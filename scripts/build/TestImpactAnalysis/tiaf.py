@@ -311,7 +311,7 @@ class TestImpact:
         args.append(f"--suite={suite}")
         logger.info(f"Test suite is set to '{suite}'.")
 
-        #Exclude tests
+        # Exclude tests
         if exclude_file is not None:
             args.append(f"--exclude_file={exclude_file}")
             logger.info(f"Exclude file found, excluding the tests stored at '{exclude_file}'.")
