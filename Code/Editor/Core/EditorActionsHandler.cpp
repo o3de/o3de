@@ -19,6 +19,7 @@
 #include <CryEdit.h>
 #include <GameEngine.h>
 #include <LmbrCentral/Audio/AudioSystemComponentBus.h>
+#include <MainWindow.h>
 #include <QtViewPaneManager.h>
 
 #include <QDesktopServices>
@@ -270,6 +271,7 @@ void EditorActionsHandler::InitializeActions()
         actionProperties.m_name = "Save";
         actionProperties.m_description = "Save the current level";
         actionProperties.m_category = "Level";
+        actionProperties.m_hideFromMenusWhenDisabled = false;
 
         m_actionManagerInterface->RegisterAction(
             EditorMainWindowActionContextIdentifier, "o3de.action.file.save", actionProperties,
@@ -280,6 +282,7 @@ void EditorActionsHandler::InitializeActions()
         );
 
         m_actionManagerInterface->InstallEnabledStateCallback("o3de.action.file.save", IsLevelLoaded);
+        m_actionManagerInterface->AddActionToUpdater(LevelLoadedUpdaterIdentifier, "o3de.action.file.save");
     }
 
     // Save As...
@@ -288,17 +291,19 @@ void EditorActionsHandler::InitializeActions()
         actionProperties.m_name = "Save As...";
         actionProperties.m_description = "Save the current level";
         actionProperties.m_category = "Level";
+        actionProperties.m_hideFromMenusWhenDisabled = false;
 
         m_actionManagerInterface->RegisterAction(
             EditorMainWindowActionContextIdentifier, "o3de.action.file.saveAs", actionProperties,
             []()
             {
-                // TODO - Find how to call this...
-                
+                CCryEditDoc* pDoc = GetIEditor()->GetDocument();
+                pDoc->OnFileSaveAs();
             }
         );
 
         m_actionManagerInterface->InstallEnabledStateCallback("o3de.action.file.saveAs", IsLevelLoaded);
+        m_actionManagerInterface->AddActionToUpdater(LevelLoadedUpdaterIdentifier, "o3de.action.file.saveAs");
     }
 
     // Save Level Statistics
@@ -307,6 +312,7 @@ void EditorActionsHandler::InitializeActions()
         actionProperties.m_name = "Save Level Statistics";
         actionProperties.m_description = "Logs Editor memory usage.";
         actionProperties.m_category = "Level";
+        actionProperties.m_hideFromMenusWhenDisabled = false;
 
         m_actionManagerInterface->RegisterAction(
             EditorMainWindowActionContextIdentifier, "o3de.action.file.saveLevelStatistics", actionProperties,
@@ -334,7 +340,7 @@ void EditorActionsHandler::InitializeActions()
         actionProperties.m_category = "Project";
 
         m_actionManagerInterface->RegisterAction(
-            EditorMainWindowActionContextIdentifier, "o3de.action.file.saveLevelStatistics", actionProperties,
+            EditorMainWindowActionContextIdentifier, "o3de.action.project.editSettings", actionProperties,
             [cryEdit = m_cryEditApp]()
             {
                 cryEdit->OnOpenProjectManagerSettings();
@@ -452,7 +458,6 @@ void EditorActionsHandler::InitializeActions()
         );
 
         m_actionManagerInterface->InstallEnabledStateCallback("o3de.action.game.play", IsLevelLoaded);
-
         m_actionManagerInterface->AddActionToUpdater(LevelLoadedUpdaterIdentifier, "o3de.action.game.play");
         m_actionManagerInterface->AddActionToUpdater(GameModeStateChangedUpdaterIdentifier, "o3de.action.game.play");
     }
@@ -477,7 +482,6 @@ void EditorActionsHandler::InitializeActions()
         );
 
         m_actionManagerInterface->InstallEnabledStateCallback("o3de.action.game.playMaximized", IsLevelLoaded);
-
         m_actionManagerInterface->AddActionToUpdater(LevelLoadedUpdaterIdentifier, "o3de.action.game.playMaximized");
         m_actionManagerInterface->AddActionToUpdater(GameModeStateChangedUpdaterIdentifier, "o3de.action.game.playMaximized");
     }
@@ -503,7 +507,6 @@ void EditorActionsHandler::InitializeActions()
         );
 
         m_actionManagerInterface->InstallEnabledStateCallback("o3de.action.game.simulate", IsLevelLoaded);
-
         m_actionManagerInterface->AddActionToUpdater(LevelLoadedUpdaterIdentifier, "o3de.action.game.simulate");
         m_actionManagerInterface->AddActionToUpdater(GameModeStateChangedUpdaterIdentifier, "o3de.action.game.simulate");
     }
