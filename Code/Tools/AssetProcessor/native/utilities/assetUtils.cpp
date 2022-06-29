@@ -232,12 +232,10 @@ namespace AssetUtilities
     AZ::SettingsRegistryInterface::FixedValueString s_projectPath;
     AZ::SettingsRegistryInterface::FixedValueString s_projectName;
     AZ::SettingsRegistryInterface::FixedValueString s_assetRoot;
-//    AZ::SettingsRegistryInterface::FixedValueString s_assetServerAddress;
     AZ::SettingsRegistryInterface::FixedValueString s_cachedEngineRoot;
     int s_truncateFingerprintTimestampPrecision{ 1 };
     AZStd::optional<bool> s_fileHashOverride{};
     AZStd::optional<bool> s_fileHashSetting{};
-//    AZStd::optional<bool> s_serverMode{};
 
     void SetTruncateFingerprintTimestamp(int precision)
     {
