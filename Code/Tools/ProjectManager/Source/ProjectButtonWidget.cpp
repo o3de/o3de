@@ -257,9 +257,11 @@ namespace O3DE::ProjectManager
             QHBoxLayout* hLayout = new QHBoxLayout();
             hLayout->setContentsMargins(0, 0, 0, 0);
 
-            auto projectNameLabel = new AzQtComponents::ElidingLabel(m_projectInfo.GetProjectDisplayName(), this);
-            projectNameLabel->setToolTip(m_projectInfo.m_path);
-            hLayout->addWidget(projectNameLabel);
+            m_projectNameLabel = new AzQtComponents::ElidingLabel(m_projectInfo.GetProjectDisplayName(), this);
+            m_projectNameLabel->setObjectName("projectNameLabel");
+            m_projectNameLabel->setToolTip(m_projectInfo.m_path);
+            m_projectNameLabel->refreshStyle();
+            hLayout->addWidget(m_projectNameLabel);
 
             m_projectMenuButton = new QPushButton(this);
             m_projectMenuButton->setObjectName("projectMenuButton");
@@ -268,13 +270,9 @@ namespace O3DE::ProjectManager
             projectFooterLayout->addLayout(hLayout);
 
             // row 2
-            if (!m_projectInfo.m_engineName.isEmpty() && !m_engineInfo.m_name.isEmpty())
-            {
-                auto engineNameLabel = new AzQtComponents::ElidingLabel(m_engineInfo.m_name + " " + m_engineInfo.m_version, this);
-                engineNameLabel->setObjectName(m_engineInfo.m_thisEngine ? "thisEngineLabel" : "otherEngineLabel");
-                engineNameLabel->setToolTip(m_engineInfo.m_name + " " + m_engineInfo.m_version + " " + m_engineInfo.m_path);
-                projectFooterLayout->addWidget(engineNameLabel);
-            }
+            m_engineNameLabel = new AzQtComponents::ElidingLabel(m_engineInfo.m_name + " " + m_engineInfo.m_version, this);
+            SetEngine(m_engineInfo);
+            projectFooterLayout->addWidget(m_engineNameLabel);
         }
 
         vLayout->addWidget(projectFooter);
@@ -293,6 +291,8 @@ namespace O3DE::ProjectManager
 
         SetState(ProjectButtonState::ReadyToLaunch);
     }
+
+    ProjectButton::~ProjectButton() = default;
 
     QMenu* ProjectButton::CreateProjectMenu()
     {
@@ -344,6 +344,25 @@ namespace O3DE::ProjectManager
     void ProjectButton::ShowLogs()
     {
         QDesktopServices::openUrl(m_projectInfo.m_logUrl);
+    }
+
+    void ProjectButton::SetEngine(const EngineInfo& engine)
+    {
+        m_engineInfo = engine;
+        m_engineNameLabel->SetText(m_engineInfo.m_name + " " + m_engineInfo.m_version);
+        m_engineNameLabel->update();
+        m_engineNameLabel->setObjectName(m_engineInfo.m_thisEngine ? "thisEngineLabel" : "otherEngineLabel");
+        m_engineNameLabel->setToolTip(m_engineInfo.m_name + " " + m_engineInfo.m_version + " " + m_engineInfo.m_path);
+        m_engineNameLabel->refreshStyle(); // important for styles to work correctly
+    }
+
+    void ProjectButton::SetProject(const ProjectInfo& project)
+    {
+        m_projectInfo = project;
+        m_projectNameLabel->SetText(m_projectInfo.GetProjectDisplayName());
+        m_projectNameLabel->update();
+        m_projectNameLabel->setToolTip(m_projectInfo.m_path);
+        m_projectNameLabel->refreshStyle(); // important for styles to work correctly
     }
 
     void ProjectButton::SetState(enum ProjectButtonState state)
