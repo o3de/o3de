@@ -29,7 +29,7 @@ namespace ScriptCanvas::Developer
             ScriptCanvasDeveloperEditor::SystemComponent::CreateDescriptor()
         });
 
-        AZStd::vector<AZ::ComponentDescriptor*> componentDescriptors(ScriptCanvas::Developer::Libraries::Developer::GetComponentDescriptors());
+        AZStd::vector<AZ::ComponentDescriptor*> componentDescriptors(ScriptCanvas::Developer::GetComponentDescriptors());
         m_descriptors.insert(m_descriptors.end(), componentDescriptors.begin(), componentDescriptors.end());
     }
 

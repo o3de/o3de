@@ -318,6 +318,11 @@ namespace PhysX
         {
             AZ::Aabb dirtyRegion = m_dirtyRegion;
 
+            auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get();
+            auto* scene = physicsSystem->GetScene(m_attachedSceneHandle);
+
+            auto shape = GetHeightfieldShape();
+
             // For each sub-region in our dirty region, get the updated height and material data for the heightfield.
             for (float y = dirtyRegion.GetMin().GetY(); y < dirtyRegion.GetMax().GetY(); y += regionDivider)
             {
@@ -360,10 +365,6 @@ namespace PhysX
                         },
                         startColumn, startRow, numColumns, numRows);
 
-                    auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get();
-                    auto* scene = physicsSystem->GetScene(m_attachedSceneHandle);
-
-                    auto shape = GetHeightfieldShape();
                     Utils::RefreshHeightfieldShape(scene, &(*shape), *m_shapeConfig, startColumn, startRow, numColumns, numRows);
                 }
 

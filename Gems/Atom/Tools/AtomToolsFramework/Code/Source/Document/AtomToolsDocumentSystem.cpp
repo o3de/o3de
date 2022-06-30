@@ -557,7 +557,7 @@ namespace AtomToolsFramework
     {
         m_queueReopenDocuments = false;
 
-        const bool enableHotReload = GetSettingsValue<bool>("/O3DE/AtomToolsFramework/AtomToolsDocumentSystem/EnableHotReload", true);
+        const bool enableHotReload = GetSettingsValue<bool>("/O3DE/AtomToolsFramework/AtomToolsDocumentSystem/EnableAutomaticReload", true);
         if (!enableHotReload)
         {
             m_documentIdsWithDependencyChanges.clear();
@@ -573,7 +573,7 @@ namespace AtomToolsFramework
         }
 
         const bool enableHotReloadPrompts =
-            GetSettingsValue<bool>("/O3DE/AtomToolsFramework/AtomToolsDocumentSystem/EnableHotReloadPrompts", true);
+            GetSettingsValue<bool>("/O3DE/AtomToolsFramework/AtomToolsDocumentSystem/EnableAutomaticReloadPrompts", true);
 
         for (const AZ::Uuid& documentId : m_documentIdsWithExternalChanges)
         {

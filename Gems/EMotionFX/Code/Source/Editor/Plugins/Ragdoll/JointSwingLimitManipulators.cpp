@@ -23,17 +23,6 @@ namespace EMotionFX
     static constexpr float ManipulatorScale = 400.0f; // scaling factor between linear position of manipulator and swing limit in degrees
     static constexpr float ManipulatorInverseScale = 1.0f / ManipulatorScale;
 
-    JointSwingLimitManipulators::JointSwingLimitManipulators()
-    {
-        m_adjustJointLimitCallback = AZStd::make_unique<PhysicsSetupManipulatorCommandCallback>(this, false);
-        EMStudio::GetCommandManager()->RegisterCommandCallback("AdjustJointLimit", m_adjustJointLimitCallback.get());
-    }
-
-    JointSwingLimitManipulators::~JointSwingLimitManipulators()
-    {
-        EMStudio::GetCommandManager()->RemoveCommandCallback(m_adjustJointLimitCallback.get(), false);
-    }
-
     void JointSwingLimitManipulators::Setup(const PhysicsSetupManipulatorData& physicsSetupManipulatorData)
     {
         m_physicsSetupManipulatorData = physicsSetupManipulatorData;
@@ -131,14 +120,15 @@ namespace EMotionFX
 
         AZ::TickBus::Handler::BusConnect();
         PhysicsSetupManipulatorRequestBus::Handler::BusConnect();
+        m_adjustJointLimitCallback = AZStd::make_unique<PhysicsSetupManipulatorCommandCallback>(this, false);
+        EMStudio::GetCommandManager()->RegisterCommandCallback("AdjustJointLimit", m_adjustJointLimitCallback.get());
     }
 
     void JointSwingLimitManipulators::Refresh()
     {
         if (m_physicsSetupManipulatorData.HasJointLimit())
         {
-            const AZ::Transform parentWorldTransform = m_physicsSetupManipulatorData.m_nodeWorldTransform *
-                AZ::Transform::CreateFromQuaternion(m_physicsSetupManipulatorData.m_jointConfiguration->m_parentLocalRotation);
+            const AZ::Transform parentWorldTransform = m_physicsSetupManipulatorData.GetJointParentFrameWorld();
 
             AZStd::optional<float> swingLimitY =
                 m_physicsSetupManipulatorData.m_jointConfiguration->GetPropertyValue(AZ::Name("SwingLimitY"));
@@ -159,10 +149,23 @@ namespace EMotionFX
 
     void JointSwingLimitManipulators::Teardown()
     {
+        if (!m_physicsSetupManipulatorData.HasJointLimit())
+        {
+            return;
+        }
+
+        EMStudio::GetCommandManager()->RemoveCommandCallback(m_adjustJointLimitCallback.get(), false);
+        m_adjustJointLimitCallback.reset();
         PhysicsSetupManipulatorRequestBus::Handler::BusDisconnect();
         AZ::TickBus::Handler::BusDisconnect();
-        m_swingYManipulator->Unregister();
-        m_swingZManipulator->Unregister();
+        if (m_swingYManipulator)
+        {
+            m_swingYManipulator->Unregister();
+        }
+        if (m_swingZManipulator)
+        {
+            m_swingZManipulator->Unregister();
+        }
         m_swingYManipulator.reset();
         m_swingZManipulator.reset();
         m_debugDisplay = nullptr;
@@ -226,11 +229,7 @@ namespace EMotionFX
         AZ::u32 previousState = m_debugDisplay->GetState();
         m_debugDisplay->CullOff();
         m_debugDisplay->SetColor(AZ::Colors::White);
-
-        const AZ::Transform parentWorldTransform = m_physicsSetupManipulatorData.m_nodeWorldTransform *
-            AZ::Transform::CreateFromQuaternion(m_physicsSetupManipulatorData.m_jointConfiguration->m_parentLocalRotation);
-
-        m_debugDisplay->PushMatrix(parentWorldTransform);
+        m_debugDisplay->PushMatrix(m_physicsSetupManipulatorData.GetJointParentFrameWorld());
         if (swingLimitY.has_value())
         {
             m_debugDisplay->DrawLine(

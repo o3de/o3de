@@ -33,6 +33,7 @@
 #include <EMotionFX/Source/TransformData.h>
 #include <EMotionFX/Source/AttachmentNode.h>
 #include <EMotionFX/Source/AttachmentSkin.h>
+#include <EMotionFX/Source/Mesh.h>
 #include <MCore/Source/AzCoreConversions.h>
 #include <AtomLyIntegration/CommonFeatures/Material/MaterialComponentConstants.h>
 
