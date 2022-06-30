@@ -170,7 +170,7 @@ namespace PhysXDebug
                 ec->Class<SystemComponent>("PhysX Debug Visualization", "A debug visualization system component for PhysX.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
+                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("System"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &SystemComponent::m_settings, "Settings", "PhysX debug visualization settings")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &SystemComponent::m_culling, "Culling", "PhysX culling options")
