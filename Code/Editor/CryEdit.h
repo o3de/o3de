@@ -232,6 +232,7 @@ public:
     void OnUpdateNonGameMode(QAction* action);
     void OnUpdateNewLevel(QAction* action);
     void OnUpdatePlayGame(QAction* action);
+    void OnToolsLogMemoryUsage();
 
 protected:
     // ------- AzFramework::AssetSystemInfoBus::Handler ------
@@ -351,7 +352,6 @@ private:
     void OnUpdateWireframe(QAction* action);
     void OnViewConfigureLayout();
 
-    void OnToolsLogMemoryUsage();
     void OnCustomizeKeyboard();
     void OnToolsConfiguretools();
     void OnToolsScriptHelp();
