@@ -21,8 +21,8 @@ namespace ProjectSettingsTool
 
     enum class PlatformDataType
     {
-        ProjectJson, // Data comes from global project.json file
-        PlatformResource, // Data comes from another file, which can have different formats (json or plist)
+        ProjectJson, //!< Data comes from global project.json file
+        PlatformResource, //!< Data comes from another file, which can have different formats (json or plist)
 
         NumPlatformDataTypes
     };

@@ -76,7 +76,7 @@ namespace ProjectSettingsTool
         PlatformSettings* GetPlatformData(const Platform& plat);
 
         // Returns true if PlatformSettings are found for platform
-        bool HasPlatformData(const Platform& plat);
+        bool HasPlatformData(const Platform& plat) const;
 
         // Gets the earliest error not seen
         AZ::Outcome<void, SettingsError> GetError();

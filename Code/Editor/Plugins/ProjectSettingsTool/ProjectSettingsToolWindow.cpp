@@ -37,7 +37,7 @@ namespace ProjectSettingsTool
 {
     namespace
     {
-        const char* IosSettingsPListPaths[] = {
+        const char* const IosSettingsPListPaths[] = {
                     "Resources/Platform/iOS/Info.plist",
 
                     // legacy paths
@@ -45,8 +45,8 @@ namespace ProjectSettingsTool
                     "Gem/Resources/IOSLauncher/Info.plist"
         };
 
-        const char* AndroidSettingsJsonPath = "Platform/Android/android_project.json";
-        const char* AndroidSettingsJsonValueString = "android_settings";
+        const char* const AndroidSettingsJsonPath = "Platform/Android/android_project.json";
+        const char* const AndroidSettingsJsonValueString = "android_settings";
 
         bool g_serializeRegistered = false;
     }
@@ -454,7 +454,7 @@ namespace ProjectSettingsTool
         case PlatformId::Android:
         {
             auto* androidSettings = m_settingsContainer->GetPlatformData(plat);
-            if (androidSettings == nullptr ||
+            if (!androidSettings ||
                 !AZStd::holds_alternative<ProjectSettingsContainer::JsonSettings>(*androidSettings))
             {
                 QMessageBox::critical

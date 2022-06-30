@@ -140,7 +140,7 @@ namespace ProjectSettingsTool
         return result;
     }
 
-    bool ProjectSettingsContainer::HasPlatformData(const Platform& plat)
+    bool ProjectSettingsContainer::HasPlatformData(const Platform& plat) const
     {
         if (plat.m_type == PlatformDataType::PlatformResource)
         {
@@ -348,7 +348,7 @@ namespace ProjectSettingsTool
             m_errors.push(SettingsError(AZStd::string::format("Failed to load %s", plistSettings.m_path.c_str()), outcome.GetError(), true /*shouldAbort*/));
         }
 
-        static const int xmlFlags = rapidxml::parse_doctype_node | rapidxml::parse_declaration_node | rapidxml::parse_no_data_nodes;
+        const int xmlFlags = rapidxml::parse_doctype_node | rapidxml::parse_declaration_node | rapidxml::parse_no_data_nodes;
 
         plistSettings.m_document->parse<xmlFlags>(plistSettings.m_rawData.data());
     }
