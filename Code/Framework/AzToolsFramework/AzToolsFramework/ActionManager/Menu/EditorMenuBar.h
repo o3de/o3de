@@ -16,6 +16,7 @@ class QMenuBar;
 namespace AzToolsFramework
 {
     class MenuManagerInterface;
+    class MenuManagerInternalInterface;
 
     class EditorMenuBar
     {
