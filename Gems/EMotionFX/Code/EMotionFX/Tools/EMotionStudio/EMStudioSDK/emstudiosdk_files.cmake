@@ -33,6 +33,7 @@ set(FILES
     Source/PersistentPlugin.h
     Source/PluginManager.cpp
     Source/PluginManager.h
+    Source/IPluginManager.h
     Source/PluginOptions.h
     Source/PluginOptionsBus.h
     Source/PreferencesWindow.cpp

@@ -14,56 +14,50 @@
 #include "EMStudioPlugin.h"
 #include <AzCore/PlatformIncl.h>
 #include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/PersistentPlugin.h>
+#include <EMotionStudio/EMStudioSDK/Source/IPluginManager.h>
 #endif
 
 namespace EMStudio
 {
-    class EMSTUDIO_API PluginManager
+    class EMSTUDIO_API PluginManager final : 
+        public EMStudio::IPluginManager
     {
     public:
-        typedef AZStd::vector<EMStudioPlugin*> PluginVector;
-        typedef AZStd::vector<AZStd::unique_ptr<PersistentPlugin>> PersistentPluginVector;
+        AZ_RTTI(PluginManager, "{5c60f9be-f835-11ec-b939-0242ac120002}", IPluginManager);
 
         PluginManager() = default;
-        ~PluginManager();
+        ~PluginManager() override;
 
         // Plugin prototypes (persistent plugins are not included)
-        void RegisterPlugin(EMStudioPlugin* plugin) { m_registeredPlugins.push_back(plugin); }
-        size_t GetNumRegisteredPlugins() const { return m_registeredPlugins.size(); }
-        EMStudioPlugin* GetRegisteredPlugin(size_t index) { return m_registeredPlugins[index]; }
-        size_t FindRegisteredPluginIndex(const char* pluginType) const;
-        const PluginVector& GetRegisteredPlugins() { return m_registeredPlugins; }
+        virtual void RegisterPlugin(EMStudioPlugin* plugin) override { m_registeredPlugins.push_back(plugin); }
+        virtual size_t GetNumRegisteredPlugins() const override { return m_registeredPlugins.size(); }
+        virtual EMStudioPlugin* GetRegisteredPlugin(size_t index) override { return m_registeredPlugins[index]; }
+        virtual size_t FindRegisteredPluginIndex(const char* pluginType) const override;
+        virtual const PluginVector& GetRegisteredPlugins() override { return m_registeredPlugins; }
 
         // Active window plugins
-        EMStudioPlugin* CreateWindowOfType(const char* pluginType, const char* objectName = nullptr);
-        void RemoveActivePlugin(EMStudioPlugin* plugin);
+        virtual EMStudioPlugin* CreateWindowOfType(const char* pluginType, const char* objectName = nullptr) override;
+        virtual void RemoveActivePlugin(EMStudioPlugin* plugin) override;
 
-        size_t GetNumActivePlugins() const { return m_activePlugins.size(); }
-        EMStudioPlugin* GetActivePlugin(uint32 index) { return m_activePlugins[index]; }
-        const PluginVector& GetActivePlugins() { return m_activePlugins; }
+        virtual size_t GetNumActivePlugins() const override{ return m_activePlugins.size(); }
+        virtual EMStudioPlugin* GetActivePlugin(uint32 index) override { return m_activePlugins[index]; }
+        virtual const PluginVector& GetActivePlugins() override{ return m_activePlugins; }
 
-        EMStudioPlugin* FindActivePluginByTypeString(const char* pluginType) const;
+        virtual EMStudioPlugin* FindActivePluginByTypeString(const char* pluginType) const override;
+        virtual EMStudioPlugin* FindActivePlugin(uint32 classID) const override;
 
-        // Reqire that PluginType is a subclass of EMStudioPlugin
-        template<class PluginType>
-        typename AZStd::enable_if_t<AZStd::is_convertible_v<PluginType*, EMStudioPlugin*>, PluginType*> FindActivePlugin() const
-        {
-            return static_cast<PluginType*>(FindActivePlugin(PluginType::CLASS_ID));
-        }
-        EMStudioPlugin* FindActivePlugin(uint32 classID) const;
-
-        size_t CalcNumActivePluginsOfType(const char* pluginType) const;
-        size_t CalcNumActivePluginsOfType(uint32 classID) const;
+        virtual size_t CalcNumActivePluginsOfType(const char* pluginType) const override;
+        virtual size_t CalcNumActivePluginsOfType(uint32 classID) const override;
 
         // Persistent plugins
-        void AddPersistentPlugin(PersistentPlugin* plugin) { m_persistentPlugins.push_back(AZStd::unique_ptr<PersistentPlugin>(plugin)); }
-        void RemovePersistentPlugin(PersistentPlugin* plugin);
-        size_t GetNumPersistentPlugins() const { return m_persistentPlugins.size(); }
-        PersistentPlugin* GetPersistentPlugin(size_t index) { return m_persistentPlugins[index].get(); }
-        const PersistentPluginVector& GetPersistentPlugins() { return m_persistentPlugins; }
+        virtual void AddPersistentPlugin(PersistentPlugin* plugin) override { m_persistentPlugins.push_back(AZStd::unique_ptr<PersistentPlugin>(plugin)); }
+        virtual void RemovePersistentPlugin(PersistentPlugin* plugin) override;
+        virtual size_t GetNumPersistentPlugins() const override { return m_persistentPlugins.size(); }
+        virtual PersistentPlugin* GetPersistentPlugin(size_t index) override { return m_persistentPlugins[index].get(); }
+        virtual const PersistentPluginVector& GetPersistentPlugins() override { return m_persistentPlugins; }
 
-        QString GenerateObjectName() const;
-        void RegisterDefaultPlugins();
+        virtual QString GenerateObjectName() const override;
+        virtual void RegisterDefaultPlugins() override;
 
     private:
         PluginVector m_registeredPlugins;

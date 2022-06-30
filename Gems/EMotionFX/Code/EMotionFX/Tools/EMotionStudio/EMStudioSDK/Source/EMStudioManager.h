@@ -67,6 +67,9 @@ namespace EMStudio
         MCORE_INLINE QApplication* GetApp()                                     { return m_app; }
         MCORE_INLINE bool HasMainWindow() const                                 { return !m_mainWindow.isNull(); }
         MainWindow* GetMainWindow();
+
+        // O3DE_DEPRECATION_NOTICE(GHI-)
+        //! @deprecated use AZ::Interface<IPluginManager>
         MCORE_INLINE PluginManager* GetPluginManager()                          { return m_pluginManager; }
         MCORE_INLINE LayoutManager* GetLayoutManager()                          { return m_layoutManager; }
         MCORE_INLINE NotificationWindowManager* GetNotificationWindowManager()  { return m_notificationWindowManager; }
@@ -170,6 +173,9 @@ namespace EMStudio
     EMStudioManager* GetManager();
     bool HasMainWindow();
     MainWindow* GetMainWindow();
+
+    // O3DE_DEPRECATION_NOTICE(GHI-)
+    //! @deprecated use AZ::Interface<IPluginManager>
     PluginManager* GetPluginManager();
     LayoutManager* GetLayoutManager();
     NotificationWindowManager* GetNotificationWindowManager();

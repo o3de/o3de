@@ -17,6 +17,7 @@
 #include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.h>
 #include <EMotionFX/CommandSystem/Source/MotionCommands.h>
 #include <EMotionFX/CommandSystem/Source/MotionSetCommands.h>
+#include <EMotionStudio/EMStudioSDK/Source/IPluginManager.h>
 
 // include MCore related
 #include <MCore/Source/LogManager.h>
@@ -93,6 +94,7 @@ namespace EMStudio
         m_commandManager->RegisterCommand(new CommandEditorLoadAnimGraph());
         m_commandManager->RegisterCommand(new CommandEditorLoadMotionSet());
 
+
         m_eventPresetManager         = new MotionEventPresetManager();
         m_pluginManager              = new PluginManager();
         m_layoutManager              = new LayoutManager();
@@ -105,6 +107,7 @@ namespace EMStudio
         // log some information
         LogInfo();
 
+        AZ::Interface<IPluginManager>::Register(m_pluginManager);
         AZ::Interface<EMStudioManager>::Register(this);
     }
 
@@ -122,6 +125,8 @@ namespace EMStudio
 
         // delete all animgraph instances etc
         ClearScene();
+
+        AZ::Interface<IPluginManager>::Unregister(m_pluginManager);
 
         delete m_eventPresetManager;
         delete m_pluginManager;
@@ -144,7 +149,6 @@ namespace EMStudio
         }
         return m_mainWindow;
     }
-
 
     // clear everything
     void EMStudioManager::ClearScene()

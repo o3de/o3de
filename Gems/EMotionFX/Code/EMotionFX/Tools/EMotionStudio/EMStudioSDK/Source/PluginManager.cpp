@@ -48,6 +48,7 @@
 
 namespace EMStudio
 {
+
     PluginManager::~PluginManager()
     {
         UnloadPlugins();
