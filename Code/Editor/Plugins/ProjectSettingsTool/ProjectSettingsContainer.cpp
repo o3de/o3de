@@ -286,7 +286,7 @@ namespace ProjectSettingsTool
             {
                 if (!AZStd::holds_alternative<PlistSettings>(*platformSettings))
                 {
-                    AZ_Warning("ProjectSettingsContainer", false, "PlistDictionary can only be created from a xml settings.");
+                    AZ_Warning("ProjectSettingsContainer", false, "PlistDictionary can only be created from plist settings.");
                     return nullptr;
                 }
 
