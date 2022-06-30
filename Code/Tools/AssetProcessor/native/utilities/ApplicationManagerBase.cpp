@@ -1854,8 +1854,6 @@ bool ApplicationManagerBase::OnError(const char* /*window*/, const char* /*messa
 
 bool ApplicationManagerBase::CheckSufficientDiskSpace(qint64 requiredSpace, bool shutdownIfInsufficient)
 {
-    bool createdDirectory = false;
-
     QDir cacheDir;
     if (!AssetUtilities::ComputeProjectCacheRoot(cacheDir))
     {
@@ -1872,7 +1870,7 @@ bool ApplicationManagerBase::CheckSufficientDiskSpace(qint64 requiredSpace, bool
     {
         // GetFreeDiskSpace will fail if the path does not exist
         QDir dir;
-        createdDirectory = dir.mkpath(savePath);
+        dir.mkpath(savePath);
     }
 
     qint64 bytesFree = 0;
