@@ -1337,6 +1337,7 @@ namespace AssetProcessor
         //                  Stats table
         // ---------------------------------------------------------------------------------------------
         m_databaseConnection->AddStatement(CREATE_STATS_TABLE, CREATE_STATS_TABLE_STATEMENT);
+        m_createStatements.push_back(CREATE_STATS_TABLE);
 
         // ---------------------------------------------------------------------------------------------
         //                   Indices
