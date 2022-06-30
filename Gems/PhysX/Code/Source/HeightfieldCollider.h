@@ -90,8 +90,19 @@ namespace PhysX
         void UpdateHeightfieldMaterialSlots(const Physics::MaterialSlots& updatedMaterialSlots);
 
     private:
-        void UpdateHeightfieldRows(
-            AzPhysics::Scene* scene, AZStd::shared_ptr<Physics::Shape> shape, size_t rowsPerUpdate, size_t startColumn, size_t numColumns);
+        //! Updates a subset of rows in the heightfield shape configuration.
+        void UpdateShapeConfigRows(
+            AZ::Job* updateCompleteJob, size_t startColumn, size_t startRow, size_t numColumns, size_t numRows);
+
+        //! Updates a subset of rows in the PhysX heightfield based on the data in the heightfield shape configuration.
+        //! Note that while this takes in column ranges, the expectation is that it is processing all the dirty columns for each
+        //! row being updated. If this assumption changes, the dirty region tracking logic will also need to change.
+        void UpdatePhysXHeightfieldRows(
+            AzPhysics::Scene* scene, AZStd::shared_ptr<Physics::Shape> shape,
+            size_t startColumn, size_t startRow, size_t numColumns, size_t numRows);
+
+        //! Called once all of the asynchronous update jobs have completed.
+        void RefreshComplete();
 
         //! Helper class to manage the spawned physics update jobs.
         class HeightfieldUpdateJobContext : public AZ::JobContext
@@ -118,8 +129,8 @@ namespace PhysX
             void BlockUntilComplete();
 
         private:
-            //! Track the number of currently-running jobs. (This will currently either be 0 or 1, but may get more complicated someday)
-            int m_numRunningJobs = 0;
+            //! Track whether or not a refresh is currently happening.
+            bool m_refreshInProgress = false;
             //! Mutex to protect the job-running state
             AZStd::mutex m_jobsRunningNotificationMutex;
             //! Notification mechanism for knowing when the jobs have stopped running.
