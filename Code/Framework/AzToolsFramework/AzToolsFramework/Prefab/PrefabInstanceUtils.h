@@ -23,7 +23,7 @@ namespace AzToolsFramework
              * Stops when it hits either the targetInstance or the root.
              * @param startInstance An instance as starting point from an instance hierarchy tree.
              * @param targetInstance Target instance to climb up to from startInstance.
-             * @return Pointer to the targetInstance or the root(if targetInstance is not an ancestor
+             * @return Pointer to the targetInstance or the root (if targetInstance is not an ancestor
              * of startInstance), and startInstance's relative path to targetInstance.
              */
             AZStd::pair<const Instance*, AZStd::string> ClimbUpToTargetInstance(

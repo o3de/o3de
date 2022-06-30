@@ -37,11 +37,10 @@ namespace AzToolsFramework
         private:
             /**
              * Update the container entity's transform from focused instance and its dom according to the root.
-             * @param focusedInstance The pointer to the focused instance.
-             * @param instanceDom The dom of the instance that is being propagated, and will be edited
-             * by this function.
+             * @param instance The pointer to the focused instance.
+             * @param instanceDom The dom of the instance that will be edited by this function.
              */
-            void ReplaceFocusedContainerTransformAccordingToRoot(const Instance* focusedInstance, PrefabDom& focusedInstanceDom) const;
+            void ReplaceFocusedContainerTransformAccordingToRoot(const Instance* instance, PrefabDom& instanceDom) const;
 
             static AzFramework::EntityContextId s_editorEntityContextId;
 

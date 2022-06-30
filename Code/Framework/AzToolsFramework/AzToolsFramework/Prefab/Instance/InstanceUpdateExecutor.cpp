@@ -192,7 +192,7 @@ namespace AzToolsFramework
                             AZ_Assert(
                                 false,
                                 "InstanceUpdateExecutor::UpdateTemplateInstancesInQueue - "
-                                "Could not load Instance DOM from the top level ancestor's DOM.");
+                                "Could not load Instance DOM from the given Instance.");
 
                             isUpdateSuccessful = false;
                             continue;
