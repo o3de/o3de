@@ -8,7 +8,7 @@
             "PassClass": "ParentPass",
             "Slots": [
                 {
-                    "Name": "SwapChainOutput",
+                    "Name": "PipelineOutput",
                     "SlotType": "InputOutput"
                 }
             ],
@@ -16,8 +16,8 @@
                 "$type": "PassData",
                 "PipelineGlobalConnections": [
                     {
-                        "GlobalName": "SwapChainOutput",
-                        "Slot": "SwapChainOutput"
+                        "GlobalName": "PipelineOutput",
+                        "Slot": "PipelineOutput"
                     }
                 ]
             },
@@ -62,10 +62,10 @@
                             }
                         },
                         {
-                            "LocalSlot": "SwapChainOutput",
+                            "LocalSlot": "PipelineOutput",
                             "AttachmentRef": {
                                 "Pass": "PipelineGlobal",
-                                "Attachment": "SwapChainOutput"
+                                "Attachment": "PipelineOutput"
                             }
                         }
                     ]
@@ -89,10 +89,10 @@
                             }
                         },
                         {
-                            "LocalSlot": "SwapChainOutput",
+                            "LocalSlot": "PipelineOutput",
                             "AttachmentRef": {
                                 "Pass": "PipelineGlobal",
-                                "Attachment": "SwapChainOutput"
+                                "Attachment": "PipelineOutput"
                             }
                         }
                     ]
@@ -116,10 +116,10 @@
                             }
                         },
                         {
-                            "LocalSlot": "SwapChainOutput",
+                            "LocalSlot": "PipelineOutput",
                             "AttachmentRef": {
                                 "Pass": "PipelineGlobal",
-                                "Attachment": "SwapChainOutput"
+                                "Attachment": "PipelineOutput"
                             }
                         }
                     ]
@@ -136,10 +136,10 @@
                             }
                         },
                         {
-                            "LocalSlot": "SwapChainOutput",
+                            "LocalSlot": "PipelineOutput",
                             "AttachmentRef": {
                                 "Pass": "PipelineGlobal",
-                                "Attachment": "SwapChainOutput"
+                                "Attachment": "PipelineOutput"
                             }
                         },
                         {
@@ -212,10 +212,10 @@
                             }
                         },
                         {
-                            "LocalSlot": "SwapChainOutput",
+                            "LocalSlot": "PipelineOutput",
                             "AttachmentRef": {
                                 "Pass": "PipelineGlobal",
-                                "Attachment": "SwapChainOutput"
+                                "Attachment": "PipelineOutput"
                             }
                         }
                     ]
@@ -364,10 +364,10 @@
                             }
                         },
                         {
-                            "LocalSlot": "SwapChainOutput",
+                            "LocalSlot": "PipelineOutput",
                             "AttachmentRef": {
                                 "Pass": "PipelineGlobal",
-                                "Attachment": "SwapChainOutput"
+                                "Attachment": "PipelineOutput"
                             }
                         }
                     ]
@@ -494,7 +494,7 @@
                             "LocalSlot": "Output",
                             "AttachmentRef": {
                                 "Pass": "PipelineGlobal",
-                                "Attachment": "SwapChainOutput"
+                                "Attachment": "PipelineOutput"
                             }
                         }
                     ]
