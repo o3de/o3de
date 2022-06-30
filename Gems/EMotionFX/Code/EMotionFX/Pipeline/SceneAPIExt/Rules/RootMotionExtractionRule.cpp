@@ -47,11 +47,6 @@ namespace EMotionFX::Pipeline::Rule
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    RootMotionExtractionRule::RootMotionExtractionRule()
-        : ExternalToolRule<RootMotionExtractionData>()
-    {
-    }
-
     RootMotionExtractionRule::RootMotionExtractionRule(const RootMotionExtractionData& data)
         : m_data(data)
     {

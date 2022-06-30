@@ -102,11 +102,6 @@ namespace AZ
                     }
                 }
 
-                if (currentNode == scene->mRootNode)
-                {
-                    isBone = true;
-                }
-
                 if (!isBone)
                 {
                     return Events::ProcessingResult::Ignored;
