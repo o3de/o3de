@@ -8,6 +8,7 @@
 
 #include "TranslationHelper.h"
 #include <AzCore/IO/FileIO.h>
+#include <AzCore/Settings/SettingsRegistry.h>
 #include <AzFramework/Gem/GemInfo.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 

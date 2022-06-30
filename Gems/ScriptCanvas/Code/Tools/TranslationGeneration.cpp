@@ -21,7 +21,6 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
-#include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/std/string/regex.h>
 
 #include <Libraries/Core/AzEventHandler.h>
