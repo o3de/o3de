@@ -405,7 +405,7 @@ namespace AzToolsFramework
                 AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
                     &PropertyEditorGUIMessages::OnEditingFinished, newCtrl);
             });
-        // note:  Qt automatically disconnects objects from each other when either end is destroyed, no need to worry about delete.
+        // note: Qt automatically disconnects objects from each other when either end is destroyed, no need to worry about delete.
 
         return newCtrl;
     }

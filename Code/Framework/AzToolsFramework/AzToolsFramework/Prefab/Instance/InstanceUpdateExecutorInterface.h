@@ -35,7 +35,7 @@ namespace AzToolsFramework
             // prefab instance is loaded for the first time after this function is called.
             virtual void QueueRootPrefabLoadedNotificationForNextPropagation() = 0;
 
-            // Indicates whether to pause instance propagation or not.
+            //! Sets whether to pause instance propagation or not.
             //! When making property changes in the entity editor, pausing propagation during
             //! editing will prevent the user from losing control of the properties they are editing.
             virtual void SetShouldPauseInstancePropagation(bool shouldPausePropagation) = 0;
