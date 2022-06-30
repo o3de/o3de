@@ -17,6 +17,8 @@
 #include <AzQtComponents/Components/FilteredSearchWidget.h>
 #include <QElapsedTimer>
 #include <ui/BuilderListModel.h>
+#include <native/utilities/AssetUtilEBusHelper.h>
+#include <native/utilities/PlatformConfiguration.h>
 #endif
 
 namespace AzToolsFramework
@@ -133,6 +135,17 @@ private:
         QSet<AzToolsFramework::Logging::LogLine::LogType> m_logTypes;
     };
 
+    struct CacheServerData
+    {
+        bool m_dirty = false;
+        AssetProcessor::AssetServerMode m_cachingMode = AssetProcessor::AssetServerMode::Inactive;
+        AZStd::string m_serverAddress = "";
+        AssetProcessor::RecognizerContainer m_patternContainer;
+
+        void Reset();
+        void Save(MainWindow& mainWindow);
+    };
+
     Ui::MainWindow* ui;
     GUIApplicationManager* m_guiApplicationManager;
     AzToolsFramework::Logging::LogTableModel* m_logsModel;
@@ -150,6 +163,7 @@ private:
     Config m_config;
     BuilderListModel* m_builderList;
     BuilderListSortFilterProxy* m_builderListSortFilterProxy;
+    CacheServerData m_cacheServerData;
 
     void SetContextLogDetailsVisible(bool visible);
     void SetContextLogDetails(const QMap<QString, QString>& details);
@@ -210,6 +224,12 @@ private:
     void IntervalAssetTabFilterRefresh();
     /// Fires off one final refresh before invalidating the filter refresh timer.
     void ShutdownAssetTabFilterRefresh();
+
+    void SetupAssetServerTab();
+    void AddPatternRow(AZStd::string_view name, AssetBuilderSDK::AssetBuilderPattern::PatternType type, AZStd::string_view pattern);
+    void AssembleAssetPatterns();
+    void CheckAssetServerStates();
+    void ResetAssetServerView();
 
     void SetupAssetSelectionCaching();
 

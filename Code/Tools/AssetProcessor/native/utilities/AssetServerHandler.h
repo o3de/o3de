@@ -13,10 +13,16 @@
 
 namespace AssetProcessor
 {
+    inline constexpr const char* AssetCacheServerModeKey{ "assetCacheServerMode" };
+    inline constexpr const char* CacheServerAddressKey{ "cacheServerAddress" };
+
     //! AssetServerHandler is implementing asset server using network share.
     class AssetServerHandler
         : public AssetServerBus::Handler
     {
+    public:
+        static const char* GetAssetServerModeText(AssetServerMode mode);
+
     public:
         AssetServerHandler();
         virtual ~AssetServerHandler();

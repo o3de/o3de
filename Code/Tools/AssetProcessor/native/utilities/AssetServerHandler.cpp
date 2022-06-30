@@ -44,7 +44,7 @@ namespace AssetProcessor
             }
 
             AZStd::string assetCacheServerModeValue;
-            if (settingsRegistry->Get(assetCacheServerModeValue, key + "/Server/assetCacheServerMode"))
+            if (settingsRegistry->Get(assetCacheServerModeValue, key + "/Server/" + AssetCacheServerModeKey))
             {
                 AZStd::to_lower(assetCacheServerModeValue.begin(), assetCacheServerModeValue.end());
 
@@ -73,7 +73,9 @@ namespace AssetProcessor
         {
             AZStd::string address;
             if (settingsRegistry->Get(address,
-                AZ::SettingsRegistryInterface::FixedValueString(AssetProcessor::AssetProcessorSettingsKey) + "/Server/cacheServerAddress"))
+                AZ::SettingsRegistryInterface::FixedValueString(AssetProcessor::AssetProcessorSettingsKey)
+                + "/Server/"
+                + CacheServerAddressKey))
             {
                 AZ_TracePrintf(AssetProcessor::DebugChannel, "Server Address: %s\n", address.c_str());
                 return AZStd::move(address);
@@ -112,6 +114,19 @@ namespace AssetProcessor
         }
 
         return QString();
+    }
+
+    const char* AssetServerHandler::GetAssetServerModeText(AssetServerMode mode)
+    {
+        switch (mode)
+        {
+            case AssetServerMode::Inactive: return "inactive";
+            case AssetServerMode::Server: return "server";
+            case AssetServerMode::Client: return "client";
+            default:
+                break;
+        }
+        return "unknown";
     }
 
     AssetServerHandler::AssetServerHandler()
