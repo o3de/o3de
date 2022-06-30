@@ -227,6 +227,7 @@ namespace AssetProcessor
 
         //Stats
         bool GetStatByStatName(QString statName, AzToolsFramework::AssetDatabase::StatDatabaseEntryContainer& container);
+        bool ReplaceStat(AzToolsFramework::AssetDatabase::StatDatabaseEntry& stat);
     protected:
         void SetDatabaseVersion(AzToolsFramework::AssetDatabase::DatabaseVersion ver);
         void ExecuteCreateStatements();

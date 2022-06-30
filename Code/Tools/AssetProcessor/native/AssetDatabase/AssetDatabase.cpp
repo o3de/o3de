@@ -777,6 +777,16 @@ namespace AssetProcessor
         static const auto s_DeleteFileQuery = MakeSqlQuery(DELETE_FILE, DELETE_FILE_STATEMENT, LOG_NAME,
             SqlParam<AZ::s64>(":fileid"));
 
+        static const char* REPLACE_STAT = "AssetProcessor::ReplaceStat";
+        static const char* REPLACE_STAT_STATEMENT = "REPLACE INTO Stats VALUES (:statname, :statvalue, :lastlogtime);";
+        static const auto s_ReplaceStatQuery = MakeSqlQuery(
+            REPLACE_STAT,
+            REPLACE_STAT_STATEMENT,
+            LOG_NAME,
+            SqlParam<const char*>(":statname"),
+            SqlParam<AZ::s64>(":statvalue"),
+            SqlParam<AZ::s64>(":lastlogtime"));
+
         static const char* CREATEINDEX_SOURCEDEPENDENCY_SOURCE = "AssetProcesser::CreateIndexSourceSourceDependency";
         static const char* CREATEINDEX_SOURCEDEPENDENCY_SOURCE_STATEMENT =
             "CREATE INDEX IF NOT EXISTS Source_SourceDependency ON SourceDependency (Source);";
@@ -1338,6 +1348,8 @@ namespace AssetProcessor
         // ---------------------------------------------------------------------------------------------
         m_databaseConnection->AddStatement(CREATE_STATS_TABLE, CREATE_STATS_TABLE_STATEMENT);
         m_createStatements.push_back(CREATE_STATS_TABLE);
+
+        m_databaseConnection->AddStatement(REPLACE_STAT, REPLACE_STAT_STATEMENT);
 
         // ---------------------------------------------------------------------------------------------
         //                   Indices
@@ -3316,6 +3328,11 @@ namespace AssetProcessor
                 return true; // return true to continue iterating over additional results, we are populating a container
             });
         return found && succeeded;
+    }
+
+    bool AssetDatabaseConnection::ReplaceStat(AzToolsFramework::AssetDatabase::StatDatabaseEntry& stat)
+    {
+        return s_ReplaceStatQuery.BindAndStep(*m_databaseConnection, stat.m_statName.c_str(), stat.m_statValue, stat.m_lastLogTime);
     }
 
     bool AssetDatabaseConnection::SetBuilderInfoTable(AzToolsFramework::AssetDatabase::BuilderInfoEntryContainer& newEntries)
