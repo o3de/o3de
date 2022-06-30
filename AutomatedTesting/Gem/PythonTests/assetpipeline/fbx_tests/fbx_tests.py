@@ -40,6 +40,7 @@ def local_resources(request, workspace, ap_setup_fixture):
 
 
 @dataclass
+@pytest.mark.SUITE_sandbox
 class BlackboxAssetTest:
     test_name: str
     asset_folder: str
