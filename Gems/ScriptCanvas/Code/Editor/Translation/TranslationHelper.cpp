@@ -136,22 +136,14 @@ namespace ScriptCanvasEditor::TranslationHelper
                             else if (AZStd::string(path).ends_with(fileNameWithExtension))
                             {
                                 filesFound.push_back(path);
+                                foldersToSearch.clear();
+                                return false;
                             }
                             return true;
                         });
                 }
-                if (filesFound.size() > 0)
+                if (filesFound.size() == 1)
                 {
-                    // send out warning messages in case there are multiple matching translation files
-                    if (filesFound.size() > 1)
-                    {
-                        AZStd::string filelist = filesFound.front();
-                        for (size_t index = 1; index < filesFound.size(); ++index)
-                        {
-                            filelist.append(", " + filesFound[index]);
-                        }
-                        AZ_Warning("ScriptCanvas", false, AZStd::string::format("Found multiple matching translation files: [%s]", filelist.c_str()).c_str());
-                    }
                     AZ::IO::FixedMaxPath resolvedPath("");
                     fileIO->ResolvePath(resolvedPath, AZ::IO::PathView(filesFound.front()));
                     return AZ::IO::Path(resolvedPath);
