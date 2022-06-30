@@ -17,9 +17,9 @@ import azlmbr
 import azlmbr.bus as bus
 import azlmbr.editor as editor
 import azlmbr.math as math
-import azlmbr.legacy.general as general
 
 # Helper file Imports
+from editor_python_test_tools.wait_utils import PrefabWaiter
 from editor_python_test_tools.utils import Report
 
 
@@ -265,7 +265,7 @@ class EditorComponent:
         assert (
             outcome.IsSuccess()
         ), f"Failure: Could not set value to '{self.get_component_name()}' : '{component_property_path}'"
-        PrefabUtils.wait_for_propagation()
+        PrefabWaiter.wait_for_propagation()
         self.get_property_tree(True)
 
     def is_enabled(self):
@@ -468,7 +468,7 @@ class EditorEntity:
         :return: Component object of newly added component.
         """
         component = self.add_components([component_name])[0]
-        PrefabUtils.wait_for_propagation()
+        PrefabWaiter.wait_for_propagation()
         return component
 
     def add_components(self, component_names: list) -> List[EditorComponent]:
@@ -600,7 +600,7 @@ class EditorEntity:
         :return: None
         """
         editor.ToolsApplicationRequestBus(bus.Broadcast, "DeleteEntityById", self.id)
-        PrefabUtils.wait_for_propagation()
+        PrefabWaiter.wait_for_propagation()
 
     def set_visibility_state(self, is_visible: bool) -> None:
         """
@@ -814,5 +814,3 @@ class EditorLevelEntity:
         """
         type_ids = EditorComponent.get_type_ids([component_name], EditorEntityType.LEVEL)
         return editor.EditorLevelComponentAPIBus(bus.Broadcast, "CountComponentsOfType", type_ids[0])
-
-import editor_python_test_tools.prefab_utils as PrefabUtils

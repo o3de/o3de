@@ -17,14 +17,12 @@ def DeletePrefab_ContainingNestedEntitiesAndNestedPrefabs():
     """
 
     from pathlib import Path
-    import copy
 
     import azlmbr.legacy.general as general
-    import azlmbr.bus as bus
-    import azlmbr.entity as entity
 
     from editor_python_test_tools.editor_entity_utils import EditorEntity
-    from editor_python_test_tools.prefab_utils import Prefab, get_all_entity_ids, wait_for_propagation
+    from editor_python_test_tools.prefab_utils import Prefab, get_all_entity_ids
+    from editor_python_test_tools.wait_utils import PrefabWaiter
     import Prefab.tests.PrefabTestUtils as prefab_test_utils
 
     NESTED_ENTITIES_PREFAB_FILE_NAME = Path(__file__).stem + '_' + 'nested_entities_prefab'
@@ -86,7 +84,7 @@ def DeletePrefab_ContainingNestedEntitiesAndNestedPrefabs():
 
     # Undo the prefab instance deletion
     general.undo()
-    wait_for_propagation()
+    PrefabWaiter.wait_for_propagation()
 
     # Check that the prefab instance has been restored
     child_ids = instance_parent_entity.get_children_ids()
@@ -125,7 +123,7 @@ def DeletePrefab_ContainingNestedEntitiesAndNestedPrefabs():
 
     # Redo the prefab instance deletion
     general.redo()
-    wait_for_propagation()
+    PrefabWaiter.wait_for_propagation()
 
     # Check that all entities and instances have been deleted
     entity_ids_after_delete = set(get_all_entity_ids())

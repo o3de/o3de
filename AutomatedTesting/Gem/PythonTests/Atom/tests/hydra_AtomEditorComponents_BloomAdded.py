@@ -296,7 +296,7 @@ def AtomEditorComponents_Bloom_AddedToEntity():
     import azlmbr.math as math
 
     from editor_python_test_tools.editor_entity_utils import EditorEntity
-    import editor_python_test_tools.prefab_utils as PrefabUtils
+    from editor_python_test_tools.wait_utils import PrefabWaiter
     from editor_python_test_tools.utils import Report, Tracer, TestHelper
     from Atom.atom_utils.atom_constants import AtomComponentProperties
 
@@ -866,17 +866,17 @@ def AtomEditorComponents_Bloom_AddedToEntity():
 
         # 43. Delete Bloom entity.
         bloom_entity.delete()
-        PrefabUtils.wait_for_propagation()
+        PrefabWaiter.wait_for_propagation()
         Report.result(Tests.entity_deleted, not bloom_entity.exists())
 
         # 44. UNDO deletion.
         general.undo()
-        PrefabUtils.wait_for_propagation()
+        PrefabWaiter.wait_for_propagation()
         Report.result(Tests.deletion_undo, bloom_entity.exists())
 
         # 45. REDO deletion.
         general.redo()
-        PrefabUtils.wait_for_propagation()
+        PrefabWaiter.wait_for_propagation()
         Report.result(Tests.deletion_redo, not bloom_entity.exists())
 
         # 46. Look for errors and asserts.

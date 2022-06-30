@@ -59,7 +59,7 @@ def EditorWorkflow_ChildEntityTransform_Persists_After_ParentEntityTransform():
     import editor_python_test_tools.hydra_editor_utils as hydra
 
     from editor_python_test_tools.editor_entity_utils import EditorEntity, EditorComponent
-    from editor_python_test_tools.prefab_utils import wait_for_propagation
+    from editor_python_test_tools.wait_utils import PrefabWaiter
 
     parent_translate_position = azlmbr.math.Vector3(10.0, 0.0, 0.0)
     child_translate_position_before_parent_moves = azlmbr.math.Vector3(10.0, 0.0, 0.0)
@@ -76,7 +76,7 @@ def EditorWorkflow_ChildEntityTransform_Persists_After_ParentEntityTransform():
     # 03. Create child Entity to above created parent entity and set a name
     child_entity = EditorEntity.create_editor_entity("Child_Entity", parent_entity.id)
     Report.result(Tests.create_child_entity_statuses, child_entity.exists())
-    wait_for_propagation()
+    PrefabWaiter.wait_for_propagation()
 
     # 04. Move the child entity to a new postion.
     get_transform_component_outcome = editor.EditorComponentAPIBus(
@@ -86,7 +86,7 @@ def EditorWorkflow_ChildEntityTransform_Persists_After_ParentEntityTransform():
     child_transform_component.id = get_transform_component_outcome.GetValue()
     hydra.set_component_property_value(child_transform_component.id, "Values|Translate",
                                        child_translate_position_before_parent_moves)
-    wait_for_propagation()
+    PrefabWaiter.wait_for_propagation()
     Report.result(Tests.move_child_entity_statuses,
                   child_entity.validate_world_translate_position(child_translate_position_before_parent_moves))
 
@@ -97,7 +97,7 @@ def EditorWorkflow_ChildEntityTransform_Persists_After_ParentEntityTransform():
     parent_transform_component = EditorComponent(globals.property.EditorTransformComponentTypeId)
     parent_transform_component.id = get_transform_component_outcome.GetValue()
     hydra.set_component_property_value(parent_transform_component.id, "Values|Translate", parent_translate_position)
-    wait_for_propagation()
+    PrefabWaiter.wait_for_propagation()
     Report.result(Tests.move_parent_entity_statuses,
                   parent_entity.validate_world_translate_position(parent_translate_position))
     Report.result(Tests.move_child_entity_statuses,
@@ -105,7 +105,7 @@ def EditorWorkflow_ChildEntityTransform_Persists_After_ParentEntityTransform():
 
     # 06. Undo the translation of parent entity.
     general.undo()
-    wait_for_propagation()
+    PrefabWaiter.wait_for_propagation()
     Report.result(Tests.parent_entity_after_undo_statuses,
                   parent_entity.validate_world_translate_position(default_translate_position))
     Report.result(Tests.child_entity_after_undo_statuses,
@@ -113,7 +113,7 @@ def EditorWorkflow_ChildEntityTransform_Persists_After_ParentEntityTransform():
 
     # 07. Redo the translation of parent entity.
     general.redo()
-    wait_for_propagation()
+    PrefabWaiter.wait_for_propagation()
     Report.result(Tests.parent_entity_after_redo_statuses,
                   parent_entity.validate_world_translate_position(parent_translate_position))
     Report.result(Tests.child_entity_after_redo_statuses,

@@ -48,7 +48,7 @@ def Terrain_SupportsPhysics():
     :return: None
     """
 
-    import editor_python_test_tools.prefab_utils as PrefabUtils
+    from editor_python_test_tools.wait_utils import PrefabWaiter
     from editor_python_test_tools.utils import TestHelper as helper
     from editor_python_test_tools.utils import Report, Tracer
     import editor_python_test_tools.hydra_editor_utils as hydra
@@ -114,7 +114,7 @@ def Terrain_SupportsPhysics():
 
         # 7a) Disable and Enable the Terrain Height Gradient List so that the change to the container is recognized
         editor.EditorComponentAPIBus(bus.Broadcast, 'EnableComponents', [terrain_spawner_entity.components[2]])
-        PrefabUtils.wait_for_propagation()
+        PrefabWaiter.wait_for_propagation()
         
         # 8) Set the PhysX Collider to Sphere mode
         shape = 0

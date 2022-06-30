@@ -5,8 +5,9 @@ For complete copyright and license terms please see the LICENSE at the root of t
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
+
 #fmt: off
-class Tests():
+class Tests:
     level_components_added                      = ("Level components added correctly", "Failed to create level components")
     create_terrain_spawner_entity               = ("Terrain_spawner_entity created successfully", "Failed to create terrain_spawner_entity")
     create_height_provider_entity               = ("Height_provider_entity created successfully", "Failed to create height_provider_entity")
@@ -22,6 +23,7 @@ class Tests():
     values_not_the_same                         = ("The tested values are not the same", "The tested values are the same")
     no_errors_and_warnings_found                = ("No errors and warnings found", "Found errors and warnings")
 #fmt: on
+
 
 def Terrain_World_ConfigurationWorks():
     """
@@ -48,7 +50,7 @@ def Terrain_World_ConfigurationWorks():
      13) Check height value is the expected one when query resolution is changed
     """
 
-    import editor_python_test_tools.prefab_utils as PrefabUtils
+    from editor_python_test_tools.wait_utils import PrefabWaiter
     from editor_python_test_tools.utils import TestHelper as helper
     from editor_python_test_tools.utils import Report, Tracer
     import editor_python_test_tools.hydra_editor_utils as hydra
@@ -118,7 +120,7 @@ def Terrain_World_ConfigurationWorks():
         height_provider_entity.get_set_test(2, "Configuration|Frequency", frequency)
         frequencyVal = hydra.get_component_property_value(height_provider_entity.components[2], "Configuration|Frequency")
         Report.result(Tests.frequency_changed, math.isclose(frequency, frequencyVal, abs_tol = 0.00001))
-        PrefabUtils.wait_for_propagation()
+        PrefabWaiter.wait_for_propagation()
 
         # 9) Set the Gradient List to height_provider_entity
         propertyTree = hydra.get_property_tree(terrain_spawner_entity.components[2])
