@@ -143,7 +143,7 @@ namespace AssetProcessor
         }
     }
 
-    bool Builder::Start(bool doRegistration)
+    bool Builder::Start(BuilderPurpose purpose)
     {
         // Get the current BinXXX folder based on the current running AP
         QString applicationDir = QCoreApplication::instance()->applicationDirPath();
@@ -160,7 +160,7 @@ namespace AssetProcessor
             return false;
         }
 
-        const AZStd::vector<AZStd::string> params = BuildParams("resident", buildersFolder.c_str(), UuidString(), "", "", doRegistration);
+        const AZStd::vector<AZStd::string> params = BuildParams("resident", buildersFolder.c_str(), UuidString(), "", "", purpose);
 
         m_processWatcher = LaunchProcess(fullExePathString.c_str(), params);
 
@@ -184,7 +184,7 @@ namespace AssetProcessor
         return !m_processWatcher || (m_processWatcher && m_processWatcher->IsProcessRunning(exitCode));
     }
 
-    AZStd::vector<AZStd::string> Builder::BuildParams(const char* task, const char* moduleFilePath, const AZStd::string& builderGuid, const AZStd::string& jobDescriptionFile, const AZStd::string& jobResponseFile, bool doRegistration) const
+    AZStd::vector<AZStd::string> Builder::BuildParams(const char* task, const char* moduleFilePath, const AZStd::string& builderGuid, const AZStd::string& jobDescriptionFile, const AZStd::string& jobResponseFile, BuilderPurpose purpose) const
     {
         QDir projectCacheRoot;
         AssetUtilities::ComputeProjectCacheRoot(projectCacheRoot);
@@ -205,7 +205,7 @@ namespace AssetProcessor
         params.emplace_back(AZStd::string::format(R"(-engine-path="%s")", enginePath.c_str()));
         params.emplace_back(AZStd::string::format("-port=%d", portNumber));
 
-        if(doRegistration)
+        if (purpose == BuilderPurpose::Registration)
         {
             params.emplace_back("--register");
         }
@@ -500,7 +500,7 @@ namespace AssetProcessor
         m_builderDebugOutput[builderId].m_assetsProcessed.push_back(sourceAsset);
     }
 
-    BuilderRef BuilderManager::GetBuilder(bool doRegistration)
+    BuilderRef BuilderManager::GetBuilder(BuilderPurpose purpose)
     {
         AZStd::shared_ptr<Builder> newBuilder;
         BuilderRef builderRef;
@@ -508,10 +508,19 @@ namespace AssetProcessor
         {
             AZStd::unique_lock<AZStd::mutex> lock(m_buildersMutex);
 
-            if (!doRegistration)
+            if (purpose != BuilderPurpose::Registration)
             {
                 for (auto itr = m_builders.begin(); itr != m_builders.end();)
                 {
+                    if (itr == m_builders.begin() && purpose != BuilderPurpose::CreateJobs)
+                    {
+                        // The first builder is always reserved for create jobs.
+                        // Since there is only ever 1 CreateJobs process happening at once, this means CreateJobs will never have to wait to
+                        // start up a new builder. This is important since CreateJobs is meant to be quick.
+                        ++itr;
+                        continue;
+                    }
+
                     auto& builder = itr->second;
 
                     if (!builder->m_busy)
@@ -543,7 +552,7 @@ namespace AssetProcessor
             builderRef = BuilderRef(newBuilder);
         }
 
-        if (!newBuilder->Start(doRegistration))
+        if (!newBuilder->Start(purpose))
         {
             AZ_Error("BuilderManager", false, "Builder failed to start");
 
