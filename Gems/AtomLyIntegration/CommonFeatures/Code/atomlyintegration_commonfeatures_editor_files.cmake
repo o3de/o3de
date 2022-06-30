@@ -96,6 +96,8 @@ set(FILES
     Source/ReflectionProbe/EditorReflectionProbeComponent.cpp
     Source/SkinnedMesh/SkinnedMeshDebugDisplay.h
     Source/SkinnedMesh/SkinnedMeshDebugDisplay.cpp
+    Source/SkyAtmosphere/EditorSkyAtmosphereComponent.cpp
+    Source/SkyAtmosphere/EditorSkyAtmosphereComponent.h
     Source/SkyBox/EditorHDRiSkyboxComponent.cpp
     Source/SkyBox/EditorHDRiSkyboxComponent.h
     Source/SkyBox/EditorPhysicalSkyComponent.cpp

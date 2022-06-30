@@ -40,6 +40,9 @@ namespace AZ
             //! Creates a FullscreenTrianglePass
             static Ptr<FullscreenTrianglePass> Create(const PassDescriptor& descriptor);
 
+            //! Return the shader
+            Data::Instance<Shader> GetShader() const;
+
         protected:
             FullscreenTrianglePass(const PassDescriptor& descriptor);
 
