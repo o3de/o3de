@@ -134,11 +134,16 @@ namespace Terrain
         void OnTerrainDataChanged(const AZ::Aabb& dirtyRegion, TerrainDataChangedMask dataChangedMask) override;
 
         void CalculateHeightfieldRegion();
+        void BuildSurfaceTagToMaterialIndexLookup();
 
     private:
+        // The default material will always be the first material in the material list.
+        static inline constexpr uint8_t DefaultMaterialIndex = 0;
+
         TerrainPhysicsColliderConfig m_configuration;
         AZStd::atomic_bool m_terrainDataActive = false;
         AzFramework::Terrain::TerrainQueryRegion m_heightfieldRegion;
+        AZStd::unordered_map<SurfaceData::SurfaceTag, uint8_t> m_surfaceTagToMaterialIndexLookup;
 
         // Protect state reads from happening in parallel with state writes.
         mutable AZStd::shared_mutex m_stateMutex;

@@ -41,6 +41,7 @@ set(FILES
     Include/ScriptCanvas/Core/GraphScopedTypes.h
     Include/ScriptCanvas/Core/MethodConfiguration.h
     Include/ScriptCanvas/Core/ModifiableDatumView.h
+    Include/ScriptCanvas/Core/NamedId.h
     Include/ScriptCanvas/Core/Node.h
     Include/ScriptCanvas/Core/Nodeable.h
     Include/ScriptCanvas/Core/NodeableNode.h

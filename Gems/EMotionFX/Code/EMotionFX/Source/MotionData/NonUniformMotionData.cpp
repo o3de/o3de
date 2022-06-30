@@ -1238,6 +1238,7 @@ namespace EMotionFX
                 const float x = transitionZeroXAxis ? m_jointData[sampleJointDataIndex].m_positionTrack.m_values[i].GetX() : 0;
                 const float y = transitionZeroYAxis ? m_jointData[sampleJointDataIndex].m_positionTrack.m_values[i].GetY() : 0;
                 const float z = m_jointData[sampleJointDataIndex].m_positionTrack.m_values[i].GetZ();
+
                 m_jointData[sampleJointDataIndex].m_positionTrack.m_values[i].Set(x, y, z);
 
                 if (extractRotation)
