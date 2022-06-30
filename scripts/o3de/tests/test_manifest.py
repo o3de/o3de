@@ -6,15 +6,78 @@
 #
 #
 
-import argparse
 import json
-import logging
 import pytest
 import pathlib
 from unittest.mock import patch
 
 from o3de import manifest
 
+
+TEST_GEM_JSON_PAYLOAD = '''
+{
+    "gem_name": "TestGem",
+    "display_name": "TestGem",
+    "license": "Apache-2.0 Or MIT",
+    "license_url": "https://github.com/o3de/o3de/blob/development/LICENSE.txt",
+    "origin": "Open 3D Engine - o3de.org",
+    "origin_url": "https://github.com/o3de/o3de",
+    "type": "Code",
+    "summary": "A short description of TestGem.",
+    "canonical_tags": [
+        "Gem"
+    ],
+    "user_tags": [
+        "TestGem"
+    ],
+    "icon_path": "preview.png",
+    "requirements": "Any requirement goes here.",
+    "documentation_url": "The link to the documentation goes here.",
+    "dependencies": [
+    ],
+    "external_subdirectories": [
+    ]
+}
+'''
+
+TEST_ENGINE_JSON_PAYLOAD = '''
+{
+    "engine_name": "o3de",
+    "external_subdirectories": [
+        "GemInEngine"
+    ],
+    "projects": [],
+    "templates": []
+}
+'''
+
+TEST_O3DE_MANIFEST_JSON_PAYLOAD = '''
+{
+    "o3de_manifest_name": "testuser",
+    "origin": "C:/Users/testuser/.o3de",
+    "default_engines_folder": "C:/Users/testuser/.o3de/Engines",
+    "default_projects_folder": "C:/Users/testuser/.o3de/Projects",
+    "default_gems_folder": "C:/Users/testuser/.o3de/Gems",
+    "default_templates_folder": "C:/Users/testuser/.o3de/Templates",
+    "default_restricted_folder": "C:/Users/testuser/.o3de/Restricted",
+    "default_third_party_folder": "C:/Users/testuser/.o3de/3rdParty",
+    "projects": [
+        "D:/MinimalProject"
+    ],
+    "external_subdirectories": [
+        "D:/GemOutsideEngine"
+    ],
+    "templates": [],
+    "restricted": [],
+    "repos": [],
+    "engines": [
+        "D:/o3de/o3de"
+    ],
+    "engines_path": {
+        "o3de": "D:/o3de/o3de"
+    }
+}
+'''
 
 @pytest.mark.parametrize("valid_project_json_paths, valid_gem_json_paths", [
     pytest.param([pathlib.Path('D:/o3de/Templates/DefaultProject/Template/project.json')],
@@ -147,3 +210,72 @@ class TestGetTemplatesForCreation:
 
             # make sure the o3de manifest isn't attempted to be loaded
             load_o3de_manifest_patch.assert_not_called()
+
+
+class TestGetAllGems:
+    @staticmethod
+    def get_this_engine_path() -> pathlib.Path:
+        return pathlib.Path('D:/o3de/o3de')
+
+    @staticmethod
+    def resolve(self):
+        return self
+
+    @pytest.mark.parametrize("""manifest_external_subdirectories, 
+                                engine_external_subdirectories, 
+                                gem_external_subdirectories,
+                                expected_gem_paths""", [
+            pytest.param(['D:/GemOutsideEngine'], 
+                ['GemInEngine'], 
+                ['GemInGem'],
+                ['D:/GemOutsideEngine', 'D:/o3de/o3de/GemInEngine',
+                'D:/GemOutsideEngine/GemInGem', 'D:/o3de/o3de/GemInEngine/GemInGem']),
+            pytest.param(['D:/GemOutsideEngine','D:/GemOutsideEngine','D:/NonGem'],
+                ['GemInEngine','GemInEngine'],
+                ['GemInGem','GemInGem'],
+                ['D:/GemOutsideEngine', 'D:/o3de/o3de/GemInEngine',
+                'D:/GemOutsideEngine/GemInGem', 'D:/o3de/o3de/GemInEngine/GemInGem']),
+        ]
+    )
+    def test_get_all_gems_returns_unique_paths(self, manifest_external_subdirectories, 
+        engine_external_subdirectories, gem_external_subdirectories,
+        expected_gem_paths ):
+
+        def get_engine_json_data(engine_name: str = None,
+                                engine_path: str or pathlib.Path = None) -> dict or None:
+            engine_payload = json.loads(TEST_ENGINE_JSON_PAYLOAD)
+            engine_payload['external_subdirectores'] = engine_external_subdirectories
+            return engine_payload
+
+        def load_o3de_manifest(manifest_path: pathlib.Path = None) -> dict:
+            manifest_payload = json.loads(TEST_O3DE_MANIFEST_JSON_PAYLOAD)
+            manifest_payload['external_subdirectores'] = manifest_external_subdirectories
+            return manifest_payload
+
+        def get_gem_json_data(gem_name: str = None, gem_path: str or pathlib.Path = None,
+            project_path: pathlib.Path = None) -> dict or None:
+
+            if 'NonGem' in gem_path:
+                return None
+
+            gem_payload = json.loads(TEST_GEM_JSON_PAYLOAD)
+
+            if not 'GemInGem' in gem_path:
+                gem_payload["external_subdirectories"] = gem_external_subdirectories
+
+            return gem_payload
+
+        with patch('o3de.manifest.get_gem_json_data', side_effect=get_gem_json_data) \
+                as get_gem_json_data_patch,\
+            patch('o3de.manifest.get_engine_json_data', side_effect=get_engine_json_data) \
+                as get_engine_json_data_patch,\
+            patch('o3de.manifest.get_this_engine_path', side_effect=self.get_this_engine_path) \
+                as get_this_engine_path_patch,\
+            patch('pathlib.Path.is_file', return_value=True) \
+                as pathlib_is_file_mock,\
+            patch('pathlib.Path.resolve', self.resolve) \
+                as pathlib_is_resolve_mock,\
+            patch('o3de.manifest.load_o3de_manifest', side_effect=load_o3de_manifest) \
+                as load_o3de_manifest_patch:
+
+            assert manifest.get_all_gems() == expected_gem_paths
