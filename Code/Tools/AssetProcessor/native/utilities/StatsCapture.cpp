@@ -18,6 +18,7 @@
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/containers/unordered_set.h>
 #include <AzCore/std/containers/vector.h>
+#include <AzCore/std/optional.h>
 #include <AzCore/StringFunc/StringFunc.h>
 
 #include <inttypes.h>

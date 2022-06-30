@@ -15,6 +15,12 @@
 
 #include <AzCore/std/string/string_view.h>
 
+namespace AZStd
+{
+    template<class T>
+    class optional;
+}
+
 namespace AssetProcessor
 {
     namespace StatsCapture
