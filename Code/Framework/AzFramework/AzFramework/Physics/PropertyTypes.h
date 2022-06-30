@@ -14,7 +14,7 @@ namespace Physics
 {
     namespace Edit
     {
-        const static AZ::Crc32 CollisionLayerSelector = AZ_CRC("CollisionLayerSelector", 0xae1da12d);
-        const static AZ::Crc32 CollisionGroupSelector = AZ_CRC("CollisionGroupSelector", 0x7d498664);
+        const static AZ::Crc32 CollisionLayerSelector = AZ_CRC_CE("CollisionLayerSelector");
+        const static AZ::Crc32 CollisionGroupSelector = AZ_CRC_CE("CollisionGroupSelector");
     }
 }

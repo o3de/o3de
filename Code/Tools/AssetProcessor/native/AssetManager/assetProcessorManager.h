@@ -279,6 +279,7 @@ namespace AssetProcessor
         virtual void AssessAddedFile(QString filePath);
         virtual void AssessDeletedFile(QString filePath);
         void OnAssetScannerStatusChange(AssetProcessor::AssetScanningStatus status);
+        void FinishAssetScan();
         void OnJobStatusChanged(JobEntry jobEntry, JobStatus status);
 
         void CheckAssetProcessorIdleState();
@@ -394,6 +395,9 @@ namespace AssetProcessor
         void AddSourceToDatabase(AzToolsFramework::AssetDatabase::SourceDatabaseEntry& sourceDatabaseEntry, const ScanFolderInfo* scanFolder, QString relativeSourceFilePath);
 
     protected:
+        // given a set of file info that definitely exist, warm the file cache up so
+        // that we only query them once.
+        void WarmUpFileCache(QSet<AssetFileInfo> filePaths);
         // Checks whether or not a file can be skipped for processing (ie, file content hasn't changed, builders haven't been added/removed, builders for the file haven't changed)
         bool CanSkipProcessingFile(const AssetFileInfo &fileInfo, AZ::u64& fileHash);
 

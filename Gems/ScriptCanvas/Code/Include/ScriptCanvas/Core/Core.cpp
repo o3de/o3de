@@ -196,6 +196,7 @@ namespace ScriptCanvas
         : m_data(source.m_data)
         , m_id(source.Id())
         , m_relativePath(source.m_relativePath)
+        , m_absolutePath(source.m_absolutePath)
     {
         SanitizePath();
     }
@@ -232,6 +233,11 @@ namespace ScriptCanvas
         SanitizePath();
     }
 
+    const AZ::IO::Path& SourceHandle::AbsolutePath() const
+    {
+        return m_absolutePath;
+    }
+
     bool SourceHandle::AnyEquals(const SourceHandle& other) const
     {
         return m_data && m_data == other.m_data
@@ -244,6 +250,7 @@ namespace ScriptCanvas
         m_data = nullptr;
         m_id = AZ::Uuid::CreateNull();
         m_relativePath.clear();
+        m_absolutePath.clear();
     }
 
     DataPtr SourceHandle::Data() const
@@ -254,7 +261,7 @@ namespace ScriptCanvas
     // return a SourceHandle with only the Id and Path, but without a pointer to the data
     SourceHandle SourceHandle::Describe() const
     {
-        return SourceHandle(nullptr, m_id, m_relativePath);
+        return MarkAbsolutePath(SourceHandle(nullptr, m_id, m_relativePath), m_absolutePath);
     }
 
     SourceHandle SourceHandle::FromRelativePath(const SourceHandle& data, const AZ::Uuid& id, const AZ::IO::Path& path)
@@ -297,6 +304,14 @@ namespace ScriptCanvas
         return m_data != nullptr;
     }
 
+    SourceHandle SourceHandle::MarkAbsolutePath(const SourceHandle& data, const AZ::IO::Path& path)
+    {
+        SourceHandle result(data);
+        result.m_absolutePath = path;
+        result.m_absolutePath.MakePreferred();
+        return result;
+    }
+
     ScriptCanvasEditor::GraphPtr SourceHandle::Mod() const
     {
         return m_data ? m_data->ModEditorGraph() : nullptr;
@@ -311,7 +326,8 @@ namespace ScriptCanvas
     {
         return m_data.get() == other.m_data.get()
             && m_id == other.m_id
-            && m_relativePath == other.m_relativePath;
+            && m_relativePath == other.m_relativePath
+            && m_absolutePath == other.m_absolutePath;
     }
 
     bool SourceHandle::operator!=(const SourceHandle& other) const

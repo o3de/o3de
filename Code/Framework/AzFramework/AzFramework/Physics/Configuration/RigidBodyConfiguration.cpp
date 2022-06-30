@@ -39,7 +39,7 @@ namespace AzPhysics
         {
             if (classElement.GetVersion() <= 1)
             {
-                const int elementIndex = classElement.FindElement(AZ_CRC("Centre of mass offset", 0x1e569a45));
+                const int elementIndex = classElement.FindElement(AZ_CRC_CE("Centre of mass offset"));
 
                 if (elementIndex >= 0)
                 {
@@ -66,7 +66,7 @@ namespace AzPhysics
 
             if (classElement.GetVersion() <= 2)
             {
-                const int elementIndex = classElement.FindElement(AZ_CRC("Mass", 0x6c035b66));
+                const int elementIndex = classElement.FindElement(AZ_CRC_CE("Mass"));
 
                 if (elementIndex >= 0)
                 {
