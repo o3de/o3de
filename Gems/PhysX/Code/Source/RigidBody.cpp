@@ -580,6 +580,21 @@ namespace PhysX
     {
         if (m_pxRigidActor)
         {
+            if (!isKinematic)
+            {
+                // check if any of the shapes on the rigid body would prevent switching to dynamic
+                if (!AZStd::all_of(m_shapes.begin(), m_shapes.end(), [](const AZStd::shared_ptr<PhysX::Shape>& shape) {
+                    return CanShapeComputeMassProperties(*shape->GetPxShape());}))
+                {
+                    AZ_Warning(
+                        "PhysX Rigid Body",
+                        false,
+                        "Cannot set kinematic to false, because body has triangle mesh, plane or heightfield shapes attached. Name: %s",
+                        GetName().c_str());
+                    return;
+                }
+            }
+
             PHYSX_SCENE_WRITE_LOCK(m_pxRigidActor->getScene());
             m_pxRigidActor->setRigidBodyFlag(physx::PxRigidBodyFlag::eKINEMATIC, isKinematic);
         }
