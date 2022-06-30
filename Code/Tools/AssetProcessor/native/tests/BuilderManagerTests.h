@@ -13,7 +13,7 @@
 
 namespace UnitTests
 {
-    class TestBuilder : public Builder
+    class TestBuilder : public AssetProcessor::Builder
     {
     public:
         TestBuilder(const AssetUtilities::QuitListener& quitListener, AZ::Uuid uuid, int connectionId)
@@ -23,7 +23,7 @@ namespace UnitTests
         }
 
     protected:
-        bool Start(BuilderPurpose purpose) override;
+        bool Start(AssetProcessor::BuilderPurpose purpose) override;
     };
 
     class TestBuilderManager : public AssetProcessor::BuilderManager
@@ -34,7 +34,7 @@ namespace UnitTests
         int GetBuilderCreationCount() const;
 
     protected:
-        AZStd::shared_ptr<Builder> AddNewBuilder() override;
+        AZStd::shared_ptr<AssetProcessor::Builder> AddNewBuilder() override;
         
         int m_connectionCounter = 0;
     };
