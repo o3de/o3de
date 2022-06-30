@@ -142,14 +142,20 @@ namespace Multiplayer
                     AZ::Entity* entity = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->FindEntity(id);
                     if (!entity)
                     {
-                        AZ_Warning("Multiplayer Property", false, "MultiplayerSystemComponent GetOnEndpointDisonnectedEvent failed. The entity with id %s doesn't exist, please provide a valid entity id.", id.ToString().c_str())
+                        AZ_Warning("Multiplayer Property", false,
+                            "MultiplayerSystemComponent GetOnEndpointDisonnectedEvent failed."
+                            "The entity with id % s doesn't exist, please provide a valid entity id.",
+                            id.ToString().c_str())
                         return nullptr;
                     }
 
                     MultiplayerSystemComponent* mpComponent = entity->FindComponent<MultiplayerSystemComponent>();
                     if (!mpComponent)
                     {
-                        AZ_Warning("Multiplayer Property", false, "MultiplayerSystemComponent GetOnEndpointDisonnectedEvent failed. Entity '%s' (id: %s) is missing MultiplayerSystemComponent, be sure to add MultiplayerSystemComponent to this entity.", entity->GetName().c_str(), id.ToString().c_str())
+                        AZ_Warning("Multiplayer Property", false,
+                            "MultiplayerSystemComponent GetOnEndpointDisonnectedEvent failed."
+                            "Entity '%s' (id: % s) is missing MultiplayerSystemComponent, be sure to add MultiplayerSystemComponent to this entity.",
+                            entity->GetName().c_str(), id.ToString().c_str())
                         return nullptr;
                     }
 
