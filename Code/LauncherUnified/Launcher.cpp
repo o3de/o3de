@@ -314,27 +314,23 @@ namespace O3DELauncher
             // This provides an opportunity for the RemoteFileIO to override the direct instance
             auto remoteFileIo = new AZ::IO::RemoteFileIO(AZ::IO::FileIOBase::GetDirectInstance()); // Wrap LocalFileIO the direct instance
 
-            // Locally resolve the aliases to themselves to leave them intact,
-            // they will be resolved by the remote file system.
-            remoteFileIo->SetAlias("@engroot@", "@engroot@");
-            remoteFileIo->SetAlias("@projectroot@", "@projectroot@");
-            remoteFileIo->SetAlias("@products@", "@products@");
-            remoteFileIo->SetAlias("@user@", "@user@");
-            remoteFileIo->SetAlias("@log@", "@log@");
-            remoteFileIo->SetAlias("@usercache@", "@usercache@");
-            settingsRegistry->Set(FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) + "/engine_path", "@engroot@");
-            settingsRegistry->Set(FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) + "/project_path", "@projectroot@");
-            settingsRegistry->Set(AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder, "@engroot@");
-            settingsRegistry->Set(AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectPath, "@projectroot@");
-            settingsRegistry->Set(AZ::SettingsRegistryMergeUtils::FilePathKey_CacheRootFolder, "@products@");
-            settingsRegistry->Set(AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectUserPath, "@user@");
-            settingsRegistry->Set(AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectLogPath, "@log@");
-            settingsRegistry->Set(AZ::SettingsRegistryMergeUtils::FilePathKey_DevWriteStorage, "@usercache@");
-
             // SetDirectInstance will assert if this has already been set and we don't clear first
             AZ::IO::FileIOBase::SetDirectInstance(nullptr);
             // Wrap AZ:IO::LocalFileIO the direct instance
             AZ::IO::FileIOBase::SetDirectInstance(remoteFileIo);
+
+            // Set file paths to uses aliases, they will be resolved by the remote file system.
+            // Prefixing alias with / so they are treated as absolute paths by Path class,
+            // otherwise odd concatenations of aliases happen leading to invalid paths when
+            // resolved by the remote system.
+            settingsRegistry->Set(FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) + "/engine_path", "/@engroot@");
+            settingsRegistry->Set(FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) + "/project_path", "/@projectroot@");
+            settingsRegistry->Set(AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder, "/@engroot@");
+            settingsRegistry->Set(AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectPath, "/@projectroot@");
+            settingsRegistry->Set(AZ::SettingsRegistryMergeUtils::FilePathKey_CacheRootFolder, "/@products@");
+            settingsRegistry->Set(AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectUserPath, "/@user@");
+            settingsRegistry->Set(AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectLogPath, "/@log@");
+            settingsRegistry->Set(AZ::SettingsRegistryMergeUtils::FilePathKey_DevWriteStorage, "/@usercache@");
         }
     }
 
