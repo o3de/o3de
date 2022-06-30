@@ -239,9 +239,9 @@ namespace AssetProcessor
         {
             m_serverAddress = previousServerAddress;
             AZ_Error(AssetProcessor::DebugChannel, false,
-                "Server address (%s) is invalid! Reverting back to (%s)",
-                address.c_str(),
-                previousServerAddress.c_str());
+                "Server address (%.*s) is invalid! Reverting back to (%.*s)",
+                AZ_STRING_ARG(address),
+                AZ_STRING_ARG(previousServerAddress));
         }
     }
 

@@ -84,6 +84,8 @@ namespace AtomToolsFramework
         void CreateMenus(QMenuBar* menuBar) override;
         void UpdateMenus(QMenuBar* menuBar) override;
 
+        AZStd::vector<AZStd::shared_ptr<DynamicPropertyGroup>> GetSettingsDialogGroups() const override;
+
     protected:
         void AddDocumentTabBar();
         void UpdateRecentFileMenu();

@@ -32,12 +32,15 @@ QT_FORWARD_DECLARE_CLASS(QProgressBar)
 
 class LipsyncBatchGeneratorEntryWidget;
 
+namespace EMotionFX
+{
+    class MorphSetup;
+}
 
 namespace EMStudio
 {
     // forward declaration
     class EMStudioPlugin;
-
 
     // widgets
     class DragTableWidget
