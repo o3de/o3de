@@ -47,11 +47,7 @@
                                 "Attachment": "Depth"
                             }
                         }
-                    ],
-                    "PassData": {
-                        "$type": "RasterPassData",
-                        "PipelineViewTag": "MainCamera"
-                    }
+                    ]
                 },
                 {
                     "Name": "MeshMotionVectorPass",

@@ -56,7 +56,6 @@ namespace AtomToolsFramework
         , private AtomToolsFramework::AtomToolsMainMenuRequestBus::Handler
         , private GraphCanvas::SceneNotificationBus::Handler
         , private GraphCanvas::AssetEditorSettingsRequestBus::Handler
-        , private GraphCanvas::AssetEditorNotificationBus::Handler
         , private GraphCanvas::AssetEditorRequestBus::Handler
     {
         Q_OBJECT
@@ -73,7 +72,8 @@ namespace AtomToolsFramework
         // Assign the graph ID that will be rendered and edited within the view. Any connected buses will be disconnected from the old ID
         // before connecting to the new one.
         // @param activeGraphId ID of the graph that will be managed by this view. If the ID is invalid then the view will be cleared.
-        void SetActiveGraphId(const GraphCanvas::GraphId& activeGraphId);
+        // @param notify Send a notification that the active graph has changed.
+        void SetActiveGraphId(const GraphCanvas::GraphId& activeGraphId, bool notify);
 
     protected:
         // AtomToolsFramework::AtomToolsMainMenuRequestBus::Handler overrides...
@@ -116,9 +116,6 @@ namespace AtomToolsFramework
         const GraphCanvas::ConstructTypePresetBucket* GetConstructTypePresetBucket(GraphCanvas::ConstructType constructType) const override;
         GraphCanvas::Styling::ConnectionCurveType GetConnectionCurveType() const override;
         GraphCanvas::Styling::ConnectionCurveType GetDataConnectionCurveType() const override;
-
-        // GraphCanvas::AssetEditorNotificationBus::Handler overrides...
-        void OnActiveGraphChanged(const GraphCanvas::GraphId& graphId) override;
 
         // GraphCanvas::SceneNotificationBus::Handler overrides...
         void OnSelectionChanged() override;
