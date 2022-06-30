@@ -12,14 +12,8 @@
 // This is not meant to be used anywhere except in AssetProcessor.
 
 #pragma once
-
+#include <AzCore/std/optional.h>
 #include <AzCore/std/string/string_view.h>
-
-namespace AZStd
-{
-    template<class T>
-    class optional;
-}
 
 namespace AssetProcessor
 {
