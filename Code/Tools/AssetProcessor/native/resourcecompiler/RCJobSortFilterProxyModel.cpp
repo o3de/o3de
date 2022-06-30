@@ -100,7 +100,7 @@ namespace AssetProcessor
             QVariant leftDuration = sourceModel()->data(left, JobsModel::SortRole);
             QVariant rightDuration = sourceModel()->data(right, JobsModel::SortRole);
 
-            if (leftDuration.type() != QMetaType::QTime || rightDuration.type() != QMetaType::QTime)
+            if (leftDuration.type() != QVariant::Time || rightDuration.type() != QVariant::Time)
             {
                 return QSortFilterProxyModel::lessThan(left, right);
             }
