@@ -742,7 +742,7 @@ namespace AZ
 
                     if (sourceMesh.m_meshTangents)
                     {
-                        if (maxOldIndex > sourceMesh.m_meshTangents->GetCount())
+                        if (maxOldIndex >= sourceMesh.m_meshTangents->GetCount())
                         {
                             AZ_Assert(false, "Out of bounds access of mesh tangents.");
                             return AZ::Failure();
@@ -751,7 +751,7 @@ namespace AZ
 
                         if (sourceMesh.m_meshBitangents)
                         {
-                            if (maxOldIndex > sourceMesh.m_meshBitangents->GetCount())
+                            if (maxOldIndex >= sourceMesh.m_meshBitangents->GetCount())
                             {
                                 AZ_Assert(false, "Out of bounds access of mesh bitangents.");
                                 return AZ::Failure();
@@ -763,7 +763,7 @@ namespace AZ
                     uvNames.reserve(uvSetCount);
                     for (auto& uvContent : uvContentCollection)
                     {
-                        if (maxOldIndex > uvContent->GetCount())
+                        if (maxOldIndex >= uvContent->GetCount())
                         {
                             AZ_Assert(false, "Out of bounds access of uvs.");
                             return AZ::Failure();
@@ -780,7 +780,7 @@ namespace AZ
                     colorNames.reserve(colorSetCount);
                     for (auto& colorContent : colorContentCollection)
                     {
-                        if (maxOldIndex > colorContent->GetCount())
+                        if (maxOldIndex >= colorContent->GetCount())
                         {
                             AZ_Assert(false, "Out of bounds access of colors.");
                             return AZ::Failure();
