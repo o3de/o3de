@@ -11,11 +11,12 @@
 import bpy
 from bpy.props import EnumProperty
 import shutil
-from pathlib import Path
+from pathlib import Path, PurePosixPath, PureWindowsPath, PurePath
 import re
 
 from . import constants
 from . import ui
+from . import o3de_utils
 
 def check_selected():
     """!
@@ -32,17 +33,20 @@ def check_selected_bone_names():
     This function will check to see if there is a ARMATURE selected and if the bone names are o3de compatable.
     """
     context = bpy.context
-    ob = context.object
+    obj = context.object
 
     for selected_obj in context.selected_objects:
         if selected_obj is not []:
             if selected_obj.type == "ARMATURE":
-                for pb in ob.pose.bones:
-                    # Validate all chars in string.
-                    check_re =  re.compile(r"^[^<>/{}[\]~.`]*$");
-                    if not check_re.match(pb.name):
-                        # If any in the ARMATURE are named invalid return will fail.
-                        return False
+                try:
+                    for pb in obj.pose.bones:
+                        # Validate all chars in string.
+                        check_re =  re.compile(r"^[^<>/{}[\]~.`]*$");
+                        if not check_re.match(pb.name):
+                            # If any in the ARMATURE are named invalid return will fail.
+                            return False
+                except AttributeError:
+                    pass
 
 def selected_hierarchy_and_rig_animation():
     """!
@@ -73,20 +77,21 @@ def valid_animation_selection():
     the hierarchy for exporting the selected mesh, armature rig and animation.
     """
     object_selections = [obj for obj in bpy.context.selected_objects]
-    obj = object_selections[0]
+    if object_selections:
+        obj = object_selections[0]
 
-    if obj.type == 'ARMATURE':
-        bpy.types.Scene.export_good_o3de = False
-        ui.message_box("You must select lowest level mesh of Armature.", "O3DE Tools", "ERROR")
-    elif obj.children:
-        bpy.types.Scene.export_good_o3de = False
-        ui.message_box("You need to select base mesh level.", "O3DE Tools", "ERROR")
-    else:
-        bpy.types.Scene.export_good_o3de = True
-        if bpy.types.Scene.animation_export == constants.SKIN_ATTACHMENT:
-            selected_attachment_and_rig_animation()
+        if obj.type == 'ARMATURE':
+            bpy.types.Scene.export_good_o3de = False
+            ui.message_box("You must select lowest level mesh of Armature.", "O3DE Tools", "ERROR")
+        elif obj.children:
+            bpy.types.Scene.export_good_o3de = False
+            ui.message_box("You need to select base mesh level.", "O3DE Tools", "ERROR")
         else:
-            selected_hierarchy_and_rig_animation()
+            bpy.types.Scene.export_good_o3de = True
+            if bpy.types.Scene.animation_export == constants.SKIN_ATTACHMENT:
+                selected_attachment_and_rig_animation()
+            else:
+                selected_hierarchy_and_rig_animation()
 
 def check_if_valid_path(file_path):
     """!
@@ -182,12 +187,10 @@ def clone_repath_images(fileMenuExport, texture_file_path, projectSelectionList)
             # We do not want the texture folder
             texture_file_path = Path(dir_path.parent)
             loop_through_selected_materials(texture_file_path)
-
         # Check to see if this project is listed in our projectSelectionList if not add it.
         if bpy.types.Scene.selected_o3de_project_path not in projectSelectionList:
-            project_directory = str(Path(bpy.types.Scene.selected_o3de_project_path).name)
-            projectSelectionList.append((str(bpy.types.Scene.selected_o3de_project_path),
-                project_directory, str(bpy.types.Scene.selected_o3de_project_path)))
+            o3de_utils.save_project_list_json(str(bpy.types.Scene.selected_o3de_project_path))
+            o3de_utils.build_projects_list()
         bpy.types.Scene.o3de_projects_list = EnumProperty(items=projectSelectionList, name='')
     elif fileMenuExport is None:
         # TOOL MENU EXPORT BUT WAS EXPORTED ONCE IN FILE MENU
@@ -238,6 +241,25 @@ def ReplaceStoredPaths():
         image.reload()
     bpy.types.Scene.stored_image_source_paths = {}
 
+def create_collision_mesh():
+    """!
+    This function will create a copy of a selected mesh and create an o3de PhysX collider PhysX Mesh that will
+    autodect in o3de if you have a PhysX Collder Component. 
+    """
+    obj = bpy.context.object
+    # Duplicate the mesh and add an _phys extension
+    duplicate_phys_mesh = bpy.data.objects.new(f'{obj.name}_phys', bpy.data.objects[obj.name].data)
+    # Add copy to current collection in scene
+    bpy.context.collection.objects.link(duplicate_phys_mesh)
+    # Check to see if Blender added an .000 to the end of name, if so split it and use zero
+    if '.' in duplicate_phys_mesh.name:
+        name, ext = duplicate_phys_mesh.name.split(".")
+        duplicate_phys_mesh.name = name
+    # Set the copy active
+    bpy.context.view_layer.objects.active = duplicate_phys_mesh
+    # Add the Decimate Modifier on for user.
+    bpy.ops.object.modifier_add(type='DECIMATE')
+    bpy.context.object.modifiers["Decimate"].ratio = 0.1
 
 def compair_set(list_a, list_b):
     """!
@@ -296,9 +318,8 @@ def check_selected_transforms():
                 rotation_good = False
             elif not compair_set(scale_list, scale_source):
                 scale_good = False
-
+            # Check if all are true or false
             check_transfroms_bools = [location_good, rotation_good, scale_good]
-            print(check_transfroms_bools)
             if all(check_transfroms_bools):
                 return True
             else:

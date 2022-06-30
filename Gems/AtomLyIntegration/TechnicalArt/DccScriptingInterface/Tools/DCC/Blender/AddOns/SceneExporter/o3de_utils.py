@@ -8,11 +8,12 @@
 #
 #
 # -------------------------------------------------------------------------
+import bpy
 import json
-from pathlib import Path
 from . import constants
+from pathlib import Path
 
-def LookatEngineManifest():
+def look_at_engine_manifest():
     """!
     This function will look at your O3DE engine manifest JSON
     """
@@ -24,20 +25,40 @@ def LookatEngineManifest():
             o3de_projects = data['projects']
             # Send if o3de is not installed
             engine_is_installed = True
+            o3de_projects = extend_project_list(o3de_projects)
             return o3de_projects, engine_is_installed
     except:
         o3de_projects = ['']
         engine_is_installed = False
         return o3de_projects, engine_is_installed
 
+def load_saved_projects():
+    """!
+    This function will load the users project.json list
+    """
+    with open(Path(bpy.types.Scene.plugin_directory, "projects.json"), "r") as data_file:
+        data = json.load(data_file)
+        return data
+
+def extend_project_list(o3de_projects):
+    """!
+    This function will load the users project.json list and extend it to the engine manifest projects
+    """
+    saved_o3de_projects = load_saved_projects()
+    # Check to see if these projects are already on list
+    if saved_o3de_projects not in o3de_projects:
+        o3de_projects.extend(saved_o3de_projects)
+    return o3de_projects
+
 def build_projects_list():
     """!
-    This function will build the o3de project list
+    This function will check to see if O3DE is installed, looks at the o3de engine manifest projects
+    and the user saved project.json, builds the o3de project list
     """
-    o3de_projects, engine_is_installed = LookatEngineManifest()
-
+    o3de_projects, engine_is_installed = look_at_engine_manifest()
+    # Project list
     list_o3de_projects = []
-    
+    # Check to see if O3DE is installed.
     if engine_is_installed:
         # Make a list of projects to select from
         for project_full_path in o3de_projects:
@@ -48,3 +69,16 @@ def build_projects_list():
             else:
                 list_o3de_projects.append((project_full_path, Path(project_full_path).name, project_full_path))
     return list_o3de_projects
+
+def save_project_list_json(append_path):
+    """!
+    This function will save the users projects Projects.json
+    """
+    # Load the current list to append to:
+    saved_o3de_projects = load_saved_projects()
+    # Check to see if the path not already in the list:
+    if append_path not in saved_o3de_projects:
+        saved_o3de_projects.append(append_path)
+        # Save Updated
+        with open(Path(bpy.types.Scene.plugin_directory, "projects.json"), 'w') as f:
+            json.dump(saved_o3de_projects, f)

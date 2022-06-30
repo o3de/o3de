@@ -48,7 +48,7 @@ bl_info = {
 
 from typing import Any
 import bpy
-from bpy.props import EnumProperty
+from bpy.props import EnumProperty, PointerProperty
 import sys
 from pathlib import Path
 # Needed to import custom scripts in Blender Python
@@ -63,9 +63,13 @@ from . import constants
 def register():
     """! This is the function that will register Classes and Global Vars for this plugin
     """
+    bpy.types.Scene.plugin_directory = str(directory)
     bpy.utils.register_class(ui.O3deTools)
     bpy.utils.register_class(ui.MessageBox)
     bpy.utils.register_class(ui.WikiButton)
+    bpy.utils.register_class(ui.CustomProjectPath)
+    bpy.utils.register_class(ui.AddColliderMesh)
+    bpy.utils.register_class(ui.AddLODMesh)
     bpy.utils.register_class(ui.ExportFiles)
     bpy.utils.register_class(ui.ProjectsListDropDown)
     bpy.utils.register_class(ui.SceneExporterFileMenu)
@@ -93,9 +97,13 @@ def register():
 def unregister():
     """! This is the function that will unregister Classes and Global Vars for this plugin
     """
+    del bpy.types.Scene.plugin_directory
     bpy.utils.unregister_class(ui.O3deTools)
     bpy.utils.unregister_class(ui.MessageBox)
     bpy.utils.unregister_class(ui.WikiButton)
+    bpy.utils.unregister_class(ui.CustomProjectPath)
+    bpy.utils.unregister_class(ui.AddColliderMesh)
+    bpy.utils.unregister_class(ui.AddLODMesh)
     bpy.utils.unregister_class(ui.ExportFiles)
     bpy.utils.unregister_class(ui.ProjectsListDropDown)
     bpy.utils.unregister_class(ui.SceneExporterFileMenu)
