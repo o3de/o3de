@@ -2,7 +2,6 @@
 
 <typesystem package="azqtpyside">
     <load-typesystem name="typesystem_widgets.xml" generate="no"/>
-    <load-typesystem name="typesystem_quick.xml" generate="no"/>
     <load-typesystem name="typesystem_core.xml" generate="no"/>
     <load-typesystem name="typesystem_gui.xml" generate="no"/>
     
