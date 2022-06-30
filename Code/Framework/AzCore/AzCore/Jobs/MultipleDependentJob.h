@@ -56,7 +56,10 @@ namespace AZ
 
     inline void MultipleDependentJob::AddDependent(Job* dependent)
     {
-        AZ_Assert(!IsStarted(), ("Dependent can only be set before the jobs are started"));
+#ifdef AZ_DEBUG_JOB_STATE
+        AZ_Assert(m_state == STATE_SETUP, ("Dependent can only be set before the jobs are started"));
+        AZ_Assert(dependent->m_state == STATE_SETUP, ("Dependent must be in the setup state"));
+#endif
         AZ_Assert(dependent->GetDependentCount() > 0, ("Dependant jobs is always in process"));
         dependent->IncrementDependentCount();
         m_dependents.push_back(dependent);
@@ -74,13 +77,15 @@ namespace AZ
             for (DependentList::iterator it = m_dependents.begin(); it != m_dependents.end(); ++it)
             {
                 Job* dependent = *it;
+#ifdef AZ_DEBUG_JOB_STATE
                 AZ_Assert(dependent->m_state == STATE_SETUP, ("Dependent must be in setup state before it can be re-initialized"));
+#endif
                 dependent->IncrementDependentCount();
             }
         }
     }
 
-    inline MultipleDependentJob::Process()
+    inline void MultipleDependentJob::Process()
     {
         //notify all dependents
         for (DependentList::iterator it = m_dependents.begin(); it != m_dependents.end(); ++it)
