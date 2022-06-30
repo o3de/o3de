@@ -19,7 +19,6 @@ class StorageQueryTool(ABC):
         Initialise storage query tool with search parameters and flags  denoting whether to access or delete the resource
         @param kwargs: kwargs containing parsed arguments
         """
-        logger.info(kwargs)
         self._root_directory = kwargs.get('root-directory')
         self._branch = kwargs.get('branch')
         self._build = kwargs.get('build')
