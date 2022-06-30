@@ -9,6 +9,7 @@
 from tiaf_logger import get_logger
 from storage_query_tool import StorageQueryTool
 import boto3
+import botocore.exceptions
 logger = get_logger(__file__)
 
 
@@ -18,18 +19,28 @@ class S3StorageQueryTool(StorageQueryTool):
         """
         Initialise storage query tool with search parameters and access/delete parameters
         """
+        logger.info(kwargs.get('bucket_name'))
+        self._bucket_name = kwargs['bucket_name']
+
         super().__init__(**kwargs)
-        self._bucket_name = kwargs.get('bucket-name')
-        self._s3 = boto3.resource("s3")
-        self._bucket = self._s3.Bucket(self._bucket_name)
-        self._search()
         
-        if self._access_flag:
-            self._access()
+        try:
+
+            self._s3 = boto3.resource("s3")
+            self._bucket = self._s3.Bucket(self._bucket_name)
+            self._search()
+
+            if self._access_flag:
+                self._access()
         
-        if self._delete_flag:
-            self._delete()
-        
+            if self._delete_flag:
+                self._delete()
+        except botocore.exceptions.BotoCoreError as e:
+            raise SystemError(f"There was a problem with the s3 bucket: {e}")
+        except botocore.exceptions.ClientError as e:
+            raise SystemError(f"There was a problem with the s3 client: {e}")
+        except Exception as e:
+            logger.info(e)            
         
 
 
@@ -37,7 +48,8 @@ class S3StorageQueryTool(StorageQueryTool):
         """
         Executes the search based on the search parameters initialised beforehand, in either the file directory or in the s3 bucket.
         """
-        pass
+        for object in self._bucket.objects.all():
+                logger.info(object)
 
     def _write_tree(self):
         """
