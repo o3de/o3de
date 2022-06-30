@@ -1814,6 +1814,7 @@ namespace AzToolsFramework
             AddStatement(m_databaseConnection, s_queryLegacysubidsbyproductid);
             AddStatement(m_databaseConnection, s_queryProductdependenciesTable);
             AddStatement(m_databaseConnection, s_queryFilesTable);
+            AddStatement(m_databaseConnection, s_queryStatsTable);
 
             //////////////////////////////////////////////////////////////////////////
             //projection and combination queries
