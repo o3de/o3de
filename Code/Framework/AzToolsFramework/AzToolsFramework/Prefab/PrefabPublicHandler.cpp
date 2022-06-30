@@ -1031,6 +1031,20 @@ namespace AzToolsFramework
             return path;
         }
 
+        TemplateId PrefabPublicHandler::GetOwningInstancePrefabTemplateId(AZ::EntityId entityId) const
+        {
+            InstanceOptionalReference instance = GetOwnerInstanceByEntityId(entityId);
+
+            if (instance.has_value())
+            {
+                return instance->get().GetTemplateId();
+            }
+            else
+            {
+                return Prefab::InvalidTemplateId;
+            }
+        }
+
         PrefabRequestResult PrefabPublicHandler::HasUnsavedChanges(AZ::IO::Path prefabFilePath) const
         {
             auto templateId = m_prefabSystemComponentInterface->GetTemplateIdFromFilePath(prefabFilePath.c_str());
