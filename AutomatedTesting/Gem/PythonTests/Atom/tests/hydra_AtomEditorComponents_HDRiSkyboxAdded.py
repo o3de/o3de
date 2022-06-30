@@ -127,9 +127,8 @@ def AtomEditorComponents_HDRiSkybox_AddedToEntity():
         general.idle_wait_frames(1)
         Report.result(Tests.creation_redo, hdri_skybox_entity.exists())
 
-
         # 5. Set Cubemap Texture on HDRi Skybox component.
-        skybox_cubemap_asset_path = os.path.join("LightingPresets", "default_iblskyboxcm.exr.streamingimage")
+        skybox_cubemap_asset_path = os.path.join("lightingpresets", "default_iblskyboxcm.exr.streamingimage")
         skybox_cubemap_material_asset = Asset.find_asset_by_path(skybox_cubemap_asset_path, False)
         hdri_skybox_component.set_component_property_value(
             AtomComponentProperties.hdri_skybox('Cubemap Texture'), skybox_cubemap_material_asset.id)

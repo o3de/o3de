@@ -61,7 +61,6 @@ namespace EMStudio
     class BlendGraphViewWidget;
     class AnimGraphPlugin;
     class TimeViewPlugin;
-    class SaveDirtyAnimGraphFilesCallback;
     class NavigationHistory;
 
     // our anim graph event handler
@@ -130,10 +129,6 @@ namespace EMStudio
         void SetActiveAnimGraph(EMotionFX::AnimGraph* animGraph);
         EMotionFX::AnimGraph* GetActiveAnimGraph()           { return m_activeAnimGraph; }
 
-        void SaveAnimGraph(const char* filename, size_t animGraphIndex, MCore::CommandGroup* commandGroup = nullptr);
-        void SaveAnimGraph(EMotionFX::AnimGraph* animGraph, MCore::CommandGroup* commandGroup = nullptr);
-        void SaveAnimGraphAs(EMotionFX::AnimGraph* animGraph, MCore::CommandGroup* commandGroup = nullptr);
-        int SaveDirtyAnimGraph(EMotionFX::AnimGraph* animGraph, MCore::CommandGroup* commandGroup, bool askBeforeSaving, bool showCancelButton = true);
         int OnSaveDirtyAnimGraphs();
 
         PluginOptions* GetOptions() override { return &m_options; }
@@ -265,8 +260,6 @@ namespace EMStudio
         NodeGroupWindow*                            m_nodeGroupWindow;
         BlendGraphViewWidget*                       m_viewWidget;
         NavigationHistory*                          m_navigationHistory;
-
-        SaveDirtyAnimGraphFilesCallback*            m_dirtyFilesCallback;
 
         QDockWidget*                                m_nodePaletteDock;
         QDockWidget*                                m_parameterDock;

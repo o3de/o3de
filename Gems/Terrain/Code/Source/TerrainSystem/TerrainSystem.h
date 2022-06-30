@@ -65,6 +65,7 @@ namespace Terrain
         AZ::Aabb GetTerrainAabb() const override;
         void SetTerrainAabb(const AZ::Aabb& worldBounds) override;
 
+        bool TerrainAreaExistsInBounds(const AZ::Aabb& bounds) const override;
 
         //! Returns terrains height in meters at location x,y.
         //! @terrainExistsPtr: Can be nullptr. If != nullptr then, if there's no terrain at location x,y or location x,y is inside a terrain
@@ -144,52 +145,22 @@ namespace Terrain
 
         //! Given a list of XY coordinates, call the provided callback function with surface data corresponding to each
         //! XY coordinate in the list.
-        void ProcessHeightsFromList(const AZStd::span<const AZ::Vector3>& inPositions,
+        void QueryList(
+            const AZStd::span<const AZ::Vector3>& inPositions,
+            TerrainDataMask requestedData,
             AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
             Sampler sampler = Sampler::DEFAULT) const override;
-        void ProcessNormalsFromList(const AZStd::span<const AZ::Vector3>& inPositions,
+        void QueryListOfVector2(
+            const AZStd::span<const AZ::Vector2>& inPositions,
+            TerrainDataMask requestedData,
             AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
             Sampler sampler = Sampler::DEFAULT) const override;
-        void ProcessSurfaceWeightsFromList(const AZStd::span<const AZ::Vector3>& inPositions,
-            AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
-            Sampler sampler = Sampler::DEFAULT) const override;
-        void ProcessSurfacePointsFromList(const AZStd::span<const AZ::Vector3>& inPositions,
-            AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
-            Sampler sampler = Sampler::DEFAULT) const override;
-        void ProcessHeightsFromListOfVector2(const AZStd::span<const AZ::Vector2>& inPositions,
-            AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
-            Sampler sampler = Sampler::DEFAULT) const override;
-        void ProcessNormalsFromListOfVector2(const AZStd::span<const AZ::Vector2>& inPositions,
-            AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
-            Sampler sampler = Sampler::DEFAULT) const override;
-        void ProcessSurfaceWeightsFromListOfVector2(const AZStd::span<const AZ::Vector2>& inPositions,
-            AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
-            Sampler sampler = Sampler::DEFAULT) const override;
-        void ProcessSurfacePointsFromListOfVector2(const AZStd::span<const AZ::Vector2>& inPositions,
-            AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
-            Sampler sampler = Sampler::DEFAULT) const override;
-
-        //! Returns the number of samples for a given region and step size. The first and second
-        //! elements of the pair correspond to the X and Y sample counts respectively.
-        AZStd::pair<size_t, size_t> GetNumSamplesFromRegion(const AZ::Aabb& inRegion,
-            const AZ::Vector2& stepSize, Sampler sampler) const override;
 
         //! Given a region(aabb) and a step size, call the provided callback function with surface data corresponding to the
         //! coordinates in the region.
-        void ProcessHeightsFromRegion(const AZ::Aabb& inRegion,
-            const AZ::Vector2& stepSize,
-            AzFramework::Terrain::SurfacePointRegionFillCallback perPositionCallback,
-            Sampler sampler = Sampler::DEFAULT) const override;
-        void ProcessNormalsFromRegion(const AZ::Aabb& inRegion,
-            const AZ::Vector2& stepSize,
-            AzFramework::Terrain::SurfacePointRegionFillCallback perPositionCallback,
-            Sampler sampler = Sampler::DEFAULT) const override;
-        void ProcessSurfaceWeightsFromRegion(const AZ::Aabb& inRegion,
-            const AZ::Vector2& stepSize,
-            AzFramework::Terrain::SurfacePointRegionFillCallback perPositionCallback,
-            Sampler sampler = Sampler::DEFAULT) const override;
-        void ProcessSurfacePointsFromRegion(const AZ::Aabb& inRegion,
-            const AZ::Vector2& stepSize,
+        void QueryRegion(
+            const AzFramework::Terrain::TerrainQueryRegion& queryRegion,
+            TerrainDataMask requestedData,
             AzFramework::Terrain::SurfacePointRegionFillCallback perPositionCallback,
             Sampler sampler = Sampler::DEFAULT) const override;
 
@@ -197,88 +168,50 @@ namespace Terrain
         AzFramework::RenderGeometry::RayResult GetClosestIntersection(
             const AzFramework::RenderGeometry::RayRequest& ray) const override;
 
-        AZStd::shared_ptr<TerrainJobContext> ProcessHeightsFromListAsync(
+        AZStd::shared_ptr<AzFramework::Terrain::TerrainJobContext> QueryListAsync(
             const AZStd::span<const AZ::Vector3>& inPositions,
+            TerrainDataMask requestedData,
             AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
             Sampler sampler = Sampler::DEFAULT,
-            AZStd::shared_ptr<ProcessAsyncParams> params = nullptr) const override;
-        AZStd::shared_ptr<TerrainJobContext> ProcessNormalsFromListAsync(
-            const AZStd::span<const AZ::Vector3>& inPositions,
-            AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
-            Sampler sampler = Sampler::DEFAULT,
-            AZStd::shared_ptr<ProcessAsyncParams> params = nullptr) const override;
-        AZStd::shared_ptr<TerrainJobContext> ProcessSurfaceWeightsFromListAsync(
-            const AZStd::span<const AZ::Vector3>& inPositions,
-            AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
-            Sampler sampler = Sampler::DEFAULT,
-            AZStd::shared_ptr<ProcessAsyncParams> params = nullptr) const override;
-        AZStd::shared_ptr<TerrainJobContext> ProcessSurfacePointsFromListAsync(
-            const AZStd::span<const AZ::Vector3>& inPositions,
-            AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
-            Sampler sampler = Sampler::DEFAULT,
-            AZStd::shared_ptr<ProcessAsyncParams> params = nullptr) const override;
-        AZStd::shared_ptr<TerrainJobContext> ProcessHeightsFromListOfVector2Async(
+            AZStd::shared_ptr<AzFramework::Terrain::QueryAsyncParams> params = nullptr) const override;
+        AZStd::shared_ptr<AzFramework::Terrain::TerrainJobContext> QueryListOfVector2Async(
             const AZStd::span<const AZ::Vector2>& inPositions,
+            TerrainDataMask requestedData,
             AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
             Sampler sampler = Sampler::DEFAULT,
-            AZStd::shared_ptr<ProcessAsyncParams> params = nullptr) const override;
-        AZStd::shared_ptr<TerrainJobContext> ProcessNormalsFromListOfVector2Async(
-            const AZStd::span<const AZ::Vector2>& inPositions,
-            AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
-            Sampler sampler = Sampler::DEFAULT,
-            AZStd::shared_ptr<ProcessAsyncParams> params = nullptr) const override;
-        AZStd::shared_ptr<TerrainJobContext> ProcessSurfaceWeightsFromListOfVector2Async(
-            const AZStd::span<const AZ::Vector2>& inPositions,
-            AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
-            Sampler sampler = Sampler::DEFAULT,
-            AZStd::shared_ptr<ProcessAsyncParams> params = nullptr) const override;
-        AZStd::shared_ptr<TerrainJobContext> ProcessSurfacePointsFromListOfVector2Async(
-            const AZStd::span<const AZ::Vector2>& inPositions,
-            AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
-            Sampler sampler = Sampler::DEFAULT,
-            AZStd::shared_ptr<ProcessAsyncParams> params = nullptr) const override;
-        AZStd::shared_ptr<TerrainJobContext> ProcessHeightsFromRegionAsync(
-            const AZ::Aabb& inRegion,
-            const AZ::Vector2& stepSize,
+            AZStd::shared_ptr<AzFramework::Terrain::QueryAsyncParams> params = nullptr) const override;
+        AZStd::shared_ptr<AzFramework::Terrain::TerrainJobContext> QueryRegionAsync(
+            const AzFramework::Terrain::TerrainQueryRegion& queryRegion,
+            TerrainDataMask requestedData,
             AzFramework::Terrain::SurfacePointRegionFillCallback perPositionCallback,
             Sampler sampler = Sampler::DEFAULT,
-            AZStd::shared_ptr<ProcessAsyncParams> params = nullptr) const override;
-        AZStd::shared_ptr<TerrainJobContext> ProcessNormalsFromRegionAsync(
-            const AZ::Aabb& inRegion,
-            const AZ::Vector2& stepSize,
-            AzFramework::Terrain::SurfacePointRegionFillCallback perPositionCallback,
-            Sampler sampler = Sampler::DEFAULT,
-            AZStd::shared_ptr<ProcessAsyncParams> params = nullptr) const override;
-        AZStd::shared_ptr<TerrainJobContext> ProcessSurfaceWeightsFromRegionAsync(
-            const AZ::Aabb& inRegion,
-            const AZ::Vector2& stepSize,
-            AzFramework::Terrain::SurfacePointRegionFillCallback perPositionCallback,
-            Sampler sampler = Sampler::DEFAULT,
-            AZStd::shared_ptr<ProcessAsyncParams> params = nullptr) const override;
-        AZStd::shared_ptr<TerrainJobContext> ProcessSurfacePointsFromRegionAsync(
-            const AZ::Aabb& inRegion,
-            const AZ::Vector2& stepSize,
-            AzFramework::Terrain::SurfacePointRegionFillCallback perPositionCallback,
-            Sampler sampler = Sampler::DEFAULT,
-            AZStd::shared_ptr<ProcessAsyncParams> params = nullptr) const override;
+            AZStd::shared_ptr<AzFramework::Terrain::QueryAsyncParams> params = nullptr) const override;
 
     private:
-        template<typename SynchronousFunctionType, typename VectorType>
-        AZStd::shared_ptr<TerrainJobContext> ProcessFromListAsync(
-            SynchronousFunctionType synchronousFunction,
+        //! Given a set of async parameters, calculate the max number of jobs that we can use for the async call.
+        int32_t CalculateMaxJobs(AZStd::shared_ptr<AzFramework::Terrain::QueryAsyncParams> params) const;
+
+        //! Given the number of samples in a region and the desired number of jobs, choose the best subdivision of the region into jobs.
+        static void SubdivideRegionForJobs(
+            int32_t numSamplesX, int32_t numSamplesY, int32_t maxNumJobs, int32_t minPointsPerJob,
+            int32_t& subdivisionsX, int32_t& subdivisionsY);
+
+        //! This performs the logic for QueryRegion, but also accepts x and y index offsets so that the subregions for QueryRegionAsync
+        //! can pass the correct x and y indices down to the subregion perPositionCallbacks.
+        void QueryRegionInternal(
+            const AzFramework::Terrain::TerrainQueryRegion& queryRegion,
+            size_t xIndexOffset, size_t yIndexOffset,
+            TerrainDataMask requestedData,
+            AzFramework::Terrain::SurfacePointRegionFillCallback perPositionCallback,
+            Sampler sampler) const;
+
+        template<typename VectorType>
+        AZStd::shared_ptr<AzFramework::Terrain::TerrainJobContext> ProcessFromListAsync(
             const AZStd::span<const VectorType>& inPositions,
+            TerrainDataMask requestedData,
             AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
             Sampler sampler = Sampler::DEFAULT,
-            AZStd::shared_ptr<ProcessAsyncParams> params = nullptr) const;
-
-        template<typename SynchronousFunctionType>
-        AZStd::shared_ptr<TerrainJobContext> ProcessFromRegionAsync(
-            SynchronousFunctionType synchronousFunction,
-            const AZ::Aabb& inRegion,
-            const AZ::Vector2& stepSize,
-            AzFramework::Terrain::SurfacePointRegionFillCallback perPositionCallback,
-            Sampler sampler = Sampler::DEFAULT,
-            AZStd::shared_ptr<ProcessAsyncParams> params = nullptr) const;
+            AZStd::shared_ptr<AzFramework::Terrain::QueryAsyncParams> params = nullptr) const;
 
         void ClampPosition(float x, float y, AZ::Vector2& outPosition, AZ::Vector2& normalizedDelta) const;
         bool InWorldBounds(float x, float y) const;
@@ -323,9 +256,7 @@ namespace Terrain
             AZStd::vector<AZ::Vector3>& outPositions,
             Sampler sampler) const;
         AZStd::vector<AZ::Vector3> GenerateInputPositionsFromRegion(
-            const AZ::Aabb& inRegion,
-            const AZ::Vector2& stepSize,
-            Sampler sampler) const;
+            const AzFramework::Terrain::TerrainQueryRegion& queryRegion) const;
         AZStd::vector<AZ::Vector3> GenerateInputPositionsFromListOfVector2(
             const AZStd::span<const AZ::Vector2> inPositionsVec2) const;
 
@@ -363,37 +294,41 @@ namespace Terrain
         AZ::JobManager* m_terrainJobManager = nullptr;
         mutable AZStd::mutex m_activeTerrainJobContextMutex;
         mutable AZStd::condition_variable m_activeTerrainJobContextMutexConditionVariable;
-        mutable AZStd::deque<AZStd::shared_ptr<TerrainJobContext>> m_activeTerrainJobContexts;
+        mutable AZStd::deque<AZStd::shared_ptr<AzFramework::Terrain::TerrainJobContext>> m_activeTerrainJobContexts;
     };
 
-    template<typename SynchronousFunctionType, typename VectorType>
-    inline AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::TerrainJobContext> TerrainSystem::ProcessFromListAsync(
-        SynchronousFunctionType synchronousFunction,
+    template<typename VectorType>
+    inline AZStd::shared_ptr<AzFramework::Terrain::TerrainJobContext> TerrainSystem::ProcessFromListAsync(
         const AZStd::span<const VectorType>& inPositions,
+        TerrainDataMask requestedData,
         AzFramework::Terrain::SurfacePointListFillCallback perPositionCallback,
         Sampler sampler,
-        AZStd::shared_ptr<ProcessAsyncParams> params) const
+        AZStd::shared_ptr<AzFramework::Terrain::QueryAsyncParams> params) const
     {
         AZ_PROFILE_FUNCTION(Terrain);
 
-        // Determine the number of jobs to split the work into based on:
-        // 1. The number of available worker threads.
-        // 2. The desired number of jobs as passed in.
-        // 3. The number of positions being processed.
-        const int32_t numWorkerThreads = m_terrainJobManager->GetNumWorkerThreads();
-        const int32_t numJobsDesired = params ? params->m_desiredNumberOfJobs : ProcessAsyncParams::NumJobsDefault;
-        const int32_t numJobsMax = (numJobsDesired > 0) ? AZStd::min(numWorkerThreads, numJobsDesired) : numWorkerThreads;
         const int32_t numPositionsToProcess = static_cast<int32_t>(inPositions.size());
-        const int32_t minPositionsPerJob = params && (params->m_desiredNumberOfJobs > 0) ? params->m_desiredNumberOfJobs : ProcessAsyncParams::MinPositionsPerJobDefault;
-        const int32_t numJobs = AZStd::min(numJobsMax, numPositionsToProcess / minPositionsPerJob);
-        if (numJobs <= 0)
+
+        if (numPositionsToProcess == 0)
         {
             AZ_Warning("TerrainSystem", false, "No positions to process.");
             return nullptr;
         }
 
+        // Determine the maximum number of jobs, and the minimum number of positions that should be processed per job.
+        const int32_t numJobsMax = CalculateMaxJobs(params);
+        const int32_t minPositionsPerJob = params && (params->m_minPositionsPerJob > 0)
+            ? params->m_minPositionsPerJob
+            : AzFramework::Terrain::QueryAsyncParams::MinPositionsPerJobDefault;
+
+        // Based on the above, we'll create the maximum number of jobs possible that meet both criteria:
+        // - processes at least minPositionsPerJob for each job
+        // - creates no more than numJobsMax
+        const int32_t numJobs = AZStd::clamp(numPositionsToProcess / minPositionsPerJob, 1, numJobsMax);
+
         // Create a terrain job context, track it, and split the work across multiple jobs.
-        AZStd::shared_ptr<TerrainJobContext> jobContext = AZStd::make_shared<TerrainJobContext>(*m_terrainJobManager, numJobs);
+        AZStd::shared_ptr<AzFramework::Terrain::TerrainJobContext> jobContext =
+            AZStd::make_shared<AzFramework::Terrain::TerrainJobContext>(*m_terrainJobManager, numJobs);
         {
             AZStd::unique_lock<AZStd::mutex> lock(m_activeTerrainJobContextMutex);
             m_activeTerrainJobContexts.push_back(jobContext);
@@ -408,12 +343,19 @@ namespace Terrain
 
             // Define the job function using the sub span of positions to process.
             const AZStd::span<const VectorType>& positionsToProcess = inPositions.subspan(subSpanOffset, subSpanCount);
-            auto jobFunction = [this, synchronousFunction, positionsToProcess, perPositionCallback, sampler, jobContext, params]()
+            auto jobFunction = [this, positionsToProcess, requestedData, perPositionCallback, sampler, jobContext, params]()
             {
                 // Process the sub span of positions, unless the associated job context has been cancelled.
                 if (!jobContext->IsCancelled())
                 {
-                    synchronousFunction(positionsToProcess, perPositionCallback, sampler);
+                    if constexpr (AZStd::is_same<VectorType, AZ::Vector3>::value)
+                    {
+                        QueryList(positionsToProcess, requestedData, perPositionCallback, sampler);
+                    }
+                    else
+                    {
+                        QueryListOfVector2(positionsToProcess, requestedData, perPositionCallback, sampler);
+                    }
                 }
 
                 // Decrement the number of completions remaining, invoke the completion callback if this happens
@@ -444,85 +386,4 @@ namespace Terrain
         return jobContext;
     }
 
-    template<typename SynchronousFunctionType>
-    inline AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::TerrainJobContext> TerrainSystem::ProcessFromRegionAsync(
-        SynchronousFunctionType synchronousFunction,
-        const AZ::Aabb& inRegion,
-        const AZ::Vector2& stepSize,
-        AzFramework::Terrain::SurfacePointRegionFillCallback perPositionCallback,
-        Sampler sampler,
-        AZStd::shared_ptr<ProcessAsyncParams> params) const
-    {
-        AZ_PROFILE_FUNCTION(Terrain);
-
-        // ToDo: Determine the number of jobs to split the work into based on:
-        // 1. The number of available worker threads.
-        // 2. The desired number of jobs as passed in.
-        // 3. The size of the area being processed.
-        //
-        // Note: We are currently restricting the number of worker threads to one
-        // because splitting the work over multiple threads causes contention when
-        // locking various mutexes, resulting in slower overall wall time for async
-        // requests split over multiple threads vs one where all the work is done on
-        // a single thread. The latter is still preferable over a regular synchronous
-        // call because it is just as quick and prevents the main thread from blocking.
-        // Once the mutex contention issues have been addressed, we should come up with
-        // an algorithm to break up 'inRegion' into sub-regions (or lists of positions?)
-        // so that async calls automatically split the work between available job manager
-        // worker threads, unless the ProcessAsyncParams specifiy a desired number of jobs.
-        const int32_t numWorkerThreads = m_terrainJobManager->GetNumWorkerThreads();
-        const int32_t numJobsDesired = params ? params->m_desiredNumberOfJobs : ProcessAsyncParams::NumJobsDefault;
-        int32_t numJobs = (numJobsDesired > 0) ? AZStd::min(numWorkerThreads, numJobsDesired) : numWorkerThreads;
-        if (numJobs != 1)
-        {
-            // Temp until we figure out how to break up the region.
-            AZ_Warning("TerrainSystem", false, "We don't yet support breaking up regions.");
-            numJobs = 1;
-        }
-
-        // Create a terrain job context and split the work across multiple jobs.
-        AZStd::shared_ptr<TerrainJobContext> jobContext = AZStd::make_shared<TerrainJobContext>(*m_terrainJobManager, numJobs);
-        {
-            AZStd::unique_lock<AZStd::mutex> lock(m_activeTerrainJobContextMutex);
-            m_activeTerrainJobContexts.push_back(jobContext);
-        }
-        for (int32_t i = 0; i < numJobs; ++i)
-        {
-            // Define the job function using the sub region of positions to process.
-            const AZ::Aabb& subRegion = inRegion; // ToDo: Figure out how to break up the region.
-            auto jobFunction = [this, synchronousFunction, subRegion, stepSize, perPositionCallback, sampler, jobContext, params]()
-            {
-                // Process the sub region of positions, unless the associated job context has been cancelled.
-                if (!jobContext->IsCancelled())
-                {
-                    synchronousFunction(subRegion, stepSize, perPositionCallback, sampler);
-                }
-
-                // Decrement the number of completions remaining, invoke the completion callback if this happens
-                // to be the final job completed, and remove this TerrainJobContext from the list of active ones.
-                const bool wasLastJobCompleted = jobContext->OnJobCompleted();
-                if (wasLastJobCompleted)
-                {
-                    if (params && params->m_completionCallback)
-                    {
-                        params->m_completionCallback(jobContext);
-                    }
-
-                    {
-                        AZStd::unique_lock<AZStd::mutex> lock(m_activeTerrainJobContextMutex);
-                        m_activeTerrainJobContexts.erase(AZStd::find(m_activeTerrainJobContexts.begin(),
-                                                                     m_activeTerrainJobContexts.end(),
-                                                                     jobContext));
-                        m_activeTerrainJobContextMutexConditionVariable.notify_one();
-                    }
-                }
-            };
-
-            // Create the job and start it immediately.
-            AZ::Job* processJob = AZ::CreateJobFunction(jobFunction, true, jobContext.get());
-            processJob->Start();
-        }
-
-        return jobContext;
-    }
 } // namespace Terrain

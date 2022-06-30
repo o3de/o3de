@@ -7794,7 +7794,7 @@ namespace UnitTest
     class GenericsLoadInPlaceHolder final
     {
     public:
-        AZ_RTTI(((GenericsLoadInPlaceHolder<T>), "{98328203-83F0-4644-B1F6-34DDF50F3416}", T));
+        AZ_RTTI((GenericsLoadInPlaceHolder, "{98328203-83F0-4644-B1F6-34DDF50F3416}", T));
 
         static void Reflect(AZ::SerializeContext& sc)
         {

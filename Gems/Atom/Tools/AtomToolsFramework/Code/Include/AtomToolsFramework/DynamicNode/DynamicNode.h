@@ -14,7 +14,9 @@
 
 namespace AtomToolsFramework
 {
-    //! Data driven graph model node
+    //! Graph Model node that generates its appearance and slots based on an external data driven configuration. The node looks up the
+    //! config via DynamicNodeManagerRequestBus, using a tool ID and a config ID. Serializing these IDs instead of the config object saves
+    //! considerable space in the serialized graph.
     class DynamicNode final : public GraphModel::Node
     {
     public:
@@ -23,7 +25,7 @@ namespace AtomToolsFramework
         static void Reflect(AZ::ReflectContext* context);
 
         DynamicNode() = default;
-        DynamicNode(GraphModel::GraphPtr ownerGraph, const DynamicNodeConfig& config);
+        DynamicNode(GraphModel::GraphPtr ownerGraph, const AZ::Crc32& toolId, const AZStd::string& configId);
 
         const char* GetTitle() const override;
         const char* GetSubTitle() const override;
@@ -34,6 +36,8 @@ namespace AtomToolsFramework
     protected:
         void RegisterSlots() override;
 
+        AZ::Crc32 m_toolId = {};
+        AZStd::string m_configId;
         DynamicNodeConfig m_config;
     };
 } // namespace AtomToolsFramework

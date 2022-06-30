@@ -23,6 +23,8 @@ namespace AzToolsFramework
         PropertyEditorToolsSystem();
         ~PropertyEditorToolsSystem() override;
 
+        void RegisterDefaultHandlers();
+
         PropertyHandlerId GetPropertyHandlerForNode(const AZ::Dom::Value node) override;
         PropertyHandlerInstance CreateHandlerInstance(PropertyHandlerId handlerId) override;
         PropertyHandlerId RegisterHandler(HandlerData handlerData) override;
@@ -30,6 +32,7 @@ namespace AzToolsFramework
 
     private:
         AZStd::unordered_map<AZ::Name, AZStd::list<HandlerData>> m_registeredHandlers;
+        AZStd::vector<PropertyHandlerId> m_defaultHandlers;
         // PropertyEditorSystem contains all non-UI system logic for the DPE, like the DOM schema
         AZ::DocumentPropertyEditor::PropertyEditorSystem m_lowLevelSystem;
     };

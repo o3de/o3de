@@ -318,6 +318,13 @@ namespace UnitTest
                 }
             }
         }
+
+        // Bounds check for bounds that should and shouldn't have a terrain area inside
+        AZ::Aabb boundsCheckCollides = spawnerBox.GetTranslated(AZ::Vector3(5.0f, 5.0f, 5.0f));
+        EXPECT_TRUE(terrainSystem->TerrainAreaExistsInBounds(boundsCheckCollides));
+
+        AZ::Aabb boundsCheckDoesNotCollide = spawnerBox.GetTranslated(AZ::Vector3(15.0f, 15.0f, 15.0f));
+        EXPECT_FALSE(terrainSystem->TerrainAreaExistsInBounds(boundsCheckDoesNotCollide));
     }
 
     TEST_F(TerrainSystemTest, TerrainHeightQueriesWithExactSamplersIgnoreQueryGrid)
@@ -607,7 +614,7 @@ namespace UnitTest
         AzFramework::SurfaceData::SurfaceTagWeight tagWeight =
             terrainSystem->GetMaxSurfaceWeight(aabb.GetMax() + AZ::Vector3::CreateOne());
 
-        EXPECT_EQ(tagWeight.m_surfaceType, AZ::Crc32(AzFramework::SurfaceData::Constants::s_unassignedTagName));
+        EXPECT_EQ(tagWeight.m_surfaceType, AZ::Crc32(AzFramework::SurfaceData::Constants::UnassignedTagName));
 
         // Inside the layer spawner box should give us the highest weighted tag (tag1).
         tagWeight = terrainSystem->GetMaxSurfaceWeight(aabb.GetCenter());
@@ -711,7 +718,9 @@ namespace UnitTest
             inPositions.push_back(position);
         }
 
-        terrainSystem->ProcessHeightsFromList(inPositions, perPositionCallback, AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR);
+        terrainSystem->QueryList(
+            inPositions, AzFramework::Terrain::TerrainDataRequests::TerrainDataMask::Heights, perPositionCallback,
+            AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR);
     }
 
     TEST_F(TerrainSystemTest, TerrainProcessNormalsFromListWithBilinearSamplers)
@@ -799,7 +808,9 @@ namespace UnitTest
             inPositions.push_back(position);
         }
 
-        terrainSystem->ProcessNormalsFromList(inPositions, perPositionCallback, AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR);
+        terrainSystem->QueryList(
+            inPositions, AzFramework::Terrain::TerrainDataRequests::TerrainDataMask::Normals, perPositionCallback,
+            AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR);
     }
 
     TEST_F(TerrainSystemTest, TerrainProcessHeightsFromRegionWithBilinearSamplers)
@@ -828,8 +839,10 @@ namespace UnitTest
         // Create and activate the terrain system with our testing defaults for world bounds, and a query resolution at 1 meter intervals.
         auto terrainSystem = CreateAndActivateTerrainSystem(frequencyMeters);
 
-        const AZ::Aabb testRegionBox = AZ::Aabb::CreateFromMinMaxValues(-1.0f, -1.0f, -1.0f, 1.0f, 1.0f, 1.0f);
+        // Set up a query region that starts at (-1, -1, -1), queries 2 points in the X and Y direction, and uses a step size of 1.0.
+        // This should query (-1, -1), (0, -1), (-1, 0), and (0, 0).
         const AZ::Vector2 stepSize(1.0f);
+        const AzFramework::Terrain::TerrainQueryRegion queryRegion(AZ::Vector3(-1.0f), 2, 2, stepSize);
 
         const HeightTestRegionPoints testPoints[] = {
             { 0, 0, -2.0f, AZ::Vector2(-1.0f, -1.0f) },
@@ -857,7 +870,9 @@ namespace UnitTest
             EXPECT_EQ(found, true);
         };
 
-        terrainSystem->ProcessHeightsFromRegion(testRegionBox, stepSize, perPositionCallback, AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR);
+        terrainSystem->QueryRegion(
+            queryRegion, AzFramework::Terrain::TerrainDataRequests::TerrainDataMask::Heights, perPositionCallback,
+            AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR);
     }
 
     TEST_F(TerrainSystemTest, TerrainProcessNormalsFromRegionWithBilinearSamplers)
@@ -886,8 +901,10 @@ namespace UnitTest
         // Create and activate the terrain system with our testing defaults for world bounds, and a query resolution at 1 meter intervals.
         auto terrainSystem = CreateAndActivateTerrainSystem(frequencyMeters);
 
-        const AZ::Aabb testRegionBox = AZ::Aabb::CreateFromMinMaxValues(-1.0f, -1.0f, -1.0f, 1.0f, 1.0f, 1.0f);
+        // Set up a query region that starts at (-1, -1, -1), queries 2 points in the X and Y direction, and uses a step size of 1.0.
+        // This should query (-1, -1), (0, -1), (-1, 0), and (0, 0).
         const AZ::Vector2 stepSize(1.0f);
+        const AzFramework::Terrain::TerrainQueryRegion queryRegion(AZ::Vector3(-1.0f), 2, 2, stepSize);
 
         const NormalTestRegionPoints testPoints[] = {
             { 0, 0, AZ::Vector3(-0.5773f, -0.5773f, 0.5773f), AZ::Vector2(-1.0f, -1.0f) },
@@ -917,7 +934,9 @@ namespace UnitTest
             EXPECT_EQ(found, true);
         };
 
-        terrainSystem->ProcessNormalsFromRegion(testRegionBox, stepSize, perPositionCallback, AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR);
+        terrainSystem->QueryRegion(
+            queryRegion, AzFramework::Terrain::TerrainDataRequests::TerrainDataMask::Normals, perPositionCallback,
+            AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR);
     }
 
     TEST_F(TerrainSystemTest, TerrainProcessSurfaceWeightsFromRegion)
@@ -935,8 +954,9 @@ namespace UnitTest
         const float queryResolution = 1.0f;
         auto terrainSystem = CreateAndActivateTerrainSystem(queryResolution);
 
-        const AZ::Aabb testRegionBox = AZ::Aabb::CreateFromMinMaxValues(-3.0f, -3.0f, -1.0f, 3.0f, 3.0f, 1.0f);
+        // Set up a query region that starts at (-3, -3, -1), queries 6 points in the X and Y direction, and uses a step size of 1.0.
         const AZ::Vector2 stepSize(1.0f);
+        const AzFramework::Terrain::TerrainQueryRegion queryRegion(AZ::Vector3(-3.0f, -3.0f, -1.0f), 6, 6, stepSize);
 
         AzFramework::SurfaceData::SurfaceTagWeightList expectedTags;
         SetupSurfaceWeightMocks(entity.get(), expectedTags);
@@ -963,7 +983,9 @@ namespace UnitTest
             }
         };
 
-        terrainSystem->ProcessSurfaceWeightsFromRegion(testRegionBox, stepSize, perPositionCallback, AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR);
+        terrainSystem->QueryRegion(
+            queryRegion, AzFramework::Terrain::TerrainDataRequests::TerrainDataMask::SurfaceData, perPositionCallback,
+            AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR);
     }
 
     TEST_F(TerrainSystemTest, TerrainProcessSurfacePointsFromRegion)
@@ -981,8 +1003,9 @@ namespace UnitTest
         const float queryResolution = 1.0f;
         auto terrainSystem = CreateAndActivateTerrainSystem(queryResolution);
 
-        const AZ::Aabb testRegionBox = AZ::Aabb::CreateFromMinMaxValues(-3.0f, -3.0f, -1.0f, 3.0f, 3.0f, 1.0f);
+        // Set up a query region that starts at (-3, -3, -1), queries 6 points in the X and Y direction, and uses a step size of 1.0.
         const AZ::Vector2 stepSize(1.0f);
+        const AzFramework::Terrain::TerrainQueryRegion queryRegion(AZ::Vector3(-3.0f, -3.0f, -1.0f), 6, 6, stepSize);
 
         AzFramework::SurfaceData::SurfaceTagWeightList expectedTags;
         SetupSurfaceWeightMocks(entity.get(), expectedTags);
@@ -1013,7 +1036,9 @@ namespace UnitTest
             }
         };
 
-        terrainSystem->ProcessSurfacePointsFromRegion(testRegionBox, stepSize, perPositionCallback, AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT);
+        terrainSystem->QueryRegion(
+            queryRegion, AzFramework::Terrain::TerrainDataRequests::TerrainDataMask::All, perPositionCallback,
+            AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT);
     }
 
     TEST_F(TerrainSystemTest, TerrainProcessAsyncCancellation)
@@ -1059,21 +1084,22 @@ namespace UnitTest
 
         // Setup the completion callback so we can check that the entire request was cancelled.
         AZStd::semaphore asyncRequestCompletedEvent;
-        auto completionCallback = [&asyncRequestCompletedEvent](AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::TerrainJobContext> terrainJobContext)
+        auto completionCallback = [&asyncRequestCompletedEvent](AZStd::shared_ptr<AzFramework::Terrain::TerrainJobContext> terrainJobContext)
         {
             EXPECT_TRUE(terrainJobContext->IsCancelled());
             asyncRequestCompletedEvent.release();
         };
 
         // Invoke the async request.
-        AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::ProcessAsyncParams> asyncParams
-            = AZStd::make_shared<AzFramework::Terrain::TerrainDataRequests::ProcessAsyncParams>();
+        AZStd::shared_ptr<AzFramework::Terrain::QueryAsyncParams> asyncParams
+            = AZStd::make_shared<AzFramework::Terrain::QueryAsyncParams>();
         // Only use one job. We're using a lot of handshaking logic to ensure we process the main thread test logic and the callback logic
         // in the exact order we want for the test, and this logic assumes only one job is running.
         asyncParams->m_desiredNumberOfJobs = 1;
         asyncParams->m_completionCallback = completionCallback;
-        AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::TerrainJobContext> terrainJobContext
-            = terrainSystem->ProcessHeightsFromListAsync(inPositions, perPositionCallback, AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR, asyncParams);
+        AZStd::shared_ptr<AzFramework::Terrain::TerrainJobContext> terrainJobContext = terrainSystem->QueryListAsync(
+            inPositions, AzFramework::Terrain::TerrainDataRequests::TerrainDataMask::Heights, perPositionCallback,
+            AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR, asyncParams);
 
         // Wait until the async request has started before cancelling it.
         asyncRequestStartedEvent.acquire();

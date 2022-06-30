@@ -59,7 +59,7 @@ namespace GraphModelIntegration
         : public GraphCanvas::GraphCanvasMimeEvent
     {
     public:
-        AZ_RTTI( ( (CreateStandardNodeMimeEvent<NodeType>), "{DF6213A0-5C60-4C22-88F1-4CEA6D8A17EF}", NodeType), GraphCanvas::GraphCanvasMimeEvent);
+        AZ_RTTI((CreateStandardNodeMimeEvent, "{DF6213A0-5C60-4C22-88F1-4CEA6D8A17EF}", NodeType), GraphCanvas::GraphCanvasMimeEvent);
         AZ_CLASS_ALLOCATOR(CreateStandardNodeMimeEvent, AZ::SystemAllocator, 0);
 
         static void Reflect(AZ::ReflectContext* reflectContext)

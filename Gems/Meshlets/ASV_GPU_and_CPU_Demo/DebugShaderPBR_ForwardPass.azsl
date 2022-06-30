@@ -1,0 +1,138 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#include <viewsrg.srgi>
+#include <Atom/Features/PBR/DefaultObjectSrg.azsli>
+#include <Atom/Features/PBR/ForwardPassSrg.azsli>
+#include <Atom/Features/PBR/ForwardPassOutput.azsli>
+#include <Atom/Features/PBR/AlphaUtils.azsli>
+#include <Atom/Features/SrgSemantics.azsli>
+#include <Atom/Features/ColorManagement/TransformColor.azsli>
+#include <Atom/Features/PBR/Lighting/StandardLighting.azsli>
+#include <Atom/Features/PBR/Decals.azsli>
+
+ShaderResourceGroup DebugShaderPBRSrg : SRG_PerMaterial
+{
+    float3 m_baseColor;
+    float m_metallic;
+    float m_roughness;
+}
+
+/*
+* For better understanding of the meshlet data please review MeshletsData.h and 
+* specifically review MeshletDescriptor for understanding.
+* MESHLETS: meshlets descriptor structure containing vertices and indices offsets
+* MESHLETS_TRIANGLES: compressed indices of the local triangles per meshlet - each byte is a local index, 4th is not used.
+* MESHLETS_LOOKUP: vertices indirect index look up table.
+*/
+struct VSInput
+{
+    float3 m_position : POSITION;
+    float3 m_normal : NORMAL;
+    float4 m_tangent : TANGENT; 
+    float3 m_bitangent : BITANGENT; 
+    float2 m_uv : UV0;
+
+    uint4 m_meshlets : MESHLETS;
+    uint  m_meshletsTriangles : MESHLETS_TRIANGLES;
+    uint m_meshletsVtxLookup : MESHLETS_LOOKUP;
+};
+
+struct VSOutput
+{
+    float4 m_position : SV_Position;
+    float3 m_normal: NORMAL;
+    float3 m_tangent : TANGENT; 
+    float3 m_bitangent : BITANGENT; 
+    float3 m_worldPosition : UV0;
+    float2 m_uv : UV1;
+};
+
+#include <Atom/Features/Vertex/VertexHelper.azsli>
+
+VSOutput DebugShaderPBR_MainPassVS(VSInput IN)
+{
+    VSOutput OUT;
+ 
+    float3 worldPosition = mul(ObjectSrg::GetWorldMatrix(), float4(IN.m_position, 1.0)).xyz;
+ 
+    VertexHelper(IN, OUT, worldPosition);
+
+    OUT.m_uv = IN.m_uv;
+
+    return OUT;
+}
+
+ForwardPassOutput DebugShaderPBR_MainPassPS(VSOutput IN)
+{
+    // ------- Surface -------
+
+    Surface surface;
+    
+    // Position, Normal, Roughness
+    surface.position = IN.m_worldPosition.xyz;
+    surface.normal = normalize(IN.m_normal);
+    surface.vertexNormal = normalize(IN.m_normal);
+    surface.roughnessLinear = DebugShaderPBRSrg::m_roughness;
+    surface.CalculateRoughnessA();
+
+    // Albedo, SpecularF0
+    const float specularF0Factor = 0.5f;
+    surface.SetAlbedoAndSpecularF0(DebugShaderPBRSrg::m_baseColor, specularF0Factor, DebugShaderPBRSrg::m_metallic);
+
+    // Clear Coat, Transmission
+    surface.clearCoat.InitializeToZero();
+
+    // ------- LightingData -------
+
+    LightingData lightingData;
+
+    // Light iterator
+    lightingData.tileIterator.Init(IN.m_position, PassSrg::m_lightListRemapped, PassSrg::m_tileLightData);
+    lightingData.Init(surface.position, surface.normal, surface.roughnessLinear);
+
+    // Diffuse and Specular response
+    lightingData.specularResponse = FresnelSchlickWithRoughness(lightingData.NdotV, surface.specularF0, surface.roughnessLinear);
+    lightingData.diffuseResponse = 1.0f - lightingData.specularResponse;
+
+    const float alpha = 1.0f;
+
+    // ------- Lighting Calculation -------
+
+    // Apply Decals
+    ApplyDecals(lightingData.tileIterator, surface);
+
+    // Apply Direct Lighting
+    ApplyDirectLighting(surface, lightingData, IN.m_position);
+
+    // Apply Image Based Lighting (IBL)
+    ApplyIBL(surface, lightingData);
+
+    // Finalize Lighting
+    lightingData.FinalizeLighting();
+
+    PbrLightingOutput lightingOutput = GetPbrLightingOutput(surface, lightingData, alpha);
+
+    // ------- Output -------
+
+    ForwardPassOutput OUT;
+
+    OUT.m_diffuseColor = lightingOutput.m_diffuseColor;
+    OUT.m_diffuseColor.w = -1; // Subsurface scattering is disabled
+    OUT.m_specularColor = lightingOutput.m_specularColor;
+    OUT.m_specularF0 = lightingOutput.m_specularF0;
+    OUT.m_albedo = lightingOutput.m_albedo;
+    OUT.m_normal = lightingOutput.m_normal;
+
+    // Debug purposes - displays UV coordiantes as color. For meshlets this will 
+    // display the different meshlets groups.
+    OUT.m_diffuseColor = float4(IN.m_uv.rg, 0, 1);
+
+    return OUT;
+}
+

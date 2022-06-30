@@ -8,17 +8,30 @@
 #
 #
 # -------------------------------------------------------------------------
-# DCCsi\\Tools\\DCC\\Maya\\start.py
+"""! @brief
+Module Documentation:
+    < DCCsi >:: Tools/DCC/Maya/constants.py
 
-"""DccScriptingInterface (DCCsi)
-The DCCsi bootstraps tools like Maya with additional code access and extensions.
-This module starts up maya in the DCCsi managed synthetic environment context.
+This module is used to start Autodesk Maya with O3DE bootstrapping
 """
-
-###########################################################################
-# Main Code Block, runs this script as main (testing)
 # -------------------------------------------------------------------------
-if __name__ == '__main__':
-    """Run this file as main"""
+# standard imports
+import sys
+import os
+from pathlib import Path
+import logging as _logging
+# -------------------------------------------------------------------------
 
-    print('Maya.Start() not implemented')
+
+# -------------------------------------------------------------------------
+# global scope
+_MODULENAME = 'Tools.DCC.Maya.start'
+_LOGGER = _logging.getLogger(_MODULENAME)
+_LOGGER.debug('Initializing: {}.'.format({_MODULENAME}))
+# -------------------------------------------------------------------------
+
+
+# -------------------------------------------------------------------------
+_LOGGER = _logging.getLogger(_MODULENAME)
+_LOGGER.info(f'Not Implemented: {_MODULENAME}')
+# -------------------------------------------------------------------------

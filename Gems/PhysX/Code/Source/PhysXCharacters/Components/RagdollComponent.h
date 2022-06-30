@@ -37,26 +37,25 @@ namespace PhysX
 
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("PhysicsWorldBodyService", 0x944da0cc));
-            provided.push_back(AZ_CRC("PhysXRagdollService", 0x6d889c70));
+            provided.push_back(AZ_CRC_CE("PhysicsWorldBodyService"));
+            provided.push_back(AZ_CRC_CE("PhysicsRagdollService"));
         }
 
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
         {
-            incompatible.push_back(AZ_CRC("PhysXRagdollService", 0x6d889c70));
-            incompatible.push_back(AZ_CRC("LegacyCryPhysicsService", 0xbb370351));
+            incompatible.push_back(AZ_CRC_CE("PhysicsRagdollService"));
             incompatible.push_back(AZ_CRC_CE("NonUniformScaleService"));
         }
 
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
         {
-            required.push_back(AZ_CRC("TransformService", 0x8ee22c50));
+            required.push_back(AZ_CRC_CE("TransformService"));
         }
 
         static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
         {
-            dependent.push_back(AZ_CRC("PhysXColliderService", 0x4ff43f7c));
-            dependent.push_back(AZ_CRC("CharacterPhysicsDataService", 0x34757927));
+            dependent.push_back(AZ_CRC_CE("PhysicsColliderService"));
+            dependent.push_back(AZ_CRC_CE("CharacterPhysicsDataService"));
         }
 
     protected:
