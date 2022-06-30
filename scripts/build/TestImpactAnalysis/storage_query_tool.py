@@ -1,0 +1,61 @@
+#
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
+# SPDX-License-Identifier: Apache-2.0 OR MIT
+#
+#
+
+from tiaf_logger import get_logger
+
+from abc import ABC, abstractmethod
+logger = get_logger(__file__)
+
+
+class StorageQueryTool(ABC):
+
+    def __init__(self, **kwargs):
+        """
+        Initialise storage query tool with search parameters and flags  denoting whether to access or delete the resource
+        @param kwargs: kwargs containing parsed arguments
+        """
+        logger.info(kwargs)
+        self._root_directory = kwargs.get('root-directory')
+        self._branch = kwargs.get('branch')
+        self._build = kwargs.get('build')
+        self._suite = kwargs.get('suite')
+        self._access_flag = kwargs.get('access')
+        self._delete_flag = kwargs.get('delete')
+
+    @abstractmethod
+    def _search(self):
+        """
+        Executes the search based on the search parameters initialised beforehand, in either the file directory or in the s3 bucket.
+        """
+        pass
+
+    @abstractmethod
+    def _write_tree(self):
+        """
+        Displays file tree to user in console output
+        """
+        pass
+
+    @abstractmethod
+    def _delete(self, file: str):
+        """
+        Deletes the specified file
+
+        @param file: The file to be deleted
+        """
+        pass
+
+    @abstractmethod
+    def _access(self, file: str):
+        """
+        Accesses the specified file
+
+        @param file: The file to be accessed
+        """
+        pass
+
