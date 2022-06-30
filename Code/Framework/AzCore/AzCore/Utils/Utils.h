@@ -68,7 +68,7 @@ namespace AZ
         //! @returns a result object that indicates if the executable directory was able to be stored within the buffer
         ExecutablePathResult GetExecutableDirectory(char* exeStorageBuffer, size_t exeStorageSize);
 
-        //! Retrieves the full path of the directroy containing the executable
+        //! Retrieves the full path of the directory containing the executable
         AZ::IO::FixedMaxPathString GetExecutableDirectory();
 
         //! Retrieves the full path to the engine from settings registry
@@ -104,6 +104,7 @@ namespace AZ
         // Attempts the supplied path to an absolute path.
         //! Returns nullopt if path cannot be converted to an absolute path
         AZStd::optional<AZ::IO::FixedMaxPathString> ConvertToAbsolutePath(AZStd::string_view path);
+        bool ConvertToAbsolutePath(AZ::IO::FixedMaxPath& outputPath, AZStd::string_view path);
         bool ConvertToAbsolutePath(const char* path, char* absolutePath, AZ::u64 absolutePathMaxSize);
 
         //! Save a string to a file. Otherwise returns a failure with error message.

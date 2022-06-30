@@ -92,7 +92,6 @@ public Q_SLOTS:
         void OnJobStatusChanged(JobEntry entry, AzToolsFramework::AssetSystem::JobStatus status);
         void OnJobRemoved(AzToolsFramework::AssetSystem::JobInfo jobInfo);
         void OnSourceRemoved(QString sourceDatabasePath);
-        void OnFolderRemoved(QString folderPath);
 
     protected:
         QIcon m_pendingIcon;

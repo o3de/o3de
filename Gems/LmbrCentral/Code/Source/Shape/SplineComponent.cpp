@@ -15,14 +15,14 @@
 
 namespace LmbrCentral
 {
-    using SplineComboBoxVec = AZStd::vector<AZStd::pair<size_t, AZStd::string>>;
+    using SplineComboBoxVec = AZStd::vector<AZ::Edit::EnumConstant<size_t>>;
     static SplineComboBoxVec PopulateSplineTypeList()
     {
         return SplineComboBoxVec
         {
-            AZStd::make_pair(AZ::LinearSpline::RTTI_Type().GetHash(), "Linear"),
-            AZStd::make_pair(AZ::BezierSpline::RTTI_Type().GetHash(), "Bezier"),
-            AZStd::make_pair(AZ::CatmullRomSpline::RTTI_Type().GetHash(), "Catmull-Rom")
+            { AZ::LinearSpline::RTTI_Type().GetHash(), "Linear" },
+            { AZ::BezierSpline::RTTI_Type().GetHash(), "Bezier" },
+            { AZ::CatmullRomSpline::RTTI_Type().GetHash(), "Catmull-Rom" }
         };
     }
 
@@ -182,10 +182,14 @@ namespace LmbrCentral
                 Handler<BehaviorSplineComponentNotificationBusHandler>();
 
             behaviorContext->EBus<SplineComponentRequestBus>("SplineComponentRequestBus")
-                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                 ->Attribute(AZ::Edit::Attributes::Category, "Shape")
                 ->Attribute(AZ::Script::Attributes::Module, "shape")
-                ->Event("GetSpline", &SplineComponentRequestBus::Events::GetSpline)
+                ->Event("GetSpline",
+                    [](SplineComponentRequests* handler) -> const AZ::Spline&
+                    {
+                        return *(handler->GetSpline());
+                    })
                 ->Event("SetClosed", &SplineComponentRequestBus::Events::SetClosed)
                 ->Event("AddVertex", &SplineComponentRequestBus::Events::AddVertex)
                 ->Event("UpdateVertex", &SplineComponentRequestBus::Events::UpdateVertex)

@@ -215,7 +215,6 @@ namespace ScriptCanvasEditor
             if (m_assetIndex != m_assets.size())
             {
                 m_result.asset = m_assets[GetCurrentIndex()];
-                CompleteDescriptionInPlace(m_result.asset);
                 m_attemptedAssets.insert(m_result.asset.Id());
             }
         }
@@ -225,10 +224,10 @@ namespace ScriptCanvasEditor
             auto& handle = m_result.asset;
             if (!handle.IsGraphValid())
             {
-                auto outcome = LoadFromFile(handle.Path().c_str());
-                if (outcome.IsSuccess())
+                auto result = ScriptCanvas::LoadFromFile(handle.AbsolutePath().c_str());
+                if (result)
                 {
-                    handle = outcome.GetValue().handle;
+                    handle = result.m_handle;
                 }
             }
         }
@@ -320,7 +319,7 @@ namespace ScriptCanvasEditor
             for (const auto& assetPath : m_successNotifications)
             {
                 VE_LOG("received AssetCompilationSuccess: %s", assetPath.c_str());
-                SourceHandle sourceHandle(nullptr, {}, assetPath.c_str());
+                auto sourceHandle = SourceHandle::FromRelativePath(nullptr, AZ::Uuid::CreateNull(), assetPath.c_str());
                 CompleteDescriptionInPlace(sourceHandle);
 
                 if (m_attemptedAssets.contains(sourceHandle.Id()))
@@ -334,7 +333,7 @@ namespace ScriptCanvasEditor
             for (const auto& assetPath : m_failureNotifications)
             {
                 VE_LOG("received AssetCompilationFailed: %s", assetPath.c_str());
-                SourceHandle sourceHandle(nullptr, {}, assetPath.c_str());
+                auto sourceHandle = SourceHandle::FromRelativePath(nullptr, AZ::Uuid::CreateNull(), assetPath.c_str());
                 CompleteDescriptionInPlace(sourceHandle);
 
                 if (m_attemptedAssets.contains(sourceHandle.Id()))
@@ -363,10 +362,10 @@ namespace ScriptCanvasEditor
 
         void Modifier::ReportModificationSuccess()
         {
+            using namespace AzFramework;
             // \note DO NOT put asset into the m_assetsCompletedByAP here. That can only be done when the message is received by the AP
-            m_results.m_successes.push_back({ m_result.asset.Describe(), {} });
-            AzFramework::AssetSystemRequestBus::Broadcast(
-                &AzFramework::AssetSystem::AssetSystemRequests::EscalateAssetByUuid, m_result.asset.Id());
+            m_results.m_successes.push_back(m_result.asset.Describe());
+            AssetSystemRequestBus::Broadcast(&AssetSystem::AssetSystemRequests::EscalateAssetByUuid, m_result.asset.Id());
             NextModification();
         }
 
@@ -391,7 +390,7 @@ namespace ScriptCanvasEditor
             m_fileSaver = AZStd::make_unique<FileSaver>
                     ( m_config.onReadOnlyFile
                     , [this](const FileSaveResult& fileSaveResult) { OnFileSaveComplete(fileSaveResult); });
-            m_fileSaver->Save(result.asset);
+            m_fileSaver->Save(result.asset, result.asset.AbsolutePath());
         }
 
         void Modifier::SortGraphsByDependencies()

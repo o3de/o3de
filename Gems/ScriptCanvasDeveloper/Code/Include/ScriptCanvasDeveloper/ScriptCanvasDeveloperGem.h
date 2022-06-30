@@ -11,7 +11,7 @@
 #include <AzCore/Module/Module.h>
 #include <AzCore/Memory/Memory.h>
 
-namespace ScriptCanvasDeveloper
+namespace ScriptCanvas::Developer
 {
     class ScriptCanvasDeveloperModule
         : public AZ::Module

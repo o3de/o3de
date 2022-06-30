@@ -8,6 +8,7 @@
 
 #include <Atom/RHI.Loader/FunctionLoader.h>
 #include <Atom/RHI.Reflect/Vulkan/PlatformLimitsDescriptor.h>
+#include <Atom/RHI.Reflect/Vulkan/XRVkDescriptors.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RHI/TransientAttachmentPool.h>
@@ -243,11 +244,25 @@ namespace AZ
             deviceInfo.ppEnabledExtensionNames = requiredExtensions.data();
             deviceInfo.pEnabledFeatures = &m_enabledDeviceFeatures;
 
-            const VkResult vkResult = vkCreateDevice(physicalDevice.GetNativePhysicalDevice(),
-                &deviceInfo, nullptr, &m_nativeDevice);
-            AssertSuccess(vkResult);
-            RETURN_RESULT_IF_UNSUCCESSFUL(ConvertResult(vkResult));
-
+            RHI::XRRenderingInterface* xrSystem = RHI::RHISystemInterface::Get()->GetXRSystem();
+            if (xrSystem)
+            {
+                //If a XR system is registered with RHI try to get the xr compatible Vk device from XR::Vulkan module
+                XRDeviceDescriptor xrDevicDescriptor;
+                xrDevicDescriptor.m_inputData.m_deviceCreateInfo = &deviceInfo;
+                AZ::RHI::ResultCode result = xrSystem->CreateDevice(&xrDevicDescriptor);
+                AZ_Assert(result == RHI::ResultCode::Success, "Xr Vk device creation was not successful");
+                m_nativeDevice = xrDevicDescriptor.m_outputData.m_xrVkDevice;
+                RETURN_RESULT_IF_UNSUCCESSFUL(result);
+                m_isXrNativeDevice = true;
+            }
+            else
+            {
+                const VkResult vkResult = vkCreateDevice(physicalDevice.GetNativePhysicalDevice(), &deviceInfo, nullptr, &m_nativeDevice);
+                AssertSuccess(vkResult);
+                RETURN_RESULT_IF_UNSUCCESSFUL(ConvertResult(vkResult));
+            }
+           
             for (const VkDeviceQueueCreateInfo& queueInfo : queueCreationInfo)
             {
                 delete[] queueInfo.pQueuePriorities;
@@ -313,6 +328,22 @@ namespace AZ
                 m_nullDescriptorManager = NullDescriptorManager::Create();
                 result = m_nullDescriptorManager->Init(*this);
                 RETURN_RESULT_IF_UNSUCCESSFUL(result);
+            }
+
+            // Create XR session and XR swapchain if XR system is active
+            RHI::XRRenderingInterface* xrSystem = RHI::RHISystemInterface::Get()->GetXRSystem();
+            if (xrSystem)
+            {
+                XRSessionDescriptor xrSessionDescriptor;
+                xrSessionDescriptor.m_inputData.m_graphicsBinding.m_queueFamilyIndex =
+                    m_commandQueueContext.GetCommandQueue(RHI::HardwareQueueClass::Graphics).GetQueueDescriptor().m_familyIndex;
+                xrSessionDescriptor.m_inputData.m_graphicsBinding.m_queueIndex =
+                    m_commandQueueContext.GetCommandQueue(RHI::HardwareQueueClass::Graphics).GetQueueDescriptor().m_queueIndex;
+                result = xrSystem->CreateSession(&xrSessionDescriptor);
+                AZ_Assert(result == RHI::ResultCode::Success, "Xr Session creation was not successful");
+
+                result = xrSystem->CreateSwapChain();
+                AZ_Assert(result == RHI::ResultCode::Success, "Xr Session creation was not successful");
             }
 
             SetName(GetName());
@@ -536,23 +567,58 @@ namespace AZ
             m_imageMemoryRequirementsCache.Clear();
             m_bufferMemoryRequirementsCache.Clear();
 
-            if ( m_nativeDevice != VK_NULL_HANDLE )
+            // Only destroy VkDevice if created locally and not passed in by a XR module
+            if (!m_isXrNativeDevice)
             {
-                vkDestroyDevice( m_nativeDevice, nullptr );
-                m_nativeDevice = VK_NULL_HANDLE;
+                if (m_nativeDevice != VK_NULL_HANDLE)
+                {
+                    vkDestroyDevice(m_nativeDevice, nullptr);
+                    m_nativeDevice = VK_NULL_HANDLE;
+                }
             }
         }
 
-        void Device::BeginFrameInternal() 
+        RHI::ResultCode Device::BeginFrameInternal() 
         {
             // We call to collect on the release queue on the begin frame because some objects (like resource pools)
             // cannot be shutdown during the frame scheduler execution. At this point the frame has not yet started.
             m_releaseQueue.Collect();
             m_commandQueueContext.Begin();
+
+            RHI::XRRenderingInterface* xrSystem = RHI::RHISystemInterface::Get()->GetXRSystem();
+            if (xrSystem)
+            {
+                // Begin Frame can make XR related calls which we need to make sure happens
+                // from the thread related to the presentation queue or drivers will complain
+                auto& presentationQueue = m_commandQueueContext.GetPresentationCommandQueue();
+                auto presentCommand = [xrSystem](void*)
+                {
+                    xrSystem->BeginFrame();
+                };
+
+                presentationQueue.QueueCommand(AZStd::move(presentCommand));
+                presentationQueue.FlushCommands();
+            }
+            return RHI::ResultCode::Success;
         }
         
         void Device::EndFrameInternal() 
         {
+            RHI::XRRenderingInterface* xrSystem = RHI::RHISystemInterface::Get()->GetXRSystem();
+            if (xrSystem)
+            {
+                // End Frame can make XR related calls which we need to make sure happens
+                // from the thread related to the presentation queue or drivers will complain
+                auto& presentationQueue = m_commandQueueContext.GetPresentationCommandQueue();
+                auto presentCommand = [xrSystem](void*)
+                {
+                    xrSystem->EndFrame();
+                };
+
+                presentationQueue.QueueCommand(AZStd::move(presentCommand));
+                presentationQueue.FlushCommands();
+            }
+
             m_commandQueueContext.End();
             m_commandListAllocator.Collect();
             m_semaphoreAllocator.Collect();

@@ -12,6 +12,7 @@
 #include <AzCore/Name/Name.h>
 #include <AzCore/RTTI/TypeSafeIntegral.h>
 #include <AzCore/std/string/fixed_string.h>
+#include <AzCore/Serialization/SerializeContext.h>
 #include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
 #include <AzNetworking/Utilities/IpAddress.h>
 #include <AzNetworking/Serialization/ISerializer.h>
@@ -24,13 +25,26 @@ namespace Multiplayer
     static constexpr uint32_t RewindHistorySize = 128;
 
     //! The default blend factor for ScopedAlterTime
-    static constexpr float DefaultBlendFactor = 1.f;
+    static constexpr float DefaultBlendFactor = 1.0f;
+
+    //! The maximum number of entity updates we can stuff into a single update packet
+    static constexpr uint32_t MaxAggregateEntityMessages = 2048;
+
+    //! The maximum number of RPC's we can aggregate into a single packet
+    static constexpr uint32_t MaxAggregateRpcMessages = 1024;
+
+    //! The maximum number of netEntityIds we can stuff into a single reset packet
+    static constexpr uint32_t MaxAggregateEntityResets = 2048;
 
     using HostId = AzNetworking::IpAddress;
     static const HostId InvalidHostId = HostId();
 
     AZ_TYPE_SAFE_INTEGRAL(NetEntityId, uint64_t);
     static constexpr NetEntityId InvalidNetEntityId = static_cast<NetEntityId>(-1);
+
+    using NetEntityIdSet = AZStd::set<NetEntityId>;
+
+    using NetEntityIdsForReset = AZStd::fixed_vector<NetEntityId, MaxAggregateEntityResets>;
 
     AZ_TYPE_SAFE_INTEGRAL(NetComponentId, uint16_t);
     static constexpr NetComponentId InvalidNetComponentId = static_cast<NetComponentId>(-1);
@@ -88,10 +102,17 @@ namespace Multiplayer
         Activate
     };
 
+    enum class EntityMigration
+    {
+        Disabled,
+        Enabled
+    };
+
     //! Structure for identifying a specific entity within a spawnable.
     struct PrefabEntityId
     {
         AZ_TYPE_INFO(PrefabEntityId, "{EFD37465-CCAC-4E87-A825-41B4010A2C75}");
+        static void Reflect(AZ::ReflectContext* context);
 
         static constexpr uint32_t AllIndices = AZStd::numeric_limits<uint32_t>::max();
 
@@ -154,6 +175,18 @@ namespace Multiplayer
         serializer.Serialize(m_prefabName, "prefabName");
         serializer.Serialize(m_entityOffset, "entityOffset");
         return serializer.IsValid();
+    }
+
+    inline void PrefabEntityId::Reflect(AZ::ReflectContext* context)
+    {
+        if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serializeContext->Class<PrefabEntityId>()
+                ->Version(1)
+                ->Field("Prefab Name", &PrefabEntityId::m_prefabName)
+                ->Field("Entity Offset", &PrefabEntityId::m_entityOffset)
+                ;
+        }
     }
 
     inline bool EntityMigrationMessage::operator!=(const EntityMigrationMessage& rhs) const

@@ -32,12 +32,12 @@ namespace PhysXDebug
 
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("PhysXDebugEditorService", 0xf8611967));
+            provided.push_back(AZ_CRC_CE("PhysXDebugEditorService"));
         }
 
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
         {
-            required.push_back(AZ_CRC("PhysXService", 0x75beae2d));
+            required.push_back(AZ_CRC_CE("PhysicsService"));
         }
 
     protected:

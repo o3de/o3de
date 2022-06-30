@@ -1,55 +1,49 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScriptCanvas Include="Source/Nodes/Nodeables/SharedDataSlotExample.h" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-  <Class Name="InputMethodSharedDataSlotExample"
-         QualifiedName="ScriptCanvasTesting::Nodeables::InputMethodSharedDataSlotExample"
-         PreferredClassName="InputMethodSharedDataSlotExample"
-         Base="ScriptCanvas::Nodeable"
-         Icon="Icons/ScriptCanvas/Placeholder.png"
-         Category="Tests"
-         GeneratePropertyFriend="True"
-         Namespace="None"
-         Description="Input Method Shared Data">
-    <Input Name="Append Hello" Description="" DisplayGroup="InputMethodGroup">
-      <Parameter Name="str" Type="const ScriptCanvas::Data::StringType&amp;"/>
-      <Return Name="Output" Type="ScriptCanvas::Data::StringType" Shared="true" DisplayGroup="InputMethodGroup"/>
-    </Input>
-    <Input Name="Concatenate Two" Description="" DisplayGroup="Concatenate Two">
-      <Parameter Name="a" Type="const ScriptCanvas::Data::StringType&amp;"/>
-      <Parameter Name="b" Type="const ScriptCanvas::Data::StringType&amp;"/>
-      <Return Name="Output" Type="ScriptCanvas::Data::StringType" Shared="true" DisplayGroup="InputMethodGroup"/>
-    </Input>
-    <Input Name="Concatenate Three" Description="" DisplayGroup="Concatenate Three">
-      <Parameter Name="a" Type="const ScriptCanvas::Data::StringType&amp;"/>
-      <Parameter Name="b" Type="const ScriptCanvas::Data::StringType&amp;"/>
-      <Parameter Name="c" Type="const ScriptCanvas::Data::StringType&amp;"/>
-      <Return Name="Output" Type="ScriptCanvas::Data::StringType" Shared="true" DisplayGroup="InputMethodGroup"/>
-    </Input>
-  </Class>
-  <Class Name="BranchMethodSharedDataSlotExample"
-         QualifiedName="ScriptCanvasTesting::Nodeables::BranchMethodSharedDataSlotExample"
-         PreferredClassName="BranchMethodSharedDataSlotExample"
-         Base="ScriptCanvas::Nodeable"
-         Icon="Icons/ScriptCanvas/Placeholder.png"
-         Category="Tests"
-         GeneratePropertyFriend="True"
-         Description="Branch Test">
-    <Branch Name="String Magicbox" Description="">
-      <Parameter Name="input" Type="ScriptCanvas::Data::NumberType" DefaultValue="0.0"/>
-    </Branch>
-    <Output Name="One String" DisplayGroup="String Magicbox">
-      <Parameter Name="string" Type="ScriptCanvas::Data::StringType"/>
-    </Output>
-    <Output Name="Two Strings" Type="ScriptCanvas::Data::StringType" DisplayGroup="String Magicbox">
-      <Parameter Name="string1" Type="ScriptCanvas::Data::StringType"/>
-      <Parameter Name="string2" Type="ScriptCanvas::Data::StringType"/>
-    </Output>
-    <Output Name="Three Strings" Type="Data::StringType" DisplayGroup="String Magicbox">
-      <Parameter Name="string1" Type="ScriptCanvas::Data::StringType"/>
-      <Parameter Name="string2" Type="ScriptCanvas::Data::StringType"/>
-      <Parameter Name="string3" Type="ScriptCanvas::Data::StringType"/>
-    </Output>
-    <Output Name="Square" Type="ScriptCanvas::Data::StringType"/>
-    <Output Name="Pants" Type="ScriptCanvas::Data::StringType"/>
-    <Output Name="Hello" Type="ScriptCanvas::Data::StringType" DisplayGroup="BranchExecutionGroup"/>
-  </Class>
+    <Class Name="InputMethodSharedDataSlotExample"
+        QualifiedName="ScriptCanvasTesting::Nodeables::InputMethodSharedDataSlotExample"
+        PreferredClassName="InputMethodSharedDataSlotExample"
+        Category="Tests"
+        Description="Input Method Shared Data">     
+        <Input Name="Append Hello" Description="" DisplayGroup="InputMethodGroup">
+            <Parameter Name="str" Type="const ScriptCanvas::Data::StringType&amp;"/>
+            <Return Name="Output" Type="ScriptCanvas::Data::StringType" Shared="true" DisplayGroup="InputMethodGroup"/>
+        </Input>
+        <Input Name="Concatenate Two" Description="" DisplayGroup="Concatenate Two">
+            <Parameter Name="a" Type="const ScriptCanvas::Data::StringType&amp;"/>
+            <Parameter Name="b" Type="const ScriptCanvas::Data::StringType&amp;"/>
+            <Return Name="Output" Type="ScriptCanvas::Data::StringType" Shared="true" DisplayGroup="InputMethodGroup"/>
+        </Input>
+        <Input Name="Concatenate Three" Description="" DisplayGroup="Concatenate Three">
+            <Parameter Name="a" Type="const ScriptCanvas::Data::StringType&amp;"/>
+            <Parameter Name="b" Type="const ScriptCanvas::Data::StringType&amp;"/>
+            <Parameter Name="c" Type="const ScriptCanvas::Data::StringType&amp;"/>
+            <Return Name="Output" Type="ScriptCanvas::Data::StringType" Shared="true" DisplayGroup="InputMethodGroup"/>
+        </Input>
+    </Class>
+    
+    <Class Name="BranchMethodSharedDataSlotExample"
+        QualifiedName="ScriptCanvasTesting::Nodeables::BranchMethodSharedDataSlotExample"
+        PreferredClassName="BranchMethodSharedDataSlotExample"
+        Category="Tests"
+        Description="Branch Test">
+        <Branch Name="String Magicbox" Description="">
+            <Parameter Name="input" Type="ScriptCanvas::Data::NumberType" DefaultValue="0.0"/>
+        </Branch>
+        <Output Name="One String" DisplayGroup="String Magicbox">
+            <Parameter Name="string" Type="ScriptCanvas::Data::StringType"/>
+        </Output>
+        <Output Name="Two Strings" Type="ScriptCanvas::Data::StringType" DisplayGroup="String Magicbox">
+            <Parameter Name="string1" Type="ScriptCanvas::Data::StringType"/>
+            <Parameter Name="string2" Type="ScriptCanvas::Data::StringType"/>
+        </Output>
+        <Output Name="Three Strings" Type="Data::StringType" DisplayGroup="String Magicbox">
+            <Parameter Name="string1" Type="ScriptCanvas::Data::StringType"/>
+            <Parameter Name="string2" Type="ScriptCanvas::Data::StringType"/>
+            <Parameter Name="string3" Type="ScriptCanvas::Data::StringType"/>
+        </Output>
+        <Output Name="Square" Type="ScriptCanvas::Data::StringType"/>
+        <Output Name="Pants" Type="ScriptCanvas::Data::StringType"/>
+        <Output Name="Hello" Type="ScriptCanvas::Data::StringType" DisplayGroup="BranchExecutionGroup"/>
+    </Class>
 </ScriptCanvas>

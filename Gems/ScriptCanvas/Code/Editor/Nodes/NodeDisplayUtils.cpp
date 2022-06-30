@@ -114,6 +114,12 @@ namespace ScriptCanvasEditor::Nodes
         int paramIndex = 0;
         int outputIndex = 0;
 
+        int exeInputIndex = 0;
+        int exeOutputIndex = 0;
+
+        int dataInputIndex = 0;
+        int dataOutputIndex = 0;
+
         // Create the GraphCanvas slots
         for (const auto& slot : node->GetSlots())
         {
@@ -127,19 +133,26 @@ namespace ScriptCanvasEditor::Nodes
                 AZStd::string slotKeyStr;
                 if (slot.IsData())
                 {
-                    slotKeyStr.append("Data");
-                }
-
-                if (slot.GetConnectionType() == ScriptCanvas::ConnectionType::Input)
-                {
-                    slotKeyStr.append("Input_");
+                    if (slot.GetConnectionType() == ScriptCanvas::ConnectionType::Input)
+                    {
+                        slotKeyStr.append(AZStd::string::format("DataInput_%s_%d", slot.GetName().c_str(), dataInputIndex++));
+                    }
+                    else
+                    {
+                        slotKeyStr.append(AZStd::string::format("DataOutput_%s_%d", slot.GetName().c_str(), dataOutputIndex++));
+                    }
                 }
                 else
                 {
-                    slotKeyStr.append("Output_");
+                    if (slot.GetConnectionType() == ScriptCanvas::ConnectionType::Input)
+                    {
+                        slotKeyStr.append(AZStd::string::format("Input_%s_%d", slot.GetName().c_str(), exeInputIndex++));
+                    }
+                    else
+                    {
+                        slotKeyStr.append(AZStd::string::format("Output_%s_%d", slot.GetName().c_str(), exeOutputIndex++));
+                    }
                 }
-
-                slotKeyStr.append(slot.GetName());
 
                 slotKey << slotKeyStr << "details";
 

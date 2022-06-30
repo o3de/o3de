@@ -22,7 +22,6 @@ namespace AzToolsFramework { class PropertyHandlerBase; }
 
 namespace ScriptEventsEditor
 {
-
     // This is the ScriptEvent asset handler used by the Asset Editor, it does additional validation that is not
     // needed when saving the asset through the builder
     class ScriptEventAssetHandler 

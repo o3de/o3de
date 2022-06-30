@@ -111,10 +111,10 @@ namespace ScriptCanvasEditor
 
     AZ_INLINE LoadTestGraphResult LoadTestGraph(AZStd::string_view graphPath)
     {
-        if (auto loadFileOutcome = LoadFromFile(graphPath); loadFileOutcome.IsSuccess())
+        if (auto fileLoadResult = LoadFromFile(graphPath))
         {
-            auto& source = loadFileOutcome.GetValue().handle;
-            auto testableSource = SourceHandle(source, AZ::Uuid::CreateRandom(), source.Path().c_str());
+            auto& source = fileLoadResult.m_handle;
+            auto testableSource = SourceHandle::FromRelativePath(source, AZ::Uuid::CreateRandom(), source.Path().c_str());
 
             AZ::Outcome<AZ::Data::Asset<ScriptCanvas::RuntimeAsset>, AZStd::string> assetOutcome(AZ::Failure(AZStd::string("asset create failed")));
             ScriptCanvasEditor::EditorAssetConversionBus::BroadcastResult(assetOutcome
@@ -122,11 +122,11 @@ namespace ScriptCanvasEditor
 
             if (assetOutcome.IsSuccess())
             {
-                LoadTestGraphResult result;
-                result.m_editorAsset = AZStd::move(testableSource);
-                result.m_runtimeAsset = assetOutcome.GetValue();
-                result.m_entity = AZStd::make_unique<AZ::Entity>("Loaded Graph");
-                return result;
+                LoadTestGraphResult loadTestGraphResult;
+                loadTestGraphResult.m_editorAsset = AZStd::move(testableSource);
+                loadTestGraphResult.m_runtimeAsset = assetOutcome.GetValue();
+                loadTestGraphResult.m_entity = AZStd::make_unique<AZ::Entity>("Loaded Graph");
+                return loadTestGraphResult;
             }
         }
 
@@ -162,7 +162,7 @@ namespace ScriptCanvasEditor
         reporter.SetExecutionMode(mode);
 
         LoadTestGraphResult loadResult;
-        loadResult.m_editorAsset = SourceHandle(nullptr, assetId.m_guid, asset.Path());
+        loadResult.m_editorAsset = SourceHandle::FromRelativePath(nullptr, assetId.m_guid, asset.Path());
         AZ::EntityId scriptCanvasId;
         loadResult.m_entity = AZStd::make_unique<AZ::Entity>("Loaded test graph");
         loadResult.m_runtimeAsset = runtimeAsset;

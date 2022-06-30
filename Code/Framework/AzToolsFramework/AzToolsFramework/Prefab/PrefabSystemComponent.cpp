@@ -19,6 +19,7 @@
 #include <AzToolsFramework/Prefab/Spawnable/PrefabCatchmentProcessor.h>
 #include <AzToolsFramework/Prefab/Spawnable/PrefabConversionPipeline.h>
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
+#include <AzToolsFramework/Prefab/PrefabPublicNotificationHandler.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 
 namespace AzToolsFramework
@@ -60,6 +61,7 @@ namespace AzToolsFramework
             AzToolsFramework::Prefab::PrefabConversionUtils::PrefabCatchmentProcessor::Reflect(context);
             AzToolsFramework::Prefab::PrefabConversionUtils::EditorInfoRemover::Reflect(context);
             PrefabPublicRequestHandler::Reflect(context);
+            PrefabPublicNotificationHandler::Reflect(context);
             PrefabFocusHandler::Reflect(context);
             PrefabLoader::Reflect(context);
             PrefabSystemScriptingHandler::Reflect(context);
@@ -71,13 +73,12 @@ namespace AzToolsFramework
 
             if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
             {
-
                 behaviorContext->EBus<PrefabLoaderScriptingBus>("PrefabLoaderScriptingBus")
                     ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                     ->Attribute(AZ::Script::Attributes::Module, "prefab")
                     ->Attribute(AZ::Script::Attributes::Category, "Prefab")
-                    ->Event("SaveTemplateToString", &PrefabLoaderScriptingBus::Events::SaveTemplateToString);
-                ;
+                    ->Event("SaveTemplateToString", &PrefabLoaderScriptingBus::Events::SaveTemplateToString)
+                    ;
             }
 
             AZ::JsonRegistrationContext* jsonRegistration = azrtti_cast<AZ::JsonRegistrationContext*>(context);
@@ -320,10 +321,12 @@ namespace AzToolsFramework
 
             auto newInstance = AZStd::make_unique<Instance>(parent);
             EntityList newEntities;
-            if (!PrefabDomUtils::LoadInstanceFromPrefabDom(*newInstance, newEntities, instantiatingTemplate->get().GetPrefabDom()))
+            if (!PrefabDomUtils::LoadInstanceFromPrefabDom(
+                    *newInstance, newEntities, instantiatingTemplate->get().GetPrefabDom(),
+                    PrefabDomUtils::LoadFlags::UseSelectiveDeserialization))
             {
-                AZ_Error("Prefab", false,
-                    "Failed to Load Prefab Template associated with path %s. Instantiation Failed",
+                AZ_Error(
+                    "Prefab", false, "Failed to Load Prefab Template associated with path %s. Instantiation Failed",
                     instantiatingTemplate->get().GetFilePath().c_str());
                 return nullptr;
             }
@@ -732,6 +735,7 @@ namespace AzToolsFramework
                 instancesValue->get().AddMember(
                     rapidjson::Value(instanceAlias.c_str(), targetTemplateDom.GetAllocator()), PrefabDomValue(),
                     targetTemplateDom.GetAllocator());
+                SetTemplateDirtyFlag(linkTargetId, true);
             }
 
             Template& sourceTemplate = sourceTemplateRef->get();

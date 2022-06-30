@@ -184,6 +184,9 @@ namespace AzFramework
         EntitySpawnTicket& operator=(const EntitySpawnTicket& rhs);
         EntitySpawnTicket& operator=(EntitySpawnTicket&& rhs);
 
+        bool operator==(const EntitySpawnTicket& rhs) const;
+        bool operator!=(const EntitySpawnTicket& rhs) const;
+
         static void Reflect(AZ::ReflectContext* context);
 
         //! Returns an id that uniquely identifies this ticket or 0 if no spawnable has been assigned.

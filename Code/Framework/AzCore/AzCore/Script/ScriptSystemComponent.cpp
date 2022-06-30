@@ -355,6 +355,11 @@ ScriptLoadResult ScriptSystemComponent::LoadAndGetNativeContext(const Data::Asse
     ScriptContext* context = container->m_context;
     lua_State* lua = context->NativeContext();
 
+    if (asset.GetData() == nullptr)
+    {
+        return { ScriptLoadResult::Status::Failed, lua };
+    }
+
     {
         // Lock access to the loaded scripts map
         AZStd::lock_guard<AZStd::recursive_mutex> lock(container->m_loadedScriptsMutex);

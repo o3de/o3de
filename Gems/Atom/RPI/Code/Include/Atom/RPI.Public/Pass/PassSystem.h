@@ -109,18 +109,6 @@ namespace AZ
             // Returns the root of the pass tree hierarchy
             const Ptr<ParentPass>& GetRootPass() override;
 
-            // Calls Build() on passes queued in m_buildPassList
-            void BuildPasses();
-
-            // Calls Initialize() on passes queued in m_initializePassList
-            void InitializePasses();
-
-            // Validates Pass Hierarchy after building
-            void Validate();
-
-            // Removes queued passes in m_deletePassList from the hierarchy
-            void RemovePasses();
-
             // Functions for queuing passes in the lists below
             void QueueForBuild(Pass* pass) override;
             void QueueForRemoval(Pass* pass) override;
@@ -143,9 +131,6 @@ namespace AZ
 
             // The root of the pass tree hierarchy
             Ptr<ParentPass> m_rootPass = nullptr;
-
-            // Whether the Pass System is currently hot reloading passes 
-            bool m_isHotReloading = false;
 
             // Name of the pass targeted for debugging
             AZ::Name m_targetedPassDebugName;

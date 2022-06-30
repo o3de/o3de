@@ -80,19 +80,47 @@
                     "$type": "EditorColliderComponent",
                     "Id": 14094829544062915163,
                     "ColliderConfiguration": {
-                        "MaterialSelection": {
-                            "MaterialIds": [
+                        "MaterialSlots": {
+                            "Slots": [
                                 {
-                                    "MaterialId": "{DBC444ED-4809-4EB3-A0B7-3E5608816C57}"
+                                    "Name": "Material 1",
+                                    "MaterialAsset": {
+                                        "assetId": {
+                                            "guid": "{19D8D9AA-7E34-5A74-946A-D82CD0E714C1}",
+                                            "subId": 1
+                                        },
+                                        "assetHint": "levels/physics/material_perfacematerialgetscorrectmaterial/partialbounce.physicsmaterial"
+                                    }
                                 },
                                 {
-                                    "MaterialId": "{1342C732-E45A-48FA-92DD-BDCE5E29B498}"
+                                    "Name": "Material 2",
+                                    "MaterialAsset": {
+                                        "assetId": {
+                                            "guid": "{579E2294-E545-5DD3-AA05-3DCF28049FF4}",
+                                            "subId": 1
+                                        },
+                                        "assetHint": "levels/physics/material_perfacematerialgetscorrectmaterial/bounce.physicsmaterial"
+                                    }
                                 },
                                 {
-                                    "MaterialId": "{F529C9BA-5534-4E17-8232-076F4C2A85F1}"
+                                    "Name": "Material 3",
+                                    "MaterialAsset": {
+                                        "assetId": {
+                                            "guid": "{C2DC9FDF-8415-5A77-9382-A9C26E425DBC}",
+                                            "subId": 1
+                                        },
+                                        "assetHint": "levels/physics/material_perfacematerialgetscorrectmaterial/nobounce.physicsmaterial"
+                                    }
                                 },
                                 {
-                                    "MaterialId": "{F529C9BA-5534-4E17-8232-076F4C2A85F1}"
+                                    "Name": "Material 4",
+                                    "MaterialAsset": {
+                                        "assetId": {
+                                            "guid": "{C2DC9FDF-8415-5A77-9382-A9C26E425DBC}",
+                                            "subId": 1
+                                        },
+                                        "assetHint": "levels/physics/material_perfacematerialgetscorrectmaterial/nobounce.physicsmaterial"
+                                    }
                                 }
                             ]
                         }
@@ -261,10 +289,17 @@
                     "$type": "EditorColliderComponent",
                     "Id": 8555372987471605395,
                     "ColliderConfiguration": {
-                        "MaterialSelection": {
-                            "MaterialIds": [
+                        "MaterialSlots": {
+                            "Slots": [
                                 {
-                                    "MaterialId": "{1342C732-E45A-48FA-92DD-BDCE5E29B498}"
+                                    "Name": "Entire object",
+                                    "MaterialAsset": {
+                                        "assetId": {
+                                            "guid": "{579E2294-E545-5DD3-AA05-3DCF28049FF4}",
+                                            "subId": 1
+                                        },
+                                        "assetHint": "levels/physics/material_perfacematerialgetscorrectmaterial/bounce.physicsmaterial"
+                                    }
                                 }
                             ]
                         }
@@ -284,10 +319,17 @@
                     "$type": "EditorColliderComponent",
                     "Id": 10149587071258241793,
                     "ColliderConfiguration": {
-                        "MaterialSelection": {
-                            "MaterialIds": [
+                        "MaterialSlots": {
+                            "Slots": [
                                 {
-                                    "MaterialId": "{1342C732-E45A-48FA-92DD-BDCE5E29B498}"
+                                    "Name": "Entire object",
+                                    "MaterialAsset": {
+                                        "assetId": {
+                                            "guid": "{579E2294-E545-5DD3-AA05-3DCF28049FF4}",
+                                            "subId": 1
+                                        },
+                                        "assetHint": "levels/physics/material_perfacematerialgetscorrectmaterial/bounce.physicsmaterial"
+                                    }
                                 }
                             ]
                         }
@@ -398,10 +440,17 @@
                     "$type": "EditorColliderComponent",
                     "Id": 10149587071258241793,
                     "ColliderConfiguration": {
-                        "MaterialSelection": {
-                            "MaterialIds": [
+                        "MaterialSlots": {
+                            "Slots": [
                                 {
-                                    "MaterialId": "{1342C732-E45A-48FA-92DD-BDCE5E29B498}"
+                                    "Name": "Entire object",
+                                    "MaterialAsset": {
+                                        "assetId": {
+                                            "guid": "{579E2294-E545-5DD3-AA05-3DCF28049FF4}",
+                                            "subId": 1
+                                        },
+                                        "assetHint": "levels/physics/material_perfacematerialgetscorrectmaterial/bounce.physicsmaterial"
+                                    }
                                 }
                             ]
                         }

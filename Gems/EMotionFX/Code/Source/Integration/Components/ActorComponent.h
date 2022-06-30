@@ -159,11 +159,6 @@ namespace EMotionFX
                 incompatible.push_back(AZ_CRC_CE("NonUniformScaleService"));
             }
 
-            static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
-            {
-                dependent.push_back(AZ_CRC("PhysicsService", 0xa7350d22));
-            }
-
             static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
             {
                 required.push_back(AZ_CRC("TransformService", 0x8ee22c50));
@@ -193,9 +188,8 @@ namespace EMotionFX
             void CheckAttachToEntity();
 
             Configuration                                   m_configuration;            ///< Component configuration.
-                                                                                        /// Live state
-            ActorAsset::ActorInstancePtr                    m_attachmentTargetActor;    ///< Target actor instance to attach to.
             AZ::EntityId                                    m_attachmentTargetEntityId; ///< Target actor entity ID
+            AZ::EntityId                                    m_attachmentPreviousParent; ///< The parent entity id before attaching to the attachment target.
             ActorAsset::ActorInstancePtr                    m_actorInstance;            ///< Live actor instance.
             AZStd::vector<AZ::EntityId>                     m_attachments;
 

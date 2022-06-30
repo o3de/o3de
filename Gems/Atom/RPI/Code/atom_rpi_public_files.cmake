@@ -14,6 +14,7 @@ set(FILES
     Include/Atom/RPI.Public/FeatureProcessor.h
     Include/Atom/RPI.Public/FeatureProcessorFactory.h
     Include/Atom/RPI.Public/MeshDrawPacket.h
+    Include/Atom/RPI.Public/PipelinePassChanges.h
     Include/Atom/RPI.Public/PipelineState.h
     Include/Atom/RPI.Public/RenderPipeline.h
     Include/Atom/RPI.Public/RPISystem.h
@@ -101,10 +102,12 @@ set(FILES
     Include/Atom/RPI.Public/GpuQuery/Query.h
     Include/Atom/RPI.Public/GpuQuery/QueryPool.h
     Include/Atom/RPI.Public/GpuQuery/TimestampQueryPool.h
+    Include/Atom/RPI.Public/XR/XRRenderingInterface.h
     Source/RPI.Public/Culling.cpp
     Source/RPI.Public/FeatureProcessor.cpp
     Source/RPI.Public/FeatureProcessorFactory.cpp
     Source/RPI.Public/MeshDrawPacket.cpp
+    Source/RPI.Public/PipelinePassChanges.cpp
     Source/RPI.Public/PipelineState.cpp
     Source/RPI.Public/RenderPipeline.cpp
     Source/RPI.Public/RPISystem.cpp
