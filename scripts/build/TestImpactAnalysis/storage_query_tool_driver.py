@@ -8,6 +8,7 @@
 
 import argparse
 import pathlib
+from string import Template
 from tiaf_logger import get_logger
 from s3_storage_query_tool import S3StorageQueryTool
 from local_storage_query_tool import LocalStorageQueryTool
@@ -23,9 +24,7 @@ def parse_args():
 
     parser = argparse.ArgumentParser()
 
-    storage_type_group = parser.add_mutually_exclusive_group(required=True) 
-
-    storage_type_group.add_argument(
+    parser.add_argument(
         '--local',
         action="store_true",
         help="Flag to SQT to search locally",
@@ -39,7 +38,7 @@ def parse_args():
         required=False
     )
 
-    storage_type_group.add_argument(
+    parser.add_argument(
         '--s3',
         action="store_true",
         help="Flag to SQT to search using a bucket",
@@ -80,6 +79,13 @@ def parse_args():
         required=False
     )
 
+    parser.add_argument(
+        "--delete",
+        action="store_true",
+        help="Flag to delete file if found",
+        required=False
+    )
+
     args = parser.parse_args()
 
     return args
@@ -88,14 +94,16 @@ def parse_args():
 
 if __name__ == "__main__":
     try:
-        args = parse_args()
+        args = vars(parse_args())
         logger.info(args)
 
-        if args.local:
-            sqt = LocalStorageQueryTool(kwargs=args)
+        if args.get('local'):
+            sqt = LocalStorageQueryTool(**args)
         
-        if args.s3:
-            sqt = S3StorageQueryTool(kwargs=args)
+        if args.get('s3'):
+            sqt = S3StorageQueryTool(**args)
 
     except Exception as e:
+        logger.error(type(e).__name__)
+        logger.error(e.args)
         logger.error(f"Exception caught by TIAF driver: '{e}'.")
