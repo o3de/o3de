@@ -171,8 +171,17 @@ namespace EMotionFX
                     Node* selectedNode = GetNode();
                     if (GetActor() && actorInstance && selectedNode)
                     {
-                        const Transform& nodeWorldTransform = actorInstance->GetTransformData()->GetCurrentPose()->GetModelSpaceTransform(selectedNode->GetNodeIndex());
-                        physicsSetupManipulatorData.m_nodeWorldTransform = AZ::Transform::CreateFromQuaternionAndTranslation(nodeWorldTransform.m_rotation, nodeWorldTransform.m_position);
+                        const Transform& nodeWorldTransform =
+                            actorInstance->GetTransformData()->GetCurrentPose()->GetModelSpaceTransform(selectedNode->GetNodeIndex());
+                        physicsSetupManipulatorData.m_nodeWorldTransform =
+                            AZ::Transform::CreateFromQuaternionAndTranslation(nodeWorldTransform.m_rotation, nodeWorldTransform.m_position);
+                        if (selectedNode->GetParentNode())
+                        {
+                            const Transform& parentWorldTransform =
+                                actorInstance->GetTransformData()->GetCurrentPose()->GetModelSpaceTransform(selectedNode->GetParentIndex());
+                            physicsSetupManipulatorData.m_parentWorldTransform = AZ::Transform::CreateFromQuaternionAndTranslation(
+                                parentWorldTransform.m_rotation, parentWorldTransform.m_position);
+                        }
                         physicsSetupManipulatorData.m_colliderNodeConfiguration = colliderNodeConfig;
                         physicsSetupManipulatorData.m_jointConfiguration = ragdollNodeConfig->m_jointConfig.get();
                         physicsSetupManipulatorData.m_actor = GetActor();

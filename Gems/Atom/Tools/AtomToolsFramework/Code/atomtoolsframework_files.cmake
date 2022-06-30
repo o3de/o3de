@@ -130,6 +130,9 @@ set(FILES
     Source/PreviewRenderer/PreviewRendererSystemComponent.cpp
     Source/PreviewRenderer/PreviewRendererSystemComponent.h
 
+    Include/AtomToolsFramework/SettingsDialog/SettingsDialog.h
+    Source/SettingsDialog/SettingsDialog.cpp
+
     Include/AtomToolsFramework/Util/MaterialPropertyUtil.h
     Include/AtomToolsFramework/Util/Util.h
     Source/Util/MaterialPropertyUtil.cpp

@@ -7,10 +7,14 @@
  */
 
 #include <AtomToolsFramework/Document/AtomToolsDocumentSystemRequestBus.h>
+#include <AzCore/Math/Color.h>
+#include <AzCore/Math/Vector2.h>
+#include <AzCore/Math/Vector3.h>
+#include <AzCore/Math/Vector4.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <Document/MaterialCanvasDocument.h>
-#include <Document/MaterialCanvasGraphDataTypes.h>
+#include <GraphModel/Model/DataType.h>
 #include <MaterialCanvasApplication.h>
 #include <Window/MaterialCanvasGraphView.h>
 #include <Window/MaterialCanvasMainWindow.h>
@@ -77,14 +81,15 @@ namespace MaterialCanvas
 
         // Register all data types required by material canvas nodes with the dynamic node manager
         m_dynamicNodeManager->RegisterDataTypes({
-            AZStd::make_shared<GraphModel::DataType>(MaterialCanvasDataTypeEnum::Int32, int32_t{}, "int32"),
-            AZStd::make_shared<GraphModel::DataType>(MaterialCanvasDataTypeEnum::Uint32, uint32_t{}, "uint32"),
-            AZStd::make_shared<GraphModel::DataType>(MaterialCanvasDataTypeEnum::Float32, float{}, "float"),
-            AZStd::make_shared<GraphModel::DataType>(MaterialCanvasDataTypeEnum::Vector2, AZ::Vector2::CreateZero(), "Vector2"),
-            AZStd::make_shared<GraphModel::DataType>(MaterialCanvasDataTypeEnum::Vector3, AZ::Vector3::CreateZero(), "Vector3"),
-            AZStd::make_shared<GraphModel::DataType>(MaterialCanvasDataTypeEnum::Vector4, AZ::Vector4::CreateZero(), "Vector4"),
-            AZStd::make_shared<GraphModel::DataType>(MaterialCanvasDataTypeEnum::Color, AZ::Color::CreateOne(), "Color"),
-            AZStd::make_shared<GraphModel::DataType>(MaterialCanvasDataTypeEnum::String, AZStd::string{}, "String"),
+            AZStd::make_shared<GraphModel::DataType>(AZ_CRC_CE("bool"), bool{}, "bool"),
+            AZStd::make_shared<GraphModel::DataType>(AZ_CRC_CE("int"), int32_t{}, "int"),
+            AZStd::make_shared<GraphModel::DataType>(AZ_CRC_CE("uint"), uint32_t{}, "uint"),
+            AZStd::make_shared<GraphModel::DataType>(AZ_CRC_CE("float"), float{}, "float"),
+            AZStd::make_shared<GraphModel::DataType>(AZ_CRC_CE("float2"), AZ::Vector2::CreateZero(), "float2"),
+            AZStd::make_shared<GraphModel::DataType>(AZ_CRC_CE("float3"), AZ::Vector3::CreateZero(), "float3"),
+            AZStd::make_shared<GraphModel::DataType>(AZ_CRC_CE("float4"), AZ::Vector4::CreateZero(), "float4"),
+            AZStd::make_shared<GraphModel::DataType>(AZ_CRC_CE("color"), AZ::Color::CreateOne(), "color"),
+            AZStd::make_shared<GraphModel::DataType>(AZ_CRC_CE("string"), AZStd::string{}, "string"),
         });
 
         // Search the project and gems for dynamic node configurations and register them with the manager
