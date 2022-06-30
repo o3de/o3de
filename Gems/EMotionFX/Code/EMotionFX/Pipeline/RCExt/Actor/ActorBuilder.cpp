@@ -336,20 +336,7 @@ namespace EMotionFX
 
             // The search begin from the rootBoneNodeIndex.
             auto graphDownwardsRootBoneView = SceneViews::MakeSceneGraphDownwardsView<SceneViews::BreadthFirst>(graph, rootBoneNodeIndex, nameContentView.begin(), true);
-            auto it = graphDownwardsRootBoneView.begin();
-            if (!it->second)
-            {
-                // We always skip the first node because it's introduced by scenegraph
-                ++it;
-                if (!it->second && it != graphDownwardsRootBoneView.end())
-                {
-                    // In maya / max, we skip 1 root node when it have no content (emotionfx always does this)
-                    // However, fbx doesn't restrain itself from having multiple root nodes. We might want to revisit here if it ever become a problem.
-                    ++it;
-                }
-            }
-
-            for (; it != graphDownwardsRootBoneView.end(); ++it)
+            for (auto it = graphDownwardsRootBoneView.begin(); it != graphDownwardsRootBoneView.end(); ++it)
             {
                 const SceneContainers::SceneGraph::NodeIndex& nodeIndex = graph.ConvertToNodeIndex(it.GetHierarchyIterator());
 
@@ -357,7 +344,11 @@ namespace EMotionFX
                 // Note: For example, the end point could be a transform node. We will process that later on its parent node.
                 if (graph.IsNodeEndPoint(nodeIndex))
                 {
-                    continue;
+                    // Skip the end point node except if it's a root node.
+                    if (graph.GetRoot() != nodeIndex)
+                    {
+                        continue;
+                    }
                 }
 
                 auto mesh = azrtti_cast<const SceneDataTypes::IMeshData*>(it->second);

@@ -1278,12 +1278,14 @@ namespace Terrain
             const AZ::Vector2 lodSpacing = AZ::Vector2(m_sampleSpacing * (1 << lodLevel) * 2.0f);
             const AZ::Vector2 lodBoundsMin2d = boundsMin2d - lodSpacing;
             const AZ::Vector2 lodBoundsMax2d = boundsMax2d + lodSpacing;
+            const float gridMeters = (m_gridSize * m_sampleSpacing) * (1 << lodLevel);
 
             auto& lodGrid = m_sectorLods.at(lodLevel);
             for (Sector& sector : lodGrid.m_sectors)
             {
-                const AZ::Vector2 sectorAabbMin2D = AZ::Vector2(sector.m_aabb.GetMin());
-                const AZ::Vector2 sectorAabbMax2D = AZ::Vector2(sector.m_aabb.GetMax());
+                const AZ::Vector2 sectorAabbMin2D = sector.m_worldCoord.ToVector2() * gridMeters;
+                const AZ::Vector2 sectorAabbMax2D = sectorAabbMin2D + AZ::Vector2(gridMeters);
+
                 const bool overlaps = sectorAabbMin2D.IsLessEqualThan(lodBoundsMax2d) && sectorAabbMax2D.IsGreaterEqualThan(lodBoundsMin2d);
                 if (overlaps)
                 {
