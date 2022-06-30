@@ -471,7 +471,7 @@ namespace AzToolsFramework
 
 } // namespace AzToolsFramework
 
-extern "C" AZ_DLL_EXPORT void InitializeDynamicModule(void* env);
+extern "C" AZ_DLL_EXPORT void InitializeDynamicModule();
 extern "C" AZ_DLL_EXPORT void UninitializeDynamicModule();
 
 #endif // CRYINCLUDE_EDITOR_CRYEDIT_H
