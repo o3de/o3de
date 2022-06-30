@@ -20,16 +20,9 @@ namespace EMotionFX
         : m_rotationManipulators(AZ::Transform::Identity())
     {
         m_rotationManipulators.SetCircleBoundWidth(AzToolsFramework::ManipulatorCicleBoundWidth());
-        m_adjustColliderCallback = AZStd::make_unique<PhysicsSetupManipulatorCommandCallback>(this, false);
-        EMStudio::GetCommandManager()->RegisterCommandCallback("AdjustCollider", m_adjustColliderCallback.get());
     }
 
-    ColliderRotationManipulators::~ColliderRotationManipulators()
-    {
-        EMStudio::GetCommandManager()->RemoveCommandCallback(m_adjustColliderCallback.get(), false);
-    }
-
-    void ColliderRotationManipulators::Setup(PhysicsSetupManipulatorData& physicsSetupManipulatorData)
+    void ColliderRotationManipulators::Setup(const PhysicsSetupManipulatorData& physicsSetupManipulatorData)
     {
         m_physicsSetupManipulatorData = physicsSetupManipulatorData;
 
@@ -70,6 +63,8 @@ namespace EMotionFX
 
         AZ::TickBus::Handler::BusConnect();
         PhysicsSetupManipulatorRequestBus::Handler::BusConnect();
+        m_adjustColliderCallback = AZStd::make_unique<PhysicsSetupManipulatorCommandCallback>(this, false);
+        EMStudio::GetCommandManager()->RegisterCommandCallback("AdjustCollider", m_adjustColliderCallback.get());
     }
 
     void ColliderRotationManipulators::Refresh()
@@ -85,6 +80,13 @@ namespace EMotionFX
 
     void ColliderRotationManipulators::Teardown()
     {
+        if (!m_physicsSetupManipulatorData.HasColliders())
+        {
+            return;
+        }
+
+        EMStudio::GetCommandManager()->RemoveCommandCallback(m_adjustColliderCallback.get(), false);
+        m_adjustColliderCallback.reset();
         PhysicsSetupManipulatorRequestBus::Handler::BusDisconnect();
         AZ::TickBus::Handler::BusDisconnect();
         m_rotationManipulators.Unregister();

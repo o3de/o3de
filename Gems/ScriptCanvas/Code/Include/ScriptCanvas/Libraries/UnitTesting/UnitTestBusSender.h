@@ -8,8 +8,6 @@
 
 #pragma once
 
-#include "UnitTesting.h"
-
 #include "UnitTestBus.h"
 
 namespace AZ

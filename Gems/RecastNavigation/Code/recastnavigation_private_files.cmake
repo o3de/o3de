@@ -18,14 +18,17 @@ set(FILES
     Source/Components/RecastNavigationPhysXProviderComponent.h
     Source/Components/RecastNavigationPhysXProviderComponent.cpp
 
-    Source/Misc/RecastHelpers.h
+    Source/Misc/RecastNavigationConstants.h
     Source/Misc/RecastNavigationDebugDraw.h
     Source/Misc/RecastNavigationDebugDraw.cpp
-    Source/Misc/RecastNavigationMeshCommon.h
-    Source/Misc/RecastNavigationMeshCommon.cpp
     Source/Misc/RecastNavigationMeshConfig.h
     Source/Misc/RecastNavigationMeshConfig.cpp
-    Source/Misc/RecastNavigationPhysXProviderCommon.h
-    Source/Misc/RecastNavigationPhysXProviderCommon.cpp
-    Source/Misc/RecastSmartPointer.h
+    Source/Misc/RecastNavigationMeshComponentController.h
+    Source/Misc/RecastNavigationMeshComponentController.cpp
+    Source/Misc/RecastNavigationPhysXProviderConfig.h
+    Source/Misc/RecastNavigationPhysXProviderConfig.cpp
+    Source/Misc/RecastNavigationPhysXProviderComponentController.h
+    Source/Misc/RecastNavigationPhysXProviderComponentController.cpp
+    Source/Misc/RecastProcessing.h
+    Source/Misc/RecastProcessing.cpp
 )

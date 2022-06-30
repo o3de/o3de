@@ -9,11 +9,8 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
 
     set(SMOKETEST_FILTER "SUITE_smoke and not SerializeContext")
 
-    include(${LY_ROOT_FOLDER}/Code/Tools/SerializeContextTools/Platform/${PAL_PLATFORM_NAME}/PAL_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
-    if (PAL_TRAIT_BUILD_SERIALIZECONTEXTTOOLS)
-        list(APPEND additional_dependencies AZ::SerializeContextTools) # test_CLITool_SerializeContextTools depends on it
-        set(SMOKETEST_FILTER "SUITE_smoke")
-    endif()
+    list(APPEND additional_dependencies AZ::SerializeContextTools) # test_CLITool_SerializeContextTools depends on it
+    set(SMOKETEST_FILTER "SUITE_smoke")
 
     ly_add_pytest(
         NAME AutomatedTesting::SmokeTest

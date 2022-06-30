@@ -41,9 +41,9 @@ namespace PhysX
     void HeightfieldColliderComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
         provided.push_back(AZ_CRC_CE("PhysicsWorldBodyService"));
-        provided.push_back(AZ_CRC_CE("PhysXColliderService"));
-        provided.push_back(AZ_CRC_CE("PhysXHeightfieldColliderService"));
-        provided.push_back(AZ_CRC_CE("PhysXStaticRigidBodyService"));
+        provided.push_back(AZ_CRC_CE("PhysicsColliderService"));
+        provided.push_back(AZ_CRC_CE("PhysicsHeightfieldColliderService"));
+        provided.push_back(AZ_CRC_CE("PhysicsStaticRigidBodyService"));
     }
 
     void HeightfieldColliderComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
@@ -53,9 +53,9 @@ namespace PhysX
 
     void HeightfieldColliderComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC_CE("PhysXColliderService"));
-        incompatible.push_back(AZ_CRC_CE("PhysXStaticRigidBodyService"));
-        incompatible.push_back(AZ_CRC_CE("PhysXRigidBodyService"));
+        incompatible.push_back(AZ_CRC_CE("PhysicsColliderService"));
+        incompatible.push_back(AZ_CRC_CE("PhysicsStaticRigidBodyService"));
+        incompatible.push_back(AZ_CRC_CE("PhysicsRigidBodyService"));
     }
 
     HeightfieldColliderComponent::~HeightfieldColliderComponent()
@@ -82,6 +82,14 @@ namespace PhysX
         ColliderComponentRequestBus::Handler::BusDisconnect();
 
         m_heightfieldCollider.reset();
+    }
+
+    void HeightfieldColliderComponent::BlockOnPendingJobs()
+    {
+        if (m_heightfieldCollider)
+        {
+            m_heightfieldCollider->BlockOnPendingJobs();
+        }
     }
 
     void HeightfieldColliderComponent::SetColliderConfiguration(const Physics::ColliderConfiguration& colliderConfig)

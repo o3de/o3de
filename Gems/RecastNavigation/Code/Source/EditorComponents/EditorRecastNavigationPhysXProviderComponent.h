@@ -10,33 +10,29 @@
 
 #include <AzCore/Component/Component.h>
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
-#include <Misc/RecastNavigationPhysXProviderCommon.h>
-#include <RecastNavigation/RecastNavigationProviderBus.h>
+#include <Components/RecastNavigationPhysXProviderComponent.h>
+#include <Misc/RecastNavigationPhysXProviderComponentController.h>
+#include <ToolsComponents/EditorComponentAdapter.h>
 
 namespace RecastNavigation
 {
     //! Editor version of @RecastNavigationPhysXProviderComponent
     class EditorRecastNavigationPhysXProviderComponent final
-        : public AzToolsFramework::Components::EditorComponentBase
+        : public AzToolsFramework::Components::EditorComponentAdapter<RecastNavigationPhysXProviderComponentController,
+                                                                      RecastNavigationPhysXProviderComponent, RecastNavigationPhysXProviderConfig>
     {
     public:
-        AZ_EDITOR_COMPONENT(EditorRecastNavigationPhysXProviderComponent,
-            "{F1E57D0B-11A1-46C2-876D-720DD40CB14D}", AzToolsFramework::Components::EditorComponentBase);
+        using BaseClass = AzToolsFramework::Components::EditorComponentAdapter<RecastNavigationPhysXProviderComponentController, RecastNavigationPhysXProviderComponent, RecastNavigationPhysXProviderConfig>;
+        AZ_EDITOR_COMPONENT(EditorRecastNavigationPhysXProviderComponent, EditorRecastNavigationPhysXProviderComponentTypeId, BaseClass);
         static void Reflect(AZ::ReflectContext* context);
 
-        static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
-        static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
-        static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
+        EditorRecastNavigationPhysXProviderComponent() = default;
+        explicit EditorRecastNavigationPhysXProviderComponent(const RecastNavigationPhysXProviderConfig& config);
 
-        //! EditorComponentBase overrides ...
-        //! @{
         void Activate() override;
         void Deactivate() override;
         void BuildGameEntity(AZ::Entity* gameEntity) override;
-        //! @}
 
-    private:
-        //! If enabled, debug draw is enabled to show the triangles collected in the PhysX scene for the navigation mesh.
-        bool m_debugDrawInputData = false;
+        AZ::u32 OnConfigurationChanged() override;
     };
 } // namespace RecastNavigation

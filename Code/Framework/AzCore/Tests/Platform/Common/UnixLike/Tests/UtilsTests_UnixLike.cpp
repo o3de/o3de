@@ -16,11 +16,6 @@ namespace UnitTest
     {
     };
 
-    TEST_F(UtilsUnixLikeTestFixture, ConvertToAbsolutePath_OnInvalidPath_Fails)
-    {
-        EXPECT_FALSE(AZ::Utils::ConvertToAbsolutePath("><\\#/@):"));
-    }
-
     TEST_F(UtilsUnixLikeTestFixture, ConvertToAbsolutePath_OnRelativePath_Succeeds)
     {
         AZStd::optional<AZ::IO::FixedMaxPathString> absolutePath = AZ::Utils::ConvertToAbsolutePath("./");
@@ -35,5 +30,12 @@ namespace UnitTest
         AZStd::optional<AZ::IO::FixedMaxPathString> absolutePath = AZ::Utils::ConvertToAbsolutePath(executableDirectory);
         ASSERT_TRUE(absolutePath);
         EXPECT_STRCASEEQ(executableDirectory, absolutePath->c_str());
+    }
+
+    TEST_F(UtilsUnixLikeTestFixture, ConvertToAbsolutePath_OnNonExistentPath_Succeeds)
+    {
+        AZStd::optional<AZ::IO::FixedMaxPathString> absolutePath = AZ::Utils::ConvertToAbsolutePath(
+            "_PathWhichShouldNotExistButIsOkIfItDoesExist");
+        ASSERT_TRUE(absolutePath);
     }
 }

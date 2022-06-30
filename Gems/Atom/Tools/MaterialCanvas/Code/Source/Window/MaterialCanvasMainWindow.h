@@ -28,8 +28,7 @@
 namespace MaterialCanvas
 {
     //! MaterialCanvasMainWindow
-    class MaterialCanvasMainWindow
-        : public AtomToolsFramework::AtomToolsDocumentMainWindow
+    class MaterialCanvasMainWindow : public AtomToolsFramework::AtomToolsDocumentMainWindow
     {
         Q_OBJECT
     public:
@@ -37,8 +36,7 @@ namespace MaterialCanvas
 
         using Base = AtomToolsFramework::AtomToolsDocumentMainWindow;
 
-        MaterialCanvasMainWindow(
-            const AZ::Crc32& toolId, const AtomToolsFramework::GraphViewConfig& graphViewConfig, QWidget* parent = 0);
+        MaterialCanvasMainWindow(const AZ::Crc32& toolId, const AtomToolsFramework::GraphViewConfig& graphViewConfig, QWidget* parent = 0);
         ~MaterialCanvasMainWindow();
 
     protected:
@@ -53,11 +51,10 @@ namespace MaterialCanvas
         void OnDocumentError(const AZ::Uuid& documentId) override;
 
         // AtomToolsFramework::AtomToolsDocumentMainWindow overrides...
-        void OpenSettings() override;
-        void OpenHelp() override;
+        AZStd::string GetHelpDialogText() const override;
 
     private:
-        AtomToolsFramework::AtomToolsDocumentInspector* m_materialInspector = {};
+        AtomToolsFramework::AtomToolsDocumentInspector* m_documentInspector = {};
         AtomToolsFramework::EntityPreviewViewportSettingsInspector* m_viewportSettingsInspector = {};
         AtomToolsFramework::EntityPreviewViewportToolBar* m_toolBar = {};
         AtomToolsFramework::EntityPreviewViewportWidget* m_materialViewport = {};

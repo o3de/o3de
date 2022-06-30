@@ -2,22 +2,18 @@
 
 <ScriptCanvas Include="Include/ScriptCanvas/Libraries/Time/TimerNodeable.h" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <Class Name="TimerNodeable"
-           QualifiedName="Nodeables::Time::TimerNodeable"
-           PreferredClassName="Timer"
-           Base="ScriptCanvas::Nodeable"
-           Icon="Icons/ScriptCanvas/Placeholder.png"
-           Category="Timing"
-           GeneratePropertyFriend="True"
-           Namespace="ScriptCanvas"
-           Description="While active, will signal the output at the given interval.">
+        QualifiedName="Nodeables::Time::TimerNodeable"
+        PreferredClassName="Timer"
+        Category="Timing"
+        Namespace="ScriptCanvas"
+        Description="While active, will signal the output at the given interval.">
 
-      <Input Name="Start" Description="Starts the timer"/>
-      <Input Name="Stop" Description="Stops the timer"/>
+        <Input Name="Start" Description="Starts the timer"/>
+        <Input Name="Stop" Description="Stops the timer"/>
 
-      <Output Name="On Tick" Description="Signaled at each tick while the timer is in operation.">
-        <Parameter Name="Milliseconds" Type="Data::NumberType" Description="The amount of time that has elapsed since the timer started in milliseconds."/>
-        <Parameter Name="Seconds" Type="Data::NumberType" Description="The amount of time that has elapsed since the timer started in seconds."/>
-      </Output>
-
+        <Output Name="On Tick" Description="Signaled at each tick while the timer is in operation.">
+            <Parameter Name="Milliseconds" Type="Data::NumberType" Description="The amount of time that has elapsed since the timer started in milliseconds."/>
+            <Parameter Name="Seconds" Type="Data::NumberType" Description="The amount of time that has elapsed since the timer started in seconds."/>
+        </Output>
     </Class>
 </ScriptCanvas>

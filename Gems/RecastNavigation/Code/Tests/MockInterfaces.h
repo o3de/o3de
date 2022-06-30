@@ -1,3 +1,4 @@
+
 /*
  * Copyright (c) Contributors to the Open 3D Engine Project.
  * For complete copyright and license terms please see the LICENSE at the root of this distribution.
@@ -7,6 +8,7 @@
  */
 
 #include <AzCore/Component/Entity.h>
+#include <AzCore/Component/TickBus.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Time/ITime.h>
 #include <AzCore/UnitTest/TestTypes.h>
@@ -70,29 +72,59 @@ namespace RecastNavigationTests
 
     struct Wait : public RecastNavigation::RecastNavigationMeshNotificationBus::Handler
     {
-        Wait(AZ::EntityId id)
+        explicit Wait(AZ::EntityId id)
         {
             RecastNavigation::RecastNavigationMeshNotificationBus::Handler::BusConnect(id);
         }
 
-        void OnNavigationMeshUpdated(AZ::EntityId) override
+        ~Wait() override
         {
-            m_calls++;
+            RecastNavigation::RecastNavigationMeshNotificationBus::Handler::BusDisconnect();
         }
 
-        int m_calls = 0;
+        void OnNavigationMeshUpdated(AZ::EntityId) override
+        {
+            m_updatedCalls++;
+        }
+
+        int m_updatedCalls = 0;
+
+        void OnNavigationMeshBeganRecalculating(AZ::EntityId) override
+        {
+            m_recalculatingCalls++;
+        }
+
+        int m_recalculatingCalls = 0;
 
         void Reset()
         {
-            m_calls = 0;
+            m_updatedCalls = 0;
+            m_recalculatingCalls = 0;
         }
 
-        void BlockUntilCalled(AZ::TimeMs timeout = AZ::TimeMs{ 100 }) const
+        void BlockUntilNavigationMeshRecalculating(AZ::TimeMs timeout = AZ::TimeMs{ 2000 }) const
         {
             const AZ::TimeMs timeStep{ 5 };
             AZ::TimeMs current{ 0 };
-            while (current < timeout && m_calls == 0)
+            while (current < timeout && m_recalculatingCalls == 0)
             {
+                // Nav mesh notifications occurs on main threads via ticks.
+                AZ::TickBus::Broadcast(&AZ::TickBus::Events::OnTick, 0.1f, AZ::ScriptTimePoint{});
+
+                AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(static_cast<int>(timeStep)));
+                current += timeStep;
+            }
+        }
+
+        void BlockUntilCalled(AZ::TimeMs timeout = AZ::TimeMs{ 2000 }) const
+        {
+            const AZ::TimeMs timeStep{ 5 };
+            AZ::TimeMs current{ 0 };
+            while (current < timeout && m_updatedCalls == 0)
+            {
+                // Nav mesh notifications occurs on main threads via ticks.
+                AZ::TickBus::Broadcast(&AZ::TickBus::Events::OnTick, 0.1f, AZ::ScriptTimePoint{});
+
                 AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(static_cast<int>(timeStep)));
                 current += timeStep;
             }

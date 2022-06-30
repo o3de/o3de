@@ -105,7 +105,7 @@ namespace ScriptCanvasEditor
 
                 rootElement.RemoveElement(variableDataElementIndex);
 
-                overrides.m_source = SourceHandle(nullptr, assetHolder.m_scriptCanvasAsset.GetId().m_guid, {});
+                overrides.m_source = SourceHandle(nullptr, assetHolder.m_scriptCanvasAsset.GetId().m_guid);
 
                 for (auto& variable : editableData.GetVariables())
                 {
@@ -129,7 +129,7 @@ namespace ScriptCanvasEditor
             }
 
             // all object stream reads must convert add all new data for JSON reads...
-            const SourceHandle fromAssetHolder = SourceHandle(nullptr, sourceId, path);
+            const SourceHandle fromAssetHolder = SourceHandle::FromRelativePath(nullptr, sourceId, path);
             const SourceHandle fromOverrides = overrides.m_source;
 
             Configuration configuration;

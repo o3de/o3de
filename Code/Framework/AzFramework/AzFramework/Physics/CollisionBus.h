@@ -10,6 +10,7 @@
 
 #include <AzCore/Component/ComponentBus.h>
 #include <AzFramework/Physics/Configuration/CollisionConfiguration.h>
+#include <AzFramework/Physics/Shape.h>
 
 namespace Physics
 {
@@ -56,6 +57,10 @@ namespace Physics
 
         /// Creates a new collision group preset with corresponding groupName.
         virtual void CreateCollisionGroup(const AZStd::string& groupName, const AzPhysics::CollisionGroup& group) = 0;
+
+        /// Returns whether two objects should collide, based on their collider configurations.
+        virtual bool ShouldCollide(
+            const Physics::ColliderConfiguration& colliderConfigurationA, const Physics::ColliderConfiguration& colliderConfigurationB) = 0;
     };
 
     /// Collision requests bus traits. Singleton pattern.

@@ -25,9 +25,11 @@ namespace AZ
         {
             m_windowHandle = windowHandle;
 
-            CreateSwapChain(device);
+            CreateSwapChains(device);
 
-            FillWindowState(m_swapChain->GetDescriptor().m_dimensions.m_imageWidth, m_swapChain->GetDescriptor().m_dimensions.m_imageHeight);
+            RHI::Ptr<RHI::SwapChain> defaultSwapChain = m_swapChains[static_cast<uint32_t>(SwapChainMode::Default)];
+            FillWindowState(defaultSwapChain->GetDescriptor().m_dimensions.m_imageWidth,
+                            defaultSwapChain->GetDescriptor().m_dimensions.m_imageHeight);
 
             AzFramework::WindowNotificationBus::Handler::BusConnect(m_windowHandle);
             AzFramework::ExclusiveFullScreenRequestBus::Handler::BusConnect(m_windowHandle);
@@ -59,40 +61,46 @@ namespace AZ
             DestroySwapChain();
         }
 
-        const RHI::AttachmentId& WindowContext::GetSwapChainAttachmentId() const
-        {
-            return m_swapChain->GetAttachmentId();
+        const RHI::AttachmentId& WindowContext::GetSwapChainAttachmentId(SwapChainMode swapChainMode) const
+        {   
+            return GetSwapChain(swapChainMode)->GetAttachmentId();
         }
 
-        const RHI::Ptr<RHI::SwapChain>& WindowContext::GetSwapChain() const
+        const RHI::Ptr<RHI::SwapChain>& WindowContext::GetSwapChain(SwapChainMode swapChainMode) const
         {
-            return m_swapChain;
+            return m_swapChains[static_cast<uint32_t>(swapChainMode)];
         }
 
-        const RHI::Viewport& WindowContext::GetViewport() const
+        uint32_t WindowContext::GetSwapChainsSize() const
         {
-            return m_viewportDefault;
+            return aznumeric_cast<uint32_t>(m_swapChains.size());
         }
 
-        const RHI::Scissor& WindowContext::GetScissor() const
+        const RHI::Viewport& WindowContext::GetViewport(SwapChainMode swapChainMode) const
         {
-            return m_scissorDefault;
+            return m_defaultViewports[static_cast<uint32_t>(swapChainMode)];     
+        }
+
+        const RHI::Scissor& WindowContext::GetScissor(SwapChainMode swapChainMode) const
+        {
+            return m_defaultScissors[static_cast<uint32_t>(swapChainMode)];  
         }
 
         void WindowContext::OnWindowResized(uint32_t width, uint32_t height)
         {
-            const AZ::RHI::SwapChainDimensions& currentDimensions = m_swapChain->GetDescriptor().m_dimensions;
+            RHI::Ptr<RHI::SwapChain> defaultSwapChain = m_swapChains[static_cast<uint32_t>(SwapChainMode::Default)];
+            const AZ::RHI::SwapChainDimensions& currentDimensions = defaultSwapChain->GetDescriptor().m_dimensions;
             if (width != currentDimensions.m_imageWidth || height != currentDimensions.m_imageHeight)
             {
                 // Get current dimension and only overwrite the sizes.
-                RHI::SwapChainDimensions dimensions = m_swapChain->GetDescriptor().m_dimensions;
+                RHI::SwapChainDimensions dimensions = defaultSwapChain->GetDescriptor().m_dimensions;
                 dimensions.m_imageWidth = AZStd::max(width, 1u);
                 dimensions.m_imageHeight = AZStd::max(height, 1u);
-                dimensions.m_imageFormat = GetSwapChainFormat(m_swapChain->GetDevice());
+                dimensions.m_imageFormat = GetSwapChainFormat(defaultSwapChain->GetDevice());
 
                 FillWindowState(dimensions.m_imageWidth, dimensions.m_imageHeight);
 
-                m_swapChain->Resize(dimensions);
+                defaultSwapChain->Resize(dimensions);
 
                 WindowContextNotificationBus::Event(m_windowHandle, &WindowContextNotifications::OnViewportResized, width, height);
             }
@@ -109,30 +117,34 @@ namespace AZ
 
         void WindowContext::OnVsyncIntervalChanged(uint32_t interval)
         {
-            if (m_swapChain->GetDescriptor().m_verticalSyncInterval != interval)
+            RHI::Ptr<RHI::SwapChain> defaultSwapChain = m_swapChains[static_cast<uint32_t>(SwapChainMode::Default)];
+            if (defaultSwapChain->GetDescriptor().m_verticalSyncInterval != interval)
             {
-                m_swapChain->SetVerticalSyncInterval(interval);
+                defaultSwapChain->SetVerticalSyncInterval(interval);
             }
         }
 
         bool WindowContext::IsExclusiveFullScreenPreferred() const
         {
-            return m_swapChain->IsExclusiveFullScreenPreferred();
+            RHI::Ptr<RHI::SwapChain> defaultSwapChain = m_swapChains[static_cast<uint32_t>(SwapChainMode::Default)];
+            return defaultSwapChain->IsExclusiveFullScreenPreferred();
         }
 
         bool WindowContext::GetExclusiveFullScreenState() const
         {
-            return m_swapChain->GetExclusiveFullScreenState();
+            RHI::Ptr<RHI::SwapChain> defaultSwapChain = m_swapChains[static_cast<uint32_t>(SwapChainMode::Default)];
+            return defaultSwapChain->GetExclusiveFullScreenState();
         }
 
         bool WindowContext::SetExclusiveFullScreenState(bool fullScreenState)
         {
-            return m_swapChain->SetExclusiveFullScreenState(fullScreenState);
+            RHI::Ptr<RHI::SwapChain> defaultSwapChain = m_swapChains[static_cast<uint32_t>(SwapChainMode::Default)];
+            return defaultSwapChain->SetExclusiveFullScreenState(fullScreenState);
         }
 
-        void WindowContext::CreateSwapChain(RHI::Device& device)
+        void WindowContext::CreateSwapChains(RHI::Device& device)
         {
-            m_swapChain = RHI::Factory::Get().CreateSwapChain();
+            RHI::Ptr<RHI::SwapChain> swapChain = RHI::Factory::Get().CreateSwapChain();
 
             AzFramework::WindowSize windowSize;
             AzFramework::WindowRequestBus::EventResult(
@@ -154,31 +166,68 @@ namespace AZ
             descriptor.m_verticalSyncInterval = syncInterval;
             descriptor.m_dimensions.m_imageWidth = width;
             descriptor.m_dimensions.m_imageHeight = height;
-            descriptor.m_dimensions.m_imageCount = 3;
+            descriptor.m_dimensions.m_imageCount = AZ::RHI::Limits::Device::FrameCountMax;
             descriptor.m_dimensions.m_imageFormat = GetSwapChainFormat(device);
 
             AZStd::string attachmentName = AZStd::string::format("WindowContextAttachment_%p", m_windowHandle);
             descriptor.m_attachmentId = RHI::AttachmentId{ attachmentName.c_str() };
+            swapChain->Init(device, descriptor);
+            m_swapChains.push_back(swapChain);
+            m_defaultViewports.push_back(RHI::Viewport{});
+            m_defaultScissors.push_back(RHI::Scissor{});
 
-            m_swapChain->Init(device, descriptor);
+            // Add XR pipelines if it is active
+            XRRenderingInterface* xrSystem = RPISystemInterface::Get()->GetXRSystem();
+            if (xrSystem)
+            {
+                for (AZ::u32 i = 0; i < xrSystem->GetNumViews(); i++)
+                {
+                    RHI::Ptr<RHI::SwapChain> xrSwapChain = RHI::Factory::Get().CreateSwapChain();
+                    RHI::SwapChainDescriptor xrDescriptor;
+                    xrDescriptor.m_dimensions.m_imageWidth = xrSystem->GetSwapChainWidth(i);
+                    xrDescriptor.m_dimensions.m_imageHeight = xrSystem->GetSwapChainHeight(i);
+                    xrDescriptor.m_dimensions.m_imageCount = AZ::RHI::Limits::Device::FrameCountMax;
+                    xrDescriptor.m_isXrSwapChain = true;
+                    xrDescriptor.m_xrSwapChainIndex = i;
+                    xrDescriptor.m_dimensions.m_imageFormat = GetSwapChainFormat(device);
+
+                    attachmentName = AZStd::string::format("XRSwapChain_View_%i", i);
+                    xrDescriptor.m_attachmentId = RHI::AttachmentId{ attachmentName.c_str() };
+
+                    xrSwapChain->Init(device, xrDescriptor);
+                    m_swapChains.push_back(xrSwapChain);
+
+                    RHI::Viewport xrViewport;
+                    xrViewport.m_maxX = static_cast<float>(xrDescriptor.m_dimensions.m_imageWidth);
+                    xrViewport.m_maxY = static_cast<float>(xrDescriptor.m_dimensions.m_imageHeight);
+                    m_defaultViewports.push_back(xrViewport);
+
+                    RHI::Scissor xrScissor;
+                    xrScissor.m_maxX = static_cast<int16_t>(xrDescriptor.m_dimensions.m_imageWidth);
+                    xrScissor.m_maxY = static_cast<int16_t>(xrDescriptor.m_dimensions.m_imageHeight);
+                    m_defaultScissors.push_back(xrScissor);
+                }
+            }
         }
 
         void WindowContext::DestroySwapChain()
         {
-            m_swapChain = nullptr;
+            m_swapChains.clear();
+            m_defaultViewports.clear();
+            m_defaultScissors.clear();
         }
 
         void WindowContext::FillWindowState(const uint32_t width, const uint32_t height)
         {
-            m_viewportDefault.m_minX = 0;
-            m_viewportDefault.m_minY = 0;
-            m_viewportDefault.m_maxX = static_cast<float>(width);
-            m_viewportDefault.m_maxY = static_cast<float>(height);
+            m_defaultViewports[static_cast<uint32_t>(SwapChainMode::Default)].m_minX = 0;
+            m_defaultViewports[static_cast<uint32_t>(SwapChainMode::Default)].m_minY = 0;
+            m_defaultViewports[static_cast<uint32_t>(SwapChainMode::Default)].m_maxX = static_cast<float>(width);
+            m_defaultViewports[static_cast<uint32_t>(SwapChainMode::Default)].m_maxY = static_cast<float>(height);
 
-            m_scissorDefault.m_minX = 0;
-            m_scissorDefault.m_minY = 0;
-            m_scissorDefault.m_maxX = static_cast<int16_t>(width);
-            m_scissorDefault.m_maxY = static_cast<int16_t>(height);
+            m_defaultScissors[static_cast<uint32_t>(SwapChainMode::Default)].m_minX = 0;
+            m_defaultScissors[static_cast<uint32_t>(SwapChainMode::Default)].m_minY = 0;
+            m_defaultScissors[static_cast<uint32_t>(SwapChainMode::Default)].m_maxX = static_cast<int16_t>(width);
+            m_defaultScissors[static_cast<uint32_t>(SwapChainMode::Default)].m_maxY = static_cast<int16_t>(height);
         }
 
         RHI::Format WindowContext::GetSwapChainFormat(RHI::Device& device) const

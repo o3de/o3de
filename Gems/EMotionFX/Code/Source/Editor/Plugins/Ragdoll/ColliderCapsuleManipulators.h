@@ -25,11 +25,8 @@ namespace EMotionFX
         , private AzToolsFramework::CapsuleViewportEdit
     {
     public:
-        ColliderCapsuleManipulators();
-        ~ColliderCapsuleManipulators();
-
         // PhysicsSetupManipulatorsBase overrides ...
-        void Setup(PhysicsSetupManipulatorData& physicsSetupManipulatorData) override;
+        void Setup(const PhysicsSetupManipulatorData& physicsSetupManipulatorData) override;
         void Refresh() override;
         void Teardown() override;
         void ResetValues() override;

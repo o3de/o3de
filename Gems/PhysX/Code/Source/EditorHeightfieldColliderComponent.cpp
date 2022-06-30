@@ -15,7 +15,6 @@
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
 #include <AzFramework/Physics/Configuration/StaticRigidBodyConfiguration.h>
-#include <AzFramework/Physics/MaterialBus.h>
 #include <AzFramework/Physics/Shape.h>
 #include <AzFramework/Physics/SimulatedBodies/StaticRigidBody.h>
 #include <AzFramework/Viewport/CameraState.h>
@@ -74,8 +73,8 @@ namespace PhysX
     void EditorHeightfieldColliderComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
         provided.push_back(AZ_CRC_CE("PhysicsWorldBodyService"));
-        provided.push_back(AZ_CRC_CE("PhysXColliderService"));
-        provided.push_back(AZ_CRC_CE("PhysXHeightfieldColliderService"));
+        provided.push_back(AZ_CRC_CE("PhysicsColliderService"));
+        provided.push_back(AZ_CRC_CE("PhysicsHeightfieldColliderService"));
     }
 
     void EditorHeightfieldColliderComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
@@ -85,25 +84,15 @@ namespace PhysX
 
     void EditorHeightfieldColliderComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC_CE("PhysXColliderService"));
-        incompatible.push_back(AZ_CRC_CE("PhysXStaticRigidBodyService"));
-        incompatible.push_back(AZ_CRC_CE("PhysXRigidBodyService"));
+        incompatible.push_back(AZ_CRC_CE("PhysicsColliderService"));
+        incompatible.push_back(AZ_CRC_CE("PhysicsStaticRigidBodyService"));
+        incompatible.push_back(AZ_CRC_CE("PhysicsRigidBodyService"));
     }
 
     EditorHeightfieldColliderComponent::EditorHeightfieldColliderComponent()
         : m_physXConfigChangedHandler(
               []([[maybe_unused]] const AzPhysics::SystemConfiguration* config)
               {
-                  AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
-                      &AzToolsFramework::PropertyEditorGUIMessages::RequestRefresh,
-                      AzToolsFramework::PropertyModificationRefreshLevel::Refresh_AttributesAndValues);
-              })
-        , m_onMaterialLibraryChangedEventHandler(
-              [this](const AZ::Data::AssetId& defaultMaterialLibrary)
-              {
-                  m_colliderConfig->m_materialSelection.OnMaterialLibraryChanged(defaultMaterialLibrary);
-                  Physics::ColliderComponentEventBus::Event(GetEntityId(), &Physics::ColliderComponentEvents::OnColliderChanged);
-
                   AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
                       &AzToolsFramework::PropertyEditorGUIMessages::RequestRefresh,
                       AzToolsFramework::PropertyModificationRefreshLevel::Refresh_AttributesAndValues);
@@ -159,6 +148,14 @@ namespace PhysX
         m_heightfieldCollider.reset();
     }
 
+    void EditorHeightfieldColliderComponent::BlockOnPendingJobs()
+    {
+        if (m_heightfieldCollider)
+        {
+            m_heightfieldCollider->BlockOnPendingJobs();
+        }
+    }
+
     void EditorHeightfieldColliderComponent::BuildGameEntity(AZ::Entity* gameEntity)
     {
         auto* heightfieldColliderComponent = gameEntity->CreateComponent<HeightfieldColliderComponent>();
@@ -180,17 +177,12 @@ namespace PhysX
             {
                 physXSystem->RegisterSystemConfigurationChangedEvent(m_physXConfigChangedHandler);
             }
-            if (!m_onMaterialLibraryChangedEventHandler.IsConnected())
-            {
-                physXSystem->RegisterOnMaterialLibraryChangedEventHandler(m_onMaterialLibraryChangedEventHandler);
-            }
         }
     }
 
     // AzToolsFramework::EntitySelectionEvents
     void EditorHeightfieldColliderComponent::OnDeselected()
     {
-        m_onMaterialLibraryChangedEventHandler.Disconnect();
         m_physXConfigChangedHandler.Disconnect();
     }
 

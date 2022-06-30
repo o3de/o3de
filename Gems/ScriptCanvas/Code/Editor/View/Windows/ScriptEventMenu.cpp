@@ -69,8 +69,9 @@ namespace ScriptEvents
                     auto deserializeResult = Deserialize(loadOutcome.GetValue().GetScriptCanvasSerializationData(), MakeInternalGraphEntitiesUnique::Yes);
                     if (deserializeResult.m_isSuccessful)
                     {
+
                         // success
-                        return { SourceHandle(deserializeResult.m_graphDataPtr, path), "" };
+                        return { SourceHandle::FromRelativePath(deserializeResult.m_graphDataPtr, path.Filename()), "" };
                     }
                     else
                     {
@@ -94,8 +95,16 @@ namespace ScriptEvents
         AZStd::pair<bool, AZStd::vector<AZStd::string>> ParseAsAction(const ScriptCanvas::SourceHandle& sourceHandle)
         {
             using namespace ScriptCanvas::ScriptEventGrammar;
-            GraphToScriptEventsResult result = ParseScriptEventsDefinition(*sourceHandle.Get());
-            return { result.m_isScriptEvents, result.m_parseErrors };
+
+            if (sourceHandle.IsGraphValid())
+            {
+                GraphToScriptEventsResult result = ParseScriptEventsDefinition(*sourceHandle.Get());
+                return { result.m_isScriptEvents, result.m_parseErrors };
+            }
+            else
+            {
+                return { false, { "no valid graph supplied" } };
+            }
         }
 
         AZStd::pair<bool, AZStd::string> SaveAsAction([[maybe_unused]] const ScriptCanvas::SourceHandle& sourceHandle)
@@ -160,6 +169,7 @@ namespace ScriptEvents
             bool isParsed = graph && ScriptEventGrammar::ParseMinimumScriptEventArtifacts(*graph).m_isScriptEvents;
             menuItemsEnabled.m_addHelpers = graph && !isParsed;
             menuItemsEnabled.m_clear = graph && graph->IsScriptEventExtension();
+            menuItemsEnabled.m_parse = graph != nullptr;
             menuItemsEnabled.m_save = isParsed;
             return menuItemsEnabled;
         }

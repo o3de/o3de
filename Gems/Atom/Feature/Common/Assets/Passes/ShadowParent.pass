@@ -35,7 +35,7 @@
                 },
                 // SwapChain here is only used to reference the frame height and format
                 {
-                    "Name": "SwapChainOutput",
+                    "Name": "PipelineOutput",
                     "SlotType": "InputOutput"
                 },
                 {
@@ -56,28 +56,28 @@
                 {
                     "LocalSlot": "DirectionalShadowmap",
                     "AttachmentRef": {
-                        "Pass": "CascadedShadowmapsPass",
+                        "Pass": "Cascades",
                         "Attachment": "Shadowmap"
                     }
                 },
                 {
                     "LocalSlot": "DirectionalESM",
                     "AttachmentRef": {
-                        "Pass": "EsmShadowmapsPassDirectional",
+                        "Pass": "CascadesESM",
                         "Attachment": "EsmShadowmaps"
                     }
                 },
                 {
                     "LocalSlot": "ProjectedShadowmap",
                     "AttachmentRef": {
-                        "Pass": "ProjectedShadowmapsPass",
+                        "Pass": "Projected",
                         "Attachment": "Shadowmap"
                     }
                 },
                 {
                     "LocalSlot": "ProjectedESM",
                     "AttachmentRef": {
-                        "Pass": "EsmShadowmapsPassProjected",
+                        "Pass": "ProjectedESM",
                         "Attachment": "EsmShadowmaps"
                     }
                 },
@@ -91,7 +91,7 @@
             ],
             "PassRequests": [
                 {
-                    "Name": "CascadedShadowmapsPass",
+                    "Name": "Cascades",
                     "TemplateName": "CascadedShadowmapsTemplate",
                     "PassData": {
                         "$type": "RasterPassData",
@@ -109,7 +109,7 @@
                     ]
                 },
                 {
-                    "Name": "ProjectedShadowmapsPass",
+                    "Name": "Projected",
                     "TemplateName": "ProjectedShadowmapsTemplate",
                     "PassData": {
                         "$type": "RasterPassData",
@@ -127,7 +127,7 @@
                     ]
                 },
                 {
-                    "Name": "EsmShadowmapsPassDirectional",
+                    "Name": "CascadesESM",
                     "TemplateName": "EsmShadowmapsTemplate",
                     "PassData": {
                         "$type": "EsmShadowmapsPassData",
@@ -137,14 +137,14 @@
                         {
                             "LocalSlot": "DepthShadowmaps",
                             "AttachmentRef": {
-                                "Pass": "CascadedShadowmapsPass",
+                                "Pass": "Cascades",
                                 "Attachment": "Shadowmap"
                             }
                         }
                     ]
                 },
                 {
-                    "Name": "EsmShadowmapsPassProjected",
+                    "Name": "ProjectedESM",
                     "TemplateName": "EsmShadowmapsTemplate",
                     "PassData": {
                         "$type": "EsmShadowmapsPassData",
@@ -154,7 +154,7 @@
                         {
                             "LocalSlot": "DepthShadowmaps",
                             "AttachmentRef": {
-                                "Pass": "ProjectedShadowmapsPass",
+                                "Pass": "Projected",
                                 "Attachment": "Shadowmap"
                             }
                         }
@@ -167,14 +167,14 @@
                         {
                             "LocalSlot": "DirectionalShadowmaps",
                             "AttachmentRef": {
-                                "Pass": "CascadedShadowmapsPass",
+                                "Pass": "Cascades",
                                 "Attachment": "Shadowmap"
                             }
                         },
                         {
                             "LocalSlot": "DirectionalShadowmapsESM",
                             "AttachmentRef": {
-                                "Pass": "EsmShadowmapsPassDirectional",
+                                "Pass": "CascadesESM",
                                 "Attachment": "EsmShadowmaps"
                             }
                         }

@@ -162,7 +162,7 @@
                     "SizeSource": {
                         "Source": {
                             "Pass": "Parent",
-                            "Attachment": "SwapChainOutput"
+                            "Attachment": "PipelineOutput"
                         }
                     },
                     "ImageDescriptor": {
@@ -175,7 +175,7 @@
                     "SizeSource": {
                         "Source": {
                             "Pass": "Parent",
-                            "Attachment": "SwapChainOutput"
+                            "Attachment": "PipelineOutput"
                         }
                     },
                     "ImageDescriptor": {
@@ -188,7 +188,7 @@
                     "SizeSource": {
                         "Source": {
                             "Pass": "Parent",
-                            "Attachment": "SwapChainOutput"
+                            "Attachment": "PipelineOutput"
                         }
                     },
                     "ImageDescriptor": {
@@ -201,7 +201,7 @@
                     "SizeSource": {
                         "Source": {
                             "Pass": "Parent",
-                            "Attachment": "SwapChainOutput"
+                            "Attachment": "PipelineOutput"
                         }
                     },
                     "ImageDescriptor": {
@@ -214,7 +214,7 @@
                     "SizeSource": {
                         "Source": {
                             "Pass": "Parent",
-                            "Attachment": "SwapChainOutput"
+                            "Attachment": "PipelineOutput"
                         }
                     },
                     "ImageDescriptor": {

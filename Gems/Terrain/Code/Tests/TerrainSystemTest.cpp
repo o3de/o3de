@@ -318,6 +318,13 @@ namespace UnitTest
                 }
             }
         }
+
+        // Bounds check for bounds that should and shouldn't have a terrain area inside
+        AZ::Aabb boundsCheckCollides = spawnerBox.GetTranslated(AZ::Vector3(5.0f, 5.0f, 5.0f));
+        EXPECT_TRUE(terrainSystem->TerrainAreaExistsInBounds(boundsCheckCollides));
+
+        AZ::Aabb boundsCheckDoesNotCollide = spawnerBox.GetTranslated(AZ::Vector3(15.0f, 15.0f, 15.0f));
+        EXPECT_FALSE(terrainSystem->TerrainAreaExistsInBounds(boundsCheckDoesNotCollide));
     }
 
     TEST_F(TerrainSystemTest, TerrainHeightQueriesWithExactSamplersIgnoreQueryGrid)
@@ -607,7 +614,7 @@ namespace UnitTest
         AzFramework::SurfaceData::SurfaceTagWeight tagWeight =
             terrainSystem->GetMaxSurfaceWeight(aabb.GetMax() + AZ::Vector3::CreateOne());
 
-        EXPECT_EQ(tagWeight.m_surfaceType, AZ::Crc32(AzFramework::SurfaceData::Constants::s_unassignedTagName));
+        EXPECT_EQ(tagWeight.m_surfaceType, AZ::Crc32(AzFramework::SurfaceData::Constants::UnassignedTagName));
 
         // Inside the layer spawner box should give us the highest weighted tag (tag1).
         tagWeight = terrainSystem->GetMaxSurfaceWeight(aabb.GetCenter());

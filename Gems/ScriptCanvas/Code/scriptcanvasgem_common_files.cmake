@@ -100,7 +100,7 @@ set(FILES
     Include/ScriptCanvas/Libraries/Libraries.cpp
     Include/ScriptCanvas/Libraries/Core/AzEventHandler.cpp
     Include/ScriptCanvas/Libraries/Core/BinaryOperator.cpp
-    Include/ScriptCanvas/Libraries/Core/CoreNodes.cpp
+    Include/ScriptCanvas/Libraries/Core/CoreLibrary.cpp
     Include/ScriptCanvas/Libraries/Core/EBusEventHandler.cpp
     Include/ScriptCanvas/Libraries/Core/ExtractProperty.cpp
     Include/ScriptCanvas/Libraries/Core/EventHandlerTranslationUtility.cpp
@@ -113,35 +113,59 @@ set(FILES
     Include/ScriptCanvas/Libraries/Core/MethodOverloaded.cpp
     Include/ScriptCanvas/Libraries/Core/Nodeling.cpp
     Include/ScriptCanvas/Libraries/Core/ReceiveScriptEvent.cpp
-    Include/ScriptCanvas/Libraries/Core/Repeater.cpp
-    Include/ScriptCanvas/Libraries/Core/RepeaterNodeable.cpp
     Include/ScriptCanvas/Libraries/Core/ScriptEventBase.cpp
     Include/ScriptCanvas/Libraries/Core/SendScriptEvent.cpp
     Include/ScriptCanvas/Libraries/Core/SetVariable.cpp
     Include/ScriptCanvas/Libraries/Core/UnaryOperator.cpp
-    Include/ScriptCanvas/Libraries/Deprecated/Contains.cpp
     Include/ScriptCanvas/Libraries/Deprecated/DeprecatedNodeLibrary.cpp
-    Include/ScriptCanvas/Libraries/Deprecated/Replace.cpp
-    Include/ScriptCanvas/Libraries/Deprecated/RotateMethod.cpp
-    Include/ScriptCanvas/Libraries/Deprecated/StringMethods.cpp
-    Include/ScriptCanvas/Libraries/Deprecated/Utilities.cpp
+    Include/ScriptCanvas/Libraries/Deprecated/Entity/RotateMethod.cpp
+    Include/ScriptCanvas/Libraries/Deprecated/Logic/Sequencer.cpp
+    Include/ScriptCanvas/Libraries/Deprecated/Operators/Containers/Operator.cpp
+    Include/ScriptCanvas/Libraries/Deprecated/Operators/Containers/OperatorAt.cpp
+    Include/ScriptCanvas/Libraries/Deprecated/Operators/Containers/OperatorBack.cpp
+    Include/ScriptCanvas/Libraries/Deprecated/Operators/Containers/OperatorClear.cpp
+    Include/ScriptCanvas/Libraries/Deprecated/Operators/Containers/OperatorEmpty.cpp
+    Include/ScriptCanvas/Libraries/Deprecated/Operators/Containers/OperatorErase.cpp
+    Include/ScriptCanvas/Libraries/Deprecated/Operators/Containers/OperatorFront.cpp
+    Include/ScriptCanvas/Libraries/Deprecated/Operators/Containers/OperatorInsert.cpp
+    Include/ScriptCanvas/Libraries/Deprecated/Operators/Containers/OperatorPushBack.cpp
+    Include/ScriptCanvas/Libraries/Deprecated/Operators/Containers/OperatorSize.cpp
+    Include/ScriptCanvas/Libraries/Deprecated/Operators/Math/OperatorDivideByNumber.cpp
+    Include/ScriptCanvas/Libraries/Deprecated/Operators/Math/OperatorLength.cpp
+    Include/ScriptCanvas/Libraries/Deprecated/Operators/Math/OperatorLerp.cpp
+    Include/ScriptCanvas/Libraries/Deprecated/String/Contains.cpp
+    Include/ScriptCanvas/Libraries/Deprecated/String/Replace.cpp
+    Include/ScriptCanvas/Libraries/Deprecated/String/StringMethods.cpp
+    Include/ScriptCanvas/Libraries/Deprecated/String/Utilities.cpp
+    Include/ScriptCanvas/Libraries/Deprecated/Time/Countdown.cpp
+    Include/ScriptCanvas/Libraries/Deprecated/Time/Duration.cpp
+    Include/ScriptCanvas/Libraries/Deprecated/Time/HeartBeat.cpp
+    Include/ScriptCanvas/Libraries/Deprecated/Time/Repeater.cpp
+    Include/ScriptCanvas/Libraries/Deprecated/Time/Timer.cpp
+    Include/ScriptCanvas/Libraries/Deprecated/UnitTesting/ExpectEqual.cpp
+    Include/ScriptCanvas/Libraries/Deprecated/UnitTesting/ExpectFalse.cpp
+    Include/ScriptCanvas/Libraries/Deprecated/UnitTesting/ExpectGreaterThan.cpp
+    Include/ScriptCanvas/Libraries/Deprecated/UnitTesting/ExpectGreaterThanEqual.cpp
+    Include/ScriptCanvas/Libraries/Deprecated/UnitTesting/ExpectLessThan.cpp
+    Include/ScriptCanvas/Libraries/Deprecated/UnitTesting/ExpectLessThanEqual.cpp
+    Include/ScriptCanvas/Libraries/Deprecated/UnitTesting/ExpectNotEqual.cpp
+    Include/ScriptCanvas/Libraries/Deprecated/UnitTesting/ExpectTrue.cpp
+    Include/ScriptCanvas/Libraries/Deprecated/UnitTesting/UnitTesting.cpp
     Include/ScriptCanvas/Libraries/Entity/EntityFunctions.cpp
     Include/ScriptCanvas/Libraries/Logic/Any.cpp
     Include/ScriptCanvas/Libraries/Logic/Break.cpp
     Include/ScriptCanvas/Libraries/Logic/Cycle.cpp
     Include/ScriptCanvas/Libraries/Logic/Gate.cpp
     Include/ScriptCanvas/Libraries/Logic/IsNull.cpp
-    Include/ScriptCanvas/Libraries/Logic/Logic.cpp
+    Include/ScriptCanvas/Libraries/Logic/LogicLibrary.cpp
     Include/ScriptCanvas/Libraries/Logic/Once.cpp
     Include/ScriptCanvas/Libraries/Logic/OrderedSequencer.cpp
-    Include/ScriptCanvas/Libraries/Logic/Sequencer.cpp
     Include/ScriptCanvas/Libraries/Logic/TargetedSequencer.cpp
     Include/ScriptCanvas/Libraries/Logic/WeightedRandomSequencer.cpp
     Include/ScriptCanvas/Libraries/Logic/While.cpp
     Include/ScriptCanvas/Libraries/Math/AABB.cpp
     Include/ScriptCanvas/Libraries/Math/Color.cpp
     Include/ScriptCanvas/Libraries/Math/CRC.cpp
-    Include/ScriptCanvas/Libraries/Math/Math.cpp
     Include/ScriptCanvas/Libraries/Math/MathFunctions.cpp
     Include/ScriptCanvas/Libraries/Math/MathExpression.cpp
     Include/ScriptCanvas/Libraries/Math/MathNodeUtilities.cpp
@@ -154,52 +178,25 @@ set(FILES
     Include/ScriptCanvas/Libraries/Math/Vector2.cpp
     Include/ScriptCanvas/Libraries/Math/Vector3.cpp
     Include/ScriptCanvas/Libraries/Math/Vector4.cpp
-    Include/ScriptCanvas/Libraries/Comparison/Comparison.cpp
-    Include/ScriptCanvas/Libraries/Time/Time.cpp
-    Include/ScriptCanvas/Libraries/Time/Countdown.cpp
+    Include/ScriptCanvas/Libraries/Comparison/ComparisonLibrary.cpp
     Include/ScriptCanvas/Libraries/Time/DelayNodeable.cpp
-    Include/ScriptCanvas/Libraries/Time/Duration.cpp
-    Include/ScriptCanvas/Libraries/Time/HeartBeat.cpp
-    Include/ScriptCanvas/Libraries/Time/Timer.cpp
     Include/ScriptCanvas/Libraries/Time/TimeDelayNodeable.cpp
     Include/ScriptCanvas/Libraries/Time/DurationNodeable.cpp
     Include/ScriptCanvas/Libraries/Time/HeartBeatNodeable.cpp
+    Include/ScriptCanvas/Libraries/Time/RepeaterNodeable.cpp
     Include/ScriptCanvas/Libraries/Time/TimerNodeable.cpp
-    Include/ScriptCanvas/Libraries/Spawning/Spawning.cpp
+    Include/ScriptCanvas/Libraries/Spawning/SpawningLibrary.cpp
     Include/ScriptCanvas/Libraries/Spawning/CreateSpawnTicketNodeable.cpp
     Include/ScriptCanvas/Libraries/Spawning/SpawnNodeable.cpp
     Include/ScriptCanvas/Libraries/Spawning/DespawnNodeable.cpp
-    Include/ScriptCanvas/Libraries/String/String.cpp
     Include/ScriptCanvas/Libraries/String/StringFunctions.cpp
-    Include/ScriptCanvas/Libraries/UnitTesting/ExpectEqual.cpp
-    Include/ScriptCanvas/Libraries/UnitTesting/ExpectFalse.cpp
-    Include/ScriptCanvas/Libraries/UnitTesting/ExpectGreaterThan.cpp
-    Include/ScriptCanvas/Libraries/UnitTesting/ExpectGreaterThanEqual.cpp
-    Include/ScriptCanvas/Libraries/UnitTesting/ExpectLessThan.cpp
-    Include/ScriptCanvas/Libraries/UnitTesting/ExpectLessThanEqual.cpp
-    Include/ScriptCanvas/Libraries/UnitTesting/ExpectNotEqual.cpp
-    Include/ScriptCanvas/Libraries/UnitTesting/ExpectTrue.cpp
-    Include/ScriptCanvas/Libraries/UnitTesting/UnitTesting.cpp
     Include/ScriptCanvas/Libraries/UnitTesting/UnitTestingLibrary.cpp
     Include/ScriptCanvas/Libraries/UnitTesting/Auxiliary/Auxiliary.cpp
     Include/ScriptCanvas/Libraries/UnitTesting/UnitTestBusSender.cpp
-    Include/ScriptCanvas/Libraries/Operators/Operators.cpp
-    Include/ScriptCanvas/Libraries/Operators/Operator.cpp
-    Include/ScriptCanvas/Libraries/Operators/Containers/OperatorAt.cpp
-    Include/ScriptCanvas/Libraries/Operators/Containers/OperatorBack.cpp
-    Include/ScriptCanvas/Libraries/Operators/Containers/OperatorClear.cpp
-    Include/ScriptCanvas/Libraries/Operators/Containers/OperatorEmpty.cpp
-    Include/ScriptCanvas/Libraries/Operators/Containers/OperatorErase.cpp
-    Include/ScriptCanvas/Libraries/Operators/Containers/OperatorFront.cpp
-    Include/ScriptCanvas/Libraries/Operators/Containers/OperatorInsert.cpp
-    Include/ScriptCanvas/Libraries/Operators/Containers/OperatorPushBack.cpp
-    Include/ScriptCanvas/Libraries/Operators/Containers/OperatorSize.cpp
+    Include/ScriptCanvas/Libraries/Operators/OperatorsLibrary.cpp
     Include/ScriptCanvas/Libraries/Operators/Math/OperatorAdd.cpp
     Include/ScriptCanvas/Libraries/Operators/Math/OperatorArithmetic.cpp
     Include/ScriptCanvas/Libraries/Operators/Math/OperatorDiv.cpp
-    Include/ScriptCanvas/Libraries/Operators/Math/OperatorDivideByNumber.cpp
-    Include/ScriptCanvas/Libraries/Operators/Math/OperatorLength.cpp
-    Include/ScriptCanvas/Libraries/Operators/Math/OperatorLerp.cpp
     Include/ScriptCanvas/Libraries/Operators/Math/OperatorMul.cpp
     Include/ScriptCanvas/Libraries/Operators/Math/OperatorSub.cpp
     Include/ScriptCanvas/Libraries/Operators/Math/OperatorLerpNodeable.cpp

@@ -159,7 +159,7 @@ namespace AzToolsFramework
             }
 
             PrefabDomUtils::InstanceDomMetadata* instanceDomMetadata = context.GetMetadata().Find<PrefabDomUtils::InstanceDomMetadata>();
-            PrefabDomValueConstReference cachedInstanceDom = instance->GetCachedInstanceDom();
+            PrefabDomReference cachedInstanceDom = instance->GetCachedInstanceDom();
 
             if (instanceDomMetadata == nullptr || cachedInstanceDom == AZStd::nullopt)
             {
@@ -307,7 +307,7 @@ namespace AzToolsFramework
                         AZStd::unique_ptr<Instance> detachedInstance = instance->DetachNestedInstance(instanceAlias);
                         detachedInstance.reset();
 
-                        AZStd::unique_ptr<Instance> nestedInstance = AZStd::make_unique<Instance>();
+                        AZStd::unique_ptr<Instance> nestedInstance = AZStd::make_unique<Instance>(instance->m_entityIdInstanceRelationship);
 
                         nestedInstance->m_alias = instanceAlias;
                         nestedInstance->m_parent = instance;

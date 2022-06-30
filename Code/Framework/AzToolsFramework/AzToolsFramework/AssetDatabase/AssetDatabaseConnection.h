@@ -67,6 +67,7 @@ namespace AzToolsFramework
             RemoveOutputPrefixFromScanFolders,
             AddedSourceIndexForSourceDependencyTable,
             AddedSourceDependencySubIdsAndProductHashes,
+            AddedFlagsColumnToProductTable,
             //Add all new versions before this
             DatabaseVersionCount,
             LatestVersion = DatabaseVersionCount - 1
@@ -232,15 +233,12 @@ namespace AzToolsFramework
         public:
             ProductDatabaseEntry() = default;
             ProductDatabaseEntry(AZ::s64 productID, AZ::s64 jobPK,  AZ::u32 subID, const char* productName,
-                AZ::Data::AssetType assetType, AZ::Uuid legacyGuid = AZ::Uuid::CreateNull(), AZ::u64 hash = 0);
+                AZ::Data::AssetType assetType, AZ::Uuid legacyGuid = AZ::Uuid::CreateNull(), AZ::u64 hash = 0, AZStd::bitset<64> flags = 0);
             ProductDatabaseEntry(AZ::s64 jobPK, AZ::u32 subID, const char* productName,
-                AZ::Data::AssetType assetType, AZ::Uuid legacyGuid = AZ::Uuid::CreateNull(), AZ::u64 hash = 0);
-            ProductDatabaseEntry(ProductDatabaseEntry&& other);
+                AZ::Data::AssetType assetType, AZ::Uuid legacyGuid = AZ::Uuid::CreateNull(), AZ::u64 hash = 0, AZStd::bitset<64> flags = 0);
+            AZ_DEFAULT_COPY_MOVE(ProductDatabaseEntry);
 
-            ProductDatabaseEntry& operator=(ProductDatabaseEntry&& other);
             bool operator==(const ProductDatabaseEntry& other) const;
-
-            AZ_DEFAULT_COPY(ProductDatabaseEntry);
 
             AZStd::string ToString() const;
             auto GetColumns();
@@ -252,6 +250,7 @@ namespace AzToolsFramework
             AZ::Data::AssetType m_assetType = AZ::Data::AssetType::CreateNull();
             AZ::Uuid m_legacyGuid = AZ::Uuid::CreateNull();//used only for backward compatibility with old product guid, is generated based on product name
             AZ::u64 m_hash = 0;
+            AZStd::bitset<64> m_flags = 0;
         };
         typedef AZStd::vector<ProductDatabaseEntry> ProductDatabaseEntryContainer;
 
@@ -533,6 +532,7 @@ namespace AzToolsFramework
             bool QuerySourceBySourceName(const char* exactSourceName, sourceHandler handler);
             bool QuerySourceBySourceNameScanFolderID(const char* exactSourceName, AZ::s64 scanFolderID, sourceHandler handler);
             bool QuerySourceLikeSourceName(const char* likeSourceName, LikeType likeType, sourceHandler handler);
+            bool QuerySourceLikeSourceNameScanFolderID(const char* likeSourceName, AZ::s64 scanFolderID, LikeType likeType, sourceHandler handler);
             bool QuerySourceAnalysisFingerprint(const char* exactSourceName, AZ::s64 scanFolderID, AZStd::string& result);
             bool QuerySourceAndScanfolder(combinedSourceScanFolderHandler handler);
 
@@ -632,7 +632,7 @@ namespace AzToolsFramework
             //FileInfo
             bool QueryFileByFileID(AZ::s64 fileID, fileHandler handler);
             bool QueryFilesByFileNameAndScanFolderID(const char* fileName, AZ::s64 scanfolderID, fileHandler handler);
-            bool QueryFilesLikeFileName(const char* likeFileName, LikeType likeType, fileHandler handler);
+            bool QueryFilesLikeFileNameAndScanFolderID(const char* likeFileName, LikeType likeType, AZ::s64 scanfolderID, fileHandler handler);
             bool QueryFilesByScanFolderID(AZ::s64 scanFolderID, fileHandler handler);
             bool QueryFileByFileNameScanFolderID(const char* fileName, AZ::s64 scanFolderID, fileHandler handler);
             //////////////////////////////////////////////////////////////////////////

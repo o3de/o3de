@@ -15,9 +15,6 @@
 
 namespace Multiplayer
 {
-    // The maximum number of entity updates we can stuff into a single update packet
-    static const uint32_t MaxAggregateEntityMessages = 2048;
-
     //! @class NetworkEntityUpdateMessage
     //! @brief Property replication packet.
     class NetworkEntityUpdateMessage

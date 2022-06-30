@@ -12,15 +12,23 @@ set(FILES
     ActionManager/Action/ActionManager.cpp
     ActionManager/Action/ActionManager.h
     ActionManager/Action/ActionManagerInterface.h
+    ActionManager/Action/ActionManagerNotificationBus.h
     ActionManager/Action/EditorAction.cpp
     ActionManager/Action/EditorAction.h
     ActionManager/Action/EditorActionContext.cpp
     ActionManager/Action/EditorActionContext.h
     ActionManager/Menu/EditorMenu.cpp
     ActionManager/Menu/EditorMenu.h
+    ActionManager/Menu/EditorMenuBar.cpp
+    ActionManager/Menu/EditorMenuBar.h
     ActionManager/Menu/MenuManager.cpp
     ActionManager/Menu/MenuManager.h
     ActionManager/Menu/MenuManagerInterface.h
+    ActionManager/ToolBar/EditorToolBar.cpp
+    ActionManager/ToolBar/EditorToolBar.h
+    ActionManager/ToolBar/ToolBarManager.cpp
+    ActionManager/ToolBar/ToolBarManager.h
+    ActionManager/ToolBar/ToolBarManagerInterface.h
     AssetEditor/AssetEditorBus.cpp
     AssetEditor/AssetEditorBus.h
     AssetEditor/AssetEditorToolbar.ui
@@ -342,6 +350,8 @@ set(FILES
     ToolsMessaging/EntityHighlightBus.h
     UI/Docking/DockWidgetUtils.cpp
     UI/Docking/DockWidgetUtils.h
+    UI/DocumentPropertyEditor/ContainerActionButtonHandler.cpp
+    UI/DocumentPropertyEditor/ContainerActionButtonHandler.h
     UI/DocumentPropertyEditor/PropertyEditorToolsSystemInterface.h
     UI/DocumentPropertyEditor/PropertyEditorToolsSystem.cpp
     UI/DocumentPropertyEditor/PropertyEditorToolsSystem.h
@@ -353,6 +363,9 @@ set(FILES
     UI/DPEDebugViewer/DPEDebugModel.h
     UI/DPEDebugViewer/DPEDebugTextView.cpp
     UI/DPEDebugViewer/DPEDebugTextView.h
+    UI/DPEDebugViewer/DPEDebugWindow.cpp
+    UI/DPEDebugViewer/DPEDebugWindow.h
+    UI/DPEDebugViewer/DPEDebugWindow.ui
     UI/Layer/AddToLayerMenu.cpp
     UI/Layer/AddToLayerMenu.h
     UI/Logging/LoggingCommon.h
@@ -729,6 +742,8 @@ set(FILES
     Prefab/PrefabPublicHandler.cpp
     Prefab/PrefabPublicInterface.h
     Prefab/PrefabPublicNotificationBus.h
+    Prefab/PrefabPublicNotificationHandler.h
+    Prefab/PrefabPublicNotificationHandler.cpp
     Prefab/PrefabPublicRequestBus.h
     Prefab/PrefabPublicRequestHandler.h
     Prefab/PrefabPublicRequestHandler.cpp
@@ -749,6 +764,9 @@ set(FILES
     Prefab/Spawnable/EditorOnlyEntityHandler/WorldEditorOnlyEntityHandler.h
     Prefab/Spawnable/EditorOnlyEntityHandler/WorldEditorOnlyEntityHandler.cpp
     Prefab/Spawnable/EntityAliasTypes.h
+    Prefab/Spawnable/EntityIdPathMapperInterface.h
+    Prefab/Spawnable/InMemorySpawnableAssetUtils.h
+    Prefab/Spawnable/InMemorySpawnableAssetUtils.cpp
     Prefab/Spawnable/PrefabInMemorySpawnableConverter.h
     Prefab/Spawnable/PrefabInMemorySpawnableConverter.cpp
     Prefab/Spawnable/PrefabCatchmentProcessor.h
@@ -796,6 +814,7 @@ set(FILES
     UI/Layer/LayerUiHandler.cpp
     UI/Prefab/LevelRootUiHandler.h
     UI/Prefab/LevelRootUiHandler.cpp
+    UI/Prefab/PrefabFocusChangeBehavior.h
     UI/Prefab/PrefabIntegrationBus.h
     UI/Prefab/PrefabIntegrationManager.h
     UI/Prefab/PrefabIntegrationManager.cpp
@@ -824,6 +843,10 @@ set(FILES
     Script/LuaSymbolsReporterBus.h
     Script/LuaSymbolsReporterSystemComponent.h
     Script/LuaSymbolsReporterSystemComponent.cpp
+    Physics/Material/Legacy/LegacyPhysicsMaterialConversionUtils.h
+    Physics/Material/Legacy/LegacyPhysicsMaterialConversionUtils.cpp
+    Physics/Material/Legacy/LegacyPhysicsPrefabConversionUtils.h
+    Physics/Material/Legacy/LegacyPhysicsPrefabConversionUtils.cpp
 )
 
 # Prevent the following files from being grouped in UNITY builds

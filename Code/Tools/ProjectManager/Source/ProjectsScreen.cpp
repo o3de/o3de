@@ -83,9 +83,7 @@ namespace O3DE::ProjectManager
             });
     }
 
-    ProjectsScreen::~ProjectsScreen()
-    {
-    }
+    ProjectsScreen::~ProjectsScreen() = default;
 
     QFrame* ProjectsScreen::CreateFirstTimeContent()
     {
@@ -368,7 +366,11 @@ namespace O3DE::ProjectManager
             }
         }
 
-        m_stack->setCurrentWidget(m_projectsContent);
+        if (m_projectsContent)
+        {
+            m_stack->setCurrentWidget(m_projectsContent);
+        }
+
         m_projectsFlowLayout->update();
     }
 
@@ -430,6 +432,7 @@ namespace O3DE::ProjectManager
         emit ResetScreenRequest(ProjectManagerScreen::CreateProject);
         emit ChangeScreenRequest(ProjectManagerScreen::CreateProject);
     }
+
     void ProjectsScreen::HandleAddProjectButton()
     {
         if (ProjectUtils::AddProjectDialog(this))
@@ -437,6 +440,7 @@ namespace O3DE::ProjectManager
             emit ChangeScreenRequest(ProjectManagerScreen::Projects);
         }
     }
+
     void ProjectsScreen::HandleAddRemoteProjectButton()
     {
         AddRemoteProjectDialog* addRemoteProjectDialog = new AddRemoteProjectDialog(this);
@@ -520,14 +524,16 @@ namespace O3DE::ProjectManager
             emit ChangeScreenRequest(ProjectManagerScreen::UpdateProject);
         }
     }
+
     void ProjectsScreen::HandleEditProjectGems(const QString& projectPath)
     {
         if (!WarnIfInBuildQueue(projectPath))
         {
             emit NotifyCurrentProject(projectPath);
-            emit ChangeScreenRequest(ProjectManagerScreen::GemCatalog);
+            emit ChangeScreenRequest(ProjectManagerScreen::ProjectGemCatalog);
         }
     }
+
     void ProjectsScreen::HandleCopyProject(const ProjectInfo& projectInfo)
     {
         if (!WarnIfInBuildQueue(projectInfo.m_path))
@@ -542,6 +548,7 @@ namespace O3DE::ProjectManager
             }
         }
     }
+
     void ProjectsScreen::HandleRemoveProject(const QString& projectPath)
     {
         if (!WarnIfInBuildQueue(projectPath))
@@ -553,6 +560,7 @@ namespace O3DE::ProjectManager
             }
         }
     }
+
     void ProjectsScreen::HandleDeleteProject(const QString& projectPath)
     {
         if (!WarnIfInBuildQueue(projectPath))
@@ -584,7 +592,7 @@ namespace O3DE::ProjectManager
         if (showMessage)
         {
             QMessageBox::information(this,
-                tr("Project Should be rebuilt."),
+                tr("Project should be rebuilt."),
                 projectInfo.GetProjectDisplayName() + tr(" project likely needs to be rebuilt."));
         }
     }

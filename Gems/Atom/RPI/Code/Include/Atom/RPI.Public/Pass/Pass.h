@@ -58,6 +58,7 @@ namespace AZ
     {
         class Pass;
         class PassTemplate;
+        class PassTree;
         struct PassRequest;
         struct PassValidationResults;
         class AttachmentReadback;
@@ -170,7 +171,13 @@ namespace AZ
             const ParentPass* AsParent() const;
 
             // --- Utility functions ---
-            
+
+            //! Returns whether the pass is the root pass
+            bool IsRootPass() const { return m_flags.m_partOfHierarchy && (m_treeDepth == 0); }
+
+            //! Returns the PassTree from the pass's RenderPipeline (or nullptr if there isn't one)
+            PassTree* GetPassTree() const;
+
             //! Queues the pass to have Build() and Initialize() called by the PassSystem on frame update 
             void QueueForBuildAndInitialization();
 
@@ -246,11 +253,12 @@ namespace AZ
 
             //! Readback an attachment attached to the specified slot name
             //! @param readback The AttachmentReadback object which is used for readback. Its callback function will be called when readback is finished.
+            //! @param readbackIndex index from the frame capture system to identify which capture is in progress
             //! @param slotName The attachment bind to the slot with this slotName is to be readback
             //! @param option The option is used for choosing input or output state when readback an InputOutput attachment.
             //!               It's ignored if the attachment isn't an InputOutput attachment.
             //! Return true if the readback request was successful. User may expect the AttachmentReadback's callback function would be called. 
-            bool ReadbackAttachment(AZStd::shared_ptr<AttachmentReadback> readback, const Name& slotName, PassAttachmentReadbackOption option = PassAttachmentReadbackOption::Output);
+            bool ReadbackAttachment(AZStd::shared_ptr<AttachmentReadback> readback, uint32_t readbackIndex, const Name& slotName, PassAttachmentReadbackOption option = PassAttachmentReadbackOption::Output);
 
             //! Returns whether the Timestamp queries is enabled/disabled for this pass
             bool IsTimestampQueryEnabled() const { return m_flags.m_timestampQueryEnabled; }
