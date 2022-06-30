@@ -61,12 +61,13 @@ namespace PhysX
         void Display(const AzFramework::ViewportInfo& viewportInfo,
             AzFramework::DebugDisplayRequests& debugDisplay) const;
 
+        // EditorHeightfieldColliderRequestBus::Handler overrides...
+        void RequestHeightfieldBaking() override;
+
     private:
         AZ::u32 OnConfigurationChanged();
         AZ::u32 OnToggleBakedHeightfield();
         AZ::u32 GetBakedHeightfieldVisibilitySetting();
-
-        void RequestHeightfieldBaking() override;
 
         // Utility functions for heightfield baking
         void StartHeightfieldBakingJob();

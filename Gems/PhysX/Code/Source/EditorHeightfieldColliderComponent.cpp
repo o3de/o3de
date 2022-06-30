@@ -67,15 +67,18 @@ namespace PhysX
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorHeightfieldColliderComponent::OnConfigurationChanged)
 
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &EditorHeightfieldColliderComponent::m_useBakedHeightfield, "Use Baked Heightfield",
-                        "Selects between a dynamically generated heightfield or a prebaked one. Note: This affects only game time heightfields")
-                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorHeightfieldColliderComponent::OnToggleBakedHeightfield)
+                        AZ::Edit::UIHandlers::Default,
+                        &EditorHeightfieldColliderComponent::m_colliderDebugDraw,
+                        "Debug draw settings",
+                        "Debug draw settings")
+                        ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
 
-                    ->UIElement(AZ::Edit::UIHandlers::Button, "Bake Heightfield", "Bake Heightfield")
-                        ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")
-                        ->Attribute(AZ::Edit::Attributes::ButtonText, "Bake Heightfield")
-                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorHeightfieldColliderComponent::RequestHeightfieldBaking)
-                        ->Attribute(AZ::Edit::Attributes::Visibility, &EditorHeightfieldColliderComponent::GetBakedHeightfieldVisibilitySetting)
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default, &EditorHeightfieldColliderComponent::m_useBakedHeightfield, "Use Baked Heightfield",
+                        "Selects between a dynamically generated heightfield or a prebaked one. "
+                        "A prebaked one will remain unchanged at game time even if the heightfield provider changes its data. "
+                        "A dynamic one will change with heightfield provider changes.")
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorHeightfieldColliderComponent::OnToggleBakedHeightfield)
 
                     ->DataElement(
                         AZ::Edit::UIHandlers::MultiLineEdit, &EditorHeightfieldColliderComponent::m_bakedHeightfieldRelativePath,
@@ -83,10 +86,11 @@ namespace PhysX
                         ->Attribute(AZ::Edit::Attributes::ReadOnly, true)
                         ->Attribute(AZ::Edit::Attributes::Visibility, &EditorHeightfieldColliderComponent::GetBakedHeightfieldVisibilitySetting)
 
-                    ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &EditorHeightfieldColliderComponent::m_colliderDebugDraw, "Debug draw settings",
-                        "Debug draw settings")
-                        ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
+                    ->UIElement(AZ::Edit::UIHandlers::Button, "Bake Heightfield", "Bake Heightfield")
+                        ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")
+                        ->Attribute(AZ::Edit::Attributes::ButtonText, "Bake Heightfield")
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorHeightfieldColliderComponent::RequestHeightfieldBaking)
+                        ->Attribute(AZ::Edit::Attributes::Visibility, &EditorHeightfieldColliderComponent::GetBakedHeightfieldVisibilitySetting)
                     ;
             }
 
@@ -160,7 +164,6 @@ namespace PhysX
 
         m_bakingCompletion.Reset(true /*isClearDependent*/);
         m_heightfieldAssetBakingJob.Reset(true);
-
 
         AzPhysics::SceneHandle sceneHandle = AzPhysics::InvalidSceneHandle;
         if (auto sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
