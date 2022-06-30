@@ -94,7 +94,7 @@ namespace O3DE::ProjectManager
         Q_OBJECT
 
     public:
-        explicit ProjectButton(const ProjectInfo& projectInfo, const EngineInfo& engineInfo, QWidget* parent = nullptr);
+        ProjectButton(const ProjectInfo& projectInfo, const EngineInfo& engineInfo, QWidget* parent = nullptr);
         ~ProjectButton();
 
         const ProjectInfo& GetProjectInfo() const;
