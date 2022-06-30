@@ -24,7 +24,6 @@ namespace AssetProcessor
     {
         m_ui->setupUi(this);
         m_ui->scrollAreaWidgetContents->setLayout(m_ui->scrollableVerticalLayout);
-        //m_ui->productTable->Resize
         ResetText();
     }
 
@@ -110,13 +109,6 @@ namespace AssetProcessor
             m_ui->productTable->setItem(productCount, 1, rowName);
             ++productCount;
         }
-
-        // The default list behavior is to maintain size and let you scroll within.
-        // The entire frame is scrollable here, so the list should adjust to fit the contents.
-        //m_ui->productTable->setMinimumHeight(m_ui->productTable->rowHeight(0) * productCount + 2 * m_ui->productTable->frameWidth());
-        //m_ui->productTable->resize(m_ui->SourceAssetDetailTabs->size());
-        //m_ui->productTable->adjustSize();
-
     }
 
     void SourceAssetDetailsPanel::BuildOutgoingSourceDependencies(
@@ -231,12 +223,8 @@ namespace AssetProcessor
         m_ui->sourceGuidTitleLabel->setVisible(visible);
         m_ui->sourceGuidValueLabel->setVisible(visible);
 
-        m_ui->productTable->setVisible(visible);
+        m_ui->AssetInfoSeparatorLine->setVisible(visible);
 
-        m_ui->outgoingSourceDependenciesTable->setVisible(visible);
-
-        m_ui->incomingSourceDependenciesTable->setVisible(visible);
-
-        m_ui->DependencySeparatorLine->setVisible(visible);
+        m_ui->SourceAssetDetailTabs->setVisible(visible);
     }
 }
