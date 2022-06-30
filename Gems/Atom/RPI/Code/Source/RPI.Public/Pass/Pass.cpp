@@ -1455,7 +1455,7 @@ namespace AZ
             return GetPipelineStatisticsResultInternal();
         }
 
-        bool Pass::ReadbackAttachment(AZStd::shared_ptr<AttachmentReadback> readback, const Name& slotName, PassAttachmentReadbackOption option)
+        bool Pass::ReadbackAttachment(AZStd::shared_ptr<AttachmentReadback> readback, uint32_t readbackIndex, const Name& slotName, PassAttachmentReadbackOption option)
         {
             // Return false if it's already readback
             if (m_attachmentReadback)
@@ -1474,8 +1474,8 @@ namespace AZ
                         RHI::AttachmentId attachmentId = binding.GetAttachment()->GetAttachmentId();
 
                         // Append slot index and pass name so the read back's name won't be same as the attachment used in other passes.
-                        AZStd::string readbackName = AZStd::string::format("%s_%d_%s", attachmentId.GetCStr(),
-                            bindingIndex, GetName().GetCStr());
+                        AZStd::string readbackName = AZStd::string::format("%s_%d_%d_%s", attachmentId.GetCStr(),
+                            readbackIndex, bindingIndex, GetName().GetCStr());
                         if (readback->ReadPassAttachment(binding.GetAttachment().get(), AZ::Name(readbackName)))
                         {
                             m_readbackOption = PassAttachmentReadbackOption::Output;

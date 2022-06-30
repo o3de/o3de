@@ -48,7 +48,7 @@ namespace NvCloth
                         ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
                         ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Cloth.svg")
                         ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Cloth.svg")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
+                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                         ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/physx/cloth/")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
 
@@ -64,7 +64,7 @@ namespace NvCloth
                 editContext->Class<ClothConfiguration>("Cloth Configuration", "Configuration for cloth simulation.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
+                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
 
@@ -407,12 +407,12 @@ namespace NvCloth
 
     void EditorClothComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("ClothMeshService", 0x6ffcbca5));
+        provided.push_back(AZ_CRC_CE("ClothMeshService"));
     }
 
     void EditorClothComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC("MeshService", 0x71d8a455));
+        required.push_back(AZ_CRC_CE("MeshService"));
     }
 
     void EditorClothComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
