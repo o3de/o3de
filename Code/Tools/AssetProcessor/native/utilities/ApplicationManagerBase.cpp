@@ -1855,7 +1855,6 @@ bool ApplicationManagerBase::OnError(const char* /*window*/, const char* /*messa
 bool ApplicationManagerBase::CheckSufficientDiskSpace(qint64 requiredSpace, bool shutdownIfInsufficient)
 {
     QDir cacheDir;
-    AZ_UNUSED(cacheDir);
     if (!AssetUtilities::ComputeProjectCacheRoot(cacheDir))
     {
         AZ_Error(
