@@ -198,7 +198,7 @@ namespace O3DE::ProjectManager
                         paths.emplace_back(buildConfigurationPath / AZ_TRAIT_OS_PLATFORM_CODENAME / "profile" / "Editor");
                     }
 
-                    for (auto path : paths)
+                    for (auto& path : paths)
                     {
                         if(AZ::IO::SystemFile::Exists(path.ReplaceExtension(AZ_TRAIT_OS_EXECUTABLE_EXTENSION).c_str()))
                         {
@@ -214,7 +214,7 @@ namespace O3DE::ProjectManager
                 auto engineInfo = engineResult.GetValue<EngineInfo>();
                 if (!engineInfo.m_thisEngine)
                 {
-                    AZ::IO::FixedMaxPath fixedEnginePath{ engineInfo.m_path.toStdString().c_str() };
+                    AZ::IO::FixedMaxPath fixedEnginePath{ engineInfo.m_path.toUtf8().constData() };
                     // first try the default sdk path
                     if (editorPath = (fixedEnginePath / "bin" / AZ_TRAIT_OS_PLATFORM_CODENAME / "profile" / "Default" / "Editor").
                         ReplaceExtension(AZ_TRAIT_OS_EXECUTABLE_EXTENSION);
