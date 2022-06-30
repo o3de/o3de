@@ -64,11 +64,17 @@ namespace AZ
             //! int array: Max count for descriptors 
             AZStd::unordered_map<AZStd::string, AZStd::array<uint32_t, NumHeapFlags>> m_descriptorHeapLimits;
 
-            // Number of max static handles for shader visible srv/uav/cbv views
+            //! Number of max static handles for shader visible srv/uav/cbv views
             uint32_t m_numShaderVisibleCbvSrvUavStaticHandles = 2000;
 
-            //Bool to indicate allowing compaction of shader visible srv/uav/cbv heap in case of fragmentation
+            //! Bool to indicate allowing compaction of shader visible srv/uav/cbv heap in case of fragmentation
             bool m_allowDescriptorHeapCompaction = false;
+
+            //! Denote portion of the shader-visible descriptor heap used to maintain static handles.
+            //! NOTE: dynamic descriptors are needed to allocate per-frame descriptor tables for resources that are
+            //! not bound via bindless, so this number should reflect that. If the majority of resources correctly
+            //! leverage the bindless mechanism, this number can be higher (e.g. [0.8f, 0.9f]).
+            float m_staticDescriptorRatio = 0.5f;
 
             FrameGraphExecuterData m_frameGraphExecuterData;
 

@@ -38,17 +38,18 @@ namespace AZ
 
             if (RHI::CheckBitsAny(bindFlags, RHI::BufferBindFlags::ShaderRead | RHI::BufferBindFlags::RayTracingAccelerationStructure))
             {
-                descriptorContext.CreateShaderResourceView(buffer, viewDescriptor, m_readDescriptor);
+                descriptorContext.CreateShaderResourceView(buffer, viewDescriptor, m_readDescriptor, m_staticReadDescriptor);
             }
 
             if (RHI::CheckBitsAny(bindFlags, RHI::BufferBindFlags::ShaderWrite))
             {
-                descriptorContext.CreateUnorderedAccessView(buffer, viewDescriptor, m_readWriteDescriptor, m_clearDescriptor);
+                descriptorContext.CreateUnorderedAccessView(
+                    buffer, viewDescriptor, m_readWriteDescriptor, m_clearDescriptor, m_staticReadWriteDescriptor);
             }
 
             if (RHI::CheckBitsAny(bindFlags, RHI::BufferBindFlags::Constant))
             {
-                descriptorContext.CreateConstantBufferView(buffer, viewDescriptor, m_constantDescriptor);
+                descriptorContext.CreateConstantBufferView(buffer, viewDescriptor, m_constantDescriptor, m_staticConstantDescriptor);
             }
 
             return RHI::ResultCode::Success;
@@ -67,6 +68,10 @@ namespace AZ
             descriptorContext.ReleaseDescriptor(m_readDescriptor);
             descriptorContext.ReleaseDescriptor(m_readWriteDescriptor);
             descriptorContext.ReleaseDescriptor(m_clearDescriptor);
+            descriptorContext.ReleaseDescriptor(m_constantDescriptor);
+            descriptorContext.ReleaseStaticDescriptor(m_staticReadDescriptor);
+            descriptorContext.ReleaseStaticDescriptor(m_staticReadWriteDescriptor);
+            descriptorContext.ReleaseStaticDescriptor(m_staticConstantDescriptor);
             m_memory = nullptr;
             m_gpuAddress = 0;
         }

@@ -37,6 +37,11 @@ namespace AZ
             
             const MemoryView& GetTextureBufferView() const;
             MemoryView& GetTextureBufferView();
+            
+            //! Get the index related to the position of the read and readwrite view within the global Bindless Argument Buffer
+            uint32_t GetBindlessReadIndex() const override;
+            uint32_t GetBindlessReadWriteIndex() const override;
+            
         private:
             BufferView() = default;
 
@@ -52,6 +57,10 @@ namespace AZ
             
             //TextureBuffer view. Used for texture_buffer variables
             MemoryView m_imageBufferMemoryView;
+            
+            //! Index related to the position of the read and readwrite view within the global Bindless Argument Buffer
+            uint32_t m_readIndex = ~0u;
+            uint32_t m_readWriteIndex = ~0u;
         };
     }
 }

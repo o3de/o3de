@@ -14,4 +14,10 @@
 //Used for normal map sampling
 #define AZ_TRAIT_ASTC_COMPRESSION 1
 
+//size for unbounded arrays
+#define UNBOUNDED_SIZE 100000
+
+//Unbounded array direct binding not supported on metal
+#define UB_DIRECTBINDING_NOTSUPPPORTED
+
 static const float4 s_AzslDebugColor = float4(85.0 / 255.0, 85.0 / 255.0, 85.0 / 255.0, 1);

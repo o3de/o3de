@@ -33,6 +33,10 @@ namespace AZ
                 uint32_t descriptorCountForHeap,
                 uint32_t descriptorCountForAllocator);
 
+            //! Initialize a descriptor pool mapping a range of descriptors from a parent heap. Descriptors are allocated
+            //! using the RHI::PoolAllocator
+            void InitPooledRange(DescriptorPool& parent, uint32_t offset, uint32_t count);
+
             ID3D12DescriptorHeap* GetPlatformHeap() const;
 
             //! Allocate a Descriptor handles

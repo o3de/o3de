@@ -27,7 +27,7 @@ namespace AZ
         
         void CommandListBase::Init(RHI::HardwareQueueClass hardwareQueueClass, Device* device)
         {
-            AZ_UNUSED(device);
+            m_device = device;
             m_hardwareQueueClass = hardwareQueueClass;
             m_supportsInterDrawTimestamps = AZ::RHI::QueryTypeFlags::Timestamp == (device->GetFeatures().m_queryTypesMask[static_cast<uint32_t>(hardwareQueueClass)] & AZ::RHI::QueryTypeFlags::Timestamp);
         }

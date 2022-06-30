@@ -75,8 +75,8 @@ namespace AZ
                 ShaderInputBufferType type,
                 uint32_t bufferCount,
                 uint32_t strideSize,
-                uint32_t registerId
-                );
+                uint32_t registerId,
+                uint32_t spaceId);
 
             HashValue64 GetHash(HashValue64 seed = HashValue64{ 0 }) const;
 
@@ -103,6 +103,8 @@ namespace AZ
              * SRG, others need it when creating the PipelineLayout.
              */
             uint32_t m_registerId = UndefinedRegisterSlot;
+
+            uint32_t m_spaceId = UndefinedRegisterSlot;
         };
 
         enum class ShaderInputImageAccess : uint32_t
@@ -138,7 +140,8 @@ namespace AZ
                 ShaderInputImageAccess access,
                 ShaderInputImageType type,
                 uint32_t imageCount,
-                uint32_t registerId);
+                uint32_t registerId,
+                uint32_t spaceId);
 
             HashValue64 GetHash(HashValue64 seed = HashValue64{ 0 }) const;
 
@@ -162,6 +165,8 @@ namespace AZ
              * SRG, others need it when creating the PipelineLayout.
              */
             uint32_t m_registerId = UndefinedRegisterSlot;
+
+            uint32_t m_spaceId = UndefinedRegisterSlot;
         };
 
         class ShaderInputBufferUnboundedArrayDescriptor final
@@ -176,7 +181,8 @@ namespace AZ
                 ShaderInputBufferAccess access,
                 ShaderInputBufferType type,
                 uint32_t strideSize,
-                uint32_t registerId);
+                uint32_t registerId,
+                uint32_t spaceId);
 
             HashValue64 GetHash(HashValue64 seed = HashValue64{ 0 }) const;
 
@@ -200,6 +206,8 @@ namespace AZ
              * SRG, others need it when creating the PipelineLayout.
              */
             uint32_t m_registerId = UndefinedRegisterSlot;
+
+            uint32_t m_spaceId = UndefinedRegisterSlot;
         };
 
         class ShaderInputImageUnboundedArrayDescriptor final
@@ -213,7 +221,8 @@ namespace AZ
                 const Name& name,
                 ShaderInputImageAccess access,
                 ShaderInputImageType type,
-                uint32_t registerId);
+                uint32_t registerId,
+                uint32_t spaceId);
 
             HashValue64 GetHash(HashValue64 seed = HashValue64{ 0 }) const;
 
@@ -234,6 +243,8 @@ namespace AZ
              * SRG, others need it when creating the PipelineLayout.
              */
             uint32_t m_registerId = UndefinedRegisterSlot;
+
+            uint32_t m_spaceId = UndefinedRegisterSlot;
         };
 
         class ShaderInputSamplerDescriptor final
@@ -243,7 +254,7 @@ namespace AZ
             static void Reflect(ReflectContext* context);
 
             ShaderInputSamplerDescriptor() = default;
-            ShaderInputSamplerDescriptor(const Name& name, uint32_t samplerCount, uint32_t registerId);
+            ShaderInputSamplerDescriptor(const Name& name, uint32_t samplerCount, uint32_t registerId, uint32_t spaceId);
 
             HashValue64 GetHash(HashValue64 seed = HashValue64{ 0 }) const;
 
@@ -261,6 +272,8 @@ namespace AZ
              * SRG, others need it when creating the PipelineLayout.
              */
             uint32_t m_registerId = UndefinedRegisterSlot;
+
+            uint32_t m_spaceId = UndefinedRegisterSlot;
         };
 
         class ShaderInputConstantDescriptor final
@@ -274,7 +287,8 @@ namespace AZ
                 const Name& name,
                 uint32_t constantByteOffset,
                 uint32_t constantByteCount,
-                uint32_t registerId);
+                uint32_t registerId,
+                uint32_t spaceId);
 
             /// Returns the 64-bit hash of the binding.
             HashValue64 GetHash(HashValue64 seed = HashValue64{ 0 }) const;
@@ -296,6 +310,8 @@ namespace AZ
              * SRG, others need it when creating the PipelineLayout.
              */
             uint32_t m_registerId = UndefinedRegisterSlot;
+
+            uint32_t m_spaceId = UndefinedRegisterSlot;
         };
 
         class ShaderInputStaticSamplerDescriptor final
@@ -305,7 +321,7 @@ namespace AZ
             static void Reflect(ReflectContext* context);
 
             ShaderInputStaticSamplerDescriptor() = default;
-            ShaderInputStaticSamplerDescriptor(const Name& name, const SamplerState& samplerState, uint32_t registerId);
+            ShaderInputStaticSamplerDescriptor(const Name& name, const SamplerState& samplerState, uint32_t registerId, uint32_t spaceId);
 
             HashValue64 GetHash(HashValue64 seed = HashValue64{ 0 }) const;
 
@@ -323,6 +339,8 @@ namespace AZ
              * SRG, others need it when creating the PipelineLayout.
              */
             uint32_t m_registerId = UndefinedRegisterSlot;
+
+            uint32_t m_spaceId = UndefinedRegisterSlot;
         };
 
         /// Returns the string name for the shader input type enum.

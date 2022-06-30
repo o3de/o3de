@@ -110,4 +110,6 @@ set(FILES
     Source/RHI/MetalView.mm
     Source/RHI/MetalViewController.h
     Source/RHI/MetalViewController.mm
+    Source/RHI/BindlessArgumentBuffer.cpp
+    Source/RHI/BindlessArgumentBuffer.h
 )

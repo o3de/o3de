@@ -18,15 +18,18 @@ namespace AZ
             if (SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<ResourceBindingInfo>()
-                    ->Version(0)
+                    ->Version(1)
                     ->Field("m_shaderStageMask", &ResourceBindingInfo::m_shaderStageMask)
-                    ->Field("m_registerId", &ResourceBindingInfo::m_registerId);
+                    ->Field("m_registerId", &ResourceBindingInfo::m_registerId)
+                    ->Field("m_spaceId", &ResourceBindingInfo::m_spaceId);
             }
         }
 
         HashValue64 ResourceBindingInfo::GetHash() const
         {
-            return TypeHash64(*this);
+            HashValue64 hash = TypeHash64(static_cast<uint32_t>(m_shaderStageMask));
+            hash = TypeHash64(m_registerId, hash);
+            return hash;
         }
 
         void ShaderResourceGroupBindingInfo::Reflect(AZ::ReflectContext* context)
@@ -35,10 +38,9 @@ namespace AZ
             if (SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<ShaderResourceGroupBindingInfo>()
-                    ->Version(0)
+                    ->Version(1)
                     ->Field("m_constantDataBindingInfo", &ShaderResourceGroupBindingInfo::m_constantDataBindingInfo)
-                    ->Field("m_resourcesRegisterMap", &ShaderResourceGroupBindingInfo::m_resourcesRegisterMap)
-                    ->Field("m_spaceId", &ShaderResourceGroupBindingInfo::m_spaceId);
+                    ->Field("m_resourcesRegisterMap", &ShaderResourceGroupBindingInfo::m_resourcesRegisterMap);
             }
         }
 
@@ -50,7 +52,6 @@ namespace AZ
                 seed = TypeHash64(resourceInfo.first.GetHash(), seed);
                 seed = TypeHash64(resourceInfo.second, seed);
             }
-            seed = TypeHash64(m_spaceId, seed);
             return seed;
         }
 

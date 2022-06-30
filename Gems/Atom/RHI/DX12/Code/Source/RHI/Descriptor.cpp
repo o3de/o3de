@@ -44,7 +44,7 @@ namespace AZ
             return *this;
         }
 
-        DescriptorTable::DescriptorTable(DescriptorHandle handle, uint16_t count)
+        DescriptorTable::DescriptorTable(DescriptorHandle handle, uint32_t count)
             : m_offset(handle)
             , m_size(count)
         {}
@@ -69,7 +69,7 @@ namespace AZ
             return m_offset.m_flags;
         }
 
-        uint16_t DescriptorTable::GetSize() const
+        uint32_t DescriptorTable::GetSize() const
         {
             return m_size;
         }

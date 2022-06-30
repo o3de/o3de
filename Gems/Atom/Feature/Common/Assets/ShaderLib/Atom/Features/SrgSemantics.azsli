@@ -50,6 +50,11 @@ ShaderResourceGroupSemantic SRG_PerScene
     FrequencyId = 6;
 };
 
+ShaderResourceGroupSemantic SRG_Bindless
+{
+    FrequencyId = 7;
+};
+
 // Ray tracing SRGs
 ShaderResourceGroupSemantic SRG_RayTracingGlobal
 {

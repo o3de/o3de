@@ -41,6 +41,16 @@ namespace AZ
             //! Returns the hash of the view.
             HashValue64 GetHash() const;
 
+            virtual uint32_t GetBindlessReadIndex() const
+            {
+                return 0xffffffff;
+            }
+
+            virtual uint32_t GetBindlessReadWriteIndex() const
+            {
+                return 0xffffffff;
+            }
+
         protected:
             HashValue64 m_hash = HashValue64{ 0 };
 

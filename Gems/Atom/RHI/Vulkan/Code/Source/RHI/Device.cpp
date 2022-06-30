@@ -162,6 +162,12 @@ namespace AZ
             descriptorIndexingFeatures.descriptorBindingPartiallyBound = physicalDeviceDescriptorIndexingFeatures.shaderStorageTexelBufferArrayNonUniformIndexing;
             descriptorIndexingFeatures.descriptorBindingVariableDescriptorCount = physicalDeviceDescriptorIndexingFeatures.descriptorBindingVariableDescriptorCount;
             descriptorIndexingFeatures.runtimeDescriptorArray = physicalDeviceDescriptorIndexingFeatures.runtimeDescriptorArray;
+            descriptorIndexingFeatures.descriptorBindingSampledImageUpdateAfterBind =
+                physicalDeviceDescriptorIndexingFeatures.descriptorBindingSampledImageUpdateAfterBind;
+            descriptorIndexingFeatures.descriptorBindingStorageImageUpdateAfterBind =
+                physicalDeviceDescriptorIndexingFeatures.descriptorBindingStorageImageUpdateAfterBind;
+            descriptorIndexingFeatures.descriptorBindingStorageBufferUpdateAfterBind =
+                physicalDeviceDescriptorIndexingFeatures.descriptorBindingStorageBufferUpdateAfterBind;
 
             VkPhysicalDeviceBufferDeviceAddressFeaturesEXT bufferDeviceAddressFeatures = {};
             bufferDeviceAddressFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES_EXT;
@@ -204,6 +210,11 @@ namespace AZ
                 vulkan12Features.bufferDeviceAddress = physicalDevice.GetPhysicalDeviceVulkan12Features().bufferDeviceAddress;
                 vulkan12Features.bufferDeviceAddressMultiDevice = physicalDevice.GetPhysicalDeviceVulkan12Features().bufferDeviceAddressMultiDevice;
                 vulkan12Features.runtimeDescriptorArray = physicalDevice.GetPhysicalDeviceVulkan12Features().runtimeDescriptorArray;
+                vulkan12Features.descriptorBindingSampledImageUpdateAfterBind = physicalDevice.GetPhysicalDeviceVulkan12Features().descriptorBindingSampledImageUpdateAfterBind;
+                vulkan12Features.descriptorBindingStorageImageUpdateAfterBind = physicalDevice.GetPhysicalDeviceVulkan12Features().descriptorBindingStorageImageUpdateAfterBind;
+                vulkan12Features.descriptorBindingStorageBufferUpdateAfterBind = physicalDevice.GetPhysicalDeviceVulkan12Features().descriptorBindingStorageBufferUpdateAfterBind;
+                vulkan12Features.descriptorBindingPartiallyBound = physicalDevice.GetPhysicalDeviceVulkan12Features().descriptorBindingPartiallyBound;
+                vulkan12Features.descriptorBindingUpdateUnusedWhilePending = physicalDevice.GetPhysicalDeviceVulkan12Features().descriptorBindingUpdateUnusedWhilePending;
                 robustness2.pNext = &vulkan12Features;
                 deviceInfo.pNext = &depthClipEnabled;
             }
@@ -273,6 +284,9 @@ namespace AZ
 
             //Load device features now that we have loaded all extension info
             physicalDevice.LoadSupportedFeatures();
+
+            m_bindlessDescriptorPool.Init(*this);
+
             return RHI::ResultCode::Success;
         }
 
@@ -476,6 +490,11 @@ namespace AZ
             return *m_asyncUploadQueue;
         }        
 
+        BindlessDescriptorPool& Device::GetBindlessDescriptorPool()
+        {
+            return m_bindlessDescriptorPool;
+        }
+
         RHI::Ptr<Buffer> Device::AcquireStagingBuffer(AZStd::size_t byteCount)
         {
             RHI::Ptr<Buffer> stagingBuffer = Buffer::Create();
@@ -546,6 +565,7 @@ namespace AZ
 
             m_commandQueueContext.Shutdown();
 
+            m_bindlessDescriptorPool.Shutdown();
             m_stagingBufferPool.reset();
             m_renderPassCache.first.Clear();
             m_framebufferCache.first.Clear();
@@ -622,6 +642,7 @@ namespace AZ
             m_commandQueueContext.End();
             m_commandListAllocator.Collect();
             m_semaphoreAllocator.Collect();
+            m_bindlessDescriptorPool.GarbageCollect();
         }
 
         void Device::WaitForIdleInternal() 

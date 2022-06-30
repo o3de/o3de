@@ -52,16 +52,28 @@ namespace AZ
 #endif
 
             // Vulkan BufferViews are used to enable shaders to access buffer contents interpreted as formatted data.
-            if (viewDescriptor.m_elementFormat != RHI::Format::Unknown &&
-                (RHI::CheckBitsAny(bindFlags, RHI::BufferBindFlags::ShaderRead) ||
-                 RHI::CheckBitsAny(bindFlags, RHI::BufferBindFlags::ShaderWrite)))
+            bool shaderRead = RHI::CheckBitsAny(bindFlags, RHI::BufferBindFlags::ShaderRead);
+            bool shaderReadWrite = RHI::CheckBitsAny(bindFlags, RHI::BufferBindFlags::ShaderWrite);
+            if (viewDescriptor.m_elementFormat != RHI::Format::Unknown && (shaderRead || shaderReadWrite))
             {
                 auto result = BuildNativeBufferView(device, buffer, viewDescriptor);
+
+                if (shaderRead)
+                {
+                    m_readIndex = device.GetBindlessDescriptorPool().AttachReadBuffer(this);
+                }
+
+                if (shaderReadWrite)
+                {
+                    m_readWriteIndex = device.GetBindlessDescriptorPool().AttachReadWriteBuffer(this);
+                }
+
                 RETURN_RESULT_IF_UNSUCCESSFUL(result);
             }
             else if (RHI::CheckBitsAny(bindFlags, RHI::BufferBindFlags::RayTracingAccelerationStructure))
             {
                 m_nativeAccelerationStructure = buffer.GetNativeAccelerationStructure();
+                m_tlasIndex = device.GetBindlessDescriptorPool().AttachTLAS(this);
             }
 
             SetName(GetName());
@@ -75,6 +87,21 @@ namespace AZ
                 auto& device = static_cast<Device&>(GetDevice());
                 device.QueueForRelease(new ReleaseContainer<VkBufferView>(device.GetNativeDevice(), m_nativeBufferView, vkDestroyBufferView));
                 m_nativeBufferView = VK_NULL_HANDLE;
+
+                if (m_readIndex != ~0u)
+                {
+                    device.GetBindlessDescriptorPool().DetachReadBuffer(m_readIndex);
+                }
+
+                if (m_readWriteIndex != ~0u)
+                {
+                    device.GetBindlessDescriptorPool().DetachReadWriteBuffer(m_readWriteIndex);
+                }
+
+                if (m_tlasIndex != ~0u)
+                {
+                    device.GetBindlessDescriptorPool().DetachTLAS(m_tlasIndex);
+                }
             }
             return RHI::ResultCode::Success;
         }
@@ -116,5 +143,20 @@ namespace AZ
             return m_nativeAccelerationStructure;
         }
 
-    }
-}
+        uint32_t BufferView::GetBindlessReadIndex() const
+        {
+            return m_readIndex;
+        }
+
+        uint32_t BufferView::GetBindlessReadWriteIndex() const
+        {
+            return m_readWriteIndex;
+        }
+
+        uint32_t BufferView::GetBindlessTLASIndex() const
+        {
+            return m_tlasIndex;
+        }
+
+    } // namespace Vulkan
+} // namespace AZ
