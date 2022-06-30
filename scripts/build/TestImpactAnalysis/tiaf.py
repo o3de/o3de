@@ -312,17 +312,17 @@ class TestImpact:
         logger.info(f"Test suite is set to '{suite}'.")
 
         # Exclude tests
-        if exclude_file is not None:
+        if exclude_file:
             args.append(f"--exclude_file={exclude_file}")
             logger.info(f"Exclude file found, excluding the tests stored at '{exclude_file}'.")
         else:
             logger.info(f'Exclude file not found, skipping.')
 
         # Timeouts
-        if test_timeout is not None:
+        if test_timeout:
             args.append(f"--ttimeout={test_timeout}")
             logger.info(f"Test target timeout is set to {test_timeout} seconds.")
-        if global_timeout is not None:
+        if global_timeout:
             args.append(f"--gtimeout={global_timeout}")
             logger.info(f"Global sequence timeout is set to {test_timeout} seconds.")
 
@@ -340,7 +340,7 @@ class TestImpact:
                 report = json.load(json_file)
 
             # Attempt to store the historic data for this branch and sequence
-            if self._is_source_of_truth_branch and persistent_storage is not None:
+            if self._is_source_of_truth_branch and persistent_storage:
                 persistent_storage.update_and_store_historic_data()
         else:
             logger.error(f"The test impact analysis runtime returned with error: '{runtime_result.returncode}'.")
