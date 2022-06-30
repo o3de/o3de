@@ -102,13 +102,7 @@ namespace AssetProcessor
 
         m_ui->SourceAssetDetailTabs->setTabText(0, tr("Products (%1)").arg(productCount));
 
-        if (productCount == 0)
-        {
-            m_ui->productTable->insertRow(productCount);
-            QTableWidgetItem* rowName = new QTableWidgetItem(tr("No products"));
-            m_ui->productTable->setItem(productCount, 1, rowName);
-            ++productCount;
-        }
+        m_ui->SourceAssetDetailTabs->setTabVisible(0, productCount > 0);
     }
 
     void SourceAssetDetailsPanel::BuildOutgoingSourceDependencies(
@@ -146,19 +140,7 @@ namespace AssetProcessor
         });
 
         m_ui->SourceAssetDetailTabs->setTabText(1, tr("Dependencies - Out (%1)").arg(sourceDependencyCount));
-
-        if (sourceDependencyCount == 0)
-        {
-            m_ui->outgoingSourceDependenciesTable->insertRow(sourceDependencyCount);
-            QTableWidgetItem* rowName = new QTableWidgetItem(tr("No source dependencies"));
-            m_ui->outgoingSourceDependenciesTable->setItem(sourceDependencyCount, 1, rowName);
-            ++sourceDependencyCount;
-        }
-
-        // The default list behavior is to maintain size and let you scroll within.
-        // The entire frame is scrollable here, so the list should adjust to fit the contents.
-        m_ui->outgoingSourceDependenciesTable->setMinimumHeight(m_ui->outgoingSourceDependenciesTable->rowHeight(0) * sourceDependencyCount + 2 * m_ui->outgoingSourceDependenciesTable->frameWidth());
-        m_ui->outgoingSourceDependenciesTable->adjustSize();
+        m_ui->SourceAssetDetailTabs->setTabVisible(1, sourceDependencyCount > 0);
     }
 
     void SourceAssetDetailsPanel::BuildIncomingSourceDependencies(
@@ -191,19 +173,7 @@ namespace AssetProcessor
         });
 
         m_ui->SourceAssetDetailTabs->setTabText(2, tr("Dependencies - In (%1)").arg(sourceDependencyCount));
-        if (sourceDependencyCount == 0)
-        {
-            m_ui->incomingSourceDependenciesTable->insertRow(sourceDependencyCount);
-            QTableWidgetItem* rowName = new QTableWidgetItem(tr("No source dependencies"));
-            m_ui->incomingSourceDependenciesTable->setItem(sourceDependencyCount, 1, rowName);
-            ++sourceDependencyCount;
-        }
-
-        // The default list behavior is to maintain size and let you scroll within.
-        // The entire frame is scrollable here, so the list should adjust to fit the contents.
-        m_ui->incomingSourceDependenciesTable->setMinimumHeight(m_ui->incomingSourceDependenciesTable->rowHeight(0) * sourceDependencyCount + 2 * m_ui->incomingSourceDependenciesTable->frameWidth());
-        m_ui->incomingSourceDependenciesTable->adjustSize();
-
+        m_ui->SourceAssetDetailTabs->setTabVisible(2, sourceDependencyCount > 0);
     }
 
     void SourceAssetDetailsPanel::ResetText()
