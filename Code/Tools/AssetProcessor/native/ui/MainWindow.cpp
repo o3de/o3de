@@ -522,6 +522,27 @@ void MainWindow::Activate()
 
     m_guiApplicationManager->GetAssetProcessorManager()->SetBuilderDebugFlag(enableBuilderDebugFlag);
     ui->debugOutputCheckBox->setCheckState(enableBuilderDebugFlag ? Qt::Checked : Qt::Unchecked);
+
+    connect(ui->fastScanButton, &QPushButton::clicked, this, &MainWindow::OnFastScanButtonClicked);
+
+    settings.beginGroup("Options");
+    bool initialScanSkippingEnabled = settings.value("SkipInitialScan", QVariant(false)).toBool();
+    settings.endGroup();
+
+    QObject::connect(ui->skipinitialdatabaseCheck, &QCheckBox::stateChanged, this,
+        [](int newCheckState)
+    {
+        bool newOption = newCheckState == Qt::Checked ? true : false;
+        // don't change initial scan skipping feature value, as it's only relevant on the first scan
+        // save the value for the next run
+        QSettings settingsInCallback;
+        settingsInCallback.beginGroup("Options");
+        settingsInCallback.setValue("SkipInitialScan", QVariant(newOption));
+        settingsInCallback.endGroup();
+    });
+
+    m_guiApplicationManager->GetAssetProcessorManager()->SetInitialScanSkippingFeature(initialScanSkippingEnabled);
+    ui->skipinitialdatabaseCheck->setCheckState(initialScanSkippingEnabled ? Qt::Checked : Qt::Unchecked);
 }
 
 void MainWindow::BuilderTabSelectionChanged(const QItemSelection& selected, const QItemSelection& /*deselected*/)
@@ -1175,6 +1196,11 @@ void MainWindow::HighlightAsset(QString assetPath)
 
     // select the first item in the list
     ui->jobTreeView->setCurrentIndex(m_jobSortFilterProxy->index(0, 0));
+}
+
+void MainWindow::OnFastScanButtonClicked()
+{
+    m_guiApplicationManager->FastScan();
 }
 
 void MainWindow::OnAssetTabChange(int index)

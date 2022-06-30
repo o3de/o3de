@@ -117,6 +117,8 @@ public:
 
     void Rescan();
 
+    void FastScan();
+
     bool IsAssetProcessorManagerIdle() const override;
     bool CheckFullIdle();
 Q_SIGNALS:
