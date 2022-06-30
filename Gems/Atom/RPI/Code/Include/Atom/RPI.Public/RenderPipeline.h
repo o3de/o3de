@@ -11,6 +11,7 @@
 #include <Atom/RHI/DrawList.h>
 
 #include <Atom/RPI.Public/Base.h>
+#include <Atom/RPI.Public/PipelinePassChanges.h>
 #include <Atom/RPI.Public/Pass/PassTree.h>
 #include <Atom/RPI.Public/Pass/ParentPass.h>
 
@@ -140,19 +141,17 @@ namespace AZ
 
             const Ptr<ParentPass>& GetRootPass() const;
 
+            //! Returns the flags indicating the pipeline pass changes that occured this past frame
+            u32 GetPipelinePassChanges() const { return m_pipelinePassChanges; }
+
             //! Processes passes in the pipeline that are queued for build, initialization or removal
             void ProcessQueuedPassChanges();
 
-            //! This function need to be called by Pass class when any passes are added/removed in this pipeline's pass tree.
-            void SetPassModified();
-
-            //! Notifies the pipeline it needs to recreate passes. Typical use case is for pass asset hot reloading.
-            void SetPassNeedsRecreate();
+            //! This function signals the render pipeline that modifications have been made to the pipeline passes
+            void MarkPipelinePassChanges(u32 passChangeFlags);
             
-            //! Update passes and views when any pass was modified which may affect pipeline views.
-            //! This function is automatically called when frame starts. User may call it manually when they expect to get up to date view information
-            //! after any pass changes.
-            void OnPassModified();
+            //! Update passes and views that are affected by any modifed passes. Called at the start of each frame.
+            void UpdatePasses();
 
             //! Check if this pipeline should be removed after a single execution.
             bool IsExecuteOnce();
@@ -288,12 +287,12 @@ namespace AZ
             
             // RenderPipeline's name id, it will be used to identify the render pipeline when it's added to a Scene
             RenderPipelineId m_nameId;
-            
-            // Whether the pass tree was modified. It's used to trigger rebuild pipeline views when frame starts
-            bool m_wasPassModified = false;
 
             // Whether the pipeline should recreate it's pass tree, for example in the case of pass asset hot reloading.
             bool m_needsPassRecreate = false;
+
+            // Set of flags to track what changes have been made to the pipeline's passes
+            u32 m_pipelinePassChanges = PipelinePassChanges::NoPassChanges;
 
             PipelineViewTag m_mainViewTag;
 

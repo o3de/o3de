@@ -29,9 +29,10 @@ namespace AtomToolsFramework
         void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
 
         //! AZ::Render::FrameCaptureNotificationBus::Handler overrides...
-        void OnCaptureFinished(AZ::Render::FrameCaptureResult result, const AZStd::string& info) override;
+        void OnCaptureFinished(uint32_t frameCaptureId, AZ::Render::FrameCaptureResult result, const AZStd::string& info) override;
 
         //! This is necessary to suspend capture until preview scene is ready
         int m_ticksToCapture = 1;
+        uint32_t m_frameCaptureId = AZ::Render::FrameCaptureRequests::s_InvalidFrameCaptureId;
     };
 } // namespace AtomToolsFramework

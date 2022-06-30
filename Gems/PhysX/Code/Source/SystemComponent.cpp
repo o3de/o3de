@@ -118,12 +118,12 @@ namespace PhysX
 
     void SystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC_CE("PhysXService"));
+        provided.push_back(AZ_CRC_CE("PhysicsService"));
     }
 
     void SystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC_CE("PhysXService"));
+        incompatible.push_back(AZ_CRC_CE("PhysicsService"));
     }
 
     void SystemComponent::GetRequiredServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& required)
