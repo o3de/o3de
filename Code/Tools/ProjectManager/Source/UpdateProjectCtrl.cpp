@@ -278,7 +278,7 @@ namespace O3DE::ProjectManager
             }
 
             // Move project first to avoid trying to update settings at the new location before it has been moved there
-            if (newProjectSettings.m_path != m_projectInfo.m_path)
+            if (QDir(newProjectSettings.m_path) != QDir(m_projectInfo.m_path))
             {
                 if (!ProjectUtils::MoveProject(m_projectInfo.m_path, newProjectSettings.m_path, this))
                 {
@@ -293,9 +293,9 @@ namespace O3DE::ProjectManager
                 return false;
             }
 
-            if (newProjectSettings.m_path != m_projectInfo.m_path ||
+            if (QDir(newProjectSettings.m_path) != QDir(m_projectInfo.m_path) ||
                 newProjectSettings.m_projectName != m_projectInfo.m_projectName ||
-                newProjectSettings.m_enginePath != m_projectInfo.m_enginePath)
+                QDir(newProjectSettings.m_enginePath) != QDir(m_projectInfo.m_enginePath))
             {
                 // Remove project build successfully paths for both old and new projects
                 // because a full rebuild is required when moving projects
