@@ -469,7 +469,7 @@ namespace AZ
                 for (auto& renderPipeline : scene->GetRenderPipelines())
                 {
                     renderPipeline->GetRenderSettings().m_multisampleState = multisampleState;
-                    renderPipeline->SetPassNeedsRecreate();
+                    renderPipeline->MarkPipelinePassChanges(PipelinePassChanges::MultisampleStateChanged);
                 }
             }
         }

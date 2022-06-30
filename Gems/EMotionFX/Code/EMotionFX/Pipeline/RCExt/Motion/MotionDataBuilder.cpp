@@ -20,6 +20,7 @@
 #include <SceneAPIExt/Rules/MotionRangeRule.h>
 #include <SceneAPIExt/Rules/MotionAdditiveRule.h>
 #include <SceneAPIExt/Rules/MotionSamplingRule.h>
+#include <SceneAPIExt/Rules/RootMotionExtractionRule.h>
 #include <RCExt/Motion/MotionDataBuilder.h>
 #include <RCExt/ExportContexts.h>
 
@@ -230,9 +231,15 @@ namespace EMotionFX
             // Grab the rules we need before visiting the scene graph.
             AZStd::shared_ptr<const Rule::MotionSamplingRule> samplingRule = motionGroup.GetRuleContainerConst().FindFirstByType<Rule::MotionSamplingRule>();
             AZStd::shared_ptr<const Rule::MotionAdditiveRule> additiveRule = motionGroup.GetRuleContainerConst().FindFirstByType<Rule::MotionAdditiveRule>();
+            AZStd::shared_ptr<const Rule::RootMotionExtractionRule> rootMotionExtractionRule = motionGroup.GetRuleContainerConst().FindFirstByType<Rule::RootMotionExtractionRule>();
             motionData->SetAdditive(additiveRule ? true : false);
 
             AZStd::vector<size_t> rootJoints; // The list of root nodes.
+
+            // Data for root motion extraction
+            const size_t invalidJointDataIndex = AZStd::numeric_limits<size_t>::max();
+            size_t sampleJointDataIndex = invalidJointDataIndex;
+            size_t rootJointDataIndex = invalidJointDataIndex;
 
             size_t maxNumFrames = 0;
             double lowestTimeStep = 999999999.0;
@@ -258,6 +265,16 @@ namespace EMotionFX
                     continue;
                 }
 
+                const SceneContainers::SceneGraph::NodeIndex boneNodeIndex = graph.Find(it->first.GetPath());
+                const char* nodeName = it->first.GetName();
+                const char* nodePath = it->first.GetPath();
+
+                // Add root joint to motion data when root motion extraction rule exsits.
+                if (rootMotionExtractionRule && boneNodeIndex == rootBoneNodeIndex)
+                {
+                    rootJointDataIndex = motionData->AddJoint(nodeName, Transform::CreateIdentity(), Transform::CreateIdentity());
+                }
+
                 // Currently only get the first (one) AnimationData
                 auto childView = SceneViews::MakeSceneGraphChildView<SceneViews::AcceptEndPointsOnly>(graph, graph.ConvertToNodeIndex(it.GetHierarchyIterator()),
                         graph.GetContentStorage().begin(), true);
@@ -268,13 +285,17 @@ namespace EMotionFX
                 }
 
                 const SceneDataTypes::IAnimationData* animation = azrtti_cast<const SceneDataTypes::IAnimationData*>(result->get());
-
-                const char* nodeName = it->first.GetName();
                 const size_t jointDataIndex = motionData->AddJoint(nodeName, Transform::CreateIdentity(), Transform::CreateIdentity());
+
+                // Keep track of the sample joint index.
+                if (rootMotionExtractionRule && sampleJointDataIndex == invalidJointDataIndex
+                    && AzFramework::StringFunc::Find(nodePath, rootMotionExtractionRule->GetData().GetSampleJoint().c_str()) != AZStd::string::npos)
+                {
+                    sampleJointDataIndex = jointDataIndex;
+                }
 
                 // If we deal with a root bone or one of its child nodes, disable the keytrack optimization.
                 // This prevents sliding feet etc. A better solution is probably to increase compression rates based on the "distance" from the root node, hierarchy wise.
-                const SceneContainers::SceneGraph::NodeIndex boneNodeIndex = graph.Find(it->first.GetPath());
                 if (graph.GetNodeParent(boneNodeIndex) == rootBoneNodeIndex || boneNodeIndex == rootBoneNodeIndex)
                 {
                     rootJoints.emplace_back(jointDataIndex);
@@ -387,6 +408,12 @@ namespace EMotionFX
                 (
                     motionData->SetJointBindPoseScale(jointDataIndex, bindScale);
                 )
+            } // End looping through bones and adding motion data.
+
+            if (rootMotionExtractionRule && sampleJointDataIndex != invalidJointDataIndex && rootJointDataIndex != invalidJointDataIndex)
+            {
+                const auto& data = rootMotionExtractionRule->GetData();
+                motionData->ExtractMotion(sampleJointDataIndex, rootJointDataIndex, data.GetTransitionZeroXAxis(), data.GetTransitionZeroYAxis());
             }
 
             AZStd::shared_ptr<Rule::IMotionScaleRule> scaleRule = motionGroup.GetRuleContainerConst().FindFirstByType<Rule::IMotionScaleRule>();

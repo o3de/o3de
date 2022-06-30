@@ -58,7 +58,6 @@ ApplicationManagerBase::ApplicationManagerBase(int* argc, char*** argv, QObject*
 ApplicationManagerBase::~ApplicationManagerBase()
 {
     AzToolsFramework::SourceControlNotificationBus::Handler::BusDisconnect();
-    AssetProcessor::DiskSpaceInfoBus::Handler::BusDisconnect();
     AZ::Debug::TraceMessageBus::Handler::BusDisconnect();
     AssetProcessor::AssetBuilderRegistrationBus::Handler::BusDisconnect();
     AssetBuilderSDK::AssetBuilderBus::Handler::BusDisconnect();
@@ -886,7 +885,6 @@ ApplicationManager::BeforeRunStatus ApplicationManagerBase::BeforeRun()
     AssetProcessor::AssetBuilderRegistrationBus::Handler::BusConnect();
     AssetProcessor::AssetBuilderInfoBus::Handler::BusConnect();
     AZ::Debug::TraceMessageBus::Handler::BusConnect();
-    AssetProcessor::DiskSpaceInfoBus::Handler::BusConnect();
     AzToolsFramework::SourceControlNotificationBus::Handler::BusConnect();
 
     return ApplicationManager::BeforeRunStatus::Status_Success;
@@ -1405,7 +1403,7 @@ bool ApplicationManagerBase::Activate()
         "AssetProcessor will process assets from project root %s.\n", AssetUtilities::ComputeProjectPath().toUtf8().data());
 
     // Shutdown if the disk has less than 128MB of free space
-    if (!CheckSufficientDiskSpace(projectCache.absolutePath(), 128 * 1024 * 1024, true))
+    if (!CheckSufficientDiskSpace(128 * 1024 * 1024, true))
     {
         // CheckSufficientDiskSpace reports an error if disk space is low.
         return false;
@@ -1854,9 +1852,21 @@ bool ApplicationManagerBase::OnError(const char* /*window*/, const char* /*messa
     return true;
 }
 
-bool ApplicationManagerBase::CheckSufficientDiskSpace(const QString& savePath, qint64 requiredSpace, bool shutdownIfInsufficient)
+bool ApplicationManagerBase::CheckSufficientDiskSpace(qint64 requiredSpace, bool shutdownIfInsufficient)
 {
     bool createdDirectory = false;
+
+    QDir cacheDir;
+    if (!AssetUtilities::ComputeProjectCacheRoot(cacheDir))
+    {
+        AZ_Error(
+            "AssetProcessor",
+            false,
+            "Could not compute project cache root, please configure your project correctly to launch Asset Processor.");
+        return false;
+    }
+
+    QString savePath = cacheDir.absolutePath();
 
     if (!QDir(savePath).exists())
     {
@@ -1867,25 +1877,6 @@ bool ApplicationManagerBase::CheckSufficientDiskSpace(const QString& savePath, q
 
     qint64 bytesFree = 0;
     [[maybe_unused]] bool result = AzToolsFramework::ToolsFileUtils::GetFreeDiskSpace(savePath, bytesFree);
-
-    if (createdDirectory)
-    {
-        // Clean up the folder so we're not leaving empty folders all over the place
-        // We need to walk up the path and try to delete each folder along the way since savePath might have created a series of folders
-        // Just deleting savePath would only delete the last folder created
-        AZ::IO::Path path(savePath.toUtf8().constData());
-        while(AZ::IO::SystemFile::DeleteDir(path.c_str())) // DeleteDir should fail if the directory is not empty
-        {
-            if (path.HasParentPath())
-            {
-                path = path.ParentPath();
-            }
-            else
-            {
-                break;
-            }
-        }
-    }
 
     AZ_Assert(result, "Unable to determine the amount of free space on drive containing path (%s).", savePath.toUtf8().constData());
 
