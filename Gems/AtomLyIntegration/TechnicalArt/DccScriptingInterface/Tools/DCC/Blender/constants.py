@@ -19,21 +19,21 @@ Notice: this module should not actually set ENVARs in the os.environ
 That would be the responsibility of a module like config.py
 """
 # -------------------------------------------------------------------------
-# built-ins
+import timeit
+_MODULE_START = timeit.default_timer()  # start tracking
+
+# standard imports
 import sys
 import os
 import site
 import timeit
 import inspect
-from os.path import expanduser
 from pathlib import Path
 import logging as _logging
 # -------------------------------------------------------------------------
 
 
 # -------------------------------------------------------------------------
-_START = timeit.default_timer() # start tracking
-
 # global scope
 _MODULENAME = 'Tools.DCC.Blender.constants'
 _LOGGER = _logging.getLogger(_MODULENAME)
@@ -96,6 +96,22 @@ PATH_DCCSI_TOOLS_BLENDER = _PATH_DCCSI_TOOLS_BLENDER
 # Note: we've developed and tested with Blender 3.0 (experimental)
 # change at your own risk, we are just future proofing.
 
+# our dccsi location for substance designer <DCCsi>\Tools\DCC\Blender
+ENVAR_DCCSI_TOOLS_BLENDER = "DCCSI_TOOLS_BLENDER"
+PATH_DCCSI_TOOLS_BLENDER = Path(_MODULE_PATH.parent)
+PATH_DCCSI_TOOLS_BLENDER = Path(os.getenv(ENVAR_DCCSI_TOOLS_BLENDER,
+                                          PATH_DCCSI_TOOLS_BLENDER.as_posix()))
+
+# DCCsi tools dir
+# This could be improved, ENVAR Key should be refacted across files to 'DCCSI_TOOLS'
+# ENVAR_PATH_DCCSI_TOOLS = "PATH_DCCSI_TOOLS"  # resolves to <DCCsi>\Tools
+# if it is already defined in a higher up file pull from there
+# to ensure a continual cascade
+from azpy.constants import ENVAR_PATH_DCCSI_TOOLS
+PATH_PATH_DCCSI_TOOLS = Path(PATH_DCCSI_TOOLS_BLENDER.parent.parent)
+PATH_PATH_DCCSI_TOOLS = Path(os.getenv(ENVAR_PATH_DCCSI_TOOLS,
+                                       PATH_PATH_DCCSI_TOOLS.as_posix()))
+
 ENVAR_DCCSI_BLENDER_VERSION = "DCCSI_BLENDER_VERSION"
 TAG_DCCSI_BLENDER_VERSION = "3.1"
 
@@ -106,6 +122,11 @@ ENVAR_PATH_DCCSI_BLENDER_LOC = "PATH_DCCSI_BLENDER_LOC"
 STR_PATH_DCCSI_BLENDER_LOCATION = f'C:/Program Files/Blender Foundation/Blender {TAG_DCCSI_BLENDER_VERSION}'
 PATH_DCCSI_BLENDER_LOC = Path(STR_PATH_DCCSI_BLENDER_LOCATION)
 
+ENVAR_PATH_DCCSI_BLENDER_SCRIPTS = "PATH_DCCSI_BLENDER_SCRIPTS"
+PATH_DCCSI_BLENDER_SCRIPTS = Path(PATH_DCCSI_TOOLS_BLENDER, 'Scripts').resolve()
+PATH_DCCSI_BLENDER_SCRIPTS = Path(os.getenv(ENVAR_PATH_DCCSI_BLENDER_SCRIPTS,
+                                            PATH_DCCSI_BLENDER_SCRIPTS.as_posix()))
+
 # I think this one will launch with a console
 TAG_BLENDER_EXE = "blender.exe"
 ENVAR_PATH_DCCSI_BLENDER_EXE = "PATH_DCCSI_BLENDER_EXE"
@@ -114,9 +135,9 @@ PATH_DCCSI_BLENDER_EXE = Path(STR_PATH_DCCSI_BLENDER_EXE)
 
 # this is the standard launcher that prevents the command window from popping up on start
 # https://developer.blender.org/rBf3944cf503966a93a124e389d9232d7f833c0077
-TAG_BLENDER_LAUNCHER = "blender-launcher.exe"
-ENVAR_DCCSI_BLENDER_LAUNCHER = "DCCSI_BLENDER_LAUNCHER_EXE"
-STR_DCCSI_BLENDER_LAUNCHER_EXE = f'{PATH_DCCSI_BLENDER_LOC}/{TAG_BLENDER_LAUNCHER}'
+TAG_BLENDER_LAUNCHER_EXE = "blender-launcher.exe"
+ENVAR_DCCSI_BLENDER_LAUNCHER_EXE = "DCCSI_BLENDER_LAUNCHER_EXE"
+STR_DCCSI_BLENDER_LAUNCHER_EXE = f'{PATH_DCCSI_BLENDER_LOC}/{TAG_BLENDER_LAUNCHER_EXE}'
 PATH_DCCSI_BLENDER_LAUNCHER_EXE = Path(STR_DCCSI_BLENDER_LAUNCHER_EXE)
 
 # know where to find Blenders python if we ever need it
@@ -206,5 +227,5 @@ if __name__ == '__main__':
     # custom prompt
     sys.ps1 = f"[{_MODULENAME}]>>"
 
-_LOGGER.debug('{0} took: {1} sec'.format(_MODULENAME, timeit.default_timer() - _START))
+_LOGGER.debug('{0} took: {1} sec'.format(_MODULENAME, timeit.default_timer() - _MODULE_START))
 # --- END -----------------------------------------------------------------

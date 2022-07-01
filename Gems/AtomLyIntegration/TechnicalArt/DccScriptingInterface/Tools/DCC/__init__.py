@@ -25,12 +25,12 @@ import logging as _logging
 _PACKAGENAME = 'Tools.DCC'
 
 __all__ = ['Blender',
-           'Maya']  # to do: add others when they are set up
+           'Maya',
+           'Substance']  # to do: add others when they are set up
           #'3dsMax',
           #'Houdini',
           #'Marmoset',
-          #'Substance',
-          #'Foo',
+          # 'Foo',
 
 _LOGGER = _logging.getLogger(_PACKAGENAME)
 _LOGGER.debug('Initializing: {}'.format(_PACKAGENAME))
@@ -61,16 +61,16 @@ _LOGGER.debug('PATH_DCCSI_TOOLS_DCC: {}'.format(_PATH_DCCSI_TOOLS_DCC))
 
 # -------------------------------------------------------------------------
 from Tools import _DCCSI_TESTS
-    
+
 if _DCCSI_TESTS:
     from azpy import test_imports
-    
+
     _LOGGER.info(STR_CROSSBAR)
-    
+
     _LOGGER.info('Testing Imports from {0}'.format(_PACKAGENAME))
     test_imports(__all__,
                  _pkg=_PACKAGENAME,
                  _logger=_LOGGER)
-    
-    _LOGGER.info(STR_CROSSBAR)    
+
+    _LOGGER.info(STR_CROSSBAR)
 # -------------------------------------------------------------------------

@@ -15,9 +15,10 @@ Module Documentation:
 This module manages the dynamic config and settings for boostrapping
 Adobe Substance Designer with o3de inter-op, scripts, etc.
 
-This like the core <DCCsi>/config.py is the use of Dynaconf:
-1. Layered config and settings
-2. Dervie or alter via logic
+This like the core <DCCsi>/config.py uses Dynaconf:
+1. Modular rather then monolithic (single DCC integrations can stand on their own)
+2. Layered config and settings (the core can be extended or )
+3. Dervie or alter via logic
 3. etc. (to do: expand on the benefits)
 
 """
@@ -36,6 +37,10 @@ from pathlib import Path
 import logging as _logging
 # -------------------------------------------------------------------------
 
+# This module and others like Substance/config.py have a lot of duplicate
+# boilerplate code (as we are early, these are the first versions to stand up)
+# They could possibly be improved by unifying into a Class object designed
+# with extensibility
 
 # -------------------------------------------------------------------------
 # global scope
@@ -125,11 +130,9 @@ _DCCSI_SYS_PATH = _DCCSI_CORE_CONFIG._DCCSI_SYS_PATH
 _DCCSI_PYTHONPATH = _DCCSI_CORE_CONFIG._DCCSI_PYTHONPATH
 
 # special, stash local PYTHONPATHs in a non-managed way (won't end up in settings.local.json)
-#global _DCCSI_PYTHONPATH_EXCLUDE
 DCCSI_PYTHONPATH_EXCLUDE = _DCCSI_CORE_CONFIG._DCCSI_PYTHONPATH_EXCLUDE
 
 # this is a dict bucket to store none-managed settings (fully local to module)
-#global _DCCSI_LOCAL_SETTINGS
 _DCCSI_LOCAL_SETTINGS = _DCCSI_CORE_CONFIG._DCCSI_LOCAL_SETTINGS
 # -------------------------------------------------------------------------
 
@@ -187,6 +190,8 @@ def get_config_settings(core_config=_DCCSI_CORE_CONFIG,
     # global _DCCSI_LOCAL_SETTINGS # non-dynaconf managed settings
 
     # This extends the settings and environment with Subtance3d stuff
+    os.environ[f"DYNACONF_{ENVAR_DCCSI_SUBSTANCE_SET_CALLBACKS}"] = str(DCCSI_SUBSTANCE_SET_CALLBACKS)
+
     os.environ[f"DYNACONF_{ENVAR_DCCSI_TOOLS_SUBSTANCE}"] = PATH_DCCSI_TOOLS_SUBSTANCE.as_posix()
     os.environ[f"DYNACONF_{ENVAR_PATH_DCCSI_TOOLS}"] = PATH_PATH_DCCSI_TOOLS.as_posix()
     os.environ[f"DYNACONF_{ENVAR_DCCSI_SUBSTANCE_RESOURCES}"] = PATH_DCCSI_SUBSTANCE_RESOURCES.as_posix()
@@ -195,7 +200,6 @@ def get_config_settings(core_config=_DCCSI_CORE_CONFIG,
     os.environ[f"DYNACONF_{ENVAR_DCCSI_SUBSTANCE_PYTHON}"] = PATH_DCCSI_SUBSTANCE_PYTHON.as_posix()
     os.environ[f"DYNACONF_{ENVAR_DCCSI_SUBSTANCE_PY_EXE}"] = PATH_DCCSI_SUBSTANCE_PY_EXE.as_posix()
     os.environ[f"DYNACONF_{ENVAR_DCCSI_IDE_PY_SUBSTANCE}"] = PATH_DCCSI_IDE_PY_SUBSTANCE.as_posix()
-    os.environ[f"DYNACONF_{ENVAR_DCCSI_SUBSTANCE_SET_CALLBACKS}"] = str(DCCSI_SUBSTANCE_SET_CALLBACKS)
     os.environ[f"DYNACONF_{ENVAR_DCCSI_SUBSTANCE_SCRIPTS}"] = PATH_DCCSI_SUBSTANCE_SCRIPTS.as_posix()
     os.environ[f"DYNACONF_{ENVAR_DCCSI_SUBSTANCE_CFG}"] = PATH_DCCSI_SUBSTANCE_CFG.as_posix()
 
@@ -207,6 +211,8 @@ def get_config_settings(core_config=_DCCSI_CORE_CONFIG,
 
     # packs paths lists to DCCSI_ managed envars
     core_config.add_path_list_to_envar(dccsi_sys_path, 'DYNACONF_DCCSI_SYS_PATH')
+
+    # to do: might be a bug here, not writting to setting.local.json
     core_config.add_path_list_to_envar(dccsi_pythonpath, 'DYNACONF_DCCSI_PYTHONPATH')
 
     # final stage, if we have managed path lists set them
@@ -240,7 +246,7 @@ if __name__ == '__main__':
 
     main_start = timeit.default_timer()  # start tracking
 
-    _MODULENAME = 'DCCsi.Tools.DCC.Substance.config'
+    _MODULENAME = 'DCCsi.Tools.DCC.Substance.config.cli'
 
     import pathlib
 
@@ -257,12 +263,7 @@ if __name__ == '__main__':
         # override loglevel if runnign debug
         _DCCSI_LOGLEVEL = _logging.DEBUG
 
-    # set up module logging
-    #for handler in _logging.root.handlers[:]:
-        #_logging.root.removeHandler(handler)
-
     # configure basic logger
-    # note: not using a common logger to reduce cyclical imports
     _logging.basicConfig(level=_DCCSI_LOGLEVEL,
                         format=FRMT_LOG_LONG,
                         datefmt='%m-%d %H:%M')
@@ -280,7 +281,7 @@ if __name__ == '__main__':
     # parse the command line args
     import argparse
     parser = argparse.ArgumentParser(
-        description='O3DE DCCsi Dynamic Config (dynaconf) for Blender',
+        description='O3DE DCCsi Dynamic Config (dynaconf) for Substance',
         epilog="Attempts to determine O3DE project if -pp not set")
 
     parser.add_argument('-gd', '--global-debug',
@@ -362,7 +363,7 @@ if __name__ == '__main__':
 
     if args.developer_mode:
         _DCCSI_DEV_MODE = True
-        attach_debugger()  # attempts to start debugger
+        azpy.config_utils.attach_debugger()  # attempts to start debugger
 
     if args.set_debugger:
         _LOGGER.info('Setting and switching debugger type not implemented (default=WING)')

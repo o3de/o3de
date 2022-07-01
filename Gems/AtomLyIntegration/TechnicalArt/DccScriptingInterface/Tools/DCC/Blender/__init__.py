@@ -28,7 +28,6 @@ _PACKAGENAME = 'Tools.DCC.Blender'
 
 __all__ = ['config',
            'constants',
-           'setup',
            'start']
 
 _LOGGER = _logging.getLogger(_PACKAGENAME)
@@ -90,13 +89,13 @@ def attach_debugger():
     This should be replaced with a plugin based dev package."""
     _DCCSI_GDEBUG = True
     os.environ["DYNACONF_DCCSI_GDEBUG"] = str(_DCCSI_GDEBUG)
-    
+
     _DCCSI_DEV_MODE = True
     os.environ["DYNACONF_DCCSI_DEV_MODE"] = str(_DCCSI_DEV_MODE)
-    
+
     from azpy.test.entry_test import connect_wing
     _debugger = connect_wing()
-    
+
     return _debugger
 
 if _DCCSI_DEV_MODE:
@@ -149,4 +148,3 @@ if _DCCSI_DEV_MODE:
 if __name__ == '__main__':
     """Run as main, perform debug and tests"""
     pass
-    

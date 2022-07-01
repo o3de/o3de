@@ -69,14 +69,13 @@ _LOGGER.debug(f'site.addsitedir({_PATH_DCCSIG})')
 # If a ENVAR is already set (externally), that will persist as default
 
 # our dccsi location for substance designer <DCCsi>\Tools\DCC\Substance
-# to do: This ENVAR Key should be refacted across files to 'DCCSI_TOOLS_SUBSTANCE'
 ENVAR_DCCSI_TOOLS_SUBSTANCE = "DCCSI_TOOLS_SUBSTANCE"
 PATH_DCCSI_TOOLS_SUBSTANCE = Path(_MODULE_PATH.parent)
 PATH_DCCSI_TOOLS_SUBSTANCE = Path(os.getenv(ENVAR_DCCSI_TOOLS_SUBSTANCE,
-                                                  PATH_DCCSI_TOOLS_SUBSTANCE.as_posix()))
+                                            PATH_DCCSI_TOOLS_SUBSTANCE.as_posix()))
 
 # DCCsi tools dir
-# to do: This ENVAR Key should be refacted across files to 'DCCSI_TOOLS'
+# This could be improved, ENVAR Key should be refacted across files to 'DCCSI_TOOLS'
 # ENVAR_PATH_DCCSI_TOOLS = "PATH_DCCSI_TOOLS"  # resolves to <DCCsi>\Tools
 # if it is already defined in a higher up file pull from there
 # to ensure a continual cascade
@@ -158,7 +157,7 @@ WIN_ALT_CCD_REG_APP_PATHS_HKEY = "HKEY_CURRENT_USER\\Software\\Microsoft\\Window
 WIN_SA_REG_APP_PATHS_HKEY = "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall6"
 WIN_SA_VER_5_x_SUBKEY = "{25E7D16D-1FBA-49EA-BF36-E2D6B20A9206}"   # Version 5.x
 WIN_SA_VER_6_x_SUBKEY = "{09a302b1-8da8-4f62-b0cb-a208faa210f9}"   # Version 6.x
-WIN_SA_VER_7_x_SUBKEY = "{e9e3d6d9-3023-41c7-b223-11d8fdd691b9}"   # Version 7.x (2017.x) to 11.1
+WIN_SA_VER_7_x_SUBKEY = "{e9e3d6d9-3023-41c7-b223-11d8fdd691b9}"   # Version 7.x (201C:\depot\o3de-dev\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface\azpy\__init__.py7.x) to 11.1
 WIN_SA_VER_11_2_SUBKEY = "{662bb79f-5616-44e6-a84d-b3d6abebe002}"  # Version 11.2 (or newer)
 
 # Steam
