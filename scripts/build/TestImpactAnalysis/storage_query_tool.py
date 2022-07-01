@@ -32,7 +32,6 @@ class StorageQueryTool(ABC):
         self._file_out = kwargs.get('file_out')
 
         if self._update_flag or self._create_flag:
-
             self._file = self._get_file(self._file_in)
 
         if self.has_full_address:
