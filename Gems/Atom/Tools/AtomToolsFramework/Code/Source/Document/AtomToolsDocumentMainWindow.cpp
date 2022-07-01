@@ -238,9 +238,14 @@ namespace AtomToolsFramework
             "Document System Settings",
             {
                 AtomToolsFramework::CreatePropertyFromSetting(
+                    "/O3DE/AtomToolsFramework/AtomToolsDocumentSystem/DisplayWarningMessageDialogs",
+                    "Display Warning Message Dialogs",
+                    "Display message boxes for warnings opening documents",
+                    true),
+                AtomToolsFramework::CreatePropertyFromSetting(
                     "/O3DE/AtomToolsFramework/AtomToolsDocumentSystem/DisplayErrorMessageDialogs",
                     "Display Error Message Dialogs",
-                    "Display message boxes for warnings and errors opening documents",
+                    "Display message boxes for errors opening documents",
                     true),
                 AtomToolsFramework::CreatePropertyFromSetting(
                     "/O3DE/AtomToolsFramework/AtomToolsDocumentSystem/EnableAutomaticReload",
@@ -252,6 +257,16 @@ namespace AtomToolsFramework
                     "Enable Automatic Reload Prompts",
                     "Confirm before automatically reloading modified documents",
                     true),
+                AtomToolsFramework::CreatePropertyFromSetting(
+                    "/O3DE/AtomToolsFramework/AtomToolsDocumentSystem/AutoSaveEnabled",
+                    "Enable Auto Save",
+                    "Automatically save documents after they are modified",
+                    false),
+                AtomToolsFramework::CreatePropertyFromSetting(
+                    "/O3DE/AtomToolsFramework/AtomToolsDocumentSystem/AutoSaveInterval",
+                    "Auto Save Interval",
+                    "How often (in milliseconds) auto save occurs",
+                    aznumeric_cast<AZ::s64>(250)),
             }));
         return groups;
     }
