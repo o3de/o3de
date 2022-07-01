@@ -11,13 +11,14 @@
 
 namespace EMotionFX::Pipeline::Behavior
 {
-    const char* RootMotionExtractionRuleBehavior::s_defaultSampleJoint = "hip";
+    // List of default names for the sample joints. The first joint name matches any of those names will be default selected.
+    static constexpr const AZStd::array s_defaultSampleJoints { "Hip", "Pelvis" };
 
     void RootMotionExtractionRuleBehavior::Reflect(AZ::ReflectContext* context)
     {
         Rule::RootMotionExtractionRule::Reflect(context);
 
-        AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
+        auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
         if (serializeContext)
         {
             serializeContext->Class<RootMotionExtractionRuleBehavior, AZ::SceneAPI::SceneCore::BehaviorComponent>()->Version(1);
@@ -45,14 +46,18 @@ namespace EMotionFX::Pipeline::Behavior
         auto nameStorage = scene.GetGraph().GetNameStorage();
         for (auto it = nameStorage.begin(); it != nameStorage.end(); ++it)
         {
-            if (AzFramework::StringFunc::Find(it->GetName(), s_defaultSampleJoint) != AZStd::string::npos)
+            for (const char* defaultJoint : s_defaultSampleJoints)
             {
-                Rule::RootMotionExtractionData data = rootMotionExtractionRule->GetData();
-                // Set the sample joint name to the 'path' which is unique.
-                data.m_sampleJoint = it->GetPath();
-                rootMotionExtractionRule->SetData(data);
-                return;
+                // Select the first matching joint in the default name list.
+                if (AzFramework::StringFunc::Find(it->GetName(), defaultJoint) != AZStd::string::npos)
+                {
+                    Rule::RootMotionExtractionData data = rootMotionExtractionRule->GetData();
+                    // Set the sample joint name to the 'path' which is unique.
+                    data.m_sampleJoint = it->GetPath();
+                    rootMotionExtractionRule->SetData(data);
+                    return;
+                }
             }
         }
     }
-}
+} // namespace EMotionFX::Pipeline::Behavior

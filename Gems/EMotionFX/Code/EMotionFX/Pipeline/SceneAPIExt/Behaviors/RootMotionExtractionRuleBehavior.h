@@ -24,15 +24,12 @@ namespace EMotionFX::Pipeline::Behavior
 
         ~RootMotionExtractionRuleBehavior() override = default;
 
-        // BehaviorComponent override..
+        // BehaviorComponent override...
         void Activate() override;
         void Deactivate() override;
         static void Reflect(AZ::ReflectContext* context);
 
-        // ManifestMetaInfo override..
+        // ManifestMetaInfo override...
         void InitializeObject(const AZ::SceneAPI::Containers::Scene& scene, AZ::SceneAPI::DataTypes::IManifestObject& target) override;
-
-    private:
-        static const char* s_defaultSampleJoint;
     };
-}
+} // namespace EMotionFX::Pipeline::Behavior
