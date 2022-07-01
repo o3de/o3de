@@ -9,17 +9,15 @@
 set(FILES
     Include/StartingPointInput/InputEventRequestBus.h
     Include/StartingPointInput/InputEventNotificationBus.h
+    Source/Deprecated/InputNode.h
+    Source/Deprecated/InputNode.ScriptCanvasGrammar.xml
     Source/InputConfigurationComponent.h
     Source/InputConfigurationComponent.cpp
     Source/InputEventBindings.h
     Source/InputEventGroup.h
     Source/InputEventMap.h
     Source/InputEventMap.cpp
-    Source/InputLibrary.h
-    Source/InputLibrary.cpp
-    Source/InputNode.h
     Source/InputHandlerNodeable.h
     Source/InputHandlerNodeable.cpp
     Source/InputHandlerNodeable.ScriptCanvasNodeable.xml
-    Source/InputNode.ScriptCanvasGrammar.xml
 )

@@ -17,7 +17,7 @@
 #include <ScriptCanvas/Core/SlotMetadata.h>
 #include <ScriptCanvas/Internal/Nodes/BaseTimerNode.h>
 #include <ScriptCanvas/Libraries/Core/EBusEventHandler.h>
-#include <ScriptCanvas/Libraries/Core/Repeater.h>
+#include <ScriptCanvas/Libraries/Deprecated/Time/Repeater.h>
 #include <ScriptCanvas/Utils/SerializationUtils.h>
 
 namespace ScriptCanvas

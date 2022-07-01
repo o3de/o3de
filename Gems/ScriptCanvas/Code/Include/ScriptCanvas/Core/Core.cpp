@@ -335,7 +335,7 @@ namespace ScriptCanvas
         return !(*this == other);
     }
 
-    const AZ::IO::Path& SourceHandle::Path() const
+    const AZ::IO::Path& SourceHandle::RelativePath() const
     {
         return m_relativePath;
     }

@@ -357,7 +357,7 @@ namespace O3DE::ProjectManager
         connect(iconButton, &QPushButton::clicked, this, &CartButton::ShowGemCart);
         m_layout->addWidget(iconButton);
 
-        m_countLabel = new QLabel();
+        m_countLabel = new QLabel("0");
         m_countLabel->setObjectName("GemCatalogCartCountLabel");
         m_countLabel->setFixedHeight(s_iconSize - 1); // Compensate for the empty icon space by using a slightly smaller label height.
         m_layout->addWidget(m_countLabel);
