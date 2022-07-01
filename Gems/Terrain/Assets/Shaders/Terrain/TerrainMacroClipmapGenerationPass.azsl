@@ -12,6 +12,8 @@
 
 #define THREAD_NUM_X 8
 #define THREAD_NUM_Y 8
+#define NO_NORMAL 0.0
+#define HAS_NORMAL 1.0
 
 ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
 {
@@ -57,9 +59,10 @@ void MainCS(
 
             float3 macroColor = TerrainMaterialSrg::m_baseColor.rgb;
             float3 macroNormal = float3(0.0, 0.0, 1.0);
-            SampleMacroTexture(worldPosition, positionDdx, positionDdy, macroColor, macroNormal);
+            bool hasNormal;
+            SampleMacroTexture(worldPosition, positionDdx, positionDdy, macroColor, macroNormal, hasNormal);
 
-            PassSrg::m_macroColorClipmaps[texelIndex] = float4(macroColor, 1.0);
+            PassSrg::m_macroColorClipmaps[texelIndex] = float4(macroColor, hasNormal ? HAS_NORMAL : NO_NORMAL);
             PassSrg::m_macroNormalClipmaps[texelIndex] = macroNormal.xy;
         }
     }
