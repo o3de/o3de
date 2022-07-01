@@ -15,8 +15,9 @@ class StorageQueryTool(ABC):
 
     def __init__(self, **kwargs):
         """
-        Initialise storage query tool with search parameters and flags  denoting whether to access or delete the resource
-        @param kwargs: kwargs containing parsed arguments
+        Initialise storage query tool with search parameters and flags  denoting whether to access or delete the resource.
+
+        @param kwargs: kwargs containing parsed arguments.
         """
         self._root_directory = kwargs.get('root_directory')
         self._branch = kwargs.get('branch')
@@ -38,7 +39,8 @@ class StorageQueryTool(ABC):
 
     def _get_file(self, file_address: str):
         """
-        Get historic json file from specified file address
+        Get historic json file from specified file address.
+
         @param file_address: Address to read json from.
         """
         try:
@@ -58,36 +60,38 @@ class StorageQueryTool(ABC):
     @abstractmethod
     def _delete(self, file: str):
         """
-        Deletes the specified file
+        Deletes the specified file.
 
-        @param file: The file to be deleted
+        @param file: The file to be deleted.
         """
         pass
 
     @abstractmethod
     def _access(self, file: str):
         """
-        Accesses the specified file
+        Accesses the specified file.
 
-        @param file: The file to be accessed
+        @param file: The file to be accessed.
         """
         pass
 
     @abstractmethod
     def _put(self, file: str, location: str):
         """
-        Put the specified file in the specified location
-        @param file: File in json format to store
-        @param location: Location to store the file
+        Put the specified file in the specified location.
+
+        @param file: File in json format to store.
+        @param location: Location to store the file.
         """
         pass
 
     @abstractmethod
     def _update(self, file: str, location: str):
         """
-        Replace the file in the specified location with the provided filed if it exists
-        @param file: File in json format to store
-        @param location: Location to store the file
+        Replace the file in the specified location with the provided filed if it exists.
+
+        @param file: File in json format to store.
+        @param location: Location to store the file.
         """
         pass
 

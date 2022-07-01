@@ -146,4 +146,4 @@ if __name__ == "__main__":
     except Exception as e:
         logger.error(type(e).__name__)
         logger.error(e.args)
-        logger.error(f"Exception caught by TIAF driver: '{e}'.")
+        logger.error(f"Exception caught by TIAF Tools: '{e}'.")

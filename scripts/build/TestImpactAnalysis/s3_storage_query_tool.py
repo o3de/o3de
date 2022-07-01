@@ -20,7 +20,7 @@ class S3StorageQueryTool(StorageQueryTool):
 
     def __init__(self, **kwargs):
         """
-        Initialise storage query tool with search parameters and access/delete parameters
+        Initialise storage query tool with search parameters and access/delete parameters.
         """
         super().__init__(**kwargs)
         self._bucket_name = kwargs['bucket_name']
@@ -72,8 +72,9 @@ class S3StorageQueryTool(StorageQueryTool):
     def _check_object_exists(self, bucket: str, key: str):
         """
         Method that returns whether an object exists in the specified bucket. It also writes into the console whether the file exists.
-        @param bucket: name of the bucket to check
-        @param key: key of the object to look for
+
+        @param bucket: name of the bucket to check.
+        @param key: key of the object to look for.
         """
         try:
             self._s3.Object(bucket, key).load()
@@ -86,9 +87,10 @@ class S3StorageQueryTool(StorageQueryTool):
 
     def _delete(self, bucket_name: str, file: str):
         """
-        Deletes the specified file
-        @param bucket_name: Bucket to delete file from
-        @param file: The file to be deleted
+        Deletes the specified file.
+
+        @param bucket_name: Bucket to delete file from.
+        @param file: The file to be deleted.
         """
         if self._check_object_exists(bucket_name, file):
             logger.info(
@@ -97,10 +99,11 @@ class S3StorageQueryTool(StorageQueryTool):
 
     def _access(self, bucket_name: str, file: str, destination: str):
         """
-        Accesses the specified file
-        @param bucket_name: Bucket to access file in
-        @param file: The file to be accessed
-        @param destination: Path to where file should be saved on local machine
+        Accesses the specified file.
+
+        @param bucket_name: Bucket to access file in.
+        @param file: The file to be accessed.
+        @param destination: Path to where file should be saved on local machine.
         """
         if self._check_object_exists(bucket_name, file):
             try:
@@ -126,10 +129,11 @@ class S3StorageQueryTool(StorageQueryTool):
 
     def _put(self, bucket_name: str, file: str, storage_location: str):
         """
-        Put the specified file in the specified location
-        @param bucket-name: Bucket to store data in
-        @param file: File to store in bucket
-        @param storage_location: Location to store the file
+        Put the specified file in the specified location.
+
+        @param bucket-name: Bucket to store data in.
+        @param file: File to store in bucket.
+        @param storage_location: Location to store the file.
         """
         if not self._check_object_exists(bucket_name, storage_location):
             data = BytesIO(zlib.compress(bytes(file, "UTF-8")))
@@ -143,10 +147,11 @@ class S3StorageQueryTool(StorageQueryTool):
 
     def _update(self, bucket_name: str, file: str, storage_location: str):
         """
-        Replace the file in the specified location with the provided file if it exists
-        @param bucket-name: Bucket to store data in
-        @param file: File to store in bucket
-        @param storage_location: Location to store the file
+        Replace the file in the specified location with the provided file if it exists.
+
+        @param bucket-name: Bucket to store data in.
+        @param file: File to store in bucket.
+        @param storage_location: Location to store the file.
         """
         if self._check_object_exists(bucket_name, storage_location):
             data = BytesIO(zlib.compress(bytes(file, "UTF-8")))

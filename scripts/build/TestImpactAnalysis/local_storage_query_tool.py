@@ -16,7 +16,7 @@ class LocalStorageQueryTool(StorageQueryTool):
 
     def __init__(self, **kwargs):
         """
-        Initialise storage query tool with search parameters and access/delete parameters
+        Initialise storage query tool with search parameters and access/delete parameters.
         """
         super().__init__(**kwargs)
         self._search_in = kwargs.get('search_in')
@@ -37,22 +37,22 @@ class LocalStorageQueryTool(StorageQueryTool):
 
     def _write_tree(self):
         """
-        Displays file tree to user in console output
+        Displays file tree to user in console output.
         """
         pass
 
     def _delete(self, file: str):
         """
-        Deletes the specified file
+        Deletes the specified file.
 
-        @param file: The file to be deleted
+        @param file: The file to be deleted.
         """
         pass
 
     def _access(self, file: str):
         """
-        Accesses the specified file
+        Accesses the specified file.
 
-        @param file: The file to be accessed
+        @param file: The file to be accessed.
         """
         pass
