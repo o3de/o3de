@@ -36,7 +36,7 @@ _LOGGER = _logging.getLogger(_PACKAGENAME)
 
 
 # -------------------------------------------------------------------------
-# set up access to this Blender folder as a pkg
+# set up access to this Substance folder as a pkg
 _MODULE_PATH = Path(__file__)  # To Do: what if frozen?
 _DCCSI_TOOLS_SUBSTANCE_PATH = Path(_MODULE_PATH.parent)
 
@@ -110,4 +110,3 @@ if _DCCSI_DEV_MODE:
 if __name__ == '__main__':
     """Run as main, perform debug and tests"""
     pass
-    
