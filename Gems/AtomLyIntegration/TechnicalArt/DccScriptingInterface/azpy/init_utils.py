@@ -109,10 +109,10 @@ if sys.version_info.major < 3:
 def initialize_logger(name,
                       log_to_file=False,
                       default_log_level=_logging.NOTSET,
-                      propogate=False):
+                      propagate=False):
     """Start a azpy logger"""
     _logger = _logging.getLogger(name)
-    _logger.propagate = propogate
+    _logger.propagate = propagate
     if not _logger.handlers:
 
         _log_level = int(os.getenv('DCCSI_LOGLEVEL', default_log_level))

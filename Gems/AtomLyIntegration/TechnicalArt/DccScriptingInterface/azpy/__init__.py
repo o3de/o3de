@@ -155,12 +155,9 @@ if __name__ == '__main__':
     _DCCSI_LOGLEVEL = int(env_bool.env_bool(constants.ENVAR_DCCSI_LOGLEVEL,
                                             _logging.INFO))
     if _DCCSI_GDEBUG:
-        # override loglevel if runnign debug
+        # override loglevel if running debug
         _DCCSI_LOGLEVEL = _logging.DEBUG
-        
-    # set up module logging
-    #for handler in _logging.root.handlers[:]:
-        #_logging.root.removeHandler(handler)
+    
         
     # configure basic logger
     # note: not using a common logger to reduce cyclical imports
