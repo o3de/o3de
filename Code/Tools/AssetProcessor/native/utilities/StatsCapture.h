@@ -31,7 +31,7 @@ namespace AssetProcessor
         //! Stop the clock running for a particular stat name.
         //! Return this run's duration in milliseconds. If there is no such stat name, 
         //! or if BeginCaptureStat was not called before, no duration is returned.
-        AZStd::optional<AZStd::sys_time_t> EndCaptureStat(AZStd::string_view statName);
+        AZStd::optional<AZStd::sys_time_t> EndCaptureStat(AZStd::string_view statName, bool persistToDb = false);
 
         //! Do additional processing and then write the cumulative stats to log.
         //! Note that since this is an AP-specific system, the analysis done in the dump function
