@@ -596,7 +596,7 @@ namespace GradientSignal
         // Cancel any pending preview refreshes before locking, to help ensure the preview itself isn't holding the lock
         auto entityIds = CancelPreviewRendering();
 
-        // Re-setup the dependency monitor when the configuratio changes because the gradient sampler
+        // Re-setup the dependency monitor when the configuration changes because the gradient sampler
         // could've changed
         SetupDependencyMonitor();
 
