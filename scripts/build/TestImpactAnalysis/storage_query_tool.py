@@ -28,9 +28,11 @@ class StorageQueryTool(ABC):
         self._delete_flag = kwargs.get('delete')
         self._update_flag = kwargs.get('update')
         self._create_flag = kwargs.get('create')
+        self._file_in = kwargs.get('file_in')
+        self._file_out = kwargs.get('file_out')
 
         if self._update_flag or self._create_flag:
-            self._file_in = kwargs.get('file_in')
+            
             self._file = self._get_file(self._file_in)
 
         if self.has_full_address:
