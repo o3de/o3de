@@ -120,6 +120,13 @@ def parse_args():
         required=False
     )
 
+    parser.add_argument(
+        "--file-out",
+        type=valid_path,
+        help="Path to store file in when downloading",
+        required=False
+    )
+
 
     args = parser.parse_args()
 
