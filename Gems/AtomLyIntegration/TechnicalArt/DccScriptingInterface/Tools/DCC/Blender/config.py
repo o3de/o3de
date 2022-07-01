@@ -348,6 +348,12 @@ if __name__ == '__main__':
                         default=False,
                         help='(not implemented) writes settings as a O3DE < project >/registry/dccsi_configuration.setreg.')
 
+    parser.add_argument('-lps', '--log-print-settings',
+                        type=bool,
+                        required=False,
+                        default=True,
+                        help='Well dump settings results into the log.')
+
     parser.add_argument('-ex', '--exit',
                         type=bool,
                         required=False,
@@ -391,13 +397,15 @@ if __name__ == '__main__':
             # this should be set if there are local settings!? to do: circle back
             _LOGGER.debug('DCCSI_LOCAL_SETTINGS: {}'.format(settings.DCCSI_LOCAL_SETTINGS))
 
-    # format the setting, Box is an orderedDict object with convenience methods
-    from box import Box
-    _settings_box = Box(settings.as_dict())
+    # handle dumping logging of settings
+    if args.log_print_settings:
+        # format the setting, Box is an orderedDict object with convenience methods
+        from box import Box
+        _settings_box = Box(settings.as_dict())
 
-    _LOGGER.info('Logging the Substance Dynaconf settings object ...')
-    _LOGGER.info(str(_settings_box.to_json(sort_keys=True,
-                                           indent=4)))
+        _LOGGER.info('Logging the Substance Dynaconf settings object ...')
+        _LOGGER.info(str(_settings_box.to_json(sort_keys=True,
+                                               indent=4)))
 
     # custom prompt
     sys.ps1 = f"[{_MODULENAME}]>>"

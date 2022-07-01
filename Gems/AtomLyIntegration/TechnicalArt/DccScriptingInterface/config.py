@@ -691,7 +691,8 @@ def export_settings(settings,
                     settings_filepath=TAG_DCCSI_LOCAL_SETTINGS_SLUG,
                     use_dynabox=False,
                     env=None,
-                    merge=False):
+                    merge=False,
+                    log_settings=False):
 
     # To Do: when running script from IDE settings.local.json are
     # correctly written to the < dccsi > root folder (script is cwd?)
@@ -738,8 +739,10 @@ def export_settings(settings,
         _settings_box = Box(_settings_dict)
 
         _LOGGER.info('Pretty print, _settings_box: {}'.format(_settings_file))
-        _LOGGER.info(str(_settings_box.to_json(sort_keys=True,
-                                               indent=4)))
+
+        if log_settings:
+            _LOGGER.info(str(_settings_box.to_json(sort_keys=True,
+                                                   indent=4)))
 
         # writes settings box
         _settings_box.to_json(filename=_settings_file.as_posix(),
@@ -924,6 +927,12 @@ if __name__ == '__main__':
                         default=False,
                         help='Runs Qt/PySide2 tests and reports.')
 
+    parser.add_argument('-lps', '--log-print-settings',
+                        type=bool,
+                        required=False,
+                        default=True,
+                        help='Well dump settings results into the log.')
+
     parser.add_argument('-ex', '--exit',
                         type=bool,
                         required=False,
@@ -1032,12 +1041,19 @@ if __name__ == '__main__':
     settings.setenv()  # doing this will add/set the additional DYNACONF_ envars
 
     if _DCCSI_GDEBUG or args.cache_local_settings:
+        if args.log_print_settings:
+            log_settings = True
+        else:
+            log_settings = False
+
         if args.export_settings:
             export_settings_path = Path(args.export_settings).resolve()
             export_settings(settings=settings,
-                            settings_filepath=export_settings_path.as_posix())
+                            settings_filepath=export_settings_path.as_posix(),
+                            log_settings=log_settings)
         else:
-            export_settings(settings)
+            export_settings(settings=settings,
+                            log_settings=log_settings)
             # this should be set if there are local settings!?
             _LOGGER.debug('DCCSI_LOCAL_SETTINGS: {}'.format(settings.DCCSI_LOCAL_SETTINGS))
 
