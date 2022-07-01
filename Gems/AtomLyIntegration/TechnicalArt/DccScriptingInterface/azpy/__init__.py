@@ -146,7 +146,6 @@ _LOGGER.debug('DCCSI_LOG_PATH: {}'.format(_DCCSI_LOG_PATH))
 if __name__ == '__main__':
     """Run in debug perform local tests from IDE or CLI"""
 
-    # happy print
     _LOGGER.info(constants.STR_CROSSBAR)
     _LOGGER.info('~ {}.py ... Running script as __main__'.format(_PACKAGENAME))
     _LOGGER.info(constants.STR_CROSSBAR)

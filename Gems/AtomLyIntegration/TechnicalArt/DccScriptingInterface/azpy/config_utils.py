@@ -553,7 +553,6 @@ if __name__ == '__main__':
                         datefmt='%m-%d %H:%M')
     _LOGGER = _logging.getLogger(_MODULENAME)
 
-    # happy print
     _LOGGER.info("# {0} #".format('-' * 72))
     _LOGGER.info(f'~ {_MODULENAME} ... Running module as __main__')
     _LOGGER.info("# {0} #".format('-' * 72))

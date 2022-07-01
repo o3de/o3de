@@ -389,7 +389,6 @@ if __name__ == '__main__':
 
     _LOGGER = _logging.getLogger(_MODULENAME)
 
-    # happy print
     _LOGGER.info(STR_CROSSBAR)
     _LOGGER.info(f'~ {_MODULENAME} ... Running script as __main__')
     _LOGGER.info(STR_CROSSBAR)

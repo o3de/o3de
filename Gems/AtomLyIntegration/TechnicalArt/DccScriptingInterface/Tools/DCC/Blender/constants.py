@@ -179,7 +179,6 @@ if __name__ == '__main__':
 
     _LOGGER = _logging.getLogger(_MODULENAME)
 
-    # happy print
     from azpy.constants import STR_CROSSBAR
     _LOGGER.info(STR_CROSSBAR)
     _LOGGER.info(f'~ {_MODULENAME} ... Running script as __main__')
