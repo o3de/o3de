@@ -748,7 +748,7 @@ def export_settings(settings,
 
     # experimental, have not utilized this yet but it would be the native
     # way for dynaconf to write settings, i went with a Box dictionary
-    # as it is ordered and I can ensure the settlings are pretty with indenting
+    # as it is ordered and I can ensure the settings are pretty with indenting
     elif use_dynabox:
         # writing settings using dynabox
         from dynaconf import loaders
