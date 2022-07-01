@@ -63,7 +63,7 @@ namespace ProjectSettingsTool
         };
 
         using JsonSettings = Settings<rapidjson::Document>;
-        using PlistSettings = Settings<AZ::rapidxml::xml_document<char>>;
+        using PlistSettings = Settings<XmlDocument>;
         using PlatformSettings = AZStd::variant<JsonSettings, PlistSettings>; // Platform data (Android, ios) can be either json or plist
 
         // Constructs the main manager of a document

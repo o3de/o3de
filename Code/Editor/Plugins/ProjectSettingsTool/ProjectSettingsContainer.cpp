@@ -19,11 +19,6 @@
 
 namespace ProjectSettingsTool
 {
-    using namespace AZ;
-    using StringOutcome = Outcome<void, AZStd::string>;
-    using XmlDocument = rapidxml::xml_document<char>;
-    using XmlNode = rapidxml::xml_node<char>;
-
     SettingsError::SettingsError(const AZStd::string& error, const AZStd::string& reason, bool shouldAbort)
         : m_error(error)
         , m_reason(reason)
@@ -31,7 +26,7 @@ namespace ProjectSettingsTool
     {
     }
 
-    StringOutcome WriteConfigFile(const AZStd::string& fileName, const AZStd::string& fileContents)
+    AZ::Outcome<void, AZStd::string> WriteConfigFile(const AZStd::string& fileName, const AZStd::string& fileContents)
     {
         using AZ::IO::SystemFile;
         const char* filePath = fileName.c_str();
@@ -65,7 +60,7 @@ namespace ProjectSettingsTool
         return AZ::Failure(AZStd::string::format("Could not check out or make file writable: \"%s\".", filePath));
     }
 
-    StringOutcome ReadConfigFile(const AZStd::string& fileName, AZStd::string& fileContents)
+    AZ::Outcome<void, AZStd::string> ReadConfigFile(const AZStd::string& fileName, AZStd::string& fileContents)
     {
         using AZ::IO::SystemFile;
         const char* filePath = fileName.c_str();
@@ -313,7 +308,7 @@ namespace ProjectSettingsTool
 
     void ProjectSettingsContainer::LoadJson(JsonSettings& jsonSettings)
     {
-        StringOutcome outcome = ReadConfigFile(jsonSettings.m_path, jsonSettings.m_rawData);
+        AZ::Outcome<void, AZStd::string> outcome = ReadConfigFile(jsonSettings.m_path, jsonSettings.m_rawData);
         if (!outcome.IsSuccess())
         {
             m_errors.push(SettingsError(AZStd::string::format("Failed to load %s", jsonSettings.m_path.c_str()), outcome.GetError(), true /*shouldAbort*/));
@@ -332,7 +327,7 @@ namespace ProjectSettingsTool
         jsonSettings.m_document->Accept(jsonDatawriter);
         const AZStd::string jsonDataString = jsonDataBuffer.GetString();
 
-        StringOutcome outcome = WriteConfigFile(jsonSettings.m_path, jsonDataString);
+        AZ::Outcome<void, AZStd::string> outcome = WriteConfigFile(jsonSettings.m_path, jsonDataString);
 
         if (!outcome.IsSuccess())
         {
@@ -342,13 +337,13 @@ namespace ProjectSettingsTool
 
     void ProjectSettingsContainer::LoadPlist(PlistSettings& plistSettings)
     {
-        StringOutcome outcome = ReadConfigFile(plistSettings.m_path, plistSettings.m_rawData);
+        AZ::Outcome<void, AZStd::string> outcome = ReadConfigFile(plistSettings.m_path, plistSettings.m_rawData);
         if (!outcome.IsSuccess())
         {
             m_errors.push(SettingsError(AZStd::string::format("Failed to load %s", plistSettings.m_path.c_str()), outcome.GetError(), true /*shouldAbort*/));
         }
 
-        const int xmlFlags = rapidxml::parse_doctype_node | rapidxml::parse_declaration_node | rapidxml::parse_no_data_nodes;
+        const int xmlFlags = AZ::rapidxml::parse_doctype_node | AZ::rapidxml::parse_declaration_node | AZ::rapidxml::parse_no_data_nodes;
 
         plistSettings.m_document->parse<xmlFlags>(plistSettings.m_rawData.data());
     }
@@ -357,9 +352,9 @@ namespace ProjectSettingsTool
     {
         // Needed to write a document out to a string
         AZStd::string xmlDocString;
-        rapidxml::print(std::back_inserter(xmlDocString), *plistSettings.m_document);
+        AZ::rapidxml::print(std::back_inserter(xmlDocString), *plistSettings.m_document);
 
-        StringOutcome outcome = WriteConfigFile(plistSettings.m_path, xmlDocString);
+        AZ::Outcome<void, AZStd::string> outcome = WriteConfigFile(plistSettings.m_path, xmlDocString);
 
         if (!outcome.IsSuccess())
         {

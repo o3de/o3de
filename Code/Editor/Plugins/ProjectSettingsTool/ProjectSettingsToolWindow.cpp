@@ -38,11 +38,11 @@ namespace ProjectSettingsTool
     namespace
     {
         const char* const IosSettingsPListPaths[] = {
-                    "Resources/Platform/iOS/Info.plist",
+            "Resources/Platform/iOS/Info.plist",
 
-                    // legacy paths
-                    "Gem/Resources/Platform/iOS/Info.plist",
-                    "Gem/Resources/IOSLauncher/Info.plist"
+            // legacy paths
+            "Gem/Resources/Platform/iOS/Info.plist",
+            "Gem/Resources/IOSLauncher/Info.plist"
         };
 
         const char* const AndroidSettingsJsonPath = "Platform/Android/android_project.json";
@@ -50,8 +50,6 @@ namespace ProjectSettingsTool
 
         bool g_serializeRegistered = false;
     }
-
-    using XmlNode = AZ::rapidxml::xml_node<char>;
 
     ProjectSettingsToolWindow::ProjectSettingsToolWindow(QWidget* parent)
         : QWidget(parent)
