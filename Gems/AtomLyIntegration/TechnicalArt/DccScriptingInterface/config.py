@@ -627,7 +627,7 @@ def get_config_settings(engine_path=_O3DE_DEV,
                         dccsi_path=_PATH_DCCSIG,
                         dccsi_sys_path=_DCCSI_SYS_PATH,
                         dccsi_pythonpath=_DCCSI_PYTHONPATH):
-    """Convenience method to initialize and retreive settings directly from module."""
+    """Convenience method to initialize and retrieve settings directly from module."""
 
     time_start = timeit.default_timer()  # start tracking
 
@@ -647,7 +647,7 @@ def get_config_settings(engine_path=_O3DE_DEV,
 
     # These should ONLY be set for O3DE and non-DCC environments
     # They will most likely cause other Qt/PySide DCC apps to fail
-    # or hopefully they can be overridden for DCC envionments
+    # or hopefully they can be overridden for DCC environments
     if enable_o3de_python:
         dccsi_sys_path, dccsi_pythonpath, settings = init_o3de_python(settings.O3DE_DEV,
                                                                       settings.PATH_O3DE_BIN,
@@ -717,7 +717,7 @@ def export_settings(settings,
     # we can use this marker to know the local settings exist
     os.environ['DYNACONF_DCCSI_LOCAL_SETTINGS'] = "True"
 
-    # make sure the dnyaconf synthetic env is updated before writting settings
+    # make sure the dynaconf synthetic env is updated before writing settings
     # this will make it into our settings file as "DCCSI_SYS_PATH":<value>
     add_path_list_to_envar(dccsi_sys_path, 'DYNACONF_DCCSI_SYS_PATH')
     add_path_list_to_envar(dccsi_pythonpath, 'DYNACONF_DCCSI_PYTHONPATH')
@@ -752,9 +752,9 @@ def export_settings(settings,
 
     # experimental, have not utilized this yet but it would be the native
     # way for dynaconf to write settings, i went with a Box dictionary
-    # as it is ordered and I can ensure the setttings are pretty
+    # as it is ordered and I can ensure the settlings are pretty
     elif use_dynabox:
-        # writting settings using dynabox
+        # writing settings using dynabox
         from dynaconf import loaders
         from dynaconf.utils.boxing import DynaBox
 
@@ -848,7 +848,7 @@ if __name__ == '__main__':
                         type=str,
                         required=False,
                         default='WING',
-                        help='(NOT IMPLEMENTED) Default debugger: WING, thers: PYCHARM and VSCODE.')
+                        help='(NOT IMPLEMENTED) Default debugger: WING, others: PYCHARM and VSCODE.')
 
     parser.add_argument('-ep', '--engine-path',
                         type=pathlib.Path,
@@ -936,7 +936,7 @@ if __name__ == '__main__':
     parser.add_argument('-ex', '--exit',
                         type=bool,
                         required=False,
-                        help='Exits python. Do not exit if you want to be in interactive interpretter after config')
+                        help='Exits python. Do not exit if you want to be in interactive interpreter after config')
 
     args = parser.parse_args()
 
