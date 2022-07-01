@@ -105,32 +105,20 @@ def Atom_MeshOptimizerTest():
             mesh_entity.has_component(AtomComponentProperties.mesh()))
 
         # 5. Set Mesh component asset property
-        model_path = os.path.join('testdata', 'objects', 'modelhotreload', 'sphere_5lods.azmodel')
+        model_path = os.path.join('valena', 'valenaactor.azmodel')
         model = Asset.find_asset_by_path(model_path)
         onModelReadyHelper = OnModelReadyHelper()
         onModelReadyHelper.wait_for_on_model_ready(mesh_entity.id, mesh_component, model.id)
         Report.result(Tests.model_asset_specified,
                       mesh_component.get_component_property_value(
                           AtomComponentProperties.mesh('Model Asset')) == model.id)
-        #mesh_component.set_component_property_value(AtomComponentProperties.mesh('Model Asset'), model.id)
-
-        #Report.result(Tests.model_asset_is_optimized,
-        #              mesh_component.get_component_property_value(
-        #                  AtomComponentProperties.mesh('Use ray tracing')) is False)
         
-        #pteObj = editor.EditorComponentAPIBus(bus.Broadcast, 'BuildComponentPropertyTreeEditor', component)
-        #BaseClass.check_result(pteObj.IsSuccess(), "BuildComponentPropertyTreeEditor")
-        #pte = pteObj.GetValue()
-        print("here")
-        mesh_component.get_property_tree(True)
         vertex_count = mesh_component.get_component_property_value(
                           AtomComponentProperties.mesh('Vertex Count LOD0'))
-        print("{0}".format(vertex_count))
+
         Report.result(Tests.model_asset_is_optimized,
                       mesh_component.get_component_property_value(
-                          AtomComponentProperties.mesh('Vertex Count LOD0')) <= 23190)
-                          
-        hydra.get_property_tree(mesh_entity.components[0])  
+                          AtomComponentProperties.mesh('Vertex Count LOD0')) <= 231904)
 
 
 if __name__ == "__main__":
