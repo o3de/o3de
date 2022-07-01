@@ -38,6 +38,7 @@ namespace AZ
         void FrameGraphExecuteContext::SetCommandList(CommandList& commandList)
         {
             m_descriptor.m_commandList = &commandList;
+            m_descriptor.m_commandList->SetSubmitRange(m_descriptor.m_submitRange);
         }
     }
 }

@@ -29,11 +29,11 @@ namespace AZ
             m_workRequest.m_signalFence = m_scopes.back()->GetSignalFenceValue();
             m_workRequest.m_commandLists.resize(1);
 
-            AZStd::vector<RHI::ScopeId> scopeIds;
-            scopeIds.reserve(m_scopes.size());
+            AZStd::vector<InitMergedRequest::ScopeEntry> scopeEntries;
+            scopeEntries.reserve(m_scopes.size());
             for (const Scope* scope : m_scopes)
             {
-                scopeIds.push_back(scope->GetId());
+                scopeEntries.push_back({ scope->GetId(), scope->GetEstimatedItemCount() });
 
                 {
                     auto& swapChainsToPresent = m_workRequest.m_swapChainsToPresent;
@@ -57,8 +57,8 @@ namespace AZ
             }
 
             InitMergedRequest request;
-            request.m_scopeIds = scopeIds.data();
-            request.m_scopeCount = static_cast<uint32_t>(scopeIds.size());
+            request.m_scopeEntries = scopeEntries.data();
+            request.m_scopeCount = static_cast<uint32_t>(scopeEntries.size());
             Base::Init(request);
         }
 

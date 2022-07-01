@@ -417,21 +417,31 @@ namespace AZ
             m_cachedSkinningShaderOptions.SetShader(m_skinningShader);
         }
 
-        void SkinnedMeshFeatureProcessor::SubmitSkinningDispatchItems(RHI::CommandList* commandList)
+        void SkinnedMeshFeatureProcessor::SubmitSkinningDispatchItems(RHI::CommandList* commandList, uint32_t startIndex, uint32_t endIndex)
         {
             AZStd::lock_guard lock(m_dispatchItemMutex);
-            for (const RHI::DispatchItem* dispatchItem : m_skinningDispatches)
+
+            AZStd::unordered_set<const RHI::DispatchItem*>::iterator it = m_skinningDispatches.begin();
+            AZStd::advance(it, startIndex);
+            for (uint32_t index = startIndex; index < endIndex; ++index, ++it)
             {
+                const RHI::DispatchItem* dispatchItem = *it;
+                dispatchItem->m_submitIndex = index;
                 commandList->Submit(*dispatchItem);
             }
             m_skinningDispatches.clear();
         }
 
-        void SkinnedMeshFeatureProcessor::SubmitMorphTargetDispatchItems(RHI::CommandList* commandList)
+        void SkinnedMeshFeatureProcessor::SubmitMorphTargetDispatchItems(RHI::CommandList* commandList, uint32_t startIndex, uint32_t endIndex)
         {
             AZStd::lock_guard lock(m_dispatchItemMutex);
-            for (const RHI::DispatchItem* dispatchItem : m_morphTargetDispatches)
+
+            AZStd::unordered_set<const RHI::DispatchItem*>::iterator it = m_morphTargetDispatches.begin();
+            AZStd::advance(it, startIndex);
+            for (uint32_t index = startIndex; index < endIndex; ++index, ++it)
             {
+                const RHI::DispatchItem* dispatchItem = *it;
+                dispatchItem->m_submitIndex = index;
                 commandList->Submit(*dispatchItem);
             }
             m_morphTargetDispatches.clear();

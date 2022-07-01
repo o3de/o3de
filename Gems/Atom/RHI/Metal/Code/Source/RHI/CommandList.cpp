@@ -62,6 +62,7 @@ namespace AZ
 
         void CommandList::Submit(const RHI::CopyItem& copyItem)
         {
+            ValidateSubmitItem(copyItem);
             CreateEncoder(CommandEncoderType::Blit);
 
             id<MTLBlitCommandEncoder> blitEncoder = GetEncoder<id<MTLBlitCommandEncoder>>();
@@ -182,6 +183,7 @@ namespace AZ
         {
             AZ_PROFILE_FUNCTION(RHI);
 
+            ValidateSubmitItem(dispatchItem);
             CreateEncoder(CommandEncoderType::Compute);
             bool bindResourceSuccessfull = CommitShaderResources<RHI::PipelineStateType::Dispatch>(dispatchItem);
 
@@ -202,6 +204,8 @@ namespace AZ
 
         void CommandList::Submit(const RHI::DispatchRaysItem& dispatchRaysItem)
         {
+            ValidateSubmitItem(dispatchRaysItem);
+
             // [GFX TODO][ATOM-5268] Implement Metal Ray Tracing
             AZ_Assert(false, "Not implemented");
         }
@@ -484,6 +488,7 @@ namespace AZ
         {
             AZ_PROFILE_FUNCTION(RHI);
 
+            ValidateSubmitItem(drawItem);
             CreateEncoder(CommandEncoderType::Render);
 
             RHI::CommandListScissorState scissorState;

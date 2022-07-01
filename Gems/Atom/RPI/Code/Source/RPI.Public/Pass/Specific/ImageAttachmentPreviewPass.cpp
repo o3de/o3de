@@ -410,7 +410,7 @@ namespace AZ
 
             // output attachment
             frameGraph.UseColorAttachment(RHI::ImageScopeAttachmentDescriptor{ m_outputColorAttachment->GetAttachmentId() });
-            frameGraph.SetEstimatedItemCount(1);
+            frameGraph.SetEstimatedItemCount(aznumeric_cast<uint32_t>(m_imageTypePreviewInfo.size()));
         }
 
         void ImageAttachmentPreviewPass::CompileResources(const RHI::FrameGraphCompileContext& context)
@@ -536,10 +536,12 @@ namespace AZ
             commandList->SetShaderResourceGroupForDraw(*m_passSrg->GetRHIShaderResourceGroup());
 
             // submit draw call
-            for (const auto& previewInfo : m_imageTypePreviewInfo)
+            for (uint32_t index = context.GetSubmitRange().m_startIndex; index < context.GetSubmitRange().m_endIndex; ++index)
             {
+                const ImageTypePreviewInfo& previewInfo = m_imageTypePreviewInfo[index];
                 if (previewInfo.m_imageCount > 0)
                 {
+                    previewInfo.m_item.m_submitIndex = index;
                     commandList->Submit(previewInfo.m_item);
                 }
             }

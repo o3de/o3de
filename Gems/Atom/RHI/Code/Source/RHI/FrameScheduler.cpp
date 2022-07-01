@@ -494,7 +494,9 @@ namespace AZ
                 ScopeProducer* scopeProducer = FindScopeProducer(executeContext->GetScopeId());
 
                 AZ_PROFILE_SCOPE(RHI, "ScopeProducer: %s", scopeProducer->GetScopeId().GetCStr());
+                executeContext->GetCommandList()->ResetTotalSubmits();
                 scopeProducer->BuildCommandList(*executeContext);
+                executeContext->GetCommandList()->ValidateTotalSubmits(scopeProducer);
             }
 
             group.EndContext(index);

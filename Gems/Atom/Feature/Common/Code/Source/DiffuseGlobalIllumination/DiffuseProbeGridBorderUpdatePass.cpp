@@ -119,6 +119,9 @@ namespace AZ
 
             RPI::Scene* scene = m_pipeline->GetScene();
             DiffuseProbeGridFeatureProcessor* diffuseProbeGridFeatureProcessor = scene->GetFeatureProcessor<DiffuseProbeGridFeatureProcessor>();
+
+            frameGraph.SetEstimatedItemCount(aznumeric_cast<uint32_t>(diffuseProbeGridFeatureProcessor->GetVisibleRealTimeProbeGrids().size() * 4));
+
             for (auto& diffuseProbeGrid : diffuseProbeGridFeatureProcessor->GetVisibleRealTimeProbeGrids())
             {
                 // probe irradiance image
@@ -167,15 +170,13 @@ namespace AZ
             RPI::Scene* scene = m_pipeline->GetScene();
             DiffuseProbeGridFeatureProcessor* diffuseProbeGridFeatureProcessor = scene->GetFeatureProcessor<DiffuseProbeGridFeatureProcessor>();
 
-            // compute the index range to process for this command list
-            uint32_t numGrids = aznumeric_cast<uint32_t>(diffuseProbeGridFeatureProcessor->GetVisibleRealTimeProbeGrids().size());
-            uint32_t startIndex = (context.GetCommandListIndex() * numGrids) / context.GetCommandListCount();
-            uint32_t endIndex = ((context.GetCommandListIndex() + 1) * numGrids) / context.GetCommandListCount();
-
             // submit the DispatchItems for each DiffuseProbeGrid in this range
-            for (uint32_t index = startIndex; index < endIndex; ++index)
+            uint32_t index = context.GetSubmitRange().m_startIndex;
+            while (index < context.GetSubmitRange().m_endIndex)
             {
-                AZStd::shared_ptr<DiffuseProbeGrid> diffuseProbeGrid = diffuseProbeGridFeatureProcessor->GetVisibleRealTimeProbeGrids()[index];
+                AZ_Assert(index % 4 == 0, "Incorrect number of submits in DiffuseProbeGridBorderUpdatePass::BuildCommandListInternal");
+                uint32_t diffuseProbeGridIndex = index / 4;
+                AZStd::shared_ptr<DiffuseProbeGrid> diffuseProbeGrid = diffuseProbeGridFeatureProcessor->GetVisibleRealTimeProbeGrids()[diffuseProbeGridIndex];
 
                 uint32_t probeCountX;
                 uint32_t probeCountY;
@@ -187,6 +188,7 @@ namespace AZ
                     commandList->SetShaderResourceGroupForDispatch(*shaderResourceGroup);
 
                     RHI::DispatchItem dispatchItem;
+                    dispatchItem.m_submitIndex = index++;
                     dispatchItem.m_arguments = m_rowDispatchArgs;
                     dispatchItem.m_pipelineState = m_rowPipelineState;
                     dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsX = probeCountX * (DiffuseProbeGrid::DefaultNumIrradianceTexels + 2);
@@ -202,6 +204,7 @@ namespace AZ
                     commandList->SetShaderResourceGroupForDispatch(*shaderResourceGroup);
 
                     RHI::DispatchItem dispatchItem;
+                    dispatchItem.m_submitIndex = index++;
                     dispatchItem.m_arguments = m_columnDispatchArgs;
                     dispatchItem.m_pipelineState = m_columnPipelineState;
                     dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsX = probeCountX;
@@ -217,6 +220,7 @@ namespace AZ
                     commandList->SetShaderResourceGroupForDispatch(*shaderResourceGroup);
 
                     RHI::DispatchItem dispatchItem;
+                    dispatchItem.m_submitIndex = index++;
                     dispatchItem.m_arguments = m_rowDispatchArgs;
                     dispatchItem.m_pipelineState = m_rowPipelineState;
                     dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsX = probeCountX * (DiffuseProbeGrid::DefaultNumDistanceTexels + 2);
@@ -232,6 +236,7 @@ namespace AZ
                     commandList->SetShaderResourceGroupForDispatch(*shaderResourceGroup);
 
                     RHI::DispatchItem dispatchItem;
+                    dispatchItem.m_submitIndex = index++;
                     dispatchItem.m_arguments = m_columnDispatchArgs;
                     dispatchItem.m_pipelineState = m_columnPipelineState;
                     dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsX = probeCountX;
