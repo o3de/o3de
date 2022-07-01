@@ -11,7 +11,6 @@
 #if !defined(Q_MOC_RUN)
 #include <MCore/Source/StandardHeaders.h>
 #include <MCore/Source/MemoryFile.h>
-#include <EMotionFX/Rendering/Common/Camera.h>
 #include <Integration/Rendering/RenderFlag.h>
 #include "EMStudioConfig.h"
 #include <QString>

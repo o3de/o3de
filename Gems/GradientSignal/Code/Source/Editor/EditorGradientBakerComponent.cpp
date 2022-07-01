@@ -14,7 +14,9 @@
 #include <GradientSignal/Ebuses/GradientPreviewRequestBus.h>
 #include <GradientSignal/Ebuses/ImageGradientRequestBus.h>
 
+AZ_PUSH_DISABLE_WARNING(4777, "-Wunknown-warning-option")
 #include <OpenImageIO/imageio.h>
+AZ_POP_DISABLE_WARNING
 
 namespace GradientSignal
 {

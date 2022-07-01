@@ -106,14 +106,15 @@ namespace AZ {
     } // namespace SceneAPI
 } // namespace AZ
 
-extern "C" AZ_DLL_EXPORT void InitializeDynamicModule(void* env)
+static bool g_sceneDataInitialized = false;
+
+extern "C" AZ_DLL_EXPORT void InitializeDynamicModule()
 {
-    if (AZ::Environment::IsReady())
+    if (g_sceneDataInitialized)
     {
         return;
     }
-
-    AZ::Environment::Attach(static_cast<AZ::EnvironmentInstance>(env));
+    g_sceneDataInitialized = true;
 
     AZ::SceneAPI::SceneData::Initialize();
 }
@@ -130,10 +131,11 @@ extern "C" AZ_DLL_EXPORT void ReflectBehavior(AZ::BehaviorContext * context)
 
 extern "C" AZ_DLL_EXPORT void UninitializeDynamicModule()
 {
-    if (!AZ::Environment::IsReady())
+    if (!g_sceneDataInitialized)
     {
         return;
     }
+    g_sceneDataInitialized = false;
 
     AZ::SceneAPI::SceneData::Uninitialize();
 
@@ -147,8 +149,6 @@ extern "C" AZ_DLL_EXPORT void UninitializeDynamicModule()
     {
         AZ::AllocatorInstance<AZ::OSAllocator>::Destroy();
     }
-
-    AZ::Environment::Detach();
 }
 
 #endif // !defined(AZ_MONOLITHIC_BUILD)

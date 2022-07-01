@@ -9,6 +9,7 @@
 
 #include <AzCore/PlatformDef.h>
 #include <AzCore/base.h>
+#include <AzCore/O3DEKernelConfiguration.h>
 
 namespace AZ
 {
@@ -92,7 +93,7 @@ namespace AZ
     }
 }
 
-#ifdef AZ_ENABLE_TRACING
+#if defined(AZ_ENABLE_TRACING) && !defined(O3DEKernel_EXPORTS)
 
 /**
 * AZ tracing macros provide debug information reporting for assert, errors, warnings, and informational messages.
