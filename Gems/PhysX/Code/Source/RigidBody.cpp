@@ -583,8 +583,14 @@ namespace PhysX
             if (!isKinematic)
             {
                 // check if any of the shapes on the rigid body would prevent switching to dynamic
-                if (!AZStd::all_of(m_shapes.begin(), m_shapes.end(), [](const AZStd::shared_ptr<PhysX::Shape>& shape) {
-                    return CanShapeComputeMassProperties(*shape->GetPxShape());}))
+                const bool allShapesCanComputeMassProperties = AZStd::all_of(
+                    m_shapes.begin(),
+                    m_shapes.end(),
+                    [](const AZStd::shared_ptr<PhysX::Shape>& shape)
+                    {
+                        return CanShapeComputeMassProperties(*shape->GetPxShape());
+                    });
+                if (!allShapesCanComputeMassProperties)
                 {
                     AZ_Warning(
                         "PhysX Rigid Body",
