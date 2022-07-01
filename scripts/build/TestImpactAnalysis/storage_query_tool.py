@@ -6,6 +6,7 @@
 #
 #
 
+import pathlib
 from tiaf_logger import get_logger
 
 from abc import ABC, abstractmethod
@@ -31,6 +32,9 @@ class StorageQueryTool(ABC):
         if self._update_flag or self._create_flag:
             self._file_in = kwargs.get('file_in')
             self._file = self._get_file(self._file_in)
+
+        if self.has_full_address:
+            self._full_address = pathlib.Path(self._root_directory, self._branch, self._build, self._suite)
 
     def _get_file(self, file_address: str):
         """
@@ -92,3 +96,7 @@ class StorageQueryTool(ABC):
         @param location: Location to store the file
         """
         pass
+
+    @property
+    def has_full_address(self):
+        return self._root_directory and self._branch and self._build and self._suite
