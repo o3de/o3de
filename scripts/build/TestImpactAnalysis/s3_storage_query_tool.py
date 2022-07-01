@@ -65,9 +65,10 @@ class S3StorageQueryTool(StorageQueryTool):
             self._check_object_exists(self._bucket_name, self._full_address)
 
         else:
-            bucket_objs = filter_by(self._root_directory, bucket_objs)
-            for obj in bucket_objs:
-                logger.info(obj.key)
+            if self._root_directory:
+                bucket_objs = filter_by(self._root_directory, bucket_objs)
+            [logger.info(obj.key) for obj in bucket_objs]
+
 
     def _check_object_exists(self, bucket, key):
         try:
@@ -78,12 +79,6 @@ class S3StorageQueryTool(StorageQueryTool):
             if e.response['Error']['Code'] == "404":
                 logger.info("File not found!")
             return False
-
-    def _write_tree(self):
-        """
-        Displays file tree to user in console output
-        """
-        pass
 
     def _delete(self, bucket_name: str, file: str):
         """
