@@ -24,17 +24,17 @@ class S3StorageQueryTool(StorageQueryTool):
         
         try:
 
-            self._s3 = boto3.resource("s3")
-            self._bucket = self._s3.Bucket(self._bucket_name)
-
-            if self._read:
-                self._access()
-            elif self._create_flag:
-                self._put(self._file, self._location)
-            elif self._update_flag:
-                self._update(self._file, self._location)
-            elif self._delete_flag:
-                self._delete("")
+            self._s3_client = boto3.client('s3')
+            self._s3 = boto3.resource('s3')
+            if self.has_full_address:
+                if self._read and self._file_out:
+                    self._access(self._bucket_name, self._full_address, self._file_out)
+                elif self._create_flag:
+                    self._put(self._file, self._full_address)
+                elif self._update_flag:
+                    self._update(self._file, self._full_address)
+                elif self._delete_flag:
+                    self._delete(self._bucket_name, self._full_address)
             else:
                 self._display()
         except botocore.exceptions.BotoCoreError as e:
