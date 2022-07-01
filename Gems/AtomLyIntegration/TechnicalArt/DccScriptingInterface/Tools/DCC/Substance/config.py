@@ -132,7 +132,7 @@ _DCCSI_PYTHONPATH = _DCCSI_CORE_CONFIG._DCCSI_PYTHONPATH
 # special, stash local PYTHONPATHs in a non-managed way (won't end up in settings.local.json)
 _DCCSI_PYTHONPATH_EXCLUDE = _DCCSI_CORE_CONFIG._DCCSI_PYTHONPATH_EXCLUDE
 
-# this is a dict bucket to store none-managed settings (fully local to module)
+# this is a dict bucket to store unmanaged settings (fully local to module)
 _DCCSI_LOCAL_SETTINGS = _DCCSI_CORE_CONFIG._DCCSI_LOCAL_SETTINGS
 # -------------------------------------------------------------------------
 
