@@ -2,27 +2,24 @@
 
 <ScriptCanvas Include="Source/InputHandlerNodeable.h" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <Class Name="InputHandlerNodeable"
-           Namespace="StartingPointInput"
-           QualifiedName="StartingPointInput::InputHandlerNodeable"
-           PreferredClassName="Input Handler"
-           Base="ScriptCanvas::Nodeable"
-           Icon="Icons/ScriptCanvas/Bus.png"
-           EditAttributes="AZ::Edit::Attributes::Category@Gameplay/Input"
-           GraphEntryPoint="True"
-           GeneratePropertyFriend="True"
-           Description="Handle processed input events found in input binding assets">
+        Namespace="StartingPointInput"
+        QualifiedName="StartingPointInput::InputHandlerNodeable"
+        PreferredClassName="Input Handler"
+        Category="Input"
+        GraphEntryPoint="True"
+        Description="Handle processed input events found in input binding assets">
 
-      <Output Name="Pressed" Description="Signaled when the input event begins." >
-        <Parameter Name="value" Type="float" Shared="true"/>
-      </Output>
-      <Output Name="Held" Description="Signaled while the input event is active." >
-        <Parameter Name="value" Type="float" Shared="true"/>
-      </Output>
-      <Output Name="Released" Description="Signaled when the input event ends." >
-        <Parameter Name="value" Type="float" Shared="true"/>
-      </Output>
-      <Input Name="Connect Event" Description="Connect to input event name as defined in an input binding asset.">
-        <Parameter Name="Event Name" Type="AZStd::string" Description="Event name as defined in an input binding asset.  Example 'Fireball'."/>
-      </Input>/>
+        <Output Name="Pressed" Description="Signaled when the input event begins." >
+            <Parameter Name="value" Type="float" Shared="true"/>
+        </Output>
+        <Output Name="Held" Description="Signaled while the input event is active." >
+            <Parameter Name="value" Type="float" Shared="true"/>
+        </Output>
+        <Output Name="Released" Description="Signaled when the input event ends." >
+            <Parameter Name="value" Type="float" Shared="true"/>
+        </Output>
+        <Input Name="Connect Event" Description="Connect to input event name as defined in an input binding asset.">
+            <Parameter Name="Event Name" Type="AZStd::string" Description="Event name as defined in an input binding asset.  Example 'Fireball'."/>
+        </Input>/>
     </Class>
 </ScriptCanvas>

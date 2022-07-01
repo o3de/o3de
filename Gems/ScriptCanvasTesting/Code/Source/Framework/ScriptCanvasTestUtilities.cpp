@@ -20,6 +20,7 @@
 #include <ScriptCanvas/Asset/RuntimeAsset.h>
 #include <ScriptCanvas/Asset/RuntimeAssetHandler.h>
 #include <ScriptCanvas/Execution/RuntimeComponent.h>
+#include <ScriptCanvas/Libraries/Core/Method.h>
 
 namespace ScriptCanvasTestUtilitiesCPP
 {
