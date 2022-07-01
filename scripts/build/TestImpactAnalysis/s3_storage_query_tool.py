@@ -12,6 +12,7 @@ import boto3
 import botocore.exceptions
 import zlib
 import json
+from io import BytesIO
 logger = get_logger(__file__)
 
 
@@ -30,14 +31,17 @@ class S3StorageQueryTool(StorageQueryTool):
             self._s3 = boto3.resource('s3')
             if self.has_full_address:
                 if self._read and self._file_out:
-                    self._access(self._bucket_name,
-                                 self._full_address, self._file_out)
+                    self._access(bucket_name=self._bucket_name,
+                                 file=self._full_address, destination=self._file_out)
                 elif self._create_flag:
-                    self._put(self._file, self._full_address)
+                    self._put(bucket_name=self._bucket_name,
+                              file=self._file, storage_location=self._full_address)
                 elif self._update_flag:
-                    self._update(self._file, self._full_address)
+                    self._update(bucket_name=self._bucket_name,
+                                 file=self._file, storage_location=self._full_address)
                 elif self._delete_flag:
-                    self._delete(self._bucket_name, self._full_address)
+                    self._delete(bucket_name=self._bucket_name,
+                                 file=self._full_address)
             else:
                 self._display()
         except botocore.exceptions.BotoCoreError as e:
@@ -122,18 +126,36 @@ class S3StorageQueryTool(StorageQueryTool):
             except json.JSONDecodeError:
                 logger.error("The historic data does not contain valid JSON.")
 
-    def _put(self, bucket_name: str, file_address: str, storage_location: str):
+    def _put(self, bucket_name: str, file: str, storage_location: str):
         """
         Put the specified file in the specified location
-        @param file: File in json format to store
-        @param location: Location to store the file
+        @param bucket-name: Bucket to store data in
+        @param file: File to store in bucket
+        @param storage_location: Location to store the file
         """
-        pass
+        if not self._check_object_exists(bucket_name, storage_location):
+            data = BytesIO(zlib.compress(bytes(file, "UTF-8")))
+            logger.info(
+                f"Uploading data to: {storage_location} in bucket: {bucket_name}")
+            self._s3_client.put_object(
+                Bucket=bucket_name, Key=storage_location, Body=data)
+            logger.info(f"Upload complete")
+        else:
+            logger.info("Cancelling put, as file exists already")
 
-    def _update(self, bucket_name: str, file_address: str, storage_location: str):
+    def _update(self, bucket_name: str, file: str, storage_location: str):
         """
-        Replace the file in the specified location with the provided filed if it exists
-        @param file: File in json format to store
-        @param location: Location to store the file
+        Replace the file in the specified location with the provided file if it exists
+        @param bucket-name: Bucket to store data in
+        @param file: File to store in bucket
+        @param storage_location: Location to store the file
         """
-        pass
+        if self._check_object_exists(bucket_name, storage_location):
+            data = BytesIO(zlib.compress(bytes(file, "UTF-8")))
+            logger.info(
+                f"Uploading data to: {storage_location} in bucket: {bucket_name}")
+            self._s3_client.put_object(
+                Bucket=bucket_name, Key=storage_location, Body=data)
+            logger.info(f"Upload complete")
+        else:
+            logger.info("Cancelling update, as file does not already exist")
