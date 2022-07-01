@@ -250,8 +250,4 @@ if __name__ == '__main__':
 
     # custom prompt
     sys.ps1 = f"[{_MODULENAME}]>>"
-
-    # if args.exit:
-        # # return
-        # sys.exit()
 # --- END -----------------------------------------------------------------
