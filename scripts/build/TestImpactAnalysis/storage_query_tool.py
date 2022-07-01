@@ -36,7 +36,7 @@ class StorageQueryTool(ABC):
             self._file = self._get_file(self._file_in)
 
         if self.has_full_address:
-            self._full_address = pathlib.Path(self._root_directory, self._branch, self._build, self._suite)
+            self._full_address = str(f"{self._root_directory}/{self._branch}/{self._build}/{self._suite}/historic_data.json.zip")
 
     def _get_file(self, file_address: str):
         """
@@ -101,4 +101,4 @@ class StorageQueryTool(ABC):
 
     @property
     def has_full_address(self):
-        return self._root_directory and self._branch and self._build and self._suite
+        return (self._root_directory and self._branch and self._build and self._suite)
