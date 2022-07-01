@@ -167,6 +167,27 @@ namespace PhysXEditorTests
                         }
                     }
                 });
+
+        ON_CALL(mockShapeRequests, UpdateHeightsAndMaterialsAsync)
+            .WillByDefault(
+                [](const Physics::UpdateHeightfieldSampleFunction& updateHeightsMaterialsCallback,
+                   const Physics::UpdateHeightfieldCompleteFunction& updateHeightsMaterialsCompleteCallback,
+                   [[maybe_unused]] size_t startColumn,
+                   [[maybe_unused]] size_t startRow,
+                   [[maybe_unused]] size_t numColumns,
+                   [[maybe_unused]] size_t numRows)
+                {
+                    auto samples = GetSamples();
+                    for (size_t row = 0; row < 3; row++)
+                    {
+                        for (size_t col = 0; col < 3; col++)
+                        {
+                            updateHeightsMaterialsCallback(col, row, samples[(row * 3) + col]);
+                        }
+                    }
+
+                    updateHeightsMaterialsCompleteCallback();
+                });
     }
 
     EntityPtr TestCreateActiveGameEntityFromEditorEntity(AZ::Entity* editorEntity)

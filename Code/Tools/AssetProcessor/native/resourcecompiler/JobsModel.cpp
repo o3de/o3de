@@ -84,6 +84,8 @@ namespace AssetProcessor
                     return tr("Job Key");
                 case ColumnCompleted:
                     return tr("Completed");
+                case ColumnProcessDuration:
+                    return tr("Last Process Duration");
                 default:
                     break;
                 }
@@ -174,6 +176,32 @@ namespace AssetProcessor
                 else
                 {
                     return getItem(index.row())->m_completedTime.toString("hh:mm:ss.zzz MMM dd, yyyy");
+                }
+            case ColumnProcessDuration:
+                if (role == SortRole)
+                {
+                    return getItem(index.row())->m_processDuration;
+                }
+                else
+                {
+                    QTime processDuration = getItem(index.row())->m_processDuration;
+                    if (!processDuration.isValid())
+                    {
+                        return "";
+                    }
+                    if (processDuration.hour() > 0)
+                    {
+                        return processDuration.toString("zzz' ms, 'ss' sec, 'mm' min, 'hh' hr'");
+                    }
+                    if (processDuration.minute() > 0)
+                    {
+                        return processDuration.toString("zzz' ms, 'ss' sec, 'mm' min'");
+                    }
+                    if (processDuration.second() > 0)
+                    {
+                        return processDuration.toString("zzz' ms, 'ss' sec'");
+                    }
+                    return processDuration.toString("zzz' ms'");
                 }
             default:
                 break;
@@ -440,6 +468,20 @@ namespace AssetProcessor
                 jobInfo->m_completedTime = QDateTime();
             }
             Q_EMIT dataChanged(index(jobIndex, 0, QModelIndex()), index(jobIndex, columnCount() - 1, QModelIndex()));
+        }
+    }
+
+    void JobsModel::OnJobProcessDurationChanged(JobEntry jobEntry, QTime duration)
+    {
+        QueueElementID elementId(jobEntry.m_databaseSourceName, jobEntry.m_platformInfo.m_identifier.c_str(), jobEntry.m_jobKey);
+
+        if (auto iter = m_cachedJobsLookup.find(elementId); iter != m_cachedJobsLookup.end())
+        {
+            unsigned int jobIndex = iter.value();
+            CachedJobInfo* jobInfo = m_cachedJobs[jobIndex];
+            jobInfo->m_processDuration = duration;
+            Q_EMIT dataChanged(
+                index(jobIndex, ColumnProcessDuration, QModelIndex()), index(jobIndex, ColumnProcessDuration, QModelIndex()));
         }
     }
 

@@ -78,6 +78,17 @@ namespace UnitTest
         [[maybe_unused]] const AZStd::string& sourcePath, [[maybe_unused]] AZStd::string& relativePath,
         [[maybe_unused]] AZStd::string& watchFolder)
     {
+        AZStd::string normalizedSourcePath = sourcePath;
+        AzFramework::StringFunc::Path::Normalize(normalizedSourcePath);
+
+        auto iter = m_sourcePath_sourceInfo_map.find(normalizedSourcePath);
+        if (iter != m_sourcePath_sourceInfo_map.end())
+        {
+            relativePath = iter->second.m_assetInfo.m_relativePath;
+            watchFolder = iter->second.m_watchFolder;
+            return true;
+        }
+
         return false;
     }
 
