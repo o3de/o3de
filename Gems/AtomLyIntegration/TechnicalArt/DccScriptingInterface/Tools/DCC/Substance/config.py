@@ -68,17 +68,29 @@ from azpy.config_utils import FRMT_LOG_LONG
 from azpy.config_utils import STR_CROSSBAR
 
 # defaults, can be overriden/forced here for development
-# method 1: .bat file, <dccsi>
+# they should be commited in an off/False state
 from azpy.env_bool import env_bool
 _DCCSI_GDEBUG = env_bool(ENVAR_DCCSI_GDEBUG, False)
 _DCCSI_DEV_MODE = env_bool(ENVAR_DCCSI_DEV_MODE, False)
 _DCCSI_LOGLEVEL = env_bool(ENVAR_DCCSI_LOGLEVEL, _logging.INFO)
 _DCCSI_GDEBUGGER = env_bool(ENVAR_DCCSI_GDEBUGGER, 'WING')
+# you can also set in a persistent manner externally
+# method 1: set envar within Env_Dev.bat file
+#    this would set in env prior to running anything within that env context
+# method 2: override in settings.local.json
+#    this is the preffered manner, dynaconf will always load this by default
+#    so these values will always be last and take precidence within code
+#    that is executed after:
+#        from dynacof import settings
+#        settings.setenv()
 
 # this will boostrap access to the dccsi managed package dependancies
 # <DCCsi>\3rdParty\Python\Lib\3.x\3.x.x (based on python version)
 _PATH_DCCSI_PYTHON_LIB = azpy.config_utils.bootstrap_dccsi_py_libs()
 site.addsitedir(_PATH_DCCSI_PYTHON_LIB.as_posix())
+# ^ we don't add this to dynaconf env, or it will end up in settings.local.json
+# and we don't want that, since this LIB location is transient/procedural
+# to ensure we are always booystrapping the correct path based on python version running
 # -------------------------------------------------------------------------
 
 
@@ -92,13 +104,12 @@ _DCCSI_CORE_CONFIG = azpy.config_utils.get_dccsi_config(_PATH_DCCSIG)
 
 # now standalone we can validate the config, env, settings.
 _SETTINGS = _DCCSI_CORE_CONFIG.get_config_settings(enable_o3de_python=False,
-                                                  enable_o3de_pyside2=True,
+                                                  enable_o3de_pyside2=False,
                                                   set_env=True)
 # we don't init the O3DE python env settings!
 # that will cause conflicts with the DCC tools python!!!
-# we are enabling the O3DE PySide2 (aka QtForPython) access
-# to do: get o3de Qt running on a thread in blender:
-# https://github.com/friedererdmann/blender_pyside2_example
+# we are also not enabling the O3DE PySide2 (aka QtForPython) access
+# this can cause GUI and boot failure with Qt basedd applications (Maya, Substance3D, etc.)
 # -------------------------------------------------------------------------
 
 
@@ -108,20 +119,18 @@ _SETTINGS = _DCCSI_CORE_CONFIG.get_config_settings(enable_o3de_python=False,
 # these global variables are passed as defaults into methods within the module
 
 # special, a global home for stashing PATHs for managed settings
-global _DCCSI_SYS_PATH
-_DCCSI_SYS_PATH = list()
+_DCCSI_SYS_PATH = _DCCSI_CORE_CONFIG._DCCSI_SYS_PATH
 
 # special, a global home for stashing PYTHONPATHs for managed settings
-global _DCCSI_PYTHONPATH
-_DCCSI_PYTHONPATH = list()
+_DCCSI_PYTHONPATH = _DCCSI_CORE_CONFIG._DCCSI_PYTHONPATH
 
 # special, stash local PYTHONPATHs in a non-managed way (won't end up in settings.local.json)
-global _DCCSI_PYTHONPATH_EXCLUDE
-_DCCSI_PYTHONPATH_EXCLUDE = list()
+#global _DCCSI_PYTHONPATH_EXCLUDE
+DCCSI_PYTHONPATH_EXCLUDE = _DCCSI_CORE_CONFIG._DCCSI_PYTHONPATH_EXCLUDE
 
 # this is a dict bucket to store none-managed settings (fully local to module)
-global _DCCSI_LOCAL_SETTINGS
-_DCCSI_LOCAL_SETTINGS = {}
+#global _DCCSI_LOCAL_SETTINGS
+_DCCSI_LOCAL_SETTINGS = _DCCSI_CORE_CONFIG._DCCSI_LOCAL_SETTINGS
 # -------------------------------------------------------------------------
 
 
@@ -148,8 +157,8 @@ from Tools.DCC.Substance.constants import PATH_DCCSI_SUBSTANCE_PYTHON
 from Tools.DCC.Substance.constants import ENVAR_DCCSI_SUBSTANCE_PY_EXE
 from Tools.DCC.Substance.constants import PATH_DCCSI_SUBSTANCE_PY_EXE
 
-from Tools.DCC.Substance.constants import ENVAR_DCCSI_PY_SUBSTANCE
-from Tools.DCC.Substance.constants import PATH_DCCSI_PY_SUBSTANCE
+from Tools.DCC.Substance.constants import ENVAR_DCCSI_IDE_PY_SUBSTANCE
+from Tools.DCC.Substance.constants import PATH_DCCSI_IDE_PY_SUBSTANCE
 
 from Tools.DCC.Substance.constants import ENVAR_DCCSI_SUBSTANCE_SET_CALLBACKS
 from Tools.DCC.Substance.constants import DCCSI_SUBSTANCE_SET_CALLBACKS
@@ -157,13 +166,17 @@ from Tools.DCC.Substance.constants import DCCSI_SUBSTANCE_SET_CALLBACKS
 from Tools.DCC.Substance.constants import ENVAR_DCCSI_SUBSTANCE_SCRIPTS
 from Tools.DCC.Substance.constants import PATH_DCCSI_SUBSTANCE_SCRIPTS
 
-from Tools.DCC.Substance.constants import ENVAR_DCCSI_SUBSTANCE_CFG_PATH
+from Tools.DCC.Substance.constants import ENVAR_DCCSI_SUBSTANCE_CFG
 from Tools.DCC.Substance.constants import PATH_DCCSI_SUBSTANCE_CFG
 # -------------------------------------------------------------------------
 
 
 # -------------------------------------------------------------------------
-def init_dccsi_substance(settings=_SETTINGS, set_env=True):
+def get_config_settings(core_config=_DCCSI_CORE_CONFIG,
+                        settings=_SETTINGS,
+                        dccsi_sys_path=_DCCSI_SYS_PATH,
+                        dccsi_pythonpath=_DCCSI_PYTHONPATH,
+                        set_env=True):
     # now we can extend the environment specific to Blender
     # start by grabbing the constants we want to work with as envars
     # import others
@@ -181,10 +194,24 @@ def init_dccsi_substance(settings=_SETTINGS, set_env=True):
     os.environ[f"DYNACONF_{ENVAR_DCCSI_SUBSTANCE_EXE}"] = PATH_DCCSI_SUBSTANCE_EXE.as_posix()
     os.environ[f"DYNACONF_{ENVAR_DCCSI_SUBSTANCE_PYTHON}"] = PATH_DCCSI_SUBSTANCE_PYTHON.as_posix()
     os.environ[f"DYNACONF_{ENVAR_DCCSI_SUBSTANCE_PY_EXE}"] = PATH_DCCSI_SUBSTANCE_PY_EXE.as_posix()
-    os.environ[f"DYNACONF_{ENVAR_DCCSI_PY_SUBSTANCE}"] = PATH_DCCSI_PY_SUBSTANCE.as_posix()
-    os.environ[f"DYNACONF_{ENVAR_DCCSI_SUBSTANCE_SET_CALLBACKS}"] = DCCSI_SUBSTANCE_SET_CALLBACKS
+    os.environ[f"DYNACONF_{ENVAR_DCCSI_IDE_PY_SUBSTANCE}"] = PATH_DCCSI_IDE_PY_SUBSTANCE.as_posix()
+    os.environ[f"DYNACONF_{ENVAR_DCCSI_SUBSTANCE_SET_CALLBACKS}"] = str(DCCSI_SUBSTANCE_SET_CALLBACKS)
     os.environ[f"DYNACONF_{ENVAR_DCCSI_SUBSTANCE_SCRIPTS}"] = PATH_DCCSI_SUBSTANCE_SCRIPTS.as_posix()
-    os.environ[f"DYNACONF_{ENVAR_DCCSI_SUBSTANCE_CFG_PATH}"] = PATH_DCCSI_SUBSTANCE_CFG.as_posix()
+    os.environ[f"DYNACONF_{ENVAR_DCCSI_SUBSTANCE_CFG}"] = PATH_DCCSI_SUBSTANCE_CFG.as_posix()
+
+    # appends paths lists locally
+    dccsi_sys_path.append(PATH_DCCSI_SUBSTANCE_LOCATION.as_posix())
+    dccsi_sys_path.append(PATH_DCCSI_SUBSTANCE_PYTHON.as_posix())
+
+    dccsi_pythonpath.append(PATH_DCCSI_SUBSTANCE_SCRIPTS.as_posix())
+
+    # packs paths lists to DCCSI_ managed envars
+    core_config.add_path_list_to_envar(dccsi_sys_path, 'DYNACONF_DCCSI_SYS_PATH')
+    core_config.add_path_list_to_envar(dccsi_pythonpath, 'DYNACONF_DCCSI_PYTHONPATH')
+
+    # final stage, if we have managed path lists set them
+    core_config.add_path_list_to_envar(dccsi_sys_path)
+    core_config.add_path_list_to_addsitedir(dccsi_pythonpath)
 
     # now standalone we can validate the config. env, settings.
     from dynaconf import settings
@@ -194,16 +221,6 @@ def init_dccsi_substance(settings=_SETTINGS, set_env=True):
 
     time_complete = timeit.default_timer() - time_start
     _LOGGER.info('~   config.init_o3de_core() DONE: {} sec'.format(time_complete))
-
-    return settings
-# -------------------------------------------------------------------------
-
-
-# -------------------------------------------------------------------------
-def get_config_settings(settings=_SETTINGS, set_env=True):
-    'This will return the settings as initialized via this module'
-
-    settings = init_dccsi_substance()
 
     return settings
 # -------------------------------------------------------------------------
@@ -270,13 +287,13 @@ if __name__ == '__main__':
                         type=bool,
                         required=False,
                         default=False,
-                        help='(NOT IMPLEMENTED) Enables global debug flag.')
+                        help='Enables global debug flag.')
 
     parser.add_argument('-dm', '--developer-mode',
                         type=bool,
                         required=False,
                         default=False,
-                        help='(NOT IMPLEMENTED) Enables dev mode for early auto attaching debugger.')
+                        help='Enables dev mode for early auto attaching debugger.')
 
     parser.add_argument('-sd', '--set-debugger',
                         type=str,
@@ -302,6 +319,34 @@ if __name__ == '__main__':
                         default=False,
                         help='(NOT IMPLEMENTED) Runs Qt/PySide2 tests and reports.')
 
+    parser.add_argument('-pc', '--project-config',
+                        type=bool,
+                        required=False,
+                        help='(not implemented) Enables reading the < >project >/registry/dccsi_configuration.setreg.')
+
+    parser.add_argument('-cls', '--cache-local-settings',
+                        type=bool,
+                        required=False,
+                        default=True,
+                        help='Ensures setting.local.json is written to cache settings')
+
+    parser.add_argument('-es', '--export-settings',
+                        type=pathlib.Path,
+                        required=False,
+                        help='(Not Tested) Writes managed settings to specified path.')
+
+    parser.add_argument('-ls', '--load-settings',
+                        type=pathlib.Path,
+                        required=False,
+                        default=False,
+                        help='(Not Implemented) Would load and read settings from a specified path.')
+
+    parser.add_argument('-ec', '--export-configuration',
+                        type=bool,
+                        required=False,
+                        default=False,
+                        help='(not implemented) writes settings as a O3DE < project >/registry/dccsi_configuration.setreg.')
+
     parser.add_argument('-ex', '--exit',
                         type=bool,
                         required=False,
@@ -321,31 +366,37 @@ if __name__ == '__main__':
 
     if args.set_debugger:
         _LOGGER.info('Setting and switching debugger type not implemented (default=WING)')
-        # To Do: implement debugger plugin pattern
+        # To Do: implement dev module with debugger plugin pattern
 
     # now standalone we can validate the config. env, settings.
     # settings = get_config_settings(stub) # To Do: pipe in CLI
-    settings = get_config_settings()
+    settings = get_config_settings(core_config=_DCCSI_CORE_CONFIG,
+                                   settings=_SETTINGS,
+                                   dccsi_sys_path=_DCCSI_SYS_PATH,
+                                   dccsi_pythonpath=_DCCSI_PYTHONPATH,
+                                   set_env=True)
 
-    # CORE
-    _LOGGER.info(STR_CROSSBAR)
-    # not using fstrings in this module because it might run in py2.7 (maya)
-    _LOGGER.info('DCCSI_GDEBUG: {}'.format(settings.DCCSI_GDEBUG))
-    _LOGGER.info('DCCSI_DEV_MODE: {}'.format(settings.DCCSI_DEV_MODE))
-    _LOGGER.info('DCCSI_LOGLEVEL: {}'.format(settings.DCCSI_LOGLEVEL))
-    _LOGGER.info('DCCSI_OS_FOLDER: {}'.format(settings.DCCSI_OS_FOLDER))
+    if _DCCSI_GDEBUG or args.cache_local_settings:
+        if args.export_settings:
+            export_settings_path = Path(args.export_settings).resolve()
+            _DCCSI_CORE_CONFIG.export_settings(settings=settings,
+                                               settings_filepath=export_settings_path.as_posix())
+        else:
+            export_settings_path = Path(PATH_DCCSI_TOOLS_SUBSTANCE,
+                                        'settings.local.json').resolve()
+            _DCCSI_CORE_CONFIG.export_settings(settings=settings,
+                                               settings_filepath=export_settings_path.as_posix())
 
-    _LOGGER.info('O3DE_DEV: {}'.format(settings.O3DE_DEV))
-    _LOGGER.info('O3DE_O3DE_BUILD_FOLDER: {}'.format(settings.PATH_O3DE_BUILD))
-    _LOGGER.info('PATH_O3DE_BUILD: {}'.format(settings.PATH_O3DE_BUILD))
-    _LOGGER.info('PATH_O3DE_BIN: {}'.format(settings.PATH_O3DE_BIN))
+            # this should be set if there are local settings!? to do: circle back
+            _LOGGER.debug('DCCSI_LOCAL_SETTINGS: {}'.format(settings.DCCSI_LOCAL_SETTINGS))
 
-    _LOGGER.info('PATH_DCCSIG: {}'.format(settings.PATH_DCCSIG))
-    _LOGGER.info('DCCSI_LOG_PATH: {}'.format(settings.DCCSI_LOG_PATH))
-    _LOGGER.info('PATH_DCCSI_CONFIG: {}'.format(settings.PATH_DCCSI_CONFIG))
+    # format the setting, Box is an orderedDict object with convenience methods
+    from box import Box
+    _settings_box = Box(settings.as_dict())
 
-    # to do: log substance settings for cli
-    _LOGGER.info(f'{ENVAR_DCCSI_TOOLS_SUBSTANCE}: {settings.DCCSI_TOOLS_SUBSTANCE}')
+    _LOGGER.info('Logging the Substance Dynaconf settings object ...')
+    _LOGGER.info(str(_settings_box.to_json(sort_keys=True,
+                                           indent=4)))
 
     # custom prompt
     sys.ps1 = f"[{_MODULENAME}]>>"

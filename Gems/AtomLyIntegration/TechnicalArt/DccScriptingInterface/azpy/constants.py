@@ -127,6 +127,7 @@ TAG_DIR_O3DE_BUILD_FOLDER = str('build')
 TAG_O3DE_FOLDER = str('.o3de')
 TAG_O3DE_BOOTSTRAP = str('bootstrap.setreg')
 TAG_DCCSI_CONFIG = str('dccsi_configuration.setreg')
+TAG_DCCSI_LOCAL_SETTINGS_SLUG = str('settings.local.json')
 
 # py path string, parts, etc.
 TAG_DEFAULT_PY = str('Launch_pyBASE.bat')

@@ -237,7 +237,7 @@ def add_path_list_to_envar(path_list=_DCCSI_SYS_PATH,
 # -------------------------------------------------------------------------
 # To Do: move to config utils?
 def add_path_list_to_addsitedir(path_list=_DCCSI_PYTHONPATH,
-                       envar='PYTHONPATH'):
+                                envar='PYTHONPATH'):
     """"!
     Take in a list of Path objects to add to system ENVAR (like PYTHONPATH).
     This makes sure each path is fully added as searchable code access.
@@ -458,7 +458,6 @@ def init_o3de_core(engine_path=_O3DE_DEV,
                                         #'.secrets.json'])
 
     # global settings
-    os.environ["DYNACONF_DCCSI_OS_FOLDER"] = azpy.config_utils.get_os()
     os.environ["DYNACONF_DCCSI_GDEBUG"] = str(_DCCSI_GDEBUG)
     os.environ["DYNACONF_DCCSI_DEV_MODE"] = str(_DCCSI_DEV_MODE)
     os.environ['DYNACONF_DCCSI_LOGLEVEL'] = str(_DCCSI_LOGLEVEL)
@@ -683,10 +682,13 @@ def get_config_settings(engine_path=_O3DE_DEV,
 
 
 # -------------------------------------------------------------------------
+# get file name slug for exporting/caching local setting
+from azpy.constants import TAG_DCCSI_LOCAL_SETTINGS_SLUG
+
 def export_settings(settings,
                     dccsi_sys_path=_DCCSI_SYS_PATH,
                     dccsi_pythonpath=_DCCSI_PYTHONPATH,
-                    settings_filepath='settings.local.json',
+                    settings_filepath=TAG_DCCSI_LOCAL_SETTINGS_SLUG,
                     use_dynabox=False,
                     env=None,
                     merge=False):
@@ -763,6 +765,7 @@ def export_settings(settings,
 
         elif env:
             # the env can also be written, though this isn't yet utilized by config.py
+            # To do: we should probably set up each DCC tool as it's own env group!
             #loaders.write(_settings_file, DynaBox(data).to_dict(), merge=False, env='development')
             loaders.write(_settings_file.as_posix(), _settings_box, merge, env)
             return _settings_box
@@ -901,7 +904,6 @@ if __name__ == '__main__':
     parser.add_argument('-es', '--export-settings',
                         type=pathlib.Path,
                         required=False,
-                        default=False,
                         help='Writes managed settings to specified path.')
 
     parser.add_argument('-ls', '--load-settings',
@@ -973,7 +975,6 @@ if __name__ == '__main__':
     _LOGGER.info('DCCSI_GDEBUG: {}'.format(settings.DCCSI_GDEBUG))
     _LOGGER.info('DCCSI_DEV_MODE: {}'.format(settings.DCCSI_DEV_MODE))
     _LOGGER.info('DCCSI_LOGLEVEL: {}'.format(settings.DCCSI_LOGLEVEL))
-    _LOGGER.info('DCCSI_OS_FOLDER: {}'.format(settings.DCCSI_OS_FOLDER))
 
     _LOGGER.info('O3DE_DEV: {}'.format(settings.O3DE_DEV))
     _LOGGER.info('O3DE_O3DE_BUILD_FOLDER: {}'.format(settings.PATH_O3DE_BUILD))
@@ -1032,7 +1033,9 @@ if __name__ == '__main__':
 
     if _DCCSI_GDEBUG or args.cache_local_settings:
         if args.export_settings:
-            export_settings(settings=settings, settings_filepath=args.export_settings)
+            export_settings_path = Path(args.export_settings).resolve()
+            export_settings(settings=settings,
+                            settings_filepath=export_settings_path.as_posix())
         else:
             export_settings(settings)
             # this should be set if there are local settings!?
