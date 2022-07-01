@@ -632,7 +632,7 @@ if __name__ == '__main__':
         _PATH_DCCSI_PYTHON_LIB = Path(bootstrap_dccsi_py_libs(_PATH_DCCSIG)).resolve()
         _LOGGER.info(f'PATH_DCCSI_PYTHON_LIB: {_PATH_DCCSI_PYTHON_LIB.resolve()}')
 
-        # uses a know file to walk and discover the engine root
+        # uses a known file to walk and discover the engine root
         _O3DE_DEV = Path(get_o3de_engine_root(check_stub='engine.json')).resolve()
         _LOGGER.info(f'O3DE_DEV: {_O3DE_DEV.as_posix()}')
 
