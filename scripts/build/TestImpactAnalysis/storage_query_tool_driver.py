@@ -136,7 +136,6 @@ def parse_args():
 if __name__ == "__main__":
     try:
         args = vars(parse_args())
-        logger.info(args)
 
         if args.get('local'):
             sqt = LocalStorageQueryTool(**args)
