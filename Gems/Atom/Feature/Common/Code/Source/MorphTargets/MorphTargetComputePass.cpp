@@ -53,6 +53,8 @@ namespace AZ
             {
                 frameGraph.SetEstimatedItemCount(m_skinnedMeshFeatureProcessor->GetMorphTargetDispatchCount());
             }
+
+            ComputePass::SetupFrameGraphDependencies(frameGraph);
         }
 
         void MorphTargetComputePass::BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context)

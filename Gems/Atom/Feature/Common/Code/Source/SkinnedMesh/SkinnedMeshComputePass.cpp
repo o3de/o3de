@@ -46,6 +46,8 @@ namespace AZ
             {
                 frameGraph.SetEstimatedItemCount(m_skinnedMeshFeatureProcessor->GetSkinningDispatchCount());
             }
+
+            ComputePass::SetupFrameGraphDependencies(frameGraph);
         }
 
         void SkinnedMeshComputePass::BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context)

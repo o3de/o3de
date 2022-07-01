@@ -143,6 +143,8 @@ namespace AZ
             void HairSkinningComputePass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph)
             {
                 frameGraph.SetEstimatedItemCount(aznumeric_cast<uint32_t>(m_dispatchItems.size()));
+
+                RPI::ComputePass::SetupFrameGraphDependencies(frameGraph);
             }
 
             void HairSkinningComputePass::CompileResources([[maybe_unused]] const RHI::FrameGraphCompileContext& context)
