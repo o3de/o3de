@@ -40,6 +40,7 @@ namespace AZ
                         ->DataElement(AZ::Edit::UIHandlers::Default, &VariantInfo::m_stableId, "Stable Id", "Unique identifier for this shader variant within the list")
                             ->Attribute(AZ::Edit::Attributes::ReadOnly, true)
                         ->DataElement(AZ::Edit::UIHandlers::Default, &VariantInfo::m_options, "Options", "Table of shader options for configuring this variant")
+                            ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                             ->Attribute(AZ::Edit::Attributes::ContainerCanBeModified, false)
                             ->Attribute(AZ::Edit::Attributes::ContainerReorderAllow, false)
                         ;

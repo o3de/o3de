@@ -178,53 +178,79 @@ namespace ScriptCanvas
         : m_id(AZ::Uuid::CreateNull())
     {}
 
+    SourceHandle::SourceHandle(const SourceHandle& data, const AZ::Uuid& id)
+        : m_data(data.m_data)
+        , m_id(id)
+    {
+        SanitizePath();
+    }
+
+    SourceHandle::SourceHandle(ScriptCanvas::DataPtr graph, const AZ::Uuid& id)
+        : m_data(graph)
+        , m_id(id)
+    {
+        SanitizePath();
+    }
+
+    SourceHandle::SourceHandle(const SourceHandle& source)
+        : m_data(source.m_data)
+        , m_id(source.Id())
+        , m_relativePath(source.m_relativePath)
+        , m_absolutePath(source.m_absolutePath)
+    {
+        SanitizePath();
+    }
+
     SourceHandle::SourceHandle(const SourceHandle& data, const AZ::Uuid& id, const AZ::IO::Path& path)
         : m_data(data.m_data)
         , m_id(id)
-        , m_absolutePath(path)
+        , m_relativePath(path)
     {
-        SanitizePaths();
-        m_id = id;
+        SanitizePath();
     }
 
     SourceHandle::SourceHandle(ScriptCanvas::DataPtr graph, const AZ::Uuid& id, const AZ::IO::Path& path)
         : m_data(graph)
         , m_id(id)
-        , m_absolutePath(path)
+        , m_relativePath(path)
     {
-        SanitizePaths();
-        m_id = id;
+        SanitizePath();
     }
 
     SourceHandle::SourceHandle(const SourceHandle& data, const AZ::IO::Path& path)
         : m_data(data.m_data)
         , m_id(AZ::Uuid::CreateNull())
-        , m_absolutePath(path)
+        , m_relativePath(path)
     {
-        SanitizePaths();
+        SanitizePath();
     }
 
     SourceHandle::SourceHandle(ScriptCanvas::DataPtr graph, const AZ::IO::Path& path)
         : m_data(graph)
         , m_id(AZ::Uuid::CreateNull())
-        , m_absolutePath(path)
+        , m_relativePath(path)
     {
-        SanitizePaths();
+        SanitizePath();
+    }
+
+    const AZ::IO::Path& SourceHandle::AbsolutePath() const
+    {
+        return m_absolutePath;
     }
 
     bool SourceHandle::AnyEquals(const SourceHandle& other) const
     {
         return m_data && m_data == other.m_data
             || !m_id.IsNull() && m_id == other.m_id
-            || !m_absolutePath.empty() &&  m_absolutePath == other.m_absolutePath;
+            || !m_relativePath.empty() && m_relativePath == other.m_relativePath;
     }
 
     void SourceHandle::Clear()
     {
         m_data = nullptr;
         m_id = AZ::Uuid::CreateNull();
-        m_absolutePath.clear();
         m_relativePath.clear();
+        m_absolutePath.clear();
     }
 
     DataPtr SourceHandle::Data() const
@@ -235,7 +261,27 @@ namespace ScriptCanvas
     // return a SourceHandle with only the Id and Path, but without a pointer to the data
     SourceHandle SourceHandle::Describe() const
     {
-        return SourceHandle(nullptr, m_id, m_absolutePath);
+        return MarkAbsolutePath(SourceHandle(nullptr, m_id, m_relativePath), m_absolutePath);
+    }
+
+    SourceHandle SourceHandle::FromRelativePath(const SourceHandle& data, const AZ::Uuid& id, const AZ::IO::Path& path)
+    {
+        return SourceHandle(data, id, path);
+    }
+
+    SourceHandle SourceHandle::FromRelativePath(ScriptCanvas::DataPtr graph, const AZ::Uuid& id, const AZ::IO::Path& path)
+    {
+        return SourceHandle(graph, id, path);
+    }
+
+    SourceHandle SourceHandle::FromRelativePath(const SourceHandle& data, const AZ::IO::Path& path)
+    {
+        return SourceHandle(data, path);
+    }
+
+    SourceHandle SourceHandle::FromRelativePath(ScriptCanvas::DataPtr graph, const AZ::IO::Path& path)
+    {
+        return SourceHandle(graph, path);
     }
 
     ScriptCanvasEditor::GraphPtrConst SourceHandle::Get() const
@@ -250,12 +296,20 @@ namespace ScriptCanvas
 
     bool SourceHandle::IsDescriptionValid() const
     {
-        return !m_id.IsNull() && (!m_absolutePath.empty() || !m_relativePath.empty());
+        return !m_id.IsNull() && (!m_relativePath.empty());
     }
 
     bool SourceHandle::IsGraphValid() const
     {
         return m_data != nullptr;
+    }
+
+    SourceHandle SourceHandle::MarkAbsolutePath(const SourceHandle& data, const AZ::IO::Path& path)
+    {
+        SourceHandle result(data);
+        result.m_absolutePath = path;
+        result.m_absolutePath.MakePreferred();
+        return result;
     }
 
     ScriptCanvasEditor::GraphPtr SourceHandle::Mod() const
@@ -265,13 +319,14 @@ namespace ScriptCanvas
 
     AZStd::string SourceHandle::Name() const
     {
-        return AZStd::string::format("%.*s", AZ_STRING_ARG(m_absolutePath.Filename().Native()));
+        return AZStd::string::format("%.*s", AZ_STRING_ARG(m_relativePath.Filename().Native()));
     }
 
     bool SourceHandle::operator==(const SourceHandle& other) const
     {
         return m_data.get() == other.m_data.get()
             && m_id == other.m_id
+            && m_relativePath == other.m_relativePath
             && m_absolutePath == other.m_absolutePath;
     }
 
@@ -280,25 +335,19 @@ namespace ScriptCanvas
         return !(*this == other);
     }
 
-    const AZ::IO::Path& SourceHandle::Path() const
-    {
-        return m_absolutePath;
-    }
-
-    void SourceHandle::SanitizePaths()
-    {
-        m_absolutePath.MakePreferred();
-        m_relativePath = m_absolutePath.RelativePath();
-    }
-
     const AZ::IO::Path& SourceHandle::RelativePath() const
     {
         return m_relativePath;
     }
 
+    void SourceHandle::SanitizePath()
+    {
+        m_relativePath.MakePreferred();
+    }
+
     bool SourceHandle::PathEquals(const SourceHandle& other) const
     {
-        return m_absolutePath == other.m_absolutePath;
+        return m_relativePath == other.m_relativePath;
     }
 
     void SourceHandle::Reflect(AZ::ReflectContext* context)

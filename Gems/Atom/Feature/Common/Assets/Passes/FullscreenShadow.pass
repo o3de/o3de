@@ -50,6 +50,9 @@
                         "LoadAction": "DontCare",
                         "StoreAction": "Store"
                     }
+                    // Todo: test Compute Shader version with async compute and LDS optimizations
+                    //"ScopeAttachmentUsage": "Shader",
+                    //"ShaderInputName": "m_fullscreenShadowOutput"
                 }
             ],
             "ImageAttachments": [
@@ -58,7 +61,7 @@
                     "SizeSource": {
                         "Source": {
                             "Pass": "Parent",
-                            "Attachment": "SwapChainOutput"
+                            "Attachment": "PipelineOutput"
                         }
                     },
                     "ImageDescriptor": {
@@ -97,6 +100,15 @@
                 },
                 "PipelineViewTag": "MainCamera"
             }
+            // Todo: test Compute Shader version with async compute and LDS optimizations
+            // "PassData": {
+            //     "$type": "ComputePassData",
+            //     "ShaderAsset": {
+            //         "FilePath": "Shaders/Shadow/FullscreenShadow.shader"
+            //     },
+            //     "Make Fullscreen Pass": true,
+            //     "PipelineViewTag": "MainCamera"
+            // }
         }
     }
 }

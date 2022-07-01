@@ -39,7 +39,6 @@ namespace ScriptCanvasEditor
         , private AZ::UserSettingsNotificationBus::Handler
         , private AZ::Data::AssetBus::MultiHandler
         , private AzToolsFramework::AssetSeedManagerRequests::Bus::Handler
-        , private AzToolsFramework::EditorContextMenuBus::Handler
         , private AzToolsFramework::EditorEntityContextNotificationBus::Handler
         , private AzToolsFramework::AssetSystemBus::Handler
         , private AZ::SystemTickBus::Handler
@@ -68,11 +67,6 @@ namespace ScriptCanvasEditor
         // SystemRequestBus::Handler...
         void GetEditorCreatableTypes(AZStd::unordered_set<ScriptCanvas::Data::Type>& outCreatableTypes) override;
         void CreateEditorComponentsOnEntity(AZ::Entity* entity, const AZ::Data::AssetType& assetType) override;
-        ////////////////////////////////////////////////////////////////////////
-
-        ////////////////////////////////////////////////////////////////////////
-        // AztoolsFramework::EditorContextMenuBus::Handler...
-        void PopulateEditorGlobalContextMenu(QMenu* menu, const AZ::Vector2& point, int flags) override;
         ////////////////////////////////////////////////////////////////////////
 
         ////////////////////////////////////////////////////////////////////////
@@ -113,7 +107,6 @@ namespace ScriptCanvasEditor
     private:
         SystemComponent(const SystemComponent&) = delete;
 
-        void FilterForScriptCanvasEnabledEntities(AzToolsFramework::EntityIdList& sourceList, AzToolsFramework::EntityIdList& targetList);
         void PopulateEditorCreatableTypes();
         
         AZStd::unique_ptr<AZ::JobManager> m_jobManager;

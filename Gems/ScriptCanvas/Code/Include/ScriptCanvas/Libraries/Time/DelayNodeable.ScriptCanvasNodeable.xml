@@ -1,29 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <ScriptCanvas Include="Include/ScriptCanvas/Libraries/Time/DelayNodeable.h" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-  <Class Name="DelayNodeable"
-      QualifiedName="ScriptCanvas::Nodeables::Time::DelayNodeable"
-      PreferredClassName="Delay"
-      Uuid="{32C41074-B35E-DF94-AD36-E75684370F4A}"
-      Base="ScriptCanvas::Nodeable"
-      Category="Timing"
-      Version="0"
-      GeneratePropertyFriend="True"
-      Namespace="ScriptCanvas"
-      Description="While active, will signal the output at the given interval.">
-    <Input Name="Start" Description="When signaled, execution is delayed at this node according to the specified properties.">
-      <Parameter Name="Start: Time" Type="Data::NumberType" DefaultValue="0.0" Description="Amount of time to delay, in seconds."/>
-      <Parameter Name="Start: Loop" Type="Data::BooleanType" DefaultValue="false" Description="If true, the delay will restart after triggering the Out slot."/>
-      <Parameter Name="Start: Hold" Type="Data::NumberType" DefaultValue="0.0" Description="Amount of time to wait before restarting, in seconds."/>
-    </Input>/>
-    <Input Name="Reset" Description="When signaled, execution is delayed at this node according to the specified properties.">
-      <Parameter Name="Reset: Time" Type="Data::NumberType" DefaultValue="0.0" Description="Amount of time to delay, in seconds."/>
-      <Parameter Name="Reset: Loop" Type="Data::BooleanType" DefaultValue="false" Description="If true, the delay will restart after triggering the Out slot."/>
-      <Parameter Name="Reset: Hold" Type="Data::NumberType" DefaultValue="0.0" Description="Amount of time to wait before restarting, in seconds."/>
-    </Input>/>
-    <Input Name="Cancel" Description="Cancels the current delay."/>
-    <Output Name="Done" Description="Signaled when the delay reaches zero." >
-      <Parameter Name="Elapsed" Type="Data::NumberType" Description="The amount of time that has elapsed since the delay began."/>
-    </Output>
-  </Class>
+    <Class Name="DelayNodeable"
+        QualifiedName="ScriptCanvas::Nodeables::Time::DelayNodeable"
+        PreferredClassName="Delay"
+        Uuid="{32C41074-B35E-DF94-AD36-E75684370F4A}"
+        Category="Timing"
+        Namespace="ScriptCanvas"
+        Description="While active, will signal the output at the given interval.">
+        <Input Name="Start" Description="When signaled, execution is delayed at this node according to the specified properties.">
+            <Parameter Name="Start: Time" Type="Data::NumberType" DefaultValue="0.0" Description="Amount of time to delay, in seconds."/>
+            <Parameter Name="Start: Loop" Type="Data::BooleanType" DefaultValue="false" Description="If true, the delay will restart after triggering the Out slot."/>
+            <Parameter Name="Start: Hold" Type="Data::NumberType" DefaultValue="0.0" Description="Amount of time to wait before restarting, in seconds."/>
+        </Input>/>
+        <Input Name="Reset" Description="When signaled, execution is delayed at this node according to the specified properties.">
+            <Parameter Name="Reset: Time" Type="Data::NumberType" DefaultValue="0.0" Description="Amount of time to delay, in seconds."/>
+            <Parameter Name="Reset: Loop" Type="Data::BooleanType" DefaultValue="false" Description="If true, the delay will restart after triggering the Out slot."/>
+            <Parameter Name="Reset: Hold" Type="Data::NumberType" DefaultValue="0.0" Description="Amount of time to wait before restarting, in seconds."/>
+        </Input>/>
+        <Input Name="Cancel" Description="Cancels the current delay."/>
+        <Output Name="Done" Description="Signaled when the delay reaches zero." >
+            <Parameter Name="Elapsed" Type="Data::NumberType" Description="The amount of time that has elapsed since the delay began."/>
+        </Output>
+    </Class>
 </ScriptCanvas>

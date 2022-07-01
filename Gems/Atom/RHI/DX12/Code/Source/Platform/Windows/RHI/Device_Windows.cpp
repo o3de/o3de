@@ -310,12 +310,11 @@ namespace AZ
                 return "D3D12_DRED_ALLOCATION_TYPE_VIDEO_MOTION_VECTOR_HEAP";
             case D3D12_DRED_ALLOCATION_TYPE_VIDEO_EXTENSION_COMMAND:
                 return "D3D12_DRED_ALLOCATION_TYPE_VIDEO_EXTENSION_COMMAND";
-#ifdef __ID3D12DeviceRemovedExtendedDataSettings1_INTERFACE_DEFINED__
-            case D3D12_DRED_ALLOCATION_TYPE_VIDEO_ENCODER:
-                return "D3D12_DRED_ALLOCATION_TYPE_VIDEO_ENCODER";
-            case D3D12_DRED_ALLOCATION_TYPE_VIDEO_ENCODER_HEAP:
-                return "D3D12_DRED_ALLOCATION_TYPE_VIDEO_ENCODER_HEAP";
-#endif
+
+            // NOTE: These enums are not defined in Win10 SDKs 10.0.19041.0 and older
+            // case D3D12_DRED_ALLOCATION_TYPE_VIDEO_ENCODER:
+            // case D3D12_DRED_ALLOCATION_TYPE_VIDEO_ENCODER_HEAP:
+
             case D3D12_DRED_ALLOCATION_TYPE_INVALID:
                 return "D3D12_DRED_ALLOCATION_TYPE_INVALID";
             default:
@@ -615,7 +614,7 @@ namespace AZ
                         {
                             D3D12_AUTO_BREADCRUMB_OP op = currentNode->pCommandHistory[i];
 
-                            if (errorOccurred && i == actual + 1)
+                            if (errorOccurred && i == actual)
                             {
                                 // This is the first op that exceeds the number of ops that finished
                                 line = "===ERROR START===\n";
@@ -881,9 +880,10 @@ namespace AZ
             return formatsList;
         }
 
-        void Device::BeginFrameInternal()
+        RHI::ResultCode Device::BeginFrameInternal()
         {
             m_commandQueueContext.Begin();
+            return RHI::ResultCode::Success;
         }
     }
 }

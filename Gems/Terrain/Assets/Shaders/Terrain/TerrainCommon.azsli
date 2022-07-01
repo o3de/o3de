@@ -76,9 +76,6 @@ ShaderResourceGroup ObjectSrg : SRG_PerObject
 option bool o_useClipmap = false;
 option bool o_useTerrainClod = true;
 
-static const uint GridSize = 64;
-static const float RcpGridSize = rcp(GridSize);
-
 struct VertexInput
 {
     float2 m_xyPosition : POSITION0;
@@ -86,8 +83,6 @@ struct VertexInput
     float2 m_xyNormal : NORMAL0;
     float1 m_lodZPosition : POSITION2;
     float2 m_lodXYNormal : NORMAL1;
-
-    uint m_vertexId : SV_VertexID; // Used for continuous lod
 };
 
 float2 GetWorldXYPosition(in ObjectSrg::PatchData patchData, in float2 vertexPosition)
@@ -97,7 +92,7 @@ float2 GetWorldXYPosition(in ObjectSrg::PatchData patchData, in float2 vertexPos
 
 void CalculateTerrainPosition(
     in SceneSrg::TerrainWorldData worldData, in ObjectSrg::PatchData patchData, in VertexInput input,
-    out float3 worldPosition, out float4 position, out float2 cullDistance, out float3 normal)
+    out float3 worldPosition, out float4 position, out float3 normal)
 {
     float2 worldXyPosition = GetWorldXYPosition(ObjectSrg::m_patchData, input.m_xyPosition);
     if (input.m_zPosition == 1.0)
@@ -110,15 +105,12 @@ void CalculateTerrainPosition(
     float height = worldData.m_zMin + input.m_zPosition * worldData.m_zExtents;
 
     worldPosition = float3(GetWorldXYPosition(patchData, input.m_xyPosition), height);
-    cullDistance = TerrainSrg::CalculateCullDistance(patchData.m_lodLevel, worldPosition);
+    float clodDistance = TerrainSrg::CalculateClodDistance(patchData.m_lodLevel, worldPosition);
     normal = float3(input.m_xyNormal, 0.0);
 
     if (o_useTerrainClod)
     {
-        const float quadSize = patchData.m_xyScale * RcpGridSize;
-        const float quadDiagonal = quadSize * sqrt(2.0);
-        float clodPadding = quadDiagonal * 2; // pad enough to handle a diagonal on the quad from the next lod (which will be 2x the size).
-        float clodBlend = saturate((cullDistance.y - clodPadding) * TerrainSrg::m_meshData.m_rcpClodDistance * patchData.m_rcpLodLevel);
+        float clodBlend = saturate(clodDistance * TerrainSrg::m_meshData.m_rcpClodDistance * patchData.m_rcpLodLevel);
         float lodHeight = worldData.m_zMin + input.m_lodZPosition * worldData.m_zExtents;
         worldPosition.z = lerp(lodHeight, height, clodBlend);
 

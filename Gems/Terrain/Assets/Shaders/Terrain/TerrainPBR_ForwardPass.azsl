@@ -31,11 +31,6 @@ struct VSOutput
     float4 m_position : SV_Position;
     float3 m_normal: NORMAL;
     float3 m_worldPosition : UV0;
-
-    // Using two culling planes - cull triangles too close to or too far from the camera for thier LOD
-    // This allows some overlap in polygons along seams which helps reduce the chance of a hole. When 
-    // support for continuous lod is added, we should be able to get away with just one culling plane.
-    float2 m_cullDistance : SV_CullDistance; 
 };
 
 VSOutput TerrainPBR_MainPassVS(VertexInput input)
@@ -44,7 +39,7 @@ VSOutput TerrainPBR_MainPassVS(VertexInput input)
     
     CalculateTerrainPosition(
         SceneSrg::m_terrainWorldData, ObjectSrg::m_patchData, input, // input params
-        output.m_worldPosition, output.m_position, output.m_cullDistance, output.m_normal // output params
+        output.m_worldPosition, output.m_position, output.m_normal // output params
         );
 
     return output;
@@ -87,17 +82,18 @@ void GatherSurfaceDataFromClipmaps(
     )
 {
     ClipmapSample clipmapSample = SampleClipmap(position);
-    hasDetailSurface = clipmapSample.m_hasDetail;
 
     if (clipmapSample.m_hasMacro)
     {
         macroColor = clipmapSample.m_macroColor;
         macroNormal = clipmapSample.m_macroNormal;
     }
-    if (hasDetailSurface)
+    if (detailFactor < 1.0)
     {
+        hasDetailSurface = clipmapSample.m_hasDetail;
         detailSurface = clipmapSample.m_detailSurface;
     }
+
 }
 
 ForwardPassOutput TerrainPBR_MainPassPS(VSOutput input)
@@ -107,7 +103,6 @@ ForwardPassOutput TerrainPBR_MainPassPS(VSOutput input)
     surface.position = input.m_worldPosition.xyz;
     surface.vertexNormal = normalize(input.m_normal);
     float viewDistance = length(ViewSrg::m_worldPosition - input.m_worldPosition.xyz);
-    float detailFactor = saturate((viewDistance - TerrainMaterialSrg::m_detailFadeDistance) / max(TerrainMaterialSrg::m_detailFadeLength, EPSILON));
 
     // Surface data to be gathered from clipmaps or materials.
     float3 macroNormal = surface.vertexNormal;
@@ -115,12 +110,17 @@ ForwardPassOutput TerrainPBR_MainPassPS(VSOutput input)
     bool hasDetailSurface = false;
     DetailSurface detailSurface = GetDefaultDetailSurface();
 
+    float detailFactor;
     if (o_useClipmap)
     {
+        // Clipmap has a max render distance. The true fade distance should be the min.
+        float detailFadeDistance = min(TerrainMaterialSrg::m_detailFadeDistance, TerrainSrg::m_clipmapData.m_detailClipmapMaxRenderRadius - TerrainMaterialSrg::m_detailFadeLength);
+        detailFactor = saturate((viewDistance - detailFadeDistance) / max(TerrainMaterialSrg::m_detailFadeLength, EPSILON));
         GatherSurfaceDataFromClipmaps(surface.position.xy, detailFactor, macroColor, macroNormal, hasDetailSurface, detailSurface);
     }
     else
     {
+        detailFactor = saturate((viewDistance - TerrainMaterialSrg::m_detailFadeDistance) / max(TerrainMaterialSrg::m_detailFadeLength, EPSILON));
         GatherSurfaceDataFromMaterials(surface.position.xy, detailFactor, macroColor, macroNormal, hasDetailSurface, detailSurface);
     }
 
@@ -206,9 +206,10 @@ ForwardPassOutput TerrainPBR_MainPassPS(VSOutput input)
         uint lodLevel = ObjectSrg::m_patchData.m_lodLevel % 6;
         float3 debugColor = debugColors[lodLevel];
         output.m_diffuseColor.xyz = (output.m_diffuseColor.xyz + debugColor) * (debugColor + 1.0);
+        float patchScale = ObjectSrg::m_patchData.m_xyScale * TerrainSrg::m_meshData.m_gridToQuadScale;
 
         // Draw red wireframe on quad boundaries
-        float quadSpacing = ObjectSrg::m_patchData.m_xyScale * RcpGridSize;
+        float quadSpacing = patchScale * TerrainSrg::m_meshData.m_rcpGridSize;
         float2 modPos = input.m_worldPosition.xy % quadSpacing;
         const float lineWidth = 0.04 * quadSpacing;
         if (any(abs(modPos) < lineWidth) || any(abs(modPos) > quadSpacing - lineWidth))
@@ -222,6 +223,23 @@ ForwardPassOutput TerrainPBR_MainPassPS(VSOutput input)
         if (any(abs(modPos) < lineWidth) || any(abs(modPos) > quadSpacing - lineWidth))
         {
             output.m_diffuseColor.g += 1.0;
+        }
+
+        // Draw blue on sector boundaries
+        modPos = input.m_worldPosition.xy % patchScale;
+        if (any(abs(modPos) < quadSpacing * 0.5) || any(abs(modPos) > patchScale - quadSpacing * 0.5))
+        {
+            output.m_diffuseColor.b += 1.0;
+        }
+        
+        if (o_useTerrainClod)
+        {
+            float clodDistance = TerrainSrg::CalculateClodDistance(ObjectSrg::m_patchData.m_lodLevel, input.m_worldPosition);
+            float clodBlend = 1.0 - saturate(clodDistance * TerrainSrg::m_meshData.m_rcpClodDistance * ObjectSrg::m_patchData.m_rcpLodLevel);
+            if (clodBlend > 0.0 && clodBlend < 1.0)
+            {
+                output.m_diffuseColor.rgb += lerp(float3(0.1, 0.1, 0.0), float3(0.0, 0.1, 0.1), clodBlend);
+            }
         }
     }
 

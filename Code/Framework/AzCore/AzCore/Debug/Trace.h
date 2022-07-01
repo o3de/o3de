@@ -9,6 +9,7 @@
 
 #include <AzCore/PlatformDef.h>
 #include <AzCore/base.h>
+#include <AzCore/O3DEKernelConfiguration.h>
 
 namespace AZ
 {
@@ -28,6 +29,14 @@ namespace AZ
             Errors = 1,
             Warnings = 2,
             Info = 3
+        };
+
+        // Represents the options to select C language FILE* stream to write raw output
+        enum class RedirectCStream
+        {
+            Stdout,
+            Stderr,
+            None
         };
 
         class Trace
@@ -84,7 +93,7 @@ namespace AZ
     }
 }
 
-#ifdef AZ_ENABLE_TRACING
+#if defined(AZ_ENABLE_TRACING) && !defined(O3DEKernel_EXPORTS)
 
 /**
 * AZ tracing macros provide debug information reporting for assert, errors, warnings, and informational messages.

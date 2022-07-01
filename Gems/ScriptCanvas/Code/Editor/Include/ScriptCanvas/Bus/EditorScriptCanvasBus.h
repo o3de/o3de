@@ -76,21 +76,7 @@ namespace ScriptCanvasEditor
     };
 
     using EditorScriptCanvasComponentRequestBus = AZ::EBus<EditorScriptCanvasComponentRequests>;
-
-    // Above bus is keyed off of the graph Id. Which I don't really have access to.
-    // This bus is here just so I can tell it to open the Editor.
-    class EditorContextMenuRequests : public AZ::EBusTraits
-    {
-    public:
-        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
-        using BusIdType = AZ::EntityId;
-
-        //! Gets the GraphId for the EditorScriptCanvasComponent on the given entity.
-        virtual AZ::Data::AssetId GetAssetId() const = 0;
-    };
-
-    using EditorContextMenuRequestBus = AZ::EBus<EditorContextMenuRequests>;
-        
+            
     class EditorGraphRequests : public AZ::EBusTraits
     {
     public:

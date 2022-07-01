@@ -136,6 +136,9 @@ namespace Terrain
 
     void TerrainPhysicsColliderComponent::Activate()
     {
+        // Build a mapping of surface tags to material indices for quick lookups when building/refreshing the collider.
+        BuildSurfaceTagToMaterialIndexLookup();
+
         const auto entityId = GetEntityId();
         LmbrCentral::ShapeComponentNotificationsBus::Handler::BusConnect(entityId);
         Physics::HeightfieldProviderRequestsBus::Handler::BusConnect(entityId);
@@ -167,14 +170,16 @@ namespace Terrain
                 // Find the intersection of the dirty region and the collider, and only notify about that area as changing.
                 AZ::Aabb dirtyBounds = colliderBounds.GetClamped(dirtyRegion);
 
-                Physics::HeightfieldProviderNotificationBus::Broadcast(
+                Physics::HeightfieldProviderNotificationBus::Event(
+                    GetEntityId(),
                     &Physics::HeightfieldProviderNotificationBus::Events::OnHeightfieldDataChanged, dirtyBounds, heightfieldChangeMask);
             }
         }
         else
         {
             // No valid dirty region, so update the entire collider bounds.
-            Physics::HeightfieldProviderNotificationBus::Broadcast(
+            Physics::HeightfieldProviderNotificationBus::Event(
+                GetEntityId(),
                 &Physics::HeightfieldProviderNotificationBus::Events::OnHeightfieldDataChanged, colliderBounds, heightfieldChangeMask);
         }
     }
@@ -358,7 +363,7 @@ namespace Terrain
             return static_cast<uint8_t>(materialIter - materialList.begin());
         }
 
-        return 0;
+        return DefaultMaterialIndex;
     }
 
     AZ::Data::Asset<Physics::MaterialAsset> TerrainPhysicsColliderComponent::FindMaterialAssetForSurfaceTag(const SurfaceData::SurfaceTag tag) const
@@ -468,11 +473,17 @@ namespace Terrain
         const float worldHeightBoundsMin = worldSize.GetMin().GetZ();
         const float worldHeightBoundsMax = worldSize.GetMax().GetZ();
 
-        AZStd::vector<AZ::Data::Asset<Physics::MaterialAsset>> materialList = GetMaterialList();
+        // Grab a local copy of the surface tag to material lookup to ensure that modifications on other threads
+        // don't affect us while we're in the middle of the query.
+        AZStd::unordered_map<SurfaceData::SurfaceTag, uint8_t> surfaceTagToMaterialIndexLookup;
+        {
+            AZStd::shared_lock lock(m_stateMutex);
+            surfaceTagToMaterialIndexLookup = m_surfaceTagToMaterialIndexLookup;
+        }
 
         auto perPositionCallback =
-            [startColumn, startRow, &updateHeightsMaterialsCallback, &materialList, this, worldCenterZ, worldHeightBoundsMin,
-             worldHeightBoundsMax]
+            [startColumn, startRow, &updateHeightsMaterialsCallback, &surfaceTagToMaterialIndexLookup, worldCenterZ,
+            worldHeightBoundsMin, worldHeightBoundsMax]
             (size_t xIndex, size_t yIndex, const AzFramework::SurfaceData::SurfacePoint& surfacePoint, bool terrainExists)
         {
             float height = surfacePoint.m_position.GetZ();
@@ -496,8 +507,17 @@ namespace Terrain
             Physics::HeightMaterialPoint point;
             point.m_height = height - worldCenterZ;
             point.m_quadMeshType = terrainExists ? Physics::QuadMeshType::SubdivideUpperLeftToBottomRight : Physics::QuadMeshType::Hole;
-            AZ::Data::Asset<Physics::MaterialAsset> materialAsset = FindMaterialAssetForSurfaceTag(surfaceWeight.m_surfaceType);
-            point.m_materialIndex = GetMaterialIndex(materialAsset, materialList);
+
+            // Get the material index for the surface type. If we can't find it, use the default material.
+            if (const auto& entry = surfaceTagToMaterialIndexLookup.find(surfaceWeight.m_surfaceType);
+                entry != surfaceTagToMaterialIndexLookup.end())
+            {
+                point.m_materialIndex = entry->second;
+            }
+            else
+            {
+                point.m_materialIndex = DefaultMaterialIndex;
+            }
 
             size_t column = startColumn + xIndex;
             size_t row = startRow + yIndex;
@@ -537,12 +557,37 @@ namespace Terrain
         }
     }
 
+    void TerrainPhysicsColliderComponent::BuildSurfaceTagToMaterialIndexLookup()
+    {
+        auto materialList = GetMaterialList();
+
+        // Lock this *after* calling GetMaterialList() so that we don't have nested locks.
+        AZStd::unique_lock lock(m_stateMutex);
+
+        m_surfaceTagToMaterialIndexLookup.clear();
+
+        for (const auto& mapping : m_configuration.m_surfaceMaterialMappings)
+        {
+            for (uint8_t materialIndex = 0; materialIndex < materialList.size(); materialIndex++)
+            {
+                if (mapping.m_materialAsset == materialList[materialIndex])
+                {
+                    m_surfaceTagToMaterialIndexLookup.emplace(mapping.m_surfaceTag, materialIndex);
+                    break;
+                }
+            }
+        }
+    }
+
     void TerrainPhysicsColliderComponent::UpdateConfiguration(const TerrainPhysicsColliderConfig& newConfiguration)
     {
         {
             AZStd::unique_lock lock(m_stateMutex);
             m_configuration = newConfiguration;
         }
+
+        // Build a mapping of surface tags to material indices for quick lookups when building/refreshing the collider.
+        BuildSurfaceTagToMaterialIndexLookup();
 
         NotifyListenersOfHeightfieldDataChange(
             Physics::HeightfieldProviderNotifications::HeightfieldChangeMask::SurfaceMapping, AZ::Aabb::CreateNull());

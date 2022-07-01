@@ -7,6 +7,7 @@
 #
 
 set(FILES
+    Tests/AutoGen/ScriptCanvasAutoGenRegistryTest.cpp
     Tests/Framework/ScriptCanvasUnitTestFixture.h
     Tests/Libraries/Entity/ScriptCanvasUnitTest_EntityFunctions.cpp
     Tests/Libraries/Math/ScriptCanvasUnitTest_AABB.cpp
@@ -23,5 +24,6 @@ set(FILES
     Tests/Libraries/Math/ScriptCanvasUnitTest_Vector3.cpp
     Tests/Libraries/Math/ScriptCanvasUnitTest_Vector4.cpp
     Tests/Libraries/String/ScriptCanvasUnitTest_StringFunctions.cpp
+    Tests/Libraries/ScriptCanvasNodeRegistryTest.cpp
     Tests/ScriptCanvasTest.cpp
 )

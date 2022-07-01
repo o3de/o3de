@@ -10,11 +10,6 @@ if (NOT PAL_TRAIT_BUILD_HOST_TOOLS)
     return()
 endif()
 
-include(Platform/${PAL_PLATFORM_NAME}/PAL_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
-if (NOT PAL_TRAIT_BUILD_SERIALIZECONTEXTTOOLS)
-    return()
-endif()
-
 ly_add_target(
     NAME SerializeContextTools EXECUTABLE
     NAMESPACE AZ
