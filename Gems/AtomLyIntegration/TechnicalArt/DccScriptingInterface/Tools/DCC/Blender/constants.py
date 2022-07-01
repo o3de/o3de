@@ -12,7 +12,7 @@
 Module Documentation:
     < DCCsi >:: Tools//DCC//Blender//constants.py
 
-This module contains default values for common used constants & strings.
+This module contains default values for commonly used constants & strings.
 We can make an update here easily that is propagated elsewhere.
 
 Notice: this module should not actually set ENVARs in the os.environ
