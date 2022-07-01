@@ -42,12 +42,27 @@ class S3StorageQueryTool(StorageQueryTool):
         
 
 
-    def _search(self):
+    def _display(self):
         """
         Executes the search based on the search parameters initialised beforehand, in either the file directory or in the s3 bucket.
         """
-        for object in self._bucket.objects.all():
-                logger.info(object)
+
+        def filter_by(filter_by, bucket_objs):
+            prefix_string = filter_by + "/"
+            result = bucket_objs.filter(Prefix=prefix_string)
+            return result
+
+        bucket_objs = self._bucket.objects.all()
+
+        if self._root_directory:
+            bucket_objs = filter_by(self._root_directory, bucket_objs)
+        elif self._branch and self._build and self._suite:
+            bucket_objs = filter_by(self._root_directory+"/"+self._branch, bucket_objs)
+
+        for object in bucket_objs:
+            logger.info(object.key)
+
+    
 
     def _write_tree(self):
         """
