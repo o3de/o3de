@@ -1351,6 +1351,7 @@ namespace ScriptCanvasEditor
 
 
         auto activeGraph =  SourceHandle::FromRelativePath(result.m_handle, assetInfo.m_assetId.m_guid, assetInfo.m_relativePath);
+        activeGraph = SourceHandle::MarkAbsolutePath(activeGraph, fullPath);
         
         auto openOutcome = OpenScriptCanvasAsset(activeGraph, Tracker::ScriptCanvasFileState::UNMODIFIED);
         if (openOutcome)
