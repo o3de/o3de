@@ -28,11 +28,16 @@ class S3StorageQueryTool(StorageQueryTool):
             self._bucket = self._s3.Bucket(self._bucket_name)
             self._search()
 
-            if self._access_flag:
+            if self._read:
                 self._access()
-        
-            if self._delete_flag:
-                self._delete()
+            elif self._create_flag:
+                self._put(self._file, self._location)
+            elif self._update_flag:
+                self._update(self._file, self._location)
+            elif self._delete_flag:
+                self._delete("")
+            else:
+                self._display()
         except botocore.exceptions.BotoCoreError as e:
             raise SystemError(f"There was a problem with the s3 bucket: {e}")
         except botocore.exceptions.ClientError as e:
