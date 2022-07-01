@@ -47,8 +47,8 @@ _PATH_DCCSIG = os.path.normpath(os.path.join(_MODULE_PATH, '../..'))
 _PATH_DCCSIG = os.getenv('PATH_DCCSIG', _PATH_DCCSIG)
 site.addsitedir(_PATH_DCCSIG)
 
-# Ideally this module is standalone with minila dependancies
-# Most logic, such as a search to dervie a path, should happen outside of this module.
+# Ideally this module is standalone with minimal dependancies
+# Most logic, such as a search to derive a path, should happen outside of this module.
 # To Do: place best defaults here and logical derivations in a config.py
 
 # now we have azpy api access
