@@ -591,7 +591,7 @@ if __name__ == '__main__':
     parser.add_argument('-ex', '--exit',
                         type=bool,
                         required=False,
-                        help='(NOT IMPLEMENTED) Exits python. Do not exit if you want to be in interactive interpretter after config')
+                        help='(NOT IMPLEMENTED) Exits python. Do not exit if you want to be in interactive interpreter after config')
 
     args = parser.parse_args()
 
