@@ -8,7 +8,7 @@
             "PassClass": "ParentPass",
             "Slots": [
                 {
-                    "Name": "SwapChainOutput",
+                    "Name": "PipelineOutput",
                     "SlotType": "InputOutput"
                 }
             ],
@@ -16,8 +16,8 @@
                 "$type": "PassData",
                 "PipelineGlobalConnections": [
                     {
-                        "GlobalName": "SwapChainOutput",
-                        "Slot": "SwapChainOutput"
+                        "GlobalName": "PipelineOutput",
+                        "Slot": "PipelineOutput"
                     }
                 ]
             },
@@ -51,10 +51,10 @@
                             }
                         },
                         {
-                            "LocalSlot": "SwapChainOutput",
+                            "LocalSlot": "PipelineOutput",
                             "AttachmentRef": {
                                 "Pass": "Parent",
-                                "Attachment": "SwapChainOutput"
+                                "Attachment": "PipelineOutput"
                             }
                         }
                     ]
@@ -78,16 +78,16 @@
                             }
                         },
                         {
-                            "LocalSlot": "SwapChainOutput",
+                            "LocalSlot": "PipelineOutput",
                             "AttachmentRef": {
                                 "Pass": "Parent",
-                                "Attachment": "SwapChainOutput"
+                                "Attachment": "PipelineOutput"
                             }
                         }
                     ]
                 },
                 {
-                    "Name": "ShadowPass",
+                    "Name": "Shadows",
                     "TemplateName": "ShadowParentTemplate",
                     "Connections": [
                         {
@@ -98,19 +98,19 @@
                             }
                         },
                         {
-                            "LocalSlot": "SwapChainOutput",
+                            "LocalSlot": "PipelineOutput",
                             "AttachmentRef": {
                                 "Pass": "Parent",
-                                "Attachment": "SwapChainOutput"
+                                "Attachment": "PipelineOutput"
                             }
                         },
                         {
                             "LocalSlot": "Depth",
                             "AttachmentRef": {
                                 "Pass": "DepthPrePass",
-                                "Attachment": "DepthMSAA" 
+                                "Attachment": "DepthMSAA"
                             }
-                        }                           
+                        }
                     ]
                 },
                 {
@@ -121,28 +121,28 @@
                         {
                             "LocalSlot": "DirectionalLightShadowmap",
                             "AttachmentRef": {
-                                "Pass": "ShadowPass",
+                                "Pass": "Shadows",
                                 "Attachment": "DirectionalShadowmap"
                             }
                         },
                         {
                             "LocalSlot": "ExponentialShadowmapDirectional",
                             "AttachmentRef": {
-                                "Pass": "ShadowPass",
+                                "Pass": "Shadows",
                                 "Attachment": "DirectionalESM"
                             }
                         },
                         {
                             "LocalSlot": "ProjectedShadowmap",
                             "AttachmentRef": {
-                                "Pass": "ShadowPass",
+                                "Pass": "Shadows",
                                 "Attachment": "ProjectedShadowmap"
                             }
                         },
                         {
                             "LocalSlot": "ExponentialShadowmapProjected",
                             "AttachmentRef": {
-                                "Pass": "ShadowPass",
+                                "Pass": "Shadows",
                                 "Attachment": "ProjectedESM"
                             }
                         },
@@ -219,28 +219,28 @@
                         {
                             "LocalSlot": "DirectionalShadowmap",
                             "AttachmentRef": {
-                                "Pass": "ShadowPass",
+                                "Pass": "Shadows",
                                 "Attachment": "DirectionalShadowmap"
                             }
                         },
                         {
                             "LocalSlot": "DirectionalESM",
                             "AttachmentRef": {
-                                "Pass": "ShadowPass",
+                                "Pass": "Shadows",
                                 "Attachment": "DirectionalESM"
                             }
                         },
                         {
                             "LocalSlot": "ProjectedShadowmap",
                             "AttachmentRef": {
-                                "Pass": "ShadowPass",
+                                "Pass": "Shadows",
                                 "Attachment": "ProjectedShadowmap"
                             }
                         },
                         {
                             "LocalSlot": "ProjectedESM",
                             "AttachmentRef": {
-                                "Pass": "ShadowPass",
+                                "Pass": "Shadows",
                                 "Attachment": "ProjectedESM"
                             }
                         },
@@ -293,10 +293,10 @@
                             }
                         },
                         {
-                            "LocalSlot": "SwapChainOutput",
+                            "LocalSlot": "PipelineOutput",
                             "AttachmentRef": {
                                 "Pass": "Parent",
-                                "Attachment": "SwapChainOutput"
+                                "Attachment": "PipelineOutput"
                             }
                         }
                     ]
@@ -362,7 +362,7 @@
                             "LocalSlot": "Output",
                             "AttachmentRef": {
                                 "Pass": "Parent",
-                                "Attachment": "SwapChainOutput"
+                                "Attachment": "PipelineOutput"
                             }
                         }
                     ]

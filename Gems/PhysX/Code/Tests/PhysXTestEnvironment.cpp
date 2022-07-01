@@ -91,10 +91,6 @@ namespace PhysX
 
     void Environment::SetupInternal()
     {
-#if AZ_TRAIT_UNITTEST_USE_TEST_RUNNER_ENVIRONMENT
-        AZ::EnvironmentInstance inst = AZ::Test::GetPlatform().GetTestRunnerEnvironment();
-        AZ::Environment::Attach(inst);
-#endif
         AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
 
         m_fileIo = AZStd::make_unique<AZ::IO::LocalFileIO>();

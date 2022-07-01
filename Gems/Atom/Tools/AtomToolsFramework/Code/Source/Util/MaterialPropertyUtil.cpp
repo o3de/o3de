@@ -207,11 +207,9 @@ namespace AtomToolsFramework
                 AZ_Error("AtomToolsFramework", false, "Image asset could not be found for property: '%s'.", propertyId.GetCStr());
                 return false;
             }
-            else
-            {
-                propertyValue = GetExteralReferencePath(exportPath, imagePath);
-                return true;
-            }
+
+            propertyValue = GetPathToExteralReference(exportPath, imagePath);
+            return true;
         }
 
         return true;

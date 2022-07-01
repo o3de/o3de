@@ -99,7 +99,7 @@ namespace AZ
 
             private:
                 SectionName m_sectionName;
-                bool m_shouldEndSection = false;
+                [[maybe_unused]] bool m_shouldEndSection = false;
             };
 
         private:
