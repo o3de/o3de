@@ -186,8 +186,11 @@ namespace EMotionFX
             default:
                 MCORE_ASSERT(false);
             }
-
-            const AZ::Quaternion targetRot = MCore::CreateFromAxisAndAngle(axis, MCore::Math::DegreesToRadians(360.0f * (inputAmount - 0.5f) * invertFactor));
+            AZ::Quaternion targetRot = AZ::Quaternion::CreateIdentity();
+            if (axis.GetLengthSq() > 0.0f)
+            {
+                targetRot = AZ::Quaternion::CreateFromAxisAngle(axis.GetNormalized(), MCore::Math::DegreesToRadians(360.0f * (inputAmount - 0.5f) * invertFactor));
+            }
             AZ::Quaternion deltaRot = AZ::Quaternion::CreateIdentity().Lerp(targetRot, uniqueData->m_deltaTime * factor);
             deltaRot.Normalize();
             uniqueData->m_additiveTransform.m_rotation = uniqueData->m_additiveTransform.m_rotation * deltaRot;
