@@ -57,7 +57,7 @@ namespace AZ
     {
 #ifdef AZ_DEBUG_JOB_STATE
         AZ_Assert(m_state == STATE_SETUP, ("Dependent can only be set before the jobs are started"));
-        AZ_Assert(dependent->m_state == STATE_SETUP, ("Dependent must be in the setup state"));
+        AZ_Assert(dependent->GetState() == STATE_SETUP, ("Dependent must be in the setup state"));
 #endif
         AZ_Assert(dependent->GetDependentCount() > 0, ("Dependant jobs is always in process"));
         dependent->IncrementDependentCount();
@@ -77,7 +77,7 @@ namespace AZ
             {
                 Job* dependent = *it;
 #ifdef AZ_DEBUG_JOB_STATE
-                AZ_Assert(dependent->m_state == STATE_SETUP, ("Dependent must be in setup state before it can be re-initialized"));
+                AZ_Assert(dependent->GetState() == STATE_SETUP, ("Dependent must be in setup state before it can be re-initialized"));
 #endif
                 dependent->IncrementDependentCount();
             }
