@@ -162,7 +162,7 @@
                     "SizeSource": {
                         "Source": {
                             "Pass": "Parent",
-                            "Attachment": "SwapChainOutput"
+                            "Attachment": "PipelineOutput"
                         }
                     },
                     "MultisampleSource": {
@@ -179,7 +179,7 @@
                     "SizeSource": {
                         "Source": {
                             "Pass": "Parent",
-                            "Attachment": "SwapChainOutput"
+                            "Attachment": "PipelineOutput"
                         }
                     },
                     "MultisampleSource": {
@@ -196,7 +196,7 @@
                     "SizeSource": {
                         "Source": {
                             "Pass": "Parent",
-                            "Attachment": "SwapChainOutput"
+                            "Attachment": "PipelineOutput"
                         }
                     },
                     "MultisampleSource": {
@@ -213,7 +213,7 @@
                     "SizeSource": {
                         "Source": {
                             "Pass": "Parent",
-                            "Attachment": "SwapChainOutput"
+                            "Attachment": "PipelineOutput"
                         }
                     },
                     "MultisampleSource": {
@@ -230,7 +230,7 @@
                     "SizeSource": {
                         "Source": {
                             "Pass": "Parent",
-                            "Attachment": "SwapChainOutput"
+                            "Attachment": "PipelineOutput"
                         }
                     },
                     "MultisampleSource": {
