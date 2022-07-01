@@ -14,7 +14,6 @@
 #include <AzCore/Serialization/SerializeContext.h>
 
 #include <AzToolsFramework/Entity/EntityTypes.h>
-#include <AzToolsFramework/Prefab/PrefabIdTypes.h>
 
 namespace AzToolsFramework
 {
@@ -143,13 +142,6 @@ namespace AzToolsFramework
              * @return Returns the path to the prefab, or an empty path if the entity is owned by the level.
              */
             virtual AZ::IO::Path GetOwningInstancePrefabPath(AZ::EntityId entityId) const = 0;
-
-            /**
-             * Get the template id to the prefab file for the prefab instance owning the entity provided.
-             * @param entityId The id for the entity being queried.
-             * @return Returns the template id to the prefab, or an invalid template id if the entity is owned by the level.
-             */
-            virtual TemplateId GetOwningInstancePrefabTemplateId(AZ::EntityId entityId) const = 0;
 
             /**
              * Gets whether the prefab has unsaved changes.
