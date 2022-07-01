@@ -29,7 +29,6 @@ import logging as _logging
 
 
 # -------------------------------------------------------------------------
-#os.environ['PYTHONINSPECT'] = 'True'
 # global scope
 _MODULENAME = 'Tools.DCC.Substance.start'
 _LOGGER = _logging.getLogger(_MODULENAME)
