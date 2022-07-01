@@ -84,16 +84,6 @@ set command=""%DCCSI_SUBSTANCE_EXE%" --config-file %DCCSI_SUBSTANCE_CFG%"
 IF EXIST "%DCCSI_SUBSTANCE_LOCATION%\Adobe Substance 3D Designer.exe" (
     start "" "%DCCSI_SUBSTANCE_LOCATION%\Adobe Substance 3D Designer.exe" --config-file %~dp0o3de_dccsi.sbscfg %*
 )
-::ELSE (
-::    Where "Adobe Substance 3D Designer.exe" 2> NUL
-::    IF ERRORLEVEL 1 (
-::        echo "Adobe Substance 3D Designer.exe" could not be found
-::            pause
-::    ) ELSE (
-::        start "" "Adobe Substance 3D Designer.exe" %*
-::    )
-::)
-
 ::ENDLOCAL
 
 :: Restore previous directory
