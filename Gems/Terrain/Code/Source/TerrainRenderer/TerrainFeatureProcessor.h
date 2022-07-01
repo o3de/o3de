@@ -11,6 +11,7 @@
 #include <AzFramework/Terrain/TerrainDataRequestBus.h>
 
 #include <TerrainRenderer/BindlessImageArrayHandler.h>
+#include <TerrainRenderer/Passes/TerrainClipmapComputePass.h>
 #include <TerrainRenderer/TerrainDetailMaterialManager.h>
 #include <TerrainRenderer/TerrainMacroMaterialManager.h>
 #include <TerrainRenderer/TerrainClipmapManager.h>
@@ -119,6 +120,6 @@ namespace Terrain
 
         AZStd::vector<AZ::RPI::RenderPass*> m_passes;
         // Used to check whether we need to initialize the clipmap manager.
-        AZ::RPI::Pass* m_clipmapPass = nullptr;
+        TerrainMacroClipmapGenerationPass* m_clipmapPass = nullptr;
     };
 }

@@ -7,7 +7,6 @@
  */
 
 #include <TerrainRenderer/TerrainFeatureProcessor.h>
-#include <TerrainRenderer/Passes/TerrainClipmapComputePass.h>
 
 #include <Atom/Utils/Utils.h>
 #include <Atom/RHI/RHISystemInterface.h>
@@ -433,7 +432,7 @@ namespace Terrain
         );
 
         auto clipmapPassFilter = AZ::RPI::PassFilter::CreateWithPassName(AZ::Name("TerrainMacroClipmapGenerationPass"), GetParentScene());
-        m_clipmapPass = AZ::RPI::PassSystemInterface::Get()->FindFirstPass(clipmapPassFilter);
+        m_clipmapPass = static_cast<TerrainMacroClipmapGenerationPass*>(AZ::RPI::PassSystemInterface::Get()->FindFirstPass(clipmapPassFilter));
     }
 
     const AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> TerrainFeatureProcessor::GetTerrainShaderResourceGroup() const
@@ -453,6 +452,6 @@ namespace Terrain
 
     bool TerrainFeatureProcessor::ClipmapFeatureIsEnabled() const
     {
-        return m_clipmapPass && static_cast<TerrainMacroClipmapGenerationPass*>(m_clipmapPass)->ClipmapFeatureIsEnabled();
+        return m_clipmapPass && m_clipmapPass->ClipmapFeatureIsEnabled();
     }
 }
