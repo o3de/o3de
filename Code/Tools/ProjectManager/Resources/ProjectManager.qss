@@ -142,7 +142,7 @@ QTabBar::tab:focus {
 }
 
 #formFrame QLineEdit:disabled {
-    color: #AAAAAA
+    color: #AAAAAA;
 }
 
 
@@ -156,6 +156,49 @@ QTabBar::tab:focus {
     font-size:21px;
     color:#ffffff;
     margin: 24px 0 10px 50px;
+}
+
+#rightPaneHeader {
+    font-size:21px;
+    qproperty-indent: 0;
+}
+
+#rightPaneSubheader {
+    font-size:14px;
+    qproperty-indent: 0;
+}
+
+#createAGemLeftPane {
+    background-color: #444444;
+    min-width: 230px;
+    padding-top: 60px;
+    padding-left: 30px;
+}
+
+#createAGemRightPane {
+    padding-top: 50px;
+    padding-left: 60px;
+}
+
+#leftPaneText {
+    font-size: 16px;
+}
+
+#qRadioButton {
+    padding-top: 34px;
+    font-size: 14px;
+}
+
+#qRadioButtonSubtext {
+    padding-bottom: 20px;
+    padding-left: 23px;
+    font-size: 12;
+}
+
+#createAGemField {
+    qproperty-indent: 0;
+    padding-left: 0px;
+    margin-left: 0px;
 }
 
 /************** General (Modal windows) **************/

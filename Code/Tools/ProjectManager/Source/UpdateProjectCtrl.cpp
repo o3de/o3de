@@ -8,6 +8,7 @@
 
 #include <GemCatalog/GemCatalogScreen.h>
 #include <GemRepo/GemRepoScreen.h>
+#include <CreateAGemScreen.h>
 #include <ProjectManagerDefs.h>
 #include <PythonBindingsInterface.h>
 #include <ScreenHeaderWidget.h>
@@ -43,6 +44,7 @@ namespace O3DE::ProjectManager
         m_updateSettingsScreen = new UpdateProjectSettingsScreen();
         m_gemCatalogScreen = new GemCatalogScreen();
         m_gemRepoScreen = new GemRepoScreen(this);
+        m_createAGemScreen = new CreateAGemScreen();
 
         connect(m_gemCatalogScreen, &ScreenWidget::ChangeScreenRequest, this, &UpdateProjectCtrl::OnChangeScreenRequest);
         connect(m_gemRepoScreen, &GemRepoScreen::OnRefresh, m_gemCatalogScreen, &GemCatalogScreen::Refresh);
@@ -73,6 +75,7 @@ namespace O3DE::ProjectManager
         m_stack->addWidget(topBarFrameWidget);
         m_stack->addWidget(m_gemCatalogScreen);
         m_stack->addWidget(m_gemRepoScreen);
+        m_stack->addWidget(m_createAGemScreen);
 
         QDialogButtonBox* backNextButtons = new QDialogButtonBox();
         backNextButtons->setObjectName("footer");
@@ -135,6 +138,11 @@ namespace O3DE::ProjectManager
         else if (screen == ProjectManagerScreen::UpdateProjectSettings)
         {
             m_stack->setCurrentWidget(m_updateSettingsScreen);
+            Update();
+        }
+        else if (screen == ProjectManagerScreen::CreateAGemScreen)
+        {
+            m_stack->setCurrentWidget(m_createAGemScreen);
             Update();
         }
         else

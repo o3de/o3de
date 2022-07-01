@@ -14,6 +14,7 @@
 #include <GemCatalog/GemModel.h>
 #include <GemCatalog/GemCatalogScreen.h>
 #include <GemRepo/GemRepoScreen.h>
+#include <CreateAGemScreen.h>
 #include <ProjectUtils.h>
 #include <DownloadController.h>
 
