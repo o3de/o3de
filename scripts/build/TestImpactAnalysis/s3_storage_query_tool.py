@@ -56,15 +56,15 @@ class S3StorageQueryTool(StorageQueryTool):
             result = bucket_objs.filter(Prefix=prefix_string)
             return result
 
-        bucket_objs = self._bucket.objects.all()
+        bucket_objs =self._s3.Bucket(self._bucket_name).objects.all()
 
-        if self._root_directory:
+        if self.has_full_address:
+            self._check_object_exists(self._bucket_name, self._full_address)
+            
+        else:
             bucket_objs = filter_by(self._root_directory, bucket_objs)
-        elif self._branch and self._build and self._suite:
-            bucket_objs = filter_by(self._root_directory+"/"+self._branch, bucket_objs)
-
-        for object in bucket_objs:
-            logger.info(object.key)
+            for object in bucket_objs:
+                logger.info(object.key)
 
     def _check_object_exists(self, bucket, key):
         try:
