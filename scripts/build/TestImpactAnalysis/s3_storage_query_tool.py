@@ -66,7 +66,15 @@ class S3StorageQueryTool(StorageQueryTool):
         for object in bucket_objs:
             logger.info(object.key)
 
-    
+    def _check_object_exists(self, bucket, key):
+        try:
+            self._s3.Object(bucket, key).load()
+            logger.info(f"File found at {key} in bucket: {bucket}")
+            return True
+        except botocore.exceptions.ClientError as e:
+            if e.response['Error']['Code'] == "404":
+                logger.info("File not found!")
+            return False
 
     def _write_tree(self):
         """
