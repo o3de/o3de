@@ -22,6 +22,12 @@ def parse_args():
         else:
             raise FileNotFoundError(value)
 
+    def valid_path(value):
+        if pathlib.Path(value).is_dir():
+            return value
+        else:
+            raise FileNotFoundError(value)
+
     parser = argparse.ArgumentParser()
 
     parser.add_argument(
