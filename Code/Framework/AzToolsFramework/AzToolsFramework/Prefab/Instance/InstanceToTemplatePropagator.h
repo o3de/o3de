@@ -43,9 +43,9 @@ namespace AzToolsFramework
             void AddPatchesToLink(const PrefabDom& patches, Link& link);
 
         private:
+            InstanceEntityMapperInterface* m_instanceEntityMapperInterface = nullptr;
+            PrefabSystemComponentInterface* m_prefabSystemComponentInterface = nullptr;
             InstanceDomGenerator m_instanceDomGenerator;
-            InstanceEntityMapperInterface* m_instanceEntityMapperInterface;
-            PrefabSystemComponentInterface* m_prefabSystemComponentInterface;
         };
     }
 }

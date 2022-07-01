@@ -23,6 +23,8 @@ namespace AzToolsFramework
         {
             AZ::Interface<InstanceToTemplateInterface>::Register(this);
 
+            m_instanceDomGenerator.RegisterInstanceDomGeneratorInterface();
+
             //get instance id associated with entityId
             m_instanceEntityMapperInterface = AZ::Interface<InstanceEntityMapperInterface>::Get();
             AZ_Assert(m_instanceEntityMapperInterface,
@@ -37,8 +39,6 @@ namespace AzToolsFramework
                 "Prefab - InstanceToTemplateInterface - "
                 "Prefab System Component Interface could not be found. "
                 "Check that it is being correctly initialized.");
-
-            m_instanceDomGenerator.RegisterInstanceDomGeneratorInterface();
         }
 
         void InstanceToTemplatePropagator::UnregisterInstanceToTemplateInterface()
