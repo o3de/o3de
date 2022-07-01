@@ -179,7 +179,7 @@ private:
         module->Load(false);
         if (auto init = module->GetFunction<AZ::InitializeDynamicModuleFunction>(AZ::InitializeDynamicModuleFunctionName); init)
         {
-            AZStd::invoke(init, AZ::Environment::GetInstance());
+            AZStd::invoke(init);
         }
         return module;
     }

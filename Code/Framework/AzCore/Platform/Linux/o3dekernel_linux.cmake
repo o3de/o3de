@@ -6,8 +6,7 @@
 #
 #
 
-set(FILES
-    ### Disabling until infrequent async timing issues are fixed https://github.com/o3de/o3de/issues/10343
-    #Tests/EditorNavigationMeshTest.cpp 
-    Tests/RecastNavigationEditorTest.cpp
+set(LY_BUILD_DEPENDENCIES
+    PRIVATE
+        pthread
 )
