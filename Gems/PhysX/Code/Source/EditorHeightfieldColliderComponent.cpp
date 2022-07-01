@@ -105,7 +105,7 @@ namespace PhysX
         }
     }
 
-    AZ::u32 EditorHeightfieldColliderComponent::GetBakedHeightfieldVisibilitySetting()
+    AZ::u32 EditorHeightfieldColliderComponent::GetBakedHeightfieldVisibilitySetting() const
     {
         // Controls that are specific to baked heightfields call this to determine their visibility
         // they are visible when the mode is set to baked, otherwise hidden
@@ -223,7 +223,7 @@ namespace PhysX
         return AZ::Edit::PropertyRefreshLevels::None;
     }
 
-    AZ::u32 EditorHeightfieldColliderComponent::SaveHeightfieldAssetToDisk()
+    bool EditorHeightfieldColliderComponent::SaveHeightfieldAssetToDisk()
     {
         auto assetType = AZ::AzTypeInfo<PhysX::Pipeline::HeightFieldAsset>::Uuid();
         auto assetHandler = const_cast<AZ::Data::AssetHandler*>(AZ::Data::AssetManager::Instance().GetHandler(assetType));
@@ -241,10 +241,16 @@ namespace PhysX
                 if (!assetHandler->SaveAssetData(m_bakedHeightfieldAsset, &fileStream))
                 {
                     AZ_Error("PhysX", false, "Unable to save heightfield asset %s", heightfieldFullPath.c_str());
+                    return false;
                 }
             }
+            else
+            {
+                AZ_Error("PhysX", false, "Unable to open heightfield asset file %s", heightfieldFullPath.c_str());
+                return false;
+            }
         }
-        return 0;
+        return true;
     }
 
     void EditorHeightfieldColliderComponent::StartHeightfieldBakingJob()
@@ -294,7 +300,7 @@ namespace PhysX
     {
         AZStd::string entityName = GetEntity()->GetName();
 
-        // the file name is a combination of the entity name, a UUID, and the filemask
+        // the file name is a combination of the entity name and a UUID
         AZ::Uuid uuid = AZ::Uuid::CreateRandom();
         AZStd::string uuidString;
         uuid.ToString(uuidString);

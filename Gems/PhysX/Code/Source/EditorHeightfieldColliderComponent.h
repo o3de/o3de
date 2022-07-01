@@ -67,7 +67,7 @@ namespace PhysX
     private:
         AZ::u32 OnConfigurationChanged();
         AZ::u32 OnToggleBakedHeightfield();
-        AZ::u32 GetBakedHeightfieldVisibilitySetting();
+        AZ::u32 GetBakedHeightfieldVisibilitySetting() const;
 
         // Utility functions for heightfield baking
         void StartHeightfieldBakingJob();
@@ -77,7 +77,7 @@ namespace PhysX
         bool CheckoutHeightfieldAsset() const;
 
         // Note: This function is called from a Job thread.
-        AZ::u32 SaveHeightfieldAssetToDisk();
+        bool SaveHeightfieldAssetToDisk();
 
         DebugDraw::Collider m_colliderDebugDraw; //!< Handles drawing the collider
 
@@ -100,7 +100,7 @@ namespace PhysX
         public:
             explicit HeightfieldBakingJob(EditorHeightfieldColliderComponent* owner);
             void Process() override;
-            EditorHeightfieldColliderComponent* m_owner;
+            EditorHeightfieldColliderComponent* m_owner = nullptr;
         };
 
         HeightfieldBakingJob m_heightfieldAssetBakingJob;

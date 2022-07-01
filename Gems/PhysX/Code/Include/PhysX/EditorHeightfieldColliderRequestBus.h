@@ -12,7 +12,7 @@
 
 namespace PhysX
 {
-    // Provides an interface to the Editor Heightfield Collider component
+    //! Provides an interface to the Editor Heightfield Collider component
     class EditorHeightfieldColliderInterface : public AZ::ComponentBus
     {
     public:
@@ -20,7 +20,7 @@ namespace PhysX
 
         virtual ~EditorHeightfieldColliderInterface() = default;
 
-        // Signals the component to bake the heightfield
+        //! Signals the component to bake the heightfield
         virtual void RequestHeightfieldBaking() = 0;
     };
 
