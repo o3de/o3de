@@ -35,6 +35,13 @@ _MODULENAME = 'Tools.DCC.Substance.start'
 _LOGGER = _logging.getLogger(_MODULENAME)
 _LOGGER.debug(f'Initializing: {_MODULENAME}')
 
+_MODULE_PATH = Path(__file__)  # To Do: what if frozen?
+
+# This ensures basic code access to the DCCsi
+# <o3de>/Gems/AtomLyIntegration/TechnicalArt/<DCCsi>
+_PATH_DCCSIG = Path(_MODULE_PATH, '../../../..').resolve()
+site.addsitedir(_PATH_DCCSIG.as_posix())
+
 import Tools.DCC.Substance.config as substance_config
 
 _SETTINGS = substance_config.get_config_settings()
