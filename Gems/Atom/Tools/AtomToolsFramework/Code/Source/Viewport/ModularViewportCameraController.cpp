@@ -21,6 +21,9 @@
 #include <AzToolsFramework/Input/QtEventToAzInputMapper.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 
+#pragma optimize("", off)
+#pragma inline_depth(0)
+
 namespace AtomToolsFramework
 {
     AZ::Transform TransformFromMatrix4x4(const AZ::Matrix4x4& matrix)
@@ -202,23 +205,34 @@ namespace AtomToolsFramework
 
     bool ModularViewportCameraControllerInstance::HandleInputChannelEvent(const AzFramework::ViewportControllerInputEvent& event)
     {
-        auto modifierKeyStates = AzFramework::ModifierKeyStates{};
-        const auto* inputDevice =
-            AzFramework::InputDeviceRequests::FindInputDevice(AzToolsFramework::GetSyntheticKeyboardDeviceId(event.m_viewportId));
+        // before
+        // auto modifierKeyStates = AzFramework::ModifierKeyStates{};
+        // const auto* inputDevice =
+        //     AzFramework::InputDeviceRequests::FindInputDevice(AzToolsFramework::GetSyntheticKeyboardDeviceId(event.m_viewportId));
 
-        if (auto it = inputDevice->GetInputChannelsById().find(AzFramework::InputDeviceKeyboard::Key::ModifierAltL);
-            it != inputDevice->GetInputChannelsById().end())
+        // if (auto it = inputDevice->GetInputChannelsById().find(AzFramework::InputDeviceKeyboard::Key::ModifierAltL);
+        //     it != inputDevice->GetInputChannelsById().end())
+        // {
+        //     modifierKeyStates = [customData = it->second->GetCustomData<AzFramework::ModifierKeyStates>()]
+        //     {
+        //         if (customData)
+        //         {
+        //             return *customData;
+        //         }
+
+        //         return AzFramework::ModifierKeyStates();
+        //     }();
+        // }
+
+        const auto modifierKeyStates = [modifiers = event.m_inputChannel.GetCustomData<AzFramework::ModifierKeyStates>()]
         {
-            modifierKeyStates = [customData = it->second->GetCustomData<AzFramework::ModifierKeyStates>()]
+            if (modifiers)
             {
-                if (customData)
-                {
-                    return *customData;
-                }
+                return *modifiers;
+            }
 
-                return AzFramework::ModifierKeyStates();
-            }();
-        }
+            return AzFramework::ModifierKeyStates{};
+        }();
 
         if (event.m_priority == m_priorityFn(m_cameraSystem))
         {
@@ -404,3 +418,6 @@ namespace AtomToolsFramework
         return m_camera.Transform() * AZ::Transform::CreateFromMatrix3x3(AZ::Matrix3x3::CreateRotationY(m_targetRoll));
     }
 } // namespace AtomToolsFramework
+
+#pragma optimize("", on)
+#pragma inline_depth()
