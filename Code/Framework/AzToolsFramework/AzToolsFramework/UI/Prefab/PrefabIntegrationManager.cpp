@@ -710,8 +710,7 @@ namespace AzToolsFramework
 
         void PrefabIntegrationManager::ContextMenu_SavePrefab(AZ::EntityId containerEntity)
         {
-            TemplateId templateId = s_prefabPublicInterface->GetOwningInstancePrefabTemplateId(containerEntity);
-            AZ::Interface<PrefabIntegrationManager>::Get()->m_prefabSaveHandler.ExecuteSavePrefabDialog(templateId, true);
+            m_prefabSaveHandler.ExecuteSavePrefabDialog(containerEntity, true);
         }
 
         void PrefabIntegrationManager::ContextMenu_Duplicate()
