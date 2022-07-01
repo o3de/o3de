@@ -335,7 +335,7 @@ def get_o3de_engine_root(check_stub=STUB_O3DE_DEV):
 # -------------------------------------------------------------------------
 def get_o3de_build_path(root_directory=get_o3de_engine_root(),
                         marker='CMakeCache.txt'):
-    """Returns a path for the O3DE\build root if found. Searchs down from a
+    """Returns a path for the O3DE\build root if found. Searches down from a
     known engine root path.
     Input:  a root directory, default is to discover the engine root
     Output: the path of the build folder (if found)
