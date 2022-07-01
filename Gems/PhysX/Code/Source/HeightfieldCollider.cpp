@@ -81,12 +81,14 @@ namespace PhysX
         const AZStd::string& entityName,
         AzPhysics::SceneHandle sceneHandle,
         AZStd::shared_ptr<Physics::ColliderConfiguration> colliderConfig,
-        AZStd::shared_ptr<Physics::HeightfieldShapeConfiguration> shapeConfig)
+        AZStd::shared_ptr<Physics::HeightfieldShapeConfiguration> shapeConfig,
+        DataSource dataSourceType)
         : m_entityId(entityId)
         , m_entityName(entityName)
         , m_colliderConfig(colliderConfig)
         , m_shapeConfig(shapeConfig)
         , m_attachedSceneHandle(sceneHandle)
+        , m_dataSourceType(dataSourceType)
     {
         m_jobContext = AZStd::make_unique<HeightfieldUpdateJobContext>(AZ::JobContext::GetGlobalContext()->GetJobManager());
         m_dirtyRegion = AZ::Aabb::CreateNull();
@@ -190,6 +192,13 @@ namespace PhysX
         }
     }
 
+    void HeightfieldCollider::InitStaticRigidBody()
+    {
+        AZ::Transform baseTransform = AZ::Transform::CreateIdentity();
+        AZ::TransformBus::EventResult(baseTransform, m_entityId, &AZ::TransformInterface::GetWorldTM);
+        InitStaticRigidBody(baseTransform);
+    }
+
     void HeightfieldCollider::RefreshHeightfield(
         const Physics::HeightfieldProviderNotifications::HeightfieldChangeMask changeMask,
         const AZ::Aabb& dirtyRegion)
@@ -210,6 +219,18 @@ namespace PhysX
                 UpdateHeightfieldMaterialSlots(updatedMaterialSlots);
                 return;
             }
+        }
+
+        // Early out if Heightfield Collider works only with cached heightfield data
+        if (m_dataSourceType == DataSource::UseCachedHeightfield)
+        {
+            if (m_staticRigidBodyHandle == AzPhysics::InvalidSimulatedBodyHandle
+                && m_shapeConfig->GetCachedNativeHeightfield() != nullptr)
+            {
+                InitStaticRigidBody();
+            }
+
+            return;
         }
 
         AZ::Aabb heightfieldAabb = GetColliderShapeAabb();
@@ -283,9 +304,7 @@ namespace PhysX
         {
             // Create a new rigid body for the heightfield on the main thread. This will ensure that other physics calls can safely
             // request the rigid body even while we're asynchronously updating the heightfield itself on a separate thread.
-            AZ::Transform baseTransform = AZ::Transform::CreateIdentity();
-            AZ::TransformBus::EventResult(baseTransform, m_entityId, &AZ::TransformInterface::GetWorldTM);
-            InitStaticRigidBody(baseTransform);
+            InitStaticRigidBody();
         }
 
         m_dirtyRegion.AddAabb(requestRegion);
