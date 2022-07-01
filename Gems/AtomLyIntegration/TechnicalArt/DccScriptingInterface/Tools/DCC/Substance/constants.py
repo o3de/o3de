@@ -16,8 +16,8 @@ Module Documentation:
 This convention <path>, is an shorten abbreviation of a long path,
 for the sake of docstrings and comments.
 
-This module contains default values for commony used constants & strings.
-We can make an update here easily that is propogated elsewhere.
+This module contains default values for common used constants & strings.
+We can make an update here easily that is propagated elsewhere.
 
 Notice: this module should not actually set ENVARs in the os.environ
 That would be the responsibility of a module like config.py
@@ -59,12 +59,12 @@ _LOGGER.debug(f'site.addsitedir({_PATH_DCCSIG})')
 # Also they generally don't need to be altered except with special consideration.
 # If altered, it would be outside of this modules (like a config.py)
 
-# our ENVARS that mimic the dccsi windows .bat file env and can be overriden
+# our ENVARS that mimic the dccsi windows .bat file env and can be overridden
 # can be overwritten in a Env_Dev.bat file
 # or in a settings.local.json
 
 # ENVAR_ == env key
-# PATH_ == retreived path, as pathlib.Path object
+# PATH_ == retrieved path, as pathlib.Path object
 
 # If a ENVAR is already set (externally), that will persist as default
 
@@ -75,7 +75,7 @@ PATH_DCCSI_TOOLS_SUBSTANCE = Path(os.getenv(ENVAR_DCCSI_TOOLS_SUBSTANCE,
                                             PATH_DCCSI_TOOLS_SUBSTANCE.as_posix()))
 
 # DCCsi tools dir
-# This could be improved, ENVAR Key should be refacted across files to 'DCCSI_TOOLS'
+# This could be improved, ENVAR Key should be refactored across files to 'DCCSI_TOOLS'
 # ENVAR_PATH_DCCSI_TOOLS = "PATH_DCCSI_TOOLS"  # resolves to <DCCsi>\Tools
 # if it is already defined in a higher up file pull from there
 # to ensure a continual cascade
@@ -139,10 +139,10 @@ PATH_DCCSI_SUBSTANCE_CFG = Path(os.getenv(ENVAR_DCCSI_SUBSTANCE_CFG,
 
 
 # -------------------------------------------------------------------------
-# Substance Designer Registry paths, to retreive registered install paths
+# Substance Designer Registry paths, to retrieve registered install paths
 # To Do: the use of these and searching the registry is not implemented in DCCsi yet
 # Substance docs: https://substance3d.adobe.com/documentation/sddoc/retrieving-the-installation-path-172823228.html
-# Windwows (registry)
+# Windrows (registry)
 # Creative Cloud Desktop (CCD), Adobe Version 11.2 (or newer)
 WIN_REG_APP_PATHS_HKEY = "HKEY_LOCAL_MACHINE\\Software\\Microsoft\\Windows\\CurrentVersion\\App Paths\\"
 WIN_CCD_SUBD_APP_EXE_SUBKEY = "Adobe Substance 3D Designer.exe"
@@ -162,7 +162,7 @@ WIN_SA_VER_11_2_SUBKEY = "{662bb79f-5616-44e6-a84d-b3d6abebe002}"  # Version 11.
 
 # Steam
 # The application is installed in the steamapps/common/ sub-folder of the Steam installation folder.
-# You'll want to override the appplication path in the <dccsi>/Tools/DCC/Substance/settings.local.json file
+# You'll want to override the application path in the <dccsi>/Tools/DCC/Substance/settings.local.json file
 # to do: If someone ever sets this up put an example here
 
 # Mac (library)
@@ -199,7 +199,7 @@ if __name__ == '__main__':
     # default loglevel to info unless set
     _DCCSI_LOGLEVEL = int(env_bool(ENVAR_DCCSI_LOGLEVEL, _logging.INFO))
     if _DCCSI_GDEBUG:
-        # override loglevel if runnign debug
+        # override loglevel if running debug
         _DCCSI_LOGLEVEL = _logging.DEBUG
 
     # set up module logging

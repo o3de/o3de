@@ -12,8 +12,8 @@
 Module Documentation:
     < DCCsi >:: Tools//DCC//Blender//constants.py
 
-This module contains default values for commony used constants & strings.
-We can make an update here easily that is propogated elsewhere.
+This module contains default values for common used constants & strings.
+We can make an update here easily that is propagated elsewhere.
 
 Notice: this module should not actually set ENVARs in the os.environ
 That would be the responsibility of a module like config.py
@@ -78,7 +78,7 @@ from azpy.constants import ENVAR_DCCSI_DEV_MODE
 from azpy.constants import ENVAR_DCCSI_LOGLEVEL
 from azpy.constants import ENVAR_DCCSI_GDEBUGGER
 
-# defaults, can be overriden/forced here for development
+# defaults, can be overridden/forced here for development
 _DCCSI_GDEBUG = env_bool(ENVAR_DCCSI_GDEBUG, False)
 _DCCSI_DEV_MODE = env_bool(ENVAR_DCCSI_DEV_MODE, False)
 _DCCSI_LOGLEVEL = env_bool(ENVAR_DCCSI_LOGLEVEL, _logging.INFO)
@@ -103,7 +103,7 @@ PATH_DCCSI_TOOLS_BLENDER = Path(os.getenv(ENVAR_DCCSI_TOOLS_BLENDER,
                                           PATH_DCCSI_TOOLS_BLENDER.as_posix()))
 
 # DCCsi tools dir
-# This could be improved, ENVAR Key should be refacted across files to 'DCCSI_TOOLS'
+# This could be improved, ENVAR Key should be refactored across files to 'DCCSI_TOOLS'
 # ENVAR_PATH_DCCSI_TOOLS = "PATH_DCCSI_TOOLS"  # resolves to <DCCsi>\Tools
 # if it is already defined in a higher up file pull from there
 # to ensure a continual cascade
@@ -185,7 +185,7 @@ if __name__ == '__main__':
     _LOGGER.info(f'~ {_MODULENAME} ... Running script as __main__')
     _LOGGER.info(STR_CROSSBAR)
 
-    #  this is just a debug developer convenience print (for testing acess)
+    #  this is just a debug developer convenience print (for testing access)
     import pkgutil
     _LOGGER.info(f'Current working dir: {os.getcwd()}')
     search_path = ['.']  # set to None to see all modules importable from sys.path

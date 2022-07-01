@@ -80,28 +80,7 @@ if _DCCSI_GDEBUG:
     _LOGGER = _logging.getLogger(_PACKAGENAME)
 # -------------------------------------------------------------------------
 
-
-# -------------------------------------------------------------------------
-def attach_debugger():
-    """!
-    This will attemp to attch the WING debugger
-    To Do: other IDEs for debugging not yet implemented.
-    This should be replaced with a plugin based dev package."""
-    _DCCSI_GDEBUG = True
-    os.environ["DYNACONF_DCCSI_GDEBUG"] = str(_DCCSI_GDEBUG)
-
-    _DCCSI_DEV_MODE = True
-    os.environ["DYNACONF_DCCSI_DEV_MODE"] = str(_DCCSI_DEV_MODE)
-
-    from azpy.test.entry_test import connect_wing
-    _debugger = connect_wing()
-
-    return _debugger
-
-if _DCCSI_DEV_MODE:
-    attach_debugger()
-# -------------------------------------------------------------------------
-
+from azpy.config_utils import attach_debugger
 
 # -------------------------------------------------------------------------
 # message collection
@@ -113,33 +92,14 @@ _LOGGER.debug(f'PATH_DCCSI_TOOLS_DCC: {_PATH_DCCSI_TOOLS_DCC}')
 _LOGGER.debug(f'DCCSI_TOOLS_BLENDER_PATH: {_DCCSI_TOOLS_BLENDER_PATH}')
 # -------------------------------------------------------------------------
 
-
-# -------------------------------------------------------------------------
-def test_imports(_all=__all__,_pkg=_PACKAGENAME,_logger=_LOGGER):
-    # If in dev mode this will test imports of __all__
-    _logger.debug(f"~   Import triggered from: {_pkg}")
-    import importlib
-    for mod_str in _all:
-        try:
-            # this is py2.7 compatible
-            # in py3.5+, we can use importlib.util instead
-            importlib.import_module(f'.{mod_str}', _pkg)
-            _logger.debug(f"~       Imported module: {_pkg}.{mod_str}")
-        except Exception as e:
-            _logger.warning(f'~       {e}')
-            _logger.warning(f"~       {_pkg}.{mod_str} :: ImportFail")
-            return False
-    return True
-# -------------------------------------------------------------------------
-
+from azpy.init_utils import test_imports
 
 # -------------------------------------------------------------------------
 if _DCCSI_DEV_MODE:
     # If in dev mode this will test imports of __all__
     _LOGGER.debug(f'Testing Imports from {_PACKAGENAME}')
-    test_imports(__all__)
+    test_imports(_all=__all__,_pkg=_PACKAGENAME,_logger=_LOGGER)
 # -------------------------------------------------------------------------
-
 
 
 ###########################################################################

@@ -12,13 +12,13 @@
 Module Documentation:
     < DCCsi >:: Tools//DCC//Substance//config.py
 
-This module manages the dynamic config and settings for boostrapping
+This module manages the dynamic config and settings for bootstrapping
 Adobe Substance Designer with o3de inter-op, scripts, etc.
 
 This like the core <DCCsi>/config.py uses Dynaconf:
 1. Modular rather then monolithic (single DCC integrations can stand on their own)
 2. Layered config and settings (the core can be extended or )
-3. Dervie or alter via logic
+3. Derive or alter via logic
 3. etc. (to do: expand on the benefits)
 
 """
@@ -72,8 +72,8 @@ from azpy.config_utils import ENVAR_DCCSI_GDEBUGGER
 from azpy.config_utils import FRMT_LOG_LONG
 from azpy.config_utils import STR_CROSSBAR
 
-# defaults, can be overriden/forced here for development
-# they should be commited in an off/False state
+# defaults, can be overridden/forced here for development
+# they should be committed in an off/False state
 from azpy.env_bool import env_bool
 _DCCSI_GDEBUG = env_bool(ENVAR_DCCSI_GDEBUG, False)
 _DCCSI_DEV_MODE = env_bool(ENVAR_DCCSI_DEV_MODE, False)
@@ -83,19 +83,19 @@ _DCCSI_GDEBUGGER = env_bool(ENVAR_DCCSI_GDEBUGGER, 'WING')
 # method 1: set envar within Env_Dev.bat file
 #    this would set in env prior to running anything within that env context
 # method 2: override in settings.local.json
-#    this is the preffered manner, dynaconf will always load this by default
-#    so these values will always be last and take precidence within code
+#    this is the preferred manner, dynaconf will always load this by default
+#    so these values will always be last and take precedence within code
 #    that is executed after:
 #        from dynacof import settings
 #        settings.setenv()
 
-# this will boostrap access to the dccsi managed package dependancies
+# this will bootstrap access to the dccsi managed package dependencies
 # <DCCsi>\3rdParty\Python\Lib\3.x\3.x.x (based on python version)
 _PATH_DCCSI_PYTHON_LIB = azpy.config_utils.bootstrap_dccsi_py_libs()
 site.addsitedir(_PATH_DCCSI_PYTHON_LIB.as_posix())
 # ^ we don't add this to dynaconf env, or it will end up in settings.local.json
 # and we don't want that, since this LIB location is transient/procedural
-# to ensure we are always booystrapping the correct path based on python version running
+# to ensure we are always bootstrapping the correct path based on python version running
 # -------------------------------------------------------------------------
 
 
@@ -104,7 +104,7 @@ site.addsitedir(_PATH_DCCSI_PYTHON_LIB.as_posix())
 if _DCCSI_DEV_MODE:
     azpy.config_utils.attach_debugger(_DCCSI_GDEBUGGER)
 
-# This will import and retreive the core <dccsi>/config.py and settings
+# This will import and retrieve the core <dccsi>/config.py and settings
 _DCCSI_CORE_CONFIG = azpy.config_utils.get_dccsi_config(_PATH_DCCSIG)
 
 # now standalone we can validate the config, env, settings.
@@ -114,13 +114,13 @@ _SETTINGS = _DCCSI_CORE_CONFIG.get_config_settings(enable_o3de_python=False,
 # we don't init the O3DE python env settings!
 # that will cause conflicts with the DCC tools python!!!
 # we are also not enabling the O3DE PySide2 (aka QtForPython) access
-# this can cause GUI and boot failure with Qt basedd applications (Maya, Substance3D, etc.)
+# this can cause GUI and boot failure with Qt based applications (Maya, Substance3D, etc.)
 # -------------------------------------------------------------------------
 
 
 # -------------------------------------------------------------------------
 # global scope
-# start locally prepping known default values for dyanmic environment settings
+# start locally prepping known default values for dynamic environment settings
 # these global variables are passed as defaults into methods within the module
 
 # special, a global home for stashing PATHs for managed settings
@@ -189,7 +189,7 @@ def get_config_settings(core_config=_DCCSI_CORE_CONFIG,
     # we don't do this often but we want to stash to global dict
     # global _DCCSI_LOCAL_SETTINGS # non-dynaconf managed settings
 
-    # This extends the settings and environment with Subtance3d stuff
+    # This extends the settings and environment with Substance3d stuff
     os.environ[f"DYNACONF_{ENVAR_DCCSI_SUBSTANCE_SET_CALLBACKS}"] = str(DCCSI_SUBSTANCE_SET_CALLBACKS)
 
     os.environ[f"DYNACONF_{ENVAR_DCCSI_TOOLS_SUBSTANCE}"] = PATH_DCCSI_TOOLS_SUBSTANCE.as_posix()
@@ -212,7 +212,7 @@ def get_config_settings(core_config=_DCCSI_CORE_CONFIG,
     # packs paths lists to DCCSI_ managed envars
     core_config.add_path_list_to_envar(dccsi_sys_path, 'DYNACONF_DCCSI_SYS_PATH')
 
-    # to do: might be a bug here, not writting to setting.local.json
+    # to do: might be a bug here, not writing to setting.local.json
     core_config.add_path_list_to_envar(dccsi_pythonpath, 'DYNACONF_DCCSI_PYTHONPATH')
 
     # final stage, if we have managed path lists set them
@@ -260,7 +260,7 @@ if __name__ == '__main__':
     # default loglevel to info unless set
     _DCCSI_LOGLEVEL = int(env_bool(ENVAR_DCCSI_LOGLEVEL, _logging.INFO))
     if _DCCSI_GDEBUG:
-        # override loglevel if runnign debug
+        # override loglevel if running debug
         _DCCSI_LOGLEVEL = _logging.DEBUG
 
     # configure basic logger
@@ -300,7 +300,7 @@ if __name__ == '__main__':
                         type=str,
                         required=False,
                         default='WING',
-                        help='(NOT IMPLEMENTED) Default debugger: WING, thers: PYCHARM and VSCODE.')
+                        help='(NOT IMPLEMENTED) Default debugger: WING, others: PYCHARM and VSCODE.')
 
     parser.add_argument('-pp', '--project-path',
                         type=pathlib.Path,
@@ -358,7 +358,7 @@ if __name__ == '__main__':
                         type=bool,
                         required=False,
                         default=False,
-                        help='(NOT IMPLEMENTED) Exits python. Do not exit if you want to be in interactive interpretter after config')
+                        help='(NOT IMPLEMENTED) Exits python. Do not exit if you want to be in interactive interpreter after config')
 
     args = parser.parse_args()
 

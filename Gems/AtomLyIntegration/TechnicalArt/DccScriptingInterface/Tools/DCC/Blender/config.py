@@ -12,7 +12,7 @@
 Module Documentation:
     < DCCsi >:: Tools//DCC//Blender//config.py
 
-This module manages the dynamic config and settings for boostrapping Blender
+This module manages the dynamic config and settings for bootstrapping Blender
 """
 # -------------------------------------------------------------------------
 import timeit
@@ -65,8 +65,8 @@ from azpy.config_utils import ENVAR_DCCSI_GDEBUGGER
 from azpy.config_utils import FRMT_LOG_LONG
 from azpy.config_utils import STR_CROSSBAR
 
-# defaults, can be overriden/forced here for development
-# they should be commited in an off/False state
+# defaults, can be overridden/forced here for development
+# they should be committed in an off/False state
 from azpy.env_bool import env_bool
 _DCCSI_GDEBUG = env_bool(ENVAR_DCCSI_GDEBUG, False)
 _DCCSI_DEV_MODE = env_bool(ENVAR_DCCSI_DEV_MODE, False)
@@ -76,19 +76,19 @@ _DCCSI_GDEBUGGER = env_bool(ENVAR_DCCSI_GDEBUGGER, 'WING')
 # method 1: set envar within Env_Dev.bat file
 #    this would set in env prior to running anything within that env context
 # method 2: override in settings.local.json
-#    this is the preffered manner, dynaconf will always load this by default
-#    so these values will always be last and take precidence within code
+#    this is the preferred manner, dynaconf will always load this by default
+#    so these values will always be last and take precedence within code
 #    that is executed after:
 #        from dynacof import settings
 #        settings.setenv()
 
-# this will boostrap access to the dccsi managed package dependancies
+# this will boostrap access to the dccsi managed package dependencies
 # <DCCsi>\3rdParty\Python\Lib\3.x\3.x.x (based on python version)
 _PATH_DCCSI_PYTHON_LIB = azpy.config_utils.bootstrap_dccsi_py_libs()
 site.addsitedir(_PATH_DCCSI_PYTHON_LIB.as_posix())
 # ^ we don't add this to dynaconf env, or it will end up in settings.local.json
 # and we don't want that, since this LIB location is transient/procedural
-# to ensure we are always booystrapping the correct path based on python version running
+# to ensure we are always bootstrapping the correct path based on python version running
 # -------------------------------------------------------------------------
 
 
@@ -116,7 +116,7 @@ _SETTINGS = _DCCSI_CORE_CONFIG.get_config_settings(enable_o3de_python=False,
 
 # -------------------------------------------------------------------------
 # global scope
-# start locally prepping known default values for dyanmic environment settings
+# start locally prepping known default values for dynamic environment settings
 # these global variables are passed as defaults into methods within the module
 
 # special, a global home for stashing PATHs for managed settings
@@ -207,7 +207,7 @@ def get_config_settings(core_config=_DCCSI_CORE_CONFIG,
     # packs paths lists to DCCSI_ managed envars
     core_config.add_path_list_to_envar(dccsi_sys_path, 'DYNACONF_DCCSI_SYS_PATH')
 
-    # to do: might be a bug here, not writting to setting.local.json
+    # to do: might be a bug here, not writing to setting.local.json
     core_config.add_path_list_to_envar(dccsi_pythonpath, 'DYNACONF_DCCSI_PYTHONPATH')
 
     # final stage, if we have managed path lists set them
@@ -255,12 +255,8 @@ if __name__ == '__main__':
     # default loglevel to info unless set
     _DCCSI_LOGLEVEL = int(env_bool(ENVAR_DCCSI_LOGLEVEL, _logging.INFO))
     if _DCCSI_GDEBUG:
-        # override loglevel if runnign debug
+        # override loglevel if running debug
         _DCCSI_LOGLEVEL = _logging.DEBUG
-
-    # set up module logging
-    # for handler in _logging.root.handlers[:]:
-        # _logging.root.removeHandler(handler)
 
     # configure basic logger
     # note: not using a common logger to reduce cyclical imports
@@ -300,7 +296,7 @@ if __name__ == '__main__':
                         type=str,
                         required=False,
                         default='WING',
-                        help='(NOT IMPLEMENTED) Default debugger: WING, thers: PYCHARM and VSCODE.')
+                        help='(NOT IMPLEMENTED) Default debugger: WING, others: PYCHARM and VSCODE.')
 
     parser.add_argument('-pp', '--project-path',
                         type=pathlib.Path,
@@ -358,7 +354,7 @@ if __name__ == '__main__':
                         type=bool,
                         required=False,
                         default=False,
-                        help='(NOT IMPLEMENTED) Exits python. Do not exit if you want to be in interactive interpretter after config')
+                        help='(NOT IMPLEMENTED) Exits python. Do not exit if you want to be in interactive interpreter after config')
 
     args = parser.parse_args()
 
