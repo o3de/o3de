@@ -29,6 +29,18 @@ namespace PhysX
         , protected PhysX::ColliderShapeRequestBus::Handler
     {
     public:
+
+        //! Enum for specifying how Heightfield Collider should be created
+        enum class DataSource
+        {
+            //! Generate a new heightfield using the data from the Terrain System.
+            GenerateNewHeightfield,
+
+            //! Use the cached heightfield data from shape configuration.
+            //! Usually it comes loaded from a heightfield asset.
+            UseCachedHeightfield
+        };
+
         HeightfieldCollider() = default;
         ~HeightfieldCollider();
 
@@ -43,7 +55,8 @@ namespace PhysX
             const AZStd::string& entityName,
             AzPhysics::SceneHandle sceneHandle, 
             AZStd::shared_ptr<Physics::ColliderConfiguration> colliderConfig,
-            AZStd::shared_ptr<Physics::HeightfieldShapeConfiguration> shapeConfig);
+            AZStd::shared_ptr<Physics::HeightfieldShapeConfiguration> shapeConfig,
+            DataSource dataSourceType);
 
         //! Get the currently-spawned heightfield shape.
         //! @return Pointer to the heightfield shape.
@@ -86,6 +99,7 @@ namespace PhysX
 
         void ClearHeightfield();
         void InitStaticRigidBody(const AZ::Transform& baseTransform);
+        void InitStaticRigidBody();
 
         void UpdateHeightfieldMaterialSlots(const Physics::MaterialSlots& updatedMaterialSlots);
 
@@ -151,6 +165,9 @@ namespace PhysX
 
         //! Track the current dirty region for async heightfield refreshes.
         AZ::Aabb m_dirtyRegion;
+
+        //! Specifies the way of creating Heightfield Collider.
+        DataSource m_dataSourceType = DataSource::GenerateNewHeightfield;
     };
 
 } // namespace PhysX

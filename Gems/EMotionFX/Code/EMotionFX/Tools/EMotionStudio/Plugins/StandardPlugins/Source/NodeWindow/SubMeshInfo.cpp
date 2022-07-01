@@ -9,7 +9,6 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <EMotionFX/Source/Actor.h>
-#include <EMotionFX/Source/Material.h>
 #include <EMotionFX/Source/SubMesh.h>
 #include <EMotionStudio/EMStudioSDK/Source/Allocators.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/NodeWindow/SubMeshInfo.h>
@@ -19,10 +18,8 @@ namespace EMStudio
 {
     AZ_CLASS_ALLOCATOR_IMPL(SubMeshInfo, EMStudio::UIAllocator, 0)
 
-    SubMeshInfo::SubMeshInfo(EMotionFX::Actor* actor, size_t lodLevel, EMotionFX::SubMesh* subMesh)
+    SubMeshInfo::SubMeshInfo([[maybe_unused]] EMotionFX::Actor* actor, [[maybe_unused]] size_t lodLevel, EMotionFX::SubMesh* subMesh)
     {
-        // In EMFX studio, we are not using the subMesh index - they all uses the default material.
-        m_materialName = actor->GetMaterial(lodLevel, 0)->GetNameString();
         m_verticesCount = subMesh->GetNumVertices();
         m_indicesCount = subMesh->GetNumIndices();
         m_polygonsCount = subMesh->GetNumPolygons();
@@ -39,7 +36,6 @@ namespace EMStudio
 
         serializeContext->Class<SubMeshInfo>()
             ->Version(1)
-            ->Field("materialName", &SubMeshInfo::m_materialName)
             ->Field("verticesCount", &SubMeshInfo::m_verticesCount)
             ->Field("indicesCount", &SubMeshInfo::m_indicesCount)
             ->Field("polygonsCount", &SubMeshInfo::m_polygonsCount)
@@ -56,8 +52,6 @@ namespace EMStudio
             ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                 ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-                ->Attribute(AZ::Edit::Attributes::ReadOnly, true)
-            ->DataElement(AZ::Edit::UIHandlers::Default, &SubMeshInfo::m_materialName, "Material", "")
                 ->Attribute(AZ::Edit::Attributes::ReadOnly, true)
             ->DataElement(AZ::Edit::UIHandlers::Default, &SubMeshInfo::m_verticesCount, "Vertices", "")
                 ->Attribute(AZ::Edit::Attributes::ReadOnly, true)
