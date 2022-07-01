@@ -268,7 +268,6 @@ if __name__ == '__main__':
 
     from azpy.constants import STR_CROSSBAR
 
-    # happy print
     _LOGGER.info(STR_CROSSBAR)
     _LOGGER.info('~ {}.py ... Running script as __main__'.format(_MODULENAME))
     _LOGGER.info(STR_CROSSBAR)

@@ -816,7 +816,6 @@ if __name__ == '__main__':
     _LOGGER.debug('_DCCSI_DEV_MODE: {}'.format(_DCCSI_DEV_MODE))
     _LOGGER.debug('_DCCSI_LOGLEVEL: {}'.format(_DCCSI_LOGLEVEL))
 
-    # happy print
     _LOGGER.info(STR_CROSSBAR)
     _LOGGER.info(f'~ {_MODULENAME} ... Running module as __main__')
     _LOGGER.info(STR_CROSSBAR)
