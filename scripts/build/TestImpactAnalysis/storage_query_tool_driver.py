@@ -8,7 +8,6 @@
 
 import argparse
 import pathlib
-from string import Template
 from tiaf_logger import get_logger
 from s3_storage_query_tool import S3StorageQueryTool
 from local_storage_query_tool import LocalStorageQueryTool
