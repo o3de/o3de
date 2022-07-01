@@ -39,15 +39,21 @@ namespace Terrain
         static constexpr uint32_t DetailClipmapStackSizeMax = 16;
         static constexpr uint32_t SharedClipmapStackSizeMax = AZStd::max(ClipmapConfiguration::MacroClipmapStackSizeMax, ClipmapConfiguration::DetailClipmapStackSizeMax);
 
+        enum ClipmapSize : uint32_t
+        {
+            ClipmapSize512 = 512u,
+            ClipmapSize1024 = 1024u
+        };
+
         //! The size of the clipmap image in each layer.
-        uint32_t m_clipmapSize = 1024u;
+        ClipmapSize m_clipmapSize = ClipmapSize1024;
 
         //! Max render radius that the lowest resolution clipmap can cover.
         //! Radius in: meters.
         float m_macroClipmapMaxRenderRadius = 2048.0f;
         float m_detailClipmapMaxRenderRadius = 256.0f;
 
-        //! Max resolution of the clipmap stack.
+        //! The resolution of the highest resolution clipmap in the stack.
         //! The actual max resolution may be bigger due to rounding.
         //! Resolution in: texels per meter.
         float m_macroClipmapMaxResolution = 2.0f;
@@ -126,12 +132,14 @@ namespace Terrain
             "m_detailOcclusionClipmaps",
         };
 
+        void SetConfiguration(const ClipmapConfiguration& config);
+
         void Initialize(AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>& terrainSrg);
         bool IsInitialized() const;
         void Reset();
         //! Reset full refresh flag so that all the clipmap image will be repainted.
         void TriggerFullRefresh();
-        bool UpdateSrgIndices(AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>& srg);
+        void UpdateSrgIndices(AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>& srg);
 
         void Update(const AZ::Vector3& cameraPosition, const AZ::RPI::Scene* scene, AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>& terrainSrg);
 
@@ -161,9 +169,25 @@ namespace Terrain
             AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>& terrainSrg);
 
         //! Initialzation functions.
-        void InitializeClipmapBounds(const AZ::Vector2& center);
-        void InitializeClipmapData();
-        void InitializeClipmapImages();
+        void QueryMacroClipmapStackSize();
+        void QueryDetailClipmapStackSize();
+        void InitializeMacroClipmapBounds(const AZ::Vector2& center);
+        void InitializeMacroClipmapData();
+        void InitializeMacroClipmapImages();
+        void InitializeMacroClipmapGpuBuffer();
+        void InitializeDetailClipmapBounds(const AZ::Vector2& center);
+        void InitializeDetailClipmapData();
+        void InitializeDetailClipmapImages();
+        void InitializeDetailClipmapGpuBuffer();
+
+        //! Clear functions.
+        void ClearMacroClipmapImages();
+        void ClearMacroClipmapGpuBuffer();
+        void ClearDetailClipmapImages();
+        void ClearDetailClipmapGpuBuffer();
+
+        //! Cached terrain SRG for configuration update.
+        AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> m_terrainSrg;
 
         using RawVector2f = AZStd::array<float, 2>;
         using RawVector4f = AZStd::array<float, 4>;
@@ -276,7 +300,7 @@ namespace Terrain
                 float m_detail;
                 RawVector2f m_padding;
             };
-            AZStd::array<RawVector4f, ClipmapConfiguration::SharedClipmapStackSizeMax> m_clipmapToWorldScale;
+            AZStd::array<ClipmapToWorldScale, ClipmapConfiguration::SharedClipmapStackSizeMax> m_clipmapToWorldScale;
         };
 
         ClipmapData m_clipmapData;

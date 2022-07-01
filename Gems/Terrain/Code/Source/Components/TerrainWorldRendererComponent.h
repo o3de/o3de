@@ -33,6 +33,7 @@ namespace Terrain
 
         DetailMaterialConfiguration m_detailMaterialConfig;
         MeshConfiguration m_meshConfig;
+        ClipmapConfiguration m_clipmapConfig;
     };
 
 
