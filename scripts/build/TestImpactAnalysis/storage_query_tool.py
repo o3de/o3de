@@ -25,7 +25,17 @@ class StorageQueryTool(ABC):
         self._suite = kwargs.get('suite')
         self._access_flag = kwargs.get('access')
         self._delete_flag = kwargs.get('delete')
-
+    def _get_file(self, file_address: str):
+        """
+        Get historic json file from specified file address
+        @param file_address: Address to read json from.
+        """
+        try:
+            with open(file_address, "r") as historic_data_raw:
+                return historic_data_raw.read()
+        except FileNotFoundError as e:
+            logger.error(f"File not found at '{file_address}'. Exception:'{e}'.")
+        
     @abstractmethod
     def _search(self):
         """
