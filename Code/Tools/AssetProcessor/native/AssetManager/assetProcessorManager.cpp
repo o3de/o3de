@@ -240,7 +240,14 @@ namespace AssetProcessor
                 // because sometimes jobs take a short cut from "started" -> "failed" or "started" -> "complete
                 // without going thru the RC.
                 // as such, all the code in this block should be crafted to work regardless of whether its double called.
-                AssetProcessor::StatsCapture::EndCaptureStat(statKey.toUtf8().constData());
+                AZStd::optional<AZStd::sys_time_t> operationDuration =
+                    AssetProcessor::StatsCapture::EndCaptureStat(statKey.toUtf8().constData());
+
+                if (operationDuration)
+                {
+                    Q_EMIT JobProcessDurationChanged(
+                        jobEntry, QTime::fromMSecsSinceStartOfDay(aznumeric_cast<int>(operationDuration.value())));
+                }
 
                 m_jobRunKeyToJobInfoMap.erase(jobEntry.m_jobRunKey);
                 Q_EMIT SourceFinished(sourceUUID, legacySourceUUID);
