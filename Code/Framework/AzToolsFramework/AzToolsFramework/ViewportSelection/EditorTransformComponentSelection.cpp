@@ -19,8 +19,10 @@
 #include <AzFramework/Viewport/ViewportColors.h>
 #include <AzFramework/Viewport/ViewportScreen.h>
 #include <AzQtComponents/Components/Style.h>
+#include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
 #include <AzToolsFramework/Commands/EntityManipulatorCommand.h>
 #include <AzToolsFramework/Commands/SelectionCommand.h>
+#include <AzToolsFramework/Editor/ActionManagerUtils.h>
 #include <AzToolsFramework/Entity/EditorEntityTransformBus.h>
 #include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntityInterface.h>
 #include <AzToolsFramework/Manipulators/ManipulatorManager.h>
@@ -42,6 +44,8 @@
 #include <Entity/EditorEntityHelpers.h>
 #include <QApplication>
 #include <QRect>
+
+static constexpr AZStd::string_view EditorMainWindowActionContextIdentifier = "o3de.context.editor.mainwindow";
 
 namespace AzToolsFramework
 {
@@ -1031,7 +1035,19 @@ namespace AzToolsFramework
         CreateSpaceSelectionCluster();
         CreateSnappingCluster();
 
-        RegisterActions();
+        if (IsNewActionManagerEnabled())
+        {
+            m_actionManagerInterface = AZ::Interface<ActionManagerInterface>::Get();
+            AZ_Assert(
+                m_actionManagerInterface, "PrefabCould not get ActionManagerInterface on EditorTransformComponentSelection construction.");
+
+            RegisterEditorActions();
+        }
+        else
+        {
+            RegisterActions();
+        }
+
         SetupBoxSelect();
         RefreshSelectedEntityIdsAndRegenerateManipulators();
 
@@ -1057,7 +1073,10 @@ namespace AzToolsFramework
         DestroyCluster(m_spaceCluster.m_clusterId);
         DestroyCluster(m_snappingCluster.m_clusterId);
 
-        UnregisterActions();
+        if (!IsNewActionManagerEnabled())
+        {
+            UnregisterActions();
+        }
 
         m_pivotOverrideFrame.Reset();
 
@@ -2481,6 +2500,449 @@ namespace AzToolsFramework
             });
 
         EditorMenuRequestBus::Broadcast(&EditorMenuRequests::RestoreEditMenuToDefault);
+    }
+
+    void EditorTransformComponentSelection::RegisterEditorActions()
+    {
+        // Duplicate
+        {
+            AzToolsFramework::ActionProperties actionProperties;
+            actionProperties.m_name = DuplicateTitle;
+            actionProperties.m_description = DuplicateDesc;
+            actionProperties.m_category = "Edit";
+
+            m_actionManagerInterface->RegisterAction(
+                EditorMainWindowActionContextIdentifier,
+                "o3de.action.edit.duplicate",
+                actionProperties,
+                []()
+                {
+                    AZ_PROFILE_FUNCTION(AzToolsFramework);
+
+                    ScopedUndoBatch undoBatch(DuplicateUndoRedoDesc);
+                    auto selectionCommand = AZStd::make_unique<SelectionCommand>(EntityIdList(), DuplicateUndoRedoDesc);
+                    selectionCommand->SetParent(undoBatch.GetUndoBatch());
+                    selectionCommand.release();
+
+                    bool handled = false;
+                    EditorRequestBus::Broadcast(&EditorRequests::CloneSelection, handled);
+
+                    // selection update handled in AfterEntitySelectionChanged
+                }
+            );
+        }
+
+        // Delete
+        {
+            AzToolsFramework::ActionProperties actionProperties;
+            actionProperties.m_name = DeleteTitle;
+            actionProperties.m_description = DeleteDesc;
+            actionProperties.m_category = "Edit";
+
+            m_actionManagerInterface->RegisterAction(
+                EditorMainWindowActionContextIdentifier,
+                "o3de.action.edit.delete",
+                actionProperties,
+                [this]()
+                {
+                    AZ_PROFILE_FUNCTION(AzToolsFramework);
+
+                    ScopedUndoBatch undoBatch(DeleteUndoRedoDesc);
+
+                    CreateEntityManipulatorDeselectCommand(undoBatch);
+
+                    ToolsApplicationRequestBus::Broadcast(
+                        &ToolsApplicationRequests::DeleteEntitiesAndAllDescendants, EntityIdVectorFromContainer(m_selectedEntityIds));
+
+                    m_selectedEntityIds.clear();
+                    m_pivotOverrideFrame.Reset();
+                }
+            );
+        }
+
+        // Select All
+        {
+            AzToolsFramework::ActionProperties actionProperties;
+            actionProperties.m_name = SelectAllTitle;
+            actionProperties.m_description = SelectAllDesc;
+            actionProperties.m_category = "Edit";
+
+            m_actionManagerInterface->RegisterAction(
+                EditorMainWindowActionContextIdentifier,
+                "o3de.action.edit.selectAll",
+                actionProperties,
+                [this]()
+                {
+                    AZ_PROFILE_FUNCTION(AzToolsFramework);
+
+                    ScopedUndoBatch undoBatch(SelectAllEntitiesUndoRedoDesc);
+
+                    if (m_entityIdManipulators.m_manipulators)
+                    {
+                        auto manipulatorCommand =
+                            AZStd::make_unique<EntityManipulatorCommand>(CreateManipulatorCommandStateFromSelf(), ManipulatorUndoRedoName);
+
+                        // note, nothing will change that the manipulatorCommand needs to keep track
+                        // for after so no need to call SetManipulatorAfter
+
+                        manipulatorCommand->SetParent(undoBatch.GetUndoBatch());
+                        manipulatorCommand.release();
+                    }
+
+                    EnumerateEditorEntities(
+                        [this](AZ::EntityId entityId)
+                        {
+                            if (IsSelectableInViewport(entityId))
+                            {
+                                AddEntityToSelection(entityId);
+                            }
+                        });
+
+                    auto nextEntityIds = EntityIdVectorFromContainer(m_selectedEntityIds);
+
+                    auto selectionCommand = AZStd::make_unique<SelectionCommand>(nextEntityIds, SelectAllEntitiesUndoRedoDesc);
+                    selectionCommand->SetParent(undoBatch.GetUndoBatch());
+                    selectionCommand.release();
+
+                    SetSelectedEntities(nextEntityIds);
+                    RegenerateManipulators();
+                }
+            );
+        }
+
+        // Invert Selection
+        {
+            AzToolsFramework::ActionProperties actionProperties;
+            actionProperties.m_name = InvertSelectionTitle;
+            actionProperties.m_description = InvertSelectionDesc;
+            actionProperties.m_category = "Edit";
+
+            m_actionManagerInterface->RegisterAction(
+                EditorMainWindowActionContextIdentifier,
+                "o3de.action.edit.invertSelection",
+                actionProperties,
+                [this]()
+                {
+                    AZ_PROFILE_FUNCTION(AzToolsFramework);
+
+                    ScopedUndoBatch undoBatch(InvertSelectionUndoRedoDesc);
+
+                    if (m_entityIdManipulators.m_manipulators)
+                    {
+                        auto manipulatorCommand =
+                            AZStd::make_unique<EntityManipulatorCommand>(CreateManipulatorCommandStateFromSelf(), ManipulatorUndoRedoName);
+
+                        // note, nothing will change that the manipulatorCommand needs to keep track
+                        // for after so no need to call SetManipulatorAfter
+
+                        manipulatorCommand->SetParent(undoBatch.GetUndoBatch());
+                        manipulatorCommand.release();
+                    }
+
+                    EntityIdSet entityIds;
+                    EnumerateEditorEntities(
+                        [this, &entityIds](AZ::EntityId entityId)
+                        {
+                            const auto entityIdIt = AZStd::find(m_selectedEntityIds.begin(), m_selectedEntityIds.end(), entityId);
+                            if (entityIdIt == m_selectedEntityIds.end())
+                            {
+                                if (IsSelectableInViewport(entityId))
+                                {
+                                    entityIds.insert(entityId);
+                                }
+                            }
+                        });
+
+                    m_selectedEntityIds = entityIds;
+
+                    auto nextEntityIds = EntityIdVectorFromContainer(entityIds);
+
+                    auto selectionCommand = AZStd::make_unique<SelectionCommand>(nextEntityIds, InvertSelectionUndoRedoDesc);
+                    selectionCommand->SetParent(undoBatch.GetUndoBatch());
+                    selectionCommand.release();
+
+                    SetSelectedEntities(nextEntityIds);
+                    RegenerateManipulators();
+                }
+            );
+        }
+
+        // Toggle Pivot Location
+        {
+            AzToolsFramework::ActionProperties actionProperties;
+            actionProperties.m_name = TogglePivotTitleEditMenu;
+            actionProperties.m_description = TogglePivotDesc;
+            actionProperties.m_category = "Edit";
+
+            m_actionManagerInterface->RegisterAction(
+                EditorMainWindowActionContextIdentifier,
+                "o3de.action.edit.togglePivot",
+                actionProperties,
+                [&]()
+                {
+                    ToggleCenterPivotSelection();
+                }
+            );
+        }
+
+        // Reset Entity Transform
+        {
+            AzToolsFramework::ActionProperties actionProperties;
+            actionProperties.m_name = ResetEntityTransformTitle;
+            actionProperties.m_description = ResetEntityTransformDesc;
+            actionProperties.m_category = "Edit";
+
+            m_actionManagerInterface->RegisterAction(
+                EditorMainWindowActionContextIdentifier,
+                "o3de.action.edit.resetEntityTransform",
+                actionProperties,
+                [this]
+                {
+                    switch (m_mode)
+                    {
+                    case Mode::Rotation:
+                        ResetOrientationForSelectedEntitiesLocal();
+                        break;
+                    case Mode::Scale:
+                        CopyScaleToSelectedEntitiesIndividualLocal(1.0f);
+                        break;
+                    case Mode::Translation:
+                        ResetTranslationForSelectedEntitiesLocal();
+                        break;
+                    }
+                }
+            );
+        }
+
+        // Toggle Pivot Location
+        {
+            AzToolsFramework::ActionProperties actionProperties;
+            actionProperties.m_name = ResetManipulatorTitle;
+            actionProperties.m_description = ResetManipulatorDesc;
+            actionProperties.m_category = "Edit";
+
+            m_actionManagerInterface->RegisterAction(
+                EditorMainWindowActionContextIdentifier,
+                "o3de.action.edit.resetManipulator",
+                actionProperties,
+                [this]()
+                {
+                    DelegateClearManipulatorOverride();
+                }
+            );
+        }
+
+        const auto showHide = [this](const bool show)
+        {
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
+
+            ScopedUndoBatch undoBatch(HideSelectionUndoRedoDesc);
+
+            if (m_entityIdManipulators.m_manipulators)
+            {
+                CreateEntityManipulatorDeselectCommand(undoBatch);
+            }
+
+            // make a copy of selected entity ids
+            const auto selectedEntityIds = EntityIdVectorFromContainer(m_selectedEntityIds);
+            for (AZ::EntityId entityId : selectedEntityIds)
+            {
+                ScopedUndoBatch::MarkEntityDirty(entityId);
+                SetEntityVisibility(entityId, show);
+            }
+
+            RegenerateManipulators();
+        };
+
+        // Hide Selection
+        {
+            AzToolsFramework::ActionProperties actionProperties;
+            actionProperties.m_name = HideSelectionTitle;
+            actionProperties.m_description = HideSelectionDesc;
+            actionProperties.m_category = "Edit";
+
+            m_actionManagerInterface->RegisterAction(
+                EditorMainWindowActionContextIdentifier,
+                "o3de.action.edit.hideSelection",
+                actionProperties,
+                [showHide]()
+                {
+                    showHide(false);
+                }
+            );
+        }
+
+        // Show All
+        {
+            AzToolsFramework::ActionProperties actionProperties;
+            actionProperties.m_name = ShowAllTitle;
+            actionProperties.m_description = ShowAllDesc;
+            actionProperties.m_category = "Edit";
+
+            m_actionManagerInterface->RegisterAction(
+                EditorMainWindowActionContextIdentifier,
+                "o3de.action.edit.showAll",
+                actionProperties,
+                []()
+                {
+                    AZ_PROFILE_FUNCTION(AzToolsFramework);
+
+                    ScopedUndoBatch undoBatch(ShowAllEntitiesUndoRedoDesc);
+
+                    EnumerateEditorEntities(
+                        [](const AZ::EntityId entityId)
+                        {
+                            ScopedUndoBatch::MarkEntityDirty(entityId);
+                            SetEntityVisibility(entityId, true);
+                        }
+                    );
+                }
+            );
+        }
+
+        // Lock Selection
+
+        const auto lockUnlock = [this](const bool lock)
+        {
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
+
+            ScopedUndoBatch undoBatch(LockSelectionUndoRedoDesc);
+
+            if (m_entityIdManipulators.m_manipulators)
+            {
+                CreateEntityManipulatorDeselectCommand(undoBatch);
+            }
+
+            // make a copy of selected entity ids
+            const auto selectedEntityIds = EntityIdVectorFromContainer(m_selectedEntityIds);
+            for (AZ::EntityId entityId : selectedEntityIds)
+            {
+                ScopedUndoBatch::MarkEntityDirty(entityId);
+                SetEntityLockState(entityId, lock);
+            }
+
+            RegenerateManipulators();
+        };
+
+        {
+            AzToolsFramework::ActionProperties actionProperties;
+            actionProperties.m_name = LockSelectionTitle;
+            actionProperties.m_description = LockSelectionDesc;
+            actionProperties.m_category = "Edit";
+
+            m_actionManagerInterface->RegisterAction(
+                EditorMainWindowActionContextIdentifier,
+                "o3de.action.edit.lockSelection",
+                actionProperties,
+                [lockUnlock]()
+                {
+                    lockUnlock(true);
+                }
+            );
+        }
+
+        // Unlock All Entities
+        {
+            AzToolsFramework::ActionProperties actionProperties;
+            actionProperties.m_name = UnlockAllTitle;
+            actionProperties.m_description = UnlockAllDesc;
+            actionProperties.m_category = "Edit";
+
+            m_actionManagerInterface->RegisterAction(
+                EditorMainWindowActionContextIdentifier,
+                "o3de.action.edit.unlockAllEntities",
+                actionProperties,
+                []()
+                {
+                    AZ_PROFILE_FUNCTION(AzToolsFramework);
+
+                    ScopedUndoBatch undoBatch(UnlockAllUndoRedoDesc);
+
+                    EnumerateEditorEntities(
+                        [](AZ::EntityId entityId)
+                        {
+                            ScopedUndoBatch::MarkEntityDirty(entityId);
+                            SetEntityLockState(entityId, false);
+                        }
+                    );
+                }
+            );
+        }
+
+        // Transform Mode - Move
+        {
+            AzToolsFramework::ActionProperties actionProperties;
+            actionProperties.m_name = "Move";
+            actionProperties.m_description = "Select and move selected object(s)";
+            actionProperties.m_category = "Edit";
+            actionProperties.m_iconPath = ":/stylesheet/img/UI20/toolbar/Move.svg";
+
+            m_actionManagerInterface->RegisterCheckableAction(
+                EditorMainWindowActionContextIdentifier,
+                "o3de.action.edit.transform.move",
+                actionProperties,
+                [&]()
+                {
+                    SetTransformMode(Mode::Translation);
+                },
+                [&]() -> bool
+                {
+                    return GetTransformMode() == Mode::Translation;
+                }
+            );
+
+            // TODO - Update when the transform mode changes.
+        }
+
+        // Transform Mode - Rotate
+        {
+            AzToolsFramework::ActionProperties actionProperties;
+            actionProperties.m_name = "Rotate";
+            actionProperties.m_description = "Select and rotate selected object(s)";
+            actionProperties.m_category = "Edit";
+            actionProperties.m_iconPath = ":/stylesheet/img/UI20/toolbar/Rotate.svg";
+
+            m_actionManagerInterface->RegisterCheckableAction(
+                EditorMainWindowActionContextIdentifier,
+                "o3de.action.edit.transform.rotate",
+                actionProperties,
+                [&]()
+                {
+                    SetTransformMode(Mode::Rotation);
+                },
+                [&]() -> bool
+                {
+                    return GetTransformMode() == Mode::Rotation;
+                }
+            );
+
+            // TODO - Update when the transform mode changes.
+        }
+
+        // Transform Mode - Scale
+        {
+            AzToolsFramework::ActionProperties actionProperties;
+            actionProperties.m_name = "Scale";
+            actionProperties.m_description = "Select and rotate selected object(s)";
+            actionProperties.m_category = "Edit";
+            actionProperties.m_iconPath = ":/stylesheet/img/UI20/toolbar/Scale.svg";
+
+            m_actionManagerInterface->RegisterCheckableAction(
+                EditorMainWindowActionContextIdentifier,
+                "o3de.action.edit.transform.scale",
+                actionProperties,
+                [&]()
+                {
+                    SetTransformMode(Mode::Rotation);
+                },
+                [&]() -> bool
+                {
+                    return GetTransformMode() == Mode::Rotation;
+                }
+            );
+
+            // TODO - Update when the transform mode changes.
+        }
     }
 
     void EditorTransformComponentSelection::UnregisterActions()
