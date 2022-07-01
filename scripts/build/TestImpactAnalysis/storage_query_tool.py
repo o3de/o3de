@@ -56,13 +56,6 @@ class StorageQueryTool(ABC):
         pass
 
     @abstractmethod
-    def _write_tree(self):
-        """
-        Displays file tree to user in console output
-        """
-        pass
-
-    @abstractmethod
     def _delete(self, file: str):
         """
         Deletes the specified file
