@@ -255,6 +255,7 @@ namespace AtomToolsFramework
             return {};
         }
 
+        const AZStd::string exportPathWithoutAlias = GetPathWithoutAlias(exportPath);
         const AZStd::string referencePathWithoutAlias = GetPathWithoutAlias(referencePath);
 
         if (!relativeToExportPath)
@@ -276,7 +277,7 @@ namespace AtomToolsFramework
             }
         }
 
-        AZ::IO::BasicPath<AZStd::string> exportFolder(exportPath);
+        AZ::IO::BasicPath<AZStd::string> exportFolder(exportPathWithoutAlias);
         exportFolder.RemoveFilename();
 
         return AZ::IO::PathView(referencePathWithoutAlias).LexicallyRelative(exportFolder).StringAsPosix();
