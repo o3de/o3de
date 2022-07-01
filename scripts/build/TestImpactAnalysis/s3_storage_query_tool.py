@@ -70,7 +70,12 @@ class S3StorageQueryTool(StorageQueryTool):
             [logger.info(obj.key) for obj in bucket_objs]
 
 
-    def _check_object_exists(self, bucket, key):
+    def _check_object_exists(self, bucket: str, key: str):
+        """
+        Method that returns whether an object exists in the specified bucket. It also writes into the console whether the file exists.
+        @param bucket: name of the bucket to check
+        @param key: key of the object to look for
+        """
         try:
             self._s3.Object(bucket, key).load()
             logger.info(f"File found at {key} in bucket: {bucket}")
