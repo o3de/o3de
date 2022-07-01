@@ -474,7 +474,6 @@ namespace O3DELauncher
         azstrncpy(systemInitParams.szSystemCmdLine, sizeof(systemInitParams.szSystemCmdLine),
             mainInfo.m_commandLine, mainInfo.m_commandLineLen);
 
-        systemInitParams.pSharedEnvironment = AZ::Environment::GetInstance();
         systemInitParams.sLogFileName = GetLogFilename();
         systemInitParams.hInstance = mainInfo.m_instance;
         systemInitParams.hWnd = mainInfo.m_window;

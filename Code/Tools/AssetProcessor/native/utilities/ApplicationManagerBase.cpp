@@ -58,7 +58,6 @@ ApplicationManagerBase::ApplicationManagerBase(int* argc, char*** argv, QObject*
 ApplicationManagerBase::~ApplicationManagerBase()
 {
     AzToolsFramework::SourceControlNotificationBus::Handler::BusDisconnect();
-    AssetProcessor::DiskSpaceInfoBus::Handler::BusDisconnect();
     AZ::Debug::TraceMessageBus::Handler::BusDisconnect();
     AssetProcessor::AssetBuilderRegistrationBus::Handler::BusDisconnect();
     AssetBuilderSDK::AssetBuilderBus::Handler::BusDisconnect();
@@ -886,7 +885,6 @@ ApplicationManager::BeforeRunStatus ApplicationManagerBase::BeforeRun()
     AssetProcessor::AssetBuilderRegistrationBus::Handler::BusConnect();
     AssetProcessor::AssetBuilderInfoBus::Handler::BusConnect();
     AZ::Debug::TraceMessageBus::Handler::BusConnect();
-    AssetProcessor::DiskSpaceInfoBus::Handler::BusConnect();
     AzToolsFramework::SourceControlNotificationBus::Handler::BusConnect();
 
     return ApplicationManager::BeforeRunStatus::Status_Success;
@@ -1405,7 +1403,7 @@ bool ApplicationManagerBase::Activate()
         "AssetProcessor will process assets from project root %s.\n", AssetUtilities::ComputeProjectPath().toUtf8().data());
 
     // Shutdown if the disk has less than 128MB of free space
-    if (!CheckSufficientDiskSpace(projectCache.absolutePath(), 128 * 1024 * 1024, true))
+    if (!CheckSufficientDiskSpace(128 * 1024 * 1024, true))
     {
         // CheckSufficientDiskSpace reports an error if disk space is low.
         return false;
@@ -1523,7 +1521,7 @@ bool ApplicationManagerBase::Activate()
         []()
         {
             AssetProcessor::BuilderRef builder;
-            AssetProcessor::BuilderManagerBus::BroadcastResult(builder, &AssetProcessor::BuilderManagerBus::Events::GetBuilder, true);
+            AssetProcessor::BuilderManagerBus::BroadcastResult(builder, &AssetProcessor::BuilderManagerBus::Events::GetBuilder, AssetProcessor::BuilderPurpose::Registration);
 
             if (!builder)
             {
@@ -1578,7 +1576,7 @@ bool ApplicationManagerBase::InitializeInternalBuilders()
     return result;
 }
 
-static void HandleConditionalRetry(const AssetProcessor::BuilderRunJobOutcome& result, int retryCount, AssetProcessor::BuilderRef& builderRef)
+static void HandleConditionalRetry(const AssetProcessor::BuilderRunJobOutcome& result, int retryCount, AssetProcessor::BuilderRef& builderRef, AssetProcessor::BuilderPurpose purpose)
 {
     // If a lost connection occured or the process was terminated before a response can be read, and there is another retry to get the
     // response from a Builder, then handle the logic to log and sleep before attempting the retry of the job
@@ -1593,7 +1591,7 @@ static void HandleConditionalRetry(const AssetProcessor::BuilderRunJobOutcome& r
             // If the connection was lost and the process handle is no longer valid, then we need to request a new builder to reprocess the job
             AZStd::string oldBuilderId = builderRef->GetUuid().ToString<AZStd::string>();
             builderRef.release();
-            AssetProcessor::BuilderManagerBus::BroadcastResult(builderRef, &AssetProcessor::BuilderManagerBusTraits::GetBuilder, false);
+            AssetProcessor::BuilderManagerBus::BroadcastResult(builderRef, &AssetProcessor::BuilderManagerBusTraits::GetBuilder, purpose);
 
             AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Lost connection to builder %s. Retrying with a new builder %s (Attempt %d with %d second delay)",
                             oldBuilderId.c_str(),
@@ -1645,7 +1643,7 @@ void ApplicationManagerBase::RegisterBuilderInformation(const AssetBuilderSDK::A
             [](const AssetBuilderSDK::CreateJobsRequest& request, AssetBuilderSDK::CreateJobsResponse& response)
         {
             AssetProcessor::BuilderRef builderRef;
-            AssetProcessor::BuilderManagerBus::BroadcastResult(builderRef, &AssetProcessor::BuilderManagerBusTraits::GetBuilder, false);
+            AssetProcessor::BuilderManagerBus::BroadcastResult(builderRef, &AssetProcessor::BuilderManagerBusTraits::GetBuilder, AssetProcessor::BuilderPurpose::CreateJobs);
 
             if (builderRef)
             {
@@ -1658,7 +1656,7 @@ void ApplicationManagerBase::RegisterBuilderInformation(const AssetBuilderSDK::A
                     result = builderRef->RunJob<AssetBuilder::CreateJobsNetRequest, AssetBuilder::CreateJobsNetResponse>(
                         request, response, s_MaximumCreateJobsTimeSeconds, "create", "", nullptr);
 
-                    HandleConditionalRetry(result, retryCount, builderRef);
+                    HandleConditionalRetry(result, retryCount, builderRef, AssetProcessor::BuilderPurpose::CreateJobs);
 
                 } while ((result == AssetProcessor::BuilderRunJobOutcome::LostConnection ||
                           result == AssetProcessor::BuilderRunJobOutcome::ProcessTerminated) &&
@@ -1678,7 +1676,7 @@ void ApplicationManagerBase::RegisterBuilderInformation(const AssetBuilderSDK::A
             AssetBuilderSDK::JobCancelListener jobCancelListener(request.m_jobId);
 
             AssetProcessor::BuilderRef builderRef;
-            AssetProcessor::BuilderManagerBus::BroadcastResult(builderRef, &AssetProcessor::BuilderManagerBusTraits::GetBuilder, false);
+            AssetProcessor::BuilderManagerBus::BroadcastResult(builderRef, &AssetProcessor::BuilderManagerBusTraits::GetBuilder, AssetProcessor::BuilderPurpose::ProcessJob);
 
             if (builderRef)
             {
@@ -1698,7 +1696,7 @@ void ApplicationManagerBase::RegisterBuilderInformation(const AssetBuilderSDK::A
                     result = builderRef->RunJob<AssetBuilder::ProcessJobNetRequest, AssetBuilder::ProcessJobNetResponse>(
                         request, response, s_MaximumProcessJobsTimeSeconds, "process", "", &jobCancelListener, request.m_tempDirPath);
 
-                    HandleConditionalRetry(result, retryCount, builderRef);
+                    HandleConditionalRetry(result, retryCount, builderRef, AssetProcessor::BuilderPurpose::ProcessJob);
 
                 } while ((result == AssetProcessor::BuilderRunJobOutcome::LostConnection ||
                           result == AssetProcessor::BuilderRunJobOutcome::ProcessTerminated) &&
@@ -1854,38 +1852,29 @@ bool ApplicationManagerBase::OnError(const char* /*window*/, const char* /*messa
     return true;
 }
 
-bool ApplicationManagerBase::CheckSufficientDiskSpace(const QString& savePath, qint64 requiredSpace, bool shutdownIfInsufficient)
+bool ApplicationManagerBase::CheckSufficientDiskSpace(qint64 requiredSpace, bool shutdownIfInsufficient)
 {
-    bool createdDirectory = false;
+    QDir cacheDir;
+    if (!AssetUtilities::ComputeProjectCacheRoot(cacheDir))
+    {
+        AZ_Error(
+            "AssetProcessor",
+            false,
+            "Could not compute project cache root, please configure your project correctly to launch Asset Processor.");
+        return false;
+    }
+
+    QString savePath = cacheDir.absolutePath();
 
     if (!QDir(savePath).exists())
     {
         // GetFreeDiskSpace will fail if the path does not exist
         QDir dir;
-        createdDirectory = dir.mkpath(savePath);
+        dir.mkpath(savePath);
     }
 
     qint64 bytesFree = 0;
     [[maybe_unused]] bool result = AzToolsFramework::ToolsFileUtils::GetFreeDiskSpace(savePath, bytesFree);
-
-    if (createdDirectory)
-    {
-        // Clean up the folder so we're not leaving empty folders all over the place
-        // We need to walk up the path and try to delete each folder along the way since savePath might have created a series of folders
-        // Just deleting savePath would only delete the last folder created
-        AZ::IO::Path path(savePath.toUtf8().constData());
-        while(AZ::IO::SystemFile::DeleteDir(path.c_str())) // DeleteDir should fail if the directory is not empty
-        {
-            if (path.HasParentPath())
-            {
-                path = path.ParentPath();
-            }
-            else
-            {
-                break;
-            }
-        }
-    }
 
     AZ_Assert(result, "Unable to determine the amount of free space on drive containing path (%s).", savePath.toUtf8().constData());
 

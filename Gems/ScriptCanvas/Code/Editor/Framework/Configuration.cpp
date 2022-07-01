@@ -216,7 +216,7 @@ namespace ScriptCanvasEditor
 
         if (m_sourceHandle.IsDescriptionValid())
         {
-            m_sourceName = m_sourceHandle.Path().Filename().Native();
+            m_sourceName = m_sourceHandle.RelativePath().Filename().Native();
         }
 
         m_eventPropertiesChanged.Signal(*this);
@@ -225,7 +225,7 @@ namespace ScriptCanvasEditor
         {
             ScriptCanvasBuilder::DataSystemSourceNotificationsBus::Handler::BusConnect(m_sourceHandle.Id());
 
-            if (!m_sourceHandle.Path().empty())
+            if (!m_sourceHandle.RelativePath().empty())
             {
                 const auto validation = CompileLatestInternal();
                 if (validation == BuildStatusValidation::Good)
@@ -253,8 +253,8 @@ namespace ScriptCanvasEditor
         }
         else
         {
-            AZ_Warning("ScriptCanvas", m_sourceHandle.Path().empty()
-                , "Configuration had no valid ID for %s and won't compile or expose variables.", m_sourceHandle.Path().c_str());
+            AZ_Warning("ScriptCanvas", m_sourceHandle.RelativePath().empty()
+                , "Configuration had no valid ID for %s and won't compile or expose variables.", m_sourceHandle.RelativePath().c_str());
         }
 
         m_eventSourceFailed.Signal(*this);

@@ -44,9 +44,9 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 {%      endif %}
 {% endif %}
 
-{%- set attribute_Base = Class.attrib['Base']  %}
-{% if not Class.attrib['Base'] is defined %}
-{%    set attribute_Base = "ScriptCanvas::Nodeable" %}
+{% set attribute_Base = "ScriptCanvas::Nodeable" %}
+{% if Class.attrib['Base'] is defined and Class.attrib['Base'] %}
+{%    set attribute_Base = Class.attrib['Base'] %}
 {% endif %}
 
 {% if attribute_Namespace is defined %}
@@ -70,7 +70,7 @@ namespace {{attribute_Namespace}}
 // You must #include the generated header into the source header
 #define SCRIPTCANVAS_NODE_{{className}} \
 public: \
-    AZ_RTTI({{className}}, "{{nodeableClassName|createHashGuid}}"{% if Class.attrib['Base'] is defined %}, {{ Class.attrib['Base'] }}{% endif %}); \
+    AZ_RTTI({{className}}, "{{nodeableClassName|createHashGuid}}", {{attribute_Base}}); \
     static void Reflect(AZ::ReflectContext* reflection); \
     static void ExtendReflectionSerialize([[maybe_unused]] AZ::SerializeContext::ClassBuilder* builder){% if Class.attrib['ExtendReflectionSerialize'] is defined %};{% else %}{}{% endif %} \
     static void ExtendReflectionEdit([[maybe_unused]] AZ::EditContext::ClassBuilder* builder){% if Class.attrib['ExtendReflectionEdit'] is defined %};{% else %}{}{% endif %} \
@@ -112,10 +112,10 @@ public: \
 
               size_t GenerateFingerprint() const override;
 
-{% if Class.attrib['EntryPoint'] is defined and Class.attrib['EntryPoint'] == "true" %}
+{% if Class.attrib['GraphEntryPoint'] is defined and Class.attrib['GraphEntryPoint'] == "True" %}
               bool IsEntryPoint() const override { return true; }
-
 {% endif %}
+
               {{nodeableNodeName}}();
 
               {{Class.attrib['NodeDeclarations']}}

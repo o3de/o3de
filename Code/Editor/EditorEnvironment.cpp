@@ -14,13 +14,3 @@ void SetEditorEnvironment(SSystemGlobalEnvironment* pEnv)
     assert(!gEnv || gEnv != pEnv);
     gEnv = pEnv;
 }
-
-void AttachEditorAZEnvironment(AZ::EnvironmentInstance azEnv)
-{
-    AZ::Environment::Attach(azEnv);
-}
-
-void DetachEditorAZEnvironment()
-{
-    AZ::Environment::Detach();
-}
