@@ -41,7 +41,6 @@ class PersistentStorageS3(PersistentStorage):
         self.branch = branch
         self._retrieve_historic_data(config)
         
-
     def _store_historic_data(self, historic_data_json: str):
         """
         Stores then historical data in specified s3 bucket at the location <branch>/<build_config>/historical_data.json.zip.
