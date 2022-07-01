@@ -370,13 +370,8 @@ namespace GradientSignal
             SetDirty();
         }
 
-        m_dependencyMonitor.Reset();
-        m_dependencyMonitor.ConnectOwner(GetEntityId());
-        m_dependencyMonitor.ConnectDependency(m_configuration.m_gradientSampler.m_gradientId);
-
-        // Connect to GradientRequestBus after the gradient sampler and dependency monitor is configured
-        // before listening for gradient queries.
-        GradientRequestBus::Handler::BusConnect(GetEntityId());
+        // Setup the dependency monitor and listen for gradient requests
+        SetupDependencyMonitor();
 
         UpdatePreviewSettings();
 
@@ -451,6 +446,19 @@ namespace GradientSignal
         }
 
         return entityIds;
+    }
+
+    void EditorGradientBakerComponent::SetupDependencyMonitor()
+    {
+        GradientRequestBus::Handler::BusDisconnect();
+
+        m_dependencyMonitor.Reset();
+        m_dependencyMonitor.ConnectOwner(GetEntityId());
+        m_dependencyMonitor.ConnectDependency(m_configuration.m_gradientSampler.m_gradientId);
+
+        // Connect to GradientRequestBus after the gradient sampler and dependency monitor is configured
+        // before listening for gradient queries.
+        GradientRequestBus::Handler::BusConnect(GetEntityId());
     }
 
     void EditorGradientBakerComponent::BakeImage()
@@ -589,6 +597,10 @@ namespace GradientSignal
     {
         // Cancel any pending preview refreshes before locking, to help ensure the preview itself isn't holding the lock
         auto entityIds = CancelPreviewRendering();
+
+        // Re-setup the dependency monitor when the configuration changes because the gradient sampler
+        // could've changed
+        SetupDependencyMonitor();
 
         // Refresh any of the previews that we canceled that were still in progress so they can be completed
         for (auto entityId : entityIds)
