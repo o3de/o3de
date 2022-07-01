@@ -75,3 +75,20 @@ class StorageQueryTool(ABC):
         """
         pass
 
+    @abstractmethod
+    def _put(self, file: str, location: str):
+        """
+        Put the specified file in the specified location
+        @param file: File in json format to store
+        @param location: Location to store the file
+        """
+        pass
+
+    @abstractmethod
+    def _update(self, file: str, location: str):
+        """
+        Replace the file in the specified location with the provided filed if it exists
+        @param file: File in json format to store
+        @param location: Location to store the file
+        """
+        pass
