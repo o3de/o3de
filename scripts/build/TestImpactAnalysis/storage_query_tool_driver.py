@@ -85,30 +85,10 @@ def parse_args():
     )
 
     parser.add_argument(
-        "--delete",
-        action="store_true",
-        help="Flag to delete file if found",
-        required=False
-    )
-
-    parser.add_argument(
-        "--read",
-        action="store_true",
-        help="Flag to access file if found",
-        required=False
-    )
-
-    parser.add_argument(
-        "--update",
-        action="store_true",
-        help="Flag to replace file if found",
-        required=False
-    )
-
-    parser.add_argument(
-        "--create",
-        action="store_true",
-        help="Flag to create file if not found",
+        "--action",
+        type=str,
+        help="What action TIAF Tools should take",
+        choices=["read","update","delete","create"],
         required=False
     )
 
@@ -136,6 +116,8 @@ def parse_args():
 if __name__ == "__main__":
     try:
         args = vars(parse_args())
+
+        logger.info(args)
 
         if args.get('local'):
             sqt = LocalStorageQueryTool(**args)
