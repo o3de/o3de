@@ -13,7 +13,7 @@
 Module Documentation:
     < DCCsi >:: Tools//DCC//Substance//constants.py
 
-This convention <path>, is an shorten abbreviation of a long path,
+This convention <path>, is a shortened abbreviation of a long path,
 for the sake of docstrings and comments.
 
 This module contains default values for common used constants & strings.
