@@ -32,11 +32,12 @@ class StorageQueryTool(ABC):
         self._file_out = kwargs.get('file_out')
 
         if self._update_flag or self._create_flag:
-            
+
             self._file = self._get_file(self._file_in)
 
         if self.has_full_address:
-            self._full_address = str(f"{self._root_directory}/{self._branch}/{self._build}/{self._suite}/historic_data.json.zip")
+            self._full_address = str(
+                f"{self._root_directory}/{self._branch}/{self._build}/{self._suite}/historic_data.json.zip")
 
     def _get_file(self, file_address: str):
         """
@@ -47,8 +48,9 @@ class StorageQueryTool(ABC):
             with open(file_address, "r") as historic_data_raw:
                 return historic_data_raw.read()
         except FileNotFoundError as e:
-            logger.error(f"File not found at '{file_address}'. Exception:'{e}'.")
-        
+            logger.error(
+                f"File not found at '{file_address}'. Exception:'{e}'.")
+
     @abstractmethod
     def _display(self):
         """

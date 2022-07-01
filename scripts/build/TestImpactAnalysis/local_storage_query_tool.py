@@ -21,21 +21,18 @@ class LocalStorageQueryTool(StorageQueryTool):
         super().__init__(**kwargs)
         self._search_in = kwargs.get('search_in')
         self._search()
-        
+
         if self._access_flag:
             self._access()
-        
+
         if self._delete_flag:
             self._delete()
-        
-        
-
 
     def _search(self):
         """
         Executes the search based on the search parameters initialised beforehand, in either the file directory or in the s3 bucket.
         """
-        
+
         pass
 
     def _write_tree(self):
@@ -59,4 +56,3 @@ class LocalStorageQueryTool(StorageQueryTool):
         @param file: The file to be accessed
         """
         pass
-

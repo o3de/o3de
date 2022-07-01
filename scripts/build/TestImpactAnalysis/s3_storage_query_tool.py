@@ -23,14 +23,15 @@ class S3StorageQueryTool(StorageQueryTool):
         """
         super().__init__(**kwargs)
         self._bucket_name = kwargs['bucket_name']
-        
+
         try:
 
             self._s3_client = boto3.client('s3')
             self._s3 = boto3.resource('s3')
             if self.has_full_address:
                 if self._read and self._file_out:
-                    self._access(self._bucket_name, self._full_address, self._file_out)
+                    self._access(self._bucket_name,
+                                 self._full_address, self._file_out)
                 elif self._create_flag:
                     self._put(self._file, self._full_address)
                 elif self._update_flag:
@@ -44,9 +45,7 @@ class S3StorageQueryTool(StorageQueryTool):
         except botocore.exceptions.ClientError as e:
             raise SystemError(f"There was a problem with the s3 client: {e}")
         except Exception as e:
-            logger.info(e)            
-        
-
+            logger.info(e)
 
     def _display(self):
         """
@@ -58,11 +57,11 @@ class S3StorageQueryTool(StorageQueryTool):
             result = bucket_objs.filter(Prefix=prefix_string)
             return result
 
-        bucket_objs =self._s3.Bucket(self._bucket_name).objects.all()
+        bucket_objs = self._s3.Bucket(self._bucket_name).objects.all()
 
         if self.has_full_address:
             self._check_object_exists(self._bucket_name, self._full_address)
-            
+
         else:
             bucket_objs = filter_by(self._root_directory, bucket_objs)
             for object in bucket_objs:
@@ -84,14 +83,15 @@ class S3StorageQueryTool(StorageQueryTool):
         """
         pass
 
-    def _delete(self, bucket_name:str, file: str):
+    def _delete(self, bucket_name: str, file: str):
         """
         Deletes the specified file
         @param bucket_name: Bucket to delete file from
         @param file: The file to be deleted
         """
         if self._check_object_exists(bucket_name, file):
-            logger.info(f"Deleting file in bucket: {bucket_name} with key {file}")
+            logger.info(
+                f"Deleting file in bucket: {bucket_name} with key {file}")
             self._s3.Object(bucket_name, file).delete()
 
     def _access(self, bucket_name: str, file: str, destination: str):
@@ -102,22 +102,27 @@ class S3StorageQueryTool(StorageQueryTool):
         """
         if self._check_object_exists(bucket_name, file):
             try:
-                logger.info(f"Downloading file in bucket: {bucket_name} with key {file}")
-                file_stream = self._s3_client.get_object(Bucket=bucket_name, Key=file)['Body']
+                logger.info(
+                    f"Downloading file in bucket: {bucket_name} with key {file}")
+                file_stream = self._s3_client.get_object(
+                    Bucket=bucket_name, Key=file)['Body']
             except botocore.exceptions.ClientError as e:
                 logger.error(f"Failed to download file, error: {e}")
             try:
-                decoded_data = zlib.decompress(file_stream.read()).decode('UTF-8')
+                decoded_data = zlib.decompress(
+                    file_stream.read()).decode('UTF-8')
                 logger.info(f"Decoding complete.")
                 json_obj = json.loads(decoded_data)
-                with open(f"{destination}historic_data.json","w", encoding="UTF-8", newline="\n") as raw_output_file:
-                    json.dump(json_obj, raw_output_file, ensure_ascii=False, indent=4)
+                with open(f"{destination}historic_data.json", "w", encoding="UTF-8", newline="\n") as raw_output_file:
+                    json.dump(json_obj, raw_output_file,
+                              ensure_ascii=False, indent=4)
 
-                logger.info(f"Data sucessfully saved in: {destination}historic_data.json")
+                logger.info(
+                    f"Data sucessfully saved in: {destination}historic_data.json")
             except json.JSONDecodeError:
                 logger.error("The historic data does not contain valid JSON.")
 
-    def _put(self, file: str, location: str):
+    def _put(self, bucket_name: str, file_address: str, storage_location: str):
         """
         Put the specified file in the specified location
         @param file: File in json format to store
@@ -125,11 +130,10 @@ class S3StorageQueryTool(StorageQueryTool):
         """
         pass
 
-    def _update(self, file: str, location: str):
+    def _update(self, bucket_name: str, file_address: str, storage_location: str):
         """
         Replace the file in the specified location with the provided filed if it exists
         @param file: File in json format to store
         @param location: Location to store the file
         """
         pass
-
