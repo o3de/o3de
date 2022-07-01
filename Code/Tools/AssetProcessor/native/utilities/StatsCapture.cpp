@@ -196,8 +196,8 @@ namespace AssetProcessor
                     AzToolsFramework::AssetDatabase::StatDatabaseEntry entry;
                     entry.m_statName = statName;
                     entry.m_statValue = aznumeric_cast<AZ::s64>(operationDuration.count());
-                    entry.m_lastLogTime = 1; // TODO: change to real time
-                    m_dbConnection.ReplaceStat(entry); // TODO: check this succeeds
+                    entry.m_lastLogTime = aznumeric_cast<AZ::s64>(QDateTime::currentMSecsSinceEpoch());
+                    m_dbConnection.ReplaceStat(entry);
                 }
             }
             return operationDurationInMillisecond;
