@@ -19,11 +19,11 @@ class StorageQueryTool(ABC):
         Initialise storage query tool with search parameters and flags  denoting whether to access or delete the resource
         @param kwargs: kwargs containing parsed arguments
         """
-        self._root_directory = kwargs.get('root-directory')
+        self._root_directory = kwargs.get('root_directory')
         self._branch = kwargs.get('branch')
         self._build = kwargs.get('build')
         self._suite = kwargs.get('suite')
-        self._access_flag = kwargs.get('access')
+        self._read = kwargs.get('read')
         self._delete_flag = kwargs.get('delete')
         self._update_flag = kwargs.get('update')
         self._create_flag = kwargs.get('create')
@@ -44,7 +44,7 @@ class StorageQueryTool(ABC):
             logger.error(f"File not found at '{file_address}'. Exception:'{e}'.")
         
     @abstractmethod
-    def _search(self):
+    def _display(self):
         """
         Executes the search based on the search parameters initialised beforehand, in either the file directory or in the s3 bucket.
         """
