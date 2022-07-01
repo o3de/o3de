@@ -27,7 +27,7 @@ namespace AZ
 
             CreateSwapChains(device);
 
-            RHI::Ptr<RHI::SwapChain> defaultSwapChain = m_swapChainsData[static_cast<uint32_t>(SwapChainMode::Default)].m_swapChain;
+            RHI::Ptr<RHI::SwapChain> defaultSwapChain = GetSwapChain(SwapChainMode::Default);
             FillWindowState(defaultSwapChain->GetDescriptor().m_dimensions.m_imageWidth,
                             defaultSwapChain->GetDescriptor().m_dimensions.m_imageHeight);
 
@@ -97,7 +97,7 @@ namespace AZ
 
         void WindowContext::OnWindowResized(uint32_t width, uint32_t height)
         {
-            RHI::Ptr<RHI::SwapChain> defaultSwapChain = m_swapChainsData[static_cast<uint32_t>(SwapChainMode::Default)].m_swapChain;
+            RHI::Ptr<RHI::SwapChain> defaultSwapChain = GetSwapChain(SwapChainMode::Default);
             const AZ::RHI::SwapChainDimensions& currentDimensions = defaultSwapChain->GetDescriptor().m_dimensions;
             if (width != currentDimensions.m_imageWidth || height != currentDimensions.m_imageHeight)
             {
