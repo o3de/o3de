@@ -10,6 +10,8 @@ from tiaf_logger import get_logger
 from storage_query_tool import StorageQueryTool
 import boto3
 import botocore.exceptions
+import zlib
+import json
 logger = get_logger(__file__)
 
 
@@ -92,13 +94,28 @@ class S3StorageQueryTool(StorageQueryTool):
             logger.info(f"Deleting file in bucket: {bucket_name} with key {file}")
             self._s3.Object(bucket_name, file).delete()
 
-    def _access(self, file: str):
+    def _access(self, bucket_name: str, file: str, destination: str):
         """
         Accesses the specified file
-
+        @param bucket_name: Bucket to access file in
         @param file: The file to be accessed
         """
-        pass
+        if self._check_object_exists(bucket_name, file):
+            try:
+                logger.info(f"Downloading file in bucket: {bucket_name} with key {file}")
+                file_stream = self._s3_client.get_object(Bucket=bucket_name, Key=file)['Body']
+            except botocore.exceptions.ClientError as e:
+                logger.error(f"Failed to download file, error: {e}")
+            try:
+                decoded_data = zlib.decompress(file_stream.read()).decode('UTF-8')
+                logger.info(f"Decoding complete.")
+                json_obj = json.loads(decoded_data)
+                with open(f"{destination}historic_data.json","w", encoding="UTF-8", newline="\n") as raw_output_file:
+                    json.dump(json_obj, raw_output_file, ensure_ascii=False, indent=4)
+
+                logger.info(f"Data sucessfully saved in: {destination}historic_data.json")
+            except json.JSONDecodeError:
+                logger.error("The historic data does not contain valid JSON.")
 
     def _put(self, file: str, location: str):
         """
