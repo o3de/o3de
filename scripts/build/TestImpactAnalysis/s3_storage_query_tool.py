@@ -26,7 +26,6 @@ class S3StorageQueryTool(StorageQueryTool):
 
             self._s3 = boto3.resource("s3")
             self._bucket = self._s3.Bucket(self._bucket_name)
-            self._search()
 
             if self._read:
                 self._access()
