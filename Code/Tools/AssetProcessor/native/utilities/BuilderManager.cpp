@@ -26,11 +26,6 @@ namespace AssetProcessor
     //! Time in milliseconds to wait after each message pump cycle
     static const int s_IdleBuilderPumpingDelayMS = 100;
 
-    //! Amount of time in seconds to wait for a builder to start up and connect
-    // sometimes, builders take a long time to start because of things like virus scanners scanning each
-    // builder DLL, so we give them a large margin.
-    static const int s_StartupConnectionWaitTimeS = 300;
-
     static const int s_MillisecondsInASecond = 1000;
 
     static const char* s_buildersFolderName = "Builders";
@@ -42,6 +37,15 @@ namespace AssetProcessor
 
     bool Builder::WaitForConnection()
     {
+        if (m_startupWaitTimeS == 0)
+        {
+            const auto* settingsRegistry = AZ::SettingsRegistry::Get();
+            if (settingsRegistry)
+            {
+                settingsRegistry->Get(m_startupWaitTimeS, "/Amazon/AssetProcessor/Settings/BuilderManager/StartupTimeoutSeconds");
+            }
+        }
+
         if (m_connectionId == 0)
         {
             bool result = false;
@@ -55,7 +59,7 @@ namespace AssetProcessor
 
                 PumpCommunicator();
 
-                if (ticker.elapsed() > s_StartupConnectionWaitTimeS * s_MillisecondsInASecond
+                if (ticker.elapsed() > m_startupWaitTimeS * s_MillisecondsInASecond
                     || m_quitListener.WasQuitRequested()
                     || !IsRunning())
                 {
@@ -83,7 +87,7 @@ namespace AssetProcessor
             }
             else
             {
-                AZ_Error("Builder", false, "AssetBuilder failed to connect within %d seconds", s_StartupConnectionWaitTimeS);
+                AZ_Error("Builder", false, "AssetBuilder failed to connect within %d seconds", m_startupWaitTimeS);
             }
 
             return false;
@@ -139,7 +143,7 @@ namespace AssetProcessor
         }
     }
 
-    bool Builder::Start(bool doRegistration)
+    bool Builder::Start(BuilderPurpose purpose)
     {
         // Get the current BinXXX folder based on the current running AP
         QString applicationDir = QCoreApplication::instance()->applicationDirPath();
@@ -156,7 +160,7 @@ namespace AssetProcessor
             return false;
         }
 
-        const AZStd::vector<AZStd::string> params = BuildParams("resident", buildersFolder.c_str(), UuidString(), "", "", doRegistration);
+        const AZStd::vector<AZStd::string> params = BuildParams("resident", buildersFolder.c_str(), UuidString(), "", "", purpose);
 
         m_processWatcher = LaunchProcess(fullExePathString.c_str(), params);
 
@@ -180,7 +184,7 @@ namespace AssetProcessor
         return !m_processWatcher || (m_processWatcher && m_processWatcher->IsProcessRunning(exitCode));
     }
 
-    AZStd::vector<AZStd::string> Builder::BuildParams(const char* task, const char* moduleFilePath, const AZStd::string& builderGuid, const AZStd::string& jobDescriptionFile, const AZStd::string& jobResponseFile, bool doRegistration) const
+    AZStd::vector<AZStd::string> Builder::BuildParams(const char* task, const char* moduleFilePath, const AZStd::string& builderGuid, const AZStd::string& jobDescriptionFile, const AZStd::string& jobResponseFile, BuilderPurpose purpose) const
     {
         QDir projectCacheRoot;
         AssetUtilities::ComputeProjectCacheRoot(projectCacheRoot);
@@ -201,7 +205,7 @@ namespace AssetProcessor
         params.emplace_back(AZStd::string::format(R"(-engine-path="%s")", enginePath.c_str()));
         params.emplace_back(AZStd::string::format("-port=%d", portNumber));
 
-        if(doRegistration)
+        if (purpose == BuilderPurpose::Registration)
         {
             params.emplace_back("--register");
         }
@@ -296,7 +300,7 @@ namespace AssetProcessor
         }
         else if (jobCancelListener && jobCancelListener->IsCancelled())
         {
-            AZ_Error("Builder", false, "Job request was cancelled");
+            AZ_Error("Builder", false, "Job request was canceled");
             TerminateProcess(AZ::u32(-1)); // Terminate the builder. Even if it isn't deadlocked, we can't put it back in the pool while it's busy.
             return BuilderRunJobOutcome::JobCancelled;
         }
@@ -332,13 +336,7 @@ namespace AssetProcessor
 
     BuilderRef::~BuilderRef()
     {
-        if (m_builder)
-        {
-            AZ_Warning("BuilderRef", m_builder->m_busy, "Builder reference is valid but is already set to not busy");
-
-            m_builder->m_busy = false;
-            m_builder = nullptr;
-        }
+        release();
     }
 
     const Builder* BuilderRef::operator->() const
@@ -349,6 +347,17 @@ namespace AssetProcessor
     BuilderRef::operator bool() const
     {
         return m_builder != nullptr;
+    }
+
+    void BuilderRef::release()
+    {
+        if (m_builder)
+        {
+            AZ_Warning("BuilderRef", m_builder->m_busy, "Builder reference is valid but is already set to not busy");
+
+            m_builder->m_busy = false;
+            m_builder = nullptr;
+        }
     }
 
     //////////////////////////////////////////////////////////////////////////
@@ -376,6 +385,8 @@ namespace AssetProcessor
 
     BuilderManager::~BuilderManager()
     {
+        PrintDebugOutput();
+
         BusDisconnect();
         m_quitListener.BusDisconnect();
         m_quitListener.ApplicationShutdownRequested();
@@ -484,7 +495,12 @@ namespace AssetProcessor
         return builder;
     }
 
-    BuilderRef BuilderManager::GetBuilder(bool doRegistration)
+    void BuilderManager::AddAssetToBuilderProcessedList(const AZ::Uuid& builderId, const AZStd::string& sourceAsset)
+    {
+        m_builderDebugOutput[builderId].m_assetsProcessed.push_back(sourceAsset);
+    }
+
+    BuilderRef BuilderManager::GetBuilder(BuilderPurpose purpose)
     {
         AZStd::shared_ptr<Builder> newBuilder;
         BuilderRef builderRef;
@@ -492,10 +508,19 @@ namespace AssetProcessor
         {
             AZStd::unique_lock<AZStd::mutex> lock(m_buildersMutex);
 
-            if (!doRegistration)
+            if (purpose != BuilderPurpose::Registration)
             {
                 for (auto itr = m_builders.begin(); itr != m_builders.end();)
                 {
+                    if (itr == m_builders.begin() && purpose != BuilderPurpose::CreateJobs)
+                    {
+                        // The first builder is always reserved for create jobs.
+                        // Since there is only ever 1 CreateJobs process happening at once, this means CreateJobs will never have to wait to
+                        // start up a new builder. This is important since CreateJobs is meant to be quick.
+                        ++itr;
+                        continue;
+                    }
+
                     auto& builder = itr->second;
 
                     if (!builder->m_busy)
@@ -527,7 +552,7 @@ namespace AssetProcessor
             builderRef = BuilderRef(newBuilder);
         }
 
-        if (!newBuilder->Start(doRegistration))
+        if (!newBuilder->Start(purpose))
         {
             AZ_Error("BuilderManager", false, "Builder failed to start");
 
@@ -559,4 +584,24 @@ namespace AssetProcessor
             }
         }
     }
+
+    void BuilderManager::PrintDebugOutput()
+    {
+        // If debug output was tracked, print it on shutdown.
+        // This prints each asset that was processed by each builder, in the order they were processed.
+        // This is useful for tracing issues like memory leaks across assets processed by the same builder.
+        for (auto builderInfo : m_builderDebugOutput)
+        {
+            AZ_TracePrintf("BuilderManager", "Builder %.*s processed these assets:\n",
+                AZ_STRING_ARG(builderInfo.first.ToString<AZStd::string>()));
+            for (auto asset : builderInfo.second.m_assetsProcessed)
+            {
+                AZ_TracePrintf(
+                    "BuilderManager", "Builder with ID %.*s processed %.*s\n",
+                    AZ_STRING_ARG(builderInfo.first.ToFixedString()),
+                    AZ_STRING_ARG(asset));
+            }
+        }
+    }
+
 } // namespace AssetProcessor

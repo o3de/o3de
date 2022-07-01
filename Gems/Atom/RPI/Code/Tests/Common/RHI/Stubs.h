@@ -57,7 +57,7 @@ namespace UnitTest
         private:
             AZ::RHI::ResultCode InitInternal(AZ::RHI::PhysicalDevice&) override { return AZ::RHI::ResultCode::Success; }
             void ShutdownInternal() override {}
-            void BeginFrameInternal() override {}
+            AZ::RHI::ResultCode BeginFrameInternal() override { return AZ::RHI::ResultCode::Success;}
             void EndFrameInternal() override {}
             void WaitForIdleInternal() override {}
             void CompileMemoryStatisticsInternal(AZ::RHI::MemoryStatisticsBuilder&) override {}
@@ -132,7 +132,7 @@ namespace UnitTest
             {
                 return m_data;
             }
-                       
+
         private:
             bool m_isMapped = false;
             AZStd::vector<uint8_t> m_data;
@@ -146,7 +146,7 @@ namespace UnitTest
 
         private:
             AZ::RHI::ResultCode InitInternal(AZ::RHI::Device&, const AZ::RHI::BufferPoolDescriptor&) override { return AZ::RHI::ResultCode::Success;}
-            
+
             AZ::RHI::ResultCode InitBufferInternal(AZ::RHI::Buffer& bufferBase, const AZ::RHI::BufferDescriptor& descriptor) override
             {
                 AZ_Assert(IsInitialized(), "Buffer Pool is not initialized");
@@ -178,6 +178,7 @@ namespace UnitTest
 
             AZ::RHI::ResultCode OrphanBufferInternal(AZ::RHI::Buffer&) override { return AZ::RHI::ResultCode::Success; }
             AZ::RHI::ResultCode StreamBufferInternal([[maybe_unused]] const AZ::RHI::BufferStreamRequest& request) override { return AZ::RHI::ResultCode::Success; }
+            void ComputeFragmentation() const override {}
         };
 
         class ImagePool
@@ -199,6 +200,8 @@ namespace UnitTest
         {
         public:
             AZ_CLASS_ALLOCATOR(StreamingImagePool, AZ::SystemAllocator, 0);
+
+            void ComputeFragmentation() const override {}
 
         private:
             AZ::RHI::ResultCode InitImageInternal([[maybe_unused]] const AZ::RHI::StreamingImageInitRequest& request) override { return AZ::RHI::ResultCode::Success; }
@@ -262,10 +265,11 @@ namespace UnitTest
             AZ_CLASS_ALLOCATOR(PipelineLibrary, AZ::SystemAllocator, 0);
 
         private:
-            AZ::RHI::ResultCode InitInternal(AZ::RHI::Device&, const AZ::RHI::PipelineLibraryData*) override { return AZ::RHI::ResultCode::Success; }
+            AZ::RHI::ResultCode InitInternal(AZ::RHI::Device&, [[maybe_unused]] const AZ::RHI::PipelineLibraryDescriptor& descriptor) override { return AZ::RHI::ResultCode::Success; }
             void ShutdownInternal() override {}
-            AZ::RHI::ResultCode MergeIntoInternal(AZStd::array_view<const AZ::RHI::PipelineLibrary*>) override { return AZ::RHI::ResultCode::Success; }
+            AZ::RHI::ResultCode MergeIntoInternal(AZStd::span<const AZ::RHI::PipelineLibrary* const>) override { return AZ::RHI::ResultCode::Success; }
             AZ::RHI::ConstPtr<AZ::RHI::PipelineLibraryData> GetSerializedDataInternal() const override { return nullptr; }
+            bool SaveSerializedDataInternal([[maybe_unused]] const AZStd::string& filePath) const { return true;}
         };
 
         class ShaderStageFunction
@@ -372,11 +376,11 @@ namespace UnitTest
             AZ::RHI::ResultCode InitInternal([[maybe_unused]] AZ::RHI::Device& device, [[maybe_unused]] const AZ::RHI::QueryPoolDescriptor& descriptor) override { return AZ::RHI::ResultCode::Success; }
             AZ::RHI::ResultCode InitQueryInternal([[maybe_unused]] AZ::RHI::Query& query) override { return AZ::RHI::ResultCode::Success; }
             AZ::RHI::ResultCode GetResultsInternal(
-                [[maybe_unused]] uint32_t startIndex, 
-                [[maybe_unused]] uint32_t queryCount, 
-                [[maybe_unused]] uint64_t* results, 
-                [[maybe_unused]] uint32_t resultsCount, 
-                [[maybe_unused]] AZ::RHI::QueryResultFlagBits flags) override 
+                [[maybe_unused]] uint32_t startIndex,
+                [[maybe_unused]] uint32_t queryCount,
+                [[maybe_unused]] uint64_t* results,
+                [[maybe_unused]] uint32_t resultsCount,
+                [[maybe_unused]] AZ::RHI::QueryResultFlagBits flags) override
             { return AZ::RHI::ResultCode::Success; }
         };
 

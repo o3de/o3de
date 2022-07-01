@@ -29,6 +29,7 @@ namespace AZ::Prefab
     public:
         static constexpr const char* BuilderId = "{A2E0791C-4607-4363-A7FD-73D01ED49660}";
         static constexpr const char* PrefabJobKey = "Prefabs";
+        static constexpr const char* ConfigKey = "GameObjectCreation";
 
         AZ_COMPONENT(PrefabBuilderComponent, BuilderId);
         static void Reflect(AZ::ReflectContext* context);

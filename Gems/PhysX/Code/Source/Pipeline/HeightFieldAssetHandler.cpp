@@ -6,15 +6,16 @@
  *
  */
 
+#include <Source/Pipeline/HeightFieldAssetHandler.h>
 
 #include <Pipeline/HeightFieldAssetHandler.h>
 #include <Pipeline/StreamWrapper.h>
+#include <AzCore/Debug/Profiler.h>
 #include <AzCore/IO/GenericStreams.h>
 #include <AzCore/IO/FileIO.h>
 #include <PhysX/HeightFieldAsset.h>
 #include <PhysX/SystemComponentBus.h>
 #include <PhysX/ComponentTypeIds.h>
-#include <Source/Pipeline/HeightFieldAssetHandler.h>
 #include <PxPhysicsAPI.h>
 
 #include <extensions/PxSerialization.h>
@@ -125,20 +126,8 @@ namespace PhysX::Pipeline
         {
             if (header.m_assetDataSize > 0)
             {
-                // Version 1 doesn't have min/max heights, so only read this data for versions 2+.
-                if (header.m_assetVersion >= 2)
-                {
-                    readerStream.read(&physXHeightFieldAsset->m_minHeight, sizeof(float));
-                    readerStream.read(&physXHeightFieldAsset->m_maxHeight, sizeof(float));
-                }
-                else
-                {
-                    // In versions 0 & 1, the data is cooked assuming the data starts at origin (min height = 0)
-                    // and has a max height of 1024.0f.
-                    const float v1HardCodedMaxHeight = 1024.0f;
-                    physXHeightFieldAsset->m_minHeight = 0.0f;
-                    physXHeightFieldAsset->m_maxHeight = v1HardCodedMaxHeight;
-                }
+                readerStream.read(&physXHeightFieldAsset->m_minHeight, sizeof(float));
+                readerStream.read(&physXHeightFieldAsset->m_maxHeight, sizeof(float));
 
                 // Create heightfield from cooked file
                 physx::PxPhysics& physx = PxGetPhysics();
@@ -181,43 +170,34 @@ namespace PhysX::Pipeline
         }
 
         HeightFieldAssetHeader header;
-        if (header.m_assetVersion == 2)
-        {
-            physx::PxCooking* cooking = nullptr;
-            SystemRequestsBus::BroadcastResult(cooking, &SystemRequests::GetCooking);
+        physx::PxCooking* cooking = nullptr;
+        SystemRequestsBus::BroadcastResult(cooking, &SystemRequests::GetCooking);
 
-            // Read samples from heightfield
-            AZStd::vector<physx::PxHeightFieldSample> samples;
-            samples.resize(heightField->getNbColumns() * heightField->getNbRows());
-            heightField->saveCells(samples.data(), (physx::PxU32)samples.size() * heightField->getSampleStride());
+        // Read samples from heightfield
+        AZStd::vector<physx::PxHeightFieldSample> samples;
+        samples.resize(heightField->getNbColumns() * heightField->getNbRows());
+        heightField->saveCells(samples.data(), (physx::PxU32)samples.size() * heightField->getSampleStride());
 
-            // Read description from heightfield
-            physx::PxHeightFieldDesc heightFieldDesc;
-            heightFieldDesc.format = heightField->getFormat();
-            heightFieldDesc.nbColumns = heightField->getNbColumns();
-            heightFieldDesc.nbRows = heightField->getNbRows();
-            heightFieldDesc.samples.data = samples.data();
-            heightFieldDesc.samples.stride = heightField->getSampleStride();
+        // Read description from heightfield
+        physx::PxHeightFieldDesc heightFieldDesc;
+        heightFieldDesc.format = heightField->getFormat();
+        heightFieldDesc.nbColumns = heightField->getNbColumns();
+        heightFieldDesc.nbRows = heightField->getNbRows();
+        heightFieldDesc.samples.data = samples.data();
+        heightFieldDesc.samples.stride = heightField->getSampleStride();
 
-            // Cook description to file
-            physx::PxDefaultMemoryOutputStream writer;
-            bool success = cooking->cookHeightField(heightFieldDesc, writer);
-            header.m_assetDataSize = writer.getSize() + 2 * sizeof(float);
+        // Cook description to file
+        physx::PxDefaultMemoryOutputStream writer;
+        bool success = cooking->cookHeightField(heightFieldDesc, writer);
+        header.m_assetDataSize = writer.getSize() + 2 * sizeof(float);
 
-            PhysX::StreamWrapper writerStream(stream);
-            writerStream.write(&header, sizeof(header));
-            writerStream.write(&physXHeightFieldAsset->m_minHeight, sizeof(physXHeightFieldAsset->m_minHeight));
-            writerStream.write(&physXHeightFieldAsset->m_maxHeight, sizeof(physXHeightFieldAsset->m_maxHeight));
-            writerStream.write(writer.getData(), writer.getSize());
+        PhysX::StreamWrapper writerStream(stream);
+        writerStream.write(&header, sizeof(header));
+        writerStream.write(&physXHeightFieldAsset->m_minHeight, sizeof(physXHeightFieldAsset->m_minHeight));
+        writerStream.write(&physXHeightFieldAsset->m_maxHeight, sizeof(physXHeightFieldAsset->m_maxHeight));
+        writerStream.write(writer.getData(), writer.getSize());
 
-            return success;
-        }
-        else
-        {
-            AZ_Warning("HeightFieldAssetHandler", false, "Unsupported asset version");
-        }
-
-        return false;
+        return success;
     }
 
     void HeightFieldAssetHandler::DestroyAsset(AZ::Data::AssetPtr ptr)

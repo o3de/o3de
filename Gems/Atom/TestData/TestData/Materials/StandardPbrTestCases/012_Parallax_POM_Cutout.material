@@ -1,28 +1,18 @@
 {
-    "description": "",
     "materialType": "Materials/Types/StandardPBR.materialtype",
-    "parentMaterial": "",
-    "propertyLayoutVersion": 3,
-    "properties": {
-        "baseColor": {
-            "textureMap": "TestData/Textures/TextureHaven/4k_castle_brick_02_red/4k_castle_brick_02_red_bc.png"
-        },
-        "opacity": {
-            "alphaSource": "Split",
-            "mode": "Cutout",
-            "textureMap": "TestData/Textures/checker8x8_512.png"
-        },
-        "parallax": {
-            "factor": 0.10000000149011612,
-            "quality": "High",
-            "textureMap": "TestData/Textures/TextureHaven/4k_castle_brick_02_red/4k_castle_brick_02_red_disp.png"
-        },
-        "uv": {
-            "center": [
-                0.0,
-                0.0
-            ],
-            "scale": 0.5
-        }
+    "materialTypeVersion": 5,
+    "propertyValues": {
+        "baseColor.textureMap": "TestData/Textures/TextureHaven/4k_castle_brick_02_red/4k_castle_brick_02_red_bc.png",
+        "opacity.alphaSource": "Split",
+        "opacity.mode": "Cutout",
+        "opacity.textureMap": "TestData/Textures/checker8x8_512.png",
+        "parallax.factor": 0.10000000149011612,
+        "parallax.quality": "High",
+        "parallax.textureMap": "TestData/Textures/TextureHaven/4k_castle_brick_02_red/4k_castle_brick_02_red_disp.png",
+        "uv.center": [
+            0.0,
+            0.0
+        ],
+        "uv.scale": 0.5
     }
 }

@@ -20,9 +20,13 @@ ly_add_target(
         PRIVATE
             AZ::AzCore
             Gem::Atom_RHI.Public
+            AzFramework
         PUBLIC
             Gem::Atom_RHI.Reflect
-            3rdParty::libpng
+            Gem::Atom_RPI.Public
+            Gem::ImGui.imguilib
+            3rdParty::PNG
+            Gem::ProfilerImGui
 )
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
@@ -51,7 +55,7 @@ endif()
 ################################################################################
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
 
-    o3de_pal_dir(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME} ${gem_restricted_path} ${gem_path} ${gem_parent_relative_path})
+    o3de_pal_dir(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME} "${gem_restricted_path}" "${gem_path}" "${gem_parent_relative_path}")
 
     ly_add_target(
         NAME Atom_Utils.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}

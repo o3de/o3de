@@ -104,7 +104,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             NAME FastNoise.Editor.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
             NAMESPACE Gem
             FILES_CMAKE
-                fastnoise_tests_files.cmake
+                fastnoise_editor_tests_files.cmake
             COMPILE_DEFINITIONS
                 PUBLIC
                     FASTNOISE_EDITOR
@@ -120,23 +120,31 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         ly_add_googletest(
             NAME Gem::FastNoise.Editor.Tests
         )
-    else()
-        ly_add_target(
-            NAME FastNoise.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
-            NAMESPACE Gem
-            FILES_CMAKE
-                fastnoise_tests_files.cmake
-            INCLUDE_DIRECTORIES
-                PRIVATE
-                    Tests
-            BUILD_DEPENDENCIES
-                PRIVATE
-                    AZ::AzTest
-                    Gem::FastNoise.Static
-                    Gem::LmbrCentral
-        )
-        ly_add_googletest(
-            NAME Gem::FastNoise.Tests
-        )
     endif()
+
+    ly_add_target(
+        NAME FastNoise.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
+        NAMESPACE Gem
+        FILES_CMAKE
+            fastnoise_tests_files.cmake
+        INCLUDE_DIRECTORIES
+            PRIVATE
+                Tests
+        BUILD_DEPENDENCIES
+            PRIVATE
+                AZ::AzTest
+                Gem::FastNoise.Static
+                Gem::GradientSignal
+                Gem::GradientSignal.Tests.Static
+                Gem::LmbrCentral
+    )
+    ly_add_googletest(
+        NAME Gem::FastNoise.Tests
+    )
+
+    ly_add_googlebenchmark(
+        NAME Gem::FastNoise.Benchmarks
+        TARGET Gem::FastNoise.Tests
+    )
+
 endif()

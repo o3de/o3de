@@ -91,22 +91,10 @@
                     "$type": "EditorScriptCanvasComponent",
                     "Id": 10596595655489113153,
                     "m_name": "AutoComponent_RPC",
-                    "m_assetHolder": {
-                        "m_asset": {
-                            "assetId": {
-                                "guid": "{5ED120C4-07DC-56F1-80A7-37BFC98FD74E}"
-                            },
-                            "assetHint": "levels/multiplayer/autocomponent_rpc/autocomponent_rpc.scriptcanvas"
-                        }
-                    },
                     "runtimeDataIsValid": true,
-                    "runtimeDataOverrides": {
-                        "source": {
-                            "assetId": {
-                                "guid": "{5ED120C4-07DC-56F1-80A7-37BFC98FD74E}"
-                            },
-                            "assetHint": "levels/multiplayer/autocomponent_rpc/autocomponent_rpc.scriptcanvas"
-                        }
+                    "sourceHandle": {
+                        "id": "{5ED120C4-07DC-56F1-80A7-37BFC98FD74E}",
+                        "path": "levels/multiplayer/autocomponent_rpc/autocomponent_rpc.scriptcanvas"
                     }
                 },
                 "Component_[11440172471478606933]": {
@@ -183,6 +171,13 @@
                 "Component_[9407892837096707905]": {
                     "$type": "EditorEntityIconComponent",
                     "Id": 9407892837096707905
+                },
+                "Component_[9505416969829669337]": {
+                    "$type": "EditorTagComponent",
+                    "Id": 9505416969829669337,
+                    "Tags": [
+                        "Player"
+                    ]
                 },
                 "Component_[9878555871810913249]": {
                     "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",

@@ -34,12 +34,14 @@ namespace AZ
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<DiffuseProbeGridComponentConfig>()
-                    ->Version(1)
+                    ->Version(4) // Added scrolling
                     ->Field("ProbeSpacing", &DiffuseProbeGridComponentConfig::m_probeSpacing)
                     ->Field("Extents", &DiffuseProbeGridComponentConfig::m_extents)
                     ->Field("AmbientMultiplier", &DiffuseProbeGridComponentConfig::m_ambientMultiplier)
                     ->Field("ViewBias", &DiffuseProbeGridComponentConfig::m_viewBias)
                     ->Field("NormalBias", &DiffuseProbeGridComponentConfig::m_normalBias)
+                    ->Field("NumRaysPerProbe", &DiffuseProbeGridComponentConfig::m_numRaysPerProbe)
+                    ->Field("Scrolling", &DiffuseProbeGridComponentConfig::m_scrolling)
                     ->Field("EditorMode", &DiffuseProbeGridComponentConfig::m_editorMode)
                     ->Field("RuntimeMode", &DiffuseProbeGridComponentConfig::m_runtimeMode)
                     ->Field("BakedIrradianceTextureRelativePath", &DiffuseProbeGridComponentConfig::m_bakedIrradianceTextureRelativePath)
@@ -48,6 +50,9 @@ namespace AZ
                     ->Field("BakedIrradianceTextureAsset", &DiffuseProbeGridComponentConfig::m_bakedIrradianceTextureAsset)
                     ->Field("BakedDistanceTextureAsset", &DiffuseProbeGridComponentConfig::m_bakedDistanceTextureAsset)
                     ->Field("BakedProbeDataTextureAsset", &DiffuseProbeGridComponentConfig::m_bakedProbeDataTextureAsset)
+                    ->Field("VisualizationEnabled", &DiffuseProbeGridComponentConfig::m_visualizationEnabled)
+                    ->Field("VisualizationShowInactiveProbes", &DiffuseProbeGridComponentConfig::m_visualizationShowInactiveProbes)
+                    ->Field("VisualizationSphereRadius", &DiffuseProbeGridComponentConfig::m_visualizationSphereRadius)
                     ;
             }
         }
@@ -138,6 +143,11 @@ namespace AZ
             m_featureProcessor->SetAmbientMultiplier(m_handle, m_configuration.m_ambientMultiplier);
             m_featureProcessor->SetViewBias(m_handle, m_configuration.m_viewBias);
             m_featureProcessor->SetNormalBias(m_handle, m_configuration.m_normalBias);
+            m_featureProcessor->SetNumRaysPerProbe(m_handle, m_configuration.m_numRaysPerProbe);
+            m_featureProcessor->SetScrolling(m_handle, m_configuration.m_scrolling);
+            m_featureProcessor->SetVisualizationEnabled(m_handle, m_configuration.m_visualizationEnabled);
+            m_featureProcessor->SetVisualizationShowInactiveProbes(m_handle, m_configuration.m_visualizationShowInactiveProbes);
+            m_featureProcessor->SetVisualizationSphereRadius(m_handle, m_configuration.m_visualizationSphereRadius);
 
             // load the baked texture assets, but only if they are all valid
             if (m_configuration.m_bakedIrradianceTextureAsset.GetId().IsValid() &&
@@ -320,6 +330,28 @@ namespace AZ
             m_featureProcessor->SetNormalBias(m_handle, m_configuration.m_normalBias);
         }
 
+        void DiffuseProbeGridComponentController::SetNumRaysPerProbe(const DiffuseProbeGridNumRaysPerProbe& numRaysPerProbe)
+        {
+            if (!m_featureProcessor)
+            {
+                return;
+            }
+
+            m_configuration.m_numRaysPerProbe = numRaysPerProbe;
+            m_featureProcessor->SetNumRaysPerProbe(m_handle, m_configuration.m_numRaysPerProbe);
+        }
+
+        void DiffuseProbeGridComponentController::SetScrolling(bool scrolling)
+        {
+            if (!m_featureProcessor)
+            {
+                return;
+            }
+
+            m_configuration.m_scrolling = scrolling;
+            m_featureProcessor->SetScrolling(m_handle, m_configuration.m_scrolling);
+        }
+
         void DiffuseProbeGridComponentController::SetEditorMode(DiffuseProbeGridMode editorMode)
         {
             if (!m_featureProcessor)
@@ -341,6 +373,39 @@ namespace AZ
 
             // only update the configuration
             m_configuration.m_runtimeMode = runtimeMode;
+        }
+
+        void DiffuseProbeGridComponentController::SetVisualizationEnabled(bool visualizationEnabled)
+        {
+            if (!m_featureProcessor)
+            {
+                return;
+            }
+
+            m_configuration.m_visualizationEnabled = visualizationEnabled;
+            m_featureProcessor->SetVisualizationEnabled(m_handle, m_configuration.m_visualizationEnabled);
+        }
+
+        void DiffuseProbeGridComponentController::SetVisualizationShowInactiveProbes(bool visualizationShowInactiveProbes)
+        {
+            if (!m_featureProcessor)
+            {
+                return;
+            }
+
+            m_configuration.m_visualizationShowInactiveProbes = visualizationShowInactiveProbes;
+            m_featureProcessor->SetVisualizationShowInactiveProbes(m_handle, m_configuration.m_visualizationShowInactiveProbes);
+        }
+
+        void DiffuseProbeGridComponentController::SetVisualizationSphereRadius(float visualizationSphereRadius)
+        {
+            if (!m_featureProcessor)
+            {
+                return;
+            }
+
+            m_configuration.m_visualizationSphereRadius = visualizationSphereRadius;
+            m_featureProcessor->SetVisualizationSphereRadius(m_handle, m_configuration.m_visualizationSphereRadius);
         }
 
         void DiffuseProbeGridComponentController::BakeTextures(DiffuseProbeGridBakeTexturesCallback callback)

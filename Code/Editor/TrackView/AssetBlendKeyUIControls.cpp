@@ -19,72 +19,9 @@
 #include <CryCommon/Maestro/Types/AssetBlendKey.h>
 
 // Editor
+#include "KeyUIControls.h"
 #include "TrackViewKeyPropertiesDlg.h"
 #include "Controls/ReflectedPropertyControl/ReflectedPropertyItem.h"
-
-
-//////////////////////////////////////////////////////////////////////////
-class CAssetBlendKeyUIControls
-    : public CTrackViewKeyUIControls
-{
-public:
-
-    AZ::EntityId m_entityId;
-    AZ::ComponentId m_componentId;
-
-    CSmartVariableArray mv_table;
-    CSmartVariable<QString> mv_asset;
-    CSmartVariable<bool> mv_loop;
-    CSmartVariable<float> mv_startTime;
-    CSmartVariable<float> mv_endTime;
-    CSmartVariable<float> mv_timeScale;
-    CSmartVariable<float> mv_blendInTime;
-    CSmartVariable<float> mv_blendOutTime;
-
-    void OnCreateVars() override
-    {
-        // Init to an invalid id
-        AZ::Data::AssetId assetId;
-        assetId.SetInvalid();
-        mv_asset->SetUserData(assetId.m_subId);
-        mv_asset->SetDisplayValue(assetId.m_guid.ToString<AZStd::string>().c_str());
-
-        AddVariable(mv_table, "Key Properties");
-        // In the future, we may have different types of AssetBlends supported. Right now
-        // "motion" for the Simple Motion Component is the only instance.
-        AddVariable(mv_table, mv_asset, "Motion", IVariable::DT_MOTION);
-        AddVariable(mv_table, mv_loop, "Loop");
-        AddVariable(mv_table, mv_startTime, "Start Time");
-        AddVariable(mv_table, mv_endTime, "End Time");
-        AddVariable(mv_table, mv_timeScale, "Time Scale");
-        AddVariable(mv_table, mv_blendInTime, "Blend In Time");
-        AddVariable(mv_table, mv_blendOutTime, "Blend Out Time");
-        mv_timeScale->SetLimits(0.001f, 100.f);
-    }
-
-    bool SupportTrackType([[maybe_unused]] const CAnimParamType& paramType, [[maybe_unused]] EAnimCurveType trackType, AnimValueType valueType) const override
-    {
-        return valueType == AnimValueType::AssetBlend;
-    }
-
-    bool OnKeySelectionChange(CTrackViewKeyBundle& selectedKeys) override;
-    void OnUIChange(IVariable* pVar, CTrackViewKeyBundle& selectedKeys) override;
-
-    unsigned int GetPriority() const override { return 1; }
-
-    static const GUID& GetClassID()
-    {
-        // {5DC82D28-6C50-4406-8993-06770C640F98}
-        static const GUID guid =
-        {
-            0x5DC82D28, 0x6C50, 0x4406, { 0x89, 0x93, 0x06, 0x77, 0x0C, 0x64, 0x0F, 0x98 }
-        };
-        return guid;
-    }
-
-protected:
-    void ResetStartEndLimits(float AssetBlendKeyDuration);
-};
 
 //////////////////////////////////////////////////////////////////////////
 void CAssetBlendKeyUIControls::ResetStartEndLimits(float assetBlendKeyDuration)
@@ -220,5 +157,3 @@ void CAssetBlendKeyUIControls::OnUIChange(IVariable* pVar, CTrackViewKeyBundle& 
         }
     }
 }
-
-REGISTER_QT_CLASS_DESC(CAssetBlendKeyUIControls, "TrackView.KeyUI.AssetBlends", "TrackViewKeyUI");

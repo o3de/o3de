@@ -35,6 +35,8 @@ namespace AZ
             float m_ambientMultiplier = DefaultDiffuseProbeGridAmbientMultiplier;
             float m_viewBias = DefaultDiffuseProbeGridViewBias;
             float m_normalBias = DefaultDiffuseProbeGridNormalBias;
+            DiffuseProbeGridNumRaysPerProbe m_numRaysPerProbe = DefaultDiffuseProbeGridNumRaysPerProbe;
+            bool m_scrolling = false;
 
             DiffuseProbeGridMode m_editorMode = DiffuseProbeGridMode::RealTime;
             DiffuseProbeGridMode m_runtimeMode = DiffuseProbeGridMode::RealTime;
@@ -46,6 +48,10 @@ namespace AZ
             Data::Asset<RPI::StreamingImageAsset> m_bakedIrradianceTextureAsset;
             Data::Asset<RPI::StreamingImageAsset> m_bakedDistanceTextureAsset;
             Data::Asset<RPI::StreamingImageAsset> m_bakedProbeDataTextureAsset;
+
+            bool m_visualizationEnabled = false;
+            bool m_visualizationShowInactiveProbes = false;
+            float m_visualizationSphereRadius = DefaultVisualizationSphereRadius;
 
             AZ::u64 m_entityId{ EntityId::InvalidEntityId };
         };
@@ -98,8 +104,13 @@ namespace AZ
             void SetAmbientMultiplier(float ambientMultiplier);
             void SetViewBias(float viewBias);
             void SetNormalBias(float normalBias);
+            void SetNumRaysPerProbe(const DiffuseProbeGridNumRaysPerProbe& numRaysPerProbe);
+            void SetScrolling(bool scrolling);
             void SetEditorMode(DiffuseProbeGridMode editorMode);
             void SetRuntimeMode(DiffuseProbeGridMode runtimeMode);
+            void SetVisualizationEnabled(bool visualizationEnabled);
+            void SetVisualizationShowInactiveProbes(bool visualizationShowInactiveProbes);
+            void SetVisualizationSphereRadius(float visualizationSphereRadius);
 
             // Bake the diffuse probe grid textures to assets
             void BakeTextures(DiffuseProbeGridBakeTexturesCallback callback);

@@ -9,11 +9,14 @@
 #pragma once
 
 #include <AzCore/Component/Component.h>
+#include <AzCore/std/parallel/shared_mutex.h>
 #include <GradientSignal/Ebuses/GradientRequestBus.h>
 #include <GradientSignal/Ebuses/SmoothStepRequestBus.h>
 #include <GradientSignal/Ebuses/SurfaceSlopeGradientRequestBus.h>
 #include <SurfaceData/SurfaceDataTypes.h>
+#include <SurfaceData/SurfacePointList.h>
 #include <GradientSignal/SmoothStep.h>
+#include <GradientSignal/Util.h>
 
 namespace LmbrCentral
 {
@@ -91,6 +94,7 @@ namespace GradientSignal
         //////////////////////////////////////////////////////////////////////////
         // GradientRequestBus
         float GetValue(const GradientSampleParams& sampleParams) const override;
+        void GetValues(AZStd::span<const AZ::Vector3> positions, AZStd::span<float> outValues) const override;
 
     protected:
         //////////////////////////////////////////////////////////////////////////
@@ -122,5 +126,6 @@ namespace GradientSignal
 
     private:
         SurfaceSlopeGradientConfig m_configuration;
+        mutable AZStd::shared_mutex m_queryMutex;
     };
 }

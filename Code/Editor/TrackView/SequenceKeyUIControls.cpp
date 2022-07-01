@@ -13,50 +13,8 @@
 #include <CryCommon/Maestro/Types/AnimParamType.h>
 
 // Editor
+#include "KeyUIControls.h"
 #include "TrackViewDialog.h"
-
-
-//////////////////////////////////////////////////////////////////////////
-class CSequenceKeyUIControls
-    : public CTrackViewKeyUIControls
-{
-public:
-    CSmartVariableArray mv_table;
-    CSmartVariableEnum<QString> mv_sequence;
-    CSmartVariable<bool> mv_overrideTimes;
-    CSmartVariable<float> mv_startTime;
-    CSmartVariable<float> mv_endTime;
-
-    void OnCreateVars() override
-    {
-        AddVariable(mv_table, "Key Properties");
-        AddVariable(mv_table, mv_sequence, "Sequence");
-        AddVariable(mv_table, mv_overrideTimes, "Override Start/End Times");
-        AddVariable(mv_table, mv_startTime, "Start Time");
-        AddVariable(mv_table, mv_endTime, "End Time");
-    }
-    bool SupportTrackType(const CAnimParamType& paramType, [[maybe_unused]] EAnimCurveType trackType, [[maybe_unused]] AnimValueType valueType) const override
-    {
-        return paramType == AnimParamType::Sequence;
-    }
-    bool OnKeySelectionChange(CTrackViewKeyBundle& selectedKeys) override;
-    void OnUIChange(IVariable* pVar, CTrackViewKeyBundle& selectedKeys) override;
-
-    unsigned int GetPriority() const override { return 1; }
-
-    static const GUID& GetClassID()
-    {
-        // {68030C46-1402-45d1-91B3-8EC6F29C0FED}
-        static const GUID guid =
-        {
-            0x68030c46, 0x1402, 0x45d1, { 0x91, 0xb3, 0x8e, 0xc6, 0xf2, 0x9c, 0xf, 0xed }
-        };
-        return guid;
-    }
-
-private:
-    bool m_skipOnUIChange = false;
-};
 
 //////////////////////////////////////////////////////////////////////////
 bool CSequenceKeyUIControls::OnKeySelectionChange(CTrackViewKeyBundle& selectedKeys)
@@ -215,5 +173,3 @@ void CSequenceKeyUIControls::OnUIChange(IVariable* pVar, CTrackViewKeyBundle& se
         }
     }
 }
-
-REGISTER_QT_CLASS_DESC(CSequenceKeyUIControls, "TrackView.KeyUI.Sequence", "TrackViewKeyUI");

@@ -65,7 +65,7 @@ def add_gem_dependency(cmake_file: pathlib.Path,
                 # Split the rest of the line on whitespace just in case there are multiple gems in a line
                 gem_name_list = map(lambda gem_name: gem_name.strip('"'), parsed_line.split())
                 if gem_name in gem_name_list:
-                    logger.warning(f'{gem_name} is already enabled in file {str(cmake_file)}.')
+                    logger.info(f'{gem_name} is already enabled in file {str(cmake_file)}.')
                     return 0
 
             t_data.append(line)
@@ -150,7 +150,10 @@ def remove_gem_dependency(cmake_file: pathlib.Path,
                 # If the in_gem_list was flipped to false, that means the currently parsed line contained the
                 # line end marker, so append that to the result_line
                 result_line += enable_gem_end_marker if not in_gem_list else ''
-                t_data.append(result_line + '\n')
+                # Strip of trailing whitespace. This also strips result lines which are empty of the indent
+                result_line = result_line.rstrip()
+                if result_line:
+                    t_data.append(result_line + '\n')
             else:
                 t_data.append(line)
 
@@ -163,11 +166,6 @@ def remove_gem_dependency(cmake_file: pathlib.Path,
         s.writelines(t_data)
 
     return 0
-
-
-def get_project_gems(project_path: pathlib.Path,
-                     platform: str = 'Common') -> set:
-    return get_gems_from_cmake_file(get_enabled_gem_cmake_file(project_path=project_path, platform=platform))
 
 
 def get_enabled_gems(cmake_file: pathlib.Path) -> set:
@@ -206,15 +204,6 @@ def get_enabled_gems(cmake_file: pathlib.Path) -> set:
     return gem_target_set
 
 
-def get_project_gem_paths(project_path:  pathlib.Path,
-                          platform: str = 'Common') -> set:
-    gem_names = get_project_gems(project_path, platform)
-    gem_paths = set()
-    for gem_name in gem_names:
-        gem_paths.add(manifest.get_registered(gem_name=gem_name, project_path=project_path))
-    return gem_paths
-
-
 def get_enabled_gem_cmake_file(project_name: str = None,
                                 project_path: str or pathlib.Path = None,
                                 platform: str = 'Common') -> pathlib.Path or None:
@@ -235,14 +224,22 @@ def get_enabled_gem_cmake_file(project_name: str = None,
     enable_gem_filename = "enabled_gems.cmake"
 
     if platform == 'Common':
-        project_code_dir = project_path / 'Gem/Code'
-        if project_code_dir.is_dir():
-            dependencies_file_path = project_code_dir / enable_gem_filename
-            return dependencies_file_path.resolve()
-        return (project_path / 'Code' / enable_gem_filename).resolve()
+        possible_project_enable_gem_filename_paths = [
+            pathlib.Path(project_path / 'Gem' / enable_gem_filename),
+            pathlib.Path(project_path / 'Gem/Code' / enable_gem_filename),
+            pathlib.Path(project_path / 'Code' / enable_gem_filename)
+        ]
+        for possible_project_enable_gem_filename_path in possible_project_enable_gem_filename_paths:
+            if possible_project_enable_gem_filename_path.is_file():
+                return possible_project_enable_gem_filename_path.resolve()
+        return possible_project_enable_gem_filename_paths[0].resolve()
     else:
-        project_code_dir = project_path / 'Gem/Code/Platform' / platform
-        if project_code_dir.is_dir():
-            dependencies_file_path = project_code_dir / enable_gem_filename
-            return dependencies_file_path.resolve()
-        return (project_path / 'Code/Platform' / platform / enable_gem_filename).resolve()
+        possible_project_platform_enable_gem_filename_paths = [
+            pathlib.Path(project_path / 'Gem/Platform' / platform / enable_gem_filename),
+            pathlib.Path(project_path / 'Gem/Code/Platform' / platform / enable_gem_filename),
+            pathlib.Path(project_path / 'Code/Platform' / platform / enable_gem_filename)
+        ]
+        for possible_project_platform_enable_gem_filename_path in possible_project_platform_enable_gem_filename_paths:
+            if possible_project_platform_enable_gem_filename_path.is_file():
+                return possible_project_platform_enable_gem_filename_path.resolve()
+        return possible_project_platform_enable_gem_filename_paths[0].resolve()

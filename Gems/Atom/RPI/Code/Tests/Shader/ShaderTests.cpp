@@ -538,7 +538,11 @@ namespace UnitTest
 
             auto shaderAsset = shader->GetAsset();
             EXPECT_EQ(shader->GetPipelineStateType(), shaderAsset->GetPipelineStateType());
-            EXPECT_EQ(shader->GetShaderResourceGroupLayouts(), shaderAsset->GetShaderResourceGroupLayouts());
+            using ShaderResourceGroupLayoutSpan = AZStd::span<const AZ::RHI::Ptr<AZ::RHI::ShaderResourceGroupLayout>>;
+            ShaderResourceGroupLayoutSpan shaderResourceGroupLayoutSpan = shader->GetShaderResourceGroupLayouts();
+            ShaderResourceGroupLayoutSpan shaderAssetResourceGroupLayoutSpan = shader->GetShaderResourceGroupLayouts();
+            EXPECT_EQ(shaderResourceGroupLayoutSpan.data(), shaderAssetResourceGroupLayoutSpan.data());
+            EXPECT_EQ(shaderResourceGroupLayoutSpan.size(), shaderAssetResourceGroupLayoutSpan.size());
             
             const RPI::ShaderVariant& rootShaderVariant = shader->GetVariant( RPI::ShaderVariantStableId{0} );
             
@@ -789,16 +793,6 @@ namespace UnitTest
         EXPECT_FALSE(success);
         errorMessageFinder.CheckExpectedErrorsFound();
 
-        // Add shader option with an empty default value.
-        errorMessageFinder.Reset();
-        errorMessageFinder.AddExpectedErrorMessage("invalid default value");
-        AZStd::vector<RPI::ShaderOptionValuePair> list5;
-        list5.push_back({ Name("0"),    RPI::ShaderOptionValue(0) }); // 1+ bit
-        list5.push_back({ Name("1"),    RPI::ShaderOptionValue(1) }); // ...
-        success = shaderOptionGroupLayout->AddShaderOption(AZ::RPI::ShaderOptionDescriptor{ Name{"Invalid"}, intRangeType, 16, order++, list5, Name() });
-        EXPECT_FALSE(success);
-        errorMessageFinder.CheckExpectedErrorsFound();
-
         // Add shader option with an invalid default int value.
         errorMessageFinder.Reset();
         errorMessageFinder.AddExpectedErrorMessage("invalid default value");
@@ -881,6 +875,18 @@ namespace UnitTest
         EXPECT_FALSE(shaderOptionGroupLayout->FindValue(Name{ "Blah" }, Name{ "Navy" }).IsValid());
 
         EXPECT_FALSE(shaderOptionGroupLayout->FindShaderOptionIndex(Name{ "Invalid" }).IsValid());
+    }
+    
+    TEST_F(ShaderTests, ImplicitDefaultValue)
+    {
+        // Add shader option with no default value.
+
+        RPI::Ptr<RPI::ShaderOptionGroupLayout> shaderOptionGroupLayout = RPI::ShaderOptionGroupLayout::Create();
+
+        AZStd::vector<RPI::ShaderOptionValuePair> values = AZ::RPI::CreateEnumShaderOptionValues({"A", "B", "C"});
+        bool success = shaderOptionGroupLayout->AddShaderOption(AZ::RPI::ShaderOptionDescriptor{ Name{"NoDefaultSpecified"}, RPI::ShaderOptionType::Enumeration, 0, 0, values });
+        EXPECT_TRUE(success);
+        EXPECT_STREQ("A", shaderOptionGroupLayout->GetShaderOptions().back().GetDefaultValue().GetCStr());
     }
 
     TEST_F(ShaderTests, ShaderOptionGroupTest)
@@ -1662,20 +1668,21 @@ namespace UnitTest
         EXPECT_FALSE(result7.IsFullyBaked());
         EXPECT_EQ(result7.GetStableId().GetIndex(), stableId7);
 
-        // All searches so far found exactly the node we were looking for
-        // The next couple of searches will not find the requested node
-        //  and will instead default to its parent, up the tree to the root
-        //
-        // []                       [Root]
-        //                          /    \
-        // [Color]              [Teal]  [Fuchsia]
-        //                        /        \
-        // [Quality]          [Sublime]   [Auto]
-        //                                  /
-        // [NumberSamples]                [50]
-        //                                /  \
-        // [Raytracing]                [On]  [Off]
-
+        /*
+           All searches so far found exactly the node we were looking for
+           The next couple of searches will not find the requested node
+            and will instead default to its parent, up the tree to the root
+          
+           []                       [Root]
+                                    /    \
+           [Color]              [Teal]  [Fuchsia]
+                                  /        \
+           [Quality]          [Sublime]   [Auto]
+                                            /
+           [NumberSamples]                [50]
+                                          /  \
+           [Raytracing]                [On]  [Off]
+        */
 
         // ----------------------------------------
         // [Quality::Poor]

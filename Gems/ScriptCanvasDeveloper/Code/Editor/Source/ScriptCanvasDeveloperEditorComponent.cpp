@@ -17,7 +17,6 @@
 #include <ScriptCanvasDeveloperEditor/NodeListDumpAction.h>
 #include <ScriptCanvasDeveloperEditor/TSGenerateAction.h>
 #include <ScriptCanvasDeveloperEditor/AutomationActions/DynamicSlotFullCreation.h>
-#include <ScriptCanvasDeveloperEditor/AutomationActions/FullyConnectedNodePaletteCreation.h>
 #include <ScriptCanvasDeveloperEditor/AutomationActions/NodePaletteFullCreation.h>
 #include <ScriptCanvasDeveloperEditor/AutomationActions/VariableListFullCreation.h>
 #include <ScriptCanvasDeveloperEditor/Developer.h>
@@ -33,8 +32,6 @@ namespace ScriptCanvasDeveloperEditor
     ////////////////////
     void SystemComponent::Reflect(AZ::ReflectContext* context)
     {
-        ScriptCanvasDeveloper::Libraries::Developer::Reflect(context);
-
         if (auto serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serialize->Class<SystemComponent, AZ::Component>()
@@ -55,12 +52,7 @@ namespace ScriptCanvasDeveloperEditor
 
     void SystemComponent::Init()
     {
-        AZ::EnvironmentVariable<ScriptCanvas::NodeRegistry> nodeRegistryVariable = AZ::Environment::FindVariable<ScriptCanvas::NodeRegistry>(ScriptCanvas::s_nodeRegistryName);
-        if (nodeRegistryVariable)
-        {
-            ScriptCanvas::NodeRegistry& nodeRegistry = nodeRegistryVariable.Get();
-            ScriptCanvasDeveloper::Libraries::Developer::InitNodeRegistry(nodeRegistry);
-        }
+        ScriptCanvas::Developer::InitNodeRegistry();
     }
 
     void SystemComponent::Activate()
@@ -108,7 +100,7 @@ namespace ScriptCanvasDeveloperEditor
 
         QObject::connect(action, &QAction::triggered, [mainWindow]()
         {
-            ScriptCanvasDeveloper::EditorAutomationTestDialogRequests* requests = ScriptCanvasDeveloper::EditorAutomationTestDialogRequestBus::FindFirstHandler(ScriptCanvasEditor::AssetEditorId);
+            ScriptCanvas::Developer::EditorAutomationTestDialogRequests* requests = ScriptCanvas::Developer::EditorAutomationTestDialogRequestBus::FindFirstHandler(ScriptCanvasEditor::AssetEditorId);
 
             if (requests)
             {
@@ -116,7 +108,7 @@ namespace ScriptCanvasDeveloperEditor
             }
             else
             {
-                ScriptCanvasDeveloper::EditorAutomationTestDialog* testDialog = new ScriptCanvasDeveloper::EditorAutomationTestDialog(mainWindow);
+                ScriptCanvas::Developer::EditorAutomationTestDialog* testDialog = new ScriptCanvas::Developer::EditorAutomationTestDialog(mainWindow);
                 testDialog->ShowTestDialog();
             }
         });

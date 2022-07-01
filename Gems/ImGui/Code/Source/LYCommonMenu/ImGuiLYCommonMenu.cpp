@@ -11,8 +11,10 @@
 #ifdef IMGUI_ENABLED
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/std/sort.h>
+#include <AzCore/StringFunc/StringFunc.h>
 #include <AzFramework/Input/Buses/Requests/InputSystemCursorRequestBus.h>
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
+#include <AzFramework/Spawnable/Spawnable.h>
 #include <AzFramework/Viewport/ViewportBus.h>
 #include <ILevelSystem.h>
 #include "ImGuiColorDefines.h"
@@ -267,7 +269,7 @@ namespace ImGui
 
                     bool usePrefabSystemForLevels = false;
                     AzFramework::ApplicationRequests::Bus::BroadcastResult(
-                        usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemForLevelsEnabled);
+                        usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
 
                     if (usePrefabSystemForLevels)
                     {
@@ -275,12 +277,28 @@ namespace ImGui
 
                         AZ::Data::AssetType levelAssetType = lvlSystem->GetLevelAssetType();
                         AZStd::vector<AZStd::string> levelNames;
+                        AZStd::set<AZStd::string> networkedLevelNames;
                         auto enumerateCB =
-                            [levelAssetType, &levelNames]([[maybe_unused]] const AZ::Data::AssetId id, const AZ::Data::AssetInfo& assetInfo)
+                            [levelAssetType, &levelNames, &networkedLevelNames]([[maybe_unused]] const AZ::Data::AssetId id, const AZ::Data::AssetInfo& assetInfo)
                         {
                             if (assetInfo.m_assetType == levelAssetType)
                             {
-                                levelNames.emplace_back(assetInfo.m_relativePath);
+                                // A network spawnable is serialized to file as a ".network.spawnable". (See Multiplayer Gem's MultiplayerConstants.h)
+                                // Filter out network spawnables from the level list, 
+                                // but keep track of which levels require networking so they can be recognized in the level selection menu. 
+                                constexpr AZStd::fixed_string<32> networkSpawnablePrefix(".network");
+                                constexpr AZStd::fixed_string<32> networkSpawnableFileExtension = networkSpawnablePrefix + AzFramework::Spawnable::DotFileExtension;
+
+                                if (assetInfo.m_relativePath.ends_with(networkSpawnableFileExtension))
+                                {   
+                                    AZStd::string spawnablePath(assetInfo.m_relativePath); 
+                                    AZ::StringFunc::Replace(spawnablePath, networkSpawnablePrefix.c_str(), "");
+                                    networkedLevelNames.emplace(spawnablePath);
+                                }
+                                else
+                                {
+                                    levelNames.emplace_back(assetInfo.m_relativePath);
+                                }
                             }
                         };
 
@@ -294,7 +312,8 @@ namespace ImGui
                         ImGui::TextColored(ImGui::Colors::s_PlainLabelColor, "Load Level: ");
                         for (int i = 0; i < levelNames.size(); i++)
                         {
-                            if (ImGui::MenuItem(AZStd::string::format("%d- %s", i, levelNames[i].c_str()).c_str()))
+                            bool isNetworked = networkedLevelNames.contains(levelNames[i]);
+                            if (ImGui::MenuItem(AZStd::string::format("%d- %s%s", i, levelNames[i].c_str(), isNetworked ? " (Multiplayer)":"").c_str()))
                             {
                                 AZ::TickBus::QueueFunction(
                                     [lvlSystem, levelNames, i]()

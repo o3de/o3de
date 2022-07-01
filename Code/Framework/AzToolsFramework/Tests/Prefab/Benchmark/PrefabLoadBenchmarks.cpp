@@ -19,7 +19,7 @@ namespace Benchmark
         const unsigned int numTemplates = static_cast<unsigned int>(state.range());
         CreateFakePaths(numTemplates);
 
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             state.PauseTiming();
 

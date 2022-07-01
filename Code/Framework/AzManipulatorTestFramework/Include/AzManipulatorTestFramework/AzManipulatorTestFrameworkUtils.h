@@ -40,5 +40,5 @@ namespace AzManipulatorTestFramework
     AzFramework::ScreenPoint GetCameraStateViewportCenter(const AzFramework::CameraState& cameraState);
 
     //! Default viewport size (1080p) in 16:9 aspect ratio.
-    inline const auto DefaultViewportSize = AZ::Vector2(1920.0f, 1080.0f);
+    inline const auto DefaultViewportSize = AzFramework::ScreenSize(1920, 1080);
 } // namespace AzManipulatorTestFramework

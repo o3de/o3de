@@ -64,12 +64,12 @@ namespace AzNetworking
         return true;
     }
 
-    bool TcpSocket::Connect(const IpAddress& address)
+    bool TcpSocket::Connect(const IpAddress& address, uint16_t localPort)
     {
         Close();
 
         if (!SocketCreateInternal()
-         || !BindSocketForConnectInternal(address)
+         || !BindSocketForConnectInternal(address, localPort)
          || !(SetSocketNonBlocking(m_socketFd) && SetSocketNoDelay(m_socketFd)))
         {
             Close();
@@ -135,7 +135,7 @@ namespace AzNetworking
             {
                 return 0;
             }
-            AZLOG_ERROR("Failed to read from socket (%d:%s)", error, GetNetworkErrorDesc(error));
+            AZLOG_WARN("Failed to read from socket (%d:%s)", error, GetNetworkErrorDesc(error));
         }
         else if (receivedBytes == 0)
         {
@@ -149,44 +149,61 @@ namespace AzNetworking
     bool TcpSocket::BindSocketForListenInternal(uint16_t port)
     {
         // Handle binding
+        sockaddr_in hints;
+        hints.sin_family = AF_INET;
+        hints.sin_addr.s_addr = INADDR_ANY;
+        hints.sin_port = htons(port);
+
+        if (::bind(aznumeric_cast<int32_t>(m_socketFd), (const sockaddr*)&hints, sizeof(hints)) != 0)
         {
-            sockaddr_in hints;
-            hints.sin_family = AF_INET;
-            hints.sin_addr.s_addr = INADDR_ANY;
-            hints.sin_port = htons(port);
+            const int32_t error = GetLastNetworkError();
+            AZLOG_WARN("Failed to bind TCP socket to port %u (%d:%s)", uint32_t(port), error, GetNetworkErrorDesc(error));
+            return false;
+        }
 
-            if (::bind(aznumeric_cast<int32_t>(m_socketFd), (const sockaddr*)&hints, sizeof(hints)) != 0)
-            {
-                const int32_t error = GetLastNetworkError();
-                AZLOG_ERROR("Failed to bind TCP socket to port %u (%d:%s)", uint32_t(port), error, GetNetworkErrorDesc(error));
-                return false;
-            }
-
-            if (::listen(aznumeric_cast<int32_t>(m_socketFd), SOMAXCONN) != 0)
-            {
-                const int32_t error = GetLastNetworkError();
-                AZLOG_ERROR("Failed to listen on socket (%d:%s)", error, GetNetworkErrorDesc(error));
-                return false;
-            }
+        if (::listen(aznumeric_cast<int32_t>(m_socketFd), SOMAXCONN) != 0)
+        {
+            const int32_t error = GetLastNetworkError();
+            AZLOG_WARN("Failed to listen on socket (%d:%s)", error, GetNetworkErrorDesc(error));
+            return false;
         }
 
         return true;
     }
 
-    bool TcpSocket::BindSocketForConnectInternal(const IpAddress& address)
+    bool TcpSocket::BindSocketForConnectInternal(const IpAddress& address, uint16_t localPort)
     {
-        struct sockaddr_in dest;
-        memset(&dest, 0, sizeof(dest));
-
-        dest.sin_family = AF_INET;
-        dest.sin_addr.s_addr = address.GetAddress(ByteOrder::Network);
-        dest.sin_port = address.GetPort(ByteOrder::Network);
-
-        if (::connect(static_cast<int32_t>(m_socketFd), (struct sockaddr*)&dest, sizeof(dest)) != 0)
+        // If a specific local port was specified, attempt to use that port
+        if (localPort != 0)
         {
-            const int32_t error = GetLastNetworkError();
-            AZLOG_ERROR("Failed to connect to remote endpoint (%s) (%d:%s)", address.GetString().c_str(), error, GetNetworkErrorDesc(error));
-            return false;
+            sockaddr_in hints;
+            memset(&hints, 0, sizeof(hints));
+            hints.sin_family = AF_INET;
+            hints.sin_port = htons(localPort);
+
+            if (::bind(aznumeric_cast<int32_t>(m_socketFd), (const sockaddr*)&hints, sizeof(hints)) != 0)
+            {
+                const int32_t error = GetLastNetworkError();
+                AZLOG_WARN("Failed to bind TCP socket to port %u (%d:%s)", uint32_t(localPort), error, GetNetworkErrorDesc(error));
+                return false;
+            }
+        }
+
+        // Initiate connection to the requested remote endpoint
+        {
+            struct sockaddr_in dest;
+            memset(&dest, 0, sizeof(dest));
+
+            dest.sin_family = AF_INET;
+            dest.sin_addr.s_addr = address.GetAddress(ByteOrder::Network);
+            dest.sin_port = address.GetPort(ByteOrder::Network);
+
+            if (::connect(aznumeric_cast<int32_t>(m_socketFd), (struct sockaddr*)&dest, sizeof(dest)) != 0)
+            {
+                const int32_t error = GetLastNetworkError();
+                AZLOG(NET_TcpTraffic, "Failed to connect to remote endpoint (%s) (%d:%s)", address.GetString().c_str(), error, GetNetworkErrorDesc(error));
+                return false;
+            }
         }
 
         return true;
@@ -208,7 +225,7 @@ namespace AzNetworking
             if (!IsOpen())
             {
                 const int32_t error = GetLastNetworkError();
-                AZLOG_ERROR("Failed to create socket (%d:%s)", error, GetNetworkErrorDesc(error));
+                AZLOG_WARN("Failed to create socket (%d:%s)", error, GetNetworkErrorDesc(error));
                 m_socketFd = InvalidSocketFd;
                 return false;
             }

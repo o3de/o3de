@@ -11,11 +11,13 @@
 #include <AzCore/base.h>
 #include <AzCore/Math/Aabb.h>
 #include <AzCore/std/containers/array.h>
+#include <AzCore/std/function/function_template.h>
 
 #include <AzFramework/Terrain/TerrainDataRequestBus.h>
 
 #include <TerrainRenderer/Aabb2i.h>
 #include <TerrainRenderer/BindlessImageArrayHandler.h>
+#include <TerrainRenderer/ClipmapBounds.h>
 #include <TerrainRenderer/TerrainAreaMaterialRequestBus.h>
 #include <TerrainRenderer/Vector2i.h>
 
@@ -28,6 +30,20 @@
 
 namespace Terrain
 {
+    struct DetailMaterialConfiguration
+    {
+        AZ_CLASS_ALLOCATOR(DetailMaterialConfiguration, AZ::SystemAllocator, 0);
+        AZ_RTTI(DetailMaterialConfiguration, "{D2A2EFBB-B0C2-4363-9B32-15B9ACD52902}");
+
+        DetailMaterialConfiguration() = default;
+        virtual ~DetailMaterialConfiguration() = default;
+
+        bool m_useHeightBasedBlending = false;
+        float m_renderDistance = 512.0f;
+        float m_fadeDistance = 64.0f;
+        float m_scale = 1.0f;
+    };
+
     class TerrainDetailMaterialManager
         : private AzFramework::Terrain::TerrainDataNotificationBus::Handler
         , private TerrainAreaMaterialNotificationBus::Handler
@@ -42,12 +58,15 @@ namespace Terrain
         
         void Initialize(
             const AZStd::shared_ptr<AZ::Render::BindlessImageArrayHandler>& bindlessImageHandler,
-            AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>& terrainSrg);
+            const AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>& terrainSrg,
+            const AZ::Data::Instance<AZ::RPI::Material>& materialInstance);
         bool IsInitialized() const;
         void Reset();
-        bool UpdateSrgIndices(AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>& srg);
+        bool UpdateSrgIndices(const AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>& srg);
 
         void Update(const AZ::Vector3& cameraPosition, AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>& terrainSrg);
+
+        void SetDetailMaterialConfiguration(const DetailMaterialConfiguration& params);
 
     private:
         
@@ -56,6 +75,7 @@ namespace Terrain
 
         enum DetailTextureFlags : uint32_t
         {
+            None                =  0b0000'0000'0000'0000'0000'0000'0000'0000,
             UseTextureBaseColor =  0b0000'0000'0000'0000'0000'0000'0000'0001,
             UseTextureNormal =     0b0000'0000'0000'0000'0000'0000'0000'0010,
             UseTextureMetallic =   0b0000'0000'0000'0000'0000'0000'0000'0100,
@@ -67,16 +87,16 @@ namespace Terrain
             FlipNormalX =          0b0000'0000'0000'0001'0000'0000'0000'0000,
             FlipNormalY =          0b0000'0000'0000'0010'0000'0000'0000'0000,
 
-            BlendModeMask =        0b0000'0000'0000'1100'0000'0000'0000'0000,
-            BlendModeLerp =        0b0000'0000'0000'0000'0000'0000'0000'0000,
-            BlendModeLinearLight = 0b0000'0000'0000'0100'0000'0000'0000'0000,
-            BlendModeMultiply =    0b0000'0000'0000'1000'0000'0000'0000'0000,
-            BlendModeOverlay =     0b0000'0000'0000'1100'0000'0000'0000'0000,
+            BlendModeMask =        0b0000'0000'0001'1100'0000'0000'0000'0000,
+            BlendModeLerp =        0b0000'0000'0000'0100'0000'0000'0000'0000,
+            BlendModeLinearLight = 0b0000'0000'0000'1000'0000'0000'0000'0000,
+            BlendModeMultiply =    0b0000'0000'0000'1100'0000'0000'0000'0000,
+            BlendModeOverlay =     0b0000'0000'0001'0000'0000'0000'0000'0000,
         };
         
         struct DetailMaterialShaderData
         {
-            // Uv
+            // Uv (data is 3x3, padding each row for explicit alignment)
             AZStd::array<float, 12> m_uvTransform
             {
                 1.0, 0.0, 0.0, 0.0,
@@ -92,16 +112,17 @@ namespace Terrain
             float m_baseColorFactor{ 1.0f };
 
             float m_normalFactor{ 1.0f };
-            float m_metalFactor{ 1.0f };
+            float m_metalFactor{ 0.0f };
             float m_roughnessScale{ 1.0f };
             float m_roughnessBias{ 0.0f };
 
-            float m_specularF0Factor{ 1.0f };
+            float m_specularF0Factor{ 0.5f };
             float m_occlusionFactor{ 1.0f };
             float m_heightFactor{ 1.0f };
             float m_heightOffset{ 0.0f };
 
             float m_heightBlendFactor{ 0.5f };
+            float m_heightWeightClampFactor{ 0.1f };
 
             // Flags
             DetailTextureFlags m_flags{ 0 };
@@ -117,9 +138,8 @@ namespace Terrain
             uint16_t m_heightImageIndex{ InvalidImageIndex };
 
             // 16 byte aligned
-            uint16_t m_padding1;
-            uint32_t m_padding2;
-            uint32_t m_padding3;
+            uint16_t m_padding1{ 0 };
+            uint32_t m_padding2{ 0 };
         };
         static_assert(sizeof(DetailMaterialShaderData) % 16 == 0, "DetailMaterialShaderData must be 16 byte aligned.");
 
@@ -127,7 +147,7 @@ namespace Terrain
         {
             AZ::Data::AssetId m_assetId;
             AZ::RPI::Material::ChangeId m_materialChangeId{AZ::RPI::Material::DEFAULT_CHANGE_ID};
-            uint32_t refCount = 0;
+            uint32_t m_refCount = 0;
             uint16_t m_detailMaterialBufferIndex{ 0xFFFF };
 
             AZ::Data::Instance<AZ::RPI::Image> m_colorImage;
@@ -150,20 +170,35 @@ namespace Terrain
             AZ::EntityId m_entityId;
             AZ::Aabb m_region{AZ::Aabb::CreateNull()};
             AZStd::vector<DetailMaterialSurface> m_materialsForSurfaces;
+            uint16_t m_defaultDetailMaterialId{ 0xFFFF };
+
+            bool HasMaterials()
+            {
+                return m_defaultDetailMaterialId != InvalidDetailMaterialId || !m_materialsForSurfaces.empty();
+            }
         };
         
+        using DetailMaterialContainer = AZ::Render::IndexedDataVector<DetailMaterialData>;
+        static constexpr auto InvalidDetailMaterialId = DetailMaterialContainer::NoFreeSlot;
+        
         // System-level parameters
-        static constexpr int32_t DetailTextureSize{ 1024 };
-        static constexpr int32_t DetailTextureSizeHalf{ DetailTextureSize / 2 };
-        static constexpr float DetailTextureScale{ 0.5f };
+        int32_t m_detailTextureSize{ 1024 };
+        float m_detailTextureScale{ 0.5f };
         
         // AzFramework::Terrain::TerrainDataNotificationBus overrides...
         void OnTerrainDataChanged(const AZ::Aabb& dirtyRegion, TerrainDataChangedMask dataChangedMask) override;
         
         // TerrainAreaMaterialNotificationBus overrides...
+        void OnTerrainDefaultSurfaceMaterialCreated(AZ::EntityId entityId, AZ::Data::Instance<AZ::RPI::Material> material) override;
+        void OnTerrainDefaultSurfaceMaterialDestroyed(AZ::EntityId entityId) override;
+        void OnTerrainDefaultSurfaceMaterialChanged(AZ::EntityId entityId, AZ::Data::Instance<AZ::RPI::Material> newMaterial) override;
         void OnTerrainSurfaceMaterialMappingCreated(AZ::EntityId entityId, SurfaceData::SurfaceTag surfaceTag, MaterialInstance material) override;
         void OnTerrainSurfaceMaterialMappingDestroyed(AZ::EntityId entityId, SurfaceData::SurfaceTag surfaceTag) override;
-        void OnTerrainSurfaceMaterialMappingChanged(AZ::EntityId entityId, SurfaceData::SurfaceTag surfaceTag, MaterialInstance material) override;
+        void OnTerrainSurfaceMaterialMappingMaterialChanged(AZ::EntityId entityId, SurfaceData::SurfaceTag surfaceTag, MaterialInstance material) override;
+        void OnTerrainSurfaceMaterialMappingTagChanged(
+            AZ::EntityId entityId, SurfaceData::SurfaceTag oldSurfaceTag, SurfaceData::SurfaceTag newSurfaceTag) override;
+        void OnTerrainSurfaceMaterialMappingRegionCreated(AZ::EntityId entityId, const AZ::Aabb& region) override;
+        void OnTerrainSurfaceMaterialMappingRegionDestroyed(AZ::EntityId entityId, const AZ::Aabb& oldRegion) override;
         void OnTerrainSurfaceMaterialMappingRegionChanged(AZ::EntityId entityId, const AZ::Aabb& oldRegion, const AZ::Aabb& newRegion) override;
 
         //! Removes all images from all detail materials from the bindless image array
@@ -178,49 +213,58 @@ namespace Terrain
         //! Updates a specific detail material with settings from a material instance
         void UpdateDetailMaterialData(uint16_t detailMaterialIndex, MaterialInstance material);
 
-        //! Checks to see if the detail material id texture needs to update based on new center and bounds. Any
+        //! Checks to see if the detail material id texture needs to update based on the camera position. Any
         //! required updates are then executed.
-        void CheckUpdateDetailTexture(const Aabb2i& newBounds, const Vector2i& newCenter);
+        void CheckUpdateDetailTexture(const AZ::Vector3& cameraPosition);
 
         //! Updates the detail texture in a given area
-        void UpdateDetailTexture(const Aabb2i& updateArea, const Aabb2i& textureBounds, const Vector2i& centerPixel);
+        void UpdateDetailTexture(const AZ::Aabb& worldUpdateAabb, const Aabb2i& textureUpdateAabb);
 
-        //! Finds the detail material Id for a surface type and position
-        uint16_t GetDetailMaterialForSurfaceTypeAndPosition(AZ::Crc32 surfaceType, const AZ::Vector2& position);
+        //! Finds the detail material Id for a region and surface type
+        uint16_t GetDetailMaterialForSurfaceType(const DetailMaterialListRegion& materialRegion, AZ::Crc32 surfaceType) const;
 
-        //! Calculates which regions of the detail material id texture need to be updated based on the update area. Since
-        //! the "center" of the detail material id texture can move, a single update region in contiguous world space may
-        //! map to up to 4 different areas on teh detail material id texture.
-        uint8_t CalculateUpdateRegions(const Aabb2i& updateArea, const Aabb2i& textureBounds, const Vector2i& centerPixel,
-            AZStd::array<Aabb2i, 4>& textureSpaceAreas, AZStd::array<Aabb2i, 4>& scaledWorldSpaceAreas);
+        //! Finds a region for a position. Returns nullptr if none found.
+        const DetailMaterialListRegion* FindRegionForPosition(const AZ::Vector2& position) const;
+    
+        //! Initializes shader data for the default passthrough material which is used when no other detail material is found.
+        void InitializePassthroughDetailMaterial();
 
+        //! Updates data regarding the material ID texture and resets it so it will get rebuilt.
+        void InitializeTextureParams();
+
+        //! Updates paramters related to detail materials on the terrain material itself.
+        void UpdateTerrainMaterial();
+
+        using DefaultMaterialSurfaceCallback = AZStd::function<void(DetailMaterialSurface&)>;
+        bool ForSurfaceTag(DetailMaterialListRegion& materialRegion,
+            SurfaceData::SurfaceTag surfaceTag, DefaultMaterialSurfaceCallback callback);
         DetailMaterialListRegion* FindByEntityId(AZ::EntityId entityId, AZ::Render::IndexedDataVector<DetailMaterialListRegion>& container);
         DetailMaterialListRegion& FindOrCreateByEntityId(AZ::EntityId entityId, AZ::Render::IndexedDataVector<DetailMaterialListRegion>& container);
         void RemoveByEntityId(AZ::EntityId entityId, AZ::Render::IndexedDataVector<DetailMaterialListRegion>& container);
-        
+
+        DetailMaterialConfiguration m_config;
+
         AZStd::shared_ptr<AZ::Render::BindlessImageArrayHandler> m_bindlessImageHandler;
         
         AZ::Data::Instance<AZ::RPI::AttachmentImage> m_detailTextureImage;
+        AZ::Data::Instance<AZ::RPI::Material> m_terrainMaterial;
 
-        AZ::Render::IndexedDataVector<DetailMaterialData> m_detailMaterials;
+        DetailMaterialContainer m_detailMaterials;
         AZ::Render::IndexedDataVector<DetailMaterialListRegion> m_detailMaterialRegions;
         AZ::Render::SparseVector<DetailMaterialShaderData> m_detailMaterialShaderData;
         AZ::Render::GpuBufferHandler m_detailMaterialDataBuffer;
-        
+        uint8_t m_passthroughMaterialId = 0;
+
         AZ::Aabb m_dirtyDetailRegion{ AZ::Aabb::CreateNull() };
-        AZ::Vector3 m_previousCameraPosition = AZ::Vector3(AZStd::numeric_limits<float>::max(), 0.0, 0.0);
-        Aabb2i m_detailTextureBounds;
-        Vector2i m_detailTextureCenter;
+        ClipmapBounds m_detailMaterialIdBounds;
 
         AZ::RHI::ShaderInputImageIndex m_detailMaterialIdPropertyIndex;
         AZ::RHI::ShaderInputBufferIndex m_detailMaterialDataIndex;
-        AZ::RHI::ShaderInputConstantIndex m_detailCenterPropertyIndex;
-        AZ::RHI::ShaderInputConstantIndex m_detailAabbPropertyIndex;
-        AZ::RHI::ShaderInputConstantIndex m_detailHalfPixelUvPropertyIndex;
+        AZ::RHI::ShaderInputConstantIndex m_detailScalePropertyIndex;
 
         bool m_isInitialized{ false };
         bool m_detailMaterialBufferNeedsUpdate{ false };
         bool m_detailImageNeedsUpdate{ false };
-
+        
     };
 }

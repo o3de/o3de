@@ -160,12 +160,12 @@ namespace AzNetworking
         return SerializeHelper(buffer, bufferCapacity, isString, outSize, name);
     }
 
-    bool DeltaSerializerCreate::BeginObject([[maybe_unused]] const char* name, [[maybe_unused]] const char* typeName)
+    bool DeltaSerializerCreate::BeginObject([[maybe_unused]] const char* name)
     {
         return true;
     }
 
-    bool DeltaSerializerCreate::EndObject([[maybe_unused]] const char* name, [[maybe_unused]] const char* typeName)
+    bool DeltaSerializerCreate::EndObject([[maybe_unused]] const char* name)
     {
         return true;
     }
@@ -257,6 +257,11 @@ namespace AzNetworking
         ;
     }
 
+    DeltaSerializerApply::~DeltaSerializerApply()
+    {
+        ;
+    }
+
     SerializerMode DeltaSerializerApply::GetSerializerMode() const
     {
         return SerializerMode::WriteToObject;
@@ -339,12 +344,12 @@ namespace AzNetworking
         return SerializeHelper(buffer, bufferCapacity, isString, outSize, name);
     }
 
-    bool DeltaSerializerApply::BeginObject([[maybe_unused]] const char *name, [[maybe_unused]] const char* typeName)
+    bool DeltaSerializerApply::BeginObject([[maybe_unused]] const char *name)
     {
         return true;
     }
 
-    bool DeltaSerializerApply::EndObject([[maybe_unused]] const char *name, [[maybe_unused]] const char* typeName)
+    bool DeltaSerializerApply::EndObject([[maybe_unused]] const char *name)
     {
         return true;
     }

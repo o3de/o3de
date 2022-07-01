@@ -1,0 +1,256 @@
+{
+  "version": 4,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 23,
+    "patch": 0
+  },
+  "include": [
+    "../Common/CMakePresets.json"
+  ],
+  "configurePresets": [
+    {
+      "name": "android-default",
+      "displayName": "Android",
+      "description": "Android default configuration",
+      "toolchainFile": "${sourceDir}/cmake/Platform/Android/Toolchain_android.cmake",
+      "inherits": [
+        "android-ninja",
+        "android-unity",
+        "android-non-monolithic"
+      ],
+      "condition": {
+        "type": "inList",
+        "string": "${hostSystemName}",
+        "list": [
+          "Darwin",
+          "Linux",
+          "Windows"
+        ]
+      }
+    },
+    {
+      "name": "android-mono-default",
+      "displayName": "Android Monolithic with Unity and Ninja",
+      "description": "Configures Android to build the Monolithic permutation using Ninja with Unity builds",
+      "toolchainFile": "${sourceDir}/cmake/Platform/Android/Toolchain_android.cmake",
+      "inherits": [
+        "android-ninja",
+        "android-unity",
+        "android-monolithic"
+      ],
+      "condition": {
+        "type": "inList",
+        "string": "${hostSystemName}",
+        "list": [
+          "Darwin",
+          "Linux",
+          "Windows"
+        ]
+      }
+    },
+    {
+      "name": "android-unity",
+      "displayName": "Android Unity",
+      "description": "Android build which uses unity files",
+      "toolchainFile": "${sourceDir}/cmake/Platform/Android/Toolchain_android.cmake",
+      "binaryDir": "${sourceDir}/build/android",
+      "inherits": [
+        "unity"
+      ],
+      "condition": {
+        "type": "inList",
+        "string": "${hostSystemName}",
+        "list": [
+          "Darwin",
+          "Linux",
+          "Windows"
+        ]
+      }
+    },
+    {
+      "name": "android-no-unity",
+      "displayName": "Android without Unity",
+      "description": "Android build which uses unity files",
+      "toolchainFile": "${sourceDir}/cmake/Platform/Android/Toolchain_android.cmake",
+      "binaryDir": "${sourceDir}/build/android_no_unity",
+      "inherits": [
+        "no-unity"
+      ],
+      "condition": {
+        "type": "inList",
+        "string": "${hostSystemName}",
+        "list": [
+          "Darwin",
+          "Linux",
+          "Windows"
+        ]
+      }
+    },
+    {
+      "name": "android-non-monolithic",
+      "displayName": "Android Non-Monolithic",
+      "description": "Default configuration for non-monolithic builds",
+      "toolchainFile": "${sourceDir}/cmake/Platform/Android/Toolchain_android.cmake",
+      "inherits": [
+        "non-monolithic"
+      ],
+      "condition": {
+        "type": "inList",
+        "string": "${hostSystemName}",
+        "list": [
+          "Darwin",
+          "Linux",
+          "Windows"
+        ]
+      }
+    },
+    {
+      "name": "android-monolithic",
+      "displayName": "Android Monolithic",
+      "description": "Default configuration for monolithic builds",
+      "toolchainFile": "${sourceDir}/cmake/Platform/Android/Toolchain_android.cmake",
+      "binaryDir": "${sourceDir}/build/android_mono",
+      "inherits": [
+        "monolithic"
+      ],
+      "condition": {
+        "type": "inList",
+        "string": "${hostSystemName}",
+        "list": [
+          "Darwin",
+          "Linux",
+          "Windows"
+        ]
+      }
+    },
+    {
+      "name": "android-ninja",
+      "displayName": "Android Ninja",
+      "description": "Configure Android using with the Ninja generator",
+      "toolchainFile": "${sourceDir}/cmake/Platform/Android/Toolchain_android.cmake",
+      "binaryDir": "${sourceDir}/build/android_ninja",
+      "inherits": [
+        "android-ninja-unity"
+      ],
+      "condition": {
+        "type": "inList",
+        "string": "${hostSystemName}",
+        "list": [
+          "Darwin",
+          "Linux",
+          "Windows"
+        ]
+      }
+    },
+    {
+      "name": "android-ninja-unity",
+      "displayName": "Android Ninja Unity",
+      "description": "Configure Android with the Ninja generator + Unity Builds",
+      "toolchainFile": "${sourceDir}/cmake/Platform/Android/Toolchain_android.cmake",
+      "binaryDir": "${sourceDir}/build/android_ninja_unity",
+      "inherits": [
+        "ninja-multi-config",
+        "android-unity"
+      ],
+      "condition": {
+        "type": "inList",
+        "string": "${hostSystemName}",
+        "list": [
+          "Darwin",
+          "Linux",
+          "Windows"
+        ]
+      }
+    },
+    {
+      "name": "android-ninja-no-unity",
+      "displayName": "Android Ninja without Unity",
+      "description": "Configure Android with the Ninja Generator without unity builds",
+      "toolchainFile": "${sourceDir}/cmake/Platform/Android/Toolchain_android.cmake",
+      "binaryDir": "${sourceDir}/build/android_ninja_no_unity",
+      "inherits": [
+        "ninja-multi-config",
+        "android-no-unity"
+      ],
+      "condition": {
+        "type": "inList",
+        "string": "${hostSystemName}",
+        "list": [
+          "Darwin",
+          "Linux",
+          "Windows"
+        ]
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "android-default",
+      "displayName": "Android",
+      "description": "Builds all targets for Android",
+      "configurePreset": "android-default",
+      "condition": {
+        "type": "inList",
+        "string": "${hostSystemName}",
+        "list": [
+          "Darwin",
+          "Linux",
+          "Windows"
+        ]
+      }
+    },
+    {
+      "name": "android-install",
+      "displayName": "Android install",
+      "description": "Builds the \"install\" target for Android, which builds all target and runs the CMake --install step",
+      "configurePreset": "android-default",
+      "inherits": [
+        "install"
+      ],
+      "condition": {
+        "type": "inList",
+        "string": "${hostSystemName}",
+        "list": [
+          "Darwin",
+          "Linux",
+          "Windows"
+        ]
+      }
+    },
+    {
+      "name": "android-mono-default",
+      "displayName": "Android Monolithic",
+      "description": "Builds all targets for Android in the monolithic permutation",
+      "configurePreset": "android-mono-default",
+      "condition": {
+        "type": "inList",
+        "string": "${hostSystemName}",
+        "list": [
+          "Darwin",
+          "Linux",
+          "Windows"
+        ]
+      }
+    },
+    {
+      "name": "android-mono-install",
+      "displayName": "Android Monolithic install",
+      "description": "Builds the \"install\" target for android monolithic permutation, which builds all target and runs the CMake --install step",
+      "configurePreset": "android-mono-default",
+      "inherits": [
+        "install"
+      ],
+      "condition": {
+        "type": "inList",
+        "string": "${hostSystemName}",
+        "list": [
+          "Darwin",
+          "Linux",
+          "Windows"
+        ]
+      }
+    }
+  ],
+  "testPresets": []
+}

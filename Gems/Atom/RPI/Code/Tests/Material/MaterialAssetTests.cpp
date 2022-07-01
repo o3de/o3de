@@ -28,6 +28,7 @@ namespace UnitTest
     protected:
         Data::Asset<MaterialTypeAsset> m_testMaterialTypeAsset;
         Data::Asset<ImageAsset> m_testImageAsset;
+        Data::Asset<ImageAsset> m_testAttachmentImageAsset;
 
         void SetUp() override
         {
@@ -38,6 +39,7 @@ namespace UnitTest
             // Since this test doesn't actually instantiate a Material, it won't need to instantiate this ImageAsset, so all we
             // need is an asset reference with a valid ID.
             m_testImageAsset = Data::Asset<ImageAsset>{ Uuid::CreateRandom(), azrtti_typeid<StreamingImageAsset>() };
+            m_testAttachmentImageAsset = Data::Asset<AttachmentImageAsset>{ Uuid::CreateRandom(), azrtti_typeid<AttachmentImageAsset>() };
 
             auto shaderAsset = CreateTestShaderAsset(Uuid::CreateRandom(), materialSrgLayout);
 
@@ -55,6 +57,7 @@ namespace UnitTest
             materialTypeCreator.SetPropertyValue(Name{ "MyColor" }, Color{ 0.1f, 0.2f, 0.3f, 0.4f });
             materialTypeCreator.SetPropertyValue(Name{ "MyImage" }, m_testImageAsset);
             materialTypeCreator.SetPropertyValue(Name{ "MyEnum" }, 1u);
+            materialTypeCreator.SetPropertyValue(Name{ "MyAttachmentImage" }, m_testAttachmentImageAsset);
             EXPECT_TRUE(materialTypeCreator.End(m_testMaterialTypeAsset));
         }
 
@@ -76,7 +79,7 @@ namespace UnitTest
         auto validate = [this](Data::Asset<MaterialAsset> materialAsset)
         {
             EXPECT_EQ(m_testMaterialTypeAsset, materialAsset->GetMaterialTypeAsset());
-            EXPECT_EQ(materialAsset->GetPropertyValues().size(), 10);
+            EXPECT_EQ(materialAsset->GetPropertyValues().size(), 11);
             EXPECT_EQ(materialAsset->GetPropertyValues()[0].GetValue<bool>(), true);
             EXPECT_EQ(materialAsset->GetPropertyValues()[1].GetValue<int32_t>(), -2);
             EXPECT_EQ(materialAsset->GetPropertyValues()[2].GetValue<uint32_t>(), 12);
@@ -87,6 +90,7 @@ namespace UnitTest
             EXPECT_EQ(materialAsset->GetPropertyValues()[7].GetValue<Color>(), Color(1.0f, 1.0f, 1.0f, 1.0f));
             EXPECT_EQ(materialAsset->GetPropertyValues()[8].GetValue<Data::Asset<ImageAsset>>(), m_testImageAsset);
             EXPECT_EQ(materialAsset->GetPropertyValues()[9].GetValue<uint32_t>(), 1u);
+            EXPECT_EQ(materialAsset->GetPropertyValues()[10].GetValue<Data::Asset<ImageAsset>>(), m_testAttachmentImageAsset);
         };
 
         // Test basic process of creating a valid asset...
@@ -94,7 +98,7 @@ namespace UnitTest
         Data::AssetId assetId(Uuid::CreateRandom());
 
         MaterialAssetCreator creator;
-        creator.Begin(assetId, *m_testMaterialTypeAsset);
+        creator.Begin(assetId, m_testMaterialTypeAsset, true);
         creator.SetPropertyValue(Name{ "MyFloat2" }, Vector2{ 0.1f, 0.2f });
         creator.SetPropertyValue(Name{ "MyFloat3" }, Vector3{ 1.1f, 1.2f, 1.3f });
         creator.SetPropertyValue(Name{ "MyFloat4" }, Vector4{ 2.1f, 2.2f, 2.3f, 2.4f });
@@ -105,12 +109,17 @@ namespace UnitTest
         creator.SetPropertyValue(Name{ "MyBool"   }, true);
         creator.SetPropertyValue(Name{ "MyImage"  }, m_testImageAsset);
         creator.SetPropertyValue(Name{ "MyEnum"   }, 1u);
+        creator.SetPropertyValue(Name{ "MyAttachmentImage"  }, m_testAttachmentImageAsset);
 
         Data::Asset<MaterialAsset> materialAsset;
         EXPECT_TRUE(creator.End(materialAsset));
 
         EXPECT_EQ(assetId, materialAsset->GetId());
         EXPECT_EQ(Data::AssetData::AssetStatus::Ready, materialAsset->GetStatus());
+
+        EXPECT_TRUE(materialAsset->WasPreFinalized());
+        EXPECT_EQ(0, materialAsset->GetRawPropertyValues().size());
+
         validate(materialAsset);
 
         // Also test serialization...
@@ -123,13 +132,66 @@ namespace UnitTest
         Data::Asset<RPI::MaterialAsset> serializedAsset = tester.SerializeIn(Data::AssetId(Uuid::CreateRandom()), noAssets);
         validate(serializedAsset);
     }
+    
+    TEST_F(MaterialAssetTests, DeferredFinalize)
+    {
+        Data::AssetId assetId(Uuid::CreateRandom());
+
+        MaterialAssetCreator creator;
+        bool shouldFinalize = false;
+        creator.Begin(assetId, m_testMaterialTypeAsset, shouldFinalize);
+
+        creator.SetPropertyValue(Name{ "MyFloat2" }, Vector2{ 0.1f, 0.2f });
+        creator.SetPropertyValue(Name{ "MyFloat3" }, Vector3{ 1.1f, 1.2f, 1.3f });
+        creator.SetPropertyValue(Name{ "MyFloat4" }, Vector4{ 2.1f, 2.2f, 2.3f, 2.4f });
+        creator.SetPropertyValue(Name{ "MyColor"  }, Color{ 1.0f, 1.0f, 1.0f, 1.0f });
+        creator.SetPropertyValue(Name{ "MyInt"    }, -2);
+        creator.SetPropertyValue(Name{ "MyUInt"   }, 12u);
+        creator.SetPropertyValue(Name{ "MyFloat"  }, 1.5f);
+        creator.SetPropertyValue(Name{ "MyBool"   }, true);
+        creator.SetPropertyValue(Name{ "MyImage"  }, m_testImageAsset);
+        creator.SetPropertyValue(Name{ "MyEnum"   }, 1u);
+        creator.SetPropertyValue(Name{ "MyAttachmentImage"  }, m_testAttachmentImageAsset);
+
+        Data::Asset<MaterialAsset> materialAsset;
+        EXPECT_TRUE(creator.End(materialAsset));
+
+        EXPECT_FALSE(materialAsset->WasPreFinalized());
+        EXPECT_EQ(11, materialAsset->GetRawPropertyValues().size());
+
+        // Also test serialization...
+
+        SerializeTester<RPI::MaterialAsset> tester(GetSerializeContext());
+        tester.SerializeOut(materialAsset.Get());
+
+        // Using a filter that skips loading assets because we are using a dummy image asset
+        ObjectStream::FilterDescriptor noAssets{ AZ::Data::AssetFilterNoAssetLoading };
+        Data::Asset<RPI::MaterialAsset> serializedAsset = tester.SerializeIn(Data::AssetId(Uuid::CreateRandom()), noAssets);
+        
+        EXPECT_FALSE(materialAsset->WasPreFinalized());
+        EXPECT_EQ(11, materialAsset->GetRawPropertyValues().size());
+
+        // GetPropertyValues() will automatically finalize the material asset, so we can go ahead and check the property values.
+        EXPECT_EQ(materialAsset->GetPropertyValues().size(), 11);
+        EXPECT_EQ(materialAsset->GetPropertyValues()[0].GetValue<bool>(), true);
+        EXPECT_EQ(materialAsset->GetPropertyValues()[1].GetValue<int32_t>(), -2);
+        EXPECT_EQ(materialAsset->GetPropertyValues()[2].GetValue<uint32_t>(), 12);
+        EXPECT_EQ(materialAsset->GetPropertyValues()[3].GetValue<float>(), 1.5f);
+        EXPECT_EQ(materialAsset->GetPropertyValues()[4].GetValue<Vector2>(), Vector2(0.1f, 0.2f));
+        EXPECT_EQ(materialAsset->GetPropertyValues()[5].GetValue<Vector3>(), Vector3(1.1f, 1.2f, 1.3f));
+        EXPECT_EQ(materialAsset->GetPropertyValues()[6].GetValue<Vector4>(), Vector4(2.1f, 2.2f, 2.3f, 2.4f));
+        EXPECT_EQ(materialAsset->GetPropertyValues()[7].GetValue<Color>(), Color(1.0f, 1.0f, 1.0f, 1.0f));
+        EXPECT_EQ(materialAsset->GetPropertyValues()[8].GetValue<Data::Asset<ImageAsset>>(), m_testImageAsset);
+        EXPECT_EQ(materialAsset->GetPropertyValues()[9].GetValue<uint32_t>(), 1u);
+        EXPECT_EQ(materialAsset->GetPropertyValues()[10].GetValue<Data::Asset<ImageAsset>>(), m_testAttachmentImageAsset);
+    }
 
     TEST_F(MaterialAssetTests, PropertyDefaultValuesComeFromParentMaterial)
     {
         Data::AssetId assetId(Uuid::CreateRandom());
 
         MaterialAssetCreator creator;
-        creator.Begin(assetId, *m_testMaterialTypeAsset);
+        creator.Begin(assetId, m_testMaterialTypeAsset, true);
         creator.SetPropertyValue(Name{ "MyFloat" }, 3.14f);
 
         Data::Asset<MaterialAsset> materialAsset;
@@ -146,7 +208,7 @@ namespace UnitTest
         ObjectStream::FilterDescriptor noAssets{ AZ::Data::AssetFilterNoAssetLoading };
         materialAsset = tester.SerializeIn(Data::AssetId(Uuid::CreateRandom()), noAssets);
 
-        EXPECT_EQ(materialAsset->GetPropertyValues().size(), 10);
+        EXPECT_EQ(materialAsset->GetPropertyValues().size(), 11);
         EXPECT_EQ(materialAsset->GetPropertyValues()[0].GetValue<bool>(), true);
         EXPECT_EQ(materialAsset->GetPropertyValues()[1].GetValue<int32_t>(), 1);
         EXPECT_EQ(materialAsset->GetPropertyValues()[2].GetValue<uint32_t>(), 2);
@@ -157,6 +219,7 @@ namespace UnitTest
         EXPECT_EQ(materialAsset->GetPropertyValues()[7].GetValue<Color>(), Color(0.1f, 0.2f, 0.3f, 0.4f));
         EXPECT_EQ(materialAsset->GetPropertyValues()[8].GetValue<Data::Asset<ImageAsset>>(), m_testImageAsset);
         EXPECT_EQ(materialAsset->GetPropertyValues()[9].GetValue<uint32_t>(), 1u);
+        EXPECT_EQ(materialAsset->GetPropertyValues()[10].GetValue<Data::Asset<ImageAsset>>(), m_testAttachmentImageAsset);
     }
 
     TEST_F(MaterialAssetTests, MaterialWithNoSRGOrProperties)
@@ -171,7 +234,7 @@ namespace UnitTest
 
         Data::Asset<MaterialAsset> materialAsset;
         MaterialAssetCreator materialCreator;
-        materialCreator.Begin(Uuid::CreateRandom(), *emptyMaterialTypeAsset);
+        materialCreator.Begin(Uuid::CreateRandom(), emptyMaterialTypeAsset, true);
         EXPECT_TRUE(materialCreator.End(materialAsset));
         EXPECT_EQ(emptyMaterialTypeAsset, materialAsset->GetMaterialTypeAsset());
         EXPECT_EQ(materialAsset->GetPropertyValues().size(), 0);
@@ -189,7 +252,7 @@ namespace UnitTest
         Data::AssetId assetId(Uuid::CreateRandom());
 
         MaterialAssetCreator creator;
-        creator.Begin(assetId, *m_testMaterialTypeAsset);
+        creator.Begin(assetId, m_testMaterialTypeAsset, true);
         creator.SetPropertyValue(Name{ "MyImage" }, streamingImageAsset);
 
         Data::Asset<MaterialAsset> materialAsset;
@@ -211,8 +274,8 @@ namespace UnitTest
     TEST_F(MaterialAssetTests, UpgradeMaterialAsset)
     {
         // Here we test the main way that a material asset upgrade would be applied at runtime: A material type is updated to
-        // both rename a property *and* change the order in which properties appear in the layout. In this case, the new name
-        // must be identified and then that new name is used to find the appropriate index in the property layout.
+        // both rename properties, set new values *and* change the order in which properties appear in the layout.
+        // Various permutations of the ordering of 'rename' and 'setValue' actions are tested.
 
         auto materialSrgLayout = CreateCommonTestMaterialSrgLayout();
 
@@ -222,65 +285,164 @@ namespace UnitTest
         MaterialTypeAssetCreator materialTypeCreator;
         materialTypeCreator.Begin(Uuid::CreateRandom());
         materialTypeCreator.AddShader(shaderAsset);
+        // Set default values
         AddMaterialPropertyForSrg(materialTypeCreator, Name{ "MyInt" }, MaterialPropertyDataType::Int, Name{ "m_int" });
         AddMaterialPropertyForSrg(materialTypeCreator, Name{ "MyUInt" }, MaterialPropertyDataType::UInt, Name{ "m_uint" });
         AddMaterialPropertyForSrg(materialTypeCreator, Name{ "MyFloat" }, MaterialPropertyDataType::Float, Name{ "m_float" });
+        AddMaterialPropertyForSrg(materialTypeCreator, Name{ "MyFloat2" }, MaterialPropertyDataType::Int, Name{ "m_float2" });
+        AddMaterialPropertyForSrg(materialTypeCreator, Name{ "MyFloat3" }, MaterialPropertyDataType::Int, Name{ "m_float3" });
         EXPECT_TRUE(materialTypeCreator.End(testMaterialTypeAssetV1));
 
         // Construct the material asset with materialTypeAsset version 1
         Data::AssetId assetId(Uuid::CreateRandom());
 
         MaterialAssetCreator creator;
-        const bool includePropertyNames = true;
-        creator.Begin(assetId, *testMaterialTypeAssetV1, includePropertyNames);
+        const bool shouldFinalize = false;
+        creator.Begin(assetId, testMaterialTypeAssetV1, shouldFinalize);
+        creator.SetMaterialTypeVersion(1);
+        // Set some properties to non-default values
         creator.SetPropertyValue(Name{ "MyInt" }, 7);
         creator.SetPropertyValue(Name{ "MyUInt" }, 8u);
         creator.SetPropertyValue(Name{ "MyFloat" }, 9.0f);
+        creator.SetPropertyValue(Name{ "MyFloat2" }, 10.0f);
         Data::Asset<MaterialAsset> materialAsset;
         EXPECT_TRUE(creator.End(materialAsset));
 
-        // Prepare material type asset version 2 with the update actions
-        MaterialVersionUpdate versionUpdate(2);
-        versionUpdate.AddAction(MaterialVersionUpdate::RenamePropertyAction(
-            {
-                Name{ "MyInt" },
-                Name{ "MyIntRenamed" }
-            }));
 
-        Data::Asset<MaterialTypeAsset> testMaterialTypeAssetV2;
+        Data::Asset<MaterialTypeAsset> testMaterialTypeAssetV3;
         materialTypeCreator.Begin(Uuid::CreateRandom());
-        materialTypeCreator.SetVersion(versionUpdate.GetVersion());
-        materialTypeCreator.AddVersionUpdate(versionUpdate);
+        // Prepare material type asset version 3 with update actions
+        materialTypeCreator.SetVersion(3);
+        {
+            MaterialVersionUpdate versionUpdate(2);
+            versionUpdate.AddAction(MaterialVersionUpdate::Action(
+                AZ::Name{ "rename" },
+                {
+                    { Name{ "from" }, AZStd::string("MyInt") },
+                    { Name{ "to"   }, AZStd::string("MyIntIntermediateRename") }
+                } ));
+            versionUpdate.AddAction(MaterialVersionUpdate::Action(
+                AZ::Name{ "setValue" },
+                {
+                    { Name("name"),  AZStd::string("MyFloat") },
+                    { Name("value"), 3.14f }
+                } ));
+            versionUpdate.AddAction(MaterialVersionUpdate::Action(
+                AZ::Name{ "setValue" },
+                {
+                    { Name("name"),  AZStd::string("MyFloat2") },
+                    { Name("value"), 2.0f }
+                } ));
+            versionUpdate.AddAction(MaterialVersionUpdate::Action(
+                AZ::Name{ "setValue" },
+                {
+                    { Name("name"),  AZStd::string("MyUInt") },
+                    { Name("value"), 314u }
+                } ));
+            materialTypeCreator.AddVersionUpdate(versionUpdate);
+        }
+        {
+            MaterialVersionUpdate versionUpdate(3);
+            versionUpdate.AddAction(MaterialVersionUpdate::Action(
+                AZ::Name{ "setValue" },
+                {
+                    { Name("name"),  AZStd::string("MyFloat3") },
+                    { Name("value"), 3.0f }
+                } ));
+            versionUpdate.AddAction(MaterialVersionUpdate::Action(
+                AZ::Name{ "rename" },
+                {
+                    { Name{ "from" }, AZStd::string("MyIntIntermediateRename") },
+                    { Name{ "to"   }, AZStd::string("MyIntFinalRename") }
+                } ));
+            versionUpdate.AddAction(MaterialVersionUpdate::Action(
+                AZ::Name{ "rename" },
+                {
+                    { Name{ "from" }, AZStd::string("MyUInt") },
+                    { Name{ "to"   }, AZStd::string("MyUIntRenamed") }
+                } ));
+            versionUpdate.AddAction(MaterialVersionUpdate::Action(
+                AZ::Name{ "rename" },
+                {
+                    { Name{ "from" }, AZStd::string("MyFloat") },
+                    { Name{ "to"   }, AZStd::string("MyFloatRenamed") }
+                } ));
+            materialTypeCreator.AddVersionUpdate(versionUpdate);
+        }
         materialTypeCreator.AddShader(shaderAsset);
-        // Now we add the properties in a different order from before, and use the new name for MyInt.
-        AddMaterialPropertyForSrg(materialTypeCreator, Name{ "MyUInt" }, MaterialPropertyDataType::UInt, Name{ "m_uint" });
-        AddMaterialPropertyForSrg(materialTypeCreator, Name{ "MyFloat" }, MaterialPropertyDataType::Float, Name{ "m_float" });
-        AddMaterialPropertyForSrg(materialTypeCreator, Name{ "MyIntRenamed" }, MaterialPropertyDataType::Int, Name{ "m_int" });
-        EXPECT_TRUE(materialTypeCreator.End(testMaterialTypeAssetV2));
+        // Now we add the properties in a different order from before, and use the new names.
+        AddMaterialPropertyForSrg(materialTypeCreator, Name{ "MyUIntRenamed" }, MaterialPropertyDataType::UInt, Name{ "m_uint" });
+        AddMaterialPropertyForSrg(materialTypeCreator, Name{ "MyFloatRenamed" }, MaterialPropertyDataType::Float, Name{ "m_float" });
+        AddMaterialPropertyForSrg(materialTypeCreator, Name{ "MyIntFinalRename" }, MaterialPropertyDataType::Int, Name{ "m_int" });
+        AddMaterialPropertyForSrg(materialTypeCreator, Name{ "MyFloat2" }, MaterialPropertyDataType::Float, Name{ "m_float2" });
+        AddMaterialPropertyForSrg(materialTypeCreator, Name{ "MyFloat3" }, MaterialPropertyDataType::Float, Name{ "m_float3" });
+        EXPECT_TRUE(materialTypeCreator.End(testMaterialTypeAssetV3));
 
-        // This is our way of faking the idea that an old version of the MaterialAsset could be loaded with a new version of the MaterialTypeAsset.
-        ReplaceMaterialType(materialAsset, testMaterialTypeAssetV2);
+        // This is our way of faking the idea that an old version of the MaterialAsset could be
+        // loaded with a new version of the MaterialTypeAsset.
+        ReplaceMaterialType(materialAsset, testMaterialTypeAssetV3);
 
-        // This can find errors and warnings, we are looking for a warning when the version update is applied
+        // Expected warning messages
         ErrorMessageFinder warningFinder; 
-        warningFinder.AddExpectedErrorMessage("Automatic updates are available. Consider updating the .material source file");
+        auto ExpectOverwriteMessage = [&warningFinder](uint32_t version, const char *name, const char *finalName)
+        {
+            if (finalName == nullptr)
+            {
+                warningFinder.AddExpectedErrorMessage(AZStd::string::format(
+                    "SetValue operation of update to version %u has detected (and overwritten) a previous value for '%s'.",
+                    version, name));
+            }
+            else
+            {
+                warningFinder.AddExpectedErrorMessage(AZStd::string::format(
+                    "SetValue operation of update to version %u has detected (and overwritten) a previous value for '%s' "
+                    "(final name of this property: '%s').",
+                    version, name, finalName));
+            }
+        };
+        warningFinder.AddExpectedErrorMessage("Automatic updates have been applied. Consider updating the .material source file");
         warningFinder.AddExpectedErrorMessage("This material is based on version '1'");
-        warningFinder.AddExpectedErrorMessage("material type is now at version '2'");
+        warningFinder.AddExpectedErrorMessage("material type is now at version '3'");
+        ExpectOverwriteMessage(2, "MyFloat", "MyFloatRenamed");
+        ExpectOverwriteMessage(2, "MyFloat2", nullptr);
+        ExpectOverwriteMessage(2, "MyUInt", "MyUIntRenamed");
 
-        // Even though this material was created using the old version of the material type, it's property values should get automatically
-        // updated to align with the new property layout in the latest MaterialTypeAsset.
-        MaterialPropertyIndex myIntIndex = materialAsset->GetMaterialPropertiesLayout()->FindPropertyIndex(Name{"MyIntRenamed"});
-        EXPECT_EQ(2, myIntIndex.GetIndex());
-        EXPECT_EQ(7, materialAsset->GetPropertyValues()[myIntIndex.GetIndex()].GetValue<int32_t>());
-
+        // Trigger the version updates of the material asset and check the warnings
+        materialAsset->GetPropertyValues(); // triggers version updates
         warningFinder.CheckExpectedErrorsFound();
 
-        // Since the MaterialAsset has already been updated, and the warning reported once, we should not see the "consider updating"
-        // warning reported again on subsequent property accesses.
+        // Since the MaterialAsset has already been updated, and the warnings reported once, we
+        // should not see any warnings reported again on subsequent property accesses.
         warningFinder.Reset();
-        myIntIndex = materialAsset->GetMaterialPropertiesLayout()->FindPropertyIndex(Name{"MyIntRenamed"});
+
+        // Check that the properties have been properly updated, and that their index corresponds to the latest property layout.
+        auto FindIndex = [&materialAsset](const Name &propertyId)
+        {
+            return materialAsset->GetMaterialPropertiesLayout()->FindPropertyIndex(propertyId);
+        };
+        EXPECT_FALSE(FindIndex(Name{"MyUInt"}).IsValid());
+        MaterialPropertyIndex myUIntIndex = FindIndex(Name{"MyUIntRenamed"});
+        EXPECT_EQ(0, myUIntIndex.GetIndex());
+        EXPECT_EQ(314u, materialAsset->GetPropertyValues()[myUIntIndex.GetIndex()].GetValue<uint32_t>());
+
+        EXPECT_FALSE(FindIndex(Name{"MyFloat"}).IsValid());
+        MaterialPropertyIndex myFloatIndex = FindIndex(Name{"MyFloatRenamed"});
+        EXPECT_EQ(1, myFloatIndex.GetIndex());
+        EXPECT_EQ(3.14f, materialAsset->GetPropertyValues()[myFloatIndex.GetIndex()].GetValue<float>());
+
+        EXPECT_FALSE(FindIndex(Name{"MyInt"}).IsValid());
+        EXPECT_FALSE(FindIndex(Name{"MyIntIntermediateRename"}).IsValid());
+        MaterialPropertyIndex myIntIndex = FindIndex(Name{"MyIntFinalRename"});
         EXPECT_EQ(2, myIntIndex.GetIndex());
         EXPECT_EQ(7, materialAsset->GetPropertyValues()[myIntIndex.GetIndex()].GetValue<int32_t>());
+
+        MaterialPropertyIndex myFloat2Index = FindIndex(Name{"MyFloat2"});
+        EXPECT_EQ(3, myFloat2Index.GetIndex());
+        EXPECT_EQ(2.0f, materialAsset->GetPropertyValues()[myFloat2Index.GetIndex()].GetValue<float>());
+
+        MaterialPropertyIndex myFloat3Index = FindIndex(Name{"MyFloat3"});
+        EXPECT_EQ(4, myFloat3Index.GetIndex());
+        EXPECT_EQ(3.0f, materialAsset->GetPropertyValues()[myFloat3Index.GetIndex()].GetValue<float>());
     }
 
     TEST_F(MaterialAssetTests, Error_NoBegin)
@@ -307,26 +469,68 @@ namespace UnitTest
         // We use local functions to easily start a new MaterialAssetCreator for each test case because
         // the AssetCreator would just skip subsequent operations after the first failure is detected.
 
-        auto expectCreatorError = [this](AZStd::function<void(MaterialAssetCreator& creator)> passBadInput)
+        auto expectCreatorError = [this](const char* expectedErrorMessage, AZStd::function<void(MaterialAssetCreator& creator)> passBadInput)
         {
-            MaterialAssetCreator creator;
-            creator.Begin(Uuid::CreateRandom(), *m_testMaterialTypeAsset);
+            // Test with finalizing enabled
+            {
+                MaterialAssetCreator creator;
+                creator.Begin(Uuid::CreateRandom(), m_testMaterialTypeAsset, true);
 
-            AZ_TEST_START_ASSERTTEST;
-            passBadInput(creator);
-            AZ_TEST_STOP_ASSERTTEST(1);
+                ErrorMessageFinder errorMessageFinder;
+                errorMessageFinder.AddExpectedErrorMessage(expectedErrorMessage);
+                errorMessageFinder.AddIgnoredErrorMessage("Failed to build", true);
 
-            EXPECT_EQ(1, creator.GetErrorCount());
+                passBadInput(creator);
+
+                Data::Asset<MaterialAsset> materialAsset;
+                EXPECT_FALSE(creator.End(materialAsset));
+
+                errorMessageFinder.CheckExpectedErrorsFound();
+
+                EXPECT_TRUE(creator.GetErrorCount() > 0);
+            }
+            
+            // Test with finalizing disabled, so no validation occurs because the MaterialTypeAsset data is not used.
+            {
+                MaterialAssetCreator creator;
+                creator.Begin(Uuid::CreateRandom(), m_testMaterialTypeAsset, false);
+
+                passBadInput(creator);
+
+                Data::Asset<MaterialAsset> materialAsset;
+                EXPECT_TRUE(creator.End(materialAsset));
+
+                EXPECT_EQ(creator.GetErrorCount(), 0);
+            }
         };
 
         auto expectCreatorWarning = [this](AZStd::function<void(MaterialAssetCreator& creator)> passBadInput)
         {
-            MaterialAssetCreator creator;
-            creator.Begin(Uuid::CreateRandom(), *m_testMaterialTypeAsset);
+            // Test with finalizing enabled
+            {
+                MaterialAssetCreator creator;
+                creator.Begin(Uuid::CreateRandom(), m_testMaterialTypeAsset, true);
 
-            passBadInput(creator);
+                passBadInput(creator);
 
-            EXPECT_EQ(1, creator.GetWarningCount());
+                Data::Asset<MaterialAsset> material;
+                creator.End(material);
+
+                EXPECT_EQ(1, creator.GetWarningCount());
+            }
+            
+            // Test with finalizing disabled, so no validation occurs because the MaterialTypeAsset data is not used.
+            {
+                MaterialAssetCreator creator;
+                creator.Begin(Uuid::CreateRandom(), m_testMaterialTypeAsset, false);
+
+                passBadInput(creator);
+
+                Data::Asset<MaterialAsset> material;
+                creator.End(material);
+
+                EXPECT_EQ(0, creator.GetWarningCount());
+            }
         };
 
         // Invalid input ID
@@ -343,55 +547,35 @@ namespace UnitTest
 
         // Test data type mismatches...
 
-        expectCreatorError([this](MaterialAssetCreator& creator)
-        {
-            creator.SetPropertyValue(Name{ "MyBool" }, m_testImageAsset);
-        });
+        expectCreatorError("Type mismatch",
+            [this](MaterialAssetCreator& creator)
+            {
+                creator.SetPropertyValue(Name{ "MyBool" }, m_testImageAsset);
+            });
 
-        expectCreatorError([](MaterialAssetCreator& creator)
-        {
-            creator.SetPropertyValue(Name{ "MyInt" }, 0.0f);
-        });
+        expectCreatorError("Type mismatch",
+            [](MaterialAssetCreator& creator)
+            {
+                creator.SetPropertyValue(Name{ "MyFloat" }, AZ::Vector4{});
+            });
 
-        expectCreatorError([](MaterialAssetCreator& creator)
-        {
-            creator.SetPropertyValue(Name{ "MyUInt" }, -1);
-        });
+        expectCreatorError("Type mismatch",
+            [](MaterialAssetCreator& creator)
+            {
+                creator.SetPropertyValue(Name{ "MyColor" }, MaterialPropertyValue(false));
+            });
 
-        expectCreatorError([](MaterialAssetCreator& creator)
-        {
-            creator.SetPropertyValue(Name{ "MyFloat" }, 10u);
-        });
+        expectCreatorError("Type mismatch",
+            [](MaterialAssetCreator& creator)
+            {
+                creator.SetPropertyValue(Name{ "MyImage" }, true);
+            });
 
-        expectCreatorError([](MaterialAssetCreator& creator)
-        {
-            creator.SetPropertyValue(Name{ "MyFloat2" }, 1.0f);
-        });
-
-        expectCreatorError([](MaterialAssetCreator& creator)
-        {
-            creator.SetPropertyValue(Name{ "MyFloat3" }, AZ::Vector4{});
-        });
-
-        expectCreatorError([](MaterialAssetCreator& creator)
-        {
-            creator.SetPropertyValue(Name{ "MyFloat4" }, AZ::Vector3{});
-        });
-
-        expectCreatorError([](MaterialAssetCreator& creator)
-        {
-            creator.SetPropertyValue(Name{ "MyColor" }, MaterialPropertyValue(false));
-        });
-
-        expectCreatorError([](MaterialAssetCreator& creator)
-        {
-            creator.SetPropertyValue(Name{ "MyImage" }, true);
-        });
-
-        expectCreatorError([](MaterialAssetCreator& creator)
-        {
-            creator.SetPropertyValue(Name{ "MyEnum" }, -1);
-        });
+        expectCreatorError("can only accept UInt value",
+            [](MaterialAssetCreator& creator)
+            {
+                creator.SetPropertyValue(Name{ "MyEnum" }, -1);
+            });
     }
 }
 

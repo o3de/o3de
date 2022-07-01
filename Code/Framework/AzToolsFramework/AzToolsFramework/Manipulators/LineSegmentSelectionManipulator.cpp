@@ -78,8 +78,8 @@ namespace AzToolsFramework
                 &ViewportInteraction::ViewportInteractionRequestBus::Events::GetCameraState);
 
             m_onLeftMouseDownCallback(CalculateManipulationDataAction(
-                TransformUniformScale(GetSpace()), GetNonUniformScale(), interaction.m_mousePick.m_rayOrigin,
-                interaction.m_mousePick.m_rayDirection, cameraState.m_farClip, m_localStart, m_localEnd));
+                GetSpace(), GetNonUniformScale(), interaction.m_mousePick.m_rayOrigin, interaction.m_mousePick.m_rayDirection,
+                cameraState.m_farClip, m_localStart, m_localEnd));
         }
     }
 
@@ -93,8 +93,8 @@ namespace AzToolsFramework
                 &ViewportInteraction::ViewportInteractionRequestBus::Events::GetCameraState);
 
             m_onLeftMouseUpCallback(CalculateManipulationDataAction(
-                TransformUniformScale(GetSpace()), GetNonUniformScale(), interaction.m_mousePick.m_rayOrigin,
-                interaction.m_mousePick.m_rayDirection, cameraState.m_farClip, m_localStart, m_localEnd));
+                GetSpace(), GetNonUniformScale(), interaction.m_mousePick.m_rayOrigin, interaction.m_mousePick.m_rayDirection,
+                cameraState.m_farClip, m_localStart, m_localEnd));
         }
     }
 
@@ -116,8 +116,8 @@ namespace AzToolsFramework
         {
             m_manipulatorView->Draw(
                 GetManipulatorManagerId(), managerState, GetManipulatorId(),
-                ManipulatorState{ TransformUniformScale(GetSpace()), GetNonUniformScale(), m_localStart, MouseOver() }, debugDisplay,
-                cameraState, mouseInteraction);
+                ManipulatorState{ GetSpace(), GetNonUniformScale(), m_localStart, MouseOver() }, debugDisplay, cameraState,
+                mouseInteraction);
         }
     }
 

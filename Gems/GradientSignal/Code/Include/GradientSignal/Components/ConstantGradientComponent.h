@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/Component/Component.h>
+#include <AzCore/std/parallel/shared_mutex.h>
 #include <GradientSignal/Ebuses/GradientRequestBus.h>
 #include <GradientSignal/Ebuses/ConstantGradientRequestBus.h>
 
@@ -62,7 +63,7 @@ namespace GradientSignal
         //////////////////////////////////////////////////////////////////////////
         // GradientRequestBus
         float GetValue(const GradientSampleParams& sampleParams) const override;
-        void GetValues(AZStd::span<AZ::Vector3> positions, AZStd::span<float> outValues) const override;
+        void GetValues(AZStd::span<const AZ::Vector3> positions, AZStd::span<float> outValues) const override;
 
     protected:
         //////////////////////////////////////////////////////////////////////////
@@ -72,5 +73,6 @@ namespace GradientSignal
 
     private:
         ConstantGradientConfig m_configuration;
+        mutable AZStd::shared_mutex m_queryMutex;
     };
 }

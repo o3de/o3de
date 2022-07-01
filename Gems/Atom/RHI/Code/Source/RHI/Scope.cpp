@@ -24,12 +24,13 @@ namespace AZ
             return m_isActive;
         }
 
-        void Scope::Init(const ScopeId& scopeId)
+        void Scope::Init(const ScopeId& scopeId, HardwareQueueClass hardwareQueueClass)
         {
             AZ_Assert(!scopeId.IsEmpty(), "Scope id is not valid.");
             AZ_Assert(IsInitialized() == false, "Scope was previously initialized.");
             SetName(scopeId);
             m_id = scopeId;
+            m_hardwareQueueClass = hardwareQueueClass;
             InitInternal();
             m_isInitialized = true;
         }
@@ -132,6 +133,11 @@ namespace AZ
         HardwareQueueClass Scope::GetHardwareQueueClass() const
         {
             return m_hardwareQueueClass;
+        }
+
+        void Scope::SetHardwareQueueClass(HardwareQueueClass hardwareQueueClass)
+        {
+            m_hardwareQueueClass = hardwareQueueClass;
         }
 
         uint32_t Scope::GetEstimatedItemCount() const

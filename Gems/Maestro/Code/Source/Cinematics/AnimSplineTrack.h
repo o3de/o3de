@@ -13,7 +13,6 @@
 #pragma once
 
 #include "IMovieSystem.h"
-#include "TCBSpline.h"
 #include "2DSpline.h"
 
 #define MIN_TIME_PRECISION 0.01f
@@ -27,7 +26,24 @@ class TAnimSplineTrack
 {
 public:
     AZ_CLASS_ALLOCATOR(TAnimSplineTrack, AZ::SystemAllocator, 0);
-    AZ_RTTI((TAnimSplineTrack, "{6D72D5F6-61A7-43D4-9104-8F7DCCC19E10}", Vec2), IAnimTrack)
+    AZ_RTTI((TAnimSplineTrack, "{6D72D5F6-61A7-43D4-9104-8F7DCCC19E10}", ValueType), IAnimTrack);
+
+    static constexpr void DeprecatedTypeNameVisitor(
+        const AZ::DeprecatedTypeNameCallback& visitCallback)
+    {
+        // TAnimSplineTrack previously restricted the typename to 128 bytes
+        AZStd::array<char, 128> deprecatedName{};
+
+        // The old TAnimSplineTrack TypeName mistakenly used Vec2 as the template parameter and not ValueType
+        // Also the extra space before the '>' is due to the AZ::Internal::AggregateTypes template
+        // always adding a space after each argument
+        AZ::Internal::AzTypeInfoSafeCat(deprecatedName.data(), deprecatedName.size(), "TAnimSplineTrack<Vec2 >");
+
+        if (visitCallback)
+        {
+            visitCallback(deprecatedName.data());
+        }
+    }
 
     TAnimSplineTrack()
         : m_refCount(0)
@@ -409,7 +425,7 @@ private:
 
     unsigned int m_id = 0;
 
-    static bool VersionConverter(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement) {};
+    static bool VersionConverter(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement) { return false; };
 };
 
 //////////////////////////////////////////////////////////////////////////

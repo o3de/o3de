@@ -47,6 +47,7 @@ namespace AZ
                 if (behaviorContext)
                 {
                     behaviorContext->Class<SceneAPI::DataTypes::IBoneData>()
+                        ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::ListOnly)
                         ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                         ->Attribute(AZ::Script::Attributes::Module, "scene");
                     behaviorContext->Class<AZ::SceneData::GraphData::BoneData>()

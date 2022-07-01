@@ -34,6 +34,10 @@
                     // individual job took.
                     "MaxIndividualStats" : 4
                 },
+                "BuilderManager": {
+                    // Number of seconds to wait for AssetBuilder process to start before terminating the process
+                    "StartupTimeoutSeconds" : 900
+                },
                 "Platform pc": {
                     "tags": "tools,renderer,dx12,vulkan,null"
                 },
@@ -93,7 +97,10 @@
                     "Animations/SkeletonList.xml": "i_caf",
                     "cbc": "abc",
                     "fbx.assetinfo": "fbx",
-                    "stl.assetinfo": "stl"
+                    "stl.assetinfo": "stl",
+                    "gltf.assetinfo": "gltf",
+                    "glb.assetinfo": "glb"
+
                 },
 
                 // ---- add any folders to scan here.  The priority order is the order they appear here
@@ -454,12 +461,6 @@
                     "params": "copy",
                     "productAssetType": "{25971C7A-26E2-4D08-A146-2EFCC1C36B0C}"
                 },
-                "RC physmaterial": {
-                    "glob": "*.physmaterial",
-                    "params": "copy",
-                    "critical": true,
-                    "productAssetType": "{9E366D8C-33BB-4825-9A1F-FA3ADBE11D0F}"
-                },
                 "RC ocm": {
                     "glob": "*.ocm",
                     "params": "copy"
@@ -479,17 +480,6 @@
                 "RC CertificateDER": {
                     "glob": "*.der",
                     "params": "copy"
-                },
-                "RC PhysXMeshAsset": {
-                    "glob": "*.pxmesh",
-                    "params": "copy",
-                    "productAssetType": "{7A2871B9-5EAB-4DE0-A901-B0D2C6920DDB}"
-                },
-                // Copy over cooked PhysX heightfield
-                "RC PhysX HeightField": {
-                    "glob": "*.pxheightfield",
-                    "params": "copy",
-                    "productAssetType": "{B61189FE-B2D7-4AF1-8951-CB5C0F7834FC}"
                 },
                 "RC filetag": {
                     "glob": "*.filetag",

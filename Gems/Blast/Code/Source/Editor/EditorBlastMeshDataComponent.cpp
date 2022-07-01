@@ -26,12 +26,12 @@ namespace Blast
 
     void EditorBlastMeshDataComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC("TransformService", 0x8ee22c50));
+        required.push_back(AZ_CRC_CE("TransformService"));
     }
 
     void EditorBlastMeshDataComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
     {
-        dependent.push_back(AZ_CRC("EditorVisibilityService", 0x90888caf));
+        dependent.push_back(AZ_CRC_CE("EditorVisibilityService"));
     }
 
     void EditorBlastMeshDataComponent::GetIncompatibleServices(
@@ -59,10 +59,7 @@ namespace Blast
                     ->Attribute(AZ::Edit::Attributes::Category, "Destruction")
                     ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Box.png")
                     ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Box.png")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
-                    ->Attribute(
-                        AZ::Edit::Attributes::HelpPageURL,
-                        "https://o3de.org/docs/user-guide/components/reference/destruction/blast-family-mesh-data/")
+                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(
                         AZ::Edit::UIHandlers::CheckBox, &EditorBlastMeshDataComponent::m_showMeshAssets,
@@ -173,7 +170,7 @@ namespace Blast
                 GetEntityId(), &AZ::Render::MeshComponentNotificationBus::Events::OnModelReady, model->GetModelAsset(),
                 model);
             AZ::Render::MaterialReceiverNotificationBus::Event(
-                GetEntityId(), &AZ::Render::MaterialReceiverNotificationBus::Events::OnMaterialAssignmentsChanged);
+                GetEntityId(), &AZ::Render::MaterialReceiverNotificationBus::Events::OnMaterialAssignmentSlotsChanged);
         }
     }
 
@@ -183,7 +180,7 @@ namespace Blast
         {
             AZ::Render::MaterialAssignmentMap materials;
             AZ::Render::MaterialComponentRequestBus::EventResult(
-                materials, GetEntityId(), &AZ::Render::MaterialComponentRequests::GetMaterialOverrides);
+                materials, GetEntityId(), &AZ::Render::MaterialComponentRequests::GetMaterialMap);
 
             m_meshFeatureProcessor->ReleaseMesh(m_meshHandle);
             m_meshHandle = m_meshFeatureProcessor->AcquireMesh(AZ::Render::MeshHandleDescriptor{ m_meshAssets[0] }, materials);

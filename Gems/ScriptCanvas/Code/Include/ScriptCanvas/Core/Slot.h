@@ -33,7 +33,15 @@ namespace ScriptCanvas
 
         int m_index = 0;
     };
-    
+
+    struct SlotState
+    {
+        CombinedSlotType type;
+        AZStd::string name;
+        VariableId variableReference;
+        Datum value;
+    };
+
     class Slot final
         : public VariableNotificationBus::Handler
     {
@@ -136,7 +144,7 @@ namespace ScriptCanvas
         bool IsData() const;
 
         const Datum* FindDatum() const;
-        void FindModifiableDatumView(ModifiableDatumView& datumView);
+        bool FindModifiableDatumView(ModifiableDatumView& datumView);
 
         // If you are data. You could be a reference pin(i.e. must be a variable)
         // Or a value data pin.
@@ -147,9 +155,14 @@ namespace ScriptCanvas
         bool CanConvertToValue() const;
         bool ConvertToValue();
 
-        bool CanConvertToReference() const;
-        bool ConvertToReference();
-        void SetVariableReference(const VariableId& variableId);
+        bool CanConvertToReference(bool isNewSlot = false) const;
+        bool ConvertToReference(bool isNewSlot = false);
+        enum class IsVariableTypeChange
+        {
+            No,
+            Yes
+        };
+        void SetVariableReference(const VariableId& variableId, IsVariableTypeChange isTypeChange = IsVariableTypeChange::No);
         const VariableId& GetVariableReference() const;
         GraphVariable* GetVariable() const;
 

@@ -11,20 +11,15 @@
 
 #include <algorithm>
 
-// AWs Native SDK
-AZ_PUSH_DISABLE_WARNING(4251 4355 4996, "-Wunknown-warning-option")
-#include <aws/core/auth/AWSCredentialsProvider.h>
-AZ_POP_DISABLE_WARNING
-
 // Qt
-#include <QMenuBar>
-#include <QDebug>
-#include <QMessageBox>
-#include <QInputDialog>
-#include <QHBoxLayout>
 #ifdef Q_OS_WIN
 #include <QAbstractEventDispatcher>
 #endif
+#include <QDebug>
+#include <QHBoxLayout>
+#include <QInputDialog>
+#include <QMenuBar>
+#include <QMessageBox>
 
 // AzCore
 #include <AzCore/Component/ComponentApplication.h>
@@ -40,21 +35,25 @@ AZ_POP_DISABLE_WARNING
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
 #include <AzFramework/Network/SocketConnection.h>
 #include <AzFramework/Asset/AssetSystemComponent.h>
+#include <AzFramework/Viewport/CameraInput.h>
 
 // AzToolsFramework
+#include <AzToolsFramework/API/EditorCameraBus.h>
 #include <AzToolsFramework/Application/Ticker.h>
 #include <AzToolsFramework/API/EditorWindowRequestBus.h>
 #include <AzToolsFramework/API/EditorAnimationSystemRequestBus.h>
-#include <AzToolsFramework/SourceControl/QtSourceControlNotificationHandler.h>
+#include <AzToolsFramework/Editor/ActionManagerUtils.h>
 #include <AzToolsFramework/PythonTerminal/ScriptTermDialog.h>
+#include <AzToolsFramework/SourceControl/QtSourceControlNotificationHandler.h>
+#include <AzToolsFramework/Viewport/LocalViewBookmarkLoader.h>
 #include <AzToolsFramework/Viewport/ViewportSettings.h>
 #include <AzToolsFramework/ViewportSelection/EditorTransformComponentSelectionRequestBus.h>
 
 // AzQtComponents
 #include <AzQtComponents/Buses/ShortcutDispatch.h>
 #include <AzQtComponents/Components/DockMainWindow.h>
-#include <AzQtComponents/Components/Widgets/SpinBox.h>
 #include <AzQtComponents/Components/Style.h>
+#include <AzQtComponents/Components/Widgets/SpinBox.h>
 #include <AzQtComponents/Components/WindowDecorationWrapper.h>
 #include <AzQtComponents/DragAndDrop/MainWindowDragAndDrop.h>
 
@@ -77,7 +76,6 @@ AZ_POP_DISABLE_WARNING
 #include "ToolbarManager.h"
 #include "Core/QtEditorApplication.h"
 #include "UndoDropDown.h"
-#include "CVarMenu.h"
 #include "EditorViewportSettings.h"
 
 #include "KeyboardCustomizationSettings.h"
@@ -101,6 +99,7 @@ AZ_POP_DISABLE_WARNING
 #include <ImGuiBus.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 #include <LmbrCentral/Audio/AudioSystemComponentBus.h>
+#include <Editor/EditorViewportCamera.h>
 
 using namespace AZ;
 using namespace AzQtComponents;
@@ -292,15 +291,11 @@ MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent)
     , m_oldMainFrame(nullptr)
     , m_viewPaneManager(QtViewPaneManager::instance())
-    , m_shortcutDispatcher(new ShortcutDispatcher(this))
-    , m_actionManager(new ActionManager(this, QtViewPaneManager::instance(), m_shortcutDispatcher))
     , m_undoStateAdapter(new UndoStackStateAdapter(this))
     , m_keyboardCustomization(nullptr)
     , m_activeView(nullptr)
     , m_settings("O3DE", "O3DE")
-    , m_toolbarManager(new ToolbarManager(m_actionManager, this))
     , m_assetImporterManager(new AssetImporterManager(this))
-    , m_levelEditorMenuHandler(new LevelEditorMenuHandler(this, m_viewPaneManager))
     , m_sourceControlNotifHandler(new AzToolsFramework::QtSourceControlNotificationHandler(this))
     , m_viewPaneHost(nullptr)
     , m_autoSaveTimer(nullptr)
@@ -308,6 +303,15 @@ MainWindow::MainWindow(QWidget* parent)
     , m_backgroundUpdateTimer(nullptr)
     , m_connectionLostTimer(new QTimer(this))
 {
+    // Determine which action manager classes should be enabled based on the current setting.
+    if (!IsNewActionManagerEnabled())
+    {
+        m_shortcutDispatcher = new ShortcutDispatcher(this);
+        m_actionManager = new ActionManager(this, QtViewPaneManager::instance(), m_shortcutDispatcher);
+        m_toolbarManager = new ToolbarManager(m_actionManager, this);
+        m_levelEditorMenuHandler = new LevelEditorMenuHandler(this, m_viewPaneManager);
+    }
+
     setObjectName("MainWindow"); // For IEditor::GetEditorMainWindow to work in plugins, where we can't link against MainWindow::instance()
     m_instance = this;
 
@@ -405,7 +409,6 @@ MainWindow::~MainWindow()
 {
     AzToolsFramework::SourceControlNotificationBus::Handler::BusDisconnect();
 
-    delete m_toolbarManager;
     m_connectionListener.reset();
     GetIEditor()->UnregisterNotifyListener(this);
 
@@ -414,6 +417,14 @@ MainWindow::~MainWindow()
         GetEntityContextId(), &ActionOverrideRequests::TeardownActionOverrideHandler);
 
     m_instance = nullptr;
+    
+    if (!IsNewActionManagerEnabled())
+    {
+        delete m_levelEditorMenuHandler;
+        delete m_toolbarManager;
+        delete m_actionManager;
+        delete m_shortcutDispatcher;
+    }
 }
 
 void MainWindow::InitCentralWidget()
@@ -446,7 +457,10 @@ void MainWindow::Initialize()
 {
     m_viewPaneManager->SetMainWindow(m_viewPaneHost, &m_settings, /*unused*/ QByteArray());
 
-    InitActions();
+    if (!IsNewActionManagerEnabled())
+    {
+        InitActions();
+    }
 
     RegisterStdViewClasses();
     InitCentralWidget();
@@ -454,12 +468,19 @@ void MainWindow::Initialize()
     // load toolbars ("shelves") and macros
     GetIEditor()->GetToolBoxManager()->Load(m_actionManager);
 
-    InitToolActionHandlers();
+    if (!IsNewActionManagerEnabled())
+    {
+        InitToolActionHandlers();
 
-    // Initialize toolbars before we setup the menu so that any tools can be added to the toolbar as needed
-    InitToolBars();
+        // Initialize toolbars before we setup the menu so that any tools can be added to the toolbar as needed
+        InitToolBars();
 
-    m_levelEditorMenuHandler->Initialize();
+        m_levelEditorMenuHandler->Initialize();
+    }
+    else
+    {
+        m_editorActionsHandler.Initialize(this);
+    }
 
     InitStatusBar();
 
@@ -665,7 +686,7 @@ void MainWindow::InitActions()
 
     bool usePrefabSystemForLevels = false;
     AzFramework::ApplicationRequests::Bus::BroadcastResult(
-        usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemForLevelsEnabled);
+        usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
     if (!usePrefabSystemForLevels)
     {
         am->AddAction(ID_FILE_EXPORTTOGAMENOSURFACETEXTURE, tr("&Export to Engine"))
@@ -851,78 +872,154 @@ void MainWindow::InitActions()
         .SetShortcut(tr("Z"))
         .SetToolTip(tr("Center on Selection (Z)"))
         .Connect(&QAction::triggered, this, &MainWindow::OnGotoSelected);
+
+    const auto goToViewBookmarkFn = [](const int index)
+    {
+        AzToolsFramework::ViewBookmarkInterface* viewBookmarkInterface = AZ::Interface<ViewBookmarkInterface>::Get();
+        if (!viewBookmarkInterface)
+        {
+            AZ_Warning("Main Window", false, "Couldn't find View Bookmark Loader");
+            return false;
+        }
+
+        const AZStd::optional<AzToolsFramework::ViewBookmark> bookmark = viewBookmarkInterface->LoadBookmarkAtIndex(index);
+        if (!bookmark.has_value())
+        {
+            return false;
+        }
+
+        // Check the bookmark we want to load is not exactly 0
+        if (bookmark.value().IsZero())
+        {
+            QString tagConsoleText = tr("View Bookmark %1 has not been set yet").arg(index + 1);
+            AZ_Warning("Main Window", false, tagConsoleText.toUtf8().data());
+            return false;
+        }
+
+        SandboxEditor::InterpolateDefaultViewportCameraToTransform(
+            bookmark->m_position, AZ::DegToRad(bookmark->m_rotation.GetX()), AZ::DegToRad(bookmark->m_rotation.GetZ()));
+
+        QString tagConsoleText = tr("View Bookmark %1 loaded position: x=%2, y=%3, z=%4")
+                                     .arg(index + 1)
+                                     .arg(bookmark->m_position.GetX(), 0, 'f', 2)
+                                     .arg(bookmark->m_position.GetY(), 0, 'f', 2)
+                                     .arg(bookmark->m_position.GetZ(), 0, 'f', 2);
+
+        AZ_Printf("MainWindow", tagConsoleText.toUtf8().data());
+        return true;
+    };
+
     am->AddAction(ID_GOTO_LOC1, tr("Location 1"))
         .SetShortcut(tr("Shift+F1"))
-        .SetToolTip(tr("Location 1 (Shift+F1)"));
+        .SetToolTip(tr("Go to Location 1 (Shift+F1)"))
+        .Connect(&QAction::triggered, [goToViewBookmarkFn](){ goToViewBookmarkFn(0);});
     am->AddAction(ID_GOTO_LOC2, tr("Location 2"))
         .SetShortcut(tr("Shift+F2"))
-        .SetToolTip(tr("Location 2 (Shift+F2)"));
+        .SetToolTip(tr("Go to Location 2 (Shift+F2)"))
+        .Connect(&QAction::triggered, [goToViewBookmarkFn](){ goToViewBookmarkFn(1);});
     am->AddAction(ID_GOTO_LOC3, tr("Location 3"))
         .SetShortcut(tr("Shift+F3"))
-        .SetToolTip(tr("Location 3 (Shift+F3)"));
+        .SetToolTip(tr("Go to Location 3 (Shift+F3)"))
+        .Connect(&QAction::triggered, [goToViewBookmarkFn](){ goToViewBookmarkFn(2);});
     am->AddAction(ID_GOTO_LOC4, tr("Location 4"))
         .SetShortcut(tr("Shift+F4"))
-        .SetToolTip(tr("Location 4 (Shift+F4)"));
+        .SetToolTip(tr("Go to Location 4 (Shift+F4)"))
+        .Connect(&QAction::triggered, [goToViewBookmarkFn](){ goToViewBookmarkFn(3);});
     am->AddAction(ID_GOTO_LOC5, tr("Location 5"))
         .SetShortcut(tr("Shift+F5"))
-        .SetToolTip(tr("Location 5 (Shift+F5)"));
+        .SetToolTip(tr("Go to Location 5 (Shift+F5)"))
+        .Connect(&QAction::triggered, [goToViewBookmarkFn](){ goToViewBookmarkFn(4);});
     am->AddAction(ID_GOTO_LOC6, tr("Location 6"))
         .SetShortcut(tr("Shift+F6"))
-        .SetToolTip(tr("Location 6 (Shift+F6)"));
+        .SetToolTip(tr("Go to Location 6 (Shift+F6)"))
+        .Connect(&QAction::triggered, [goToViewBookmarkFn](){ goToViewBookmarkFn(5);});
     am->AddAction(ID_GOTO_LOC7, tr("Location 7"))
         .SetShortcut(tr("Shift+F7"))
-        .SetToolTip(tr("Location 7 (Shift+F7)"));
+        .SetToolTip(tr("Go to Location 7 (Shift+F7)"))
+        .Connect(&QAction::triggered, [goToViewBookmarkFn](){ goToViewBookmarkFn(6);});
     am->AddAction(ID_GOTO_LOC8, tr("Location 8"))
         .SetShortcut(tr("Shift+F8"))
-        .SetToolTip(tr("Location 8 (Shift+F8)"));
+        .SetToolTip(tr("Go to Location 8 (Shift+F8)"))
+        .Connect(&QAction::triggered, [goToViewBookmarkFn](){ goToViewBookmarkFn(7);});
     am->AddAction(ID_GOTO_LOC9, tr("Location 9"))
         .SetShortcut(tr("Shift+F9"))
-        .SetToolTip(tr("Location 9 (Shift+F9)"));
+        .SetToolTip(tr("Go to Location 9 (Shift+F9)"))
+        .Connect(&QAction::triggered, [goToViewBookmarkFn](){ goToViewBookmarkFn(8);});
     am->AddAction(ID_GOTO_LOC10, tr("Location 10"))
         .SetShortcut(tr("Shift+F10"))
-        .SetToolTip(tr("Location 10 (Shift+F10)"));
+        .SetToolTip(tr("Go to Location 10 (Shift+F10)"))
+        .Connect(&QAction::triggered, [goToViewBookmarkFn](){ goToViewBookmarkFn(9);});
     am->AddAction(ID_GOTO_LOC11, tr("Location 11"))
         .SetShortcut(tr("Shift+F11"))
-        .SetToolTip(tr("Location 11 (Shift+F11)"));
+        .SetToolTip(tr("Go to Location 11 (Shift+F11)"))
+        .Connect(&QAction::triggered, [goToViewBookmarkFn](){ goToViewBookmarkFn(10);});
     am->AddAction(ID_GOTO_LOC12, tr("Location 12"))
         .SetShortcut(tr("Shift+F12"))
-        .SetToolTip(tr("Location 12 (Shift+F12)"));
+        .SetToolTip(tr("Go to Location 12 (Shift+F12)"))
+        .Connect(&QAction::triggered, [goToViewBookmarkFn](){ goToViewBookmarkFn(11);});
+
+    const auto tagViewBookmarkFn = [](const int index)
+    {
+        if (auto viewBookmark = AzToolsFramework::StoreViewBookmarkFromActiveCameraAtIndex(index); viewBookmark.has_value())
+        {
+            const QString tagConsoleText = tr("View Bookmark %1 set to the position: x=%2, y=%3, z=%4")
+                                               .arg(index + 1)
+                                               .arg(viewBookmark->m_position.GetX(), 0, 'f', 2)
+                                               .arg(viewBookmark->m_position.GetY(), 0, 'f', 2)
+                                               .arg(viewBookmark->m_position.GetZ(), 0, 'f', 2);
+
+            AZ_Printf("MainWindow", tagConsoleText.toUtf8().data());
+        }
+    };
+
     am->AddAction(ID_TAG_LOC1, tr("Location 1"))
         .SetShortcut(tr("Ctrl+F1"))
-        .SetToolTip(tr("Location 1 (Ctrl+F1)"));
+        .SetToolTip(tr("Save Location 1 (Ctrl+F1)"))
+        .Connect(&QAction::triggered, [tagViewBookmarkFn](){ tagViewBookmarkFn(0); });
     am->AddAction(ID_TAG_LOC2, tr("Location 2"))
         .SetShortcut(tr("Ctrl+F2"))
-        .SetToolTip(tr("Location 2 (Ctrl+F2)"));
+        .SetToolTip(tr("Save Location 2 (Ctrl+F2)"))
+        .Connect(&QAction::triggered, [tagViewBookmarkFn](){ tagViewBookmarkFn(1); });
     am->AddAction(ID_TAG_LOC3, tr("Location 3"))
         .SetShortcut(tr("Ctrl+F3"))
-        .SetToolTip(tr("Location 3 (Ctrl+F3)"));
+        .SetToolTip(tr("Save Location 3 (Ctrl+F3)"))
+        .Connect(&QAction::triggered, [tagViewBookmarkFn](){ tagViewBookmarkFn(2); });
     am->AddAction(ID_TAG_LOC4, tr("Location 4"))
         .SetShortcut(tr("Ctrl+F4"))
-        .SetToolTip(tr("Location 4 (Ctrl+F4)"));
+        .SetToolTip(tr("Save Location 4 (Ctrl+F4)"))
+        .Connect(&QAction::triggered, [tagViewBookmarkFn](){ tagViewBookmarkFn(3); });
     am->AddAction(ID_TAG_LOC5, tr("Location 5"))
         .SetShortcut(tr("Ctrl+F5"))
-        .SetToolTip(tr("Location 5 (Ctrl+F5)"));
+        .SetToolTip(tr("Save Location 5 (Ctrl+F5)"))
+        .Connect(&QAction::triggered, [tagViewBookmarkFn](){ tagViewBookmarkFn(4); });
     am->AddAction(ID_TAG_LOC6, tr("Location 6"))
         .SetShortcut(tr("Ctrl+F6"))
-        .SetToolTip(tr("Location 6 (Ctrl+F6)"));
+        .SetToolTip(tr("Save Location 6 (Ctrl+F6)"))
+        .Connect(&QAction::triggered, [tagViewBookmarkFn](){ tagViewBookmarkFn(5); });
     am->AddAction(ID_TAG_LOC7, tr("Location 7"))
         .SetShortcut(tr("Ctrl+F7"))
-        .SetToolTip(tr("Location 7 (Ctrl+F7)"));
+        .SetToolTip(tr("Save Location 7 (Ctrl+F7)"))
+        .Connect(&QAction::triggered, [tagViewBookmarkFn](){ tagViewBookmarkFn(6); });
     am->AddAction(ID_TAG_LOC8, tr("Location 8"))
         .SetShortcut(tr("Ctrl+F8"))
-        .SetToolTip(tr("Location 8 (Ctrl+F8)"));
+        .SetToolTip(tr("Save Location 8 (Ctrl+F8)"))
+        .Connect(&QAction::triggered, [tagViewBookmarkFn](){ tagViewBookmarkFn(7); });
     am->AddAction(ID_TAG_LOC9, tr("Location 9"))
         .SetShortcut(tr("Ctrl+F9"))
-        .SetToolTip(tr("Location 9 (Ctrl+F9)"));
+        .SetToolTip(tr("Save Location 9 (Ctrl+F9)"))
+        .Connect(&QAction::triggered, [tagViewBookmarkFn](){ tagViewBookmarkFn(8); });
     am->AddAction(ID_TAG_LOC10, tr("Location 10"))
         .SetShortcut(tr("Ctrl+F10"))
-        .SetToolTip(tr("Location 10 (Ctrl+F10)"));
+        .SetToolTip(tr("Save Location 10 (Ctrl+F10)"))
+        .Connect(&QAction::triggered, [tagViewBookmarkFn](){ tagViewBookmarkFn(9); });
     am->AddAction(ID_TAG_LOC11, tr("Location 11"))
         .SetShortcut(tr("Ctrl+F11"))
-        .SetToolTip(tr("Location 11 (Ctrl+F11)"));
+        .SetToolTip(tr("Save Location 11 (Ctrl+F11)"))
+        .Connect(&QAction::triggered, [tagViewBookmarkFn](){ tagViewBookmarkFn(10); });
     am->AddAction(ID_TAG_LOC12, tr("Location 12"))
         .SetShortcut(tr("Ctrl+F12"))
-        .SetToolTip(tr("Location 12 (Ctrl+F12)"));
+        .SetToolTip(tr("Save Location 12 (Ctrl+F12)"))
+        .Connect(&QAction::triggered, [tagViewBookmarkFn](){ tagViewBookmarkFn(11); });
 
     if (CViewManager::IsMultiViewportEnabled())
     {
@@ -1017,9 +1114,6 @@ void MainWindow::InitActions()
     am->AddAction(ID_TOOLS_ENABLEFILECHANGEMONITORING, tr("Enable File Change Monitoring"));
     am->AddAction(ID_CLEAR_REGISTRY, tr("Clear Registry Data"))
         .SetStatusTip(tr("Clear Registry Data"));
-    am->AddAction(ID_VALIDATELEVEL, tr("&Check Level for Errors"))
-        .SetStatusTip(tr("Validate Level"));
-    am->AddAction(ID_TOOLS_VALIDATEOBJECTPOSITIONS, tr("Check Object Positions"));
     QAction* saveLevelStatsAction =
         am->AddAction(ID_TOOLS_LOGMEMORYUSAGE, tr("Save Level Statistics"))
                 .SetStatusTip(tr("Logs Editor memory usage."));
@@ -1047,15 +1141,12 @@ void MainWindow::InitActions()
         .SetToolTip(tr("Show &Quick Access Bar (Ctrl+Alt+Space)"));
 
     // Disable layouts menu
-    if (CViewManager::IsMultiViewportEnabled())
-    {
-        am->AddAction(ID_VIEW_LAYOUTS, tr("Layouts"));
+    am->AddAction(ID_VIEW_LAYOUTS, tr("Layouts"));
 
-        am->AddAction(ID_VIEW_SAVELAYOUT, tr("Save Layout..."))
-            .Connect(&QAction::triggered, this, &MainWindow::SaveLayout);
-        am->AddAction(ID_VIEW_LAYOUT_LOAD_DEFAULT, tr("Restore Default Layout"))
-            .Connect(&QAction::triggered, [this]() { m_viewPaneManager->RestoreDefaultLayout(true); });
-    }
+    am->AddAction(ID_VIEW_SAVELAYOUT, tr("Save Layout..."))
+        .Connect(&QAction::triggered, this, &MainWindow::SaveLayout);
+    am->AddAction(ID_VIEW_LAYOUT_LOAD_DEFAULT, tr("Restore Default Layout"))
+        .Connect(&QAction::triggered, [this]() { m_viewPaneManager->RestoreDefaultLayout(true); });
 
     am->AddAction(ID_SKINS_REFRESH, tr("Refresh Style"))
         .SetToolTip(tr("Refreshes the editor stylesheet"))
@@ -1291,6 +1382,11 @@ void MainWindow::AdjustToolBarIconSize(AzQtComponents::ToolBar::ToolBarIconSize 
 
 void MainWindow::OnGameModeChanged(bool inGameMode)
 {
+    if (IsNewActionManagerEnabled())
+    {
+        return;
+    }
+
     menuBar()->setDisabled(inGameMode);
     m_toolbarManager->SetEnabled(!inGameMode);
 
@@ -1353,7 +1449,7 @@ void MainWindow::OnEditorNotifyEvent(EEditorNotifyEvent ev)
         break;
     // Remove track view option to avoid starting in bad state
     case eNotify_OnBeginSimulationMode:
-        if (m_actionManager->HasAction(ID_OPEN_TRACKVIEW))
+        if (m_actionManager && m_actionManager->HasAction(ID_OPEN_TRACKVIEW))
         {
             QAction* tvAction = m_actionManager->GetAction(ID_OPEN_TRACKVIEW);
             if (tvAction)
@@ -1363,7 +1459,7 @@ void MainWindow::OnEditorNotifyEvent(EEditorNotifyEvent ev)
         }
         break;
     case eNotify_OnEndSimulationMode:
-        if (m_actionManager->HasAction(ID_OPEN_TRACKVIEW))
+        if (m_actionManager && m_actionManager->HasAction(ID_OPEN_TRACKVIEW))
         {
             QAction* tvAction = m_actionManager->GetAction(ID_OPEN_TRACKVIEW);
             if (tvAction)
@@ -1475,11 +1571,10 @@ void MainWindow::ResetBackgroundUpdateTimer()
         m_backgroundUpdateTimer = nullptr;
     }
 
-    ICVar* pBackgroundUpdatePeriod = gEnv->pConsole->GetCVar("ed_backgroundUpdatePeriod");
-    if (pBackgroundUpdatePeriod && pBackgroundUpdatePeriod->GetIVal() > 0)
+    if (gSettings.backgroundUpdatePeriod > 0)
     {
         m_backgroundUpdateTimer = new QTimer(this);
-        m_backgroundUpdateTimer->start(pBackgroundUpdatePeriod->GetIVal());
+        m_backgroundUpdateTimer->start(gSettings.backgroundUpdatePeriod);
         connect(m_backgroundUpdateTimer, &QTimer::timeout, this, [&]() {
             // Make sure that visible editor window get low-fps updates while in the background
 
@@ -1853,7 +1948,7 @@ void MainWindow::OnViewPaneCreated(const QtViewPane* pane)
         id = pane->m_options.builtInActionId;
     }
 
-    if (m_actionManager->HasAction(id))
+    if (!IsNewActionManagerEnabled() && m_actionManager->HasAction(id))
     {
         action = m_actionManager->GetAction(id);
         action->setChecked(true);

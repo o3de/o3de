@@ -19,6 +19,7 @@
 #include <MCore/Source/Command.h>
 #include <MCore/Source/MCoreCommandManager.h>
 #include <AzQtComponents/Components/Widgets/Card.h>
+#include <EMotionFX/Source/PhysicsSetup.h>
 #include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/EMStudioPlugin.h>
 #include <QPushButton>
 #include <QWidget>
@@ -46,11 +47,11 @@ namespace EMotionFX
     public:
         ColliderPropertyNotify(ColliderWidget* colliderWidget);
 
-        void BeforePropertyModified(AzToolsFramework::InstanceDataNode* pNode) override;
-        void AfterPropertyModified(AzToolsFramework::InstanceDataNode* /*pNode*/) override {}
+        void BeforePropertyModified(AzToolsFramework::InstanceDataNode* node) override;
+        void AfterPropertyModified(AzToolsFramework::InstanceDataNode* node) override;
 
-        void SetPropertyEditingActive(AzToolsFramework::InstanceDataNode* /*pNode*/) override {}
-        void SetPropertyEditingComplete(AzToolsFramework::InstanceDataNode* pNode) override;
+        void SetPropertyEditingActive([[maybe_unused]] AzToolsFramework::InstanceDataNode* node) override {}
+        void SetPropertyEditingComplete(AzToolsFramework::InstanceDataNode* node) override;
 
         void SealUndoStack() override {}
 
@@ -75,6 +76,8 @@ namespace EMotionFX
         Node* GetJoint() const { return m_joint; }
         size_t GetColliderIndex() const { return m_colliderIndex; }
         PhysicsSetup::ColliderConfigType GetColliderType() const { return m_colliderType; }
+
+        void InvalidateEditorValues();
 
     signals:
         void CopyCollider(size_t index);
@@ -143,40 +146,6 @@ namespace EMotionFX
 
         void contextMenuEvent(QContextMenuEvent* event) override;
         QSize sizeHint() const override;
-
-        /**
-         * Render the given colliders.
-         * @param[in] colliders The colliders to render.
-         * @param[in] actorInstance The actor instance from which the world space transforms for the colliders are read from.
-         * @param[in] node The node to which the colliders belong to.
-         * @param[in] renderInfo Needed to access the render util.
-         * @param[in] colliderColor The collider color.
-         */
-        //! Deprecated: remove after openglrenderwidget is gone.
-        static void LegacyRenderColliders(const AzPhysics::ShapeColliderPairList& colliders,
-            const ActorInstance* actorInstance,
-            const Node* node,
-            EMStudio::EMStudioPlugin::RenderInfo* renderInfo,
-            const MCore::RGBAColor& colliderColor);
-
-        //! Deprecated: remove after openglrenderwidget is gone.
-        static void LegacyRenderColliders(
-            PhysicsSetup::ColliderConfigType colliderConfigType,
-            const MCore::RGBAColor& defaultColor,
-            const MCore::RGBAColor& selectedColor,
-            EMStudio::RenderPlugin* renderPlugin,
-            EMStudio::EMStudioPlugin::RenderInfo* renderInfo);
-
-        static void RenderColliders(
-            const AzPhysics::ShapeColliderPairList& colliders,
-            const ActorInstance* actorInstance,
-            const Node* node,
-            const AZ::Color& colliderColor);
-
-        static void RenderColliders(
-            PhysicsSetup::ColliderConfigType colliderConfigType,
-            const AZ::Color& defaultColor,
-            const AZ::Color& selectedColor);
 
         static int s_layoutSpacing;
 

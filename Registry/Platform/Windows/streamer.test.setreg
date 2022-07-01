@@ -11,44 +11,19 @@
                     "Generic":
                     {
                         "Stack":
-                        [
-                            {
-                                "$type": "AZ::IO::StorageDriveConfig",
-                                "MaxFileHandles": 1024
-                            },
+                        {
+                            "Native drive":
                             {
                                 "$type": "AZ::IO::WindowsStorageDriveConfig",
+                                "$stack_after": "Drive",
                                 "MaxFileHandles": 1024,
                                 "MaxMetaDataCache": 1024,
                                 "Overcommit": 8,
                                 "EnableFileSharing": true,
                                 "EnableUnbufferedReads": true,
                                 "MinimalReporting": true
-                            },
-                            {
-                                "$type": "AZ::IO::ReadSplitterConfig",
-                                "BufferSizeMib": 10,
-                                "SplitSize": "MaxTransfer",
-                                "AdjustOffset": true,
-                                "SplitAlignedRequests": false
-                            },
-                            {
-                                "$type": "AZ::IO::BlockCacheConfig",
-                                "CacheSizeMib": 10,
-                                "BlockSize": "MaxTransfer"
-                            },
-                            {
-                                "$type": "AZ::IO::DedicatedCacheConfig",
-                                "CacheSizeMib": 10,
-                                "BlockSize": "MemoryAlignment",
-                                "WriteOnlyEpilog": true
-                            },
-                            {
-                                "$type": "AZ::IO::FullFileDecompressorConfig",
-                                "MaxNumReads": 4,
-                                "MaxNumJobs": 4
                             }
-                        ]
+                        }
                     }
                 }
             }

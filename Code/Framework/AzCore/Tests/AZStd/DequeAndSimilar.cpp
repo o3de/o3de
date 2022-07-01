@@ -16,9 +16,6 @@
 #include <AzCore/std/allocator_static.h>
 #include <AzCore/std/allocator_ref.h>
 
-using namespace AZStd;
-using namespace UnitTestInternal;
-
 #define AZ_TEST_VALIDATE_EMPTY_DEQUE(_Deque) \
     AZ_TEST_ASSERT(_Deque.validate());       \
     AZ_TEST_ASSERT(_Deque.size() == 0);      \
@@ -33,6 +30,9 @@ using namespace UnitTestInternal;
 
 namespace UnitTest
 {
+    using namespace AZStd;
+    using namespace UnitTestInternal;
+
     class Containers
         : public AllocatorsFixture
     {

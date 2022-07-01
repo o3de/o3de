@@ -31,7 +31,7 @@ namespace AZ
             : m_data{AZStd::move(data)}
         {}
 
-        AZStd::array_view<uint8_t> PipelineLibraryData::GetData() const
+        AZStd::span<const uint8_t> PipelineLibraryData::GetData() const
         {
             return m_data;
         }

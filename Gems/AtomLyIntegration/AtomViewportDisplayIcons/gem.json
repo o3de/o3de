@@ -6,7 +6,7 @@
     "origin": "Open 3D Engine - o3de.org",
     "origin_url": "https://github.com/o3de/o3de",
     "type": "Code",
-    "summary": "",
+    "summary": "Viewport display icons for Atom",
     "canonical_tags": [
         "Gem"
     ],
@@ -16,7 +16,6 @@
     "dependencies": [
         "Atom_RHI",
         "Atom_RPI",
-        "Atom_Bootstrap",
-        "Atom_AtomBridge"
+        "Atom_Bootstrap"
     ]
 }

@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <BuilderSettings/ImageProcessingDefines.h>
+#include <Atom/ImageProcessing/ImageProcessingDefines.h>
 #include <AzCore/RTTI/TypeInfo.h>
 #include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/Memory/Memory.h>

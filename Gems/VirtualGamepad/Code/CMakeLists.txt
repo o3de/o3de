@@ -40,6 +40,6 @@ ly_add_target(
 )
 
 # the virtual gamepad is needed everywhere except servers:
-ly_create_alias(NAME VirtualGamepad.Clients  NAMESPACE Gem TARGETS Gem::VirtualGamepad)
-ly_create_alias(NAME VirtualGamepad.Tools    NAMESPACE Gem TARGETS Gem::VirtualGamepad)
-ly_create_alias(NAME VirtualGamepad.Builders NAMESPACE Gem TARGETS Gem::VirtualGamepad Gem::UiBasics.Builders)
+ly_create_alias(NAME VirtualGamepad.Clients  NAMESPACE Gem TARGETS Gem::VirtualGamepad Gem::LyShine.Clients)
+ly_create_alias(NAME VirtualGamepad.Tools    NAMESPACE Gem TARGETS Gem::VirtualGamepad Gem::LyShine.Tools)
+ly_create_alias(NAME VirtualGamepad.Builders NAMESPACE Gem TARGETS Gem::VirtualGamepad Gem::UiBasics.Builders Gem::LyShine.Builders)

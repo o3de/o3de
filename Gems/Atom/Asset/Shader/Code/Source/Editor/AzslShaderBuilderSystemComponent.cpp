@@ -13,6 +13,7 @@
 
 #include <Atom/RHI.Edit/ShaderPlatformInterface.h>
 #include <Atom/RHI.Edit/Utils.h>
+#include <Atom/RHI.Edit/ShaderBuildOptions.h>
 
 #include <Atom/RPI.Reflect/Asset/AssetHandler.h>
 #include <Atom/RPI.Reflect/Shader/ShaderAsset.h>
@@ -26,8 +27,6 @@
 #include <AzCore/Settings/SettingsRegistry.h>
 
 #include <CommonFiles/Preprocessor.h>
-#include <CommonFiles/GlobalBuildOptions.h>
-#include <Editor/AtomShaderCapabilitiesConfigFile.h>
 
 namespace AZ
 {
@@ -45,9 +44,8 @@ namespace AZ
 
             PreprocessorOptions::Reflect(context);
             RHI::ShaderCompilerProfiling::Reflect(context);
-            AtomShaderConfig::CapabilitiesConfigFile::Reflect(context);
-            GlobalBuildOptions::Reflect(context);
-            RHI::ShaderCompilerArguments::Reflect(context);
+            RHI::ShaderBuildArguments::Reflect(context);
+            RHI::ShaderBuildOptions::Reflect(context);
         }
 
         void AzslShaderBuilderSystemComponent::GetProvidedServices(ComponentDescriptor::DependencyArrayType& provided)
@@ -82,7 +80,7 @@ namespace AZ
             // Register Shader Asset Builder
             AssetBuilderSDK::AssetBuilderDesc shaderAssetBuilderDescriptor;
             shaderAssetBuilderDescriptor.m_name = "Shader Asset Builder";
-            shaderAssetBuilderDescriptor.m_version = 109; // Modify Metal shader platform to permit the precise keyword to fix depth bitwise mismatch between passes
+            shaderAssetBuilderDescriptor.m_version = 112; // Fixed Dx12 shader stage visibility
             shaderAssetBuilderDescriptor.m_patterns.push_back(AssetBuilderSDK::AssetBuilderPattern( AZStd::string::format("*.%s", RPI::ShaderSourceData::Extension), AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
             shaderAssetBuilderDescriptor.m_busId = azrtti_typeid<ShaderAssetBuilder>();
             shaderAssetBuilderDescriptor.m_createJobFunction = AZStd::bind(&ShaderAssetBuilder::CreateJobs, &m_shaderAssetBuilder, AZStd::placeholders::_1, AZStd::placeholders::_2);
@@ -107,7 +105,7 @@ namespace AZ
                 shaderVariantAssetBuilderDescriptor.m_name = "Shader Variant Asset Builder";
                 // Both "Shader Variant Asset Builder" and "Shader Asset Builder" produce ShaderVariantAsset products. If you update
                 // ShaderVariantAsset you will need to update BOTH version numbers, not just "Shader Variant Asset Builder".
-                shaderVariantAssetBuilderDescriptor.m_version = 27; // The Build Time Stamp of ShaderAsset And ShaderVariantAsset Should Be Based On GetTimeUTCMilliSecond().
+                shaderVariantAssetBuilderDescriptor.m_version = 28; // Fixed Dx12 shader stage visibility
                 shaderVariantAssetBuilderDescriptor.m_patterns.push_back(AssetBuilderSDK::AssetBuilderPattern(AZStd::string::format("*.%s", RPI::ShaderVariantListSourceData::Extension), AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
                 shaderVariantAssetBuilderDescriptor.m_busId = azrtti_typeid<ShaderVariantAssetBuilder>();
                 shaderVariantAssetBuilderDescriptor.m_createJobFunction = AZStd::bind(&ShaderVariantAssetBuilder::CreateJobs, &m_shaderVariantAssetBuilder, AZStd::placeholders::_1, AZStd::placeholders::_2);
@@ -120,7 +118,7 @@ namespace AZ
             // Register Precompiled Shader Builder
             AssetBuilderSDK::AssetBuilderDesc precompiledShaderBuilderDescriptor;
             precompiledShaderBuilderDescriptor.m_name = "Precompiled Shader Builder";
-            precompiledShaderBuilderDescriptor.m_version = 10; // ATOM-15472
+            precompiledShaderBuilderDescriptor.m_version = 11; // ATOM-15740
             precompiledShaderBuilderDescriptor.m_patterns.push_back(AssetBuilderSDK::AssetBuilderPattern(AZStd::string::format("*.%s", AZ::PrecompiledShaderBuilder::Extension), AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
             precompiledShaderBuilderDescriptor.m_busId = azrtti_typeid<PrecompiledShaderBuilder>();
             precompiledShaderBuilderDescriptor.m_createJobFunction = AZStd::bind(&PrecompiledShaderBuilder::CreateJobs, &m_precompiledShaderBuilder, AZStd::placeholders::_1, AZStd::placeholders::_2);

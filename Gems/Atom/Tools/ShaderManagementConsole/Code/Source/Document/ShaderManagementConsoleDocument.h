@@ -5,64 +5,86 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
-#include <Atom/Document/ShaderManagementConsoleDocumentRequestBus.h>
 #include <Atom/RPI.Edit/Shader/ShaderVariantListSourceData.h>
+#include <Atom/RPI.Reflect/Material/ShaderCollection.h>
 #include <Atom/RPI.Reflect/Shader/ShaderAsset.h>
 #include <AtomToolsFramework/Document/AtomToolsDocument.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/RTTI/RTTI.h>
+#include <AzCore/std/containers/vector.h>
+#include <Document/ShaderManagementConsoleDocumentRequestBus.h>
 
 namespace ShaderManagementConsole
 {
-    /**
-     * ShaderManagementConsoleDocument provides an API for modifying and saving document properties.
-     */
+    //! ShaderManagementConsoleDocument provides an API for modifying and saving document properties.
     class ShaderManagementConsoleDocument
         : public AtomToolsFramework::AtomToolsDocument
         , public ShaderManagementConsoleDocumentRequestBus::Handler
     {
     public:
-        AZ_RTTI(ShaderManagementConsoleDocument, "{DBA269AE-892B-415C-8FA1-166B94B0E045}");
+        AZ_RTTI(ShaderManagementConsoleDocument, "{C8FAF1C7-8665-423C-B1DD-82016231B17B}", AtomToolsFramework::AtomToolsDocument);
         AZ_CLASS_ALLOCATOR(ShaderManagementConsoleDocument, AZ::SystemAllocator, 0);
-        AZ_DISABLE_COPY(ShaderManagementConsoleDocument);
+        AZ_DISABLE_COPY_MOVE(ShaderManagementConsoleDocument);
 
-        ShaderManagementConsoleDocument();
-        virtual ~ShaderManagementConsoleDocument();
+        static void Reflect(AZ::ReflectContext* context);
 
-        ////////////////////////////////////////////////////////////////////////
-        // AtomToolsFramework::AtomToolsDocument
-        ////////////////////////////////////////////////////////////////////////
-        bool Open(AZStd::string_view loadPath) override;
-        bool Close() override;
+        ShaderManagementConsoleDocument() = default;
+        ShaderManagementConsoleDocument(const AZ::Crc32& toolId, const AtomToolsFramework::DocumentTypeInfo& documentTypeInfo);
+        ~ShaderManagementConsoleDocument();
+
+        // AtomToolsFramework::AtomToolsDocument overrides...
+        static AtomToolsFramework::DocumentTypeInfo BuildDocumentTypeInfo();
+        AtomToolsFramework::DocumentObjectInfoVector GetObjectInfo() const override;
+        bool Open(const AZStd::string& loadPath) override;
+        bool Save() override;
+        bool SaveAsCopy(const AZStd::string& savePath) override;
+        bool SaveAsChild(const AZStd::string& savePath) override;
         bool IsOpen() const override;
-        ////////////////////////////////////////////////////////////////////////
+        bool IsModified() const override;
+        bool BeginEdit() override;
+        bool EndEdit() override;
 
-        ////////////////////////////////////////////////////////////////////////
-        // ShaderManagementConsoleDocumentRequestBus::Handler implementation
-        size_t GetShaderOptionCount() const override;
+        // ShaderManagementConsoleDocumentRequestBus::Handler overridfes...
+        void SetShaderVariantListSourceData(const AZ::RPI::ShaderVariantListSourceData& shaderVariantListSourceData) override;
+        const AZ::RPI::ShaderVariantListSourceData& GetShaderVariantListSourceData() const override;
+        size_t GetShaderOptionDescriptorCount() const override;
         const AZ::RPI::ShaderOptionDescriptor& GetShaderOptionDescriptor(size_t index) const override;
-        size_t GetShaderVariantCount() const override;
-        const AZ::RPI::ShaderVariantListSourceData::VariantInfo& GetShaderVariantInfo(size_t index) const override;
-        ////////////////////////////////////////////////////////////////////////
 
     private:
-        // Function to be bound for undo and redo
-        using UndoRedoFunction = AZStd::function<void()>;
+        // AtomToolsFramework::AtomToolsDocument overrides...
+        void Clear() override;
 
-        // A pair of functions, where first is the undo operation and second is the redo operation
-        using UndoRedoFunctionPair = AZStd::pair<UndoRedoFunction, UndoRedoFunction>;
+        // Write shader variant list source data to JSON
+        bool SaveSourceData();
 
-        // Container for all of the active undo and redo functions and state
-        using UndoRedoHistory = AZStd::vector<UndoRedoFunctionPair>;
+        // Read shader variant list source data from JSON and initialize the document
+        bool LoadShaderSourceData();
 
-        void Clear();
+        // Read shader source data from JSON then find all references to to populate the shader variant list and initialize the document
+        bool LoadShaderVariantListSourceData();
+
+        // Find all material assets that reference material types using shaderFilePath
+        AZStd::vector<AZ::Data::AssetId> FindMaterialAssetsUsingShader(const AZStd::string& shaderFilePath);
+
+        // Retrieve all of the shader collection items from a material instance created from materialAssetId
+        AZStd::vector<AZ::RPI::ShaderCollection::Item> GetMaterialInstanceShaderItems(const AZ::Data::AssetId& materialAssetId);
 
         // Source data for shader variant list
         AZ::RPI::ShaderVariantListSourceData m_shaderVariantListSourceData;
 
+        // Backup copy of the shader variant list source data that will be saved for restoration during undo.
+        AZ::RPI::ShaderVariantListSourceData m_shaderVariantListSourceDataBeforeEdit;
+
         // Shader asset for the corresponding shader variant list
         AZ::Data::Asset<AZ::RPI::ShaderAsset> m_shaderAsset;
+
+        AZ::RPI::ShaderOptionDescriptor m_invalidDescriptor;
+
+        // Flag tracking the modified state of the document.
+        // Will be set to true anytime data is changed and cleared anytime the document is saved.
+        bool m_modified = {};
     };
 } // namespace ShaderManagementConsole

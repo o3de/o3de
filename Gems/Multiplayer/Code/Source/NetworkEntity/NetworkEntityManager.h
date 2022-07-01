@@ -11,6 +11,7 @@
 #include <AzCore/EBus/ScheduledEvent.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzFramework/Spawnable/RootSpawnableInterface.h>
+#include <AzFramework/Spawnable/SpawnableAssetBus.h>
 #include <Source/NetworkEntity/NetworkEntityAuthorityTracker.h>
 #include <Source/NetworkEntity/NetworkEntityTracker.h>
 #include <Source/NetworkEntity/NetworkSpawnableLibrary.h>
@@ -26,8 +27,11 @@ namespace Multiplayer
     class NetworkEntityManager final
         : public INetworkEntityManager
         , public AzFramework::RootSpawnableNotificationBus::Handler
+        , public AzFramework::SpawnableAssetEventsBus::Handler
     {
     public:
+        static constexpr AZ::Crc32 NetworkEntityTag = AZ_CRC_CE("Network");
+
         NetworkEntityManager();
         ~NetworkEntityManager();
 
@@ -43,7 +47,13 @@ namespace Multiplayer
         ConstNetworkEntityHandle GetEntity(NetEntityId netEntityId) const override;
         NetEntityId GetNetEntityIdById(const AZ::EntityId& entityId) const override;
 
-        EntityList CreateEntitiesImmediate(const AzFramework::Spawnable& spawnable, NetEntityRole netEntityRole, AutoActivate autoActivate);
+        EntityList CreateEntitiesImmediate
+        (
+            const AzFramework::Spawnable& spawnable,
+            NetEntityRole netEntityRole,
+            const AZ::Transform& transform,
+            AutoActivate autoActivate
+        );
         EntityList CreateEntitiesImmediate
         (
             const PrefabEntityId& prefabEntryId,
@@ -81,6 +91,10 @@ namespace Multiplayer
         void HandleLocalRpcMessage(NetworkEntityRpcMessage& message) override;
         void HandleEntitiesExitDomain(const NetEntityIdSet& entitiesNotInDomain) override;
         void ForceAssumeAuthority(const ConstNetworkEntityHandle& entityHandle) override;
+        void MarkAlwaysRelevantToClients(const ConstNetworkEntityHandle& entityHandle, bool alwaysRelevant) override;
+        void MarkAlwaysRelevantToServers(const ConstNetworkEntityHandle& entityHandle, bool alwaysRelevant) override;
+        const NetEntityHandleSet& GetAlwaysRelevantToClientsSet() const override;
+        const NetEntityHandleSet& GetAlwaysRelevantToServersSet() const override;
         void SetMigrateTimeoutTimeMs(AZ::TimeMs timeoutTimeMs) override;
         void DebugDraw() const override;
         //! @}
@@ -91,6 +105,14 @@ namespace Multiplayer
         //! @{
         void OnRootSpawnableAssigned(AZ::Data::Asset<AzFramework::Spawnable> rootSpawnable, uint32_t generation) override;
         void OnRootSpawnableReleased(uint32_t generation) override;
+        //! @}
+
+        //! SpawnableAssetEventsBus
+        //! @{
+        void OnResolveAliases(
+            AzFramework::Spawnable::EntityAliasVisitor& aliases,
+            const AzFramework::SpawnableMetaData& metadata,
+            const AzFramework::Spawnable::EntityList& entities) override;
         //! @}
 
         //! Used to release all memory prior to shutdown.
@@ -104,6 +126,9 @@ namespace Multiplayer
         NetworkEntityTracker m_networkEntityTracker;
         NetworkEntityAuthorityTracker m_networkEntityAuthorityTracker;
         MultiplayerComponentRegistry m_multiplayerComponentRegistry;
+
+        AZStd::unordered_set<ConstNetworkEntityHandle> m_alwaysRelevantToClients;
+        AZStd::unordered_set<ConstNetworkEntityHandle> m_alwaysRelevantToServers;
 
         AZ::ScheduledEvent m_removeEntitiesEvent;
         AZStd::vector<NetEntityId> m_removeList;

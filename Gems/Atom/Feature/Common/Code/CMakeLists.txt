@@ -6,7 +6,7 @@
 #
 #
 
-o3de_pal_dir(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME} ${gem_restricted_path} ${gem_path} ${gem_parent_relative_path})
+o3de_pal_dir(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME} "${gem_restricted_path}" "${gem_path}" "${gem_parent_relative_path}")
 set(common_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/Common)
 
 ly_add_target(
@@ -18,7 +18,6 @@ ly_add_target(
         ${pal_source_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
     PLATFORM_INCLUDE_FILES
         ${pal_source_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}.cmake
-        ${common_source_dir}/${PAL_TRAIT_COMPILER_ID}/atom_feature_common_${PAL_TRAIT_COMPILER_ID_LOWERCASE}.cmake
     INCLUDE_DIRECTORIES
         PRIVATE
             .
@@ -133,6 +132,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 Gem::Atom_Feature_Common.Public
     )
 
+    set(runtime_dependencies_builders ${pal_source_dir}/runtime_dependencies_builders.cmake)
     ly_add_target(
         NAME Atom_Feature_Common.Builders GEM_MODULE
 
@@ -140,7 +140,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         FILES_CMAKE
             atom_feature_common_builders_files.cmake
         PLATFORM_INCLUDE_FILES
-            ${runtime_dependencies_tools}
+            ${runtime_dependencies_builders}
         INCLUDE_DIRECTORIES
             PRIVATE
                 Source/Builders

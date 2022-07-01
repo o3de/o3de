@@ -10,7 +10,7 @@
 #include <Atom/RHI/PipelineStateDescriptor.h>
 
 #include <Atom/RHI.Edit/ShaderPlatformInterface.h>
-#include <Atom/RHI.Edit/ShaderCompilerArguments.h>
+#include <Atom/RHI.Edit/ShaderBuildArguments.h>
 
 #include <Atom/RPI.Reflect/Shader/ShaderCommonTypes.h>
 
@@ -57,7 +57,14 @@ namespace AZ
             };
 
             AZStd::string m_source;
-            RHI::ShaderCompilerArguments m_compiler;
+
+            RHI::ShaderBuildArguments m_removeBuildArguments;  // These arguments are removed first.
+            RHI::ShaderBuildArguments m_addBuildArguments;     // Subsequently, these arguments are added.
+
+            // List of macro definitions that will be rolled into m_addBuildArguments.m_preprocessorArguments as command line arguments
+            // for the C-Preprocessor. At face value this is redundant, but it is very convenient for the customer
+            // as most of the time this all they customize in terms of shader compilation arguments.
+            AZStd::vector<AZStd::string> m_definitions;
 
             AZStd::string m_drawListName;
 
@@ -79,33 +86,13 @@ namespace AZ
                 //! If left empty, the data refers to the default supervariant.
                 AZ::Name m_name;
 
-                //! + MCPP Macro definition arguments + AZSLc arguments.
-                //! These arguments are added after shader_global_build_options.json & m_compiler.m_azslcAdditionalFreeArguments.
-                //! Arguments that start with "-D" are given to MCPP.
-                //!     Example: "-DMACRO1 -DMACRO2=3".
-                //! all other arguments are given to AZSLc.
-                //! Note the arguments are added in addition to the arguments
-                //! in <GAME_PROJECT>/Config/shader_global_build_options.json
-                AZStd::string m_plusArguments;
+                RHI::ShaderBuildArguments m_removeBuildArguments;  // These arguments are removed first.
+                RHI::ShaderBuildArguments m_addBuildArguments;     // Subsequently, these arguments are added.
 
-                //! Opposite to @m_plusArguments.
-                //! - MCPP Macro definition arguments - AZSLc arguments.
-                //! Because there are global compilation arguments, this one is useful to remove some of those arguments
-                //! in order to customize the compilation of a particular supervariant.
-                AZStd::string m_minusArguments;
-
-                //! Helper function. Parses @m_minusArguments and @m_plusArguments, looks for arguments of type -D<name>[=<value>] and returns
-                //! a list of <name> to remove.
-                AZStd::vector<AZStd::string> GetCombinedListOfMacroDefinitionNamesToRemove() const;
-
-                //! Helper function. Parses @m_plusArguments, looks for arguments of type "-D<name>[=<value>]" and returns
-                //! a list of "<name>[=<value>]".
-                AZStd::vector<AZStd::string> GetMacroDefinitionsToAdd() const;
-
-                //! Helper function. Takes AZSLc arguments from @m_minusArguments and @m_plusArguments, removes them from @initialAzslcCompilerArguments.
-                //! Takes AZSLc arguments from @m_plusArguments and appends them to @initialAzslcCompilerArguments.
-                //! Returns a new string with customized arguments.
-                AZStd::string GetCustomizedArgumentsForAzslc(const AZStd::string& initialAzslcCompilerArguments) const;
+                // List of macro definitions that will be rolled into m_addBuildArguments.m_preprocessorArguments as command line arguments
+                // for the C-Preprocessor. At face value this is redundant, but it is very convenient for the customer
+                // as most of the time this all they customize in terms of shader compilation arguments.
+                AZStd::vector<AZStd::string> m_definitions;
             };
 
             //! Optional list of supervariants.

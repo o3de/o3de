@@ -6,21 +6,19 @@
  *
  */
 
-#include <AtomToolsFramework/DynamicProperty/DynamicProperty.h>
-#include <AtomToolsFramework/Util/MaterialPropertyUtil.h>
-
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
 #include <Atom/RPI.Reflect/Image/ImageAsset.h>
+#include <Atom/RPI.Reflect/Image/AttachmentImageAsset.h>
 #include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
 #include <Atom/RPI.Reflect/Material/MaterialTypeAsset.h>
-
+#include <AtomToolsFramework/DynamicProperty/DynamicProperty.h>
+#include <AtomToolsFramework/Util/MaterialPropertyUtil.h>
+#include <AtomToolsFramework/Util/Util.h>
 #include <AzCore/Math/Color.h>
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Vector4.h>
-#include <AzToolsFramework/API/EditorAssetSystemAPI.h>
-#include <AzToolsFramework/UI/PropertyEditor/InstanceDataHierarchy.h>
 
 namespace AtomToolsFramework
 {
@@ -31,15 +29,6 @@ namespace AtomToolsFramework
 
     AZStd::any ConvertToEditableType(const AZ::RPI::MaterialPropertyValue& value)
     {
-        if (value.Is<AZ::Data::Asset<AZ::RPI::ImageAsset>>())
-        {
-            const AZ::Data::Asset<AZ::RPI::ImageAsset>& imageAsset = value.GetValue<AZ::Data::Asset<AZ::RPI::ImageAsset>>();
-            return AZStd::any(AZ::Data::Asset<AZ::RPI::StreamingImageAsset>(
-                imageAsset.GetId(),
-                azrtti_typeid<AZ::RPI::StreamingImageAsset>(),
-                imageAsset.GetHint()));
-        }
-
         return AZ::RPI::MaterialPropertyValue::ToAny(value);
     }
 
@@ -76,7 +65,7 @@ namespace AtomToolsFramework
     void ConvertToPropertyConfig(AtomToolsFramework::DynamicPropertyConfig& propertyConfig, const AZ::RPI::MaterialTypeSourceData::PropertyDefinition& propertyDefinition)
     {
         propertyConfig.m_dataType = ConvertToEditableType(propertyDefinition.m_dataType);
-        propertyConfig.m_name = propertyDefinition.m_name;
+        propertyConfig.m_name = propertyDefinition.GetName();
         propertyConfig.m_displayName = propertyDefinition.m_displayName;
         propertyConfig.m_description = propertyDefinition.m_description;
         propertyConfig.m_defaultValue = ConvertToEditableType(propertyDefinition.m_value);
@@ -89,6 +78,13 @@ namespace AtomToolsFramework
         propertyConfig.m_vectorLabels = propertyDefinition.m_vectorLabels;
         propertyConfig.m_visible = propertyDefinition.m_visibility != AZ::RPI::MaterialPropertyVisibility::Hidden;
         propertyConfig.m_readOnly = propertyDefinition.m_visibility == AZ::RPI::MaterialPropertyVisibility::Disabled;
+
+        // Use customized property handler (ImageAssetPropertyHandler) for image asset
+        if (propertyDefinition.m_dataType == AZ::RPI::MaterialPropertyDataType::Image)
+        {
+            propertyConfig.m_supportedAssetTypes.push_back(azrtti_typeid<AZ::RPI::AttachmentImageAsset>());
+            propertyConfig.m_supportedAssetTypes.push_back(azrtti_typeid<AZ::RPI::StreamingImageAsset>());
+        }
 
         // Update the description for material properties to include script name assuming id is set beforehand
         propertyConfig.m_description = AZStd::string::format(
@@ -154,7 +150,6 @@ namespace AtomToolsFramework
             ComparePropertyValues<AZ::Data::AssetId>(valueA, valueB) ||
             ComparePropertyValues<AZ::Data::Asset<AZ::Data::AssetData>>(valueA, valueB) ||
             ComparePropertyValues<AZ::Data::Asset<AZ::RPI::ImageAsset>>(valueA, valueB) ||
-            ComparePropertyValues<AZ::Data::Asset<AZ::RPI::StreamingImageAsset>>(valueA, valueB) ||
             ComparePropertyValues<AZ::Data::Asset<AZ::RPI::MaterialAsset>>(valueA, valueB) ||
             ComparePropertyValues<AZ::Data::Asset<AZ::RPI::MaterialTypeAsset>>(valueA, valueB) ||
             ComparePropertyValues<AZStd::string>(valueA, valueB))
@@ -220,52 +215,5 @@ namespace AtomToolsFramework
         }
 
         return true;
-    }
-
-    AZStd::string GetExteralReferencePath(
-        const AZStd::string& exportPath, const AZStd::string& referencePath, const bool relativeToExportPath)
-    {
-        if (referencePath.empty())
-        {
-            return {};
-        }
-
-        if (!relativeToExportPath)
-        {
-            AZStd::string watchFolder;
-            AZ::Data::AssetInfo assetInfo;
-            bool sourceInfoFound = false;
-            AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
-                sourceInfoFound, &AzToolsFramework::AssetSystemRequestBus::Events::GetSourceInfoBySourcePath, referencePath.c_str(),
-                assetInfo, watchFolder);
-            if (sourceInfoFound)
-            {
-                return assetInfo.m_relativePath;
-            }
-        }
-
-        AZ::IO::BasicPath<AZStd::string> exportFolder(exportPath);
-        exportFolder.RemoveFilename();
-        return AZ::IO::PathView(referencePath).LexicallyRelative(exportFolder).StringAsPosix();
-    }
-
-    const AtomToolsFramework::DynamicProperty* FindDynamicPropertyForInstanceDataNode(const AzToolsFramework::InstanceDataNode* pNode)
-    {
-        // Traverse up the hierarchy from the input node to search for an instance corresponding to material inspector property
-        for (const AzToolsFramework::InstanceDataNode* currentNode = pNode; currentNode; currentNode = currentNode->GetParent())
-        {
-            const AZ::SerializeContext* context = currentNode->GetSerializeContext();
-            const AZ::SerializeContext::ClassData* classData = currentNode->GetClassMetadata();
-            if (context && classData)
-            {
-                if (context->CanDowncast(
-                        classData->m_typeId, azrtti_typeid<AtomToolsFramework::DynamicProperty>(), classData->m_azRtti, nullptr))
-                {
-                    return static_cast<const AtomToolsFramework::DynamicProperty*>(currentNode->FirstInstance());
-                }
-            }
-        }
-
-        return nullptr;
     }
 } // namespace AtomToolsFramework

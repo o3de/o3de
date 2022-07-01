@@ -52,6 +52,7 @@ namespace UnitTest
         }
 
         MOCK_METHOD3(GetHeight, void(const AZ::Vector3& inPosition, AZ::Vector3& outPosition, bool& terrainExists));
+        MOCK_METHOD2(GetHeights, void(AZStd::span<AZ::Vector3> inOutPositionList, AZStd::span<bool> terrainExistsList));
     };
 
     class MockTerrainSpawnerRequests : public Terrain::TerrainSpawnerRequestBus::Handler

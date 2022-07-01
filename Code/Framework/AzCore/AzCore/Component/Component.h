@@ -8,7 +8,7 @@
 
 /** @file
  * Header file for the Component base class.
- * In Open 3D Engine's component entity system, each component defines a discrete  
+ * In Open 3D Engine's component entity system, each component defines a discrete
  * feature that can be attached to an entity.
  */
 
@@ -36,7 +36,7 @@ namespace AZ
     using ComponentValidationResult = AZ::Outcome<void, AZStd::string>;
 
     /**
-     * Base class for all components. 
+     * Base class for all components.
      */
     class Component
     {
@@ -50,11 +50,11 @@ namespace AZ
 
         /**
          * Initializes a component's internals.
-         * A component's constructor should initialize the component's variables only. 
-         * Because the component is not active yet, it should not connect to message buses, 
-         * send messages, and so on. Similarly, the component's constructor should not 
-         * attempt to cache pointers or data from other components on the same entity 
-         * because those components can be added or removed at any moment. To process 
+         * A component's constructor should initialize the component's variables only.
+         * Because the component is not active yet, it should not connect to message buses,
+         * send messages, and so on. Similarly, the component's constructor should not
+         * attempt to cache pointers or data from other components on the same entity
+         * because those components can be added or removed at any moment. To process
          * and initialize all resources that make a component ready to operate, use Init().
          */
         Component();
@@ -68,12 +68,11 @@ namespace AZ
         /**
          * Returns a pointer to the entity.
          * If the component is not attached to any entity, this function returns a null pointer.
-         * In that case, the component is in the default state (not activated). However, 
-         * except in the case of tools, you typically should not use this function. It is a best 
-         * practice to access other components through EBuses instead of accessing them directly. 
-         * For more information, see the 
-         * <a href="http://docs.aws.amazon.com/lumberyard/latest/developerguide/component-entity-system-pg-intro.html">Programmer's Guide to Entities and Components</a> 
-         * in the Open 3D Engine Developer Guide.
+         * In that case, the component is in the default state (not activated). However,
+         * except in the case of tools, you typically should not use this function. It is a best
+         * practice to access other components through EBuses instead of accessing them directly.
+         * For more information, see the O3DE
+         * <a href="https://www.o3de.org/docs/user-guide/programming/components/">Component Development</a> documentation.
          * @return A pointer to the entity. If the component is not attached to any entity,
          * the return value is a null pointer.
          */
@@ -81,7 +80,7 @@ namespace AZ
 
         /**
          * Returns the entity ID if the component is attached to an entity.
-         * If the component is not attached to any entity, this function asserts. 
+         * If the component is not attached to any entity, this function asserts.
          * As a safeguard, make sure that GetEntity()!=nullptr.
          * @return The ID of the entity that contains the component.
          */
@@ -99,7 +98,7 @@ namespace AZ
          * Returns the component ID, which is valid only when the component is attached to an entity.
          * If the component is not attached to any entity, the return value is 0.
          * As a safeguard, make sure that GetEntity()!=nullptr.
-         * @return The ID of the component. If the component is attached to any entity, 
+         * @return The ID of the component. If the component is attached to any entity,
          * the return value is 0.
          */
         ComponentId GetId() const       { return m_id; }
@@ -185,7 +184,7 @@ namespace AZ
          * Overriding this function allows your component to be configured at runtime.
          * See AZ::ComponentConfig for more details.
          * This function cannot be invoked while the component is activated.
-         * 
+         *
          * @code{.cpp}
          * // sample implementation
          * bool ReadInConfig(const ComponentConfig* baseConfig) override
@@ -243,16 +242,16 @@ namespace AZ
 
     /**
      * Includes the core component code required to make a component work.
-     * This macro is typically included in other macros, such as AZ_COMPONENT, to 
+     * This macro is typically included in other macros, such as AZ_COMPONENT, to
      * create a component.
      */
     #define AZ_COMPONENT_BASE(_ComponentClass, ...)                                                                                     \
     AZ_CLASS_ALLOCATOR(_ComponentClass, AZ::SystemAllocator, 0)                                                                         \
-    friend class AZ::HasComponentReflect<_ComponentClass>;                                                                              \
-    friend class AZ::HasComponentProvidedServices<_ComponentClass>;                                                                     \
-    friend class AZ::HasComponentDependentServices<_ComponentClass>;                                                                    \
-    friend class AZ::HasComponentRequiredServices<_ComponentClass>;                                                                     \
-    friend class AZ::HasComponentIncompatibleServices<_ComponentClass>;                                                                 \
+    template<class Comp, class Void> friend class AZ::HasComponentReflect;                                                              \
+    template<class Comp, class Void> friend class AZ::HasComponentProvidedServices;                                                     \
+    template<class Comp, class Void> friend class AZ::HasComponentDependentServices;                                                    \
+    template<class Comp, class Void> friend class AZ::HasComponentRequiredServices;                                                     \
+    template<class Comp, class Void> friend class AZ::HasComponentIncompatibleServices;                                                 \
     static AZ::ComponentDescriptor* CreateDescriptor()                                                                                  \
     {                                                                                                                                   \
             AZ::ComponentDescriptor* descriptor = nullptr;                                                                              \
@@ -281,11 +280,11 @@ namespace AZ
     }
 
     /**
-     * Declares a descriptor class.  
-     * Unless you are implementing very advanced internal functionality, we recommend using 
-     * AZ_COMPONENT instead of this macro. This macro enables you to implement a static function 
-     * in the Component class instead of writing a descriptor. It defines a CreateDescriptorFunction 
-     * that you can call to register a descriptor. (Only one descriptor can exist per environment.) 
+     * Declares a descriptor class.
+     * Unless you are implementing very advanced internal functionality, we recommend using
+     * AZ_COMPONENT instead of this macro. This macro enables you to implement a static function
+     * in the Component class instead of writing a descriptor. It defines a CreateDescriptorFunction
+     * that you can call to register a descriptor. (Only one descriptor can exist per environment.)
      * This macro fails silently if you implement the functions with the wrong signatures.
      */
     #define AZ_COMPONENT_INTRUSIVE_DESCRIPTOR_TYPE(_ComponentClass)         \
@@ -295,7 +294,7 @@ namespace AZ
     /**
      * Declares a component with the default settings.
      * The component derives from AZ::Component, is not templated, uses AZ::SystemAllocator,
-     * and so on. AZ_COMPONENT(_ComponentClass, _ComponentId, OtherBaseClases... Component) is 
+     * and so on. AZ_COMPONENT(_ComponentClass, _ComponentId, OtherBaseClases... Component) is
      * included automatically.
      *
      * The component that this macro creates has a static function called CreateDescriptor

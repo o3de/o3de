@@ -11,11 +11,12 @@
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 
 #include <QApplication>
+#include <QMessageBox>
 
 namespace AzToolsFramework
 {
-    /// Gets the currently active window, or the Editor's main window if there is no active window.
-    /// Can be used to guarantee that modal dialogs have a valid parent in every context.
+    //! Gets the currently active window, or the Editor's main window if there is no active window.
+    //! Can be used to guarantee that modal dialogs have a valid parent in every context.
     inline QWidget* GetActiveWindow()
     {
         QWidget* activeWindow = QApplication::activeWindow();
@@ -26,5 +27,12 @@ namespace AzToolsFramework
 
         return activeWindow;
     }
+
+    //! Create a simple modal dialog with a warning message.
+    inline void WarningDialog(AZStd::string_view title, AZStd::string_view message)
+    {
+        QMessageBox::warning(GetActiveWindow(), QString(title.data()), QString(message.data()), QMessageBox::Ok, QMessageBox::Ok);
+    }
+
 } // namespace AzToolsFramework
 

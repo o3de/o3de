@@ -13,6 +13,7 @@
 #include <AzFramework/Input/Events/InputChannelEventListener.h>
 
 #include <Atom/RHI/PipelineState.h>
+#include <Atom/RHI/StreamBufferView.h>
 
 #include <Atom/RPI.Public/Image/StreamingImage.h>
 #include <Atom/RPI.Public/Pass/RenderPass.h>
@@ -94,6 +95,8 @@ namespace AZ
             void BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context) override;
 
         private:
+            static const int MaxUserTextures = 15;
+
             //! Class which connects to the tick handler using the tick order required at the start of an ImGui frame.
             class TickHandlerFrameStart : protected TickBus::Handler
             {
@@ -133,7 +136,8 @@ namespace AZ
             //! Updates the index and vertex buffers, and returns the total number of draw items.
             uint32_t UpdateImGuiResources();
 
-            void Init();
+            // Initializes ImGui related data in the pass. Called during the pass's initialization phase.
+            void InitializeImGui();
 
             ImGuiContext* m_imguiContext = nullptr;
             TickHandlerFrameStart m_tickHandlerFrameStart;
@@ -143,17 +147,20 @@ namespace AZ
             Data::Instance<RPI::Shader> m_shader;
 
             Data::Instance<RPI::ShaderResourceGroup> m_resourceGroup;
-            RHI::ShaderInputNameIndex m_fontImageIndex = "FontImage";
+            RHI::ShaderInputNameIndex m_texturesIndex = "m_textures";
             RHI::ShaderInputNameIndex m_projectionMatrixIndex = "m_projectionMatrix";
             RHI::Viewport m_viewportState;
 
             RHI::IndexBufferView m_indexBufferView;
-            AZStd::array<RHI::StreamBufferView, 1> m_vertexBufferView; // Only 1 vertex stream view needed, but most RHI apis expect an array.
+            AZStd::array<RHI::StreamBufferView, 2> m_vertexBufferView; // For vertex buffer and instance data
             AZStd::vector<DrawInfo> m_draws;
             Data::Instance<RPI::StreamingImage> m_fontAtlas;
 
             AZStd::vector<ImDrawData> m_drawData;
             bool m_isDefaultImGuiPass = false;
+
+            // Whether the pass data indicated that the pass should be used as the default ImGui pass
+            bool m_requestedAsDefaultImguiPass = false;
 
             // ImGui processes mouse wheel movement on NewFrame(), which could be before input events
             // happen, so save the value to apply the most recent value right before NewFrame().
@@ -162,6 +169,15 @@ namespace AZ
             uint32_t m_viewportWidth = 0;
             uint32_t m_viewportHeight = 0;
 
+            AZStd::unordered_map<Data::Instance<RPI::StreamingImage>, uint32_t> m_userTextures;
+            Data::Instance<RPI::Buffer> m_instanceBuffer;
+            RHI::StreamBufferView m_instanceBufferView;
+
+            // cache the font text id
+            void* m_imguiFontTexId = nullptr;
+
+            // Whether the pass has already initialized it's ImGui related data.
+            bool m_imguiInitialized = false;
         };
     }   // namespace RPI
 }   // namespace AZ

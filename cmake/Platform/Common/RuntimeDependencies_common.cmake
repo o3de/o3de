@@ -7,17 +7,17 @@
 #
 
 set(LY_COPY_PERMISSIONS "OWNER_READ OWNER_WRITE OWNER_EXECUTE")
-set(LY_TARGET_TYPES_WITH_RUNTIME_OUTPUTS MODULE_LIBRARY SHARED_LIBRARY EXECUTABLE APPLICATION)
+set(LY_TARGET_TYPES_WITH_RUNTIME_OUTPUTS UTILITY MODULE_LIBRARY SHARED_LIBRARY EXECUTABLE APPLICATION)
 
 # There are several runtime dependencies to handle:
-# 1. Dependencies to 3rdparty libraries. This involves copying IMPORTED_LOCATION to the folder where the target is. 
+# 1. Dependencies to 3rdparty libraries. This involves copying IMPORTED_LOCATION to the folder where the target is.
 #    Some 3rdParty may require to copy the IMPORTED_LOCATION to a relative folder to where the target is.
-# 2. Dependencies to files. This involves copying INTERFACE_LY_TARGET_FILES to the folder where the target is. In 
+# 2. Dependencies to files. This involves copying INTERFACE_LY_TARGET_FILES to the folder where the target is. In
 #    this case, the files may include a relative folder to where the target is.
 # 3. In some platforms and types of targets, we also need to copy the MANUALLY_ADDED_DEPENDENCIES to the folder where the
-#    target is. This is because the target is not in the same folder as the added dependencies. 
-# In all cases, we need to recursively walk through dependencies to find the above. In multiple cases, we will end up 
-# with the same files trying to be copied to the same place. This is expected, we still want to be able to produce a 
+#    target is. This is because the target is not in the same folder as the added dependencies.
+# In all cases, we need to recursively walk through dependencies to find the above. In multiple cases, we will end up
+# with the same files trying to be copied to the same place. This is expected, we still want to be able to produce a
 # working output per target, so there will be duplication.
 #
 
@@ -49,7 +49,7 @@ function(ly_get_runtime_dependencies ly_RUNTIME_DEPENDENCIES ly_TARGET)
     endif()
 
     unset(all_runtime_dependencies)
-    
+
     # Collect all dependencies to other targets. Dependencies are through linking (LINK_LIBRARIES), and
     # other manual dependencies (MANUALLY_ADDED_DEPENDENCIES)
 
@@ -77,9 +77,10 @@ function(ly_get_runtime_dependencies ly_RUNTIME_DEPENDENCIES ly_TARGET)
             continue()
         endif()
 
-        if(TARGET ${link_dependency} AND link_dependency MATCHES "^3rdParty::")
+        if(TARGET ${link_dependency})
+            get_target_property(is_imported ${link_dependency} IMPORTED)
             get_target_property(is_system_library ${link_dependency} LY_SYSTEM_LIBRARY)
-            if(is_system_library)
+            if(is_imported AND is_system_library)
                 continue()
             endif()
         endif()
@@ -121,34 +122,48 @@ function(ly_get_runtime_dependencies ly_RUNTIME_DEPENDENCIES ly_TARGET)
                 set(imported_property IMPORTED_LOCATION)
             endif()
 
+            # The below loop emulates CMake's search for imported locations:
             unset(target_locations)
-            get_target_property(target_locations ${ly_TARGET} ${imported_property})
-            if(target_locations)
-                list(APPEND all_runtime_dependencies "${target_locations}")
-            else()
-                # Check if the property exists for configurations
-                unset(target_locations)
-                foreach(conf IN LISTS CMAKE_CONFIGURATION_TYPES)
-                    string(TOUPPER ${conf} UCONF)
-                    unset(current_target_locations)
-                    get_target_property(current_target_locations ${ly_TARGET} ${imported_property}_${UCONF})
-                    if(current_target_locations)
-                        string(APPEND target_locations $<$<CONFIG:${conf}>:${current_target_locations}>)
+            foreach(conf IN LISTS CMAKE_CONFIGURATION_TYPES)
+                string(TOUPPER ${conf} UCONF)
+                # try to use the mapping
+                get_target_property(mapped_conf ${ly_TARGET} MAP_IMPORTED_CONFIG_${UCONF})
+                if(NOT mapped_conf)
+                    # if there's no mapping specified, prefer a matching conf if its available
+                    # and if its not, fall back to the blank/empty one (the semicolon is not a typo)
+                    set(mapped_conf "${UCONF};")
+                endif()
+
+                unset(current_target_locations)
+                # note that mapped_conf is a LIST, we need to iterate the list and find the first one that exists:
+                foreach(check_conf IN LISTS mapped_conf)
+                    # check_conf will either be a string like "RELEASE" or the blank empty string.
+                    if (check_conf)
+                        # a non-empty element indicates to look fro IMPORTED_LOCATION_xxxxxxxxx
+                        get_target_property(current_target_locations ${ly_TARGET} ${imported_property}_${check_conf})
                     else()
-                        # try to use the mapping
-                        get_target_property(mapped_conf ${ly_TARGET} MAP_IMPORTED_CONFIG_${UCONF})
-                        if(mapped_conf)
-                            unset(current_target_locations)
-                            get_target_property(current_target_locations ${ly_TARGET} ${imported_property}_${mapped_conf})
-                            if(current_target_locations)
-                                string(APPEND target_locations $<$<CONFIG:${conf}>:${current_target_locations}>)
-                            endif()
-                        endif()
+                        # an empty element indicates to look at the IMPORTED_LOCATION with no suffix.
+                        get_target_property(current_target_locations ${ly_TARGET} ${imported_property})
+                    endif()
+
+                    if(current_target_locations)
+                        # we need to escape any semicolons, since this could be a list.
+                        string(REPLACE ";" "$<SEMICOLON>" current_target_locations "${current_target_locations}")
+                        string(APPEND target_locations "$<$<CONFIG:${conf}>:${current_target_locations}>")
+                        break() # stop looking after the first one is found (This emulates CMakes behavior)
                     endif()
                 endforeach()
-                if(target_locations)
-                    list(APPEND all_runtime_dependencies ${target_locations})
+                if (NOT current_target_locations)
+                    # we didn't find any locations.
+                    if(NOT target_type STREQUAL "INTERFACE_LIBRARY")
+                        # If you explicitly chose to declare a STATIC library but not supply an imported location
+                        # then its a mistake.
+                        message(FATAL_ERROR "${target_type} Library ${ly_TARGET} specified MAP_IMPORTED_CONFIG_${UCONF} = ${mapped_conf} but did not have any of ${imported_property}_xxxx set")
+                    endif()
                 endif()
+            endforeach()
+            if(target_locations)
+                list(APPEND all_runtime_dependencies ${target_locations})
             endif()
 
         endif()
@@ -170,7 +185,7 @@ endfunction()
 function(ly_get_runtime_dependency_command ly_RUNTIME_COMMAND ly_RUNTIME_DEPEND ly_TARGET)
 
     # To optimize this, we are going to cache the commands for the targets we requested. A lot of targets end up being
-    # dependencies of other targets. 
+    # dependencies of other targets.
     get_property(is_command_cached GLOBAL PROPERTY LY_RUNTIME_DEPENDENCY_COMMAND_${ly_TARGET} SET)
     if(is_command_cached)
 
@@ -266,15 +281,23 @@ function(ly_delayed_generate_runtime_dependencies)
         foreach(runtime_dependency ${runtime_dependencies})
             unset(runtime_command)
             unset(runtime_depend)
-            ly_get_runtime_dependency_command(runtime_command runtime_depend ${runtime_dependency})
+
+            ly_get_runtime_dependency_command(runtime_command runtime_depend "${runtime_dependency}")
             string(APPEND LY_COPY_COMMANDS ${runtime_command})
             list(APPEND runtime_depends ${runtime_depend})
         endforeach()
 
         # Generate the output file, note the STAMP_OUTPUT_FILE need to match with the one defined in LYWrappers.cmake
         set(STAMP_OUTPUT_FILE ${CMAKE_BINARY_DIR}/runtime_dependencies/$<CONFIG>/${target}.stamp)
-        set(target_file_dir "$<TARGET_FILE_DIR:${target}>")
-        set(target_file "$<TARGET_FILE:${target}>")
+        # UTILITY type targets does not have a target file, so the CMAKE_RUNTIME_OUTPUT_DIRECTORY is used
+        if (NOT target_type STREQUAL UTILITY)
+            set(target_file_dir "$<TARGET_FILE_DIR:${target}>")
+            set(target_file "$<TARGET_FILE:${target}>")
+        else()
+            set(target_file_dir "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
+            unset(target_file)
+        endif()
+
         ly_file_read(${LY_RUNTIME_DEPENDENCIES_TEMPLATE} template_file)
         string(CONFIGURE "${LY_COPY_COMMANDS}" LY_COPY_COMMANDS @ONLY)
         string(CONFIGURE "${template_file}" configured_template_file @ONLY)
@@ -282,7 +305,7 @@ function(ly_delayed_generate_runtime_dependencies)
             OUTPUT ${CMAKE_BINARY_DIR}/runtime_dependencies/$<CONFIG>/${target}.cmake
             CONTENT "${configured_template_file}"
         )
-        
+
         # set the property that is consumed from the custom command generated in LyWrappers.cmake
         set_target_properties(${target} PROPERTIES RUNTIME_DEPENDENCIES_DEPENDS "${runtime_depends}")
 

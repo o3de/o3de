@@ -16,13 +16,15 @@
 #include <ScriptCanvas/Core/Nodeable.h>
 #include <ScriptCanvas/Core/NodeableOut.h>
 #include <ScriptCanvas/Execution/Interpreted/ExecutionStateInterpreted.h>
+#include <ScriptCanvas/Execution/Interpreted/ExecutionStateInterpretedAPI.h>
 #include <ScriptCanvas/Execution/Interpreted/ExecutionStateInterpretedUtility.h>
-#include <ScriptCanvas/Execution/NodeableOut/NodeableOutNative.h>
 #include <ScriptCanvas/Grammar/PrimitivesDeclarations.h>
 #include <ScriptCanvas/Libraries/Math/MathNodeUtilities.h>
 #include <ScriptCanvas/Utils/BehaviorContextUtils.h>
 
+#include "ExecutionInterpretedClassAPI.h"
 #include "ExecutionInterpretedCloningAPI.h"
+#include "ExecutionInterpretedComponentAPI.h"
 #include "ExecutionInterpretedDebugAPI.h"
 #include "ExecutionInterpretedEBusAPI.h"
 #include "ExecutionInterpretedOut.h"
@@ -48,20 +50,11 @@ namespace ExecutionInterpretedAPICpp
     [[maybe_unused]] constexpr unsigned char k_FastValuesIndexSentinel = 'G' - '0';
 
     template<typename T>
-    T* GetAs(AZ::BehaviorValueParameter& argument)
+    T* GetAs(AZ::BehaviorArgument& argument)
     {
         return argument.m_typeId == azrtti_typeid<T>()
             ? reinterpret_cast<T*>(argument.GetValueAddress())
             : nullptr;
-    }
-
-    int DeleteNodeable(lua_State* lua)
-    {
-        AZ::LuaUserData* userData = reinterpret_cast<AZ::LuaUserData*>(lua_touserdata(lua, -1));
-        AZ_Assert(userData && userData->magicData == AZ_CRC_CE("AZLuaUserData"), "this isn't user data");
-        delete reinterpret_cast<ScriptCanvas::Nodeable*>(userData->value);
-        userData->value = nullptr;
-        return 0;
     }
 
     int ErrorHandler(lua_State* lua)
@@ -76,22 +69,6 @@ namespace ExecutionInterpretedAPICpp
         }
 
         lua_pop(lua, 1);
-        return 0;
-    }
-
-    int ProxyNewIndexMethod(lua_State* lua)
-    {
-        // Lua: ud, k, v 
-        lua_pushvalue(lua, lua_upvalueindex(1));
-        // Lua: ud, k, v, ?
-        AZ_Assert(lua_istable(lua, -1), "the first upvalue must be a table");
-        // Lua: ud, k, v, proxy
-        lua_replace(lua, -4);
-        // Lua: proxy k, v
-        lua_rawset(lua, -3);
-        // Lua: proxy
-        lua_pop(lua, 1);
-        // Lua: 
         return 0;
     }
 
@@ -175,7 +152,7 @@ namespace ExecutionInterpretedAPICpp
             // Lua: 
             AZStd::pair<void*, AZ::BehaviorContext*> multipleResults = ScriptCanvas::BehaviorContextUtils::ConstructTupleGetContext(typeId);
             AZ_Assert(multipleResults.first, "failure to construct a tuple by typeid from behavior context");
-            AZ::BehaviorValueParameter parameter;
+            AZ::BehaviorArgument parameter;
             parameter.m_value = multipleResults.first;
             parameter.m_typeId = typeId;
             AZ::StackPush(lua, multipleResults.second, parameter);
@@ -301,9 +278,9 @@ namespace ScriptCanvas
             return bcClassIter != behaviorContext.m_typeToClassMap.end() ? bcClassIter->second->m_azRtti : nullptr;
         }
 
-        AZ::BehaviorValueParameter BehaviorValueParameterFromTypeIdString(const char* aztypeidStr, AZ::BehaviorContext& behaviorContext)
+        AZ::BehaviorArgument BehaviorValueParameterFromTypeIdString(const char* aztypeidStr, AZ::BehaviorContext& behaviorContext)
         {
-            AZ::BehaviorValueParameter bvp;
+            AZ::BehaviorArgument bvp;
             bvp.m_typeId = CreateIdFromStringFast(aztypeidStr);
             bvp.m_azRtti = GetRttiHelper(bvp.m_typeId, behaviorContext);
             return bvp;
@@ -362,80 +339,7 @@ namespace ScriptCanvas
             return id;
         }
 
-        int OverrideNodeableMetatable(lua_State* lua)
-        {
-            using namespace ExecutionInterpretedAPICpp;
-
-            /**
-            Here is the function in Lua for easier reading
-            function OverrideNodeableMetatable(userdata, class_mt)
-                local proxy = setmetatable({}, class_mt) -- class_mt from the user graph definition
-                local instance_mt = {
-                    __index = proxy
-                    __newindex = function(t, k, v)
-                        proxy[k] = v
-                    end,
-                }
-                --[[ -- not being done
-                for name, method in pairs(metamethods) do
-                    if name ~= '__index' and name ~= '__newindex' do
-                        instance_mt[name] = method
-                    end
-                end
-                --]]
-                return setmetatable(userdata instance_mt) -- can't be done from Lua
-            end
-            --[[
-            userdata to Nodeable before:
-            getmetatable(userdata).__index == Nodeable
-
-            userdata to Nodeable after:
-            local override_mt = getmetatable(userdata)
-            local proxy = override_mt.__index
-            local SubGraph = getmetatable(proxy).__index
-            getmetatable(SubGraph.__index) == Nodeable)
-            --]]
-            */
-
-            // \note: all other metamethods ignored for now
-            // \note: the the object is being constructed, and is assumed to never leave or re-enter Lua again
-            AZ_Assert(lua_isuserdata(lua, -2) && !lua_islightuserdata(lua, -2), "Error in compiled lua file, 1st argument to OverrideNodeableMetatable is not userdata (Nodeable)");
-            AZ_Assert(lua_istable(lua, -1), "Error in compiled lua file, 2nd argument to OverrideNodeableMetatable is not a Lua table");
-                   
-            [[maybe_unused]] auto userData = reinterpret_cast<AZ::LuaUserData*>(lua_touserdata(lua, -2));
-            AZ_Assert(userData && userData->magicData == AZ_CRC_CE("AZLuaUserData"), "this isn't user data");
-            // Lua: LuaUserData::nodeable, class_mt
-            lua_newtable(lua);
-            // Lua: LuaUserData::nodeable, class_mt, proxy
-            lua_pushvalue(lua, -2);
-            // Lua: LuaUserData::nodeable, class_mt, proxy, class_mt
-            lua_setmetatable(lua, -2);
-            // Lua: LuaUserData::nodeable, class_mt, proxy
-            lua_newtable(lua);
-            // Lua: LuaUserData::nodeable, class_mt, proxy, userdata_mt
-            lua_pushvalue(lua, -2);
-            // Lua: LuaUserData::nodeable, class_mt, proxy, userdata_mt, proxy
-            lua_setfield(lua, -2, "__index");
-            // Lua: LuaUserData::nodeable, class_mt, proxy, userdata_mt
-            lua_pushvalue(lua, -2);
-            // Lua: LuaUserData::nodeable, class_mt, proxy, userdata_mt, proxy
-            lua_pushcclosure(lua, &ProxyNewIndexMethod, 1);
-            // Lua: LuaUserData::nodeable, class_mt, proxy, userdata_mt, ProxyNewIndexMethod
-            lua_setfield(lua, -2, "__newindex");
-            // Lua: LuaUserData::nodeable, class_mt, proxy, userdata_mt
-            lua_pushcfunction(lua, &DeleteNodeable);
-            // Lua: LuaUserData::nodeable, class_mt, proxy, userdata_mt, DeleteNodeable
-            lua_setfield(lua, -2, "__gc");
-            // Lua: LuaUserData::nodeable, class_mt, proxy, userdata_mt
-            lua_setmetatable(lua, -4);
-            // Lua: LuaUserData::nodeable, class_mt, proxy
-            lua_pop(lua, 2);
-            // Lua: LuaUserData::nodeable            
-            AZ_Assert(reinterpret_cast<AZ::LuaUserData*>(lua_touserdata(lua, -1)) == userData, "must leave original userdata at the top of the stack");
-            return 1;
-        }
-
-        void PushActivationArgs(lua_State* lua, AZ::BehaviorValueParameter* arguments, size_t numArguments)
+        void PushActivationArgs(lua_State* lua, AZ::BehaviorArgument* arguments, size_t numArguments)
         {
             auto behaviorContext = AZ::ScriptContext::FromNativeContext(lua)->GetBoundContext();
 
@@ -456,12 +360,9 @@ namespace ScriptCanvas
             using namespace ScriptCanvas::Grammar;
             using namespace ExecutionInterpretedAPICpp;
 
-            lua_register(lua, k_InitializeNodeableOutKeys, &InitializeNodeableOutKeys);
-            lua_register(lua, k_NodeableCallInterpretedOut, &CallExecutionOut);
-            lua_register(lua, k_NodeableSetExecutionOutName, &SetExecutionOut);
-            lua_register(lua, k_NodeableSetExecutionOutResultName, &SetExecutionOutResult);
-            lua_register(lua, k_NodeableSetExecutionOutUserSubgraphName, &SetExecutionOutUserSubgraph);
-            lua_register(lua, k_OverrideNodeableMetatableName, &OverrideNodeableMetatable);
+            lua_register(lua, k_InitializeExecutionOutsName, &InitializeNodeableOutKeys);
+            lua_register(lua, k_SetExecutionOutNameNodeable, &SetExecutionOut);
+            lua_register(lua, k_SetExecutionOutResultNameNodeable, &SetExecutionOutResult);
             lua_register(lua, k_UnpackDependencyConstructionArgsFunctionName, &UnpackDependencyConstructionArgs);
             lua_register(lua, k_UnpackDependencyConstructionArgsLeafFunctionName, &UnpackDependencyConstructionArgsLeaf);
 
@@ -481,35 +382,38 @@ namespace ScriptCanvas
             lua_register(lua, k_GetRandomSwitchControlNumberName, &GetRandomSwitchControlNumber);
 
             RegisterTypeSafeEBusResultFunctions(lua);
+            RegisterComponentAPI(lua);
             RegisterCloningAPI(lua);
             RegisterDebugAPI(lua);
             RegisterEBusHandlerAPI(lua);
+            RegisterUserObjectAPI(lua);
             lua_gc(lua, LUA_GCCOLLECT, 0);
         }
 
-        int CallExecutionOut(lua_State* lua)
+        void RegisterUserObjectAPI(lua_State* /*lua*/)
         {
-            // Lua: executionState, outKey, args...
-            const int argsCount = lua_gettop(lua);
-            AZ_Assert(argsCount >= 2, "CallExecutionOut: Error in compiled Lua file, not enough arguments");
-            AZ_Assert(lua_isuserdata(lua, 1), "CallExecutionOut: Error in compiled lua file, 1st argument to SetExecutionOut is not userdata (Nodeable)");
-            AZ_Assert(lua_isnumber(lua, 2), "CallExecutionOut: Error in compiled lua file, 2nd argument to SetExecutionOut is not a number");
-            Nodeable* nodeable = AZ::ScriptValue<Nodeable*>::StackRead(lua, 1);
-            size_t index = aznumeric_caster(lua_tointeger(lua, 2));
-            nodeable->CallOut(index, nullptr, nullptr, argsCount - 2);
-            // Lua: results...
-            return lua_gettop(lua);
+            AZ::ScriptContext* scriptContext{};
+            AZ::ScriptSystemRequestBus::BroadcastResult(scriptContext, &AZ::ScriptSystemRequests::GetContext, AZ::ScriptContextIds::DefaultScriptContextId);
+            AZ_Verify(scriptContext && scriptContext->Execute(ExecutionInterpretedAPICpp::k_LuaClassInheritanceChunk)
+                , "Failed to add ScriptCanvas user object inheritance to ScriptContext!");
+        }
+
+        int ReportError(lua_State* lua, AZStd::string_view message)
+        {
+            using namespace ExecutionInterpretedAPICpp;
+            lua_pushlstring(lua, message.data(), message.length());
+            return ErrorHandler(lua);
         }
 
         void InitializeInterpretedStatics(RuntimeData& runtimeData)
         {
-            AZ_Error("ScriptCanvas", !runtimeData.m_areStaticsInitialized, "ScriptCanvas runtime data already initalized");
+            AZ_Error("ScriptCanvas", !runtimeData.m_areScriptLocalStaticsInitialized, "ScriptCanvas runtime data already initialized");
             {
-                runtimeData.m_areStaticsInitialized = true;
+                runtimeData.m_areScriptLocalStaticsInitialized = true;
 
                 for (auto& dependency : runtimeData.m_requiredAssets)
                 {
-                    if (!dependency.Get()->m_runtimeData.m_areStaticsInitialized)
+                    if (!dependency.Get()->m_runtimeData.m_areScriptLocalStaticsInitialized)
                     {
                         InitializeInterpretedStatics(dependency.Get()->m_runtimeData);
                     }
@@ -522,7 +426,6 @@ namespace ScriptCanvas
                 {
                     AZ::ScriptLoadResult result{};
                     AZ::ScriptSystemRequestBus::BroadcastResult(result, &AZ::ScriptSystemRequests::LoadAndGetNativeContext, runtimeData.m_script, AZ::k_scriptLoadBinary, AZ::ScriptContextIds::DefaultScriptContextId);
-                    AZ_Assert(result.status == AZ::ScriptLoadResult::Status::Initial, "ExecutionStateInterpreted script asset was valid but failed to load.");
                     AZ_Assert(result.lua, "Must have a default script context and a lua_State");
                     AZ_Assert(lua_istable(result.lua, -1), "No run-time execution was available for this script");
 
@@ -580,8 +483,7 @@ namespace ScriptCanvas
         int SetExecutionOut(lua_State* lua)
         {
             // \note Return values could become necessary.
-            // \see LY-99750
-
+            
             AZ_Assert(lua_isuserdata(lua, -3), "Error in compiled lua file, 1st argument to SetExecutionOut is not userdata (Nodeable)");
             AZ_Assert(lua_isnumber(lua, -2), "Error in compiled lua file, 2nd argument to SetExecutionOut is not a number");
             AZ_Assert(lua_isfunction(lua, -1), "Error in compiled lua file, 3rd argument to SetExecutionOut is not a function (lambda need to get around atypically routed arguments)");
@@ -603,7 +505,6 @@ namespace ScriptCanvas
         int SetExecutionOutResult(lua_State* lua)
         {
             // \note Return values could become necessary.
-            // \see LY-99750
 
             AZ_Assert(lua_isuserdata(lua, -3), "Error in compiled lua file, 1st argument to SetExecutionOutResult is not userdata (Nodeable)");
             AZ_Assert(lua_isnumber(lua, -2), "Error in compiled lua file, 2nd argument to SetExecutionOutResult is not a number");
@@ -623,30 +524,10 @@ namespace ScriptCanvas
             return 0;
         }
 
-        int SetExecutionOutUserSubgraph(lua_State* lua)
-        {
-            AZ_Assert(lua_isuserdata(lua, -3), "Error in compiled lua file, 1st argument to SetExecutionOutUserSubgraph is not userdata (Nodeable)");
-            AZ_Assert(lua_isnumber(lua, -2), "Error in compiled lua file, 2nd argument to SetExecutionOutUserSubgraph is not a number");
-            AZ_Assert(lua_isfunction(lua, -1), "Error in compiled lua file, 3rd argument to SetExecutionOutUserSubgraph is not a function (lambda need to get around atypically routed arguments)");
-            Nodeable* nodeable = AZ::ScriptValue<Nodeable*>::StackRead(lua, -3);
-            AZ_Assert(nodeable, "Failed to read nodeable");
-            size_t index = aznumeric_caster(lua_tointeger(lua, -2));
-            // Lua: nodeable, index, lambda
-
-            lua_pushvalue(lua, -1);
-            // Lua: nodeable, index, lambda, lambda
-
-            nodeable->SetExecutionOut(index, OutInterpretedUserSubgraph(lua));
-            // Lua: nodeable, index, lambda
-
-            // \todo clear these immediately after they are not needed with an explicit call written by the translator
-            return 0;
-        }
-
         //////////////////////////////////////////////////////////////////////////
         // \todo ScriptCanvas will probably need its own version of all of these functions
         //////////////////////////////////////////////////////////////////////////
-        void StackPush(lua_State* lua, AZ::BehaviorContext* context, AZ::BehaviorValueParameter& argument)
+        void StackPush(lua_State* lua, AZ::BehaviorContext* context, AZ::BehaviorArgument& argument)
         {
             using namespace ExecutionInterpretedAPICpp;
 
@@ -670,19 +551,14 @@ namespace ScriptCanvas
             }
         }
 
-        bool StackRead(lua_State* lua, AZ::BehaviorContext* context, int index, AZ::BehaviorValueParameter& param, AZ::StackVariableAllocator* allocator)
+        bool StackRead(lua_State* lua, AZ::BehaviorContext* context, int index, AZ::BehaviorArgument& param, AZ::StackVariableAllocator* allocator)
         {
             return AZ::StackRead(lua, index, context, param, allocator);
         }
 
-        void InterpretedUnloadData(RuntimeData& runtimeData)
-        {
-            AZ::ScriptSystemRequestBus::Broadcast(&AZ::ScriptSystemRequests::ClearAssetReferences, runtimeData.m_script.GetId());
-        }
-
         struct DependencyConstructionPack
         {
-            ExecutionStateInterpreted* executionState;
+            ExecutionState* executionState;
             AZStd::vector<RuntimeDataOverrides>* dependencies;
             const size_t dependenciesIndex;
             RuntimeDataOverrides& runtimeOverrides;
@@ -690,7 +566,7 @@ namespace ScriptCanvas
 
         DependencyConstructionPack UnpackDependencyConstructionArgsSanitize(lua_State* lua)
         {
-            auto executionState = AZ::ScriptValue<ExecutionStateInterpreted*>::StackRead(lua, 1);
+            auto executionState = ExecutionStateRead(lua, 1);
             AZ_Assert(executionState, "Error in compiled lua file, 1st argument to UnpackDependencyArgs is not an ExecutionStateInterpreted");
             AZ_Assert(lua_islightuserdata(lua, 2), "Error in compiled lua file, 2nd argument to UnpackDependencyArgs is not userdata (AZStd::vector<AZ::Data::Asset<RuntimeAsset>>*), but a :%s", lua_typename(lua, 2));
             auto dependentOverrides = reinterpret_cast<AZStd::vector<RuntimeDataOverrides>*>(lua_touserdata(lua, 2));
@@ -703,7 +579,7 @@ namespace ScriptCanvas
         {
             ActivationInputArray storage;
             ActivationData data(args.runtimeOverrides, storage);
-            ActivationInputRange range = Execution::Context::CreateActivateInputRange(data, args.executionState->GetEntityId());
+            ActivationInputRange range = Execution::Context::CreateActivateInputRange(data);
             PushActivationArgs(lua, range.inputs, range.totalCount);
             return static_cast<int>(range.totalCount);
         }

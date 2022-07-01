@@ -13,51 +13,8 @@
 // CryCommon
 #include <CryCommon/Maestro/Types/AnimParamType.h>
 // Editor
+#include "KeyUIControls.h"
 #include "TrackViewKeyPropertiesDlg.h"
-
-//////////////////////////////////////////////////////////////////////////
-class CCaptureKeyUIControls
-    : public CTrackViewKeyUIControls
-{
-public:
-    CSmartVariableArray mv_table;
-    CSmartVariable<float> mv_duration;
-    CSmartVariable<float> mv_timeStep;
-    CSmartVariable<QString> mv_prefix;
-    CSmartVariable<QString> mv_folder;
-    CSmartVariable<bool> mv_once;
-
-    void OnCreateVars() override
-    {
-        mv_duration.GetVar()->SetLimits(0, 100000.0f);
-        mv_timeStep.GetVar()->SetLimits(0.001f, 1.0f);
-
-        AddVariable(mv_table, "Key Properties");
-        AddVariable(mv_table, mv_duration, "Duration");
-        AddVariable(mv_table, mv_timeStep, "Time Step");
-        AddVariable(mv_table, mv_prefix, "Output Prefix");
-        AddVariable(mv_table, mv_folder, "Output Folder");
-        AddVariable(mv_table, mv_once, "Just one frame?");
-    }
-    bool SupportTrackType(const CAnimParamType& paramType, [[maybe_unused]] EAnimCurveType trackType, [[maybe_unused]] AnimValueType valueType) const override
-    {
-        return paramType == AnimParamType::Capture;
-    }
-    bool OnKeySelectionChange(CTrackViewKeyBundle& selectedKeys) override;
-    void OnUIChange(IVariable* pVar, CTrackViewKeyBundle& selectedKeys) override;
-
-    unsigned int GetPriority() const override { return 1; }
-
-    static const GUID& GetClassID()
-    {
-        // {543197BF-5E43-4abc-8F07-B84078846E4C}
-        static const GUID guid =
-        {
-            0x543197bf, 0x5e43, 0x4abc, { 0x8f, 0x7, 0xb8, 0x40, 0x78, 0x84, 0x6e, 0x4c }
-        };
-        return guid;
-    }
-};
 
 //////////////////////////////////////////////////////////////////////////
 bool CCaptureKeyUIControls::OnKeySelectionChange(CTrackViewKeyBundle& selectedKeys)
@@ -143,5 +100,3 @@ void CCaptureKeyUIControls::OnUIChange(IVariable* pVar, CTrackViewKeyBundle& sel
         }
     }
 }
-
-REGISTER_QT_CLASS_DESC(CCaptureKeyUIControls, "TrackView.KeyUI.Capture", "TrackViewKeyUI");

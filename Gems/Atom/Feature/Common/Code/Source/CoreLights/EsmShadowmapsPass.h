@@ -15,7 +15,7 @@
 #include <Atom/RPI.Public/Buffer/Buffer.h>
 #include <Atom/RHI.Reflect/ShaderResourceGroupLayoutDescriptor.h>
 #include <AtomCore/Instance/Instance.h>
-#include <AtomCore/std/containers/array_view.h>
+#include <AzCore/std/containers/span.h>
 #include <AzCore/std/containers/array.h>
 #include <AzCore/Preprocessor/Enum.h>
 
@@ -79,7 +79,6 @@ namespace AZ
             explicit EsmShadowmapsPass(const RPI::PassDescriptor& descriptor);
 
             // Pass Behaviour overrides...
-            void ResetInternal() override;
             void FrameBeginInternal(FramePrepareParams params) override;
 
             void UpdateChildren();

@@ -24,7 +24,6 @@
 #define PLATFORM_IMPL_H_SECTION_TRAITS 1
 #define PLATFORM_IMPL_H_SECTION_CRYLOWLATENCYSLEEP 2
 #define PLATFORM_IMPL_H_SECTION_CRYGETFILEATTRIBUTES 3
-#define PLATFORM_IMPL_H_SECTION_CRYSETFILEATTRIBUTES 4
 #define PLATFORM_IMPL_H_SECTION_CRY_FILE_ATTRIBUTE_STUBS 5
 #define PLATFORM_IMPL_H_SECTION_CRY_SYSTEM_FUNCTIONS 6
 #define PLATFORM_IMPL_H_SECTION_VIRTUAL_ALLOCATORS 7
@@ -87,19 +86,11 @@ void ModuleInitISystem(ISystem* pSystem, [[maybe_unused]] const char* moduleName
     {
         gEnv = pSystem->GetGlobalEnvironment();
         assert(gEnv);
-        
-        if (!AZ::Environment::IsReady() || (AZ::Environment::GetInstance() != gEnv->pSharedEnvironment))
-        {
-            AZ::Environment::Attach(gEnv->pSharedEnvironment);
-            AZ::AllocatorManager::Instance();  // Force the AllocatorManager to instantiate and register any allocators defined in data sections
-        }
     } // if pSystem
 }
 
 void ModuleShutdownISystem([[maybe_unused]] ISystem* pSystem)
 {
-    // Unregister with AZ environment.
-    AZ::Environment::Detach();
 }
 
 void* GetModuleInitISystemSymbol()
@@ -157,18 +148,12 @@ void __stl_debug_message(const char* format_str, ...)
 #include <intrin.h>
 #endif
 
-#if defined(APPLE) || defined(LINUX)
-#include "CryAssert_impl.h"
-#endif
-
 #if defined(AZ_RESTRICTED_PLATFORM)
     #define AZ_RESTRICTED_SECTION PLATFORM_IMPL_H_SECTION_CRY_SYSTEM_FUNCTIONS
     #include AZ_RESTRICTED_FILE(platform_impl_h)
 #endif
 
 #if defined (_WIN32)
-
-#include "CryAssert_impl.h"
 
 //////////////////////////////////////////////////////////////////////////
 void CrySleep(unsigned int dwMilliseconds)
@@ -200,7 +185,7 @@ void CryMessageBox([[maybe_unused]] const char* lpText, [[maybe_unused]] const c
 void InitRootDir(char szExeFileName[], uint nExeSize, char szExeRootName[], uint nRootSize)
 {
     char szPath[_MAX_PATH];
-    AZ::Utils::GetExecutablePathReturnType ret = AZ::Utils::GetExecutablePath(szPath, _MAX_PATH);
+    [[maybe_unused]] AZ::Utils::GetExecutablePathReturnType ret = AZ::Utils::GetExecutablePath(szPath, _MAX_PATH);
     AZ_Assert(ret.m_pathStored == AZ::Utils::ExecutablePathResult::Success, "The path to the current executable exceeds the expected length");
     const size_t nLen = strnlen(szPath, _MAX_PATH);
 
@@ -242,22 +227,6 @@ void InitRootDir(char szExeFileName[], uint nExeSize, char szExeRootName[], uint
             }
         }
     }
-}
-
-//////////////////////////////////////////////////////////////////////////
-bool CrySetFileAttributes(const char* lpFileName, uint32 dwFileAttributes)
-{
-#if defined(AZ_RESTRICTED_PLATFORM)
-    #define AZ_RESTRICTED_SECTION PLATFORM_IMPL_H_SECTION_CRYSETFILEATTRIBUTES
-    #include AZ_RESTRICTED_FILE(platform_impl_h)
-#endif
-#if defined(AZ_RESTRICTED_SECTION_IMPLEMENTED)
-#undef AZ_RESTRICTED_SECTION_IMPLEMENTED
-#else
-    AZStd::wstring lpFileNameW;
-    AZStd::to_wstring(lpFileNameW, lpFileName);
-    return SetFileAttributes(lpFileNameW.c_str(), dwFileAttributes) != 0;
-#endif
 }
 
 //////////////////////////////////////////////////////////////////////////

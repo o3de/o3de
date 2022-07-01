@@ -81,6 +81,7 @@ namespace AzToolsFramework
         void AddEditorEntity(AZ::Entity* entity) override;
         void AddEditorEntities(const EntityList& entities) override;
         void HandleEntitiesAdded(const EntityList& entities) override;
+        void FinalizeEditorEntity(AZ::Entity* entity) override;
         bool CloneEditorEntities(const EntityIdList& sourceEntities, 
                                  EntityList& resultEntities,
                                  AZ::SliceComponent::EntityIdToEntityIdMap& sourceToCloneEntityIdMap) override;
@@ -142,12 +143,8 @@ namespace AzToolsFramework
         }
 
     protected:
-
         void OnContextEntitiesAdded(const EntityList& entities) override;
         void OnContextEntityRemoved(const AZ::EntityId& id) override;
-
-        // Helper function for creating editor ready entities.
-        void FinalizeEditorEntity(AZ::Entity* entity);
 
         void SetupEditorEntity(AZ::Entity* entity);
         void SetupEditorEntities(const EntityList& entities);

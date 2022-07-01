@@ -3,7 +3,6 @@
     "Version": 1,
     "ClassName": "AZ::Render::ModelPreset",
     "ClassData": {
-        "displayName": "Cylinder (Beveled)",
         "modelAsset": {
             "assetId": {
                 "guid": "{0C731B02-18BC-58ED-9DED-B22375D43B2B}",

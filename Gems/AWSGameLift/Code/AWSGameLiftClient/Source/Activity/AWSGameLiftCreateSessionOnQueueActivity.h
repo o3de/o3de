@@ -26,7 +26,7 @@ namespace AWSGameLift
         AZStd::string CreateSessionOnQueue(const AWSGameLiftCreateSessionOnQueueRequest& createSessionOnQueueRequest);
 
         // Validate CreateSessionOnQueueRequest and check required request parameters
-        bool ValidateCreateSessionOnQueueRequest(const AzFramework::CreateSessionRequest& createSessionRequest);
+        bool ValidateCreateSessionOnQueueRequest(const Multiplayer::CreateSessionRequest& createSessionRequest);
 
     } // namespace CreateSessionOnQueueActivity
 } // namespace AWSGameLift

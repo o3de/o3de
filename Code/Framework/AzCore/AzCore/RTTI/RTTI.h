@@ -10,6 +10,7 @@
 
 #include <AzCore/RTTI/TypeInfo.h>
 #include <AzCore/Module/Environment.h>
+#include <AzCore/std/typetraits/has_member_function.h>
 #include <AzCore/std/typetraits/is_abstract.h>
 
 namespace AZStd
@@ -232,13 +233,9 @@ namespace AZ
         Intrusive,
         External
     };
-    
+
     template<typename T>
-    struct HasAZRttiExternal
-    {
-        static constexpr bool value = false;
-        using type = AZStd::false_type;
-    };
+    struct HasAZRttiExternal : AZStd::false_type {};
 
     template<typename T>
     struct HasAZRtti
@@ -254,7 +251,7 @@ namespace AZ
      * AZ_RTTI includes the functionality of AZ_TYPE_INFO, so you don't have to declare TypeInfo it if you use AZ_RTTI
      * The syntax is AZ_RTTI(ClassName,ClassUuid,(BaseClass1..N)) you can have 0 to N base classes this will allow us
      * to perform dynamic casts and query about types.
-     * 
+     *
      *  \note A more complex use case is when you use templates where you have to group the parameters for the TypeInfo call.
      * ex. AZ_RTTI( ( (ClassName<TemplateArg1, TemplateArg2, ...>), ClassUuid, TemplateArg1, TemplateArg2, ...), BaseClass1...)
      *
@@ -267,17 +264,13 @@ namespace AZ
     // Variadic parameters should be the base class(es) if there are any
     #define AZ_EXTERNAL_RTTI_SPECIALIZE(Type, ...)                                  \
         template<>                                                                  \
-        struct HasAZRttiExternal<Type>                                              \
-        {                                                                           \
-            static const bool value = true;                                         \
-            using type = AZStd::true_type;                                          \
-        };                                                                          \
+        struct HasAZRttiExternal<Type> : AZStd::true_type{};                        \
                                                                                     \
         template<>                                                                  \
             struct AZ::Internal::RttiHelper<Type>                                   \
             : public AZ::Internal::ExternalVariadicRttiHelper<Type, ##__VA_ARGS__>  \
         {                                                                           \
-        };    
+        };
 
      /**
       * Interface for resolving RTTI information when no compile-time type information is available.
@@ -541,7 +534,7 @@ namespace AZ
             {
                 if (outPointer == nullptr)
                 {
-                    // For classes with Intrusive RTTI IsTypeOf is used instead as this External RTTI class does not have 
+                    // For classes with Intrusive RTTI IsTypeOf is used instead as this External RTTI class does not have
                     // virtual RTTI_AddressOf functions for looking up the correct address
                     if (HasAZRttiExternal<T2>::value)
                     {
@@ -604,13 +597,13 @@ namespace AZ
         using TypeInfoTag = AZStd::conditional_t<hasTypeInfo, AZ::Internal::RttiHelperTags::TypeInfoOnly, AZ::Internal::RttiHelperTags::Unavailable>;
         using Tag = AZStd::conditional_t<hasRtti, AZ::Internal::RttiHelperTags::Standard, TypeInfoTag>;
 
-        static_assert(!HasAZRttiIntrusive<ValueType>::value || !AZ::Internal::HasAZTypeInfoSpecialized<ValueType>::value,
+        static_assert(!HasAZRttiIntrusive<ValueType>::value || !AZ::Internal::HasAZTypeInfoSpecialized<ValueType>,
             "Types cannot use AZ_TYPE_INFO_SPECIALIZE macro externally with the AZ_RTTI macro"
             " AZ_RTTI adds virtual functions to the type in order to find the concrete class when looking up a typeid"
             " Specializing AzTypeInfo for a type would cause it not be used");
 
         return AZ::Internal::GetRttiHelper_Internal<ValueType>(Tag{});
-    }                                                      
+    }
 
     namespace Internal
     {
@@ -971,37 +964,43 @@ namespace AZ
     {
         return AZ::Internal::RttiTypeId<U, TypeIdResolverTag>();
     }
-    
+
     template<template<typename...> class U, typename = void>
     inline const AZ::TypeId& RttiTypeId()
     {
         return AzGenericTypeInfo::Uuid<U>();
     }
-    
+
+    #if defined(AZ_COMPILER_MSVC)
+    // There is a bug with the MSVC compiler when using the 'auto' keyword here. It appears that MSVC is unable to distinguish between a template
+    // template argument with a type variadic pack vs a template template argument with a non-type auto variadic pack.
     template<template<AZStd::size_t...> class U, typename = void>
+    #else
+    template<template<auto...> class U, typename = void>
+    #endif // defined(AZ_COMPILER_MSVC)
     inline const AZ::TypeId& RttiTypeId()
     {
         return AzGenericTypeInfo::Uuid<U>();
     }
-    
-    template<template<typename, AZStd::size_t> class U, typename = void>
+
+    template<template<typename, auto> class U, typename = void>
     inline const AZ::TypeId& RttiTypeId()
     {
         return AzGenericTypeInfo::Uuid<U>();
     }
-    
-    template<template<typename, typename, AZStd::size_t> class U, typename = void>
+
+    template<template<typename, typename, auto> class U, typename = void>
     inline const AZ::TypeId& RttiTypeId()
     {
         return AzGenericTypeInfo::Uuid<U>();
     }
-    
-    template<template<typename, typename, typename, AZStd::size_t> class U, typename = void>
+
+    template<template<typename, typename, typename, auto> class U, typename = void>
     inline const AZ::TypeId& RttiTypeId()
     {
         return AzGenericTypeInfo::Uuid<U>();
     }
-    
+
     template<class U>
     inline const AZ::TypeId& RttiTypeId(const U& data)
     {
@@ -1027,15 +1026,22 @@ namespace AZ
     }
 
     // Returns true if the type is contained, otherwise false. Safe to call for type not supporting AZRtti (returns false unless type fully match).
+
+#if defined(AZ_COMPILER_MSVC)
+    // There is a bug with the MSVC compiler when using the 'auto' keyword here. It appears that MSVC is unable to distinguish between a template
+    // template argument with a type variadic pack vs a template template argument with a non-type auto variadic pack.
     template<template<AZStd::size_t...> class T, class U>
-    inline bool     RttiIsTypeOf(const U&)
+#else
+    template<template<auto...> class T, class U>
+#endif // defined(AZ_COMPILER_MSVC)
+    inline bool RttiIsTypeOf(const U&)
     {
         using CheckType = typename AZ::Internal::RttiRemoveQualifiers<U>::type;
         return AzGenericTypeInfo::Uuid<T>() == RttiTypeId<CheckType, AZ::GenericTypeIdTag>();
     }
 
     // Returns true if the type is contained, otherwise false. Safe to call for type not supporting AZRtti (returns false unless type fully match).
-    template<template<typename, AZStd::size_t> class T, class U>
+    template<template<typename, auto> class T, class U>
     inline bool     RttiIsTypeOf(const U&)
     {
         using CheckType = typename AZ::Internal::RttiRemoveQualifiers<U>::type;
@@ -1043,7 +1049,7 @@ namespace AZ
     }
 
     // Returns true if the type is contained, otherwise false.Safe to call for type not supporting AZRtti(returns false unless type fully match).
-    template<template<typename, typename, AZStd::size_t> class T, class U>
+    template<template<typename, typename, auto> class T, class U>
     inline bool     RttiIsTypeOf(const U&)
     {
         using CheckType = typename AZ::Internal::RttiRemoveQualifiers<U>::type;
@@ -1051,7 +1057,7 @@ namespace AZ
     }
 
     // Returns true if the type is contained, otherwise false.Safe to call for type not supporting AZRtti(returns false unless type fully match).
-    template<template<typename, typename, typename, AZStd::size_t> class T, class U>
+    template<template<typename, typename, typename, auto> class T, class U>
     inline bool     RttiIsTypeOf(const U&)
     {
         using CheckType = typename AZ::Internal::RttiRemoveQualifiers<U>::type;

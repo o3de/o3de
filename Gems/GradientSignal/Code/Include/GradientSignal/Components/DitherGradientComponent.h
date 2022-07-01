@@ -10,6 +10,7 @@
 
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/ComponentBus.h>
+#include <AzCore/std/parallel/shared_mutex.h>
 #include <GradientSignal/GradientSampler.h>
 #include <GradientSignal/Ebuses/DitherGradientRequestBus.h>
 #include <GradientSignal/Ebuses/GradientRequestBus.h>
@@ -77,7 +78,7 @@ namespace GradientSignal
         //////////////////////////////////////////////////////////////////////////
         // GradientRequestBus
         float GetValue(const GradientSampleParams& sampleParams) const override;
-        void GetValues(AZStd::span<AZ::Vector3> positions, AZStd::span<float> outValues) const override;
+        void GetValues(AZStd::span<const AZ::Vector3> positions, AZStd::span<float> outValues) const override;
         bool IsEntityInHierarchy(const AZ::EntityId& entityId) const override;
 
         //////////////////////////////////////////////////////////////////////////
@@ -112,5 +113,6 @@ namespace GradientSignal
 
         DitherGradientConfig m_configuration;
         LmbrCentral::DependencyMonitor m_dependencyMonitor;
+        mutable AZStd::shared_mutex m_queryMutex;
     };
 }

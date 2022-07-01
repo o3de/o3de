@@ -1,0 +1,205 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#pragma once
+
+#include <Atom/Features/SrgSemantics.azsli>
+
+#include <scenesrg.srgi>
+#include <viewsrg.srgi>
+
+#include <Atom/RPI/BitOperations.azsli>
+
+#ifndef ENABLE_SHADER_DEBUGGING
+#define ENABLE_SHADER_DEBUGGING     1
+#endif
+
+#if ENABLE_SHADER_DEBUGGING
+    option bool o_shader_debugging_enabled = true;
+
+    // Used for custom purposes depending on the debug settings
+    // For example, used to store the value of the directional light shadow when debugging the cascade shadowmap
+    static float4 customDebugFloats = float4(0, 0, 0, 0);
+
+#else
+    #define o_shader_debugging_enabled false
+#endif
+
+// Options controlling various aspects of the rendering
+enum class RenderDebugOptions
+{
+    DebugEnabled,
+
+    OverrideBaseColor,
+    OverrideRoughness,
+    OverrideMetallic,
+
+    UseDebugLight,
+
+    EnableNormalMaps,
+    EnableDetailNormalMaps,
+
+    EnableDiffuseLighting,
+    EnableSpecularLighting,
+    EnableDirectLighting,
+    EnableIndirectLighting,
+
+    // Debug flags hooked up to the debug render component for quick and easy shader testing/debugging
+    CustomDebugOption01,
+    CustomDebugOption02,
+    CustomDebugOption03,
+    CustomDebugOption04,
+};
+
+// Specifies what debug info to render to the view
+enum class RenderDebugViewMode
+{
+    None,
+
+    Normal,
+    Tangent,
+    Bitangent,
+    
+    BaseColor,
+    Albedo,
+    Roughness,
+    Metallic,
+
+    CascadeShadows,
+};
+
+bool IsDebuggingEnabled()
+{
+#if ENABLE_SHADER_DEBUGGING
+    return o_shader_debugging_enabled && SceneSrg::m_debuggingEnabled;
+#else
+    return false;
+#endif
+}
+
+// Placeholder version of the above function until o_shader_debugging_enabled can be hooked up to all shaders
+bool IsDebuggingEnabled_PLACEHOLDER()
+{
+#if ENABLE_SHADER_DEBUGGING
+    return SceneSrg::m_debuggingEnabled;
+    //return o_shader_debugging_enabled && SceneSrg::m_debuggingEnabled;
+#else
+    return false;
+#endif
+}
+
+
+uint GetDebugOptions()
+{
+    return ViewSrg::m_renderDebugOptions;
+}
+
+uint GetDebugOption(RenderDebugOptions debugOption)
+{
+    uint optionIndex = (uint)debugOption;
+    uint debugOptions = GetDebugOptions();
+    return GetBit(debugOptions, optionIndex);
+}
+
+RenderDebugViewMode GetRenderDebugViewMode()
+{
+    return (RenderDebugViewMode)ViewSrg::m_renderDebugViewMode;
+}
+
+void DebugModifyOutput(inout float4 outDiffuse, inout float4 outSpecular, inout float4 outAlbedo, inout float4 outSpecularF0,
+                       float3 normal, float3 tangent, float3 bitangent,
+                       float3 baseColor, float3 albedo, float roughness, float metallic)
+{
+    if(IsDebuggingEnabled())
+    {
+        RenderDebugViewMode viewMode = (RenderDebugViewMode)ViewSrg::m_renderDebugViewMode;
+
+        normal = (normal * 0.5) + 0.5;
+        tangent = (tangent * 0.5) + 0.5;
+        bitangent = (bitangent * 0.5) + 0.5;
+
+             if(viewMode == RenderDebugViewMode::Normal)         { outSpecular.rgb = normal; }
+        else if(viewMode == RenderDebugViewMode::Tangent)        { outSpecular.rgb = tangent; }
+        else if(viewMode == RenderDebugViewMode::Bitangent)      { outSpecular.rgb = bitangent; }
+        else if(viewMode == RenderDebugViewMode::BaseColor)      { outSpecular.rgb = baseColor; }
+        else if(viewMode == RenderDebugViewMode::Albedo)         { outSpecular.rgb = albedo; }
+        else if(viewMode == RenderDebugViewMode::Roughness)      { outSpecular.rgb = roughness.rrr; }
+        else if(viewMode == RenderDebugViewMode::Metallic)       { outSpecular.rgb = metallic.rrr; }
+        else if(viewMode == RenderDebugViewMode::CascadeShadows) { outSpecular.rgb = customDebugFloats.rgb; }
+
+        if(viewMode != RenderDebugViewMode::None)
+        {
+            outDiffuse = float4(0, 0, 0, 0);
+            outAlbedo = float4(0, 0, 0, 0);
+            outSpecularF0 = float4(0, 0, 0, 0);
+        }
+    }
+}
+
+// --- Specific options ---
+
+bool UseDebugLight()
+{
+    return IsDebuggingEnabled_PLACEHOLDER() &&
+           GetDebugOption(RenderDebugOptions::UseDebugLight);
+}
+
+bool IsDiffuseLightingEnabled()
+{
+    return !IsDebuggingEnabled_PLACEHOLDER() ||
+           GetDebugOption(RenderDebugOptions::EnableDiffuseLighting);
+}
+
+bool IsSpecularLightingEnabled()
+{
+    return !IsDebuggingEnabled_PLACEHOLDER() || 
+           GetDebugOption(RenderDebugOptions::EnableSpecularLighting);
+}
+
+bool IsDirectLightingEnabled()
+{
+    return !IsDebuggingEnabled_PLACEHOLDER() ||
+           (GetDebugOption(RenderDebugOptions::EnableDirectLighting) && 
+           !UseDebugLight());
+}
+
+bool IsIndirectLightingEnabled()
+{
+    return !IsDebuggingEnabled_PLACEHOLDER() ||
+           (GetDebugOption(RenderDebugOptions::EnableIndirectLighting) &&
+           !UseDebugLight());
+}
+
+bool AreNormalMapsEnabled()
+{
+    return !IsDebuggingEnabled() || GetDebugOption(RenderDebugOptions::EnableNormalMaps);
+}
+
+bool AreDetailNormalMapsEnabled()
+{
+    return !IsDebuggingEnabled() || GetDebugOption(RenderDebugOptions::EnableDetailNormalMaps);
+}
+
+bool OverrideBaseColorEnabled()
+{
+    return IsDebuggingEnabled() && GetDebugOption( RenderDebugOptions::OverrideBaseColor );
+}
+
+bool OverrideRoughnessEnabled()
+{
+    return IsDebuggingEnabled() && GetDebugOption( RenderDebugOptions::OverrideRoughness );
+}
+
+bool OverrideMetallicEnabled()
+{
+    return IsDebuggingEnabled() && GetDebugOption( RenderDebugOptions::OverrideMetallic );
+}
+
+float3 GetBaseColorOverride() { return SceneSrg::m_debugOverrideBaseColor; }
+float GetRoughnessOverride() { return SceneSrg::m_debugOverrideRoughness; }
+float GetMetallicOverride() { return SceneSrg::m_debugOverrideMetallic; }

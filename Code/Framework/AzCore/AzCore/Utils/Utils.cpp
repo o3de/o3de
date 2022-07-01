@@ -65,7 +65,20 @@ namespace AZ::Utils
         return AZStd::nullopt;
     }
 
-    AZ::IO::FixedMaxPathString GetEngineManifestPath()
+    bool ConvertToAbsolutePath(AZ::IO::FixedMaxPath& outputPath, AZStd::string_view path)
+    {
+        AZ::IO::FixedMaxPathString srcPath{ path };
+        if (ConvertToAbsolutePath(srcPath.c_str(), outputPath.Native().data(), outputPath.Native().capacity()))
+        {
+            // Fix the size value of the fixed string by calculating the c-string length using char traits
+            outputPath.Native().resize_no_construct(AZStd::char_traits<char>::length(outputPath.Native().data()));
+            return true;
+        }
+
+        return false;
+    }
+
+    AZ::IO::FixedMaxPathString GetO3deManifestPath()
     {
         AZ::IO::FixedMaxPath o3deManifestPath = GetO3deManifestDirectory();
         if (!o3deManifestPath.empty())
@@ -180,6 +193,17 @@ namespace AZ::Utils
 
     AZ::IO::FixedMaxPathString GetO3deManifestDirectory()
     {
+        if (auto registry = AZ::SettingsRegistry::Get(); registry != nullptr)
+        {
+            AZ::SettingsRegistryInterface::FixedValueString settingsValue;
+            if (registry->Get(settingsValue, AZ::SettingsRegistryMergeUtils::FilePathKey_O3deManifestRootFolder))
+            {
+                return AZ::IO::FixedMaxPathString{ settingsValue };
+            }
+        }
+
+        // If the O3DEManifest key isn't set in teh settings registry
+        // fallback to use the user's home directory with the .o3de folder appended to it
         AZ::IO::FixedMaxPath path = GetHomeDirectory();
         path /= ".o3de";
         return path.Native();

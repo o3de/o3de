@@ -33,13 +33,16 @@ namespace AZ
             RPI::ScenePtr scene,
             RPI::ViewPtr view,
             AZ::Uuid entityContextId,
-            const Data::AssetId& modelAssetId,
-            const Data::AssetId& materialAssetId,
-            const Data::AssetId& lightingPresetAssetId,
+            const Data::Asset<RPI::ModelAsset>& modelAsset,
+            const Data::Asset<RPI::MaterialAsset>& materialAsset,
+            const Data::Asset<RPI::AnyAsset>& lightingPresetAsset,
             const Render::MaterialPropertyOverrideMap& materialPropertyOverrides)
             : m_scene(scene)
             , m_view(view)
             , m_entityContextId(entityContextId)
+            , m_modelAsset(modelAsset)
+            , m_materialAsset(materialAsset)
+            , m_lightingPresetAsset(lightingPresetAsset)
             , m_materialPropertyOverrides(materialPropertyOverrides)
         {
             // Create preview model
@@ -50,10 +53,6 @@ namespace AZ
             m_modelEntity->CreateComponent(azrtti_typeid<AzFramework::TransformComponent>());
             m_modelEntity->Init();
             m_modelEntity->Activate();
-
-            m_modelAsset.Create(modelAssetId);
-            m_materialAsset.Create(materialAssetId);
-            m_lightingPresetAsset.Create(lightingPresetAssetId);
         }
 
         SharedPreviewContent::~SharedPreviewContent()
@@ -112,11 +111,11 @@ namespace AZ
                 m_modelEntity->GetId(), &Render::MeshComponentRequestBus::Events::SetModelAsset, m_modelAsset);
 
             Render::MaterialComponentRequestBus::Event(
-                m_modelEntity->GetId(), &Render::MaterialComponentRequestBus::Events::SetMaterialOverride,
+                m_modelEntity->GetId(), &Render::MaterialComponentRequestBus::Events::SetMaterialAssetId,
                 Render::DefaultMaterialAssignmentId, m_materialAsset.GetId());
 
             Render::MaterialComponentRequestBus::Event(
-                m_modelEntity->GetId(), &Render::MaterialComponentRequestBus::Events::SetPropertyOverrides,
+                m_modelEntity->GetId(), &Render::MaterialComponentRequestBus::Events::SetPropertyValues,
                 Render::DefaultMaterialAssignmentId, m_materialPropertyOverrides);
         }
 
@@ -148,7 +147,7 @@ namespace AZ
 
                     preset->ApplyLightingPreset(
                         iblFeatureProcessor, skyboxFeatureProcessor, exposureControlSettingInterface, directionalLightFeatureProcessor,
-                        cameraConfig, lightHandles);
+                        cameraConfig, lightHandles, false);
                 }
             }
         }

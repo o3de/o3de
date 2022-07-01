@@ -10,6 +10,7 @@
 
 #include <AzFramework/Visibility/EntityVisibilityQuery.h>
 #include <AzManipulatorTestFramework/AzManipulatorTestFramework.h>
+#include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
 
 namespace AzFramework
 {
@@ -22,7 +23,7 @@ namespace AzManipulatorTestFramework
     class ViewportInteraction
         : public ViewportInteractionInterface
         , public AzToolsFramework::ViewportInteraction::ViewportInteractionRequestBus::Handler
-        , public AzToolsFramework::ViewportInteraction::ViewportSettingsRequestBus::Handler
+        , public UnitTest::ViewportSettingsTestImpl
         , private AzToolsFramework::ViewportInteraction::EditorEntityViewportInteractionRequestBus::Handler
     {
     public:
@@ -50,19 +51,6 @@ namespace AzManipulatorTestFramework
             const AzFramework::ScreenPoint& screenPosition) override;
         float DeviceScalingFactor() override;
 
-        // ViewportSettingsRequestBus overrides ...
-        bool GridSnappingEnabled() const override;
-        float GridSize() const override;
-        bool ShowGrid() const override;
-        bool AngleSnappingEnabled() const override;
-        float AngleStep() const override;
-        float ManipulatorLineBoundWidth() const override;
-        float ManipulatorCircleBoundWidth() const override;
-        bool StickySelectEnabled() const override;
-        AZ::Vector3 DefaultEditorCameraPosition() const override;
-        bool IconsVisible() const override;
-        bool HelpersVisible() const override;
-
         // EditorEntityViewportInteractionRequestBus overrides ...
         void FindVisibleEntities(AZStd::vector<AZ::EntityId>& visibleEntities) override;
 
@@ -72,12 +60,5 @@ namespace AzManipulatorTestFramework
         AzFramework::EntityVisibilityQuery m_entityVisibilityQuery;
         AZStd::shared_ptr<AzFramework::DebugDisplayRequests> m_debugDisplayRequests;
         AzFramework::CameraState m_cameraState;
-        float m_gridSize = 1.0f;
-        float m_angularStep = 0.0f;
-        bool m_gridSnapping = false;
-        bool m_angularSnapping = false;
-        bool m_stickySelect = true;
-        bool m_iconsVisible = true;
-        bool m_helpersVisible = true;
     };
 } // namespace AzManipulatorTestFramework

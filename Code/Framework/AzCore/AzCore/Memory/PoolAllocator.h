@@ -102,7 +102,7 @@ namespace AZ
             }
 
             //////////////////////////////////////////////////////////////////////////
-            // IAllocatorAllocate
+            // IAllocatorSchema
             pointer_type ReAllocate(pointer_type ptr, size_type newSize, size_type newAlignment) override
             {
                 (void)ptr;

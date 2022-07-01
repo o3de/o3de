@@ -43,8 +43,13 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 namespace {{attribute_Namespace}}
 {
 {% endif %}
-{% set className = Class.attrib['Name'] %}
-{% set baseClasses = ", ".join(Class.attrib['Base'].split(';')) if Class.attrib['Base'] is string else "ScriptCanvas::Node" %}
+
+{%- set className = Class.attrib['Name'] %}
+
+{%- set baseClass = "ScriptCanvas::Node" %}
+{% if Class.attrib['Base'] is defined and Class.attrib['Base'] %}
+{%    set baseClass = Class.attrib['Base'] %}
+{% endif %}
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////
@@ -64,12 +69,12 @@ namespace {{attribute_Namespace}}
 // You must #include the generated header into the source header
 #define SCRIPTCANVAS_NODE_{{ className }} \
 public: \
-    AZ_COMPONENT({{ className }}, "{{ classUuid }}", {{ baseClasses }} ); \
+    AZ_COMPONENT({{ className }}, "{{ classUuid }}", {{ baseClass }} ); \
     static void Reflect(AZ::ReflectContext* reflection); \
     void ConfigureSlots() override; \
     bool RequiresDynamicSlotOrdering() const override; \
     bool IsDeprecated() const override; \
-{% if deprecationUuid is defined %}    ScriptCanvas::NodeConfiguration GetReplacementNodeConfiguration() const override; \
+{% if deprecationUuid is defined %}    ScriptCanvas::NodeReplacementConfiguration GetReplacementNodeConfiguration() const override; \
 {% endif %}
     using Node::FindDatum; \
 {% if Class.attrib['GraphEntryPoint'] is defined %}    bool IsEntryPoint() const override { return {%if Class.attrib['GraphEntryPoint'] == "True" %}true{%else%}false{%endif%}; } \

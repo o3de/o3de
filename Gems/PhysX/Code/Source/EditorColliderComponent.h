@@ -100,7 +100,7 @@ namespace PhysX
         , protected DebugDraw::DisplayCallback
         , protected AzToolsFramework::EntitySelectionEvents::Bus::Handler
         , private AzToolsFramework::BoxManipulatorRequestBus::Handler
-        , private AZ::Data::AssetBus::MultiHandler
+        , private AZ::Data::AssetBus::Handler
         , private PhysX::MeshColliderComponentRequestsBus::Handler
         , private AZ::TransformNotificationBus::Handler
         , private PhysX::ColliderShapeRequestBus::Handler
@@ -144,8 +144,10 @@ namespace PhysX
         void OnSelected() override;
         void OnDeselected() override;
 
-        // DisplayCallback
-        void Display(AzFramework::DebugDisplayRequests& debugDisplay) const override;
+        // DisplayCallback overrides...
+        void Display(const AzFramework::ViewportInfo& viewportInfo,
+            AzFramework::DebugDisplayRequests& debugDisplay) const override;
+
         void DisplayMeshCollider(AzFramework::DebugDisplayRequests& debugDisplay) const;
         void DisplayUnscaledPrimitiveCollider(AzFramework::DebugDisplayRequests& debugDisplay) const;
         void DisplayScaledPrimitiveCollider(AzFramework::DebugDisplayRequests& debugDisplay) const;
@@ -156,9 +158,7 @@ namespace PhysX
 
         // PhysXMeshColliderComponentRequestBus
         AZ::Data::Asset<Pipeline::MeshAsset> GetMeshAsset() const override;
-        Physics::MaterialId GetMaterialId() const override;
         void SetMeshAsset(const AZ::Data::AssetId& id) override;
-        void SetMaterialId(const Physics::MaterialId& id) override;
         void UpdateMaterialSlotsFromMeshAsset();
 
         // TransformBus
@@ -171,6 +171,7 @@ namespace PhysX
         AZ::Vector3 GetDimensions() override;
         void SetDimensions(const AZ::Vector3& dimensions) override;
         AZ::Transform GetCurrentTransform() override;
+        AZ::Transform GetCurrentLocalTransform() override;
         AZ::Vector3 GetBoxScale() override;
 
         // AZ::Render::MeshComponentNotificationBus
@@ -251,7 +252,6 @@ namespace PhysX
         DebugDraw::Collider m_colliderDebugDraw;
 
         AzPhysics::SystemEvents::OnConfigurationChangedEvent::Handler m_physXConfigChangedHandler;
-        AzPhysics::SystemEvents::OnMaterialLibraryChangedEvent::Handler m_onMaterialLibraryChangedEventHandler;
         AZ::Transform m_cachedWorldTransform;
 
         AZ::NonUniformScaleChangedEvent::Handler m_nonUniformScaleChangedHandler; //!< Responds to changes in non-uniform scale.

@@ -45,8 +45,7 @@ namespace JsonSerializationTests
 
         AZStd::shared_ptr<AZ::RPI::MaterialTypeSourceData::PropertyDefinition> CreatePartialDefaultInstance() override
         {
-            auto result = AZStd::make_shared<AZ::RPI::MaterialTypeSourceData::PropertyDefinition>();
-            result->m_name = "testProperty";
+            auto result = AZStd::make_shared<AZ::RPI::MaterialTypeSourceData::PropertyDefinition>("testProperty");
             result->m_dataType = AZ::RPI::MaterialPropertyDataType::Float;
             result->m_step = 1.0f;
             result->m_value = 0.0f;
@@ -65,8 +64,7 @@ namespace JsonSerializationTests
 
         AZStd::shared_ptr<AZ::RPI::MaterialTypeSourceData::PropertyDefinition> CreateFullySetInstance() override
         {
-            auto result = AZStd::make_shared<AZ::RPI::MaterialTypeSourceData::PropertyDefinition>();
-            result->m_name = "testProperty";
+            auto result = AZStd::make_shared<AZ::RPI::MaterialTypeSourceData::PropertyDefinition>("testProperty");
             result->m_description = "description";
             result->m_displayName = "display_name";
             result->m_dataType = AZ::RPI::MaterialPropertyDataType::Float;
@@ -113,29 +111,11 @@ namespace JsonSerializationTests
             features.EnableJsonType(rapidjson::kObjectType);
         }
 
-        bool CompareFloatAny(const AZStd::any& lhs, const AZStd::any& rhs)
-        {
-            if (!lhs.is<float>() || !rhs.is<float>())
-            {
-                return lhs.empty() && rhs.empty();
-            }
-
-            const float* lhsValue = AZStd::any_cast<float>(&lhs);
-            const float* rhsValue = AZStd::any_cast<float>(&rhs);
-
-            if (lhsValue == nullptr || rhsValue == nullptr)
-            {
-                return false;
-            }
-
-            return *lhsValue == *rhsValue;
-        }
-
         bool AreEqual(
             const AZ::RPI::MaterialTypeSourceData::PropertyDefinition& lhs,
             const AZ::RPI::MaterialTypeSourceData::PropertyDefinition& rhs) override
         {
-            if (lhs.m_name != rhs.m_name) { return false; }
+            if (lhs.GetName() != rhs.GetName()) { return false; }
             if (lhs.m_description != rhs.m_description) { return false; }
             if (lhs.m_displayName != rhs.m_displayName) { return false; }
             if (lhs.m_dataType != rhs.m_dataType) { return false; }
@@ -216,7 +196,7 @@ namespace UnitTest
         EXPECT_EQ(AZ::JsonSerializationResult::Processing::Completed, loadResult.m_jsonResultCode.GetProcessing());
         EXPECT_EQ(AZ::JsonSerializationResult::Outcomes::PartialDefaults, loadResult.m_jsonResultCode.GetOutcome());
 
-        EXPECT_EQ("testProperty", propertyData.m_name);
+        EXPECT_EQ("testProperty", propertyData.GetName());
         EXPECT_EQ("Test Property", propertyData.m_displayName);
         EXPECT_EQ("This is a property description", propertyData.m_description);
         EXPECT_EQ(MaterialPropertyDataType::Float, propertyData.m_dataType);
@@ -851,7 +831,7 @@ namespace UnitTest
         EXPECT_EQ(AZ::JsonSerializationResult::Tasks::ReadField, loadResult.m_jsonResultCode.GetTask());
         EXPECT_EQ(AZ::JsonSerializationResult::Processing::Completed, loadResult.m_jsonResultCode.GetProcessing());
         
-        EXPECT_EQ("testProperty", propertyData.m_name);
+        EXPECT_EQ("testProperty", propertyData.GetName());
 
         EXPECT_EQ(1, propertyData.m_outputConnections.size());
         EXPECT_EQ(MaterialPropertyOutputType::ShaderOption, propertyData.m_outputConnections[0].m_type);
@@ -934,7 +914,7 @@ namespace UnitTest
         EXPECT_EQ(AZ::JsonSerializationResult::Tasks::ReadField, loadResult.m_jsonResultCode.GetTask());
         EXPECT_EQ(AZ::JsonSerializationResult::Processing::Completed, loadResult.m_jsonResultCode.GetProcessing());
 
-        EXPECT_EQ(propertyData.m_name, "testProperty");
+        EXPECT_EQ(propertyData.GetName(), "testProperty");
         EXPECT_EQ(propertyData.m_dataType, MaterialPropertyDataType::Float);
         EXPECT_EQ(propertyData.m_outputConnections.size(), 0);
 
@@ -964,7 +944,7 @@ namespace UnitTest
         EXPECT_EQ(AZ::JsonSerializationResult::Tasks::ReadField, loadResult.m_jsonResultCode.GetTask());
         EXPECT_EQ(AZ::JsonSerializationResult::Processing::Completed, loadResult.m_jsonResultCode.GetProcessing());
 
-        EXPECT_EQ(propertyData.m_name, "testProperty");
+        EXPECT_EQ(propertyData.GetName(), "testProperty");
         EXPECT_EQ(propertyData.m_dataType, MaterialPropertyDataType::Float);
         EXPECT_EQ(propertyData.m_outputConnections.size(), 1);
         EXPECT_EQ(propertyData.m_outputConnections[0].m_fieldName, "o_foo");

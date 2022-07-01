@@ -8,10 +8,14 @@
 #include <Atom/RHI/ShaderResourceGroupPool.h>
 #include <Atom/RHI/BufferView.h>
 #include <Atom/RHI/ImageView.h>
+#include <AzCore/Console/IConsole.h>
+
 namespace AZ
 {
     namespace RHI
     {
+        AZ_CVAR(bool, r_DisablePartialSrgCompilation, false, nullptr, AZ::ConsoleFunctorFlags::Null, "Enable this cvar to disable Partial SRG compilation");
+
         ShaderResourceGroupPool::ShaderResourceGroupPool() {}
 
         ShaderResourceGroupPool::~ShaderResourceGroupPool() {}
@@ -112,7 +116,7 @@ namespace AZ
             bool isQueuedForCompile = shaderResourceGroup.IsQueuedForCompile();
             AZ_Warning(
                 "ShaderResourceGroupPool", !isQueuedForCompile,
-                "Attempting to compile an SRG that's already been queued for compile. Only compile an SRG once per frame.");            
+                "Attempting to compile an SRG that's already been queued for compile. Only compile an SRG once per frame.");
 
             if (!isQueuedForCompile)
             {
@@ -153,7 +157,7 @@ namespace AZ
         {
             CalculateGroupDataDiff(group, groupData);
             group.SetData(groupData);
-            CompileGroupInternal(group, group.GetData());
+            CompileGroup(group, group.GetData());
         }
 
         void ShaderResourceGroupPool::CalculateGroupDataDiff(ShaderResourceGroup& shaderResourceGroup, const ShaderResourceGroupData& groupData)
@@ -202,8 +206,8 @@ namespace AZ
                 // Generate diffs for image views.
                 if (HasImageGroup())
                 {
-                    AZStd::array_view<ConstPtr<ImageView>> viewGroupOld = shaderResourceGroup.GetData().GetImageGroup();
-                    AZStd::array_view<ConstPtr<ImageView>> viewGroupNew = groupData.GetImageGroup();
+                    AZStd::span<const ConstPtr<ImageView>> viewGroupOld = shaderResourceGroup.GetData().GetImageGroup();
+                    AZStd::span<const ConstPtr<ImageView>> viewGroupNew = groupData.GetImageGroup();
                     AZ_Assert(viewGroupOld.size() == viewGroupNew.size(), "ShaderResourceGroupData layouts do not match.");
                     for (size_t i = 0; i < viewGroupOld.size(); ++i)
                     {
@@ -214,8 +218,8 @@ namespace AZ
                 // Generate diffs for buffer views.
                 if (HasBufferGroup())
                 {
-                    AZStd::array_view<ConstPtr<BufferView>> viewGroupOld = shaderResourceGroup.GetData().GetBufferGroup();
-                    AZStd::array_view<ConstPtr<BufferView>> viewGroupNew = groupData.GetBufferGroup();
+                    AZStd::span<const ConstPtr<BufferView>> viewGroupOld = shaderResourceGroup.GetData().GetBufferGroup();
+                    AZStd::span<const ConstPtr<BufferView>> viewGroupNew = groupData.GetBufferGroup();
                     AZ_Assert(viewGroupOld.size() == viewGroupNew.size(), "ShaderResourceGroupData layouts do not match.");
                     for (size_t i = 0; i < viewGroupOld.size(); ++i)
                     {
@@ -246,6 +250,113 @@ namespace AZ
             return static_cast<uint32_t>(m_groupsToCompile.size());
         }
 
+        template<typename T>
+        HashValue64 ShaderResourceGroupPool::GetViewHash(AZStd::span<const RHI::ConstPtr<T>> views)
+        {
+            HashValue64 viewHash = HashValue64{ 0 };
+            for (size_t i = 0; i < views.size(); ++i)
+            {
+                if (views[i])
+                {
+                    viewHash = TypeHash64(views[i]->GetHash(), viewHash);
+                }
+            }
+            return viewHash;
+        }
+
+        template<typename T>
+        void ShaderResourceGroupPool::UpdateMaskBasedOnViewHash(
+            ShaderResourceGroup& shaderResourceGroup, Name entryName, AZStd::span<const RHI::ConstPtr<T>> views,
+            ShaderResourceGroupData::ResourceType resourceType)
+        {
+            //Get the view hash and check if it was updated in which case we need to compile those views. 
+            HashValue64 viewHash = GetViewHash<T>(views);
+            if (shaderResourceGroup.GetViewHash(entryName) != viewHash)
+            {
+                shaderResourceGroup.EnableRhiResourceTypeCompilation(static_cast<ShaderResourceGroupData::ResourceTypeMask>(AZ_BIT(static_cast<uint32_t>(resourceType))));
+                shaderResourceGroup.ResetResourceTypeIteration(resourceType);
+                shaderResourceGroup.UpdateViewHash(entryName, viewHash);
+            }
+        }
+
+        void ShaderResourceGroupPool::ResetUpdateMaskForModifiedViews(
+            ShaderResourceGroup& shaderResourceGroup, const ShaderResourceGroupData& shaderResourceGroupData)
+        {
+            const RHI::ShaderResourceGroupLayout& groupLayout = *shaderResourceGroupData.GetLayout();
+            uint32_t shaderInputIndex = 0;
+            //Check image views
+            for (const RHI::ShaderInputImageDescriptor& shaderInputImage : groupLayout.GetShaderInputListForImages())
+            {
+                const RHI::ShaderInputImageIndex imageInputIndex(shaderInputIndex);
+                UpdateMaskBasedOnViewHash<RHI::ImageView>(
+                    shaderResourceGroup, shaderInputImage.m_name, shaderResourceGroupData.GetImageViewArray(imageInputIndex),
+                    ShaderResourceGroupData::ResourceType::ImageView);
+                ++shaderInputIndex;
+            }
+
+            shaderInputIndex = 0;
+            //Check buffer views
+            for (const RHI::ShaderInputBufferDescriptor& shaderInputBuffer : groupLayout.GetShaderInputListForBuffers())
+            {
+                const RHI::ShaderInputBufferIndex bufferInputIndex(shaderInputIndex);
+                UpdateMaskBasedOnViewHash<RHI::BufferView>(
+                    shaderResourceGroup, shaderInputBuffer.m_name, shaderResourceGroupData.GetBufferViewArray(bufferInputIndex),
+                    ShaderResourceGroupData::ResourceType::BufferView);
+                ++shaderInputIndex;
+            }
+
+            shaderInputIndex = 0;
+            //Check unbounded image views
+            for (const RHI::ShaderInputImageUnboundedArrayDescriptor& shaderInputImageUnboundedArray : groupLayout.GetShaderInputListForImageUnboundedArrays())
+            {
+                const RHI::ShaderInputImageUnboundedArrayIndex imageUnboundedArrayInputIndex(shaderInputIndex);
+                UpdateMaskBasedOnViewHash<RHI::ImageView>(
+                    shaderResourceGroup, shaderInputImageUnboundedArray.m_name,
+                    shaderResourceGroupData.GetImageViewUnboundedArray(imageUnboundedArrayInputIndex),
+                    ShaderResourceGroupData::ResourceType::ImageViewUnboundedArray);
+                ++shaderInputIndex;
+            }
+
+            shaderInputIndex = 0;
+            //Check unbounded buffer views
+            for (const RHI::ShaderInputBufferUnboundedArrayDescriptor& shaderInputBufferUnboundedArray : groupLayout.GetShaderInputListForBufferUnboundedArrays())
+            {
+                const RHI::ShaderInputBufferUnboundedArrayIndex bufferUnboundedArrayInputIndex(shaderInputIndex);
+                UpdateMaskBasedOnViewHash<RHI::BufferView>(
+                    shaderResourceGroup, shaderInputBufferUnboundedArray.m_name,
+                    shaderResourceGroupData.GetBufferViewUnboundedArray(bufferUnboundedArrayInputIndex),
+                    ShaderResourceGroupData::ResourceType::BufferViewUnboundedArray);
+                ++shaderInputIndex;
+            }
+        }
+
+        ResultCode ShaderResourceGroupPool::CompileGroup(ShaderResourceGroup& shaderResourceGroup,
+                                                         const ShaderResourceGroupData& shaderResourceGroupData)
+        {
+            if (r_DisablePartialSrgCompilation)
+            {
+                //Reset m_rhiUpdateMask for all resource types which will disable partial SRG compilation
+                for (uint32_t i = 0; i < static_cast<uint32_t>(ShaderResourceGroupData::ResourceType::Count); i++)
+                {
+                    shaderResourceGroup.EnableRhiResourceTypeCompilation(static_cast<ShaderResourceGroupData::ResourceTypeMask>(AZ_BIT(i)));
+                }
+            }
+
+            //Modify m_rhiUpdateMask in case a view was modified. This can happen if a view is invalidated
+            ResetUpdateMaskForModifiedViews(shaderResourceGroup, shaderResourceGroupData);   
+            
+            //Check if any part of the Srg was updated before trying to compile it
+            if (shaderResourceGroup.IsAnyResourceTypeUpdated())
+            {
+                ResultCode resultCode = CompileGroupInternal(shaderResourceGroup, shaderResourceGroupData);
+                
+                //Reset update mask if the latency check has been fulfilled
+                shaderResourceGroup.DisableCompilationForAllResourceTypes();
+                return resultCode;
+            }
+            return ResultCode::Success;
+        }
+    
         void ShaderResourceGroupPool::CompileGroupsForInterval(Interval interval)
         {
             AZ_Assert(m_isCompiling, "You must call CompileGroupsBegin() first!");
@@ -259,7 +370,7 @@ namespace AZ
                 ShaderResourceGroup* group = m_groupsToCompile[i];
                 AZ_PROFILE_SCOPE(RHI, "CompileGroupsForInterval %s", group->GetName().GetCStr());
 
-                CompileGroupInternal(*group, group->GetData());
+                CompileGroup(*group, group->GetData());
                 group->m_isQueuedForCompile = false;
             }
         }

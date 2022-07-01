@@ -35,7 +35,7 @@ TEST_F(AWSGameLiftAcceptMatchActivityTest, BuildAWSGameLiftAcceptMatchRequest_Ca
 TEST_F(AWSGameLiftAcceptMatchActivityTest, ValidateAcceptMatchRequest_CallWithBaseType_GetFalseResult)
 {
     AZ_TEST_START_TRACE_SUPPRESSION;
-    auto result = AcceptMatchActivity::ValidateAcceptMatchRequest(AzFramework::AcceptMatchRequest());
+    auto result = AcceptMatchActivity::ValidateAcceptMatchRequest(Multiplayer::AcceptMatchRequest());
     EXPECT_FALSE(result);
     AZ_TEST_STOP_TRACE_SUPPRESSION(1); // capture 1 error message
 }

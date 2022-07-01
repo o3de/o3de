@@ -27,7 +27,6 @@ if(PAL_TRAIT_AZTESTRUNNER_SUPPORTED AND NOT LY_MONOLITHIC_GAME)
             PRIVATE
                 AZ::AzCore
                 AZ::AzTest
-                AZ::AzFramework
     )
     
     if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)

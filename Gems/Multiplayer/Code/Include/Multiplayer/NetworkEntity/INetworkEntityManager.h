@@ -26,7 +26,7 @@ namespace Multiplayer
     using EntityExitDomainEvent = AZ::Event<const ConstNetworkEntityHandle&>;
     using ControllersActivatedEvent = AZ::Event<const ConstNetworkEntityHandle&, EntityIsMigrating>;
     using ControllersDeactivatedEvent = AZ::Event<const ConstNetworkEntityHandle&, EntityIsMigrating>;
-    using NetEntityIdSet = AZStd::unordered_set<NetEntityId>;
+    using NetEntityHandleSet = AZStd::unordered_set<ConstNetworkEntityHandle>;
 
     //! @class INetworkEntityManager
     //! @brief The interface for managing all networked entities.
@@ -189,6 +189,26 @@ namespace Multiplayer
         //! This should only be used in the event of the unexpected loss of the previous authority, any other usage could corrupt the simulation.
         //! @param entityHandle the entity to forcibly assume authoritative control over
         virtual void ForceAssumeAuthority(const ConstNetworkEntityHandle& entityHandle) = 0;
+
+        //! Will toggle whether or not the provided entity should always be relevant to client connections.
+        //! Use carefully, as this will cause the entity to bypass normal relevancy checks and could cause bandwidth issues.
+        //! @param entityHandle   const network entity handle to the entity to override relevancy for
+        //! @param alwaysRelevant a true value will enable always relevant, false will disable
+        virtual void MarkAlwaysRelevantToClients(const ConstNetworkEntityHandle& entityHandle, bool alwaysRelevant) = 0;
+
+        //! Will toggle whether or not the provided entity should always be relevant to server connections.
+        //! Use carefully, as this will cause the entity to bypass normal relevancy checks and could cause bandwidth issues.
+        //! @param entityHandle   const network entity handle to the entity to override relevancy for
+        //! @param alwaysRelevant a true value will enable always relevant, false will disable
+        virtual void MarkAlwaysRelevantToServers(const ConstNetworkEntityHandle& entityHandle, bool alwaysRelevant) = 0;
+
+        //! Retrieves the set of network entities that should always be relevant to client connections.
+        //! @return the set of network entities that should always be relevant to client connections
+        virtual const NetEntityHandleSet& GetAlwaysRelevantToClientsSet() const = 0;
+
+        //! Retrieves the set of network entities that should always be relevant to server connections.
+        //! @return the set of network entities that should always be relevant to server connections
+        virtual const NetEntityHandleSet& GetAlwaysRelevantToServersSet() const = 0;
 
         //! Overrides the default timeout time used during entity migrations.
         //! @param timeoutTimeMs the timeout time to use in milliseconds

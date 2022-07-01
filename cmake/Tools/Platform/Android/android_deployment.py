@@ -94,7 +94,8 @@ class AndroidDeployment(object):
             if asset_mode == 'PAK':
                 self.local_asset_path = self.dev_root / 'Pak' / f'{game_name.lower()}_{asset_type}_paks'
             else:
-                self.local_asset_path = self.dev_root / game_name / 'Cache' / asset_type
+                # Assets layout folder when assets are not included into APK is 'app/src/assets'
+                self.local_asset_path = self.build_dir / 'app/src/assets'
 
             assert game_name is not None, f"'game_name' is required"
             self.game_name = game_name
@@ -183,7 +184,7 @@ class AndroidDeployment(object):
         logging.debug(f"adb command: {subprocess.list2cmdline(call_arguments)}")
 
         try:
-            output = subprocess.check_output(call_arguments,
+            output = subprocess.check_output(subprocess.list2cmdline(call_arguments),
                                              shell=True,
                                              stderr=subprocess.PIPE).decode(common.DEFAULT_TEXT_READ_ENCODING,
                                                                                common.ENCODING_ERROR_HANDLINGS)
@@ -415,7 +416,7 @@ class AndroidDeployment(object):
             android_package_name = android_support.TEST_RUNNER_PACKAGE_NAME
         else:
             android_package_name = self.get_android_project_settings(key_name='package_name',
-                                                                     default_value='com.lumberyard.sdk')
+                                                                     default_value='org.o3de.sdk')
 
         if self.clean_deploy and self.check_package_installed(android_package_name, target_device):
             logging.info(f"Device '{target_device}': Uninstalling pre-existing APK for {self.game_name} ...")
@@ -436,7 +437,7 @@ class AndroidDeployment(object):
         assert not self.is_test_project
 
         android_package_name = self.get_android_project_settings(key_name='package_name',
-                                                                 default_value='com.lumberyard.sdk')
+                                                                 default_value='org.o3de.sdk')
         relative_assets_path = f'Android/data/{android_package_name}/files'
         output_target = f'{detected_storage}/{relative_assets_path}'
         device_timestamp_file = f'{output_target}/{ANDROID_TARGET_TIMESTAMP_FILENAME}'
@@ -452,22 +453,20 @@ class AndroidDeployment(object):
                            device_id=target_device)
             logging.info(f"Device '{target_device}': Target cleaned.")
 
-        settings_registry_src = self.build_dir / 'app/src/main/assets/Registry'
-        settings_registry_dst = f'{output_target}/Registry'
+        # '/.' is necessary to avoid copying folder 'assets' to destination, but its content.
+        assets_layout_src = f'{str(self.local_asset_path)}/.'
+        assets_layout_dst = f'{output_target}'
 
         if self.clean_deploy or not target_timestamp:
-            logging.info(f"Device '{target_device}': Pushing {len(self.files_in_asset_path)} files from {str(self.local_asset_path.resolve())} to device ...")
-            paths_to_deploy = [(str(self.local_asset_path.resolve()), output_target),
-                               (str(settings_registry_src), settings_registry_dst)]
-            for path_to_deploy, target_path in paths_to_deploy:
-                try:
-                    self.adb_call(arg_list=['push', str(path_to_deploy), target_path],
-                                  device_id=target_device)
-                except common.LmbrCmdError as err:
-                    # Something went wrong, clean up before leaving
-                    self.adb_shell(command=f'rm -rf {output_target}',
-                                   device_id=target_device)
-                    raise err
+            logging.info(f"Device '{target_device}': Pushing {len(self.files_in_asset_path)} files from {assets_layout_src} to device {assets_layout_dst} ...")
+            try:
+                self.adb_call(arg_list=['push', assets_layout_src, assets_layout_dst],
+                                device_id=target_device)
+            except common.LmbrCmdError as err:
+                # Something went wrong, clean up before leaving
+                self.adb_shell(command=f'rm -rf {output_target}',
+                                device_id=target_device)
+                raise err
 
         else:
             # If no clean was specified, individually inspect all files to see if it needs to be updated
@@ -478,17 +477,13 @@ class AndroidDeployment(object):
                     files_to_copy.append(asset_file)
 
             if len(files_to_copy) > 0:
-                logging.info(f"Copying {len(files_to_copy)} assets to device  {target_device}")
+                logging.info(f"Copying {len(files_to_copy)} assets to device {target_device}")
 
             for src_path in files_to_copy:
                 relative_path = os.path.relpath(str(src_path), str(self.local_asset_path)).replace('\\', '/')
                 target_path = f"{output_target}/{relative_path}"
                 self.adb_call(arg_list=['push', str(src_path), target_path],
                               device_id=target_device)
-
-            # Always update the settings registry
-            self.adb_call(arg_list=['push', str(settings_registry_src), settings_registry_dst],
-                          device_id=target_device)
 
         self.update_device_file_timestamp(relative_assets_path=output_target,
                                           device_id=target_device)
@@ -539,7 +534,7 @@ class AndroidDeployment(object):
                         if self.deployment_type == AndroidDeployment.DEPLOY_ASSETS_ONLY:
                             # If we are deploying assets only without an APK, make sure the APK is even installed first
                             android_package_name = self.get_android_project_settings(key_name='package_name',
-                                                                                     default_value='com.lumberyard.sdk')
+                                                                                     default_value='org.o3de.sdk')
                             if not self.check_package_installed(package_name=android_package_name,
                                                                 target_device=target_device):
                                 raise common.LmbrCmdError(f"Unable to locate APK for {self.game_name} on device '{target_device}'. Make sure it is installed "

@@ -13,16 +13,17 @@
 #include <AzCore/std/containers/fixed_unordered_set.h>
 #include <AzCore/std/containers/fixed_unordered_map.h>
 #include <AzCore/std/string/string.h>
+#include <AzCore/std/typetraits/has_member_function.h>
 
 #if defined(HAVE_BENCHMARK)
 #include <benchmark/benchmark.h>
 #endif // HAVE_BENCHMARK
 
-using namespace AZStd;
-using namespace UnitTestInternal;
-
 namespace UnitTest
 {
+    using namespace AZStd;
+    using namespace UnitTestInternal;
+
     AZ_HAS_MEMBER(HashValidate, validate, void, ());
 
     /**
@@ -50,7 +51,7 @@ namespace UnitTest
         template <class H>
         static void ValidateHash(H& h, size_t numElements = 0)
         {
-            Validator<H, HasHashValidate<H>::value>::Validate(h);
+            Validator<H, HasHashValidate_v<H>>::Validate(h);
             EXPECT_EQ(numElements, h.size());
             if (numElements > 0)
             {
@@ -1107,7 +1108,7 @@ namespace UnitTest
         {
             return testString == key.m_name;
         };
-        
+
         auto entityIt = ownedStringSet.find_as(nonOwnedString1, AZStd::hash<AZStd::string>(), keyEqual);
         EXPECT_NE(ownedStringSet.end(), entityIt);
         EXPECT_EQ(nonOwnedString1, entityIt->m_name);
@@ -1125,7 +1126,7 @@ namespace UnitTest
         aset2.insert("PlayerBase");
         aset2.insert("PlacementObstructionBase");
         aset2.insert("DamageableBase");
-        EXPECT_EQ(aset1, aset2); 
+        EXPECT_EQ(aset1, aset2);
     }
 
     TEST_F(HashedContainers, UnorderedMapIterateEmpty)
@@ -1163,7 +1164,7 @@ namespace UnitTest
     {
     };
 
-    
+
     struct MoveOnlyIntType
     {
         MoveOnlyIntType() = default;
@@ -1307,7 +1308,7 @@ namespace UnitTest
         EXPECT_NE(testContainer.end(), insertResult.position);
         EXPECT_TRUE(insertResult.inserted);
         EXPECT_TRUE(insertResult.node.empty());
-        
+
         EXPECT_NE(0, testContainer.count(-60));
         EXPECT_EQ(8, testContainer.size());
     }
@@ -1400,7 +1401,7 @@ namespace UnitTest
     {
         using ContainerType = ContainerTemplate<int32_t, AZStd::hash<int32_t>, AZStd::equal_to<int32_t>, AZ::AZStdIAllocator>;
 
-        static ContainerType Create(std::initializer_list<typename ContainerType::value_type> intList, AZ::IAllocatorAllocate* allocatorInstance)
+        static ContainerType Create(std::initializer_list<typename ContainerType::value_type> intList, AZ::IAllocator* allocatorInstance)
         {
             ContainerType allocatorSet(intList, AZStd::hash<int32_t>{}, AZStd::equal_to<int32_t>{}, AZ::AZStdIAllocator{ allocatorInstance });
             return allocatorSet;
@@ -1450,7 +1451,7 @@ namespace UnitTest
         static MapType Create()
         {
             MapType testMap;
-            
+
             testMap.emplace(8001, 1337);
             testMap.emplace(-200, 31337);
             testMap.emplace(-932, 0xbaddf00d);
@@ -1491,7 +1492,7 @@ namespace UnitTest
 
         MapType testContainer = TypeParam::Create();
         node_type extractedNode = testContainer.extract(3);
-        
+
         EXPECT_EQ(8, testContainer.size());
         EXPECT_TRUE(extractedNode.empty());
     }
@@ -1545,7 +1546,7 @@ namespace UnitTest
         EXPECT_EQ(7, testContainer.size());
         EXPECT_FALSE(extractedNode.empty());
         EXPECT_EQ(0b11010110110000101, extractedNode.key());
-        
+
         extractedNode.key() = -60;
         extractedNode.mapped() = -1;
 
@@ -1798,7 +1799,7 @@ namespace UnitTest
     {
         using ContainerType = ContainerTemplate<int32_t, int32_t, AZStd::hash<int32_t>, AZStd::equal_to<int32_t>, AZ::AZStdIAllocator>;
 
-        static ContainerType Create(std::initializer_list<typename ContainerType::value_type> intList, AZ::IAllocatorAllocate* allocatorInstance)
+        static ContainerType Create(std::initializer_list<typename ContainerType::value_type> intList, AZ::IAllocator* allocatorInstance)
         {
             ContainerType allocatorMap(intList, AZStd::hash<int32_t>{}, AZStd::equal_to<int32_t>{}, AZ::AZStdIAllocator{ allocatorInstance });
             return allocatorMap;
@@ -1990,13 +1991,13 @@ namespace UnitTest
         // The following call will construct a TrackConstructorCalls element
         EXPECT_TRUE(container.contains(HashedContainerTransparentTestInternal::TrackConstructorCalls{ 2 }));
         EXPECT_EQ(1, HashedContainerTransparentTestInternal::s_allConstructorCount);
-        
+
 
         // The transparent contain function should be invoked and no constructor of TrackConstructorCallsElement should be invoked
         EXPECT_TRUE(container.contains(2));
         // The ConstructorCount should still be the same
         EXPECT_EQ(1, HashedContainerTransparentTestInternal::s_allConstructorCount);
-        
+
         // In the case when the element isn't found, no constructor shouldn't be invoked as well
         EXPECT_FALSE(container.contains(27));
         EXPECT_EQ(1, HashedContainerTransparentTestInternal::s_allConstructorCount);

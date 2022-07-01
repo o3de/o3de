@@ -10,19 +10,23 @@
 #pragma once
 
 #include <AzCore/Component/Component.h>
+#include <AzCore/Component/TickBus.h>
 #include <AzCore/Jobs/JobContext.h>
 #include <AzCore/Jobs/JobManager.h>
 #include <AzCore/UserSettings/UserSettingsProvider.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
+#include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Asset/AssetSeedManager.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/Editor/EditorContextMenuBus.h>
+#include <AzToolsFramework/Entity/EditorEntityContextBus.h>
+#include <Builder/ScriptCanvasBuilder.h>
+#include <Builder/ScriptCanvasBuilderDataSystem.h>
 #include <Core/GraphBus.h>
 #include <Editor/View/Windows/Tools/UpgradeTool/Model.h>
 #include <ScriptCanvas/Bus/ScriptCanvasBus.h>
 #include <ScriptCanvas/Bus/ScriptCanvasExecutionBus.h>
-#include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 
 namespace ScriptCanvasEditor
 {
@@ -35,9 +39,9 @@ namespace ScriptCanvasEditor
         , private AZ::UserSettingsNotificationBus::Handler
         , private AZ::Data::AssetBus::MultiHandler
         , private AzToolsFramework::AssetSeedManagerRequests::Bus::Handler
-        , private AzToolsFramework::EditorContextMenuBus::Handler
         , private AzToolsFramework::EditorEntityContextNotificationBus::Handler
-
+        , private AzToolsFramework::AssetSystemBus::Handler
+        , private AZ::SystemTickBus::Handler
     {
     public:
         AZ_COMPONENT(SystemComponent, "{1DE7A120-4371-4009-82B5-8140CB1D7B31}");
@@ -61,14 +65,8 @@ namespace ScriptCanvasEditor
 
         ////////////////////////////////////////////////////////////////////////
         // SystemRequestBus::Handler...
-        void AddAsyncJob(AZStd::function<void()>&& jobFunc) override;
         void GetEditorCreatableTypes(AZStd::unordered_set<ScriptCanvas::Data::Type>& outCreatableTypes) override;
         void CreateEditorComponentsOnEntity(AZ::Entity* entity, const AZ::Data::AssetType& assetType) override;
-        ////////////////////////////////////////////////////////////////////////
-
-        ////////////////////////////////////////////////////////////////////////
-        // AztoolsFramework::EditorContextMenuBus::Handler...
-        void PopulateEditorGlobalContextMenu(QMenu* menu, const AZ::Vector2& point, int flags) override;
         ////////////////////////////////////////////////////////////////////////
 
         ////////////////////////////////////////////////////////////////////////
@@ -102,13 +100,13 @@ namespace ScriptCanvasEditor
 
     protected:
         void OnStartPlayInEditor() override;
-
         void OnStopPlayInEditor() override;
-
+        void OnSystemTick() override;
+        void RequestGarbageCollect() override;
+        
     private:
         SystemComponent(const SystemComponent&) = delete;
 
-        void FilterForScriptCanvasEnabledEntities(AzToolsFramework::EntityIdList& sourceList, AzToolsFramework::EntityIdList& targetList);
         void PopulateEditorCreatableTypes();
         
         AZStd::unique_ptr<AZ::JobManager> m_jobManager;
@@ -121,5 +119,8 @@ namespace ScriptCanvasEditor
 
         bool m_isUpgrading = false;
         bool m_upgradeDisabled = false;
+        bool m_isGarbageCollectRequested = true;
+
+        ScriptCanvasBuilder::DataSystem m_dataSystem;
     };
 }

@@ -40,9 +40,16 @@ find_package_handle_standard_args(o3de
     found_matching_engine
 )
 
+cmake_path(SET engine_root_folder NORMALIZE ${current_path}/..)
+set_property(GLOBAL PROPERTY O3DE_ENGINE_ROOT_FOLDER "${engine_root_folder}")
+
+# Inject the CompilerSettings.cmake to be included before the project command
+set(CMAKE_PROJECT_INCLUDE_BEFORE "${engine_root_folder}cmake/CompilerSettings.cmake")
+
 macro(o3de_initialize)
     set(INSTALLED_ENGINE FALSE)
     set(LY_PROJECTS ${CMAKE_CURRENT_LIST_DIR})
     o3de_current_file_path(current_path)
+    enable_testing()
     add_subdirectory(${current_path}/.. o3de)
 endmacro()

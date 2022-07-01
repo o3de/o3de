@@ -16,7 +16,7 @@
 #include <Atom/RPI.Reflect/Asset/AssetHandler.h>
 #include <Atom/RPI.Reflect/ResourcePoolAsset.h>
 
-#include <AtomCore/std/containers/array_view.h>
+#include <AzCore/std/containers/span.h>
 
 #include <AzCore/Asset/AssetCommon.h>
 
@@ -46,7 +46,7 @@ namespace AZ
             BufferAsset() = default;
             ~BufferAsset() = default;
 
-            AZStd::array_view<uint8_t> GetBuffer() const;
+            AZStd::span<const uint8_t> GetBuffer() const;
 
             const RHI::BufferDescriptor& GetBufferDescriptor() const;
 

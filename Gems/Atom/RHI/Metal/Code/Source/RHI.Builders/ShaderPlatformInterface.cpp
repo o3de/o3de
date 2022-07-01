@@ -53,19 +53,19 @@ namespace AZ
         {
             return AZ::Metal::PipelineLayoutDescriptor::Create();
         }
- 
+
         bool ShaderPlatformInterface::BuildPipelineLayoutDescriptor(
             RHI::Ptr<RHI::PipelineLayoutDescriptor> pipelineLayoutDescriptor,
             const ShaderResourceGroupInfoList& srgInfoList,
             const RootConstantsInfo& rootConstantsInfo,
-            const RHI::ShaderCompilerArguments& shaderCompilerArguments)
+            [[maybe_unused]] const RHI::ShaderBuildArguments& shaderBuildArguments)
         {
             AZ::Metal::PipelineLayoutDescriptor* metalDescriptor = azrtti_cast<AZ::Metal::PipelineLayoutDescriptor*>(pipelineLayoutDescriptor.get());
             AZ_Assert(metalDescriptor, "PipelineLayoutDescriptor should have been created by now");
-            
+
             const uint32_t groupLayoutCount = static_cast<uint32_t>(srgInfoList.size());
             AZ_Assert(groupLayoutCount <= RHI::Limits::Pipeline::ShaderResourceGroupCountMax, "Exceeded ShaderResourceGroupLayout count limit.");
-            
+
             // Slot to index mapping
             AZ::Metal::SlotToIndexTable slotToIndexTable;
             AZ::Metal::IndexToSlotTable indexToSlotTable;
@@ -81,17 +81,17 @@ namespace AZ
             {
                 return first.m_layout->GetBindingSlot() < second.m_layout->GetBindingSlot();
             });
-             
+
             for (uint32_t groupLayoutIndex = 0; groupLayoutIndex < groupLayoutCount; ++groupLayoutIndex)
             {
                 const auto& srgInfo = sortedSrgInfos[groupLayoutIndex];
                 const RHI::ShaderResourceGroupLayout& groupLayout = *srgInfo.m_layout;
                 const uint32_t srgLayoutSlot = groupLayout.GetBindingSlot();
-                
+
                 AZ_Assert(srgLayoutSlot <= RHI::Limits::Pipeline::ShaderResourceGroupCountMax, "Cannot exceed the array limit");
                 slotToIndexTable[srgLayoutSlot] = groupLayoutIndex;
                 indexToSlotTable[groupLayoutIndex] = srgLayoutSlot;
-                
+
                 ShaderResourceGroupVisibility srgVisibility;
                 for (const auto& resourceBindInfo : srgInfo.m_bindingInfo.m_resourcesRegisterMap)
                 {
@@ -99,24 +99,24 @@ namespace AZ
                 }
                 srgVisibility.m_constantDataStageMask = srgInfo.m_bindingInfo.m_constantDataBindingInfo.m_shaderStageMask;
                 metalDescriptor->AddShaderResourceGroupVisibility(srgVisibility);
-                
+
                 //cache the layout in order to fill out unused variables
                 m_srgLayouts[groupLayoutIndex] = srgInfo.m_layout;
             }
-            
+
             if (rootConstantsInfo.m_totalSizeInBytes > 0)
             {
                 metalDescriptor->SetRootConstantBinding(RootConstantBinding{ rootConstantsInfo.m_registerId, rootConstantsInfo.m_spaceId });
             }
-            
+
             metalDescriptor->SetBindingTables(slotToIndexTable, indexToSlotTable);
             return metalDescriptor->Finalize() == RHI::ResultCode::Success;
         }
-    
+
         RHI::Ptr<RHI::ShaderStageFunction> ShaderPlatformInterface::CreateShaderStageFunction(const StageDescriptor& stageDescriptor)
         {
             RHI::Ptr<ShaderStageFunction> newShaderStageFunction = ShaderStageFunction::Create(RHI::ToRHIShaderStage(stageDescriptor.m_stageType));
-            
+
             const Metal::ShaderSourceCode& sourceCode = stageDescriptor.m_sourceCode;
 
             //Metal sourceCode is great for debugging but it is not needed as we are also packing the bytecode. This
@@ -127,7 +127,7 @@ namespace AZ
             const AZStd::string& entryFunctionName = stageDescriptor.m_entryFunctionName;
             newShaderStageFunction->SetByteCode(byteCode);
             newShaderStageFunction->SetEntryFunctionName(entryFunctionName);
-            
+
             newShaderStageFunction->Finalize();
             return newShaderStageFunction;
         }
@@ -152,24 +152,6 @@ namespace AZ
             return (shaderStageType == RHI::ShaderHardwareStage::RayTracing);
         }
 
-        AZStd::string ShaderPlatformInterface::GetAzslCompilerParameters(const RHI::ShaderCompilerArguments& shaderCompilerArguments) const
-        {
-            // Note: all platforms use DirectX packing rules. We enable vk namespace as well to allow
-            // for vk syntax to carry  through from dxc to spirv-cross.
-            return shaderCompilerArguments.MakeAdditionalAzslcCommandLineString() +
-                " --use-spaces --unique-idx --namespace=mt,vk --root-const=128 --pad-root-const";
-        }
- 
-        AZStd::string ShaderPlatformInterface::GetAzslCompilerWarningParameters(const RHI::ShaderCompilerArguments& shaderCompilerArguments) const
-        {
-            return shaderCompilerArguments.MakeAdditionalAzslcWarningCommandLineString();
-        }
-
-        bool ShaderPlatformInterface::BuildHasDebugInfo(const RHI::ShaderCompilerArguments& shaderCompilerArguments) const
-        {
-            return shaderCompilerArguments.m_generateDebugInfo;
-        }
-
         const char* ShaderPlatformInterface::GetAzslHeader(const AssetBuilderSDK::PlatformInfo& platform) const
         {
             if(platform.HasTag("mobile"))
@@ -189,7 +171,7 @@ namespace AZ
            RHI::ShaderHardwareStage shaderStage,
            const AZStd::string& tempFolderPath,
            StageDescriptor& outputDescriptor,
-           const RHI::ShaderCompilerArguments& shaderCompilerArguments) const
+           const RHI::ShaderBuildArguments& shaderBuildArguments) const
         {
             for ([[maybe_unused]] auto srgLayout : m_srgLayouts)
             {
@@ -205,7 +187,7 @@ namespace AZ
                 tempFolderPath,                  // AP temp folder for the job
                 functionName,                    // name of function that is the entry point
                 shaderStage,                     // shader stage (vertex shader, pixel shader, ...)
-                shaderCompilerArguments,
+                shaderBuildArguments,
                 shaderSourceCode,                // cross-compiled shader output
                 shaderByteCode,                  // compiled byte code
                 platform,                        // target platform
@@ -241,7 +223,7 @@ namespace AZ
             const AZStd::string& tempFolder,
             const AZStd::string& entryPoint,
             const RHI::ShaderHardwareStage shaderType,
-            const RHI::ShaderCompilerArguments& shaderCompilerArguments,
+            const RHI::ShaderBuildArguments& shaderBuildArguments,
             AZStd::vector<char>& sourceMetalShader,
             AZStd::vector<uint8_t>& compiledByteCode,
             const AssetBuilderSDK::PlatformInfo& platform,
@@ -255,7 +237,7 @@ namespace AZ
 
             // Stage profile name parameter
             const AZStd::string shaderModelVersion = "6_2";
-            
+
             const AZStd::unordered_map<RHI::ShaderHardwareStage, AZStd::string> stageToProfileName =
             {
                 {RHI::ShaderHardwareStage::Vertex,   "vs_" + shaderModelVersion},
@@ -268,25 +250,10 @@ namespace AZ
                 AZ_Error(MetalShaderPlatformName, false, "Unsupported shader stage");
                 return false;
             }
-            
+
             // For this approach we will be doing hlsl->spirv(through dxc) and spirv->metalSL(through spirv cross)
             // Output spirv file
             AZStd::string shaderSpirvOutputFile = RHI::BuildFileNameWithExtension(shaderSourceFile, tempFolder, "spirv");
-            
-            // Compilation parameters
-            AZStd::string params = shaderCompilerArguments.MakeAdditionalDxcCommandLineString();
-            params += " -spirv"; // Generate SPIRV shader
-            
-            // Enable half precision types when shader model >= 6.2
-            int shaderModelMajor = 0;
-            int shaderModelMinor = 0;
-            [[maybe_unused]] int numValuesRead = azsscanf(shaderModelVersion.c_str(), "%d_%d", &shaderModelMajor, &shaderModelMinor);
-            AZ_Assert(numValuesRead == 2, "Unknown shader model version format");
-            if (shaderModelMajor >= 6 && shaderModelMinor >= 2)
-            {
-                params += " -enable-16bit-types";
-            }
-            StringFunc::TrimWhiteSpace(params, true, false);
 
             AZStd::string prependFile;
             if(platform.HasTag("mobile"))
@@ -304,11 +271,12 @@ namespace AZ
             args.m_destinationFolder = tempFolder.c_str();
 
             const auto dxcInputFile = RHI::PrependFile(args);
-            if (BuildHasDebugInfo(shaderCompilerArguments))
+            if (BuildHasDebugInfo(shaderBuildArguments))
             {
                 // dump intermediate "true final HLSL" file (shadername.metal.shadersource.prepend)
                 byProducts.m_intermediatePaths.insert(dxcInputFile);
             }
+            const auto params = RHI::ShaderBuildArguments::ListAsString(shaderBuildArguments.m_dxcArguments);
             //                                                      1.entry   3.config       5.hlsl-in
             //                                                          |   2.SM  |   4.output   |
             //                                                          |     |   |       |      |
@@ -318,20 +286,20 @@ namespace AZ
                                                                     params.c_str(),                // 3
                                                                     shaderSpirvOutputFile.c_str(), // 4
                                                                     dxcInputFile.c_str());         // 5
-            
+
             // Run dxc Compiler
             if (!RHI::ExecuteShaderCompiler(dxcRelativePath, dxcCommandOptions, shaderSourceFile, "DXC"))
             {
                 AZ_Error(MetalShaderPlatformName, false, "DXC failed to create the spirv file");
                 return false;
             }
-            if (BuildHasDebugInfo(shaderCompilerArguments))
+            if (BuildHasDebugInfo(shaderBuildArguments))
             {
                 byProducts.m_intermediatePaths.insert(shaderSpirvOutputFile);   // the spirv spit by DXC
             }
-            
+
             IO::FileIOStream spirvOutFileStream(shaderSpirvOutputFile.data(), AZ::IO::OpenMode::ModeRead | AZ::IO::OpenMode::ModeBinary);
-            
+
             if (!spirvOutFileStream.IsOpen())
             {
                 AZ_Error(MetalShaderPlatformName, false, "Failed because the shader file \"%s\" could not be opened", shaderSpirvOutputFile.data());
@@ -343,12 +311,13 @@ namespace AZ
                 spirvOutFileStream.Close();
                 return false;
             }
-            
+
             // spirv cross compiler executable
             static const char* spirvCrossRelativePath = "Builders/SPIRVCross/spirv-cross";
-           
-            AZStd::string spirvCrossCommandOptions = AZStd::string::format("--msl --msl-version 20100 --msl-invariant-float-math --msl-argument-buffers --msl-decoration-binding --msl-texture-buffer-native --output \"%s\" \"%s\"", shaderMSLOutputFile.c_str(), shaderSpirvOutputFile.c_str());
-            
+
+            const auto userDefinedSpirvCrossAgs = RHI::ShaderBuildArguments::ListAsString(shaderBuildArguments.m_spirvCrossArguments);
+            AZStd::string spirvCrossCommandOptions = AZStd::string::format("%s --output \"%s\" \"%s\"", userDefinedSpirvCrossAgs.c_str(), shaderMSLOutputFile.c_str(), shaderSpirvOutputFile.c_str());
+
             // Run spirv cross
             if (!RHI::ExecuteShaderCompiler(spirvCrossRelativePath, spirvCrossCommandOptions, shaderSpirvOutputFile, "SpirvCross"))
             {
@@ -357,17 +326,17 @@ namespace AZ
                 return false;
             }
             spirvOutFileStream.Close();
-            
+
             IO::FileIOStream outFileStream(shaderMSLOutputFile.data(), IO::OpenMode::ModeRead);
             bool finalizeShaderResult = UpdateCompiledShader(outFileStream, MetalShaderPlatformName, shaderMSLOutputFile.data(), sourceMetalShader);
             AZ_Assert(finalizeShaderResult, "Final compiled shader was not created. Check if %s was created", shaderMSLOutputFile.c_str());
 
-            if (BuildHasDebugInfo(shaderCompilerArguments))
+            if (BuildHasDebugInfo(shaderBuildArguments))
             {
                 byProducts.m_intermediatePaths.emplace(AZStd::move(shaderMSLOutputFile));   // .msl metal out of sv-cross
             }
-            
-            bool compileMetalSL = CreateMetalLib(MetalShaderPlatformName, shaderSourceFile, tempFolder, compiledByteCode, sourceMetalShader, platform);
+
+            bool compileMetalSL = CreateMetalLib(MetalShaderPlatformName, shaderSourceFile, tempFolder, compiledByteCode, sourceMetalShader, platform, shaderBuildArguments);
             if (!compileMetalSL)
             {
                 AZ_Error(MetalShaderPlatformName, false, "Failed to create bytecode");
@@ -376,7 +345,7 @@ namespace AZ
 
             return finalizeShaderResult;
         }
-        
+
         bool ShaderPlatformInterface::UpdateCompiledShader(AZ::IO::FileIOStream& fileStream, const char* platformName, const char* fileName, AZStd::vector<char>& compiledShader) const
         {
             if (!fileStream.IsOpen())
@@ -390,91 +359,80 @@ namespace AZ
                 fileStream.Close();
                 return false;
             }
-            
+
             compiledShader.resize(fileStream.GetLength() + 1); // +1 to add end of string
             memset(compiledShader.data(), 0, fileStream.GetLength() + 1);
             fileStream.Read(fileStream.GetLength(), compiledShader.data());
             fileStream.Close();
-            
+
             //Ensure that the argument buffer declaration in the shader matches the srg layout
             return AddUnusedResources(compiledShader);
         }
-    
+
         bool ShaderPlatformInterface::CreateMetalLib(const char* platformName,
                                                      const AZStd::string& shaderSourceFile,
                                                      const AZStd::string& tempFolder,
                                                      AZStd::vector<uint8_t>& compiledByteCode,
                                                      AZStd::vector<char>& sourceMetalShader,
-                                                     const AssetBuilderSDK::PlatformInfo& platform) const
+                                                     const AssetBuilderSDK::PlatformInfo& platform,
+                                                     const RHI::ShaderBuildArguments& shaderBuildArguments) const
         {
             AZStd::string inputMetalFile = RHI::BuildFileNameWithExtension(shaderSourceFile, tempFolder, "metal");
-            
+
             AZ::IO::FileIOStream sourceMtlfileStream(inputMetalFile.c_str(), AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeBinary);
             if (!sourceMtlfileStream.IsOpen())
             {
                 AZ_Error(platformName, false, "Failed because the shader file \"%s\" could not be opened", inputMetalFile.c_str());
                 return false;
             }
-            
+
             AZStd::string mtlSource = AZStd::string(sourceMetalShader.begin(), sourceMetalShader.end());
             sourceMtlfileStream.Write(mtlSource.size(), mtlSource.data());
             sourceMtlfileStream.Close();
-            
+
             AZStd::string outputAirFile = RHI::BuildFileNameWithExtension(shaderSourceFile, tempFolder, "air");
             AZStd::string outMetalLibFile = RHI::BuildFileNameWithExtension(shaderSourceFile, tempFolder, "metallib");
-            
-            //Debug symbols are always enabled at the moment. Need to turn them off for optimized shader assets. 
-            AZStd::string shaderDebugInfo = "-gline-tables-only -MO";
 
-            AZStd::string shaderMslToAirOptions = "-fpreserve-invariance";
-
-            //Apply the correct platform sdk option
-            AZStd::string platformSdk = "macosx";
-            if (platform.HasTag("mobile"))
-            {
-                platformSdk = "iphoneos";
-            }
-            
             //Convert to air file
-            AZStd::string mslToAirCommandOptions = AZStd::string::format("-sdk %s metal \"%s\" %s %s -c -o \"%s\"", platformSdk.c_str(), inputMetalFile.c_str(), shaderDebugInfo.c_str(), shaderMslToAirOptions.c_str(), outputAirFile.c_str());
-            
+            const auto metalAirArgumentsStr = RHI::ShaderBuildArguments::ListAsString(shaderBuildArguments.m_metalAirArguments);
+            const auto mslToAirCommandOptions = AZStd::string::format("%s \"%s\" -o \"%s\"", metalAirArgumentsStr.c_str(), inputMetalFile.c_str(), outputAirFile.c_str());
             if (!RHI::ExecuteShaderCompiler("/usr/bin/xcrun", mslToAirCommandOptions, inputMetalFile, "MslToAir"))
             {
                 AZ_Error(MetalShaderPlatformName, false, "Failed to convert to AIR file %s", inputMetalFile.c_str());
                 return false;
             }
-            
+
             //convert to metallib
-            AZStd::string airToMetalLibCommandOptions = AZStd::string::format("-sdk %s metallib \"%s\" -o \"%s\"", platformSdk.c_str(), outputAirFile.c_str(), outMetalLibFile.c_str());
-            
+            const auto metalLibArgumentsStr = RHI::ShaderBuildArguments::ListAsString(shaderBuildArguments.m_metalLibArguments);
+            const auto airToMetalLibCommandOptions = AZStd::string::format("%s \"%s\" -o \"%s\"", metalLibArgumentsStr.c_str(), outputAirFile.c_str(), outMetalLibFile.c_str());
             if (!RHI::ExecuteShaderCompiler("/usr/bin/xcrun", airToMetalLibCommandOptions, outputAirFile, "AirToMetallib"))
             {
                 AZ_Error(MetalShaderPlatformName, false, "Failed to convert to metallib file");
                 return false;
             }
-            
+
             AZ::IO::FileIOStream fileStream(outMetalLibFile.data(), AZ::IO::OpenMode::ModeRead);
             compiledByteCode.resize(fileStream.GetLength());
             memset(compiledByteCode.data(), 0, fileStream.GetLength() );
             fileStream.Read(fileStream.GetLength(), compiledByteCode.data());
             fileStream.Close();
-            
+
             return true;
         }
-        
+
         bool ShaderPlatformInterface::AddUnusedResources(AZStd::vector<char>& compiledShader) const
         {
             AZStd::string finalMetalSLStr = AZStd::string(compiledShader.begin(), compiledShader.end());
-            
+
             const uint32_t groupLayoutCount = static_cast<uint32_t>(m_srgLayouts.size());
             AZStd::string constantBufferTempStructs = "\n";
             AZStd::string structuredBufferTempStructs = "\n";
-            
+
             for (uint32_t groupLayoutIndex = 0; groupLayoutIndex < groupLayoutCount; ++groupLayoutIndex)
             {
                 //const auto& srgInfo = m_srgInfoList[groupLayoutIndex];
                 const RHI::ShaderResourceGroupLayout& groupLayout = *m_srgLayouts[groupLayoutIndex];
-                
+
                 //Check if an argument buffer declaration exists for this srg layout.
                 AZStd::string srgBuffer = AZStd::string::format("spvDescriptorSetBuffer%i", groupLayoutIndex);
                 size_t startOfArgBufferPos = finalMetalSLStr.find(srgBuffer);
@@ -485,7 +443,7 @@ namespace AZ
 
                 size_t endOfArgBufferPos = finalMetalSLStr.find("}", startOfArgBufferPos);
                 AZStd::string fullArgBufferDeclarationStr = finalMetalSLStr.substr(startOfArgBufferPos,endOfArgBufferPos - startOfArgBufferPos + 1);
-                
+
                 //Add all the existing or dummy entries into m_argBufferEntries which is a set. The reason for using a set
                 //is because we need the entries to be sorted based on the register and we do not want duplicates.
                 bool result = AddConstantBufferEntries(groupLayout, constantBufferTempStructs, fullArgBufferDeclarationStr, groupLayoutIndex);
@@ -494,44 +452,44 @@ namespace AZ
                      AZ_Error(MetalShaderPlatformName, false, "Failed because adding constant buffer entries within AddUnusedResources failed");
                     return false;
                 }
-                
+
                 result = AddImageEntries(groupLayout, fullArgBufferDeclarationStr);
                 if(!result)
                 {
                     AZ_Error(MetalShaderPlatformName, false, "Failed because adding image entries within AddUnusedResources failed");
                     return false;
                 }
-                
+
                 result = AddSamplerEntries(groupLayout, fullArgBufferDeclarationStr);
                 if(!result)
                 {
                     AZ_Error(MetalShaderPlatformName, false, "Failed because adding static sampler entries within AddUnusedResources failed");
                     return false;
                 }
-                
+
                 result = AddBufferEntries(groupLayout, structuredBufferTempStructs, fullArgBufferDeclarationStr, groupLayoutIndex);
                 if(!result)
                 {
                     AZ_Error(MetalShaderPlatformName, false, "Failed because adding buffer entries within AddUnusedResources failed");
                     return false;
                 }
-                
+
                 //Create a new spvDescriptorSetBuffer which matches the layout.
                 AZStd::string newArgBufferLayoutStr = "\n";
                 for (const ArgBufferEntries &entry : m_argBufferEntries )
                 {
                     newArgBufferLayoutStr += "    " + entry.first + "\n";
                 }
-                
+
                 //Replace the existing declaration with the new one just generated.
                 //We look for '{' and '}' to find out boundaries of the argument buffer declaration to replace
                 size_t startOfArgBufferBracketPos = finalMetalSLStr.find("{", startOfArgBufferPos) + 1;
                 size_t endOfArgBufferBracketPos = finalMetalSLStr.find("}", startOfArgBufferBracketPos) - 1;
                 finalMetalSLStr.replace(startOfArgBufferBracketPos, endOfArgBufferBracketPos - startOfArgBufferBracketPos, newArgBufferLayoutStr);
-                
+
                 m_argBufferEntries.clear();
             }
-            
+
             //Add dummy definitions of constant buffer and structured buffer types to the top of the file
             AZStd::string startOfShaderTag = "using namespace metal;";
             const size_t startOfShaderPos = finalMetalSLStr.find(startOfShaderTag);
@@ -540,28 +498,28 @@ namespace AZ
                 finalMetalSLStr.insert(startOfShaderPos + startOfShaderTag.length() + 1, constantBufferTempStructs);
                 finalMetalSLStr.insert(startOfShaderPos + startOfShaderTag.length() + 1, structuredBufferTempStructs);
             }
-            
+
             compiledShader = AZStd::vector<char>(finalMetalSLStr.begin(), finalMetalSLStr.end());
             return true;
         }
-        
+
         bool ShaderPlatformInterface::AddConstantBufferEntries(const RHI::ShaderResourceGroupLayout& groupLayout,
                                                                AZStd::string& constantBufferTempStructs,
                                                                AZStd::string& argBufferStr,
                                                                uint32_t groupLayoutIndex) const
         {
-            AZStd::array_view<RHI::ShaderInputConstantDescriptor> shaderInputConstantList = groupLayout.GetShaderInputListForConstants();
+            AZStd::span<const RHI::ShaderInputConstantDescriptor> shaderInputConstantList = groupLayout.GetShaderInputListForConstants();
             if (shaderInputConstantList.empty())
             {
                 return true;
             }
-            
+
             //Only need the information from the first element of the constant buffer.
             const RHI::ShaderInputConstantDescriptor& shaderInputConstant = shaderInputConstantList[0];
-            
+
             uint32_t regId = shaderInputConstant.m_registerId;
             AZStd::string srgResource = AZStd::string::format("id(%i)", regId);
-            
+
             size_t resourceStartPos = argBufferStr.find(srgResource);
             //Check if we need to create a dummy entry
             if (resourceStartPos == AZStd::string::npos)
@@ -578,7 +536,7 @@ namespace AZ
                  *
                  */
                 constantBufferTempStructs += AZStd::string::format("struct type_DummyStruct%i_DescSet%i\n{\n    float dummyArray[%i];\n};\n", regId, groupLayoutIndex, numElements);
-                
+
                  //Create the final resource entry to be added to the set
                 AZStd::string dummyResource = AZStd::string::format("constant type_DummyStruct%i_DescSet%i* dummyConstantBuffer%i [[id(%i)]];", regId, groupLayoutIndex, regId, regId);
                 m_argBufferEntries.insert(AZStd::make_pair(dummyResource, regId));
@@ -590,7 +548,7 @@ namespace AZ
                 return AddExistingResourceEntry("constant type_ConstantBuffer", resourceStartPos, regId, argBufferStr);
             }
         }
-        
+
         bool ShaderPlatformInterface::AddImageEntries(const RHI::ShaderResourceGroupLayout& groupLayout,
                                                       AZStd::string& argBufferStr) const
         {
@@ -599,7 +557,7 @@ namespace AZ
             {
                 uint32_t regId = shaderInputImage.m_registerId;
                 AZStd::string srgResource = AZStd::string::format("id(%i)", regId);
-                
+
                 const size_t resourceStartPos = argBufferStr.find(srgResource);
                 //Check if we need to create a dummy entry
                 if (resourceStartPos == AZStd::string::npos)
@@ -652,7 +610,7 @@ namespace AZ
                             AZ_Assert(false, "Invalid texture type.");
                         }
                     }
-                    
+
                     //Create the resource entry to be added to the set. Handle arrays by checking the shaderInputImage.m_count
                     AZStd::string dummyResource;
                     if(shaderInputImage.m_count > 1)
@@ -678,11 +636,11 @@ namespace AZ
             }
             return result;
         }
-        
+
         bool ShaderPlatformInterface::ProcessSamplerEntry(uint32_t regId, AZStd::string& argBufferStr, uint32_t samplercount) const
         {
             AZStd::string srgResource = AZStd::string::format("id(%i)", regId);
-            
+
             const size_t resourceStartPos = argBufferStr.find(srgResource);
             //Check if we need to create a dummy entry
             if (resourceStartPos == AZStd::string::npos)
@@ -705,7 +663,7 @@ namespace AZ
                 return AddExistingResourceEntry("sampler", resourceStartPos, regId, argBufferStr);
             }
         }
-        
+
         bool ShaderPlatformInterface::AddSamplerEntries(const RHI::ShaderResourceGroupLayout& groupLayout,
                                                         AZStd::string& argBufferStr) const
         {
@@ -714,15 +672,15 @@ namespace AZ
             {
                 result &= ProcessSamplerEntry(staticSampler.m_registerId, argBufferStr, 0);
             }
-            
+
             for (const RHI::ShaderInputSamplerDescriptor& dynamicSampler : groupLayout.GetShaderInputListForSamplers())
             {
                 result &= ProcessSamplerEntry(dynamicSampler.m_registerId, argBufferStr, dynamicSampler.m_count);
             }
-            
+
             return result;
         }
-        
+
         bool ShaderPlatformInterface::AddBufferEntries(const RHI::ShaderResourceGroupLayout& groupLayout,
                                                                  AZStd::string& structuredBufferTempStructs,
                                                                  AZStd::string& argBufferStr,
@@ -733,7 +691,7 @@ namespace AZ
             {
                 uint32_t regId = shaderInputBuffer.m_registerId;
                 AZStd::string srgResource = AZStd::string::format("id(%i)", regId);
-                
+
                 size_t resourceStartPos = argBufferStr.find(srgResource);
                 //Check if we need to create a dummy entry
                 if (resourceStartPos == AZStd::string::npos)
@@ -755,7 +713,7 @@ namespace AZ
                     */
                     structuredBufferTempStructs += AZStd::string::format("struct DummySRG_%s_DescSet%i\n{\n    float dummyArray[%i];\n};\n", shaderInputBuffer.m_name.GetCStr(), groupLayoutIndex, numElements);
                     structuredBufferTempStructs += AZStd::string::format("struct type_RWStructuredDummyBuffer%i_DescSet%i\n{\n    DummySRG_%s_DescSet%i _m0[%i];\n};\n", regId, groupLayoutIndex, shaderInputBuffer.m_name.GetCStr(), groupLayoutIndex, shaderInputBuffer.m_count);
-                    
+
                     //Create the final resource entry to be added to the set
                     AZStd::string dummyResource = AZStd::string::format("device type_RWStructuredDummyBuffer%i_DescSet%i* dummyStructuredBuffer%i [[id(%i)]];", regId, groupLayoutIndex, regId, regId);
                     m_argBufferEntries.insert(AZStd::make_pair(dummyResource, regId));
@@ -823,7 +781,7 @@ namespace AZ
             }
             return result;
         }
-        
+
         bool ShaderPlatformInterface::AddExistingResourceEntry(const char* resourceStr,
                                                                size_t resourceStartPos,
                                                                uint32_t regId,
@@ -832,8 +790,8 @@ namespace AZ
             size_t prevEndOfLine = argBufferStr.rfind("\n", resourceStartPos);
             size_t nextEndOfLine = argBufferStr.find("\n", resourceStartPos);
             size_t startOfEntryPos = argBufferStr.find(resourceStr, prevEndOfLine);
-            
-            //Check to see if a valid entry is found. 
+
+            //Check to see if a valid entry is found.
             if(startOfEntryPos == AZStd::string::npos || startOfEntryPos > nextEndOfLine)
             {
                 AZ_Error(MetalShaderPlatformName, startOfEntryPos != AZStd::string::npos, "Entry-> %s not found within Descriptor set %s", resourceStr, argBufferStr.c_str());
@@ -843,7 +801,7 @@ namespace AZ
             {
                 size_t endOfEntryPos = argBufferStr.find("\n", startOfEntryPos);
                 AZ_Assert(endOfEntryPos != AZStd::string::npos, "Resource entry missing");
-                
+
                 AZStd::string existingEntry = argBufferStr.substr(prevEndOfLine,endOfEntryPos - prevEndOfLine);
                 m_argBufferEntries.insert(AZStd::make_pair(existingEntry, regId));
                 return true;

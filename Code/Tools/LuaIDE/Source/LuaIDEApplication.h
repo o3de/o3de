@@ -17,7 +17,7 @@ namespace LUAEditor
         , protected AzToolsFramework::SourceControlNotificationBus::Handler
     {
     public:
-        Application(int &argc, char **argv);
+        Application(int argc, char **argv);
         ~Application() override;
 
     protected:

@@ -48,7 +48,7 @@ namespace AZ
         template<class T>
         void AddShaderInputs(
             RHI::ShaderResourceGroupLayout& srgLayout,
-            AZStd::array_view<T> shaderInputs,
+            AZStd::span<const T> shaderInputs,
             const uint32_t bindingSlot,
             const RHI::ShaderResourceGroupBindingInfo& srgBidingInfo)
         {

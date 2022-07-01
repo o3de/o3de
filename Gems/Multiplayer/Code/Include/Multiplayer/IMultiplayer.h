@@ -11,6 +11,10 @@
 #include <AzCore/RTTI/RTTI.h>
 #include <AzNetworking/ConnectionLayer/IConnection.h>
 #include <AzNetworking/DataStructures/ByteBuffer.h>
+#include <AzNetworking/Serialization/NetworkInputSerializer.h>
+#include <AzNetworking/Serialization/NetworkOutputSerializer.h>
+#include <AzNetworking/Serialization/TrackChangedSerializer.h>
+#include <AzNetworking/Serialization/TypeValidatingSerializer.h>
 #include <Multiplayer/NetworkEntity/IFilterEntityManager.h>
 #include <Multiplayer/Components/MultiplayerComponentRegistry.h>
 #include <Multiplayer/NetworkEntity/INetworkEntityManager.h>
@@ -24,6 +28,19 @@ namespace AzNetworking
 
 namespace Multiplayer
 {
+#ifdef AZ_RELEASE_BUILD
+    // Disable serializer type validation in release
+    using InputSerializer = AzNetworking::NetworkInputSerializer;
+    using OutputSerializer = AzNetworking::TrackChangedSerializer<AzNetworking::NetworkOutputSerializer>;
+    using RpcInputSerializer = AzNetworking::NetworkInputSerializer;
+    using RpcOutputSerializer = AzNetworking::NetworkOutputSerializer;
+#else
+    using InputSerializer = AzNetworking::TypeValidatingSerializer<AzNetworking::NetworkInputSerializer>;
+    using OutputSerializer = AzNetworking::TypeValidatingSerializer<AzNetworking::TrackChangedSerializer<AzNetworking::NetworkOutputSerializer>>;
+    using RpcInputSerializer = AzNetworking::TypeValidatingSerializer<AzNetworking::NetworkInputSerializer>;
+    using RpcOutputSerializer = AzNetworking::TypeValidatingSerializer<AzNetworking::NetworkOutputSerializer>;
+#endif
+
     //! Collection of types of Multiplayer Connections
     enum class MultiplayerAgentType
     {
@@ -172,16 +189,6 @@ namespace Multiplayer
         //! Returns the network entity manager instance bound to this multiplayer instance.
         //! @return pointer to the network entity manager instance bound to this multiplayer instance
         virtual INetworkEntityManager* GetNetworkEntityManager() = 0;
-
-        //! Sets user-defined filtering manager for entities.
-        //! This allows selectively choosing which entities to replicate on a per client connection.
-        //! See IFilterEntityManager for details.
-        //! @param entityFilter non-owning pointer, the caller is responsible for memory management.
-        virtual void SetFilterEntityManager(IFilterEntityManager* entityFilter) = 0;
-
-        //! Returns a pointer to the user-defined filtering manager of entities.
-        //! @return pointer to the filtered entity manager, or nullptr if not set
-        virtual IFilterEntityManager* GetFilterEntityManager() = 0;
 
         //! Registers a temp userId to allow a host to look up a players controlled entity in the event of a rejoin or migration event.
         //! @param temporaryUserIdentifier the temporary user identifier used to identify a player across hosts

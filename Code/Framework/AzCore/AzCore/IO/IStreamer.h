@@ -15,14 +15,18 @@
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/string/string_view.h>
+#include <AzCore/std/any.h>
 
 // These Streamer includes need to be moved to Streamer internals/implementation,
 // and pull out only what we need for visibility at IStreamer.h interface declaration.
 #include <AzCore/IO/Streamer/Statistics.h>
-#include <AzCore/IO/Streamer/FileRequest.h>
 
 namespace AZ::IO
 {
+    class ExternalFileRequest;
+    class FileRequestHandle;
+
+    using FileRequestPtr = AZStd::intrusive_ptr<ExternalFileRequest>;
     /**
      * Data Streamer Interface
      */
@@ -58,7 +62,7 @@ namespace AZ::IO
             void* outputBuffer,
             size_t outputBufferSize,
             size_t readSize,
-            AZStd::chrono::microseconds deadline = IStreamerTypes::s_noDeadline,
+            IStreamerTypes::Deadline deadline = IStreamerTypes::s_noDeadline,
             IStreamerTypes::Priority priority = IStreamerTypes::s_priorityMedium,
             size_t offset = 0) = 0;
 
@@ -80,7 +84,7 @@ namespace AZ::IO
             void* outputBuffer,
             size_t outputBufferSize,
             size_t readSize,
-            AZStd::chrono::microseconds deadline = IStreamerTypes::s_noDeadline,
+            IStreamerTypes::Deadline deadline = IStreamerTypes::s_noDeadline,
             IStreamerTypes::Priority priority = IStreamerTypes::s_priorityMedium,
             size_t offset = 0) = 0;
 
@@ -102,7 +106,7 @@ namespace AZ::IO
             AZStd::string_view relativePath,
             IStreamerTypes::RequestMemoryAllocator& allocator,
             size_t size,
-            AZStd::chrono::microseconds deadline = IStreamerTypes::s_noDeadline,
+            IStreamerTypes::Deadline deadline = IStreamerTypes::s_noDeadline,
             IStreamerTypes::Priority priority = IStreamerTypes::s_priorityMedium,
             size_t offset = 0) = 0;
 
@@ -126,7 +130,7 @@ namespace AZ::IO
             AZStd::string_view relativePath,
             IStreamerTypes::RequestMemoryAllocator& allocator,
             size_t size,
-            AZStd::chrono::microseconds deadline = IStreamerTypes::s_noDeadline,
+            IStreamerTypes::Deadline deadline = IStreamerTypes::s_noDeadline,
             IStreamerTypes::Priority priority = IStreamerTypes::s_priorityMedium,
             size_t offset = 0) = 0;
 
@@ -155,9 +159,7 @@ namespace AZ::IO
         //! @param newPriority The new priority for the request.
         //! @result A smart pointer to the newly created request with the reschedule command.
         virtual FileRequestPtr RescheduleRequest(
-            FileRequestPtr target,
-            AZStd::chrono::microseconds newDeadline,
-            IStreamerTypes::Priority newPriority) = 0;
+            FileRequestPtr target, IStreamerTypes::Deadline newDeadline, IStreamerTypes::Priority newPriority) = 0;
 
         //! Adjusts the deadline and priority of a request.
         //! This has no effect if the requests is already being processed, if the
@@ -168,10 +170,7 @@ namespace AZ::IO
         //! @param newPriority The new priority for the request.
         //! @return A reference to the provided request.
         virtual FileRequestPtr& RescheduleRequest(
-            FileRequestPtr& request,
-            FileRequestPtr target,
-            AZStd::chrono::microseconds newDeadline,
-            IStreamerTypes::Priority newPriority) = 0;
+            FileRequestPtr& request, FileRequestPtr target, IStreamerTypes::Deadline newDeadline, IStreamerTypes::Priority newPriority) = 0;
 
         //! Creates a dedicated cache for the target file. The target file won't be removed from the cache until
         //! DestroyDedicatedCache is called. Typical use of a dedicated cache is for files that have their own compression
@@ -230,6 +229,24 @@ namespace AZ::IO
         //! @param request The request that will store the command to flush all caches.
         //! @return A reference to the provided request.
         virtual FileRequestPtr& FlushCaches(FileRequestPtr& request) = 0;
+
+        //! Retrieves statistics for the requested type. This is meant for statistics that can't be retrieved in a lockless manner. For
+        //! metrics that can be retrieved lockless use CollectStatistics.
+        //! @param output The storage for the information that's being reported. The container needs to remain alive for the duration of
+        //!     the call. Register a callback with SetRequestCompleteCallback to determine when the container is no longer needed.
+        //! @param reportType The type of information to report.
+        //! @return A smart pointer to the newly created request with the command to report statistics.
+        virtual FileRequestPtr Report(AZStd::vector<Statistic>& output, IStreamerTypes::ReportType reportType) = 0;
+
+        //! Retrieves statistics for the requested type. This is meant for statistics that can't be retrieved in a lockless manner. For
+        //! metrics that can be retrieved lockless use CollectStatistics.
+        //! @param request The request that will store the command to report.
+        //! @param output The storage for the information that's being reported. The container needs to remain alive for the duration of
+        //!     the call. Register a callback with SetRequestCompleteCallback to determine when the container is no longer needed.
+        //! @param reportType The type of information to report.
+        //! @return A reference to the provided request.
+        virtual FileRequestPtr& Report(
+            FileRequestPtr& request, AZStd::vector<Statistic>& output, IStreamerTypes::ReportType reportType) = 0;
 
         //! Creates a custom request. This can be used by extensions to Streamer's stack to add their own commands.
         //! @param data Storage for the arguments to the command.
@@ -334,9 +351,9 @@ namespace AZ::IO
         //
 
         //! Collect statistics from all the components that make up Streamer.
-        //! This is thread safe in the sense that it won't crash.
-        //! Data is collected lockless from involved threads and might be slightly
-        //! out of date in some cases.
+        //! This function is immediately executed and returns immediately with the results. Due to this behavior there's a limit
+        //! to the number of statistics that can be returned as only lockless retrieval data can be retrieved. The data is also a
+        //! snapshot so may be slightly out of date. To get additional data use Report.
         //! @param statistics The container where statistics will be added to.
         virtual void CollectStatistics(AZStd::vector<Statistic>& statistics) = 0;
 
@@ -352,6 +369,8 @@ namespace AZ::IO
         //! were made.
         virtual void ResumeProcessing() = 0;
 
+        //! Whether or not processing of requests has been suspended.
+        virtual bool IsSuspended() const = 0;
     };
 
 } // namespace AZ::IO

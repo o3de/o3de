@@ -62,7 +62,7 @@ namespace AZ
             return nullptr;
         }
 
-        const AZStd::shared_ptr<PassTemplate> PassLibrary::GetPassTemplate(const Name& templateName) const
+        const AZStd::shared_ptr<const PassTemplate> PassLibrary::GetPassTemplate(const Name& templateName) const
         {
             const TemplateEntry* entry = GetEntry(templateName);
             return entry ? entry->m_template : nullptr;
@@ -294,7 +294,7 @@ namespace AZ
         void PassLibrary::OnAssetReloaded(Data::Asset<Data::AssetData> asset)
         {
             // Handle pass asset reload
-            Data::Asset<PassAsset> passAsset = Data::static_pointer_cast<PassAsset>(asset);
+            Data::Asset<PassAsset> passAsset = { asset.GetAs<PassAsset>() , AZ::Data::AssetLoadBehavior::PreLoad};
             if (passAsset && passAsset->GetPassTemplate())
             {
                 LoadPassAsset(passAsset->GetPassTemplate()->m_name, passAsset, true);
@@ -342,7 +342,7 @@ namespace AZ
                     {
                         if (pass->m_pipeline)
                         {
-                            pass->m_pipeline->SetPassNeedsRecreate();
+                            pass->m_pipeline->MarkPipelinePassChanges(PipelinePassChanges::PassAssetHotReloaded);
                         }
                     }
                 }

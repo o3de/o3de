@@ -10,7 +10,6 @@
 #pragma once
 
 #include <LyShine/Animation/IUiAnimation.h>
-//#include "TCBSpline.h"
 #include "2DSpline.h"
 
 #define MIN_TIME_PRECISION 0.01f
@@ -24,7 +23,7 @@ class TUiAnimSplineTrack
 {
 public:
     AZ_CLASS_ALLOCATOR(TUiAnimSplineTrack, AZ::SystemAllocator, 0)
-    AZ_RTTI((TUiAnimSplineTrack, "{A78AAC62-84D0-4E2E-958E-564F51A140D2}", Vec2), IUiAnimTrack);
+    AZ_RTTI((TUiAnimSplineTrack, "{A78AAC62-84D0-4E2E-958E-564F51A140D2}", ValueType), IUiAnimTrack);
 
     TUiAnimSplineTrack()
         : m_refCount(0)
@@ -378,7 +377,7 @@ private:
 
     UiAnimParamData m_componentParamData;
 
-    static bool VersionConverter(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement) {};
+    static bool VersionConverter(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement) { return false; };
 };
 
 //////////////////////////////////////////////////////////////////////////

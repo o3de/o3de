@@ -63,16 +63,17 @@ def SlopeFilter_ComponentAndOverrides_InstancesPlantOnValidSlopes():
     from editor_python_test_tools.utils import TestHelper as helper
 
     # 1) Open an existing simple level
-    helper.init_idle()
-    helper.open_level("Physics", "Base")
+    hydra.open_base_level()
 
     # Set view of planting area for visual debugging
     general.set_current_view_position(512.0, 475.0, 38.0)
 
     # 2) Create a new entity with required vegetation area components
     center_point = math.Vector3(512.0, 512.0, 32.0)
-    asset_path = os.path.join("Slices", "PinkFlower.dynamicslice")
-    spawner_entity = dynveg.create_dynamic_slice_vegetation_area("Instance Spawner", center_point, 32.0, 32.0, 32.0, asset_path)
+    pink_flower_asset_path = os.path.join("assets", "objects", "foliage", "grass_flower_pink.azmodel")
+    pink_flower_prefab = dynveg.create_temp_mesh_prefab(pink_flower_asset_path, "Slope_PinkFlower")[0]
+    spawner_entity = dynveg.create_temp_prefab_vegetation_area("Instance Spawner", center_point, 32.0, 32.0, 32.0,
+                                                               pink_flower_prefab)
 
     # Add a Vegetation Slope Filter
     spawner_entity.add_component("Vegetation Slope Filter")

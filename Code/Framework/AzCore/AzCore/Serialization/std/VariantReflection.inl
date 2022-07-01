@@ -32,7 +32,7 @@ namespace AZ
              * But as the AZStdAssociativeContainer instance will not be accessed outside of the module it was
              * created within then this will return this .dll/.exe module allocator
              */
-            classElement.m_attributes.set_allocator(AZStdFunctorAllocator([]() -> IAllocatorAllocate& { return GetCurrentSerializeContextModule().GetAllocator(); }));
+            classElement.m_attributes.set_allocator(AZStdFunctorAllocator([]() -> IAllocator& { return GetCurrentSerializeContextModule().GetAllocator(); }));
         }
 
         template<size_t Index, size_t... Digits>
@@ -270,7 +270,7 @@ namespace AZ
                     return true;
                 }
 
-                // Next check if the convertible type id is exactly equal to one of the non-pointer alternatives 
+                // Next check if the convertible type id is exactly equal to one of the non-pointer alternatives
                 // i.e Variant<int*, int> would match can only match the `int` alternative at this point
                 for (const SerializeContext::ClassElement& altClassElement : m_dataContainer.m_alternativeClassElements)
                 {
@@ -422,14 +422,14 @@ namespace AZ
         public:
             AZ_TYPE_INFO(GenericClassVariant, AZ::s_variantTypeId);
             GenericClassVariant()
-                : m_classData{ SerializeContext::ClassData::Create<VariantType>("variant", GetSpecializedTypeId(), &m_variantInstanceFactory, nullptr, &m_variantContainer) }
+                : m_classData{ SerializeContext::ClassData::Create<VariantType>(AZ::AzTypeInfo<VariantType>::Name(), GetSpecializedTypeId(), &m_variantInstanceFactory, nullptr, &m_variantContainer) }
             {
                 m_classData.m_dataConverter = &m_dataConverter;
                 // As the SerializeGenericTypeInfo is created on demand when a variant is reflected(in static memory)
                 // the serialize context dll module allocator has to be used to manage the lifetime of the ClassData attributes within a module
                 // If a module which reflects a variant is unloaded, then the dll module allocator will properly unreflect the variant type from the serialize context
                 // for this particular module
-                AZStdFunctorAllocator dllAllocator([]() -> IAllocatorAllocate& { return GetCurrentSerializeContextModule().GetAllocator(); });
+                AZStdFunctorAllocator dllAllocator([]() -> IAllocator& { return GetCurrentSerializeContextModule().GetAllocator(); });
                 m_classData.m_attributes.set_allocator(AZStd::move(dllAllocator));
 
                 // Create the ObjectStreamWriteOverrideCB in the current module
@@ -480,7 +480,7 @@ namespace AZ
                 }
             }
         private:
-            static void ObjectStreamWriter(SerializeContext::EnumerateInstanceCallContext& callContext, const void* variantPtr,
+            static ObjectStreamWriteOverrideResponse ObjectStreamWriter(SerializeContext::EnumerateInstanceCallContext& callContext, const void* variantPtr,
                 [[maybe_unused]] const SerializeContext::ClassData& variantClassData, const SerializeContext::ClassElement* variantClassElement)
             {
                 auto alternativeVisitor = [&callContext, variantClassElement](auto&& elementAlt)
@@ -496,13 +496,14 @@ namespace AZ
                     altClassElement.m_offset = 0;
                     VariantSerializationInternal::SetupClassElementFromType<AltType>(altClassElement);
                     const AZ::Uuid& altTypeId = altClassElement.m_typeId;
-                    
+
                     const SerializeContext::ClassData* altClassData = context.FindClassData(altTypeId);
                     AZ_Error("Serialize", altClassData, "Unable to find ClassData for variant alternative with name %s and typeid of %s", AzTypeInfo<AltType>::Name(), altTypeId.ToString<AZStd::string>().data());
                     return altClassData ? callContext.m_context->EnumerateInstanceConst(&callContext, &elementAlt, altTypeId, altClassData, &altClassElement) : false;
                 };
 
                 AZStd::visit(AZStd::move(alternativeVisitor), *reinterpret_cast<const VariantType*>(variantPtr));
+                return AZ::ObjectStreamWriteOverrideResponse::CompletedWrite;
             }
 
             VariantSerializationInternal::AZStdVariantContainer<Types...> m_variantContainer;

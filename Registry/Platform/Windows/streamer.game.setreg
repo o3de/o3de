@@ -11,7 +11,8 @@
                     "Generic":
                     {
                         "Stack":
-                        [
+                        {
+                            "Drive":
                             {
                                 "$type": "AZ::IO::WindowsStorageDriveConfig",
                                 // The maximum number of file handles that are cached. Only a small number are needed when running from 
@@ -37,31 +38,8 @@
                                 // If true, only information that's explicitly requested or issues are reported. If false, status information
                                 // such as when drives are created and destroyed is reported as well.
                                 "MinimalReporting": false
-                            },
-                            {
-                                "$type": "AZ::IO::ReadSplitterConfig",
-                                "BufferSizeMib": 6,
-                                "SplitSize": "MaxTransfer",
-                                "AdjustOffset": true,
-                                "SplitAlignedRequests": false
-                            },
-                            {
-                                "$type": "AZ::IO::BlockCacheConfig",
-                                "CacheSizeMib": 10,
-                                "BlockSize": "MaxTransfer"
-                            },
-                            {
-                                "$type": "AZ::IO::DedicatedCacheConfig",
-                                "CacheSizeMib": 2,
-                                "BlockSize": "MemoryAlignment",
-                                "WriteOnlyEpilog": true
-                            },
-                            {
-                                "$type": "AZ::IO::FullFileDecompressorConfig",
-                                "MaxNumReads": 2,
-                                "MaxNumJobs": 2
                             }
-                        ]
+                        }
                     }
                 }
             }

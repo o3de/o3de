@@ -156,7 +156,7 @@ namespace EMotionFX
         {
             OutputIncomingNode(animGraphInstance, GetInputNode(INPUTPORT_ROTATE_AMOUNT));
             const float rotateFactor = MCore::Clamp<float>(GetInputNumberAsFloat(animGraphInstance, INPUTPORT_ROTATE_AMOUNT), 0.0f, 1.0f);
-            const AZ::Vector3 newAngles = MCore::LinearInterpolate<AZ::Vector3>(m_minRotation, m_maxRotation, rotateFactor);
+            const AZ::Vector3 newAngles = m_minRotation.Lerp(m_maxRotation, rotateFactor);
             outputTransform.m_rotation = inputTransform.m_rotation * MCore::AzEulerAnglesToAzQuat(MCore::Math::DegreesToRadians(newAngles.GetX()), 
                 MCore::Math::DegreesToRadians(newAngles.GetY()), 
                 MCore::Math::DegreesToRadians(newAngles.GetZ()));
@@ -167,7 +167,7 @@ namespace EMotionFX
         {
             OutputIncomingNode(animGraphInstance, GetInputNode(INPUTPORT_TRANSLATE_AMOUNT));
             const float factor = MCore::Clamp<float>(GetInputNumberAsFloat(animGraphInstance, INPUTPORT_TRANSLATE_AMOUNT), 0.0f, 1.0f);
-            const AZ::Vector3 newValue = MCore::LinearInterpolate<AZ::Vector3>(m_minTranslation, m_maxTranslation, factor);
+            const AZ::Vector3 newValue = m_minTranslation.Lerp(m_maxTranslation, factor);
             outputTransform.m_position = inputTransform.m_position + newValue;
         }
 
@@ -178,7 +178,7 @@ namespace EMotionFX
             {
                 OutputIncomingNode(animGraphInstance, GetInputNode(INPUTPORT_SCALE_AMOUNT));
                 const float factor = MCore::Clamp<float>(GetInputNumberAsFloat(animGraphInstance, INPUTPORT_SCALE_AMOUNT), 0.0f, 1.0f);
-                const AZ::Vector3 newValue = MCore::LinearInterpolate<AZ::Vector3>(m_minScale, m_maxScale, factor);
+                const AZ::Vector3 newValue = m_minScale.Lerp(m_maxScale, factor);
                 outputTransform.m_scale = inputTransform.m_scale + newValue;
             }
         )

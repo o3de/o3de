@@ -8,6 +8,7 @@
 
 #include <Atom/RHI/Device.h>
 #include <Atom/RHI/MemoryStatisticsBus.h>
+#include <Atom/RHI/RHISystem.h>
 
 #include <AzCore/std/sort.h>
 
@@ -109,6 +110,19 @@ namespace AZ
             }
         }
 
+        bool Device::WasDeviceRemoved()
+        {
+            return m_wasDeviceRemoved;
+        }
+
+        void Device::SetDeviceRemoved()
+        {
+            m_wasDeviceRemoved = true;
+
+            // set notification
+            RHISystemNotificationBus::Broadcast(&RHISystemNotificationBus::Events::OnDeviceRemoved, this);
+        }
+
         ResultCode Device::BeginFrame()
         {
             AZ_PROFILE_FUNCTION(RHI);
@@ -116,8 +130,7 @@ namespace AZ
             if (ValidateIsInitialized() && ValidateIsNotInFrame())
             {
                 m_isInFrame = true;
-                BeginFrameInternal();
-                return ResultCode::Success;
+                return BeginFrameInternal();
             }
             return ResultCode::InvalidOperation;
         }

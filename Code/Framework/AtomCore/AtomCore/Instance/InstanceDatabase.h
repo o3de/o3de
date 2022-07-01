@@ -17,6 +17,11 @@
 #include <AzCore/Module/Environment.h>
 #include <AzCore/std/parallel/shared_mutex.h>
 
+namespace AZStd
+{
+    class any;
+}
+
 namespace AZ
 {
     namespace Data

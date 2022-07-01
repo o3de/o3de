@@ -651,7 +651,7 @@ namespace AssetBuilderSDK
         , m_productSubID(productSubID)
     {
         //////////////////////////////////////////////////////////////////////////
-        // Builders should output product asset types directly.  
+        // Builders should output product asset types directly.
         // This should only be used for exceptions, mostly legacy and generic data.
         if (m_productAssetType.IsNull())
         {
@@ -670,7 +670,7 @@ namespace AssetBuilderSDK
         , m_productSubID(productSubID)
     {
         //////////////////////////////////////////////////////////////////////////
-        // Builders should output product asset types directly.  
+        // Builders should output product asset types directly.
         // This should only be used for exceptions, mostly legacy.
         if (m_productAssetType.IsNull())
         {
@@ -1059,15 +1059,18 @@ namespace AssetBuilderSDK
     {
         if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serializeContext->Class<JobProduct>()->
-                Version(6)->
-                Field("Product File Name", &JobProduct::m_productFileName)->
-                Field("Product Asset Type", &JobProduct::m_productAssetType)->
-                Field("Product Sub Id", &JobProduct::m_productSubID)->
-                Field("Legacy Sub Ids", &JobProduct::m_legacySubIDs)->
-                Field("Dependencies", &JobProduct::m_dependencies)->
-                Field("Relative Path Dependencies", &JobProduct::m_pathDependencies)->
-                Field("Dependencies Handled", &JobProduct::m_dependenciesHandled);
+            serializeContext->Class<JobProduct>()
+                ->Version(7)
+                ->Field("Product File Name", &JobProduct::m_productFileName)
+                ->Field("Product Asset Type", &JobProduct::m_productAssetType)
+                ->Field("Product Sub Id", &JobProduct::m_productSubID)
+                ->Field("Legacy Sub Ids", &JobProduct::m_legacySubIDs)
+                ->Field("Dependencies", &JobProduct::m_dependencies)
+                ->Field("Relative Path Dependencies", &JobProduct::m_pathDependencies)
+                ->Field("Dependencies Handled", &JobProduct::m_dependenciesHandled)
+                ->Field("Output Flags", &JobProduct::m_outputFlags)
+                ->Field("Output Path Override", &JobProduct::m_outputPathOverride)
+            ;
 
             serializeContext->RegisterGenericType<AZStd::vector<JobProduct>>();
         }
@@ -1084,7 +1087,11 @@ namespace AssetBuilderSDK
                 ->Property("productSubID", BehaviorValueProperty(&JobProduct::m_productSubID))
                 ->Property("productDependencies", BehaviorValueProperty(&JobProduct::m_dependencies))
                 ->Property("pathDependencies", BehaviorValueProperty(&JobProduct::m_pathDependencies))
-                ->Property("dependenciesHandled", BehaviorValueProperty(&JobProduct::m_dependenciesHandled));
+                ->Property("dependenciesHandled", BehaviorValueProperty(&JobProduct::m_dependenciesHandled))
+                ->Property("outputFlags", BehaviorValueProperty(&JobProduct::m_outputFlags))
+                ->Property("outputPathOverride", BehaviorValueProperty(&JobProduct::m_outputPathOverride))
+                ->Enum<aznumeric_cast<int>(ProductOutputFlags::ProductAsset)>("ProductAsset")
+                ->Enum<aznumeric_cast<int>(ProductOutputFlags::IntermediateAsset)>("IntermediateAsset")
             ;
         }
     }
@@ -1161,6 +1168,26 @@ namespace AssetBuilderSDK
         return m_resultCode == ProcessJobResultCode::ProcessJobResult_Success;
     }
 
+    bool ProcessJobResponse::ReportProductCollisions() const
+    {
+        bool result = true;
+        AZStd::unordered_map<AZ::u32, const char*> subIdMap;
+        for(const auto& jobProduct : m_outputProducts)
+        {
+            auto subIdEntry = AZStd::make_pair(jobProduct.m_productSubID, jobProduct.m_productFileName.c_str());
+            auto insertResult = subIdMap.insert(subIdEntry);
+            if (!insertResult.second)
+            {
+                AZ_Error("asset", false, "SubId (%d) conflicts with file1 (%s) and file2 (%s)",
+                    jobProduct.m_productSubID,
+                    jobProduct.m_productFileName.c_str(),
+                    insertResult.first->second );
+                result = false;
+            }
+        }
+        return result;
+    }
+
     void InitializeReflectContext(AZ::ReflectContext* context)
     {
         ProductPathDependency::Reflect(context);
@@ -1219,6 +1246,13 @@ namespace AssetBuilderSDK
     bool AssetBuilderSDK::JobCancelListener::IsCancelled() const
     {
         return m_cancelled;
+    }
+
+    bool SourceFileDependency::operator==(const SourceFileDependency& other) const
+    {
+        return m_sourceDependencyType == other.m_sourceDependencyType
+            && m_sourceFileDependencyPath == other.m_sourceFileDependencyPath
+            && m_sourceFileDependencyUUID == other.m_sourceFileDependencyUUID;
     }
 
     AZStd::string SourceFileDependency::ToString() const
@@ -1324,6 +1358,31 @@ namespace AssetBuilderSDK
     {
     }
 
+    bool JobDependency::operator==(const JobDependency& other) const
+    {
+        return m_sourceFile == other.m_sourceFile
+            && m_jobKey == other.m_jobKey
+            && m_platformIdentifier == other.m_platformIdentifier
+            && m_type == other.m_type;
+    }
+
+    AZStd::string JobDependency::ConcatenateSubIds() const
+    {
+        AZStd::string subIdConcatenation = "";
+
+        for (AZ::u32 subId : m_productSubIds)
+        {
+            if (!subIdConcatenation.empty())
+            {
+                subIdConcatenation.append(",");
+            }
+
+            subIdConcatenation.append(AZStd::string::format("%d", subId));
+        }
+
+        return subIdConcatenation;
+    }
+
     void JobDependency::Reflect(AZ::ReflectContext* context)
     {
         if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
@@ -1333,7 +1392,8 @@ namespace AssetBuilderSDK
                 Field("Source File", &JobDependency::m_sourceFile)->
                 Field("Job Key", &JobDependency::m_jobKey)->
                 Field("Platform Identifier", &JobDependency::m_platformIdentifier)->
-                Field("Job Dependency Type", &JobDependency::m_type);
+                Field("Job Dependency Type", &JobDependency::m_type)->
+                Field("Product SubIds", &JobDependency::m_productSubIds);
 
             serializeContext->RegisterGenericType<AZStd::vector<JobDependency>>();
         }
@@ -1346,6 +1406,7 @@ namespace AssetBuilderSDK
                 ->Property("sourceFile", BehaviorValueProperty(&JobDependency::m_sourceFile))
                 ->Property("jobKey", BehaviorValueProperty(&JobDependency::m_jobKey))
                 ->Property("platformIdentifier", BehaviorValueProperty(&JobDependency::m_platformIdentifier))
+                ->Property("productSubIds", BehaviorValueProperty(&JobDependency::m_productSubIds))
                 ->Property("type", BehaviorValueProperty(&JobDependency::m_type))
                 ->Enum<aznumeric_cast<int>(JobDependencyType::Fingerprint)>("Fingerprint")
                 ->Enum<aznumeric_cast<int>(JobDependencyType::Order)>("Order")
@@ -1435,7 +1496,7 @@ namespace AssetBuilderSDK
     }
 
     AZ::u64 GetHashFromIOStream(AZ::IO::GenericStream& readStream, AZ::IO::SizeType* bytesReadOut, int hashMsDelay)
-    {        
+    {
         constexpr AZ::u64 HashBufferSize = 1024 * 64;
         char buffer[HashBufferSize];
 

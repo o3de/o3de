@@ -74,7 +74,7 @@ namespace AZStd
         constexpr basic_fixed_string(const_pointer ptr);
 
         // #6
-        template<class InputIt, typename = enable_if_t<Internal::is_input_iterator_v<InputIt> && !is_convertible_v<InputIt, size_t>>>
+        template<class InputIt, typename = enable_if_t<input_iterator<InputIt> && !is_convertible_v<InputIt, size_t>>>
         constexpr basic_fixed_string(InputIt first, InputIt last);
 
         // #7
@@ -146,7 +146,7 @@ namespace AZStd
         constexpr auto append(size_type count, Element ch) -> basic_fixed_string&;
         template<class InputIt>
         constexpr auto append(InputIt first, InputIt last)
-            -> enable_if_t<Internal::is_input_iterator_v<InputIt> && !is_convertible_v<InputIt, size_type>, basic_fixed_string&>;
+            -> enable_if_t<input_iterator<InputIt> && !is_convertible_v<InputIt, size_type>, basic_fixed_string&>;
         constexpr auto append(AZStd::initializer_list<Element> ilist) -> basic_fixed_string&;
 
         constexpr auto assign(const basic_fixed_string& rhs) -> basic_fixed_string&;
@@ -161,7 +161,7 @@ namespace AZStd
         constexpr auto assign(size_type count, Element ch) -> basic_fixed_string&;
         template<class InputIt>
         constexpr auto assign(InputIt first, InputIt last)
-            ->enable_if_t<Internal::is_input_iterator_v<InputIt> && !is_convertible_v<InputIt, size_type>, basic_fixed_string&>;
+            ->enable_if_t<input_iterator<InputIt> && !is_convertible_v<InputIt, size_type>, basic_fixed_string&>;
 
         constexpr auto assign(AZStd::initializer_list<Element> ilist) -> basic_fixed_string&;
 
@@ -179,7 +179,7 @@ namespace AZStd
         constexpr auto insert(const_iterator insertPos, size_type count, Element ch) -> iterator;
         template<class InputIt>
         constexpr auto insert(const_iterator insertPos, InputIt first, InputIt last)
-        -> enable_if_t<Internal::is_input_iterator_v<InputIt> && !is_convertible_v<InputIt, size_type>, iterator>;
+        -> enable_if_t<input_iterator<InputIt> && !is_convertible_v<InputIt, size_type>, iterator>;
 
         constexpr auto insert(const_iterator insertPos, AZStd::initializer_list<Element> ilist) -> iterator;
 
@@ -215,7 +215,7 @@ namespace AZStd
         constexpr auto replace(const_iterator first, const_iterator last, size_type count, Element ch) -> basic_fixed_string&;
         template<class InputIt>
         constexpr auto replace(const_iterator first, const_iterator last, InputIt first2, InputIt last2)
-            -> enable_if_t<Internal::is_input_iterator_v<InputIt> && !is_convertible_v<InputIt, size_type>, basic_fixed_string&>;
+            -> enable_if_t<input_iterator<InputIt> && !is_convertible_v<InputIt, size_type>, basic_fixed_string&>;
         constexpr auto replace(const_iterator first, const_iterator last, AZStd::initializer_list<Element> ilist) -> basic_fixed_string&;
 
         constexpr auto at(size_type offset) -> reference;

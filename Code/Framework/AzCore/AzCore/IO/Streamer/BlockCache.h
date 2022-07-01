@@ -21,6 +21,13 @@
 
 namespace AZ::IO
 {
+    class RequestPath;
+    namespace Requests
+    {
+        struct ReadData;
+        struct ReportData;
+    }
+
     struct BlockCacheConfig final :
         public IStreamerStackConfig
     {
@@ -109,7 +116,7 @@ namespace AZ::IO
 
         using TimePoint = AZStd::chrono::system_clock::time_point;
 
-        void ReadFile(FileRequest* request, FileRequest::ReadData& data);
+        void ReadFile(FileRequest* request, Requests::ReadData& data);
         void ContinueReadFile(FileRequest* request, u64 fileLength);
         CacheResult ReadFromCache(FileRequest* request, Section& section, const RequestPath& filePath);
         CacheResult ReadFromCache(FileRequest* request, Section& section, u32 cacheBlock);
@@ -125,6 +132,8 @@ namespace AZ::IO
         bool IsCacheBlockInFlight(u32 index) const;
         void ResetCacheEntry(u32 index);
         void ResetCache();
+
+        void Report(const Requests::ReportData& data) const;
 
         //! Map of the file requests that are being processed and the sections of the parent requests they'll complete.
         AZStd::unordered_multimap<FileRequest*, Section> m_pendingRequests;

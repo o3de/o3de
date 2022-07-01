@@ -16,7 +16,7 @@ o3de_restricted_path(${gem_json} gem_restricted_path gem_parent_relative_path)
 #       in which case it will see if that platform is present here or in the restricted folder.
 #       i.e. It could here : ${Name}/Code/Platform/<platform_name>  or
 #            <restricted_folder>/<platform_name>/${Name}/Code
-o3de_pal_dir(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME} ${gem_restricted_path} ${gem_path} ${gem_parent_relative_path})
+o3de_pal_dir(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME} "${gem_restricted_path}" "${gem_path}" "${gem_parent_relative_path}")
 
 # Now that we have the platform abstraction layer (PAL) folder for this folder, thats where we will find the
 # traits for this platform. Traits for a platform are defines for things like whether or not something in this project
@@ -74,10 +74,3 @@ ly_create_alias(NAME ${Name}.Servers  NAMESPACE Gem TARGETS Gem::${Name})
 
 # Enable the specified list of gems from GEM_FILE or GEMS list for this specific project:
 ly_enable_gems(PROJECT_NAME ${Name} GEM_FILE enabled_gems.cmake)
-
-if(PAL_TRAIT_BUILD_SERVER_SUPPORTED)
-    # this property causes it to actually make a ServerLauncher.
-    # if you don't want a Server application, you can remove this and the
-    # following ly_enable_gems lines.
-    set_property(GLOBAL APPEND PROPERTY LY_LAUNCHER_SERVER_PROJECTS ${Name})
-endif()

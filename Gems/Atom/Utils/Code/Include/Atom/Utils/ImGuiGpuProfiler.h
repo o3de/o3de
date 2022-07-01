@@ -8,13 +8,17 @@
 
 #pragma once
 
+#include <imgui/imgui.h>
 #include <Atom/RHI.Reflect/MemoryStatistics.h>
 #include <Atom/RPI.Public/GpuQuery/GpuQueryTypes.h>
+#include <Atom/RPI.Public/Pass/Pass.h>
 
 #include <AzCore/Name/Name.h>
 #include <AzCore/std/containers/array.h>
 #include <AzCore/std/containers/variant.h>
 #include <AzCore/std/string/string.h>
+
+#include <Profiler/ImGuiTreemap.h>
 
 namespace AZ
 {
@@ -258,24 +262,49 @@ namespace AZ
         public:
             // Draw the overall GPU memory profiling window.
             void DrawGpuMemoryWindow(bool& draw);
+            ImGuiGpuMemoryView();
+            ~ImGuiGpuMemoryView();
 
         private:
+            // Collate data from RHI and update memory view tables and treemap
+            void PerformCapture();
+
             // Draw the heap usage pie chart
             void DrawPieChart(const AZ::RHI::MemoryStatistics::Heap& heap);
+
+            // Update allocations and pools in the device and heap treemap widgets.
+            void UpdateTreemaps();
 
             // Update the saved pointers in m_tableRows according to new data/filters
             void UpdateTableRows();
 
-            void DrawTable();
+            void DrawTables();
 
             // Sort the table according to the appropriate column.
-            void SortTable(ImGuiTableSortSpecs* sortSpecs);
+            void SortPoolTable(ImGuiTableSortSpecs* sortSpecs);
+            void SortResourceTable(ImGuiTableSortSpecs* sortSpecs);
 
-            struct TableRow
+            // Save and load data to and from CSV files
+            void SaveToCSV();
+            void LoadFromCSV(const AZStd::string& fileName);
+
+            struct PoolTableRow
+            {
+                Name m_poolName;
+
+                bool m_deviceHeap = false;
+                size_t m_budgetBytes = 0;
+                size_t m_reservedBytes = 0;
+                size_t m_residentBytes = 0;
+                float m_fragmentation = 0.f;
+            };
+
+            struct ResourceTableRow
             {
                 Name m_parentPoolName;
                 Name m_bufImgName;
                 size_t m_sizeInBytes = 0;
+                float m_fragmentation = 0.f;
                 AZStd::string m_bindFlags;
             };
 
@@ -286,9 +315,21 @@ namespace AZ
 
             ImGuiTextFilter m_nameFilter;
 
-            AZStd::vector<TableRow> m_tableRows;
+            AZStd::vector<PoolTableRow> m_poolTableRows;
+            AZStd::vector<ResourceTableRow> m_resourceTableRows;
             AZStd::vector<AZ::RHI::MemoryStatistics::Pool> m_savedPools;
             AZStd::vector<AZ::RHI::MemoryStatistics::Heap> m_savedHeaps;
+
+            Profiler::ImGuiTreemap* m_hostTreemap = nullptr;
+            Profiler::ImGuiTreemap* m_deviceTreemap = nullptr;
+            bool m_showHostTreemap = false;
+            bool m_showDeviceTreemap = false;
+
+            AZStd::string m_memoryCapturePath;
+            AZStd::string m_loadedCapturePath;
+            AZStd::string m_captureMessage;
+            char m_captureInput[AZ::IO::MaxPathLength] = { '\0' };
+            size_t m_captureSelection = 0;
         };
 
         class ImGuiGpuProfiler
@@ -325,4 +366,3 @@ namespace AZ
     } //namespace Render
 } // namespace AZ
 
-#include "ImGuiGpuProfiler.inl"

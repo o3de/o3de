@@ -6,7 +6,7 @@
 #
 #
 
-o3de_pal_dir(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME} ${gem_restricted_path} ${gem_path} ${gem_parent_relative_path})
+o3de_pal_dir(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME} "${gem_restricted_path}" "${gem_path}" "${gem_parent_relative_path}")
 set(common_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/Common)
 
 ly_add_target(
@@ -27,6 +27,7 @@ ly_add_target(
         PUBLIC
             Gem::Atom_RPI.Public
             Gem::Atom_Utils.Static
+            Gem::AtomLyIntegration_CommonFeatures.Static
             Gem::Atom_Bootstrap.Headers
             Gem::AtomFont
             Gem::TextureAtlas
@@ -96,6 +97,7 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
             PUBLIC
                 Gem::Atom_RPI.Public
                 Gem::Atom_Utils.Static
+                Gem::AtomLyIntegration_CommonFeatures.Static
                 Gem::Atom_Bootstrap.Headers
         RUNTIME_DEPENDENCIES
             Gem::TextureAtlas.Editor
@@ -156,6 +158,7 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
             PUBLIC
                 Gem::Atom_RPI.Public
                 Gem::Atom_Utils.Static
+                Gem::AtomLyIntegration_CommonFeatures.Static
                 Gem::Atom_Bootstrap.Headers
     )
 

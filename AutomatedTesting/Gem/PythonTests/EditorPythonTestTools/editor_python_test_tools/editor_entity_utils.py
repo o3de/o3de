@@ -10,6 +10,7 @@ from __future__ import annotations
 from typing import List, Tuple, Union
 from enum import Enum
 import warnings
+import re
 
 # Open 3D Engine Imports
 import azlmbr
@@ -34,6 +35,7 @@ class EditorComponent:
         EditorEntity.add_component() or Entity.add_components() or EditorEntity.get_components_of_type()
     which also assigns self.id and self.type_id to the EditorComponent object.
     self.type_id is the UUID for the component type as provided by an ebus call.
+    self.id is an azlmbr.entity.EntityComponentIdPair which contains both entity and component id's
     """
 
     def __init__(self, type_id: uuid):
@@ -76,6 +78,27 @@ class EditorComponent:
         Report.info(prop_tree.build_paths_list())
         self.property_tree_editor = prop_tree
         return self.property_tree_editor
+
+    def get_property_type_visibility(self):
+        """
+        Used to work with Property Tree Editor build_paths_list_with_types.
+        Some component properties have unclear type or return to much information to contain within one Report.info.
+        The iterable dictionary can be used to print each property path and type individually with a for loop.
+        :return: Dictionary where key is property path and value is a tuple (property az_type, UI visible)
+        """
+        if self.property_tree_editor is None:
+            self.get_property_tree()
+        path_type_re = re.compile(r"([ A-z_|]+)(?=\s) \(([A-z0-9:<> ]+),([A-z]+)")
+        result = {}
+        path_types = self.property_tree_editor.build_paths_list_with_types()
+        for path_type in path_types:
+            match_line = path_type_re.search(path_type)
+            if match_line is None:
+                Report.info(path_type)
+                continue
+            path, az_type, visible = match_line.groups()
+            result[path] = (az_type, visible)
+        return result
 
     def is_property_container(self, component_property_path: str) -> bool:
         """
@@ -242,6 +265,8 @@ class EditorComponent:
         assert (
             outcome.IsSuccess()
         ), f"Failure: Could not set value to '{self.get_component_name()}' : '{component_property_path}'"
+        PrefabUtils.wait_for_propagation()
+        self.get_property_tree(True)
 
     def is_enabled(self):
         """
@@ -269,6 +294,13 @@ class EditorComponent:
         """
         warnings.warn("disable_component is deprecated, use set_enabled(False) instead.", DeprecationWarning)
         editor.EditorComponentAPIBus(bus.Broadcast, "DisableComponents", [self.id])
+
+    def remove(self):
+        """
+        Removes the component from its associated entity. Essentially a delete since only UNDO can return it.
+        :return: None
+        """
+        editor.EditorComponentAPIBus(bus.Broadcast, "RemoveComponents", [self.id])
 
     @staticmethod
     def get_type_ids(component_names: list, entity_type: EditorEntityType = EditorEntityType.GAME) -> list:
@@ -436,6 +468,7 @@ class EditorEntity:
         :return: Component object of newly added component.
         """
         component = self.add_components([component_name])[0]
+        PrefabUtils.wait_for_propagation()
         return component
 
     def add_components(self, component_names: list) -> List[EditorComponent]:
@@ -473,12 +506,11 @@ class EditorEntity:
         :param component_names: List of component names to remove
         :return: None
         """
-        type_ids = EditorComponent.get_type_ids(component_names, EditorEntityType.GAME)
-        for type_id in type_ids:
-            remove_outcome = editor.EditorComponentAPIBus(bus.Broadcast, "RemoveComponents", self.id, [type_id])
-            assert (
-                remove_outcome.IsSuccess()
-            ), f"Failure: could not remove component from '{self.get_name()}'"
+        component_ids = [component.id for component in self.get_components_of_type(component_names)]
+        remove_success = editor.EditorComponentAPIBus(bus.Broadcast, "RemoveComponents", component_ids)
+        assert (
+            remove_success
+        ), f"Failure: could not remove component from entity '{self.get_name()}'"
 
     def get_components_of_type(self, component_names: list) -> List[EditorComponent]:
         """
@@ -568,6 +600,7 @@ class EditorEntity:
         :return: None
         """
         editor.ToolsApplicationRequestBus(bus.Broadcast, "DeleteEntityById", self.id)
+        PrefabUtils.wait_for_propagation()
 
     def set_visibility_state(self, is_visible: bool) -> None:
         """
@@ -625,6 +658,12 @@ class EditorEntity:
         new_rotation = convert_to_azvector3(new_rotation)
         azlmbr.components.TransformBus(azlmbr.bus.Event, "SetWorldRotation", self.id, new_rotation)
 
+    def get_world_uniform_scale(self) -> float:
+        """
+        Gets the world uniform scale of the current entity
+        """
+        return azlmbr.components.TransformBus(azlmbr.bus.Event, "GetWorldUniformScale", self.id)
+
     # Local Transform Functions
     def get_local_uniform_scale(self) -> float:
         """
@@ -670,6 +709,18 @@ class EditorEntity:
         """
         new_translation = convert_to_azvector3(new_translation)
         azlmbr.components.TransformBus(azlmbr.bus.Event, "SetLocalTranslation", self.id, new_translation)
+
+    def validate_world_translate_position(self, expected_translation) -> bool:
+        """
+        Validates whether the actual world translation of the entity matches the provided translation value.
+        :param expected_translation: The math.Vector3 value to compare against the world translation on the entity.
+        :return: The bool indicating whether the translate position matched or not.
+        """
+        is_entity_at_expected_position = self.get_world_translation().IsClose(expected_translation)
+        assert is_entity_at_expected_position, \
+            f"Translation position of entity '{self.get_name()}' : {self.get_world_translation().ToString()} does not" \
+            f" match the expected value : {expected_translation.ToString()}"
+        return is_entity_at_expected_position
 
     # Use this only when prefab system is enabled as it will fail otherwise.
     def focus_on_owning_prefab(self) -> None:
@@ -763,3 +814,5 @@ class EditorLevelEntity:
         """
         type_ids = EditorComponent.get_type_ids([component_name], EditorEntityType.LEVEL)
         return editor.EditorLevelComponentAPIBus(bus.Broadcast, "CountComponentsOfType", type_ids[0])
+
+import editor_python_test_tools.prefab_utils as PrefabUtils

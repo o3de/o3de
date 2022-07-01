@@ -97,6 +97,7 @@ namespace AzFramework
         //! ApplicationRequests::Bus::Handler
         void ResolveEnginePath(AZStd::string& engineRelativePath) const override;
         void CalculateBranchTokenForEngineRoot(AZStd::string& token) const override;
+        bool IsEditorModeFeedbackEnabled() const override;
         bool IsPrefabSystemEnabled() const override;
         bool ArePrefabWipFeaturesEnabled() const override;
         void SetPrefabSystemEnabled(bool enable) override;

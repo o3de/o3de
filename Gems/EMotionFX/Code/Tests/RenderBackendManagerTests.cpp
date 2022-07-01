@@ -65,7 +65,7 @@ namespace EMotionFX
             }
 
             MOCK_METHOD1(OnTick, void(float));
-            MOCK_METHOD1(DebugDraw, void(const EMotionFX::ActorRenderFlagBitset&));
+            MOCK_METHOD1(DebugDraw, void(const EMotionFX::ActorRenderFlags&));
             MOCK_CONST_METHOD0(IsVisible, bool());
             MOCK_METHOD1(SetIsVisible, void(bool));
             MOCK_METHOD1(SetMaterials, void(const ActorAsset::MaterialList&));

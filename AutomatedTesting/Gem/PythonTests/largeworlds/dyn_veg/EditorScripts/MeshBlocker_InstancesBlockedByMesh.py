@@ -46,23 +46,22 @@ def MeshBlocker_InstancesBlockedByMesh():
 
     import editor_python_test_tools.hydra_editor_utils as hydra
     from largeworlds.large_worlds_utils import editor_dynveg_test_helper as dynveg
+    import editor_python_test_tools.prefab_utils as PrefabUtils
     from editor_python_test_tools.utils import Report
     from editor_python_test_tools.utils import TestHelper as helper
 
     # Open an existing simple level
-    helper.init_idle()
-    helper.open_level("Physics", "Base")
+    hydra.open_base_level()
 
     general.set_current_view_position(500.49, 498.69, 46.66)
     general.set_current_view_rotation(-42.05, 0.00, -36.33)
 
     # Create entity with components "Vegetation Layer Spawner", "Vegetation Asset List", "Box Shape"
     entity_position = math.Vector3(512.0, 512.0, 32.0)
-    asset_path = os.path.join("Slices", "PurpleFlower.dynamicslice")
-    spawner_entity = dynveg.create_dynamic_slice_vegetation_area("Instance Spawner",
-                                                                               entity_position,
-                                                                               10.0, 10.0, 10.0,
-                                                                               asset_path)
+    pink_flower_asset_path = os.path.join("assets", "objects", "foliage", "grass_flower_pink.azmodel")
+    pink_flower_prefab = dynveg.create_temp_mesh_prefab(pink_flower_asset_path, "MeshBlocker_PinkFlower")[0]
+    spawner_entity = dynveg.create_temp_prefab_vegetation_area("Instance Spawner", entity_position, 10.0, 10.0, 10.0,
+                                                               pink_flower_prefab)
 
     # Create surface entity to plant on
     dynveg.create_surface_entity("Surface Entity", entity_position, 10.0, 10.0, 1.0)
@@ -78,7 +77,9 @@ def MeshBlocker_InstancesBlockedByMesh():
     cubeId = asset.AssetCatalogRequestBus(
         bus.Broadcast, "GetAssetIdByPath", os.path.join("objects", "_primitives", "_box_1x1.azmodel"), math.Uuid(),
         False)
+
     blocker_entity.get_set_test(1, "Controller|Configuration|Mesh Asset", cubeId)
+    PrefabUtils.wait_for_propagation()
     components.TransformBus(bus.Event, "SetLocalUniformScale", blocker_entity.id, 2.0)
 
     # Verify spawned instance counts are accurate after addition of Blocker Entity

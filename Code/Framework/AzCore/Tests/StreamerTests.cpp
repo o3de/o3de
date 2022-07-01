@@ -10,6 +10,7 @@
 #include <FileIOBaseTestTypes.h>
 #include <AzCore/IO/CompressionBus.h>
 #include <AzCore/IO/FileIO.h>
+#include <AzCore/IO/Streamer/FileRequest.h>
 #include <AzCore/IO/Streamer/Streamer.h>
 #include <AzCore/IO/Streamer/StreamerComponent.h>
 #include <AzCore/IO/Streamer/StreamerConfiguration.h>
@@ -93,8 +94,8 @@ namespace AZ::IO
     public:
         virtual ~MockFileBase() = default;
 
-        virtual void CreateTestFile(AZStd::string filename, size_t fileSize, PadArchive padding) = 0;
-        virtual const AZStd::string& GetFileName() const = 0;
+        virtual void CreateTestFile(AZ::IO::PathView filePath, size_t fileSize, PadArchive padding) = 0;
+        virtual AZ::IO::PathView GetFileName() const = 0;
     };
 
     class MockUncompressedFile
@@ -105,25 +106,25 @@ namespace AZ::IO
         {
             if (m_hasFile)
             {
-                FileIOBase::GetInstance()->DestroyPath(m_filename.c_str());
+                FileIOBase::GetInstance()->DestroyPath(m_filePath.c_str());
             }
         }
 
-        void CreateTestFile(AZStd::string filename, size_t fileSize, PadArchive) override
+        void CreateTestFile(AZ::IO::PathView filePath, size_t fileSize, PadArchive) override
         {
             m_fileSize = fileSize;
-            m_filename = AZStd::move(filename);
-            Utils::CreateTestFile(m_filename, m_fileSize, 0);
+            m_filePath = filePath;
+            Utils::CreateTestFile(m_filePath.Native(), m_fileSize, 0);
             m_hasFile = true;
         }
 
-        const AZStd::string& GetFileName() const override
+        AZ::IO::PathView GetFileName() const override
         {
-            return m_filename;
+            return m_filePath;
         }
 
     private:
-        AZStd::string m_filename;
+        AZ::IO::Path m_filePath;
         size_t m_fileSize = 0;
         bool m_hasFile = false;
     };
@@ -141,26 +142,26 @@ namespace AZ::IO
             if (m_hasFile)
             {
                 BusDisconnect();
-                FileIOBase::GetInstance()->DestroyPath(m_filename.c_str());
+                FileIOBase::GetInstance()->DestroyPath(m_filePath.c_str());
             }
         }
 
-        void CreateTestFile(AZStd::string filename, size_t fileSize, PadArchive padding) override
+        void CreateTestFile(AZ::IO::PathView filePath, size_t fileSize, PadArchive padding) override
         {
             m_fileSize = fileSize;
-            m_filename = AZStd::move(filename);
+            m_filePath = filePath;
             m_hasPadding = (padding == PadArchive::Yes);
             uint32_t paddingSize = s_paddingSize;
-            Utils::CreateTestFile(m_filename, m_fileSize / 2, m_hasPadding ? paddingSize : 0 );
+            Utils::CreateTestFile(m_filePath.Native(), m_fileSize / 2, m_hasPadding ? paddingSize : 0);
 
             m_hasFile = true;
 
             BusConnect();
         }
 
-        const AZStd::string& GetFileName() const override
+        AZ::IO::PathView GetFileName() const override
         {
-            return m_filename;
+            return m_filePath;
         }
 
         void Decompress(const AZ::IO::CompressionInfo& info, const void* compressed, size_t compressedSize,
@@ -194,12 +195,12 @@ namespace AZ::IO
         }
 
         //@{ CompressionBus Handler implementation.
-        void FindCompressionInfo(bool& found, AZ::IO::CompressionInfo& info, const AZStd::string_view filename) override
+        void FindCompressionInfo(bool& found, AZ::IO::CompressionInfo& info, const AZ::IO::PathView filePath) override
         {
-            if (m_hasFile && m_filename == filename)
+            if (m_hasFile && m_filePath == filePath)
             {
                 found = true;
-                info.m_archiveFilename.InitFromRelativePath(m_filename.c_str());
+                info.m_archiveFilename = RequestPath(m_filePath);
                 ASSERT_TRUE(info.m_archiveFilename.IsValid());
                 info.m_compressedSize = m_fileSize / 2;
                 const uint32_t tag = s_tag;
@@ -221,7 +222,7 @@ namespace AZ::IO
         //@}
 
     private:
-        AZStd::string m_filename;
+        AZ::IO::Path m_filePath;
         size_t m_fileSize = 0;
         bool m_hasFile = false;
         bool m_hasPadding = false;
@@ -272,20 +273,6 @@ namespace AZ::IO
             delete m_application;
             m_application = nullptr;
 
-            for (size_t i = 0; i < m_testFileCount; ++i)
-            {
-                AZStd::string name = AZStd::string::format("TestFile_%zu.test", i);
-
-#if AZ_TRAIT_TEST_APPEND_ROOT_FOLDER_TO_PATH
-                AZ::IO::Path testFullPath(AZ_TRAIT_TEST_ROOT_FOLDER);
-#else
-                AZ::IO::Path testFullPath;
-#endif
-                testFullPath /= name;
-
-                FileIOBase::GetInstance()->DestroyPath(testFullPath.c_str());
-            }
-
             FileIOBase::SetInstance(m_prevFileIO);
 
             AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Destroy();
@@ -298,7 +285,7 @@ namespace AZ::IO
         //! then call WaitForScheduler to give Steamers scheduler some time to update it's internal status.
         void WaitForScheduler()
         {
-            AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(250));
+            AZStd::this_thread::sleep_for(AZStd::chrono::microseconds(1));
         }
 
     protected:
@@ -313,11 +300,7 @@ namespace AZ::IO
         {
             AZStd::string name = AZStd::string::format("TestFile_%zu.test", m_testFileCount++);
 
-#if AZ_TRAIT_TEST_APPEND_ROOT_FOLDER_TO_PATH
-            AZ::IO::Path testFullPath(AZ_TRAIT_TEST_ROOT_FOLDER);
-#else
-            AZ::IO::Path testFullPath;
-#endif
+            AZ::IO::Path testFullPath = m_tempDirectory.GetDirectory();
             testFullPath /= name;
 
             AZStd::unique_ptr<MockFileBase> result = CreateMockFile();
@@ -351,7 +334,7 @@ namespace AZ::IO
             }
         }
 
-        void PeriodicallyCheckedRead(AZStd::string_view filename, void* buffer, u64 fileSize, u64 offset, AZStd::chrono::seconds timeOut)
+        void PeriodicallyCheckedRead(AZ::IO::PathView filePath, void* buffer, u64 fileSize, u64 offset, AZStd::chrono::seconds timeOut)
         {
             AZStd::binary_semaphore sync;
 
@@ -363,7 +346,7 @@ namespace AZ::IO
                 sync.release();
             };
 
-            FileRequestPtr request = this->m_streamer->Read(filename, buffer, fileSize, fileSize,
+            FileRequestPtr request = this->m_streamer->Read(filePath.Native(), buffer, fileSize, fileSize,
                 IStreamerTypes::s_deadlineNow, IStreamerTypes::s_priorityMedium, offset);
             this->m_streamer->SetRequestCompleteCallback(request, AZStd::move(callback));
             this->m_streamer->QueueRequest(AZStd::move(request));
@@ -373,6 +356,7 @@ namespace AZ::IO
             ASSERT_TRUE(readSuccessful);
         }
 
+        AZ::Test::ScopedAutoTempDirectory m_tempDirectory;
         UnitTest::TestFileIOBase m_fileIO;
         FileIOBase* m_prevFileIO{ nullptr };
         IStreamer* m_streamer{ nullptr };
@@ -546,7 +530,7 @@ namespace AZ::IO
         for (block = 0; block < fileSize; block += bufferSize)
         {
             size_t blockSize = AZStd::min(bufferSize, fileRemainder);
-            this->m_streamer->Read(requests[requestIndex], testFile->GetFileName(), buffer + block, blockSize, blockSize,
+            this->m_streamer->Read(requests[requestIndex], testFile->GetFileName().Native(), buffer + block, blockSize, blockSize,
                 IStreamerTypes::s_deadlineNow, IStreamerTypes::s_priorityMedium, block);
             this->m_streamer->SetRequestCompleteCallback(requests[requestIndex], callback);
             fileRemainder -= blockSize;
@@ -585,7 +569,7 @@ namespace AZ::IO
         };
 
         char buffer[fileSize];
-        FileRequestPtr request = this->m_streamer->Read(testFile->GetFileName(), buffer, fileSize, fileSize);
+        FileRequestPtr request = this->m_streamer->Read(testFile->GetFileName().Native(), buffer, fileSize, fileSize);
         this->m_streamer->SetRequestCompleteCallback(request, AZStd::move(callback));
 
         this->m_streamer->SuspendProcessing();
@@ -633,7 +617,7 @@ namespace AZ::IO
             auto testFile = this->CreateTestFile(fileSize, PadArchive::No);
             AZStd::unique_ptr<char[]> buffer(new char[fileSize]);
 
-            auto readRequest = this->m_streamer->Read(testFile->GetFileName(), buffer.get(), fileSize, fileSize);
+            auto readRequest = this->m_streamer->Read(testFile->GetFileName().Native(), buffer.get(), fileSize, fileSize);
             this->m_streamer->SetRequestCompleteCallback(readRequest, callback);
             auto flushRequest = this->m_streamer->FlushCaches();
             this->m_streamer->SetRequestCompleteCallback(flushRequest, callback);

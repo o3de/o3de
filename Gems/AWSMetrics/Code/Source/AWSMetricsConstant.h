@@ -21,16 +21,16 @@ namespace AWSMetrics
     static constexpr char AwsMetricsAttributeKeyEventData[] = "event_data";
 
     //! Service API request and response object keys
-    static constexpr char AwsMetricsSuccessResponseRecordKeyErrorCode[] = "error_code";
-    static constexpr char AwsMetricsSuccessResponseRecordKeyResult[] = "result";
-    static constexpr char AwsMetricsSuccessResponseKeyFailedRecordCount[] = "failed_record_count";
-    static constexpr char AwsMetricsSuccessResponseKeyEvents[] = "events";
-    static constexpr char AwsMetricsSuccessResponseKeyTotal[] = "total";
-    static constexpr char AwsMetricsErrorKeyMessage[] = "message";
-    static constexpr char AwsMetricsErrorKeyType[] = "type";
-    static constexpr char AwsMetricsRequestParameterKeyEvents[] = "events";
+    static constexpr char AwsMetricsPostMetricsEventsResponseEntryKeyErrorCode[] = "error_code";
+    static constexpr char AwsMetricsPostMetricsEventsResponseEntryKeyResult[] = "result";
+    static constexpr char AwsMetricsPostMetricsEventsResponseKeyFailedRecordCount[] = "failed_record_count";
+    static constexpr char AwsMetricsPostMetricsEventsResponseKeyEvents[] = "events";
+    static constexpr char AwsMetricsPostMetricsEventsResponseKeyTotal[] = "total";
+    static constexpr char AwsMetricsPostMetricsEventsErrorKeyMessage[] = "message";
+    static constexpr char AwsMetricsPostMetricsEventsErrorKeyType[] = "type";
+    static constexpr char AwsMetricsPostMetricsEventsRequestParameterKeyEvents[] = "events";
 
-    static constexpr char AwsMetricsSuccessResponseRecordResult[] = "Ok";
+    static constexpr char AwsMetricsPostMetricsEventsResponseEntrySuccessResult[] = "Ok";
 
     //! Service API limits
     //! https://docs.aws.amazon.com/apigateway/latest/developerguide/limits.html

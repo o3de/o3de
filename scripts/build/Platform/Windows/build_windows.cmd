@@ -9,6 +9,7 @@ REM
 
 SETLOCAL EnableDelayedExpansion
 CALL "%~dp0env_windows.cmd"
+IF NOT %ERRORLEVEL%==0 EXIT /b 1
 
 IF NOT EXIST "%OUTPUT_DIRECTORY%" (
     MKDIR %OUTPUT_DIRECTORY%.
@@ -21,7 +22,7 @@ ECHO [ci_build] cmake --version
 cmake --version
 IF ERRORLEVEL 1 (
     ECHO [ci_build] CMAKE not found!
-    exit /b 1
+    EXIT /b 1
 )
 
 REM Compute half the amount of processors so some jobs can run
@@ -47,14 +48,14 @@ IF NOT EXIST CMakeCache.txt (
     )
 )
 IF DEFINED RUN_CONFIGURE (
-    ECHO [ci_build] %CONFIGURE_CMD%
-    %CONFIGURE_CMD%
+    call ECHO [ci_build] %CONFIGURE_CMD%
+    call %CONFIGURE_CMD%
     IF NOT !ERRORLEVEL!==0 GOTO :error
     ECHO !CONFIGURE_CMD!> %LAST_CONFIGURE_CMD_FILE%
 )
 
-ECHO [ci_build] cmake --build . --target %CMAKE_TARGET% --config %CONFIGURATION% %CMAKE_BUILD_ARGS% -- %CMAKE_NATIVE_BUILD_ARGS%
-cmake --build . --target %CMAKE_TARGET% --config %CONFIGURATION% %CMAKE_BUILD_ARGS% -- %CMAKE_NATIVE_BUILD_ARGS%
+call ECHO [ci_build] cmake --build . --target %CMAKE_TARGET% --config %CONFIGURATION% %CMAKE_BUILD_ARGS% -- %CMAKE_NATIVE_BUILD_ARGS%
+call cmake --build . --target %CMAKE_TARGET% --config %CONFIGURATION% %CMAKE_BUILD_ARGS% -- %CMAKE_NATIVE_BUILD_ARGS%
 IF NOT %ERRORLEVEL%==0 GOTO :error
 
 POPD

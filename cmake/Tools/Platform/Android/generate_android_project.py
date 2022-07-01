@@ -181,7 +181,7 @@ def main(args):
                         default=-1)
 
     parser.add_argument(ANDROID_NATIVE_API_LEVEL,
-                        help=f'The android native API level to use for the APK. If not set, this will default to the android SDK platform. (Minimum {MIN_ANDROID_SDK_PLATFORM})',
+                        help=f'The android native API level to use for the APK. If not set, this will default to the android SDK platform. (Minimum {MIN_NATIVE_API_LEVEL})',
                         type=int,
                         default=-1)
 
@@ -410,7 +410,7 @@ def main(args):
                                                         gradle_version=gradle_version,
                                                         gradle_plugin_version=android_gradle_plugin_version,
                                                         override_ninja_path=override_ninja_path,
-                                                        include_assets_in_apk=parsed_args.get_argument(INCLUDE_APK_ASSETS_ARGUMENT_NAME),
+                                                        include_assets_in_apk=parsed_args.include_apk_assets,
                                                         asset_mode=parsed_args.get_argument(ASSET_MODE_ARGUMENT_NAME),
                                                         asset_type=parsed_args.get_argument(ASSET_TYPE_ARGUMENT_NAME),
                                                         signing_config=signing_config,

@@ -9,7 +9,6 @@
 
 #include <Atom/RPI.Public/AuxGeom/AuxGeomFeatureProcessorInterface.h>
 
-#include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/Interface/Interface.h>
@@ -39,7 +38,6 @@ namespace Blast
         , public AZ::Interface<Blast::BlastSystemRequests>::Registrar
         , public AZ::TickBus::Handler
         , private CrySystemEventBus::Handler
-        , private AZ::Data::AssetBus::MultiHandler
     {
     public:
         AZ_COMPONENT(BlastSystemComponent, "{9705144A-FF10-45CE-AA3D-3E1F43872429}");
@@ -61,9 +59,6 @@ namespace Blast
         // AZTickBus interface implementation
         void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
 
-        // AZ::Data::AssetBus interface implementation
-        void OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
-
         // Blast configuration methods
         void LoadConfiguration();
         void SaveConfiguration();
@@ -76,7 +71,7 @@ namespace Blast
         // Getters for physx/NvBlast structures
         Nv::Blast::TkFramework* GetTkFramework() const override;
         Nv::Blast::ExtSerialization* GetExtSerialization() const override;
-        Nv::Blast::TkGroup* GetTkGroup() override;
+        Nv::Blast::TkGroup* CreateTkGroup() override;
 
         void AddDamageDesc(AZStd::unique_ptr<NvBlastExtRadialDamageDesc> desc) override;
         void AddDamageDesc(AZStd::unique_ptr<NvBlastExtCapsuleRadialDamageDesc> desc) override;
@@ -100,11 +95,14 @@ namespace Blast
         class AZBlastAllocatorCallback : public Nv::Blast::AllocatorCallback
         {
         public:
+            // Blast requires 16-byte alignment
+            static const size_t alignment = 16;
+
             void* allocate(
                 size_t size, const char* typeName, [[maybe_unused]] const char* filename,
                 [[maybe_unused]] int line) override
             {
-                return azmalloc_4(size, 0, AZ::SystemAllocator, typeName);
+                return azmalloc_4(size, alignment, AZ::SystemAllocator, typeName);
             }
 
             void deallocate(void* ptr) override

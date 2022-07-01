@@ -38,56 +38,44 @@ function(ly_create_alias)
                             "Make sure the target wasn't copy and pasted here or elsewhere.")
     endif()
 
-    # easy version - if its just one target and it exist at the time of this call,
-    # we can directly get the target, and make both aliases,
-    # the namespace and non namespace one, point at it.
-    set(create_interface_target TRUE)
-    list(LENGTH ly_create_alias_TARGETS number_of_targets)
-    if (number_of_targets EQUAL 1)
-        if(TARGET ${ly_create_alias_TARGETS})
-            ly_de_alias_target(${ly_create_alias_TARGETS} de_aliased_target_name)
-            add_library(${ly_create_alias_NAMESPACE}::${ly_create_alias_NAME} ALIAS ${de_aliased_target_name})
-            if (NOT TARGET ${ly_create_alias_NAME})
-                add_library(${ly_create_alias_NAME} ALIAS ${de_aliased_target_name})
-            endif()
-            set(create_interface_target FALSE)
-        endif()
-    endif()
 
-    # more complex version - one alias to multiple targets or the alias is being made to a TARGET that doesn't exist yet.
+    # Using an ALIAS target inhibits finding the ALIAS target SOURCE_DIR, which is needed to determine the gem root of the alias target
+
+    # complex version - one alias to multiple targets or the alias is being made to a TARGET that doesn't exist yet.
     # To actually achieve this we have to create an interface library with those dependencies,
     # then we have to create an alias to that target.
     # By convention we create one without a namespace then alias the namespaced one.
-    if(create_interface_target)
-        if(TARGET ${ly_create_alias_NAME})
-            message(FATAL_ERROR "Internal alias target already exists, cannot create an alias for it: ${ly_create_alias_NAME}\n"
-                                "This could be a copy-paste error, where some part of the ly_create_alias call was changed but the other")
-        endif()
-
-        add_library(${ly_create_alias_NAME} INTERFACE IMPORTED GLOBAL)
-        set_target_properties(${ly_create_alias_NAME} PROPERTIES GEM_MODULE TRUE)
-
-        foreach(target_name ${ly_create_alias_TARGETS})
-            if(TARGET ${target_name})
-                ly_de_alias_target(${target_name} de_aliased_target_name)
-                if(NOT de_aliased_target_name)
-                    message(FATAL_ERROR "Target not found in ly_create_alias call: ${target_name} - check your spelling of the target name")
-                endif()
-            else()
-                set(de_aliased_target_name ${target_name})
-            endif()
-            list(APPEND final_targets ${de_aliased_target_name})
-        endforeach()
-    
-        # add_dependencies must be called with at least one dependent target
-        if(final_targets)
-            ly_parse_third_party_dependencies("${final_targets}")
-            ly_add_dependencies(${ly_create_alias_NAME} ${final_targets})
-        endif()
-
-        # now add the final alias:
-        add_library(${ly_create_alias_NAMESPACE}::${ly_create_alias_NAME} ALIAS ${ly_create_alias_NAME})
+    if(TARGET ${ly_create_alias_NAME})
+        message(FATAL_ERROR "Internal alias target already exists, cannot create an alias for it: ${ly_create_alias_NAME}\n"
+                            "This could be a copy-paste error, where some part of the ly_create_alias call was changed but the other")
     endif()
+
+    add_library(${ly_create_alias_NAME} INTERFACE IMPORTED GLOBAL)
+    set_target_properties(${ly_create_alias_NAME} PROPERTIES GEM_MODULE TRUE)
+
+    foreach(target_name ${ly_create_alias_TARGETS})
+        if(TARGET ${target_name})
+            ly_de_alias_target(${target_name} de_aliased_target_name)
+            if(NOT de_aliased_target_name)
+                message(FATAL_ERROR "Target not found in ly_create_alias call: ${target_name} - check your spelling of the target name")
+            endif()
+        else()
+            set(de_aliased_target_name ${target_name})
+        endif()
+        list(APPEND final_targets ${de_aliased_target_name})
+    endforeach()
+    
+    # add_dependencies must be called with at least one dependent target
+    if(final_targets)
+        ly_parse_third_party_dependencies("${final_targets}")
+        ly_add_dependencies(${ly_create_alias_NAME} ${final_targets})
+        # copy over all the dependent target interface properties to the alias
+        o3de_copy_targets_usage_requirements(TARGET ${ly_create_alias_NAME} SOURCE_TARGETS ${final_targets})
+    endif()
+
+    # now add the final alias:
+    add_library(${ly_create_alias_NAMESPACE}::${ly_create_alias_NAME} ALIAS ${ly_create_alias_NAME})
+
 
     # Store off the arguments used by ly_create_alias into a DIRECTORY property
     # This will be used to re-create the calls in the generated CMakeLists.txt in the INSTALL step
@@ -262,6 +250,8 @@ function(ly_add_gem_dependencies_to_project_variants)
                 ${PREFIX_CLAUSE}
                 TARGETS ${ly_add_gem_dependencies_TARGET}
                 DEPENDENT_TARGETS ${dealiased_gem_target})
+        else()
+            message(VERBOSE "Gem \"${gem_name}\" does not expose a variant of ${ly_add_gem_dependencies_VARIANT}")
         endif()
     endforeach()
 endfunction()
@@ -278,6 +268,9 @@ function(ly_enable_gems_delayed)
         if (NOT TARGET ${target})
             message(FATAL_ERROR "ly_set_gem_variant_to_load specified TARGET '${target}' but no such target was found.")
         endif()
+
+        get_property(target_gem_variants GLOBAL PROPERTY LY_GEM_VARIANTS_"${target}")
+        message(VERBOSE "Adding gem dependencies for \"${target}\" associated with the Gem variants of \"${target_gem_variants}\"")
 
         # Lookup if the target is scoped to a project
         # In that case the target can only use gem targets that is
@@ -314,7 +307,6 @@ function(ly_enable_gems_delayed)
 
             # Gather the Gem variants associated with this target and iterate over them to combine them with the enabled
             # gems for the each project
-            get_property(target_gem_variants GLOBAL PROPERTY LY_GEM_VARIANTS_"${target}")
             foreach(variant ${target_gem_variants})
                 ly_add_gem_dependencies_to_project_variants(
                     PROJECT_NAME ${project}

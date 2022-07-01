@@ -89,7 +89,7 @@ class LinuxLauncher(Launcher):
         self.restore_settings()
         super(LinuxLauncher, self).teardown()
 
-    def kill(self):
+    def _kill(self):
         """
         This is a hard kill, and then wait to make sure until it actually ended.
 

@@ -11,6 +11,7 @@
 #include <Atom/RPI.Reflect/Material/MaterialFunctor.h>
 #include <Atom/RPI.Reflect/Material/MaterialPropertyDescriptor.h>
 #include <Atom/RHI.Reflect/Limits.h>
+#include <Atom/Utils/MaterialUtils.h>
 
 namespace AZ
 {
@@ -23,14 +24,6 @@ namespace AZ
             friend class Transform2DFunctorSourceData;
         public:
             AZ_RTTI(Transform2DFunctor, "{3E9C4357-6B2D-4A22-89DB-462441C9D8CD}", RPI::MaterialFunctor);
-
-            enum class TransformType
-            {
-                Invalid,
-                Scale,
-                Rotate,
-                Translate
-            };
 
             static void Reflect(ReflectContext* context);
 
@@ -56,7 +49,5 @@ namespace AZ
         };
 
     } // namespace Render
-
-    AZ_TYPE_INFO_SPECIALIZE(Render::Transform2DFunctor::TransformType, "{D8C15D33-CE3D-4297-A646-030B0625BF84}");
 
 } // namespace AZ

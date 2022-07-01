@@ -13,6 +13,7 @@
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/IO/IStreamer.h>
 #include <AzCore/IO/Path/Path.h>
+#include <AzCore/IO/Streamer/FileRequest.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/Serialization/Utils.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
@@ -927,6 +928,12 @@ void AssetBuilderComponent::JobThread()
         AssetBuilderSDK::AssetBuilderTraceBus::Broadcast(&AssetBuilderSDK::AssetBuilderTraceBus::Events::ResetErrorCount);
         AssetBuilderSDK::AssetBuilderTraceBus::Broadcast(&AssetBuilderSDK::AssetBuilderTraceBus::Events::ResetWarningCount);
 
+        size_t allocatedBytesBefore = 0;
+        size_t capacityBytesBefore = 0;
+        AZ::AllocatorManager::Instance().GarbageCollect();
+        AZ::AllocatorManager::Instance().GetAllocatorStats(allocatedBytesBefore, capacityBytesBefore);
+        AZ_TracePrintf("AssetBuilder", "AllocatorManager before: allocatedBytes = %zu capacityBytes = %zu\n", allocatedBytesBefore, capacityBytesBefore);
+
         switch (job->m_jobType)
         {
             case JobType::Create:
@@ -953,6 +960,7 @@ void AssetBuilderComponent::JobThread()
                     AZ_Error("AssetBuilder", false, "Builder UUID [%s] does not exist in the AssetBuilderDescMap for source file %s",
                         netRequest->m_request.m_builderid.ToString<AZStd::fixed_string<64>>().c_str(), netRequest->m_request.m_sourceFile.c_str());
                 }
+
                 break;
             }
             case JobType::Process:
@@ -995,6 +1003,14 @@ void AssetBuilderComponent::JobThread()
                 AZ_Error("AssetBuilder", false, "Unhandled job request type");
                 continue;
         }
+
+        size_t allocatedBytesAfter = 0;
+        size_t capacityBytesAfter = 0;
+        AZ::AllocatorManager::Instance().GarbageCollect();
+        AZ_MALLOC_TRIM(0);
+        AZ::AllocatorManager::Instance().GetAllocatorStats(allocatedBytesAfter, capacityBytesAfter);
+        AZ_TracePrintf("AssetBuilder", "AllocatorManager after: allocatedBytes = %zu capacityBytes = %zu; allocated change = %zd\n",
+            allocatedBytesAfter, capacityBytesAfter, allocatedBytesAfter - allocatedBytesBefore);
 
         AZ::u32 warningCount, errorCount;
         AssetBuilderSDK::AssetBuilderTraceBus::BroadcastResult(warningCount, &AssetBuilderSDK::AssetBuilderTraceBus::Events::GetWarningCount);

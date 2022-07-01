@@ -28,6 +28,7 @@ set(FILES
     Include/Atom/RPI.Reflect/Model/MorphTargetDelta.h
     Include/Atom/RPI.Reflect/Model/MorphTargetMetaAsset.h
     Include/Atom/RPI.Reflect/Model/MorphTargetMetaAssetCreator.h
+    Include/Atom/RPI.Reflect/Model/SkinJointIdPadding.h
     Include/Atom/RPI.Reflect/Model/SkinMetaAsset.h
     Include/Atom/RPI.Reflect/Model/SkinMetaAssetCreator.h
     Include/Atom/RPI.Reflect/Asset/AssetHandler.h
@@ -51,9 +52,9 @@ set(FILES
     Include/Atom/RPI.Reflect/Image/StreamingImagePoolAssetCreator.h
     Include/Atom/RPI.Reflect/Material/LuaMaterialFunctor.h
     Include/Atom/RPI.Reflect/Material/MaterialAsset.h
-    Include/Atom/RPI.Reflect/Material/MaterialAssetCreatorCommon.h
     Include/Atom/RPI.Reflect/Material/MaterialAssetCreator.h
     Include/Atom/RPI.Reflect/Material/MaterialDynamicMetadata.h
+    Include/Atom/RPI.Reflect/Material/MaterialNameContext.h
     Include/Atom/RPI.Reflect/Material/MaterialPropertyDescriptor.h
     Include/Atom/RPI.Reflect/Material/MaterialPropertiesLayout.h
     Include/Atom/RPI.Reflect/Material/MaterialPropertyValue.h
@@ -113,6 +114,7 @@ set(FILES
     Source/RPI.Reflect/Model/MorphTargetDelta.cpp
     Source/RPI.Reflect/Model/MorphTargetMetaAsset.cpp
     Source/RPI.Reflect/Model/MorphTargetMetaAssetCreator.cpp
+    Source/RPI.Reflect/Model/SkinJointIdPadding.cpp
     Source/RPI.Reflect/Model/SkinMetaAsset.cpp
     Source/RPI.Reflect/Model/SkinMetaAssetCreator.cpp
     Source/RPI.Reflect/ResourcePoolAsset.cpp
@@ -133,8 +135,8 @@ set(FILES
     Source/RPI.Reflect/Image/StreamingImagePoolAssetCreator.cpp
     Source/RPI.Reflect/Material/MaterialPropertyValue.cpp
     Source/RPI.Reflect/Material/MaterialAsset.cpp
-    Source/RPI.Reflect/Material/MaterialAssetCreatorCommon.cpp
     Source/RPI.Reflect/Material/MaterialAssetCreator.cpp
+    Source/RPI.Reflect/Material/MaterialNameContext.cpp
     Source/RPI.Reflect/Material/LuaMaterialFunctor.cpp
     Source/RPI.Reflect/Material/MaterialDynamicMetadata.cpp
     Source/RPI.Reflect/Material/MaterialPropertyDescriptor.cpp

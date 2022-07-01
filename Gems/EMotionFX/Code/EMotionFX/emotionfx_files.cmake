@@ -36,7 +36,6 @@ set(FILES
     Source/DebugDraw.cpp
     Source/DualQuatSkinDeformer.cpp
     Source/DualQuatSkinDeformer.h
-    Source/EMotionFX.h
     Source/EMotionFXConfig.h
     Source/EMotionFXManager.cpp
     Source/EMotionFXManager.h
@@ -50,8 +49,6 @@ set(FILES
     Source/KeyTrackLinearDynamic.h
     Source/KeyTrackLinearDynamic.inl
     Source/LayerPass.h
-    Source/Material.cpp
-    Source/Material.h
     Source/MemoryCategories.h
     Source/Mesh.cpp
     Source/Mesh.h
@@ -132,8 +129,6 @@ set(FILES
     Source/SoftSkinManager.h
     Source/SpringSolver.cpp
     Source/SpringSolver.h
-    Source/StandardMaterial.cpp
-    Source/StandardMaterial.h
     Source/SubMesh.cpp
     Source/SubMesh.h
     Source/ThreadData.cpp
@@ -163,8 +158,6 @@ set(FILES
     Source/AnimGraphEventBuffer.h
     Source/AnimGraphExitNode.cpp
     Source/AnimGraphExitNode.h
-    Source/AnimGraphGameControllerSettings.cpp
-    Source/AnimGraphGameControllerSettings.h
     Source/AnimGraphHubNode.cpp
     Source/AnimGraphHubNode.h
     Source/AnimGraphInstance.cpp

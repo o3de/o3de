@@ -186,7 +186,7 @@ function(ly_add_external_target)
         endif()
 
         # Check if there is a pal file
-        o3de_pal_dir(pal_file ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME}/${ly_add_external_target_PACKAGE}_${PAL_PLATFORM_NAME_LOWERCASE}.cmake ${O3DE_ENGINE_RESTRICTED_PATH} ${LY_ROOT_FOLDER})
+        o3de_pal_dir(pal_file ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME}/${ly_add_external_target_PACKAGE}_${PAL_PLATFORM_NAME_LOWERCASE}.cmake "${O3DE_ENGINE_RESTRICTED_PATH}" "${LY_ROOT_FOLDER}")
         if(NOT EXISTS ${pal_file})
             set(pal_file ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME}/${ly_add_external_target_PACKAGE}_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
         endif()
@@ -357,12 +357,12 @@ endfunction()
 
 # Add the 3rdParty folder to find the modules
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/3rdParty)
-o3de_pal_dir(pal_dir ${CMAKE_CURRENT_LIST_DIR}/3rdParty/Platform/${PAL_PLATFORM_NAME} ${O3DE_ENGINE_RESTRICTED_PATH} ${LY_ROOT_FOLDER})
+o3de_pal_dir(pal_dir ${CMAKE_CURRENT_LIST_DIR}/3rdParty/Platform/${PAL_PLATFORM_NAME} "${O3DE_ENGINE_RESTRICTED_PATH}" "${LY_ROOT_FOLDER}")
 list(APPEND CMAKE_MODULE_PATH ${pal_dir})
 
 if(NOT INSTALLED_ENGINE)
     # Add the 3rdParty cmake files to the IDE
     ly_include_cmake_file_list(cmake/3rdParty/cmake_files.cmake)
-    o3de_pal_dir(pal_3rdparty_dir ${CMAKE_CURRENT_SOURCE_DIR}/cmake/3rdParty/Platform/${PAL_PLATFORM_NAME} ${O3DE_ENGINE_RESTRICTED_PATH} ${LY_ROOT_FOLDER})
+    o3de_pal_dir(pal_3rdparty_dir ${CMAKE_CURRENT_SOURCE_DIR}/cmake/3rdParty/Platform/${PAL_PLATFORM_NAME} "${O3DE_ENGINE_RESTRICTED_PATH}" "${LY_ROOT_FOLDER}")
     ly_include_cmake_file_list(${pal_3rdparty_dir}/cmake_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake)
 endif()

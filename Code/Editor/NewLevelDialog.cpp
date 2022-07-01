@@ -18,9 +18,6 @@
 #include <QTimer>
 #include <QToolButton>
 
-// Editor
-#include "NewTerrainDialog.h"
-
 AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 #include <ui_NewLevelDialog.h>
 AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING

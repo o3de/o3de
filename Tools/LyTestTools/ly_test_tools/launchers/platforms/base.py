@@ -91,7 +91,7 @@ class Launcher(object):
                     # our code reading the contents of the file
                     elif artifact_ext == '.log':
                         open(os.path.join(self.workspace.paths.project_log(), artifact), 'w').close() # clear it
-                        log.info(f"Clearing pre-existing artifact {artifact} from calling Launcher.setup()")
+                        log.debug(f"Clearing pre-existing artifact {artifact} from calling Launcher.setup()")
                 except PermissionError:
                     log.warning(f'Unable to remove artifact: {artifact}, skipping.')
                     pass
@@ -208,7 +208,7 @@ class Launcher(object):
 
         :return None:
         """
-        self.kill()
+        self._kill()
         self.ensure_stopped()
         self.teardown()
 
@@ -228,7 +228,7 @@ class Launcher(object):
         """
         raise NotImplementedError("Launch is not implemented")
 
-    def kill(self):
+    def _kill(self):
         """
         Force stop the launcher.
 
@@ -274,7 +274,7 @@ class Launcher(object):
                 timeout=timeout
             )
         except ly_test_tools.launchers.exceptions.TeardownError:
-            self.kill()
+            self._kill()
 
     def get_device_config(self, config_file, device_section, device_key):
         """

@@ -56,7 +56,7 @@ namespace AZ
                     ;
 
                 serializeContext->Class<PassSlot>()
-                    ->Version(2)
+                    ->Version(3)
                     ->Field("Name", &PassSlot::m_name)
                     ->Field("ShaderInputName", &PassSlot::m_shaderInputName)
                     ->Field("ShaderImageDimensionsConstant", &PassSlot::m_shaderImageDimensionsName)
@@ -67,54 +67,9 @@ namespace AZ
                     ->Field("BufferViewDesc", &PassSlot::m_bufferViewDesc)
                     ->Field("LoadStoreAction", &PassSlot::m_loadStoreAction)
                     ->Field("FormatFallbacks", &PassSlot::m_formatFallbacks)
-                    ->Field("FormatFilter", &PassSlot::m_formatFilter)
-                    ->Field("DimensionFilter", &PassSlot::m_dimensionFilter)
                     ;
             }
         }
-
-        template<typename FilterType>
-        bool FilterListAcceptsInput(const AZStd::vector<FilterType>& filterList, FilterType input)
-        {
-            // If no filters are specified then we accept everything
-            if (filterList.empty())
-            {
-                return true;
-            }
-
-            // Loop over the specified filter. If one matches the input, return true.
-            for (const FilterType& filter : filterList)
-            {
-                if (input == filter)
-                {
-                    return true;
-                }
-            }
-
-            // The input was not contained in the list of filters. Return false.
-            return false;
-        }
-
-        bool PassSlot::AcceptsFormat(const RHI::UnifiedAttachmentDescriptor& desc) const
-        {
-            // Only filtering image attachments since the BufferDescriptor class has neither size nor format
-            if(desc.m_type == RHI::AttachmentType::Image)
-            {
-                return FilterListAcceptsInput(m_formatFilter, desc.m_image.m_format);
-            }
-            return true;
-        }
-
-        bool PassSlot::AcceptsDimension(const RHI::UnifiedAttachmentDescriptor& desc) const
-        {
-            // Only filtering image attachments since the BufferDescriptor class has neither size nor format
-            if (desc.m_type == RHI::AttachmentType::Image)
-            {
-                return FilterListAcceptsInput(m_dimensionFilter, desc.m_image.m_dimension);
-            }
-            return true;
-        }
-
 
         // --- PassAttachmentRef ---
 
@@ -203,7 +158,7 @@ namespace AZ
             if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
                 serializeContext->Class<PassAttachmentDesc>()
-                    ->Version(2)    // Removing PassAttachmentArraySizeSource class
+                    ->Version(3)    // Removing PassAttachmentArraySizeSource class
                     ->Field("Name", &PassAttachmentDesc::m_name)
                     ->Field("Lifetime", &PassAttachmentDesc::m_lifetime)
                     ->Field("SizeSource", &PassAttachmentDesc::m_sizeSource)

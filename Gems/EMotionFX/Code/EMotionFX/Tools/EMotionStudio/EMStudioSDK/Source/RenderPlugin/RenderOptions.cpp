@@ -6,11 +6,10 @@
  *
  */
 
-#include "RenderOptions.h"
+#include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzToolsFramework/UI/PropertyEditor/ReflectedPropertyEditor.hxx>
-#include <EMotionFX/Rendering/Common/OrbitCamera.h>
 #include <EMotionFX/Source/EMotionFXManager.h>
 #include <Integration/Rendering/RenderActorSettings.h>
 #include <MysticQt/Source/MysticQtConfig.h>
@@ -80,6 +79,9 @@ namespace EMStudio
         , m_tangentsScale(1.0f)
         , m_nodeOrientationScale(1.0f)
         , m_scaleBonesOnLength(true)
+        , m_nearClipPlaneDistance(0.1f)
+        , m_farClipPlaneDistance(200.0f)
+        , m_fov(55.0f)
         , m_mainLightIntensity(1.0f)
         , m_mainLightAngleA(0.0f)
         , m_mainLightAngleB(0.0f)
@@ -125,10 +127,6 @@ namespace EMStudio
         , m_lastUsedLayout("Single")
         , m_renderSelectionBox(true)
     {
-        MCommon::OrbitCamera tempCam;
-        m_nearClipPlaneDistance = tempCam.GetNearClipDistance();
-        m_farClipPlaneDistance = tempCam.GetFarClipDistance();
-        m_fov = tempCam.GetFOV();
     }
 
     RenderOptions& RenderOptions::operator=(const RenderOptions& other)
@@ -177,6 +175,10 @@ namespace EMStudio
         SetNearClipPlaneDistance(other.GetNearClipPlaneDistance());
         SetFarClipPlaneDistance(other.GetFarClipPlaneDistance());
         SetFOV(other.GetFOV());
+        SetRenderFlags(other.GetRenderFlags());
+        SetManipulatorMode(other.GetManipulatorMode());
+        SetCameraViewMode(other.GetCameraViewMode());
+        SetCameraFollowUp(other.GetCameraFollowUp());
         return *this;
     }
 
@@ -247,6 +249,11 @@ namespace EMStudio
         settings->setValue(s_renderSelectionBoxOptionName, m_renderSelectionBox);
 
         settings->setValue("manipulatorMode", static_cast<int>(m_manipulatorMode));
+        settings->setValue("cameraViewMode", static_cast<int>(m_cameraViewMode));
+        settings->setValue("cameraFollowUp", m_cameraFollowUp);
+
+        // Save render flags
+        settings->setValue("renderFlags", static_cast<AZ::u32>(m_renderFlags));
     }
 
     RenderOptions RenderOptions::Load(QSettings* settings)
@@ -315,6 +322,12 @@ namespace EMStudio
         options.m_renderSelectionBox = settings->value(s_renderSelectionBoxOptionName, options.m_renderSelectionBox).toBool();
 
         options.m_manipulatorMode = static_cast<ManipulatorMode>(settings->value("manipulatorMode", options.m_manipulatorMode).toInt());
+        options.m_cameraViewMode = static_cast<CameraViewMode>(settings->value("cameraViewMode", options.m_cameraViewMode).toInt());
+        options.m_cameraFollowUp = settings->value("CameraFollowUp", options.m_cameraFollowUp).toBool();
+
+        // Read render flags
+        options.m_renderFlags =
+            EMotionFX::ActorRenderFlags(settings->value("RenderFlags", static_cast<int>(EMotionFX::ActorRenderFlags::Default)).toInt());
 
         options.CopyToRenderActorSettings(EMotionFX::GetRenderActorSettings());
 
@@ -1058,6 +1071,41 @@ namespace EMStudio
         return m_manipulatorMode;
     }
 
+    void RenderOptions::SetCameraViewMode(CameraViewMode mode)
+    {
+        m_cameraViewMode = mode;
+    }
+
+    RenderOptions::CameraViewMode RenderOptions::GetCameraViewMode() const
+    {
+        return m_cameraViewMode;
+    }
+
+    void RenderOptions::SetCameraFollowUp(bool followUp)
+    {
+        m_cameraFollowUp = followUp;
+    }
+
+    bool RenderOptions::GetCameraFollowUp() const
+    {
+        return m_cameraFollowUp;
+    }
+
+    void RenderOptions::ToggerRenderFlag(uint8 index)
+    {
+        m_renderFlags ^= EMotionFX::ActorRenderFlags(AZ_BIT(index));
+    }
+
+    void RenderOptions::SetRenderFlags(EMotionFX::ActorRenderFlags renderFlags)
+    {
+        m_renderFlags = renderFlags;
+    }
+
+    EMotionFX::ActorRenderFlags RenderOptions::GetRenderFlags() const
+    {
+        return m_renderFlags;
+    }
+
     void RenderOptions::CopyToRenderActorSettings(AZ::Render::RenderActorSettings& settings) const
     {
         settings.m_vertexNormalsScale = m_vertexNormalsScale;
@@ -1087,6 +1135,7 @@ namespace EMStudio
         settings.m_simulatedObjectColliderColor = m_simulatedObjectColliderColor;
         settings.m_selectedSimulatedObjectColliderColor = m_selectedSimulatedObjectColliderColor;
         settings.m_jointNameColor = m_nodeNameColor;
+        settings.m_trajectoryPathColor = m_trajectoryArrowInnerColor;
     }
 
     void RenderOptions::OnGridUnitSizeChangedCallback() const

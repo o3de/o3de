@@ -11,6 +11,7 @@
 #include <AzCore/Component/Component.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/RTTI/TypeInfo.h>
+#include <AzCore/std/parallel/shared_mutex.h>
 #include <GradientSignal/Ebuses/GradientRequestBus.h>
 #include <GradientSignal/Ebuses/GradientTransformRequestBus.h>
 #include <FastNoise/Ebuses/FastNoiseGradientRequestBus.h>
@@ -46,6 +47,8 @@ namespace FastNoiseGem
         AZ::u32 GetFractalParameterVisbility() const;
         AZ::u32 GetFrequencyParameterVisbility() const;
         AZ::u32 GetInterpParameterVisibility() const;
+
+        bool operator==(const FastNoiseGradientConfig& rhs) const;
 
         int m_seed = 1;
         float m_frequency = 1.f;
@@ -90,12 +93,13 @@ namespace FastNoiseGem
 
         // GradientRequestBus overrides...
         float GetValue(const GradientSignal::GradientSampleParams& sampleParams) const override;
+        void GetValues(AZStd::span<const AZ::Vector3> positions, AZStd::span<float> outValues) const override;
 
     protected:
         FastNoiseGradientConfig m_configuration;
         FastNoise m_generator;
         GradientSignal::GradientTransform m_gradientTransform;
-        mutable AZStd::shared_mutex m_transformMutex;
+        mutable AZStd::shared_mutex m_queryMutex;
 
         // GradientTransformNotificationBus overrides...
         void OnGradientTransformChanged(const GradientSignal::GradientTransform& newTransform) override;

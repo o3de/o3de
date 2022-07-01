@@ -12,6 +12,7 @@
 #include <AzToolsFramework/ToolsComponents/EditorComponentAdapter.h>
 #include <Atom/Feature/Utils/FrameCaptureBus.h>
 #include <PostProcess/ColorGrading/HDRColorGradingComponent.h>
+#include <AtomLyIntegration/CommonFeatures/PostProcess/ColorGrading/EditorHDRColorGradingBus.h>
 
 namespace AZ
 {
@@ -19,14 +20,15 @@ namespace AZ
     {
         static constexpr const char* const TempTiffFilePath{ "@usercache@/LutGeneration/SavedLut_%s.tiff" };
         static constexpr const char* const GeneratedLutRelativePath = { "LutGeneration/SavedLut_%s" };
-        static constexpr const char* const TiffToAzassetPythonScriptPath{ "@engroot@/Gems/Atom/Feature/Common/Editor/Scripts/ColorGrading/tiff_to_3dl_azasset.py" };
-        static constexpr const char* const ActivateLutAssetPythonScriptPath{ "@engroot@/Gems/Atom/Feature/Common/Editor/Scripts/ColorGrading/activate_lut_asset.py" };
+        static constexpr const char* const TiffToAzassetPythonScriptPath{ "@gemroot:Atom_Feature_Common@/Editor/Scripts/ColorGrading/tiff_to_3dl_azasset.py" };
+        static constexpr const char* const ActivateLutAssetPythonScriptPath{ "@gemroot:Atom_Feature_Common@/Editor/Scripts/ColorGrading/activate_lut_asset.py" };
 
         class EditorHDRColorGradingComponent final
             : public AzToolsFramework::Components::
                   EditorComponentAdapter<HDRColorGradingComponentController, HDRColorGradingComponent, HDRColorGradingComponentConfig>
             , private TickBus::Handler
             , private FrameCaptureNotificationBus::Handler
+            , private EditorHDRColorGradingRequestBus::Handler
         {
         public:
             using BaseClass = AzToolsFramework::Components::EditorComponentAdapter<HDRColorGradingComponentController, HDRColorGradingComponent, HDRColorGradingComponentConfig>;
@@ -37,6 +39,9 @@ namespace AZ
             EditorHDRColorGradingComponent() = default;
             EditorHDRColorGradingComponent(const HDRColorGradingComponentConfig& config);
 
+            void Activate() override;
+            void Deactivate() override;
+
             //! EditorRenderComponentAdapter overrides...
             AZ::u32 OnConfigurationChanged() override;
 
@@ -45,13 +50,19 @@ namespace AZ
             void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
 
             // FrameCaptureNotificationBus overrides ...
-            void OnCaptureFinished(AZ::Render::FrameCaptureResult result, const AZStd::string& info) override;
+            void OnCaptureFinished(uint32_t frameCaptureId, AZ::Render::FrameCaptureResult result, const AZStd::string& info) override;
+
+            //! EditorHDRColorGradingRequestBus overrides...
+            void GenerateLutAsync() override;
+            void ActivateLutAsync() override;
 
             void GenerateLut();
             AZ::u32 ActivateLut();
+
             bool GetGeneratedLutVisibilitySettings();
 
             bool m_waitOneFrame = false;
+            uint32_t m_frameCaptureId = AZ::Render::FrameCaptureRequests::s_InvalidFrameCaptureId;
             AZStd::string m_currentTiffFilePath;
             AZStd::string m_currentLutFilePath;
 

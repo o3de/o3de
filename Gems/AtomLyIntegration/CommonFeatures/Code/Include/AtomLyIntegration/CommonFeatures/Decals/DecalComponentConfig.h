@@ -26,6 +26,7 @@ namespace AZ
             Data::Asset<RPI::MaterialAsset> m_materialAsset;
             float m_attenuationAngle = 1.0f;
             float m_opacity = 1.0f;
+            float m_normalMapOpacity = 1.0f;
             // Decals with a larger sort key appear over top of smaller sort keys            
             uint8_t m_sortKey = DefaultDecalSortKey;
         };

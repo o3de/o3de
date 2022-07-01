@@ -23,6 +23,7 @@ namespace AzToolsFramework
 
             virtual void OnPrefabInstancePropagationBegin() {}
             virtual void OnPrefabInstancePropagationEnd() {}
+            virtual void OnRootPrefabInstanceLoaded() {}
 
             virtual void OnPrefabTemplateDirtyFlagUpdated(
                 [[maybe_unused]] TemplateId templateId, [[maybe_unused]] bool status) {}
@@ -35,8 +36,27 @@ namespace AzToolsFramework
             // Does not trigger individual OnTemplateRemoved events
             virtual void OnAllTemplatesRemoved() {}
         };
-
         using PrefabPublicNotificationBus = AZ::EBus<PrefabPublicNotifications>;
+
+        //! Used to notify changes to a prefab template.
+        class PrefabTemplateNotifications
+            : public AZ::EBusTraits
+        {
+        public:
+            //////////////////////////////////////////////////////////////////////////
+            // EBusTraits overrides
+            static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
+            static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
+            using BusIdType = TemplateId;
+            //////////////////////////////////////////////////////////////////////////
+
+            //! Triggered when the prefab template is saved to disk.
+            virtual void OnPrefabTemplateSaved() = 0;
+
+        protected:
+            ~PrefabTemplateNotifications() = default;
+        };
+        using PrefabTemplateNotificationBus = AZ::EBus<PrefabTemplateNotifications>;
 
     } // namespace Prefab
 } // namespace AzToolsFramework

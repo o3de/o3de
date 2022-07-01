@@ -120,7 +120,7 @@ namespace AzFramework
                 int res = chdir(processLaunchInfo.m_workingDirectory.c_str());
                 if (res != 0)
                 {
-                    write(errorPipe[1], &errno, sizeof(int));
+                    [[maybe_unused]] auto writeResult = write(errorPipe[1], &errno, sizeof(int));
                     // We *have* to _exit as we are the child process and simply
                     // returning at this point would mean we would start running
                     // the code from our parent process and that will just wreck
@@ -132,15 +132,19 @@ namespace AzFramework
             switch (processLaunchInfo.m_processPriority)
             {
                 case PROCESSPRIORITY_BELOWNORMAL:
-                    nice(1);
+                {
+                    [[maybe_unused]] auto niceResult = nice(1);
                     // also reduce disk impact:
                     // setiopolicy_np(IOPOL_TYPE_DISK, IOPOL_SCOPE_PROCESS, IOPOL_UTILITY);
                     break;
+                }
                 case PROCESSPRIORITY_IDLE:
-                    nice(20);
+                {
+                    [[maybe_unused]] auto niceResult = nice(20);
                     // also reduce disk impact:
                     // setiopolicy_np(IOPOL_TYPE_DISK, IOPOL_SCOPE_PROCESS, IOPOL_THROTTLE);
                     break;
+                }
             }
 
             startupInfo.SetupHandlesForChildProcess();
@@ -153,7 +157,7 @@ namespace AzFramework
             // to stop it from continuing to run as a clone of the parent.
             // Communicate the error code back to the parent via a pipe for the
             // parent to read.
-            write(errorPipe[1], &errval, sizeof(errval));
+            [[maybe_unused]] auto writeResult = write(errorPipe[1], &errval, sizeof(errval));
 
             _exit(0);
         }
@@ -317,7 +321,7 @@ namespace AzFramework
 
         // Set up a pipe to communicate the error code from the subprocess's execvpe call
         AZStd::array<int, 2> childErrorPipeFds{};
-        pipe(childErrorPipeFds.data());
+        [[maybe_unused]] auto pipeResult = pipe(childErrorPipeFds.data());
 
         // This configures the write end of the pipe to close on calls to `exec`
         fcntl(childErrorPipeFds[1], F_SETFD, fcntl(childErrorPipeFds[1], F_GETFD) | FD_CLOEXEC);

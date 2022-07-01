@@ -14,7 +14,15 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
 {
     PrefabDocument::PrefabDocument(AZStd::string name)
         : m_name(AZStd::move(name))
-        , m_instance(AZStd::make_unique<AzToolsFramework::Prefab::Instance>())
+        , m_instance(AZStd::make_unique<AzToolsFramework::Prefab::Instance>(AzToolsFramework::Prefab::EntityIdInstanceRelationship::OneToMany))
+    {
+        m_instance->SetTemplateSourcePath(AZ::IO::Path("InMemory") / m_name);
+    }
+
+    PrefabDocument::PrefabDocument(AZStd::string name, InstanceAlias alias)
+        : m_name(AZStd::move(name))
+        , m_instance(AZStd::make_unique<AzToolsFramework::Prefab::Instance>(
+              alias, AzToolsFramework::Prefab::EntityIdInstanceRelationship::OneToMany))
     {
         m_instance->SetTemplateSourcePath(AZ::IO::Path("InMemory") / m_name);
     }
@@ -53,21 +61,14 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
 
     const PrefabDom& PrefabDocument::GetDom() const
     {
-        if (m_isDirty)
-        {
-            m_isDirty = !PrefabDomUtils::StoreInstanceInPrefabDom(*m_instance, m_dom);
-        }
+        RefreshPrefabDom();
         return m_dom;
     }
 
     PrefabDom&& PrefabDocument::TakeDom()
     {
-        if (m_isDirty)
-        {
-            [[maybe_unused]] bool storedSuccessfully = PrefabDomUtils::StoreInstanceInPrefabDom(*m_instance, m_dom);
-            AZ_Assert(storedSuccessfully, "Failed to store Instance '%s' to PrefabDom.", m_name.c_str());
-            m_isDirty = false;
-        }
+        RefreshPrefabDom();
+        
         // After the PrefabDom is moved an empty PrefabDom is left behind. This should be reflected in the Instance,
         // so reset it so it's empty as well.
         m_instance->Reset();
@@ -104,7 +105,7 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         if (sourceInstance != nullptr && entityId.IsValid())
         {
             return SpawnableUtils::CreateEntityAlias(
-                source.m_name, *sourceInstance, m_name, *m_instance, entityId, aliasType, loadBehavior, tag, context);
+                source.m_name, *sourceInstance, m_name, *m_instance, *m_instance, entityId, aliasType, loadBehavior, tag, context);
         }
         else
         {
@@ -126,11 +127,13 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
 
     AZStd::vector<AZ::Data::Asset<AZ::Data::AssetData>>& PrefabDocument::GetReferencedAssets()
     {
+        RefreshPrefabDom();
         return m_referencedAssets;
     }
 
     const AZStd::vector<AZ::Data::Asset<AZ::Data::AssetData>>& PrefabDocument::GetReferencedAssets() const
     {
+        RefreshPrefabDom();
         return m_referencedAssets;
     }
 
@@ -139,7 +142,7 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         using namespace AzToolsFramework::Prefab;
 
         m_instance->Reset();
-        if (PrefabDomUtils::LoadInstanceFromPrefabDom(*m_instance, prefab, m_referencedAssets, PrefabDomUtils::LoadFlags::AssignRandomEntityId))
+        if (PrefabDomUtils::LoadInstanceFromPrefabDom(*m_instance, prefab, m_referencedAssets))
         {
             return true;
         }
@@ -156,6 +159,22 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
                 "PrefabDocument", false, "Failed to construct Prefab instance from given PrefabDOM '%.*s'.", AZ_STRING_ARG(sourceName));
 #endif
             return false;
+        }
+    }
+
+    void PrefabDocument::RefreshPrefabDom() const
+    {
+        if (m_isDirty)
+        {
+            m_referencedAssets.clear();
+            if (PrefabDomUtils::StoreInstanceInPrefabDom(*m_instance, m_dom, m_referencedAssets))
+            {
+                m_isDirty = false;
+            }
+            else
+            {
+                AZ_Assert(false, "Failed to store Instance '%s' to PrefabDom.", m_name.c_str());
+            }
         }
     }
 } // namespace AzToolsFramework::Prefab::PrefabConversionUtils

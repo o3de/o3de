@@ -107,7 +107,13 @@ namespace LyShineExamples
         }
 
         ISprite* sprite = (m_overrideSprite) ? m_overrideSprite : m_sprite;
-        AZ::Data::Instance<AZ::RPI::Image> image = sprite->GetImage();
+        AZ::Data::Instance<AZ::RPI::Image> image;
+
+        if (sprite != nullptr)
+        {
+            image = sprite->GetImage();
+        }
+
         bool isTextureSRGB = false;
         bool isTexturePremultipliedAlpha = false; // we are not rendering from a render target with alpha in it
         LyShine::BlendMode blendMode = LyShine::BlendMode::Normal;
@@ -284,7 +290,7 @@ namespace LyShineExamples
         // If this is called from RC.exe for example these pointers will not be set. In that case
         // we only need to be able to load, init and save the component. It will never be
         // activated.
-        if (!(gEnv && gEnv->pLyShine))
+        if (!AZ::Interface<ILyShine>::Get())
         {
             return;
         }
@@ -294,7 +300,7 @@ namespace LyShineExamples
         {
             if (!m_spritePathname.GetAssetPath().empty())
             {
-                m_sprite = gEnv->pLyShine->LoadSprite(m_spritePathname.GetAssetPath().c_str());
+                m_sprite = AZ::Interface<ILyShine>::Get()->LoadSprite(m_spritePathname.GetAssetPath().c_str());
             }
         }
 
@@ -399,7 +405,7 @@ namespace LyShineExamples
         if (!m_spritePathname.GetAssetPath().empty())
         {
             // Load the new texture.
-            newSprite = gEnv->pLyShine->LoadSprite(m_spritePathname.GetAssetPath().c_str());
+            newSprite = AZ::Interface<ILyShine>::Get()->LoadSprite(m_spritePathname.GetAssetPath().c_str());
         }
 
         SAFE_RELEASE(m_sprite);

@@ -5,78 +5,78 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
+#include <AtomToolsFramework/Document/AtomToolsDocumentObjectInfo.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/std/any.h>
 
-#include <AtomToolsFramework/DynamicProperty/DynamicProperty.h>
-#include <AtomToolsFramework/DynamicProperty/DynamicPropertyGroup.h>
-
 namespace AtomToolsFramework
 {
-    class AtomToolsDocumentNotifications
-        : public AZ::EBusTraits
+    class AtomToolsDocumentNotifications : public AZ::EBusTraits
     {
     public:
-        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
+        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
+        typedef AZ::Crc32 BusIdType;
 
         //! Signal that a document was created
         //! @param documentId unique id of document for which the notification is sent
-        virtual void OnDocumentCreated([[maybe_unused]] const AZ::Uuid& documentId) {}
+        virtual void OnDocumentCreated([[maybe_unused]] const AZ::Uuid& documentId){};
 
         //! Signal that a document was destroyed
         //! @param documentId unique id of document for which the notification is sent
-        virtual void OnDocumentDestroyed([[maybe_unused]] const AZ::Uuid& documentId) {}
+        virtual void OnDocumentDestroyed([[maybe_unused]] const AZ::Uuid& documentId){};
 
         //! Signal that a document was opened
         //! @param documentId unique id of document for which the notification is sent
-        virtual void OnDocumentOpened([[maybe_unused]] const AZ::Uuid& documentId) {}
+        virtual void OnDocumentOpened([[maybe_unused]] const AZ::Uuid& documentId){};
 
         //! Signal that a document was closed
         //! @param documentId unique id of document for which the notification is sent
-        virtual void OnDocumentClosed([[maybe_unused]] const AZ::Uuid& documentId) {}
+        virtual void OnDocumentClosed([[maybe_unused]] const AZ::Uuid& documentId){};
 
         //! Signal that a document was saved
         //! @param documentId unique id of document for which the notification is sent
-        virtual void OnDocumentSaved([[maybe_unused]] const AZ::Uuid& documentId) {}
-
-        //! Signal that a document was selected
-        //! @param documentId unique id of document for which the notification is sent
-        virtual void OnDocumentSelected([[maybe_unused]] const AZ::Uuid& documentId) {}
+        virtual void OnDocumentSaved([[maybe_unused]] const AZ::Uuid& documentId){};
 
         //! Signal that a document was modified
         //! @param documentId unique id of document for which the notification is sent
-        virtual void OnDocumentModified([[maybe_unused]] const AZ::Uuid& documentId) {}
+        virtual void OnDocumentModified([[maybe_unused]] const AZ::Uuid& documentId){};
 
         //! Signal that a document dependency was modified
         //! @param documentId unique id of document for which the notification is sent
-        virtual void OnDocumentDependencyModified([[maybe_unused]] const AZ::Uuid& documentId) {}
+        virtual void OnDocumentDependencyModified([[maybe_unused]] const AZ::Uuid& documentId){};
 
         //! Signal that a document was modified externally
         //! @param documentId unique id of document for which the notification is sent
-        virtual void OnDocumentExternallyModified([[maybe_unused]] const AZ::Uuid& documentId) {}
+        virtual void OnDocumentExternallyModified([[maybe_unused]] const AZ::Uuid& documentId){};
 
-        //! Signal that a document undo state was updated
+        //! Signal that the current location in the undo redo history has changed and the UI needs to be updated
         //! @param documentId unique id of document for which the notification is sent
-        virtual void OnDocumentUndoStateChanged([[maybe_unused]] const AZ::Uuid& documentId) {}
+        virtual void OnDocumentUndoStateChanged([[maybe_unused]] const AZ::Uuid& documentId){};
 
-        //! Signal that a property changed
+        //! Signal that the group has been changed.
         //! @param documentId unique id of document for which the notification is sent
-        //! @param property object containing the property value and configuration that was modified
-        virtual void OnDocumentPropertyValueModified([[maybe_unused]] const AZ::Uuid& documentId, [[maybe_unused]] const AtomToolsFramework::DynamicProperty& property) {}
+        //! @param objectInfo description of the reflected object that's been modified
+        //! @param rebuilt signifies if it was a structural change that might require ui to be rebuilt
+        virtual void OnDocumentObjectInfoChanged(
+            [[maybe_unused]] const AZ::Uuid& documentId,
+            [[maybe_unused]] const DocumentObjectInfo& objectInfo,
+            [[maybe_unused]] bool rebuilt){};
 
-        //! Signal that the property configuration has been changed.
+        //! Signal that reflected objects and pointers contained in the document have been invalidated so that any affected UI can be rebuilt
         //! @param documentId unique id of document for which the notification is sent
-        //! @param property object containing the property value and configuration that was modified
-        virtual void OnDocumentPropertyConfigModified([[maybe_unused]] const AZ::Uuid& documentId, [[maybe_unused]] const AtomToolsFramework::DynamicProperty& property) {}
-        
-        //! Signal that the property group visibility has been changed.
+        virtual void OnDocumentObjectInfoInvalidated([[maybe_unused]] const AZ::Uuid& documentId){};
+
+        //! Signal the document content has been cleared
         //! @param documentId unique id of document for which the notification is sent
-        //! @param groupId id of the group that changed
-        //! @param visible whether the property group is visible
-        virtual void OnDocumentPropertyGroupVisibilityChanged([[maybe_unused]] const AZ::Uuid& documentId, [[maybe_unused]] const AZ::Name& groupId, [[maybe_unused]] bool visible) {}
+        virtual void OnDocumentCleared([[maybe_unused]] const AZ::Uuid& documentId){};
+
+        //! Signal the document has experienced an error
+        //! @param documentId unique id of document for which the notification is sent
+        virtual void OnDocumentError([[maybe_unused]] const AZ::Uuid& documentId){};
     };
 
     using AtomToolsDocumentNotificationBus = AZ::EBus<AtomToolsDocumentNotifications>;

@@ -127,12 +127,14 @@ namespace AzToolsFramework
         {
             AzFramework::EntityContextEventBus::Handler::BusConnect(editorEntityContextId);
         }
+        AzToolsFramework::Prefab::PrefabPublicNotificationBus::Handler::BusConnect();
 
         Reset();
     }
 
     EditorEntityModel::~EditorEntityModel()
     {
+        AzToolsFramework::Prefab::PrefabPublicNotificationBus::Handler::BusDisconnect();
         AzFramework::EntityContextEventBus::Handler::BusDisconnect();
         SliceEditorEntityOwnershipServiceNotificationBus::Handler::BusDisconnect();
         EditorEntityContextNotificationBus::Handler::BusDisconnect();
@@ -360,6 +362,7 @@ namespace AzToolsFramework
             if (parentInfo.HasChild(childId))
             {
                 ReparentChild(childId, entityId, AZ::EntityId());
+                AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(&ToolsApplicationRequests::RemoveDirtyEntity, childId);
             }
         }
 
@@ -387,6 +390,7 @@ namespace AzToolsFramework
         for (auto childId : children)
         {
             ReparentChild(childId, AZ::EntityId(), entityId);
+            AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(&ToolsApplicationRequests::RemoveDirtyEntity, childId);
             m_entityOrphanTable[entityId].insert(childId);
         }
 
@@ -423,18 +427,7 @@ namespace AzToolsFramework
 
         childInfo.SetParentId(parentId);
 
-        bool isDuringUndoRedo = false;
-        AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(isDuringUndoRedo, &AzToolsFramework::ToolsApplicationRequestBus::Events::IsDuringUndoRedo);
-        if (isDuringUndoRedo)
-        {
-            // Undoing the parent entity's transform will first delete the parent entity and then re-create it with its
-            // old transform. Keep child entities' local transform so they stay put in their parent's space after undo actions.
-            AZ::TransformBus::Event(childId, &AZ::TransformBus::Events::SetParentRelative, parentId);
-        }
-        else
-        {
-            AZ::TransformBus::Event(childId, &AZ::TransformBus::Events::SetParent, parentId);
-        }
+        AZ::TransformBus::Event(childId, &AZ::TransformBus::Events::SetParentRelative, parentId);
 
         //creating/pushing slices doesn't always destroy/de-register the original entity before adding the replacement
         if (!parentInfo.HasChild(childId))
@@ -515,7 +508,12 @@ namespace AzToolsFramework
                 EditorEntityInfoNotificationBus::Broadcast(&EditorEntityInfoNotificationBus::Events::OnEntityInfoUpdatedRemoveChildEnd, parentId, childId);
             }
         }
-        AzToolsFramework::RemoveEntityIdFromSortInfo(parentId, childId);
+
+        // During prefab propagation, we don't need to update the sort order. It'll be taken care by prefab instance deserialization.
+        if (!m_isPrefabPropagationInProgress)
+        {
+            AzToolsFramework::RemoveEntityIdFromSortInfo(parentId, childId);
+        }
 
         childInfo.SetParentId(AZ::EntityId());
         UpdateSliceInfoHierarchy(childInfo.GetId());
@@ -643,14 +641,9 @@ namespace AzToolsFramework
         }
     }
 
-    void EditorEntityModel::OnEntitiesAboutToBeCloned()
+    void EditorEntityModel::SetForceAddEntitiesToBackFlag(bool forceAddToBack)
     {
-        m_forceAddToBack = true;
-    }
-
-    void EditorEntityModel::OnEntitiesCloned()
-    {
-        m_forceAddToBack = false;
+        m_forceAddToBack = forceAddToBack;
     }
 
     void EditorEntityModel::ChildEntityOrderArrayUpdated()
@@ -850,6 +843,16 @@ namespace AzToolsFramework
         }
 
         AZ::TickBus::Handler::BusDisconnect();
+    }
+
+    void EditorEntityModel::OnPrefabInstancePropagationBegin()
+    {
+        m_isPrefabPropagationInProgress = true;
+    }
+
+    void EditorEntityModel::OnPrefabInstancePropagationEnd()
+    {
+        m_isPrefabPropagationInProgress = false;
     }
 
     void EditorEntityModel::UpdateSliceInfoHierarchy(AZ::EntityId entityId)

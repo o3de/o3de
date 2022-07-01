@@ -23,8 +23,11 @@ namespace AZ
         class ParentPass
             : public Pass
         {
-            AZ_RPI_PASS(ParentPass);
-
+            friend class PassFactory;
+            friend class PassLibrary;
+            friend class PassSystem;
+            friend class RenderPipeline;
+            friend class UnitTest::PassTests;
             friend class Pass;
 
         public:
@@ -56,8 +59,16 @@ namespace AZ
 
             // --- Children related functions ---
 
-            //! Adds pass to list of children
-            void AddChild(const Ptr<Pass>& child);
+            //! Adds pass to list of children. NOTE: skipStateCheckWhenRunningTests is only used to support manual adding of passing in unit tests, do not use this variable otherwise
+            void AddChild(const Ptr<Pass>& child, bool skipStateCheckWhenRunningTests = false);
+
+            //! Inserts a pass at specified position
+            //! If the position is invalid, the child pass won't be added, and the function returns false
+            bool InsertChild(const Ptr<Pass>& child, ChildPassIndex position);
+            bool InsertChild(const Ptr<Pass>& child, uint32_t index);
+
+            //! Called when a pass is added as a child pass to this parent
+            void OnChildAdded(const Ptr<Pass>& child);
 
             //! Searches for a child pass with the given name. Returns the child's index if found, null index otherwise
             ChildPassIndex FindChildPassIndex(const Name& passName) const;
@@ -69,7 +80,7 @@ namespace AZ
             Ptr<PassType> FindChildPass() const;
 
             //! Gets the list of children. Useful for validating hierarchies
-            AZStd::array_view<Ptr<Pass>> GetChildren() const;
+            AZStd::span<const Ptr<Pass>> GetChildren() const;
 
             //! Searches the tree for the first pass that uses the given DrawListTag.
             const Pass* FindPass(RHI::DrawListTag drawListTag) const;
@@ -115,7 +126,7 @@ namespace AZ
             void RemoveChild(Ptr<Pass> pass);
 
             // Orphans all children by clearing m_children.
-            void RemoveChildren();
+            void RemoveChildren(bool calledFromDestructor = false);
 
         private:
             // RPI::Pass overrides...

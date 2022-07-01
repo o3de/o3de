@@ -1,22 +1,14 @@
 {
-    "description": "",
     "materialType": "Materials\\Types\\StandardPBR.materialtype",
-    "parentMaterial": "",
-    "propertyLayoutVersion": 3,
-    "properties": {
-        "baseColor": {
-            "color": [
-                0.3330281674861908,
-                0.3330281674861908,
-                0.3330281674861908,
-                1.0
-            ]
-        },
-        "roughness": {
-            "factor": 0.0
-        },
-        "specularF0": {
-            "textureMap": "TestData/Textures/checker8x8_gray_512.png"
-        }
+    "materialTypeVersion": 5,
+    "propertyValues": {
+        "baseColor.color": [
+            0.3330281674861908,
+            0.3330281674861908,
+            0.3330281674861908,
+            1.0
+        ],
+        "roughness.factor": 0.0,
+        "specularF0.textureMap": "TestData/Textures/checker8x8_gray_512.png"
     }
 }

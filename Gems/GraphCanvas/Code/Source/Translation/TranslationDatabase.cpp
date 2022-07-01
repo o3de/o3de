@@ -6,7 +6,7 @@
  *
  */
 
-#include "GraphCanvas.h"
+#include <GraphCanvas.h>
 
 namespace GraphCanvas
 {

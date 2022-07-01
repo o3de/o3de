@@ -9,11 +9,12 @@
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/Memory/AllocatorManager.h>
 
-#define RECORDING_ENABLED 0
+// Only used to create recordings of memory operations to use for memory benchmarks
+#define O3DE_RECORDING_ENABLED 0
 
-#if RECORDING_ENABLED
+#if O3DE_RECORDING_ENABLED
 
-#include <AzCore/std/containers/unordered_map.h>
+#include <AzCore/std/containers/map.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/std/parallel/mutex.h>
 #include <AzCore/std/parallel/scoped_lock.h>
@@ -62,23 +63,24 @@ namespace
 
     static constexpr size_t s_maxNumberOfAllocationsToRecord = 16384;
     static size_t s_numberOfAllocationsRecorded = 0;
-    static constexpr size_t s_allocationOperationCount = 5 * 1024;
+    static constexpr size_t s_allocationOperationCount = 8 * 1024;
     static AZStd::array<AllocatorOperation, s_allocationOperationCount> s_operations = {};
     static uint64_t s_operationCounter = 0;
 
     static unsigned int s_nextRecordId = 1;
-    using AllocatorOperationByAddress = AZStd::unordered_map<void*, AllocatorOperation, AZStd::less<void*>, DebugAllocator>;
+    using AllocatorOperationByAddress = AZStd::map<void*, AllocatorOperation, AZStd::less<void*>, DebugAllocator>;
     static AllocatorOperationByAddress s_allocatorOperationByAddress;
     using AvailableRecordIds = AZStd::vector<unsigned int, DebugAllocator>;
     AvailableRecordIds s_availableRecordIds;
 
     void RecordAllocatorOperation(AllocatorOperation::OperationType type, void* ptr, size_t size = 0, size_t alignment = 0)
     {
-        AZStd::scoped_lock<AZStd::mutex> lock(s_operationsMutex);
+        AZStd::scoped_lock lock(s_operationsMutex);
         if (s_operationCounter == s_allocationOperationCount)
         {
             AZ::IO::SystemFile file;
             int mode = AZ::IO::SystemFile::OpenMode::SF_OPEN_APPEND | AZ::IO::SystemFile::OpenMode::SF_OPEN_WRITE_ONLY;
+            // memoryrecordings.bin is being output to the current working directory
             if (!file.Exists("memoryrecordings.bin"))
             {
                 mode |= AZ::IO::SystemFile::OpenMode::SF_OPEN_CREATE;
@@ -158,8 +160,8 @@ namespace
 
 namespace AZ
 {
-    AllocatorBase::AllocatorBase(IAllocatorAllocate* allocationSource, const char* name, const char* desc)
-        : IAllocator(allocationSource)
+    AllocatorBase::AllocatorBase(IAllocatorSchema* allocationSchema, const char* name, const char* desc)
+        : IAllocator(allocationSchema)
         , m_name(name)
         , m_desc(desc)
     {
@@ -184,11 +186,6 @@ namespace AZ
         return m_desc;
     }
 
-    IAllocatorAllocate* AllocatorBase::GetSchema()
-    {
-        return nullptr;
-    }
-
     Debug::AllocationRecords* AllocatorBase::GetRecords()
     {
         return m_records;
@@ -205,23 +202,11 @@ namespace AZ
         return m_isReady;
     }
 
-    bool AllocatorBase::CanBeOverridden() const
-    {
-        return m_canBeOverridden;
-    }
-
     void AllocatorBase::PostCreate()
     {
         if (m_registrationEnabled)
         {
-            if (AZ::Environment::IsReady())
-            {
-                AllocatorManager::Instance().RegisterAllocator(this);
-            }
-            else
-            {
-                AllocatorManager::PreRegisterAllocator(this);
-            }
+            AllocatorManager::Instance().RegisterAllocator(this);
         }
 
         const auto debugConfig = GetDebugConfig();
@@ -272,11 +257,6 @@ namespace AZ
         return m_isProfilingActive;
     }
 
-    void AllocatorBase::DisableOverriding()
-    {
-        m_canBeOverridden = false;
-    }
-
     void AllocatorBase::DisableRegistration()
     {
         m_registrationEnabled = false;
@@ -285,10 +265,6 @@ namespace AZ
     void AllocatorBase::ProfileAllocation(
         void* ptr, size_t byteSize, size_t alignment, const char* name, const char* fileName, int lineNum, int suppressStackRecord)
     {
-#if defined(AZ_HAS_VARIADIC_TEMPLATES) && defined(AZ_DEBUG_BUILD)
-        ++suppressStackRecord; // one more for the fact the ebus is a function
-#endif // AZ_HAS_VARIADIC_TEMPLATES
-
         if (m_isProfilingActive)
         {
             auto records = GetRecords();
@@ -298,7 +274,7 @@ namespace AZ
             }
         }
 
-#if RECORDING_ENABLED
+#if O3DE_RECORDING_ENABLED
         RecordAllocatorOperation(AllocatorOperation::ALLOCATE, ptr, byteSize, alignment);
 #endif
     }
@@ -313,7 +289,7 @@ namespace AZ
                 records->UnregisterAllocation(ptr, byteSize, alignment, info);
             }
         }
-#if RECORDING_ENABLED
+#if O3DE_RECORDING_ENABLED
         RecordAllocatorOperation(AllocatorOperation::DEALLOCATE, ptr, byteSize, alignment);
 #endif
     }
@@ -330,7 +306,7 @@ namespace AZ
             ProfileDeallocation(ptr, 0, 0, &info);
             ProfileAllocation(newPtr, newSize, newAlignment, info.m_name, info.m_fileName, info.m_lineNum, 0);
         }
-#if RECORDING_ENABLED
+#if O3DE_RECORDING_ENABLED
         RecordAllocatorOperation(AllocatorOperation::DEALLOCATE, ptr);
         RecordAllocatorOperation(AllocatorOperation::ALLOCATE, newPtr, newSize, newAlignment);
 #endif
@@ -351,7 +327,7 @@ namespace AZ
                 records->ResizeAllocation(ptr, newSize);
             }
         }
-#if RECORDING_ENABLED
+#if O3DE_RECORDING_ENABLED
         RecordAllocatorOperation(AllocatorOperation::ALLOCATE, ptr, newSize);
 #endif
     }

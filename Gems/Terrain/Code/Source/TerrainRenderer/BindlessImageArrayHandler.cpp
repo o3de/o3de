@@ -94,7 +94,7 @@ namespace AZ::Render
             return false;
         }
 
-        AZStd::array_view<const AZ::RHI::ImageView*> imageViews(m_bindlessImageViews.data(), m_bindlessImageViews.size());
+        AZStd::span<const AZ::RHI::ImageView* const> imageViews(m_bindlessImageViews.data(), m_bindlessImageViews.size());
         return srg->SetImageViewUnboundedArray(m_texturesIndex, imageViews);
     }
 

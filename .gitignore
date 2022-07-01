@@ -2,7 +2,7 @@
 .vs/
 .vscode/
 __pycache__
-[Bb]uild/
+/[Bb]uild
 [Oo]ut/**
 CMakeUserPresets.json
 [Cc]ache/

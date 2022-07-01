@@ -17,7 +17,6 @@
 #include <EMotionFX/Source/ActorBus.h>
 #include <EMotionFX/Source/Motion.h>
 #include <EMotionFX/Source/MeshDeformerStack.h>
-#include <EMotionFX/Source/Material.h>
 #include <EMotionFX/Source/Mesh.h>
 #include <EMotionFX/Source/SubMesh.h>
 #include <EMotionFX/Source/MorphMeshDeformer.h>
@@ -93,9 +92,7 @@ namespace EMotionFX
         m_optimizeSkeleton          = false;
 
         // make sure we have at least allocated the first LOD of materials and facial setups
-        m_materials.reserve(4);  // reserve space for 4 lods
         m_morphSetups.reserve(4); //
-        m_materials.emplace_back();
         m_morphSetups.emplace_back(nullptr);
 
         GetEventManager().OnCreateActor(this);
@@ -109,7 +106,6 @@ namespace EMotionFX
 
         m_nodeMirrorInfos.clear();
 
-        RemoveAllMaterials();
         RemoveAllMorphSetups();
         RemoveAllNodeGroups();
 
@@ -142,18 +138,6 @@ namespace EMotionFX
         for (const NodeGroup* nodeGroup : m_nodeGroups)
         {
             result->AddNodeGroup(aznew NodeGroup(*nodeGroup));
-        }
-
-        // clone the materials
-        result->m_materials.resize(m_materials.size());
-        for (size_t i = 0; i < m_materials.size(); ++i)
-        {
-            // get the number of materials in the current LOD
-            result->m_materials[i].reserve(m_materials[i].size());
-            for (const Material* material : m_materials[i])
-            {
-                result->AddMaterial(i, material->Clone());
-            }
         }
 
         // clone the skeleton
@@ -253,24 +237,6 @@ namespace EMotionFX
         });
     }
 
-
-    // removes all materials from the actor
-    void Actor::RemoveAllMaterials()
-    {
-        // for all LODs
-        for (AZStd::vector<Material*>& materials : m_materials)
-        {
-            // delete all materials
-            for (Material* material : materials)
-            {
-                material->Destroy();
-            }
-        }
-
-        m_materials.clear();
-    }
-
-
     // add a LOD level and copy the data from the last LOD level to the new one
     void Actor::AddLODLevel(bool copyFromLastLODLevel)
     {
@@ -301,9 +267,6 @@ namespace EMotionFX
             }
         }
 
-        // create a new material array for the new LOD level
-        m_materials.resize(lodLevels.size());
-
         // create an empty morph setup for the new LOD level
         m_morphSetups.emplace_back(nullptr);
 
@@ -332,9 +295,6 @@ namespace EMotionFX
             lodInfo.m_mesh           = nullptr;
             lodInfo.m_stack          = nullptr;
         }
-
-        // create a new material array for the new LOD level
-        m_materials.emplace(AZStd::next(begin(m_materials), insertAt));
 
         // create an empty morph setup for the new LOD level
         m_morphSetups.emplace(AZStd::next(begin(m_morphSetups), insertAt), nullptr);
@@ -392,19 +352,6 @@ namespace EMotionFX
             }
         }
 
-        // copy the materials
-        const size_t numMaterials = copyActor->GetNumMaterials(copyLODLevel);
-        for (Material* i : m_materials[replaceLODLevel])
-        {
-            i->Destroy();
-        }
-        m_materials[replaceLODLevel].clear();
-        m_materials[replaceLODLevel].reserve(numMaterials);
-        for (size_t i = 0; i < numMaterials; ++i)
-        {
-            AddMaterial(replaceLODLevel, copyActor->GetMaterial(copyLODLevel, i)->Clone());
-        }
-
         // copy the morph setup
         if (m_morphSetups[replaceLODLevel])
         {
@@ -426,13 +373,21 @@ namespace EMotionFX
     {
         m_meshLodData.m_lodLevels.resize(numLODs);
 
-        // reserve space for the materials
-        m_materials.resize(numLODs);
-
         if (adjustMorphSetup)
         {
             m_morphSetups.resize(numLODs);
             AZStd::fill(begin(m_morphSetups), AZStd::next(begin(m_morphSetups), numLODs), nullptr);
+        }
+        else
+        {
+            if (m_morphSetups.size() < numLODs)
+            {
+                AZ::u32 num = m_morphSetups.empty() ? 0 : (AZ::u32)m_morphSetups.size();
+                for (AZ::u32 i = num; i < numLODs; ++i)
+                {
+                    m_morphSetups.push_back(nullptr);
+                }
+            }
         }
     }
 
@@ -784,62 +739,6 @@ namespace EMotionFX
             }
         }
     }
-
-
-
-    // check if the material is used by the given mesh
-    bool Actor::CheckIfIsMaterialUsed(Mesh* mesh, size_t materialIndex) const
-    {
-        // check if the mesh is valid
-        if (mesh == nullptr)
-        {
-            return false;
-        }
-
-        // iterate through the submeshes
-        const size_t numSubMeshes = mesh->GetNumSubMeshes();
-        for (size_t s = 0; s < numSubMeshes; ++s)
-        {
-            // if the submesh material index is the same as the material index we search for, then it is being used
-            if (mesh->GetSubMesh(s)->GetMaterial() == materialIndex)
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-
-    // check if the material is used by a mesh of this actor
-    bool Actor::CheckIfIsMaterialUsed(size_t lodLevel, size_t index) const
-    {
-        // iterate through all nodes of the actor and check its meshes
-        const size_t numNodes = m_skeleton->GetNumNodes();
-        for (size_t i = 0; i < numNodes; ++i)
-        {
-            // if the mesh is in LOD range check if it uses the material
-            if (CheckIfIsMaterialUsed(GetMesh(lodLevel, i), index))
-            {
-                return true;
-            }
-        }
-
-        // return false, this means that no mesh uses the given material
-        return false;
-    }
-
-
-    // remove the given material and reassign all material numbers of the submeshes
-    void Actor::RemoveMaterial(size_t lodLevel, size_t index)
-    {
-        MCORE_ASSERT(lodLevel < m_materials.size());
-
-        // first of all remove the given material
-        m_materials[lodLevel][index]->Destroy();
-        m_materials[lodLevel].erase(AZStd::next(begin(m_materials[lodLevel]), index));
-    }
-
 
     // try to find the motion extraction node automatically
     Node* Actor::FindBestMotionExtractionNode() const
@@ -1432,6 +1331,13 @@ namespace EMotionFX
             {
                 m_skinToSkeletonIndexMap = ConstructSkinToSkeletonIndexMap(m_skinMetaAsset);
             }
+            else
+            {
+                AZ_Error(
+                    "Actor", false,
+                    "Actor finalization: Skin meta asset was expected to be ready but is not ready yet.  Cannot complete finalizing actor %s",
+                    this->m_name.c_str());
+            }
             ConstructMeshes();
 
             if (m_morphTargetMetaAsset.IsReady())
@@ -1866,46 +1772,6 @@ namespace EMotionFX
         }
     }
 
-    void Actor::ReserveMaterials(size_t lodLevel, size_t numMaterials)
-    {
-        m_materials[lodLevel].reserve(numMaterials);
-    }
-
-    // get a material
-    Material* Actor::GetMaterial(size_t lodLevel, size_t nr) const
-    {
-        MCORE_ASSERT(lodLevel < m_materials.size());
-        MCORE_ASSERT(nr < m_materials[lodLevel].size());
-        return m_materials[lodLevel][nr];
-    }
-
-
-    // get a material by name
-    size_t Actor::FindMaterialIndexByName(size_t lodLevel, const char* name) const
-    {
-        // search through all materials
-        const auto foundMaterial = AZStd::find_if(m_materials[lodLevel].begin(), m_materials[lodLevel].end(), [name](const Material* material)
-        {
-            return material->GetNameString() == name;
-        });
-        return foundMaterial != m_materials[lodLevel].end() ? AZStd::distance(m_materials[lodLevel].begin(), foundMaterial) : InvalidIndex;
-    }
-
-    // set a material
-    void Actor::SetMaterial(size_t lodLevel, size_t nr, Material* mat)
-    {
-        m_materials[lodLevel][nr] = mat;
-    }
-
-    void Actor::AddMaterial(size_t lodLevel, Material* mat)
-    {
-        m_materials[lodLevel].emplace_back(mat);
-    }
-
-    size_t Actor::GetNumMaterials(size_t lodLevel) const
-    {
-        return m_materials[lodLevel].size();
-    }
 
     size_t Actor::GetNumLODLevels() const
     {
@@ -2441,13 +2307,13 @@ namespace EMotionFX
         // 1) Build a set of nodes that we want to keep in the actor skeleton heirarchy.
         // 2) Mark all the node in the above list and all their predecessors.
         // 3) In actor skeleton, remove every node that hasn't been marked.
-        // 4) Meanwhile, build a map that represent the child-parent relationship. 
+        // 4) Meanwhile, build a map that represent the child-parent relationship.
         // 5) After the node index changed, we use the map in 4) to restore the child-parent relationship.
         size_t numNodes = m_skeleton->GetNumNodes();
         AZStd::vector<bool> flags;
         AZStd::unordered_map<AZStd::string, AZStd::string> childParentMap;
         flags.resize(numNodes);
-        
+
         AZStd::unordered_set<Node*> nodesToKeep;
         // Search the hit detection config to find and keep all the hit detection nodes.
         for (const Physics::CharacterColliderNodeConfiguration& nodeConfig : m_physicsSetup->GetHitDetectionConfig().m_nodes)
@@ -2540,7 +2406,7 @@ namespace EMotionFX
 
     Node* Actor::FindMeshJoint(const AZ::Data::Asset<AZ::RPI::ModelLodAsset>& lodModelAsset) const
     {
-        const AZStd::array_view<AZ::RPI::ModelLodAsset::Mesh>& sourceMeshes = lodModelAsset->GetMeshes();
+        const AZStd::span<const AZ::RPI::ModelLodAsset::Mesh>& sourceMeshes = lodModelAsset->GetMeshes();
 
         // Use the first joint that we can find for any of the Atom sub meshes and use it as owner of our mesh.
         for (const AZ::RPI::ModelLodAsset::Mesh& sourceMesh : sourceMeshes)
@@ -2563,17 +2429,12 @@ namespace EMotionFX
         AZ_Assert(m_meshAsset.IsReady(), "Mesh asset should be fully loaded and ready.");
 
         AZStd::vector<LODLevel>& lodLevels = m_meshLodData.m_lodLevels;
-        const AZStd::array_view<AZ::Data::Asset<AZ::RPI::ModelLodAsset>>& lodAssets = m_meshAsset->GetLodAssets();
+        const AZStd::span<const AZ::Data::Asset<AZ::RPI::ModelLodAsset>>& lodAssets = m_meshAsset->GetLodAssets();
         const size_t numLODLevels = lodAssets.size();
 
         lodLevels.clear();
         SetNumLODLevels(numLODLevels, /*adjustMorphSetup=*/false);
         const size_t numNodes = m_skeleton->GetNumNodes();
-
-        // Remove all the materials and add them back based on the meshAsset. Eventually we will remove all the material from Actor and
-        // GLActor.
-        RemoveAllMaterials();
-        m_materials.resize(numLODLevels);
 
         for (size_t lodLevel = 0; lodLevel < numLODLevels; ++lodLevel)
         {
@@ -2581,7 +2442,7 @@ namespace EMotionFX
 
             lodLevels[lodLevel].m_nodeInfos.resize(numNodes);
 
-            // Create a single mesh for the actor.
+            // Create a single mesh for the actor per LOD.
             Mesh* mesh = Mesh::CreateFromModelLod(lodAsset, m_skinToSkeletonIndexMap);
 
             // Find an owning joint for the mesh.
@@ -2612,10 +2473,8 @@ namespace EMotionFX
                     continue;
                 }
 
-                EMotionFX::SkinningInfoVertexAttributeLayer* skinLayer =
-                    static_cast<EMotionFX::SkinningInfoVertexAttributeLayer*>(vertexAttributeLayer);
-                const AZ::u32 numOrgVerts = skinLayer->GetNumAttributes();
-                const size_t numLocalJoints = skinLayer->CalcLocalJointIndices(numOrgVerts).size();
+                const uint16 numLocalJoints = mesh->GetNumUniqueJoints();
+                const uint16 highestJointIndex = mesh->GetHighestJointIndex();
 
                 // The information about if we want to use dual quat skinning is baked into the mesh chunk and we don't have access to that
                 // anymore. Default to dual quat skinning.
@@ -2624,20 +2483,18 @@ namespace EMotionFX
                 {
                     DualQuatSkinDeformer* skinDeformer = DualQuatSkinDeformer::Create(mesh);
                     jointInfo.m_stack->AddDeformer(skinDeformer);
-                    skinDeformer->ReserveLocalBones(numLocalJoints);
-                    skinDeformer->Reinitialize(this, meshJoint, static_cast<uint32>(lodLevel));
+                    skinDeformer->ReserveLocalBones(aznumeric_caster(numLocalJoints));
+                    skinDeformer->Reinitialize(this, meshJoint, static_cast<uint32>(lodLevel), highestJointIndex);
                 }
                 else
                 {
                     SoftSkinDeformer* skinDeformer = GetSoftSkinManager().CreateDeformer(mesh);
                     jointInfo.m_stack->AddDeformer(skinDeformer);
-                    skinDeformer->ReserveLocalBones(numLocalJoints); // pre-alloc data to prevent reallocs
-                    skinDeformer->Reinitialize(this, meshJoint, static_cast<uint32>(lodLevel));
+                    skinDeformer->ReserveLocalBones(aznumeric_caster(numLocalJoints)); // pre-alloc data to prevent reallocs
+                    skinDeformer->Reinitialize(this, meshJoint, static_cast<uint32>(lodLevel), highestJointIndex);
                 }
             }
 
-            // Add material for this mesh
-            AddMaterial(static_cast<uint32>(lodLevel), Material::Create(GetName()));
         }
     }
 
@@ -2689,7 +2546,7 @@ namespace EMotionFX
         AZ_Assert(m_meshAsset.IsReady() && m_morphTargetMetaAsset.IsReady(),
             "Mesh as well as morph target meta asset asset should be fully loaded and ready.");
         AZStd::vector<LODLevel>& lodLevels = m_meshLodData.m_lodLevels;
-        const AZStd::array_view<AZ::Data::Asset<AZ::RPI::ModelLodAsset>>& lodAssets = m_meshAsset->GetLodAssets();
+        const AZStd::span<const AZ::Data::Asset<AZ::RPI::ModelLodAsset>>& lodAssets = m_meshAsset->GetLodAssets();
         const size_t numLODLevels = lodAssets.size();
 
         AZ_Assert(m_morphSetups.size() == numLODLevels, "There needs to be a morph setup for every single LOD level.");
@@ -2697,7 +2554,7 @@ namespace EMotionFX
         for (size_t lodLevel = 0; lodLevel < numLODLevels; ++lodLevel)
         {
             const AZ::Data::Asset<AZ::RPI::ModelLodAsset>& lodAsset = lodAssets[lodLevel];
-            const AZStd::array_view<AZ::RPI::ModelLodAsset::Mesh>& sourceMeshes = lodAsset->GetMeshes();
+            const AZStd::span<const AZ::RPI::ModelLodAsset::Mesh>& sourceMeshes = lodAsset->GetMeshes();
 
             MorphSetup* morphSetup = m_morphSetups[static_cast<uint32>(lodLevel)];
             if (!morphSetup)
@@ -2733,7 +2590,7 @@ namespace EMotionFX
 
             // The lod has shared buffers that combine the data from each submesh. In case any of the submeshes has a
             // morph target buffer view we can access the entire morph target buffer via the buffer asset.
-            AZStd::array_view<uint8_t> morphTargetDeltaView;
+            AZStd::span<const uint8_t> morphTargetDeltaView;
             for (const AZ::RPI::ModelLodAsset::Mesh& sourceMesh : sourceMeshes)
             {
                 if (const auto* bufferAssetView = sourceMesh.GetSemanticBufferAssetView(AZ::Name("MORPHTARGET_VERTEXDELTAS")))

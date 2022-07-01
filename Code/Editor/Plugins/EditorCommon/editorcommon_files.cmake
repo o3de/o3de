@@ -9,7 +9,6 @@
 set(FILES
     EditorCommon.h
     EditorCommon.cpp
-    EditorCommon.rc
     EditorCommonAPI.h
     ActionOutput.h
     ActionOutput.cpp
@@ -17,16 +16,4 @@ set(FILES
     DockTitleBarWidget.h
     SaveUtilities/AsyncSaveRunner.h
     SaveUtilities/AsyncSaveRunner.cpp
-    AxisHelper.cpp
-    DisplayContext.cpp
-    DeepFilterProxyModel.cpp
-    DeepFilterProxyModel.h
-    Resource.h
-    DrawingPrimitives/Ruler.cpp
-    DrawingPrimitives/Ruler.h
-    DrawingPrimitives/TimeSlider.cpp
-    DrawingPrimitives/TimeSlider.h
-    WinWidget/WinWidget.h
-    WinWidget/WinWidgetManager.h
-    WinWidget/WinWidgetManager.cpp
 )

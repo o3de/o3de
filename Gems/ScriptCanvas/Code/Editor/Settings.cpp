@@ -115,7 +115,7 @@ namespace ScriptCanvasEditor
                         assetSaveData.reserve(assetIds.size());
                         for (const AZ::Data::AssetId& assetId : assetIds)
                         {
-                            assetSaveData.emplace_back(SourceHandle( nullptr, assetId.m_guid, "" ));
+                            assetSaveData.emplace_back(SourceHandle( nullptr, assetId.m_guid ));
                         }
                     }
                 }
@@ -530,6 +530,8 @@ namespace ScriptCanvasEditor
             , m_showValidationWarnings(true)
             , m_showValidationErrors(true)
             , m_alignmentTimeMS(250)
+            , m_saveRawTranslationOuputToFile(ScriptCanvas::Grammar::g_saveRawTranslationOuputToFile)
+            , m_printAbstractCodeModel(ScriptCanvas::Grammar::g_printAbstractCodeModel)
         {
             GraphCanvas::AssetEditorPresetNotificationBus::Handler::BusConnect(ScriptCanvasEditor::AssetEditorId);
         }

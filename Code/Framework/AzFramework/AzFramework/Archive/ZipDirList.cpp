@@ -39,7 +39,7 @@ namespace AZ::IO::ZipDir
     {
     }
 
-    auto FileDataRecord::New(const FileRecord& rThat, AZ::IAllocatorAllocate* allocator) -> AZStd::intrusive_ptr<FileDataRecord>
+    auto FileDataRecord::New(const FileRecord& rThat, AZ::IAllocator* allocator) -> AZStd::intrusive_ptr<FileDataRecord>
     {
         auto fileDataRecordAlloc = reinterpret_cast<FileDataRecord*>(allocator->Allocate(
             sizeof(FileDataRecord) + rThat.pFileEntryBase->desc.lSizeCompressed,

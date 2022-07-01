@@ -8,11 +8,15 @@
 #pragma once
 
 #include <AzCore/EBus/EBus.h>
+#include <AzCore/std/smart_ptr/unique_ptr.h>
 
 #include <Blast/BlastDebug.h>
-#include <Blast/BlastMaterial.h>
 
 struct NvBlastExtRadialDamageDesc;
+struct NvBlastExtCapsuleRadialDamageDesc;
+struct NvBlastExtShearDamageDesc;
+struct NvBlastExtTriangleIntersectionDamageDesc;
+struct NvBlastExtImpactSpreadDamageDesc;
 struct NvBlastExtProgramParams;
 
 namespace Nv::Blast
@@ -30,7 +34,6 @@ namespace Blast
 
         static void Reflect(AZ::ReflectContext* context);
 
-        AZ::Data::Asset<Blast::BlastMaterialLibraryAsset> m_materialLibrary = AZ::Data::AssetLoadBehavior::NoLoad;
         uint32_t m_stressSolverIterations = 180;
     };
 
@@ -55,7 +58,7 @@ namespace Blast
         //! Getters for the NvBlast singletons
         virtual Nv::Blast::TkFramework* GetTkFramework() const = 0;
         virtual Nv::Blast::ExtSerialization* GetExtSerialization() const = 0;
-        virtual Nv::Blast::TkGroup* GetTkGroup() = 0;
+        virtual Nv::Blast::TkGroup* CreateTkGroup() = 0;
 
         //! Configuration
         virtual const BlastGlobalConfiguration& GetGlobalConfiguration() const = 0;

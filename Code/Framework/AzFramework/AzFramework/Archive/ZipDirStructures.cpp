@@ -25,13 +25,13 @@ namespace AZ::IO::ZipDir::ZipDirStructuresInternal
 {
     static void* ZlibAlloc(void* userData, uint32_t item, uint32_t size)
     {
-        auto allocator = reinterpret_cast<AZ::IAllocatorAllocate*>(userData);
+        auto allocator = reinterpret_cast<AZ::IAllocator*>(userData);
         return allocator->Allocate(item * size, alignof(uint8_t), 0, "ZLibAlloc");
     }
 
     static void ZlibFree(void* userData, void* ptr)
     {
-        auto allocator = reinterpret_cast<AZ::IAllocatorAllocate*>(userData);
+        auto allocator = reinterpret_cast<AZ::IAllocator*>(userData);
         allocator->DeAllocate(ptr);
     }
 
@@ -296,7 +296,7 @@ namespace AZ::IO::ZipDir::ZipDirStructuresInternal
             return {};
         }
 
-        AZ::IAllocatorAllocate* allocator = &AZ::AllocatorInstance<AZ::OSAllocator>::Get();
+        AZ::IAllocator* allocator = &AZ::AllocatorInstance<AZ::OSAllocator>::Get();
         AZStd::intrusive_ptr<AZ::IO::MemoryBlock> memoryBlock{ new (allocator->Allocate(sizeof(AZ::IO::MemoryBlock), alignof(AZ::IO::MemoryBlock))) AZ::IO::MemoryBlock{AZ::IO::MemoryBlockDeleter{ &AZ::AllocatorInstance<AZ::OSAllocator>::Get() }} };
         auto CreateFunc = [](size_t byteSize, size_t byteAlignment, const char* name)
         {
@@ -451,7 +451,7 @@ namespace AZ::IO::ZipDir
         if (GetDiskFreeSpaceA(drive.c_str(),nullptr, &bytesPerSector, nullptr, nullptr))
         {
             m_nSectorSize = bytesPerSector;
-            AZ::IAllocatorAllocate& allocator = AZ::AllocatorInstance<AZ::OSAllocator>::Get();
+            AZ::IAllocator& allocator = AZ::AllocatorInstance<AZ::OSAllocator>::Get();
             if (m_pReadTarget)
             {
                 allocator.DeAllocate(m_pReadTarget);

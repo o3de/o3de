@@ -27,8 +27,10 @@ namespace ScriptCanvasEditor
     AZStd::optional<SourceHandle> CompleteDescription(const SourceHandle& source);
     // if CompleteDescription() succeeds, sets the handle to the result, else does nothing
     bool CompleteDescriptionInPlace(SourceHandle& source);
+    // accepts any sort of path and returns one with a relative path if possible
+    AZStd::optional<SourceHandle> CreateFromAnyPath(const SourceHandle& source, const AZ::IO::Path& path);
 
-    class Graph;
+    class EditorGraph;
     class NodePaletteModel;
 
     class NodeIdentifierFactory
@@ -48,7 +50,7 @@ namespace ScriptCanvasEditor
 
         virtual ~GraphStatisticsHelper() = default;
 
-        void PopulateStatisticData(const Graph* editorGraph);
+        void PopulateStatisticData(const EditorGraph* editorGraph);
         
         AZStd::unordered_map< ScriptCanvas::NodeTypeIdentifier, int > m_nodeIdentifierCount;
 

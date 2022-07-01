@@ -28,11 +28,9 @@
 
 #include <EMotionFX/Source/Actor.h>
 #include <EMotionFX/Source/Node.h>
-#include <EMotionFX/Source/StandardMaterial.h>
 #include <EMotionFX/Exporters/ExporterLib/Exporter/Exporter.h>
 #include <MCore/Source/AzCoreConversions.h>
 
-#include <GFxFramework/MaterialIO/Material.h>
 #include <AzCore/Math/MathUtils.h>
 #include <AzCore/Math/Matrix3x4.h>
 #include <AzCore/Math/Quaternion.h>
@@ -40,7 +38,6 @@
 #include <AzCore/Interface/Interface.h>
 #include <AzFramework/Application/Application.h>
 #include <AzToolsFramework/Debug/TraceContext.h>
-
 
 namespace EMotionFX
 {
@@ -55,10 +52,9 @@ namespace EMotionFX
         EMotionFX::Transform SceneDataMatrixToEmfxTransformConverted(
             const SceneDataTypes::MatrixType& azTransform, const AZ::SceneAPI::CoordinateSystemConverter& coordSysConverter)
         {
-            return EMotionFX::Transform(
-                coordSysConverter.ConvertVector3(azTransform.GetTranslation()),
-                coordSysConverter.ConvertQuaternion(AZ::Quaternion::CreateFromMatrix3x4(azTransform)),
-                coordSysConverter.ConvertScale(azTransform.RetrieveScale()));
+            EMotionFX::Transform transform;
+            transform.InitFromAZTransform(AZ::Transform::CreateFromMatrix3x4(coordSysConverter.ConvertMatrix3x4(azTransform)));
+            return transform;
         }
 
 
@@ -117,15 +113,6 @@ namespace EMotionFX
             const AZ::u32 exfxNodeCount = aznumeric_cast<AZ::u32>(nodeIndices.size());
             actor->SetNumNodes(aznumeric_cast<AZ::u32>(exfxNodeCount));
             actor->ResizeTransformData();
-
-            // Add a standard material
-            // This material is used within the existing EMotionFX GL window. The engine will use a native engine material at runtime. The GL window will also be replaced by a native engine viewport
-            EMotionFX::StandardMaterial* defaultMat = EMotionFX::StandardMaterial::Create("Default");
-            defaultMat->SetAmbient(MCore::RGBAColor(0.0f, 0.0f, 0.0f));
-            defaultMat->SetDiffuse(MCore::RGBAColor(1.0f, 1.0f, 1.0f));
-            defaultMat->SetSpecular(MCore::RGBAColor(1.0f, 1.0f, 1.0f));
-            defaultMat->SetShine(100.0f);
-            actor->AddMaterial(0, defaultMat);
 
             EMotionFX::Pose* bindPose = actor->GetBindPose();
             AZ_Assert(bindPose, "BindPose not available for actor");
@@ -339,20 +326,7 @@ namespace EMotionFX
 
             // The search begin from the rootBoneNodeIndex.
             auto graphDownwardsRootBoneView = SceneViews::MakeSceneGraphDownwardsView<SceneViews::BreadthFirst>(graph, rootBoneNodeIndex, nameContentView.begin(), true);
-            auto it = graphDownwardsRootBoneView.begin();
-            if (!it->second)
-            {
-                // We always skip the first node because it's introduced by scenegraph
-                ++it;
-                if (!it->second && it != graphDownwardsRootBoneView.end())
-                {
-                    // In maya / max, we skip 1 root node when it have no content (emotionfx always does this)
-                    // However, fbx doesn't restrain itself from having multiple root nodes. We might want to revisit here if it ever become a problem.
-                    ++it;
-                }
-            }
-
-            for (; it != graphDownwardsRootBoneView.end(); ++it)
+            for (auto it = graphDownwardsRootBoneView.begin(); it != graphDownwardsRootBoneView.end(); ++it)
             {
                 const SceneContainers::SceneGraph::NodeIndex& nodeIndex = graph.ConvertToNodeIndex(it.GetHierarchyIterator());
 
@@ -360,13 +334,56 @@ namespace EMotionFX
                 // Note: For example, the end point could be a transform node. We will process that later on its parent node.
                 if (graph.IsNodeEndPoint(nodeIndex))
                 {
-                    continue;
+                    // Skip the end point node except if it's a root node.
+                    if (graph.GetRoot() != nodeIndex)
+                    {
+                        continue;
+                    }
                 }
 
                 auto mesh = azrtti_cast<const SceneDataTypes::IMeshData*>(it->second);
                 if (mesh)
                 {
-                    outMeshIndices.push_back(nodeIndex);
+                    outMeshIndices.emplace_back(nodeIndex);
+
+                    // Don't need to add a mesh node except if it is a parent of another joint / mesh node.
+                    // Example:
+                    // joint_1
+                    //   |____transform
+                    //   |____mesh_1 (keep)
+                    //         |____transform
+                    //         |____mesh_2 (remove)
+                    //         |      |____transform
+                    //         |_______joint_2
+                    //                |____transform
+                    // emfx doesn't need to contain the "end-point" mesh node because mesh buffers are ultimately stored in a single atom mesh.
+                    // NOTE: Joint and mesh node often have a transform node as the children. To correctly detect whether a mesh node has a joint
+                    // or mesh children, we need to check the type id of the children as well.
+                    if (!graph.HasNodeChild(nodeIndex))
+                    {
+                        continue;
+                    }
+                    else
+                    {
+                        bool hasJointOrMeshChildren = false;
+                        SceneContainers::SceneGraph::NodeIndex childNodeIndex = graph.GetNodeChild(nodeIndex);
+                        while (childNodeIndex.IsValid())
+                        {
+                            auto childContent = graph.GetNodeContent(childNodeIndex);
+                            if (childContent->RTTI_IsTypeOf(SceneDataTypes::IBoneData::TYPEINFO_Uuid())
+                                || childContent->RTTI_IsTypeOf(SceneDataTypes::IMeshData::TYPEINFO_Uuid()))
+                            {
+                                hasJointOrMeshChildren = true;
+                                break;
+                            }
+                            childNodeIndex = graph.GetNodeSibling(childNodeIndex);
+                        }
+
+                        if (!hasJointOrMeshChildren)
+                        {
+                            continue;
+                        }
+                    }
                 }
 
                 auto bone = azrtti_cast<const SceneDataTypes::IBoneData*>(it->second);
@@ -375,7 +392,7 @@ namespace EMotionFX
                     outBoneNameEmfxIndexMap[it->first.GetName()] = aznumeric_cast<AZ::u32>(outNodeIndices.size());
                 }
 
-                // Add bones and mesh nodes to our list of nodes we want to export.
+                // Add bones, or mesh (that has a child mesh or joint) to our list of nodes we want to export.
                 outNodeIndices.push_back(nodeIndex);
             }
         }

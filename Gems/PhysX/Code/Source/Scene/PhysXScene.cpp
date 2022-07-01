@@ -7,14 +7,6 @@
  */
 #include <Scene/PhysXScene.h>
 
-#include <AzCore/Debug/ProfilerBus.h>
-#include <AzCore/std/containers/variant.h>
-#include <AzCore/std/containers/vector.h>
-#include <AzCore/std/smart_ptr/make_shared.h>
-#include <AzFramework/Physics/Character.h>
-#include <AzFramework/Physics/Collision/CollisionEvents.h>
-#include <AzFramework/Physics/Configuration/RigidBodyConfiguration.h>
-#include <AzFramework/Physics/Configuration/StaticRigidBodyConfiguration.h>
 
 #include <Collision.h>
 #include <RigidBody.h>
@@ -30,6 +22,17 @@
 #include <PhysX/Debug/PhysXDebugConfiguration.h>
 #include <PhysX/MathConversion.h>
 #include <Joint/PhysXJoint.h>
+
+#include <AzCore/Debug/ProfilerBus.h>
+#include <AzCore/std/containers/variant.h>
+#include <AzCore/std/containers/vector.h>
+#include <AzCore/std/smart_ptr/make_shared.h>
+#include <AzCore/Debug/Profiler.h>
+#include <AzFramework/Physics/Character.h>
+#include <AzFramework/Physics/Collision/CollisionEvents.h>
+#include <AzFramework/Physics/Configuration/RigidBodyConfiguration.h>
+#include <AzFramework/Physics/Configuration/StaticRigidBodyConfiguration.h>
+#include <AzFramework/Physics/Material/PhysicsMaterialManager.h>
 
 namespace PhysX
 {
@@ -122,7 +125,7 @@ namespace PhysX
 
         bool AddShape(AZStd::variant<AzPhysics::RigidBody*, AzPhysics::StaticRigidBody*> simulatedBody, const AzPhysics::ShapeVariantData& shapeData)
         {
-            if (auto* shapeColliderPair = AZStd::get_if<AzPhysics::ShapeColliderPair>(&shapeData))
+            if (const auto* shapeColliderPair = AZStd::get_if<AzPhysics::ShapeColliderPair>(&shapeData))
             {
                 bool shapeAdded = false;
                 auto shapePtr = AZStd::make_shared<Shape>(*(shapeColliderPair->first), *(shapeColliderPair->second));
@@ -136,7 +139,7 @@ namespace PhysX
                     }, simulatedBody);
                 return shapeAdded;
             }
-            else if (auto* shapeColliderPairList = AZStd::get_if<AZStd::vector<AzPhysics::ShapeColliderPair>>(&shapeData))
+            else if (const auto* shapeColliderPairList = AZStd::get_if<AZStd::vector<AzPhysics::ShapeColliderPair>>(&shapeData))
             {
                 bool shapeAdded = false;
                 for (const auto& shapeColliderConfigs : *shapeColliderPairList)
@@ -153,15 +156,16 @@ namespace PhysX
                 }
                 return shapeAdded;
             }
-            else if (auto* shape = AZStd::get_if<AZStd::shared_ptr<Physics::Shape>>(&shapeData))
+            else if (const auto* shape = AZStd::get_if<AZStd::shared_ptr<Physics::Shape>>(&shapeData))
             {
-                AZStd::visit([shape](auto&& body)
+                auto shapePtr = *shape;
+                AZStd::visit([shapePtr](auto&& body)
                     {
-                        body->AddShape(*shape);
+                        body->AddShape(shapePtr);
                     }, simulatedBody);
                 return true;
             }
-            else if (auto* shapeList = AZStd::get_if<AZStd::vector<AZStd::shared_ptr<Physics::Shape>>>(&shapeData))
+            else if (const auto* shapeList = AZStd::get_if<AZStd::vector<AZStd::shared_ptr<Physics::Shape>>>(&shapeData))
             {
                 for (auto shapePtr : *shapeList)
                 {
@@ -227,7 +231,7 @@ namespace PhysX
         AzPhysics::SimulatedBody* CreateRagdollBody(PhysXScene* scene,
             const Physics::RagdollConfiguration* ragdollConfig)
         {
-            return Utils::Characters::CreateRagdoll(const_cast<Physics::RagdollConfiguration&>(*ragdollConfig),
+            return Utils::Characters::CreateRagdoll(*ragdollConfig,
                 scene->GetSceneHandle());
         }
 

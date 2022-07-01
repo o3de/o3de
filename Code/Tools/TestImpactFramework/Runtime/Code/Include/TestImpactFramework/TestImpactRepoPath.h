@@ -24,13 +24,13 @@ namespace TestImpact
         using value_type = AZ::IO::Path::value_type;
 
         constexpr RepoPath() = default;
-        constexpr RepoPath(const RepoPath&) = default;
-        constexpr RepoPath(RepoPath&&) noexcept = default;
-        constexpr RepoPath(const string_type& path) noexcept;
-        constexpr RepoPath(const string_view_type& path) noexcept;
-        constexpr RepoPath(const value_type* path) noexcept;
-        constexpr RepoPath(const AZ::IO::PathView& path);
-        constexpr RepoPath(const AZ::IO::Path& path);
+        RepoPath(const RepoPath&) = default;
+        RepoPath(RepoPath&&) noexcept = default;
+        RepoPath(const string_type& path) noexcept;
+        RepoPath(const string_view_type& path) noexcept;
+        RepoPath(const value_type* path) noexcept;
+        RepoPath(const AZ::IO::PathView& path);
+        RepoPath(const AZ::IO::Path& path);
 
         RepoPath& operator=(const RepoPath&) noexcept = default;
         RepoPath& operator=(const string_type&) noexcept;
@@ -52,11 +52,11 @@ namespace TestImpact
         // Wrappers around the AZ::IO::Path concatenation operator
         friend RepoPath operator/(const RepoPath& lhs, const AZ::IO::PathView& rhs);
         friend RepoPath operator/(const RepoPath& lhs, AZStd::string_view rhs);
-        friend RepoPath operator/(const RepoPath& lhs, const typename value_type* rhs);
+        friend RepoPath operator/(const RepoPath& lhs, const value_type* rhs);
         friend RepoPath operator/(const RepoPath& lhs, const RepoPath& rhs);
         RepoPath& operator/=(const AZ::IO::PathView& rhs);
         RepoPath& operator/=(AZStd::string_view rhs);
-        RepoPath& operator/=(const typename value_type* rhs);
+        RepoPath& operator/=(const value_type* rhs);
         RepoPath& operator/=(const RepoPath& rhs);
 
         friend bool operator==(const RepoPath& lhs, const RepoPath& rhs) noexcept;
@@ -67,27 +67,27 @@ namespace TestImpact
         AZ::IO::Path m_path;
     };
 
-    constexpr RepoPath::RepoPath(const string_type& path) noexcept
+    inline RepoPath::RepoPath(const string_type& path) noexcept
         : m_path(AZ::IO::Path(path).MakePreferred())
     {
     }
 
-    constexpr RepoPath::RepoPath(const string_view_type& path) noexcept
+    inline RepoPath::RepoPath(const string_view_type& path) noexcept
         : m_path(AZ::IO::Path(path).MakePreferred())
     {
     }
 
-    constexpr RepoPath::RepoPath(const value_type* path) noexcept
+    inline RepoPath::RepoPath(const value_type* path) noexcept
         : m_path(AZ::IO::Path(path).MakePreferred())
     {
     }
 
-    constexpr RepoPath::RepoPath(const AZ::IO::PathView& path)
+    inline RepoPath::RepoPath(const AZ::IO::PathView& path)
         : m_path(AZ::IO::Path(path).MakePreferred())
     {
     }
 
-    constexpr RepoPath::RepoPath(const AZ::IO::Path& path)
+    inline RepoPath::RepoPath(const AZ::IO::Path& path)
         : m_path(AZ::IO::Path(path).MakePreferred())
     {
     }

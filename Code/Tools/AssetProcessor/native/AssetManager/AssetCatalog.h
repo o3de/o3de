@@ -43,7 +43,7 @@ namespace AssetProcessor
 {
     class AssetDatabaseConnection;
 
-    class AssetCatalog 
+    class AssetCatalog
         : public QObject
         , private AssetRegistryRequestBus::Handler
         , private AzToolsFramework::AssetSystemRequestBus::Handler
@@ -53,7 +53,7 @@ namespace AssetProcessor
         using NetworkRequestID = AssetProcessor::NetworkRequestID;
         using BaseAssetProcessorMessage = AzFramework::AssetSystem::BaseAssetProcessorMessage;
         Q_OBJECT;
-    
+
     public:
         AssetCatalog(QObject* parent, AssetProcessor::PlatformConfiguration* platformConfiguration);
         virtual ~AssetCatalog();
@@ -75,7 +75,7 @@ namespace AssetProcessor
         void OnSourceQueued(AZ::Uuid sourceUuid, AZ::Uuid legacyUuid, QString rootPath, QString relativeFilePath);
         void OnSourceFinished(AZ::Uuid sourceUuid, AZ::Uuid legacyUuid);
         void AsyncAssetCatalogStatusRequest();
-        
+
     protected:
 
         //////////////////////////////////////////////////////////////////////////
@@ -135,13 +135,13 @@ namespace AssetProcessor
 
         //! Gets the source file info for an Asset by checking the DB first and the APM queue second
         bool GetSourceFileInfoFromAssetId(const AZ::Data::AssetId &assetId, AZStd::string& watchFolder, AZStd::string& relativePath);
-        
+
         //! Gets the product AssetInfo based on a platform and assetId.  If you specify a null or empty platform the current or first available will be used.
         AZ::Data::AssetInfo GetProductAssetInfo(const char* platformName, const AZ::Data::AssetId& id);
-        
+
         //! GetAssetInfo that tries to figure out if the asset is a product or source so it can return info about the product or source respectively
         bool GetAssetInfoByIdOnly(const AZ::Data::AssetId& id, const AZStd::string& platformName, AZ::Data::AssetInfo& assetInfo, AZStd::string& rootFilePath);
-        
+
         //! Checks in the currently-in-queue assets list for info on an asset (by source Id)
         bool GetQueuedAssetInfoById(const AZ::Uuid& guid, AZStd::string& watchFolder, AZStd::string& relativePath);
 
@@ -212,7 +212,5 @@ namespace AssetProcessor
         AZStd::unordered_multimap<AZ::Data::AssetId, QString> m_cachedNoPreloadDependenyAssetList;
 
         AZStd::vector<char> m_saveBuffer; // so that we don't realloc all the time
-
-        QDir m_cacheRootDir;
     };
 }

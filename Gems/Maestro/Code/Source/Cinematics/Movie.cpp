@@ -1554,8 +1554,8 @@ void CMovieSystem::ControlCapture()
 {
 #if !defined(NDEBUG)
     bool bBothStartAndEnd = m_bStartCapture && m_bEndCapture;
-#endif
     assert(!bBothStartAndEnd);
+#endif
 
     bool bAllCVarsReady
         = m_cvar_capture_frame_once && m_cvar_capture_folder && m_cvar_capture_frames;

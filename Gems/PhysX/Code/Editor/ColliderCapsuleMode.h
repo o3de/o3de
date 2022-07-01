@@ -11,6 +11,7 @@
 #include <Editor/Source/ComponentModes/PhysXSubComponentModeBase.h>
 #include <AzToolsFramework/ComponentModes/BoxViewportEdit.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
+#include <AzToolsFramework/ComponentModes/CapsuleViewportEdit.h>
 
 namespace PhysX
 {
@@ -18,6 +19,7 @@ namespace PhysX
     class ColliderCapsuleMode
         : public PhysXSubComponentModeBase
         , private AzFramework::EntityDebugDisplayEventBus::Handler
+        , private AzToolsFramework::CapsuleViewportEdit
     {
     public:
         AZ_CLASS_ALLOCATOR_DECL
@@ -34,14 +36,15 @@ namespace PhysX
             const AzFramework::ViewportInfo& viewportInfo,
             AzFramework::DebugDisplayRequests& debugDisplay) override;
 
-        void SetupRadiusManipulator(const AZ::EntityComponentIdPair& idPair, const AZ::Transform& worldTransform);
-        void SetupHeightManipulator(const AZ::EntityComponentIdPair& idPair, const AZ::Transform& worldTransform);
-        void OnRadiusManipulatorMoved(const AzToolsFramework::LinearManipulator::Action& action, const AZ::EntityComponentIdPair& idPair);
-        void OnHeightManipulatorMoved(const AzToolsFramework::LinearManipulator::Action& action, const AZ::EntityComponentIdPair& idPair);
-        void AdjustRadiusManipulator(const AZ::EntityComponentIdPair& idPair, const float capsuleHeight);
-        void AdjustHeightManipulator(const AZ::EntityComponentIdPair& idPair, const float capsuleRadius);
+        // CapsuleViewportEdit ...
+        AZ::Transform GetCapsuleWorldTransform() const override;
+        AZ::Transform GetCapsuleLocalTransform() const override;
+        AZ::Vector3 GetCapsuleNonUniformScale() const override;
+        float GetCapsuleRadius() const override;
+        float GetCapsuleHeight() const override;
+        void SetCapsuleRadius(float radius) override;
+        void SetCapsuleHeight(float height) override;
 
-        AZStd::shared_ptr<AzToolsFramework::LinearManipulator> m_radiusManipulator;
-        AZStd::shared_ptr<AzToolsFramework::LinearManipulator> m_heightManipulator;
+        AZ::EntityComponentIdPair m_entityComponentIdPair;
     };
 } //namespace PhysX

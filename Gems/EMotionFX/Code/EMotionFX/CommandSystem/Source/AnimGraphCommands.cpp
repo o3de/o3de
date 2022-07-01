@@ -24,7 +24,6 @@
 #include <EMotionFX/Source/MotionSystem.h>
 #include <EMotionFX/Source/Recorder.h>
 #include <EMotionFX/Source/Importer/Importer.h>
-#include <EMotionFX/Exporters/ExporterLib/Exporter/ExporterFileProcessor.h>
 #include <AzFramework/API/ApplicationAPI.h>
 
 

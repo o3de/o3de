@@ -107,7 +107,6 @@ namespace AZ
         m_used = 0;
 
         m_desc = desc;
-        m_subAllocator = nullptr;
 
         for (int i = 0; i < Descriptor::m_maxNumBlocks; ++i)
         {

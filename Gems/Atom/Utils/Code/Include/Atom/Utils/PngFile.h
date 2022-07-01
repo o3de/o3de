@@ -11,7 +11,7 @@
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/containers/unordered_map.h>
-#include <AtomCore/std/containers/array_view.h>
+#include <AzCore/std/containers/span.h>
 #include <AzCore/std/functional.h>
 
 #include <Atom/RHI.Reflect/Size.h>
@@ -55,7 +55,7 @@ namespace AZ
             static PngFile Load(const char* path, LoadSettings loadSettings = {});
 
             //! @return the loaded PngFile or an invalid PngFile if there was an error.
-            static PngFile LoadFromBuffer(AZStd::array_view<uint8_t> data, LoadSettings loadSettings = {});
+            static PngFile LoadFromBuffer(AZStd::span<const uint8_t> data, LoadSettings loadSettings = {});
 
             //! Create a PngFile from an RHI data buffer.
             //! @param size the dimensions of the image (m_depth is not used, assumed to be 1)
@@ -63,7 +63,7 @@ namespace AZ
             //! @param data the buffer of image data. The size of the buffer must match the @size and @format parameters.
             //! @param errorHandler optional callback function describing any errors that are encountered
             //! @return the created PngFile or an invalid PngFile if there was an error.
-            static PngFile Create(const RHI::Size& size, RHI::Format format, AZStd::array_view<uint8_t> data, ErrorHandler errorHandler = {});
+            static PngFile Create(const RHI::Size& size, RHI::Format format, AZStd::span<const uint8_t> data, ErrorHandler errorHandler = {});
             static PngFile Create(const RHI::Size& size, RHI::Format format, AZStd::vector<uint8_t>&& data, ErrorHandler errorHandler = {});
 
             PngFile() = default;

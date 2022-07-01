@@ -5,10 +5,6 @@ For complete copyright and license terms please see the LICENSE at the root of t
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
-import os
-import sys
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-
 def Blast_ActorSplitsAfterRadialDamage():
     from BaseDamageTest import base_run as internal_run
     from BlastUtils import Constants

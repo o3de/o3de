@@ -17,7 +17,7 @@ namespace PhysX
 {
     namespace Editor
     {
-        static const AZ::Crc32 InertiaHandler = AZ_CRC("RigidBodyInertia", 0x3091b106);
+        static const AZ::Crc32 InertiaHandler = AZ_CRC_CE("RigidBodyInertia");
 
         class InertiaPropertyHandler
             : public QObject

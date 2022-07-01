@@ -19,7 +19,6 @@ namespace AssetProcessor
 
 class BatchApplicationManager
     : public ApplicationManagerBase
-    , public AssetProcessor::MessageInfoBus::Handler
 {
     Q_OBJECT
 public:

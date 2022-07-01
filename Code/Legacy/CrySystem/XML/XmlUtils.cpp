@@ -16,7 +16,6 @@
 #include "SerializeXMLReader.h"
 #include "SerializeXMLWriter.h"
 
-#include "XMLBinaryWriter.h"
 #include "XMLBinaryReader.h"
 
 #include <md5.h>

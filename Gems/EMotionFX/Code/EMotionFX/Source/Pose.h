@@ -184,9 +184,9 @@ namespace EMotionFX
          * @param[in] linkToActorInstance The actor instance to link to the pose data.
          * @result Valid pointer to the pose data of the given type.
          */
-        PoseData* GetAndPreparePoseData(const AZ::TypeId& typeId, ActorInstance* linkToActorInstance);
+        PoseData* GetAndPreparePoseData(const AZ::TypeId& typeId, const ActorInstance* linkToActorInstance);
         template <class T>
-        T* GetAndPreparePoseData(ActorInstance* linkToActorInstance) { return azdynamic_cast<T*>(GetAndPreparePoseData(azrtti_typeid<T>(), linkToActorInstance)); }
+        T* GetAndPreparePoseData(const ActorInstance* linkToActorInstance) { return azdynamic_cast<T*>(GetAndPreparePoseData(azrtti_typeid<T>(), linkToActorInstance)); }
 
         /**
          * Draw debug visualization for the given pose.

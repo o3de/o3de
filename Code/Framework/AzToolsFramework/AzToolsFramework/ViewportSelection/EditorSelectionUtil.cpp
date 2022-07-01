@@ -52,7 +52,7 @@ namespace AzToolsFramework
 
         // compute the distance from the camera, projected onto the camera's forward direction
         // note: this keeps the scale value the same when positions are at the edge of the screen
-        const float projectedCameraDistance = std::abs((cameraState.m_position - worldPosition).Dot(cameraState.m_forward));
+        const float projectedCameraDistance = AZStd::abs((cameraState.m_position - worldPosition).Dot(cameraState.m_forward));
 
         // author sizes of bounds/manipulators as they would appear
         // in perspective 10 meters from the camera.
@@ -83,25 +83,38 @@ namespace AzToolsFramework
     }
 
     bool PickEntity(
-        const AZ::EntityId entityId,
-        const ViewportInteraction::MouseInteraction& mouseInteraction,
-        float& closestDistance,
-        const int viewportId)
+        AZ::EntityId entityId, const AZ::Vector3& rayOrigin, const AZ::Vector3& rayDirection, float& closestDistance, const int viewportId)
     {
         AZ_PROFILE_FUNCTION(Entity);
+
+        closestDistance = AZStd::numeric_limits<float>::max();
+
+        const auto viewportInfo = AzFramework::ViewportInfo{ viewportId };
+        // check if components provide an aabb
+        const AZ::Aabb aabb = CalculateEditorEntitySelectionBounds(entityId, viewportInfo);
+        if (!aabb.IsValid())
+        {
+            return false;
+        }
+
+        // coarse grain check
+        float unused;
+        if (!AabbIntersectRay(rayOrigin, rayDirection, aabb, unused))
+        {
+            return false;
+        }
 
         bool entityPicked = false;
         EditorComponentSelectionRequestsBus::EnumerateHandlersId(
             entityId,
-            [mouseInteraction, &entityPicked, &closestDistance, viewportId](EditorComponentSelectionRequests* handler) -> bool
+            [rayOrigin, rayDirection, &entityPicked, &closestDistance, viewportInfo](EditorComponentSelectionRequests* handler) -> bool
             {
-                if (handler->SupportsEditorRayIntersect())
+                if (handler->SupportsEditorRayIntersectViewport(viewportInfo))
                 {
-                    float distance = std::numeric_limits<float>::max();
-                    const bool intersection = handler->EditorSelectionIntersectRayViewport(
-                        { viewportId }, mouseInteraction.m_mousePick.m_rayOrigin, mouseInteraction.m_mousePick.m_rayDirection, distance);
-
-                    if (intersection && distance < closestDistance)
+                    float distance = AZStd::numeric_limits<float>::max();
+                    if (const bool intersection =
+                            handler->EditorSelectionIntersectRayViewport(viewportInfo, rayOrigin, rayDirection, distance);
+                        intersection && distance < closestDistance)
                     {
                         entityPicked = true;
                         closestDistance = distance;
@@ -112,6 +125,16 @@ namespace AzToolsFramework
             });
 
         return entityPicked;
+    }
+
+    bool PickEntity(
+        const AZ::EntityId entityId,
+        const ViewportInteraction::MouseInteraction& mouseInteraction,
+        float& closestDistance,
+        const int viewportId)
+    {
+        return PickEntity(
+            entityId, mouseInteraction.m_mousePick.m_rayOrigin, mouseInteraction.m_mousePick.m_rayDirection, closestDistance, viewportId);
     }
 
     AzFramework::CameraState GetCameraState(const int viewportId)

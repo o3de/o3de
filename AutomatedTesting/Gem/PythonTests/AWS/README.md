@@ -3,7 +3,7 @@
 ## Prerequisites
 1. Build the O3DE Editor and AutomatedTesting.GameLauncher in Profile.
 2. Install the latest version of NodeJs.
-3. AWS CLI is installed and configured following [Configuration and Credential File Settings](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-files.html).
+3. AWS CLI is installed and AWS crendentials are configured via [environment variables](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-envvars.html) or [default profile](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-files.html).
 4. [AWS Cloud Development Kit (CDK)](https://docs.aws.amazon.com/cdk/latest/guide/getting_started.html#getting_started_install) is installed.
 
 ## Deploy CDK Applications

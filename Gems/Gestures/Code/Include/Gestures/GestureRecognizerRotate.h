@@ -11,6 +11,7 @@
 
 #include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/Time/ITime.h>
+#include <AzCore/Math/MathUtils.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace Gestures
@@ -63,8 +64,8 @@ namespace Gestures
        AZ::Vector2 GetCurrentPosition0() const { return m_currentPositions[0]; }
        AZ::Vector2 GetCurrentPosition1() const { return m_currentPositions[1]; }
 
-       AZ::Vector2 GetStartMidpoint() const { return Lerp(GetStartPosition0(), GetStartPosition1(), 0.5f); }
-       AZ::Vector2 GetCurrentMidpoint() const { return Lerp(GetCurrentPosition0(), GetCurrentPosition1(), 0.5f); }
+       AZ::Vector2 GetStartMidpoint() const { return AZ::Lerp(GetStartPosition0(), GetStartPosition1(), 0.5f); }
+       AZ::Vector2 GetCurrentMidpoint() const { return AZ::Lerp(GetCurrentPosition0(), GetCurrentPosition1(), 0.5f); }
 
        float GetStartDistance() const { return GetStartPosition1().GetDistance(GetStartPosition0()); }
        float GetCurrentDistance() const { return GetCurrentPosition1().GetDistance(GetCurrentPosition0()); }

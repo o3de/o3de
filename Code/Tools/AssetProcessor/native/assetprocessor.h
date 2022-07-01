@@ -22,10 +22,12 @@
 #include <AzCore/std/containers/map.h>
 #include <AzCore/std/containers/set.h>
 #include <AzCore/Asset/AssetCommon.h>
+#include <AzCore/IO/Path/Path.h>
 #include <AzFramework/Asset/AssetRegistry.h>
 #include <AzCore/Math/Crc.h>
 #include <native/AssetManager/assetScanFolderInfo.h>
 #include <AzFramework/StringFunc/StringFunc.h>
+#include "AssetProcessor_Traits_Platform.h"
 
 namespace AssetProcessor
 {
@@ -35,10 +37,10 @@ namespace AssetProcessor
     const char* const AutoFailReasonKey = "failreason"; // the key to look in for auto-fail reason.
     const char* const AutoFailLogFile = "faillogfile"; // if this is provided, this is a complete log of the failure and will be added after the failreason.
     const char* const AutoFailOmitFromDatabaseKey = "failreason_omitFromDatabase"; // if set in your job info hash, your job will not be tracked by the database.
-    const char* const JobWarningKey = "ap_warningmessage"; // key used to store a warning message to be shown in the job log
     const char* const PlaceHolderFileName = "$missing_dependency$"; // Used as a placeholder in the dependency system, such as when a source file is deleted and a previously met dependency is broken.
     const unsigned int g_RetriesForFenceFile = 5; // number of retries for fencing
-    const int RetriesForJobNetworkError = 1; // number of times to retry a job when a network error is determined to have caused a job failure
+    constexpr int RetriesForJobLostConnection = ASSETPROCESSOR_TRAIT_ASSET_BUILDER_LOST_CONNECTION_RETRIES; // number of times to retry a job when a network error due to network issues or a crashed AssetBuilder process is determined to have caused a job failure
+    constexpr const char* IntermediateAssetsFolderName = "Intermediate Assets"; // name of the intermediate assets folder
     // Even though AP can handle files with path length greater than window's legacy path length limit, we have some 3rdparty sdk's
     // which do not handle this case ,therefore we will make AP fail any jobs whose either source file or output file name exceeds the windows legacy path length limit
 #define AP_MAX_PATH_LEN 260
@@ -203,9 +205,11 @@ namespace AssetProcessor
         JobEntry m_jobEntry;
         AZStd::string m_extraInformationForFingerprinting;
         const ScanFolderInfo* m_scanFolder; // the scan folder info the file was found in
-        QString m_destinationPath; // the final folder that will be where your products are placed if you give relative path names
-        // destinationPath will be a cache folder.  If you tell it to emit something like "blah.dds"
-        // it will put it in (destinationPath)/blah.dds for example
+
+        AZ::IO::Path m_intermediatePath; // The base/root path of the intermediate output folder
+        AZ::IO::Path m_cachePath; // The base/root path of the cache folder, including the platform
+        AZ::IO::Path m_relativePath; // Relative path portion of the output file.  This can be overridden by the builder
+
         AZStd::vector<JobDependencyInternal> m_jobDependencyList;
 
         // which files to include in the fingerprinting. (Not including job dependencies)
@@ -222,6 +226,8 @@ namespace AssetProcessor
 
         AssetBuilderSDK::AssetBuilderDesc   m_assetBuilderDesc;
         AssetBuilderSDK::JobParameterMap    m_jobParam;
+
+        AZStd::vector<AZStd::string> m_warnings;
 
         // autoFail makes jobs which are added to the list and will automatically fail, and are used
         // to make sure that a "failure" shows up on the list so that the user can click to inspect the job and see why
@@ -242,11 +248,6 @@ namespace AssetProcessor
                 (m_jobEntry.m_platformInfo.m_identifier == rhs.m_jobEntry.m_platformInfo.m_identifier) &&
                 (m_jobEntry.m_jobKey == rhs.m_jobEntry.m_jobKey) &&
                 m_jobEntry.m_builderGuid == rhs.m_jobEntry.m_builderGuid);
-        }
-
-        static bool DatabaseSourceLexCompare(const JobDetails& left, const JobDetails& right)
-        {
-            return left.m_jobEntry.m_databaseSourceName <= right.m_jobEntry.m_databaseSourceName;
         }
 
         JobDetails() = default;

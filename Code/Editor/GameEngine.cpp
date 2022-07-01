@@ -18,6 +18,7 @@
 // AzCore
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/IO/IStreamer.h>
+#include <AzCore/IO/Streamer/FileRequest.h>
 #include <AzCore/std/parallel/binary_semaphore.h>
 #include <AzCore/Console/IConsole.h>
 
@@ -42,8 +43,6 @@
 
 #include "ViewManager.h"
 #include "AnimationContext.h"
-#include "UndoViewPosition.h"
-#include "UndoViewRotation.h"
 #include "MainWindow.h"
 #include "Include/IObjectManager.h"
 #include "ActionManager.h"
@@ -357,8 +356,6 @@ AZ::Outcome<void, AZStd::string> CGameEngine::Init(
     sip.bTestMode = bTestMode;
     sip.hInstance = nullptr;
 
-    sip.pSharedEnvironment = AZ::Environment::GetInstance();
-
 #ifdef AZ_PLATFORM_MAC
     // Create a hidden QWidget. Would show a black window on macOS otherwise.
     auto window = new QWidget();
@@ -478,7 +475,7 @@ void CGameEngine::SetLevelPath(const QString& path)
 
 bool CGameEngine::LoadLevel(
     [[maybe_unused]] bool bDeleteAIGraph,
-    bool bReleaseResources)
+    [[maybe_unused]] bool bReleaseResources)
 {
      m_bLevelLoaded = false;
     CLogFile::FormatLine("Loading map '%s' into engine...", m_levelPath.toUtf8().data());
@@ -490,7 +487,7 @@ bool CGameEngine::LoadLevel(
 
     bool usePrefabSystemForLevels = false;
     AzFramework::ApplicationRequests::Bus::BroadcastResult(
-        usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemForLevelsEnabled);
+        usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
 
     if (!usePrefabSystemForLevels)
     {
@@ -501,22 +498,6 @@ bool CGameEngine::LoadLevel(
         {
             CryWarning(VALIDATOR_MODULE_EDITOR, VALIDATOR_WARNING, "Level Pack File %s Not Found", pakFile.toUtf8().data());
         }
-    }
-
-    // Initialize physics grid.
-    if (bReleaseResources)
-    {
-        AZ::Aabb terrainAabb = AZ::Aabb::CreateFromPoint(AZ::Vector3::CreateZero());
-        AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(terrainAabb, &AzFramework::Terrain::TerrainDataRequests::GetTerrainAabb);
-        int physicsEntityGridSize = static_cast<int>(terrainAabb.GetXExtent());
-
-        //CryPhysics under performs if physicsEntityGridSize < nTerrainSize.
-        if (physicsEntityGridSize <= 0)
-        {
-            ICVar* pCvar = m_pISystem->GetIConsole()->GetCVar("e_PhysEntityGridSizeDefault");
-            physicsEntityGridSize = pCvar ? pCvar->GetIVal() : 4096;
-        }
-
     }
 
     // Audio: notify audio of level loading start?

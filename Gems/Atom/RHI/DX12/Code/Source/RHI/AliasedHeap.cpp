@@ -72,7 +72,7 @@ namespace AZ
             heapMemoryUsage.m_reservedInBytes = heapDesc.SizeInBytes;
 
             Microsoft::WRL::ComPtr<ID3D12Heap> heap;
-            AssertSuccess(device.GetDevice()->CreateHeap(&heapDesc, IID_GRAPHICS_PPV_ARGS(heap.GetAddressOf())));
+            device.AssertSuccess(device.GetDevice()->CreateHeap(&heapDesc, IID_GRAPHICS_PPV_ARGS(heap.GetAddressOf())));
             m_heap = heap.Get();
             
             return m_heap ? RHI::ResultCode::Success : RHI::ResultCode::Fail;
@@ -113,7 +113,7 @@ namespace AZ
 
             if (!memoryView.IsValid())
             {
-                RHI::ResultCode::OutOfMemory;
+                return RHI::ResultCode::OutOfMemory;
             }
 
             buffer->SetDescriptor(descriptor);

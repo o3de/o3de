@@ -45,5 +45,20 @@ namespace UnitTest
             // Click the entity in the viewport
             m_actionDispatcher->CameraState(m_cameraState)->MousePosition(carScreenPosition)->MouseLButtonDown()->MouseLButtonUp();
         }
+
+        void BoxSelectOnViewport()
+        {
+            // Calculate the position in screen space of where to begin and end the box select action
+            const auto beginningPositionWorldBoxSelect = AzFramework::WorldToScreen(AZ::Vector3(-10.0f, 15.0f, 5.0f), m_cameraState);
+            const auto endingPositionWorldBoxSelect = AzFramework::WorldToScreen(AZ::Vector3(10.0f, 15.0f, -5.0f), m_cameraState);
+
+            // Perform a box select in the viewport
+            m_actionDispatcher->SetStickySelect(true)
+                ->CameraState(m_cameraState)
+                ->MousePosition(beginningPositionWorldBoxSelect)
+                ->MouseLButtonDown()
+                ->MousePosition(endingPositionWorldBoxSelect)
+                ->MouseLButtonUp();
+        }
     };
 } // namespace UnitTest

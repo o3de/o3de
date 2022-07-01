@@ -116,7 +116,7 @@ namespace O3DE::ProjectManager
         // Separating line
         QFrame* hLine = new QFrame();
         hLine->setFrameShape(QFrame::HLine);
-        hLine->setStyleSheet("color: #666666;");
+        hLine->setObjectName("horizontalSeparatingLine");
         vLayout->addWidget(hLine);
 
         UpdateCollapseState();
@@ -318,6 +318,12 @@ namespace O3DE::ProjectManager
         const int selectedGemTotal = m_gemModel->GatherGemsToBeAdded(/*includeDependencies=*/true).size();
         const int unselectedGemTotal = m_gemModel->GatherGemsToBeRemoved(/*includeDependencies=*/true).size();
         const int enabledGemTotal = m_gemModel->TotalAddedGems(/*includeDependencies=*/true);
+
+        if (selectedGemTotal == 0 && enabledGemTotal == 0 && unselectedGemTotal == 0 && totalGems > 0)
+        {
+            // no gems are selected, unselected or enabled  
+            return;
+        }
 
         elementNames.push_back(GemSortFilterProxyModel::GetGemSelectedString(GemSortFilterProxyModel::GemSelected::Selected));
         elementCounts.push_back(selectedGemTotal);

@@ -98,7 +98,7 @@ def AtomEditorComponents_postfx_shape_weight_AddedToEntity():
         # Test setup begins.
         # Setup: Wait for Editor idle loop before executing Python hydra scripts then open "Base" level.
         TestHelper.init_idle()
-        TestHelper.open_level("", "Base")
+        TestHelper.open_level("Graphics", "base_empty")
 
         # Test steps begin.
         # 1. Create a PostFx Shape Weight Modifier entity with no components.
@@ -188,10 +188,12 @@ def AtomEditorComponents_postfx_shape_weight_AddedToEntity():
 
         # 15. UNDO deletion.
         general.undo()
+        general.idle_wait_frames(1)
         Report.result(Tests.deletion_undo, postfx_shape_weight_entity.exists())
 
         # 16. REDO deletion.
         general.redo()
+        general.idle_wait_frames(1)
         Report.result(Tests.deletion_redo, not postfx_shape_weight_entity.exists())
 
         # 17. Look for errors or asserts.

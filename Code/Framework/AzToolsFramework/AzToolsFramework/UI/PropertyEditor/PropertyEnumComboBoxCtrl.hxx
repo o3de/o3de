@@ -66,6 +66,12 @@ namespace AzToolsFramework
     class GenericEnumPropertyComboBoxHandler
         : public GenericComboBoxHandler<ValueType>
     {
+        virtual void ConsumeParentAttribute(GenericComboBoxCtrlBase* GUI, AZ::u32 attrib, PropertyAttributeReader* attrValue, const char* debugName) override
+        {
+            // Simply re-route to ConsumeAttribute since no special logic is needed.
+            ConsumeAttribute(GUI, attrib, attrValue, debugName);
+        }
+
         virtual void ConsumeAttribute(GenericComboBoxCtrlBase* GUI, AZ::u32 attrib, PropertyAttributeReader* attrValue, const char* debugName) override
         {
             (void)debugName;
@@ -144,12 +150,8 @@ namespace AzToolsFramework
                 {
                     for (const AZ::Edit::EnumConstant<ValueType>& constantValue : enumConstantValues)
                     {
-                        enumValues.push_back();
-                        auto& enumValue = enumValues.back();
-                        enumValue.first = constantValue.m_value;
-                        enumValue.second = constantValue.m_description;
+                        enumValues.emplace_back(constantValue.m_value, constantValue.m_description);
                     }
-
                     genericGUI->setElements(enumValues);
                 }
                 else
@@ -164,11 +166,7 @@ namespace AzToolsFramework
 
                             for (const auto& secondPair : attempt2)
                             {
-                                enumValues.push_back();
-                                auto& enumValue = enumValues.back();
-
-                                enumValue.first = secondPair.first;
-                                enumValue.second = secondPair.second;
+                                enumValues.emplace_back(secondPair.first, secondPair.second);
                             }
                         }
                         else

@@ -90,6 +90,66 @@ namespace UnitTest
         return AZStd::string(keyText.toUtf8().data());
     }
 
+    bool ViewportSettingsTestImpl::GridSnappingEnabled() const
+    {
+        return m_gridSnapping;
+    }
+
+    float ViewportSettingsTestImpl::GridSize() const
+    {
+        return m_gridSize;
+    }
+
+    bool ViewportSettingsTestImpl::ShowGrid() const
+    {
+        return false;
+    }
+
+    bool ViewportSettingsTestImpl::AngleSnappingEnabled() const
+    {
+        return m_angularSnapping;
+    }
+
+    float ViewportSettingsTestImpl::AngleStep() const
+    {
+        return m_angularStep;
+    }
+
+    float ViewportSettingsTestImpl::ManipulatorLineBoundWidth() const
+    {
+        return 0.1f;
+    }
+
+    float ViewportSettingsTestImpl::ManipulatorCircleBoundWidth() const
+    {
+        return 0.1f;
+    }
+
+    bool ViewportSettingsTestImpl::StickySelectEnabled() const
+    {
+        return m_stickySelect;
+    }
+
+    bool ViewportSettingsTestImpl::IconsVisible() const
+    {
+        return m_iconsVisible;
+    }
+
+    bool ViewportSettingsTestImpl::HelpersVisible() const
+    {
+        return m_helpersVisible;
+    }
+
+    AZ::Vector3 ViewportSettingsTestImpl::DefaultEditorCameraPosition() const
+    {
+        return AZ::Vector3::CreateZero();
+    }
+
+    AZ::Vector2 ViewportSettingsTestImpl::DefaultEditorCameraOrientation() const
+    {
+        return AZ::Vector2::CreateZero();
+    }
+
     bool TestWidget::eventFilter(QObject* watched, QEvent* event)
     {
         AZ_UNUSED(watched);
@@ -312,7 +372,6 @@ namespace UnitTest
 
     ToolsApplicationMessageHandler::ToolsApplicationMessageHandler()
     {
-        m_gridMateMessageHandler = AZStd::make_unique<ErrorHandler>("GridMate");
         m_enginePathMessageHandler = AZStd::make_unique<ErrorHandler>("Engine Path");
         m_skippingDriveMessageHandler = AZStd::make_unique<ErrorHandler>("Skipping drive");
         m_storageDriveMessageHandler = AZStd::make_unique<ErrorHandler>("Storage drive");

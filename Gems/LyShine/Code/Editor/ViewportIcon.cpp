@@ -296,7 +296,7 @@ void ViewportIcon::DrawDistanceLine(Draw2dHelper& draw2d, AZ::Vector2 start, AZ:
 
     draw2d.SetTextAlignment(IDraw2d::HAlign::Center, IDraw2d::VAlign::Bottom);
     draw2d.SetTextRotation(rotation);
-    draw2d.DrawText(textBuf, textPos, 16.0f * ViewportIcon::GetDpiScaleFactor(), 1.0f);
+    draw2d.DrawText(textBuf, textPos, 8.0f, 1.0f);
 }
 
 void ViewportIcon::DrawAnchorLinesSplit(Draw2dHelper& draw2d, AZ::Vector2 anchorPos1, AZ::Vector2 anchorPos2,

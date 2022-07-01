@@ -7,6 +7,7 @@
  */
 
 #include <AzToolsFramework/UI/EditorEntityUi/EditorEntityUiHandlerBase.h>
+#include <AzToolsFramework/UI/Outliner/EntityOutlinerListModel.hxx>
 
 #include <AzCore/Interface/Interface.h>
 
@@ -117,9 +118,16 @@ namespace AzToolsFramework
     {
     }
 
-    bool EditorEntityUiHandlerBase::OnEntityDoubleClick([[maybe_unused]] AZ::EntityId entityId) const
+    bool EditorEntityUiHandlerBase::OnOutlinerItemDoubleClick([[maybe_unused]] const QModelIndex& index) const
     {
         return false;
+    }
+
+    AZ::EntityId EditorEntityUiHandlerBase::GetEntityIdFromIndex(const QModelIndex& index)
+    {
+        QModelIndex firstColumnIndex = index.siblingAtColumn(EntityOutlinerListModel::ColumnName);
+
+        return AZ::EntityId(firstColumnIndex.data(EntityOutlinerListModel::EntityIdRole).value<AZ::u64>());
     }
 
 } // namespace AzToolsFramework

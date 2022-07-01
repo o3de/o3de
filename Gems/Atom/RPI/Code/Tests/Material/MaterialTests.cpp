@@ -35,7 +35,9 @@ namespace UnitTest
         Data::Asset<MaterialTypeAsset> m_testMaterialTypeAsset;
         Data::Asset<MaterialAsset> m_testMaterialAsset;
         Data::Asset<StreamingImageAsset> m_testImageAsset;
+        Data::Asset<AttachmentImageAsset> m_testAttachmentImageAsset;
         Data::Instance<StreamingImage> m_testImage;
+        Data::Instance<AttachmentImage> m_testAttachmentImage;
 
         Data::Asset<StreamingImageAsset> CreateTestImageAsset() const
         {
@@ -55,6 +57,19 @@ namespace UnitTest
             imageCreator.AddMipChainAsset(*mipChainAsset.Get());
             imageCreator.SetFlags(StreamingImageFlags::NotStreamable);
             imageCreator.SetPoolAssetId(ImageSystemInterface::Get()->GetSystemStreamingPool()->GetAssetId());
+            imageCreator.End(testImageAsset);
+
+            return testImageAsset;
+        }
+
+        Data::Asset<AttachmentImageAsset> CreateAttachmentImageAsset() const
+        {
+            Data::Asset<AttachmentImageAsset> testImageAsset;
+
+            AttachmentImageAssetCreator imageCreator;
+            imageCreator.Begin(Uuid::CreateRandom());
+            imageCreator.SetPoolAsset({ImageSystemInterface::Get()->GetSystemAttachmentPool()->GetAssetId(), azrtti_typeid<ResourcePoolAsset>()});
+            imageCreator.SetName(Name("testAttachmentImageAsset"), true);
             imageCreator.End(testImageAsset);
 
             return testImageAsset;
@@ -84,8 +99,11 @@ namespace UnitTest
             m_testImageAsset = CreateTestImageAsset();
             m_testImage = StreamingImage::FindOrCreate(m_testImageAsset);
 
+            m_testAttachmentImageAsset = CreateAttachmentImageAsset();
+            m_testAttachmentImage = AttachmentImage::FindOrCreate(m_testAttachmentImageAsset);
+
             MaterialAssetCreator materialCreator;
-            materialCreator.Begin(Uuid::CreateRandom(), *m_testMaterialTypeAsset);
+            materialCreator.Begin(Uuid::CreateRandom(), m_testMaterialTypeAsset, true);
             materialCreator.SetPropertyValue(Name{ "MyFloat2" }, Vector2{ 0.1f, 0.2f });
             materialCreator.SetPropertyValue(Name{ "MyFloat3" }, Vector3{ 1.1f, 1.2f, 1.3f });
             materialCreator.SetPropertyValue(Name{ "MyFloat4" }, Vector4{ 2.1f, 2.2f, 2.3f, 2.4f });
@@ -96,6 +114,7 @@ namespace UnitTest
             materialCreator.SetPropertyValue(Name{ "MyBool" }, true);
             materialCreator.SetPropertyValue(Name{ "MyImage" }, Data::Asset<ImageAsset>(m_testImageAsset));
             materialCreator.SetPropertyValue(Name{ "MyEnum" }, 2u);
+            materialCreator.SetPropertyValue(Name{ "MyAttachmentImage" }, Data::Asset<ImageAsset>(m_testAttachmentImageAsset));
             materialCreator.End(m_testMaterialAsset);
         }
 
@@ -107,6 +126,8 @@ namespace UnitTest
             m_testMaterialAsset.Reset();
             m_testImageAsset.Reset();
             m_testImage = nullptr;
+            m_testAttachmentImageAsset.Reset();
+            m_testAttachmentImage = nullptr;
 
             RPITestFixture::TearDown();
         }
@@ -145,6 +166,7 @@ namespace UnitTest
 
             EXPECT_EQ(srgData.GetImageView(srgData.FindShaderInputImageIndex(Name{ "m_image" }), 0), nullptr);
             EXPECT_EQ(srgData.GetConstant<uint32_t>(srgData.FindShaderInputConstantIndex(Name{ "m_enum" })), 1u);
+            EXPECT_EQ(srgData.GetImageView(srgData.FindShaderInputImageIndex(Name{ "m_attachmentImage" }), 0), nullptr);
         }
 
         void ValidateInitialValuesFromMaterial(Data::Instance<Material> material)
@@ -161,6 +183,7 @@ namespace UnitTest
             EXPECT_EQ(material->GetPropertyValue<Color>(material->FindPropertyIndex(Name{ "MyColor" })), Color(1.0f, 1.0f, 1.0f, 1.0f));
             EXPECT_EQ(material->GetPropertyValue<Data::Instance<Image>>(material->FindPropertyIndex(Name{ "MyImage" })), m_testImage);
             EXPECT_EQ(material->GetPropertyValue<uint32_t>(material->FindPropertyIndex(Name{ "MyEnum" })), 2u);
+            EXPECT_EQ(material->GetPropertyValue<Data::Instance<Image>>(material->FindPropertyIndex(Name{ "MyAttachmentImage" })), m_testAttachmentImage);
 
             // Dig in to the SRG to make sure the values were applied there as well...
 
@@ -181,6 +204,7 @@ namespace UnitTest
 
             EXPECT_EQ(srgData.GetImageView(srgData.FindShaderInputImageIndex(Name{ "m_image" }), 0), m_testImage->GetImageView());
             EXPECT_EQ(srgData.GetConstant<uint32_t>(srgData.FindShaderInputConstantIndex(Name{ "m_enum" })), 2u);
+            EXPECT_EQ(srgData.GetImageView(srgData.FindShaderInputImageIndex(Name{ "m_attachmentImage" }), 0), m_testAttachmentImage->GetImageView());
         }
 
         //! Provides write access to private material asset property values, primarily for simulating
@@ -289,7 +313,7 @@ namespace UnitTest
         materialTypeCreator.End(materialTypeAsset);
 
         MaterialAssetCreator materialAssetCreator;
-        materialAssetCreator.Begin(Uuid::CreateRandom(), *materialTypeAsset);
+        materialAssetCreator.Begin(Uuid::CreateRandom(), materialTypeAsset, true);
         materialAssetCreator.End(materialAsset);
 
         Data::Instance<Material> material = Material::FindOrCreate(materialAsset);
@@ -330,7 +354,7 @@ namespace UnitTest
         EXPECT_FALSE(material->SetPropertyValue<float>(material->FindPropertyIndex(Name{ "MyFloat" }), 2.5f));
         
         ProcessQueuedSrgCompilations(m_testMaterialShaderAsset, m_testMaterialSrgLayout->GetName());
-        EXPECT_FALSE(material->Compile());
+        EXPECT_TRUE(material->Compile());
 
         // Make sure the SRG is still tainted, because the SetPropertyValue() functions weren't processed
         EXPECT_EQ(srgData.GetConstant<float>(srgData.FindShaderInputConstantIndex(Name{ "m_float" })), 0.0f);
@@ -341,7 +365,7 @@ namespace UnitTest
         Data::Asset<MaterialAsset> materialAssetWithEmptyImage;
 
         MaterialAssetCreator materialCreator;
-        materialCreator.Begin(Uuid::CreateRandom(), *m_testMaterialTypeAsset);
+        materialCreator.Begin(Uuid::CreateRandom(), m_testMaterialTypeAsset, true);
         materialCreator.SetPropertyValue(Name{"MyFloat2"}, Vector2{0.1f, 0.2f});
         materialCreator.SetPropertyValue(Name{"MyFloat3"}, Vector3{1.1f, 1.2f, 1.3f});
         materialCreator.SetPropertyValue(Name{"MyFloat4"}, Vector4{2.1f, 2.2f, 2.3f, 2.4f});
@@ -379,7 +403,7 @@ namespace UnitTest
 
         Data::Asset<MaterialAsset> emptyMaterialAsset;
         MaterialAssetCreator materialCreator;
-        materialCreator.Begin(Uuid::CreateRandom(), *emptyMaterialTypeAsset);
+        materialCreator.Begin(Uuid::CreateRandom(), emptyMaterialTypeAsset, true);
         EXPECT_TRUE(materialCreator.End(emptyMaterialAsset));
 
         Data::Instance<Material> material = Material::FindOrCreate(emptyMaterialAsset);
@@ -389,18 +413,9 @@ namespace UnitTest
 
     Ptr<ShaderOptionGroupLayout> CreateTestOptionsLayout()
     {
-        AZStd::vector<RPI::ShaderOptionValuePair> enumOptionValues;
-        enumOptionValues.push_back({Name("Low"),  RPI::ShaderOptionValue(0)});
-        enumOptionValues.push_back({Name("Med"), RPI::ShaderOptionValue(1)});
-        enumOptionValues.push_back({Name("High"), RPI::ShaderOptionValue(2)});
-
-        AZStd::vector<RPI::ShaderOptionValuePair> boolOptionValues;
-        boolOptionValues.push_back({Name("False"),  RPI::ShaderOptionValue(0)});
-        boolOptionValues.push_back({Name("True"), RPI::ShaderOptionValue(1)});
-
-        AZStd::vector<RPI::ShaderOptionValuePair> rangeOptionValues;
-        rangeOptionValues.push_back({Name("1"),  RPI::ShaderOptionValue(1)});
-        rangeOptionValues.push_back({Name("10"), RPI::ShaderOptionValue(10)});
+        AZStd::vector<RPI::ShaderOptionValuePair> enumOptionValues = CreateEnumShaderOptionValues({"Low", "Med", "High"});
+        AZStd::vector<RPI::ShaderOptionValuePair> boolOptionValues = CreateBoolShaderOptionValues();
+        AZStd::vector<RPI::ShaderOptionValuePair> rangeOptionValues = CreateIntRangeShaderOptionValues(1, 10);
 
         Ptr<ShaderOptionGroupLayout> shaderOptions = ShaderOptionGroupLayout::Create();
         uint32_t order = 0;
@@ -450,7 +465,7 @@ namespace UnitTest
         materialTypeCreator.End(m_testMaterialTypeAsset);
 
         MaterialAssetCreator materialAssetCreator;
-        materialAssetCreator.Begin(Uuid::CreateRandom(), *m_testMaterialTypeAsset);
+        materialAssetCreator.Begin(Uuid::CreateRandom(), m_testMaterialTypeAsset, true);
         materialAssetCreator.End(m_testMaterialAsset);
 
         Data::Instance<Material> material = Material::FindOrCreate(m_testMaterialAsset);
@@ -521,7 +536,7 @@ namespace UnitTest
         materialTypeCreator.End(m_testMaterialTypeAsset);
 
         MaterialAssetCreator materialAssetCreator;
-        materialAssetCreator.Begin(Uuid::CreateRandom(), *m_testMaterialTypeAsset);
+        materialAssetCreator.Begin(Uuid::CreateRandom(), m_testMaterialTypeAsset, true);
         materialAssetCreator.End(m_testMaterialAsset);
 
         Data::Instance<Material> material = Material::FindOrCreate(m_testMaterialAsset);
@@ -591,7 +606,7 @@ namespace UnitTest
         materialTypeCreator.End(m_testMaterialTypeAsset);
 
         MaterialAssetCreator materialAssetCreator;
-        materialAssetCreator.Begin(Uuid::CreateRandom(), *m_testMaterialTypeAsset);
+        materialAssetCreator.Begin(Uuid::CreateRandom(), m_testMaterialTypeAsset, true);
         materialAssetCreator.End(m_testMaterialAsset);
 
         Data::Instance<Material> material = Material::FindOrCreate(m_testMaterialAsset);
@@ -655,7 +670,7 @@ namespace UnitTest
         materialTypeCreator.End(m_testMaterialTypeAsset);
 
         MaterialAssetCreator materialAssetCreator;
-        materialAssetCreator.Begin(Uuid::CreateRandom(), *m_testMaterialTypeAsset);
+        materialAssetCreator.Begin(Uuid::CreateRandom(), m_testMaterialTypeAsset, true);
         materialAssetCreator.End(m_testMaterialAsset);
 
         Data::Instance<Material> material = Material::FindOrCreate(m_testMaterialAsset);
@@ -669,7 +684,7 @@ namespace UnitTest
     {
         Data::Asset<MaterialAsset> materialAsset;
         MaterialAssetCreator materialCreator;
-        materialCreator.Begin(Uuid::CreateRandom(), *m_testMaterialTypeAsset);
+        materialCreator.Begin(Uuid::CreateRandom(), m_testMaterialTypeAsset, true);
         materialCreator.SetPropertyValue(Name{ "MyFloat2" }, Vector2{ 0.1f, 0.2f });
         materialCreator.SetPropertyValue(Name{ "MyFloat3" }, Vector3{ 1.1f, 1.2f, 1.3f });
         materialCreator.SetPropertyValue(Name{ "MyFloat4" }, Vector4{ 2.1f, 2.2f, 2.3f, 2.4f });
@@ -778,7 +793,7 @@ namespace UnitTest
         materialTypeCreator.End(materialTypeAsset);
 
         MaterialAssetCreator materialAssetCreator;
-        materialAssetCreator.Begin(Uuid::CreateRandom(), *materialTypeAsset);
+        materialAssetCreator.Begin(Uuid::CreateRandom(), materialTypeAsset, true);
         materialAssetCreator.End(materialAsset);
 
         Data::Instance<Material> material = Material::FindOrCreate(materialAsset);
@@ -854,12 +869,17 @@ namespace UnitTest
         AddCommonTestMaterialProperties(materialTypeCreator);
         materialTypeCreator.SetVersion(2);
         MaterialVersionUpdate versionUpdate(2);
-        versionUpdate.AddAction(MaterialVersionUpdate::RenamePropertyAction({Name{ "OldName" },Name{ "MyInt" }}));
+        versionUpdate.AddAction(MaterialVersionUpdate::Action(Name("rename"),
+                {
+                    { Name{ "from" }, AZStd::string("OldName") },
+                    { Name{ "to"   }, AZStd::string("MyInt")   }
+                } ));
+
         materialTypeCreator.AddVersionUpdate(versionUpdate);
         materialTypeCreator.End(m_testMaterialTypeAsset);
 
         MaterialAssetCreator materialCreator;
-        materialCreator.Begin(Uuid::CreateRandom(), *m_testMaterialTypeAsset);
+        materialCreator.Begin(Uuid::CreateRandom(), m_testMaterialTypeAsset, true);
         materialCreator.End(m_testMaterialAsset);
 
         Data::Instance<Material> material = Material::FindOrCreate(m_testMaterialAsset);
@@ -908,11 +928,17 @@ namespace UnitTest
         CheckPropertyValueRoundTrip(Data::Asset<Data::AssetData>{});
         CheckPropertyValueRoundTrip(Data::Asset<ImageAsset>{});
         CheckPropertyValueRoundTrip(Data::Asset<StreamingImageAsset>{});
+        CheckPropertyValueRoundTrip(Data::Asset<AttachmentImageAsset>{});
         CheckPropertyValueRoundTrip(Data::Asset<Data::AssetData>{Uuid::CreateRandom(), azrtti_typeid<AZ::RPI::StreamingImageAsset>(), "TestAssetPath.png"});
+        CheckPropertyValueRoundTrip(Data::Asset<Data::AssetData>{Uuid::CreateRandom(), azrtti_typeid<AZ::RPI::AttachmentImageAsset>(), "TestAssetPath.attimage"});
         CheckPropertyValueRoundTrip(Data::Asset<ImageAsset>{Uuid::CreateRandom(), azrtti_typeid<AZ::RPI::StreamingImageAsset>(), "TestAssetPath.png"});
+        CheckPropertyValueRoundTrip(Data::Asset<ImageAsset>{Uuid::CreateRandom(), azrtti_typeid<AZ::RPI::AttachmentImageAsset>(), "TestAssetPath.attimage"});
         CheckPropertyValueRoundTrip(Data::Asset<StreamingImageAsset>{Uuid::CreateRandom(), azrtti_typeid<AZ::RPI::StreamingImageAsset>(), "TestAssetPath.png"});
+        CheckPropertyValueRoundTrip(Data::Asset<AttachmentImageAsset>{Uuid::CreateRandom(), azrtti_typeid<AZ::RPI::AttachmentImageAsset>(), "TestAssetPath.attimage"});
         CheckPropertyValueRoundTrip(m_testImageAsset);
+        CheckPropertyValueRoundTrip(m_testAttachmentImageAsset);
         CheckPropertyValueRoundTrip(Data::Instance<Image>{m_testImage});
+        CheckPropertyValueRoundTrip(Data::Instance<Image>{m_testAttachmentImage});
         CheckPropertyValueRoundTrip(AZStd::string{"hello"});
     }
 }

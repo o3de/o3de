@@ -23,7 +23,7 @@
 #include <Atom/RPI.Reflect/Base.h>
 #include <Atom/RPI.Reflect/Asset/AssetReference.h>
 
-#include <AtomCore/std/containers/array_view.h>
+#include <AzCore/std/containers/span.h>
 
 #include <AzCore/std/containers/array.h>
 #include <AzCore/std/smart_ptr/intrusive_base.h>
@@ -72,12 +72,6 @@ namespace AZ
             //! Returns the corresponding ScopeAttachmentAccess for this slot
             RHI::ScopeAttachmentAccess GetAttachmentAccess() const;
 
-            //! Returns true if the filters allow the given format
-            bool AcceptsFormat(const RHI::UnifiedAttachmentDescriptor& desc) const;
-
-            //! Returns true if the filters allow the given image dimension
-            bool AcceptsDimension(const RHI::UnifiedAttachmentDescriptor& desc) const;
-
             //! Name of the slot
             Name m_name;
 
@@ -121,16 +115,10 @@ namespace AZ
 
             //! List of formats to fallback to if the format specified in the view descriptor is not supported by the device
             AZStd::vector<RHI::Format> m_formatFallbacks;
-
-            //! List of allowed formats for the input. If list is empty, the input accepts all formats
-            AZStd::vector<RHI::Format> m_formatFilter;
-
-            //! List of allowed image dimensions for the input. If empty, the input accepts all dimensions
-            AZStd::vector<RHI::ImageDimension> m_dimensionFilter;
         };
 
         using PassSlotList = AZStd::vector<PassSlot>;
-        using PassSlotListView = AZStd::array_view<PassSlot>;
+        using PassSlotListView = AZStd::span<const PassSlot>;
 
         //! Refers to a PassAttachment or a PassAttachmentBinding on an adjacent Pass in the hierarchy. Specifies the
         //! name of attachment or binding/slot as well as the name of the Pass on which the attachment or binding lives.
@@ -166,13 +154,13 @@ namespace AZ
         };
 
         using PassConnectionList = AZStd::vector<PassConnection>;
-        using PassConnectionListView = AZStd::array_view<PassConnection>;
+        using PassConnectionListView = AZStd::span<const PassConnection>;
 
         //! Specifies a connection from a Pass's output slot to one of it's input slots. This is used as a fallback
         //! for the output when the pass is disabled so the output can present a valid attachments to subsequent passes.
         struct PassFallbackConnection final
         {
-            AZ_TYPE_INFO(PassConnection, "{281C6C09-2BB8-49C0-967E-DF6A57DE1095}");
+            AZ_TYPE_INFO(PassFallbackConnection, "{281C6C09-2BB8-49C0-967E-DF6A57DE1095}");
             static void Reflect(AZ::ReflectContext* context);
 
             //! Name of the input slot that will provide the fallback attachment
@@ -183,7 +171,7 @@ namespace AZ
         };
 
         using PassFallbackConnectionList = AZStd::vector<PassFallbackConnection>;
-        using PassFallbackConnectionListView = AZStd::array_view<PassFallbackConnection>;
+        using PassFallbackConnectionListView = AZStd::span<const PassFallbackConnection>;
 
         // --- Pass Attachment Descriptor Classes ---
 
@@ -269,7 +257,7 @@ namespace AZ
         };
 
         using PassImageAttachmentDescList = AZStd::vector<PassImageAttachmentDesc>;
-        using PassImageAttachmentDescListView = AZStd::array_view<PassAttachmentDesc>;
+        using PassImageAttachmentDescListView = AZStd::span<const PassAttachmentDesc>;
 
         //! A PassAttachmentDesc used for buffers
         struct PassBufferAttachmentDesc final
@@ -283,7 +271,7 @@ namespace AZ
         };
 
         using PassBufferAttachmentDescList = AZStd::vector<PassBufferAttachmentDesc>;
-        using PassBufferAttachmentDescListView = AZStd::array_view<PassBufferAttachmentDesc>;
+        using PassBufferAttachmentDescListView = AZStd::span<const PassBufferAttachmentDesc>;
 
     }   // namespace RPI
 

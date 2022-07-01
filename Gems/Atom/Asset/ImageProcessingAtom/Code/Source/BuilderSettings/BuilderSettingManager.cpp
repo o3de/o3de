@@ -43,7 +43,7 @@
 
 namespace ImageProcessingAtom
 {
-    const char* BuilderSettingManager::s_defaultConfigRelativeFolder = "Gems/Atom/Asset/ImageProcessingAtom/Assets/Config/";
+    const char* BuilderSettingManager::s_defaultConfigFolder = "@gemroot:ImageProcessingAtom@/Assets/Config/";
     const char* BuilderSettingManager::s_projectConfigRelativeFolder = "Config/AtomImageBuilder/";
     const char* BuilderSettingManager::s_builderSettingFileName = "ImageBuilder.settings";
     const char* BuilderSettingManager::s_presetFileExtension = "preset";
@@ -237,10 +237,9 @@ namespace ImageProcessingAtom
                 AZStd::string("File IO instance needs to be initialized to resolve ImageProcessing builder file aliases"));
         }
 
-        if (auto engineRoot = fileIoBase->ResolvePath("@engroot@"); engineRoot.has_value())
+        if (auto defaultConfigFolder = fileIoBase->ResolvePath(s_defaultConfigFolder); defaultConfigFolder.has_value())
         {
-            m_defaultConfigFolder = *engineRoot;
-            m_defaultConfigFolder /= s_defaultConfigRelativeFolder;
+            m_defaultConfigFolder = *defaultConfigFolder;
         }
 
         if (auto sourceGameRoot = fileIoBase->ResolvePath("@projectroot@"); sourceGameRoot.has_value())
@@ -588,7 +587,7 @@ namespace ImageProcessingAtom
         metafilePath = AZStd::string();
     }
 
-    AZStd::string GetFileMask(AZStd::string_view imageFilePath)
+    AZStd::string BuilderSettingManager::GetFileMask(AZStd::string_view imageFilePath) const
     {
         //get file name
         AZStd::string fileName;
@@ -604,6 +603,32 @@ namespace ImageProcessingAtom
         }
 
         return AZStd::string();
+    }
+
+    PresetName BuilderSettingManager::GetDefaultPreset() const
+    {
+        return m_defaultPreset;
+    }
+
+    PresetName BuilderSettingManager::GetDefaultAlphaPreset() const
+    {
+        return m_defaultPresetAlpha;
+    }
+
+    AZStd::vector<PresetName> BuilderSettingManager::GetPresetsForFileMask(const FileMask& fileMask) const
+    {
+        AZStd::vector<PresetName> presets;
+
+        AZStd::lock_guard<AZStd::recursive_mutex> lock(m_presetMapLock);
+        if (auto it = m_presetFilterMap.find(fileMask); it != m_presetFilterMap.end())
+        {
+            for (const PresetName& presetName : it->second)
+            {
+                presets.push_back(presetName);
+            }
+        }
+
+        return presets;
     }
 
     bool BuilderSettingManager::IsValidPreset(PresetName presetName) const

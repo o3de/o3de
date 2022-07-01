@@ -15,26 +15,18 @@
 #include <AzCore/Serialization/Json/JsonUtils.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/std/numeric.h>
+#include <Tests/DOM/DomFixtures.h>
 
 namespace AZ::Dom::Tests
 {
-    class DomValueTests : public UnitTest::AllocatorsFixture
+    class DomValueTests : public DomTestFixture
     {
     public:
-        void SetUp() override
-        {
-            UnitTest::AllocatorsFixture::SetUp();
-            NameDictionary::Create();
-            AZ::AllocatorInstance<ValueAllocator>::Create();
-        }
-
         void TearDown() override
         {
             m_value = Value();
 
-            AZ::AllocatorInstance<ValueAllocator>::Destroy();
-            NameDictionary::Destroy();
-            UnitTest::AllocatorsFixture::TearDown();
+            DomTestFixture::TearDown();
         }
 
         void PerformValueChecks()

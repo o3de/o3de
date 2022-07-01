@@ -8,8 +8,10 @@
 #pragma once
 
 #include <AzCore/Math/Vector2.h>
+#include <AzCore/PlatformDef.h>
+
 #include <LyShine/UiBase.h>
-#include <AtomCore/Instance/Instance.h>
+#include <AtomCore/Instance/InstanceData.h>
 
 class IDraw2d;
 class ISprite;
@@ -19,6 +21,7 @@ class UiEntityContext;
 namespace AZ::RPI
 {
     class Image;
+    class AttachmentImageAsset;
 }
 
 // The following ifdef block is the standard way of creating macros which make exporting
@@ -28,9 +31,9 @@ namespace AZ::RPI
 // LYSHINE_API functions as being imported from a DLL, whereas this DLL sees symbols
 // defined with this macro as being exported.
 #ifdef LYSHINE_EXPORTS
-    #define LYSHINE_API DLL_EXPORT
+    #define LYSHINE_API AZ_DLL_EXPORT
 #else
-    #define LYSHINE_API DLL_IMPORT
+    #define LYSHINE_API AZ_DLL_IMPORT
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -38,7 +41,10 @@ namespace AZ::RPI
 class ILyShine
 {
 public:
-    virtual ~ILyShine(){}
+    AZ_RTTI(ILyShine, "{652ED9D7-0782-44E8-BCE7-65DD38C90907}");
+
+    ILyShine() = default;
+    virtual ~ILyShine() = default;
 
     //! Delete this object
     virtual void Release() = 0;
@@ -82,8 +88,8 @@ public:
     //! Load a sprite object.
     virtual ISprite* LoadSprite(const AZStd::string& pathname) = 0;
 
-    //! Create a sprite that references the specified render target
-    virtual ISprite* CreateSprite(const AZStd::string& renderTargetName) = 0;
+    //! Create a sprite that references the specified render target asset
+    virtual ISprite* CreateSprite(const AZ::Data::Asset<AZ::RPI::AttachmentImageAsset>& attachmentImageAsset) = 0;
 
     //! Check if a sprite's texture asset exists. The .sprite sidecar file is optional and is not checked
     virtual bool DoesSpriteTextureAssetExist(const AZStd::string& pathname) = 0;
