@@ -10,6 +10,7 @@
 
 #include <AzCore/Console/Console.h>
 #include <AzCore/Math/Frustum.h>
+#include <AzCore/Math/ShapeIntersection.h>
 #include <AzCore/Jobs/Algorithms.h>
 #include <AzCore/Jobs/JobCompletion.h>
 #include <AzCore/Jobs/JobFunction.h>
@@ -21,6 +22,8 @@
 #include <Atom/RPI.Public/MeshDrawPacket.h>
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/View.h>
+#include <Atom/RPI.Public/AuxGeom/AuxGeomDraw.h>
+#include <Atom/RPI.Public/AuxGeom/AuxGeomFeatureProcessorInterface.h>
 #include <Atom/RPI.Public/Buffer/Buffer.h>
 #include <Atom/RPI.Public/Model/Model.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
@@ -46,6 +49,14 @@ namespace Terrain
         "Turns on debug coloring for terrain mesh lods."
     );
 
+    AZ_CVAR(bool,
+        r_debugTerrainAabbs,
+        false,
+        nullptr,
+        AZ::ConsoleFunctorFlags::Null,
+        "Turns on debug aabbs for terrain sectors."
+        );
+
     TerrainMeshManager::TerrainMeshManager()
     {
     }
@@ -58,7 +69,7 @@ namespace Terrain
     void TerrainMeshManager::Initialize(AZ::RPI::Scene& parentScene)
     {
         m_parentScene = &parentScene;
-        InitializeCommonSectorData();
+        InitializeRayTracingData();
 
         AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusConnect();
 
@@ -82,6 +93,28 @@ namespace Terrain
 
         // This will trigger a draw packet rebuild later.
         AZ::RPI::ShaderSystemInterface::Get()->SetGlobalShaderOption(AZ::Name{ "o_useTerrainClod" }, AZ::RPI::ShaderOptionValue{ m_config.m_clodEnabled });
+    }
+
+    bool TerrainMeshManager::UpdateGridSize(float distanceToFirstLod)
+    {
+        float queryResolution = 1.0f;
+        AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
+            queryResolution, &AzFramework::Terrain::TerrainDataRequests::GetTerrainHeightQueryResolution);
+
+        float quadsToFirstLod = distanceToFirstLod / queryResolution;
+        uint32_t quadsPerSector = aznumeric_cast<uint32_t>(quadsToFirstLod / 4.0f);
+        uint32_t gridSize = AZ::RHI::IsPowerOfTwo(quadsPerSector) ? quadsPerSector : (AZ::RHI::NextPowerOfTwo(quadsPerSector) >> 1);
+        gridSize = AZStd::GetMin(gridSize, 128u); // x/y positions must be able to fix in 8 bits (256 is too large by 1)
+        gridSize = AZStd::GetMax(gridSize, 8u); // make sure there's enough vertices to be worth drawing.
+
+        if (gridSize != m_gridSize)
+        {
+            m_gridSize = aznumeric_cast<uint8_t>(gridSize);
+            m_gridVerts1D = m_gridSize + 1;
+            m_gridVerts2D = m_gridVerts1D * m_gridVerts1D;
+            return true;
+        }
+        return false;
     }
 
     void TerrainMeshManager::SetMaterial(MaterialInstance materialInstance)
@@ -147,6 +180,7 @@ namespace Terrain
         if (m_rebuildSectors)
         {
             // Rebuild the sectors when the configuration or terrain world changes
+            CreateCommonBuffers();
             RebuildSectors();
             m_rebuildSectors = false;
         }
@@ -155,6 +189,8 @@ namespace Terrain
         mainView->GetCameraTransform().GetTranslation().StoreToFloat3(meshData.m_mainCameraPosition.data());
         meshData.m_firstLodDistance = m_config.m_firstLodDistance;
         meshData.m_rcpClodDistance = 1.0f / m_config.m_clodDistance;
+        meshData.m_rcpGridSize = 1.0f / m_gridSize;
+        meshData.m_gridToQuadScale = m_gridSize / 255.0f;
         terrainSrg->SetConstant(m_srgMeshDataIndex, meshData);
     }
 
@@ -171,7 +207,7 @@ namespace Terrain
             const Vector2i newStartCoord = [&]()
             {
                 const float maxDistance = m_config.m_firstLodDistance * aznumeric_cast<float>(1 << lodLevel);
-                const float gridMeters = (GridSize * m_sampleSpacing) * (1 << lodLevel);
+                const float gridMeters = (m_gridSize * m_sampleSpacing) * (1 << lodLevel);
                 const int32_t startCoordX = aznumeric_cast<int32_t>(AZStd::floorf((newPosition.GetX() - maxDistance) / gridMeters));
                 const int32_t startCoordY = aznumeric_cast<int32_t>(AZStd::floorf((newPosition.GetY() - maxDistance) / gridMeters));
 
@@ -298,7 +334,7 @@ namespace Terrain
 
     void TerrainMeshManager::RebuildSectors()
     {
-        const float gridMeters = GridSize * m_sampleSpacing;
+        const float gridMeters = m_gridSize * m_sampleSpacing;
 
         const auto& materialAsset = m_materialInstance->GetAsset();
         const auto& shaderAsset = materialAsset->GetMaterialTypeAsset()->GetShaderAssetForObjectSrg();
@@ -339,14 +375,14 @@ namespace Terrain
             {
                 sector.m_srg = AZ::RPI::ShaderResourceGroup::Create(shaderAsset, materialAsset->GetObjectSrgLayout()->GetName());
 
-                sector.m_heightsNormalsBuffer = CreateMeshBufferInstance(sizeof(HeightNormalVertex), GridVerts2D);
+                sector.m_heightsNormalsBuffer = CreateMeshBufferInstance(sizeof(HeightNormalVertex), m_gridVerts2D);
                 sector.m_streamBufferViews[StreamIndex::XYPositions] = CreateStreamBufferView(m_xyPositionsBuffer);
                 sector.m_streamBufferViews[StreamIndex::Heights] = CreateStreamBufferView(sector.m_heightsNormalsBuffer);
                 sector.m_streamBufferViews[StreamIndex::Normals] = CreateStreamBufferView(sector.m_heightsNormalsBuffer, AZ::RHI::GetFormatSize(HeightFormat));
 
                 if (m_config.m_clodEnabled)
                 {
-                    sector.m_lodHeightsNormalsBuffer = CreateMeshBufferInstance(sizeof(HeightNormalVertex), GridVerts2D);
+                    sector.m_lodHeightsNormalsBuffer = CreateMeshBufferInstance(sizeof(HeightNormalVertex), m_gridVerts2D);
                     sector.m_streamBufferViews[StreamIndex::LodHeights] = CreateStreamBufferView(sector.m_lodHeightsNormalsBuffer);
                     sector.m_streamBufferViews[StreamIndex::LodNormals] = CreateStreamBufferView(sector.m_lodHeightsNormalsBuffer, AZ::RHI::GetFormatSize(HeightFormat));
                 }
@@ -381,26 +417,27 @@ namespace Terrain
             UpdateCandidateSectors();
         }
 
+        const AZ::RPI::AuxGeomDrawPtr auxGeomPtr = r_debugTerrainAabbs ?
+            AZ::RPI::AuxGeomFeatureProcessorInterface::GetDrawQueueForScene(m_parentScene) :
+            nullptr;
+
         // Compare view frustums against the list of candidate sectors and submit those sectors to draw.
         for (auto& view : process.m_views)
         {
             const AZ::Frustum viewFrustum = AZ::Frustum::CreateFromMatrixColumnMajor(view->GetWorldToClipMatrix());
-            const AZ::Vector3 viewVector = viewFrustum.GetPlane(AZ::Frustum::PlaneId::Near).GetNormal();
-            const AZ::Vector3 viewPosition = view->GetCameraTransform().GetTranslation();
-
             for (CandidateSector& candidateSector : m_candidateSectors)
             {
-                float radius = 0.0f;
-                [[maybe_unused]] AZ::Vector3 center;
-                candidateSector.m_aabb.GetAsSphere(center, radius);
-
-                if (viewVector.Dot(viewPosition - candidateSector.m_aabb.GetCenter()) >= -radius || // Cheap check to eliminate sectors behind camera
-                    viewFrustum.IntersectAabb(candidateSector.m_aabb) == AZ::IntersectResult::Overlaps) // Check against frustum
+                if (AZ::ShapeIntersection::Overlaps(viewFrustum, candidateSector.m_aabb))
                 {
                     view->AddDrawPacket(candidateSector.m_rhiDrawPacket);
+                    if (auxGeomPtr && view == mainView)
+                    {
+                        auxGeomPtr->DrawAabb(candidateSector.m_aabb, AZ::Colors::Red, AZ::RPI::AuxGeomDraw::DrawStyle::Line);
+                    }
                 }
             }
         }
+
     }
 
     void TerrainMeshManager::RebuildDrawPackets()
@@ -513,8 +550,10 @@ namespace Terrain
             AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
                 queryResolution, &AzFramework::Terrain::TerrainDataRequests::GetTerrainHeightQueryResolution);
 
+            bool gridSizeChanged = UpdateGridSize(m_config.m_firstLodDistance);
+
             // Sectors need to be rebuilt if the sample spacing changes.
-            m_rebuildSectors = m_rebuildSectors || (m_sampleSpacing != queryResolution);
+            m_rebuildSectors = m_rebuildSectors || (m_sampleSpacing != queryResolution) || gridSizeChanged;
 
             m_worldBounds = worldBounds;
             m_sampleSpacing = queryResolution;
@@ -550,13 +589,13 @@ namespace Terrain
         // buffer. This in turn increases the probability that previously processed vertices will be in the vertex cache.
 
         // Generate x and y coordinates using Moser-de Bruijn sequences, so the final z-order position can be found quickly by interleaving.
-        static_assert(GridSize < AZStd::numeric_limits<uint8_t>::max(),
+        AZ_Assert(m_gridSize < AZStd::numeric_limits<uint8_t>::max(),
             "The following equation to generate z-order indices requires the number to be 8 or fewer bits.");
 
-        AZStd::array<uint16_t, GridSize> zOrderX;
-        AZStd::array<uint16_t, GridSize> zOrderY;
+        AZStd::vector<uint16_t> zOrderX(m_gridSize);
+        AZStd::vector<uint16_t> zOrderY(m_gridSize);
 
-        for (uint16_t i = 0; i < GridSize; ++i)
+        for (uint16_t i = 0; i < m_gridSize; ++i)
         {
             // This will take any 8 bit number and put 0's in between each bit. For instance 0b1011 becomes 0b1000101.
             uint16_t value = ((i * 0x0101010101010101ULL & 0x8040201008040201ULL) * 0x0102040810204081ULL >> 49) & 0x5555;
@@ -565,19 +604,19 @@ namespace Terrain
         }
 
         AZStd::vector<uint16_t> m_indices;
-        m_indices.resize_no_construct(GridSize * GridSize * 6); // total number of quads, 2 triangles with 6 indices per quad.
+        m_indices.resize_no_construct(m_gridSize * m_gridSize * 6); // total number of quads, 2 triangles with 6 indices per quad.
 
         // Create the indices for a mesh patch in z-order for vertex cache optimization.
-        for (uint16_t y = 0; y < GridSize; ++y)
+        for (uint16_t y = 0; y < m_gridSize; ++y)
         {
-            for (uint16_t x = 0; x < GridSize; ++x)
+            for (uint16_t x = 0; x < m_gridSize; ++x)
             {
-                uint16_t quadOrder = (zOrderX[x] | zOrderY[y]); // Interleave the x and y arrays from above for a final z-order index.
+                uint32_t quadOrder = (zOrderX[x] | zOrderY[y]); // Interleave the x and y arrays from above for a final z-order index.
                 quadOrder *= 6; // 6 indices per quad (2 triangles, 3 vertices each)
 
-                const uint16_t topLeft = y * GridVerts1D + x;
+                const uint16_t topLeft = y * m_gridVerts1D + x;
                 const uint16_t topRight = topLeft + 1;
-                const uint16_t bottomLeft = topLeft + GridVerts1D;
+                const uint16_t bottomLeft = topLeft + m_gridVerts1D;
                 const uint16_t bottomRight = bottomLeft + 1;
 
                 m_indices.at(quadOrder + 0) = topLeft;
@@ -590,10 +629,10 @@ namespace Terrain
         }
 
         // Infer the vertex order from the indices for cache efficient vertex buffer reads. Create a table that
-        // can quickly map from a linear order (y * GridVerts1D + x) to the order dictated by the indices. Update
+        // can quickly map from a linear order (y * m_gridVerts1D + x) to the order dictated by the indices. Update
         // the index buffer to point directly to these new indices.
         constexpr uint16_t VertexNotSet = 0xFFFF;
-        m_vertexOrder = AZStd::vector<uint16_t>(GridVerts2D, VertexNotSet);
+        m_vertexOrder = AZStd::vector<uint16_t>(m_gridVerts2D, VertexNotSet);
         uint16_t vertex = 0;
         for (uint16_t& index : m_indices)
         {
@@ -625,12 +664,12 @@ namespace Terrain
         };
 
         AZStd::vector<VertexPosition> m_xyPositions;
-        m_xyPositions.resize_no_construct(GridVerts2D);
-        for (uint8_t y = 0; y < GridVerts1D; ++y)
+        m_xyPositions.resize_no_construct(m_gridVerts2D);
+        for (uint8_t y = 0; y < m_gridVerts1D; ++y)
         {
-            for (uint8_t x = 0; x < GridVerts1D; ++x)
+            for (uint8_t x = 0; x < m_gridVerts1D; ++x)
             {
-                uint16_t zOrderCoord = m_vertexOrder.at(y * GridVerts1D + x);
+                uint16_t zOrderCoord = m_vertexOrder.at(y * m_gridVerts1D + x);
                 m_xyPositions.at(zOrderCoord) = { x, y };
             }
         }
@@ -639,6 +678,8 @@ namespace Terrain
             AZ::RHI::GetFormatSize(XYPositionFormat),
             aznumeric_cast<uint32_t>(m_xyPositions.size()),
             m_xyPositions.data());
+
+        m_dummyLodHeightsNormalsBuffer = CreateMeshBufferInstance(sizeof(HeightNormalVertex), m_gridVerts2D, nullptr);
     }
 
     void TerrainMeshManager::UpdateSectorBuffers(Sector& sector, const AZStd::span<const HeightNormalVertex> heightsNormals)
@@ -652,16 +693,16 @@ namespace Terrain
     {
         // Store the height and normal information for the next lod level in each vertex for continuous LOD.
         AZStd::vector<HeightNormalVertex> clodHeightNormals;
-        clodHeightNormals.resize_no_construct(GridVerts2D);
+        clodHeightNormals.resize_no_construct(m_gridVerts2D);
 
-        constexpr uint16_t LodGridVerts1D = (GridVerts1D >> 1) + 1;
+        const uint16_t lodGridVerts1D = (m_gridVerts1D >> 1) + 1;
 
-        for (uint16_t yPos = 0; yPos < GridVerts1D; ++yPos)
+        for (uint16_t yPos = 0; yPos < m_gridVerts1D; ++yPos)
         {
-            for (uint16_t xPos = 0; xPos < GridVerts1D; ++xPos)
+            for (uint16_t xPos = 0; xPos < m_gridVerts1D; ++xPos)
             {
-                uint16_t index = yPos * GridVerts1D + xPos;
-                uint16_t lodIndex1 = (yPos / 2) * LodGridVerts1D + (xPos / 2);
+                uint16_t index = yPos * m_gridVerts1D + xPos;
+                uint16_t lodIndex1 = (yPos / 2) * lodGridVerts1D + (xPos / 2);
                 uint16_t lodIndex2 = lodIndex1;
 
                 if (xPos % 2 == 1)
@@ -672,7 +713,7 @@ namespace Terrain
                 if (yPos % 2 == 1)
                 {
                     // y position is between two vertices in the column
-                    lodIndex2 += LodGridVerts1D;
+                    lodIndex2 += lodGridVerts1D;
                 }
 
                 const uint16_t zOrderIndex = m_vertexOrder.at(index);
@@ -700,12 +741,8 @@ namespace Terrain
         sector.m_lodHeightsNormalsBuffer->UpdateData(clodHeightNormals.data(), clodHeightNormals.size() * sizeof(HeightNormalVertex), 0);
     }
 
-    void TerrainMeshManager::InitializeCommonSectorData()
+    void TerrainMeshManager::InitializeRayTracingData()
     {
-        CreateCommonBuffers();
-
-        m_dummyLodHeightsNormalsBuffer = CreateMeshBufferInstance(sizeof(HeightNormalVertex), GridVerts2D, nullptr);
-
         constexpr uint32_t rayTracingVertices1d = RayTracingQuads1D + 1; // need vertex for end cap
         constexpr uint32_t rayTracingTotalVertices = rayTracingVertices1d * rayTracingVertices1d;
         m_raytracingPositionsBuffer = CreateRayTracingMeshBufferInstance(AZ::RHI::Format::R32G32B32_FLOAT, rayTracingTotalVertices, nullptr, "TerrainRaytracingPositions");
@@ -899,7 +936,7 @@ namespace Terrain
 
             for (Sector* sector : sectors)
             {
-                const float gridMeters = (GridSize * m_sampleSpacing) * (1 << lodLevel);
+                const float gridMeters = (m_gridSize * m_sampleSpacing) * (1 << lodLevel);
 
                 const auto jobLambda = [this, sector, gridMeters]() -> void
                 {
@@ -907,10 +944,10 @@ namespace Terrain
 
                     {
                         SectorDataRequest request;
-                        request.m_samplesX = GridVerts1D;
-                        request.m_samplesY = GridVerts1D;
+                        request.m_samplesX = m_gridVerts1D;
+                        request.m_samplesY = m_gridVerts1D;
                         request.m_worldStartPosition = sector->m_worldCoord.ToVector2() * gridMeters;
-                        request.m_vertexSpacing = gridMeters / GridSize;
+                        request.m_vertexSpacing = gridMeters / m_gridSize;
                         request.m_useVertexOrderRemap = true;
 
                         GatherMeshData(request, meshHeightsNormals, sector->m_aabb, sector->m_hasData);
@@ -926,11 +963,11 @@ namespace Terrain
                     if (m_config.m_clodEnabled && sector->m_hasData)
                     {
                         SectorDataRequest request;
-                        uint16_t gridSizeNextLod = (GridSize >> 1);
-                        request.m_samplesX = gridSizeNextLod + 1;
-                        request.m_samplesY = gridSizeNextLod + 1;
+                        uint16_t m_gridSizeNextLod = (m_gridSize >> 1);
+                        request.m_samplesX = m_gridSizeNextLod + 1;
+                        request.m_samplesY = m_gridSizeNextLod + 1;
                         request.m_worldStartPosition = sector->m_worldCoord.ToVector2() * gridMeters;
-                        request.m_vertexSpacing = gridMeters / gridSizeNextLod;
+                        request.m_vertexSpacing = gridMeters / m_gridSizeNextLod;
 
                         AZ::Aabb dummyAabb = AZ::Aabb::CreateNull(); // Don't update the sector aabb based on only the clod vertices.
                         bool terrainExists = false;
@@ -949,7 +986,7 @@ namespace Terrain
 
                 ShaderObjectData objectSrgData;
                 objectSrgData.m_xyTranslation = { sector->m_worldCoord.m_x * gridMeters, sector->m_worldCoord.m_y * gridMeters };
-                objectSrgData.m_xyScale = gridMeters * (aznumeric_cast<float>(AZStd::numeric_limits<uint8_t>::max()) / GridSize);
+                objectSrgData.m_xyScale = gridMeters * (aznumeric_cast<float>(AZStd::numeric_limits<uint8_t>::max()) / m_gridSize);
                 objectSrgData.m_lodLevel = lodLevel;
                 objectSrgData.m_rcpLodLevel = 1.0f / (lodLevel + 1);
                 sector->m_srg->SetConstant(m_patchDataIndex, objectSrgData);
@@ -1241,12 +1278,14 @@ namespace Terrain
             const AZ::Vector2 lodSpacing = AZ::Vector2(m_sampleSpacing * (1 << lodLevel) * 2.0f);
             const AZ::Vector2 lodBoundsMin2d = boundsMin2d - lodSpacing;
             const AZ::Vector2 lodBoundsMax2d = boundsMax2d + lodSpacing;
+            const float gridMeters = (m_gridSize * m_sampleSpacing) * (1 << lodLevel);
 
             auto& lodGrid = m_sectorLods.at(lodLevel);
             for (Sector& sector : lodGrid.m_sectors)
             {
-                const AZ::Vector2 sectorAabbMin2D = AZ::Vector2(sector.m_aabb.GetMin());
-                const AZ::Vector2 sectorAabbMax2D = AZ::Vector2(sector.m_aabb.GetMax());
+                const AZ::Vector2 sectorAabbMin2D = sector.m_worldCoord.ToVector2() * gridMeters;
+                const AZ::Vector2 sectorAabbMax2D = sectorAabbMin2D + AZ::Vector2(gridMeters);
+
                 const bool overlaps = sectorAabbMin2D.IsLessEqualThan(lodBoundsMax2d) && sectorAabbMax2D.IsGreaterEqualThan(lodBoundsMin2d);
                 if (overlaps)
                 {

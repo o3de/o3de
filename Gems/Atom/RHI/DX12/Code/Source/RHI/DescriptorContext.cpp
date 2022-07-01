@@ -375,7 +375,7 @@ namespace AZ
             {
                 //Track active SRGs in case we need to compact the shader visible cbv_srv_uav heap
                 AZStd::scoped_lock lock{ m_srgMapMutex };
-                auto iter = m_srgAllocations.find(srg);
+                [[maybe_unused]] auto iter = m_srgAllocations.find(srg);
                 AZ_Assert(iter != m_srgAllocations.end(), "Srg entry not found");
                 m_srgAllocations[srg]--;
                 if (m_srgAllocations[srg] == 0)

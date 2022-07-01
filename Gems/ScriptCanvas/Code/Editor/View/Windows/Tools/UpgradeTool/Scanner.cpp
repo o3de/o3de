@@ -13,6 +13,7 @@
 #include <AzToolsFramework/AssetBrowser/AssetBrowserModel.h>
 #include <Editor/View/Windows/Tools/UpgradeTool/LogTraits.h>
 #include <Editor/View/Windows/Tools/UpgradeTool/Scanner.h>
+#include <ScriptCanvas/Components/EditorUtils.h>
 #include <ScriptCanvas/Assets/ScriptCanvasFileHandling.h>
 
 namespace ScannerCpp
@@ -34,9 +35,9 @@ namespace ScannerCpp
         && entry->GetFullPath().ends_with(".scriptcanvas"))
         {
             auto sourceEntry = azrtti_cast<const AzToolsFramework::AssetBrowser::SourceAssetBrowserEntry*>(entry);
-            AZStd::string fullPath = sourceEntry->GetRelativePath();
-            AzFramework::StringFunc::Path::Normalize(fullPath);
-            result.m_catalogAssets.push_back(SourceHandle::FromRelativePath(nullptr, sourceEntry->GetSourceUuid(), fullPath));
+            result.m_catalogAssets.push_back
+                ( SourceHandle::MarkAbsolutePath
+                    ( SourceHandle::FromRelativePath(nullptr, sourceEntry->GetRelativePath()), sourceEntry->GetFullPath()));
         }
 
         const int rowCount = model.rowCount(index);
@@ -82,13 +83,13 @@ namespace ScriptCanvasEditor
         {
             if (m_config.filter && m_config.filter(asset) == ScanConfiguration::Filter::Exclude)
             {
-                VE_LOG("Scanner: Excluded: %s ", ModCurrentAsset().Path().c_str());
+                VE_LOG("Scanner: Excluded: %s ", ModCurrentAsset().RelativePath().c_str());
                 m_result.m_filteredAssets.push_back(ModCurrentAsset().Describe());
                 ModelNotificationsBus::Broadcast(&ModelNotificationsTraits::OnScanFilteredGraph, ModCurrentAsset());
             }
             else
             {
-                VE_LOG("Scanner: Included: %s ", ModCurrentAsset().Path().c_str());
+                VE_LOG("Scanner: Included: %s ", ModCurrentAsset().RelativePath().c_str());
                 m_result.m_unfiltered.push_back(ModCurrentAsset().Describe());
                 ModelNotificationsBus::Broadcast(&ModelNotificationsTraits::OnScanUnFilteredGraph, ModCurrentAsset());
             }
@@ -101,15 +102,13 @@ namespace ScriptCanvasEditor
 
         SourceHandle Scanner::LoadAsset()
         {
-            auto result = ScriptCanvas::LoadFromFile(ModCurrentAsset().Path().c_str());
-            if (result)
-            {
-                return result.m_handle;
-            }
-            else
+            auto result = ScriptCanvas::LoadFromFile(ModCurrentAsset().AbsolutePath().Native());
+            if (!result)
             {
                 return {};
             }
+
+            return result.m_handle;
         }
 
         SourceHandle& Scanner::ModCurrentAsset()
@@ -133,17 +132,17 @@ namespace ScriptCanvasEditor
             {
                 if (auto asset = LoadAsset(); asset.IsGraphValid())
                 {
-                    VE_LOG("Scanner: Loaded: %s ", ModCurrentAsset().Path().c_str());
+                    VE_LOG("Scanner: Loaded: %s ", ModCurrentAsset().RelativePath().c_str());
                     FilterAsset(asset);
                 }
                 else
                 {
-                    VE_LOG("Scanner: Failed to load: %s ", ModCurrentAsset().Path().c_str());
+                    VE_LOG("Scanner: Failed to load: %s ", ModCurrentAsset().RelativePath().c_str());
                     m_result.m_loadErrors.push_back(ModCurrentAsset().Describe());
                     ModelNotificationsBus::Broadcast(&ModelNotificationsTraits::OnScanLoadFailure, ModCurrentAsset());
                 }
 
-                VE_LOG("Scanner: scan of %s complete", ModCurrentAsset().Path().c_str());
+                VE_LOG("Scanner: scan of %s complete", ModCurrentAsset().RelativePath().c_str());
                 ++m_catalogAssetIndex;
             }
         }
