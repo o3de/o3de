@@ -19,10 +19,8 @@ class S3StorageQueryTool(StorageQueryTool):
         """
         Initialise storage query tool with search parameters and access/delete parameters
         """
-        logger.info(kwargs.get('bucket_name'))
-        self._bucket_name = kwargs['bucket_name']
-
         super().__init__(**kwargs)
+        self._bucket_name = kwargs['bucket_name']
         
         try:
 
