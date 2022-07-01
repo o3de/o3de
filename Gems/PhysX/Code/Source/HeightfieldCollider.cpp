@@ -534,13 +534,16 @@ namespace PhysX
             // effectively lets us create an implicit dependency on all the jobs created by that API, because until we start the
             // completion jobs, nothing downstream from them can start either.
 
-            for (size_t jobIndex = 0; jobIndex < updateShapeConfigJobs.size(); jobIndex++)
-            {
-                updateShapeConfigJobs[jobIndex]->Start();
-                updatePhysXHeightfieldJobs[jobIndex]->Start();
-            }
+            // We also need to start all the jobs in the reverse order of execution, so that way we don't encounter a race condition
+            // where a job might finish before we've even started the next one, which potentially prevents it from ever executing.
 
             refreshCompleteJob->Start();
+
+            for (int32_t jobIndex = aznumeric_cast<int32_t>(updateShapeConfigJobs.size() - 1); jobIndex >= 0; jobIndex--)
+            {
+                updatePhysXHeightfieldJobs[jobIndex]->Start();
+                updateShapeConfigJobs[jobIndex]->Start();
+            }
         }
     }
 
