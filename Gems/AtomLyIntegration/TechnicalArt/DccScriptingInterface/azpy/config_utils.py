@@ -149,15 +149,53 @@ except Exception as e:
 
 # -------------------------------------------------------------------------
 # to do: move to a azpy.dev module with plugins for multiple IDEs
-def attach_debugger():
+def attach_debugger(debugger_type=_DCCSI_GDEBUGGER):
+    """!
+    This will attempt to attach the WING debugger
+    To Do: other IDEs for debugging not yet implemented.
+    This should be replaced with a plugin based dev package."""
+
+    # we only support wing right now
+    # your WING_VERSION_PATH as of version 7.x defaults to either Wing Personal 7.x or Wing Pro 7.x
+    # your WING_IDE_DIR is your installation path, which defaults to: C:\Program Files (x86)\WING_VERSION_PATH
+    # your APP_DATA_PATH defaults to C:\Users\[Your User Name]\AppData\Roaming\WING_VERSION_PATH (without the .x minor version)
+
+    # after installing wing, opy the WING_IDE_DIR\wingdbstub.py file to APP_DATA_PATH
+
+    # Open the APP_DATA_PATH \wingdbstub.py file and modify line 96 to
+    #kEmbedded = 1
+
+    # or alternatively you can manually edit the copy in the ide install location.
+    # such as: "WINGHOME": "C:\Program Files (x86)\Wing Pro 7.2"
+
+    from azpy.constants import PATH_USER_HOME
+    from azpy.constants import TAG_WING_PRO
+    from azpy.constants import TAG_DEFAULT_WING_MAJOR_VER
+    # this will need to be improved, a azpy.dev module should be written
+    # this should have an IDE plugin pattern, attach_debugger() would be moved there
+    # and the IDE type, version and related data would be data driven (config.py, settings.local.json)
+    wingstub_appdata = Path(PATH_USER_HOME,
+                            'AppData',
+                            'Roaming',
+                            f'{TAG_WING_PRO} {str(TAG_DEFAULT_WING_MAJOR_VER)}').resolve()
+
+    # we can set this here in anticipation of importing from this location,
+    # however currently entry_test is setup to use WINGHOME
+    # there is suggested improvement here to move all of this to a azpy.dev module
+    # and make it much more user friendly, configurable and data-driven
+    sys.path.append(wingstub_appdata.as_posix())
+
     _DCCSI_GDEBUG = True
-    os.environ["DYNACONF_DCCSI_GDEBUG"] = str(_DCCSI_GDEBUG)
+    os.environ["DCCSI_GDEBUG"] = str(_DCCSI_GDEBUG)  # cast bools
 
     _DCCSI_DEV_MODE = True
-    os.environ["DYNACONF_DCCSI_DEV_MODE"] = str(_DCCSI_DEV_MODE)
+    os.environ["DCCSI_DEV_MODE"] = str(_DCCSI_DEV_MODE)
 
     from azpy.test.entry_test import connect_wing
-    _debugger = connect_wing()
+    if debugger_type == 'WING':
+        _debugger = connect_wing()
+    else:
+        _LOGGER.warning(f'Debugger type: {debugger_type}, is Not Implemented!')
 
     return _debugger
 # -------------------------------------------------------------------------

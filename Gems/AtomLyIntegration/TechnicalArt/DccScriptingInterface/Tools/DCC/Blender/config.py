@@ -210,15 +210,15 @@ def get_config_settings(core_config=_DCCSI_CORE_CONFIG,
     # to do: might be a bug here, not writing to setting.local.json
     core_config.add_path_list_to_envar(dccsi_pythonpath, 'DYNACONF_DCCSI_PYTHONPATH')
 
-    # final stage, if we have managed path lists set them
-    core_config.add_path_list_to_envar(dccsi_sys_path)
-    core_config.add_path_list_to_addsitedir(dccsi_pythonpath)
-
     # now standalone we can validate the config. env, settings.
     from dynaconf import settings
 
     if set_env:
         settings.setenv()
+
+        # final stage, if we have managed path lists set them
+        core_config.add_path_list_to_envar(dccsi_sys_path)
+        core_config.add_path_list_to_addsitedir(dccsi_pythonpath)
 
     time_complete = timeit.default_timer() - time_start
     _LOGGER.info('~   config.init_o3de_core() DONE: {} sec'.format(time_complete))

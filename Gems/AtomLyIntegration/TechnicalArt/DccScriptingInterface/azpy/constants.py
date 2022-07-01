@@ -100,14 +100,14 @@ PATH_PROGRAMFILES_X64 = str(os.environ['PROGRAMFILES'])
 
 # os.path.expanduser("~") returns different values in py2.7 vs 3
 PATH_USER_HOME = expanduser("~")
-_LOGGER.debug('user home: {}'.format(PATH_USER_HOME))
+_LOGGER.debug(f'user home: {PATH_USER_HOME}')
 
 # special case, make sure didn't return <user>\documents
 _uh_parts = os.path.split(PATH_USER_HOME)
 
 if str(_uh_parts[1].lower()) == 'documents':
     PATH_USER_HOME = _uh_parts[0]
-    _LOGGER.debug('user home CORRECTED: {}'.format(PATH_USER_HOME))
+    _LOGGER.debug(f'user home CORRECTED: {PATH_USER_HOME}')
 
 STR_USER_O3DE_PATH = str('{home}\\{o3de}')
 # -------------------------------------------------------------------------
@@ -228,9 +228,9 @@ ENVAR_QTFORPYTHON_PATH = str('QTFORPYTHON_PATH')
 # -------------------------------------------------------------------------
 # IDE: constants, like wing ENVARS
 TAG_DEFAULT_WING_MAJOR_VER = str(7)
-TAG_DEFAULT_WING_MINOR_VER = str(1)
-TAG_WING_IDE = str('\\Wing IDE ')  # old, pre 7
-TAG_WING_PRO = str('\\Wing Pro ')  # new 7+
+TAG_DEFAULT_WING_MINOR_VER = str(2)  # I had to bump so I could locally debug
+TAG_WING_IDE = str('Wing IDE ')  # old, pre 7
+TAG_WING_PRO = str('Wing Pro ')  # new 7+
 
 ENVAR_WINGHOME = str('WINGHOME')
 ENVAR_DCCSI_WING_VERSION_MAJOR = str('DCCSI_WING_VERSION_MAJOR')
@@ -353,8 +353,8 @@ PATH_DCCSI_PYTHON_LIB = STR_PATH_DCCSI_PYTHON_LIB.format(PATH_DCCSIG,
 
 
 # wing paths
-STR_CONSTRUCT_WING_PATH = str('{progX86}{wing_tag}{major}.{minor}')
-PATH_DEFAULT_WINGHOME = str('{0}{1}{2}.{3}'
+STR_CONSTRUCT_WING_PATH = str(f'{PATH_PROGRAMFILES_X86}\\{TAG_WING_PRO} {TAG_DEFAULT_WING_MAJOR_VER}.{TAG_DEFAULT_WING_MINOR_VER}')
+PATH_DEFAULT_WINGHOME = str('{0}\\{1}{2}.{3}'
                             ''.format(PATH_PROGRAMFILES_X86,
                                       TAG_WING_PRO,
                                       TAG_DEFAULT_WING_MAJOR_VER,
