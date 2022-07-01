@@ -79,7 +79,7 @@ _DCCSI_GDEBUGGER = env_bool(ENVAR_DCCSI_GDEBUGGER, 'WING')
 #    this is the preferred manner, dynaconf will always load this by default
 #    so these values will always be last and take precedence within code
 #    that is executed after:
-#        from dynacof import settings
+#        from dynaconf import settings
 #        settings.setenv()
 
 # this will boostrap access to the dccsi managed package dependencies
