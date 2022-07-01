@@ -25,7 +25,7 @@ import logging as _logging
 # -------------------------------------------------------------------------
 
 # There are many __init__ files throughout the dccsi that need to be refactored
-# and updated to shared this modeul for comment utils.
+# and updated to share this module for common utils.
 
 # -------------------------------------------------------------------------
 # Global Scope
