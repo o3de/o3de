@@ -6,8 +6,6 @@
 #
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
-#
-# note: this module should reamin py2.7 compatible (Maya) so no f'strings
 # -------------------------------------------------------------------------
 """@module docstring
 This module is part of the O3DE DccScriptingInterface Gem
@@ -29,7 +27,7 @@ get_o3de_project_path()    :get the project path while within editor
 bootstrap_dccsi_py_libs()  :extends code access (mainly used in Maya py27)
 """
 # --------------------------------------------------------------------------
-#os.environ['PYTHONINSPECT'] = 'True'
+# Now that we no longer need to support py2.7 this module can be improved.
 
 import timeit
 _MODULE_START = timeit.default_timer()  # start tracking
