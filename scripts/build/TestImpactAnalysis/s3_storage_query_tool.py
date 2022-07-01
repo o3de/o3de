@@ -82,13 +82,15 @@ class S3StorageQueryTool(StorageQueryTool):
         """
         pass
 
-    def _delete(self, file: str):
+    def _delete(self, bucket_name:str, file: str):
         """
         Deletes the specified file
-
+        @param bucket_name: Bucket to delete file from
         @param file: The file to be deleted
         """
-        pass
+        if self._check_object_exists(bucket_name, file):
+            logger.info(f"Deleting file in bucket: {bucket_name} with key {file}")
+            self._s3.Object(bucket_name, file).delete()
 
     def _access(self, file: str):
         """
