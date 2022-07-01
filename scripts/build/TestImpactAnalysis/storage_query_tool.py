@@ -25,6 +25,13 @@ class StorageQueryTool(ABC):
         self._suite = kwargs.get('suite')
         self._access_flag = kwargs.get('access')
         self._delete_flag = kwargs.get('delete')
+        self._update_flag = kwargs.get('update')
+        self._create_flag = kwargs.get('create')
+
+        if self._update_flag or self._create_flag:
+            self._file_in = kwargs.get('file_in')
+            self._file = self._get_file(self._file_in)
+
     def _get_file(self, file_address: str):
         """
         Get historic json file from specified file address
