@@ -201,16 +201,18 @@ namespace AZ
                 selectedMeshPathsByLod.resize(lodRule->GetLodCount());
                 for (size_t lod = 0; lod < lodRule->GetLodCount(); ++lod)
                 {
-                    selectedMeshPathsByLod[lod] = SceneAPI::Utilities::SceneGraphSelector::GenerateTargetNodes(sceneGraph, context.m_group,
-                        lodRule->GetSceneNodeSelectionList(lod), isNonOptimizedMesh, SceneAPI::Utilities::SceneGraphSelector::RemapToOptimizedMesh);
+                    selectedMeshPathsByLod[lod] = SceneAPI::Utilities::SceneGraphSelector::GenerateTargetNodes(
+                        sceneGraph, lodRule->GetSceneNodeSelectionList(lod), isNonOptimizedMesh,
+                        SceneAPI::Utilities::SceneGraphSelector::RemapToOptimizedMesh);
                 }
             }
 
             // Gather the list of nodes in the graph that are selected as part of this
             // MeshGroup defined in context.m_group, then remap to the optimized mesh
             // nodes, if they exist.
-            AZStd::vector<AZStd::string> selectedMeshPaths = SceneAPI::Utilities::SceneGraphSelector::GenerateTargetNodes(sceneGraph, context.m_group,
-                context.m_group.GetSceneNodeSelectionList(), isNonOptimizedMesh, SceneAPI::Utilities::SceneGraphSelector::RemapToOptimizedMesh);
+            AZStd::vector<AZStd::string> selectedMeshPaths = SceneAPI::Utilities::SceneGraphSelector::GenerateTargetNodes(
+                sceneGraph, context.m_group.GetSceneNodeSelectionList(), isNonOptimizedMesh,
+                SceneAPI::Utilities::SceneGraphSelector::RemapToOptimizedMesh);
 
             // Iterate over the downwards, breadth-first view into the scene.
             // First we have to split the source mesh data up by lod.

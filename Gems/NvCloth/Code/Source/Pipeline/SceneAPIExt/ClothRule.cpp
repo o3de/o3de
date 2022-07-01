@@ -12,6 +12,7 @@
 
 #include <SceneAPI/SceneCore/DataTypes/GraphData/IMeshData.h>
 #include <SceneAPI/SceneCore/DataTypes/GraphData/IMeshVertexColorData.h>
+#include <SceneAPI/SceneData/Groups/MeshGroup.h>
 
 #include <Pipeline/SceneAPIExt/ClothRule.h>
 
@@ -39,11 +40,9 @@ namespace NvCloth
         {
             const AZ::SceneAPI::Containers::SceneGraph::NodeIndex meshNodeIndex = [this, &graph]()
             {
-                if (const auto index = graph.Find(GetMeshNodeName() + AZStd::string(AZ::SceneAPI::Utilities::OptimizedMeshSuffix)); index.IsValid())
-                {
-                    return index;
-                }
-                return graph.Find(GetMeshNodeName());
+                const auto originalMeshIndex = graph.Find(GetMeshNodeName());
+                return AZ::SceneAPI::Utilities::SceneGraphSelector::RemapToOptimizedMesh(
+                    graph, originalMeshIndex);
             }();
 
             if (!meshNodeIndex.IsValid())
