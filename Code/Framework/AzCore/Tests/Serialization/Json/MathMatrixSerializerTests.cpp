@@ -56,57 +56,17 @@ namespace JsonSerializationTests
         // Arbitrary Matrix
 
         template <typename MatrixType>
-        MatrixType CreateArbitraryMatrixRotationAndSale(AZ::SimpleLcgRandom& random)
-        {
-            // start a matrix with arbitrary degrees
-            float roll = random.GetRandomFloat() * 360.0f;
-            float pitch = random.GetRandomFloat() * 360.0f;
-            float yaw = random.GetRandomFloat() * 360.0f;
-            const AZ::Vector3 eulerRadians = AZ::Vector3DegToRad(AZ::Vector3{ roll, pitch, yaw });
-            const auto rotX = MatrixType::CreateRotationX(eulerRadians.GetX());
-            const auto rotY = MatrixType::CreateRotationY(eulerRadians.GetY());
-            const auto rotZ = MatrixType::CreateRotationZ(eulerRadians.GetZ());
-            auto matrix = rotX * rotY * rotZ;
-
-            // apply a scale
-            matrix.MultiplyByScale(AZ::Vector3{ random.GetRandomFloat() });
-            return matrix;
-        }
-
-        template <typename MatrixType>
-        void AssignArbitrarySetTranslation(MatrixType& matrix, AZ::SimpleLcgRandom& random)
-        {
-            float x = random.GetRandomFloat() * 10000.0f;
-            float y = random.GetRandomFloat() * 10000.0f;
-            float z = random.GetRandomFloat() * 10000.0f;
-            matrix.SetTranslation(AZ::Vector3{ x, y, z });
-        }
-
-        template <typename MatrixType>
-        MatrixType CreateArbitraryMatrix(size_t seed);
-
-        template <>
-        AZ::Matrix3x3 CreateArbitraryMatrix(size_t seed)
+        MatrixType CreateArbitraryMatrix(size_t seed)
         {
             AZ::SimpleLcgRandom random(seed);
-            return CreateArbitraryMatrixRotationAndSale<AZ::Matrix3x3>(random);
-        }
-
-        template <>
-        AZ::Matrix3x4 CreateArbitraryMatrix(size_t seed)
-        {
-            AZ::SimpleLcgRandom random(seed);
-            auto matrix = CreateArbitraryMatrixRotationAndSale<AZ::Matrix3x4>(random);
-            AssignArbitrarySetTranslation<AZ::Matrix3x4>(matrix, random);
-            return matrix;
-        }
-
-        template <>
-        AZ::Matrix4x4 CreateArbitraryMatrix(size_t seed)
-        {
-            AZ::SimpleLcgRandom random(seed);
-            auto matrix = CreateArbitraryMatrixRotationAndSale<AZ::Matrix4x4>(random);
-            AssignArbitrarySetTranslation<AZ::Matrix4x4>(matrix, random);
+            MatrixType matrix;
+            for (int rowIndex = 0; rowIndex < MatrixType::RowCount; rowIndex++)
+            {
+                for (int colIndex = 0; colIndex < MatrixType::ColCount; colIndex++)
+                {
+                    matrix.SetElement(rowIndex, colIndex, random.GetRandomFloat() * 10000.0f);
+                }
+            }
             return matrix;
         }
 
@@ -473,32 +433,6 @@ namespace JsonSerializationTests
         EXPECT_TRUE(defaultValue == output);
     }
 
-    TYPED_TEST(JsonMathMatrixSerializerTests, LoadSave_Zero_SavesAndLoadsIdentityMatrix)
-    {
-        using namespace AZ::JsonSerializationResult;
-
-        auto defaultValue = JsonMathMatrixSerializerTests<TypeParam>::Descriptor::MatrixType::CreateIdentity();
-        auto input = JsonMathMatrixSerializerTests<TypeParam>::Descriptor::MatrixType::CreateZero();
-
-        rapidjson::Value& objectInput = this->m_jsonDocument->SetObject();
-        this->m_serializer->Store(
-            objectInput,
-            &input,
-            &defaultValue,
-            azrtti_typeid<typename JsonMathMatrixSerializerTests<TypeParam>::Descriptor::MatrixType>(),
-            *this->m_jsonSerializationContext);
-
-        auto output = defaultValue;
-        ResultCode result = this->m_serializer->Load(
-            &output,
-            azrtti_typeid<typename JsonMathMatrixSerializerTests<TypeParam>::Descriptor::MatrixType>(),
-            *this->m_jsonDocument,
-            *this->m_jsonDeserializationContext);
-
-        ASSERT_EQ(Outcomes::Unsupported, result.GetOutcome());
-        EXPECT_TRUE(defaultValue == output);
-    }
-
     TYPED_TEST(JsonMathMatrixSerializerTests, Load_InvalidFields_ReturnsUnsupportedAndLeavesMatrixUntouched)
     {
         using namespace AZ::JsonSerializationResult;
@@ -553,5 +487,4 @@ namespace JsonSerializationTests
             }
         }
     }
-
 } // namespace JsonSerializationTests
