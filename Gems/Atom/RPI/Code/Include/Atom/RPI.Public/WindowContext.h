@@ -99,7 +99,7 @@ namespace AZ
             // Destroys the underlying XR SwapChains
             void DestroyXRSwapChains();
 
-            // Destroys all the swapChain data related to the provided index
+            // Destroys swapChain data related to the provided index
             void DestroySwapChain(uint32_t swapChainIndex);
 
             // Fills the default window states based on the given width and height
@@ -113,18 +113,16 @@ namespace AZ
 
             struct SwapChainData
             {
-                // The swapChain that this context has created for the
-                // given default window as well as xr swapchains
+                // RHI SwapChain object itself
                 RHI::Ptr<RHI::SwapChain> m_swapChain;
 
-                // The default viewport that covers the entire surface described
-                // by the default and XR SwapChains. 
+                // The default viewport that covers the entire surface
                 RHI::Viewport m_viewport;
 
-                // The default scissor that covers the entire surface described
-                // by the default and XR SwapChains
+                // The default scissor that covers the entire surface
                 RHI::Scissor m_scissor;
             };
+            // Data structure to hold SwapChain for Default and XR SwapChains.
             AZStd::vector<SwapChainData> m_swapChainsData;
 
             // Non-owning reference to associated ViewportContexts (if any)

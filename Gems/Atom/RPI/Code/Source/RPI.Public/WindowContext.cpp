@@ -72,7 +72,7 @@ namespace AZ
         const RHI::Ptr<RHI::SwapChain>& WindowContext::GetSwapChain(SwapChainMode swapChainMode) const
         {
             uint32_t swapChainIndex = static_cast<uint32_t>(swapChainMode);
-            AZ_Assert(swapChainIndex < GetSwapChainsSize(), "Swapchain does not exist");
+            AZ_Assert(swapChainIndex < GetSwapChainsSize(), "Swapchain with index %i does not exist", swapChainIndex);
             return m_swapChainsData[swapChainIndex].m_swapChain;
         }
 
@@ -200,7 +200,7 @@ namespace AZ
             XRRenderingInterface* xrSystem = RPISystemInterface::Get()->GetXRSystem();
             if (xrSystem)
             {
-                AZ::u32 numXrViews = xrSystem->GetNumViews();
+                const AZ::u32 numXrViews = xrSystem->GetNumViews();
                 AZ_Assert(numXrViews <= 2, "Atom only supports two XR views");
                 for (AZ::u32 i = 0; i < numXrViews; i++)
                 {
@@ -262,15 +262,18 @@ namespace AZ
 
         void WindowContext::FillWindowState(const uint32_t width, const uint32_t height)
         {
-            m_swapChainsData[static_cast<uint32_t>(SwapChainMode::Default)].m_viewport.m_minX = 0;
-            m_swapChainsData[static_cast<uint32_t>(SwapChainMode::Default)].m_viewport.m_minY = 0;
-            m_swapChainsData[static_cast<uint32_t>(SwapChainMode::Default)].m_viewport.m_maxX = static_cast<float>(width);
-            m_swapChainsData[static_cast<uint32_t>(SwapChainMode::Default)].m_viewport.m_maxY = static_cast<float>(height);
+            auto& defaultViewport = m_swapChainsData[static_cast<uint32_t>(SwapChainMode::Default)].m_viewport;
+            auto& defaultScissor = m_swapChainsData[static_cast<uint32_t>(SwapChainMode::Default)].m_scissor;
 
-            m_swapChainsData[static_cast<uint32_t>(SwapChainMode::Default)].m_scissor.m_minX = 0;
-            m_swapChainsData[static_cast<uint32_t>(SwapChainMode::Default)].m_scissor.m_minY = 0;
-            m_swapChainsData[static_cast<uint32_t>(SwapChainMode::Default)].m_scissor.m_maxX = static_cast<int16_t>(width);
-            m_swapChainsData[static_cast<uint32_t>(SwapChainMode::Default)].m_scissor.m_maxY = static_cast<int16_t>(height);
+            defaultViewport.m_minX = 0;
+            defaultViewport.m_minY = 0;
+            defaultViewport.m_maxX = static_cast<float>(width);
+            defaultViewport.m_maxY = static_cast<float>(height);
+
+            defaultScissor.m_minX = 0;
+            defaultScissor.m_minY = 0;
+            defaultScissor.m_maxX = static_cast<int16_t>(width);
+            defaultScissor.m_maxY = static_cast<int16_t>(height);
         }
 
         RHI::Format WindowContext::GetSwapChainFormat(RHI::Device& device) const
