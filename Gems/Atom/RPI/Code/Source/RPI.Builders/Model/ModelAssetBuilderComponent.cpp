@@ -103,7 +103,7 @@ namespace AZ
             if (auto* serialize = azrtti_cast<SerializeContext*>(context))
             {
                 serialize->Class<ModelAssetBuilderComponent, SceneAPI::SceneCore::ExportingComponent>()
-                    ->Version(32);  // Updating morph targets to be per-mesh instead of per-lod
+                    ->Version(33);  // Fix parent-child relationship in scene
             }
         }
 
@@ -312,10 +312,11 @@ namespace AZ
                     const auto node = sceneGraph.Find(meshPath);
                     sourceMesh.m_worldTransform = AZ::SceneAPI::Utilities::DetermineWorldTransform(scene, node, context.m_group.GetRuleContainerConst());
 
-                    auto sibling = sceneGraph.GetNodeChild(node);
-
+                    // Add the MeshData to the source mesh
                     AddToMeshContent(viewIt.second, sourceMesh);
 
+                    // Iterate over the immediate children of the mesh node, looking for additional data like uvs, tangents, etc.
+                    auto sibling = sceneGraph.GetNodeChild(node);
                     bool traversing = true;
                     while (traversing)
                     {
@@ -323,7 +324,12 @@ namespace AZ
                         {
                             auto siblingContent = sceneGraph.GetNodeContent(sibling);
 
-                            AddToMeshContent(siblingContent, sourceMesh);
+                            // If a sibling is MeshData, that indicates a separate mesh node
+                            // that should not add to or overwrite the MeshData for the current node
+                            if (!azrtti_istypeof<MeshData>(siblingContent.get()))
+                            {
+                                AddToMeshContent(siblingContent, sourceMesh);
+                            }
 
                             sibling = sceneGraph.GetNodeSibling(sibling);
                         }
@@ -373,7 +379,14 @@ namespace AZ
                 lodAssetCreator.Begin(CreateAssetId(lodAssetName));
 
                 {
-                    ProductMeshContentList lodMeshes = SourceMeshListToProductMeshList(context, sourceMeshContentList, jointNameToIndexMap, morphTargetMetaCreator);
+                    AZ::Outcome<ProductMeshContentList> productMeshListOutcome =
+                        SourceMeshListToProductMeshList(context, sourceMeshContentList, jointNameToIndexMap, morphTargetMetaCreator);
+
+                    if (!productMeshListOutcome.IsSuccess())
+                    {
+                        return AZ::SceneAPI::Events::ProcessingResult::Failure;
+                    }
+                    ProductMeshContentList lodMeshes = productMeshListOutcome.GetValue();
 
                     PadVerticesForSkinning(lodMeshes);
 
@@ -404,7 +417,13 @@ namespace AZ
 
                     if (canMergeMeshes)
                     {
-                        lodMeshes = MergeMeshesByMaterialUid(lodMeshes);
+                        productMeshListOutcome = MergeMeshesByMaterialUid(lodMeshes);
+
+                        if (!productMeshListOutcome.IsSuccess())
+                        {
+                            return AZ::SceneAPI::Events::ProcessingResult::Failure;
+                        }
+                        lodMeshes = productMeshListOutcome.GetValue();
                     }
 
 #if defined(AZ_RPI_MESHES_SHARE_COMMON_BUFFERS)
@@ -562,7 +581,7 @@ namespace AZ
             }
         }
 
-        ModelAssetBuilderComponent::ProductMeshContentList ModelAssetBuilderComponent::SourceMeshListToProductMeshList(
+        AZ::Outcome<ModelAssetBuilderComponent::ProductMeshContentList> ModelAssetBuilderComponent::SourceMeshListToProductMeshList(
             const ModelAssetBuilderContext& context,
             const SourceMeshContentList& sourceMeshList,
             AZStd::unordered_map<AZStd::string, uint16_t>& jointNameToIndexMap,
@@ -692,6 +711,10 @@ namespace AZ
                     // that we have so that they start at 0 and are contiguous. 
                     AZStd::map<uint32_t, uint32_t> oldToNewIndices;
                     uint32_t newIndex = 0;
+
+                    // Keep track of the highest value of old indices to validate vertex stream size
+                    uint32_t maxOldIndex = 0;
+
                     for (uint32_t& index : productMesh.m_indices)
                     {
                         if (oldToNewIndices.find(index) == oldToNewIndices.end())
@@ -699,7 +722,7 @@ namespace AZ
                             oldToNewIndices[index] = newIndex;
                             newIndex++;
                         }
-
+                        maxOldIndex = AZStd::max(maxOldIndex, index);
                         index = oldToNewIndices[index];
                     }
 
@@ -719,10 +742,20 @@ namespace AZ
 
                     if (sourceMesh.m_meshTangents)
                     {
+                        if (maxOldIndex >= sourceMesh.m_meshTangents->GetCount())
+                        {
+                            AZ_Assert(false, "Out of bounds access of mesh tangents.");
+                            return AZ::Failure();
+                        }
                         tangents.reserve(vertexCount * TangentFloatsPerVert);
 
                         if (sourceMesh.m_meshBitangents)
                         {
+                            if (maxOldIndex >= sourceMesh.m_meshBitangents->GetCount())
+                            {
+                                AZ_Assert(false, "Out of bounds access of mesh bitangents.");
+                                return AZ::Failure();
+                            }
                             bitangents.reserve(vertexCount * BitangentFloatsPerVert);
                         }
                     }
@@ -730,6 +763,11 @@ namespace AZ
                     uvNames.reserve(uvSetCount);
                     for (auto& uvContent : uvContentCollection)
                     {
+                        if (maxOldIndex >= uvContent->GetCount())
+                        {
+                            AZ_Assert(false, "Out of bounds access of uvs.");
+                            return AZ::Failure();
+                        }
                         uvNames.push_back(uvContent->GetCustomName());
                     }
 
@@ -742,6 +780,11 @@ namespace AZ
                     colorNames.reserve(colorSetCount);
                     for (auto& colorContent : colorContentCollection)
                     {
+                        if (maxOldIndex >= colorContent->GetCount())
+                        {
+                            AZ_Assert(false, "Out of bounds access of colors.");
+                            return AZ::Failure();
+                        }
                         colorNames.push_back(colorContent->GetCustomName());
                     }
 
@@ -754,8 +797,11 @@ namespace AZ
                     const bool hasClothData = !sourceMesh.m_meshClothData.empty();
                     if (hasClothData)
                     {
-                        AZ_Assert(sourceMesh.m_meshClothData.size() == vertexCount,
-                            "Vertex Count %d does not match mesh cloth data size %d", vertexCount, sourceMesh.m_meshClothData.size());
+                        if (sourceMesh.m_meshClothData.size() != vertexCount)
+                        {
+                            AZ_Assert(false, "Vertex Count %d does not match mesh cloth data size %d", vertexCount, sourceMesh.m_meshClothData.size());
+                            return AZ::Failure();
+                        }
                         clothData.reserve(vertexCount * ClothDataFloatsPerVert);
                     }
 
@@ -904,7 +950,7 @@ namespace AZ
                 }// for each product mesh in productsByMaterialUid
             }// for each product in productList (for each source mesh)
 
-            return productMeshList;
+            return AZ::Success(productMeshList);
         }
 
         void ModelAssetBuilderComponent::PadVerticesForSkinning(ProductMeshContentList& productMeshList)
@@ -1028,7 +1074,8 @@ namespace AZ
             }
         }
 
-        ModelAssetBuilderComponent::ProductMeshContentList ModelAssetBuilderComponent::MergeMeshesByMaterialUid(const ProductMeshContentList& productMeshList)
+        AZ::Outcome<ModelAssetBuilderComponent::ProductMeshContentList> ModelAssetBuilderComponent::MergeMeshesByMaterialUid(
+            const ProductMeshContentList& productMeshList)
         {
             ProductMeshContentList finalMeshList;
             {
@@ -1076,7 +1123,11 @@ namespace AZ
 
                     ProductMeshContent mergedMesh = MergeMeshList(meshList, RemapIndices);
                     mergedMesh.m_materialUid = it.first;
-                    ValidateStreamAlignment(mergedMesh);
+
+                    if(!ValidateStreamAlignment(mergedMesh))
+                    {
+                        return AZ::Failure();
+                    }
 
                     finalMeshList.emplace_back(AZStd::move(mergedMesh));
                 }
@@ -1086,59 +1137,74 @@ namespace AZ
                 {
                     if (!mesh.CanBeMerged())
                     {
-                        ValidateStreamAlignment(mesh);
+                        if(!ValidateStreamAlignment(mesh))
+                        {
+                            return AZ::Failure();
+                        }
+
                         finalMeshList.emplace_back(mesh);
                     }
                 }
             }
 
-            return finalMeshList;
+            return AZ::Success(finalMeshList);
         }
 
         template<typename T>
-        void ModelAssetBuilderComponent::ValidateStreamSize([[maybe_unused]] size_t expectedVertexCount, [[maybe_unused]] const AZStd::vector<T>& bufferData, [[maybe_unused]] AZ::RHI::Format format, [[maybe_unused]] const char* streamName) const
+        bool ModelAssetBuilderComponent::ValidateStreamSize([[maybe_unused]] size_t expectedVertexCount, [[maybe_unused]] const AZStd::vector<T>& bufferData, [[maybe_unused]] AZ::RHI::Format format, [[maybe_unused]] const char* streamName) const
         {
-#if defined(AZ_ENABLE_TRACING)
             size_t actualVertexCount = (bufferData.size() * sizeof(T)) / RHI::GetFormatSize(format);
-#endif
-            AZ_Error(s_builderName, expectedVertexCount == actualVertexCount, "VertexStream '%s' does not match the expected vertex count. This typically means multiple sub-meshes have mis-matched vertex stream layouts (such as one having more uv sets than the other) but are assigned the same material in the dcc tool so they were merged.", streamName);
+            bool vertexCountMatchesExpected = expectedVertexCount == actualVertexCount;
+            AZ_Error(
+                s_builderName, vertexCountMatchesExpected,
+                "VertexStream '%s' does not match the expected vertex count. This typically means multiple sub-meshes have mis-matched "
+                "vertex stream layouts (such as one having more uv sets than the other) but are assigned the same material in the dcc tool "
+                "so they were merged.",
+                streamName);
+            return vertexCountMatchesExpected;
         }
 
-        void ModelAssetBuilderComponent::ValidateStreamAlignment(const ProductMeshContent& mesh) const
+        bool ModelAssetBuilderComponent::ValidateStreamAlignment(const ProductMeshContent& mesh) const
         {
+            bool success = true;
             size_t expectedVertexCount = mesh.m_positions.size() * sizeof(mesh.m_positions[0]) / RHI::GetFormatSize(PositionFormat);
             if (!mesh.m_normals.empty())
             {
-                ValidateStreamSize(expectedVertexCount, mesh.m_normals, NormalFormat, "NORMAL");
+                success &= ValidateStreamSize(expectedVertexCount, mesh.m_normals, NormalFormat, "NORMAL");
             }
             if (!mesh.m_tangents.empty())
             {
-                ValidateStreamSize(expectedVertexCount, mesh.m_tangents, TangentFormat, "TANGENT");
+                success &= ValidateStreamSize(expectedVertexCount, mesh.m_tangents, TangentFormat, "TANGENT");
             }
             if (!mesh.m_bitangents.empty())
             {
-                ValidateStreamSize(expectedVertexCount, mesh.m_bitangents, BitangentFormat, "BITANGENT");
+                success &= ValidateStreamSize(expectedVertexCount, mesh.m_bitangents, BitangentFormat, "BITANGENT");
             }
             for (size_t i = 0; i < mesh.m_uvSets.size(); ++i)
             {
-                ValidateStreamSize(expectedVertexCount, mesh.m_uvSets[i], UVFormat, mesh.m_uvCustomNames[i].GetCStr());
+                success &= ValidateStreamSize(expectedVertexCount, mesh.m_uvSets[i], UVFormat, mesh.m_uvCustomNames[i].GetCStr());
             }
             for (size_t i = 0; i < mesh.m_colorSets.size(); ++i)
             {
-                ValidateStreamSize(expectedVertexCount, mesh.m_colorSets[i], ColorFormat, mesh.m_colorCustomNames[i].GetCStr());
+                success &= ValidateStreamSize(expectedVertexCount, mesh.m_colorSets[i], ColorFormat, mesh.m_colorCustomNames[i].GetCStr());
             }
             if (!mesh.m_clothData.empty())
             {
-                ValidateStreamSize(expectedVertexCount, mesh.m_clothData, ClothDataFormat, ShaderSemanticName_ClothData);
+                success &= ValidateStreamSize(expectedVertexCount, mesh.m_clothData, ClothDataFormat, ShaderSemanticName_ClothData);
             }
             if (!mesh.m_skinJointIndices.empty())
             {
-                ValidateStreamSize(expectedVertexCount * mesh.m_influencesPerVertex, mesh.m_skinJointIndices, AZ::RHI::Format::R16_UINT, ShaderSemanticName_SkinJointIndices);
+                success &= ValidateStreamSize(
+                    expectedVertexCount * mesh.m_influencesPerVertex, mesh.m_skinJointIndices, AZ::RHI::Format::R16_UINT,
+                    ShaderSemanticName_SkinJointIndices);
             }
             if (!mesh.m_skinWeights.empty())
             {
-                ValidateStreamSize(expectedVertexCount * mesh.m_influencesPerVertex, mesh.m_skinWeights, SkinWeightFormat, ShaderSemanticName_SkinWeights);
+                success &= ValidateStreamSize(
+                    expectedVertexCount * mesh.m_influencesPerVertex, mesh.m_skinWeights, SkinWeightFormat, ShaderSemanticName_SkinWeights);
             }
+
+            return success;
         }
 
         ModelAssetBuilderComponent::ProductMeshView ModelAssetBuilderComponent::CreateViewToEntireMesh(const ProductMeshContent& mesh)

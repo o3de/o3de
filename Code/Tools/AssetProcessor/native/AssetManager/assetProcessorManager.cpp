@@ -181,14 +181,21 @@ namespace AssetProcessor
         else if ((status == AssetProcessor::AssetScanningStatus::Completed) ||
                  (status == AssetProcessor::AssetScanningStatus::Stopped))
         {
-            m_isCurrentlyScanning = false;
             AssetProcessor::StatsCapture::EndCaptureStat("AssetScanning");
-
-            // we cannot invoke this immediately - the scanner might be done, but we aren't actually ready until we've processed all remaining messages:
-            QMetaObject::invokeMethod(this, "CheckMissingFiles", Qt::QueuedConnection);
+            // place a message in the queue that will cause us to transition
+            // into a "no longer scanning" state and then continue with the next phase
+            // we place this at the end of the queue rather than calling it immediately, becuase
+            // other messages may still be in the queue such as the incoming file list.
+            QMetaObject::invokeMethod(this, "FinishAssetScan", Qt::QueuedConnection);
         }
     }
 
+    void AssetProcessorManager::FinishAssetScan()
+    {
+        AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Initial Scan complete, checking for missing files...\n");
+        m_isCurrentlyScanning = false;
+        CheckMissingFiles();
+    }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // JOB STATUS REQUEST HANDLING
@@ -3072,14 +3079,92 @@ namespace AssetProcessor
         }
     }
 
+    // The file cache is used before actually hitting physical media to determine the
+    // existence of files and to retrieve the file's hash.
+    // It assumes that the presence of a file in the cache means the file exists.
+    // Because of this, it also monitors for file notifications from the operating system
+    // (such as changed, deleted, etc) and invalidates its cache, removing hashes or file entries
+    // as appropriate.
+    // This means we can 'warm up the cache' from the prior known file list in the database, BUT
+    // can only populate the entries discovered by the file scanner (so they are known to exist)
+    // and we can only populate the hashes in the cache for files which are known to exist AND
+    // whos modtime has not changed.
+    void AssetProcessorManager::WarmUpFileCache(QSet<AssetFileInfo> filePaths)
+    {
+        // if the 'skipping feature' is disabled, do not pre-populate the cache
+        // This will cause it to rehash everything every time.
+        if (!m_allowModtimeSkippingFeature)
+        {
+            return;
+        }
+        
+        IFileStateRequests* fileStateCache = AZ::Interface<IFileStateRequests>::Get();
+        if (!fileStateCache)
+        {
+            return;
+        }
+        
+        // the strategy here is to only warm up the file cache if absolutely everything
+        // is okay - the mod time must match last time, the file must exist, the hash must be present
+        // and non zero from last time.  If anything at all is not correct, we will not warm the
+        // cache up and this will cause it to refetch on demand.
+        for (const AssetFileInfo& fileInfo : filePaths)
+        {
+            // fileInfo represents an file found in the bulk scanning (so it actually exists)
+            // m_fileModTimes is a list of last-known modtimes from the database from last run.
+            auto fileItr = m_fileModTimes.find(fileInfo.m_filePath.toUtf8().data());
+            if (fileItr != m_fileModTimes.end())
+            {
+                AZ::u64 databaseModTime = fileItr->second;
+                if(databaseModTime != 0)
+                {
+                    auto thisModTime = aznumeric_cast<decltype(databaseModTime)>(AssetUtilities::AdjustTimestamp(fileInfo.m_modTime));
+                    if (thisModTime == databaseModTime)
+                    {
+                        // the actual modtime of the file has not changed since last and the file still exists.
+                        // does the database know what its hash was last time?
+                        auto hashItr = m_fileHashes.find(fileInfo.m_filePath.toUtf8().constData());
+                        if(hashItr != m_fileHashes.end())
+                        {
+                            AZ::u64 databaseHashValue = hashItr->second;
+                            if (databaseHashValue != 0)
+                            {
+                                // we have a valid database hash value and mod time has not changed.
+                                // cache it so that future calls to GetFileHash and the like
+                                // use this cached value.
+                                if (fileStateCache)
+                                {
+                                    fileStateCache->WarmUpCache(fileInfo, databaseHashValue);
+                                    continue;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            // Note that the 'continue' statement above, which happens if all conditions are met
+            // causes it to skip over the following line.  If the execution ends up here, it means
+            // that the database's modtime was probably stale or this is a new file or some other
+            // disqualifying condition.  However, the fileInfo is still a real file on disk that
+            // came from the bulk scan, so we can still warm up the file cache with this info.
+            fileStateCache->WarmUpCache(fileInfo);
+        }
+    }
+
     // this means a file is definitely coming from the file scanner, and not the file monitor.
     // the file scanner does not scan the cache.
     // the scanner should be omitting directory changes.
-
     void AssetProcessorManager::AssessFilesFromScanner(QSet<AssetFileInfo> filePaths)
     {
+        AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Received %i files from the scanner.  Assessing...\n", static_cast<int>(filePaths.size()));
+        AssetProcessor::StatsCapture::BeginCaptureStat("WarmingFileCache");
+        WarmUpFileCache(filePaths);
+        AssetProcessor::StatsCapture::EndCaptureStat("WarmingFileCache");
+        
         int processedFileCount = 0;
-
+        
+        AssetProcessor::StatsCapture::BeginCaptureStat("InitialFileAssessment");
+        
         for (const AssetFileInfo& fileInfo : filePaths)
         {
             if (m_allowModtimeSkippingFeature)
@@ -3115,6 +3200,8 @@ namespace AssetProcessor
         {
             AZ_TracePrintf(AssetProcessor::DebugChannel, "%d files reported from scanner.  %d unchanged files skipped, %d files processed\n", filePaths.size(), filePaths.size() - processedFileCount, processedFileCount);
         }
+        
+        AssetProcessor::StatsCapture::EndCaptureStat("InitialFileAssessment");
     }
 
     void AssetProcessorManager::RecordFoldersFromScanner(QSet<AssetFileInfo> folderPaths)

@@ -23,21 +23,26 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 namespace AZ
 {
     class ReflectContext;
+    class ComponentDescriptor;
 }
 
 namespace ScriptCanvas
 {
+    struct NodeRegistry;
+
     //! {{autogenTargetName}}FunctionRegistry
     //! AutoGen registry to register function required metadata into system
     class {{autogenTargetName}}FunctionRegistry
-        : public IScriptCanvasFunctionRegistry
+        : public ScriptCanvasRegistry
     {
     public:
         {{autogenTargetName}}FunctionRegistry();
         virtual ~{{autogenTargetName}}FunctionRegistry();
  
-        //! Reflect function metadata into BehaviorContext
+        //! ScriptCanvasRegistry
         void Reflect(AZ::ReflectContext* context) override;
+        void Init([[maybe_unused]] NodeRegistry* nodeRegistry) override {}
+        AZStd::vector<AZ::ComponentDescriptor*> GetComponentDescriptors() override { return {}; }
 
         //! Get AutoGen registry name
         static const char* GetRegistryName();

@@ -230,7 +230,6 @@ class TestEditorTestSuite(unittest.TestCase):
         mock_asset_processor = mock.MagicMock()
         for test_data in mock_test_data_generator:
             test_data.asset_processor = mock_asset_processor
-        mock_asset_processor.stop.assert_called_once_with(1)
         mock_asset_processor.teardown.assert_called()
         assert test_data.asset_processor is None
         mock_kill_processes.assert_called_once_with(include_asset_processor=True)
