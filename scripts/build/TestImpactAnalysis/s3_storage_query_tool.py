@@ -5,14 +5,14 @@
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
-
-from tiaf_logger import get_logger
-from storage_query_tool import StorageQueryTool
-import boto3
-import botocore.exceptions
 import zlib
 import json
 from io import BytesIO
+import boto3
+import botocore.exceptions
+from tiaf_logger import get_logger
+from storage_query_tool import StorageQueryTool
+
 logger = get_logger(__file__)
 
 
@@ -48,8 +48,6 @@ class S3StorageQueryTool(StorageQueryTool):
             raise SystemError(f"There was a problem with the s3 bucket: {e}")
         except botocore.exceptions.ClientError as e:
             raise SystemError(f"There was a problem with the s3 client: {e}")
-        except Exception as e:
-            logger.info(e)
 
     def _display(self):
         """
@@ -68,8 +66,8 @@ class S3StorageQueryTool(StorageQueryTool):
 
         else:
             bucket_objs = filter_by(self._root_directory, bucket_objs)
-            for object in bucket_objs:
-                logger.info(object.key)
+            for obj in bucket_objs:
+                logger.info(obj.key)
 
     def _check_object_exists(self, bucket, key):
         try:
@@ -156,6 +154,6 @@ class S3StorageQueryTool(StorageQueryTool):
                 f"Uploading data to: {storage_location} in bucket: {bucket_name}")
             self._s3_client.put_object(
                 Bucket=bucket_name, Key=storage_location, Body=data)
-            logger.info(f"Upload complete")
+            logger.info("Upload complete")
         else:
             logger.info("Cancelling update, as file does not already exist")
