@@ -86,6 +86,35 @@ def parse_args():
         required=False
     )
 
+    parser.add_argument(
+        "--read",
+        action="store_true",
+        help="Flag to access file if found",
+        required=False
+    )
+
+    parser.add_argument(
+        "--update",
+        action="store_true",
+        help="Flag to replace file if found",
+        required=False
+    )
+
+    parser.add_argument(
+        "--create",
+        action="store_true",
+        help="Flag to create file if not found",
+        required=False
+    )
+
+    parser.add_argument(
+        "--file-in",
+        type=valid_file_path,
+        help="Path to file to be used when creating or updating a file",
+        required=False
+    )
+
+
     args = parser.parse_args()
 
     return args
