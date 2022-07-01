@@ -131,7 +131,7 @@ namespace GraphCanvas
     //////////////////////////
     // LinearSlotGroupLayout
     //////////////////////////
-    GeneralSlotLayoutGraphicsWidget::LinearSlotGroupWidget::LinearSlotGroupWidget(QGraphicsItem* parent, const AZStd::string& nodeType)
+    GeneralSlotLayoutGraphicsWidget::LinearSlotGroupWidget::LinearSlotGroupWidget(QGraphicsItem* parent)
         : QGraphicsWidget(parent)
         , m_inputs(nullptr)
         , m_outputs(nullptr)
@@ -151,6 +151,11 @@ namespace GraphCanvas
             
             m_inputs->addItem(spacer);
         }
+
+        m_horizontalSpacer = new QGraphicsWidget();
+        m_horizontalSpacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+        m_horizontalSpacer->setContentsMargins(0, 0, 0, 0);
+        m_horizontalSpacer->setPreferredSize(0, 0);
         
         m_outputs = new QGraphicsLinearLayout(Qt::Vertical);
         m_outputs->setContentsMargins(0, 0, 0, 0);
@@ -169,30 +174,16 @@ namespace GraphCanvas
         m_layout = new QGraphicsLinearLayout(Qt::Horizontal);
         setLayout(m_layout);
 
-        if (nodeType == Styling::Elements::Small)
-        {
-            m_layout->setContentsMargins(0, 0, 0, 0);
-        }
-
         m_layout->setInstantInvalidatePropagation(true);
 
         // Creating the actual display
         // <input><spacer><output>
         m_layout->addItem(m_inputs);
-        m_layout->setAlignment(m_inputs, Qt::AlignCenter);
-
-        if (nodeType != Styling::Elements::Small)
-        {
-            m_horizontalSpacer = new QGraphicsWidget();
-            m_horizontalSpacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
-            m_horizontalSpacer->setContentsMargins(0, 0, 0, 0);
-            m_horizontalSpacer->setPreferredSize(0, 0);
-
-            m_layout->addItem(m_horizontalSpacer);
-        }
-
+        m_layout->addItem(m_horizontalSpacer);
         m_layout->addItem(m_outputs);
-        m_layout->setAlignment(m_outputs, Qt::AlignCenter);
+
+        m_layout->setAlignment(m_inputs, Qt::AlignTop);
+        m_layout->setAlignment(m_outputs, Qt::AlignTop);
     }
 
     void GeneralSlotLayoutGraphicsWidget::LinearSlotGroupWidget::DisplaySlot(const AZ::EntityId& slotId)
@@ -272,6 +263,11 @@ namespace GraphCanvas
     QGraphicsLinearLayout* GeneralSlotLayoutGraphicsWidget::LinearSlotGroupWidget::GetLayout()
     {
         return m_layout;
+    }
+
+    QGraphicsWidget* GeneralSlotLayoutGraphicsWidget::LinearSlotGroupWidget::GetSpacer()
+    {
+        return m_horizontalSpacer;
     }
 
     const AZStd::vector< SlotLayoutInfo >& GeneralSlotLayoutGraphicsWidget::LinearSlotGroupWidget::GetInputSlots() const
@@ -495,9 +491,14 @@ namespace GraphCanvas
         return this;
     }
 
-    QGraphicsLinearLayout* GeneralSlotLayoutGraphicsWidget::GetLinearLayout()
+    QGraphicsLinearLayout* GeneralSlotLayoutGraphicsWidget::GetLinearLayout(const SlotGroup& slotGroup)
     {
-        return FindCreateSlotGroupWidget(SlotGroups::DataGroup)->GetLayout();
+        return FindCreateSlotGroupWidget(slotGroup)->GetLayout();
+    }
+
+    QGraphicsWidget* GeneralSlotLayoutGraphicsWidget::GetSpacer(const SlotGroup& slotGroup)
+    {
+        return FindCreateSlotGroupWidget(slotGroup)->GetSpacer();
     }
 
     void GeneralSlotLayoutGraphicsWidget::OnSceneSet(const AZ::EntityId& /*sceneId*/)
@@ -805,10 +806,7 @@ namespace GraphCanvas
                     m_nodeSlots.m_slotGroupConfigurations[slotType] = groupConfiguration;
                 }
 
-                AZStd::string nodeType;
-                StyledEntityRequestBus::EventResult(nodeType, GetEntityId(), &StyledEntityRequests::GetClass);
-
-                retVal = aznew LinearSlotGroupWidget(this, nodeType);
+                retVal = aznew LinearSlotGroupWidget(this);
                 retVal->UpdateStyle(m_styleHelper);
 
                 m_slotGroups[slotType] = retVal;

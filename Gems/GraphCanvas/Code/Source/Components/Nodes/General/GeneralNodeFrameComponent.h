@@ -96,10 +96,6 @@ namespace GraphCanvas
         explicit GeneralNodeFrameGraphicsWidget(const AZ::EntityId& nodeVisual);
         ~GeneralNodeFrameGraphicsWidget() override = default;
 
-        // NodeFrameGraphicsWidget
-        qreal GetCornerRadius() const override;
-        ////
-
         // SceneMemberUIRequestBus
         QPainterPath GetOutline() const override;
         ////

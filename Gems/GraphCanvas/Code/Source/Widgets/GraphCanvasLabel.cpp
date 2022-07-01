@@ -270,7 +270,7 @@ namespace GraphCanvas
         m_desiredBounds = fontRectangle.adjusted(0.0f, 0.0f, padding * 2.0f, padding * 2.0f);
         
         // Seem so be an off by 1 error here. So adding one in each direction to my desired size to stop text from being clipped.
-        m_desiredBounds.adjust(-1.0, -1.0, 1.0, 1.0);        
+        //m_desiredBounds.adjust(-1.0, -1.0, 1.0, 1.0);        
 
         m_minimumSize = m_styleHelper.GetMinimumSize(m_desiredBounds.size());        
 

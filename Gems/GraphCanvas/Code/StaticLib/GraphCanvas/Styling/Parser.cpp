@@ -197,6 +197,10 @@ namespace
         {
             return Styling::Attribute::Spacing;
         }
+        else if (attribute == Styling::Attributes::LayoutOrientation)
+        {
+            return Styling::Attribute::LayoutOrientation;
+        }
         else if (attribute == Styling::Attributes::Selectors)
         {
             return Styling::Attribute::Selectors;
@@ -367,6 +371,20 @@ namespace
         else if (QString::compare(value, QLatin1String("center"), Qt::CaseInsensitive) == 0)
         {
             return Qt::AlignVCenter;
+        }
+
+        return {};
+    }
+
+    Qt::Orientation ParseOrientation(const QString& value)
+    {
+        if (QString::compare(value, QLatin1String("vertical"), Qt::CaseInsensitive) == 0)
+        {
+            return Qt::Vertical;
+        }
+        else if (QString::compare(value, QLatin1String("horizontal"), Qt::CaseInsensitive) == 0)
+        {
+            return Qt::Horizontal;
         }
 
         return {};
@@ -914,6 +932,14 @@ namespace GraphCanvas
                     if (Qt::AlignmentFlag flag = ParseTextVerticalAlignment(member->value.GetString()))
                     {
                         style->SetAttribute(attribute, QVariant::fromValue(flag));
+                    }
+                    break;
+                }
+                case Attribute::LayoutOrientation:
+                {
+                    if (Qt::Orientation orientation = ParseOrientation(member->value.GetString()))
+                    {
+                        style->SetAttribute(attribute, orientation);
                     }
                     break;
                 }

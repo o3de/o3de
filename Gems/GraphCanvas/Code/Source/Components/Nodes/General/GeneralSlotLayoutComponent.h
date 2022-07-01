@@ -103,12 +103,14 @@ namespace GraphCanvas
         {
         public:
             AZ_CLASS_ALLOCATOR(LinearSlotGroupWidget, AZ::SystemAllocator, 0);
-            LinearSlotGroupWidget(QGraphicsItem* parent, const AZStd::string& nodeType = "");
+            LinearSlotGroupWidget(QGraphicsItem* parent);
 
             void DisplaySlot(const AZ::EntityId& slotId);
             void RemoveSlot(const AZ::EntityId& slotId);
 
             QGraphicsLinearLayout* GetLayout();
+
+            QGraphicsWidget* GetSpacer();
 
             const AZStd::vector< SlotLayoutInfo >& GetInputSlots() const;
             const AZStd::vector< SlotLayoutInfo >& GetOutputSlots() const;
@@ -159,7 +161,8 @@ namespace GraphCanvas
 
         // NodeSlotsRequestBus
         QGraphicsLayoutItem* GetGraphicsLayoutItem() override;
-        QGraphicsLinearLayout* GetLinearLayout() override;
+        QGraphicsLinearLayout* GetLinearLayout(const SlotGroup& slotGroup) override;
+        QGraphicsWidget* GetSpacer(const SlotGroup& slotGroup) override;
         ////
 
         // SceneMemberNotificationBus

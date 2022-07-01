@@ -45,7 +45,9 @@ namespace GraphCanvas
 
         virtual QGraphicsLayoutItem* GetGraphicsLayoutItem() = 0;
 
-        virtual QGraphicsLinearLayout* GetLinearLayout() = 0;
+        virtual QGraphicsLinearLayout* GetLinearLayout(const SlotGroup& slotGroup) = 0;
+
+        virtual QGraphicsWidget* GetSpacer(const SlotGroup& slotGroup) = 0;
 
     };
 

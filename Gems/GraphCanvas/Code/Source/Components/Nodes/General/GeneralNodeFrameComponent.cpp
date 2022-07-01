@@ -101,13 +101,6 @@ namespace GraphCanvas
     {
     }
 
-    qreal GeneralNodeFrameGraphicsWidget::GetCornerRadius() const
-    {
-        AZStd::string nodeType;
-        StyledEntityRequestBus::EventResult(nodeType, GetEntityId(), &StyledEntityRequests::GetClass);
-        return nodeType == Styling::Elements::Small ? 10.0 : m_style.GetAttribute(Styling::Attribute::BorderRadius, 5.0);
-    }
-
     QPainterPath GeneralNodeFrameGraphicsWidget::GetOutline() const
     {
         QPainterPath path;
@@ -147,9 +140,6 @@ namespace GraphCanvas
 
             qreal halfBorder = border.widthF() / 2.;
             QRectF adjusted = boundingRect().marginsRemoved(QMarginsF(halfBorder, halfBorder, halfBorder, halfBorder));
-
-            AZStd::string nodeType;
-            StyledEntityRequestBus::EventResult(nodeType, GetEntityId(), &StyledEntityRequests::GetClass);
 
             if (cornerRadius >= 1.0)
             {

@@ -54,7 +54,6 @@ namespace GraphCanvas
             // Pseudo-elements
             const char* const Title = "title";
             const char* const MainTitle = ".maintitle";
-            const char* const MainTitleCentered = ".maintitlecentered";
             const char* const SubTitle = ".subtitle";
             
             const char* const ConnectionPin = "connectionPin";
@@ -160,6 +159,8 @@ namespace GraphCanvas
 
             const char* const Spacing = "spacing";
 
+            const char* const LayoutOrientation = "layout-orientation";
+
             // Custom Attributes
             const char* const ConnectionJut = "connection-jut";
             const char* const ConnectionDragMaximumDistance = "connection-drag-max-distance";
@@ -237,6 +238,8 @@ namespace GraphCanvas
             Spacing,
             TextAlignment,
             TextVerticalAlignment,
+
+            LayoutOrientation,
 
             // Custom Attributes
             ConnectionJut,

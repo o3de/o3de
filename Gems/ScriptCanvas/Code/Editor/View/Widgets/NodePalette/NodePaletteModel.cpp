@@ -33,6 +33,11 @@
 
 AZ_DEFINE_BUDGET(NodePaletteModel);
 
+namespace ScriptCanvasEditor
+{
+    AZ_CVAR(bool, ed_showSmallOperators, false, nullptr, AZ::ConsoleFunctorFlags::Null, "Show small operator nodes in the palette");
+}
+
 namespace
 {
     static constexpr char DefaultGlobalConstantCategory[] = "Global Constants";
@@ -791,105 +796,107 @@ namespace
 
     void PopulateDataDrivenNodes(ScriptCanvasEditor::NodePaletteModel& nodePaletteModel)
     {
-        // Increment
-        ScriptCanvasEditor::RegisterSmallOperatorNodeInformation incrementInfo;
-        incrementInfo.m_nodeLexicalId = AZ_CRC_CE("Increment");
-        incrementInfo.m_nodeTitle = "++";
-        incrementInfo.m_nodeToolTip = "Increments the input number by 1";
-        incrementInfo.m_nodeDataType = ScriptCanvas::Data::Type::Number();
-        incrementInfo.m_paletteTitle = "Increment";
-        nodePaletteModel.RegisterSmallOperatorNode(incrementInfo);
+        if (ScriptCanvasEditor::ed_showSmallOperators)
+        {
+            // Increment
+            ScriptCanvasEditor::RegisterSmallOperatorNodeInformation incrementInfo;
+            incrementInfo.m_nodeLexicalId = AZ_CRC_CE("Increment");
+            incrementInfo.m_nodeTitle = "++";
+            incrementInfo.m_nodeToolTip = "Increments the input number by 1";
+            incrementInfo.m_nodeDataType = ScriptCanvas::Data::Type::Number();
+            incrementInfo.m_paletteTitle = "Increment";
+            nodePaletteModel.RegisterSmallOperatorNode(incrementInfo);
 
-        // Decrement
-        ScriptCanvasEditor::RegisterSmallOperatorNodeInformation decrementInfo;
-        decrementInfo.m_nodeLexicalId = AZ_CRC_CE("Decrement");
-        decrementInfo.m_nodeTitle = "--";
-        decrementInfo.m_nodeToolTip = "Decrements the input number by 1";
-        decrementInfo.m_nodeDataType = ScriptCanvas::Data::Type::Number();
-        decrementInfo.m_paletteTitle = "Decrement";
-        nodePaletteModel.RegisterSmallOperatorNode(decrementInfo);
+            // Decrement
+            ScriptCanvasEditor::RegisterSmallOperatorNodeInformation decrementInfo;
+            decrementInfo.m_nodeLexicalId = AZ_CRC_CE("Decrement");
+            decrementInfo.m_nodeTitle = "--";
+            decrementInfo.m_nodeToolTip = "Decrements the input number by 1";
+            decrementInfo.m_nodeDataType = ScriptCanvas::Data::Type::Number();
+            decrementInfo.m_paletteTitle = "Decrement";
+            nodePaletteModel.RegisterSmallOperatorNode(decrementInfo);
 
-        // Double
-        ScriptCanvasEditor::RegisterSmallOperatorNodeInformation doubleInfo;
-        doubleInfo.m_nodeLexicalId = AZ_CRC_CE("Double");
-        doubleInfo.m_nodeTitle = "*2";
-        doubleInfo.m_nodeToolTip = "Multiplies the input number by 2";
-        doubleInfo.m_nodeDataType = ScriptCanvas::Data::Type::Number();
-        doubleInfo.m_paletteTitle = "Double";
-        nodePaletteModel.RegisterSmallOperatorNode(doubleInfo);
+            // Double
+            ScriptCanvasEditor::RegisterSmallOperatorNodeInformation doubleInfo;
+            doubleInfo.m_nodeLexicalId = AZ_CRC_CE("Double");
+            doubleInfo.m_nodeTitle = "*2";
+            doubleInfo.m_nodeToolTip = "Multiplies the input number by 2";
+            doubleInfo.m_nodeDataType = ScriptCanvas::Data::Type::Number();
+            doubleInfo.m_paletteTitle = "Double";
+            nodePaletteModel.RegisterSmallOperatorNode(doubleInfo);
 
-        // Negative
-        ScriptCanvasEditor::RegisterSmallOperatorNodeInformation negativeInfo;
-        negativeInfo.m_nodeLexicalId = AZ_CRC_CE("Negative");
-        negativeInfo.m_nodeTitle = "*-1";
-        negativeInfo.m_nodeToolTip = "Multiplies the input number by -1";
-        negativeInfo.m_nodeDataType = ScriptCanvas::Data::Type::Number();
-        negativeInfo.m_paletteTitle = "Negative";
-        nodePaletteModel.RegisterSmallOperatorNode(negativeInfo);
+            // Negative
+            ScriptCanvasEditor::RegisterSmallOperatorNodeInformation negativeInfo;
+            negativeInfo.m_nodeLexicalId = AZ_CRC_CE("Negative");
+            negativeInfo.m_nodeTitle = "*-1";
+            negativeInfo.m_nodeToolTip = "Multiplies the input number by -1";
+            negativeInfo.m_nodeDataType = ScriptCanvas::Data::Type::Number();
+            negativeInfo.m_paletteTitle = "Negative";
+            nodePaletteModel.RegisterSmallOperatorNode(negativeInfo);
 
-        // Square
-        ScriptCanvasEditor::RegisterSmallOperatorNodeInformation squareInfo;
-        squareInfo.m_nodeLexicalId = AZ_CRC_CE("Square");
-        squareInfo.m_nodeTitle = "^2";
-        squareInfo.m_nodeToolTip = "Raises the input number to the power of 2";
-        squareInfo.m_nodeDataType = ScriptCanvas::Data::Type::Number();
-        squareInfo.m_paletteTitle = "Square";
-        nodePaletteModel.RegisterSmallOperatorNode(squareInfo);
+            // Square
+            ScriptCanvasEditor::RegisterSmallOperatorNodeInformation squareInfo;
+            squareInfo.m_nodeLexicalId = AZ_CRC_CE("Square");
+            squareInfo.m_nodeTitle = "^2";
+            squareInfo.m_nodeToolTip = "Raises the input number to the power of 2";
+            squareInfo.m_nodeDataType = ScriptCanvas::Data::Type::Number();
+            squareInfo.m_paletteTitle = "Square";
+            nodePaletteModel.RegisterSmallOperatorNode(squareInfo);
 
-        // Cube
-        ScriptCanvasEditor::RegisterSmallOperatorNodeInformation cubeInfo;
-        cubeInfo.m_nodeLexicalId = AZ_CRC_CE("Cube");
-        cubeInfo.m_nodeTitle = "^3";
-        cubeInfo.m_nodeToolTip = "Raises the input number to the power of 3";
-        cubeInfo.m_nodeDataType = ScriptCanvas::Data::Type::Number();
-        cubeInfo.m_paletteTitle = "Cube";
-        nodePaletteModel.RegisterSmallOperatorNode(cubeInfo);
+            // Cube
+            ScriptCanvasEditor::RegisterSmallOperatorNodeInformation cubeInfo;
+            cubeInfo.m_nodeLexicalId = AZ_CRC_CE("Cube");
+            cubeInfo.m_nodeTitle = "^3";
+            cubeInfo.m_nodeToolTip = "Raises the input number to the power of 3";
+            cubeInfo.m_nodeDataType = ScriptCanvas::Data::Type::Number();
+            cubeInfo.m_paletteTitle = "Cube";
+            nodePaletteModel.RegisterSmallOperatorNode(cubeInfo);
 
-        // Square Root
-        ScriptCanvasEditor::RegisterSmallOperatorNodeInformation squareRootInfo;
-        squareRootInfo.m_nodeLexicalId = AZ_CRC_CE("Square Root");
-        squareRootInfo.m_nodeTitle = "sqrt";
-        squareRootInfo.m_nodeToolTip = "Gets the square root of the input number";
-        squareRootInfo.m_nodeDataType = ScriptCanvas::Data::Type::Number();
-        squareRootInfo.m_paletteTitle = "Square Root";
-        nodePaletteModel.RegisterSmallOperatorNode(squareRootInfo);
+            // Square Root
+            ScriptCanvasEditor::RegisterSmallOperatorNodeInformation squareRootInfo;
+            squareRootInfo.m_nodeLexicalId = AZ_CRC_CE("Square Root");
+            squareRootInfo.m_nodeTitle = "sqrt";
+            squareRootInfo.m_nodeToolTip = "Gets the square root of the input number";
+            squareRootInfo.m_nodeDataType = ScriptCanvas::Data::Type::Number();
+            squareRootInfo.m_paletteTitle = "Square Root";
+            nodePaletteModel.RegisterSmallOperatorNode(squareRootInfo);
 
-        // Cube Root
-        ScriptCanvasEditor::RegisterSmallOperatorNodeInformation cubeRootInfo;
-        cubeRootInfo.m_nodeLexicalId = AZ_CRC_CE("Cube Root");
-        cubeRootInfo.m_nodeTitle = "cbrt";
-        cubeRootInfo.m_nodeToolTip = "Gets the cube root of the input number";
-        cubeRootInfo.m_nodeDataType = ScriptCanvas::Data::Type::Number();
-        cubeRootInfo.m_paletteTitle = "Cube Root";
-        nodePaletteModel.RegisterSmallOperatorNode(cubeRootInfo);
+            // Cube Root
+            ScriptCanvasEditor::RegisterSmallOperatorNodeInformation cubeRootInfo;
+            cubeRootInfo.m_nodeLexicalId = AZ_CRC_CE("Cube Root");
+            cubeRootInfo.m_nodeTitle = "cbrt";
+            cubeRootInfo.m_nodeToolTip = "Gets the cube root of the input number";
+            cubeRootInfo.m_nodeDataType = ScriptCanvas::Data::Type::Number();
+            cubeRootInfo.m_paletteTitle = "Cube Root";
+            nodePaletteModel.RegisterSmallOperatorNode(cubeRootInfo);
 
-        // Invert Vector 2
-        ScriptCanvasEditor::RegisterSmallOperatorNodeInformation invertVector2Info;
-        invertVector2Info.m_nodeLexicalId = AZ_CRC_CE("Invert Vector 2");
-        invertVector2Info.m_nodeTitle = "inv";
-        invertVector2Info.m_nodeToolTip = "Inverts the input vector 2";
-        invertVector2Info.m_nodeDataType = ScriptCanvas::Data::Type::Vector2();
-        invertVector2Info.m_paletteTitle = "Invert Vector 2";
-        nodePaletteModel.RegisterSmallOperatorNode(invertVector2Info);
+            // Invert Vector 2
+            ScriptCanvasEditor::RegisterSmallOperatorNodeInformation invertVector2Info;
+            invertVector2Info.m_nodeLexicalId = AZ_CRC_CE("Invert Vector 2");
+            invertVector2Info.m_nodeTitle = "inv";
+            invertVector2Info.m_nodeToolTip = "Inverts the input vector 2";
+            invertVector2Info.m_nodeDataType = ScriptCanvas::Data::Type::Vector2();
+            invertVector2Info.m_paletteTitle = "Invert Vector 2";
+            nodePaletteModel.RegisterSmallOperatorNode(invertVector2Info);
 
-        // Invert Vector 3
-        ScriptCanvasEditor::RegisterSmallOperatorNodeInformation invertVector3Info;
-        invertVector3Info.m_nodeLexicalId = AZ_CRC_CE("Invert Vector 3");
-        invertVector3Info.m_nodeTitle = "inv";
-        invertVector3Info.m_nodeToolTip = "Inverts the input vector 3";
-        invertVector3Info.m_nodeDataType = ScriptCanvas::Data::Type::Vector3();
-        invertVector3Info.m_paletteTitle = "Invert Vector 3";
-        nodePaletteModel.RegisterSmallOperatorNode(invertVector3Info);
+            // Invert Vector 3
+            ScriptCanvasEditor::RegisterSmallOperatorNodeInformation invertVector3Info;
+            invertVector3Info.m_nodeLexicalId = AZ_CRC_CE("Invert Vector 3");
+            invertVector3Info.m_nodeTitle = "inv";
+            invertVector3Info.m_nodeToolTip = "Inverts the input vector 3";
+            invertVector3Info.m_nodeDataType = ScriptCanvas::Data::Type::Vector3();
+            invertVector3Info.m_paletteTitle = "Invert Vector 3";
+            nodePaletteModel.RegisterSmallOperatorNode(invertVector3Info);
 
-        // Invert Vector 4
-        ScriptCanvasEditor::RegisterSmallOperatorNodeInformation invertVector4Info;
-        invertVector4Info.m_nodeLexicalId = AZ_CRC_CE("Invert Vector 4");
-        invertVector4Info.m_nodeTitle = "inv";
-        invertVector4Info.m_nodeToolTip = "Inverts the input vector 4";
-        invertVector4Info.m_nodeDataType = ScriptCanvas::Data::Type::Vector4();
-        invertVector4Info.m_paletteTitle = "Invert Vector 4";
-        nodePaletteModel.RegisterSmallOperatorNode(invertVector4Info);
-
+            // Invert Vector 4
+            ScriptCanvasEditor::RegisterSmallOperatorNodeInformation invertVector4Info;
+            invertVector4Info.m_nodeLexicalId = AZ_CRC_CE("Invert Vector 4");
+            invertVector4Info.m_nodeTitle = "inv";
+            invertVector4Info.m_nodeToolTip = "Inverts the input vector 4";
+            invertVector4Info.m_nodeDataType = ScriptCanvas::Data::Type::Vector4();
+            invertVector4Info.m_paletteTitle = "Invert Vector 4";
+            nodePaletteModel.RegisterSmallOperatorNode(invertVector4Info);
+        }
     }
 
     // Helper function for populating the node palette model.
@@ -944,6 +951,7 @@ namespace
 
 namespace ScriptCanvasEditor
 {
+
     ////////////////////////////////
     // NodePaletteModelInformation
     ////////////////////////////////

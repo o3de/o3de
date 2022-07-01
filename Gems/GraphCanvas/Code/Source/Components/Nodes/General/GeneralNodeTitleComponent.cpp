@@ -238,8 +238,7 @@ namespace GraphCanvas
         m_titleWidget = aznew GraphCanvasLabel(this);
         m_subTitleWidget = aznew GraphCanvasLabel(this);
         m_linearLayout = new QGraphicsLinearLayout(Qt::Vertical);
-        m_linearLayout->setSpacing(0);
-        
+
         setLayout(m_linearLayout);
         setData(GraphicsItemName, QStringLiteral("Title/%1").arg(static_cast<AZ::u64>(m_entityId), 16, 16, QChar('0')));
     }
@@ -420,14 +419,6 @@ namespace GraphCanvas
             m_linearLayout->addItem(m_subTitleWidget);
         }
 
-        AZStd::string nodeType;
-        StyledEntityRequestBus::EventResult(nodeType, GetEntityId(), &StyledEntityRequests::GetClass);
-
-        if (nodeType == Styling::Elements::Small)
-        {
-            m_linearLayout->setContentsMargins(0, 0, 0, 0);
-        }
-
         RefreshDisplay();
         NodeTitleNotificationsBus::Event(GetEntityId(), &NodeTitleNotifications::OnTitleChanged);
         NodeUIRequestBus::Event(GetEntityId(), &NodeUIRequests::AdjustSize);
@@ -436,23 +427,19 @@ namespace GraphCanvas
     void GeneralNodeTitleGraphicsWidget::UpdateStyles()
     {
         m_styleHelper.SetStyle(GetEntityId(), Styling::Elements::Title);
-        
-        AZStd::string nodeType;
-        StyledEntityRequestBus::EventResult(nodeType, GetEntityId(), &StyledEntityRequests::GetClass);
 
-        if (nodeType == Styling::Elements::Small)
-        {
-            m_titleWidget->SetStyle(GetEntityId(), Styling::Elements::MainTitleCentered);
-        }
-        else
-        {
-            m_titleWidget->SetStyle(GetEntityId(), Styling::Elements::MainTitle);
-        }
+        qreal spacing = m_styleHelper.GetAttribute(Styling::Attribute::Spacing, 0);
+        qreal margin = m_styleHelper.GetAttribute(Styling::Attribute::Margin, 0);
+
+        m_linearLayout->setSpacing(spacing);
+        m_linearLayout->setContentsMargins(margin, margin, margin, margin);
         
+        m_titleWidget->SetStyle(GetEntityId(), Styling::Elements::MainTitle);
         m_subTitleWidget->SetStyle(GetEntityId(), Styling::Elements::SubTitle);
 
         // Just clear our the disabled palette and we'll get it when we need it.
         m_disabledPalette = nullptr;
+
     }
 
     void GeneralNodeTitleGraphicsWidget::RefreshDisplay()
@@ -495,10 +482,7 @@ namespace GraphCanvas
     {
         GRAPH_CANVAS_DETAILED_PROFILE_FUNCTION();
 
-        AZStd::string nodeType;
-        StyledEntityRequestBus::EventResult(nodeType, GetEntityId(), &StyledEntityRequests::GetClass);
-
-        if (nodeType == Styling::Elements::Small)
+        if (m_styleHelper.GetColor(Styling::Attribute::BackgroundColor) == Qt::transparent)    // If the background color is set to transparent, we dont need to worry about any of this
         {
             return;
         }
