@@ -38,15 +38,15 @@ namespace AZ::Render
         return Name(AZStd::string(drawList.GetStringView()) + "_EntityMaskPass");
     }
 
-    static Name GetPassthroughPassTemplateName(const EditorStateParentPassBase& state)
-    {
-        return Name(state.GetStateName() + "PassthroughTemplate");
-    }
+    //static Name GetPassthroughPassTemplateName(const EditorStateParentPassBase& state)
+    //{
+    //    return Name(state.GetStateName() + "PassthroughTemplate");
+    //}
     
-    static Name GetPassthroughPassNameForState(const EditorStateParentPassBase& state)
-    {
-        return Name(state.GetStateName() + "PassthroughPass");
-    }
+    //static Name GetPassthroughPassNameForState(const EditorStateParentPassBase& state)
+    //{
+    //    return Name(state.GetStateName() + "PassthroughPass");
+    //}
 
     void CreateAndAddStateParentPassTemplate(const EditorStateParentPassBase& state)
     {
@@ -153,11 +153,11 @@ namespace AZ::Render
         RPI::PassSystemInterface::Get()->AddPassTemplate(stateParentPassTemplate->m_name, stateParentPassTemplate);
     }
 
-    void CreateAndAddPassthroughPassTemplate(const EditorStateParentPassBase& state)
+    void CreateAndAddPassthroughPassTemplate(/* const EditorStateParentPassBase& state*/)
     {
         auto passTemplate = AZStd::make_shared<RPI::PassTemplate>();
-        passTemplate->m_name = GetPassthroughPassTemplateName(state);
-        passTemplate->m_passClass = PassthroughStatePassTemplatePassClassName;
+        passTemplate->m_name = Name("PassThroughPassTemplate"); // GetPassthroughPassTemplateName(state);
+        passTemplate->m_passClass = Name("FullScreenTriangle");//PassthroughStatePassTemplatePassClassName;
     
         // Input color slot
         {
@@ -211,7 +211,7 @@ namespace AZ::Render
             passData->m_pipelineViewTag = "MainCamera";
             passData->m_shaderAsset.m_filePath = shaderFilePath;
             passData->m_shaderAsset.m_assetId = shaderAssetId;
-            passData->editorStatePass = &state;
+            //passData->editorStatePass = &state;
             passTemplate->m_passData = passData;
         }
 
@@ -352,11 +352,11 @@ namespace AZ::Render
         }
         
         // Editor state passes
+        RPI::PassRequest pass;
         auto previousOutput = AZStd::make_pair<Name, Name>(Name("Parent"), Name("ColorInputOutput"));
         for (const auto& state : m_editorStateParentPasses)
         {
             CreateAndAddStateParentPassTemplate(*state);
-            RPI::PassRequest pass;
             pass.m_passName = state->GetPassName();
             pass.m_templateName = state->GetPassTemplateName();
         
@@ -385,25 +385,25 @@ namespace AZ::Render
             }
         
             mainParentPassTemplate->AddPassRequest(pass);
-        
-            // Passthrough pass 
+        }
+
+        // Passthrough pass
+        {
+            CreateAndAddPassthroughPassTemplate(/*state*/);
+            RPI::PassRequest passthrough;
+            passthrough.m_passName = Name("PassThroughPass");//GetPassthroughPassNameForState(*state);
+            passthrough.m_templateName = Name("PassThroughPassTemplate");//GetPassthroughPassTemplateName(*state);
+
+            // Input color
             {
-                CreateAndAddPassthroughPassTemplate(*state);
-                RPI::PassRequest passthrough;
-                passthrough.m_passName = GetPassthroughPassNameForState(*state);
-                passthrough.m_templateName = GetPassthroughPassTemplateName(*state);
-                
-                // Input color
-                {
-                    RPI::PassConnection connection;
-                    connection.m_localSlot = Name("InputColor");
-                    connection.m_attachmentRef = { pass.m_passName, Name("OutputColor") };
-                    passthrough.AddInputConnection(connection);
-                }
-        
-                mainParentPassTemplate->AddPassRequest(passthrough);
-                previousOutput = { passthrough.m_passName, Name("OutputColor") };
+                RPI::PassConnection connection;
+                connection.m_localSlot = Name("InputColor");
+                connection.m_attachmentRef = { pass.m_passName, Name("OutputColor") };
+                passthrough.AddInputConnection(connection);
             }
+
+            mainParentPassTemplate->AddPassRequest(passthrough);
+            previousOutput = { passthrough.m_passName, Name("OutputColor") };
         }
 
         RPI::PassSystemInterface::Get()->AddPassTemplate(mainParentPassTemplate->m_name, mainParentPassTemplate);
