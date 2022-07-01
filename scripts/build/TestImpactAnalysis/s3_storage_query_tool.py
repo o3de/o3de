@@ -101,6 +101,7 @@ class S3StorageQueryTool(StorageQueryTool):
         Accesses the specified file
         @param bucket_name: Bucket to access file in
         @param file: The file to be accessed
+        @param destination: Path to where file should be saved on local machine
         """
         if self._check_object_exists(bucket_name, file):
             try:
