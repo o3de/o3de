@@ -58,6 +58,7 @@ namespace O3DE::ProjectManager
         QModelIndex AddGem(const GemInfo& gemInfo);
         void RemoveGem(const QModelIndex& modelIndex);
         void RemoveGem(const QString& gemName);
+        void RemoveRowAndUpdateIndexes(int arow);
         void Clear();
         void UpdateGemDependencies();
 
