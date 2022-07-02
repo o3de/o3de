@@ -1646,10 +1646,13 @@ namespace ScriptCanvasEditor
         {
             auto newPath = sourceHandle.AbsolutePath();
             newPath.ReplaceExtension(".scriptcanvas");
+
             if (auto relativeOption = ScriptCanvasEditor::CreateFromAnyPath(sourceHandle, newPath))
             {
                 sourceHandle = *relativeOption;
             }
+
+            sourceHandle = SourceHandle::MarkAbsolutePath(sourceHandle, newPath);
         }        
 
         if (!m_activeGraph.AnyEquals(sourceHandle))
