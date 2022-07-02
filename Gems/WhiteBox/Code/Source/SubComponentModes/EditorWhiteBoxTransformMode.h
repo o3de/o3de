@@ -87,11 +87,8 @@ namespace WhiteBox
         struct VertexTransformSelection
         {
             AZ::Vector3 m_localPosition = AZ::Vector3::CreateZero();
-
             AZStd::vector<AZ::Vector3> m_vertexPositions;
-
             Api::VertexHandles m_vertexHandles;
-
             IntersectionSelection m_selection;
         };
 
@@ -105,7 +102,7 @@ namespace WhiteBox
         AZ::EntityComponentIdPair m_entityComponentIdPair; //!< The entity and component id this modifier is associated with.
 
         AZStd::shared_ptr<AzToolsFramework::Manipulators> m_manipulator = nullptr;
-        AZStd::shared_ptr<VertexTransformSelection> m_vertexSelection = nullptr;
+        AZStd::shared_ptr<VertexTransformSelection> m_whiteBoxSelection = nullptr;
 
         AZStd::optional<PolygonIntersection> m_polygonIntersection = AZStd::nullopt;
         AZStd::optional<EdgeIntersection> m_edgeIntersection = AZStd::nullopt;
@@ -117,7 +114,7 @@ namespace WhiteBox
         AzToolsFramework::ViewportUi::ButtonId m_transformRotateButtonId;
         AzToolsFramework::ViewportUi::ButtonId m_transformScaleButtonId;
 
-        AZ::Event<AzToolsFramework::ViewportUi::ButtonId>::Handler m_TransformSelectionHandler;
+        AZ::Event<AzToolsFramework::ViewportUi::ButtonId>::Handler m_transformSelectionHandler;
     };
 
 } // namespace WhiteBox
