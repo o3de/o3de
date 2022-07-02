@@ -11,11 +11,10 @@
 // include the required headers
 #include "Attribute.h"
 #include "StandardHeaders.h"
-#include "Vector.h"
 
 #include <AzCore/Math/Color.h>
 #include <AzCore/Math/MathStringConversions.h>
-#include <AzFramework/StringFunc/StringFunc.h>
+#include <AzCore/StringFunc/StringFunc.h>
 #include <MCore/Source/AttributeAllocator.h>
 
 namespace MCore
@@ -49,6 +48,7 @@ namespace MCore
         // overloaded from the attribute base class
         Attribute* Clone() const override                           { return AttributeColor::Create(m_value); }
         const char* GetTypeString() const override                  { return "AttributeColor"; }
+
         bool InitFrom(const Attribute* other) override
         {
             if (other->GetType() != TYPE_ID)
@@ -58,10 +58,11 @@ namespace MCore
             m_value = static_cast<const AttributeColor*>(other)->GetValue();
             return true;
         }
+
         bool InitFromString(const AZStd::string& valueString) override
         {
             AZ::Vector4 vec4;
-            if (!AzFramework::StringFunc::LooksLikeVector4(valueString.c_str(), &vec4))
+            if (!AZ::StringFunc::LooksLikeVector4(valueString.c_str(), &vec4))
             {
                 return false;
             }
@@ -71,7 +72,7 @@ namespace MCore
         
         bool ConvertToString(AZStd::string& outString) const override
         {
-            AZStd::to_string(outString, m_value.GetAsVector4());
+            AZStd::to_string(outString, m_value);
             return true;
         }
         
