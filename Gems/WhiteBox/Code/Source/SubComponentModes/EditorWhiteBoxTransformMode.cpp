@@ -368,39 +368,30 @@ namespace WhiteBox
                 manipulator->SetLocalPosition(transformSelection->m_localPosition + action.LocalPositionOffset());
             }
 
+            Api::CalculateNormals(*whiteBox);
             Api::CalculatePlanarUVs(*whiteBox);
+
             EditorWhiteBoxComponentNotificationBus::Event(
                 entityComponentIdPair, &EditorWhiteBoxComponentNotificationBus::Events::OnWhiteBoxMeshModified);
         };
 
-        auto mouseUpHandlerFn = [entityComponentIdPair = m_entityComponentIdPair,
+        auto mouseUpHandlerFn = [mouseMoveHandlerFn, entityComponentIdPair = m_entityComponentIdPair,
                                  transformSelection = m_whiteBoxSelection,
                                  currentManipulator = AZStd::weak_ptr<AzToolsFramework::TranslationManipulators>(
                                      translationManipulators)](const auto& action)
         {
-
             WhiteBoxMesh* whiteBox = nullptr;
             EditorWhiteBoxComponentRequestBus::EventResult(
                 whiteBox, entityComponentIdPair, &EditorWhiteBoxComponentRequests::GetWhiteBoxMesh);
 
-            size_t vertexIndex = 0;
-            for (const Api::VertexHandle& vertexHandle : transformSelection->m_vertexHandles)
-            {
-                const AZ::Vector3 vertexPosition = transformSelection->m_vertexPositions[vertexIndex++] + action.LocalPositionOffset();
-                Api::SetVertexPosition(*whiteBox, vertexHandle, vertexPosition);
-            }
+            mouseMoveHandlerFn(action);
 
             transformSelection->m_vertexPositions = Api::VertexPositions(*whiteBox, transformSelection->m_vertexHandles);
             transformSelection->m_localPosition = transformSelection->m_localPosition + action.LocalPositionOffset();
-
             if (auto manipulator = currentManipulator.lock())
             {
                 manipulator->SetLocalPosition(transformSelection->m_localPosition);
             }
-
-            Api::CalculateNormals(*whiteBox);
-            Api::CalculatePlanarUVs(*whiteBox);
-
             EditorWhiteBoxComponentRequestBus::Event(entityComponentIdPair, &EditorWhiteBoxComponentRequests::SerializeWhiteBox);
         };
 
@@ -441,8 +432,7 @@ namespace WhiteBox
             AzFramework::ViewportColors::YAxisColor,
             AzFramework::ViewportColors::ZAxisColor);
 
-        rotationManipulators->InstallMouseMoveCallback(
-            [entityComponentIdPair = m_entityComponentIdPair,
+        auto mouseMoveHandlerFn = [entityComponentIdPair = m_entityComponentIdPair,
              transformSelection = m_whiteBoxSelection,
              currentManipulator = AZStd::weak_ptr<AzToolsFramework::RotationManipulators>(rotationManipulators)](
                 const AzToolsFramework::AngularManipulator::Action& action)
@@ -469,10 +459,11 @@ namespace WhiteBox
                 Api::CalculatePlanarUVs(*whiteBox);
                 EditorWhiteBoxComponentNotificationBus::Event(
                     entityComponentIdPair, &EditorWhiteBoxComponentNotificationBus::Events::OnWhiteBoxMeshModified);
-            });
+            };
 
+        rotationManipulators->InstallMouseMoveCallback(mouseMoveHandlerFn);
         rotationManipulators->InstallLeftMouseUpCallback(
-            [entityComponentIdPair = m_entityComponentIdPair,
+            [mouseMoveHandlerFn, entityComponentIdPair = m_entityComponentIdPair,
              transformSelection = m_whiteBoxSelection,
              currentManipulator = AZStd::weak_ptr<AzToolsFramework::RotationManipulators>(rotationManipulators)](
                 const AzToolsFramework::AngularManipulator::Action& action)
@@ -480,23 +471,13 @@ namespace WhiteBox
                 WhiteBoxMesh* whiteBox = nullptr;
                 EditorWhiteBoxComponentRequestBus::EventResult(
                     whiteBox, entityComponentIdPair, &EditorWhiteBoxComponentRequests::GetWhiteBoxMesh);
-                size_t vertexIndex = 0;
-                for (const Api::VertexHandle& vertexHandle : transformSelection->m_vertexHandles)
-                {
-                    const AZ::Vector3 vertexPosition =
-                        (action.LocalOrientation())
-                            .TransformVector(transformSelection->m_vertexPositions[vertexIndex++] - transformSelection->m_localPosition) +
-                        transformSelection->m_localPosition;
-                    Api::SetVertexPosition(*whiteBox, vertexHandle, vertexPosition);
-                }
+                mouseMoveHandlerFn(action);
+
                 transformSelection->m_vertexPositions = Api::VertexPositions(*whiteBox, transformSelection->m_vertexHandles);
-                
                 if (auto manipulator = currentManipulator.lock())
                 {
                     manipulator->SetLocalOrientation(AZ::Quaternion::CreateIdentity());
                 }
-                Api::CalculateNormals(*whiteBox);
-                Api::CalculatePlanarUVs(*whiteBox);
 
                 EditorWhiteBoxComponentRequestBus::Event(entityComponentIdPair, &EditorWhiteBoxComponentRequests::SerializeWhiteBox);
             });
@@ -532,10 +513,6 @@ namespace WhiteBox
             [entityComponentIdPair = m_entityComponentIdPair,
              transformSelection = m_whiteBoxSelection](const auto& action)
         {
-            if (!transformSelection)
-            {
-                return;
-            }
             WhiteBoxMesh* whiteBox = nullptr;
             EditorWhiteBoxComponentRequestBus::EventResult(
                 whiteBox, entityComponentIdPair, &EditorWhiteBoxComponentRequests::GetWhiteBoxMesh);
@@ -550,37 +527,23 @@ namespace WhiteBox
                 Api::SetVertexPosition(*whiteBox, vertexHandle, vertexPosition);
             }
 
+            Api::CalculateNormals(*whiteBox);
             Api::CalculatePlanarUVs(*whiteBox);
             EditorWhiteBoxComponentNotificationBus::Event(
                 entityComponentIdPair, &EditorWhiteBoxComponentNotificationBus::Events::OnWhiteBoxMeshModified);
         };
 
         auto mouseUpHandlerFn =
-            [entityComponentIdPair = m_entityComponentIdPair,
+            [mouseMoveHandlerFn, entityComponentIdPair = m_entityComponentIdPair,
              transformSelection = m_whiteBoxSelection](const auto& action)
         {
-            if (!transformSelection)
-            {
-                return;
-            }
             WhiteBoxMesh* whiteBox = nullptr;
             EditorWhiteBoxComponentRequestBus::EventResult(
                 whiteBox, entityComponentIdPair, &EditorWhiteBoxComponentRequests::GetWhiteBoxMesh);
 
-            size_t vertexIndex = 0;
-            for (const Api::VertexHandle& vertexHandle : transformSelection->m_vertexHandles)
-            {
-                const AZ::Vector3 vertexLocalPosition =
-                    (transformSelection->m_vertexPositions[vertexIndex++] - transformSelection->m_localPosition);
-                const AZ::Vector3 vertexPosition =
-                    (vertexLocalPosition * (AZ::Vector3::CreateOne() + (action.m_start.m_sign * action.LocalScaleOffset()))) +
-                    transformSelection->m_localPosition;
-                Api::SetVertexPosition(*whiteBox, vertexHandle, vertexPosition);
-            }
+            mouseMoveHandlerFn(action);
             transformSelection->m_vertexPositions = Api::VertexPositions(*whiteBox, transformSelection->m_vertexHandles);
 
-            Api::CalculateNormals(*whiteBox);
-            Api::CalculatePlanarUVs(*whiteBox);
             EditorWhiteBoxComponentRequestBus::Event(entityComponentIdPair, &EditorWhiteBoxComponentRequests::SerializeWhiteBox);
         };
 
