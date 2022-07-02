@@ -46,10 +46,13 @@ import ly_test_tools.environment.process_utils as process_utils
 import ly_test_tools.o3de.editor_test_utils as editor_utils
 from ly_test_tools.o3de.asset_processor import AssetProcessor
 from ly_test_tools.launchers.exceptions import WaitTimeoutError
+from ly_test_tools.o3de.multi_test_framework import AbstractTestBase, AbstractTestClass, AbstractTestSuite, Result
 
 __test__ = False  # This file contains ready-to-use test functions which are not actual tests, avoid pytest collection
 
 logger = logging.getLogger(__name__)
+
+LOG_NAME = "editor_test.log"
 
 
 def _split_batched_editor_log_file(workspace, starting_path, destination_file, log_file_to_split):
@@ -88,22 +91,8 @@ def _split_batched_editor_log_file(workspace, starting_path, destination_file, l
         current_new_log.close()
         workspace.artifact_manager.save_artifact(last_log_name)
 
-class EditorTest(abc.ABC):
-    """
-    Abstract Test targeting the O3DE Editor. The following attributes can be overridden by the test writer:
-    """
-    # Test file that this test will run, must be set by user for EditorTest to execute
-    test_module = None
-    # Maximum time to allow the editor to run, in seconds
-    timeout = 180
-    # Attach debugger when running the test, useful for debugging crashes. Should never be left True in production.
-    # Where possible, also recommended to switch to EditorSingleTest for better debugging in isolation.
-    attach_debugger = False
-    # Wait until a debugger is attached at the startup of the test, this is another way of debugging.
-    wait_for_debugger = False
 
-
-class EditorSingleTest(EditorTest):
+class EditorSingleTest(AbstractTestBase):
     """
     Test that will run alone in one editor with no parallel editors, limiting environmental side-effects at the
     expense of redundant isolated work
@@ -165,7 +154,7 @@ class EditorSingleTest(EditorTest):
         pass
 
 
-class EditorSharedTest(EditorTest):
+class EditorSharedTest(AbstractTestBase):
     """
     Test that will run in parallel with tests in different editor instances, as well as serially batching with other
     tests in each editor instance. Minimizes total test run duration.
@@ -201,6 +190,8 @@ class EditorBatchedTest(EditorSharedTest):
 
 
 class Result:
+
+    log_attribute = "editor_log"
 
     class EditorTestResultException(Exception):
         """ Indicates that an unknown result was found during the tests  """
@@ -387,67 +378,29 @@ class Result:
 
 
 @pytest.mark.parametrize("crash_log_watchdog", [("raise_on_crash", False)])
-class EditorTestSuite:
+class EditorTestSuite(AbstractTestSuite):
     # Extra cmdline arguments to supply for every editor instance for this test suite
     global_extra_cmdline_args = ["-BatchMode", "-autotest_mode"]
     # Tests usually run with no renderer, however some tests require a renderer and will disable this
     use_null_renderer = True
     # Maximum time in seconds for a single editor to stay open across the set of shared tests
     timeout_editor_shared_test = 300
+    # Maximum time (seconds) for waiting for a crash file to finish being dumped to disk
+    _TIMEOUT_CRASH_LOG = 20
+    # Return code for test failure
+    _TEST_FAIL_RETCODE = 0xF
 
-    @staticmethod
-    def get_number_parallel_editors() -> int:
+    def _get_number_parallel_editors(self, request: _pytest.fixtures.FixtureRequest) -> int:
         """
-        Number of editors to run in parallel, this method can be overridden by the user.
-        Note: CLI option '--editors-parallel' takes precedence over class settings.
-        :return: count of parallel editors to run
+        Retrieves the number of parallel preference based on cmdline overrides, class overrides, or default
+        :request: The Pytest Request object
+        :return: The number of parallel editors to use
         """
-        count = 1
-        found_processors = os.cpu_count()
-        if found_processors:
-            # only schedule on half the cores since the application will also run multithreaded
-            # also compensates for hyperthreaded/clustered/virtual cores inflating this count
-            count = math.floor(found_processors / 2)
-            if count < 1:
-                count = 1
+        parallel_editors_value = request.config.getoption("--editors-parallel", None)
+        if parallel_editors_value:
+            return int(parallel_editors_value)
 
-        return count
-
-    _TIMEOUT_CRASH_LOG = 20  # Maximum time (seconds) for waiting for a crash file to finish being dumped to disk
-    _TEST_FAIL_RETCODE = 0xF  # Return code for test failure
-
-    class TestData:
-        __test__ = False  # Tell PyTest to skip collecting this even though it has "Test" in the name; avoids warnings.
-
-        def __init__(self):
-            self.results = {}  # Dict of str(test_spec.__name__) -> Result.ResultType
-            self.asset_processor = None
-
-    @pytest.fixture(scope="class")
-    def editor_test_data(self, request: _pytest.fixtures.FixtureRequest) -> EditorTestSuite.TestData:
-        """
-        Yields a per-class structure to store the data of each test result and an AssetProcessor object that will be
-        re-used on the whole suite
-        :request: The Pytest request object
-        :yield: The TestData object
-        """
-        yield from self._editor_test_data(request)
-
-    def _editor_test_data(self, request: _pytest.fixtures.FixtureRequest) -> EditorTestSuite.TestData:
-        """
-        A wrapped implementation to simplify unit testing pytest fixtures. Users should not call this directly.
-        :request: The Pytest request object (unused, but always passed by pytest)
-        :yield: The TestData object
-        """
-        test_data = EditorTestSuite.TestData()
-        yield test_data  # yield to pytest while test-class executes
-        # resumed by pytest after each test-class finishes
-        if test_data.asset_processor:  # was assigned an AP to manage
-            test_data.asset_processor.teardown()
-            test_data.asset_processor = None
-            editor_utils.kill_all_ly_processes(include_asset_processor=True)
-        else:  # do not interfere as a preexisting AssetProcessor may be owned by something else
-            editor_utils.kill_all_ly_processes(include_asset_processor=False)
+        return self.get_number_parallel_instances()
 
     class Runner:
         def __init__(self, name, func, tests):
@@ -512,22 +465,22 @@ class EditorTestSuite:
 
                 def make_test_func(inner_test_spec):
                     @set_marks({"run_type": "run_single"})
-                    def single_run(self, request, workspace, editor, editor_test_data, launcher_platform):
+                    def single_run(self, request, workspace, editor, collected_test_data, launcher_platform):
                         # only single tests are allowed to have setup/teardown, however we can have shared tests that
                         # were explicitly set as single, for example via cmdline argument override
                         is_single_test = issubclass(inner_test_spec, EditorSingleTest)
                         if is_single_test:
                             # Setup step for wrap_run
-                            wrap = inner_test_spec.wrap_run(self, request, workspace, editor, editor_test_data, launcher_platform)
+                            wrap = inner_test_spec.wrap_run(self, request, workspace, editor, collected_test_data, launcher_platform)
                             assert isinstance(wrap, types.GeneratorType), "wrap_run must return a generator, did you forget 'yield'?"
                             next(wrap, None)
                             # Setup step
-                            inner_test_spec.setup(self, request, workspace, editor, editor_test_data, launcher_platform)
+                            inner_test_spec.setup(self, request, workspace, editor, collected_test_data, launcher_platform)
                         # Run
-                        self._run_single_test(request, workspace, editor, editor_test_data, inner_test_spec)
+                        self._run_single_test(request, workspace, editor, collected_test_data, inner_test_spec)
                         if is_single_test:
                             # Teardown
-                            inner_test_spec.teardown(self, request, workspace, editor, editor_test_data, launcher_platform)
+                            inner_test_spec.teardown(self, request, workspace, editor, collected_test_data, launcher_platform)
                             # Teardown step for wrap_run
                             next(wrap, None)
                     return single_run
@@ -544,8 +497,8 @@ class EditorTestSuite:
 
                 def make_func():
                     @set_marks({"runner": target_runner, "run_type": "run_shared"})
-                    def shared_run(self, request, workspace, editor, editor_test_data, launcher_platform):
-                        getattr(self, function.__name__)(request, workspace, editor, editor_test_data, target_runner.tests)
+                    def shared_run(self, request, workspace, editor, collected_test_data, launcher_platform):
+                        getattr(self, function.__name__)(request, workspace, editor, collected_test_data, target_runner.tests)
 
                     return shared_run
 
@@ -555,16 +508,16 @@ class EditorTestSuite:
                 for shared_test_spec in tests:
                     def make_func(inner_test_spec):
                         @set_marks({"runner": target_runner, "test_spec": inner_test_spec, "run_type": "result"})
-                        def result(self, request, workspace, editor, editor_test_data, launcher_platform):
+                        def result(self, request, workspace, editor, collected_test_data, launcher_platform):
                             result_key = inner_test_spec.__name__
-                            # The runner must have filled the editor_test_data.results dict fixture for this test.
+                            # The runner must have filled the collected_test_data.results dict fixture for this test.
                             # Hitting this assert could mean if there was an error executing the runner
-                            if result_key not in editor_test_data.results:
+                            if result_key not in collected_test_data.results:
                                 raise Result.EditorTestResultException(f"No results found for {result_key}. "
                                                                        f"Test may not have ran due to the Editor "
                                                                        f"shutting down. Check for issues in previous "
                                                                        f"tests.")
-                            cls._report_result(result_key, editor_test_data.results[result_key])
+                            cls._report_result(result_key, collected_test_data.results[result_key])
 
                         return result
 
@@ -733,40 +686,40 @@ class EditorTestSuite:
 
     @staticmethod
     def _prepare_asset_processor(workspace: ly_test_tools._internal.managers.workspace.AbstractWorkspaceManager,
-                                 editor_test_data: TestData) -> None:
+                                 collected_test_data: TestData) -> None:
         """
         Prepares the asset processor for the test depending on whether or not the process is open and if the current
         test owns it.
         :workspace: The workspace object in case an AssetProcessor object needs to be created
-        :editor_test_data: The test data from calling editor_test_data()
+        :collected_test_data: The test data from calling collected_test_data()
         :return: None
         """
         try:
             # Start-up an asset processor if we are not already managing one
-            if editor_test_data.asset_processor is None:
+            if collected_test_data.asset_processor is None:
                 if not process_utils.process_exists("AssetProcessor", ignore_extensions=True):
                     editor_utils.kill_all_ly_processes(include_asset_processor=True)
-                    editor_test_data.asset_processor = AssetProcessor(workspace)
-                    editor_test_data.asset_processor.start()
+                    collected_test_data.asset_processor = AssetProcessor(workspace)
+                    collected_test_data.asset_processor.start()
                 else:  # If another AP process already exists, do not kill it as we do not manage it
                     editor_utils.kill_all_ly_processes(include_asset_processor=False)
             else:  # Make sure existing asset processor wasn't closed by accident
-                editor_test_data.asset_processor.start()
+                collected_test_data.asset_processor.start()
         except Exception as ex:
-            editor_test_data.asset_processor = None
+            collected_test_data.asset_processor = None
             raise ex
 
     def _setup_editor_test(self, editor: ly_test_tools.launchers.platforms.base.Launcher,
                            workspace: ly_test_tools._internal.managers.workspace.AbstractWorkspaceManager,
-                           editor_test_data: TestData) -> None:
+                           collected_test_data: AbstractTestSuite.TestData) -> None:
         """
         Sets up an editor test by preparing the Asset Processor, killing all other O3DE processes, and configuring
         :editor: The launcher Editor object
         :workspace: The test Workspace object
-        :editor_test_data: The TestData from calling editor_test_data()
+        :collected_test_data: The TestData from calling collected_test_data()
         :return: None
         """
-        self._prepare_asset_processor(workspace, editor_test_data)
+        self._prepare_asset_processor(workspace, collected_test_data)
         editor_utils.kill_all_ly_processes(include_asset_processor=False)
         editor.configure_settings()
 
@@ -1088,17 +1041,17 @@ class EditorTestSuite:
     def _run_single_test(self, request: _pytest.fixtures.FixtureRequest,
                          workspace: ly_test_tools._internal.managers.workspace.AbstractWorkspaceManager,
                          editor: ly_test_tools.launchers.platforms.base.Launcher,
-                         editor_test_data: TestData, test_spec: EditorSingleTest) -> None:
+                         collected_test_data: TestData, test_spec: EditorSingleTest) -> None:
         """
         Runs a single test (one editor, one test) with the given specs
         :request: The Pytest Request
         :workspace: The LyTestTools Workspace object
         :editor: The LyTestTools Editor object
-        :editor_test_data: The TestData from calling editor_test_data()
+        :collected_test_data: The TestData from calling collected_test_data()
         :test_spec: The test class that should be a subclass of EditorSingleTest
         :return: None
         """
-        self._setup_editor_test(editor, workspace, editor_test_data)
+        self._setup_editor_test(editor, workspace, collected_test_data)
         extra_cmdline_args = []
         if hasattr(test_spec, "extra_cmdline_args"):
             extra_cmdline_args = test_spec.extra_cmdline_args
@@ -1110,7 +1063,7 @@ class EditorTestSuite:
                       Result.Unknown(
                           test_spec=test_spec,
                           extra_info="Unexpectedly found no test run information on stdout in the editor log")}
-        editor_test_data.results.update(result)
+        collected_test_data.results.update(result)
         test_name, test_result = next(iter(result.items()))
         self._report_result(test_name, test_result)
         # If test did not pass, save assets with errors and warnings
@@ -1119,14 +1072,16 @@ class EditorTestSuite:
 
     def _run_batched_tests(self, request: _pytest.fixtures.FixtureRequest,
                            workspace: ly_test_tools._internal.managers.workspace.AbstractWorkspaceManager,
-                           editor: ly_test_tools.launchers.platforms.base.Launcher, editor_test_data: TestData,
-                           test_spec_list: list[EditorSharedTest], extra_cmdline_args: list[str] = None) -> None:
+                           editor: ly_test_tools.launchers.platforms.base.Launcher,
+                           collected_test_data: AbstractTestSuite.TestData,
+                           test_spec_list: list[EditorSharedTest],
+                           extra_cmdline_args: list[str] = None) -> None:
         """
         Runs a batch of tests in one single editor with the given spec list (one editor, multiple tests)
         :request: The Pytest Request
         :workspace: The LyTestTools Workspace object
         :editor: The LyTestTools Editor object
-        :editor_test_data: The TestData from calling editor_test_data()
+        :collected_test_data: The TestData from calling collected_test_data()
         :test_spec_list: A list of EditorSharedTest tests to run
         :extra_cmdline_args: Any extra command line args in a list
         :return: None
@@ -1137,10 +1092,10 @@ class EditorTestSuite:
         if not test_spec_list:
             return
 
-        self._setup_editor_test(editor, workspace, editor_test_data)
+        self._setup_editor_test(editor, workspace, collected_test_data)
         results = self._exec_editor_multitest(request, workspace, editor, 1, "editor_test.log", test_spec_list,
                                               extra_cmdline_args)
-        editor_test_data.results.update(results)
+        collected_test_data.results.update(results)
         # If at least one test did not pass, save assets with errors and warnings
         for result in results:
             if result is None:
@@ -1150,16 +1105,19 @@ class EditorTestSuite:
                 editor_utils.save_failed_asset_joblogs(workspace)
                 return  # exit early on first batch failure
 
-    def _run_parallel_tests(self, request: _pytest.fixtures.FixtureRequest,
+    def _run_parallel_tests(self,
+                            request: _pytest.fixtures.FixtureRequest,
                             workspace: ly_test_tools._internal.managers.workspace.AbstractWorkspaceManager,
-                            editor: ly_test_tools.launchers.platforms.base.Launcher, editor_test_data: TestData,
-                            test_spec_list: list[EditorSharedTest], extra_cmdline_args: list[str] = None) -> None:
+                            editor: ly_test_tools.launchers.platforms.base.Launcher,
+                            collected_test_data: AbstractTestSuite.TestData,
+                            test_spec_list: list[EditorSharedTest],
+                            extra_cmdline_args: list[str] = None) -> None:
         """
         Runs multiple editors with one test on each editor (multiple editor, one test each)
         :request: The Pytest Request
         :workspace: The LyTestTools Workspace object
         :editor: The LyTestTools Editor object
-        :editor_test_data: The TestData from calling editor_test_data()
+        :collected_test_data: The TestData from calling collected_test_data()
         :test_spec_list: A list of EditorSharedTest tests to run
         :extra_cmdline_args: Any extra command line args in a list
         :return: None
@@ -1170,8 +1128,8 @@ class EditorTestSuite:
         if not test_spec_list:
             return
 
-        self._setup_editor_test(editor, workspace, editor_test_data)
-        parallel_editors = self._get_number_parallel_editors(request)
+        self._setup_editor_test(editor, workspace, collected_test_data)
+        parallel_editors = self._get_number_parallel_instances(request)
         assert parallel_editors > 0, "Must have at least one editor"
         
         # If there are more tests than max parallel editors, we will split them into multiple consecutive runs
@@ -1210,23 +1168,26 @@ class EditorTestSuite:
                               Result.Unknown(
                                   test_spec=EditorParallelTest,
                                   extra_info="Unexpectedly found no test run information on stdout in the editor log")}
-                editor_test_data.results.update(result)
+                collected_test_data.results.update(result)
                 if not isinstance(result, Result.Pass):
                     save_asset_logs = True
             # If at least one test did not pass, save assets with errors and warnings
             if save_asset_logs:
                 editor_utils.save_failed_asset_joblogs(workspace)
 
-    def _run_parallel_batched_tests(self, request: _pytest.fixtures.FixtureRequest,
+    def _run_parallel_batched_tests(self,
+                                    request: _pytest.fixtures.FixtureRequest,
                                     workspace: ly_test_tools._internal.managers.workspace.AbstractWorkspaceManager,
-                                    editor: ly_test_tools.launchers.platforms.base.Launcher, editor_test_data: TestData,
-                                    test_spec_list: list[EditorSharedTest], extra_cmdline_args: list[str] = None) -> None:
+                                    editor: ly_test_tools.launchers.platforms.base.Launcher,
+                                    collected_test_data: AbstractTestSuite.TestData,
+                                    test_spec_list: list[EditorSharedTest],
+                                    extra_cmdline_args: list[str] = None) -> None:
         """
         Runs multiple editors with a batch of tests for each editor (multiple editor, multiple tests each)
         :request: The Pytest Request
         :workspace: The LyTestTools Workspace object
         :editor: The LyTestTools Editor object
-        :editor_test_data: The TestData from calling editor_test_data()
+        :collected_test_data: The TestData from calling collected_test_data()
         :test_spec_list: A list of EditorSharedTest tests to run
         :extra_cmdline_args: Any extra command line args in a list
         :return: None
@@ -1237,8 +1198,8 @@ class EditorTestSuite:
         if not test_spec_list:
             return
 
-        self._setup_editor_test(editor, workspace, editor_test_data)
-        total_threads = self._get_number_parallel_editors(request)
+        self._setup_editor_test(editor, workspace, collected_test_data)
+        total_threads = self._get_number_parallel_instances(request)
         assert total_threads > 0, "Must have at least one editor"
         threads = []
         tests_per_editor = int(math.ceil(len(test_spec_list) / total_threads))
@@ -1278,21 +1239,9 @@ class EditorTestSuite:
                           Result.Unknown(
                               test_spec=EditorSharedTest,
                               extra_info="Unexpectedly found no test run information on stdout in the editor log")}
-            editor_test_data.results.update(result)
+            collected_test_data.results.update(result)
             if not isinstance(result, Result.Pass):
                 save_asset_logs = True
         # If at least one test did not pass, save assets with errors and warnings
         if save_asset_logs:
             editor_utils.save_failed_asset_joblogs(workspace)
-
-    def _get_number_parallel_editors(self, request: _pytest.fixtures.FixtureRequest) -> int:
-        """
-        Retrieves the number of parallel preference based on cmdline overrides, class overrides, or default
-        :request: The Pytest Request object
-        :return: The number of parallel editors to use
-        """
-        parallel_editors_value = request.config.getoption("--editors-parallel", None)
-        if parallel_editors_value:
-            return int(parallel_editors_value)
-
-        return self.get_number_parallel_editors()
