@@ -479,8 +479,8 @@ namespace EMotionFX
         AZ::Vector3 axis = oldForward.Cross(newForward);
         if (axis.GetLengthSq() > 0.0f)
         {
-            globalTransformA.m_rotation = AZ::Quaternion::CreateFromAxisAngle(axis.GetNormalized(), deltaAngle) * 
-                globalTransformA.m_rotation;
+            globalTransformA.m_rotation = AZ::Quaternion::CreateFromAxisAngle(
+                axis.GetNormalized(), deltaAngle) * globalTransformA.m_rotation;
         }
         outTransformPose.SetWorldSpaceTransform(nodeIndexA, globalTransformA);
 
@@ -513,8 +513,8 @@ namespace EMotionFX
             axis = oldForward.Cross(newForward);
             if (axis.GetLengthSq() > 0.0f)
             {
-                globalTransformB.m_rotation = AZ::Quaternion::CreateFromAxisAngle(axis.GetNormalized(), deltaAngle) * 
-                    globalTransformB.m_rotation;
+                globalTransformB.m_rotation = AZ::Quaternion::CreateFromAxisAngle(
+                    axis.GetNormalized(), deltaAngle) * globalTransformB.m_rotation;
             }
         }
 
