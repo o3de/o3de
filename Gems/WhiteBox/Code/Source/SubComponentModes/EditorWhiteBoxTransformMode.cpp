@@ -86,7 +86,7 @@ namespace WhiteBox
             m_transformScaleButtonId,
             ManipulatorModeClusterScaleTooltip);
 
-        m_TransformSelectionHandler = AZ::Event<AzToolsFramework::ViewportUi::ButtonId>::Handler(
+        m_transformSelectionHandler = AZ::Event<AzToolsFramework::ViewportUi::ButtonId>::Handler(
             [this](AzToolsFramework::ViewportUi::ButtonId buttonId)
             {
                 if (buttonId == m_transformTranslateButtonId)
@@ -109,7 +109,7 @@ namespace WhiteBox
             AzToolsFramework::ViewportUi::DefaultViewportId,
             &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::RegisterClusterEventHandler,
             m_transformClusterId,
-            m_TransformSelectionHandler);
+            m_transformSelectionHandler);
 
         RefreshManipulator();
     }
@@ -135,7 +135,7 @@ namespace WhiteBox
 
     void TransformMode::Refresh()
     {
-        m_vertexSelection.reset();
+        m_whiteBoxSelection.reset();
         DestroyManipulators();
     }
 
@@ -179,9 +179,9 @@ namespace WhiteBox
             DrawPoints(debugDisplay, whiteBox, viewportInfo, handles, ed_whiteBoxVertexHover);
         }
 
-        if (m_vertexSelection)
+        if (m_whiteBoxSelection)
         {
-            if (auto polygonSelection = AZStd::get_if<PolygonIntersection>(&m_vertexSelection->m_selection))
+            if (auto polygonSelection = AZStd::get_if<PolygonIntersection>(&m_whiteBoxSelection->m_selection))
             {
                 auto vertexHandles = Api::PolygonVertexHandles(*whiteBox, polygonSelection->GetHandle());
                 DrawPoints(debugDisplay, whiteBox, viewportInfo, vertexHandles, ed_whiteBoxVertexSelection);
@@ -191,7 +191,7 @@ namespace WhiteBox
                     DrawOutline(debugDisplay, whiteBox, polygonSelection->GetHandle(), ed_whiteBoxOutlineSelection);
                 }
             }
-            else if (auto edgeSelection = AZStd::get_if<EdgeIntersection>(&m_vertexSelection->m_selection))
+            else if (auto edgeSelection = AZStd::get_if<EdgeIntersection>(&m_whiteBoxSelection->m_selection))
             {
                 auto vertexHandles = Api::EdgeVertexHandles(*whiteBox, edgeSelection->GetHandle());
                 DrawPoints(debugDisplay, whiteBox, viewportInfo, vertexHandles, ed_whiteBoxVertexSelection);
@@ -200,7 +200,7 @@ namespace WhiteBox
                     DrawEdge(debugDisplay, whiteBox, edgeSelection->GetHandle(), ed_whiteBoxOutlineSelection);
                 }
             }
-            else if (auto vertexSelection = AZStd::get_if<VertexIntersection>(&m_vertexSelection->m_selection))
+            else if (auto vertexSelection = AZStd::get_if<VertexIntersection>(&m_whiteBoxSelection->m_selection))
             {
                 if (m_vertexIntersection.value_or(VertexIntersection{}).GetHandle() != vertexSelection->GetHandle())
                 {
@@ -253,24 +253,24 @@ namespace WhiteBox
             case GeometryIntersection::Polygon:
                 if (polygonIntersection.has_value())
                 {
-                    m_vertexSelection = AZStd::make_shared<TransformMode::VertexTransformSelection>();
-                    m_vertexSelection->m_selection = polygonIntersection.value();
+                    m_whiteBoxSelection = AZStd::make_shared<TransformMode::VertexTransformSelection>();
+                    m_whiteBoxSelection->m_selection = polygonIntersection.value();
                     RefreshManipulator();
                 }
                 break;
             case GeometryIntersection::Edge:
                 if (edgeIntersection.has_value())
                 {
-                    m_vertexSelection = AZStd::make_shared<TransformMode::VertexTransformSelection>();
-                    m_vertexSelection->m_selection = edgeIntersection.value();
+                    m_whiteBoxSelection = AZStd::make_shared<TransformMode::VertexTransformSelection>();
+                    m_whiteBoxSelection->m_selection = edgeIntersection.value();
                     RefreshManipulator();
                 }
                 break;
             case GeometryIntersection::Vertex:
                 if (vertexIntersection.has_value())
                 {
-                    m_vertexSelection = AZStd::make_shared<TransformMode::VertexTransformSelection>();
-                    m_vertexSelection->m_selection = vertexIntersection.value();
+                    m_whiteBoxSelection = AZStd::make_shared<TransformMode::VertexTransformSelection>();
+                    m_whiteBoxSelection->m_selection = vertexIntersection.value();
                     RefreshManipulator();
                 }
                 break;
@@ -286,7 +286,7 @@ namespace WhiteBox
     void TransformMode::RefreshManipulator()
     {
         DestroyManipulators();
-        if (m_vertexSelection)
+        if (m_whiteBoxSelection)
         {
             switch (m_transformType)
             {
@@ -310,24 +310,24 @@ namespace WhiteBox
 
     void TransformMode::UpdateTransformHandles(WhiteBoxMesh* mesh)
     {
-        if (auto polygonSelection = AZStd::get_if<PolygonIntersection>(&m_vertexSelection->m_selection))
+        if (auto polygonSelection = AZStd::get_if<PolygonIntersection>(&m_whiteBoxSelection->m_selection))
         {
-            m_vertexSelection->m_vertexHandles = Api::PolygonVertexHandles(*mesh, polygonSelection->GetHandle());
-            m_vertexSelection->m_vertexPositions = Api::VertexPositions(*mesh, m_vertexSelection->m_vertexHandles);
-            m_vertexSelection->m_localPosition = Api::PolygonMidpoint(*mesh, polygonSelection->GetHandle());
+            m_whiteBoxSelection->m_vertexHandles = Api::PolygonVertexHandles(*mesh, polygonSelection->GetHandle());
+            m_whiteBoxSelection->m_vertexPositions = Api::VertexPositions(*mesh, m_whiteBoxSelection->m_vertexHandles);
+            m_whiteBoxSelection->m_localPosition = Api::PolygonMidpoint(*mesh, polygonSelection->GetHandle());
         }
-        else if (auto edgeSelection = AZStd::get_if<EdgeIntersection>(&m_vertexSelection->m_selection))
+        else if (auto edgeSelection = AZStd::get_if<EdgeIntersection>(&m_whiteBoxSelection->m_selection))
         {
             auto edgeHandle = Api::EdgeVertexHandles(*mesh, edgeSelection->GetHandle());
-            m_vertexSelection->m_vertexHandles = Api::VertexHandles(edgeHandle.cbegin(), edgeHandle.cend());
-            m_vertexSelection->m_vertexPositions = Api::VertexPositions(*mesh, m_vertexSelection->m_vertexHandles);
-            m_vertexSelection->m_localPosition = Api::EdgeMidpoint(*mesh, edgeSelection->GetHandle());
+            m_whiteBoxSelection->m_vertexHandles = Api::VertexHandles(edgeHandle.cbegin(), edgeHandle.cend());
+            m_whiteBoxSelection->m_vertexPositions = Api::VertexPositions(*mesh, m_whiteBoxSelection->m_vertexHandles);
+            m_whiteBoxSelection->m_localPosition = Api::EdgeMidpoint(*mesh, edgeSelection->GetHandle());
         }
-        else if (auto vertexSelection = AZStd::get_if<VertexIntersection>(&m_vertexSelection->m_selection))
+        else if (auto vertexSelection = AZStd::get_if<VertexIntersection>(&m_whiteBoxSelection->m_selection))
         {
-            m_vertexSelection->m_vertexHandles = Api::VertexHandles({ vertexSelection->GetHandle() });
-            m_vertexSelection->m_vertexPositions = Api::VertexPositions(*mesh, m_vertexSelection->m_vertexHandles);
-            m_vertexSelection->m_localPosition = Api::VertexPosition(*mesh, vertexSelection->GetHandle());
+            m_whiteBoxSelection->m_vertexHandles = Api::VertexHandles({ vertexSelection->GetHandle() });
+            m_whiteBoxSelection->m_vertexPositions = Api::VertexPositions(*mesh, m_whiteBoxSelection->m_vertexHandles);
+            m_whiteBoxSelection->m_localPosition = Api::VertexPosition(*mesh, vertexSelection->GetHandle());
         }
     }
 
@@ -347,14 +347,12 @@ namespace WhiteBox
             whiteBox, m_entityComponentIdPair, &EditorWhiteBoxComponentRequests::GetWhiteBoxMesh);
 
         UpdateTransformHandles(whiteBox);
-        translationManipulators->SetLocalPosition(m_vertexSelection->m_localPosition);
+        translationManipulators->SetLocalPosition(m_whiteBoxSelection->m_localPosition);
 
         auto mouseMoveHandlerFn = [entityComponentIdPair = m_entityComponentIdPair,
-                                   transformSelection = m_vertexSelection,
-                                   translationManipulator = AZStd::weak_ptr<AzToolsFramework::TranslationManipulators>(
-                                       translationManipulators)](const auto& action)
+                                   transformSelection = m_whiteBoxSelection,
+                                   currentManipulator = AZStd::weak_ptr<AzToolsFramework::TranslationManipulators>(translationManipulators)](const auto& action)
         {
-
             WhiteBoxMesh* whiteBox = nullptr;
             EditorWhiteBoxComponentRequestBus::EventResult(
                 whiteBox, entityComponentIdPair, &EditorWhiteBoxComponentRequests::GetWhiteBoxMesh);
@@ -365,7 +363,7 @@ namespace WhiteBox
                 const AZ::Vector3 vertexPosition = transformSelection->m_vertexPositions[vertexIndex++] + action.LocalPositionOffset();
                 Api::SetVertexPosition(*whiteBox, vertexHandle, vertexPosition);
             }
-            if (auto manipulator = translationManipulator.lock())
+            if (auto manipulator = currentManipulator.lock())
             {
                 manipulator->SetLocalPosition(transformSelection->m_localPosition + action.LocalPositionOffset());
             }
@@ -376,8 +374,8 @@ namespace WhiteBox
         };
 
         auto mouseUpHandlerFn = [entityComponentIdPair = m_entityComponentIdPair,
-                                 transformSelection = m_vertexSelection,
-                                 translationManipulator = AZStd::weak_ptr<AzToolsFramework::TranslationManipulators>(
+                                 transformSelection = m_whiteBoxSelection,
+                                 currentManipulator = AZStd::weak_ptr<AzToolsFramework::TranslationManipulators>(
                                      translationManipulators)](const auto& action)
         {
 
@@ -395,7 +393,7 @@ namespace WhiteBox
             transformSelection->m_vertexPositions = Api::VertexPositions(*whiteBox, transformSelection->m_vertexHandles);
             transformSelection->m_localPosition = transformSelection->m_localPosition + action.LocalPositionOffset();
 
-            if (auto manipulator = translationManipulator.lock())
+            if (auto manipulator = currentManipulator.lock())
             {
                 manipulator->SetLocalPosition(transformSelection->m_localPosition);
             }
@@ -433,7 +431,7 @@ namespace WhiteBox
         rotationManipulators->AddEntityComponentIdPair(m_entityComponentIdPair);
 
         UpdateTransformHandles(whiteBox);
-        rotationManipulators->SetLocalPosition(m_vertexSelection->m_localPosition);
+        rotationManipulators->SetLocalPosition(m_whiteBoxSelection->m_localPosition);
         rotationManipulators->SetLocalOrientation(AZ::Quaternion::CreateIdentity());
 
         rotationManipulators->SetLocalAxes(AZ::Vector3::CreateAxisX(), AZ::Vector3::CreateAxisY(), AZ::Vector3::CreateAxisZ());
@@ -445,11 +443,10 @@ namespace WhiteBox
 
         rotationManipulators->InstallMouseMoveCallback(
             [entityComponentIdPair = m_entityComponentIdPair,
-             transformSelection = m_vertexSelection,
-             translationManipulator = AZStd::weak_ptr<AzToolsFramework::RotationManipulators>(rotationManipulators)](
+             transformSelection = m_whiteBoxSelection,
+             currentManipulator = AZStd::weak_ptr<AzToolsFramework::RotationManipulators>(rotationManipulators)](
                 const AzToolsFramework::AngularManipulator::Action& action)
             {
-
                 WhiteBoxMesh* whiteBox = nullptr;
                 EditorWhiteBoxComponentRequestBus::EventResult(
                     whiteBox, entityComponentIdPair, &EditorWhiteBoxComponentRequests::GetWhiteBoxMesh);
@@ -463,11 +460,12 @@ namespace WhiteBox
                     Api::SetVertexPosition(*whiteBox, vertexHandle, vertexPosition);
                 }
 
-                if (auto manipulator = translationManipulator.lock())
+                if (auto manipulator = currentManipulator.lock())
                 {
                     manipulator->SetLocalOrientation(action.LocalOrientation());
                 }
 
+                Api::CalculateNormals(*whiteBox);
                 Api::CalculatePlanarUVs(*whiteBox);
                 EditorWhiteBoxComponentNotificationBus::Event(
                     entityComponentIdPair, &EditorWhiteBoxComponentNotificationBus::Events::OnWhiteBoxMeshModified);
@@ -475,11 +473,10 @@ namespace WhiteBox
 
         rotationManipulators->InstallLeftMouseUpCallback(
             [entityComponentIdPair = m_entityComponentIdPair,
-             transformSelection = m_vertexSelection,
-             translationManipulator = AZStd::weak_ptr<AzToolsFramework::RotationManipulators>(rotationManipulators)](
+             transformSelection = m_whiteBoxSelection,
+             currentManipulator = AZStd::weak_ptr<AzToolsFramework::RotationManipulators>(rotationManipulators)](
                 const AzToolsFramework::AngularManipulator::Action& action)
             {
-
                 WhiteBoxMesh* whiteBox = nullptr;
                 EditorWhiteBoxComponentRequestBus::EventResult(
                     whiteBox, entityComponentIdPair, &EditorWhiteBoxComponentRequests::GetWhiteBoxMesh);
@@ -493,11 +490,11 @@ namespace WhiteBox
                     Api::SetVertexPosition(*whiteBox, vertexHandle, vertexPosition);
                 }
                 transformSelection->m_vertexPositions = Api::VertexPositions(*whiteBox, transformSelection->m_vertexHandles);
-                if (auto manipulator = translationManipulator.lock())
+                
+                if (auto manipulator = currentManipulator.lock())
                 {
                     manipulator->SetLocalOrientation(AZ::Quaternion::CreateIdentity());
                 }
-
                 Api::CalculateNormals(*whiteBox);
                 Api::CalculatePlanarUVs(*whiteBox);
 
@@ -529,12 +526,11 @@ namespace WhiteBox
             AzFramework::ViewportColors::ZAxisColor);
 
         UpdateTransformHandles(whiteBox);
-        scaleManipulators->SetLocalPosition(m_vertexSelection->m_localPosition);
+        scaleManipulators->SetLocalPosition(m_whiteBoxSelection->m_localPosition);
 
         auto mouseMoveHandlerFn =
             [entityComponentIdPair = m_entityComponentIdPair,
-             transformSelection = m_vertexSelection,
-             scaleManipulator = AZStd::weak_ptr<AzToolsFramework::ScaleManipulators>(scaleManipulators)](const auto& action)
+             transformSelection = m_whiteBoxSelection](const auto& action)
         {
             if (!transformSelection)
             {
@@ -561,8 +557,7 @@ namespace WhiteBox
 
         auto mouseUpHandlerFn =
             [entityComponentIdPair = m_entityComponentIdPair,
-             transformSelection = m_vertexSelection,
-             scaleManipulator = AZStd::weak_ptr<AzToolsFramework::ScaleManipulators>(scaleManipulators)](const auto& action)
+             transformSelection = m_whiteBoxSelection](const auto& action)
         {
             if (!transformSelection)
             {
