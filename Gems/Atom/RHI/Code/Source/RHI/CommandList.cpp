@@ -12,7 +12,7 @@ namespace AZ
 {
     namespace RHI
     {
-        void CommandList::ValidateSubmitItem(const SubmitItem& submitItem)
+        void CommandList::ValidateSubmitItem([[maybe_unused]] const SubmitItem& submitItem)
         {
             if (m_submitRange.GetCount())
             {
@@ -27,7 +27,7 @@ namespace AZ
             }
         }
 
-        void CommandList::ValidateTotalSubmits(const ScopeProducer* scopeProducer)
+        void CommandList::ValidateTotalSubmits([[maybe_unused]] const ScopeProducer* scopeProducer)
         {
             if (m_submitRange.GetCount())
             {
