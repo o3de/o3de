@@ -58,7 +58,6 @@ namespace O3DE::ProjectManager
         QModelIndex AddGem(const GemInfo& gemInfo);
         void RemoveGem(const QModelIndex& modelIndex);
         void RemoveGem(const QString& gemName);
-        void RemoveRowAndUpdateIndexes(int arow);
         void Clear();
         void UpdateGemDependencies();
 
@@ -119,6 +118,7 @@ namespace O3DE::ProjectManager
 
     protected slots: 
         void OnRowsAboutToBeRemoved(const QModelIndex& parent, int first, int last);
+        void OnRowsRemoved(const QModelIndex& parent, int first, int last);
 
     private:
         void GetAllDependingGems(const QModelIndex& modelIndex, QSet<QModelIndex>& inOutGems);

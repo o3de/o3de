@@ -19,6 +19,7 @@ namespace O3DE::ProjectManager
     {
         m_selectionModel = new QItemSelectionModel(this, parent);
         connect(this, &QAbstractItemModel::rowsAboutToBeRemoved, this, &GemModel::OnRowsAboutToBeRemoved);
+        connect(this, &QAbstractItemModel::rowsRemoved, this, &GemModel::OnRowsRemoved);
     }
 
     QItemSelectionModel* GemModel::GetSelectionModel() const
@@ -73,7 +74,7 @@ namespace O3DE::ProjectManager
 
     void GemModel::RemoveGem(const QModelIndex& modelIndex)
     {
-        RemoveRowAndUpdateIndexes(modelIndex.row());
+        removeRow(modelIndex.row());
     }
 
     void GemModel::RemoveGem(const QString& gemName)
@@ -81,28 +82,7 @@ namespace O3DE::ProjectManager
         auto nameFind = m_nameToIndexMap.find(gemName);
         if (nameFind != m_nameToIndexMap.end())
         {
-            RemoveRowAndUpdateIndexes(nameFind->row());
-        }
-    }
-
-    void GemModel::RemoveRowAndUpdateIndexes(int arow)
-    {
-        bool doUpdate = arow < rowCount() - 1; // before we remove a row check if we need updating later
-        removeRow(arow);
-
-        if (doUpdate)
-        {
-            /* need to update the index map as it's possible that model indexes updated.
-             * i.e.
-             * rows = [0, 1, 2, 3]
-             * removing row 1 will move the model indexes of 2 and 3 but m_nameToIndexMap will still be pointing to 2 and 3
-             * when it should be pointing to 1 and 2
-             */
-            for (int row = arow; row < rowCount(); ++row)
-            {
-                const QModelIndex modelIndex = index(row, 0);
-                m_nameToIndexMap[GetName(modelIndex)] = modelIndex;
-            }
+            removeRow(nameFind->row());
         }
     }
 
@@ -218,6 +198,16 @@ namespace O3DE::ProjectManager
     QStringList GemModel::GetDependingGems(const QModelIndex& modelIndex)
     {
         return modelIndex.data(RoleDependingGems).toStringList();
+    }
+
+    void GemModel::OnRowsRemoved(const QModelIndex& parent, int first, [[maybe_unused]] int last)
+    {
+        // fix up the name to index map for all rows that changed
+        for (int row = first; row < rowCount(); ++row)
+        {
+            const QModelIndex modelIndex = index(row, 0, parent);
+            m_nameToIndexMap[GetName(modelIndex)] = modelIndex;
+        }
     }
 
     void GemModel::GetAllDependingGems(const QModelIndex& modelIndex, QSet<QModelIndex>& inOutGems)
