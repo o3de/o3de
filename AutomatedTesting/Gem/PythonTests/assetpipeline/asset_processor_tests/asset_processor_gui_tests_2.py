@@ -139,7 +139,7 @@ class TestsAssetProcessorGUI_WindowsAndMac(object):
         assert value.lower() == "true", f"The fast scan setting found is {value}"
 
         # Launch GameLauncher.exe with Null Renderer enabled so that Non-GPU Automation Nodes don't fail on the renderer
-        launcher = launcher_helper.create_game_launcher(workspace, ["-NullRenderer"])
+        launcher = launcher_helper.create_game_launcher(workspace, args=["-NullRenderer"])
         launcher.start()
 
         # Validate that no fatal errors (crashes) are reported within a certain time frame (10 seconds timeout)
@@ -147,14 +147,19 @@ class TestsAssetProcessorGUI_WindowsAndMac(object):
         time.sleep(CHECK_ALIVE_SECONDS)
         launcher_name = f"{workspace.project.title()}.GameLauncher"
         # fmt:off
-        assert process_utils.process_exists(launcher_name, ignore_extensions=True), \
-            f"{launcher_name} was not live during the check."
-        assert process_utils.process_exists("AssetProcessor", ignore_extensions=True), \
-            "AssetProcessor was not live during the check."
-        # fmt:on
+
+        launcher_exists = False
+        asset_processor_exists = False
+        if process_utils.process_exists(launcher_name, ignore_extensions=True):
+            launcher_exists = True
+        if process_utils.process_exists("AssetProcessor", ignore_extensions=True):
+            asset_processor_exists = True
 
         launcher.stop()
 
+        assert launcher_exists, f"{launcher_name} was not live during the check."
+        assert asset_processor_exists, "AssetProcessor was not live during the check."
+        # fmt:on
 
 @pytest.mark.usefixtures("asset_processor")
 @pytest.mark.usefixtures("ap_setup_fixture")

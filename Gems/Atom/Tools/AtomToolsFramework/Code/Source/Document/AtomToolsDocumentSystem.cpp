@@ -37,6 +37,15 @@ namespace AtomToolsFramework
         }
     }
 
+    void DisplayWarningMessage(QWidget* parent, const QString& title, const QString& text)
+    {
+        AZ_Warning("AtomToolsDocumentSystem", false, text.toUtf8().constData());
+        if (GetSettingsValue<bool>("/O3DE/AtomToolsFramework/AtomToolsDocumentSystem/DisplayWarningMessageDialogs", true))
+        {
+            QMessageBox::warning(parent, title, text);
+        }
+    }
+
     void AtomToolsDocumentSystem::Reflect(AZ::ReflectContext* context)
     {
         if (auto serialize = azrtti_cast<AZ::SerializeContext*>(context))
@@ -72,6 +81,7 @@ namespace AtomToolsFramework
                 ->Event("SaveDocumentAsCopy", &AtomToolsDocumentSystemRequestBus::Events::SaveDocumentAsCopy)
                 ->Event("SaveDocumentAsChild", &AtomToolsDocumentSystemRequestBus::Events::SaveDocumentAsChild)
                 ->Event("SaveAllDocuments", &AtomToolsDocumentSystemRequestBus::Events::SaveAllDocuments)
+                ->Event("SaveAllModifiedDocuments", &AtomToolsDocumentSystemRequestBus::Events::SaveAllModifiedDocuments)
                 ->Event("GetDocumentCount", &AtomToolsDocumentSystemRequestBus::Events::GetDocumentCount)
                 ->Event("IsDocumentOpen", &AtomToolsDocumentSystemRequestBus::Events::IsDocumentOpen)
                 ->Event("AddRecentFilePath", &AtomToolsDocumentSystemRequestBus::Events::AddRecentFilePath)
@@ -213,7 +223,7 @@ namespace AtomToolsFramework
 
         if (traceRecorder.GetWarningCount(true) > 0)
         {
-            QMessageBox::warning(
+            DisplayWarningMessage(
                 GetToolMainWindow(),
                 QObject::tr("Document opened with warnings"),
                 QObject::tr("Warnings encountered: \n%1\n\n%2").arg(openPath.c_str()).arg(traceRecorder.GetDump().c_str()));
@@ -471,12 +481,33 @@ namespace AtomToolsFramework
         bool result = true;
         for (const auto& documentPair : m_documentMap)
         {
-            if (!SaveDocument(documentPair.first))
+            bool canSave = false;
+            AtomToolsDocumentRequestBus::EventResult(canSave, documentPair.first, &AtomToolsDocumentRequestBus::Events::CanSave);
+            if (canSave && !SaveDocument(documentPair.first))
             {
                 result = false;
             }
         }
 
+        return result;
+    }
+
+    bool AtomToolsDocumentSystem::SaveAllModifiedDocuments()
+    {
+        bool result = true;
+        for (const auto& documentPair : m_documentMap)
+        {
+            bool isModified = false;
+            AtomToolsDocumentRequestBus::EventResult(isModified, documentPair.first, &AtomToolsDocumentRequestBus::Events::IsModified);
+            bool canSave = false;
+            AtomToolsDocumentRequestBus::EventResult(canSave, documentPair.first, &AtomToolsDocumentRequestBus::Events::CanSave);
+            if (isModified && canSave && !SaveDocument(documentPair.first))
+            {
+                result = false;
+            }
+        }
+
+        m_queueSaveAllModifiedDocuments = false;
         return result;
     }
 
@@ -536,6 +567,20 @@ namespace AtomToolsFramework
     {
         m_documentIdsWithExternalChanges.insert(documentId);
         QueueReopenDocuments();
+    }
+
+    void AtomToolsDocumentSystem::OnDocumentModified([[maybe_unused]] const AZ::Uuid& documentId)
+    {
+        if (GetSettingsValue<bool>("/O3DE/AtomToolsFramework/AtomToolsDocumentSystem/AutoSaveEnabled", false))
+        {
+            if (!m_queueSaveAllModifiedDocuments)
+            {
+                m_queueSaveAllModifiedDocuments = true;
+                const int interval =static_cast<int>(
+                    GetSettingsValue<AZ::s64>("/O3DE/AtomToolsFramework/AtomToolsDocumentSystem/AutoSaveInterval", 250));
+                QTimer::singleShot(interval, [this] { SaveAllModifiedDocuments(); });
+            }
+        }
     }
 
     void AtomToolsDocumentSystem::OnDocumentDependencyModified(const AZ::Uuid& documentId)

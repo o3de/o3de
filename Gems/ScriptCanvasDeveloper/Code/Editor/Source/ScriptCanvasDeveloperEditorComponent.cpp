@@ -32,8 +32,6 @@ namespace ScriptCanvasDeveloperEditor
     ////////////////////
     void SystemComponent::Reflect(AZ::ReflectContext* context)
     {
-        ScriptCanvas::Developer::Libraries::Developer::Reflect(context);
-
         if (auto serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serialize->Class<SystemComponent, AZ::Component>()
@@ -54,12 +52,7 @@ namespace ScriptCanvasDeveloperEditor
 
     void SystemComponent::Init()
     {
-        AZ::EnvironmentVariable<ScriptCanvas::NodeRegistry> nodeRegistryVariable = AZ::Environment::FindVariable<ScriptCanvas::NodeRegistry>(ScriptCanvas::s_nodeRegistryName);
-        if (nodeRegistryVariable)
-        {
-            ScriptCanvas::NodeRegistry& nodeRegistry = nodeRegistryVariable.Get();
-            ScriptCanvas::Developer::Libraries::Developer::InitNodeRegistry(nodeRegistry);
-        }
+        ScriptCanvas::Developer::InitNodeRegistry();
     }
 
     void SystemComponent::Activate()

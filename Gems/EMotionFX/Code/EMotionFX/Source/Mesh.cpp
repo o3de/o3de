@@ -364,7 +364,6 @@ namespace EMotionFX
                 subMeshVertexCount,
                 subMeshIndexCount,
                 subMeshPolygonCount,
-                /*materialIndex*/0,
                 /*numJoints*/0);
 
             mesh->InsertSubMesh(subMeshIndex, subMesh);
@@ -1472,7 +1471,6 @@ namespace EMotionFX
             MCore::LogDebug("     + Num vertices = %d", subMesh->GetNumVertices());
             MCore::LogDebug("     + Num indices  = %d (%d polygons)", subMesh->GetNumIndices(), subMesh->GetNumPolygons());
             MCore::LogDebug("     + Num bones    = %d", subMesh->GetNumBones());
-            MCore::LogDebug("     + MaterialNr   = %d", subMesh->GetMaterial());
 
             /*      // output all triangle indices that point inside the data we output above
             LogDebug("       - Triangle Indices:");

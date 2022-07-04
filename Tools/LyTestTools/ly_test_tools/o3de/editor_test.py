@@ -52,6 +52,42 @@ __test__ = False  # This file contains ready-to-use test functions which are not
 logger = logging.getLogger(__name__)
 
 
+def _split_batched_editor_log_file(workspace, starting_path, destination_file, log_file_to_split):
+    """
+    Splits a batched editor log file into separate log files for each test case in the log
+    :param workspace: The LyTestTools Workspace object
+    :param starting_path: the original path for the logs
+    :param destination_file: the destination path for the logs
+    :param log_file_to_split: the log file to split
+    """
+    # text that designates the start of logging for a new test
+    test_case_split = ".py (testcase )"
+    dir_name = os.path.dirname(starting_path)
+
+    # the current log we are writing to
+    current_new_log_path = os.path.join(dir_name, f"SetUp" + ".log")
+    current_new_log = open(current_new_log_path, "a+")
+
+    # loop through the log to split, and write to the split logs
+    with open(destination_file) as log_file:
+        for line in log_file:
+            split_line = line.split(test_case_split)
+            if len(split_line) > 1:
+                # found a new test case, we need to split the log, line below is an example of what we're splitting
+                # <13:22:34> (python) - Running automated test: C:\\Git\\o3de\\AutomatedTesting\\Gem\\PythonTests\\largeworlds\\dyn_veg\\EditorScripts\\LayerSpawner_InstancesPlantInAllSupportedShapes'
+                new_log_name = split_line[0].split(os.sep)[-1] + ".log"
+                # resulting in LayerSpawner_InstancesPlantInAllSupportedShapes.log
+                current_new_log.close()
+                workspace.artifact_manager.save_artifact(current_new_log.name)
+                current_new_log = open(os.path.join(dir_name, new_log_name), "a+")
+                current_new_log.write(line)
+            else:
+                current_new_log.write(line)
+        # make sure to save the last log
+        last_log_name = current_new_log.name
+        current_new_log.close()
+        workspace.artifact_manager.save_artifact(last_log_name)
+
 class EditorTest(abc.ABC):
     """
     Abstract Test targeting the O3DE Editor. The following attributes can be overridden by the test writer:
@@ -407,7 +443,6 @@ class EditorTestSuite:
         yield test_data  # yield to pytest while test-class executes
         # resumed by pytest after each test-class finishes
         if test_data.asset_processor:  # was assigned an AP to manage
-            test_data.asset_processor.stop(1)
             test_data.asset_processor.teardown()
             test_data.asset_processor = None
             editor_utils.kill_all_ly_processes(include_asset_processor=True)
@@ -962,8 +997,10 @@ class EditorTestSuite:
             editor_log_content = editor_utils.retrieve_editor_log_content(run_id, log_name, workspace)
             # Save the editor log
             try:
-                workspace.artifact_manager.save_artifact(
-                    os.path.join(editor_utils.retrieve_log_path(run_id, workspace), log_name), f'({run_id}){log_name}')
+                path_to_artifact = os.path.join(editor_utils.retrieve_log_path(run_id, workspace), log_name)
+                full_log_name = f'({run_id}){log_name}'
+                destination_path = workspace.artifact_manager.save_artifact(path_to_artifact, full_log_name)
+                _split_batched_editor_log_file(workspace, path_to_artifact, destination_path, full_log_name)
             except FileNotFoundError:
                 # Error logging is already performed and we don't want this to fail the test
                 pass
