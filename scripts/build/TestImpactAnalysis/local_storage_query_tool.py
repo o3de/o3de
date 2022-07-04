@@ -63,7 +63,7 @@ class LocalStorageQueryTool(StorageQueryTool):
 
     def _check_object_exists(self, key: str):
         """
-        Method that returns whether an object exists in the specified bucket. It also writes into the console whether the file exists.
+        Method that returns whether an object exists in the specified location. It also writes into the console whether the file exists.
 
         @param key: address of the file to look for.
         """
@@ -78,8 +78,7 @@ class LocalStorageQueryTool(StorageQueryTool):
         """
         Deletes the specified file.
 
-        @param bucket_name: Bucket to delete file from.
-        @param file: The file to be deleted.
+        @param file: Path to the file to be deleted.
         """
         if self._check_object_exists(file):
             logger.info(
@@ -90,8 +89,7 @@ class LocalStorageQueryTool(StorageQueryTool):
         """
         Accesses the specified file.
 
-        @param bucket_name: Bucket to access file in.
-        @param file: The file to be accessed.
+        @param file: Path to the file to be accessed.
         @param destination: Path to where file should be saved on local machine.
         """
         if self._check_object_exists(file):
@@ -101,8 +99,7 @@ class LocalStorageQueryTool(StorageQueryTool):
         """
         Put the specified file in the specified location.
 
-        @param bucket-name: Bucket to store data in.
-        @param file: File to store in bucket.
+        @param file: File to store.
         @param storage_location: Location to store the file.
         """
         try:
@@ -120,8 +117,7 @@ class LocalStorageQueryTool(StorageQueryTool):
         """
         Replace the file in the specified location with the provided file if it exists.
 
-        @param bucket-name: Bucket to store data in.
-        @param file: File to store in bucket.
+        @param file: File to store.
         @param storage_location: Location to store the file.
         """
         try:
