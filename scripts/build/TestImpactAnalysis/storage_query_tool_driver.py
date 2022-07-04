@@ -87,7 +87,7 @@ if __name__ == "__main__":
             sqt = S3StorageQueryTool(**args)
         else:
             if not pathlib.Path(args.search_in).is_dir():
-                raise FileNotFoundError(value)
+                raise FileNotFoundError(args.search_in)
             sqt = LocalStorageQueryTool(**args)
 
     except Exception as e:
