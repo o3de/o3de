@@ -31,7 +31,7 @@ def parse_args():
 
     parser.add_argument(
         '--search-in',
-        type=valid_file_path,
+        type=valid_path,
         help="Directory SQT should search in when searching locally, or directory when using S3.",
         required=False
     )
