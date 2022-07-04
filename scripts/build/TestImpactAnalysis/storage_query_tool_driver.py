@@ -31,7 +31,7 @@ def parse_args():
 
     parser.add_argument(
         '--search-in',
-        type=valid_path,
+        type=str,
         help="Directory SQT should search in when searching locally, or directory when using S3.",
         required=False
     )
@@ -86,6 +86,8 @@ if __name__ == "__main__":
         if args.get('s3_bucket'):
             sqt = S3StorageQueryTool(**args)
         else:
+            if not pathlib.Path(args.search_in).is_dir():
+                raise FileNotFoundError(value)
             sqt = LocalStorageQueryTool(**args)
 
     except Exception as e:
