@@ -113,8 +113,8 @@ namespace AZ
                 // Construct the material source data object that will be exported
                 AZ::RPI::MaterialSourceData exportData;
                 exportData.m_materialTypeVersion = editData.m_materialTypeAsset->GetVersion();
-                exportData.m_materialType = AtomToolsFramework::GetExteralReferencePath(path, editData.m_materialTypeSourcePath);
-                exportData.m_parentMaterial = AtomToolsFramework::GetExteralReferencePath(path, editData.m_materialParentSourcePath);
+                exportData.m_materialType = AtomToolsFramework::GetPathToExteralReference(path, editData.m_materialTypeSourcePath);
+                exportData.m_parentMaterial = AtomToolsFramework::GetPathToExteralReference(path, editData.m_materialParentSourcePath);
 
                 // Copy all of the properties from the material asset to the source data that will be exported
                 bool result = true;

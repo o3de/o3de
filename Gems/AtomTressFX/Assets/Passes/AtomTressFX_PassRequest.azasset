@@ -50,28 +50,28 @@
             {
                 "LocalSlot": "DirectionalShadowmap",
                 "AttachmentRef": {
-                    "Pass": "ShadowPass",
+                    "Pass": "Shadows",
                     "Attachment": "DirectionalShadowmap"
                 }
             },
             {
                 "LocalSlot": "DirectionalESM",
                 "AttachmentRef": {
-                    "Pass": "ShadowPass",
+                    "Pass": "Shadows",
                     "Attachment": "DirectionalESM"
                 }
             },
             {
                 "LocalSlot": "ProjectedShadowmap",
                 "AttachmentRef": {
-                    "Pass": "ShadowPass",
+                    "Pass": "Shadows",
                     "Attachment": "ProjectedShadowmap"
                 }
             },
             {
                 "LocalSlot": "ProjectedESM",
                 "AttachmentRef": {
-                    "Pass": "ShadowPass",
+                    "Pass": "Shadows",
                     "Attachment": "ProjectedESM"
                 }
             },

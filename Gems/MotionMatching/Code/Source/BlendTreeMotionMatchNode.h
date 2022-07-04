@@ -92,6 +92,7 @@ namespace EMotionFX::MotionMatching
         void PostUpdate(AnimGraphInstance* animGraphInstance, float timePassedInSeconds) override;
 
         AZ::Crc32 GetTrajectoryPathSettingsVisibility() const;
+        AZ::Crc32 GetDataNormalizationSettingsVisibility() const;
         AZ::Crc32 OnVisualizeSchemaButtonClicked();
         AZStd::string OnVisualizeSchemaButtonText() const;
 
@@ -106,6 +107,12 @@ namespace EMotionFX::MotionMatching
         AZ::u32 m_minFramesPerKdTreeNode = 1000;
         TrajectoryQuery::EMode m_trajectoryQueryMode = TrajectoryQuery::MODE_TARGETDRIVEN;
         bool m_mirror = false;
+
+        // Data normalization.
+        bool m_normalizeData = false;
+        float m_featureMin = 0.0f;
+        float m_featureMax = 1.0f;
+        bool m_clipFeatures = false;
 
         AZ::Debug::Timer m_timer;
         float m_updateTimeInMs = 0.0f;

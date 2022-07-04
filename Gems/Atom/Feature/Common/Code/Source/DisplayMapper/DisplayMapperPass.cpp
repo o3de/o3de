@@ -82,9 +82,9 @@ namespace AZ
         {
             // [GFX TODO] [ATOM-2450] Logic determine the type of display attached and use it to drive the
             // display mapper parameters.
-            if (m_swapChainAttachmentBinding && m_swapChainAttachmentBinding->GetAttachment())
+            if (m_pipelineOutput && m_pipelineOutput->GetAttachment())
             {
-                m_displayBufferFormat = m_swapChainAttachmentBinding->GetAttachment()->m_descriptor.m_image.m_format;
+                m_displayBufferFormat = m_pipelineOutput->GetAttachment()->m_descriptor.m_image.m_format;
             }
 
             if (m_displayBufferFormat != RHI::Format::Unknown)
@@ -170,7 +170,7 @@ namespace AZ
                 m_ldrGradingLookupTablePass->SetInputReferenceAttachmentName(inputPassAttachment);
             }
 
-            m_swapChainAttachmentBinding = FindAttachmentBinding(Name("SwapChainOutput"));
+            m_pipelineOutput = FindAttachmentBinding(Name("PipelineOutput"));
 
             ParentPass::BuildInternal();
         }

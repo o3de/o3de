@@ -93,8 +93,14 @@ namespace AZ
             // Creates the underlying RHI level SwapChain for the given Window plus XR swapchains.
             void CreateSwapChains(RHI::Device& device);
 
-            // Destroys the underlying SwapChain
-            void DestroySwapChain();
+            // Destroys the underlying default SwapChain
+            void DestroyDefaultSwapChain();
+
+            // Destroys the underlying XR SwapChains
+            void DestroyXRSwapChains();
+
+            // Destroys swapChain data related to the provided index
+            void DestroySwapChain(uint32_t swapChainIndex);
 
             // Fills the default window states based on the given width and height
             void FillWindowState(const uint32_t width, const uint32_t height);
@@ -105,17 +111,19 @@ namespace AZ
             // The handle of the window that this is context describes
             AzFramework::NativeWindowHandle m_windowHandle;
 
-            // The swapChain that this context has created for the
-            // given window as well as xr swapchains
-            AZStd::vector<RHI::Ptr<RHI::SwapChain>> m_swapChains;
+            struct SwapChainData
+            {
+                // RHI SwapChain object itself
+                RHI::Ptr<RHI::SwapChain> m_swapChain;
 
-            // The default viewport that covers the entire surface described
-            // by the default and XR SwapChains. 
-            AZStd::vector<RHI::Viewport> m_defaultViewports;
+                // The default viewport that covers the entire surface
+                RHI::Viewport m_viewport;
 
-            // The default scissor that covers the entire surface described
-            // by the default and XR SwapChains
-            AZStd::vector<RHI::Scissor> m_defaultScissors;
+                // The default scissor that covers the entire surface
+                RHI::Scissor m_scissor;
+            };
+            // Data structure to hold SwapChain for Default and XR SwapChains.
+            AZStd::vector<SwapChainData> m_swapChainsData;
 
             // Non-owning reference to associated ViewportContexts (if any)
             AZStd::vector<AZStd::weak_ptr<ViewportContext>> m_viewportContexts;
