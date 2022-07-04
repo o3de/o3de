@@ -34,19 +34,19 @@ class S3StorageQueryTool(StorageQueryTool):
                     case self.Action.CREATE:
                         logger.info('create')
                         self._put(bucket_name=self._bucket_name,
-                              file=self._file, storage_location=self._full_address)
+                                  file=self._file, storage_location=self._full_address)
                     case self.Action.READ:
                         logger.info('read')
                         self._access(bucket_name=self._bucket_name,
-                                 file=self._full_address, destination=self._file_out)
+                                     file=self._full_address, destination=self._file_out)
                     case self.Action.UPDATE:
                         logger.info('update')
                         self._update(bucket_name=self._bucket_name,
-                                 file=self._file, storage_location=self._full_address)
+                                     file=self._file, storage_location=self._full_address)
                     case self.Action.DELETE:
                         logger.info("update")
                         self._delete(bucket_name=self._bucket_name,
-                                 file=self._full_address)                    
+                                     file=self._full_address)
             else:
                 self._display()
         except botocore.exceptions.BotoCoreError as e:
