@@ -6,7 +6,6 @@
  *
  */
 
-
 #pragma once
 
 #if !defined(Q_MOC_RUN)
@@ -25,20 +24,22 @@ class CAboutDialog
     Q_OBJECT
 
 public:
+
+    static constexpr int m_imageWidth = 668;
+    static constexpr int m_imageHeight = 368;
+    static constexpr int m_enforcedWidth = 600;
+    static constexpr int m_enforcedHeight = 300;
+
     CAboutDialog(QString versionText, QString richTextCopyrightNotice, QWidget* pParent = nullptr);
     ~CAboutDialog();
 
-private:
+protected:
+    virtual void focusOutEvent(QFocusEvent * event) override;
 
-    void mouseReleaseEvent(QMouseEvent* event) override;
+private:
     void paintEvent(QPaintEvent* event) override;
 
     QScopedPointer<Ui::CAboutDialog>    m_ui;
     QPixmap                             m_backgroundImage;
-
-    const int m_imageWidth = 668;
-    const int m_imageHeight = 368;
-    const int m_enforcedWidth = 600;
-    const int m_enforcedHeight = 300;
 };
 
