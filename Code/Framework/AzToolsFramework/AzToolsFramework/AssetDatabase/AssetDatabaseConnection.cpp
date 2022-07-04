@@ -966,6 +966,12 @@ namespace AzToolsFramework
                 LOG_NAME,
                 SqlParam<const char*>(":statname"));
 
+            static const char* QUERY_STAT_LIKE_STATNAME= "AzToolsFramework::AssetDatabase::QueryStatLikeStatNamePrefix";
+            static const char* QUERY_STAT_LIKE_STATNAME_STATEMENT = "SELECT * FROM Stats WHERE "
+                                                                  "StatName LIKE :statname ;";
+            static const auto s_queryStatLikeStatName= MakeSqlQuery(
+                QUERY_STAT_LIKE_STATNAME, QUERY_STAT_LIKE_STATNAME_STATEMENT, LOG_NAME, SqlParam<const char*>(":statname"));
+
             void PopulateJobInfo(AzToolsFramework::AssetSystem::JobInfo& jobinfo, JobDatabaseEntry& jobDatabaseEntry)
             {
                 jobinfo.m_platform = AZStd::move(jobDatabaseEntry.m_platform);
@@ -1921,6 +1927,7 @@ namespace AzToolsFramework
             AddStatement(m_databaseConnection, s_queryFileByFileNameScanfolderid);
 
             AddStatement(m_databaseConnection, s_queryStatByStatName);
+            AddStatement(m_databaseConnection, s_queryStatLikeStatName);
 
             AddStatement(m_databaseConnection, s_queryBuilderInfoTable);
         }
@@ -2693,6 +2700,11 @@ namespace AzToolsFramework
         bool AssetDatabaseConnection::QueryStatByStatName(const char* statName, statHandler handler)
         {
             return s_queryStatByStatName.BindAndQuery(*m_databaseConnection, handler, &GetStatResult, statName);
+        }
+
+        bool AssetDatabaseConnection::QueryStatLikeStatName(const char* statName, statHandler handler)
+        {
+            return s_queryStatLikeStatName.BindAndQuery(*m_databaseConnection, handler, &GetStatResult, statName);
         }
 
         void AssetDatabaseConnection::SetQueryLogging(bool enableLogging)

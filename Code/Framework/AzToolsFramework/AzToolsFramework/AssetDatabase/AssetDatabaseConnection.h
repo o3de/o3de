@@ -665,6 +665,7 @@ namespace AzToolsFramework
 
             //Stat
             bool QueryStatByStatName(const char* statName, statHandler handler);
+            bool QueryStatLikeStatName(const char* statName, statHandler handler);
 
             //////////////////////////////////////////////////////////////////////////
 
