@@ -355,7 +355,33 @@ namespace AssetProcessor
             AssetProcessor::AssetDatabaseConnection assetDatabaseConnection;
             assetDatabaseConnection.OpenDatabase();
 
-            auto jobsFunction = [this, &assetDatabaseConnection](AzToolsFramework::AssetDatabase::JobDatabaseEntry& entry)
+            // Get historical ProcessJob stats from asset database
+            AZStd::unordered_map<QueueElementID, AZ::s64> historicalStats;
+            auto statsFunction = [&historicalStats](AzToolsFramework::AssetDatabase::StatDatabaseEntry entry)
+            {
+                AZStd::vector<AZStd::size_t> delimiterPos;
+                delimiterPos.reserve(3);
+                for (size_t pos = 0;
+                     (pos = entry.m_statName.find(',', delimiterPos.empty() ? 0 : (delimiterPos.back() + 1))) != AZStd::string::npos;)
+                {
+                    delimiterPos.push_back(pos);
+                }
+                if (delimiterPos.size() != 3)
+                {
+                    return true;
+                }
+
+                QueueElementID elementId;
+                elementId.SetInputAssetName(entry.m_statName.substr(delimiterPos[0] + 1, delimiterPos[1] - delimiterPos[0] - 1).c_str());
+                elementId.SetJobDescriptor(entry.m_statName.substr(delimiterPos[1] + 1, delimiterPos[2] - delimiterPos[1] - 1).c_str());
+                elementId.SetPlatform(entry.m_statName.substr(delimiterPos[2] + 1).c_str());
+                historicalStats[elementId] = entry.m_statValue;
+                return true;
+            };
+            assetDatabaseConnection.QueryStatLikeStatName("ProcessJob,%", statsFunction);
+
+            // Get jobs from asset database
+            auto jobsFunction = [this, &assetDatabaseConnection, &historicalStats](AzToolsFramework::AssetDatabase::JobDatabaseEntry& entry)
             {
                 AzToolsFramework::AssetDatabase::SourceDatabaseEntry source;
                 assetDatabaseConnection.GetSourceBySourceID(entry.m_sourcePK, source);
@@ -369,6 +395,11 @@ namespace AssetProcessor
                 jobInfo->m_completedTime = QDateTime::fromMSecsSinceEpoch(entry.m_lastLogTime);
                 jobInfo->m_warningCount = entry.m_warningCount;
                 jobInfo->m_errorCount = entry.m_errorCount;
+                if (historicalStats.count(jobInfo->m_elementId))
+                {
+                    jobInfo->m_processDuration =
+                        QTime::fromMSecsSinceStartOfDay(aznumeric_cast<int>(historicalStats.at(jobInfo->m_elementId)));
+                }
                 m_cachedJobs.push_back(jobInfo);
                 m_cachedJobsLookup.insert(jobInfo->m_elementId, aznumeric_caster(m_cachedJobs.size() - 1));
                 return true;
