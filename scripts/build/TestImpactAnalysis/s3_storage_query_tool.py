@@ -17,6 +17,10 @@ logger = get_logger(__file__)
 
 
 class S3StorageQueryTool(StorageQueryTool):
+    """
+    S3 oriented subclass of the Storage Query Tool, with Create, Read, Update and Delete functionality for dealing with historic.json.zip files in buckets
+
+    """
 
     def __init__(self, **kwargs):
         """
@@ -72,7 +76,8 @@ class S3StorageQueryTool(StorageQueryTool):
         else:
             if self._root_directory:
                 bucket_objs = filter_by(self._root_directory, bucket_objs)
-            [logger.info(obj.key) for obj in bucket_objs]
+            for obj in bucket_objs:
+                logger.info(obj.key) 
 
     def _check_object_exists(self, bucket: str, key: str):
         """
@@ -123,7 +128,7 @@ class S3StorageQueryTool(StorageQueryTool):
                     file_stream.read()).decode('UTF-8')
                 logger.info(f"Decoding complete.")
                 json_obj = json.loads(decoded_data)
-                with open(f"{destination}historic_data.json", "w", encoding="UTF-8", newline="\n") as raw_output_file:
+                with open(f"{destination}historic_data.json", "w", encoding="UTF-8") as raw_output_file:
                     json.dump(json_obj, raw_output_file,
                               ensure_ascii=False, indent=4)
 
