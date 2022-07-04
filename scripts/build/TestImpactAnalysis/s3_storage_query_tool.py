@@ -79,7 +79,7 @@ class S3StorageQueryTool(StorageQueryTool):
             if self._root_directory:
                 bucket_objs = filter_by(self._root_directory, bucket_objs)
             for obj in bucket_objs:
-                logger.info(obj.key) 
+                logger.info(obj.key)
 
     def _check_object_exists(self, bucket: str, key: str):
         """

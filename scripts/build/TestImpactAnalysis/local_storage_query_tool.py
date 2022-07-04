@@ -31,13 +31,15 @@ class LocalStorageQueryTool(StorageQueryTool):
             match self._action:
                 case self.Action.CREATE:
                     logger.info('Creating file')
-                    self._put(file=self._file, storage_location=self._full_address)
+                    self._put(file=self._file,
+                              storage_location=self._full_address)
                 case self.Action.READ:
                     logger.info('Opening file')
                     self._access(file=self._full_address)
                 case self.Action.UPDATE:
                     logger.info('Updating File')
-                    self._update(file=self._file, storage_location=self._full_address)
+                    self._update(file=self._file,
+                                 storage_location=self._full_address)
                 case self.Action.DELETE:
                     logger.info("Deleting File")
                     self._delete(file=self._full_address)
@@ -55,11 +57,13 @@ class LocalStorageQueryTool(StorageQueryTool):
             self._check_object_exists(self._bucket_name, self._full_address)
         else:
             if self._root_directory:
-                l = Path.glob(Path(self._root_directory),"**/*.json")
+                l = Path.glob(Path(self._root_directory), "**/*.json")
                 for obj in l:
-                    logger.info(obj.__str__() + ", last modified at: " + str(datetime.datetime.utcfromtimestamp(obj.stat().st_mtime)))
+                    logger.info(obj.__str__() + ", last modified at: " +
+                                str(datetime.datetime.utcfromtimestamp(obj.stat().st_mtime)))
             else:
-                raise SystemError("You must provide a root directory to search in or a full address when using local storage.")                    
+                raise SystemError(
+                    "You must provide a root directory to search in or a full address when using local storage.")
 
     def _check_object_exists(self, key: str):
         """
@@ -74,7 +78,7 @@ class LocalStorageQueryTool(StorageQueryTool):
             logger.info(f"File not found at {key}")
             return False
 
-    def _delete(self,file: str):
+    def _delete(self, file: str):
         """
         Deletes the specified file.
 
@@ -106,8 +110,8 @@ class LocalStorageQueryTool(StorageQueryTool):
             json_obj = json.loads(file)
             if not self._check_object_exists(storage_location):
                 with open(f"{storage_location}historic_data.json", "w", encoding="UTF-8") as raw_output_file:
-                        json.dump(json_obj, raw_output_file,
-                                ensure_ascii=False, indent=4)
+                    json.dump(json_obj, raw_output_file,
+                              ensure_ascii=False, indent=4)
             else:
                 logger.info("Cancelling create, as file exists already")
         except json.JSONDecodeError:
@@ -124,8 +128,8 @@ class LocalStorageQueryTool(StorageQueryTool):
             json_obj = json.loads(file)
             if self._check_object_exists(storage_location):
                 with open(f"{storage_location}historic_data.json", "w", encoding="UTF-8") as raw_output_file:
-                        json.dump(json_obj, raw_output_file,
-                                ensure_ascii=False, indent=4)
+                    json.dump(json_obj, raw_output_file,
+                              ensure_ascii=False, indent=4)
             else:
                 logger.info("Cancelling update, as file does not exist")
         except json.JSONDecodeError:
