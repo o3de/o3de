@@ -30,64 +30,30 @@ def parse_args():
     parser = argparse.ArgumentParser()
 
     parser.add_argument(
-        '--local',
-        action="store_true",
-        help="Flag to SQT to search locally",
-        required=False
-    )
-
-    parser.add_argument(
         '--search-in',
         type=valid_file_path,
-        help="Directory SQT should search in when searching locally",
+        help="Directory SQT should search in when searching locally, or directory when using S3.",
         required=False
     )
 
     parser.add_argument(
-        '--s3',
-        action="store_true",
-        help="Flag to SQT to search using a bucket",
-        required=False
-    )
-
-    parser.add_argument(
-        '--bucket-name',
+        '--s3-bucket',
         type=str,
-        help="Bucket name to search for",
+        help="Flag to SQT to use S3, will search in the named bucket.",
         required=False
     )
 
     parser.add_argument(
-        '--root-directory',
-        help="Root directory to search for", 
-        required=False
-    )
-
-    parser.add_argument(
-        '--branch',
+        '--full-address',
         type=str,
-        help="Branch name to search for",
-        required=False
-    )
-
-    parser.add_argument(
-        '--suite',
-        type=str,
-        help="Testing suite to search for",
-        required=False
-    )
-
-    parser.add_argument(
-        '--build',
-        type=str,
-        help="Build configuration to search for",
+        help="Full address to desired file, either locally or in bucket.",
         required=False
     )
 
     parser.add_argument(
         "--action",
         type=str,
-        help="What action TIAF Tools should take",
+        help="What action TIAF Tools should take.",
         choices=["read","update","delete","create"],
         required=False
     )
@@ -95,14 +61,14 @@ def parse_args():
     parser.add_argument(
         "--file-in",
         type=valid_file_path,
-        help="Path to file to be used when creating or updating a file",
+        help="Path to file to be used when creating or updating a file.",
         required=False
     )
 
     parser.add_argument(
         "--file-out",
         type=valid_path,
-        help="Path to store file in when downloading",
+        help="Path to store file in when downloading.",
         required=False
     )
 
@@ -116,14 +82,11 @@ def parse_args():
 if __name__ == "__main__":
     try:
         args = vars(parse_args())
-
-        logger.info(args)
-
-        if args.get('local'):
-            sqt = LocalStorageQueryTool(**args)
         
-        if args.get('s3'):
+        if args.get('s3_bucket'):
             sqt = S3StorageQueryTool(**args)
+        else:
+            sqt = LocalStorageQueryTool(**args)
 
     except Exception as e:
         logger.error(type(e).__name__)

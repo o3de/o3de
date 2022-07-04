@@ -23,25 +23,30 @@ class S3StorageQueryTool(StorageQueryTool):
         Initialise storage query tool with search parameters and access/delete parameters.
         """
         super().__init__(**kwargs)
-        self._bucket_name = kwargs['bucket_name']
+        self._bucket_name = kwargs['s3_bucket']
 
         try:
 
             self._s3_client = boto3.client('s3')
             self._s3 = boto3.resource('s3')
             if self.has_full_address:
-                if self._read and self._file_out:
-                    self._access(bucket_name=self._bucket_name,
-                                 file=self._full_address, destination=self._file_out)
-                elif self._create_flag:
-                    self._put(bucket_name=self._bucket_name,
+                match self._action:
+                    case self.Action.CREATE:
+                        logger.info('create')
+                        self._put(bucket_name=self._bucket_name,
                               file=self._file, storage_location=self._full_address)
-                elif self._update_flag:
-                    self._update(bucket_name=self._bucket_name,
+                    case self.Action.READ:
+                        logger.info('read')
+                        self._access(bucket_name=self._bucket_name,
+                                 file=self._full_address, destination=self._file_out)
+                    case self.Action.UPDATE:
+                        logger.info('update')
+                        self._update(bucket_name=self._bucket_name,
                                  file=self._file, storage_location=self._full_address)
-                elif self._delete_flag:
-                    self._delete(bucket_name=self._bucket_name,
-                                 file=self._full_address)
+                    case self.Action.DELETE:
+                        logger.info("update")
+                        self._delete(bucket_name=self._bucket_name,
+                                 file=self._full_address)                    
             else:
                 self._display()
         except botocore.exceptions.BotoCoreError as e:

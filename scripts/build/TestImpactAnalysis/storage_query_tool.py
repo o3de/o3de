@@ -6,6 +6,9 @@
 #
 #
 
+from argparse import Action
+from enum import Enum
+from gzip import READ
 from tiaf_logger import get_logger
 from abc import ABC, abstractmethod
 logger = get_logger(__file__)
@@ -13,29 +16,26 @@ logger = get_logger(__file__)
 
 class StorageQueryTool(ABC):
 
+    class Action(Enum):
+        CREATE = "create"
+        READ = "read"
+        UPDATE = "update"
+        DELETE = "delete"
+
     def __init__(self, **kwargs):
         """
         Initialise storage query tool with search parameters and flags  denoting whether to access or delete the resource.
 
         @param kwargs: kwargs containing parsed arguments.
         """
-        self._root_directory = kwargs.get('root_directory')
-        self._branch = kwargs.get('branch')
-        self._build = kwargs.get('build')
-        self._suite = kwargs.get('suite')
-        self._read = kwargs.get('read')
-        self._delete_flag = kwargs.get('delete')
-        self._update_flag = kwargs.get('update')
-        self._create_flag = kwargs.get('create')
+        self._root_directory = kwargs.get('search_in')
+        self._action = self.Action(kwargs.get('action'))
         self._file_in = kwargs.get('file_in')
         self._file_out = kwargs.get('file_out')
+        self._full_address = kwargs.get('full_address')
 
-        if self._update_flag or self._create_flag:
+        if self._action == self.Action.CREATE or self._action == self.Action.UPDATE:
             self._file = self._get_file(self._file_in)
-
-        if self.has_full_address:
-            self._full_address = str(
-                f"{self._root_directory}/{self._branch}/{self._build}/{self._suite}/historic_data.json.zip")
 
     def _get_file(self, file_address: str):
         """
@@ -97,4 +97,4 @@ class StorageQueryTool(ABC):
 
     @property
     def has_full_address(self):
-        return (self._root_directory and self._branch and self._build and self._suite)
+        return self._full_address
