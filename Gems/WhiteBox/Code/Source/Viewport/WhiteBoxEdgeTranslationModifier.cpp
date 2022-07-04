@@ -345,7 +345,7 @@ namespace WhiteBox
             }
             else
             {
-                view->SetColor(cl_whiteBoxEdgeHoveredColor, cl_whiteBoxEdgeHoveredColor);
+                view->SetColor(ed_whiteBoxOutlineHover, ed_whiteBoxOutlineHover);
             }
 
             view->SetWidth(m_width, m_hoverWidth);
