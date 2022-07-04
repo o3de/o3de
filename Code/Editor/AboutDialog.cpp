@@ -5,17 +5,10 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-
-#include "EditorDefs.h"
 #include "AboutDialog.h"
 
 // Qt
 #include <QPainter>
-#include <QDesktopServices>
-#include <QSvgWidget>
-
-// AzCore
-#include <AzCore/Casting/numeric_cast.h>    // for aznumeric_cast
 
 #include <AzQtComponents/Utilities/PixmapScaleUtilities.h>
 
@@ -23,12 +16,11 @@ AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 #include <ui_AboutDialog.h>
 AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 
-CAboutDialog::CAboutDialog(QString versionText, QString richTextCopyrightNotice, QWidget* pParent /*=nullptr*/)
-    : QDialog(pParent)
+CAboutDialog::CAboutDialog(QString versionText, QString richTextCopyrightNotice, QWidget* pParent)
+    : QDialog(pParent, Qt::FramelessWindowHint | Qt::Popup)
     , m_ui(new Ui::CAboutDialog)
 {
     m_ui->setupUi(this);
-    setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
 
     m_ui->m_transparentTrademarks->setText(versionText);
 
@@ -64,6 +56,11 @@ CAboutDialog::~CAboutDialog()
 {
 }
 
+void CAboutDialog::focusOutEvent(QFocusEvent* event)
+{
+    accept();
+}
+
 void CAboutDialog::paintEvent(QPaintEvent*)
 {
     QPainter painter(this);
@@ -72,14 +69,5 @@ void CAboutDialog::paintEvent(QPaintEvent*)
     painter.drawPixmap(drawTarget, m_backgroundImage);
 }
 
-void CAboutDialog::mouseReleaseEvent(QMouseEvent* event)
-{
-    if (event->button() == Qt::LeftButton)
-    {
-        accept();
-    }
-
-    QDialog::mouseReleaseEvent(event);
-}
 
 #include <moc_AboutDialog.cpp>
