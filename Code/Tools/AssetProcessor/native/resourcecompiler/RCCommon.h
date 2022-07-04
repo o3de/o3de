@@ -39,4 +39,16 @@ namespace AssetProcessor
     uint qHash(const AssetProcessor::QueueElementID& key, uint seed = 0);
 } // namespace AssetProcessor
 
+namespace AZStd {
+    // Implement the hash for QueueElementID, so it can be used as the key of AZStd::unordered_map
+    template <>
+    struct hash<AssetProcessor::QueueElementID>
+    {
+        inline size_t operator()(const AssetProcessor::QueueElementID& key) const
+        {
+            return AssetProcessor::qHash(key);
+        }
+    };
+} // namespace AZStd
+
 #endif //ASSETPROCESSOR_RCQUEUESORTMODEL_H
