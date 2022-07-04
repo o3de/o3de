@@ -148,7 +148,7 @@ class S3StorageQueryTool(StorageQueryTool):
         if not self._check_object_exists(bucket_name, storage_location):
             data = BytesIO(zlib.compress(bytes(file, "UTF-8")))
             logger.info(
-                f"Uploading data to: {storage_location}.zip in bucket: {bucket_name}")
+                f"Uploading data to: {storage_location} in bucket: {bucket_name}")
             self._s3_client.put_object(
                 Bucket=bucket_name, Key=storage_location, Body=data)
             logger.info(f"Upload complete")
@@ -166,7 +166,7 @@ class S3StorageQueryTool(StorageQueryTool):
         if self._check_object_exists(bucket_name, storage_location):
             data = BytesIO(zlib.compress(bytes(file, "UTF-8")))
             logger.info(
-                f"Uploading data to: {storage_location}.zip in bucket: {bucket_name}")
+                f"Uploading data to: {storage_location} in bucket: {bucket_name}")
             self._s3_client.put_object(
                 Bucket=bucket_name, Key=storage_location, Body=data)
             logger.info("Upload complete")
