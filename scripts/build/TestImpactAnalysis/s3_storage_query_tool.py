@@ -51,6 +51,8 @@ class S3StorageQueryTool(StorageQueryTool):
                         logger.info("update")
                         self._delete(bucket_name=self._bucket_name,
                                      file=self._full_address)
+                    case self.Action.QUERY:
+                        self._display()
             else:
                 self._display()
         except botocore.exceptions.BotoCoreError as e:

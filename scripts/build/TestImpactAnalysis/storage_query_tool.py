@@ -21,6 +21,7 @@ class StorageQueryTool(ABC):
         READ = "read"
         UPDATE = "update"
         DELETE = "delete"
+        QUERY = None
 
     def __init__(self, **kwargs):
         """
