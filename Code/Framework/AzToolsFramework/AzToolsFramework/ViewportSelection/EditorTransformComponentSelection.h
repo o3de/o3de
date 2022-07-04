@@ -32,12 +32,13 @@
 #include <AzToolsFramework/ViewportSelection/EditorHelpers.h>
 #include <AzToolsFramework/ViewportSelection/EditorTransformComponentSelectionRequestBus.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiRequestBus.h>
+#include <AzToolsFramework/API/EntityCompositionNotificationBus.h>
 
 namespace AzToolsFramework
 {
-    namespace ViewportUi
+    namespace ComponentModeFramework
     {
-        class ViewportSwitcherManager;
+        class ComponentModeSwitcher;
     }
 
     class EditorVisibleEntityDataCacheInterface;
@@ -116,15 +117,16 @@ namespace AzToolsFramework
         AZ::Event<ViewportUi::ButtonId>::Handler m_spaceHandler; //!< Callback for when a space cluster button is pressed.
     };
 
-    struct SwitcherCluster
+    struct Switcher
     {
-        SwitcherCluster() = default;
+        Switcher() = default;
         // disable copying and moving (implicit)
-        SwitcherCluster(const SwitcherCluster&) = delete;
-        SwitcherCluster& operator=(const SwitcherCluster&) = delete;
+        Switcher(const Switcher&) = delete;
+        Switcher& operator=(const Switcher&) = delete;
 
-        ViewportUi::SwitcherId m_switcherId; //!< Component mode switcher id.
-        AZStd::vector<ViewportUi::ButtonId> m_switcherButtonsId; //!< Vector of component mode switcher button ids.
+        ViewportUi::SwitcherId m_switcherId; //!< Switcher id.
+        AZStd::vector<ViewportUi::ButtonId> m_switcherButtonsId; //!< Vector of Switcher button ids.
+        AZ::Event<ViewportUi::ButtonId>::Handler m_switcherHandler; //!< Callback for when a switcher button is pressed.
     };
 
     //! Exposed to the viewport manager
@@ -163,6 +165,7 @@ namespace AzToolsFramework
         , private AZ::TransformNotificationBus::MultiHandler
         , private ViewportInteraction::ViewportSettingsNotificationBus::Handler
         , private ReadOnlyEntityPublicNotificationBus::Handler
+        , private EntityCompositionNotificationBus::Handler
     {
     public:
         AZ_CLASS_ALLOCATOR_DECL
@@ -202,7 +205,7 @@ namespace AzToolsFramework
 
         void CreateTransformModeSelectionCluster();
         void CreateSpaceSelectionCluster();
-        void CreateSwitcherCluster();
+        void CreateSwitcher();
         void CreateSnappingCluster();
 
         void ClearManipulatorTranslationOverride();
@@ -277,6 +280,11 @@ namespace AzToolsFramework
         // ToolsApplicationNotificationBus overrides ...
         void BeforeEntitySelectionChanged() override;
         void AfterEntitySelectionChanged(const EntityIdList& newlySelectedEntities, const EntityIdList& newlyDeselectedEntities) override;
+
+        // EntityCompositionNotificationBus overrides ...
+        void OnEntityComponentAdded(const AZ::EntityId&, const AZ::ComponentId&) override;
+        void OnEntityComponentRemoved(const AZ::EntityId&, const AZ::ComponentId&) override;
+        void OnEntityCompositionChanged(const AzToolsFramework::EntityIdList&) override;
 
         // TransformNotificationBus overrides ...
         void OnTransformChanged(const AZ::Transform& localTM, const AZ::Transform& worldTM) override;
@@ -366,9 +374,11 @@ namespace AzToolsFramework
         AzFramework::CursorState m_cursorState; //!< Track the mouse position and delta movement each frame.
         SpaceCluster m_spaceCluster; //!< Related viewport ui state for controlling the current reference space.
         SnappingCluster m_snappingCluster; //!< Related viewport ui state for aligning positions to a grid or reference frame.
-        SwitcherCluster m_switcherCluster; //!< Related viewport ui state for controlling the component mode switcher.
+        Switcher m_switcher; //!< Related viewport ui state for controlling the component mode switcher.
         bool m_viewportUiVisible = true; //!< Used to hide/show the viewport ui elements.
-        AZStd::unique_ptr<ViewportUi::ViewportSwitcherManager> m_viewportSwitcherManager;
+        AZStd::unique_ptr<ComponentModeFramework::ComponentModeSwitcher> m_componentModeSwitcher;
+        AZ::EntityComponentIdPair m_componentModePair;
+        bool m_AddRemove;
     };
 
     //! Bundles viewport state that impacts how accents are added/removed in HandleAccents.

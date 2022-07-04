@@ -140,33 +140,33 @@ namespace AzToolsFramework::ViewportUi::Internal
         PositionViewportUiElementAnchored(id, GetQtAlignment(alignment));
     }
 
-    void ViewportUiDisplay::AddSwitcherButton(const ViewportUiElementId clusterId, Button* button)
+    void ViewportUiDisplay::AddSwitcherButton(const ViewportUiElementId switcherId, Button* button)
     {
-        if (auto viewportUiSwitcher = qobject_cast<ViewportUiSwitcher*>(GetViewportUiElement(clusterId).get()))
+        if (auto viewportUiSwitcher = qobject_cast<ViewportUiSwitcher*>(GetViewportUiElement(switcherId).get()))
         {
             viewportUiSwitcher->AddButton(button);
         }
     }
 
-    void ViewportUiDisplay::RemoveSwitcherButton(ViewportUiElementId clusterId, ButtonId buttonId)
+    void ViewportUiDisplay::RemoveSwitcherButton(ViewportUiElementId switcherId, ButtonId buttonId)
     {
-        if (auto cluster = qobject_cast<ViewportUiSwitcher*>(GetViewportUiElement(clusterId).get()))
+        if (auto cluster = qobject_cast<ViewportUiSwitcher*>(GetViewportUiElement(switcherId).get()))
         {
             cluster->RemoveButton(buttonId);
         }
     }
 
-    void ViewportUiDisplay::UpdateSwitcher(ViewportUiElementId clusterId)
+    void ViewportUiDisplay::UpdateSwitcher(ViewportUiElementId switcherId)
     {
-        if (auto cluster = qobject_cast<ViewportUiSwitcher*>(GetViewportUiElement(clusterId).get()))
+        if (auto cluster = qobject_cast<ViewportUiSwitcher*>(GetViewportUiElement(switcherId).get()))
         {
             cluster->Update();
         }
     }
 
-    void ViewportUiDisplay::SetSwitcherActiveButton(ViewportUiElementId clusterId, ButtonId buttonId)
+    void ViewportUiDisplay::SetSwitcherActiveButton(ViewportUiElementId switcherId, ButtonId buttonId)
     {
-        if (auto viewportUiSwitcher = qobject_cast<ViewportUiSwitcher*>(GetViewportUiElement(clusterId).get()))
+        if (auto viewportUiSwitcher = qobject_cast<ViewportUiSwitcher*>(GetViewportUiElement(switcherId).get()))
         {
             viewportUiSwitcher->SetActiveButton(buttonId);
         }

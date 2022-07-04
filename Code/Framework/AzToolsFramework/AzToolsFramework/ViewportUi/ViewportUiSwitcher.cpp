@@ -8,7 +8,8 @@
 
 #include <AzToolsFramework/ViewportUi/ButtonGroup.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiSwitcher.h>
-
+#pragma optimize("", off)
+#pragma inline_depth(0)
 namespace AzToolsFramework::ViewportUi::Internal
 {
     ViewportUiSwitcher::ViewportUiSwitcher(AZStd::shared_ptr<ButtonGroup> buttonGroup)
@@ -158,3 +159,5 @@ namespace AzToolsFramework::ViewportUi::Internal
         m_activeButtonId = buttonId;
     }
 } // namespace AzToolsFramework::ViewportUi::Internal
+#pragma optimize("", on)
+#pragma inline_depth()

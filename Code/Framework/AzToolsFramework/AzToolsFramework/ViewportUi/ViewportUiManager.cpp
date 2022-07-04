@@ -156,6 +156,15 @@ namespace AzToolsFramework::ViewportUi
         }
     }
 
+    void ViewportUiManager::RemoveSwitcherButton(SwitcherId switcherId, ButtonId buttonId)
+    {
+        if (auto switcherIt = m_switcherButtonGroups.find(switcherId); switcherIt != m_switcherButtonGroups.end())
+        {
+            auto switcher = switcherIt->second;
+            m_viewportUi->RemoveSwitcherButton(switcher->GetViewportUiElementId(), buttonId);
+        }
+    }
+
     static void SetViewportUiElementVisible(Internal::ViewportUiDisplay* ui, ViewportUiElementId id, bool visible)
     {
         if (visible)

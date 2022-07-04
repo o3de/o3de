@@ -562,8 +562,6 @@ set(FILES
     ViewportUi/ViewportUiCluster.cpp
     ViewportUi/ViewportUiSwitcher.h
     ViewportUi/ViewportUiSwitcher.cpp
-    ViewportUi/ViewportUiSwitcherManager.h
-    ViewportUi/ViewportUiSwitcherManager.cpp
     ViewportUi/ViewportUiWidgetCallbacks.h
     ViewportUi/ViewportUiWidgetCallbacks.cpp
     ViewportUi/ViewportUiDisplayLayout.h
@@ -573,6 +571,8 @@ set(FILES
     ComponentMode/ComponentModeCollection.cpp
     ComponentMode/ComponentModeDelegate.h
     ComponentMode/ComponentModeDelegate.cpp
+    ComponentMode/ComponentModeSwitcher.h
+    ComponentMode/ComponentModeSwitcher.cpp
     ComponentMode/ComponentModeViewportUi.h
     ComponentMode/ComponentModeViewportUi.cpp
     ComponentMode/ComponentModeViewportUiRequestBus.h
