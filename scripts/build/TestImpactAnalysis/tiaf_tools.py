@@ -54,7 +54,7 @@ def parse_args():
         "--action",
         type=str,
         help="What action TIAF Tools should take.",
-        choices=["read","update","delete","create"],
+        choices=["read", "update", "delete", "create"],
         required=False
     )
 
@@ -72,17 +72,15 @@ def parse_args():
         required=False
     )
 
-
     args = parser.parse_args()
 
     return args
 
 
-
 if __name__ == "__main__":
     try:
         args = vars(parse_args())
-        
+
         if args.get('s3_bucket'):
             sqt = S3StorageQueryTool(**args)
         else:
