@@ -165,12 +165,6 @@ namespace GraphCanvas
         }
     }
 
-    void GraphCanvasLabel::SetAlignment(Qt::Alignment alignment)
-    {
-        m_alignment = alignment;
-        update();
-    }
-
     void GraphCanvasLabel::SetDefaultAlignment(Qt::Alignment defaultAlignment)
     {
         m_defaultAlignment = defaultAlignment;
@@ -270,7 +264,7 @@ namespace GraphCanvas
         m_desiredBounds = fontRectangle.adjusted(0.0f, 0.0f, padding * 2.0f, padding * 2.0f);
         
         // Seem so be an off by 1 error here. So adding one in each direction to my desired size to stop text from being clipped.
-        //m_desiredBounds.adjust(-1.0, -1.0, 1.0, 1.0);        
+        m_desiredBounds.adjust(-1.0, -1.0, 1.0, 1.0);        
 
         m_minimumSize = m_styleHelper.GetMinimumSize(m_desiredBounds.size());        
 
@@ -396,7 +390,7 @@ namespace GraphCanvas
             painter->setBrush(QBrush());
             painter->setFont(m_styleHelper.GetFont());
 
-            Qt::Alignment textAlignment = m_alignment ? m_alignment : m_styleHelper.GetTextAlignment(m_defaultAlignment);
+            Qt::Alignment textAlignment = m_styleHelper.GetTextAlignment(m_defaultAlignment);
 
             QTextOption opt(textAlignment);
             opt.setFlags(QTextOption::IncludeTrailingSpaces);

@@ -75,8 +75,6 @@ namespace GraphCanvas
         //! Sets whether or not the text label will allow newlines in the text
         void SetAllowNewlines(bool allow);
 
-        void SetAlignment(Qt::Alignment alignment);
-
         void SetDefaultAlignment(Qt::Alignment defaultAlignment);
 
         Styling::StyleHelper& GetStyleHelper();
@@ -98,8 +96,6 @@ namespace GraphCanvas
         ////
 
     private:
-        // If this has a value other than null, this will be used as the text alignment
-        Qt::Alignment   m_alignment;
 
         Qt::Alignment   m_defaultAlignment;
         bool m_elide;

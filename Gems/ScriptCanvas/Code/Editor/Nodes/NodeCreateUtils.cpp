@@ -255,7 +255,6 @@ namespace ScriptCanvasEditor::Nodes
 
     NodeIdPair CreateDataDrivenNode(const AZStd::any& nodeData, const AZ::Crc32& nodeLexicalId, const ScriptCanvas::ScriptCanvasId& scriptCanvasId)
     {
-        // TODO: Make this check what types nodeData can be cast to and decide what create function to run based on that
         return CreateSmallOperatorNode(AZStd::any_cast<SmallOperatorCreationData>(nodeData), nodeLexicalId, scriptCanvasId);
     }
 

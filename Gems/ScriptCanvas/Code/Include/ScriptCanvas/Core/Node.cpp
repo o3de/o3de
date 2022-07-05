@@ -44,6 +44,7 @@ namespace NodeCpp
     {
         MergeFromBackend2dotZero = 12,
         AddDisabledFlag = 13,
+        AddName = 1,
 
         // add your named version above
         Current,
