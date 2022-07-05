@@ -1474,7 +1474,6 @@ const char* CLog::GetModuleFilter()
 void CLog::FlushAndClose()
 {
 #if defined(KEEP_LOG_FILE_OPEN)
-    m_logFileHandle.Flush();
     CloseLogFile();
 #endif
 }
