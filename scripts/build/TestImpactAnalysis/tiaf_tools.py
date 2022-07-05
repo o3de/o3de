@@ -15,7 +15,7 @@ import sys
 logger = get_logger(__file__)
 
 
-def parse_args(args):
+def parse_args():
     def valid_file_path(value):
         if pathlib.Path(value).is_file():
             return value
@@ -73,22 +73,18 @@ def parse_args(args):
         required=False
     )
 
-    args = parser.parse_args()
+    return parser.parse_args()
 
-    return args
-
-def run():
+def run(args: dict):
     try:
-        args = vars(parse_args(sys.argv[1:]))
-
-        logger.info(args)
-
         if args.get('s3_bucket'):
             sqt = S3StorageQueryTool(**args)
         else:
-            if args['search_in']:
+            if args.get('search_in'):
                 if not pathlib.Path(args['search_in']).is_dir():
-                    raise FileNotFoundError(args.search_in)
+                    raise FileNotFoundError(args['search_in'])
+                sqt = LocalStorageQueryTool(**args)
+            elif args.get('full_address'):
                 sqt = LocalStorageQueryTool(**args)
             else:
                 logger.error("You must define a repository to search in when searching locally")
@@ -99,5 +95,5 @@ def run():
         logger.error(f"Exception caught by TIAF Tools: '{e}'.")
 
 if __name__ == "__main__":
-    run()
-    
+    parsed_args = vars(parse_args())
+    run(args=parsed_args)
