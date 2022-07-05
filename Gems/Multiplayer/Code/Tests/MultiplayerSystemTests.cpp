@@ -44,6 +44,8 @@ namespace UnitTest
             m_mpComponent->AddSessionShutdownHandler(m_shutdownHandler);
             m_connAcquiredHandler = Multiplayer::ConnectionAcquiredEvent::Handler([this](Multiplayer::MultiplayerAgentDatum value) { TestConnectionAcquiredEvent(value); });
             m_mpComponent->AddConnectionAcquiredHandler(m_connAcquiredHandler);
+            m_endpointDisonnectedHandler = Multiplayer::EndpointDisonnectedEvent::Handler([this](Multiplayer::MultiplayerAgentType value) { TestEndpointDisonnectedEvent(value); });
+            m_mpComponent->AddEndpointDisonnectedHandler(m_endpointDisonnectedHandler);
             m_mpComponent->Activate();
         }
 
@@ -73,13 +75,20 @@ namespace UnitTest
             m_connectionAcquiredCount += aznumeric_cast<uint32_t>(datum.m_id);
         }
 
+        void TestEndpointDisonnectedEvent([[maybe_unused]] Multiplayer::MultiplayerAgentType value)
+        {
+            ++m_endpointDisonnectedCount;
+        }
+
         uint32_t m_initEventTriggerCount = 0;
         uint32_t m_shutdownEventTriggerCount = 0;
         uint32_t m_connectionAcquiredCount = 0;
+        uint32_t m_endpointDisonnectedCount = 0;
 
         Multiplayer::SessionInitEvent::Handler m_initHandler;
         Multiplayer::SessionShutdownEvent::Handler m_shutdownHandler;
         Multiplayer::ConnectionAcquiredEvent::Handler m_connAcquiredHandler;
+        Multiplayer::EndpointDisonnectedEvent::Handler m_endpointDisonnectedHandler;
 
         AzNetworking::NetworkingSystemComponent* m_netComponent = nullptr;
         Multiplayer::MultiplayerSystemComponent* m_mpComponent = nullptr;
@@ -105,6 +114,7 @@ namespace UnitTest
         m_mpComponent->OnDisconnect(&connMock1, AzNetworking::DisconnectReason::None, AzNetworking::TerminationEndpoint::Local);
         m_mpComponent->OnDisconnect(&connMock2, AzNetworking::DisconnectReason::None, AzNetworking::TerminationEndpoint::Local);
 
+        EXPECT_EQ(m_endpointDisonnectedCount, 2);
         EXPECT_EQ(m_shutdownEventTriggerCount, 1);
     }
 
@@ -121,6 +131,8 @@ namespace UnitTest
         // Clean up connection data
         m_mpComponent->OnDisconnect(&connMock1, AzNetworking::DisconnectReason::None, AzNetworking::TerminationEndpoint::Local);
         m_mpComponent->OnDisconnect(&connMock2, AzNetworking::DisconnectReason::None, AzNetworking::TerminationEndpoint::Local);
+
+        EXPECT_EQ(m_endpointDisonnectedCount, 2);
     }
 
     TEST_F(MultiplayerSystemTests, TestSpawnerEvents)
@@ -140,6 +152,7 @@ namespace UnitTest
         m_mpComponent->OnDisconnect(&connMock, AzNetworking::DisconnectReason::None, AzNetworking::TerminationEndpoint::Local);
         AZ_TEST_STOP_TRACE_SUPPRESSION(2);
 
+        EXPECT_EQ(m_endpointDisonnectedCount, 1);
         EXPECT_EQ(m_mpSpawnerMock.m_playerCount, 0);
         AZ::Interface<Multiplayer::IMultiplayerSpawner>::Unregister(&m_mpSpawnerMock);
     }
