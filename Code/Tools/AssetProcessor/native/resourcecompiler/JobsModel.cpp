@@ -371,6 +371,18 @@ namespace AssetProcessor
                     elementId.SetPlatform(tokens[3].c_str());
                     historicalStats[elementId] = entry.m_statValue;
                 }
+                else
+                {
+                    AZ_Warning(
+                        "AssetProcessor",
+                        false,
+                        "ProcessJob stat entry \"%s\" could not be parsed and will not be used. Expected %d tokens, but found %d. A wrong "
+                        "stat name may be used in Asset Processor code, or the asset database may be corrupted. If you keep encountering "
+                        "this warning, report an issue on GitHub with O3DE version number.",
+                        entry.m_statName.c_str(),
+                        tokens.size(),
+                        4); 
+                }
                 
                 return true;
             };
