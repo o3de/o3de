@@ -23,8 +23,6 @@ namespace AzToolsFramework
         {
             AZ::Interface<InstanceToTemplateInterface>::Register(this);
 
-            m_instanceDomGenerator.RegisterInstanceDomGeneratorInterface();
-
             //get instance id associated with entityId
             m_instanceEntityMapperInterface = AZ::Interface<InstanceEntityMapperInterface>::Get();
             AZ_Assert(m_instanceEntityMapperInterface,
@@ -43,8 +41,6 @@ namespace AzToolsFramework
 
         void InstanceToTemplatePropagator::UnregisterInstanceToTemplateInterface()
         {
-            m_instanceDomGenerator.UnregisterInstanceDomGeneratorInterface();
-
             AZ::Interface<InstanceToTemplateInterface>::Unregister(this);
         }
 
