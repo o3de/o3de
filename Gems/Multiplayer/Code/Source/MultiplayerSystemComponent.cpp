@@ -144,7 +144,7 @@ namespace Multiplayer
                     {
                         AZ_Warning("Multiplayer Property", false,
                             "MultiplayerSystemComponent GetOnEndpointDisonnectedEvent failed."
-                            "The entity with id % s doesn't exist, please provide a valid entity id.",
+                            "The entity with id %s doesn't exist, please provide a valid entity id.",
                             id.ToString().c_str())
                         return nullptr;
                     }
@@ -154,7 +154,7 @@ namespace Multiplayer
                     {
                         AZ_Warning("Multiplayer Property", false,
                             "MultiplayerSystemComponent GetOnEndpointDisonnectedEvent failed."
-                            "Entity '%s' (id: % s) is missing MultiplayerSystemComponent, be sure to add MultiplayerSystemComponent to this entity.",
+                            "Entity '%s' (id: %s) is missing MultiplayerSystemComponent, be sure to add MultiplayerSystemComponent to this entity.",
                             entity->GetName().c_str(), id.ToString().c_str())
                         return nullptr;
                     }
