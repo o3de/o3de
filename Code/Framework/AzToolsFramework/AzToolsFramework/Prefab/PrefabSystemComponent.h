@@ -414,7 +414,7 @@ namespace AzToolsFramework
             // Handles the public Prefab API used by UI and scripting.
             PrefabPublicHandler m_prefabPublicHandler;
 
-            InstanceDomGenerator m_instanceDomGenerator;
+            // InstanceDomGenerator m_instanceDomGenerator;
 
             // Used for updating Instances of Prefab Template.
             InstanceUpdateExecutor m_instanceUpdateExecutor;

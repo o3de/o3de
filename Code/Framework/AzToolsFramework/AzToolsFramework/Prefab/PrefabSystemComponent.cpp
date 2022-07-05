@@ -34,7 +34,7 @@ namespace AzToolsFramework
         {
             AZ::Interface<PrefabSystemComponentInterface>::Register(this);
             m_prefabLoader.RegisterPrefabLoaderInterface();
-            m_instanceDomGenerator.RegisterInstanceDomGeneratorInterface();
+            // m_instanceDomGenerator.RegisterInstanceDomGeneratorInterface();
             m_instanceToTemplatePropagator.RegisterInstanceToTemplateInterface();
             m_instanceUpdateExecutor.RegisterInstanceUpdateExecutorInterface();
             m_prefabPublicHandler.RegisterPrefabPublicHandlerInterface();
@@ -51,7 +51,7 @@ namespace AzToolsFramework
             m_prefabPublicHandler.UnregisterPrefabPublicHandlerInterface();
             m_instanceUpdateExecutor.UnregisterInstanceUpdateExecutorInterface();
             m_instanceToTemplatePropagator.UnregisterInstanceToTemplateInterface();
-            m_instanceDomGenerator.UnregisterInstanceDomGeneratorInterface();
+            // m_instanceDomGenerator.UnregisterInstanceDomGeneratorInterface();
             m_prefabLoader.UnregisterPrefabLoaderInterface();
             AZ::Interface<PrefabSystemComponentInterface>::Unregister(this);
         }

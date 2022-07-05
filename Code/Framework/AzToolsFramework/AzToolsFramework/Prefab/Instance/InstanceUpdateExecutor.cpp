@@ -40,6 +40,8 @@ namespace AzToolsFramework
 
         void InstanceUpdateExecutor::RegisterInstanceUpdateExecutorInterface()
         {
+            m_instanceDomGenerator.RegisterInstanceDomGeneratorInterface();
+
             m_prefabSystemComponentInterface = AZ::Interface<PrefabSystemComponentInterface>::Get();
             AZ_Assert(m_prefabSystemComponentInterface != nullptr,
                 "Prefab - InstanceUpdateExecutor::RegisterInstanceUpdateExecutorInterface - "
@@ -65,6 +67,8 @@ namespace AzToolsFramework
         {
             m_GameModeEventHandler.Disconnect();
             AZ::Interface<InstanceUpdateExecutorInterface>::Unregister(this);
+
+            m_instanceDomGenerator.UnregisterInstanceDomGeneratorInterface();
         }
 
         void InstanceUpdateExecutor::AddTemplateInstancesToQueue(TemplateId instanceTemplateId, InstanceOptionalConstReference instanceToExclude)
@@ -183,7 +187,10 @@ namespace AzToolsFramework
                             continue;
                         }
 
-                        bool instanceDomGenerated = m_instanceDomGeneratorInterface->GenerateInstanceDom(
+                        /*bool instanceDomGenerated = m_instanceDomGeneratorInterface->GenerateInstanceDom(
+                            instanceToUpdate, instanceDom);*/
+
+                        bool instanceDomGenerated = m_instanceDomGenerator.GenerateInstanceDom(
                             instanceToUpdate, instanceDom);
                         if (!instanceDomGenerated)
                         {
