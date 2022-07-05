@@ -12,15 +12,16 @@
 #include "GoToButton.h"
 #include "SourceAssetTreeItemData.h"
 #include "SourceAssetTreeModel.h"
-
+#include <AssetBuilderSDK/AssetBuilderSDK.h>
 
 #include <native/ui/ui_GoToButton.h>
 #include <native/ui/ui_SourceAssetDetailsPanel.h>
 
 namespace AssetProcessor
 {
-
-    SourceAssetDetailsPanel::SourceAssetDetailsPanel(QWidget* parent) : AssetDetailsPanel(parent), m_ui(new Ui::SourceAssetDetailsPanel)
+    SourceAssetDetailsPanel::SourceAssetDetailsPanel(QWidget* parent)
+        : AssetDetailsPanel(parent)
+        , m_ui(new Ui::SourceAssetDetailsPanel)
     {
         m_ui->setupUi(this);
         m_ui->scrollAreaWidgetContents->setLayout(m_ui->scrollableVerticalLayout);
@@ -29,7 +30,6 @@ namespace AssetProcessor
 
     SourceAssetDetailsPanel::~SourceAssetDetailsPanel()
     {
-
     }
 
     void SourceAssetDetailsPanel::AssetDataSelectionChanged(const QItemSelection& selected, const QItemSelection& /*deselected*/)
@@ -50,7 +50,8 @@ namespace AssetProcessor
         }
         AssetTreeItem* childItem = static_cast<AssetTreeItem*>(sourceModelIndex.internalPointer());
 
-        const AZStd::shared_ptr<const SourceAssetTreeItemData> sourceItemData = AZStd::rtti_pointer_cast<const SourceAssetTreeItemData>(childItem->GetData());
+        const AZStd::shared_ptr<const SourceAssetTreeItemData> sourceItemData =
+            AZStd::rtti_pointer_cast<const SourceAssetTreeItemData>(childItem->GetData());
 
         m_ui->assetNameLabel->setText(childItem->GetData()->m_name);
 
@@ -73,41 +74,91 @@ namespace AssetProcessor
     }
 
     void SourceAssetDetailsPanel::BuildProducts(
-        AssetDatabaseConnection& assetDatabaseConnection,
-        const AZStd::shared_ptr<const SourceAssetTreeItemData> sourceItemData)
+        AssetDatabaseConnection& assetDatabaseConnection, const AZStd::shared_ptr<const SourceAssetTreeItemData> sourceItemData)
     {
         // Clear & ClearContents leave the table dimensions the same, so set rowCount to zero to reset it.
         m_ui->productTable->setRowCount(0);
+        m_ui->IntermediateAssetsTable->setRowCount(0);
 
+        int intermediateAssetCount = 0;
         int productCount = 0;
         assetDatabaseConnection.QueryProductBySourceID(
             sourceItemData->m_sourceInfo.m_sourceID,
             [&](AzToolsFramework::AssetDatabase::ProductDatabaseEntry& productEntry)
-        {
-            m_ui->productTable->insertRow(productCount);
+            {
+                AZStd::string platform;
+                AZ::s64 sourcePK;
+                assetDatabaseConnection.QueryJobByProductID(
+                    productEntry.m_productID,
+                    [&](AzToolsFramework::AssetDatabase::JobDatabaseEntry& jobEntry)
+                    {
+                        platform = jobEntry.m_platform;
+                        sourcePK = jobEntry.m_sourcePK;
+                        return true;
+                    });
 
-            // Qt handles cleanup automatically, setting this as the parent means
-            // when this panel is torn down, these widgets will be destroyed.
-            GoToButton* rowGoToButton = new GoToButton(this);
-            connect(rowGoToButton->m_ui->goToPushButton, &QPushButton::clicked, [=] {
-                GoToProduct(productEntry.m_productName);
+                if (platform == AssetBuilderSDK::CommonPlatformName)
+                {
+                    m_ui->IntermediateAssetsTable->insertRow(intermediateAssetCount);
+
+                    AZStd::string intermediateAssetSourcePath;
+                    assetDatabaseConnection.QuerySourceBySourceID(
+                        sourcePK,
+                        [&](AzToolsFramework::AssetDatabase::SourceDatabaseEntry& sourceEntry)
+                        {
+                            intermediateAssetSourcePath = sourceEntry.m_sourceName;
+                            return true;
+                        });
+                    
+
+                    // Qt handles cleanup automatically, setting this as the parent means
+                    // when this panel is torn down, these widgets will be destroyed.
+                    GoToButton* rowGoToButton = new GoToButton(this);
+                    connect(
+                        rowGoToButton->m_ui->goToPushButton,
+                        &QPushButton::clicked,
+                        [=]
+                        {
+                            GoToSource(intermediateAssetSourcePath);
+                        });
+                    m_ui->IntermediateAssetsTable->setCellWidget(intermediateAssetCount, 0, rowGoToButton);
+
+                    QTableWidgetItem* rowName = new QTableWidgetItem(productEntry.m_productName.c_str());
+                    m_ui->IntermediateAssetsTable->setItem(intermediateAssetCount, 1, rowName);
+                    ++intermediateAssetCount;
+                }
+                else
+                {
+                    m_ui->productTable->insertRow(productCount);
+
+                    // Qt handles cleanup automatically, setting this as the parent means
+                    // when this panel is torn down, these widgets will be destroyed.
+                    GoToButton* rowGoToButton = new GoToButton(this);
+                    connect(
+                        rowGoToButton->m_ui->goToPushButton,
+                        &QPushButton::clicked,
+                        [=]
+                        {
+                            GoToProduct(productEntry.m_productName);
+                        });
+                    m_ui->productTable->setCellWidget(productCount, 0, rowGoToButton);
+
+                    QTableWidgetItem* rowName = new QTableWidgetItem(productEntry.m_productName.c_str());
+                    m_ui->productTable->setItem(productCount, 1, rowName);
+                    ++productCount;
+                }
+                return true;
             });
-            m_ui->productTable->setCellWidget(productCount, 0, rowGoToButton);
-
-            QTableWidgetItem* rowName = new QTableWidgetItem(productEntry.m_productName.c_str());
-            m_ui->productTable->setItem(productCount, 1, rowName);
-            ++productCount;
-            return true;
-        });
 
         m_ui->SourceAssetDetailTabs->setTabText(0, tr("Products (%1)").arg(productCount));
-
         m_ui->SourceAssetDetailTabs->setTabVisible(0, productCount > 0);
+
+        m_ui->SourceAssetDetailTabs->setTabText(3, tr("Intermediate Assets (%1)").arg(intermediateAssetCount));
+        m_ui->SourceAssetDetailTabs->setTabVisible(3, intermediateAssetCount > 0);
     }
 
     void SourceAssetDetailsPanel::BuildOutgoingSourceDependencies(
-        AssetDatabaseConnection& assetDatabaseConnection,
-        const AZStd::shared_ptr<const SourceAssetTreeItemData> sourceItemData)
+        AssetDatabaseConnection& assetDatabaseConnection, const AZStd::shared_ptr<const SourceAssetTreeItemData> sourceItemData)
     {
         m_ui->outgoingSourceDependenciesTable->setRowCount(0);
         int sourceDependencyCount = 0;
@@ -116,36 +167,39 @@ namespace AssetProcessor
             nullptr,
             AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::DEP_Any,
             [&](AzToolsFramework::AssetDatabase::SourceFileDependencyEntry& sourceFileDependencyEntry)
-        {
-            m_ui->outgoingSourceDependenciesTable->insertRow(sourceDependencyCount);
-
-            // Some outgoing source dependencies are wildcard, or unresolved paths.
-            // Only add a button to link to rows that actually exist.
-            QModelIndex goToIndex = m_sourceTreeModel->GetIndexForSource(sourceFileDependencyEntry.m_dependsOnSource);
-            if (goToIndex.isValid())
             {
-                // Qt handles cleanup automatically, setting this as the parent means
-                // when this panel is torn down, these widgets will be destroyed.
-                GoToButton* rowGoToButton = new GoToButton(this);
-                connect(rowGoToButton->m_ui->goToPushButton, &QPushButton::clicked, [=] {
-                    GoToSource(sourceFileDependencyEntry.m_dependsOnSource);
-                });
-                m_ui->outgoingSourceDependenciesTable->setCellWidget(sourceDependencyCount, 0, rowGoToButton);
-            }
+                m_ui->outgoingSourceDependenciesTable->insertRow(sourceDependencyCount);
 
-            QTableWidgetItem* rowName = new QTableWidgetItem(sourceFileDependencyEntry.m_dependsOnSource.c_str());
-            m_ui->outgoingSourceDependenciesTable->setItem(sourceDependencyCount, 1, rowName);
-            ++sourceDependencyCount;
-            return true;
-        });
+                // Some outgoing source dependencies are wildcard, or unresolved paths.
+                // Only add a button to link to rows that actually exist.
+                QModelIndex goToIndex = m_sourceTreeModel->GetIndexForSource(sourceFileDependencyEntry.m_dependsOnSource);
+                if (goToIndex.isValid())
+                {
+                    // Qt handles cleanup automatically, setting this as the parent means
+                    // when this panel is torn down, these widgets will be destroyed.
+                    GoToButton* rowGoToButton = new GoToButton(this);
+                    connect(
+                        rowGoToButton->m_ui->goToPushButton,
+                        &QPushButton::clicked,
+                        [=]
+                        {
+                            GoToSource(sourceFileDependencyEntry.m_dependsOnSource);
+                        });
+                    m_ui->outgoingSourceDependenciesTable->setCellWidget(sourceDependencyCount, 0, rowGoToButton);
+                }
+
+                QTableWidgetItem* rowName = new QTableWidgetItem(sourceFileDependencyEntry.m_dependsOnSource.c_str());
+                m_ui->outgoingSourceDependenciesTable->setItem(sourceDependencyCount, 1, rowName);
+                ++sourceDependencyCount;
+                return true;
+            });
 
         m_ui->SourceAssetDetailTabs->setTabText(1, tr("Dependencies - Out (%1)").arg(sourceDependencyCount));
         m_ui->SourceAssetDetailTabs->setTabVisible(1, sourceDependencyCount > 0);
     }
 
     void SourceAssetDetailsPanel::BuildIncomingSourceDependencies(
-        AssetDatabaseConnection& assetDatabaseConnection,
-        const AZStd::shared_ptr<const SourceAssetTreeItemData> sourceItemData)
+        AssetDatabaseConnection& assetDatabaseConnection, const AZStd::shared_ptr<const SourceAssetTreeItemData> sourceItemData)
     {
         m_ui->incomingSourceDependenciesTable->setRowCount(0);
         int sourceDependencyCount = 0;
@@ -154,23 +208,27 @@ namespace AssetProcessor
             nullptr,
             AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::DEP_Any,
             [&](AzToolsFramework::AssetDatabase::SourceFileDependencyEntry& sourceFileDependencyEntry)
-        {
-            m_ui->incomingSourceDependenciesTable->insertRow(sourceDependencyCount);
+            {
+                m_ui->incomingSourceDependenciesTable->insertRow(sourceDependencyCount);
 
-            // Qt handles cleanup automatically, setting this as the parent means
-            // when this panel is torn down, these widgets will be destroyed.
-            GoToButton* rowGoToButton = new GoToButton(this);
-            connect(rowGoToButton->m_ui->goToPushButton, &QPushButton::clicked, [=] {
-                GoToSource(sourceFileDependencyEntry.m_source);
+                // Qt handles cleanup automatically, setting this as the parent means
+                // when this panel is torn down, these widgets will be destroyed.
+                GoToButton* rowGoToButton = new GoToButton(this);
+                connect(
+                    rowGoToButton->m_ui->goToPushButton,
+                    &QPushButton::clicked,
+                    [=]
+                    {
+                        GoToSource(sourceFileDependencyEntry.m_source);
+                    });
+                m_ui->incomingSourceDependenciesTable->setCellWidget(sourceDependencyCount, 0, rowGoToButton);
+
+                QTableWidgetItem* rowName = new QTableWidgetItem(sourceFileDependencyEntry.m_source.c_str());
+                m_ui->incomingSourceDependenciesTable->setItem(sourceDependencyCount, 1, rowName);
+
+                ++sourceDependencyCount;
+                return true;
             });
-            m_ui->incomingSourceDependenciesTable->setCellWidget(sourceDependencyCount, 0, rowGoToButton);
-
-            QTableWidgetItem* rowName = new QTableWidgetItem(sourceFileDependencyEntry.m_source.c_str());
-            m_ui->incomingSourceDependenciesTable->setItem(sourceDependencyCount, 1, rowName);
-
-            ++sourceDependencyCount;
-            return true;
-        });
 
         m_ui->SourceAssetDetailTabs->setTabText(2, tr("Dependencies - In (%1)").arg(sourceDependencyCount));
         m_ui->SourceAssetDetailTabs->setTabVisible(2, sourceDependencyCount > 0);
@@ -197,4 +255,4 @@ namespace AssetProcessor
 
         m_ui->SourceAssetDetailTabs->setVisible(visible);
     }
-}
+} // namespace AssetProcessor

@@ -490,6 +490,68 @@
               </item>
              </layout>
             </widget>
+
+             <widget class="QWidget" name="IntermediateAssetsTab">
+               <attribute name="title">
+                 <string>Intermediate Assets</string>
+               </attribute>
+               <layout class="QVBoxLayout" name="IntermediateAssetsLayout" stretch="0">
+                 <item>
+                   <widget class="QTableWidget" name="IntermediateAssetsTable">
+                     <property name="verticalScrollBarPolicy">
+                       <enum>Qt::ScrollBarAsNeeded</enum>
+                     </property>
+                     <property name="horizontalScrollBarPolicy">
+                       <enum>Qt::ScrollBarAsNeeded</enum>
+                     </property>
+                     <property name="sizeAdjustPolicy">
+                       <enum>QAbstractScrollArea::AdjustIgnored</enum>
+                     </property>
+                     <property name="editTriggers">
+                       <set>QAbstractItemView::NoEditTriggers</set>
+                     </property>
+                     <property name="showDropIndicator" stdset="0">
+                       <bool>false</bool>
+                     </property>
+                     <property name="dragDropOverwriteMode">
+                       <bool>false</bool>
+                     </property>
+                     <property name="alternatingRowColors">
+                       <bool>true</bool>
+                     </property>
+                     <property name="selectionMode">
+                       <enum>QAbstractItemView::SingleSelection</enum>
+                     </property>
+                     <property name="showGrid">
+                       <bool>false</bool>
+                     </property>
+                     <property name="columnCount">
+                       <number>2</number>
+                     </property>
+                     <attribute name="horizontalHeaderVisible">
+                       <bool>false</bool>
+                     </attribute>
+                     <attribute name="horizontalHeaderMinimumSectionSize">
+                       <number>24</number>
+                     </attribute>
+                     <attribute name="horizontalHeaderDefaultSectionSize">
+                       <number>24</number>
+                     </attribute>
+                     <attribute name="horizontalHeaderStretchLastSection">
+                       <bool>true</bool>
+                     </attribute>
+                     <attribute name="verticalHeaderVisible">
+                       <bool>false</bool>
+                     </attribute>
+                     <attribute name="verticalHeaderStretchLastSection">
+                       <bool>false</bool>
+                     </attribute>
+                     <column/>
+                     <column/>
+                   </widget>
+                 </item>
+               </layout>
+             </widget>
            </widget>
           </item>
          </layout>
