@@ -85,6 +85,7 @@ site.addsitedir(_PATH_DCCSIG)  # must be done for azpy
 # now we have dccsi azpy api access
 import azpy.config_utils
 from azpy.config_utils import attach_debugger
+
 from azpy.env_bool import env_bool
 from azpy.constants import ENVAR_DCCSI_GDEBUG
 from azpy.constants import ENVAR_DCCSI_DEV_MODE
@@ -785,9 +786,16 @@ def export_settings(settings,
 if __name__ == '__main__':
     """Run this file as a standalone cli script for testing/debugging"""
 
-    while 0: # temp internal debug flag
-        _DCCSI_GDEBUG = True
-        break
+    from azpy.env_bool import env_bool
+    # temp internal debug flag, toggle values for manual testing
+    _DCCSI_GDEBUG = env_bool(ENVAR_DCCSI_GDEBUG, False)
+    _DCCSI_DEV_MODE = env_bool(ENVAR_DCCSI_DEV_MODE, False)
+    _DCCSI_LOGLEVEL = env_bool(ENVAR_DCCSI_LOGLEVEL, _logging.INFO)
+    _DCCSI_GDEBUGGER = env_bool(ENVAR_DCCSI_GDEBUGGER, 'WING')
+
+    from azpy.shared.utils.arg_bool import arg_bool
+    # Suggestion for next iteration, args set to anything but None will
+    # evaluate as True
 
     from azpy.constants import STR_CROSSBAR
 
@@ -931,12 +939,16 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    # easy overrides
-    if args.global_debug:
-        _DCCSI_GDEBUG = True
-        os.environ["DYNACONF_DCCSI_GDEBUG"] = str(_DCCSI_GDEBUG)
+    from azpy.shared.utils.arg_bool import arg_bool
 
-    if args.developer_mode:
+    # easy overrides
+    if arg_bool(args.global_debug, desc="args.global_debug"):
+        from azpy.constants import ENVAR_DCCSI_GDEBUG
+        _DCCSI_GDEBUG = True
+        _LOGGER.setLevel(_logging.DEBUG)
+        _LOGGER.info(f'Global debug is set, {ENVAR_DCCSI_GDEBUG}={_DCCSI_GDEBUG}')
+
+    if arg_bool(args.developer_mode, desc="args.developer_mode"):
         _DCCSI_DEV_MODE = True
         azpy.config_utils.attach_debugger()  # attempts to start debugger
 

@@ -360,13 +360,17 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    # easy overrides
-    if args.global_debug:
-        _DCCSI_GDEBUG = True
-        os.environ["DYNACONF_DCCSI_GDEBUG"] = str(_DCCSI_GDEBUG)
+    from azpy.shared.utils.arg_bool import arg_bool
 
-    if args.developer_mode:
-        _DCCSI_DEV_MODE = True
+    # easy overrides
+    if arg_bool(args.global_debug, desc="args.global_debug"):
+        from azpy.constants import ENVAR_DCCSI_GDEBUG
+        _DCCSI_GDEBUG = True
+        _LOGGER.setLevel(_logging.DEBUG)
+        _LOGGER.info(f'Global debug is set, {ENVAR_DCCSI_GDEBUG}={_DCCSI_GDEBUG}')
+
+    if arg_bool(args.developer_mode, desc="args.developer_mode"):
+        _DCCSI_DEV_MODE = True  # session based
         azpy.config_utils.attach_debugger()  # attempts to start debugger
 
     if args.set_debugger:
@@ -408,7 +412,9 @@ if __name__ == '__main__':
 
     if args.install_package_dependencies:
         import foundation
-
+        _LOGGER.info('Installing python package dependancies from requirements.txt')
+        foundation.install_requirements(python_exe=settings.DCCSI_SUBSTANCE_PY_EXE)
+        _LOGGER.warning('If the Substance3D app is running we suggest restarting it')
 
     # custom prompt
     sys.ps1 = f"[{_MODULENAME}]>>"
