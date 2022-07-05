@@ -399,9 +399,8 @@ if __name__ == '__main__':
             # this should be set if there are local settings!? to do: circle back
             _LOGGER.debug('DCCSI_LOCAL_SETTINGS: {}'.format(settings.DCCSI_LOCAL_SETTINGS))
 
-
     # handle dumping logging of settings
-    if args.log_print_settings:
+    if arg_bool(args.log_print_settings, desc="args.log_print_settings"):
         # format the setting, Box is an orderedDict object with convenience methods
         from box import Box
         _settings_box = Box(settings.as_dict())
@@ -410,7 +409,7 @@ if __name__ == '__main__':
         _LOGGER.info(str(_settings_box.to_json(sort_keys=True,
                                                indent=4)))
 
-    if args.install_package_dependencies:
+    if arg_bool(args.install_package_dependencies, desc="args.install_package_dependencies"):
         import foundation
         _LOGGER.info('Installing python package dependancies from requirements.txt')
         foundation.install_requirements(python_exe=settings.DCCSI_SUBSTANCE_PY_EXE)

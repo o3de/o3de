@@ -347,7 +347,13 @@ if __name__ == '__main__':
                         type=bool,
                         required=False,
                         default=True,
-                        help='Well dump settings results into the log.')
+                        help='Will dump settings results into the log.')
+
+    parser.add_argument('-ipd', '--install-package-dependencies',
+                        type=bool,
+                        required=False,
+                        default=True,
+                        help='Will install/update the DCCsi python package dependencies.')
 
     parser.add_argument('-ex', '--exit',
                         type=bool,
@@ -357,13 +363,17 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    # easy overrides
-    if args.global_debug:
-        _DCCSI_GDEBUG = True
-        os.environ["DYNACONF_DCCSI_GDEBUG"] = str(_DCCSI_GDEBUG)
+    from azpy.shared.utils.arg_bool import arg_bool
 
-    if args.developer_mode:
-        _DCCSI_DEV_MODE = True
+    # easy overrides
+    if arg_bool(args.global_debug, desc="args.global_debug"):
+        from azpy.constants import ENVAR_DCCSI_GDEBUG
+        _DCCSI_GDEBUG = True
+        _LOGGER.setLevel(_logging.DEBUG)
+        _LOGGER.info(f'Global debug is set, {ENVAR_DCCSI_GDEBUG}={_DCCSI_GDEBUG}')
+
+    if arg_bool(args.developer_mode, desc="args.developer_mode"):
+        _DCCSI_DEV_MODE = True  # session based
         azpy.config_utils.attach_debugger()  # attempts to start debugger
 
     if args.set_debugger:
@@ -393,7 +403,7 @@ if __name__ == '__main__':
             _LOGGER.debug('DCCSI_LOCAL_SETTINGS: {}'.format(settings.DCCSI_LOCAL_SETTINGS))
 
     # handle dumping logging of settings
-    if args.log_print_settings:
+    if arg_bool(args.log_print_settings, desc="args.log_print_settings"):
         # format the setting, Box is an orderedDict object with convenience methods
         from box import Box
         _settings_box = Box(settings.as_dict())
@@ -401,6 +411,12 @@ if __name__ == '__main__':
         _LOGGER.info('Logging the Substance Dynaconf settings object ...')
         _LOGGER.info(str(_settings_box.to_json(sort_keys=True,
                                                indent=4)))
+
+    if arg_bool(args.install_package_dependencies, desc="args.install_package_dependencies"):
+        import foundation
+        _LOGGER.info('Installing python package dependancies from requirements.txt')
+        foundation.install_requirements(python_exe=settings.DCCSI_BLENDER_PY_EXE)
+        _LOGGER.warning('If the Blender app is running we suggest restarting it')
 
     # custom prompt
     sys.ps1 = f"[{_MODULENAME}]>>"
