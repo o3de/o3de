@@ -119,7 +119,7 @@ namespace ScriptCanvasEditor
         bool AcceptsComponentScript() const;
 
         /// Some Scripts refer the 'self Entity Id', part of the Entity / Component extension of current ScriptCanvas scripting system.
-        /// This allows programmers to enable or disable using such a script with this Configuraiton.
+        /// This allows programmers to enable or disable using such a script with this Configuration.
         void SetAcceptsComponentScript(bool value);
 
         AZ::EventHandler<const Configuration&> ConnectToIncompatilbleScript(AZStd::function<void(const Configuration&)>&& function) const;
@@ -129,5 +129,5 @@ namespace ScriptCanvasEditor
 
         bool m_acceptsComponentScript = true;
         // ... #scriptcanvas_component_extension
-        };
+    };
 }

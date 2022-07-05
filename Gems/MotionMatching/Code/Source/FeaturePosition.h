@@ -43,6 +43,7 @@ namespace EMotionFX::MotionMatching
         void DebugDraw(AzFramework::DebugDisplayRequests& debugDisplay,
             const Pose& currentPose,
             const FeatureMatrix& featureMatrix,
+            const FeatureMatrixTransformer* featureTransformer,
             size_t frameIndex) override;
 
         static void Reflect(AZ::ReflectContext* context);
