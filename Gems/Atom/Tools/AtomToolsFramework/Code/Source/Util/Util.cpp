@@ -9,6 +9,7 @@
 #include <Atom/ImageProcessing/ImageObject.h>
 #include <Atom/ImageProcessing/ImageProcessingBus.h>
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
+#include <Atom/RPI.Reflect/Asset/AssetUtils.h>
 #include <AtomToolsFramework/Util/Util.h>
 #include <AzCore/IO/ByteContainerStream.h>
 #include <AzCore/IO/SystemFile.h>
@@ -24,10 +25,12 @@
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/AssetSelectionModel.h>
+#include <AzToolsFramework/ToolsComponents/EditorAssetMimeDataContainer.h>
 
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
 #include <QApplication>
 #include <QMessageBox>
+#include <QMimeData>
 #include <QProcess>
 AZ_POP_DISABLE_WARNING
 
@@ -341,5 +344,60 @@ namespace AtomToolsFramework
     {
         auto convertedPath = AZ::IO::FileIOBase::GetInstance()->ConvertToAlias(AZ::IO::PathView{ path });
         return convertedPath ? convertedPath->StringAsPosix() : path;
+    }
+
+    AZStd::set<AZStd::string> GetPathsFromMimeData(const QMimeData* mimeData)
+    {
+        AZStd::set<AZStd::string> paths;
+        if (!mimeData)
+        {
+            return paths;
+        }
+
+        if (mimeData->hasFormat(AzToolsFramework::EditorAssetMimeDataContainer::GetMimeType()))
+        {
+            AzToolsFramework::EditorAssetMimeDataContainer container;
+            if (container.FromMimeData(mimeData))
+            {
+                for (const auto& asset : container.m_assets)
+                {
+                    AZStd::string path = AZ::RPI::AssetUtils::GetSourcePathByAssetId(asset.m_assetId);
+                    if (ValidateDocumentPath(path))
+                    {
+                        paths.insert(path);
+                    }
+                }
+            }
+        }
+
+        if (mimeData->hasFormat(AzToolsFramework::AssetBrowser::AssetBrowserEntry::GetMimeType()))
+        {
+            AZStd::vector<AzToolsFramework::AssetBrowser::AssetBrowserEntry*> entries;
+            if (AzToolsFramework::AssetBrowser::AssetBrowserEntry::FromMimeData(mimeData, entries))
+            {
+                for (const auto entry : entries)
+                {
+                    AZStd::string path = entry->GetFullPath();
+                    if (ValidateDocumentPath(path))
+                    {
+                        paths.insert(path);
+                    }
+                }
+            }
+        }
+
+        for (const auto& url : mimeData->urls())
+        {
+            if (url.isLocalFile())
+            {
+                AZStd::string path = url.toLocalFile().toUtf8().constData();
+                if (ValidateDocumentPath(path))
+                {
+                    paths.insert(path);
+                }
+            }
+        }
+
+        return paths;
     }
 } // namespace AtomToolsFramework
