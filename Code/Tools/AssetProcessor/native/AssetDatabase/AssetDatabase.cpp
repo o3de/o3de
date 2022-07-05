@@ -3330,6 +3330,21 @@ namespace AssetProcessor
         return found && succeeded;
     }
 
+    bool AssetDatabaseConnection::GetStatLikeStatName(QString statName, StatDatabaseEntryContainer& container)
+    {
+        bool found = false;
+        bool succeeded = QueryStatLikeStatName(
+            statName.toUtf8().constData(),
+            [&](StatDatabaseEntry& stat)
+            {
+                found = true;
+                container.push_back();
+                container.back() = AZStd::move(stat);
+                return true; // return true to continue iterating over additional results, we are populating a container
+            });
+        return found && succeeded;
+    }
+
     bool AssetDatabaseConnection::ReplaceStat(AzToolsFramework::AssetDatabase::StatDatabaseEntry& stat)
     {
         return s_ReplaceStatQuery.BindAndStep(*m_databaseConnection, stat.m_statName.c_str(), stat.m_statValue, stat.m_lastLogTime);
