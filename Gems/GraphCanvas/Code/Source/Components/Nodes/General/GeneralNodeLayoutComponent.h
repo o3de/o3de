@@ -66,6 +66,7 @@ namespace GraphCanvas
     protected:
 
         void UpdateLayoutParameters();
+        void SwitchToHorizontalLayout();
 
         QGraphicsLinearLayout* m_title;
         QGraphicsLinearLayout* m_slots;
@@ -73,12 +74,6 @@ namespace GraphCanvas
         QGraphicsLinearLayout* m_inputSlots;
         QGraphicsLinearLayout* m_outputSlots;
 
-        Qt::Orientation m_layoutOrientation;
-
-        QGraphicsWidget* m_titleGraphicsItem;
-        QGraphicsLayoutItem* m_slotsGraphicsItem;
-        QGraphicsLinearLayout* m_slotLayout;
-        QGraphicsWidget* m_horizontalSpacer;
-
+        bool hasCheckedForHorizontalLayout;
     };
 }
