@@ -45,7 +45,6 @@ namespace EMotionFX
                 Rule::MotionSamplingRule::Reflect(context);
                 Rule::MotionScaleRule::Reflect(context);
                 Rule::MorphTargetRuleReadOnly::Reflect(context);
-                Rule::RootMotionExtractionRule::Reflect(context);
                 
                 AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
                 if (serializeContext)
