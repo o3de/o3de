@@ -54,7 +54,7 @@ class LocalStorageQueryTool(StorageQueryTool):
         """
 
         if self.has_full_address:
-            self._check_object_exists(self._bucket_name, self._full_address)
+            self._check_object_exists(self._full_address)
         else:
             if self._root_directory:
                 l = Path.glob(Path(self._root_directory), "**/*.json")
