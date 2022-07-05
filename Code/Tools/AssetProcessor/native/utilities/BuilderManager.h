@@ -27,6 +27,14 @@ namespace AssetProcessor
     //! Indicates if job request files should be created on success.  Can be useful for debugging
     static const bool s_createRequestFileForSuccessfulJob = false;
 
+    //! Enum used to indicate the purpose of a builder which may result in special handling
+    enum class BuilderPurpose
+    {
+        CreateJobs,
+        ProcessJob,
+        Registration
+    };
+
     //! This EBUS is used to request a free builder from the builder manager pool
     class BuilderManagerBusTraits
         : public AZ::EBusTraits
@@ -39,7 +47,7 @@ namespace AssetProcessor
         virtual ~BuilderManagerBusTraits() = default;
 
         //! Returns a builder for doing work
-        virtual BuilderRef GetBuilder(bool doRegistration) = 0;
+        virtual BuilderRef GetBuilder(BuilderPurpose purpose) = 0;
 
         virtual void AddAssetToBuilderProcessedList(const AZ::Uuid& /*builderId*/, const AZStd::string& /*sourceAsset*/)
         {
@@ -70,7 +78,7 @@ namespace AssetProcessor
             : m_uuid(uuid),
             m_quitListener(quitListener)
         {}
-        ~Builder() = default;
+        virtual ~Builder() = default;
 
         // Disable copy and move (can't move a semaphore)
         AZ_DISABLE_COPY_MOVE(Builder);
@@ -99,15 +107,15 @@ namespace AssetProcessor
         template<typename TNetRequest, typename TNetResponse, typename TRequest, typename TResponse>
         BuilderRunJobOutcome RunJob(const TRequest& request, TResponse& response, AZ::u32 processTimeoutLimitInSeconds, const AZStd::string& task, const AZStd::string& modulePath, AssetBuilderSDK::JobCancelListener* jobCancelListener = nullptr, AZStd::string tempFolderPath = AZStd::string()) const;
 
-    private:
+    protected:
 
         //! Starts the builder process and waits for it to connect
-        bool Start(bool doRegistration);
+        virtual bool Start(BuilderPurpose purpose);
 
         //! Sets the connection id and signals that the builder has connected
         void SetConnection(AZ::u32 connId);
 
-        AZStd::vector<AZStd::string> BuildParams(const char* task, const char* moduleFilePath, const AZStd::string& builderGuid, const AZStd::string& jobDescriptionFile, const AZStd::string& jobResponseFile, bool doRegistration) const;
+        AZStd::vector<AZStd::string> BuildParams(const char* task, const char* moduleFilePath, const AZStd::string& builderGuid, const AZStd::string& jobDescriptionFile, const AZStd::string& jobResponseFile, BuilderPurpose purpose) const;
         AZStd::unique_ptr<AzFramework::ProcessWatcher> LaunchProcess(const char* fullExePath, const AZStd::vector<AZStd::string>& params) const;
 
         //! Waits for the builder exe to send the job response and pumps stdout/err
@@ -115,7 +123,7 @@ namespace AssetProcessor
 
         //! Writes the request out to disk for debug purposes and logs info on how to manually run the asset builder
         template<typename TRequest>
-        bool DebugWriteRequestFile(QString tempFolderPath, const TRequest& request, const AZStd::string& task, const AZStd::string& modulePath) const;
+        bool DebugWriteRequestFile(QString tempFolderPath, const TRequest& request, const AZStd::string& task, const AZStd::string& modulePath, BuilderPurpose purpose) const;
 
         const AZ::Uuid m_uuid;
 
@@ -184,13 +192,13 @@ namespace AssetProcessor
         void ConnectionLost(AZ::u32 connId);
 
         //BuilderManagerBus
-        BuilderRef GetBuilder(bool doRegistration) override;
+        BuilderRef GetBuilder(BuilderPurpose purpose) override;
         void AddAssetToBuilderProcessedList(const AZ::Uuid& builderId, const AZStd::string& sourceAsset) override;
 
-    private:
+    protected:
 
         //! Makes a new builder, adds it to the pool, and returns a shared pointer to it
-        AZStd::shared_ptr<Builder> AddNewBuilder();
+        virtual AZStd::shared_ptr<Builder> AddNewBuilder();
 
         //! Handles incoming builder connections
         void IncomingBuilderPing(AZ::u32 connId, AZ::u32 type, AZ::u32 serial, QByteArray payload, QString platform);
