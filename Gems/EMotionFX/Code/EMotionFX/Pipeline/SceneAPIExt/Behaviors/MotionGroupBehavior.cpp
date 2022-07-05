@@ -25,6 +25,7 @@
 #include <SceneAPIExt/Rules/MotionScaleRule.h>
 #include <SceneAPIExt/Rules/MotionRangeRule.h>
 #include <SceneAPIExt/Rules/MorphTargetRule.h>
+#include <SceneAPIExt/Rules/RootMotionExtractionRule.h>
 
 namespace EMotionFX
 {
@@ -44,6 +45,7 @@ namespace EMotionFX
                 Rule::MotionSamplingRule::Reflect(context);
                 Rule::MotionScaleRule::Reflect(context);
                 Rule::MorphTargetRuleReadOnly::Reflect(context);
+                Rule::RootMotionExtractionRule::Reflect(context);
                 
                 AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
                 if (serializeContext)
@@ -104,6 +106,10 @@ namespace EMotionFX
                     if (existingRules.find(Rule::MotionSamplingRule::TYPEINFO_Uuid()) == existingRules.end())
                     {
                         modifiers.push_back(Rule::MotionSamplingRule::TYPEINFO_Uuid());
+                    }
+                    if (existingRules.find(Rule::RootMotionExtractionRule::TYPEINFO_Uuid()) == existingRules.end())
+                    {
+                        modifiers.push_back(Rule::RootMotionExtractionRule::TYPEINFO_Uuid());
                     }
                 }
             }

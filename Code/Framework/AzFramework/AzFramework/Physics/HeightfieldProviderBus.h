@@ -48,6 +48,7 @@ namespace Physics
     };
 
     using UpdateHeightfieldSampleFunction = AZStd::function<void(size_t column, size_t row, const Physics::HeightMaterialPoint& point)>;
+    using UpdateHeightfieldCompleteFunction = AZStd::function<void()>;
 
     //! An interface to provide heightfield values.
     //! This EBus supports multiple concurrent requests from different threads.
@@ -124,6 +125,15 @@ namespace Physics
         virtual void UpdateHeightsAndMaterials(
             const UpdateHeightfieldSampleFunction& updateHeightsMaterialsCallback,
             size_t startColumn, size_t startRow, size_t numColumns, size_t numRows) const = 0;
+
+        //! Asynchronously updates the list of heights and materials within the region.
+        virtual void UpdateHeightsAndMaterialsAsync(
+            const UpdateHeightfieldSampleFunction& updateHeightsMaterialsCallback,
+            const UpdateHeightfieldCompleteFunction& updateHeightsCompleteCallback,
+            size_t startColumn,
+            size_t startRow,
+            size_t numColumns,
+            size_t numRows) const = 0;
     };
 
     using HeightfieldProviderRequestsBus = AZ::EBus<HeightfieldProviderRequests>;

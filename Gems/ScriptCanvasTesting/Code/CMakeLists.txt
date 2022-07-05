@@ -41,10 +41,10 @@ ly_add_target(
         AUTOGEN_RULES
             *.ScriptCanvasFunction.xml,ScriptCanvasFunctionRegistry_Header.jinja,TestAutoGenFunctionRegistry.generated.h
             *.ScriptCanvasFunction.xml,ScriptCanvasFunctionRegistry_Source.jinja,TestAutoGenFunctionRegistry.generated.cpp
-            *.ScriptCanvasGrammar.xml,ScriptCanvasGrammar_Header.jinja,$path/$fileprefix.generated.h
-            *.ScriptCanvasGrammar.xml,ScriptCanvasGrammar_Source.jinja,$path/$fileprefix.generated.cpp
             *.ScriptCanvasNodeable.xml,ScriptCanvasNodeable_Header.jinja,$path/$fileprefix.generated.h
             *.ScriptCanvasNodeable.xml,ScriptCanvasNodeable_Source.jinja,$path/$fileprefix.generated.cpp
+            *.ScriptCanvasNodeable.xml,ScriptCanvasNodeableRegistry_Header.jinja,TestAutoGenNodeableRegistry.generated.h
+            *.ScriptCanvasNodeable.xml,ScriptCanvasNodeableRegistry_Source.jinja,TestAutoGenNodeableRegistry.generated.cpp
     RUNTIME_DEPENDENCIES
         Gem::ScriptCanvas.Editor
         Gem::GraphCanvasWidgets

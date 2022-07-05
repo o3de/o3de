@@ -5,10 +5,9 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZCORE_JOBS_JOBMULTIPLEDEPENDENT_H
-#define AZCORE_JOBS_JOBMULTIPLEDEPENDENT_H 1
+#pragma once
 
-#include <AzCore/Jobs/job.h>
+#include <AzCore/Jobs/Job.h>
 #include <AzCore/std/containers/vector.h>
 
 namespace AZ
@@ -56,7 +55,10 @@ namespace AZ
 
     inline void MultipleDependentJob::AddDependent(Job* dependent)
     {
-        AZ_Assert(!IsStarted(), ("Dependent can only be set before the jobs are started"));
+#ifdef AZ_DEBUG_JOB_STATE
+        AZ_Assert(m_state == STATE_SETUP, ("Dependent can only be set before the jobs are started"));
+        AZ_Assert(dependent->GetState() == STATE_SETUP, ("Dependent must be in the setup state"));
+#endif
         AZ_Assert(dependent->GetDependentCount() > 0, ("Dependant jobs is always in process"));
         dependent->IncrementDependentCount();
         m_dependents.push_back(dependent);
@@ -74,13 +76,15 @@ namespace AZ
             for (DependentList::iterator it = m_dependents.begin(); it != m_dependents.end(); ++it)
             {
                 Job* dependent = *it;
-                AZ_Assert(dependent->m_state == STATE_SETUP, ("Dependent must be in setup state before it can be re-initialized"));
+#ifdef AZ_DEBUG_JOB_STATE
+                AZ_Assert(dependent->GetState() == STATE_SETUP, ("Dependent must be in setup state before it can be re-initialized"));
+#endif
                 dependent->IncrementDependentCount();
             }
         }
     }
 
-    inline MultipleDependentJob::Process()
+    inline void MultipleDependentJob::Process()
     {
         //notify all dependents
         for (DependentList::iterator it = m_dependents.begin(); it != m_dependents.end(); ++it)
@@ -91,5 +95,3 @@ namespace AZ
     }
 }
 
-#endif
-#pragma once

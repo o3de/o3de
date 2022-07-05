@@ -2620,7 +2620,7 @@ move_a_file_tests = [
             encoded_command="bad_file\\badfile.bad,bad_file\\MoveOutput\\formerBadFile.txt",
             encoded_output_dir="project_test_assets_dir\\MoveOutput\\",
             move_successful=False,
-            output_messages=["File not found."],
+            output_messages=["matched an existing file but it is not a source asset"],
         ),
         id="C19462844",
         marks=pytest.mark.test_case_id("C19462844"),
