@@ -75,7 +75,6 @@ class EditorComponent:
             build_prop_tree_outcome.IsSuccess()
         ), f"Failure: Could not build property tree editor of component: '{self.get_component_name()}'"
         prop_tree = build_prop_tree_outcome.GetValue()
-        Report.info(prop_tree.build_paths_list())
         self.property_tree_editor = prop_tree
         return self.property_tree_editor
 
@@ -468,7 +467,6 @@ class EditorEntity:
         :return: Component object of newly added component.
         """
         component = self.add_components([component_name])[0]
-        PrefabWaiter.wait_for_propagation()
         return component
 
     def add_components(self, component_names: list) -> List[EditorComponent]:
@@ -490,6 +488,7 @@ class EditorEntity:
             new_comp.id = add_component_outcome.GetValue()[0]
             components.append(new_comp)
             self.components.append(new_comp)
+        PrefabWaiter.wait_for_propagation()
         return components
 
     def remove_component(self, component_name: str) -> None:
