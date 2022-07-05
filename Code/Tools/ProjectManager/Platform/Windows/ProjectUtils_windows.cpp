@@ -186,7 +186,7 @@ namespace O3DE::ProjectManager
                     // First try <project-build-path>/bin/$<CONFIG> and if that path doesn't exist
                     // try <project-build-path>/bin/$<PLATFORM>/$<CONFIG>
                     buildConfigurationPath /= "bin";
-                    auto paths = AZStd::vector<AZ::IO::FixedMaxPath>{
+                    AZStd::fixed_vector<AZ::IO::FixedMaxPath, 4> paths = {
                         buildConfigurationPath / AZ_BUILD_CONFIGURATION_TYPE / "Editor",
                         buildConfigurationPath / AZ_TRAIT_OS_PLATFORM_CODENAME / AZ_BUILD_CONFIGURATION_TYPE / "Editor"
                     };
