@@ -143,16 +143,10 @@ namespace O3DE::ProjectManager
 
     void GemCatalogScreen::NotifyCurrentScreen()
     {
-        if (m_readOnly)
+        if (m_readOnly && m_gemModel->rowCount() == 0)
         {
-            if (m_gemModel->rowCount() == 0)
-            {
-                ReinitForProject(m_projectPath);
-            }
-            else
-            {
-                Refresh();
-            }
+            // init the read only catalog the first time it is shown
+            ReinitForProject(m_projectPath);
         }
     }
 
