@@ -12,6 +12,7 @@
 #include <native/AssetDatabase/AssetDatabase.h>
 #include <native/resourcecompiler/RCJobSortFilterProxyModel.h>
 #include <native/utilities/JobDiagnosticTracker.h>
+#include <AzCore\StringFunc\StringFunc.h>
 
 namespace AssetProcessor
 {
@@ -359,23 +360,18 @@ namespace AssetProcessor
             AZStd::unordered_map<QueueElementID, AZ::s64> historicalStats;
             auto statsFunction = [&historicalStats](AzToolsFramework::AssetDatabase::StatDatabaseEntry entry)
             {
-                AZStd::vector<AZStd::size_t> delimiterPos;
-                delimiterPos.reserve(3);
-                for (size_t pos = 0;
-                     (pos = entry.m_statName.find(',', delimiterPos.empty() ? 0 : (delimiterPos.back() + 1))) != AZStd::string::npos;)
-                {
-                    delimiterPos.push_back(pos);
-                }
-                if (delimiterPos.size() != 3)
-                {
-                    return true;
-                }
+                AZStd::vector<AZStd::string> tokens;
+                AZ::StringFunc::Tokenize(entry.m_statName, tokens, ',');
 
-                QueueElementID elementId;
-                elementId.SetInputAssetName(entry.m_statName.substr(delimiterPos[0] + 1, delimiterPos[1] - delimiterPos[0] - 1).c_str());
-                elementId.SetJobDescriptor(entry.m_statName.substr(delimiterPos[1] + 1, delimiterPos[2] - delimiterPos[1] - 1).c_str());
-                elementId.SetPlatform(entry.m_statName.substr(delimiterPos[2] + 1).c_str());
-                historicalStats[elementId] = entry.m_statValue;
+                if (tokens.size() == 4)
+                {
+                    QueueElementID elementId;
+                    elementId.SetInputAssetName(tokens[1].c_str());
+                    elementId.SetJobDescriptor(tokens[2].c_str());
+                    elementId.SetPlatform(tokens[3].c_str());
+                    historicalStats[elementId] = entry.m_statValue;
+                }
+                
                 return true;
             };
             assetDatabaseConnection.QueryStatLikeStatName("ProcessJob,%", statsFunction);
