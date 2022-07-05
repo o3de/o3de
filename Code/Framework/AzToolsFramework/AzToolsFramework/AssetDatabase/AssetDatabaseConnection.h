@@ -423,6 +423,7 @@ namespace AzToolsFramework
             StatDatabaseEntry& operator=(StatDatabaseEntry&& other) = default;
             StatDatabaseEntry& operator=(const StatDatabaseEntry& other) = default;
             bool operator==(const StatDatabaseEntry& other) const;
+            bool operator!=(const StatDatabaseEntry& other) const;
 
             AZStd::string ToString() const;
             auto GetColumns();

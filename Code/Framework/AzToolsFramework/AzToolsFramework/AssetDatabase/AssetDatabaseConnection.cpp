@@ -1684,6 +1684,11 @@ namespace AzToolsFramework
             return m_statName == other.m_statName && m_statValue == other.m_statValue && m_lastLogTime == other.m_lastLogTime;
         }
 
+        bool StatDatabaseEntry::operator!=(const StatDatabaseEntry& other) const
+        {
+            return m_statName != other.m_statName || m_statValue != other.m_statValue || m_lastLogTime != other.m_lastLogTime;
+        }
+
         AZStd::string StatDatabaseEntry::ToString() const
         {
             return AZStd::string::format(
