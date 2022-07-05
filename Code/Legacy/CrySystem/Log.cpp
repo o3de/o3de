@@ -855,7 +855,7 @@ void CLog::LogStringToFile(const char* szString, ELogType logType, bool bAdd, [[
         return;
     }
 
-    if (!m_pSystem)
+    if (!m_pSystem || !AZ::IO::FileIOBase::GetInstance())
     {
         return;
     }
@@ -1474,21 +1474,15 @@ const char* CLog::GetModuleFilter()
 void CLog::FlushAndClose()
 {
 #if defined(KEEP_LOG_FILE_OPEN)
-    if (m_logFileHandle.IsOpen())
-    {
-        CloseLogFile();
-    }
+    m_logFileHandle.Flush();
+    CloseLogFile();
 #endif
 }
 
 void CLog::Flush()
 {
 #if defined(KEEP_LOG_FILE_OPEN)
-    if (m_logFileHandle.IsOpen())
-    {
-        CloseLogFile();
-        OpenLogFile(m_szFilename, AZ::IO::OpenMode::ModeAppend);
-    }
+    m_logFileHandle.Flush();
 #endif
 }
 
