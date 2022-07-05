@@ -80,7 +80,6 @@ namespace O3DE::ProjectManager
                 elementWidget->setLayout(elementLayout);
 
                 QCheckBox* checkbox = new QCheckBox(elementNames[i]);
-                //checkbox->setStyleSheet("font-size: 12px;");
                 m_buttonGroup->addButton(checkbox);
                 elementLayout->addWidget(checkbox);
 
