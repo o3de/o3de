@@ -27,6 +27,8 @@ set(FILES
     Source/FormFolderBrowseEditWidget.cpp
     Source/FormImageBrowseEditWidget.h
     Source/FormImageBrowseEditWidget.cpp
+    Source/GemsGemRepoScreen.h
+    Source/GemsGemRepoScreen.cpp
     Source/GemsSubWidget.h
     Source/GemsSubWidget.cpp
     Source/DownloadController.h
@@ -39,6 +41,8 @@ set(FILES
     Source/ProjectManagerWindow.cpp
     Source/ProjectTemplateInfo.h
     Source/ProjectTemplateInfo.cpp
+    Source/ProjectGemCatalogScreen.h
+    Source/ProjectGemCatalogScreen.cpp
     Source/PythonBindings.h
     Source/PythonBindings.cpp
     Source/PythonBindingsInterface.h

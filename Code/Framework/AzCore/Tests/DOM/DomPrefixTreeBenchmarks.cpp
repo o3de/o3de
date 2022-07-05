@@ -59,7 +59,7 @@ namespace AZ::Dom::Benchmark
     BENCHMARK_DEFINE_F(DomPrefixTreeBenchmark, FindValue_ExactPath)(benchmark::State& state)
     {
         SetupTree(state);
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (const auto& pathToCheck : *m_registeredPaths)
             {
@@ -73,7 +73,7 @@ namespace AZ::Dom::Benchmark
     BENCHMARK_DEFINE_F(DomPrefixTreeBenchmark, FindValue_InexactPath)(benchmark::State& state)
     {
         SetupTree(state);
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (const auto& pathToCheck : *m_registeredPaths)
             {
@@ -88,7 +88,7 @@ namespace AZ::Dom::Benchmark
     {
         SetupTree(state);
 
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             m_tree.VisitPath(Path(), [](const Path& path, const AZStd::string& value)
             {

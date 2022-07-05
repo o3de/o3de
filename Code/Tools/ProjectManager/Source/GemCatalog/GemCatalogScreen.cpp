@@ -15,8 +15,6 @@
 #include <GemCatalog/GemModel.h>
 #include <GemCatalog/GemListHeaderWidget.h>
 #include <GemCatalog/GemSortFilterProxyModel.h>
-#include <GemCatalog/GemRequirementDialog.h>
-#include <GemCatalog/GemDependenciesDialog.h>
 #include <GemCatalog/GemUpdateDialog.h>
 #include <GemCatalog/GemUninstallDialog.h>
 #include <GemCatalog/GemItemDelegate.h>
@@ -39,8 +37,9 @@
 
 namespace O3DE::ProjectManager
 {
-    GemCatalogScreen::GemCatalogScreen(QWidget* parent)
+    GemCatalogScreen::GemCatalogScreen(bool readOnly, QWidget* parent)
         : ScreenWidget(parent)
+        , m_readOnly(readOnly)
     {
         // The width of either side panel (filters, inspector) in the catalog
         constexpr int sidePanelWidth = 240;
@@ -115,7 +114,7 @@ namespace O3DE::ProjectManager
             },
             this);
 
-        m_gemListView = new GemListView(m_proxyModel, m_proxyModel->GetSelectionModel(), listHeaderWidget, this);
+        m_gemListView = new GemListView(m_proxyModel, m_proxyModel->GetSelectionModel(), listHeaderWidget, m_readOnly, this);
 
         QHBoxLayout* listHeaderLayout = new QHBoxLayout();
         listHeaderLayout->setMargin(0);
@@ -140,6 +139,21 @@ namespace O3DE::ProjectManager
         m_notificationsView = AZStd::make_unique<AzToolsFramework::ToastNotificationsView>(this, AZ_CRC("GemCatalogNotificationsView"));
         m_notificationsView->SetOffset(QPoint(10, 70));
         m_notificationsView->SetMaxQueuedNotifications(1);
+    }
+
+    void GemCatalogScreen::NotifyCurrentScreen()
+    {
+        if (m_readOnly)
+        {
+            if (m_gemModel->rowCount() == 0)
+            {
+                ReinitForProject(m_projectPath);
+            }
+            else
+            {
+                Refresh();
+            }
+        }
     }
 
     void GemCatalogScreen::ReinitForProject(const QString& projectPath)
@@ -533,6 +547,13 @@ namespace O3DE::ProjectManager
             }
 
             m_gemModel->UpdateGemDependencies();
+
+            // if we don't have a project path early out
+            if (m_projectPath.isEmpty())
+            {
+                return;
+            }
+
             m_notificationsEnabled = false;
 
             // Gather enabled gems for the given project.
@@ -576,85 +597,16 @@ namespace O3DE::ProjectManager
         m_headerWidget->GemCartShown();
     }
 
-    GemCatalogScreen::EnableDisableGemsResult GemCatalogScreen::EnableDisableGemsForProject(const QString& projectPath)
-    {
-        IPythonBindings* pythonBindings = PythonBindingsInterface::Get();
-        QVector<QModelIndex> toBeAdded = m_gemModel->GatherGemsToBeAdded();
-        QVector<QModelIndex> toBeRemoved = m_gemModel->GatherGemsToBeRemoved();
-
-        if (m_gemModel->DoGemsToBeAddedHaveRequirements())
-        {
-            GemRequirementDialog* confirmRequirementsDialog = new GemRequirementDialog(m_gemModel, this);
-            if(confirmRequirementsDialog->exec() == QDialog::Rejected)
-            {
-                return EnableDisableGemsResult::Cancel;
-            }
-        }
-
-        if (m_gemModel->HasDependentGemsToRemove())
-        {
-            GemDependenciesDialog* dependenciesDialog = new GemDependenciesDialog(m_gemModel, this);
-            if(dependenciesDialog->exec() == QDialog::Rejected)
-            {
-                return EnableDisableGemsResult::Cancel;
-            }
-
-            toBeAdded = m_gemModel->GatherGemsToBeAdded();
-            toBeRemoved = m_gemModel->GatherGemsToBeRemoved();
-        }
-
-        for (const QModelIndex& modelIndex : toBeAdded)
-        {
-            const QString& gemPath = GemModel::GetPath(modelIndex);
-
-            // make sure any remote gems we added were downloaded successfully 
-            const GemInfo::DownloadStatus status = GemModel::GetDownloadStatus(modelIndex);
-            if (GemModel::GetGemOrigin(modelIndex) == GemInfo::Remote &&
-                !(status == GemInfo::Downloaded || status == GemInfo::DownloadSuccessful))
-            {
-                QMessageBox::critical(
-                    nullptr, "Cannot add gem that isn't downloaded",
-                    tr("Cannot add gem %1 to project because it isn't downloaded yet or failed to download.")
-                        .arg(GemModel::GetDisplayName(modelIndex)));
-
-                return EnableDisableGemsResult::Failed;
-            }
-
-            const AZ::Outcome<void, AZStd::string> result = pythonBindings->AddGemToProject(gemPath, projectPath);
-            if (!result.IsSuccess())
-            {
-                QMessageBox::critical(nullptr, "Failed to add gem to project",
-                    tr("Cannot add gem %1 to project.<br><br>Error:<br>%2").arg(GemModel::GetDisplayName(modelIndex), result.GetError().c_str()));
-
-                return EnableDisableGemsResult::Failed;
-            }
-
-            // register external gems that were added with relative paths
-            if (m_gemsToRegisterWithProject.contains(gemPath))
-            {
-                pythonBindings->RegisterGem(QDir(projectPath).relativeFilePath(gemPath), projectPath);
-            }
-        }
-
-        for (const QModelIndex& modelIndex : toBeRemoved)
-        {
-            const QString gemPath = GemModel::GetPath(modelIndex);
-            const AZ::Outcome<void, AZStd::string> result = pythonBindings->RemoveGemFromProject(gemPath, projectPath);
-            if (!result.IsSuccess())
-            {
-                QMessageBox::critical(nullptr, "Failed to remove gem from project",
-                    tr("Cannot remove gem %1 from project.<br><br>Error:<br>%2").arg(GemModel::GetDisplayName(modelIndex), result.GetError().c_str()));
-
-                return EnableDisableGemsResult::Failed;
-            }
-        }
-
-        return EnableDisableGemsResult::Success;
-    }
-
     void GemCatalogScreen::HandleOpenGemRepo()
     {
-        emit ChangeScreenRequest(ProjectManagerScreen::GemRepos);
+        if (m_readOnly)
+        {
+            emit ChangeScreenRequest(ProjectManagerScreen::GemsGemRepos);
+        }
+        else
+        {
+            emit ChangeScreenRequest(ProjectManagerScreen::GemRepos);
+        }
     }
 
     void GemCatalogScreen::UpdateAndShowGemCart(QWidget* cartWidget)
@@ -729,5 +681,15 @@ namespace O3DE::ProjectManager
     ProjectManagerScreen GemCatalogScreen::GetScreenEnum()
     {
         return ProjectManagerScreen::GemCatalog;
+    }
+
+    QString GemCatalogScreen::GetTabText()
+    {
+        return "Gems";
+    }
+
+    bool GemCatalogScreen::IsTab()
+    {
+        return true;
     }
 } // namespace O3DE::ProjectManager

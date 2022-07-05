@@ -335,7 +335,7 @@ namespace ScriptCanvas
         return !(*this == other);
     }
 
-    const AZ::IO::Path& SourceHandle::Path() const
+    const AZ::IO::Path& SourceHandle::RelativePath() const
     {
         return m_relativePath;
     }
@@ -358,6 +358,35 @@ namespace ScriptCanvas
                 ->Version(1)
                 ->Field("id", &SourceHandle::m_id)
                 ->Field("path", &SourceHandle::m_relativePath)
+                ;
+
+            if (auto editContext = serializeContext->GetEditContext())
+            {
+                editContext->Class<SourceHandle>("Source Handle", "Script Canvas Source File")
+                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                    ->Attribute(AZ::Edit::Attributes::Category, "Scripting")
+                    ->Attribute(AZ::Edit::Attributes::Icon, "Icons/ScriptCanvas/ScriptCanvas.svg")
+                    ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/ScriptCanvas/Viewport/ScriptCanvas.svg")
+                    ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
+                    ->Attribute(AZ::Edit::Attributes::AssetPickerTitle, "Script Canvas")
+                    ->Attribute(AZ::Edit::Attributes::SourceAssetFilterPattern, "*.scriptcanvas")
+                    ;
+            }
+        }
+        else if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+        {
+            behaviorContext->Class<SourceHandle>()
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
+                ->Attribute(AZ::Script::Attributes::Category, "scriptcanvas")
+                ->Attribute(AZ::Script::Attributes::Module, "scriptcanvas")
+                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
+                ;
+
+            behaviorContext->Method("SourceHandleFromPath", [](AZStd::string_view pathStringView)->SourceHandle {  return FromRelativePath(DataPtr{}, AZ::IO::Path(pathStringView)); })
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
+                ->Attribute(AZ::Script::Attributes::Category, "scriptcanvas")
+                ->Attribute(AZ::Script::Attributes::Module, "scriptcanvas")
+                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
                 ;
         }
     }

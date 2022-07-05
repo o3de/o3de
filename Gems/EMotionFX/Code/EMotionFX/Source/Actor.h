@@ -42,7 +42,6 @@ namespace EMotionFX
     class NodeMap;
     class AnimGraph;
     class Node;
-    class Material;
     class MorphSetup;
     class NodeGroup;
     class SimulatedObjectSetup;
@@ -255,84 +254,6 @@ namespace EMotionFX
         const AZStd::shared_ptr<SimulatedObjectSetup>& GetSimulatedObjectSetup() const;
 
         /**
-         * Pre-allocate space to store a given amount of materials.
-         * This does not have any effect on the value returned by GetNumMaterials().
-         * @param lodLevel The geometry LOD level to work on.
-         * @param numMaterials The amount of materials to pre-allocate space for.
-         */
-        void ReserveMaterials(size_t lodLevel, size_t numMaterials);
-
-        /**
-         * Get a given material.
-         * @param lodLevel The LOD level to get the material from.
-         * @param nr The material number to get.
-         * @result A pointer to the material.
-         */
-        Material* GetMaterial(size_t lodLevel, size_t nr) const;
-
-        /**
-         * Find the material number/index of the material with the specified name.
-         * Please note that this check is case sensitive.
-         * @param lodLevel The level of detail to get the material from.
-         * @param name The name of the material.
-         * @result Returns the material number/index, which you can use to GetMaterial. When no material with the given name
-         *         can be found, a value of MCORE_INVALIDINDEX32 is returned.
-         */
-        size_t FindMaterialIndexByName(size_t lodLevel, const char* name) const;
-
-        /**
-         * Set a given material.
-         * @param lodLevel The LOD level to set the material at.
-         * @param nr The material number to set.
-         * @param mat The material to set at this index.
-         */
-        void SetMaterial(size_t lodLevel, size_t nr, Material* mat);
-
-        /**
-         * Add a material to the back of the material list.
-         * @param lodLevel The LOD level add the material to.
-         * @param mat The material to add to the back of the list.
-         */
-        void AddMaterial(size_t lodLevel, Material* mat);
-
-        /**
-         * Remove the given material from the material list and reassign all material numbers of the sub meshes
-         * since the material order will be changed after removing a material. This means that several sub meshes
-         * do not point to their correct materials anymore or that they would be even out of range. If one of the sub
-         * meshes got a bigger material index number than the material which has been removed, the offset of the node
-         * to which this sub mesh belongs to will be changed so that the sub mesh point to its right material again.
-         * This will be fixed by decreasing their material offset.
-         * @param lodLevel The LOD level add the material to.
-         * @param index The material index of the material to remove.
-         */
-        void RemoveMaterial(size_t lodLevel, size_t index);
-
-        /**
-         * Get the number of materials.
-         * @param lodLevel The LOD level to get the number of material from.
-         * @result The number of materials this actor has/uses.
-         */
-        size_t GetNumMaterials(size_t lodLevel) const;
-
-        /**
-         * Removes all materials from this actor.
-         */
-        void RemoveAllMaterials();
-
-        /**
-         * Check whether the given material is used by one of the meshes in the actor.
-         * So checks each material with the the material which is passed as parameter if they point to the same material
-         * object in memory. If they are equal it returns true, this means that the given material is used by a mesh of
-         * the actor. False means that no mesh uses the given material.
-         * @param lodLevel The LOD level of the material to check.
-         * @param index The material number to check.
-         * @result Returns true when there are meshes using the material, otherwise false is returned.
-         */
-        bool CheckIfIsMaterialUsed(size_t lodLevel, size_t index) const;
-
-        //------------------------------------------------
-
-        /**
          * Add a LOD level.
          * @param[in] copyFromLastLevelLOD True in case the new LOD level should contain the same meshes as the last LOD level. In case of false the meshes and everything won't be copied over.
          */
@@ -439,15 +360,6 @@ namespace EMotionFX
          */
         void VerifySkinning(AZStd::vector<uint8>& conflictNodeFlags, size_t skeletalLODLevel, size_t geometryLODLevel);
 
-        /**
-         * Checks if the given material is used by a given mesh.
-         * @param mesh The mesh to check.
-         * @param materialIndex The index of the material to check.
-         * @return True if one of the submeshes of the given mesh uses the given material, false if not.
-         */
-        bool CheckIfIsMaterialUsed(Mesh* mesh, size_t materialIndex) const;
-
-        //------------------
 
         /**
          * Get a pointer to the custom data you stored.
@@ -916,7 +828,6 @@ namespace EMotionFX
         AZStd::string                                   m_name;                      /**< The name of the actor. */
         AZStd::string                                   m_fileName;                  /**< The filename of the actor. */
         AZStd::vector<NodeMirrorInfo>                    m_nodeMirrorInfos;           /**< The array of node mirror info. */
-        AZStd::vector< AZStd::vector< Material* > >       m_materials;                 /**< A collection of materials (for each lod). */
         AZStd::vector< MorphSetup* >                     m_morphSetups;               /**< A morph setup for each geometry LOD. */
         AZStd::vector<NodeGroup*>                       m_nodeGroups;                /**< The set of node groups. */
         AZStd::shared_ptr<PhysicsSetup>                 m_physicsSetup;             /**< Hit detection, ragdoll and cloth colliders, joint limits and rigid bodies. */

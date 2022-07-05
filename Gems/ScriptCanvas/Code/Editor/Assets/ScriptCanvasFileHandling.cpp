@@ -59,7 +59,9 @@ namespace ScriptCanvas
                     , handle.ToString().c_str(), loadResult.ToString().c_str()));
             }
 
-            handle = SourceHandle::FromRelativePath(loadResult.m_handle.Data(), handle.Id(), handle.Path().c_str());
+            auto absolutePath = handle.AbsolutePath();
+            handle = SourceHandle::FromRelativePath(loadResult.m_handle.Data(), handle.Id(), handle.RelativePath().c_str());
+            handle = SourceHandle::MarkAbsolutePath(handle, absolutePath);
         }
 
         AZStd::vector<SourceHandle> dependentAssets;
