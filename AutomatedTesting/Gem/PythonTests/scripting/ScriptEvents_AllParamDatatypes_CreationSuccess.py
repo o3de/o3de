@@ -32,7 +32,6 @@ N_VAR_TYPES = 10  # Top 10 variable types
 SEARCH_RETRY_ATTEMPTS = 20
 TEST_METHOD_NAME = "test_method_name"
 
-
 class TestScriptEvents_AllParamDatatypes_CreationSuccess():
     """
     Summary:
@@ -82,6 +81,22 @@ class TestScriptEvents_AllParamDatatypes_CreationSuccess():
                 return False
         return True
 
+    def set_name_field_names(self):
+        index = 0
+        name_fields = tools.get_script_event_parameter_name_text(self)
+        for name_field in name_fields:
+            if name_field is not None and name_field.text() == PARAMETER_NAME:
+                name_field.setText(f"param_{index}")
+                index += 1
+
+    def set_type_field_types(self):
+        index = 0
+        type_combo_boxes = tools.get_script_event_parameter_type_combobox(self)
+        for type_combo_box in type_combo_boxes:
+            if type_combo_box is not None and index < N_VAR_TYPES:
+                type_combo_box.setCurrentIndex(index)
+                index += 1
+
     @pyside_utils.wrap_async
     async def run_test(self):
 
@@ -124,19 +139,11 @@ class TestScriptEvents_AllParamDatatypes_CreationSuccess():
 
         # 7) Set different names and datatypes for each parameter
         tools.expand_qt_container_rows(self, NAME_STRING)
-        index = 0
-        name_fields = tools.get_script_event_parameter_name_text(self)
-        for name_field in name_fields:
-            if name_field is not None and name_field.text() == PARAMETER_NAME:
-                name_field.setText(f"param_{index}")
-                index += 1
+        # give all name fields a unique name using index variable
+        self.set_name_field_names()
 
-        index = 0
-        type_combo_boxes = tools.get_script_event_parameter_type_combobox(self)
-        for type_combo_box in type_combo_boxes:
-            if type_combo_box is not None and index < N_VAR_TYPES:
-                type_combo_box.setCurrentIndex(index)
-                index += 1
+        # give all the type fields a different type using the index for combo box selection
+        self.set_type_field_types()
 
         # 8) Save file and verify node in SC Node Palette
         Report.result(Tests.file_saved, tools.save_script_event_file(self, FILE_PATH))
