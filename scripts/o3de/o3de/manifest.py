@@ -308,10 +308,10 @@ def get_project_external_subdirectories(project_path: pathlib.Path) -> list:
                         project_object['external_subdirectories'])) if 'external_subdirectories' in project_object else []
     return []
 
-def get_project_engine(project_path: str or pathlib.Path) -> pathlib.Path or None:
+def get_project_engine(project_path: pathlib.Path) -> pathlib.Path or None:
     project_object = get_project_json_data(project_path=project_path)
     if project_object:
-        engine_name = project_object.get('engine','')
+        engine_name = project_object.get('engine', '')
         if engine_name:
             engine_path = get_registered(engine_name=engine_name)
             if engine_path:
