@@ -12,7 +12,7 @@
 #include <native/AssetDatabase/AssetDatabase.h>
 #include <native/resourcecompiler/RCJobSortFilterProxyModel.h>
 #include <native/utilities/JobDiagnosticTracker.h>
-#include <AzCore\StringFunc\StringFunc.h>
+#include <AzCore/StringFunc/StringFunc.h>
 
 namespace AssetProcessor
 {
