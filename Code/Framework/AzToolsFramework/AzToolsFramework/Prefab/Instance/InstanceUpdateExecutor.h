@@ -13,7 +13,6 @@
 #include <AzCore/std/containers/deque.h>
 #include <AzFramework/Entity/EntityContext.h>
 #include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipService.h>
-#include <AzToolsFramework/Prefab/Instance/InstanceDomGenerator.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceUpdateExecutorInterface.h>
 #include <AzToolsFramework/Prefab/PrefabDomTypes.h>
 #include <AzToolsFramework/Prefab/PrefabIdTypes.h>
