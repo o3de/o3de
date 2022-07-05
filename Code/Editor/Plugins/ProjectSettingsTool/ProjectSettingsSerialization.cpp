@@ -19,8 +19,6 @@
 
 namespace ProjectSettingsTool
 {
-    using XmlNode = AZ::rapidxml::xml_node<char>;
-
     const char* stringStr = "string";
     const char* arrayStr = "array";
     const char* trueStr = "true";
@@ -363,7 +361,7 @@ namespace ProjectSettingsTool
         return true;
     }
 
-    bool Serializer::UiEqualToPlistArray(AZ::rapidxml::xml_node<char>* array, AzToolsFramework::InstanceDataNode* node) const
+    bool Serializer::UiEqualToPlistArray(XmlNode* array, AzToolsFramework::InstanceDataNode* node) const
     {
         const AZ::SerializeContext::ClassData* baseMeta = node->GetClassMetadata();
         if (baseMeta)

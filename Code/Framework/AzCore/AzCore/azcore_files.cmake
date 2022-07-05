@@ -418,8 +418,6 @@ set(FILES
     Memory/SystemAllocator.h
     Module/DynamicModuleHandle.cpp
     Module/DynamicModuleHandle.h
-    Module/Environment.cpp
-    Module/Environment.h
     Module/Module.cpp
     Module/Module.h
     Module/ModuleManagerBus.h
