@@ -13,7 +13,8 @@
 Module Documentation:
     < DCCsi > / foundation.py
 
-Running this module installs the DCCsi python requirements.txt for other python interpreters (like Maya)
+Running this module installs the DCCsi python requirements.txt for other python
+interpreters (like Maya)
 
 It installs based on the python version into a location (such as):
 <o3de>/Gems/AtomLyIntegration/TechnicalArt/DccScriptingInterface/3rdParty/Python/Lib/3.x
@@ -21,12 +22,17 @@ It installs based on the python version into a location (such as):
 This is to ensure that we are not modifying the users DCC tools install directly.
 
 For this script to function on windows you may need Administrator privledges.
-^ You only have to start with Admin rights if you are running foundation.py or otherwise updating packages
+^ You only have to start with Admin rights if you are running foundation.py
+to install/update packages and other functions that write to disk.
+
+Suggestion: we could move the package location and be more cross-platform:
+from: <o3de>/Gems/AtomLyIntegration/TechnicalArt/DccScriptingInterface/3rdParty/Python/Lib/3.x
+to (windows): \Users\<Username>\AppData\Local\Programs\
 
 Open an admin elevated cmd prompt here:
 C:\depot\o3de-dev\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface
 
-The following would execpt this script, the default behaviour is to check
+The following would execute this script, the default behaviour is to check
 the o3de python and install the requirements.txt for that python version,
 
   >python.cmd foundation.py
@@ -64,7 +70,11 @@ _MODULE_PATH = Path(__file__)            # this script
 _PATH_DCCSIG = Path(_MODULE_PATH.parent) # dccsi
 os.environ['PATH_DCCSIG'] = _PATH_DCCSIG.as_posix()
 site.addsitedir(_PATH_DCCSIG.as_posix()) # python path
-os.chdir(_PATH_DCCSIG.as_posix())
+os.chdir(_PATH_DCCSIG.as_posix())        # cwd
+
+# local imports from dccsi
+import azpy.config_utils
+from azpy.shared.utils.arg_bool import arg_bool
 
 # the path we want to install packages into
 STR_PATH_DCCSI_PYTHON_LIB = str('{0}\\3rdParty\\Python\\Lib\\{1}.x\\{1}.{2}.x\\site-packages')
@@ -283,22 +293,8 @@ def run_command() -> 'subprocess.CompletedProcess[str]':
 
 
 # -------------------------------------------------------------------------
-def arg_bool(bool_arg, desc='arg desc not set'):
-    """cast a arg bool to a python bool"""
-
-    _LOGGER.info(f"Checking '{desc}': {bool_arg}")
-
-    if bool_arg in ('True', 'true', '1'):
-        return True
-    elif bool_arg in ('False', 'false', '0'):
-        return False
-    else:
-        return bool_arg
-# -------------------------------------------------------------------------
-
-
-# -------------------------------------------------------------------------
-def set_version(ver_major=sys.version_info.major, ver_minor=sys.version_info.minor):
+def set_version(ver_major=sys.version_info.major,
+                ver_minor=sys.version_info.minor):
     global _SYS_VER_MAJOR
     global _SYS_VER_MINOR
     global _PATH_DCCSI_PYTHON_LIB
@@ -382,8 +378,7 @@ if __name__ == '__main__':
     parser.add_argument('-dm', '--developer-mode',
                         type=bool,
                         required=False,
-                        default=False,
-                        help='(NOT IMPLEMENTED) Enables dev mode for early auto attaching debugger.')
+                        help='Enables dev mode for early auto attaching debugger.')
 
     parser.add_argument('-sd', '--set-debugger',
                         type=str,
@@ -403,12 +398,10 @@ if __name__ == '__main__':
 
     parser.add_argument('-ep', '--ensurepip',
                         required=False,
-                        default=False,
                         help='Uses ensurepip, to make sure pip is installed')
 
     parser.add_argument('-ip', '--install_pip',
                         required=False,
-                        default=False,
                         help='Attempts install pip via download of get-pip.py')
 
     parser.add_argument('-ir', '--install_requirements',
@@ -419,7 +412,6 @@ if __name__ == '__main__':
     parser.add_argument('-ex', '--exit',
                         type=bool,
                         required=False,
-                        default=False,
                         help='Exits python. Do not exit if you want to be in interactive interpretter after config')
 
     args = parser.parse_args()
@@ -428,6 +420,10 @@ if __name__ == '__main__':
     if args.global_debug:
         _DCCSI_GDEBUG = True
         os.environ["DYNACONF_DCCSI_GDEBUG"] = str(_DCCSI_GDEBUG)
+
+    if args.developer_mode:
+        _DCCSI_DEV_MODE = True
+        azpy.config_utils.attach_debugger()  # attempts to start debugger
 
     if not args.python_exe:
         _LOGGER.warning("It is suggested to use arg '-py' or '--python_exe' to pass in the python exe for the target dcc tool.")

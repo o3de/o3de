@@ -32,7 +32,6 @@ _PACKAGENAME = 'azpy'
 
 __all__ = ['constants',
             'config_utils',
-           'init_utils',
            'env_bool',
            'return_stub',
            'logger',
@@ -118,11 +117,11 @@ _DCCSI_LOG_PATH = Path(PATH_DCCSI_LOG_PATH.format(PATH_O3DE_PROJECT=_PATH_O3DE_P
                                                   TAG_DCCSI_NICKNAME=TAG_DCCSI_NICKNAME))
 # -------------------------------------------------------------------------
 
-# some methods refactored from here into azpy.init_utils
-from azpy.init_utils import makedirs
-from azpy.init_utils import FileExistsError
-from azpy.init_utils import initialize_logger
-from azpy.init_utils import test_imports
+# some methods refactored from here into azpy.shared.utils.init
+from azpy.shared.utils.init import makedirs
+from azpy.shared.utils.init import FileExistsError
+from azpy.shared.utils.init import initialize_logger
+from azpy.shared.utils.init import test_imports
 
 # -------------------------------------------------------------------------
 # some simple logger tests

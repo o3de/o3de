@@ -9,9 +9,9 @@
 #
 # -------------------------------------------------------------------------
 """! @brief
-<DCCsi>/azpy/shared/__init__.py
+<DCCsi>/azpy/shared/utils/__init__.py
 
-DCCsi package for shared packages.
+DCCsi package for shared utils.
 """
 # standard imports
 from pathlib import Path
@@ -21,11 +21,11 @@ import logging as _logging
 
 # -------------------------------------------------------------------------
 # global scope
-_PACKAGENAME = 'azpy.shared'
+_PACKAGENAME = 'azpy.shared.utils'
 _LOGGER = _logging.getLogger(_PACKAGENAME)
 _LOGGER.debug(f'Initializing: {_PACKAGENAME}')
 
-__all__ = ['common', 'ui', 'utils']
+__all__ = ['arg_bool', 'init']
 
 from azpy.env_bool import env_bool
 from azpy.constants import ENVAR_DCCSI_GDEBUG

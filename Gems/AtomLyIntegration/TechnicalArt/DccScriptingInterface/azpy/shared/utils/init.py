@@ -8,7 +8,7 @@
 #
 # -------------------------------------------------------------------------
 """! @brief
-<DCCsi>/azpy/init_utils.py
+<DCCsi>/azpy/shared/utils/__init__.py
 
 This module moves some utility methods out of __init__ files so we can reuse
 and reduce boiler plate code copied across modules.
@@ -29,7 +29,7 @@ import logging as _logging
 
 # -------------------------------------------------------------------------
 # Global Scope
-_MODULENAME = 'azpy.init_utils'
+_MODULENAME = 'azpy.shared.utils.init'
 _LOGGER = _logging.getLogger(_MODULENAME)
 _LOGGER.debug('Initializing: {}.'.format({_MODULENAME}))
 

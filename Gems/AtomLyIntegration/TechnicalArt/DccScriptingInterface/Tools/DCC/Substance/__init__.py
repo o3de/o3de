@@ -93,10 +93,10 @@ _LOGGER.debug(f'PATH_DCCSI_TOOLS_DCC: {_PATH_DCCSI_TOOLS_DCC}')
 _LOGGER.debug(f'DCCSI_TOOLS_SUBSTANCE_PATH: {_DCCSI_TOOLS_SUBSTANCE_PATH}')
 # -------------------------------------------------------------------------
 
-from azpy.init_utils import test_imports
 
 # -------------------------------------------------------------------------
 if _DCCSI_DEV_MODE:
+    from azpy.shared.utils.init import test_imports
     # If in dev mode this will test imports of __all__
     _LOGGER.debug(f'Testing Imports from {_PACKAGENAME}')
     test_imports(_all=__all__,_pkg=_PACKAGENAME,_logger=_LOGGER)

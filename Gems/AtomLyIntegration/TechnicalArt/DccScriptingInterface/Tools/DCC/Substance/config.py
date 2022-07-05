@@ -286,13 +286,11 @@ if __name__ == '__main__':
     parser.add_argument('-gd', '--global-debug',
                         type=bool,
                         required=False,
-                        default=False,
                         help='Enables global debug flag.')
 
     parser.add_argument('-dm', '--developer-mode',
                         type=bool,
                         required=False,
-                        default=False,
                         help='Enables dev mode for early auto attaching debugger.')
 
     parser.add_argument('-sd', '--set-debugger',
@@ -310,13 +308,11 @@ if __name__ == '__main__':
     parser.add_argument('-qt', '--enable-qt',
                         type=bool,
                         required=False,
-                        default=False,
                         help='(NOT IMPLEMENTED) Enables O3DE Qt & PySide2 access.')
 
     parser.add_argument('-tp', '--test-pyside2',
                         type=bool,
                         required=False,
-                        default=False,
                         help='(NOT IMPLEMENTED) Runs Qt/PySide2 tests and reports.')
 
     parser.add_argument('-pc', '--project-config',
@@ -338,25 +334,28 @@ if __name__ == '__main__':
     parser.add_argument('-ls', '--load-settings',
                         type=pathlib.Path,
                         required=False,
-                        default=False,
                         help='(Not Implemented) Would load and read settings from a specified path.')
 
     parser.add_argument('-ec', '--export-configuration',
                         type=bool,
                         required=False,
-                        default=False,
                         help='(not implemented) writes settings as a O3DE < project >/registry/dccsi_configuration.setreg.')
 
     parser.add_argument('-lps', '--log-print-settings',
                         type=bool,
                         required=False,
                         default=True,
-                        help='Well dump settings results into the log.')
+                        help='Will dump settings results into the log.')
+
+    parser.add_argument('-ipd', '--install-package-dependencies',
+                        type=bool,
+                        required=False,
+                        default=True,
+                        help='Will install/update the DCCsi python package dependencies.')
 
     parser.add_argument('-ex', '--exit',
                         type=bool,
                         required=False,
-                        default=False,
                         help='(NOT IMPLEMENTED) Exits python. Do not exit if you want to be in interactive interpreter after config')
 
     args = parser.parse_args()
@@ -406,6 +405,10 @@ if __name__ == '__main__':
         _LOGGER.info('Logging the Substance Dynaconf settings object ...')
         _LOGGER.info(str(_settings_box.to_json(sort_keys=True,
                                                indent=4)))
+
+    if args.install_package_dependencies:
+        import foundation
+
 
     # custom prompt
     sys.ps1 = f"[{_MODULENAME}]>>"
