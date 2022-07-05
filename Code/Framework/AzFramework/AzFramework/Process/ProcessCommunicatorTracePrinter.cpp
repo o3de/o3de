@@ -22,7 +22,6 @@ ProcessCommunicatorTracePrinter::~ProcessCommunicatorTracePrinter()
     Pump();  // get any remaining data if available and split it by newlines
     
     // if there's any further data left over in the buffer then make sure it gets written, too
-    
     WriteCurrentString(false);
     
     // flush stderr

@@ -172,7 +172,7 @@ namespace Multiplayer
             {
                 m_serverProcessWatcher->TerminateProcess(0);
 
-                // the TracePrinter hangs onto a pointer to an object that is owned by
+                // The TracePrinter hangs onto a pointer to an object that is owned by
                 // the ProcessWatcher.  Make sure to destroy the TracePrinter first, before ProcessWatcher.
                 m_serverProcessTracePrinter = nullptr;
                 m_serverProcessWatcher = nullptr;
