@@ -966,7 +966,7 @@ namespace AzToolsFramework
                 LOG_NAME,
                 SqlParam<const char*>(":statname"));
 
-            static const char* QUERY_STAT_LIKE_STATNAME= "AzToolsFramework::AssetDatabase::QueryStatLikeStatNamePrefix";
+            static const char* QUERY_STAT_LIKE_STATNAME= "AzToolsFramework::AssetDatabase::QueryStatLikeStatName";
             static const char* QUERY_STAT_LIKE_STATNAME_STATEMENT = "SELECT * FROM Stats WHERE "
                                                                   "StatName LIKE :statname ;";
             static const auto s_queryStatLikeStatName= MakeSqlQuery(
