@@ -260,7 +260,7 @@ namespace AssetProcessor
     };
     using AssetServerBus = AZ::EBus<AssetServerBusTraits>;
 
-    // This EBUS is notify listeners when Asset Server state(s) changes.
+    // This EBUS has notify listeners when Asset Server state(s) changes.
     class AssetServerNotifications
         : public AZ::EBusTraits
     {
@@ -269,7 +269,7 @@ namespace AssetProcessor
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single; //single bus
         typedef AZStd::recursive_mutex MutexType;
 
-        //! TBD
+        //! This emits when the mode of the Asset Server Cache mode has changed.
         virtual void OnRemoteCachingModeChanged([[maybe_unused]] AssetServerMode mode) {}
     };
     using AssetServerNotificationBus = AZ::EBus<AssetServerNotifications>;

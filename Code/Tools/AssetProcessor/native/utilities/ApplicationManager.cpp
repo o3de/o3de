@@ -489,10 +489,6 @@ bool ApplicationManager::StartAZFramework()
     //Registering all the Components
     m_frameworkApp.RegisterComponentDescriptor(AzFramework::LogComponent::CreateDescriptor());
 
-    AZ::SerializeContext* serializeContext{};
-    AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
-    AssetProcessor::PlatformConfiguration::Reflect(serializeContext);
-
     Reflect();
 
     const AzFramework::CommandLine* commandLine = nullptr;
