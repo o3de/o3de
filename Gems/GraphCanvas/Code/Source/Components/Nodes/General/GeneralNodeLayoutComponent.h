@@ -74,6 +74,6 @@ namespace GraphCanvas
         QGraphicsLinearLayout* m_inputSlots;
         QGraphicsLinearLayout* m_outputSlots;
 
-        bool hasCheckedForHorizontalLayout;
+        bool m_hasCheckedForHorizontalLayout;
     };
 }

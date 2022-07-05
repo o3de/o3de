@@ -81,6 +81,7 @@ namespace GraphCanvas
         m_layout = new QGraphicsLinearLayout(Qt::Vertical);
         m_layout->setInstantInvalidatePropagation(true);
 
+        m_hasCheckedForHorizontalLayout = false;
     }
 
     void GeneralNodeLayoutComponent::Activate()
@@ -99,7 +100,7 @@ namespace GraphCanvas
     
     void GeneralNodeLayoutComponent::OnStyleChanged()
     {
-        if (!hasCheckedForHorizontalLayout)
+        if (!m_hasCheckedForHorizontalLayout)
         {
             Styling::StyleHelper style(GetEntityId());
             Qt::Orientation layoutOrientation = style.GetAttribute(Styling::Attribute::LayoutOrientation, Qt::Vertical);
@@ -109,7 +110,7 @@ namespace GraphCanvas
                 SwitchToHorizontalLayout();
             }
 
-            hasCheckedForHorizontalLayout = true;
+            m_hasCheckedForHorizontalLayout = true;
         }
         
         UpdateLayoutParameters();

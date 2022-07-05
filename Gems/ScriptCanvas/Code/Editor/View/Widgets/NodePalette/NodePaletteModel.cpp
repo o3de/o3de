@@ -247,15 +247,6 @@ namespace
         return skipBuses;
     }
 
-    ScriptCanvasEditor::RegisterNodeInformation GetIncrementNodeInformation()
-    {
-        ScriptCanvasEditor::RegisterNodeInformation nodeInformation;
-        nodeInformation.m_displayName = "++";
-        nodeInformation.m_categoryPath = "Math";
-        nodeInformation.m_toolTip = "Increments a value";
-        return nodeInformation;
-    }
-
     //! Register all nodes populated into the ScriptCanvas NodeRegistry
     void PopulateScriptCanvasDerivedNodes(ScriptCanvasEditor::NodePaletteModel& nodePaletteModel,
         const AZ::SerializeContext& serializeContext)
