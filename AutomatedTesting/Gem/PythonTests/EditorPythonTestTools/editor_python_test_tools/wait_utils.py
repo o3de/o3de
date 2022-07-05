@@ -15,6 +15,6 @@ class PrefabWaiter:
     @staticmethod
     def wait_for_propagation():
         """
-        Waits 1 frame before proceeding to allow for prefab propagation to occur
+        Script thread releases execution to main thread for 1 frame to allow for prefab propagation to occur
         """
         general.idle_wait_frames(1)
