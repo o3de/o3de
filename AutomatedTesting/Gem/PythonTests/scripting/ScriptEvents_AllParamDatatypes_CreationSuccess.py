@@ -139,10 +139,8 @@ class TestScriptEvents_AllParamDatatypes_CreationSuccess():
 
         # 7) Set different names and datatypes for each parameter
         tools.expand_qt_container_rows(self, NAME_STRING)
-        # give all name fields a unique name using index variable
-        self.set_name_field_names()
 
-        # give all the type fields a different type using the index for combo box selection
+        self.set_name_field_names()
         self.set_type_field_types()
 
         # 8) Save file and verify node in SC Node Palette
