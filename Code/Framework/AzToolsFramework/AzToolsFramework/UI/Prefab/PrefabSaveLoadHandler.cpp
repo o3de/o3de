@@ -76,13 +76,25 @@ namespace AzToolsFramework
         PrefabSaveHandler::PrefabSaveHandler()
         {
             s_prefabLoaderInterface = AZ::Interface<PrefabLoaderInterface>::Get();
-            AZ_Assert(s_prefabLoaderInterface, "Prefab - PrefabSaveHandler - could not get PrefabLoaderInterface on construction.");
+            if (s_prefabLoaderInterface == nullptr)
+            {
+                AZ_Assert(false, "Prefab - PrefabSaveHandler - could not get PrefabLoaderInterface on construction.");
+                return;
+            }
 
             s_prefabPublicInterface = AZ::Interface<PrefabPublicInterface>::Get();
-            AZ_Assert(s_prefabPublicInterface, "Prefab - PrefabSaveHandler - could not get PrefabPublicInterface on construction.");
+            if (s_prefabPublicInterface == nullptr)
+            {
+                AZ_Assert(false, "Prefab - PrefabSaveHandler - could not get PrefabPublicInterface on construction.");
+                return;
+            }
            
             s_prefabSystemComponentInterface = AZ::Interface<PrefabSystemComponentInterface>::Get();
-            AZ_Assert(s_prefabSystemComponentInterface, "Prefab - PrefabSaveHandler - could not get PrefabSystemComponentInterface on construction.");
+            if (s_prefabSystemComponentInterface == nullptr)
+            {
+                AZ_Assert(false, "Prefab - PrefabSaveHandler - could not get PrefabSystemComponentInterface on construction.");
+                return;
+            }
 
             AssetBrowser::AssetBrowserSourceDropBus::Handler::BusConnect(s_prefabFileExtension);
         }
@@ -139,14 +151,14 @@ namespace AzToolsFramework
             return QDialogButtonBox::DestructiveRole;
         }
 
-        void PrefabSaveHandler::ExecuteSavePrefabDialog(const AZ::EntityId& entityId, bool useSaveAllPrefabsPreference)
+        void PrefabSaveHandler::ExecuteSavePrefabDialog(AZ::EntityId entityId)
         {
             auto instanceEntityMapper = AZ::Interface<InstanceEntityMapperInterface>::Get();
             AZ_Assert(instanceEntityMapper, "Prefab - PrefabSaveHandler - could not get InstanceEntityMapperInterface when saving prefab.");
 
             if (const InstanceOptionalReference instance = instanceEntityMapper->FindOwningInstance(entityId); instance.has_value())
             {
-                ExecuteSavePrefabDialog(instance->get().GetTemplateId(), useSaveAllPrefabsPreference);
+                ExecuteSavePrefabDialog(instance->get().GetTemplateId(), true);
             }
         }
 

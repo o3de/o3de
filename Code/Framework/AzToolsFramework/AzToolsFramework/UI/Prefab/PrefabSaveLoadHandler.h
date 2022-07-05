@@ -60,7 +60,7 @@ namespace AzToolsFramework
 
             // Dialogs
             int ExecuteClosePrefabDialog(TemplateId templateId);
-            void ExecuteSavePrefabDialog(const AZ::EntityId& entityId, bool useSaveAllPrefabsPreference);
+            void ExecuteSavePrefabDialog(AZ::EntityId entityId);
             void ExecuteSavePrefabDialog(TemplateId templateId, bool useSaveAllPrefabsPreference);
             static bool QueryUserForPrefabFilePath(AZStd::string& outPrefabFilePath);
             static bool QueryUserForProceduralPrefabAsset(AZStd::string& outPrefabAssetPath);
