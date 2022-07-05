@@ -509,7 +509,7 @@ namespace O3DE::ProjectManager
     {
         EngineInfo engineInfo;
         bool result = ExecuteWithLock([&] {
-            auto enginePathResult = m_manifest.attr("get_project_engine")(QString_To_Py_String(projectPath));
+            auto enginePathResult = m_manifest.attr("get_project_engine")(QString_To_Py_Path(projectPath));
 
             // if a valid registered object is not found None is returned
             if (!pybind11::isinstance<pybind11::none>(enginePathResult))
