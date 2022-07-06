@@ -34,7 +34,8 @@ namespace AssetProcessor
 
     void SourceAssetDetailsPanel::AssetDataSelectionChanged(const QItemSelection& selected, const QItemSelection& /*deselected*/)
     {
-        QItemSelection sourceSelection = m_sourceFilterModel->mapSelectionToSource(selected);
+        AssetTreeFilterModel* filterModel = m_isIntermediateAsset ? m_intermediateFilterModel : m_sourceFilterModel;
+        QItemSelection sourceSelection = filterModel->mapSelectionToSource(selected);
         // Even if multi-select is enabled, only display the first selected item.
         if (sourceSelection.indexes().count() == 0 || !sourceSelection.indexes()[0].isValid())
         {
@@ -213,7 +214,19 @@ namespace AssetProcessor
 
                 // Some outgoing source dependencies are wildcard, or unresolved paths.
                 // Only add a button to link to rows that actually exist.
-                QModelIndex goToIndex = m_sourceTreeModel->GetIndexForSource(sourceFileDependencyEntry.m_dependsOnSource);
+                
+                AzToolsFramework::AssetDatabase::SourceDatabaseEntry dependencyDetails;
+                assetDatabaseConnection.QuerySourceBySourceName(
+                    sourceFileDependencyEntry.m_dependsOnSource.c_str(),
+                    [&](AzToolsFramework::AssetDatabase::SourceDatabaseEntry& sourceEntry)
+                    {
+                        dependencyDetails = sourceEntry;
+                        return false;
+                    });
+
+
+                SourceAssetTreeModel* treeModel = dependencyDetails.m_scanFolderPK == 1 ? m_intermediateTreeModel : m_sourceTreeModel;
+                QModelIndex goToIndex = treeModel->GetIndexForSource(sourceFileDependencyEntry.m_dependsOnSource);
                 if (goToIndex.isValid())
                 {
                     // Qt handles cleanup automatically, setting this as the parent means

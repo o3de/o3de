@@ -34,6 +34,8 @@ namespace AssetProcessor
         explicit SourceAssetDetailsPanel(QWidget* parent = nullptr);
         ~SourceAssetDetailsPanel() override;
 
+        void SetIsIntermediateAsset() { m_isIntermediateAsset = true; }
+
     public Q_SLOTS:
         void AssetDataSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected);
 
@@ -52,5 +54,6 @@ namespace AssetProcessor
             const AZStd::shared_ptr<const SourceAssetTreeItemData> sourceItemData);
 
         QScopedPointer<Ui::SourceAssetDetailsPanel> m_ui;
+        bool m_isIntermediateAsset = false;
     };
 } // namespace AssetProcessor

@@ -38,6 +38,9 @@ namespace AssetProcessor
             QTreeView* sourceTreeView,
             SourceAssetTreeModel* sourceAssetTreeModel,
             AssetTreeFilterModel* sourceFilterModel,
+            QTreeView* intermediateTreeView,
+            SourceAssetTreeModel* intermediateAssetTreeModel,
+            AssetTreeFilterModel* intermediateFilterModel,
             QTreeView* productTreeView,
             ProductAssetTreeModel* productAssetTreeModel,
             AssetTreeFilterModel* productFilterModel,
@@ -50,6 +53,11 @@ namespace AssetProcessor
         QTreeView* m_sourceTreeView = nullptr;
         SourceAssetTreeModel* m_sourceTreeModel = nullptr;
         AssetTreeFilterModel* m_sourceFilterModel = nullptr;
+        
+        QTreeView* m_intermediateTreeView = nullptr;
+        SourceAssetTreeModel* m_intermediateTreeModel = nullptr;
+        AssetTreeFilterModel* m_intermediateFilterModel = nullptr;
+
         QTreeView* m_productTreeView = nullptr;
         ProductAssetTreeModel* m_productTreeModel = nullptr;
         AssetTreeFilterModel* m_productFilterModel = nullptr;

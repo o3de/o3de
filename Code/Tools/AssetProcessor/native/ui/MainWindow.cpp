@@ -407,6 +407,8 @@ void MainWindow::Activate()
     connect(ui->assetDataFilteredSearchWidget, &AzQtComponents::FilteredSearchWidget::TextFilterChanged,
         m_productAssetTreeFilterModel, static_cast<void (QSortFilterProxyModel::*)(const QString&)>(&AssetTreeFilterModel::FilterChanged));
 
+    ui->intermediateAssetDetailsPanel->SetIsIntermediateAsset();
+
     AzQtComponents::StyleManager::setStyleSheet(ui->sourceAssetDetailsPanel, QStringLiteral("style:AssetProcessor.qss"));
     AzQtComponents::StyleManager::setStyleSheet(ui->intermediateAssetDetailsPanel, QStringLiteral("style:AssetProcessor.qss"));
     AzQtComponents::StyleManager::setStyleSheet(ui->productAssetDetailsPanel, QStringLiteral("style:AssetProcessor.qss"));
@@ -415,13 +417,19 @@ void MainWindow::Activate()
         ui->SourceAssetsTreeView,
         m_sourceModel,
         m_sourceAssetTreeFilterModel,
+        ui->IntermediateAssetsTreeView,
+        m_intermediateModel,
+        m_intermediateAssetTreeFilterModel,
         ui->ProductAssetsTreeView,
         m_productModel,
         m_productAssetTreeFilterModel,
         ui->assetsTabWidget);
     ui->intermediateAssetDetailsPanel->RegisterAssociatedWidgets(
-        ui->IntermediateAssetsTreeView,
+        ui->SourceAssetsTreeView,
         m_sourceModel,
+        m_sourceAssetTreeFilterModel,
+        ui->IntermediateAssetsTreeView,
+        m_intermediateModel,
         m_intermediateAssetTreeFilterModel,
         ui->ProductAssetsTreeView,
         m_productModel,
@@ -431,6 +439,9 @@ void MainWindow::Activate()
         ui->SourceAssetsTreeView,
         m_sourceModel,
         m_sourceAssetTreeFilterModel,
+        ui->IntermediateAssetsTreeView,
+        m_intermediateModel,
+        m_intermediateAssetTreeFilterModel,
         ui->ProductAssetsTreeView,
         m_productModel,
         m_productAssetTreeFilterModel,
