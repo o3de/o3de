@@ -109,7 +109,7 @@ class LocalStorageQueryTool(StorageQueryTool):
         try:
             json_obj = json.loads(file)
             if not self._check_object_exists(storage_location):
-                with open(f"{storage_location}historic_data.json", "w", encoding="UTF-8") as raw_output_file:
+                with open(f"{storage_location}/historic_data.json", "w", encoding="UTF-8") as raw_output_file:
                     json.dump(json_obj, raw_output_file,
                               ensure_ascii=False, indent=4)
             else:
