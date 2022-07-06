@@ -78,21 +78,21 @@ namespace AzToolsFramework
             s_prefabLoaderInterface = AZ::Interface<PrefabLoaderInterface>::Get();
             if (s_prefabLoaderInterface == nullptr)
             {
-                AZ_Assert(false, "Prefab - PrefabSaveHandler - could not get PrefabLoaderInterface on construction.");
+                AZ_Assert(false, "PrefabSaveHandler - could not get PrefabLoaderInterface on construction.");
                 return;
             }
 
             s_prefabPublicInterface = AZ::Interface<PrefabPublicInterface>::Get();
             if (s_prefabPublicInterface == nullptr)
             {
-                AZ_Assert(false, "Prefab - PrefabSaveHandler - could not get PrefabPublicInterface on construction.");
+                AZ_Assert(false, "PrefabSaveHandler - could not get PrefabPublicInterface on construction.");
                 return;
             }
            
             s_prefabSystemComponentInterface = AZ::Interface<PrefabSystemComponentInterface>::Get();
             if (s_prefabSystemComponentInterface == nullptr)
             {
-                AZ_Assert(false, "Prefab - PrefabSaveHandler - could not get PrefabSystemComponentInterface on construction.");
+                AZ_Assert(false, "PrefabSaveHandler - could not get PrefabSystemComponentInterface on construction.");
                 return;
             }
 
