@@ -52,15 +52,18 @@ namespace UnitTest
             AZ::SettingsRegistry::Register(&m_mockSettingsRegistry);
             m_tempFolder = QStandardPaths::writableLocation(QStandardPaths::TempLocation);
             m_fakeSourceFile = QString(m_tempFolder + m_fakeFullname + ".zip");
-            AssetUtilities::ResetServerAddress();
-            AssetUtilities::ResetServerMode();
+
+            using namespace AssetProcessor;
+            AssetServerBus::Broadcast(&AssetServerBus::Events::SetServerAddress, "");
+            AssetServerBus::Broadcast(&AssetServerBus::Events::SetRemoteCachingMode, AssetServerMode::Inactive);
         }
 
         ~AssetServerHandlerUnitTest()
         {
             RemoveMockAssetArchive();
-            AssetUtilities::ResetServerAddress();
-            AssetUtilities::ResetServerMode();
+            using namespace AssetProcessor;
+            AssetServerBus::Broadcast(&AssetServerBus::Events::SetServerAddress, "");
+            AssetServerBus::Broadcast(&AssetServerBus::Events::SetRemoteCachingMode, AssetServerMode::Inactive);
             AZ::SettingsRegistry::Unregister(&m_mockSettingsRegistry);
         }
 
@@ -116,7 +119,8 @@ namespace UnitTest
 
     TEST_F(AssetServerHandlerUnitTest, AssetCacheServer_UnConfiguredToRunAsServer_SetsFalse)
     {
-        EXPECT_CALL(m_mockSettingsRegistry, Get(::testing::An<AZStd::string&>(), ::testing::_)).Times(1);
+        EXPECT_CALL(m_mockSettingsRegistry, Get(::testing::An<AZStd::string&>(), ::testing::_)).Times(2);
+        EXPECT_CALL(m_mockSettingsRegistry, Get(::testing::An<bool&>(), ::testing::_)).Times(1);
 
         AssetProcessor::AssetServerHandler assetServerHandler;
         EXPECT_FALSE(assetServerHandler.IsServerAddressValid());
@@ -127,12 +131,12 @@ namespace UnitTest
         m_enableServer = true;
         MockSettingsRegistry();
 
-        EXPECT_CALL(m_mockSettingsRegistry, Get(::testing::An<AZStd::string&>(), ::testing::_)).Times(1);
+        EXPECT_CALL(m_mockSettingsRegistry, Get(::testing::An<AZStd::string&>(), ::testing::_)).Times(2);
         EXPECT_CALL(m_mockSettingsRegistry, Get(::testing::An<bool&>(), ::testing::_)).Times(1);
 
         AssetProcessor::AssetServerHandler assetServerHandler;
         EXPECT_TRUE(assetServerHandler.IsServerAddressValid());
-        EXPECT_TRUE(AssetUtilities::InServerMode());
+        EXPECT_TRUE(assetServerHandler.GetRemoteCachingMode() == AssetProcessor::AssetServerMode::Server);
     }
 
     TEST_F(AssetServerHandlerUnitTest, AssetCacheServer_ConfiguredToRunAsClient_Works)
@@ -140,12 +144,12 @@ namespace UnitTest
         m_enableServer = false;
         MockSettingsRegistry();
 
-        EXPECT_CALL(m_mockSettingsRegistry, Get(::testing::An<AZStd::string&>(), ::testing::_)).Times(1);
+        EXPECT_CALL(m_mockSettingsRegistry, Get(::testing::An<AZStd::string&>(), ::testing::_)).Times(2);
         EXPECT_CALL(m_mockSettingsRegistry, Get(::testing::An<bool&>(), ::testing::_)).Times(1);
 
         AssetProcessor::AssetServerHandler assetServerHandler;
         EXPECT_TRUE(assetServerHandler.IsServerAddressValid());
-        EXPECT_FALSE(AssetUtilities::InServerMode());
+        EXPECT_TRUE(assetServerHandler.GetRemoteCachingMode() == AssetProcessor::AssetServerMode::Client);
     }
 
     TEST_F(AssetServerHandlerUnitTest, AssetCacheServer_ServerStoresZipFile_Works)
@@ -162,7 +166,7 @@ namespace UnitTest
         };
         ON_CALL(m_mockArchiveCommandsBusHandler, CreateArchive(::testing::_, ::testing::_)).WillByDefault(createArchive);
 
-        EXPECT_CALL(m_mockSettingsRegistry, Get(::testing::An<AZStd::string&>(), ::testing::_)).Times(1);
+        EXPECT_CALL(m_mockSettingsRegistry, Get(::testing::An<AZStd::string&>(), ::testing::_)).Times(2);
         EXPECT_CALL(m_mockSettingsRegistry, Get(::testing::An<bool&>(), ::testing::_)).Times(1);
         EXPECT_CALL(m_mockArchiveCommandsBusHandler, CreateArchive(::testing::_, ::testing::_)).Times(1);
 
@@ -177,8 +181,13 @@ namespace UnitTest
         builderParams.m_processJobRequest.m_sourceFile = (m_tempFolder + m_fakeFullname).toUtf8().toStdString().c_str();
 
         AssetProcessor::AssetServerHandler assetServerHandler;
+
+        using namespace AssetProcessor;
+        AssetServerMode mode = {};
+        AssetServerBus::BroadcastResult(mode , &AssetServerBus::Events::GetRemoteCachingMode);
+
         EXPECT_TRUE(assetServerHandler.IsServerAddressValid());
-        EXPECT_TRUE(AssetUtilities::InServerMode());
+        EXPECT_EQ(mode, AssetServerMode::Server);
         EXPECT_TRUE(assetServerHandler.StoreJobResult(builderParams, sourceFileList));
     }
 
@@ -197,7 +206,7 @@ namespace UnitTest
         };
         ON_CALL(m_mockArchiveCommandsBusHandler, ExtractArchive(::testing::_, ::testing::_)).WillByDefault(extractArchive);
 
-        EXPECT_CALL(m_mockSettingsRegistry, Get(::testing::An<AZStd::string&>(), ::testing::_)).Times(1);
+        EXPECT_CALL(m_mockSettingsRegistry, Get(::testing::An<AZStd::string&>(), ::testing::_)).Times(2);
         EXPECT_CALL(m_mockSettingsRegistry, Get(::testing::An<bool&>(), ::testing::_)).Times(1);
         EXPECT_CALL(m_mockArchiveCommandsBusHandler, ExtractArchive(::testing::_, ::testing::_)).Times(1);
 
@@ -211,8 +220,13 @@ namespace UnitTest
         builderParams.m_processJobRequest.m_sourceFile = (m_tempFolder + m_fakeFullname).toUtf8().toStdString().c_str();
 
         AssetProcessor::AssetServerHandler assetServerHandler;
+
+        using namespace AssetProcessor;
+        AssetServerMode mode = {};
+        AssetServerBus::BroadcastResult(mode, &AssetServerBus::Events::GetRemoteCachingMode);
+
         EXPECT_TRUE(assetServerHandler.IsServerAddressValid());
-        EXPECT_FALSE(AssetUtilities::InServerMode());
+        EXPECT_EQ(mode, AssetServerMode::Client);
         EXPECT_TRUE(assetServerHandler.RetrieveJobResult(builderParams));
     }
 }
