@@ -7,6 +7,8 @@
  */
 #pragma once
 
+#include <AzCore/IO/Path/Path.h>
+
 #if !defined(Q_MOC_RUN)
 #include <ScreenWidget.h>
 #include <EngineInfo.h>
@@ -90,7 +92,7 @@ namespace O3DE::ProjectManager
         FlowLayout* m_projectsFlowLayout = nullptr;
         QFileSystemWatcher* m_fileSystemWatcher = nullptr;
         QStackedWidget* m_stack = nullptr;
-        QHash<QString, ProjectButton*> m_projectButtons;
+        AZStd::unordered_map<AZ::IO::Path, ProjectButton*> m_projectButtons;
         QList<ProjectInfo> m_requiresBuild;
         QQueue<ProjectInfo> m_buildQueue;
         ProjectBuilderController* m_currentBuilder = nullptr;
