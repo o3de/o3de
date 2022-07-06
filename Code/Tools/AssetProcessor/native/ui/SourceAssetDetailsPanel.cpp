@@ -16,6 +16,7 @@
 
 #include <native/ui/ui_GoToButton.h>
 #include <native/ui/ui_SourceAssetDetailsPanel.h>
+#include <native/utilities/assetUtils.h>
 
 namespace AssetProcessor
 {
@@ -62,17 +63,16 @@ namespace AssetProcessor
             SetDetailsVisible(false, false);
             return;
         }
-        bool isIntermediateAsset = sourceItemData->m_sourceInfo.m_scanFolderPK == 1;
-        SetDetailsVisible(true, isIntermediateAsset);
+
+        SetDetailsVisible(true, m_isIntermediateAsset);
 
         AssetDatabaseConnection assetDatabaseConnection;
         assetDatabaseConnection.OpenDatabase();
 
-        if (isIntermediateAsset)
+        if (m_isIntermediateAsset)
         {
             // First, find the product version of this intermediate asset.
-            AZStd::string intermediateProductPath = AZStd::string::format("common/%s", sourceItemData->m_assetDbName.c_str());
-
+            AZStd::string intermediateProductPath = AssetUtilities::GetIntermediateAssetDatabaseName(sourceItemData->m_assetDbName.c_str());
             AzToolsFramework::AssetDatabase::SourceDatabaseEntry upstreamSource;
 
             assetDatabaseConnection.QueryProductByProductName(

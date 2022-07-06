@@ -54,6 +54,7 @@ namespace AssetProcessor
             const AZStd::shared_ptr<const SourceAssetTreeItemData> sourceItemData);
 
         QScopedPointer<Ui::SourceAssetDetailsPanel> m_ui;
+        AZStd::optional<AZ::s64> m_intermediateAssetFolderID;
         bool m_isIntermediateAsset = false;
     };
 } // namespace AssetProcessor

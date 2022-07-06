@@ -224,6 +224,9 @@ namespace AssetProcessor
         //! Request to invalidate and reprocess a source asset or folder containing source assets
         AZ::u64 RequestReprocess(const QString& sourcePath);
         AZ::u64 RequestReprocess(const AZStd::list<AZStd::string>& reprocessList);
+        
+        AZStd::optional<AZ::s64> GetIntermediateAssetScanFolderID() const;
+
     Q_SIGNALS:
         void NumRemainingJobsChanged(int newNumJobs);
 

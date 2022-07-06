@@ -71,7 +71,12 @@ namespace AssetProcessor
                 return false;
             });
 
-        bool isIntermediate = sourceDetails.m_scanFolderPK == 1;
+        bool isIntermediate = false;
+        if(m_intermediateAssetFolderID.has_value())
+        {
+            isIntermediate = sourceDetails.m_scanFolderPK == m_intermediateAssetFolderID.value();
+        }
+
         int assetTabIndex = static_cast<int>(
             isIntermediate ? MainWindow::AssetTabIndex::Source : MainWindow::AssetTabIndex::Intermediate);
         m_assetsTab->setCurrentIndex(assetTabIndex);

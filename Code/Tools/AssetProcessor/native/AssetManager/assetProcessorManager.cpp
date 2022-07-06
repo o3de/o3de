@@ -4656,6 +4656,15 @@ namespace AssetProcessor
         }
     }
 
+    AZStd::optional<AZ::s64> AssetProcessorManager::GetIntermediateAssetScanFolderID() const
+    {
+        if (!m_platformConfig)
+        {
+            return AZStd::nullopt;
+        }
+        return m_platformConfig->GetIntermediateAssetsScanFolderId();
+    }
+
     void AssetProcessorManager::CheckAssetProcessorIdleState()
     {
         Q_EMIT AssetProcessorManagerIdleState(IsIdle());
