@@ -1908,6 +1908,7 @@ void CCryEditApp::OnAppAbout()
     auto geo = dialog->geometry();
     geo.moveCenter(mainWindow->mapToGlobal(mainWindow->geometry().center()));
     dialog->setGeometry(geo);
+    dialog->setAttribute(Qt::WA_DeleteOnClose);
     dialog->show();
 }
 

@@ -11,15 +11,17 @@
 #include <QPainter>
 
 #include <AzQtComponents/Utilities/PixmapScaleUtilities.h>
+#include <qnamespace.h>
 
 AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 #include <ui_AboutDialog.h>
 AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 
 CAboutDialog::CAboutDialog(QString versionText, QString richTextCopyrightNotice, QWidget* pParent)
-    : QDialog(pParent, Qt::FramelessWindowHint | Qt::Popup)
+    : QDialog(pParent, Qt::FramelessWindowHint | Qt::Tool)
     , m_ui(new Ui::CAboutDialog)
 {
+
     m_ui->setupUi(this);
 
     m_ui->m_transparentTrademarks->setText(versionText);
