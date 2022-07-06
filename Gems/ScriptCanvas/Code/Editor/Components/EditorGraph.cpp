@@ -1601,7 +1601,7 @@ namespace ScriptCanvasEditor
         ScriptCanvas::Slot* slot = nullptr;
         ScriptCanvas::NodeRequestBus::EventResult(slot, scriptCanvasNodeId, &ScriptCanvas::NodeRequests::GetSlot, scriptCanvasSlotId);
 
-        if (slot == nullptr || slot->IsUserAdded() || !slot->CanHaveInputField())
+        if (slot == nullptr || slot->IsUserAdded())
         {
             return nullptr;
         }
@@ -1619,6 +1619,11 @@ namespace ScriptCanvasEditor
             }
 
             delete dataInterface;
+            return nullptr;
+        }
+
+        if (!slot->CanHaveInputField())
+        {
             return nullptr;
         }
 
