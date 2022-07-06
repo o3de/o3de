@@ -104,6 +104,20 @@ namespace PhysX
         void UpdateHeightfieldMaterialSlots(const Physics::MaterialSlots& updatedMaterialSlots);
 
     private:
+        //! Updates a subset of rows in the heightfield shape configuration.
+        void UpdateShapeConfigRows(
+            AZ::Job* updateCompleteJob, size_t startColumn, size_t startRow, size_t numColumns, size_t numRows);
+
+        //! Updates a subset of rows in the PhysX heightfield based on the data in the heightfield shape configuration.
+        //! Note that while this takes in column ranges, the expectation is that it is processing all the dirty columns for each
+        //! row being updated. If this assumption changes, the dirty region tracking logic will also need to change.
+        void UpdatePhysXHeightfieldRows(
+            AzPhysics::Scene* scene, AZStd::shared_ptr<Physics::Shape> shape,
+            size_t startColumn, size_t startRow, size_t numColumns, size_t numRows);
+
+        //! Called once all of the asynchronous update jobs have completed.
+        void RefreshComplete();
+
         //! Helper class to manage the spawned physics update jobs.
         class HeightfieldUpdateJobContext : public AZ::JobContext
         {
@@ -119,18 +133,18 @@ namespace PhysX
             //! Check to see if the jobs should be canceled.
             bool IsCanceled() const;
 
-            //! Track all jobs that are being started.
-            void OnJobStart();
+            //! Track that the refresh has been started.
+            void OnRefreshStart();
 
-            //! Track all jobs that have been completed.
-            void OnJobComplete();
+            //! Track that the refresh has been completed.
+            void OnRefreshComplete();
 
             //! Block until all jobs have been completed.
             void BlockUntilComplete();
 
         private:
-            //! Track the number of currently-running jobs. (This will currently either be 0 or 1, but may get more complicated someday)
-            int m_numRunningJobs = 0;
+            //! Track whether or not a refresh is currently happening.
+            bool m_refreshInProgress = false;
             //! Mutex to protect the job-running state
             AZStd::mutex m_jobsRunningNotificationMutex;
             //! Notification mechanism for knowing when the jobs have stopped running.
@@ -164,10 +178,23 @@ namespace PhysX
         AZStd::string m_entityName;
 
         //! Track the current dirty region for async heightfield refreshes.
-        AZ::Aabb m_dirtyRegion;
+        struct DirtyHeightfieldRegion
+        {
+            DirtyHeightfieldRegion();
+            void SetNull();
+            void AddAabb(const AZ::Aabb& dirtyRegion, AZ::EntityId entityId);
 
+            size_t m_minRowVertex;      //! the first dirty row vertex
+            size_t m_minColumnVertex;   //! the first dirty column vertex
+            size_t m_maxRowVertex;      //! one past the last dirty row vertex (i.e. max - min = num dirty)
+            size_t m_maxColumnVertex;   //! one past the last dirty column vertex
+        };
+
+        DirtyHeightfieldRegion m_dirtyRegion;
+        
         //! Specifies the way of creating Heightfield Collider.
         DataSource m_dataSourceType = DataSource::GenerateNewHeightfield;
+       
     };
 
 } // namespace PhysX

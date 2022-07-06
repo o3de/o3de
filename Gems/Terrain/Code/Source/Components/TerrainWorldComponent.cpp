@@ -89,9 +89,11 @@ namespace Terrain
                     ->DataElement(AZ::Edit::UIHandlers::Default, &TerrainWorldConfig::m_worldMin, "World Bounds (Min)", "")
                         ->Attribute(AZ::Edit::Attributes::Min, -65536.0f)
                         ->Attribute(AZ::Edit::Attributes::Max, 65536.0f)
+                        ->Attribute(AZ::Edit::Attributes::ChangeValidate, &TerrainWorldConfig::ValidateBoundsMin)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &TerrainWorldConfig::m_worldMax, "World Bounds (Max)", "")
                         ->Attribute(AZ::Edit::Attributes::Min, -65536.0f)
                         ->Attribute(AZ::Edit::Attributes::Max, 65536.0f)
+                        ->Attribute(AZ::Edit::Attributes::ChangeValidate, &TerrainWorldConfig::ValidateBoundsMax)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &TerrainWorldConfig::m_heightQueryResolution, "Height Query Resolution (m)", "")
                         ->Attribute(AZ::Edit::Attributes::Min, 0.1f)
