@@ -7,29 +7,27 @@
  */
 #pragma once
 
-#include <AzCore/UnitTest/TestTypes.h>
-#include <Atom/RHI/BufferPool.h>
-#include <Atom/RHI/BufferView.h>
+#include <Atom/RHI/DeviceBufferPool.h>
+#include <Atom/RHI/DeviceBufferView.h>
 #include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/UnitTest/TestTypes.h>
 
 namespace UnitTest
 {
-    class BufferView
-        : public AZ::RHI::BufferView
+    class BufferView : public AZ::RHI::DeviceBufferView
     {
     public:
         AZ_CLASS_ALLOCATOR(BufferView, AZ::SystemAllocator, 0);
 
     private:
-        AZ::RHI::ResultCode InitInternal(AZ::RHI::Device& device, const AZ::RHI::Resource&) override;
+        AZ::RHI::ResultCode InitInternal(AZ::RHI::Device& device, const AZ::RHI::DeviceResource&) override;
         AZ::RHI::ResultCode InvalidateInternal() override;
         void ShutdownInternal() override;
     };
 
     class BufferPool;
 
-    class Buffer
-        : public AZ::RHI::Buffer
+    class Buffer : public AZ::RHI::DeviceBuffer
     {
         friend class BufferPool;
     public:
@@ -48,8 +46,7 @@ namespace UnitTest
         AZStd::vector<uint8_t> m_data;
     };
 
-    class BufferPool
-        : public AZ::RHI::BufferPool
+    class BufferPool : public AZ::RHI::DeviceBufferPool
     {
     public:
         AZ_CLASS_ALLOCATOR(BufferPool, AZ::SystemAllocator, 0);
@@ -59,17 +56,17 @@ namespace UnitTest
 
         void ShutdownInternal() override;
 
-        AZ::RHI::ResultCode InitBufferInternal(AZ::RHI::Buffer& bufferBase, const AZ::RHI::BufferDescriptor& descriptor) override;
+        AZ::RHI::ResultCode InitBufferInternal(AZ::RHI::DeviceBuffer& bufferBase, const AZ::RHI::BufferDescriptor& descriptor) override;
 
-        void ShutdownResourceInternal(AZ::RHI::Resource&) override;
+        void ShutdownResourceInternal(AZ::RHI::DeviceResource&) override;
 
-        AZ::RHI::ResultCode OrphanBufferInternal(AZ::RHI::Buffer& buffer) override;
+        AZ::RHI::ResultCode OrphanBufferInternal(AZ::RHI::DeviceBuffer& buffer) override;
 
-        AZ::RHI::ResultCode MapBufferInternal(const AZ::RHI::BufferMapRequest& request, AZ::RHI::BufferMapResponse& response) override;
+        AZ::RHI::ResultCode MapBufferInternal(const AZ::RHI::DeviceBufferMapRequest& request, AZ::RHI::DeviceBufferMapResponse& response) override;
 
-        void UnmapBufferInternal(AZ::RHI::Buffer& bufferBase) override;
+        void UnmapBufferInternal(AZ::RHI::DeviceBuffer& bufferBase) override;
 
-        AZ::RHI::ResultCode StreamBufferInternal(const AZ::RHI::BufferStreamRequest& request) override;
+        AZ::RHI::ResultCode StreamBufferInternal(const AZ::RHI::DeviceBufferStreamRequest& request) override;
 
         void ComputeFragmentation() const override {}
     };

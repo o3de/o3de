@@ -8,8 +8,8 @@
 #pragma once
 
 #include <Atom/RHI/DeviceObject.h>
-#include <Atom/RHI/Fence.h>
-#include <Atom/RHI/StreamingImagePool.h>
+#include <Atom/RHI/DeviceFence.h>
+#include <Atom/RHI/DeviceStreamingImagePool.h>
 #include <AzCore/std/parallel/mutex.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <Atom/RHI/AsyncWorkQueue.h>
@@ -22,8 +22,8 @@ namespace AZ
 {
     namespace RHI
     {
-        struct BufferStreamRequest;
-        struct StreamingImageExpandRequest;
+        struct DeviceBufferStreamRequest;
+        struct DeviceStreamingImageExpandRequest;
     }
 
     namespace Vulkan
@@ -63,8 +63,8 @@ namespace AZ
             RHI::ResultCode Init(const Descriptor& descriptor);
             void Shutdown();
 
-            RHI::AsyncWorkHandle QueueUpload(const RHI::BufferStreamRequest& request);
-            RHI::AsyncWorkHandle QueueUpload(const RHI::StreamingImageExpandRequest& request, uint32_t residentMip);
+            RHI::AsyncWorkHandle QueueUpload(const RHI::DeviceBufferStreamRequest& request);
+            RHI::AsyncWorkHandle QueueUpload(const RHI::DeviceStreamingImageExpandRequest& request, uint32_t residentMip);
 
             void WaitForUpload(const RHI::AsyncWorkHandle& workHandle);
 
@@ -86,7 +86,7 @@ namespace AZ
             void EndFramePacket(Queue* queue, Semaphore* semaphoreToSignal = nullptr);
 
             void EmmitPrologueMemoryBarrier(const Buffer& buffer, size_t offset, size_t size);
-            void EmmitPrologueMemoryBarrier(const RHI::StreamingImageExpandRequest& request, uint32_t residentMip);
+            void EmmitPrologueMemoryBarrier(const RHI::DeviceStreamingImageExpandRequest& request, uint32_t residentMip);
 
             void EmmitEpilogueMemoryBarrier(
                 CommandList& commandList,
@@ -96,7 +96,7 @@ namespace AZ
 
             void EmmitEpilogueMemoryBarrier(
                 CommandList& commandList,
-                const RHI::StreamingImageExpandRequest& request,
+                const RHI::DeviceStreamingImageExpandRequest& request,
                 uint32_t residentMip);
 
             // Handles the end of the upload. This includes emitting the epilogue barriers and doing any
@@ -108,7 +108,7 @@ namespace AZ
                 const AZStd::vector<Fence*> fencesToSignal,
                 Args&& ...args);
             
-            RHI::AsyncWorkHandle CreateAsyncWork(RHI::Ptr<Fence> fence, RHI::Fence::SignalCallback callback = nullptr);
+            RHI::AsyncWorkHandle CreateAsyncWork(RHI::Ptr<Fence> fence, RHI::DeviceFence::SignalCallback callback = nullptr);
             void ProcessCallback(const RHI::AsyncWorkHandle& handle);
 
             Descriptor m_descriptor;

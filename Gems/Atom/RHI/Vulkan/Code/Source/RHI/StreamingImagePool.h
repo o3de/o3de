@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <Atom/RHI/StreamingImagePool.h>
+#include <Atom/RHI/DeviceStreamingImagePool.h>
 #include <Atom/RHI.Reflect/Vulkan/ImagePoolDescriptor.h>
 #include <RHI/MemoryAllocator.h>
 #include <AzCore/std/parallel/mutex.h>
@@ -20,9 +20,9 @@ namespace AZ
         class Image;
 
         class StreamingImagePool final
-            : public RHI::StreamingImagePool
+            : public RHI::DeviceStreamingImagePool
         {
-            using Base = RHI::StreamingImagePool;
+            using Base = RHI::DeviceStreamingImagePool;
 
         public:
             AZ_CLASS_ALLOCATOR(StreamingImagePool, AZ::SystemAllocator, 0);
@@ -37,15 +37,15 @@ namespace AZ
             //////////////////////////////////////////////////////////////////////////
             // RHI::StreamingImagePool
             RHI::ResultCode InitInternal(RHI::Device& deviceBase, const RHI::StreamingImagePoolDescriptor& descriptor) override;
-            RHI::ResultCode InitImageInternal(const RHI::StreamingImageInitRequest& request) override;
-            RHI::ResultCode ExpandImageInternal(const RHI::StreamingImageExpandRequest& request) override;
-            RHI::ResultCode TrimImageInternal(RHI::Image& image, uint32_t targetMipLevel) override;
+            RHI::ResultCode InitImageInternal(const RHI::DeviceStreamingImageInitRequest& request) override;
+            RHI::ResultCode ExpandImageInternal(const RHI::DeviceStreamingImageExpandRequest& request) override;
+            RHI::ResultCode TrimImageInternal(RHI::DeviceImage& image, uint32_t targetMipLevel) override;
             //////////////////////////////////////////////////////////////////////////
 
             //////////////////////////////////////////////////////////////////////////
-            // RHI::ResourcePool
+            // RHI::DeviceResourcePool
             void ShutdownInternal() override;
-            void ShutdownResourceInternal(RHI::Resource& resourceBase) override;
+            void ShutdownResourceInternal(RHI::DeviceResource& resourceBase) override;
             /// As streaming image tiles are allocated from a pool allocator, fragmentation will remain 0 for
             /// the streaming image pool
             void ComputeFragmentation() const override;

@@ -7,13 +7,13 @@
  */
 #pragma once
 
-#include <Atom/RHI/Buffer.h>
-#include <Atom/RHI/BufferProperty.h>
 #include <Atom/RHI.Reflect/AttachmentEnums.h>
+#include <Atom/RHI/AsyncWorkQueue.h>
+#include <Atom/RHI/BufferProperty.h>
+#include <Atom/RHI/DeviceBuffer.h>
 #include <AzCore/Memory/PoolAllocator.h>
 #include <AzCore/std/containers/list.h>
 #include <AzCore/std/parallel/mutex.h>
-#include <Atom/RHI/AsyncWorkQueue.h>
 #include <RHI/BufferMemoryView.h>
 #include <RHI/Queue.h>
 
@@ -21,7 +21,7 @@ namespace AZ
 {
     namespace RHI
     {
-        class BufferView;
+        class DeviceBufferView;
     }
     namespace Vulkan
     {
@@ -30,9 +30,9 @@ namespace AZ
         class CommandQueue;
 
         class Buffer final
-            : public RHI::Buffer
+            : public RHI::DeviceBuffer
         {
-            using Base = RHI::Buffer;
+            using Base = RHI::DeviceBuffer;
             friend class BufferPool;
             friend class AliasedHeap;
             friend class Device;
@@ -52,12 +52,12 @@ namespace AZ
             using SubresourceRangeOwner = BufferOwnerProperty::PropertyRange;
 
             // Returns a list of queues that owns a subresource region.
-            AZStd::vector<SubresourceRangeOwner> GetOwnerQueue(const RHI::BufferView& bufferView) const;
+            AZStd::vector<SubresourceRangeOwner> GetOwnerQueue(const RHI::DeviceBufferView& bufferView) const;
             AZStd::vector<SubresourceRangeOwner> GetOwnerQueue(const RHI::BufferSubresourceRange* range = nullptr) const;
 
             // Set the owner queue of a subresource region.
             void SetOwnerQueue(const QueueId& queueId, const RHI::BufferSubresourceRange* range = nullptr);
-            void SetOwnerQueue(const QueueId& queueId, const RHI::BufferView& bufferView);
+            void SetOwnerQueue(const QueueId& queueId, const RHI::DeviceBufferView& bufferView);
 
             void SetUploadHandle(const RHI::AsyncWorkHandle& handle);
             const RHI::AsyncWorkHandle& GetUploadHandle() const;
@@ -78,7 +78,7 @@ namespace AZ
             //////////////////////////////////////////////////////////////////////////
 
             //////////////////////////////////////////////////////////////////////////
-            // RHI::Resource
+            // RHI::DeviceResource
             void ReportMemoryUsage(RHI::MemoryStatisticsBuilder& builder) const override;
             //////////////////////////////////////////////////////////////////////////
    

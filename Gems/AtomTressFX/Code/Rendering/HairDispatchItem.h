@@ -8,15 +8,15 @@
 
 #pragma once
 
-#include <Atom/RHI/DispatchItem.h>
+#include <Atom/RHI/DeviceDispatchItem.h>
 #include <AtomCore/Instance/InstanceData.h>
 
 namespace AZ
 {
     namespace RHI
     {
-        class BufferView;
-        class PipelineState;
+        class DeviceBufferView;
+        class DevicePipelineState;
     }
 
     namespace RPI
@@ -62,10 +62,10 @@ namespace AZ
                     uint32_t elementsAmount
                 );
 
-                RHI::DispatchItem* GetDispatchItem() { return &m_dispatchItem;  }
+                RHI::DeviceDispatchItem* GetDispatchItem() { return &m_dispatchItem;  }
 
             private:
-                RHI::DispatchItem m_dispatchItem;
+                RHI::DeviceDispatchItem m_dispatchItem;
                 RPI::Shader* m_shader;
             };
 

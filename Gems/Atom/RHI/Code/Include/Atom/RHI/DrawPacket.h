@@ -38,7 +38,7 @@ namespace AZ
         {
             friend class DrawPacketBuilder;
         public:
-            using DrawItemVisitor = AZStd::function<void(DrawListTag, DrawItemProperties)>;
+            using DrawItemVisitor = AZStd::function<void(DrawListTag, DeviceDrawItemProperties)>;
 
             //! Draw packets cannot be move constructed or copied, as they contain an additional memory payload.
             AZ_DISABLE_COPY_MOVE(DrawPacket);
@@ -50,7 +50,7 @@ namespace AZ
             size_t GetDrawItemCount() const;
 
             //! Returns the draw item and its properties associated with the provided index.
-            DrawItemProperties GetDrawItem(size_t index) const;
+            DeviceDrawItemProperties GetDrawItem(size_t index) const;
 
             //! Returns the draw list tag associated with the provided index.
             DrawListTag GetDrawListTag(size_t index) const;
@@ -75,7 +75,7 @@ namespace AZ
             DrawFilterMask m_drawFilterMask = DrawFilterMaskDefaultValue;
 
             // The index buffer view used when the draw call is indexed.
-            IndexBufferView m_indexBufferView;
+            DeviceIndexBufferView m_indexBufferView;
 
             uint8_t m_drawItemCount = 0;
             uint8_t m_streamBufferViewCount = 0;
@@ -86,7 +86,7 @@ namespace AZ
             uint8_t m_viewportsCount = 0;
 
             // List of draw items.
-            const DrawItem* m_drawItems = nullptr;
+            const DeviceDrawItem* m_drawItems = nullptr;
 
             // List of draw item sort keys associated with the draw item index.
             const DrawItemSortKey* m_drawItemSortKeys = nullptr;
@@ -95,16 +95,16 @@ namespace AZ
             const DrawListTag* m_drawListTags = nullptr;
 
             // List of shader resource groups shared by all draw items.
-            const ShaderResourceGroup* const* m_shaderResourceGroups = nullptr;
+            const DeviceShaderResourceGroup* const* m_shaderResourceGroups = nullptr;
 
             // List of shader resource groups that aren't shared, but unique for each draw item.
-            const ShaderResourceGroup* const* m_uniqueShaderResourceGroups = nullptr;
+            const DeviceShaderResourceGroup* const* m_uniqueShaderResourceGroups = nullptr;
 
             // List of inline constants shared by all draw items.
             const uint8_t* m_rootConstants = nullptr;
 
             // The list of stream buffer views. Each draw item has a view into the array.
-            const StreamBufferView* m_streamBufferViews = nullptr;
+            const DeviceStreamBufferView* m_streamBufferViews = nullptr;
 
             // Optional list of scissors to be used by all draw items.
             const Scissor* m_scissors = nullptr;

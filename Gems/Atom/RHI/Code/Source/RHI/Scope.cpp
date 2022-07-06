@@ -5,10 +5,10 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <Atom/RHI/Scope.h>
+#include <Atom/RHI/DeviceBufferPoolBase.h>
+#include <Atom/RHI/DeviceImagePoolBase.h>
 #include <Atom/RHI/ResourcePoolDatabase.h>
-#include <Atom/RHI/ImagePoolBase.h>
-#include <Atom/RHI/BufferPoolBase.h>
+#include <Atom/RHI/Scope.h>
 
 namespace AZ
 {
@@ -99,7 +99,7 @@ namespace AZ
             resourcePoolDatabase.ForEachPoolResolver<decltype(queuePoolResolverFunction)>(queuePoolResolverFunction);
         }
 
-        void Scope::AddQueryPoolUse(Ptr<QueryPool> queryPool, [[maybe_unused]] const RHI::Interval& interval, [[maybe_unused]] RHI::ScopeAttachmentAccess access)
+        void Scope::AddQueryPoolUse(Ptr<DeviceQueryPool> queryPool, [[maybe_unused]] const RHI::Interval& interval, [[maybe_unused]] RHI::ScopeAttachmentAccess access)
         {
             m_queryPools.push_back(queryPool);
         }
@@ -175,12 +175,12 @@ namespace AZ
             return m_resourcePoolResolves;
         }
 
-        const AZStd::vector<SwapChain*>& Scope::GetSwapChainsToPresent() const
+        const AZStd::vector<DeviceSwapChain*>& Scope::GetSwapChainsToPresent() const
         {
             return m_swapChainsToPresent;
         }
 
-        const AZStd::vector<Ptr<Fence>>& Scope::GetFencesToSignal() const
+        const AZStd::vector<Ptr<DeviceFence>>& Scope::GetFencesToSignal() const
         {
             return m_fencesToSignal;
         }
@@ -214,7 +214,7 @@ namespace AZ
             consumer->m_producersByQueue[static_cast<uint32_t>(producer->GetHardwareQueueClass())] = producer;
         }
 
-        void Scope::AddFenceToSignal(Ptr<Fence> fence)
+        void Scope::AddFenceToSignal(Ptr<DeviceFence> fence)
         {
             m_fencesToSignal.push_back(fence);
         }

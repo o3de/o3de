@@ -15,7 +15,7 @@ namespace AZ
 {
     namespace Vulkan
     {
-        class Resource;
+        class DeviceResource;
         class Scope;
         class Buffer;
         class Image;
@@ -46,14 +46,14 @@ namespace AZ
             // RHI::AliasedHeap
             AZStd::unique_ptr<RHI::AliasingBarrierTracker> CreateBarrierTrackerInternal() override;
             RHI::ResultCode InitInternal(RHI::Device& device, const RHI::AliasedHeapDescriptor& descriptor) override;
-            RHI::ResultCode InitImageInternal(const RHI::ImageInitRequest& request, size_t heapOffset) override;
-            RHI::ResultCode InitBufferInternal(const RHI::BufferInitRequest& request, size_t heapOffset) override;
+            RHI::ResultCode InitImageInternal(const RHI::DeviceImageInitRequest& request, size_t heapOffset) override;
+            RHI::ResultCode InitBufferInternal(const RHI::DeviceBufferInitRequest& request, size_t heapOffset) override;
             //////////////////////////////////////////////////////////////////////////
 
             //////////////////////////////////////////////////////////////////////////
-            // RHI::ResourcePool
+            // RHI::DeviceResourcePool
             void ShutdownInternal() override;
-            void ShutdownResourceInternal(RHI::Resource& resource) override;
+            void ShutdownResourceInternal(RHI::DeviceResource& resource) override;
             //////////////////////////////////////////////////////////////////////////
 
             Device& GetVulkanRHIDevice() const;

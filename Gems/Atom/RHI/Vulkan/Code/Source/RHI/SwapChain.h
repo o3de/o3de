@@ -7,16 +7,16 @@
  */
 #pragma once
 
-#include <Atom/RHI/SwapChain.h>
 #include <Atom/RHI.Reflect/SwapChainDescriptor.h>
+#include <Atom/RHI/DeviceSwapChain.h>
 #include <AzCore/std/containers/list.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/utils.h>
-#include <RHI/Semaphore.h>
+#include <RHI/Framebuffer.h>
 #include <RHI/Image.h>
 #include <RHI/ImageView.h>
-#include <RHI/Framebuffer.h>
 #include <RHI/RenderPass.h>
+#include <RHI/Semaphore.h>
 #include <RHI/WSISurface.h>
 
 namespace AZ
@@ -27,9 +27,9 @@ namespace AZ
         class CommandQueue;
 
         class SwapChain final
-            : public RHI::SwapChain
+            : public RHI::DeviceSwapChain
         {
-            using Base = RHI::SwapChain;
+            using Base = RHI::DeviceSwapChain;
 
         public:
             AZ_CLASS_ALLOCATOR(SwapChain, AZ::SystemAllocator, 0);
@@ -64,7 +64,7 @@ namespace AZ
             // RHI::SwapChain
             RHI::ResultCode InitInternal(RHI::Device& device, const RHI::SwapChainDescriptor& descriptor, RHI::SwapChainDimensions* nativeDimensions) override;
             void ShutdownInternal() override;
-            RHI::ResultCode InitImageInternal(const RHI::SwapChain::InitImageRequest& request) override;
+            RHI::ResultCode InitImageInternal(const RHI::DeviceSwapChain::InitImageRequest& request) override;
             RHI::ResultCode ResizeInternal(const RHI::SwapChainDimensions& dimensions, RHI::SwapChainDimensions* nativeDimensions) override;
             uint32_t PresentInternal() override;
             void SetVerticalSyncIntervalInternal(uint32_t previousVsyncInterval) override;

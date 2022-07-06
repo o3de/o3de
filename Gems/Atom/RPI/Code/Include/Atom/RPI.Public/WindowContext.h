@@ -10,7 +10,7 @@
 
 #include <Atom/RPI.Public/Base.h>
 
-#include <Atom/RHI/SwapChain.h>
+#include <Atom/RHI/DeviceSwapChain.h>
 
 #include <Atom/RHI.Reflect/Scissor.h>
 #include <Atom/RHI.Reflect/Viewport.h>
@@ -57,7 +57,7 @@ namespace AZ
             const RHI::AttachmentId& GetSwapChainAttachmentId(ViewType viewType = ViewType::Default) const;
 
             //! Retrieves the underlying SwapChain created by this WindowContext
-            const RHI::Ptr<RHI::SwapChain>& GetSwapChain(ViewType viewType = ViewType::Default) const;
+            const RHI::Ptr<RHI::DeviceSwapChain>& GetSwapChain(ViewType viewType = ViewType::Default) const;
 
             //! Retrieves the default ViewportState for the WindowContext
             const RHI::Viewport& GetViewport(ViewType viewType = ViewType::Default) const;
@@ -106,7 +106,7 @@ namespace AZ
             struct SwapChainData
             {
                 // RHI SwapChain object itself
-                RHI::Ptr<RHI::SwapChain> m_swapChain;
+                RHI::Ptr<RHI::DeviceSwapChain> m_swapChain;
 
                 // The default viewport that covers the entire surface
                 RHI::Viewport m_viewport;

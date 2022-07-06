@@ -18,9 +18,6 @@ namespace AZ
 {
     namespace Vulkan
     {
-        class Device;
-
-
         class FrameGraphExecuter final
             : public RHI::FrameGraphExecuter
         {
@@ -53,5 +50,5 @@ namespace AZ
             AZStd::unordered_map<RHI::GraphGroupId, AZStd::unique_ptr<FrameGraphExecuteGroupHandlerBase>> m_groupHandlers;
             FrameGraphExecuterData m_frameGraphExecuterData;
         };
-    }
+    } // namespace Vulkan
 }

@@ -7,8 +7,8 @@
  */
 #pragma once
 
+#include <Atom/RHI/DeviceResourcePool.h>
 #include <Atom/RHI/FrameEventBus.h>
-#include <Atom/RHI/ResourcePool.h>
 
 namespace AZ
 {
@@ -35,7 +35,9 @@ namespace AZ
             virtual void Deactivate() {}
             
             /// Called when a resource from the pool is being Shutdown
-            virtual void OnResourceShutdown(const RHI::Resource& resource) {}
+            virtual void OnResourceShutdown(const RHI::DeviceResource& resource)
+            {
+            }
 
             Device& GetDevice() const { return m_device; }
 

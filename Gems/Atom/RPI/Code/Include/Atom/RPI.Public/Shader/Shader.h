@@ -14,8 +14,8 @@
 #include <Atom/RPI.Reflect/Shader/ShaderOptionGroup.h>
 #include <Atom/RPI.Reflect/Shader/IShaderVariantFinder.h>
 
+#include <Atom/RHI/DevicePipelineLibrary.h>
 #include <Atom/RHI/DrawListTagRegistry.h>
-#include <Atom/RHI/PipelineLibrary.h>
 
 #include <AtomCore/Instance/InstanceData.h>
 #include <AzCore/IO/SystemFile.h>
@@ -115,7 +115,7 @@ namespace AZ
             const ShaderOutputContract& GetOutputContract() const;
             
             /// Acquires a pipeline state directly from a descriptor.
-            const RHI::PipelineState* AcquirePipelineState(const RHI::PipelineStateDescriptor& descriptor) const;
+            const RHI::DevicePipelineState* AcquirePipelineState(const RHI::PipelineStateDescriptor& descriptor) const;
 
             /// Finds and returns the shader resource group asset with the requested name. Returns an empty handle if no matching group was found.
             const RHI::Ptr<RHI::ShaderResourceGroupLayout>& FindShaderResourceGroupLayout(const Name& shaderResourceGroupName) const;

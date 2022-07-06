@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <Atom/RHI/QueryPool.h>
+#include <Atom/RHI/DeviceQueryPool.h>
 #include <AzCore/std/parallel/conditional_variable.h>
 
 namespace AZ
@@ -18,9 +18,9 @@ namespace AZ
 
         
         class QueryPool final
-            : public RHI::QueryPool
+            : public RHI::DeviceQueryPool
         {
-            using Base = RHI::QueryPool;
+            using Base = RHI::DeviceQueryPool;
         public:
             AZ_RTTI(QueryPool, "{0C03DF09-F4F4-45FB-BE90-4779E44CD4D6}", Base);
             AZ_CLASS_ALLOCATOR(QueryPool, AZ::SystemAllocator, 0);

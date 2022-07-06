@@ -78,7 +78,7 @@ namespace AZ
             Base::Shutdown();
         }
 
-        uint64_t AsyncUploadQueue::QueueUpload(const RHI::BufferStreamRequest& uploadRequest)
+        uint64_t AsyncUploadQueue::QueueUpload(const RHI::DeviceBufferStreamRequest& uploadRequest)
         {
             Buffer& destBuffer = static_cast<Buffer&>(*uploadRequest.m_buffer);
             const MemoryView& destMemoryView = destBuffer.GetMemoryView();
@@ -89,11 +89,11 @@ namespace AZ
             // We just map, copy and then unmap.
             if(mtlStorageMode == MTLStorageModeShared || mtlStorageMode == GetCPUGPUMemoryMode())
             {
-                RHI::BufferMapRequest mapRequest;
+                RHI::DeviceBufferMapRequest mapRequest;
                 mapRequest.m_buffer = uploadRequest.m_buffer;
                 mapRequest.m_byteCount = uploadRequest.m_byteCount;
                 mapRequest.m_byteOffset = uploadRequest.m_byteOffset;
-                RHI::BufferMapResponse mapResponse;
+                RHI::DeviceBufferMapResponse mapResponse;
                 bufferPool.MapBuffer(mapRequest, mapResponse);
                 ::memcpy(mapResponse.m_data, uploadRequest.m_sourceData, uploadRequest.m_byteCount);
                 bufferPool.UnmapBuffer(*uploadRequest.m_buffer);
@@ -168,7 +168,7 @@ namespace AZ
         }
                 
         // [GFX TODO][ATOM-4205] Stage/Upload 3D streaming images more efficiently.
-        RHI::AsyncWorkHandle AsyncUploadQueue::QueueUpload(const RHI::StreamingImageExpandRequest& request, uint32_t residentMip)
+        RHI::AsyncWorkHandle AsyncUploadQueue::QueueUpload(const RHI::DeviceStreamingImageExpandRequest& request, uint32_t residentMip)
         {
             auto& device = static_cast<Device&>(GetDevice());
             id<MTLDevice> mtlDevice = device.GetMtlDevice();

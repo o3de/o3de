@@ -57,7 +57,7 @@ namespace AZ
          * Describes an instance of a stream channel within a stream layout. A stream channel
          * corresponds to a single data element on the input vertex, and it has a semantic associated
          * with it which matches the element within the shader. The data in a stream channel can be
-         * offset from the base of the parent StreamBufferView to interleave multiple channels within 
+         * offset from the base of the parent DeviceStreamBufferView to interleave multiple channels within 
          * the same buffer.
          */
         class StreamChannelDescriptor
@@ -84,13 +84,13 @@ namespace AZ
             /// The parent stream buffer index.
             uint32_t m_bufferIndex = 0;
 
-            /// Byte offset from the base of the StreamBufferView to the first element in this channel. 
+            /// Byte offset from the base of the DeviceStreamBufferView to the first element in this channel. 
             /// Used to interleave multiple channels in a single buffer.
             uint32_t m_byteOffset = 0;
         };
 
         /**
-         * Describes an instance of a StreamBufferView within the stream layout. Each stream
+         * Describes an instance of a DeviceStreamBufferView within the stream layout. Each stream
          * buffer provides new data to the shader at a specified step rate. The byte stride
          * is the total width of a single element in the buffer stream.
          */
@@ -116,9 +116,9 @@ namespace AZ
 
             /**
              * The distance in bytes between consecutive vertex entries in the buffer.
-             * This will match the stride value in StreamBufferView. It is provided separately here
+             * This will match the stride value in DeviceStreamBufferView. It is provided separately here
              * because some platforms may require this information at PSO compile time, while the 
-             * StreamBufferView is not available until draw time.
+             * DeviceStreamBufferView is not available until draw time.
              */
             uint32_t m_byteStride = 0;
         };

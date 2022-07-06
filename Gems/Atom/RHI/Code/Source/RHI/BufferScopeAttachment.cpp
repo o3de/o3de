@@ -8,7 +8,7 @@
 
 #include <Atom/RHI/BufferScopeAttachment.h>
 #include <Atom/RHI/BufferFrameAttachment.h>
-#include <Atom/RHI/BufferView.h>
+#include <Atom/RHI/DeviceBufferView.h>
 
 namespace AZ
 {
@@ -39,12 +39,12 @@ namespace AZ
             return m_descriptor;
         }
 
-        const BufferView* BufferScopeAttachment::GetBufferView() const
+        const DeviceBufferView* BufferScopeAttachment::GetBufferView() const
         {
-            return static_cast<const BufferView*>(ScopeAttachment::GetResourceView());
+            return static_cast<const DeviceBufferView*>(ScopeAttachment::GetResourceView());
         }
 
-        void BufferScopeAttachment::SetBufferView(ConstPtr<BufferView> bufferView)
+        void BufferScopeAttachment::SetBufferView(ConstPtr<DeviceBufferView> bufferView)
         {
             SetResourceView(AZStd::move(bufferView));
         }

@@ -22,7 +22,7 @@ namespace AZ
         {
         }
     
-        RHI::ResultCode ImagePoolResolver::UpdateImage(const RHI::ImageUpdateRequest& request, size_t& bytesTransferred)
+        RHI::ResultCode ImagePoolResolver::UpdateImage(const RHI::DeviceImageUpdateRequest& request, size_t& bytesTransferred)
         {
             Image* image = static_cast<Image*>(request.m_image);
 
@@ -111,8 +111,8 @@ namespace AZ
 
             m_uploadPackets.clear();
         }
-    
-        void ImagePoolResolver::OnResourceShutdown(const RHI::Resource& resource)
+
+        void ImagePoolResolver::OnResourceShutdown(const RHI::DeviceResource& resource)
         {
             AZStd::lock_guard<AZStd::mutex> lock(m_uploadPacketsLock);
             const Image* image = static_cast<const Image*>(&resource);

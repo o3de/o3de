@@ -183,7 +183,7 @@ namespace UnitTest
         void TearDown() override
         {
             using namespace AZ;
-            RHI::ResourceInvalidateBus::ExecuteQueuedEvents();
+            RHI::DeviceResourceInvalidateBus::ExecuteQueuedEvents();
 
             m_defaultPool = nullptr;
 
@@ -315,7 +315,7 @@ namespace UnitTest
 
             const size_t mipChainTailIndex = imageAsset->GetMipChainCount() - 1;
 
-            RHI::Ptr<RHI::Image> rhiImage = imageInstance->GetRHIImage();
+            RHI::Ptr<RHI::DeviceImage> rhiImage = imageInstance->GetRHIImage();
 
             // This should no-op.
             imageInstance->TrimToMipChainLevel(mipChainTailIndex);

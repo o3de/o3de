@@ -7,15 +7,14 @@
  */
 #pragma once
 
-#include <AzCore/UnitTest/TestTypes.h>
-#include <Atom/RHI/Query.h>
-#include <Atom/RHI/QueryPool.h>
+#include <Atom/RHI/DeviceQuery.h>
+#include <Atom/RHI/DeviceQueryPool.h>
 #include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/UnitTest/TestTypes.h>
 
 namespace UnitTest
 {
-    class Query
-        : public AZ::RHI::Query
+    class Query : public AZ::RHI::DeviceQuery
     {
     public:
         AZ_CLASS_ALLOCATOR(Query, AZ::SystemAllocator, 0);
@@ -26,8 +25,7 @@ namespace UnitTest
         AZ::RHI::ResultCode WriteTimestampInternal(AZ::RHI::CommandList& commandList) override;
     };
 
-    class QueryPool
-        : public AZ::RHI::QueryPool
+    class QueryPool : public AZ::RHI::DeviceQueryPool
     {
     public:
         AZ_CLASS_ALLOCATOR(QueryPool, AZ::SystemAllocator, 0);
@@ -36,7 +34,7 @@ namespace UnitTest
 
     private:
         AZ::RHI::ResultCode InitInternal(AZ::RHI::Device& device, const AZ::RHI::QueryPoolDescriptor& descriptor) override;
-        AZ::RHI::ResultCode InitQueryInternal(AZ::RHI::Query& query) override;
+        AZ::RHI::ResultCode InitQueryInternal(AZ::RHI::DeviceQuery& query) override;
         AZ::RHI::ResultCode GetResultsInternal(uint32_t startIndex, uint32_t queryCount, uint64_t* results, uint32_t resultsCount, AZ::RHI::QueryResultFlagBits flags) override;
     };
 }

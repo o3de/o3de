@@ -7,16 +7,15 @@
  */
 #pragma once
 
+#include <Atom/RHI/DeviceRayTracingBufferPools.h>
 #include <AzCore/Memory/SystemAllocator.h>
-#include <Atom/RHI/RayTracingBufferPools.h>
 
 namespace AZ
 {
     namespace Vulkan
     {
         //! This is the Vulkan-specific RayTracingBufferPools class.
-        class RayTracingBufferPools final
-            : public RHI::RayTracingBufferPools
+        class RayTracingBufferPools final : public RHI::DeviceRayTracingBufferPools
         {
         public:
             AZ_CLASS_ALLOCATOR(RayTracingBufferPools, AZ::SystemAllocator, 0);

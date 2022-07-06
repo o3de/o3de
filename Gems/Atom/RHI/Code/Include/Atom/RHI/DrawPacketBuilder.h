@@ -32,13 +32,13 @@ namespace AZ
                 uint8_t m_stencilRef = 0;
 
                 //! The array of stream buffers to bind for this draw item.
-                AZStd::span<const StreamBufferView> m_streamBufferViews;
+                AZStd::span<const DeviceStreamBufferView> m_streamBufferViews;
 
                 //! Shader resource group unique for this draw request
-                const ShaderResourceGroup* m_uniqueShaderResourceGroup = nullptr;
+                const DeviceShaderResourceGroup* m_uniqueShaderResourceGroup = nullptr;
 
                 //! The pipeline state assigned to this draw item.
-                const PipelineState* m_pipelineState = nullptr;
+                const DevicePipelineState* m_pipelineState = nullptr;
 
                 //! The sort key assigned to this draw item.
                 DrawItemSortKey m_sortKey = 0;
@@ -52,9 +52,9 @@ namespace AZ
 
             void Begin(IAllocator* allocator);
 
-            void SetDrawArguments(const DrawArguments& drawArguments);
+            void SetDrawArguments(const DeviceDrawArguments& drawArguments);
 
-            void SetIndexBufferView(const IndexBufferView& indexBufferView);
+            void SetIndexBufferView(const DeviceIndexBufferView& indexBufferView);
 
             void SetRootConstants(AZStd::span<const uint8_t> rootConstants);
 
@@ -66,7 +66,7 @@ namespace AZ
 
             void SetViewport(const Viewport& viewport);
 
-            void AddShaderResourceGroup(const ShaderResourceGroup* shaderResourceGroup);
+            void AddShaderResourceGroup(const DeviceShaderResourceGroup* shaderResourceGroup);
 
             void SetDrawFilterMask(DrawFilterMask filterMask);
 
@@ -78,13 +78,13 @@ namespace AZ
             void ClearData();
 
             IAllocator* m_allocator = nullptr;
-            DrawArguments m_drawArguments;
+            DeviceDrawArguments m_drawArguments;
             DrawListMask m_drawListMask = 0;
             DrawFilterMask m_drawFilterMask = DrawFilterMaskDefaultValue;
             size_t m_streamBufferViewCount = 0;
-            IndexBufferView m_indexBufferView;
+            DeviceIndexBufferView m_indexBufferView;
             AZStd::fixed_vector<DrawRequest, DrawItemCountMax> m_drawRequests;
-            AZStd::fixed_vector<const ShaderResourceGroup*, Limits::Pipeline::ShaderResourceGroupCountMax> m_shaderResourceGroups;
+            AZStd::fixed_vector<const DeviceShaderResourceGroup*, Limits::Pipeline::ShaderResourceGroupCountMax> m_shaderResourceGroups;
             AZStd::span<const uint8_t> m_rootConstants;
             AZStd::fixed_vector<Scissor, Limits::Pipeline::AttachmentColorCountMax> m_scissors;
             AZStd::fixed_vector<Viewport, Limits::Pipeline::AttachmentColorCountMax> m_viewports;

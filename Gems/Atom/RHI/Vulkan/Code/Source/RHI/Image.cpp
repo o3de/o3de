@@ -34,7 +34,7 @@ namespace AZ
             return aznew Image();
         }
 
-         RHI::ResultCode Image::Init(Device& device, VkImage image, const RHI::ImageDescriptor& descriptor)
+        RHI::ResultCode Image::Init(Device& device, VkImage image, const RHI::ImageDescriptor& descriptor)
         {
             AZ_Assert(image != VK_NULL_HANDLE, "Vulkan Image is null.");
             RHI::DeviceObject::Init(device);
@@ -131,7 +131,7 @@ namespace AZ
             return m_ownerQueue.Get(range ? *range : RHI::ImageSubresourceRange(GetDescriptor()));
         }
 
-        AZStd::vector<Image::SubresourceRangeOwner> Image::GetOwnerQueue(const RHI::ImageView& view) const
+        AZStd::vector<Image::SubresourceRangeOwner> Image::GetOwnerQueue(const RHI::DeviceImageView& view) const
         {
             auto range = RHI::ImageSubresourceRange(view.GetDescriptor());
             return GetOwnerQueue(&range);
@@ -143,7 +143,7 @@ namespace AZ
             m_ownerQueue.Set(range ? *range : RHI::ImageSubresourceRange(GetDescriptor()), queueId);
         }
 
-        void Image::SetOwnerQueue(const QueueId& queueId, const RHI::ImageView& view)
+        void Image::SetOwnerQueue(const QueueId& queueId, const RHI::DeviceImageView& view)
         {
             auto range = RHI::ImageSubresourceRange(view.GetDescriptor());
             SetOwnerQueue(queueId , &range);
@@ -323,7 +323,7 @@ namespace AZ
 
             return finalFlags;
         }
-        
+
         void Image::SetNameInternal(const AZStd::string_view& name)
         {
             if (IsInitialized() && !name.empty())
@@ -345,7 +345,10 @@ namespace AZ
         // We don't use vkGetImageSubresourceLayout to calculate the subresource layout because we don't use linear images.
         // vkGetImageSubresourceLayout only works for linear images.
         // We always use optimal tiling since it's more efficient. We upload the content of the image using a staging buffer.
-        void Image::GetSubresourceLayoutsInternal(const RHI::ImageSubresourceRange& subresourceRange, RHI::ImageSubresourceLayoutPlaced* subresourceLayouts, size_t* totalSizeInBytes) const
+        void Image::GetSubresourceLayoutsInternal(
+            const RHI::ImageSubresourceRange& subresourceRange,
+            RHI::DeviceImageSubresourceLayoutPlaced* subresourceLayouts,
+            size_t* totalSizeInBytes) const
         {
             const RHI::ImageDescriptor& imageDescriptor = GetDescriptor();
             uint32_t byteOffset = 0;
@@ -362,7 +365,7 @@ namespace AZ
                     if (subresourceLayouts)
                     {
                         const uint32_t subresourceIndex = RHI::GetImageSubresourceIndex(mipSlice, arraySlice, imageDescriptor.m_mipLevels);
-                        RHI::ImageSubresourceLayoutPlaced& layout = subresourceLayouts[subresourceIndex];
+                        RHI::DeviceImageSubresourceLayoutPlaced& layout = subresourceLayouts[subresourceIndex];
                         layout.m_bytesPerRow = subresourceLayout.m_bytesPerRow;
                         layout.m_bytesPerImage = subresourceLayout.m_rowCount * subresourceLayout.m_bytesPerRow;
                         layout.m_offset = byteOffset;

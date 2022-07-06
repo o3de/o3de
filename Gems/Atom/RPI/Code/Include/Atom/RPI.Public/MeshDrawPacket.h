@@ -84,7 +84,7 @@ namespace AZ
 
             // We hold ConstPtr<RHI::ShaderResourceGroup> instead of Instance<RPI::ShaderResourceGroup> because the Material class
             // does not allow public access to its Instance<RPI::ShaderResourceGroup>.
-            ConstPtr<RHI::ShaderResourceGroup> m_materialSrg;
+            ConstPtr<RHI::DeviceShaderResourceGroup> m_materialSrg;
 
             AZStd::fixed_vector<Data::Instance<ShaderResourceGroup>, RHI::DrawPacketBuilder::DrawItemCountMax> m_perDrawSrgs;
 

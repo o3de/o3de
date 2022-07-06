@@ -6,8 +6,8 @@
  *
  */
 
+#include <Atom/RHI/DeviceResource.h>
 #include <Atom/RHI/FrameAttachment.h>
-#include <Atom/RHI/Resource.h>
 
 namespace AZ
 {
@@ -42,17 +42,17 @@ namespace AZ
             return m_lifetimeType;
         }
 
-        Resource* FrameAttachment::GetResource()
+        DeviceResource* FrameAttachment::GetResource()
         {
             return m_resource.get();
         }
 
-        const Resource* FrameAttachment::GetResource() const
+        const DeviceResource* FrameAttachment::GetResource() const
         {
             return m_resource.get();
         }
 
-        void FrameAttachment::SetResource(Ptr<Resource> resource)
+        void FrameAttachment::SetResource(Ptr<DeviceResource> resource)
         {
             AZ_Assert(!m_resource, "A resource has already been assigned to this frame attachment.");
             AZ_Assert(resource, "Assigning a null resource to attachment %s.", m_attachmentId.GetCStr());

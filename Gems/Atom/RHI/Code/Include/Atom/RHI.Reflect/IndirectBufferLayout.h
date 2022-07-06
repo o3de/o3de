@@ -26,6 +26,7 @@ namespace AZ
             Draw,               // A Draw operation
             DrawIndexed,        // An Indexed Draw operation
             Dispatch,           // A Dispatch operation
+            DispatchRays,       // A Ray Tracing operation
             VertexBufferView,   // Set a Vertex Buffer View into a specific slot
             IndexBufferView,    // Set the Index Buffer View
             RootConstants     // Set the values of all Inline Constants

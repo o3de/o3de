@@ -15,11 +15,11 @@ namespace AZ
 {
     namespace RHI
     {
-        class ResourcePool;
+        class DeviceResourcePool;
         class ResourcePoolResolver;
-        class BufferPoolBase;
-        class ImagePoolBase;
-        class ShaderResourceGroupPool;
+        class DeviceBufferPoolBase;
+        class DeviceImagePoolBase;
+        class DeviceShaderResourceGroupPool;
 
         /**
          * This class is a simple database of active resource pools. Resource pools
@@ -27,7 +27,7 @@ namespace AZ
          * respectively. The database provides a way to iterate over active pools in
          * a thread-safe way using a reader-writer lock.
          *
-         * ResourcePool is friended to the class in order to allow it to control
+         * DeviceResourcePool is friended to the class in order to allow it to control
          * attachment / detachment from the database.
          */
         class ResourcePoolDatabase final
@@ -39,14 +39,14 @@ namespace AZ
 
             /**
              * Provides a read-locked loop over the set of buffer pools.
-             * @param predicate The predicate to call for each instance. Expected signature: void(const BufferPoolBase*).
+             * @param predicate The predicate to call for each instance. Expected signature: void(const DeviceBufferPoolBase*).
              */
             template <typename Predicate>
             void ForEachBufferPool(Predicate predicate) const;
 
             /**
              * Provides a read-locked loop over the set of buffer pools.
-             * @param predicate The predicate to call for each instance. Expected signature: void(BufferPoolBase*).
+             * @param predicate The predicate to call for each instance. Expected signature: void(DeviceBufferPoolBase*).
              */
             template <typename Predicate>
             void ForEachBufferPool(Predicate predicate);
@@ -81,14 +81,14 @@ namespace AZ
 
             /**
              * Provides a read-locked loop over the set resource pools.
-             * @param predicate The predicate to call for each instance. Expected signature: void(const ResourcePool*).
+             * @param predicate The predicate to call for each instance. Expected signature: void(const DeviceResourcePool*).
              */
             template <typename Predicate>
             void ForEachPool(Predicate predicate) const;
 
             /**
              * Provides a read-locked loop over the set of resource pools.
-             * @param predicate The predicate to call for each instance. Expected signature: void(ResourcePool*).
+             * @param predicate The predicate to call for each instance. Expected signature: void(DeviceResourcePool*).
              */
             template <typename Predicate>
             void ForEachPool(Predicate predicate);
@@ -108,15 +108,15 @@ namespace AZ
             void ForEachPoolResolver(Predicate predicate);
 
         private:
-            friend class ResourcePool;
-            void AttachPool(ResourcePool* resourcePool);
-            void DetachPool(ResourcePool* resourcePool);
+            friend class DeviceResourcePool;
+            void AttachPool(DeviceResourcePool* resourcePool);
+            void DetachPool(DeviceResourcePool* resourcePool);
 
             mutable AZStd::shared_mutex m_mutex;
-            AZStd::vector<ResourcePool*> m_pools;
-            AZStd::vector<BufferPoolBase*> m_bufferPools;
-            AZStd::vector<ImagePoolBase*> m_imagePools;
-            AZStd::vector<ShaderResourceGroupPool*> m_shaderResourceGroupPools;
+            AZStd::vector<DeviceResourcePool*> m_pools;
+            AZStd::vector<DeviceBufferPoolBase*> m_bufferPools;
+            AZStd::vector<DeviceImagePoolBase*> m_imagePools;
+            AZStd::vector<DeviceShaderResourceGroupPool*> m_shaderResourceGroupPools;
             AZStd::vector<ResourcePoolResolver*> m_poolResolvers;
         };
 

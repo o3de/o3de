@@ -29,7 +29,7 @@ namespace AZ
             , m_pool{streamingImagePool}
             {}
 
-            RHI::ResultCode UpdateImage(const RHI::StreamingImageExpandRequest& request);
+            RHI::ResultCode UpdateImage(const RHI::DeviceStreamingImageExpandRequest& request);
             int CalculateMipLevel(int lowestMipLength, int currentMipLength);
             
             void Compile() override;

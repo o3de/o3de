@@ -7,9 +7,9 @@
  */
 #pragma once
 
-#include <Atom/RHI/PipelineState.h>
-#include <RHI/PipelineLayout.h>
+#include <Atom/RHI/DevicePipelineState.h>
 #include <Metal/Metal.h>
+#include <RHI/PipelineLayout.h>
 
 namespace AZ
 {
@@ -27,8 +27,7 @@ namespace AZ
             MTLDepthClipMode    m_depthClipMode;
         };
 
-        class PipelineState final
-            : public RHI::PipelineState
+        class PipelineState final : public RHI::DevicePipelineState
         {
         public:
             AZ_CLASS_ALLOCATOR(PipelineState, AZ::SystemAllocator, 0);

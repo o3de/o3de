@@ -135,7 +135,7 @@ namespace AZ
             ImageSubresource::Reflect(context);
             ImageSubresourceRange::Reflect(context);
             ImageSubresourceLayout::Reflect(context);
-            ImageSubresourceLayoutPlaced::Reflect(context);
+            DeviceImageSubresourceLayoutPlaced::Reflect(context);
             //////////////////////////////////////////////////////////////////////////
 
             //////////////////////////////////////////////////////////////////////////

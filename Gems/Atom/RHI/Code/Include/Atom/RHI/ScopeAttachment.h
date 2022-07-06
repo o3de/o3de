@@ -7,9 +7,9 @@
  */
 #pragma once
 
-#include <Atom/RHI.Reflect/AttachmentId.h>
 #include <Atom/RHI.Reflect/AttachmentEnums.h>
-#include <Atom/RHI/ResourceView.h>
+#include <Atom/RHI.Reflect/AttachmentId.h>
+#include <Atom/RHI/DeviceResourceView.h>
 #include <AzCore/RTTI/RTTI.h>
 
 namespace AZ
@@ -18,7 +18,7 @@ namespace AZ
     {
         class Scope;
         class FrameAttachment;
-        class SwapChain;
+        class DeviceSwapChain;
     
         struct ScopeAttachmentUsageAndAccess
         {
@@ -61,7 +61,7 @@ namespace AZ
             const AZStd::vector<ScopeAttachmentUsageAndAccess>& GetUsageAndAccess() const;
             
             //! Returns the resource view.
-            const ResourceView* GetResourceView() const;
+            const DeviceResourceView* GetResourceView() const;
 
             //! Returns the parent scope that this attachment is bound to.
             const Scope& GetScope() const;
@@ -93,7 +93,7 @@ namespace AZ
         protected:
 
             //! Assigns the resource view to this scope attachment.
-            void SetResourceView(ConstPtr<ResourceView> resourceView);
+            void SetResourceView(ConstPtr<DeviceResourceView> resourceView);
 
         private:
             
@@ -104,7 +104,7 @@ namespace AZ
             ScopeAttachment* m_next = nullptr;
 
             /// The resource view declared for usage on this scope.
-            ConstPtr<ResourceView> m_resourceView;
+            ConstPtr<DeviceResourceView> m_resourceView;
 
             /// The scope that the attachment is bound to.
             Scope* m_scope = nullptr;

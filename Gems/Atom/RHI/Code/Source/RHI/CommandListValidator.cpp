@@ -5,20 +5,20 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <Atom/RHI/CommandListValidator.h>
-#include <Atom/RHI/Scope.h>
-#include <Atom/RHI/ShaderResourceGroup.h>
-#include <Atom/RHI/ShaderResourceGroupPool.h>
-#include <Atom/RHI/ResourcePool.h>
-#include <Atom/RHI/BufferPoolBase.h>
-#include <Atom/RHI/ImagePoolBase.h>
-#include <Atom/RHI/ImageView.h>
-#include <Atom/RHI/ResourceView.h>
-#include <Atom/RHI/Resource.h>
-#include <Atom/RHI/FrameGraph.h>
-#include <Atom/RHI/ScopeAttachment.h>
-#include <Atom/RHI/FrameAttachment.h>
 #include <Atom/RHI.Reflect/PipelineLayoutDescriptor.h>
+#include <Atom/RHI/CommandListValidator.h>
+#include <Atom/RHI/DeviceBufferPoolBase.h>
+#include <Atom/RHI/DeviceResource.h>
+#include <Atom/RHI/DeviceResourcePool.h>
+#include <Atom/RHI/DeviceResourceView.h>
+#include <Atom/RHI/FrameAttachment.h>
+#include <Atom/RHI/FrameGraph.h>
+#include <Atom/RHI/DeviceImagePoolBase.h>
+#include <Atom/RHI/DeviceImageView.h>
+#include <Atom/RHI/Scope.h>
+#include <Atom/RHI/ScopeAttachment.h>
+#include <Atom/RHI/DeviceShaderResourceGroup.h>
+#include <Atom/RHI/DeviceShaderResourceGroupPool.h>
 namespace AZ
 {
     namespace RHI
@@ -35,7 +35,7 @@ namespace AZ
 
             for (const ScopeAttachment* scopeAttachment : scope.GetAttachments())
             {
-                const ResourceView* resourceView = scopeAttachment->GetResourceView();
+                const DeviceResourceView* resourceView = scopeAttachment->GetResourceView();
                 m_attachments[&resourceView->GetResource()].push_back(scopeAttachment);
             }
         }
@@ -50,7 +50,7 @@ namespace AZ
             m_attachments.clear();
         }
 
-        bool CommandListValidator::ValidateShaderResourceGroup(const ShaderResourceGroup& shaderResourceGroup, const ShaderResourceGroupBindingInfo& bindingInfo) const
+        bool CommandListValidator::ValidateShaderResourceGroup(const DeviceShaderResourceGroup& shaderResourceGroup, const ShaderResourceGroupBindingInfo& bindingInfo) const
         {
             if (!Validation::IsEnabled())
             {
@@ -75,7 +75,7 @@ namespace AZ
 
             bool isSuccess = true;
 
-            const ShaderResourceGroupData& groupData = shaderResourceGroup.GetData();
+            const DeviceShaderResourceGroupData& groupData = shaderResourceGroup.GetData();
             const ShaderResourceGroupLayout& groupLayout = *groupData.GetLayout();
 
             // Validate buffers
@@ -230,16 +230,18 @@ namespace AZ
 
         bool CommandListValidator::ValidateView(const ValidateViewContext& context, bool ignoreAttachmentValidation) const
         {
-            const ResourceView& resourceView = *context.m_resourceView;
-            const Resource& resource = resourceView.GetResource();
+            const DeviceResourceView& resourceView = *context.m_resourceView;
+            const DeviceResource& resource = resourceView.GetResource();
             [[maybe_unused]] const char* resourceViewName = resourceView.GetName().GetCStr();
             [[maybe_unused]] const char* resourceName = resource.GetName().GetCStr();
 
             if (resourceView.IsStale())
             {
                 AZ_Warning(
-                    "CommandListValidator", false,
-                    "[Scope '%s', SRG '%s']: ResourceView '%s' of Resource '%s' is stale! This indicates that the SRG was not properly "
+                    "CommandListValidator",
+                    false,
+                    "[Scope '%s', SRG '%s']: DeviceResourceView '%s' of DeviceResource '%s' is stale! This indicates that the SRG was not "
+                    "properly "
                     "compiled, or was invalidated after compilation during the command list recording phase.",
                     context.m_scopeName,
                     context.m_srgName,
@@ -254,12 +256,13 @@ namespace AZ
                 return ValidateAttachment(context, resource.GetFrameAttachment());
             }
 
-            // Resource is not an attachment. It must be in a read-only state.
+            // DeviceResource is not an attachment. It must be in a read-only state.
             if (!ignoreAttachmentValidation && context.m_scopeAttachmentAccess != ScopeAttachmentAccess::Read)
             {
                 AZ_Warning(
-                    "CommandListValidator", false,
-                    "[Scope '%s', SRG '%s']: ResourceView '%s' of Resource '%s' is declared as '%s', but this type "
+                    "CommandListValidator",
+                    false,
+                    "[Scope '%s', SRG '%s']: DeviceResourceView '%s' of DeviceResource '%s' is declared as '%s', but this type "
                     "requires that the resource be an attachment.",
                     context.m_scopeName,
                     context.m_srgName,

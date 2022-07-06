@@ -52,7 +52,7 @@ namespace AZ
             m_cullable.SetDebugName(AZ::Name("DiffuseProbeGrid Volume"));
 
             // create the visualization TLAS
-            m_visualizationTlas = AZ::RHI::RayTracingTlas::CreateRHIRayTracingTlas();
+            m_visualizationTlas = AZ::RHI::DeviceRayTracingTlas::CreateRHIRayTracingTlas();
 
             // create the grid data buffer
             m_gridDataBuffer = RHI::Factory::Get().CreateBuffer();
@@ -61,7 +61,7 @@ namespace AZ
             descriptor.m_byteCount = DiffuseProbeGridRenderData::GridDataBufferSize;
             descriptor.m_bindFlags = RHI::BufferBindFlags::ShaderReadWrite;
 
-            RHI::BufferInitRequest request;
+            RHI::DeviceBufferInitRequest request;
             request.m_buffer = m_gridDataBuffer.get();
             request.m_descriptor = descriptor;
             [[maybe_unused]] RHI::ResultCode result = m_renderData->m_bufferPool->InitBuffer(request);
@@ -351,7 +351,7 @@ namespace AZ
 
                     m_rayTraceImage[m_currentImageIndex] = RHI::Factory::Get().CreateImage();
 
-                    RHI::ImageInitRequest request;
+                    RHI::DeviceImageInitRequest request;
                     request.m_image = m_rayTraceImage[m_currentImageIndex].get();
                     request.m_descriptor = RHI::ImageDescriptor::Create2D(RHI::ImageBindFlags::ShaderReadWrite | RHI::ImageBindFlags::CopyRead, width, height, DiffuseProbeGridRenderData::RayTraceImageFormat);
                     [[maybe_unused]] RHI::ResultCode result = m_renderData->m_imagePool->InitImage(request);
@@ -365,7 +365,7 @@ namespace AZ
 
                     m_irradianceImage[m_currentImageIndex] = RHI::Factory::Get().CreateImage();
 
-                    RHI::ImageInitRequest request;
+                    RHI::DeviceImageInitRequest request;
                     request.m_image = m_irradianceImage[m_currentImageIndex].get();
                     request.m_descriptor = RHI::ImageDescriptor::Create2D(RHI::ImageBindFlags::ShaderReadWrite | RHI::ImageBindFlags::CopyRead, width, height, DiffuseProbeGridRenderData::IrradianceImageFormat);
                     RHI::ClearValue clearValue = RHI::ClearValue::CreateVector4Float(0.0f, 0.0f, 0.0f, 0.0f);
@@ -381,7 +381,7 @@ namespace AZ
 
                     m_distanceImage[m_currentImageIndex] = RHI::Factory::Get().CreateImage();
 
-                    RHI::ImageInitRequest request;
+                    RHI::DeviceImageInitRequest request;
                     request.m_image = m_distanceImage[m_currentImageIndex].get();
                     request.m_descriptor = RHI::ImageDescriptor::Create2D(RHI::ImageBindFlags::ShaderReadWrite | RHI::ImageBindFlags::CopyRead, width, height, DiffuseProbeGridRenderData::DistanceImageFormat);
                     [[maybe_unused]] RHI::ResultCode result = m_renderData->m_imagePool->InitImage(request);
@@ -395,7 +395,7 @@ namespace AZ
 
                     m_probeDataImage[m_currentImageIndex] = RHI::Factory::Get().CreateImage();
 
-                    RHI::ImageInitRequest request;
+                    RHI::DeviceImageInitRequest request;
                     request.m_image = m_probeDataImage[m_currentImageIndex].get();
                     request.m_descriptor = RHI::ImageDescriptor::Create2D(RHI::ImageBindFlags::ShaderReadWrite | RHI::ImageBindFlags::CopyRead, width, height, DiffuseProbeGridRenderData::ProbeDataImageFormat);
                     [[maybe_unused]] RHI::ResultCode result = m_renderData->m_imagePool->InitImage(request);
@@ -913,7 +913,7 @@ namespace AZ
             m_visualizationPrepareSrg->SetConstant(constantIndex, m_visualizationSphereRadius);
         }
 
-        void DiffuseProbeGrid::UpdateVisualizationRayTraceSrg(const Data::Instance<RPI::Shader>& shader, const RHI::Ptr<RHI::ShaderResourceGroupLayout>& layout, const RHI::ImageView* outputImageView)
+        void DiffuseProbeGrid::UpdateVisualizationRayTraceSrg(const Data::Instance<RPI::Shader>& shader, const RHI::Ptr<RHI::ShaderResourceGroupLayout>& layout, const RHI::DeviceImageView* outputImageView)
         {
             if (!m_visualizationRayTraceSrg)
             {

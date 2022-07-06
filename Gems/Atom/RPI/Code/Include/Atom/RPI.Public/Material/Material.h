@@ -27,7 +27,7 @@ namespace AZ
 {
     namespace RHI
     {
-        class ShaderResourceGroup;
+        class DeviceShaderResourceGroup;
     }
 
     namespace RPI
@@ -126,7 +126,7 @@ namespace AZ
             //! Do not set this in the shipping runtime unless you know what you are doing.
             void SetPsoHandlingOverride(MaterialPropertyPsoHandling psoHandlingOverride);
 
-            const RHI::ShaderResourceGroup* GetRHIShaderResourceGroup() const;
+            const RHI::DeviceShaderResourceGroup* GetRHIShaderResourceGroup() const;
 
             const Data::Asset<MaterialAsset>& GetAsset() const;
 
@@ -180,7 +180,7 @@ namespace AZ
             Data::Instance<RPI::ShaderResourceGroup> m_shaderResourceGroup;
 
             //! The RHI shader resource group owned by m_shaderResourceGroup. Held locally to avoid an indirection.
-            const RHI::ShaderResourceGroup* m_rhiShaderResourceGroup = nullptr;
+            const RHI::DeviceShaderResourceGroup* m_rhiShaderResourceGroup = nullptr;
 
             //! Provides a description of the set of available material properties, cached locally so we don't have to keep fetching it from the MaterialTypeSourceData.
             RHI::ConstPtr<MaterialPropertiesLayout> m_layout;

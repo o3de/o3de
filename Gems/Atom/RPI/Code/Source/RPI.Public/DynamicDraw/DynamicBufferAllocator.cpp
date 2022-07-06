@@ -129,9 +129,9 @@ namespace AZ
             return allocatedBuffer;
         }
 
-        RHI::IndexBufferView DynamicBufferAllocator::GetIndexBufferView(RHI::Ptr<DynamicBuffer> dynamicBuffer, RHI::IndexFormat format)
+        RHI::DeviceIndexBufferView DynamicBufferAllocator::GetIndexBufferView(RHI::Ptr<DynamicBuffer> dynamicBuffer, RHI::IndexFormat format)
         {
-            return RHI::IndexBufferView(
+            return RHI::DeviceIndexBufferView(
                 *m_ringBuffer->GetRHIBuffer(),
                 GetBufferAddressOffset(dynamicBuffer),
                 dynamicBuffer->m_size,
@@ -139,9 +139,9 @@ namespace AZ
             );
         }
 
-        RHI::StreamBufferView DynamicBufferAllocator::GetStreamBufferView(RHI::Ptr<DynamicBuffer> dynamicBuffer, uint32_t strideByteCount)
+        RHI::DeviceStreamBufferView DynamicBufferAllocator::GetStreamBufferView(RHI::Ptr<DynamicBuffer> dynamicBuffer, uint32_t strideByteCount)
         {
-            return RHI::StreamBufferView(
+            return RHI::DeviceStreamBufferView(
                 *m_ringBuffer->GetRHIBuffer(),
                 GetBufferAddressOffset(dynamicBuffer),
                 dynamicBuffer->m_size,

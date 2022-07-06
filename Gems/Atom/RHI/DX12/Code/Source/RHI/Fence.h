@@ -11,7 +11,7 @@
 // are defined prior to the inclusion of the pix3 runtime.
 #include <RHI/DX12.h>
 
-#include <Atom/RHI/Fence.h>
+#include <Atom/RHI/DeviceFence.h>
 #include <Atom/RHI/Scope.h>
 #include <AzCore/Memory/PoolAllocator.h>
 #include <AzCore/std/containers/array.h>
@@ -109,7 +109,7 @@ namespace AZ
          * the internal Fence instance instead.
          */
         class FenceImpl final
-            : public RHI::Fence
+            : public RHI::DeviceFence
         {
         public:
             AZ_CLASS_ALLOCATOR(FenceImpl, AZ::SystemAllocator, 0);

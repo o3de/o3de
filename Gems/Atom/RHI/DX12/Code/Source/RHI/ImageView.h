@@ -7,10 +7,10 @@
  */
 #pragma once
 
-#include <RHI/Descriptor.h>
 #include <Atom/RHI.Reflect/AttachmentEnums.h>
-#include <Atom/RHI/ImageView.h>
+#include <Atom/RHI/DeviceImageView.h>
 #include <AzCore/Memory/PoolAllocator.h>
+#include <RHI/Descriptor.h>
 
 namespace AZ
 {
@@ -18,10 +18,10 @@ namespace AZ
     {
         class Image;
 
-        class ImageView final
-            : public RHI::ImageView
+        class ImageView final : public RHI::DeviceImageView
         {
-            using Base = RHI::ImageView;
+            using Base = RHI::DeviceImageView;
+
         public:
             AZ_CLASS_ALLOCATOR(ImageView, AZ::ThreadPoolAllocator, 0);
             AZ_RTTI(ImageView, "{FEC44057-C031-4454-9326-94758C4F729A}", Base);
@@ -49,7 +49,7 @@ namespace AZ
 
             //////////////////////////////////////////////////////////////////////////
             // RHI::ImageView
-            RHI::ResultCode InitInternal(RHI::Device& device, const RHI::Resource& resourceBase) override;
+            RHI::ResultCode InitInternal(RHI::Device& device, const RHI::DeviceResource& resourceBase) override;
             RHI::ResultCode InvalidateInternal() override;
             void ShutdownInternal() override;
             //////////////////////////////////////////////////////////////////////////

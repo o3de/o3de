@@ -191,6 +191,7 @@ namespace AZ
                 case IndirectCommandType::DrawIndexed:
                 case IndirectCommandType::Dispatch:
                 case IndirectCommandType::IndexBufferView:
+                case IndirectCommandType::DispatchRays:
                 case IndirectCommandType::RootConstants:
                 case IndirectCommandType::VertexBufferView:
                     if (AZStd::find(m_commands.begin(), m_commands.end(), command) != m_commands.end())

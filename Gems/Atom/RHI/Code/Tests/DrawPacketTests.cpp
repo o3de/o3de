@@ -12,7 +12,7 @@
 #include <Atom/RHI/DrawPacketBuilder.h>
 #include <Atom/RHI/DrawListContext.h>
 #include <Atom/RHI/DrawListTagRegistry.h>
-#include <Atom/RHI/PipelineState.h>
+#include <Atom/RHI/DevicePipelineState.h>
 
 #include <AzCore/Math/Random.h>
 #include <AzCore/std/sort.h>
@@ -25,14 +25,14 @@ namespace UnitTest
 
     struct DrawItemData
     {
-        DrawItemData(SimpleLcgRandom& random, const RHI::Buffer* bufferEmpty, const RHI::PipelineState* psoEmpty)
+        DrawItemData(SimpleLcgRandom& random, const RHI::DeviceBuffer* bufferEmpty, const RHI::DevicePipelineState* psoEmpty)
         {
             m_pipelineState = psoEmpty;
 
             // Fill with deterministic random data to compare against.
             for (auto& streamBufferView : m_streamBufferViews)
             {
-                streamBufferView = RHI::StreamBufferView{ *bufferEmpty, random.GetRandom(), random.GetRandom(), random.GetRandom() };
+                streamBufferView = RHI::DeviceStreamBufferView{ *bufferEmpty, random.GetRandom(), random.GetRandom(), random.GetRandom() };
             }
 
             m_tag = RHI::DrawListTag(random.GetRandom() % RHI::Limits::Pipeline::DrawListTagCountMax);
@@ -40,9 +40,9 @@ namespace UnitTest
             m_sortKey = random.GetRandom();
         }
 
-        AZStd::array<RHI::StreamBufferView, RHI::Limits::Pipeline::StreamCountMax> m_streamBufferViews;
+        AZStd::array<RHI::DeviceStreamBufferView, RHI::Limits::Pipeline::StreamCountMax> m_streamBufferViews;
 
-        const RHI::PipelineState* m_pipelineState;
+        const RHI::DevicePipelineState* m_pipelineState;
         RHI::DrawListTag m_tag;
         RHI::DrawItemSortKey m_sortKey;
         uint8_t m_stencilRef;
@@ -73,12 +73,12 @@ namespace UnitTest
                 m_drawItemDatas.emplace_back(random, m_bufferEmpty.get(), m_psoEmpty.get());
             }
 
-            m_indexBufferView = RHI::IndexBufferView(*m_bufferEmpty, random.GetRandom(), random.GetRandom(), RHI::IndexFormat::Uint16);
+            m_indexBufferView = RHI::DeviceIndexBufferView(*m_bufferEmpty, random.GetRandom(), random.GetRandom(), RHI::IndexFormat::Uint16);
         }
 
-        void ValidateDrawItem(const DrawItemData& drawItemData, RHI::DrawItemProperties itemProperties) const
+        void ValidateDrawItem(const DrawItemData& drawItemData, RHI::DeviceDrawItemProperties itemProperties) const
         {
-            const RHI::DrawItem* drawItem = itemProperties.m_item;
+            const RHI::DeviceDrawItem* drawItem = itemProperties.m_item;
 
             EXPECT_EQ(itemProperties.m_sortKey, drawItemData.m_sortKey);
             EXPECT_EQ(drawItem->m_stencilRef, drawItemData.m_stencilRef);
@@ -147,12 +147,12 @@ namespace UnitTest
             return drawPacket;
         }
 
-        RHI::Ptr<RHI::Buffer> m_bufferEmpty;
-        RHI::ConstPtr<RHI::PipelineState> m_psoEmpty;
+        RHI::Ptr<RHI::DeviceBuffer> m_bufferEmpty;
+        RHI::ConstPtr<RHI::DevicePipelineState> m_psoEmpty;
 
-        AZStd::array<RHI::Ptr<RHI::ShaderResourceGroup>, RHI::Limits::Pipeline::ShaderResourceGroupCountMax> m_srgs;
+        AZStd::array<RHI::Ptr<RHI::DeviceShaderResourceGroup>, RHI::Limits::Pipeline::ShaderResourceGroupCountMax> m_srgs;
         AZStd::array<uint8_t, sizeof(unsigned int) * 4> m_rootConstants;
-        RHI::IndexBufferView m_indexBufferView;
+        RHI::DeviceIndexBufferView m_indexBufferView;
 
         AZStd::vector<DrawItemData> m_drawItemDatas;
     };

@@ -7,9 +7,9 @@
  */
 #pragma once
 
+#include <Atom/RHI.Reflect/ClearValue.h>
 #include <Atom/RHI/FrameEventBus.h>
 #include <Atom/RHI/Scope.h>
-#include <Atom/RHI.Reflect/ClearValue.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/containers/vector.h>
 #include <RHI/Fence.h>
@@ -162,7 +162,7 @@ namespace AZ
             void ActivateInternal() override;
             void DeactivateInternal() override;
             void CompileInternal(RHI::Device& device) override;
-            void AddQueryPoolUse(RHI::Ptr<RHI::QueryPool> queryPool, const RHI::Interval& interval, RHI::ScopeAttachmentAccess access) override;
+            void AddQueryPoolUse(RHI::Ptr<RHI::DeviceQueryPool> queryPool, const RHI::Interval& interval, RHI::ScopeAttachmentAccess access) override;
             //////////////////////////////////////////////////////////////////////////
 
             //////////////////////////////////////////////////////////////////////////

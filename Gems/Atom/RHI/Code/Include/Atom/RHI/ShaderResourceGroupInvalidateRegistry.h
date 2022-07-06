@@ -7,14 +7,14 @@
  */
 #pragma once
 
-#include <Atom/RHI/ResourceInvalidateBus.h>
+#include <Atom/RHI/DeviceResourceInvalidateBus.h>
 
 namespace AZ
 {
     namespace RHI
     {
-        class Resource;
-        class ShaderResourceGroup;
+        class DeviceResource;
+        class DeviceShaderResourceGroup;
 
         /**
          * This data structure associates Resource invalidation events with Shader Resource Group compilation events.
@@ -41,24 +41,24 @@ namespace AZ
          * The registry is not thread-safe. It needs to be externally synchronized.
          */
         class ShaderResourceGroupInvalidateRegistry
-            : public ResourceInvalidateBus::MultiHandler
+            : public DeviceResourceInvalidateBus::MultiHandler
         {
         public:
-            using CompileGroupFunction = AZStd::function<void(ShaderResourceGroup&)>;
+            using CompileGroupFunction = AZStd::function<void(DeviceShaderResourceGroup&)>;
 
             ShaderResourceGroupInvalidateRegistry() = default;
 
             void SetCompileGroupFunction(CompileGroupFunction compileGroupFunction);
 
-            void OnAttach(const Resource* resource, ShaderResourceGroup* shaderResourceGroup);
+            void OnAttach(const DeviceResource* resource, DeviceShaderResourceGroup* shaderResourceGroup);
 
-            void OnDetach(const Resource* resource, ShaderResourceGroup* shaderResourceGroup);
+            void OnDetach(const DeviceResource* resource, DeviceShaderResourceGroup* shaderResourceGroup);
 
             bool IsEmpty() const;
 
         private:
             //////////////////////////////////////////////////////////////////////////
-            // ResourceInvalidateBus::Handler
+            // DeviceResourceInvalidateBus::Handler
             ResultCode OnResourceInvalidate() override;
             //////////////////////////////////////////////////////////////////////////
 
@@ -66,8 +66,8 @@ namespace AZ
             /// uses multiple views to the same resource (or the same view multiple times).
             using RefCountType = uint32_t;
 
-            using Registry = AZStd::unordered_map<ShaderResourceGroup*, RefCountType>;
-            using ResourceToRegistry = AZStd::unordered_map<const Resource*, Registry>;
+            using Registry = AZStd::unordered_map<DeviceShaderResourceGroup*, RefCountType>;
+            using ResourceToRegistry = AZStd::unordered_map<const DeviceResource*, Registry>;
 
             ResourceToRegistry m_resourceToRegistryMap;
             CompileGroupFunction m_compileGroupFunction;

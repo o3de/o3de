@@ -109,7 +109,7 @@ namespace AZ
 
                 m_readBuffersViews.resize(2);
            
-                RHI::Buffer* rhiBuffer = SharedBuffer::Get()->GetBuffer()->GetRHIBuffer();
+                RHI::DeviceBuffer* rhiBuffer = SharedBuffer::Get()->GetBuffer()->GetRHIBuffer();
                 for (uint8_t index = 0; index < 2 ; ++index)
                 {
                     // Buffer view creation from the shared buffer
@@ -233,7 +233,7 @@ namespace AZ
                 m_dynamicBuffersViews.resize(uint8_t(HairDynamicBuffersSemantics::NumBufferStreams));
                 m_dynamicViewAllocators.resize(uint8_t(HairDynamicBuffersSemantics::NumBufferStreams));
 
-                RHI::Buffer* rhiBuffer = SharedBuffer::Get()->GetBuffer()->GetRHIBuffer();
+                RHI::DeviceBuffer* rhiBuffer = SharedBuffer::Get()->GetBuffer()->GetRHIBuffer();
                 for (int stream=0; stream< uint8_t(HairDynamicBuffersSemantics::NumBufferStreams) ; ++stream)
                 {
                     SrgBufferDescriptor& streamDesc = m_dynamicBuffersDescriptors[stream];
@@ -575,7 +575,7 @@ namespace AZ
                 //------------ Index Buffer  ------------
                 m_TotalIndices = asset.GetNumHairTriangleIndices();
 
-                RHI::BufferInitRequest request;
+                RHI::DeviceBufferInitRequest request;
                 uint32_t indexBufferSize = m_TotalIndices * sizeof(uint32_t);
                 m_indexBuffer = RHI::Factory::Get().CreateBuffer();
                 request.m_buffer = m_indexBuffer.get();
@@ -585,7 +585,7 @@ namespace AZ
                 };
                 request.m_initialData = (void*)asset.m_triangleIndices.data();
                 
-                RHI::Ptr<RHI::BufferPool> bufferPool = RPI::BufferSystemInterface::Get()->GetCommonBufferPool(RPI::CommonBufferPoolType::StaticInputAssembly);
+                RHI::Ptr<RHI::DeviceBufferPool> bufferPool = RPI::BufferSystemInterface::Get()->GetCommonBufferPool(RPI::CommonBufferPoolType::StaticInputAssembly);
                 if (!bufferPool)
                 {
                     AZ_Error("Hair Gem", false, "Common buffer pool for index buffer could not be created");
@@ -596,7 +596,7 @@ namespace AZ
                 AZ_Error("Hair Gem", result == RHI::ResultCode::Success, "Failed to initialize index buffer - error [%d]", result);
 
                 // create index buffer view
-                m_indexBufferView = RHI::IndexBufferView(*m_indexBuffer.get(), 0, indexBufferSize, RHI::IndexFormat::Uint32 );
+                m_indexBufferView = RHI::DeviceIndexBufferView(*m_indexBuffer.get(), 0, indexBufferSize, RHI::IndexFormat::Uint32 );
  
                 return true;
             }
@@ -1192,7 +1192,7 @@ namespace AZ
                 return iter->second;
             }
 
-            const RHI::DispatchItem* HairRenderObject::GetDispatchItem(RPI::Shader* computeShader)
+            const RHI::DeviceDispatchItem* HairRenderObject::GetDispatchItem(RPI::Shader* computeShader)
             {
                 auto dispatchIter = m_dispatchItems.find(computeShader);
                 if (dispatchIter == m_dispatchItems.end())

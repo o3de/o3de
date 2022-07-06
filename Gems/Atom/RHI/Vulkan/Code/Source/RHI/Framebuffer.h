@@ -8,7 +8,7 @@
 #pragma once
 
 #include <Atom/RHI/DeviceObject.h>
-#include <Atom/RHI/ResourceInvalidateBus.h>
+#include <Atom/RHI/DeviceResourceInvalidateBus.h>
 #include <AzCore/Memory/PoolAllocator.h>
 #include <AzCore/std/containers/vector.h>
 #include <RHI/ImageView.h>
@@ -24,7 +24,7 @@ namespace AZ
 
         class Framebuffer final
             : public RHI::DeviceObject
-            , public RHI::ResourceInvalidateBus::MultiHandler
+            , public RHI::DeviceResourceInvalidateBus::MultiHandler
         {
             using Base = RHI::DeviceObject;
 
@@ -64,7 +64,7 @@ namespace AZ
             //////////////////////////////////////////////////////////////////////////
 
             //////////////////////////////////////////////////////////////////////////
-            // ResourceInvalidateBus::MultiHandler
+            // DeviceResourceInvalidateBus::MultiHandler
             RHI::ResultCode OnResourceInvalidate() override final;
             //////////////////////////////////////////////////////////////////////////
 

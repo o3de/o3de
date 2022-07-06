@@ -52,11 +52,12 @@ namespace AZ
             }
         }
 
-        void DiffuseProbeGridBorderUpdatePass::LoadShader(AZStd::string shaderFilePath,
-                                                          Data::Instance<RPI::Shader>& shader,
-                                                          const RHI::PipelineState*& pipelineState,
-                                                          RHI::Ptr<RHI::ShaderResourceGroupLayout>& srgLayout,
-                                                          RHI::DispatchDirect& dispatchArgs)
+        void DiffuseProbeGridBorderUpdatePass::LoadShader(
+            AZStd::string shaderFilePath,
+            Data::Instance<RPI::Shader>& shader,
+            const RHI::DevicePipelineState*& pipelineState,
+            RHI::Ptr<RHI::ShaderResourceGroupLayout>& srgLayout,
+            RHI::DispatchDirect& dispatchArgs)
         {
             // load shader
             // Note: the shader may not be available on all platforms
@@ -155,7 +156,7 @@ namespace AZ
             for (auto& diffuseProbeGrid : diffuseProbeGridFeatureProcessor->GetVisibleRealTimeProbeGrids())
             {
                 // the diffuse probe grid Srg must be updated in the Compile phase in order to successfully bind the ReadWrite shader inputs
-                // (see line ValidateSetImageView() in ShaderResourceGroupData.cpp)
+                // (see line ValidateSetImageView() in DeviceShaderResourceGroupData.cpp)
                 diffuseProbeGrid->UpdateBorderUpdateSrgs(m_rowShader, m_rowSrgLayout, m_columnShader, m_columnSrgLayout);
 
                 diffuseProbeGrid->GetBorderUpdateRowIrradianceSrg()->Compile();
@@ -186,10 +187,10 @@ namespace AZ
 
                 // row irradiance
                 {
-                    const RHI::ShaderResourceGroup* shaderResourceGroup = diffuseProbeGrid->GetBorderUpdateRowIrradianceSrg()->GetRHIShaderResourceGroup();
+                    const RHI::DeviceShaderResourceGroup* shaderResourceGroup = diffuseProbeGrid->GetBorderUpdateRowIrradianceSrg()->GetRHIShaderResourceGroup();
                     commandList->SetShaderResourceGroupForDispatch(*shaderResourceGroup);
 
-                    RHI::DispatchItem dispatchItem;
+                    RHI::DeviceDispatchItem dispatchItem;
                     dispatchItem.m_arguments = m_rowDispatchArgs;
                     dispatchItem.m_pipelineState = m_rowPipelineState;
                     dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsX = probeCountX * (DiffuseProbeGrid::DefaultNumIrradianceTexels + 2);
@@ -201,10 +202,10 @@ namespace AZ
 
                 // column irradiance
                 {
-                    const RHI::ShaderResourceGroup* shaderResourceGroup = diffuseProbeGrid->GetBorderUpdateColumnIrradianceSrg()->GetRHIShaderResourceGroup();
+                    const RHI::DeviceShaderResourceGroup* shaderResourceGroup = diffuseProbeGrid->GetBorderUpdateColumnIrradianceSrg()->GetRHIShaderResourceGroup();
                     commandList->SetShaderResourceGroupForDispatch(*shaderResourceGroup);
 
-                    RHI::DispatchItem dispatchItem;
+                    RHI::DeviceDispatchItem dispatchItem;
                     dispatchItem.m_arguments = m_columnDispatchArgs;
                     dispatchItem.m_pipelineState = m_columnPipelineState;
                     dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsX = probeCountX;
@@ -216,10 +217,10 @@ namespace AZ
 
                 // row distance
                 {
-                    const RHI::ShaderResourceGroup* shaderResourceGroup = diffuseProbeGrid->GetBorderUpdateRowDistanceSrg()->GetRHIShaderResourceGroup();
+                    const RHI::DeviceShaderResourceGroup* shaderResourceGroup = diffuseProbeGrid->GetBorderUpdateRowDistanceSrg()->GetRHIShaderResourceGroup();
                     commandList->SetShaderResourceGroupForDispatch(*shaderResourceGroup);
 
-                    RHI::DispatchItem dispatchItem;
+                    RHI::DeviceDispatchItem dispatchItem;
                     dispatchItem.m_arguments = m_rowDispatchArgs;
                     dispatchItem.m_pipelineState = m_rowPipelineState;
                     dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsX = probeCountX * (DiffuseProbeGrid::DefaultNumDistanceTexels + 2);
@@ -231,10 +232,10 @@ namespace AZ
 
                 // column distance
                 {
-                    const RHI::ShaderResourceGroup* shaderResourceGroup = diffuseProbeGrid->GetBorderUpdateColumnDistanceSrg()->GetRHIShaderResourceGroup();
+                    const RHI::DeviceShaderResourceGroup* shaderResourceGroup = diffuseProbeGrid->GetBorderUpdateColumnDistanceSrg()->GetRHIShaderResourceGroup();
                     commandList->SetShaderResourceGroupForDispatch(*shaderResourceGroup);
 
-                    RHI::DispatchItem dispatchItem;
+                    RHI::DeviceDispatchItem dispatchItem;
                     dispatchItem.m_arguments = m_columnDispatchArgs;
                     dispatchItem.m_pipelineState = m_columnPipelineState;
                     dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsX = probeCountX;

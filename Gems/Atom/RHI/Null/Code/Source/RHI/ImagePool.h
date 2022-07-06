@@ -7,31 +7,31 @@
  */
 #pragma once
 
-#include <Atom/RHI/ImagePool.h>
+#include <Atom/RHI/DeviceImagePool.h>
 
 namespace AZ
 {
     namespace Null
     {
         class ImagePool final
-            : public RHI::ImagePool
+            : public RHI::DeviceImagePool
         {
-            using Base = RHI::ImagePool;
+            using Base = RHI::DeviceImagePool;
         public:
             AZ_CLASS_ALLOCATOR(ImagePool, AZ::SystemAllocator, 0);
-            AZ_RTTI(ImagePool, "{40DC04EA-890C-4D99-9F9C-DEC0038D7451}", RHI::ImagePool);
-            
+            AZ_RTTI(ImagePool, "{40DC04EA-890C-4D99-9F9C-DEC0038D7451}", RHI::DeviceImagePool);
+
             static RHI::Ptr<ImagePool> Create();
-            
+
         private:
             ImagePool() = default;
-                        
+
             //////////////////////////////////////////////////////////////////////////
             // RHI::ImagePool
             RHI::ResultCode InitInternal([[maybe_unused]] RHI::Device&, [[maybe_unused]] const RHI::ImagePoolDescriptor&) override { return RHI::ResultCode::Success;}
-            RHI::ResultCode InitImageInternal([[maybe_unused]] const RHI::ImageInitRequest& request) override { return RHI::ResultCode::Success;}
-            RHI::ResultCode UpdateImageContentsInternal([[maybe_unused]] const RHI::ImageUpdateRequest& request) override { return RHI::ResultCode::Success;}
-            void ShutdownResourceInternal([[maybe_unused]] RHI::Resource& resourceBase) override {}
+            RHI::ResultCode InitImageInternal([[maybe_unused]] const RHI::DeviceImageInitRequest& request) override { return RHI::ResultCode::Success;}
+            RHI::ResultCode UpdateImageContentsInternal([[maybe_unused]] const RHI::DeviceImageUpdateRequest& request) override { return RHI::ResultCode::Success;}
+            void ShutdownResourceInternal([[maybe_unused]] RHI::DeviceResource& resourceBase) override {}
             //////////////////////////////////////////////////////////////////////////
         };
     }

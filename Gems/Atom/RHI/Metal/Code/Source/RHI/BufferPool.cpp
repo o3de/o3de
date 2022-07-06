@@ -16,7 +16,7 @@
 
 namespace Platform
 {
-    AZ::RHI::ResultCode MapBufferInternal(const AZ::RHI::BufferMapRequest& request, AZ::RHI::BufferMapResponse& response);
+    AZ::RHI::ResultCode MapBufferInternal(const AZ::RHI::DeviceBufferMapRequest& request, AZ::RHI::DeviceBufferMapResponse& response);
     void UnMapBufferInternal(AZ::RHI::Buffer& bufferBase);
 }
 
@@ -99,7 +99,7 @@ namespace AZ
             return RHI::ResultCode::OutOfMemory;
         }
 
-        void BufferPool::ShutdownResourceInternal(RHI::Resource& resourceBase)
+        void BufferPool::ShutdownResourceInternal(RHI::DeviceResource& resourceBase)
         {
             Buffer& buffer = static_cast<Buffer&>(resourceBase);
 
@@ -128,7 +128,7 @@ namespace AZ
             return RHI::ResultCode::OutOfMemory;
         }
         
-        RHI::ResultCode BufferPool::MapBufferInternal(const RHI::BufferMapRequest& request, RHI::BufferMapResponse& response)
+        RHI::ResultCode BufferPool::MapBufferInternal(const RHI::DeviceBufferMapRequest& request, RHI::DeviceBufferMapResponse& response)
         {
             Buffer& buffer = *static_cast<Buffer*>(request.m_buffer);            
             MTLStorageMode mtlStorageMode = buffer.GetMemoryView().GetStorageMode();
@@ -180,7 +180,7 @@ namespace AZ
             Platform::UnMapBufferInternal(bufferBase);
         }
         
-        RHI::ResultCode BufferPool::StreamBufferInternal(const RHI::BufferStreamRequest& request)
+        RHI::ResultCode BufferPool::StreamBufferInternal(const RHI::DeviceBufferStreamRequest& request)
         {
             GetDevice().GetAsyncUploadQueue().QueueUpload(request);
             return RHI::ResultCode::Success;

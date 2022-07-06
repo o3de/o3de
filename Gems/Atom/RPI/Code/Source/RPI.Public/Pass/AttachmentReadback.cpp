@@ -17,7 +17,7 @@
 
 #include <Atom/RHI/CommandList.h>
 #include <Atom/RHI/Factory.h>
-#include <Atom/RHI/Fence.h>
+#include <Atom/RHI/DeviceFence.h>
 #include <Atom/RHI/FrameGraphExecuteContext.h>
 #include <Atom/RHI/FrameScheduler.h>
 #include <Atom/RHI/RHISystemInterface.h>
@@ -277,7 +277,7 @@ namespace AZ
 
             m_dispatchItem.m_arguments = dispatchArgs;
 
-            const RHI::ImageView* imageView = context.GetImageView(m_attachmentId);
+            const RHI::DeviceImageView* imageView = context.GetImageView(m_attachmentId);
             m_decomposeSrg->SetImageView(m_decomposeInputImageIndex, imageView);
 
             imageView = context.GetImageView(m_copyAttachmentId);
@@ -351,7 +351,7 @@ namespace AZ
         {
             if (m_attachmentType == RHI::AttachmentType::Buffer)
             {
-                const AZ::RHI::Buffer* buffer = context.GetBuffer(m_copyAttachmentId);
+                const AZ::RHI::DeviceBuffer* buffer = context.GetBuffer(m_copyAttachmentId);
 
                 RPI::CommonBufferDescriptor desc;
                 desc.m_poolType = RPI::CommonBufferPoolType::ReadBack;
@@ -361,7 +361,7 @@ namespace AZ
                 m_readbackBufferArray[m_readbackBufferCurrentIndex] = BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
 
                 // copy buffer
-                RHI::CopyBufferDescriptor copyBuffer;
+                RHI::DeviceCopyBufferDescriptor copyBuffer;
                 copyBuffer.m_sourceBuffer = buffer;
                 copyBuffer.m_destinationBuffer = m_readbackBufferArray[m_readbackBufferCurrentIndex]->GetRHIBuffer();
                 copyBuffer.m_size = aznumeric_cast<uint32_t>(desc.m_byteCount);
@@ -371,7 +371,7 @@ namespace AZ
             else if (m_attachmentType == RHI::AttachmentType::Image)
             {
                 // copy image to read back buffer since only buffer can be accessed by host
-                const AZ::RHI::Image* image = context.GetImage(m_copyAttachmentId);
+                const AZ::RHI::DeviceImage* image = context.GetImage(m_copyAttachmentId);
                 if (!image)
                 {
                     AZ_Warning("AttachmentReadback", false, "Failed to find attachment image %s for copy to buffer", m_copyAttachmentId.GetCStr());
@@ -393,7 +393,7 @@ namespace AZ
                     range.m_aspectFlags = RHI::ImageAspectFlags::Depth;
                 }
 
-                RHI::ImageSubresourceLayoutPlaced imageSubresourceLayout;
+                RHI::DeviceImageSubresourceLayoutPlaced imageSubresourceLayout;
                 image->GetSubresourceLayouts(range, &imageSubresourceLayout, nullptr);
 
                 RPI::CommonBufferDescriptor desc;
@@ -407,7 +407,7 @@ namespace AZ
                 m_imageDescriptor.m_format = FindFormatForAspect(m_imageDescriptor.m_format, imageAspect);
 
                 // copy descriptor for copying image to buffer
-                RHI::CopyImageToBufferDescriptor copyImageToBuffer;
+                RHI::DeviceCopyImageToBufferDescriptor copyImageToBuffer;
                 copyImageToBuffer.m_sourceImage = image;
                 copyImageToBuffer.m_sourceSize = m_imageDescriptor.m_size;
                 copyImageToBuffer.m_sourceSubresource = RHI::ImageSubresource(0 /*mipslice*/, 0 /*arraySlice*/, imageAspect);
@@ -434,7 +434,7 @@ namespace AZ
         void AttachmentReadback::Reset()
         {
             m_attachmentId = RHI::AttachmentId{};
-            m_copyItem = RHI::CopyItem{};
+            m_copyItem = RHI::DeviceCopyItem{};
             m_state = ReadbackState::Idle;
             m_readbackName = AZ::Name{};
             m_dataBuffer = nullptr;

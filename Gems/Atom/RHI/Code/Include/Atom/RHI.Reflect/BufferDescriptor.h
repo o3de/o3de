@@ -27,10 +27,10 @@ namespace AZ
         AZ_ENUM_CLASS_WITH_UNDERLYING_TYPE(BufferBindFlags, uint32_t,
             (None            , 0),
 
-            /// Supports input assembly access through a IndexBufferView or StreamBufferView. This flag is for buffers that are not updated often
+            /// Supports input assembly access through a DeviceIndexBufferView or DeviceStreamBufferView. This flag is for buffers that are not updated often
             (InputAssembly   , AZ_BIT(0)),
             
-            /// Supports input assembly access through a IndexBufferView or StreamBufferView. This flag is for buffers that are updated frequently
+            /// Supports input assembly access through a DeviceIndexBufferView or DeviceStreamBufferView. This flag is for buffers that are updated frequently
             (DynamicInputAssembly , AZ_BIT(1)),
             
             /// Supports constant access through a ShaderResourceGroup.

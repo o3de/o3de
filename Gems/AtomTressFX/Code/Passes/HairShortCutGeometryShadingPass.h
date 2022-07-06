@@ -14,7 +14,7 @@ namespace AZ
 {
     namespace RHI
     {
-        struct DrawItem;
+        struct DeviceDrawItem;
     }
 
     namespace Render

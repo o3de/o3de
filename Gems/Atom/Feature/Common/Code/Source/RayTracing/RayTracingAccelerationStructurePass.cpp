@@ -59,13 +59,13 @@ namespace AZ
             {
                 if (rayTracingFeatureProcessor->GetRevision() != m_rayTracingRevision)
                 {
-                    RHI::RayTracingBufferPools& rayTracingBufferPools = rayTracingFeatureProcessor->GetBufferPools();
+                    auto& rayTracingBufferPools = rayTracingFeatureProcessor->GetBufferPools();
                     RayTracingFeatureProcessor::SubMeshVector& subMeshes = rayTracingFeatureProcessor->GetSubMeshes();
                     uint32_t rayTracingSubMeshCount = rayTracingFeatureProcessor->GetSubMeshCount();
 
                     // create the TLAS descriptor
-                    RHI::RayTracingTlasDescriptor tlasDescriptor;
-                    RHI::RayTracingTlasDescriptor* tlasDescriptorBuild = tlasDescriptor.Build();
+                    RHI::DeviceRayTracingTlasDescriptor tlasDescriptor;
+                    RHI::DeviceRayTracingTlasDescriptor* tlasDescriptorBuild = tlasDescriptor.Build();
 
                     uint32_t instanceIndex = 0;
                     for (auto& subMesh : subMeshes)
@@ -83,11 +83,11 @@ namespace AZ
                     }
 
                     // create the TLAS buffers based on the descriptor
-                    RHI::Ptr<RHI::RayTracingTlas>& rayTracingTlas = rayTracingFeatureProcessor->GetTlas();
+                    auto& rayTracingTlas = rayTracingFeatureProcessor->GetTlas();
                     rayTracingTlas->CreateBuffers(*device, &tlasDescriptor, rayTracingBufferPools);
 
                     // import and attach the TLAS buffer
-                    const RHI::Ptr<RHI::Buffer>& rayTracingTlasBuffer = rayTracingTlas->GetTlasBuffer();
+                    const RHI::Ptr<RHI::DeviceBuffer>& rayTracingTlasBuffer = rayTracingTlas->GetTlasBuffer();
                     if (rayTracingTlasBuffer && rayTracingSubMeshCount)
                     {
                         AZ::RHI::AttachmentId tlasAttachmentId = rayTracingFeatureProcessor->GetTlasAttachmentId();

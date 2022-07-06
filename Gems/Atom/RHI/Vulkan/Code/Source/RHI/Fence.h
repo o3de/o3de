@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <Atom/RHI/Fence.h>
+#include <Atom/RHI/DeviceFence.h>
 #include <AzCore/Memory/PoolAllocator.h>
 #include <RHI/SignalEvent.h>
 
@@ -18,9 +18,9 @@ namespace AZ
         class Device;
 
         class Fence final
-            : public RHI::Fence
+            : public RHI::DeviceFence
         {
-            using Base = RHI::Fence;
+            using Base = RHI::DeviceFence;
 
         public:
             AZ_CLASS_ALLOCATOR(Fence, AZ::ThreadPoolAllocator, 0);

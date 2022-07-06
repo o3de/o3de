@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <Atom/RHI/Image.h>
+#include <Atom/RHI/DeviceImage.h>
 #include <Atom/RHI/ImageProperty.h>
 #include <Atom/RHI.Reflect/ImageDescriptor.h>
 #include <Atom/RHI.Reflect/ImageSubresource.h>
@@ -23,7 +23,7 @@ namespace AZ
 {
     namespace RHI
     {
-        class ImageView;
+        class DeviceImageView;
     };
     namespace Vulkan
     {
@@ -33,9 +33,9 @@ namespace AZ
         class AliasedHeap;
 
         class Image final
-            : public RHI::Image
+            : public RHI::DeviceImage
         {
-            using Base = RHI::Image;
+            using Base = RHI::DeviceImage;
             friend class ImagePool;
             friend class StreamingImagePool;
             friend class AliasedHeap;
@@ -48,7 +48,7 @@ namespace AZ
             static RHI::Ptr<Image> Create();
 
             ~Image();
-            
+
             /// It is internally used to handle VkImage as Vulkan::Image class.
             RHI::ResultCode Init(Device& device, VkImage image, const RHI::ImageDescriptor& descriptor);
 
@@ -78,9 +78,9 @@ namespace AZ
             using SubresourceRangeOwner = ImageOwnerProperty::PropertyRange;
 
             AZStd::vector<SubresourceRangeOwner> GetOwnerQueue(const RHI::ImageSubresourceRange* range = nullptr) const;
-            AZStd::vector<SubresourceRangeOwner> GetOwnerQueue(const RHI::ImageView& view) const;
+            AZStd::vector<SubresourceRangeOwner> GetOwnerQueue(const RHI::DeviceImageView& view) const;
             void SetOwnerQueue(const QueueId& queueId, const RHI::ImageSubresourceRange* range = nullptr);
-            void SetOwnerQueue(const QueueId& queueId, const RHI::ImageView& view);
+            void SetOwnerQueue(const QueueId& queueId, const RHI::DeviceImageView& view);
 
             using ImageLayoutProperty = RHI::ImageProperty<VkImageLayout>;
             using SubresourceRangeLayout = ImageLayoutProperty::PropertyRange;
@@ -105,7 +105,7 @@ namespace AZ
             //////////////////////////////////////////////////////////////////////////
 
             //////////////////////////////////////////////////////////////////////////
-            // RHI::Resource
+            // RHI::DeviceResource
             void ReportMemoryUsage(RHI::MemoryStatisticsBuilder& builder) const override;
             //////////////////////////////////////////////////////////////////////////
 
@@ -113,7 +113,7 @@ namespace AZ
             // RHI::Image
             void GetSubresourceLayoutsInternal(
                 const RHI::ImageSubresourceRange& subresourceRange,
-                RHI::ImageSubresourceLayoutPlaced* subresourceLayouts,
+                RHI::DeviceImageSubresourceLayoutPlaced* subresourceLayouts,
                 size_t* totalSizeInBytes) const override;
             //////////////////////////////////////////////////////////////////////////
 

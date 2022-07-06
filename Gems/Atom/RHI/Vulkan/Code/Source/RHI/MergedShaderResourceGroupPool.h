@@ -7,11 +7,11 @@
  */
 #pragma once
 
-#include <RHI/ShaderResourceGroupPool.h>
 #include <RHI/Buffer.h>
 #include <RHI/BufferPool.h>
 #include <RHI/DescriptorSetAllocator.h>
 #include <RHI/DescriptorSetLayout.h>
+#include <RHI/ShaderResourceGroupPool.h>
 
 #include <Atom/RHI/ObjectCache.h>
 
@@ -45,7 +45,7 @@ namespace AZ
 
         private:
             //////////////////////////////////////////////////////////////////////////
-            // RHI::ResourcePool
+            // RHI::DeviceResourcePool
             RHI::ResultCode InitInternal(RHI::Device& deviceBase, const RHI::ShaderResourceGroupPoolDescriptor& descriptor) override;
             void ShutdownInternal() override;
             //////////////////////////////////////////////////////////////////////////

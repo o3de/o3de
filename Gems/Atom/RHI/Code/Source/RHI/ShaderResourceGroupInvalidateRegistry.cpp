@@ -6,7 +6,7 @@
  *
  */
 #include <Atom/RHI/ShaderResourceGroupInvalidateRegistry.h>
-#include <Atom/RHI/ShaderResourceGroup.h>
+#include <Atom/RHI/DeviceShaderResourceGroup.h>
 namespace AZ
 {
     namespace RHI
@@ -16,17 +16,17 @@ namespace AZ
             m_compileGroupFunction = compileGroupFunction;
         }
 
-        void ShaderResourceGroupInvalidateRegistry::OnAttach(const Resource* resource, ShaderResourceGroup* shaderResourceGroup)
+        void ShaderResourceGroupInvalidateRegistry::OnAttach(const DeviceResource* resource, DeviceShaderResourceGroup* shaderResourceGroup)
         {
             RefCountType &refcount = m_resourceToRegistryMap[resource][shaderResourceGroup];
             if (refcount == 0)
             {
-                ResourceInvalidateBus::MultiHandler::BusConnect(resource);
+                DeviceResourceInvalidateBus::MultiHandler::BusConnect(resource);
             }
             ++refcount;
         }
 
-        void ShaderResourceGroupInvalidateRegistry::OnDetach(const Resource* resource, ShaderResourceGroup* shaderResourceGroup)
+        void ShaderResourceGroupInvalidateRegistry::OnDetach(const DeviceResource* resource, DeviceShaderResourceGroup* shaderResourceGroup)
         {
             auto outerIt = m_resourceToRegistryMap.find(resource);
             AZ_Assert(outerIt != m_resourceToRegistryMap.end(), "No SRG registry found.");
@@ -45,7 +45,7 @@ namespace AZ
                 // Drop the whole registry if this is the last element.
                 else
                 {
-                    ResourceInvalidateBus::MultiHandler::BusDisconnect(resource);
+                    DeviceResourceInvalidateBus::MultiHandler::BusDisconnect(resource);
                     m_resourceToRegistryMap.erase(outerIt);
                 }
             }
@@ -60,7 +60,7 @@ namespace AZ
         {
             AZ_PROFILE_FUNCTION(RHI);
             AZ_Assert(m_compileGroupFunction, "No compile function set");
-            const Resource* resource = *ResourceInvalidateBus::GetCurrentBusId();
+            const DeviceResource* resource = *DeviceResourceInvalidateBus::GetCurrentBusId();
 
             Registry& registry = m_resourceToRegistryMap[resource];
             AZ_Assert(registry.empty() == false, "Registry should not be empty.");

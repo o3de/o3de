@@ -15,7 +15,7 @@
 #include <Atom/RPI.Reflect/Image/AttachmentImageAssetCreator.h>
 
 #include <Atom/RHI/Factory.h>
-#include <Atom/RHI/ImagePool.h>
+#include <Atom/RHI/DeviceImagePool.h>
 
 #include <AtomCore/Instance/InstanceDatabase.h>
 
@@ -134,9 +134,9 @@ namespace AZ
                 return RHI::ResultCode::Fail;
             }
 
-            RHI::ImagePool* rhiPool = pool->GetRHIPool();
+            RHI::DeviceImagePool* rhiPool = pool->GetRHIPool();
 
-            RHI::ImageInitRequest initRequest;
+            RHI::DeviceImageInitRequest initRequest;
             initRequest.m_image = GetRHIImage();
             initRequest.m_descriptor = imageAsset.GetImageDescriptor();
             initRequest.m_optimizedClearValue = imageAsset.GetOptimizedClearValue();

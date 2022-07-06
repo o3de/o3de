@@ -148,13 +148,13 @@ namespace AZ
 
             return "Unknown";
         }
-    
-        const ResourceView* ScopeAttachment::GetResourceView() const
+
+        const DeviceResourceView* ScopeAttachment::GetResourceView() const
         {
             return m_resourceView.get();
         }
 
-        void ScopeAttachment::SetResourceView(ConstPtr<ResourceView> resourceView)
+        void ScopeAttachment::SetResourceView(ConstPtr<DeviceResourceView> resourceView)
         {
             m_resourceView = AZStd::move(resourceView);
         }

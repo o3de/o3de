@@ -9,7 +9,7 @@
 #include <CoreLights/LightCullingPass.h>
 
 #include <Atom/RHI/Factory.h>
-#include <Atom/RHI/PipelineState.h>
+#include <Atom/RHI/DevicePipelineState.h>
 #include <Atom/RHI/FrameGraphInterface.h>
 #include <Atom/RHI/FrameGraphAttachmentInterface.h>
 #include <Atom/RHI/Device.h>
@@ -36,7 +36,7 @@
 #include <cmath>
 #include <Atom/RPI.Public/Image/ImageSystemInterface.h>
 #include <Atom/RPI.Public/Image/AttachmentImagePool.h>
-#include <Atom/RHI/ImagePool.h>
+#include <Atom/RHI/DeviceImagePool.h>
 #include <Atom/RPI.Public/Image/AttachmentImage.h>
 
 namespace AZ

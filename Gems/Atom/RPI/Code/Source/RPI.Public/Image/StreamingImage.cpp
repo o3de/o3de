@@ -132,7 +132,7 @@ namespace AZ
             }
 
             // Cache off the RHI streaming image pool instance.
-            RHI::StreamingImagePool* rhiPool = pool->GetRHIPool();
+            RHI::DeviceStreamingImagePool* rhiPool = pool->GetRHIPool();
 
             /**
              * NOTE: The tail mip-chain is required to exist as a dependency of this asset. This allows
@@ -145,7 +145,7 @@ namespace AZ
             const ImageMipChainAsset& mipChainTailAsset = imageAsset.GetTailMipChain();
 
             {
-                RHI::StreamingImageInitRequest initRequest;
+                RHI::DeviceStreamingImageInitRequest initRequest;
                 initRequest.m_image = GetRHIImage();
                 initRequest.m_descriptor = imageAsset.GetImageDescriptor();
                 initRequest.m_tailMipSlices = mipChainTailAsset.GetMipSlices();
@@ -451,7 +451,7 @@ namespace AZ
             {
                 const auto& mipSlices = mipChainAsset->GetMipSlices();
 
-                RHI::StreamingImageExpandRequest request;
+                RHI::DeviceStreamingImageExpandRequest request;
                 request.m_image = GetRHIImage();
                 request.m_mipSlices = mipSlices;
 

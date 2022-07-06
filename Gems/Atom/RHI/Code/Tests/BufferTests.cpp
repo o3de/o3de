@@ -41,7 +41,7 @@ namespace UnitTest
 
     TEST_F(BufferTests, TestNoop)
     {
-        RHI::Ptr<RHI::Buffer> noopBuffer;
+        RHI::Ptr<RHI::DeviceBuffer> noopBuffer;
         noopBuffer = RHI::Factory::Get().CreateBuffer();
     }
 
@@ -49,7 +49,7 @@ namespace UnitTest
     {
         RHI::Ptr<RHI::Device> device = MakeTestDevice();
 
-        RHI::Ptr<RHI::Buffer> bufferA;
+        RHI::Ptr<RHI::DeviceBuffer> bufferA;
         bufferA = RHI::Factory::Get().CreateBuffer();
 
         bufferA->SetName(Name("BufferA"));
@@ -57,12 +57,12 @@ namespace UnitTest
         AZ_TEST_ASSERT(bufferA->use_count() == 1);
 
         {
-            RHI::Ptr<RHI::BufferPool> bufferPool;
+            RHI::Ptr<RHI::DeviceBufferPool> bufferPool;
             bufferPool = RHI::Factory::Get().CreateBufferPool();
 
             AZ_TEST_ASSERT(bufferPool->use_count() == 1);
 
-            RHI::Ptr<RHI::Buffer> bufferB;
+            RHI::Ptr<RHI::DeviceBuffer> bufferB;
             bufferB = RHI::Factory::Get().CreateBuffer();
             AZ_TEST_ASSERT(bufferB->use_count() == 1);
 
@@ -79,13 +79,13 @@ namespace UnitTest
             AZ_TEST_ASSERT(bufferA->IsInitialized() == false);
             AZ_TEST_ASSERT(bufferB->IsInitialized() == false);
 
-            RHI::BufferInitRequest initRequest;
+            RHI::DeviceBufferInitRequest initRequest;
             initRequest.m_buffer = bufferA.get();
             initRequest.m_descriptor = RHI::BufferDescriptor(RHI::BufferBindFlags::Constant, 32);
             initRequest.m_initialData = testData.data();
             bufferPool->InitBuffer(initRequest);
 
-            RHI::Ptr<RHI::BufferView> bufferView;
+            RHI::Ptr<RHI::DeviceBufferView> bufferView;
             bufferView = bufferA->GetBufferView(RHI::BufferViewDescriptor::CreateRaw(0, 32));
             
             AZ_TEST_ASSERT(bufferView->IsInitialized());
@@ -113,24 +113,21 @@ namespace UnitTest
             {
                 uint32_t bufferIndex = 0;
 
-                const RHI::Buffer* buffers[] =
-                {
-                    bufferA.get(),
-                    bufferB.get()
-                };
+                const RHI::DeviceBuffer* buffers[] = { bufferA.get(), bufferB.get() };
 
-                bufferPool->ForEach<RHI::Buffer>([&bufferIndex, &buffers]([[maybe_unused]] RHI::Buffer& buffer)
-                {
-                    AZ_UNUSED(buffers); // Prevent unused warning in release builds
-                    AZ_Assert(buffers[bufferIndex] == &buffer, "buffers don't match");
-                    bufferIndex++;
-                });
+                bufferPool->ForEach<RHI::DeviceBuffer>(
+                    [&bufferIndex, &buffers]([[maybe_unused]] RHI::DeviceBuffer& buffer)
+                    {
+                        AZ_UNUSED(buffers); // Prevent unused warning in release builds
+                        AZ_Assert(buffers[bufferIndex] == &buffer, "buffers don't match");
+                        bufferIndex++;
+                    });
             }
 
             bufferB->Shutdown();
             AZ_TEST_ASSERT(bufferB->GetPool() == nullptr);
 
-            RHI::Ptr<RHI::BufferPool> bufferPoolB;
+            RHI::Ptr<RHI::DeviceBufferPool> bufferPoolB;
             bufferPoolB = RHI::Factory::Get().CreateBufferPool();
             bufferPoolB->Init(*device, bufferPoolDesc);
 
@@ -142,7 +139,7 @@ namespace UnitTest
 
             //Since we are switching bufferpools for bufferB it adds a refcount and invalidates the views.
             //We need this to ensure the views are fully invalidated in order to release the refcount and avoid a leak.
-            RHI::ResourceInvalidateBus::ExecuteQueuedEvents();
+            RHI::DeviceResourceInvalidateBus::ExecuteQueuedEvents();
 
             bufferPoolB->Shutdown();
             AZ_TEST_ASSERT(bufferPoolB->GetResourceCount() == 0);
@@ -156,20 +153,20 @@ namespace UnitTest
     {
         RHI::Ptr<RHI::Device> device = MakeTestDevice();
 
-        RHI::Ptr<RHI::BufferView> bufferViewA;
-        
+        RHI::Ptr<RHI::DeviceBufferView> bufferViewA;
+
         {
-            RHI::Ptr<RHI::BufferPool> bufferPool;
+            RHI::Ptr<RHI::DeviceBufferPool> bufferPool;
             bufferPool = RHI::Factory::Get().CreateBufferPool();
 
             RHI::BufferPoolDescriptor bufferPoolDesc;
             bufferPoolDesc.m_bindFlags = RHI::BufferBindFlags::Constant;
             bufferPool->Init(*device, bufferPoolDesc);
 
-            RHI::Ptr<RHI::Buffer> buffer;
+            RHI::Ptr<RHI::DeviceBuffer> buffer;
             buffer = RHI::Factory::Get().CreateBuffer();
 
-            RHI::BufferInitRequest initRequest;
+            RHI::DeviceBufferInitRequest initRequest;
             initRequest.m_buffer = buffer.get();
             initRequest.m_descriptor = RHI::BufferDescriptor(RHI::BufferBindFlags::Constant, 32);
             bufferPool->InitBuffer(initRequest);
@@ -191,7 +188,7 @@ namespace UnitTest
             AZ_TEST_ASSERT(bufferViewA->IsStale());
 
             // This should re-initialize the views.
-            RHI::ResourceInvalidateBus::ExecuteQueuedEvents();
+            RHI::DeviceResourceInvalidateBus::ExecuteQueuedEvents();
             AZ_TEST_ASSERT(bufferViewA->IsInitialized());
             AZ_TEST_ASSERT(bufferViewA->IsStale() == false);
 
@@ -201,7 +198,7 @@ namespace UnitTest
             AZ_TEST_ASSERT(bufferViewA->IsStale());
 
             // This should re-initialize the views.
-            RHI::ResourceInvalidateBus::ExecuteQueuedEvents();
+            RHI::DeviceResourceInvalidateBus::ExecuteQueuedEvents();
             AZ_TEST_ASSERT(bufferViewA->IsInitialized());
             AZ_TEST_ASSERT(bufferViewA->IsStale() == false);
         }
@@ -231,16 +228,16 @@ namespace UnitTest
             m_bufferPool->Init(*m_device, bufferPoolDesc);
 
             m_buffer = RHI::Factory::Get().CreateBuffer();
-            RHI::BufferInitRequest initRequest;
+            RHI::DeviceBufferInitRequest initRequest;
             initRequest.m_buffer = m_buffer.get();
             initRequest.m_descriptor = RHI::BufferDescriptor(GetParam().bufferBindFlags, 32);
             m_bufferPool->InitBuffer(initRequest);
        }
 
-        RHI::Ptr<RHI::Device> m_device; 
-        RHI::Ptr<RHI::BufferPool> m_bufferPool;
-        RHI::Ptr<RHI::Buffer> m_buffer;
-        RHI::Ptr<RHI::BufferView> m_bufferView;
+       RHI::Ptr<RHI::Device> m_device;
+       RHI::Ptr<RHI::DeviceBufferPool> m_bufferPool;
+       RHI::Ptr<RHI::DeviceBuffer> m_buffer;
+       RHI::Ptr<RHI::DeviceBufferView> m_bufferView;
     };
 
     TEST_P(BufferBindFlagTests, InitView_ViewIsCreated)

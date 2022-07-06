@@ -7,15 +7,14 @@
  */
 #pragma once
 
-#include <Atom/RHI/PipelineLibrary.h>
+#include <Atom/RHI/DevicePipelineLibrary.h>
 #include <AzCore/Memory/SystemAllocator.h>
 
 namespace AZ
 {
     namespace Metal
     {
-        class PipelineLibrary final
-            : public RHI::PipelineLibrary
+        class PipelineLibrary final : public RHI::DevicePipelineLibrary
         {
         public:
             AZ_CLASS_ALLOCATOR(PipelineLibrary, AZ::SystemAllocator, 0);
@@ -31,9 +30,9 @@ namespace AZ
 
             //////////////////////////////////////////////////////////////////////////
             // RHI::PipelineLibrary
-            RHI::ResultCode InitInternal(RHI::Device& device, const RHI::PipelineLibraryDescriptor& descriptor) override;
+            RHI::ResultCode InitInternal(RHI::Device& device, const RHI::DevicePipelineLibraryDescriptor& descriptor) override;
             void ShutdownInternal() override;
-            RHI::ResultCode MergeIntoInternal(AZStd::span<const RHI::PipelineLibrary* const> libraries) override;
+            RHI::ResultCode MergeIntoInternal(AZStd::span<const RHI::DevicePipelineLibrary* const> libraries) override;
             RHI::ConstPtr<RHI::PipelineLibraryData> GetSerializedDataInternal() const override;
             bool IsMergeRequired() const;
             bool SaveSerializedDataInternal(const AZStd::string& filePath) const;

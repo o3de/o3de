@@ -21,7 +21,7 @@ namespace AZ
         {
         }
 
-        RHI::ResultCode ImagePoolResolver::UpdateImage(const RHI::ImageUpdateRequest& request, size_t& bytesTransferred)
+        RHI::ResultCode ImagePoolResolver::UpdateImage(const RHI::DeviceImageUpdateRequest& request, size_t& bytesTransferred)
         {
             auto* image = static_cast<Image*>(request.m_image);
             const auto& subresourceLayout = request.m_sourceSubresourceLayout;
@@ -138,7 +138,7 @@ namespace AZ
                 const uint32_t stagingRowPitch = subresourceLayout.m_bytesPerRow;
                 const uint32_t stagingSlicePitch = subresourceLayout.m_rowCount * stagingRowPitch;
 
-                RHI::CopyBufferToImageDescriptor copyDescriptor;
+                RHI::DeviceCopyBufferToImageDescriptor copyDescriptor;
                 copyDescriptor.m_sourceBuffer = packet.m_stagingBuffer.get();
                 copyDescriptor.m_sourceOffset = 0;
                 copyDescriptor.m_sourceBytesPerRow = stagingRowPitch;
@@ -151,8 +151,8 @@ namespace AZ
                 copyDescriptor.m_destinationOrigin.m_top = packet.m_offset.m_top;
                 copyDescriptor.m_destinationOrigin.m_front = packet.m_offset.m_front;
 
-                commandList.Submit(RHI::CopyItem(copyDescriptor));
-                
+                commandList.Submit(RHI::DeviceCopyItem(copyDescriptor));
+
                 device.QueueForRelease(packet.m_stagingBuffer);
             }
         }
@@ -164,7 +164,7 @@ namespace AZ
             m_epiloqueBarriers.clear();
         }
 
-        void ImagePoolResolver::OnResourceShutdown(const RHI::Resource& resource)
+        void ImagePoolResolver::OnResourceShutdown(const RHI::DeviceResource& resource)
         {
             AZStd::lock_guard<AZStd::mutex> lock(m_uploadPacketsLock);
             const Image* image = static_cast<const Image*>(&resource);

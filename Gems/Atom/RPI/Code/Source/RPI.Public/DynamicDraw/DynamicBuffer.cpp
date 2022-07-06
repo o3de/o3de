@@ -34,12 +34,12 @@ namespace AZ
             return m_address;
         }
 
-        RHI::IndexBufferView DynamicBuffer::GetIndexBufferView(RHI::IndexFormat format)
+        RHI::DeviceIndexBufferView DynamicBuffer::GetIndexBufferView(RHI::IndexFormat format)
         {
             return m_allocator->GetIndexBufferView(this, format);
         }
 
-        RHI::StreamBufferView DynamicBuffer::GetStreamBufferView(uint32_t strideByteCount)
+        RHI::DeviceStreamBufferView DynamicBuffer::GetStreamBufferView(uint32_t strideByteCount)
         {
             return m_allocator->GetStreamBufferView(this, strideByteCount);
         }

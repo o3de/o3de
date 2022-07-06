@@ -40,11 +40,11 @@ namespace AZ
             m_renderPass = descriptor.m_renderPass;
             AZ_Assert(!descriptor.m_attachmentImageViews.empty(), "Descriptor have no image view.");
 
-            m_attachments.resize(descriptor.m_attachmentImageViews.size());          
-           
+            m_attachments.resize(descriptor.m_attachmentImageViews.size());
+
             // An attachment (ImageView) become stale when the corresponding resource (Image) is updated,
             // and Framebuffer have to be updated then (after the update of the attachment).
-            // ResourceInvalidateBus informs the update of a resource.
+            // DeviceResourceInvalidateBus informs the update of a resource.
             // Since the ResourceEventPriority of ImageView is higher than one of Framebuffer,
             // ImageView will be updated before update of Framebuffer.
             bool attachmentIsStale = false;
@@ -52,7 +52,7 @@ namespace AZ
             {
                 const ImageView* imageView = descriptor.m_attachmentImageViews[index];
                 attachmentIsStale |= imageView->IsStale();
-                RHI::ResourceInvalidateBus::MultiHandler::BusConnect(&imageView->GetImage());
+                RHI::DeviceResourceInvalidateBus::MultiHandler::BusConnect(&imageView->GetImage());
                 m_attachments[index] = imageView;
             }
 
@@ -115,8 +115,8 @@ namespace AZ
         {
             for (const RHI::ConstPtr<ImageView>& imageView : m_attachments)
             {
-                const RHI::Image& image = imageView->GetImage();
-                RHI::ResourceInvalidateBus::MultiHandler::BusDisconnect(&image);
+                const RHI::DeviceImage& image = imageView->GetImage();
+                RHI::DeviceResourceInvalidateBus::MultiHandler::BusDisconnect(&image);
             }
             Invalidate();
             Base::Shutdown();

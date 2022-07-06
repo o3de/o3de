@@ -25,11 +25,11 @@
 #include <AzFramework/Font/FontInterface.h>
 
 #include <Atom/RHI.Reflect/Base.h>
-#include <Atom/RHI/StreamBufferView.h>
-#include <Atom/RHI/IndexBufferView.h>
-#include <Atom/RHI/PipelineState.h>
+#include <Atom/RHI/DeviceStreamBufferView.h>
+#include <Atom/RHI/DeviceIndexBufferView.h>
+#include <Atom/RHI/DevicePipelineState.h>
 #include <Atom/RHI/DrawList.h>
-#include <Atom/RHI/Image.h>
+#include <Atom/RHI/DeviceImage.h>
 #include <Atom/RPI.Public/Buffer/Buffer.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 #include <Atom/RPI.Public/Shader/Shader.h>
@@ -274,7 +274,7 @@ namespace AZ
         AZStd::unique_ptr<uint8_t[]> m_fontBuffer;
 
         AZ::Data::Instance<AZ::RPI::StreamingImage> m_fontStreamingImage;
-        AZ::RHI::Ptr<AZ::RHI::Image>     m_fontImage;
+        AZ::RHI::Ptr<AZ::RHI::DeviceImage>     m_fontImage;
         uint32_t m_fontImageVersion = 0;
 
         AtomFont* m_atomFont = nullptr;

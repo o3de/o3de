@@ -51,18 +51,18 @@ namespace UnitTest
 
     TEST_F(QueryTests, TestNoop)
     {
-        RHI::Ptr<RHI::Query> noopQuery;
+        RHI::Ptr<RHI::DeviceQuery> noopQuery;
         noopQuery = RHI::Factory::Get().CreateQuery();
         AZ_TEST_ASSERT(noopQuery);
 
-        RHI::Ptr<RHI::QueryPool> noopQueryPool;
+        RHI::Ptr<RHI::DeviceQueryPool> noopQueryPool;
         noopQueryPool = RHI::Factory::Get().CreateQueryPool();
         AZ_TEST_ASSERT(noopQueryPool);
     }
 
     TEST_F(QueryTests, Test)
     {
-        RHI::Ptr<RHI::Query> queryA;
+        RHI::Ptr<RHI::DeviceQuery> queryA;
         queryA = RHI::Factory::Get().CreateQuery();
 
         queryA->SetName(Name("QueryA"));
@@ -70,12 +70,12 @@ namespace UnitTest
         AZ_TEST_ASSERT(queryA->use_count() == 1);
 
         {
-            RHI::Ptr<RHI::QueryPool> queryPool;
+            RHI::Ptr<RHI::DeviceQueryPool> queryPool;
             queryPool = RHI::Factory::Get().CreateQueryPool();
 
             EXPECT_EQ(1, queryPool->use_count());
 
-            RHI::Ptr<RHI::Query> queryB;
+            RHI::Ptr<RHI::DeviceQuery> queryB;
             queryB = RHI::Factory::Get().CreateQuery();
             EXPECT_EQ(1, queryB->use_count());
 
@@ -104,24 +104,21 @@ namespace UnitTest
             {
                 uint32_t queryIndex = 0;
 
-                const RHI::Query* queries[] =
-                {
-                    queryA.get(),
-                    queryB.get()
-                };
+                const RHI::DeviceQuery* queries[] = { queryA.get(), queryB.get() };
 
-                queryPool->ForEach<RHI::Query>([&queryIndex, &queries]([[maybe_unused]] RHI::Query& query)
-                {
-                    AZ_UNUSED(queries); // Prevent unused warning in release builds
-                    AZ_Assert(queries[queryIndex] == &query, "Queries don't match");
-                    queryIndex++;
-                });
+                queryPool->ForEach<RHI::DeviceQuery>(
+                    [&queryIndex, &queries]([[maybe_unused]] RHI::DeviceQuery& query)
+                    {
+                        AZ_UNUSED(queries); // Prevent unused warning in release builds
+                        AZ_Assert(queries[queryIndex] == &query, "Queries don't match");
+                        queryIndex++;
+                    });
             }
 
             queryB->Shutdown();
             EXPECT_EQ(queryB->GetPool(), nullptr);
 
-            RHI::Ptr<RHI::QueryPool> queryPoolB;
+            RHI::Ptr<RHI::DeviceQueryPool> queryPoolB;
             queryPoolB = RHI::Factory::Get().CreateQueryPool();
             queryPoolB->Init(*m_device, queryPoolDesc);
 
@@ -130,7 +127,7 @@ namespace UnitTest
 
             //Since we are switching queryPool for queryB it adds a refcount and invalidates the views.
             //We need this to ensure the views are fully invalidated in order to release the refcount and avoid a leak.
-            RHI::ResourceInvalidateBus::ExecuteQueuedEvents();
+            RHI::DeviceResourceInvalidateBus::ExecuteQueuedEvents();
 
             queryPoolB->Shutdown();
             EXPECT_EQ(queryPoolB->GetResourceCount(), 0);
@@ -143,13 +140,13 @@ namespace UnitTest
     TEST_F(QueryTests, TestAllocations)
     {
         static const uint32_t numQueries = 10;
-        AZStd::array<RHI::Ptr<RHI::Query>, numQueries> queries;
+        AZStd::array<RHI::Ptr<RHI::DeviceQuery>, numQueries> queries;
         for (auto& query : queries)
         {
             query = RHI::Factory::Get().CreateQuery();
         }
 
-        RHI::Ptr<RHI::QueryPool> queryPool;
+        RHI::Ptr<RHI::DeviceQueryPool> queryPool;
         queryPool = RHI::Factory::Get().CreateQueryPool();
 
         RHI::QueryPoolDescriptor queryPoolDesc;
@@ -158,7 +155,7 @@ namespace UnitTest
         queryPoolDesc.m_pipelineStatisticsMask = RHI::PipelineStatisticsFlags::None;
         queryPool->Init(*m_device, queryPoolDesc);
 
-        AZStd::vector<RHI::Query*> queriesToInitialize(numQueries);
+        AZStd::vector<RHI::DeviceQuery*> queriesToInitialize(numQueries);
         for (size_t i = 0; i < queries.size(); ++i)
         {
             queriesToInitialize[i] = queries[i].get();
@@ -166,7 +163,7 @@ namespace UnitTest
 
         RHI::ResultCode result = queryPool->InitQuery(queriesToInitialize.data(), static_cast<uint32_t>(queriesToInitialize.size()));
         EXPECT_EQ(result, RHI::ResultCode::Success);
-        auto checkSlotsFunc = [](const AZStd::vector<RHI::Query*>& queries)
+        auto checkSlotsFunc = [](const AZStd::vector<RHI::DeviceQuery*>& queries)
         {
             if (queries.size() < 2)
             {
@@ -198,7 +195,7 @@ namespace UnitTest
         AZ_TEST_ASSERT(!extraQuery->IsInitialized());
 
         AZStd::vector<uint32_t> queriesIndicesToShutdown = { 5, 6 };
-        AZStd::vector<RHI::Query*> queriesToShutdown;
+        AZStd::vector<RHI::DeviceQuery*> queriesToShutdown;
         for (auto& index : queriesIndicesToShutdown)
         {
             queries[index]->Shutdown();
@@ -225,7 +222,7 @@ namespace UnitTest
 
         //Since we are switching queryPools for some queries it adds a refcount and invalidates the views.
         //We need to ensure the views are fully invalidated in order to release the refcount and avoid leaks.
-        RHI::ResourceInvalidateBus::ExecuteQueuedEvents();
+        RHI::DeviceResourceInvalidateBus::ExecuteQueuedEvents();
 
         checkSlotsFunc(queriesToInitialize);
     }
@@ -233,13 +230,13 @@ namespace UnitTest
     TEST_F(QueryTests, TestIntervals)
     {
         static const uint32_t numQueries = 10;
-        AZStd::array<RHI::Ptr<RHI::Query>, numQueries> queries;
+        AZStd::array<RHI::Ptr<RHI::DeviceQuery>, numQueries> queries;
         for (auto& query : queries)
         {
             query = RHI::Factory::Get().CreateQuery();
         }
 
-        RHI::Ptr<RHI::QueryPool> queryPool;
+        RHI::Ptr<RHI::DeviceQueryPool> queryPool;
         queryPool = RHI::Factory::Get().CreateQueryPool();
 
         RHI::QueryPoolDescriptor queryPoolDesc;
@@ -248,7 +245,7 @@ namespace UnitTest
         queryPoolDesc.m_pipelineStatisticsMask = RHI::PipelineStatisticsFlags::None;
         queryPool->Init(*m_device, queryPoolDesc);
 
-        AZStd::vector<RHI::Query*> queriesToInitialize(numQueries);
+        AZStd::vector<RHI::DeviceQuery*> queriesToInitialize(numQueries);
         for (size_t i = 0; i < queries.size(); ++i)
         {
             queriesToInitialize[i] = queries[i].get();
@@ -271,7 +268,7 @@ namespace UnitTest
         EXPECT_EQ(testQueryPoolIntervals.front(), RHI::Interval(queryToTest->GetHandle().GetIndex(), queryToTest->GetHandle().GetIndex()));
 
         AZStd::vector<RHI::Interval> intervalsToTest = { RHI::Interval(5, 5), RHI::Interval(0, 3), RHI::Interval(8, 9) };
-        AZStd::vector<RHI::Query*> queriesToTest;
+        AZStd::vector<RHI::DeviceQuery*> queriesToTest;
         for (auto& interval : intervalsToTest)
         {
             for (uint32_t i = interval.m_min; i <= interval.m_max; ++i)
@@ -291,7 +288,7 @@ namespace UnitTest
 
     TEST_F(QueryTests, TestQuery)
     {
-        AZStd::array<RHI::Ptr<RHI::QueryPool>, RHI::QueryTypeCount> queryPools;
+        AZStd::array<RHI::Ptr<RHI::DeviceQueryPool>, RHI::QueryTypeCount> queryPools;
         for (size_t i = 0; i < queryPools.size(); ++i)
         {
             auto& queryPool = queryPools[i];
@@ -388,7 +385,7 @@ namespace UnitTest
 
     TEST_F(QueryTests, TestQueryPoolInitialization)
     {
-        RHI::Ptr<RHI::QueryPool> queryPool;
+        RHI::Ptr<RHI::DeviceQueryPool> queryPool;
         queryPool = RHI::Factory::Get().CreateQueryPool();
         RHI::QueryPoolDescriptor queryPoolDesc;
         queryPoolDesc.m_queriesCount = 0;
@@ -414,7 +411,7 @@ namespace UnitTest
 
     TEST_F(QueryTests, TestResults)
     {
-        AZStd::array<RHI::Ptr<RHI::QueryPool>, 2> queryPools;
+        AZStd::array<RHI::Ptr<RHI::DeviceQueryPool>, 2> queryPools;
         RHI::PipelineStatisticsFlags mask = RHI::PipelineStatisticsFlags::CInvocations | RHI::PipelineStatisticsFlags::CPrimitives | RHI::PipelineStatisticsFlags::IAPrimitives;
         for (auto& queryPool : queryPools)
         {
@@ -450,7 +447,7 @@ namespace UnitTest
         // Results count is too small
         anotherQuery->Shutdown();
         queryPools[0]->InitQuery(anotherQuery.get());
-        RHI::Query* queries[] = { query.get(), anotherQuery.get() };
+        RHI::DeviceQuery* queries[] = { query.get(), anotherQuery.get() };
         AZ_TEST_START_ASSERTTEST;
         EXPECT_EQ(queryPools[0]->GetResults(queries, 2, results.data(), numPipelineStatistics, RHI::QueryResultFlagBits::None), RHI::ResultCode::InvalidArgument);
         AZ_TEST_STOP_ASSERTTEST(1);
@@ -461,10 +458,10 @@ namespace UnitTest
         // Unsorted queries
         {
             const size_t numQueries = 5;
-            AZStd::array<RHI::Ptr<AZ::RHI::Query>, numQueries> queries2;
+            AZStd::array<RHI::Ptr<AZ::RHI::DeviceQuery>, numQueries> queries2;
             AZStd::vector<uint64_t> results2(numQueries);
 
-            RHI::Ptr<RHI::QueryPool> queryPool = RHI::Factory::Get().CreateQueryPool();
+            RHI::Ptr<RHI::DeviceQueryPool> queryPool = RHI::Factory::Get().CreateQueryPool();
             RHI::QueryPoolDescriptor queryPoolDesc;
             queryPoolDesc.m_queriesCount = 5;
             queryPoolDesc.m_type = RHI::QueryType::Occlusion;
@@ -476,7 +473,9 @@ namespace UnitTest
                 queryPool->InitQuery(queries2[i].get());
             }
 
-            AZStd::array<RHI::Query*, numQueries> queriesPtr = { queries2[2].get(), queries2[0].get(), queries2[1].get(), queries2[3].get(), queries2[4].get() };
+            AZStd::array<RHI::DeviceQuery*, numQueries> queriesPtr = {
+                queries2[2].get(), queries2[0].get(), queries2[1].get(), queries2[3].get(), queries2[4].get()
+            };
             EXPECT_EQ(queryPool->GetResults(queriesPtr.data(), numQueries, results2.data(), numQueries, RHI::QueryResultFlagBits::None), RHI::ResultCode::Success);
             for (uint32_t i = 0; i < numQueries; ++i)
             {
@@ -486,6 +485,6 @@ namespace UnitTest
 
         //Since we are switching queryPools for some queries it adds a refcount and invalidates the views.
         //We need to ensure the views are fully invalidated in order to release the refcount and avoid leaks.
-        RHI::ResourceInvalidateBus::ExecuteQueuedEvents();
+        RHI::DeviceResourceInvalidateBus::ExecuteQueuedEvents();
     }
 }

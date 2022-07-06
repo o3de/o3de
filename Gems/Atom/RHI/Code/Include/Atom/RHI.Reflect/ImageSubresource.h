@@ -124,13 +124,13 @@ namespace AZ
             
         };
 
-        struct ImageSubresourceLayoutPlaced : ImageSubresourceLayout
+        struct DeviceImageSubresourceLayoutPlaced : ImageSubresourceLayout
         {
-            AZ_TYPE_INFO(ImageSubresourceLayoutPlaced, "{38EFBB72-A539-4F1D-A710-565BF6527B6E}");
+            AZ_TYPE_INFO(DeviceImageSubresourceLayoutPlaced, "{38EFBB72-A539-4F1D-A710-565BF6527B6E}");
             static void Reflect(AZ::ReflectContext* context);
 
-            ImageSubresourceLayoutPlaced() = default;
-            ImageSubresourceLayoutPlaced(const ImageSubresourceLayout& subresourceLayout, uint32_t offset);
+            DeviceImageSubresourceLayoutPlaced() = default;
+            DeviceImageSubresourceLayoutPlaced(const ImageSubresourceLayout& subresourceLayout, uint32_t offset);
 
             uint32_t m_offset = 0;
         };

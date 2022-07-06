@@ -7,7 +7,7 @@
  */
 
 #include <Atom/RHI/SwapChainFrameAttachment.h>
-#include <Atom/RHI/SwapChain.h>
+#include <Atom/RHI/DeviceSwapChain.h>
 
 namespace AZ
 {
@@ -15,17 +15,17 @@ namespace AZ
     {
         SwapChainFrameAttachment::SwapChainFrameAttachment(
             const AttachmentId& attachmentId,
-            Ptr<SwapChain> swapChain)
+            Ptr<DeviceSwapChain> swapChain)
             : ImageFrameAttachment(attachmentId, swapChain->GetCurrentImage())
             , m_swapChain{AZStd::move(swapChain)}
         {}
 
-        SwapChain* SwapChainFrameAttachment::GetSwapChain()
+        DeviceSwapChain* SwapChainFrameAttachment::GetSwapChain()
         {
             return m_swapChain.get();
         }
 
-        const SwapChain* SwapChainFrameAttachment::GetSwapChain() const
+        const DeviceSwapChain* SwapChainFrameAttachment::GetSwapChain() const
         {
             return m_swapChain.get();
         }

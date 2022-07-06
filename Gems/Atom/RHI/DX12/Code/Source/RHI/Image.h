@@ -7,16 +7,16 @@
  */
 #pragma once
 
-#include <RHI/TileAllocator.h>
-#include <RHI/MemoryView.h>
-#include <Atom/RHI/Image.h>
-#include <Atom/RHI/Allocator.h>
-#include <Atom/RHI/ImageProperty.h>
 #include <Atom/RHI.Reflect/Handle.h>
 #include <Atom/RHI.Reflect/Limits.h>
-#include <AzCore/std/containers/array.h>
+#include <Atom/RHI/Allocator.h>
+#include <Atom/RHI/DeviceImage.h>
+#include <Atom/RHI/ImageProperty.h>
 #include <AzCore/Memory/PoolAllocator.h>
+#include <AzCore/std/containers/array.h>
 #include <AzCore/std/parallel/atomic.h>
+#include <RHI/MemoryView.h>
+#include <RHI/TileAllocator.h>
 
 namespace AZ
 {
@@ -59,10 +59,10 @@ namespace AZ
             AZStd::vector<D3D12_SUBRESOURCE_TILING> m_subresourceTiling;
         };
 
-        class Image final
-            : public RHI::Image
+        class Image final : public RHI::DeviceImage
         {
-            using Base = RHI::Image;
+            using Base = RHI::DeviceImage;
+
         public:
             AZ_CLASS_ALLOCATOR(Image, AZ::SystemAllocator, 0);
             AZ_RTTI(Image, "{D2B32EE2-2ED5-477A-8346-95AF0D11DAC8}", Base);
@@ -136,7 +136,7 @@ namespace AZ
             // RHI::Image
             void GetSubresourceLayoutsInternal(
                 const RHI::ImageSubresourceRange& subresourceRange,
-                RHI::ImageSubresourceLayoutPlaced* subresourceLayouts,
+                RHI::DeviceImageSubresourceLayoutPlaced* subresourceLayouts,
                 size_t* totalSizeInBytes) const override;
 
             void SetDescriptor(const RHI::ImageDescriptor& descriptor) override;
@@ -153,7 +153,7 @@ namespace AZ
             // The number of bytes actually resident in cases where the image has tile mappings.
             size_t m_residentSizeInBytes = 0;
 
-            AZStd::array<RHI::ImageSubresourceLayoutPlaced, RHI::Limits::Image::MipCountMax> m_subresourceLayoutsPerMipChain;
+            AZStd::array<RHI::DeviceImageSubresourceLayoutPlaced, RHI::Limits::Image::MipCountMax> m_subresourceLayoutsPerMipChain;
 
             // The layout of tiles with respect to each subresource in the image.
             ImageTileLayout m_tileLayout;

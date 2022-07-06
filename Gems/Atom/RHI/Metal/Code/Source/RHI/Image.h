@@ -7,11 +7,11 @@
  */
 #pragma once
 
-#include <Atom/RHI/AsyncWorkQueue.h>
-#include <Atom/RHI/ImageView.h>
-#include <Atom/RHI/Image.h>
-#include <Atom/RHI/ImagePool.h>
 #include <Atom/RHI.Reflect/AttachmentEnums.h>
+#include <Atom/RHI/AsyncWorkQueue.h>
+#include <Atom/RHI/DeviceImage.h>
+#include <Atom/RHI/ImagePool.h>
+#include <Atom/RHI/ImageView.h>
 #include <AzCore/Memory/PoolAllocator.h>
 #include <AzCore/std/parallel/atomic.h>
 #include <RHI/MemoryView.h>
@@ -21,11 +21,11 @@ namespace AZ
     namespace Metal
     {
         class Device;
-                
-        class Image final
-            : public RHI::Image
+
+        class Image final : public RHI::DeviceImage
         {
-            using Base = RHI::Image;
+            using Base = RHI::DeviceImage;
+
         public:
             AZ_CLASS_ALLOCATOR(Image, AZ::ThreadPoolAllocator, 0);
             AZ_RTTI(Image, "{F9F25704-F885-4CBD-BC96-D8D1E89F95EA}", Base);

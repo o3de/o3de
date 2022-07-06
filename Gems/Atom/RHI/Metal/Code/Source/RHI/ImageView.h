@@ -18,10 +18,10 @@ namespace AZ
     {
         class Image;
 
-        class ImageView final
-            : public RHI::ImageView
+        class ImageView final : public RHI::DeviceImageView
         {
-            using Base = RHI::ImageView;
+            using Base = RHI::DeviceImageView;
+
         public:
             AZ_CLASS_ALLOCATOR(ImageView, AZ::ThreadPoolAllocator, 0);
             AZ_RTTI(ImageView, "{8D509777-8BF1-4652-B0B1-539C7225DAE9}", Base);

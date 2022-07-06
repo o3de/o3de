@@ -21,7 +21,7 @@
 #include <Atom/RPI.Reflect/ResourcePoolAssetCreator.h>
 
 #include <Atom/RHI.Reflect/ImagePoolDescriptor.h>
-#include <Atom/RHI/ImagePool.h>
+#include <Atom/RHI/DeviceImagePool.h>
 
 #include <Atom/RHI/RHISystemInterface.h>
 

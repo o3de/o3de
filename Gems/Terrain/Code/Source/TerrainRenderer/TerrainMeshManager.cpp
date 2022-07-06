@@ -263,7 +263,7 @@ namespace Terrain
 
     }
 
-    AZ::RHI::StreamBufferView TerrainMeshManager::CreateStreamBufferView(AZ::Data::Instance<AZ::RPI::Buffer>& buffer, uint32_t offset)
+    AZ::RHI::DeviceStreamBufferView TerrainMeshManager::CreateStreamBufferView(AZ::Data::Instance<AZ::RPI::Buffer>& buffer, uint32_t offset)
     {
         return
         {
@@ -502,7 +502,7 @@ namespace Terrain
 
             m_parentScene->ConfigurePipelineState(drawListTag, pipelineStateDescriptor);
 
-            const AZ::RHI::PipelineState* pipelineState = shader->AcquirePipelineState(pipelineStateDescriptor);
+            const AZ::RHI::DevicePipelineState* pipelineState = shader->AcquirePipelineState(pipelineStateDescriptor);
             if (!pipelineState)
             {
                 AZ_Error(TerrainMeshManagerName, false, "Shader '%s'. Failed to acquire default pipeline state", shaderItem.GetShaderAsset()->GetName().GetCStr());
@@ -1114,24 +1114,24 @@ namespace Terrain
         m_raytracingNormalsBuffer->Unmap();
 
         // setup the stream and shader buffer views
-        AZ::RHI::Buffer& rhiPositionsBuffer = *m_raytracingPositionsBuffer->GetRHIBuffer();
+        AZ::RHI::DeviceBuffer& rhiPositionsBuffer = *m_raytracingPositionsBuffer->GetRHIBuffer();
         uint32_t positionsBufferByteCount = aznumeric_cast<uint32_t>(rhiPositionsBuffer.GetDescriptor().m_byteCount);
         AZ::RHI::Format positionsBufferFormat = m_raytracingPositionsBuffer->GetBufferViewDescriptor().m_elementFormat;
         uint32_t positionsBufferElementSize = AZ::RHI::GetFormatSize(positionsBufferFormat);
-        AZ::RHI::StreamBufferView positionsVertexBufferView(rhiPositionsBuffer, 0, positionsBufferByteCount, positionsBufferElementSize);
+        AZ::RHI::DeviceStreamBufferView positionsVertexBufferView(rhiPositionsBuffer, 0, positionsBufferByteCount, positionsBufferElementSize);
         AZ::RHI::BufferViewDescriptor positionsBufferDescriptor = AZ::RHI::BufferViewDescriptor::CreateRaw(0, positionsBufferByteCount);
 
-        AZ::RHI::Buffer& rhiNormalsBuffer = *m_raytracingNormalsBuffer->GetRHIBuffer();
+        AZ::RHI::DeviceBuffer& rhiNormalsBuffer = *m_raytracingNormalsBuffer->GetRHIBuffer();
         uint32_t normalsBufferByteCount = aznumeric_cast<uint32_t>(rhiNormalsBuffer.GetDescriptor().m_byteCount);
         AZ::RHI::Format normalsBufferFormat = m_raytracingNormalsBuffer->GetBufferViewDescriptor().m_elementFormat;
         uint32_t normalsBufferElementSize = AZ::RHI::GetFormatSize(normalsBufferFormat);
-        AZ::RHI::StreamBufferView normalsVertexBufferView(rhiNormalsBuffer, 0, normalsBufferByteCount, normalsBufferElementSize);
+        AZ::RHI::DeviceStreamBufferView normalsVertexBufferView(rhiNormalsBuffer, 0, normalsBufferByteCount, normalsBufferElementSize);
         AZ::RHI::BufferViewDescriptor normalsBufferDescriptor = AZ::RHI::BufferViewDescriptor::CreateRaw(0, normalsBufferByteCount);
 
-        AZ::RHI::Buffer& rhiIndexBuffer = *m_raytracingIndexBuffer->GetRHIBuffer();
+        AZ::RHI::DeviceBuffer& rhiIndexBuffer = *m_raytracingIndexBuffer->GetRHIBuffer();
         uint32_t indexBufferByteCount = aznumeric_cast<uint32_t>(rhiIndexBuffer.GetDescriptor().m_byteCount);
         AZ::RHI::IndexFormat indexBufferFormat = AZ::RHI::IndexFormat::Uint32;
-        AZ::RHI::IndexBufferView indexBufferView(rhiIndexBuffer, 0, indexBufferByteCount, indexBufferFormat);
+        AZ::RHI::DeviceIndexBufferView indexBufferView(rhiIndexBuffer, 0, indexBufferByteCount, indexBufferFormat);
 
         uint32_t indexElementSize = AZ::RHI::GetIndexFormatSize(indexBufferFormat);
         uint32_t indexElementCount = indexBufferByteCount / indexElementSize;

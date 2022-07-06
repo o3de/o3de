@@ -7,11 +7,11 @@
  */
 #pragma once
 
-#include <RHI/MemoryView.h>
-#include <Atom/RHI/Buffer.h>
-#include <RHI/BufferMemoryView.h>
+#include <Atom/RHI/DeviceBuffer.h>
 #include <AzCore/Memory/PoolAllocator.h>
 #include <AzCore/std/parallel/atomic.h>
+#include <RHI/BufferMemoryView.h>
+#include <RHI/MemoryView.h>
 
 namespace AZ
 {
@@ -21,10 +21,10 @@ namespace AZ
         class BufferPool;
         class AliasedHeap;
 
-        class Buffer final
-            : public RHI::Buffer
+        class Buffer final : public RHI::DeviceBuffer
         {
-            using Base = RHI::Buffer;
+            using Base = RHI::DeviceBuffer;
+
         public:
             AZ_CLASS_ALLOCATOR(Buffer, AZ::ThreadPoolAllocator, 0);
             AZ_RTTI(Buffer, "{EFBC5B3C-84BB-43E8-8C68-A44EC30ADC39}", Base);
@@ -62,7 +62,7 @@ namespace AZ
 
             //////////////////////////////////////////////////////////////////////////
             // RHI::Buffer
-            using RHI::Buffer::SetDescriptor;
+            using Base::SetDescriptor;
             //////////////////////////////////////////////////////////////////////////
 
             // The buffer memory allocation on the primary heap.

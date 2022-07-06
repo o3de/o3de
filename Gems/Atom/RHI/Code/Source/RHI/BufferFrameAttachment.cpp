@@ -8,21 +8,16 @@
 
 #include <Atom/RHI/BufferFrameAttachment.h>
 #include <Atom/RHI/BufferScopeAttachment.h>
-#include <Atom/RHI/BufferView.h>
+#include <Atom/RHI/DeviceBufferView.h>
 #include <Atom/RHI/Factory.h>
 
 namespace AZ
 {
     namespace RHI
     {
-        BufferFrameAttachment::BufferFrameAttachment(
-            const AttachmentId& attachmentId,
-            Ptr<Buffer> buffer)
-            : FrameAttachment(
-                attachmentId,
-                HardwareQueueClassMask::All,
-                AttachmentLifetimeType::Imported)
-            , m_bufferDescriptor{buffer->GetDescriptor()}
+        BufferFrameAttachment::BufferFrameAttachment(const AttachmentId& attachmentId, Ptr<DeviceBuffer> buffer)
+            : FrameAttachment(attachmentId, HardwareQueueClassMask::All, AttachmentLifetimeType::Imported)
+            , m_bufferDescriptor{ buffer->GetDescriptor() }
         {
             SetResource(AZStd::move(buffer));
         }
@@ -60,14 +55,14 @@ namespace AZ
             return m_bufferDescriptor;
         }
 
-        const Buffer* BufferFrameAttachment::GetBuffer() const
+        const DeviceBuffer* BufferFrameAttachment::GetBuffer() const
         {
-            return static_cast<const Buffer*>(GetResource());
+            return static_cast<const DeviceBuffer*>(GetResource());
         }
 
-        Buffer* BufferFrameAttachment::GetBuffer()
+        DeviceBuffer* BufferFrameAttachment::GetBuffer()
         {
-            return static_cast<Buffer*>(GetResource());
+            return static_cast<DeviceBuffer*>(GetResource());
         }
     }
 }

@@ -116,7 +116,7 @@ namespace AZ
             }
         }
 
-        RHI::ResultCode TransientAttachmentPool::InitInternal(RHI::Device& deviceBase, const RHI::TransientAttachmentPoolDescriptor& descriptor)
+        RHI::ResultCode TransientAttachmentPool::InitInternal(RHI::Device& deviceBase, const RHI::DeviceTransientAttachmentPoolDescriptor& descriptor)
         {
             static const uint32_t ObjectCacheSize = 256;
             

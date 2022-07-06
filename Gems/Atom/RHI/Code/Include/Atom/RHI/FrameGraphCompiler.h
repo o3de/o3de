@@ -10,8 +10,8 @@
 #include <Atom/RHI.Reflect/FrameSchedulerEnums.h>
 #include <Atom/RHI/Object.h>
 #include <Atom/RHI/ObjectCache.h>
-#include <Atom/RHI/ImageView.h>
-#include <Atom/RHI/BufferView.h>
+#include <Atom/RHI/DeviceImageView.h>
+#include <Atom/RHI/DeviceBufferView.h>
 
 //! Struct used as a key for m_imageReverseLookupHash map below. The reason for using a struct instead of a hash directly is
 //! so that the map can handle hash collision correctly by using the == operator. This struct contains
@@ -83,7 +83,7 @@ namespace AZ
         class FrameGraph;
         class FrameGraphAttachmentDatabase;
         class ResourcePoolFrameAttachment;
-        class TransientAttachmentPool;
+        class DeviceTransientAttachmentPool;
 
         /**
          * @brief Fill this request structure and pass to FrameGraphCompiler::Compile.
@@ -96,7 +96,7 @@ namespace AZ
             FrameGraph* m_frameGraph = nullptr;
 
             /// The transient attachment pool used for transient attachment allocations. Must be a valid instance.
-            TransientAttachmentPool* m_transientAttachmentPool = nullptr;
+            DeviceTransientAttachmentPool* m_transientAttachmentPool = nullptr;
 
             /// The verbosity requested for compilation. Logs are emitted using the AzCore logging functions.
             FrameSchedulerLogVerbosity m_logVerbosity = FrameSchedulerLogVerbosity::None;
@@ -121,7 +121,7 @@ namespace AZ
          * platform implementation. The provided FrameGraph instance is compiled in-place according to the
          * following phases:
          *
-         *      == Cross-Queue Graph Edges == 
+         *      == Cross-Queue Graph Edges ==
          *
          * FrameGraph contains a graph of Scope instances. Scopes are topologically sorted prior to
          * compilation as part of the graph construction process. Scopes associate directly to a "Hardware Queue Class":
@@ -142,7 +142,7 @@ namespace AZ
          *      == Transient Attachments ==
          *
          * Transient attachments are intra-frame and do not persist after the frame ends and can take the form of
-         * buffers or images. These attachments are owned by a TransientAttachmentPool; every frame, the pool
+         * buffers or images. These attachments are owned by a DeviceTransientAttachmentPool; every frame, the pool
          * is reset. Since attachments are always declared for usage on scopes, its full usage chain--and thus its
          * lifetime across the frame--is immediately available.
          *
@@ -219,7 +219,7 @@ namespace AZ
 
             void CompileTransientAttachments(
                 FrameGraph& frameGraph,
-                TransientAttachmentPool& transientAttachmentPool,
+                DeviceTransientAttachmentPool& transientAttachmentPool,
                 FrameSchedulerCompileFlags compileFlags,
                 FrameSchedulerStatisticsFlags statisticsFlags);
 
@@ -232,13 +232,13 @@ namespace AZ
                                  ObjectCache<ObjectCacheType>& objectCache);
             
             // Returns the resource from local cache if it exists within it or create one if it doesn't and add it to the cache
-            ImageView* GetImageViewFromLocalCache(Image* image, const ImageViewDescriptor& imageViewDescriptor);
-            BufferView* GetBufferViewFromLocalCache(Buffer* buffer, const BufferViewDescriptor& bufferViewDescriptor);
+            DeviceImageView* GetImageViewFromLocalCache(DeviceImage* image, const ImageViewDescriptor& imageViewDescriptor);
+            DeviceBufferView* GetBufferViewFromLocalCache(DeviceBuffer* buffer, const BufferViewDescriptor& bufferViewDescriptor);
             
             // This cache is mainly for transient resources. It adds a dependency to the resource views and hence they wont be
             // deleted at the end of the frame and re-created at the start. Mainly used as an optimization.  
-            ObjectCache<ImageView> m_imageViewCache;
-            ObjectCache<BufferView> m_bufferViewCache;
+            ObjectCache<DeviceImageView> m_imageViewCache;
+            ObjectCache<DeviceBufferView> m_bufferViewCache;
             
             // The maps below are used to reverse look up view hashes so we can clear them out of m_imageViewCache/m_bufferViewCache
             // once they have been replaced with a new view instance. 

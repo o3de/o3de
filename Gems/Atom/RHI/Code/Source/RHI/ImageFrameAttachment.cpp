@@ -15,7 +15,7 @@ namespace AZ
     {
         ImageFrameAttachment::ImageFrameAttachment(
             const AttachmentId& attachmentId,
-            Ptr<Image> image)
+            Ptr<DeviceImage> image)
             : FrameAttachment(
                 attachmentId,
                 HardwareQueueClassMask::All,
@@ -64,14 +64,14 @@ namespace AZ
             return m_imageDescriptor;
         }
 
-        const Image* ImageFrameAttachment::GetImage() const
+        const DeviceImage* ImageFrameAttachment::GetImage() const
         {
-            return static_cast<const Image*>(GetResource());
+            return static_cast<const DeviceImage*>(GetResource());
         }
 
-        Image* ImageFrameAttachment::GetImage()
+        DeviceImage* ImageFrameAttachment::GetImage()
         {
-            return static_cast<Image*>(GetResource());
+            return static_cast<DeviceImage*>(GetResource());
         }
 
         ClearValue ImageFrameAttachment::GetOptimizedClearValue() const

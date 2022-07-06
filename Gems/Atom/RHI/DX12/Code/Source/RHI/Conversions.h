@@ -20,8 +20,8 @@
 #include <Atom/RHI.Reflect/MultisampleState.h>
 #include <Atom/RHI.Reflect/QueryPoolDescriptor.h>
 #include <Atom/RHI/CommandList.h>
-#include <Atom/RHI/DrawItem.h>
-#include <Atom/RHI/Query.h>
+#include <Atom/RHI/DeviceDrawItem.h>
+#include <Atom/RHI/DeviceQuery.h>
 #include <AzCore/std/containers/vector.h>
 #include <RHI/DX12.h>
 

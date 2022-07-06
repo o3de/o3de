@@ -14,8 +14,8 @@
 #include <ACES/Aces.h>
 #include <Atom/Feature/DisplayMapper/DisplayMapperConfigurationDescriptor.h>
 
-#include <Atom/RHI/ImagePool.h>
-#include <Atom/RHI/ImageView.h>
+#include <Atom/RHI/DeviceImagePool.h>
+#include <Atom/RHI/DeviceImageView.h>
 
 #include <Atom/RPI.Reflect/System/AnyAsset.h>
 #include <Atom/RPI.Public/Image/StreamingImage.h>
@@ -105,7 +105,7 @@ namespace AZ
             static const int ImagePoolBudget = 1 << 20; // 1 Megabyte
 
             // LUTs that are baked through shaders
-            RHI::Ptr<RHI::ImagePool>                                    m_displayMapperImagePool;
+            RHI::Ptr<RHI::DeviceImagePool>                                    m_displayMapperImagePool;
             AZStd::unordered_map<AZ::Name, DisplayMapperLut>            m_ownedLuts;
             // LUTs loaded from assets
             AZStd::unordered_map<AZStd::string, DisplayMapperAssetLut>  m_assetLuts;

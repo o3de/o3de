@@ -10,13 +10,13 @@
 #include <Atom/RHI.Reflect/AttachmentId.h>
 #include <Atom/RHI.Reflect/TransientAttachmentStatistics.h>
 #include <Atom/RHI/AliasingBarrierTracker.h>
-#include <Atom/RHI/BufferPool.h>
+#include <Atom/RHI/DeviceBufferPool.h>
+#include <Atom/RHI/DeviceResourcePool.h>
 #include <Atom/RHI/FreeListAllocator.h>
-#include <Atom/RHI/ImagePool.h>
+#include <Atom/RHI/DeviceImagePool.h>
 #include <Atom/RHI/Object.h>
 #include <Atom/RHI/ObjectCache.h>
-#include <Atom/RHI/ResourcePool.h>
-#include <Atom/RHI/TransientAttachmentPool.h>
+#include <Atom/RHI/DeviceTransientAttachmentPool.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 
@@ -24,10 +24,10 @@ namespace AZ
 {
     namespace RHI
     {
-        class Resource;
+        class DeviceResource;
         class Scope;
-        class Buffer;
-        class Image;
+        class DeviceBuffer;
+        class DeviceImage;
 
         struct AliasedHeapDescriptor
             : public ResourcePoolDescriptor
@@ -45,10 +45,9 @@ namespace AZ
         //! Aliased Heaps are used for allocating transient attachments (resources that are valid only during the duration of a frame).
         //! and they will reuse memory whenever possible, and will also track the necessary barriers that need to be inserted when aliasing happens.
         //! Aliased Heaps do not support aliased resources being used at the same time (even if the resources are compatible).
-        class AliasedHeap
-            : public ResourcePool
+        class AliasedHeap : public DeviceResourcePool
         {
-            using Base = ResourcePool;
+            using Base = DeviceResourcePool;
         public:
             AZ_CLASS_ALLOCATOR(AliasedHeap, AZ::SystemAllocator, 0);
             AZ_RTTI(AliasedHeap, "{9C4BB24D-3B76-4584-BA68-600BC7E2A2AA}");
@@ -63,10 +62,7 @@ namespace AZ
             void Begin(const RHI::TransientAttachmentPoolCompileFlags compileFlags);
 
             //! Begin the use of a buffer resource.
-            ResultCode ActivateBuffer(
-                const TransientBufferDescriptor& descriptor,
-                Scope& scope,
-                Buffer** activatedBuffer);
+            ResultCode ActivateBuffer(const TransientBufferDescriptor& descriptor, Scope& scope, DeviceBuffer** activatedBuffer);
 
             //! Ends the use of a previously activated buffer.
             void DeactivateBuffer(
@@ -74,10 +70,7 @@ namespace AZ
                 Scope& scope);
 
             //! Begin the use of an image resource.
-            ResultCode ActivateImage(
-                const TransientImageDescriptor& descriptor,
-                Scope& scope,
-                Image** activatedImage);
+            ResultCode ActivateImage(const TransientImageDescriptor& descriptor, Scope& scope, DeviceImage** activatedImage);
 
             //! Ends the use of a previously activated image.
             void DeactivateImage(
@@ -108,14 +101,14 @@ namespace AZ
             virtual ResultCode InitInternal(Device& device, const AliasedHeapDescriptor& descriptor) = 0;
             //! Implementation initialization of an Aliased image.
             //! @param heapOffset Offset in bytes of the heap where the resource should be created.
-            virtual ResultCode InitImageInternal(const ImageInitRequest& request, size_t heapOffset) = 0;
+            virtual ResultCode InitImageInternal(const DeviceImageInitRequest& request, size_t heapOffset) = 0;
             //! Implementation initialization of an Aliased buffer.
             //! @param heapOffset Offset in bytes of the heap where the resource should be created.
-            virtual ResultCode InitBufferInternal(const BufferInitRequest& request, size_t heapOffset) = 0;
+            virtual ResultCode InitBufferInternal(const DeviceBufferInitRequest& request, size_t heapOffset) = 0;
             //////////////////////////////////////////////////////////////////////////
 
             //////////////////////////////////////////////////////////////////////////
-            // ResourcePool
+            // DeviceResourcePool
             void ShutdownInternal() override;
             void ComputeFragmentation() const override;
             //////////////////////////////////////////////////////////////////////////
@@ -130,7 +123,7 @@ namespace AZ
             FreeListAllocator m_firstFitAllocator;
 
             /// Cache of attachments.
-            ObjectCache<Resource> m_cache;
+            ObjectCache<DeviceResource> m_cache;
 
             /// The aliasing barrier tracker used to compute aliasing barriers when activations
             /// and deactivations occur.
@@ -149,7 +142,7 @@ namespace AZ
             /// Reverse lookup for getting the attachment index the heap statistics.
             struct AttachmentData
             {
-                Resource* m_resource = nullptr;
+                DeviceResource* m_resource = nullptr;
                 uint32_t m_attachmentIndex = 0;
                 Scope* m_activateScope = nullptr;
             };

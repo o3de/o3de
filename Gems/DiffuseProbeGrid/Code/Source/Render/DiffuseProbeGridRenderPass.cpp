@@ -198,7 +198,7 @@ namespace AZ
                 }
 
                 // the diffuse probe grid Srg must be updated in the Compile phase in order to successfully bind the ReadWrite shader inputs
-                // (see ValidateSetImageView() of ShaderResourceGroupData.cpp)
+                // (see ValidateSetImageView() of DeviceShaderResourceGroupData.cpp)
                 diffuseProbeGrid->UpdateRenderObjectSrg();
 
                 diffuseProbeGrid->GetRenderObjectSrg()->Compile();

@@ -32,7 +32,7 @@ namespace UnitTest
         void ValidateBinding(
             const RHI::Scope* scope,
             const RHI::BufferScopeAttachment* scopeAttachment,
-            const RHI::Buffer* buffer)
+            const RHI::DeviceBuffer* buffer)
         {
             ASSERT_TRUE(scopeAttachment->GetPrevious() == nullptr);
             ASSERT_TRUE(scopeAttachment->GetNext() == nullptr);
@@ -53,7 +53,7 @@ namespace UnitTest
         void ValidateBinding(
             const RHI::Scope* scope,
             const RHI::ImageScopeAttachment* scopeAttachment,
-            const RHI::Image* image)
+            const RHI::DeviceImage* image)
         {
             ASSERT_TRUE(scopeAttachment->GetPrevious() == nullptr);
             ASSERT_TRUE(scopeAttachment->GetNext() == nullptr);
@@ -91,14 +91,14 @@ namespace UnitTest
 
             for (uint32_t i = 0; i < BufferCount; ++i)
             {
-                RHI::Ptr<RHI::Buffer> buffer;
+                RHI::Ptr<RHI::DeviceBuffer> buffer;
                 buffer = RHI::Factory::Get().CreateBuffer();
 
                 RHI::BufferDescriptor desc;
                 desc.m_bindFlags = RHI::BufferBindFlags::ShaderReadWrite;
                 desc.m_byteCount = BufferSize;
 
-                RHI::BufferInitRequest request;
+                RHI::DeviceBufferInitRequest request;
                 request.m_descriptor = desc;
                 request.m_buffer = buffer.get();
                 m_state->m_bufferPool->InitBuffer(request);
@@ -118,7 +118,7 @@ namespace UnitTest
 
             for (uint32_t i = 0; i < ImageCount; ++i)
             {
-                RHI::Ptr<RHI::Image> image;
+                RHI::Ptr<RHI::DeviceImage> image;
                 image = RHI::Factory::Get().CreateImage();
 
                 RHI::ImageDescriptor desc = RHI::ImageDescriptor::Create2D(
@@ -127,7 +127,7 @@ namespace UnitTest
                     ImageSize,
                     RHI::Format::R8G8B8A8_UNORM);
 
-                RHI::ImageInitRequest request;
+                RHI::DeviceImageInitRequest request;
                 request.m_descriptor = desc;
                 request.m_image = image.get();
                 m_state->m_imagePool->InitImage(request);
@@ -449,20 +449,20 @@ namespace UnitTest
 
         struct ImageAttachment
         {
-            RHI::Ptr<RHI::Image> m_image;
+            RHI::Ptr<RHI::DeviceImage> m_image;
             RHI::AttachmentId m_id;
         };
 
         struct BufferAttachment
         {
-            RHI::Ptr<RHI::Buffer> m_buffer;
+            RHI::Ptr<RHI::DeviceBuffer> m_buffer;
             RHI::AttachmentId m_id;
         };
 
         struct State
         {
-            RHI::Ptr<RHI::BufferPool> m_bufferPool;
-            RHI::Ptr<RHI::ImagePool> m_imagePool;
+            RHI::Ptr<RHI::DeviceBufferPool> m_bufferPool;
+            RHI::Ptr<RHI::DeviceImagePool> m_imagePool;
             RHI::Ptr<RHI::FrameGraphCompiler> m_frameGraphCompiler;
 
             ImageAttachment m_imageAttachments[ImageCount];

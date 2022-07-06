@@ -7,11 +7,11 @@
  */
 #pragma once
 
-#include <RHI/Buffer.h>
-#include <Atom/RHI/ShaderResourceGroup.h>
 #include <Atom/RHI.Reflect/Metal/PipelineLayoutDescriptor.h>
+#include <Atom/RHI/DeviceShaderResourceGroup.h>
 #include <AzCore/std/containers/vector.h>
 #include <RHI/ArgumentBuffer.h>
+#include <RHI/Buffer.h>
 
 namespace AZ
 {
@@ -29,11 +29,11 @@ namespace AZ
             // The constant buffer CPU address.
             void* m_cpuConstantAddress = nullptr;
         };
-        
-        class ShaderResourceGroup final
-            : public RHI::ShaderResourceGroup
+
+        class ShaderResourceGroup final : public RHI::DeviceShaderResourceGroup
         {
-            using Base = RHI::ShaderResourceGroup;
+            using Base = RHI::DeviceShaderResourceGroup;
+
         public:
             AZ_CLASS_ALLOCATOR(ShaderResourceGroup, AZ::SystemAllocator, 0);
 

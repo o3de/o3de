@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <Atom/RHI/Fence.h>
+#include <Atom/RHI/DeviceFence.h>
 #include <Atom/RHI/Scope.h>
 #include <AzCore/Memory/PoolAllocator.h>
 #include <AzCore/std/containers/array.h>
@@ -85,8 +85,7 @@ namespace AZ
         //! indirectly held a reference to one. Therefore, this implementation is only used when passing
         //! fences back and forth between the user and the RHI interface. Low-level systems will use
         //! the internal Fence instance instead.
-        class FenceImpl final
-            : public RHI::Fence
+        class FenceImpl final : public RHI::DeviceFence
         {
         public:
             AZ_CLASS_ALLOCATOR(FenceImpl, AZ::SystemAllocator, 0);

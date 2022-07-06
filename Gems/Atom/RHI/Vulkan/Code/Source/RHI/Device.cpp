@@ -11,7 +11,7 @@
 #include <Atom/RHI.Reflect/Vulkan/XRVkDescriptors.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/RHISystemInterface.h>
-#include <Atom/RHI/TransientAttachmentPool.h>
+#include <Atom/RHI/DeviceTransientAttachmentPool.h>
 #include <AzCore/std/containers/set.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/Debug/Trace.h>
@@ -508,7 +508,7 @@ namespace AZ
         {
             RHI::Ptr<Buffer> stagingBuffer = Buffer::Create();
             RHI::BufferDescriptor bufferDesc(RHI::BufferBindFlags::CopyRead, byteCount);
-            RHI::BufferInitRequest initRequest(*stagingBuffer, bufferDesc);
+            RHI::DeviceBufferInitRequest initRequest(*stagingBuffer, bufferDesc);
             const RHI::ResultCode result = m_stagingBufferPool->InitBuffer(initRequest);
             if (result != RHI::ResultCode::Success)
             {

@@ -15,7 +15,7 @@ namespace AZ
 {
     namespace RHI
     {
-        class BufferView;
+        class DeviceBufferView;
         class BufferFrameAttachment;
 
         /**
@@ -51,10 +51,10 @@ namespace AZ
             BufferScopeAttachment* GetNext();
 
             /// Returns the buffer view set on the scope attachment.
-            const BufferView* GetBufferView() const;
+            const DeviceBufferView* GetBufferView() const;
 
             /// Assigns a buffer view to the scope attachment.
-            void SetBufferView(ConstPtr<BufferView> bufferView);
+            void SetBufferView(ConstPtr<DeviceBufferView> bufferView);
 
         private:
             BufferScopeAttachmentDescriptor m_descriptor;

@@ -22,33 +22,33 @@ namespace AZ
 {
     namespace RHI
     {
-        class Buffer;
-        class BufferPool;
-        class BufferView;
+        class DeviceBuffer;
+        class DeviceBufferPool;
+        class DeviceBufferView;
         class Device;
-        class Image;
-        class ImagePool;
-        class ImageView;
-        class IndirectBufferSignature;
-        class IndirectBufferWriter;
-        class Fence;
+        class DeviceImage;
+        class DeviceImagePool;
+        class DeviceImageView;
+        class DeviceIndirectBufferSignature;
+        class DeviceIndirectBufferWriter;
+        class DeviceFence;
         class FrameGraphCompiler;
         class FrameGraphExecuter;
-        class PipelineState;
-        class PipelineLibrary;
-        class Query;
-        class QueryPool;
+        class DevicePipelineState;
+        class DevicePipelineLibrary;
+        class DeviceQuery;
+        class DeviceQueryPool;
         class Scope;
-        class ShaderResourceGroup;
-        class ShaderResourceGroupPool;
-        class StreamingImagePool;
-        class SwapChain;
-        class TransientAttachmentPool;
-        class RayTracingBufferPools;
-        class RayTracingBlas;
-        class RayTracingTlas;
-        class RayTracingPipelineState;
-        class RayTracingShaderTable;
+        class DeviceShaderResourceGroup;
+        class DeviceShaderResourceGroupPool;
+        class DeviceStreamingImagePool;
+        class DeviceSwapChain;
+        class DeviceTransientAttachmentPool;
+        class DeviceRayTracingBufferPools;
+        class DeviceRayTracingBlas;
+        class DeviceRayTracingTlas;
+        class DeviceRayTracingPipelineState;
+        class DeviceRayTracingShaderTable;
 
         //! Priority of a Factory. The lower the number the higher the priority.
         //! Used when there's multiple factories available and the user hasn't define
@@ -101,11 +101,12 @@ namespace AZ
             //! Access the RenderDoc API pointer if available.
             //! The availability of the render doc API at runtime depends on the following:
             //! - You must not be building a packaged game/product (LY_MONOLITHIC_GAME not enabled in CMake)
-            //! - A valid renderdoc installation was found, either by auto-discovery, or by supplying ATOM_RENDERDOC_PATH as an environment variable
+            //! - A valid renderdoc installation was found, either by auto-discovery, or by supplying ATOM_RENDERDOC_PATH as an environment
+            //! variable
             //! - The module loaded successfully at runtime, and the API function pointer was retrieved successfully
             static RENDERDOC_API_1_1_2* GetRenderDocAPI();
 #endif
-            
+
             //! Returns true if RenderDoc dll is loaded
             static bool IsRenderDocModuleLoaded();
 
@@ -127,19 +128,15 @@ namespace AZ
             //! Returns the default priority of the factory in case there's no priorities set in the FactoryManager.
             virtual APIPriority GetDefaultPriority() = 0;
 
-            //! Purpose: The API Unique Index will be encoded in the 2 Most Significant Bits of a ShaderVariantAsset ProductSubId (a 32bits integer). 
-            //! Returns a number in the range [0..3].
-            //! In theory any given AssetBuilderSdk::PlatformInfo can support several RHI::APITypes.
-            //! In reality "pc" only supports DX12 & Vulkan.
-            //! "ios" supports only Metal.
-            //! "mac" supports only Metal.
-            //! "android" supports only Vulkan.
-            //! So, for all practical purposes, a single PlatformInfo won't support more than 2 ShaderPlatformInterfaces, but for the sake of
-            //! hedging our bets into the future We assume no more than 4 ShaderPlatformInterfaces will ever be supported for any given PlatformInfo.
-            //! REMARK: It is the responsibility of the Factory subclass to return a unique number between 0...3.
-            //! For example DX12 can return 0, while Vulkan should return 1 (Satisfies "pc", "android" and "linux").
-            //! Metal can return 0 because it is the only ShaderPlatformInterface for "ios", "mac" and "appletv".
-            //! See AZ::RHI::Limits::APIType::PerPlatformApiUniqueIndexMax.
+            //! Purpose: The API Unique Index will be encoded in the 2 Most Significant Bits of a ShaderVariantAsset ProductSubId (a 32bits
+            //! integer). Returns a number in the range [0..3]. In theory any given AssetBuilderSdk::PlatformInfo can support several
+            //! RHI::APITypes. In reality "pc" only supports DX12 & Vulkan. "ios" supports only Metal. "mac" supports only Metal. "android"
+            //! supports only Vulkan. So, for all practical purposes, a single PlatformInfo won't support more than 2
+            //! ShaderPlatformInterfaces, but for the sake of hedging our bets into the future We assume no more than 4
+            //! ShaderPlatformInterfaces will ever be supported for any given PlatformInfo. REMARK: It is the responsibility of the Factory
+            //! subclass to return a unique number between 0...3. For example DX12 can return 0, while Vulkan should return 1 (Satisfies
+            //! "pc", "android" and "linux"). Metal can return 0 because it is the only ShaderPlatformInterface for "ios", "mac" and
+            //! "appletv". See AZ::RHI::Limits::APIType::PerPlatformApiUniqueIndexMax.
             virtual uint32_t GetAPIUniqueIndex() const = 0;
 
             //! Collects the set of physical devices on the system and returns a list of them. Physical
@@ -155,59 +152,59 @@ namespace AZ
             //! in an uninitialized state; the operation simply allocates the memory for the appropriate
             //! platform type and returns the pointer.
 
-            virtual Ptr<Buffer> CreateBuffer() = 0;
+            virtual Ptr<DeviceBuffer> CreateBuffer() = 0;
 
-            virtual Ptr<BufferPool> CreateBufferPool() = 0;
+            virtual Ptr<DeviceBufferPool> CreateBufferPool() = 0;
 
-            virtual Ptr<BufferView> CreateBufferView() = 0;
+            virtual Ptr<DeviceBufferView> CreateBufferView() = 0;
 
             virtual Ptr<Device> CreateDevice() = 0;
 
-            virtual Ptr<Fence> CreateFence() = 0;
+            virtual Ptr<DeviceFence> CreateFence() = 0;
 
             virtual Ptr<FrameGraphCompiler> CreateFrameGraphCompiler() = 0;
 
             virtual Ptr<FrameGraphExecuter> CreateFrameGraphExecuter() = 0;
 
-            virtual Ptr<Image> CreateImage() = 0;
+            virtual Ptr<DeviceImage> CreateImage() = 0;
 
-            virtual Ptr<ImagePool> CreateImagePool() = 0;
+            virtual Ptr<DeviceImagePool> CreateImagePool() = 0;
 
-            virtual Ptr<ImageView> CreateImageView() = 0;
+            virtual Ptr<DeviceImageView> CreateImageView() = 0;
 
-            virtual Ptr<StreamingImagePool> CreateStreamingImagePool() = 0;
+            virtual Ptr<DeviceStreamingImagePool> CreateStreamingImagePool() = 0;
 
-            virtual Ptr<PipelineState> CreatePipelineState() = 0;
+            virtual Ptr<DevicePipelineState> CreatePipelineState() = 0;
 
-            virtual Ptr<PipelineLibrary> CreatePipelineLibrary() = 0;
+            virtual Ptr<DevicePipelineLibrary> CreatePipelineLibrary() = 0;
 
             virtual Ptr<Scope> CreateScope() = 0;
 
-            virtual Ptr<ShaderResourceGroup> CreateShaderResourceGroup() = 0;
+            virtual Ptr<DeviceShaderResourceGroup> CreateShaderResourceGroup() = 0;
 
-            virtual Ptr<ShaderResourceGroupPool> CreateShaderResourceGroupPool() = 0;
+            virtual Ptr<DeviceShaderResourceGroupPool> CreateShaderResourceGroupPool() = 0;
 
-            virtual Ptr<SwapChain> CreateSwapChain() = 0;
+            virtual Ptr<DeviceSwapChain> CreateSwapChain() = 0;
 
-            virtual Ptr<TransientAttachmentPool> CreateTransientAttachmentPool() = 0;
+            virtual Ptr<DeviceTransientAttachmentPool> CreateTransientAttachmentPool() = 0;
 
-            virtual Ptr<QueryPool> CreateQueryPool() = 0;
+            virtual Ptr<DeviceQueryPool> CreateQueryPool() = 0;
 
-            virtual Ptr<Query> CreateQuery() = 0;
+            virtual Ptr<DeviceQuery> CreateQuery() = 0;
 
-            virtual Ptr<IndirectBufferSignature> CreateIndirectBufferSignature() = 0;
+            virtual Ptr<DeviceIndirectBufferSignature> CreateIndirectBufferSignature() = 0;
 
-            virtual Ptr<IndirectBufferWriter> CreateIndirectBufferWriter() = 0;
+            virtual Ptr<DeviceIndirectBufferWriter> CreateIndirectBufferWriter() = 0;
 
-            virtual Ptr<RayTracingBufferPools> CreateRayTracingBufferPools() = 0;
+            virtual Ptr<DeviceRayTracingBufferPools> CreateRayTracingBufferPools() = 0;
 
-            virtual Ptr<RayTracingBlas> CreateRayTracingBlas() = 0;
+            virtual Ptr<DeviceRayTracingBlas> CreateRayTracingBlas() = 0;
 
-            virtual Ptr<RayTracingTlas> CreateRayTracingTlas() = 0;
+            virtual Ptr<DeviceRayTracingTlas> CreateRayTracingTlas() = 0;
 
-            virtual Ptr<RayTracingPipelineState> CreateRayTracingPipelineState() = 0;
+            virtual Ptr<DeviceRayTracingPipelineState> CreateRayTracingPipelineState() = 0;
 
-            virtual Ptr<RayTracingShaderTable> CreateRayTracingShaderTable() = 0;
+            virtual Ptr<DeviceRayTracingShaderTable> CreateRayTracingShaderTable() = 0;
         };
-    }
-}
+    } // namespace RHI
+} // namespace AZ

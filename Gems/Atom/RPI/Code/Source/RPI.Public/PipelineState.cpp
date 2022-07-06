@@ -156,7 +156,7 @@ namespace AZ
             m_descriptor.m_inputStreamLayout = inputStreamLayout;
         }
 
-        const RHI::PipelineState* PipelineStateForDraw::Finalize()
+        const RHI::DevicePipelineState* PipelineStateForDraw::Finalize()
         {
             if (m_dirty)
             {
@@ -178,7 +178,7 @@ namespace AZ
             return m_pipelineState;
         }
 
-        const RHI::PipelineState* PipelineStateForDraw::GetRHIPipelineState() const
+        const RHI::DevicePipelineState* PipelineStateForDraw::GetRHIPipelineState() const
         {
             AZ_Assert(false == m_dirty, "The descriptor has been modified and Finalize() need to be called before get a proper PipelineState");
 

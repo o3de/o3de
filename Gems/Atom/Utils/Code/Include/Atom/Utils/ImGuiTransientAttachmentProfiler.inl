@@ -7,7 +7,7 @@
  */
 
 #include <Atom/RHI/RHISystemInterface.h>
-#include <Atom/RHI/TransientAttachmentPool.h>
+#include <Atom/RHI/DeviceTransientAttachmentPool.h>
 
 namespace AZ
 {

@@ -33,11 +33,12 @@ namespace AZ
         private:
             DiffuseProbeGridBorderUpdatePass(const RPI::PassDescriptor& descriptor);
 
-            void LoadShader(AZStd::string shaderFilePath,
-                            Data::Instance<RPI::Shader>& shader,
-                            const RHI::PipelineState*& pipelineState,
-                            RHI::Ptr<RHI::ShaderResourceGroupLayout>& srgLayout,
-                            RHI::DispatchDirect& dispatchArgs);
+            void LoadShader(
+                AZStd::string shaderFilePath,
+                Data::Instance<RPI::Shader>& shader,
+                const RHI::DevicePipelineState*& pipelineState,
+                RHI::Ptr<RHI::ShaderResourceGroupLayout>& srgLayout,
+                RHI::DispatchDirect& dispatchArgs);
 
             // Pass overrides
             bool IsEnabled() const override;
@@ -48,8 +49,8 @@ namespace AZ
             // shader
             Data::Instance<RPI::Shader> m_rowShader;
             Data::Instance<RPI::Shader> m_columnShader;
-            const RHI::PipelineState* m_rowPipelineState = nullptr;
-            const RHI::PipelineState* m_columnPipelineState = nullptr;
+            const RHI::DevicePipelineState* m_rowPipelineState = nullptr;
+            const RHI::DevicePipelineState* m_columnPipelineState = nullptr;
             RHI::Ptr<RHI::ShaderResourceGroupLayout> m_rowSrgLayout;
             RHI::Ptr<RHI::ShaderResourceGroupLayout> m_columnSrgLayout;
             RHI::DispatchDirect m_rowDispatchArgs;

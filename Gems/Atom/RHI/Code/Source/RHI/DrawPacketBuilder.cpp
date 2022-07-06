@@ -23,12 +23,12 @@ namespace AZ
             m_allocator = allocator ? allocator : &AllocatorInstance<SystemAllocator>::Get();
         }
 
-        void DrawPacketBuilder::SetDrawArguments(const DrawArguments& drawArguments)
+        void DrawPacketBuilder::SetDrawArguments(const DeviceDrawArguments& drawArguments)
         {
             m_drawArguments = drawArguments;
         }
 
-        void DrawPacketBuilder::SetIndexBufferView(const IndexBufferView& indexBufferView)
+        void DrawPacketBuilder::SetIndexBufferView(const DeviceIndexBufferView& indexBufferView)
         {
             m_indexBufferView = indexBufferView;
         }
@@ -58,7 +58,7 @@ namespace AZ
             SetViewports(AZStd::span<const Viewport>(&viewport, 1));
         }
 
-        void DrawPacketBuilder::AddShaderResourceGroup(const ShaderResourceGroup* shaderResourceGroup)
+        void DrawPacketBuilder::AddShaderResourceGroup(const DeviceShaderResourceGroup* shaderResourceGroup)
         {
             if (Validation::IsEnabled())
             {
@@ -124,8 +124,8 @@ namespace AZ
                 AZStd::alignment_of<DrawPacket>::value);
 
             const VirtualAddress drawItemsOffset = linearAllocator.Allocate(
-                sizeof(DrawItem) * m_drawRequests.size(),
-                AZStd::alignment_of<DrawItem>::value);
+                sizeof(DeviceDrawItem) * m_drawRequests.size(),
+                AZStd::alignment_of<DeviceDrawItem>::value);
 
             const VirtualAddress drawItemSortKeysOffset = linearAllocator.Allocate(
                 sizeof(DrawItemSortKey) * m_drawRequests.size(),
@@ -136,20 +136,20 @@ namespace AZ
                 AZStd::alignment_of<DrawListTag>::value);
 
             const VirtualAddress shaderResourceGroupsOffset = linearAllocator.Allocate(
-                sizeof(const ShaderResourceGroup*) * m_shaderResourceGroups.size(),
-                AZStd::alignment_of<const ShaderResourceGroup*>::value);
+                sizeof(const DeviceShaderResourceGroup*) * m_shaderResourceGroups.size(),
+                AZStd::alignment_of<const DeviceShaderResourceGroup*>::value);
 
             const VirtualAddress uniqueShaderResourceGroupsOffset = linearAllocator.Allocate(
-                sizeof(const ShaderResourceGroup*) * m_drawRequests.size(),
-                AZStd::alignment_of<const ShaderResourceGroup*>::value);
+                sizeof(const DeviceShaderResourceGroup*) * m_drawRequests.size(),
+                AZStd::alignment_of<const DeviceShaderResourceGroup*>::value);
 
             const VirtualAddress rootConstantsOffset = linearAllocator.Allocate(
                 sizeof(uint8_t) * m_rootConstants.size(),
                 AZStd::alignment_of<uint8_t>::value);
 
             const VirtualAddress streamBufferViewsOffset = linearAllocator.Allocate(
-                sizeof(StreamBufferView) * m_streamBufferViewCount,
-                AZStd::alignment_of<StreamBufferView>::value);
+                sizeof(DeviceStreamBufferView) * m_streamBufferViewCount,
+                AZStd::alignment_of<DeviceStreamBufferView>::value);
 
             const VirtualAddress scissorOffset = linearAllocator.Allocate(
                 sizeof(Scissor) * m_scissors.size(),
@@ -170,7 +170,7 @@ namespace AZ
 
             if (shaderResourceGroupsOffset.IsValid())
             {
-                auto shaderResourceGroups = reinterpret_cast<const ShaderResourceGroup**>(allocationData + shaderResourceGroupsOffset.m_ptr);
+                auto shaderResourceGroups = reinterpret_cast<const DeviceShaderResourceGroup**>(allocationData + shaderResourceGroupsOffset.m_ptr);
                 for (size_t i = 0; i < m_shaderResourceGroups.size(); ++i)
                 {
                     shaderResourceGroups[i] = m_shaderResourceGroups[i];
@@ -182,7 +182,7 @@ namespace AZ
 
             if (uniqueShaderResourceGroupsOffset.IsValid())
             {
-                auto shaderResourceGroups = reinterpret_cast<const ShaderResourceGroup**>(allocationData + uniqueShaderResourceGroupsOffset.m_ptr);
+                auto shaderResourceGroups = reinterpret_cast<const DeviceShaderResourceGroup**>(allocationData + uniqueShaderResourceGroupsOffset.m_ptr);
                 for (size_t i = 0; i < m_drawRequests.size(); ++i)
                 {
                     shaderResourceGroups[i] = m_drawRequests[i].m_uniqueShaderResourceGroup;
@@ -217,7 +217,7 @@ namespace AZ
                 drawPacket->m_viewportsCount = aznumeric_caster(m_viewports.size());
             }
 
-            auto drawItems = reinterpret_cast<DrawItem*>(allocationData + drawItemsOffset.m_ptr);
+            auto drawItems = reinterpret_cast<DeviceDrawItem*>(allocationData + drawItemsOffset.m_ptr);
             auto drawItemSortKeys = reinterpret_cast<DrawItemSortKey*>(allocationData + drawItemSortKeysOffset.m_ptr);
             auto drawListTags = reinterpret_cast<DrawListTag*>(allocationData + drawListTagsOffset.m_ptr);
             drawPacket->m_drawItemCount = aznumeric_caster(m_drawRequests.size());
@@ -232,7 +232,7 @@ namespace AZ
                 drawListTags[i] = drawRequest.m_listTag;
                 drawItemSortKeys[i] = drawRequest.m_sortKey;
 
-                DrawItem& drawItem = drawItems[i];
+                DeviceDrawItem& drawItem = drawItems[i];
                 drawItem.m_arguments = m_drawArguments;
                 drawItem.m_stencilRef = drawRequest.m_stencilRef;
                 drawItem.m_streamBufferViewCount = 0;
@@ -252,7 +252,7 @@ namespace AZ
 
             if (streamBufferViewsOffset.IsValid())
             {
-                auto streamBufferViews = reinterpret_cast<StreamBufferView*>(allocationData + streamBufferViewsOffset.m_ptr);
+                auto streamBufferViews = reinterpret_cast<DeviceStreamBufferView*>(allocationData + streamBufferViewsOffset.m_ptr);
 
                 drawPacket->m_streamBufferViews = streamBufferViews;
                 drawPacket->m_streamBufferViewCount = aznumeric_caster(m_streamBufferViewCount);
@@ -266,7 +266,7 @@ namespace AZ
                         drawItems[i].m_streamBufferViews = streamBufferViews;
                         drawItems[i].m_streamBufferViewCount = aznumeric_caster(drawRequest.m_streamBufferViews.size());
 
-                        for (const StreamBufferView& streamBufferView : drawRequest.m_streamBufferViews)
+                        for (const DeviceStreamBufferView& streamBufferView : drawRequest.m_streamBufferViews)
                         {
                             *streamBufferViews++ = streamBufferView;
                         }

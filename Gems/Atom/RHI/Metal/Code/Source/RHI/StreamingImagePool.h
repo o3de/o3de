@@ -9,7 +9,7 @@
 
 #pragma once
 
-#include <Atom/RHI/StreamingImagePool.h>
+#include <Atom/RHI/DeviceStreamingImagePool.h>
 #include <AzCore/std/parallel/atomic.h>
 #include <RHI/Image.h>
 
@@ -18,11 +18,11 @@ namespace AZ
     namespace Metal
     {
         class StreamingImagePoolResolver;
-        
-        class StreamingImagePool final
-            : public RHI::StreamingImagePool
+
+        class StreamingImagePool final : public RHI::DeviceStreamingImagePool
         {
-            using Base = RHI::StreamingImagePool;
+            using Base = RHI::DeviceStreamingImagePool;
+
         public:
             AZ_CLASS_ALLOCATOR(StreamingImagePool, AZ::SystemAllocator, 0);
             AZ_RTTI(StreamingImagePool, "{B5AA610C-0EA9-4077-9537-3E5D31646BC4}", Base);
@@ -36,15 +36,15 @@ namespace AZ
             //////////////////////////////////////////////////////////////////////////
             // RHI::StreamingImagePool
             RHI::ResultCode InitInternal(RHI::Device& deviceBase, const RHI::StreamingImagePoolDescriptor& descriptor) override;
-            RHI::ResultCode InitImageInternal(const RHI::StreamingImageInitRequest& request) override;
-            RHI::ResultCode ExpandImageInternal(const RHI::StreamingImageExpandRequest& request) override;
-            RHI::ResultCode TrimImageInternal(RHI::Image& image, uint32_t targetMipLevel) override;
+            RHI::ResultCode InitImageInternal(const RHI::DeviceStreamingImageInitRequest& request) override;
+            RHI::ResultCode ExpandImageInternal(const RHI::DeviceStreamingImageExpandRequest& request) override;
+            RHI::ResultCode TrimImageInternal(RHI::DeviceImage& image, uint32_t targetMipLevel) override;
             //////////////////////////////////////////////////////////////////////////
 
             //////////////////////////////////////////////////////////////////////////
             // RHI::ResourcePool
             void ShutdownInternal() override;
-            void ShutdownResourceInternal(RHI::Resource& resourceBase) override;
+            void ShutdownResourceInternal(RHI::DeviceResource& resourceBase) override;
             void ComputeFragmentation() const override {}
             //////////////////////////////////////////////////////////////////////////
         };

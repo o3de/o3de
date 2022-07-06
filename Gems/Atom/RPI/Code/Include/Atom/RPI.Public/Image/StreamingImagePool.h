@@ -12,7 +12,7 @@
 
 #include <Atom/RPI.Reflect/Image/StreamingImagePoolAsset.h>
 
-#include <Atom/RHI/StreamingImagePool.h>
+#include <Atom/RHI/DeviceStreamingImagePool.h>
 
 #include <AtomCore/Instance/InstanceData.h>
 
@@ -47,9 +47,9 @@ namespace AZ
             //! @param streamingImagePoolAsset The asset used to instantiate an instance of the streaming image pool.
             static Data::Instance<StreamingImagePool> FindOrCreate(const Data::Asset<StreamingImagePoolAsset>& streamingImagePoolAsset);
 
-            RHI::StreamingImagePool* GetRHIPool();
+            RHI::DeviceStreamingImagePool* GetRHIPool();
 
-            const RHI::StreamingImagePool* GetRHIPool() const;
+            const RHI::DeviceStreamingImagePool* GetRHIPool() const;
 
         private:
             StreamingImagePool() = default;
@@ -68,7 +68,7 @@ namespace AZ
             ///////////////////////////////////////////////////////////////////
 
             // The RHI streaming image pool instance.
-            RHI::Ptr<RHI::StreamingImagePool> m_pool;
+            RHI::Ptr<RHI::DeviceStreamingImagePool> m_pool;
 
             // The controller used to manage streaming events on the pool.
             Data::Instance<StreamingImageController> m_controller;

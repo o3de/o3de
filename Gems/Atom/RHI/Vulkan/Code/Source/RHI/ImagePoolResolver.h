@@ -36,14 +36,14 @@ namespace AZ
             ImagePoolResolver(Device& device);
 
             /// Uploads new content to an image subresource.
-            RHI::ResultCode UpdateImage(const RHI::ImageUpdateRequest& request, size_t& bytesTransferred);
+            RHI::ResultCode UpdateImage(const RHI::DeviceImageUpdateRequest& request, size_t& bytesTransferred);
 
             //////////////////////////////////////////////////////////////////////
             ///ResourcePoolResolver
             void Compile(const RHI::HardwareQueueClass hardwareClass) override;
             void Resolve(CommandList& commandList) override;
             void Deactivate() override;
-            void OnResourceShutdown(const RHI::Resource& resource) override;
+            void OnResourceShutdown(const RHI::DeviceResource& resource) override;
             void QueuePrologueTransitionBarriers(CommandList& commandList) override;
             void QueueEpilogueTransitionBarriers(CommandList& commandList) override;
             //////////////////////////////////////////////////////////////////////

@@ -53,7 +53,7 @@ namespace AZ
                 }
             }
 
-            RHI::Ptr<RHI::StreamingImagePool> pool = RHI::Factory::Get().CreateStreamingImagePool();
+            RHI::Ptr<RHI::DeviceStreamingImagePool> pool = RHI::Factory::Get().CreateStreamingImagePool();
 
             const RHI::ResultCode resultCode = pool->Init(device, poolAsset.GetPoolDescriptor());
 
@@ -91,12 +91,12 @@ namespace AZ
             m_controller->Update();
         }
 
-        RHI::StreamingImagePool* StreamingImagePool::GetRHIPool()
+        RHI::DeviceStreamingImagePool* StreamingImagePool::GetRHIPool()
         {
             return m_pool.get();
         }
 
-        const RHI::StreamingImagePool* StreamingImagePool::GetRHIPool() const
+        const RHI::DeviceStreamingImagePool* StreamingImagePool::GetRHIPool() const
         {
             return m_pool.get();
         }

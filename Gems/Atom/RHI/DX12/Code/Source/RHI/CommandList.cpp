@@ -19,13 +19,13 @@
 #include <RHI/SwapChain.h>
 #include <RHI/CommandQueue.h>
 #include <RHI/QueryPool.h>
-#include <Atom/RHI/IndirectArguments.h>
+#include <Atom/RHI/DeviceIndirectArguments.h>
 #include <RHI/RayTracingBlas.h>
 #include <RHI/RayTracingTlas.h>
 #include <RHI/RayTracingPipelineState.h>
 #include <RHI/RayTracingShaderTable.h>
 #include <RHI/BufferPool.h>
-#include <Atom/RHI/DispatchRaysItem.h>
+#include <Atom/RHI/DeviceDispatchRaysItem.h>
 #include <Atom/RHI/Factory.h>
 
 // Conditionally disable timing at compile-time based on profile policy
@@ -139,17 +139,17 @@ namespace AZ
             m_state.m_scissorState.Set(AZStd::span<const RHI::Scissor>(scissors, count));
         }
 
-        void CommandList::SetShaderResourceGroupForDraw(const RHI::ShaderResourceGroup& shaderResourceGroup)
+        void CommandList::SetShaderResourceGroupForDraw(const RHI::DeviceShaderResourceGroup& shaderResourceGroup)
         {
             SetShaderResourceGroup<RHI::PipelineStateType::Draw>(static_cast<const ShaderResourceGroup*>(&shaderResourceGroup));
         }
 
-        void CommandList::SetShaderResourceGroupForDispatch(const RHI::ShaderResourceGroup& shaderResourceGroup)
+        void CommandList::SetShaderResourceGroupForDispatch(const RHI::DeviceShaderResourceGroup& shaderResourceGroup)
         {
             SetShaderResourceGroup<RHI::PipelineStateType::Dispatch>(static_cast<const ShaderResourceGroup*>(&shaderResourceGroup));
         }
 
-        void CommandList::Submit(const RHI::CopyItem& copyItem, uint32_t submitIndex)
+        void CommandList::Submit(const RHI::DeviceCopyItem& copyItem, uint32_t submitIndex)
         {
             ValidateSubmitIndex(submitIndex);
 
@@ -158,7 +158,7 @@ namespace AZ
 
             case RHI::CopyItemType::Buffer:
             {
-                const RHI::CopyBufferDescriptor& descriptor = copyItem.m_buffer;
+                const RHI::DeviceCopyBufferDescriptor& descriptor = copyItem.m_buffer;
                 const Buffer* sourceBuffer = static_cast<const Buffer*>(descriptor.m_sourceBuffer);
                 const Buffer* destinationBuffer = static_cast<const Buffer*>(descriptor.m_destinationBuffer);
 
@@ -173,7 +173,7 @@ namespace AZ
 
             case RHI::CopyItemType::Image:
             {
-                const RHI::CopyImageDescriptor& descriptor = copyItem.m_image;
+                const RHI::DeviceCopyImageDescriptor& descriptor = copyItem.m_image;
                 const Image* sourceImage = static_cast<const Image*>(descriptor.m_sourceImage);
                 const Image* destinationImage = static_cast<const Image*>(descriptor.m_destinationImage);
 
@@ -216,7 +216,7 @@ namespace AZ
 
             case RHI::CopyItemType::BufferToImage:
             {
-                const RHI::CopyBufferToImageDescriptor& descriptor = copyItem.m_bufferToImage;
+                const RHI::DeviceCopyBufferToImageDescriptor& descriptor = copyItem.m_bufferToImage;
                 const Buffer* sourceBuffer = static_cast<const Buffer*>(descriptor.m_sourceBuffer);
                 const Image* destinationImage = static_cast<const Image*>(descriptor.m_destinationImage);
 
@@ -252,7 +252,7 @@ namespace AZ
 
             case RHI::CopyItemType::ImageToBuffer:
             {
-                const RHI::CopyImageToBufferDescriptor& descriptor = copyItem.m_imageToBuffer;
+                const RHI::DeviceCopyImageToBufferDescriptor& descriptor = copyItem.m_imageToBuffer;
                 const Image* sourceImage = static_cast<const Image*>(descriptor.m_sourceImage);
                 const Buffer* destinationBuffer = static_cast<const Buffer*>(descriptor.m_destinationBuffer);
 
@@ -279,7 +279,7 @@ namespace AZ
             }
             case RHI::CopyItemType::QueryToBuffer:
             {
-                const RHI::CopyQueryToBufferDescriptor& descriptor = copyItem.m_queryToBuffer;
+                const RHI::DeviceCopyQueryToBufferDescriptor& descriptor = copyItem.m_queryToBuffer;
 
                 GetCommandList()->ResolveQueryData(
                     static_cast<const QueryPool*>(descriptor.m_sourceQueryPool)->GetHeap(),
@@ -296,7 +296,7 @@ namespace AZ
             }
         }
 
-        void CommandList::Submit(const RHI::DispatchItem& dispatchItem, uint32_t submitIndex)
+        void CommandList::Submit(const RHI::DeviceDispatchItem& dispatchItem, uint32_t submitIndex)
         {
             ValidateSubmitIndex(submitIndex);
 
@@ -324,7 +324,8 @@ namespace AZ
             }
         }
 
-        void CommandList::Submit([[maybe_unused]] const RHI::DispatchRaysItem& dispatchRaysItem, [[maybe_unused]] uint32_t submitIndex)
+        void CommandList::Submit(
+            [[maybe_unused]] const RHI::DeviceDispatchRaysItem& dispatchRaysItem, [[maybe_unused]] uint32_t submitIndex)
         {
 #ifdef AZ_DX12_DXR_SUPPORT
             ValidateSubmitIndex(submitIndex);
@@ -400,15 +401,15 @@ namespace AZ
             desc.HitGroupTable.SizeInBytes = shaderTableBuffers.m_hitGroupTableSize;
             desc.HitGroupTable.StrideInBytes = shaderTableBuffers.m_hitGroupTableStride;
 
-            desc.Width = dispatchRaysItem.m_width;
-            desc.Height = dispatchRaysItem.m_height;
-            desc.Depth = dispatchRaysItem.m_depth;
+            desc.Width = dispatchRaysItem.m_arguments.m_direct.m_width;
+            desc.Height = dispatchRaysItem.m_arguments.m_direct.m_height;
+            desc.Depth = dispatchRaysItem.m_arguments.m_direct.m_depth;
            
             commandList->DispatchRays(&desc);
 #endif
         }
 
-        void CommandList::Submit(const RHI::DrawItem& drawItem, uint32_t submitIndex)
+        void CommandList::Submit(const RHI::DeviceDrawItem& drawItem, uint32_t submitIndex)
         {
             ValidateSubmitIndex(submitIndex);
 
@@ -490,7 +491,7 @@ namespace AZ
             }
         }
 
-        void CommandList::BeginPredication(const RHI::Buffer& buffer, uint64_t offset, RHI::PredicationOp operation)
+        void CommandList::BeginPredication(const RHI::DeviceBuffer& buffer, uint64_t offset, RHI::PredicationOp operation)
         {
             GetCommandList()->SetPredication(
                 static_cast<const Buffer&>(buffer).GetMemoryView().GetMemory(), 
@@ -504,7 +505,7 @@ namespace AZ
             GetCommandList()->SetPredication(nullptr, 0, D3D12_PREDICATION_OP_EQUAL_ZERO);
         }
 
-        void CommandList::BuildBottomLevelAccelerationStructure([[maybe_unused]] const RHI::RayTracingBlas& rayTracingBlas)
+        void CommandList::BuildBottomLevelAccelerationStructure([[maybe_unused]] const RHI::DeviceRayTracingBlas& rayTracingBlas)
         {
 #ifdef AZ_DX12_DXR_SUPPORT
             const RayTracingBlas& dx12RayTracingBlas = static_cast<const RayTracingBlas&>(rayTracingBlas);
@@ -528,7 +529,7 @@ namespace AZ
 #endif
         }
 
-        void CommandList::BuildTopLevelAccelerationStructure([[maybe_unused]] const RHI::RayTracingTlas& rayTracingTlas)
+        void CommandList::BuildTopLevelAccelerationStructure([[maybe_unused]] const RHI::DeviceRayTracingTlas& rayTracingTlas)
         {
 #ifdef AZ_DX12_DXR_SUPPORT
             const RayTracingTlas& dx12RayTracingTlas = static_cast<const RayTracingTlas&>(rayTracingTlas);
@@ -611,7 +612,7 @@ namespace AZ
             m_state.m_scissorState.m_isDirty = false;
         }
 
-        void CommandList::ExecuteIndirect(const RHI::IndirectArguments& arguments)
+        void CommandList::ExecuteIndirect(const RHI::DeviceIndirectArguments& arguments)
         {
             const IndirectBufferSignature* signature = static_cast<const IndirectBufferSignature*>(arguments.m_indirectBufferView->GetSignature());
 
@@ -627,7 +628,7 @@ namespace AZ
             );
         }
 
-        void CommandList::SetStreamBuffers(const RHI::StreamBufferView* streams, uint32_t count)
+        void CommandList::SetStreamBuffers(const RHI::DeviceStreamBufferView* streams, uint32_t count)
         {
             bool needsBinding = false;
 
@@ -663,7 +664,7 @@ namespace AZ
             }
         }
 
-        void CommandList::SetIndexBuffer(const RHI::IndexBufferView& indexBufferView)
+        void CommandList::SetIndexBuffer(const RHI::DeviceIndexBufferView& indexBufferView)
         {
             uint64_t indexBufferHash = static_cast<uint64_t>(indexBufferView.GetHash());
             if (indexBufferHash != m_state.m_indexBufferHash)

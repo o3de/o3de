@@ -6,13 +6,13 @@
  *
  */
 
-#include <RHI/RayTracingBlas.h>
-#include <RHI/Buffer.h>
 #include <Atom/RHI.Reflect/Vulkan/Conversion.h>
-#include <RHI/Device.h>
+#include <Atom/RHI/DeviceBufferPool.h>
+#include <Atom/RHI/DeviceRayTracingBufferPools.h>
 #include <Atom/RHI/Factory.h>
-#include <Atom/RHI/BufferPool.h>
-#include <Atom/RHI/RayTracingBufferPools.h>
+#include <RHI/Buffer.h>
+#include <RHI/Device.h>
+#include <RHI/RayTracingBlas.h>
 
 namespace AZ
 {
@@ -23,7 +23,10 @@ namespace AZ
             return aznew RayTracingBlas;
         }
 
-        RHI::ResultCode RayTracingBlas::CreateBuffersInternal(RHI::Device& deviceBase, const RHI::RayTracingBlasDescriptor* descriptor, const RHI::RayTracingBufferPools& bufferPools)
+        RHI::ResultCode RayTracingBlas::CreateBuffersInternal(
+            RHI::Device& deviceBase,
+            const RHI::DeviceRayTracingBlasDescriptor* descriptor,
+            const RHI::DeviceRayTracingBufferPools& bufferPools)
         {
             auto& device = static_cast<Device&>(deviceBase);
             auto& physicalDevice = static_cast<const PhysicalDevice&>(device.GetPhysicalDevice());
@@ -39,7 +42,7 @@ namespace AZ
                 buffers.m_accelerationStructure = nullptr;
             }
 
-            const RHI::RayTracingGeometryVector& geometries = descriptor->GetGeometries();
+            const RHI::DeviceRayTracingGeometryVector& geometries = descriptor->GetGeometries();
 
             // build the list of VkAccelerationStructureGeometryKHR structures
             buffers.m_geometryDescs.clear();
@@ -49,7 +52,7 @@ namespace AZ
             AZStd::vector<uint32_t> primitiveCounts;
             primitiveCounts.reserve(geometries.size());
 
-            for (const RHI::RayTracingGeometry& geometry : geometries)
+            for (const RHI::DeviceRayTracingGeometry& geometry : geometries)
             {
                 VkAccelerationStructureGeometryKHR geometryDesc = {};
                 geometryDesc.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_GEOMETRY_KHR;
@@ -122,7 +125,7 @@ namespace AZ
             scratchBufferDescriptor.m_bindFlags = RHI::BufferBindFlags::ShaderReadWrite | RHI::BufferBindFlags::RayTracingScratchBuffer;
             scratchBufferDescriptor.m_byteCount = buildSizesInfo.buildScratchSize;
             
-            AZ::RHI::BufferInitRequest scratchBufferRequest;
+            AZ::RHI::DeviceBufferInitRequest scratchBufferRequest;
             scratchBufferRequest.m_buffer = buffers.m_scratchBuffer.get();
             scratchBufferRequest.m_descriptor = scratchBufferDescriptor;
             [[maybe_unused]] RHI::ResultCode resultCode = bufferPools.GetScratchBufferPool()->InitBuffer(scratchBufferRequest);
@@ -137,7 +140,7 @@ namespace AZ
             blasBufferDescriptor.m_bindFlags = RHI::BufferBindFlags::ShaderReadWrite | RHI::BufferBindFlags::RayTracingAccelerationStructure;
             blasBufferDescriptor.m_byteCount = buildSizesInfo.accelerationStructureSize;
             
-            AZ::RHI::BufferInitRequest blasBufferRequest;
+            AZ::RHI::DeviceBufferInitRequest blasBufferRequest;
             blasBufferRequest.m_buffer = buffers.m_blasBuffer.get();
             blasBufferRequest.m_descriptor = blasBufferDescriptor;
             resultCode = bufferPools.GetBlasBufferPool()->InitBuffer(blasBufferRequest);

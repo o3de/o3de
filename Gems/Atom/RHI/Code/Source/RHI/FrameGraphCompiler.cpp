@@ -6,20 +6,20 @@
  *
  */
 
-#include <Atom/RHI/FrameGraphCompiler.h>
 #include <Atom/RHI/BufferFrameAttachment.h>
 #include <Atom/RHI/BufferScopeAttachment.h>
+#include <Atom/RHI/DeviceTransientAttachmentPool.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/FrameGraph.h>
+#include <Atom/RHI/FrameGraphCompiler.h>
 #include <Atom/RHI/ImageFrameAttachment.h>
 #include <Atom/RHI/ImageScopeAttachment.h>
 #include <Atom/RHI/RHIUtils.h>
 #include <Atom/RHI/Scope.h>
 #include <Atom/RHI/SwapChainFrameAttachment.h>
-#include <Atom/RHI/TransientAttachmentPool.h>
 #include <AzCore/IO/SystemFile.h>
-#include <AzCore/std/sort.h>
 #include <AzCore/std/optional.h>
+#include <AzCore/std/sort.h>
 
 namespace AZ
 {
@@ -86,7 +86,8 @@ namespace AZ
                 const bool hasTransientAttachments = attachmentDatabase.GetTransientBufferAttachments().size() || attachmentDatabase.GetTransientImageAttachments().size();
                 if (request.m_transientAttachmentPool == nullptr && hasTransientAttachments)
                 {
-                    return AZ::Failure(AZStd::string("TransientAttachmentPool is null, but transient attachments are in the graph. Skipping compilation..."));
+                    return AZ::Failure(AZStd::string(
+                        "DeviceTransientAttachmentPool is null, but transient attachments are in the graph. Skipping compilation..."));
                 }
             }
 
@@ -470,7 +471,7 @@ namespace AZ
 
         void FrameGraphCompiler::CompileTransientAttachments(
             FrameGraph& frameGraph,
-            TransientAttachmentPool& transientAttachmentPool,
+            DeviceTransientAttachmentPool& transientAttachmentPool,
             FrameSchedulerCompileFlags compileFlags,
             FrameSchedulerStatisticsFlags statisticsFlags)
         {
@@ -543,8 +544,8 @@ namespace AZ
             AZ_Assert(transientBufferGraphAttachments.size() + transientImageGraphAttachments.size() < AZ_BIT(ATTACHMENT_BIT_COUNT),
                 "Exceeded maximum number of allowed attachments");            
 
-            AZStd::vector<Buffer*> transientBuffers(transientBufferGraphAttachments.size());
-            AZStd::vector<Image*> transientImages(transientImageGraphAttachments.size());
+            AZStd::vector<DeviceBuffer*> transientBuffers(transientBufferGraphAttachments.size());
+            AZStd::vector<DeviceImage*> transientImages(transientImageGraphAttachments.size());
             AZStd::vector<Command> commands;
             commands.reserve((transientBufferGraphAttachments.size() + transientImageGraphAttachments.size()) * 2);
 
@@ -628,7 +629,10 @@ namespace AZ
 
                     case Action::DeactivateBuffer:
                     {
-                        AZ_Assert(!allocateResources || transientBuffers[attachmentIndex] || IsNullRHI(), "Buffer is not active: %s", transientBufferGraphAttachments[attachmentIndex]->GetId().GetCStr());
+                        AZ_Assert(
+                            !allocateResources || transientBuffers[attachmentIndex] || IsNullRHI(),
+                            "DeviceBuffer is not active: %s",
+                            transientBufferGraphAttachments[attachmentIndex]->GetId().GetCStr());
                         BufferFrameAttachment* bufferFrameAttachment = transientBufferGraphAttachments[attachmentIndex];
                         transientAttachmentPool.DeactivateBuffer(bufferFrameAttachment->GetId());
                         transientBuffers[attachmentIndex] = nullptr;
@@ -647,13 +651,16 @@ namespace AZ
                     case Action::ActivateBuffer:
                     {
                         BufferFrameAttachment* bufferFrameAttachment = transientBufferGraphAttachments[attachmentIndex];
-                        AZ_Assert(transientBuffers[attachmentIndex] == nullptr, "Buffer has been activated already. %s", bufferFrameAttachment->GetId().GetCStr());
+                        AZ_Assert(
+                            transientBuffers[attachmentIndex] == nullptr,
+                            "DeviceBuffer has been activated already. %s",
+                            bufferFrameAttachment->GetId().GetCStr());
 
                         TransientBufferDescriptor descriptor;
                         descriptor.m_attachmentId = bufferFrameAttachment->GetId();
                         descriptor.m_bufferDescriptor = bufferFrameAttachment->GetBufferDescriptor();
 
-                        Buffer* buffer = transientAttachmentPool.ActivateBuffer(descriptor);
+                        DeviceBuffer* buffer = transientAttachmentPool.ActivateBuffer(descriptor);
                         if (allocateResources && buffer)
                         {
                             bufferFrameAttachment->SetResource(buffer);
@@ -681,7 +688,7 @@ namespace AZ
                             descriptor.m_optimizedClearValue = &optimizedClearValue;
                         }
 
-                        Image* image = transientAttachmentPool.ActivateImage(descriptor);
+                        DeviceImage* image = transientAttachmentPool.ActivateImage(descriptor);
                         if (allocateResources && image)
                         {
                             imageFrameAttachment->SetResource(image);
@@ -715,14 +722,14 @@ namespace AZ
             processCommands(poolCompileFlags, memoryUsage ? &memoryUsage.value() : nullptr);
         }
                     
-        ImageView* FrameGraphCompiler::GetImageViewFromLocalCache(Image* image, const ImageViewDescriptor& imageViewDescriptor)
+        DeviceImageView* FrameGraphCompiler::GetImageViewFromLocalCache(DeviceImage* image, const ImageViewDescriptor& imageViewDescriptor)
         {
-            const size_t baseHash = AZStd::hash<Image*>()(image);
+            const size_t baseHash = AZStd::hash<DeviceImage*>()(image);
             // [GFX TODO][ATOM-6289] This should be looked into, combining cityhash with AZStd::hash
             const HashValue64 hash = imageViewDescriptor.GetHash(static_cast<HashValue64>(baseHash));
 
             // Attempt to find the image view in the cache.
-            ImageView* imageView = m_imageViewCache.Find(static_cast<uint64_t>(hash));
+            DeviceImageView* imageView = m_imageViewCache.Find(static_cast<uint64_t>(hash));
 
             if (!imageView)
             {
@@ -731,7 +738,7 @@ namespace AZ
                 const ImageResourceViewData imageResourceViewData = ImageResourceViewData {image->GetName(), imageViewDescriptor};
                 RemoveFromCache(imageResourceViewData, m_imageReverseLookupHash, m_imageViewCache);
                 // Create a new image view instance and insert it into the cache.
-                Ptr<ImageView> imageViewPtr = Factory::Get().CreateImageView();
+                Ptr<DeviceImageView> imageViewPtr = Factory::Get().CreateImageView();
                 if (imageViewPtr->Init(*image, imageViewDescriptor) == ResultCode::Success)
                 {
                     imageView = imageViewPtr.get();
@@ -749,14 +756,14 @@ namespace AZ
             return imageView;
         }
                     
-        BufferView* FrameGraphCompiler::GetBufferViewFromLocalCache(Buffer* buffer, const BufferViewDescriptor& bufferViewDescriptor)
+        DeviceBufferView* FrameGraphCompiler::GetBufferViewFromLocalCache(DeviceBuffer* buffer, const BufferViewDescriptor& bufferViewDescriptor)
         {
-            const size_t baseHash = AZStd::hash<Buffer*>()(buffer);
+            const size_t baseHash = AZStd::hash<DeviceBuffer*>()(buffer);
             // [GFX TODO][ATOM-6289] This should be looked into, combining cityhash with AZStd::hash
             const HashValue64 hash = bufferViewDescriptor.GetHash(static_cast<HashValue64>(baseHash));
 
             // Attempt to find the buffer view in the cache.
-            BufferView* bufferView = m_bufferViewCache.Find(static_cast<uint64_t>(hash));
+            DeviceBufferView* bufferView = m_bufferViewCache.Find(static_cast<uint64_t>(hash));
 
             if (!bufferView)
             {
@@ -766,7 +773,7 @@ namespace AZ
                 RemoveFromCache(bufferResourceViewData, m_bufferReverseLookupHash, m_bufferViewCache);
                 
                 // Create a new buffer view instance and insert it into the cache.
-                Ptr<BufferView> bufferViewPtr = Factory::Get().CreateBufferView();
+                Ptr<DeviceBufferView> bufferViewPtr = Factory::Get().CreateBufferView();
                 if (bufferViewPtr->Init(*buffer, bufferViewDescriptor) == ResultCode::Success)
                 {
                     bufferView = bufferViewPtr.get();
@@ -790,7 +797,7 @@ namespace AZ
 
             for (ImageFrameAttachment* imageAttachment : attachmentDatabase.GetImageAttachments())
             {
-                Image* image = imageAttachment->GetImage();
+                DeviceImage* image = imageAttachment->GetImage();
 
                 if (!image)
                 {
@@ -802,7 +809,7 @@ namespace AZ
                 {
                     const ImageViewDescriptor& imageViewDescriptor = node->GetDescriptor().m_imageViewDescriptor;
                     
-                    ImageView* imageView = nullptr;
+                    DeviceImageView* imageView = nullptr;
                     //Check image's cache first as that contains views provided by higher level code.
                     if(image->IsInResourceCache(imageViewDescriptor))
                     {
@@ -822,7 +829,7 @@ namespace AZ
 
             for (BufferFrameAttachment* bufferAttachment : attachmentDatabase.GetBufferAttachments())
             {
-                Buffer* buffer = bufferAttachment->GetBuffer();
+                DeviceBuffer* buffer = bufferAttachment->GetBuffer();
 
                 if (!buffer)
                 {
@@ -835,7 +842,7 @@ namespace AZ
                 {
                     const BufferViewDescriptor& bufferViewDescriptor = node->GetDescriptor().m_bufferViewDescriptor;
                     
-                    BufferView* bufferView = nullptr;
+                    DeviceBufferView* bufferView = nullptr;
                     //Check buffer's cache first as that contains views provided by higher level code.
                     if(buffer->IsInResourceCache(bufferViewDescriptor))
                     {

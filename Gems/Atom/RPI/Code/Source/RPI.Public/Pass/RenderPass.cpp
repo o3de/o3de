@@ -276,7 +276,7 @@ namespace AZ
                     {
                         inputIndex = imageIndex;
                     }
-                    const RHI::ImageView* imageView =
+                    const RHI::DeviceImageView* imageView =
                         context.GetImageView(attachment->GetAttachmentId(), binding.m_unifiedScopeDesc.GetImageViewDescriptor(), binding.m_scopeAttachmentUsage);
 
                     if (binding.m_shaderImageDimensionsNameIndex.HasName())
@@ -316,7 +316,7 @@ namespace AZ
                     {
                         inputIndex = bufferIndex;
                     }
-                    const RHI::BufferView* bufferView = context.GetBufferView(attachment->GetAttachmentId(), binding.m_scopeAttachmentUsage);
+                    const RHI::DeviceBufferView* bufferView = context.GetBufferView(attachment->GetAttachmentId(), binding.m_scopeAttachmentUsage);
                     m_shaderResourceGroup->SetBufferView(RHI::ShaderInputBufferIndex(inputIndex), bufferView, arrayIndex);
                     ++bufferIndex;
                 }
@@ -374,7 +374,7 @@ namespace AZ
         void RenderPass::CollectSrgs()
         {
             // Scene srg
-            const RHI::ShaderResourceGroup* sceneSrg = m_pipeline->GetScene()->GetRHIShaderResourceGroup();
+            const RHI::DeviceShaderResourceGroup* sceneSrg = m_pipeline->GetScene()->GetRHIShaderResourceGroup();
             BindSrg(sceneSrg);
 
             // View srg
@@ -396,7 +396,7 @@ namespace AZ
             m_shaderResourceGroupsToBind.clear();
         }
 
-        void RenderPass::BindSrg(const RHI::ShaderResourceGroup* srg)
+        void RenderPass::BindSrg(const RHI::DeviceShaderResourceGroup* srg)
         {
             if (srg)
             {
@@ -413,7 +413,7 @@ namespace AZ
 
         void RenderPass::SetSrgsForDraw(RHI::CommandList* commandList)
         {
-            for (const RHI::ShaderResourceGroup* shaderResourceGroup : m_shaderResourceGroupsToBind)
+            for (const RHI::DeviceShaderResourceGroup* shaderResourceGroup : m_shaderResourceGroupsToBind)
             {
                 commandList->SetShaderResourceGroupForDraw(*shaderResourceGroup);
             }
@@ -421,7 +421,7 @@ namespace AZ
 
         void RenderPass::SetSrgsForDispatch(RHI::CommandList* commandList)
         {
-            for (const RHI::ShaderResourceGroup* shaderResourceGroup : m_shaderResourceGroupsToBind)
+            for (const RHI::DeviceShaderResourceGroup* shaderResourceGroup : m_shaderResourceGroupsToBind)
             {
                 commandList->SetShaderResourceGroupForDispatch(*shaderResourceGroup);
             }

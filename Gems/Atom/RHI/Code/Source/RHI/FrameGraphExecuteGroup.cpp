@@ -6,8 +6,8 @@
  *
  */
 #include <Atom/RHI/FrameGraphExecuteGroup.h>
-#include <Atom/RHI/Buffer.h>
-#include <Atom/RHI/Image.h>
+#include <Atom/RHI/DeviceBuffer.h>
+#include <Atom/RHI/DeviceImage.h>
 
 namespace AZ
 {

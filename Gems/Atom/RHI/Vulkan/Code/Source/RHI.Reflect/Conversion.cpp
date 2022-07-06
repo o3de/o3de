@@ -5,16 +5,16 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <Atom/RHI.Reflect/Vulkan/Conversion.h>
 #include <Atom/RHI.Reflect/ImageDescriptor.h>
 #include <Atom/RHI.Reflect/ImageSubresource.h>
 #include <Atom/RHI.Reflect/RenderAttachmentLayout.h>
 #include <Atom/RHI.Reflect/ShaderResourceGroupLayout.h>
+#include <Atom/RHI.Reflect/Vulkan/Conversion.h>
+#include <Atom/RHI/DeviceImage.h>
+#include <Atom/RHI/DeviceImageView.h>
 #include <Atom/RHI/ImageScopeAttachment.h>
 #include <Atom/RHI/Scope.h>
 #include <Atom/RHI/ScopeAttachment.h>
-#include <Atom/RHI/Image.h>
-#include <Atom/RHI/ImageView.h>
 #include <AzCore/std/algorithm.h>
 #include <AzCore/std/containers/bitset.h>
 
@@ -1101,7 +1101,7 @@ namespace AZ
                 }
             }
 
-            const RHI::ImageView* imageView = imageAttachment.GetImageView();
+            const RHI::DeviceImageView* imageView = imageAttachment.GetImageView();
             auto imageAspects = RHI::FilterBits(imageView->GetImage().GetAspectFlags(), imageView->GetDescriptor().m_aspectFlags);
             switch (usagesAndAccesses.front().m_usage)
             {

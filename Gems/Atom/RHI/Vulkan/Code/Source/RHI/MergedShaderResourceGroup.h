@@ -7,8 +7,8 @@
  */
 #pragma once
 
-#include <RHI/ShaderResourceGroup.h>
 #include <AzCore/std/parallel/shared_mutex.h>
+#include <RHI/ShaderResourceGroup.h>
 
 namespace AZ
 {
@@ -57,7 +57,7 @@ namespace AZ
             };
 
             // Utility function that merges multiple ShaderResoruceGroup data into one.
-            RHI::ShaderResourceGroupData MergeShaderResourceData(const ShaderResourceGroupArray& srgList) const;
+            RHI::DeviceShaderResourceGroupData MergeShaderResourceData(const ShaderResourceGroupArray& srgList) const;
             // List of the ShaderResourceGroup instances that are being merged.
             ShaderResourceGroupArray m_mergedShaderResourceGroupList = {};
             // Keeps track of the frame iteration for each ShaderResourceGroup when the last compile happens. This is used

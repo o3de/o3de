@@ -28,7 +28,7 @@ namespace AZ
             
             ImagePoolResolver(Device& device);
 
-            RHI::ResultCode UpdateImage(const RHI::ImageUpdateRequest& request, size_t& bytesTransferred);
+            RHI::ResultCode UpdateImage(const RHI::DeviceImageUpdateRequest& request, size_t& bytesTransferred);
             int CalculateMipLevel(int lowestMipLength, int currentMipLength);
             
             //////////////////////////////////////////////////////////////////////
@@ -36,7 +36,7 @@ namespace AZ
             void Compile() override;
             void Resolve(CommandList& commandList) const override;
             void Deactivate() override;
-            void OnResourceShutdown(const RHI::Resource& resource) override;
+            void OnResourceShutdown(const RHI::DeviceResource& resource) override;
             //////////////////////////////////////////////////////////////////////
             
         private:

@@ -37,7 +37,7 @@ namespace AZ
         class PipelineLibraryData final
             : public AZStd::intrusive_base
         {
-            friend class PipelineLibrary;
+            friend class DevicePipelineLibrary;
         public:
             AZ_CLASS_ALLOCATOR(PipelineLibraryData, SystemAllocator, 0);
             AZ_TYPE_INFO(PipelineLibraryData, "{6A349BB4-4787-46B5-A70A-7BA90515391F}");

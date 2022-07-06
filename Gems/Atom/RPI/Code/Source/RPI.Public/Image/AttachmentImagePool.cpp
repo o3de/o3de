@@ -11,7 +11,7 @@
 #include <Atom/RPI.Reflect/ResourcePoolAsset.h>
 
 #include <Atom/RHI/Factory.h>
-#include <Atom/RHI/ImagePool.h>
+#include <Atom/RHI/DeviceImagePool.h>
 
 #include <Atom/RHI.Reflect/ImagePoolDescriptor.h>
 
@@ -43,7 +43,7 @@ namespace AZ
 
         RHI::ResultCode AttachmentImagePool::Init(RHI::Device& device, ResourcePoolAsset& poolAsset)
         {
-            RHI::Ptr<RHI::ImagePool> imagePool = RHI::Factory::Get().CreateImagePool();
+            RHI::Ptr<RHI::DeviceImagePool> imagePool = RHI::Factory::Get().CreateImagePool();
             if (!imagePool)
             {
                 AZ_Error("RPI::ImagePool", false, "Failed to create RHI::ImagePool");
@@ -66,12 +66,12 @@ namespace AZ
             return resultCode;
         }
 
-        const RHI::ImagePool* AttachmentImagePool::GetRHIPool() const
+        const RHI::DeviceImagePool* AttachmentImagePool::GetRHIPool() const
         {
             return m_pool.get();
         }
 
-        RHI::ImagePool* AttachmentImagePool::GetRHIPool()
+        RHI::DeviceImagePool* AttachmentImagePool::GetRHIPool()
         {
             return m_pool.get();
         }

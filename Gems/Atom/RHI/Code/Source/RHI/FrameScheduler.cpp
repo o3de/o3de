@@ -6,7 +6,10 @@
  *
  */
 
-#include <Atom/RHI/FrameScheduler.h>
+#include <Atom/RHI/DeviceRayTracingShaderTable.h>
+#include <Atom/RHI/DeviceResourceInvalidateBus.h>
+#include <Atom/RHI/DeviceShaderResourceGroupPool.h>
+#include <Atom/RHI/DeviceTransientAttachmentPool.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/FrameEventBus.h>
 #include <Atom/RHI/FrameGraph.h>
@@ -15,14 +18,11 @@
 #include <Atom/RHI/FrameGraphExecuteGroup.h>
 #include <Atom/RHI/FrameGraphExecuter.h>
 #include <Atom/RHI/FrameGraphLogger.h>
+#include <Atom/RHI/FrameScheduler.h>
 #include <Atom/RHI/MemoryStatisticsBuilder.h>
 #include <Atom/RHI/MemoryStatisticsBus.h>
-#include <Atom/RHI/ResourceInvalidateBus.h>
-#include <Atom/RHI/ScopeProducer.h>
-#include <Atom/RHI/ShaderResourceGroupPool.h>
-#include <Atom/RHI/TransientAttachmentPool.h>
 #include <Atom/RHI/ResourcePoolDatabase.h>
-#include <Atom/RHI/RayTracingShaderTable.h>
+#include <Atom/RHI/ScopeProducer.h>
 
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Jobs/Algorithms.h>
@@ -66,7 +66,7 @@ namespace AZ
                 return resultCode;
             }
 
-            if (TransientAttachmentPool::NeedsTransientAttachmentPool(descriptor.m_transientAttachmentPoolDescriptor))
+            if (DeviceTransientAttachmentPool::NeedsTransientAttachmentPool(descriptor.m_transientAttachmentPoolDescriptor))
             {
                 m_transientAttachmentPool = Factory::Get().CreateTransientAttachmentPool();
                 resultCode = m_transientAttachmentPool->Init(device, descriptor.m_transientAttachmentPoolDescriptor);
@@ -265,7 +265,7 @@ namespace AZ
 
             // Execute all queued resource invalidations, which will mark SRG's for compilation.
             {
-                ResourceInvalidateBus::ExecuteQueuedEvents();
+                DeviceResourceInvalidateBus::ExecuteQueuedEvents();
             }
 
             const ResourcePoolDatabase& resourcePoolDatabase = m_device->GetResourcePoolDatabase();
@@ -278,7 +278,7 @@ namespace AZ
                 {
                     AZ::TaskGraph taskGraph{ "SRG Compilation" };
 
-                    const auto compileIntervalsFunction = [compilesPerJob, &taskGraph](ShaderResourceGroupPool* srgPool)
+                    const auto compileIntervalsFunction = [compilesPerJob, &taskGraph](DeviceShaderResourceGroupPool* srgPool)
                     {
                         srgPool->CompileGroupsBegin();
                         const uint32_t compilesInPool = srgPool->GetGroupsToCompileCount();
@@ -320,7 +320,7 @@ namespace AZ
                 }
                 else // use Job system
                 {
-                    const auto compileGroupsBeginFunction = [](ShaderResourceGroupPool* srgPool)
+                    const auto compileGroupsBeginFunction = [](DeviceShaderResourceGroupPool* srgPool)
                     {
                         srgPool->CompileGroupsBegin();
                     };
@@ -330,7 +330,7 @@ namespace AZ
                     // Iterate over each SRG pool and fork jobs to compile SRGs.
                     AZ::JobCompletion jobCompletion;
 
-                    const auto compileIntervalsFunction = [compilesPerJob, &jobCompletion](ShaderResourceGroupPool* srgPool)
+                    const auto compileIntervalsFunction = [compilesPerJob, &jobCompletion](DeviceShaderResourceGroupPool* srgPool)
                     {
                         const uint32_t compilesInPool = srgPool->GetGroupsToCompileCount();
                         const uint32_t jobCount = AZ::DivideAndRoundUp(compilesInPool, compilesPerJob);
@@ -357,7 +357,7 @@ namespace AZ
 
                     jobCompletion.StartAndWaitForCompletion();
 
-                    const auto compileGroupsEndFunction = [](ShaderResourceGroupPool* srgPool)
+                    const auto compileGroupsEndFunction = [](DeviceShaderResourceGroupPool* srgPool)
                     {
                         srgPool->CompileGroupsEnd();
                     };
@@ -367,7 +367,7 @@ namespace AZ
             }
             else
             {
-                const auto compileAllLambda = [](ShaderResourceGroupPool* srgPool)
+                const auto compileAllLambda = [](DeviceShaderResourceGroupPool* srgPool)
                 {
                     srgPool->CompileGroupsBegin();
                     srgPool->CompileGroupsForInterval(Interval(0, srgPool->GetGroupsToCompileCount()));
@@ -392,7 +392,7 @@ namespace AZ
                 rayTracingShaderTable->Validate();
 
                 [[maybe_unused]] ResultCode resultCode = rayTracingShaderTable->BuildInternal();
-                AZ_Assert(resultCode == ResultCode::Success, "RayTracingShaderTable build failed");
+                AZ_Assert(resultCode == ResultCode::Success, "DeviceRayTracingShaderTable build failed");
 
                 rayTracingShaderTable->m_isQueuedForBuild = false;
             }
@@ -638,12 +638,12 @@ namespace AZ
             return m_rootScopeId;
         }
 
-        const TransientAttachmentPoolDescriptor* FrameScheduler::GetTransientAttachmentPoolDescriptor() const
+        const DeviceTransientAttachmentPoolDescriptor* FrameScheduler::GetTransientAttachmentPoolDescriptor() const
         {
             return m_transientAttachmentPool ? &m_transientAttachmentPool->GetDescriptor() : nullptr;
         }
 
-        void FrameScheduler::QueueRayTracingShaderTableForBuild(RayTracingShaderTable* rayTracingShaderTable)
+        void FrameScheduler::QueueRayTracingShaderTableForBuild(DeviceRayTracingShaderTable* rayTracingShaderTable)
         {
             m_rayTracingShaderTablesToBuild.push_back(rayTracingShaderTable);
         }

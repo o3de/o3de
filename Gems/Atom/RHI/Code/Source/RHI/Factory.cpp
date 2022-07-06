@@ -6,11 +6,11 @@
  *
  */
 
+#include <Atom/RHI/DeviceResourceInvalidateBus.h>
 #include <Atom/RHI/Factory.h>
-#include <Atom/RHI/ResourceInvalidateBus.h>
 #include <Atom/RHI/RHIUtils.h>
-#include <AzCore/Interface/Interface.h>
 #include <AzCore/Component/TickBus.h>
+#include <AzCore/Interface/Interface.h>
 
 #if defined(USE_RENDERDOC) || defined(USE_PIX)
 #include <AzCore/Module/DynamicModuleHandle.h>
@@ -132,7 +132,7 @@ namespace AZ
         {
             Interface<Factory>::Register(instance);
 
-            ResourceInvalidateBus::AllowFunctionQueuing(true);
+            DeviceResourceInvalidateBus::AllowFunctionQueuing(true);
 
             // We delay the printf of which RHI we are going to use until the logging system is
             // up and running so the message is logged into the game/editor log file.
@@ -152,8 +152,8 @@ namespace AZ
 
         void Factory::Unregister(Factory* instance)
         {
-            ResourceInvalidateBus::AllowFunctionQueuing(false);
-            ResourceInvalidateBus::ClearQueuedEvents();
+            DeviceResourceInvalidateBus::AllowFunctionQueuing(false);
+            DeviceResourceInvalidateBus::ClearQueuedEvents();
 
             Interface<Factory>::Unregister(instance);
 

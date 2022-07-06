@@ -129,18 +129,18 @@ namespace AZ
             , m_blockElementHeight{blockElementHeight}
         {}
 
-        ImageSubresourceLayoutPlaced::ImageSubresourceLayoutPlaced(const ImageSubresourceLayout& subresourceLayout, uint32_t offset)
+        DeviceImageSubresourceLayoutPlaced::DeviceImageSubresourceLayoutPlaced(const ImageSubresourceLayout& subresourceLayout, uint32_t offset)
             : ImageSubresourceLayout(subresourceLayout)
             , m_offset{offset}
         {}
 
-        void ImageSubresourceLayoutPlaced::Reflect(AZ::ReflectContext* context)
+        void DeviceImageSubresourceLayoutPlaced::Reflect(AZ::ReflectContext* context)
         {
             if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
-                serializeContext->Class<ImageSubresourceLayoutPlaced, ImageSubresourceLayout>()
+                serializeContext->Class<DeviceImageSubresourceLayoutPlaced, ImageSubresourceLayout>()
                     ->Version(0)
-                    ->Field("m_offset", &ImageSubresourceLayoutPlaced::m_offset)
+                    ->Field("m_offset", &DeviceImageSubresourceLayoutPlaced::m_offset)
                     ;
             }
         }

@@ -7,24 +7,24 @@
  */
 
 #include "Atom_RHI_Vulkan_Platform.h"
+#include <Atom/RHI.Reflect/ClearValue.h>
+#include <Atom/RHI.Reflect/ImagePoolDescriptor.h>
+#include <Atom/RHI.Reflect/ImageScopeAttachmentDescriptor.h>
+#include <Atom/RHI.Reflect/Vulkan/Conversion.h>
+#include <Atom/RHI.Reflect/Vulkan/XRVkDescriptors.h>
 #include <Atom/RHI/PipelineStateDescriptor.h>
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RHI/XRRenderingInterface.h>
-#include <Atom/RHI.Reflect/ClearValue.h>
-#include <Atom/RHI.Reflect/ImageScopeAttachmentDescriptor.h>
-#include <Atom/RHI.Reflect/ImagePoolDescriptor.h>
-#include <Atom/RHI.Reflect/Vulkan/XRVkDescriptors.h>
-#include <AzCore/std/algorithm.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
-#include <Atom/RHI.Reflect/Vulkan/Conversion.h>
+#include <AzCore/std/algorithm.h>
 #include <RHI/Device.h>
+#include <RHI/GraphicsPipeline.h>
 #include <RHI/Image.h>
 #include <RHI/ImagePool.h>
-#include <RHI/GraphicsPipeline.h>
 #include <RHI/Queue.h>
+#include <RHI/ReleaseContainer.h>
 #include <RHI/RenderPass.h>
 #include <RHI/SwapChain.h>
-#include <RHI/ReleaseContainer.h>
 
 namespace AZ
 {
@@ -55,7 +55,8 @@ namespace AZ
             return *m_presentationQueue;
         }
 
-        void SwapChain::QueueBarrier(const VkPipelineStageFlags src, const VkPipelineStageFlags dst, const VkImageMemoryBarrier& imageBarrier)
+        void SwapChain::QueueBarrier(
+            const VkPipelineStageFlags src, const VkPipelineStageFlags dst, const VkImageMemoryBarrier& imageBarrier)
         {
             m_swapChainBarrier.m_barrier = imageBarrier;
             m_swapChainBarrier.m_srcPipelineStages = src;
@@ -94,7 +95,8 @@ namespace AZ
             }
         }
 
-        RHI::ResultCode SwapChain::InitInternal(RHI::Device& baseDevice, const RHI::SwapChainDescriptor& descriptor, RHI::SwapChainDimensions* nativeDimensions)
+        RHI::ResultCode SwapChain::InitInternal(
+            RHI::Device& baseDevice, const RHI::SwapChainDescriptor& descriptor, RHI::SwapChainDimensions* nativeDimensions)
         {
             RHI::ResultCode result = RHI::ResultCode::Success;
             RHI::DeviceObject::Init(baseDevice);
@@ -147,7 +149,7 @@ namespace AZ
             m_currentFrameContext = {};
         }
 
-        RHI::ResultCode SwapChain::InitImageInternal(const RHI::SwapChain::InitImageRequest& request)
+        RHI::ResultCode SwapChain::InitImageInternal(const RHI::DeviceSwapChain::InitImageRequest& request)
         {
             auto& device = static_cast<Device&>(GetDevice());
             Image* image = static_cast<Image*>(request.m_image);

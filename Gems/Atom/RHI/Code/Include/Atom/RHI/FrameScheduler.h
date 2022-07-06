@@ -9,14 +9,14 @@
 
 #include <Atom/RHI.Reflect/FrameSchedulerEnums.h>
 #include <Atom/RHI.Reflect/MemoryStatistics.h>
-#include <Atom/RHI/FrameGraphBuilder.h>
-#include <Atom/RHI/FrameGraphExecuter.h>
-#include <Atom/RHI/FrameGraphCompiler.h>
+#include <Atom/RHI/DeviceRayTracingShaderTable.h>
+#include <Atom/RHI/DeviceTransientAttachmentPool.h>
 #include <Atom/RHI/FrameGraph.h>
-#include <Atom/RHI/RayTracingShaderTable.h>
+#include <Atom/RHI/FrameGraphBuilder.h>
+#include <Atom/RHI/FrameGraphCompiler.h>
+#include <Atom/RHI/FrameGraphExecuter.h>
 #include <Atom/RHI/ScopeProducer.h>
 #include <Atom/RHI/ScopeProducerEmpty.h>
-#include <Atom/RHI/TransientAttachmentPool.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 
 namespace AZ
@@ -26,14 +26,14 @@ namespace AZ
 
     namespace RHI
     {
-        class ShaderResourceGroupPool;
+        class DeviceShaderResourceGroupPool;
         class FrameGraphExecuteGroup;
 
         //! @brief Fill this descriptor when initializing a FrameScheduler instance.
         struct FrameSchedulerDescriptor
         {
             // The descriptor used to initialize the transient attachment pool.
-            TransientAttachmentPoolDescriptor m_transientAttachmentPoolDescriptor;
+            DeviceTransientAttachmentPoolDescriptor m_transientAttachmentPoolDescriptor;
 
             // Platform specific limits
             ConstPtr<PlatformLimitsDescriptor> m_platformLimitsDescriptor = nullptr;
@@ -112,7 +112,7 @@ namespace AZ
         //!
         //! FrameScheduler contains a single "root" Graphics scope which is always the first scope added to the graph. All
         //! subsequent scopes take on a dependency to this root scope. The reason for this is twofold:
-        //! 1) ResourcePool implementations need a scope to perform resolves (DMA uploads) to GPU memory. These operations
+        //! 1) DeviceResourcePool implementations need a scope to perform resolves (DMA uploads) to GPU memory. These operations
         //! occur first in the frame to avoid complicating pool / scope dependencies. Hence, this is done synchronously
         //!       on the Graphics queue.
         //! 2) To make resource transitions and aliasing easier, the first scope in an attachment chain should be a
@@ -176,11 +176,11 @@ namespace AZ
             //! Returns the implicit root scope id.
             ScopeId GetRootScopeId() const;
 
-            //! Returns the descriptor which has information on the properties of a TransientAttachmentPool.
-            const TransientAttachmentPoolDescriptor* GetTransientAttachmentPoolDescriptor() const;
+            //! Returns the descriptor which has information on the properties of a DeviceTransientAttachmentPool.
+            const DeviceTransientAttachmentPoolDescriptor* GetTransientAttachmentPoolDescriptor() const;
 
             //! Adds a RayTracingShaderTable to be built this frame
-            void QueueRayTracingShaderTableForBuild(RayTracingShaderTable* rayTracingShaderTable);
+            void QueueRayTracingShaderTableForBuild(DeviceRayTracingShaderTable* rayTracingShaderTable);
 
             //! Returns PhysicalDeviceDescriptor which can be used to extract vendor/driver information
             const PhysicalDeviceDescriptor& GetPhysicalDeviceDescriptor();
@@ -217,7 +217,7 @@ namespace AZ
             Ptr<FrameGraphCompiler> m_frameGraphCompiler;
             Ptr<FrameGraphExecuter> m_frameGraphExecuter;
 
-            Ptr<TransientAttachmentPool> m_transientAttachmentPool;
+            Ptr<DeviceTransientAttachmentPool> m_transientAttachmentPool;
 
             AZStd::sys_time_t m_lastFrameEndTime{};
             MemoryStatistics m_memoryStatistics;
@@ -230,7 +230,7 @@ namespace AZ
             AZStd::unordered_map<ScopeId, ScopeProducer*> m_scopeProducerLookup;
 
             // list of RayTracingShaderTables that should be built this frame
-            AZStd::vector<RHI::Ptr<RayTracingShaderTable>> m_rayTracingShaderTablesToBuild;
+            AZStd::vector<RHI::Ptr<DeviceRayTracingShaderTable>> m_rayTracingShaderTablesToBuild;
 
             AZ::TaskGraphActiveInterface* m_taskGraphActive = nullptr;
         };

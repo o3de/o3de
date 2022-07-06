@@ -9,7 +9,7 @@
 #include <Atom/RHI/CommandList.h>
 #include <Atom/RHI/DrawListTagRegistry.h>
 #include <Atom/RHI/RHISystemInterface.h>
-#include <Atom/RHI/ShaderResourceGroup.h>
+#include <Atom/RHI/DeviceShaderResourceGroup.h>
 
 #include <Atom/RPI.Public/DynamicDraw/DynamicDrawInterface.h>
 #include <Atom/RPI.Public/Pass/RasterPass.h>
@@ -188,10 +188,10 @@ namespace AZ
             }
             PassSystemInterface::Get()->IncrementFrameDrawItemCount(m_drawItemCount);
             m_combinedDrawList.resize(m_drawItemCount);
-            RHI::DrawItemProperties* currentBuffer = m_combinedDrawList.data();
+            RHI::DeviceDrawItemProperties* currentBuffer = m_combinedDrawList.data();
             for (auto drawList : drawLists)
             {
-                memcpy(currentBuffer, drawList.data(), drawList.size()*sizeof(RHI::DrawItemProperties));
+                memcpy(currentBuffer, drawList.data(), drawList.size()*sizeof(RHI::DeviceDrawItemProperties));
                 currentBuffer += drawList.size();
             }
             SortDrawList(m_combinedDrawList);
@@ -239,7 +239,7 @@ namespace AZ
 
                 for (uint32_t index = context.GetSubmitRange().m_startIndex; index < context.GetSubmitRange().m_endIndex; ++index)
                 {
-                    const RHI::DrawItemProperties& drawItemProperties = m_drawListView[index];
+                    const RHI::DeviceDrawItemProperties& drawItemProperties = m_drawListView[index];
                     if (drawItemProperties.m_drawFilterMask & m_pipeline->GetDrawFilterMask())
                     {
                         commandList->Submit(*drawItemProperties.m_item, index);

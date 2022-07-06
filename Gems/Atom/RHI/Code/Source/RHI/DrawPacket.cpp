@@ -20,10 +20,10 @@ namespace AZ
             return m_drawItemCount;
         }
 
-        DrawItemProperties DrawPacket::GetDrawItem(size_t index) const
+        DeviceDrawItemProperties DrawPacket::GetDrawItem(size_t index) const
         {
             AZ_Assert(index < GetDrawItemCount(), "Out of bounds array access!");
-            return DrawItemProperties(&m_drawItems[index], m_drawItemSortKeys[index], m_drawFilterMask);
+            return DeviceDrawItemProperties(&m_drawItems[index], m_drawItemSortKeys[index], m_drawFilterMask);
         }
 
         DrawListTag DrawPacket::GetDrawListTag(size_t index) const

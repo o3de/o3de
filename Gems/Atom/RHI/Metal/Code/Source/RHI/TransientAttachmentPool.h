@@ -7,11 +7,11 @@
  */
 #pragma once
 
-#include <Atom/RHI/Scope.h>
-#include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <Atom/RHI/AliasedAttachmentAllocator.h>
-#include <Atom/RHI/TransientAttachmentPool.h>
+#include <Atom/RHI/DeviceTransientAttachmentPool.h>
+#include <Atom/RHI/Scope.h>
 #include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <RHI/AliasedHeap.h>
 
 namespace AZ
@@ -19,11 +19,11 @@ namespace AZ
     namespace Metal
     {
         using AliasedAttachmentAllocator = RHI::AliasedAttachmentAllocator<AliasedHeap>;
-    
-        class TransientAttachmentPool
-            : public RHI::TransientAttachmentPool
+
+        class TransientAttachmentPool : public RHI::DeviceTransientAttachmentPool
         {
-            using Base = RHI::TransientAttachmentPool;
+            using Base = RHI::DeviceTransientAttachmentPool;
+
         public:
             AZ_CLASS_ALLOCATOR(TransientAttachmentPool, AZ::SystemAllocator, 0);
             AZ_RTTI(TransientAttachmentPool, "{7E958929-A44F-4C5F-946D-61C283968C29}", Base);
@@ -35,7 +35,7 @@ namespace AZ
             
             //////////////////////////////////////////////////////////////////////////
             // RHI::TransientAttachmentPool
-            RHI::ResultCode InitInternal(RHI::Device& device, const RHI::TransientAttachmentPoolDescriptor& descriptor) override;
+            RHI::ResultCode InitInternal(RHI::Device& device, const RHI::DeviceTransientAttachmentPoolDescriptor& descriptor) override;
             void BeginInternal(const RHI::TransientAttachmentPoolCompileFlags flags, const RHI::TransientAttachmentStatistics::MemoryUsage* memoryHint) override;
             void EndInternal() override;
             RHI::Image* ActivateImage(const RHI::TransientImageDescriptor& descriptor) override;

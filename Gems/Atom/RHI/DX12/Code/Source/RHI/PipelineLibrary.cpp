@@ -42,7 +42,8 @@ namespace AZ
             return aznew PipelineLibrary;
         }
 
-        RHI::ResultCode PipelineLibrary::InitInternal(RHI::Device& deviceBase, [[maybe_unused]] const RHI::PipelineLibraryDescriptor& descriptor)
+        RHI::ResultCode PipelineLibrary::InitInternal(
+            RHI::Device& deviceBase, [[maybe_unused]] const RHI::DevicePipelineLibraryDescriptor& descriptor)
         {
             Device& device = static_cast<Device&>(deviceBase);
             ID3D12DeviceX* dx12Device = device.GetDevice();
@@ -215,7 +216,8 @@ namespace AZ
 #endif
         }
 
-        RHI::ResultCode PipelineLibrary::MergeIntoInternal([[maybe_unused]] AZStd::span<const RHI::PipelineLibrary* const> pipelineLibraries)
+        RHI::ResultCode PipelineLibrary::MergeIntoInternal(
+            [[maybe_unused]] AZStd::span<const RHI::DevicePipelineLibrary* const> pipelineLibraries)
         {
             if (RHI::Factory::Get().IsRenderDocModuleLoaded() ||
                 RHI::Factory::Get().IsPixModuleLoaded())

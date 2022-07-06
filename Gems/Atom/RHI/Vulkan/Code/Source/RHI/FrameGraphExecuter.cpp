@@ -68,6 +68,7 @@ namespace AZ
             {
                 mergedScopes.push_back(static_cast<const Scope*>(scopeBase));
                 FrameGraphExecuteGroupMerged* multiScopeContextGroup = AddGroup<FrameGraphExecuteGroupMerged>();
+                auto device = static_cast<Device*>(&scopeBase.GetDevice());
                 multiScopeContextGroup->Init(device, AZStd::move(mergedScopes));           
             }
 #else

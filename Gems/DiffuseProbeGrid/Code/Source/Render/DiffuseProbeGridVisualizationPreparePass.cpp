@@ -115,8 +115,8 @@ namespace AZ
                 }
 
                 // create the TLAS descriptor by adding an instance entry for each probe in the grid
-                RHI::RayTracingTlasDescriptor tlasDescriptor;
-                RHI::RayTracingTlasDescriptor* tlasDescriptorBuild = tlasDescriptor.Build();
+                RHI::DeviceRayTracingTlasDescriptor tlasDescriptor;
+                RHI::DeviceRayTracingTlasDescriptor* tlasDescriptorBuild = tlasDescriptor.Build();
 
                 // initialize the transform for each probe to Identity(), they will be updated by the compute shader
                 AZ::Transform transform = AZ::Transform::Identity();
@@ -133,7 +133,7 @@ namespace AZ
                 }
 
                 // create the TLAS buffers from on the descriptor
-                RHI::Ptr<RHI::RayTracingTlas>& visualizationTlas = diffuseProbeGrid->GetVisualizationTlas();
+                auto& visualizationTlas = diffuseProbeGrid->GetVisualizationTlas();
                 visualizationTlas->CreateBuffers(*device, &tlasDescriptor, diffuseProbeGridFeatureProcessor->GetVisualizationBufferPools());                    
             }
 
@@ -157,9 +157,9 @@ namespace AZ
                 }
 
                 // import and attach the visualization TLAS and probe data
-                RHI::Ptr<RHI::RayTracingTlas>& visualizationTlas = diffuseProbeGrid->GetVisualizationTlas();
-                const RHI::Ptr<RHI::Buffer>& tlasBuffer = visualizationTlas->GetTlasBuffer();
-                const RHI::Ptr<RHI::Buffer>& tlasInstancesBuffer = visualizationTlas->GetTlasInstancesBuffer();
+                auto& visualizationTlas = diffuseProbeGrid->GetVisualizationTlas();
+                const RHI::Ptr<RHI::DeviceBuffer>& tlasBuffer = visualizationTlas->GetTlasBuffer();
+                const RHI::Ptr<RHI::DeviceBuffer>& tlasInstancesBuffer = visualizationTlas->GetTlasInstancesBuffer();
                 if (tlasBuffer && tlasInstancesBuffer)
                 {
                     // TLAS buffer
@@ -245,7 +245,7 @@ namespace AZ
                 }
 
                 // the DiffuseProbeGrid Srg must be updated in the Compile phase in order to successfully bind the ReadWrite shader inputs
-                // (see ValidateSetImageView() in ShaderResourceGroupData.cpp)
+                // (see ValidateSetImageView() in DeviceShaderResourceGroupData.cpp)
                 diffuseProbeGrid->UpdateVisualizationPrepareSrg(m_shader, m_srgLayout);
                 diffuseProbeGrid->GetVisualizationPrepareSrg()->Compile();
             }
@@ -267,10 +267,10 @@ namespace AZ
                     continue;
                 }
 
-                const RHI::ShaderResourceGroup* shaderResourceGroup = diffuseProbeGrid->GetVisualizationPrepareSrg()->GetRHIShaderResourceGroup();
+                const RHI::DeviceShaderResourceGroup* shaderResourceGroup = diffuseProbeGrid->GetVisualizationPrepareSrg()->GetRHIShaderResourceGroup();
                 commandList->SetShaderResourceGroupForDispatch(*shaderResourceGroup);
 
-                RHI::DispatchItem dispatchItem;
+                RHI::DeviceDispatchItem dispatchItem;
                 dispatchItem.m_arguments = m_dispatchArgs;
                 dispatchItem.m_pipelineState = m_pipelineState;
                 dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsX = diffuseProbeGrid->GetTotalProbeCount();

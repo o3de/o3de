@@ -7,8 +7,8 @@
  */
 #pragma once
 
+#include <Atom/RHI/DeviceRayTracingAccelerationStructure.h>
 #include <Atom_RHI_Vulkan_Platform.h>
-#include <Atom/RHI/RayTracingAccelerationStructure.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 
@@ -19,8 +19,7 @@ namespace AZ
         class Buffer;
 
         //! This class builds and contains the Vulkan RayTracing BLAS buffers.
-        class RayTracingBlas final
-            : public RHI::RayTracingBlas
+        class RayTracingBlas final : public RHI::DeviceRayTracingBlas
         {
         public:
             AZ_CLASS_ALLOCATOR(RayTracingBlas, AZ::SystemAllocator, 0);
@@ -29,8 +28,8 @@ namespace AZ
 
             struct BlasBuffers
             {
-                RHI::Ptr<RHI::Buffer> m_blasBuffer;
-                RHI::Ptr<RHI::Buffer> m_scratchBuffer;
+                RHI::Ptr<RHI::DeviceBuffer> m_blasBuffer;
+                RHI::Ptr<RHI::DeviceBuffer> m_scratchBuffer;
                 VkAccelerationStructureKHR m_accelerationStructure = VK_NULL_HANDLE;
 
                 AZStd::vector<VkAccelerationStructureGeometryKHR> m_geometryDescs;
@@ -47,7 +46,10 @@ namespace AZ
             RayTracingBlas() = default;
 
             // RHI::RayTracingBlas overrides...
-            RHI::ResultCode CreateBuffersInternal(RHI::Device& deviceBase, const RHI::RayTracingBlasDescriptor* descriptor, const RHI::RayTracingBufferPools& rayTracingBufferPools) override;
+            RHI::ResultCode CreateBuffersInternal(
+                RHI::Device& deviceBase,
+                const RHI::DeviceRayTracingBlasDescriptor* descriptor,
+                const RHI::DeviceRayTracingBufferPools& rayTracingBufferPools) override;
 
             // buffer list to keep buffers alive for several frames
             static const uint32_t BufferCount = 3;

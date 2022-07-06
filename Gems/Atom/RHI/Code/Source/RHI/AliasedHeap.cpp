@@ -6,8 +6,8 @@
  *
  */
 #include <Atom/RHI/AliasedHeap.h>
-#include <Atom/RHI/Image.h>
-#include <Atom/RHI/Buffer.h>
+#include <Atom/RHI/DeviceImage.h>
+#include <Atom/RHI/DeviceBuffer.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/Scope.h>
 #include <Atom/RHI.Reflect/TransientBufferDescriptor.h>
@@ -108,7 +108,7 @@ namespace AZ
         ResultCode AliasedHeap::ActivateBuffer(
             const RHI::TransientBufferDescriptor& descriptor,
             Scope& scope,
-            Buffer** activatedBuffer)
+            DeviceBuffer** activatedBuffer)
         {
             ResourceMemoryRequirements memRequirements = GetDevice().GetResourceMemoryRequirements(descriptor.m_bufferDescriptor);
             
@@ -122,7 +122,7 @@ namespace AZ
             const size_t heapOffsetInBytes = address.m_ptr;
             m_heapStats.m_watermarkSize = AZStd::max(m_heapStats.m_watermarkSize, heapOffsetInBytes + static_cast<size_t>(memRequirements.m_sizeInBytes));
 
-            Buffer* buffer = nullptr;
+            DeviceBuffer* buffer = nullptr;
             if (!CheckBitsAny(m_compileFlags, TransientAttachmentPoolCompileFlags::DontAllocateResources))
             {
                 AZ_Assert(m_totalAllocations < m_cache.GetCapacity(),
@@ -134,9 +134,9 @@ namespace AZ
                 AZStd::hash_combine(reinterpret_cast<size_t&>(hash), heapOffsetInBytes);
 
                 // Check the cache for the buffer.
-                if (RHI::Resource* attachment = m_cache.Find(static_cast<uint64_t>(hash)))
+                if (RHI::DeviceResource* attachment = m_cache.Find(static_cast<uint64_t>(hash)))
                 {
-                    buffer = static_cast<Buffer*>(attachment);
+                    buffer = static_cast<DeviceBuffer*>(attachment);
                 }
                 // buffer is not in cache. Create a new one at the placed address, and add it to the cache.
                 else
@@ -145,14 +145,14 @@ namespace AZ
                     RemoveFromCache(descriptor.m_attachmentId);
 
                     // Ownership is managed by the cache.
-                    RHI::Ptr<Buffer> bufferPtr = Factory::Get().CreateBuffer();
+                    RHI::Ptr<DeviceBuffer> bufferPtr = Factory::Get().CreateBuffer();
                     buffer = bufferPtr.get();
 
                     RHI::ResultCode resultCode = Base::InitResource(
                         buffer,
                         [this, buffer, &descriptor, heapOffsetInBytes]
                     {
-                        BufferInitRequest request(*buffer, descriptor.m_bufferDescriptor);
+                        DeviceBufferInitRequest request(*buffer, descriptor.m_bufferDescriptor);
                         return InitBufferInternal(request, heapOffsetInBytes);
                     });
 
@@ -229,7 +229,7 @@ namespace AZ
             m_activeAttachmentLookup.erase(findIter);
         }
 
-        ResultCode AliasedHeap::ActivateImage(const RHI::TransientImageDescriptor& descriptor, Scope& scope, Image** activatedImage)
+        ResultCode AliasedHeap::ActivateImage(const RHI::TransientImageDescriptor& descriptor, Scope& scope, DeviceImage** activatedImage)
         {
             ResourceMemoryRequirements memRequirements = GetDevice().GetResourceMemoryRequirements(descriptor.m_imageDescriptor);
 
@@ -242,7 +242,7 @@ namespace AZ
             const size_t heapOffsetInBytes = address.m_ptr;
             m_heapStats.m_watermarkSize = AZStd::max(m_heapStats.m_watermarkSize, heapOffsetInBytes + static_cast<size_t>(memRequirements.m_sizeInBytes));
 
-            Image* image = nullptr;
+            DeviceImage* image = nullptr;
 
             if (!CheckBitsAny(m_compileFlags, TransientAttachmentPoolCompileFlags::DontAllocateResources))
             {
@@ -255,9 +255,9 @@ namespace AZ
                 AZStd::hash_combine(reinterpret_cast<size_t&>(hash), heapOffsetInBytes);
 
                 // Check the cache for the image.
-                if (RHI::Resource* attachment = m_cache.Find(static_cast<uint64_t>(hash)))
+                if (RHI::DeviceResource* attachment = m_cache.Find(static_cast<uint64_t>(hash)))
                 {
-                    image = static_cast<Image*>(attachment);
+                    image = static_cast<DeviceImage*>(attachment);
                 }
                 // image is not in cache. Create a new one at the placed address, and add it to the cache.
                 else
@@ -266,14 +266,14 @@ namespace AZ
                     RemoveFromCache(descriptor.m_attachmentId);
 
                     // Ownership is managed by the cache.
-                    RHI::Ptr<Image> imagePtr = Factory::Get().CreateImage();
+                    RHI::Ptr<DeviceImage> imagePtr = Factory::Get().CreateImage();
                     image = imagePtr.get();
 
                     RHI::ResultCode resultCode = Base::InitResource(
                         image,
                         [this, image, &descriptor, heapOffsetInBytes]
                     {
-                        ImageInitRequest request(*image, descriptor.m_imageDescriptor, descriptor.m_optimizedClearValue);
+                        DeviceImageInitRequest request(*image, descriptor.m_imageDescriptor, descriptor.m_optimizedClearValue);
                         return InitImageInternal(request, heapOffsetInBytes);
                     });
 

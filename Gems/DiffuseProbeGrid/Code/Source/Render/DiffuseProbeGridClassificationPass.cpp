@@ -7,7 +7,7 @@
  */
 
 #include <Atom/RHI/Factory.h>
-#include <Atom/RHI/PipelineState.h>
+#include <Atom/RHI/DevicePipelineState.h>
 #include <Atom/RHI/FrameGraphInterface.h>
 #include <Atom/RHI/FrameGraphAttachmentInterface.h>
 #include <Atom/RHI/Device.h>
@@ -62,7 +62,7 @@ namespace AZ
                 RHI::PipelineStateDescriptorForDispatch pipelineStateDescriptor;
                 const auto& shaderVariant = shader->GetVariant(RPI::ShaderAsset::RootShaderVariantStableId);
                 shaderVariant.ConfigurePipelineState(pipelineStateDescriptor);
-                const RHI::PipelineState* pipelineState = shader->AcquirePipelineState(pipelineStateDescriptor);
+                const RHI::DevicePipelineState* pipelineState = shader->AcquirePipelineState(pipelineStateDescriptor);
                 AZ_Assert(pipelineState, "Failed to acquire pipeline state");
 
                 RHI::Ptr<RHI::ShaderResourceGroupLayout> srgLayout = shader->FindShaderResourceGroupLayout(RPI::SrgBindingSlot::Pass);
@@ -159,7 +159,7 @@ namespace AZ
             for (auto& diffuseProbeGrid : diffuseProbeGridFeatureProcessor->GetVisibleRealTimeProbeGrids())
             {
                 // the diffuse probe grid Srg must be updated in the Compile phase in order to successfully bind the ReadWrite shader inputs
-                // (see ValidateSetImageView() in ShaderResourceGroupData.cpp)
+                // (see ValidateSetImageView() in DeviceShaderResourceGroupData.cpp)
                 DiffuseProbeGridShader& shader = m_shaders[diffuseProbeGrid->GetNumRaysPerProbe().m_index];
                 diffuseProbeGrid->UpdateClassificationSrg(shader.m_shader, shader.m_srgLayout);
                 diffuseProbeGrid->GetClassificationSrg()->Compile();
@@ -178,10 +178,10 @@ namespace AZ
                 AZStd::shared_ptr<DiffuseProbeGrid> diffuseProbeGrid = diffuseProbeGridFeatureProcessor->GetVisibleRealTimeProbeGrids()[index];
                 DiffuseProbeGridShader& shader = m_shaders[diffuseProbeGrid->GetNumRaysPerProbe().m_index];
 
-                const RHI::ShaderResourceGroup* shaderResourceGroup = diffuseProbeGrid->GetClassificationSrg()->GetRHIShaderResourceGroup();
+                const RHI::DeviceShaderResourceGroup* shaderResourceGroup = diffuseProbeGrid->GetClassificationSrg()->GetRHIShaderResourceGroup();
                 commandList->SetShaderResourceGroupForDispatch(*shaderResourceGroup);
 
-                RHI::DispatchItem dispatchItem;
+                RHI::DeviceDispatchItem dispatchItem;
                 dispatchItem.m_arguments = shader.m_dispatchArgs;
                 dispatchItem.m_pipelineState = shader.m_pipelineState;
                 dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsX = AZ::DivideAndRoundUp(diffuseProbeGrid->GetTotalProbeCount(), diffuseProbeGrid->GetFrameUpdateCount());

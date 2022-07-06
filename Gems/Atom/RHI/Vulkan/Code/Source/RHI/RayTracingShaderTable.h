@@ -7,17 +7,16 @@
  */
 #pragma once
 
-#include <Atom/RHI/RayTracingShaderTable.h>
+#include <Atom/RHI/DeviceBuffer.h>
+#include <Atom/RHI/DeviceRayTracingShaderTable.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
-#include <Atom/RHI/Buffer.h>
 
 namespace AZ
 {
     namespace Vulkan
     {
-        class RayTracingShaderTable final
-            : public RHI::RayTracingShaderTable
+        class RayTracingShaderTable final : public RHI::DeviceRayTracingShaderTable
         {
         public:
             AZ_CLASS_ALLOCATOR(RayTracingShaderTable, AZ::SystemAllocator, 0);
@@ -26,15 +25,15 @@ namespace AZ
 
             struct ShaderTableBuffers
             {
-                RHI::Ptr<RHI::Buffer> m_rayGenerationTable;
+                RHI::Ptr<RHI::DeviceBuffer> m_rayGenerationTable;
                 uint32_t m_rayGenerationTableSize = 0;
                 uint32_t m_rayGenerationTableStride = 0;
 
-                RHI::Ptr<RHI::Buffer> m_missTable;
+                RHI::Ptr<RHI::DeviceBuffer> m_missTable;
                 uint32_t m_missTableSize = 0;
                 uint32_t m_missTableStride = 0;
 
-                RHI::Ptr<RHI::Buffer> m_hitGroupTable;
+                RHI::Ptr<RHI::DeviceBuffer> m_hitGroupTable;
                 uint32_t m_hitGroupTableSize = 0;
                 uint32_t m_hitGroupTableStride = 0;
             };
@@ -45,11 +44,11 @@ namespace AZ
 
             RayTracingShaderTable() = default;
 
-            RHI::Ptr<RHI::Buffer> BuildTable(
+            RHI::Ptr<RHI::DeviceBuffer> BuildTable(
                 const VkPhysicalDeviceRayTracingPipelinePropertiesKHR& rayTracingPipelineProperties,
                 const RayTracingPipelineState* rayTracingPipelineState,
-                const RHI::RayTracingBufferPools& bufferPools,
-                const RHI::RayTracingShaderTableRecordList& recordList,
+                const RHI::DeviceRayTracingBufferPools& bufferPools,
+                const RHI::DeviceRayTracingShaderTableRecordList& recordList,
                 uint32_t shaderRecordSize,
                 AZStd::string shaderTableName);
 

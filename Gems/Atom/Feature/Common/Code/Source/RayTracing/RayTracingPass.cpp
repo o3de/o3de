@@ -11,9 +11,9 @@
 #include <Atom/RHI/CommandList.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/FrameScheduler.h>
-#include <Atom/RHI/DispatchRaysItem.h>
+#include <Atom/RHI/DeviceDispatchRaysItem.h>
 #include <Atom/RHI/RHISystemInterface.h>
-#include <Atom/RHI/PipelineState.h>
+#include <Atom/RHI/DevicePipelineState.h>
 #include <Atom/RPI.Reflect/Pass/PassTemplate.h>
 #include <Atom/RPI.Reflect/Shader/ShaderAsset.h>
 #include <Atom/RPI.Public/Base.h>
@@ -126,7 +126,7 @@ namespace AZ
             m_requiresRayTracingMaterialSrg = (rayTracingMaterialSrgLayout != nullptr);
 
             // build the ray tracing pipeline state descriptor
-            RHI::RayTracingPipelineStateDescriptor descriptor;
+            RHI::DeviceRayTracingPipelineStateDescriptor descriptor;
             descriptor.Build()
                 ->PipelineState(m_globalPipelineState.get())
                 ->MaxPayloadSize(m_passData->m_maxPayloadSize)
@@ -183,7 +183,7 @@ namespace AZ
             if (!m_rayTracingShaderTable)
             {
                 RHI::Ptr<RHI::Device> device = RHI::RHISystemInterface::Get()->GetDevice();
-                RHI::RayTracingBufferPools& rayTracingBufferPools = rayTracingFeatureProcessor->GetBufferPools();
+                auto& rayTracingBufferPools = rayTracingFeatureProcessor->GetBufferPools();
 
                 m_rayTracingShaderTable = RHI::Factory::Get().CreateRayTracingShaderTable();
                 m_rayTracingShaderTable->Init(*device.get(), rayTracingBufferPools);
@@ -203,7 +203,7 @@ namespace AZ
 
             // TLAS
             {
-                const RHI::Ptr<RHI::Buffer>& rayTracingTlasBuffer = rayTracingFeatureProcessor->GetTlas()->GetTlasBuffer();
+                const RHI::Ptr<RHI::DeviceBuffer>& rayTracingTlasBuffer = rayTracingFeatureProcessor->GetTlas()->GetTlasBuffer();
                 if (rayTracingTlasBuffer)
                 {
                     AZ::RHI::AttachmentId tlasAttachmentId = rayTracingFeatureProcessor->GetTlasAttachmentId();
@@ -244,14 +244,15 @@ namespace AZ
                 // scene changed, need to rebuild the shader table
                 m_rayTracingRevision = rayTracingRevision;
 
-                AZStd::shared_ptr<RHI::RayTracingShaderTableDescriptor> descriptor = AZStd::make_shared<RHI::RayTracingShaderTableDescriptor>();
+                auto descriptor = AZStd::make_shared<RHI::DeviceRayTracingShaderTableDescriptor>();
 
                 if (rayTracingFeatureProcessor->GetSubMeshCount())
                 {
                     // build the ray tracing shader table descriptor
-                    RHI::RayTracingShaderTableDescriptor* descriptorBuild = descriptor->Build(AZ::Name("RayTracingShaderTable"), m_rayTracingPipelineState)
-                        ->RayGenerationRecord(AZ::Name(m_passData->m_rayGenerationShaderName.c_str()))
-                        ->MissRecord(AZ::Name(m_passData->m_missShaderName.c_str()));
+                    RHI::DeviceRayTracingShaderTableDescriptor* descriptorBuild =
+                        descriptor->Build(AZ::Name("DeviceRayTracingShaderTable"), m_rayTracingPipelineState)
+                            ->RayGenerationRecord(AZ::Name(m_passData->m_rayGenerationShaderName.c_str()))
+                            ->MissRecord(AZ::Name(m_passData->m_missShaderName.c_str()));
 
                     // add a hit group for each mesh to the shader table
                     for (uint32_t i = 0; i < rayTracingFeatureProcessor->GetSubMeshCount(); ++i)
@@ -278,7 +279,7 @@ namespace AZ
                 return;
             }
 
-            RHI::DispatchRaysItem dispatchRaysItem;
+            RHI::DeviceDispatchRaysItem dispatchRaysItem;
 
             // calculate thread counts if this is a full screen raytracing pass
             if (m_passData->m_makeFullscreenPass)
@@ -299,20 +300,20 @@ namespace AZ
 
                 RHI::Size imageSize = outputAttachment->m_descriptor.m_image.m_size;
 
-                dispatchRaysItem.m_width = imageSize.m_width;
-                dispatchRaysItem.m_height = imageSize.m_height;
-                dispatchRaysItem.m_depth = imageSize.m_depth;
+                dispatchRaysItem.m_arguments.m_direct.m_width = imageSize.m_width;
+                dispatchRaysItem.m_arguments.m_direct.m_height = imageSize.m_height;
+                dispatchRaysItem.m_arguments.m_direct.m_depth = imageSize.m_depth;
             }
             else
             {
-                dispatchRaysItem.m_width = m_passData->m_threadCountX;
-                dispatchRaysItem.m_height = m_passData->m_threadCountY;
-                dispatchRaysItem.m_depth = m_passData->m_threadCountZ;
+                dispatchRaysItem.m_arguments.m_direct.m_width = m_passData->m_threadCountX;
+                dispatchRaysItem.m_arguments.m_direct.m_height = m_passData->m_threadCountY;
+                dispatchRaysItem.m_arguments.m_direct.m_depth = m_passData->m_threadCountZ;
             }
 
             // bind RayTracingGlobal, RayTracingScene, and View Srgs
             // [GFX TODO][ATOM-15610] Add RenderPass::SetSrgsForRayTracingDispatch
-            AZStd::vector<RHI::ShaderResourceGroup*> shaderResourceGroups =
+            AZStd::vector<RHI::DeviceShaderResourceGroup*> shaderResourceGroups =
             {
                 m_shaderResourceGroup->GetRHIShaderResourceGroup(),
                 rayTracingFeatureProcessor->GetRayTracingSceneSrg()->GetRHIShaderResourceGroup()

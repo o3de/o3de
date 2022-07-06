@@ -1223,7 +1223,7 @@ namespace AZ
         {
             AZ::RHI::ResultCode result = AZ::RHI::ResultCode::Fail;
 
-            AZ::RHI::BufferInitRequest request;
+            AZ::RHI::DeviceBufferInitRequest request;
 
             // setup m_pointIndexBuffer
             objectBuffers.m_pointIndexBuffer = AZ::RHI::Factory::Get().CreateBuffer();
@@ -1299,7 +1299,7 @@ namespace AZ
 
             // Setup point index buffer view
             objectBuffers.m_pointIndexCount = static_cast<uint32_t>(meshData.m_pointIndices.size());
-            AZ::RHI::IndexBufferView pointIndexBufferView =
+            AZ::RHI::DeviceIndexBufferView pointIndexBufferView =
             {
                 *objectBuffers.m_pointIndexBuffer,
                 0,
@@ -1310,7 +1310,7 @@ namespace AZ
 
             // Setup line index buffer view
             objectBuffers.m_lineIndexCount = static_cast<uint32_t>(meshData.m_lineIndices.size());
-            AZ::RHI::IndexBufferView lineIndexBufferView =
+            AZ::RHI::DeviceIndexBufferView lineIndexBufferView =
             {
                 *objectBuffers.m_lineIndexBuffer,
                 0,
@@ -1321,7 +1321,7 @@ namespace AZ
 
             // Setup triangle index buffer view
             objectBuffers.m_triangleIndexCount = static_cast<uint32_t>(meshData.m_triangleIndices.size());
-            AZ::RHI::IndexBufferView triangleIndexBufferView =
+            AZ::RHI::DeviceIndexBufferView triangleIndexBufferView =
             {
                 *objectBuffers.m_triangleIndexBuffer,
                 0,
@@ -1334,7 +1334,7 @@ namespace AZ
             const auto positionCount = static_cast<uint32_t>(meshData.m_positions.size());
             const uint32_t positionSize = sizeof(float) * 3;
 
-            AZ::RHI::StreamBufferView positionBufferView =
+            AZ::RHI::DeviceStreamBufferView positionBufferView =
             {
                 *objectBuffers.m_positionBuffer,
                 0,
@@ -1346,7 +1346,7 @@ namespace AZ
             const auto normalCount = static_cast<uint32_t>(meshData.m_normals.size());
             const uint32_t normalSize = sizeof(float) * 3;
 
-            AZ::RHI::StreamBufferView normalBufferView =
+            AZ::RHI::DeviceStreamBufferView normalBufferView =
             {
                 *objectBuffers.m_normalBuffer,
                 0,
@@ -1557,7 +1557,7 @@ namespace AZ
             destPipelineState->Finalize();
         }
 
-        const AZ::RHI::IndexBufferView& FixedShapeProcessor::GetShapeIndexBufferView(AuxGeomShapeType shapeType, int drawStyle, LodIndex lodIndex) const
+        const AZ::RHI::DeviceIndexBufferView& FixedShapeProcessor::GetShapeIndexBufferView(AuxGeomShapeType shapeType, int drawStyle, LodIndex lodIndex) const
         {
             switch(drawStyle)
             {
@@ -1659,7 +1659,7 @@ namespace AZ
             return nullptr;
         }
 
-        const AZ::RHI::IndexBufferView& FixedShapeProcessor::GetBoxIndexBufferView(int drawStyle) const
+        const AZ::RHI::DeviceIndexBufferView& FixedShapeProcessor::GetBoxIndexBufferView(int drawStyle) const
         {
             switch(drawStyle)
             {
@@ -1756,10 +1756,10 @@ namespace AZ
             RHI::DrawPacketBuilder& drawPacketBuilder,
             AZ::Data::Instance<RPI::ShaderResourceGroup>& srg,
             uint32_t indexCount,
-            const RHI::IndexBufferView& indexBufferView,
+            const RHI::DeviceIndexBufferView& indexBufferView,
             const StreamBufferViewsForAllStreams& streamBufferViews,
             RHI::DrawListTag drawListTag,
-            const AZ::RHI::PipelineState* pipelineState,
+            const AZ::RHI::DevicePipelineState* pipelineState,
             RHI::DrawItemSortKey sortKey)
         {
             RHI::DrawIndexed drawIndexed;

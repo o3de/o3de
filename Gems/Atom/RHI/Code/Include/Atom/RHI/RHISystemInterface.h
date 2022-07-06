@@ -24,14 +24,14 @@ namespace AZ
     {
         class Device;
         class FrameGraphBuilder;
-        class PipelineState;
+        class DevicePipelineState;
         class PipelineStateCache;
         class PlatformLimitsDescriptor;
         class PhysicalDeviceDescriptor;
-        class RayTracingShaderTable;
+        class DeviceRayTracingShaderTable;
         struct FrameSchedulerCompileRequest;
         struct TransientAttachmentStatistics;
-        struct TransientAttachmentPoolDescriptor;
+        struct DeviceTransientAttachmentPoolDescriptor;
 
         class RHISystemInterface
         {
@@ -62,12 +62,12 @@ namespace AZ
 
             virtual const RHI::MemoryStatistics* GetMemoryStatistics() const = 0;
 
-            virtual const RHI::TransientAttachmentPoolDescriptor* GetTransientAttachmentPoolDescriptor() const = 0;
+            virtual const RHI::DeviceTransientAttachmentPoolDescriptor* GetTransientAttachmentPoolDescriptor() const = 0;
 
             virtual ConstPtr<PlatformLimitsDescriptor> GetPlatformLimitsDescriptor() const = 0;
 
-            virtual void QueueRayTracingShaderTableForBuild(RayTracingShaderTable* rayTracingShaderTable) = 0;
-            
+            virtual void QueueRayTracingShaderTableForBuild(DeviceRayTracingShaderTable* rayTracingShaderTable) = 0;
+
             virtual const PhysicalDeviceDescriptor& GetPhysicalDeviceDescriptor() = 0;
 
             virtual XRRenderingInterface* GetXRSystem() const = 0;

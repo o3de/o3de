@@ -13,7 +13,7 @@ namespace AZ
 {
     namespace Metal
     {
-        RHI::ResultCode StreamingImagePoolResolver::UpdateImage(const RHI::StreamingImageExpandRequest& request)
+        RHI::ResultCode StreamingImagePoolResolver::UpdateImage(const RHI::DeviceStreamingImageExpandRequest& request)
         {
             AZ_PROFILE_FUNCTION(RHI);
             

@@ -7,10 +7,10 @@
  */
 #pragma once
 
-#include <RHI/PipelineLayout.h>
-#include <Atom/RHI/PipelineState.h>
+#include <Atom/RHI/DevicePipelineState.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
+#include <RHI/PipelineLayout.h>
 
 namespace AZ
 {
@@ -34,10 +34,9 @@ namespace AZ
                 // Only draw data for now.
                 PipelineStateDrawData m_drawData;
             };
-        };        
+        };
 
-        class PipelineState final
-            : public RHI::PipelineState
+        class PipelineState final : public RHI::DevicePipelineState
         {
             friend class PipelineStatePool;
         public:
@@ -58,9 +57,18 @@ namespace AZ
 
             //////////////////////////////////////////////////////////////////////////
             // RHI::PipelineState
-            RHI::ResultCode InitInternal(RHI::Device& device, const RHI::PipelineStateDescriptorForDraw& descriptor, RHI::PipelineLibrary* pipelineLibrary) override;
-            RHI::ResultCode InitInternal(RHI::Device& device, const RHI::PipelineStateDescriptorForDispatch& descriptor, RHI::PipelineLibrary* pipelineLibrary) override;
-            RHI::ResultCode InitInternal(RHI::Device& device, const RHI::PipelineStateDescriptorForRayTracing& descriptor, RHI::PipelineLibrary* pipelineLibrary) override;
+            RHI::ResultCode InitInternal(
+                RHI::Device& device,
+                const RHI::PipelineStateDescriptorForDraw& descriptor,
+                RHI::DevicePipelineLibrary* pipelineLibrary) override;
+            RHI::ResultCode InitInternal(
+                RHI::Device& device,
+                const RHI::PipelineStateDescriptorForDispatch& descriptor,
+                RHI::DevicePipelineLibrary* pipelineLibrary) override;
+            RHI::ResultCode InitInternal(
+                RHI::Device& device,
+                const RHI::PipelineStateDescriptorForRayTracing& descriptor,
+                RHI::DevicePipelineLibrary* pipelineLibrary) override;
             void ShutdownInternal() override;
             //////////////////////////////////////////////////////////////////////////
 

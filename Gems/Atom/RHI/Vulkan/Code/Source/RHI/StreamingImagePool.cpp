@@ -48,7 +48,7 @@ namespace AZ
             memoryAllocDescriptor.m_pageSizeInBytes = RHI::RHISystemInterface::Get()->GetPlatformLimitsDescriptor()->m_platformDefaultValues.m_imagePoolPageSizeInBytes;
             memoryAllocDescriptor.m_heapMemoryLevel = heapMemoryLevel;
             memoryAllocDescriptor.m_memoryTypeBits = memoryTypeBits;
-            // We don't pass the ResourcePool MemoryUsage because we will manually control residency when expanding/trimming.
+            // We don't pass the DeviceResourcePool MemoryUsage because we will manually control residency when expanding/trimming.
             memoryAllocDescriptor.m_getHeapMemoryUsageFunction = [this]() { return &m_memoryAllocatorUsage; };
             memoryAllocDescriptor.m_recycleOnCollect = true;
             memoryAllocDescriptor.m_collectLatency = RHI::Limits::Device::FrameCountMax;
@@ -57,7 +57,7 @@ namespace AZ
             return RHI::ResultCode::Success;
         }
 
-        RHI::ResultCode StreamingImagePool::InitImageInternal(const RHI::StreamingImageInitRequest& request) 
+        RHI::ResultCode StreamingImagePool::InitImageInternal(const RHI::DeviceStreamingImageInitRequest& request) 
         {
             auto& image = static_cast<Image&>(*request.m_image);
             auto& device = static_cast<Device&>(GetDevice());
@@ -95,7 +95,7 @@ namespace AZ
             image.SetResidentSizeInBytes(memoryRequirements.size);
 
             // Queue upload tail mip slices.
-            RHI::StreamingImageExpandRequest uploadMipRequest;
+            RHI::DeviceStreamingImageExpandRequest uploadMipRequest;
             uploadMipRequest.m_image = &image;
             uploadMipRequest.m_mipSlices = request.m_tailMipSlices;
             uploadMipRequest.m_waitForUpload = true;
@@ -108,7 +108,7 @@ namespace AZ
             return RHI::ResultCode::Success;
         }
 
-        RHI::ResultCode StreamingImagePool::ExpandImageInternal(const RHI::StreamingImageExpandRequest& request) 
+        RHI::ResultCode StreamingImagePool::ExpandImageInternal(const RHI::DeviceStreamingImageExpandRequest& request) 
         {
             auto& image = static_cast<Image&>(*request.m_image);
             auto& device = static_cast<Device&>(GetDevice());
@@ -133,7 +133,7 @@ namespace AZ
             memoryUsage.Validate();
 
             // Create new expand request and append callback from the StreamingImagePool.
-            RHI::StreamingImageExpandRequest newRequest = request;
+            RHI::DeviceStreamingImageExpandRequest newRequest = request;
             newRequest.m_completeCallback = [=]()
             {
                 Image& imageCompleted = static_cast<Image&>(*request.m_image);
@@ -147,7 +147,7 @@ namespace AZ
             return RHI::ResultCode::Success;
         }
 
-        RHI::ResultCode StreamingImagePool::TrimImageInternal(RHI::Image& imageBase, uint32_t targetMipLevel)
+        RHI::ResultCode StreamingImagePool::TrimImageInternal(RHI::DeviceImage& imageBase, uint32_t targetMipLevel)
         {
             auto& image = static_cast<Image&>(imageBase);
 
@@ -178,7 +178,7 @@ namespace AZ
             m_memoryAllocator.Shutdown();
         }
 
-        void StreamingImagePool::ShutdownResourceInternal(RHI::Resource& resourceBase)
+        void StreamingImagePool::ShutdownResourceInternal(RHI::DeviceResource& resourceBase)
         {
             auto& image = static_cast<Image&>(resourceBase);
 

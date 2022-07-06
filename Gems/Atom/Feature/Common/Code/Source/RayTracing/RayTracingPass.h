@@ -7,12 +7,12 @@
  */
 #pragma once
 
-#include <AzCore/Memory/SystemAllocator.h>
-#include <Atom/RHI/RayTracingPipelineState.h>
-#include <Atom/RHI/RayTracingShaderTable.h>
+#include <Atom/RHI/DeviceRayTracingPipelineState.h>
+#include <Atom/RHI/DeviceRayTracingShaderTable.h>
 #include <Atom/RPI.Public/Pass/RenderPass.h>
 #include <Atom/RPI.Public/Shader/Shader.h>
 #include <Atom/RPI.Public/Shader/ShaderReloadNotificationBus.h>
+#include <AzCore/Memory/SystemAllocator.h>
 
 namespace AZ
 {
@@ -68,9 +68,9 @@ namespace AZ
             Data::Instance<RPI::Shader> m_rayGenerationShader;
             Data::Instance<RPI::Shader> m_missShader;
             Data::Instance<RPI::Shader> m_closestHitShader;
-            RHI::Ptr<RHI::RayTracingPipelineState> m_rayTracingPipelineState;
-            RHI::ConstPtr<RHI::PipelineState> m_globalPipelineState;
-            RHI::Ptr<RHI::RayTracingShaderTable> m_rayTracingShaderTable;
+            RHI::Ptr<RHI::DeviceRayTracingPipelineState> m_rayTracingPipelineState;
+            RHI::ConstPtr<RHI::DevicePipelineState> m_globalPipelineState;
+            RHI::Ptr<RHI::DeviceRayTracingShaderTable> m_rayTracingShaderTable;
             bool m_requiresViewSrg = false;
             bool m_requiresSceneSrg = false;
             bool m_requiresRayTracingMaterialSrg = false;

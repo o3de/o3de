@@ -23,8 +23,8 @@ namespace AZ
         {
             return m_mtlBinaryArchive;
         }
-    
-        RHI::ResultCode PipelineLibrary::InitInternal(RHI::Device& deviceBase, const RHI::PipelineLibraryDescriptor& descriptor)
+
+        RHI::ResultCode PipelineLibrary::InitInternal(RHI::Device& deviceBase, const RHI::DevicePipelineLibraryDescriptor& descriptor)
         {
             DeviceObject::Init(deviceBase);
             auto& device = static_cast<Device&>(deviceBase);
@@ -99,8 +99,8 @@ namespace AZ
             }
             return computePipelineState;
         }
-    
-        RHI::ResultCode PipelineLibrary::MergeIntoInternal(AZStd::span<const RHI::PipelineLibrary* const> pipelineLibraries)
+
+        RHI::ResultCode PipelineLibrary::MergeIntoInternal(AZStd::span<const RHI::DevicePipelineLibrary* const> pipelineLibraries)
         {
             AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
             NSError* error = nil;

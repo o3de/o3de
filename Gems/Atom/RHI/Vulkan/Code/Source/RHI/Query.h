@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <Atom/RHI/Query.h>
+#include <Atom/RHI/DeviceQuery.h>
 
 namespace AZ
 {
@@ -16,9 +16,9 @@ namespace AZ
         class CommandList;
 
         class Query final
-            : public RHI::Query
+            : public RHI::DeviceQuery
         {
-            using Base = RHI::Query;
+            using Base = RHI::DeviceQuery;
 
         public:
             AZ_RTTI(Query, "{E27876FA-D96D-407A-926A-C480F4EDCBD0}", Base);

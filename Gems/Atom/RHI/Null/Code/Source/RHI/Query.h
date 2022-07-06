@@ -7,25 +7,25 @@
  */
 #pragma once
 
-#include <Atom/RHI/Query.h>
+#include <Atom/RHI/DeviceQuery.h>
 #include <AzCore/Memory/PoolAllocator.h>
 
 namespace AZ
 {
     namespace Null
     {
-        class Query final
-            : public RHI::Query
+        class Query final : public RHI::DeviceQuery
         {
             friend class QueryPool;
-            using Base = RHI::Query;
+            using Base = RHI::DeviceQuery;
+
         public:
             AZ_CLASS_ALLOCATOR(Query, AZ::ThreadPoolAllocator, 0);
             AZ_RTTI(Query, "{2DD0558E-F422-4268-8C1F-9900818A7B5A}", Base);
             ~Query() = default;
 
-            static RHI::Ptr<Query> Create();           
-            
+            static RHI::Ptr<Query> Create();
+
         private:
             Query() = default;
 

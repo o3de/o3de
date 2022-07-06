@@ -7,11 +7,11 @@
  */
 #pragma once
 
-#include <Atom/RHI/PipelineState.h>
-#include <Atom/RHI/PipelineLibrary.h>
+#include <Atom/RHI/DevicePipelineLibrary.h>
+#include <Atom/RHI/DevicePipelineState.h>
 #include <Atom/RHI/ThreadLocalContext.h>
-#include <AzCore/std/containers/bitset.h>
 #include <AzCore/Utils/TypeHash.h>
+#include <AzCore/std/containers/bitset.h>
 
 namespace UnitTest
 {
@@ -87,10 +87,11 @@ namespace AZ
         //! Example Usage:
         //! @code{.cpp}
         //!      // Create library instance.
-        //!      RHI::PipelineLibraryHandle libraryHandle = pipelineStateCache->CreateLibrary(serializedData); // Initial data loaded from disk.
+        //!      RHI::PipelineLibraryHandle libraryHandle = pipelineStateCache->CreateLibrary(serializedData); // Initial data loaded from
+        //!      disk.
         //!
         //!      // In jobs. Lots and lots of requests.
-        //!      const RHI::PipelineState* pipelineState = pipelineStateCache->AcquirePipelineState(libraryHandle, descriptor);
+        //!      const RHI::DevicePipelineState* pipelineState = pipelineStateCache->AcquirePipelineState(libraryHandle, descriptor);
         //!
         //!      // Reset contents of library. Releases all pipeline state references. Library remains valid.
         //!      pipelineStateCache->ResetLibrary(libraryHandle);
@@ -126,7 +127,7 @@ namespace AZ
 
             //! Returns the resulting merged library from all the threadLibraries related to the passed in handle.
             //! The merged library can be used to write out the serialized data.
-            Ptr<PipelineLibrary> GetMergedLibrary(PipelineLibraryHandle handle) const;
+            Ptr<DevicePipelineLibrary> GetMergedLibrary(PipelineLibraryHandle handle) const;
 
             //! Acquires a pipeline state (either draw or dispatch variants) from the cache. Pipeline states are associated
             //! to a specific library handle. Successive calls with the same pipeline state descriptor hash will return the same
@@ -136,7 +137,7 @@ namespace AZ
             //! It is permitted to take a strong reference to the returned pointer, but is not necessary as long as the reference
             //! is discarded on a library reset / release event. The cache will store a reference internally. If a strong reference
             //! is held externally, the instance will remain valid even after the cache is reset / destroyed.
-            const PipelineState* AcquirePipelineState(PipelineLibraryHandle library, const PipelineStateDescriptor& descriptor);
+            const DevicePipelineState* AcquirePipelineState(PipelineLibraryHandle library, const PipelineStateDescriptor& descriptor);
 
             //! This method merges the global pending cache into the global read-only cache and clears all thread-local caches.
             //! This reduces the total memory footprint of the caches and optimizes subsequent fetches. This method should be called
@@ -152,7 +153,7 @@ namespace AZ
 
             struct PipelineStateEntry
             {
-                PipelineStateEntry(PipelineStateHash hash, ConstPtr<PipelineState> pipelineState, const PipelineStateDescriptor& descriptor);
+                PipelineStateEntry(PipelineStateHash hash, ConstPtr<DevicePipelineState> pipelineState, const PipelineStateDescriptor& descriptor);
 
                 bool operator < (const PipelineStateEntry& rhs) const
                 {
@@ -162,7 +163,7 @@ namespace AZ
                 bool operator == (const PipelineStateEntry& rhs) const;
 
                 PipelineStateHash m_hash;
-                ConstPtr<PipelineState> m_pipelineState;
+                ConstPtr<DevicePipelineState> m_pipelineState;
 
                 // pipeline state descriptor variant for dispatch, draw, and ray tracing
                 using PipelineStateDescriptorVariant = AZStd::variant<AZ::RHI::PipelineStateDescriptorForDraw, AZ::RHI::PipelineStateDescriptorForDispatch, AZ::RHI::PipelineStateDescriptorForRayTracing>;
@@ -194,7 +195,7 @@ namespace AZ
 
                 // Contains the initial serialized data (Used to prime the thread libraries)
                 // or the file name that contains the serialized data
-                PipelineLibraryDescriptor m_pipelineLibraryDescriptor;
+                DevicePipelineLibraryDescriptor m_pipelineLibraryDescriptor;
             };
 
             using GlobalLibrarySet = AZStd::fixed_vector<GlobalLibraryEntry, LibraryCountMax>;
@@ -208,7 +209,7 @@ namespace AZ
                 //! pipeline states without locking. The libraries are coalesced into a single library
                 //! during GetMergedLibrary. The library is lazily initialized on the thread
                 //! and uses the initial serialized data passed in at creation time.
-                Ptr<PipelineLibrary> m_library;
+                Ptr<DevicePipelineLibrary> m_library;
             };
 
             //! Each thread has its own list of pipeline library entries. The index maps 1-to-1 with GlobalLibrarySet.
@@ -217,13 +218,13 @@ namespace AZ
             using ThreadLibrarySet = AZStd::array<ThreadLibraryEntry, LibraryCountMax>;
 
             //! Helper function which binary searches a pipeline state set looking for an entry which matches the requested descriptor.
-            static const PipelineState* FindPipelineState(const PipelineStateSet& pipelineStateSet, const PipelineStateDescriptor& descriptor);
+            static const DevicePipelineState* FindPipelineState(const PipelineStateSet& pipelineStateSet, const PipelineStateDescriptor& descriptor);
 
             //! Helper function which inserts an entry into the set. Returns true if the entry was inserted, or false is a duplicate entry existed.
             static bool InsertPipelineState(PipelineStateSet& pipelineStateSet, PipelineStateEntry pipelineStateEntry);
 
             //! Performs a pipeline state compilation on the global cache using the thread-local pipeline library.
-            ConstPtr<PipelineState> CompilePipelineState(
+            ConstPtr<DevicePipelineState> CompilePipelineState(
                 GlobalLibraryEntry& globalLibraryEntry,
                 ThreadLibraryEntry& threadLibraryEntry,
                 const PipelineStateDescriptor& pipelineStateDescriptor,

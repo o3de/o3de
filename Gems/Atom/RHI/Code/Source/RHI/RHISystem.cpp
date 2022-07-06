@@ -263,7 +263,7 @@ namespace AZ
             return m_frameScheduler.GetMemoryStatistics();
         }
 
-        const AZ::RHI::TransientAttachmentPoolDescriptor* RHISystem::GetTransientAttachmentPoolDescriptor() const
+        const AZ::RHI::DeviceTransientAttachmentPoolDescriptor* RHISystem::GetTransientAttachmentPoolDescriptor() const
         {
             return m_frameScheduler.GetTransientAttachmentPoolDescriptor();
         }
@@ -273,7 +273,7 @@ namespace AZ
             return m_device->GetDescriptor().m_platformLimitsDescriptor;
         }
 
-        void RHISystem::QueueRayTracingShaderTableForBuild(RayTracingShaderTable* rayTracingShaderTable)
+        void RHISystem::QueueRayTracingShaderTableForBuild(DeviceRayTracingShaderTable* rayTracingShaderTable)
         {
             m_frameScheduler.QueueRayTracingShaderTableForBuild(rayTracingShaderTable);
         }

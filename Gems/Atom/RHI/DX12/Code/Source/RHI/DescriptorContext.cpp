@@ -5,14 +5,14 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <RHI/DescriptorContext.h>
+#include <Atom/RHI.Reflect/DX12/PlatformLimitsDescriptor.h>
+#include <Atom/RHI/DeviceShaderResourceGroupPool.h>
 #include <RHI/Buffer.h>
 #include <RHI/Conversions.h>
+#include <RHI/DescriptorContext.h>
 #include <RHI/Device.h>
 #include <RHI/Image.h>
 #include <RHI/ShaderResourceGroupPool.h>
-#include <Atom/RHI.Reflect/DX12/PlatformLimitsDescriptor.h>
-#include <Atom/RHI/ShaderResourceGroupPool.h>
 
 namespace AZ
 {
@@ -597,7 +597,8 @@ namespace AZ
                 //Re-update all the descriptor tables associated with active SRGs
                 for (const auto& [srg, numAllocations] : m_srgAllocations)
                 {
-                    RHI::ResultCode resultCode = static_cast<ShaderResourceGroupPool*>(srg->GetPool())->UpdateDescriptorTableAfterCompaction(*srg, srg->GetData());
+                    RHI::ResultCode resultCode =
+                        static_cast<ShaderResourceGroupPool*>(srg->GetPool())->UpdateDescriptorTableAfterCompaction(*srg, srg->GetData());
                     if (resultCode != RHI::ResultCode::Success)
                     {
                         return resultCode;

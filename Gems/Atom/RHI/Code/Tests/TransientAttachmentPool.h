@@ -7,18 +7,17 @@
  */
 #pragma once
 
-#include <Atom/RHI/Buffer.h>
-#include <Atom/RHI/Image.h>
+#include <Atom/RHI/DeviceBuffer.h>
+#include <Atom/RHI/DeviceImage.h>
+#include <Atom/RHI/DeviceTransientAttachmentPool.h>
 #include <Atom/RHI/Factory.h>
-#include <Atom/RHI/TransientAttachmentPool.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/containers/unordered_set.h>
 
 namespace UnitTest
 {
-    class TransientAttachmentPool
-        : public AZ::RHI::TransientAttachmentPool
+    class TransientAttachmentPool : public AZ::RHI::DeviceTransientAttachmentPool
     {
     public:
         AZ_CLASS_ALLOCATOR(TransientAttachmentPool, AZ::SystemAllocator, 0);
@@ -26,15 +25,15 @@ namespace UnitTest
         TransientAttachmentPool() = default;
 
     private:
-        AZ::RHI::ResultCode InitInternal(AZ::RHI::Device&, const AZ::RHI::TransientAttachmentPoolDescriptor& descriptor) override;
+        AZ::RHI::ResultCode InitInternal(AZ::RHI::Device&, const AZ::RHI::DeviceTransientAttachmentPoolDescriptor& descriptor) override;
 
         void ShutdownInternal() override;
 
         void BeginInternal(const AZ::RHI::TransientAttachmentPoolCompileFlags flags, const AZ::RHI::TransientAttachmentStatistics::MemoryUsage* memoryHint) override;
 
-        AZ::RHI::Image* ActivateImage(const AZ::RHI::TransientImageDescriptor&) override;
+        AZ::RHI::DeviceImage* ActivateImage(const AZ::RHI::TransientImageDescriptor&) override;
 
-        AZ::RHI::Buffer* ActivateBuffer(const AZ::RHI::TransientBufferDescriptor&) override;
+        AZ::RHI::DeviceBuffer* ActivateBuffer(const AZ::RHI::TransientBufferDescriptor&) override;
 
         void DeactivateBuffer(const AZ::RHI::AttachmentId&) override;
 
@@ -42,9 +41,9 @@ namespace UnitTest
 
         void EndInternal() override;
 
-        AZ::RHI::Ptr<AZ::RHI::ImagePool> m_imagePool;
-        AZ::RHI::Ptr<AZ::RHI::BufferPool> m_bufferPool;
-        AZStd::unordered_map<AZ::RHI::AttachmentId, AZ::RHI::Ptr<AZ::RHI::Resource>> m_attachments;
+        AZ::RHI::Ptr<AZ::RHI::DeviceImagePool> m_imagePool;
+        AZ::RHI::Ptr<AZ::RHI::DeviceBufferPool> m_bufferPool;
+        AZStd::unordered_map<AZ::RHI::AttachmentId, AZ::RHI::Ptr<AZ::RHI::DeviceResource>> m_attachments;
 
         AZStd::unordered_set<AZ::RHI::AttachmentId> m_activeSet;
     };

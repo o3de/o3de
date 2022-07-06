@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <Atom/RHI/Buffer.h>
+#include <Atom/RHI/DeviceBuffer.h>
 #include <AzCore/Memory/PoolAllocator.h>
 #include <RHI/BufferMemoryView.h>
 
@@ -17,11 +17,11 @@ namespace AZ
     {
         class Device;
         class BufferPool;
-        
-        class Buffer final
-            : public RHI::Buffer
+
+        class Buffer final : public RHI::DeviceBuffer
         {
-            using Base = RHI::Buffer;
+            using Base = RHI::DeviceBuffer;
+
         public:
             AZ_CLASS_ALLOCATOR(Buffer, AZ::ThreadPoolAllocator, 0);
             AZ_RTTI(Buffer, "{50D79542-AD49-46C8-8660-583A84802105}", Base);

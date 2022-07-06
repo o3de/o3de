@@ -20,7 +20,7 @@ namespace AZ
         {
         }
 
-        void* BufferPoolResolver::MapBuffer(const RHI::BufferMapRequest& request)
+        void* BufferPoolResolver::MapBuffer(const RHI::DeviceBufferMapRequest& request)
         {
             AZ_Assert(request.m_byteCount > 0, "ByteCount of request is null");
             auto* buffer = static_cast<Buffer*>(request.m_buffer);
@@ -87,7 +87,7 @@ namespace AZ
             m_uploadPackets.clear();
         }
 
-        void BufferPoolResolver::OnResourceShutdown(const RHI::Resource& resource)
+        void BufferPoolResolver::OnResourceShutdown(const RHI::DeviceResource& resource)
         {
             const Buffer& buffer = static_cast<const Buffer&>(resource);
             if (!buffer.m_pendingResolves)

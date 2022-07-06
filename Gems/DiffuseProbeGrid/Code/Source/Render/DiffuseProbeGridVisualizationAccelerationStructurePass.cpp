@@ -96,9 +96,9 @@ namespace AZ
                 }
 
                 // import and attach the visualization TLAS buffers
-                RHI::Ptr<RHI::RayTracingTlas>& visualizationTlas = diffuseProbeGrid->GetVisualizationTlas();
-                const RHI::Ptr<RHI::Buffer>& tlasBuffer = visualizationTlas->GetTlasBuffer();
-                const RHI::Ptr<RHI::Buffer>& tlasInstancesBuffer = visualizationTlas->GetTlasInstancesBuffer();
+                auto& visualizationTlas = diffuseProbeGrid->GetVisualizationTlas();
+                const RHI::Ptr<RHI::DeviceBuffer>& tlasBuffer = visualizationTlas->GetTlasBuffer();
+                const RHI::Ptr<RHI::DeviceBuffer>& tlasInstancesBuffer = visualizationTlas->GetTlasInstancesBuffer();
                 if (tlasBuffer && tlasInstancesBuffer)
                 {
                     // TLAS buffer

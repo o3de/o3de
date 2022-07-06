@@ -21,8 +21,8 @@ namespace AZ
 {
     namespace RHI
     {
-        class Buffer;
-        class BufferView;
+        class DeviceBuffer;
+        class DeviceBufferView;
     }
 
     namespace RPI

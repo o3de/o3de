@@ -40,9 +40,7 @@ namespace AZ
         }
 
         RHI::ResultCode PipelineState::InitInternal(
-            RHI::Device& deviceBase,
-            const RHI::PipelineStateDescriptorForDraw& descriptor,
-            RHI::PipelineLibrary* pipelineLibraryBase)
+            RHI::Device& deviceBase, const RHI::PipelineStateDescriptorForDraw& descriptor, RHI::DevicePipelineLibrary* pipelineLibraryBase)
         {
             Device& device = static_cast<Device&>(deviceBase);
 
@@ -122,7 +120,7 @@ namespace AZ
         RHI::ResultCode PipelineState::InitInternal(
             RHI::Device& deviceBase,
             const RHI::PipelineStateDescriptorForDispatch& descriptor,
-            RHI::PipelineLibrary* pipelineLibraryBase)
+            RHI::DevicePipelineLibrary* pipelineLibraryBase)
         {
             Device& device = static_cast<Device&>(deviceBase);
 
@@ -168,7 +166,7 @@ namespace AZ
         RHI::ResultCode PipelineState::InitInternal(
             RHI::Device& deviceBase,
             const RHI::PipelineStateDescriptorForRayTracing& descriptor,
-            [[maybe_unused]] RHI::PipelineLibrary* pipelineLibraryBase)
+            [[maybe_unused]] RHI::DevicePipelineLibrary* pipelineLibraryBase)
         {
             Device& device = static_cast<Device&>(deviceBase);
 

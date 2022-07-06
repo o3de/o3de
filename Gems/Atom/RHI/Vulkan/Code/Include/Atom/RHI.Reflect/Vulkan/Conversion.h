@@ -24,8 +24,8 @@
 #include <Atom/RHI.Reflect/ShaderResourceGroupLayoutDescriptor.h>
 #include <Atom/RHI.Reflect/ScopeAttachmentDescriptor.h>
 #include <Atom/RHI.Reflect/Size.h>
-#include <Atom/RHI/IndexBufferView.h>
-#include <Atom/RHI/Query.h>
+#include <Atom/RHI/DeviceIndexBufferView.h>
+#include <Atom/RHI/DeviceQuery.h>
 #include <Atom/RHI/PipelineStateDescriptor.h>
 
 namespace AZ

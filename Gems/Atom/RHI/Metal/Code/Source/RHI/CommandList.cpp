@@ -60,7 +60,7 @@ namespace AZ
             CommandListBase::FlushEncoder();
         }
 
-        void CommandList::Submit(const RHI::CopyItem& copyItem, uint32_t submitIndex)
+        void CommandList::Submit(const RHI::DeviceCopyItem& copyItem, uint32_t submitIndex)
         {
             ValidateSubmitIndex(submitIndex);
             CreateEncoder(CommandEncoderType::Blit);
@@ -179,7 +179,7 @@ namespace AZ
             }
         }
 
-        void CommandList::Submit(const RHI::DispatchItem& dispatchItem, uint32_t submitIndex)
+        void CommandList::Submit(const RHI::DeviceDispatchItem& dispatchItem, uint32_t submitIndex)
         {
             AZ_PROFILE_FUNCTION(RHI);
 
@@ -202,7 +202,7 @@ namespace AZ
 
         }
 
-        void CommandList::Submit(const RHI::DispatchRaysItem& dispatchRaysItem, uint32_t submitIndex)
+        void CommandList::Submit(const RHI::DeviceDispatchRaysItem& dispatchRaysItem, uint32_t submitIndex)
         {
             ValidateSubmitIndex(submitIndex);
 
@@ -484,7 +484,7 @@ namespace AZ
             }
         }
 
-        void CommandList::Submit(const RHI::DrawItem& drawItem, uint32_t submitIndex)
+        void CommandList::Submit(const RHI::DeviceDrawItem& drawItem, uint32_t submitIndex)
         {
             AZ_PROFILE_FUNCTION(RHI);
 
@@ -643,7 +643,7 @@ namespace AZ
             }
         }
 
-        void CommandList::SetStreamBuffers(const RHI::StreamBufferView* streams, uint32_t count)
+        void CommandList::SetStreamBuffers(const RHI::DeviceStreamBufferView* streams, uint32_t count)
         {
             uint16_t bufferArrayLen = 0;
             AZStd::array<id<MTLBuffer>, METAL_MAX_ENTRIES_BUFFER_ARG_TABLE> mtlStreamBuffers;
@@ -691,12 +691,12 @@ namespace AZ
             [renderEncoder setDepthClipMode: rastState.m_depthClipMode];
         }
 
-        void CommandList::SetShaderResourceGroupForDraw(const RHI::ShaderResourceGroup& shaderResourceGroup)
+        void CommandList::SetShaderResourceGroupForDraw(const RHI::DeviceShaderResourceGroup& shaderResourceGroup)
         {
             SetShaderResourceGroup<RHI::PipelineStateType::Draw>(static_cast<const ShaderResourceGroup*>(&shaderResourceGroup));
         }
 
-        void CommandList::SetShaderResourceGroupForDispatch(const RHI::ShaderResourceGroup& shaderResourceGroup)
+        void CommandList::SetShaderResourceGroupForDispatch(const RHI::DeviceShaderResourceGroup& shaderResourceGroup)
         {
             SetShaderResourceGroup<RHI::PipelineStateType::Dispatch>(static_cast<const ShaderResourceGroup*>(&shaderResourceGroup));
         }
@@ -792,13 +792,13 @@ namespace AZ
             m_state.m_scissorState.m_isDirty = false;
         }
 
-        void CommandList::BuildBottomLevelAccelerationStructure(const RHI::RayTracingBlas& rayTracingBlas)
+        void CommandList::BuildBottomLevelAccelerationStructure(const RHI::DeviceRayTracingBlas& rayTracingBlas)
         {
             // [GFX TODO][ATOM-5268] Implement Metal Ray Tracing
             AZ_Assert(false, "Not implemented");
         }
 
-        void CommandList::BuildTopLevelAccelerationStructure(const RHI::RayTracingTlas& rayTracingTlas)
+        void CommandList::BuildTopLevelAccelerationStructure(const RHI::DeviceRayTracingTlas& rayTracingTlas)
         {
             // [GFX TODO][ATOM-5268] Implement Metal Ray Tracing
             AZ_Assert(false, "Not implemented");

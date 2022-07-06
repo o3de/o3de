@@ -60,7 +60,7 @@ namespace AZ
             TagBitRegistry() = default;
             static TagType ConvertToUnderlyingType(TagType tag);
             static TagType ConvertFromUnderlyingType(TagType tag);
-            TagRegistry<typename IndexType, sizeof(IndexType) * 8> m_tagRegistry;
+            TagRegistry<IndexType, sizeof(IndexType) * 8> m_tagRegistry;
         };
 
         template<typename IndexType>

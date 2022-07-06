@@ -142,7 +142,7 @@ namespace Terrain
 
             AZ::Data::Instance<AZ::RPI::Buffer> m_heightsNormalsBuffer;
             AZ::Data::Instance<AZ::RPI::Buffer> m_lodHeightsNormalsBuffer;
-            AZStd::array<AZ::RHI::StreamBufferView, StreamIndex::Count> m_streamBufferViews;
+            AZStd::array<AZ::RHI::DeviceStreamBufferView, StreamIndex::Count> m_streamBufferViews;
 
             // Hold reference to the draw srgs so they don't get released.
             AZStd::fixed_vector<AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>, AZ::RHI::DrawPacketBuilder::DrawItemCountMax> m_perDrawSrgs;
@@ -191,7 +191,7 @@ namespace Terrain
         {
             AZ::Data::Instance<AZ::RPI::Shader> m_shader;
             AZ::RPI::ShaderOptionGroup m_shaderOptions;
-            const AZ::RHI::PipelineState* m_pipelineState;
+            const AZ::RHI::DevicePipelineState* m_pipelineState;
             AZ::RHI::DrawListTag m_drawListTag;
             AZ::RHI::Ptr<AZ::RHI::ShaderResourceGroupLayout> m_drawSrgLayout;
             AZ::RPI::ShaderVariant m_shaderVariant;
@@ -222,7 +222,7 @@ namespace Terrain
         void BuildDrawPacket(Sector& sector);
         void RebuildSectors();
         void RebuildDrawPackets();
-        AZ::RHI::StreamBufferView CreateStreamBufferView(AZ::Data::Instance<AZ::RPI::Buffer>& buffer, uint32_t offset = 0);
+        AZ::RHI::DeviceStreamBufferView CreateStreamBufferView(AZ::Data::Instance<AZ::RPI::Buffer>& buffer, uint32_t offset = 0);
 
         void CreateCommonBuffers();
         void InitializeRayTracingData();
@@ -268,7 +268,7 @@ namespace Terrain
         AZ::Data::Instance<AZ::RPI::Buffer> m_xyPositionsBuffer;
         AZ::Data::Instance<AZ::RPI::Buffer> m_indexBuffer;
         AZ::Data::Instance<AZ::RPI::Buffer> m_dummyLodHeightsNormalsBuffer;
-        AZ::RHI::IndexBufferView m_indexBufferView;
+        AZ::RHI::DeviceIndexBufferView m_indexBufferView;
 
         // Currently ray tracing meshes are kept separate from the regular meshes. The intention is to
         // combine them in the future to support terrain lods in ray tracing.

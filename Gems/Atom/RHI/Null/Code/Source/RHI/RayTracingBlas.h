@@ -7,8 +7,8 @@
  */
 #pragma once
 
-#include <Atom/RHI/RayTracingAccelerationStructure.h>
-#include <Atom/RHI/RayTracingBufferPools.h>
+#include <Atom/RHI/DeviceRayTracingAccelerationStructure.h>
+#include <Atom/RHI/DeviceRayTracingBufferPools.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 
@@ -18,8 +18,7 @@ namespace AZ
     {
         class Buffer;
 
-        class RayTracingBlas final
-            : public RHI::RayTracingBlas
+        class RayTracingBlas final : public RHI::DeviceRayTracingBlas
         {
         public:
             AZ_CLASS_ALLOCATOR(RayTracingBlas, AZ::SystemAllocator, 0);
@@ -33,7 +32,13 @@ namespace AZ
             RayTracingBlas() = default;
 
             // RHI::RayTracingBlas overrides...
-            RHI::ResultCode CreateBuffersInternal([[maybe_unused]] RHI::Device& deviceBase, [[maybe_unused]] const RHI::RayTracingBlasDescriptor* descriptor, [[maybe_unused]] const RHI::RayTracingBufferPools& rayTracingBufferPools) override {return RHI::ResultCode::Success;}
+            RHI::ResultCode CreateBuffersInternal(
+                [[maybe_unused]] RHI::Device& deviceBase,
+                [[maybe_unused]] const RHI::DeviceRayTracingBlasDescriptor* descriptor,
+                [[maybe_unused]] const RHI::DeviceRayTracingBufferPools& rayTracingBufferPools) override
+            {
+                return RHI::ResultCode::Success;
+            }
         };
     }
 }

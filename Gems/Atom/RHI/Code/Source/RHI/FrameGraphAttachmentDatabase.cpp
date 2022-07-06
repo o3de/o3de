@@ -11,7 +11,7 @@
 #include <Atom/RHI/ImageFrameAttachment.h>
 #include <Atom/RHI/BufferScopeAttachment.h>
 #include <Atom/RHI/ImageScopeAttachment.h>
-#include <Atom/RHI/SwapChain.h>
+#include <Atom/RHI/DeviceSwapChain.h>
 namespace AZ
 {
     namespace RHI
@@ -24,7 +24,7 @@ namespace AZ
             return seed;
         }
 
-        ScopeId FrameGraphAttachmentDatabase::EmplaceResourcePoolUse(ResourcePool& pool, ScopeId scopeId)
+        ScopeId FrameGraphAttachmentDatabase::EmplaceResourcePoolUse(DeviceResourcePool& pool, ScopeId scopeId)
         {
             ScopeId lastScope;
             auto found = m_resourcePoolLastScopeUse.find(&pool);        
@@ -58,7 +58,7 @@ namespace AZ
 
         ResultCode FrameGraphAttachmentDatabase::ImportSwapChain(
             const AttachmentId& attachmentId,
-            Ptr<SwapChain> swapChain)
+            Ptr<DeviceSwapChain> swapChain)
         {
             if (!ValidateAttachmentIsUnregistered(attachmentId))
             {
@@ -73,7 +73,7 @@ namespace AZ
 
         ResultCode FrameGraphAttachmentDatabase::ImportImage(
             const AttachmentId& attachmentId,
-            Ptr<Image> image)
+            Ptr<DeviceImage> image)
         {
             // Only import the attachment if it hasn't already been imported
             if (FindAttachment(attachmentId) == nullptr)
@@ -85,9 +85,7 @@ namespace AZ
             return ResultCode::Success;
         }
 
-        ResultCode FrameGraphAttachmentDatabase::ImportBuffer(
-            const AttachmentId& attachmentId,
-            Ptr<Buffer> buffer)
+        ResultCode FrameGraphAttachmentDatabase::ImportBuffer(const AttachmentId& attachmentId, Ptr<DeviceBuffer> buffer)
         {
             // Only import the attachment if it hasn't already been imported
             if (FindAttachment(attachmentId) == nullptr)

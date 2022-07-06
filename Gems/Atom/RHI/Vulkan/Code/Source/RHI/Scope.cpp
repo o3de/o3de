@@ -5,26 +5,26 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <algorithm>
-#include <Atom/RHI/BufferScopeAttachment.h>
 #include <Atom/RHI/BufferProperty.h>
-#include <Atom/RHI/ImageScopeAttachment.h>
+#include <Atom/RHI/BufferScopeAttachment.h>
 #include <Atom/RHI/ImageFrameAttachment.h>
+#include <Atom/RHI/ImageScopeAttachment.h>
 #include <Atom/RHI/ResolveScopeAttachment.h>
 #include <Atom/RHI/SwapChainFrameAttachment.h>
+#include <RHI/BufferView.h>
 #include <RHI/CommandList.h>
+#include <RHI/Device.h>
+#include <RHI/Framebuffer.h>
 #include <RHI/GraphicsPipeline.h>
 #include <RHI/ImageView.h>
-#include <RHI/QueryPool.h>
 #include <RHI/PipelineState.h>
+#include <RHI/QueryPool.h>
 #include <RHI/RenderPass.h>
 #include <RHI/ResourcePoolResolver.h>
 #include <RHI/Scope.h>
 #include <RHI/SwapChain.h>
-#include <RHI/Framebuffer.h>
-#include <RHI/Device.h>
 #include <Atom/RHI.Reflect/Vulkan/Conversion.h>
-#include <RHI/BufferView.h>
+#include <algorithm>
 
 namespace AZ
 {
@@ -342,7 +342,7 @@ namespace AZ
             RHI::FrameEventBus::Handler::BusConnect(&deviceBase);
         }
 
-        void Scope::AddQueryPoolUse(RHI::Ptr<RHI::QueryPool> queryPool, const RHI::Interval& interval, RHI::ScopeAttachmentAccess access)
+        void Scope::AddQueryPoolUse(RHI::Ptr<RHI::DeviceQueryPool> queryPool, const RHI::Interval& interval, RHI::ScopeAttachmentAccess access)
         {
             m_queryPoolAttachments.push_back({ AZStd::static_pointer_cast<QueryPool>(queryPool), interval, access });
         }
