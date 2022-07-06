@@ -156,7 +156,7 @@ namespace AZ
             InitializeMaterialInstance(asset);
         }
 
-        void MaterialComponentController::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
+        void MaterialComponentController::OnSystemTick()
         {
             if (m_queuedLoadMaterials)
             {
@@ -191,7 +191,7 @@ namespace AZ
                     MaterialComponentNotificationBus::Event(m_entityId, &MaterialComponentNotifications::OnMaterialsUpdated, m_configuration.m_materials);
                 }
 
-                TickBus::Handler::BusDisconnect();
+                SystemTickBus::Handler::BusDisconnect();
             }
         }
 
@@ -290,7 +290,7 @@ namespace AZ
 
         void MaterialComponentController::ReleaseMaterials()
         {
-            TickBus::Handler::BusDisconnect();
+            SystemTickBus::Handler::BusDisconnect();
             Data::AssetBus::MultiHandler::BusDisconnect();
 
             m_defaultMaterialMap.clear();
@@ -762,27 +762,27 @@ namespace AZ
         void MaterialComponentController::QueuePropertyChanges(const MaterialAssignmentId& materialAssignmentId)
         {
             m_materialsWithDirtyProperties.emplace(materialAssignmentId);
-            if (!TickBus::Handler::BusIsConnected())
+            if (!SystemTickBus::Handler::BusIsConnected())
             {
-                TickBus::Handler::BusConnect();
+                SystemTickBus::Handler::BusConnect();
             }
         }
 
         void MaterialComponentController::QueueMaterialUpdateNotification()
         {
             m_queuedMaterialUpdateNotification = true;
-            if (!TickBus::Handler::BusIsConnected())
+            if (!SystemTickBus::Handler::BusIsConnected())
             {
-                TickBus::Handler::BusConnect();
+                SystemTickBus::Handler::BusConnect();
             }
         }
 
         void MaterialComponentController::QueueLoadMaterials()
         {
             m_queuedLoadMaterials = true;
-            if (!TickBus::Handler::BusIsConnected())
+            if (!SystemTickBus::Handler::BusIsConnected())
             {
-                TickBus::Handler::BusConnect();
+                SystemTickBus::Handler::BusConnect();
             }
         }
 
