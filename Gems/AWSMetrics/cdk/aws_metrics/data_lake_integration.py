@@ -61,12 +61,10 @@ class DataLakeIntegration:
                 restrict_public_buckets=True
             ),
             server_access_logs_bucket=server_access_logs_bucket,
-            server_access_logs_prefix=f'{self._stack.stack_name}-AccessLogs' if server_access_logs_bucket else None
+            server_access_logs_prefix=f'{self._stack.stack_name}-AccessLogs' if server_access_logs_bucket else None,
+            lifecycle_rules=[s3.LifecycleRule(expiration=core.Duration.days(30))],
+            removal_policy=core.RemovalPolicy.RETAIN
         )
-
-        # For Amazon S3 buckets, you must delete all objects in the bucket for deletion to succeed.
-        cfn_bucket = self._analytics_bucket.node.find_child('Resource')
-        cfn_bucket.apply_removal_policy(core.RemovalPolicy.DESTROY)
 
         core.CfnOutput(
             self._stack,
