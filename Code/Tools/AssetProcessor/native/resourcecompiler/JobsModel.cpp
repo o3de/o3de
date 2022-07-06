@@ -360,10 +360,11 @@ namespace AssetProcessor
             AZStd::unordered_map<QueueElementID, AZ::s64> historicalStats;
             auto statsFunction = [&historicalStats](AzToolsFramework::AssetDatabase::StatDatabaseEntry entry)
             {
+                static constexpr int numTokensExpected = 4;
                 AZStd::vector<AZStd::string> tokens;
                 AZ::StringFunc::Tokenize(entry.m_statName, tokens, ',');
 
-                if (tokens.size() == 4)
+                if (tokens.size() == numTokensExpected)
                 {
                     QueueElementID elementId;
                     elementId.SetInputAssetName(tokens[1].c_str());
@@ -380,8 +381,8 @@ namespace AssetProcessor
                         "stat name may be used in Asset Processor code, or the asset database may be corrupted. If you keep encountering "
                         "this warning, report an issue on GitHub with O3DE version number.",
                         entry.m_statName.c_str(),
-                        tokens.size(),
-                        4); 
+                        numTokensExpected,
+                        tokens.size()); 
                 }
                 
                 return true;
