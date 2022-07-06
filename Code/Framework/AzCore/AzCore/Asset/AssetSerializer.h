@@ -92,15 +92,55 @@ namespace AZ {
             }
         };
 
+        class DataConverter
+            : public SerializeContext::IDataConverter
+        {
+        public:
+            bool CanConvertFromType(
+                const TypeId& convertibleTypeId,
+                const SerializeContext::ClassData& classData,
+                SerializeContext& /*serializeContext*/) override
+            {
+                return classData.m_typeId == convertibleTypeId ||
+                    (convertibleTypeId == GetAssetClassId() && classData.m_typeId == azrtti_typeid<ThisType>()) ||
+                    (convertibleTypeId == azrtti_typeid<Data::Asset<Data::AssetData>>() && classData.m_typeId == azrtti_typeid<ThisType>());
+            }
+
+            bool ConvertFromType(
+                void*& convertibleTypePtr,
+                const TypeId& convertibleTypeId,
+                void* classPtr,
+                const SerializeContext::ClassData& classData,
+                SerializeContext& serializeContext) override
+            {
+                if (CanConvertFromType(convertibleTypeId, classData, serializeContext))
+                {
+                    convertibleTypePtr = classPtr;
+                    return true;
+                }
+
+                return false;
+            }
+        };
+
         class GenericClassGenericAsset
             : public GenericClassInfo
         {
         public:
             GenericClassGenericAsset()
-                : m_classData{ SerializeContext::ClassData::Create<ThisType>("Asset", GetAssetClassId(), &m_factory, &AssetSerializer::s_serializer) }
+                : m_classData{ SerializeContext::ClassData::Create<ThisType>(AzTypeInfo<ThisType>::Name(), GetSpecializedTypeId(), &m_factory, &AssetSerializer::s_serializer) }
             {
-                m_classData.m_version = 2;
+                m_classData.m_version = 3;
+                m_classData.m_dataConverter = &m_dataConverter;
             }
+            // The default implementation of the special member functions would
+            // not update the `m_classData.m_dataConverter` pointer, so delete
+            // them.
+            GenericClassGenericAsset(const GenericClassGenericAsset& rhs) = delete;
+            GenericClassGenericAsset(GenericClassGenericAsset&& rhs) = delete;
+            GenericClassGenericAsset& operator=(const GenericClassGenericAsset& rhs) = delete;
+            GenericClassGenericAsset& operator=(GenericClassGenericAsset&& rhs) = delete;
+            ~GenericClassGenericAsset() override = default;
 
             SerializeContext::ClassData* GetClassData() override
             {
@@ -120,7 +160,7 @@ namespace AZ {
 
             const Uuid& GetSpecializedTypeId() const override
             {
-                return GetAssetClassId();
+                return azrtti_typeid<ThisType>();
             }
 
             const Uuid& GetGenericTypeId() const override
@@ -132,13 +172,25 @@ namespace AZ {
             {
                 if (serializeContext)
                 {
-                    serializeContext->RegisterGenericClassInfo(GetSpecializedTypeId(), this, &AZ::AnyTypeInfoConcept<Data::Asset<Data::AssetData>>::CreateAny);
-                    serializeContext->RegisterGenericClassInfo(azrtti_typeid<ThisType>(), this, &AZ::AnyTypeInfoConcept<ThisType>::CreateAny);
+                    serializeContext->RegisterGenericClassInfo(GetSpecializedTypeId(), this, &AZ::AnyTypeInfoConcept<ThisType>::CreateAny);
+                    if constexpr (AZStd::is_same_v<ThisType, Data::Asset<Data::AssetData>>)
+                    {
+                        serializeContext->RegisterGenericClassInfo(GetAssetClassId(), this, &AZ::AnyTypeInfoConcept<ThisType>::CreateAny);
+                    }
+                    else
+                    {
+                        if (!serializeContext->FindGenericClassInfo(GetAssetClassId()))
+                        {
+                            SerializeGenericTypeInfo<Data::Asset<Data::AssetData>>::GetGenericInfo()->Reflect(serializeContext);
+                        }
+                    }
                 }
             }
 
             Factory m_factory;
             SerializeContext::ClassData m_classData;
+        private:
+            DataConverter m_dataConverter{};
         };
 
         using ClassInfoType = GenericClassGenericAsset;

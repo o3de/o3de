@@ -37,6 +37,15 @@ namespace AZ
             WindowContext() = default;
             ~WindowContext() = default;
 
+            //! Enum to describe swapchain type
+            enum class SwapChainMode : uint32_t
+            {
+                Default = 0,
+                XrLeft,
+                XrRight,
+                Count
+            };
+
             //! Initializes the WindowContext from the given AzFramework's window
             //! param[in] windowHandle The native window handle of the Window we want to construct an RPI WindowContext for
             //! param[in] masterPassName The name of the pass that supplies input to the window's swapchain pass
@@ -53,20 +62,22 @@ namespace AZ
             void Shutdown();
 
             //! Returns a unique attachment id associated with the swap chain.
-            const RHI::AttachmentId& GetSwapChainAttachmentId() const;
+            const RHI::AttachmentId& GetSwapChainAttachmentId(SwapChainMode swapChainMode = SwapChainMode::Default) const;
 
             //! Retrieves the underlying SwapChain created by this WindowContext
-            const RHI::Ptr<RHI::SwapChain>& GetSwapChain() const;
+            const RHI::Ptr<RHI::SwapChain>& GetSwapChain(SwapChainMode swapChainMode = SwapChainMode::Default) const;
 
             //! Retrieves the default ViewportState for the WindowContext
-            const RHI::Viewport& GetViewport() const;
+            const RHI::Viewport& GetViewport(SwapChainMode swapChainMode = SwapChainMode::Default) const;
 
             //! Retrieves the default ScissorState for the WindowContext
-            const RHI::Scissor& GetScissor() const;
+            const RHI::Scissor& GetScissor(SwapChainMode swapChainMode = SwapChainMode::Default) const;
 
             //! Get the window ID for the WindowContext
             AzFramework::NativeWindowHandle GetWindowHandle() const { return m_windowHandle; }
 
+            //! Get the number of active swapchains
+            uint32_t GetSwapChainsSize() const;
         private:
 
             // WindowNotificationBus::Handler overrides ...
@@ -79,11 +90,17 @@ namespace AZ
             bool GetExclusiveFullScreenState() const override;
             bool SetExclusiveFullScreenState(bool fullScreenState) override;
 
-            // Creates the underlying RHI level SwapChain for the given Window
-            void CreateSwapChain(RHI::Device& device);
+            // Creates the underlying RHI level SwapChain for the given Window plus XR swapchains.
+            void CreateSwapChains(RHI::Device& device);
 
-            // Destroys the underlying SwapChain
-            void DestroySwapChain();
+            // Destroys the underlying default SwapChain
+            void DestroyDefaultSwapChain();
+
+            // Destroys the underlying XR SwapChains
+            void DestroyXRSwapChains();
+
+            // Destroys swapChain data related to the provided index
+            void DestroySwapChain(uint32_t swapChainIndex);
 
             // Fills the default window states based on the given width and height
             void FillWindowState(const uint32_t width, const uint32_t height);
@@ -94,14 +111,19 @@ namespace AZ
             // The handle of the window that this is context describes
             AzFramework::NativeWindowHandle m_windowHandle;
 
-            // The swapChain that this context has created for the given window
-            RHI::Ptr<RHI::SwapChain> m_swapChain;
+            struct SwapChainData
+            {
+                // RHI SwapChain object itself
+                RHI::Ptr<RHI::SwapChain> m_swapChain;
 
-            // The default viewport that covers the entire surface described by the SwapChain
-            RHI::Viewport m_viewportDefault;
+                // The default viewport that covers the entire surface
+                RHI::Viewport m_viewport;
 
-            // The default scissor that covers the entire surface described by the SwapChain
-            RHI::Scissor m_scissorDefault;
+                // The default scissor that covers the entire surface
+                RHI::Scissor m_scissor;
+            };
+            // Data structure to hold SwapChain for Default and XR SwapChains.
+            AZStd::vector<SwapChainData> m_swapChainsData;
 
             // Non-owning reference to associated ViewportContexts (if any)
             AZStd::vector<AZStd::weak_ptr<ViewportContext>> m_viewportContexts;

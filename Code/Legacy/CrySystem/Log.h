@@ -13,7 +13,7 @@
 #include <MultiThread_Containers.h>
 #include <list>
 #include <AzCore/std/string/fixed_string.h>
-#include <AzCore/IO/SystemFile.h>
+#include <AzCore/IO/FileIO.h>
 
 struct IConsole;
 struct ICVar;
@@ -98,6 +98,7 @@ public:
     virtual void Update();
     virtual const char* GetModuleFilter();
     virtual void FlushAndClose();
+    virtual void Flush();
 
 private: // -------------------------------------------------------------------
     struct SLogMsg
@@ -137,7 +138,7 @@ private: // -------------------------------------------------------------------
     void LogStringToConsole(const char* szString, ELogType logType, bool bAdd) {}
 #endif // !defined(EXCLUDE_NORMAL_LOG)
 
-    bool OpenLogFile(const char* filename, int mode);
+    bool OpenLogFile(const char* filename, AZ::IO::OpenMode mode);
     void CloseLogFile();
 
     // will format the message into m_szTemp
@@ -156,7 +157,7 @@ private: // -------------------------------------------------------------------
     float m_fLastLoadingUpdateTime;                           // for non-frequent streamingEngine update
     char m_szFilename[MAX_FILENAME_SIZE];            // can be with path
     mutable char m_sBackupFilename[MAX_FILENAME_SIZE];   // can be with path
-    AZ::IO::SystemFile m_logFileHandle;
+    AZ::IO::FileIOStream m_logFileHandle;
 
     bool m_backupLogs;
 
@@ -194,8 +195,6 @@ private: // -------------------------------------------------------------------
 
 #if defined(KEEP_LOG_FILE_OPEN)
     static void LogFlushFile(IConsoleCmdArgs* pArgs);
-
-    bool m_bFirstLine;
 #endif
 
 public: // -------------------------------------------------------------------

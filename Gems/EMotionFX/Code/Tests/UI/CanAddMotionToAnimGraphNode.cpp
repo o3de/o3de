@@ -49,8 +49,7 @@ namespace EMotionFX
         ASSERT_TRUE(motionSetWindow) << "No motion set window found";
 
         // Check there aren't any motion sets yet.
-        const size_t numMotionSets = EMotionFX::GetMotionManager().GetNumMotionSets();
-        EXPECT_EQ(numMotionSets, 0);
+        const size_t oldNumMotionSets = EMotionFX::GetMotionManager().GetNumMotionSets();
 
         // Find the action to create a new motion set and press it.
         QWidget* addMotionSetButton = GetWidgetWithNameFromNamedToolbar(managementWindow, "MotionSetManagementWindow.ToolBar", "MotionSetManagementWindow.ToolBar.AddNewMotionSet");
@@ -58,10 +57,9 @@ namespace EMotionFX
         QTest::mouseClick(addMotionSetButton, Qt::LeftButton);
 
         // Make sure the new motion set has  been created.
-        const size_t numMotionSetsAfterCreate = EMotionFX::GetMotionManager().GetNumMotionSets();
-        ASSERT_EQ(numMotionSetsAfterCreate, numMotionSets + 1) << "Failed to create motion set.";
+        ASSERT_EQ(EMotionFX::GetMotionManager().GetNumMotionSets(), oldNumMotionSets + 1) << "Failed to create motion set.";
 
-        EMotionFX::MotionSet* motionSet = EMotionFX::GetMotionManager().GetMotionSet(0);
+        EMotionFX::MotionSet* motionSet = EMotionFX::GetMotionManager().GetMotionSet(oldNumMotionSets);
 
         // Ensure new motion set is selected.
         motionSetPlugin->SetSelectedSet(motionSet);
@@ -119,7 +117,7 @@ namespace EMotionFX
         // Select our motion set in the combo widget (index 0 is the select motion set instruction text).
         QComboBox* combo = animGraphEditor->GetMotionSetComboBox();
         ASSERT_TRUE(combo) << "Unable to get MotionSetComboBox from AnimGraphEditor.";
-        combo->setCurrentIndex(0);
+        combo->setCurrentIndex(1);
 
         // Find the picker add button in the attributes window and press it.
         const  MotionSetMotionIdPicker* idPicker = attributesWindow->findChild<MotionSetMotionIdPicker*>();

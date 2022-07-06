@@ -27,7 +27,6 @@ namespace Multiplayer
     using ControllersActivatedEvent = AZ::Event<const ConstNetworkEntityHandle&, EntityIsMigrating>;
     using ControllersDeactivatedEvent = AZ::Event<const ConstNetworkEntityHandle&, EntityIsMigrating>;
     using NetEntityHandleSet = AZStd::unordered_set<ConstNetworkEntityHandle>;
-    using NetEntityIdSet = AZStd::unordered_set<NetEntityId>;
 
     //! @class INetworkEntityManager
     //! @brief The interface for managing all networked entities.

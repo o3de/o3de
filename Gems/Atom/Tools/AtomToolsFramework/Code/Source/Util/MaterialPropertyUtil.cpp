@@ -8,6 +8,7 @@
 
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
 #include <Atom/RPI.Reflect/Image/ImageAsset.h>
+#include <Atom/RPI.Reflect/Image/AttachmentImageAsset.h>
 #include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
 #include <Atom/RPI.Reflect/Material/MaterialTypeAsset.h>
@@ -81,7 +82,8 @@ namespace AtomToolsFramework
         // Use customized property handler (ImageAssetPropertyHandler) for image asset
         if (propertyDefinition.m_dataType == AZ::RPI::MaterialPropertyDataType::Image)
         {
-            propertyConfig.m_customHandler = AZ_CRC_CE("ImageAsset");
+            propertyConfig.m_supportedAssetTypes.push_back(azrtti_typeid<AZ::RPI::AttachmentImageAsset>());
+            propertyConfig.m_supportedAssetTypes.push_back(azrtti_typeid<AZ::RPI::StreamingImageAsset>());
         }
 
         // Update the description for material properties to include script name assuming id is set beforehand
@@ -205,11 +207,9 @@ namespace AtomToolsFramework
                 AZ_Error("AtomToolsFramework", false, "Image asset could not be found for property: '%s'.", propertyId.GetCStr());
                 return false;
             }
-            else
-            {
-                propertyValue = GetExteralReferencePath(exportPath, imagePath);
-                return true;
-            }
+
+            propertyValue = GetPathToExteralReference(exportPath, imagePath);
+            return true;
         }
 
         return true;

@@ -67,8 +67,8 @@ namespace AZ::Render
             float m_boundaryScale = 0.f; // the half of boundary of lit/shadowed areas. (in degrees)
             uint32_t m_filteringSampleCount = 0;
             AZStd::array<float, 2> m_unprojectConstants = { {0, 0} };
-            float m_bias;
-            float m_normalShadowBias = 0;
+            float m_bias = 0.0f;
+            float m_normalShadowBias = 0.0f;
             float m_esmExponent = 87.0f;
             float m_padding[3];
         };

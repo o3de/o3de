@@ -139,27 +139,20 @@ namespace AzToolsFramework
 
         bool AssetBrowserEntry::FromMimeData(const QMimeData* mimeData, AZStd::vector<AssetBrowserEntry*>& entries)
         {
-            if (!mimeData)
+            if (!mimeData || !mimeData->hasFormat(GetMimeType()))
             {
                 return false;
             }
 
-            for (auto format : mimeData->formats())
-            {
-                if (format != GetMimeType())
-                {
-                    continue;
-                }
+            // Deserializing the vector of asset browser entries saved in the mime data
+            AZStd::vector<AssetBrowserEntry*> entriesStored;
+            QByteArray byteArray = mimeData->data(GetMimeType());
+            AZ::IO::MemoryStream stream(byteArray.constData(), byteArray.size());
+            AZ::Utils::LoadObjectFromStreamInPlace(stream, entriesStored);
 
-                QByteArray arrayData = mimeData->data(format);
-                AZ::IO::MemoryStream ms(arrayData.constData(), arrayData.size());
-                AssetBrowserEntry* entry = AZ::Utils::LoadObjectFromStream<AssetBrowserEntry>(ms, nullptr);
-                if (entry)
-                {
-                    entries.push_back(entry);
-                }
-            }
-            return entries.size() > 0;
+            // Adding all entries read from the mime data to the complete list of asset browser entries
+            entries.insert(entries.end(), entriesStored.begin(), entriesStored.end());
+            return entriesStored.size() > 0;
         }
 
         void AssetBrowserEntry::AddToMimeData(QMimeData* mimeData) const
@@ -169,14 +162,26 @@ namespace AzToolsFramework
                 return;
             }
 
+            // Reading previously stored asset browser entries from mime data
+            AZStd::vector<AssetBrowserEntry*> entriesStored;
+            FromMimeData(mimeData, entriesStored);
+
+            // Appending this entry to the list that was just deserialized
+            entriesStored.push_back(const_cast<AssetBrowserEntry*>(this));
+
+            // Serializing the updated list of asset browser entries to a byte buffer
             AZStd::vector<char> buffer;
+            AZ::IO::ByteContainerStream<AZStd::vector<char>> stream(&buffer);
+            AZ::Utils::SaveObjectToStream(stream, AZ::DataStream::ST_BINARY, &entriesStored);
 
-            AZ::IO::ByteContainerStream<AZStd::vector<char> > byteStream(&buffer);
-            AZ::Utils::SaveObjectToStream(byteStream, AZ::DataStream::ST_BINARY, this, this->RTTI_GetType());
+            // Saving the buffer of asset browser entries back to the mime data
+            QByteArray byteArray(buffer.data(), static_cast<int>(buffer.size()));
+            mimeData->setData(GetMimeType(), byteArray);
 
-            QByteArray dataArray(buffer.data(), static_cast<int>(sizeof(char) * buffer.size()));
-            mimeData->setData(GetMimeType(), dataArray);
-            mimeData->setUrls({ QUrl::fromLocalFile(GetFullPath().c_str()) });
+            // Also writing out the source file path for compatibility with targets supporting URL mime data
+            QList<QUrl> urls = mimeData->urls();
+            urls.push_back(QUrl::fromLocalFile(GetFullPath().c_str()));
+            mimeData->setUrls(urls);
         }
 
         QString AssetBrowserEntry::GetMimeType()

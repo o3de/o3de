@@ -30,16 +30,32 @@ namespace AZ
             Outcome<Data::AssetId> MakeAssetId(const AZStd::string& originatingSourcePath, const AZStd::string& referencedSourceFilePath, uint32_t productSubId, TraceLevel reporting = TraceLevel::Error);
 
             template<typename AssetDataT>
-            Outcome<AZ::Data::Asset<AssetDataT>> LoadAsset(const AZStd::string& sourcePath, uint32_t productSubId = 0, TraceLevel reporting = TraceLevel::Error);
+            Outcome<AZ::Data::Asset<AssetDataT>> LoadAsset(
+                const AZStd::string& sourcePath,
+                uint32_t productSubId = 0,
+                TraceLevel reporting = TraceLevel::Error,
+                const AZ::Data::AssetLoadParameters& assetLoadParameters = AZ::Data::AssetLoadParameters{});
 
             template<typename AssetDataT>
-            Outcome<AZ::Data::Asset<AssetDataT>> LoadAsset(const AZStd::string& originatingSourcePath, const AZStd::string& referencedSourceFilePath, uint32_t productSubId = 0, TraceLevel reporting = TraceLevel::Error);
+            Outcome<AZ::Data::Asset<AssetDataT>> LoadAsset(
+                const AZStd::string& originatingSourcePath,
+                const AZStd::string& referencedSourceFilePath,
+                uint32_t productSubId = 0,
+                TraceLevel reporting = TraceLevel::Error,
+                const AZ::Data::AssetLoadParameters& assetLoadParameters = AZ::Data::AssetLoadParameters{});
 
             template<typename AssetDataT>
-            Outcome<AZ::Data::Asset<AssetDataT>> LoadAsset(const AZ::Data::AssetId& assetId, const char* sourcePathForDebug, TraceLevel reporting = TraceLevel::Error);
+            Outcome<AZ::Data::Asset<AssetDataT>> LoadAsset(
+                const AZ::Data::AssetId& assetId,
+                const char* sourcePathForDebug,
+                TraceLevel reporting = TraceLevel::Error,
+                const AZ::Data::AssetLoadParameters& assetLoadParameters = AZ::Data::AssetLoadParameters{});
 
             template<typename AssetDataT>
-            Outcome<AZ::Data::Asset<AssetDataT>> LoadAsset(const AZ::Data::AssetId& assetId, TraceLevel reporting = TraceLevel::Error);
+            Outcome<AZ::Data::Asset<AssetDataT>> LoadAsset(
+                const AZ::Data::AssetId& assetId,
+                TraceLevel reporting = TraceLevel::Error,
+                const AZ::Data::AssetLoadParameters& assetLoadParameters = AZ::Data::AssetLoadParameters{});
 
             //! Attempts to resolve the full path to a product asset given its ID
             AZStd::string GetProductPathByAssetId(const AZ::Data::AssetId& assetId);
@@ -74,12 +90,16 @@ namespace AZ
             // Definitions...
 
             template<typename AssetDataT>
-            Outcome<AZ::Data::Asset<AssetDataT>> LoadAsset(const AZStd::string& sourcePath, uint32_t productSubId, TraceLevel reporting)
+            Outcome<AZ::Data::Asset<AssetDataT>> LoadAsset(
+                const AZStd::string& sourcePath,
+                uint32_t productSubId,
+                TraceLevel reporting,
+                const AZ::Data::AssetLoadParameters& assetLoadParameters)
             {
                 auto assetId = MakeAssetId(sourcePath, productSubId, reporting);
                 if (assetId.IsSuccess())
                 {
-                    return LoadAsset<AssetDataT>(assetId.GetValue(), sourcePath.c_str(), reporting);
+                    return LoadAsset<AssetDataT>(assetId.GetValue(), sourcePath.c_str(), reporting, assetLoadParameters);
                 }
                 else
                 {
@@ -88,20 +108,32 @@ namespace AZ
             }
 
             template<typename AssetDataT>
-            Outcome<AZ::Data::Asset<AssetDataT>> LoadAsset(const AZStd::string& originatingSourcePath, const AZStd::string& referencedSourceFilePath, uint32_t productSubId, TraceLevel reporting)
+            Outcome<AZ::Data::Asset<AssetDataT>> LoadAsset(
+                const AZStd::string& originatingSourcePath,
+                const AZStd::string& referencedSourceFilePath,
+                uint32_t productSubId,
+                TraceLevel reporting,
+                const AZ::Data::AssetLoadParameters& assetLoadParameters)
             {
                 AZStd::string resolvedPath = ResolvePathReference(originatingSourcePath, referencedSourceFilePath);
-                return LoadAsset<AssetDataT>(resolvedPath, productSubId, reporting);
+                return LoadAsset<AssetDataT>(resolvedPath, productSubId, reporting, assetLoadParameters);
             }
 
             template<typename AssetDataT>
-            Outcome<AZ::Data::Asset<AssetDataT>> LoadAsset(const AZ::Data::AssetId& assetId, TraceLevel reporting)
+            Outcome<AZ::Data::Asset<AssetDataT>> LoadAsset(
+                const AZ::Data::AssetId& assetId,
+                TraceLevel reporting,
+                const AZ::Data::AssetLoadParameters& assetLoadParameters)
             {
-                return LoadAsset<AssetDataT>(assetId, nullptr, reporting);
+                return LoadAsset<AssetDataT>(assetId, nullptr, reporting, assetLoadParameters);
             }
 
             template<typename AssetDataT>
-            Outcome<AZ::Data::Asset<AssetDataT>> LoadAsset(const AZ::Data::AssetId& assetId, [[maybe_unused]] const char* sourcePathForDebug, TraceLevel reporting)
+            Outcome<AZ::Data::Asset<AssetDataT>> LoadAsset(
+                const AZ::Data::AssetId& assetId,
+                [[maybe_unused]] const char* sourcePathForDebug,
+                TraceLevel reporting,
+                const AZ::Data::AssetLoadParameters& assetLoadParameters)
             {
                 if (nullptr == AZ::IO::FileIOBase::GetInstance()->GetAlias("@products@"))
                 {
@@ -111,7 +143,7 @@ namespace AZ
                     return AZ::Failure();
                 }
 
-                Data::Asset<AssetDataT> asset = AZ::Data::AssetManager::Instance().GetAsset<AssetDataT>(assetId, AZ::Data::AssetLoadBehavior::PreLoad);
+                Data::Asset<AssetDataT> asset = AZ::Data::AssetManager::Instance().GetAsset<AssetDataT>(assetId, AZ::Data::AssetLoadBehavior::PreLoad, assetLoadParameters);
                 asset.BlockUntilLoadComplete();
 
                 if (asset.IsReady())

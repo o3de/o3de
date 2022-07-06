@@ -274,6 +274,8 @@ bool QtViewPane::CloseInstance(QDockWidget* dockWidget, CloseModes closeModes)
                 dockWidget->hide();
             }
         }
+
+        AzToolsFramework::EditorEventsBus::Broadcast(&AzToolsFramework::EditorEventsBus::Handler::OnViewPaneClosed, m_name.toUtf8().data());
     }
 
     return canClose;
@@ -326,6 +328,16 @@ bool DockWidget::event(QEvent* qtEvent)
     )
     {
         reparentToMainWindowFix();
+    }
+
+    if (qtEvent->type() == QEvent::Close)
+    {
+        // Wait one frame so that the pane's state is propagated correctly.
+        QTimer::singleShot(0, this, [pane = m_pane]()
+            {
+                AzToolsFramework::EditorEventsBus::Broadcast(&AzToolsFramework::EditorEventsBus::Handler::OnViewPaneClosed, pane->m_name.toUtf8().data());
+            }
+        );
     }
 
     return AzQtComponents::StyledDockWidget::event(qtEvent);
@@ -724,6 +736,9 @@ const QtViewPane* QtViewPaneManager::OpenPane(const QString& name, QtViewPane::O
                 {
                     pane->m_dockWidgetInstances.removeAll(newDockWidget);
                 }
+
+                AzToolsFramework::EditorEventsBus::Broadcast(
+                    &AzToolsFramework::EditorEventsBus::Handler::OnViewPaneClosed, pane->m_name.toUtf8().data());
             });
 
             // only set the single instance of the dock widget on the pane if this
@@ -855,6 +870,7 @@ const QtViewPane* QtViewPaneManager::OpenPane(const QString& name, QtViewPane::O
         }
     }
 
+    AzToolsFramework::EditorEventsBus::Broadcast(&AzToolsFramework::EditorEventsBus::Handler::OnViewPaneOpened, pane->m_name.toUtf8().data());
     return pane;
 }
 

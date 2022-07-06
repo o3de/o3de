@@ -15,6 +15,7 @@
 
 #include <AzCore/Name/Name.h>
 #include <AzFramework/Windowing/WindowBus.h>
+#include <Atom/RPI.Public/XR/XRRenderingInterface.h>
 
 namespace AZ
 {
@@ -39,6 +40,10 @@ namespace AZ
 
             //! Was the RPI system initialized properly
             virtual bool IsInitialized() const = 0;
+
+            //! If the renderer is null.
+            //! It's controlled by renderer=null command line option
+            virtual bool IsNullRenderer() const = 0;
 
             //! Register a created scene to RPISystem. Registered scene will be simulated and rendered in RPISystem ticks
             virtual void RegisterScene(ScenePtr scene) = 0;
@@ -94,6 +99,9 @@ namespace AZ
             //! Application multisample state
             virtual void SetApplicationMultisampleState(const RHI::MultisampleState& multisampleState) = 0;
             virtual const RHI::MultisampleState& GetApplicationMultisampleState() const = 0;
+
+            //! Get the XR system for XR specific functionality
+            virtual XRRenderingInterface* GetXRSystem() const = 0;
         };
 
     } // namespace RPI

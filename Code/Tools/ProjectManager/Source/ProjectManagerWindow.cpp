@@ -22,9 +22,11 @@ namespace O3DE::ProjectManager
         QVector<ProjectManagerScreen> screenEnums =
         {
             ProjectManagerScreen::Projects,
+            ProjectManagerScreen::GemCatalog,
             ProjectManagerScreen::Engine,
             ProjectManagerScreen::CreateProject,
-            ProjectManagerScreen::UpdateProject
+            ProjectManagerScreen::UpdateProject,
+            ProjectManagerScreen::GemsGemRepos
         };
         screensCtrl->BuildScreens(screenEnums);
 

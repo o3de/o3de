@@ -177,11 +177,8 @@ namespace AZ
                     const RHI::Ptr<RHI::Buffer>& rayTracingTlasBuffer = rayTracingFeatureProcessor->GetTlas()->GetTlasBuffer();
                     if (rayTracingTlasBuffer)
                     {
-                        if (!frameGraph.GetAttachmentDatabase().IsAttachmentValid(tlasAttachmentId))
-                        {
-                            [[maybe_unused]] RHI::ResultCode result = frameGraph.GetAttachmentDatabase().ImportBuffer(tlasAttachmentId, rayTracingTlasBuffer);
-                            AZ_Assert(result == RHI::ResultCode::Success, "Failed to import ray tracing TLAS buffer with error %d", result);
-                        }
+                        [[maybe_unused]] RHI::ResultCode result = frameGraph.GetAttachmentDatabase().ImportBuffer(tlasAttachmentId, rayTracingTlasBuffer);
+                        AZ_Assert(result == RHI::ResultCode::Success, "Failed to import ray tracing TLAS buffer with error %d", result);
 
                         uint32_t tlasBufferByteCount = aznumeric_cast<uint32_t>(rayTracingTlasBuffer->GetDescriptor().m_byteCount);
                         RHI::BufferViewDescriptor tlasBufferViewDescriptor = RHI::BufferViewDescriptor::CreateRaw(0, tlasBufferByteCount);
@@ -290,10 +287,10 @@ namespace AZ
             RPI::Scene* scene = m_pipeline->GetScene();
             DiffuseProbeGridFeatureProcessor* diffuseProbeGridFeatureProcessor = scene->GetFeatureProcessor<DiffuseProbeGridFeatureProcessor>();
             RayTracingFeatureProcessor* rayTracingFeatureProcessor = scene->GetFeatureProcessor<RayTracingFeatureProcessor>();
-            const Data::Instance<RPI::Buffer> meshInfoBuffer = rayTracingFeatureProcessor->GetMeshInfoBuffer();
+            const Data::Instance<RPI::Buffer> meshInfoBuffer = rayTracingFeatureProcessor->GetMeshInfoGpuBuffer();
 
-            if (rayTracingFeatureProcessor->GetTlas()->GetTlasBuffer() &&
-                rayTracingFeatureProcessor->GetMeshInfoBuffer() &&
+            if (meshInfoBuffer &&
+                rayTracingFeatureProcessor->GetTlas()->GetTlasBuffer() &&
                 rayTracingFeatureProcessor->GetSubMeshCount())
             {
                 for (auto& diffuseProbeGrid : diffuseProbeGridFeatureProcessor->GetVisibleRealTimeProbeGrids())
@@ -316,15 +313,10 @@ namespace AZ
                 if (rayTracingFeatureProcessor->GetSubMeshCount())
                 {
                     // build the ray tracing shader table descriptor
-                    RHI::RayTracingShaderTableDescriptor* descriptorBuild = descriptor->Build(AZ::Name("RayTracingShaderTable"), m_rayTracingPipelineState)
+                    descriptor->Build(AZ::Name("RayTracingShaderTable"), m_rayTracingPipelineState)
                         ->RayGenerationRecord(AZ::Name("RayGen"))
-                        ->MissRecord(AZ::Name("Miss"));
-
-                    // add a hit group for each mesh to the shader table
-                    for (uint32_t i = 0; i < rayTracingFeatureProcessor->GetSubMeshCount(); ++i)
-                    {
-                        descriptorBuild->HitGroupRecord(AZ::Name("HitGroup"));
-                    }
+                        ->MissRecord(AZ::Name("Miss"))
+                        ->HitGroupRecord(AZ::Name("HitGroup"));
                 }
 
                 m_rayTracingShaderTable->Build(descriptor);
@@ -343,9 +335,16 @@ namespace AZ
                 rayTracingFeatureProcessor->GetSubMeshCount() &&
                 m_rayTracingShaderTable)
             {
-                // submit the DispatchRaysItem for each DiffuseProbeGrid
-                for (auto& diffuseProbeGrid : diffuseProbeGridFeatureProcessor->GetVisibleRealTimeProbeGrids())
+                // compute the index range to process for this command list
+                uint32_t numGrids = aznumeric_cast<uint32_t>(diffuseProbeGridFeatureProcessor->GetVisibleRealTimeProbeGrids().size());
+                uint32_t startIndex = (context.GetCommandListIndex() * numGrids) / context.GetCommandListCount();
+                uint32_t endIndex = ((context.GetCommandListIndex() + 1) * numGrids) / context.GetCommandListCount();
+
+                // submit the DispatchRaysItems for each DiffuseProbeGrid in this range
+                for (uint32_t index = startIndex; index < endIndex; ++index)
                 {
+                    AZStd::shared_ptr<DiffuseProbeGrid> diffuseProbeGrid = diffuseProbeGridFeatureProcessor->GetVisibleRealTimeProbeGrids()[index];
+
                     const RHI::ShaderResourceGroup* shaderResourceGroups[] = {
                         diffuseProbeGrid->GetRayTraceSrg()->GetRHIShaderResourceGroup(),
                         rayTracingFeatureProcessor->GetRayTracingSceneSrg()->GetRHIShaderResourceGroup()

@@ -17,11 +17,13 @@
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzFramework/Physics/PhysicsSystem.h>
 #include <AzFramework/Physics/SystemBus.h>
-#include <AzFramework/Physics/MaterialBus.h>
 #include <AzFramework/Physics/Collision/CollisionEvents.h>
 #include <AzFramework/Physics/Common/PhysicsTypes.h>
+#include <AzFramework/Physics/Material/PhysicsMaterialManager.h>
 #include <Blast/BlastActor.h>
 #include <Blast/BlastSystemBus.h>
+#include <Material/BlastMaterial.h>
+#include <PhysX/Material/PhysXMaterial.h>
 #include <Common/Utils.h>
 #include <Components/BlastFamilyComponentNotificationBusHandler.h>
 #include <Components/BlastMeshDataComponent.h>
@@ -34,11 +36,13 @@
 namespace Blast
 {
     BlastFamilyComponent::BlastFamilyComponent(
-        const AZ::Data::Asset<BlastAsset> blastAsset, const BlastMaterialId materialId,
-        Physics::MaterialId physicsMaterialId, const BlastActorConfiguration actorConfiguration)
+        AZ::Data::Asset<BlastAsset> blastAsset,
+        AZ::Data::Asset<MaterialAsset> blastMaterialAsset,
+        AZ::Data::Asset<Physics::MaterialAsset> physicsMaterialAsset,
+        const BlastActorConfiguration& actorConfiguration)
         : m_blastAsset(blastAsset)
-        , m_materialId(materialId)
-        , m_physicsMaterialId(physicsMaterialId)
+        , m_blastMaterialAsset(blastMaterialAsset)
+        , m_physicsMaterialAsset(physicsMaterialAsset)
         , m_actorConfiguration(actorConfiguration)
         , m_debugRenderMode(DebugRenderDisabled)
     {
@@ -54,10 +58,10 @@ namespace Blast
         if (AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serialize->Class<BlastFamilyComponent, AZ::Component>()
-                ->Version(1)
+                ->Version(4)
                 ->Field("BlastAsset", &BlastFamilyComponent::m_blastAsset)
-                ->Field("BlastMaterial", &BlastFamilyComponent::m_materialId)
-                ->Field("PhysicsMaterial", &BlastFamilyComponent::m_physicsMaterialId)
+                ->Field("BlastMaterialAsset", &BlastFamilyComponent::m_blastMaterialAsset)
+                ->Field("PhysicsMaterialAsset", &BlastFamilyComponent::m_physicsMaterialAsset)
                 ->Field("ActorConfiguration", &BlastFamilyComponent::m_actorConfiguration);
         }
 
@@ -71,33 +75,33 @@ namespace Blast
                     "Radial Damage", &BlastFamilyDamageRequests::RadialDamage,
                     {{{"position", "The global position of the damage's hit."},
                       {"minRadius", "Damages all chunks/bonds that are in the range [0, minRadius] with full damage.",
-                       AZ::BehaviorDefaultValuePtr(aznew AZ::BehaviorDefaultValue(static_cast<float>(0.0)))},
+                       behaviorContext->MakeDefaultValue(0.0f)},
                       {"maxRadius",
                        "Damages all chunks/bonds that are in the range [minRadius, maxRadius] with linearly decreasing "
                        "damage.",
-                       AZ::BehaviorDefaultValuePtr(aznew AZ::BehaviorDefaultValue(static_cast<float>(1.0)))},
+                       behaviorContext->MakeDefaultValue(1.0f)},
                       {"damage", "How much damage to deal."}}})
                 ->Event(
                     "Capsule Damage", &BlastFamilyDamageRequests::CapsuleDamage,
                     {{{"position0", "The global position of one of the capsule's ends."},
                       {"position1", "The global position of another of the capsule's ends."},
                       {"minRadius", "Damages all chunks/bonds that are in the range [0, minRadius] with full damage.",
-                       AZ::BehaviorDefaultValuePtr(aznew AZ::BehaviorDefaultValue(static_cast<float>(0.0)))},
+                       behaviorContext->MakeDefaultValue(0.0f)},
                       {"maxRadius",
                        "Damages all chunks/bonds that are in the range [minRadius, maxRadius] with linearly decreasing "
                        "damage.",
-                       AZ::BehaviorDefaultValuePtr(aznew AZ::BehaviorDefaultValue(static_cast<float>(1.0)))},
+                       behaviorContext->MakeDefaultValue(1.0f)},
                       {"damage", "How much damage to deal."}}})
                 ->Event(
                     "Shear Damage", &BlastFamilyDamageRequests::ShearDamage,
                     {{{"position", "The global position of the damage's hit."},
                       {"normal", "The normal of the damage's hit."},
                       {"minRadius", "Damages all chunks/bonds that are in the range [0, minRadius] with full damage.",
-                       AZ::BehaviorDefaultValuePtr(aznew AZ::BehaviorDefaultValue(static_cast<float>(0.0)))},
+                       behaviorContext->MakeDefaultValue(0.0f)},
                       {"maxRadius",
                        "Damages all chunks/bonds that are in the range [minRadius, maxRadius] with linearly decreasing "
                        "damage.",
-                       AZ::BehaviorDefaultValuePtr(aznew AZ::BehaviorDefaultValue(static_cast<float>(1.0)))},
+                       behaviorContext->MakeDefaultValue(1.0f)},
                       {"damage", "How much damage to deal."}}})
                 ->Event(
                     "Triangle Damage", &BlastFamilyDamageRequests::TriangleDamage,
@@ -109,11 +113,11 @@ namespace Blast
                     "Impact Spread Damage", &BlastFamilyDamageRequests::ImpactSpreadDamage,
                     {{{"position", "The global position of the damage's hit."},
                       {"minRadius", "Damages all chunks/bonds that are in the range [0, minRadius] with full damage",
-                       AZ::BehaviorDefaultValuePtr(aznew AZ::BehaviorDefaultValue(static_cast<float>(0.0)))},
+                       behaviorContext->MakeDefaultValue(0.0f)},
                       {"maxRadius",
                        "Damages all chunks/bonds that are in the range [minRadius, maxRadius] with linearly decreasing "
                        "damage.",
-                       AZ::BehaviorDefaultValuePtr(aznew AZ::BehaviorDefaultValue(static_cast<float>(1.0)))},
+                       behaviorContext->MakeDefaultValue(1.0f)},
                       {"damage", "How much damage to deal."}}})
                 ->Event(
                     "Stress Damage",
@@ -188,18 +192,32 @@ namespace Blast
     {
         AZ_PROFILE_FUNCTION(Physics);
 
-        if (!m_blastAsset.GetId().IsValid())
+        if (const auto blastAssetId = m_blastAsset.GetId();
+            blastAssetId.IsValid())
+        {
+            AZ::Data::AssetBus::MultiHandler::BusConnect(blastAssetId);
+        }
+        else
         {
             AZ_Warning("BlastFamilyComponent", false, "Blast Family Component created with invalid blast asset.");
             return;
         }
 
-        Spawn();
+        // If user didn't assign a blast material the default will be used.
+        if (const auto blastMaterialAssetId = m_blastMaterialAsset.GetId();
+            blastMaterialAssetId.IsValid())
+        {
+            AZ::Data::AssetBus::MultiHandler::BusConnect(blastMaterialAssetId);
+        }
+
+        // Wait for assets to be ready to spawn the blast family
     }
 
     void BlastFamilyComponent::Deactivate()
     {
         AZ_PROFILE_FUNCTION(Physics);
+
+        AZ::Data::AssetBus::MultiHandler::BusDisconnect();
 
         Despawn();
     }
@@ -213,39 +231,35 @@ namespace Blast
             return;
         }
 
-        if (!m_blastAsset.IsReady())
+        // Create blast material instance
+        if (m_blastMaterialAsset.IsReady())
         {
-            m_blastAsset.QueueLoad();
-            m_blastAsset.BlockUntilLoadComplete();
-            if (!m_blastAsset.IsReady())
-            {
-                AZ_Error("BlastFamilyComponent", false, "Failed to load blast asset %s.", m_blastAsset.GetHint().c_str());
-                return;
-            }
+            m_blastMaterial = AZStd::make_unique<Material>(m_blastMaterialAsset.Get()->GetMaterialConfiguration());
+        }
+        else
+        {
+            // Use default material configuration
+            m_blastMaterial = AZStd::make_unique<Material>(MaterialConfiguration{});
+        }
+
+        // Create physx material instance
+        m_physxMaterial = PhysX::Material::FindOrCreateMaterial(m_physicsMaterialAsset);
+        if (!m_physxMaterial)
+        {
+            m_physxMaterial =
+                AZStd::rtti_pointer_cast<PhysX::Material>(
+                    AZ::Interface<Physics::MaterialManager>::Get()->GetDefaultMaterial());
         }
 
         auto blastSystem = AZ::Interface<BlastSystemRequests>::Get();
-
-        // Get transform
-        AZ::Transform transform = AZ::Transform::Identity();
-        AZ::TransformBus::EventResult(transform, GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
-
-        // Get blast material
-        BlastMaterialFromAssetConfiguration blastMaterialConfiguration;
-        auto materialLibrary = blastSystem->GetGlobalConfiguration().m_materialLibrary.Get();
-        if (materialLibrary)
-        {
-            materialLibrary->GetDataForMaterialId(m_materialId, blastMaterialConfiguration);
-        }
-        auto blastMaterial = BlastMaterial(blastMaterialConfiguration.m_configuration);
 
         // Create family
         const BlastFamilyDesc familyDesc
             {*m_blastAsset.Get(),
              this,
              blastSystem->CreateTkGroup(), // Blast system takes care of destroying this group when it's empty.
-             m_physicsMaterialId,
-             blastMaterial,
+             m_physxMaterial->GetId(),
+             m_blastMaterial.get(),
              AZStd::make_shared<BlastActorFactoryImpl>(),
              EntityProvider::Create(),
              m_actorConfiguration};
@@ -254,31 +268,20 @@ namespace Blast
 
         // Create stress solver
         auto stressSolverSettings =
-            blastMaterial.GetStressSolverSettings(blastSystem->GetGlobalConfiguration().m_stressSolverIterations);
+            m_blastMaterial->GetStressSolverSettings(blastSystem->GetGlobalConfiguration().m_stressSolverIterations);
         // Have to do const cast here, because TkFamily does not give non-const family
         auto solverPtr = Nv::Blast::ExtStressSolver::create(
             const_cast<NvBlastFamily&>(*m_family->GetTkFamily()->getFamilyLL()), stressSolverSettings);
         m_solver = physx::unique_ptr<Nv::Blast::ExtStressSolver>(solverPtr);
 
-        AZStd::shared_ptr<Physics::Material> physicsMaterial;
-        Physics::PhysicsMaterialRequestBus::BroadcastResult(
-            physicsMaterial,
-            &Physics::PhysicsMaterialRequestBus::Events::GetMaterialById,
-            m_physicsMaterialId);
-        if (!physicsMaterial)
-        {
-            AZ_Warning("BlastFamilyComponent", false, "Material Id %s was not found, using default material instead.",
-                m_physicsMaterialId.GetUuid().ToString<AZStd::string>().c_str());
-
-            Physics::PhysicsMaterialRequestBus::BroadcastResult(
-                physicsMaterial,
-                &Physics::PhysicsMaterialRequestBus::Events::GetGenericDefaultMaterial);
-            AZ_Assert(physicsMaterial, "BlastFamilyComponent: Invalid default physics material");
-        }
-        m_solver->setAllNodesInfoFromLL(physicsMaterial->GetDensity());
+        m_solver->setAllNodesInfoFromLL(m_physxMaterial->GetDensity());
 
         // Create damage and actor render managers
-        m_damageManager = AZStd::make_unique<DamageManager>(blastMaterial, m_family->GetActorTracker());
+        m_damageManager = AZStd::make_unique<DamageManager>(m_blastMaterial.get(), m_family->GetActorTracker());
+
+        // Get transform
+        AZ::Transform transform = AZ::Transform::Identity();
+        AZ::TransformBus::EventResult(transform, GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
 
         if (m_meshDataComponent)
         {
@@ -320,6 +323,8 @@ namespace Blast
         m_damageManager.reset();
         m_solver.reset();
         m_family.reset();
+        m_blastMaterial.reset();
+        m_physxMaterial.reset();
 
         m_isSpawned = false;
     }
@@ -605,6 +610,50 @@ namespace Blast
         if (m_actorRenderManager)
         {
             m_actorRenderManager->SyncMeshes();
+        }
+    }
+
+    void BlastFamilyComponent::OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset)
+    {
+        if (m_blastAsset == asset)
+        {
+            m_blastAsset = asset;
+        }
+
+        const bool expectingMaterialAsset = m_blastMaterialAsset.GetId().IsValid();
+        if (expectingMaterialAsset && m_blastMaterialAsset == asset)
+        {
+            m_blastMaterialAsset = asset;
+        }
+
+        if (m_blastAsset.IsReady() &&
+            (!expectingMaterialAsset || m_blastMaterialAsset.IsReady()))
+        {
+            AZ::Data::AssetBus::MultiHandler::BusDisconnect();
+
+            Spawn();
+        }
+    }
+
+    void BlastFamilyComponent::OnAssetError(AZ::Data::Asset<AZ::Data::AssetData> asset)
+    {
+        if (m_blastAsset == asset)
+        {
+            AZ_Warning("BlastFamilyComponent", false, "Blast Family Component has an invalid blast asset.");
+        }
+        else if (m_blastMaterialAsset == asset)
+        {
+            AZ_Warning("BlastFamilyComponent", false, "Blast Family Component has an invalid blast material asset. Default material will be used.");
+
+            // Set asset to an invalid id to know it's not expected to have a material asset and use the default material instead.
+            m_blastMaterialAsset = {};
+
+            if (m_blastAsset.IsReady())
+            {
+                AZ::Data::AssetBus::MultiHandler::BusDisconnect();
+
+                Spawn();
+            }
         }
     }
 } // namespace Blast

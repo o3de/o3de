@@ -90,15 +90,15 @@ namespace AZ
                 AZ_RTTI(SceneDataPopulatedContextBase, "{5F4CE8D2-EEAC-49F7-8065-0B6372162D6F}", ImportContext);
 
                 SceneDataPopulatedContextBase(NodeEncounteredContext& parent,
-                    const AZStd::shared_ptr<DataTypes::IGraphObject>& nodeData,
+                    AZStd::shared_ptr<DataTypes::IGraphObject> nodeData,
                     const AZStd::string& dataName);
 
                 SceneDataPopulatedContextBase(Containers::Scene& scene,
                     Containers::SceneGraph::NodeIndex currentGraphPosition,
                     RenamedNodesMap& nodeNameMap,
-                    const AZStd::shared_ptr<DataTypes::IGraphObject>& nodeData, const AZStd::string& dataName);
+                    AZStd::shared_ptr<DataTypes::IGraphObject> nodeData, const AZStd::string& dataName);
 
-                const AZStd::shared_ptr<DataTypes::IGraphObject>& m_graphData;
+                AZStd::shared_ptr<DataTypes::IGraphObject> m_graphData;
                 const AZStd::string m_dataName;
             };
 
@@ -124,10 +124,10 @@ namespace AZ
                 AZ_RTTI(SceneAttributeDataPopulatedContextBase, "{DA133E14-0770-435B-9A4E-38679367F56C}", ImportContext);
 
                 SceneAttributeDataPopulatedContextBase(SceneNodeAppendedContextBase& parent,
-                    const AZStd::shared_ptr<DataTypes::IGraphObject>& nodeData,
+                    AZStd::shared_ptr<DataTypes::IGraphObject> nodeData,
                     const Containers::SceneGraph::NodeIndex attributeNodeIndex, const AZStd::string& dataName);
 
-                const AZStd::shared_ptr<DataTypes::IGraphObject>& m_graphData;
+                AZStd::shared_ptr<DataTypes::IGraphObject> m_graphData;
                 const AZStd::string m_dataName;
             };
 

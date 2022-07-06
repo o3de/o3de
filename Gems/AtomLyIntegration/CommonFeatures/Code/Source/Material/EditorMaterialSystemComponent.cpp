@@ -100,6 +100,7 @@ namespace AZ
             AZ::EntitySystemBus::Handler::BusConnect();
             EditorMaterialSystemComponentNotificationBus::Handler::BusConnect();
             EditorMaterialSystemComponentRequestBus::Handler::BusConnect();
+            MaterialComponentNotificationBus::Router::BusRouterConnect();
             AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler::BusConnect();
             AzToolsFramework::EditorMenuNotificationBus::Handler::BusConnect();
             AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
@@ -112,6 +113,7 @@ namespace AZ
             AZ::EntitySystemBus::Handler::BusDisconnect();
             EditorMaterialSystemComponentNotificationBus::Handler::BusDisconnect();
             EditorMaterialSystemComponentRequestBus::Handler::BusDisconnect();
+            MaterialComponentNotificationBus::Router::BusRouterDisconnect();
             AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler::BusDisconnect();
             AzToolsFramework::EditorMenuNotificationBus::Handler::BusDisconnect();
             AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect(); 
@@ -149,7 +151,9 @@ namespace AZ
         }
 
         void EditorMaterialSystemComponent::OpenMaterialInspector(
-            const AZ::EntityId& entityId, const AZ::Render::MaterialAssignmentId& materialAssignmentId)
+            const AZ::EntityId& primaryEntityId,
+            const AzToolsFramework::EntityIdSet& entityIdsToEdit,
+            const AZ::Render::MaterialAssignmentId& materialAssignmentId)
         {
             auto dockWidget = AzToolsFramework::InstanceViewPane("Material Property Inspector");
             if (dockWidget)
@@ -157,7 +161,7 @@ namespace AZ
                 auto inspector = static_cast<AZ::Render::EditorMaterialComponentInspector::MaterialPropertyInspector*>(dockWidget->widget());
                 if (inspector)
                 {
-                    inspector->LoadMaterial(entityId, materialAssignmentId);
+                    inspector->LoadMaterial(primaryEntityId, entityIdsToEdit, materialAssignmentId);
                 }
             }
         }
@@ -172,20 +176,15 @@ namespace AZ
             {
                 AZ::Data::AssetId materialAssetId = {};
                 MaterialComponentRequestBus::EventResult(
-                    materialAssetId, entityId, &MaterialComponentRequestBus::Events::GetMaterialOverride, materialAssignmentId);
+                    materialAssetId, entityId, &MaterialComponentRequestBus::Events::GetMaterialAssetId, materialAssignmentId);
                 if (!materialAssetId.IsValid())
                 {
-                    MaterialComponentRequestBus::EventResult(
-                        materialAssetId, entityId, &MaterialComponentRequestBus::Events::GetDefaultMaterialAssetId, materialAssignmentId);
-                    if (!materialAssetId.IsValid())
-                    {
-                        return;
-                    }
+                    return;
                 }
 
                 AZ::Render::MaterialPropertyOverrideMap propertyOverrides;
                 AZ::Render::MaterialComponentRequestBus::EventResult(
-                    propertyOverrides, entityId, &AZ::Render::MaterialComponentRequestBus::Events::GetPropertyOverrides,
+                    propertyOverrides, entityId, &AZ::Render::MaterialComponentRequestBus::Events::GetPropertyValues,
                     materialAssignmentId);
 
                 AZ::Data::Asset<AZ::RPI::ModelAsset> modelAsset;
@@ -235,8 +234,9 @@ namespace AZ
             return QPixmap();
         }
 
-        void EditorMaterialSystemComponent::OnEntityDestroyed(const AZ::EntityId& entityId)
+        void EditorMaterialSystemComponent::OnEntityDeactivated(const AZ::EntityId& entityId)
         {
+            // Deleting any preview saved for an entity that is about to be deactivated
             m_materialPreviews.erase(entityId);
         }
 
@@ -246,7 +246,16 @@ namespace AZ
             [[maybe_unused]] const QPixmap& pixmap)
         {
             PurgePreviews();
+
+            // Caching preview so the image will not have to be regenerated every time it's requested
             m_materialPreviews[entityId][materialAssignmentId] = pixmap;
+        }
+
+        void EditorMaterialSystemComponent::OnMaterialSlotLayoutChanged()
+        {
+            // Deleting any preview saved for an entity whose material configuration is about to be invalidated
+            const AZ::EntityId entityId = *MaterialComponentNotificationBus::GetCurrentBusId();
+            m_materialPreviews.erase(entityId);
         }
 
         void EditorMaterialSystemComponent::OnPopulateToolMenuItems()
@@ -284,7 +293,7 @@ namespace AZ
             AzToolsFramework::ViewPaneOptions inspectorOptions;
             inspectorOptions.canHaveMultipleInstances = true;
             inspectorOptions.preferedDockingArea = Qt::NoDockWidgetArea;
-            inspectorOptions.paneRect = QRect(50, 50, 400, 700);
+            inspectorOptions.paneRect = QRect(50, 50, 600, 1000);
             inspectorOptions.showInMenu = false;
             inspectorOptions.showOnToolsToolbar = false;
             AzToolsFramework::RegisterViewPane<AZ::Render::EditorMaterialComponentInspector::MaterialPropertyInspector>(
@@ -307,6 +316,7 @@ namespace AZ
 
         void EditorMaterialSystemComponent::PurgePreviews()
         {
+            // Deleting all saved previews after a certain threshold has been reached
             size_t materialPreviewCount = 0;
             for (const auto& materialPreviewPair : m_materialPreviews)
             {

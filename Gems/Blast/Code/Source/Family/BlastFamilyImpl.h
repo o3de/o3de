@@ -12,7 +12,7 @@
 #include <AzCore/std/containers/unordered_set.h>
 #include <Blast/BlastActor.h>
 #include <Blast/BlastDebug.h>
-#include <Blast/BlastMaterial.h>
+#include <Material/BlastMaterial.h>
 
 #include <Family/ActorTracker.h>
 #include <Family/BlastFamily.h>
@@ -84,8 +84,8 @@ namespace Blast
         AZStd::shared_ptr<EntityProvider> m_entityProvider;
         BlastListener* m_listener;
 
-        const Physics::MaterialId m_physicsMaterialId;
-        const BlastMaterial m_blastMaterial;
+        Physics::MaterialId m_physicsMaterialId;
+        const Material* m_blastMaterial = nullptr;
         const BlastActorConfiguration& m_actorConfiguration;
         AZ::Transform m_initialTransform;
         bool m_isSpawned;

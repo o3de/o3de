@@ -21,9 +21,6 @@
 
 #include <AzNetworking/ConnectionLayer/IConnection.h>
 #include <AzNetworking/PacketLayer/IPacket.h>
-#include <AzNetworking/Serialization/ISerializer.h>
-#include <AzNetworking/Serialization/NetworkInputSerializer.h>
-#include <AzNetworking/Serialization/NetworkOutputSerializer.h>
 
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Console/IConsole.h>
@@ -353,17 +350,16 @@ namespace Multiplayer
 
     bool EntityReplicator::IsMarkedForRemoval() const
     {
-        bool ret(true);
         if (m_propertyPublisher)
         {
-            ret = m_propertyPublisher->IsDeleting();
+            return m_propertyPublisher->IsDeleting();
         }
-        else
+        else if (m_propertySubscriber)
         {
-            AZ_Assert(m_propertySubscriber, "Expected to have at least a subscriber when deleting");
-            ret = m_propertySubscriber->IsDeleting();
+            return m_propertySubscriber->IsDeleting();
         }
-        return ret;
+        AZLOG_WARN("Encountered netentity marked for removal that is not properly bound");
+        return true;
     }
 
     void EntityReplicator::SetPendingRemoval(AZ::TimeMs pendingRemovalTimeMs)
@@ -394,18 +390,17 @@ namespace Multiplayer
 
     bool EntityReplicator::IsDeletionAcknowledged() const
     {
-        bool ret(true);
-        // we sent the delete message, make sure it gets there
+        // We sent the delete message, make sure it gets there
         if (m_propertyPublisher)
         {
-            ret = m_propertyPublisher->IsDeleted();
+            return m_propertyPublisher->IsDeleted();
         }
-        else
+        else if (m_propertySubscriber)
         {
-            AZ_Assert(m_propertySubscriber, "Expected to have at least a subscriber when deleting");
-            ret = m_propertySubscriber->IsDeleted();
+            return m_propertySubscriber->IsDeleted();
         }
-        return ret;
+        AZLOG_WARN("Encountered netentity marked for removal that is not properly bound");
+        return true;
     }
 
     AZ::TimeMs EntityReplicator::GetResendTimeoutTimeMs() const
@@ -428,7 +423,7 @@ namespace Multiplayer
         }
 
         if ((hierarchyChildComponent && hierarchyChildComponent->IsHierarchicalChild())
-            || (hierarchyRootComponent && hierarchyRootComponent->IsHierarchicalChild()))
+         || (hierarchyRootComponent && hierarchyRootComponent->IsHierarchicalChild()))
         {
             // If hierarchy is enabled for the entity, check if the parent is available
             if (const NetworkTransformComponent* networkTransform = entity->FindComponent<NetworkTransformComponent>())
@@ -492,7 +487,7 @@ namespace Multiplayer
             updateMessage.SetPrefabEntityId(netBindComponent->GetPrefabEntityId());
         }
 
-        AzNetworking::NetworkInputSerializer inputSerializer(updateMessage.ModifyData().GetBuffer(), static_cast<uint32_t>(updateMessage.ModifyData().GetCapacity()));
+        InputSerializer inputSerializer(updateMessage.ModifyData().GetBuffer(), static_cast<uint32_t>(updateMessage.ModifyData().GetCapacity()));
         m_propertyPublisher->UpdateSerialization(inputSerializer);
         updateMessage.ModifyData().Resize(inputSerializer.GetSize());
 
@@ -535,8 +530,11 @@ namespace Multiplayer
     void EntityReplicator::OnEntityDirtiedEvent()
     {
         AZ_Assert(m_propertyPublisher, "Expected to have a publisher, did we forget to disconnect?");
-        m_propertyPublisher->GenerateRecord();
-        m_replicationManager.AddReplicatorToPendingSend(*this);
+        if (m_propertyPublisher != nullptr)
+        {
+            m_propertyPublisher->GenerateRecord();
+            m_replicationManager.AddReplicatorToPendingSend(*this);
+        }
     }
 
     void EntityReplicator::OnEntityRemovedEvent()

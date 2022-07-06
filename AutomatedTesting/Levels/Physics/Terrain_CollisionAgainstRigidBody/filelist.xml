@@ -1,6 +1,0 @@
-<download name="PhysXEntity_collides_with_PhysXTerrain" type="Map">
- <index src="filelist.xml" dest="filelist.xml"/>
- <files>
-  <file src="level.pak" dest="level.pak" size="39336" md5="e4c278be1a4235499834a14f8fc8bda3"/>
- </files>
-</download>

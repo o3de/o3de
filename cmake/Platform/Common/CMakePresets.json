@@ -1,0 +1,199 @@
+{
+    "version": 4,
+    "cmakeMinimumRequired": {
+        "major": 3,
+        "minor": 23,
+        "patch": 0
+    },
+    "configurePresets": [
+        {
+            "name": "default",
+            "description": "Placeholder configuration that buildPresets and testPresets can inherit from",
+            "hidden": true
+        },
+        {
+            "name": "debug",
+            "description": "Specifies build type for single-configuration generators: debug",
+            "hidden": true,
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": {
+                    "type": "STRING",
+                    "value": "debug"
+                }
+            }
+        },
+        {
+            "name": "release",
+            "description": "Specifies build type for single-configuration generators: release",
+            "hidden": true,
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": {
+                    "type": "STRING",
+                    "value": "release"
+                }
+            }
+        },
+        {
+            "name": "profile",
+            "description": "Specifies build type for single-configuration generators: profile",
+            "hidden": true,
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": {
+                    "type": "STRING",
+                    "value": "profile"
+                }
+            }
+        },
+        {
+            "name": "no-unity",
+            "description": "unity: off",
+            "hidden": true,
+            "cacheVariables": {
+                "LY_UNITY_BUILD": {
+                    "type": "BOOL",
+                    "value": "OFF"
+                }
+            }
+        },
+        {
+            "name": "unity",
+            "description": "unity: on",
+            "hidden": true,
+            "cacheVariables": {
+                "LY_UNITY_BUILD": {
+                    "type": "BOOL",
+                    "value": "ON"
+                }
+            }
+        },
+        {
+            "name": "non-monolithic",
+            "description": "non-monolithic permutation(Default)",
+            "hidden": true,
+            "cacheVariables": {
+                "LY_MONOLITHIC_GAME": {
+                    "type": "BOOL",
+                    "value": "OFF"
+                }
+            }
+        },
+        {
+            "name": "monolithic",
+            "description": "monolithic permutation(Monolithic)",
+            "hidden": true,
+            "cacheVariables": {
+                "LY_MONOLITHIC_GAME": {
+                    "type": "BOOL",
+                    "value": "ON"
+                }
+            }
+        },
+        {
+            "name": "ninja-multi-config",
+            "displayName": "Ninja Multi-Config",
+            "description": "Default build using Ninja Multi-Config generator",
+            "hidden": true,
+            "generator": "Ninja Multi-Config"
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "debug",
+            "description": "configuration: debug",
+            "hidden": true,
+            "configurePreset": "default",
+            "configuration": "debug"
+        },
+        {
+            "name": "release",
+            "description": "configuration: release",
+            "hidden": true,
+            "configurePreset": "default",
+            "configuration": "release"
+        },
+        {
+            "name": "profile",
+            "description": "configuration: profile",
+            "hidden": true,
+            "configurePreset": "default",
+            "configuration": "profile"
+        },
+        {
+            "name": "editor",
+            "description": "target: editor",
+            "hidden": true,
+            "configurePreset": "default",
+            "inherits": [ "profile"],
+            "targets": "Editor"
+        },
+        {
+            "name": "assetprocessor",
+            "description": "target: asset processor",
+            "hidden": true,
+            "configurePreset": "default",
+            "inherits": [ "profile"],
+            "targets": "AssetProcessor"
+        },
+        {
+            "name": "install",
+            "description": "Builds the dependencies install(Ninja, Make, etc...) or INSTALL(Visual Studio, Xcode) target. Afterwards run the CMake install step to install the build dependencies",
+            "hidden": true,
+            "configurePreset": "default",
+            "inherits": [ "profile"],
+            "targets": "install"
+        },
+        {
+            "name": "test-default",
+            "description": "Builds the smoke and main test suite dependencies",
+            "hidden": true,
+            "configurePreset": "default",
+            "inherits": [ "profile"],
+            "targets": ["TEST_SUITE_main", "TEST_SUITE_smoke"]
+        }
+    ],
+    "testPresets": [
+        {
+            "name": "test-default",
+            "description": "CTest preset which runs the smoke and main test suites",
+            "hidden": true,
+            "configurePreset": "default",
+            "output": {
+                "outputOnFailure": true,
+                "outputLogFile": "Ctest-${presetName}.log"
+            },
+            "execution": {
+                "noTestsAction": "error"
+            },
+            "filter": {
+                "include": {
+                    "label": "(SUITE_smoke|SUITE_main)"
+                },
+                "exclude": {
+                    "label": "(REQUIRES_gpu)"
+                }
+            }
+        },
+        {
+            "name": "test-default-debug",
+            "description": "Runs the smoke and main test suites using the debug configuration",
+            "hidden": true,
+            "configurePreset": "default",
+            "inherits": ["test-default"],
+            "configuration": "debug",
+            "output": {
+                "outputLogFile": "Ctest-${presetName}-debug.log"
+            }
+        },
+        {
+            "name": "test-default-profile",
+            "description": "Runs the smoke and main test suites using the profile configuration",
+            "hidden": true,
+            "configurePreset": "default",
+            "inherits": ["test-default"],
+            "configuration": "profile",
+            "output": {
+                "outputLogFile": "Ctest-${presetName}-profile.log"
+            }
+        }
+    ]
+}

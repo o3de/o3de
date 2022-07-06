@@ -65,7 +65,9 @@ namespace AtomToolsFramework
 
     void AssetSelectionComboBox::SelectAsset(const AZ::Data::AssetId& assetId)
     {
-        setCurrentIndex(findData(QVariant(QString(assetId.ToString<AZStd::string>().c_str()))));
+        const QVariant assetIdItemData(assetId.ToString<AZStd::string>().c_str());
+        const int index = findData(assetIdItemData);
+        setCurrentIndex(index);
     }
 
     AZ::Data::AssetId AssetSelectionComboBox::GetSelectedAsset() const
@@ -116,11 +118,9 @@ namespace AtomToolsFramework
     {
         if (m_filterCallback && m_filterCallback(assetInfo))
         {
-            int index = findData(QVariant(QString(assetId.ToString<AZStd::string>().c_str())));
-            if (index >= 0)
-            {
-                removeItem(index);
-            }
+            const QVariant assetIdItemData(assetId.ToString<AZStd::string>().c_str());
+            const int index = findData(assetIdItemData);
+            removeItem(index);
         }
     }
 
@@ -128,11 +128,16 @@ namespace AtomToolsFramework
     {
         if (m_filterCallback && m_filterCallback(assetInfo))
         {
-            addItem(
-                GetDisplayNameFromPath(AZ::RPI::AssetUtils::GetSourcePathByAssetId(assetInfo.m_assetId)).c_str(),
-                QVariant(QString(assetInfo.m_assetId.ToString<AZStd::string>().c_str())));
-
-            RegisterThumbnail(assetInfo.m_assetId);
+            // Only add the asset if no item exists with the incoming asset ID
+            const QVariant assetIdItemData(assetInfo.m_assetId.ToString<AZStd::string>().c_str());
+            const int index = findData(assetIdItemData);
+            if (index < 0)
+            {
+                const AZStd::string path = AZ::RPI::AssetUtils::GetSourcePathByAssetId(assetInfo.m_assetId);
+                const AZStd::string displayName = GetDisplayNameFromPath(path);
+                addItem(displayName.c_str(), assetIdItemData);
+                RegisterThumbnail(assetInfo.m_assetId);
+            }
         }
     }
 
@@ -159,7 +164,8 @@ namespace AtomToolsFramework
             auto thumbnailKeyItr = m_thumbnailKeys.find(assetId);
             if (thumbnailKeyItr != m_thumbnailKeys.end())
             {
-                int index = findData(QVariant(QString(assetId.ToString<AZStd::string>().c_str())));
+                const QVariant assetIdItemData(assetId.ToString<AZStd::string>().c_str());
+                const int index = findData(assetIdItemData);
                 if (index >= 0)
                 {
                     AzToolsFramework::Thumbnailer::SharedThumbnail thumbnail;

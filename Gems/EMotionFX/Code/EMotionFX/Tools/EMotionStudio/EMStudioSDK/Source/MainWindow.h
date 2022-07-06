@@ -128,7 +128,7 @@ namespace EMStudio
 
         GUIOptions& GetOptions()                                                { return m_options; }
 
-        void Reset(bool clearActors = true, bool clearMotionSets = true, bool clearMotions = true, bool clearAnimGraphs = true, MCore::CommandGroup* commandGroup = nullptr);
+        void Reset(bool clearActors = true, bool clearMotionSets = true, bool clearMotions = true, bool clearAnimGraphs = true, MCore::CommandGroup* commandGroup = nullptr, bool addDefaultMotionSet = true);
 
         // settings
         void SavePreferences();

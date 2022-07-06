@@ -9,7 +9,6 @@
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Component/EntityUtils.h>
 #include <AzFramework/Spawnable/Spawnable.h>
-#include <AzToolsFramework/Prefab/Instance/InstanceEntityMapperInterface.h>
 #include <AzToolsFramework/Prefab/Spawnable/PrefabDocument.h>
 #include <AzToolsFramework/Prefab/Spawnable/PrefabProcessorContext.h>
 #include <AzToolsFramework/Prefab/Spawnable/SpawnableUtils.h>
@@ -30,7 +29,14 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
 
     PrefabProcessorContext::PrefabProcessorContext(const AZ::Uuid& sourceUuid)
         : m_sourceUuid(sourceUuid)
-    {}
+    {
+        AZ::Interface<EntityIdPathMapperInterface>::Register(this);
+    }
+
+    PrefabProcessorContext::~PrefabProcessorContext()
+    {
+        AZ::Interface<EntityIdPathMapperInterface>::Unregister(this);
+    }
 
     bool PrefabProcessorContext::AddPrefab(PrefabDocument&& document)
     {
@@ -274,6 +280,21 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         }
     }
 
+    AZ::IO::PathView PrefabProcessorContext::GetHashedPathUsedForEntityIdGeneration(const AZ::EntityId entityId)
+    {
+        auto hashedPathIterator = m_entityIdToHashedPathMap.find(entityId);
+        if (hashedPathIterator != m_entityIdToHashedPathMap.end())
+        {
+            return hashedPathIterator->second;
+        }
+        return AZ::IO::PathView();
+    }
+
+    void PrefabProcessorContext::SetHashedPathUsedForEntityIdGeneration(const AZ::EntityId entityId, AZ::IO::PathView pathUsedForHashing)
+    {
+        m_entityIdToHashedPathMap[entityId] = pathUsedForHashing;
+    }
+
     bool PrefabProcessorContext::HasCompletedSuccessfully() const
     {
         return m_completedSuccessfully;
@@ -289,4 +310,16 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         return loadBehavior == EntityAliasSpawnableLoadBehavior::DependentLoad ? AZ::Data::AssetLoadBehavior::PreLoad
                                                                                : AZ::Data::AssetLoadBehavior::NoLoad;
     }
+
+    void PrefabProcessorContext::AddPrefabSpawnablePostProcessEventHandler(PrefabSpawnablePostProcessEvent::Handler& handler)
+    {
+        handler.Connect(m_prefabPostProcessEvent);
+    }
+
+    void PrefabProcessorContext::SendSpawnablePostProcessEvent(const AZStd::string& prefabName, AzFramework::Spawnable& spawnable)
+    {
+        m_prefabPostProcessEvent.Signal(prefabName, spawnable);
+    }
+
 } // namespace AzToolsFramework::Prefab::PrefabConversionUtils
+

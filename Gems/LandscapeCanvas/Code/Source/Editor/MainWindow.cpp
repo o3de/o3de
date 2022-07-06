@@ -84,6 +84,7 @@
 #include <Editor/Nodes/Gradients/AltitudeGradientNode.h>
 #include <Editor/Nodes/Gradients/ConstantGradientNode.h>
 #include <Editor/Nodes/Gradients/FastNoiseGradientNode.h>
+#include <Editor/Nodes/Gradients/GradientBakerNode.h>
 #include <Editor/Nodes/Gradients/ImageGradientNode.h>
 #include <Editor/Nodes/Gradients/PerlinNoiseGradientNode.h>
 #include <Editor/Nodes/Gradients/RandomNoiseGradientNode.h>
@@ -118,6 +119,7 @@ namespace LandscapeCanvasEditor
     static const char* PreviewEntityElementName = "PreviewEntity";
     static const char* GradientIdElementName = "GradientId";
     static const char* ShapeEntityIdElementName = "ShapeEntityId";
+    static const char* InputBoundsEntityIdElementName = "InputBounds";
     static const char* VegetationAreaEntityIdElementName = "element";
 
     static IEditor* GetLegacyEditor()
@@ -342,6 +344,7 @@ namespace LandscapeCanvasEditor
         gradientCategory->SetTitlePalette("GradientNodeTitlePalette");
         REGISTER_NODE_PALETTE_ITEM(gradientCategory, AltitudeGradientNode, editorId);
         REGISTER_NODE_PALETTE_ITEM(gradientCategory, ConstantGradientNode, editorId);
+        REGISTER_NODE_PALETTE_ITEM(gradientCategory, GradientBakerNode, editorId);
         REGISTER_NODE_PALETTE_ITEM(gradientCategory, ImageGradientNode, editorId);
         REGISTER_NODE_PALETTE_ITEM(gradientCategory, PerlinNoiseGradientNode, editorId);
         REGISTER_NODE_PALETTE_ITEM(gradientCategory, RandomNoiseGradientNode, editorId);
@@ -531,7 +534,7 @@ namespace LandscapeCanvasEditor
         LandscapeCanvas::LandscapeCanvasRequestBus::Handler::BusDisconnect();
     }
 
-    GraphModel::IGraphContextPtr MainWindow::GetGraphContext() const
+    GraphModel::GraphContextPtr MainWindow::GetGraphContext() const
     {
         return LandscapeCanvas::GraphContext::GetInstance();
     }
@@ -1227,6 +1230,7 @@ namespace LandscapeCanvasEditor
         static const char* PreviewEntityIdPropertyPath = "Preview Settings|Pin Preview to Shape";
         static const char* GradientEntityIdPropertyPath = "Gradient|Gradient Entity Id";
         static const char* ShapeEntityIdPropertyPath = "Shape Entity Id";
+        static const char* InputBoundsEntityIdPropertyPath = "Input Bounds";
         static const char* PinToShapeEntityIdPropertyPath = "Pin To Shape Entity Id";
         static const char* VegetationAreasPropertyPath = "Vegetation Areas";
 
@@ -1250,6 +1254,10 @@ namespace LandscapeCanvasEditor
             else if (slotName == LandscapeCanvas::PIN_TO_SHAPE_SLOT_ID)
             {
                 propertyPath = PinToShapeEntityIdPropertyPath;
+            }
+            else if (slotName == LandscapeCanvas::INPUT_BOUNDS_SLOT_ID)
+            {
+                propertyPath = InputBoundsEntityIdPropertyPath;
             }
         } break;
         case LandscapeCanvas::LandscapeCanvasDataTypeEnum::Gradient:
@@ -3097,6 +3105,11 @@ namespace LandscapeCanvasEditor
                     inboundShapeEntityId = *reinterpret_cast<AZ::EntityId*>(instance);
                     return false;
                 }
+                else if (strcmp(classElement->m_name, InputBoundsEntityIdElementName) == 0)
+                {
+                    inboundShapeEntityId = *reinterpret_cast<AZ::EntityId*>(instance);
+                    return false;
+                }
             }
 
             return true;
@@ -3115,12 +3128,16 @@ namespace LandscapeCanvasEditor
         // Connect any inbound shape slots to the corresponding shape bounds
         if (inboundShapeEntityId.IsValid())
         {
-            // We have two different inbound shape slots that share the same underlying property,
+            // We have multiple inbound shape slots that share the same underlying property,
             // so we need to figure out which kind of inbound shape slot this node has
             GraphModel::SlotId shapeSlotId(LandscapeCanvas::INBOUND_SHAPE_SLOT_ID);
             if (!node->GetSlot(shapeSlotId))
             {
                 shapeSlotId = GraphModel::SlotId(LandscapeCanvas::PIN_TO_SHAPE_SLOT_ID);
+                if (!node->GetSlot(shapeSlotId))
+                {
+                    shapeSlotId = GraphModel::SlotId(LandscapeCanvas::INPUT_BOUNDS_SLOT_ID);
+                }
             }
 
             shapeSlotEntityPairs.push_back(AZStd::make_pair(shapeSlotId, inboundShapeEntityId));
@@ -3269,7 +3286,7 @@ namespace LandscapeCanvasEditor
                 // some magic that takes place where they each support an Invalid data type as well as
                 // their specific data type, so instead of comparing the current slot->GetDataType() directly
                 // we need to check the possible data types instead for a  match.
-                const auto& dataTypes = slot->GetPossibleDataTypes();
+                const auto& dataTypes = slot->GetSupportedDataTypes();
                 auto iter = AZStd::find(dataTypes.begin(), dataTypes.end(), dataType);
                 if (iter != dataTypes.end())
                 {

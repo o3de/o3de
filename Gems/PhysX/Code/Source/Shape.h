@@ -42,56 +42,37 @@ namespace PhysX
         Shape(const Shape& shape) = delete;
         Shape& operator=(const Shape& shape) = delete;
 
-        physx::PxShape* GetPxShape();
-
+        // Physics::Shape overrides...
         void SetMaterial(const AZStd::shared_ptr<Physics::Material>& material) override;
         AZStd::shared_ptr<Physics::Material> GetMaterial() const override;
-
-        void SetMaterials(const AZStd::vector<AZStd::shared_ptr<PhysX::Material>>& materials);
-        const AZStd::vector<AZStd::shared_ptr<PhysX::Material>>& GetMaterials();
-
         void SetCollisionLayer(const AzPhysics::CollisionLayer& layer) override;
         AzPhysics::CollisionLayer GetCollisionLayer() const override;
-
         void SetCollisionGroup(const AzPhysics::CollisionGroup& group) override;
         AzPhysics::CollisionGroup GetCollisionGroup() const override;
-
         void SetName(const char* name) override;
-
         void SetLocalPose(const AZ::Vector3& offset, const AZ::Quaternion& rotation) override;
         AZStd::pair<AZ::Vector3, AZ::Quaternion> GetLocalPose() const override;
-
         float GetRestOffset() const override;
         float GetContactOffset() const override;
         void SetRestOffset(float restOffset) override;
         void SetContactOffset(float contactOffset) override;
-
         void* GetNativePointer() override;
-
         AZ::Crc32 GetTag() const override;
-
-        bool IsTrigger() const;
-
         void AttachedToActor(void* actor) override;
         void DetachedFromActor() override;
-
-        //! Raycast against this shape.
-        //! @param request Ray parameters in world space.
-        //! @param worldTransform World transform of this shape.
         AzPhysics::SceneQueryHit RayCast(const AzPhysics::RayCastRequest& worldSpaceRequest, const AZ::Transform& worldTransform) override;
-
-        //! Raycast against this shape using local coordinates.
-        //! @param request Ray parameters in local space.
         AzPhysics::SceneQueryHit RayCastLocal(const AzPhysics::RayCastRequest& localSpaceRequest) override;
-
-        //! Retrieve this shape AABB.
-        //! @param worldTransform World transform of this shape.
         AZ::Aabb GetAabb(const AZ::Transform& worldTransform) const override;
-
-        //! Retrieve this shape AABB using local coordinates
         AZ::Aabb GetAabbLocal() const override;
+        void GetGeometry(AZStd::vector<AZ::Vector3>& vertices, AZStd::vector<AZ::u32>& indices,
+            const AZ::Aabb* optionalBounds = nullptr) const override;
 
-        void GetGeometry(AZStd::vector<AZ::Vector3>& vertices, AZStd::vector<AZ::u32>& indices, AZ::Aabb* optionalBounds = nullptr) override;
+        physx::PxShape* GetPxShape();
+
+        void SetPhysXMaterials(const AZStd::vector<AZStd::shared_ptr<PhysX::Material>>& materials);
+        const AZStd::vector<AZStd::shared_ptr<PhysX::Material>>& GetPhysXMaterials();
+
+        bool IsTrigger() const;
 
     private:
         void BindMaterialsWithPxShape();

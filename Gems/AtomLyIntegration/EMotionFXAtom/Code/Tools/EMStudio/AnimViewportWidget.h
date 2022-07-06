@@ -11,6 +11,7 @@
 #include <QMouseEvent>
 #include <AtomToolsFramework/Viewport/RenderViewportWidget.h>
 #include <AzFramework/Viewport/CameraInput.h>
+#include <AzToolsFramework/ViewportUi/ViewportUiManager.h>
 
 #include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/ViewportPluginBus.h>
 #include <EMStudio/AnimViewportRequestBus.h>
@@ -59,6 +60,8 @@ namespace EMStudio
         void mouseMoveEvent(QMouseEvent* event) override;
         void mouseReleaseEvent(QMouseEvent* event) override;
 
+        void resizeEvent(QResizeEvent* event) override;
+
         static constexpr float CameraDistance = 2.0f;
 
         AtomRenderPlugin* m_plugin;
@@ -87,5 +90,8 @@ namespace EMStudio
         QPoint m_prevMousePoint;
         int m_pixelsSinceClick = 0;
         const int MinMouseMovePixes = 5;
+
+        AzToolsFramework::ViewportUi::ViewportUiManager m_viewportUiManager;
+        QWidget m_renderOverlay;
     };
 }

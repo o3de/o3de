@@ -119,9 +119,10 @@ namespace AZ
             }
         }
 
-        void Device::BeginFrameInternal()
+        RHI::ResultCode Device::BeginFrameInternal()
         {
             TryCreateAutoreleasePool();
+            return RHI::ResultCode::Success;
         }
 
         void Device::EndFrameInternal()

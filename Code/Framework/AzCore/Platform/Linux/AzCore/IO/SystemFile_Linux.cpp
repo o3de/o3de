@@ -48,3 +48,11 @@ namespace AZ::IO::Platform
         }
     }
 }
+
+namespace AZ::IO::PosixInternal
+{
+    int Pipe(int(&pipeFileDescriptors)[2], int, OpenFlags pipeFlags)
+    {
+        return pipe2(pipeFileDescriptors, static_cast<int>(pipeFlags));
+    }
+} // namespace AZ::IO::PosixInternal

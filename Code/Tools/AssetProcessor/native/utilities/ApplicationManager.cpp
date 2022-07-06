@@ -18,6 +18,7 @@
 
 #include <native/resourcecompiler/RCBuilder.h>
 #include <native/utilities/StatsCapture.h>
+#include <native/utilities/PlatformConfiguration.h>
 
 #include <QLocale>
 #include <QTranslator>
@@ -25,6 +26,7 @@
 
 #include <QSettings>
 
+#include <AzToolsFramework/Archive/ArchiveComponent.h>
 #include <AzFramework/Asset/AssetCatalogComponent.h>
 #include <AzToolsFramework/Entity/EditorEntityFixupComponent.h>
 #include <AzToolsFramework/ToolsComponents/ToolsAssetCatalogComponent.h>
@@ -152,6 +154,7 @@ AZ::ComponentTypeList AssetProcessorAZApplication::GetRequiredSystemComponents()
 
     components.push_back(azrtti_typeid<AzToolsFramework::PerforceComponent>());
     components.push_back(azrtti_typeid<AzToolsFramework::Prefab::PrefabSystemComponent>());
+    components.push_back(azrtti_typeid<AzToolsFramework::ArchiveComponent>()); // AP manages compressed files using ArchiveComponent
 
     return components;
 }
@@ -604,7 +607,7 @@ bool ApplicationManager::Activate()
     // the following controls what registry keys (or on mac or linux what entries in home folder) are used
     // so they should not be translated!
     qApp->setOrganizationName(GetOrganizationName());
-    qApp->setOrganizationDomain("amazon.com");
+    qApp->setOrganizationDomain("o3de.org");
     qApp->setApplicationName(GetApplicationName());
 
     return true;

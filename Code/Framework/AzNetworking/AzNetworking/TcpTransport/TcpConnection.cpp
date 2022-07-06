@@ -36,7 +36,8 @@ namespace AzNetworking
         , m_connectionRole(ConnectionRole::Acceptor)
         , m_registeredSocketFd(InvalidSocketFd)
     {
-        ;
+        const AZ::CVarFixedString compressor = static_cast<AZ::CVarFixedString>(net_TcpCompressor);
+        m_compressor = AZ::Interface<INetworking>::Get()->CreateCompressor(compressor);
     }
 
     TcpConnection::TcpConnection
@@ -55,8 +56,7 @@ namespace AzNetworking
         , m_registeredSocketFd(InvalidSocketFd)
     {
         const AZ::CVarFixedString compressor = static_cast<AZ::CVarFixedString>(net_TcpCompressor);
-        const AZ::Name compressorName = AZ::Name(compressor);
-        m_compressor = AZ::Interface<INetworking>::Get()->CreateCompressor(compressorName);
+        m_compressor = AZ::Interface<INetworking>::Get()->CreateCompressor(compressor);
 
         if (useEncryption)
         {
@@ -72,14 +72,16 @@ namespace AzNetworking
     {
         if (m_state == ConnectionState::Connected)
         {
+            m_state = ConnectionState::Disconnecting;
             m_networkInterface.GetConnectionListener().OnDisconnect(this, DisconnectReason::ConnectionDeleted, TerminationEndpoint::Local);
+            m_state = ConnectionState::Disconnected;
         }
     }
 
-    bool TcpConnection::Connect()
+    bool TcpConnection::Connect(uint16_t localPort)
     {
         Disconnect(DisconnectReason::TerminatedByClient, TerminationEndpoint::Local);
-        if (!m_socket->Connect(GetRemoteAddress()))
+        if (!m_socket->Connect(GetRemoteAddress(), localPort))
         {
             m_networkInterface.GetConnectionListener().OnDisconnect(this, DisconnectReason::ConnectionRejected, TerminationEndpoint::Local);
             return false;
@@ -235,6 +237,12 @@ namespace AzNetworking
         {
             return true;
         }
+        if (m_state == ConnectionState::Disconnecting)
+        {
+            AZLOG_WARN("Disconnecting an already disconnecting connection due to %s", ToString(reason).data());
+            return false;
+        }
+        m_state = ConnectionState::Disconnecting;
         m_networkInterface.GetConnectionListener().OnDisconnect(this, reason, endpoint);
         m_networkInterface.RequestDisconnect(this, reason);
         m_state = ConnectionState::Disconnected;
@@ -258,11 +266,11 @@ namespace AzNetworking
         int32_t payloadSize = aznumeric_cast<int32_t>(payloadBuffer.GetSize());
         bool shouldCompress = m_compressor && packetType != aznumeric_cast<PacketType>(CorePackets::PacketType::InitiateConnectionPacket);
 
-        // Create and serialize header...
+        // Create and serialize uncompressed version of header
         TcpPacketEncodingBuffer headerBuffer;
         {
-            TcpPacketHeader header(packetType, aznumeric_cast<uint16_t>(payloadBuffer.GetSize()));
-            header.SetPacketFlag(PacketFlag::Compressed, shouldCompress);
+            TcpPacketHeader header(packetType, aznumeric_cast<uint16_t>(payloadSize));
+            header.SetPacketFlag(PacketFlag::Compressed, false);
             NetworkInputSerializer serializer(headerBuffer.GetBuffer(), static_cast<uint32_t>(headerBuffer.GetCapacity()));
             if (!header.Serialize(serializer))
             {
@@ -271,23 +279,15 @@ namespace AzNetworking
             headerBuffer.Resize(serializer.GetSize());
         }
 
-        const uint16_t headerSize = aznumeric_cast<uint16_t>(headerBuffer.GetSize());
         const uint8_t* srcData = reinterpret_cast<const uint8_t*>(payloadBuffer.GetBuffer());
-        uint8_t* dstData = reinterpret_cast<uint8_t*>(m_sendRingbuffer.ReserveBlockForWrite(headerSize + payloadSize));
-
-        if (dstData == nullptr)
-        {
-            AZLOG_ERROR("Send ringbuffer full, dropped packet");
-            return false;
-        }
 
         // Compress send data
         TcpPacketEncodingBuffer writeBuffer;
         if (m_compressor && packetType != aznumeric_cast<PacketType>(CorePackets::PacketType::InitiateConnectionPacket))
         {
-            const AZStd::size_t maxSizeNeeded = m_compressor->GetMaxCompressedBufferSize(payloadBuffer.GetSize());
+            const AZStd::size_t maxSizeNeeded = m_compressor->GetMaxCompressedBufferSize(payloadSize);
             AZStd::size_t compressionMemBytesUsed = 0;
-            CompressorError compErr = m_compressor->Compress(payloadBuffer.GetBuffer(), payloadBuffer.GetSize(), writeBuffer.GetBuffer(), maxSizeNeeded, compressionMemBytesUsed);
+            CompressorError compErr = m_compressor->Compress(payloadBuffer.GetBuffer(), payloadSize, writeBuffer.GetBuffer(), maxSizeNeeded, compressionMemBytesUsed);
 
             if (compErr != CompressorError::Ok)
             {
@@ -300,12 +300,36 @@ namespace AzNetworking
                 // Track how many packets are being sent with no compression gain
                 m_networkInterface.GetMetrics().m_sendCompressedPacketsNoGain++;
             }
-            // Track byte delta caused by compression
-            m_networkInterface.GetMetrics().m_sendBytesCompressedDelta += (payloadSize - compressionMemBytesUsed);
 
-            writeBuffer.Resize(aznumeric_cast<int32_t>(compressionMemBytesUsed));
-            payloadSize = static_cast<uint32_t>(writeBuffer.GetSize());
-            srcData = writeBuffer.GetBuffer();
+            // Only use compression if there's actual gain
+            if (compressionMemBytesUsed < payloadSize)
+            {
+                // Track byte delta caused by compression
+                m_networkInterface.GetMetrics().m_sendBytesCompressedDelta += (payloadSize - compressionMemBytesUsed);
+
+                writeBuffer.Resize(aznumeric_cast<int32_t>(compressionMemBytesUsed));
+                payloadSize = static_cast<uint32_t>(writeBuffer.GetSize());
+                srcData = writeBuffer.GetBuffer();
+
+                // Recreate and reserialize header with compressed payload size and compression flag
+                TcpPacketHeader header(packetType, aznumeric_cast<uint16_t>(payloadSize));
+                header.SetPacketFlag(PacketFlag::Compressed, shouldCompress);
+                NetworkInputSerializer serializer(headerBuffer.GetBuffer(), static_cast<uint32_t>(headerBuffer.GetCapacity()));
+                if (!header.Serialize(serializer))
+                {
+                    return false;
+                }
+                headerBuffer.Resize(serializer.GetSize());
+            }
+        }
+
+        const uint16_t headerSize = aznumeric_cast<uint16_t>(headerBuffer.GetSize());
+        uint8_t* dstData = reinterpret_cast<uint8_t*>(m_sendRingbuffer.ReserveBlockForWrite(headerSize + payloadSize));
+
+        if (dstData == nullptr)
+        {
+            AZLOG_ERROR("Send ringbuffer full, dropped packet");
+            return false;
         }
 
         // Copy the header data to the ring buffer
@@ -346,8 +370,8 @@ namespace AzNetworking
             // If we can't fit the packet, do not allow the copy to proceed as that would overwrite invalid memory
             return false;
         }
-        outBuffer.Resize(packetSize);
 
+        const uint16_t transmittedPacketSize = packetSize;
         const uint8_t* srcData = serializer.GetUnreadData();
         if (m_compressor && outHeader.IsPacketFlagSet(PacketFlag::Compressed))
         {
@@ -360,10 +384,12 @@ namespace AzNetworking
             packetSize = aznumeric_cast<uint16_t>(outBuffer.GetSize());
         }
 
+        outBuffer.Resize(packetSize);
+
         uint8_t* dstData = outBuffer.GetBuffer();
         memcpy(dstData, srcData, packetSize);
 
-        m_recvRingbuffer.AdvanceReadBuffer(serializer.GetReadSize() + packetSize);
+        m_recvRingbuffer.AdvanceReadBuffer(serializer.GetReadSize() + transmittedPacketSize);
         GetMetrics().LogPacketRecv(packetSize, currentTimeMs);
         m_networkInterface.GetMetrics().m_recvPackets++;
         return true;

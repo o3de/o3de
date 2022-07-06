@@ -216,10 +216,14 @@
                 "Name": "NewDepthOfFieldCompositeTemplate",
                 "Path": "Passes/NewDepthOfFieldComposite.pass"
             },
-			{
+            {
                 "Name": "EsmShadowmapsTemplate",
                 "Path": "Passes/EsmShadowmaps.pass"
             },
+	    {
+                "Name": "FullscreenShadowTemplate",
+                "Path": "Passes/FullscreenShadow.pass"
+            },            
             {
                 "Name": "LightCullingHeatmapTemplate",
                 "Path": "Passes/LightCullingHeatmap.pass"
@@ -571,34 +575,6 @@
             {
                 "Name": "HDRColorGradingTemplate",
                 "Path": "Passes/HDRColorGrading.pass"
-            },
-            {
-                "Name": "EditorModeFeedbackParentTemplate",
-                "Path": "Passes/EditorModeFeedbackParent.pass"
-            },
-            {
-                "Name": "EditorModeMaskTemplate",
-                "Path": "Passes/EditorModeMask.pass"
-            },
-            {
-                "Name": "EditorModeDesaturationTemplate",
-                "Path": "Passes/EditorModeDesaturation.pass"
-            },
-            {
-                "Name": "EditorModeTintTemplate",
-                "Path": "Passes/EditorModeTint.pass"
-            },
-            {
-                "Name": "EditorModeBlurParentTemplate",
-                "Path": "Passes/EditorModeBlurParent.pass"
-            },
-            {
-                "Name": "EditorModeBlurTemplate",
-                "Path": "Passes/EditorModeBlur.pass"
-            },
-            {
-                "Name": "EditorModeOutlineTemplate",
-                "Path": "Passes/EditorModeOutline.pass"
             },
             {
                 "Name": "LutGenerationTemplate",
