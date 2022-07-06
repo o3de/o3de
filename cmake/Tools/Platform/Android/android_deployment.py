@@ -130,14 +130,14 @@ class AndroidDeployment(object):
     @staticmethod
     def read_android_settings(dev_root, game_name):
         """
-        Read and parse the project.json file into a dictionary to process the specific attributes needed for the manifest template
+        Read and parse the android_project.json file into a dictionary to process the specific attributes needed for the manifest template
 
         :param dev_root:    The dev root we are working from
         :param game_name:   Name of the game under the dev root
         :return: The android settings for the game project if any
         """
         game_folder = dev_root / game_name
-        game_folder_project_properties_path = game_folder / 'project.json'
+        game_folder_project_properties_path = game_folder / 'Platform' / 'Android' / 'android_project.json'
         game_project_properties_content = game_folder_project_properties_path.resolve(strict=True)\
                                                                              .read_text(encoding=common.DEFAULT_TEXT_READ_ENCODING,
                                                                                         errors=common.ENCODING_ERROR_HANDLINGS)

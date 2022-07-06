@@ -88,6 +88,7 @@ TEST_F(ScriptCanvasTestFixture, EntityIdInputForOnGraphStart)
     ExpectParseError("LY_SC_UnitTest_EntityIdInputForOnGraphStart");
 }
 
+// disabled due to lack of confirming known null on nodes that are not BC method nodes
 TEST_F(ScriptCanvasTestFixture, DISABLED_ParseErrorOnKnownNull)
 {
     ExpectParseError("LY_SC_UnitTest_ParseErrorOnKnownNull");

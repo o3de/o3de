@@ -36,7 +36,7 @@ namespace AssetProcessor
             AZ_CLASS_ALLOCATOR(StatsCaptureImpl, AZ::SystemAllocator, 0);
 
             void BeginCaptureStat(AZStd::string_view statName);
-            void EndCaptureStat(AZStd::string_view statName);
+            AZStd::optional<AZStd::sys_time_t> EndCaptureStat(AZStd::string_view statName);
             void Dump();
         private:
             using timepoint = AZStd::chrono::high_resolution_clock::time_point;
@@ -47,7 +47,7 @@ namespace AssetProcessor
                 timepoint m_operationStartTime = {}; // Async tracking - the last time stamp an operation started.
                 int64_t m_operationCount = 0; // In case there's more than one sample.  Used to calc average.
             };
-            
+
             AZStd::unordered_map<AZStd::string, StatsEntry> m_stats;
             bool m_dumpMachineReadableStats = false;
             bool m_dumpHumanReadableStats = true;
@@ -172,15 +172,19 @@ namespace AssetProcessor
             existingStat.m_operationStartTime = AZStd::chrono::high_resolution_clock::now();
         }
 
-        void StatsCaptureImpl::EndCaptureStat(AZStd::string_view statName)
+        AZStd::optional<AZStd::sys_time_t> StatsCaptureImpl::EndCaptureStat(AZStd::string_view statName)
         {
             StatsEntry& existingStat = m_stats[statName];
+            AZStd::optional<AZStd::sys_time_t> operationDurationInMillisecond;
             if (existingStat.m_operationStartTime != timepoint())
             {
-                existingStat.m_cumulativeTime = AZStd::chrono::high_resolution_clock::now() - existingStat.m_operationStartTime;
+                duration operationDuration = AZStd::chrono::high_resolution_clock::now() - existingStat.m_operationStartTime;
+                operationDurationInMillisecond = operationDuration.count();
+                existingStat.m_cumulativeTime = existingStat.m_cumulativeTime + operationDuration;
                 existingStat.m_operationCount = existingStat.m_operationCount + 1;
                 existingStat.m_operationStartTime = timepoint(); // reset the start time so that double 'Ends' are ignored.
             }
+            return operationDurationInMillisecond;
         }
 
         void StatsCaptureImpl::Dump()
@@ -383,12 +387,13 @@ namespace AssetProcessor
         }
 
         //! Stop the clock running for a particular stat name.
-        void EndCaptureStat(AZStd::string_view statName)
+        AZStd::optional<AZStd::sys_time_t> EndCaptureStat(AZStd::string_view statName)
         {
             if (g_instance)
             {
-                g_instance->EndCaptureStat(statName);
+                return g_instance->EndCaptureStat(statName);
             }
+            return AZStd::optional<AZStd::sys_time_t>();
         }
 
         //! Do additional processing and then write the cumulative stats to log.

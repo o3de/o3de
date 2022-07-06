@@ -739,7 +739,7 @@ def trigger_context_menu_entry(widget, pattern, pos=None, index=None):
         return run_async(result)
 
 
-async def open_context_menu(widget, pos=None, index=None, timeout=1.0):
+async def open_context_menu(widget, pos=None, index=None, timeout=5.0):
     """
     Trigger a context menu event on a widget
     widget: The widget to trigger the event on
