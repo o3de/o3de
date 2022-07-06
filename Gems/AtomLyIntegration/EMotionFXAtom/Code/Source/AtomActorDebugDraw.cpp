@@ -195,7 +195,7 @@ namespace AZ::Render
             {
                 EMotionFX::Node* node = instance->GetActor()->GetSkeleton()->GetNode(instance->GetEnabledNode(i));
                 EMotionFX::Mesh* mesh = instance->GetActor()->GetMesh(geomLODLevel, node->GetNodeIndex());
-                const AZ::Transform globalTM = pose->GetWorldSpaceTransform(node->GetNodeIndex()).ToAZTransform();
+                const AZ::Transform globalTM = pose->GetMeshNodeWorldSpaceTransform(geomLODLevel, node->GetNodeIndex()).ToAZTransform();
 
                 m_currentMesh = nullptr;
 
@@ -266,11 +266,31 @@ namespace AZ::Render
         // Ragdoll
         if (AZ::RHI::CheckBitsAny(renderFlags, EMotionFX::ActorRenderFlags::RagdollColliders))
         {
-            m_characterPhysicsDebugDraw.RenderColliders(
-                debugDisplay,
-                instance->GetActor()->GetPhysicsSetup()->GetColliderConfigByType(EMotionFX::PhysicsSetup::Ragdoll),
-                nodeDebugDrawDataFunction,
-                { renderActorSettings.m_ragdollColliderColor, renderActorSettings.m_selectedRagdollColliderColor });
+            Physics::CharacterColliderConfiguration* ragdollColliderConfiguration =
+                instance->GetActor()->GetPhysicsSetup()->GetColliderConfigByType(EMotionFX::PhysicsSetup::Ragdoll);
+            Physics::ParentIndices parentIndices;
+            parentIndices.reserve(ragdollColliderConfiguration->m_nodes.size());
+
+            for (const auto& nodeConfiguration : ragdollColliderConfiguration->m_nodes)
+            {
+                AZ::Outcome<size_t> parentIndexOutcome;
+                const EMotionFX::Skeleton* skeleton = instance->GetActor()->GetSkeleton();
+                EMotionFX::Node* childNode = skeleton->FindNodeByName(nodeConfiguration.m_name);
+                if (childNode)
+                {
+                    const EMotionFX::Node* parentNode = childNode->GetParentNode();
+                    if (parentNode)
+                    {
+                        parentIndexOutcome = ragdollColliderConfiguration->FindNodeConfigIndexByName(parentNode->GetNameString());
+                    }
+                }
+                parentIndices.push_back(parentIndexOutcome.GetValueOr(SIZE_MAX));
+            }
+
+            m_characterPhysicsDebugDraw.RenderRagdollColliders(
+                                debugDisplay, ragdollColliderConfiguration, nodeDebugDrawDataFunction, parentIndices,
+                                { renderActorSettings.m_ragdollColliderColor, renderActorSettings.m_selectedRagdollColliderColor,
+                                  renderActorSettings.m_violatedRagdollColliderColor });
         }
         if (AZ::RHI::CheckBitsAny(renderFlags, EMotionFX::ActorRenderFlags::RagdollJointLimits))
         {

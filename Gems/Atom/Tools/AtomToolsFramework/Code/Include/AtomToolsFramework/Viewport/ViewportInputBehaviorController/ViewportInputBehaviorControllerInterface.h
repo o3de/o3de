@@ -21,32 +21,23 @@ namespace AtomToolsFramework
         //! Get entityId of viewport camera
         virtual const AZ::EntityId& GetCameraEntityId() const = 0;
 
-        //! Get entityId of camera target
-        virtual const AZ::EntityId& GetTargetEntityId() const = 0;
+        //! Get entityId of object
+        virtual const AZ::EntityId& GetObjectEntityId() const = 0;
 
-        //! Get entityId of scene's IBL entity
+        //! Get entityId of environment entity
         virtual const AZ::EntityId& GetEnvironmentEntityId() const = 0;
 
         //! Get actual position where the camera is facing
-        virtual const AZ::Vector3& GetTargetPosition() const = 0;
+        virtual const AZ::Vector3& GetObjectPosition() const = 0;
 
-        //! Set camera target position
-        //! @param targetPosition world space position to point camera at
-        virtual void SetTargetPosition(const AZ::Vector3& targetPosition) = 0;
+        //! Set camera object position
+        //! @param objectPosition world space position to point camera at
+        virtual void SetObjectPosition(const AZ::Vector3& objectPosition) = 0;
 
-        //! Set camera target bounds
-        //! @param targetBounds AABB of target
-        virtual void SetTargetBounds(const AZ::Aabb& targetBounds) = 0;
+        //! Get distance between camera and its object
+        virtual float GetDistanceToObject() const = 0;
 
-        //! Get distance between camera and its target
-        virtual float GetDistanceToTarget() const = 0;
-
-        //! Get minimum and maximum camera distance to the model based on mesh size
-        //! @param distanceMin closest camera can be to the target
-        //! @param distanceMax furthest camera can be from the target
-        virtual void GetExtents(float& distanceMin, float& distanceMax) const = 0;
-
-        //! Get bounding sphere radius of the active model
+        //! Get bounding sphere radius of the active object
         virtual float GetRadius() const = 0;
 
         //! Reset camera to default position and rotation 
@@ -56,7 +47,7 @@ namespace AtomToolsFramework
         //! @param value field of view in degrees
         virtual void SetFieldOfView(float value) = 0;
 
-        //! Check if camera is looking directly at a model
+        //! Check if camera is looking directly at an object
         virtual bool IsCameraCentered() const = 0;
     };
 } // namespace AtomToolsFramework

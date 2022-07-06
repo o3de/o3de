@@ -27,7 +27,7 @@ namespace AZ::Internal
 
 
 #ifndef AZ_SIZE_ALIGN_UP
-/// Aign to the next bigger/up size
+/// Align to the next bigger/up size
 #   define AZ_SIZE_ALIGN_UP(_size, _align)       ((_size+(_align-1)) & ~(_align-1))
 #endif // AZ_SIZE_ALIGN_UP
 #ifndef AZ_SIZE_ALIGN_DOWN
@@ -260,18 +260,151 @@ namespace AZ
 
 #define AZ_UNUSED(...) AZ_MACRO_SPECIALIZE(AZ_UNUSED_, AZ_VA_NUM_ARGS(__VA_ARGS__), (__VA_ARGS__))
 
+// Overload bitwise operators(|, &, ^) for enum types
 #define AZ_DEFINE_ENUM_BITWISE_OPERATORS(EnumType) \
-inline constexpr EnumType operator | (EnumType a, EnumType b) \
-    { return EnumType(((AZStd::underlying_type<EnumType>::type)a) | ((AZStd::underlying_type<EnumType>::type)b)); } \
-inline constexpr EnumType& operator |= (EnumType &a, EnumType b) \
+constexpr EnumType operator | (EnumType a, EnumType b) \
+    { \
+        using UnderlyingType = AZStd::underlying_type_t<EnumType>; \
+        return EnumType(static_cast<UnderlyingType>(a) | static_cast<UnderlyingType>(b)); \
+    } \
+constexpr EnumType& operator |= (EnumType &a, EnumType b) \
     { return a = a | b; } \
-inline constexpr EnumType operator & (EnumType a, EnumType b) \
-    { return EnumType(((AZStd::underlying_type<EnumType>::type)a) & ((AZStd::underlying_type<EnumType>::type)b)); } \
-inline constexpr EnumType& operator &= (EnumType &a, EnumType b) \
+constexpr EnumType operator & (EnumType a, EnumType b) \
+    { \
+        using UnderlyingType = AZStd::underlying_type_t<EnumType>; \
+        return EnumType(static_cast<UnderlyingType>(a) & static_cast<UnderlyingType>(b)); \
+    } \
+constexpr EnumType& operator &= (EnumType &a, EnumType b) \
     { return a = a & b; } \
-inline constexpr EnumType operator ~ (EnumType a) \
-    { return EnumType(~((AZStd::underlying_type<EnumType>::type)a)); } \
-inline constexpr EnumType operator ^ (EnumType a, EnumType b) \
-    { return EnumType(((AZStd::underlying_type<EnumType>::type)a) ^ ((AZStd::underlying_type<EnumType>::type)b)); } \
-inline constexpr EnumType& operator ^= (EnumType &a, EnumType b) \
+constexpr EnumType operator ~ (EnumType a) \
+    { \
+        using UnderlyingType = AZStd::underlying_type_t<EnumType>; \
+        return EnumType(~static_cast<UnderlyingType>(a)); \
+    } \
+constexpr EnumType operator ^ (EnumType a, EnumType b) \
+    { \
+        using UnderlyingType = AZStd::underlying_type_t<EnumType>; \
+        return EnumType(static_cast<UnderlyingType>(a) ^ static_cast<UnderlyingType>(b)); \
+    } \
+constexpr EnumType& operator ^= (EnumType &a, EnumType b) \
     { return a = a ^ b; }
+
+// Overload arithmetic operators(+, -, *, /, %, <<, >>,++, --) for enum types
+#define AZ_DEFINE_ENUM_ARITHMETIC_OPERATORS(EnumType) \
+constexpr EnumType operator+(EnumType lhs, EnumType rhs) \
+    { \
+        using UnderlyingType = AZStd::underlying_type_t<EnumType>; \
+        return EnumType{ static_cast<UnderlyingType>(static_cast<UnderlyingType>(lhs) + static_cast<UnderlyingType>(rhs)) }; \
+    } \
+constexpr EnumType operator-(EnumType lhs, EnumType rhs) \
+    { \
+        using UnderlyingType = AZStd::underlying_type_t<EnumType>; \
+        return EnumType{ static_cast<UnderlyingType>(static_cast<UnderlyingType>(lhs) - static_cast<UnderlyingType>(rhs)) }; \
+    } \
+constexpr EnumType operator*(EnumType lhs, EnumType rhs) \
+    { \
+        using UnderlyingType = AZStd::underlying_type_t<EnumType>; \
+        return EnumType{ static_cast<UnderlyingType>(static_cast<UnderlyingType>(lhs) * static_cast<UnderlyingType>(rhs)) }; \
+    } \
+constexpr EnumType operator/(EnumType lhs, EnumType rhs) \
+    { \
+        using UnderlyingType = AZStd::underlying_type_t<EnumType>; \
+        return EnumType{ static_cast<UnderlyingType>(static_cast<UnderlyingType>(lhs) / static_cast<UnderlyingType>(rhs)) }; \
+    } \
+constexpr EnumType operator%(EnumType lhs, EnumType rhs) \
+    { \
+        using UnderlyingType = AZStd::underlying_type_t<EnumType>; \
+        return EnumType{ static_cast<UnderlyingType>(static_cast<UnderlyingType>(lhs) % static_cast<UnderlyingType>(rhs)) }; \
+    } \
+constexpr EnumType operator>>(EnumType value, int32_t shift) \
+    { \
+        using UnderlyingType = AZStd::underlying_type_t<EnumType>; \
+        return EnumType{ static_cast<UnderlyingType>(static_cast<UnderlyingType>(value) >> shift) }; \
+    } \
+constexpr EnumType operator<<(EnumType value, int32_t shift) \
+    { \
+        using UnderlyingType = AZStd::underlying_type_t<EnumType>; \
+        return EnumType{ static_cast<UnderlyingType>(static_cast<UnderlyingType>(value) << shift) }; \
+    } \
+constexpr EnumType& operator+=(EnumType& lhs, EnumType rhs) \
+    { \
+        using UnderlyingType = AZStd::underlying_type_t<EnumType>; \
+        return lhs = EnumType{ static_cast<UnderlyingType>(static_cast<UnderlyingType>(lhs) + static_cast<UnderlyingType>(rhs)) }; \
+    } \
+constexpr EnumType& operator-=(EnumType& lhs, EnumType rhs) \
+    { \
+        using UnderlyingType = AZStd::underlying_type_t<EnumType>; \
+        return lhs = EnumType{ static_cast<UnderlyingType>(static_cast<UnderlyingType>(lhs) - static_cast<UnderlyingType>(rhs)) }; \
+    } \
+constexpr EnumType& operator*=(EnumType& lhs, EnumType rhs) \
+    { \
+        using UnderlyingType = AZStd::underlying_type_t<EnumType>; \
+        return lhs = EnumType{ static_cast<UnderlyingType>(static_cast<UnderlyingType>(lhs) * static_cast<UnderlyingType>(rhs)) }; \
+    } \
+constexpr EnumType& operator/=(EnumType& lhs, EnumType rhs) \
+    { \
+        using UnderlyingType = AZStd::underlying_type_t<EnumType>; \
+        return lhs = EnumType{ static_cast<UnderlyingType>(static_cast<UnderlyingType>(lhs) / static_cast<UnderlyingType>(rhs)) }; \
+    } \
+constexpr EnumType& operator%=(EnumType& lhs, EnumType rhs) \
+    { \
+        using UnderlyingType = AZStd::underlying_type_t<EnumType>; \
+        return lhs = EnumType{ static_cast<UnderlyingType>(static_cast<UnderlyingType>(lhs) % static_cast<UnderlyingType>(rhs)) }; \
+    } \
+constexpr EnumType& operator>>=(EnumType& value, int32_t shift) \
+    { \
+        using UnderlyingType = AZStd::underlying_type_t<EnumType>; \
+        return value = EnumType{ static_cast<UnderlyingType>(static_cast<UnderlyingType>(value) >> shift) }; \
+    } \
+constexpr EnumType& operator<<=(EnumType& value, int32_t shift) \
+    { \
+        using UnderlyingType = AZStd::underlying_type_t<EnumType>; \
+        return value = EnumType{ static_cast<UnderlyingType>(static_cast<UnderlyingType>(value) << shift) }; \
+    } \
+constexpr EnumType& operator++(EnumType& value) \
+    { \
+        using UnderlyingType = AZStd::underlying_type_t<EnumType>; \
+        return value = EnumType{ static_cast<UnderlyingType>(static_cast<UnderlyingType>(value) + 1) }; \
+    } \
+constexpr EnumType& operator--(EnumType& value) \
+    { \
+        using UnderlyingType = AZStd::underlying_type_t<EnumType>; \
+        return value = EnumType{ static_cast<UnderlyingType>(static_cast<UnderlyingType>(value) - 1) }; \
+    } \
+constexpr EnumType operator++(EnumType& value, int) \
+    { const EnumType result = value; ++value; return result; } \
+constexpr EnumType operator--(EnumType& value, int) \
+    { const EnumType result = value; --value; return result; }
+
+// Overload relational operators(==, !=, <, >, <=, >=) for enum types
+#define AZ_DEFINE_ENUM_RELATIONAL_OPERATORS(EnumType) \
+constexpr bool operator>(EnumType lhs, EnumType rhs) \
+    { \
+        using UnderlyingType = AZStd::underlying_type_t<EnumType>; \
+        return static_cast<UnderlyingType>(lhs) > static_cast<UnderlyingType>(rhs); \
+    } \
+constexpr bool operator<(EnumType lhs, EnumType rhs) \
+    { \
+        using UnderlyingType = AZStd::underlying_type_t<EnumType>; \
+        return static_cast<UnderlyingType>(lhs) < static_cast<UnderlyingType>(rhs); \
+    } \
+constexpr bool operator>=(EnumType lhs, EnumType rhs) \
+    { \
+        using UnderlyingType = AZStd::underlying_type_t<EnumType>; \
+        return static_cast<UnderlyingType>(lhs) >= static_cast<UnderlyingType>(rhs); \
+    } \
+constexpr bool operator<=(EnumType lhs, EnumType rhs) \
+    { \
+        using UnderlyingType = AZStd::underlying_type_t<EnumType>; \
+        return static_cast<UnderlyingType>(lhs) <= static_cast<UnderlyingType>(rhs); \
+    } \
+constexpr bool operator==(EnumType lhs, EnumType rhs) \
+    { \
+        using UnderlyingType = AZStd::underlying_type_t<EnumType>; \
+        return static_cast<UnderlyingType>(lhs) == static_cast<UnderlyingType>(rhs); \
+    } \
+constexpr bool operator!=(EnumType lhs, EnumType rhs) \
+    { \
+        using UnderlyingType = AZStd::underlying_type_t<EnumType>; \
+        return static_cast<UnderlyingType>(lhs) != static_cast<UnderlyingType>(rhs); \
+    }

@@ -1483,7 +1483,7 @@ namespace {{ Component.attrib['Namespace'] }}
     {{ DefineRpcInvocations(Component, ControllerBaseName, 'Authority', 'Client', true)|indent(4) }}
 
 {% for Service in Component.iter('ComponentRelation') %}
-{%      if (Service.attrib['HasController']|booleanTrue) and (Service.attrib['Constraint'] != 'Incompatible') %}
+{%      if (Service.attrib['Constraint'] != 'Incompatible') and (Service.attrib['HasController']|booleanTrue)%}
     {{ Service.attrib['Namespace'] }}::{{ Service.attrib['Name'] }}Controller* {{ ControllerBaseName }}::Get{{ Service.attrib['Name'] }}Controller()
     {
         Multiplayer::MultiplayerComponent* controllerComponent = GetParent().Get{{ Service.attrib['Name'] }}();
@@ -1521,7 +1521,7 @@ namespace {{ Component.attrib['Namespace'] }}
             AZ::EditContext* editContext = serializeContext->GetEditContext();
             if (editContext)
             {
-                editContext->Class<{{ ComponentBaseName }}>("{{ ComponentBaseName }}", "{{ Component.attrib['Description'] }}")
+                editContext->Class<{{ ComponentBaseName }}>("{{ ComponentBaseName | camelToHuman | replace(" Component", "") }}", "{{ Component.attrib['Description'] }}")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "{{ Component.attrib['Namespace'] }}")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
@@ -1532,7 +1532,7 @@ namespace {{ Component.attrib['Namespace'] }}
                     {{ DefineArchetypePropertyEditReflection(Component, ComponentBaseName)|indent(20) }};
 {% if ComponentDerived %}
 
-                editContext->Class<{{ ComponentName }}>("{{ ComponentName }}", "{{ Component.attrib['Description'] }}")
+                editContext->Class<{{ ComponentName }}>("{{ ComponentName | camelToHuman | replace(" Component", "") }}", "{{ Component.attrib['Description'] }}")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "{{ Component.attrib['Namespace'] }}")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"));
@@ -1731,6 +1731,7 @@ namespace {{ Component.attrib['Namespace'] }}
 
         {{ RecordName }} record = {{ RecordName }}::AttachRecord(replicationRecord);
 
+        serializer.BeginObject("{{ ComponentBaseName }}");
         if (replicationRecord.ContainsAuthorityToClientBits())
         {
             SerializeAuthorityToClientProperties(record, serializer);
@@ -1747,6 +1748,7 @@ namespace {{ Component.attrib['Namespace'] }}
         {
             SerializeAutonomousToAuthorityProperties(record, serializer);
         }
+        serializer.EndObject("{{ ComponentBaseName }}");
         return serializer.IsValid();
     }
 

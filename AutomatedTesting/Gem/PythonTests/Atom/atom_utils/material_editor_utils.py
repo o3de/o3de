@@ -51,11 +51,11 @@ def open_material(file_path):
     return azlmbr.atomtools.AtomToolsDocumentSystemRequestBus(bus.Broadcast, "OpenDocument", file_path)
 
 
-def is_open(document_id):
+def is_document_open(document_id):
     """
     :return: bool
     """
-    return azlmbr.atomtools.AtomToolsDocumentRequestBus(bus.Event, "IsOpen", document_id)
+    return azlmbr.atomtools.AtomToolsDocumentSystemRequestBus(bus.Broadcast, "IsDocumentOpen", document_id)
 
 
 def save_document(document_id):
@@ -135,34 +135,34 @@ def set_pane_visibility(pane_name, value):
 
 def select_lighting_config(asset_path):
     asset_id = azlmbr.asset.AssetCatalogRequestBus(azlmbr.bus.Broadcast, 'GetAssetIdByPath', asset_path, azlmbr.math.Uuid(), False)
-    azlmbr.materialeditor.MaterialViewportSettingsRequestBus(azlmbr.bus.Broadcast, "LoadLightingPresetByAssetId", asset_id)
+    azlmbr.atomtools.EntityPreviewViewportSettingsRequestBus(azlmbr.bus.Broadcast, "LoadLightingPresetByAssetId", asset_id)
 
 
 def set_grid_enable_disable(value):
-    azlmbr.materialeditor.MaterialViewportSettingsRequestBus(azlmbr.bus.Broadcast, "SetGridEnabled", value)
+    azlmbr.atomtools.EntityPreviewViewportSettingsRequestBus(azlmbr.bus.Broadcast, "SetGridEnabled", value)
 
 
 def get_grid_enable_disable():
     """
     :return: bool
     """
-    return azlmbr.materialeditor.MaterialViewportSettingsRequestBus(azlmbr.bus.Broadcast, "GetGridEnabled")
+    return azlmbr.atomtools.EntityPreviewViewportSettingsRequestBus(azlmbr.bus.Broadcast, "GetGridEnabled")
 
 
 def set_shadowcatcher_enable_disable(value):
-    azlmbr.materialeditor.MaterialViewportSettingsRequestBus(azlmbr.bus.Broadcast, "SetShadowCatcherEnabled", value)
+    azlmbr.atomtools.EntityPreviewViewportSettingsRequestBus(azlmbr.bus.Broadcast, "SetShadowCatcherEnabled", value)
 
 
 def get_shadowcatcher_enable_disable():
     """
     :return: bool
     """
-    return azlmbr.materialeditor.MaterialViewportSettingsRequestBus(azlmbr.bus.Broadcast, "GetShadowCatcherEnabled")
+    return azlmbr.atomtools.EntityPreviewViewportSettingsRequestBus(azlmbr.bus.Broadcast, "GetShadowCatcherEnabled")
 
 
 def select_model_config(asset_path):
     asset_id = azlmbr.asset.AssetCatalogRequestBus(azlmbr.bus.Broadcast, 'GetAssetIdByPath', asset_path, azlmbr.math.Uuid(), False)
-    azlmbr.materialeditor.MaterialViewportSettingsRequestBus(azlmbr.bus.Broadcast, "LoadModelPresetByAssetId", asset_id)
+    azlmbr.atomtools.EntityPreviewViewportSettingsRequestBus(azlmbr.bus.Broadcast, "LoadModelPresetByAssetId", asset_id)
 
 
 def exit():

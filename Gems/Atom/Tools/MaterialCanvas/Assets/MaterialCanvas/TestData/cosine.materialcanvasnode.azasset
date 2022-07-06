@@ -1,0 +1,23 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "DynamicNodeConfig",
+    "ClassData": {
+        "category": "Math Operations",
+        "title": "Time",
+        "outputSlots": [
+            {
+                "name": "outTime",
+                "displayName": "Time",
+                "description": "Time",
+                "supportedDataTypes": [
+                    "float"
+                ],
+                "defaultTime": {
+                    "$type": "float",
+                    "Value": 0.0
+                }
+            }
+        ]
+    }
+}

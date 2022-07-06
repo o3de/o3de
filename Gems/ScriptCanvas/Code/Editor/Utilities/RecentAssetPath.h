@@ -12,7 +12,8 @@
 
 namespace ScriptCanvasEditor
 {
-    SourceHandle ReadRecentAssetId();
+    using SourceHandle = SourceHandle;
+
     void SetRecentAssetId(SourceHandle assetId);
     void ClearRecentAssetId();
 }

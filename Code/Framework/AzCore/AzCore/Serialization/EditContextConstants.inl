@@ -124,6 +124,7 @@ namespace AZ
             //! Container attribute that is used to override labels for its elements given the index of the element
             const static AZ::Crc32 IndexedChildNameLabelOverride = AZ_CRC("IndexedChildNameLabelOverride", 0x5f313ac2);
             const static AZ::Crc32 DescriptionTextOverride = AZ_CRC("DescriptionTextOverride", 0x608b64a8);
+            const static AZ::Crc32 ContainerReorderAllow = AZ_CRC_CE("ContainerReorderAllow");
 
             const static AZ::Crc32 PrimaryAssetType = AZ_CRC("PrimaryAssetType", 0xa400a5ce);
             const static AZ::Crc32 DynamicElementType = AZ_CRC("DynamicElementType", 0x7c0b82f9);

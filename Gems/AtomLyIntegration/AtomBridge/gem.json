@@ -26,7 +26,6 @@
         "ImguiAtom",
         "AtomFont",
         "AtomViewportDisplayInfo",
-        "Atom",
         "AtomShader",
         "ImageProcessingAtom",
         "AtomToolsFramework",

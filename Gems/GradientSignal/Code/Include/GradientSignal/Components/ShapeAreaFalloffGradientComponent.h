@@ -8,12 +8,14 @@
 
 #pragma once
 
-#include <LmbrCentral/Dependency/DependencyMonitor.h>
 #include <AzCore/Component/Component.h>
+#include <AzCore/Component/EntityBus.h>
+#include <AzCore/std/parallel/shared_mutex.h>
 #include <GradientSignal/Ebuses/GradientRequestBus.h>
-#include <GradientSignal/GradientSampler.h>
 #include <GradientSignal/Ebuses/ShapeAreaFalloffGradientRequestBus.h>
+#include <GradientSignal/GradientSampler.h>
 #include <LmbrCentral/Dependency/DependencyMonitor.h>
+#include <LmbrCentral/Shape/ShapeComponentBus.h>
 
 namespace LmbrCentral
 {
@@ -33,8 +35,8 @@ namespace GradientSignal
 
         AZ::EntityId m_shapeEntityId;
         float m_falloffWidth = 1.0f;
-
         FalloffType m_falloffType = FalloffType::Outer;
+        bool m_is3dFalloff = false;
     };
 
     static const AZ::Uuid ShapeAreaFalloffGradientComponentTypeId = "{F32A108B-7612-4AC2-B436-96DDDCE9E70B}";
@@ -46,6 +48,8 @@ namespace GradientSignal
         : public AZ::Component
         , private GradientRequestBus::Handler
         , private ShapeAreaFalloffGradientRequestBus::Handler
+        , private LmbrCentral::ShapeComponentNotificationsBus::Handler
+        , private AZ::EntityBus::Handler
     {
     public:
         template<typename, typename> friend class LmbrCentral::EditorWrappedComponentBase;
@@ -72,6 +76,15 @@ namespace GradientSignal
         void GetValues(AZStd::span<const AZ::Vector3> positions, AZStd::span<float> outValues) const override;
 
     protected:
+        ////////////////////////////////////////////////////////////////////////
+        // EntityEvents
+        void OnEntityActivated(const AZ::EntityId& entityId) override;
+        void OnEntityDeactivated(const AZ::EntityId& entityId) override;
+
+        ////////////////////////////////////////////////////////////////////////
+        // LmbrCentral::ShapeComponentNotificationsBus
+        void OnShapeChanged(LmbrCentral::ShapeComponentNotifications::ShapeChangeReasons reasons) override;
+
         //////////////////////////////////////////////////////////////////////////
         // ShapeAreaFalloffGradientRequestBus
         AZ::EntityId GetShapeEntityId() const override;
@@ -83,8 +96,14 @@ namespace GradientSignal
         FalloffType GetFalloffType() const override;
         void SetFalloffType(FalloffType type) override;
 
+        bool Get3dFalloff() const override;
+        void Set3dFalloff(bool is3dFalloff) override;
+
+        void CacheShapeBounds();
     private:
         ShapeAreaFalloffGradientConfig m_configuration;
         LmbrCentral::DependencyMonitor m_dependencyMonitor;
+        mutable AZStd::shared_mutex m_queryMutex;
+        AZ::Vector3 m_cachedShapeCenter;
     };
 }

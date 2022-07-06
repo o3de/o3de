@@ -16,25 +16,28 @@
 #include <EMotionStudio/EMStudioSDK/Source/MainWindowEventFilter.h>
 #include <EMotionStudio/EMStudioSDK/Source/PluginManager.h>
 #include <EMotionStudio/EMStudioSDK/Source/PreferencesWindow.h>
-#include <EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderPlugin.h>
 #include <EMotionStudio/EMStudioSDK/Source/ResetSettingsDialog.h>
 #include <EMotionStudio/EMStudioSDK/Source/SaveChangedFilesManager.h>
 #include <EMotionStudio/EMStudioSDK/Source/Workspace.h>
+#include <Editor/SaveDirtyFilesCallbacks.h>
+#include <MCore/Source/LogManager.h>
 
 #include <Editor/ActorEditorBus.h>
 #include <EMotionFX/CommandSystem/Source/CommandManager.h>
 #include <EMotionFX/CommandSystem/Source/MiscCommands.h>
 #include <EMotionFX/CommandSystem/Source/SelectionCommands.h>
-#include <EMotionFX/Tools/EMotionStudio/Plugins/RenderPlugins/Source/OpenGLRender/OpenGLRenderPlugin.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 
 #include <AzQtComponents/Components/FancyDocking.h>
 
 // include Qt related
 #include <QAbstractEventDispatcher>
+#include <QCloseEvent>
 #include <QComboBox>
 #include <QDesktopServices>
 #include <QDir>
+#include <QDragEnterEvent>
+#include <QDropEvent>
 #include <QLabel>
 #include <QMenu>
 #include <QMenuBar>
@@ -44,10 +47,11 @@
 #include <QStatusBar>
 #include <QTextEdit>
 
-// include MCore related
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/IO/Path/Path.h>
+#include <AzCore/std/containers/vector.h>
+#include <AzCore/std/sort.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
@@ -74,89 +78,6 @@ AZ_POP_DISABLE_WARNING
 
 namespace EMStudio
 {
-    class SaveDirtyWorkspaceCallback
-        : public SaveDirtyFilesCallback
-    {
-        MCORE_MEMORYOBJECTCATEGORY(SaveDirtyWorkspaceCallback, MCore::MCORE_DEFAULT_ALIGNMENT, MEMCATEGORY_EMSTUDIOSDK)
-
-    public:
-        SaveDirtyWorkspaceCallback()
-            : SaveDirtyFilesCallback()                                                              {}
-        ~SaveDirtyWorkspaceCallback()                                                               {}
-
-        enum
-        {
-            TYPE_ID = 0x000002345
-        };
-        uint32 GetType() const override                                                             { return TYPE_ID; }
-        uint32 GetPriority() const override                                                         { return 0; }
-        bool GetIsPostProcessed() const override                                                    { return false; }
-
-        void GetDirtyFileNames(AZStd::vector<AZStd::string>* outFileNames, AZStd::vector<ObjectPointer>* outObjects) override
-        {
-            Workspace* workspace = GetManager()->GetWorkspace();
-            if (workspace->GetDirtyFlag())
-            {
-                // add the filename to the dirty filenames array
-                outFileNames->push_back(workspace->GetFilename());
-
-                // add the link to the actual object
-                ObjectPointer objPointer;
-                objPointer.m_workspace = workspace;
-                outObjects->push_back(objPointer);
-            }
-        }
-
-        int SaveDirtyFiles(const AZStd::vector<AZStd::string>& filenamesToSave, const AZStd::vector<ObjectPointer>& objects, MCore::CommandGroup* commandGroup) override
-        {
-            MCORE_UNUSED(filenamesToSave);
-
-            const size_t numObjects = objects.size();
-            for (size_t i = 0; i < numObjects; ++i)
-            {
-                // get the current object pointer and skip directly if the type check fails
-                ObjectPointer objPointer = objects[i];
-                if (objPointer.m_workspace == nullptr)
-                {
-                    continue;
-                }
-
-                Workspace* workspace = objPointer.m_workspace;
-
-                // has the workspace been saved already or is it a new one?
-                if (workspace->GetFilenameString().empty())
-                {
-                    // open up save as dialog so that we can choose a filename
-                    const AZStd::string filename = GetMainWindow()->GetFileManager()->SaveWorkspaceFileDialog(GetMainWindow());
-                    if (filename.empty())
-                    {
-                        return DirtyFileManager::CANCELED;
-                    }
-
-                    // save the workspace using the newly selected filename
-                    AZStd::string command = AZStd::string::format("SaveWorkspace -filename \"%s\"", filename.c_str());
-                    commandGroup->AddCommandString(command);
-                }
-                else
-                {
-                    // save workspace using its filename
-                    AZStd::string command = AZStd::string::format("SaveWorkspace -filename \"%s\"", workspace->GetFilename());
-                    commandGroup->AddCommandString(command);
-                }
-            }
-
-            return DirtyFileManager::FINISHED;
-        }
-
-        const char* GetExtension() const override       { return "emfxworkspace"; }
-        const char* GetFileType() const override        { return "workspace"; }
-        const AZ::Uuid GetFileRttiType() const override
-        {
-            return azrtti_typeid<EMStudio::Workspace>();
-        }
-
-    };
-
     class UndoMenuCallback
         : public MCore::CommandManagerCallback
     {
@@ -282,6 +203,7 @@ namespace EMStudio
         // Unload everything from the Editor, so that reopening the editor
         // results in an empty scene
         Reset();
+        CommandSystem::ClearMotionSetsCommand(); // Remove the default motion set.
 
         delete m_shortcutManager;
         delete m_fileManager;
@@ -466,7 +388,7 @@ namespace EMStudio
 
         menu->addAction("Documentation", this, []
         {
-            QDesktopServices::openUrl(QUrl("https://o3de.org/docs/"));
+            QDesktopServices::openUrl(QUrl("https://o3de.org/docs/user-guide/visualization/animation/"));
         });
 
         menu->addAction("Forums", this, []
@@ -496,6 +418,10 @@ namespace EMStudio
 
         // Create the dirty file manager and register the workspace callback.
         m_dirtyFileManager = new DirtyFileManager;
+        m_dirtyFileManager->AddCallback(new SaveDirtyActorFilesCallback());
+        m_dirtyFileManager->AddCallback(new SaveDirtyMotionFilesCallback());
+        m_dirtyFileManager->AddCallback(new SaveDirtyMotionSetFilesCallback());
+        m_dirtyFileManager->AddCallback(new SaveDirtyAnimGraphFilesCallback());
         m_dirtyFileManager->AddCallback(new SaveDirtyWorkspaceCallback);
 
         // init the file manager
@@ -994,7 +920,19 @@ namespace EMStudio
         }
 
         // enable the menus if at least one motion set
-        if (EMotionFX::GetMotionManager().GetNumMotionSets() > 0)
+        bool emptyDefaultMotionSet = false;
+        if (EMotionFX::GetMotionManager().GetNumMotionSets() == 1)
+        {
+            EMotionFX::MotionSet* motionSet = EMotionFX::GetMotionManager().GetMotionSet(0);
+            if (motionSet->GetNumChildSets() == 0 &&
+                motionSet->GetNumMotionEntries() == 0 &&
+                motionSet->GetNameString() == CommandSystem::s_defaultMotionSetName)
+            {
+                emptyDefaultMotionSet = true;
+            }
+        }
+
+        if (EMotionFX::GetMotionManager().GetNumMotionSets() > 0 && !emptyDefaultMotionSet)
         {
             m_resetAction->setEnabled(true);
             m_saveAllAction->setEnabled(true);
@@ -1088,37 +1026,27 @@ namespace EMStudio
     // update the items inside the Window->Create menu item
     void MainWindow::UpdateCreateWindowMenu()
     {
-        // get the plugin manager
         PluginManager* pluginManager = GetPluginManager();
 
-        // get the number of plugins
-        const size_t numPlugins = pluginManager->GetNumPlugins();
+        const size_t numRegisteredPlugins = pluginManager->GetNumRegisteredPlugins();
+        const PluginManager::PluginVector& registeredPlugins = pluginManager->GetRegisteredPlugins();
 
-        // add each plugin name in an array to sort them
-        AZStd::vector<AZStd::string> sortedPlugins;
-        sortedPlugins.reserve(numPlugins);
-        for (size_t p = 0; p < numPlugins; ++p)
+        AZStd::vector<AZStd::string> sortedPluginNames;
+        sortedPluginNames.reserve(numRegisteredPlugins);
+        for (const EMStudioPlugin* plugin : registeredPlugins)
         {
-            EMStudioPlugin* plugin = pluginManager->GetPlugin(p);
-            sortedPlugins.emplace_back(plugin->GetName());
+            sortedPluginNames.push_back(plugin->GetName());
         }
-        AZStd::sort(begin(sortedPlugins), end(sortedPlugins));
+        AZStd::sort(sortedPluginNames.begin(), sortedPluginNames.end());
 
         // clear the window menu
         m_createWindowMenu->clear();
 
         // for all registered plugins, create a menu items
-        for (size_t p = 0; p < numPlugins; ++p)
+        for (const AZStd::string& pluginTypeString : sortedPluginNames)
         {
-            // get the plugin
-            const size_t pluginIndex = pluginManager->FindPluginByTypeString(sortedPlugins[p].c_str());
-            EMStudioPlugin* plugin = pluginManager->GetPlugin(pluginIndex);
-
-            // don't add invisible plugins to the list
-            if (plugin->GetPluginType() == EMStudioPlugin::PLUGINTYPE_INVISIBLE)
-            {
-                continue;
-            }
+            const size_t pluginIndex = pluginManager->FindRegisteredPluginIndex(pluginTypeString.c_str());
+            EMStudioPlugin* plugin = registeredPlugins[pluginIndex];
 
             // check if multiple instances allowed
             // on this case the plugin is not one action but one submenu
@@ -1177,7 +1105,7 @@ namespace EMStudio
             }
 
             // if we have a dock widget plugin here, making floatable and change its window size
-            if (newPlugin->GetPluginType() == EMStudioPlugin::PLUGINTYPE_DOCKWIDGET)
+            if (newPlugin->GetPluginType() == EMStudioPlugin::PLUGINTYPE_WINDOW)
             {
                 DockWidgetPlugin* dockPlugin = static_cast<DockWidgetPlugin*>(newPlugin);
                 QRect dockRect;
@@ -1188,7 +1116,7 @@ namespace EMStudio
         }
         else // (checked == false)
         {
-            EMStudioPlugin* plugin = EMStudio::GetPluginManager()->GetActivePluginByTypeString(FromQtString(pluginName).c_str());
+            EMStudioPlugin* plugin = EMStudio::GetPluginManager()->FindActivePluginByTypeString(FromQtString(pluginName).c_str());
             AZ_Assert(plugin, "Failed to get plugin, since it was checked it should be active");
             EMStudio::GetPluginManager()->RemoveActivePlugin(plugin);
         }
@@ -1226,17 +1154,24 @@ namespace EMStudio
 
             generalPropertyWidget->AddInstance(&m_options, azrtti_typeid(m_options));
 
-            PluginManager* pluginManager = GetPluginManager();
-            const size_t numPlugins = pluginManager->GetNumActivePlugins();
-            for (size_t i = 0; i < numPlugins; ++i)
+            const PluginManager::PluginVector& activePlugins = GetPluginManager()->GetActivePlugins();
+            for (EMStudioPlugin* plugin : activePlugins)
             {
-                EMStudioPlugin* currentPlugin = pluginManager->GetActivePlugin(i);
-                PluginOptions* pluginOptions = currentPlugin->GetOptions();
-                if (pluginOptions)
+                if (PluginOptions* pluginOptions = plugin->GetOptions())
                 {
                     generalPropertyWidget->AddInstance(pluginOptions, azrtti_typeid(pluginOptions));
                 }
             }
+
+            const PluginManager::PersistentPluginVector& persistentPlugins = GetPluginManager()->GetPersistentPlugins();
+            for (const AZStd::unique_ptr<PersistentPlugin>& plugin : persistentPlugins)
+            {
+                if (PluginOptions* pluginOptions = plugin->GetOptions())
+                {
+                    generalPropertyWidget->AddInstance(pluginOptions, azrtti_typeid(pluginOptions));
+                }
+            }
+
 
             AZ::SerializeContext* serializeContext = nullptr;
             AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
@@ -1340,15 +1275,6 @@ namespace EMStudio
 
         // add the load and the create instance commands
         commandGroup.AddCommandString(loadActorCommand.c_str());
-
-        // Temp solution after we refactor / remove the actor manager.
-        // We only need to create the actor instance by ourselves when openGLRenderPlugin is present.
-        // Atom render viewport will create actor instance along with the actor component.
-        PluginManager* pluginManager = GetPluginManager();
-        if (pluginManager->FindActivePlugin(static_cast<uint32>(OpenGLRenderPlugin::CLASS_ID)))
-        {
-            commandGroup.AddCommandString("CreateActorInstance -actorID %LASTRESULT%");
-        }
 
         // execute the group command
         if (GetCommandManager()->ExecuteCommandGroup(commandGroup, outResult) == false)
@@ -1593,7 +1519,7 @@ namespace EMStudio
     }
 
 
-    void MainWindow::Reset(bool clearActors, bool clearMotionSets, bool clearMotions, bool clearAnimGraphs, MCore::CommandGroup* commandGroup)
+    void MainWindow::Reset(bool clearActors, bool clearMotionSets, bool clearMotions, bool clearAnimGraphs, MCore::CommandGroup* commandGroup, bool addDefaultMotionSet)
     {
         // create and relink to a temporary new command group in case the input command group has not been specified
         MCore::CommandGroup newCommandGroup("Reset Scene");
@@ -1612,6 +1538,10 @@ namespace EMStudio
             if (clearMotionSets)
             {
                 CommandSystem::ClearMotionSetsCommand(&newCommandGroup);
+                if (addDefaultMotionSet)
+                {
+                    CommandSystem::CreateDefaultMotionSet(/*forceCreate=*/true, &newCommandGroup);
+                }
             }
             if (clearMotions)
             {
@@ -1631,6 +1561,10 @@ namespace EMStudio
             if (clearMotionSets)
             {
                 CommandSystem::ClearMotionSetsCommand(commandGroup);
+                if (addDefaultMotionSet)
+                {
+                    CommandSystem::CreateDefaultMotionSet(/*forceCreate=*/true, commandGroup);
+                }
             }
             if (clearMotions)
             {
@@ -1650,7 +1584,7 @@ namespace EMStudio
         GetCommandManager()->ClearHistory();
 
         Workspace* workspace = GetManager()->GetWorkspace();
-        workspace->SetDirtyFlag(true);
+        workspace->SetDirtyFlag(false);
     }
 
     void MainWindow::OnReset()
@@ -2269,7 +2203,7 @@ namespace EMStudio
                 MCore::CommandGroup workspaceCommandGroup("Load workspace", 64);
 
                 // clear everything before laoding a new workspace file
-                Reset(true, true, true, true, &workspaceCommandGroup);
+                Reset(/*clearActors=*/true, /*clearMotionSets=*/true, /*clearMotions=*/true, /*clearAnimGraphs=*/true, &workspaceCommandGroup, /*addDefaultMotionSet=*/false);
                 workspaceCommandGroup.SetReturnFalseAfterError(true);
 
                 // load the first workspace of the list as more doesn't make sense anyway
@@ -2283,16 +2217,12 @@ namespace EMStudio
                         // set the workspace not dirty
                         workspace->SetDirtyFlag(false);
 
-                        // for all registered plugins, call the after load workspace callback
-                        PluginManager* pluginManager = GetPluginManager();
-                        const size_t numPlugins = pluginManager->GetNumActivePlugins();
-                        for (size_t p = 0; p < numPlugins; ++p)
+                        const PluginManager::PluginVector& activePlugins = GetPluginManager()->GetActivePlugins();
+                        for (EMStudioPlugin* plugin : activePlugins)
                         {
-                            EMStudioPlugin* plugin = pluginManager->GetActivePlugin(p);
                             plugin->OnAfterLoadProject();
                         }
 
-                        // clear the history
                         GetCommandManager()->ClearHistory();
 
                         // set the window title using the workspace filename
@@ -2469,12 +2399,9 @@ namespace EMStudio
             LoadFiles(m_characterFiles, 0, 0, false, true);
             m_characterFiles.clear();
 
-            // for all registered plugins, call the after load actors callback
-            PluginManager* pluginManager = GetPluginManager();
-            const size_t numPlugins = pluginManager->GetNumActivePlugins();
-            for (size_t p = 0; p < numPlugins; ++p)
+            const PluginManager::PluginVector& activePlugins = GetPluginManager()->GetActivePlugins();
+            for (EMStudioPlugin* plugin : activePlugins)
             {
-                EMStudioPlugin* plugin = pluginManager->GetActivePlugin(p);
                 plugin->OnAfterLoadActors();
             }
         }
@@ -2805,14 +2732,9 @@ namespace EMStudio
 
     void MainWindow::OnUpdateRenderPlugins()
     {
-        // sort the active plugins based on their priority
-        PluginManager* pluginManager = GetPluginManager();
-
-        // get the number of active plugins, iterate through them and call the process frame method
-        const size_t numPlugins = pluginManager->GetNumActivePlugins();
-        for (size_t p = 0; p < numPlugins; ++p)
+        const PluginManager::PluginVector& activePlugins = GetPluginManager()->GetActivePlugins();
+        for (EMStudioPlugin* plugin : activePlugins)
         {
-            EMStudioPlugin* plugin = pluginManager->GetActivePlugin(p);
             if (plugin->GetPluginType() == EMStudioPlugin::PLUGINTYPE_RENDERING)
             {
                 plugin->ProcessFrame(0.0f);
@@ -2828,11 +2750,16 @@ namespace EMStudio
             return;
         }
 
-        const size_t numPlugins = pluginManager->GetNumActivePlugins();
-        for (size_t i = 0; i < numPlugins; ++i)
+        const PluginManager::PluginVector& activePlugins = pluginManager->GetActivePlugins();
+        for (EMStudioPlugin* plugin : activePlugins)
         {
-            EMStudio::EMStudioPlugin* plugin = pluginManager->GetActivePlugin(i);
             plugin->ProcessFrame(timeDelta);
+        }
+
+        const PluginManager::PersistentPluginVector& persistentPlugins = pluginManager->GetPersistentPlugins();
+        for (const AZStd::unique_ptr<PersistentPlugin>& plugin : persistentPlugins)
+        {
+            plugin->Update(timeDelta);
         }
     }
 

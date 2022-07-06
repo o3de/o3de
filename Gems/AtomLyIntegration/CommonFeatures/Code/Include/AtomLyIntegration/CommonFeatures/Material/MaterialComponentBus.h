@@ -15,130 +15,200 @@ namespace AZ
     namespace Render
     {
         //! MaterialComponentRequestBus provides an interface to request operations on a MaterialComponent
-        class MaterialComponentRequests
-            : public ComponentBus
+        class MaterialComponentRequests : public ComponentBus
         {
         public:
-            //! Get all material assignments that can be overridden
-            virtual MaterialAssignmentMap GetOriginalMaterialAssignments() const = 0;
-            //! Get material assignment id matching lod and label substring
-            virtual MaterialAssignmentId FindMaterialAssignmentId(const MaterialAssignmentLodIndex lod, const AZStd::string& label) const = 0;
-            //! Get default material asset
+            //! Get a map representing the default layout and values for all material assignment slots on the source model or object
+            virtual MaterialAssignmentMap GetDefautMaterialMap() const = 0;
+
+            //! Search for a material assignment ID matching the lod and label parameters
+            //! @param lod Index of the LOD to be searched for the material assignment ID. -1 is used to search the default material and
+            //! model material slots.
+            //! @param label Substring used to look up a material assignment ID with a matching label.
+            //! @returns The corresponding material assignment ID is found, otherwise DefaultMaterialAssignmentId.
+            virtual MaterialAssignmentId FindMaterialAssignmentId(
+                const MaterialAssignmentLodIndex lod, const AZStd::string& label) const = 0;
+
+            //! Get the material asset associated with the source model or object prior to overrides being applied.
+            //! @param materialAssignmentId ID of material assignment slot for which the information is being requested.
+            //! @returns Default asset ID associated with the material assignment ID, otherwise an invalid asset ID.
             virtual AZ::Data::AssetId GetDefaultMaterialAssetId(const MaterialAssignmentId& materialAssignmentId) const = 0;
-            //! Get material slot label
-            virtual AZStd::string GetMaterialSlotLabel(const MaterialAssignmentId& materialAssignmentId) const = 0;
-            //! Set material overrides
-            virtual void SetMaterialOverrides(const MaterialAssignmentMap& materials) = 0;
-            //! Get material overrides
-            virtual const MaterialAssignmentMap& GetMaterialOverrides() const = 0;
-            //! Clear all material overrides
-            virtual void ClearAllMaterialOverrides() = 0;
-            //! Clear non-lod material overrides
-            virtual void ClearModelMaterialOverrides() = 0;
-            //! Clear lod material overrides
-            virtual void ClearLodMaterialOverrides() = 0;
-            //! Clear residual materials that don't correspond to the associated model
-            virtual void ClearIncompatibleMaterialOverrides() = 0;
-            //! Clear materials that reference missing assets
-            virtual void ClearInvalidMaterialOverrides() = 0;
-            //! Repair materials that reference missing assets by assigning the default asset
-            virtual void RepairInvalidMaterialOverrides() = 0;
-            //! Repair material property overrides that reference missing properties by auto-renaming them where possible
+
+            //! Get the material asset associated with the source model or object prior to overrides being applied.
+            //! @param materialAssignmentId ID of material assignment slot for which the information is being requested.
+            //! @returns String corresponding to the display name of the material slot.
+            virtual AZStd::string GetMaterialLabel(const MaterialAssignmentId& materialAssignmentId) const = 0;
+
+            //! Replaces all material and property overrides with whatever is contained in the provided map.
+            //! @param materials Map of material assignment data including materials, property overrides, and other parameters.
+            virtual void SetMaterialMap(const MaterialAssignmentMap& materials) = 0;
+
+            //! Returns all materials and properties used by the material component.
+            //! @returns Map of material assigned data including materials, property overrides, and other parameters.
+            virtual const MaterialAssignmentMap& GetMaterialMap() const = 0;
+
+            //! Clears all overridden materials and properties from the material component.
+            virtual void ClearMaterialMap() = 0;
+
+            //! Clears all overrides from the material component not associated with a specific LOD.
+            virtual void ClearMaterialsOnModelSlots() = 0;
+
+            //! Clears all overrides from the material component associated with a specific LOD.
+            virtual void ClearMaterialsOnLodSlots() = 0;
+
+            //! Clear all material overrides from the material component mapped to material assignment IDs that do not match the current
+            //! material layout. This is usually used for clearing materials leftover between model changes or moving the material component
+            //! from one entity to another.
+            virtual void ClearMaterialsOnInvalidSlots() = 0;
+
+            //! Clears all material overrides referencing material assets that cant' be located.
+            virtual void ClearMaterialsWithMissingAssets() = 0;
+
+            //! Updates all material overrides referencing material assets that can't be located to instead point to a default material
+            //! asset.
+            virtual void RepairMaterialsWithMissingAssets() = 0;
+
+            //! Remaps material property overrides that have been renamed since they were assigned.
             //! @return the number of properties that were updated
-            virtual uint32_t ApplyAutomaticPropertyUpdates() = 0;
-            //! Set default material override
-            virtual void SetDefaultMaterialOverride(const AZ::Data::AssetId& materialAssetId) = 0;
-            //! Get default material override
-            virtual const AZ::Data::AssetId GetDefaultMaterialOverride() const = 0;
-            //! Clear default material override
-            virtual void ClearDefaultMaterialOverride() = 0;
-            //! Set material override
-            virtual void SetMaterialOverride(const MaterialAssignmentId& materialAssignmentId, const AZ::Data::AssetId& materialAssetId) = 0;
-            //! Get material override
-            virtual AZ::Data::AssetId GetMaterialOverride(const MaterialAssignmentId& materialAssignmentId) const = 0;
-            //! Clear material override
-            virtual void ClearMaterialOverride(const MaterialAssignmentId& materialAssignmentId) = 0;
+            virtual uint32_t RepairMaterialsWithRenamedProperties() = 0;
+
+            //! Convenience function to set the overridden material asset on the default material slot.
+            //! @param materialAssetId Material asset that will be assigned to the default material slot.
+            virtual void SetMaterialAssetIdOnDefaultSlot(const AZ::Data::AssetId& materialAssetId) = 0;
+
+            //! Convenience function to get the current material asset on the default material slot.
+            virtual const AZ::Data::AssetId GetMaterialAssetIdOnDefaultSlot() const = 0;
+
+            //! Convenience function to clear be over written material has set on the default material slot.
+            virtual void ClearMaterialAssetIdOnDefaultSlot() = 0;
+
+            //! Assign a material asset to the slot corresponding to material assignment ID
+            //! @param materialAssignmentId ID of material slot that the material will be assigned to.
+            //! @param materialAssetId Material asset that will be assigned to the material slot.
+            virtual void SetMaterialAssetId(const MaterialAssignmentId& materialAssignmentId, const AZ::Data::AssetId& materialAssetId) = 0;
+
+            //! Retrieve the material asset associated with the material assignment ID
+            //! @param materialAssignmentId ID of material slot.
+            //! @returns The current material asset ID is found, otherwise invalid asset ID .
+            virtual AZ::Data::AssetId GetMaterialAssetId(const MaterialAssignmentId& materialAssignmentId) const = 0;
+
+            //! Removes the material asset associated with the material assignment ID
+            //! @param materialAssignmentId ID of material slot.
+            virtual void ClearMaterialAssetId(const MaterialAssignmentId& materialAssignmentId) = 0;
+
+            //! Check if the material slot contains an explicit material asset override
+            //! @param materialAssignmentId ID of material slot.
+            //! @returns true if a valid material asset has been assigned. 
+            virtual bool IsMaterialAssetIdOverridden(const MaterialAssignmentId& materialAssignmentId) const = 0;
+
             //! Set a material property override value wrapped by an AZStd::any
-            virtual void SetPropertyOverride(const MaterialAssignmentId& materialAssignmentId, const AZStd::string& propertyName, const AZStd::any& value) = 0;
-            //! Get a material property override value wrapped by an AZStd::any
-            virtual AZStd::any GetPropertyOverride(const MaterialAssignmentId& materialAssignmentId, const AZStd::string& propertyName) const = 0;
-            //! Clear property override for a specific material assignment
-            virtual void ClearPropertyOverride(const MaterialAssignmentId& materialAssignmentId, const AZStd::string& propertyName) = 0;
-            //! Clear property overrides for a specific material assignment
-            virtual void ClearPropertyOverrides(const MaterialAssignmentId& materialAssignmentId) = 0;
-            //! Clear all property overrides
-            virtual void ClearAllPropertyOverrides() = 0;
-            //! Set Property overrides for a specific material assignment
-            virtual void SetPropertyOverrides(
+            //! @param materialAssignmentId ID of material slot.
+            //! @param propertyName Name of the property being assigned.
+            //! @param value Value to be assigned to the specified property.
+            virtual void SetPropertyValue(
+                const MaterialAssignmentId& materialAssignmentId, const AZStd::string& propertyName, const AZStd::any& value) = 0;
+
+            //! Get the current value of a material property wrapped by an AZStd::any
+            //! @param materialAssignmentId ID of material slot.
+            //! @param propertyName Name of the property being requested.
+            //! @returns Value of the property is located, otherwise an empty AZStd::any.
+            virtual AZStd::any GetPropertyValue(
+                const MaterialAssignmentId& materialAssignmentId, const AZStd::string& propertyName) const = 0;
+
+            //! Clear any property override associated with the material assignment ID and property name.
+            //! @param materialAssignmentId ID of material slot.
+            //! @param propertyName Name of the property being cleared.
+            virtual void ClearPropertyValue(const MaterialAssignmentId& materialAssignmentId, const AZStd::string& propertyName) = 0;
+
+            //! Clear all property overrides associated with the material assignment ID.
+            //! @param materialAssignmentId ID of material slot.
+            virtual void ClearPropertyValues(const MaterialAssignmentId& materialAssignmentId) = 0;
+
+            //! Clear all property overrides for every material in the material component.
+            virtual void ClearAllPropertyValues() = 0;
+
+            //! Replaces all property overrides associated with the material assignment ID.
+            //! @param materialAssignmentId ID of material slot.
+            //! @param propertyOverrides Map of all property values being assigned.
+            virtual void SetPropertyValues(
                 const MaterialAssignmentId& materialAssignmentId, const MaterialPropertyOverrideMap& propertyOverrides) = 0;
-            //! Get Property overrides for a specific material assignment
-            virtual MaterialPropertyOverrideMap GetPropertyOverrides(const MaterialAssignmentId& materialAssignmentId) const = 0;
+
+            //! Retrieves a map of all property values associated with the material assignment ID.
+            //! @param materialAssignmentId ID of material slot.
+            //! @returns Map of all property values.
+            virtual MaterialPropertyOverrideMap GetPropertyValues(const MaterialAssignmentId& materialAssignmentId) const = 0;
+
             //! Set Model UV overrides for a specific material assignment
+            //! @param materialAssignmentId ID of material slot.
+            //! @param modelUvOverrides Map of remapped UV channels.
             virtual void SetModelUvOverrides(
                 const MaterialAssignmentId& materialAssignmentId, const AZ::RPI::MaterialModelUvOverrideMap& modelUvOverrides) = 0;
+
             //! Get Model UV overrides for a specific material assignment
+            //! @param materialAssignmentId ID of material slot.
+            //! @returns Map of remapped UV channels.
             virtual AZ::RPI::MaterialModelUvOverrideMap GetModelUvOverrides(const MaterialAssignmentId& materialAssignmentId) const = 0;
 
             //! Set material property override value with a specific type
             template<typename T>
-            void SetPropertyOverrideT(const MaterialAssignmentId& materialAssignmentId, const AZStd::string& propertyName, const T& value)
+            void SetPropertyValueT(const MaterialAssignmentId& materialAssignmentId, const AZStd::string& propertyName, const T& value)
             {
-                SetPropertyOverride(materialAssignmentId, propertyName, AZStd::any(value));
+                SetPropertyValue(materialAssignmentId, propertyName, AZStd::any(value));
             }
 
             //! Get material property override value with a specific type
             template<typename T>
-            T GetPropertyOverrideT(const MaterialAssignmentId& materialAssignmentId, const AZStd::string& propertyName) const
+            T GetPropertyValueT(const MaterialAssignmentId& materialAssignmentId, const AZStd::string& propertyName) const
             {
-                const AZStd::any& value = GetPropertyOverride(materialAssignmentId, propertyName);
+                const AZStd::any& value = GetPropertyValue(materialAssignmentId, propertyName);
                 return !value.empty() && value.is<T>() ? AZStd::any_cast<T>(value) : T{};
             }
         };
         using MaterialComponentRequestBus = EBus<MaterialComponentRequests>;
 
-        //! MaterialComponent can send out notifications on the MaterialComponentNotificationBus 
-        class MaterialComponentNotifications
-            : public ComponentBus
+        //! MaterialComponent can send out notifications on the MaterialComponentNotificationBus
+        class MaterialComponentNotifications : public ComponentBus
         {
         public:
+            //! This event is sent every time a material or property update affects UI.
+            virtual void OnMaterialsEdited(){};
 
-            //! This message is sent every time a material or property update affects UI.
-            virtual void OnMaterialsEdited() {}
+            //! This event is sent whenever the default material slot configuration is updated in the material component.
+            virtual void OnMaterialSlotLayoutChanged(){};
 
-            //! This message is sent when one or more material property changes have been applied, at most once per frame.
-            virtual void OnMaterialsUpdated([[maybe_unused]] const MaterialAssignmentMap& materials) {}
+            //! This event is sent when one or more material property changes have been applied, at most once per frame.
+            virtual void OnMaterialsUpdated([[maybe_unused]] const MaterialAssignmentMap& materials){};
 
-            //! This message is sent when the component has created the material instance to be used for rendering.
-            virtual void OnMaterialInstanceCreated([[maybe_unused]] const MaterialAssignment& materialAssignment) {}
+            //! This event is sent when the component has created the material instance to be used for rendering.
+            virtual void OnMaterialInstanceCreated([[maybe_unused]] const MaterialAssignment& materialAssignment){};
         };
         using MaterialComponentNotificationBus = EBus<MaterialComponentNotifications>;
 
-        //! Bus for retrieving information about materials embedded in or used by a source, like a model
-        class MaterialReceiverRequests
-            : public ComponentBus
+        //! Any component that wishes to interface with the material component must implement this bus. These functions provides the
+        //! material component with the layout, default materials, labels, and other information about all available material slots.
+        class MaterialReceiverRequests : public ComponentBus
         {
         public:
-            //! Get material assignment id matching lod and label substring
+            //! Search for a material assignment id matching lod and label substring
             virtual MaterialAssignmentId FindMaterialAssignmentId(
                 const MaterialAssignmentLodIndex lod, const AZStd::string& label) const = 0;
-                
-            //! Returns the list of all ModelMaterialSlot's for the model, across all LODs.
-            virtual RPI::ModelMaterialSlotMap GetModelMaterialSlots() const = 0;
 
-            //! Returns the available, overridable material slots and the default assigned materials
-            virtual MaterialAssignmentMap GetMaterialAssignments() const = 0;
+            //! Returns a map of all material slot labels.
+            virtual MaterialAssignmentLabelMap GetMaterialLabels() const = 0;
+
+            //! Returns the available material slots and default assigned materials
+            virtual MaterialAssignmentMap GetDefautMaterialMap() const = 0;
 
             virtual AZStd::unordered_set<AZ::Name> GetModelUvNames() const = 0;
         };
         using MaterialReceiverRequestBus = EBus<MaterialReceiverRequests>;
 
         //! Bus for notifying when materials embedded in or used by a source, like a model, change
-        class MaterialReceiverNotifications
-            : public ComponentBus
+        class MaterialReceiverNotifications : public ComponentBus
         {
         public:
             //! Notification that overridable material slots are available or have changed
-            virtual void OnMaterialAssignmentsChanged() = 0;
+            virtual void OnMaterialAssignmentSlotsChanged(){};
         };
         using MaterialReceiverNotificationBus = EBus<MaterialReceiverNotifications>;
 

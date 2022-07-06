@@ -27,7 +27,6 @@ namespace LegacyFramework
     {
         void* m_applicationModule;  // only necessary if you want to attach your application as a DLL plugin to another application, hosting it
         bool m_enableGUI; // false if you want none of the QT or GUI functionality to exist.  You cannot use project manager if you do this.
-        bool m_enableGridmate; // false if you want to not activate the network communications module.
         bool m_enablePerforce; // false if you want to not activate perforce SCM integration.  note that this will eventually become a plugin anyway
         bool m_enableProjectManager; // false if you want to disable project management.  No project path will be set and the project picker GUI will not appear.
         bool m_shouldRunAssetProcessor; // false if you want to disable auto launching the asset processor.

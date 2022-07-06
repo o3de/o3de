@@ -39,6 +39,7 @@ namespace GradientSignal
                     ->Attribute(AZ::Edit::Attributes::Category, s_categoryName)
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+
                     ->ClassElement(AZ::Edit::ClassElements::Group, "Preview")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
                     ->UIElement("GradientPreviewer", "Previewer")
@@ -46,7 +47,7 @@ namespace GradientSignal
                     ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")
                     ->Attribute(AZ_CRC("GradientEntity", 0xe8531817), &EditorGradientSurfaceDataComponent::GetGradientEntityId)
                     ->Attribute(AZ_CRC("GradientFilter", 0x99bf0362), &EditorGradientSurfaceDataComponent::GetFilterFunc)
-                    ->ClassElement(AZ::Edit::ClassElements::Group, "")
+                    ->EndGroup()
                     ;
             }
         }
@@ -111,24 +112,14 @@ namespace GradientSignal
             point.m_normal = AZ::Vector3::CreateAxisZ();
             SurfaceData::SurfacePointList pointList;
 
-            // Lock the SurfaceDataSystemRequestBus during the point list construction so that we always follow a pattern of locking the
-            // system bus *before* modifying surface weights, which locks the SurfaceDataModifierBus. Otherwise, it's possible to get
-            // these to lock in the reverse order which can cause deadlocks.
-            {
-                auto& surfaceDataContext = SurfaceData::SurfaceDataSystemRequestBus::GetOrCreateContext(false);
-                typename SurfaceData::SurfaceDataSystemRequestBus::Context::DispatchLockGuard scopeLock(surfaceDataContext.m_contextMutex);
+            // Get the Surface Modifier handle for this component.
+            SurfaceData::SurfaceDataRegistryHandle modifierHandle = SurfaceData::InvalidSurfaceDataRegistryHandle;
+            modifierHandle = AZ::Interface<SurfaceData::SurfaceDataSystem>::Get()->GetSurfaceDataModifierHandle(m_component.GetEntityId());
 
-                // Get the Surface Modifier handle for this component.
-                SurfaceData::SurfaceDataRegistryHandle modifierHandle = SurfaceData::InvalidSurfaceDataRegistryHandle;
-                SurfaceData::SurfaceDataSystemRequestBus::BroadcastResult(
-                    modifierHandle, &SurfaceData::SurfaceDataSystemRequestBus::Events::GetSurfaceDataModifierHandle,
-                    m_component.GetEntityId());
-
-                // Send the fake surface point into the component, see what emerges
-                pointList.StartListConstruction(AZStd::span<const AzFramework::SurfaceData::SurfacePoint>(&point, 1));
-                pointList.ModifySurfaceWeights(modifierHandle);
-                pointList.EndListConstruction();
-            }
+            // Send the fake surface point into the component, see what emerges
+            pointList.StartListConstruction(AZStd::span<const AzFramework::SurfaceData::SurfacePoint>(&point, 1));
+            pointList.ModifySurfaceWeights(modifierHandle);
+            pointList.EndListConstruction();
 
             // If the point was successfully modified, we should have one or more masks with a non-zero value.
             // Technically, they should all have the same value, but we'll grab the max from all of them in case

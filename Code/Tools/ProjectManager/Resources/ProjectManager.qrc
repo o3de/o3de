@@ -12,6 +12,7 @@
         <file>FolderOffset.svg</file>
         <file>FolderOffset_Hover.svg</file>
         <file>Select_Folder.svg</file>
+        <file>Select_Folder_Disabled.svg</file>
         <file>ProjectManager-Icon.ico</file>
         <file>ProjectManager-Icon.svg</file>
         <file>Windows.svg</file>
@@ -43,5 +44,7 @@
         <file>gem.svg</file>
         <file>checkmark.svg</file>
         <file>SpinningGears.webp</file>
+        <file>Cloud.svg</file>
+        <file>Cloud_Hover.svg</file>
     </qresource>
 </RCC>

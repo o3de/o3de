@@ -48,8 +48,8 @@ function(ly_add_target_dependencies)
 
     unset(ALL_GEM_DEPENDENCIES)
     foreach(dependency_file ${ly_add_gem_dependencies_DEPENDENCIES_FILES})
-    #unset any GEM_DEPENDENCIES and include the dependencies file, that should populate GEM_DEPENDENCIES
-    unset(GEM_DEPENDENCIES)
+        #unset any GEM_DEPENDENCIES and include the dependencies file, that should populate GEM_DEPENDENCIES
+        unset(GEM_DEPENDENCIES)
         include(${dependency_file})
         list(APPEND ALL_GEM_DEPENDENCIES ${GEM_DEPENDENCIES})
     endforeach()
@@ -62,13 +62,16 @@ function(ly_add_target_dependencies)
         ly_add_dependencies(${target} ${ALL_GEM_DEPENDENCIES})
 
         # Add the target to the LY_DELAYED_LOAD_DEPENDENCIES if it isn't already on the list
-        get_property(delayed_load_target_set GLOBAL PROPERTY LY_DELAYED_LOAD_"${ly_add_gem_dependencies_PREFIX},${target}" SET)
-        if(NOT delayed_load_target_set)
+        get_property(load_dependencies_set GLOBAL PROPERTY LY_DELAYED_LOAD_DEPENDENCIES)
+        if(NOT "${ly_add_gem_dependencies_PREFIX},${target}" IN_LIST load_dependencies_set)
             set_property(GLOBAL APPEND PROPERTY LY_DELAYED_LOAD_DEPENDENCIES "${ly_add_gem_dependencies_PREFIX},${target}")
         endif()
         foreach(gem_target ${ALL_GEM_DEPENDENCIES})
             # Add the list of gem dependencies to the LY_TARGET_DELAYED_DEPENDENCIES_${ly_add_gem_dependencies_PREFIX};${target} property
-            set_property(GLOBAL APPEND PROPERTY LY_DELAYED_LOAD_"${ly_add_gem_dependencies_PREFIX},${target}" ${gem_target})
+            get_property(target_load_dependencies GLOBAL PROPERTY LY_DELAYED_LOAD_"${ly_add_gem_dependencies_PREFIX},${target}")
+            if(NOT "${gem_target}" IN_LIST target_load_dependencies)
+                set_property(GLOBAL APPEND PROPERTY LY_DELAYED_LOAD_"${ly_add_gem_dependencies_PREFIX},${target}" ${gem_target})
+            endif()
         endforeach()
     endforeach()
 endfunction()
@@ -115,7 +118,7 @@ function(ly_generate_project_build_path_setreg project_real_path)
     set(project_bin_path ${CMAKE_BINARY_DIR})
     string(CONFIGURE ${project_build_path_template} project_build_path_setreg_content @ONLY)
     set(project_user_build_path_setreg_file ${project_real_path}/user/Registry/Platform/${PAL_PLATFORM_NAME}/build_path.setreg)
-    file(GENERATE OUTPUT ${project_user_build_path_setreg_file} CONTENT ${project_build_path_setreg_content})
+    file(GENERATE OUTPUT ${project_user_build_path_setreg_file} CONTENT "${project_build_path_setreg_content}")
 endfunction()
 
 function(install_project_asset_artifacts project_real_path)
@@ -190,11 +193,17 @@ foreach(project ${LY_PROJECTS})
 
     cmake_path(GET project FILENAME project_folder_name )
     list(APPEND LY_PROJECTS_FOLDER_NAME ${project_folder_name})
-    add_subdirectory(${project} "${project_folder_name}-${full_directory_hash}")
+    # Generate a setreg file with the path to cmake binary directory
+    # into <project-path>/user/Registry/Platform/<Platform> directory
     ly_generate_project_build_path_setreg(${full_directory_path})
 
     # Get project name
     o3de_read_json_key(project_name ${full_directory_path}/project.json "project_name")
+
+    # Set the project name into the global O3DE_PROJECTS_NAME property
+    set_property(GLOBAL APPEND PROPERTY O3DE_PROJECTS_NAME ${project_name})
+
+    # Append the project external directory to LY_EXTERNAL_SUBDIR_${project_name} property
     add_project_json_external_subdirectories(${full_directory_path} "${project_name}")
 
     install_project_asset_artifacts(${full_directory_path})

@@ -109,6 +109,8 @@ namespace AzToolsFramework
 
         AZ::Data::AssetType m_currentAssetType;
 
+        AZStd::vector<AZ::Data::AssetType> m_supportedAssetTypes;
+
         AzQtComponents::BrowseEdit* m_browseEdit = nullptr;
 
         AZStd::string m_defaultAssetHint;
@@ -188,6 +190,9 @@ namespace AzToolsFramework
         void HandleFieldClear();
         AZStd::string AddDefaultSuffix(const AZStd::string& filename);
 
+        //! Whether this property can have the input asset id&type as its value
+        virtual bool CanAcceptAsset(const AZ::Data::AssetId& assetId, const AZ::Data::AssetType& assetType) const;
+
         //////////////////////////////////////////////////////////////////////////
         // AssetSystemBus
         void SourceFileChanged(AZStd::string relativePath, AZStd::string scanFolder, AZ::Uuid sourceUUID) override;
@@ -238,6 +243,10 @@ namespace AzToolsFramework
         void SetCustomThumbnailEnabled(bool enabled);
         void SetCustomThumbnailPixmap(const QPixmap& pixmap);
 
+        void SetSupportedAssetTypes(const AZStd::vector<AZ::Data::AssetType>& supportedAssetTypes);
+        const AZStd::vector<AZ::Data::AssetType>& GetSupportedAssetTypes() const;
+        AZStd::vector<AZ::Data::AssetType> GetSelectableAssetTypes() const;
+
         void SetSelectedAssetID(const AZ::Data::AssetId& newID);
         void SetCurrentAssetType(const AZ::Data::AssetType& newType);
         void SetSelectedAssetID(const AZ::Data::AssetId& newID, const AZ::Data::AssetType& newType);
@@ -285,6 +294,15 @@ namespace AzToolsFramework
         virtual void WriteGUIValuesIntoProperty(size_t index, PropertyAssetCtrl* GUI, property_t& instance, InstanceDataNode* node) override;
         static bool ReadValuesIntoGUIInternal(size_t index, PropertyAssetCtrl* GUI, const property_t& instance, InstanceDataNode* node);
         virtual bool ReadValuesIntoGUI(size_t index, PropertyAssetCtrl* GUI, const property_t& instance, InstanceDataNode* node)  override;
+    protected:
+        AZ::Data::Asset<AZ::Data::AssetData>* CastTo(void* instance, const InstanceDataNode* node, const AZ::Uuid& /*fromId*/, const AZ::Uuid& /*toId*/) const override
+        {
+            if (node->GetElementMetadata()->m_genericClassInfo && node->GetElementMetadata()->m_genericClassInfo->GetGenericTypeId() == AZ::GetAssetClassId())
+            {
+                return static_cast<AZ::Data::Asset<AZ::Data::AssetData>*>(instance);
+            }
+            return nullptr;
+        }
     };
 
     class SimpleAssetPropertyHandlerDefault

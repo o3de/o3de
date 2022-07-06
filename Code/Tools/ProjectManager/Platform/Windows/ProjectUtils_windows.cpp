@@ -52,6 +52,22 @@ namespace O3DE::ProjectManager
             return AZ::Success();
         }
 
+        AZ::Outcome<QString, QString> FindSupportedCMake()
+        {
+            // Validate that cmake is installed and is in the path
+            auto cmakeVersionQueryResult = ExecuteCommandResult("cmake", QStringList{ "--version" });
+            if (!cmakeVersionQueryResult.IsSuccess())
+            {
+                return AZ::Failure(
+                    QObject::tr("CMake not found. \n\n"
+                                "Make sure that the minimum version of CMake is installed and available from the command prompt. "
+                                "Refer to the <a href='https://o3de.org/docs/welcome-guide/setup/requirements/#cmake'>O3DE "
+                                "requirements</a> for more information."));
+            }
+
+            return AZ::Success(QString{ ProjectCMakeCommand });
+        }
+
         AZ::Outcome<QString, QString> FindSupportedCompilerForPlatform()
         {
             // Validate that cmake is installed
@@ -60,12 +76,10 @@ namespace O3DE::ProjectManager
             {
                 return AZ::Failure(cmakeProcessEnvResult.GetError());
             }
-            auto cmakeVersionQueryResult = ExecuteCommandResult("cmake", QStringList{"--version"});
-            if (!cmakeVersionQueryResult.IsSuccess())
+
+            if (auto cmakeVersionQueryResult = FindSupportedCMake(); !cmakeVersionQueryResult.IsSuccess())
             {
-                return AZ::Failure(QObject::tr("CMake not found. \n\n"
-                    "Make sure that the minimum version of CMake is installed and available from the command prompt. "
-                    "Refer to the <a href='https://o3de.org/docs/welcome-guide/setup/requirements/#cmake'>O3DE requirements</a> for more information."));
+                return cmakeVersionQueryResult;
             }
 
             // Validate that the minimal version of visual studio is installed
@@ -76,11 +90,8 @@ namespace O3DE::ProjectManager
             QFileInfo vsWhereFile(vsWherePath);
             if (vsWhereFile.exists() && vsWhereFile.isFile())
             {
-                QStringList vsWhereBaseArguments = QStringList{"-version",
-                                                               "[16.11,18)",
-                                                               "-latest",
-                                                               "-requires",
-                                                               "Microsoft.VisualStudio.Component.VC.Tools.x86.x64"};
+                QStringList vsWhereBaseArguments =
+                    QStringList{ "-version", "[16.11,18)", "-latest", "-requires", "Microsoft.VisualStudio.Component.VC.Tools.x86.x64" };
 
                 QProcess vsWhereIsCompleteProcess;
                 vsWhereIsCompleteProcess.setProcessChannelMode(QProcess::MergedChannels);
@@ -94,7 +105,8 @@ namespace O3DE::ProjectManager
                     {
                         QProcess vsWhereCompilerVersionProcess;
                         vsWhereCompilerVersionProcess.setProcessChannelMode(QProcess::MergedChannels);
-                        vsWhereCompilerVersionProcess.start(vsWherePath, vsWhereBaseArguments + QStringList{"-property", "catalog_productDisplayVersion"});
+                        vsWhereCompilerVersionProcess.start(
+                            vsWherePath, vsWhereBaseArguments + QStringList{ "-property", "catalog_productDisplayVersion" });
 
                         if (vsWhereCompilerVersionProcess.waitForStarted() && vsWhereCompilerVersionProcess.waitForFinished())
                         {
@@ -105,9 +117,11 @@ namespace O3DE::ProjectManager
                 }
             }
 
-            return AZ::Failure(QObject::tr("Visual Studio 2019 version 16.11 or higher or Visual Studio 2022 version 17.0 or higher not found.<br><br>"
-                "A compatible version of Visual Studio is required to build this project.<br>"
-                "Refer to the <a href='https://o3de.org/docs/welcome-guide/requirements/#microsoft-visual-studio'>Visual Studio requirements</a> for more information."));
+            return AZ::Failure(
+                QObject::tr("Visual Studio 2019 version 16.11 or higher or Visual Studio 2022 version 17.0 or higher not found.<br><br>"
+                            "A compatible version of Visual Studio is required to build this project.<br>"
+                            "Refer to the <a href='https://o3de.org/docs/welcome-guide/requirements/#microsoft-visual-studio'>Visual "
+                            "Studio requirements</a> for more information."));
         }
 
         AZ::Outcome<void, QString> OpenCMakeGUI(const QString& projectPath)

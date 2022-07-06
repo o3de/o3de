@@ -7,15 +7,16 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 Utility functions mostly for the editor_test module. They can also be used for assisting Editor tests.
 """
 from __future__ import annotations
-import os
-import time
 import logging
+import os
 import re
+import time
 
 import ly_test_tools.environment.process_utils as process_utils
 import ly_test_tools.environment.waiter as waiter
 
 logger = logging.getLogger(__name__)
+
 
 def kill_all_ly_processes(include_asset_processor: bool = True) -> None:
     """
@@ -24,19 +25,20 @@ def kill_all_ly_processes(include_asset_processor: bool = True) -> None:
     :param include_asset_processor: Boolean flag whether or not to kill the AP
     :return: None
     """
-    LY_PROCESSES = [
+    ly_processes = [
         'Editor', 'Profiler', 'RemoteConsole', 'o3de', 'AutomatedTesting.ServerLauncher'
     ]
-    AP_PROCESSES = [
+    ap_processes = [
         'AssetProcessor', 'AssetProcessorBatch', 'AssetBuilder'
     ]
     
     if include_asset_processor:
-        process_utils.kill_processes_named(LY_PROCESSES+AP_PROCESSES, ignore_extensions=True)
+        process_utils.kill_processes_named(ly_processes+ap_processes, ignore_extensions=True)
     else:
-        process_utils.kill_processes_named(LY_PROCESSES, ignore_extensions=True)
+        process_utils.kill_processes_named(ly_processes, ignore_extensions=True)
 
-def get_testcase_module_filepath(testcase_module: Module) -> str:
+
+def get_testcase_module_filepath(testcase_module: types.ModuleType) -> str:
     """
     return the full path of the test module using always '.py' extension
     :param testcase_module: The testcase python module being tested
@@ -44,7 +46,8 @@ def get_testcase_module_filepath(testcase_module: Module) -> str:
     """
     return os.path.splitext(testcase_module.__file__)[0] + ".py"
 
-def get_module_filename(testcase_module: Module):
+
+def get_module_filename(testcase_module: types.ModuleType) -> str:
     """
     return The filename of the module without path
     Note: This is differs from module.__name__ in the essence of not having the package directory.
@@ -54,7 +57,8 @@ def get_module_filename(testcase_module: Module):
     """
     return os.path.splitext(os.path.basename(testcase_module.__file__))[0]
 
-def retrieve_log_path(run_id: int, workspace: AbstractWorkspaceManager) -> str:
+
+def retrieve_log_path(run_id: int, workspace: ly_test_tools._internal.managers.workspace.AbstractWorkspaceManager) -> str:
     """
     return the log/ project path for this test run.
     :param run_id: editor id that will be used for differentiating paths
@@ -63,12 +67,14 @@ def retrieve_log_path(run_id: int, workspace: AbstractWorkspaceManager) -> str:
     """
     return os.path.join(workspace.paths.project(), "user", f"log_test_{run_id}")
 
-def retrieve_crash_output(run_id: int, workspace: AbstractWorkspaceManager, timeout: float = 10) -> str:
+
+def retrieve_crash_output(run_id: int, workspace: ly_test_tools._internal.managers.workspace.AbstractWorkspaceManager,
+                          timeout: float = 10) -> str:
     """
     returns the crash output string for the given test run.
     :param run_id: editor id that will be used for differentiating paths
     :param workspace: Workspace fixture
-    :timeout: Maximum time (seconds) to wait for crash output file to appear
+    :param timeout: Maximum time (seconds) to wait for crash output file to appear
     :return str: The contents of the editor crash file (error.log)
     """
     crash_info = "-- No crash log available --"
@@ -88,7 +94,8 @@ def retrieve_crash_output(run_id: int, workspace: AbstractWorkspaceManager, time
         crash_info += f"\n{str(ex)}"
     return crash_info
 
-def cycle_crash_report(run_id: int, workspace: AbstractWorkspaceManager) -> None:
+
+def cycle_crash_report(run_id: int, workspace: ly_test_tools._internal.managers.workspace.AbstractWorkspaceManager) -> None:
     """
     Attempts to rename error.log and error.dmp(crash files) into new names with the timestamp on it.
     :param run_id: editor id that will be used for differentiating paths
@@ -108,13 +115,16 @@ def cycle_crash_report(run_id: int, workspace: AbstractWorkspaceManager) -> None
             except Exception as ex:
                 logger.warning(f"Couldn't cycle file {filepath}. Error: {str(ex)}")
 
-def retrieve_editor_log_content(run_id: int, log_name: str, workspace: AbstractWorkspaceManager, timeout: int = 10) -> str:
+
+def retrieve_editor_log_content(run_id: int, log_name: str,
+                                workspace: ly_test_tools._internal.managers.workspace.AbstractWorkspaceManager,
+                                timeout: int = 10) -> str:
     """
     Retrieves the contents of the given editor log file.
     :param run_id: editor id that will be used for differentiating paths
     :log_name: The name of the editor log to retrieve
     :param workspace: Workspace fixture
-    :timeout: Maximum time to wait for the log file to appear
+    :param timeout: Maximum time to wait for the log file to appear
     :return str: The contents of the log
     """
     editor_info = "-- No editor log available --"
@@ -134,12 +144,13 @@ def retrieve_editor_log_content(run_id: int, log_name: str, workspace: AbstractW
         editor_info = f"-- Error reading {log_name}: {str(ex)} --"
     return editor_info
 
-def retrieve_last_run_test_index_from_output(test_spec_list: list[EditorTestBase], output: str) -> int:
+
+def retrieve_last_run_test_index_from_output(test_spec_list: list[EditorTest], output: str) -> int:
     """
     Finds out what was the last test that was run by inspecting the input.
     This is used for determining what was the batched test has crashed the editor
     :param test_spec_list: List of tests that were run in this editor
-    :output: Editor output to inspect
+    :param output: Editor output to inspect
     :return: Index in the given test_spec_list of the last test that ran
     """
     index = -1
@@ -147,13 +158,14 @@ def retrieve_last_run_test_index_from_output(test_spec_list: list[EditorTestBase
     for test_spec in test_spec_list:
         find_pos = output.find(test_spec.__name__, find_pos)
         if find_pos == -1:
-            index = max(index, 0) # <- if we didn't even find the first test, assume its been the first one that crashed
+            index = max(index, 0)  # didn't even find the first test, assume the first one immediately crashed
             return index
         else:
             index += 1
     return index
 
-def save_failed_asset_joblogs(workspace: AbstractWorkspace) -> None:
+
+def save_failed_asset_joblogs(workspace: ly_test_tools._internal.managers.workspace.AbstractWorkspaceManager) -> None:
     """
     Checks all asset logs in the JobLogs directory to see if the asset has any warnings or errors. If so, the asset is
     saved via ArtifactManager.
@@ -169,7 +181,8 @@ def save_failed_asset_joblogs(workspace: AbstractWorkspace) -> None:
                 try:
                     workspace.artifact_manager.save_artifact(full_log_path)
                 except Exception as e:  # Purposefully broad
-                    logger.warning(f"Error when saving log at path:{full_log_path}\n{e}")
+                    logger.warning(f"Error when saving log at path: {full_log_path}\n{e}")
+
 
 def _check_log_errors_warnings(log_path: str) -> bool:
     """
@@ -185,12 +198,12 @@ def _check_log_errors_warnings(log_path: str) -> bool:
         logger.warning(f"Could not find path {log_path} during asset log collection.")
         return False
     log_regex = "(\\d+) errors, (\\d+) warnings"
-    with open(log_path, 'r') as opened_asset_log:
+    with open(log_path, 'r', encoding='UTF-8', errors='ignore') as opened_asset_log:
         for log_line in opened_asset_log:
             regex_match = re.search(log_regex, log_line)
             if regex_match is not None:
                 break
     # If we match any non zero numbers in: n error, n warnings
-    if regex_match is None or (int)(regex_match.group(1)) != 0 or (int)(regex_match.group(2)) != 0:
+    if regex_match is None or int(regex_match.group(1)) != 0 or int(regex_match.group(2)) != 0:
         return True
     return False

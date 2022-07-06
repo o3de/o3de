@@ -159,8 +159,7 @@ namespace UnitTest
         const uint32_t imageSize = 4096;
         const int32_t imageSeed = 12345;
         config.m_imageAsset = UnitTest::CreateImageAsset(imageSize, imageSize, imageSeed);
-        config.m_tilingX = 1.0f;
-        config.m_tilingY = 1.0f;
+        config.m_tiling = AZ::Vector2::CreateOne();
         entity->CreateComponent<GradientSignal::ImageGradientComponent>(config);
 
         // Create a Gradient Transform Component with arbitrary parameters.

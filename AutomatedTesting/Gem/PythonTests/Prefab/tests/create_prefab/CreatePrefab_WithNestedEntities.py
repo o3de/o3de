@@ -16,9 +16,7 @@ def CreatePrefab_WithNestedEntities():
 
     from pathlib import Path
 
-    from editor_python_test_tools.editor_entity_utils import EditorEntity
     from editor_python_test_tools.prefab_utils import Prefab
-
     import Prefab.tests.PrefabTestUtils as prefab_test_utils
 
     NESTED_ENTITIES_PREFAB_FILE_NAME = Path(__file__).stem + 'nested_entities_prefab'
@@ -32,6 +30,7 @@ def CreatePrefab_WithNestedEntities():
     # Creates new nested entities at the root level
     # Asserts if creation didn't succeed
     nested_entities_root = prefab_test_utils.create_linear_nested_entities(NESTED_ENTITIES_NAME_PREFIX, NUM_NESTED_ENTITIES_LEVELS, OLD_POSITION)
+    nested_entities_root_parent = nested_entities_root.get_parent_id()
     prefab_test_utils.validate_linear_nested_entities(nested_entities_root, NUM_NESTED_ENTITIES_LEVELS, OLD_POSITION)
 
     # Asserts if prefab creation doesn't succeed
@@ -39,7 +38,10 @@ def CreatePrefab_WithNestedEntities():
     nested_entities_root_on_instance = nested_entities_prefab_instance.get_direct_child_entities()[0]
     prefab_test_utils.validate_linear_nested_entities(nested_entities_root_on_instance, NUM_NESTED_ENTITIES_LEVELS, OLD_POSITION)
 
-    # Moves the position of root of the nested entities, it should also update all the entites' positions
+    # Test undo/redo on prefab creation
+    prefab_test_utils.validate_undo_redo_on_prefab_creation(nested_entities_prefab_instance, nested_entities_root_parent)
+
+    # Moves the position of root of the nested entities, it should also update all the entities' positions
     nested_entities_root_on_instance.set_world_translation(NEW_POSITION)
     prefab_test_utils.validate_linear_nested_entities(nested_entities_root_on_instance, NUM_NESTED_ENTITIES_LEVELS, NEW_POSITION)
 

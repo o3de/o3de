@@ -139,6 +139,20 @@ namespace AZ
             //! Reduces acne by biasing the shadowmap lookup along the geometric normal.
             //! @param normalShadowBias Sets the amount of normal shadow bias to apply.
             virtual void SetNormalShadowBias(float normalShadowBias) = 0;
+
+            // Global Illumination
+
+            //! Returns true if this light affects global illumination
+            virtual bool GetAffectsGI() const = 0;
+
+            //! Set whether this light affects global illumination
+            virtual void SetAffectsGI(bool affectsGI) const = 0;
+
+            //! Returns the contribution multiplier for global illumination
+            virtual float GetAffectsGIFactor() const = 0;
+
+            //! Sets the contribution multiplier for global illumination
+            virtual void SetAffectsGIFactor(float affectsGIFactor) const = 0;
         };
 
         //! The EBus for requests to for setting and getting light component properties.

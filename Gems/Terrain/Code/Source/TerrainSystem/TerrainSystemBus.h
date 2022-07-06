@@ -15,6 +15,7 @@
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 
 #include <AzCore/EBus/EBus.h>
+#include <AzCore/EBus/EBusSharedDispatchTraits.h>
 #include <AzCore/Component/ComponentBus.h>
 
 #include <AzFramework/Terrain/TerrainDataRequestBus.h>
@@ -51,20 +52,17 @@ namespace Terrain
 
 
     /**
-    * A bus to signal the life times of terrain areas
-    */
-    class TerrainAreaHeightRequests
-        : public AZ::ComponentBus
+    * A bus to signal the life times of terrain areas.
+     * This bus uses shared dispatches, which means that all requests on the bus can run in parallel, but will NOT run in parallel
+     * with bus connections / disconnections.
+     */
+    class TerrainAreaHeightRequests : public AZ::EBusSharedDispatchTraits<TerrainAreaHeightRequests>
     {
     public:
         ////////////////////////////////////////////////////////////////////////
         // EBusTraits
-        using MutexType = AZStd::recursive_mutex;
-
-        // This bus will not lock during an EBus call. This lets us run multiple queries in parallel, but it also means
-        // that anything that implements this EBus will need to ensure that queries can't be in the middle of running at the
-        // same time as bus connects / disconnects.
-        static const bool LocklessDispatch = true;
+        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
+        typedef AZ::EntityId BusIdType;
         ////////////////////////////////////////////////////////////////////////
 
         virtual ~TerrainAreaHeightRequests() = default;

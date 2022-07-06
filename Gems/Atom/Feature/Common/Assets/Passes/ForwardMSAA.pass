@@ -15,6 +15,12 @@
                     "ScopeAttachmentUsage": "Shader"
                 },
                 {
+                    "Name": "FullscreenShadow",
+                    "ShaderInputName": "m_fullscreenShadow",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader"
+                },                
+                {
                     "Name": "DirectionalLightShadowmap",
                     "ShaderInputName": "m_directionalLightShadowmap",
                     "SlotType": "Input",
@@ -156,7 +162,7 @@
                     "SizeSource": {
                         "Source": {
                             "Pass": "Parent",
-                            "Attachment": "SwapChainOutput"
+                            "Attachment": "PipelineOutput"
                         }
                     },
                     "MultisampleSource": {
@@ -173,7 +179,7 @@
                     "SizeSource": {
                         "Source": {
                             "Pass": "Parent",
-                            "Attachment": "SwapChainOutput"
+                            "Attachment": "PipelineOutput"
                         }
                     },
                     "MultisampleSource": {
@@ -190,7 +196,7 @@
                     "SizeSource": {
                         "Source": {
                             "Pass": "Parent",
-                            "Attachment": "SwapChainOutput"
+                            "Attachment": "PipelineOutput"
                         }
                     },
                     "MultisampleSource": {
@@ -207,7 +213,7 @@
                     "SizeSource": {
                         "Source": {
                             "Pass": "Parent",
-                            "Attachment": "SwapChainOutput"
+                            "Attachment": "PipelineOutput"
                         }
                     },
                     "MultisampleSource": {
@@ -224,7 +230,7 @@
                     "SizeSource": {
                         "Source": {
                             "Pass": "Parent",
-                            "Attachment": "SwapChainOutput"
+                            "Attachment": "PipelineOutput"
                         }
                     },
                     "MultisampleSource": {
@@ -285,6 +291,13 @@
                     "AttachmentRef": {
                         "Pass": "This",
                         "Attachment": "BRDFTexture"
+                    }
+                },
+                {
+                    "LocalSlot": "FullscreenShadow",
+                    "AttachmentRef": {
+                        "Pass": "PipelineGlobal",
+                        "Attachment": "FullscreenShadowBuffer"
                     }
                 }
             ]

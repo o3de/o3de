@@ -103,7 +103,7 @@ namespace SurfaceData
     {
         if (m_providerHandle != InvalidSurfaceDataRegistryHandle)
         {
-            SurfaceDataSystemRequestBus::Broadcast(&SurfaceDataSystemRequestBus::Events::UnregisterSurfaceDataProvider, m_providerHandle);
+            AZ::Interface<SurfaceData::SurfaceDataSystem>::Get()->UnregisterSurfaceDataProvider(m_providerHandle);
             m_providerHandle = InvalidSurfaceDataRegistryHandle;
         }
 
@@ -268,7 +268,7 @@ namespace SurfaceData
             // Our mesh has become valid, so register as a provider and save off the provider handle
             AZ_Assert((m_providerHandle == InvalidSurfaceDataRegistryHandle), "Surface data handle is initialized before our mesh became active");
             AZ_Assert(m_meshBounds.IsValid(), "Mesh Geometry isn't correctly initialized.");
-            SurfaceDataSystemRequestBus::BroadcastResult(m_providerHandle, &SurfaceDataSystemRequestBus::Events::RegisterSurfaceDataProvider, registryEntry);
+            m_providerHandle = AZ::Interface<SurfaceData::SurfaceDataSystem>::Get()->RegisterSurfaceDataProvider(registryEntry);
 
             // Start listening for surface data events
             AZ_Assert((m_providerHandle != InvalidSurfaceDataRegistryHandle), "Invalid surface data handle");
@@ -278,7 +278,7 @@ namespace SurfaceData
         {
             // Our mesh has stopped being valid, so unregister and stop listening for surface data events
             AZ_Assert((m_providerHandle != InvalidSurfaceDataRegistryHandle), "Invalid surface data handle");
-            SurfaceDataSystemRequestBus::Broadcast(&SurfaceDataSystemRequestBus::Events::UnregisterSurfaceDataProvider, m_providerHandle);
+            AZ::Interface<SurfaceData::SurfaceDataSystem>::Get()->UnregisterSurfaceDataProvider(m_providerHandle);
             m_providerHandle = InvalidSurfaceDataRegistryHandle;
 
             SurfaceDataProviderRequestBus::Handler::BusDisconnect();
@@ -287,7 +287,7 @@ namespace SurfaceData
         {
             // Our mesh was valid before and after, it just changed in some way, so update our registry entry.
             AZ_Assert((m_providerHandle != InvalidSurfaceDataRegistryHandle), "Invalid surface data handle");
-            SurfaceDataSystemRequestBus::Broadcast(&SurfaceDataSystemRequestBus::Events::UpdateSurfaceDataProvider, m_providerHandle, registryEntry);
+            AZ::Interface<SurfaceData::SurfaceDataSystem>::Get()->UpdateSurfaceDataProvider(m_providerHandle, registryEntry);
         }
     }
 }

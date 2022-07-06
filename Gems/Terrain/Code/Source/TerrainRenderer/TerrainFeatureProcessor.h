@@ -13,12 +13,12 @@
 #include <TerrainRenderer/BindlessImageArrayHandler.h>
 #include <TerrainRenderer/TerrainDetailMaterialManager.h>
 #include <TerrainRenderer/TerrainMacroMaterialManager.h>
+#include <TerrainRenderer/TerrainClipmapManager.h>
 #include <TerrainRenderer/TerrainMeshManager.h>
 
 #include <Atom/RPI.Public/FeatureProcessor.h>
 #include <Atom/RPI.Public/Image/AttachmentImage.h>
 #include <Atom/RPI.Public/Material/MaterialReloadNotificationBus.h>
-#include <Atom/RPI.Public/Shader/ShaderSystemInterface.h>
 
 namespace AZ::RPI
 {
@@ -53,11 +53,11 @@ namespace Terrain
         void Render(const AZ::RPI::FeatureProcessor::RenderPacket& packet) override;
 
         void SetDetailMaterialConfiguration(const DetailMaterialConfiguration& config);
-        void SetWorldSize(AZ::Vector2 sizeInMeters);
+        void SetMeshConfiguration(const MeshConfiguration& config);
 
         const AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> GetTerrainShaderResourceGroup() const;
-        const AZ::Aabb& GetTerrainBounds() const;
         const AZ::Data::Instance<AZ::RPI::Material> GetMaterial() const;
+        const TerrainClipmapManager& GetClipmapManager() const;
     private:
 
         static constexpr auto InvalidImageIndex = AZ::Render::BindlessImageArrayHandler::InvalidImageIndex;
@@ -65,10 +65,10 @@ namespace Terrain
         
         struct WorldShaderData
         {
-            AZStd::array<float, 3> m_min{ 0.0f, 0.0f, 0.0f };
-            float padding1{ 0.0f };
-            AZStd::array<float, 3> m_max{ 0.0f, 0.0f, 0.0f };
-            float padding2{ 0.0f };
+            float m_zMin;
+            float m_zMax;
+            float m_zExtents;
+            float m_padding;
         };
 
         // AZ::RPI::MaterialReloadNotificationBus::Handler overrides...
@@ -87,18 +87,18 @@ namespace Terrain
 
         void Initialize();
 
-        void UpdateHeightmapImage();
         void PrepareMaterialData();
 
         void TerrainHeightOrSettingsUpdated(const AZ::Aabb& dirtyRegion);
 
         void ProcessSurfaces(const FeatureProcessor::RenderPacket& process);
 
-        void CacheForwardPass();
+        void CachePasses();
 
         TerrainMeshManager m_meshManager;
         TerrainMacroMaterialManager m_macroMaterialManager;
         TerrainDetailMaterialManager m_detailMaterialManager;
+        TerrainClipmapManager m_clipmapManager;
 
         AZStd::shared_ptr<AZ::Render::BindlessImageArrayHandler> m_imageArrayHandler;
 
@@ -106,22 +106,15 @@ namespace Terrain
         MaterialInstance m_materialInstance;
 
         AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> m_terrainSrg;
-        AZ::Data::Instance<AZ::RPI::AttachmentImage> m_heightmapImage;
 
-        AZ::RHI::ShaderInputImageIndex m_heightmapPropertyIndex;
-        AZ::RHI::ShaderInputConstantIndex m_worldDataIndex;
+        AZ::RHI::ShaderInputNameIndex m_worldDataIndex = "m_terrainWorldData";
 
-        AZ::Aabb m_terrainBounds{ AZ::Aabb::CreateNull() };
+        AZ::Vector2 m_zBounds{ AZ::Vector2::CreateZero() };
         AZ::Aabb m_dirtyRegion{ AZ::Aabb::CreateNull() };
         
         float m_sampleSpacing{ 0.0f };
-        
-        bool m_heightmapNeedsUpdate{ false };
-        bool m_forceRebuildDrawPackets{ false };
-        bool m_imageBindingsNeedUpdate{ false };
+        bool m_terrainBoundsNeedUpdate{ false };
 
-        AZ::RPI::ShaderSystemInterface::GlobalShaderOptionUpdatedEvent::Handler m_handleGlobalShaderOptionUpdate;
-
-        AZ::RPI::RenderPass* m_forwardPass;
+        AZStd::vector<AZ::RPI::RenderPass*> m_passes;
     };
 }

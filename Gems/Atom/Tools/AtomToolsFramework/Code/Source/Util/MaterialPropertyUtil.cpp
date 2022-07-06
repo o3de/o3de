@@ -8,6 +8,7 @@
 
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
 #include <Atom/RPI.Reflect/Image/ImageAsset.h>
+#include <Atom/RPI.Reflect/Image/AttachmentImageAsset.h>
 #include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
 #include <Atom/RPI.Reflect/Material/MaterialTypeAsset.h>
@@ -28,17 +29,6 @@ namespace AtomToolsFramework
 
     AZStd::any ConvertToEditableType(const AZ::RPI::MaterialPropertyValue& value)
     {
-        if (value.Is<AZ::Data::Asset<AZ::RPI::ImageAsset>>())
-        {
-            const auto& imageAsset = value.GetValue<AZ::Data::Asset<AZ::RPI::ImageAsset>>();
-            return AZStd::any(AZ::Data::Asset<AZ::RPI::StreamingImageAsset>(imageAsset.GetId(), azrtti_typeid<AZ::RPI::StreamingImageAsset>(), imageAsset.GetHint()));
-        }
-        else if (value.Is<AZ::Data::Instance<AZ::RPI::Image>>())
-        {
-            const auto& image = value.GetValue<AZ::Data::Instance<AZ::RPI::Image>>();
-            return AZStd::any(AZ::Data::Asset<AZ::RPI::StreamingImageAsset>(image->GetAssetId(), azrtti_typeid<AZ::RPI::StreamingImageAsset>()));
-        }
-
         return AZ::RPI::MaterialPropertyValue::ToAny(value);
     }
 
@@ -88,6 +78,13 @@ namespace AtomToolsFramework
         propertyConfig.m_vectorLabels = propertyDefinition.m_vectorLabels;
         propertyConfig.m_visible = propertyDefinition.m_visibility != AZ::RPI::MaterialPropertyVisibility::Hidden;
         propertyConfig.m_readOnly = propertyDefinition.m_visibility == AZ::RPI::MaterialPropertyVisibility::Disabled;
+
+        // Use customized property handler (ImageAssetPropertyHandler) for image asset
+        if (propertyDefinition.m_dataType == AZ::RPI::MaterialPropertyDataType::Image)
+        {
+            propertyConfig.m_supportedAssetTypes.push_back(azrtti_typeid<AZ::RPI::AttachmentImageAsset>());
+            propertyConfig.m_supportedAssetTypes.push_back(azrtti_typeid<AZ::RPI::StreamingImageAsset>());
+        }
 
         // Update the description for material properties to include script name assuming id is set beforehand
         propertyConfig.m_description = AZStd::string::format(
@@ -153,7 +150,6 @@ namespace AtomToolsFramework
             ComparePropertyValues<AZ::Data::AssetId>(valueA, valueB) ||
             ComparePropertyValues<AZ::Data::Asset<AZ::Data::AssetData>>(valueA, valueB) ||
             ComparePropertyValues<AZ::Data::Asset<AZ::RPI::ImageAsset>>(valueA, valueB) ||
-            ComparePropertyValues<AZ::Data::Asset<AZ::RPI::StreamingImageAsset>>(valueA, valueB) ||
             ComparePropertyValues<AZ::Data::Asset<AZ::RPI::MaterialAsset>>(valueA, valueB) ||
             ComparePropertyValues<AZ::Data::Asset<AZ::RPI::MaterialTypeAsset>>(valueA, valueB) ||
             ComparePropertyValues<AZStd::string>(valueA, valueB))
@@ -211,11 +207,9 @@ namespace AtomToolsFramework
                 AZ_Error("AtomToolsFramework", false, "Image asset could not be found for property: '%s'.", propertyId.GetCStr());
                 return false;
             }
-            else
-            {
-                propertyValue = GetExteralReferencePath(exportPath, imagePath);
-                return true;
-            }
+
+            propertyValue = GetPathToExteralReference(exportPath, imagePath);
+            return true;
         }
 
         return true;

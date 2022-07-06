@@ -104,9 +104,17 @@ QTabBar::tab:focus {
     border:1px solid red;
 }
 
+#formFrame:disabled {
+    border:1px solid #959595;
+}
+
 #formFrame QLabel {
     font-size: 13px;
     color: #cccccc;
+}
+
+#formFrame QLabel:disabled {
+    color: #888888;
 }
 
 #formFrame QPushButton {
@@ -119,6 +127,10 @@ QTabBar::tab:focus {
     border:none;
 }
 
+#formFrame QPushButton:disabled {
+    background:transparent url(:/Select_Folder_Disabled.svg) no-repeat center;
+}
+
 #formFrame QLineEdit {
     background-color: rgba(0,0,0,0);
     font-size: 18px;
@@ -127,6 +139,10 @@ QTabBar::tab:focus {
     line-height: 30px;
     height: 1em;
     padding-top: -4px;
+}
+
+#formFrame QLineEdit:disabled {
+    color: #AAAAAA
 }
 
 
@@ -425,6 +441,14 @@ QTabBar::tab:focus {
     background:rgba(0,0,0,180) url(:/FolderOffset_Hover.svg) no-repeat center center;
 }
 
+#addRemoteProjectButton {
+    background:rgba(0,0,0,180) url(:/Cloud.svg) no-repeat center center;
+}
+#addRemoteProjectButton:hover,
+#addRemoteProjectButton:pressed {
+    background:rgba(0,0,0,180) url(:/Cloud_Hover.svg) no-repeat center center;
+}
+
 #projectsContent > QFrame  {
     margin-top:60px;
 }
@@ -449,7 +473,14 @@ QTabBar::tab:focus {
     border:1px solid #1e70eb;
 }
 
-#projectButton > QFrame  {
+#projectButton  {
+    min-width: 210px;
+    max-width: 210px;
+    min-height: 310px;
+    max-height: 310px;
+}
+
+#projectButton > Frame {
     margin-top:6px;
 }
 
@@ -457,6 +488,7 @@ QTabBar::tab:focus {
     font-weight:bold;
     font-size:14px;
     qproperty-indent: 0;
+    margin:0;
 }
 
 #labelButton QPushButton {
@@ -525,6 +557,24 @@ QProgressBar {
 
 QProgressBar::chunk {
     background-color: #1E70EB;
+}
+
+/************** Remote Projects **************/
+
+#remoteProjectDialogInstructionTitleLabel,
+#remoteProjectDialogDownloadProjectLabel {
+    font-size: 14px;
+    font-weight: 600;
+}
+
+#remoteProjectDialogRequirementsTitleLabel,
+#remoteProjectDialogLicensesTitleLabel {
+    font-size: 16px;
+    font-weight: 300;
+}
+
+#addRemoteProjectDialog > QLabel:disabled {
+    color: #AAAAAA;
 }
 
 /************** Gem Catalog **************/

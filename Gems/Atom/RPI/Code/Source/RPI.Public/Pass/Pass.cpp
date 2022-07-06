@@ -85,6 +85,7 @@ namespace AZ
 
         Pass::~Pass()
         {
+            AZ_RPI_BREAK_ON_TARGET_PASS;
             PassSystemInterface::Get()->UnregisterPass(this);
         }
 
@@ -98,17 +99,10 @@ namespace AZ
             return desc;
         }
 
-        // --- Enable/Disable ---
-
         void Pass::SetEnabled(bool enabled)
         {
             m_flags.m_enabled = enabled;
             OnHierarchyChange();
-        }
-
-        bool Pass::IsEnabled() const
-        {
-            return m_flags.m_enabled;
         }
 
         // --- Error Logging ---
@@ -145,25 +139,25 @@ namespace AZ
 
         void Pass::OnHierarchyChange()
         {
-            if (m_parent == nullptr)
+            if (m_parent != nullptr)
             {
-                return;
-            }
+                // Set new tree depth and path
+                m_flags.m_parentEnabled = m_parent->m_flags.m_enabled && (m_parent->m_flags.m_parentEnabled || m_parent->m_parent == nullptr);
+                m_treeDepth = m_parent->m_treeDepth + 1;
+                m_path = ConcatPassName(m_parent->m_path, m_name);
+                m_flags.m_partOfHierarchy = m_parent->m_flags.m_partOfHierarchy;
 
-            // Set new tree depth and path
-            m_flags.m_parentEnabled = m_parent->m_flags.m_enabled && (m_parent->m_flags.m_parentEnabled || m_parent->m_parent == nullptr);
-            m_treeDepth = m_parent->m_treeDepth + 1;
-            m_path = ConcatPassName(m_parent->m_path, m_name);
-            m_flags.m_partOfHierarchy = m_parent->m_flags.m_partOfHierarchy;
-
-            if (m_state == PassState::Orphaned)
-            {
-                QueueForBuildAndInitialization();
+                if (m_state == PassState::Orphaned)
+                {
+                    QueueForBuildAndInitialization();
+                }
             }
+            AZ_RPI_BREAK_ON_TARGET_PASS;
         }
 
         void Pass::RemoveFromParent()
         {
+            AZ_RPI_BREAK_ON_TARGET_PASS;
             AZ_RPI_PASS_ASSERT(m_parent != nullptr, "Trying to remove pass from parent but pointer to the parent pass is null.");
             m_parent->RemoveChild(Ptr<Pass>(this));
             m_queueState = PassQueueState::NoQueue;
@@ -172,6 +166,7 @@ namespace AZ
 
         void Pass::OnOrphan()
         {
+            AZ_RPI_BREAK_ON_TARGET_PASS;
             if (m_flags.m_containsGlobalReference && m_pipeline != nullptr)
             {
                 m_pipeline->RemovePipelineGlobalConnectionsFromPass(this);
@@ -180,20 +175,9 @@ namespace AZ
             m_parent = nullptr;
             m_flags.m_partOfHierarchy = false;
             m_treeDepth = 0;
+            m_parentChildIndex = 0;
             m_queueState = PassQueueState::NoQueue;
             m_state = PassState::Orphaned;
-        }
-
-        // --- Getters & Setters ---
-
-        PassState Pass::GetPassState() const
-        {
-            return m_state;
-        }
-
-        ParentPass* Pass::GetParent() const
-        {
-            return m_parent;
         }
 
         ParentPass* Pass::AsParent()
@@ -206,40 +190,7 @@ namespace AZ
             return azrtti_cast<const ParentPass*>(this);
         }
 
-        const Name& Pass::GetName() const
-        {
-            return m_name;
-        }
-
-        const Name& Pass::GetPathName() const
-        {
-            return m_path;
-        }
-
-        uint32_t Pass::GetTreeDepth() const
-        {
-            return m_treeDepth;
-        }
-
-        PassAttachmentBindingListView Pass::GetAttachmentBindings() const
-        {
-            return m_attachmentBindings;
-        }
-
-        uint32_t Pass::GetInputCount() const
-        {
-            return uint32_t(m_inputBindingIndices.size());
-        }
-
-        uint32_t Pass::GetInputOutputCount() const
-        {
-            return uint32_t(m_inputOutputBindingIndices.size());
-        }
-
-        uint32_t Pass::GetOutputCount() const
-        {
-            return uint32_t(m_outputBindingIndices.size());
-        }
+        // --- Bindings ---
 
         PassAttachmentBinding& Pass::GetInputBinding(uint32_t index)
         {
@@ -257,11 +208,6 @@ namespace AZ
         {
             uint32_t bindingIndex = m_outputBindingIndices[index];
             return m_attachmentBindings[bindingIndex];
-        }
-
-        const PassTemplate* Pass::GetPassTemplate() const
-        {
-            return m_template.get();
         }
 
         void Pass::AddAttachmentBinding(PassAttachmentBinding attachmentBinding)
@@ -1125,7 +1071,8 @@ namespace AZ
 
                 // Transition state
                 // If we are Rendering, the state will transition [Rendering -> Queued] in Pass::FrameEnd
-                if (m_state != PassState::Rendering)
+                // TODO: the PassState::Reset check is a quick fix until the pass concurrency with multiple scenes issue is fixed
+                if (m_state != PassState::Rendering && m_state != PassState::Reset)
                 {
                     m_state = PassState::Queued;
                 }
@@ -1173,6 +1120,8 @@ namespace AZ
 
         void Pass::Reset()
         {
+            AZ_RPI_BREAK_ON_TARGET_PASS;
+
             // Ensure we're in a valid state to reset. This ensures the pass won't be reset multiple times in the same frame.
             bool execute = (m_state == PassState::Idle);
             execute = execute || (m_state == PassState::Queued && m_queueState == PassQueueState::QueuedForBuildAndInitialization);
@@ -1356,6 +1305,7 @@ namespace AZ
             }
 
             AZ_Assert(m_state == PassState::Idle, "Pass::FrameBegin - Pass [%s] is attempting to render, but is not in the Idle state.", m_path.GetCStr());
+
             m_state = PassState::Rendering;
 
             UpdateConnectedInputBindings();
@@ -1393,21 +1343,11 @@ namespace AZ
         }
 
         // --- RenderPipeline, PipelineViewTag and DrawListTag ---
-        
-        bool Pass::HasDrawListTag() const
-        {
-            return m_flags.m_hasDrawListTag;
-        }
-        
+                
         RHI::DrawListTag Pass::GetDrawListTag() const
         {
             static RHI::DrawListTag invalidTag;
             return invalidTag;
-        }
-
-        bool Pass::HasPipelineViewTag() const
-        {
-            return m_flags.m_hasPipelineViewTag;
         }
 
         const PipelineViewTag& Pass::GetPipelineViewTag() const
@@ -1418,14 +1358,27 @@ namespace AZ
 
         void Pass::SetRenderPipeline(RenderPipeline* pipeline)
         {
-            m_pipeline = pipeline;
+            AZ_Assert(!m_pipeline || !pipeline || m_pipeline == pipeline,
+                "Switching passes between pipelines is not supported and may result in undefined behavior");
+
+            if (m_pipeline != pipeline)
+            {
+                m_pipeline = pipeline;
+
+                // Re-queue for new pipeline. 
+                if (m_pipeline != nullptr)
+                {
+                    PassState currentState = m_state;
+                    m_queueState = PassQueueState::NoQueue;
+                    QueueForBuildAndInitialization();
+                    if (currentState == PassState::Reset)
+                    {
+                        m_state = PassState::Reset;
+                    }
+                }
+            }
         }
         
-        RenderPipeline* Pass::GetRenderPipeline() const
-        {
-            return m_pipeline;
-        }
-
         void Pass::ManualPipelineBuildAndInitialize()
         {
             Build();
@@ -1440,6 +1393,11 @@ namespace AZ
                 return m_pipeline->GetScene();
             }
             return nullptr;
+        }
+
+        PassTree* Pass::GetPassTree() const
+        {
+            return m_pipeline ? &(m_pipeline->m_passTree) : nullptr;
         }
 
         void Pass::GetViewDrawListInfo(RHI::DrawListMask& outDrawListMask, PassesByDrawList& outPassesByDrawList, const PipelineViewTag& viewTag) const
@@ -1497,27 +1455,7 @@ namespace AZ
             return GetPipelineStatisticsResultInternal();
         }
 
-        TimestampResult Pass::GetTimestampResultInternal() const
-        {
-            return TimestampResult();
-        }
-
-        PipelineStatisticsResult Pass::GetPipelineStatisticsResultInternal() const
-        {
-            return PipelineStatisticsResult();
-        }
-
-        void Pass::SetTimestampQueryEnabled(bool enable)
-        {
-            m_flags.m_timestampQueryEnabled = enable;
-        }
-
-        void Pass::SetPipelineStatisticsQueryEnabled(bool enable)
-        {
-            m_flags.m_pipelineStatisticsQueryEnabled = enable;
-        }
-
-        bool Pass::ReadbackAttachment(AZStd::shared_ptr<AttachmentReadback> readback, const Name& slotName, PassAttachmentReadbackOption option)
+        bool Pass::ReadbackAttachment(AZStd::shared_ptr<AttachmentReadback> readback, uint32_t readbackIndex, const Name& slotName, PassAttachmentReadbackOption option)
         {
             // Return false if it's already readback
             if (m_attachmentReadback)
@@ -1536,8 +1474,8 @@ namespace AZ
                         RHI::AttachmentId attachmentId = binding.GetAttachment()->GetAttachmentId();
 
                         // Append slot index and pass name so the read back's name won't be same as the attachment used in other passes.
-                        AZStd::string readbackName = AZStd::string::format("%s_%d_%s", attachmentId.GetCStr(),
-                            bindingIndex, GetName().GetCStr());
+                        AZStd::string readbackName = AZStd::string::format("%s_%d_%d_%s", attachmentId.GetCStr(),
+                            readbackIndex, bindingIndex, GetName().GetCStr());
                         if (readback->ReadPassAttachment(binding.GetAttachment().get(), AZ::Name(readbackName)))
                         {
                             m_readbackOption = PassAttachmentReadbackOption::Output;
@@ -1574,16 +1512,6 @@ namespace AZ
             {
                 m_attachmentCopy.lock()->FrameBegin(params);
             }
-        }
-
-        bool Pass::IsTimestampQueryEnabled() const
-        {
-            return m_flags.m_timestampQueryEnabled;
-        }
-
-        bool Pass::IsPipelineStatisticsQueryEnabled() const
-        {
-            return m_flags.m_pipelineStatisticsQueryEnabled;
         }
 
         void Pass::PrintIndent(AZStd::string& stringOutput, uint32_t indent) const
@@ -1823,4 +1751,3 @@ namespace AZ
 
     }   // namespace RPI
 }   // namespace AZ
-

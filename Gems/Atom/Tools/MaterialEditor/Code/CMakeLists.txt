@@ -10,7 +10,7 @@ if(NOT PAL_TRAIT_BUILD_HOST_TOOLS)
     return()
 endif()
 
-o3de_pal_dir(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME} ${gem_restricted_path} ${gem_path} ${gem_parent_relative_path})
+o3de_pal_dir(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME} "${gem_restricted_path}" "${gem_path}" "${gem_parent_relative_path}")
 
 include(${pal_source_dir}/PAL_${PAL_PLATFORM_NAME_LOWERCASE}.cmake) # PAL_TRAIT_ATOM_MATERIAL_EDITOR_APPLICATION_SUPPORTED
 
@@ -37,18 +37,11 @@ ly_add_target(
             Include
     BUILD_DEPENDENCIES
         PRIVATE
-            Gem::AtomToolsFramework.Static
-            Gem::AtomToolsFramework.Editor
-            Gem::Atom_RHI.Public
-            Gem::Atom_RHI.Reflect
-            Gem::Atom_RPI.Edit
-            Gem::Atom_RPI.Public
-            Gem::Atom_Feature_Common.Public
-            Gem::Atom_Component_DebugCamera.Static
             Gem::AtomLyIntegration_CommonFeatures.Static
+            Gem::AtomToolsFramework.Editor
+            Gem::AtomToolsFramework.Static
     RUNTIME_DEPENDENCIES
         Gem::AtomToolsFramework.Editor
-        Gem::EditorPythonBindings.Editor
 )
 
 ly_set_gem_variant_to_load(TARGETS MaterialEditor VARIANTS Tools)

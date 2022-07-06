@@ -74,7 +74,7 @@ namespace AZ
             }
             else if (m_scriptAsset.IsReady())
             {
-                return m_scriptAsset->GetScriptBuffer();
+                return m_scriptAsset->m_data.GetScriptBuffer();
             }
             else
             {
@@ -665,7 +665,7 @@ namespace AZ
 
         LuaMaterialFunctorRenderStates LuaMaterialFunctorShaderItem::GetRenderStatesOverride()
         {
-            if (m_context->CheckPsoChangesAllowed() && m_shaderItem)
+            if (m_context && m_context->CheckPsoChangesAllowed() && m_shaderItem)
             {
                 return LuaMaterialFunctorRenderStates{m_shaderItem->GetRenderStatesOverlay()};
             }

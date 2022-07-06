@@ -82,8 +82,8 @@ namespace UnitTest
             {
                 AZ::AllocatorInstance<AZ::SystemAllocator>().Create();
             }
-            AZ::SceneAPI::SceneCoreStandaloneAllocator::Initialize(AZ::Environment::GetInstance());
-            AZ::SceneAPI::SceneDataStandaloneAllocator::Initialize(AZ::Environment::GetInstance());
+            AZ::SceneAPI::SceneCoreStandaloneAllocator::Initialize();
+            AZ::SceneAPI::SceneDataStandaloneAllocator::Initialize();
         }
 
         static void TearDownTestCase()

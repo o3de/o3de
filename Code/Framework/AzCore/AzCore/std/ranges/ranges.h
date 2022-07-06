@@ -16,6 +16,7 @@
 #include <AzCore/std/typetraits/is_signed.h>
 #include <AzCore/std/typetraits/is_unsigned.h>
 #include <AzCore/std/typetraits/remove_cv.h>
+#include <AzCore/std/typetraits/remove_all_extents.h>
 
 namespace AZStd
 {
@@ -1112,14 +1113,14 @@ namespace AZStd::ranges
 
         template <class Derived = D>
         constexpr auto data() ->
-            enable_if_t<contiguous_iterator<iterator_t<Derived>>, decltype(to_address(ranges::begin(static_cast<Derived&>(*this))))>
+            enable_if_t<contiguous_iterator<iterator_t<Derived>>, decltype(AZStd::to_address(ranges::begin(static_cast<Derived&>(*this))))>
         {
             return to_address(ranges::begin(derived()));
         }
         template <class Derived = D>
         constexpr auto data() const ->
             enable_if_t<range<const Derived> && contiguous_iterator<iterator_t<const Derived>>,
-            decltype(to_address(ranges::begin(static_cast<const Derived&>(*this))))>
+            decltype(AZStd::to_address(ranges::begin(static_cast<const Derived&>(*this))))>
         {
             return to_address(ranges::begin(derived()));
         }

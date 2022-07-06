@@ -12,25 +12,6 @@
 
 namespace AssetProcessor
 {
-    // RCCommon contains common structs used by the RC Job System
-
-    //! Job Exit codes.
-    // note that this is NOT a complete list of return codes, and RC.EXE itself may return unknown return codes here.
-
-    enum JobExitCodes : int
-    {
-        JobExitCode_Success = 0,
-        JobExitCode_Failed = -10,
-        JobExitCode_InvalidParams = -9,
-        JobExitCode_UnableToCreateTempDir = -8,
-        JobExitCode_CopyFailed = -6,
-        JobExitCode_Unknown = -1,
-        JobExitCode_RCNotFound = -4,
-        JobExitCode_RCCouldNotBeLaunched = -5,
-        JobExitCode_JobCancelled = -7,
-    };
-
-
     //! Identifies a queued job uniquely.  Not a case sensitive compare
     class QueueElementID
     {

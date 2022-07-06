@@ -59,7 +59,7 @@ namespace AZ::Dom::Benchmark
     BENCHMARK_DEFINE_F(DomPrefixTreeBenchmark, FindValue_ExactPath)(benchmark::State& state)
     {
         SetupTree(state);
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (const auto& pathToCheck : *m_registeredPaths)
             {
@@ -73,32 +73,52 @@ namespace AZ::Dom::Benchmark
     BENCHMARK_DEFINE_F(DomPrefixTreeBenchmark, FindValue_InexactPath)(benchmark::State& state)
     {
         SetupTree(state);
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (const auto& pathToCheck : *m_registeredPaths)
             {
-                benchmark::DoNotOptimize(m_tree.ValueAtPath(pathToCheck, PrefixTreeMatch::PathAndSubpaths));
+                benchmark::DoNotOptimize(m_tree.ValueAtPath(pathToCheck, PrefixTreeMatch::PathAndParents));
             }
         }
         state.SetItemsProcessed(m_registeredPaths->size() * state.iterations());
     }
     REGISTER_TREE_BENCHMARK(DomPrefixTreeBenchmark, FindValue_InexactPath);
 
-    BENCHMARK_DEFINE_F(DomPrefixTreeBenchmark, FindValue_VisitEntries)(benchmark::State& state)
+    BENCHMARK_DEFINE_F(DomPrefixTreeBenchmark, FindValue_VisitEntries_LeastToMostSpecific)(benchmark::State& state)
+    {
+        SetupTree(state);
+
+        for ([[maybe_unused]] auto _ : state)
+        {
+            m_tree.VisitPath(Path(), [](const Path& path, const AZStd::string& value)
+            {
+                benchmark::DoNotOptimize(path);
+                benchmark::DoNotOptimize(value);
+                return true;
+            });
+        }
+        state.SetItemsProcessed(m_registeredPaths->size() * state.iterations());
+    }
+    REGISTER_TREE_BENCHMARK(DomPrefixTreeBenchmark, FindValue_VisitEntries_LeastToMostSpecific);
+
+    BENCHMARK_DEFINE_F(DomPrefixTreeBenchmark, FindValue_VisitEntries_MostToLeastSpecific)(benchmark::State& state)
     {
         SetupTree(state);
 
         for (auto _ : state)
         {
-            m_tree.VisitPath(Path(), PrefixTreeMatch::PathAndSubpaths, [](const Path& path, const AZStd::string& value)
-            {
-                benchmark::DoNotOptimize(path);
-                benchmark::DoNotOptimize(value);
-            });
+            m_tree.VisitPath(
+                Path(),
+                [](const Path& path, const AZStd::string& value)
+                {
+                    benchmark::DoNotOptimize(path);
+                    benchmark::DoNotOptimize(value);
+                    return true;
+                }, PrefixTreeTraversalFlags::TraverseMostToLeastSpecific);
         }
         state.SetItemsProcessed(m_registeredPaths->size() * state.iterations());
     }
-    REGISTER_TREE_BENCHMARK(DomPrefixTreeBenchmark, FindValue_VisitEntries);
+    REGISTER_TREE_BENCHMARK(DomPrefixTreeBenchmark, FindValue_VisitEntries_MostToLeastSpecific);
 }
 
 #undef REGISTER_TREE_BENCHMARK

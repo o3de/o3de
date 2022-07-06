@@ -84,6 +84,8 @@ namespace AssetProcessor
                     return tr("Job Key");
                 case ColumnCompleted:
                     return tr("Completed");
+                case ColumnProcessDuration:
+                    return tr("Last Process Duration");
                 default:
                     break;
                 }
@@ -174,6 +176,32 @@ namespace AssetProcessor
                 else
                 {
                     return getItem(index.row())->m_completedTime.toString("hh:mm:ss.zzz MMM dd, yyyy");
+                }
+            case ColumnProcessDuration:
+                if (role == SortRole)
+                {
+                    return getItem(index.row())->m_processDuration;
+                }
+                else
+                {
+                    QTime processDuration = getItem(index.row())->m_processDuration;
+                    if (!processDuration.isValid())
+                    {
+                        return "";
+                    }
+                    if (processDuration.hour() > 0)
+                    {
+                        return processDuration.toString("zzz' ms, 'ss' sec, 'mm' min, 'hh' hr'");
+                    }
+                    if (processDuration.minute() > 0)
+                    {
+                        return processDuration.toString("zzz' ms, 'ss' sec, 'mm' min'");
+                    }
+                    if (processDuration.second() > 0)
+                    {
+                        return processDuration.toString("zzz' ms, 'ss' sec'");
+                    }
+                    return processDuration.toString("zzz' ms'");
                 }
             default:
                 break;
@@ -443,6 +471,20 @@ namespace AssetProcessor
         }
     }
 
+    void JobsModel::OnJobProcessDurationChanged(JobEntry jobEntry, QTime duration)
+    {
+        QueueElementID elementId(jobEntry.m_databaseSourceName, jobEntry.m_platformInfo.m_identifier.c_str(), jobEntry.m_jobKey);
+
+        if (auto iter = m_cachedJobsLookup.find(elementId); iter != m_cachedJobsLookup.end())
+        {
+            unsigned int jobIndex = iter.value();
+            CachedJobInfo* jobInfo = m_cachedJobs[jobIndex];
+            jobInfo->m_processDuration = duration;
+            Q_EMIT dataChanged(
+                index(jobIndex, ColumnProcessDuration, QModelIndex()), index(jobIndex, ColumnProcessDuration, QModelIndex()));
+        }
+    }
+
     void JobsModel::OnSourceRemoved(QString sourceDatabasePath)
     {
         // when a source is removed, we need to eliminate all job entries for that source regardless of all other details of it.
@@ -461,26 +503,6 @@ namespace AssetProcessor
         {
             RemoveJob(removal);
         }
-    }
-
-    void JobsModel::OnFolderRemoved(QString folderPath)
-    {
-        QList<AssetProcessor::QueueElementID> elementsToRemove;
-        for (int index = 0; index < m_cachedJobs.size(); ++index)
-        {
-            if (m_cachedJobs[index]->m_elementId.GetInputAssetName().startsWith(folderPath, Qt::CaseSensitive))
-            {
-                elementsToRemove.push_back(m_cachedJobs[index]->m_elementId);
-            }
-        }
-
-        // now that we've collected all the elements to remove, we can remove them.  
-        // Doing it this way avoids problems with mutating these cache structures while iterating them.
-        for (const AssetProcessor::QueueElementID& removal : elementsToRemove)
-        {
-            RemoveJob(removal);
-        }
-
     }
 
     void JobsModel::OnJobRemoved(AzToolsFramework::AssetSystem::JobInfo jobInfo)

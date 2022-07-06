@@ -10,7 +10,7 @@ if(NOT PAL_TRAIT_BUILD_HOST_TOOLS)
     return()
 endif()
 
-o3de_pal_dir(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME} ${gem_restricted_path} ${gem_path} ${gem_parent_relative_path})
+o3de_pal_dir(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME} "${gem_restricted_path}" "${gem_path}" "${gem_parent_relative_path}")
 
 include(${pal_source_dir}/PAL_${PAL_PLATFORM_NAME_LOWERCASE}.cmake) # PAL_TRAIT_ATOM_SHADER_MANAGEMENT_CONSOLE_APPLICATION_SUPPORTED
 
@@ -39,12 +39,8 @@ ly_add_target(
         PRIVATE
             Gem::AtomToolsFramework.Static
             Gem::AtomToolsFramework.Editor
-            Gem::Atom_RPI.Edit
-            Gem::Atom_RPI.Public
-            Gem::Atom_RHI.Reflect
     RUNTIME_DEPENDENCIES
         Gem::AtomToolsFramework.Editor
-        Gem::EditorPythonBindings.Editor
 )
 
 ly_set_gem_variant_to_load(TARGETS ShaderManagementConsole VARIANTS Tools)

@@ -109,7 +109,6 @@ set(FILES
     parallel/mutex.h
     parallel/semaphore.h
     parallel/scoped_lock.h
-    parallel/shared_spin_mutex.h
     parallel/shared_mutex.h
     parallel/spin_mutex.h
     parallel/thread.h
@@ -242,6 +241,7 @@ set(FILES
     typetraits/void_t.h
     typetraits/internal/type_sequence_traits.h
     typetraits/internal/is_template_copy_constructible.h
+    utility/as_const.h
     utility/declval.h
     utility/move.h
 )

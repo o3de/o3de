@@ -309,10 +309,11 @@ namespace AZ::IO
             {
                 FileReadInformation& read = m_readSlots_readInfo[i];
                 u64 totalBytesRead = m_readSizeAverage.GetTotal();
-                double totalReadTimeUSec = aznumeric_caster(m_readTimeAverage.GetTotal().count());
+                double totalReadTime = aznumeric_caster(m_readTimeAverage.GetTotal().count());
                 auto readCommand = AZStd::get_if<Requests::ReadData>(&read.m_request->GetCommand());
                 AZ_Assert(readCommand, "Request currently reading doesn't contain a read command.");
-                auto endTime = read.m_startTime + AZStd::chrono::microseconds(aznumeric_cast<u64>((readCommand->m_size * totalReadTimeUSec) / totalBytesRead));
+                AZStd::chrono::system_clock::time_point endTime =
+                    read.m_startTime + Statistic::TimeValue(aznumeric_cast<u64>((readCommand->m_size * totalReadTime) / totalBytesRead));
                 earliestSlot = AZStd::min(earliestSlot, endTime);
                 read.m_request->SetEstimatedCompletion(endTime);
             }
@@ -400,8 +401,8 @@ namespace AZ::IO
             }
 
             u64 totalBytesRead = m_readSizeAverage.GetTotal();
-            double totalReadTimeUSec = aznumeric_caster(m_readTimeAverage.GetTotal().count());
-            startTime += AZStd::chrono::microseconds(aznumeric_cast<u64>((readSize * totalReadTimeUSec) / totalBytesRead));
+            double totalReadTime = aznumeric_caster(m_readTimeAverage.GetTotal().count());
+            startTime += Statistic::TimeValue(aznumeric_cast<u64>((readSize * totalReadTime) / totalBytesRead));
             activeOffset = offset + readSize;
         }
         request->SetEstimatedCompletion(startTime);
@@ -471,7 +472,7 @@ namespace AZ::IO
                 DWORD shareMode = (m_constructionOptions.m_enableSharing || data.m_sharedRead) ? FILE_SHARE_READ: 0;
 
                 AZStd::wstring filenameW;
-                AZStd::to_wstring(filenameW, data.m_path.GetAbsolutePath());
+                AZStd::to_wstring(filenameW, data.m_path.GetAbsolutePathCStr());
                 file = ::CreateFileW(
                     filenameW.c_str(),              // file name
                     FILE_GENERIC_READ,              // desired access
@@ -812,7 +813,7 @@ namespace AZ::IO
 
         WIN32_FILE_ATTRIBUTE_DATA attributes;
         AZStd::wstring filenameW;
-        AZStd::to_wstring(filenameW, fileExists.m_path.GetAbsolutePath());
+        AZStd::to_wstring(filenameW, fileExists.m_path.GetAbsolutePathCStr());
         if (::GetFileAttributesExW(filenameW.c_str(), GetFileExInfoStandard, &attributes))
         {
             if ((attributes.dwFileAttributes != INVALID_FILE_ATTRIBUTES) &&
@@ -871,7 +872,7 @@ namespace AZ::IO
         {
             WIN32_FILE_ATTRIBUTE_DATA attributes;
             AZStd::wstring filenameW;
-            AZStd::to_wstring(filenameW, command.m_path.GetAbsolutePath());
+            AZStd::to_wstring(filenameW, command.m_path.GetAbsolutePathCStr());
             if (::GetFileAttributesExW(filenameW.c_str(), GetFileExInfoStandard, &attributes) &&
                 (attributes.dwFileAttributes != INVALID_FILE_ATTRIBUTES) && ((attributes.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0))
             {
@@ -1108,7 +1109,7 @@ namespace AZ::IO
         return m_metaDataCache_front;
     }
 
-    bool StorageDriveWin::IsServicedByThisDrive(const char* filePath) const
+    bool StorageDriveWin::IsServicedByThisDrive(AZ::IO::PathView filePath) const
     {
         // This approach doesn't allow paths to be resolved to the correct drive when junctions are used or when a drive
         // is mapped as folder of another drive. To do this correctly "GetVolumePathName" should be used, but this takes
@@ -1116,7 +1117,7 @@ namespace AZ::IO
         // multiple disks.
         for (const AZStd::string& drivePath : m_drivePaths)
         {
-            if (azstrnicmp(filePath, drivePath.c_str(), drivePath.length()) == 0)
+            if (filePath.RootName().Compare(drivePath) == 0)
             {
                 return true;
             }
@@ -1128,22 +1129,57 @@ namespace AZ::IO
     {
         if (m_cachesInitialized)
         {
-            constexpr double bytesToMB = aznumeric_cast<double>(1_mib);
             using DoubleSeconds = AZStd::chrono::duration<double>;
 
-            double totalBytesReadMB = m_readSizeAverage.GetTotal() / bytesToMB;
+            u64 totalBytesRead = m_readSizeAverage.GetTotal();
             double totalReadTimeSec = AZStd::chrono::duration_cast<DoubleSeconds>(m_readTimeAverage.GetTotal()).count();
-            statistics.push_back(Statistic::CreateFloat(m_name, "Read Speed (avg. mbps)", totalBytesReadMB / totalReadTimeSec));
-            statistics.push_back(Statistic::CreateInteger(m_name, "File Open & Close (avg. us)", m_fileOpenCloseTimeAverage.CalculateAverage().count()));
-            statistics.push_back(Statistic::CreateInteger(m_name, "Get file exists (avg. us)", m_getFileExistsTimeAverage.CalculateAverage().count()));
-            statistics.push_back(Statistic::CreateInteger(m_name, "Get file meta data (avg. us)", m_getFileMetaDataRetrievalTimeAverage.CalculateAverage().count()));
+            statistics.push_back(Statistic::CreateBytesPerSecond(m_name, "Read Speed", totalBytesRead / totalReadTimeSec,
+                "The average read speed in megabytes per second this drive achieved. This is the maximum achievable speed for reading from "
+                "disk. If this is lower than expected it may indicate that there's an overhead from the operating system, the drive has "
+                "seen a lot of use, other applications are using the same drive and/or anti-virus scans are slowing down reads. Enabling "
+                "buffered reads through the Settings Registry can increase the read speeds as the operating system can cache files, but "
+                "this will typically only accelerate files that are read multiple times and will be slower for the first read. Artificial "
+                "can therefore be misleading if the same files are repeatedly loaded."));
+            statistics.push_back(Statistic::CreateTimeRange(
+                m_name, "File Open & Close", m_fileOpenCloseTimeAverage.CalculateAverage(), m_fileOpenCloseTimeAverage.GetMinimum(),
+                m_fileOpenCloseTimeAverage.GetMaximum(),
+                "The average amount of time needed to open and close file handles. This is a fixed cost from the operating "
+                "system. This can be mitigated running from archives."));
+            statistics.push_back(Statistic::CreateTimeRange(
+                m_name, "Get file exists", m_getFileExistsTimeAverage.CalculateAverage(),
+                m_getFileExistsTimeAverage.GetMinimum(), m_getFileExistsTimeAverage.GetMaximum(),
+                "The average amount of time needed to check if a file exists. This is a fixed cost from the operating "
+                "system. This can be mitigated running from archives."));
+            statistics.push_back(Statistic::CreateTimeRange(
+                m_name, "Get file meta data", m_getFileMetaDataRetrievalTimeAverage.CalculateAverage(),
+                m_getFileMetaDataRetrievalTimeAverage.GetMinimum(), m_getFileMetaDataRetrievalTimeAverage.GetMaximum(),
+                "The average amount of time in microseconds needed to retrieve file information. This is a fixed cost from the operating "
+                "system. This can be mitigated running from archives."));
 
-            statistics.push_back(Statistic::CreateInteger(m_name, "Available slots", CalculateNumAvailableSlots()));
+            statistics.push_back(Statistic::CreateInteger(m_name, "Available slots", CalculateNumAvailableSlots(),
+                "The total number of available slots to queue requests on. The lower this number, the more active this node is. A small "
+                "number is ideal as it means there are a few requests available for immediate processing next once a request "
+                "completes. If this is value is often negative then increasing the over-commit value, but keep in mind that too many "
+                "over-committed reduces the ability of scheduler to order requests."));
 
 #if AZ_STREAMER_ADD_EXTRA_PROFILING_INFO
-            statistics.push_back(Statistic::CreatePercentage(m_name, FileSwitchesName, m_fileSwitchPercentageStat.GetAverage()));
-            statistics.push_back(Statistic::CreatePercentage(m_name, SeeksName, m_seekPercentageStat.GetAverage()));
-            statistics.push_back(Statistic::CreatePercentage(m_name, DirectReadsName, m_directReadsPercentageStat.GetAverage()));
+            statistics.push_back(Statistic::CreatePercentageRange(
+                m_name, FileSwitchesName, m_fileSwitchPercentageStat.GetAverage(), m_fileSwitchPercentageStat.GetMinimum(),
+                m_fileSwitchPercentageStat.GetMaximum(),
+                "The percentage of file requests that required switching to a different file. When running from loose file this should be "
+                "close to 100% as that would indicate mostly full file reads. When running from archives this should be as close to 0 as "
+                "possible as that would indicate efficiently running from archives."));
+            statistics.push_back(Statistic::CreatePercentageRange(
+                m_name, SeeksName, m_seekPercentageStat.GetAverage(), m_seekPercentageStat.GetMinimum(), m_seekPercentageStat.GetMaximum(),
+                "The percentage of file reads that required seeking within a file. For loose files this should be lose to zero to indicate "
+                "no partial file reads. For archives this value is typically high, which is not a problem, but lower values indicate more "
+                "efficient scheduling and archive layout which will result in better hardware cache utilization."));
+            statistics.push_back(Statistic::CreatePercentageRange(
+                m_name, DirectReadsName, m_directReadsPercentageStat.GetAverage(), m_directReadsPercentageStat.GetMinimum(),
+                m_directReadsPercentageStat.GetMaximum(),
+                "The percentage of reads that did not require any additional aligning. If this number isn't close to 100 percent "
+                "performance will suffer as temporary buffers need to be allocated and freed. The best way to avoid this is by adding a "
+                "block cache and/or read splitter in front of this node."));
 #endif
         }
         StreamStackEntry::CollectStatistics(statistics);
@@ -1153,20 +1189,73 @@ namespace AZ::IO
     {
         switch (data.m_reportType)
         {
-        case Requests::ReportType::FileLocks:
+        case IStreamerTypes::ReportType::Config:
+            {
+                AZStd::string drivePaths;
+                AZ::StringFunc::Join(drivePaths, m_drivePaths, ' ');
+                data.m_output.push_back(Statistic::CreatePersistentString(
+                    m_name, "Drive paths", AZStd::move(drivePaths), "The drive paths this node monitors."));
+                data.m_output.push_back(Statistic::CreateInteger(
+                    m_name, "Max file handles", m_maxFileHandles,
+                    "The maximum number of file handles this drive node will cache. Increasing this will allow files that are read "
+                    "multiple times to be processed faster. It's recommended to have this set to at least the largest number of archives "
+                    "that can be in use at the same time."));
+                data.m_output.push_back(Statistic::CreateInteger(
+                    m_name, "Max meta data cache", m_metaDataCache_paths.size(),
+                    "The maximum number of meta data like file sizes this drive node will cache."));
+                data.m_output.push_back(Statistic::CreateByteSize(
+                    m_name, "Physical sector size", m_physicalSectorSize,
+                    "The sector size used by the hardware. For optimal performance memory alignment and read sizes need to be multiples of "
+                    "this value."));
+                data.m_output.push_back(Statistic::CreateByteSize(
+                    m_name, "Logical sector size", m_logicalSectorSize,
+                    "The sector size used by the operating system. This is typically the same or smaller than the physical sector size. If "
+                    "the physical sector size alignment can't be met, this is the next best size to align to."));
+                data.m_output.push_back(Statistic::CreateInteger(
+                    m_name, "IO channel count", m_ioChannelCount, "The amount of requests the hardware can process in parallel."));
+                data.m_output.push_back(Statistic::CreateInteger(
+                    m_name, "Overcommit", m_overCommit,
+                    "The number of additional requests this node will accept. Higher numbers means that drives don't have to wait for the "
+                    "scheduler to provide new request to process and the next request can immediately start reading. If this value is too "
+                    "high though it will negatively impact the scheduler's ability to order and prioritize requests, which can lead to "
+                    "poorer hardware and software cache performance and slower cancellations, among others."));
+                data.m_output.push_back(Statistic::CreateBoolean(
+                    m_name, "Has seek penalty", m_constructionOptions.m_hasSeekPenalty,
+                    "Whether or not the hardware has a penalty for seeking. This refers to drives that need to physically position a read "
+                    "head to retrieve data, which can cause additional seek times for non-consecutive reads. This does not refer to seeks "
+                    "impacting hardware cache performance."));
+                data.m_output.push_back(Statistic::CreateBoolean(
+                    m_name, "Unbuffered reads enabled", m_constructionOptions.m_enableUnbufferedReads,
+                    "Whether or not this drive will use the operating system's cache (buffered) or not (unbuffered). Buffered reads are "
+                    "beneficial when reading the same file frequently, which happens during development. Unbuffered typically is faster "
+                    "when reading the initial file as there's much less the operating system has to do, but subsequential reads are "
+                    "slower. Unbuffered is optimal for released games as these don't often read the same file. Please keep in mind that "
+                    "artificial tests may show an improvement with buffered enabled but this can be due to repeatedly reading the same "
+                    "files and often doesn't reflect a real-world scenario."));
+                data.m_output.push_back(Statistic::CreateBoolean(
+                    m_name, "Enable sharing", m_constructionOptions.m_enableSharing,
+                    "Whether or not file read sharing is enabled. When enabled this enabled other applications can continue to read the "
+                    "files, though not write to them. This doesn't have any noticeable impact on performance, but may be a security "
+                    "concern."));
+                data.m_output.push_back(Statistic::CreateBoolean(
+                    m_name, "Minimal reporting", m_constructionOptions.m_minimalReporting,
+                    "Whether or not this node only reports issues or reports all information."));
+                data.m_output.push_back(Statistic::CreateReferenceString(
+                    m_name, "Next node", m_next ? AZStd::string_view(m_next->GetName()) : AZStd::string_view("<None>"),
+                    "The name of the node that follows this node or none."));
+            }
+            break;
+        case IStreamerTypes::ReportType::FileLocks:
             if (m_cachesInitialized)
             {
                 for (u32 i = 0; i < m_maxFileHandles; ++i)
                 {
                     if (m_fileCache_handles[i] != INVALID_HANDLE_VALUE)
                     {
-                        AZ_Printf("Streamer", "File lock in %s : '%s'.\n", m_name.c_str(), m_fileCache_paths[i].GetRelativePath());
+                        data.m_output.push_back(
+                            Statistic::CreatePersistentString(m_name, "File lock", m_fileCache_paths[i].GetRelativePath().Native()));
                     }
                 }
-            }
-            else
-            {
-                AZ_Printf("Streamer", "File lock in %s : No files have been streamed.\n", m_name.c_str());
             }
             break;
         default:

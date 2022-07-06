@@ -44,7 +44,6 @@ struct VSOutput
     float3 m_tangent : TANGENT; 
     float3 m_bitangent : BITANGENT; 
     float3 m_worldPosition : UV0;
-    float3 m_shadowCoords[ViewSrg::MaxCascadeCount] : UV5;
 
     // Extended fields (only referenced in this azsl file)...
     float2 m_uv[UvSetCount] : UV1;    
@@ -72,17 +71,6 @@ VSOutput EnhancedPbr_ForwardPassVS(VSInput IN)
     float3x3 objectToWorldIT = GetNormalToWorld();
     ConstructTBN(IN.m_normal, IN.m_tangent, IN.m_bitangent, objectToWorld, objectToWorldIT, OUT.m_normal, OUT.m_tangent, OUT.m_bitangent);
 
-    // directional light shadow 
-    const uint shadowIndex = ViewSrg::m_shadowIndexDirectionalLight;
-    if (o_enableShadows && !skipShadowCoords && shadowIndex < SceneSrg::m_directionalLightCount)
-    {
-        DirectionalLightShadow::GetShadowCoords(
-            shadowIndex,
-            worldPosition,
-            OUT.m_normal,
-            OUT.m_shadowCoords);
-    }
-
     return OUT;
 }
 
@@ -96,13 +84,13 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
     // ------- Tangents & Bitangets -------
     float3 tangents[UvSetCount] = { IN.m_tangent.xyz, IN.m_tangent.xyz };
     float3 bitangents[UvSetCount] = { IN.m_bitangent.xyz, IN.m_bitangent.xyz };
-
-    if ((o_parallax_feature_enabled && !o_enableSubsurfaceScattering) || o_normal_useTexture || (o_clearCoat_enabled && o_clearCoat_normal_useTexture) || o_detail_normal_useTexture)
+    
+    if (ShouldHandleParallax() || o_normal_useTexture || (o_clearCoat_enabled && o_clearCoat_normal_useTexture) || o_detail_normal_useTexture)
     {
         for (int i = 0; i != UvSetCount; ++i)
         {
             EvaluateTangentFrame(
-                IN.m_normal,
+                vertexNormal,
                 IN.m_worldPosition, 
                 isFrontFace,
                 IN.m_uv[i],
@@ -125,7 +113,7 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
     {
         EnhancedSetPixelDepth(
             IN.m_worldPosition,
-            IN.m_normal,
+            vertexNormal,
             tangents,
             bitangents,
             IN.m_uv,
@@ -134,16 +122,6 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
             IN.m_position.w,
             depth,
             displacementIsClipped);
-
-        // Adjust directional light shadow coorinates for parallax correction
-        if(o_parallax_enablePixelDepthOffset)
-        {
-            const uint shadowIndex = ViewSrg::m_shadowIndexDirectionalLight;
-            if (o_enableShadows && shadowIndex < SceneSrg::m_directionalLightCount)
-            {
-                DirectionalLightShadow::GetShadowCoords(shadowIndex, IN.m_worldPosition, vertexNormal, IN.m_shadowCoords);
-            }
-        }
     }
 
     SurfaceSettings surfaceSettings;
@@ -155,7 +133,7 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
     // TODO: this often invokes a separate sample of the base color texture which is wasteful
     float alpha = GetAlphaAndClip(IN.m_uv);
 
-    EvaluateEnhancedSurface(IN.m_normal, IN.m_uv, IN.m_detailUv, tangents, bitangents, isFrontFace, displacementIsClipped, surface, surfaceSettings);
+    EvaluateEnhancedSurface(vertexNormal, IN.m_uv, IN.m_detailUv, tangents, bitangents, isFrontFace, displacementIsClipped, surface, surfaceSettings);
 
     // ------- Lighting Data -------
 
@@ -165,9 +143,6 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
     lightingData.tileIterator.Init(IN.m_position, PassSrg::m_lightListRemapped, PassSrg::m_tileLightData);
     lightingData.Init(surface.position, surface.normal, surface.roughnessLinear);
     
-    // Directional light shadow coordinates
-    lightingData.shadowCoords = IN.m_shadowCoords;
-
     lightingData.emissiveLighting = surface.emissiveLighting;
     lightingData.diffuseAmbientOcclusion = surface.diffuseAmbientOcclusion;
     lightingData.specularOcclusion = surface.specularOcclusion;
@@ -192,7 +167,7 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
     ApplyDecals(lightingData.tileIterator, surface);
 
     // Apply Direct Lighting
-    ApplyDirectLighting(surface, lightingData);
+    ApplyDirectLighting(surface, lightingData, IN.m_position);
 
     // Apply Image Based Lighting (IBL)
     ApplyIBL(surface, lightingData);

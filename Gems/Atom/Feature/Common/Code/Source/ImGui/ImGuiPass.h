@@ -136,7 +136,8 @@ namespace AZ
             //! Updates the index and vertex buffers, and returns the total number of draw items.
             uint32_t UpdateImGuiResources();
 
-            void Init();
+            // Initializes ImGui related data in the pass. Called during the pass's initialization phase.
+            void InitializeImGui();
 
             ImGuiContext* m_imguiContext = nullptr;
             TickHandlerFrameStart m_tickHandlerFrameStart;
@@ -158,6 +159,9 @@ namespace AZ
             AZStd::vector<ImDrawData> m_drawData;
             bool m_isDefaultImGuiPass = false;
 
+            // Whether the pass data indicated that the pass should be used as the default ImGui pass
+            bool m_requestedAsDefaultImguiPass = false;
+
             // ImGui processes mouse wheel movement on NewFrame(), which could be before input events
             // happen, so save the value to apply the most recent value right before NewFrame().
             float m_lastFrameMouseWheel = 0.0;
@@ -168,6 +172,12 @@ namespace AZ
             AZStd::unordered_map<Data::Instance<RPI::StreamingImage>, uint32_t> m_userTextures;
             Data::Instance<RPI::Buffer> m_instanceBuffer;
             RHI::StreamBufferView m_instanceBufferView;
+
+            // cache the font text id
+            void* m_imguiFontTexId = nullptr;
+
+            // Whether the pass has already initialized it's ImGui related data.
+            bool m_imguiInitialized = false;
         };
     }   // namespace RPI
 }   // namespace AZ

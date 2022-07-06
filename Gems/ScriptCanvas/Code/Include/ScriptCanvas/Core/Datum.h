@@ -49,8 +49,8 @@ namespace ScriptCanvas
         };
 
         // calls a function and converts the result to a ScriptCanvas type, if necessary
-        static AZ::Outcome<Datum, AZStd::string> CallBehaviorContextMethodResult(const AZ::BehaviorMethod* method, const AZ::BehaviorParameter* resultType, AZ::BehaviorValueParameter* params, unsigned int numExpectedArgs, const AZStd::string_view context);
-        static AZ::Outcome<void, AZStd::string> CallBehaviorContextMethod(const AZ::BehaviorMethod* method, AZ::BehaviorValueParameter* params, unsigned int numExpectedArgs);
+        static AZ::Outcome<Datum, AZStd::string> CallBehaviorContextMethodResult(const AZ::BehaviorMethod* method, const AZ::BehaviorParameter* resultType, AZ::BehaviorArgument* params, unsigned int numExpectedArgs, const AZStd::string_view context);
+        static AZ::Outcome<void, AZStd::string> CallBehaviorContextMethod(const AZ::BehaviorMethod* method, AZ::BehaviorArgument* params, unsigned int numExpectedArgs);
 
         static bool IsValidDatum(const Datum* datum);
 
@@ -64,7 +64,7 @@ namespace ScriptCanvas
         Datum(const AZ::BehaviorParameter& parameterDesc, eOriginality originality, const void* source);
         Datum(BehaviorContextResultTag, const AZ::BehaviorParameter& resultType);
         Datum(const AZStd::string& behaviorClassName, eOriginality originality);
-        Datum(const AZ::BehaviorValueParameter& value);
+        Datum(const AZ::BehaviorArgument& value);
 
         void ReconfigureDatumTo(Datum&& object);
         void ReconfigureDatumTo(const Datum& object);
@@ -79,7 +79,7 @@ namespace ScriptCanvas
         /// that REFERS to the source, and passing in a value will create a datum with a new, Script-owned, copy from the source.
         //
         // Also needs to bypass when it conflicts with the other constructors available.
-        template<typename t_Value, typename = AZStd::enable_if_t<!AZStd::is_same<AZStd::decay_t<t_Value>, Datum>::value && !AZStd::is_same<AZStd::decay_t<t_Value>, AZ::BehaviorValueParameter>::value> >
+        template<typename t_Value, typename = AZStd::enable_if_t<!AZStd::is_same<AZStd::decay_t<t_Value>, Datum>::value && !AZStd::is_same<AZStd::decay_t<t_Value>, AZ::BehaviorArgument>::value> >
         explicit Datum(t_Value&& value);
 
         AZ_INLINE bool Empty() const;
@@ -95,7 +95,12 @@ namespace ScriptCanvas
         AZ_INLINE const void* GetAsDanger() const;
 
         const Data::Type& GetType() const { return m_type; }
-        void SetType(const Data::Type& dataType);
+        enum class TypeChange
+        {
+            Forced,
+            Requested,
+        };
+        void SetType(const Data::Type& dataType, TypeChange typeChange = TypeChange::Requested);
 
         template<typename T>
         void SetAZType()
@@ -147,15 +152,15 @@ namespace ScriptCanvas
         void SetNotificationsTarget(AZ::EntityId notificationId);
 
         // pushes this datum to the void* address in destination
-        bool ToBehaviorContext(AZ::BehaviorValueParameter& destination) const;
+        bool ToBehaviorContext(AZ::BehaviorArgument& destination) const;
 
         // returns BVP with void* to the datum address
-        AZ::BehaviorValueParameter ToBehaviorContext(AZ::BehaviorClass*& behaviorClass);
+        AZ::BehaviorArgument ToBehaviorContext(AZ::BehaviorClass*& behaviorClass);
 
-        // creates an AZ::BehaviorValueParameter with a void* that points to this datum, depending on what the parameter needs
-        // this is called when the AZ::BehaviorValueParameter needs this value as input to another function
+        // creates an AZ::BehaviorArgument with a void* that points to this datum, depending on what the parameter needs
+        // this is called when the AZ::BehaviorArgument needs this value as input to another function
         // so it is appropriate for the value output to be nullptr
-        AZ::Outcome<AZ::BehaviorValueParameter, AZStd::string> ToBehaviorValueParameter(const AZ::BehaviorParameter& description) const;
+        AZ::Outcome<AZ::BehaviorArgument, AZStd::string> ToBehaviorValueParameter(const AZ::BehaviorParameter& description) const;
 
         AZ_INLINE AZStd::string ToString() const;
 
@@ -171,11 +176,11 @@ namespace ScriptCanvas
         // This should be called at ScriptCanvas compile time when the runtime entity is available
         void ResolveSelfEntityReferences(const AZ::EntityId& graphOwnerId);
 
-        // creates an AZ::BehaviorValueParameter with a void* that points to this datum, depending on what the parameter needs
-        // this is called when the AZ::BehaviorValueParameter needs this value as output from another function
+        // creates an AZ::BehaviorArgument with a void* that points to this datum, depending on what the parameter needs
+        // this is called when the AZ::BehaviorArgument needs this value as output from another function
         // so it is NOT appropriate for the value output to be nullptr, if the description is for a pointer to an object
         // there needs to be valid memory to write that pointer
-        AZ::Outcome<AZ::BehaviorValueParameter, AZStd::string> ToBehaviorValueParameterResult(const AZ::BehaviorParameter& description, const AZStd::string_view className, const AZStd::string_view methodName);
+        AZ::Outcome<AZ::BehaviorArgument, AZStd::string> ToBehaviorValueParameterResult(const AZ::BehaviorParameter& description, const AZStd::string_view className, const AZStd::string_view methodName);
 
         // This is used as the destination for a Behavior Context function call; after the call the result must be converted.
         void ConvertBehaviorContextMethodResult(const AZ::BehaviorParameter& resultType);
@@ -355,9 +360,9 @@ namespace ScriptCanvas
 
         bool ToBehaviorContextNumber(void* target, const AZ::Uuid& typeID) const;
 
-        AZ::BehaviorValueParameter ToBehaviorValueParameterNumber(const AZ::BehaviorParameter& description);
+        AZ::BehaviorArgument ToBehaviorValueParameterNumber(const AZ::BehaviorParameter& description);
 
-        AZ::Outcome<AZ::BehaviorValueParameter, AZStd::string> ToBehaviorValueParameterString(const AZ::BehaviorParameter& description);
+        AZ::Outcome<AZ::BehaviorArgument, AZStd::string> ToBehaviorValueParameterString(const AZ::BehaviorParameter& description);
 
         AZStd::string ToStringAABB(const Data::AABBType& source) const;
 

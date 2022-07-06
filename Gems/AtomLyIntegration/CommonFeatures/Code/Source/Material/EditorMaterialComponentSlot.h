@@ -20,6 +20,10 @@ namespace AZ
     namespace Render
     {
         //! Details for a single editable material assignment
+        //! EditorMaterialComponentSlot will attempt to forward all changes to selected entities for actions invoked from a context menu or
+        //! entity inspector. The set of selected or pinned entities will be retrieved directly from the inspector. Updates will be
+        //! applied to the entities and their materials using MaterialComponentRequestBus.
+        //! Undo and redo for all of those entities will be managed by calls to OnDataChanged.
         struct EditorMaterialComponentSlot final
         {
             AZ_RTTI(EditorMaterialComponentSlot, "{344066EB-7C3D-4E92-B53D-3C9EBD546488}");
@@ -27,6 +31,9 @@ namespace AZ
 
             static bool ConvertVersion(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement);
             static void Reflect(ReflectContext* context);
+
+            EditorMaterialComponentSlot() = default;
+            EditorMaterialComponentSlot(const AZ::EntityId& entityId, const MaterialAssignmentId& materialAssignmentId);
 
             //! Get cached preview image as a buffer to use as an RPE attribute
             //! If a cached image isn't avalible then a request will be made to render one
@@ -45,22 +52,33 @@ namespace AZ
             bool HasSourceData() const;
 
             //! Assign a new material override asset
-            void SetAsset(const Data::AssetId& assetId);
-
-            //! Assign a new material override asset
             void SetAsset(const Data::Asset<RPI::MaterialAsset>& asset);
 
-            //! Remove material and prperty overrides
+            //! Assign a new material override asset
+            void SetAssetId(const Data::AssetId& assetId);
+
+            //! Remove material and property overrides
             void Clear();
 
-            //! Remove prperty overrides
-            void ClearOverrides();
+            //! Remove material overrides
+            void ClearMaterial();
 
-            void OpenMaterialExporter();
+            //! Remove property overrides
+            void ClearProperties();
+
+            //! Launch the material editor application and open the active material for this slot
             void OpenMaterialEditor() const;
-            void OpenMaterialInspector();
-            void OpenUvNameMapInspector();
 
+            //! Open the material exporter, aka generate source materials dialog, and apply resulting materials to a set of entities
+            void OpenMaterialExporter(const AzToolsFramework::EntityIdSet& entityIdsToEdit);
+
+            //! Open the material instance inspector to edit material property overrides for a set of entities 
+            void OpenMaterialInspector(const AzToolsFramework::EntityIdSet& entityIdsToEdit);
+
+            //! Open the dialog for mapping UV channels for models and materials
+            void OpenUvNameMapInspector(const AzToolsFramework::EntityIdSet& entityIdsToEdit);
+
+            //! Bypass the UI to export the active material to the export path 
             void ExportMaterial(const AZStd::string& exportPath, bool overwrite);
 
             AZ::EntityId m_entityId;
@@ -69,8 +87,8 @@ namespace AZ
 
         private:
             void OpenPopupMenu(const AZ::Data::AssetId& assetId, const AZ::Data::AssetType& assetType);
-            void OnMaterialChanged() const;
-            void OnDataChanged() const;
+            void OnMaterialChangedFromRPE() const;
+            void OnDataChanged(const AzToolsFramework::EntityIdSet& entityIdsToEdit, bool updateAsset) const;
             mutable bool m_updatePreview = true;
         };
 

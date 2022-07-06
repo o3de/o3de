@@ -30,8 +30,8 @@
   },
   "debug": {
     "TAGS": [
-      "nightly-incremental",
-      "nightly-clean",
+      "periodic-incremental-daily",
+      "periodic-clean-weekly-internal",
       "weekly-build-metrics"
     ],
     "COMMAND": "build_linux.sh",
@@ -45,8 +45,8 @@
   },
   "profile": {
     "TAGS": [
-      "nightly-incremental",
-      "nightly-clean",
+      "periodic-incremental-daily",
+      "periodic-clean-weekly-internal",
       "daily-pipeline-metrics",
       "weekly-build-metrics"
     ],
@@ -61,8 +61,8 @@
   },
   "profile_gcc_nounity": {
     "TAGS": [
-      "nightly-incremental",
-      "nightly-clean"
+      "periodic-incremental-daily-internal",
+      "periodic-clean-weekly-internal"
     ],
     "COMMAND": "build_linux.sh",
     "PARAMETERS": {
@@ -99,14 +99,15 @@
       "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DLY_PARALLEL_LINK_JOBS=4",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "all",
-      "CTEST_OPTIONS": "-E (AutomatedTesting::TerrainTests_Main|Gem::EMotionFX.Editor.Tests) -L (SUITE_smoke|SUITE_main) -LE (REQUIRES_gpu) --no-tests=error",
-      "TEST_RESULTS": "False"
+      "CTEST_OPTIONS": "-E (AutomatedTesting::TerrainTests_Main|Gem::EMotionFX.Editor.Tests) -L (SUITE_smoke|SUITE_main) -LE (REQUIRES_gpu) --no-tests=error -T Test",
+      "TEST_METRICS": "True",
+      "TEST_RESULTS": "True"
     }
   },
   "test_profile_gcc_nounity": {
     "TAGS": [
-      "nightly-incremental",
-      "nightly-clean"
+      "periodic-incremental-daily-internal",
+      "periodic-clean-weekly-internal"
     ],
     "COMMAND": "build_test_linux.sh",
     "PARAMETERS": {
@@ -115,8 +116,9 @@
       "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DLY_UNITY_BUILD=FALSE -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ -DLY_PARALLEL_LINK_JOBS=4 -DLY_GCC_BUILD_FOR_GCOV=ON",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "all",
-      "CTEST_OPTIONS": "-E (AutomatedTesting::TerrainTests_Main|Gem::EMotionFX.Editor.Tests) -L (SUITE_smoke|SUITE_main) -LE (REQUIRES_gpu) --no-tests=error",
-      "TEST_RESULTS": "False",
+      "CTEST_OPTIONS": "-E (AutomatedTesting::TerrainTests_Main|Gem::EMotionFX.Editor.Tests) -L (SUITE_smoke|SUITE_main) -LE (REQUIRES_gpu) --no-tests=error -T Test",
+      "TEST_METRICS": "True",
+      "TEST_RESULTS": "True",
       "LY_MIN_MEMORY_PER_CORE": "2097152"
     }
   },
@@ -129,15 +131,16 @@
       "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DLY_UNITY_BUILD=FALSE -DLY_PARALLEL_LINK_JOBS=4",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "all",
-      "CTEST_OPTIONS": "-E (AutomatedTesting::TerrainTests_Main|Gem::EMotionFX.Editor.Tests) -L (SUITE_smoke|SUITE_main) -LE (REQUIRES_gpu) --no-tests=error",
-      "TEST_RESULTS": "False"
+      "CTEST_OPTIONS": "-E (AutomatedTesting::TerrainTests_Main|Gem::EMotionFX.Editor.Tests) -L (SUITE_smoke|SUITE_main) -LE (REQUIRES_gpu) --no-tests=error -T Test",
+      "TEST_METRICS": "True",
+      "TEST_RESULTS": "True"
     }
   },
   "asset_profile": {
     "TAGS": [
       "weekly-build-metrics",
-      "nightly-incremental",
-      "nightly-clean"
+      "periodic-incremental-daily",
+      "periodic-clean-weekly-internal"
     ],
     "COMMAND": "build_asset_linux.sh",
     "PARAMETERS": {
@@ -153,6 +156,9 @@
   },
   "asset_profile_nounity": {
     "TAGS": [],
+    "PIPELINE_ENV": {
+      "NONBLOCKING_STEP": "True"
+    },
     "COMMAND": "build_asset_linux.sh",
     "PARAMETERS": {
       "CONFIGURATION": "profile",
@@ -167,8 +173,8 @@
   },
   "awsi_test_profile_pipe": {
     "TAGS": [
-      "nightly-incremental",
-      "nightly-clean"
+      "periodic-incremental-daily-internal",
+      "periodic-clean-weekly-internal"
     ],
     "steps": [
       "awsi_deployment",
@@ -190,14 +196,15 @@
       "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DLY_PARALLEL_LINK_JOBS=4",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "TEST_SUITE_awsi",
-      "CTEST_OPTIONS": "-L (SUITE_awsi) --no-tests=error",
+      "CTEST_OPTIONS": "-L (SUITE_awsi) --no-tests=error -T Test",
+      "TEST_METRICS": "True",
       "TEST_RESULTS": "True"
     }
   },
   "periodic_test_profile": {
     "TAGS": [
-      "nightly-incremental",
-      "nightly-clean",
+      "periodic-incremental-daily",
+      "periodic-clean-weekly-internal",
       "weekly-build-metrics"
     ],
     "COMMAND": "build_test_linux.sh",
@@ -207,14 +214,15 @@
       "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DLY_PARALLEL_LINK_JOBS=4",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "TEST_SUITE_periodic",
-      "CTEST_OPTIONS": "-L (SUITE_periodic) -LE (REQUIRES_gpu) --no-tests=error",
-      "TEST_RESULTS": "False"
+      "CTEST_OPTIONS": "-L (SUITE_periodic) -LE (REQUIRES_gpu) --no-tests=error -T Test",
+      "TEST_METRICS": "True",
+      "TEST_RESULTS": "True"
     }
   },
   "sandbox_test_profile": {
     "TAGS": [
-      "nightly-incremental",
-      "nightly-clean",
+      "periodic-incremental-daily",
+      "periodic-clean-weekly-internal",
       "weekly-build-metrics"
     ],
     "PIPELINE_ENV": {
@@ -227,13 +235,15 @@
       "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DLY_PARALLEL_LINK_JOBS=4",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "all",
-      "CTEST_OPTIONS": "-L (SUITE_sandbox) --no-tests=error"
+      "CTEST_OPTIONS": "-L (SUITE_sandbox) --no-tests=error -T Test",
+      "TEST_METRICS": "True",
+      "TEST_RESULTS": "True"
     }
   },
   "benchmark_test_profile": {
     "TAGS": [
-      "nightly-incremental",
-      "nightly-clean",
+      "periodic-incremental-daily",
+      "periodic-clean-weekly-internal",
       "weekly-build-metrics"
     ],
     "COMMAND": "build_test_linux.sh",
@@ -243,14 +253,15 @@
       "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DLY_PARALLEL_LINK_JOBS=4",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "TEST_SUITE_benchmark",
-      "CTEST_OPTIONS": "-L (SUITE_benchmark) --no-tests=error",
-      "TEST_RESULTS": "False"
+      "CTEST_OPTIONS": "-L (SUITE_benchmark) -LE (REQUIRES_gpu) --no-tests=error -T Test",
+      "TEST_METRICS": "True",
+      "TEST_RESULTS": "True"
     }
   },
   "release": {
     "TAGS": [
-      "nightly-incremental",
-      "nightly-clean",
+      "periodic-incremental-daily",
+      "periodic-clean-weekly-internal",
       "weekly-build-metrics"
     ],
     "COMMAND": "build_linux.sh",
@@ -264,8 +275,8 @@
   },
   "monolithic_release": {
     "TAGS": [
-      "nightly-incremental",
-      "nightly-clean",
+      "periodic-incremental-daily-internal",
+      "periodic-clean-weekly-internal",
       "weekly-build-metrics"
     ],
     "COMMAND": "build_linux.sh",
@@ -283,13 +294,13 @@
     "PARAMETERS": {
         "CONFIGURATION": "profile",
         "OUTPUT_DIRECTORY": "build/linux",
-        "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DLY_PARALLEL_LINK_JOBS=4 -DLY_DISABLE_TEST_MODULES=TRUE",
+        "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DLY_PARALLEL_LINK_JOBS=4 -DLY_DISABLE_TEST_MODULES=TRUE -DLY_STRIP_DEBUG_SYMBOLS=TRUE",
         "CMAKE_TARGET": "install"
     }
   },
   "installer_pipe": { 
     "TAGS": [
-      "nightly-clean",
+      "periodic-clean-weekly-internal",
       "nightly-installer"
     ],
     "steps": [
@@ -305,7 +316,7 @@
     "PARAMETERS": {
         "CONFIGURATION": "profile",
         "OUTPUT_DIRECTORY": "build/linux",
-        "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DLY_PARALLEL_LINK_JOBS=4 -DLY_DISABLE_TEST_MODULES=TRUE -DLY_VERSION_ENGINE_NAME=o3de-sdk",
+        "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DLY_PARALLEL_LINK_JOBS=4 -DLY_DISABLE_TEST_MODULES=TRUE -DLY_VERSION_ENGINE_NAME=o3de-sdk -DLY_STRIP_DEBUG_SYMBOLS=TRUE",
         "EXTRA_CMAKE_OPTIONS": "-DLY_INSTALLER_AUTO_GEN_TAG=TRUE -DLY_INSTALLER_DOWNLOAD_URL=${INSTALLER_DOWNLOAD_URL} -DLY_INSTALLER_LICENSE_URL=${INSTALLER_DOWNLOAD_URL}/license",
         "CPACK_OPTIONS": "-D CPACK_UPLOAD_URL=${CPACK_UPLOAD_URL}",
         "CMAKE_TARGET": "all"
@@ -313,8 +324,8 @@
   },
   "install_profile_pipe": {
     "TAGS": [
-      "nightly-incremental",
-      "nightly-clean"
+      "periodic-incremental-daily",
+      "periodic-clean-weekly-internal"
     ],
     "PIPELINE_ENV": {
       "PROJECT_REPOSITORY_NAME": "TestProject"
@@ -351,7 +362,9 @@
     },
     "COMMAND": "deploy_cdk_applications.sh",
     "PARAMETERS": {
-      "NVM_VERSION": "v0.39.1"
+      "NVM_VERSION": "v0.39.1",
+      "CDK_VERSION": "1.154.0",
+      "PYTHON_RUNTIME": "python-3.7.12-rev2-linux"
     }
   },
   "awsi_destruction": {
@@ -361,7 +374,9 @@
     },
     "COMMAND": "destroy_cdk_applications.sh",
     "PARAMETERS": {
-      "NVM_VERSION": "v0.39.1"
+      "NVM_VERSION": "v0.39.1",
+      "CDK_VERSION": "1.154.0",
+      "PYTHON_RUNTIME": "python-3.7.12-rev2-linux"
     }
   }
 }
