@@ -960,7 +960,6 @@ namespace Multiplayer
                 EnableAutonomousControl(controlledEntity, AzNetworking::InvalidConnectionId);
             }
         }
-
         AZLOG_INFO("Multiplayer operating in %s mode", GetEnumString(m_agentType));
     }
 
