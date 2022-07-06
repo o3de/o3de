@@ -12,6 +12,7 @@
 #include "native/resourcecompiler/rccontroller.h"
 #include "native/FileServer/fileServer.h"
 #include "native/AssetManager/assetScanner.h"
+#include <native/utilities/PlatformConfiguration.h>
 
 #include <QApplication>
 #include <QDialogButtonBox>
@@ -750,6 +751,7 @@ void GUIApplicationManager::Reflect()
     EBUS_EVENT_RESULT(context, AZ::ComponentApplicationBus, GetSerializeContext);
     AZ_Assert(context, "No serialize context");
     AzToolsFramework::LogPanel::BaseLogPanel::Reflect(context);
+    AssetProcessor::PlatformConfiguration::Reflect(context);
 }
 
 const char* GUIApplicationManager::GetLogBaseName()
