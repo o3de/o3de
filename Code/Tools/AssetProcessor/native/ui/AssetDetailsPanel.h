@@ -49,9 +49,9 @@ namespace AssetProcessor
         void GoToSource(const AZStd::string& source);
         void GoToProduct(const AZStd::string& product);
         
-        void SetIntermediateAssetFolderID(AZStd::optional<AZ::s64> intermediateAssetFolderID)
+        void SetIntermediateAssetFolderId(AZStd::optional<AZ::s64> intermediateAssetFolderId)
         {
-            m_intermediateAssetFolderID = intermediateAssetFolderID;
+            m_intermediateAssetFolderId = intermediateAssetFolderId;
         }
 
     protected:
@@ -68,6 +68,6 @@ namespace AssetProcessor
         AssetTreeFilterModel* m_productFilterModel = nullptr;
         QTabWidget* m_assetsTab = nullptr;
         
-        AZStd::optional<AZ::s64> m_intermediateAssetFolderID;
+        AZStd::optional<AZ::s64> m_intermediateAssetFolderId;
     };
 } // namespace AssetProcessor

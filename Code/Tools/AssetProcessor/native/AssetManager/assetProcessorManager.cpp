@@ -4656,7 +4656,7 @@ namespace AssetProcessor
         }
     }
 
-    AZStd::optional<AZ::s64> AssetProcessorManager::GetIntermediateAssetScanFolderID() const
+    AZStd::optional<AZ::s64> AssetProcessorManager::GetIntermediateAssetScanFolderId() const
     {
         if (!m_platformConfig)
         {

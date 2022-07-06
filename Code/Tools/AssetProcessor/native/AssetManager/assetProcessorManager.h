@@ -225,7 +225,7 @@ namespace AssetProcessor
         AZ::u64 RequestReprocess(const QString& sourcePath);
         AZ::u64 RequestReprocess(const AZStd::list<AZStd::string>& reprocessList);
         
-        AZStd::optional<AZ::s64> GetIntermediateAssetScanFolderID() const;
+        AZStd::optional<AZ::s64> GetIntermediateAssetScanFolderId() const;
 
     Q_SIGNALS:
         void NumRemainingJobsChanged(int newNumJobs);

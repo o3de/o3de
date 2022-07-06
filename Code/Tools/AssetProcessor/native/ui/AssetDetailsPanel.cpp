@@ -72,9 +72,9 @@ namespace AssetProcessor
             });
 
         bool isIntermediate = false;
-        if(m_intermediateAssetFolderID.has_value())
+        if(m_intermediateAssetFolderId.has_value())
         {
-            isIntermediate = sourceDetails.m_scanFolderPK == m_intermediateAssetFolderID.value();
+            isIntermediate = sourceDetails.m_scanFolderPK == m_intermediateAssetFolderId.value();
         }
 
         int assetTabIndex = static_cast<int>(
