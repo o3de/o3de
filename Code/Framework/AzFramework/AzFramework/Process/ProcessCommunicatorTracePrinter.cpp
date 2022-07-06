@@ -19,6 +19,9 @@ ProcessCommunicatorTracePrinter::ProcessCommunicatorTracePrinter(AzFramework::Pr
 ProcessCommunicatorTracePrinter::~ProcessCommunicatorTracePrinter()
 {
     // flush stdout
+    Pump();  // get any remaining data if available and split it by newlines
+    
+    // if there's any further data left over in the buffer then make sure it gets written, too
     WriteCurrentString(false);
     
     // flush stderr
@@ -80,7 +83,10 @@ void ProcessCommunicatorTracePrinter::WriteCurrentString(bool isFromStdErr)
         }
         else
         {
-            AZ_TracePrintf(m_window.c_str(), "%s", bufferToUse.c_str());
+            // Note that the input string will never have a newline at the end of it
+            // because it comes from ParseDataBuffer above, which splits by newline
+            // but does not include the newlines.
+            AZ_TracePrintf(m_window.c_str(), "%s\n", bufferToUse.c_str());
         }
         bufferToUse.clear();
     }

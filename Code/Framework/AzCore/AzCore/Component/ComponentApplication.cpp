@@ -438,6 +438,10 @@ namespace AZ
             m_eventLogger = EventLoggerPtr(static_cast<AZ::Debug::LocalFileEventLogger*>(AZ::Interface<AZ::Debug::IEventLogger>::Get()),
                 EventLoggerDeleter{ true });
         }
+        
+        // we are about to create allocators, so make sure that
+        // the descriptor is filled with at least the defaults:
+        m_descriptor.m_recordingMode = AllocatorManager::Instance().GetDefaultTrackingMode();
 
         // Initializes the OSAllocator and SystemAllocator as soon as possible
         CreateOSAllocator();

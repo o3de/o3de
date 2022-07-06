@@ -961,6 +961,7 @@ namespace AzQtComponents
                 const auto enabled = settings.value(g_enabledKey);
                 SetFilterState(category.toString(), displayName.toString(), enabled.toBool());
             }
+            settings.endArray();
         }
 
         emit TextFilterChanged(textFilter());
