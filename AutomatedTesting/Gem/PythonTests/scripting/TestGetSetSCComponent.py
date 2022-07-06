@@ -9,7 +9,6 @@ import os
 import azlmbr.math as math
 import editor_python_test_tools.pyside_utils as pyside_utils
 import editor_python_test_tools.hydra_editor_utils as hydra
-from editor_python_test_tools.editor_entity_utils import EditorEntity, EditorComponent
 import azlmbr.paths as paths
 
 
@@ -27,7 +26,7 @@ class TestGetSetSCComponent:
         test_entity2.create_entity(position,  ["Script Canvas"])
         #script_canvas_component = test_entity2.add_component("Script Canvas")
         script_canvas_component = test_entity2.components[0]
-        hydra.set_component_property_value(script_canvas_component, componentPropertyPath, SOURCE_FILE_0)
+        hydra.set_component_property_value(script_canvas_component, componentPropertyPath, source0)
         script_file = hydra.get_component_property_value(script_canvas_component, componentPropertyPath)
 
         print(script_file)
