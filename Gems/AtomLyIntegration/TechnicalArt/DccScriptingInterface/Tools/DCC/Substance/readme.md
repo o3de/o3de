@@ -8,7 +8,7 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 
 # O3DE DCCsi and Substance Designer
 
-This document contains instructions and other information related to using Adobe Substance Designer with Open 3D Engine (O3DE).  O3DE has a Gem called the DccScriptingInterface (DCCsi) that helps user manage the usage of many popular Digital Content Creation tools (DCC) such as Substance.  These are primarily workflow integrations with the intent to provide an improved ease-of-use experience when these tools are used to author source content for O3DE.  The DCCsi helps with aspects such as, configuration and settings, launching tools and boostrapping them with O3DE extensions (generally python scripts using the DCC tools APIs to automate tasks)
+This document contains instructions and other information related to using Adobe Substance Designer with Open 3D Engine (O3DE).  O3DE has a Gem called the DccScriptingInterface (DCCsi) that helps user manage the usage of many popular Digital Content Creation tools (DCC) such as Substance.  These are primarily workflow integrations with the intent to provide an improved ease-of-use experience when these tools are used to author source content for O3DE.  The DCCsi helps with aspects such as, configuration and settings, launching tools and bootstrapping them with O3DE extensions (generally python scripts using the DCC tools APIs to automate tasks)
 
 ## Status:  Prototype
 
@@ -19,11 +19,15 @@ It does not have end-user artist functionality or creature comforts yet.
 ## Revision Info:
 
 - This is the first working Proof of Concept
-- This version is only the integration patterns for configuration, settings, launch and boostrapping.  No tooling within Substance is implemented yet.
+
+- This version is only the integration patterns for configuration, settings, launch and bootstrapping.  No tooling within Substance is implemented yet.
 
 - Currently only the latest version of Substance Designer installed via Adobe CC has been tested: 12.1.1 build 5825 commit 9adecf0b Release (2022-05-31).
+
 - This should work with other modern Adobe versions in the same Adobe install location:
+  
   - C:\Program Files\Adobe\Adobe Substance 3D Designer\Adobe Substance 3D Designer.exe
+
 - See the Appendix if you are trying to work with older legacy versions.
 
 ### Getting Started
@@ -32,7 +36,7 @@ It does not have end-user artist functionality or creature comforts yet.
 
 1. Make sure that Adobe Substance3D (aka Substance Designer) is installed. As noted above, currently we have only tested the latest version installed via Creative Cloud Desktop and only in the default install location.
 
-2. Run the following command, this will generate default config/settings and install the DCCsi python package dependancies:
+2. Run the following command, this will generate default config/settings and install the DCCsi python package dependencies:
    
    1. dccsi > `python.cmd Tools/DCC/Substance/config.py`
 
@@ -66,25 +70,23 @@ https://github.com/o3de/o3de/blob/development/Gems/AtomLyIntegration/TechnicalAr
 
 ### General Info
 
-The DCCsi utilizes a set of package dependancies defined in a requirements.txt file
+The DCCsi utilizes a set of package dependencies defined in a requirements.txt file
 
 [< o3de> / Gems / AtomLyIntegration / TechnicalArt / DccScriptingInterface / requirements.txt](https://github.com/o3de/o3de/blob/development/Gems/AtomLyIntegration/TechnicalArt/DccScriptingInterface/requirements.txt)
 
-When the O3DE engine is built (cmake), these packages are installed into the O3DE python interpretter/runtime, so python scripts utilizing them have access to these packages; i.e. when a python script is executed by the main Editor.exe python runtime.
+When the O3DE engine is built (cmake), these packages are installed into the O3DE python interpreter/runtime, so python scripts utilizing them have access to these packages; i.e. when a python script is executed by the main Editor.exe python runtime.
 
-Many DCC applications such as Substance Designer also come with a managed python interpretter:
+Many DCC applications such as Substance Designer also come with a managed python interpreter:
 
-- O3DE doesn't use a user or system installed python interpretter, nor do most DCC apps we are aware of.
+- O3DE doesn't use a user or system installed python interpreter, nor do most DCC apps we are aware of.
 
 - The DCC apps python version may be different then O3DE e.g. python 3.7.12 vs 3.9.9.
 
-- O3DE and most DCC apps we are aware of don't make use of virtual enviornments, which is a common way to manage package dependancies for different versions of python.
+- O3DE and most DCC apps we are aware of don't make use of virtual environments, which is a common way to manage package dependencies for different versions of python.
 
 - The O3DE DCCsi attempts to not directly modify the DCC app installation (e.g. we don't install packages directly into Maya or Substance in the host platforms %ProgramFiles%)
 
-- To facilitate package dependancies the dccsi provides a script called **<u>foundation.py</u>** which utilizes the DCC apps python.exe and pip (setup tools) to install packages into a target directory which the DCCsi code can access 
-
-
+- To facilitate package dependencies the dccsi provides a script called **<u>foundation.py</u>** which utilizes the DCC apps python.exe and pip (setup tools) to install packages into a target directory which the DCCsi code can access 
 
 The DCCsi currently manages **<u>Substance Designer</u>** from this location:
 
@@ -114,7 +116,7 @@ If you are encountering issues ...
    
    2) #technical-artists: [Discord, o3de #Technical Artists](https://discordapp.com/channels/805939474655346758/842110573625081876)
 
-2)  Write a GitHub Issue, assign to me
+2) Write a GitHub Issue, assign to me
 
 ## Env_Dev.bat
 

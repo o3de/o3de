@@ -19,7 +19,8 @@ This like the core <DCCsi>/config.py uses Dynaconf:
 1. Modular rather then monolithic (single DCC integrations can stand on their own)
 2. Layered config and settings (the core can be extended or )
 3. Derive or alter via logic
-3. etc. (to do: expand on the benefits)
+4. DCC integration code and comments are written for a novice TA audience
+5. etc. (to do: expand on the benefits)
 
 """
 # -------------------------------------------------------------------------
@@ -37,10 +38,10 @@ from pathlib import Path
 import logging as _logging
 # -------------------------------------------------------------------------
 
-# This module and others like Substance/config.py have a lot of duplicate
+# This module and others like Blender/config.py have a lot of duplicate
 # boilerplate code (as we are early, these are the first versions to stand up)
 # They could possibly be improved by unifying into a Class object designed
-# with extensibility
+# with inheritance extensibility
 
 # -------------------------------------------------------------------------
 # global scope
@@ -86,7 +87,7 @@ _DCCSI_GDEBUGGER = env_bool(ENVAR_DCCSI_GDEBUGGER, 'WING')
 #    this is the preferred manner, dynaconf will always load this by default
 #    so these values will always be last and take precedence within code
 #    that is executed after:
-#        from dynacof import settings
+#        from dynaconf import settings
 #        settings.setenv()
 
 # this will bootstrap access to the dccsi managed package dependencies
@@ -180,7 +181,7 @@ def get_config_settings(core_config=_DCCSI_CORE_CONFIG,
                         dccsi_sys_path=_DCCSI_SYS_PATH,
                         dccsi_pythonpath=_DCCSI_PYTHONPATH,
                         set_env=True):
-    # now we can extend the environment specific to Blender
+    # now we can extend the environment specific to Substance
     # start by grabbing the constants we want to work with as envars
     # import others
 
@@ -411,7 +412,7 @@ if __name__ == '__main__':
 
     if arg_bool(args.install_package_dependencies, desc="args.install_package_dependencies"):
         import foundation
-        _LOGGER.info('Installing python package dependancies from requirements.txt')
+        _LOGGER.info('Installing python package dependencies from requirements.txt')
         foundation.install_requirements(python_exe=settings.DCCSI_SUBSTANCE_PY_EXE)
         _LOGGER.warning('If the Substance3D app is running we suggest restarting it')
 
