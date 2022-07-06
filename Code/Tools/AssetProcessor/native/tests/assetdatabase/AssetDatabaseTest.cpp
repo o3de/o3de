@@ -2490,7 +2490,7 @@ namespace UnitTests
         secondStatEntry.m_statName = statEntry.m_statName;
         secondStatEntry.m_statValue = 16384;
         secondStatEntry.m_lastLogTime = 23570;
-        EXPECT_TRUE(m_data->m_connection.ReplaceStat(statEntry));
+        EXPECT_TRUE(m_data->m_connection.ReplaceStat(secondStatEntry));
         m_data->m_connection.GetStatByStatName(statEntry.m_statName.c_str(), statContainer);
         ASSERT_EQ(statContainer.size(), 1);
         ASSERT_NE(statContainer.at(0), statEntry);
