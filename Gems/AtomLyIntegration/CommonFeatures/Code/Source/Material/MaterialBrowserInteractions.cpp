@@ -92,7 +92,7 @@ namespace AZ
                       {
                           AZ::RPI::MaterialSourceData materialData;
                           materialData.m_materialTypeVersion = 5;
-                          materialData.m_materialType = AtomToolsFramework::GetExteralReferencePath(
+                          materialData.m_materialType = AtomToolsFramework::GetPathToExteralReference(
                               dialog.m_targetPath.toUtf8().constData(), dialog.m_sourcePath.toUtf8().constData());
                           dialog.m_sourcePath.toUtf8().constData();
                           materialData.m_parentMaterial = "";
