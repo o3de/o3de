@@ -6,9 +6,9 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
 from aws_cdk import (
-    core,
     aws_iam as iam
 )
+import aws_cdk as core
 
 from .aws_metrics_stack import AWSMetricsStack
 from aws_metrics.policy_statements_builder.user_policy_statements_builder import UserPolicyStatementsBuilder

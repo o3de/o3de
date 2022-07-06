@@ -18,20 +18,38 @@ KINESIS_APPLICATION_CODE = "-- ** Continuous Filter **\n"\
                    "METRIC_UNIT_VALUE_INT BIGINT,\n"\
                    "METRIC_UNIT VARCHAR(1024),\n"\
                    "OUTPUT_TYPE VARCHAR(1024));\n"\
-                   "CREATE OR REPLACE PUMP \"LOGIN_PUMP\" AS\n"\
+                   "CREATE OR REPLACE PUMP \"CLIENT_LEAVE_PUMP\" AS\n"\
                    "INSERT INTO \"DESTINATION_STREAM\" (METRIC_NAME, METRIC_TIMESTAMP, METRIC_UNIT_VALUE_INT, METRIC_UNIT, OUTPUT_TYPE)\n"\
-                   "SELECT STREAM 'TotalLogins', UNIX_TIMESTAMP(TIME_WINDOW), COUNT(distinct_stream.login_count) AS unique_count, 'Count', 'metrics'\n"\
-                   "FROM (\n"\
-                   "    SELECT STREAM DISTINCT\n"\
-                   "    ROWTIME as window_time,\n"\
-                   "    \"AnalyticsApp_001\".\"event_id\" as login_count,\n"\
-                   "    STEP(\"AnalyticsApp_001\".ROWTIME BY INTERVAL '1' MINUTE) as TIME_WINDOW\n"\
-                   "    FROM \"AnalyticsApp_001\"\n"\
-                   "    WHERE \"AnalyticsApp_001\".\"event_name\" = 'login'\n"\
-                   ") as distinct_stream\n"\
+                   "SELECT STREAM 'ClientLeave', UNIX_TIMESTAMP(FLOOR(\"event_timestamp\" TO MINUTE)), COUNT(\"event_id\"), 'Count', 'metrics'\n"\
+                   "FROM\n"\
+                   "    \"AnalyticsApp_001\"\n"\
+                   "WHERE\n"\
+                   "    \"AnalyticsApp_001\".\"event_name\" = 'client_leave'\n"\
                    "GROUP BY\n"\
-                   "    TIME_WINDOW,\n"\
-                   "    STEP(distinct_stream.window_time BY INTERVAL '1' MINUTE);\n"
+                   "    FLOOR(\"event_timestamp\" TO MINUTE),\n"\
+                   "    STEP(\"AnalyticsApp_001\".ROWTIME BY INTERVAL '1' MINUTE);\n"\
+                   "\n"\
+                   "CREATE OR REPLACE PUMP \"CLIENT_JOIN_PUMP\" AS\n"\
+                   "INSERT INTO \"DESTINATION_STREAM\" (METRIC_NAME, METRIC_TIMESTAMP, METRIC_UNIT_VALUE_INT, METRIC_UNIT, OUTPUT_TYPE)\n"\
+                   "SELECT STREAM 'ClientJoin', UNIX_TIMESTAMP(FLOOR(\"event_timestamp\" TO MINUTE)), COUNT(\"event_id\"), 'Count', 'metrics'\n"\
+                   "FROM\n"\
+                   "    \"AnalyticsApp_001\"\n"\
+                   "WHERE\n"\
+                   "    \"AnalyticsApp_001\".\"event_name\" = 'client_join'\n"\
+                   "GROUP BY\n"\
+                   "    FLOOR(\"event_timestamp\" TO MINUTE),\n"\
+                   "    STEP(\"AnalyticsApp_001\".ROWTIME BY INTERVAL '1' MINUTE);\n"\
+                   "\n"\
+                   "CREATE OR REPLACE PUMP \"CLIENT_CONNECTION_COUNT_PUMP\" AS\n"\
+                   "INSERT INTO \"DESTINATION_STREAM\" (METRIC_NAME, METRIC_TIMESTAMP, METRIC_UNIT_VALUE_INT, METRIC_UNIT, OUTPUT_TYPE)\n"\
+                   "SELECT STREAM 'ClientConnectionCount', UNIX_TIMESTAMP(FLOOR(\"event_timestamp\" TO MINUTE)), MAX(\"client_connection_count\"), 'Count', 'metrics'\n"\
+                   "FROM\n"\
+                   "    \"AnalyticsApp_001\"\n"\
+                   "WHERE\n"\
+                   "    \"AnalyticsApp_001\".\"event_name\" = 'client_connection_count'\n"\
+                   "GROUP BY\n"\
+                   "    FLOOR(\"event_timestamp\" TO MINUTE),\n"\
+                   "    STEP(\"AnalyticsApp_001\".ROWTIME BY INTERVAL '1' MINUTE);\n"\
 
 
 # Constants for the analytics processing and events processing lambda.

@@ -6,12 +6,13 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
 from aws_cdk import (
-    core,
     aws_kinesisfirehose as kinesisfirehose,
     aws_iam as iam,
     aws_lambda as lambda_,
     aws_logs as logs
 )
+import aws_cdk as core
+from constructs import Construct
 
 import os
 
@@ -25,7 +26,7 @@ class BatchProcessing:
     the Kinesis Data Firehose delivery stream for batch processing.
     """
     def __init__(self,
-                 stack: core.Construct,
+                 stack: Construct,
                  application_name: str,
                  input_stream_arn: str,
                  analytics_bucket_arn: str,

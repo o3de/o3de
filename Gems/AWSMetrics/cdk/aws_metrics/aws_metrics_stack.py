@@ -5,9 +5,8 @@ For complete copyright and license terms please see the LICENSE at the root of t
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
-from aws_cdk import (
-    core
-)
+import aws_cdk as core
+from constructs import Construct
 
 from .real_time_data_processing import RealTimeDataProcessing
 from .data_ingestion import DataIngestion
@@ -27,7 +26,7 @@ class AWSMetricsStack(core.Stack):
     """
 
     def __init__(self,
-                 scope: core.Construct,
+                 scope: Construct,
                  id_: str,
                  application_name: str,
                  optional_features: dict,
