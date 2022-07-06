@@ -28,23 +28,22 @@ class LocalStorageQueryTool(StorageQueryTool):
         """
         super().__init__(**kwargs)
         if self.has_full_address:
-            match self._action:
-                case self.Action.CREATE:
-                    logger.info('Creating file')
-                    self._put(file=self._file,
-                              storage_location=self._full_address)
-                case self.Action.READ:
-                    logger.info('Opening file')
-                    self._access(file=self._full_address)
-                case self.Action.UPDATE:
-                    logger.info('Updating File')
-                    self._update(file=self._file,
-                                 storage_location=self._full_address)
-                case self.Action.DELETE:
-                    logger.info("Deleting File")
-                    self._delete(file=self._full_address)
-                case self.Action.QUERY:
-                    self._display()
+            if self._action == self.Action.CREATE:
+                logger.info('Creating file')
+                self._put(file=self._file,
+                            storage_location=self._full_address)
+            elif self._action == self.Action.READ:
+                logger.info('Opening file')
+                self._access(file=self._full_address)
+            elif self._action == self.Action.UPDATE:
+                logger.info('Updating File')
+                self._update(file=self._file,
+                                storage_location=self._full_address)
+            elif self._action == self.Action.DELETE:
+                logger.info("Deleting File")
+                self._delete(file=self._full_address)
+            elif self._action == self.Action.QUERY:
+                self._display()
         else:
             self._display()
 
