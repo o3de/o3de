@@ -122,24 +122,6 @@ namespace AZ
                     ->Field("AcesParameterOverrides", &DisplayMapperConfigurationDescriptor::m_acesParameterOverrides)
                 ;
 
-                //if (auto editContext = serializeContext->GetEditContext())
-                //{
-                //    editContext->Class<DisplayMapperConfigurationDescriptor>("DisplayMapperConfiguration", "")
-                //        ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                //        ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
-                //        ->DataElement(AZ::Edit::UIHandlers::Default, &RasterState::m_depthBias, "Depth Bias", "")
-                //        ->DataElement(AZ::Edit::UIHandlers::Default, &RasterState::m_depthBiasClamp, "Depth Bias Clamp", "")
-                //        ->DataElement(AZ::Edit::UIHandlers::Default, &RasterState::m_depthBiasSlopeScale, "Depth Bias Slope Scale", "")
-                //        ->DataElement(AZ::Edit::UIHandlers::Default, &RasterState::m_fillMode, "Fill Mode", "")
-                //            ->Attribute(AZ::Edit::Attributes::EnumValues, AZ::Edit::GetEnumConstantsFromTraits<FillMode>())
-                //        ->DataElement(AZ::Edit::UIHandlers::Default, &RasterState::m_cullMode, "Cull Mode", "")
-                //            ->Attribute(AZ::Edit::Attributes::EnumValues, AZ::Edit::GetEnumConstantsFromTraits<CullMode>())
-                //        ->DataElement(AZ::Edit::UIHandlers::Default, &RasterState::m_multisampleEnable, "Multisample Enable", "")
-                //        ->DataElement(AZ::Edit::UIHandlers::Default, &RasterState::m_depthClipEnable, "Depth Clip Enable", "")
-                //        ->DataElement(AZ::Edit::UIHandlers::Default, &RasterState::m_conservativeRasterEnable, "Conservative Raster Enable", "")
-                //        ->DataElement(AZ::Edit::UIHandlers::Default, &RasterState::m_forcedSampleCount, "Forced Sample Count", "")
-                //        ;
-                //}
             }
 
             if (auto* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
