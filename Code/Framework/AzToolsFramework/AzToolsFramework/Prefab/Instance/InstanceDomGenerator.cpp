@@ -24,6 +24,8 @@ namespace AzToolsFramework
 
         void InstanceDomGenerator::RegisterInstanceDomGeneratorInterface()
         {
+            AZ::Interface<InstanceDomGeneratorInterface>::Register(this);
+
             // Get EditorEntityContextId
             EditorEntityContextRequestBus::BroadcastResult(s_editorEntityContextId, &EditorEntityContextRequests::GetEditorEntityContextId);
 
@@ -38,8 +40,6 @@ namespace AzToolsFramework
                 "Prefab - InstanceDomGenerator::Initialize - "
                 "Prefab System Component Interface could not be found. "
                 "Check that it is being correctly initialized.");
-
-            AZ::Interface<InstanceDomGeneratorInterface>::Register(this);
         }
 
         void InstanceDomGenerator::UnregisterInstanceDomGeneratorInterface()

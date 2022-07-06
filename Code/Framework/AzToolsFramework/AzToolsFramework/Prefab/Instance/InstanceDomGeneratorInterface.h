@@ -10,7 +10,6 @@
 
 #include <AzCore/RTTI/RTTI.h>
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
-#include <AzToolsFramework/Prefab/PrefabIdTypes.h>
 
 namespace AzToolsFramework
 {

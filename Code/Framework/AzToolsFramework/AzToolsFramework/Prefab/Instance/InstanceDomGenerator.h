@@ -12,7 +12,6 @@
 #include <AzCore/RTTI/RTTI.h>
 #include <AzFramework/Entity/EntityContext.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceDomGeneratorInterface.h>
-#include <AzToolsFramework/Prefab/PrefabDomTypes.h>
 
 namespace AzToolsFramework
 {
