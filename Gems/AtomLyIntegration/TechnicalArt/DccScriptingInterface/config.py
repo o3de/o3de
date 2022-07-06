@@ -186,7 +186,7 @@ def add_path_list_to_envar(path_list=_DCCSI_SYS_PATH,
     @param envar: add paths to this ENVAR
     """
 
-    _LOGGER.info('checking envar: {}'.format(envar))
+    _LOGGER.info(f'checking envar: {envar}')
 
     # get or default to empty
     if envar in os.environ:
@@ -199,10 +199,10 @@ def add_path_list_to_envar(path_list=_DCCSI_SYS_PATH,
     known_pathlist = _ENVAR.split(os.pathsep)
 
     if len(path_list) == 0:
-        _LOGGER.warning('No {} paths added, path_list is empty'.format(envar))
+        _LOGGER.warning(f'No {envar} paths added, path_list is empty')
         return None
     else:
-        _LOGGER.info('Adding paths to envar: {}'.format(envar))
+        _LOGGER.info(f'Adding paths to envar: {envar}')
         # To Do: more validation and error checking?
         for p in path_list:
             p = Path(p)
