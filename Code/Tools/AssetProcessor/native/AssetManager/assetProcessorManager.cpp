@@ -3876,19 +3876,12 @@ namespace AssetProcessor
                         {
                             if (auto result = jobDependenciesDuplicateCheck.insert(jobDependency); !result.second)
                             {
-                                auto warningMessage = AZStd::string::format(
-                                    "Builder `%s` declared duplicate Job Dependencies for file `%s`.  Dependency: (`%s` `%s` `%s`).  Duplicates will be skipped.  "
-                                    "Please update the builder or content to remove the duplicates.",
-                                    builderInfo.m_name.c_str(),
-                                    actualRelativePath.toUtf8().constData(),
-                                    jobDependency.m_sourceFile.ToString().c_str(),
-                                    jobDependency.m_jobKey.c_str(),
-                                    jobDependency.m_platformIdentifier.c_str());
-
-                                AZ_Warning(AssetProcessor::DebugChannel, false, "%s", warningMessage.c_str());
-
-                                newJob.m_warnings.push_back(AZStd::move(warningMessage));
-
+                                // It is not an error or warning to supply the same job dependency
+                                // repeatedly as a duplicate.  It is common for builders to be parsing
+                                // source files which may mention the same dependency repeatedly.
+                                // Rather than require all of them do filtering on their end, it is
+                                // cleaner to do the de-duplication here and drop the duplicates.
+                                
                                 continue;
                             }
 
