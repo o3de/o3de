@@ -22,10 +22,14 @@ AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnin
 #include <QByteArray>
 #include <QCloseEvent>
 #include <QDesktopServices>
+#include <QDragEnterEvent>
+#include <QDragLeaveEvent>
+#include <QDropEvent>
 #include <QInputDialog>
 #include <QLayout>
 #include <QMenu>
 #include <QMenuBar>
+#include <QMimeData>
 #include <QTimer>
 #include <QWindow>
 AZ_POP_DISABLE_WARNING
@@ -53,6 +57,8 @@ namespace AtomToolsFramework
 
             QDesktopServices::openUrl(QUrl::fromLocalFile(absolutePath.c_str()));
         });
+
+        setAcceptDrops(true);
 
         AtomToolsDocumentNotificationBus::Handler::BusConnect(m_toolId);
     }
@@ -233,36 +239,36 @@ namespace AtomToolsFramework
     AZStd::vector<AZStd::shared_ptr<DynamicPropertyGroup>> AtomToolsDocumentMainWindow::GetSettingsDialogGroups() const
     {
         AZStd::vector<AZStd::shared_ptr<DynamicPropertyGroup>> groups = Base::GetSettingsDialogGroups();
-        groups.push_back(AtomToolsFramework::CreateSettingsGroup(
+        groups.push_back(CreateSettingsGroup(
             "Document System Settings",
             "Document System Settings",
             {
-                AtomToolsFramework::CreatePropertyFromSetting(
+                CreatePropertyFromSetting(
                     "/O3DE/AtomToolsFramework/AtomToolsDocumentSystem/DisplayWarningMessageDialogs",
                     "Display Warning Message Dialogs",
                     "Display message boxes for warnings opening documents",
                     true),
-                AtomToolsFramework::CreatePropertyFromSetting(
+                CreatePropertyFromSetting(
                     "/O3DE/AtomToolsFramework/AtomToolsDocumentSystem/DisplayErrorMessageDialogs",
                     "Display Error Message Dialogs",
                     "Display message boxes for errors opening documents",
                     true),
-                AtomToolsFramework::CreatePropertyFromSetting(
+                CreatePropertyFromSetting(
                     "/O3DE/AtomToolsFramework/AtomToolsDocumentSystem/EnableAutomaticReload",
                     "Enable Automatic Reload",
                     "Automatically reload documents after external modifications",
                     true),
-                AtomToolsFramework::CreatePropertyFromSetting(
+                CreatePropertyFromSetting(
                     "/O3DE/AtomToolsFramework/AtomToolsDocumentSystem/EnableAutomaticReloadPrompts",
                     "Enable Automatic Reload Prompts",
                     "Confirm before automatically reloading modified documents",
                     true),
-                AtomToolsFramework::CreatePropertyFromSetting(
+                CreatePropertyFromSetting(
                     "/O3DE/AtomToolsFramework/AtomToolsDocumentSystem/AutoSaveEnabled",
                     "Enable Auto Save",
                     "Automatically save documents after they are modified",
                     false),
-                AtomToolsFramework::CreatePropertyFromSetting(
+                CreatePropertyFromSetting(
                     "/O3DE/AtomToolsFramework/AtomToolsDocumentSystem/AutoSaveInterval",
                     "Auto Save Interval",
                     "How often (in milliseconds) auto save occurs",
@@ -629,6 +635,66 @@ namespace AtomToolsFramework
         AtomToolsDocumentSystemRequestBus::EventResult(canClose, m_toolId, &AtomToolsDocumentSystemRequestBus::Events::CloseAllDocuments);
         closeEvent->setAccepted(canClose);
         Base::closeEvent(closeEvent);
+    }
+
+    void AtomToolsDocumentMainWindow::dragEnterEvent(QDragEnterEvent* event)
+    {
+        // Check for files matching supported document types being dragged into the main window
+        for (const AZStd::string& path : GetPathsFromMimeData(event->mimeData()))
+        {
+            DocumentTypeInfoVector documentTypes;
+            AtomToolsDocumentSystemRequestBus::EventResult(
+                documentTypes, m_toolId, &AtomToolsDocumentSystemRequestBus::Events::GetRegisteredDocumentTypes);
+            for (const auto& documentType : documentTypes)
+            {
+                if (documentType.IsSupportedExtensionToOpen(path))
+                {
+                    event->setAccepted(true);
+                    event->acceptProposedAction();
+                    Base::dragEnterEvent(event);
+                    return;
+                }
+            }
+        }
+
+        event->setAccepted(false);
+        Base::dragEnterEvent(event);
+    }
+
+    void AtomToolsDocumentMainWindow::dragMoveEvent(QDragMoveEvent* event)
+    {
+        // Files dragged into the main window must only be accepted if they are within the client area
+        event->setAccepted(centralWidget() && centralWidget()->geometry().contains(event->pos()));
+        Base::dragMoveEvent(event);
+    }
+
+    void AtomToolsDocumentMainWindow::dragLeaveEvent(QDragLeaveEvent* event)
+    {
+        Base::dragLeaveEvent(event);
+    }
+
+    void AtomToolsDocumentMainWindow::dropEvent(QDropEvent* event)
+    {
+        // If supported document files are dragged into the main window client area attempt to open them
+        if (centralWidget() && centralWidget()->geometry().contains(event->pos()))
+        {
+            for (const AZStd::string& path : GetPathsFromMimeData(event->mimeData()))
+            {
+                DocumentTypeInfoVector documentTypes;
+                AtomToolsDocumentSystemRequestBus::EventResult(
+                    documentTypes, m_toolId, &AtomToolsDocumentSystemRequestBus::Events::GetRegisteredDocumentTypes);
+                for (const auto& documentType : documentTypes)
+                {
+                    if (documentType.IsSupportedExtensionToOpen(path))
+                    {
+                        AtomToolsDocumentSystemRequestBus::Event(m_toolId, &AtomToolsDocumentSystemRequestBus::Events::OpenDocument, path);
+                        event->acceptProposedAction();
+                    }
+                }
+            }
+        }
+
+        Base::dropEvent(event);
     }
 
     template<typename Functor>

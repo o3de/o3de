@@ -295,6 +295,8 @@ namespace AZ
             SizeType    GetCurPos() const override;
             SizeType    GetLength() const override;
 
+            virtual void Flush();
+
         private:
             HandleType m_handle;    ///< Open file handle.
             AZStd::string m_filename; ///< Stores filename for reopen support

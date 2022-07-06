@@ -1356,7 +1356,9 @@ namespace AZ
 
         const char* RemoteFileIO::GetAlias(const char* alias) const
         {
-            return m_excludedFileIO ? m_excludedFileIO->GetAlias(alias) : nullptr;
+            // RemoteFileIO will always leave aliases intact so it's
+            // the remote system that is the one replacing it.
+            return m_excludedFileIO ? alias : nullptr;
         }
 
         void RemoteFileIO::ClearAlias(const char* alias)
@@ -1387,17 +1389,45 @@ namespace AZ
 
         bool RemoteFileIO::ResolvePath(const char* path, char* resolvedPath, AZ::u64 resolvedPathSize) const
         {
-            return m_excludedFileIO ? m_excludedFileIO->ResolvePath(path, resolvedPath, resolvedPathSize) : false;
+            if (!m_excludedFileIO)
+            {
+                return false;
+            }
+
+            if (strlen(path) + 1 > resolvedPathSize)
+            {
+                return false;
+            }
+
+            // RemoteFileIO will only copy path to resolvedPath,
+            // keeping the aliases intact so it's
+            // the remote system that is the one replacing it.
+            azstrcpy(resolvedPath, resolvedPathSize, path);
+            return true;
         }
 
         bool RemoteFileIO::ResolvePath(AZ::IO::FixedMaxPath& resolvedPath, const AZ::IO::PathView& path) const
         {
-            return m_excludedFileIO ? m_excludedFileIO->ResolvePath(resolvedPath, path) : false;
+            if (!m_excludedFileIO)
+            {
+                return false;
+            }
+
+            if (path.Native().size() > resolvedPath.Native().max_size())
+            {
+                return false;
+            }
+
+            // RemoteFileIO will only copy path to resolvedPath
+            // keeping the aliases intact so it's
+            // the remote system that is the one replacing it.
+            resolvedPath = path;
+            return true;
         }
 
         bool RemoteFileIO::ReplaceAlias(AZ::IO::FixedMaxPath& replaceAliasPath, const AZ::IO::PathView& path) const
         {
-            return m_excludedFileIO ? m_excludedFileIO->ReplaceAlias(replaceAliasPath, path) : false;
+            return ResolvePath(replaceAliasPath, path);
         }
 
 #ifdef REMOTEFILEIO_CACHE_FILETREE

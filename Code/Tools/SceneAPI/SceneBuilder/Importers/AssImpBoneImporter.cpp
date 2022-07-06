@@ -71,6 +71,13 @@ namespace AZ
                 FindAllBones(scene, boneByNameMap);
 
                 bool isBone = FindFirstBoneByNodeName(currentNode, boneByNameMap);
+
+                // Export the scene root node as a bone.
+                if (!isBone)
+                {
+                    isBone = (currentNode == scene->mRootNode);
+                }
+
                 if (!isBone)
                 {
                     // In case the bone is not listed in any of the meshes in the scene, populate a set of animated bone names from
@@ -93,11 +100,6 @@ namespace AZ
                     {
                         isBone = true;
                     }
-                }
-
-                if (currentNode == scene->mRootNode)
-                {
-                    isBone = true;
                 }
 
                 if (!isBone)

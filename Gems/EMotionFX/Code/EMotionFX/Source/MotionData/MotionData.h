@@ -134,6 +134,13 @@ namespace EMotionFX
             bool m_logDetails = false;
         };
 
+        struct RootMotionExtractionSettings
+        {
+            bool m_transitionZeroXAxis = false;
+            bool m_transitionZeroYAxis = false;
+            AZStd::string m_sampleJoint = "Hip";
+        };
+
         MotionData() = default;
         MotionData(const MotionData&) = delete;
         MotionData(MotionData&&) = delete;
@@ -270,7 +277,7 @@ namespace EMotionFX
         void SetJointBindPoseScale(size_t jointDataIndex, const AZ::Vector3& scale);
 #endif
 
-        virtual void ExtractMotion(size_t sampleJointDataIndex, size_t targetJointDataIndex, bool transitionZeroXAxis, bool transitionZeroYAxis);
+        virtual void ExtractMotion(size_t sampleJointDataIndex, size_t targetJointDataIndex, bool transitionZeroXAxis, bool transitionZeroYAxis, bool extractRotation);
 
         static AZStd::string ReadStringFromStream(MCore::Stream* stream, MCore::Endian::EEndianType sourceEndianType);
 
