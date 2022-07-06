@@ -10,9 +10,11 @@
 #include "MultiplayerConnectionViewportMessageSystemComponent.h"
 #include <Atom/RPI.Public/ViewportContextBus.h>
 #include <Atom/RPI.Public/ViewportContext.h>
-#include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <AzCore/Console/IConsole.h>
+#include <AzFramework/Entity/EntityDebugDisplayBus.h>
+#include <AzNetworking/Framework/INetworking.h>
 #include <Multiplayer/IMultiplayerSpawner.h>
+#include <Multiplayer/MultiplayerConstants.h>
 
 namespace Multiplayer
 {
@@ -38,8 +40,6 @@ namespace Multiplayer
     }
     
     MultiplayerConnectionViewportMessageSystemComponent::MultiplayerConnectionViewportMessageSystemComponent()
-        : m_clientConnectedEventHandler([this]{this->OnClientConnected();}),
-          m_clientDisconnectedEventHandler([this]{this->OnClientDisconnected();})
     {
         AZ::Interface<IMultiplayerConnectionViewportMessage>::Register(this);
     }
@@ -57,8 +57,6 @@ namespace Multiplayer
     void MultiplayerConnectionViewportMessageSystemComponent::Activate()
     {
         AZ::TickBus::Handler::BusConnect();
-        AZ::Interface<IMultiplayer>::Get()->AddClientConnectedHandler(m_clientConnectedEventHandler);
-        AZ::Interface<IMultiplayer>::Get()->AddClientDisconnectedHandler(m_clientDisconnectedEventHandler);
     }
 
     void MultiplayerConnectionViewportMessageSystemComponent::Deactivate()
@@ -95,36 +93,38 @@ namespace Multiplayer
 
         // Build the connection status string (just show client connected or disconnected status for now)
         const auto multiplayerSystemComponent = AZ::Interface<IMultiplayer>::Get();
-        MultiplayerAgentType agentType = multiplayerSystemComponent->GetAgentType();
-        constexpr int MAX_STATUS_TEXT_LENGTH = 64;
-        char connectionStatusText[MAX_STATUS_TEXT_LENGTH] = {};
-        AZ::Color connectionStatusColor = AZ::Colors::White;
-        
-        if (agentType == MultiplayerAgentType::Client)
+        MultiplayerAgentType agentType = multiplayerSystemComponent->GetAgentType();        
+        if (agentType != MultiplayerAgentType::Client)
         {
-            switch (m_clientConnectionStatus)
-            {
-            case Connected:
-                azsnprintf(connectionStatusText, MAX_STATUS_TEXT_LENGTH, "Operating as multiplayer %s.", GetEnumString(agentType));
-                connectionStatusColor = AZ::Colors::White;
-                break;
-            case Disconnected:
-                azsnprintf(connectionStatusText, MAX_STATUS_TEXT_LENGTH, "Client disconnected!");
-                connectionStatusColor = AZ::Colors::Crimson;
-                break;
-            case Uninitialized: break;
-            default:
-                azsnprintf(connectionStatusText, MAX_STATUS_TEXT_LENGTH, "Multiplayer Connection Status Fail!\nClient in an unknown connection status!");
-                connectionStatusColor = AZ::Colors::Crimson;
-            }
+            return;
         }
 
         // Display the connection status to the top-left viewport
-        if (strlen(connectionStatusText) > 0)
+        if (AzNetworking::INetworkInterface* networkInterface = AZ::Interface<AzNetworking::INetworking>::Get()->RetrieveNetworkInterface(AZ::Name(MpNetworkInterfaceName)))
         {
-            AzFramework::DebugDisplayRequestBus::Broadcast(&AzFramework::DebugDisplayRequestBus::Events::SetColor, connectionStatusColor);
-            AzFramework::DebugDisplayRequestBus::Broadcast(&AzFramework::DebugDisplayRequestBus::Events::Draw2dTextLabel, 
-                editorsv_connectionStatus_topLeftBorderPadding_x, editorsv_connectionStatus_topLeftBorderPadding_y, editorsv_connectionMessageFontSize, connectionStatusText, false);
+            AzNetworking::IConnectionSet& connectionSet = networkInterface->GetConnectionSet();
+            if (connectionSet.GetConnectionCount() > 0)
+            {
+                // Display the connection status (calling VisitConnections(), but there's only 1 since we're a client)
+                auto displayConnectionStatus = [](AzNetworking::IConnection& connection)
+                {
+                    AZStd::string connectionStatusText = AZStd::string::format("Operating as multiplayer Client: %s", GetEnumString(connection.GetConnectionState()));
+                    AzFramework::DebugDisplayRequestBus::Broadcast(&AzFramework::DebugDisplayRequestBus::Events::SetColor, AZ::Colors::White);
+                    AzFramework::DebugDisplayRequestBus::Broadcast(&AzFramework::DebugDisplayRequestBus::Events::Draw2dTextLabel, 
+                        editorsv_connectionStatus_topLeftBorderPadding_x, editorsv_connectionStatus_topLeftBorderPadding_y, editorsv_connectionMessageFontSize, 
+                        connectionStatusText.c_str(), false);
+                };
+                connectionSet.VisitConnections(displayConnectionStatus);
+            }
+            else
+            {
+                // If we're a client yet are lacking a connection then we've been unintentionally disconnected
+                // Display a disconnect message in the viewport
+                AzFramework::DebugDisplayRequestBus::Broadcast(&AzFramework::DebugDisplayRequestBus::Events::SetColor, AZ::Colors::Red);
+                AzFramework::DebugDisplayRequestBus::Broadcast(&AzFramework::DebugDisplayRequestBus::Events::Draw2dTextLabel, 
+                    editorsv_connectionStatus_topLeftBorderPadding_x, editorsv_connectionStatus_topLeftBorderPadding_y, editorsv_connectionMessageFontSize, 
+                    "Multiplayer Client Disconnected!", false);
+            }
         }
     }
 
@@ -142,15 +142,5 @@ namespace Multiplayer
     void MultiplayerConnectionViewportMessageSystemComponent::StopCenterViewportDebugMessaging()
     {
         m_centerViewportDebugText = "";
-    }
-    
-    void MultiplayerConnectionViewportMessageSystemComponent::OnClientConnected()
-    {
-        m_clientConnectionStatus = ClientConnectionStatus::Connected;
-    }
-
-    void MultiplayerConnectionViewportMessageSystemComponent::OnClientDisconnected()
-    {
-        m_clientConnectionStatus = ClientConnectionStatus::Disconnected;
     }
 }

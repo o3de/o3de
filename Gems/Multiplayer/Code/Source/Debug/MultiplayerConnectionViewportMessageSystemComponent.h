@@ -38,8 +38,6 @@ namespace Multiplayer
 
 
     private:
-        enum ClientConnectionStatus { Uninitialized, Connected, Disconnected };
-
         //! AZ::TickBus::Handler
         //! @{
         void OnTick(float, AZ::ScriptTimePoint) override;
@@ -51,12 +49,6 @@ namespace Multiplayer
         void StopCenterViewportDebugMessaging() override;
         //! @}
 
-        void OnClientConnected();
-        void OnClientDisconnected();
-
         AZStd::string m_centerViewportDebugText;
-        ClientConnectionStatus m_clientConnectionStatus = ClientConnectionStatus::Uninitialized;
-        ClientConnectedEvent::Handler m_clientConnectedEventHandler;
-        ClientDisconnectedEvent::Handler m_clientDisconnectedEventHandler;
     };
 }
