@@ -471,7 +471,7 @@ class AndroidDeployment(object):
         self.adb_shell(command=f'mkdir {output_target}', device_id=target_device)
         for asset_path in self.files_in_asset_path:
             if asset_path.is_dir():
-                relative_path = os.path.relpath(str(asset_path), str(self.local_asset_path)).replace('\\', '/')
+                relative_path = asset_path.relative_to(self.local_asset_path).as_posix()
                 target_path = f"{output_target}/{relative_path}"
                 self.adb_shell(command=f'mkdir {target_path}', device_id=target_device)
 
@@ -499,7 +499,7 @@ class AndroidDeployment(object):
                 logging.info(f"Copying {len(files_to_copy)} assets to device {target_device}")
 
             for src_path in files_to_copy:
-                relative_path = os.path.relpath(str(src_path), str(self.local_asset_path)).replace('\\', '/')
+                relative_path = src_path.relative_to(self.local_asset_path).as_posix()
                 target_path = f"{output_target}/{relative_path}"
                 self.adb_call(arg_list=['push', str(src_path), target_path],
                               device_id=target_device)
