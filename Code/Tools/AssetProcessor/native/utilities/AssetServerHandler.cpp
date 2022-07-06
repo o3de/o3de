@@ -131,8 +131,8 @@ namespace AssetProcessor
 
     AssetServerHandler::AssetServerHandler()
     {
-        SetServerAddress(CheckServerAddress());
         SetRemoteCachingMode(CheckServerMode());
+        SetServerAddress(CheckServerAddress());
         AssetServerBus::Handler::BusConnect();
     }
 
@@ -231,18 +231,21 @@ namespace AssetProcessor
         return m_serverAddress;
     }
 
-    void AssetServerHandler::SetServerAddress(const AZStd::string& address)
+    bool AssetServerHandler::SetServerAddress(const AZStd::string& address)
     {
         AZStd::string previousServerAddress = m_serverAddress;
         m_serverAddress = address;
         if (!IsServerAddressValid())
         {
             m_serverAddress = previousServerAddress;
-            AZ_Error(AssetProcessor::DebugChannel, false,
+            AZ_Error(AssetProcessor::DebugChannel,
+                m_assetCachingMode == AssetServerMode::Inactive,
                 "Server address (%.*s) is invalid! Reverting back to (%.*s)",
                 AZ_STRING_ARG(address),
                 AZ_STRING_ARG(previousServerAddress));
+            return false;
         }
+        return true;
     }
 
     bool AssetServerHandler::RetrieveJobResult(const AssetProcessor::BuilderParams& builderParams)

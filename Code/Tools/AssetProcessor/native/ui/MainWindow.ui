@@ -1500,41 +1500,101 @@
               <verstretch>0</verstretch>
              </sizepolicy>
             </property>
-            <layout class="QGridLayout" name="gridLayout">
-             <item row="1" column="0">
-              <widget class="QComboBox" name="serverCacheModeOptions">
+            <layout class="QGridLayout" name="gridLayout" columnstretch="0,0,0,0,0">
+             <property name="sizeConstraint">
+              <enum>QLayout::SetDefaultConstraint</enum>
+             </property>
+             <item row="5" column="4">
+              <widget class="QPushButton" name="serverAddressButton">
                <property name="maximumSize">
                 <size>
-                 <width>128</width>
+                 <width>16</width>
                  <height>16777215</height>
                 </size>
                </property>
-               <property name="toolTip">
-                <string>Select the mode the project should use to cache asset products.</string>
-               </property>
-               <property name="currentText">
-                <string>Placeholder</string>
-               </property>
-               <property name="placeholderText">
-                <string>Placeholder</string>
+               <property name="text">
+                <string/>
                </property>
               </widget>
              </item>
-             <item row="2" column="0">
+             <item row="1" column="0">
+              <widget class="Line" name="line">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+              </widget>
+             </item>
+             <item row="4" column="0">
               <widget class="QLabel" name="label_3">
                <property name="text">
                 <string>Step 2: Select a remote folder</string>
                </property>
               </widget>
              </item>
-             <item row="0" column="0">
-              <widget class="QLabel" name="label_2">
-               <property name="text">
-                <string>Step 1: Set shared cache mode</string>
+             <item row="8" column="0" colspan="5">
+              <widget class="QTableWidget" name="sharedCacheTable">
+               <property name="wordWrap">
+                <bool>false</bool>
                </property>
+               <property name="rowCount">
+                <number>3</number>
+               </property>
+               <property name="columnCount">
+                <number>5</number>
+               </property>
+               <attribute name="horizontalHeaderCascadingSectionResizes">
+                <bool>false</bool>
+               </attribute>
+               <attribute name="horizontalHeaderStretchLastSection">
+                <bool>false</bool>
+               </attribute>
+               <attribute name="verticalHeaderVisible">
+                <bool>false</bool>
+               </attribute>
+               <row>
+                <property name="text">
+                 <string>New Row</string>
+                </property>
+               </row>
+               <row/>
+               <row/>
+               <column>
+                <property name="text">
+                 <string/>
+                </property>
+                <property name="toolTip">
+                 <string>Toggle pattern activity.</string>
+                </property>
+               </column>
+               <column>
+                <property name="text">
+                 <string>Name</string>
+                </property>
+               </column>
+               <column>
+                <property name="text">
+                 <string>Type</string>
+                </property>
+                <property name="toolTip">
+                 <string extracomment="Choose how the pattern text will be used. Wildcard or regular expression supported. "/>
+                </property>
+               </column>
+               <column>
+                <property name="text">
+                 <string>Pattern</string>
+                </property>
+               </column>
+               <column>
+                <property name="text">
+                 <string/>
+                </property>
+                <property name="toolTip">
+                 <string>Remove the pattern.</string>
+                </property>
+               </column>
               </widget>
              </item>
-             <item row="3" column="0" colspan="3">
+             <item row="5" column="0" colspan="4">
               <widget class="QPlainTextEdit" name="serverAddressText">
                <property name="sizePolicy">
                 <sizepolicy hsizetype="Expanding" vsizetype="Maximum">
@@ -1565,74 +1625,7 @@
                </property>
               </widget>
              </item>
-             <item row="6" column="0" colspan="3">
-              <widget class="QTableWidget" name="sharedCacheTable">
-               <property name="wordWrap">
-                <bool>false</bool>
-               </property>
-               <property name="rowCount">
-                <number>3</number>
-               </property>
-               <property name="columnCount">
-                <number>5</number>
-               </property>
-               <attribute name="horizontalHeaderCascadingSectionResizes">
-                <bool>false</bool>
-               </attribute>
-               <attribute name="verticalHeaderVisible">
-                <bool>false</bool>
-               </attribute>
-               <row>
-                <property name="text">
-                 <string>New Row</string>
-                </property>
-               </row>
-               <row/>
-               <row/>
-               <column>
-                <property name="text">
-                 <string/>
-                </property>
-                <property name="toolTip">
-                 <string>Toggle pattern activity.</string>
-                </property>
-               </column>
-               <column>
-                <property name="text">
-                 <string>Name</string>
-                </property>
-               </column>
-               <column>
-                <property name="text">
-                 <string>Type</string>
-                </property>
-               </column>
-               <column>
-                <property name="text">
-                 <string>Pattern</string>
-                </property>
-               </column>
-               <column>
-                <property name="text">
-                 <string/>
-                </property>
-                <property name="toolTip">
-                 <string>Remove the pattern.</string>
-                </property>
-               </column>
-              </widget>
-             </item>
-             <item row="5" column="0">
-              <widget class="QPushButton" name="sharedCacheAddPattern">
-               <property name="toolTip">
-                <string>Add an asset pattern to cache to the remote folder.</string>
-               </property>
-               <property name="text">
-                <string>+ Add Pattern</string>
-               </property>
-              </widget>
-             </item>
-             <item row="1" column="2">
+             <item row="9" column="4">
               <widget class="QPushButton" name="sharedCacheDiscardButton">
                <property name="maximumSize">
                 <size>
@@ -1645,23 +1638,100 @@
                </property>
               </widget>
              </item>
-             <item row="4" column="0">
+             <item row="7" column="0">
+              <widget class="QPushButton" name="sharedCacheAddPattern">
+               <property name="toolTip">
+                <string>Add an asset pattern to cache to the remote folder.</string>
+               </property>
+               <property name="text">
+                <string>+ Add Pattern</string>
+               </property>
+              </widget>
+             </item>
+             <item row="6" column="0">
               <widget class="QLabel" name="label_4">
                <property name="text">
                 <string>Step 3: Manage shared cache asset patterns</string>
                </property>
               </widget>
              </item>
-             <item row="1" column="1">
+             <item row="2" column="0">
+              <widget class="QLabel" name="label_2">
+               <property name="text">
+                <string>Step 1: Set shared cache mode</string>
+               </property>
+              </widget>
+             </item>
+             <item row="9" column="3">
               <widget class="QPushButton" name="sharedCacheSubmitButton">
                <property name="maximumSize">
                 <size>
-                 <width>64</width>
+                 <width>128</width>
                  <height>16777215</height>
                 </size>
                </property>
                <property name="text">
-                <string>Submit</string>
+                <string>Save Changes</string>
+               </property>
+              </widget>
+             </item>
+             <item row="3" column="0">
+              <widget class="QComboBox" name="serverCacheModeOptions">
+               <property name="maximumSize">
+                <size>
+                 <width>128</width>
+                 <height>16777215</height>
+                </size>
+               </property>
+               <property name="toolTip">
+                <string>Select the mode the project should use to cache asset products.</string>
+               </property>
+               <property name="currentText">
+                <string>Placeholder</string>
+               </property>
+               <property name="placeholderText">
+                <string>Placeholder</string>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="0">
+              <widget class="QLabel" name="sharedCacheTitle">
+               <property name="font">
+                <font>
+                 <pointsize>10</pointsize>
+                 <weight>75</weight>
+                 <bold>true</bold>
+                </font>
+               </property>
+               <property name="text">
+                <string># Shared Cache Settings</string>
+               </property>
+               <property name="textFormat">
+                <enum>Qt::MarkdownText</enum>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="2">
+              <widget class="QLabel" name="sharedCacheStatus">
+               <property name="font">
+                <font>
+                 <pointsize>10</pointsize>
+                </font>
+               </property>
+               <property name="frameShape">
+                <enum>QFrame::StyledPanel</enum>
+               </property>
+               <property name="frameShadow">
+                <enum>QFrame::Sunken</enum>
+               </property>
+               <property name="text">
+                <string/>
+               </property>
+               <property name="textFormat">
+                <enum>Qt::MarkdownText</enum>
+               </property>
+               <property name="margin">
+                <number>5</number>
                </property>
               </widget>
              </item>

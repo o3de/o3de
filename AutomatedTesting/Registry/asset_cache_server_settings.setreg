@@ -1,0 +1,28 @@
+{
+    "Amazon": {
+        "AssetProcessor": {
+            "Settings": {
+                "Server": {
+                    "cacheServerAddress": "D:\\work\\transfer",
+                    "assetCacheServerMode": "inactive",
+                    " \u0000HGÐ\u0002\u0000\u0000#\u0000\u0011GÐ\u0002\u0000\u0000uilder": {
+                        "name": "Atom Image Builder",
+                        "glob": "*.tiff"
+                    },
+                    "ACS Precompiled Shader Builder": {
+                        "name": "Precompiled Shader Builder",
+                        "glob": "*.precompiledshader"
+                    },
+                    "ACS Scene Builder": {
+                        "name": "Scene Builder",
+                        "glob": "*.fbx"
+                    },
+                    "ACS Shader Asset Builder": {
+                        "name": "Shader Asset Builder",
+                        "glob": "*.shader"
+                    }
+                }
+            }
+        }
+    }
+}

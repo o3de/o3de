@@ -137,13 +137,23 @@ private:
 
     struct CacheServerData
     {
+        enum class ErrorLevel
+        {
+            None,
+            Notice,
+            Warning,
+            Error
+        };
+
         bool m_dirty = false;
         AssetProcessor::AssetServerMode m_cachingMode = AssetProcessor::AssetServerMode::Inactive;
         AZStd::string m_serverAddress = "";
         AssetProcessor::RecognizerContainer m_patternContainer;
+        ErrorLevel m_errorLevel = ErrorLevel::None;
+        AZStd::string m_errorMessage;
 
         void Reset();
-        void Save(MainWindow& mainWindow);
+        bool Save(MainWindow& mainWindow);
     };
 
     Ui::MainWindow* ui;
@@ -230,6 +240,7 @@ private:
     void AssembleAssetPatterns();
     void CheckAssetServerStates();
     void ResetAssetServerView();
+    void SetServerAddress(AZStd::string_view serverAddress);
 
     void SetupAssetSelectionCaching();
 

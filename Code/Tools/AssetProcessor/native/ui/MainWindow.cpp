@@ -50,6 +50,7 @@
 #include <QUrl>
 #include <QWidgetAction>
 #include <QKeyEvent>
+#include <QFileDialog>
 
 static const char* g_showContextDetailsKey = "ShowContextDetailsTable";
 static const QString g_jobFilteredSearchWidgetState = QStringLiteral("jobFilteredSearchWidget");
@@ -125,7 +126,7 @@ void MainWindow::CacheServerData::Reset()
     m_dirty = false;
 }
 
-void MainWindow::CacheServerData::Save(MainWindow& mainWindow)
+bool MainWindow::CacheServerData::Save(MainWindow& mainWindow)
 {
     // construct JSON for writing out a .setreg for current settings
     rapidjson::Document doc;
@@ -192,7 +193,8 @@ void MainWindow::CacheServerData::Save(MainWindow& mainWindow)
     fullpath /= assetCacheServerSettings;
 
     QFile file(fullpath.c_str());
-    if (file.open(QIODevice::ReadWrite))
+    bool result = file.open(QIODevice::ReadWrite);
+    if (result)
     {
         rapidjson::StringBuffer buffer;
         rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(buffer);
@@ -203,8 +205,17 @@ void MainWindow::CacheServerData::Save(MainWindow& mainWindow)
         QTextStream stream(&file);
         stream.setCodec("UTF-8");
         stream << buffer.GetString();
+
+        m_errorLevel = CacheServerData::ErrorLevel::Notice;
+        m_errorMessage = AZStd::string::format("Updated settings file (%s)", fullpath.c_str());
+    }
+    else
+    {
+        m_errorLevel = CacheServerData::ErrorLevel::Error;
+        m_errorMessage = AZStd::string::format("**Error**: Could not write settings file (%s)", fullpath.c_str());
     }
     file.close();
+    return result;
 }
 
 MainWindow::Config MainWindow::loadConfig(QSettings& settings)
@@ -706,22 +717,21 @@ void MainWindow::SetupAssetServerTab()
             }
         });
 
+    ui->serverAddressButton->setIcon(QIcon(":/PropertyEditor/Resources/Browse_on.png"));
+    QObject::connect(ui->serverAddressButton, &QPushButton::clicked, this,
+        [this]()
+        {
+            auto path = QDir::toNativeSeparators(QFileDialog::getExistingDirectory(this, tr("Choose remote folder.")));
+            if (!path.isEmpty())
+            {
+                ui->serverAddressText->setPlainText(path);
+            }
+        });
+
     QObject::connect(ui->serverAddressText, &QPlainTextEdit::textChanged, this,
         [this]()
         {
-            AZStd::string inputServerAddress{
-                this->ui->serverAddressText->toPlainText().toUtf8().data() };
-
-            AssetServerBus::BroadcastResult(
-                this->m_cacheServerData.m_serverAddress,
-                &AssetServerBus::Events::GetServerAddress);
-
-            if (this->m_cacheServerData.m_serverAddress != inputServerAddress)
-            {
-                this->m_cacheServerData.m_dirty = true;
-                this->m_cacheServerData.m_serverAddress = inputServerAddress;
-                this->CheckAssetServerStates();
-            }
+            SetServerAddress(this->ui->serverAddressText->toPlainText().toUtf8().data());
         });
 
     QObject::connect(ui->sharedCacheSubmitButton, &QPushButton::clicked, this,
@@ -729,11 +739,22 @@ void MainWindow::SetupAssetServerTab()
         {
             if (this->m_cacheServerData.m_dirty)
             {
+                bool changedServerAddress = false;
                 AssembleAssetPatterns();
-                this->m_cacheServerData.Save(*this);
-                AssetServerBus::Broadcast(&AssetServerBus::Events::SetServerAddress, this->m_cacheServerData.m_serverAddress);
-                AssetServerBus::Broadcast(&AssetServerBus::Events::SetRemoteCachingMode, this->m_cacheServerData.m_cachingMode);
-                this->m_cacheServerData.Reset();
+                AssetServerBus::BroadcastResult(changedServerAddress, &AssetServerBus::Events::SetServerAddress, this->m_cacheServerData.m_serverAddress);
+                if (changedServerAddress)
+                {
+                    if (this->m_cacheServerData.Save(*this))
+                    {
+                        AssetServerBus::Broadcast(&AssetServerBus::Events::SetRemoteCachingMode, this->m_cacheServerData.m_cachingMode);
+                        this->m_cacheServerData.Reset();
+                    }
+                }
+                else if (this->m_cacheServerData.m_cachingMode != AssetServerMode::Inactive)
+                {
+                    this->m_cacheServerData.m_errorLevel = CacheServerData::ErrorLevel::Error;
+                    this->m_cacheServerData.m_errorMessage = AZStd::string::format("**Error**: Invalid server address!");
+                }
                 this->CheckAssetServerStates();
             }
         });
@@ -798,7 +819,7 @@ void MainWindow::AddPatternRow(AZStd::string_view name, AssetBuilderSDK::AssetBu
 
     // Remove button
     auto* button = new QPushButton();
-    button->setIcon(QIcon(":/stylesheet/img/titlebarmenu/close.png"));
+    button->setIcon(QIcon(":/PropertyEditor/Resources/trash-small.png"));
     ui->sharedCacheTable->setCellWidget(row, aznumeric_cast<int>(PatternColumns::Remove), button);
     ui->sharedCacheTable->setColumnWidth(aznumeric_cast<int>(PatternColumns::Remove), 16);
     QObject::connect(button, &QPushButton::clicked, this,
@@ -854,6 +875,35 @@ void MainWindow::CheckAssetServerStates()
         ui->sharedCacheSubmitButton->setEnabled(false);
         ui->sharedCacheDiscardButton->setEnabled(false);
     }
+
+    switch (m_cacheServerData.m_errorLevel)
+    {
+        case CacheServerData::ErrorLevel::None:
+        {
+            ui->sharedCacheStatus->setText("");
+            break;
+        }
+        case CacheServerData::ErrorLevel::Notice:
+        {
+            ui->sharedCacheStatus->setStyleSheet("font-weight: normal; color: green");
+            ui->sharedCacheStatus->setText(m_cacheServerData.m_errorMessage.c_str());
+            break;
+        }
+        case CacheServerData::ErrorLevel::Warning:
+        {
+            ui->sharedCacheStatus->setStyleSheet("font-weight: medium; color: yellow");
+            ui->sharedCacheStatus->setText(m_cacheServerData.m_errorMessage.c_str());
+            break;
+        }
+        case CacheServerData::ErrorLevel::Error:
+        {
+            ui->sharedCacheStatus->setStyleSheet("font-weight: bold; color: red");
+            ui->sharedCacheStatus->setText(m_cacheServerData.m_errorMessage.c_str());
+            break;
+        }
+        default:
+            break;
+    }
 }
 
 void MainWindow::ResetAssetServerView()
@@ -871,7 +921,25 @@ void MainWindow::ResetAssetServerView()
     }
 
     m_cacheServerData.m_dirty = false;
+    m_cacheServerData.m_errorLevel = CacheServerData::ErrorLevel::None;
+    m_cacheServerData.m_errorMessage.clear();
     CheckAssetServerStates();
+}
+
+void MainWindow::SetServerAddress(AZStd::string_view serverAddress)
+{
+    using namespace AssetProcessor;
+
+    AssetServerBus::BroadcastResult(
+        this->m_cacheServerData.m_serverAddress,
+        &AssetServerBus::Events::GetServerAddress);
+
+    if (this->m_cacheServerData.m_serverAddress != serverAddress)
+    {
+        this->m_cacheServerData.m_dirty = true;
+        this->m_cacheServerData.m_serverAddress = serverAddress;
+        this->CheckAssetServerStates();
+    }
 }
 
 void MainWindow::SetupAssetSelectionCaching()
