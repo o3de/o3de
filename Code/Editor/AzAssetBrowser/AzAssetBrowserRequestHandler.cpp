@@ -426,6 +426,11 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
             {
                 CFileUtil::PopulateQMenu(caller, menu, fullFilePath);
             }
+            // Add Rename option
+            menu->addAction(QObject::tr("Rename asset"), [treeView]()
+            {
+                treeView->RenameEntry();
+            })->setShortcut(Qt::Key_F2);
         }
 
         // Add Delete option

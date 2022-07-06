@@ -67,10 +67,21 @@ namespace AzToolsFramework
             QAction* deleteAction = new QAction("Delete Action", this);
             deleteAction->setShortcut(QKeySequence::Delete);
             connect(
-                deleteAction, &QAction::triggered, this, [this]
-                    {
-                        DeleteEntries();
-                    });
+                deleteAction, &QAction::triggered, this, [this]()
+                {
+                    DeleteEntries();
+                });
+            addAction(deleteAction);
+
+            QAction* renameAction = new QAction("Rename Action", this);
+            renameAction->setShortcut(Qt::Key_F2);
+            connect(
+                renameAction, &QAction::triggered, this, [this]()
+                {
+                    RenameEntry();
+                });
+            addAction(renameAction);
+
         }
 
         AssetBrowserTreeView::~AssetBrowserTreeView()
@@ -472,6 +483,15 @@ namespace AzToolsFramework
                 {
                     SCCommandBus::Broadcast(&SCCommandBus::Events::RequestDelete, entry->GetFullPath().c_str(), callback);
                 }
+            }
+        }
+
+        void AssetBrowserTreeView::RenameEntry()
+        {
+            auto entries = GetSelectedAssets();
+            if (entries.size() == 1)
+            {
+                edit(currentIndex());
             }
         }
     } // namespace AssetBrowser

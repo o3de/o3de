@@ -60,6 +60,8 @@ namespace AzToolsFramework
 
             void DeleteEntries();
 
+            void RenameEntry();
+
             //////////////////////////////////////////////////////////////////////////
             // AssetBrowserViewRequestBus
             void SelectProduct(AZ::Data::AssetId assetID) override;
