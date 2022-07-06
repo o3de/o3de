@@ -115,6 +115,7 @@ namespace Multiplayer
         void Terminate(AzNetworking::DisconnectReason reason) override;
         void AddClientMigrationStartEventHandler(ClientMigrationStartEvent::Handler& handler) override;
         void AddClientMigrationEndEventHandler(ClientMigrationEndEvent::Handler& handler) override;
+        void AddClientConnectedHandler(ClientConnectedEvent::Handler& handler) override;
         void AddClientDisconnectedHandler(ClientDisconnectedEvent::Handler& handler) override;
         void AddNotifyClientMigrationHandler(NotifyClientMigrationEvent::Handler& handler) override;
         void AddNotifyEntityMigrationEventHandler(NotifyEntityMigrationEvent::Handler& handler) override;
@@ -164,6 +165,7 @@ namespace Multiplayer
         SessionShutdownEvent m_shutdownEvent;
         ConnectionAcquiredEvent m_connectionAcquiredEvent;
         ServerAcceptanceReceivedEvent m_serverAcceptanceReceivedEvent;
+        ClientConnectedEvent m_clientConnectedEvent;
         ClientDisconnectedEvent m_clientDisconnectedEvent;
         ClientMigrationStartEvent m_clientMigrationStartEvent;
         ClientMigrationEndEvent m_clientMigrationEndEvent;

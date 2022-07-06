@@ -794,6 +794,7 @@ namespace Multiplayer
                 m_pendingConnectionTickets.pop();
             }
             connection->SendReliablePacket(MultiplayerPackets::Connect(0, m_temporaryUserIdentifier, providerTicket.c_str()));
+            m_clientConnectedEvent.Signal();
         }
         else
         {
@@ -960,7 +961,7 @@ namespace Multiplayer
                 EnableAutonomousControl(controlledEntity, AzNetworking::InvalidConnectionId);
             }
         }
-        
+
         AZLOG_INFO("Multiplayer operating in %s mode", GetEnumString(m_agentType));
     }
 
@@ -972,6 +973,11 @@ namespace Multiplayer
     void MultiplayerSystemComponent::AddClientMigrationEndEventHandler(ClientMigrationEndEvent::Handler& handler)
     {
         handler.Connect(m_clientMigrationEndEvent);
+    }
+
+    void MultiplayerSystemComponent::AddClientConnectedHandler(ClientConnectedEvent::Handler& handler)
+    {
+        handler.Connect(m_clientConnectedEvent);
     }
 
     void MultiplayerSystemComponent::AddClientDisconnectedHandler(ClientDisconnectedEvent::Handler& handler)

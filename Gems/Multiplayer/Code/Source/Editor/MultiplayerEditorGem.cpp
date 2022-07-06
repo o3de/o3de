@@ -10,7 +10,6 @@
 #include <MultiplayerSystemComponent.h>
 #include <Editor/MultiplayerEditorGem.h>
 #include <Editor/MultiplayerEditorSystemComponent.h>
-#include <Editor/MultiplayerEditorConnectionViewportMessageSystemComponent.h>
 
 #include <AzNetworking/Framework/NetworkingSystemComponent.h>
 
@@ -27,7 +26,6 @@ namespace Multiplayer
             {
                 MultiplayerEditorSystemComponent::CreateDescriptor(),
                 PythonEditorFuncs::CreateDescriptor(),
-                MultiplayerEditorConnectionViewportMessageSystemComponent::CreateDescriptor()
             });
     }
 
@@ -37,7 +35,6 @@ namespace Multiplayer
     {
         AZ::ComponentTypeList requiredComponents = MultiplayerModule::GetRequiredSystemComponents();
         requiredComponents.push_back(azrtti_typeid<MultiplayerEditorSystemComponent>());
-        requiredComponents.push_back(azrtti_typeid<MultiplayerEditorConnectionViewportMessageSystemComponent>());
         return requiredComponents;
     }
 } // namespace Multiplayer

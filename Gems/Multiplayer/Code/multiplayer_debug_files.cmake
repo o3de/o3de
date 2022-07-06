@@ -7,6 +7,8 @@
 #
 
 set(FILES
+    Source/Debug/MultiplayerConnectionViewportMessageSystemComponent.h
+    Source/Debug/MultiplayerConnectionViewportMessageSystemComponent.cpp
     Source/Debug/MultiplayerDebugAuditTrail.cpp
     Source/Debug/MultiplayerDebugAuditTrail.h
     Source/Debug/MultiplayerDebugByteReporter.cpp
@@ -23,4 +25,5 @@ set(FILES
     Source/Debug/MultiplayerDebugModule.h
     Source/Debug/MultiplayerDebugSystemComponent.cpp
     Source/Debug/MultiplayerDebugSystemComponent.h
+
 )
