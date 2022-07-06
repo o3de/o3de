@@ -9,85 +9,60 @@
 
 #include <AzCore/std/ranges/all_view.h>
 #include <AzCore/std/ranges/ranges_adaptor.h>
-#include <AzCore/std/typetraits/is_reference.h>
 
 namespace AZStd::ranges
 {
-    namespace Internal
-    {
-        template<class T, size_t N, class = void>
-        /*concept*/ constexpr bool has_tuple_element = false;
-
-        template<class T, size_t N>
-        /*concept*/ constexpr bool has_tuple_element<T, N, enable_if_t<conjunction_v<
-            sfinae_trigger<typename tuple_size<T>::type>,
-            bool_constant<(N < tuple_size_v<T>)>,
-            sfinae_trigger<tuple_element_t<N, T>>,
-            bool_constant<convertible_to<decltype(AZStd::get<N>(declval<T>())), const tuple_element_t<N, T>&>> >
-        >> = true;
-
-        template<class T, size_t N, class = void>
-        /*concept*/ constexpr bool returnable_element = false;
-
-        template<class T, size_t N>
-        /*concept*/ constexpr bool returnable_element<T, N, enable_if_t<
-            is_reference_v<T>> > = true;
-
-        template<class T, size_t N>
-        /*concept*/ constexpr bool returnable_element<T, N, enable_if_t<
-            move_constructible<tuple_element_t<N, T>>> > = true;
-    }
-
-    template<class View, size_t N, class = enable_if_t<conjunction_v<
+    template<class View, class Func, class = enable_if_t<conjunction_v<
         bool_constant<input_range<View>>,
         bool_constant<view<View>>,
-        bool_constant<Internal::has_tuple_element<range_value_t<View>, N>>,
-        bool_constant<Internal::has_tuple_element<remove_reference_t<range_reference_t<View>>, N>>,
-        bool_constant<Internal::returnable_element<range_reference_t<View>, N>> >
+        bool_constant<copy_constructible<Func>>,
+        is_object<Func>,
+        bool_constant<regular_invocable<Func&, range_reference_t<View>>>,
+        bool_constant<AZStd::Internal::can_reference<invoke_result_t<Func&, range_reference_t<View>>>>
+        >
         >>
-    class elements_view;
+    class transform_view;
 
-    // Alias for elements_view which is useful for extracting keys from associative containers
-    template<class View>
-    using keys_view = elements_view<View, 0>;
-    // Alias for elements_view which is useful for extracting values from associative containers
-    template<class View>
-    using values_view = elements_view<View, 1>;
 
-    template<class T, size_t N>
-    inline constexpr bool enable_borrowed_range<elements_view<T, N>> = enable_borrowed_range<T>;
-
-    // views::elements customization point
+    // views::transform customization point
     namespace views
     {
-        namespace Internal
+       namespace Internal
         {
-            template<size_t N>
-            struct elements_fn
-                : Internal::range_adaptor_closure<elements_fn<N>>
+            struct transform_fn
+                : Internal::range_adaptor_closure<transform_fn>
             {
-                template <class View, class = enable_if_t<conjunction_v<
+                template <class View, class Func, class = enable_if_t<conjunction_v<
                     bool_constant<viewable_range<View>>
                     >>>
-                constexpr auto operator()(View&& view) const
+                constexpr auto operator()(View&& view, Func&& func) const
                 {
-                    return elements_view<views::all_t<View>, N>(AZStd::forward<View>(view));
+                    return transform_view(AZStd::forward<View>(view), AZStd::forward<Func>(func));
+                }
+
+                // Create a range_adaptor forwarder which binds the pattern for later
+                template <class Func, class = enable_if_t<constructible_from<decay_t<Func>, Func>>>
+                constexpr auto operator()(Func&& func) const
+                {
+                    return range_adaptor_closure_forwarder(
+                        [*this, func = AZStd::forward<Func>(func)](auto&& view) mutable
+                        {
+                            // Pattern needs to be decayed in case it's type is array
+                            return (*this)(AZStd::forward<decltype(view)>(view), AZStd::forward<Func>(func));
+                        }
+                    );
                 }
             };
         }
         inline namespace customization_point_object
         {
-            template<size_t N>
-            constexpr Internal::elements_fn<N> elements{};
-
-            constexpr auto keys = elements<0>;
-            constexpr auto values = elements<1>;
+            constexpr Internal::transform_fn transform{};
         }
     }
 
-    template<class View, size_t N, class>
-    class elements_view
-        : public view_interface<elements_view<View, N>>
+    template<class View, class Func, class>
+    class transform_view
+        : public view_interface<transform_view<View, Func>>
     {
         template<bool>
         struct iterator;
@@ -95,12 +70,13 @@ namespace AZStd::ranges
         struct sentinel;
 
     public:
-        template <bool Enable = default_initializable<View>,
+        template <bool Enable = default_initializable<View> && default_initializable<Func>,
             class = enable_if_t<Enable>>
-        elements_view() {}
+        transform_view() {}
 
-        explicit constexpr elements_view(View base)
+         constexpr transform_view(View base, Func func)
             : m_base(AZStd::move(base))
+            , m_func(AZStd::move(func))
         {
         }
 
@@ -109,24 +85,23 @@ namespace AZStd::ranges
         {
             return m_base;
         }
-        constexpr View base()&&
+        constexpr View base() &&
         {
             return AZStd::move(m_base);
         }
 
-        template<bool Enable = !Internal::simple_view<View>, class = enable_if_t<Enable>>
         constexpr auto begin()
         {
-            return iterator<false>{ ranges::begin(m_base) };
+            return iterator<false>{ *this, ranges::begin(m_base) };
         }
 
-        template<bool Enable = range<const View>, class = enable_if_t<Enable>>
+        template<bool Enable = range<const View> && regular_invocable<const Func&, range_reference_t<const View>>,
+            class = enable_if_t<Enable>>
         constexpr auto begin() const
         {
-            return iterator<true>{ ranges::begin(m_base) };
+            return iterator<true>{ *this, ranges::begin(m_base) };
         }
 
-        template<bool Enable = !Internal::simple_view<View>, class = enable_if_t<Enable>>
         constexpr auto end()
         {
             if constexpr (!common_range<View>)
@@ -135,11 +110,12 @@ namespace AZStd::ranges
             }
             else
             {
-                return iterator<false>{ ranges::end(m_base) };
+                return iterator<false>{ *this, ranges::end(m_base) };
             }
         }
 
-        template<bool Enable = range<const View>>
+        template<bool Enable = range<const View> && regular_invocable<const Func&, range_reference_t<const View>>,
+            class = enable_if_t<Enable>>
         constexpr auto end() const
         {
             if constexpr (!common_range<const View>)
@@ -148,7 +124,7 @@ namespace AZStd::ranges
             }
             else
             {
-                return iterator<true>{ ranges::end(m_base) };
+                return iterator<true>{ *this, ranges::end(m_base) };
             }
         }
 
@@ -166,13 +142,19 @@ namespace AZStd::ranges
 
     private:
         View m_base{};
+        Internal::copyable_box<Func> m_func{};
     };
 
-    template<class View, size_t N, bool Const, class = void>
-    struct elements_view_iterator_category {};
+    // deduction guides
+    template<class R, class F>
+    transform_view(R&&, F) -> transform_view<views::all_t<R>, F>;
 
-    template<class View, size_t N, bool Const>
-    struct elements_view_iterator_category<View, N, Const, enable_if_t<forward_range<Internal::maybe_const<Const, View>> >>
+    template<class View, class Func, bool Const, class = void>
+    struct transform_view_iterator_category {};
+
+    template<class View, class Func, bool Const>
+    struct transform_view_iterator_category<View, Func, Const,
+        enable_if_t<forward_range<Internal::maybe_const<Const, View>> >>
     {
     private:
         // Use a "function" to check the type traits of the join view iterators
@@ -181,60 +163,51 @@ namespace AZStd::ranges
         // to determine the type.
         // It is a form of template metaprogramming which uses actual code
         // to create an instance of a type and then uses decltype to extract the type
-        static constexpr auto get_iterator_category()
+        static constexpr decltype(auto) get_iterator_category()
         {
             using Base = Internal::maybe_const<Const, View>;
             using IterCategory = typename iterator_traits<iterator_t<Base>>::iterator_category;
 
-            if constexpr (!is_lvalue_reference_v<decltype(AZStd::get<N>(*declval<iterator_t<Base>>()))>)
+            if constexpr (is_lvalue_reference_v<invoke_result_t<Func&, range_reference_t<Base>>>)
             {
-                return input_iterator_tag{};
-            }
-            else if constexpr (derived_from<IterCategory, random_access_iterator_tag>)
-            {
-                return random_access_iterator_tag{};
+                if constexpr (derived_from<IterCategory, random_access_iterator_tag>)
+                {
+                    return random_access_iterator_tag{};
+                }
+                else
+                {
+                    return IterCategory{};
+                }
             }
             else
             {
-                return IterCategory{};
+                return input_iterator_tag{};
             }
         }
     public:
         using iterator_category = decltype(get_iterator_category());
     };
 
-    template<class View, size_t N, class ViewEnable>
+    template<class View, class Func, class ViewEnable>
     template<bool Const>
-    struct elements_view<View, N, ViewEnable>::iterator
+    struct transform_view<View, Func, ViewEnable>::iterator
         : enable_if_t<conjunction_v<
         bool_constant<input_range<View>>,
         bool_constant<view<View>>,
-        bool_constant<Internal::has_tuple_element<range_value_t<View>, N>>,
-        bool_constant<Internal::has_tuple_element<remove_reference_t<range_reference_t<View>>, N>>,
-        bool_constant<Internal::returnable_element<range_reference_t<View>, N>> >
-        , elements_view_iterator_category<View, N, Const>
+        bool_constant<copy_constructible<Func>>,
+        is_object<Func>,
+        bool_constant<regular_invocable<Func&, range_reference_t<View>>>,
+        bool_constant<AZStd::Internal::can_reference<invoke_result_t<Func&, range_reference_t<View>>>>
+        >, transform_view_iterator_category<View, Func, Const>
        >
     {
     private:
         template <bool>
         friend struct sentinel;
 
+        using Parent = Internal::maybe_const<Const, transform_view>;
         using Base = Internal::maybe_const<Const, View>;
 
-        static constexpr decltype(auto) get_element(const iterator_t<Base>& i)
-        {
-            if constexpr (is_reference_v<range_reference_t<Base>>)
-            {
-                // Return a reference to the element of the tuple like type
-                return AZStd::get<N>(*i);
-            }
-            else
-            {
-                // Cast the result of calling AZStd::get on value type reference
-                using E = remove_cv_t<tuple_element_t<N, range_reference_t<Base>>>;
-                return static_cast<E>(AZStd::get<N>(*i));
-            }
-        }
     public:
 
         using iterator_concept = conditional_t<random_access_range<Base>,
@@ -245,7 +218,7 @@ namespace AZStd::ranges
                     forward_iterator_tag,
                     input_iterator_tag>>>;
 
-        using value_type = remove_cvref_t<tuple_element_t<N, range_value_t<Base>>>;
+        using value_type = remove_cvref_t<invoke_result_t<Func&, range_reference_t<Base>>>;
         using difference_type = range_difference_t<Base>;
 
     // libstdc++ std::reverse_iterator use pre C++ concept when the concept feature is off
@@ -257,20 +230,24 @@ namespace AZStd::ranges
     // to work with the AZStd range views
     #if !__cpp_lib_concepts
         using pointer = void;
-        using reference = decltype(get_element(declval<iterator_t<Base>>()));
+        using reference = conditional_t<is_reference_v<invoke_result_t<Func&, range_reference_t<Base>>>,
+            invoke_result_t<Func&, range_reference_t<Base>>,
+            dangling>;
     #endif
 
-        template<class BaseIter = iterator_t<Base>, class = enable_if_t<default_initializable<BaseIter>>>
+        template<bool Enable = default_initializable<iterator_t<Base>>, class = enable_if_t<Enable>>
         iterator() {}
 
-        constexpr iterator(iterator_t<Base> current)
+        constexpr iterator(Parent& parent, iterator_t<Base> current)
             : m_current(AZStd::move(current))
+            , m_parent(AZStd::addressof(parent))
         {
         }
-        template<class ViewIter = iterator_t<View>, class BaseIter = iterator_t<Base>,
-            class = enable_if_t<Const && convertible_to<ViewIter, BaseIter>>>
+        template<bool Enable = convertible_to<iterator_t<View>, iterator_t<Base>>,
+            class = enable_if_t<Const && Enable>>
         iterator(iterator<!Const> i)
             : m_current(i.m_current)
+            , m_parent(i.m_parent)
         {
         }
 
@@ -285,8 +262,9 @@ namespace AZStd::ranges
         }
 
         constexpr decltype(auto) operator*() const
+            noexcept(noexcept(AZStd::invoke(*m_parent->m_func, *m_current)))
         {
-            return get_element(m_current);
+            return AZStd::invoke(*m_parent->m_func, *m_current);
         }
 
         constexpr iterator& operator++()
@@ -295,7 +273,7 @@ namespace AZStd::ranges
             return *this;
         }
 
-        constexpr auto operator++(int)
+        constexpr decltype(auto) operator++(int)
         {
             if constexpr (!forward_range<Base>)
             {
@@ -341,7 +319,7 @@ namespace AZStd::ranges
         template<bool Enable = random_access_range<Base>, class = enable_if_t<Enable>>
         constexpr decltype(auto) operator[](difference_type n) const
         {
-            return get_element(m_current + n);
+            return AZStd::invoke(*m_parent->m_func, m_current[n]);
         }
 
         // equality_comparable
@@ -380,23 +358,19 @@ namespace AZStd::ranges
         template<bool Enable = random_access_range<Base>, class = enable_if_t<Enable>>
         friend constexpr iterator operator+(const iterator& x, difference_type n)
         {
-            iterator iterCopy(x);
-            iterCopy += n;
-            return iterCopy;
+            return { x.m_parent, x.m_current + n};
         }
 
         template<bool Enable = random_access_range<Base>, class = enable_if_t<Enable>>
         friend constexpr iterator operator+(difference_type n, const iterator& x)
         {
-            return n + x;
+            return { x.m_parent, x.m_current + n};
         }
 
         template<bool Enable = random_access_range<Base>, class = enable_if_t<Enable>>
         friend constexpr iterator operator-(const iterator& x, difference_type n)
         {
-            iterator iterCopy(x);
-            iterCopy -= n;
-            return iterCopy;
+            return { x.m_parent, x.m_current - n};
         }
 
         template<class BaseIter = iterator_t<Base>, class = enable_if_t<sized_sentinel_for<BaseIter, BaseIter>>>
@@ -408,23 +382,26 @@ namespace AZStd::ranges
     private:
         //! iterator to range being viewed
         iterator_t<Base> m_current{};
+        //! reference to parent transform
+        Parent* m_parent{};
     };
 
-    namespace ElementsViewInternal
+    namespace TransformViewInternal
     {
         struct requirements_fulfilled {};
     }
 
-    template<class View, size_t N, class ViewEnable>
+    template<class View, class Func, class ViewEnable>
     template<bool Const>
-    struct elements_view<View, N, ViewEnable>::sentinel
+    struct transform_view<View, Func, ViewEnable>::sentinel
         : enable_if_t<conjunction_v<
         bool_constant<input_range<View>>,
         bool_constant<view<View>>,
-        bool_constant<Internal::has_tuple_element<range_value_t<View>, N>>,
-        bool_constant<Internal::has_tuple_element<remove_reference_t<range_reference_t<View>>, N>>,
-        bool_constant<Internal::returnable_element<range_reference_t<View>, N>> >
-        , ElementsViewInternal::requirements_fulfilled>
+        bool_constant<copy_constructible<Func>>,
+        is_object<Func>,
+        bool_constant<regular_invocable<Func&, range_reference_t<View>>>,
+        bool_constant<AZStd::Internal::can_reference<invoke_result_t<Func&, range_reference_t<View>>>>
+        >, TransformViewInternal::requirements_fulfilled>
     {
     private:
         using Base = Internal::maybe_const<Const, View>;

@@ -939,7 +939,7 @@ namespace AZStd::ranges
                 }
                 else
                 {
-                    operator()(ranges::begin(r), ranges::end(r));
+                    return operator()(ranges::begin(r), ranges::end(r));
                 }
             }
         };
