@@ -46,7 +46,7 @@ namespace AZ
         explicit Vector3(const Vector2& source);
 
         //! Sets x,y components from a Vector2, specify z separately.
-        explicit Vector3(const Vector2& source, float z);
+        Vector3(const Vector2& source, float z);
 
         //! Sets x,y,z components from a Vector4.
         explicit Vector3(const Vector4& source);

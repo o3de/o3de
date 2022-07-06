@@ -42,16 +42,16 @@ namespace AZ
         explicit Vector4(const Vector2& source);
 
         //! Copies x,y components from a Vector2, sets w = 1.0, specify z separately.
-        explicit Vector4(const Vector2& source, float z);
+        Vector4(const Vector2& source, float z);
 
         //! Copies x,y components from a Vector2, specify z and w separately.
-        explicit Vector4(const Vector2& source, float z, float w);
+        Vector4(const Vector2& source, float z, float w);
 
         //! Copies x,y,z components from a Vector3, sets w = 1.0.
         explicit Vector4(const Vector3& source);
 
         //! Copies x,y,z components from a Vector3, specify w separately.
-        explicit Vector4(const Vector3& source, float w);
+        Vector4(const Vector3& source, float w);
 
         //! For internal use only, arrangement of values in SIMD type is not guaranteed.
         explicit Vector4(Simd::Vec4::FloatArgType value);
