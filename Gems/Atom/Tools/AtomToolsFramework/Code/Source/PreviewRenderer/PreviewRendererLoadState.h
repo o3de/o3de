@@ -16,17 +16,16 @@ namespace AtomToolsFramework
     //! PreviewRendererLoadState pauses further rendering until all assets used for rendering a thumbnail have been loaded
     class PreviewRendererLoadState final
         : public PreviewRendererState
-        , public AZ::TickBus::Handler
+        , public AZ::SystemTickBus::Handler
     {
     public:
         PreviewRendererLoadState(PreviewRenderer* renderer);
         ~PreviewRendererLoadState();
 
     private:
-        //! AZ::TickBus::Handler interface overrides...
-        void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
+        //! AZ::SystemTickBus::Handler interface overrides...
+        void OnSystemTick() override;
 
-        static constexpr float TimeOutS = 5.0f;
-        float m_timeRemainingS = 0.0f;
+        AZStd::chrono::system_clock::time_point m_startTime = AZStd::chrono::system_clock::now();
     };
 } // namespace AtomToolsFramework
