@@ -250,7 +250,7 @@ namespace AZ
                 RenderPass* renderPass = azrtti_cast<RenderPass*>(pass);
                 if (renderPass)
                 {
-                    frameGraph.ExecuteAfter(GetScopeId());
+                    frameGraph.ExecuteAfter(renderPass->GetScopeId());
                 }
             }
             for (Pass* pass : m_executeBeforePasses)
@@ -258,7 +258,7 @@ namespace AZ
                 RenderPass* renderPass = azrtti_cast<RenderPass*>(pass);
                 if (renderPass)
                 {
-                    frameGraph.ExecuteBefore(GetScopeId());
+                    frameGraph.ExecuteBefore(renderPass->GetScopeId());
                 }
             }
         }
@@ -429,8 +429,15 @@ namespace AZ
 
         void RenderPass::SetPipelineViewTag(const PipelineViewTag& viewTag)
         {
-            m_viewTag = viewTag;
-            m_flags.m_hasPipelineViewTag = !viewTag.IsEmpty();
+            if (m_viewTag != viewTag)
+            {
+                m_viewTag = viewTag;
+                m_flags.m_hasPipelineViewTag = !viewTag.IsEmpty();
+                if (m_pipeline)
+                {
+                    m_pipeline->MarkPipelinePassChanges(PipelinePassChanges::PipelineViewTagChanged);
+                }
+            }
         }
 
         TimestampResult RenderPass::GetTimestampResultInternal() const

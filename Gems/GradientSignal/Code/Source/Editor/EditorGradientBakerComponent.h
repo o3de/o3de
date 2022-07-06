@@ -94,6 +94,8 @@ namespace GradientSignal
         AZ_EDITOR_COMPONENT(
             EditorGradientBakerComponent, EditorGradientBakerComponentTypeId, AzToolsFramework::Components::EditorComponentBase);
         static void Reflect(AZ::ReflectContext* context);
+        static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services);
+        static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services);
 
         EditorGradientBakerComponent() = default;
 
@@ -138,6 +140,8 @@ namespace GradientSignal
 
         void UpdatePreviewSettings() const;
         AzToolsFramework::EntityIdList CancelPreviewRendering() const;
+
+        void SetupDependencyMonitor();
 
         void BakeImage();
         void StartBakeImageJob();

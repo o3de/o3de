@@ -187,7 +187,7 @@ namespace ScriptCanvasEditor
                         ->Attribute(AZ::Edit::Attributes::Icon, "Icons/ScriptCanvas/ScriptCanvas.svg")
                         ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/ScriptCanvas/Viewport/ScriptCanvas.svg")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &Configuration::m_sourceHandle, "Source File", "Script Canvas source file associated with this component")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &Configuration::m_sourceHandle, "Source", "Script Canvas source file associated with this component")
                         ->Attribute("BrowseIcon", ":/stylesheet/img/UI20/browse-edit-select-files.svg")
                         ->Attribute("EditButton", "")
                         ->Attribute("EditDescription", "Open in Script Canvas Editor")
@@ -195,6 +195,7 @@ namespace ScriptCanvasEditor
                         ->Attribute(AZ::Edit::Attributes::AssetPickerTitle, "Script Canvas")
                         ->Attribute(AZ::Edit::Attributes::SourceAssetFilterPattern, "*.scriptcanvas")
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &Configuration::OnEditorChangeSource)
+                        // ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::HideChildren) // or just ::Hide
                     ->DataElement(AZ::Edit::UIHandlers::Default, &Configuration::m_propertyOverrides, "Properties", "Script Canvas Graph Properties")
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &Configuration::OnEditorChangeProperties)
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
@@ -216,7 +217,7 @@ namespace ScriptCanvasEditor
 
         if (m_sourceHandle.IsDescriptionValid())
         {
-            m_sourceName = m_sourceHandle.Path().Filename().Native();
+            m_sourceName = m_sourceHandle.RelativePath().Filename().Native();
         }
 
         m_eventPropertiesChanged.Signal(*this);
@@ -225,7 +226,7 @@ namespace ScriptCanvasEditor
         {
             ScriptCanvasBuilder::DataSystemSourceNotificationsBus::Handler::BusConnect(m_sourceHandle.Id());
 
-            if (!m_sourceHandle.Path().empty())
+            if (!m_sourceHandle.RelativePath().empty())
             {
                 const auto validation = CompileLatestInternal();
                 if (validation == BuildStatusValidation::Good)
@@ -253,8 +254,8 @@ namespace ScriptCanvasEditor
         }
         else
         {
-            AZ_Warning("ScriptCanvas", m_sourceHandle.Path().empty()
-                , "Configuration had no valid ID for %s and won't compile or expose variables.", m_sourceHandle.Path().c_str());
+            AZ_Warning("ScriptCanvas", m_sourceHandle.RelativePath().empty()
+                , "Configuration had no valid ID for %s and won't compile or expose variables.", m_sourceHandle.RelativePath().c_str());
         }
 
         m_eventSourceFailed.Signal(*this);

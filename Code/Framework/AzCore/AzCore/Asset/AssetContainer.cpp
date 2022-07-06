@@ -13,10 +13,11 @@
 
 namespace AZ::Data
 {
-    AssetContainer::AssetContainer(Asset<AssetData> rootAsset, const AssetLoadParameters& loadParams)
+    AssetContainer::AssetContainer(Asset<AssetData> rootAsset, const AssetLoadParameters& loadParams, bool isReload)
     {
         m_rootAsset = AssetInternal::WeakAsset<AssetData>(rootAsset);
         m_containerAssetId = m_rootAsset.GetId();
+        m_isReload = isReload;
 
         AddDependentAssets(rootAsset, loadParams);
     }
@@ -232,8 +233,22 @@ namespace AZ::Data
         // Finally, after creating and queueing the dependent assets, queue the root asset.  This is saved until last to ensure that
         // it doesn't have any chance of serializing in until after all the dependent assets have been queued for loading and have
         // been added to the list of dependencies.
-        auto thisAsset = AssetManager::Instance().GetAssetInternal(rootAssetId, rootAssetType, rootAsset.GetAutoLoadBehavior(),
-            loadParamsCopyWithNoLoadingFilter, AssetInfo(), HasPreloads(rootAssetId));
+        Asset<AssetData> thisAsset;
+
+        if (!m_isReload)
+        {
+            thisAsset = AssetManager::Instance().GetAssetInternal(
+                rootAssetId, rootAssetType, rootAsset.GetAutoLoadBehavior(),
+                loadParamsCopyWithNoLoadingFilter, AssetInfo(), HasPreloads(rootAssetId));
+        }
+        else
+        {
+            // For reloading, we assume the passed-in asset reference has already been created and just needs to be queued for loading
+            // calling GetAssetInternal would result in re-using the existing reference instead of actually loading
+            thisAsset = rootAsset;
+
+            AssetManager::Instance().QueueAssetReload(rootAsset, HasPreloads(rootAssetId));
+        }
 
         if (!thisAsset)
         {
@@ -349,6 +364,11 @@ namespace AZ::Data
         HandleReadyAsset(asset);
     }
 
+    void AssetContainer::OnAssetReloaded(Asset<AssetData> asset)
+    {
+        HandleReadyAsset(asset);
+    }
+
     void AssetContainer::OnAssetError(Asset<AssetData> asset)
     {
         AZ_Warning("AssetContainer", false, "Error loading asset %s", asset->GetId().ToString<AZStd::string>().c_str());
@@ -363,9 +383,9 @@ namespace AZ::Data
         // We'll go through and check the ready status of every dependency immediately after finishing initialization anyway
         if (m_initComplete)
         {
-        RemoveFromAllWaitingPreloads(asset->GetId());
-        RemoveWaitingAsset(asset->GetId());
-    }
+            RemoveFromAllWaitingPreloads(asset->GetId());
+            RemoveWaitingAsset(asset->GetId());
+        }
     }
 
     void AssetContainer::OnAssetDataLoaded(Asset<AssetData> asset)
@@ -401,7 +421,7 @@ namespace AZ::Data
             }
         }
         auto thisAsset = GetAssetData(waiterId);
-        AssetManager::Instance().ValidateAndPostLoad(thisAsset, true, false, nullptr);
+        AssetManager::Instance().ValidateAndPostLoad(thisAsset, true, waiterId == m_containerAssetId ? m_isReload : false, nullptr);
     }
 
     void AssetContainer::RemoveFromAllWaitingPreloads(const AssetId& thisId)

@@ -30,6 +30,12 @@ namespace AssetProcessor
 
         for (const AssetBuilderSDK::PlatformInfo& info : m_platformConfig->GetEnabledPlatforms())
         {
+            if (info.m_identifier == AssetBuilderSDK::CommonPlatformName)
+            {
+                // Currently the Common platform is not supported as a product asset platform
+                continue;
+            }
+
             m_platforms.push_back(QString::fromUtf8(info.m_identifier.c_str()));
         }
 
@@ -41,8 +47,6 @@ namespace AssetProcessor
         m_saveBuffer.reserve(1024 * 1024 * 30);
 
         AssetUtilities::ComputeProjectPath();
-
-        AssetUtilities::ComputeProjectCacheRoot(m_cacheRootDir);
 
         if (!ConnectToDatabase())
         {
@@ -1211,8 +1215,7 @@ namespace AssetProcessor
             AssetUtilities::ComputeProjectCacheRoot(cacheRoot);
             QString normalizedCacheRoot = AssetUtilities::NormalizeFilePath(cacheRoot.path());
 
-            bool inCacheFolder = normalizedSourceOrProductPath.startsWith(normalizedCacheRoot, Qt::CaseInsensitive);
-            if (inCacheFolder)
+            if (AssetUtilities::IsInCacheFolder(normalizedSourceOrProductPath.toUtf8().constData(), cacheRoot.absolutePath().toUtf8().constData()))
             {
                 // The path send by the game/editor contains the cache root so we try to find the asset id
                 // from the asset database
@@ -1275,28 +1278,25 @@ namespace AssetProcessor
     void AssetCatalog::ProcessGetFullSourcePathFromRelativeProductPathRequest(const AZStd::string& relPath, AZStd::string& fullSourcePath)
     {
         QString assetPath = relPath.c_str();
-        QString normalisedAssetPath = AssetUtilities::NormalizeFilePath(assetPath);
+        QString normalizedAssetPath = AssetUtilities::NormalizeFilePath(assetPath);
         int resultCode = 0;
         QString fullAssetPath;
 
-        if (normalisedAssetPath.isEmpty())
+        if (normalizedAssetPath.isEmpty())
         {
             fullSourcePath = "";
             return;
         }
 
-        QDir inputPath(normalisedAssetPath);
+        QDir inputPath(normalizedAssetPath);
 
         if (inputPath.isAbsolute())
         {
-            bool inCacheFolder = false;
             QDir cacheRoot;
             AssetUtilities::ComputeProjectCacheRoot(cacheRoot);
             QString normalizedCacheRoot = AssetUtilities::NormalizeFilePath(cacheRoot.path());
-            //Check to see whether the path contains the cache root
-            inCacheFolder = normalisedAssetPath.startsWith(normalizedCacheRoot, Qt::CaseInsensitive);
 
-            if (!inCacheFolder)
+            if (!AssetUtilities::IsInCacheFolder(normalizedAssetPath.toUtf8().constData(), cacheRoot.absolutePath().toUtf8().constData()))
             {
                 // Attempt to convert to relative path
                 QString dummy, convertedRelPath;
@@ -1317,16 +1317,16 @@ namespace AssetProcessor
             else
             {
                 // The path send by the game/editor contains the cache root ,try to find the productName from it
-                normalisedAssetPath.remove(0, normalizedCacheRoot.length() + 1); // adding 1 for the native separator
+                normalizedAssetPath.remove(0, normalizedCacheRoot.length() + 1); // adding 1 for the native separator
             }
         }
 
         if (!resultCode)
         {
             //remove aliases if present
-            normalisedAssetPath = AssetUtilities::NormalizeAndRemoveAlias(normalisedAssetPath);
+            normalizedAssetPath = AssetUtilities::NormalizeAndRemoveAlias(normalizedAssetPath);
 
-            if (!normalisedAssetPath.isEmpty()) // this happens if it comes in as just for example "@products@/"
+            if (!normalizedAssetPath.isEmpty()) // this happens if it comes in as just for example "@products@/"
             {
                 AZStd::lock_guard<AZStd::mutex> lock(m_databaseMutex);
 
@@ -1336,8 +1336,14 @@ namespace AssetProcessor
                 QString productName;
                 for (const AssetBuilderSDK::PlatformInfo& platformInfo : platforms)
                 {
+                    if (platformInfo.m_identifier == AssetBuilderSDK::CommonPlatformName)
+                    {
+                        // Common platform is not supported for product assets currently
+                        continue;
+                    }
+
                     QString platformName = QString::fromUtf8(platformInfo.m_identifier.c_str());
-                    productName = AssetUtilities::GuessProductNameInDatabase(normalisedAssetPath, platformName, m_db.get());
+                    productName = AssetUtilities::GuessProductNameInDatabase(normalizedAssetPath, platformName, m_db.get());
                     if (!productName.isEmpty())
                     {
                         break;
@@ -1361,7 +1367,7 @@ namespace AssetProcessor
                 else
                 {
                     // if we are not able to guess the product name than maybe the asset path is an input name
-                    fullAssetPath = m_platformConfig->FindFirstMatchingFile(normalisedAssetPath);
+                    fullAssetPath = m_platformConfig->FindFirstMatchingFile(normalizedAssetPath);
                     if (!fullAssetPath.isEmpty())
                     {
                         resultCode = 1;
