@@ -44,6 +44,9 @@ namespace AzToolsFramework
 
         void InstanceDomGenerator::UnregisterInstanceDomGeneratorInterface()
         {
+            m_prefabSystemComponentInterface = nullptr;
+            m_prefabFocusInterface = nullptr;
+
             AZ::Interface<InstanceDomGeneratorInterface>::Unregister(this);
         }
 

@@ -67,6 +67,10 @@ namespace AzToolsFramework
         {
             m_GameModeEventHandler.Disconnect();
 
+            m_instanceDomGeneratorInterface = nullptr;
+            m_templateInstanceMapperInterface = nullptr;
+            m_prefabSystemComponentInterface = nullptr;
+
             m_instanceDomGenerator.UnregisterInstanceDomGeneratorInterface();
 
             AZ::Interface<InstanceUpdateExecutorInterface>::Unregister(this);
