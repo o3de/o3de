@@ -140,5 +140,10 @@ namespace AZ
             m_scissorState = scissor;
         }
 
+        void ShadowmapPass::UpdatePipelineViewTag(const RPI::PipelineViewTag& viewTag)
+        {
+            SetPipelineViewTag(viewTag);
+        }
+
     } // namespace Render
 } // namespace AZ

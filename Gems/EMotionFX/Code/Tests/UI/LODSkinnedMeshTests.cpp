@@ -21,8 +21,7 @@
 #include <AzToolsFramework/UI/PropertyEditor/ReflectedPropertyEditor.hxx>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyRowWidget.hxx>
 #include <Editor/Plugins/SkeletonOutliner/SkeletonOutlinerPlugin.h>
-#include <EMotionFX/Source/Material.h>
-#include <EMotionFX/Source/StandardMaterial.h>
+#include <EMotionFX/Source/Mesh.h>
 #include <EMotionStudio/EMStudioSDK/Source/EMStudioManager.h>
 #include <EMotionStudio/EMStudioSDK/Source/NodeHierarchyWidget.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/NodeWindow/NodeWindowPlugin.h>
@@ -89,15 +88,11 @@ namespace EMotionFX
         // Modify the actor to have numLODs LOD levels.
         Actor* actor = actorAsset->GetActor();
         Mesh* lodMesh = actor->GetMesh(0, 0);
-        StandardMaterial* dummyMat = StandardMaterial::Create("Dummy Material");
-        actor->AddMaterial(0, dummyMat); // owns the material
-
+        
         for (int i = 1; i < numLODs; ++i)
         {
             actor->InsertLODLevel(i);
             actor->SetMesh(i, 0, lodMesh->Clone());
-            dummyMat->SetAmbient(MCore::RGBAColor{ i * 20.f });
-            actor->AddMaterial(i, dummyMat->Clone());
         }
 
         return AZStd::move(actorAsset);

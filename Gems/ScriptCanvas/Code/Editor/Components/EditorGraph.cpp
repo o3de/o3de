@@ -83,7 +83,6 @@ AZ_POP_DISABLE_WARNING
 #include <ScriptCanvas/Core/Connection.h>
 #include <ScriptCanvas/Utils/NodeUtils.h>
 #include <ScriptCanvas/Variable/VariableBus.h>
-#include <ScriptCanvas/Libraries/UnitTesting/UnitTestingLibrary.h>
 
     AZ_CVAR(bool, g_disableDeprecatedNodeUpdates, false, {}, AZ::ConsoleFunctorFlags::Null,
         "Disables automatic update attempts of deprecated nodes, so that graphs that require and update can be viewed in their original form");
@@ -1710,7 +1709,7 @@ namespace ScriptCanvasEditor
 
     void EditorGraph::SignalDirty()
     {
-        SourceHandle handle(m_owner, {}, {});
+        SourceHandle handle(m_owner, AZ::Uuid::CreateNull());
         GeneralRequestBus::Broadcast(&GeneralRequests::SignalSceneDirty, handle);
     }
 

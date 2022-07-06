@@ -12,8 +12,11 @@
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyFilePathCtrl.h>
 #include <GradientSignal/Ebuses/GradientPreviewRequestBus.h>
+#include <GradientSignal/Ebuses/ImageGradientRequestBus.h>
 
+AZ_PUSH_DISABLE_WARNING(4777, "-Wunknown-warning-option")
 #include <OpenImageIO/imageio.h>
+AZ_POP_DISABLE_WARNING
 
 namespace GradientSignal
 {
@@ -338,6 +341,16 @@ namespace GradientSignal
         }
     }
 
+    void EditorGradientBakerComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services)
+    {
+        services.push_back(AZ_CRC_CE("GradientBakerService"));
+    }
+
+    void EditorGradientBakerComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services)
+    {
+        services.push_back(AZ_CRC_CE("GradientBakerService"));
+    }
+
     void EditorGradientBakerComponent::Activate()
     {
         AzToolsFramework::Components::EditorComponentBase::Activate();
@@ -357,13 +370,8 @@ namespace GradientSignal
             SetDirty();
         }
 
-        m_dependencyMonitor.Reset();
-        m_dependencyMonitor.ConnectOwner(GetEntityId());
-        m_dependencyMonitor.ConnectDependency(m_configuration.m_gradientSampler.m_gradientId);
-
-        // Connect to GradientRequestBus after the gradient sampler and dependency monitor is configured
-        // before listening for gradient queries.
-        GradientRequestBus::Handler::BusConnect(GetEntityId());
+        // Setup the dependency monitor and listen for gradient requests
+        SetupDependencyMonitor();
 
         UpdatePreviewSettings();
 
@@ -440,6 +448,19 @@ namespace GradientSignal
         return entityIds;
     }
 
+    void EditorGradientBakerComponent::SetupDependencyMonitor()
+    {
+        GradientRequestBus::Handler::BusDisconnect();
+
+        m_dependencyMonitor.Reset();
+        m_dependencyMonitor.ConnectOwner(GetEntityId());
+        m_dependencyMonitor.ConnectDependency(m_configuration.m_gradientSampler.m_gradientId);
+
+        // Connect to GradientRequestBus after the gradient sampler and dependency monitor is configured
+        // before listening for gradient queries.
+        GradientRequestBus::Handler::BusConnect(GetEntityId());
+    }
+
     void EditorGradientBakerComponent::BakeImage()
     {
         if (IsBakeDisabled())
@@ -507,6 +528,23 @@ namespace GradientSignal
 
             AZ::TickBus::Handler::BusDisconnect();
 
+            // After a successful bake, if the Entity that contains this gradient baker component also
+            // has an image gradient component, then update the image gradient's image asset with the
+            // output path that we baked to
+            if (GradientSignal::ImageGradientRequestBus::HasHandlers(GetEntityId()))
+            {
+                AzToolsFramework::ScopedUndoBatch undo("Update Image Gradient Asset");
+
+                QString outputImagePath = QString::fromUtf8(
+                    m_configuration.m_outputImagePath.c_str(), static_cast<int>(m_configuration.m_outputImagePath.Native().size()));
+                outputImagePath += ".streamingimage";
+
+                GradientSignal::ImageGradientRequestBus::Event(
+                    GetEntityId(), &GradientSignal::ImageGradientRequests::SetImageAssetPath, outputImagePath.toUtf8().constData());
+
+                undo.MarkEntityDirty(GetEntityId());
+            }
+
             // Refresh once the job has completed so the Bake button can be re-enabled
             AzToolsFramework::ToolsApplicationNotificationBus::Broadcast(
                 &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_AttributesAndValues);
@@ -559,6 +597,10 @@ namespace GradientSignal
     {
         // Cancel any pending preview refreshes before locking, to help ensure the preview itself isn't holding the lock
         auto entityIds = CancelPreviewRendering();
+
+        // Re-setup the dependency monitor when the configuration changes because the gradient sampler
+        // could've changed
+        SetupDependencyMonitor();
 
         // Refresh any of the previews that we canceled that were still in progress so they can be completed
         for (auto entityId : entityIds)

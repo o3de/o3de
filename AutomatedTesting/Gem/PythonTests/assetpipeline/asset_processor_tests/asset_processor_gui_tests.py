@@ -342,18 +342,14 @@ class TestsAssetProcessorGUI_Windows(object):
         Tests whether or not Asset Processor will Time Out
 
         Test Steps:
-        1. Create a temporary testing environment
-        2. Start the Asset Processor
-        3. Copy in assets to the test environment
-        4. Try to stop the Asset Processor with a timeout of 1 second (This cannot be done manually).
-        5. Verify that Asset Processor times out and returns the expected error
+        1. Start the Asset Processor
+        2. Try to stop the Asset Processor with a timeout of 0 seconds (This cannot be done manually).
+        3. Verify that Asset Processor times out and returns the expected StopReason
         """
-        asset_processor.create_temp_asset_root()
-        asset_processor.start()
 
-        # Copy in some assets, so that the AP will be busy when the stop command is called.
-        asset_processor.prepare_test_environment(ap_setup_fixture["tests_dir"], "TimeOutTest", use_current_root=True)
-        assert asset_processor.stop(timeout=0) == StopReason.TIMEOUT, "AP did not time out as expected"
+        asset_processor.start()
+        stop = asset_processor.stop(timeout=0)
+        assert stop == StopReason.TIMEOUT, f"AP did not time out as expected, Expected: {StopReason.TIMEOUT} Actual: {stop}"
 
     @pytest.mark.assetpipeline
     def test_APStopDefaultTimeout_DoesNotTimeOut(self, asset_processor):

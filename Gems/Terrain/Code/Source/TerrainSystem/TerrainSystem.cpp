@@ -1057,23 +1057,27 @@ void TerrainSystem::QueryList(
             (requestedData & TerrainDataMask::Heights) ? terrainExistsEmpty : terrainExists);
     }
 
-    AzFramework::SurfaceData::SurfacePoint surfacePoint;
-    for (size_t i = 0; i < inPositions.size(); i++)
     {
-        surfacePoint.m_position = inPositions[i];
-        if (requestedData & TerrainDataMask::Heights)
+        AZ_PROFILE_SCOPE(Terrain, "QueryList-PerPositionCallbacks");
+
+        AzFramework::SurfaceData::SurfacePoint surfacePoint;
+        for (size_t i = 0; i < inPositions.size(); i++)
         {
-            surfacePoint.m_position.SetZ(heights[i]);
+            surfacePoint.m_position = inPositions[i];
+            if (requestedData & TerrainDataMask::Heights)
+            {
+                surfacePoint.m_position.SetZ(heights[i]);
+            }
+            if (requestedData & TerrainDataMask::Normals)
+            {
+                surfacePoint.m_normal = AZStd::move(normals[i]);
+            }
+            if (requestedData & TerrainDataMask::SurfaceData)
+            {
+                surfacePoint.m_surfaceTags = AZStd::move(surfaceWeights[i]);
+            }
+            perPositionCallback(surfacePoint, terrainExists[i]);
         }
-        if (requestedData & TerrainDataMask::Normals)
-        {
-            surfacePoint.m_normal = AZStd::move(normals[i]);
-        }
-        if (requestedData & TerrainDataMask::SurfaceData)
-        {
-            surfacePoint.m_surfaceTags = AZStd::move(surfaceWeights[i]);
-        }
-        perPositionCallback(surfacePoint, terrainExists[i]);
     }
 }
 
@@ -1233,27 +1237,31 @@ void TerrainSystem::QueryRegionInternal(
         GetOrderedSurfaceWeightsFromList(
             inPositions, sampler, surfaceWeights, (requestedData & TerrainDataMask::Heights) ? terrainExistsEmpty : terrainExists);
     }
-    
-    AzFramework::SurfaceData::SurfacePoint surfacePoint;
-    for (size_t y = 0, i = 0; y < queryRegion.m_numPointsY; y++)
+
     {
-        for (size_t x = 0; x < queryRegion.m_numPointsX; x++)
+        AZ_PROFILE_SCOPE(Terrain, "QueryRegionInternal-PerPositionCallbacks");
+
+        AzFramework::SurfaceData::SurfacePoint surfacePoint;
+        for (size_t y = 0, i = 0; y < queryRegion.m_numPointsY; y++)
         {
-            surfacePoint.m_position = inPositions[i];
-            if (requestedData & TerrainDataMask::Heights)
+            for (size_t x = 0; x < queryRegion.m_numPointsX; x++)
             {
-                surfacePoint.m_position.SetZ(heights[i]);
+                surfacePoint.m_position = inPositions[i];
+                if (requestedData & TerrainDataMask::Heights)
+                {
+                    surfacePoint.m_position.SetZ(heights[i]);
+                }
+                if (requestedData & TerrainDataMask::Normals)
+                {
+                    surfacePoint.m_normal = AZStd::move(normals[i]);
+                }
+                if (requestedData & TerrainDataMask::SurfaceData)
+                {
+                    surfacePoint.m_surfaceTags = AZStd::move(surfaceWeights[i]);
+                }
+                perPositionCallback(x + xIndexOffset, y + yIndexOffset, surfacePoint, terrainExists[i]);
+                i++;
             }
-            if (requestedData & TerrainDataMask::Normals)
-            {
-                surfacePoint.m_normal = AZStd::move(normals[i]);
-            }
-            if (requestedData & TerrainDataMask::SurfaceData)
-            {
-                surfacePoint.m_surfaceTags = AZStd::move(surfaceWeights[i]);
-            }
-            perPositionCallback(x + xIndexOffset, y + yIndexOffset, surfacePoint, terrainExists[i]);
-            i++;
         }
     }
 }

@@ -8,6 +8,7 @@
 
 set(FILES
     Include/PhysX/EditorColliderComponentRequestBus.h
+    Include/PhysX/EditorHeightfieldColliderRequestBus.h
     Include/PhysX/EditorJointBus.h
     Source/ComponentDescriptors.cpp
     Source/ComponentDescriptors.h
@@ -31,6 +32,10 @@ set(FILES
     Source/EditorHeightfieldColliderComponent.h
     Source/EditorJointComponent.cpp
     Source/EditorJointComponent.h
+    Source/EditorPhysXJointInterface.cpp
+    Source/EditorPhysXJointInterface.h
+    Source/EditorJointOptimizer.cpp
+    Source/EditorJointOptimizer.h
     Source/Pipeline/MeshExporter.cpp
     Source/Pipeline/MeshExporter.h
     Source/Pipeline/MeshGroup.cpp

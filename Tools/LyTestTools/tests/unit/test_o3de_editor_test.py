@@ -33,6 +33,32 @@ class TestEditorTest(unittest.TestCase):
         assert mock_editorsharedtest.is_batchable
         assert not mock_editorsharedtest.is_parallelizable
 
+    def test_SplitBatchedEditorLogFile_FoundTestCase_SavesTwoLogs(self):
+        mock_workspace = mock.MagicMock()
+        starting_path = "C:/Git/o3de/AutomatedTesting/user/log_test_1/(1)editor_test.log"
+        destination_file = "C:/Git/o3de/build/windows/Testing/LyTestTools/arbitrary/(1)editor_test.log"
+        log_file_to_split = "(1)editor_test.log"
+        mock_data = 'plus some text here \n and more dummy (python) - Running automated test: ' \
+                    'C:\\Git\\o3de\\AutomatedTesting\\Gem\\PythonTests\\largeworlds\\dyn_veg\\EditorScripts' \
+                    '\\SurfaceDataRefreshes_RemainsStable.py (testcase ) \n plus some other text \n'
+        with mock.patch('builtins.open', mock.mock_open(read_data=mock_data)) as mock_file:
+            editor_test._split_batched_editor_log_file(mock_workspace, starting_path, destination_file, log_file_to_split)
+
+        assert mock_workspace.artifact_manager.save_artifact.call_count == 2
+
+    def test_SplitBatchedEditorLogFile_DidNotFindTestCase_SavesOneLog(self):
+        mock_workspace = mock.MagicMock()
+        starting_path = "C:/Git/o3de/AutomatedTesting/user/log_test_1/(1)editor_test.log"
+        destination_file = "C:/Git/o3de/build/windows/Testing/LyTestTools/arbitrary/(1)editor_test.log"
+        log_file_to_split = "(1)editor_test.log"
+        mock_data = 'plus some text here \n and more dummy (python) - Running automated test: ' \
+                    'C:\\Git\\o3de\\AutomatedTesting\\Gem\\PythonTests\\largeworlds\\dyn_veg\\EditorScripts' \
+                    '\\SurfaceDataRefreshes_RemainsStable.\n plus some other text \n'
+        with mock.patch('builtins.open', mock.mock_open(read_data=mock_data)) as mock_file:
+            editor_test._split_batched_editor_log_file(mock_workspace, starting_path, destination_file, log_file_to_split)
+
+        assert mock_workspace.artifact_manager.save_artifact.call_count == 1
+
 
 class TestResultType(unittest.TestCase):
 
@@ -204,7 +230,6 @@ class TestEditorTestSuite(unittest.TestCase):
         mock_asset_processor = mock.MagicMock()
         for test_data in mock_test_data_generator:
             test_data.asset_processor = mock_asset_processor
-        mock_asset_processor.stop.assert_called_once_with(1)
         mock_asset_processor.teardown.assert_called()
         assert test_data.asset_processor is None
         mock_kill_processes.assert_called_once_with(include_asset_processor=True)
@@ -686,11 +711,11 @@ class TestRunningTests(unittest.TestCase):
     @mock.patch('tempfile.NamedTemporaryFile', mock.MagicMock())
     @mock.patch('os.path.join', mock.MagicMock())
     @mock.patch('os.path.splitext', mock.MagicMock())
+    @mock.patch('os.path.dirname', mock.MagicMock())
     def test_ExecEditorMultitest_AllTestsPass_ReturnsPasses(self, mock_cycle_crash, mock_get_filepath):
         mock_test_suite = ly_test_tools.o3de.editor_test.EditorTestSuite()
         mock_workspace = mock.MagicMock()
         mock_artifact_manager = mock.MagicMock()
-        mock_artifact_manager.save_artifact.return_value = mock.MagicMock()
         mock_workspace.artifact_manager = mock_artifact_manager
         mock_workspace.paths.engine_root.return_value = ""
         mock_editor = mock.MagicMock()
@@ -701,9 +726,13 @@ class TestRunningTests(unittest.TestCase):
         mock_test_spec_2.__name__ = 'mock_test_name_2'
         mock_test_spec_list = [mock_test_spec, mock_test_spec_2]
         mock_get_filepath.return_value = ""
+        mock_path_exists = mock.MagicMock()
+        mock_path_exists.return_value = True
 
-        results = mock_test_suite._exec_editor_multitest(mock.MagicMock(), mock_workspace, mock_editor, 0,
-                                                         'mock_log_name', mock_test_spec_list, [])
+        with mock.patch('builtins.open', mock.mock_open(read_data="")) as mock_file:
+            results = mock_test_suite._exec_editor_multitest(mock.MagicMock(), mock_workspace, mock_editor, 0,
+                                                             'mock_log_name', mock_test_spec_list, [])
+
         assert len(results) == 2
         assert isinstance(results['mock_test_name'], editor_test.Result.Pass)
         assert isinstance(results['mock_test_name_2'], editor_test.Result.Pass)
@@ -717,6 +746,7 @@ class TestRunningTests(unittest.TestCase):
     @mock.patch('tempfile.NamedTemporaryFile', mock.MagicMock())
     @mock.patch('os.path.join', mock.MagicMock())
     @mock.patch('os.path.splitext', mock.MagicMock())
+    @mock.patch('os.path.dirname', mock.MagicMock())
     def test_ExecEditorMultitest_OneFailure_CallsCorrectFunc(self, mock_cycle_crash, mock_get_testcase_filepath,
                                                              mock_get_results):
         mock_test_suite = ly_test_tools.o3de.editor_test.EditorTestSuite()
@@ -730,8 +760,9 @@ class TestRunningTests(unittest.TestCase):
         mock_get_testcase_filepath.side_effect = ['mock_path', 'mock_path_2']
         mock_get_results.return_value = {'mock_test_name': mock.MagicMock(), 'mock_test_name_2': mock.MagicMock()}
 
-        results = mock_test_suite._exec_editor_multitest(mock.MagicMock(), mock_workspace, mock_editor, 0,
-                                                         'mock_log_name', mock_test_spec_list, [])
+        with mock.patch('builtins.open', mock.mock_open(read_data="")) as mock_file:
+            results = mock_test_suite._exec_editor_multitest(mock.MagicMock(), mock_workspace, mock_editor, 0,
+                                                             'mock_log_name', mock_test_spec_list, [])
 
         assert len(results) == 2
         assert mock_cycle_crash.called
@@ -747,6 +778,8 @@ class TestRunningTests(unittest.TestCase):
     @mock.patch('tempfile.NamedTemporaryFile', mock.MagicMock())
     @mock.patch('os.path.join', mock.MagicMock())
     @mock.patch('os.path.basename', mock.MagicMock())
+    @mock.patch('os.path.dirname', mock.MagicMock())
+    @mock.patch('ly_test_tools.o3de.editor_test._split_batched_editor_log_file', mock.MagicMock())
     def test_ExecEditorMultitest_OneCrash_ReportsOnUnknownResult(self, mock_cycle_crash, mock_get_testcase_filepath,
                                                                  mock_retrieve_log, mock_retrieve_editor_log,
                                                                  mock_get_results, mock_retrieve_crash):
@@ -785,6 +818,8 @@ class TestRunningTests(unittest.TestCase):
     @mock.patch('tempfile.NamedTemporaryFile', mock.MagicMock())
     @mock.patch('os.path.join', mock.MagicMock())
     @mock.patch('os.path.basename', mock.MagicMock())
+    @mock.patch('os.path.dirname', mock.MagicMock())
+    @mock.patch('ly_test_tools.o3de.editor_test._split_batched_editor_log_file', mock.MagicMock())
     def test_ExecEditorMultitest_ManyUnknown_ReportsUnknownResults(self, mock_cycle_crash, mock_get_testcase_filepath,
                                                                    mock_retrieve_log, mock_retrieve_editor_log,
                                                                    mock_get_results, mock_retrieve_crash):
