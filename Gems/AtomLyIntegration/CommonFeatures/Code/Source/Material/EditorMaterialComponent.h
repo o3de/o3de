@@ -9,7 +9,6 @@
 #pragma once
 
 #include <Atom/Feature/Utils/EditorRenderComponentAdapter.h>
-#include <AtomLyIntegration/CommonFeatures/Material/EditorMaterialSystemComponentNotificationBus.h>
 #include <AtomLyIntegration/CommonFeatures/Material/MaterialComponentBus.h>
 #include <AtomLyIntegration/CommonFeatures/Material/MaterialComponentConstants.h>
 #include <Material/EditorMaterialComponentSlot.h>
@@ -23,7 +22,6 @@ namespace AZ
         class EditorMaterialComponent final
             : public EditorRenderComponentAdapter<MaterialComponentController, MaterialComponent, MaterialComponentConfig>
             , public MaterialComponentNotificationBus::Handler
-            , public EditorMaterialSystemComponentNotificationBus::Handler
         {
         public:
             friend class JsonEditorMaterialComponentSerializer;
@@ -52,10 +50,6 @@ namespace AZ
             //! MaterialComponentNotificationBus::Handler overrides...
             void OnMaterialSlotLayoutChanged() override;
             void OnMaterialInstanceCreated(const MaterialAssignment& materialAssignment) override;
-
-            //! EditorMaterialSystemComponentNotificationBus::Handler overrides...
-            void OnRenderMaterialPreviewComplete(
-                const AZ::EntityId& entityId, const AZ::Render::MaterialAssignmentId& materialAssignmentId, const QPixmap& pixmap) override;
 
             // Regenerates the editor component material slots based on the material and
             // LOD mapping from the model or other consumer of materials.
