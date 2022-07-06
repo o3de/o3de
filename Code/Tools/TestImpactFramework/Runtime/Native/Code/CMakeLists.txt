@@ -20,8 +20,6 @@ ly_add_target(
     INCLUDE_DIRECTORIES
         PRIVATE
             Source
-        PUBLIC
-            Include
     BUILD_DEPENDENCIES
         PRIVATE            
             AZ::TestImpact.Runtime.Common.Static

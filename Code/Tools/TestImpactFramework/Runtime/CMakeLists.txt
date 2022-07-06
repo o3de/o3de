@@ -8,3 +8,4 @@
 
 add_subdirectory(Common)
 add_subdirectory(Native)
+add_subdirectory(Python)
