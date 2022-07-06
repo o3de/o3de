@@ -74,10 +74,6 @@ CLog::CLog(ISystem* pSystem)
 
     m_nMainThreadId = CryGetCurrentThreadId();
 
-#if defined(KEEP_LOG_FILE_OPEN)
-    m_bFirstLine = true;
-#endif
-
     m_iLastHistoryItem = 0;
     memset(m_history, 0, sizeof(m_history));
 
@@ -186,7 +182,7 @@ void CLog::CloseLogFile()
 }
 
 //////////////////////////////////////////////////////////////////////////
-bool CLog::OpenLogFile(const char* filename, int mode)
+bool CLog::OpenLogFile(const char* filename, AZ::IO::OpenMode mode)
 {
     if (m_logFileHandle.IsOpen())
     {
@@ -201,28 +197,16 @@ bool CLog::OpenLogFile(const char* filename, int mode)
         return false;
     }
 
-    // it is assumed that @log@ points at the appropriate place (so for apple, to the user profile dir)
-    AZ::IO::FileIOBase* fileSystem = AZ::IO::FileIOBase::GetDirectInstance();
-    if (AZ::IO::FixedMaxPath logFilePath; fileSystem->ReplaceAlias(logFilePath, filename))
-    {
-        logFilePath = logFilePath.LexicallyNormal();
-        m_logFileHandle.Open(logFilePath.c_str(), mode);
-    }
+    bool opened = m_logFileHandle.Open(filename, mode);
 
-    if (m_logFileHandle.IsOpen())
-    {
-#if defined(KEEP_LOG_FILE_OPEN)
-        m_bFirstLine = true;
-#endif
-    }
-    else
-    {
 #if defined(LINUX) || defined(APPLE)
-        syslog(LOG_NOTICE, "Failed to open log file [%s], mode [%d]", filename, mode);
-#endif
+    if (!opened)
+    {
+        syslog(LOG_NOTICE, "Failed to open log file [%s], mode [%d]", filename, static_cast<int>(mode));
     }
+#endif
 
-    return m_logFileHandle.IsOpen();
+    return opened;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -871,7 +855,7 @@ void CLog::LogStringToFile(const char* szString, ELogType logType, bool bAdd, [[
         return;
     }
 
-    if (!m_pSystem)
+    if (!m_pSystem || !AZ::IO::FileIOBase::GetInstance())
     {
         return;
     }
@@ -1064,26 +1048,17 @@ void CLog::LogStringToFile(const char* szString, ELogType logType, bool bAdd, [[
     {
         if (!m_logFileHandle.IsOpen())
         {
-            constexpr auto openMode = AZ::IO::SystemFile::OpenMode::SF_OPEN_APPEND
-                | AZ::IO::SystemFile::OpenMode::SF_OPEN_CREATE
-                | AZ::IO::SystemFile::OpenMode::SF_OPEN_WRITE_ONLY;
-            OpenLogFile(m_szFilename, openMode);
+            OpenLogFile(m_szFilename, AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeCreatePath);
         }
 
         if (m_logFileHandle.IsOpen())
         {
-#if defined(KEEP_LOG_FILE_OPEN)
-            if (m_bFirstLine)
-            {
-                m_bFirstLine = false;
-            }
-#endif
             if (bAdd)
             {
                 // if adding to a prior line erase the \n at the end.
-                m_logFileHandle.Seek(-2, AZ::IO::SystemFile::SeekMode::SF_SEEK_END);
+                m_logFileHandle.Seek(-2, AZ::IO::GenericStream::SeekMode::ST_SEEK_END);
             }
-            m_logFileHandle.Write(tempString.c_str(), tempString.size());
+            m_logFileHandle.Write(tempString.size(), tempString.c_str());
 #if !defined(KEEP_LOG_FILE_OPEN)
             CloseLogFile();
 #endif
@@ -1327,24 +1302,22 @@ bool CLog::SetFileName(const char* fileNameOrAbsolutePath, bool backupLogs)
     {
         return false;
     }
+
+    AZStd::string previousFilename = m_szFilename;
     azstrncpy(m_szFilename, AZ_ARRAY_SIZE(m_szFilename), fileNameOrAbsolutePath, sizeof(m_szFilename));
 
     CreateBackupFile();
 
-    AZ::IO::FileIOBase* fileSystem = AZ::IO::FileIOBase::GetDirectInstance();
-    AZ::IO::FixedMaxPath newLogFilePath;
-    if (fileSystem->ReplaceAlias(newLogFilePath, m_szFilename))
+    if (m_logFileHandle.IsOpen() && m_szFilename != previousFilename)
     {
-        newLogFilePath = newLogFilePath.LexicallyNormal();
-    }
-    if (m_logFileHandle.IsOpen() && newLogFilePath != m_logFileHandle.Name())
-    {
-        constexpr auto openMode = AZ::IO::SystemFile::OpenMode::SF_OPEN_APPEND
-            | AZ::IO::SystemFile::OpenMode::SF_OPEN_CREATE
-            | AZ::IO::SystemFile::OpenMode::SF_OPEN_WRITE_ONLY;
-        if(AZ::IO::SystemFile newLogFile; newLogFile.Open(m_szFilename, openMode))
+        CloseLogFile();
+        if (!OpenLogFile(m_szFilename, AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeCreatePath))
         {
-            m_logFileHandle = AZStd::move(newLogFile);
+            // Failed to open/create the new file. Go back to the previous
+            // state of the log appending to the previous file.
+            azstrncpy(m_szFilename, AZ_ARRAY_SIZE(m_szFilename), previousFilename.c_str(), sizeof(m_szFilename));
+            OpenLogFile(m_szFilename, AZ::IO::OpenMode::ModeAppend);
+            return false;
         }
     }
 
@@ -1501,10 +1474,14 @@ const char* CLog::GetModuleFilter()
 void CLog::FlushAndClose()
 {
 #if defined(KEEP_LOG_FILE_OPEN)
-    if (m_logFileHandle.IsOpen())
-    {
-        CloseLogFile();
-    }
+    CloseLogFile();
+#endif
+}
+
+void CLog::Flush()
+{
+#if defined(KEEP_LOG_FILE_OPEN)
+    m_logFileHandle.Flush();
 #endif
 }
 
@@ -1513,7 +1490,7 @@ void CLog::LogFlushFile([[maybe_unused]] IConsoleCmdArgs* pArgs)
 {
     if ((gEnv) && (gEnv->pLog))
     {
-        gEnv->pLog->FlushAndClose();
+        gEnv->pLog->Flush();
     }
 }
 #endif

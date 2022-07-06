@@ -75,5 +75,8 @@ namespace UnitTest
         MOCK_CONST_METHOD5(GetHeightfieldIndicesFromRegion, void(const AZ::Aabb&, size_t&, size_t&, size_t&, size_t&));
         MOCK_CONST_METHOD5(
             UpdateHeightsAndMaterials, void(const Physics::UpdateHeightfieldSampleFunction&, size_t, size_t, size_t, size_t));
+        MOCK_CONST_METHOD6(
+            UpdateHeightsAndMaterialsAsync, void(const Physics::UpdateHeightfieldSampleFunction&,
+                const Physics::UpdateHeightfieldCompleteFunction&, size_t, size_t, size_t, size_t));
     };
 } // namespace UnitTest

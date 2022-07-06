@@ -18,6 +18,7 @@
 
 #include <native/resourcecompiler/RCBuilder.h>
 #include <native/utilities/StatsCapture.h>
+#include <native/utilities/PlatformConfiguration.h>
 
 #include <QLocale>
 #include <QTranslator>
