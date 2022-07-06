@@ -21,6 +21,20 @@ if(PAL_TRAIT_PROF_PIX_SUPPORTED)
 endif()
 
 ly_add_target(
+    NAME O3DEKernel ${PAL_TRAIT_MONOLITHIC_DRIVEN_LIBRARY_TYPE}
+    NAMESPACE AZ
+    FILES_CMAKE
+        AzCore/o3dekernel_files.cmake
+    PLATFORM_INCLUDE_FILES
+        ${pal_dir}/o3dekernel_${PAL_PLATFORM_NAME_LOWERCASE}.cmake
+    INCLUDE_DIRECTORIES
+        PUBLIC
+            .
+            ${pal_dir}
+            ${common_dir}
+)
+
+ly_add_target(
     NAME AzCore STATIC
     NAMESPACE AZ
     FILES_CMAKE
@@ -43,6 +57,7 @@ ly_add_target(
             3rdParty::zstd
             3rdParty::cityhash
             ${AZ_CORE_PIX_BUILD_DEPENDENCIES}
+            AZ::O3DEKernel
 )
 ly_add_source_properties(
     SOURCES

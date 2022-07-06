@@ -86,19 +86,11 @@ void ModuleInitISystem(ISystem* pSystem, [[maybe_unused]] const char* moduleName
     {
         gEnv = pSystem->GetGlobalEnvironment();
         assert(gEnv);
-        
-        if (!AZ::Environment::IsReady() || (AZ::Environment::GetInstance() != gEnv->pSharedEnvironment))
-        {
-            AZ::Environment::Attach(gEnv->pSharedEnvironment);
-            AZ::AllocatorManager::Instance();  // Force the AllocatorManager to instantiate and register any allocators defined in data sections
-        }
     } // if pSystem
 }
 
 void ModuleShutdownISystem([[maybe_unused]] ISystem* pSystem)
 {
-    // Unregister with AZ environment.
-    AZ::Environment::Detach();
 }
 
 void* GetModuleInitISystemSymbol()
@@ -193,7 +185,7 @@ void CryMessageBox([[maybe_unused]] const char* lpText, [[maybe_unused]] const c
 void InitRootDir(char szExeFileName[], uint nExeSize, char szExeRootName[], uint nRootSize)
 {
     char szPath[_MAX_PATH];
-    AZ::Utils::GetExecutablePathReturnType ret = AZ::Utils::GetExecutablePath(szPath, _MAX_PATH);
+    [[maybe_unused]] AZ::Utils::GetExecutablePathReturnType ret = AZ::Utils::GetExecutablePath(szPath, _MAX_PATH);
     AZ_Assert(ret.m_pathStored == AZ::Utils::ExecutablePathResult::Success, "The path to the current executable exceeds the expected length");
     const size_t nLen = strnlen(szPath, _MAX_PATH);
 
