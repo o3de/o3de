@@ -386,6 +386,19 @@ void MainWindow::Activate()
     connect(ui->assetDataFilteredSearchWidget, &AzQtComponents::FilteredSearchWidget::TextFilterChanged,
         m_sourceAssetTreeFilterModel, static_cast<void (QSortFilterProxyModel::*)(const QString&)>(&AssetTreeFilterModel::FilterChanged));
 
+    m_intermediateAssetTreeFilterModel = new AssetProcessor::AssetTreeFilterModel(this);
+    m_intermediateModel = new AssetProcessor::SourceAssetTreeModel(m_sharedDbConnection, this);
+    m_intermediateModel->SetOnlyShowIntermediateAssets();
+    m_intermediateModel->Reset();
+    m_intermediateAssetTreeFilterModel->setSourceModel(m_intermediateModel);
+    ui->IntermediateAssetsTreeView->setModel(m_intermediateAssetTreeFilterModel);
+    connect(
+        ui->assetDataFilteredSearchWidget,
+        &AzQtComponents::FilteredSearchWidget::TextFilterChanged,
+        m_intermediateAssetTreeFilterModel,
+        static_cast<void (QSortFilterProxyModel::*)(const QString&)>(&AssetTreeFilterModel::FilterChanged));
+
+
     m_productAssetTreeFilterModel = new AssetProcessor::AssetTreeFilterModel(this);
     m_productModel = new AssetProcessor::ProductAssetTreeModel(m_sharedDbConnection, this);
     m_productModel->Reset();
@@ -395,6 +408,7 @@ void MainWindow::Activate()
         m_productAssetTreeFilterModel, static_cast<void (QSortFilterProxyModel::*)(const QString&)>(&AssetTreeFilterModel::FilterChanged));
 
     AzQtComponents::StyleManager::setStyleSheet(ui->sourceAssetDetailsPanel, QStringLiteral("style:AssetProcessor.qss"));
+    AzQtComponents::StyleManager::setStyleSheet(ui->intermediateAssetDetailsPanel, QStringLiteral("style:AssetProcessor.qss"));
     AzQtComponents::StyleManager::setStyleSheet(ui->productAssetDetailsPanel, QStringLiteral("style:AssetProcessor.qss"));
 
     ui->sourceAssetDetailsPanel->RegisterAssociatedWidgets(
@@ -405,6 +419,14 @@ void MainWindow::Activate()
         m_productModel,
         m_productAssetTreeFilterModel,
         ui->assetsTabWidget);
+    ui->intermediateAssetDetailsPanel->RegisterAssociatedWidgets(
+        ui->IntermediateAssetsTreeView,
+        m_sourceModel,
+        m_intermediateAssetTreeFilterModel,
+        ui->ProductAssetsTreeView,
+        m_productModel,
+        m_productAssetTreeFilterModel,
+        ui->assetsTabWidget);    
     ui->productAssetDetailsPanel->RegisterAssociatedWidgets(
         ui->SourceAssetsTreeView,
         m_sourceModel,
@@ -419,6 +441,7 @@ void MainWindow::Activate()
     ui->productAssetDetailsPanel->SetScanQueueEnabled(false);
 
     connect(ui->SourceAssetsTreeView->selectionModel(), &QItemSelectionModel::selectionChanged, ui->sourceAssetDetailsPanel, &SourceAssetDetailsPanel::AssetDataSelectionChanged);
+    connect(ui->IntermediateAssetsTreeView->selectionModel(), &QItemSelectionModel::selectionChanged, ui->intermediateAssetDetailsPanel, &SourceAssetDetailsPanel::AssetDataSelectionChanged);
     connect(ui->ProductAssetsTreeView->selectionModel(), &QItemSelectionModel::selectionChanged, ui->productAssetDetailsPanel, &ProductAssetDetailsPanel::AssetDataSelectionChanged);
     connect(ui->assetsTabWidget, &QTabWidget::currentChanged, this, &MainWindow::OnAssetTabChange);
 
@@ -601,6 +624,7 @@ void MainWindow::SetupAssetSelectionCaching()
             // ClearSelection says in the Qt docs that the selectionChange signal will be sent, but that wasn't happening,
             // so force the details panel to refresh.
             ui->sourceAssetDetailsPanel->AssetDataSelectionChanged(QItemSelection(), QItemSelection());
+            ui->intermediateAssetDetailsPanel->AssetDataSelectionChanged(QItemSelection(), QItemSelection());
             return;
         }
         m_sourceAssetTreeFilterModel->ForceModelIndexVisible(goToIndex);
@@ -1189,11 +1213,18 @@ void MainWindow::OnAssetTabChange(int index)
     {
     case AssetTabIndex::Source:
         ui->sourceAssetDetailsPanel->setVisible(true);
+        ui->intermediateAssetDetailsPanel->setVisible(false);
         ui->productAssetDetailsPanel->setVisible(false);
         break;
     case AssetTabIndex::Product:
         ui->sourceAssetDetailsPanel->setVisible(false);
+        ui->intermediateAssetDetailsPanel->setVisible(false);
         ui->productAssetDetailsPanel->setVisible(true);
+        break;
+    case AssetTabIndex::Intermediate:
+        ui->sourceAssetDetailsPanel->setVisible(false);
+        ui->intermediateAssetDetailsPanel->setVisible(true);
+        ui->productAssetDetailsPanel->setVisible(false);
         break;
     }
 }

@@ -27,6 +27,8 @@ namespace AssetProcessor
 
         QModelIndex GetIndexForSource(const AZStd::string& source);
 
+        void SetOnlyShowIntermediateAssets() { m_intermediateAssets = true; }
+
     protected:
         void ResetModel() override;
 
@@ -42,5 +44,6 @@ namespace AssetProcessor
         AZStd::unordered_map<AZ::s64, AssetTreeItem*> m_sourceIdToTreeItem;
         QDir m_assetRoot;
         bool m_assetRootSet = false;
+        bool m_intermediateAssets = false;
     };
 }

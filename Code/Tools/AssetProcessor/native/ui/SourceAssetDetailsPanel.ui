@@ -281,6 +281,49 @@
               </property>
              </widget>
             </item>
+             <item row="2" column="0">
+               <widget class="QLabel" name="sourceAsssetTitleLabel">
+                 <property name="styleSheet">
+                   <string notr="true">font: bold;</string>
+                 </property>
+                 <property name="text">
+                   <string>Source Asset</string>
+                 </property>
+                 <property name="alignment">
+                   <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+                 </property>
+               </widget>
+             </item>
+             <item row="2" column="1">
+               <layout class="QHBoxLayout" name="sourceAsset">
+                 <item>
+                   <widget class="AssetProcessor::GoToButton" name="gotoAssetButton">
+                     <property name="sizePolicy">
+                       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                         <horstretch>0</horstretch>
+                         <verstretch>0</verstretch>
+                       </sizepolicy>
+                     </property>
+                     <property name="minimumSize">
+                       <size>
+                         <width>24</width>
+                         <height>24</height>
+                       </size>
+                     </property>
+                   </widget>
+                 </item>
+                 <item>
+                   <widget class="QLabel" name="sourceAssetValueLabel">
+                     <property name="text">
+                       <string>sourceAsset Here</string>
+                     </property>
+                     <property name="textInteractionFlags">
+                       <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
+                     </property>
+                   </widget>
+                 </item>
+               </layout>
+             </item>
            </layout>
           </item>
           <item>
@@ -563,6 +606,16 @@
    </item>
   </layout>
  </widget>
- <resources/>
+  <customwidgets>
+    <customwidget>
+      <class>AssetProcessor::GoToButton</class>
+      <extends>QPushButton</extends>
+      <header>native/ui/GoToButton.h</header>
+      <container>1</container>
+    </customwidget>
+  </customwidgets>
+  <resources>
+    <include location="style/AssetProcessor.qrc"/>
+  </resources>
  <connections/>
 </ui>

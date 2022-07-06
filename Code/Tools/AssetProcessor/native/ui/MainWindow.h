@@ -57,7 +57,8 @@ public:
     enum class AssetTabIndex
     {
         Source = 0,
-        Product = 1
+        Intermediate = 1,
+        Product = 2
     };
 
     // This order is actually driven by the layout in the UI file.
@@ -140,8 +141,10 @@ private:
     LogSortFilterProxy* m_logSortFilterProxy;
     AssetProcessor::JobsModel* m_jobsModel;
     AssetProcessor::SourceAssetTreeModel* m_sourceModel = nullptr;
+    AssetProcessor::SourceAssetTreeModel* m_intermediateModel = nullptr;
     AssetProcessor::ProductAssetTreeModel* m_productModel = nullptr;
     AssetProcessor::AssetTreeFilterModel* m_sourceAssetTreeFilterModel = nullptr;
+    AssetProcessor::AssetTreeFilterModel* m_intermediateAssetTreeFilterModel = nullptr;
     AssetProcessor::AssetTreeFilterModel* m_productAssetTreeFilterModel = nullptr;
     QPointer<AssetProcessor::LogPanel> m_loggingPanel;
     int m_processJobsCount = 0;

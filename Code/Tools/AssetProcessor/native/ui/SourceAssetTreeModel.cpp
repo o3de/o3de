@@ -38,12 +38,36 @@ namespace AssetProcessor
         m_sourceToTreeItem.clear();
         m_sourceIdToTreeItem.clear();
 
-        m_sharedDbConnection->QuerySourceAndScanfolder(
-            [&](AzToolsFramework::AssetDatabase::SourceAndScanFolderDatabaseEntry& sourceAndScanFolder)
-            {
-                AddOrUpdateEntry(sourceAndScanFolder, sourceAndScanFolder, true);
-                return true; // return true to continue iterating over additional results, we are populating a container
-            });
+        if (!m_intermediateAssets)
+        {
+            // AddOrUpdateEntry will remove intermediate assets if they shouldn't be included in this tree.
+            m_sharedDbConnection->QuerySourceAndScanfolder(
+                [&](AzToolsFramework::AssetDatabase::SourceAndScanFolderDatabaseEntry& sourceAndScanFolder)
+                {
+                    AddOrUpdateEntry(sourceAndScanFolder, sourceAndScanFolder, true);
+                    return true; // return true to continue iterating over additional results, we are populating a container
+                });
+        }
+        else
+        {
+            AzToolsFramework::AssetDatabase::ScanFolderDatabaseEntry scanFolderEntry;
+            // When building the intermediate asset source asset tree, search by the scan folder to save time
+            m_sharedDbConnection->QueryScanFolderByPortableKey(
+                "Intermediate Assets",
+                [&](AzToolsFramework::AssetDatabase::ScanFolderDatabaseEntry& scanFolder)
+                {
+                    scanFolderEntry = scanFolder;
+                    return false;
+                });
+
+            m_sharedDbConnection->QuerySourceByScanFolderID(
+                scanFolderEntry.m_scanFolderID,
+                [&](AzToolsFramework::AssetDatabase::SourceDatabaseEntry& souceEntry)
+                {
+                    AddOrUpdateEntry(souceEntry, scanFolderEntry, true);
+                    return true; // return true to continue iterating over additional results, we are populating a container
+                });
+        }
     }
 
     void SourceAssetTreeModel::AddOrUpdateEntry(
@@ -62,6 +86,12 @@ namespace AssetProcessor
             QModelIndex existingIndexStart = createIndex(existingEntry->second->GetRow(), 0, existingEntry->second);
             QModelIndex existingIndexEnd = createIndex(existingEntry->second->GetRow(), existingEntry->second->GetColumnCount() - 1, existingEntry->second);
             dataChanged(existingIndexStart, existingIndexEnd);
+            return;
+        }
+
+        if ((source.m_scanFolderPK == 1 && !m_intermediateAssets) ||
+            (source.m_scanFolderPK != 1 && m_intermediateAssets))
+        {
             return;
         }
 

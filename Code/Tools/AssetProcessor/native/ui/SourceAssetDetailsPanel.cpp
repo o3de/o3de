@@ -58,15 +58,56 @@ namespace AssetProcessor
         if (childItem->GetData()->m_isFolder || !sourceItemData)
         {
             // Folders don't have details.
-            SetDetailsVisible(false);
+            SetDetailsVisible(false, false);
             return;
         }
-        SetDetailsVisible(true);
-        m_ui->scanFolderValueLabel->setText(sourceItemData->m_scanFolderInfo.m_scanFolder.c_str());
-        m_ui->sourceGuidValueLabel->setText(sourceItemData->m_sourceInfo.m_sourceGuid.ToString<AZStd::string>().c_str());
+        bool isIntermediateAsset = sourceItemData->m_sourceInfo.m_scanFolderPK == 1;
+        SetDetailsVisible(true, isIntermediateAsset);
 
         AssetDatabaseConnection assetDatabaseConnection;
         assetDatabaseConnection.OpenDatabase();
+
+        if (isIntermediateAsset)
+        {
+            // First, find the product version of this intermediate asset.
+            AZStd::string intermediateProductPath = AZStd::string::format("common/%s", sourceItemData->m_assetDbName.c_str());
+
+            AzToolsFramework::AssetDatabase::SourceDatabaseEntry upstreamSource;
+
+            assetDatabaseConnection.QueryProductByProductName(
+                intermediateProductPath.c_str(),
+                [&](AzToolsFramework::AssetDatabase::ProductDatabaseEntry& productEntry)
+                {
+                    assetDatabaseConnection.QuerySourceByProductID(
+                        productEntry.m_productID,
+                        [&](AzToolsFramework::AssetDatabase::SourceDatabaseEntry& sourceEntry)
+                        {
+                            upstreamSource = sourceEntry;
+                            return true;
+                        });
+                    return true;
+                });
+
+            // Second, get the source that created this product.
+
+
+            // Finally, populate the UI with the information on the source that output this.
+            m_ui->gotoAssetButton->m_ui->goToPushButton->disconnect();
+
+            connect(
+                m_ui->gotoAssetButton->m_ui->goToPushButton,
+                &QPushButton::clicked,
+                [=]
+                {
+                    GoToSource(upstreamSource.m_sourceName);
+                });
+
+            m_ui->sourceAssetValueLabel->setText(upstreamSource.m_sourceName.c_str());
+        }
+
+        m_ui->scanFolderValueLabel->setText(sourceItemData->m_scanFolderInfo.m_scanFolder.c_str());
+        m_ui->sourceGuidValueLabel->setText(sourceItemData->m_sourceInfo.m_sourceGuid.ToString<AZStd::string>().c_str());
+
 
         BuildProducts(assetDatabaseConnection, sourceItemData);
         BuildOutgoingSourceDependencies(assetDatabaseConnection, sourceItemData);
@@ -237,10 +278,10 @@ namespace AssetProcessor
     void SourceAssetDetailsPanel::ResetText()
     {
         m_ui->assetNameLabel->setText(tr("Select an asset to see details"));
-        SetDetailsVisible(false);
+        SetDetailsVisible(false, false);
     }
 
-    void SourceAssetDetailsPanel::SetDetailsVisible(bool visible)
+    void SourceAssetDetailsPanel::SetDetailsVisible(bool visible, bool isIntermediateAsset)
     {
         // The folder selected description has opposite visibility from everything else.
         m_ui->folderSelectedDescription->setVisible(!visible);
@@ -250,6 +291,10 @@ namespace AssetProcessor
 
         m_ui->sourceGuidTitleLabel->setVisible(visible);
         m_ui->sourceGuidValueLabel->setVisible(visible);
+
+        m_ui->sourceAsssetTitleLabel->setVisible(isIntermediateAsset);
+        m_ui->gotoAssetButton->setVisible(isIntermediateAsset);
+        m_ui->sourceAssetValueLabel->setVisible(isIntermediateAsset);
 
         m_ui->AssetInfoSeparatorLine->setVisible(visible);
 

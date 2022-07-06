@@ -39,7 +39,7 @@ namespace AssetProcessor
 
     protected:
         void ResetText();
-        void SetDetailsVisible(bool visible);
+        void SetDetailsVisible(bool visible, bool isIntermediateAsset);
 
         void BuildProducts(
             AssetDatabaseConnection& assetDatabaseConnection,
