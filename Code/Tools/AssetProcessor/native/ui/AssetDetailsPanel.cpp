@@ -78,7 +78,7 @@ namespace AssetProcessor
         }
 
         int assetTabIndex = static_cast<int>(
-            isIntermediate ? MainWindow::AssetTabIndex::Source : MainWindow::AssetTabIndex::Intermediate);
+            isIntermediate ? MainWindow::AssetTabIndex::Intermediate : MainWindow::AssetTabIndex::Source);
         m_assetsTab->setCurrentIndex(assetTabIndex);
 
         QTreeView* treeView = isIntermediate ? m_intermediateTreeView : m_sourceTreeView;

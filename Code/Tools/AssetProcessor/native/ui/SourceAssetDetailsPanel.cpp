@@ -79,6 +79,7 @@ namespace AssetProcessor
                 intermediateProductPath.c_str(),
                 [&](AzToolsFramework::AssetDatabase::ProductDatabaseEntry& productEntry)
                 {
+                    // Second, get the source that created this product.
                     assetDatabaseConnection.QuerySourceByProductID(
                         productEntry.m_productID,
                         [&](AzToolsFramework::AssetDatabase::SourceDatabaseEntry& sourceEntry)
@@ -88,9 +89,6 @@ namespace AssetProcessor
                         });
                     return true;
                 });
-
-            // Second, get the source that created this product.
-
 
             // Finally, populate the UI with the information on the source that output this.
             m_ui->gotoAssetButton->m_ui->goToPushButton->disconnect();
@@ -152,6 +150,8 @@ namespace AssetProcessor
                             return true;
                         });
                     
+                //AssetUtilities::ProductPath productPath = AssetUtilities::ProductPath::FromDatabasePath(productEntry.m_productName);
+                AZStd::string sourceIntermediateAssetPath = AssetUtilities::StripAssetPlatformNoCopy(productEntry.m_productName);
 
                     // Qt handles cleanup automatically, setting this as the parent means
                     // when this panel is torn down, these widgets will be destroyed.
@@ -161,7 +161,7 @@ namespace AssetProcessor
                         &QPushButton::clicked,
                         [=]
                         {
-                            GoToSource(intermediateAssetSourcePath);
+                            GoToSource(sourceIntermediateAssetPath);
                         });
                     m_ui->IntermediateAssetsTable->setCellWidget(intermediateAssetCount, 0, rowGoToButton);
 
