@@ -7,6 +7,8 @@
  */
 
 
+#include <AzCore/Preprocessor/Enum.h>
+#include <AzCore/Preprocessor/EnumReflectUtils.h>
 #include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
@@ -103,18 +105,13 @@ namespace AZ
             m_gamma = displayMapperParameters.m_gamma;
         }
 
+        AZ_ENUM_DEFINE_REFLECT_UTILITIES(DisplayMapperOperationType);
+
         void DisplayMapperConfigurationDescriptor::Reflect(AZ::ReflectContext* context)
         {
             if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
-                serializeContext->Enum<DisplayMapperOperationType>()
-                    ->Value("Aces", DisplayMapperOperationType::Aces)
-                    ->Value("AcesLut", DisplayMapperOperationType::AcesLut)
-                    ->Value("Passthrough", DisplayMapperOperationType::Passthrough)
-                    ->Value("GammaSRGB", DisplayMapperOperationType::GammaSRGB)
-                    ->Value("Reinhard", DisplayMapperOperationType::Reinhard)
-                    ->Value("Invalid", DisplayMapperOperationType::Invalid)
-                    ;
+                DisplayMapperOperationTypeReflect(*serializeContext);
                 
                 serializeContext->Class<DisplayMapperConfigurationDescriptor>()
                     ->Version(2)
@@ -124,18 +121,30 @@ namespace AZ
                     ->Field("LdrColorGradingLut", &DisplayMapperConfigurationDescriptor::m_ldrColorGradingLut)
                     ->Field("AcesParameterOverrides", &DisplayMapperConfigurationDescriptor::m_acesParameterOverrides)
                 ;
+
+                //if (auto editContext = serializeContext->GetEditContext())
+                //{
+                //    editContext->Class<DisplayMapperConfigurationDescriptor>("DisplayMapperConfiguration", "")
+                //        ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                //        ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
+                //        ->DataElement(AZ::Edit::UIHandlers::Default, &RasterState::m_depthBias, "Depth Bias", "")
+                //        ->DataElement(AZ::Edit::UIHandlers::Default, &RasterState::m_depthBiasClamp, "Depth Bias Clamp", "")
+                //        ->DataElement(AZ::Edit::UIHandlers::Default, &RasterState::m_depthBiasSlopeScale, "Depth Bias Slope Scale", "")
+                //        ->DataElement(AZ::Edit::UIHandlers::Default, &RasterState::m_fillMode, "Fill Mode", "")
+                //            ->Attribute(AZ::Edit::Attributes::EnumValues, AZ::Edit::GetEnumConstantsFromTraits<FillMode>())
+                //        ->DataElement(AZ::Edit::UIHandlers::Default, &RasterState::m_cullMode, "Cull Mode", "")
+                //            ->Attribute(AZ::Edit::Attributes::EnumValues, AZ::Edit::GetEnumConstantsFromTraits<CullMode>())
+                //        ->DataElement(AZ::Edit::UIHandlers::Default, &RasterState::m_multisampleEnable, "Multisample Enable", "")
+                //        ->DataElement(AZ::Edit::UIHandlers::Default, &RasterState::m_depthClipEnable, "Depth Clip Enable", "")
+                //        ->DataElement(AZ::Edit::UIHandlers::Default, &RasterState::m_conservativeRasterEnable, "Conservative Raster Enable", "")
+                //        ->DataElement(AZ::Edit::UIHandlers::Default, &RasterState::m_forcedSampleCount, "Forced Sample Count", "")
+                //        ;
+                //}
             }
 
             if (auto* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
             {
-                behaviorContext->Class<DisplayMapperOperationType>()
-                    ->Enum<(uint32_t)DisplayMapperOperationType::Aces>("DisplayMapperOperationType_Aces")
-                    ->Enum<(uint32_t)DisplayMapperOperationType::AcesLut>("DisplayMapperOperationType_AcesLut")
-                    ->Enum<(uint32_t)DisplayMapperOperationType::Passthrough>("DisplayMapperOperationType_Passthrough")
-                    ->Enum<(uint32_t)DisplayMapperOperationType::GammaSRGB>("DisplayMapperOperationType_GammaSRGB")
-                    ->Enum<(uint32_t)DisplayMapperOperationType::Reinhard>("DisplayMapperOperationType_Reinhard")
-                    ->Enum<(uint32_t)DisplayMapperOperationType::Invalid>("DisplayMapperOperationType_Invalid")
-                    ;
+                DisplayMapperOperationTypeReflect(*behaviorContext);
             }
         }
 
