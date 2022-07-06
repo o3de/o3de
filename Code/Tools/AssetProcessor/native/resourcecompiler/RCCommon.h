@@ -8,6 +8,7 @@
 #ifndef ASSETPROCESSOR_RCCOMMON_H
 #define ASSETPROCESSOR_RCCOMMON_H
 
+#include <AzCore/std/functional.h>
 #include <QString>
 
 namespace AssetProcessor
