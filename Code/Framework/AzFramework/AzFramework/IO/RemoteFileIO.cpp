@@ -1357,7 +1357,7 @@ namespace AZ
         const char* RemoteFileIO::GetAlias(const char* alias) const
         {
             // RemoteFileIO will always leave aliases intact so it's
-            // the remote system the one replacing it.
+            // the remote system that is the one replacing it.
             return m_excludedFileIO ? alias : nullptr;
         }
 
@@ -1401,7 +1401,7 @@ namespace AZ
 
             // RemoteFileIO will only copy path to resolvedPath,
             // keeping the aliases intact so it's
-            // the remote system the one replacing it.
+            // the remote system that is the one replacing it.
             azstrcpy(resolvedPath, resolvedPathSize, path);
             return true;
         }
@@ -1420,7 +1420,7 @@ namespace AZ
 
             // RemoteFileIO will only copy path to resolvedPath
             // keeping the aliases intact so it's
-            // the remote system the one replacing it.
+            // the remote system that is the one replacing it.
             resolvedPath = path;
             return true;
         }
