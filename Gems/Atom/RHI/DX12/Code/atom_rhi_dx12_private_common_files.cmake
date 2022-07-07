@@ -47,6 +47,8 @@ set(FILES
     Source/RHI/FrameGraphExecuteGroupMerged.h
     Source/RHI/FrameGraphExecuter.cpp
     Source/RHI/FrameGraphExecuter.h
+    Source/RHI/HeapAllocator.cpp
+    Source/RHI/HeapAllocator.h
     Source/RHI/Image.cpp
     Source/RHI/Image.h
     Source/RHI/ImagePool.cpp

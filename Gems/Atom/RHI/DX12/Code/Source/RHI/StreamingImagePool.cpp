@@ -12,13 +12,25 @@
 #include <RHI/Image.h>
 #include <RHI/ResourcePoolResolver.h>
 #include <Atom/RHI/MemoryStatisticsBuilder.h>
-// NOTE: Tiled resources are currently disabled, because RenderDoc does not support them.
-// #define AZ_RHI_USE_TILED_RESOURCES
+
+// NOTE: Tiled resources are currently disabled, because RenderDoc does not support them. (this may not be the case anymore)
+#define AZ_RHI_USE_TILED_RESOURCES
 
 namespace AZ
 {
     namespace DX12
     {
+
+        // constants for heap page allocation 
+        namespace
+        {
+            const static int MaxTextureResolution = 8*1024;
+            // Maxinum page size should be able to accommodate one slice of texture with maxinum size
+            const static int MaxPageSize = MaxTextureResolution*MaxTextureResolution*4*4; //4 channel 4 bytes/channel
+        }
+
+        // The StreamingImagePoolResolver adds streaming image transition barriers when scope starts
+        // The streaming image transition barriers are added when image was initlized and image mip got expanded or trimmed.
         class StreamingImagePoolResolver
             : public ResourcePoolResolver
         {
@@ -140,23 +152,24 @@ namespace AZ
 
 #ifdef AZ_RHI_USE_TILED_RESOURCES
             {
-                AZ_PROFILE_SCOPE(RHI, "StreamImagePool::CreateHeap");
+                Device& device = static_cast<Device&>(deviceBase);
+                
+                m_memoryAllocatorUsage = m_memoryUsage.GetHeapMemoryUsage(RHI::HeapMemoryLevel::Device);
+                
+                HeapAllocator::Descriptor heapPageAllocatorDesc;
+                heapPageAllocatorDesc.m_device = &device;
+                heapPageAllocatorDesc.m_pageSizeInBytes = D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT * 1024; // 64M
+                heapPageAllocatorDesc.m_getHeapMemoryUsageFunction = [this]() { return &m_memoryAllocatorUsage;};
+                heapPageAllocatorDesc.m_resourceTypeFlags = ImageResourceTypeFlags::Image;
+                heapPageAllocatorDesc.m_collectLatency = 0;
 
-                CD3DX12_HEAP_DESC heapDesc(descriptor.m_budgetInBytes, D3D12_HEAP_TYPE_DEFAULT, 0, D3D12_HEAP_FLAG_DENY_BUFFERS | D3D12_HEAP_FLAG_DENY_RT_DS_TEXTURES);
+                m_heapPageAllocator.Init(heapPageAllocatorDesc);
 
-                Microsoft::WRL::ComPtr<ID3D12Heap> heap;
-                device.AssertSuccess(device.GetDevice()->CreateHeap(&heapDesc, IID_GRAPHICS_PPV_ARGS(heap.GetAddressOf())));
-                m_heap = heap.Get();
-            }
-
-            {
-                const size_t tileCountTotal = descriptor.m_budgetInBytes / D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT;
-
-                RHI::PoolAllocator::Descriptor allocatorDesc;
-                allocatorDesc.m_elementSize = 1;
-                allocatorDesc.m_alignmentInBytes = 1;
-                allocatorDesc.m_capacityInBytes = tileCountTotal;
-                m_tileAllocator.Init(allocatorDesc);
+                TileAllocator::Descriptor tileAllocatorDesc;
+                tileAllocatorDesc.m_elementSize = D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT;
+                tileAllocatorDesc.m_alignmentInBytes = D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT;
+                tileAllocatorDesc.m_capacityInBytes = heapPageAllocatorDesc.m_pageSizeInBytes;
+                m_tileAllocator.Init(tileAllocatorDesc, m_heapPageAllocator);
             }
 #endif
 
@@ -167,19 +180,20 @@ namespace AZ
         void StreamingImagePool::ShutdownInternal()
         {
 #ifdef AZ_RHI_USE_TILED_RESOURCES
-            GetDevice().QueueForRelease(AZStd::move(m_heap));
             m_tileAllocator.Shutdown();
 #endif
         }
 
-        void StreamingImagePool::AllocateImageTilesInternal(Image& image, CommandList::TileMapRequest& request, uint32_t subresourceIndex)
+        void StreamingImagePool::AllocateImageTilesInternal(Image& image, uint32_t subresourceIndex)
         {
-            AZ_Assert(request.m_destinationHeap, "Destination heap must be valid.");
+            CommandList::TileMapRequest request;
+            request.m_sourceMemory = image.GetMemoryView().GetMemory();
 
             uint32_t imageTileOffset = 0;
             image.m_tileLayout.GetSubresourceTileInfo(subresourceIndex, imageTileOffset, request.m_sourceCoordinate, request.m_sourceRegionSize);
 
             request.m_destinationTileMap.resize(request.m_sourceRegionSize.NumTiles);
+            request.m_destinationHeap = nullptr;
 
             // Allocate tiles from the tile pool.
             for (uint32_t subresourceTileIndex = 0; subresourceTileIndex < request.m_sourceRegionSize.NumTiles; ++subresourceTileIndex)
@@ -187,16 +201,21 @@ namespace AZ
                 const uint32_t imageTileIndex = imageTileOffset + subresourceTileIndex;
 
                 // Make sure the tile is actually null so we don't leak.
-                AZ_Assert(image.m_tiles[imageTileIndex].IsNull(), "Stomping on an existing tile allocation. This will leak.");
+                AZ_Assert(image.m_tiles[imageTileIndex].m_size == 0, "Stomping on an existing tile allocation. This will leak.");
 
-                RHI::VirtualAddress address = m_tileAllocator.Allocate();
-                AZ_Assert(address.IsValid(), "Exceeded size of tile heap. The budget checks should have caught this.");
+                Tile tile = m_tileAllocator.Allocate(D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT, D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT);
+                AZ_Assert(tile.m_memory.get(), "Exceeded size of tile heap. The budget checks should have caught this.");
 
                 // Store the allocation in the image (using image-relative index).
-                image.m_tiles[imageTileIndex] = address;
+                image.m_tiles[imageTileIndex] = tile;
 
                 // Store the allocation into the map request (using subresource-relative index).
-                request.m_destinationTileMap[subresourceTileIndex] = static_cast<uint32_t>(address.m_ptr);
+                if (tile.m_memory.get() != request.m_destinationHeap && request.m_destinationHeap != nullptr)
+                {
+                    AZ_Assert(false, "allocated in more than one heap");
+                }
+                request.m_destinationHeap = tile.m_memory.get();
+                request.m_destinationTileMap[subresourceTileIndex] = static_cast<uint32_t>(tile.m_offset/D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT);
             }
 
             GetDevice().GetAsyncUploadQueue().QueueTileMapping(request);
@@ -217,7 +236,8 @@ namespace AZ
                 const uint32_t imageTileIndex = imageTileOffset + subresourceTileIndex;
 
                 // De-allocate the tile and reset it null.
-                AZ_Assert(image.m_tiles[imageTileIndex].IsValid(), "Attempting to map a tile to null when it's already null.");
+                AZ_Assert(image.m_tiles[imageTileIndex].m_memory.get(), "Attempting to map a tile to null when it's already null.");
+
                 m_tileAllocator.DeAllocate(image.m_tiles[imageTileIndex]);
                 image.m_tiles[imageTileIndex] = {};
             }
@@ -236,10 +256,7 @@ namespace AZ
             const ImageTileLayout& tileLayout = image.m_tileLayout;
             if (tileLayout.m_mipCountPacked)
             {
-                CommandList::TileMapRequest request;
-                request.m_sourceMemory = image.GetMemoryView().GetMemory();
-                request.m_destinationHeap = m_heap.get();
-                AllocateImageTilesInternal(image, request, tileLayout.GetPackedSubresourceIndex());
+                AllocateImageTilesInternal(image, tileLayout.GetPackedSubresourceIndex());
             }
         }
 
@@ -257,17 +274,12 @@ namespace AZ
             // Only proceed if the interval is still valid.
             if (mipInterval.m_min < mipInterval.m_max)
             {
-                // Reuse the same request structure (avoids additional heap allocations).
-                CommandList::TileMapRequest request;
-                request.m_sourceMemory = image.GetMemoryView().GetMemory();
-                request.m_destinationHeap = m_heap.get();
-
                 AZStd::lock_guard<AZStd::mutex> lock(m_tileMutex);
                 for (uint32_t arrayIndex = 0; arrayIndex < descriptor.m_arraySize; ++arrayIndex)
                 {
                     for (uint32_t mipIndex = mipInterval.m_min; mipIndex < mipInterval.m_max; ++mipIndex)
                     {
-                        AllocateImageTilesInternal(image, request, RHI::GetImageSubresourceIndex(mipIndex, arrayIndex, descriptor.m_mipLevels));
+                        AllocateImageTilesInternal(image, RHI::GetImageSubresourceIndex(mipIndex, arrayIndex, descriptor.m_mipLevels));
                     }
                 }
             }
@@ -405,7 +417,7 @@ namespace AZ
             if (image.IsTiled())
             {
                 m_tileMutex.lock();
-                for (RHI::VirtualAddress address : image.m_tiles)
+                for (auto address : image.m_tiles)
                 {
                     m_tileAllocator.DeAllocate(address);
                 }

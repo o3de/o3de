@@ -10,6 +10,7 @@
 #include <Atom/RHI/StreamingImagePool.h>
 #include <Atom/RHI/PoolAllocator.h>
 #include <RHI/CommandList.h>
+#include <RHI/HeapAllocator.h>
 
 namespace AZ
 {
@@ -18,6 +19,36 @@ namespace AZ
         class Device;
         class Image;
         class StreamingImagePoolResolver;
+
+ /*       class ImageAllocator
+        {
+        public:
+            ImageAllocator() = default;
+            ImageAllocator(const ImageAllocator&) = delete;
+
+            using Descriptor = HeapAllocator::Descriptor;
+
+            void Init(const Descriptor& descriptor);
+
+            void Shutdown();
+
+            void GarbageCollect();
+
+            MemoryView Allocate(size_t sizeInBytes, size_t overrideAlignment = 0);
+
+            void DeAllocate(const MemoryView& memory);
+
+            float ComputeFragmentation() const;
+
+        private:
+            Descriptor m_descriptor;
+            
+            HeapAllocator m_heapPageAllocator;
+            // for allocate tile from heap page
+            TileAllocator m_tileAllocator;
+
+            AZStd::mutex m_subAllocatorMutex;
+        };*/
 
         class StreamingImagePool final
             : public RHI::StreamingImagePool
@@ -55,7 +86,7 @@ namespace AZ
             void ComputeFragmentation() const override {}
             //////////////////////////////////////////////////////////////////////////
 
-            void AllocateImageTilesInternal(Image& image, CommandList::TileMapRequest& request, uint32_t subresourceIndex);
+            void AllocateImageTilesInternal(Image& image, uint32_t subresourceIndex);
             void DeAllocateImageTilesInternal(Image& image, uint32_t subresourceIndex);
 
             // Standard mips each have their own set of tiles.
@@ -68,7 +99,13 @@ namespace AZ
             RHI::Ptr<ID3D12Heap> m_heap;
 
             AZStd::mutex m_tileMutex;
-            RHI::PoolAllocator m_tileAllocator;
+            //RHI::PoolAllocator m_tileAllocator;
+
+            // for allocate heap page
+            HeapAllocator m_heapPageAllocator;
+            // for allocate tile from heap page
+            TileAllocator m_tileAllocator;
+            RHI::HeapMemoryUsage m_memoryAllocatorUsage;
         };
     }
 }

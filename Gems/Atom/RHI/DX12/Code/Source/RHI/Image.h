@@ -7,6 +7,7 @@
  */
 #pragma once
 
+#include <RHI/HeapAllocator.h>
 #include <RHI/MemoryView.h>
 #include <Atom/RHI/Image.h>
 #include <Atom/RHI/Allocator.h>
@@ -156,7 +157,7 @@ namespace AZ
 
             // A flat list of tile allocations. The index of each allocation is described
             // by the tile layout. The value at each index is a tile in the backing heap.
-            AZStd::vector<RHI::VirtualAddress> m_tiles;
+            AZStd::vector<Tile> m_tiles;
 
             // Tracking the actual mip level data uploaded. It's also used for invalidate image view. 
             uint32_t m_streamedMipLevel = 0;
