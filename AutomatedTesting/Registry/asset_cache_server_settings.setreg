@@ -3,9 +3,9 @@
         "AssetProcessor": {
             "Settings": {
                 "Server": {
-                    "cacheServerAddress": "D:\\work\\transfer",
+                    "cacheServerAddress": "",
                     "assetCacheServerMode": "inactive",
-                    " \u0000HGÐ\u0002\u0000\u0000#\u0000\u0011GÐ\u0002\u0000\u0000uilder": {
+                    "ACS Atom Image Builder": {
                         "name": "Atom Image Builder",
                         "glob": "*.tiff"
                     },
