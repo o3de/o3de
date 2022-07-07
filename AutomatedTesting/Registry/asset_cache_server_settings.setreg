@@ -7,19 +7,23 @@
                     "assetCacheServerMode": "inactive",
                     "ACS Atom Image Builder": {
                         "name": "Atom Image Builder",
-                        "glob": "*.tiff"
+                        "glob": "*.tiff",
+                        "checkServer": true
                     },
                     "ACS Precompiled Shader Builder": {
                         "name": "Precompiled Shader Builder",
-                        "glob": "*.precompiledshader"
+                        "glob": "*.precompiledshader",
+                        "checkServer": true
                     },
                     "ACS Scene Builder": {
                         "name": "Scene Builder",
-                        "glob": "*.fbx"
+                        "glob": "*.fbx",
+                        "checkServer": true
                     },
                     "ACS Shader Asset Builder": {
                         "name": "Shader Asset Builder",
-                        "glob": "*.shader"
+                        "glob": "*.shader",
+                        "checkServer": true
                     }
                 }
             }
