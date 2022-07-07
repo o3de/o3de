@@ -274,12 +274,12 @@ def get_sc_editor_node_inspector(sc_editor):
 
     return node_inspector_widget
 
-def create_entity_with_sc_component_asset(name, source_file, position = math.Vector3(512.0, 512.0, 32.0)):
+def create_entity_with_sc_component_asset(entity_name, source_file, position = math.Vector3(512.0, 512.0, 32.0)):
     """
     function for creating a new entity in the scene w/ a script canvas component. Function also adds as
     script canvas file to the script canvas component's source file property.
 
-    param name: the name you want to assign the entity
+    param entity_name: the name you want to assign the entity
     param source_file: the path to  script canvas file to be added to the script canvas component
     param position: the translation property of the new entity's transform
 
@@ -287,7 +287,7 @@ def create_entity_with_sc_component_asset(name, source_file, position = math.Vec
     """
     sourcehandle = scriptcanvas.SourceHandleFromPath(source_file)
 
-    entity = hydra.Entity(name)
+    entity = hydra.Entity(entity_name)
     entity.create_entity(position, ["Script Canvas"])
 
     script_canvas_component = entity.components[0]

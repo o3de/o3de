@@ -29,33 +29,7 @@ EXPECTED_LINES = ["T92569006_ScriptEvent_Sent", "T92569006_ScriptEvent_Received"
 SC_FILE_PATH = os.path.join(paths.projectroot, "ScriptCanvas", "T92569006_ScriptCanvas.scriptcanvas")
 
 class ScriptEvents_ReturnSetType_Successfully:
-    """
-    Summary: A temporary level is created with an Entity having ScriptCanvas component.
-     ScriptEvent(T92569006_ScriptEvent.scriptevents) is created with one Method that has a return value.
-     ScriptCanvas(T92569006_ScriptCanvas.scriptcanvas) is attached to Entity. Graph has Send node that sends the Method
-     of the ScriptEvent and prints the returned result ( On Entity Activated -> Send node -> Print) and Receive node is
-     set to return custom value ( Receive node -> Print).
-     Verify that the entity containing T92569006_ScriptCanvas.scriptcanvas should print the custom value set in both
-     Send and Receive nodes.
 
-    Expected Behavior:
-     After entering game mode, the graph on the entity should print an expected message to the console
-
-    Test Steps:
-     1) Open the base level
-     2) Create test entity
-     3) Start Tracer
-     4) Enter Game Mode
-     5) Read for line
-     6) Exit Game Mode
-
-    Note:
-     - This test file must be called from the Open 3D Engine Editor command terminal
-     - Any passed and failed tests are written to the Editor.log file.
-        Parsing the file or running a log_monitor are required to observe the test results.
-
-    :return: None
-    """
 
     def __init__(self):
         self.editor_main_window = None
@@ -76,6 +50,34 @@ class ScriptEvents_ReturnSetType_Successfully:
 
     @pyside_utils.wrap_async
     async def run_test(self):
+
+        """
+            Summary: A temporary level is created with an Entity having ScriptCanvas component.
+             ScriptEvent(T92569006_ScriptEvent.scriptevents) is created with one Method that has a return value.
+             ScriptCanvas(T92569006_ScriptCanvas.scriptcanvas) is attached to Entity. Graph has Send node that sends the Method
+             of the ScriptEvent and prints the returned result ( On Entity Activated -> Send node -> Print) and Receive node is
+             set to return custom value ( Receive node -> Print).
+             Verify that the entity containing T92569006_ScriptCanvas.scriptcanvas should print the custom value set in both
+             Send and Receive nodes.
+
+            Expected Behavior:
+             After entering game mode, the graph on the entity should print an expected message to the console
+
+            Test Steps:
+             1) Open the base level
+             2) Create test entity
+             3) Start Tracer
+             4) Enter Game Mode
+             5) Read for line
+             6) Exit Game Mode
+
+            Note:
+             - This test file must be called from the Open 3D Engine Editor command terminal
+             - Any passed and failed tests are written to the Editor.log file.
+                Parsing the file or running a log_monitor are required to observe the test results.
+
+            :return: None
+            """
 
         # Preconditions
         general.idle_enable(True)
