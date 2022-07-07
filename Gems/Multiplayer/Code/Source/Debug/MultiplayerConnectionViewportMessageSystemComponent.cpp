@@ -19,17 +19,14 @@
 namespace Multiplayer
 {
     constexpr float defaultConnectionMessageFontSize = 0.7f;
-    AZ_CVAR_SCOPED(float, editorsv_connectionMessageFontSize, defaultConnectionMessageFontSize, nullptr, AZ::ConsoleFunctorFlags::Null, 
+    const AZ::Vector2 viewportConnectionTopLeftBorderPadding(40.0f, 22.0f);
+
+    AZ_CVAR_SCOPED(bool, cl_viewportConnectionStatus, true, nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
+        "This will enable displaying connection status in the client's viewport while running multiplayer.");
+
+    AZ_CVAR_SCOPED(float, cl_viewportConnectionMessageFontSize, defaultConnectionMessageFontSize, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, 
         "The font size used for displaying updates on screen while the multiplayer editor is connecting to the server.");
     
-    AZ_CVAR_SCOPED(
-        float, editorsv_connectionStatus_topLeftBorderPadding_x, 40.0f, nullptr, AZ::ConsoleFunctorFlags::Null,
-        "The top left border padding for the viewport debug connection status display text");
-
-    AZ_CVAR_SCOPED(
-        float, editorsv_connectionStatus_topLeftBorderPadding_y, 22.0f, nullptr, AZ::ConsoleFunctorFlags::Null,
-        "The top left border padding for the viewport debug connection status display text");
-
     void MultiplayerConnectionViewportMessageSystemComponent::Reflect(AZ::ReflectContext* context)
     {
         if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
@@ -66,6 +63,11 @@ namespace Multiplayer
 
     void MultiplayerConnectionViewportMessageSystemComponent::OnTick(float, AZ::ScriptTimePoint)
     {
+        if (!cl_viewportConnectionStatus)
+        {
+            return;
+        }
+
         AZ::RPI::ViewportContextPtr viewport = AZ::RPI::ViewportContextRequests::Get()->GetDefaultViewportContext();
         if (!viewport)
         {
@@ -84,11 +86,11 @@ namespace Multiplayer
 
             AzFramework::DebugDisplayRequestBus::Broadcast(&AzFramework::DebugDisplayRequestBus::Events::SetColor, AZ::Colors::Yellow);
             AzFramework::DebugDisplayRequestBus::Broadcast(&AzFramework::DebugDisplayRequestBus::Events::Draw2dTextLabel, 
-                center_screenposition_x / dpiScalingFactor, screenposition_title_y / dpiScalingFactor, editorsv_connectionMessageFontSize, "Multiplayer Editor", true);
+                center_screenposition_x / dpiScalingFactor, screenposition_title_y / dpiScalingFactor, cl_viewportConnectionMessageFontSize, "Multiplayer Editor", true);
 
             AzFramework::DebugDisplayRequestBus::Broadcast(&AzFramework::DebugDisplayRequestBus::Events::SetColor, AZ::Colors::White);
             AzFramework::DebugDisplayRequestBus::Broadcast(&AzFramework::DebugDisplayRequestBus::Events::Draw2dTextLabel, 
-                center_screenposition_x / dpiScalingFactor, screenposition_debugtext_y / dpiScalingFactor, editorsv_connectionMessageFontSize, m_centerViewportDebugText.c_str(), true);
+                center_screenposition_x / dpiScalingFactor, screenposition_debugtext_y / dpiScalingFactor, cl_viewportConnectionMessageFontSize, m_centerViewportDebugText.c_str(), true);
         }
 
         // Build the connection status string (just show client connected or disconnected status for now)
@@ -98,7 +100,7 @@ namespace Multiplayer
         {
             return;
         }
-
+        
         // Display the connection status to the top-left viewport
         if (AzNetworking::INetworkInterface* networkInterface = AZ::Interface<AzNetworking::INetworking>::Get()->RetrieveNetworkInterface(AZ::Name(MpNetworkInterfaceName)))
         {
@@ -108,10 +110,10 @@ namespace Multiplayer
                 // Display the connection status (calling VisitConnections(), but there's only 1 since we're a client)
                 auto displayConnectionStatus = [](AzNetworking::IConnection& connection)
                 {
-                    AZStd::string connectionStatusText = AZStd::string::format("Operating as multiplayer Client: %s", GetEnumString(connection.GetConnectionState()));
+                    AZStd::string connectionStatusText = AZStd::string::format("Operating as multiplayer Client: %s", ToString(connection.GetConnectionState()).data());
                     AzFramework::DebugDisplayRequestBus::Broadcast(&AzFramework::DebugDisplayRequestBus::Events::SetColor, AZ::Colors::White);
                     AzFramework::DebugDisplayRequestBus::Broadcast(&AzFramework::DebugDisplayRequestBus::Events::Draw2dTextLabel, 
-                        editorsv_connectionStatus_topLeftBorderPadding_x, editorsv_connectionStatus_topLeftBorderPadding_y, editorsv_connectionMessageFontSize, 
+                        viewportConnectionTopLeftBorderPadding.GetX(), viewportConnectionTopLeftBorderPadding.GetY(), cl_viewportConnectionMessageFontSize, 
                         connectionStatusText.c_str(), false);
                 };
                 connectionSet.VisitConnections(displayConnectionStatus);
@@ -122,7 +124,7 @@ namespace Multiplayer
                 // Display a disconnect message in the viewport
                 AzFramework::DebugDisplayRequestBus::Broadcast(&AzFramework::DebugDisplayRequestBus::Events::SetColor, AZ::Colors::Red);
                 AzFramework::DebugDisplayRequestBus::Broadcast(&AzFramework::DebugDisplayRequestBus::Events::Draw2dTextLabel, 
-                    editorsv_connectionStatus_topLeftBorderPadding_x, editorsv_connectionStatus_topLeftBorderPadding_y, editorsv_connectionMessageFontSize, 
+                    viewportConnectionTopLeftBorderPadding.GetX(), viewportConnectionTopLeftBorderPadding.GetY(), cl_viewportConnectionMessageFontSize, 
                     "Multiplayer Client Disconnected!", false);
             }
         }
