@@ -7,14 +7,14 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 Test Case Title: Event can return a value of set type successfully
 """
 
-from PySide2 import QtWidgets, QtTest, QtCore
 import editor_python_test_tools.pyside_utils as pyside_utils
 from editor_python_test_tools.utils import TestHelper as helper
 from editor_python_test_tools.utils import Report, Tracer
 import azlmbr.legacy.general as general
 import scripting_utils.scripting_tools as scripting_tools
-from scripting_utils.scripting_constants import WAIT_TIME_3, SCRIPT_CANVAS_UI, NODE_PALETTE_UI, NODE_PALETTE_QT,\
-    TREE_VIEW_QT, NODE_CATEGORY_MATH
+import azlmbr.paths as paths
+import editor_python_test_tools.hydra_editor_utils as hydra
+from scripting_utils.scripting_constants import WAIT_TIME_3
 
 # fmt: off
 class Tests():
@@ -25,9 +25,9 @@ class Tests():
     exit_game_mode  = ("Successfully exited game mode",        "Failed to exit game mode")
 # fmt: on
 
-LEVEL_NAME = "tmp_level"
+LEVEL_NAME = "Base"
 EXPECTED_LINES = ["T92569006_ScriptEvent_Sent", "T92569006_ScriptEvent_Received"]
-SC_ASSET_PATH = os.path.join("ScriptCanvas", "T92569006_ScriptCanvas.scriptcanvas")
+SC_FILE_PATH = os.path.join(paths.projectroot, "ScriptCanvas", "T92569006_ScriptCanvas.scriptcanvas")
 
 class ScriptEvents_ReturnSetType_Successfully:
     """
@@ -58,50 +58,51 @@ class ScriptEvents_ReturnSetType_Successfully:
     :return: None
     """
 
-
-
     def __init__(self):
         self.editor_main_window = None
-        self.sc_editor = None
-        self.sc_editor_main_window = None
 
-    def create_editor_entity(name, sc_asset):
-        entity = Entity.create_editor_entity(name)
-        sc_comp = entity.add_component("Script Canvas")
-        asset_id = asset.AssetCatalogRequestBus(bus.Broadcast, "GetAssetIdByPath", sc_asset, math.Uuid(), False)
-        sc_comp.set_component_property_value("Script Canvas Asset|Script Canvas Asset", asset_id)
-        Report.critical_result(Tests.entity_created, entity.id.isValid())
+    def locate_expected_lines(self, section_tracer, lines):
 
-    def locate_expected_lines(line_list: list):
         found_lines = [printInfo.message.strip() for printInfo in section_tracer.prints]
 
-        return all(line in found_lines for line in line_list)
+        expected_lines = len(lines)
+        matching_lines = 0
+
+        for line in lines:
+            for found_line in found_lines:
+                if line == found_line:
+                    matching_lines += 1
+
+        return matching_lines >= expected_lines
 
     @pyside_utils.wrap_async
     async def run_test(self):
 
-        # 1) Create temp level
+        # Preconditions
         general.idle_enable(True)
-        result = general.create_level_no_prompt(LEVEL_NAME, 128, 1, 512, True)
-        Report.critical_result(Tests.level_created, result == 0)
+
+        # 1) Open the base level
+        hydra.open_base_level()
         helper.wait_for_condition(lambda: general.get_current_level_name() == LEVEL_NAME, WAIT_TIME_3)
         general.close_pane("Error Report")
 
         # 2) Create test entity
-        self.create_editor_entity("TestEntity", SC_ASSET_PATH)
+        entity = scripting_tools.create_entity_with_sc_component_asset("TestEntity", SC_FILE_PATH)
+        helper.wait_for_condition(lambda: entity is not None, WAIT_TIME_3)
+        Report.critical_result(Tests.entity_created, entity.id.isValid())
 
         # 3) Start Tracer
         with Tracer() as section_tracer:
 
-        # 4) Enter Game Mode
-        helper.enter_game_mode(Tests.enter_game_mode)
+            # 4) Enter Game Mode
+            helper.enter_game_mode(Tests.enter_game_mode)
 
-        # 5) Read for line
-        lines_located = helper.wait_for_condition(lambda: self.locate_expected_lines(EXPECTED_LINES), WAIT_TIME_3)
-        Report.result(Tests.lines_found, lines_located)
+            # 5) Read for line
+            lines_located = helper.wait_for_condition(lambda: self.locate_expected_lines(section_tracer, EXPECTED_LINES), WAIT_TIME_3)
+            Report.result(Tests.lines_found, lines_located)
 
-        # 6) Exit Game Mode
-        helper.exit_game_mode(Tests.exit_game_mode)
+            # 6) Exit Game Mode
+            helper.exit_game_mode(Tests.exit_game_mode)
 
 
 test = ScriptEvents_ReturnSetType_Successfully()
