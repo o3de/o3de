@@ -142,7 +142,7 @@ def unzip(dest, src, force=False, allow_exists=False):
         if secs == 0:
             secs = 0.01
 
-        logger.info(
+        logger.debug(
             f'Extracted {full_size / ONE_GIB:.2f} GiB '
             f'from "{src}" to "{dst_path}" in '
             f'{secs / 60:2.2f} minutes, '
@@ -187,7 +187,7 @@ def untgz(dest, src, exact_tgz_size=False, force=False, allow_exists=False):
         if secs == 0:
             secs = 0.01
 
-        logger.info(
+        logger.debug(
             f'Extracted {full_size / ONE_GIB:.2f} MiB '
             f'from {src} to {dst_path} '
             f'in {secs / 60:2.2f} minutes, '
@@ -224,7 +224,7 @@ def unlock_file(file_name):
         logger.warning(f'Clearing write lock for file {file_name}.')
         return True
     else:
-        logger.info(f'File {file_name} not write locked. Unlocking file not necessary.')
+        logger.debug(f'File {file_name} not write locked. Unlocking file not necessary.')
         return False
 
 
@@ -241,7 +241,7 @@ def lock_file(file_name):
         logger.warning(f'Write locking file {file_name}')
         return True
     else:
-        logger.info(f'File {file_name} already locked. Locking file not necessary.')
+        logger.debug(f'File {file_name} already locked. Locking file not necessary.')
         return False
 
 
@@ -277,7 +277,7 @@ def delete(file_list, del_files, del_dirs):
         file_list = [file_list]
 
     for file_to_delete in file_list:
-        logger.info(f'Deleting "{file_to_delete}"')
+        logger.debug(f'Deleting "{file_to_delete}"')
         try:
             if del_dirs and os.path.isdir(file_to_delete):
                 change_permissions(file_to_delete, 0o777)
@@ -319,7 +319,7 @@ def create_backup(source, backup_dir, backup_name=None):
     else:
         dest = os.path.join(backup_dir, f'{backup_name}.bak')
 
-    logger.info(f'Saving backup of {source} in {dest}')
+    logger.debug(f'Saving backup of {source} in {dest}')
     if os.path.exists(dest):
         logger.warning(f'Backup file already exists at {dest}, it will be overwritten.')
 
@@ -355,7 +355,7 @@ def restore_backup(original_file, backup_dir, backup_name=None):
         logger.warning(f'Backup file {backup} does not exist, aborting backup restoration.')
         return False
 
-    logger.info(f'Restoring backup of {original_file} from {backup}')
+    logger.debug(f'Restoring backup of {original_file} from {backup}')
     try:
         shutil.copy2(backup, original_file)
     except Exception:  # intentionally broad
@@ -363,9 +363,10 @@ def restore_backup(original_file, backup_dir, backup_name=None):
         return False
     return True
 
+
 def delete_oldest(path_glob, keep_num, del_files=True, del_dirs=False):
     """ Delete oldest builds, keeping a specific number """
-    logger.info(
+    logger.debug(
         f'Deleting dirs: {del_dirs} files: {del_files} "{path_glob}", keeping {keep_num}')
     paths = glob.iglob(path_glob)
     paths = sorted(paths, key=lambda fi: os.path.getctime(fi), reverse=True)

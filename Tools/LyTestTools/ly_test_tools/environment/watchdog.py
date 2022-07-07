@@ -112,7 +112,7 @@ class Watchdog(object):
         while True:
             # check to see if the thread is shut down
             if self._shutdown.wait(timeout=self._interval):
-                logger.info(f"Shutting down watchdog: {self.name}")
+                logger.debug(f"Shutting down watchdog: {self.name}")
                 return
             # call the target function and see if it returned True
             if self._bool_fn():
@@ -219,7 +219,7 @@ class CrashLogWatchdog(Watchdog):
                             Investigate the process that creates the error log for failures."
 
         if os.path.exists(log_path):
-            logger.info(f"Removing existing {log_path} when initializing crash log watchdog.")
+            logger.debug(f"Removing existing {log_path} when initializing crash log watchdog.")
             os.remove(log_path)
 
         super(CrashLogWatchdog, self).__init__(bool_fn=crash_exists, interval=interval,
