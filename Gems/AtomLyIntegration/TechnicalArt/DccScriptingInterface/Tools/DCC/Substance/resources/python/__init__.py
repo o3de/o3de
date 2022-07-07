@@ -8,5 +8,4 @@
 #
 #
 # -------------------------------------------------------------------------
-
-print('Not Implemented')
+"""O3DE python scripts and plugins for Adobe Substance3D"""

@@ -9,45 +9,50 @@
 #
 # -------------------------------------------------------------------------
 """! @brief
-<DCCsi>/Tools/DCC/__init__.py
+DCCsi/Tools/DCC/Substance/__init__.py
 
-This init allows us to treat the DCCsi Tools DCC folder as a package.
+This init allows us to treat Substance setup as a DCCsi tools python package
 """
 # -------------------------------------------------------------------------
 # standard imports
 import os
+import site
 from pathlib import Path
 import logging as _logging
 # -------------------------------------------------------------------------
 
+
 # -------------------------------------------------------------------------
 # global scope
-_PACKAGENAME = 'Tools.DCC'
+_PACKAGENAME = 'Tools.DCC.Substance'
 
-__all__ = ['Blender',
-           'Maya',
-           'Substance']  # to do: add others when they are set up
-          #'3dsMax',
-          #'Houdini',
-          #'Marmoset',
-          # 'Foo',
+__all__ = ['config',
+           'constants',
+           'setup',
+           'start']
 
 _LOGGER = _logging.getLogger(_PACKAGENAME)
-_LOGGER.debug('Initializing: {}'.format(_PACKAGENAME))
 # -------------------------------------------------------------------------
 
 
 # -------------------------------------------------------------------------
-# set up access to this DCC folder as a pkg
+# set up access to this Substance folder as a pkg
 _MODULE_PATH = Path(__file__)  # To Do: what if frozen?
+_DCCSI_TOOLS_SUBSTANCE_PATH = Path(_MODULE_PATH.parent)
 
-from Tools import _PATH_DCCSIG
+# we need to set up basic access to the DCCsi
+_PATH_DCCSI_TOOLS_DCC = Path(_DCCSI_TOOLS_SUBSTANCE_PATH.parent)
+_PATH_DCCSI_TOOLS_DCC = Path(os.getenv('PATH_DCCSI_TOOLS_DCC', _PATH_DCCSI_TOOLS_DCC.as_posix()))
+site.addsitedir(_PATH_DCCSI_TOOLS_DCC.as_posix())
 
-from Tools import _PATH_DCCSI_TOOLS
+# we need to set up basic access to the DCCsi
+_PATH_DCCSI_TOOLS = Path(_PATH_DCCSI_TOOLS_DCC.parent)
+_PATH_DCCSI_TOOLS = Path(os.getenv('PATH_DCCSI_TOOLS', _PATH_DCCSI_TOOLS.as_posix()))
 
-_PATH_DCCSI_TOOLS_DCC = Path(_MODULE_PATH.parent)
-_PATH_DCCSI_TOOLS_DCC = Path(os.getenv('ATH_DCCSI_TOOLS_DCC',
-                                       _PATH_DCCSI_TOOLS_DCC.as_posix()))
+# we need to set up basic access to the DCCsi
+_PATH_DCCSIG = Path.joinpath(_DCCSI_TOOLS_SUBSTANCE_PATH, '../../..').resolve()
+_PATH_DCCSIG = Path(os.getenv('PATH_DCCSIG', _PATH_DCCSIG.as_posix()))
+site.addsitedir(_PATH_DCCSIG.as_posix())
 # -------------------------------------------------------------------------
 
 
@@ -68,7 +73,7 @@ _DCCSI_GDEBUGGER = env_bool(ENVAR_DCCSI_GDEBUGGER, 'WING')
 # default loglevel to info unless set
 _DCCSI_LOGLEVEL = int(env_bool(ENVAR_DCCSI_LOGLEVEL, _logging.INFO))
 if _DCCSI_GDEBUG:
-    # override loglevel if runnign debug
+    # override loglevel if running debug
     _DCCSI_LOGLEVEL = _logging.DEBUG
     _logging.basicConfig(level=_DCCSI_LOGLEVEL,
                         format=FRMT_LOG_LONG,
@@ -85,7 +90,9 @@ _LOGGER.debug(f'_MODULE_PATH: {_MODULE_PATH}')
 _LOGGER.debug(f'PATH_DCCSIG: {_PATH_DCCSIG}')
 _LOGGER.debug(f'PATH_DCCSI_TOOLS: {_PATH_DCCSI_TOOLS}')
 _LOGGER.debug(f'PATH_DCCSI_TOOLS_DCC: {_PATH_DCCSI_TOOLS_DCC}')
+_LOGGER.debug(f'DCCSI_TOOLS_SUBSTANCE_PATH: {_DCCSI_TOOLS_SUBSTANCE_PATH}')
 # -------------------------------------------------------------------------
+
 
 # -------------------------------------------------------------------------
 if _DCCSI_DEV_MODE:
@@ -94,6 +101,7 @@ if _DCCSI_DEV_MODE:
     _LOGGER.debug(f'Testing Imports from {_PACKAGENAME}')
     test_imports(_all=__all__,_pkg=_PACKAGENAME,_logger=_LOGGER)
 # -------------------------------------------------------------------------
+
 
 
 ###########################################################################

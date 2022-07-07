@@ -19,38 +19,37 @@ So we can make an update here once that is used elsewhere.
 < To Do: Further document module here >
 """
 # -------------------------------------------------------------------------
-#  built-ins
+import timeit
+_MODULE_START = timeit.default_timer()  # start tracking
+
+# standard imports
 import os
 import sys
 import site
-import timeit
 from os.path import expanduser
 import logging as _logging
 # -------------------------------------------------------------------------
 
 
 # -------------------------------------------------------------------------
-_START = timeit.default_timer() # start tracking
-
 # global scope
 _MODULENAME = 'azpy.constants'
 _LOGGER = _logging.getLogger(_MODULENAME)
 _LOGGER.debug(f'Initializing: {_MODULENAME}')
-
-# set up module logging
-#for handler in _logging.root.handlers[:]:
-    #_logging.root.removeHandler(handler)
 # -------------------------------------------------------------------------
 
 
 # -------------------------------------------------------------------------
-# os.environ['PYTHONINSPECT'] = 'True'
-# for this module to perform standalone
-# we need to set up basic access to the DCCsi
+# This sets up basic code access to the DCCsi
+# <o3de>/Gems/AtomLyIntegration/TechnicalArt/<DCCsi>
 _MODULE_PATH = os.path.realpath(__file__)  # To Do: what if frozen?
 _PATH_DCCSIG = os.path.normpath(os.path.join(_MODULE_PATH, '../..'))
 _PATH_DCCSIG = os.getenv('PATH_DCCSIG', _PATH_DCCSIG)
 site.addsitedir(_PATH_DCCSIG)
+
+# Ideally this module is standalone with minimal dependancies
+# Most logic, such as a search to derive a path, should happen outside of this module.
+# To Do: place best defaults here and logical derivations in a config.py
 
 # now we have azpy api access
 import azpy
@@ -62,6 +61,7 @@ from azpy.config_utils import get_stub_check_path
 
 # -------------------------------------------------------------------------
 # This is the first set of defined constants (and we use them here)
+# to do: remove str(), those were added to improve py2/3 unicode
 ENVAR_DCCSI_GDEBUG = str('DCCSI_GDEBUG')
 ENVAR_DCCSI_DEV_MODE = str('DCCSI_DEV_MODE')
 ENVAR_DCCSI_GDEBUGGER = str('DCCSI_GDEBUGGER')
@@ -100,15 +100,15 @@ PATH_PROGRAMFILES_X64 = str(os.environ['PROGRAMFILES'])
 
 # os.path.expanduser("~") returns different values in py2.7 vs 3
 PATH_USER_HOME = expanduser("~")
-_LOGGER.debug('user home: {}'.format(PATH_USER_HOME))
+_LOGGER.debug(f'user home: {PATH_USER_HOME}')
 
 # special case, make sure didn't return <user>\documents
 _uh_parts = os.path.split(PATH_USER_HOME)
 
 if str(_uh_parts[1].lower()) == 'documents':
     PATH_USER_HOME = _uh_parts[0]
-    _LOGGER.debug('user home CORRECTED: {}'.format(PATH_USER_HOME))
-    
+    _LOGGER.debug(f'user home CORRECTED: {PATH_USER_HOME}')
+
 STR_USER_O3DE_PATH = str('{home}\\{o3de}')
 # -------------------------------------------------------------------------
 
@@ -127,6 +127,7 @@ TAG_DIR_O3DE_BUILD_FOLDER = str('build')
 TAG_O3DE_FOLDER = str('.o3de')
 TAG_O3DE_BOOTSTRAP = str('bootstrap.setreg')
 TAG_DCCSI_CONFIG = str('dccsi_configuration.setreg')
+TAG_DCCSI_LOCAL_SETTINGS_SLUG = str('settings.local.json')
 
 # py path string, parts, etc.
 TAG_DEFAULT_PY = str('Launch_pyBASE.bat')
@@ -227,9 +228,9 @@ ENVAR_QTFORPYTHON_PATH = str('QTFORPYTHON_PATH')
 # -------------------------------------------------------------------------
 # IDE: constants, like wing ENVARS
 TAG_DEFAULT_WING_MAJOR_VER = str(7)
-TAG_DEFAULT_WING_MINOR_VER = str(1)
-TAG_WING_IDE = str('\\Wing IDE ')  # old, pre 7
-TAG_WING_PRO = str('\\Wing Pro ')  # new 7+
+TAG_DEFAULT_WING_MINOR_VER = str(2)  # I had to bump so I could locally debug
+TAG_WING_IDE = str('Wing IDE ')  # old, pre 7
+TAG_WING_PRO = str('Wing Pro ')  # new 7+
 
 ENVAR_WINGHOME = str('WINGHOME')
 ENVAR_DCCSI_WING_VERSION_MAJOR = str('DCCSI_WING_VERSION_MAJOR')
@@ -352,8 +353,8 @@ PATH_DCCSI_PYTHON_LIB = STR_PATH_DCCSI_PYTHON_LIB.format(PATH_DCCSIG,
 
 
 # wing paths
-STR_CONSTRUCT_WING_PATH = str('{progX86}{wing_tag}{major}.{minor}')
-PATH_DEFAULT_WINGHOME = str('{0}{1}{2}.{3}'
+STR_CONSTRUCT_WING_PATH = str(f'{PATH_PROGRAMFILES_X86}\\{TAG_WING_PRO} {TAG_DEFAULT_WING_MAJOR_VER}.{TAG_DEFAULT_WING_MINOR_VER}')
+PATH_DEFAULT_WINGHOME = str('{0}\\{1}{2}.{3}'
                             ''.format(PATH_PROGRAMFILES_X86,
                                       TAG_WING_PRO,
                                       TAG_DEFAULT_WING_MAJOR_VER,
@@ -373,7 +374,7 @@ PATH_SAT_INSTALL_PATH = str('{0}\\{1}\\{2}\\{3}\\{4}'
 # -------------------------------------------------------------------------
 if __name__ == '__main__':
     """Run this file as a standalone script"""
-    
+
     # turn all of these off/on for testing
     _DCCSI_GDEBUG = False
     _DCCSI_DEV_MODE = False
@@ -385,10 +386,9 @@ if __name__ == '__main__':
     _logging.basicConfig(level=_DCCSI_LOGLEVEL,
                          format=FRMT_LOG_LONG,
                          datefmt='%m-%d %H:%M')
-    
+
     _LOGGER = _logging.getLogger(_MODULENAME)
 
-    # happy print
     _LOGGER.info(STR_CROSSBAR)
     _LOGGER.info(f'~ {_MODULENAME} ... Running script as __main__')
     _LOGGER.info(STR_CROSSBAR)
@@ -420,7 +420,7 @@ if __name__ == '__main__':
     _stash_dict['PATH_USER_O3DE_BOOTSTRAP'] = Path(PATH_USER_O3DE_BOOTSTRAP)
 
     # ---------------------------------------------------------------------
-    # py 2 and 3 compatible iter    
+    # py 2 and 3 compatible iter
     def get_items(dict_object):
         for key in dict_object:
             yield key, dict_object[key]
@@ -431,10 +431,10 @@ if __name__ == '__main__':
             value.exists()
             _LOGGER.info(F'{key}: {value}')
         except Exception as e:
-            _LOGGER.warning(f'FAILED PATH: {e}') 
+            _LOGGER.warning(f'FAILED PATH: {e}')
 
     # custom prompt
     sys.ps1 = f"[{_MODULENAME}]>>"
 
-_LOGGER.debug(f'{_MODULENAME} took: {(timeit.default_timer() - _START)} sec') 
+_LOGGER.debug(f'{_MODULENAME} took: {(timeit.default_timer() - _MODULE_START)} sec')
 # --- END -----------------------------------------------------------------

@@ -10,9 +10,18 @@
 # -------------------------------------------------------------------------
 """! @brief
 Module Documentation:
-    < DCCsi >:: Tools//DCC//Blender//config.py
+    < DCCsi >:: Tools//DCC//Substance//config.py
 
-This module manages the dynamic config and settings for bootstrapping Blender
+This module manages the dynamic config and settings for bootstrapping
+Adobe Substance Designer with o3de inter-op, scripts, etc.
+
+This like the core <DCCsi>/config.py uses Dynaconf:
+1. Modular rather then monolithic (single DCC integrations can stand on their own)
+2. Layered config and settings (the core can be extended or )
+3. Derive or alter via logic
+4. DCC integration code and comments are written for a novice TA audience
+5. etc. (to do: expand on the benefits)
+
 """
 # -------------------------------------------------------------------------
 import timeit
@@ -23,21 +32,20 @@ import sys
 import os
 import site
 import re
-import timeit
+import inspect
 import importlib.util
-import pathlib
 from pathlib import Path
 import logging as _logging
 # -------------------------------------------------------------------------
 
-# This module and others like Substance/config.py have a lot of duplicate
+# This module and others like Blender/config.py have a lot of duplicate
 # boilerplate code (as we are early, these are the first versions to stand up)
 # They could possibly be improved by unifying into a Class object designed
-# with extensibility
+# with inheritance extensibility
 
 # -------------------------------------------------------------------------
 # global scope
-_MODULENAME = 'Tools.DCC.Blender.config'
+_MODULENAME = 'Tools.DCC.Substance.config'
 _LOGGER = _logging.getLogger(_MODULENAME)
 _LOGGER.debug(f'Initializing: {_MODULENAME}')
 
@@ -82,7 +90,7 @@ _DCCSI_GDEBUGGER = env_bool(ENVAR_DCCSI_GDEBUGGER, 'WING')
 #        from dynaconf import settings
 #        settings.setenv()
 
-# this will boostrap access to the dccsi managed package dependencies
+# this will bootstrap access to the dccsi managed package dependencies
 # <DCCsi>\3rdParty\Python\Lib\3.x\3.x.x (based on python version)
 _PATH_DCCSI_PYTHON_LIB = azpy.config_utils.bootstrap_dccsi_py_libs()
 site.addsitedir(_PATH_DCCSI_PYTHON_LIB.as_posix())
@@ -97,20 +105,17 @@ site.addsitedir(_PATH_DCCSI_PYTHON_LIB.as_posix())
 if _DCCSI_DEV_MODE:
     azpy.config_utils.attach_debugger(_DCCSI_GDEBUGGER)
 
-# This will import and retreive the core <dccsi>/config.py and settings
+# This will import and retrieve the core <dccsi>/config.py and settings
 _DCCSI_CORE_CONFIG = azpy.config_utils.get_dccsi_config(_PATH_DCCSIG)
 
 # now standalone we can validate the config, env, settings.
 _SETTINGS = _DCCSI_CORE_CONFIG.get_config_settings(enable_o3de_python=False,
-                                                  enable_o3de_pyside2=True,
+                                                  enable_o3de_pyside2=False,
                                                   set_env=True)
 # we don't init the O3DE python env settings!
 # that will cause conflicts with the DCC tools python!!!
-# we are enabling the O3DE PySide2 (aka QtForPython) access for Blender
-# it is just not utilized yet
-
-# This could be improved by running o3de Qt in a thread in blender, similar to this
-# https://github.com/friedererdmann/blender_pyside2_example
+# we are also not enabling the O3DE PySide2 (aka QtForPython) access
+# this can cause GUI and boot failure with Qt based applications (Maya, Substance3D, etc.)
 # -------------------------------------------------------------------------
 
 
@@ -126,47 +131,47 @@ _DCCSI_SYS_PATH = _DCCSI_CORE_CONFIG._DCCSI_SYS_PATH
 _DCCSI_PYTHONPATH = _DCCSI_CORE_CONFIG._DCCSI_PYTHONPATH
 
 # special, stash local PYTHONPATHs in a non-managed way (won't end up in settings.local.json)
-DCCSI_PYTHONPATH_EXCLUDE = _DCCSI_CORE_CONFIG._DCCSI_PYTHONPATH_EXCLUDE
+_DCCSI_PYTHONPATH_EXCLUDE = _DCCSI_CORE_CONFIG._DCCSI_PYTHONPATH_EXCLUDE
 
-# this is a dict bucket to store none-managed settings (fully local to module)
+# this is a dict bucket to store unmanaged settings (fully local to module)
 _DCCSI_LOCAL_SETTINGS = _DCCSI_CORE_CONFIG._DCCSI_LOCAL_SETTINGS
 # -------------------------------------------------------------------------
 
 
 # -------------------------------------------------------------------------
-# now we can extend the environment specific to Blender
-# start by grabbing the constants we want to work with as envars
+# grab imports from Substance\constants.py that we will use
+from Tools.DCC.Substance.constants import ENVAR_DCCSI_TOOLS_SUBSTANCE
+from Tools.DCC.Substance.constants import PATH_DCCSI_TOOLS_SUBSTANCE
 
-# import them all, but below are the ones we will use directly
+from Tools.DCC.Substance.constants import ENVAR_PATH_DCCSI_TOOLS
+from Tools.DCC.Substance.constants import PATH_PATH_DCCSI_TOOLS
 
-from Tools.DCC.Blender.constants import ENVAR_PATH_DCCSI_TOOLS
-from Tools.DCC.Blender.constants import PATH_PATH_DCCSI_TOOLS
+from Tools.DCC.Substance.constants import ENVAR_DCCSI_SUBSTANCE_RESOURCES
+from Tools.DCC.Substance.constants import PATH_DCCSI_SUBSTANCE_RESOURCES
 
-from Tools.DCC.Blender.constants import ENVAR_DCCSI_TOOLS_BLENDER
-from Tools.DCC.Blender.constants import PATH_DCCSI_TOOLS_BLENDER
+from Tools.DCC.Substance.constants import ENVAR_DCCSI_SUBSTANCE_LOCATION
+from Tools.DCC.Substance.constants import PATH_DCCSI_SUBSTANCE_LOCATION
 
-from Tools.DCC.Blender.constants import ENVAR_PATH_DCCSI_BLENDER_SCRIPTS
-from Tools.DCC.Blender.constants import PATH_DCCSI_BLENDER_SCRIPTS
+from Tools.DCC.Substance.constants import ENVAR_DCCSI_SUBSTANCE_EXE
+from Tools.DCC.Substance.constants import PATH_DCCSI_SUBSTANCE_EXE
 
-from Tools.DCC.Blender.constants import ENVAR_PATH_DCCSI_BLENDER_LOC
-from Tools.DCC.Blender.constants import PATH_DCCSI_BLENDER_LOC
+from Tools.DCC.Substance.constants import ENVAR_DCCSI_SUBSTANCE_PYTHON
+from Tools.DCC.Substance.constants import PATH_DCCSI_SUBSTANCE_PYTHON
 
-from Tools.DCC.Blender.constants import ENVAR_PATH_DCCSI_BLENDER_EXE
-from Tools.DCC.Blender.constants import PATH_DCCSI_BLENDER_EXE
+from Tools.DCC.Substance.constants import ENVAR_DCCSI_SUBSTANCE_PY_EXE
+from Tools.DCC.Substance.constants import PATH_DCCSI_SUBSTANCE_PY_EXE
 
-from Tools.DCC.Blender.constants import ENVAR_DCCSI_BLENDER_LAUNCHER_EXE
-from Tools.DCC.Blender.constants import PATH_DCCSI_BLENDER_LAUNCHER_EXE
+from Tools.DCC.Substance.constants import ENVAR_DCCSI_IDE_PY_SUBSTANCE
+from Tools.DCC.Substance.constants import PATH_DCCSI_IDE_PY_SUBSTANCE
 
-from Tools.DCC.Blender.constants import ENVAR_DCCSI_BLENDER_PYTHON_LOC
-from Tools.DCC.Blender.constants import PATH_DCCSI_BLENDER_PYTHON_LOC
+from Tools.DCC.Substance.constants import ENVAR_DCCSI_SUBSTANCE_SET_CALLBACKS
+from Tools.DCC.Substance.constants import DCCSI_SUBSTANCE_SET_CALLBACKS
 
-from Tools.DCC.Blender.constants import ENVAR_DCCSI_BLENDER_PY_EXE
-from Tools.DCC.Blender.constants import PATH_DCCSI_BLENDER_PY_EXE
+from Tools.DCC.Substance.constants import ENVAR_DCCSI_SUBSTANCE_SCRIPTS
+from Tools.DCC.Substance.constants import PATH_DCCSI_SUBSTANCE_SCRIPTS
 
-from Tools.DCC.Blender.constants import ENVAR_PATH_DCCSI_BLENDER_BOOTSTRAP
-from Tools.DCC.Blender.constants import PATH_DCCSI_BLENDER_BOOTSTRAP
-
-from Tools.DCC.Blender.constants import URL_DCCSI_BLENDER_WIKI
+from Tools.DCC.Substance.constants import ENVAR_DCCSI_SUBSTANCE_CFG
+from Tools.DCC.Substance.constants import PATH_DCCSI_SUBSTANCE_CFG
 # -------------------------------------------------------------------------
 
 
@@ -176,7 +181,7 @@ def get_config_settings(core_config=_DCCSI_CORE_CONFIG,
                         dccsi_sys_path=_DCCSI_SYS_PATH,
                         dccsi_pythonpath=_DCCSI_PYTHONPATH,
                         set_env=True):
-    # now we can extend the environment specific to Blender
+    # now we can extend the environment specific to Substance
     # start by grabbing the constants we want to work with as envars
     # import others
 
@@ -185,24 +190,25 @@ def get_config_settings(core_config=_DCCSI_CORE_CONFIG,
     # we don't do this often but we want to stash to global dict
     # global _DCCSI_LOCAL_SETTINGS # non-dynaconf managed settings
 
-    # This extends the settings and environment with Subtance3d stuff
-    os.environ[f"DYNACONF_{URL_DCCSI_BLENDER_WIKI}"] = URL_DCCSI_BLENDER_WIKI
+    # This extends the settings and environment with Substance3d stuff
+    os.environ[f"DYNACONF_{ENVAR_DCCSI_SUBSTANCE_SET_CALLBACKS}"] = str(DCCSI_SUBSTANCE_SET_CALLBACKS)
 
+    os.environ[f"DYNACONF_{ENVAR_DCCSI_TOOLS_SUBSTANCE}"] = PATH_DCCSI_TOOLS_SUBSTANCE.as_posix()
     os.environ[f"DYNACONF_{ENVAR_PATH_DCCSI_TOOLS}"] = PATH_PATH_DCCSI_TOOLS.as_posix()
-    os.environ[f"DYNACONF_{ENVAR_DCCSI_TOOLS_BLENDER}"] = PATH_DCCSI_TOOLS_BLENDER.as_posix()
-    os.environ[f"DYNACONF_{ENVAR_PATH_DCCSI_BLENDER_SCRIPTS}"] = PATH_DCCSI_BLENDER_SCRIPTS.as_posix()
-    os.environ[f"DYNACONF_{ENVAR_PATH_DCCSI_BLENDER_LOC}"] = PATH_DCCSI_BLENDER_LOC.as_posix()
-    os.environ[f"DYNACONF_{ENVAR_PATH_DCCSI_BLENDER_EXE}"] = PATH_DCCSI_BLENDER_EXE.as_posix()
-    os.environ[f"DYNACONF_{ENVAR_DCCSI_BLENDER_LAUNCHER_EXE}"] = PATH_DCCSI_BLENDER_LAUNCHER_EXE.as_posix()
-    os.environ[f"DYNACONF_{ENVAR_DCCSI_BLENDER_PYTHON_LOC}"] = PATH_DCCSI_BLENDER_PYTHON_LOC.as_posix()
-    os.environ[f"DYNACONF_{ENVAR_DCCSI_BLENDER_PY_EXE}"] = PATH_DCCSI_BLENDER_PY_EXE.as_posix()
-    os.environ[f"DYNACONF_{ENVAR_PATH_DCCSI_BLENDER_BOOTSTRAP}"] = PATH_DCCSI_BLENDER_BOOTSTRAP.as_posix()
+    os.environ[f"DYNACONF_{ENVAR_DCCSI_SUBSTANCE_RESOURCES}"] = PATH_DCCSI_SUBSTANCE_RESOURCES.as_posix()
+    os.environ[f"DYNACONF_{ENVAR_DCCSI_SUBSTANCE_LOCATION}"] = PATH_DCCSI_SUBSTANCE_LOCATION.as_posix()
+    os.environ[f"DYNACONF_{ENVAR_DCCSI_SUBSTANCE_EXE}"] = PATH_DCCSI_SUBSTANCE_EXE.as_posix()
+    os.environ[f"DYNACONF_{ENVAR_DCCSI_SUBSTANCE_PYTHON}"] = PATH_DCCSI_SUBSTANCE_PYTHON.as_posix()
+    os.environ[f"DYNACONF_{ENVAR_DCCSI_SUBSTANCE_PY_EXE}"] = PATH_DCCSI_SUBSTANCE_PY_EXE.as_posix()
+    os.environ[f"DYNACONF_{ENVAR_DCCSI_IDE_PY_SUBSTANCE}"] = PATH_DCCSI_IDE_PY_SUBSTANCE.as_posix()
+    os.environ[f"DYNACONF_{ENVAR_DCCSI_SUBSTANCE_SCRIPTS}"] = PATH_DCCSI_SUBSTANCE_SCRIPTS.as_posix()
+    os.environ[f"DYNACONF_{ENVAR_DCCSI_SUBSTANCE_CFG}"] = PATH_DCCSI_SUBSTANCE_CFG.as_posix()
 
     # appends paths lists locally
-    dccsi_sys_path.append(PATH_DCCSI_BLENDER_LOC.as_posix())
-    dccsi_sys_path.append(PATH_DCCSI_BLENDER_PYTHON_LOC.as_posix())
+    dccsi_sys_path.append(PATH_DCCSI_SUBSTANCE_LOCATION.as_posix())
+    dccsi_sys_path.append(PATH_DCCSI_SUBSTANCE_PYTHON.as_posix())
 
-    dccsi_pythonpath.append(PATH_DCCSI_BLENDER_SCRIPTS.as_posix())
+    dccsi_pythonpath.append(PATH_DCCSI_SUBSTANCE_SCRIPTS.as_posix())
 
     # packs paths lists to DCCSI_ managed envars
     core_config.add_path_list_to_envar(dccsi_sys_path, 'DYNACONF_DCCSI_SYS_PATH')
@@ -241,7 +247,7 @@ if __name__ == '__main__':
 
     main_start = timeit.default_timer()  # start tracking
 
-    _MODULENAME = 'DCCsi.Tools.DCC.Blender.config.cli'
+    _MODULENAME = 'DCCsi.Tools.DCC.Substance.config.cli'
 
     import pathlib
 
@@ -259,7 +265,6 @@ if __name__ == '__main__':
         _DCCSI_LOGLEVEL = _logging.DEBUG
 
     # configure basic logger
-    # note: not using a common logger to reduce cyclical imports
     _logging.basicConfig(level=_DCCSI_LOGLEVEL,
                         format=FRMT_LOG_LONG,
                         datefmt='%m-%d %H:%M')
@@ -276,19 +281,17 @@ if __name__ == '__main__':
     # parse the command line args
     import argparse
     parser = argparse.ArgumentParser(
-        description='O3DE DCCsi Dynamic Config (dynaconf) for Blender',
+        description='O3DE DCCsi Dynamic Config (dynaconf) for Substance',
         epilog="Attempts to determine O3DE project if -pp not set")
 
     parser.add_argument('-gd', '--global-debug',
                         type=bool,
                         required=False,
-                        default=False,
                         help='Enables global debug flag.')
 
     parser.add_argument('-dm', '--developer-mode',
                         type=bool,
                         required=False,
-                        default=False,
                         help='Enables dev mode for early auto attaching debugger.')
 
     parser.add_argument('-sd', '--set-debugger',
@@ -306,13 +309,11 @@ if __name__ == '__main__':
     parser.add_argument('-qt', '--enable-qt',
                         type=bool,
                         required=False,
-                        default=False,
                         help='(NOT IMPLEMENTED) Enables O3DE Qt & PySide2 access.')
 
     parser.add_argument('-tp', '--test-pyside2',
                         type=bool,
                         required=False,
-                        default=False,
                         help='(NOT IMPLEMENTED) Runs Qt/PySide2 tests and reports.')
 
     parser.add_argument('-pc', '--project-config',
@@ -334,13 +335,11 @@ if __name__ == '__main__':
     parser.add_argument('-ls', '--load-settings',
                         type=pathlib.Path,
                         required=False,
-                        default=False,
                         help='(Not Implemented) Would load and read settings from a specified path.')
 
     parser.add_argument('-ec', '--export-configuration',
                         type=bool,
                         required=False,
-                        default=False,
                         help='(not implemented) writes settings as a O3DE < project >/registry/dccsi_configuration.setreg.')
 
     parser.add_argument('-lps', '--log-print-settings',
@@ -358,7 +357,6 @@ if __name__ == '__main__':
     parser.add_argument('-ex', '--exit',
                         type=bool,
                         required=False,
-                        default=False,
                         help='(NOT IMPLEMENTED) Exits python. Do not exit if you want to be in interactive interpreter after config')
 
     args = parser.parse_args()
@@ -394,7 +392,7 @@ if __name__ == '__main__':
             _DCCSI_CORE_CONFIG.export_settings(settings=settings,
                                                settings_filepath=export_settings_path.as_posix())
         else:
-            export_settings_path = Path(PATH_DCCSI_TOOLS_BLENDER,
+            export_settings_path = Path(PATH_DCCSI_TOOLS_SUBSTANCE,
                                         'settings.local.json').resolve()
             _DCCSI_CORE_CONFIG.export_settings(settings=settings,
                                                settings_filepath=export_settings_path.as_posix())
@@ -414,9 +412,9 @@ if __name__ == '__main__':
 
     if arg_bool(args.install_package_dependencies, desc="args.install_package_dependencies"):
         import foundation
-        _LOGGER.info('Installing python package dependancies from requirements.txt')
-        foundation.install_requirements(python_exe=settings.DCCSI_BLENDER_PY_EXE)
-        _LOGGER.warning('If the Blender app is running we suggest restarting it')
+        _LOGGER.info('Installing python package dependencies from requirements.txt')
+        foundation.install_requirements(python_exe=settings.DCCSI_SUBSTANCE_PY_EXE)
+        _LOGGER.warning('If the Substance3D app is running we suggest restarting it')
 
     # custom prompt
     sys.ps1 = f"[{_MODULENAME}]>>"
