@@ -47,6 +47,18 @@ namespace Terrain
                     ;
             }
         }
+
+        if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+        {
+            behaviorContext->Class<TerrainSurfaceMaterialMapping>()
+                ->Constructor()
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                ->Attribute(AZ::Script::Attributes::Category, "Terrain")
+                ->Attribute(AZ::Script::Attributes::Module, "terrain")
+                ->Property("SurfaceTag", BehaviorValueProperty(&TerrainSurfaceMaterialMapping::m_surfaceTag))
+                ->Property("MaterialAsset", BehaviorValueProperty(&TerrainSurfaceMaterialMapping::m_materialAsset))
+                ;
+        }
     }
 
     void TerrainSurfaceMaterialsListConfig::Reflect(AZ::ReflectContext* context)
@@ -78,6 +90,18 @@ namespace Terrain
                         "Material Mappings", "Maps surfaces to materials.");
             }
         }
+
+        if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+        {
+            behaviorContext->Class<TerrainSurfaceMaterialsListConfig>()
+                ->Constructor()
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                ->Attribute(AZ::Script::Attributes::Category, "Terrain")
+                ->Attribute(AZ::Script::Attributes::Module, "terrain")
+                ->Property("DefaultSurfaceMaterial", BehaviorValueProperty(&TerrainSurfaceMaterialsListConfig::m_defaultSurfaceMaterial))
+                ->Property("SurfaceMaterials", BehaviorValueProperty(&TerrainSurfaceMaterialsListConfig::m_surfaceMaterials))
+                ;
+        }
     }
 
     TerrainSurfaceMaterialsListConfig::TerrainSurfaceMaterialsListConfig()
@@ -88,6 +112,7 @@ namespace Terrain
                aznew AZ::Edit::AttributeData<AZ::Crc32>(AZ::Edit::PropertyVisibility::Hide)
            }
        );
+       m_hideSurfaceTagData.m_name = "hideSurfaceTagData";
     }
 
     const AZ::Edit::ElementData* TerrainSurfaceMaterialsListConfig::GetDynamicData(const void* handlerPtr, const void* elementPtr, const AZ::Uuid& )

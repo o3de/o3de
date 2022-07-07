@@ -504,7 +504,13 @@ namespace AssetProcessor
     {
         AZStd::shared_ptr<Builder> newBuilder;
         BuilderRef builderRef;
+        if (m_quitListener.WasQuitRequested())
+        {
+            // don't hand out new builders if we're quitting.
+            return builderRef;
+        }
 
+        // the below scope is intentional, to contain the scoped lock.
         {
             AZStd::unique_lock<AZStd::mutex> lock(m_buildersMutex);
 

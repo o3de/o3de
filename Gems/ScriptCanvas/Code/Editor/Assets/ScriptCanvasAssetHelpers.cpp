@@ -60,10 +60,6 @@ namespace ScriptCanvasEditor
 
         AZ::Data::AssetInfo GetSourceInfoByProductId(AZ::Data::AssetId assetId, AZ::Data::AssetType assetType)
         {
-            AZStd::string watchFolder;
-            AZ::Data::AssetInfo assetInfo;
-            const AZStd::string platformName = ""; // Empty for default
-
             AzToolsFramework::AssetSystemRequestBus::Events* assetSystem = AzToolsFramework::AssetSystemRequestBus::FindFirstHandler();
 
             if (assetSystem == nullptr)
@@ -71,19 +67,11 @@ namespace ScriptCanvasEditor
                 return AZ::Data::AssetInfo();
             }
 
+            AZStd::string watchFolder;
+            AZ::Data::AssetInfo assetInfo;
+            const AZStd::string platformName = ""; // Empty for default
+
             if (!assetSystem->GetAssetInfoById(assetId, assetType, platformName, assetInfo, watchFolder))
-            {
-                return AZ::Data::AssetInfo();
-            }
-
-            AZStd::string sourcePath;
-
-            if (!assetSystem->GetFullSourcePathFromRelativeProductPath(assetInfo.m_relativePath, sourcePath))
-            {
-                return AZ::Data::AssetInfo();
-            }
-
-            if (!assetSystem->GetSourceInfoBySourcePath(sourcePath.c_str(), assetInfo, watchFolder))
             {
                 return AZ::Data::AssetInfo();
             }

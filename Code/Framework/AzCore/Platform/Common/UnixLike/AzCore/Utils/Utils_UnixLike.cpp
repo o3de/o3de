@@ -8,6 +8,7 @@
 
 #include <AzCore/Utils/Utils.h>
 
+#include <cerrno>
 #include <cstdlib>
 #include <pwd.h>
 
