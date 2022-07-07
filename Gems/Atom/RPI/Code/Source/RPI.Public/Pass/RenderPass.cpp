@@ -53,7 +53,7 @@ namespace AZ
         RHI::RenderAttachmentConfiguration RenderPass::GetRenderAttachmentConfiguration() const
         {
             RHI::RenderAttachmentLayoutBuilder builder;
-            auto* pass = builder.AddSubpass();
+            auto* layoutBuilder = builder.AddSubpass();
 
             for (size_t slotIndex = 0; slotIndex < m_attachmentBindings.size(); ++slotIndex)
             {
@@ -67,7 +67,7 @@ namespace AZ
                 // Handle the depth-stencil attachment. There should be only one.
                 if (binding.m_scopeAttachmentUsage == RHI::ScopeAttachmentUsage::DepthStencil)
                 {
-                    pass->DepthStencilAttachment(binding.GetAttachment()->m_descriptor.m_image.m_format);
+                    layoutBuilder->DepthStencilAttachment(binding.GetAttachment()->m_descriptor.m_image.m_format);
                     continue;
                 }
 
@@ -80,7 +80,7 @@ namespace AZ
                 if (binding.m_scopeAttachmentUsage == RHI::ScopeAttachmentUsage::RenderTarget)
                 {
                     RHI::Format format = binding.GetAttachment()->m_descriptor.m_image.m_format;
-                    pass->RenderTargetAttachment(format);
+                    layoutBuilder->RenderTargetAttachment(format);
                 }
             }
 
@@ -172,7 +172,7 @@ namespace AZ
                     }
                     else
                     {
-                        AZ_Error( "Pass System", AZ::RHI::IsNullRenderer(), "[Pass %s] Could not bind shader buffer index '%s' because it has no attachment.", GetName().GetCStr(), shaderName.GetCStr());
+                        AZ_Error( "Pass System", AZ::RHI::IsNullRHI(), "[Pass %s] Could not bind shader buffer index '%s' because it has no attachment.", GetName().GetCStr(), shaderName.GetCStr());
                         binding.m_shaderInputIndex = PassAttachmentBinding::ShaderInputNoBind;
                     }
                 }
@@ -250,7 +250,7 @@ namespace AZ
                 RenderPass* renderPass = azrtti_cast<RenderPass*>(pass);
                 if (renderPass)
                 {
-                    frameGraph.ExecuteAfter(GetScopeId());
+                    frameGraph.ExecuteAfter(renderPass->GetScopeId());
                 }
             }
             for (Pass* pass : m_executeBeforePasses)
@@ -258,7 +258,7 @@ namespace AZ
                 RenderPass* renderPass = azrtti_cast<RenderPass*>(pass);
                 if (renderPass)
                 {
-                    frameGraph.ExecuteBefore(GetScopeId());
+                    frameGraph.ExecuteBefore(renderPass->GetScopeId());
                 }
             }
         }
@@ -400,7 +400,14 @@ namespace AZ
         {
             if (srg)
             {
-                m_shaderResourceGroupsToBind.push_back(srg);
+                if (!m_shaderResourceGroupsToBind.full())
+                {
+                    m_shaderResourceGroupsToBind.push_back(srg);
+                }
+                else
+                {
+                    AZ_Error("Pass System", false, "Attempting to bind an srg to a RenderPass, but there is no more room.")
+                }
             }
         }
 
@@ -422,8 +429,15 @@ namespace AZ
 
         void RenderPass::SetPipelineViewTag(const PipelineViewTag& viewTag)
         {
-            m_viewTag = viewTag;
-            m_flags.m_hasPipelineViewTag = !viewTag.IsEmpty();
+            if (m_viewTag != viewTag)
+            {
+                m_viewTag = viewTag;
+                m_flags.m_hasPipelineViewTag = !viewTag.IsEmpty();
+                if (m_pipeline)
+                {
+                    m_pipeline->MarkPipelinePassChanges(PipelinePassChanges::PipelineViewTagChanged);
+                }
+            }
         }
 
         TimestampResult RenderPass::GetTimestampResultInternal() const

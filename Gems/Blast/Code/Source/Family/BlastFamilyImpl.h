@@ -12,7 +12,7 @@
 #include <AzCore/std/containers/unordered_set.h>
 #include <Blast/BlastActor.h>
 #include <Blast/BlastDebug.h>
-#include <Blast/BlastMaterial.h>
+#include <Material/BlastMaterial.h>
 
 #include <Family/ActorTracker.h>
 #include <Family/BlastFamily.h>
@@ -58,10 +58,10 @@ namespace Blast
         void DispatchActorCreated(const BlastActor& actor);
         void DispatchActorDestroyed(const BlastActor& actor);
 
-        AZStd::vector<BlastActorDesc> CalculateInitialActors(const AZ::Transform& transform);
+        AZStd::vector<BlastActorDesc> CalculateActorsDescFromFamily(const AZ::Transform& transform);
 
         void HandleSplitEvent(
-            const Nv::Blast::TkSplitEvent* splitEvent, AZStd::vector<BlastActorDesc>& newActors,
+            const Nv::Blast::TkSplitEvent* splitEvent, AZStd::vector<BlastActorDesc>& newActorsDesc,
             AZStd::unordered_set<BlastActor*>& actorsToDelete);
 
         // Calculates actor description for an actor that has a parent.
@@ -73,7 +73,7 @@ namespace Blast
         BlastActorDesc CalculateActorDesc(const AZ::Transform& transform, Nv::Blast::TkActor* tkActor);
 
         void FillDebugRenderHealthGraph(
-            DebugRenderBuffer& debugRenderBuffer, DebugRenderMode mode, Nv::Blast::TkActor& actor);
+            DebugRenderBuffer& debugRenderBuffer, DebugRenderMode mode, const Nv::Blast::TkActor& actor);
         void FillDebugRenderAccelerator(DebugRenderBuffer& debugRenderBuffer, DebugRenderMode mode);
 
 
@@ -84,8 +84,8 @@ namespace Blast
         AZStd::shared_ptr<EntityProvider> m_entityProvider;
         BlastListener* m_listener;
 
-        const Physics::MaterialId m_physicsMaterialId;
-        const BlastMaterial m_blastMaterial;
+        Physics::MaterialId m_physicsMaterialId;
+        const Material* m_blastMaterial = nullptr;
         const BlastActorConfiguration& m_actorConfiguration;
         AZ::Transform m_initialTransform;
         bool m_isSpawned;

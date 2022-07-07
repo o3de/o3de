@@ -994,7 +994,7 @@ namespace DatumHelpers
         return ToBehaviorContext<ScriptCanvas::Data::QuaternionType>(valueOut, typeIDOut, valueIn);
     }
 
-    AZ_INLINE bool ToBehaviorContextString(AZ::BehaviorValueParameter& destination, const void* valueIn)
+    AZ_INLINE bool ToBehaviorContextString(AZ::BehaviorArgument& destination, const void* valueIn)
     {
         if (Data::IsString(destination.m_typeId))
         {
@@ -1097,7 +1097,7 @@ namespace DatumHelpers
         return false;
     }
 
-    bool ToBehaviorContext(const ScriptCanvas::Data::Type& typeIn, const void* valueIn, AZ::BehaviorValueParameter& destination, AZ::BehaviorClass* behaviorClassOut)
+    bool ToBehaviorContext(const ScriptCanvas::Data::Type& typeIn, const void* valueIn, AZ::BehaviorArgument& destination, AZ::BehaviorClass* behaviorClassOut)
     {
         const AZ::Uuid& typeIDOut = destination.m_typeId;
         void* valueOut = destination.GetValueAddress();
@@ -1163,10 +1163,10 @@ namespace DatumHelpers
         return false;
     }
 
-    AZ::BehaviorValueParameter ConvertibleToBehaviorValueParameter(const AZ::BehaviorParameter& description, [[maybe_unused]] const AZ::Uuid& azType, AZStd::string_view name, void* value, void*& pointer)
+    AZ::BehaviorArgument ConvertibleToBehaviorValueParameter(const AZ::BehaviorParameter& description, [[maybe_unused]] const AZ::Uuid& azType, AZStd::string_view name, void* value, void*& pointer)
     {
         AZ_Assert(value, "value must be valid");
-        AZ::BehaviorValueParameter parameter;
+        AZ::BehaviorArgument parameter;
         parameter.m_typeId = description.m_typeId;
         parameter.m_name = name.data();
 
@@ -1266,7 +1266,7 @@ namespace ScriptCanvas
         InitializeBehaviorContextMethodResult(resultType);
     }
 
-    Datum::Datum(const AZ::BehaviorValueParameter& value)
+    Datum::Datum(const AZ::BehaviorArgument& value)
         : Datum(value,
             !(value.m_traits& (AZ::BehaviorParameter::TR_POINTER | AZ::BehaviorParameter::TR_REFERENCE)) ? eOriginality::Original : eOriginality::Copy,
             value.m_value)
@@ -1352,14 +1352,14 @@ namespace ScriptCanvas
                     && method->GetNumArguments() == 2)
                 {
                     bool comparisonResult{};
-                    AZ::BehaviorValueParameter result(&comparisonResult);
-                    AZStd::array<AZ::BehaviorValueParameter, 2> params;
-                    AZ::Outcome<AZ::BehaviorValueParameter, AZStd::string> lhsArgument = lhs.ToBehaviorValueParameter(*method->GetArgument(0));
+                    AZ::BehaviorArgument result(&comparisonResult);
+                    AZStd::array<AZ::BehaviorArgument, 2> params;
+                    AZ::Outcome<AZ::BehaviorArgument, AZStd::string> lhsArgument = lhs.ToBehaviorValueParameter(*method->GetArgument(0));
 
                     if (lhsArgument.IsSuccess() && lhsArgument.GetValue().m_value)
                     {
                         params[0].Set(lhsArgument.GetValue());
-                        AZ::Outcome<AZ::BehaviorValueParameter, AZStd::string> rhsArgument = rhs.ToBehaviorValueParameter(*method->GetArgument(1));
+                        AZ::Outcome<AZ::BehaviorArgument, AZStd::string> rhsArgument = rhs.ToBehaviorValueParameter(*method->GetArgument(1));
 
                         if (rhsArgument.IsSuccess() && rhsArgument.GetValue().m_value)
                         {
@@ -1793,9 +1793,9 @@ namespace ScriptCanvas
         return (source && DatumHelpers::FromBehaviorContextVector4(sourceTypeID, source, m_storage.value)) || true;
     }
 
-    void Datum::SetType(const Data::Type& dataType)
+    void Datum::SetType(const Data::Type& dataType, TypeChange typeChange)
     {
-        if (!GetType().IsValid() && m_isDefaultConstructed)
+        if (!GetType().IsValid() && m_isDefaultConstructed || typeChange == TypeChange::Forced)
         {
             if (dataType.IsValid())
             {
@@ -2188,7 +2188,7 @@ namespace ScriptCanvas
     }
 
     // pushes this datum to the void* address in destination
-    bool Datum::ToBehaviorContext(AZ::BehaviorValueParameter& destination) const
+    bool Datum::ToBehaviorContext(AZ::BehaviorArgument& destination) const
     {
         AZ::BehaviorContext* behaviorContext = nullptr;
         AZ::ComponentApplicationBus::BroadcastResult(behaviorContext, &AZ::ComponentApplicationRequests::GetBehaviorContext);
@@ -2200,18 +2200,18 @@ namespace ScriptCanvas
             ((IS_A(targetType) || IsConvertibleTo(targetType)) || (IS_A(Data::Type::String()) && AZ::BehaviorContextHelper::IsStringParameter(destination)))
             && DatumHelpers::ToBehaviorContext(m_type, GetValueAddress(), destination, destinationBehaviorClass);
 
-        AZ_Error("Script Canvas", success, "Cannot push Datum with type %s into BehaviorValueParameter expecting type %s", GetName(m_type).c_str(), GetName(targetType).c_str());
+        AZ_Error("Script Canvas", success, "Cannot push Datum with type %s into BehaviorArgument expecting type %s", GetName(m_type).c_str(), GetName(targetType).c_str());
 
         return success;
     }
 
-    AZ::BehaviorValueParameter Datum::ToBehaviorContext(AZ::BehaviorClass*& behaviorClass)
+    AZ::BehaviorArgument Datum::ToBehaviorContext(AZ::BehaviorClass*& behaviorClass)
     {
         AZ::BehaviorContext* behaviorContext = nullptr;
         AZ::ComponentApplicationBus::BroadcastResult(behaviorContext, &AZ::ComponentApplicationRequests::GetBehaviorContext);
         AZ_Assert(behaviorContext, "Script Canvas can't do anything without a behavior context!");
         behaviorClass = AZ::BehaviorContextHelper::GetClass(behaviorContext, GetType().GetAZType());
-        AZ::BehaviorValueParameter bvp;
+        AZ::BehaviorArgument bvp;
         bvp.m_value = ModResultAddress();
         bvp.m_typeId = GetType().GetAZType();
         return bvp;
@@ -2222,7 +2222,7 @@ namespace ScriptCanvas
         return DatumHelpers::ToBehaviorContextNumber(target, typeID, GetValueAddress());
     }
 
-    AZ::Outcome<AZ::BehaviorValueParameter, AZStd::string> Datum::ToBehaviorValueParameter(const AZ::BehaviorParameter& description) const
+    AZ::Outcome<AZ::BehaviorArgument, AZStd::string> Datum::ToBehaviorValueParameter(const AZ::BehaviorParameter& description) const
     {
         AZ_Assert(m_isOverloadedStorage || IS_A(Data::FromAZType(description.m_typeId)) || IsConvertibleTo(description), "Mismatched type going to behavior value parameter: %s", description.m_name);
 
@@ -2230,7 +2230,7 @@ namespace ScriptCanvas
 
         if (!Data::IsValueType(m_type) && !SatisfiesTraits(static_cast<AZ::u8>(description.m_traits)))
         {
-            return AZ::Failure(AZStd::string("Attempting to convert null value to BehaviorValueParameter that expects reference or value"));
+            return AZ::Failure(AZStd::string("Attempting to convert null value to BehaviorArgument that expects reference or value"));
         }
 
         if (IS_A(Data::Type::Number()))
@@ -2243,7 +2243,7 @@ namespace ScriptCanvas
         }
         else
         {
-            AZ::BehaviorValueParameter parameter;
+            AZ::BehaviorArgument parameter;
             parameter.m_typeId = description.m_typeId; /// \todo verify there is no polymorphic danger here
             parameter.m_name = m_class ? m_class->m_name.c_str() : Data::GetBehaviorContextName(m_type);
             parameter.m_azRtti = m_class ? m_class->m_azRtti : nullptr;
@@ -2268,7 +2268,7 @@ namespace ScriptCanvas
         }
     }
 
-    AZ::Outcome<AZ::BehaviorValueParameter, AZStd::string> Datum::ToBehaviorValueParameterResult([[maybe_unused]] const AZ::BehaviorParameter& description, [[maybe_unused]] const AZStd::string_view className, [[maybe_unused]] const AZStd::string_view methodName)
+    AZ::Outcome<AZ::BehaviorArgument, AZStd::string> Datum::ToBehaviorValueParameterResult([[maybe_unused]] const AZ::BehaviorParameter& description, [[maybe_unused]] const AZStd::string_view className, [[maybe_unused]] const AZStd::string_view methodName)
     {
         AZ_Assert(m_isOverloadedStorage || IS_A(Data::FromAZType(description.m_typeId)) || IsConvertibleTo(description), "Mismatched type going to behavior value parameter: %s (Context: %s :: %s)", description.m_name, className.data(), methodName.data());
 
@@ -2283,7 +2283,7 @@ namespace ScriptCanvas
             return const_cast<Datum*>(this)->ToBehaviorValueParameterString(description);
         }
 
-        AZ::BehaviorValueParameter parameter;
+        AZ::BehaviorArgument parameter;
 
         if (IsValueType(m_type))
         {
@@ -2340,7 +2340,7 @@ namespace ScriptCanvas
         return AZ::Success(parameter);
     }
 
-    AZ::BehaviorValueParameter Datum::ToBehaviorValueParameterNumber(const AZ::BehaviorParameter& description)
+    AZ::BehaviorArgument Datum::ToBehaviorValueParameterNumber(const AZ::BehaviorParameter& description)
     {
         AZ_Assert(IS_A(Data::Type::Number()), "ToBehaviorValueParameterNumber is only for numbers");
         // m_conversion isn't a number yet
@@ -2349,13 +2349,13 @@ namespace ScriptCanvas
         return DatumHelpers::ConvertibleToBehaviorValueParameter(description, description.m_typeId, "number", reinterpret_cast<void*>(&m_conversionStorage), m_pointer);
     }
 
-    AZ::Outcome<AZ::BehaviorValueParameter, AZStd::string> Datum::ToBehaviorValueParameterString(const AZ::BehaviorParameter& description)
+    AZ::Outcome<AZ::BehaviorArgument, AZStd::string> Datum::ToBehaviorValueParameterString(const AZ::BehaviorParameter& description)
     {
-        AZ_Assert(IS_A(Data::Type::String()), "Cannot created BehaviorValueParameter that contains a string. Datum type must be a string");
+        AZ_Assert(IS_A(Data::Type::String()), "Cannot created BehaviorArgument that contains a string. Datum type must be a string");
 
         if (!AZ::BehaviorContextHelper::IsStringParameter(description))
         {
-            return AZ::Failure(AZStd::string("BehaviorParameter is not a string parameter, a BehaviorValueParameter that references a Script Canvas string cannot be made"));
+            return AZ::Failure(AZStd::string("BehaviorParameter is not a string parameter, a BehaviorArgument that references a Script Canvas string cannot be made"));
         }
 
         AZ::BehaviorContext* behaviorContext = nullptr;
@@ -2380,7 +2380,7 @@ namespace ScriptCanvas
             }
         }
 
-        return AZ::Failure(AZStd::string::format("Cannot create a BehaviorValueParameter of type %s", description.m_name));
+        return AZ::Failure(AZStd::string::format("Cannot create a BehaviorArgument of type %s", description.m_name));
     }
 
     bool Datum::ToString(Data::StringType& result) const
@@ -2507,8 +2507,8 @@ namespace ScriptCanvas
                     {
                         if (method->GetNumArguments() > 0)
                         {
-                            AZ::BehaviorValueParameter result(&stringOut);
-                            AZ::Outcome<AZ::BehaviorValueParameter, AZStd::string> argument = ToBehaviorValueParameter(*method->GetArgument(0));
+                            AZ::BehaviorArgument result(&stringOut);
+                            AZ::Outcome<AZ::BehaviorArgument, AZStd::string> argument = ToBehaviorValueParameter(*method->GetArgument(0));
                             return argument.IsSuccess() && argument.GetValue().m_value && method->Call(&argument.GetValue(), 1, &result);
                         }
                     }
@@ -2611,7 +2611,7 @@ namespace ScriptCanvas
             , (source.GetW()));
     }
 
-    AZ::Outcome<void, AZStd::string> Datum::CallBehaviorContextMethod(const AZ::BehaviorMethod* method, AZ::BehaviorValueParameter* params, unsigned int numExpectedArgs)
+    AZ::Outcome<void, AZStd::string> Datum::CallBehaviorContextMethod(const AZ::BehaviorMethod* method, AZ::BehaviorArgument* params, unsigned int numExpectedArgs)
     {
         AZ_Assert(method, "AZ::BehaviorMethod* method == nullptr in Datum");
         if (method->Call(params, numExpectedArgs))
@@ -2624,14 +2624,14 @@ namespace ScriptCanvas
         }
     }
 
-    AZ::Outcome<Datum, AZStd::string> Datum::CallBehaviorContextMethodResult(const AZ::BehaviorMethod* method, const AZ::BehaviorParameter* resultType, AZ::BehaviorValueParameter* params, unsigned int numExpectedArgs, const AZStd::string_view context)
+    AZ::Outcome<Datum, AZStd::string> Datum::CallBehaviorContextMethodResult(const AZ::BehaviorMethod* method, const AZ::BehaviorParameter* resultType, AZ::BehaviorArgument* params, unsigned int numExpectedArgs, const AZStd::string_view context)
     {
         AZ_Assert(resultType, "const AZ::BehaviorParameter* resultType == nullptr in Datum");
         AZ_Assert(method, "AZ::BehaviorMethod* method == nullptr in Datum");
         // create storage for the destination of the results in the function call...
         Datum resultDatum(s_behaviorContextResultTag, *resultType);
-        //...and initialize a AZ::BehaviorValueParameter to wrap the storage...
-        AZ::Outcome<AZ::BehaviorValueParameter, AZStd::string> parameter = resultDatum.ToBehaviorValueParameterResult(*resultType, context, method->m_name);
+        //...and initialize a AZ::BehaviorArgument to wrap the storage...
+        AZ::Outcome<AZ::BehaviorArgument, AZStd::string> parameter = resultDatum.ToBehaviorValueParameterResult(*resultType, context, method->m_name);
         if (parameter.IsSuccess())
         {
             // ...the result of Call here will write back to it...

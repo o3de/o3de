@@ -1,1432 +1,902 @@
-<ObjectStream version="3">
-	<Class name="ScriptCanvasData" version="4" type="{1072E894-0C67-4091-8B64-F7DB324AD13C}">
-		<Class name="AZStd::unique_ptr" field="m_scriptCanvas" type="{8FFB6D85-994F-5262-BA1C-D0082A7F65C5}">
-			<Class name="AZ::Entity" field="element" version="2" type="{75651658-8663-478D-9090-2432DFCAFA44}">
-				<Class name="EntityId" field="Id" version="1" type="{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}">
-					<Class name="AZ::u64" field="id" value="35808655248642" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
-				</Class>
-				<Class name="AZStd::string" field="Name" value="Script Canvas Graph" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-				<Class name="AZStd::vector" field="Components" type="{13D58FF9-1088-5C69-9A1F-C2A144B57B78}">
-					<Class name="EditorGraphVariableManagerComponent" field="element" type="{86B7CC96-9830-4BD1-85C3-0C0BD0BFBEE7}">
-						<Class name="GraphVariableManagerComponent" field="BaseClass1" version="3" type="{825DC28D-667D-43D0-AF11-73681351DD2F}">
-							<Class name="AZ::Component" field="BaseClass1" type="{EDFCB2CF-F75D-43BE-B26B-F35821B29247}">
-								<Class name="AZ::u64" field="Id" value="15691885613441416095" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
-							</Class>
-							<Class name="VariableData" field="m_variableData" version="3" type="{4F80659A-CD11-424E-BF04-AF02ABAC06B0}">
-								<Class name="AZStd::unordered_map" field="m_nameVariableMap" type="{6C3A5734-6C27-5033-B033-D5CAD11DE55A}">
-									<Class name="AZStd::pair" field="element" type="{E64D2110-EB38-5AE1-9B1D-3C06A10C7D6A}">
-										<Class name="VariableId" field="value1" type="{CA57A57B-E510-4C09-B952-1F43742166AE}">
-											<Class name="AZ::Uuid" field="m_id" value="{798B51A5-C8BC-403C-A49E-C98442F8170D}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-										</Class>
-										<Class name="GraphVariable" field="value2" version="3" type="{5BDC128B-8355-479C-8FA8-4BFFAB6915A8}">
-											<Class name="Datum" field="Datum" version="6" type="{8B836FC0-98A8-4A81-8651-35C7CA125451}">
-												<Class name="bool" field="m_isUntypedStorage" value="true" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-												<Class name="Type" field="m_type" version="2" type="{0EADF8F5-8AB8-42E9-9C50-F5C78255C817}">
-													<Class name="unsigned int" field="m_type" value="3" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-													<Class name="AZ::Uuid" field="m_azType" value="{00000000-0000-0000-0000-000000000000}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-												</Class>
-												<Class name="int" field="m_originality" value="1" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
-												<Class name="any" field="m_datumStorage" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
-													<Class name="double" field="m_data" value="1.0000000" type="{110C4B14-11A8-4E9D-8638-5051013A56AC}"/>
-												</Class>
-												<Class name="AZStd::string" field="m_datumLabel" value="Variable 6" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-											</Class>
-											<Class name="Crc32" field="InputControlVisibility" type="{9F4E062E-06A0-46D4-85DF-E0DA96467D3A}">
-												<Class name="unsigned int" field="Value" value="2755429085" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-											</Class>
-											<Class name="AZStd::string" field="ExposureCategory" value="" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-											<Class name="int" field="SortPriority" value="-1" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
-											<Class name="ReplicaNetworkProperties" field="ReplicaNetProps" version="1" type="{4F055551-DD75-4877-93CE-E80C844FC155}">
-												<Class name="bool" field="m_isSynchronized" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-											</Class>
-											<Class name="VariableId" field="VariableId" type="{CA57A57B-E510-4C09-B952-1F43742166AE}">
-												<Class name="AZ::Uuid" field="m_id" value="{798B51A5-C8BC-403C-A49E-C98442F8170D}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-											</Class>
-											<Class name="AZStd::string" field="VariableName" value="Variable 6" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-											<Class name="unsigned char" field="Scope" value="0" type="{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}"/>
-										</Class>
-									</Class>
-									<Class name="AZStd::pair" field="element" type="{E64D2110-EB38-5AE1-9B1D-3C06A10C7D6A}">
-										<Class name="VariableId" field="value1" type="{CA57A57B-E510-4C09-B952-1F43742166AE}">
-											<Class name="AZ::Uuid" field="m_id" value="{DD99C1E7-468B-46D5-9758-9CDCA5D3FC78}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-										</Class>
-										<Class name="GraphVariable" field="value2" version="3" type="{5BDC128B-8355-479C-8FA8-4BFFAB6915A8}">
-											<Class name="Datum" field="Datum" version="6" type="{8B836FC0-98A8-4A81-8651-35C7CA125451}">
-												<Class name="bool" field="m_isUntypedStorage" value="true" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-												<Class name="Type" field="m_type" version="2" type="{0EADF8F5-8AB8-42E9-9C50-F5C78255C817}">
-													<Class name="unsigned int" field="m_type" value="3" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-													<Class name="AZ::Uuid" field="m_azType" value="{00000000-0000-0000-0000-000000000000}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-												</Class>
-												<Class name="int" field="m_originality" value="1" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
-												<Class name="any" field="m_datumStorage" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
-													<Class name="double" field="m_data" value="0.0000000" type="{110C4B14-11A8-4E9D-8638-5051013A56AC}"/>
-												</Class>
-												<Class name="AZStd::string" field="m_datumLabel" value="Variable 7" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-											</Class>
-											<Class name="Crc32" field="InputControlVisibility" type="{9F4E062E-06A0-46D4-85DF-E0DA96467D3A}">
-												<Class name="unsigned int" field="Value" value="2755429085" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-											</Class>
-											<Class name="AZStd::string" field="ExposureCategory" value="" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-											<Class name="int" field="SortPriority" value="-1" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
-											<Class name="ReplicaNetworkProperties" field="ReplicaNetProps" version="1" type="{4F055551-DD75-4877-93CE-E80C844FC155}">
-												<Class name="bool" field="m_isSynchronized" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-											</Class>
-											<Class name="VariableId" field="VariableId" type="{CA57A57B-E510-4C09-B952-1F43742166AE}">
-												<Class name="AZ::Uuid" field="m_id" value="{DD99C1E7-468B-46D5-9758-9CDCA5D3FC78}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-											</Class>
-											<Class name="AZStd::string" field="VariableName" value="Variable 7" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-											<Class name="unsigned char" field="Scope" value="0" type="{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}"/>
-										</Class>
-									</Class>
-								</Class>
-							</Class>
-							<Class name="AZStd::unordered_map" field="CopiedVariableRemapping" type="{723F81A5-0980-50C7-8B1F-BE646339362B}"/>
-						</Class>
-					</Class>
-					<Class name="Graph" field="element" version="8" type="{4D755CA9-AB92-462C-B24F-0B3376F19967}">
-						<Class name="Graph" field="BaseClass1" version="17" type="{C3267D77-EEDC-490E-9E42-F1D1F473E184}">
-							<Class name="AZ::Component" field="BaseClass1" type="{EDFCB2CF-F75D-43BE-B26B-F35821B29247}">
-								<Class name="AZ::u64" field="Id" value="4326477749048814000" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
-							</Class>
-							<Class name="GraphData" field="m_graphData" version="4" type="{ADCB5EB5-8D3F-42ED-8F65-EAB58A82C381}">
-								<Class name="AZStd::unordered_set" field="m_nodes" type="{27BF7BD3-6E17-5619-9363-3FC3D9A5369D}">
-									<Class name="AZ::Entity" field="element" version="2" type="{75651658-8663-478D-9090-2432DFCAFA44}">
-										<Class name="EntityId" field="Id" version="1" type="{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}">
-											<Class name="AZ::u64" field="id" value="35817245183234" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
-										</Class>
-										<Class name="AZStd::string" field="Name" value="83673333253680" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-										<Class name="AZStd::vector" field="Components" type="{13D58FF9-1088-5C69-9A1F-C2A144B57B78}">
-											<Class name="MethodOverloaded" field="element" version="6" type="{C1E3C9D0-42E3-4D00-AE73-2A881E7E76A8}">
-												<Class name="Method" field="BaseClass1" version="5" type="{E42861BD-1956-45AE-8DD7-CCFC1E3E5ACF}">
-													<Class name="Node" field="BaseClass1" version="14" type="{52B454AE-FA7E-4FE9-87D3-A1CAB235C691}">
-														<Class name="AZ::Component" field="BaseClass1" type="{EDFCB2CF-F75D-43BE-B26B-F35821B29247}">
-															<Class name="AZ::u64" field="Id" value="11642019024002928881" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
-														</Class>
-														<Class name="AZStd::list" field="Slots" type="{E01B3091-9B44-571A-A87B-7D0E2768D774}">
-															<Class name="Slot" field="element" version="21" type="{FBFE0F02-4C26-475F-A28B-18D3A533C13C}">
-																<Class name="bool" field="IsOverload" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-																<Class name="bool" field="isVisibile" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-																<Class name="SlotId" field="id" version="2" type="{14C629F6-467B-46FE-8B63-48FDFCA42175}">
-																	<Class name="AZ::Uuid" field="m_id" value="{10FB287D-435E-452F-9569-B294C58F704D}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-																</Class>
-																<Class name="int" field="DynamicTypeOverride" value="0" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
-																<Class name="AZStd::vector" field="contracts" type="{C87136AF-3259-590C-9519-D1C4C75F1C86}">
-																	<Class name="AZStd::unique_ptr" field="element" type="{75F9EC0D-D8D6-5410-BD79-960E22076B03}">
-																		<Class name="SlotTypeContract" field="element" type="{084B4F2A-AB34-4931-9269-E3614FC1CDFA}">
-																			<Class name="Contract" field="BaseClass1" type="{93846E60-BD7E-438A-B970-5C4AA591CF93}"/>
-																		</Class>
-																	</Class>
-																	<Class name="AZStd::unique_ptr" field="element" type="{75F9EC0D-D8D6-5410-BD79-960E22076B03}">
-																		<Class name="ExclusivePureDataContract" field="element" type="{E48A0B26-B6B7-4AF3-9341-9E5C5C1F0DE8}">
-																			<Class name="Contract" field="BaseClass1" type="{93846E60-BD7E-438A-B970-5C4AA591CF93}"/>
-																		</Class>
-																	</Class>
-																</Class>
-																<Class name="AZStd::string" field="slotName" value="EntityID: 0" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-																<Class name="AZStd::string" field="toolTip" value="" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-																<Class name="Type" field="DisplayDataType" version="2" type="{0EADF8F5-8AB8-42E9-9C50-F5C78255C817}">
-																	<Class name="unsigned int" field="m_type" value="1" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-																	<Class name="AZ::Uuid" field="m_azType" value="{00000000-0000-0000-0000-000000000000}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-																</Class>
-																<Class name="Crc32" field="DisplayGroup" type="{9F4E062E-06A0-46D4-85DF-E0DA96467D3A}">
-																	<Class name="unsigned int" field="Value" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-																</Class>
-																<Class name="SlotDescriptor" field="Descriptor" version="1" type="{FBF1C3A7-AA74-420F-BBE4-29F78D6EA262}">
-																	<Class name="int" field="ConnectionType" value="1" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
-																	<Class name="int" field="SlotType" value="2" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
-																</Class>
-																<Class name="bool" field="IsLatent" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-																<Class name="Crc32" field="DynamicGroup" type="{9F4E062E-06A0-46D4-85DF-E0DA96467D3A}">
-																	<Class name="unsigned int" field="Value" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-																</Class>
-																<Class name="int" field="DataType" value="1" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
-																<Class name="bool" field="IsReference" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-																<Class name="VariableId" field="VariableReference" type="{CA57A57B-E510-4C09-B952-1F43742166AE}">
-																	<Class name="AZ::Uuid" field="m_id" value="{00000000-0000-0000-0000-000000000000}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-																</Class>
-															</Class>
-															<Class name="Slot" field="element" version="21" type="{FBFE0F02-4C26-475F-A28B-18D3A533C13C}">
-																<Class name="bool" field="IsOverload" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-																<Class name="bool" field="isVisibile" value="true" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-																<Class name="SlotId" field="id" version="2" type="{14C629F6-467B-46FE-8B63-48FDFCA42175}">
-																	<Class name="AZ::Uuid" field="m_id" value="{64BEB6F5-8F89-4DE0-964E-CFDF479CC2B0}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-																</Class>
-																<Class name="int" field="DynamicTypeOverride" value="1" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
-																<Class name="AZStd::vector" field="contracts" type="{C87136AF-3259-590C-9519-D1C4C75F1C86}">
-																	<Class name="AZStd::unique_ptr" field="element" type="{75F9EC0D-D8D6-5410-BD79-960E22076B03}">
-																		<Class name="SlotTypeContract" field="element" type="{084B4F2A-AB34-4931-9269-E3614FC1CDFA}">
-																			<Class name="Contract" field="BaseClass1" type="{93846E60-BD7E-438A-B970-5C4AA591CF93}"/>
-																		</Class>
-																	</Class>
-																	<Class name="AZStd::unique_ptr" field="element" type="{75F9EC0D-D8D6-5410-BD79-960E22076B03}">
-																		<Class name="ExclusivePureDataContract" field="element" type="{E48A0B26-B6B7-4AF3-9341-9E5C5C1F0DE8}">
-																			<Class name="Contract" field="BaseClass1" type="{93846E60-BD7E-438A-B970-5C4AA591CF93}"/>
-																		</Class>
-																	</Class>
-																	<Class name="AZStd::unique_ptr" field="element" type="{75F9EC0D-D8D6-5410-BD79-960E22076B03}">
-																		<Class name="OverloadContract" field="element" type="{45622160-13C5-46E3-94D9-AE2EAFE6AC64}">
-																			<Class name="Contract" field="BaseClass1" type="{93846E60-BD7E-438A-B970-5C4AA591CF93}"/>
-																		</Class>
-																	</Class>
-																</Class>
-																<Class name="AZStd::string" field="slotName" value="Candidate" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-																<Class name="AZStd::string" field="toolTip" value="left of &gt;" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-																<Class name="Type" field="DisplayDataType" version="2" type="{0EADF8F5-8AB8-42E9-9C50-F5C78255C817}">
-																	<Class name="unsigned int" field="m_type" value="3" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-																	<Class name="AZ::Uuid" field="m_azType" value="{00000000-0000-0000-0000-000000000000}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-																</Class>
-																<Class name="Crc32" field="DisplayGroup" type="{9F4E062E-06A0-46D4-85DF-E0DA96467D3A}">
-																	<Class name="unsigned int" field="Value" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-																</Class>
-																<Class name="SlotDescriptor" field="Descriptor" version="1" type="{FBF1C3A7-AA74-420F-BBE4-29F78D6EA262}">
-																	<Class name="int" field="ConnectionType" value="1" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
-																	<Class name="int" field="SlotType" value="2" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
-																</Class>
-																<Class name="bool" field="IsLatent" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-																<Class name="Crc32" field="DynamicGroup" type="{9F4E062E-06A0-46D4-85DF-E0DA96467D3A}">
-																	<Class name="unsigned int" field="Value" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-																</Class>
-																<Class name="int" field="DataType" value="1" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
-																<Class name="bool" field="IsReference" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-																<Class name="VariableId" field="VariableReference" type="{CA57A57B-E510-4C09-B952-1F43742166AE}">
-																	<Class name="AZ::Uuid" field="m_id" value="{00000000-0000-0000-0000-000000000000}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-																</Class>
-															</Class>
-															<Class name="Slot" field="element" version="21" type="{FBFE0F02-4C26-475F-A28B-18D3A533C13C}">
-																<Class name="bool" field="IsOverload" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-																<Class name="bool" field="isVisibile" value="true" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-																<Class name="SlotId" field="id" version="2" type="{14C629F6-467B-46FE-8B63-48FDFCA42175}">
-																	<Class name="AZ::Uuid" field="m_id" value="{5A1713AB-B2BD-4E28-8D27-D3DF9B41B3A8}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-																</Class>
-																<Class name="int" field="DynamicTypeOverride" value="1" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
-																<Class name="AZStd::vector" field="contracts" type="{C87136AF-3259-590C-9519-D1C4C75F1C86}">
-																	<Class name="AZStd::unique_ptr" field="element" type="{75F9EC0D-D8D6-5410-BD79-960E22076B03}">
-																		<Class name="SlotTypeContract" field="element" type="{084B4F2A-AB34-4931-9269-E3614FC1CDFA}">
-																			<Class name="Contract" field="BaseClass1" type="{93846E60-BD7E-438A-B970-5C4AA591CF93}"/>
-																		</Class>
-																	</Class>
-																	<Class name="AZStd::unique_ptr" field="element" type="{75F9EC0D-D8D6-5410-BD79-960E22076B03}">
-																		<Class name="ExclusivePureDataContract" field="element" type="{E48A0B26-B6B7-4AF3-9341-9E5C5C1F0DE8}">
-																			<Class name="Contract" field="BaseClass1" type="{93846E60-BD7E-438A-B970-5C4AA591CF93}"/>
-																		</Class>
-																	</Class>
-																	<Class name="AZStd::unique_ptr" field="element" type="{75F9EC0D-D8D6-5410-BD79-960E22076B03}">
-																		<Class name="OverloadContract" field="element" type="{45622160-13C5-46E3-94D9-AE2EAFE6AC64}">
-																			<Class name="Contract" field="BaseClass1" type="{93846E60-BD7E-438A-B970-5C4AA591CF93}"/>
-																		</Class>
-																	</Class>
-																</Class>
-																<Class name="AZStd::string" field="slotName" value="Reference" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-																<Class name="AZStd::string" field="toolTip" value="right of &gt;" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-																<Class name="Type" field="DisplayDataType" version="2" type="{0EADF8F5-8AB8-42E9-9C50-F5C78255C817}">
-																	<Class name="unsigned int" field="m_type" value="3" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-																	<Class name="AZ::Uuid" field="m_azType" value="{00000000-0000-0000-0000-000000000000}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-																</Class>
-																<Class name="Crc32" field="DisplayGroup" type="{9F4E062E-06A0-46D4-85DF-E0DA96467D3A}">
-																	<Class name="unsigned int" field="Value" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-																</Class>
-																<Class name="SlotDescriptor" field="Descriptor" version="1" type="{FBF1C3A7-AA74-420F-BBE4-29F78D6EA262}">
-																	<Class name="int" field="ConnectionType" value="1" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
-																	<Class name="int" field="SlotType" value="2" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
-																</Class>
-																<Class name="bool" field="IsLatent" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-																<Class name="Crc32" field="DynamicGroup" type="{9F4E062E-06A0-46D4-85DF-E0DA96467D3A}">
-																	<Class name="unsigned int" field="Value" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-																</Class>
-																<Class name="int" field="DataType" value="1" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
-																<Class name="bool" field="IsReference" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-																<Class name="VariableId" field="VariableReference" type="{CA57A57B-E510-4C09-B952-1F43742166AE}">
-																	<Class name="AZ::Uuid" field="m_id" value="{00000000-0000-0000-0000-000000000000}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-																</Class>
-															</Class>
-															<Class name="Slot" field="element" version="21" type="{FBFE0F02-4C26-475F-A28B-18D3A533C13C}">
-																<Class name="bool" field="IsOverload" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-																<Class name="bool" field="isVisibile" value="true" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-																<Class name="SlotId" field="id" version="2" type="{14C629F6-467B-46FE-8B63-48FDFCA42175}">
-																	<Class name="AZ::Uuid" field="m_id" value="{18D633F3-047B-4952-9C73-10428963FF91}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-																</Class>
-																<Class name="int" field="DynamicTypeOverride" value="0" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
-																<Class name="AZStd::vector" field="contracts" type="{C87136AF-3259-590C-9519-D1C4C75F1C86}">
-																	<Class name="AZStd::unique_ptr" field="element" type="{75F9EC0D-D8D6-5410-BD79-960E22076B03}">
-																		<Class name="SlotTypeContract" field="element" type="{084B4F2A-AB34-4931-9269-E3614FC1CDFA}">
-																			<Class name="Contract" field="BaseClass1" type="{93846E60-BD7E-438A-B970-5C4AA591CF93}"/>
-																		</Class>
-																	</Class>
-																	<Class name="AZStd::unique_ptr" field="element" type="{75F9EC0D-D8D6-5410-BD79-960E22076B03}">
-																		<Class name="ExclusivePureDataContract" field="element" type="{E48A0B26-B6B7-4AF3-9341-9E5C5C1F0DE8}">
-																			<Class name="Contract" field="BaseClass1" type="{93846E60-BD7E-438A-B970-5C4AA591CF93}"/>
-																		</Class>
-																	</Class>
-																</Class>
-																<Class name="AZStd::string" field="slotName" value="Report" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-																<Class name="AZStd::string" field="toolTip" value="additional notes for the test report" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-																<Class name="Type" field="DisplayDataType" version="2" type="{0EADF8F5-8AB8-42E9-9C50-F5C78255C817}">
-																	<Class name="unsigned int" field="m_type" value="5" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-																	<Class name="AZ::Uuid" field="m_azType" value="{00000000-0000-0000-0000-000000000000}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-																</Class>
-																<Class name="Crc32" field="DisplayGroup" type="{9F4E062E-06A0-46D4-85DF-E0DA96467D3A}">
-																	<Class name="unsigned int" field="Value" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-																</Class>
-																<Class name="SlotDescriptor" field="Descriptor" version="1" type="{FBF1C3A7-AA74-420F-BBE4-29F78D6EA262}">
-																	<Class name="int" field="ConnectionType" value="1" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
-																	<Class name="int" field="SlotType" value="2" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
-																</Class>
-																<Class name="bool" field="IsLatent" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-																<Class name="Crc32" field="DynamicGroup" type="{9F4E062E-06A0-46D4-85DF-E0DA96467D3A}">
-																	<Class name="unsigned int" field="Value" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-																</Class>
-																<Class name="int" field="DataType" value="1" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
-																<Class name="bool" field="IsReference" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-																<Class name="VariableId" field="VariableReference" type="{CA57A57B-E510-4C09-B952-1F43742166AE}">
-																	<Class name="AZ::Uuid" field="m_id" value="{00000000-0000-0000-0000-000000000000}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-																</Class>
-															</Class>
-															<Class name="Slot" field="element" version="21" type="{FBFE0F02-4C26-475F-A28B-18D3A533C13C}">
-																<Class name="bool" field="IsOverload" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-																<Class name="bool" field="isVisibile" value="true" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-																<Class name="SlotId" field="id" version="2" type="{14C629F6-467B-46FE-8B63-48FDFCA42175}">
-																	<Class name="AZ::Uuid" field="m_id" value="{43EB7FF0-576A-4BCC-827B-E356B27C7CE6}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-																</Class>
-																<Class name="int" field="DynamicTypeOverride" value="0" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
-																<Class name="AZStd::vector" field="contracts" type="{C87136AF-3259-590C-9519-D1C4C75F1C86}">
-																	<Class name="AZStd::unique_ptr" field="element" type="{75F9EC0D-D8D6-5410-BD79-960E22076B03}">
-																		<Class name="SlotTypeContract" field="element" type="{084B4F2A-AB34-4931-9269-E3614FC1CDFA}">
-																			<Class name="Contract" field="BaseClass1" type="{93846E60-BD7E-438A-B970-5C4AA591CF93}"/>
-																		</Class>
-																	</Class>
-																</Class>
-																<Class name="AZStd::string" field="slotName" value="In" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-																<Class name="AZStd::string" field="toolTip" value="" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-																<Class name="Type" field="DisplayDataType" version="2" type="{0EADF8F5-8AB8-42E9-9C50-F5C78255C817}">
-																	<Class name="unsigned int" field="m_type" value="2" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-																	<Class name="AZ::Uuid" field="m_azType" value="{00000000-0000-0000-0000-000000000000}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-																</Class>
-																<Class name="Crc32" field="DisplayGroup" type="{9F4E062E-06A0-46D4-85DF-E0DA96467D3A}">
-																	<Class name="unsigned int" field="Value" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-																</Class>
-																<Class name="SlotDescriptor" field="Descriptor" version="1" type="{FBF1C3A7-AA74-420F-BBE4-29F78D6EA262}">
-																	<Class name="int" field="ConnectionType" value="1" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
-																	<Class name="int" field="SlotType" value="1" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
-																</Class>
-																<Class name="bool" field="IsLatent" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-																<Class name="Crc32" field="DynamicGroup" type="{9F4E062E-06A0-46D4-85DF-E0DA96467D3A}">
-																	<Class name="unsigned int" field="Value" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-																</Class>
-																<Class name="int" field="DataType" value="0" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
-																<Class name="bool" field="IsReference" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-																<Class name="VariableId" field="VariableReference" type="{CA57A57B-E510-4C09-B952-1F43742166AE}">
-																	<Class name="AZ::Uuid" field="m_id" value="{00000000-0000-0000-0000-000000000000}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-																</Class>
-															</Class>
-															<Class name="Slot" field="element" version="21" type="{FBFE0F02-4C26-475F-A28B-18D3A533C13C}">
-																<Class name="bool" field="IsOverload" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-																<Class name="bool" field="isVisibile" value="true" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-																<Class name="SlotId" field="id" version="2" type="{14C629F6-467B-46FE-8B63-48FDFCA42175}">
-																	<Class name="AZ::Uuid" field="m_id" value="{7F07D2B9-4E97-4434-AC57-38D644B73A39}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-																</Class>
-																<Class name="int" field="DynamicTypeOverride" value="0" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
-																<Class name="AZStd::vector" field="contracts" type="{C87136AF-3259-590C-9519-D1C4C75F1C86}">
-																	<Class name="AZStd::unique_ptr" field="element" type="{75F9EC0D-D8D6-5410-BD79-960E22076B03}">
-																		<Class name="SlotTypeContract" field="element" type="{084B4F2A-AB34-4931-9269-E3614FC1CDFA}">
-																			<Class name="Contract" field="BaseClass1" type="{93846E60-BD7E-438A-B970-5C4AA591CF93}"/>
-																		</Class>
-																	</Class>
-																</Class>
-																<Class name="AZStd::string" field="slotName" value="Out" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-																<Class name="AZStd::string" field="toolTip" value="" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-																<Class name="Type" field="DisplayDataType" version="2" type="{0EADF8F5-8AB8-42E9-9C50-F5C78255C817}">
-																	<Class name="unsigned int" field="m_type" value="2" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-																	<Class name="AZ::Uuid" field="m_azType" value="{00000000-0000-0000-0000-000000000000}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-																</Class>
-																<Class name="Crc32" field="DisplayGroup" type="{9F4E062E-06A0-46D4-85DF-E0DA96467D3A}">
-																	<Class name="unsigned int" field="Value" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-																</Class>
-																<Class name="SlotDescriptor" field="Descriptor" version="1" type="{FBF1C3A7-AA74-420F-BBE4-29F78D6EA262}">
-																	<Class name="int" field="ConnectionType" value="2" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
-																	<Class name="int" field="SlotType" value="1" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
-																</Class>
-																<Class name="bool" field="IsLatent" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-																<Class name="Crc32" field="DynamicGroup" type="{9F4E062E-06A0-46D4-85DF-E0DA96467D3A}">
-																	<Class name="unsigned int" field="Value" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-																</Class>
-																<Class name="int" field="DataType" value="0" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
-																<Class name="bool" field="IsReference" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-																<Class name="VariableId" field="VariableReference" type="{CA57A57B-E510-4C09-B952-1F43742166AE}">
-																	<Class name="AZ::Uuid" field="m_id" value="{00000000-0000-0000-0000-000000000000}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-																</Class>
-															</Class>
-														</Class>
-														<Class name="AZStd::list" field="Datums" type="{36259B04-FAAB-5E8A-B7BF-A5E2EA5A9B3A}">
-															<Class name="Datum" field="element" version="6" type="{8B836FC0-98A8-4A81-8651-35C7CA125451}">
-																<Class name="bool" field="m_isUntypedStorage" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-																<Class name="Type" field="m_type" version="2" type="{0EADF8F5-8AB8-42E9-9C50-F5C78255C817}">
-																	<Class name="unsigned int" field="m_type" value="1" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-																	<Class name="AZ::Uuid" field="m_azType" value="{00000000-0000-0000-0000-000000000000}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-																</Class>
-																<Class name="int" field="m_originality" value="1" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
-																<Class name="any" field="m_datumStorage" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
-																	<Class name="EntityId" field="m_data" version="1" type="{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}">
-																		<Class name="AZ::u64" field="id" value="4276206253" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
-																	</Class>
-																</Class>
-																<Class name="AZStd::string" field="m_datumLabel" value="" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-															</Class>
-															<Class name="Datum" field="element" version="6" type="{8B836FC0-98A8-4A81-8651-35C7CA125451}">
-																<Class name="bool" field="m_isUntypedStorage" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-																<Class name="Type" field="m_type" version="2" type="{0EADF8F5-8AB8-42E9-9C50-F5C78255C817}">
-																	<Class name="unsigned int" field="m_type" value="3" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-																	<Class name="AZ::Uuid" field="m_azType" value="{00000000-0000-0000-0000-000000000000}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-																</Class>
-																<Class name="int" field="m_originality" value="1" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
-																<Class name="any" field="m_datumStorage" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
-																	<Class name="double" field="m_data" value="0.0000000" type="{110C4B14-11A8-4E9D-8638-5051013A56AC}"/>
-																</Class>
-																<Class name="AZStd::string" field="m_datumLabel" value="Candidate" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-															</Class>
-															<Class name="Datum" field="element" version="6" type="{8B836FC0-98A8-4A81-8651-35C7CA125451}">
-																<Class name="bool" field="m_isUntypedStorage" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-																<Class name="Type" field="m_type" version="2" type="{0EADF8F5-8AB8-42E9-9C50-F5C78255C817}">
-																	<Class name="unsigned int" field="m_type" value="3" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-																	<Class name="AZ::Uuid" field="m_azType" value="{00000000-0000-0000-0000-000000000000}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-																</Class>
-																<Class name="int" field="m_originality" value="1" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
-																<Class name="any" field="m_datumStorage" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
-																	<Class name="double" field="m_data" value="0.0000000" type="{110C4B14-11A8-4E9D-8638-5051013A56AC}"/>
-																</Class>
-																<Class name="AZStd::string" field="m_datumLabel" value="Reference" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-															</Class>
-															<Class name="Datum" field="element" version="6" type="{8B836FC0-98A8-4A81-8651-35C7CA125451}">
-																<Class name="bool" field="m_isUntypedStorage" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-																<Class name="Type" field="m_type" version="2" type="{0EADF8F5-8AB8-42E9-9C50-F5C78255C817}">
-																	<Class name="unsigned int" field="m_type" value="5" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-																	<Class name="AZ::Uuid" field="m_azType" value="{00000000-0000-0000-0000-000000000000}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-																</Class>
-																<Class name="int" field="m_originality" value="0" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
-																<Class name="any" field="m_datumStorage" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
-																	<Class name="AZStd::string" field="m_data" value="" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-																</Class>
-																<Class name="AZStd::string" field="m_datumLabel" value="Report" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-															</Class>
-														</Class>
-														<Class name="int" field="NodeDisabledFlag" value="0" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
-													</Class>
-													<Class name="int" field="methodType" value="2" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
-													<Class name="AZStd::string" field="methodName" value="Expect Greater Than" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-													<Class name="AZStd::string" field="className" value="Unit Testing" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-													<Class name="AZStd::vector" field="namespaces" type="{99DAD0BC-740E-5E82-826B-8FC7968CC02C}"/>
-													<Class name="AZStd::vector" field="resultSlotIDs" type="{D0B13803-101B-54D8-914C-0DA49FDFA268}"/>
-													<Class name="AZStd::string" field="prettyClassName" value="Unit Testing" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-												</Class>
-												<Class name="AZStd::vector" field="orderedInputSlotIds" type="{D0B13803-101B-54D8-914C-0DA49FDFA268}">
-													<Class name="SlotId" field="element" version="2" type="{14C629F6-467B-46FE-8B63-48FDFCA42175}">
-														<Class name="AZ::Uuid" field="m_id" value="{10FB287D-435E-452F-9569-B294C58F704D}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-													</Class>
-													<Class name="SlotId" field="element" version="2" type="{14C629F6-467B-46FE-8B63-48FDFCA42175}">
-														<Class name="AZ::Uuid" field="m_id" value="{64BEB6F5-8F89-4DE0-964E-CFDF479CC2B0}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-													</Class>
-													<Class name="SlotId" field="element" version="2" type="{14C629F6-467B-46FE-8B63-48FDFCA42175}">
-														<Class name="AZ::Uuid" field="m_id" value="{5A1713AB-B2BD-4E28-8D27-D3DF9B41B3A8}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-													</Class>
-													<Class name="SlotId" field="element" version="2" type="{14C629F6-467B-46FE-8B63-48FDFCA42175}">
-														<Class name="AZ::Uuid" field="m_id" value="{18D633F3-047B-4952-9C73-10428963FF91}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-													</Class>
-												</Class>
-												<Class name="AZStd::vector" field="outputSlotIds" type="{D0B13803-101B-54D8-914C-0DA49FDFA268}">
-													<Class name="SlotId" field="element" version="2" type="{14C629F6-467B-46FE-8B63-48FDFCA42175}">
-														<Class name="AZ::Uuid" field="m_id" value="{00000000-0000-0000-0000-000000000000}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-													</Class>
-												</Class>
-											</Class>
-										</Class>
-										<Class name="bool" field="IsDependencyReady" value="true" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-										<Class name="bool" field="IsRuntimeActive" value="true" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-									</Class>
-									<Class name="AZ::Entity" field="element" version="2" type="{75651658-8663-478D-9090-2432DFCAFA44}">
-										<Class name="EntityId" field="Id" version="1" type="{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}">
-											<Class name="AZ::u64" field="id" value="35830130085122" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
-										</Class>
-										<Class name="AZStd::string" field="Name" value="319086199609" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-										<Class name="AZStd::vector" field="Components" type="{13D58FF9-1088-5C69-9A1F-C2A144B57B78}">
-											<Class name="Start" field="element" version="2" type="{F200B22A-5903-483A-BF63-5241BC03632B}">
-												<Class name="Node" field="BaseClass1" version="14" type="{52B454AE-FA7E-4FE9-87D3-A1CAB235C691}">
-													<Class name="AZ::Component" field="BaseClass1" type="{EDFCB2CF-F75D-43BE-B26B-F35821B29247}">
-														<Class name="AZ::u64" field="Id" value="3397625298891366833" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
-													</Class>
-													<Class name="AZStd::list" field="Slots" type="{E01B3091-9B44-571A-A87B-7D0E2768D774}">
-														<Class name="Slot" field="element" version="21" type="{FBFE0F02-4C26-475F-A28B-18D3A533C13C}">
-															<Class name="bool" field="IsOverload" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-															<Class name="bool" field="isVisibile" value="true" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-															<Class name="SlotId" field="id" version="2" type="{14C629F6-467B-46FE-8B63-48FDFCA42175}">
-																<Class name="AZ::Uuid" field="m_id" value="{580BA341-A358-462B-806B-8B21A48818AF}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-															</Class>
-															<Class name="int" field="DynamicTypeOverride" value="0" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
-															<Class name="AZStd::vector" field="contracts" type="{C87136AF-3259-590C-9519-D1C4C75F1C86}">
-																<Class name="AZStd::unique_ptr" field="element" type="{75F9EC0D-D8D6-5410-BD79-960E22076B03}">
-																	<Class name="SlotTypeContract" field="element" type="{084B4F2A-AB34-4931-9269-E3614FC1CDFA}">
-																		<Class name="Contract" field="BaseClass1" type="{93846E60-BD7E-438A-B970-5C4AA591CF93}"/>
-																	</Class>
-																</Class>
-															</Class>
-															<Class name="AZStd::string" field="slotName" value="Out" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-															<Class name="AZStd::string" field="toolTip" value="Signaled when the entity that owns this graph is fully activated." type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-															<Class name="Type" field="DisplayDataType" version="2" type="{0EADF8F5-8AB8-42E9-9C50-F5C78255C817}">
-																<Class name="unsigned int" field="m_type" value="2" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-																<Class name="AZ::Uuid" field="m_azType" value="{00000000-0000-0000-0000-000000000000}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-															</Class>
-															<Class name="Crc32" field="DisplayGroup" type="{9F4E062E-06A0-46D4-85DF-E0DA96467D3A}">
-																<Class name="unsigned int" field="Value" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-															</Class>
-															<Class name="SlotDescriptor" field="Descriptor" version="1" type="{FBF1C3A7-AA74-420F-BBE4-29F78D6EA262}">
-																<Class name="int" field="ConnectionType" value="2" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
-																<Class name="int" field="SlotType" value="1" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
-															</Class>
-															<Class name="bool" field="IsLatent" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-															<Class name="Crc32" field="DynamicGroup" type="{9F4E062E-06A0-46D4-85DF-E0DA96467D3A}">
-																<Class name="unsigned int" field="Value" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-															</Class>
-															<Class name="int" field="DataType" value="0" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
-															<Class name="bool" field="IsReference" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-															<Class name="VariableId" field="VariableReference" type="{CA57A57B-E510-4C09-B952-1F43742166AE}">
-																<Class name="AZ::Uuid" field="m_id" value="{00000000-0000-0000-0000-000000000000}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-															</Class>
-														</Class>
-													</Class>
-													<Class name="AZStd::list" field="Datums" type="{36259B04-FAAB-5E8A-B7BF-A5E2EA5A9B3A}"/>
-													<Class name="int" field="NodeDisabledFlag" value="0" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
-												</Class>
-											</Class>
-										</Class>
-										<Class name="bool" field="IsDependencyReady" value="true" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-										<Class name="bool" field="IsRuntimeActive" value="true" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-									</Class>
-									<Class name="AZ::Entity" field="element" version="2" type="{75651658-8663-478D-9090-2432DFCAFA44}">
-										<Class name="EntityId" field="Id" version="1" type="{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}">
-											<Class name="AZ::u64" field="id" value="35821540150530" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
-										</Class>
-										<Class name="AZStd::string" field="Name" value="SC Node(GetVariable)" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-										<Class name="AZStd::vector" field="Components" type="{13D58FF9-1088-5C69-9A1F-C2A144B57B78}">
-											<Class name="GetVariableNode" field="element" type="{8225BE35-4C45-4A32-94D9-3DE114F6F5AF}">
-												<Class name="Node" field="BaseClass1" version="14" type="{52B454AE-FA7E-4FE9-87D3-A1CAB235C691}">
-													<Class name="AZ::Component" field="BaseClass1" type="{EDFCB2CF-F75D-43BE-B26B-F35821B29247}">
-														<Class name="AZ::u64" field="Id" value="15687292051988225268" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
-													</Class>
-													<Class name="AZStd::list" field="Slots" type="{E01B3091-9B44-571A-A87B-7D0E2768D774}">
-														<Class name="Slot" field="element" version="21" type="{FBFE0F02-4C26-475F-A28B-18D3A533C13C}">
-															<Class name="bool" field="IsOverload" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-															<Class name="bool" field="isVisibile" value="true" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-															<Class name="SlotId" field="id" version="2" type="{14C629F6-467B-46FE-8B63-48FDFCA42175}">
-																<Class name="AZ::Uuid" field="m_id" value="{82F521D6-66BB-4C26-AE8C-49C1DE79A5C0}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-															</Class>
-															<Class name="int" field="DynamicTypeOverride" value="0" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
-															<Class name="AZStd::vector" field="contracts" type="{C87136AF-3259-590C-9519-D1C4C75F1C86}">
-																<Class name="AZStd::unique_ptr" field="element" type="{75F9EC0D-D8D6-5410-BD79-960E22076B03}">
-																	<Class name="SlotTypeContract" field="element" type="{084B4F2A-AB34-4931-9269-E3614FC1CDFA}">
-																		<Class name="Contract" field="BaseClass1" type="{93846E60-BD7E-438A-B970-5C4AA591CF93}"/>
-																	</Class>
-																</Class>
-															</Class>
-															<Class name="AZStd::string" field="slotName" value="In" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-															<Class name="AZStd::string" field="toolTip" value="When signaled sends the property referenced by this node to a Data Output slot" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-															<Class name="Type" field="DisplayDataType" version="2" type="{0EADF8F5-8AB8-42E9-9C50-F5C78255C817}">
-																<Class name="unsigned int" field="m_type" value="2" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-																<Class name="AZ::Uuid" field="m_azType" value="{00000000-0000-0000-0000-000000000000}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-															</Class>
-															<Class name="Crc32" field="DisplayGroup" type="{9F4E062E-06A0-46D4-85DF-E0DA96467D3A}">
-																<Class name="unsigned int" field="Value" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-															</Class>
-															<Class name="SlotDescriptor" field="Descriptor" version="1" type="{FBF1C3A7-AA74-420F-BBE4-29F78D6EA262}">
-																<Class name="int" field="ConnectionType" value="1" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
-																<Class name="int" field="SlotType" value="1" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
-															</Class>
-															<Class name="bool" field="IsLatent" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-															<Class name="Crc32" field="DynamicGroup" type="{9F4E062E-06A0-46D4-85DF-E0DA96467D3A}">
-																<Class name="unsigned int" field="Value" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-															</Class>
-															<Class name="int" field="DataType" value="0" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
-															<Class name="bool" field="IsReference" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-															<Class name="VariableId" field="VariableReference" type="{CA57A57B-E510-4C09-B952-1F43742166AE}">
-																<Class name="AZ::Uuid" field="m_id" value="{00000000-0000-0000-0000-000000000000}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-															</Class>
-														</Class>
-														<Class name="Slot" field="element" version="21" type="{FBFE0F02-4C26-475F-A28B-18D3A533C13C}">
-															<Class name="bool" field="IsOverload" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-															<Class name="bool" field="isVisibile" value="true" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-															<Class name="SlotId" field="id" version="2" type="{14C629F6-467B-46FE-8B63-48FDFCA42175}">
-																<Class name="AZ::Uuid" field="m_id" value="{9E2B1F50-27BF-4CF4-88E0-4A87CF4095FE}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-															</Class>
-															<Class name="int" field="DynamicTypeOverride" value="0" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
-															<Class name="AZStd::vector" field="contracts" type="{C87136AF-3259-590C-9519-D1C4C75F1C86}">
-																<Class name="AZStd::unique_ptr" field="element" type="{75F9EC0D-D8D6-5410-BD79-960E22076B03}">
-																	<Class name="SlotTypeContract" field="element" type="{084B4F2A-AB34-4931-9269-E3614FC1CDFA}">
-																		<Class name="Contract" field="BaseClass1" type="{93846E60-BD7E-438A-B970-5C4AA591CF93}"/>
-																	</Class>
-																</Class>
-															</Class>
-															<Class name="AZStd::string" field="slotName" value="Out" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-															<Class name="AZStd::string" field="toolTip" value="Signaled after the referenced property has been pushed to the Data Output slot" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-															<Class name="Type" field="DisplayDataType" version="2" type="{0EADF8F5-8AB8-42E9-9C50-F5C78255C817}">
-																<Class name="unsigned int" field="m_type" value="2" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-																<Class name="AZ::Uuid" field="m_azType" value="{00000000-0000-0000-0000-000000000000}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-															</Class>
-															<Class name="Crc32" field="DisplayGroup" type="{9F4E062E-06A0-46D4-85DF-E0DA96467D3A}">
-																<Class name="unsigned int" field="Value" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-															</Class>
-															<Class name="SlotDescriptor" field="Descriptor" version="1" type="{FBF1C3A7-AA74-420F-BBE4-29F78D6EA262}">
-																<Class name="int" field="ConnectionType" value="2" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
-																<Class name="int" field="SlotType" value="1" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
-															</Class>
-															<Class name="bool" field="IsLatent" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-															<Class name="Crc32" field="DynamicGroup" type="{9F4E062E-06A0-46D4-85DF-E0DA96467D3A}">
-																<Class name="unsigned int" field="Value" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-															</Class>
-															<Class name="int" field="DataType" value="0" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
-															<Class name="bool" field="IsReference" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-															<Class name="VariableId" field="VariableReference" type="{CA57A57B-E510-4C09-B952-1F43742166AE}">
-																<Class name="AZ::Uuid" field="m_id" value="{00000000-0000-0000-0000-000000000000}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-															</Class>
-														</Class>
-														<Class name="Slot" field="element" version="21" type="{FBFE0F02-4C26-475F-A28B-18D3A533C13C}">
-															<Class name="bool" field="IsOverload" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-															<Class name="bool" field="isVisibile" value="true" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-															<Class name="SlotId" field="id" version="2" type="{14C629F6-467B-46FE-8B63-48FDFCA42175}">
-																<Class name="AZ::Uuid" field="m_id" value="{03452E15-4742-4E0C-B56D-42FE700D9C52}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-															</Class>
-															<Class name="int" field="DynamicTypeOverride" value="0" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
-															<Class name="AZStd::vector" field="contracts" type="{C87136AF-3259-590C-9519-D1C4C75F1C86}">
-																<Class name="AZStd::unique_ptr" field="element" type="{75F9EC0D-D8D6-5410-BD79-960E22076B03}">
-																	<Class name="SlotTypeContract" field="element" type="{084B4F2A-AB34-4931-9269-E3614FC1CDFA}">
-																		<Class name="Contract" field="BaseClass1" type="{93846E60-BD7E-438A-B970-5C4AA591CF93}"/>
-																	</Class>
-																</Class>
-															</Class>
-															<Class name="AZStd::string" field="slotName" value="Number" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-															<Class name="AZStd::string" field="toolTip" value="" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-															<Class name="Type" field="DisplayDataType" version="2" type="{0EADF8F5-8AB8-42E9-9C50-F5C78255C817}">
-																<Class name="unsigned int" field="m_type" value="3" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-																<Class name="AZ::Uuid" field="m_azType" value="{00000000-0000-0000-0000-000000000000}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-															</Class>
-															<Class name="Crc32" field="DisplayGroup" type="{9F4E062E-06A0-46D4-85DF-E0DA96467D3A}">
-																<Class name="unsigned int" field="Value" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-															</Class>
-															<Class name="SlotDescriptor" field="Descriptor" version="1" type="{FBF1C3A7-AA74-420F-BBE4-29F78D6EA262}">
-																<Class name="int" field="ConnectionType" value="2" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
-																<Class name="int" field="SlotType" value="2" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
-															</Class>
-															<Class name="bool" field="IsLatent" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-															<Class name="Crc32" field="DynamicGroup" type="{9F4E062E-06A0-46D4-85DF-E0DA96467D3A}">
-																<Class name="unsigned int" field="Value" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-															</Class>
-															<Class name="int" field="DataType" value="1" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
-															<Class name="bool" field="IsReference" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-															<Class name="VariableId" field="VariableReference" type="{CA57A57B-E510-4C09-B952-1F43742166AE}">
-																<Class name="AZ::Uuid" field="m_id" value="{00000000-0000-0000-0000-000000000000}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-															</Class>
-														</Class>
-													</Class>
-													<Class name="AZStd::list" field="Datums" type="{36259B04-FAAB-5E8A-B7BF-A5E2EA5A9B3A}"/>
-													<Class name="int" field="NodeDisabledFlag" value="0" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
-												</Class>
-												<Class name="VariableId" field="m_variableId" type="{CA57A57B-E510-4C09-B952-1F43742166AE}">
-													<Class name="AZ::Uuid" field="m_id" value="{798B51A5-C8BC-403C-A49E-C98442F8170D}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-												</Class>
-												<Class name="SlotId" field="m_variableDataOutSlotId" version="2" type="{14C629F6-467B-46FE-8B63-48FDFCA42175}">
-													<Class name="AZ::Uuid" field="m_id" value="{03452E15-4742-4E0C-B56D-42FE700D9C52}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-												</Class>
-												<Class name="AZStd::vector" field="m_propertyAccounts" type="{3BEC267E-B4D3-588E-B183-954A20D83BDD}"/>
-											</Class>
-										</Class>
-										<Class name="bool" field="IsDependencyReady" value="true" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-										<Class name="bool" field="IsRuntimeActive" value="true" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-									</Class>
-									<Class name="AZ::Entity" field="element" version="2" type="{75651658-8663-478D-9090-2432DFCAFA44}">
-										<Class name="EntityId" field="Id" version="1" type="{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}">
-											<Class name="AZ::u64" field="id" value="35812950215938" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
-										</Class>
-										<Class name="AZStd::string" field="Name" value="SC Node(GetVariable)" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-										<Class name="AZStd::vector" field="Components" type="{13D58FF9-1088-5C69-9A1F-C2A144B57B78}">
-											<Class name="GetVariableNode" field="element" type="{8225BE35-4C45-4A32-94D9-3DE114F6F5AF}">
-												<Class name="Node" field="BaseClass1" version="14" type="{52B454AE-FA7E-4FE9-87D3-A1CAB235C691}">
-													<Class name="AZ::Component" field="BaseClass1" type="{EDFCB2CF-F75D-43BE-B26B-F35821B29247}">
-														<Class name="AZ::u64" field="Id" value="6580914116192618247" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
-													</Class>
-													<Class name="AZStd::list" field="Slots" type="{E01B3091-9B44-571A-A87B-7D0E2768D774}">
-														<Class name="Slot" field="element" version="21" type="{FBFE0F02-4C26-475F-A28B-18D3A533C13C}">
-															<Class name="bool" field="IsOverload" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-															<Class name="bool" field="isVisibile" value="true" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-															<Class name="SlotId" field="id" version="2" type="{14C629F6-467B-46FE-8B63-48FDFCA42175}">
-																<Class name="AZ::Uuid" field="m_id" value="{82901026-EF74-475E-A6F6-6AE0672CB137}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-															</Class>
-															<Class name="int" field="DynamicTypeOverride" value="0" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
-															<Class name="AZStd::vector" field="contracts" type="{C87136AF-3259-590C-9519-D1C4C75F1C86}">
-																<Class name="AZStd::unique_ptr" field="element" type="{75F9EC0D-D8D6-5410-BD79-960E22076B03}">
-																	<Class name="SlotTypeContract" field="element" type="{084B4F2A-AB34-4931-9269-E3614FC1CDFA}">
-																		<Class name="Contract" field="BaseClass1" type="{93846E60-BD7E-438A-B970-5C4AA591CF93}"/>
-																	</Class>
-																</Class>
-															</Class>
-															<Class name="AZStd::string" field="slotName" value="In" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-															<Class name="AZStd::string" field="toolTip" value="When signaled sends the property referenced by this node to a Data Output slot" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-															<Class name="Type" field="DisplayDataType" version="2" type="{0EADF8F5-8AB8-42E9-9C50-F5C78255C817}">
-																<Class name="unsigned int" field="m_type" value="2" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-																<Class name="AZ::Uuid" field="m_azType" value="{00000000-0000-0000-0000-000000000000}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-															</Class>
-															<Class name="Crc32" field="DisplayGroup" type="{9F4E062E-06A0-46D4-85DF-E0DA96467D3A}">
-																<Class name="unsigned int" field="Value" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-															</Class>
-															<Class name="SlotDescriptor" field="Descriptor" version="1" type="{FBF1C3A7-AA74-420F-BBE4-29F78D6EA262}">
-																<Class name="int" field="ConnectionType" value="1" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
-																<Class name="int" field="SlotType" value="1" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
-															</Class>
-															<Class name="bool" field="IsLatent" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-															<Class name="Crc32" field="DynamicGroup" type="{9F4E062E-06A0-46D4-85DF-E0DA96467D3A}">
-																<Class name="unsigned int" field="Value" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-															</Class>
-															<Class name="int" field="DataType" value="0" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
-															<Class name="bool" field="IsReference" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-															<Class name="VariableId" field="VariableReference" type="{CA57A57B-E510-4C09-B952-1F43742166AE}">
-																<Class name="AZ::Uuid" field="m_id" value="{00000000-0000-0000-0000-000000000000}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-															</Class>
-														</Class>
-														<Class name="Slot" field="element" version="21" type="{FBFE0F02-4C26-475F-A28B-18D3A533C13C}">
-															<Class name="bool" field="IsOverload" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-															<Class name="bool" field="isVisibile" value="true" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-															<Class name="SlotId" field="id" version="2" type="{14C629F6-467B-46FE-8B63-48FDFCA42175}">
-																<Class name="AZ::Uuid" field="m_id" value="{3F8FCA7E-AB02-4124-82DB-970C16042742}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-															</Class>
-															<Class name="int" field="DynamicTypeOverride" value="0" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
-															<Class name="AZStd::vector" field="contracts" type="{C87136AF-3259-590C-9519-D1C4C75F1C86}">
-																<Class name="AZStd::unique_ptr" field="element" type="{75F9EC0D-D8D6-5410-BD79-960E22076B03}">
-																	<Class name="SlotTypeContract" field="element" type="{084B4F2A-AB34-4931-9269-E3614FC1CDFA}">
-																		<Class name="Contract" field="BaseClass1" type="{93846E60-BD7E-438A-B970-5C4AA591CF93}"/>
-																	</Class>
-																</Class>
-															</Class>
-															<Class name="AZStd::string" field="slotName" value="Out" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-															<Class name="AZStd::string" field="toolTip" value="Signaled after the referenced property has been pushed to the Data Output slot" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-															<Class name="Type" field="DisplayDataType" version="2" type="{0EADF8F5-8AB8-42E9-9C50-F5C78255C817}">
-																<Class name="unsigned int" field="m_type" value="2" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-																<Class name="AZ::Uuid" field="m_azType" value="{00000000-0000-0000-0000-000000000000}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-															</Class>
-															<Class name="Crc32" field="DisplayGroup" type="{9F4E062E-06A0-46D4-85DF-E0DA96467D3A}">
-																<Class name="unsigned int" field="Value" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-															</Class>
-															<Class name="SlotDescriptor" field="Descriptor" version="1" type="{FBF1C3A7-AA74-420F-BBE4-29F78D6EA262}">
-																<Class name="int" field="ConnectionType" value="2" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
-																<Class name="int" field="SlotType" value="1" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
-															</Class>
-															<Class name="bool" field="IsLatent" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-															<Class name="Crc32" field="DynamicGroup" type="{9F4E062E-06A0-46D4-85DF-E0DA96467D3A}">
-																<Class name="unsigned int" field="Value" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-															</Class>
-															<Class name="int" field="DataType" value="0" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
-															<Class name="bool" field="IsReference" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-															<Class name="VariableId" field="VariableReference" type="{CA57A57B-E510-4C09-B952-1F43742166AE}">
-																<Class name="AZ::Uuid" field="m_id" value="{00000000-0000-0000-0000-000000000000}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-															</Class>
-														</Class>
-														<Class name="Slot" field="element" version="21" type="{FBFE0F02-4C26-475F-A28B-18D3A533C13C}">
-															<Class name="bool" field="IsOverload" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-															<Class name="bool" field="isVisibile" value="true" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-															<Class name="SlotId" field="id" version="2" type="{14C629F6-467B-46FE-8B63-48FDFCA42175}">
-																<Class name="AZ::Uuid" field="m_id" value="{F1E1D8B7-589C-4C28-AA80-00144E85294F}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-															</Class>
-															<Class name="int" field="DynamicTypeOverride" value="0" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
-															<Class name="AZStd::vector" field="contracts" type="{C87136AF-3259-590C-9519-D1C4C75F1C86}">
-																<Class name="AZStd::unique_ptr" field="element" type="{75F9EC0D-D8D6-5410-BD79-960E22076B03}">
-																	<Class name="SlotTypeContract" field="element" type="{084B4F2A-AB34-4931-9269-E3614FC1CDFA}">
-																		<Class name="Contract" field="BaseClass1" type="{93846E60-BD7E-438A-B970-5C4AA591CF93}"/>
-																	</Class>
-																</Class>
-															</Class>
-															<Class name="AZStd::string" field="slotName" value="Number" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-															<Class name="AZStd::string" field="toolTip" value="" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-															<Class name="Type" field="DisplayDataType" version="2" type="{0EADF8F5-8AB8-42E9-9C50-F5C78255C817}">
-																<Class name="unsigned int" field="m_type" value="3" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-																<Class name="AZ::Uuid" field="m_azType" value="{00000000-0000-0000-0000-000000000000}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-															</Class>
-															<Class name="Crc32" field="DisplayGroup" type="{9F4E062E-06A0-46D4-85DF-E0DA96467D3A}">
-																<Class name="unsigned int" field="Value" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-															</Class>
-															<Class name="SlotDescriptor" field="Descriptor" version="1" type="{FBF1C3A7-AA74-420F-BBE4-29F78D6EA262}">
-																<Class name="int" field="ConnectionType" value="2" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
-																<Class name="int" field="SlotType" value="2" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
-															</Class>
-															<Class name="bool" field="IsLatent" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-															<Class name="Crc32" field="DynamicGroup" type="{9F4E062E-06A0-46D4-85DF-E0DA96467D3A}">
-																<Class name="unsigned int" field="Value" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-															</Class>
-															<Class name="int" field="DataType" value="1" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
-															<Class name="bool" field="IsReference" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-															<Class name="VariableId" field="VariableReference" type="{CA57A57B-E510-4C09-B952-1F43742166AE}">
-																<Class name="AZ::Uuid" field="m_id" value="{00000000-0000-0000-0000-000000000000}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-															</Class>
-														</Class>
-													</Class>
-													<Class name="AZStd::list" field="Datums" type="{36259B04-FAAB-5E8A-B7BF-A5E2EA5A9B3A}"/>
-													<Class name="int" field="NodeDisabledFlag" value="0" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
-												</Class>
-												<Class name="VariableId" field="m_variableId" type="{CA57A57B-E510-4C09-B952-1F43742166AE}">
-													<Class name="AZ::Uuid" field="m_id" value="{DD99C1E7-468B-46D5-9758-9CDCA5D3FC78}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-												</Class>
-												<Class name="SlotId" field="m_variableDataOutSlotId" version="2" type="{14C629F6-467B-46FE-8B63-48FDFCA42175}">
-													<Class name="AZ::Uuid" field="m_id" value="{F1E1D8B7-589C-4C28-AA80-00144E85294F}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-												</Class>
-												<Class name="AZStd::vector" field="m_propertyAccounts" type="{3BEC267E-B4D3-588E-B183-954A20D83BDD}"/>
-											</Class>
-										</Class>
-										<Class name="bool" field="IsDependencyReady" value="true" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-										<Class name="bool" field="IsRuntimeActive" value="true" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-									</Class>
-									<Class name="AZ::Entity" field="element" version="2" type="{75651658-8663-478D-9090-2432DFCAFA44}">
-										<Class name="EntityId" field="Id" version="1" type="{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}">
-											<Class name="AZ::u64" field="id" value="35825835117826" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
-										</Class>
-										<Class name="AZStd::string" field="Name" value="37719353338543" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-										<Class name="AZStd::vector" field="Components" type="{13D58FF9-1088-5C69-9A1F-C2A144B57B78}">
-											<Class name="Method" field="element" version="5" type="{E42861BD-1956-45AE-8DD7-CCFC1E3E5ACF}">
-												<Class name="Node" field="BaseClass1" version="14" type="{52B454AE-FA7E-4FE9-87D3-A1CAB235C691}">
-													<Class name="AZ::Component" field="BaseClass1" type="{EDFCB2CF-F75D-43BE-B26B-F35821B29247}">
-														<Class name="AZ::u64" field="Id" value="4504459272326843067" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
-													</Class>
-													<Class name="AZStd::list" field="Slots" type="{E01B3091-9B44-571A-A87B-7D0E2768D774}">
-														<Class name="Slot" field="element" version="21" type="{FBFE0F02-4C26-475F-A28B-18D3A533C13C}">
-															<Class name="bool" field="IsOverload" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-															<Class name="bool" field="isVisibile" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-															<Class name="SlotId" field="id" version="2" type="{14C629F6-467B-46FE-8B63-48FDFCA42175}">
-																<Class name="AZ::Uuid" field="m_id" value="{BC9878D7-815D-4F38-AD61-7FAF9251AF22}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-															</Class>
-															<Class name="int" field="DynamicTypeOverride" value="0" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
-															<Class name="AZStd::vector" field="contracts" type="{C87136AF-3259-590C-9519-D1C4C75F1C86}">
-																<Class name="AZStd::unique_ptr" field="element" type="{75F9EC0D-D8D6-5410-BD79-960E22076B03}">
-																	<Class name="SlotTypeContract" field="element" type="{084B4F2A-AB34-4931-9269-E3614FC1CDFA}">
-																		<Class name="Contract" field="BaseClass1" type="{93846E60-BD7E-438A-B970-5C4AA591CF93}"/>
-																	</Class>
-																</Class>
-																<Class name="AZStd::unique_ptr" field="element" type="{75F9EC0D-D8D6-5410-BD79-960E22076B03}">
-																	<Class name="ExclusivePureDataContract" field="element" type="{E48A0B26-B6B7-4AF3-9341-9E5C5C1F0DE8}">
-																		<Class name="Contract" field="BaseClass1" type="{93846E60-BD7E-438A-B970-5C4AA591CF93}"/>
-																	</Class>
-																</Class>
-															</Class>
-															<Class name="AZStd::string" field="slotName" value="EntityID: 0" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-															<Class name="AZStd::string" field="toolTip" value="" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-															<Class name="Type" field="DisplayDataType" version="2" type="{0EADF8F5-8AB8-42E9-9C50-F5C78255C817}">
-																<Class name="unsigned int" field="m_type" value="2" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-																<Class name="AZ::Uuid" field="m_azType" value="{00000000-0000-0000-0000-000000000000}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-															</Class>
-															<Class name="Crc32" field="DisplayGroup" type="{9F4E062E-06A0-46D4-85DF-E0DA96467D3A}">
-																<Class name="unsigned int" field="Value" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-															</Class>
-															<Class name="SlotDescriptor" field="Descriptor" version="1" type="{FBF1C3A7-AA74-420F-BBE4-29F78D6EA262}">
-																<Class name="int" field="ConnectionType" value="1" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
-																<Class name="int" field="SlotType" value="2" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
-															</Class>
-															<Class name="bool" field="IsLatent" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-															<Class name="Crc32" field="DynamicGroup" type="{9F4E062E-06A0-46D4-85DF-E0DA96467D3A}">
-																<Class name="unsigned int" field="Value" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-															</Class>
-															<Class name="int" field="DataType" value="1" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
-															<Class name="bool" field="IsReference" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-															<Class name="VariableId" field="VariableReference" type="{CA57A57B-E510-4C09-B952-1F43742166AE}">
-																<Class name="AZ::Uuid" field="m_id" value="{00000000-0000-0000-0000-000000000000}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-															</Class>
-														</Class>
-														<Class name="Slot" field="element" version="21" type="{FBFE0F02-4C26-475F-A28B-18D3A533C13C}">
-															<Class name="bool" field="IsOverload" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-															<Class name="bool" field="isVisibile" value="true" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-															<Class name="SlotId" field="id" version="2" type="{14C629F6-467B-46FE-8B63-48FDFCA42175}">
-																<Class name="AZ::Uuid" field="m_id" value="{4608F5E1-B87D-4749-8CF3-6D317F07D461}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-															</Class>
-															<Class name="int" field="DynamicTypeOverride" value="0" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
-															<Class name="AZStd::vector" field="contracts" type="{C87136AF-3259-590C-9519-D1C4C75F1C86}">
-																<Class name="AZStd::unique_ptr" field="element" type="{75F9EC0D-D8D6-5410-BD79-960E22076B03}">
-																	<Class name="SlotTypeContract" field="element" type="{084B4F2A-AB34-4931-9269-E3614FC1CDFA}">
-																		<Class name="Contract" field="BaseClass1" type="{93846E60-BD7E-438A-B970-5C4AA591CF93}"/>
-																	</Class>
-																</Class>
-																<Class name="AZStd::unique_ptr" field="element" type="{75F9EC0D-D8D6-5410-BD79-960E22076B03}">
-																	<Class name="ExclusivePureDataContract" field="element" type="{E48A0B26-B6B7-4AF3-9341-9E5C5C1F0DE8}">
-																		<Class name="Contract" field="BaseClass1" type="{93846E60-BD7E-438A-B970-5C4AA591CF93}"/>
-																	</Class>
-																</Class>
-															</Class>
-															<Class name="AZStd::string" field="slotName" value="Report" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-															<Class name="AZStd::string" field="toolTip" value="additional notes for the test report" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-															<Class name="Type" field="DisplayDataType" version="2" type="{0EADF8F5-8AB8-42E9-9C50-F5C78255C817}">
-																<Class name="unsigned int" field="m_type" value="5" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-																<Class name="AZ::Uuid" field="m_azType" value="{00000000-0000-0000-0000-000000000000}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-															</Class>
-															<Class name="Crc32" field="DisplayGroup" type="{9F4E062E-06A0-46D4-85DF-E0DA96467D3A}">
-																<Class name="unsigned int" field="Value" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-															</Class>
-															<Class name="SlotDescriptor" field="Descriptor" version="1" type="{FBF1C3A7-AA74-420F-BBE4-29F78D6EA262}">
-																<Class name="int" field="ConnectionType" value="1" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
-																<Class name="int" field="SlotType" value="2" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
-															</Class>
-															<Class name="bool" field="IsLatent" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-															<Class name="Crc32" field="DynamicGroup" type="{9F4E062E-06A0-46D4-85DF-E0DA96467D3A}">
-																<Class name="unsigned int" field="Value" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-															</Class>
-															<Class name="int" field="DataType" value="1" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
-															<Class name="bool" field="IsReference" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-															<Class name="VariableId" field="VariableReference" type="{CA57A57B-E510-4C09-B952-1F43742166AE}">
-																<Class name="AZ::Uuid" field="m_id" value="{00000000-0000-0000-0000-000000000000}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-															</Class>
-														</Class>
-														<Class name="Slot" field="element" version="21" type="{FBFE0F02-4C26-475F-A28B-18D3A533C13C}">
-															<Class name="bool" field="IsOverload" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-															<Class name="bool" field="isVisibile" value="true" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-															<Class name="SlotId" field="id" version="2" type="{14C629F6-467B-46FE-8B63-48FDFCA42175}">
-																<Class name="AZ::Uuid" field="m_id" value="{77333425-735E-4C33-820E-DF6B8CE6613E}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-															</Class>
-															<Class name="int" field="DynamicTypeOverride" value="0" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
-															<Class name="AZStd::vector" field="contracts" type="{C87136AF-3259-590C-9519-D1C4C75F1C86}">
-																<Class name="AZStd::unique_ptr" field="element" type="{75F9EC0D-D8D6-5410-BD79-960E22076B03}">
-																	<Class name="SlotTypeContract" field="element" type="{084B4F2A-AB34-4931-9269-E3614FC1CDFA}">
-																		<Class name="Contract" field="BaseClass1" type="{93846E60-BD7E-438A-B970-5C4AA591CF93}"/>
-																	</Class>
-																</Class>
-															</Class>
-															<Class name="AZStd::string" field="slotName" value="In" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-															<Class name="AZStd::string" field="toolTip" value="" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-															<Class name="Type" field="DisplayDataType" version="2" type="{0EADF8F5-8AB8-42E9-9C50-F5C78255C817}">
-																<Class name="unsigned int" field="m_type" value="2" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-																<Class name="AZ::Uuid" field="m_azType" value="{00000000-0000-0000-0000-000000000000}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-															</Class>
-															<Class name="Crc32" field="DisplayGroup" type="{9F4E062E-06A0-46D4-85DF-E0DA96467D3A}">
-																<Class name="unsigned int" field="Value" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-															</Class>
-															<Class name="SlotDescriptor" field="Descriptor" version="1" type="{FBF1C3A7-AA74-420F-BBE4-29F78D6EA262}">
-																<Class name="int" field="ConnectionType" value="1" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
-																<Class name="int" field="SlotType" value="1" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
-															</Class>
-															<Class name="bool" field="IsLatent" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-															<Class name="Crc32" field="DynamicGroup" type="{9F4E062E-06A0-46D4-85DF-E0DA96467D3A}">
-																<Class name="unsigned int" field="Value" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-															</Class>
-															<Class name="int" field="DataType" value="0" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
-															<Class name="bool" field="IsReference" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-															<Class name="VariableId" field="VariableReference" type="{CA57A57B-E510-4C09-B952-1F43742166AE}">
-																<Class name="AZ::Uuid" field="m_id" value="{00000000-0000-0000-0000-000000000000}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-															</Class>
-														</Class>
-														<Class name="Slot" field="element" version="21" type="{FBFE0F02-4C26-475F-A28B-18D3A533C13C}">
-															<Class name="bool" field="IsOverload" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-															<Class name="bool" field="isVisibile" value="true" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-															<Class name="SlotId" field="id" version="2" type="{14C629F6-467B-46FE-8B63-48FDFCA42175}">
-																<Class name="AZ::Uuid" field="m_id" value="{0299DA2E-B579-472F-8E47-3B6199853915}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-															</Class>
-															<Class name="int" field="DynamicTypeOverride" value="0" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
-															<Class name="AZStd::vector" field="contracts" type="{C87136AF-3259-590C-9519-D1C4C75F1C86}">
-																<Class name="AZStd::unique_ptr" field="element" type="{75F9EC0D-D8D6-5410-BD79-960E22076B03}">
-																	<Class name="SlotTypeContract" field="element" type="{084B4F2A-AB34-4931-9269-E3614FC1CDFA}">
-																		<Class name="Contract" field="BaseClass1" type="{93846E60-BD7E-438A-B970-5C4AA591CF93}"/>
-																	</Class>
-																</Class>
-															</Class>
-															<Class name="AZStd::string" field="slotName" value="Out" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-															<Class name="AZStd::string" field="toolTip" value="" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-															<Class name="Type" field="DisplayDataType" version="2" type="{0EADF8F5-8AB8-42E9-9C50-F5C78255C817}">
-																<Class name="unsigned int" field="m_type" value="2" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-																<Class name="AZ::Uuid" field="m_azType" value="{00000000-0000-0000-0000-000000000000}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-															</Class>
-															<Class name="Crc32" field="DisplayGroup" type="{9F4E062E-06A0-46D4-85DF-E0DA96467D3A}">
-																<Class name="unsigned int" field="Value" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-															</Class>
-															<Class name="SlotDescriptor" field="Descriptor" version="1" type="{FBF1C3A7-AA74-420F-BBE4-29F78D6EA262}">
-																<Class name="int" field="ConnectionType" value="2" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
-																<Class name="int" field="SlotType" value="1" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
-															</Class>
-															<Class name="bool" field="IsLatent" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-															<Class name="Crc32" field="DynamicGroup" type="{9F4E062E-06A0-46D4-85DF-E0DA96467D3A}">
-																<Class name="unsigned int" field="Value" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-															</Class>
-															<Class name="int" field="DataType" value="0" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
-															<Class name="bool" field="IsReference" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-															<Class name="VariableId" field="VariableReference" type="{CA57A57B-E510-4C09-B952-1F43742166AE}">
-																<Class name="AZ::Uuid" field="m_id" value="{00000000-0000-0000-0000-000000000000}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-															</Class>
-														</Class>
-													</Class>
-													<Class name="AZStd::list" field="Datums" type="{36259B04-FAAB-5E8A-B7BF-A5E2EA5A9B3A}">
-														<Class name="Datum" field="element" version="6" type="{8B836FC0-98A8-4A81-8651-35C7CA125451}">
-															<Class name="bool" field="m_isUntypedStorage" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-															<Class name="Type" field="m_type" version="2" type="{0EADF8F5-8AB8-42E9-9C50-F5C78255C817}">
-																<Class name="unsigned int" field="m_type" value="1" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-																<Class name="AZ::Uuid" field="m_azType" value="{00000000-0000-0000-0000-000000000000}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-															</Class>
-															<Class name="int" field="m_originality" value="1" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
-															<Class name="any" field="m_datumStorage" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
-																<Class name="EntityId" field="m_data" version="1" type="{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}">
-																	<Class name="AZ::u64" field="id" value="4276206253" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
-																</Class>
-															</Class>
-															<Class name="AZStd::string" field="m_datumLabel" value="" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-														</Class>
-														<Class name="Datum" field="element" version="6" type="{8B836FC0-98A8-4A81-8651-35C7CA125451}">
-															<Class name="bool" field="m_isUntypedStorage" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-															<Class name="Type" field="m_type" version="2" type="{0EADF8F5-8AB8-42E9-9C50-F5C78255C817}">
-																<Class name="unsigned int" field="m_type" value="5" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-																<Class name="AZ::Uuid" field="m_azType" value="{00000000-0000-0000-0000-000000000000}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-															</Class>
-															<Class name="int" field="m_originality" value="0" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
-															<Class name="any" field="m_datumStorage" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
-																<Class name="AZStd::string" field="m_data" value="" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-															</Class>
-															<Class name="AZStd::string" field="m_datumLabel" value="Report" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-														</Class>
-													</Class>
-													<Class name="int" field="NodeDisabledFlag" value="0" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
-												</Class>
-												<Class name="int" field="methodType" value="2" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
-												<Class name="AZStd::string" field="methodName" value="Mark Complete" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-												<Class name="AZStd::string" field="className" value="Unit Testing" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-												<Class name="AZStd::vector" field="namespaces" type="{99DAD0BC-740E-5E82-826B-8FC7968CC02C}"/>
-												<Class name="AZStd::vector" field="resultSlotIDs" type="{D0B13803-101B-54D8-914C-0DA49FDFA268}"/>
-												<Class name="AZStd::string" field="prettyClassName" value="Unit Testing" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-											</Class>
-										</Class>
-										<Class name="bool" field="IsDependencyReady" value="true" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-										<Class name="bool" field="IsRuntimeActive" value="true" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-									</Class>
-								</Class>
-								<Class name="AZStd::vector" field="m_connections" type="{21786AF0-2606-5B9A-86EB-0892E2820E6C}">
-									<Class name="AZ::Entity" field="element" version="2" type="{75651658-8663-478D-9090-2432DFCAFA44}">
-										<Class name="EntityId" field="Id" version="1" type="{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}">
-											<Class name="AZ::u64" field="id" value="35834425052418" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
-										</Class>
-										<Class name="AZStd::string" field="Name" value="srcEndpoint=(Get Variable: Out), destEndpoint=(Get Variable: In)" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-										<Class name="AZStd::vector" field="Components" type="{13D58FF9-1088-5C69-9A1F-C2A144B57B78}">
-											<Class name="Connection" field="element" type="{64CA5016-E803-4AC4-9A36-BDA2C890C6EB}">
-												<Class name="AZ::Component" field="BaseClass1" type="{EDFCB2CF-F75D-43BE-B26B-F35821B29247}">
-													<Class name="AZ::u64" field="Id" value="6865546659146654810" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
-												</Class>
-												<Class name="Endpoint" field="sourceEndpoint" version="1" type="{91D4ADAC-56FE-4D82-B9AF-6975D21435C8}">
-													<Class name="EntityId" field="nodeId" version="1" type="{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}">
-														<Class name="AZ::u64" field="id" value="35812950215938" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
-													</Class>
-													<Class name="SlotId" field="slotId" version="2" type="{14C629F6-467B-46FE-8B63-48FDFCA42175}">
-														<Class name="AZ::Uuid" field="m_id" value="{3F8FCA7E-AB02-4124-82DB-970C16042742}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-													</Class>
-												</Class>
-												<Class name="Endpoint" field="targetEndpoint" version="1" type="{91D4ADAC-56FE-4D82-B9AF-6975D21435C8}">
-													<Class name="EntityId" field="nodeId" version="1" type="{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}">
-														<Class name="AZ::u64" field="id" value="35821540150530" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
-													</Class>
-													<Class name="SlotId" field="slotId" version="2" type="{14C629F6-467B-46FE-8B63-48FDFCA42175}">
-														<Class name="AZ::Uuid" field="m_id" value="{82F521D6-66BB-4C26-AE8C-49C1DE79A5C0}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-													</Class>
-												</Class>
-											</Class>
-										</Class>
-										<Class name="bool" field="IsDependencyReady" value="true" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-										<Class name="bool" field="IsRuntimeActive" value="true" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-									</Class>
-									<Class name="AZ::Entity" field="element" version="2" type="{75651658-8663-478D-9090-2432DFCAFA44}">
-										<Class name="EntityId" field="Id" version="1" type="{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}">
-											<Class name="AZ::u64" field="id" value="35838720019714" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
-										</Class>
-										<Class name="AZStd::string" field="Name" value="srcEndpoint=(On Graph Start: Out), destEndpoint=(Get Variable: In)" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-										<Class name="AZStd::vector" field="Components" type="{13D58FF9-1088-5C69-9A1F-C2A144B57B78}">
-											<Class name="Connection" field="element" type="{64CA5016-E803-4AC4-9A36-BDA2C890C6EB}">
-												<Class name="AZ::Component" field="BaseClass1" type="{EDFCB2CF-F75D-43BE-B26B-F35821B29247}">
-													<Class name="AZ::u64" field="Id" value="4734231341724554698" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
-												</Class>
-												<Class name="Endpoint" field="sourceEndpoint" version="1" type="{91D4ADAC-56FE-4D82-B9AF-6975D21435C8}">
-													<Class name="EntityId" field="nodeId" version="1" type="{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}">
-														<Class name="AZ::u64" field="id" value="35830130085122" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
-													</Class>
-													<Class name="SlotId" field="slotId" version="2" type="{14C629F6-467B-46FE-8B63-48FDFCA42175}">
-														<Class name="AZ::Uuid" field="m_id" value="{580BA341-A358-462B-806B-8B21A48818AF}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-													</Class>
-												</Class>
-												<Class name="Endpoint" field="targetEndpoint" version="1" type="{91D4ADAC-56FE-4D82-B9AF-6975D21435C8}">
-													<Class name="EntityId" field="nodeId" version="1" type="{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}">
-														<Class name="AZ::u64" field="id" value="35812950215938" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
-													</Class>
-													<Class name="SlotId" field="slotId" version="2" type="{14C629F6-467B-46FE-8B63-48FDFCA42175}">
-														<Class name="AZ::Uuid" field="m_id" value="{82901026-EF74-475E-A6F6-6AE0672CB137}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-													</Class>
-												</Class>
-											</Class>
-										</Class>
-										<Class name="bool" field="IsDependencyReady" value="true" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-										<Class name="bool" field="IsRuntimeActive" value="true" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-									</Class>
-									<Class name="AZ::Entity" field="element" version="2" type="{75651658-8663-478D-9090-2432DFCAFA44}">
-										<Class name="EntityId" field="Id" version="1" type="{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}">
-											<Class name="AZ::u64" field="id" value="913392993207592" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
-										</Class>
-										<Class name="AZStd::string" field="Name" value="srcEndpoint=(Get Variable: Number), destEndpoint=(Expect Greater Than: Reference)" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-										<Class name="AZStd::vector" field="Components" type="{13D58FF9-1088-5C69-9A1F-C2A144B57B78}">
-											<Class name="Connection" field="element" type="{64CA5016-E803-4AC4-9A36-BDA2C890C6EB}">
-												<Class name="AZ::Component" field="BaseClass1" type="{EDFCB2CF-F75D-43BE-B26B-F35821B29247}">
-													<Class name="AZ::u64" field="Id" value="10194596403623170725" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
-												</Class>
-												<Class name="Endpoint" field="sourceEndpoint" version="1" type="{91D4ADAC-56FE-4D82-B9AF-6975D21435C8}">
-													<Class name="EntityId" field="nodeId" version="1" type="{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}">
-														<Class name="AZ::u64" field="id" value="35812950215938" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
-													</Class>
-													<Class name="SlotId" field="slotId" version="2" type="{14C629F6-467B-46FE-8B63-48FDFCA42175}">
-														<Class name="AZ::Uuid" field="m_id" value="{F1E1D8B7-589C-4C28-AA80-00144E85294F}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-													</Class>
-												</Class>
-												<Class name="Endpoint" field="targetEndpoint" version="1" type="{91D4ADAC-56FE-4D82-B9AF-6975D21435C8}">
-													<Class name="EntityId" field="nodeId" version="1" type="{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}">
-														<Class name="AZ::u64" field="id" value="35817245183234" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
-													</Class>
-													<Class name="SlotId" field="slotId" version="2" type="{14C629F6-467B-46FE-8B63-48FDFCA42175}">
-														<Class name="AZ::Uuid" field="m_id" value="{5A1713AB-B2BD-4E28-8D27-D3DF9B41B3A8}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-													</Class>
-												</Class>
-											</Class>
-										</Class>
-										<Class name="bool" field="IsDependencyReady" value="true" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-										<Class name="bool" field="IsRuntimeActive" value="true" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-									</Class>
-									<Class name="AZ::Entity" field="element" version="2" type="{75651658-8663-478D-9090-2432DFCAFA44}">
-										<Class name="EntityId" field="Id" version="1" type="{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}">
-											<Class name="AZ::u64" field="id" value="913457417717032" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
-										</Class>
-										<Class name="AZStd::string" field="Name" value="srcEndpoint=(Expect Greater Than: Out), destEndpoint=(Mark Complete: In)" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-										<Class name="AZStd::vector" field="Components" type="{13D58FF9-1088-5C69-9A1F-C2A144B57B78}">
-											<Class name="Connection" field="element" type="{64CA5016-E803-4AC4-9A36-BDA2C890C6EB}">
-												<Class name="AZ::Component" field="BaseClass1" type="{EDFCB2CF-F75D-43BE-B26B-F35821B29247}">
-													<Class name="AZ::u64" field="Id" value="8644757972423562696" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
-												</Class>
-												<Class name="Endpoint" field="sourceEndpoint" version="1" type="{91D4ADAC-56FE-4D82-B9AF-6975D21435C8}">
-													<Class name="EntityId" field="nodeId" version="1" type="{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}">
-														<Class name="AZ::u64" field="id" value="35817245183234" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
-													</Class>
-													<Class name="SlotId" field="slotId" version="2" type="{14C629F6-467B-46FE-8B63-48FDFCA42175}">
-														<Class name="AZ::Uuid" field="m_id" value="{7F07D2B9-4E97-4434-AC57-38D644B73A39}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-													</Class>
-												</Class>
-												<Class name="Endpoint" field="targetEndpoint" version="1" type="{91D4ADAC-56FE-4D82-B9AF-6975D21435C8}">
-													<Class name="EntityId" field="nodeId" version="1" type="{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}">
-														<Class name="AZ::u64" field="id" value="35825835117826" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
-													</Class>
-													<Class name="SlotId" field="slotId" version="2" type="{14C629F6-467B-46FE-8B63-48FDFCA42175}">
-														<Class name="AZ::Uuid" field="m_id" value="{77333425-735E-4C33-820E-DF6B8CE6613E}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-													</Class>
-												</Class>
-											</Class>
-										</Class>
-										<Class name="bool" field="IsDependencyReady" value="true" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-										<Class name="bool" field="IsRuntimeActive" value="true" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-									</Class>
-									<Class name="AZ::Entity" field="element" version="2" type="{75651658-8663-478D-9090-2432DFCAFA44}">
-										<Class name="EntityId" field="Id" version="1" type="{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}">
-											<Class name="AZ::u64" field="id" value="913461712684328" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
-										</Class>
-										<Class name="AZStd::string" field="Name" value="srcEndpoint=(Get Variable: Out), destEndpoint=(Expect Greater Than: In)" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-										<Class name="AZStd::vector" field="Components" type="{13D58FF9-1088-5C69-9A1F-C2A144B57B78}">
-											<Class name="Connection" field="element" type="{64CA5016-E803-4AC4-9A36-BDA2C890C6EB}">
-												<Class name="AZ::Component" field="BaseClass1" type="{EDFCB2CF-F75D-43BE-B26B-F35821B29247}">
-													<Class name="AZ::u64" field="Id" value="14752499224355635717" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
-												</Class>
-												<Class name="Endpoint" field="sourceEndpoint" version="1" type="{91D4ADAC-56FE-4D82-B9AF-6975D21435C8}">
-													<Class name="EntityId" field="nodeId" version="1" type="{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}">
-														<Class name="AZ::u64" field="id" value="35821540150530" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
-													</Class>
-													<Class name="SlotId" field="slotId" version="2" type="{14C629F6-467B-46FE-8B63-48FDFCA42175}">
-														<Class name="AZ::Uuid" field="m_id" value="{9E2B1F50-27BF-4CF4-88E0-4A87CF4095FE}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-													</Class>
-												</Class>
-												<Class name="Endpoint" field="targetEndpoint" version="1" type="{91D4ADAC-56FE-4D82-B9AF-6975D21435C8}">
-													<Class name="EntityId" field="nodeId" version="1" type="{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}">
-														<Class name="AZ::u64" field="id" value="35817245183234" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
-													</Class>
-													<Class name="SlotId" field="slotId" version="2" type="{14C629F6-467B-46FE-8B63-48FDFCA42175}">
-														<Class name="AZ::Uuid" field="m_id" value="{43EB7FF0-576A-4BCC-827B-E356B27C7CE6}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-													</Class>
-												</Class>
-											</Class>
-										</Class>
-										<Class name="bool" field="IsDependencyReady" value="true" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-										<Class name="bool" field="IsRuntimeActive" value="true" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-									</Class>
-									<Class name="AZ::Entity" field="element" version="2" type="{75651658-8663-478D-9090-2432DFCAFA44}">
-										<Class name="EntityId" field="Id" version="1" type="{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}">
-											<Class name="AZ::u64" field="id" value="913466007651624" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
-										</Class>
-										<Class name="AZStd::string" field="Name" value="srcEndpoint=(Get Variable: Number), destEndpoint=(Expect Greater Than: Candidate)" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-										<Class name="AZStd::vector" field="Components" type="{13D58FF9-1088-5C69-9A1F-C2A144B57B78}">
-											<Class name="Connection" field="element" type="{64CA5016-E803-4AC4-9A36-BDA2C890C6EB}">
-												<Class name="AZ::Component" field="BaseClass1" type="{EDFCB2CF-F75D-43BE-B26B-F35821B29247}">
-													<Class name="AZ::u64" field="Id" value="16335580892027604938" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
-												</Class>
-												<Class name="Endpoint" field="sourceEndpoint" version="1" type="{91D4ADAC-56FE-4D82-B9AF-6975D21435C8}">
-													<Class name="EntityId" field="nodeId" version="1" type="{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}">
-														<Class name="AZ::u64" field="id" value="35821540150530" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
-													</Class>
-													<Class name="SlotId" field="slotId" version="2" type="{14C629F6-467B-46FE-8B63-48FDFCA42175}">
-														<Class name="AZ::Uuid" field="m_id" value="{03452E15-4742-4E0C-B56D-42FE700D9C52}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-													</Class>
-												</Class>
-												<Class name="Endpoint" field="targetEndpoint" version="1" type="{91D4ADAC-56FE-4D82-B9AF-6975D21435C8}">
-													<Class name="EntityId" field="nodeId" version="1" type="{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}">
-														<Class name="AZ::u64" field="id" value="35817245183234" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
-													</Class>
-													<Class name="SlotId" field="slotId" version="2" type="{14C629F6-467B-46FE-8B63-48FDFCA42175}">
-														<Class name="AZ::Uuid" field="m_id" value="{64BEB6F5-8F89-4DE0-964E-CFDF479CC2B0}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-													</Class>
-												</Class>
-											</Class>
-										</Class>
-										<Class name="bool" field="IsDependencyReady" value="true" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-										<Class name="bool" field="IsRuntimeActive" value="true" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-									</Class>
-								</Class>
-								<Class name="AZStd::unordered_map" field="m_dependentAssets" type="{1BC78FA9-1D82-5F17-BD28-C35D1F4FA737}"/>
-								<Class name="AZStd::vector" field="m_scriptEventAssets" type="{479100D9-6931-5E23-8494-5A28EF2FCD8A}"/>
-							</Class>
-							<Class name="unsigned char" field="executionMode" value="0" type="{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}"/>
-							<Class name="AZ::Uuid" field="m_assetType" value="{3E2AC8CD-713F-453E-967F-29517F331784}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-							<Class name="bool" field="isFunctionGraph" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-							<Class name="SlotId" field="versionData" version="2" type="{14C629F6-467B-46FE-8B63-48FDFCA42175}">
-								<Class name="AZ::Uuid" field="m_id" value="{01000000-0100-0000-2901-000040644DBC}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-							</Class>
-						</Class>
-						<Class name="unsigned int" field="m_variableCounter" value="7" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-						<Class name="bool" field="m_saveFormatConverted" value="true" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-						<Class name="AZStd::unordered_map" field="GraphCanvasData" type="{0005D26C-B35A-5C30-B60C-5716482946CB}">
-							<Class name="AZStd::pair" field="element" type="{22EBF919-A826-58E5-8EF6-15CA70D620BB}">
-								<Class name="EntityId" field="value1" version="1" type="{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}">
-									<Class name="AZ::u64" field="id" value="35812950215938" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
-								</Class>
-								<Class name="EntitySaveDataContainer" field="value2" version="2" type="{DCCDA882-AF72-49C3-9AAD-BA601322BFBC}">
-									<Class name="AZStd::unordered_map" field="ComponentData" type="{318313BB-1036-5630-AFC4-FCBD54818E6D}">
-										<Class name="AZStd::pair" field="element" type="{CE78FEBD-1B9D-5A3E-9B95-BD8DD8CCCD4B}">
-											<Class name="AZ::Uuid" field="value1" value="{24CB38BB-1705-4EC5-8F63-B574571B4DCD}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-											<Class name="NodeSaveData" field="value2" version="1" type="{24CB38BB-1705-4EC5-8F63-B574571B4DCD}">
-												<Class name="bool" field="HideUnusedSlots" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-											</Class>
-										</Class>
-										<Class name="AZStd::pair" field="element" type="{CE78FEBD-1B9D-5A3E-9B95-BD8DD8CCCD4B}">
-											<Class name="AZ::Uuid" field="value1" value="{328FF15C-C302-458F-A43D-E1794DE0904E}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-											<Class name="GeneralNodeTitleComponentSaveData" field="value2" version="1" type="{328FF15C-C302-458F-A43D-E1794DE0904E}">
-												<Class name="ComponentSaveData" field="BaseClass1" version="1" type="{359ACEC7-D0FA-4FC0-8B59-3755BB1A9836}"/>
-												<Class name="AZStd::string" field="PaletteOverride" value="GetVariableNodeTitlePalette" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-											</Class>
-										</Class>
-										<Class name="AZStd::pair" field="element" type="{CE78FEBD-1B9D-5A3E-9B95-BD8DD8CCCD4B}">
-											<Class name="AZ::Uuid" field="value1" value="{B1F49A35-8408-40DA-B79E-F1E3B64322CE}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-											<Class name="PersistentIdComponentSaveData" field="value2" version="1" type="{B1F49A35-8408-40DA-B79E-F1E3B64322CE}">
-												<Class name="ComponentSaveData" field="BaseClass1" version="1" type="{359ACEC7-D0FA-4FC0-8B59-3755BB1A9836}"/>
-												<Class name="AZ::Uuid" field="PersistentId" value="{A8E17819-EB24-4433-B048-9EDA0FB6A3C9}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-											</Class>
-										</Class>
-										<Class name="AZStd::pair" field="element" type="{CE78FEBD-1B9D-5A3E-9B95-BD8DD8CCCD4B}">
-											<Class name="AZ::Uuid" field="value1" value="{7CC444B1-F9B3-41B5-841B-0C4F2179F111}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-											<Class name="GeometrySaveData" field="value2" version="1" type="{7CC444B1-F9B3-41B5-841B-0C4F2179F111}">
-												<Class name="Vector2" field="Position" value="200.0000000 360.0000000" type="{3D80F623-C85C-4741-90D0-E4E66164E6BF}"/>
-											</Class>
-										</Class>
-										<Class name="AZStd::pair" field="element" type="{CE78FEBD-1B9D-5A3E-9B95-BD8DD8CCCD4B}">
-											<Class name="AZ::Uuid" field="value1" value="{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-											<Class name="StylingComponentSaveData" field="value2" version="1" type="{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}">
-												<Class name="ComponentSaveData" field="BaseClass1" version="1" type="{359ACEC7-D0FA-4FC0-8B59-3755BB1A9836}"/>
-												<Class name="AZStd::string" field="SubStyle" value=".getVariable" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-											</Class>
-										</Class>
-									</Class>
-								</Class>
-							</Class>
-							<Class name="AZStd::pair" field="element" type="{22EBF919-A826-58E5-8EF6-15CA70D620BB}">
-								<Class name="EntityId" field="value1" version="1" type="{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}">
-									<Class name="AZ::u64" field="id" value="35830130085122" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
-								</Class>
-								<Class name="EntitySaveDataContainer" field="value2" version="2" type="{DCCDA882-AF72-49C3-9AAD-BA601322BFBC}">
-									<Class name="AZStd::unordered_map" field="ComponentData" type="{318313BB-1036-5630-AFC4-FCBD54818E6D}">
-										<Class name="AZStd::pair" field="element" type="{CE78FEBD-1B9D-5A3E-9B95-BD8DD8CCCD4B}">
-											<Class name="AZ::Uuid" field="value1" value="{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-											<Class name="StylingComponentSaveData" field="value2" version="1" type="{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}">
-												<Class name="ComponentSaveData" field="BaseClass1" version="1" type="{359ACEC7-D0FA-4FC0-8B59-3755BB1A9836}"/>
-												<Class name="AZStd::string" field="SubStyle" value="" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-											</Class>
-										</Class>
-										<Class name="AZStd::pair" field="element" type="{CE78FEBD-1B9D-5A3E-9B95-BD8DD8CCCD4B}">
-											<Class name="AZ::Uuid" field="value1" value="{7CC444B1-F9B3-41B5-841B-0C4F2179F111}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-											<Class name="GeometrySaveData" field="value2" version="1" type="{7CC444B1-F9B3-41B5-841B-0C4F2179F111}">
-												<Class name="Vector2" field="Position" value="-80.0000000 240.0000000" type="{3D80F623-C85C-4741-90D0-E4E66164E6BF}"/>
-											</Class>
-										</Class>
-										<Class name="AZStd::pair" field="element" type="{CE78FEBD-1B9D-5A3E-9B95-BD8DD8CCCD4B}">
-											<Class name="AZ::Uuid" field="value1" value="{B1F49A35-8408-40DA-B79E-F1E3B64322CE}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-											<Class name="PersistentIdComponentSaveData" field="value2" version="1" type="{B1F49A35-8408-40DA-B79E-F1E3B64322CE}">
-												<Class name="ComponentSaveData" field="BaseClass1" version="1" type="{359ACEC7-D0FA-4FC0-8B59-3755BB1A9836}"/>
-												<Class name="AZ::Uuid" field="PersistentId" value="{A8F78048-AD23-43BB-961B-ACF144E666E1}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-											</Class>
-										</Class>
-										<Class name="AZStd::pair" field="element" type="{CE78FEBD-1B9D-5A3E-9B95-BD8DD8CCCD4B}">
-											<Class name="AZ::Uuid" field="value1" value="{24CB38BB-1705-4EC5-8F63-B574571B4DCD}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-											<Class name="NodeSaveData" field="value2" version="1" type="{24CB38BB-1705-4EC5-8F63-B574571B4DCD}">
-												<Class name="bool" field="HideUnusedSlots" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-											</Class>
-										</Class>
-									</Class>
-								</Class>
-							</Class>
-							<Class name="AZStd::pair" field="element" type="{22EBF919-A826-58E5-8EF6-15CA70D620BB}">
-								<Class name="EntityId" field="value1" version="1" type="{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}">
-									<Class name="AZ::u64" field="id" value="35817245183234" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
-								</Class>
-								<Class name="EntitySaveDataContainer" field="value2" version="2" type="{DCCDA882-AF72-49C3-9AAD-BA601322BFBC}">
-									<Class name="AZStd::unordered_map" field="ComponentData" type="{318313BB-1036-5630-AFC4-FCBD54818E6D}">
-										<Class name="AZStd::pair" field="element" type="{CE78FEBD-1B9D-5A3E-9B95-BD8DD8CCCD4B}">
-											<Class name="AZ::Uuid" field="value1" value="{24CB38BB-1705-4EC5-8F63-B574571B4DCD}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-											<Class name="NodeSaveData" field="value2" version="1" type="{24CB38BB-1705-4EC5-8F63-B574571B4DCD}">
-												<Class name="bool" field="HideUnusedSlots" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-											</Class>
-										</Class>
-										<Class name="AZStd::pair" field="element" type="{CE78FEBD-1B9D-5A3E-9B95-BD8DD8CCCD4B}">
-											<Class name="AZ::Uuid" field="value1" value="{328FF15C-C302-458F-A43D-E1794DE0904E}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-											<Class name="GeneralNodeTitleComponentSaveData" field="value2" version="1" type="{328FF15C-C302-458F-A43D-E1794DE0904E}">
-												<Class name="ComponentSaveData" field="BaseClass1" version="1" type="{359ACEC7-D0FA-4FC0-8B59-3755BB1A9836}"/>
-												<Class name="AZStd::string" field="PaletteOverride" value="MethodNodeTitlePalette" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-											</Class>
-										</Class>
-										<Class name="AZStd::pair" field="element" type="{CE78FEBD-1B9D-5A3E-9B95-BD8DD8CCCD4B}">
-											<Class name="AZ::Uuid" field="value1" value="{B1F49A35-8408-40DA-B79E-F1E3B64322CE}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-											<Class name="PersistentIdComponentSaveData" field="value2" version="1" type="{B1F49A35-8408-40DA-B79E-F1E3B64322CE}">
-												<Class name="ComponentSaveData" field="BaseClass1" version="1" type="{359ACEC7-D0FA-4FC0-8B59-3755BB1A9836}"/>
-												<Class name="AZ::Uuid" field="PersistentId" value="{215504DF-BBB7-4333-AADF-AC4E975321D3}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-											</Class>
-										</Class>
-										<Class name="AZStd::pair" field="element" type="{CE78FEBD-1B9D-5A3E-9B95-BD8DD8CCCD4B}">
-											<Class name="AZ::Uuid" field="value1" value="{7CC444B1-F9B3-41B5-841B-0C4F2179F111}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-											<Class name="GeometrySaveData" field="value2" version="1" type="{7CC444B1-F9B3-41B5-841B-0C4F2179F111}">
-												<Class name="Vector2" field="Position" value="620.0000000 220.0000000" type="{3D80F623-C85C-4741-90D0-E4E66164E6BF}"/>
-											</Class>
-										</Class>
-										<Class name="AZStd::pair" field="element" type="{CE78FEBD-1B9D-5A3E-9B95-BD8DD8CCCD4B}">
-											<Class name="AZ::Uuid" field="value1" value="{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-											<Class name="StylingComponentSaveData" field="value2" version="1" type="{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}">
-												<Class name="ComponentSaveData" field="BaseClass1" version="1" type="{359ACEC7-D0FA-4FC0-8B59-3755BB1A9836}"/>
-												<Class name="AZStd::string" field="SubStyle" value=".time" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-											</Class>
-										</Class>
-									</Class>
-								</Class>
-							</Class>
-							<Class name="AZStd::pair" field="element" type="{22EBF919-A826-58E5-8EF6-15CA70D620BB}">
-								<Class name="EntityId" field="value1" version="1" type="{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}">
-									<Class name="AZ::u64" field="id" value="35821540150530" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
-								</Class>
-								<Class name="EntitySaveDataContainer" field="value2" version="2" type="{DCCDA882-AF72-49C3-9AAD-BA601322BFBC}">
-									<Class name="AZStd::unordered_map" field="ComponentData" type="{318313BB-1036-5630-AFC4-FCBD54818E6D}">
-										<Class name="AZStd::pair" field="element" type="{CE78FEBD-1B9D-5A3E-9B95-BD8DD8CCCD4B}">
-											<Class name="AZ::Uuid" field="value1" value="{24CB38BB-1705-4EC5-8F63-B574571B4DCD}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-											<Class name="NodeSaveData" field="value2" version="1" type="{24CB38BB-1705-4EC5-8F63-B574571B4DCD}">
-												<Class name="bool" field="HideUnusedSlots" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-											</Class>
-										</Class>
-										<Class name="AZStd::pair" field="element" type="{CE78FEBD-1B9D-5A3E-9B95-BD8DD8CCCD4B}">
-											<Class name="AZ::Uuid" field="value1" value="{B1F49A35-8408-40DA-B79E-F1E3B64322CE}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-											<Class name="PersistentIdComponentSaveData" field="value2" version="1" type="{B1F49A35-8408-40DA-B79E-F1E3B64322CE}">
-												<Class name="ComponentSaveData" field="BaseClass1" version="1" type="{359ACEC7-D0FA-4FC0-8B59-3755BB1A9836}"/>
-												<Class name="AZ::Uuid" field="PersistentId" value="{80439F35-25F4-403D-860D-503656B3F909}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-											</Class>
-										</Class>
-										<Class name="AZStd::pair" field="element" type="{CE78FEBD-1B9D-5A3E-9B95-BD8DD8CCCD4B}">
-											<Class name="AZ::Uuid" field="value1" value="{328FF15C-C302-458F-A43D-E1794DE0904E}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-											<Class name="GeneralNodeTitleComponentSaveData" field="value2" version="1" type="{328FF15C-C302-458F-A43D-E1794DE0904E}">
-												<Class name="ComponentSaveData" field="BaseClass1" version="1" type="{359ACEC7-D0FA-4FC0-8B59-3755BB1A9836}"/>
-												<Class name="AZStd::string" field="PaletteOverride" value="GetVariableNodeTitlePalette" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-											</Class>
-										</Class>
-										<Class name="AZStd::pair" field="element" type="{CE78FEBD-1B9D-5A3E-9B95-BD8DD8CCCD4B}">
-											<Class name="AZ::Uuid" field="value1" value="{7CC444B1-F9B3-41B5-841B-0C4F2179F111}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-											<Class name="GeometrySaveData" field="value2" version="1" type="{7CC444B1-F9B3-41B5-841B-0C4F2179F111}">
-												<Class name="Vector2" field="Position" value="200.0000000 180.0000000" type="{3D80F623-C85C-4741-90D0-E4E66164E6BF}"/>
-											</Class>
-										</Class>
-										<Class name="AZStd::pair" field="element" type="{CE78FEBD-1B9D-5A3E-9B95-BD8DD8CCCD4B}">
-											<Class name="AZ::Uuid" field="value1" value="{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-											<Class name="StylingComponentSaveData" field="value2" version="1" type="{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}">
-												<Class name="ComponentSaveData" field="BaseClass1" version="1" type="{359ACEC7-D0FA-4FC0-8B59-3755BB1A9836}"/>
-												<Class name="AZStd::string" field="SubStyle" value=".getVariable" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-											</Class>
-										</Class>
-									</Class>
-								</Class>
-							</Class>
-							<Class name="AZStd::pair" field="element" type="{22EBF919-A826-58E5-8EF6-15CA70D620BB}">
-								<Class name="EntityId" field="value1" version="1" type="{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}">
-									<Class name="AZ::u64" field="id" value="35808655248642" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
-								</Class>
-								<Class name="EntitySaveDataContainer" field="value2" version="2" type="{DCCDA882-AF72-49C3-9AAD-BA601322BFBC}">
-									<Class name="AZStd::unordered_map" field="ComponentData" type="{318313BB-1036-5630-AFC4-FCBD54818E6D}">
-										<Class name="AZStd::pair" field="element" type="{CE78FEBD-1B9D-5A3E-9B95-BD8DD8CCCD4B}">
-											<Class name="AZ::Uuid" field="value1" value="{5F84B500-8C45-40D1-8EFC-A5306B241444}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-											<Class name="SceneComponentSaveData" field="value2" version="3" type="{5F84B500-8C45-40D1-8EFC-A5306B241444}">
-												<Class name="AZStd::vector" field="Constructs" type="{60BF495A-9BEF-5429-836B-37ADEA39CEA0}"/>
-												<Class name="ViewParams" field="ViewParams" version="1" type="{D016BF86-DFBB-4AF0-AD26-27F6AB737740}">
-													<Class name="double" field="Scale" value="0.8500000" type="{110C4B14-11A8-4E9D-8638-5051013A56AC}"/>
-													<Class name="float" field="AnchorX" value="-783.5294189" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
-													<Class name="float" field="AnchorY" value="-341.1764832" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
-												</Class>
-												<Class name="unsigned int" field="BookmarkCounter" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-											</Class>
-										</Class>
-									</Class>
-								</Class>
-							</Class>
-							<Class name="AZStd::pair" field="element" type="{22EBF919-A826-58E5-8EF6-15CA70D620BB}">
-								<Class name="EntityId" field="value1" version="1" type="{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}">
-									<Class name="AZ::u64" field="id" value="35825835117826" type="{D6597933-47CD-4FC8-B911-63F3E2B0993A}"/>
-								</Class>
-								<Class name="EntitySaveDataContainer" field="value2" version="2" type="{DCCDA882-AF72-49C3-9AAD-BA601322BFBC}">
-									<Class name="AZStd::unordered_map" field="ComponentData" type="{318313BB-1036-5630-AFC4-FCBD54818E6D}">
-										<Class name="AZStd::pair" field="element" type="{CE78FEBD-1B9D-5A3E-9B95-BD8DD8CCCD4B}">
-											<Class name="AZ::Uuid" field="value1" value="{24CB38BB-1705-4EC5-8F63-B574571B4DCD}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-											<Class name="NodeSaveData" field="value2" version="1" type="{24CB38BB-1705-4EC5-8F63-B574571B4DCD}">
-												<Class name="bool" field="HideUnusedSlots" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-											</Class>
-										</Class>
-										<Class name="AZStd::pair" field="element" type="{CE78FEBD-1B9D-5A3E-9B95-BD8DD8CCCD4B}">
-											<Class name="AZ::Uuid" field="value1" value="{328FF15C-C302-458F-A43D-E1794DE0904E}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-											<Class name="GeneralNodeTitleComponentSaveData" field="value2" version="1" type="{328FF15C-C302-458F-A43D-E1794DE0904E}">
-												<Class name="ComponentSaveData" field="BaseClass1" version="1" type="{359ACEC7-D0FA-4FC0-8B59-3755BB1A9836}"/>
-												<Class name="AZStd::string" field="PaletteOverride" value="MethodNodeTitlePalette" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-											</Class>
-										</Class>
-										<Class name="AZStd::pair" field="element" type="{CE78FEBD-1B9D-5A3E-9B95-BD8DD8CCCD4B}">
-											<Class name="AZ::Uuid" field="value1" value="{B1F49A35-8408-40DA-B79E-F1E3B64322CE}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-											<Class name="PersistentIdComponentSaveData" field="value2" version="1" type="{B1F49A35-8408-40DA-B79E-F1E3B64322CE}">
-												<Class name="ComponentSaveData" field="BaseClass1" version="1" type="{359ACEC7-D0FA-4FC0-8B59-3755BB1A9836}"/>
-												<Class name="AZ::Uuid" field="PersistentId" value="{9FFAB666-B877-4D79-AB3D-C7E147D49EA1}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-											</Class>
-										</Class>
-										<Class name="AZStd::pair" field="element" type="{CE78FEBD-1B9D-5A3E-9B95-BD8DD8CCCD4B}">
-											<Class name="AZ::Uuid" field="value1" value="{7CC444B1-F9B3-41B5-841B-0C4F2179F111}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-											<Class name="GeometrySaveData" field="value2" version="1" type="{7CC444B1-F9B3-41B5-841B-0C4F2179F111}">
-												<Class name="Vector2" field="Position" value="980.0000000 220.0000000" type="{3D80F623-C85C-4741-90D0-E4E66164E6BF}"/>
-											</Class>
-										</Class>
-										<Class name="AZStd::pair" field="element" type="{CE78FEBD-1B9D-5A3E-9B95-BD8DD8CCCD4B}">
-											<Class name="AZ::Uuid" field="value1" value="{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
-											<Class name="StylingComponentSaveData" field="value2" version="1" type="{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}">
-												<Class name="ComponentSaveData" field="BaseClass1" version="1" type="{359ACEC7-D0FA-4FC0-8B59-3755BB1A9836}"/>
-												<Class name="AZStd::string" field="SubStyle" value=".time" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
-											</Class>
-										</Class>
-									</Class>
-								</Class>
-							</Class>
-						</Class>
-						<Class name="AZStd::unordered_map" field="CRCCacheMap" type="{2376BDB0-D7B6-586B-A603-42BE703EB2C9}"/>
-						<Class name="GraphStatisticsHelper" field="StatisticsHelper" version="1" type="{7D5B7A65-F749-493E-BA5C-6B8724791F03}">
-							<Class name="AZStd::unordered_map" field="InstanceCounter" type="{9EC84E0A-F296-5212-8B69-4DE48E695D61}"/>
-						</Class>
-						<Class name="int" field="GraphCanvasSaveVersion" value="1" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
-					</Class>
-				</Class>
-				<Class name="bool" field="IsDependencyReady" value="true" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-				<Class name="bool" field="IsRuntimeActive" value="true" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
-			</Class>
-		</Class>
-	</Class>
-</ObjectStream>
-
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "ScriptCanvasData",
+    "ClassData": {
+        "m_scriptCanvas": {
+            "Id": {
+                "id": 1326209913149486
+            },
+            "Name": "Script Canvas Graph",
+            "Components": {
+                "Component_[15691885613441416095]": {
+                    "$type": "EditorGraphVariableManagerComponent",
+                    "Id": 15691885613441416095,
+                    "m_variableData": {
+                        "m_nameVariableMap": [
+                            {
+                                "Key": {
+                                    "m_id": "{798B51A5-C8BC-403C-A49E-C98442F8170D}"
+                                },
+                                "Value": {
+                                    "Datum": {
+                                        "scriptCanvasType": {
+                                            "m_type": 3
+                                        },
+                                        "isNullPointer": false,
+                                        "$type": "double",
+                                        "value": 1.0,
+                                        "label": "Variable 6"
+                                    },
+                                    "VariableId": {
+                                        "m_id": "{798B51A5-C8BC-403C-A49E-C98442F8170D}"
+                                    },
+                                    "VariableName": "Variable 6"
+                                }
+                            },
+                            {
+                                "Key": {
+                                    "m_id": "{DD99C1E7-468B-46D5-9758-9CDCA5D3FC78}"
+                                },
+                                "Value": {
+                                    "Datum": {
+                                        "scriptCanvasType": {
+                                            "m_type": 3
+                                        },
+                                        "isNullPointer": false,
+                                        "$type": "double",
+                                        "value": 0.0,
+                                        "label": "Variable 7"
+                                    },
+                                    "VariableId": {
+                                        "m_id": "{DD99C1E7-468B-46D5-9758-9CDCA5D3FC78}"
+                                    },
+                                    "VariableName": "Variable 7"
+                                }
+                            }
+                        ]
+                    }
+                },
+                "Component_[4326477749048814000]": {
+                    "$type": "EditorGraph",
+                    "Id": 4326477749048814000,
+                    "m_graphData": {
+                        "m_nodes": [
+                            {
+                                "Id": {
+                                    "id": 1326231387985966
+                                },
+                                "Name": "83673333253680",
+                                "Components": {
+                                    "Component_[11642019024002928881]": {
+                                        "$type": "MethodOverloaded",
+                                        "Id": 11642019024002928881,
+                                        "Slots": [
+                                            {
+                                                "isVisibile": false,
+                                                "id": {
+                                                    "m_id": "{10FB287D-435E-452F-9569-B294C58F704D}"
+                                                },
+                                                "contracts": [
+                                                    {
+                                                        "$type": "SlotTypeContract"
+                                                    },
+                                                    null
+                                                ],
+                                                "slotName": "EntityID: 0",
+                                                "DisplayDataType": {
+                                                    "m_type": 1
+                                                },
+                                                "Descriptor": {
+                                                    "ConnectionType": 1,
+                                                    "SlotType": 2
+                                                },
+                                                "DataType": 1
+                                            },
+                                            {
+                                                "id": {
+                                                    "m_id": "{64BEB6F5-8F89-4DE0-964E-CFDF479CC2B0}"
+                                                },
+                                                "DynamicTypeOverride": 1,
+                                                "contracts": [
+                                                    {
+                                                        "$type": "SlotTypeContract"
+                                                    },
+                                                    null,
+                                                    {
+                                                        "$type": "OverloadContract"
+                                                    }
+                                                ],
+                                                "slotName": "Candidate",
+                                                "toolTip": "left of >",
+                                                "DisplayDataType": {
+                                                    "m_type": 3
+                                                },
+                                                "Descriptor": {
+                                                    "ConnectionType": 1,
+                                                    "SlotType": 2
+                                                },
+                                                "DataType": 1
+                                            },
+                                            {
+                                                "id": {
+                                                    "m_id": "{5A1713AB-B2BD-4E28-8D27-D3DF9B41B3A8}"
+                                                },
+                                                "DynamicTypeOverride": 1,
+                                                "contracts": [
+                                                    {
+                                                        "$type": "SlotTypeContract"
+                                                    },
+                                                    null,
+                                                    {
+                                                        "$type": "OverloadContract"
+                                                    }
+                                                ],
+                                                "slotName": "Reference",
+                                                "toolTip": "right of >",
+                                                "DisplayDataType": {
+                                                    "m_type": 3
+                                                },
+                                                "Descriptor": {
+                                                    "ConnectionType": 1,
+                                                    "SlotType": 2
+                                                },
+                                                "DataType": 1
+                                            },
+                                            {
+                                                "id": {
+                                                    "m_id": "{18D633F3-047B-4952-9C73-10428963FF91}"
+                                                },
+                                                "contracts": [
+                                                    {
+                                                        "$type": "SlotTypeContract"
+                                                    },
+                                                    null
+                                                ],
+                                                "slotName": "Report",
+                                                "toolTip": "additional notes for the test report",
+                                                "DisplayDataType": {
+                                                    "m_type": 5
+                                                },
+                                                "Descriptor": {
+                                                    "ConnectionType": 1,
+                                                    "SlotType": 2
+                                                },
+                                                "DataType": 1
+                                            },
+                                            {
+                                                "id": {
+                                                    "m_id": "{43EB7FF0-576A-4BCC-827B-E356B27C7CE6}"
+                                                },
+                                                "contracts": [
+                                                    {
+                                                        "$type": "SlotTypeContract"
+                                                    }
+                                                ],
+                                                "slotName": "In",
+                                                "Descriptor": {
+                                                    "ConnectionType": 1,
+                                                    "SlotType": 1
+                                                }
+                                            },
+                                            {
+                                                "id": {
+                                                    "m_id": "{7F07D2B9-4E97-4434-AC57-38D644B73A39}"
+                                                },
+                                                "contracts": [
+                                                    {
+                                                        "$type": "SlotTypeContract"
+                                                    }
+                                                ],
+                                                "slotName": "Out",
+                                                "Descriptor": {
+                                                    "ConnectionType": 2,
+                                                    "SlotType": 1
+                                                }
+                                            }
+                                        ],
+                                        "Datums": [
+                                            {
+                                                "isOverloadedStorage": false,
+                                                "scriptCanvasType": {
+                                                    "m_type": 1
+                                                },
+                                                "isNullPointer": false,
+                                                "$type": "EntityId",
+                                                "value": {
+                                                    "id": 4276206253
+                                                }
+                                            },
+                                            {
+                                                "isOverloadedStorage": false,
+                                                "scriptCanvasType": {
+                                                    "m_type": 3
+                                                },
+                                                "isNullPointer": false,
+                                                "$type": "double",
+                                                "value": 0.0,
+                                                "label": "Candidate"
+                                            },
+                                            {
+                                                "isOverloadedStorage": false,
+                                                "scriptCanvasType": {
+                                                    "m_type": 3
+                                                },
+                                                "isNullPointer": false,
+                                                "$type": "double",
+                                                "value": 0.0,
+                                                "label": "Reference"
+                                            },
+                                            {
+                                                "isOverloadedStorage": false,
+                                                "scriptCanvasType": {
+                                                    "m_type": 5
+                                                },
+                                                "isNullPointer": false,
+                                                "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                                                "value": "",
+                                                "label": "Report"
+                                            }
+                                        ],
+                                        "methodType": 2,
+                                        "methodName": "Expect Greater Than",
+                                        "className": "Unit Testing",
+                                        "prettyClassName": "Unit Testing",
+                                        "orderedInputSlotIds": [
+                                            {
+                                                "m_id": "{10FB287D-435E-452F-9569-B294C58F704D}"
+                                            },
+                                            {
+                                                "m_id": "{64BEB6F5-8F89-4DE0-964E-CFDF479CC2B0}"
+                                            },
+                                            {
+                                                "m_id": "{5A1713AB-B2BD-4E28-8D27-D3DF9B41B3A8}"
+                                            },
+                                            {
+                                                "m_id": "{18D633F3-047B-4952-9C73-10428963FF91}"
+                                            }
+                                        ],
+                                        "outputSlotIds": [
+                                            {}
+                                        ]
+                                    }
+                                }
+                            },
+                            {
+                                "Id": {
+                                    "id": 1326222798051374
+                                },
+                                "Name": "SC Node(GetVariable)",
+                                "Components": {
+                                    "Component_[15687292051988225268]": {
+                                        "$type": "GetVariableNode",
+                                        "Id": 15687292051988225268,
+                                        "Slots": [
+                                            {
+                                                "id": {
+                                                    "m_id": "{82F521D6-66BB-4C26-AE8C-49C1DE79A5C0}"
+                                                },
+                                                "contracts": [
+                                                    {
+                                                        "$type": "SlotTypeContract"
+                                                    }
+                                                ],
+                                                "slotName": "In",
+                                                "toolTip": "When signaled sends the property referenced by this node to a Data Output slot",
+                                                "Descriptor": {
+                                                    "ConnectionType": 1,
+                                                    "SlotType": 1
+                                                }
+                                            },
+                                            {
+                                                "id": {
+                                                    "m_id": "{9E2B1F50-27BF-4CF4-88E0-4A87CF4095FE}"
+                                                },
+                                                "contracts": [
+                                                    {
+                                                        "$type": "SlotTypeContract"
+                                                    }
+                                                ],
+                                                "slotName": "Out",
+                                                "toolTip": "Signaled after the referenced property has been pushed to the Data Output slot",
+                                                "Descriptor": {
+                                                    "ConnectionType": 2,
+                                                    "SlotType": 1
+                                                }
+                                            },
+                                            {
+                                                "id": {
+                                                    "m_id": "{03452E15-4742-4E0C-B56D-42FE700D9C52}"
+                                                },
+                                                "contracts": [
+                                                    {
+                                                        "$type": "SlotTypeContract"
+                                                    }
+                                                ],
+                                                "slotName": "Number",
+                                                "DisplayDataType": {
+                                                    "m_type": 3
+                                                },
+                                                "Descriptor": {
+                                                    "ConnectionType": 2,
+                                                    "SlotType": 2
+                                                },
+                                                "DataType": 1
+                                            }
+                                        ],
+                                        "m_variableId": {
+                                            "m_id": "{798B51A5-C8BC-403C-A49E-C98442F8170D}"
+                                        },
+                                        "m_variableDataOutSlotId": {
+                                            "m_id": "{03452E15-4742-4E0C-B56D-42FE700D9C52}"
+                                        }
+                                    }
+                                }
+                            },
+                            {
+                                "Id": {
+                                    "id": 1326227093018670
+                                },
+                                "Name": "319086199609",
+                                "Components": {
+                                    "Component_[3397625298891366833]": {
+                                        "$type": "Start",
+                                        "Id": 3397625298891366833,
+                                        "Slots": [
+                                            {
+                                                "id": {
+                                                    "m_id": "{580BA341-A358-462B-806B-8B21A48818AF}"
+                                                },
+                                                "contracts": [
+                                                    {
+                                                        "$type": "SlotTypeContract"
+                                                    }
+                                                ],
+                                                "slotName": "Out",
+                                                "toolTip": "Signaled when the entity that owns this graph is fully activated.",
+                                                "Descriptor": {
+                                                    "ConnectionType": 2,
+                                                    "SlotType": 1
+                                                }
+                                            }
+                                        ]
+                                    }
+                                }
+                            },
+                            {
+                                "Id": {
+                                    "id": 1326214208116782
+                                },
+                                "Name": "37719353338543",
+                                "Components": {
+                                    "Component_[4504459272326843067]": {
+                                        "$type": "{E42861BD-1956-45AE-8DD7-CCFC1E3E5ACF} Method",
+                                        "Id": 4504459272326843067,
+                                        "Slots": [
+                                            {
+                                                "isVisibile": false,
+                                                "id": {
+                                                    "m_id": "{BC9878D7-815D-4F38-AD61-7FAF9251AF22}"
+                                                },
+                                                "contracts": [
+                                                    {
+                                                        "$type": "SlotTypeContract"
+                                                    },
+                                                    null
+                                                ],
+                                                "slotName": "EntityID: 0",
+                                                "Descriptor": {
+                                                    "ConnectionType": 1,
+                                                    "SlotType": 2
+                                                },
+                                                "DataType": 1
+                                            },
+                                            {
+                                                "id": {
+                                                    "m_id": "{4608F5E1-B87D-4749-8CF3-6D317F07D461}"
+                                                },
+                                                "contracts": [
+                                                    {
+                                                        "$type": "SlotTypeContract"
+                                                    },
+                                                    null
+                                                ],
+                                                "slotName": "Report",
+                                                "toolTip": "additional notes for the test report",
+                                                "DisplayDataType": {
+                                                    "m_type": 5
+                                                },
+                                                "Descriptor": {
+                                                    "ConnectionType": 1,
+                                                    "SlotType": 2
+                                                },
+                                                "DataType": 1
+                                            },
+                                            {
+                                                "id": {
+                                                    "m_id": "{77333425-735E-4C33-820E-DF6B8CE6613E}"
+                                                },
+                                                "contracts": [
+                                                    {
+                                                        "$type": "SlotTypeContract"
+                                                    }
+                                                ],
+                                                "slotName": "In",
+                                                "Descriptor": {
+                                                    "ConnectionType": 1,
+                                                    "SlotType": 1
+                                                }
+                                            },
+                                            {
+                                                "id": {
+                                                    "m_id": "{0299DA2E-B579-472F-8E47-3B6199853915}"
+                                                },
+                                                "contracts": [
+                                                    {
+                                                        "$type": "SlotTypeContract"
+                                                    }
+                                                ],
+                                                "slotName": "Out",
+                                                "Descriptor": {
+                                                    "ConnectionType": 2,
+                                                    "SlotType": 1
+                                                }
+                                            }
+                                        ],
+                                        "Datums": [
+                                            {
+                                                "isOverloadedStorage": false,
+                                                "scriptCanvasType": {
+                                                    "m_type": 1
+                                                },
+                                                "isNullPointer": false,
+                                                "$type": "EntityId",
+                                                "value": {
+                                                    "id": 4276206253
+                                                }
+                                            },
+                                            {
+                                                "isOverloadedStorage": false,
+                                                "scriptCanvasType": {
+                                                    "m_type": 5
+                                                },
+                                                "isNullPointer": false,
+                                                "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                                                "value": "",
+                                                "label": "Report"
+                                            }
+                                        ],
+                                        "methodType": 2,
+                                        "methodName": "Mark Complete",
+                                        "className": "Unit Testing",
+                                        "resultSlotIDs": [
+                                            {}
+                                        ],
+                                        "prettyClassName": "Unit Testing"
+                                    }
+                                }
+                            },
+                            {
+                                "Id": {
+                                    "id": 1326218503084078
+                                },
+                                "Name": "SC Node(GetVariable)",
+                                "Components": {
+                                    "Component_[6580914116192618247]": {
+                                        "$type": "GetVariableNode",
+                                        "Id": 6580914116192618247,
+                                        "Slots": [
+                                            {
+                                                "id": {
+                                                    "m_id": "{82901026-EF74-475E-A6F6-6AE0672CB137}"
+                                                },
+                                                "contracts": [
+                                                    {
+                                                        "$type": "SlotTypeContract"
+                                                    }
+                                                ],
+                                                "slotName": "In",
+                                                "toolTip": "When signaled sends the property referenced by this node to a Data Output slot",
+                                                "Descriptor": {
+                                                    "ConnectionType": 1,
+                                                    "SlotType": 1
+                                                }
+                                            },
+                                            {
+                                                "id": {
+                                                    "m_id": "{3F8FCA7E-AB02-4124-82DB-970C16042742}"
+                                                },
+                                                "contracts": [
+                                                    {
+                                                        "$type": "SlotTypeContract"
+                                                    }
+                                                ],
+                                                "slotName": "Out",
+                                                "toolTip": "Signaled after the referenced property has been pushed to the Data Output slot",
+                                                "Descriptor": {
+                                                    "ConnectionType": 2,
+                                                    "SlotType": 1
+                                                }
+                                            },
+                                            {
+                                                "id": {
+                                                    "m_id": "{F1E1D8B7-589C-4C28-AA80-00144E85294F}"
+                                                },
+                                                "contracts": [
+                                                    {
+                                                        "$type": "SlotTypeContract"
+                                                    }
+                                                ],
+                                                "slotName": "Number",
+                                                "DisplayDataType": {
+                                                    "m_type": 3
+                                                },
+                                                "Descriptor": {
+                                                    "ConnectionType": 2,
+                                                    "SlotType": 2
+                                                },
+                                                "DataType": 1
+                                            }
+                                        ],
+                                        "m_variableId": {
+                                            "m_id": "{DD99C1E7-468B-46D5-9758-9CDCA5D3FC78}"
+                                        },
+                                        "m_variableDataOutSlotId": {
+                                            "m_id": "{F1E1D8B7-589C-4C28-AA80-00144E85294F}"
+                                        }
+                                    }
+                                }
+                            }
+                        ],
+                        "m_connections": [
+                            {
+                                "Id": {
+                                    "id": 1326235682953262
+                                },
+                                "Name": "srcEndpoint=(Get Variable: Out), destEndpoint=(Get Variable: In)",
+                                "Components": {
+                                    "Component_[6865546659146654810]": {
+                                        "$type": "{64CA5016-E803-4AC4-9A36-BDA2C890C6EB} Connection",
+                                        "Id": 6865546659146654810,
+                                        "sourceEndpoint": {
+                                            "nodeId": {
+                                                "id": 1326218503084078
+                                            },
+                                            "slotId": {
+                                                "m_id": "{3F8FCA7E-AB02-4124-82DB-970C16042742}"
+                                            }
+                                        },
+                                        "targetEndpoint": {
+                                            "nodeId": {
+                                                "id": 1326222798051374
+                                            },
+                                            "slotId": {
+                                                "m_id": "{82F521D6-66BB-4C26-AE8C-49C1DE79A5C0}"
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            {
+                                "Id": {
+                                    "id": 1326239977920558
+                                },
+                                "Name": "srcEndpoint=(On Graph Start: Out), destEndpoint=(Get Variable: In)",
+                                "Components": {
+                                    "Component_[4734231341724554698]": {
+                                        "$type": "{64CA5016-E803-4AC4-9A36-BDA2C890C6EB} Connection",
+                                        "Id": 4734231341724554698,
+                                        "sourceEndpoint": {
+                                            "nodeId": {
+                                                "id": 1326227093018670
+                                            },
+                                            "slotId": {
+                                                "m_id": "{580BA341-A358-462B-806B-8B21A48818AF}"
+                                            }
+                                        },
+                                        "targetEndpoint": {
+                                            "nodeId": {
+                                                "id": 1326218503084078
+                                            },
+                                            "slotId": {
+                                                "m_id": "{82901026-EF74-475E-A6F6-6AE0672CB137}"
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            {
+                                "Id": {
+                                    "id": 1326244272887854
+                                },
+                                "Name": "srcEndpoint=(Get Variable: Number), destEndpoint=(Expect Greater Than: Reference)",
+                                "Components": {
+                                    "Component_[10194596403623170725]": {
+                                        "$type": "{64CA5016-E803-4AC4-9A36-BDA2C890C6EB} Connection",
+                                        "Id": 10194596403623170725,
+                                        "sourceEndpoint": {
+                                            "nodeId": {
+                                                "id": 1326218503084078
+                                            },
+                                            "slotId": {
+                                                "m_id": "{F1E1D8B7-589C-4C28-AA80-00144E85294F}"
+                                            }
+                                        },
+                                        "targetEndpoint": {
+                                            "nodeId": {
+                                                "id": 1326231387985966
+                                            },
+                                            "slotId": {
+                                                "m_id": "{5A1713AB-B2BD-4E28-8D27-D3DF9B41B3A8}"
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            {
+                                "Id": {
+                                    "id": 1326248567855150
+                                },
+                                "Name": "srcEndpoint=(Expect Greater Than: Out), destEndpoint=(Mark Complete: In)",
+                                "Components": {
+                                    "Component_[8644757972423562696]": {
+                                        "$type": "{64CA5016-E803-4AC4-9A36-BDA2C890C6EB} Connection",
+                                        "Id": 8644757972423562696,
+                                        "sourceEndpoint": {
+                                            "nodeId": {
+                                                "id": 1326231387985966
+                                            },
+                                            "slotId": {
+                                                "m_id": "{7F07D2B9-4E97-4434-AC57-38D644B73A39}"
+                                            }
+                                        },
+                                        "targetEndpoint": {
+                                            "nodeId": {
+                                                "id": 1326214208116782
+                                            },
+                                            "slotId": {
+                                                "m_id": "{77333425-735E-4C33-820E-DF6B8CE6613E}"
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            {
+                                "Id": {
+                                    "id": 1326252862822446
+                                },
+                                "Name": "srcEndpoint=(Get Variable: Out), destEndpoint=(Expect Greater Than: In)",
+                                "Components": {
+                                    "Component_[14752499224355635717]": {
+                                        "$type": "{64CA5016-E803-4AC4-9A36-BDA2C890C6EB} Connection",
+                                        "Id": 14752499224355635717,
+                                        "sourceEndpoint": {
+                                            "nodeId": {
+                                                "id": 1326222798051374
+                                            },
+                                            "slotId": {
+                                                "m_id": "{9E2B1F50-27BF-4CF4-88E0-4A87CF4095FE}"
+                                            }
+                                        },
+                                        "targetEndpoint": {
+                                            "nodeId": {
+                                                "id": 1326231387985966
+                                            },
+                                            "slotId": {
+                                                "m_id": "{43EB7FF0-576A-4BCC-827B-E356B27C7CE6}"
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            {
+                                "Id": {
+                                    "id": 1326257157789742
+                                },
+                                "Name": "srcEndpoint=(Get Variable: Number), destEndpoint=(Expect Greater Than: Candidate)",
+                                "Components": {
+                                    "Component_[16335580892027604938]": {
+                                        "$type": "{64CA5016-E803-4AC4-9A36-BDA2C890C6EB} Connection",
+                                        "Id": 16335580892027604938,
+                                        "sourceEndpoint": {
+                                            "nodeId": {
+                                                "id": 1326222798051374
+                                            },
+                                            "slotId": {
+                                                "m_id": "{03452E15-4742-4E0C-B56D-42FE700D9C52}"
+                                            }
+                                        },
+                                        "targetEndpoint": {
+                                            "nodeId": {
+                                                "id": 1326231387985966
+                                            },
+                                            "slotId": {
+                                                "m_id": "{64BEB6F5-8F89-4DE0-964E-CFDF479CC2B0}"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    "m_assetType": "{3E2AC8CD-713F-453E-967F-29517F331784}",
+                    "versionData": {
+                        "_grammarVersion": 1,
+                        "_runtimeVersion": 1,
+                        "_fileVersion": 1
+                    },
+                    "m_variableCounter": 7,
+                    "GraphCanvasData": [
+                        {
+                            "Key": {
+                                "id": 1326209913149486
+                            },
+                            "Value": {
+                                "ComponentData": {
+                                    "{5F84B500-8C45-40D1-8EFC-A5306B241444}": {
+                                        "$type": "SceneComponentSaveData",
+                                        "ViewParams": {
+                                            "Scale": 0.85,
+                                            "AnchorX": -783.5294189453125,
+                                            "AnchorY": -341.1764831542969
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "id": 1326214208116782
+                            },
+                            "Value": {
+                                "ComponentData": {
+                                    "{24CB38BB-1705-4EC5-8F63-B574571B4DCD}": {
+                                        "$type": "NodeSaveData"
+                                    },
+                                    "{328FF15C-C302-458F-A43D-E1794DE0904E}": {
+                                        "$type": "GeneralNodeTitleComponentSaveData",
+                                        "PaletteOverride": "MethodNodeTitlePalette"
+                                    },
+                                    "{7CC444B1-F9B3-41B5-841B-0C4F2179F111}": {
+                                        "$type": "GeometrySaveData",
+                                        "Position": [
+                                            980.0,
+                                            220.0
+                                        ]
+                                    },
+                                    "{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}": {
+                                        "$type": "StylingComponentSaveData",
+                                        "SubStyle": ".time"
+                                    },
+                                    "{B1F49A35-8408-40DA-B79E-F1E3B64322CE}": {
+                                        "$type": "PersistentIdComponentSaveData",
+                                        "PersistentId": "{9FFAB666-B877-4D79-AB3D-C7E147D49EA1}"
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "id": 1326218503084078
+                            },
+                            "Value": {
+                                "ComponentData": {
+                                    "{24CB38BB-1705-4EC5-8F63-B574571B4DCD}": {
+                                        "$type": "NodeSaveData"
+                                    },
+                                    "{328FF15C-C302-458F-A43D-E1794DE0904E}": {
+                                        "$type": "GeneralNodeTitleComponentSaveData",
+                                        "PaletteOverride": "GetVariableNodeTitlePalette"
+                                    },
+                                    "{7CC444B1-F9B3-41B5-841B-0C4F2179F111}": {
+                                        "$type": "GeometrySaveData",
+                                        "Position": [
+                                            200.0,
+                                            360.0
+                                        ]
+                                    },
+                                    "{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}": {
+                                        "$type": "StylingComponentSaveData",
+                                        "SubStyle": ".getVariable"
+                                    },
+                                    "{B1F49A35-8408-40DA-B79E-F1E3B64322CE}": {
+                                        "$type": "PersistentIdComponentSaveData",
+                                        "PersistentId": "{A8E17819-EB24-4433-B048-9EDA0FB6A3C9}"
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "id": 1326222798051374
+                            },
+                            "Value": {
+                                "ComponentData": {
+                                    "{24CB38BB-1705-4EC5-8F63-B574571B4DCD}": {
+                                        "$type": "NodeSaveData"
+                                    },
+                                    "{328FF15C-C302-458F-A43D-E1794DE0904E}": {
+                                        "$type": "GeneralNodeTitleComponentSaveData",
+                                        "PaletteOverride": "GetVariableNodeTitlePalette"
+                                    },
+                                    "{7CC444B1-F9B3-41B5-841B-0C4F2179F111}": {
+                                        "$type": "GeometrySaveData",
+                                        "Position": [
+                                            200.0,
+                                            180.0
+                                        ]
+                                    },
+                                    "{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}": {
+                                        "$type": "StylingComponentSaveData",
+                                        "SubStyle": ".getVariable"
+                                    },
+                                    "{B1F49A35-8408-40DA-B79E-F1E3B64322CE}": {
+                                        "$type": "PersistentIdComponentSaveData",
+                                        "PersistentId": "{80439F35-25F4-403D-860D-503656B3F909}"
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "id": 1326227093018670
+                            },
+                            "Value": {
+                                "ComponentData": {
+                                    "{24CB38BB-1705-4EC5-8F63-B574571B4DCD}": {
+                                        "$type": "NodeSaveData"
+                                    },
+                                    "{7CC444B1-F9B3-41B5-841B-0C4F2179F111}": {
+                                        "$type": "GeometrySaveData",
+                                        "Position": [
+                                            -80.0,
+                                            240.0
+                                        ]
+                                    },
+                                    "{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}": {
+                                        "$type": "StylingComponentSaveData"
+                                    },
+                                    "{B1F49A35-8408-40DA-B79E-F1E3B64322CE}": {
+                                        "$type": "PersistentIdComponentSaveData",
+                                        "PersistentId": "{A8F78048-AD23-43BB-961B-ACF144E666E1}"
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "id": 1326231387985966
+                            },
+                            "Value": {
+                                "ComponentData": {
+                                    "{24CB38BB-1705-4EC5-8F63-B574571B4DCD}": {
+                                        "$type": "NodeSaveData"
+                                    },
+                                    "{328FF15C-C302-458F-A43D-E1794DE0904E}": {
+                                        "$type": "GeneralNodeTitleComponentSaveData",
+                                        "PaletteOverride": "MethodNodeTitlePalette"
+                                    },
+                                    "{7CC444B1-F9B3-41B5-841B-0C4F2179F111}": {
+                                        "$type": "GeometrySaveData",
+                                        "Position": [
+                                            620.0,
+                                            220.0
+                                        ]
+                                    },
+                                    "{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}": {
+                                        "$type": "StylingComponentSaveData",
+                                        "SubStyle": ".time"
+                                    },
+                                    "{B1F49A35-8408-40DA-B79E-F1E3B64322CE}": {
+                                        "$type": "PersistentIdComponentSaveData",
+                                        "PersistentId": "{215504DF-BBB7-4333-AADF-AC4E975321D3}"
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        }
+    }
+}

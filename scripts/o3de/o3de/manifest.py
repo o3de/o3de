@@ -62,7 +62,7 @@ def get_o3de_download_folder() -> pathlib.Path:
 
 
 def get_o3de_engines_folder() -> pathlib.Path:
-    engines_folder = get_o3de_folder() / 'Engines'
+    engines_folder = get_o3de_user_folder() / 'Engines'
     engines_folder.mkdir(parents=True, exist_ok=True)
     return engines_folder
 
@@ -86,7 +86,7 @@ def get_o3de_templates_folder() -> pathlib.Path:
 
 
 def get_o3de_restricted_folder() -> pathlib.Path:
-    restricted_folder = get_o3de_folder() / 'Restricted'
+    restricted_folder = get_o3de_user_folder() / 'Restricted'
     restricted_folder.mkdir(parents=True, exist_ok=True)
     return restricted_folder
 
@@ -156,25 +156,30 @@ def get_default_o3de_manifest_json_data() -> dict:
     return json_data
 
 def get_o3de_manifest() -> pathlib.Path:
-    manifest_path = get_o3de_folder() / 'o3de_manifest.json'
-    if not manifest_path.is_file():
-        json_data = get_default_o3de_manifest_json_data()
-
-        with manifest_path.open('w') as s:
-            s.write(json.dumps(json_data, indent=4) + '\n')
-
-    return manifest_path
+    return get_o3de_folder() / 'o3de_manifest.json'
 
 
 def load_o3de_manifest(manifest_path: pathlib.Path = None) -> dict:
     """
     Loads supplied manifest file or ~/.o3de/o3de_manifest.json if None
+    If the supplied manifest_path is None and  ~/.o3de/o3de_manifest.json doesn't exist default manifest data
+    is instead returned.
+    Note: There is a difference between supplying a manifest_path parameter of None and '~/.o3de/o3de_manifest.json'
+    In the former if the o3de_manifest.json doesn't exist, default o3de manifest data is returned.
+    In the later that the o3de_manifest.json must exist as the caller explicitly specified the manifest path
 
     raises Json.JSONDecodeError if manifest data could not be decoded to JSON
     :param manifest_path: optional path to manifest file to load
     """
     if not manifest_path:
         manifest_path = get_o3de_manifest()
+        # If the default o3de manifest file doesn't exist and the manifest_path parameter was not supplied
+        # return the default o3de manifest data
+        if not manifest_path.is_file():
+            logger.info(f'A manifest path of None has been supplied and the {manifest_path} does not exist.'
+                        ' The default o3de manifest data dictionary will be returned.')
+            return get_default_o3de_manifest_json_data()
+
     with manifest_path.open('r') as f:
         try:
             json_data = json.load(f)
@@ -209,19 +214,13 @@ def get_gems_from_external_subdirectories(external_subdirs: list) -> list:
     '''
     Helper Method for scanning a set of external subdirectories for gem.json files
     '''
-    def is_gem_subdirectory(subdir_files):
-        for name in files:
-            if name == 'gem.json':
-                return True
-        return False
-
     gem_directories = []
-    # Locate all subfolders with gem.json files within them
+
     if external_subdirs:
         for subdirectory in external_subdirs:
-            for root, dirs, files in os.walk(pathlib.Path(subdirectory).resolve()):
-                if is_gem_subdirectory(files):
-                    gem_directories.append(pathlib.PurePath(root).as_posix())
+            gem_json_path = pathlib.Path(subdirectory).resolve() / 'gem.json'
+            if gem_json_path.is_file():
+                gem_directories.append(pathlib.PurePath(subdirectory).as_posix())
 
     return gem_directories
 
@@ -320,15 +319,27 @@ def get_project_templates(project_path: pathlib.Path) -> list:
 
 # gem.json queries
 def get_gem_gems(gem_path: pathlib.Path) -> list:
-    return get_gems_from_external_subdirectories(get_gem_external_subdirectories(gem_path))
+    return get_gems_from_external_subdirectories(get_gem_external_subdirectories(gem_path, set()))
 
 
-def get_gem_external_subdirectories(gem_path: pathlib.Path) -> list:
+def get_gem_external_subdirectories(gem_path: pathlib.Path, visited_gem_paths: set) -> list:
+    if gem_path in visited_gem_paths:
+        logger.error(f'A cycle has been detected when visiting external subdirectories at gem path "{gem_path}". The visited paths are: {visited_gem_paths}')
+        return []
+    visited_gem_paths.add(gem_path)
+
     gem_object = get_gem_json_data(gem_path=gem_path)
     if gem_object:
-        return list(map(lambda rel_path: (pathlib.Path(gem_path) / rel_path).as_posix(),
-                        gem_object[
-                            'external_subdirectories'])) if 'external_subdirectories' in gem_object else []
+        external_subdirectories = list(map(lambda rel_path: (pathlib.Path(gem_path) / rel_path).as_posix(),
+            gem_object['external_subdirectories'])) if 'external_subdirectories' in gem_object else []
+
+        # recurse into gem subdirectories 
+        for external_subdirectory in external_subdirectories:
+            gem_json_path = pathlib.Path(external_subdirectory).resolve() / 'gem.json'
+            if gem_json_path.is_file():
+                external_subdirectories.extend(get_gem_external_subdirectories(external_subdirectory, visited_gem_paths))
+
+        return external_subdirectories
     return []
 
 
@@ -358,16 +369,9 @@ def get_all_external_subdirectories(project_path: pathlib.Path = None) -> list:
     if project_path:
         external_subdirectories_data.extend(get_project_external_subdirectories(project_path))
 
-    def descend_gems(gem_path: pathlib.Path):
-        new_external_subdirectories_data = get_gem_external_subdirectories(gem_path)
-        external_subdirectories_data.extend(new_external_subdirectories_data)
-        new_gems_data = get_gems_from_external_subdirectories(new_external_subdirectories_data)
-        for new_gem in new_gems_data:
-            descend_gems(new_gem)
-
-    gems_data = get_gems_from_external_subdirectories(external_subdirectories_data)
-    for gem in gems_data:
-        descend_gems(gem)
+    gem_paths = get_gems_from_external_subdirectories(external_subdirectories_data)
+    for gem_path in gem_paths:
+        external_subdirectories_data.extend(get_gem_external_subdirectories(gem_path, set()))
 
     # Remove duplicates from the list
     return list(dict.fromkeys(external_subdirectories_data))
@@ -692,20 +696,40 @@ def get_registered(engine_name: str = None,
 
     elif isinstance(default_folder, str):
         if default_folder == 'engines':
-            default_engines_folder = pathlib.Path(json_data['default_engines_folder']).resolve()
-            return default_engines_folder
+            if 'default_engines_folder' in json_data:
+                default_engines_folder = pathlib.Path(json_data['default_engines_folder'])
+            else:
+                default_engines_folder = pathlib.Path(
+                    get_default_o3de_manifest_json_data().get('default_engines_folder', None))
+            return default_engines_folder.resolve() if default_engines_folder else None
         elif default_folder == 'projects':
-            default_projects_folder = pathlib.Path(json_data['default_projects_folder']).resolve()
-            return default_projects_folder
+            if 'default_projects_folder' in json_data:
+                default_projects_folder = pathlib.Path(json_data['default_projects_folder'])
+            else:
+                default_projects_folder = pathlib.Path(
+                    get_default_o3de_manifest_json_data().get('default_projects_folder', None))
+            return default_projects_folder.resolve() if default_projects_folder else None
         elif default_folder == 'gems':
-            default_gems_folder = pathlib.Path(json_data['default_gems_folder']).resolve()
-            return default_gems_folder
+            if 'default_gems_folder' in json_data:
+                default_gems_folder = pathlib.Path(json_data['default_gems_folder'])
+            else:
+                default_gems_folder = pathlib.Path(
+                    get_default_o3de_manifest_json_data().get('default_gems_folder', None))
+            return default_gems_folder.resolve() if default_gems_folder else None
         elif default_folder == 'templates':
-            default_templates_folder = pathlib.Path(json_data['default_templates_folder']).resolve()
-            return default_templates_folder
+            if 'default_templates_folder' in json_data:
+                default_templates_folder = pathlib.Path(json_data['default_templates_folder'])
+            else:
+                default_templates_folder = pathlib.Path(
+                    get_default_o3de_manifest_json_data().get('default_templates_folder', None))
+            return default_templates_folder.resolve() if default_templates_folder else None
         elif default_folder == 'restricted':
-            default_restricted_folder = pathlib.Path(json_data['default_restricted_folder']).resolve()
-            return default_restricted_folder
+            if 'default_restricted_folder' in json_data:
+                default_restricted_folder = pathlib.Path(json_data['default_restricted_folder'])
+            else:
+                default_restricted_folder = pathlib.Path(
+                    get_default_o3de_manifest_json_data().get('default_restricted_folder', None))
+            return default_restricted_folder.resolve() if default_restricted_folder else None
 
     elif isinstance(repo_name, str):
         cache_folder = get_o3de_cache_folder()

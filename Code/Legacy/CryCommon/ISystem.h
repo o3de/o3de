@@ -50,10 +50,6 @@ struct IRemoteConsole;
 struct IRenderer;
 struct ICryFont;
 struct IMovieSystem;
-namespace Audio
-{
-    struct IAudioSystem;
-} // namespace Audio
 struct SFileVersion;
 struct INameTable;
 struct ILevelSystem;
@@ -472,8 +468,6 @@ namespace AZ
     } // namespace Internal
 } // namespace AZ
 
-typedef AZ::Internal::EnvironmentInterface SharedEnvironmentInstance;
-
 // Description:
 //  Structure passed to Init method of ISystem interface.
 struct SSystemInitParams
@@ -501,8 +495,6 @@ struct SSystemInitParams
 
     ISystem* pSystem;                                           // Pointer to existing ISystem interface, it will be reused if not NULL.
 
-    SharedEnvironmentInstance* pSharedEnvironment;
-
     // Summary:
     //  Initialization defaults.
     SSystemInitParams()
@@ -528,8 +520,6 @@ struct SSystemInitParams
         bToolMode = false;
 
         pSystem = NULL;
-
-        pSharedEnvironment = nullptr;
     }
 };
 
@@ -602,7 +592,6 @@ struct SSystemGlobalEnvironment
     ISystem*                   pSystem = nullptr;
     ILog*                      pLog;
     IMovieSystem*              pMovieSystem;
-    SharedEnvironmentInstance*      pSharedEnvironment;
 
 #if defined(AZ_RESTRICTED_PLATFORM)
     #define AZ_RESTRICTED_SECTION ISYSTEM_H_SECTION_4
@@ -965,7 +954,7 @@ struct ISystem
     //   Execute command line arguments.
     //   Should be after init game.
     // Example:
-    //   +g_gametype ASSAULT +map "testy"
+    //   +g_gametype ASSAULT +LoadLevel "testy"
     virtual void ExecuteCommandLine(bool deferred=true) = 0;
 
     // Description:

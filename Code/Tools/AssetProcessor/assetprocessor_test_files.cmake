@@ -20,13 +20,12 @@ set(FILES
     native/tests/AssetProcessorTest.cpp
     native/tests/BaseAssetProcessorTest.h
     native/tests/assetdatabase/AssetDatabaseTest.cpp
-    native/tests/resourcecompiler/RCBuilderTest.cpp
-    native/tests/resourcecompiler/RCBuilderTest.h
     native/tests/resourcecompiler/RCControllerTest.cpp
     native/tests/resourcecompiler/RCControllerTest.h
     native/tests/resourcecompiler/RCJobTest.cpp
     native/tests/assetBuilderSDK/assetBuilderSDKTest.h
     native/tests/assetBuilderSDK/assetBuilderSDKTest.cpp
+    native/tests/assetBuilderSDK/JobProductTests.cpp
     native/tests/assetBuilderSDK/SerializationDependenciesTests.cpp
     native/tests/assetmanager/AssetProcessorManagerTest.cpp
     native/tests/assetmanager/AssetProcessorManagerTest.h
@@ -40,6 +39,10 @@ set(FILES
     native/tests/assetmanager/MockFileProcessor.cpp
     native/tests/assetmanager/TestEventSignal.cpp
     native/tests/assetmanager/TestEventSignal.h
+    native/tests/assetmanager/AssetManagerTestingBase.cpp
+    native/tests/assetmanager/AssetManagerTestingBase.h
+    native/tests/assetmanager/IntermediateAssetTests.cpp
+    native/tests/assetmanager/IntermediateAssetTests.h
     native/tests/utilities/assetUtilsTest.cpp
     native/tests/platformconfiguration/platformconfigurationtests.cpp
     native/tests/platformconfiguration/platformconfigurationtests.h
@@ -61,6 +64,9 @@ set(FILES
     native/tests/AssetProcessorMessagesTests.cpp
     native/tests/ApplicationManagerTests.cpp
     native/tests/ApplicationManagerTests.h
+    native/tests/BuilderManagerTests.cpp
+    native/tests/BuilderManagerTests.h
+    native/unittests/AssetCacheServerUnitTests.cpp
     native/unittests/AssetProcessingStateDataUnitTests.cpp
     native/unittests/AssetProcessingStateDataUnitTests.h
     native/unittests/AssetProcessorManagerUnitTests.cpp

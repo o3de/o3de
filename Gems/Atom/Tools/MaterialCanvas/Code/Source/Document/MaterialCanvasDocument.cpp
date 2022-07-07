@@ -10,14 +10,20 @@
 #include <Atom/RPI.Edit/Common/JsonUtils.h>
 #include <Atom/RPI.Reflect/System/AnyAsset.h>
 #include <AtomToolsFramework/Document/AtomToolsDocumentNotificationBus.h>
+#include <AtomToolsFramework/DynamicNode/DynamicNodeManagerRequestBus.h>
 #include <AtomToolsFramework/Util/Util.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <Document/MaterialCanvasDocument.h>
-
 #include <GraphCanvas/Components/SceneBus.h>
 #include <GraphCanvas/GraphCanvasBus.h>
+
+#include <AzCore/IO/ByteContainerStream.h>
+#include <AzCore/Serialization/ObjectStream.h>
+#include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Serialization/Utils.h>
+#include <AzCore/std/containers/vector.h>
 
 namespace MaterialCanvas
 {
@@ -40,19 +46,28 @@ namespace MaterialCanvas
         }
     }
 
-    MaterialCanvasDocument::MaterialCanvasDocument(const AZ::Crc32& toolId, const AtomToolsFramework::DocumentTypeInfo& documentTypeInfo)
+    MaterialCanvasDocument::MaterialCanvasDocument(
+        const AZ::Crc32& toolId,
+        const AtomToolsFramework::DocumentTypeInfo& documentTypeInfo,
+        AZStd::shared_ptr<GraphModel::GraphContext> graphContext)
         : AtomToolsFramework::AtomToolsDocument(toolId, documentTypeInfo)
+        , m_graphContext(graphContext)
     {
         // Creating the scene entity and graph for this document. This may end up moving to the view if we can have the document only store
         // minimal material graph specific data that can be transformed into a graph canvas graph in the view and back. That abstraction
         // would help maintain a separation between the serialized data and the UI for rendering and interacting with the graph. This would
         // also help establish a mediator pattern for other node based tools that want to visualize their data or documents as a graph. My
         // understanding is that graph model will help with this.
-        m_sceneEntity = {};
-        GraphCanvas::GraphCanvasRequestBus::BroadcastResult(m_sceneEntity, &GraphCanvas::GraphCanvasRequests::CreateSceneAndActivate);
+        m_graph = AZStd::make_shared<GraphModel::Graph>(m_graphContext);
 
+        GraphModelIntegration::GraphManagerRequestBus::BroadcastResult(
+            m_sceneEntity, &GraphModelIntegration::GraphManagerRequests::CreateScene, m_graph, m_toolId);
         m_graphId = m_sceneEntity->GetId();
-        GraphCanvas::SceneRequestBus::Event(m_graphId, &GraphCanvas::SceneRequests::SetEditorId, toolId);
+
+        RecordGraphState();
+
+        // Listen for GraphController notifications on the new graph.
+        GraphModelIntegration::GraphControllerNotificationBus::Handler::BusConnect(m_graphId);
 
         MaterialCanvasDocumentRequestBus::Handler::BusConnect(m_id);
     }
@@ -60,7 +75,17 @@ namespace MaterialCanvas
     MaterialCanvasDocument::~MaterialCanvasDocument()
     {
         MaterialCanvasDocumentRequestBus::Handler::BusDisconnect();
+
+        // Stop listening for GraphController notifications for this graph.
+        GraphModelIntegration::GraphControllerNotificationBus::Handler::BusDisconnect();
+
+        GraphModelIntegration::GraphManagerRequestBus::Broadcast(
+            &GraphModelIntegration::GraphManagerRequests::DeleteGraphController, m_graphId);
+
+        m_graph.reset();
+        m_graphId = GraphCanvas::GraphId();
         delete m_sceneEntity;
+        m_sceneEntity = {};
     }
 
     AtomToolsFramework::DocumentTypeInfo MaterialCanvasDocument::BuildDocumentTypeInfo()
@@ -69,7 +94,16 @@ namespace MaterialCanvas
         AtomToolsFramework::DocumentTypeInfo documentType;
         documentType.m_documentTypeName = "Material Canvas";
         documentType.m_documentFactoryCallback = [](const AZ::Crc32& toolId, const AtomToolsFramework::DocumentTypeInfo& documentTypeInfo) {
-            return aznew MaterialCanvasDocument(toolId, documentTypeInfo); };
+            // A list of all registered data types is needed to create a graph context
+            GraphModel::DataTypeList registeredDataTypes;
+            AtomToolsFramework::DynamicNodeManagerRequestBus::EventResult(
+                registeredDataTypes, toolId, &AtomToolsFramework::DynamicNodeManagerRequestBus::Events::GetRegisteredDataTypes);
+
+            // Creating a graph context per document by default. It can be overridden in the application to provide a shared context.
+            auto graphContext = AZStd::make_shared<GraphModel::GraphContext>("Material Canvas", ".materialcanvas", registeredDataTypes);
+            graphContext->CreateModuleGraphManager();
+            return aznew MaterialCanvasDocument(toolId, documentTypeInfo, graphContext);
+        };
 
         // Need to revisit the distinction between file types for creation versus file types for opening. Creation types are meant to be
         // used as templates or documents from which another is derived, like material types or parents. Currently a combination of the
@@ -113,12 +147,22 @@ namespace MaterialCanvas
             return false;
         }
 
-        // Saving and loading a placeholder string asset
         auto loadResult = AZ::JsonSerializationUtils::LoadAnyObjectFromFile(m_absolutePath);
-        if (!loadResult || !loadResult.GetValue().is<AZStd::string>())
+        if (!loadResult || !loadResult.GetValue().is<GraphModel::Graph>())
         {
             return OpenFailed();
         }
+
+        // Cloning loaded data using the serialize context because the graph does not have a copy or move constructor
+        AZ::SerializeContext* serializeContext = {};
+        AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
+        AZ_Assert(serializeContext, "Failed to acquire application serialize context.");
+
+        GraphModel::GraphPtr graph;
+        graph.reset(serializeContext->CloneObject(AZStd::any_cast<const GraphModel::Graph>(&loadResult.GetValue())));
+
+        CreateGraph(graph);
+        m_modified = false;
 
         return OpenSucceeded();
     }
@@ -132,13 +176,13 @@ namespace MaterialCanvas
             return false;
         }
 
-        // Saving and loading a placeholder string asset
-        AZStd::string placeholderData;
-        if (!AZ::JsonSerializationUtils::SaveObjectToFile(&placeholderData, m_savePathNormalized))
+        if (!AZ::JsonSerializationUtils::SaveObjectToFile(m_graph.get(), m_savePathNormalized))
         {
             return SaveFailed();
         }
 
+        m_modified = false;
+        m_absolutePath = m_savePathNormalized;
         return SaveSucceeded();
     }
 
@@ -151,13 +195,13 @@ namespace MaterialCanvas
             return false;
         }
 
-        // Saving and loading a placeholder string asset
-        AZStd::string placeholderData;
-        if (!AZ::JsonSerializationUtils::SaveObjectToFile(&placeholderData, m_savePathNormalized))
+        if (!AZ::JsonSerializationUtils::SaveObjectToFile(m_graph.get(), m_savePathNormalized))
         {
             return SaveFailed();
         }
 
+        m_modified = false;
+        m_absolutePath = m_savePathNormalized;
         return SaveSucceeded();
     }
 
@@ -170,47 +214,64 @@ namespace MaterialCanvas
             return false;
         }
 
-        // Saving and loading a placeholder string asset
-        AZStd::string placeholderData;
-        if (!AZ::JsonSerializationUtils::SaveObjectToFile(&placeholderData, m_savePathNormalized))
+        if (!AZ::JsonSerializationUtils::SaveObjectToFile(m_graph.get(), m_savePathNormalized))
         {
             return SaveFailed();
         }
 
+        m_modified = false;
+        m_absolutePath = m_savePathNormalized;
         return SaveSucceeded();
     }
 
     bool MaterialCanvasDocument::IsOpen() const
     {
-        return AtomToolsDocument::IsOpen();
+        return AtomToolsDocument::IsOpen() && m_graph && m_graphId.IsValid();
     }
 
     bool MaterialCanvasDocument::IsModified() const
     {
-        bool result = false;
-        return result;
+        return m_modified;
     }
 
     bool MaterialCanvasDocument::BeginEdit()
     {
-        // Save the current properties as a momento for undo before any changes are applied
         return true;
     }
 
     bool MaterialCanvasDocument::EndEdit()
     {
+        auto undoState = m_graphStateForUndoRedo;
+
+        RecordGraphState();
+        auto redoState = m_graphStateForUndoRedo;
+
+        if (undoState != redoState)
+        {
+            AddUndoRedoHistory(
+                [this, undoState]() { RestoreGraphState(undoState); },
+                [this, redoState]() { RestoreGraphState(redoState); });
+
+            m_modified = true;
+            AtomToolsFramework::AtomToolsDocumentNotificationBus::Event(
+                m_toolId, &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentObjectInfoInvalidated, m_id);
+            AtomToolsFramework::AtomToolsDocumentNotificationBus::Event(
+                m_toolId, &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentModified, m_id);
+        }
         return true;
     }
 
-    // MaterialCanvasDocumentRequestBus::Handler overrides...
-
-    inline GraphCanvas::GraphId MaterialCanvasDocument::GetGraphId() const
+    GraphCanvas::GraphId MaterialCanvasDocument::GetGraphId() const
     {
         return m_graphId;
     }
 
     void MaterialCanvasDocument::Clear()
     {
+        DestroyGraph();
+        m_graphStateForUndoRedo.clear();
+        m_modified = false;
+
         AtomToolsFramework::AtomToolsDocument::Clear();
     }
 
@@ -222,5 +283,73 @@ namespace MaterialCanvas
     bool MaterialCanvasDocument::ReopenRestoreState()
     {
         return AtomToolsDocument::ReopenRestoreState();
+    }
+
+    void MaterialCanvasDocument::OnGraphModelRequestUndoPoint()
+    {
+        BeginEdit();
+        EndEdit();
+    }
+
+    void MaterialCanvasDocument::OnGraphModelTriggerUndo()
+    {
+        Undo();
+    }
+
+    void MaterialCanvasDocument::OnGraphModelTriggerRedo()
+    {
+        Redo();
+    }
+
+    void MaterialCanvasDocument::RecordGraphState()
+    {
+        // Serialize the current graph to a byte stream so that it can be restored with undo redo operations.
+        m_graphStateForUndoRedo.clear();
+        AZ::IO::ByteContainerStream<decltype(m_graphStateForUndoRedo)> undoGraphStateStream(&m_graphStateForUndoRedo);
+        AZ::Utils::SaveObjectToStream(undoGraphStateStream, AZ::ObjectStream::ST_BINARY, m_graph.get());
+    }
+
+    void MaterialCanvasDocument::RestoreGraphState(const AZStd::vector<AZ::u8>& graphState)
+    {
+        // Restore a version of the graph that was previously serialized to a byte stream
+        m_graphStateForUndoRedo = graphState;
+        AZ::IO::ByteContainerStream<decltype(m_graphStateForUndoRedo)> undoGraphStateStream(&m_graphStateForUndoRedo);
+
+        GraphModel::GraphPtr graph = AZStd::make_shared<GraphModel::Graph>(m_graphContext);
+        AZ::Utils::LoadObjectFromStreamInPlace(undoGraphStateStream, *graph.get());
+
+        CreateGraph(graph);
+
+        m_modified = true;
+        AtomToolsFramework::AtomToolsDocumentNotificationBus::Event(
+            m_toolId, &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentObjectInfoInvalidated, m_id);
+        AtomToolsFramework::AtomToolsDocumentNotificationBus::Event(
+            m_toolId, &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentModified, m_id);
+    }
+
+    void MaterialCanvasDocument::CreateGraph(GraphModel::GraphPtr graph)
+    {
+        DestroyGraph();
+
+        m_graph = graph;
+        m_graph->PostLoadSetup(m_graphContext);
+        RecordGraphState();
+
+        // The graph controller will create all of the scene items on construction.
+        GraphModelIntegration::GraphManagerRequestBus::Broadcast(
+            &GraphModelIntegration::GraphManagerRequests::CreateGraphController, m_graphId, m_graph);
+    }
+
+    void MaterialCanvasDocument::DestroyGraph()
+    {
+        // The graph controller does not currently delete all of the scene items when it's destroyed.
+        GraphModelIntegration::GraphManagerRequestBus::Broadcast(
+            &GraphModelIntegration::GraphManagerRequests::DeleteGraphController, m_graphId);
+        m_graph.reset();
+
+        // This needs to be done whenever the graph is destroyed during undo and redo so that the previous version of the data is deleted. 
+        GraphCanvas::GraphModelRequestBus::Event(m_graphId, &GraphCanvas::GraphModelRequests::RequestPushPreventUndoStateUpdate);
+        GraphCanvas::SceneRequestBus::Event(m_graphId, &GraphCanvas::SceneRequests::ClearScene);
+        GraphCanvas::GraphModelRequestBus::Event(m_graphId, &GraphCanvas::GraphModelRequests::RequestPopPreventUndoStateUpdate);
     }
 } // namespace MaterialCanvas

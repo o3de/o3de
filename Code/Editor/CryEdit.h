@@ -196,7 +196,6 @@ public:
     void OnDocumentationAWSSupport();
     void OnCommercePublish();
     void OnCommerceMerch();
-    void SaveTagLocations();
     void OnExportSelectedObjects();
     void OnEditHold();
     void OnEditFetch();
@@ -233,6 +232,7 @@ public:
     void OnUpdateNonGameMode(QAction* action);
     void OnUpdateNewLevel(QAction* action);
     void OnUpdatePlayGame(QAction* action);
+    void OnToolsLogMemoryUsage();
 
 protected:
     // ------- AzFramework::AssetSystemInfoBus::Handler ------
@@ -247,7 +247,6 @@ private:
 
     CMainFrame* GetMainFrame() const;
     void WriteConfig();
-    void LoadTagLocations();
     bool UserExportToGame(bool bNoMsgBox = true);
     static void ShowSplashScreen(CCryEditApp* app);
     static void CloseSplashScreen();
@@ -303,10 +302,6 @@ private:
 
     CConsoleDialog* m_pConsoleDialog = nullptr;
 
-    AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
-    Vec3 m_tagLocations[12];
-    Ang3 m_tagAngles[12];
-    AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
     float m_fastRotateAngle = 45.0f;
     float m_moveSpeedStep = 0.1f;
 
@@ -357,7 +352,6 @@ private:
     void OnUpdateWireframe(QAction* action);
     void OnViewConfigureLayout();
 
-    void OnToolsLogMemoryUsage();
     void OnCustomizeKeyboard();
     void OnToolsConfiguretools();
     void OnToolsScriptHelp();
@@ -477,7 +471,7 @@ namespace AzToolsFramework
 
 } // namespace AzToolsFramework
 
-extern "C" AZ_DLL_EXPORT void InitializeDynamicModule(void* env);
+extern "C" AZ_DLL_EXPORT void InitializeDynamicModule();
 extern "C" AZ_DLL_EXPORT void UninitializeDynamicModule();
 
 #endif // CRYINCLUDE_EDITOR_CRYEDIT_H

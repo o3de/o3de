@@ -9,6 +9,7 @@
 
 #include <AzCore/PlatformDef.h>
 #include <AzCore/base.h>
+#include <AzCore/O3DEKernelConfiguration.h>
 
 namespace AZ
 {
@@ -28,6 +29,14 @@ namespace AZ
             Errors = 1,
             Warnings = 2,
             Info = 3
+        };
+
+        // Represents the options to select C language FILE* stream to write raw output
+        enum class RedirectCStream
+        {
+            Stdout,
+            Stderr,
+            None
         };
 
         class Trace
@@ -84,7 +93,7 @@ namespace AZ
     }
 }
 
-#ifdef AZ_ENABLE_TRACING
+#if defined(AZ_ENABLE_TRACING) && !defined(O3DEKernel_EXPORTS)
 
 /**
 * AZ tracing macros provide debug information reporting for assert, errors, warnings, and informational messages.
@@ -138,7 +147,7 @@ namespace AZ
     {                                                                                                                                                                                 \
         using namespace AZ::TraceInternal;                                                                                                                                            \
         [[maybe_unused]] const auto& rTraceFmtCompileTimeCheckExpressionHelper = (expression); /* This is needed for edge cases for expressions containing lambdas, that were unsupported before C++20 */   \
-        constexpr ExpressionValidResult isValidTraceFmtResult = ExpressionIsValid<decltype(rTraceFmtCompileTimeCheckExpressionHelper)>::value;                                        \
+        [[maybe_unused]] constexpr ExpressionValidResult isValidTraceFmtResult = ExpressionIsValid<decltype(rTraceFmtCompileTimeCheckExpressionHelper)>::value;                                        \
         /* Assert different message depending whether it's const char array or if we have extra arguments */                                                                          \
         static_assert(!(isVaArgs) ? isValidTraceFmtResult != ExpressionValidResult::Invalid_ConstCharArray : true, baseMsg " " msg);                                                    \
         static_assert(isVaArgs  ? isValidTraceFmtResult != ExpressionValidResult::Invalid_ConstCharArray : true, baseMsg " " msgVargs);                                               \

@@ -460,7 +460,6 @@ int main(int argc, char** argv)                                                 
 
 #define AZ_UNIT_TEST_HOOK(...)           AZ_MACRO_SPECIALIZE(AZ_UNIT_TEST_HOOK_, AZ_VA_NUM_ARGS(__VA_ARGS__), (__VA_ARGS__))
 
-
 // Declares a visible external symbol which identifies an executable as containing tests
 #define DECLARE_AZ_UNIT_TEST_MAIN() AZTEST_EXPORT int ContainsAzUnitTestMain() { return 1; }
 

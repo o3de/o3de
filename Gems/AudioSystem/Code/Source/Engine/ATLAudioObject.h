@@ -19,55 +19,28 @@
 
 #include <AzFramework/Physics/Common/PhysicsSceneQueries.h>
 
-struct IRenderAuxGeom;
+namespace AzFramework
+{
+    class DebugDisplayRequests;
+}
 
 class ATLAudioObjectTest;
 
 namespace Audio
 {
     ///////////////////////////////////////////////////////////////////////////////////////////////////
-    enum EATLTriggerStatus : TATLEnumFlagsType
-    {
-        eATS_NONE                       = 0,
-        eATS_PLAYING                    = AUDIO_BIT(0),
-        eATS_PREPARED                   = AUDIO_BIT(1),
-        eATS_LOADING                    = AUDIO_BIT(2),
-        eATS_UNLOADING                  = AUDIO_BIT(3),
-        eATS_STARTING                   = AUDIO_BIT(4),
-        eATS_WAITING_FOR_REMOVAL        = AUDIO_BIT(5),
-        eATS_CALLBACK_ON_AUDIO_THREAD   = AUDIO_BIT(6),
-    };
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
     struct SATLTriggerImplState
     {
-        SATLTriggerImplState()
-            : nFlags(eATS_NONE)
-        {}
-
-        TATLEnumFlagsType nFlags;
+        TATLEnumFlagsType nFlags{ eATS_NONE };
     };
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     struct SATLTriggerInstanceState
     {
-        SATLTriggerInstanceState()
-            : nFlags(eATS_NONE)
-            , nTriggerID(INVALID_AUDIO_CONTROL_ID)
-            , numPlayingEvents(0)
-            , numLoadingEvents(0)
-            , pOwnerOverride(nullptr)
-            , pUserData(nullptr)
-            , pUserDataOwner(nullptr)
-        {}
-
-        TATLEnumFlagsType nFlags;
-        TAudioControlID nTriggerID;
-        size_t numPlayingEvents;
-        size_t numLoadingEvents;
-        void* pOwnerOverride;
-        void* pUserData;
-        void* pUserDataOwner;
+        TATLEnumFlagsType nFlags{ eATS_NONE };
+        TAudioControlID nTriggerID{ INVALID_AUDIO_CONTROL_ID };
+        size_t numPlayingEvents{ 0 };
+        void* pOwner{ nullptr };
     };
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -88,15 +61,11 @@ namespace Audio
         : public CATLEntity<TAudioObjectID>
     {
     public:
-        ~CATLAudioObjectBase() override {}
-
-        void ReportStartingTriggerInstance(const TAudioTriggerInstanceID audioTriggerInstanceID, const TAudioControlID audioControlID);
-        void ReportStartedTriggerInstance(const TAudioTriggerInstanceID audioTriggerInstanceID, void* const pOwnerOverride, void* const pUserData, void* const pUserDataOwner, const TATLEnumFlagsType nFlags);
-
-        void ReportStartedEvent(const CATLEvent* const pEvent);
-        void ReportFinishedEvent(const CATLEvent* const pEvent, const bool bSuccess);
-
-        void ReportPrepUnprepTriggerImpl(const TAudioTriggerImplID nTriggerImplID, const bool bPrepared);
+        void TriggerInstanceStarting(TAudioTriggerInstanceID triggerInstanceId, TAudioControlID audioControlId);
+        void TriggerInstanceStarted(TAudioTriggerInstanceID triggerInstanceId, void* owner);
+        void TriggerInstanceFinished(TObjectTriggerStates::const_iterator iter);
+        void EventStarted(const CATLEvent* const atlEvent);
+        void EventFinished(const CATLEvent* const atlEvent);
 
         void SetSwitchState(const TAudioControlID nSwitchID, const TAudioSwitchStateID nStateID);
         void SetRtpc(const TAudioControlID nRtpcID, const float fValue);
@@ -156,7 +125,6 @@ namespace Audio
 
         virtual void Clear();
         virtual void Update(const float fUpdateIntervalMS, const SATLWorldPosition& rListenerPosition);
-        void ReportFinishedTriggerInstance(TObjectTriggerStates::iterator& iTriggerEntry);
 
         TObjectEventSet m_cActiveEvents;
         TObjectTriggerStates m_cTriggers;
@@ -205,7 +173,7 @@ namespace Audio
         : public CATLAudioObjectBase
     {
     public:
-        explicit CATLGlobalAudioObject(const TAudioObjectID nID, IATLAudioObjectData* const pImplData = nullptr)
+        CATLGlobalAudioObject(const TAudioObjectID nID, IATLAudioObjectData* const pImplData)
             : CATLAudioObjectBase(nID, eADS_GLOBAL, pImplData)
         {}
 
@@ -319,7 +287,7 @@ namespace Audio
 
         void Update(float deltaMs);
         void Reset();
-        void SetType(EAudioObjectObstructionCalcType calcType);
+        void SetType(ObstructionType calcType);
         bool CanRun() const;
         void Run(const SATLWorldPosition& listenerPosition);
         void CastRay(const AZ::Vector3& origin, const AZ::Vector3& dest, const AZ::u16 rayIndex);
@@ -336,7 +304,7 @@ namespace Audio
         void SetupTestRay(AZ::u16 rayIndex);
 
 #if !defined(AUDIO_RELEASE)
-        void DrawObstructionRays(IRenderAuxGeom& auxGeom) const;
+        void DrawObstructionRays(AzFramework::DebugDisplayRequests& debugDisplay) const;
 #endif // !AUDIO_RELEASE
 
         static constexpr float s_epsilon = 1e-3f;
@@ -348,7 +316,7 @@ namespace Audio
         CSmoothFloat m_obstructionValue;
         CSmoothFloat m_occlusionValue;
         TAudioObjectID m_audioObjectId;
-        EAudioObjectObstructionCalcType m_obstOccType;
+        ObstructionType m_obstOccType;
     };
 
 
@@ -386,7 +354,7 @@ namespace Audio
 
         void SetPosition(const SATLWorldPosition& oNewPosition);
 
-        void SetRaycastCalcType(const EAudioObjectObstructionCalcType type);
+        void SetRaycastCalcType(const ObstructionType type);
         void RunRaycasts(const SATLWorldPosition& listenerPos);
         bool CanRunRaycasts() const;
         void GetObstOccData(SATLSoundPropagationData& data) const;
@@ -411,7 +379,10 @@ namespace Audio
 
 #if !defined(AUDIO_RELEASE)
     public:
-        void DrawDebugInfo(IRenderAuxGeom& auxGeom, const AZ::Vector3& vListenerPos, const CATLDebugNameStore* const pDebugNameStore) const;
+        void DrawDebugInfo(
+            AzFramework::DebugDisplayRequests& debugDisplay,
+            const AZ::Vector3& listenerPos,
+            const CATLDebugNameStore* const debugNameStore) const;
         const SATLWorldPosition& GetPosition() const
         {
             return m_oPosition;

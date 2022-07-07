@@ -10,6 +10,7 @@
 #include <TerrainRenderer/Components/TerrainSurfaceMaterialsListComponent.h>
 
 #include <AzCore/Console/Console.h>
+#include <AzCore/std/parallel/semaphore.h>
 
 #include <Atom/RPI.Public/Image/AttachmentImagePool.h>
 #include <Atom/RPI.Public/Image/ImageSystemInterface.h>
@@ -276,7 +277,7 @@ namespace Terrain
 
         ClipmapBoundsDescriptor desc;
         desc.m_clipmapUpdateMultiple = 1;
-        desc.m_clipToWorldScale = m_detailTextureScale;
+        desc.m_clipmapToWorldScale = m_detailTextureScale;
         desc.m_size = m_detailTextureSize;
 
         // Initialize world space to a value that won't match the initial camera position.
@@ -626,7 +627,7 @@ namespace Terrain
             const auto index = getIndex(indexName);
             if (index.IsValid())
             {
-                // GetValue<T>() expects the actaul type, not a reference type, so the reference needs to be removed.
+                // GetValue<T>() expects the actual type, not a reference type, so the reference needs to be removed.
                 using TypeRefRemoved = AZStd::remove_cvref_t<decltype(ref)>;
                 ref = material->GetPropertyValue(index).GetValue<TypeRefRemoved>();
             }
@@ -812,7 +813,7 @@ namespace Terrain
     {
         
         AZ::Aabb untouchedRegion = AZ::Aabb::CreateNull();
-        ClipmapBounds::ClipmapBoundsRegionList edgeUpdatedRegions =
+        ClipmapBoundsRegionList edgeUpdatedRegions =
             m_detailMaterialIdBounds.UpdateCenter(AZ::Vector2(cameraPosition.GetX(), cameraPosition.GetY()), &untouchedRegion);
         
         if (!m_detailTextureImage)
@@ -827,7 +828,7 @@ namespace Terrain
             m_detailTextureImage = AZ::RPI::AttachmentImage::Create(*imagePool.get(), imageDescriptor, TerrainDetailName, nullptr, nullptr);
             AZ_Error(TerrainDetailMaterialManagerName, m_detailTextureImage, "Failed to initialize the detail texture image.");
 
-            ClipmapBounds::ClipmapBoundsRegionList updateRegions = m_detailMaterialIdBounds.TransformRegion(m_detailMaterialIdBounds.GetWorldBounds());
+            ClipmapBoundsRegionList updateRegions = m_detailMaterialIdBounds.TransformRegion(m_detailMaterialIdBounds.GetWorldBounds());
             for (const auto& region : updateRegions)
             {
                 UpdateDetailTexture(region.m_worldAabb, region.m_localAabb);
@@ -846,7 +847,7 @@ namespace Terrain
                 m_dirtyDetailRegion = m_dirtyDetailRegion.GetClamped(untouchedRegion);
                 if (m_dirtyDetailRegion.IsValid())
                 {
-                    ClipmapBounds::ClipmapBoundsRegionList updateRegions = m_detailMaterialIdBounds.TransformRegion(m_dirtyDetailRegion);
+                    ClipmapBoundsRegionList updateRegions = m_detailMaterialIdBounds.TransformRegion(m_dirtyDetailRegion);
                     for (const auto& region : updateRegions)
                     {
                         UpdateDetailTexture(region.m_worldAabb, region.m_localAabb);
@@ -948,23 +949,34 @@ namespace Terrain
             {
                 float totalWeight = firstWeight + secondWeight;
                 float blendWeight = 1.0f - (firstWeight / totalWeight);
-                pixel.m_blend = aznumeric_cast<uint8_t>(AZStd::round(blendWeight * 255.0f));
+                pixel.m_blend = aznumeric_cast<uint8_t>(blendWeight * 255.0f + 0.5f);
             }
         };
             
         AZ::Vector2 stepSize(m_detailTextureScale);
         AZ::Aabb offsetWorldAabb = worldUpdateAabb.GetTranslated(AZ::Vector3(m_detailTextureScale * 0.5f)); // offset by half a pixel
 
-        {
-            // Block other threads from accessing the surface data bus while we are in GetValue (which may call into the SurfaceData bus).
-            // This prevents lock inversion deadlocks between this calling Gradient->Surface and something else calling Surface->Gradient.
-            auto& surfaceDataContext = SurfaceData::SurfaceDataSystemRequestBus::GetOrCreateContext(false);
-            typename SurfaceData::SurfaceDataSystemRequestBus::Context::DispatchLockGuard scopeLock(surfaceDataContext.m_contextMutex);
+        AZStd::binary_semaphore wait;
 
-            AzFramework::Terrain::TerrainDataRequestBus::Broadcast(
-                &AzFramework::Terrain::TerrainDataRequests::ProcessSurfaceWeightsFromRegion, offsetWorldAabb, stepSize, perPositionCallback,
-                AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT);
-        }
+        AZStd::shared_ptr<AzFramework::Terrain::QueryAsyncParams> asyncParams
+            = AZStd::make_shared<AzFramework::Terrain::QueryAsyncParams>();
+        asyncParams->m_desiredNumberOfJobs = AzFramework::Terrain::QueryAsyncParams::UseMaxJobs;
+        asyncParams->m_minPositionsPerJob = 4 * m_detailTextureSize; // do at least 4 rows per job.
+        asyncParams->m_completionCallback = [&wait](AZStd::shared_ptr<AzFramework::Terrain::TerrainJobContext>)
+        {
+            wait.release();
+        };
+
+        AzFramework::Terrain::TerrainQueryRegion queryRegion(offsetWorldAabb.GetMin(), width, height, stepSize);
+        AzFramework::Terrain::TerrainDataRequestBus::Broadcast(
+            &AzFramework::Terrain::TerrainDataRequests::QueryRegionAsync,
+            queryRegion,
+            AzFramework::Terrain::TerrainDataRequests::TerrainDataMask::SurfaceData,
+            perPositionCallback,
+            AzFramework::Terrain::TerrainDataRequests::Sampler::DEFAULT,
+            asyncParams);
+
+        wait.acquire();
 
         const int32_t left = textureUpdateAabb.m_min.m_x;
         const int32_t top = textureUpdateAabb.m_min.m_y;

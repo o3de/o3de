@@ -92,6 +92,13 @@ namespace AZ::Data
         }
     }
 
+    AssetId::FixedString AssetId::ToFixedString() const
+    {
+        FixedString result;
+        result = FixedString::format("%s:%08x", m_guid.ToFixedString().c_str(), m_subId);
+        return result;
+    }
+
     namespace AssetInternal
     {
         Asset<AssetData> FindOrCreateAsset(const AssetId& id, const AssetType& type, AssetLoadBehavior assetReferenceLoadBehavior)
@@ -156,7 +163,7 @@ namespace AZ::Data
                     return { it->second, assetReferenceLoadBehavior };
                 }
             }
-            return {};
+            return {nullptr, assetReferenceLoadBehavior};
         }
 
         AssetId ResolveAssetId(const AssetId& id)

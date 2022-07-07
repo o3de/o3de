@@ -16,7 +16,6 @@
 namespace AssetProcessor
 {
     extern const BuilderIdAndName BUILDER_ID_COPY;
-    extern const BuilderIdAndName BUILDER_ID_RC;
     extern const BuilderIdAndName BUILDER_ID_SKIP;
 
     struct MockRecognizerConfiguration
@@ -28,77 +27,30 @@ namespace AssetProcessor
         {
             return m_container;
         }
+
+        const RecognizerContainer& GetAssetCacheRecognizerContainer() const override
+        {
+            return m_container;
+        }
+
         const ExcludeRecognizerContainer& GetExcludeAssetRecognizerContainer() const override
         {
             return m_excludeContainer;
         }
 
+        bool AddAssetCacheRecognizerContainer(const RecognizerContainer&) override
+        {
+            return false;
+        }
+
         RecognizerContainer m_container;
         ExcludeRecognizerContainer m_excludeContainer;
     };
-    class MockRCCompiler
-        : public AssetProcessor::RCCompiler
-    {
-    public:
-        MockRCCompiler()
-            : m_executeResultResult(0, false, "c:\temp")
-        {
-        }
-
-        bool Initialize() override
-        {
-            m_initialize++;
-            return m_initializeResult;
-        }
-        bool Execute([[maybe_unused]] const QString& inputFile, [[maybe_unused]] const QString& watchFolder, [[maybe_unused]] const QString& platformIdentifier, [[maybe_unused]] const QString& params, [[maybe_unused]] const QString& dest, 
-            [[maybe_unused]] const AssetBuilderSDK::JobCancelListener* jobCancelListener, Result& result) const override
-        {
-            m_execute++;
-            result = m_executeResultResult;
-            return m_executeResult;
-        }
-        void RequestQuit() override
-        {
-            m_request_quit++;
-        }
-
-        void ResetCounters()
-        {
-            this->m_initialize = 0;
-            this->m_execute = 0;
-            this->m_request_quit = 0;
-        }
-
-        void SetResultInitialize(bool result)
-        {
-            m_initializeResult = result;
-        }
-
-        void SetResultExecute(bool result)
-        {
-            m_executeResult = result;
-        }
-
-        void SetResultResultExecute(Result result)
-        {
-            m_executeResultResult = result;
-        }
-
-        bool m_initializeResult = true;
-        bool m_executeResult = true;
-        Result m_executeResultResult;
-        mutable int m_initialize = 0;
-        mutable int m_execute = 0;
-        mutable int m_request_quit = 0;
-    };
-
-
 
     InternalMockBuilder::InternalMockBuilder(const QHash<QString, BuilderIdAndName>& inputBuilderNameByIdMap)
         : InternalRecognizerBasedBuilder(inputBuilderNameByIdMap,AZ::Uuid::CreateRandom())
         , m_createJobCallsCount(0)
     {
-        this->m_rcCompiler.reset(new MockRCCompiler());
     }
 
     InternalMockBuilder::~InternalMockBuilder()
@@ -108,7 +60,7 @@ namespace AssetProcessor
     bool InternalMockBuilder::InitializeMockBuilder(const AssetRecognizer& assetRecognizer)
     {
         MockRecognizerConfiguration conf;
-        conf.m_container[QString(assetRecognizer.m_name.data())] = assetRecognizer;
+        conf.m_container[assetRecognizer.m_name] = assetRecognizer;
         return InternalRecognizerBasedBuilder::Initialize(conf);
     }
 
@@ -162,11 +114,11 @@ namespace AssetProcessor
 
     bool MockApplicationManager::RegisterAssetRecognizerAsBuilder(const AssetProcessor::AssetRecognizer& rec)
     {
-        QString newBuilderId = BUILDER_ID_RC.GetId();
-        QString newBuilderName = rec.m_name;
+        QString newBuilderId = BUILDER_ID_COPY.GetId();
+        QString newBuilderName = rec.m_name.c_str();
         QHash<QString, BuilderIdAndName> inputBuilderNameByIdMap =
         {
-            { newBuilderId, BUILDER_ID_RC }
+            { newBuilderId, BUILDER_ID_COPY }
         };
 
         AZStd::shared_ptr<InternalMockBuilder>   builder =
@@ -174,8 +126,8 @@ namespace AssetProcessor
 
         if (m_internalBuilderRegistrationCount++ > 0)
         {
-            // After the first initialization, the builder with id BUILDER_ID_RC will have already been registered to the builder bus.  
-            // After the initial registration, make sure to unregister based on the fixed internal rc uuid so we can register it again
+            // After the first initialization, the builder with id BUILDER_ID_COPY will have already been registered to the builder bus.  
+            // After the initial registration, make sure to unregister based on the fixed internal uuid so we can register it again
             AZ::Uuid uuid = AZ::Uuid::CreateString(newBuilderId.toUtf8().data());
             EBUS_EVENT(AssetBuilderRegistrationBus, UnRegisterBuilderDescriptor, uuid);
         }
@@ -189,17 +141,16 @@ namespace AssetProcessor
         patterns.push_back(rec.m_patternMatcher.GetBuilderPattern());
 
 
-        AZStd::string buildAZName(rec.m_name.toUtf8().data());
+        AZStd::string buildAZName(rec.m_name);
         if (m_internalBuilders.find(buildAZName) != m_internalBuilders.end())
         {
             m_internalBuilders.erase(buildAZName);
         }
         m_internalBuilders[buildAZName] = builder;
 
-        AssetBuilderSDK::AssetBuilderDesc   builderDesc = builder->CreateBuilderDesc(rec.m_name, newBuilderId, patterns);
+        AssetBuilderSDK::AssetBuilderDesc   builderDesc = builder->CreateBuilderDesc(rec.m_name.c_str(), newBuilderId, patterns);
 
-
-        AZ::Uuid        internalUuid = AZ::Uuid::CreateRandom();
+        AZ::Uuid internalUuid = AZ::Uuid::CreateRandom();
         m_internalBuilderUUIDByName[buildAZName] = internalUuid;
 
         BuilderFilePatternMatcherAndBuilderDesc matcherAndbuilderDesc;

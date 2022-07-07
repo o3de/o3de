@@ -33,7 +33,7 @@ namespace UnitTests
             AZStd::unordered_multimap<AZStd::string, QString> m_productPaths;
             AZStd::vector<QString> m_deletedSources;
             AZStd::shared_ptr<AssetProcessor::InternalMockBuilder> m_builderTxtBuilder;
-            MockBuilderInfoHandler m_mockBuilderInfoHandler;
+            MockMultiBuilderInfoHandler m_mockBuilderInfoHandler;
         };
 
         AZStd::unique_ptr<StaticData> m_data;

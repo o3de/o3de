@@ -41,13 +41,14 @@ namespace EMStudio
 
     AtomRenderPlugin::~AtomRenderPlugin()
     {
+        AzToolsFramework::ViewportInteraction::ViewportMouseRequestBus::Handler::BusDisconnect();
+        delete m_animViewportWidget;
+
         SaveRenderOptions();
         GetCommandManager()->RemoveCommandCallback(m_importActorCallback, false);
         GetCommandManager()->RemoveCommandCallback(m_removeActorCallback, false);
         delete m_importActorCallback;
         delete m_removeActorCallback;
-
-        AzToolsFramework::ViewportInteraction::ViewportMouseRequestBus::Handler::BusDisconnect();
     }
 
     const char* AtomRenderPlugin::GetName() const
@@ -58,16 +59,6 @@ namespace EMStudio
     uint32 AtomRenderPlugin::GetClassID() const
     {
         return static_cast<uint32>(AtomRenderPlugin::CLASS_ID);
-    }
-
-    const char* AtomRenderPlugin::GetCreatorName() const
-    {
-        return "O3DE";
-    }
-
-    float AtomRenderPlugin::GetVersion() const
-    {
-        return 1.0f;
     }
 
     bool AtomRenderPlugin::GetIsClosable() const
@@ -83,11 +74,6 @@ namespace EMStudio
     bool AtomRenderPlugin::GetIsVertical() const
     {
         return false;
-    }
-
-    EMStudioPlugin* AtomRenderPlugin::Clone()
-    {
-        return new AtomRenderPlugin();
     }
 
     EMStudioPlugin::EPluginType AtomRenderPlugin::GetPluginType() const
@@ -206,14 +192,16 @@ namespace EMStudio
             {
                 const AZ::EntityId entityId = m_animViewportWidget->GetAnimViewportRenderer()->GetEntityId();
                 AZ::TransformBus::EventResult(m_mouseDownStartTransform, entityId, &AZ::TransformBus::Events::GetLocalTM);
+                m_rotateManipulators.SetLocalOrientation(m_mouseDownStartTransform.GetRotation());
             });
 
         m_rotateManipulators.InstallMouseMoveCallback(
             [this](const AzToolsFramework::AngularManipulator::Action& action)
             {
                 const AZ::EntityId entityId = m_animViewportWidget->GetAnimViewportRenderer()->GetEntityId();
-                AZ::TransformBus::Event(entityId, &AZ::TransformBus::Events::SetLocalRotationQuaternion,
-                    m_mouseDownStartTransform.GetRotation() * action.m_current.m_delta);
+                AZ::Quaternion localRotation = m_mouseDownStartTransform.GetRotation() * action.m_current.m_delta;
+                AZ::TransformBus::Event(entityId, &AZ::TransformBus::Events::SetLocalRotationQuaternion, localRotation);
+                m_rotateManipulators.SetLocalOrientation(localRotation);
             });
 
         // Setup the scale manipulator

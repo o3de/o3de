@@ -533,7 +533,7 @@ namespace LyShine
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     const char* RenderTargetRenderNode::GetRenderTargetName() const
     {
-        return m_attachmentImage->GetRHIImage()->GetName().GetCStr();
+        return m_attachmentImage ? m_attachmentImage->GetRHIImage()->GetName().GetCStr() : "";
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////

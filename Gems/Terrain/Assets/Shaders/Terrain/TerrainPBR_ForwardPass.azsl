@@ -13,6 +13,8 @@
 #include <TerrainSrg.azsli>
 #include <TerrainCommon.azsli>
 #include <TerrainDetailHelpers.azsli>
+#include <TerrainMacroHelpers.azsli>
+#include <ClipmapComputeHelpers.azsli>
 #include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
 #include <Atom/Features/PBR/ForwardPassSrg.azsli>
 #include <Atom/Features/PBR/ForwardPassOutput.azsli>
@@ -22,134 +24,104 @@
 #include <Atom/Features/Shadow/DirectionalLightShadow.azsli>
 #include <Atom/Features/PBR/Decals.azsli>
 
+option bool o_debugTerrainLodLevels = false;
+
 struct VSOutput
 {
     float4 m_position : SV_Position;
     float3 m_normal: NORMAL;
     float3 m_worldPosition : UV0;
-    float3 m_shadowCoords[ViewSrg::MaxCascadeCount] : UV2;
 };
 
-VSOutput TerrainPBR_MainPassVS(VertexInput IN)
+VSOutput TerrainPBR_MainPassVS(VertexInput input)
 {
-    VSOutput OUT;
- 
-    HeightContext heightContext;
-    heightContext.Initialize(SceneSrg::m_heightmapImage, IN.m_position, ObjectSrg::m_patchData, SceneSrg::m_terrainWorldData.m_min, SceneSrg::m_terrainWorldData.m_max);
-
-    if (heightContext.IsVertexOutsideOfTerrainBounds())
-    {
-        // Output a NaN to remove this vertex.
-        OUT.m_position = 1.0 / 0.0;
-        return OUT;
-    }
-
-    float height = 0.0;
-
-    if (o_useTerrainSmoothing)
-    {
-        height = heightContext.GetSmoothedHeight(SceneSrg::m_heightmapImage, SceneSrg::HeightmapSampler);
-    }
-    else
-    {
-        height = heightContext.GetHeight(SceneSrg::m_heightmapImage);
-    }
-
-    OUT.m_worldPosition = float3(heightContext.m_xyPosition, height);
-    OUT.m_position = mul(ViewSrg::m_viewProjectionMatrix, float4(OUT.m_worldPosition, 1.0));
-    OUT.m_normal = heightContext.CalculateNormal(SceneSrg::m_heightmapImage);
-
-    // directional light shadow 
-    const uint shadowIndex = ViewSrg::m_shadowIndexDirectionalLight;
-    if (o_enableShadows && shadowIndex < SceneSrg::m_directionalLightCount)
-    {
-        DirectionalLightShadow::GetShadowCoords(
-            shadowIndex,
-            OUT.m_worldPosition,
-            OUT.m_normal,
-            OUT.m_shadowCoords);
-    }
+    VSOutput output;
     
-    return OUT;
+    CalculateTerrainPosition(
+        SceneSrg::m_terrainWorldData, ObjectSrg::m_patchData, input, // input params
+        output.m_worldPosition, output.m_position, output.m_normal // output params
+        );
+
+    return output;
 }
 
-ForwardPassOutput TerrainPBR_MainPassPS(VSOutput IN)
+void GatherSurfaceDataFromMaterials(
+    in float2 position,
+    in float detailFactor,
+    inout float3 macroColor,
+    inout float3 macroNormal,
+    inout bool hasDetailSurface,
+    inout DetailSurface detailSurface
+    )
 {
-    // ------- Surface -------
-    Surface surface;
-    surface.position = IN.m_worldPosition.xyz;
-    surface.vertexNormal = normalize(IN.m_normal);
+    // ------- Macro Data -------
+    float2 positionDdx = ddx(position);
+    float2 positionDdy = ddy(position);
+    SampleMacroTexture(position, positionDdx, positionDdy, macroColor, macroNormal);
 
-    float viewDistance = length(ViewSrg::m_worldPosition - surface.position);
-    float detailFactor = saturate((viewDistance - TerrainMaterialSrg::m_detailFadeDistance) / max(TerrainMaterialSrg::m_detailFadeLength, EPSILON));
-    float2 detailUv = IN.m_worldPosition.xy * TerrainMaterialSrg::m_detailTextureMultiplier;
-    
-    // ------- Normal -------
-    float3 macroNormal = normalize(IN.m_normal);
-    
-    // ------- Macro Color / Normal -------
-    float3 macroColor = TerrainMaterialSrg::m_baseColor.rgb;
-
-    uint2 macroGridResolution = uint2(TerrainSrg::m_macroMaterialGrid.m_resolution >> 16, TerrainSrg::m_macroMaterialGrid.m_resolution & 0xFFFF);
-    float macroTileSize = TerrainSrg::m_macroMaterialGrid.m_tileSize;
-    float2 macroGridOffset = TerrainSrg::m_macroMaterialGrid.m_offset;
-    uint2 macroGridPosition = (surface.position.xy - macroGridOffset) / macroTileSize;
-
-    uint macroTileIndex = macroGridResolution.x * macroGridPosition.y + macroGridPosition.x;
-    static const uint NumMacroMaterialsPerTile = 4;
-    macroTileIndex *= NumMacroMaterialsPerTile;
-
-    [unroll] for (uint i = 0; i < NumMacroMaterialsPerTile; ++i)
-    {
-        TerrainSrg::MacroMaterialData macroMaterialData = TerrainSrg::m_macroMaterialData[macroTileIndex + i];
-        if ((macroMaterialData.m_flags & 1) == 0)
-        {
-            break; // No more macro materials for this tile
-        }
-
-        if (any(surface.position.xy < macroMaterialData.m_boundsMin) || any (surface.position.xy > macroMaterialData.m_boundsMax))
-        {
-            continue; // Macro material exists for this tile but is out of the bounds of this particular position
-        }
-
-        float2 macroUvSize = macroMaterialData.m_boundsMax - macroMaterialData.m_boundsMin;
-        macroUvSize.x = -macroUvSize.x;
-        float2 macroUv = (macroMaterialData.m_boundsMin - surface.position.xy) / macroUvSize;
-
-        // The macro uv gradient can vary massively over the quad because different pixels may choose different macro materials with different UVs.
-        // To fix, we use the world position scaled by the macro uv scale which should be fairly uniform across macro materials.
-        float2 macroUvScale = IN.m_worldPosition.xy / macroUvSize;
-        float2 ddx_macroUv = ddx(macroUvScale);
-        float2 ddy_macroUv = ddy(macroUvScale);
-
-        if (macroMaterialData.m_colorMapId != 0xFFFF)
-        {
-            macroColor = TerrainSrg::m_textures[macroMaterialData.m_colorMapId].SampleGrad(TerrainMaterialSrg::m_sampler, macroUv, ddx_macroUv, ddy_macroUv).rgb;
-            macroColor = TransformColor(macroColor, ColorSpaceId::LinearSRGB, ColorSpaceId::ACEScg);
-        }
-
-        if (macroMaterialData.m_normalMapId != 0xFFFF)
-        {
-            bool flipX = macroMaterialData.m_flags & 2;
-            bool flipY = macroMaterialData.m_flags & 4;
-            float factor = macroMaterialData.m_normalFactor;
-        
-            float2 sampledValue = SampleNormalXY(TerrainSrg::m_textures[macroMaterialData.m_normalMapId], TerrainMaterialSrg::m_sampler, macroUv, flipX, flipY);
-            macroNormal = normalize(GetTangentSpaceNormal_Unnormalized(sampledValue, factor));
-        }
-        break;
-    }
-    
-    // ------- Base Color -------
-
-    DetailSurface detailSurface = GetDefaultDetailSurface();
-    float2 detailRegionCoord = surface.position.xy * TerrainSrg::m_detailMaterialIdScale;
-    bool hasDetailSurface = false;
+    // ------- Detail Data -------
+    float2 detailUv = position.xy * TerrainMaterialSrg::m_detailTextureMultiplier;
+    float2 detailUvDdx = ddx(detailUv);
+    float2 detailUvDdy = ddy(detailUv);
+    float2 detailRegionCoord = position.xy * TerrainSrg::m_detailMaterialIdScale;
 
     // Only sample detail textures if inside where detail materials should be drawn.
     if (detailFactor < 1.0)
     {
-        hasDetailSurface = GetDetailSurface(detailSurface, detailRegionCoord, detailUv, macroColor);
+        hasDetailSurface = GetDetailSurface(detailSurface, detailRegionCoord, detailUv, detailUvDdx, detailUvDdy, macroColor);
+    }
+}
+
+void GatherSurfaceDataFromClipmaps(
+    in float2 position,
+    in float detailFactor,
+    inout float3 macroColor,
+    inout float3 macroNormal,
+    inout bool hasDetailSurface,
+    inout DetailSurface detailSurface
+    )
+{
+    ClipmapSample clipmapSample = SampleClipmap(position);
+
+    if (clipmapSample.m_hasMacro)
+    {
+        macroColor = clipmapSample.m_macroColor;
+        macroNormal = clipmapSample.m_macroNormal;
+    }
+    if (detailFactor < 1.0)
+    {
+        hasDetailSurface = clipmapSample.m_hasDetail;
+        detailSurface = clipmapSample.m_detailSurface;
+    }
+
+}
+
+ForwardPassOutput TerrainPBR_MainPassPS(VSOutput input)
+{
+    // ------- Surface -------
+    Surface surface;
+    surface.position = input.m_worldPosition.xyz;
+    surface.vertexNormal = normalize(input.m_normal);
+    float viewDistance = length(ViewSrg::m_worldPosition - input.m_worldPosition.xyz);
+
+    // Surface data to be gathered from clipmaps or materials.
+    float3 macroNormal = surface.vertexNormal;
+    float3 macroColor = TerrainMaterialSrg::m_baseColor.rgb;
+    bool hasDetailSurface = false;
+    DetailSurface detailSurface = GetDefaultDetailSurface();
+
+    float detailFactor;
+    if (o_useClipmap)
+    {
+        // Clipmap has a max render distance. The true fade distance should be the min.
+        float detailFadeDistance = min(TerrainMaterialSrg::m_detailFadeDistance, TerrainSrg::m_clipmapData.m_detailClipmapMaxRenderRadius - TerrainMaterialSrg::m_detailFadeLength);
+        detailFactor = saturate((viewDistance - detailFadeDistance) / max(TerrainMaterialSrg::m_detailFadeLength, EPSILON));
+        GatherSurfaceDataFromClipmaps(surface.position.xy, detailFactor, macroColor, macroNormal, hasDetailSurface, detailSurface);
+    }
+    else
+    {
+        detailFactor = saturate((viewDistance - TerrainMaterialSrg::m_detailFadeDistance) / max(TerrainMaterialSrg::m_detailFadeLength, EPSILON));
+        GatherSurfaceDataFromMaterials(surface.position.xy, detailFactor, macroColor, macroNormal, hasDetailSurface, detailSurface);
     }
 
     const float macroRoughness = 1.0;
@@ -185,11 +157,10 @@ ForwardPassOutput TerrainPBR_MainPassPS(VSOutput IN)
     LightingData lightingData;
 
     // Light iterator
-    lightingData.tileIterator.Init(IN.m_position, PassSrg::m_lightListRemapped, PassSrg::m_tileLightData);
+    lightingData.tileIterator.Init(input.m_position, PassSrg::m_lightListRemapped, PassSrg::m_tileLightData);
     lightingData.Init(surface.position, surface.normal, surface.roughnessLinear);
 
     // Shadow, Occlusion
-    lightingData.shadowCoords = IN.m_shadowCoords;
     lightingData.diffuseAmbientOcclusion = detailSurface.m_occlusion;
 
     // Diffuse and Specular response
@@ -204,7 +175,7 @@ ForwardPassOutput TerrainPBR_MainPassPS(VSOutput IN)
     ApplyDecals(lightingData.tileIterator, surface);
 
     // Apply Direct Lighting
-    ApplyDirectLighting(surface, lightingData);
+    ApplyDirectLighting(surface, lightingData, input.m_position);
 
     // Apply Image Based Lighting (IBL)
     ApplyIBL(surface, lightingData);
@@ -216,14 +187,67 @@ ForwardPassOutput TerrainPBR_MainPassPS(VSOutput IN)
 
     // ------- Output -------
 
-    ForwardPassOutput OUT;
+    ForwardPassOutput output;
 
-    OUT.m_diffuseColor = lightingOutput.m_diffuseColor;
-    OUT.m_diffuseColor.w = -1; // Subsurface scattering is disabled
-    OUT.m_specularColor = lightingOutput.m_specularColor;
-    OUT.m_specularF0 = lightingOutput.m_specularF0;
-    OUT.m_albedo = lightingOutput.m_albedo;
-    OUT.m_normal = lightingOutput.m_normal;
+    output.m_diffuseColor = lightingOutput.m_diffuseColor;
 
-    return OUT;
+    if (o_debugTerrainLodLevels)
+    {
+        // Assign the LOD a color
+        float3 debugColors[6] = 
+        {
+            float3(0.1, 0.0, 0.0),
+            float3(0.0, 0.1, 0.0),
+            float3(0.0, 0.0, 0.1),
+            float3(0.1, 0.1, 0.0),
+            float3(0.1, 0.0, 0.1),
+            float3(0.0, 0.1, 0.1),
+        };
+        uint lodLevel = ObjectSrg::m_patchData.m_lodLevel % 6;
+        float3 debugColor = debugColors[lodLevel];
+        output.m_diffuseColor.xyz = (output.m_diffuseColor.xyz + debugColor) * (debugColor + 1.0);
+        float patchScale = ObjectSrg::m_patchData.m_xyScale * TerrainSrg::m_meshData.m_gridToQuadScale;
+
+        // Draw red wireframe on quad boundaries
+        float quadSpacing = patchScale * TerrainSrg::m_meshData.m_rcpGridSize;
+        float2 modPos = input.m_worldPosition.xy % quadSpacing;
+        const float lineWidth = 0.04 * quadSpacing;
+        if (any(abs(modPos) < lineWidth) || any(abs(modPos) > quadSpacing - lineWidth))
+        {
+            output.m_diffuseColor.r += 1.0;
+        }
+
+        // Draw yellow (red + green) wireframe on quad boundaries of next lod level.
+        quadSpacing *= 2.0;
+        modPos = input.m_worldPosition.xy % quadSpacing;
+        if (any(abs(modPos) < lineWidth) || any(abs(modPos) > quadSpacing - lineWidth))
+        {
+            output.m_diffuseColor.g += 1.0;
+        }
+
+        // Draw blue on sector boundaries
+        modPos = input.m_worldPosition.xy % patchScale;
+        if (any(abs(modPos) < quadSpacing * 0.5) || any(abs(modPos) > patchScale - quadSpacing * 0.5))
+        {
+            output.m_diffuseColor.b += 1.0;
+        }
+        
+        if (o_useTerrainClod)
+        {
+            float clodDistance = TerrainSrg::CalculateClodDistance(ObjectSrg::m_patchData.m_lodLevel, input.m_worldPosition);
+            float clodBlend = 1.0 - saturate(clodDistance * TerrainSrg::m_meshData.m_rcpClodDistance * ObjectSrg::m_patchData.m_rcpLodLevel);
+            if (clodBlend > 0.0 && clodBlend < 1.0)
+            {
+                output.m_diffuseColor.rgb += lerp(float3(0.1, 0.1, 0.0), float3(0.0, 0.1, 0.1), clodBlend);
+            }
+        }
+    }
+
+    output.m_diffuseColor.w = -1; // Subsurface scattering is disabled
+    output.m_specularColor = lightingOutput.m_specularColor;
+    output.m_specularF0 = lightingOutput.m_specularF0;
+    output.m_albedo = lightingOutput.m_albedo;
+    output.m_normal = lightingOutput.m_normal;
+
+    return output;
 }

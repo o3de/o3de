@@ -30,6 +30,7 @@ set(FILES
     Source/MainWindow.h
     Source/MotionEventPresetManager.cpp
     Source/MotionEventPresetManager.h
+    Source/PersistentPlugin.h
     Source/PluginManager.cpp
     Source/PluginManager.h
     Source/PluginOptions.h
@@ -64,19 +65,6 @@ set(FILES
     Source/NodeSelectionWindow.h
     Source/MotionSetSelectionWindow.cpp
     Source/MotionSetSelectionWindow.h
-    Source/RenderPlugin/CommandCallbacks.cpp
-    Source/RenderPlugin/ManipulatorCallbacks.cpp
-    Source/RenderPlugin/ManipulatorCallbacks.h
-    Source/RenderPlugin/RenderLayouts.h
     Source/RenderPlugin/RenderOptions.cpp
     Source/RenderPlugin/RenderOptions.h
-    Source/RenderPlugin/RenderPlugin.cpp
-    Source/RenderPlugin/RenderPlugin.h
-    Source/RenderPlugin/RenderUpdateCallback.cpp
-    Source/RenderPlugin/RenderUpdateCallback.h
-    Source/RenderPlugin/RenderViewContextMenu.cpp
-    Source/RenderPlugin/RenderViewWidget.cpp
-    Source/RenderPlugin/RenderViewWidget.h
-    Source/RenderPlugin/RenderWidget.cpp
-    Source/RenderPlugin/RenderWidget.h
 )

@@ -1,0 +1,114 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "FullscreenShadowTemplate",
+            "PassClass": "FullscreenShadowPass",
+            "Slots": [
+                {
+                    "Name": "DirectionalShadowmaps",
+                    "SlotType": "Input",
+                    "ShaderInputName": "m_directionalShadowmaps",
+                    "ScopeAttachmentUsage": "Shader",
+                    "ImageViewDesc": {
+                        "IsArray": 1
+                    }
+                },
+                {
+                    "Name": "DirectionalShadowmapsESM",
+                    "ShaderInputName": "m_directionalShadowmapsESM",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader",
+                    "ImageViewDesc": {
+                        "IsArray": 1
+                    }
+                },
+                {
+                    "Name": "Depth",
+                    "SlotType": "Input",
+                    "ShaderInputName": "m_depth",
+                    "ScopeAttachmentUsage": "Shader",
+                    "ImageViewDesc": {
+                        "AspectFlags": [
+                            "Depth"
+                        ]
+                    }
+                },
+                {
+                    "Name": "DepthLinear",
+                    "SlotType": "Input",
+                    "ShaderInputName": "m_depthLinear",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "Output",
+                    "SlotType": "Output",
+                    "ScopeAttachmentUsage": "RenderTarget",
+                    "LoadStoreAction": {
+                        "LoadAction": "DontCare",
+                        "StoreAction": "Store"
+                    }
+                    // Todo: test Compute Shader version with async compute and LDS optimizations
+                    //"ScopeAttachmentUsage": "Shader",
+                    //"ShaderInputName": "m_fullscreenShadowOutput"
+                }
+            ],
+            "ImageAttachments": [
+                {
+                    "Name": "Result",
+                    "SizeSource": {
+                        "Source": {
+                            "Pass": "Parent",
+                            "Attachment": "PipelineOutput"
+                        }
+                    },
+                    "ImageDescriptor": {
+                        "Format": "R8_UNORM",
+                        "SharedQueueMask": "Graphics"
+                    }
+                }
+            ],
+            "Connections": [
+                {
+                    "LocalSlot": "Depth",
+                    "AttachmentRef": {
+                        "Pass": "PipelineGlobal",
+                        "Attachment": "DepthMSAA"
+                    }
+                },
+                {
+                    "LocalSlot": "DepthLinear",
+                    "AttachmentRef": {
+                        "Pass": "PipelineGlobal",
+                        "Attachment": "DepthLinear"
+                    }
+                },
+                {
+                    "LocalSlot": "Output",
+                    "AttachmentRef": {
+                        "Pass": "This",
+                        "Attachment": "Result"
+                    }
+                }
+            ],
+            "PassData": {
+                "$type": "FullscreenTrianglePassData",
+                "ShaderAsset": {
+                    "FilePath": "Shaders/Shadow/FullscreenShadow.shader"
+                },
+                "PipelineViewTag": "MainCamera"
+            }
+            // Todo: test Compute Shader version with async compute and LDS optimizations
+            // "PassData": {
+            //     "$type": "ComputePassData",
+            //     "ShaderAsset": {
+            //         "FilePath": "Shaders/Shadow/FullscreenShadow.shader"
+            //     },
+            //     "Make Fullscreen Pass": true,
+            //     "PipelineViewTag": "MainCamera"
+            // }
+        }
+    }
+}

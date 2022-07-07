@@ -136,8 +136,11 @@ namespace AtomToolsFramework
             AddEditDataAttributeMemberFunction(AZ::Edit::Attributes::ReadOnly, &DynamicProperty::IsReadOnly);
             AddEditDataAttributeMemberFunction(AZ::Edit::Attributes::EnumValues, &DynamicProperty::GetEnumValues);
             AddEditDataAttributeMemberFunction(AZ::Edit::Attributes::ChangeNotify, &DynamicProperty::OnDataChanged);
-            AddEditDataAttribute(AZ::Edit::Attributes::ShowProductAssetFileName, false);
-            AddEditDataAttribute(AZ_CRC_CE("Thumbnail"), m_config.m_showThumbnail);
+
+            if (m_config.m_customHandler)
+            {
+                AddEditDataAttribute(AZ::Edit::Attributes::Handler, m_config.m_customHandler);
+            }
 
             switch (m_config.m_dataType)
             {
@@ -167,6 +170,11 @@ namespace AtomToolsFramework
                 break;
             case DynamicPropertyType::String:
                 m_editData.m_elementId = AZ::Edit::UIHandlers::LineEdit;
+                break;
+            case DynamicPropertyType::Asset:
+                AddEditDataAttribute(AZ::Edit::Attributes::ShowProductAssetFileName, false);
+                AddEditDataAttribute(AZ_CRC_CE("Thumbnail"), m_config.m_showThumbnail);
+                AddEditDataAttribute(AZ_CRC_CE("SupportedAssetTypes"), m_config.m_supportedAssetTypes);
                 break;
             case DynamicPropertyType::Invalid:
                 break;

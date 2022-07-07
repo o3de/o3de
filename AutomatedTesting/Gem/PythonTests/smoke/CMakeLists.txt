@@ -9,16 +9,12 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
 
     set(SMOKETEST_FILTER "SUITE_smoke and not SerializeContext")
 
-    include(${LY_ROOT_FOLDER}/Code/Tools/SerializeContextTools/Platform/${PAL_PLATFORM_NAME}/PAL_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
-    if (PAL_TRAIT_BUILD_SERIALIZECONTEXTTOOLS)
-        list(APPEND additional_dependencies AZ::SerializeContextTools) # test_CLITool_SerializeContextTools depends on it
-        set(SMOKETEST_FILTER "SUITE_smoke")
-    endif()
+    list(APPEND additional_dependencies AZ::SerializeContextTools) # test_CLITool_SerializeContextTools depends on it
+    set(SMOKETEST_FILTER "SUITE_smoke")
 
     ly_add_pytest(
         NAME AutomatedTesting::SmokeTest
         TEST_SUITE smoke
-        TEST_SERIAL
         PATH ${CMAKE_CURRENT_LIST_DIR}
         PYTEST_MARKS ${SMOKETEST_FILTER}
         RUNTIME_DEPENDENCIES
@@ -32,20 +28,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
             ${additional_dependencies}
         COMPONENT
             Smoke
-    )
-
-    ly_add_pytest(
-        NAME AutomatedTesting::GameLauncherWithGPU
-        TEST_SUITE sandbox
-        TEST_REQUIRES gpu
-        PATH ${CMAKE_CURRENT_LIST_DIR}/test_GameLauncher_EnterExitGameMode_Works.py
-        TIMEOUT 100
-        RUNTIME_DEPENDENCIES
-            AZ::AssetProcessor
-            AZ::PythonBindingsExample
-            Legacy::Editor
-            AutomatedTesting.GameLauncher
-            AutomatedTesting.Assets
     )
 
     ly_add_pytest(

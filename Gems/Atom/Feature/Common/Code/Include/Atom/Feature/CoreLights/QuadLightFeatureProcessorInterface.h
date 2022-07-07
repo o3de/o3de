@@ -45,6 +45,11 @@ namespace AZ
             AZStd::array<float, 3> m_rgbIntensityNits = { { 0.0f, 0.0f, 0.0f } };
             uint32_t m_flags = 0x0;
 
+            float m_affectsGIFactor = 1.0f;
+            bool m_affectsGI = true;
+            float m_padding0 = 0.0f;
+            float m_padding1 = 0.0f;
+
             void SetFlag(QuadLightFlag::Flag flag, bool value)
             {
                 m_flags = value ?
@@ -85,6 +90,10 @@ namespace AZ
             virtual void SetAttenuationRadius(LightHandle handle, float attenuationRadius) = 0;
             //! Sets the quad radius for the provided LightHandle.
             virtual void SetQuadDimensions(LightHandle handle, float width, float height) = 0;
+            //! Specifies if this light affects the diffuse global illumination in the scene.
+            virtual void SetAffectsGI(LightHandle handle, bool affectsGI) = 0;
+            //! Specifies the contribution of this light to the diffuse global illumination in the scene.
+            virtual void SetAffectsGIFactor(LightHandle handle, float affectsGIFactor) = 0;
 
             //! Sets all of the the quad data for the provided LightHandle.
             virtual void SetQuadData(LightHandle handle, const QuadLightData& data) = 0;

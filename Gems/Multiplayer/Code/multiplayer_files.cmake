@@ -17,6 +17,7 @@ set(FILES
     Include/Multiplayer/MultiplayerStats.h
     Include/Multiplayer/MultiplayerTypes.h
     Include/Multiplayer/MultiplayerEditorServerBus.h
+    Include/Multiplayer/IMultiplayerEditorConnectionViewportMessage.h
     Include/Multiplayer/Components/LocalPredictionPlayerInputComponent.h
     Include/Multiplayer/Components/MultiplayerComponent.h
     Include/Multiplayer/Components/MultiplayerComponentRegistry.h
@@ -135,8 +136,6 @@ set(FILES
     Source/NetworkInput/NetworkInputMigrationVector.cpp
     Source/NetworkTime/NetworkTime.cpp
     Source/NetworkTime/NetworkTime.h
-    Source/Pipeline/NetworkSpawnableHolderComponent.cpp
-    Source/Pipeline/NetworkSpawnableHolderComponent.h
     Source/ReplicationWindows/NullReplicationWindow.cpp
     Source/ReplicationWindows/NullReplicationWindow.h
     Source/ReplicationWindows/ServerToClientReplicationWindow.cpp

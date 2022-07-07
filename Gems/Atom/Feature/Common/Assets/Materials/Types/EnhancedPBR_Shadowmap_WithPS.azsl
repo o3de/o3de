@@ -5,6 +5,9 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+ 
+#define SHADOWMAP 1
+#define ENABLE_ALPHA_CLIP 1
 
 #include <scenesrg.srgi>
 #include "EnhancedPBR_Common.azsli"
@@ -23,6 +26,4 @@
 #include "MaterialFunctions/ParallaxDepth.azsli"
 #include "MaterialFunctions/StandardGetAlphaAndClip.azsli"
 
-#define SHADOWS 1
-#define ENABLE_ALPHA_CLIP 1
 #include "DepthPass_WithPS.azsli"

@@ -1,6 +1,6 @@
 {
     "materialType": "Materials/Types/StandardPBR.materialtype",
-    "materialTypeVersion": 3,
+    "materialTypeVersion": 5,
     "propertyValues": {
         "baseColor.color": [
             0.2541542649269104,
@@ -10,6 +10,7 @@
         ],
         "baseColor.factor": 0.75,
         "baseColor.textureBlendMode": "Lerp",
-        "baseColor.textureMap": "TestData/Textures/TextureHaven/4k_castle_brick_02_red/4k_castle_brick_02_red_hp_bc.png"
+        "baseColor.textureMap": "TestData/Textures/TextureHaven/4k_castle_brick_02_red/4k_castle_brick_02_red_hp_bc.png",
+        "irradiance.irradianceColorSource": "BaseColorTint"
     }
 }

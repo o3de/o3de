@@ -25,14 +25,20 @@ namespace O3DE::ProjectManager
         bool RegisterProject(const QString& path);
         bool UnregisterProject(const QString& path);
         bool CopyProjectDialog(const QString& origPath, ProjectInfo& newProjectInfo, QWidget* parent = nullptr);
-        bool CopyProject(const QString& origPath, const QString& newPath, QWidget* parent, bool skipRegister = false);
+        bool CopyProject(const QString& origPath, const QString& newPath, QWidget* parent, bool skipRegister = false, bool showProgress = true);
         bool DeleteProjectFiles(const QString& path, bool force = false);
-        bool MoveProject(QString origPath, QString newPath, QWidget* parent, bool skipRegister = false);
+        bool MoveProject(QString origPath, QString newPath, QWidget* parent, bool skipRegister = false, bool showProgress = true);
 
         bool ReplaceProjectFile(const QString& origFile, const QString& newFile, QWidget* parent = nullptr, bool interactive = true);
 
         bool FindSupportedCompiler(QWidget* parent = nullptr);
         AZ::Outcome<QString, QString> FindSupportedCompilerForPlatform();
+
+        //! Detect if cmake is installed
+        //! Does NOT detect if the version of cmake required to run O3DE
+        //! The cmake exeuctable is only tool suitable for detecting the minimum cmake version
+        //! required, so it is left up to it to detect the version and error out.
+        AZ::Outcome<QString, QString> FindSupportedCMake();
 
         ProjectManagerScreen GetProjectManagerScreen(const QString& screen);
 
@@ -40,8 +46,8 @@ namespace O3DE::ProjectManager
          * Execute a console command and return the result.
          * @param cmd the command
          * @param arguments the command argument list
-         * @param processEnv the environment 
-         * @param commandTimeoutSeconds the amount of time in seconds to let the command run before terminating it 
+         * @param processEnv the environment
+         * @param commandTimeoutSeconds the amount of time in seconds to let the command run before terminating it
          * @return AZ::Outcome with the command result on success
          */
         AZ::Outcome<QString, QString> ExecuteCommandResult(
@@ -53,8 +59,8 @@ namespace O3DE::ProjectManager
          * Execute a console command, display the progress in a modal dialog and return the result.
          * @param cmd the command
          * @param arguments the command argument list
-         * @param processEnv the environment 
-         * @param commandTimeoutSeconds the amount of time in seconds to let the command run before terminating it 
+         * @param processEnv the environment
+         * @param commandTimeoutSeconds the amount of time in seconds to let the command run before terminating it
          * @return AZ::Outcome with the command result on success
          */
         AZ::Outcome<QString, QString> ExecuteCommandResultModalDialog(
@@ -67,15 +73,17 @@ namespace O3DE::ProjectManager
         AZ::Outcome<void, QString> OpenCMakeGUI(const QString& projectPath);
         AZ::Outcome<QString, QString> RunGetPythonScript(const QString& enginePath);
 
+        QString GetDefaultProjectPath();
+
         /**
          * Create a desktop shortcut.
-         * @param filename the name of the desktop shorcut file 
-         * @param target the path to the target to run 
+         * @param filename the name of the desktop shorcut file
+         * @param target the path to the target to run
          * @param arguments the argument list to provide to the target
          * @return AZ::Outcome with the command result on success
          */
         AZ::Outcome<QString, QString> CreateDesktopShortcut(const QString& filename, const QString& targetPath, const QStringList& arguments);
-        
+
         /**
          * Lookup the location of an Editor executable executable that can be used with the
          * supplied project path
@@ -100,7 +108,7 @@ namespace O3DE::ProjectManager
 
 
         /**
-         * Display a dialog with general and detailed sections for the given AZ::Outcome 
+         * Display a dialog with general and detailed sections for the given AZ::Outcome
          * @param title Dialog title
          * @param outcome The AZ::Outcome with general and detailed error messages
          * @param parent Optional QWidget parent
