@@ -51,14 +51,29 @@ namespace AssetProcessor
         else
         {
             AzToolsFramework::AssetDatabase::ScanFolderDatabaseEntry scanFolderEntry;
-            // When building the intermediate asset source asset tree, search by the scan folder to save time
-            m_sharedDbConnection->QueryScanFolderByPortableKey(
-                "Intermediate Assets",
-                [&](AzToolsFramework::AssetDatabase::ScanFolderDatabaseEntry& scanFolder)
-                {
-                    scanFolderEntry = scanFolder;
-                    return false;
-                });
+
+            if(!m_intermediateAssetFolderId.has_value())
+            {
+                // When building the intermediate asset source asset tree, search by the scan folder to save time
+                m_sharedDbConnection->QueryScanFolderByPortableKey(
+                    "Intermediate Assets",
+                    [&](AzToolsFramework::AssetDatabase::ScanFolderDatabaseEntry& scanFolder)
+                    {
+                        m_intermediateAssetFolderId = scanFolder.m_scanFolderID;
+                        scanFolderEntry = scanFolder;
+                        return false;
+                    });
+            }
+            else
+            {
+                m_sharedDbConnection->QueryScanFolderByScanFolderID(
+                    m_intermediateAssetFolderId.value(),
+                    [&](AzToolsFramework::AssetDatabase::ScanFolderDatabaseEntry& scanFolder)
+                    {
+                        scanFolderEntry = scanFolder;
+                        return false;
+                    });
+            }
 
             m_sharedDbConnection->QuerySourceByScanFolderID(
                 scanFolderEntry.m_scanFolderID,
@@ -89,8 +104,9 @@ namespace AssetProcessor
             return;
         }
 
-        if ((source.m_scanFolderPK == 1 && !m_intermediateAssets) ||
-            (source.m_scanFolderPK != 1 && m_intermediateAssets))
+        if (m_intermediateAssetFolderId.has_value() &&
+            ((source.m_scanFolderPK == m_intermediateAssetFolderId.value() && !m_intermediateAssets) ||
+             (source.m_scanFolderPK != m_intermediateAssetFolderId.value() && m_intermediateAssets)))
         {
             return;
         }

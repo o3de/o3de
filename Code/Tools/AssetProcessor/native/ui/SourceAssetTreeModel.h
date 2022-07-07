@@ -29,6 +29,11 @@ namespace AssetProcessor
 
         void SetOnlyShowIntermediateAssets() { m_intermediateAssets = true; }
 
+        void SetIntermediateAssetFolderId(AZStd::optional<AZ::s64> intermediateAssetFolderId)
+        {
+            m_intermediateAssetFolderId = intermediateAssetFolderId;
+        }
+
     protected:
         void ResetModel() override;
 
@@ -45,5 +50,6 @@ namespace AssetProcessor
         QDir m_assetRoot;
         bool m_assetRootSet = false;
         bool m_intermediateAssets = false;
+        AZStd::optional<AZ::s64> m_intermediateAssetFolderId;
     };
 }

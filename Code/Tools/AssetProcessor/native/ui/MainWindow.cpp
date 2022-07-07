@@ -425,6 +425,8 @@ void MainWindow::Activate()
     ui->productAssetDetailsPanel->SetIntermediateAssetFolderId(intermediateAssetFolderId);
     ui->sourceAssetDetailsPanel->SetIntermediateAssetFolderId(intermediateAssetFolderId);
     ui->intermediateAssetDetailsPanel->SetIntermediateAssetFolderId(intermediateAssetFolderId);
+    m_intermediateModel->SetIntermediateAssetFolderId(intermediateAssetFolderId);
+    m_sourceModel->SetIntermediateAssetFolderId(intermediateAssetFolderId);
 
     AzQtComponents::StyleManager::setStyleSheet(ui->sourceAssetDetailsPanel, QStringLiteral("style:AssetProcessor.qss"));
     AzQtComponents::StyleManager::setStyleSheet(ui->intermediateAssetDetailsPanel, QStringLiteral("style:AssetProcessor.qss"));
