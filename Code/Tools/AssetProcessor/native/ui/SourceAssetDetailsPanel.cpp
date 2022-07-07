@@ -130,7 +130,7 @@ namespace AssetProcessor
                 AZ::s64 sourcePK;
                 assetDatabaseConnection.QueryJobByProductID(
                     productEntry.m_productID,
-                    [&](AzToolsFramework::AssetDatabase::JobDatabaseEntry& jobEntry)
+                    [&platform, &sourcePK](AzToolsFramework::AssetDatabase::JobDatabaseEntry& jobEntry)
                     {
                         platform = jobEntry.m_platform;
                         sourcePK = jobEntry.m_sourcePK;
@@ -144,7 +144,7 @@ namespace AssetProcessor
                     AZStd::string intermediateAssetSourcePath;
                     assetDatabaseConnection.QuerySourceBySourceID(
                         sourcePK,
-                        [&](AzToolsFramework::AssetDatabase::SourceDatabaseEntry& sourceEntry)
+                        [&intermediateAssetSourcePath](AzToolsFramework::AssetDatabase::SourceDatabaseEntry& sourceEntry)
                         {
                             intermediateAssetSourcePath = sourceEntry.m_sourceName;
                             return true;
