@@ -21,12 +21,10 @@ import logging as _logging
 #  global space debug flag, no fancy stuff here we use in bootstrap
 _DCCSI_GDEBUG = False  # manually enable to debug this file
 
-_PACKAGENAME = __name__
-if _PACKAGENAME is '__main__':
-    _PACKAGENAME = 'azpy.return_stub'
+_MODULENAME = 'azpy.return_stub'
 
-_LOGGER = _logging.getLogger(_PACKAGENAME)
-_LOGGER.debug('Initializing: {0}.'.format({_PACKAGENAME}))
+_LOGGER = _logging.getLogger(_MODULENAME)
+_LOGGER.debug('Initializing: {0}.'.format({_MODULENAME}))
 
 __all__ = ['return_stub']
 # -------------------------------------------------------------------------
