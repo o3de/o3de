@@ -915,11 +915,11 @@ namespace AzToolsFramework
             bool addChildren = true;
             auto editMetaData = node.GetElementEditMetadata();
 
-            if (editMetaData && !editMetaData->m_name)
-            {
-                AZStd::string nodeName = node.GetElementMetadata()->m_name;
-                AZ_Warning("PropertyTreeEditor", false, "Found ElementData with no name on node \"%s\" with path\"%s\", skipping.", nodeName.c_str(), path.c_str());
-            }
+            AZ_Warning("PropertyTreeEditor",
+                !editMetaData || editMetaData->m_name,
+                "Found ElementData with no name on node \"%s\" with path\"%s\", skipping.",
+                node.GetElementMetadata() && node.GetElementMetadata()->m_name ? node.GetElementMetadata()->m_name : "",
+                path.c_str());
 
             if (editMetaData && editMetaData->m_name)
             {
