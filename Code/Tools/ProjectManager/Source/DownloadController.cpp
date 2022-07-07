@@ -26,7 +26,7 @@ namespace O3DE::ProjectManager
         connect(&m_workerThread, &QThread::started, m_worker, &DownloadWorker::StartDownload);
         connect(m_worker, &DownloadWorker::Done, this, &DownloadController::HandleResults);
         connect(m_worker, &DownloadWorker::UpdateProgress, this, &DownloadController::UpdateUIProgress);
-        connect(this, &DownloadController::StartGemDownload, m_worker, &DownloadWorker::StartDownload);
+        connect(this, &DownloadController::StartGemDownload, m_worker, &DownloadWorker::SetGemToDownload);
     }
 
     DownloadController::~DownloadController()
@@ -102,7 +102,7 @@ namespace O3DE::ProjectManager
 
         if (!m_gemNames.empty())
         {
-            emit StartGemDownload(m_gemNames.front());
+            emit StartGemDownload(m_gemNames.front(), true);
         }
         else
         {
