@@ -2609,7 +2609,7 @@ namespace UnitTests
         for (const auto prefix : prefixes)
         {
             StatDatabaseEntryContainer container;
-            m_data->m_connection.GetStatLikeStatName((prefix + "%").c_str(), container);
+            EXPECT_TRUE(m_data->m_connection.GetStatLikeStatName((prefix + "%").c_str(), container));
             EXPECT_EQ(container.size(), StatCountPerPrefix);
         }
 
@@ -2618,7 +2618,7 @@ namespace UnitTests
         for (unsigned int i = 0; i < StatCountPerPrefix; ++i, ++query[1])
         {
             StatDatabaseEntryContainer container;
-            m_data->m_connection.GetStatLikeStatName(query, container);
+            EXPECT_TRUE(m_data->m_connection.GetStatLikeStatName(query, container));
             EXPECT_EQ(container.size(), prefixes.size());
         }
     }
