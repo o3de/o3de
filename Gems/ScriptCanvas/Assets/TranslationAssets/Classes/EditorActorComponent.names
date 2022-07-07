@@ -1,0 +1,12 @@
+{
+    "entries": [
+        {
+            "base": "EditorActorComponent",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "EditorActorComponent"
+            }
+        }
+    ]
+}

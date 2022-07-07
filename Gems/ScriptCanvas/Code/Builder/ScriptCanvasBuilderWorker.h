@@ -16,6 +16,7 @@
 #include <ScriptCanvas/Translation/Translation.h>
 #include <ScriptCanvas/Asset/RuntimeAsset.h>
 #include <ScriptCanvas/Asset/RuntimeAssetHandler.h>
+#include <ScriptCanvas/Core/Core.h>
 
 namespace AZ
 {
@@ -35,14 +36,14 @@ namespace ScriptCanvas
 
 namespace ScriptCanvasEditor
 {
-    class Graph;
-    class ScriptCanvasAsset;
+    class EditorGraph;
 }
 
 namespace ScriptCanvasBuilder
 {
+    using SourceHandle = ScriptCanvas::SourceHandle;
+
     constexpr const char* s_scriptCanvasBuilder = "ScriptCanvasBuilder";
-    constexpr const char* s_scriptCanvasCopyJobKey = "Script Canvas Copy Job";
     constexpr const char* s_scriptCanvasProcessJobKey = "Script Canvas Process Job";
     constexpr const char* s_unitTestParseErrorPrefix = "LY_SC_UnitTest";
 
@@ -59,6 +60,15 @@ namespace ScriptCanvasBuilder
         PrefabIntegration,
         CorrectGraphVariableVersion,
         ReflectEntityIdNodes,
+        FixExecutionStateNodeableConstruction,
+        SwitchAssetsToBinary,
+        ReinforcePreloadBehavior,
+        SeparateFromEntityComponentSystem,
+        DistinguishEntityScriptFromScript,
+        ExecutionStateAsLightUserdata,
+        UpdateDependencyHandling,
+        AddExplicitDestructCallForMemberVariables,
+
         // add new entries above
         Current,
     };
@@ -69,7 +79,6 @@ namespace ScriptCanvasBuilder
 
     struct AssetHandlers
     {
-        AZ::Data::AssetHandler* m_editorAssetHandler = nullptr;
         AZ::Data::AssetHandler* m_editorFunctionAssetHandler = nullptr;
         AZ::Data::AssetHandler* m_runtimeAssetHandler = nullptr;
         AZ::Data::AssetHandler* m_subgraphInterfaceHandler = nullptr;
@@ -80,7 +89,6 @@ namespace ScriptCanvasBuilder
 
     struct SharedHandlers
     {
-        HandlerOwnership m_editorAssetHandler{};
         HandlerOwnership m_editorFunctionAssetHandler{};
         HandlerOwnership m_runtimeAssetHandler{};
         HandlerOwnership m_subgraphInterfaceHandler{};
@@ -122,23 +130,17 @@ namespace ScriptCanvasBuilder
         }
     };
 
-    AZ::Outcome<AZ::Data::Asset<ScriptCanvas::RuntimeAsset>, AZStd::string> CreateRuntimeAsset(const AZ::Data::Asset<ScriptCanvasEditor::ScriptCanvasAsset>& asset);
+    AZ::Outcome<AZ::Data::Asset<ScriptCanvas::RuntimeAsset>, AZStd::string> CreateRuntimeAsset(const SourceHandle& asset);
 
-    AZ::Outcome<ScriptCanvas::GraphData, AZStd::string> CompileGraphData(AZ::Entity* scriptCanvasEntity);
-
-    AZ::Outcome<ScriptCanvas::VariableData, AZStd::string> CompileVariableData(AZ::Entity* scriptCanvasEntity);
-
-    AZ::Outcome<ScriptCanvas::Translation::LuaAssetResult, AZStd::string> CreateLuaAsset(AZ::Entity* buildEntity, AZ::Data::AssetId scriptAssetId, AZStd::string_view rawLuaFilePath);
+    AZ::Outcome<ScriptCanvas::Translation::LuaAssetResult, AZStd::string> CreateLuaAsset(const SourceHandle& editAsset, AZStd::string_view rawLuaFilePath);
 
     int GetBuilderVersion();
-
-    AZ::Outcome<AZ::Data::Asset<ScriptCanvasEditor::ScriptCanvasAsset>, AZStd::string> LoadEditorAsset(AZStd::string_view graphPath, AZ::Data::AssetId assetId, AZ::Data::AssetFilterCB assetFilterCB = {});
 
     AZ::Outcome<ScriptCanvas::Grammar::AbstractCodeModelConstPtr, AZStd::string> ParseGraph(AZ::Entity& buildEntity, AZStd::string_view graphPath);
 
     AZ::Outcome<void, AZStd::string> ProcessTranslationJob(ProcessTranslationJobInput& input);
 
-    ScriptCanvasEditor::Graph* PrepareSourceGraph(AZ::Entity* const buildEntity);
+    ScriptCanvasEditor::EditorGraph* PrepareSourceGraph(AZ::Entity* const buildEntity);
 
     AZ::Outcome<void, AZStd::string> SaveSubgraphInterface(ProcessTranslationJobInput& input, ScriptCanvas::SubgraphInterfaceData& subgraphInterface);
 
@@ -169,7 +171,6 @@ namespace ScriptCanvasBuilder
         void ShutDown() override {};
 
     private:
-        AZ::Data::AssetHandler* m_editorAssetHandler = nullptr;
         AZ::Data::AssetHandler* m_runtimeAssetHandler = nullptr;
         AZ::Data::AssetHandler* m_subgraphInterfaceHandler = nullptr;
 

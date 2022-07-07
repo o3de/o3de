@@ -74,7 +74,7 @@ namespace AZStd
         constexpr basic_fixed_string(const_pointer ptr);
 
         // #6
-        template<class InputIt, typename = enable_if_t<Internal::is_input_iterator_v<InputIt> && !is_convertible_v<InputIt, size_t>>>
+        template<class InputIt, typename = enable_if_t<input_iterator<InputIt> && !is_convertible_v<InputIt, size_t>>>
         constexpr basic_fixed_string(InputIt first, InputIt last);
 
         // #7
@@ -95,6 +95,10 @@ namespace AZStd
         template<typename T, typename = AZStd::enable_if_t<is_convertible_v<const T&, basic_string_view<Element, Traits>>
             && !is_convertible_v<const T&, const Element*>>>
         constexpr basic_fixed_string(const T& convertibleToView, size_type rhsOffset, size_type count);
+
+
+        // #12
+        constexpr basic_fixed_string(AZStd::nullptr_t) = delete;
 
         constexpr operator AZStd::basic_string_view<Element, Traits>() const;
 
@@ -120,6 +124,7 @@ namespace AZStd
         constexpr auto operator=(const T& convertible_to_view)
             -> AZStd::enable_if_t<is_convertible_v<const T&, basic_string_view<Element, Traits>>
             && !is_convertible_v<const T&, const Element*>, basic_fixed_string&>;
+        constexpr auto operator=(AZStd::nullptr_t) -> basic_fixed_string& = delete;
 
         constexpr auto operator+=(const basic_fixed_string& rhs) -> basic_fixed_string&;
         constexpr auto operator+=(const_pointer ptr) -> basic_fixed_string&;
@@ -141,7 +146,7 @@ namespace AZStd
         constexpr auto append(size_type count, Element ch) -> basic_fixed_string&;
         template<class InputIt>
         constexpr auto append(InputIt first, InputIt last)
-            -> enable_if_t<Internal::is_input_iterator_v<InputIt> && !is_convertible_v<InputIt, size_type>, basic_fixed_string&>;
+            -> enable_if_t<input_iterator<InputIt> && !is_convertible_v<InputIt, size_type>, basic_fixed_string&>;
         constexpr auto append(AZStd::initializer_list<Element> ilist) -> basic_fixed_string&;
 
         constexpr auto assign(const basic_fixed_string& rhs) -> basic_fixed_string&;
@@ -156,7 +161,7 @@ namespace AZStd
         constexpr auto assign(size_type count, Element ch) -> basic_fixed_string&;
         template<class InputIt>
         constexpr auto assign(InputIt first, InputIt last)
-            ->enable_if_t<Internal::is_input_iterator_v<InputIt> && !is_convertible_v<InputIt, size_type>, basic_fixed_string&>;
+            ->enable_if_t<input_iterator<InputIt> && !is_convertible_v<InputIt, size_type>, basic_fixed_string&>;
 
         constexpr auto assign(AZStd::initializer_list<Element> ilist) -> basic_fixed_string&;
 
@@ -174,7 +179,7 @@ namespace AZStd
         constexpr auto insert(const_iterator insertPos, size_type count, Element ch) -> iterator;
         template<class InputIt>
         constexpr auto insert(const_iterator insertPos, InputIt first, InputIt last)
-        -> enable_if_t<Internal::is_input_iterator_v<InputIt> && !is_convertible_v<InputIt, size_type>, iterator>;
+        -> enable_if_t<input_iterator<InputIt> && !is_convertible_v<InputIt, size_type>, iterator>;
 
         constexpr auto insert(const_iterator insertPos, AZStd::initializer_list<Element> ilist) -> iterator;
 
@@ -210,7 +215,7 @@ namespace AZStd
         constexpr auto replace(const_iterator first, const_iterator last, size_type count, Element ch) -> basic_fixed_string&;
         template<class InputIt>
         constexpr auto replace(const_iterator first, const_iterator last, InputIt first2, InputIt last2)
-            -> enable_if_t<Internal::is_input_iterator_v<InputIt> && !is_convertible_v<InputIt, size_type>, basic_fixed_string&>;
+            -> enable_if_t<input_iterator<InputIt> && !is_convertible_v<InputIt, size_type>, basic_fixed_string&>;
         constexpr auto replace(const_iterator first, const_iterator last, AZStd::initializer_list<Element> ilist) -> basic_fixed_string&;
 
         constexpr auto at(size_type offset) -> reference;
@@ -338,26 +343,6 @@ namespace AZStd
         static decltype(auto) format(const wchar_t* format, ...);
 
     protected:
-        template<class InputIt>
-        constexpr auto append_iter(InputIt first, InputIt last)
-           -> enable_if_t<Internal::is_input_iterator_v<InputIt> && !is_convertible_v<InputIt, size_type>, basic_fixed_string&>;
-
-        template<class InputIt>
-        constexpr auto construct_iter(InputIt first, InputIt last)
-            -> enable_if_t<Internal::is_input_iterator_v<InputIt> && !is_convertible_v<InputIt, size_type>>;
-
-        template<class InputIt>
-        constexpr auto assign_iter(InputIt first, InputIt last)
-            -> enable_if_t<Internal::is_input_iterator_v<InputIt> && !is_convertible_v<InputIt, size_type>, basic_fixed_string&>;
-
-        template<class InputIt>
-        constexpr auto insert_iter(const_iterator insertPos, InputIt first, InputIt last)
-            -> enable_if_t<Internal::is_input_iterator_v<InputIt> && !is_convertible_v<InputIt, size_type>, iterator>;
-
-        template<class InputIt>
-        constexpr auto replace_iter(const_iterator first, const_iterator last, InputIt first2, InputIt last2)
-            -> enable_if_t<Internal::is_input_iterator_v<InputIt> && !is_convertible_v<InputIt, size_type>, basic_fixed_string&>;
-
         constexpr auto fits_in_capacity(size_type newSize) -> bool;
 
         inline static constexpr size_type Capacity = MaxElementCount; // current storage reserved for string not including null-terminator
@@ -459,6 +444,15 @@ namespace AZStd
     constexpr bool operator>=(const basic_fixed_string<Element, MaxElementCount, Traits>& lhs, const Element* rhs);
     template<class Element, size_t MaxElementCount, class Traits>
     constexpr bool operator>=(const Element* lhs, const basic_fixed_string<Element, MaxElementCount, Traits>& rhs);
+
+    // C++20 erase helpers
+    template<class Element, size_t MaxElementCount, class Traits, class U>
+    constexpr auto erase(basic_fixed_string<Element, MaxElementCount, Traits>& container, const U& element)
+        -> typename basic_fixed_string<Element, MaxElementCount, Traits>::size_type;
+
+    template<class Element, size_t MaxElementCount, class Traits, class Predicate>
+    constexpr auto erase_if(basic_fixed_string<Element, MaxElementCount, Traits>& container, Predicate predicate)
+        -> typename basic_fixed_string<Element, MaxElementCount, Traits>::size_type;
 
     template<class T>
     struct hash;

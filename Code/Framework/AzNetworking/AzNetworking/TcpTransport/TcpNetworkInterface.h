@@ -80,7 +80,7 @@ namespace AzNetworking
         //! @param connectionListener reference to the connection listener responsible for handling all connection events
         //! @param trustZone          the trust level assigned to this network interface, server to server or client to server
         //! @param listenThread       the listen thread to bind to this network interface
-        TcpNetworkInterface(AZ::Name name, IConnectionListener& connectionListener, TrustZone trustZone, TcpListenThread& listenThread);
+        TcpNetworkInterface(const AZ::Name& name, IConnectionListener& connectionListener, TrustZone trustZone, TcpListenThread& listenThread);
         ~TcpNetworkInterface() override;
 
         //! INetworkInterface interface.
@@ -92,15 +92,17 @@ namespace AzNetworking
         IConnectionSet& GetConnectionSet() override;
         IConnectionListener& GetConnectionListener() override;
         bool Listen(uint16_t port) override;
-        ConnectionId Connect(const IpAddress& remoteAddress) override;
-        void Update(AZ::TimeMs deltaTimeMs) override;
+        ConnectionId Connect(const IpAddress& remoteAddress, uint16_t localPort = 0) override;
+        void Update() override;
         bool SendReliablePacket(ConnectionId connectionId, const IPacket& packet) override;
         PacketId SendUnreliablePacket(ConnectionId connectionId, const IPacket& packet) override;
         bool WasPacketAcked(ConnectionId connectionId, PacketId packetId) override;
         bool StopListening() override;
         bool Disconnect(ConnectionId connectionId, DisconnectReason reason) override;
-        void SetTimeoutEnabled(bool timeoutEnabled) override;
-        bool IsTimeoutEnabled() const override;
+        void SetTimeoutMs(AZ::TimeMs timeoutMs) override;
+        AZ::TimeMs GetTimeoutMs() const override;
+        bool IsEncrypted() const override;
+        bool IsOpen() const override;
         //! @}
 
         //! Queues a new incoming connection for this network interface.
@@ -137,16 +139,6 @@ namespace AzNetworking
 
         AZ_DISABLE_COPY_MOVE(TcpNetworkInterface);
 
-        struct ConnectionTimeoutFunctor final
-            : public ITimeoutHandler
-        {
-            ConnectionTimeoutFunctor(TcpNetworkInterface& networkInterface);
-            TimeoutResult HandleTimeout(TimeoutQueue::TimeoutItem& item) override;
-        private:
-            AZ_DISABLE_COPY_MOVE(ConnectionTimeoutFunctor);
-            TcpNetworkInterface& m_networkInterface;
-        };
-
         struct PendingRemove
         {
             SocketFd m_socketFd;
@@ -156,13 +148,12 @@ namespace AzNetworking
         AZ::Name m_name;
         TrustZone m_trustZone;
         uint16_t m_port = 0;
-        bool m_timeoutEnabled = true;
+        AZ::TimeMs m_timeoutMs = AZ::Time::ZeroTimeMs;
         IConnectionListener& m_connectionListener;
         TcpConnectionSet m_connectionSet;
         TcpSocketManager m_tcpSocketManager;
         AZ::ThreadSafeDeque<PendingConnection> m_pendingConnections;
         AZStd::vector<PendingRemove> m_pendingRemoves;
-        TimeoutQueue m_connectionTimeoutQueue;
         TcpListenThread& m_listenThread;
 
         friend class TcpConnection; // For access to private RequestDisconnect() method

@@ -1,41 +1,27 @@
 {
-    "description": "",
     "materialType": "Materials/Types/EnhancedPBR.materialtype",
-    "parentMaterial": "",
-    "propertyLayoutVersion": 3,
-    "properties": {
-        "baseColor": {
-            "textureMap": "Objects/Lucy/Lucy_bronze_BaseColor.png",
-            "textureMapUv": "Unwrapped"
-        },
-        "detailLayerGroup": {
-            "baseColorDetailMap": "TestData/Textures/cc0/Concrete019_1K_Color.jpg",
-            "blendDetailMask": "TestData/Textures/checker2x2_128.png",
-            "enableBaseColor": true,
-            "enableDetailLayer": true,
-            "enableNormals": true,
-            "normalDetailMap": "TestData/Textures/cc0/Concrete019_1K_Normal.jpg",
-            "normalDetailStrength": 1.5
-        },
-        "detailUV": {
-            "center": [
-                0.0,
-                0.0
-            ],
-            "scale": 10.0
-        },
-        "metallic": {
-            "textureMap": "Objects/Lucy/Lucy_bronze_Metallic.png",
-            "textureMapUv": "Unwrapped"
-        },
-        "normal": {
-            "flipY": true,
-            "textureMap": "Objects/Lucy/Lucy_Normal.png",
-            "textureMapUv": "Unwrapped"
-        },
-        "roughness": {
-            "textureMap": "Objects/Lucy/Lucy_bronze_Roughness.png",
-            "textureMapUv": "Unwrapped"
-        }
+    "materialTypeVersion": 6,
+    "propertyValues": {
+        "baseColor.textureMap": "Objects/Hermanubis/Hermanubis_bronze_BaseColor.png",
+        "baseColor.textureMapUv": "Unwrapped",
+        "detailLayerGroup.baseColorDetailMap": "TestData/Textures/cc0/Concrete019_1K_Color.jpg",
+        "detailLayerGroup.blendDetailMask": "TestData/Textures/checker2x2_128.png",
+        "detailLayerGroup.enableBaseColor": true,
+        "detailLayerGroup.enableDetailLayer": true,
+        "detailLayerGroup.enableNormals": true,
+        "detailLayerGroup.normalDetailMap": "TestData/Textures/cc0/Concrete019_1K_Normal.jpg",
+        "detailLayerGroup.normalDetailStrength": 1.5,
+        "detailLayerGroup.detailUV.center": [
+            0.0,
+            0.0
+        ],
+        "detailLayerGroup.detailUV.scale": 10.0,
+        "metallic.textureMap": "Objects/Hermanubis/Hermanubis_bronze_Metallic.png",
+        "metallic.textureMapUv": "Unwrapped",
+        "normal.flipY": true,
+        "normal.textureMap": "Objects/Hermanubis/Hermanubis_Normal.png",
+        "normal.textureMapUv": "Unwrapped",
+        "roughness.textureMap": "Objects/Hermanubis/Hermanubis_bronze_Roughness.png",
+        "roughness.textureMapUv": "Unwrapped"
     }
 }

@@ -11,6 +11,7 @@
 #include <AzCore/std/containers/map.h>
 #include <AzCore/std/containers/set.h>
 #include <AzCore/std/string/string.h>
+#include <AzCore/IO/Path/Path_fwd.h>
 #include <AzFramework/FileTag/FileTagBus.h>
 
 namespace AzFramework
@@ -88,7 +89,7 @@ namespace AzFramework
 
             /////////////////////////////////////////////////////////////////////////
 
-            static AZStd::string GetDefaultFileTagFilePath(FileTagType fileTagType);
+            static AZ::IO::Path GetDefaultFileTagFilePath(FileTagType fileTagType);
 
         protected:
 

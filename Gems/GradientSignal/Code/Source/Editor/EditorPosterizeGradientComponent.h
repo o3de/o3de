@@ -9,7 +9,7 @@
 #pragma once
 
 #include <GradientSignal/Editor/EditorGradientComponentBase.h>
-#include <Components/PosterizeGradientComponent.h>
+#include <GradientSignal/Components/PosterizeGradientComponent.h>
 
 namespace GradientSignal
 {
@@ -26,6 +26,6 @@ namespace GradientSignal
         static constexpr const char* const s_componentDescription = "Divides an input gradient's signal into a specified number of bands";
         static constexpr const char* const s_icon = "Editor/Icons/Components/GradientModifier.svg";
         static constexpr const char* const s_viewportIcon = "Editor/Icons/Components/Viewport/GradientModifier.svg";
-        static constexpr const char* const s_helpUrl = "https://o3de.org/docs/user-guide/components/";
+        static constexpr const char* const s_helpUrl = "https://o3de.org/docs/user-guide/components/reference/gradient-modifiers/posterize-gradient-modifier/";
     };
 }

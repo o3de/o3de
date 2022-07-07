@@ -6,7 +6,7 @@
 #
 #
 
-ly_get_list_relative_pal_filename(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME})
+o3de_pal_dir(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME} "${gem_restricted_path}" "${gem_path}" "${gem_parent_relative_path}")
 
 ly_add_target(
     NAME Atom_Bootstrap.Headers HEADERONLY
@@ -45,14 +45,4 @@ ly_create_alias(NAME Atom_Bootstrap.Clients NAMESPACE Gem TARGETS Gem::Atom_Boot
 ly_create_alias(NAME Atom_Bootstrap.Servers NAMESPACE Gem TARGETS Gem::Atom_Bootstrap)
 
 # The Atom_Bootstrap gem is responsible for making the NativeWindow handle in the launcher applications
-# Loop over each Project name to allow the ${ProjectName}.GameLauncher and ${ProjectName}.ServerLauncher
-# target to add the gem the Clients and Servers variant
-get_property(LY_PROJECTS_TARGET_NAME GLOBAL PROPERTY LY_PROJECTS_TARGET_NAME)
-foreach(project_name IN LISTS LY_PROJECTS_TARGET_NAME)
-    # Add gem as a dependency of the Clients Launcher
-    ly_enable_gems(PROJECT_NAME ${project_name} GEMS Atom_Bootstrap VARIANTS Clients TARGETS ${project_name}.GameLauncher)
-    # Add gem as a dependency of the Servers Launcher
-    if(PAL_TRAIT_BUILD_SERVER_SUPPORTED)
-        ly_enable_gems(PROJECT_NAME ${project_name} GEMS Atom_Bootstrap VARIANTS Servers TARGETS ${project_name}.ServerLauncher)
-    endif()
-endforeach()
+ly_enable_gems(GEMS Atom_Bootstrap)

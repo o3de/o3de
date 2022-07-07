@@ -15,6 +15,7 @@ namespace AZ
 {
     namespace Render
     {
+        // Deprecated, use LuaMaterialFunctor with SetDrawListTagOverride() instead
         //! Materials can use this functor to overwrite the draw list for a shader.
         class DrawListFunctor final
             : public RPI::MaterialFunctor
@@ -26,6 +27,7 @@ namespace AZ
 
             static void Reflect(ReflectContext* context);
 
+            using RPI::MaterialFunctor::Process;
             void Process(RuntimeContext& context) override;
 
         private:

@@ -131,7 +131,7 @@
 
 -(void) productsRequest:(SKProductsRequest*) request didReceiveResponse:(SKProductsResponse*) response
 {
-    for (NSString* invalidId in response.invalidProductIdentifiers)
+    for ([[maybe_unused]] NSString* invalidId in response.invalidProductIdentifiers)
     {
         AZ_TracePrintf("O3DEInAppPurchases:", "Invalid product ID:", [invalidId cStringUsingEncoding:NSASCIIStringEncoding]);
     }

@@ -13,7 +13,9 @@
 namespace AZ
 {
     namespace Render
-    {        
+    {
+        // --- Pass Creation ---
+
         RPI::Ptr<Render::ShadowmapPass> ShadowmapPass::Create(const RPI::PassDescriptor& descriptor)
         {
             return aznew ShadowmapPass(descriptor);
@@ -41,18 +43,13 @@ namespace AZ
             childRequest.m_connections.emplace_back(passConnection);
 
             // Get the template
-            AZStd::shared_ptr<RPI::PassTemplate> childTemplate = RPI::PassSystemInterface::Get()->GetPassTemplate(childRequest.m_templateName);
+            const AZStd::shared_ptr<const RPI::PassTemplate> childTemplate = RPI::PassSystemInterface::Get()->GetPassTemplate(childRequest.m_templateName);
             AZ_Assert(childTemplate, "ShadowmapPass::CreateWIthPassRequest - attempting to create a shadowmap pass before the template has been created.");
 
             // Create the pass
             RPI::PassDescriptor descriptor{ passName, childTemplate, &childRequest };
             descriptor.m_passData = AZStd::move(passData);
             return Create(descriptor);
-        }
-
-        void ShadowmapPass::SetArraySlice(uint16_t arraySlice)
-        {
-            m_arraySlice = arraySlice;
         }
 
         void ShadowmapPass::CreatePassTemplate()
@@ -82,26 +79,7 @@ namespace AZ
             RPI::PassSystemInterface::Get()->AddPassTemplate(Name{ "ShadowmapPassTemplate" }, m_childTemplate);
         }
 
-        void ShadowmapPass::SetClearEnabled(bool enabled)
-        {
-            m_clearEnabled = enabled;
-        }
-
-        void ShadowmapPass::SetViewportScissorFromImageSize(const RHI::Size& imageSize)
-        {
-            const RHI::Viewport viewport(
-                0.f, imageSize.m_width * 1.f,
-                0.f, imageSize.m_height * 1.f);
-            const RHI::Scissor scissor(
-                0, 0, imageSize.m_width, imageSize.m_height);
-            SetViewportScissor(viewport, scissor);
-        }
-
-        void ShadowmapPass::SetViewportScissor(const RHI::Viewport& viewport, const RHI::Scissor& scissor)
-        {
-            m_viewportState = viewport;
-            m_scissorState = scissor;
-        }
+        // --- Build Override ---
 
         void ShadowmapPass::BuildInternal()
         {
@@ -134,5 +112,38 @@ namespace AZ
             Base::BuildInternal();
         }
 
-      } // namespace Render
+        // --- Setters ---
+
+        void ShadowmapPass::SetArraySlice(uint16_t arraySlice)
+        {
+            m_arraySlice = arraySlice;
+        }
+
+        void ShadowmapPass::SetClearEnabled(bool enabled)
+        {
+            m_clearEnabled = enabled;
+        }
+
+        void ShadowmapPass::SetViewportScissorFromImageSize(const RHI::Size& imageSize)
+        {
+            const RHI::Viewport viewport(
+                0.f, imageSize.m_width * 1.f,
+                0.f, imageSize.m_height * 1.f);
+            const RHI::Scissor scissor(
+                0, 0, imageSize.m_width, imageSize.m_height);
+            SetViewportScissor(viewport, scissor);
+        }
+
+        void ShadowmapPass::SetViewportScissor(const RHI::Viewport& viewport, const RHI::Scissor& scissor)
+        {
+            m_viewportState = viewport;
+            m_scissorState = scissor;
+        }
+
+        void ShadowmapPass::UpdatePipelineViewTag(const RPI::PipelineViewTag& viewTag)
+        {
+            SetPipelineViewTag(viewTag);
+        }
+
+    } // namespace Render
 } // namespace AZ

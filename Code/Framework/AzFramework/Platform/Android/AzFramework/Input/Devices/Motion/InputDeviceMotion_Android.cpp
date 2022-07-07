@@ -175,7 +175,7 @@ namespace AzFramework
         m_packedSensorDataArray = new float[packedSensorDataLength];
 
         // create the java instance
-        bool ret = m_motionSensorManager->CreateInstance("(Landroid/app/Activity;)V", AZ::Android::Utils::GetActivityRef());
+        [[maybe_unused]] bool ret = m_motionSensorManager->CreateInstance("(Landroid/app/Activity;)V", AZ::Android::Utils::GetActivityRef());
         AZ_Assert(ret, "Failed to create the MotionSensorManager Java instance.");
     }
 

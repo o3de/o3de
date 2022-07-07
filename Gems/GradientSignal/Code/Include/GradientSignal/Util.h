@@ -7,60 +7,17 @@
  */
 #pragma once
 
+#include <AzCore/Component/EntityId.h>
 #include <AzCore/Math/Aabb.h>
 #include <AzCore/Math/Vector3.h>
-#include <AzCore/Component/EntityId.h>
 #include <AzCore/Math/Matrix3x4.h>
 #include <AzCore/Math/Transform.h>
+#include <AzCore/std/containers/span.h>
 #include <LmbrCentral/Shape/ShapeComponentBus.h>
-
-namespace LmbrCentral
-{
-    class MeshAsset;
-}
+#include <GradientSignal/GradientTransform.h>
 
 namespace GradientSignal
 {
-    enum class WrappingType : AZ::u8
-    {
-        None = 0,
-        ClampToEdge,
-        Mirror,
-        Repeat,
-        ClampToZero,
-    };
-
-    enum class TransformType : AZ::u8
-    {
-        World_ThisEntity = 0,
-        Local_ThisEntity,
-        World_ReferenceEntity,
-        Local_ReferenceEntity,
-        World_Origin,
-        Relative,
-    };
-
-    AZ::Vector3 GetUnboundedPointInAabb(const AZ::Vector3& point, const AZ::Aabb& bounds);
-    AZ::Vector3 GetClampedPointInAabb(const AZ::Vector3& point, const AZ::Aabb& bounds);
-    AZ::Vector3 GetMirroredPointInAabb(const AZ::Vector3& point, const AZ::Aabb& bounds);
-    AZ::Vector3 GetRelativePointInAabb(const AZ::Vector3& point, const AZ::Aabb& bounds);
-
-    inline AZ::Vector3 GetWrappedPointInAabb(const AZ::Vector3& point, const AZ::Aabb& bounds)
-    {
-        return AZ::Vector3(
-            AZ::Wrap(point.GetX(), bounds.GetMin().GetX(), bounds.GetMax().GetX()),
-            AZ::Wrap(point.GetY(), bounds.GetMin().GetY(), bounds.GetMax().GetY()),
-            AZ::Wrap(point.GetZ(), bounds.GetMin().GetZ(), bounds.GetMax().GetZ()));
-    }
-
-    inline AZ::Vector3 GetNormalizedPointInAabb(const AZ::Vector3& point, const AZ::Aabb& bounds)
-    {
-        return AZ::Vector3(
-            AZ::LerpInverse(bounds.GetMin().GetX(), bounds.GetMax().GetX(), point.GetX()),
-            AZ::LerpInverse(bounds.GetMin().GetY(), bounds.GetMax().GetY(), point.GetY()),
-            AZ::LerpInverse(bounds.GetMin().GetZ(), bounds.GetMax().GetZ(), point.GetZ()));
-    }
-
     inline void GetObbParamsFromShape(const AZ::EntityId& entity, AZ::Aabb& bounds, AZ::Matrix3x4& worldToBoundsTransform)
     {
         //get bound and transform data for associated shape
@@ -97,27 +54,61 @@ namespace GradientSignal
 
     inline float GetLevels(float input, float inputMid, float inputMin, float inputMax, float outputMin, float outputMax)
     {
-        input = AZ::GetClamp(input, 0.0f, 1.0f);
-        inputMid = AZ::GetClamp(inputMid, 0.01f, 10.0f);        // Clamp the midpoint to a non-zero value so that it's always safe to divide by it.
+        inputMid = AZ::GetClamp(inputMid, 0.01f, 10.0f); // Clamp the midpoint to a non-zero value so that it's always safe to divide by it.
         inputMin = AZ::GetClamp(inputMin, 0.0f, 1.0f);
         inputMax = AZ::GetClamp(inputMax, 0.0f, 1.0f);
         outputMin = AZ::GetClamp(outputMin, 0.0f, 1.0f);
         outputMax = AZ::GetClamp(outputMax, 0.0f, 1.0f);
 
-        float inputCorrected = 0.0f;
         if (inputMin == inputMax)
         {
-            inputCorrected = (input <= inputMin) ? 0.0f : 1.0f;
-        }
-        else
-        {
-            const float inputRemapped = AZ::GetMin(AZ::GetMax(input - inputMin, 0.0f) / (inputMax - inputMin), 1.0f);
-            // Note:  Some paint programs map the midpoint using 1/mid where low values are dark and high values are light, 
-            // others do the reverse and use mid directly, so low values are light and high values are dark.  We've chosen to 
-            // align with 1/mid since it appears to be the more prevalent of the two approaches.
-            inputCorrected = powf(inputRemapped, 1.0f / inputMid);
+            return (AZ::GetClamp(input, 0.0f, 1.0f) <= inputMin) ? outputMin : outputMax;
         }
 
+        const float inputMidReciprocal = 1.0f / inputMid;
+        const float inputExtentsReciprocal = 1.0f / (inputMax - inputMin);
+
+        const float inputRemapped =
+            AZ::GetMin(AZ::GetMax(AZ::GetClamp(input, 0.0f, 1.0f) - inputMin, 0.0f) * inputExtentsReciprocal, 1.0f);
+
+        // Note:  Some paint programs map the midpoint using 1/mid where low values are dark and high values are light, 
+        // others do the reverse and use mid directly, so low values are light and high values are dark.  We've chosen to 
+        // align with 1/mid since it appears to be the more prevalent of the two approaches.
+        const float inputCorrected = powf(inputRemapped, inputMidReciprocal);
+
         return AZ::Lerp(outputMin, outputMax, inputCorrected);
+    }
+
+    inline void GetLevels(AZStd::span<float> inOutValues, float inputMid, float inputMin, float inputMax, float outputMin, float outputMax)
+    {
+        inputMid = AZ::GetClamp(inputMid, 0.01f, 10.0f); // Clamp the midpoint to a non-zero value so that it's always safe to divide by it.
+        inputMin = AZ::GetClamp(inputMin, 0.0f, 1.0f);
+        inputMax = AZ::GetClamp(inputMax, 0.0f, 1.0f);
+        outputMin = AZ::GetClamp(outputMin, 0.0f, 1.0f);
+        outputMax = AZ::GetClamp(outputMax, 0.0f, 1.0f);
+
+        if (inputMin == inputMax)
+        {
+            for (auto& inOutValue : inOutValues)
+            {
+                inOutValue = (AZ::GetClamp(inOutValue, 0.0f, 1.0f) <= inputMin) ? outputMin : outputMax;
+            }
+        }
+
+        const float inputMidReciprocal = 1.0f / inputMid;
+        const float inputExtentsReciprocal = 1.0f / (inputMax - inputMin);
+
+        for (auto& inOutValue : inOutValues)
+        {
+            const float inputRemapped =
+                AZ::GetMin(AZ::GetMax(AZ::GetClamp(inOutValue, 0.0f, 1.0f) - inputMin, 0.0f) * inputExtentsReciprocal, 1.0f);
+
+            // Note:  Some paint programs map the midpoint using 1/mid where low values are dark and high values are light,
+            // others do the reverse and use mid directly, so low values are light and high values are dark.  We've chosen to
+            // align with 1/mid since it appears to be the more prevalent of the two approaches.
+            const float inputCorrected = powf(inputRemapped, inputMidReciprocal);
+
+            inOutValue = AZ::Lerp(outputMin, outputMax, inputCorrected);
+        }
     }
 } // namespace GradientSignal

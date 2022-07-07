@@ -13,58 +13,9 @@
 #include <CryCommon/Maestro/Types/AnimParamType.h>
 
 // Editor
+#include "KeyUIControls.h"
 #include "TrackViewKeyPropertiesDlg.h"
 #include "TVEventsDialog.h"
-
-
-//////////////////////////////////////////////////////////////////////////
-class CTrackEventKeyUIControls
-    : public CTrackViewKeyUIControls
-{
-public:
-    CSmartVariableArray mv_table;
-    CSmartVariableEnum<QString> mv_event;
-    CSmartVariable<QString> mv_value;
-
-    void OnCreateVars() override
-    {
-        AddVariable(mv_table, "Key Properties");
-        AddVariable(mv_table, mv_event, "Track Event");
-        mv_event->SetFlags(mv_event->GetFlags() | IVariable::UI_UNSORTED);
-        AddVariable(mv_table, mv_value, "Value");
-    }
-    bool SupportTrackType(const CAnimParamType& paramType, [[maybe_unused]] EAnimCurveType trackType, [[maybe_unused]] AnimValueType valueType) const override
-    {
-        return paramType == AnimParamType::TrackEvent;
-    }
-    bool OnKeySelectionChange(CTrackViewKeyBundle& selectedKeys) override;
-    void OnUIChange(IVariable* pVar, CTrackViewKeyBundle& selectedKeys) override;
-
-    unsigned int GetPriority() const override { return 1; }
-
-    static const GUID& GetClassID()
-    {
-        // {F7D002EB-1FEA-46fa-B857-FC2B1B990B7F}
-        static const GUID guid =
-        {
-            0xf7d002eb, 0x1fea, 0x46fa, { 0xb8, 0x57, 0xfc, 0x2b, 0x1b, 0x99, 0xb, 0x7f }
-        };
-        return guid;
-    }
-
-private:
-    void OnEventEdit();
-    void BuildEventDropDown(QString& curEvent, const QString& addedEvent = "");
-
-    QString m_lastEvent;
-
-    static const char* GetAddEventString()
-    {
-        static const char* addEventString = "Add a new event...";
-
-        return addEventString;
-    }
-};
 
 //////////////////////////////////////////////////////////////////////////
 bool CTrackEventKeyUIControls::OnKeySelectionChange(CTrackViewKeyBundle& selectedKeys)
@@ -235,5 +186,3 @@ void CTrackEventKeyUIControls::BuildEventDropDown(QString& curEvent, const QStri
         }
     }
 }
-
-REGISTER_QT_CLASS_DESC(CTrackEventKeyUIControls, "TrackView.KeyUI.TrackEvent", "TrackViewKeyUI");

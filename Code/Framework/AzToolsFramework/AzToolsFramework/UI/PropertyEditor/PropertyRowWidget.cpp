@@ -28,7 +28,7 @@ AZ_POP_DISABLE_WARNING
 
 static const int LabelColumnStretch = 2;
 static const int ValueColumnStretch = 3;
-
+ 
 namespace AzToolsFramework
 {
     PropertyRowWidget::PropertyRowWidget(QWidget* pParent)
@@ -402,6 +402,12 @@ namespace AzToolsFramework
     {
         Initialize(groupName, pParent, depth, labelWidth);
         ChangeSourceNode(node);
+
+        // Need to invoke RefreshAttributesFromNode manually since it won't be called
+        // by this version of Initialize so that any change notify (along with other attributes)
+        // will be respected when toggling the group element
+        RefreshAttributesFromNode(true);
+
         CreateGroupToggleSwitch();
     }
 
@@ -421,6 +427,7 @@ namespace AzToolsFramework
     {
         QString label{ text };
         m_nameLabel->setText(label);
+        m_nameLabel->setOpenExternalLinks(true);
         m_nameLabel->setVisible(!label.isEmpty());
         // setting the stretches to 0 in case of an empty label really hides the label (i.e. even the reserved space)
         m_mainLayout->setStretch(0, label.isEmpty() ? 0 : LabelColumnStretch);
@@ -524,7 +531,12 @@ namespace AzToolsFramework
                         if (genericClassInfo->GetNumTemplatedArguments() == 1)
                         {
                             void* ptrAddress = dataNode->GetInstance(0);
-                            void* ptrValue = container->GetElementByIndex(ptrAddress, classElement, 0);
+                            void* ptrValue = nullptr;
+                            if (container->CanAccessElementsByIndex())
+                            {
+                                container->GetElementByIndex(ptrAddress, classElement, 0);
+                            }
+
                             AZ::Uuid pointeeType;
                             // If the pointer is non-null, find the polymorphic type info
                             if (ptrValue)
@@ -915,6 +927,13 @@ namespace AzToolsFramework
                 SetNameLabel(labelText.c_str());
             }
         }
+        else if (attributeName == AZ::Edit::Attributes::ContainerReorderAllow)
+        {
+            if (m_containerEditable)
+            {
+                reader.Read<bool>(m_reorderAllow);
+            }
+        }
         else if (attributeName == AZ::Edit::Attributes::DescriptionTextOverride)
         {
             AZStd::string labelText;
@@ -1102,10 +1121,7 @@ namespace AzToolsFramework
             {
                 m_dropDownArrow->hide();
             }
-            m_indent->changeSize((m_treeDepth * m_treeIndentation) + m_leafIndentation, 1, QSizePolicy::Fixed, QSizePolicy::Fixed);
-            m_leftHandSideLayout->invalidate();
-            m_leftHandSideLayout->update();
-            m_leftHandSideLayout->activate();
+            SetIndentSize(m_treeDepth * m_treeIndentation + m_leafIndentation);
         }
         else
         {
@@ -1117,10 +1133,7 @@ namespace AzToolsFramework
                 connect(m_dropDownArrow, &QCheckBox::clicked, this, &PropertyRowWidget::OnClickedExpansionButton);
             }
             m_dropDownArrow->show();
-            m_indent->changeSize((m_treeDepth * m_treeIndentation), 1, QSizePolicy::Fixed, QSizePolicy::Fixed);
-            m_leftHandSideLayout->invalidate();
-            m_leftHandSideLayout->update();
-            m_leftHandSideLayout->activate();
+            SetIndentSize(m_treeDepth * m_treeIndentation);
             m_dropDownArrow->setChecked(m_expanded);
         }
     }
@@ -1720,10 +1733,9 @@ namespace AzToolsFramework
         }
         else
         {
-            m_indicatorButton->setVisible(true);
-
             QPixmap pixmap(imagePath);
             m_indicatorButton->setIcon(pixmap);
+            m_indicatorButton->setVisible(true);
         };
     }
 
@@ -1740,15 +1752,10 @@ namespace AzToolsFramework
 
     bool PropertyRowWidget::CanBeReordered() const
     {
-        if (!m_parentRow)
-        {
-            return false;
-        }
-
-        return m_parentRow->CanChildrenBeReordered();
+        return m_parentRow && m_parentRow->m_reorderAllow && m_parentRow->CanChildrenBeReordered();
     }
 
-        int PropertyRowWidget::GetIndexInParent() const
+    int PropertyRowWidget::GetIndexInParent() const
     {
         if (!GetParentRow())
         {

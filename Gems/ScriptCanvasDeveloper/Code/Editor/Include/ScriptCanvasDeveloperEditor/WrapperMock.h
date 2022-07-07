@@ -17,12 +17,10 @@
 #include <ScriptCanvasDeveloperEditor/Mock.h>
 #include <ScriptCanvasDeveloperEditor/MockBus.h>
 
-namespace ScriptCanvasDeveloper
+namespace ScriptCanvas::Developer
 {
     namespace Nodes
     {
-        using namespace ScriptCanvas;
-
         class WrapperMock
             : public Mock
             , public ScriptCanvasEditor::ScriptCanvasWrapperNodeDescriptorRequestBus::Handler
@@ -52,7 +50,7 @@ namespace ScriptCanvasDeveloper
 
             void OnActionNameChanged();
 
-            void OnClear();
+            void OnClear() override;
             void OnNodeDisplayed(const GraphCanvas::NodeId& graphCanvasNodeId) override;
 
         private:

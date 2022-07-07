@@ -19,6 +19,7 @@
 #include <Vegetation/Ebuses/AreaSystemRequestBus.h>
 #include <Vegetation/Ebuses/FilterRequestBus.h>
 #include <Vegetation/InstanceData.h>
+#include <Atom/RPI.Reflect/Model/ModelAsset.h>
 
 namespace Vegetation
 {
@@ -259,7 +260,7 @@ namespace Vegetation
         for (const auto& id : processedIds)
         {
             bool accepted = true;
-            FilterRequestBus::EnumerateHandlersId(id, [this, &instanceData, &accepted](FilterRequestBus::Events* handler) {
+            FilterRequestBus::EnumerateHandlersId(id, [&instanceData, &accepted](FilterRequestBus::Events* handler) {
                 accepted = handler->Evaluate(instanceData);
                 return accepted;
             });
@@ -346,7 +347,11 @@ namespace Vegetation
         }
     }
 
-    void MeshBlockerComponent::OnSurfaceChanged(const AZ::EntityId& /*entityId*/, const AZ::Aabb& /*oldBounds*/, const AZ::Aabb& /*newBounds*/)
+    void MeshBlockerComponent::OnSurfaceChanged(
+        [[maybe_unused]] const AZ::EntityId& entityId,
+        [[maybe_unused]] const AZ::Aabb& oldBounds,
+        [[maybe_unused]] const AZ::Aabb& newBounds,
+        [[maybe_unused]] const SurfaceData::SurfaceTagSet& changedSurfaceTags)
     {
         // If our surfaces have changed, we will need to refresh our cache.  
         // Our cache performs lookups based on ClaimPoint handles, but the list of handles can potentially change

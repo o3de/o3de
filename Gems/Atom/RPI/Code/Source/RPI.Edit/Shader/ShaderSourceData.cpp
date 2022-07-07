@@ -6,11 +6,11 @@
  *
  */
 
-#include <Atom/RPI.Edit/Shader/ShaderSourceData.h>
 #include <Atom/RHI.Edit/Utils.h>
-#include <Atom/RHI.Edit/ShaderCompilerArguments.h>
-#include <AzCore/std/string/regex.h>
-#include <AzFramework/StringFunc/StringFunc.h>
+#include <Atom/RPI.Edit/Shader/ShaderSourceData.h>
+#include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/Serialization/EditContext.h>
+#include <AzCore/Serialization/SerializeContext.h>
 
 namespace AZ
 {
@@ -18,38 +18,146 @@ namespace AZ
     {
         void ShaderSourceData::Reflect(ReflectContext* context)
         {
-            if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
+            if (auto serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<ShaderSourceData>()
-                    ->Version(4)
+                    ->Version(6) // Introduction of "AddBuildArguments" & "RemoveBuildArguments"
                     ->Field("Source", &ShaderSourceData::m_source)
                     ->Field("DrawList", &ShaderSourceData::m_drawListName)
                     ->Field("DepthStencilState", &ShaderSourceData::m_depthStencilState)
                     ->Field("RasterState", &ShaderSourceData::m_rasterState)
                     ->Field("BlendState", &ShaderSourceData::m_blendState)
                     ->Field("ProgramSettings", &ShaderSourceData::m_programSettings)
-                    ->Field("CompilerHints", &ShaderSourceData::m_compiler)
+                    ->Field("RemoveBuildArguments", &ShaderSourceData::m_removeBuildArguments)
+                    ->Field("AddBuildArguments", &ShaderSourceData::m_addBuildArguments)
+                    ->Field("Definitions", &ShaderSourceData::m_definitions)
                     ->Field("DisabledRHIBackends", &ShaderSourceData::m_disabledRhiBackends)
                     ->Field("Supervariants", &ShaderSourceData::m_supervariants)
                     ;
 
-                serializeContext->Class<ShaderSourceData::ProgramSettings>()
+                serializeContext->Class<ProgramSettings>()
                     ->Version(1)
                     ->Field("EntryPoints", &ProgramSettings::m_entryPoints)
                     ;
 
-                serializeContext->Class<ShaderSourceData::EntryPoint>()
+                serializeContext->Class<EntryPoint>()
                     ->Version(1)
                     ->Field("Name", &EntryPoint::m_name)
                     ->Field("Type", &EntryPoint::m_type)
                     ;
 
-                serializeContext->Class<ShaderSourceData::SupervariantInfo>()
-                    ->Version(1)
+                serializeContext->Class<SupervariantInfo>()
+                    ->Version(2) // Introduction of "AddBuildArguments" & "RemoveBuildArguments"
                     ->Field("Name", &SupervariantInfo::m_name)
-                    ->Field("PlusArguments", &SupervariantInfo::m_plusArguments)
-                    ->Field("MinusArguments", &SupervariantInfo::m_minusArguments);
+                    ->Field("RemoveBuildArguments", &SupervariantInfo::m_removeBuildArguments)
+                    ->Field("AddBuildArguments", &SupervariantInfo::m_addBuildArguments)
+                    ->Field("Definitions", &SupervariantInfo::m_definitions)
+                    ;
 
+                if (auto editContext = serializeContext->GetEditContext())
+                {
+                    editContext->Class<ShaderSourceData>("ShaderSourceData", "")
+                        ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                        ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &ShaderSourceData::m_source, "Source", "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &ShaderSourceData::m_drawListName, "Draw List", "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &ShaderSourceData::m_depthStencilState, "Depth Stencil State", "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &ShaderSourceData::m_rasterState, "Raster State", "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &ShaderSourceData::m_blendState, "Blend State", "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &ShaderSourceData::m_programSettings, "Program Settings", "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &ShaderSourceData::m_removeBuildArguments, "Remove Build Arguments", "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &ShaderSourceData::m_addBuildArguments, "Add Build Arguments", "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &ShaderSourceData::m_definitions, "Definitions", "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &ShaderSourceData::m_disabledRhiBackends, "Disabled RHI Backends", "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &ShaderSourceData::m_supervariants, "Super Variants", "")
+                        ;
+
+                    editContext->Class<ProgramSettings>("ShaderSourceData::ProgramSettings", "")
+                        ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                        ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &ProgramSettings::m_entryPoints, "Entry Points", "")
+                        ;
+
+                    editContext->Class<EntryPoint>("ShaderSourceData::EntryPoint", "")
+                        ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                        ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &EntryPoint::m_name, "Name", "")
+                        ->DataElement(AZ::Edit::UIHandlers::ComboBox, &EntryPoint::m_type, "Type", "")
+                            ->EnumAttribute(ShaderStageType::Vertex, ToString(ShaderStageType::Vertex))
+                            ->EnumAttribute(ShaderStageType::Geometry, ToString(ShaderStageType::Geometry))
+                            ->EnumAttribute(ShaderStageType::TessellationControl, ToString(ShaderStageType::TessellationControl))
+                            ->EnumAttribute(ShaderStageType::TessellationEvaluation, ToString(ShaderStageType::TessellationEvaluation))
+                            ->EnumAttribute(ShaderStageType::Fragment, ToString(ShaderStageType::Fragment))
+                            ->EnumAttribute(ShaderStageType::Compute, ToString(ShaderStageType::Compute))
+                            ->EnumAttribute(ShaderStageType::RayTracing, ToString(ShaderStageType::RayTracing))
+                        ;
+
+                    editContext->Class<SupervariantInfo>("ShaderSourceData::SupervariantInfo", "")
+                        ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                        ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &SupervariantInfo::m_name, "Name", "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &SupervariantInfo::m_removeBuildArguments, "Remove Build Arguments", "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &SupervariantInfo::m_addBuildArguments, "Add Build Arguments", "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &SupervariantInfo::m_definitions, "Definitions", "")
+                        ;
+                }
+            }
+
+            if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+            {
+                // declare EntryPoint before things that use it.
+                behaviorContext->Class<ShaderSourceData::EntryPoint>("ShaderSourceData::EntryPoint")
+                    ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
+                    ->Attribute(AZ::Script::Attributes::Category, "RPI")
+                    ->Attribute(AZ::Script::Attributes::Module, "rpi")
+                    ->Constructor()
+                    ->Constructor<const ShaderSourceData::EntryPoint&>()
+                    ->Property("name", BehaviorValueProperty(&EntryPoint::m_name))
+                    ->Property("type", BehaviorValueProperty(&EntryPoint::m_type))
+                    ;
+                
+                // Declare SupervariantInfo (which uses EntryPoint) before things that use it.
+                behaviorContext->Class<ShaderSourceData::SupervariantInfo>("ShaderSourceData::SupervariantInfo")
+                    ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
+                    ->Attribute(AZ::Script::Attributes::Category, "RPI")
+                    ->Attribute(AZ::Script::Attributes::Module, "rpi")
+                    ->Constructor()
+                    ->Constructor<const ShaderSourceData::SupervariantInfo&>()
+                    ->Property("name", BehaviorValueProperty(&SupervariantInfo::m_name))
+                    ->Property("removeBuildArguments", BehaviorValueProperty(&SupervariantInfo::m_removeBuildArguments))
+                    ->Property("addBuildArguments", BehaviorValueProperty(&SupervariantInfo::m_addBuildArguments))
+                    ->Property("definitions", BehaviorValueProperty(&SupervariantInfo::m_definitions))
+                    ;
+                
+                // ShaderSourceData uses SuperVariant, so SuperVarient is defined above, before it.
+                behaviorContext->Class<ShaderSourceData>("ShaderSourceData")
+                    ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
+                    ->Attribute(AZ::Script::Attributes::Category, "RPI")
+                    ->Attribute(AZ::Script::Attributes::Module, "rpi")
+                    ->Constructor()
+                    ->Constructor<const ShaderSourceData&>()
+                    ->Property("source", BehaviorValueProperty(&ShaderSourceData::m_source))
+                    ->Property("drawListName", BehaviorValueProperty(&ShaderSourceData::m_drawListName))
+                    ->Property("depthStencilState", BehaviorValueProperty(&ShaderSourceData::m_depthStencilState))
+                    ->Property("rasterState", BehaviorValueProperty(&ShaderSourceData::m_rasterState))
+                    ->Property("blendState", BehaviorValueProperty(&ShaderSourceData::m_blendState))
+                    ->Property("programSettings", BehaviorValueProperty(&ShaderSourceData::m_programSettings))
+                    ->Property("removeBuildArguments", BehaviorValueProperty(&ShaderSourceData::m_removeBuildArguments))
+                    ->Property("addBuildArguments", BehaviorValueProperty(&ShaderSourceData::m_addBuildArguments))
+                    ->Property("definitions", BehaviorValueProperty(&ShaderSourceData::m_definitions))
+                    ->Property("disabledRhiBackends", BehaviorValueProperty(&ShaderSourceData::m_disabledRhiBackends))
+                    ->Property("superVariants", BehaviorValueProperty(&ShaderSourceData::m_supervariants))
+                    ->Method("IsRhiBackendDisabled", &ShaderSourceData::IsRhiBackendDisabled)
+                    ;
+
+                behaviorContext->Class<ShaderSourceData::ProgramSettings>("ShaderSourceData::ProgramSettings")
+                    ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
+                    ->Attribute(AZ::Script::Attributes::Category, "RPI")
+                    ->Attribute(AZ::Script::Attributes::Module, "rpi")
+                    ->Constructor()
+                    ->Constructor<const ShaderSourceData::ProgramSettings&>()
+                    ->Property("entryPoints", BehaviorValueProperty(&ProgramSettings::m_entryPoints))
+                    ;
             }
         }
 
@@ -60,109 +168,6 @@ namespace AZ
                     return currentRhiName == rhiName.GetStringView();
                 });
         }
-
-
-        //! Helper function.
-        //! Parses a string of command line arguments looking for c-preprocessor macro definitions and appends the name of macro definition arguments.
-        //! Example:
-        //! Input string: "--switch1 -DMACRO1 -v -DMACRO2=23"
-        //! append the following items: ["MACRO1", "MACRO2"]
-        static void GetListOfMacroDefinitionNames( 
-            const AZStd::string& stringWithArguments, AZStd::vector<AZStd::string>& macroDefinitionNames)
-        {
-            const AZStd::regex macroRegex(R"(-D\s*(\w+))", AZStd::regex::ECMAScript);
-
-            AZStd::string hayStack(stringWithArguments);
-            AZStd::smatch match;
-            while (AZStd::regex_search(hayStack.c_str(), match, macroRegex))
-            {
-                // First pattern is always the entire string
-                for (unsigned i = 1; i < match.size(); ++i)
-                {
-                    if (match[i].matched)
-                    {
-                        AZStd::string macroToAdd(match[i].str().c_str());
-                        const bool isPresent = AZStd::any_of(AZ_BEGIN_END(macroDefinitionNames),
-                            [&](AZStd::string_view macroName) -> bool
-                            {
-                                return macroToAdd == macroName;
-                            }
-                        );
-                        if (isPresent)
-                        {
-                            continue;
-                        }
-                        macroDefinitionNames.push_back(macroToAdd);
-                    }
-                }
-                hayStack = match.suffix();
-            }
-        }
-
-        AZStd::vector<AZStd::string> ShaderSourceData::SupervariantInfo::GetCombinedListOfMacroDefinitionNamesToRemove() const
-        {
-            AZStd::vector<AZStd::string> macroDefinitionNames;
-            GetListOfMacroDefinitionNames(m_minusArguments, macroDefinitionNames);
-            GetListOfMacroDefinitionNames(m_plusArguments, macroDefinitionNames);
-            return macroDefinitionNames;
-        }
-
-
-        //! Helper function.
-        //! Parses a string of command line arguments looking for c-preprocessor macro definitions and appends macro definition
-        //! arguments. Example: Input string: "--switch1 -DMACRO1 -v -DMACRO2=23" append the following items: ["MACRO1", "MACRO2=23"]
-        static void GetListOfMacroDefinitions(
-            const AZStd::string& stringWithArguments, AZStd::vector<AZStd::string>& macroDefinitions)
-        {
-            const AZStd::regex macroRegex(R"(-D\s*(\w+)(=\w+)?)", AZStd::regex::ECMAScript);
-
-            AZStd::string hayStack(stringWithArguments);
-            AZStd::smatch match;
-            while (AZStd::regex_search(hayStack.c_str(), match, macroRegex))
-            {
-                if (match.size() > 1)
-                {
-                    AZStd::string macro(match[1].str().c_str());
-                    if (match.size() > 2)
-                    {
-                        macro += match[2].str().c_str();
-                    }
-                    macroDefinitions.push_back(macro);
-                }
-                hayStack = match.suffix();
-            }
-        }
-
-        AZStd::vector<AZStd::string> ShaderSourceData::SupervariantInfo::GetMacroDefinitionsToAdd() const
-        {
-            AZStd::vector<AZStd::string> parsedMacroDefinitions;
-            GetListOfMacroDefinitions(m_plusArguments, parsedMacroDefinitions);
-            return parsedMacroDefinitions;
-        }
-
-        AZStd::string ShaderSourceData::SupervariantInfo::GetCustomizedArgumentsForAzslc(
-            const AZStd::string& initialAzslcCompilerArguments) const
-        {
-            const AZStd::regex macroRegex(R"(-D\s*(\w+(=\S+)?))", AZStd::regex::ECMAScript);
-
-            // We are only concerned with AZSLc arguments. Let's remove the C-Preprocessor macro definitions
-            // from @minusArguments.
-            const AZStd::string minusArguments = AZStd::regex_replace(m_minusArguments, macroRegex, "");
-            const AZStd::string plusArguments = AZStd::regex_replace(m_plusArguments, macroRegex, "");
-            AZStd::string azslcArgumentsToRemove = minusArguments + " " + plusArguments;
-            AZStd::vector<AZStd::string> azslcArgumentNamesToRemove = RHI::CommandLineArgumentUtils::GetListOfArgumentNames(azslcArgumentsToRemove);
-
-            // At this moment @azslcArgumentsToRemove contains arguments for AZSLc that can be of the form:
-            // -<arg>
-            // --<arg>[=<value>]
-            // We need to remove those from @initialAzslcCompilerArguments.
-            AZStd::string customizedArguments = RHI::CommandLineArgumentUtils::RemoveArgumentsFromCommandLineString(
-                azslcArgumentNamesToRemove, initialAzslcCompilerArguments);
-            customizedArguments += " " + plusArguments;
-
-            return RHI::CommandLineArgumentUtils::RemoveExtraSpaces(customizedArguments);
-        }
-
 
     } // namespace RPI
 } // namespace AZ

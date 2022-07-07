@@ -464,6 +464,24 @@ namespace AZ
     }
 
 
+    AZ_MATH_INLINE Vector4 Vector4::GetFloor() const
+    {
+        return Vector4(Simd::Vec4::Floor(m_value));
+    }
+
+
+    AZ_MATH_INLINE Vector4 Vector4::GetCeil() const
+    {
+        return Vector4(Simd::Vec4::Ceil(m_value));
+    }
+
+
+    AZ_MATH_INLINE Vector4 Vector4::GetRound() const
+    {
+        return Vector4(Simd::Vec4::Round(m_value));
+    }
+
+
     AZ_MATH_INLINE Vector4 Vector4::GetMin(const Vector4& v) const
     {
 #if AZ_TRAIT_USE_PLATFORM_SIMD_SCALAR

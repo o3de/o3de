@@ -7,10 +7,15 @@
 #
 
 ly_install_directory(
-    DIRECTORIES 
+    DIRECTORIES
         AssetGem
+        CppToolGem
         DefaultGem
+        PrebuiltGem
+        PythonToolGem
         DefaultProject
         MinimalProject
+        GemRepo
+        DefaultComponent
     VERBATIM
 )

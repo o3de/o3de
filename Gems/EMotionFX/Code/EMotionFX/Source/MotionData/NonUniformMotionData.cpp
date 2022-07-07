@@ -74,11 +74,10 @@ namespace EMotionFX
         return values[indexA].ToQuaternion().NLerp(values[indexB].ToQuaternion(), t);
     }
 
-    Transform NonUniformMotionData::SampleJointTransform(const SampleSettings& settings, size_t jointSkeletonIndex) const
+    Transform NonUniformMotionData::SampleJointTransform(const MotionDataSampleSettings& settings, size_t jointSkeletonIndex) const
     {
         const Actor* actor = settings.m_actorInstance->GetActor();
         const MotionLinkData* motionLinkData = FindMotionLinkData(actor);
-        const Skeleton* skeleton = actor->GetSkeleton();
 
         const size_t jointDataIndex = motionLinkData->GetJointDataLinks()[jointSkeletonIndex];
         if (m_additive && jointDataIndex == InvalidIndex)
@@ -88,7 +87,7 @@ namespace EMotionFX
 
         // Sample the interpolated data.
         Transform result;
-        const bool inPlace = (settings.m_inPlace && skeleton->GetNode(jointSkeletonIndex)->GetIsRootNode());
+        const bool inPlace = (settings.m_inPlace && jointSkeletonIndex == actor->GetMotionExtractionNodeIndex());
         if (jointDataIndex != InvalidIndex && !inPlace)
         {
             const JointData& jointData = m_jointData[jointDataIndex];
@@ -132,21 +131,20 @@ namespace EMotionFX
         return result;
     }
 
-    void NonUniformMotionData::SamplePose(const SampleSettings& settings, Pose* outputPose) const
+    void NonUniformMotionData::SamplePose(const MotionDataSampleSettings& settings, Pose* outputPose) const
     {
         AZ_Assert(settings.m_actorInstance, "Expecting a valid actor instance.");
         const Actor* actor = settings.m_actorInstance->GetActor();
         const MotionLinkData* motionLinkData = FindMotionLinkData(actor);
        
         const ActorInstance* actorInstance = settings.m_actorInstance;
-        const Skeleton* skeleton = actor->GetSkeleton();
         const Pose* bindPose = actorInstance->GetTransformData()->GetBindPose();
         const size_t numNodes = actorInstance->GetNumEnabledNodes();
         for (size_t i = 0; i < numNodes; ++i)
         {
             const uint16 jointIndex = actorInstance->GetEnabledNode(i);
             const size_t jointDataIndex = motionLinkData->GetJointDataLinks()[jointIndex];
-            const bool inPlace = (settings.m_inPlace && skeleton->GetNode(jointIndex)->GetIsRootNode());
+            const bool inPlace = (settings.m_inPlace && jointIndex == actor->GetMotionExtractionNodeIndex());
 
             // Sample the interpolated data.
             Transform result;
@@ -1205,6 +1203,61 @@ namespace EMotionFX
         return !m_jointData[jointDataIndex].m_scaleTrack.m_times.empty() ? CalculateInterpolatedValue<AZ::Vector3, AZ::Vector3>(m_jointData[jointDataIndex].m_scaleTrack, sampleTime) : m_staticJointData[jointDataIndex].m_staticTransform.m_scale;
     }
 #endif
+
+    void NonUniformMotionData::ExtractMotion(size_t sampleJointDataIndex, size_t rootJointDataIndex, bool transitionZeroXAxis, bool transitionZeroYAxis, bool extractRotation)
+    {
+        MotionData::ExtractMotion(sampleJointDataIndex, rootJointDataIndex, transitionZeroXAxis, transitionZeroYAxis, extractRotation);
+
+        if (sampleJointDataIndex == rootJointDataIndex)
+        {
+            return;
+        }
+
+        if (m_jointData.size() > sampleJointDataIndex && m_jointData.size() > rootJointDataIndex)
+        {
+            m_jointData[rootJointDataIndex].m_positionTrack = m_jointData[sampleJointDataIndex].m_positionTrack;
+            if (extractRotation)
+            {
+                m_jointData[rootJointDataIndex].m_rotationTrack = m_jointData[sampleJointDataIndex].m_rotationTrack;
+            }
+
+            for (size_t i = 0; i < m_jointData[sampleJointDataIndex].m_positionTrack.m_values.size(); ++i)
+            {
+                // Zero out transition movement based on settings.
+                if (transitionZeroXAxis)
+                {
+                    m_jointData[rootJointDataIndex].m_positionTrack.m_values[i].SetX(0);
+                }
+                if (transitionZeroYAxis)
+                {
+                    m_jointData[rootJointDataIndex].m_positionTrack.m_values[i].SetY(0);
+                }
+                m_jointData[rootJointDataIndex].m_positionTrack.m_values[i].SetZ(0);
+
+                // Compensation in samples.
+                const float x = transitionZeroXAxis ? m_jointData[sampleJointDataIndex].m_positionTrack.m_values[i].GetX() : 0;
+                const float y = transitionZeroYAxis ? m_jointData[sampleJointDataIndex].m_positionTrack.m_values[i].GetY() : 0;
+                const float z = m_jointData[sampleJointDataIndex].m_positionTrack.m_values[i].GetZ();
+
+                m_jointData[sampleJointDataIndex].m_positionTrack.m_values[i].Set(x, y, z);
+
+                if (extractRotation)
+                {
+                    m_jointData[sampleJointDataIndex].m_rotationTrack.m_values[i].FromQuaternion(AZ::Quaternion::CreateIdentity());
+                }
+            }
+        }
+
+        if (m_morphData.size() > sampleJointDataIndex && m_morphData.size() > rootJointDataIndex)
+        {
+            m_morphData[rootJointDataIndex] = m_morphData[sampleJointDataIndex];
+        }
+
+        if (m_floatData.size() > sampleJointDataIndex && m_floatData.size() > rootJointDataIndex)
+        {
+            m_floatData[rootJointDataIndex] = m_floatData[sampleJointDataIndex];
+        }
+    }
 
     Transform NonUniformMotionData::SampleJointTransform(float sampleTime, size_t jointDataIndex) const
     {

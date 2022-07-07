@@ -159,8 +159,6 @@ namespace UnitTest
         ASSERT_TRUE(m_instanceToTemplateInterface->PatchEntityInTemplate(patch, entityId));
         m_instanceUpdateExecutorInterface->UpdateTemplateInstancesInQueue();
 
-        ValidateInstanceEntitiesActive(*secondInstance);
-
         //get the entity id
         AZ::EntityId secondEntityId = secondInstance->GetEntityId(newEntityAlias);
         ASSERT_TRUE(secondEntityId.IsValid());
@@ -320,7 +318,7 @@ namespace UnitTest
         Instance& addedInstance = *addedInstancePtr;
 
         //create a first instance where the instance will be removed
-        AZStd::unique_ptr<Instance> firstInstance = m_prefabSystemComponent->CreatePrefab({}, MakeInstanceList( AZStd::move(addedInstancePtr) ), "test/path");
+        AZStd::unique_ptr<Instance> firstInstance = m_prefabSystemComponent->CreatePrefab({}, MakeInstanceList(AZStd::move(addedInstancePtr)), "test/path");
         ASSERT_TRUE(firstInstance);
 
         //get added instance alias
@@ -356,4 +354,4 @@ namespace UnitTest
 
         EXPECT_EQ(secondInstance->FindNestedInstance(addedAlias), AZStd::nullopt);
     }
-}
+} // namespace UnitTest

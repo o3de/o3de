@@ -43,6 +43,9 @@
 #include "TrackView/TrackViewUndo.h"
 #include "TrackView/TrackViewNodeFactories.h"
 
+// AzCore
+#include <AzCore/Math/Vector3.h>
+
 // static class data
 const AZ::Uuid CTrackViewAnimNode::s_nullUuid = AZ::Uuid::CreateNull();
 
@@ -1819,7 +1822,6 @@ bool CTrackViewAnimNode::IsDisabled() const
 //////////////////////////////////////////////////////////////////////////
 void CTrackViewAnimNode::SetPos(const Vec3& position)
 {
-    const float time = GetSequence()->GetTime();
     CTrackViewTrack* track = GetTrackForParameter(AnimParamType::Position);
 
     if (track)
@@ -1943,7 +1945,7 @@ void CTrackViewAnimNode::OnSelectionChanged(const bool selected)
 {
     if (m_animNode)
     {
-        const AnimNodeType animNodeType = GetType();
+        [[maybe_unused]] const AnimNodeType animNodeType = GetType();
         AZ_Assert(animNodeType == AnimNodeType::AzEntity, "Expected AzEntity for selection changed");
 
         const EAnimNodeFlags flags = (EAnimNodeFlags)m_animNode->GetFlags();
@@ -1997,19 +1999,19 @@ void CTrackViewAnimNode::SetPosRotScaleTracksDefaultValues(bool positionAllowed,
             {
                 AZ::Vector3 position = AZ::Vector3::CreateZero();
                 AZ::TransformBus::EventResult(position, entityId, &AZ::TransformBus::Events::GetWorldTranslation);
-                m_animNode->SetPos(time, AZVec3ToLYVec3(position));
+                m_animNode->SetPos(time, position);
             }
             if (rotationAllowed)
             {
                 AZ::Quaternion rotation = AZ::Quaternion::CreateIdentity();
                 AZ::TransformBus::EventResult(rotation, entityId, &AZ::TransformBus::Events::GetWorldRotationQuaternion);
-                m_animNode->SetRotate(time, AZQuaternionToLYQuaternion(rotation));
+                m_animNode->SetRotate(time, rotation);
             }
             if (scaleAllowed)
             {
                 float scale = 1.0f;
                 AZ::TransformBus::EventResult(scale, entityId, &AZ::TransformBus::Events::GetWorldUniformScale);
-                m_animNode->SetScale(time, Vec3(scale, scale, scale));
+                m_animNode->SetScale(time, AZ::Vector3(scale, scale, scale));
             }
         }
     }

@@ -9,9 +9,10 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
-#include <EMotionStudio/EMStudioSDK/Source/EMStudioConfig.h>
-#include <EMotionStudio/EMStudioSDK/Source/GUIOptions.h>
-#include <EMotionStudio/EMStudioSDK/Source/PluginOptionsBus.h>
+#include <AzCore/Component/TickBus.h>
+#include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/EMStudioConfig.h>
+#include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/GUIOptions.h>
+#include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/PluginOptionsBus.h>
 #include <AzCore/std/containers/vector.h>
 #include <MCore/Source/Command.h>
 #include <MCore/Source/StandardHeaders.h>
@@ -71,7 +72,6 @@ namespace EMStudio
 {
     // forward declaration
     class DirtyFileManager;
-    class EMStudioPlugin;
     class FileManager;
     class MainWindow;
     class NativeEventFilter;
@@ -99,8 +99,9 @@ namespace EMStudio
         : public AzQtComponents::DockMainWindow
         , private PluginOptionsNotificationsBus::Router
         , public EMotionFX::ActorEditorRequestBus::Handler
+        , private AZ::TickBus::Handler
     {
-        Q_OBJECT
+        Q_OBJECT // AUTOMOC
         MCORE_MEMORYOBJECTCATEGORY(MainWindow, MCore::MCORE_DEFAULT_ALIGNMENT, MEMCATEGORY_EMSTUDIOSDK)
 
     public:
@@ -127,7 +128,7 @@ namespace EMStudio
 
         GUIOptions& GetOptions()                                                { return m_options; }
 
-        void Reset(bool clearActors = true, bool clearMotionSets = true, bool clearMotions = true, bool clearAnimGraphs = true, MCore::CommandGroup* commandGroup = nullptr);
+        void Reset(bool clearActors = true, bool clearMotionSets = true, bool clearMotions = true, bool clearAnimGraphs = true, MCore::CommandGroup* commandGroup = nullptr, bool addDefaultMotionSet = true);
 
         // settings
         void SavePreferences();
@@ -162,6 +163,8 @@ namespace EMStudio
         void AddRecentActorFile(const QString& fileName);
 
         void LoadKeyboardShortcuts();
+
+        void UpdatePlugins(float timeDelta);
 
     public slots:
         void OnAutosaveTimeOut();
@@ -203,9 +206,6 @@ namespace EMStudio
         QAction*                m_saveAllAction;
         QAction*                m_mergeActorAction;
         QAction*                m_saveSelectedActorsAction;
-#ifdef EMFX_DEVELOPMENT_BUILD
-        QAction*                m_saveSelectedActorAsAttachmentsAction;
-#endif
 
         // application mode
         QComboBox*              m_applicationMode;
@@ -293,7 +293,7 @@ namespace EMStudio
             /// CommandManagerCallback implementation
             void OnPreExecuteCommand(MCore::CommandGroup* group, MCore::Command* command, const MCore::CommandLine& commandLine) override;
             void OnPostExecuteCommand(MCore::CommandGroup* /*group*/, MCore::Command* /*command*/, const MCore::CommandLine& /*commandLine*/, bool /*wasSuccess*/, const AZStd::string& /*outResult*/) override { }
-            void OnPreUndoCommand(MCore::Command* command, const MCore::CommandLine& commandLine);
+            void OnPreUndoCommand(MCore::Command* command, const MCore::CommandLine& commandLine) override;
             void OnPreExecuteCommandGroup(MCore::CommandGroup* /*group*/, bool /*undo*/) override { }
             void OnPostExecuteCommandGroup(MCore::CommandGroup* /*group*/, bool /*wasSuccess*/) override { }
             void OnAddCommandToHistory(size_t /*historyIndex*/, MCore::CommandGroup* /*group*/, MCore::Command* /*command*/, const MCore::CommandLine& /*commandLine*/) override { }
@@ -306,6 +306,14 @@ namespace EMStudio
         };
 
         MainWindowCommandManagerCallback m_mainWindowCommandManagerCallback;
+
+    private:
+        // AZ::TickBus::Handler overrides
+        void OnTick(float delta, AZ::ScriptTimePoint timePoint) override;
+        int GetTickOrder() override;
+
+        void EnableUpdatingPlugins();
+        void DisableUpdatingPlugins();
 
     public slots:
         void OnFileOpenActor();

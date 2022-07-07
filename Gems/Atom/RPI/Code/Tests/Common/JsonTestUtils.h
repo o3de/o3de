@@ -16,7 +16,6 @@
 #include <AzCore/IO/ByteContainerStream.h>
 #include <AzCore/JSON/prettywriter.h>
 #include <AzCore/Serialization/Json/JsonUtils.h>
-#include <Atom/RPI.Edit/Common/JsonFileLoadContext.h>
 
 namespace UnitTest
 {
@@ -46,17 +45,12 @@ namespace UnitTest
 
     //! Uses JsonSerialization to load JSON data into a reflected object
     template<typename T>
-    JsonTestResult LoadTestDataFromJson(T& object, rapidjson::Value& json, AZ::RPI::JsonFileLoadContext* jsonFileLoadContext = nullptr)
+    JsonTestResult LoadTestDataFromJson(T& object, rapidjson::Value& json)
     {
         JsonTestResult result;
 
         AZ::JsonDeserializerSettings settings;
 
-        if (jsonFileLoadContext)
-        {
-            settings.m_metadata.Add(*jsonFileLoadContext);
-        }
-        
         settings.m_reporting = [&result](AZStd::string_view message, AZ::JsonSerializationResult::ResultCode resultCode, AZStd::string_view path)
         {
             JsonTestResult::Report report;
@@ -74,14 +68,14 @@ namespace UnitTest
 
     //! Uses JsonSerialization to load JSON data from a string into a reflected object
     template<typename T>
-    JsonTestResult LoadTestDataFromJson(T& object, AZStd::string_view jsonText, AZ::RPI::JsonFileLoadContext* jsonFileLoadContext = nullptr)
+    JsonTestResult LoadTestDataFromJson(T& object, AZStd::string_view jsonText)
     {
         auto parseResult = AZ::JsonSerializationUtils::ReadJsonString(jsonText);
 
         EXPECT_TRUE(parseResult.IsSuccess()) << parseResult.GetError().c_str();
         if (parseResult.IsSuccess())
         {
-            return LoadTestDataFromJson(object, parseResult.GetValue(), jsonFileLoadContext);
+            return LoadTestDataFromJson(object, parseResult.GetValue());
         }
         else
         {

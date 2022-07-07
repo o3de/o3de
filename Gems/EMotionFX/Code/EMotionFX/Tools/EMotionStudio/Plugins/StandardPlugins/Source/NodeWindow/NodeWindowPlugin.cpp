@@ -47,12 +47,6 @@ namespace EMStudio
         m_callbacks.clear();
     }
 
-
-    EMStudioPlugin* NodeWindowPlugin::Clone()
-    {
-        return new NodeWindowPlugin();
-    }
-
     void NodeWindowPlugin::Reflect(AZ::ReflectContext* context)
     {
         NamedPropertyStringValue::Reflect(context);
@@ -327,7 +321,16 @@ namespace EMStudio
 
     void NodeWindowPlugin::OnActorReady([[maybe_unused]] EMotionFX::Actor* actor)
     {
-        ReInit();
+        m_reinitRequested = true;
+    }
+
+    void NodeWindowPlugin::ProcessFrame([[maybe_unused]] float timePassedInSeconds)
+    {
+        if (m_reinitRequested)
+        {
+            ReInit();
+            m_reinitRequested = false;
+        }
     }
 
     //-----------------------------------------------------------------------------------------

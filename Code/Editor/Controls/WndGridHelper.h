@@ -82,8 +82,6 @@ public:
             newzoom.y = 0.01f;
         }
 
-        Vec2 prevz = zoom;
-
         // Zoom to mouse position.
         float ofsx = origin.x;
         float ofsy = origin.y;

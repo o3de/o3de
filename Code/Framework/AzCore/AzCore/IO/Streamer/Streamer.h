@@ -20,6 +20,10 @@ namespace AZStd
     struct thread_desc;
 }
 
+namespace AZ::IO::Requests
+{
+    enum class ReportType : int8_t;
+}
 
 namespace AZ::IO
 {
@@ -41,22 +45,22 @@ namespace AZ::IO
 
         //! Creates a request to read a file with a user provided output buffer.
         FileRequestPtr Read(AZStd::string_view relativePath, void* outputBuffer, size_t outputBufferSize, size_t readSize,
-            AZStd::chrono::microseconds deadline = IStreamerTypes::s_noDeadline,
+            IStreamerTypes::Deadline deadline = IStreamerTypes::s_noDeadline,
             IStreamerTypes::Priority priority = IStreamerTypes::s_priorityMedium, size_t offset = 0) override;
 
         //! Sets a request to the read command with a user provided output buffer.
         FileRequestPtr& Read(FileRequestPtr& request, AZStd::string_view relativePath, void* outputBuffer, size_t outputBufferSize,
-            size_t readSize, AZStd::chrono::microseconds deadline = IStreamerTypes::s_noDeadline,
+            size_t readSize, IStreamerTypes::Deadline deadline = IStreamerTypes::s_noDeadline,
             IStreamerTypes::Priority priority = IStreamerTypes::s_priorityMedium, size_t offset = 0) override;
 
         //! Creates a request to read a file with an allocator to create the output buffer.
         FileRequestPtr Read(AZStd::string_view relativePath, IStreamerTypes::RequestMemoryAllocator& allocator,
-            size_t size, AZStd::chrono::microseconds deadline = IStreamerTypes::s_noDeadline,
+            size_t size, IStreamerTypes::Deadline deadline = IStreamerTypes::s_noDeadline,
             IStreamerTypes::Priority priority = IStreamerTypes::s_priorityMedium, size_t offset = 0) override;
 
         //! Set a request to the read command with an allocator to create the output buffer.
         FileRequestPtr& Read(FileRequestPtr& request, AZStd::string_view relativePath, IStreamerTypes::RequestMemoryAllocator& allocator,
-            size_t size, AZStd::chrono::microseconds deadline = IStreamerTypes::s_noDeadline,
+            size_t size, IStreamerTypes::Deadline deadline = IStreamerTypes::s_noDeadline,
             IStreamerTypes::Priority priority = IStreamerTypes::s_priorityMedium, size_t offset = 0) override;
 
 
@@ -67,11 +71,14 @@ namespace AZ::IO
         FileRequestPtr& Cancel(FileRequestPtr& request, FileRequestPtr target) override;
 
         //! Creates a request to adjust a previous queued request.
-        FileRequestPtr RescheduleRequest(FileRequestPtr target, AZStd::chrono::microseconds newDeadline,
-            IStreamerTypes::Priority newPriority) override;
+        FileRequestPtr RescheduleRequest(
+            FileRequestPtr target, IStreamerTypes::Deadline newDeadline, IStreamerTypes::Priority newPriority) override;
 
         //! Sets a request to the reschedule command.
-        FileRequestPtr& RescheduleRequest(FileRequestPtr& request, FileRequestPtr target, AZStd::chrono::microseconds newDeadline,
+        FileRequestPtr& RescheduleRequest(
+            FileRequestPtr& request,
+            FileRequestPtr target,
+            IStreamerTypes::Deadline newDeadline,
             IStreamerTypes::Priority newPriority) override;
 
 
@@ -167,6 +174,11 @@ namespace AZ::IO
         //! Call to collect statistics from all the components that make up Streamer.
         void CollectStatistics(AZStd::vector<Statistic>& statistics) override;
 
+        //! Tells AZ::IO::Streamer the collect information for the selected report type and store it in the provided output.
+        FileRequestPtr Report(AZStd::vector<Statistic>& output, IStreamerTypes::ReportType reportType) override;
+        //! Tells AZ::IO::Streamer the collect information for the selected report type and store it in the provided output.
+        FileRequestPtr& Report(FileRequestPtr& request, AZStd::vector<Statistic>& output, IStreamerTypes::ReportType reportType) override;
+
         //! Returns configuration recommendations as reported by the scheduler.
         const IStreamerTypes::Recommendations& GetRecommendations() const override;
 
@@ -176,6 +188,9 @@ namespace AZ::IO
         //! Resumes processing after a previous call to SuspendProcessing.
         void ResumeProcessing() override;
 
+        //! Whether or not processing of requests has been suspended.
+        bool IsSuspended() const override;
+
         //
         // Streamer specific functions.
         // These functions are specific to the AZ::IO::Streamer and in practice are only used by the StreamerComponent.
@@ -183,12 +198,6 @@ namespace AZ::IO
 
         //! Records the statistics to a profiler.
         void RecordStatistics();
-
-        //! Tells AZ::IO::Streamer the report the information for the report to the output.
-        FileRequestPtr Report(FileRequest::ReportData::ReportType reportType);
-        //! Tells AZ::IO::Streamer the report the information for the report to the output.
-        FileRequestPtr& Report(FileRequestPtr& request, FileRequest::ReportData::ReportType reportType);
-
 
         Streamer(const AZStd::thread_desc& threadDesc, AZStd::unique_ptr<Scheduler> streamStack);
         ~Streamer() override;

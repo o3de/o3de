@@ -55,8 +55,6 @@ namespace AZ
 
             m_glyphBitmap.Clear();
         }
-
-        void GetMemoryUsage([[maybe_unused]] ICrySizer* sizer) const {}
     };
 
     //! The glyph cache maps UTF32 codepoints to their corresponding FreeType data.
@@ -109,8 +107,6 @@ namespace AZ
         //!
         //! \sa FontRenderer::GetGlyph, FontTexture::UpdateSlot
         int GetGlyph(GlyphBitmap** glyph, int* horizontalAdvance, int* width, int* height, int32_t& m_characterOffsetX, int32_t& m_characterOffsetY, uint32_t character, const AtomFont::GlyphSize& glyphSize = AtomFont::defaultGlyphSize, const FFont::FontHintParams& glyphFlags = FFont::FontHintParams());
-
-        void GetMemoryUsage([[maybe_unused]] ICrySizer* sizer) const {}
 
         bool GetMonospaced() const { return m_fontRenderer.GetMonospaced(); }
 

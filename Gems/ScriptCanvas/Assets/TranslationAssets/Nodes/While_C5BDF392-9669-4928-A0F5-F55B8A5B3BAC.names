@@ -1,0 +1,41 @@
+{
+    "entries": [
+        {
+            "base": "{C5BDF392-9669-4928-A0F5-F55B8A5B3BAC}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "While",
+                "category": "Logic"
+            },
+            "slots": [
+                {
+                    "base": "DataInput_Condition_0",
+                    "details": {
+                        "name": "Condition"
+                    }
+                },
+                {
+                    "base": "Input_In_0",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "base": "Output_Out_0",
+                    "details": {
+                        "name": "Out",
+                        "tooltip": "Signalled if the condition is false, or if the loop calls the break node"
+                    }
+                },
+                {
+                    "base": "Output_Loop_1",
+                    "details": {
+                        "name": "Loop",
+                        "tooltip": "Signalled if the condition is true, and every time the last node of 'Loop' finishes"
+                    }
+                }
+            ]
+        }
+    ]
+}

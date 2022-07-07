@@ -33,16 +33,6 @@ namespace AZ
         return m_semaphore.try_acquire_for(AZStd::chrono::milliseconds{ 0 });
     }
 
-    inline void TaskGraphEvent::Wait()
-    {
-        m_semaphore.acquire();
-    }
-
-    inline void TaskGraphEvent::Signal()
-    {
-        m_semaphore.release();
-    }
-
     template<typename Lambda>
     TaskToken TaskGraph::AddTask(TaskDescriptor const& desc, Lambda&& lambda)
     {
@@ -57,6 +47,11 @@ namespace AZ
     AZStd::array<TaskToken, sizeof...(Lambdas)> TaskGraph::AddTasks(TaskDescriptor const& descriptor, Lambdas&&... lambdas)
     {
         return { AddTask(descriptor, AZStd::forward<Lambdas>(lambdas))... };
+    }
+
+    inline bool TaskGraph::IsEmpty()
+    {
+        return m_tasks.empty();
     }
 
     inline void TaskGraph::Detach()

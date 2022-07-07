@@ -6,7 +6,9 @@
  *
  */
 
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/RTTI/AttributeReader.h>
+#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/Json/JsonSerializer.h>
 #include <AzCore/Serialization/Json/BaseJsonSerializer.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
@@ -148,7 +150,7 @@ namespace AZ
             {
                 // Not using InsertTypeId here to avoid needing to create the temporary value and swap it in that call.
                 node.AddMember(rapidjson::StringRef(JsonSerialization::TypeIdFieldIdentifier),
-                    StoreTypeName(classData, context), context.GetJsonAllocator());
+                    StoreTypeName(classData, classData.m_typeId, context), context.GetJsonAllocator());
                 result = ResultCode(Tasks::WriteValue, Outcomes::Success);
             }
             return result.Combine(StoreClass(node, object, defaultObject, classData, context));
@@ -161,7 +163,6 @@ namespace AZ
         using namespace JsonSerializationResult;
 
         StoreTypeId storeTypeId = StoreTypeId::No;
-        Uuid resolvedTypeId = classData.m_typeId;
         const SerializeContext::ClassData* resolvedClassData = &classData;
         AZStd::any defaultPointerObject;
 
@@ -196,17 +197,14 @@ namespace AZ
         {
             return context.Report(Tasks::RetrieveInfo, Outcomes::Unknown,
                 AZStd::string::format("Failed to retrieve serialization information for type %s.",
-                    classElement.m_typeId.ToString<AZStd::fixed_string<AZ::Uuid::MaxStringBuffer>>().c_str()));
+                    classElement.m_typeId.ToFixedString().c_str()));
         }
         if (!elementClassData->m_azRtti)
         {
             return context.Report(Tasks::RetrieveInfo, Outcomes::Unknown,
                 AZStd::string::format("Failed to retrieve rtti information for %s.", elementClassData->m_name));
         }
-        // The SerializeGenericTypeInfo<Data::Asset<T>>::GenericClassGenericAsset is a special case
-        // The ClassData typeId is set to the GetAssetClassId(), while the RTTI is set using azrtti_typid<Data::Asset<T>>
-        AZ_Assert(elementClassData->m_azRtti->GetTypeId() == elementClassData->m_typeId
-            || elementClassData->m_typeId == GetAssetClassId(), "Type id mismatch in '%s' during serialization to a json file. (%s vs %s)",
+        AZ_Assert(elementClassData->m_azRtti->GetTypeId() == elementClassData->m_typeId, "Type id mismatch in '%s' during serialization to a json file. (%s vs %s)",
             elementClassData->m_name, elementClassData->m_azRtti->GetTypeId().ToString<AZStd::string>().c_str(), elementClassData->m_typeId.ToString<AZStd::string>().c_str());
 
         if (classElement.m_flags & SerializeContext::ClassElement::FLG_NO_DEFAULT_VALUE)
@@ -530,7 +528,7 @@ namespace AZ
         return ResolvePointerResult::ContinueProcessing;
     }
 
-    rapidjson::Value JsonSerializer::StoreTypeName(const SerializeContext::ClassData& classData, JsonSerializerContext& context)
+    rapidjson::Value JsonSerializer::StoreTypeName(const SerializeContext::ClassData& classData, const Uuid& typeId, JsonSerializerContext& context)
     {
         rapidjson::Value result;
         AZStd::vector<Uuid> ids = context.GetSerializeContext()->FindClassId(Crc32(classData.m_name));
@@ -543,7 +541,7 @@ namespace AZ
             // Only write the Uuid for the class if there are multiple classes sharing the same name.
             // In this case it wouldn't be enough to determine which class needs to be used. The 
             // class name is still added as a comment for be friendlier for users to read.
-            AZStd::string fullName = classData.m_typeId.ToString<AZStd::string>();
+            AZStd::string fullName = typeId.ToString<AZStd::string>();
             fullName += ' ';
             fullName += classData.m_name;
             result.SetString(fullName.c_str(), aznumeric_caster(fullName.size()), context.GetJsonAllocator());
@@ -559,7 +557,7 @@ namespace AZ
         const SerializeContext::ClassData* data = context.GetSerializeContext()->FindClassData(typeId);
         if (data)
         {
-            output = JsonSerializer::StoreTypeName(*data, context);
+            output = JsonSerializer::StoreTypeName(*data, typeId, context);
             return context.Report(Tasks::WriteValue, Outcomes::Success, "Type id successfully stored to json value.");
         }
         else
@@ -579,7 +577,7 @@ namespace AZ
         {
             rapidjson::Value insertedObject(rapidjson::kObjectType);
             insertedObject.AddMember(
-                rapidjson::StringRef(JsonSerialization::TypeIdFieldIdentifier), StoreTypeName(classData, context),
+                rapidjson::StringRef(JsonSerialization::TypeIdFieldIdentifier), StoreTypeName(classData, classData.m_typeId, context),
                 context.GetJsonAllocator());
 
             for (auto& element : output.GetObject())

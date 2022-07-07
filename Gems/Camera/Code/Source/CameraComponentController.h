@@ -11,20 +11,18 @@
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzFramework/Components/CameraBus.h>
+#include <AzFramework/Viewport/CameraState.h>
 #include <Atom/RPI.Public/Base.h>
 #include <Atom/RPI.Public/ViewportContextBus.h>
 #include <Atom/RPI.Public/ViewProviderBus.h>
 #include <Atom/RPI.Public/AuxGeom/AuxGeomFeatureProcessorInterface.h>
-
-#include <IViewSystem.h>
-#include <ISystem.h>
-#include <Cry_Camera.h>
 
 namespace Camera
 {
     static constexpr float DefaultFoV = 75.0f;
     static constexpr float MinFoV = std::numeric_limits<float>::epsilon();
     static constexpr float MaxFoV = AZ::RadToDeg(AZ::Constants::Pi);
+    static constexpr float MinimumNearPlaneDistance = 0.001f;
     static constexpr float DefaultNearPlaneDistance = 0.2f;
     static constexpr float DefaultFarClipPlaneDistance = 1024.0f;
     static constexpr float DefaultFrustumDimension = 256.f;
@@ -69,6 +67,13 @@ namespace Camera
         CameraComponentController() = default;
         explicit CameraComponentController(const CameraComponentConfig& config);
 
+        //! Defines a callback for determining whether this camera should push itself to the top of the Atom camera stack.
+        //! Used by the Editor to disable undesirable camera changes in edit mode.
+        void SetShouldActivateFunction(AZStd::function<bool()> shouldActivateFunction);
+
+        //! Defines a callback for determining whether this camera is currently locked by its transform.
+        void SetIsLockedFunction(AZStd::function<bool()> isLockedFunction);
+
         // Controller interface
         static void Reflect(AZ::ReflectContext* context);
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
@@ -106,6 +111,11 @@ namespace Camera
         void MakeActiveView() override;
         bool IsActiveView() override;
 
+        AZ::Vector3 ScreenToWorld(const AZ::Vector2& screenPosition, float depth) override;
+        AZ::Vector3 ScreenNdcToWorld(const AZ::Vector2& screenNdcPosition, float depth) override;
+        AZ::Vector2 WorldToScreen(const AZ::Vector3& worldPosition) override;
+        AZ::Vector2 WorldToScreenNdc(const AZ::Vector3& worldPosition) override;
+
         // AZ::TransformNotificationBus::Handler interface
         void OnTransformChanged(const AZ::Transform& local, const AZ::Transform& world) override;
 
@@ -123,6 +133,7 @@ namespace Camera
         void DeactivateAtomView();
         void UpdateCamera();
         void SetupAtomAuxGeom(AZ::RPI::ViewportContextPtr viewportContext);
+        AzFramework::CameraState GetCameraState();
 
         CameraComponentConfig m_config;
         AZ::EntityId m_entityId;
@@ -134,10 +145,7 @@ namespace Camera
         bool m_updatingTransformFromEntity = false;
         bool m_isActiveView = false;
 
-        // Cry view integration
-        IView* m_view = nullptr;
-        AZ::u32 m_prevViewId = 0;
-        IViewSystem* m_viewSystem = nullptr;
-        ISystem* m_system = nullptr;
+        AZStd::function<bool()> m_shouldActivateFn;
+        AZStd::function<bool()> m_isLockedFn = []{ return false; };
     };
 } // namespace Camera

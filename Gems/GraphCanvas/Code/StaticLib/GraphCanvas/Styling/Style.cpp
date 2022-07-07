@@ -129,7 +129,7 @@ namespace
         : public AZ::SerializeContext::IDataSerializer
     {
         /// Store the class data into a binary buffer
-        virtual size_t Save(const void* classPtr, AZ::IO::GenericStream& stream, bool isDataBigEndian /*= false*/)
+        size_t Save(const void* classPtr, AZ::IO::GenericStream& stream, bool isDataBigEndian /*= false*/) override
         {
             auto variant = reinterpret_cast<const QVariant*>(classPtr);
 
@@ -142,7 +142,7 @@ namespace
         }
 
         /// Convert binary data to text
-        virtual size_t DataToText(AZ::IO::GenericStream& in, AZ::IO::GenericStream& out, bool isDataBigEndian /*= false*/)
+        size_t DataToText(AZ::IO::GenericStream& in, AZ::IO::GenericStream& out, bool isDataBigEndian /*= false*/) override
         {
             (void)isDataBigEndian;
 
@@ -152,7 +152,7 @@ namespace
         }
 
         /// Convert text data to binary, to support loading old version formats. We must respect text version if the text->binary format has changed!
-        virtual size_t TextToData(const char* text, unsigned int textVersion, AZ::IO::GenericStream& stream, bool isDataBigEndian = false)
+        size_t TextToData(const char* text, unsigned int textVersion, AZ::IO::GenericStream& stream, bool isDataBigEndian = false) override
         {
             (void)textVersion;
             (void)isDataBigEndian;
@@ -164,7 +164,7 @@ namespace
         }
 
         /// Load the class data from a stream.
-        virtual bool Load(void* classPtr, AZ::IO::GenericStream& in, unsigned int, bool isDataBigEndian = false)
+        bool Load(void* classPtr, AZ::IO::GenericStream& in, unsigned int, bool isDataBigEndian = false) override
         {
             QByteArray buffer = ReadAll(in);
             QDataStream qtStream(&buffer, QIODevice::ReadOnly);

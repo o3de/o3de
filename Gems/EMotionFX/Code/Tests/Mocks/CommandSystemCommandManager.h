@@ -12,6 +12,8 @@ namespace CommandSystem
         : public MCore::CommandManager
     {
     public:
+        virtual ~CommandManager() = default;
+
         MOCK_METHOD0(GetCurrentSelection, SelectionList&());
         MOCK_METHOD1(SetCurrentSelection, void(SelectionList& selection));
         MOCK_CONST_METHOD0(GetLockSelection, bool());

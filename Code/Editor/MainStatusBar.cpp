@@ -15,6 +15,7 @@
 // AzQtComponents
 #include <AzQtComponents/Components/Widgets/CheckBox.h>
 #include <AzQtComponents/Components/Style.h>
+#include <AzQtComponents/Utilities/DesktopUtilities.h>
 
 // Qt
 #include <QMenu>
@@ -26,7 +27,6 @@
 
 // Editor
 #include "MainStatusBarItems.h"
-#include "CryLibrary.h"
 #include "ProcessInfo.h"
 
 
@@ -209,7 +209,7 @@ MainStatusBar::MainStatusBar(QWidget* parent)
 
     addPermanentWidget(new StatusBarItem(QStringLiteral("connection"), true, this, true), 1);
 
-    addPermanentWidget(new StatusBarItem(QStringLiteral("game_info"), this, true), 1);
+    addPermanentWidget(new GameInfoItem(QStringLiteral("game_info"), this), 1);
 
     addPermanentWidget(new MemoryStatusItem(QStringLiteral("memory"), this), 1);
 }
@@ -220,11 +220,6 @@ void MainStatusBar::Init()
     const int statusbarTimerUpdateInterval{
         500
     };                                             //in ms, so 2 FPS
-
-    AZ::IO::FixedMaxPathString projectPath = AZ::Utils::GetProjectPath();
-    QString strGameInfo;
-    strGameInfo = tr("GameFolder: '%1'").arg(projectPath.c_str());
-    SetItem(QStringLiteral("game_info"), strGameInfo, tr("Game Info"), QPixmap());
 
     //ask for updates for items regularly. This is basically what MFC does
     auto timer = new QTimer(this);
@@ -423,7 +418,7 @@ void MemoryStatusItem::updateStatus()
 GeneralStatusItem::GeneralStatusItem(QString name, MainStatusBar* parent)
     : StatusBarItem(name, parent)
 {
-    connect(parent, SIGNAL(messageChanged(QString)), this, SLOT(update()));
+    connect(parent, &MainStatusBar::messageChanged, this, [this](const QString&) { update(); });
 }
 
 QString GeneralStatusItem::CurrentText() const
@@ -434,6 +429,30 @@ QString GeneralStatusItem::CurrentText() const
     }
 
     return StatusBarItem::CurrentText();
+}
+
+GameInfoItem::GameInfoItem(QString name, MainStatusBar* parent)
+    : StatusBarItem(name, parent, true)
+{
+    m_projectPath = QString::fromUtf8(AZ::Utils::GetProjectPath().c_str());
+
+    SetText(QObject::tr("GameFolder: '%1'").arg(m_projectPath));
+    SetToolTip(QObject::tr("Game Info"));
+
+    setContextMenuPolicy(Qt::CustomContextMenu);
+    QObject::connect(this, &QWidget::customContextMenuRequested, this, &GameInfoItem::OnShowContextMenu);
+}
+
+void GameInfoItem::OnShowContextMenu(const QPoint& pos)
+{
+    QMenu contextMenu(this);
+
+    // Context menu action to open the project folder in file browser
+    contextMenu.addAction(AzQtComponents::fileBrowserActionName(), this, [this]() {
+        AzQtComponents::ShowFileOnDesktop(m_projectPath);
+    });
+
+    contextMenu.exec(mapToGlobal(pos));
 }
 
 #include <moc_MainStatusBar.cpp>

@@ -8,11 +8,7 @@
 #pragma once
 
 #include <AzCore/Debug/Budget.h>
-
-#ifdef USE_PIX
-#include <AzCore/PlatformIncl.h>
-#include <WinPixEventRuntime/pix3.h>
-#endif
+#include <AzCore/Statistics/StatisticalProfilerProxy.h>
 
 #if defined(AZ_PROFILER_MACRO_DISABLE) // by default we never disable the profiler registers as their overhead should be minimal, you can
                                        // still do that for your code though.
@@ -44,7 +40,10 @@
 #define AZ_PROFILE_INTERVAL_START(...)
 #define AZ_PROFILE_INTERVAL_START_COLORED(...)
 #define AZ_PROFILE_INTERVAL_END(...)
-#define AZ_PROFILE_INTERVAL_SCOPED(...)
+#define AZ_PROFILE_INTERVAL_SCOPED(budget, scopeNameId, ...) \
+    static constexpr AZ::Crc32 AZ_JOIN(blockId, __LINE__)(scopeNameId); \
+    AZ::Statistics::StatisticalProfilerProxy::TimedScope AZ_JOIN(scope, __LINE__)(AZ_CRC_CE(#budget), AZ_JOIN(blockId, __LINE__));
+
 #endif
 
 #ifndef AZ_PROFILE_DATAPOINT
@@ -59,16 +58,28 @@ namespace AZStd
 
 namespace AZ::Debug
 {
+    // interface for externally defined profiler systems
+    class Profiler
+    {
+    public:
+        AZ_RTTI(Profiler, "{3E5D6329-72D1-41BA-9158-68A349D1A4D5}");
+
+        Profiler() = default;
+        virtual ~Profiler() = default;
+
+        virtual void BeginRegion(const Budget* budget, const char* eventName, size_t eventNameArgCount, ...) = 0;
+        virtual void EndRegion(const Budget* budget) = 0;
+    };
+
     class ProfileScope
     {
     public:
         template<typename... T>
-        static void BeginRegion([[maybe_unused]] Budget* budget, [[maybe_unused]] const char* eventName, [[maybe_unused]] T const&... args);
-
-        static void EndRegion([[maybe_unused]] Budget* budget);
+        static void BeginRegion(Budget* budget, const char* eventName, T const&... args);
+        static void EndRegion(Budget* budget);
 
         template<typename... T>
-        ProfileScope(Budget* budget, char const* eventName, T const&... args);
+        ProfileScope(Budget* budget, const char* eventName, T const&... args);
 
         ~ProfileScope();
 

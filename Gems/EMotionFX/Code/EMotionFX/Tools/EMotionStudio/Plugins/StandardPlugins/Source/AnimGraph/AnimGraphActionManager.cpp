@@ -23,8 +23,6 @@
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/AnimGraphModel.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/AnimGraphPlugin.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/BlendGraphWidget.h>
-#include <EMotionStudio/Plugins/StandardPlugins/Source/MotionWindow/MotionWindowPlugin.h>
-#include <EMotionStudio/Plugins/StandardPlugins/Source/MotionWindow/MotionListWindow.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/MotionSetsWindow/MotionSetsWindowPlugin.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/TimeView/TimeViewPlugin.h>
 #include <AzQtComponents/Components/Widgets/ColorPicker.h>
@@ -224,11 +222,11 @@ namespace EMStudio
         }
 
         // Update motion list window to select motion.
-        EMStudioPlugin* motionBasePlugin = EMStudio::GetPluginManager()->FindActivePlugin(MotionWindowPlugin::CLASS_ID);
-        MotionWindowPlugin* motionWindowPlugin = static_cast<MotionWindowPlugin*>(motionBasePlugin);
-        if (motionWindowPlugin)
+        EMStudioPlugin* motionSetBasePlugin = EMStudio::GetPluginManager()->FindActivePlugin(MotionSetsWindowPlugin::CLASS_ID);
+        MotionSetsWindowPlugin* motionSetWindowPlugin = static_cast<MotionSetsWindowPlugin*>(motionSetBasePlugin);
+        if (motionSetWindowPlugin)
         {
-            motionWindowPlugin->ReInit();
+            motionSetWindowPlugin->ReInit();
         }
 
         // Update time view plugin with new motion related data.
@@ -412,11 +410,9 @@ namespace EMStudio
         if (!nodesByAnimGraph.empty())
         {
             MCore::CommandGroup commandGroup("Delete anim graph nodes");
-            AZ::u32 numNodes = 0;
 
             for (const AZStd::pair<EMotionFX::AnimGraph*, AZStd::vector<EMotionFX::AnimGraphNode*>>& animGraphAndNodes : nodesByAnimGraph)
             {
-                numNodes += static_cast<AZ::u32>(animGraphAndNodes.second.size());
                 CommandSystem::DeleteNodes(&commandGroup, animGraphAndNodes.first, animGraphAndNodes.second, true);
             }
 

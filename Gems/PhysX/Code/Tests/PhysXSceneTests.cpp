@@ -171,7 +171,7 @@ namespace PhysX
         //invalid simulated body handle returns null
         nullBody = sceneInterface->GetSimulatedBodyFromHandle(AzPhysics::InvalidSceneHandle, AzPhysics::InvalidSimulatedBodyHandle);
         EXPECT_TRUE(nullBody == nullptr);
-        nullBody = sceneInterface->GetSimulatedBodyFromHandle(m_testSceneHandle, AzPhysics::SimulatedBodyHandle(2347892348, 9));
+        nullBody = sceneInterface->GetSimulatedBodyFromHandle(m_testSceneHandle, AzPhysics::SimulatedBodyHandle(1347892348, 9));
         EXPECT_TRUE(nullBody == nullptr);
 
         //get 1 simulated body, should not be null.
@@ -558,7 +558,7 @@ namespace PhysX
         // add a static simulated body - this is not expected to be reported as an active actor
         AzPhysics::StaticRigidBodyConfiguration staticConfig;
         staticConfig.m_colliderAndShapeData = shapeColliderData;
-        AzPhysics::SimulatedBodyHandle staticSphereHandle = sceneInterface->AddSimulatedBody(m_testSceneHandle, &staticConfig);
+        sceneInterface->AddSimulatedBody(m_testSceneHandle, &staticConfig);
 
         // add a rigid body - this is expect to be reported as an active actor
         AzPhysics::RigidBodyConfiguration rigidConfig;

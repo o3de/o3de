@@ -11,6 +11,8 @@ namespace EMotionFX
     class AnimGraphInstance
     {
     public:
+        virtual ~AnimGraphInstance() = default;
+
         //void Output(Pose* outputPose);
         //void Start();
         //void Stop();

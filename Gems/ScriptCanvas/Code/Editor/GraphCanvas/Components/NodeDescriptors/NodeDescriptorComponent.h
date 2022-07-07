@@ -33,9 +33,9 @@ namespace ScriptCanvasEditor
         ~NodeDescriptorComponent() override = default;
 
         // Component
-        void Init();
-        void Activate();
-        void Deactivate();
+        void Init() override;
+        void Activate() override;
+        void Deactivate() override;
         ////
 
         // NodeDescriptorBus::Handler

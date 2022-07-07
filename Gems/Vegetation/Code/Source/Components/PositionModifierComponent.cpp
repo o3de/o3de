@@ -306,31 +306,42 @@ namespace Vegetation
             m_surfaceTagsToSnapToCombined.clear();
             m_surfaceTagsToSnapToCombined.reserve(
                 m_configuration.m_surfaceTagsToSnapTo.size() +
-                instanceData.m_masks.size());
+                instanceData.m_masks.GetSize());
 
             m_surfaceTagsToSnapToCombined.insert(m_surfaceTagsToSnapToCombined.end(),
                 m_configuration.m_surfaceTagsToSnapTo.begin(), m_configuration.m_surfaceTagsToSnapTo.end());
 
-            for (const auto& maskPair : instanceData.m_masks)
-            {
-                m_surfaceTagsToSnapToCombined.push_back(maskPair.first);
-            }
-
-            //get the intersection data at the new position
-            m_points.clear();
-            SurfaceData::SurfaceDataSystemRequestBus::Broadcast(&SurfaceData::SurfaceDataSystemRequestBus::Events::GetSurfacePoints, instanceData.m_position, m_surfaceTagsToSnapToCombined, m_points);
-            if (!m_points.empty())
-            {
-                //sort the intersection data by distance from the new position in case there are multiple intersections at different or unrelated heights
-                AZStd::sort(m_points.begin(), m_points.end(), [&instanceData](const SurfaceData::SurfacePoint& a, const SurfaceData::SurfacePoint& b)
+            instanceData.m_masks.EnumerateWeights(
+                [this](AZ::Crc32 surfaceType, [[maybe_unused]] float weight)
                 {
-                    return a.m_position.GetDistanceSq(instanceData.m_position) < b.m_position.GetDistanceSq(instanceData.m_position);
+                    m_surfaceTagsToSnapToCombined.push_back(surfaceType);
+                    return true;
                 });
 
-                instanceData.m_position = m_points[0].m_position;
-                instanceData.m_normal = m_points[0].m_normal;
-                instanceData.m_masks = m_points[0].m_masks;
-            }
+            //get the intersection data at the new position
+            m_points.Clear();
+            AZ::Interface<SurfaceData::SurfaceDataSystem>::Get()->GetSurfacePoints(
+                instanceData.m_position, m_surfaceTagsToSnapToCombined, m_points);
+
+            // Get the point with the closest distance from the new position in case there are multiple intersections at different or
+            // unrelated heights
+            float closestPointDistanceSq = AZStd::numeric_limits<float>::max();
+            AZ::Vector3 originalInstanceDataPosition = instanceData.m_position;
+            m_points.EnumeratePoints(
+                [&instanceData, originalInstanceDataPosition, &closestPointDistanceSq](
+                    [[maybe_unused]] size_t inPositionIndex, const AZ::Vector3& position,
+                    const AZ::Vector3& normal, const SurfaceData::SurfaceTagWeights& masks) -> bool
+                {
+                    float distanceSq = position.GetDistanceSq(originalInstanceDataPosition);
+                    if (distanceSq < closestPointDistanceSq)
+                    {
+                        instanceData.m_position = position;
+                        instanceData.m_normal = normal;
+                        instanceData.m_masks = masks;
+                        closestPointDistanceSq = distanceSq;
+                    }
+                    return true;
+                });
         }
 
         instanceData.m_position.SetZ(instanceData.m_position.GetZ() + delta.GetZ());

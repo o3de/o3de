@@ -30,10 +30,6 @@
         }
     },
 
-    "CompilerHints" : { 
-        "DisableOptimizations" : false
-    },
-
     "ProgramSettings":
     {
       "EntryPoints":
@@ -48,6 +44,16 @@
         }
       ]
     },
+
+    "Supervariants":
+    [
+        {
+            "Name": "",
+            "AddBuildArguments": {
+                "azslc": ["--no-alignment-validation"]
+            }
+        }
+    ],
 
     "DrawList" : "forward"
 }

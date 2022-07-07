@@ -10,8 +10,6 @@ set(FILES
     Exporter/EndianConversion.cpp
     Exporter/Exporter.h
     Exporter/ExporterActor.cpp
-    Exporter/ExporterFileProcessor.cpp
-    Exporter/ExporterFileProcessor.h
     Exporter/FileHeaderExport.cpp
     Exporter/MorphTargetExport.cpp
     Exporter/MotionEventExport.cpp

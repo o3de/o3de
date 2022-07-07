@@ -183,7 +183,6 @@ void CLayoutWnd::MaximizeViewport(int paneId)
 
     QString viewClass = m_viewType[paneId];
 
-    const QRect rc = rect();
     if (!m_bMaximized)
     {
         CLayoutViewPane* pViewPane = GetViewPane(paneId);
@@ -488,7 +487,6 @@ bool CLayoutWnd::LoadConfig()
 
     CreateLayout((EViewLayout)layout, false);
 
-    bool bRebindViewports = false;
     if (m_splitWnd)
     {
         const QString str = settings.value("Viewports").toString();
@@ -499,14 +497,12 @@ bool CLayoutWnd::LoadConfig()
             {
                 break;
             }
-            bRebindViewports = true;
             if (!resToken.isEmpty())
             {
                 m_viewType[nIndex] = resToken;
             }
             nIndex++;
         }
-        ;
     }
 
     BindViewports();

@@ -12,8 +12,6 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 
-#include <IRenderer.h>
-
 #include <LyShine/IDraw2d.h>
 #include <LyShine/Bus/UiCanvasBus.h>
 #include <LyShine/Bus/UiElementBus.h>
@@ -1457,7 +1455,7 @@ AZ::EntityId UiTransform2dComponent::GetAncestorWithSameDimensionScaleToDevice(S
 LyShine::EntityArray UiTransform2dComponent::GetDescendantsWithSameDimensionScaleToDevice(ScaleToDeviceMode scaleToDeviceMode) const
 {
     // Check if any descendants have their scale to device mode set in the same dimension
-    auto HasSameDimensionScaleToDevice = [this, scaleToDeviceMode](const AZ::Entity* entity)
+    auto HasSameDimensionScaleToDevice = [scaleToDeviceMode](const AZ::Entity* entity)
     {
         ScaleToDeviceMode descendantScaleToDeviceMode = ScaleToDeviceMode::None;
         EBUS_EVENT_ID_RESULT(descendantScaleToDeviceMode, entity->GetId(), UiTransformBus, GetScaleToDeviceMode);

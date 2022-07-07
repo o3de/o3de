@@ -9,7 +9,7 @@
 
 #include <Atom/RHI.Reflect/Vulkan/Base.h>
 #include <Atom/RHI.Reflect/ShaderStageFunction.h>
-#include <AtomCore/std/containers/array_view.h>
+#include <AzCore/std/containers/span.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/containers/array.h>
 #include <AzCore/std/string/string_view.h>
@@ -21,7 +21,7 @@ namespace AZ
     namespace Vulkan
     {
         using ShaderByteCode = AZStd::vector<uint8_t>;
-        using ShaderByteCodeView = AZStd::array_view<uint8_t>;
+        using ShaderByteCodeView = AZStd::span<const uint8_t>;
 
         /**
          * A set of indices used to access physical sub-stages within a virtual stage.

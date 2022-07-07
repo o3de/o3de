@@ -9,7 +9,7 @@
 
 #include <AzCore/base.h>
 #include <AzCore/Memory/SystemAllocator.h>
-#include <AzCore/std/containers/unordered_map.h>
+#include <AzCore/std/containers/vector.h>
 #include <AzCore/std/string/fixed_string.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/string/string_view.h>

@@ -16,51 +16,10 @@
 namespace AzFramework
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    const AZ::u32 InputDeviceMouse::MovementSampleRateDefault = 60;
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    const AZ::u32 InputDeviceMouse::MovementSampleRateQueueAll = std::numeric_limits<AZ::u32>::max();
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    const AZ::u32 InputDeviceMouse::MovementSampleRateAccumulateAll = 0;
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    const InputDeviceId InputDeviceMouse::Id("mouse");
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
     bool InputDeviceMouse::IsMouseDevice(const InputDeviceId& inputDeviceId)
     {
         return (inputDeviceId.GetNameCrc32() == Id.GetNameCrc32());
     }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    const InputChannelId InputDeviceMouse::Button::Left("mouse_button_left");
-    const InputChannelId InputDeviceMouse::Button::Right("mouse_button_right");
-    const InputChannelId InputDeviceMouse::Button::Middle("mouse_button_middle");
-    const InputChannelId InputDeviceMouse::Button::Other1("mouse_button_other1");
-    const InputChannelId InputDeviceMouse::Button::Other2("mouse_button_other2");
-    const AZStd::array<InputChannelId, 5> InputDeviceMouse::Button::All =
-    {{
-        Left,
-        Right,
-        Middle,
-        Other1,
-        Other2
-    }};
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    const InputChannelId InputDeviceMouse::Movement::X("mouse_delta_x");
-    const InputChannelId InputDeviceMouse::Movement::Y("mouse_delta_y");
-    const InputChannelId InputDeviceMouse::Movement::Z("mouse_delta_z");
-    const AZStd::array<InputChannelId, 3> InputDeviceMouse::Movement::All =
-    {{
-        X,
-        Y,
-        Z
-    }};
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    const InputChannelId InputDeviceMouse::SystemCursorPosition("mouse_system_cursor_position");
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     void InputDeviceMouse::Reflect(AZ::ReflectContext* context)
@@ -96,8 +55,9 @@ namespace AzFramework
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    InputDeviceMouse::InputDeviceMouse(AzFramework::InputDeviceId id)
-        : InputDevice(id)
+    InputDeviceMouse::InputDeviceMouse(const InputDeviceId& inputDeviceId,
+                                       ImplementationFactory implementationFactory)
+        : InputDevice(inputDeviceId)
         , m_allChannelsById()
         , m_buttonChannelsById()
         , m_movementChannelsById()
@@ -126,8 +86,8 @@ namespace AzFramework
         m_cursorPositionChannel = aznew InputChannelDeltaWithSharedPosition2D(SystemCursorPosition, *this, m_cursorPositionData2D);
         m_allChannelsById[SystemCursorPosition] = m_cursorPositionChannel;
 
-        // Create the platform specific implementation
-        m_pimpl.reset(Implementation::Create(*this));
+        // Create the platform specific or custom implementation
+        m_pimpl.reset(implementationFactory ? implementationFactory(*this) : nullptr);
 
         // Connect to the system cursor request bus
         InputSystemCursorRequestBus::Handler::BusConnect(GetInputDeviceId());

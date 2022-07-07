@@ -42,11 +42,12 @@ namespace AZ
             void LoadShader();
 
             // Pass overrides
+            bool IsEnabled() const override;
             void FrameBeginInternal(FramePrepareParams params) override;
-
             void SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph) override;
             void CompileResources(const RHI::FrameGraphCompileContext& context) override;
             void BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context) override;
+            void FrameEndInternal() override;
 
             // shader
             Data::Instance<RPI::Shader> m_shader;

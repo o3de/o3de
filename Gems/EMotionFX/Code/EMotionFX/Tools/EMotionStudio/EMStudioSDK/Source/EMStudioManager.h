@@ -16,8 +16,7 @@
 // include the command system
 #include <EMotionFX/CommandSystem/Source/CommandManager.h>
 
-// include the gizmos
-#include <EMotionFX/Rendering/Common/TransformationManipulator.h>
+#include <EMotionFX/Source/JointSelectionBus.h>
 
 // include the EMStudio Config
 #include "EMStudioConfig.h"
@@ -28,6 +27,8 @@
 #include "Workspace.h"
 #include "MainWindow.h"
 #include <Source/Editor/Plugins/SkeletonOutliner/SkeletonOutlinerBus.h>
+
+#include <AzToolsFramework/Manipulators/ManipulatorBus.h>
 
 // include Qt
 #include <QString>
@@ -52,10 +53,12 @@ namespace EMStudio
      */
     class EMSTUDIO_API EMStudioManager
         : private EMotionFX::SkeletonOutlinerNotificationBus::Handler
+        , private EMotionFX::JointSelectionRequestBus::Handler
     {
-        MCORE_MEMORYOBJECTCATEGORY(EMStudioManager, MCore::MCORE_DEFAULT_ALIGNMENT, MEMCATEGORY_EMSTUDIOSDK)
-
     public:
+        AZ_RTTI(EMStudio::EMStudioManager, "{D45E95CF-0C7B-44F1-A9D4-99A1E12A5AB5}")
+        AZ_CLASS_ALLOCATOR_DECL
+
         EMStudioManager(QApplication* app, int& argc, char* argv[]);
         ~EMStudioManager();
 
@@ -71,6 +74,9 @@ namespace EMStudio
         AZStd::string GetAppDataFolder() const;
         AZStd::string GetRecoverFolder() const;
         AZStd::string GetAutosavesFolder() const;
+
+        // Singleton pattern
+        static EMStudioManager* GetInstance();
 
         // text rendering helper function
         static void RenderText(QPainter& painter, const QString& text, const QColor& textColor, const QFont& font, const QFontMetrics& fontMetrics, Qt::Alignment textAlignment, const QRect& rect);
@@ -99,12 +105,16 @@ namespace EMStudio
         void SetSelectedJointIndices(const AZStd::unordered_set<size_t>& selectedJointIndices);
         const AZStd::unordered_set<size_t>& GetSelectedJointIndices() const                                { return m_selectedJointIndices; }
 
-        Workspace* GetWorkspace()                                                               { return &m_workspace; }
+        const AZStd::unordered_set<size_t>* FindSelectedJointIndices(EMotionFX::ActorInstance* instance) const
+        {
+            if (instance == m_commandManager->GetCurrentSelection().GetSingleActorInstance())
+            {
+                return &m_selectedJointIndices;
+            }
+            return nullptr;
+        }
 
-        // functions for adding/removing gizmos
-        MCommon::TransformationManipulator* AddTransformationManipulator(MCommon::TransformationManipulator* manipulator);
-        void RemoveTransformationManipulator(MCommon::TransformationManipulator* manipulator);
-        AZStd::vector<MCommon::TransformationManipulator*>* GetTransformationManipulators();
+        Workspace* GetWorkspace()                                                               { return &m_workspace; }
 
         void ClearScene();  // remove animgraphs, animgraph instances and actors
 
@@ -115,7 +125,6 @@ namespace EMStudio
         MCORE_INLINE bool GetSkipSourceControlCommands()                                        { return m_skipSourceControlCommands; }
         MCORE_INLINE void SetSkipSourceControlCommands(bool skip)                               { m_skipSourceControlCommands = skip; }
     private:
-        AZStd::vector<MCommon::TransformationManipulator*> m_transformationManipulators;
         QPointer<MainWindow>                m_mainWindow;
         QApplication*                       m_app;
         PluginManager*                      m_pluginManager;
@@ -150,34 +159,20 @@ namespace EMStudio
             void OnRemoveCommand(size_t historyIndex) override                                                                                                                                  { MCORE_UNUSED(historyIndex); }
             void OnSetCurrentCommand(size_t index) override                                                                                                                                     { MCORE_UNUSED(index); }
         };
-        EventProcessingCallback*    m_eventProcessingCallback;
+        EventProcessingCallback*    m_eventProcessingCallback = nullptr;
     };
 
+    // Define the manipulator id for atom viewport in animation editor.
+    extern const AzToolsFramework::ManipulatorManagerId g_animManipulatorManagerId;
 
-    /**
-     *
-     *
-     *
-     */
-    class EMSTUDIO_API Initializer
-    {
-    public:
-        static bool MCORE_CDECL Init(QApplication* app, int& argc, char* argv[]);
-        static void MCORE_CDECL Shutdown();
-    };
-
-
-    // the global manager
-    extern EMSTUDIO_API EMStudioManager* gEMStudioMgr;
-
-    // shortcuts
-    MCORE_INLINE QApplication*                  GetApp()                        { return gEMStudioMgr->GetApp(); }
-    MCORE_INLINE EMStudioManager*               GetManager()                    { return gEMStudioMgr; }
-    MCORE_INLINE bool                           HasMainWindow()                 { return gEMStudioMgr->HasMainWindow(); }
-    MCORE_INLINE MainWindow*                    GetMainWindow()                 { return gEMStudioMgr->GetMainWindow(); }
-    MCORE_INLINE PluginManager*                 GetPluginManager()              { return gEMStudioMgr->GetPluginManager(); }
-    MCORE_INLINE LayoutManager*                 GetLayoutManager()              { return gEMStudioMgr->GetLayoutManager(); }
-    MCORE_INLINE NotificationWindowManager*     GetNotificationWindowManager()  { return gEMStudioMgr->GetNotificationWindowManager(); }
-    MCORE_INLINE MotionEventPresetManager*      GetEventPresetManager()         { return gEMStudioMgr->GetEventPresetManger(); }
-    MCORE_INLINE CommandSystem::CommandManager* GetCommandManager()             { return gEMStudioMgr->GetCommandManager(); }
+    // Shortcuts
+    QApplication* GetApp();
+    EMStudioManager* GetManager();
+    bool HasMainWindow();
+    MainWindow* GetMainWindow();
+    PluginManager* GetPluginManager();
+    LayoutManager* GetLayoutManager();
+    NotificationWindowManager* GetNotificationWindowManager();
+    MotionEventPresetManager* GetEventPresetManager();
+    CommandSystem::CommandManager* GetCommandManager();
 }   // namespace EMStudio

@@ -29,12 +29,6 @@ AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 
 // CTVEventsDialog dialog
 
-namespace
-{
-    const int kCountSubItemIndex = 1;
-    const int kTimeSubItemIndex = 2;
-}
-
 class TVEventsModel
     : public QAbstractTableModel
 {

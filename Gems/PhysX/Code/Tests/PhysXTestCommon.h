@@ -13,7 +13,6 @@
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 
-#include <AzFramework/Physics/Material.h>
 #include <AzFramework/Physics/Common/PhysicsTypes.h>
 
 #include <PhysX/HeightFieldAsset.h>
@@ -89,6 +88,7 @@ namespace PhysX
             const AzPhysics::CollisionLayer& layer = AzPhysics::CollisionLayer::Default);
 
         AzPhysics::SimulatedBodyHandle AddStaticTriangleMeshCubeToScene(AzPhysics::SceneHandle scene, float halfExtent);
+        AzPhysics::SimulatedBodyHandle AddKinematicTriangleMeshCubeToScene(AzPhysics::SceneHandle scene, float halfExtent, AzPhysics::MassComputeFlags massComputeFlags);
 
         // Collision Filtering
         void SetCollisionLayer(EntityPtr& entity, const AZStd::string& layerName, const AZStd::string& colliderTag = "");
@@ -113,6 +113,8 @@ namespace PhysX
 
         // Mesh data generation
         PointList GeneratePyramidPoints(float length);
+        AZStd::shared_ptr<Physics::Shape> CreatePyramidShape(
+            float length, const Physics::ColliderConfiguration& colliderConfiguration = Physics::ColliderConfiguration());
         VertexIndexData GenerateCubeMeshData(float halfExtent);
 
         AzPhysics::StaticRigidBody* AddStaticFloorToScene(AzPhysics::SceneHandle sceneHandle,

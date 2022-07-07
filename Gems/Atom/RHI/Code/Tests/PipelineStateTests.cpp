@@ -189,12 +189,12 @@ namespace UnitTest
         RHI::Ptr<RHI::Device> device = MakeTestDevice();
 
         RHI::Ptr<RHI::PipelineLibrary> pipelineLibrary = RHI::Factory::Get().CreatePipelineLibrary();
-        RHI::ResultCode resultCode = pipelineLibrary->Init(*device, nullptr);
+        RHI::ResultCode resultCode = pipelineLibrary->Init(*device, RHI::PipelineLibraryDescriptor{});
         EXPECT_EQ(resultCode, RHI::ResultCode::Success);
 
         // Second init should fail and throw validation error.
         AZ_TEST_START_ASSERTTEST;
-        resultCode = pipelineLibrary->Init(*device, nullptr);
+        resultCode = pipelineLibrary->Init(*device, RHI::PipelineLibraryDescriptor{});
         AZ_TEST_STOP_ASSERTTEST(1);
 
         EXPECT_EQ(resultCode, RHI::ResultCode::InvalidOperation);
@@ -249,7 +249,7 @@ namespace UnitTest
         // Calling library methods with a null handle should early out.
         pipelineStateCache->ResetLibrary({});
         pipelineStateCache->ReleaseLibrary({});
-        EXPECT_EQ(pipelineStateCache->GetLibrarySerializedData({}), nullptr);
+        EXPECT_EQ(pipelineStateCache->GetMergedLibrary({}), nullptr);
         EXPECT_EQ(pipelineStateCache->AcquirePipelineState({}, CreatePipelineStateDescriptor(0)), nullptr);
         pipelineStateCache->Compact();
         ValidateCacheIntegrity(pipelineStateCache);

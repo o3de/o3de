@@ -16,7 +16,6 @@
 #include "System.h"
 #include "ConsoleBatchFile.h"
 
-#include <ITimer.h>
 #include <IRenderer.h>
 #include <ISystem.h>
 #include <ILog.h>
@@ -28,9 +27,22 @@
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/std/algorithm.h>
+#include <AzCore/Time/ITime.h>
 
-#include <LyShine/Bus/UiCursorBus.h>
 //#define DEFENCE_CVAR_HASH_LOGGING
+
+// s should point to a buffer at least 65 chars long
+inline void BitsAlpha64(uint64 n, char* s)
+{
+    for (int i = 0; n != 0; n >>= 1, i++)
+    {
+        if (n & 1)
+        {
+            *s++ = i < 32 ? static_cast<char>(i + 'z' - 31) : static_cast<char>(i + 'Z' - 63);
+        }
+    }
+    *s++ = '\0';
+}
 
 static inline void AssertName([[maybe_unused]] const char* szName)
 {
@@ -92,7 +104,8 @@ void Command_SetWaitSeconds(IConsoleCmdArgs* pCmd)
     if (pCmd->GetArgCount() > 1)
     {
         pConsole->m_waitSeconds.SetSeconds(atof(pCmd->GetArg(1)));
-        pConsole->m_waitSeconds += gEnv->pTimer->GetFrameStartTime();
+        const AZ::TimeMs elaspedTimeMs = AZ::GetRealElapsedTimeMs();
+        pConsole->m_waitSeconds += CTimeValue(AZ::TimeMsToSecondsDouble(elaspedTimeMs));
     }
 }
 
@@ -292,12 +305,11 @@ void CXConsole::Init(ISystem* pSystem)
     {
         m_pFont = pSystem->GetICryFont()->GetFont("default");
     }
-    m_pTimer = pSystem->GetITimer();
 
     AzFramework::InputChannelEventListener::Connect();
     AzFramework::InputTextEventListener::Connect();
 
-#if defined(_RELEASE) && !defined(PERFORMANCE_BUILD)
+#if defined(_RELEASE)
     static const int kDeactivateConsoleDefault = 1;
 #else
     static const int kDeactivateConsoleDefault = 0;
@@ -319,11 +331,6 @@ void CXConsole::Init(ISystem* pSystem)
     }
 
     m_nLoadingBackTexID = -1;
-
-    if (gEnv->IsDedicated())
-    {
-        m_bConsoleActive = true;
-    }
 
     REGISTER_COMMAND("ConsoleShow", &ConsoleShow, VF_NULL, "Opens the console");
     REGISTER_COMMAND("ConsoleHide", &ConsoleHide, VF_NULL, "Closes the console");
@@ -376,12 +383,12 @@ void CXConsole::LogChangeMessage(const char* name, const bool isConst, const boo
 
     if (allowChange)
     {
-        gEnv->pLog->LogWarning(logMessage.c_str());
+        gEnv->pLog->LogWarning("%s", logMessage.c_str());
         gEnv->pLog->LogWarning("Modifying marked variables will not be allowed in Release mode!");
     }
     else
     {
-        gEnv->pLog->LogError(logMessage.c_str());
+        gEnv->pLog->LogError("%s", logMessage.c_str());
     }
 }
 
@@ -568,35 +575,6 @@ ICVar* CXConsole::Register(const char* sName, int* src, int iValue, int nFlags, 
 
 
 //////////////////////////////////////////////////////////////////////////
-ICVar* CXConsole::RegisterCVarGroup(const char* szName, const char* szFileName)
-{
-    AssertName(szName);
-    assert(szFileName);
-
-    // suppress cvars not starting with sys_spec_ as
-    // cheaters might create cvars before we created ours
-    if (_strnicmp(szName, "sys_spec_", 9) != 0)
-    {
-        return 0;
-    }
-
-    ICVar* pCVar = stl::find_in_map(m_mapVariables, szName, NULL);
-    if (pCVar)
-    {
-        AZ_Error("System", false, "CVar groups should only be registered once");
-        return pCVar;
-    }
-
-    CXConsoleVariableCVarGroup* pCVarGroup = new CXConsoleVariableCVarGroup(this, szName, szFileName, VF_COPYNAME);
-
-    pCVar = pCVarGroup;
-
-    RegisterVar(pCVar, CXConsoleVariableCVarGroup::OnCVarChangeFunc);
-
-    return pCVar;
-}
-
-//////////////////////////////////////////////////////////////////////////
 ICVar* CXConsole::Register(const char* sName, float* src, float fValue, int nFlags, const char* help, ConsoleVarFunc pChangeFunc, bool allowModify)
 {
     AssertName(sName);
@@ -620,7 +598,6 @@ ICVar* CXConsole::Register(const char* sName, float* src, float fValue, int nFla
     return pCVar;
 }
 
-
 //////////////////////////////////////////////////////////////////////////
 ICVar* CXConsole::Register(const char* sName, const char** src, const char* defaultValue, int nFlags, const char* help, ConsoleVarFunc pChangeFunc, bool allowModify)
 {
@@ -643,7 +620,6 @@ ICVar* CXConsole::Register(const char* sName, const char** src, const char* defa
     RegisterVar(pCVar, pChangeFunc);
     return pCVar;
 }
-
 
 //////////////////////////////////////////////////////////////////////////
 ICVar* CXConsole::RegisterString(const char* sName, const char* sValue, int nFlags, const char* help, ConsoleVarFunc pChangeFunc)
@@ -704,30 +680,6 @@ ICVar* CXConsole::RegisterInt(const char* sName, int iValue, int nFlags, const c
     RegisterVar(pCVar, pChangeFunc);
     return pCVar;
 }
-
-
-
-//////////////////////////////////////////////////////////////////////////
-ICVar* CXConsole::RegisterInt64(const char* sName, int64 iValue, int nFlags, const char* help, ConsoleVarFunc pChangeFunc)
-{
-    AssertName(sName);
-
-    ICVar* pCVar = stl::find_in_map(m_mapVariables, sName, NULL);
-    if (pCVar)
-    {
-        gEnv->pLog->Log("[CVARS]: [DUPLICATE] CXConsole::RegisterInt64(): variable [%s] is already registered", pCVar->GetName());
-#if LOG_CVAR_INFRACTIONS_CALLSTACK
-        gEnv->pSystem->debug_LogCallStack();
-#endif // LOG_CVAR_INFRACTIONS_CALLSTACK
-        return pCVar;
-    }
-
-    pCVar = new CXConsoleVariableInt64(this, sName, iValue, nFlags, help);
-    RegisterVar(pCVar, pChangeFunc);
-    return pCVar;
-}
-
-
 
 //////////////////////////////////////////////////////////////////////////
 void CXConsole::UnregisterVariable(const char* sVarName, [[maybe_unused]] bool bDelete)
@@ -796,8 +748,6 @@ void    CXConsole::ShowConsole(bool show, const int iRequestScrollMax)
 
     if (show && !m_bConsoleActive)
     {
-        UiCursorBus::Broadcast(&UiCursorBus::Events::IncrementVisibleCounter);
-
         AzFramework::InputSystemCursorRequestBus::EventResult(m_previousSystemCursorState,
             AzFramework::InputDeviceMouse::Id,
             &AzFramework::InputSystemCursorRequests::GetSystemCursorState);
@@ -807,8 +757,6 @@ void    CXConsole::ShowConsole(bool show, const int iRequestScrollMax)
     }
     else if (!show && m_bConsoleActive)
     {
-        UiCursorBus::Broadcast(&UiCursorBus::Events::DecrementVisibleCounter);
-
         AzFramework::InputSystemCursorRequestBus::Event(AzFramework::InputDeviceMouse::Id,
             &AzFramework::InputSystemCursorRequests::SetSystemCursorState,
             m_previousSystemCursorState);
@@ -981,8 +929,8 @@ void CXConsole::Update()
         const float fRepeatDelay = 1.0f / 40.0f;          // in sec (similar to Windows default but might differ from actual setting)
         const float fHitchDelay = 1.0f / 10.0f;               // in sec. Very low, but still reasonable frame-rate (debug builds)
 
-        m_fRepeatTimer -= gEnv->pTimer->GetRealFrameTime();                                         // works even when time is manipulated
-        //      m_fRepeatTimer -= gEnv->pTimer->GetFrameTime(ITimer::ETIMER_UI);            // can be used once ETIMER_UI works even with t_FixedTime
+        const AZ::TimeUs delta = AZ::GetRealTickDeltaTimeUs(); // works even when time is manipulated
+        m_fRepeatTimer -= AZ::TimeUsToSeconds(delta); 
 
         if (m_fRepeatTimer <= 0.0f)
         {
@@ -1733,15 +1681,11 @@ void CXConsole::DisplayHelp(const char* help, const char* name)
     }
     else
     {
-        char* start, * pos;
-        for (pos = strstr((char*)help, "\n"), start = (char*)help; pos; start = ++pos)
+        auto PrintHelpLine = [this](AZStd::string_view line)
         {
-            AZStd::string s = start;
-            s.resize(pos - start);
-            ConsoleLogInputResponse("    $3%s", s.c_str());
-            pos = strstr(pos, "\n");
-        }
-        ConsoleLogInputResponse("    $3%s", start);
+            ConsoleLogInputResponse("    $3%.*s", AZ_STRING_ARG(line));
+        };
+        AZ::StringFunc::TokenizeVisitor(help, PrintHelpLine, '\n');
     }
 }
 
@@ -1762,7 +1706,7 @@ void CXConsole::ExecuteString(const char* command, const bool bSilentMode, const
     AZ::StringFunc::TrimWhiteSpace(str, true, false);
 
     // Unroll the exec command
-    
+
     bool unroll = (0 == AZ::StringFunc::Find(str, "exec", 0, false, false));
 
     if (unroll)
@@ -2008,7 +1952,9 @@ void CXConsole::ExecuteDeferredCommands()
 
     if (m_waitSeconds.GetValue())
     {
-        if (m_waitSeconds > gEnv->pTimer->GetFrameStartTime())
+        const AZ::TimeMs elaspsedTimeMs = AZ::GetRealElapsedTimeMs();
+        const double elaspedTimeSec = AZ::TimeMsToSecondsDouble(elaspsedTimeMs);
+        if (m_waitSeconds > CTimeValue(elaspedTimeSec))
         {
             return;
         }
@@ -2891,245 +2837,6 @@ int CXConsole::GetNumVisibleVars()
     return numVars;
 }
 
-
-//////////////////////////////////////////////////////////////////////////
-bool CXConsole::IsHashCalculated()
-{
-    return m_bCheatHashDirty == false;
-}
-
-//////////////////////////////////////////////////////////////////////////
-int CXConsole::GetNumCheatVars()
-{
-    return static_cast<int>(m_randomCheckedVariables.size());
-}
-
-//////////////////////////////////////////////////////////////////////////
-uint64 CXConsole::GetCheatVarHash()
-{
-    return m_nCheatHash;
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CXConsole::SetCheatVarHashRange(size_t firstVar, size_t lastVar)
-{
-    // check inputs are sane
-#if !defined(NDEBUG)
-    size_t numVars = GetNumCheatVars();
-    assert(firstVar < numVars && lastVar < numVars && lastVar >= firstVar);
-#endif
-
-#if defined(DEFENCE_CVAR_HASH_LOGGING)
-    if (m_bCheatHashDirty)
-    {
-        CryLog("HASHING: WARNING - trying to set up new cvar hash range while existing hash still calculating!");
-    }
-#endif
-
-    m_nCheatHashRangeFirst = firstVar;
-    m_nCheatHashRangeLast = lastVar;
-    m_bCheatHashDirty = true;
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CXConsole::CalcCheatVarHash()
-{
-    if (!m_bCheatHashDirty)
-    {
-        return;
-    }
-
-    CCrc32 runningNameCrc32;
-    CCrc32 runningNameValueCrc32;
-
-    AddCVarsToHash(m_randomCheckedVariables.begin() + m_nCheatHashRangeFirst, m_randomCheckedVariables.begin() + m_nCheatHashRangeLast, runningNameCrc32, runningNameValueCrc32);
-    AddCVarsToHash(m_alwaysCheckedVariables.begin(), m_alwaysCheckedVariables.end() - 1, runningNameCrc32, runningNameValueCrc32);
-
-    // store hash
-    m_nCheatHash = (((uint64)runningNameCrc32.Get()) << 32) | runningNameValueCrc32.Get();
-    m_bCheatHashDirty = false;
-
-#if defined(DEFENCE_CVAR_HASH_LOGGING)
-    if (!gEnv->IsDedicated())
-    {
-        CryLog("HASHING: Range %d->%d = %llx(%x,%x), max cvars = %d", m_nCheatHashRangeFirst, m_nCheatHashRangeLast,
-            m_nCheatHash, runningNameCrc32.Get(), runningNameValueCrc32.Get(),
-            GetNumCheatVars());
-        PrintCheatVars(true);
-    }
-#endif
-}
-
-void CXConsole::AddCVarsToHash(ConsoleVariablesVector::const_iterator begin, ConsoleVariablesVector::const_iterator end, CCrc32& runningNameCrc32, CCrc32& runningNameValueCrc32)
-{
-    for (ConsoleVariablesVector::const_iterator it = begin; it <= end; ++it)
-    {
-        // add name & variable to string. We add both since adding only the value could cause
-        // many collisions with variables all having value 0 or all 1.
-        AZStd::string hashStr = it->first;
-
-        runningNameCrc32.Add(hashStr.c_str(), hashStr.length());
-        hashStr += it->second->GetDataProbeString();
-        runningNameValueCrc32.Add(hashStr.c_str(), hashStr.length());
-    }
-}
-
-void CXConsole::CmdDumpAllAnticheatVars([[maybe_unused]] IConsoleCmdArgs* pArgs)
-{
-#if defined(DEFENCE_CVAR_HASH_LOGGING)
-    CXConsole* pConsole = (CXConsole*)gEnv->pConsole;
-
-    if (pConsole->IsHashCalculated())
-    {
-        CryLog("HASHING: Displaying Full Anticheat Cvar list:");
-        pConsole->PrintCheatVars(false);
-    }
-    else
-    {
-        CryLogAlways("DumpAllAnticheatVars - cannot complete, cheat vars are in a state of flux, please retry.");
-    }
-#endif
-}
-
-void CXConsole::CmdDumpLastHashedAnticheatVars([[maybe_unused]] IConsoleCmdArgs* pArgs)
-{
-#if defined(DEFENCE_CVAR_HASH_LOGGING)
-    CXConsole* pConsole = (CXConsole*)gEnv->pConsole;
-
-    if (pConsole->IsHashCalculated())
-    {
-        CryLog("HASHING: Displaying Last Hashed Anticheat Cvar list:");
-        pConsole->PrintCheatVars(true);
-    }
-    else
-    {
-        CryLogAlways("DumpLastHashedAnticheatVars - cannot complete, cheat vars are in a state of flux, please retry.");
-    }
-#endif
-}
-
-void CXConsole::PrintCheatVars([[maybe_unused]] bool bUseLastHashRange)
-{
-#if defined(DEFENCE_CVAR_HASH_LOGGING)
-    if (m_bCheatHashDirty)
-    {
-        return;
-    }
-
-    size_t i = 0;
-    char floatFormatBuf[64];
-
-    size_t nStart = 0;
-    size_t nEnd = m_mapVariables.size();
-
-    if (bUseLastHashRange)
-    {
-        nStart = m_nCheatHashRangeFirst;
-        nEnd = m_nCheatHashRangeLast;
-    }
-
-    // iterate over all const cvars in our range
-    // then hash the string.
-    CryLog("VF_CHEAT & ~VF_CHEAT_NOCHECK list:");
-
-    ConsoleVariablesMap::const_iterator it, end = m_mapVariables.end();
-    for (it = m_mapVariables.begin(); it != end; ++it)
-    {
-        // only count cheat cvars
-        if ((it->second->GetFlags() & VF_CHEAT) == 0 ||
-            (it->second->GetFlags() & VF_CHEAT_NOCHECK) != 0)
-        {
-            continue;
-        }
-
-        // count up
-        i++;
-
-        // if we haven't reached the first var, or have passed the last var, break out
-        if (i - 1 < nStart)
-        {
-            continue;
-        }
-        if (i - 1 > nEnd)
-        {
-            break;
-        }
-
-        // add name & variable to string. We add both since adding only the value could cause
-        // many collisions with variables all having value 0 or all 1.
-        string hashStr = it->first;
-        if (it->second->GetType() == CVAR_FLOAT)
-        {
-            sprintf(floatFormatBuf, "%.1g", it->second->GetFVal());
-            hashStr += floatFormatBuf;
-        }
-        else
-        {
-            hashStr += it->second->GetString();
-        }
-
-        CryLog("%s", hashStr.c_str());
-    }
-
-    // iterate over any must-check variables
-    CryLog("VF_CHEAT_ALWAYS_CHECK list:");
-
-    for (it = m_mapVariables.begin(); it != end; ++it)
-    {
-        // only count cheat cvars
-        if ((it->second->GetFlags() & VF_CHEAT_ALWAYS_CHECK) == 0)
-        {
-            continue;
-        }
-
-        // add name & variable to string. We add both since adding only the value could cause
-        // many collisions with variables all having value 0 or all 1.
-        string hashStr = it->first;
-        hashStr += it->second->GetString();
-
-        CryLog("%s", hashStr.c_str());
-    }
-#endif
-}
-
-char* CXConsole::GetCheatVarAt(uint32 nOffset)
-{
-    if (m_bCheatHashDirty)
-    {
-        return NULL;
-    }
-
-    size_t i = 0;
-    size_t nStart = nOffset;
-
-    // iterate over all const cvars in our range
-    // then hash the string.
-    ConsoleVariablesMap::const_iterator it, end = m_mapVariables.end();
-    for (it = m_mapVariables.begin(); it != end; ++it)
-    {
-        // only count cheat cvars
-        if ((it->second->GetFlags() & VF_CHEAT) == 0 ||
-            (it->second->GetFlags() & VF_CHEAT_NOCHECK) != 0)
-        {
-            continue;
-        }
-
-        // count up
-        i++;
-
-        // if we haven't reached the first var continue
-        if (i - 1 < nStart)
-        {
-            continue;
-        }
-
-        return (char*)it->first;
-    }
-
-    return NULL;
-}
-
-
 //////////////////////////////////////////////////////////////////////////
 size_t CXConsole::GetSortedVars(AZStd::vector<AZStd::string_view>& pszArray, const char* szPrefix)
 {
@@ -3312,18 +3019,6 @@ inline size_t sizeOf (const AZStd::string& str)
 inline size_t sizeOf (const char* sz)
 {
     return sz ? strlen(sz) + 1 : 0;
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CXConsole::GetMemoryUsage (class ICrySizer* pSizer) const
-{
-    pSizer->AddObject(this, sizeof(*this));
-    pSizer->AddObject(m_sInputBuffer);
-    pSizer->AddObject(m_sPrevTab);
-    pSizer->AddObject(m_dqConsoleBuffer);
-    pSizer->AddObject(m_dqHistory);
-    pSizer->AddObject(m_mapCommands);
-    pSizer->AddObject(m_mapBinds);
 }
 
 //////////////////////////////////////////////////////////////////////////

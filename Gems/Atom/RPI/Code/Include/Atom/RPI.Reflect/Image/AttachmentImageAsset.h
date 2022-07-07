@@ -42,12 +42,28 @@ namespace AZ
             //! Return the clear value of the image. The clear value may only be useful for certain type of images such as render targets (color/depth stencil). 
             const RHI::ClearValue* GetOptimizedClearValue() const;
 
+            //! Return the name which can be used as debug name
+            const AZ::Name& GetName() const;
+            
+            //! Return an unique name id which can be used as attachment id
+            RHI::AttachmentId GetAttachmentId() const;
+
+            //! Return ture if the attachment image has an unique name
+            //! An attachment image with an unique name will be registered to image system
+            //! and it can be found by ImageSystemInterface::FindRegisteredAttachmentImage() function
+            //! The unique name is same as its attachment Id
+            bool HasUniqueName() const;
+
         private:
             Data::Asset<ResourcePoolAsset> m_poolAsset;
 
-            // Clear value of the image. The value is only valid when m_isClearValueValid is true
-            RHI::ClearValue m_optimizedClearValue;
-            bool m_isClearValueValid = false;
+            // an name id
+            AZ::Name m_name;
+
+            bool m_isUniqueName = false;
+
+            // Clear value of the image
+            AZStd::shared_ptr<RHI::ClearValue> m_optimizedClearValue;
         };
 
         using AttachmentImageAssetHandler = AssetHandler<AttachmentImageAsset>;

@@ -35,7 +35,8 @@ namespace AZ
             AzslCompiler(const AZStd::string& inputFilePath);
 
             //! compile with --full and generate all .json files
-            Outcome<ShaderBuilderUtility::AzslSubProducts::Paths> EmitFullData(const AZStd::string& parameters, const AZStd::string& outputFile = "") const;
+            Outcome<ShaderBuilderUtility::AzslSubProducts::Paths> EmitFullData(const AZStd::vector<AZStd::string>& azslcArguments,
+                const AZStd::string& outputFile = "") const;
             //! compile to HLSL independently
             bool EmitShader(AZ::IO::GenericStream& outputStream, const AZStd::string& extraCompilerParams) const;
             //! compile with --ia independently and populate document @output

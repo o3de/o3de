@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+
+<Component
+    Name="NetworkTestLevelEntityComponent"
+    Namespace="AutomatedTesting"
+    OverrideComponent="false"
+    OverrideController="false"
+    OverrideInclude=""
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    
+    <ComponentRelation Constraint="Required" HasController="true" Name="NetworkTransformComponent" Namespace="Multiplayer" Include="Multiplayer/Components/NetworkTransformComponent.h" />
+    
+    <RemoteProcedure Name="AuthorityToClientNoParams_PlayFx" InvokeFrom="Authority" HandleOn="Client" IsPublic="false" IsReliable="true" GenerateEventBindings="true" Description="" />
+
+</Component>

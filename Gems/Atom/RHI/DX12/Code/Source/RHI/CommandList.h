@@ -11,12 +11,14 @@
 #include <RHI/PipelineLayout.h>
 #include <RHI/PipelineState.h>
 #include <RHI/MemoryView.h>
+#include <RHI/ShaderResourceGroup.h>
+#include <RHI/Conversions.h>
 #include <Atom/RHI.Reflect/ClearValue.h>
 #include <Atom/RHI/CommandList.h>
 #include <Atom/RHI/CommandListValidator.h>
 #include <Atom/RHI/CommandListStates.h>
 #include <Atom/RHI/ObjectPool.h>
-#include <AtomCore/std/containers/array_view.h>
+#include <AzCore/std/containers/span.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/containers/array.h>
 
@@ -273,6 +275,13 @@ namespace AZ
                 return false;
             }
             
+            const PipelineLayout* pipelineLayout = &pipelineState->GetPipelineLayout();
+            if (!pipelineLayout)
+            {
+                AZ_Assert(false, "Pipeline layout is null.");
+                return false;
+            }
+            
             bool updatePipelineState = m_state.m_pipelineState != pipelineState;
             // The pipeline state gets set first.
             if (updatePipelineState)
@@ -284,7 +293,6 @@ namespace AZ
 
                 GetCommandList()->SetPipelineState(pipelineState->Get());
 
-                const PipelineLayout* pipelineLayout = &pipelineState->GetPipelineLayout();
                 // Check if we need to set custom sample positions
                 if constexpr (pipelineType == RHI::PipelineStateType::Draw)
                 {
@@ -387,14 +395,11 @@ namespace AZ
                 }
             }
 
-            const PipelineLayout& pipelineLayout = pipelineState->GetPipelineLayout();
-            const RHI::PipelineLayoutDescriptor& pipelineLayoutDescriptor = pipelineLayout.GetPipelineLayoutDescriptor();
-
             // Pull from slot bindings dictated by the pipeline layout. Re-bind anything that has changed
             // at the flat index level.
-            for (size_t srgIndex = 0; srgIndex < pipelineLayout.GetRootParameterBindingCount(); ++srgIndex)
+            for (size_t srgIndex = 0; srgIndex < pipelineLayout->GetRootParameterBindingCount(); ++srgIndex)
             {
-                const size_t srgSlot = pipelineLayout.GetSlotByIndex(srgIndex);
+                const size_t srgSlot = pipelineLayout->GetSlotByIndex(srgIndex);
                 const ShaderResourceGroup* shaderResourceGroup = bindings.m_srgsBySlot[srgSlot];
 
                 if (AZ::RHI::Validation::IsEnabled())
@@ -417,7 +422,8 @@ namespace AZ
 
                         // this assert typically happens when a shader needs a particular Srg (e.g., the ViewSrg) but the code did not bind it,
                         // check the pass code in this callstack to determine why it was not bound
-                        AZ_Assert(false, "ShaderResourceGroup in slot '%d' is null at DrawItem submit time. This is not valid and means the shader is expecting an Srg that isF not currently bound in the pipeline. Current bindings: %s",
+                        AZ_Assert(false, "The DrawItem being submitted doesn't provide an SRG for slot '%zu', which the shader is expecting. If this slot is for a Pass, View or Scene SRG, this likely means "
+                            "the pass didn't collect it (for the view SRG, check if your pass provides a PipelineViewTag). The SRGs currently provided by the DrawItem are: %s",
                             srgSlot,
                             slotSrgString.c_str());
 
@@ -431,12 +437,12 @@ namespace AZ
                     bindings.m_srgsByIndex[srgIndex] = shaderResourceGroup;
 
                     const ShaderResourceGroupCompiledData& compiledData = shaderResourceGroup->GetCompiledData();
-                    RootParameterBinding binding = pipelineLayout.GetRootParameterBindingByIndex(srgIndex);
+                    RootParameterBinding binding = pipelineLayout->GetRootParameterBindingByIndex(srgIndex);
 
                     switch (pipelineType)
                     {
                     case RHI::PipelineStateType::Draw:
-                        if (binding.m_resourceTable.IsValid())
+                        if (binding.m_resourceTable.IsValid() && compiledData.m_gpuViewsDescriptorHandle.ptr)
                         {
                             GetCommandList()->SetGraphicsRootDescriptorTable(binding.m_resourceTable.GetIndex(), compiledData.m_gpuViewsDescriptorHandle);
                         }
@@ -446,14 +452,15 @@ namespace AZ
                             GetCommandList()->SetGraphicsRootConstantBufferView(binding.m_constantBuffer.GetIndex(), compiledData.m_gpuConstantAddress);
                         }
 
-                        if (binding.m_samplerTable.IsValid())
+                        if (binding.m_samplerTable.IsValid() && compiledData.m_gpuSamplersDescriptorHandle.ptr)
                         {
                             GetCommandList()->SetGraphicsRootDescriptorTable(binding.m_samplerTable.GetIndex(), compiledData.m_gpuSamplersDescriptorHandle);
                         }
 
                         for (uint32_t unboundedArrayIndex = 0; unboundedArrayIndex < ShaderResourceGroupCompiledData::MaxUnboundedArrays; ++unboundedArrayIndex)
                         {
-                            if (binding.m_unboundedArrayResourceTables[unboundedArrayIndex].IsValid())
+                            if (binding.m_unboundedArrayResourceTables[unboundedArrayIndex].IsValid() &&
+                                compiledData.m_gpuUnboundedArraysDescriptorHandles[unboundedArrayIndex].ptr)
                             {
                                 GetCommandList()->SetGraphicsRootDescriptorTable(
                                     binding.m_unboundedArrayResourceTables[unboundedArrayIndex].GetIndex(),
@@ -463,7 +470,7 @@ namespace AZ
                         break;
 
                     case RHI::PipelineStateType::Dispatch:
-                        if (binding.m_resourceTable.IsValid())
+                        if (binding.m_resourceTable.IsValid() && compiledData.m_gpuViewsDescriptorHandle.ptr)
                         {
                             GetCommandList()->SetComputeRootDescriptorTable(binding.m_resourceTable.GetIndex(), compiledData.m_gpuViewsDescriptorHandle);
                         }
@@ -473,14 +480,15 @@ namespace AZ
                             GetCommandList()->SetComputeRootConstantBufferView(binding.m_constantBuffer.GetIndex(), compiledData.m_gpuConstantAddress);
                         }
 
-                        if (binding.m_samplerTable.IsValid())
+                        if (binding.m_samplerTable.IsValid() && compiledData.m_gpuSamplersDescriptorHandle.ptr)
                         {
                             GetCommandList()->SetComputeRootDescriptorTable(binding.m_samplerTable.GetIndex(), compiledData.m_gpuSamplersDescriptorHandle);
                         }
 
                         for (uint32_t unboundedArrayIndex = 0; unboundedArrayIndex < ShaderResourceGroupCompiledData::MaxUnboundedArrays; ++unboundedArrayIndex)
                         {
-                            if (binding.m_unboundedArrayResourceTables[unboundedArrayIndex].IsValid())
+                            if (binding.m_unboundedArrayResourceTables[unboundedArrayIndex].IsValid() &&
+                                compiledData.m_gpuUnboundedArraysDescriptorHandles[unboundedArrayIndex].ptr)
                             {
                                 GetCommandList()->SetComputeRootDescriptorTable(
                                     binding.m_unboundedArrayResourceTables[unboundedArrayIndex].GetIndex(),
@@ -495,12 +503,15 @@ namespace AZ
                     }
                 }
 
+#if defined (AZ_RHI_ENABLE_VALIDATION)
                 if (updatePipelineState || updateSRG)
                 {
+                    const RHI::PipelineLayoutDescriptor& pipelineLayoutDescriptor = pipelineLayout->GetPipelineLayoutDescriptor();
                     m_validator.ValidateShaderResourceGroup(
                         *shaderResourceGroup,
                         pipelineLayoutDescriptor.GetShaderResourceGroupBindingInfo(srgIndex));
                 }
+#endif
             }
             return true;
         }

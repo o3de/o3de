@@ -23,6 +23,8 @@ namespace ScriptCanvasTests
     extern const char* k_tempCoreAssetName;
     extern const char* k_tempCoreAssetPath;
 
+    const char* GetUnitTestDirPathRelative();
+
     void ExpectParse(AZStd::string_view graphPath);
 
     void ExpectParseError(AZStd::string_view graphPath);
@@ -548,7 +550,7 @@ namespace ScriptCanvasTests
         bool DestroyEntityById(AZ::EntityId entityId) override;
         AZ::Entity* CloneEntity(const AZ::Entity& sourceEntity) override;
         void ResetContext() override;
-        AZ::EntityId FindLoadedEntityIdMapping(const AZ::EntityId& staticId) const;
+        AZ::EntityId FindLoadedEntityIdMapping(const AZ::EntityId& staticId) const override;
         ////
 
         void AddEntity(AZ::EntityId entityId);

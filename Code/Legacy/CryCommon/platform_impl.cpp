@@ -24,7 +24,6 @@
 #define PLATFORM_IMPL_H_SECTION_TRAITS 1
 #define PLATFORM_IMPL_H_SECTION_CRYLOWLATENCYSLEEP 2
 #define PLATFORM_IMPL_H_SECTION_CRYGETFILEATTRIBUTES 3
-#define PLATFORM_IMPL_H_SECTION_CRYSETFILEATTRIBUTES 4
 #define PLATFORM_IMPL_H_SECTION_CRY_FILE_ATTRIBUTE_STUBS 5
 #define PLATFORM_IMPL_H_SECTION_CRY_SYSTEM_FUNCTIONS 6
 #define PLATFORM_IMPL_H_SECTION_VIRTUAL_ALLOCATORS 7
@@ -71,11 +70,10 @@ void InitCRTHandlers()
 void InitCRTHandlers() {}
 #endif
 
-#ifndef SOFTCODE
 //////////////////////////////////////////////////////////////////////////
 // This is an entry to DLL initialization function that must be called for each loaded module
 //////////////////////////////////////////////////////////////////////////
-extern "C" AZ_DLL_EXPORT void ModuleInitISystem(ISystem* pSystem, [[maybe_unused]] const char* moduleName)
+void ModuleInitISystem(ISystem* pSystem, [[maybe_unused]] const char* moduleName)
 {
     if (gEnv) // Already registered.
     {
@@ -88,35 +86,11 @@ extern "C" AZ_DLL_EXPORT void ModuleInitISystem(ISystem* pSystem, [[maybe_unused
     {
         gEnv = pSystem->GetGlobalEnvironment();
         assert(gEnv);
-        
-        if (!AZ::Environment::IsReady() || (AZ::Environment::GetInstance() != gEnv->pSharedEnvironment))
-        {
-            AZ::Environment::Attach(gEnv->pSharedEnvironment);
-            AZ::AllocatorManager::Instance();  // Force the AllocatorManager to instantiate and register any allocators defined in data sections
-        }
     } // if pSystem
 }
 
-extern "C" AZ_DLL_EXPORT void ModuleShutdownISystem([[maybe_unused]] ISystem* pSystem)
+void ModuleShutdownISystem([[maybe_unused]] ISystem* pSystem)
 {
-    // Unregister with AZ environment.
-    AZ::Environment::Detach();
-}
-
-extern "C" AZ_DLL_EXPORT void InjectEnvironment(void* env)
-{
-    static bool injected = false;
-    if (!injected)
-    {
-        AZ::Environment::Attach(reinterpret_cast<AZ::EnvironmentInstance>(env));
-        AZ::AllocatorManager::Instance();  // Force the AllocatorManager to instantiate and register any allocators defined in data sections
-        injected = true;
-    }
-}
-
-extern "C" AZ_DLL_EXPORT void DetachEnvironment()
-{
-    AZ::Environment::Detach();
 }
 
 void* GetModuleInitISystemSymbol()
@@ -127,18 +101,6 @@ void* GetModuleShutdownISystemSymbol()
 {
     return reinterpret_cast<void*>(&ModuleShutdownISystem);
 }
-void* GetInjectEnvironmentSymbol()
-{
-    return reinterpret_cast<void*>(&InjectEnvironment);
-}
-void* GetDetachEnvironmentSymbol()
-{
-    return reinterpret_cast<void*>(&DetachEnvironment);
-}
-
-#endif // !defined(SOFTCODE)
-
-bool g_bProfilerEnabled = false;
 
 //////////////////////////////////////////////////////////////////////////
 // global random number generator used by cry_random functions
@@ -186,18 +148,12 @@ void __stl_debug_message(const char* format_str, ...)
 #include <intrin.h>
 #endif
 
-#if defined(APPLE) || defined(LINUX)
-#include "CryAssert_impl.h"
-#endif
-
 #if defined(AZ_RESTRICTED_PLATFORM)
     #define AZ_RESTRICTED_SECTION PLATFORM_IMPL_H_SECTION_CRY_SYSTEM_FUNCTIONS
     #include AZ_RESTRICTED_FILE(platform_impl_h)
 #endif
 
 #if defined (_WIN32)
-
-#include "CryAssert_impl.h"
 
 //////////////////////////////////////////////////////////////////////////
 void CrySleep(unsigned int dwMilliseconds)
@@ -207,21 +163,21 @@ void CrySleep(unsigned int dwMilliseconds)
 }
 
 //////////////////////////////////////////////////////////////////////////
-int CryMessageBox([[maybe_unused]] const char* lpText, [[maybe_unused]] const char* lpCaption, [[maybe_unused]] unsigned int uType)
+void CryMessageBox([[maybe_unused]] const char* lpText, [[maybe_unused]] const char* lpCaption, [[maybe_unused]] unsigned int uType)
 {
 #ifdef WIN32
     ICVar* const pCVar = gEnv && gEnv->pConsole ? gEnv->pConsole->GetCVar("sys_no_crash_dialog") : NULL;
     if ((pCVar && pCVar->GetIVal() != 0) || (gEnv && gEnv->bNoAssertDialog))
     {
-        return 0;
+        return;
     }
     AZStd::wstring lpTextW;
     AZStd::to_wstring(lpTextW, lpText);
     AZStd::wstring lpCaptionW;
     AZStd::to_wstring(lpCaptionW, lpCaption);
-    return MessageBoxW(NULL, lpTextW.c_str(), lpCaptionW.c_str(), uType);
+    MessageBoxW(NULL, lpTextW.c_str(), lpCaptionW.c_str(), uType);
 #else
-    return 0;
+    return;
 #endif
 }
 
@@ -229,7 +185,7 @@ int CryMessageBox([[maybe_unused]] const char* lpText, [[maybe_unused]] const ch
 void InitRootDir(char szExeFileName[], uint nExeSize, char szExeRootName[], uint nRootSize)
 {
     char szPath[_MAX_PATH];
-    AZ::Utils::GetExecutablePathReturnType ret = AZ::Utils::GetExecutablePath(szPath, _MAX_PATH);
+    [[maybe_unused]] AZ::Utils::GetExecutablePathReturnType ret = AZ::Utils::GetExecutablePath(szPath, _MAX_PATH);
     AZ_Assert(ret.m_pathStored == AZ::Utils::ExecutablePathResult::Success, "The path to the current executable exceeds the expected length");
     const size_t nLen = strnlen(szPath, _MAX_PATH);
 
@@ -274,22 +230,6 @@ void InitRootDir(char szExeFileName[], uint nExeSize, char szExeRootName[], uint
 }
 
 //////////////////////////////////////////////////////////////////////////
-bool CrySetFileAttributes(const char* lpFileName, uint32 dwFileAttributes)
-{
-#if defined(AZ_RESTRICTED_PLATFORM)
-    #define AZ_RESTRICTED_SECTION PLATFORM_IMPL_H_SECTION_CRYSETFILEATTRIBUTES
-    #include AZ_RESTRICTED_FILE(platform_impl_h)
-#endif
-#if defined(AZ_RESTRICTED_SECTION_IMPLEMENTED)
-#undef AZ_RESTRICTED_SECTION_IMPLEMENTED
-#else
-    AZStd::wstring lpFileNameW;
-    AZStd::to_wstring(lpFileNameW, lpFileName);
-    return SetFileAttributes(lpFileNameW.c_str(), dwFileAttributes) != 0;
-#endif
-}
-
-//////////////////////////////////////////////////////////////////////////
 threadID CryGetCurrentThreadId()
 {
     return GetCurrentThreadId();
@@ -310,12 +250,6 @@ int64 CryGetTicks()
     return li.QuadPart;
 }
 
-int64 CryGetTicksPerSec()
-{
-    LARGE_INTEGER li;
-    QueryPerformanceFrequency(&li);
-    return li.QuadPart;
-}
 #endif
 
 
@@ -339,73 +273,6 @@ inline void CryDebugStr([[maybe_unused]] const char* format, ...)
      #endif
      */
 }
-
-alignas(64) uint32  BoxSides[0x40 * 8] = {
-    0, 0, 0, 0, 0, 0, 0, 0, //00
-    0, 4, 6, 2, 0, 0, 0, 4, //01
-    7, 5, 1, 3, 0, 0, 0, 4, //02
-    0, 0, 0, 0, 0, 0, 0, 0, //03
-    0, 1, 5, 4, 0, 0, 0, 4, //04
-    0, 1, 5, 4, 6, 2, 0, 6, //05
-    7, 5, 4, 0, 1, 3, 0, 6, //06
-    0, 0, 0, 0, 0, 0, 0, 0, //07
-    7, 3, 2, 6, 0, 0, 0, 4, //08
-    0, 4, 6, 7, 3, 2, 0, 6, //09
-    7, 5, 1, 3, 2, 6, 0, 6, //0a
-    0, 0, 0, 0, 0, 0, 0, 0, //0b
-    0, 0, 0, 0, 0, 0, 0, 0, //0c
-    0, 0, 0, 0, 0, 0, 0, 0, //0d
-    0, 0, 0, 0, 0, 0, 0, 0, //0e
-    0, 0, 0, 0, 0, 0, 0, 0, //0f
-    0, 2, 3, 1, 0, 0, 0, 4, //10
-    0, 4, 6, 2, 3, 1, 0, 6, //11
-    7, 5, 1, 0, 2, 3, 0, 6, //12
-    0, 0, 0, 0, 0, 0, 0, 0, //13
-    0, 2, 3, 1, 5, 4, 0, 6, //14
-    1, 5, 4, 6, 2, 3, 0, 6, //15
-    7, 5, 4, 0, 2, 3, 0, 6, //16
-    0, 0, 0, 0, 0, 0, 0, 0, //17
-    0, 2, 6, 7, 3, 1, 0, 6, //18
-    0, 4, 6, 7, 3, 1, 0, 6, //19
-    7, 5, 1, 0, 2, 6, 0, 6, //1a
-    0, 0, 0, 0, 0, 0, 0, 0, //1b
-    0, 0, 0, 0, 0, 0, 0, 0, //1c
-    0, 0, 0, 0, 0, 0, 0, 0, //1d
-    0, 0, 0, 0, 0, 0, 0, 0, //1e
-    0, 0, 0, 0, 0, 0, 0, 0, //1f
-    7, 6, 4, 5, 0, 0, 0, 4, //20
-    0, 4, 5, 7, 6, 2, 0, 6, //21
-    7, 6, 4, 5, 1, 3, 0, 6, //22
-    0, 0, 0, 0, 0, 0, 0, 0, //23
-    7, 6, 4, 0, 1, 5, 0, 6, //24
-    0, 1, 5, 7, 6, 2, 0, 6, //25
-    7, 6, 4, 0, 1, 3, 0, 6, //26
-    0, 0, 0, 0, 0, 0, 0, 0, //27
-    7, 3, 2, 6, 4, 5, 0, 6, //28
-    0, 4, 5, 7, 3, 2, 0, 6, //29
-    6, 4, 5, 1, 3, 2, 0, 6, //2a
-    0, 0, 0, 0, 0, 0, 0, 0, //2b
-    0, 0, 0, 0, 0, 0, 0, 0, //2c
-    0, 0, 0, 0, 0, 0, 0, 0, //2d
-    0, 0, 0, 0, 0, 0, 0, 0, //2e
-    0, 0, 0, 0, 0, 0, 0, 0, //2f
-    0, 0, 0, 0, 0, 0, 0, 0, //30
-    0, 0, 0, 0, 0, 0, 0, 0, //31
-    0, 0, 0, 0, 0, 0, 0, 0, //32
-    0, 0, 0, 0, 0, 0, 0, 0, //33
-    0, 0, 0, 0, 0, 0, 0, 0, //34
-    0, 0, 0, 0, 0, 0, 0, 0, //35
-    0, 0, 0, 0, 0, 0, 0, 0, //36
-    0, 0, 0, 0, 0, 0, 0, 0, //37
-    0, 0, 0, 0, 0, 0, 0, 0, //38
-    0, 0, 0, 0, 0, 0, 0, 0, //39
-    0, 0, 0, 0, 0, 0, 0, 0, //3a
-    0, 0, 0, 0, 0, 0, 0, 0, //3b
-    0, 0, 0, 0, 0, 0, 0, 0, //3c
-    0, 0, 0, 0, 0, 0, 0, 0, //3d
-    0, 0, 0, 0, 0, 0, 0, 0, //3e
-    0, 0, 0, 0, 0, 0, 0, 0, //3f
-};
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #if defined(AZ_RESTRICTED_PLATFORM)

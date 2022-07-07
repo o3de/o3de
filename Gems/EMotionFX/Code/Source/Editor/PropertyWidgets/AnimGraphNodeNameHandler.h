@@ -29,7 +29,8 @@ namespace EMotionFX
         ~AnimGraphNodeNameLineEdit() = default;
 
         void SetNode(AnimGraphNode* node);
-
+    private:
+        void focusInEvent(QFocusEvent* event) override;
     private:
         AnimGraphNode* m_node;
     };

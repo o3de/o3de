@@ -159,6 +159,12 @@ namespace PhysX
                 AZStd::swap(m_entityTransformHandlers[index], m_entityTransformHandlers.back());
                 m_entityTransformHandlers.pop_back();
 
+                // When deleting entity from handler's m_entities, the AABB should be appended to m_pendingAabbUpdates
+                // for local wind handler to broadcast OnWindChanged to notify relative entities of wind changes in OnTick().  
+                m_pendingAabbUpdates.push_back();
+                ColliderShapeRequestBus::EventResult(m_pendingAabbUpdates.back(),
+                    entityId, &ColliderShapeRequestBus::Events::GetColliderShapeAabb);
+
                 m_changed = true;
             }
         }
@@ -177,7 +183,7 @@ namespace PhysX
         AZStd::vector<EntityTransformHandler> m_entityTransformHandlers;
         AZStd::vector<AZ::Aabb> m_pendingAabbUpdates;
         ChangeCallback m_changeCallback;
-        bool m_changed = false;
+        bool m_changed = true;
     };
 
     WindProvider::WindProvider()

@@ -80,8 +80,11 @@ namespace AZ
             static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
             using BusIdType = SceneId;
 
-            virtual Scene* FindSelf() = 0;
             virtual void OnSceneNotifictaionHandlerConnected(SceneNotification* handler) = 0;
+
+            //! Causes an update of the PipelineStateLookup during the next render tick,
+            //! after queued Pipeline changes are executed.
+            virtual void PipelineStateLookupNeedsRebuild() = 0;
         };
 
         using SceneRequestBus = AZ::EBus<SceneRequest>;

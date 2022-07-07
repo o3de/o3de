@@ -32,8 +32,8 @@ namespace AZ
             RHI::ResultCode InitInternal([[maybe_unused]] RHI::PhysicalDevice& physicalDevice) override { return RHI::ResultCode::Success; }
             void ShutdownInternal() override {}
             void CompileMemoryStatisticsInternal([[maybe_unused]] RHI::MemoryStatisticsBuilder& builder) override {}
-            void UpdateCpuTimingStatisticsInternal([[maybe_unused]] RHI::CpuTimingStatistics& cpuTimingStatistics) const override {}
-            void BeginFrameInternal() override {}
+            void UpdateCpuTimingStatisticsInternal() const override {}
+            RHI::ResultCode BeginFrameInternal() override { return RHI::ResultCode::Success; }
             void EndFrameInternal() override {}
             void WaitForIdleInternal() override {}
             AZStd::chrono::microseconds GpuTimestampToMicroseconds([[maybe_unused]] uint64_t gpuTimestamp, [[maybe_unused]] RHI::HardwareQueueClass queueClass) const override { return AZStd::chrono::microseconds();}

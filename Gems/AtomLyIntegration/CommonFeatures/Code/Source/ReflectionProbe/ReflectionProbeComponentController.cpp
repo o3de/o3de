@@ -15,7 +15,7 @@
 
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Asset/AssetManagerBus.h>
-#include <AzCore/Debug/EventTrace.h>
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
 #include <AzFramework/Entity/EntityContextBus.h>
@@ -34,7 +34,7 @@ namespace AZ
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<ReflectionProbeComponentConfig>()
-                    ->Version(0)
+                    ->Version(1)
                     ->Field("OuterHeight", &ReflectionProbeComponentConfig::m_outerHeight)
                     ->Field("OuterLength", &ReflectionProbeComponentConfig::m_outerLength)
                     ->Field("OuterWidth", &ReflectionProbeComponentConfig::m_outerWidth)
@@ -48,7 +48,9 @@ namespace AZ
                     ->Field("AuthoredCubeMapAsset", &ReflectionProbeComponentConfig::m_authoredCubeMapAsset)
                     ->Field("EntityId", &ReflectionProbeComponentConfig::m_entityId)
                     ->Field("UseParallaxCorrection", &ReflectionProbeComponentConfig::m_useParallaxCorrection)
-                    ->Field("ShowVisualization", &ReflectionProbeComponentConfig::m_showVisualization);
+                    ->Field("ShowVisualization", &ReflectionProbeComponentConfig::m_showVisualization)
+                    ->Field("RenderExposure", &ReflectionProbeComponentConfig::m_renderExposure)
+                    ->Field("BakeExposure", &ReflectionProbeComponentConfig::m_bakeExposure);
             }
         }
 
@@ -123,10 +125,10 @@ namespace AZ
 
             // add this reflection probe to the feature processor
             const AZ::Transform& transform = m_transformInterface->GetWorldTM();
-            m_handle = m_featureProcessor->AddProbe(transform, m_configuration.m_useParallaxCorrection);
+            m_handle = m_featureProcessor->AddReflectionProbe(transform, m_configuration.m_useParallaxCorrection);
 
             // set the visualization sphere option
-            m_featureProcessor->ShowProbeVisualization(m_handle, m_configuration.m_showVisualization);
+            m_featureProcessor->ShowVisualization(m_handle, m_configuration.m_showVisualization);
 
             // if this is a new ReflectionProbe entity and the box shape has not been changed (i.e., it's still unit sized)
             // then set the shape to the default extents
@@ -145,7 +147,7 @@ namespace AZ
             }
 
             // set the inner extents
-            m_featureProcessor->SetProbeInnerExtents(m_handle, AZ::Vector3(m_configuration.m_innerWidth, m_configuration.m_innerLength, m_configuration.m_innerHeight));
+            m_featureProcessor->SetInnerExtents(m_handle, AZ::Vector3(m_configuration.m_innerWidth, m_configuration.m_innerLength, m_configuration.m_innerHeight));
 
             // load cubemap
             Data::Asset<RPI::StreamingImageAsset>& cubeMapAsset =
@@ -156,13 +158,16 @@ namespace AZ
                 cubeMapAsset.QueueLoad();
                 Data::AssetBus::MultiHandler::BusConnect(cubeMapAsset.GetId());
             }
+
+            // set cubemap render exposure
+            m_featureProcessor->SetRenderExposure(m_handle, m_configuration.m_renderExposure);
         }
 
         void ReflectionProbeComponentController::Deactivate()
         {
             if (m_featureProcessor)
             {
-                m_featureProcessor->RemoveProbe(m_handle);
+                m_featureProcessor->RemoveReflectionProbe(m_handle);
                 m_handle = nullptr;
             }
 
@@ -188,7 +193,7 @@ namespace AZ
                 m_configuration.m_useBakedCubemap ? m_configuration.m_bakedCubeMapRelativePath : m_configuration.m_authoredCubeMapAsset.GetHint();
 
             Data::Instance<RPI::Image> image = RPI::StreamingImage::FindOrCreate(asset);
-            m_featureProcessor->SetProbeCubeMap(m_handle, image, relativePath);
+            m_featureProcessor->SetCubeMap(m_handle, image, relativePath);
         }
 
         void ReflectionProbeComponentController::OnAssetReloaded(Data::Asset<Data::AssetData> asset)
@@ -232,7 +237,7 @@ namespace AZ
             {
                 // clear the current cubemap
                 Data::Instance<RPI::Image> image = nullptr;
-                m_featureProcessor->SetProbeCubeMap(m_handle, image, {});
+                m_featureProcessor->SetCubeMap(m_handle, image, {});
             }
         }
 
@@ -243,7 +248,7 @@ namespace AZ
                 return;
             }
 
-            m_featureProcessor->SetProbeTransform(m_handle, world);
+            m_featureProcessor->SetTransform(m_handle, world);
         }
 
         void ReflectionProbeComponentController::OnShapeChanged(ShapeChangeReasons changeReason)
@@ -253,7 +258,7 @@ namespace AZ
                 return;
             }
 
-            AZ_Assert(m_featureProcessor->IsValidProbeHandle(m_handle), "OnShapeChanged handler called before probe was registered with feature processor");
+            AZ_Assert(m_featureProcessor->IsValidHandle(m_handle), "OnShapeChanged handler called before probe was registered with feature processor");
 
             if (changeReason == ShapeChangeReasons::ShapeChanged)
             {
@@ -269,7 +274,7 @@ namespace AZ
             }
 
             AZ::Vector3 dimensions = m_boxShapeInterface->GetBoxDimensions();
-            m_featureProcessor->SetProbeOuterExtents(m_handle, dimensions);
+            m_featureProcessor->SetOuterExtents(m_handle, dimensions);
 
             m_configuration.m_outerWidth = dimensions.GetX();
             m_configuration.m_outerLength = dimensions.GetY();
@@ -283,6 +288,16 @@ namespace AZ
             m_configuration.m_innerHeight = AZStd::min(m_configuration.m_innerHeight, m_configuration.m_outerHeight);
         }
 
+        void ReflectionProbeComponentController::SetBakeExposure(float bakeExposure)
+        {
+            if (!m_featureProcessor)
+            {
+                return;
+            }
+
+            m_featureProcessor->SetBakeExposure(m_handle, bakeExposure);
+        }
+
         void ReflectionProbeComponentController::BakeReflectionProbe(BuildCubeMapCallback callback, const AZStd::string& relativePath)
         {
             if (!m_featureProcessor)
@@ -290,7 +305,7 @@ namespace AZ
                 return;
             }
 
-            m_featureProcessor->BakeProbe(m_handle, callback, relativePath);
+            m_featureProcessor->Bake(m_handle, callback, relativePath);
         }
 
         AZ::Aabb ReflectionProbeComponentController::GetAabb() const

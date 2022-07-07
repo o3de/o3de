@@ -24,21 +24,19 @@ void FileWatcherUnitTestRunner::StartTest()
 
     FileWatcher fileWatcher;
 
-    FolderWatchCallbackEx folderWatch(tempPath, "", true);
-
-    fileWatcher.AddFolderWatch(&folderWatch);
+    fileWatcher.AddFolderWatch(tempPath);
     fileWatcher.StartWatching();
 
     { // test a single file create/write
         bool foundFile = false;
-        auto connection = QObject::connect(&folderWatch, &FolderWatchCallbackEx::fileAdded, this, [&](QString filename)
+        auto connection = QObject::connect(&fileWatcher, &FileWatcher::fileAdded, this, [&](QString filename)
         {
             AZ_TracePrintf(AssetProcessor::DebugChannel, "Single file test Found asset: %s.\n", filename.toUtf8().data());
             foundFile = true;
         });
 
         // give the file watcher thread a moment to get started
-        QThread::sleep(1);
+        QThread::msleep(50);
 
         QFile testTif(tempPath + "/test.tif");
         bool open = testTif.open(QFile::WriteOnly);
@@ -48,10 +46,9 @@ void FileWatcherUnitTestRunner::StartTest()
         testTif.write("0");
         testTif.close();
 
-
         // Wait for file change to be found, timeout, and be delivered
         unsigned int tries = 0;
-        while (!foundFile && tries++ < 100)
+        while (!foundFile && tries++ < 10)
         {
             QCoreApplication::processEvents(QEventLoop::AllEvents, 100);
             QThread::msleep(10);
@@ -63,21 +60,21 @@ void FileWatcherUnitTestRunner::StartTest()
 
     { // test a whole bunch of files created/written
       // send enough files such that main thread is likely to be blocked:
-        const unsigned long maxFiles = 10000;
+        const unsigned long maxFiles = 1000;
         QSet<QString> outstandingFiles;
 
-        auto connection = QObject::connect(&folderWatch, &FolderWatchCallbackEx::fileAdded, this, [&](QString filename)
+        auto connection = QObject::connect(&fileWatcher, &FileWatcher::fileAdded, this, [&](QString filename)
         {
             outstandingFiles.remove(filename);
         });
         AZ_TracePrintf(AssetProcessor::DebugChannel, "Performing multi-file test...\n");
 
         // give the file watcher thread a moment to get started
-        QThread::sleep(1);
+        QThread::msleep(50);
 
         for (unsigned long fileIndex = 0; fileIndex < maxFiles; ++fileIndex)
         {
-            if (fileIndex % 1000 == 0)
+            if (fileIndex % 100 == 0)
             {
                 AZ_TracePrintf(AssetProcessor::DebugChannel, "Performing multi-file test... creating file  %d / %d\n", fileIndex, maxFiles);
             }
@@ -118,18 +115,19 @@ void FileWatcherUnitTestRunner::StartTest()
         QObject::disconnect(connection);
     }
 
+
     AZ_TracePrintf(AssetProcessor::DebugChannel, "Deletion test ... \n");
 
     { // test deletion
         bool foundFile = false;
-        auto connection = QObject::connect(&folderWatch, &FolderWatchCallbackEx::fileRemoved, this, [&](QString filename)
+        auto connection = QObject::connect(&fileWatcher, &FileWatcher::fileRemoved, this, [&](QString filename)
         {
             AZ_TracePrintf(AssetProcessor::DebugChannel, "Deleted asset: %s...\n", filename.toUtf8().data());
             foundFile = true;
         });
 
         // give the file watcher thread a moment to get started
-        QThread::sleep(1);
+        QThread::msleep(50);
 
         QString filename(tempPath + "/test.tif");
         bool removed = QFile::remove(filename);
@@ -155,7 +153,7 @@ void FileWatcherUnitTestRunner::StartTest()
     {
         bool fileAddCalled = false;
         QString fileAddName;
-        auto connectionAdd = QObject::connect(&folderWatch, &FolderWatchCallbackEx::fileAdded, this, [&](QString filename)
+        auto connectionAdd = QObject::connect(&fileWatcher, &FileWatcher::fileAdded, this, [&](QString filename)
         {
             fileAddCalled = true;
             fileAddName = filename;
@@ -163,7 +161,7 @@ void FileWatcherUnitTestRunner::StartTest()
 
         bool fileRemoveCalled = false;
         QString fileRemoveName;
-        auto connectionRemove = QObject::connect(&folderWatch, &FolderWatchCallbackEx::fileRemoved, this, [&](QString filename)
+        auto connectionRemove = QObject::connect(&fileWatcher, &FileWatcher::fileRemoved, this, [&](QString filename)
         {
             fileRemoveCalled = true;
             fileRemoveName = filename;
@@ -171,14 +169,14 @@ void FileWatcherUnitTestRunner::StartTest()
 
         QStringList fileModifiedNames;
         bool fileModifiedCalled = false;
-        auto connectionModified = QObject::connect(&folderWatch, &FolderWatchCallbackEx::fileModified, this, [&](QString filename)
+        auto connectionModified = QObject::connect(&fileWatcher, &FileWatcher::fileModified, this, [&](QString filename)
         {
             fileModifiedCalled = true;
             fileModifiedNames.append(filename);
         });
 
         // give the file watcher thread a moment to get started
-        QThread::sleep(1);
+        QThread::msleep(50);
 
         QDir tempDirPath(tempPath);
         tempDirPath.mkpath("dir1");
@@ -194,7 +192,7 @@ void FileWatcherUnitTestRunner::StartTest()
         UNIT_TEST_EXPECT_TRUE(UnitTestUtils::CreateDummyFile(originalName));
 
         int tries = 0;
-        while (!(fileAddCalled && fileRemoveCalled && fileModifiedCalled) && tries++ < 100)
+        while (!(fileAddCalled && fileModifiedCalled) && tries++ < 100)
         {
             QThread::msleep(10);
             QCoreApplication::processEvents(QEventLoop::AllEvents, 100);
@@ -211,7 +209,7 @@ void FileWatcherUnitTestRunner::StartTest()
         UNIT_TEST_EXPECT_TRUE(QFile::rename(originalName, newName1));
 
         tries = 0;
-        while (!(fileAddCalled && fileRemoveCalled && fileModifiedCalled) && tries++ < 100)
+        while (!(fileAddCalled || fileRemoveCalled || fileModifiedCalled) && tries++ < 100)
         {
             QThread::msleep(10);
             QCoreApplication::processEvents(QEventLoop::AllEvents, 100);
@@ -237,7 +235,7 @@ void FileWatcherUnitTestRunner::StartTest()
         UNIT_TEST_EXPECT_TRUE(QFile::rename(newName1, newName2));
 
         tries = 0;
-        while (!(fileAddCalled && fileRemoveCalled && fileModifiedCalled) && tries++ < 100)
+        while (!(fileAddCalled || fileRemoveCalled || fileModifiedCalled) && tries++ < 100)
         {
             QThread::msleep(10);
             QCoreApplication::processEvents(QEventLoop::AllEvents, 100);
@@ -262,7 +260,7 @@ void FileWatcherUnitTestRunner::StartTest()
         fileModifiedCalled = false;
 
         tries = 0;
-        while (!(fileAddCalled && fileRemoveCalled && fileModifiedCalled) && tries++ < 100)
+        while (!(fileAddCalled || fileRemoveCalled || fileModifiedCalled) && tries++ < 100)
         {
             QThread::msleep(10);
             QCoreApplication::processEvents(QEventLoop::AllEvents, 100);
@@ -288,7 +286,7 @@ void FileWatcherUnitTestRunner::StartTest()
         UNIT_TEST_EXPECT_TRUE(renamer.rename(tempDirPath.absoluteFilePath("dir3"), tempDirPath.absoluteFilePath("dir4")));
 
         tries = 0;
-        while (!(fileAddCalled && fileRemoveCalled && fileModifiedCalled) && tries++ < 100)
+        while (!(fileAddCalled && fileRemoveCalled) && tries++ < 100)
         {
             QThread::msleep(10);
             QCoreApplication::processEvents(QEventLoop::AllEvents, 100);

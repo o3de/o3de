@@ -1,5 +1,6 @@
 <RCC>
     <qresource prefix="/PropertyEditor/Resources">
+        <file>blank.png</file>
         <file>point_hand.png</file>
         <file>cross-circle-small.png</file>
         <file>cross-small.png</file>

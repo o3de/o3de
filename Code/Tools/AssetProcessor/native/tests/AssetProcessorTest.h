@@ -15,6 +15,8 @@
 #include <native/utilities/assetUtils.h>
 #include <native/unittests/UnitTestRunner.h> // for the assert absorber.
 #include <AssetManager/FileStateCache.h>
+#include <AzCore/Component/ComponentApplicationLifecycle.h>
+#include <tests/ApplicationManagerTests.h>
 
 namespace AssetProcessor
 {
@@ -22,27 +24,17 @@ namespace AssetProcessor
     // Any gmock based fixture class can derived from this class and this will automatically do system allocation and teardown for you
     // It is important to note that if you are overriding Setup and Teardown functions of your fixture class than please call the base class functions.
     class AssetProcessorTest
-        : public ::testing::Test
+        : public ::UnitTest::ScopedAllocatorSetupFixture
     {
     protected:
-        UnitTestUtils::AssertAbsorber* m_errorAbsorber;
-        FileStatePassthrough m_fileStateCache;
+        AZStd::unique_ptr<UnitTestUtils::AssertAbsorber> m_errorAbsorber{};
+        AZStd::unique_ptr<FileStatePassthrough> m_fileStateCache{};
 
         void SetUp() override
         {
-            if (!AZ::AllocatorInstance<AZ::OSAllocator>::IsReady())
-            {
-                m_ownsOSAllocator = true;
-                AZ::AllocatorInstance<AZ::OSAllocator>::Create();
-            }
-            if (!AZ::AllocatorInstance<AZ::SystemAllocator>::IsReady())
-            {
-                m_ownsSysAllocator = true;
-                AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
-            }
-            m_errorAbsorber = new UnitTestUtils::AssertAbsorber();
-
+            m_errorAbsorber = AZStd::make_unique<UnitTestUtils::AssertAbsorber>();
             m_application = AZStd::make_unique<AzFramework::Application>();
+            m_fileStateCache = AZStd::make_unique<FileStatePassthrough>();
 
             // Inject the AutomatedTesting project as a project path into test fixture
             using FixedValueString = AZ::SettingsRegistryInterface::FixedValueString;
@@ -50,31 +42,38 @@ namespace AssetProcessor
                 + "/project_path";
             if(auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
             {
-                settingsRegistry->Set(projectPathKey, "AutomatedTesting");
+                AZ::IO::FixedMaxPath enginePath;
+                settingsRegistry->Get(enginePath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
+                settingsRegistry->Set(projectPathKey, (enginePath / "AutomatedTesting").Native());
                 AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*settingsRegistry);
+
+                AZ::ComponentApplicationLifecycle::RegisterEvent(*settingsRegistry, "SystemComponentsActivated");
+                AZ::ComponentApplicationLifecycle::RegisterEvent(*settingsRegistry, "SystemComponentsDeactivated");
+                AZ::ComponentApplicationLifecycle::RegisterEvent(*settingsRegistry, "ReflectionManagerAvailable");
+                AZ::ComponentApplicationLifecycle::RegisterEvent(*settingsRegistry, "ReflectionManagerUnavailable");
+                AZ::ComponentApplicationLifecycle::RegisterEvent(*settingsRegistry, "SystemAllocatorCreated");
+                AZ::ComponentApplicationLifecycle::RegisterEvent(*settingsRegistry, "SystemAllocatorPendingDestruction");
+                AZ::ComponentApplicationLifecycle::RegisterEvent(*settingsRegistry, "SettingsRegistryAvailable");
+                AZ::ComponentApplicationLifecycle::RegisterEvent(*settingsRegistry, "SettingsRegistryUnavailable");
+                AZ::ComponentApplicationLifecycle::RegisterEvent(*settingsRegistry, "ConsoleAvailable");
+                AZ::ComponentApplicationLifecycle::RegisterEvent(*settingsRegistry, "ConsoleUnavailable");
+                AZ::ComponentApplicationLifecycle::RegisterEvent(*settingsRegistry, "GemsLoaded");
+                AZ::ComponentApplicationLifecycle::RegisterEvent(*settingsRegistry, "GemsUnloaded");
+                AZ::ComponentApplicationLifecycle::RegisterEvent(*settingsRegistry, "FileIOAvailable");
+                AZ::ComponentApplicationLifecycle::RegisterEvent(*settingsRegistry, "FileIOUnavailable");
+                AZ::ComponentApplicationLifecycle::RegisterEvent(*settingsRegistry, "LegacySystemInterfaceCreated");
+                AZ::ComponentApplicationLifecycle::RegisterEvent(*settingsRegistry, "CriticalAssetsCompiled");
             }
         }
 
         void TearDown() override
         {
             AssetUtilities::ResetAssetRoot();
-            
+
+            m_fileStateCache.reset();
             m_application.reset();
-            delete m_errorAbsorber;
-            m_errorAbsorber = nullptr;
-            if (m_ownsSysAllocator)
-            {
-                AZ::AllocatorInstance<AZ::SystemAllocator>::Destroy();
-                m_ownsSysAllocator = false;
-            }
-            if (m_ownsOSAllocator)
-            {
-                AZ::AllocatorInstance<AZ::OSAllocator>::Destroy();
-                m_ownsOSAllocator = false;
-            }
+            m_errorAbsorber.reset();
         }
-        bool m_ownsOSAllocator = false;
-        bool m_ownsSysAllocator = false;
 
         AZStd::unique_ptr<AzFramework::Application> m_application;
     };

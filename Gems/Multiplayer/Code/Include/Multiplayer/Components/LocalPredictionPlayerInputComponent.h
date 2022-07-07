@@ -21,6 +21,7 @@ namespace Multiplayer
         AZ_MULTIPLAYER_COMPONENT(Multiplayer::LocalPredictionPlayerInputComponent, s_localPredictionPlayerInputComponentConcreteUuid, Multiplayer::LocalPredictionPlayerInputComponentBase);
 
         static void Reflect([[maybe_unused]] AZ::ReflectContext* context);
+        static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
 
         void OnInit() override;
         void OnActivate([[maybe_unused]] Multiplayer::EntityIsMigrating entityIsMigrating) override;
@@ -56,6 +57,14 @@ namespace Multiplayer
             const AzNetworking::PacketEncodingBuffer& correction
         ) override;
 
+        //! Forcibly enables ProcessInput to execute on the entity.
+        //! Note that this function is quite dangerous and should normally never be used
+        void ForceEnableAutonomousUpdate();
+
+        //! Forcibly disables ProcessInput from executing on the entity.
+        //! Note that this function is quite dangerous and should normally never be used
+        void ForceDisableAutonomousUpdate();
+
         //! Return true if we're currently migrating from one host to another.
         //! @return boolean true if we're currently migrating from one host to another
         bool IsMigrating() const;
@@ -70,6 +79,8 @@ namespace Multiplayer
         void UpdateAutonomous(AZ::TimeMs deltaTimeMs);
         void UpdateBankedTime(AZ::TimeMs deltaTimeMs);
 
+        bool SerializeEntityCorrection(AzNetworking::ISerializer& serializer);
+
         using StateHistoryItem = AZStd::unique_ptr<AzNetworking::StringifySerializer>;
         AZStd::map<ClientInputId, StateHistoryItem> m_predictiveStateHistory;
 
@@ -82,14 +93,14 @@ namespace Multiplayer
         AZ::ScheduledEvent m_autonomousUpdateEvent; // Drives autonomous input collection
         AZ::ScheduledEvent m_updateBankedTimeEvent; // Drives authority bank time updates
 
-        EntityMigrationStartEvent::Handler m_migrateStartHandler;
-        EntityMigrationEndEvent::Handler m_migrateEndHandler;
+        ClientMigrationStartEvent::Handler m_migrateStartHandler;
+        ClientMigrationEndEvent::Handler m_migrateEndHandler;
 
         double m_moveAccumulator = 0.0;
         double m_clientBankedTime = 0.0;
 
-        AZ::TimeMs m_lastInputReceivedTimeMs = AZ::TimeMs{ 0 };
-        AZ::TimeMs m_lastCorrectionSentTimeMs = AZ::TimeMs{ 0 };
+        AZ::TimeMs m_lastInputReceivedTimeMs = AZ::Time::ZeroTimeMs;
+        AZ::TimeMs m_lastCorrectionSentTimeMs = AZ::Time::ZeroTimeMs;
 
         ClientInputId m_clientInputId = ClientInputId{ 0 }; // Clients incrementing inputId
         ClientInputId m_lastClientInputId = ClientInputId{ 0 }; // Last inputId processed by the server

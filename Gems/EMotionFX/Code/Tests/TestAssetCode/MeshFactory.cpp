@@ -93,7 +93,6 @@ namespace EMotionFX
             /*numVerts=*/      mesh->GetNumVertices(),
             /*numIndices=*/    mesh->GetNumIndices(),
             /*numPolygons=*/   mesh->GetNumPolygons(),
-            /*materialIndex=*/ 0,
             /*numBones=*/      aznumeric_caster(skinningInfo.size())
         );
         mesh->AddSubMesh(subMesh);
@@ -105,7 +104,9 @@ namespace EMotionFX
             }
         }
 
+        AZ_PUSH_DISABLE_WARNING_MSVC(4244); //  warning C4244: '=': conversion from 'const int' to 'uint8', possible loss of data
         AZStd::fill(mesh->GetPolygonVertexCounts(), mesh->GetPolygonVertexCounts() + faceCount, 3);
+        AZ_POP_DISABLE_WARNING_MSVC
         AZStd::copy(indices.begin(), indices.end(), mesh->GetIndices());
 
         return mesh;

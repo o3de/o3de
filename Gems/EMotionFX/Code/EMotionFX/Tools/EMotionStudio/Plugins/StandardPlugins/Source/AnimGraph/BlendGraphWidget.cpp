@@ -1061,12 +1061,8 @@ namespace EMStudio
             return true;
         }
 
-        if (m_activeGraph->GetCreateConnectionNode()->GetType() == StateGraphNode::TYPE_ID)
-        {
-            return false;
-        }
-
-        return true;
+        const GraphNode* graphNode = m_activeGraph->GetCreateConnectionNode();
+        return graphNode && graphNode->GetType() != StateGraphNode::TYPE_ID;
     }
 
 

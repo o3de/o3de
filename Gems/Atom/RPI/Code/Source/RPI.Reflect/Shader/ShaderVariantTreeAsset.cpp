@@ -72,8 +72,6 @@ namespace AZ
 
         ShaderVariantSearchResult ShaderVariantTreeAsset::FindVariantStableId(const ShaderOptionGroupLayout* shaderOptionGroupLayout, const ShaderVariantId& shaderVariantId) const
         {
-            AZ_PROFILE_FUNCTION(RPI);
-
             struct NodeToVisit
             {
                 uint32_t m_branchCount; // Number of static branches

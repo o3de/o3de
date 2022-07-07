@@ -25,7 +25,6 @@ namespace EMotionFX
             : public AZ::ComponentBus
         {
         public:
-
             static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
 
             /// Adds audio support to when an anim event is fired
@@ -40,14 +39,12 @@ namespace EMotionFX
             /// Execute a single ATL source trigger on a joint proxy.
             virtual bool ExecuteSourceTrigger(
                 const Audio::TAudioControlID triggerID,
-                const Audio::SAudioCallBackInfos& callbackInfo,
                 const Audio::TAudioControlID& sourceId,
                 const AZStd::string& jointName) = 0;
 
             /// Execute a single ATL trigger on a joint proxy.
             virtual bool ExecuteTrigger(
                 const Audio::TAudioControlID triggerID,
-                const Audio::SAudioCallBackInfos& callbackInfo,
                 const AZStd::string& jointName) = 0;
 
             /// Kill a single or all ATL triggers on a joint proxy. If a joint name is provided, only kill on provided joint.  Otherwise, kill all joints' audio triggers.
@@ -66,14 +63,5 @@ namespace EMotionFX
 
         using AnimAudioComponentRequestBus = AZ::EBus<AnimAudioComponentRequests>;
 
-        class AnimAudioComponentNotifications
-            : public AZ::ComponentBus
-        {
-        public:
-            virtual void OnTriggerStarted(const Audio::TAudioControlID triggerID) = 0;
-            virtual void OnTriggerFinished(const Audio::TAudioControlID triggerID) = 0;
-        };
-
-        using AnimAudioComponentNotificationBus = AZ::EBus<AnimAudioComponentNotifications>;
     } // namespace Integration
 } // namespace EMotionFX

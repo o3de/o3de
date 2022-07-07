@@ -98,9 +98,9 @@ namespace AZ
             if (Validation::IsEnabled())
             {
                 // The frame attachment has tight control over lifecycle here.
-                const bool isAttach = (!m_frameAttachment && frameAttachment);
-                const bool isDetach = (m_frameAttachment && !frameAttachment);
-                AZ_Assert(isAttach || isDetach, "The frame attachment for resource '%s' was not assigned properly.");
+                [[maybe_unused]] const bool isAttach = (!m_frameAttachment && frameAttachment);
+                [[maybe_unused]] const bool isDetach = (m_frameAttachment && !frameAttachment);
+                AZ_Assert(isAttach || isDetach, "The frame attachment for resource '%s' was not assigned properly.", GetName().GetCStr());
             }
 
             m_frameAttachment = frameAttachment;

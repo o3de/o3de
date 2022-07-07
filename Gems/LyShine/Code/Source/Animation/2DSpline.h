@@ -694,7 +694,6 @@ namespace UiSpline
         Vec2 interpolate_tangent(float time, float& u)
         {
             Vec2 tangent;
-            const float epsilon = 0.001f;
             int curr = seek_key(time);
             int next = curr + 1;
             assert(0 <= curr && next < num_keys());

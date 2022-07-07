@@ -9,6 +9,7 @@
 
 #include <AzCore/std/allocator.h>
 #include <AzCore/std/algorithm.h>
+#include <AzCore/std/allocator_traits.h>
 #include <AzCore/std/createdestroy.h>
 #include <AzCore/std/typetraits/alignment_of.h>
 #include <AzCore/std/typetraits/is_integral.h>
@@ -431,7 +432,7 @@ namespace AZStd
         }
 
         AZ_FORCE_INLINE size_type   size() const        { return m_last - m_start; }
-        AZ_FORCE_INLINE size_type   max_size() const    { return m_allocator.get_max_size() / sizeof(node_type); }
+        AZ_FORCE_INLINE size_type   max_size() const    { return AZStd::allocator_traits<allocator_type>::max_size(m_allocator) / sizeof(node_type); }
         AZ_FORCE_INLINE bool        empty() const       { return m_start == m_last; }
 
         void reserve(size_type numElements)
@@ -848,10 +849,13 @@ namespace AZStd
 #endif
 
             size_type offset = firstPtr - m_start;
-            // unless we have 1 elements we have memory overlapping, so we need to use move.
-            pointer newLast = AZStd::move(lastPtr, m_last, firstPtr);
-            Internal::destroy<pointer>::range(newLast, m_last);
-            m_last = newLast;
+            if (firstPtr != lastPtr)
+            {
+                // unless we have 1 elements we have memory overlapping, so we need to use move.
+                pointer newLast = AZStd::move(lastPtr, m_last, firstPtr);
+                Internal::destroy<pointer>::range(newLast, m_last);
+                m_last = newLast;
+            }
             return iterator(AZSTD_POINTER_ITERATOR_PARAMS(m_start)) + offset;
         }
 
@@ -953,25 +957,6 @@ namespace AZStd
             return true;
         }
         /// Validates an iter iterator. Returns a combination of \ref iterator_status_flag.
-        AZ_FORCE_INLINE int     validate_iterator(const iterator& iter) const
-        {
-#ifdef AZSTD_HAS_CHECKED_ITERATORS
-            AZ_Assert(iter.m_container == this, "Iterator doesn't belong to this container");
-            pointer iterPtr = iter.m_iter;
-#else
-            pointer iterPtr = iter;
-#endif
-            if (iterPtr < m_start || iterPtr > m_last)
-            {
-                return isf_none;
-            }
-            else if (iterPtr == m_last)
-            {
-                return isf_valid;
-            }
-
-            return isf_valid | isf_can_dereference;
-        }
         AZ_FORCE_INLINE int     validate_iterator(const const_iterator& iter) const
         {
 #ifdef AZSTD_HAS_CHECKED_ITERATORS
@@ -991,7 +976,6 @@ namespace AZStd
 
             return isf_valid | isf_can_dereference;
         }
-        AZ_FORCE_INLINE int     validate_iterator(const reverse_iterator& iter) const       { return validate_iterator(iter.base()); }
         AZ_FORCE_INLINE int     validate_iterator(const const_reverse_iterator& iter) const { return validate_iterator(iter.base()); }
 
         /**
@@ -1386,6 +1370,14 @@ namespace AZStd
     }
     //#pragma endregion
 
+    template<class T, class Allocator, class U>
+    decltype(auto) erase(vector<T, Allocator>& container, const U& value)
+    {
+        auto iter = AZStd::remove(container.begin(), container.end(), value);
+        auto removedCount = AZStd::distance(iter, container.end());
+        container.erase(iter, container.end());
+        return removedCount;
+    }
     template<class T, class Allocator, class Predicate>
     decltype(auto) erase_if(vector<T, Allocator>& container, Predicate predicate)
     {

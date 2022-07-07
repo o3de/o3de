@@ -70,11 +70,11 @@ namespace AZStd
         bool try_acquire_until(const chrono::time_point<Clock, Duration>& abs_time)
         {
             auto timeNow = chrono::system_clock::now();
-            if (timeNow >= absTime)
+            if (timeNow >= abs_time)
             {
                 return false; // we timed out already!
             }
-            auto deltaTime = absTime - timeNow;
+            auto deltaTime = abs_time - timeNow;
             auto timeToTry = chrono::duration_cast<chrono::milliseconds>(deltaTime);
             return (WaitForSingleObject(m_event, aznumeric_cast<DWORD>(timeToTry.count())) == AZ_WAIT_OBJECT_0);
         }

@@ -10,6 +10,7 @@
 
 #include <Atom/RPI.Reflect/Material/MaterialFunctor.h>
 #include <Atom/RPI.Reflect/Material/MaterialPropertyDescriptor.h>
+#include <Atom/RPI.Reflect/Material/MaterialNameContext.h>
 #include <Atom/RHI.Reflect/Limits.h>
 
 namespace UnitTest
@@ -60,12 +61,8 @@ namespace AZ
             AZStd::unique_ptr<AZ::BehaviorContext> m_sriptBehaviorContext;
             AZStd::unique_ptr<AZ::ScriptContext> m_scriptContext;
             
-            // These are prefix strings that will be applied to every name lookup in the lua functor.
-            // This allows the lua script to be reused in different contexts.
-            AZStd::string m_propertyNamePrefix;
-            AZStd::string m_srgNamePrefix;
-            AZStd::string m_optionsNamePrefix;
-
+            MaterialNameContext m_materialNameContext;
+            
             enum class ScriptStatus
             {
                 Uninitialized,
@@ -83,14 +80,15 @@ namespace AZ
             AZ_TYPE_INFO(AZ::RPI::LuaMaterialFunctorCommonContext, "{2CCCB9A9-AD4F-447C-B587-E7A91CEA8088}");
 
             explicit LuaMaterialFunctorCommonContext(MaterialFunctor::RuntimeContext* runtimeContextImpl,
-                const AZStd::string& propertyNamePrefix,
-                const AZStd::string& srgNamePrefix,
-                const AZStd::string& optionsNamePrefix);
+                const MaterialPropertyFlags* materialPropertyDependencies,
+                const MaterialNameContext &materialNameContext);
 
             explicit LuaMaterialFunctorCommonContext(MaterialFunctor::EditorContext* editorContextImpl,
-                const AZStd::string& propertyNamePrefix,
-                const AZStd::string& srgNamePrefix,
-                const AZStd::string& optionsNamePrefix);
+                const MaterialPropertyFlags* materialPropertyDependencies,
+                const MaterialNameContext &materialNameContext);
+            
+            //! Returns false if PSO changes are not allowed, and may report errors or warnings
+            bool CheckPsoChangesAllowed();
 
         protected:
 
@@ -100,18 +98,22 @@ namespace AZ
             MaterialPropertyIndex GetMaterialPropertyIndex(const char* name, const char* functionName) const;
 
             const MaterialPropertyValue& GetMaterialPropertyValue(MaterialPropertyIndex propertyIndex) const;
+            
+            MaterialPropertyPsoHandling GetMaterialPropertyPsoHandling() const;
 
-            // These are prefix strings that will be applied to every name lookup in the lua functor.
-            // This allows the lua script to be reused in different contexts.
-            const AZStd::string& m_propertyNamePrefix;
-            const AZStd::string& m_srgNamePrefix;
-            const AZStd::string& m_optionsNamePrefix;
+            RHI::ConstPtr<MaterialPropertiesLayout> GetMaterialPropertiesLayout() const;
+
+            AZStd::string GetMaterialPropertyDependenciesString() const;
+
+            const MaterialNameContext &m_materialNameContext;
 
         private:
 
             // Only one of these will be valid
             MaterialFunctor::RuntimeContext* m_runtimeContextImpl = nullptr;
             MaterialFunctor::EditorContext* m_editorContextImpl = nullptr;
+            const MaterialPropertyFlags* m_materialPropertyDependencies = nullptr;
+            bool m_psoChangesReported = false; //!< errors/warnings about PSO changes will only be reported once per execution of the functor
         };
 
         //! Wraps RHI::RenderStates for LuaMaterialFunctor access
@@ -241,7 +243,11 @@ namespace AZ
 
             static void Reflect(BehaviorContext* behaviorContext);
 
-            explicit LuaMaterialFunctorShaderItem(ShaderCollection::Item* shaderItem) : m_shaderItem(shaderItem) {}
+            LuaMaterialFunctorShaderItem() :
+                m_context(nullptr), m_shaderItem(nullptr) {}
+
+            explicit LuaMaterialFunctorShaderItem(LuaMaterialFunctorCommonContext* context, ShaderCollection::Item* shaderItem) :
+                m_context(context), m_shaderItem(shaderItem) {}
 
             LuaMaterialFunctorRenderStates GetRenderStatesOverride();
             void SetEnabled(bool enable);
@@ -253,6 +259,7 @@ namespace AZ
         private:
             void SetShaderOptionValue(const Name& name, AZStd::function<bool(ShaderOptionGroup*, ShaderOptionIndex)> setValueCommand);
 
+            LuaMaterialFunctorCommonContext* m_context = nullptr;
             ShaderCollection::Item* m_shaderItem = nullptr;
         };
 
@@ -265,12 +272,13 @@ namespace AZ
             static void Reflect(BehaviorContext* behaviorContext);
 
             explicit LuaMaterialFunctorRuntimeContext(MaterialFunctor::RuntimeContext* runtimeContextImpl,
-                const AZStd::string& propertyNamePrefix,
-                const AZStd::string& srgNamePrefix,
-                const AZStd::string& optionsNamePrefix);
+                const MaterialPropertyFlags* materialPropertyDependencies,
+                const MaterialNameContext &materialNameContext);
 
             template<typename Type>
             Type GetMaterialPropertyValue(const char* name) const;
+
+            bool HasMaterialValue(const char* name) const;
 
             //! Set the value of a shader option. Applies to any shader that has an option with this name.
             //! @param name the name of the shader option to set
@@ -304,9 +312,8 @@ namespace AZ
             static void Reflect(BehaviorContext* behaviorContext);
 
             explicit LuaMaterialFunctorEditorContext(MaterialFunctor::EditorContext* editorContextImpl,
-                const AZStd::string& propertyNamePrefix,
-                const AZStd::string& srgNamePrefix,
-                const AZStd::string& optionsNamePrefix);
+                const MaterialPropertyFlags* materialPropertyDependencies,
+                const MaterialNameContext &materialNameContext);
 
             template<typename Type>
             Type GetMaterialPropertyValue(const char* name) const;

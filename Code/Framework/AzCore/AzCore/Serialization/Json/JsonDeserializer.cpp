@@ -9,6 +9,7 @@
 #include "AzCore/RTTI/TypeInfo.h"
 #include <AzCore/Math/UuidSerializer.h>
 #include <AzCore/RTTI/AttributeReader.h>
+#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/Json/CastingHelpers.h>
 #include <AzCore/Serialization/Json/JsonDeserializer.h>
 #include <AzCore/Serialization/Json/JsonStringConversionUtils.h>
@@ -758,6 +759,7 @@ namespace AZ
             else
             {
                 typeIdResult.m_determination = JsonDeserializer::TypeIdDetermination::FailedToDetermine;
+                typeIdResult.m_typeId = Uuid::CreateNull();
             }
         }
         else if (input.IsString())
@@ -767,6 +769,7 @@ namespace AZ
         else
         {
             typeIdResult.m_determination = JsonDeserializer::TypeIdDetermination::FailedToDetermine;
+            typeIdResult.m_typeId = Uuid::CreateNull();
         }
 
         switch (typeIdResult.m_determination)

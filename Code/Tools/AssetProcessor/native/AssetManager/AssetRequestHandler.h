@@ -115,7 +115,7 @@ namespace AssetProcessor
         {
             static constexpr unsigned int MessageType = TRequest::MessageType;
 
-            m_messageHandlers[MessageType] = [this, handler = AZStd::move(handler)](MessageData<AzFramework::AssetSystem::BaseAssetProcessorMessage> messageData)
+            m_messageHandlers[MessageType] = [handler = AZStd::move(handler)](MessageData<AzFramework::AssetSystem::BaseAssetProcessorMessage> messageData)
             {
                 MessageData<TRequest> downcastData = messageData;
 

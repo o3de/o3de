@@ -12,9 +12,6 @@
 
 #include <AzCore/std/containers/array.h>
 
-using namespace AZStd;
-using namespace UnitTestInternal;
-
 #define AZ_TEST_VALIDATE_EMPTY_LIST(_List)        \
     EXPECT_TRUE(_List.validate());             \
     EXPECT_EQ(0, _List.size());            \
@@ -31,6 +28,9 @@ using namespace UnitTestInternal;
 
 namespace UnitTest
 {
+    using namespace AZStd;
+    using namespace UnitTestInternal;
+
     // IntrusiveListContainerTest-Begin
 
     // My intrusive list class.
@@ -997,7 +997,7 @@ namespace UnitTest
             myclass_base_list.clear();
             auto reverseIterBegin = myclass_base_list.rbegin();
             auto reverseIterEnd = myclass_base_list.rend();
-            EXPECT_EQ(reverseIterEnd, reverseIterEnd);
+            EXPECT_EQ(reverseIterBegin, reverseIterEnd);
         }
     }
 }

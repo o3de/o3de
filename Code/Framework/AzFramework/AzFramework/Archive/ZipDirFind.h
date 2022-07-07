@@ -38,11 +38,10 @@ namespace AZ::IO::ZipDir
         // after this call returns successfully (with true returned), the m_szWildcard
         // contains the file name/wildcard and m_pDirHeader contains the directory where
         // the file (s) are to be found
-        bool PreFind(AZStd::string_view szWildcard);
+        bool PreFind(AZ::IO::PathView szWildcard);
 
         // matches the file wildcard in the m_szWildcard to the given file/dir name
-        // this takes into account the fact that xxx. is the alias name for xxx
-        bool MatchWildcard(AZStd::string_view szName);
+        bool MatchWildcard(AZ::IO::PathView szName);
 
         // the directory inside which the current object (file or directory) is being searched
         FileEntryTree* m_pDirHeader{};
@@ -50,7 +49,7 @@ namespace AZ::IO::ZipDir
         FileEntryTree* m_pRoot{}; // the root of the zip file in which to search
 
         // the actual wildcard being used in the current scan - the file name wildcard only!
-        AZStd::fixed_string<AZ_MAX_PATH_LEN> m_szWildcard;
+        AZ::IO::FixedMaxPath m_szWildcard;
     };
 
     class FindFile
@@ -66,9 +65,9 @@ namespace AZ::IO::ZipDir
         {
         }
         // if bExactFile is passed, only the file is searched, and besides with the exact name as passed (no wildcards)
-        bool FindFirst(AZStd::string_view szWildcard);
+        bool FindFirst(AZ::IO::PathView szWildcard);
 
-        FileEntry* FindExact(AZStd::string_view szPath);
+        FileEntry* FindExact(AZ::IO::PathView szPath);
 
         // goes on to the next file entry
         bool FindNext();
@@ -94,9 +93,9 @@ namespace AZ::IO::ZipDir
         {
         }
         // if bExactFile is passed, only the file is searched, and besides with the exact name as passed (no wildcards)
-        bool FindFirst(AZStd::string_view szWildcard);
+        bool FindFirst(AZ::IO::PathView szWildcard);
 
-        FileEntryTree* FindExact(AZStd::string_view szPath);
+        FileEntryTree* FindExact(AZ::IO::PathView szPath);
 
         // goes on to the next file entry
         bool FindNext();

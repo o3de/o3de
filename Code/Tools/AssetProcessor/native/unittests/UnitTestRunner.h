@@ -21,6 +21,7 @@
 #endif
 
 #include <gtest/gtest.h>
+#include <AzCore/UnitTest/UnitTest.h>
 
 //! These macros can be used for checking your unit tests,
 //! you can check AssetScannerUnitTest.cpp for usage
@@ -165,6 +166,9 @@ namespace UnitTestUtils
 
         bool OnPreAssert([[maybe_unused]] const char* fileName, [[maybe_unused]] int line, [[maybe_unused]] const char* func, [[maybe_unused]] const char* message) override
         {
+            // Print out absorbed asserts since asserts are pretty important and accidentally absorbing unintended ones can lead to difficult-to-detect issues
+            UnitTest::ColoredPrintf(UnitTest::COLOR_YELLOW, "Absorbed Assert: %s\n", message);
+
             ++m_numAssertsAbsorbed;
             if (m_debugMessages)
             {
@@ -262,11 +266,10 @@ namespace UnitTestUtils
 
             AZ::IO::FileIOBase::SetInstance(m_localFileIO);
 
-            m_localFileIO->SetAlias("@assets@", (newDir + QString("/ALIAS/assets")).toUtf8().constData());
+            m_localFileIO->SetAlias("@products@", (newDir + QString("/ALIAS/assets")).toUtf8().constData());
             m_localFileIO->SetAlias("@log@", (newDir + QString("/ALIAS/logs")).toUtf8().constData());
             m_localFileIO->SetAlias("@usercache@", (newDir + QString("/ALIAS/cache")).toUtf8().constData());
             m_localFileIO->SetAlias("@user@", (newDir + QString("/ALIAS/user")).toUtf8().constData());
-            m_localFileIO->SetAlias("@root@", (newDir + QString("/ALIAS/root")).toUtf8().constData());
         }
 
         ~ScopedDir()

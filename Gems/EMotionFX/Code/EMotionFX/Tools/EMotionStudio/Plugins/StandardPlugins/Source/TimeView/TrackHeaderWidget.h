@@ -70,8 +70,8 @@ namespace EMStudio
         void NameEdited(const QString& text);
         void EnabledCheckBoxChanged(int state);
 
-        void keyPressEvent(QKeyEvent* event);
-        void keyReleaseEvent(QKeyEvent* event);
+        void keyPressEvent(QKeyEvent* event) override;
+        void keyReleaseEvent(QKeyEvent* event) override;
     };
 
     /**

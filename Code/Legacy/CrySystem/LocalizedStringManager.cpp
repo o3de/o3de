@@ -32,8 +32,11 @@
 #define MAX_CELL_COUNT 32
 
 // CVAR names
+#if !defined(_RELEASE)
 const char c_sys_localization_debug[] = "sys_localization_debug";
 const char c_sys_localization_encode[] = "sys_localization_encode";
+#endif // !defined(_RELEASE)
+
 #define LOC_WINDOW "Localization"
 const char c_sys_localization_format[] = "sys_localization_format";
 
@@ -132,6 +135,44 @@ static const char* PLATFORM_INDEPENDENT_LANGUAGE_NAMES[ ILocalizationManager::eP
     "ar-SA",   // Arabic (Saudi Arabia)
     "da-DK"   // Danish (Denmark)
 };
+
+#if defined(WIN32) || defined(WIN64)
+namespace
+{
+#if defined(WIN32)
+    time_t gmt_to_local_win32(void)
+    {
+        TIME_ZONE_INFORMATION tzinfo;
+        DWORD dwStandardDaylight;
+        long bias;
+
+        dwStandardDaylight = GetTimeZoneInformation(&tzinfo);
+        bias = tzinfo.Bias;
+
+        if (dwStandardDaylight == TIME_ZONE_ID_STANDARD)
+        {
+            bias += tzinfo.StandardBias;
+        }
+
+        if (dwStandardDaylight == TIME_ZONE_ID_DAYLIGHT)
+        {
+            bias += tzinfo.DaylightBias;
+        }
+
+        return (-bias * 60);
+    }
+#endif // #if defined(WIN32)
+
+    time_t DateToSecondsUTC(struct tm& inDate)
+    {
+#if defined(WIN32)
+        return mktime(&inDate) + gmt_to_local_win32();
+#else
+        return mktime(&inDate);
+#endif // #if defined(WIN32)
+    }
+}
+#endif // #if defined(WIN32) || defined(WIN64)
 
 //////////////////////////////////////////////////////////////////////////
 #if !defined(_RELEASE)
@@ -799,16 +840,6 @@ bool CLocalizedStringsManager::ReleaseLocalizationDataByTag(
             m_pLanguage->m_vLocalizedStrings.clear();
             m_pLanguage->m_vLocalizedStrings = newVec;
         }
-
-        /*LARGE_INTEGER liEnd, liFreq;
-        QueryPerformanceCounter(&liEnd);
-        QueryPerformanceFrequency(&liFreq);
-
-        CTimeValue lockTime = CTimeValue((liEnd.QuadPart - liStart.QuadPart) * CTimeValue::TIMEVALUE_PRECISION / liFreq.QuadPart);
-        if (m_cvarLocalizationDebug >= 2)
-        {
-            CryLog("<Localization> ReleaseLocalizationDataByTag %s lock time %fMS", sTag, lockTime.GetMilliSeconds());
-        }*/
     }
 
     if (m_cvarLocalizationDebug >= 2)
@@ -874,7 +905,6 @@ inline YesNoType ToYesNoType(const char* szString)
 // Loads a string-table from a Excel XML Spreadsheet file.
 bool CLocalizedStringsManager::DoLoadExcelXmlSpreadsheet(const char* sFileName, uint8 nTagID, bool bReload)
 {
-    LOADING_TIME_PROFILE_SECTION_ARGS(sFileName)
     if (!m_pLanguage)
     {
         return false;
@@ -996,8 +1026,6 @@ bool CLocalizedStringsManager::DoLoadExcelXmlSpreadsheet(const char* sFileName, 
     char szLowerCaseKey[1024];
     // key CRC
     uint32 keyCRC;
-
-    size_t nMemSize = 0;
 
     for (;; )
     {
@@ -1479,30 +1507,6 @@ bool CLocalizedStringsManager::DoLoadExcelXmlSpreadsheet(const char* sFileName, 
             pEntry->flags |= SLocalizedStringEntry::IS_INTERCEPTED;
         }
 
-        nMemSize += sizeof(*pEntry) + pEntry->sCharacterName.length() * sizeof(char);
-        if (m_cvarLocalizationEncode == 0)
-        {
-            //Note that this isn't accurate if we're using encoding/compression to shrink the string as the encoding step hasn't happened yet
-            if (pEntry->TranslatedText.psUtf8Uncompressed)
-            {
-                nMemSize += pEntry->TranslatedText.psUtf8Uncompressed->length() * sizeof(char);
-            }
-        }
-        if (pEntry->pEditorExtension != NULL)
-        {
-            nMemSize += pEntry->pEditorExtension->sKey.length()
-                + pEntry->pEditorExtension->sOriginalActorLine.length()
-                + pEntry->pEditorExtension->sUtf8TranslatedActorLine.length() * sizeof(char)
-                + pEntry->pEditorExtension->sOriginalText.length()
-                + pEntry->pEditorExtension->sOriginalCharacterName.length();
-        }
-
-
-        // Compression Preparation
-        //unsigned int nSourceSize = pEntry->swTranslatedText.length()*sizeof(wchar_t);
-        //if (nSourceSize)
-        //  int zResult = Compress(pDest, nDestLen, pEntry->swTranslatedText.c_str(), nSourceSize);
-
         AddLocalizedString(m_pLanguage, pEntry, keyCRC);
     }
 
@@ -1510,10 +1514,7 @@ bool CLocalizedStringsManager::DoLoadExcelXmlSpreadsheet(const char* sFileName, 
     {
         pEncoder->Finalize();
 
-        {
             uint8 compressionBuffer[COMPRESSION_FIXED_BUFFER_LENGTH];
-            //uint8 decompressionBuffer[COMPRESSION_FIXED_BUFFER_LENGTH];
-            size_t uncompressedTotal = 0, compressedTotal = 0;
             for (size_t stringToCompress = startOfStringsToCompress; stringToCompress < m_pLanguage->m_vLocalizedStrings.size(); stringToCompress++)
             {
                 SLocalizedStringEntry* pStringToCompress = m_pLanguage->m_vLocalizedStrings[stringToCompress];
@@ -1521,30 +1522,19 @@ bool CLocalizedStringsManager::DoLoadExcelXmlSpreadsheet(const char* sFileName, 
                 {
                     size_t compBufSize = COMPRESSION_FIXED_BUFFER_LENGTH;
                     memset(compressionBuffer, 0, COMPRESSION_FIXED_BUFFER_LENGTH);
-                    //CryLogAlways("%u Compressing %s (%p)", stringToCompress, pStringToCompress->szCompressedTranslatedText, pStringToCompress->szCompressedTranslatedText);
                     size_t inputStringLength = strlen((const char*)(pStringToCompress->TranslatedText.szCompressed));
                     pEncoder->CompressInput(pStringToCompress->TranslatedText.szCompressed, inputStringLength, compressionBuffer, &compBufSize);
                     compressionBuffer[compBufSize] = 0;
                     pStringToCompress->huffmanTreeIndex = iEncoder;
                     pEncoder->AddRef();
-                    //CryLogAlways("Compressed %s (%u) to %s (%u)", pStringToCompress->szCompressedTranslatedText, strlen((const char*)pStringToCompress->szCompressedTranslatedText), compressionBuffer, compBufSize);
-                    uncompressedTotal += inputStringLength;
-                    compressedTotal += compBufSize;
 
                     uint8* szCompressedString = new uint8[compBufSize];
                     SAFE_DELETE_ARRAY(pStringToCompress->TranslatedText.szCompressed);
 
                     memcpy(szCompressedString, compressionBuffer, compBufSize);
                     pStringToCompress->TranslatedText.szCompressed = szCompressedString;
-
-                    //Testing code
-                    //memset( decompressionBuffer, 0, COMPRESSION_FIXED_BUFFER_LENGTH );
-                    //size_t decompBufSize = pEncoder->UncompressInput(compressionBuffer, COMPRESSION_FIXED_BUFFER_LENGTH, decompressionBuffer, COMPRESSION_FIXED_BUFFER_LENGTH);
-                    //CryLogAlways("Decompressed %s (%u) to %s (%u)", compressionBuffer, compBufSize, decompressionBuffer, decompBufSize);
                 }
             }
-            //CryLogAlways("[LOC PROFILING] %s, %u, Uncompressed %u, Compressed %u", sFileName, m_pLanguage->m_vLocalizedStrings.size() - startOfStringsToCompress, uncompressedTotal, compressedTotal);
-        }
     }
 
     pXmlTableReader->Release();
@@ -1554,11 +1544,7 @@ bool CLocalizedStringsManager::DoLoadExcelXmlSpreadsheet(const char* sFileName, 
 
 bool CLocalizedStringsManager::DoLoadAGSXmlDocument(const char* sFileName, uint8 nTagID, bool bReload)
 {
-    if (!sFileName)
-    {
-        return false;
-    }
-    if (!m_pLanguage)
+    if (!sFileName|| !m_pLanguage)
     {
         return false;
     }
@@ -1701,7 +1687,6 @@ bool CLocalizedStringsManager::DoLoadAGSXmlDocument(const char* sFileName, uint8
         }
         {
             uint8 compressionBuffer[COMPRESSION_FIXED_BUFFER_LENGTH] = {};
-            size_t uncompressedTotal = 0, compressedTotal = 0;
             for (size_t stringToCompress = startOfStringsToCompress; stringToCompress < m_pLanguage->m_vLocalizedStrings.size(); stringToCompress++)
             {
                 SLocalizedStringEntry* pStringToCompress = m_pLanguage->m_vLocalizedStrings[stringToCompress];
@@ -1714,8 +1699,6 @@ bool CLocalizedStringsManager::DoLoadAGSXmlDocument(const char* sFileName, uint8
                     compressionBuffer[compBufSize] = 0;
                     pStringToCompress->huffmanTreeIndex = iEncoder;
                     pEncoder->AddRef();
-                    uncompressedTotal += inputStringLength;
-                    compressedTotal += compBufSize;
                     uint8* szCompressedString = new uint8[compBufSize];
                     SAFE_DELETE_ARRAY(pStringToCompress->TranslatedText.szCompressed);
                     memcpy(szCompressedString, compressionBuffer, compBufSize);
@@ -1755,7 +1738,7 @@ void CLocalizedStringsManager::ReloadData()
 void CLocalizedStringsManager::AddLocalizedString(SLanguage* pLanguage, SLocalizedStringEntry* pEntry, const uint32 keyCRC32)
 {
     pLanguage->m_vLocalizedStrings.push_back(pEntry);
-    int nId = (int)pLanguage->m_vLocalizedStrings.size() - 1;
+    [[maybe_unused]] int nId = (int)pLanguage->m_vLocalizedStrings.size() - 1;
     pLanguage->m_keysMap[keyCRC32] = pEntry;
 
     if (m_cvarLocalizationDebug >= 2)
@@ -1780,7 +1763,7 @@ bool CLocalizedStringsManager::LocalizeString_s(const AZStd::string& sString, AZ
 bool CLocalizedStringsManager::LocalizeStringInternal(const char* pStr, size_t len, AZStd::string& outLocalizedString, bool bEnglish)
 {
     assert (m_pLanguage);
-    if (m_pLanguage == 0)
+    if (m_pLanguage == nullptr)
     {
         CryWarning(VALIDATOR_MODULE_SYSTEM, VALIDATOR_WARNING, "LocalizeString: No language set.");
         outLocalizedString.assign(pStr, pStr + len);
@@ -1927,11 +1910,9 @@ AZStd::string CLocalizedStringsManager::SLocalizedStringEntry::GetTranslatedText
 #endif  //LOG_DECOMP_TIMES
 
 #if !defined(NDEBUG)
-            size_t len =
-#endif
-                strnlen((const char*)decompressionBuffer, COMPRESSION_FIXED_BUFFER_LENGTH);
+            size_t len = strnlen((const char*)decompressionBuffer, COMPRESSION_FIXED_BUFFER_LENGTH);
             assert(len < COMPRESSION_FIXED_BUFFER_LENGTH && "Buffer not null-terminated");
-
+#endif
 
 #if defined(LOG_DECOMP_TIMES)
             nAllocTicks = CryGetTicks();
@@ -2418,16 +2399,6 @@ void CLocalizedStringsManager::FormatStringMessage(AZStd::string& outString, con
 }
 
 //////////////////////////////////////////////////////////////////////////
-int CLocalizedStringsManager::GetMemoryUsage(ICrySizer* pSizer)
-{
-    pSizer->AddObject(this, sizeof(*this));
-    pSizer->AddObject(m_languages);
-    pSizer->AddObject(m_prototypeEvents);
-    pSizer->AddObject(m_characterNameSet);
-    pSizer->AddObject(m_pLanguage);
-
-    return 0;
-}
 
 #if defined (WIN32) || defined(WIN64)
 namespace
@@ -2649,26 +2620,7 @@ namespace
         UnixTimeToFileTime(unixtime, &filetime);
         FileTimeToSystemTime(&filetime, systemtime);
     }
-
-    time_t UnixTimeFromFileTime(const FILETIME* filetime)
-    {
-        LONGLONG longlong = filetime->dwHighDateTime;
-        longlong <<= 32;
-        longlong |= filetime->dwLowDateTime;
-        longlong -= 116444736000000000;
-        return longlong / 10000000;
-    }
-
-    time_t UnixTimeFromSystemTime(const SYSTEMTIME* systemtime)
-    {
-        // convert systemtime to filetime
-        FILETIME filetime;
-        SystemTimeToFileTime(systemtime, &filetime);
-        // convert filetime to unixtime
-        time_t unixtime = UnixTimeFromFileTime(&filetime);
-        return unixtime;
-    }
-};
+}
 
 void CLocalizedStringsManager::LocalizeTime(time_t t, bool bMakeLocalTime, bool bShowSeconds, AZStd::string& outTimeString)
 {
@@ -2676,7 +2628,7 @@ void CLocalizedStringsManager::LocalizeTime(time_t t, bool bMakeLocalTime, bool 
     {
         struct tm thetime;
         localtime_s(&thetime, &t);
-        t = gEnv->pTimer->DateToSecondsUTC(thetime);
+        t = DateToSecondsUTC(thetime);
     }
     outTimeString.clear();
     LCID lcID = g_currentLanguageID.lcID ? g_currentLanguageID.lcID : LOCALE_USER_DEFAULT;
@@ -2700,7 +2652,7 @@ void CLocalizedStringsManager::LocalizeDate(time_t t, bool bMakeLocalTime, bool 
     {
         struct tm thetime;
         localtime_s(&thetime, &t);
-        t = gEnv->pTimer->DateToSecondsUTC(thetime);
+        t = DateToSecondsUTC(thetime);
     }
     outDateString.resize(0);
     LCID lcID = g_currentLanguageID.lcID ? g_currentLanguageID.lcID : LOCALE_USER_DEFAULT;

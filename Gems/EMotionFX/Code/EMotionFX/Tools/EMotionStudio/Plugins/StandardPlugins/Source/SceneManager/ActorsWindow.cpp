@@ -13,7 +13,6 @@
 #include <EMotionFX/CommandSystem/Source/ActorInstanceCommands.h>
 #include "../../../../EMStudioSDK/Source/EMStudioManager.h"
 #include "../../../../EMStudioSDK/Source/MainWindow.h"
-#include "../../../../EMStudioSDK/Source/UnitScaleWindow.h"
 #include <AzQtComponents/Components/Widgets/CheckBox.h>
 #include <EMotionFX/Source/ActorManager.h>
 #include <QContextMenuEvent>
@@ -23,7 +22,7 @@
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QToolBar>
-
+#include <Editor/SaveDirtyFilesCallbacks.h>
 
 namespace EMStudio
 {
@@ -119,12 +118,6 @@ namespace EMStudio
 
             // ignore visualization actors
             if (actor->GetIsUsedForVisualization())
-            {
-                continue;
-            }
-
-            // ignore engine actors
-            if (actor->GetIsOwnedByRuntime())
             {
                 continue;
             }
@@ -282,7 +275,7 @@ namespace EMStudio
         // Ask the user if he wants to save the actor in case it got modified and is about to be removed.
         for (EMotionFX::Actor* actor : toBeRemovedActors)
         {
-            m_plugin->SaveDirtyActor(actor, &commandGroup, true, false);
+            SaveDirtyActorFilesCallback::SaveDirtyActor(actor, &commandGroup, true, false);
         }
 
         AZStd::string result;
@@ -487,16 +480,6 @@ namespace EMStudio
         // create the context menu
         QMenu menu(this);
         menu.setToolTipsVisible(true);
-
-        bool actorSelected = false;
-        for (const QTreeWidgetItem* item : items)
-        {
-            if (item->parent() == nullptr)
-            {
-                actorSelected = true;
-                break;
-            }
-        }
 
         bool instanceSelected = false;
         const int selectedItemCount = items.count();

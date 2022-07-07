@@ -14,7 +14,7 @@
 
 #include <ScriptCanvasDeveloperEditor/WrapperMock.h>
 
-namespace ScriptCanvasDeveloper
+namespace ScriptCanvas::Developer
 {
     namespace Nodes
     {
@@ -67,7 +67,6 @@ namespace ScriptCanvasDeveloper
 
             ScriptCanvasEditor::NodeIdPair nodePair;
 
-            const AZ::Vector2 scenePointVec2 = AZ::Vector2(aznumeric_cast<float>(scenePoint.x()), aznumeric_cast<float>(scenePoint.y()));
             if (result == addMock)
             {
                 ScriptCanvasEditor::EditorGraphRequestBus::EventResult(nodePair, scriptCanvasId, &ScriptCanvasEditor::EditorGraphRequests::CreateCustomNode, azrtti_typeid<Mock>(), AZ::Vector2(aznumeric_cast<float>(scenePoint.x()), aznumeric_cast<float>(scenePoint.y())));

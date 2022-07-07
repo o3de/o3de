@@ -23,7 +23,7 @@ def output_test_data(scene):
         # Just write something to the file, but the filename is the main information
         # used for the test.
         f.write(f"scene.sourceFilename: {scene.sourceFilename}\n")
-    return True
+    return ''
 
 mySceneJobHandler = None
 

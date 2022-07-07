@@ -33,7 +33,7 @@ namespace AzToolsFramework
         void PrefabUndoInstance::Capture(
             const PrefabDom& initialState,
             const PrefabDom& endState,
-            const TemplateId& templateId)
+            TemplateId templateId)
         {
             m_templateId = templateId;
 
@@ -51,6 +51,10 @@ namespace AzToolsFramework
             m_instanceToTemplateInterface->PatchTemplate(m_redoPatch, m_templateId);
         }
 
+        void PrefabUndoInstance::Redo(InstanceOptionalConstReference instance)
+        {
+            m_instanceToTemplateInterface->PatchTemplate(m_redoPatch, m_templateId, instance);
+        }
 
         //PrefabEntityUpdateUndo
         PrefabUndoEntityUpdate::PrefabUndoEntityUpdate(const AZStd::string& undoOperationName)
@@ -84,8 +88,26 @@ namespace AzToolsFramework
             //generate undo/redo patches
             m_instanceToTemplateInterface->GeneratePatch(m_redoPatch, initialState, endState);
             m_instanceToTemplateInterface->AppendEntityAliasToPatchPaths(m_redoPatch, entityId);
+            
             m_instanceToTemplateInterface->GeneratePatch(m_undoPatch, endState, initialState);
             m_instanceToTemplateInterface->AppendEntityAliasToPatchPaths(m_undoPatch, entityId);
+
+            AZStd::string entityAliasPath = m_instanceToTemplateInterface->GenerateEntityAliasPath(entityId);
+            if (!entityAliasPath.empty())
+            {
+                PrefabDomReference cachedDom = instance.GetCachedInstanceDom();
+
+                if (cachedDom.has_value())
+                {
+                    // Create a copy of the dom of the end state so that it shares the lifecycle of the cached Dom.
+                    PrefabDom endStateCopy;
+                    endStateCopy.CopyFrom(endState, cachedDom->get().GetAllocator());
+                    Prefab::PrefabDomPath entityPathInDom(entityAliasPath.c_str());
+
+                    // Update the cached instance dom corresponding to the entity so that the same modified entity isn't reloaded again.
+                    entityPathInDom.Set(cachedDom->get(), AZStd::move(endStateCopy));
+                }
+            }
         }
 
         void PrefabUndoEntityUpdate::Undo()
@@ -110,10 +132,10 @@ namespace AzToolsFramework
                 m_templateId);
         }
 
-        void PrefabUndoEntityUpdate::Redo(InstanceOptionalReference instanceToExclude)
+        void PrefabUndoEntityUpdate::Redo(InstanceOptionalConstReference instance)
         {
             [[maybe_unused]] bool isPatchApplicationSuccessful =
-                m_instanceToTemplateInterface->PatchTemplate(m_redoPatch, m_templateId, instanceToExclude);
+                m_instanceToTemplateInterface->PatchTemplate(m_redoPatch, m_templateId, instance);
 
             AZ_Error(
                 "Prefab", isPatchApplicationSuccessful,
@@ -136,8 +158,8 @@ namespace AzToolsFramework
         }
 
         void PrefabUndoInstanceLink::Capture(
-            const TemplateId& targetId,
-            const TemplateId& sourceId,
+            TemplateId targetId,
+            TemplateId sourceId,
             const InstanceAlias& instanceAlias,
             PrefabDom linkPatches,
             const LinkId linkId)
@@ -252,7 +274,7 @@ namespace AzToolsFramework
                 return;
             }
 
-            PrefabDomReference sourceDom = sourceTemplate->get().GetPrefabDom();
+            PrefabDom& sourceDom = sourceTemplate->get().GetPrefabDom();
 
             //use instance pointer to reach position
             PrefabDomValueReference instanceDomRef = link->get().GetLinkedInstanceDom();
@@ -262,24 +284,22 @@ namespace AzToolsFramework
             instanceDom.CopyFrom(instanceDomRef->get(), instanceDom.GetAllocator());
 
             //apply the patch to the template within the target
-            AZ::JsonSerializationResult::ResultCode result = PrefabDomUtils::ApplyPatches(instanceDom, instanceDom.GetAllocator(), patch);
+            [[maybe_unused]] AZ::JsonSerializationResult::ResultCode result = PrefabDomUtils::ApplyPatches(instanceDom, instanceDom.GetAllocator(), patch);
 
-            AZ_Error(
+            AZ_Warning(
                 "Prefab",
                 (result.GetOutcome() != AZ::JsonSerializationResult::Outcomes::Skipped) &&
                 (result.GetOutcome() != AZ::JsonSerializationResult::Outcomes::PartialSkip),
                 "Some of the patches are not successfully applied.");
 
-            //remove the link id placed into the instance
-            auto linkIdIter = instanceDom.FindMember(PrefabDomUtils::LinkIdName);
-            if (linkIdIter != instanceDom.MemberEnd())
-            {
-                instanceDom.RemoveMember(PrefabDomUtils::LinkIdName);
-            }
+            // Remove the link ids if present in the doms. We don't want any overrides to be created on top of linkIds because
+            // linkIds are not persistent and will be created dynamically when prefabs are loaded into the editor.
+            instanceDom.RemoveMember(PrefabDomUtils::LinkIdName);
+            sourceDom.RemoveMember(PrefabDomUtils::LinkIdName);
 
             //we use this to diff our copy against the vanilla template (source template)
             PrefabDom patchLink;
-            m_instanceToTemplateInterface->GeneratePatch(patchLink, sourceDom->get(), instanceDom);
+            m_instanceToTemplateInterface->GeneratePatch(patchLink, sourceDom, instanceDom);
 
             // Create a copy of patchLink by providing the allocator of m_linkDomNext so that the patch doesn't become invalid when
             // the patch goes out of scope in this function.
@@ -310,12 +330,12 @@ namespace AzToolsFramework
             UpdateLink(m_linkDomNext);
         }
 
-        void PrefabUndoLinkUpdate::Redo(InstanceOptionalReference instanceToExclude)
+        void PrefabUndoLinkUpdate::Redo(InstanceOptionalConstReference instanceToExclude)
         {
             UpdateLink(m_linkDomNext, instanceToExclude);
         }
 
-        void PrefabUndoLinkUpdate::UpdateLink(PrefabDom& linkDom, InstanceOptionalReference instanceToExclude)
+        void PrefabUndoLinkUpdate::UpdateLink(PrefabDom& linkDom, InstanceOptionalConstReference instanceToExclude)
         {
             LinkReference link = m_prefabSystemComponentInterface->FindLink(m_linkId);
 

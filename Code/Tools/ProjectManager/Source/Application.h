@@ -11,6 +11,7 @@
 #include <AzFramework/Application/Application.h>
 #include <QCoreApplication>
 #include <PythonBindings.h>
+#include <Settings.h>
 #include <ProjectManagerWindow.h>
 #endif
 
@@ -28,14 +29,16 @@ namespace O3DE::ProjectManager
         using AzFramework::Application::Application;
         virtual ~Application();
 
-        bool Init(bool interactive = true);
+        bool Init(bool interactive = true, AZStd::unique_ptr<PythonBindings> pythonBindings = nullptr);
         bool Run();
         void TearDown();
 
     private:
         bool InitLog(const char* logName);
+        bool RegisterEngine(bool interactive);
 
         AZStd::unique_ptr<PythonBindings> m_pythonBindings;
+        AZStd::unique_ptr<Settings> m_settings;
         QSharedPointer<QCoreApplication> m_app;
         QSharedPointer<ProjectManagerWindow> m_mainWindow;
 

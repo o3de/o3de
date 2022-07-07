@@ -13,6 +13,7 @@
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/View.h>
 #include <Atom/RPI.Reflect/System/RenderPipelineDescriptor.h>
+#include <PostProcess/PostProcessFeatureProcessor.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Math/MatrixUtils.h>
 #include <AzCore/Name/Name.h>
@@ -47,18 +48,42 @@ namespace TrackView
         AZ::Name viewName = AZ::Name("MainCamera");
         m_view = AZ::RPI::View::CreateView(viewName, AZ::RPI::View::UsageCamera);
         m_renderPipeline->SetDefaultView(m_view);
+        m_targetView = scene.GetDefaultRenderPipeline()->GetDefaultView();
+        if (AZ::Render::PostProcessFeatureProcessor* fp = scene.GetFeatureProcessor<AZ::Render::PostProcessFeatureProcessor>())
+        {
+            // This will be set again to mimic the active camera in UpdateView
+            fp->SetViewAlias(m_view, m_targetView);
+        }
     }
 
     void AtomOutputFrameCapture::DestroyPipeline(AZ::RPI::Scene& scene)
     {
+        if (AZ::Render::PostProcessFeatureProcessor* fp = scene.GetFeatureProcessor<AZ::Render::PostProcessFeatureProcessor>())
+        {
+            // Remove view alias introduced in CreatePipeline and UpdateView
+            fp->RemoveViewAlias(m_view);
+        }
         scene.RemoveRenderPipeline(m_renderPipeline->GetId());
         m_passHierarchy.clear();
         m_renderPipeline.reset();
         m_view.reset();
+        m_targetView.reset();
     }
 
-    void AtomOutputFrameCapture::UpdateView(const AZ::Matrix3x4& cameraTransform, const AZ::Matrix4x4& cameraProjection)
+    void AtomOutputFrameCapture::UpdateView(const AZ::Matrix3x4& cameraTransform, const AZ::Matrix4x4& cameraProjection, const AZ::RPI::ViewPtr targetView)
     {
+        if (targetView && targetView != m_targetView)
+        {
+            if (AZ::RPI::Scene* scene = SceneFromGameEntityContext())
+            {
+                if (AZ::Render::PostProcessFeatureProcessor* fp = scene->GetFeatureProcessor<AZ::Render::PostProcessFeatureProcessor>())
+                {
+                    fp->SetViewAlias(m_view, targetView);
+                    m_targetView = targetView;
+                }
+            }
+        }
+
         m_view->SetCameraTransform(cameraTransform);
         m_view->SetViewToClipMatrix(cameraProjection);
     }
@@ -66,22 +91,33 @@ namespace TrackView
     bool AtomOutputFrameCapture::BeginCapture(
         const AZ::RPI::AttachmentReadback::CallbackFunction& attachmentReadbackCallback, CaptureFinishedCallback captureFinishedCallback)
     {
+        AZ_Assert(m_frameCaptureId == AZ::Render::FrameCaptureRequests::s_InvalidFrameCaptureId, "Attempting to start a 2nd frame capture while one is in progress");
         AZ::Render::FrameCaptureNotificationBus::Handler::BusConnect();
 
         m_captureFinishedCallback = AZStd::move(captureFinishedCallback);
 
         // note: "Output" (slot name) maps to MainPipeline.pass CopyToSwapChain
-        bool startedCapture = false;
+        uint32_t frameCaptureId = AZ::Render::FrameCaptureRequests::s_InvalidFrameCaptureId;
         AZ::Render::FrameCaptureRequestBus::BroadcastResult(
-            startedCapture, &AZ::Render::FrameCaptureRequestBus::Events::CapturePassAttachmentWithCallback, m_passHierarchy,
+            frameCaptureId, &AZ::Render::FrameCaptureRequestBus::Events::CapturePassAttachmentWithCallback, m_passHierarchy,
             AZStd::string("Output"), attachmentReadbackCallback, AZ::RPI::PassAttachmentReadbackOption::Output);
+        if (frameCaptureId != AZ::Render::FrameCaptureRequests::s_InvalidFrameCaptureId)
+        {
+            m_frameCaptureId = frameCaptureId;
+            return true;
+        }
 
-        return startedCapture;
+        return false;
     }
 
     void AtomOutputFrameCapture::OnCaptureFinished(
-        [[maybe_unused]] AZ::Render::FrameCaptureResult result, [[maybe_unused]] const AZStd::string& info)
+        uint32_t frameCaptureId, [[maybe_unused]] AZ::Render::FrameCaptureResult result, [[maybe_unused]] const AZStd::string& info)
     {
+        // ignore captures from other systems.
+        if (m_frameCaptureId == AZ::Render::FrameCaptureRequests::s_InvalidFrameCaptureId || frameCaptureId != m_frameCaptureId)
+        {
+            return;
+        }
         m_captureFinishedCallback();
         AZ::Render::FrameCaptureNotificationBus::Handler::BusDisconnect();
     }

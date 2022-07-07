@@ -34,6 +34,8 @@
 #include <EMotionFX/Source/DebugDraw.h>
 #include <EMotionFX/Source/RagdollInstance.h>
 
+#include <numeric>
+
 namespace EMotionFX
 {
     AZ_CLASS_ALLOCATOR_IMPL(ActorInstance, ActorInstanceAllocator, 0)
@@ -372,6 +374,8 @@ namespace EMotionFX
     // updates the skinning matrices of all nodes
     void ActorInstance::UpdateSkinningMatrices()
     {
+        AZ_PROFILE_SCOPE(Animation, "ActorInstance::UpdateSkinningMatrices");
+
         AZ::Matrix3x4* skinningMatrices = m_transformData->GetSkinningMatrices();
         const Pose* pose = m_transformData->GetCurrentPose();
 
@@ -596,6 +600,8 @@ namespace EMotionFX
     // update the bounding volume
     void ActorInstance::UpdateBounds(size_t geomLODLevel, EBoundsType boundsType, uint32 itemFrequency)
     {
+        AZ_PROFILE_SCOPE(Animation, "ActorInstance::UpdateBounds");
+
         // depending on the bounding volume update type
         switch (boundsType)
         {
@@ -1028,7 +1034,7 @@ namespace EMotionFX
                     AZ::Vector3* normals = (AZ::Vector3*)mesh->FindVertexData(Mesh::ATTRIB_NORMALS);
                     AZ::Vector3  norm = MCore::BarycentricInterpolate<AZ::Vector3>(
                             closestBaryU, closestBaryV,
-                            normals[closestIndices[0]], normals[closestIndices[1]], normals[closestIndices[2]]);                   
+                            normals[closestIndices[0]], normals[closestIndices[1]], normals[closestIndices[2]]);
                     norm = closestTransform.TransformVector(norm);
                     norm.Normalize();
                     *outNormal = norm;

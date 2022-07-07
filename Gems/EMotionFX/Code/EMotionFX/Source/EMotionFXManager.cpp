@@ -6,7 +6,6 @@
  *
  */
 
-// include the required headers
 #include "EMotionFXConfig.h"
 #include "EMotionFXManager.h"
 #include "Importer/Importer.h"
@@ -29,6 +28,8 @@
 #include <EMotionFX/Source/Allocators.h>
 #include <EMotionFX/Source/DebugDraw.h>
 #include <EMotionFX/Source/MotionData/MotionDataFactory.h>
+#include <EMotionFX/Source/PoseDataFactory.h>
+#include <Integration/Rendering/RenderActorSettings.h>
 
 namespace EMotionFX
 {
@@ -50,7 +51,7 @@ namespace EMotionFX
 
         // Create EMotion FX allocators
         Allocators::Create();
-        
+
         // create the new object
         gEMFX = AZ::Environment::CreateVariable<EMotionFXManager*>(kEMotionFXInstanceVarName);
         gEMFX.Set(EMotionFXManager::Create());
@@ -75,6 +76,7 @@ namespace EMotionFX
         gEMFX.Get()->SetRecorder              (Recorder::Create());
         gEMFX.Get()->SetMotionInstancePool    (MotionInstancePool::Create());
         gEMFX.Get()->SetDebugDraw             (aznew DebugDraw());
+        gEMFX.Get()->SetPoseDataFactory       (aznew PoseDataFactory());
         gEMFX.Get()->SetGlobalSimulationSpeed (1.0f);
 
         // set the number of threads
@@ -123,6 +125,7 @@ namespace EMotionFX
         m_recorder               = nullptr;
         m_motionInstancePool     = nullptr;
         m_debugDraw              = nullptr;
+        m_poseDataFactory        = nullptr;
         m_unitType               = MCore::Distance::UNITTYPE_METERS;
         m_globalSimulationSpeed  = 1.0f;
         m_isInEditorMode        = false;
@@ -135,6 +138,8 @@ namespace EMotionFX
         {
             RegisterMemoryCategories(MCore::GetMemoryTracker());
         }
+
+        m_renderActorSettings = AZStd::make_unique<AZ::Render::RenderActorSettings>();
     }
 
 
@@ -166,11 +171,15 @@ namespace EMotionFX
 
         delete m_debugDraw;
         m_debugDraw = nullptr;
-        
+
+        delete m_poseDataFactory;
+        m_poseDataFactory = nullptr;
+
+        m_renderActorSettings.reset();
 
         m_eventManager->Destroy();
         m_eventManager = nullptr;
-        
+
         // delete the thread datas
         for (uint32 i = 0; i < m_threadDatas.size(); ++i)
         {
@@ -341,7 +350,7 @@ namespace EMotionFX
     void EMotionFXManager::InitAssetFolderPaths()
     {
         // Initialize the asset source folder path.
-        const char* assetSourcePath = AZ::IO::FileIOBase::GetInstance()->GetAlias("@devassets@");
+        const char* assetSourcePath = AZ::IO::FileIOBase::GetInstance()->GetAlias("@projectroot@");
         if (assetSourcePath)
         {
             m_assetSourceFolder = assetSourcePath;
@@ -361,12 +370,12 @@ namespace EMotionFX
         }
         else
         {
-            AZ_Warning("EMotionFX", false, "Failed to set asset source path for alias '@devassets@'.");
+            AZ_Warning("EMotionFX", false, "Failed to set asset source path for alias '@projectroot@'.");
         }
 
 
         // Initialize the asset cache folder path.
-        const char* assetCachePath = AZ::IO::FileIOBase::GetInstance()->GetAlias("@assets@");
+        const char* assetCachePath = AZ::IO::FileIOBase::GetInstance()->GetAlias("@products@");
         if (assetCachePath)
         {
             m_assetCacheFolder = assetCachePath;
@@ -386,7 +395,7 @@ namespace EMotionFX
         }
         else
         {
-            AZ_Warning("EMotionFX", false, "Failed to set asset cache path for alias '@assets@'.");
+            AZ_Warning("EMotionFX", false, "Failed to set asset cache path for alias '@products@'.");
         }
     }
 
@@ -568,7 +577,6 @@ namespace EMotionFX
         memTracker.RegisterCategory(EMFX_MEMCATEGORY_ANIMGRAPH_SYNCTRACK,                     "EMFX_MEMCATEGORY_ANIMGRAPH_SYNCTRACK");
         memTracker.RegisterCategory(EMFX_MEMCATEGORY_ANIMGRAPH_POSE,                          "EMFX_MEMCATEGORY_ANIMGRAPH_POSE");
         memTracker.RegisterCategory(EMFX_MEMCATEGORY_ANIMGRAPH_PROCESSORS,                    "EMFX_MEMCATEGORY_ANIMGRAPH_PROCESSORS");
-        memTracker.RegisterCategory(EMFX_MEMCATEGORY_ANIMGRAPH_GAMECONTROLLER,                "EMFX_MEMCATEGORY_ANIMGRAPH_GAMECONTROLLER");
         memTracker.RegisterCategory(EMFX_MEMCATEGORY_ANIMGRAPH_EVENTBUFFERS,                  "EMFX_MEMCATEGORY_ANIMGRAPH_EVENTBUFFERS");
         memTracker.RegisterCategory(EMFX_MEMCATEGORY_ANIMGRAPH_POSEPOOL,                      "EMFX_MEMCATEGORY_ANIMGRAPH_POSEPOOL");
         memTracker.RegisterCategory(EMFX_MEMCATEGORY_ANIMGRAPH_NODES,                         "EMFX_MEMCATEGORY_ANIMGRAPH_NODES");
@@ -637,7 +645,6 @@ namespace EMotionFX
         idValues.push_back(EMFX_MEMCATEGORY_ANIMGRAPH_SYNCTRACK);
         idValues.push_back(EMFX_MEMCATEGORY_ANIMGRAPH_POSE);
         idValues.push_back(EMFX_MEMCATEGORY_ANIMGRAPH_PROCESSORS);
-        idValues.push_back(EMFX_MEMCATEGORY_ANIMGRAPH_GAMECONTROLLER);
         idValues.push_back(EMFX_MEMCATEGORY_ANIMGRAPH_EVENTBUFFERS);
         idValues.push_back(EMFX_MEMCATEGORY_ANIMGRAPH_POSEPOOL);
         idValues.push_back(EMFX_MEMCATEGORY_ANIMGRAPH_NODES);

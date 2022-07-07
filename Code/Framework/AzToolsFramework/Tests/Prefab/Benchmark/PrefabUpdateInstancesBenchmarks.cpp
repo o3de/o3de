@@ -24,7 +24,7 @@ namespace Benchmark
         const auto& nestedTemplatePath = m_paths.front();
         const auto& enclosingTemplatePath = m_paths.back();
 
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             state.PauseTiming();
 
@@ -36,7 +36,7 @@ namespace Benchmark
 
             AZStd::unique_ptr<Instance> enclosingInstance = m_prefabSystemComponent->CreatePrefab(
                 {},
-                MakeInstanceList( AZStd::move(nestedInstance) ),
+                MakeInstanceList(AZStd::move(nestedInstance)),
                 enclosingTemplatePath);
 
             TemplateId templateToInstantiateId = enclosingInstance->GetTemplateId();
@@ -85,7 +85,7 @@ namespace Benchmark
 
         const unsigned int numInstances = maxDepth;
 
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             state.PauseTiming();
 
@@ -99,7 +99,7 @@ namespace Benchmark
             {
                 currentInstanceRoot = m_prefabSystemComponent->CreatePrefab(
                     {},
-                    MakeInstanceList( AZStd::move(currentInstanceRoot) ),
+                    MakeInstanceList(AZStd::move(currentInstanceRoot)),
                     m_paths[currentDepth - 1]);
             }
 
@@ -137,7 +137,7 @@ namespace Benchmark
 
         const unsigned int numInstances = numRootInstances * maxDepth;
 
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             state.PauseTiming();
 
@@ -151,7 +151,7 @@ namespace Benchmark
             {
                 currentInstanceRoot = m_prefabSystemComponent->CreatePrefab(
                     {},
-                    MakeInstanceList( AZStd::move(currentInstanceRoot) ),
+                    MakeInstanceList(AZStd::move(currentInstanceRoot)),
                     m_paths[currentDepth]);
             }
 
@@ -197,7 +197,7 @@ namespace Benchmark
 
         const unsigned int numInstances =  (1 << maxDepth) - 1;
 
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             state.PauseTiming();
 
@@ -214,7 +214,7 @@ namespace Benchmark
 
                 currentInstanceRoot = m_prefabSystemComponent->CreatePrefab(
                     {},
-                    MakeInstanceList( AZStd::move(currentInstanceRoot), AZStd::move(extraNestedInstance) ),
+                    MakeInstanceList(AZStd::move(currentInstanceRoot), AZStd::move(extraNestedInstance)),
                     m_paths[currentDepth]);
             }
 

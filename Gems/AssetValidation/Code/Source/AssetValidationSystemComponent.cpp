@@ -142,14 +142,14 @@ namespace AssetValidation
         system.GetIConsole()->AddCommand("addseedlist", ConsoleCommandAddSeedList);
         system.GetIConsole()->AddCommand("removeseedlist", ConsoleCommandRemoveSeedList);
         system.GetIConsole()->AddCommand("printexcluded", ConsoleCommandTogglePrintExcluded);
-    }       
+    }
 
     bool AssetValidationSystemComponent::IsKnownAsset(const char* assetPath)
     {
         AZStd::string lowerAsset{ assetPath };
         AZStd::replace(lowerAsset.begin(), lowerAsset.end(), AZ_WRONG_DATABASE_SEPARATOR, AZ_CORRECT_DATABASE_SEPARATOR);
 
-        const AZStd::vector<AZStd::string> prefixes = { "./", "@assets@/" };
+        const AZStd::vector<AZStd::string> prefixes = { "./", "@products@/" };
         for (const AZStd::string& prefix : prefixes)
         {
             if (lowerAsset.starts_with(prefix))
@@ -392,7 +392,7 @@ namespace AssetValidation
         AssetValidationRequestBus::Broadcast(&AssetValidationRequestBus::Events::AddSeedList, seedfilepath);
     }
 
-    bool AssetValidationSystemComponent::AddSeedsFor(const AzFramework::AssetSeedList& seedList, AZ::u32 seedId) 
+    bool AssetValidationSystemComponent::AddSeedsFor(const AzFramework::AssetSeedList& seedList, AZ::u32 seedId)
     {
         for (const AzFramework::SeedInfo& thisSeed : seedList)
         {
@@ -401,7 +401,7 @@ namespace AssetValidation
         return true;
     }
 
-    bool AssetValidationSystemComponent::RemoveSeedsFor(const AzFramework::AssetSeedList& seedList, AZ::u32 seedId) 
+    bool AssetValidationSystemComponent::RemoveSeedsFor(const AzFramework::AssetSeedList& seedList, AZ::u32 seedId)
     {
         AssetValidationRequests::AssetSourceList removeList;
         for (const AzFramework::SeedInfo& thisSeed : seedList)
@@ -439,13 +439,6 @@ namespace AssetValidation
 
     bool GetDefaultSeedListFiles(AZStd::vector<AZStd::string>& defaultSeedListFiles)
     {
-        const char* engineRoot = nullptr;
-        AzFramework::ApplicationRequests::Bus::BroadcastResult(engineRoot, &AzFramework::ApplicationRequests::GetEngineRoot);
-
-        const char* appRoot = nullptr;
-        AzFramework::ApplicationRequests::Bus::BroadcastResult(appRoot, &AzFramework::ApplicationRequests::GetAppRoot);
-
-
         auto settingsRegistry = AZ::SettingsRegistry::Get();
         AZ::SettingsRegistryInterface::FixedValueString gameFolder;
         auto projectKey = AZ::SettingsRegistryInterface::FixedValueString::format("%s/project_path", AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey);
@@ -509,30 +502,28 @@ namespace AssetValidation
 
     AZ::Outcome<AzFramework::AssetSeedList, AZStd::string> AssetValidationSystemComponent::LoadSeedList(const char* seedPath, AZStd::string& seedListPath)
     {
-        AZStd::string absoluteSeedPath = seedPath;
+        AZ::IO::Path absoluteSeedPath = seedPath;
 
         if (AZ::StringFunc::Path::IsRelative(seedPath))
         {
-            const char* appRoot = nullptr;
-            AzFramework::ApplicationRequests::Bus::BroadcastResult(appRoot, &AzFramework::ApplicationRequests::GetEngineRoot);
+            AZ::IO::FixedMaxPath engineRoot = AZ::Utils::GetEnginePath();
 
-            if (!appRoot)
+            if (engineRoot.empty())
             {
                 return AZ::Failure(AZStd::string("Couldn't get engine root"));
             }
 
-            absoluteSeedPath = AZStd::string::format("%s/%s", appRoot, seedPath);
+            absoluteSeedPath = (engineRoot / seedPath).String();
         }
 
-        AzFramework::StringFunc::Path::Normalize(absoluteSeedPath);
         AzFramework::AssetSeedList seedList;
 
-        if (!AZ::Utils::LoadObjectFromFileInPlace(absoluteSeedPath, seedList))
+        if (!AZ::Utils::LoadObjectFromFileInPlace(absoluteSeedPath.Native(), seedList))
         {
             return AZ::Failure(AZStd::string::format("Failed to load seed list %s", absoluteSeedPath.c_str()));
         }
 
-        seedListPath = absoluteSeedPath;
+        seedListPath = AZStd::move(absoluteSeedPath.Native());
 
         return AZ::Success(seedList);
     }

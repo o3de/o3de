@@ -12,6 +12,7 @@
 #include <Atom/RHI/Buffer.h>
 #include <Atom/RHI/BufferPool.h>
 #include <Atom/RPI.Public/FeatureProcessor.h>
+#include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 
 namespace AZ
@@ -36,8 +37,6 @@ namespace AZ
             void Activate() override;
             //! Releases GPU resources.
             void Deactivate() override;
-            //! Binds buffers
-            void Render(const FeatureProcessor::RenderPacket& packet) override;
 
             // RPI::SceneNotificationBus overrides ...
             void OnBeginPrepareRender() override;
@@ -68,11 +67,13 @@ namespace AZ
             // Prepare GPU buffers for object transformation matrices
             // Create the buffers if they don't exist. Otherwise, resize them if they are not large enough for the matrices
             void PrepareBuffers();
-            
-            Data::Instance<RPI::ShaderResourceGroup> m_sceneSrg;
-            RHI::ShaderInputBufferIndex m_objectToWorldBufferIndex;
-            RHI::ShaderInputBufferIndex m_objectToWorldInverseTransposeBufferIndex;
-            RHI::ShaderInputBufferIndex m_objectToWorldHistoryBufferIndex;
+
+            void UpdateSceneSrg(RPI::ShaderResourceGroup *sceneSrg);
+
+            RPI::Scene::PrepareSceneSrgEvent::Handler m_updateSceneSrgHandler;
+            RHI::ShaderInputNameIndex m_objectToWorldBufferIndex = "m_objectToWorldBuffer";
+            RHI::ShaderInputNameIndex m_objectToWorldInverseTransposeBufferIndex = "m_objectToWorldInverseTransposeBuffer";
+            RHI::ShaderInputNameIndex m_objectToWorldHistoryBufferIndex = "m_objectToWorldHistoryBuffer";
 
             // Stores transforms that are uploaded to a GPU buffer. Used slots have float12(matrix3x4) values, empty slots
             // have a uint32_t that points to the next empty slot like a linked list. m_firstAvailableMeshTransformIndex stores the first

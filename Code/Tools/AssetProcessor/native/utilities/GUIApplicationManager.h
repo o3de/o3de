@@ -24,20 +24,30 @@ class ConnectionManager;
 class IniConfiguration;
 class ApplicationServer;
 class FileServer;
-class ShaderCompilerManager;
-class ShaderCompilerModel;
 
 namespace AssetProcessor
 {
     class AssetRequestHandler;
 }
 
+class GUIApplicationManager;
+
+struct ErrorCollector
+{
+    explicit ErrorCollector(QWidget* parent = nullptr) : m_parent(parent){}
+    ~ErrorCollector();
+
+    void AddError(AZStd::string message);
+
+    QWidget* m_parent{};
+    QStringList m_errorMessages;
+};
+
 //! This class is the Application manager for the GUI Mode
 
 
 class GUIApplicationManager
     : public ApplicationManagerBase
-    , public AssetProcessor::MessageInfoBus::Handler
 {
     Q_OBJECT
 public:
@@ -47,8 +57,6 @@ public:
     ApplicationManager::BeforeRunStatus BeforeRun() override;
     IniConfiguration* GetIniConfiguration() const;
     FileServer* GetFileServer() const;
-    ShaderCompilerManager* GetShaderCompilerManager() const;
-    ShaderCompilerModel* GetShaderCompilerModel() const;
 
     bool Run() override;
     ////////////////////////////////////////////////////
@@ -72,10 +80,6 @@ private:
     void DestroyIniConfiguration();
     void InitFileServer();
     void DestroyFileServer();
-    void InitShaderCompilerManager();
-    void DestroyShaderCompilerManager();
-    void InitShaderCompilerModel();
-    void DestroyShaderCompilerModel();
     void Destroy() override;
 
 Q_SIGNALS:
@@ -87,6 +91,7 @@ protected Q_SLOTS:
     void ShowMessageBox(QString title, QString msg, bool isCritical);
     void ShowTrayIconMessage(QString msg);
     void ShowTrayIconErrorMessage(QString msg);
+    void QuitRequested() override;
 
 private:
     bool Restart();
@@ -99,8 +104,7 @@ private:
 
     IniConfiguration* m_iniConfiguration = nullptr;
     FileServer* m_fileServer = nullptr;
-    ShaderCompilerManager* m_shaderCompilerManager = nullptr;
-    ShaderCompilerModel* m_shaderCompilerModel = nullptr;
+
     QFileSystemWatcher m_qtFileWatcher;
     AZ::UserSettingsProvider m_localUserSettings;
     bool m_messageBoxIsVisible = false;
@@ -108,6 +112,7 @@ private:
 
     QPointer<QSystemTrayIcon> m_trayIcon;
     QPointer<MainWindow> m_mainWindow;
+    AZStd::unique_ptr<ErrorCollector> m_startupErrorCollector; // Collects errors during start up to display when startup has finished
 
     AZStd::chrono::system_clock::time_point m_timeWhenLastWarningWasShown;
 };

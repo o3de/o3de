@@ -11,12 +11,12 @@
 #include <AzCore/IO/Path/Path.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/StringFunc/StringFunc.h>
+#include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <EMotionFX/Source/EMotionFXManager.h>
 #include <QtCore/QFileInfo>
 #include <QtCore/QSettings>
 #include <QtGui/QHelpEvent>
 #include <QtWidgets/QToolTip>
-
 
 namespace MysticQt
 {
@@ -128,56 +128,52 @@ namespace MysticQt
     {
         m_recentFilesMenu->clear();
 
-        AZStd::string sourceFolder = EMotionFX::GetEMotionFX().GetAssetSourceFolder();
         AZStd::string cacheFolder = EMotionFX::GetEMotionFX().GetAssetCacheFolder();
-        AzFramework::StringFunc::Path::Normalize(sourceFolder);
         AzFramework::StringFunc::Path::Normalize(cacheFolder);
-        AzFramework::StringFunc::Strip(sourceFolder, AZ_CORRECT_FILESYSTEM_SEPARATOR, true, false, true);
         AzFramework::StringFunc::Strip(cacheFolder, AZ_CORRECT_FILESYSTEM_SEPARATOR, true, false, true);
 
         int recentFilesAdded = 0;
-        QString menuItemText;
-        AZStd::string folder;
         const int recentFileCount = m_recentFiles.size();
         for (int i = 0; i < recentFileCount; ++i)
         {
-            const QFileInfo fileInfo(m_recentFiles[i]);
-            folder = fileInfo.absolutePath().toUtf8().data();
-            AzFramework::StringFunc::Path::Normalize(folder);
-            AzFramework::StringFunc::Strip(folder, AZ_CORRECT_FILESYSTEM_SEPARATOR, true, false, true);
-
-            auto CharacterCompareIgnoreCase = [](const char lhs, const char rhs)
+            const QString recentFilePath = m_recentFiles[i];
+            if (!QFile::exists(recentFilePath))
             {
-                return tolower(lhs) == tolower(rhs);
-            };
-            auto PathCompareIgnoreCase = [&CharacterCompareIgnoreCase](const AZ::IO::PathView& lhs, const AZ::IO::PathView& rhs)
-            {
-                AZStd::string_view lhsStringView = lhs.Native();
-                AZStd::string_view rhsStringView = rhs.Native();
-                return AZStd::equal(lhsStringView.begin(), lhsStringView.end(), rhsStringView.begin(), rhsStringView.end(),
-                    CharacterCompareIgnoreCase);
-            };
+                continue;
+            }
 
-            AZ::IO::PathView folderPathView(folder);
-            AZ::IO::PathView assetSourceView(sourceFolder);
-            AZ::IO::PathView assetCacheView(cacheFolder);
-            // The source folder is case-sensitive, so use the normal path compare
-            auto [folderPathIter, assetSourceIter] = AZStd::mismatch(folderPathView.begin(), folderPathView.end(),
-                assetSourceView.begin(), assetSourceView.end());
-            // The Cache folder is always lowercase, so compare while ignoring case
-            auto [folderPathIter2, assetCacheIter] = AZStd::mismatch(folderPathView.begin(), folderPathView.end(),
-                assetCacheView.begin(), assetCacheView.end(), PathCompareIgnoreCase);
-            // Both of the above mismatch checks if folder path is a sub-directory of the asset source path or
-            // the asset cache path. If either asset source path or asset cache path PathView reaches the end
-            // iterator, then the folder path is either equal to one of them or a sub-directory of one of them
+            AZStd::string normalizedPath = recentFilePath.toUtf8().data();
+            AzFramework::StringFunc::Path::Normalize(normalizedPath);
 
-            // Skip files that are not part of the current game directory.
-            if (sourceFolder == folder
-                || assetSourceIter == assetSourceView.end()
-                || cacheFolder == folder
-                || assetCacheIter == assetCacheView.end())
+            // Check if the file can be found in any of the scan folders (Project asset paths, gem asset paths, etc.)
+            bool foundInScanFolders = false;
             {
-                menuItemText = QString("&%1 %2").arg(i + 1).arg(fileInfo.fileName());
+                bool getScanFoldersSuccess = false;
+                AZStd::vector<AZStd::string> scanFolders;
+                AzToolsFramework::AssetSystemRequestBus::BroadcastResult(getScanFoldersSuccess, &AzToolsFramework::AssetSystemRequestBus::Events::GetScanFolders, scanFolders);
+                if (getScanFoldersSuccess)
+                {
+                    for (AZStd::string& scanFolder : scanFolders)
+                    {
+                        AzFramework::StringFunc::Path::Normalize(scanFolder);
+                        if (AzFramework::StringFunc::Contains(normalizedPath, scanFolder))
+                        {
+                            foundInScanFolders = true;
+                        }
+                    }
+                }
+
+                // Is the file part of the asset cache folder?
+                if (AzFramework::StringFunc::Contains(normalizedPath, cacheFolder))
+                {
+                    foundInScanFolders = true;
+                }
+            }
+
+            if (foundInScanFolders)
+            {
+                const QFileInfo fileInfo(m_recentFiles[i]);
+                const QString menuItemText = QString("&%1 %2").arg(i + 1).arg(fileInfo.fileName());
 
                 QAction* action = new QAction(m_recentFilesMenu);
                 action->setText(menuItemText);

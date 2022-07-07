@@ -8,15 +8,12 @@
 
 #include <CoreLights/SimplePointLightFeatureProcessor.h>
 
-#include <AzCore/Debug/EventTrace.h>
-
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Color.h>
 
 #include <Atom/Feature/CoreLights/CoreLightsConstants.h>
 
 #include <Atom/RHI/Factory.h>
-#include <Atom/RHI/CpuProfiler.h>
 
 #include <Atom/RPI.Public/ColorManagement/TransformColor.h>
 #include <Atom/RPI.Public/RPISystemInterface.h>
@@ -102,7 +99,7 @@ namespace AZ
 
         void SimplePointLightFeatureProcessor::Simulate(const FeatureProcessor::SimulatePacket& packet)
         {
-            AZ_ATOM_PROFILE_FUNCTION("RPI", "SimplePointLightFeatureProcessor: Simulate");
+            AZ_PROFILE_SCOPE(RPI, "SimplePointLightFeatureProcessor: Simulate");
             AZ_UNUSED(packet);
 
             if (m_deviceBufferNeedsUpdate)
@@ -114,7 +111,7 @@ namespace AZ
 
         void SimplePointLightFeatureProcessor::Render(const SimplePointLightFeatureProcessor::RenderPacket& packet)
         {
-            AZ_ATOM_PROFILE_FUNCTION("RPI", "SimplePointLightFeatureProcessor: Render");
+            AZ_PROFILE_SCOPE(RPI, "SimplePointLightFeatureProcessor: Render");
 
             for (const RPI::ViewPtr& view : packet.m_views)
             {
@@ -152,6 +149,22 @@ namespace AZ
 
             attenuationRadius = AZStd::max<float>(attenuationRadius, 0.001f); // prevent divide by zero.
             m_pointLightData.GetData(handle.GetIndex()).m_invAttenuationRadiusSquared = 1.0f / (attenuationRadius * attenuationRadius);
+            m_deviceBufferNeedsUpdate = true;
+        }
+
+        void SimplePointLightFeatureProcessor::SetAffectsGI(LightHandle handle, bool affectsGI)
+        {
+            AZ_Assert(handle.IsValid(), "Invalid LightHandle passed to SimplePointLightFeatureProcessor::SetAffectsGI().");
+
+            m_pointLightData.GetData(handle.GetIndex()).m_affectsGI = affectsGI;
+            m_deviceBufferNeedsUpdate = true;
+        }
+
+        void SimplePointLightFeatureProcessor::SetAffectsGIFactor(LightHandle handle, float affectsGIFactor)
+        {
+            AZ_Assert(handle.IsValid(), "Invalid LightHandle passed to SimplePointLightFeatureProcessor::SetAffectsGIFactor().");
+
+            m_pointLightData.GetData(handle.GetIndex()).m_affectsGIFactor = affectsGIFactor;
             m_deviceBufferNeedsUpdate = true;
         }
 

@@ -92,6 +92,7 @@ namespace AssetProcessor
         }
 
         QModelIndex parentIndex = createIndex(parent->GetRow(), 0, parent);
+        Q_ASSERT(checkIndex(parentIndex));
 
         beginRemoveRows(parentIndex, assetToRemove->GetRow(), assetToRemove->GetRow());
 
@@ -179,6 +180,8 @@ namespace AssetProcessor
             
             QModelIndex existingIndexStart = createIndex(existingEntry->second->GetRow(), 0, existingEntry->second);
             QModelIndex existingIndexEnd = createIndex(existingEntry->second->GetRow(), existingEntry->second->GetColumnCount() - 1, existingEntry->second);
+            Q_ASSERT(checkIndex(existingIndexStart));
+            Q_ASSERT(checkIndex(existingIndexEnd));
             dataChanged(existingIndexStart, existingIndexEnd);
             return;
         }
@@ -205,7 +208,8 @@ namespace AssetProcessor
             {
                 if (!modelIsResetting)
                 {
-                    QModelIndex parentIndex = createIndex(parentItem->GetRow(), 0, parentItem);
+                    QModelIndex parentIndex = parentItem == m_root.get() ? QModelIndex() : createIndex(parentItem->GetRow(), 0, parentItem);
+                    Q_ASSERT(checkIndex(parentIndex));
                     beginInsertRows(parentIndex, parentItem->getChildCount(), parentItem->getChildCount());
                 }
                 nextParent = parentItem->CreateChild(ProductAssetTreeItemData::MakeShared(nullptr, currentFullFolderPath.Native(), currentPath.c_str(), true, AZ::Uuid::CreateNull()));
@@ -231,7 +235,8 @@ namespace AssetProcessor
 
         if (!modelIsResetting)
         {
-            QModelIndex parentIndex = createIndex(parentItem->GetRow(), 0, parentItem);
+            QModelIndex parentIndex = parentItem == m_root.get() ? QModelIndex() : createIndex(parentItem->GetRow(), 0, parentItem);
+            Q_ASSERT(checkIndex(parentIndex));
             beginInsertRows(parentIndex, parentItem->getChildCount(), parentItem->getChildCount());
         }
 

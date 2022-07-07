@@ -37,7 +37,7 @@ namespace GraphCanvas
                 return 0;
             }
 
-            bool Matches([[maybe_unused]] const AZ::EntityId& object) const
+            bool Matches([[maybe_unused]] const AZ::EntityId& object) const override
             {
                 return false;
             }
@@ -79,7 +79,7 @@ namespace GraphCanvas
 
         private:
             AZStd::string m_value;
-            AZStd::hash<AZStd::string>::result_type m_hash;
+            size_t m_hash;
 
             friend class BasicSelectorEventHandler;
         };

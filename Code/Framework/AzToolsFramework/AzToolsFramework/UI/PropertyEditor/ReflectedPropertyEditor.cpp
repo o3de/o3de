@@ -254,9 +254,9 @@ namespace AzToolsFramework
         void QueueInvalidationIfSharedData(InternalReflectedPropertyEditorEvents* sender, PropertyModificationRefreshLevel level, const AZStd::set<void*>& sourceInstanceSet) override;
 
         // PropertyEditorGUIMessages::Bus::Handler
-        virtual void RequestWrite(QWidget* editorGUI) override;
-        virtual void AddElementsToParentContainer(QWidget* editorGUI, size_t numElements, const InstanceDataNode::FillDataClassCallback& fillDataCallback) override;
-        virtual void RequestRefresh(PropertyModificationRefreshLevel) override;
+        void RequestWrite(QWidget* editorGUI) override;
+        void AddElementsToParentContainer(QWidget* editorGUI, size_t numElements, const InstanceDataNode::FillDataClassCallback& fillDataCallback) override;
+        void RequestRefresh(PropertyModificationRefreshLevel) override;
         void RequestPropertyNotify(QWidget* editorGUI) override;
         void OnEditingFinished(QWidget* editorGUI) override;
     };
@@ -580,7 +580,7 @@ namespace AzToolsFramework
 
         return result;
     }
-    
+
     bool IsParentAssociativeContainer(InstanceDataNode* node)
     {
         return node->GetParent() && node->GetParent()->GetClassMetadata()->m_container && node->GetParent()->GetClassMetadata()->m_container->GetAssociativeContainerInterface();
@@ -716,7 +716,7 @@ namespace AzToolsFramework
             return;
         }
 
-        
+
         ReflectedPropertyEditorUpdateSentinel updateSentinel(m_editor, &m_editor->m_updateDepth);
 
         const bool isParentAssociativeContainer = IsParentAssociativeContainer(node);
@@ -726,7 +726,7 @@ namespace AzToolsFramework
         const bool isAssociativeContainerPair = isParentAssociativeContainer &&
             IsPairContainer(node) &&
             node->FindAttribute(AZ::Edit::InternalAttributes::ElementInstances);
-        
+
         PropertyRowWidget* pWidget = nullptr;
         if (visibility == NodeDisplayVisibility::Visible || visibility == NodeDisplayVisibility::HideChildren)
         {
@@ -890,7 +890,7 @@ namespace AzToolsFramework
         {
             instance.Build(m_impl->m_context, AZ::SerializeContext::ENUM_ACCESS_FOR_READ, m_impl->m_dynamicEditDataProvider, m_impl->m_editorParent);
             m_impl->FilterNode(instance.GetRootNode(), filter);
-            m_impl->AddProperty(instance.GetRootNode(), NULL, 0);
+            m_impl->AddProperty(instance.GetRootNode(), nullptr, 0);
         }
 
         m_impl->UpdateExpansionState();
@@ -1077,7 +1077,7 @@ namespace AzToolsFramework
 
     PropertyRowWidget* ReflectedPropertyEditor::Impl::CreateOrPullFromPool()
     {
-        PropertyRowWidget* newWidget = NULL;
+        PropertyRowWidget* newWidget = nullptr;
         if (m_widgetPool.empty())
         {
             newWidget = aznew PropertyRowWidget(m_containerWidget);
@@ -1184,7 +1184,7 @@ namespace AzToolsFramework
     {
         // re-create the tab order, based on vertical position in the list.
 
-        QWidget* pLastWidget = NULL;
+        QWidget* pLastWidget = nullptr;
 
         for (AZStd::size_t pos = 0; pos < m_impl->m_widgetsInDisplayOrder.size(); ++pos)
         {
@@ -1401,15 +1401,14 @@ namespace AzToolsFramework
             PropertyHandlerBase* handler = widget->GetHandler();
             if (handler)
             {
-                if (rowWidget->second->ShouldPreValidatePropertyChange())
+                if (widget->ShouldPreValidatePropertyChange())
                 {
-                    void* tempValue = rowWidget->first->GetClassMetadata()->m_factory->Create("Validate Attribute");
+                    AZStd::any tempValue = m_context->CreateAny(node->GetClassMetadata()->m_typeId);
+                    void* tempValueRef = AZStd::any_cast<void>(&tempValue);
 
-                    handler->WriteGUIValuesIntoTempProperty_Internal(editorGUI, tempValue, rowWidget->first->GetClassMetadata()->m_typeId, rowWidget->first->GetSerializeContext());
+                    handler->WriteGUIValuesIntoTempProperty_Internal(editorGUI, tempValueRef, node->GetClassMetadata()->m_typeId, m_context);
 
-                    bool validated = rowWidget->second->ValidatePropertyChange(tempValue, rowWidget->first->GetClassMetadata()->m_typeId);
-
-                    rowWidget->first->GetClassMetadata()->m_factory->Destroy(tempValue);
+                    bool validated = widget->ValidatePropertyChange(tempValueRef, node->GetClassMetadata()->m_typeId);
 
                     // Validate the change to make sure everything is okay before actually modifying the value on anything
                     if (!validated)
@@ -2141,7 +2140,7 @@ namespace AzToolsFramework
         AZStd::shared_ptr<void> keyToAdd(nullptr);
 
         bool createdElement = pContainerNode->CreateContainerElement(CreateContainerElementSelectClassCallback,
-            [this, pContainerNode, promptForValue, &keyToAdd](void* dataPtr, const AZ::SerializeContext::ClassElement* classElement, bool noDefaultData, AZ::SerializeContext*) -> bool
+            [pContainerNode, promptForValue, &keyToAdd](void* dataPtr, const AZ::SerializeContext::ClassElement* classElement, bool noDefaultData, AZ::SerializeContext*) -> bool
         {
             bool handled = false;
 
@@ -2253,7 +2252,7 @@ namespace AzToolsFramework
         // potentially before the second caller is ready for them.  This case should get examined to see why nested calls
         // are happening.  Either m_preventRefresh might need to turn into a refcount to allow nesting, or the assert might
         // be invalid, or the nesting shouldn't occur at all.
-        AZ_Assert(!(m_impl->m_preventRefresh && shouldPrevent), 
+        AZ_Assert(!(m_impl->m_preventRefresh && shouldPrevent),
                   "PreventRefresh set to 'true' twice.  If multiple different callers are setting this, it might need to become a refcount.");
 
         // Prevent property refreshes while we're disabled This avoids us accidentally refreshing during a destructive change.

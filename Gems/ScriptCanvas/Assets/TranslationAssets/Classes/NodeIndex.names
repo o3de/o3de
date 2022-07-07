@@ -1,0 +1,145 @@
+{
+    "entries": [
+        {
+            "base": "NodeIndex",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "Node Index"
+            },
+            "methods": [
+                {
+                    "base": "Equal",
+                    "context": "NodeIndex",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Equal"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Equal is invoked"
+                    },
+                    "details": {
+                        "name": "Equal"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{4AD18037-E629-480D-8165-997A137327FD}",
+                            "details": {
+                                "name": ""
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "ToString",
+                    "context": "NodeIndex",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke To String"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after To String is invoked"
+                    },
+                    "details": {
+                        "name": "To String"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZ Std::basic_string<char, AZ Std::char_traits<char>, allocator>"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "IsValid",
+                    "context": "NodeIndex",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Is Valid"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Is Valid is invoked"
+                    },
+                    "details": {
+                        "name": "Is Valid"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Distance",
+                    "context": "NodeIndex",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Distance"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Distance is invoked"
+                    },
+                    "details": {
+                        "name": "Distance"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{4AD18037-E629-480D-8165-997A137327FD}",
+                            "details": {
+                                "name": ""
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "AsNumber",
+                    "context": "NodeIndex",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke As Number"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after As Number is invoked"
+                    },
+                    "details": {
+                        "name": "As Number"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "unsigned int"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

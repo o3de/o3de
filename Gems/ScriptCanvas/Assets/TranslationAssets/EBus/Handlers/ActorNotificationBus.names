@@ -1,0 +1,139 @@
+{
+    "entries": [
+        {
+            "base": "ActorNotificationBus",
+            "context": "EBusHandler",
+            "variant": "",
+            "details": {
+                "name": "Actor",
+                "category": "Animation"
+            },
+            "methods": [
+                {
+                    "base": "OnMotionEvent",
+                    "details": {
+                        "name": "On Motion Event"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{0C899DAC-6B19-4BDD-AD8C-8A11EF2A6729}",
+                            "details": {
+                                "name": "Motion Event"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "OnMotionLoop",
+                    "details": {
+                        "name": "On Motion Loop"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "OnStateEntering",
+                    "details": {
+                        "name": "On State Entering"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "OnStateEntered",
+                    "details": {
+                        "name": "On State Entered"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "OnStateExiting",
+                    "details": {
+                        "name": "On State Exiting"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "OnStateExited",
+                    "details": {
+                        "name": "On State Exited"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "OnStateTransitionStart",
+                    "details": {
+                        "name": "On State Transition Start"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        },
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "OnStateTransitionEnd",
+                    "details": {
+                        "name": "On State Transition End"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        },
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

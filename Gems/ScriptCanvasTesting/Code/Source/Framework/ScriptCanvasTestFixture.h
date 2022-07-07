@@ -10,10 +10,8 @@
 
 #include <AzCore/Asset/AssetManagerComponent.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
-#include <AzCore/Driller/Driller.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/Memory/MemoryComponent.h>
-#include <AzCore/Memory/MemoryDriller.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/UnitTest/TestTypes.h>
@@ -22,9 +20,10 @@
 #include <AzFramework/IO/LocalFileIO.h>
 #include <AzTest/AzTest.h>
 
+#include <TestAutoGenFunctionRegistry.generated.h>
+#include <TestAutoGenNodeableRegistry.generated.h>
 #include <Nodes/BehaviorContextObjectTestNode.h>
-#include <Nodes/Nodeables/SharedDataSlotExample.h>
-#include <Nodes/Nodeables/ValuePointerReferenceExample.h>
+#include <Nodes/TestAutoGenFunctions.h>
 #include <ScriptCanvas/Core/Graph.h>
 #include <ScriptCanvas/Core/SlotConfigurationDefaults.h>
 #include <ScriptCanvas/ScriptCanvasGem.h>
@@ -67,7 +66,6 @@ namespace ScriptCanvasTests
                 {
                     ScriptCanvasEditor::TraceSuppressionBus::Broadcast(&ScriptCanvasEditor::TraceSuppressionRequests::SuppressPrintf, true);
                     AZ::ComponentApplication::Descriptor descriptor;
-                    descriptor.m_enableDrilling = false;
                     descriptor.m_useExistingAllocator = true;
 
                     AZ::DynamicModuleDescriptor dynamicModuleDescriptor;
@@ -91,15 +89,17 @@ namespace ScriptCanvasTests
             AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance();
             AZ_Assert(fileIO, "SC unit tests require filehandling");
 
-            if (!fileIO->GetAlias("@engroot@"))
-            {
-                const char* engineRoot = nullptr;
-                AzFramework::ApplicationRequests::Bus::BroadcastResult(engineRoot, &AzFramework::ApplicationRequests::GetEngineRoot);
-                AZ_Assert(engineRoot, "null engine root");
-                fileIO->SetAlias("@engroot@", engineRoot);
-            }
-
             s_setupSucceeded = fileIO->GetAlias("@engroot@") != nullptr;
+            // Set the @gemroot:<gem-name> alias for active gems
+            auto settingsRegistry = AZ::SettingsRegistry::Get();
+            if (settingsRegistry)
+            {
+                AZ::Test::AddActiveGem("ScriptCanvasTesting", *settingsRegistry, fileIO);
+                AZ::Test::AddActiveGem("GraphCanvas", *settingsRegistry, fileIO);
+                AZ::Test::AddActiveGem("ScriptCanvas", *settingsRegistry, fileIO);
+                AZ::Test::AddActiveGem("ScriptEvents", *settingsRegistry, fileIO);
+                AZ::Test::AddActiveGem("ExpressionEvaluation", *settingsRegistry, fileIO);
+            }
             
             AZ::TickBus::AllowFunctionQueuing(true);
 
@@ -112,23 +112,14 @@ namespace ScriptCanvasTests
             ScriptCanvasTestingNodes::BehaviorContextObjectTest::Reflect(m_serializeContext);
             ScriptCanvasTestingNodes::BehaviorContextObjectTest::Reflect(m_behaviorContext);
 
-            ::Nodes::InputMethodSharedDataSlotExampleNode::Reflect(m_serializeContext);
-            ::Nodes::InputMethodSharedDataSlotExampleNode::Reflect(m_behaviorContext);
-            ::Nodes::BranchMethodSharedDataSlotExampleNode::Reflect(m_serializeContext);
-            ::Nodes::BranchMethodSharedDataSlotExampleNode::Reflect(m_behaviorContext);
-            ::Nodes::ReturnTypeExampleNode::Reflect(m_serializeContext);
-            ::Nodes::ReturnTypeExampleNode::Reflect(m_behaviorContext);
-            ::Nodes::InputTypeExampleNode::Reflect(m_serializeContext);
-            ::Nodes::InputTypeExampleNode::Reflect(m_behaviorContext);
-            ::Nodes::BranchInputTypeExampleNode::Reflect(m_serializeContext);
-            ::Nodes::BranchInputTypeExampleNode::Reflect(m_behaviorContext);
-            ::Nodes::PropertyExampleNode::Reflect(m_serializeContext);
-            ::Nodes::PropertyExampleNode::Reflect(m_behaviorContext);
-
             TestNodeableObject::Reflect(m_serializeContext);
             TestNodeableObject::Reflect(m_behaviorContext);
             ScriptUnitTestEventHandler::Reflect(m_serializeContext);
             ScriptUnitTestEventHandler::Reflect(m_behaviorContext);
+
+            REGISTER_SCRIPTCANVAS_AUTOGEN_FUNCTION(ScriptCanvasTestingEditorStatic);
+            REGISTER_SCRIPTCANVAS_AUTOGEN_NODEABLE(ScriptCanvasTestingEditorStatic);
+            REFLECT_SCRIPTCANVAS_AUTOGEN(ScriptCanvasTestingEditorStatic, m_behaviorContext);
         }
 
         static void TearDownTestCase()
@@ -168,6 +159,11 @@ namespace ScriptCanvasTests
 
             RegisterComponentDescriptor<TestNodes::TestResult>();
             RegisterComponentDescriptor<TestNodes::ConfigurableUnitTestNode>();
+            auto autogenDescriptors = GET_SCRIPTCANVAS_AUTOGEN_COMPONENT_DESCRIPTORS(ScriptCanvasTestingEditorStatic);
+            for (auto descriptor : autogenDescriptors)
+            {
+                GetApplication()->RegisterComponentDescriptor(descriptor);
+            }
 
             m_numericVectorType = ScriptCanvas::Data::Type::BehaviorContextObject(azrtti_typeid<AZStd::vector<ScriptCanvas::Data::NumberType>>());
             m_stringToNumberMapType = ScriptCanvas::Data::Type::BehaviorContextObject(azrtti_typeid<AZStd::unordered_map<ScriptCanvas::Data::StringType, ScriptCanvas::Data::NumberType>>());

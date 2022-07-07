@@ -25,6 +25,8 @@ namespace GraphCanvas
         using ContextMenuAction::RefreshAction;
 
         void RefreshAction() override;
+
+        using CommentContextMenuAction::TriggerAction;
         SceneReaction TriggerAction(const AZ::Vector2& scenePos) override;
     };
 }

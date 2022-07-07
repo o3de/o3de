@@ -9,6 +9,8 @@
 #include <Material/MaterialAssignmentSerializer.h>
 #include <Atom/Feature/Material/MaterialAssignment.h>
 
+#include <Atom/RPI.Reflect/Image/AttachmentImageAsset.h>
+
 namespace AZ
 {
     namespace Render
@@ -16,7 +18,9 @@ namespace AZ
         AZ_CLASS_ALLOCATOR_IMPL(JsonMaterialAssignmentSerializer, AZ::SystemAllocator, 0);
 
         JsonSerializationResult::Result JsonMaterialAssignmentSerializer::Load(
-            void* outputValue, [[maybe_unused]] const Uuid& outputValueTypeId, const rapidjson::Value& inputValue,
+            void* outputValue,
+            [[maybe_unused]] const Uuid& outputValueTypeId,
+            const rapidjson::Value& inputValue,
             JsonDeserializerContext& context)
         {
             namespace JSR = JsonSerializationResult;
@@ -34,6 +38,20 @@ namespace AZ
                 result.Combine(ContinueLoadingFromJsonObjectField(
                     &materialAssignment->m_materialAsset, azrtti_typeid<decltype(materialAssignment->m_materialAsset)>(), inputValue,
                     "MaterialAsset", context));
+            }
+
+            if (inputValue.HasMember("ModelUvOverrides"))
+            {
+                AZStd::unordered_map<AZStd::string, AZStd::string> uvOverrideMap;
+                result.Combine(ContinueLoadingFromJsonObjectField(
+                    &uvOverrideMap, azrtti_typeid<decltype(uvOverrideMap)>(), inputValue, "ModelUvOverrides", context));
+
+                materialAssignment->m_matModUvOverrides.clear();
+                for (const auto& uvOverride : uvOverrideMap)
+                {
+                    const AZ::RHI::ShaderSemantic semantic(AZ::RHI::ShaderSemantic::Parse(uvOverride.first));
+                    materialAssignment->m_matModUvOverrides[semantic] = AZ::Name(uvOverride.second);
+                }
             }
 
             if (inputValue.HasMember("PropertyOverrides") && inputValue["PropertyOverrides"].IsObject())
@@ -62,7 +80,9 @@ namespace AZ
                             LoadAny<AZ::Color>(propertyValue, inputPropertyPair.value, context, result) ||
                             LoadAny<AZStd::string>(propertyValue, inputPropertyPair.value, context, result) ||
                             LoadAny<AZ::Data::AssetId>(propertyValue, inputPropertyPair.value, context, result) ||
+                            LoadAny<AZ::Data::Asset<AZ::Data::AssetData>>(propertyValue, inputPropertyPair.value, context, result) ||
                             LoadAny<AZ::Data::Asset<AZ::RPI::ImageAsset>>(propertyValue, inputPropertyPair.value, context, result) ||
+                            LoadAny<AZ::Data::Asset<AZ::RPI::AttachmentImageAsset>>(propertyValue, inputPropertyPair.value, context, result) ||
                             LoadAny<AZ::Data::Asset<AZ::RPI::StreamingImageAsset>>(propertyValue, inputPropertyPair.value, context, result))
                         {
                             materialAssignment->m_propertyOverrides[propertyName] = propertyValue;
@@ -78,7 +98,10 @@ namespace AZ
         }
 
         JsonSerializationResult::Result JsonMaterialAssignmentSerializer::Store(
-            rapidjson::Value& outputValue, const void* inputValue, const void* defaultValue, [[maybe_unused]] const Uuid& valueTypeId,
+            rapidjson::Value& outputValue,
+            const void* inputValue,
+            const void* defaultValue,
+            [[maybe_unused]] const Uuid& valueTypeId,
             JsonSerializerContext& context)
         {
             namespace JSR = AZ::JsonSerializationResult;
@@ -104,6 +127,24 @@ namespace AZ
                 result.Combine(ContinueStoringToJsonObjectField(
                     outputValue, "MaterialAsset", materialAsset, defaultmaterialAsset,
                     azrtti_typeid<decltype(materialAssignment->m_materialAsset)>(), context));
+            }
+
+            {
+                AZ::ScopedContextPath subPathPropertyOverrides(context, "m_matModUvOverrides");
+                if (!materialAssignment->m_matModUvOverrides.empty())
+                {
+                    // Convert the model material UV overrides to a map of strings for simple serialization
+                    AZStd::unordered_map<AZStd::string, AZStd::string> uvOverrideMap;
+                    AZStd::unordered_map<AZStd::string, AZStd::string> uvOverrideMapDefault;
+                    for (const auto& matModUvOverride : materialAssignment->m_matModUvOverrides)
+                    {
+                        uvOverrideMap[matModUvOverride.first.ToString()] = matModUvOverride.second.GetStringView();
+                    }
+
+                    result.Combine(ContinueStoringToJsonObjectField(
+                        outputValue, "ModelUvOverrides", &uvOverrideMap, &uvOverrideMapDefault, azrtti_typeid<decltype(uvOverrideMap)>(),
+                        context));
+                }
             }
 
             {
@@ -138,7 +179,9 @@ namespace AZ
                                 StoreAny<AZ::Color>(propertyValue, outputPropertyValue, context, result) ||
                                 StoreAny<AZStd::string>(propertyValue, outputPropertyValue, context, result) ||
                                 StoreAny<AZ::Data::AssetId>(propertyValue, outputPropertyValue, context, result) ||
+                                StoreAny<AZ::Data::Asset<AZ::Data::AssetData>>(propertyValue, outputPropertyValue, context, result) ||
                                 StoreAny<AZ::Data::Asset<AZ::RPI::ImageAsset>>(propertyValue, outputPropertyValue, context, result) ||
+                                StoreAny<AZ::Data::Asset<AZ::RPI::AttachmentImageAsset>>(propertyValue, outputPropertyValue, context, result) ||
                                 StoreAny<AZ::Data::Asset<AZ::RPI::StreamingImageAsset>>(
                                     propertyValue, outputPropertyValue, context, result))
                             {
@@ -164,7 +207,9 @@ namespace AZ
 
         template<typename T>
         bool JsonMaterialAssignmentSerializer::LoadAny(
-            AZStd::any& propertyValue, const rapidjson::Value& inputPropertyValue, AZ::JsonDeserializerContext& context,
+            AZStd::any& propertyValue,
+            const rapidjson::Value& inputPropertyValue,
+            AZ::JsonDeserializerContext& context,
             AZ::JsonSerializationResult::ResultCode& result)
         {
             if (inputPropertyValue.IsObject() && inputPropertyValue.HasMember("Value") && inputPropertyValue.HasMember("$type"))
@@ -187,7 +232,9 @@ namespace AZ
 
         template<typename T>
         bool JsonMaterialAssignmentSerializer::StoreAny(
-            const AZStd::any& propertyValue, rapidjson::Value& outputPropertyValue, AZ::JsonSerializerContext& context,
+            const AZStd::any& propertyValue,
+            rapidjson::Value& outputPropertyValue,
+            AZ::JsonSerializerContext& context,
             AZ::JsonSerializationResult::ResultCode& result)
         {
             if (propertyValue.is<T>())
@@ -199,7 +246,7 @@ namespace AZ
                 result.Combine(StoreTypeId(typeValue, azrtti_typeid<T>(), context));
                 outputPropertyValue.AddMember("$type", typeValue, context.GetJsonAllocator());
 
-                T value = AZStd::any_cast<T>(propertyValue);
+                const T& value = AZStd::any_cast<T>(propertyValue);
                 result.Combine(
                     ContinueStoringToJsonObjectField(outputPropertyValue, "Value", &value, nullptr, azrtti_typeid<T>(), context));
                 return true;
@@ -208,3 +255,4 @@ namespace AZ
         }
     } // namespace Render
 } // namespace AZ
+

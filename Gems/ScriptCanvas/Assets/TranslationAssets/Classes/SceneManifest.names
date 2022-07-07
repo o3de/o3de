@@ -1,0 +1,69 @@
+{
+    "entries": [
+        {
+            "base": "SceneManifest",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "Scene Manifest",
+                "category": "Scene"
+            },
+            "methods": [
+                {
+                    "base": "ImportFromJson",
+                    "context": "SceneManifest",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Import From Json"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Import From Json is invoked"
+                    },
+                    "details": {
+                        "name": "Import From Json"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{7114E998-A8B4-519B-9342-A86D1587B4F7}",
+                            "details": {
+                                "name": ""
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "ExportToJson",
+                    "context": "SceneManifest",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Export To Json"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Export To Json is invoked"
+                    },
+                    "details": {
+                        "name": "Export To Json"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZ Std::basic_string<char, AZ Std::char_traits<char>, allocator>"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

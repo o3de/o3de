@@ -9,7 +9,6 @@
 #ifdef HAVE_BENCHMARK
 
 #include <Benchmarks/PhysXBenchmarksCommon.h>
-#include <Material.h>
 #include <PhysXTestUtil.h>
 #include <PhysXTestCommon.h>
 
@@ -61,14 +60,11 @@ namespace PhysX::Benchmarks
             m_defaultScene = physicsSystem->GetScene(m_testSceneHandle);
         }
 
-        m_dummyTerrainComponentDescriptor = DummyTestTerrainComponent::CreateDescriptor();
         Physics::DefaultWorldBus::Handler::BusConnect();
     }
 
     void PhysXBaseBenchmarkFixture::TearDownInternal()
     {
-        //cleanup materials in case some where created
-        PhysX::MaterialManagerRequestsBus::Broadcast(&PhysX::MaterialManagerRequestsBus::Events::ReleaseAllMaterials);
         Physics::DefaultWorldBus::Handler::BusDisconnect();
 
         //Clean up the test scene
@@ -80,9 +76,6 @@ namespace PhysX::Benchmarks
         m_testSceneHandle = AzPhysics::InvalidSceneHandle;
 
         TestUtils::ResetPhysXSystem();
-        
-        m_dummyTerrainComponentDescriptor->ReleaseDescriptor();
-        m_dummyTerrainComponentDescriptor = nullptr;
     }
 
     AzPhysics::SceneHandle PhysXBaseBenchmarkFixture::CreateDefaultTestScene()

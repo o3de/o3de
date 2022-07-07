@@ -1,0 +1,45 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "HairShortCutResolveColorPassTemplate",
+            "PassClass": "FullScreenTriangle",
+            "Slots": [
+                {
+                    // This RT is MSAA - is it cheaper to avoid doing this work and only do a copy at a separate pass?
+                    "Name": "RenderTargetInputOutput",
+                    "SlotType": "InputOutput",
+                    "ScopeAttachmentUsage": "RenderTarget",
+                    "LoadStoreAction": {
+                        "LoadAction": "Load",
+                        "StoreAction": "Store"
+                    }
+                },
+                {
+                    "Name": "HairColorTexture",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader",
+                    "ShaderInputName": "m_hairColorTexture"
+                },
+                {
+                    "Name": "AccumulatedInverseAlpha",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader",
+                    "ShaderInputName": "m_accumInvAlpha"
+                }
+            ],
+            "Connections": [
+            ],
+            "PassData": {
+                "$type": "FullscreenTrianglePassData",
+                "ShaderAsset": {
+                    // Looking for it in the Shaders directory relative to the Assets directory
+                    "FilePath": "Shaders/HairShortCutResolveColor.shader"
+                }
+            }
+        }
+    }
+}
+

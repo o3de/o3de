@@ -70,16 +70,37 @@ namespace AZ
         //! Parse json text. Returns a failure with error message if the content is not valid JSON.
         AZ::Outcome<rapidjson::Document, AZStd::string> ReadJsonString(AZStd::string_view jsonText);
 
-        //! Parse a json file. Returns a failure with error message if the content is not valid JSON.
-        AZ::Outcome<rapidjson::Document, AZStd::string> ReadJsonFile(AZStd::string_view filePath);
+        //! Parse a json file. Returns a failure with error message if the content is not valid JSON or if
+        //! the file size is larger than the max file size provided.
+        AZ::Outcome<rapidjson::Document, AZStd::string> ReadJsonFile(
+            AZStd::string_view filePath, size_t maxFileSize = AZStd::numeric_limits<size_t>::max());
 
         //! Parse a json stream. Returns a failure with error message if the content is not valid JSON.
         AZ::Outcome<rapidjson::Document, AZStd::string> ReadJsonStream(IO::GenericStream& stream);
         
         //! Load object with known class type
+        //! Even if errorsOut contains errors, the load to an object could have succeeded
+        AZ::Outcome<void, AZStd::string> LoadObjectFromStringByType(void* objectToLoad, const Uuid& objectType, AZStd::string_view source,
+            AZStd::string& errorsOut, const JsonDeserializerSettings* settings = nullptr);
+
+        AZ::Outcome<void, AZStd::string> LoadObjectFromStreamByType(void* objectToLoad, const Uuid& objectType, IO::GenericStream& stream,
+            AZStd::string& errorsOut, const JsonDeserializerSettings* settings = nullptr);
+
+        template <typename ObjectType>
+        AZ::Outcome<void, AZStd::string> LoadObjectFromStream(ObjectType& objectToLoad, IO::GenericStream& stream
+            , AZStd::string& errorsOut, const JsonDeserializerSettings* settings = nullptr)
+        {
+            return LoadObjectFromStreamByType(&objectToLoad, AzTypeInfo<ObjectType>::Uuid(), stream, settings);
+        }
+
+        //! Load object with known class type
+        //! returns a failure on any error encountered during loading
+        AZ::Outcome<void, AZStd::string> LoadObjectFromStringByType(void* objectToLoad, const Uuid& objectType, AZStd::string_view source,
+            const JsonDeserializerSettings* settings = nullptr);
+
         AZ::Outcome<void, AZStd::string> LoadObjectFromStreamByType(void* objectToLoad, const Uuid& objectType, IO::GenericStream& stream,
             const JsonDeserializerSettings* settings = nullptr);
-        
+
         template <typename ObjectType>
         AZ::Outcome<void, AZStd::string> LoadObjectFromStream(ObjectType& objectToLoad, IO::GenericStream& stream, const JsonDeserializerSettings* settings = nullptr)
         {

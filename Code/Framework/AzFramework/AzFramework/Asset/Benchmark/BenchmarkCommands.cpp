@@ -43,7 +43,7 @@ namespace AzFramework::AssetBenchmark
         AZStd::thread benchmarkThread([assetList = AZStd::move(sourceAssetList), loadBlocking]()
         {
             // Define the set of loading stats to track
-            const size_t initialRequests = assetList.size();
+            [[maybe_unused]] const size_t initialRequests = assetList.size();
             size_t previouslyLoadedAssets = 0;
             size_t newlyLoadedAssets = 0;
             size_t loadErrors = 0;
@@ -195,7 +195,7 @@ namespace AzFramework::AssetBenchmark
     // Console command:  Add the given list of assets to the list of assets to load with BenchmarkLoadAssetList
     void BenchmarkAddAssetsToList(const AZ::ConsoleCommandContainer& parameters)
     {
-        bool allAssetsAdded = true;
+        [[maybe_unused]] bool allAssetsAdded = true;
 
         for (auto& assetName : parameters)
         {

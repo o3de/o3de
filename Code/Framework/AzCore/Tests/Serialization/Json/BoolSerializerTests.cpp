@@ -83,6 +83,7 @@ namespace JsonSerializationTests
             BaseJsonSerializerFixture::TearDown();
         }
 
+        using BaseJsonSerializerFixture::RegisterAdditional;
         void RegisterAdditional(AZStd::unique_ptr<AZ::SerializeContext>& serializeContext) override
         {
             serializeContext->Class<BoolPointerWrapper>()

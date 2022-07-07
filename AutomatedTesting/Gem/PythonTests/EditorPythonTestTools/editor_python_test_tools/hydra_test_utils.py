@@ -50,8 +50,10 @@ def launch_and_validate_results(request, test_directory, editor, editor_script, 
     request.addfinalizer(lambda: teardown_editor(editor))
     logger.debug("Running automated test: {}".format(editor_script))
     editor.args.extend(["--skipWelcomeScreenDialog", "--regset=/Amazon/Settings/EnableSourceControl=false", 
-                        "--regset=/Amazon/Preferences/EnablePrefabSystem=false", run_python, test_case,
-                        f"--pythontestcase={request.node.originalname}", "--runpythonargs", " ".join(cfg_args)])
+                        run_python, test_case,
+                        "--regset=/Amazon/Preferences/EnablePrefabSystem=true",
+                        f"--regset-file={os.path.join(editor.workspace.paths.engine_root(), 'Registry', 'prefab.test.setreg')}",
+                        f"--pythontestcase={request.node.name}", "--runpythonargs", " ".join(cfg_args)])
     if auto_test_mode:
         editor.args.extend(["--autotest_mode"])
     if null_renderer:
@@ -81,7 +83,8 @@ def launch_and_validate_results(request, test_directory, editor, editor_script, 
 
 
 def launch_and_validate_results_launcher(launcher, level, remote_console_instance, expected_lines, null_renderer=True,
-                                         port_listener_timeout=120, log_monitor_timeout=300, remote_console_port=4600):
+                                         port_listener_timeout=120, log_monitor_timeout=300, remote_console_port=4600,
+                                         launch_ap=True):
     """
     Runs the launcher with the specified level, and monitors Game.log for expected lines.
     :param launcher: Configured launcher object to run test against.
@@ -92,6 +95,7 @@ def launch_and_validate_results_launcher(launcher, level, remote_console_instanc
     :param port_listener_timeout: Timeout for verifying successful connection to Remote Console.
     :param log_monitor_timeout: Timeout for monitoring for lines in Game.log
     :param remote_console_port: The port used to communicate with the Remote Console.
+    :param launch_ap: Whether or not to launch AP. Defaults to True.
     """
 
     def _check_for_listening_port(port):
@@ -110,7 +114,7 @@ def launch_and_validate_results_launcher(launcher, level, remote_console_instanc
         launcher.args.extend(["-rhi=Null"])
 
     # Start the Launcher
-    with launcher.start():
+    with launcher.start(launch_ap=launch_ap):
 
         # Ensure Remote Console can be reached
         waiter.wait_for(

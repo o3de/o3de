@@ -8,6 +8,7 @@
 
 #include <Atom/Feature/Material/MaterialAssignmentId.h>
 #include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
 namespace AZ
@@ -55,6 +56,18 @@ namespace AZ
                     ->Field("lodIndex", &MaterialAssignmentId::m_lodIndex)
                     ->Field("materialSlotStableId", &MaterialAssignmentId::m_materialSlotStableId)
                     ;
+
+                if (auto editContext = serializeContext->GetEditContext())
+                {
+                    editContext->Class<MaterialAssignmentId>(
+                        "Material Assignment Id", "Material Assignment Id")
+                        ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                        ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                        ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Show)
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &MaterialAssignmentId::m_lodIndex, "LOD Index", "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &MaterialAssignmentId::m_materialSlotStableId, "Material Slot Stable Id", "")
+                        ;
+                }
             }
 
             if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))

@@ -10,6 +10,10 @@
 
 namespace AWSCore
 {
+    RequestBuilder::RequestBuilder()
+        : m_httpMethod(Aws::Http::HttpMethod::HTTP_GET)
+    {
+    }
 
     bool RequestBuilder::SetPathParameterUnescaped(const char* key, const char* value)
     {

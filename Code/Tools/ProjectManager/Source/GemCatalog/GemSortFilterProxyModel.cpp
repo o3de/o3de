@@ -50,11 +50,36 @@ namespace O3DE::ProjectManager
             }
         }
 
-        // Gem status
-        if (m_gemStatusFilter != GemStatus::NoFilter)
+        // Gem selected
+        if (m_gemSelectedFilter == GemSelected::Selected)
         {
-            const GemStatus sourceGemStatus = static_cast<GemStatus>(GemModel::IsAdded(sourceIndex));
-            if (m_gemStatusFilter != sourceGemStatus)
+            if (!GemModel::NeedsToBeAdded(sourceIndex, true))
+            {
+                return false;
+            }
+        }
+        // Gem unselected
+        else if (m_gemSelectedFilter == GemSelected::Unselected)
+        {
+            if (!GemModel::NeedsToBeRemoved(sourceIndex, true))
+            {
+                return false;
+            }
+        }
+        // Gem selected or unselected
+        else if (m_gemSelectedFilter == GemSelected::Both)
+        {
+            if (!GemModel::NeedsToBeAdded(sourceIndex, true)  && !GemModel::NeedsToBeRemoved(sourceIndex, true))
+            {
+                return false;
+            }
+        }
+
+        // Gem enabled
+        if (m_gemActiveFilter != GemActive::NoFilter)
+        {
+            const GemActive sourceGemStatus = static_cast<GemActive>(GemModel::IsAdded(sourceIndex) || GemModel::IsAddedDependency(sourceIndex));
+            if (m_gemActiveFilter != sourceGemStatus)
             {
                 return false;
             }
@@ -148,28 +173,45 @@ namespace O3DE::ProjectManager
         return true;
     }
 
-    QString GemSortFilterProxyModel::GetGemStatusString(GemStatus status)
+    QString GemSortFilterProxyModel::GetGemSelectedString(GemSelected status)
     {
         switch (status)
         {
-        case Unselected:
+        case GemSelected::Unselected:
             return "Unselected";
-        case Selected:
+        case GemSelected::Selected:
             return "Selected";
         default:
-            return "<Unknown Gem Status>";
+            return "<Unknown Selection Status>";
         }
     }
 
+    QString GemSortFilterProxyModel::GetGemActiveString(GemActive status)
+    {
+        switch (status)
+        {
+        case GemActive::Inactive:
+            return "Inactive";
+        case GemActive::Active:
+            return "Active";
+        default:
+            return "<Unknown Active Status>";
+        }
+    }
     void GemSortFilterProxyModel::InvalidateFilter()
     {
         invalidate();
         emit OnInvalidated();
     }
 
-    void GemSortFilterProxyModel::ResetFilters()
+    void GemSortFilterProxyModel::ResetFilters(bool clearSearchString)
     {
-        m_searchString.clear();
+        if (clearSearchString)
+        {
+            m_searchString.clear();
+        }
+        m_gemSelectedFilter = GemSelected::NoFilter;
+        m_gemActiveFilter = GemActive::NoFilter;
         m_gemOriginFilter = {};
         m_platformFilter = {};
         m_typeFilter = {};

@@ -562,7 +562,7 @@ namespace SliceFavorites
         // Rebuild the menu from the current tree
         m_favoritesMenu->clear();
 
-        m_favoritesMenu->addAction(QIcon(":/Icons/SliceFavorite_Icon_Manage"), "Manage favorites...", m_favoritesMenu.get(), [this]()
+        m_favoritesMenu->addAction(QIcon(":/Icons/SliceFavorite_Icon_Manage"), "Manage favorites...", m_favoritesMenu.get(), []()
         {
             AzToolsFramework::OpenViewPane(SliceFavorites::ManageSliceFavorites);
         });

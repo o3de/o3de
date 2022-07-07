@@ -8,19 +8,19 @@
 #pragma once
 
 #include <AzCore/EBus/EBus.h>
+#include <AzCore/IO/IStreamerTypes.h>
+#include <AzCore/Math/Uuid.h>
+#include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/Preprocessor/Enum.h>
+#include <AzCore/RTTI/RTTI.h>
+#include <AzCore/std/containers/bitset.h>
+#include <AzCore/std/function/function_fwd.h>
 #include <AzCore/std/parallel/atomic.h>
 #include <AzCore/std/parallel/mutex.h>
-#include <AzCore/std/function/function_fwd.h>
-#include <AzCore/RTTI/RTTI.h>
-#include <AzCore/Memory/SystemAllocator.h>
-#include <AzCore/Math/Uuid.h>
-#include <AzCore/Preprocessor/Enum.h>
-#include <AzCore/std/containers/bitset.h>
+#include <AzCore/std/string/fixed_string.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/string/string_view.h>
 #include <AzCore/std/typetraits/is_base_of.h>
-#include <AzCore/Debug/AssetTracking.h>
-#include <AzCore/IO/Streamer/FileRequest.h>
 
 namespace AZ
 {
@@ -82,6 +82,10 @@ namespace AZ
 
             static AssetId CreateString(AZStd::string_view input);
             static void Reflect(ReflectContext* context);
+
+            static constexpr size_t MaxStringBuffer = AZ::Uuid::MaxStringBuffer + 9; /// UUid size (includes terminal) + ":" + hex, subId
+            using FixedString = AZStd::fixed_string<MaxStringBuffer>;
+            FixedString ToFixedString() const;
 
             Uuid m_guid;
             u32  m_subId;   ///< To allow easier and more consistent asset guid, we can provide asset sub ID. (i.e. Guid is a cubemap texture, subId is the index of the side)
@@ -145,19 +149,20 @@ namespace AZ
             /// Asset is loaded and ready for use.
             /// Note that the asset may be ready for use before the OnAssetReady
             /// event has been dispatched by the AssetBus on the main thread.
-            AZ_FORCE_INLINE bool IsReady() const
+            bool IsReady() const
             {
                 AssetStatus status = GetStatus();
                 return (status == AssetStatus::Ready || status == AssetStatus::ReadyPreNotify);
             }
 
             /// @return True if the asset status is Error or Canceled
-            AZ_FORCE_INLINE bool IsError() const { return GetStatus() == AssetStatus::Error; }
+            bool IsError() const { return GetStatus() == AssetStatus::Error; }
             bool IsLoading(bool includeQueued = true) const;
-            AZ_FORCE_INLINE AssetStatus GetStatus() const { return m_status.load(); }
-            AZ_FORCE_INLINE const AssetId& GetId() const { return m_assetId; }
-            AZ_FORCE_INLINE const AssetType& GetType() const { return RTTI_GetType(); }
-            AZ_FORCE_INLINE int GetUseCount() const { return m_useCount.load(); }
+            AssetStatus GetStatus() const { return m_status.load(); }
+            const AssetId& GetId() const { return m_assetId; }
+            const AssetType& GetType() const { return RTTI_GetType(); }
+            int GetUseCount() const { return m_useCount.load(); }
+            int GetCreationToken() const { return m_creationToken; }
 
         protected:
             /**
@@ -169,7 +174,7 @@ namespace AZ
             virtual bool IsRegisterReadonlyAndShareable() { return true; }
 
             /**
-             * Override this function to control automatic reload behavior. 
+             * Override this function to control automatic reload behavior.
              * By default, the asset will reload automatically.
              * Return false to disable automatic reload. Potential use cases include:
              * 1, If an asset is dependent on a parent asset(i.e.both assets need to be reloaded as a group) the parent asset can explicitly reload the child.
@@ -201,10 +206,10 @@ namespace AZ
 
             AssetHandler* m_registeredHandler{ nullptr };
 
-            // This is used to identify a unique asset and should only be set by the asset manager 
+            // This is used to identify a unique asset and should only be set by the asset manager
             // and therefore does not need to be atomic.
             // All shared copy of an asset should have the same identifier and therefore
-            // should not be modified while making copy of an existing asset. 
+            // should not be modified while making copy of an existing asset.
             int m_creationToken = s_defaultCreationToken;
             // General purpose flags that should only be accessed within the asset mutex
             AZStd::bitset<32> m_flags;
@@ -258,11 +263,11 @@ namespace AZ
             {
             }
             AssetFilterCB m_assetLoadFilterCB{ nullptr };
-            AZStd::optional<AZStd::chrono::milliseconds> m_deadline{ };
+            AZStd::optional<AZ::IO::IStreamerTypes::Deadline> m_deadline{};
             AZStd::optional<IO::IStreamerTypes::Priority> m_priority{ };
             AssetDependencyLoadRules m_dependencyRules{ AssetDependencyLoadRules::Default };
             // If the asset we're requesting is already loaded and we don't want to check for any
-            // depenencies that need loading, leave this as true.  If you wish to force a clean evaluation
+            // dependencies that need loading, leave this as true.  If you wish to force a clean evaluation
             // for dependent assets set to false
             bool m_reloadMissingDependencies{ false };
             bool operator==(const AssetLoadParameters& rhs) const
@@ -325,13 +330,13 @@ namespace AZ
 
             T& operator*() const
             {
-                AZ_Assert(m_assetData, "Asset is not loaded");
+                AZ_Assert(m_assetData, "Asset %s (%s) is not loaded", m_assetId.ToString<AZStd::string>().c_str(), m_assetHint.c_str());
                 return *Get();
             }
 
             T* operator->() const
             {
-                AZ_Assert(m_assetData, "Asset is not loaded");
+                AZ_Assert(m_assetData, "Asset %s (%s) is not loaded", m_assetId.ToString<AZStd::string>().c_str(), m_assetHint.c_str());
                 return Get();
             }
 
@@ -431,7 +436,7 @@ namespace AZ
             */
             void UpgradeAssetInfo();
 
-            /** 
+            /**
             * for debugging purposes - creates a string that represents the assets id, subid, hint, and name.
             * You should use this function for any time you want to show the full details of an asset in a log message
             * as it will always produce a consistent output string.  By convention, don't surround the output of this call
@@ -556,16 +561,24 @@ namespace AZ
                     Asset<AssetData> assetData(AssetInternal::GetAssetData(actualId, AZ::Data::AssetLoadBehavior::Default));
                     if (assetData)
                     {
-                        auto curStatus = assetData->GetStatus();
+                        auto isReady = assetData->GetStatus() == AssetData::AssetStatus::Ready;
                         bool isError = assetData->IsError();
-                        connectLock.unlock();
-                        if (curStatus == AssetData::AssetStatus::Ready)
+
+                        if (isReady || isError)
                         {
-                            handler->OnAssetReady(assetData);
-                        }
-                        else if (isError)
-                        {
-                            handler->OnAssetError(assetData);
+                            connectLock.unlock();
+
+                            if (isReady)
+                            {
+                                handler->OnAssetReady(assetData);
+                            }
+                            else if (isError)
+                            {
+                                handler->OnAssetError(assetData);
+                            }
+
+                            // Lock the mutex again since some destructors will be modifying the context afterwards
+                            connectLock.lock();
                         }
                     }
                 }
@@ -573,33 +586,32 @@ namespace AZ
             template<typename Bus>
             using ConnectionPolicy = AssetConnectionPolicy<Bus>;
 
-            using EventProcessingPolicy = Debug::AssetTrackingEventProcessingPolicy<>;
             //////////////////////////////////////////////////////////////////////////
 
             virtual ~AssetEvents() {}
 
             /// Called when an asset is loaded, patched and ready to be used.
             virtual void OnAssetReady(Asset<AssetData> asset) { (void)asset; }
-            
+
             /// Called when an asset has been moved (usually due to de-fragmentation/compaction), if possible the only data pointer is provided otherwise NULL.
             virtual void OnAssetMoved(Asset<AssetData> asset, void* oldDataPointer) { (void)asset; (void)oldDataPointer; }
-            
+
             /// Called before an asset reload has started.
             virtual void OnAssetPreReload(Asset<AssetData> asset) { (void)asset; }
-            
+
             /// Called when an asset has been reloaded (usually in tool mode and loose more). It should not be called in final build.
             virtual void OnAssetReloaded(Asset<AssetData> asset) { (void)asset; }
-            
+
             /// Called when an asset failed to reload.
             virtual void OnAssetReloadError(Asset<AssetData> asset) { (void)asset; }
-            
+
             /// Called when an asset has been saved. In general most assets can't be saved (in a game) so make sure you check the flag.
             virtual void OnAssetSaved(Asset<AssetData> asset, bool isSuccessful) { (void)asset; (void)isSuccessful; }
-            
+
             /// Called when an asset is unloaded.
             virtual void OnAssetUnloaded(const AssetId assetId, const AssetType assetType) { (void)assetId; (void)assetType; }
-            
-            /** 
+
+            /**
             * Called when an error happened with an asset. When this message is received the asset should be considered broken by default.
             * Note that this can happen when the asset errors during load, but also happens when the asset is missing (not in catalog etc.)
             * in the case of an asset that is completely missing, the Asset<T> passed in here will have no hint or other information about
@@ -990,7 +1002,7 @@ namespace AZ
         template<class T>
         u8 Asset<T>::GetFlags() const
         {
-            AZ_Warning("Asset", false, "Deprecated - replaced by GetAutoLoadBehavior")
+            AZ_Warning("Asset", false, "Deprecated - replaced by GetAutoLoadBehavior");
             return static_cast<u8>(m_loadBehavior);
         }
 
@@ -1012,7 +1024,7 @@ namespace AZ
         template<class T>
         bool Asset<T>::SetFlags(u8 flags)
         {
-            AZ_Warning("Asset", false, "Deprecated - replaced by SetAutoLoadBehavior")
+            AZ_Warning("Asset", false, "Deprecated - replaced by SetAutoLoadBehavior");
             if (!m_assetData)
             {
                 AZ_Assert(flags < static_cast<u8>(AssetLoadBehavior::Count), "Flags value is out of range");
@@ -1030,13 +1042,11 @@ namespace AZ
             if (assetData && !assetData->RTTI_IsTypeOf(AzTypeInfo<T>::Uuid()))
             {
 #ifdef AZ_ENABLE_TRACING
-                char assetDataIdGUIDStr[Uuid::MaxStringBuffer];
-                char assetTypeIdGUIDStr[Uuid::MaxStringBuffer];
-                assetData->GetId().m_guid.ToString(assetDataIdGUIDStr, AZ_ARRAY_SIZE(assetDataIdGUIDStr));
-                AzTypeInfo<T>::Uuid().ToString(assetTypeIdGUIDStr, AZ_ARRAY_SIZE(assetTypeIdGUIDStr));
-                AZ_Error("AssetDatabase", false, "Asset of type %s:%x (%s) is not related to %s (%s)!",
-                    assetData->GetType().ToString<AZStd::string>().c_str(), assetData->GetId().m_subId, assetDataIdGUIDStr,
-                    AzTypeInfo<T>::Name(), assetTypeIdGUIDStr);
+                AZ_Error("AssetDatabase", false, "Asset: %s TypeId: %s, is not related to Type: %s (%s)!"
+                    , assetData->GetId().ToFixedString().c_str()
+                    , assetData->GetType().ToFixedString().c_str()
+                    , AzTypeInfo<T>::Name()
+                    , AzTypeInfo<T>::Uuid().ToFixedString().c_str());
 #endif // AZ_ENABLE_TRACING
                 m_assetId = AssetId();
                 m_assetType = azrtti_typeid<T>();
@@ -1088,7 +1098,7 @@ namespace AZ
                 // if we are a different asset (or being swapped with a empty) then we just swap as usual.
                 AZStd::swap(m_assetHint, rhs.m_assetHint);
             }
-            
+
         }
 
         //=========================================================================
@@ -1212,7 +1222,7 @@ namespace AZ
         /// Indiscriminately skips all asset references.
         bool AssetFilterNoAssetLoading(const AssetFilterInfo& filterInfo);
 
-        // Shared ProductDependency concepts between AP and LY 
+        // Shared ProductDependency concepts between AP and LY
         namespace ProductDependencyInfo
         {
             //! Corresponds to all ProductDependencyFlags, not just LoadBehaviors
@@ -1244,7 +1254,7 @@ namespace AZStd
     {
         typedef AZ::Uuid    argument_type;
         typedef size_t      result_type;
-        AZ_FORCE_INLINE size_t operator()(const AZ::Data::AssetId& id) const
+        size_t operator()(const AZ::Data::AssetId& id) const
         {
             // use the subId here because otherwise you suffer performance problems if one source has a lot of products (same guid, varying subid)
             return id.m_guid.GetHash() ^ static_cast<size_t>(id.m_subId);

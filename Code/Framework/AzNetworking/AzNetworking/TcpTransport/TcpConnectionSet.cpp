@@ -35,7 +35,7 @@ namespace AzNetworking
 
     bool TcpConnectionSet::DeleteConnection(SocketFd socketFd)
     {
-        AZLOG(TcpConnectionSet, "Deleting Tcp connection by socketId (%u)", socketFd);
+        AZLOG(TcpConnectionSet, "Deleting Tcp connection by socketId (%u)", aznumeric_cast<int32_t>(socketFd));
         TcpConnection* connection = GetConnection(socketFd);
         if (connection == nullptr)
         {

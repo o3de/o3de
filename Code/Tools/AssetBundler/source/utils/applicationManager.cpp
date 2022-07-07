@@ -54,7 +54,12 @@ namespace AssetBundler
     bool ApplicationManager::Init()
     {
         AZ::Debug::TraceMessageBus::Handler::BusConnect();
-        Start(AzFramework::Application::Descriptor());
+
+        ComponentApplication::StartupParameters startupParameters;
+        // The AssetBundler does not need to load gems
+        startupParameters.m_loadDynamicModules = false;
+        Start(AzFramework::Application::Descriptor(), startupParameters);
+
         AZ::SerializeContext* context;
         EBUS_EVENT_RESULT(context, AZ::ComponentApplicationBus, GetSerializeContext);
         AZ_Assert(context, "No serialize context");
@@ -1397,9 +1402,8 @@ namespace AssetBundler
         // If no platform was specified, defaulting to platforms specified in the asset processor config files
         AzFramework::PlatformFlags platformFlags = GetEnabledPlatformFlags(
             AZStd::string_view{ AZ::Utils::GetEnginePath() },
-            AZStd::string_view{ AZ::Utils::GetEnginePath() },
             AZStd::string_view{ AZ::Utils::GetProjectPath() });
-        auto platformsString = AzFramework::PlatformHelper::GetCommaSeparatedPlatformList(platformFlags);
+        [[maybe_unused]] auto platformsString = AzFramework::PlatformHelper::GetCommaSeparatedPlatformList(platformFlags);
 
         AZ_TracePrintf(AppWindowName, "No platform specified, defaulting to platforms ( %s ).\n", platformsString.c_str());
         return platformFlags;

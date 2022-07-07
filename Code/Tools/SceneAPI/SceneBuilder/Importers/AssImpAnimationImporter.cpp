@@ -652,7 +652,6 @@ namespace AZ
                     aiAnimMesh* aiAnimMesh = mesh->mAnimMeshes[meshIdx];
                     AZStd::string_view nodeName(aiAnimMesh->mName.C_Str());
 
-                    const AZ::u32 maxKeys = static_cast<AZ::u32>(keys.size());
                     AZ::u32 keyIdx = 0;
                     for (AZ::u32 frame = 0; frame < numKeyFrames; ++frame)
                     {

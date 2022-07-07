@@ -1,0 +1,114 @@
+{
+    "entries": [
+        {
+            "base": "ComponentId",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "Component Id",
+                "category": "Entity"
+            },
+            "methods": [
+                {
+                    "base": "IsValid",
+                    "context": "ComponentId",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Is Valid"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Is Valid is invoked"
+                    },
+                    "details": {
+                        "name": "Is Valid"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{60A9A069-9C3D-465A-B7AD-0D6CC803990A}",
+                            "details": {
+                                "name": "Behavior Component Id*"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Is Valid"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Equal",
+                    "context": "ComponentId",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Equal"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Equal is invoked"
+                    },
+                    "details": {
+                        "name": "Equal"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{60A9A069-9C3D-465A-B7AD-0D6CC803990A}",
+                            "details": {
+                                "name": "Behavior Component Id"
+                            }
+                        },
+                        {
+                            "typeid": "{60A9A069-9C3D-465A-B7AD-0D6CC803990A}",
+                            "details": {
+                                "name": "Behavior Component Id"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Is Equal"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "ToString",
+                    "context": "ComponentId",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke To String"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after To String is invoked"
+                    },
+                    "details": {
+                        "name": "To String"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{60A9A069-9C3D-465A-B7AD-0D6CC803990A}",
+                            "details": {
+                                "name": "Behavior Component Id*"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "String"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

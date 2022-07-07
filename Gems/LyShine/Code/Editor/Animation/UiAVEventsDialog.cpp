@@ -18,12 +18,6 @@
 
 // CUiAVEventsDialog dialog
 
-namespace
-{
-    const int kCountSubItemIndex = 1;
-    const int kTimeSubItemIndex = 2;
-}
-
 class UiAVEventsModel
     : public QAbstractTableModel
 {

@@ -67,7 +67,7 @@ SANDBOX_API void ErrorV(const char* format, va_list argList)
     str += szBuffer;
 
     //CLogFile::WriteLine( str );
-    CryWarning(VALIDATOR_MODULE_EDITOR, VALIDATOR_ERROR, str.toUtf8().data());
+    CryWarning(VALIDATOR_MODULE_EDITOR, VALIDATOR_ERROR, "%s", str.toUtf8().data());
 
     if (!CCryEditApp::instance()->IsInTestMode() && !CCryEditApp::instance()->IsInExportMode() && !CCryEditApp::instance()->IsInLevelLoadTestMode())
     {
@@ -95,7 +95,7 @@ SANDBOX_API void WarningV(const char* format, va_list argList)
     char        szBuffer[MAX_LOGBUFFER_SIZE];
     azvsnprintf(szBuffer, MAX_LOGBUFFER_SIZE, format, argList);
 
-    CryWarning(VALIDATOR_MODULE_EDITOR, VALIDATOR_WARNING, szBuffer);
+    CryWarning(VALIDATOR_MODULE_EDITOR, VALIDATOR_WARNING, "%s", szBuffer);
 
     bool bNoUI = false;
     ICVar* pCVar = gEnv->pConsole->GetCVar("sys_no_crash_dialog");
@@ -179,19 +179,17 @@ void CLogFile::FormatLineV(const char * format, va_list argList)
 
 void CLogFile::AboutSystem()
 {
-    char szBuffer[MAX_LOGBUFFER_SIZE];
-    wchar_t szBufferW[MAX_LOGBUFFER_SIZE];
 #if defined(AZ_PLATFORM_WINDOWS) || defined(AZ_PLATFORM_LINUX)
     //////////////////////////////////////////////////////////////////////
     // Write the system informations to the log
     //////////////////////////////////////////////////////////////////////
-
-    wchar_t szLanguageBufferW[64];
+    char szBuffer[MAX_LOGBUFFER_SIZE];
     //wchar_t szCPUModel[64];
     MEMORYSTATUS MemoryStatus;
 #endif // defined(AZ_PLATFORM_WINDOWS) || defined(AZ_PLATFORM_LINUX)
 
 #if defined(AZ_PLATFORM_WINDOWS)
+    wchar_t szLanguageBufferW[64];
     DEVMODE DisplayConfig;
     OSVERSIONINFO OSVerInfo;
     OSVerInfo.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
@@ -296,6 +294,7 @@ AZ_POP_DISABLE_WARNING
     //////////////////////////////////////////////////////////////////////
 
     str += " (";
+    wchar_t szBufferW[MAX_LOGBUFFER_SIZE];
     GetWindowsDirectoryW(szBufferW, sizeof(szBufferW));
     AZStd::to_string(szBuffer, MAX_LOGBUFFER_SIZE, szBufferW);
     str += szBuffer;
@@ -479,7 +478,7 @@ void CLogFile::WriteString(const char* pszString)
 {
     if (gEnv && gEnv->pLog)
     {
-        gEnv->pLog->LogPlus(pszString);
+        gEnv->pLog->LogPlus("%s", pszString);
     }
 }
 

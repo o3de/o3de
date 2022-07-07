@@ -47,12 +47,12 @@ namespace ImageProcessingAtomEditor
         bool HasValidImage();
 
     protected:
-        void OnSave();
         void OnHelp();
+        void OnSave();
 
         ////////////////////////////////////////////////////////////////////////
         //EditorInternalNotificationBus
-        void OnEditorSettingsChanged(bool needRefresh, const AZStd::string& platform);
+        void OnEditorSettingsChanged(bool needRefresh, const AZStd::string& platform) override;
         ////////////////////////////////////////////////////////////////////////
 
         bool event(QEvent* event) override;

@@ -6,7 +6,7 @@
  *
  */
 
-#include "PerlinGradientComponent.h"
+#include <GradientSignal/Components/PerlinGradientComponent.h>
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/Jobs/Job.h>
 #include <AzCore/Jobs/JobFunction.h>
@@ -138,16 +138,25 @@ namespace GradientSignal
 
     void PerlinGradientComponent::Activate()
     {
+        // This will immediately call OnGradientTransformChanged and initialize m_gradientTransform.
+        GradientTransformNotificationBus::Handler::BusConnect(GetEntityId());
+
         m_perlinImprovedNoise.reset(aznew PerlinImprovedNoise(AZ::GetMax(m_configuration.m_randomSeed, 1)));
-        GradientRequestBus::Handler::BusConnect(GetEntityId());
         PerlinGradientRequestBus::Handler::BusConnect(GetEntityId());
+
+        // Connect to GradientRequestBus last so that everything is initialized before listening for gradient queries.
+        GradientRequestBus::Handler::BusConnect(GetEntityId());
     }
 
     void PerlinGradientComponent::Deactivate()
     {
-        m_perlinImprovedNoise.reset();
+        // Disconnect from GradientRequestBus first to ensure no queries are in process when deactivating.
         GradientRequestBus::Handler::BusDisconnect();
+
         PerlinGradientRequestBus::Handler::BusDisconnect();
+        GradientTransformNotificationBus::Handler::BusDisconnect();
+
+        m_perlinImprovedNoise.reset();
     }
 
     bool PerlinGradientComponent::ReadInConfig(const AZ::ComponentConfig* baseConfig)
@@ -170,26 +179,62 @@ namespace GradientSignal
         return false;
     }
 
+    void PerlinGradientComponent::OnGradientTransformChanged(const GradientTransform& newTransform)
+    {
+        AZStd::unique_lock lock(m_queryMutex);
+        m_gradientTransform = newTransform;
+    }
+
     float PerlinGradientComponent::GetValue(const GradientSampleParams& sampleParams) const
     {
-        AZ_PROFILE_FUNCTION(Entity);
+        AZStd::shared_lock lock(m_queryMutex);
 
         if (m_perlinImprovedNoise)
         {
             AZ::Vector3 uvw = sampleParams.m_position;
-
             bool wasPointRejected = false;
-            const bool shouldNormalizeOutput = false;
-            GradientTransformRequestBus::Event(
-                GetEntityId(), &GradientTransformRequestBus::Events::TransformPositionToUVW, sampleParams.m_position, uvw, shouldNormalizeOutput, wasPointRejected);
+
+            m_gradientTransform.TransformPositionToUVW(sampleParams.m_position, uvw, wasPointRejected);
 
             if (!wasPointRejected)
             {
-                return m_perlinImprovedNoise->GenerateOctaveNoise(uvw.GetX(), uvw.GetY(), uvw.GetZ(), m_configuration.m_octave, m_configuration.m_amplitude, m_configuration.m_frequency);
+                return m_perlinImprovedNoise->GenerateOctaveNoise(
+                    uvw.GetX(), uvw.GetY(), uvw.GetZ(), m_configuration.m_octave, m_configuration.m_amplitude,
+                    m_configuration.m_frequency);
             }
         }
 
         return 0.0f;
+    }
+
+    void PerlinGradientComponent::GetValues(AZStd::span<const AZ::Vector3> positions, AZStd::span<float> outValues) const
+    {
+        if (positions.size() != outValues.size())
+        {
+            AZ_Assert(false, "input and output lists are different sizes (%zu vs %zu).", positions.size(), outValues.size());
+            return;
+        }
+
+        AZ::Vector3 uvw;
+        bool wasPointRejected = false;
+
+        AZStd::shared_lock lock(m_queryMutex);
+
+        for (size_t index = 0; index < positions.size(); index++)
+        {
+            m_gradientTransform.TransformPositionToUVW(positions[index], uvw, wasPointRejected);
+
+            if (!wasPointRejected)
+            {
+                outValues[index] = m_perlinImprovedNoise->GenerateOctaveNoise(
+                    uvw.GetX(), uvw.GetY(), uvw.GetZ(), m_configuration.m_octave, m_configuration.m_amplitude,
+                    m_configuration.m_frequency);
+            }
+            else
+            {
+                outValues[index] = 0.0f;
+            }
+        }
     }
 
     int PerlinGradientComponent::GetRandomSeed() const
@@ -199,9 +244,15 @@ namespace GradientSignal
 
     void PerlinGradientComponent::SetRandomSeed(int seed)
     {
-        m_configuration.m_randomSeed = AZStd::GetMax(seed, 1);
-        m_perlinImprovedNoise.release();
-        m_perlinImprovedNoise.reset(aznew PerlinImprovedNoise(m_configuration.m_randomSeed));
+        // Only hold the lock while we're changing the data. Don't hold onto it during the OnCompositionChanged call, because that can
+        // execute an arbitrary amount of logic, including calls back to this component.
+        {
+            AZStd::unique_lock lock(m_queryMutex);
+            m_configuration.m_randomSeed = AZStd::GetMax(seed, 1);
+            m_perlinImprovedNoise.release();
+            m_perlinImprovedNoise.reset(aznew PerlinImprovedNoise(m_configuration.m_randomSeed));
+        }
+
         LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
     }
 
@@ -212,7 +263,13 @@ namespace GradientSignal
 
     void PerlinGradientComponent::SetOctaves(int octaves)
     {
-        m_configuration.m_octave = octaves;
+        // Only hold the lock while we're changing the data. Don't hold onto it during the OnCompositionChanged call, because that can
+        // execute an arbitrary amount of logic, including calls back to this component.
+        {
+            AZStd::unique_lock lock(m_queryMutex);
+            m_configuration.m_octave = octaves;
+        }
+
         LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
     }
 
@@ -223,7 +280,13 @@ namespace GradientSignal
 
     void PerlinGradientComponent::SetAmplitude(float amp)
     {
-        m_configuration.m_amplitude = amp;
+        // Only hold the lock while we're changing the data. Don't hold onto it during the OnCompositionChanged call, because that can
+        // execute an arbitrary amount of logic, including calls back to this component.
+        {
+            AZStd::unique_lock lock(m_queryMutex);
+            m_configuration.m_amplitude = amp;
+        }
+
         LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
     }
 
@@ -234,7 +297,13 @@ namespace GradientSignal
 
     void PerlinGradientComponent::SetFrequency(float frequency)
     {
-        m_configuration.m_frequency = frequency;
+        // Only hold the lock while we're changing the data. Don't hold onto it during the OnCompositionChanged call, because that can
+        // execute an arbitrary amount of logic, including calls back to this component.
+        {
+            AZStd::unique_lock lock(m_queryMutex);
+            m_configuration.m_frequency = frequency;
+        }
+
         LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
     }
 }

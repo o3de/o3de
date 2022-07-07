@@ -6,7 +6,8 @@
  *
  */
 
-#include <GemCatalog/GemCatalogScreen.h>
+#include <ProjectGemCatalogScreen.h>
+#include <GemRepo/GemRepoScreen.h>
 #include <ProjectManagerDefs.h>
 #include <PythonBindingsInterface.h>
 #include <ScreenHeaderWidget.h>
@@ -14,6 +15,8 @@
 #include <UpdateProjectCtrl.h>
 #include <UpdateProjectSettingsScreen.h>
 #include <ProjectUtils.h>
+#include <DownloadController.h>
+#include <SettingsInterface.h>
 
 #include <QDialogButtonBox>
 #include <QMessageBox>
@@ -38,7 +41,11 @@ namespace O3DE::ProjectManager
         vLayout->addWidget(m_header);
 
         m_updateSettingsScreen = new UpdateProjectSettingsScreen();
-        m_gemCatalogScreen = new GemCatalogScreen();
+        m_projectGemCatalogScreen = new ProjectGemCatalogScreen();
+        m_gemRepoScreen = new GemRepoScreen(this);
+
+        connect(m_projectGemCatalogScreen, &ScreenWidget::ChangeScreenRequest, this, &UpdateProjectCtrl::OnChangeScreenRequest);
+        connect(m_gemRepoScreen, &GemRepoScreen::OnRefresh, m_projectGemCatalogScreen, &ProjectGemCatalogScreen::Refresh);
 
         m_stack = new QStackedWidget(this);
         m_stack->setObjectName("body");
@@ -64,7 +71,8 @@ namespace O3DE::ProjectManager
         topBarHLayout->addWidget(tabWidget);
 
         m_stack->addWidget(topBarFrameWidget);
-        m_stack->addWidget(m_gemCatalogScreen);
+        m_stack->addWidget(m_projectGemCatalogScreen);
+        m_stack->addWidget(m_gemRepoScreen);
 
         QDialogButtonBox* backNextButtons = new QDialogButtonBox();
         backNextButtons->setObjectName("footer");
@@ -88,6 +96,17 @@ namespace O3DE::ProjectManager
         return ProjectManagerScreen::UpdateProject;
     }
 
+    bool UpdateProjectCtrl::ContainsScreen(ProjectManagerScreen screen)
+    {
+        // Do not include GemRepos because we don't want to advertise jumping to it from all other screens here
+        return screen == GetScreenEnum() || screen == ProjectManagerScreen::ProjectGemCatalog;
+    }
+
+    void UpdateProjectCtrl::GoToScreen(ProjectManagerScreen screen)
+    {
+        OnChangeScreenRequest(screen);
+    }
+
     // Called when pressing "Edit Project Settings..."
     void UpdateProjectCtrl::NotifyCurrentScreen()
     {
@@ -95,14 +114,40 @@ namespace O3DE::ProjectManager
         Update();
 
         // Gather the available gems that will be shown in the gem catalog.
-        m_gemCatalogScreen->ReinitForProject(m_projectInfo.m_path);
+        m_projectGemCatalogScreen->ReinitForProject(m_projectInfo.m_path);
+
+        // make sure the gem repo has the latest repo details
+        m_gemRepoScreen->Reinit();
+    }
+
+    void UpdateProjectCtrl::OnChangeScreenRequest(ProjectManagerScreen screen)
+    {
+        if (screen == ProjectManagerScreen::GemRepos)
+        {
+            m_stack->setCurrentWidget(m_gemRepoScreen);
+            Update();
+        }
+        else if (screen == ProjectManagerScreen::ProjectGemCatalog)
+        {
+            m_stack->setCurrentWidget(m_projectGemCatalogScreen);
+            Update();
+        }
+        else if (screen == ProjectManagerScreen::UpdateProjectSettings)
+        {
+            m_stack->setCurrentWidget(m_updateSettingsScreen);
+            Update();
+        }
+        else
+        {
+            emit ChangeScreenRequest(screen);
+        }
     }
 
     void UpdateProjectCtrl::HandleGemsButton()
     {
         if (UpdateProjectSettings(true))
         {
-            m_stack->setCurrentWidget(m_gemCatalogScreen);
+            m_stack->setCurrentWidget(m_projectGemCatalogScreen);
             Update();
         }
     }
@@ -118,7 +163,7 @@ namespace O3DE::ProjectManager
         {
             if (UpdateProjectSettings(true))
             {
-                emit GotoPreviousScreenRequest();
+                emit GoToPreviousScreenRequest();
             }
         }
     }
@@ -134,12 +179,22 @@ namespace O3DE::ProjectManager
                 return;
             }
         }
-        else if (m_stack->currentIndex() == ScreenOrder::Gems && m_gemCatalogScreen)
+        else if (m_stack->currentIndex() == ScreenOrder::Gems && m_projectGemCatalogScreen)
         {
+            if (!m_projectGemCatalogScreen->GetDownloadController()->IsDownloadQueueEmpty())
+            {
+                QMessageBox::critical(this, tr("Gems downloading"), tr("You must wait for gems to finish downloading before continuing."));
+                return;
+            }
+
             // Enable or disable the gems that got adjusted in the gem catalog and apply them to the given project.
-            if (!m_gemCatalogScreen->EnableDisableGemsForProject(m_projectInfo.m_path))
+            const ProjectGemCatalogScreen::ConfiguredGemsResult result = m_projectGemCatalogScreen->ConfigureGemsForProject(m_projectInfo.m_path);
+            if (result == ProjectGemCatalogScreen::ConfiguredGemsResult::Failed)
             {
                 QMessageBox::critical(this, tr("Failed to configure gems"), tr("Failed to configure gems for project."));
+            }
+            if (result != ProjectGemCatalogScreen::ConfiguredGemsResult::Success)
+            {
                 return;
             }
 
@@ -168,18 +223,26 @@ namespace O3DE::ProjectManager
 
     void UpdateProjectCtrl::Update()
     {
-        if (m_stack->currentIndex() == ScreenOrder::Gems)
+        if (m_stack->currentIndex() == ScreenOrder::GemRepos)
+        {
+            m_header->setTitle(QString(tr("Edit Project Settings: \"%1\"")).arg(m_projectInfo.GetProjectDisplayName()));
+            m_header->setSubTitle(QString(tr("Gem Repositories")));
+            m_nextButton->setVisible(false);
+        }
+        else if (m_stack->currentIndex() == ScreenOrder::Gems)
         {
 
             m_header->setTitle(QString(tr("Edit Project Settings: \"%1\"")).arg(m_projectInfo.GetProjectDisplayName()));
             m_header->setSubTitle(QString(tr("Configure Gems")));
             m_nextButton->setText(tr("Save"));
+            m_nextButton->setVisible(true);
         }
         else
         {
             m_header->setTitle("");
             m_header->setSubTitle(QString(tr("Edit Project Settings: \"%1\"")).arg(m_projectInfo.GetProjectDisplayName()));
             m_nextButton->setText(tr("Save"));
+            m_nextButton->setVisible(true);
         }
     }
 
@@ -240,9 +303,18 @@ namespace O3DE::ProjectManager
                 }
             }
 
+            if (newProjectSettings.m_projectName != m_projectInfo.m_projectName)
+            {
+                // Remove project build successfully paths for both old and new project names
+                // because a full rebuild is required when moving projects
+                auto settings = SettingsInterface::Get();
+                settings->SetProjectBuiltSuccessfully(m_projectInfo, false);
+                settings->SetProjectBuiltSuccessfully(newProjectSettings, false);
+            }
+
             if (!newProjectSettings.m_newPreviewImagePath.isEmpty())
             {
-                if (!ProjectUtils::ReplaceFile(
+                if (!ProjectUtils::ReplaceProjectFile(
                         QDir(newProjectSettings.m_path).filePath(newProjectSettings.m_iconPath), newProjectSettings.m_newPreviewImagePath))
                 {
                     QMessageBox::critical(this, tr("File replace failed"), tr("Failed to replace project preview image."));

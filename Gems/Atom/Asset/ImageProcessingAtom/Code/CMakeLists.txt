@@ -26,21 +26,22 @@ set(pal_tools_include_dirs)
 foreach(enabled_platform ${LY_PAL_TOOLS_ENABLED})
     string(TOLOWER ${enabled_platform} enabled_platform_lowercase)
 
-    ly_get_list_relative_pal_filename(pal_tools_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${enabled_platform})
+    o3de_pal_dir(pal_tools_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${enabled_platform} "${gem_restricted_path}" "${gem_path}" "${gem_parent_relative_path}")
     list(APPEND pal_tools_include_dirs ${pal_tools_source_dir})
 
     list(APPEND platform_tools_files ${pal_tools_source_dir}/pal_tools_${enabled_platform_lowercase}.cmake)
     list(APPEND pal_tools_include_files ${pal_tools_source_dir}/pal_tools_${enabled_platform_lowercase}_files.cmake)
 endforeach()
 
-ly_get_list_relative_pal_filename(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME})
-ly_get_list_relative_pal_filename(common_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/Common)
+o3de_pal_dir(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME} "${gem_restricted_path}" "${gem_path}" "${gem_parent_relative_path}")
+set(common_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/Common)
 
 ly_add_target(
     NAME ImageProcessingAtom.Editor.Static STATIC
     NAMESPACE Gem
     AUTOMOC
     AUTOUIC
+    AUTORCC
     FILES_CMAKE
         imageprocessing_files.cmake
         ${pal_tools_include_files}
@@ -48,7 +49,7 @@ ly_add_target(
     PLATFORM_INCLUDE_FILES
         ${pal_source_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}.cmake
         ${common_source_dir}/${PAL_TRAIT_COMPILER_ID}/imageprocessingatom_editor_static_${PAL_TRAIT_COMPILER_ID_LOWERCASE}.cmake
-         ${platform_tools_files}
+        ${platform_tools_files}
     INCLUDE_DIRECTORIES
         PUBLIC
             Include
@@ -62,12 +63,11 @@ ly_add_target(
             3rdParty::Qt::Core
             3rdParty::Qt::Widgets
             3rdParty::Qt::Gui
-            3rdParty::etc2comp
-            3rdParty::PVRTexTool
+            3rdParty::astc-encoder
             3rdParty::squish-ccr
-            3rdParty::tiff
-            3rdParty::ilmbase
-            Legacy::CryCommon
+            3rdParty::TIFF
+            3rdParty::ISPCTexComp
+            3rdParty::OpenEXR
             AZ::AzFramework
             AZ::AzToolsFramework
             AZ::AzQtComponents
@@ -76,8 +76,6 @@ ly_add_target(
             Gem::Atom_RPI.Public
             Gem::Atom_RHI.Reflect
             Gem::Atom_Utils.Static
-    RUNTIME_DEPENDENCIES
-        3rdParty::ASTCEncoder
 
 )
 ly_add_source_properties(

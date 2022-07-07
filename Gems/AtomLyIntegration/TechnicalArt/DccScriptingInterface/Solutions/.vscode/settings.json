@@ -1,5 +1,0 @@
-{
-    "python.envFile": "${workspaceFolder}/../../.env",
-    "python.pythonPath": "${workspaceFolder}\\..\\..\\..\\..\\..\\..\\Tools\\Python\\3.7.5\\windows\\python.exe",
-    "editor.wordWrap": "wordWrapColumn"
-}

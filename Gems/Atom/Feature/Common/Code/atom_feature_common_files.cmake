@@ -8,10 +8,13 @@
 
 set(FILES
     3rdParty/ACES/ACES/Aces.h
+    Include/Atom/Feature/RenderCommon.h
     Include/Atom/Feature/ACES/AcesDisplayMapperFeatureProcessor.h
     Include/Atom/Feature/Automation/AtomAutomationBus.h
     Include/Atom/Feature/AuxGeom/AuxGeomFeatureProcessor.h
+    Include/Atom/Feature/ColorGrading/LutResolution.h
     Include/Atom/Feature/CoreLights/CoreLightsConstants.h
+    Include/Atom/Feature/CubeMapCapture/CubeMapCaptureFeatureProcessorInterface.h
     Include/Atom/Feature/DisplayMapper/AcesOutputTransformPass.h
     Include/Atom/Feature/DisplayMapper/AcesOutputTransformLutPass.h
     Include/Atom/Feature/DisplayMapper/ApplyShaperLookupTablePass.h
@@ -25,10 +28,11 @@ set(FILES
     Include/Atom/Feature/ImageBasedLights/ImageBasedLightFeatureProcessor.h
     Include/Atom/Feature/LookupTable/LookupTableAsset.h
     Include/Atom/Feature/Mesh/MeshFeatureProcessor.h
+    Include/Atom/Feature/Mesh/ModelReloaderSystemInterface.h
     Include/Atom/Feature/PostProcessing/PostProcessingConstants.h
     Include/Atom/Feature/PostProcessing/SMAAFeatureProcessorInterface.h
     Include/Atom/Feature/PostProcess/PostFxLayerCategoriesConstants.h
-    Include/Atom/Feature/ReflectionProbe/ReflectionProbeFeatureProcessor.h
+    Include/Atom/Feature/ReflectionProbe/ReflectionProbeFeatureProcessorInterface.h
     Include/Atom/Feature/SkyBox/SkyBoxFogBus.h
     Include/Atom/Feature/SkyBox/SkyboxConstants.h
     Include/Atom/Feature/SkyBox/SkyBoxLUT.h
@@ -43,16 +47,12 @@ set(FILES
     Include/Atom/Feature/Utils/MultiSparseVector.h
     Include/Atom/Feature/Utils/ProfilingCaptureBus.h
     Include/Atom/Feature/Utils/SparseVector.h
-    Include/Atom/Feature/LuxCore/LuxCoreBus.h
-    Include/Atom/Feature/LuxCore/LuxCoreTexturePass.h
-    Include/Atom/Feature/LuxCore/RenderTexturePass.h
     Source/CommonModule.cpp
     Source/CommonSystemComponent.cpp
     Source/FrameCaptureSystemComponent.cpp
     Source/FrameCaptureSystemComponent.h
     Source/ProfilingCaptureSystemComponent.cpp
     Source/ProfilingCaptureSystemComponent.h
-    Source/RenderCommon.h
     3rdParty/ACES/ACES/Aces.cpp
     Source/ACES/AcesDisplayMapperFeatureProcessor.cpp
     Source/AuxGeom/AuxGeomBase.h
@@ -65,6 +65,8 @@ set(FILES
     Source/AuxGeom/DynamicPrimitiveProcessor.h
     Source/AuxGeom/FixedShapeProcessor.cpp
     Source/AuxGeom/FixedShapeProcessor.h
+    Source/ColorGrading/LutGenerationPass.cpp
+    Source/ColorGrading/LutGenerationPass.h
     Source/CoreLights/CapsuleLightFeatureProcessor.h
     Source/CoreLights/CapsuleLightFeatureProcessor.cpp
     Source/CoreLights/CascadedShadowmapsPass.h
@@ -110,8 +112,16 @@ set(FILES
     Source/Checkerboard/CheckerboardColorResolvePass.h
     Source/Checkerboard/CheckerboardPass.cpp
     Source/Checkerboard/CheckerboardPass.h
-    Source/Decals/DecalFeatureProcessor.h
-    Source/Decals/DecalFeatureProcessor.cpp
+    Source/CubeMapCapture/CubeMapCaptureFeatureProcessor.h
+    Source/CubeMapCapture/CubeMapCaptureFeatureProcessor.cpp
+    Source/CubeMapCapture/CubeMapCapture.h
+    Source/CubeMapCapture/CubeMapCapture.cpp
+    Source/CubeMapCapture/CubeMapRenderer.h
+    Source/CubeMapCapture/CubeMapRenderer.cpp
+    Source/Debug/RenderDebugFeatureProcessor.h
+    Source/Debug/RenderDebugFeatureProcessor.cpp
+    Source/Debug/RenderDebugSettings.h
+    Source/Debug/RenderDebugSettings.cpp
     Source/Decals/DecalTextureArray.h
     Source/Decals/DecalTextureArray.cpp
     Source/Decals/AsyncLoadTracker.h
@@ -129,6 +139,10 @@ set(FILES
     Source/DiffuseGlobalIllumination/DiffuseProbeGridRelocationPass.h
     Source/DiffuseGlobalIllumination/DiffuseProbeGridClassificationPass.cpp
     Source/DiffuseGlobalIllumination/DiffuseProbeGridClassificationPass.h
+    Source/DiffuseGlobalIllumination/DiffuseProbeGridPreparePass.cpp
+    Source/DiffuseGlobalIllumination/DiffuseProbeGridPreparePass.h
+    Source/DiffuseGlobalIllumination/DiffuseProbeGridDownsamplePass.cpp
+    Source/DiffuseGlobalIllumination/DiffuseProbeGridDownsamplePass.h
     Source/DiffuseGlobalIllumination/DiffuseProbeGridRenderPass.cpp
     Source/DiffuseGlobalIllumination/DiffuseProbeGridRenderPass.h
     Source/DiffuseGlobalIllumination/DiffuseProbeGrid.cpp
@@ -137,6 +151,16 @@ set(FILES
     Source/DiffuseGlobalIllumination/DiffuseProbeGridTextureReadback.h
     Source/DiffuseGlobalIllumination/DiffuseProbeGridFeatureProcessor.h
     Source/DiffuseGlobalIllumination/DiffuseProbeGridFeatureProcessor.cpp
+    Source/DiffuseGlobalIllumination/DiffuseProbeGridVisualizationPreparePass.h
+    Source/DiffuseGlobalIllumination/DiffuseProbeGridVisualizationPreparePass.cpp
+    Source/DiffuseGlobalIllumination/DiffuseProbeGridVisualizationAccelerationStructurePass.h
+    Source/DiffuseGlobalIllumination/DiffuseProbeGridVisualizationAccelerationStructurePass.cpp
+    Source/DiffuseGlobalIllumination/DiffuseProbeGridVisualizationRayTracingPass.h
+    Source/DiffuseGlobalIllumination/DiffuseProbeGridVisualizationRayTracingPass.cpp
+    Source/DiffuseGlobalIllumination/DiffuseProbeGridVisualizationCompositePass.h
+    Source/DiffuseGlobalIllumination/DiffuseProbeGridVisualizationCompositePass.cpp
+    Source/DiffuseGlobalIllumination/DiffuseProbeGridQueryPass.cpp
+    Source/DiffuseGlobalIllumination/DiffuseProbeGridQueryPass.h
     Source/DiffuseGlobalIllumination/DiffuseGlobalIlluminationFeatureProcessor.h
     Source/DiffuseGlobalIllumination/DiffuseGlobalIlluminationFeatureProcessor.cpp
     Source/DisplayMapper/AcesOutputTransformPass.cpp
@@ -169,6 +193,10 @@ set(FILES
     Source/Math/MathFilter.cpp
     Source/Math/MathFilterDescriptor.h
     Source/Mesh/MeshFeatureProcessor.cpp
+    Source/Mesh/ModelReloader.cpp
+    Source/Mesh/ModelReloader.h
+    Source/Mesh/ModelReloaderSystem.cpp
+    Source/Mesh/ModelReloaderSystem.h
     Source/MorphTargets/MorphTargetComputePass.cpp
     Source/MorphTargets/MorphTargetComputePass.h
     Source/MorphTargets/MorphTargetDispatchItem.cpp
@@ -183,8 +211,12 @@ set(FILES
     Source/PostProcess/PostProcessFeatureProcessor.h
     Source/PostProcess/PostProcessSettings.cpp
     Source/PostProcess/PostProcessSettings.h
+    Source/PostProcess/ColorGrading/HDRColorGradingSettings.h
+    Source/PostProcess/ColorGrading/HDRColorGradingSettings.cpp
     Source/PostProcess/Bloom/BloomSettings.cpp
     Source/PostProcess/Bloom/BloomSettings.h
+    Source/PostProcess/ChromaticAberration/ChromaticAberrationSettings.cpp
+    Source/PostProcess/ChromaticAberration/ChromaticAberrationSettings.h
     Source/PostProcess/DepthOfField/DepthOfFieldSettings.cpp
     Source/PostProcess/DepthOfField/DepthOfFieldSettings.h
     Source/PostProcess/ExposureControl/ExposureControlSettings.cpp
@@ -205,6 +237,8 @@ set(FILES
     Source/PostProcessing/BloomCompositePass.cpp
     Source/PostProcessing/BloomParentPass.h
     Source/PostProcessing/BloomParentPass.cpp
+    Source/PostProcessing/ChromaticAberrationPass.h
+    Source/PostProcessing/ChromaticAberrationPass.cpp
     Source/PostProcessing/DepthOfFieldCompositePass.h
     Source/PostProcessing/DepthOfFieldCompositePass.cpp
     Source/PostProcessing/DepthOfFieldBokehBlurPass.h
@@ -225,12 +259,16 @@ set(FILES
     Source/PostProcessing/EyeAdaptationPass.h
     Source/PostProcessing/FastDepthAwareBlurPasses.cpp
     Source/PostProcessing/FastDepthAwareBlurPasses.h
+    Source/PostProcessing/HDRColorGradingPass.cpp
+    Source/PostProcessing/HDRColorGradingPass.h
     Source/PostProcessing/LookModificationCompositePass.cpp
     Source/PostProcessing/LookModificationCompositePass.h
     Source/PostProcessing/LookModificationTransformPass.cpp
     Source/PostProcessing/LookModificationTransformPass.h
     Source/PostProcessing/LuminanceHistogramGeneratorPass.h
     Source/PostProcessing/LuminanceHistogramGeneratorPass.cpp
+    Source/PostProcessing/NewDepthOfFieldPasses.cpp
+    Source/PostProcessing/NewDepthOfFieldPasses.h
     Source/PostProcessing/PostProcessingShaderOptionBase.cpp
     Source/PostProcessing/PostProcessingShaderOptionBase.h
     Source/PostProcessing/SMAABasePass.cpp
@@ -254,13 +292,19 @@ set(FILES
     Source/PostProcessing/TaaPass.cpp
     Source/RayTracing/RayTracingFeatureProcessor.h
     Source/RayTracing/RayTracingFeatureProcessor.cpp
+    Source/RayTracing/RayTracingResourceList.h
+    Source/RayTracing/RayTracingIndexList.h
     Source/RayTracing/RayTracingAccelerationStructurePass.cpp
     Source/RayTracing/RayTracingAccelerationStructurePass.h
     Source/RayTracing/RayTracingPass.cpp
     Source/RayTracing/RayTracingPass.h
     Source/RayTracing/RayTracingPassData.h
+    Source/ReflectionProbe/ReflectionProbeFeatureProcessor.h
     Source/ReflectionProbe/ReflectionProbeFeatureProcessor.cpp
+    Source/ReflectionProbe/ReflectionProbe.h
     Source/ReflectionProbe/ReflectionProbe.cpp
+    Source/ReflectionScreenSpace/ReflectionScreenSpaceTracePass.cpp
+    Source/ReflectionScreenSpace/ReflectionScreenSpaceTracePass.h
     Source/ReflectionScreenSpace/ReflectionScreenSpaceBlurPass.cpp
     Source/ReflectionScreenSpace/ReflectionScreenSpaceBlurPass.h
     Source/ReflectionScreenSpace/ReflectionScreenSpaceBlurChildPass.cpp
@@ -273,6 +317,8 @@ set(FILES
     Source/ScreenSpace/DeferredFogSettings.h
     Source/ScreenSpace/DeferredFogPass.cpp
     Source/ScreenSpace/DeferredFogPass.h
+    Source/Shadows/FullscreenShadowPass.h
+    Source/Shadows/FullscreenShadowPass.cpp
     Source/Shadows/ProjectedShadowFeatureProcessor.h
     Source/Shadows/ProjectedShadowFeatureProcessor.cpp
     Source/SkinnedMesh/SkinnedMeshComputePass.cpp
@@ -299,18 +345,6 @@ set(FILES
     Source/SkyBox/SkyBoxFogSettings.cpp
     Source/TransformService/TransformServiceFeatureProcessor.cpp
     Source/Utils/GpuBufferHandler.cpp
-    Source/LuxCore/LuxCoreTexturePass.cpp
-    Source/LuxCore/RenderTexturePass.cpp
-    Source/LuxCore/LuxCoreMaterial.cpp
-    Source/LuxCore/LuxCoreMaterial.h
-    Source/LuxCore/LuxCoreMesh.cpp
-    Source/LuxCore/LuxCoreMesh.h
-    Source/LuxCore/LuxCoreObject.cpp
-    Source/LuxCore/LuxCoreObject.h
-    Source/LuxCore/LuxCoreRenderer.cpp
-    Source/LuxCore/LuxCoreRenderer.h
-    Source/LuxCore/LuxCoreTexture.cpp
-    Source/LuxCore/LuxCoreTexture.h
 )
 
 set(SKIP_UNITY_BUILD_INCLUSION_FILES

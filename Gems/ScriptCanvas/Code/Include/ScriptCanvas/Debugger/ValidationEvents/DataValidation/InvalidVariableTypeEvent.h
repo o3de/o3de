@@ -31,12 +31,12 @@ namespace ScriptCanvas
             SetDescription(AZStd::string::format("Variable with id %s has an invalid type.", variableId.ToString().c_str()));
         }
         
-        bool CanAutoFix() const
+        bool CanAutoFix() const override
         {
             return true;
         }
         
-        AZStd::string GetIdentifier() const
+        AZStd::string GetIdentifier() const override
         {
             return DataValidationIds::InvalidVariableTypeId;
         }
@@ -46,12 +46,12 @@ namespace ScriptCanvas
             return m_variableId;
         }
         
-        AZ::Crc32 GetIdCrc() const
+        AZ::Crc32 GetIdCrc() const override
         {
             return DataValidationIds::InvalidVariableTypeCrc;
         }
 
-        AZStd::string_view GetTooltip() const
+        AZStd::string_view GetTooltip() const override
         {
             return "Invalid type for variable, auto fixing will remove all invalid variable nodes.";
         }

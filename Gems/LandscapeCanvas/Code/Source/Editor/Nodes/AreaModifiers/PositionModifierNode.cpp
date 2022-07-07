@@ -43,27 +43,26 @@ namespace LandscapeCanvas
 
     void PositionModifierNode::RegisterSlots()
     {
-        GraphModel::DataTypePtr invalidEntityDataType = GraphContext::GetInstance()->GetDataType(LandscapeCanvasDataTypeEnum::InvalidEntity);
-        GraphModel::DataTypePtr gradientDataType = GraphContext::GetInstance()->GetDataType(LandscapeCanvasDataTypeEnum::Gradient);
+        GraphModel::DataTypePtr gradientDataType = GetGraphContext()->GetDataType(LandscapeCanvasDataTypeEnum::Gradient);
 
         RegisterSlot(GraphModel::SlotDefinition::CreateInputData(
             BaseAreaModifierNode::INBOUND_GRADIENT_X_SLOT_ID,
             BaseAreaModifierNode::INBOUND_GRADIENT_X_SLOT_LABEL.toUtf8().constData(),
-            { gradientDataType, invalidEntityDataType },
+            { gradientDataType },
             AZStd::any(AZ::EntityId()),
             BaseAreaModifierNode::INBOUND_GRADIENT_X_INPUT_SLOT_DESCRIPTION.toUtf8().constData()));
 
         RegisterSlot(GraphModel::SlotDefinition::CreateInputData(
             BaseAreaModifierNode::INBOUND_GRADIENT_Y_SLOT_ID,
             BaseAreaModifierNode::INBOUND_GRADIENT_Y_SLOT_LABEL.toUtf8().constData(),
-            { gradientDataType, invalidEntityDataType },
+            { gradientDataType },
             AZStd::any(AZ::EntityId()),
             BaseAreaModifierNode::INBOUND_GRADIENT_Y_INPUT_SLOT_DESCRIPTION.toUtf8().constData()));
 
         RegisterSlot(GraphModel::SlotDefinition::CreateInputData(
             BaseAreaModifierNode::INBOUND_GRADIENT_Z_SLOT_ID,
             BaseAreaModifierNode::INBOUND_GRADIENT_Z_SLOT_LABEL.toUtf8().constData(),
-            { gradientDataType, invalidEntityDataType },
+            { gradientDataType },
             AZStd::any(AZ::EntityId()),
             BaseAreaModifierNode::INBOUND_GRADIENT_Z_INPUT_SLOT_DESCRIPTION.toUtf8().constData()));
     }

@@ -5,10 +5,11 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZSTD_RINGBUFFER_H
-#define AZSTD_RINGBUFFER_H 1
+
+#pragma once
 
 #include <AzCore/std/allocator.h>
+#include <AzCore/std/allocator_traits.h>
 #include <AzCore/std/algorithm.h>
 #include <AzCore/std/createdestroy.h>
 #include <AzCore/std/utils.h>
@@ -416,7 +417,7 @@ namespace AZStd
         }
 
         AZ_FORCE_INLINE size_type size() const      { return m_size; }
-        AZ_FORCE_INLINE size_type max_size() const  { return m_allocator.max_size() / sizeof(node_type); }
+        AZ_FORCE_INLINE size_type max_size() const  { return AZStd::allocator_traits<allocator_type>::max_size(m_allocator) / sizeof(node_type); }
         AZ_FORCE_INLINE bool empty() const          { return m_size == 0; }
         AZ_FORCE_INLINE bool full() const           { return size_type(m_end - m_buff) == m_size; }
         AZ_FORCE_INLINE size_type free() const      { return size_type(m_end - m_buff) - m_size; }
@@ -1240,6 +1241,3 @@ namespace AZStd
         lhs.swap(rhs);
     }
 }
-
-#endif // AZSTD_RINGBUFFER_H
-#pragma once

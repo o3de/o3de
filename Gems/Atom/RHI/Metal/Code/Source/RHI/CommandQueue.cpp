@@ -5,13 +5,14 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <Atom/RHI.Reflect/CpuTimingStatistics.h>
-#include <AzCore/Debug/EventTrace.h>
+
 #include <RHI/CommandQueue.h>
 #include <RHI/Conversions.h>
 #include <RHI/Device.h>
 #include <RHI/Fence.h>
 #include <RHI/SwapChain.h>
+
+#include <AzCore/Debug/Timer.h>
 
 namespace AZ
 {
@@ -115,7 +116,7 @@ namespace AZ
                      @autoreleasepool
                      {
                          AZ_PROFILE_SCOPE(RHI, "ExecuteWork");
-                         AZ_PROFILE_RHI_VARIABLE(m_lastExecuteDuration);
+                         AZ::Debug::ScopedTimer executionTimer(m_lastExecuteDuration);
                          
                          if (request.m_signalFenceValue > 0)
                          {
@@ -128,7 +129,7 @@ namespace AZ
                          }
                          
                          {
-                             AZ_PROFILE_RHI_VARIABLE(m_lastPresentDuration);
+                             AZ::Debug::ScopedTimer presentTimer(m_lastPresentDuration);
                          
                              for (RHI::SwapChain* swapChain : request.m_swapChainsToPresent)
                              {

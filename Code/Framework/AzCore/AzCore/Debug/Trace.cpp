@@ -12,9 +12,9 @@
 
 #include <AzCore/Debug/StackTracer.h>
 #include <AzCore/Debug/TraceMessageBus.h>
-#include <AzCore/Debug/TraceMessagesDrillerBus.h>
 #include <AzCore/Debug/IEventLogger.h>
 #include <AzCore/Interface/Interface.h>
+#include <AzCore/Settings/SettingsRegistry.h>
 
 #include <stdarg.h>
 
@@ -25,23 +25,22 @@
 #include <AzCore/std/containers/unordered_set.h>
 #include <AzCore/Module/Environment.h>
 #include <AzCore/Console/IConsole.h>
+#include <AzCore/std/chrono/chrono.h>
 
-namespace AZ 
+namespace AZ::Debug
 {
-    namespace Debug
-    {
-        namespace Platform
-        {
-#if defined(AZ_ENABLE_DEBUG_TOOLS)
-            bool IsDebuggerPresent();
-            void HandleExceptions(bool isEnabled);
-            void DebugBreak();
-#endif
-            void Terminate(int exitCode);
-        }
-    }
+    struct StackFrame;
 
-    using namespace AZ::Debug;
+    namespace Platform
+    {
+#if defined(AZ_ENABLE_DEBUG_TOOLS)
+        bool AttachDebugger();
+        bool IsDebuggerPresent();
+        void HandleExceptions(bool isEnabled);
+        void DebugBreak();
+#endif
+        void Terminate(int exitCode);
+    }
 
     namespace DebugInternal
     {
@@ -56,7 +55,7 @@ namespace AZ
     // Globals
     const int       g_maxMessageLength = 4096;
     static const char*    g_dbgSystemWnd = "System";
-    Trace Debug::g_tracer;
+    Trace g_tracer;
     void* g_exceptionInfo = nullptr;
 
     // Environment var needed to track ignored asserts across systems and disable native UI under certain conditions
@@ -66,11 +65,19 @@ namespace AZ
     static const int assertLevel_log = 1;
     static const int assertLevel_nativeUI = 2;
     static const int assertLevel_crash = 3;
-    static const int logLevel_errorWarning = 1;
     static const int logLevel_full = 2;
     static AZ::EnvironmentVariable<AZStd::unordered_set<size_t>> g_ignoredAsserts;
     static AZ::EnvironmentVariable<int> g_assertVerbosityLevel;
     static AZ::EnvironmentVariable<int> g_logVerbosityLevel;
+
+    static AZ::EnvironmentVariable<bool> s_AssertsAutoBreak;
+    AZ_CVAR(
+        bool,
+        bg_assertsAutoBreak,
+        false,
+        nullptr,
+        ConsoleFunctorFlags::Null,
+        "Automatically break on assert when the debugger is attached. 0=disabled, 1=enabled.");
 
     static constexpr auto PrintfEventId = EventNameHash("Printf");
     static constexpr auto WarningEventId = EventNameHash("Warning");
@@ -80,6 +87,62 @@ namespace AZ
     constexpr LogLevel DefaultLogLevel = LogLevel::Info;
 
     AZ_CVAR_SCOPED(int, bg_traceLogLevel, DefaultLogLevel, nullptr, ConsoleFunctorFlags::Null, "Enable trace message logging in release mode.  0=disabled, 1=errors, 2=warnings, 3=info.");
+    AZ_CVAR_SCOPED(bool, bg_alwaysShowCallstack, false, nullptr, ConsoleFunctorFlags::Null, "Force stack trace output without allowing ebus interception.");
+}
+
+namespace AZ::ConsoleTypeHelpers
+{
+    template<>
+    inline CVarFixedString ValueToString<AZ::Debug::RedirectCStream>(const AZ::Debug::RedirectCStream& value)
+    {
+        return ConvertString(AZStd::to_string(static_cast<AZStd::underlying_type_t<AZ::Debug::RedirectCStream>>(value)));
+    }
+
+    template<>
+    inline bool StringSetToValue<AZ::Debug::RedirectCStream>(AZ::Debug::RedirectCStream& outValue,
+        const AZ::ConsoleCommandContainer& arguments)
+    {
+        AZStd::underlying_type_t<AZ::Debug::RedirectCStream> underlyingValue;
+        const bool result = StringSetToValue(underlyingValue, arguments);
+        if (result)
+        {
+            outValue = AZ::Debug::RedirectCStream(underlyingValue);
+        }
+        return result;
+    }
+}
+
+namespace AZ::Debug
+{
+    // Allow redirection of trace raw output writes to stdout, stderr or to /dev/null
+    static constexpr const char* fileStreamIdentifier = "raw_c_stream";
+    static AZ::EnvironmentVariable<FILE*> s_fileStream;
+    void SetCFileStream(const RedirectCStream& redirectOption)
+    {
+        s_fileStream = AZ::Environment::FindVariable<FILE*>(fileStreamIdentifier);
+        if (!s_fileStream)
+        {
+            return;
+        }
+
+        switch (redirectOption)
+        {
+        case RedirectCStream::Stdout:
+            *s_fileStream = stdout;
+            break;
+        case RedirectCStream::Stderr:
+            *s_fileStream = stderr;
+            break;
+        case RedirectCStream::None:
+            *s_fileStream = nullptr;
+            break;
+        }
+    }
+
+    AZ_CVAR_SCOPED(RedirectCStream, bg_redirectrawoutput, RedirectCStream::Stdout, SetCFileStream, ConsoleFunctorFlags::Null,
+        "Set to the value of the C stream FILE* object to write raw trace output."
+        " Defaults to the stdout FILE stream");
+
 
     /**
      * If any listener returns true, store the result so we don't outputs detailed information.
@@ -102,10 +165,39 @@ namespace AZ
             g_ignoredAsserts = AZ::Environment::CreateVariable<AZStd::unordered_set<size_t>>(ignoredAssertUID);
             g_assertVerbosityLevel = AZ::Environment::CreateVariable<int>(assertVerbosityUID);
             g_logVerbosityLevel = AZ::Environment::CreateVariable<int>(logVerbosityUID);
+            s_fileStream = AZ::Environment::CreateVariable<FILE*>(fileStreamIdentifier, stdout);
 
             //default assert level is to log/print asserts this can be overriden with the sys_asserts CVAR
             g_assertVerbosityLevel.Set(assertLevel_log);
             g_logVerbosityLevel.Set(logLevel_full);
+        }
+
+        // Setup the raw C FILE* pointer to allow raw output to write to one of the std streams
+        s_fileStream = AZ::Environment::FindVariable<FILE*>(fileStreamIdentifier);
+        if (!s_fileStream)
+        {
+            FILE* redirectStream = stdout;
+            if (auto console = AZ::Interface<AZ::IConsole>::Get(); console != nullptr)
+            {
+                if (RedirectCStream redirectOption;
+                    console->GetCvarValue("bg_redirectrawoutput", redirectOption) == AZ::GetValueResult::Success)
+                {
+                    switch (redirectOption)
+                    {
+                    case RedirectCStream::Stdout:
+                        redirectStream = stdout;
+                        break;
+                    case RedirectCStream::Stderr:
+                        redirectStream = stderr;
+                        break;
+                    case RedirectCStream::None:
+                        redirectStream = nullptr;
+                        break;
+                    }
+                }
+            }
+
+            AZ::Environment::CreateVariable<FILE*>(fileStreamIdentifier, redirectStream);
         }
     }
 
@@ -137,6 +229,42 @@ namespace AZ
     {
 #if defined(AZ_ENABLE_DEBUG_TOOLS)
         return Platform::IsDebuggerPresent();
+#else
+        return false;
+#endif
+    }
+
+    bool
+    Trace::AttachDebugger()
+    {
+#if defined(AZ_ENABLE_DEBUG_TOOLS)
+        return Platform::AttachDebugger();
+#else
+        return false;
+#endif
+    }
+
+    bool
+    Trace::WaitForDebugger([[maybe_unused]] float timeoutSeconds/*=-1.f*/)
+    {
+#if defined(AZ_ENABLE_DEBUG_TOOLS)
+        using AZStd::chrono::system_clock;
+        using AZStd::chrono::time_point;
+        using AZStd::chrono::milliseconds;
+
+        milliseconds timeoutMs = milliseconds(aznumeric_cast<long long>(timeoutSeconds * 1000));
+        system_clock clock;
+        time_point start = clock.now();
+        auto hasTimedOut = [&clock, start, timeoutMs]()
+        {
+            return timeoutMs.count() >= 0 && (clock.now() - start) >= timeoutMs;
+        };
+
+        while (!AZ::Debug::Trace::IsDebuggerPresent() && !hasTimedOut())
+        {
+            AZStd::this_thread::sleep_for(milliseconds(1));
+        }
+        return AZ::Debug::Trace::IsDebuggerPresent();
 #else
         return false;
 #endif
@@ -181,12 +309,14 @@ namespace AZ
 
     void Debug::Trace::Crash()
     {
-        int* p = 0;
+        int* p = nullptr;
         *p = 1;
     }
 
     void Debug::Trace::Terminate(int exitCode)
     {
+        AZ_TracePrintf("Exit", "Called Terminate() with exit code: 0x%x", exitCode);
+        AZ::Debug::Trace::PrintCallstack("Exit");
         Platform::Terminate(exitCode);
     }
 
@@ -230,7 +360,7 @@ namespace AZ
 
         va_list mark;
         va_start(mark, format);
-        azvsnprintf(message, g_maxMessageLength - 1, format, mark); // -1 to make room for the "/n" that will be appended below 
+        azvsnprintf(message, g_maxMessageLength - 1, format, mark); // -1 to make room for the "/n" that will be appended below
         va_end(mark);
 
         if (auto logger = Interface<IEventLogger>::Get(); logger)
@@ -239,10 +369,15 @@ namespace AZ
             logger->Flush(); // Flush as an assert may indicate a crash is imminent.
         }
 
-        EBUS_EVENT(TraceMessageDrillerBus, OnPreAssert, fileName, line, funcName, message);
-
         TraceMessageResult result;
         EBUS_EVENT_RESULT(result, TraceMessageBus, OnPreAssert, fileName, line, funcName, message);
+
+        if (bg_alwaysShowCallstack)
+        {
+            // If we're always showing the callstack, print it now before there's any chance of an ebus handler interrupting
+            PrintCallstack(g_dbgSystemWnd, 1);
+        }
+
         if (result.m_value)
         {
             g_alreadyHandlingAssertOrFatal = false;
@@ -258,7 +393,6 @@ namespace AZ
             azstrcat(message, g_maxMessageLength, "\n");
             Output(g_dbgSystemWnd, message);
 
-            EBUS_EVENT(TraceMessageDrillerBus, OnAssert, message);
             EBUS_EVENT_RESULT(result, TraceMessageBus, OnAssert, message);
             if (result.m_value)
             {
@@ -268,7 +402,10 @@ namespace AZ
             }
 
             Output(g_dbgSystemWnd, "------------------------------------------------\n");
-            PrintCallstack(g_dbgSystemWnd, 1);
+            if (!bg_alwaysShowCallstack)
+            {
+                PrintCallstack(g_dbgSystemWnd, 1);
+            }
             Output(g_dbgSystemWnd, "==================================================================\n");
 
             char dialogBoxText[g_maxMessageLength];
@@ -283,10 +420,21 @@ namespace AZ
                     g_ignoredAsserts->insert(assertHash);
                 }
             }
-            
+
+            bool assertsAutoBreak = false;
+            if (auto* console = Interface<IConsole>::Get())
+            {
+                console->GetCvarValue("bg_assertsAutoBreak", assertsAutoBreak);
+            }
+            if (assertsAutoBreak && IsDebuggerPresent())
+            {
+                // You've encountered an assert! By default, the presence of a debugger will cause asserts
+                // to DebugBreak (walk up a few stack frames to understand what happened).
+                g_tracer.Break();
+            }
 #if AZ_ENABLE_TRACE_ASSERTS
             //display native UI dialogs at verbosity level 2
-            if (currentLevel == assertLevel_nativeUI)
+            else if (currentLevel == assertLevel_nativeUI)
             {
                 AZ::NativeUI::AssertAction buttonResult;
                 EBUS_EVENT_RESULT(buttonResult, AZ::NativeUI::NativeUIRequestBus, DisplayAssertDialog, dialogBoxText);
@@ -313,7 +461,7 @@ namespace AZ
             else
 #endif //AZ_ENABLE_TRACE_ASSERTS
             // Crash the application directly at assert level 3
-            if (currentLevel >= assertLevel_crash)
+            if (currentLevel == assertLevel_crash)
             {
                 AZ_Crash();
             }
@@ -350,15 +498,13 @@ namespace AZ
 
         va_list mark;
         va_start(mark, format);
-        azvsnprintf(message, g_maxMessageLength-1, format, mark); // -1 to make room for the "/n" that will be appended below 
+        azvsnprintf(message, g_maxMessageLength-1, format, mark); // -1 to make room for the "/n" that will be appended below
         va_end(mark);
 
         if (auto logger = Interface<IEventLogger>::Get(); logger)
         {
             logger->RecordStringEvent(ErrorEventId, message);
         }
-
-        EBUS_EVENT(TraceMessageDrillerBus, OnPreError, window, fileName, line, funcName, message);
 
         TraceMessageResult result;
         EBUS_EVENT_RESULT(result, TraceMessageBus, OnPreError, window, fileName, line, funcName, message);
@@ -374,7 +520,6 @@ namespace AZ
         azstrcat(message, g_maxMessageLength, "\n");
         Output(window, message);
 
-        EBUS_EVENT(TraceMessageDrillerBus, OnError, window, message);
         EBUS_EVENT_RESULT(result, TraceMessageBus, OnError, window, message);
         Output(window, "==================================================================\n");
         if (result.m_value)
@@ -402,15 +547,13 @@ namespace AZ
 
         va_list mark;
         va_start(mark, format);
-        azvsnprintf(message, g_maxMessageLength - 1, format, mark); // -1 to make room for the "/n" that will be appended below 
+        azvsnprintf(message, g_maxMessageLength - 1, format, mark); // -1 to make room for the "/n" that will be appended below
         va_end(mark);
 
         if (auto logger = Interface<IEventLogger>::Get(); logger)
         {
             logger->RecordStringEvent(WarningEventId, message);
         }
-
-        EBUS_EVENT(TraceMessageDrillerBus, OnPreWarning, window, fileName, line, funcName, message);
 
         TraceMessageResult result;
         EBUS_EVENT_RESULT(result, TraceMessageBus, OnPreWarning, window, fileName, line, funcName, message);
@@ -425,7 +568,6 @@ namespace AZ
         azstrcat(message, g_maxMessageLength, "\n");
         Output(window, message);
 
-        EBUS_EVENT(TraceMessageDrillerBus, OnWarning, window, message);
         EBUS_EVENT_RESULT(result, TraceMessageBus, OnWarning, window, message);
         Output(window, "==================================================================\n");
     }
@@ -454,8 +596,6 @@ namespace AZ
             logger->RecordStringEvent(PrintfEventId, message);
         }
 
-        EBUS_EVENT(TraceMessageDrillerBus, OnPrintf, window, message);
-
         TraceMessageResult result;
         EBUS_EVENT_RESULT(result, TraceMessageBus, OnPrintf, window, message);
         if (result.m_value)
@@ -478,13 +618,12 @@ namespace AZ
         }
 
         Platform::OutputToDebugger(window, message);
-        
+
         if (!DebugInternal::g_suppressEBusCalls)
         {
             // only call into Ebusses if we are not in a recursive-exception situation as that
             // would likely just lead to even more exceptions.
-            
-            EBUS_EVENT(TraceMessageDrillerBus, OnOutput, window, message);
+
             TraceMessageResult result;
             EBUS_EVENT_RESULT(result, TraceMessageBus, OnOutput, window, message);
             if (result.m_value)
@@ -493,14 +632,31 @@ namespace AZ
             }
         }
 
+        RawOutput(window, message);
+    }
+
+    void Trace::RawOutput(const char* window, const char* message)
+    {
+        if (!window)
+        {
+            window = g_dbgSystemWnd;
+        }
+
+
         // printf on Windows platforms seem to have a buffer length limit of 4096 characters
-        // Therefore fwrite is used directly to write the window and message to stdout
+        // Therefore fwrite is used directly to write the window and message to stdout or stderr
         AZStd::string_view windowView{ window };
         AZStd::string_view messageView{ message };
         constexpr AZStd::string_view windowMessageSeparator{ ": " };
-        fwrite(windowView.data(), 1, windowView.size(), stdout);
-        fwrite(windowMessageSeparator.data(), 1, windowMessageSeparator.size(), stdout);
-        fwrite(messageView.data(), 1, messageView.size(), stdout);
+
+        // If the raw output stream environment variable is set to a non-nullptr FILE* stream
+        // write to that stream, otherwise write stdout
+        if (FILE* rawOutputStream = s_fileStream ? *s_fileStream : stdout; rawOutputStream != nullptr)
+        {
+            fwrite(windowView.data(), 1, windowView.size(), rawOutputStream);
+            fwrite(windowMessageSeparator.data(), 1, windowMessageSeparator.size(), rawOutputStream);
+            fwrite(messageView.data(), 1, messageView.size(), rawOutputStream);
+        }
     }
 
     //=========================================================================
@@ -512,17 +668,19 @@ namespace AZ
     {
         StackFrame frames[25];
 
-        // Without StackFrame explicit alignment frames array is aligned to 4 bytes
-        // which causes the stack tracing to fail.
-        //size_t bla = AZStd::alignment_of<StackFrame>::value;
-        //printf("Alignment value %d address 0x%08x : 0x%08x\n",bla,frames);
         SymbolStorage::StackLine lines[AZ_ARRAY_SIZE(frames)];
+        unsigned int numFrames = 0;
 
         if (!nativeContext)
         {
-            suppressCount += 1; /// If we don't provide a context we will capture in the RecordFunction, so skip us (Trace::PrinCallstack).
+            suppressCount += 1; /// If we don't provide a context we will capture in the RecordFunction, so skip us (Trace::PrintCallstack).
+            numFrames = StackRecorder::Record(frames, AZ_ARRAY_SIZE(frames), suppressCount);
         }
-        unsigned int numFrames = StackRecorder::Record(frames, AZ_ARRAY_SIZE(frames), suppressCount, nativeContext);
+        else
+        {
+            numFrames = StackConverter::FromNative(frames, AZ_ARRAY_SIZE(frames), nativeContext);
+        }
+
         if (numFrames)
         {
             SymbolStorage::DecodeFrames(frames, numFrames, lines);
@@ -534,7 +692,19 @@ namespace AZ
                 }
 
                 azstrcat(lines[i], AZ_ARRAY_SIZE(lines[i]), "\n");
-                AZ_Printf(window, "%s", lines[i]); // feed back into the trace system so that listeners can get it.
+
+                // Use Output instead of AZ_Printf to be consistent with the exception output code and avoid
+                // this accidentally being suppressed as a normal message
+
+                if (bg_alwaysShowCallstack)
+                {
+                    // Use Raw Output as this cannot be suppressed
+                    RawOutput(window, lines[i]);
+                }
+                else
+                {
+                    Output(window, lines[i]);
+                }
             }
         }
     }
@@ -571,4 +741,4 @@ namespace AZ
             val.Set(level);
         }
     }
-} // namspace AZ
+} // namspace AZ::Debug

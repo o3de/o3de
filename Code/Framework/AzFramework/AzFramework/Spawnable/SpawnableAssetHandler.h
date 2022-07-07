@@ -50,5 +50,7 @@ namespace AzFramework
             const AZ::Data::Asset<AZ::Data::AssetData>& asset,
             AZStd::shared_ptr<AZ::Data::AssetDataStream> stream,
             const AZ::Data::AssetFilterCB& assetLoadFilterCB) override;
+
+    private:
     };
 } // namespace AzFramework

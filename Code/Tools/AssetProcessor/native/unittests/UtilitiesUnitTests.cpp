@@ -30,15 +30,6 @@ using namespace AssetProcessor;
 
 namespace AssetProcessor
 {
-    const char* const TEST_BOOTSTRAP_DATA =
-        "project_path = TestProject                                                         \r\n\
-        assets = pc                                                                         \r\n\
-        -- ip and port of the asset processor.Only if you need to change defaults           \r\n\
-        -- remote_ip = 127.0.0.1                                                            \r\n\
-        windows_remote_ip = 127.0.0.7                                                       \r\n\
-        remote_port = 45645                                                                 \r\n\
-        assetProcessor_branch_token = 0xDD814240";
-
     // simple utility class to make sure threads join and don't cause asserts
     // if the unit test exits early.
     class AutoThreadJoiner final
@@ -136,7 +127,6 @@ void UtilitiesUnitTests::StartTest()
     UNIT_TEST_EXPECT_TRUE(AssetUtilities::NormalizeAndRemoveAlias("@test@my\\file.txt") == QString("my/file.txt"));
     UNIT_TEST_EXPECT_TRUE(AssetUtilities::NormalizeAndRemoveAlias("@TeSt@my\\file.txt") == QString("my/file.txt")); // case sensitivity test!
 
-
     //-----------------------Test CopyFileWithTimeout---------------------
 
     QString outputFileName(dir.filePath("test1.txt"));
@@ -172,6 +162,7 @@ void UtilitiesUnitTests::StartTest()
     UNIT_TEST_EXPECT_TRUE(MoveFileWithTimeout(fileName, outputFileName, 1));
     UNIT_TEST_EXPECT_TRUE(MoveFileWithTimeout(outputFileName, fileName, 1));
 
+    // Open the file and then close it in the near future
     AZStd::atomic_bool setupDone{ false };
     AssetProcessor::AutoThreadJoiner joiner(new AZStd::thread(
         [&]()
@@ -179,7 +170,7 @@ void UtilitiesUnitTests::StartTest()
             //opening file
             outputFile.open(QFile::WriteOnly);
             setupDone = true;
-            AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(1000));
+            AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(500));
             //closing file
             outputFile.close();
         }));
@@ -194,14 +185,14 @@ void UtilitiesUnitTests::StartTest()
     //Trying to copy when the output file is open,but will close before the timeout inputted
     {
         UnitTestUtils::AssertAbsorber absorb;
-        UNIT_TEST_EXPECT_TRUE(CopyFileWithTimeout(fileName, outputFileName, 3));
+        UNIT_TEST_EXPECT_TRUE(CopyFileWithTimeout(fileName, outputFileName, 1));
 #if defined(AZ_PLATFORM_WINDOWS)
         // only windows has an issue with moving files out that are in use.
         // other platforms do so without issue.
         UNIT_TEST_EXPECT_TRUE(absorb.m_numWarningsAbsorbed > 0);
 #endif // windows platform.
     }
-  
+
     // ------------- Test CheckCanLock --------------
     {
         QTemporaryDir lockTestTempDir;
@@ -319,13 +310,6 @@ void UtilitiesUnitTests::StartTest()
 
     // --------------- TEST FilePatternMatcher
     {
-        const char* wildcardMatch[] = {
-            "*.cfg",
-            "*.txt",
-            "abf*.llm"
-            "sdf.c*",
-            "a.bcd"
-        };
         {
             AssetBuilderSDK::FilePatternMatcher extensionWildcardTest(AssetBuilderSDK::AssetBuilderPattern("*.cfg", AssetBuilderSDK::AssetBuilderPattern::Wildcard));
             UNIT_TEST_EXPECT_TRUE(extensionWildcardTest.MatchesPath(AZStd::string("foo.cfg")));
@@ -545,6 +529,7 @@ public:
 
         // The job will close the stream
         FileWriteThrashTestJob* job = aznew FileWriteThrashTestJob(true, nullptr, writeHandle, buffer);
+        job->m_writeLoopCount = 100; // compensate for artificial hashing delay below, keeping this test duration similar to others
         job->Start();
 
         // Use an artificial delay on hashing to ensure the race condition actually occurs.
@@ -559,7 +544,7 @@ public:
         Q_EMIT UnitTestPassed();
     }
 
-    bool OnPreAssert(const char* /*fileName*/, int /*line*/, const char* /*func*/, const char* /*message*/)
+    bool OnPreAssert(const char* /*fileName*/, int /*line*/, const char* /*func*/, const char* /*message*/) override
     {
         m_assertTriggered = true;
         return true;

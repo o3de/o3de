@@ -1,0 +1,41 @@
+{
+    "values": [
+        {
+            "$type": "MotionGroup",
+            "name": "walkstopturnpivot1",
+            "selectedRootBone": "RootNode.root",
+            "id": "{FCD5DF16-A875-552E-9333-3C7BF8554CBB}",
+            "rules": {
+                "rules": [
+                    {
+                        "$type": "EMotionFX::Pipeline::Rule::MotionMetaDataRule",
+                        "data": {
+                            "motionEventTable": {
+                                "tracks": [
+                                    {
+                                        "name": "Sync",
+                                        "deletable": false,
+                                        "events": [
+                                            {
+                                                "eventDatas": [
+                                                    {
+                                                        "$type": "DiscardFrameEventData"
+                                                    }
+                                                ],
+                                                "startTime": 53.06666564941406,
+                                                "endTime": 55.86666488647461
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "$type": "MotionSamplingRule"
+                    }
+                ]
+            }
+        }
+    ]
+}

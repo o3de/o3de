@@ -8,7 +8,7 @@
 
 
 #include "EditorDefs.h"
-#include "Resource.h"
+#include "Editor/Resource.h"
 #include "UiEditorAnimationBus.h"
 #include "UiAnimViewDopeSheetBase.h"
 
@@ -192,7 +192,6 @@ void CUiAnimViewDopeSheetBase::SetTimeRange(float start, float end)
 void CUiAnimViewDopeSheetBase::SetTimeScale(float timeScale, float fAnchorTime)
 {
     const double fOldOffset = -fAnchorTime * m_timeScale;
-    const double fOldScale = m_timeScale;
 
     timeScale = std::max(timeScale, 0.001f);
     timeScale = std::min(timeScale, 100000.0f);
@@ -1308,8 +1307,6 @@ void CUiAnimViewDopeSheetBase::OnCaptureChanged()
 //////////////////////////////////////////////////////////////////////////
 bool CUiAnimViewDopeSheetBase::IsOkToAddKeyHere(const CUiAnimViewTrack* pTrack, float time) const
 {
-    const float timeEpsilon = 0.05f;
-
     for (unsigned int i = 0; i < pTrack->GetKeyCount(); ++i)
     {
         CUiAnimViewKeyHandle keyHandle = const_cast<CUiAnimViewTrack*>(pTrack)->GetKey(i);
@@ -1795,8 +1792,6 @@ void CUiAnimViewDopeSheetBase::AcceptUndo()
 {
     if (UiAnimUndo::IsRecording())
     {
-        const QPoint mousePos = mapFromGlobal(QCursor::pos());
-
         if (m_mouseMode == eUiAVMouseMode_Paste)
         {
             UiAnimUndoManager::Get()->Cancel();
@@ -1871,24 +1866,22 @@ void CUiAnimViewDopeSheetBase::AddKeys(const QPoint& point, const bool bTryAddKe
 
     if (pTrack && inRange)
     {
-        bool keyCreated = false;
-        if (bTryAddKeysInGroup && pNode->GetParentNode())       // Add keys in group
+        if (bTryAddKeysInGroup && pNode->GetParentNode()) // Add keys in group
         {
             CUiAnimViewTrackBundle tracksInGroup = pNode->GetTracksByParam(pTrack->GetParameterType());
             for (int i = 0; i < (int)tracksInGroup.GetCount(); ++i)
             {
                 CUiAnimViewTrack* pCurrTrack = tracksInGroup.GetTrack(i);
 
-                if (pCurrTrack->GetChildCount() == 0)   // A simple track
+                if (pCurrTrack->GetChildCount() == 0) // A simple track
                 {
                     if (IsOkToAddKeyHere(pCurrTrack, keyTime))
                     {
                         RecordTrackUndo(pCurrTrack);
                         pCurrTrack->CreateKey(keyTime);
-                        keyCreated = true;
                     }
                 }
-                else                                                                            // A compound track
+                else // A compound track
                 {
                     for (unsigned int k = 0; k < pCurrTrack->GetChildCount(); ++k)
                     {
@@ -1897,26 +1890,24 @@ void CUiAnimViewDopeSheetBase::AddKeys(const QPoint& point, const bool bTryAddKe
                         {
                             RecordTrackUndo(pSubTrack);
                             pSubTrack->CreateKey(keyTime);
-                            keyCreated = true;
                         }
                     }
                 }
             }
         }
-        else if (pTrack->GetChildCount() == 0)          // A simple track
+        else if (pTrack->GetChildCount() == 0) // A simple track
         {
             if (IsOkToAddKeyHere(pTrack, keyTime))
             {
                 RecordTrackUndo(pTrack);
                 pTrack->CreateKey(keyTime);
-                keyCreated = true;
             }
         }
-        else                                                                                // A compound track
+        else // A compound track
         {
             if (pTrack->GetValueType() == eUiAnimValue_RGB)
             {
-                keyCreated = CreateColorKey(pTrack, keyTime);
+                CreateColorKey(pTrack, keyTime);
             }
             else
             {
@@ -1927,7 +1918,6 @@ void CUiAnimViewDopeSheetBase::AddKeys(const QPoint& point, const bool bTryAddKe
                     if (IsOkToAddKeyHere(pSubTrack, keyTime))
                     {
                         pSubTrack->CreateKey(keyTime);
-                        keyCreated = true;
                     }
                 }
             }
@@ -2241,8 +2231,6 @@ void CUiAnimViewDopeSheetBase::DrawSelectTrack(const Range& timeRange, QPainter*
 void CUiAnimViewDopeSheetBase::DrawBoolTrack(const Range& timeRange, QPainter* painter, CUiAnimViewTrack* pTrack, const QRect& rc)
 {
     int x0 = TimeToClient(timeRange.start);
-    float t0 = timeRange.start;
-    QRect trackRect;
 
     const QBrush prevBrush = painter->brush();
     painter->setBrush(m_visibilityBrush);
@@ -2273,7 +2261,6 @@ void CUiAnimViewDopeSheetBase::DrawBoolTrack(const Range& timeRange, QPainter* p
             painter->fillRect(QRect(QPoint(x0, rc.top() + 4), QPoint(x, rc.bottom() - 4)), gradient);
         }
 
-        t0 = time;
         x0 = x;
     }
     int x = TimeToClient(timeRange.end);

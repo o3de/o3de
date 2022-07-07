@@ -32,9 +32,17 @@
 #include <ScriptCanvas/Asset/ExecutionLogAsset.h>
 #endif
 
+#include <AutoGenFunctionRegistry.generated.h>
+#include <AutoGenNodeableRegistry.generated.h>
+#include <AutoGenGrammarRegistry.generated.h>
+
+REGISTER_SCRIPTCANVAS_AUTOGEN_FUNCTION(ScriptCanvasStatic);
+REGISTER_SCRIPTCANVAS_AUTOGEN_NODEABLE(ScriptCanvasStatic);
+REGISTER_SCRIPTCANVAS_AUTOGEN_GRAMMAR(ScriptCanvasStatic);
+
 namespace ScriptCanvasSystemComponentCpp
 {
-#if !defined(_RELEASE) && !defined(PERFORMANCE_BUILD)
+#if !defined(_RELEASE)
     const int k_infiniteLoopDetectionMaxIterations = 1000000;
     const int k_maxHandlerStackDepth = 25;
 #else
@@ -59,8 +67,10 @@ namespace ScriptCanvas
 {
     void SystemComponent::Reflect(AZ::ReflectContext* context)
     {
+        REFLECT_SCRIPTCANVAS_AUTOGEN(ScriptCanvasStatic, context);
         VersionData::Reflect(context);
         Nodeable::Reflect(context);
+        SourceHandle::Reflect(context);
         ReflectLibraries(context);
 
         if (AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context))
@@ -260,7 +270,7 @@ namespace ScriptCanvas
         }
 
         LockType lock(m_ownedObjectsByAddressMutex);
-        auto emplaceResult = m_ownedObjectsByAddress.emplace(object, behaviorContextObject);
+        [[maybe_unused]] auto emplaceResult = m_ownedObjectsByAddress.emplace(object, behaviorContextObject);
 
         AZ_Assert(emplaceResult.second, "Adding second owned reference to memory");
     }

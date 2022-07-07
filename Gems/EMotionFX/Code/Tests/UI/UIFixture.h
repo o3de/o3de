@@ -12,6 +12,7 @@
 
 #include <AzCore/Memory/MemoryComponent.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
+#include <AzFramework/Physics/Material/PhysicsMaterialSystemComponent.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyManagerComponent.h>
 #include <AzToolsFramework/UI/PropertyEditor/ReflectedPropertyEditor.hxx>
 
@@ -19,6 +20,7 @@
 
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/AnimGraphPlugin.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/MotionSetsWindow/MotionSetsWindowPlugin.h>
+#include <Integration/AnimationBus.h>
 
 #include <QString>
 #include <QToolBar>
@@ -50,6 +52,8 @@ namespace EMotionFX
 
     protected:
         QApplication* m_uiApp = nullptr;
+    private:
+        static inline int s_argc{0};
     };
 
     using UIFixtureBase = ComponentFixture<
@@ -58,6 +62,7 @@ namespace EMotionFX
         AZ::JobManagerComponent,
         AZ::StreamerComponent,
         AZ::UserSettingsComponent,
+        Physics::MaterialSystemComponent,
         AzToolsFramework::Components::PropertyManagerComponent,
         EMotionFX::Integration::SystemComponent
     >;
@@ -68,6 +73,7 @@ namespace EMotionFX
     class UIFixture
         : public MakeQtApplicationBase
         , public UIFixtureBase
+        , private Integration::SystemNotificationBus::Handler
     {
     public:
         void SetUp() override;
@@ -108,6 +114,10 @@ namespace EMotionFX
 
         SimulatedObjectColliderWidget* GetSimulatedObjectColliderWidget() const;
     protected:
+        virtual bool ShouldReflectPhysicSystem() { return false; }
+        virtual void ReflectMockedSystems();
+
+        void OnRegisterPlugin();
         void SetupQtAndFixtureBase();
         void SetupPluginWindows();
 

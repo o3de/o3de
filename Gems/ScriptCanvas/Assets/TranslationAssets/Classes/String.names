@@ -1,0 +1,272 @@
+{
+    "entries": [
+        {
+            "base": "String",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "Utilities",
+                "category": "String"
+            },
+            "methods": [
+                {
+                    "base": "ReplaceString",
+                    "context": "String",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Replace String"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Replace String is invoked"
+                    },
+                    "details": {
+                        "name": "Replace String"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Replace",
+                                "tooltip": "The substring to search for."
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "With",
+                                "tooltip": "The string to replace the substring with."
+                            }
+                        },
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Case Sensitive",
+                                "tooltip": "Take into account the case of the string when searching."
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZ Std::basic_string<char, AZ Std::char_traits<char>, allocator>"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Join",
+                    "context": "String",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Join"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Join is invoked"
+                    },
+                    "details": {
+                        "name": "Join"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Separator",
+                                "tooltip": "Will use this string when concatenating the strings from the array."
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZ Std::basic_string<char, AZ Std::char_traits<char>, allocator>"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "StartsWith",
+                    "context": "String",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Starts With"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Starts With is invoked"
+                    },
+                    "details": {
+                        "name": "Starts With"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Pattern",
+                                "tooltip": "The substring to search for."
+                            }
+                        },
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Case Sensitive",
+                                "tooltip": "Take into account the case of the string when searching."
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "ContainsString",
+                    "context": "String",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Contains String"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Contains String is invoked"
+                    },
+                    "details": {
+                        "name": "Contains String"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Pattern",
+                                "tooltip": "The substring to search for."
+                            }
+                        },
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Search From End",
+                                "tooltip": "Start the match checking from the end of a string."
+                            }
+                        },
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Case Sensitive",
+                                "tooltip": "Take into account the case of the string when searching."
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
+                            "details": {
+                                "name": "AZ::u 64"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Split",
+                    "context": "String",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Split"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Split is invoked"
+                    },
+                    "details": {
+                        "name": "Split"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Delimiters",
+                                "tooltip": "The characters that can be used as delimiters."
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{99DAD0BC-740E-5E82-826B-8FC7968CC02C}",
+                            "details": {
+                                "name": "AZ Std::vector<AZ Std::basic_string<char, AZ Std::char_traits<char>, allocator>, allocator>"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "IsValidFindPosition",
+                    "context": "String",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Is Valid Find Position"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Is Valid Find Position is invoked"
+                    },
+                    "details": {
+                        "name": "Is Valid Find Position"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "EndsWith",
+                    "context": "String",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Ends With"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Ends With is invoked"
+                    },
+                    "details": {
+                        "name": "Ends With"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Pattern",
+                                "tooltip": "The substring to search for."
+                            }
+                        },
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Case Sensitive",
+                                "tooltip": "Take into account the case of the string when searching."
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

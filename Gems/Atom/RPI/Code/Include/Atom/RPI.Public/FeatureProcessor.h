@@ -22,12 +22,16 @@
 #include <AzCore/base.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Component/EntityId.h>
-#include <AzCore/Jobs/JobCompletion.h>
 
 namespace AZ
 {
+    // forward declares
+    class Job;
+
     namespace RPI
     {
+        class RenderPipeline;
+
         //! @class FeatureProcessor
         //! @brief Interface that FeatureProcessors should derive from
         //! @detail FeatureProcceors will record simulation state from the simulation job graph into a buffer that is isolated from the asynchronous rendering graph.
@@ -51,6 +55,7 @@ namespace AZ
 
             struct SimulatePacket
             {
+                AZ::Job* m_parentJob = nullptr;
             };
             
             struct RenderPacket
@@ -83,6 +88,9 @@ namespace AZ
 
             //! Perform any necessary deactivation.
             virtual void Deactivate() {}
+
+            //! Apply changes and add additional render passes to the render pipeline from the feature processors
+            virtual void ApplyRenderPipelineChange(RenderPipeline* ) {}
 
             //! Allows the feature processor to expose supporting views based on
             //! the main views passed in. Main views (persistent views) are views that must be 

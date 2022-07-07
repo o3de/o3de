@@ -12,7 +12,6 @@
 #include <RHI/Conversions.h>
 #include <RHI/Device.h>
 #include <Atom/RHI/Factory.h>
-#include <AzCore/Debug/EventTrace.h>
 #include <Atom/RHI/BufferPool.h>
 #include <Atom/RHI/RayTracingBufferPools.h>
 #include <RHI/ShaderResourceGroup.h>
@@ -68,11 +67,11 @@ namespace AZ
             AZ::RHI::BufferInitRequest shaderTableBufferRequest;
             shaderTableBufferRequest.m_buffer = shaderTableBuffer.get();
             shaderTableBufferRequest.m_descriptor = shaderTableBufferDescriptor;
-            RHI::ResultCode resultCode = bufferPools.GetShaderTableBufferPool()->InitBuffer(shaderTableBufferRequest);
+            [[maybe_unused]] RHI::ResultCode resultCode = bufferPools.GetShaderTableBufferPool()->InitBuffer(shaderTableBufferRequest);
             AZ_Assert(resultCode == RHI::ResultCode::Success, "failed to create shader table buffer");
 
             MemoryView& shaderTableMemoryView = static_cast<Buffer*>(shaderTableBuffer.get())->GetMemoryView();
-            shaderTableMemoryView.SetName("RayTracingShaderTable");
+            shaderTableMemoryView.SetName(L"RayTracingShaderTable");
 
             // copy records
             RHI::BufferMapResponse mapResponse;
@@ -86,7 +85,7 @@ namespace AZ
 
                 AZStd::wstring shaderExportNameWstring;
                 AZStd::to_wstring(shaderExportNameWstring, record.m_shaderExportName.GetStringView());
-                void* shaderIdentifier = stateObjectProperties->GetShaderIdentifier(shaderExportNameWstring.c_str());
+                const void* shaderIdentifier = stateObjectProperties->GetShaderIdentifier(shaderExportNameWstring.c_str());
                 memcpy(mappedData, shaderIdentifier, D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES);
                 mappedData += D3D12_SHADER_IDENTIFIER_SIZE_IN_BYTES;
 

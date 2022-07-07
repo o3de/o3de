@@ -30,6 +30,7 @@
 
 // AzQtComponents
 #include <AzQtComponents/Components/Widgets/ColorPicker.h>
+#include <AzQtComponents/Components/Widgets/FileDialog.h>
 
 // CryCommon
 #include <CryCommon/Maestro/Bus/EditorSequenceComponentBus.h>
@@ -407,7 +408,7 @@ CTrackViewNodesCtrl::CTrackViewNodesCtrl(QWidget* hParentWnd, CTrackViewDialog* 
     serializeContext->EnumerateDerived<AZ::Component>([this](const AZ::SerializeContext::ClassData* classData, const AZ::Uuid&) -> bool
     {
         AZStd::string iconPath;
-        EBUS_EVENT_RESULT(iconPath, AzToolsFramework::EditorRequests::Bus, GetComponentEditorIcon, classData->m_typeId, nullptr);
+        AzToolsFramework::EditorRequestBus::BroadcastResult(iconPath, &AzToolsFramework::EditorRequests::GetComponentTypeEditorIcon, classData->m_typeId);
         if (!iconPath.empty())
         {
             m_componentTypeToIconMap[classData->m_typeId] = QIcon(iconPath.c_str());
@@ -1044,7 +1045,7 @@ void CTrackViewNodesCtrl::OnNMRclick(QPoint point)
                 file = QString::fromUtf8(selectedNodes.GetNode(0)->GetName().c_str()) + QString(".fbx");
             }
 
-            QString path = QFileDialog::getSaveFileName(this, tr("Export Selected Nodes To FBX File"), QString(), tr("FBX Files (*.fbx)"));
+            QString path = AzQtComponents::FileDialog::GetSaveFileName(this, tr("Export Selected Nodes To FBX File"), QString(), tr("FBX Files (*.fbx)"));
 
             if (!path.isEmpty())
             {

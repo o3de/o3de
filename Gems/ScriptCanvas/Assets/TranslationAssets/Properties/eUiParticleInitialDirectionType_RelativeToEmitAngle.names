@@ -1,0 +1,29 @@
+{
+    "entries": [
+        {
+            "base": "eUiParticleInitialDirectionType_RelativeToEmitAngle",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "Relative To Emit Angle",
+                "category": "Constants/UI/Particle Initial Direction Type"
+            },
+            "methods": [
+                {
+                    "base": "GeteUiParticleInitialDirectionType_RelativeToEmitAngle",
+                    "details": {
+                        "name": "Relative To Emit Angle"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

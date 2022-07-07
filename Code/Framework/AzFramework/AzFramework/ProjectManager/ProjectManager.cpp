@@ -64,7 +64,7 @@ namespace AzFramework::ProjectManager
         // If we were able to locate a path to a project, we're done
         if (!projectRootPath.empty())
         {
-            AZ::IO::FixedMaxPath projectJsonPath = engineRootPath / projectRootPath / "project.json";
+            AZ::IO::FixedMaxPath projectJsonPath = projectRootPath / "project.json";
             if (AZ::IO::SystemFile::Exists(projectJsonPath.c_str()))
             {
                 return ProjectPathCheckResult::ProjectPathFound;
@@ -83,7 +83,7 @@ namespace AzFramework::ProjectManager
         return ProjectPathCheckResult::ProjectManagerLaunchFailed;
     }
 
-    bool LaunchProjectManager(const AZStd::string& commandLineArgs)
+    bool LaunchProjectManager([[maybe_unused]] const AZStd::vector<AZStd::string>& commandLineArgs)
     {
         bool launchSuccess = false;
 #if (AZ_TRAIT_AZFRAMEWORK_USE_PROJECT_MANAGER)
@@ -105,7 +105,12 @@ namespace AzFramework::ProjectManager
             }
 
             AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
-            processLaunchInfo.m_commandlineParameters = executablePath.String() + commandLineArgs;
+
+            AZStd::vector<AZStd::string> launchCmd = { executablePath.String() };
+            launchCmd.insert(launchCmd.end(), commandLineArgs.begin(), commandLineArgs.end());
+
+            processLaunchInfo.m_commandlineParameters = AZStd::move(launchCmd);
+
             launchSuccess = AzFramework::ProcessLauncher::LaunchUnwatchedProcess(processLaunchInfo);
         }
         if (ownsSystemAllocator)

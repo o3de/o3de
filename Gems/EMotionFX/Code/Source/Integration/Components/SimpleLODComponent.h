@@ -17,7 +17,7 @@
 
 #include <Integration/Assets/MotionAsset.h>
 #include <Integration/ActorComponentBus.h>
-
+#include <AtomLyIntegration/CommonFeatures/Mesh/MeshComponentBus.h>
 
 namespace EMotionFX
 {
@@ -93,6 +93,9 @@ namespace EMotionFX
 
             Configuration                               m_configuration;        // Component configuration.
             EMotionFX::ActorInstance*                   m_actorInstance;        // Associated actor instance (retrieved from Actor Component).
+
+            AZ::RPI::Cullable::LodType m_previousLodType = AZ::RPI::Cullable::LodType::Default;
+            size_t m_previousLodLevel = 0;
         };
 
     } // namespace Integration

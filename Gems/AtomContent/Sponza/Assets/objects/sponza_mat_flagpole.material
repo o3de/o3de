@@ -1,26 +1,18 @@
 {
     "description": "",
-    "materialType": "Materials/Types/StandardPBR.materialtype",
     "parentMaterial": "",
-    "propertyLayoutVersion": 3,
+    "materialType": "Materials/Types/StandardPBR.materialtype",
+    "materialTypeVersion": 5,
     "properties": {
-        "occlusion": {
-            "diffuseTextureMap": "Textures/flagpole_1k_ao.png"
-        },
         "baseColor": {
-            "color": [
-                0.800000011920929,
-                0.800000011920929,
-                0.800000011920929,
-                1.0
-            ],
-            "textureMap": "Textures/flagpole_1k_basecolor.png"
+            "textureMap": "../Textures/flagpole_1k_basecolor.png"
         },
         "general": {
             "applySpecularAA": true
         },
         "irradiance": {
-            "color": [
+            "irradianceColorSource": "Manual",
+            "manualColor": [
                 1.0,
                 0.6520485281944275,
                 0.7122911214828491,
@@ -28,24 +20,25 @@
             ]
         },
         "metallic": {
-            "textureMap": "Textures/flagpole_1k_metallic.png"
+            "textureMap": "../Textures/flagpole_1k_metallic.png"
         },
         "normal": {
-            "textureMap": "Textures/flagpole_1k_normal.png"
+            "textureMap": "../Textures/flagpole_1k_normal.png"
+        },
+        "occlusion": {
+            "diffuseTextureMap": "../Textures/flagpole_1k_ao.png"
         },
         "opacity": {
             "factor": 1.0
         },
         "parallax": {
-            "algorithm": "POM",
             "factor": 0.014000000432133675,
             "pdo": true,
             "quality": "High",
-            "textureMap": "Textures/flagpole_1k_height.png",
             "useTexture": false
         },
         "roughness": {
-            "textureMap": "Textures/flagpole_1k_roughness.png"
+            "textureMap": "../Textures/flagpole_1k_roughness.png"
         },
         "specularF0": {
             "enableMultiScatterCompensation": true

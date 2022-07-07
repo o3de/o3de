@@ -20,10 +20,8 @@ set(FILES
     SystemEventDispatcher.cpp
     SystemInit.cpp
     SystemWin32.cpp
-    Timer.cpp
     XConsole.cpp
     XConsoleVariable.cpp
-    XML/ReadWriteXMLSink.h
     AZCrySystemInitLogSink.h
     AZCoreLogSink.h
     CmdLine.h
@@ -36,24 +34,17 @@ set(FILES
     SimpleStringPool.h
     CrySystem_precompiled.h
     System.h
-    SystemCFG.h
     SystemEventDispatcher.h
-    Timer.h
     XConsole.h
     XConsoleVariable.h
     XML/SerializeXMLReader.cpp
     XML/SerializeXMLWriter.cpp
     XML/xml.cpp
-    XML/XMLPatcher.cpp
     XML/XmlUtils.cpp
     XML/SerializeXMLReader.h
     XML/SerializeXMLWriter.h
     XML/xml.h
-    XML/XMLPatcher.h
-    XML/xml_string.h
     XML/XmlUtils.h
-    XML/ReadXMLSink.cpp
-    XML/WriteXMLSource.cpp
     LocalizedStringManager.cpp
     LocalizedStringManager.h
     Huffman.cpp
@@ -66,11 +57,5 @@ set(FILES
     LevelSystem/LevelSystem.h
     LevelSystem/SpawnableLevelSystem.cpp
     LevelSystem/SpawnableLevelSystem.h
-    ViewSystem/DebugCamera.cpp
-    ViewSystem/DebugCamera.h
-    ViewSystem/View.cpp
-    ViewSystem/View.h
-    ViewSystem/ViewSystem.cpp
-    ViewSystem/ViewSystem.h
     WindowsErrorReporting.cpp
 )

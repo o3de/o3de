@@ -12,6 +12,10 @@
 
 namespace AZ
 {
+    struct BehaviorParameter;
+    struct BehaviorArgument;
+    class BehaviorClass;
+
     namespace Python
     {
         class PythonBehaviorInfo;
@@ -40,7 +44,7 @@ namespace AZ
                 AZStd::any Invoke(AZStd::string_view method, AZStd::vector<AZStd::any> argList);
 
             protected:
-                bool Convert(AZStd::any& input, const AZ::BehaviorParameter* argBehaviorInfo, AZ::BehaviorValueParameter& behaviorParam);
+                bool Convert(AZStd::any& input, const AZ::BehaviorParameter* argBehaviorInfo, AZ::BehaviorArgument& behaviorParam);
 
             private:
                 AZStd::shared_ptr<const DataTypes::IGraphObject> m_graphObject;

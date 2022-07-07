@@ -44,9 +44,6 @@ namespace Path
     //! always returns a full path
     EDITOR_CORE_API AZStd::string GetEditingGameDataFolder();
 
-    //! Get the root folder (in source control or other writable assets) where you should save root data.
-    EDITOR_CORE_API AZStd::string GetEditingRootFolder();
-
     //! Set the current mod NAME for editing purposes.  After doing this the above functions will take this into account
     //! name only, please!
     EDITOR_CORE_API void SetModName(const char* input);
@@ -67,93 +64,6 @@ namespace Path
             }
         }
         return strPath;
-    }
-
-    //! Split full file name to path and filename
-    //! @param filepath [IN] Full file name inclusing path.
-    //! @param path [OUT] Extracted file path.
-    //! @param file [OUT] Extracted file (with extension).
-    inline void Split(const QString& filepath, QString& path, QString& file)
-    {
-        char path_buffer[_MAX_PATH];
-        char drive[_MAX_DRIVE];
-        char dir[_MAX_DIR];
-        char fname[_MAX_FNAME];
-        char ext[_MAX_EXT];
-#ifdef AZ_COMPILER_MSVC
-        _splitpath_s(filepath.toUtf8().data(), drive, AZ_ARRAY_SIZE(drive), dir, AZ_ARRAY_SIZE(dir), fname, AZ_ARRAY_SIZE(fname), ext, AZ_ARRAY_SIZE(ext));
-        _makepath_s(path_buffer, AZ_ARRAY_SIZE(path_buffer), drive, dir, 0, 0);
-        path = path_buffer;
-        _makepath_s(path_buffer, AZ_ARRAY_SIZE(path_buffer), 0, 0, fname, ext);
-#else
-        _splitpath(filepath.toUtf8().data(), drive, dir, fname, ext);
-        _makepath(path_buffer, drive, dir, 0, 0);
-        path = path_buffer;
-        _makepath(path_buffer, 0, 0, fname, ext);
-#endif
-        file = path_buffer;
-    }
-    inline void Split(const AZStd::string& filepath, AZStd::string& path, AZStd::string& file)
-    {
-        char path_buffer[_MAX_PATH];
-        char drive[_MAX_DRIVE];
-        char dir[_MAX_DIR];
-        char fname[_MAX_FNAME];
-        char ext[_MAX_EXT];
-#ifdef AZ_COMPILER_MSVC
-        _splitpath_s(filepath.c_str(), drive, AZ_ARRAY_SIZE(drive), dir, AZ_ARRAY_SIZE(dir), 0, 0, 0, 0);
-        _makepath_s(path_buffer, AZ_ARRAY_SIZE(path_buffer), drive, dir, 0, 0);
-        path = path_buffer;
-        _makepath_s(path_buffer, AZ_ARRAY_SIZE(path_buffer), 0, 0, fname, ext);
-#else
-        _splitpath(filepath.c_str(), drive, dir, fname, ext);
-        _makepath(path_buffer, drive, dir, 0, 0);
-        path = path_buffer;
-        _makepath(path_buffer, 0, 0, fname, ext);
-#endif
-        file = path_buffer;
-    }
-
-    //! Split full file name to path and filename
-    //! @param filepath [IN] Full file name inclusing path.
-    //! @param path [OUT] Extracted file path.
-    //! @param filename [OUT] Extracted file (without extension).
-    //! @param ext [OUT] Extracted files extension.
-    inline void Split(const QString& filepath, QString& path, QString& filename, QString& fext)
-    {
-        char path_buffer[_MAX_PATH];
-        char drive[_MAX_DRIVE];
-        char dir[_MAX_DIR];
-        char fname[_MAX_FNAME];
-        char ext[_MAX_EXT];
-#ifdef AZ_COMPILER_MSVC
-        _splitpath_s(filepath.toUtf8().data(), drive, AZ_ARRAY_SIZE(drive), dir, AZ_ARRAY_SIZE(dir), fname, AZ_ARRAY_SIZE(fname), ext, AZ_ARRAY_SIZE(ext));
-        _makepath_s(path_buffer, AZ_ARRAY_SIZE(path_buffer), drive, dir, 0, 0);
-#else
-        _splitpath(filepath.toUtf8().data(), drive, dir, fname, ext);
-        _makepath(path_buffer, drive, dir, 0, 0);
-#endif
-        path = path_buffer;
-        filename = fname;
-        fext = ext;
-    }
-    inline void Split(const AZStd::string& filepath, AZStd::string& path, AZStd::string& filename, AZStd::string& fext)
-    {
-        char path_buffer[_MAX_PATH];
-        char drive[_MAX_DRIVE];
-        char dir[_MAX_DIR];
-        char fname[_MAX_FNAME];
-        char ext[_MAX_EXT];
-#ifdef AZ_COMPILER_MSVC
-        _splitpath_s(filepath.c_str(), drive, AZ_ARRAY_SIZE(drive), dir, AZ_ARRAY_SIZE(dir), fname, AZ_ARRAY_SIZE(fname), ext, AZ_ARRAY_SIZE(ext));
-        _makepath_s(path_buffer, AZ_ARRAY_SIZE(path_buffer), drive, dir, 0, 0);
-#else
-        _splitpath(filepath.c_str(), drive, dir, fname, ext);
-        _makepath(path_buffer, drive, dir, 0, 0);
-#endif
-        path = path_buffer;
-        filename = fname;
-        fext = ext;
     }
 
     //! Split path into segments

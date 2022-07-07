@@ -8,6 +8,7 @@
 
 #include <Atom/RHI.Loader/FunctionLoader.h>
 #include <Atom/RHI.Reflect/Vulkan/PlatformLimitsDescriptor.h>
+#include <Atom/RHI.Reflect/Vulkan/XRVkDescriptors.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RHI/TransientAttachmentPool.h>
@@ -185,17 +186,26 @@ namespace AZ
             VkPhysicalDeviceShaderFloat16Int8FeaturesKHR float16Int8 = {};
             VkPhysicalDeviceSeparateDepthStencilLayoutsFeaturesKHR separateDepthStencil = {};
 
+            VkDeviceCreateInfo deviceInfo = {};
+            deviceInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+
             // If we are running Vulkan >= 1.2, then we must use VkPhysicalDeviceVulkan12Features instead
             // of VkPhysicalDeviceShaderFloat16Int8FeaturesKHR or VkPhysicalDeviceSeparateDepthStencilLayoutsFeaturesKHR.
             if (majorVersion >= 1 && minorVersion >= 2)
             {
                 vulkan12Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES;
-                VkPhysicalDeviceVulkan12Features physicalDeviceVulkan12Features = physicalDevice.GetPhysicalDeviceVulkan12Features();
                 vulkan12Features.drawIndirectCount = physicalDevice.GetPhysicalDeviceVulkan12Features().drawIndirectCount;
                 vulkan12Features.shaderFloat16 = physicalDevice.GetPhysicalDeviceVulkan12Features().shaderFloat16;
                 vulkan12Features.shaderInt8 = physicalDevice.GetPhysicalDeviceVulkan12Features().shaderInt8;
                 vulkan12Features.separateDepthStencilLayouts = physicalDevice.GetPhysicalDeviceVulkan12Features().separateDepthStencilLayouts;
+                vulkan12Features.descriptorBindingPartiallyBound = physicalDevice.GetPhysicalDeviceVulkan12Features().separateDepthStencilLayouts;
+                vulkan12Features.descriptorIndexing = physicalDevice.GetPhysicalDeviceVulkan12Features().separateDepthStencilLayouts;
+                vulkan12Features.descriptorBindingVariableDescriptorCount = physicalDevice.GetPhysicalDeviceVulkan12Features().separateDepthStencilLayouts;
+                vulkan12Features.bufferDeviceAddress = physicalDevice.GetPhysicalDeviceVulkan12Features().bufferDeviceAddress;
+                vulkan12Features.bufferDeviceAddressMultiDevice = physicalDevice.GetPhysicalDeviceVulkan12Features().bufferDeviceAddressMultiDevice;
+                vulkan12Features.runtimeDescriptorArray = physicalDevice.GetPhysicalDeviceVulkan12Features().runtimeDescriptorArray;
                 robustness2.pNext = &vulkan12Features;
+                deviceInfo.pNext = &depthClipEnabled;
             }
             else
             {
@@ -207,11 +217,24 @@ namespace AZ
                 float16Int8.pNext = &separateDepthStencil;
 
                 robustness2.pNext = &float16Int8;
+                deviceInfo.pNext = &descriptorIndexingFeatures;
             }
 
-            VkDeviceCreateInfo deviceInfo = {};
-            deviceInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-            deviceInfo.pNext = &descriptorIndexingFeatures;
+            // set raytracing features if we are running Vulkan >= 1.2
+            VkPhysicalDeviceAccelerationStructureFeaturesKHR accelerationStructureFeatures = {};
+            VkPhysicalDeviceRayTracingPipelineFeaturesKHR rayTracingPipelineFeatures = {};
+
+            if (majorVersion >= 1 && minorVersion >= 2)
+            {
+                accelerationStructureFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_FEATURES_KHR;
+                accelerationStructureFeatures.accelerationStructure = physicalDevice.GetPhysicalDeviceAccelerationStructureFeatures().accelerationStructure;
+                vulkan12Features.pNext = &accelerationStructureFeatures;
+
+                rayTracingPipelineFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_FEATURES_KHR;
+                rayTracingPipelineFeatures.rayTracingPipeline = physicalDevice.GetPhysicalDeviceRayTracingPipelineFeatures().rayTracingPipeline;
+                accelerationStructureFeatures.pNext = &rayTracingPipelineFeatures;
+            }
+
             deviceInfo.flags = 0;
             deviceInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreationInfo.size());
             deviceInfo.pQueueCreateInfos = queueCreationInfo.data();
@@ -221,14 +244,28 @@ namespace AZ
             deviceInfo.ppEnabledExtensionNames = requiredExtensions.data();
             deviceInfo.pEnabledFeatures = &m_enabledDeviceFeatures;
 
-            const VkResult vkResult = vkCreateDevice(physicalDevice.GetNativePhysicalDevice(),
-                &deviceInfo, nullptr, &m_nativeDevice);
-            AssertSuccess(vkResult);
-            RETURN_RESULT_IF_UNSUCCESSFUL(ConvertResult(vkResult));
-
+            RHI::XRRenderingInterface* xrSystem = RHI::RHISystemInterface::Get()->GetXRSystem();
+            if (xrSystem)
+            {
+                //If a XR system is registered with RHI try to get the xr compatible Vk device from XR::Vulkan module
+                XRDeviceDescriptor xrDevicDescriptor;
+                xrDevicDescriptor.m_inputData.m_deviceCreateInfo = &deviceInfo;
+                AZ::RHI::ResultCode result = xrSystem->CreateDevice(&xrDevicDescriptor);
+                AZ_Assert(result == RHI::ResultCode::Success, "Xr Vk device creation was not successful");
+                m_nativeDevice = xrDevicDescriptor.m_outputData.m_xrVkDevice;
+                RETURN_RESULT_IF_UNSUCCESSFUL(result);
+                m_isXrNativeDevice = true;
+            }
+            else
+            {
+                const VkResult vkResult = vkCreateDevice(physicalDevice.GetNativePhysicalDevice(), &deviceInfo, nullptr, &m_nativeDevice);
+                AssertSuccess(vkResult);
+                RETURN_RESULT_IF_UNSUCCESSFUL(ConvertResult(vkResult));
+            }
+           
             for (const VkDeviceQueueCreateInfo& queueInfo : queueCreationInfo)
             {
-                delete queueInfo.pQueuePriorities;
+                delete[] queueInfo.pQueuePriorities;
             }
 
             Instance& instance = Instance::GetInstance();
@@ -236,8 +273,6 @@ namespace AZ
 
             //Load device features now that we have loaded all extension info
             physicalDevice.LoadSupportedFeatures();
-
-            InitFeaturesAndLimits(physicalDevice);
             return RHI::ResultCode::Success;
         }
 
@@ -247,6 +282,8 @@ namespace AZ
             commandQueueContextDescriptor.m_frameCountMax = RHI::Limits::Device::FrameCountMax;
             RHI::ResultCode result = m_commandQueueContext.Init(*this, commandQueueContextDescriptor);
             RETURN_RESULT_IF_UNSUCCESSFUL(result);
+
+            InitFeaturesAndLimits(static_cast<const Vulkan::PhysicalDevice&>(GetPhysicalDevice()));
 
             // Initialize member variables.
             ReleaseQueue::Descriptor releaseQueueDescriptor;
@@ -291,6 +328,22 @@ namespace AZ
                 m_nullDescriptorManager = NullDescriptorManager::Create();
                 result = m_nullDescriptorManager->Init(*this);
                 RETURN_RESULT_IF_UNSUCCESSFUL(result);
+            }
+
+            // Create XR session and XR swapchain if XR system is active
+            RHI::XRRenderingInterface* xrSystem = RHI::RHISystemInterface::Get()->GetXRSystem();
+            if (xrSystem)
+            {
+                XRSessionDescriptor xrSessionDescriptor;
+                xrSessionDescriptor.m_inputData.m_graphicsBinding.m_queueFamilyIndex =
+                    m_commandQueueContext.GetCommandQueue(RHI::HardwareQueueClass::Graphics).GetQueueDescriptor().m_familyIndex;
+                xrSessionDescriptor.m_inputData.m_graphicsBinding.m_queueIndex =
+                    m_commandQueueContext.GetCommandQueue(RHI::HardwareQueueClass::Graphics).GetQueueDescriptor().m_queueIndex;
+                result = xrSystem->CreateSession(&xrSessionDescriptor);
+                AZ_Assert(result == RHI::ResultCode::Success, "Xr Session creation was not successful");
+
+                result = xrSystem->CreateSwapChain();
+                AZ_Assert(result == RHI::ResultCode::Success, "Xr Session creation was not successful");
             }
 
             SetName(GetName());
@@ -514,23 +567,58 @@ namespace AZ
             m_imageMemoryRequirementsCache.Clear();
             m_bufferMemoryRequirementsCache.Clear();
 
-            if ( m_nativeDevice != VK_NULL_HANDLE )
+            // Only destroy VkDevice if created locally and not passed in by a XR module
+            if (!m_isXrNativeDevice)
             {
-                vkDestroyDevice( m_nativeDevice, nullptr );
-                m_nativeDevice = VK_NULL_HANDLE;
+                if (m_nativeDevice != VK_NULL_HANDLE)
+                {
+                    vkDestroyDevice(m_nativeDevice, nullptr);
+                    m_nativeDevice = VK_NULL_HANDLE;
+                }
             }
         }
 
-        void Device::BeginFrameInternal() 
+        RHI::ResultCode Device::BeginFrameInternal() 
         {
             // We call to collect on the release queue on the begin frame because some objects (like resource pools)
             // cannot be shutdown during the frame scheduler execution. At this point the frame has not yet started.
             m_releaseQueue.Collect();
             m_commandQueueContext.Begin();
+
+            RHI::XRRenderingInterface* xrSystem = RHI::RHISystemInterface::Get()->GetXRSystem();
+            if (xrSystem)
+            {
+                // Begin Frame can make XR related calls which we need to make sure happens
+                // from the thread related to the presentation queue or drivers will complain
+                auto& presentationQueue = m_commandQueueContext.GetPresentationCommandQueue();
+                auto presentCommand = [xrSystem](void*)
+                {
+                    xrSystem->BeginFrame();
+                };
+
+                presentationQueue.QueueCommand(AZStd::move(presentCommand));
+                presentationQueue.FlushCommands();
+            }
+            return RHI::ResultCode::Success;
         }
         
         void Device::EndFrameInternal() 
         {
+            RHI::XRRenderingInterface* xrSystem = RHI::RHISystemInterface::Get()->GetXRSystem();
+            if (xrSystem)
+            {
+                // End Frame can make XR related calls which we need to make sure happens
+                // from the thread related to the presentation queue or drivers will complain
+                auto& presentationQueue = m_commandQueueContext.GetPresentationCommandQueue();
+                auto presentCommand = [xrSystem](void*)
+                {
+                    xrSystem->EndFrame();
+                };
+
+                presentationQueue.QueueCommand(AZStd::move(presentCommand));
+                presentationQueue.FlushCommands();
+            }
+
             m_commandQueueContext.End();
             m_commandListAllocator.Collect();
             m_semaphoreAllocator.Collect();
@@ -548,9 +636,9 @@ namespace AZ
             physicalDevice.CompileMemoryStatistics(builder);
         }
 
-        void Device::UpdateCpuTimingStatisticsInternal(RHI::CpuTimingStatistics& cpuTimingStatistics) const
+        void Device::UpdateCpuTimingStatisticsInternal() const
         {
-            m_commandQueueContext.UpdateCpuTimingStatistics(cpuTimingStatistics);
+            m_commandQueueContext.UpdateCpuTimingStatistics();
         }
 
         AZStd::vector<RHI::Format> Device::GetValidSwapChainImageFormats(const RHI::WindowHandle& windowHandle) const
@@ -741,7 +829,7 @@ namespace AZ
             vkGetPhysicalDeviceQueueFamilyProperties(nativePhysicalDevice, &queueFamilyCount, m_queueFamilyProperties.data());            
         }
 
-        RHI::Ptr<Memory> Device::AllocateMemory(uint64_t sizeInBytes, const uint32_t memoryTypeMask, const VkMemoryPropertyFlags flags)
+        RHI::Ptr<Memory> Device::AllocateMemory(uint64_t sizeInBytes, const uint32_t memoryTypeMask, const VkMemoryPropertyFlags flags, const RHI::BufferBindFlags bufferBindFlags)
         {
             const auto& physicalDevice = static_cast<const PhysicalDevice&>(GetPhysicalDevice());
             const VkPhysicalDeviceMemoryProperties& memProp = physicalDevice.GetMemoryProperties();
@@ -771,6 +859,7 @@ namespace AZ
                         RHI::CheckBitsAll(memoryTypesToUseMask, memoryTypeBit))
                     {
                         memoryDesc.m_memoryTypeIndex = memoryIndex;
+                        memoryDesc.m_bufferBindFlags = bufferBindFlags;
                         auto result = memory->Init(*this, memoryDesc);
                         if (result == RHI::ResultCode::Success)
                         {

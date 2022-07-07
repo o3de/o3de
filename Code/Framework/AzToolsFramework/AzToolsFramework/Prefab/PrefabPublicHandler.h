@@ -12,7 +12,9 @@
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/string/string_view.h>
 
+#include <AzToolsFramework/Entity/EntityTypes.h>
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
+#include <AzToolsFramework/Prefab/PrefabFocusHandler.h>
 #include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
 #include <AzToolsFramework/Prefab/PrefabUndoCache.h>
@@ -21,8 +23,6 @@ class QString;
 
 namespace AzToolsFramework
 {
-    using EntityList = AZStd::vector<AZ::Entity*>;
-
     namespace Prefab
     {
         class Instance;
@@ -42,16 +42,18 @@ namespace AzToolsFramework
             void UnregisterPrefabPublicHandlerInterface();
 
             // PrefabPublicInterface...
-            PrefabOperationResult CreatePrefabInDisk(
+            CreatePrefabResult CreatePrefabInDisk(
                 const EntityIdList& entityIds, AZ::IO::PathView filePath) override;
-            PrefabOperationResult CreatePrefabInMemory(
+            CreatePrefabResult CreatePrefabInMemory(
                 const EntityIdList& entityIds, AZ::IO::PathView filePath) override;
-            InstantiatePrefabResult InstantiatePrefab(AZStd::string_view filePath, AZ::EntityId parent, const AZ::Vector3& position) override;
+            InstantiatePrefabResult InstantiatePrefab(
+                AZStd::string_view filePath, AZ::EntityId parent, const AZ::Vector3& position) override;
             PrefabOperationResult SavePrefab(AZ::IO::Path filePath) override;
             PrefabEntityResult CreateEntity(AZ::EntityId parentId, const AZ::Vector3& position) override;
             
             PrefabOperationResult GenerateUndoNodesForEntityChangeAndUpdateCache(AZ::EntityId entityId, UndoSystem::URSequencePoint* parentUndoBatch) override;
 
+            bool IsOwnedByProceduralPrefabInstance(AZ::EntityId entityId) const override;
             bool IsInstanceContainerEntity(AZ::EntityId entityId) const override;
             bool IsLevelInstanceContainerEntity(AZ::EntityId entityId) const override;
             AZ::EntityId GetInstanceContainerEntityId(AZ::EntityId entityId) const override;
@@ -59,23 +61,30 @@ namespace AzToolsFramework
             AZ::IO::Path GetOwningInstancePrefabPath(AZ::EntityId entityId) const override;
             PrefabRequestResult HasUnsavedChanges(AZ::IO::Path prefabFilePath) const override;
 
+            //! [DEPRECATION]--This function is marked for deprecation. Please use DeleteEntitiesAndAllDescendantsInInstance instead.
             PrefabOperationResult DeleteEntitiesInInstance(const EntityIdList& entityIds) override;
+
             PrefabOperationResult DeleteEntitiesAndAllDescendantsInInstance(const EntityIdList& entityIds) override;
-            PrefabOperationResult DuplicateEntitiesInInstance(const EntityIdList& entityIds) override;
+            DuplicatePrefabResult DuplicateEntitiesInInstance(const EntityIdList& entityIds) override;
 
             PrefabOperationResult DetachPrefab(const AZ::EntityId& containerEntityId) override;
 
         private:
-            PrefabOperationResult DeleteFromInstance(const EntityIdList& entityIds, bool deleteDescendants);
+            PrefabOperationResult DeleteFromInstance(const EntityIdList& entityIds);
             PrefabOperationResult RetrieveAndSortPrefabEntitiesAndInstances(
                 const EntityList& inputEntities,
                 Instance& commonRootEntityOwningInstance,
                 EntityList& outEntities,
                 AZStd::vector<Instance*>& outInstances) const;
-            EntityIdList GenerateEntityIdListWithoutLevelInstance(const EntityIdList& entityIds) const;
+
+            //! Sanitizes an EntityIdList to remove entities that should not be affected by prefab operations.
+            //! It will identify and exclude the container entity of the root prefab instance, and all read-only entities.
+            EntityIdList SanitizeEntityIdList(const EntityIdList& entityIds) const;
 
             InstanceOptionalReference GetOwnerInstanceByEntityId(AZ::EntityId entityId) const;
             bool EntitiesBelongToSameInstance(const EntityIdList& entityIds) const;
+            void AddNewEntityToSortOrder(Instance& owningInstance, PrefabDom& domToAddEntityUnder,
+                const EntityAlias& parentEntityAlias, const EntityAlias& entityToAddAlias);
 
             /**
              * Duplicate a list of entities owned by a common owning instance by directly
@@ -166,10 +175,10 @@ namespace AzToolsFramework
 
             static void Internal_HandleContainerOverride(
                 UndoSystem::URSequencePoint* undoBatch, AZ::EntityId entityId, const PrefabDom& patch,
-                const LinkId linkId, InstanceOptionalReference parentInstance = AZStd::nullopt);
+                const LinkId linkId);
             static void Internal_HandleEntityChange(
                 UndoSystem::URSequencePoint* undoBatch, AZ::EntityId entityId, PrefabDom& beforeState,
-                PrefabDom& afterState, InstanceOptionalReference instance = AZStd::nullopt);
+                PrefabDom& afterState);
             void Internal_HandleInstanceChange(UndoSystem::URSequencePoint* undoBatch, AZ::Entity* entity, AZ::EntityId beforeParentId, AZ::EntityId afterParentId);
 
             void UpdateLinkPatchesWithNewEntityAliases(
@@ -185,8 +194,13 @@ namespace AzToolsFramework
 
             InstanceEntityMapperInterface* m_instanceEntityMapperInterface = nullptr;
             InstanceToTemplateInterface* m_instanceToTemplateInterface = nullptr;
+            PrefabFocusInterface* m_prefabFocusInterface = nullptr;
+            PrefabFocusPublicInterface* m_prefabFocusPublicInterface = nullptr;
             PrefabLoaderInterface* m_prefabLoaderInterface = nullptr;
             PrefabSystemComponentInterface* m_prefabSystemComponentInterface = nullptr;
+
+            // Handles the Prefab Focus API that determines what prefab is being edited.
+            PrefabFocusHandler m_prefabFocusHandler;
 
             // Caches entity states for undo/redo purposes
             PrefabUndoCache m_prefabUndoCache;

@@ -14,7 +14,6 @@
 
 #include <Atom/RHI/Factory.h>
 
-#include <AzCore/Debug/EventTrace.h>
 #include <AtomCore/Instance/InstanceDatabase.h>
 
 namespace AZ
@@ -43,7 +42,7 @@ namespace AZ
 
         RHI::ResultCode StreamingImagePool::Init(RHI::Device& device, StreamingImagePoolAsset& poolAsset)
         {
-            AZ_TRACE_METHOD();
+            AZ_PROFILE_FUNCTION(RPI);
 
             if (Validation::IsEnabled())
             {

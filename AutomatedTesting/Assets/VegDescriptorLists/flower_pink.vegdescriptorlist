@@ -2,11 +2,11 @@
 	<Class name="DescriptorListAsset" type="{60961B36-E3CA-4877-B197-1462C1363F6E}">
 		<Class name="AZStd::vector" field="Descriptors" type="{FC36C5E0-6152-5B06-AF30-3FC494B85FAB}">
 			<Class name="Descriptor" field="element" version="8" type="{A5A5E7F7-FC36-4BD1-8A93-21362574B9DA}">
-				<Class name="AZ::Uuid" field="SpawnerType" value="{BBA5CC1E-B4CA-4792-89F7-93711E98FBD1}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
+				<Class name="AZ::Uuid" field="SpawnerType" value="{74BEEDB5-81CF-409F-B375-0D93D81EF2E3}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
 				<Class name="AZStd::shared_ptr" field="InstanceSpawner" type="{7C7046DE-F8B1-529D-AD8C-829C6C0E2FCD}">
-					<Class name="DynamicSliceInstanceSpawner" field="element" type="{BBA5CC1E-B4CA-4792-89F7-93711E98FBD1}">
+					<Class name="PrefabInstanceSpawner" field="element" type="{74BEEDB5-81CF-409F-B375-0D93D81EF2E3}">
 						<Class name="InstanceSpawner" field="BaseClass1" type="{01AD0758-B04A-4B43-BC2B-BDCD77F4EF6A}"/>
-						<Class name="Asset" field="SliceAsset" value="id={EBFE34EB-D0A8-5E51-8234-3BE38082B28C}:2,type={78802ABF-9595-463A-8D2B-D022F906F9B1},hint={slices/pinkflower.dynamicslice}" version="1" type="{77A19D40-8731-4D3C-9041-1B43047366A4}"/>
+						<Class name="Asset" field="SpawnableAsset" value="id={80C0CF4E-9A5E-544B-B89E-BC980175A259}:e6f903d2,type={855E3021-D305-4845-B284-20C3F7FDF16B},hint={Assets/Prefabs/PinkFlower.prefab},loadBehavior=1" version="2" type="{77A19D40-8731-4D3C-9041-1B43047366A4}"/>
 					</Class>
 				</Class>
 				<Class name="float" field="Weight" value="1.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>

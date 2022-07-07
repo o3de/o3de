@@ -64,7 +64,6 @@ private:
     QString m_fileName;
     QString m_filter;
     const bool m_bOpenDialog;
-    bool m_initialized = false;
     LevelTreeModel* const m_model;
     LevelTreeModelFilter* const m_filterModel;
 };

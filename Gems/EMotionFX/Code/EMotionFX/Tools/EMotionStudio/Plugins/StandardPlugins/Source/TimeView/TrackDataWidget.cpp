@@ -44,7 +44,6 @@
 #include <EMotionFX/Source/MotionManager.h>
 #include <EMotionFX/Source/AnimGraphManager.h>
 #include <EMotionFX/CommandSystem/Source/MotionEventCommands.h>
-#include "../MotionWindow/MotionWindowPlugin.h"
 #include "../MotionEvents/MotionEventsPlugin.h"
 #include "../../../../EMStudioSDK/Source/EMStudioManager.h"
 #include "../../../../EMStudioSDK/Source/MainWindow.h"
@@ -1005,10 +1004,10 @@ namespace EMStudio
     void TrackDataWidget::SetPausedTime(float timeValue, bool emitTimeChangeStart)
     {
         m_plugin->m_curTime = timeValue;
-        const AZStd::vector<EMotionFX::MotionInstance*>& motionInstances = MotionWindowPlugin::GetSelectedMotionInstances();
-        if (motionInstances.size() == 1)
+        const AZStd::vector<EMotionFX::MotionInstance*>& selectedMotionInstances = CommandSystem::GetCommandManager()->GetCurrentSelection().GetSelectedMotionInstances();
+        if (selectedMotionInstances.size() == 1)
         {
-            EMotionFX::MotionInstance* motionInstance = motionInstances[0];
+            EMotionFX::MotionInstance* motionInstance = selectedMotionInstances[0];
             motionInstance->SetCurrentTime(timeValue);
             motionInstance->SetPause(true);
         }
@@ -2151,13 +2150,6 @@ namespace EMStudio
         {
             float startTime = copyElement.m_startTime + offset;
             float endTime   = copyElement.m_endTime + offset;
-
-            // calculate the duration of the motion event
-            float duration  = 0.0f;
-            if (MCore::Compare<float>::CheckIfIsClose(startTime, endTime, MCore::Math::epsilon) == false)
-            {
-                duration = endTime - startTime;
-            }
 
             CommandSystem::CommandHelperAddMotionEvent(trackName.c_str(), startTime, endTime, copyElement.m_eventDatas, &commandGroup);
         }

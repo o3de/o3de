@@ -67,7 +67,20 @@ namespace UnitTest
 
         AZ::IO::Path assetPath = AZStd::string_view{ AZ::Utils::GetProjectPath() };
         assetPath /= "Cache";
-        AZ::IO::FileIOBase::GetInstance()->SetAlias("@assets@", assetPath.c_str());
+        AZ::IO::FileIOBase::GetInstance()->SetAlias("@products@", assetPath.c_str());
+
+        // Remark, AZ::Utils::GetProjectPath() is not used when defining "user" folder,
+        // instead We use AZ::Test::GetEngineRootPath();.
+        // Reason:
+        // When running unit tests, using AZ::Utils::GetProjectPath() will resolve to something like:
+        // "/data/workspace/o3de/build/linux/External/Atom-9a4d112b/RPI/Code/Cache"
+        // The ShaderMetricSystem.cpp writes to the @user@ folder and the following runtime error occurs:
+        // "You may not alter data inside the asset cache.  Please check the call stack and consider writing into the source asset folder instead."
+        // "Attempted write location: /data/workspace/o3de/build/linux/External/Atom-9a4d112b/RPI/Code/Cache/user/shadermetrics.json"
+        // To avoid the error We use AZ::Test::GetEngineRootPath();
+        AZ::IO::Path userPath = AZ::Test::GetEngineRootPath();
+        userPath /= "user";
+        AZ::IO::FileIOBase::GetInstance()->SetAlias("@user@", userPath.c_str());
 
         m_jsonRegistrationContext = AZStd::make_unique<AZ::JsonRegistrationContext>();
         m_jsonSystemComponent = AZStd::make_unique<AZ::JsonSystemComponent>();
@@ -90,7 +103,7 @@ namespace UnitTest
         JobManagerThreadDesc threadDesc;
 #if AZ_TRAIT_SET_JOB_PROCESSOR_ID
         threadDesc.m_cpuId = 0; // Don't set processors IDs on windows
-#endif 
+#endif
 
         uint32_t numWorkerThreads = AZStd::thread::hardware_concurrency();
 
@@ -99,7 +112,7 @@ namespace UnitTest
             desc.m_workerThreads.push_back(threadDesc);
 #if AZ_TRAIT_SET_JOB_PROCESSOR_ID
             threadDesc.m_cpuId++;
-#endif 
+#endif
         }
 
         m_jobManager = AZStd::make_unique<JobManager>(desc);

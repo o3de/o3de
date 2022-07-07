@@ -20,7 +20,7 @@ namespace EMotionFX
     
     TEST_F(SimulatedObjectSerializeTests, SerializeTest)
     {
-        SimulatedObjectSetup* setup = m_actor->GetSimulatedObjectSetup().get();        
+        SimulatedObjectSetup* setup = GetActor()->GetSimulatedObjectSetup().get();        
 
         // Build some setup.
         SimulatedObject* object = setup->AddSimulatedObject();
@@ -29,7 +29,7 @@ namespace EMotionFX
         object->SetGravityFactor(3.0f);
         object->SetStiffnessFactor(4.0f);
         const AZStd::vector<AZStd::string> jointNames = { "l_upArm", "l_loArm", "l_hand" };
-        Skeleton* skeleton = m_actor->GetSkeleton();
+        Skeleton* skeleton = GetActor()->GetSkeleton();
         for (const AZStd::string& name : jointNames)
         {
             size_t skeletonJointIndex;
@@ -50,7 +50,7 @@ namespace EMotionFX
         object->GetSimulatedJoint(0)->SetPinned(true);
 
         // Serialize it and deserialize it.
-        const AZStd::string serialized = SerializeSimulatedObjectSetup(m_actor.get());
+        const AZStd::string serialized = SerializeSimulatedObjectSetup(GetActor());
         AZStd::unique_ptr<SimulatedObjectSetup> loadedSetup(DeserializeSimulatedObjectSetup(serialized));
 
         // Verify some of the contents of the deserialized version.

@@ -146,6 +146,7 @@ namespace AZ
 
         void RasterPass::UpdateDrawList()
         {
+            AZ_PROFILE_SCOPE(RPI, "RasterPass::UpdateDrawList");
              // DrawLists from dynamic draw
             AZStd::vector<RHI::DrawListView> drawLists = DynamicDrawInterface::Get()->GetDrawListsForPass(this);
 
@@ -216,8 +217,6 @@ namespace AZ
 
         void RasterPass::CompileResources(const RHI::FrameGraphCompileContext& context)
         {
-            AZ_PROFILE_FUNCTION(RPI);
-
             if (m_shaderResourceGroup == nullptr)
             {
                 return;
@@ -230,8 +229,6 @@ namespace AZ
 
         void RasterPass::BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context)
         {
-            AZ_PROFILE_FUNCTION(RPI);
-
             RHI::CommandList* commandList = context.GetCommandList();
 
             const RHI::DrawListView drawListViewPartition = RHI::GetDrawListPartition(m_drawListView, context.GetCommandListIndex(), context.GetCommandListCount());

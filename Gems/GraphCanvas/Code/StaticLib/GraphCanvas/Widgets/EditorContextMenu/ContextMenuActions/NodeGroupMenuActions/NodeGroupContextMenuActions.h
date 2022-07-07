@@ -25,6 +25,8 @@ namespace GraphCanvas
         using ContextMenuAction::RefreshAction;
 
         void RefreshAction() override;
+
+        using NodeGroupContextMenuAction::TriggerAction;
         SceneReaction TriggerAction(const AZ::Vector2& scenePos) override;
 
     private:
@@ -43,6 +45,8 @@ namespace GraphCanvas
         using ContextMenuAction::RefreshAction;
 
         void RefreshAction() override;
+
+        using NodeGroupContextMenuAction::TriggerAction;
         SceneReaction TriggerAction(const AZ::Vector2& scenePos) override;
     };
 
@@ -58,6 +62,8 @@ namespace GraphCanvas
         using ContextMenuAction::RefreshAction;
 
         void RefreshAction() override;
+
+        using NodeGroupContextMenuAction::TriggerAction;
         SceneReaction TriggerAction(const AZ::Vector2& scenePos) override;
     };
 
@@ -73,6 +79,8 @@ namespace GraphCanvas
         using ContextMenuAction::RefreshAction;
 
         void RefreshAction() override;
+
+        using NodeGroupContextMenuAction::TriggerAction;
         SceneReaction TriggerAction(const AZ::Vector2& scenePos) override;
     };
 
@@ -88,6 +96,8 @@ namespace GraphCanvas
         using ContextMenuAction::RefreshAction;
 
         void RefreshAction() override;
+
+        using NodeGroupContextMenuAction::TriggerAction;
         SceneReaction TriggerAction(const AZ::Vector2& scenePos) override;
     };
 }

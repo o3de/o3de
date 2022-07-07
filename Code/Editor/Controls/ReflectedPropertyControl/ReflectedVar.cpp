@@ -70,12 +70,6 @@ void ReflectedVarInit::setupReflection(AZ::SerializeContext* serializeContext)
     AZ::EditContext* ec = serializeContext->GetEditContext();
     if (ec)
     {
-        ec->Class< CReflectedVarResource >("VarResource", "Resource")
-            ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-            ->Attribute(AZ::Edit::Attributes::NameLabelOverride, &CReflectedVarResource::varName)
-            ->Attribute(AZ::Edit::Attributes::DescriptionTextOverride, &CReflectedVarResource::description)
-            ;
-
         ec->Class< CReflectedVarUser >("VarUser", "")
             ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
             ->Attribute(AZ::Edit::Attributes::NameLabelOverride, &CReflectedVarUser::varName)

@@ -66,9 +66,6 @@ namespace AZ
         {
             None = 0,
 
-            //! Enables gathering of cpu timing statistics.
-            GatherCpuTimingStatistics = AZ_BIT(0),
-
             //! Enables gathering of transient attachment statistics.
             GatherTransientAttachmentStatistics = AZ_BIT(2),
 

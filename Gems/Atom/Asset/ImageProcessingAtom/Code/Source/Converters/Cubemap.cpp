@@ -547,7 +547,7 @@ namespace ImageProcessingAtom
         }
 
         //generate box filtered source image mip chain
-        IImageObjectPtr mippedSourceImage(IImageObject::CreateImage(outWidth, outHeight, maxMipCount, ePixelFormat_R32G32B32A32F));
+        IImageObjectPtr mippedSourceImage(IImageObject::CreateImage(outWidth, outHeight, maxMipCount, srcPixelFormat));
         mippedSourceImage->CopyPropertiesFrom(m_image->Get());
 
         for (int iSide = 0; iSide < 6; ++iSide)

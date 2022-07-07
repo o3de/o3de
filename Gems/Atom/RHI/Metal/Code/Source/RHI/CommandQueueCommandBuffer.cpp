@@ -7,7 +7,6 @@
  */
 
 #include <Atom/RHI.Reflect/Base.h>
-#include <AzCore/Debug/EventTrace.h>
 #include <RHI/CommandQueue.h>
 
 namespace AZ

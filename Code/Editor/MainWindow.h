@@ -28,28 +28,31 @@
 #include <AzToolsFramework/SourceControl/SourceControlAPI.h>
 
 #include "IEditor.h"
+
+#include <Core/EditorActionsHandler.h>
 #endif
 
+class ActionManager;
 class AssetImporterManager;
-class LevelEditorMenuHandler;
-class CMainFrame;
-class UndoStackStateAdapter;
-class QComboBox;
-class KeyboardCustomizationSettings;
-class QToolButton;
-class MainStatusBar;
-class CLayoutWnd;
-struct QtViewPane;
 class CLayoutViewPane;
-class QtViewport;
-class QtViewPaneManager;
+class CLayoutWnd;
+class CMainFrame;
 class EngineConnectionListener;
+class KeyboardCustomizationSettings;
+class LevelEditorMenuHandler;
+class MainStatusBar;
+class ShortcutDispatcher;
 class ToolbarManager;
 class ToolbarCustomizationDialog;
+class UndoStackStateAdapter;
+
+class QComboBox;
+class QToolButton;
+class QtViewport;
+class QtViewPaneManager;
 class QWidgetAction;
-class ActionManager;
-class ShortcutDispatcher;
-class CVarMenu;
+
+struct QtViewPane;
 
 namespace AzQtComponents
 {
@@ -64,19 +67,19 @@ namespace AzToolsFramework
     //! @name Reverse URLs.
     //! Used to identify common actions and override them when necessary.
     //@{
-    constexpr inline AZ::Crc32 EditModeMove = AZ_CRC_CE("com.o3de.action.editor.editmode.move");
-    constexpr inline AZ::Crc32 EditModeRotate = AZ_CRC_CE("com.o3de.action.editor.editmode.rotate");
-    constexpr inline AZ::Crc32 EditModeScale = AZ_CRC_CE("com.o3de.action.editor.editmode.scale");
-    constexpr inline AZ::Crc32 SnapToGrid = AZ_CRC_CE("com.o3de.action.editor.snaptogrid");
-    constexpr inline AZ::Crc32 SnapAngle = AZ_CRC_CE("com.o3de.action.editor.snapangle");
+    constexpr inline AZ::Crc32 EditModeMove = AZ_CRC_CE("org.o3de.action.editor.editmode.move");
+    constexpr inline AZ::Crc32 EditModeRotate = AZ_CRC_CE("org.o3de.action.editor.editmode.rotate");
+    constexpr inline AZ::Crc32 EditModeScale = AZ_CRC_CE("org.o3de.action.editor.editmode.scale");
+    constexpr inline AZ::Crc32 SnapToGrid = AZ_CRC_CE("org.o3de.action.editor.snaptogrid");
+    constexpr inline AZ::Crc32 SnapAngle = AZ_CRC_CE("org.o3de.action.editor.snapangle");
     //@}
 }
 
 #define MAINFRM_LAYOUT_NORMAL "NormalLayout"
 #define MAINFRM_LAYOUT_PREVIEW "PreviewLayout"
 
-// Subclassing so we can add slots to our toolbar widgets
-// Using lambdas is crashy since the lamdba doesn't know when the widget is deleted.
+// Sub-classing so we can add slots to our toolbar widgets
+// Using lambdas is prone to crashes since the lambda doesn't know when the widget is deleted.
 
 class UndoRedoToolButton
     : public QToolButton
@@ -239,15 +242,15 @@ private:
     QtViewPaneManager* m_viewPaneManager;
     ShortcutDispatcher* m_shortcutDispatcher = nullptr;
     ActionManager* m_actionManager = nullptr;
+    ToolbarManager* m_toolbarManager = nullptr;
     UndoStackStateAdapter* m_undoStateAdapter;
 
     KeyboardCustomizationSettings* m_keyboardCustomization;
     CLayoutViewPane* m_activeView;
     QSettings m_settings;
-    ToolbarManager* const m_toolbarManager;
 
     AssetImporterManager* m_assetImporterManager;
-    LevelEditorMenuHandler* m_levelEditorMenuHandler;
+    LevelEditorMenuHandler* m_levelEditorMenuHandler = nullptr;
 
     CLayoutWnd* m_pLayoutWnd;
 
@@ -258,6 +261,8 @@ private:
     QPointer<ToolbarCustomizationDialog> m_toolbarCustomizationDialog;
     QScopedPointer<AzToolsFramework::QtSourceControlNotificationHandler> m_sourceControlNotifHandler;
     AZ::Event<bool>::Handler m_handleImGuiStateChangeHandler;
+
+    EditorActionsHandler m_editorActionsHandler;
     AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 
     static MainWindow* m_instance;

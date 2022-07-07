@@ -138,7 +138,7 @@ void UiSliceManager::MakeSliceFromEntities(AzToolsFramework::EntityIdList& entit
     // expand the list of entities to include all child entities
     AzToolsFramework::EntityIdSet entitiesAndDescendants = GatherEntitiesAndAllDescendents(entities);
 
-    const AZStd::string slicesAssetsPath = "@devassets@/UI/Slices";
+    const AZStd::string slicesAssetsPath = "@projectroot@/UI/Slices";
 
     if (!gEnv->pFileIO->Exists(slicesAssetsPath.c_str()))
     {
@@ -991,13 +991,13 @@ AZStd::string UiSliceManager::MakeTemporaryFilePathForSave(const char* targetFil
     AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance();
     AZ_Assert(fileIO, "File IO is not initialized.");
 
-    AZStd::string devAssetPath = fileIO->GetAlias("@devassets@");
+    AZStd::string devAssetPath = fileIO->GetAlias("@projectroot@");
     AZStd::string userPath = fileIO->GetAlias("@user@");
     AZStd::string tempPath = targetFilename;
     EBUS_EVENT(AzFramework::ApplicationRequests::Bus, NormalizePath, devAssetPath);
     EBUS_EVENT(AzFramework::ApplicationRequests::Bus, NormalizePath, userPath);
     EBUS_EVENT(AzFramework::ApplicationRequests::Bus, NormalizePath, tempPath);
-    AzFramework::StringFunc::Replace(tempPath, "@devassets@", devAssetPath.c_str());
+    AzFramework::StringFunc::Replace(tempPath, "@projectroot@", devAssetPath.c_str());
     AzFramework::StringFunc::Replace(tempPath, devAssetPath.c_str(), userPath.c_str());
     tempPath.append(".slicetemp");
 

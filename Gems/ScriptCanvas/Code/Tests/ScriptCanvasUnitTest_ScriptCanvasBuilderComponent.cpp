@@ -41,7 +41,6 @@ namespace ScriptCanvasUnitTest
             const char* GetExecutableFolder() const override { return nullptr; }
             const char* GetBinFolder() const { return nullptr; }
             const char* GetAppRoot() override { return nullptr; }
-            AZ::Debug::DrillerManager* GetDrillerManager() override { return nullptr; }
             void EnumerateEntities(const EntityCallback& /*callback*/) override {}
 
             // AssetBuilderBus

@@ -288,6 +288,21 @@ namespace AZ
             AZStd::string completeCommand = console->AutoCompleteCommand("testVec3");
             AZ_TEST_ASSERT(completeCommand == "testVec3");
         }
+
+        // Duplicate names
+        {
+            // Register two cvars with the same name
+            auto id = AZ::TypeId();
+            auto flag = AZ::ConsoleFunctorFlags::Null;
+            auto signature = AZ::ConsoleFunctor<void, false>::FunctorSignature();
+            AZ::ConsoleFunctor<void, false> cvarOne(*console, "testAutoCompleteDuplication", "", flag, id, signature);
+            AZ::ConsoleFunctor<void, false> cvarTwo(*console, "testAutoCompleteDuplication", "", flag, id, signature);
+
+            // Autocomplete given name expecting one match (not two)
+            AZStd::vector<AZStd::string> matches;
+            AZStd::string completeCommand = console->AutoCompleteCommand("testAutoCompleteD", &matches);
+            AZ_TEST_ASSERT(matches.size() == 1 && completeCommand == "testAutoCompleteDuplication");
+        }
     }
 
     TEST_F(ConsoleTests, ConsoleFunctor_FreeFunctorExecutionTest)

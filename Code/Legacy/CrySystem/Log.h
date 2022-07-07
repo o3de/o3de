@@ -11,6 +11,13 @@
 
 #include <ILog.h>
 #include <MultiThread_Containers.h>
+#include <list>
+#include <AzCore/std/string/fixed_string.h>
+#include <AzCore/IO/FileIO.h>
+
+struct IConsole;
+struct ICVar;
+struct ISystem;
 
 //////////////////////////////////////////////////////////////////////
 #if defined(ANDROID) || defined(AZ_PLATFORM_MAC)
@@ -91,6 +98,7 @@ public:
     virtual void Update();
     virtual const char* GetModuleFilter();
     virtual void FlushAndClose();
+    virtual void Flush();
 
 private: // -------------------------------------------------------------------
     struct SLogMsg
@@ -105,7 +113,6 @@ private: // -------------------------------------------------------------------
         ELogType logType;
         bool bAdd;
         Destination destination;
-        void GetMemoryUsage([[maybe_unused]] ICrySizer* pSizer) const {}
     };
 
     void CheckAndPruneBackupLogs() const;
@@ -131,7 +138,7 @@ private: // -------------------------------------------------------------------
     void LogStringToConsole(const char* szString, ELogType logType, bool bAdd) {}
 #endif // !defined(EXCLUDE_NORMAL_LOG)
 
-    bool OpenLogFile(const char* filename, int mode);
+    bool OpenLogFile(const char* filename, AZ::IO::OpenMode mode);
     void CloseLogFile();
 
     // will format the message into m_szTemp
@@ -150,7 +157,7 @@ private: // -------------------------------------------------------------------
     float m_fLastLoadingUpdateTime;                           // for non-frequent streamingEngine update
     char m_szFilename[MAX_FILENAME_SIZE];            // can be with path
     mutable char m_sBackupFilename[MAX_FILENAME_SIZE];   // can be with path
-    AZ::IO::SystemFile m_logFileHandle;
+    AZ::IO::FileIOStream m_logFileHandle;
 
     bool m_backupLogs;
 
@@ -188,22 +195,9 @@ private: // -------------------------------------------------------------------
 
 #if defined(KEEP_LOG_FILE_OPEN)
     static void LogFlushFile(IConsoleCmdArgs* pArgs);
-
-    bool m_bFirstLine;
 #endif
 
 public: // -------------------------------------------------------------------
-
-    void GetMemoryUsage(ICrySizer* pSizer) const
-    {
-        pSizer->AddObject(this, sizeof(*this));
-        pSizer->AddObject(m_pLogVerbosity);
-        pSizer->AddObject(m_pLogWriteToFile);
-        pSizer->AddObject(m_pLogWriteToFileVerbosity);
-        pSizer->AddObject(m_pLogVerbosityOverridesWriteToFile);
-        pSizer->AddObject(m_pLogSpamDelay);
-        pSizer->AddObject(m_threadSafeMsgQueue);
-    }
     // checks the verbosity of the message and returns NULL if the message must NOT be
     // logged, or the pointer to the part of the message that should be logged
     const char* CheckAgainstVerbosity(const char* pText, bool& logtofile, bool& logtoconsole, const uint8 DefaultVerbosity = 2);

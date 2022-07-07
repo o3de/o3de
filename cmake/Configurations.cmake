@@ -8,12 +8,27 @@
 
 include_guard(GLOBAL)
 
+# LY_CONFIGURATION_TYPES defines all the configuration types that O3DE supports
+# We dont set CMAKE_CONFIGURATION_TYPES directly because we want to be able to configure which 
+# configuration types are supported in an SDK installation. SDK installations will fill a 
+# CMAKE_CONFIGURATION_TYPES based on the configurations that were generated during the install process.
+# ly_append_configurations_options depends on LY_CONFIGURATION_TYPES being
+# set in order to successfully parse the arguments. Even for non-multi-config
+# generators, it needs to be set.
+set(LY_CONFIGURATION_TYPES "debug;profile;release" CACHE STRING "" FORCE)
+
+include(cmake/ConfigurationTypes.cmake)
+
 #! ly_append_configurations_options: adds options to the different configurations (debug, profile, release, etc)
 #
 # \arg:DEFINES
 # \arg:DEFINES_${CONFIGURATION}
 # \arg:COMPILATION
 # \arg:COMPILATION_${CONFIGURATION}
+# \arg:COMPILATION_C
+# \arg:COMPILATION_C_${CONFIGURATION}
+# \arg:COMPILATION_CXX
+# \arg:COMPILATION_CXX_${CONFIGURATION}
 # \arg:LINK
 # \arg:LINK_${CONFIGURATION}
 # \arg:LINK_STATIC
@@ -27,6 +42,8 @@ include_guard(GLOBAL)
 # \arg:LINK_SHARED
 # \arg:LINK_SHARED_${CONFIGURATION}
 #
+# Note: COMPILATION_C/COMPILATION_CXX are mutually exclusive with COMPILATION. You can only specify COMPILATION for C/C++ flags or 
+#       a combination of COMPILATION_C/COMPILATION_CXX for the separate c/c++ flags separately.
 function(ly_append_configurations_options)
 
     set(options)
@@ -34,6 +51,8 @@ function(ly_append_configurations_options)
     set(multiArgs
         DEFINES
         COMPILATION
+        COMPILATION_C
+        COMPILATION_CXX
         LINK
         LINK_STATIC
         LINK_NON_STATIC
@@ -43,7 +62,9 @@ function(ly_append_configurations_options)
     )
     foreach(arg IN LISTS multiArgs)
         list(APPEND multiValueArgs ${arg})
-        foreach(conf IN LISTS CMAKE_CONFIGURATION_TYPES)
+        # we parse the parameters based on all configuration types so unknown configurations
+        # are not passed as values to other parameters
+        foreach(conf IN LISTS LY_CONFIGURATION_TYPES)
             string(TOUPPER ${conf} UCONF)
             list(APPEND multiValueArgs ${arg}_${UCONF})
         endforeach()
@@ -59,6 +80,14 @@ function(ly_append_configurations_options)
         string(REPLACE ";" " " COMPILATION_STR "${ly_append_configurations_options_COMPILATION}")
         set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${COMPILATION_STR}" PARENT_SCOPE)
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${COMPILATION_STR}" PARENT_SCOPE)
+    endif()
+    if(ly_append_configurations_options_COMPILATION_C)
+        string(REPLACE ";" " " COMPILATION_STR "${ly_append_configurations_options_COMPILATION_C}")
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${COMPILATION_STR}" PARENT_SCOPE)
+    endif()
+    if(ly_append_configurations_options_COMPILATION_CXX)
+        string(REPLACE ";" " " COMPILATION_STR "${ly_append_configurations_options_COMPILATION_CXX}")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${COMPILATION_STR}" PARENT_SCOPE)        
     endif()
 
     if(ly_append_configurations_options_LINK)
@@ -96,6 +125,7 @@ function(ly_append_configurations_options)
         set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${LINK_STR}" PARENT_SCOPE)
     endif()
 
+    # We only iterate for the actual configuration types
     foreach(conf IN LISTS CMAKE_CONFIGURATION_TYPES)
 
         string(TOUPPER ${conf} UCONF)
@@ -143,11 +173,6 @@ endfunction()
 set(CMAKE_CXX_STANDARD 17 CACHE STRING "C++ Standard to target")
 ly_set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# ly_append_configurations_options depends on CMAKE_CONFIGURATION_TYPES being
-# set in order to successfully parse the arguments. Even for non-multi-config
-# generators, it needs to be set.
-set(CMAKE_CONFIGURATION_TYPES "debug;profile;release" CACHE STRING "" FORCE)
-
 get_property(_isMultiConfig GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
 if(NOT _isMultiConfig)
     # No reason set CMAKE_BUILD_TYPE if it's a multiconfig generator.
@@ -180,5 +205,5 @@ foreach(conf IN LISTS CMAKE_CONFIGURATION_TYPES)
 endforeach()
 
 # flags are defined per platform, follow platform files under Platform/<PlatformName>/Configurations_<platformname>.cmake
-ly_get_absolute_pal_filename(pal_dir ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Platform/${PAL_PLATFORM_NAME})
+o3de_pal_dir(pal_dir ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Platform/${PAL_PLATFORM_NAME} "${O3DE_ENGINE_RESTRICTED_PATH}" "${LY_ROOT_FOLDER}")
 include(${pal_dir}/Configurations_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)

@@ -7,6 +7,7 @@
  */
 
 #include <AzCore/Asset/AssetManager.h>
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Script/ScriptProperty.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -64,7 +65,7 @@ namespace EMotionFX
                             ->Attribute(AZ::Edit::Attributes::ViewportIcon, ":/EMotionFX/Viewport/AnimGraphComponent.svg")
                             ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                            ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/animgraph/")
+                            ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/animation/animgraph/")
                         ->DataElement(AZ::Edit::UIHandlers::Default, &EditorAnimGraphComponent::m_motionSetAsset,
                             "Motion set asset", "EMotion FX motion set asset to be loaded for this actor.")
                             ->Attribute("EditButton", "")

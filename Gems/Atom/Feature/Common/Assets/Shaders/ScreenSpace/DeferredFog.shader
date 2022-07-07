@@ -22,11 +22,6 @@
 
     "DrawList" : "forward",
 
-    "CompilerHints" : { 
-        "DxcDisableOptimizations" : false,
-        "DxcGenerateDebugInfo" : false
-    },
-
     "ProgramSettings":
     {
       "EntryPoints":

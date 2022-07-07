@@ -13,10 +13,7 @@ set(FILES
     Include/Atom/ImageProcessing/ImageProcessingEditorBus.h
     Include/Atom/ImageProcessing/PixelFormats.h
     Include/Atom/ImageProcessing/ImageObject.h
-    ../Assets/Editor/Resources.qrc
-    ../Assets/Editor/Backward.png
-    ../Assets/Editor/Forward.png
-    ../Assets/Editor/reset.png
+    Include/Atom/ImageProcessing/ImageProcessingDefines.h
     Source/ImageBuilderBaseType.h
     Source/ImageBuilderComponent.cpp
     Source/ImageBuilderComponent.h
@@ -28,7 +25,6 @@ set(FILES
     Source/BuilderSettings/BuilderSettings.h
     Source/BuilderSettings/CubemapSettings.cpp
     Source/BuilderSettings/CubemapSettings.h
-    Source/BuilderSettings/ImageProcessingDefines.h
     Source/BuilderSettings/MipmapSettings.cpp
     Source/BuilderSettings/MipmapSettings.h
     Source/BuilderSettings/PlatformSettings.h
@@ -70,6 +66,7 @@ set(FILES
     Source/Editor/ImagePopup.cpp
     Source/Editor/ImagePopup.h
     Source/Editor/ImagePopup.ui
+    Source/Editor/ImageProcessing.qrc
     Source/Editor/MipmapSettingWidget.cpp
     Source/Editor/MipmapSettingWidget.h
     Source/Editor/MipmapSettingWidget.ui
@@ -103,8 +100,6 @@ set(FILES
     Source/Converters/ConvertPixelFormat.cpp
     Source/Converters/Cubemap.h
     Source/Converters/Cubemap.cpp
-    Source/Converters/ColorChart.cpp
-    Source/Converters/HighPass.cpp
     Source/Converters/Histogram.cpp
     Source/Converters/Histogram.h
     ../External/CubeMapGen/CBBoxInt32.cpp
@@ -114,14 +109,12 @@ set(FILES
     ../External/CubeMapGen/CImageSurface.cpp
     ../External/CubeMapGen/CImageSurface.h
     ../External/CubeMapGen/VectorMacros.h
+    Source/Compressors/ASTCCompressor.cpp
+    Source/Compressors/ASTCCompressor.h
     Source/Compressors/Compressor.h
     Source/Compressors/Compressor.cpp
     Source/Compressors/CTSquisher.h
     Source/Compressors/CTSquisher.cpp
-    Source/Compressors/PVRTC.cpp
-    Source/Compressors/PVRTC.h
-    Source/Compressors/ETC2.cpp
-    Source/Compressors/ETC2.h
     Source/Compressors/CryTextureSquisher/ColorBlockRGBA4x4f.cpp
     Source/Compressors/CryTextureSquisher/ColorBlockRGBA4x4s.cpp
     Source/Compressors/CryTextureSquisher/ColorBlockRGBA4x4c.cpp
@@ -129,6 +122,8 @@ set(FILES
     Source/Compressors/CryTextureSquisher/ColorBlockRGBA4x4s.h
     Source/Compressors/CryTextureSquisher/ColorBlockRGBA4x4c.h
     Source/Compressors/CryTextureSquisher/ColorTypes.h
+    Source/Compressors/ISPCTextureCompressor.cpp
+    Source/Compressors/ISPCTextureCompressor.h
     Source/Thumbnail/ImageThumbnail.cpp
     Source/Thumbnail/ImageThumbnail.h
     Source/Thumbnail/ImageThumbnailSystemComponent.cpp

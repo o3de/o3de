@@ -14,6 +14,7 @@
 #include <AzCore/Math/Vector3.h>
 #include <AzQtComponents/Components/Widgets/ToolBar.h>
 #include <AzToolsFramework/Editor/EditorSettingsAPIBus.h>
+#include <AzToolsFramework/Prefab/PrefabLoaderInterface.h>
 #include <QIcon>
 
 #include "Settings.h"
@@ -44,7 +45,6 @@ private:
         AZ_TYPE_INFO(GeneralSettings, "{C2AE8F6D-7AA6-499E-A3E8-ECCD0AC6F3D2}")
 
         bool m_previewPanel;
-        bool m_applyConfigSpec;
         bool m_enableSourceControl;
         bool m_clearConsoleOnGameModeStart;
         AzToolsFramework::ConsoleColorTheme m_consoleBackgroundColorTheme;
@@ -55,6 +55,12 @@ private:
         bool m_restoreViewportCamera;
         bool m_bShowNews;
         bool m_enableSceneInspector;
+    };
+
+    struct LevelSaveSettings
+    {
+        AZ_TYPE_INFO(LevelSaveSettings, "{E297DAE3-3985-4BC2-8B43-45F3B1522F6B}");
+        AzToolsFramework::Prefab::SaveAllPrefabsPreference m_saveAllPrefabsPreference;
     };
 
     struct Messaging
@@ -89,6 +95,7 @@ private:
     };
 
     GeneralSettings m_generalSettings;
+    LevelSaveSettings m_levelSaveSettings;
     Messaging m_messaging;
     Undo m_undo;
     DeepSelection m_deepSelection;

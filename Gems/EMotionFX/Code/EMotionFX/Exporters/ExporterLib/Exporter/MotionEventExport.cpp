@@ -11,8 +11,8 @@
 #include <AzCore/JSON/document.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
 #include <AzCore/Serialization/Json/JsonSerializationResult.h>
+#include <AzCore/Serialization/Json/JsonUtils.h>
 #include <AzCore/Serialization/SerializeContext.h>
-#include <AzFramework/FileFunc/FileFunc.h>
 #include "Exporter.h"
 #include <MCore/Source/ReflectionSerializer.h>
 #include <EMotionFX/Source/MotionEvent.h>
@@ -55,10 +55,10 @@ namespace ExporterLib
         }
         
         AZStd::string serializedMotionEventTable;
-        auto writeToStringOutcome = AzFramework::FileFunc::WriteJsonToString(jsonDocument, serializedMotionEventTable);
+        auto writeToStringOutcome = AZ::JsonSerializationUtils::WriteJsonString(jsonDocument, serializedMotionEventTable);
         if (!writeToStringOutcome.IsSuccess())
         {
-            AZ_Error("EMotionFX", false, "WriteJsonToString failed: %s", writeToStringOutcome.GetError().c_str());
+            AZ_Error("EMotionFX", false, "WriteJsonString failed: %s", writeToStringOutcome.GetError().c_str());
             return;
         }
 

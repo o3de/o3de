@@ -7,13 +7,13 @@
  */
 #include "Sprite.h"
 #include <CryPath.h>
-#include <IRenderer.h>
 #include <ISerialize.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Asset/AssetSystemBus.h>
 #include <LyShine/Bus/Sprite/UiSpriteBus.h>
 
 #include <Atom/RPI.Public/Image/StreamingImage.h>
+#include <Atom/RPI.Public/Image/AttachmentImage.h>
 #include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
 #include <Atom/RPI.Reflect/Asset/AssetUtils.h>
 
@@ -244,12 +244,10 @@ void CSprite::SetCellBorders(int cellIndex, Borders borders)
 AZ::Data::Instance<AZ::RPI::Image> CSprite::GetImage()
 {
     // Prioritize usage of an atlas
-#ifdef LYSHINE_ATOM_TODO // texture atlas conversion to use Atom
     if (m_atlas)
     {
         return m_atlas->GetTexture();
     }
-#endif
 
     return m_image;
 }
@@ -509,20 +507,16 @@ ISprite::Borders CSprite::GetTextureSpaceCellUvBorders(int cellIndex) const
     if (CellIndexWithinRange(cellIndex))
     {
         const float cellWidth = GetCellUvSize(cellIndex).GetX();
-        const float cellMinUCoord = GetCellUvCoords(cellIndex).TopLeft().GetX();
         const float cellNormalizedLeftBorder = GetCellUvBorders(cellIndex).m_left * cellWidth;
         textureSpaceBorders.m_left = cellNormalizedLeftBorder;
 
-        const float cellMaxUCoord = GetCellUvCoords(cellIndex).TopRight().GetX();
         const float cellNormalizedRightBorder = GetCellUvBorders(cellIndex).m_right * cellWidth;
         textureSpaceBorders.m_right = cellNormalizedRightBorder;
 
         const float cellHeight = GetCellUvSize(cellIndex).GetY();
-        const float cellMinVCoord = GetCellUvCoords(cellIndex).TopLeft().GetY();
         const float cellNormalizedTopBorder = GetCellUvBorders(cellIndex).m_top * cellHeight;
         textureSpaceBorders.m_top = cellNormalizedTopBorder;
 
-        const float cellMaxVCoord = GetCellUvCoords(cellIndex).BottomLeft().GetY();
         const float cellNormalizedBottomBorder = GetCellUvBorders(cellIndex).m_bottom * cellHeight;
         textureSpaceBorders.m_bottom = cellNormalizedBottomBorder;
     }
@@ -691,10 +685,17 @@ CSprite* CSprite::LoadSprite(const AZStd::string& pathname)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-CSprite* CSprite::CreateSprite(const AZStd::string& renderTargetName)
+CSprite* CSprite::CreateSprite(const AZ::Data::Asset<AZ::RPI::AttachmentImageAsset>& attachmentImageAsset)
 {
+    auto attachmentImage = AZ::RPI::AttachmentImage::FindOrCreate(attachmentImageAsset);
+    if (!attachmentImage)
+    {
+        AZ_Warning("UI", false, "Failed to find or create render target");
+        return nullptr;
+    }
+
     // test if the sprite is already loaded, if so return loaded sprite
-    auto result = s_loadedSprites->find(renderTargetName);
+    auto result = s_loadedSprites->find(attachmentImage->GetAttachmentId().GetCStr());
     CSprite* loadedSprite = (result == s_loadedSprites->end()) ? nullptr : result->second;
 
     if (loadedSprite)
@@ -706,17 +707,8 @@ CSprite* CSprite::CreateSprite(const AZStd::string& renderTargetName)
     // create Sprite object
     CSprite* sprite = new CSprite;
 
-#ifdef LYSHINE_ATOM_TODO // render target converstion to use ATom
-    // the render target texture may not exist yet in which case we will need to load it later
-    sprite->m_texture = gEnv->pRenderer->EF_GetTextureByName(renderTargetName.c_str());
-    if (sprite->m_texture)
-    {
-        // increase the reference count on this render target texture so it doesn't get deleted
-        // while we are using it
-        sprite->m_texture->AddRef();
-    }
-#endif
-    sprite->m_pathname = renderTargetName;
+    sprite->m_image = attachmentImage;
+    sprite->m_pathname = attachmentImage->GetAttachmentId().GetCStr();
     sprite->m_texturePathname.clear();
 
     // add sprite to list of loaded sprites
@@ -859,7 +851,8 @@ bool CSprite::LoadImage(const AZStd::string& nameTex, AZ::Data::Instance<AZ::RPI
     image = AZ::RPI::StreamingImage::FindOrCreate(streamingImageAsset);
     if (!image)
     {
-        AZ_Error("CSprite", false, "Failed to find or create an image instance from image asset '%s'", streamingImageAsset.GetHint().c_str());
+        AZ_Error("CSprite", false, "Failed to find or create an image instance from image asset '%s', ID %s",
+            streamingImageAsset.GetHint().c_str(), streamingImageAsset.GetId().ToString<AZStd::string>().c_str());
         return false;
     }
 

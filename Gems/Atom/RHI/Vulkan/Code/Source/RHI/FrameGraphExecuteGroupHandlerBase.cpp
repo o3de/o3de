@@ -27,6 +27,7 @@ namespace AZ
         {
             EndInternal();
             m_device->GetCommandQueueContext().GetCommandQueue(m_hardwareQueueClass).ExecuteWork(AZStd::move(m_workRequest));
+            m_isExecuted = true;
         }
 
         bool FrameGraphExecuteGroupHandlerBase::IsComplete() const
@@ -40,6 +41,11 @@ namespace AZ
             }
 
             return true;
+        }
+
+        bool FrameGraphExecuteGroupHandlerBase::IsExecuted() const
+        {
+            return m_isExecuted;
         }
 
         template<class T>

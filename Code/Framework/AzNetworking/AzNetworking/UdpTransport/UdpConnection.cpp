@@ -58,7 +58,9 @@ namespace AzNetworking
     {
         if (m_state == ConnectionState::Connected)
         {
+            m_state = ConnectionState::Disconnecting;
             m_networkInterface.GetConnectionListener().OnDisconnect(this, DisconnectReason::ConnectionDeleted, TerminationEndpoint::Local);
+            m_state = ConnectionState::Disconnected;
         }
     }
 
@@ -79,7 +81,8 @@ namespace AzNetworking
             AZLOG(NET_Acks, "Unacked packet count exceeded, sending client heartbeat (curr %u : max %u)", m_unackedPacketCount, static_cast<uint32_t>(net_UdpMaxUnackedPacketCount));
             // This simply times out unreliable chunks that haven't completed within our timeout delay
             m_fragmentQueue.Update();
-            SendUnreliablePacket(CorePackets::HeartbeatPacket());
+            // This heartbeat is sent to minimize the time the remote endpoint spends waiting for ack vector replication, we don't require a response
+            SendUnreliablePacket(CorePackets::HeartbeatPacket(false));
         }
     }
 
@@ -117,8 +120,7 @@ namespace AzNetworking
         }
         if (m_state == ConnectionState::Disconnecting)
         {
-            AZStd::string reasonString = ToString(reason);
-            AZLOG_ERROR("Disconnecting an already disconnecting connection due to %s", reasonString.c_str());
+            AZLOG_WARN("Disconnecting an already disconnecting connection due to %s", ToString(reason).data());
             return false;
         }
         m_state = ConnectionState::Disconnecting;
@@ -236,14 +238,14 @@ namespace AzNetworking
         return true;
     }
 
-    bool UdpConnection::HandleCorePacket(IConnectionListener& connectionListener, UdpPacketHeader& header, ISerializer& serializer)
+    PacketDispatchResult UdpConnection::HandleCorePacket(IConnectionListener& connectionListener, UdpPacketHeader& header, ISerializer& serializer)
     {
         switch (static_cast<CorePackets::PacketType>(header.GetPacketType()))
         {
         case CorePackets::PacketType::InitiateConnectionPacket:
         {
             AZLOG(NET_CorePackets, "Received core packet %s", "InitiateConnection");
-            return true;
+            return PacketDispatchResult::Success;
         }
         break;
 
@@ -253,7 +255,7 @@ namespace AzNetworking
             CorePackets::ConnectionHandshakePacket packet;
             if (!serializer.Serialize(packet, "Packet"))
             {
-                return false;
+                return PacketDispatchResult::Failure;
             }
 
             if (m_state != ConnectionState::Connected)
@@ -264,7 +266,7 @@ namespace AzNetworking
                 }
             }
 
-            return true;
+            return PacketDispatchResult::Success;
         }
         break;
 
@@ -274,10 +276,10 @@ namespace AzNetworking
             CorePackets::TerminateConnectionPacket packet;
             if (!serializer.Serialize(packet, "Packet"))
             {
-                return false;
+                return PacketDispatchResult::Failure;
             }
             Disconnect(packet.GetDisconnectReason(), TerminationEndpoint::Remote);
-            return true;
+            return PacketDispatchResult::Success;
         }
         break;
 
@@ -287,10 +289,14 @@ namespace AzNetworking
             CorePackets::HeartbeatPacket packet;
             if (!serializer.Serialize(packet, "Packet"))
             {
-                return false;
+                return PacketDispatchResult::Failure;
             }
-            // Do nothing, we've already processed our ack packets
-            return true;
+            if (packet.GetRequestResponse())
+            {
+                // We're replying to a heartbeat request, we don't want a response
+                SendUnreliablePacket(CorePackets::HeartbeatPacket(false));
+            }
+            return PacketDispatchResult::Success;
         }
         break;
 
@@ -302,6 +308,6 @@ namespace AzNetworking
             AZ_Assert(false, "Unhandled core packet type!");
         }
 
-        return false;
+        return PacketDispatchResult::Failure;
     }
 }

@@ -243,7 +243,7 @@ namespace ScriptCanvas
         return resultHash;
     }
 
-    void NodeUtils::InitializeNode(Node* node, const NodeConfiguration& config)
+    void NodeUtils::InitializeNode(Node* node, const NodeReplacementConfiguration& config)
     {
         if (auto* method = azrtti_cast<ScriptCanvas::Nodes::Core::Method*>(node))
         {

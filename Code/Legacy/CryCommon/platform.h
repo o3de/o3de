@@ -51,20 +51,9 @@
 #undef AZ_RESTRICTED_SECTION_IMPLEMENTED
 #elif defined(LINUX) || defined(APPLE)
     #define __STDC_FORMAT_MACROS
-    #include <inttypes.h>
-    #if defined(APPLE) || defined(LINUX64)
-    // int64 is not the same type as the operating system's int64_t
-        #undef PRIX64
-        #undef PRIx64
-        #undef PRId64
-        #undef PRIu64
-        #define PRIX64 "llX"
-        #define PRIx64 "llx"
-        #define PRId64 "lld"
-        #define PRIu64 "llu"
-    #endif
+    #include <cinttypes>
 #else
-    #include <inttypes.h>
+    #include <cinttypes>
 #endif
 
 #if !defined(PRISIZE_T)
@@ -145,15 +134,6 @@
 #endif
 
 #include <AzCore/PlatformDef.h>
-
-#if defined(AZ_MONOLITHIC_BUILD)
-    #define DLL_EXPORT
-    #define DLL_IMPORT
-#else // AZ_MONOLITHIC_BUILD
-    #define DLL_EXPORT AZ_DLL_EXPORT
-    #define DLL_IMPORT AZ_DLL_IMPORT
-#endif // AZ_MONOLITHIC_BUILD
-
 
 //////////////////////////////////////////////////////////////////////////
 // Define BIT macro for use in enums and bit masks.
@@ -249,18 +229,12 @@ ILINE DestinationType alias_cast(SourceType pPtr)
 // Assert dialog box macros
 #include "CryAssert.h"
 
-// Replace standard assert calls by our custom one
-// Works only ifdef USE_CRY_ASSERT && _DEBUG && WIN32
-#ifndef assert
-#define assert CRY_ASSERT
-#endif
-
 //////////////////////////////////////////////////////////////////////////
 // Platform dependent functions that emulate Win32 API.
 // Mostly used only for debugging!
 //////////////////////////////////////////////////////////////////////////
 void   CrySleep(unsigned int dwMilliseconds);
-int    CryMessageBox(const char* lpText, const char* lpCaption, unsigned int uType);
+void   CryMessageBox(const char* lpText, const char* lpCaption, unsigned int uType);
 
 //---------------------------------------------------------------------------
 // Useful function to clean the structure.
@@ -353,13 +327,6 @@ void SetFlags(T& dest, U flags, bool b)
     #include AZ_RESTRICTED_FILE(platform_h)
 #endif
 
-// Include support for meta-type data.
-#include "TypeInfo_decl.h"
-
-// Include array.
-#include <CryArray.h>
-
-bool   CrySetFileAttributes(const char* lpFileName, uint32 dwFileAttributes);
 threadID CryGetCurrentThreadId();
 
 #ifdef __GNUC__

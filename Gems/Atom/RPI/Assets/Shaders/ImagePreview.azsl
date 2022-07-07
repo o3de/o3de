@@ -1,0 +1,98 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#include <Atom/Features/SrgSemantics.azsli>
+
+ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
+{    
+    Texture2D m_image;
+    Texture2DMS<float4> m_msImage;
+
+    float2 m_colorRangeMinMax;
+
+    Sampler m_sampler
+    {
+        MaxAnisotropy = 16;
+        AddressU = Wrap;
+        AddressV = Wrap;
+        AddressW = Wrap;
+    };
+}
+
+struct VSInput
+{
+    uint m_vertexIndex :SV_VertexID;
+};
+
+struct VSOutput
+{
+    float4 m_position : SV_Position;
+    float2 m_uv : TEXCOORD0;
+};
+
+option enum class ImageType 
+{ 
+    Image2d,        // Regular 2d image
+    Image2dMs       // 2d image with multisampler
+} 
+o_imageType = ImageType::Image2d;
+
+VSOutput MainVS(VSInput vsInput)
+{
+    VSOutput OUT;
+    
+    float2 positions[4] = { {-1.0, 1.0}, {1.0, 1.0}, {-1.0, -1.0}, {1.0, -1.0} };
+    float2 uvs[4] = { {0.0, 0.0}, {1.0, 0.0}, {0.0, 1.0}, {1.0, 1.0} };
+    uint index = vsInput.m_vertexIndex%4;
+    
+    OUT.m_position = float4(positions[index], 0, 1.0);
+    OUT.m_uv.xy = uvs[index];
+
+    return OUT;
+}
+
+struct PSOutput
+{
+    float4 m_color : SV_Target0;
+};
+
+PSOutput MainPS(VSOutput psInput)
+{
+    PSOutput OUT;
+
+    switch(o_imageType)
+    {
+        case ImageType::Image2d:
+        {
+            Texture2D texture = PassSrg::m_image;
+            OUT.m_color = texture.Sample(PassSrg::m_sampler, psInput.m_uv);
+            break;
+        }
+        case ImageType::Image2dMs:
+        {
+            Texture2DMS<float4> texture = PassSrg::m_msImage;            
+            uint width = 0;
+            uint height = 0;
+            uint numberOfSamples = 0;
+            texture.GetDimensions(width, height, numberOfSamples);
+            int2 coord = int2(width * psInput.m_uv.x, height * psInput.m_uv.y);
+
+            OUT.m_color = 0;
+            for (uint i = 0; i < numberOfSamples; ++i)
+            {
+                OUT.m_color += texture.Load(coord, i);
+            }
+            OUT.m_color /= numberOfSamples;
+            break;
+        }
+    }  
+
+    OUT.m_color.xyz = (OUT.m_color.xyz - PassSrg::m_colorRangeMinMax[0].xxx) / (PassSrg::m_colorRangeMinMax[1] - PassSrg::m_colorRangeMinMax[0]);
+
+    return OUT;
+}

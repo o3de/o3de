@@ -44,7 +44,7 @@ namespace MCore
         // overloaded from the attribute base class
         Attribute* Clone() const override                           { return AttributeBool::Create(m_value); }
         const char* GetTypeString() const override                  { return "AttributeBool"; }
-        bool InitFrom(const Attribute* other);
+        bool InitFrom(const Attribute* other) override;
         bool InitFromString(const AZStd::string& valueString) override
         {
             return AzFramework::StringFunc::LooksLikeBool(valueString.c_str(), &m_value);

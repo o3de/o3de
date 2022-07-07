@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/std/containers/vector.h>
+#include <AzCore/Task/TaskGraph.h>
 #include <AzCore/Outcome/Outcome.h>
 #include "EMotionFXConfig.h"
 #include <MCore/Source/DualQuaternion.h>
@@ -68,7 +69,7 @@ namespace EMotionFX
          * @param node The node where the mesh belongs to during this initialization.
          * @param lodLevel The LOD level of the mesh the mesh deformer works on.
          */
-        void Reinitialize(Actor* actor, Node* node, size_t lodLevel) override;
+        void Reinitialize(Actor* actor, Node* node, size_t lodLevel, uint16 highestJointIndex) override;
 
         /**
          * Creates an exact clone (copy) of this deformer, and returns a pointer to it.
@@ -138,6 +139,8 @@ namespace EMotionFX
 
         //! Number of vertices per batch/job used for multi-threaded software skinning.
         static constexpr AZ::u32 s_numVerticesPerBatch = 10000;
+        AZ::TaskGraph m_taskGraph;
+        bool m_useTaskGraph = true;
 
         /**
          * Default constructor.
@@ -149,12 +152,5 @@ namespace EMotionFX
          * Destructor.
          */
         virtual ~DualQuatSkinDeformer();
-
-        /**
-         * Find the entry number that uses a specified node number.
-         * @param nodeIndex The node number to search for.
-         * @result The index inside the m_bones member array, which uses the given node.
-         */
-        AZ::Outcome<size_t> FindLocalBoneIndex(size_t nodeIndex) const;
     };
 } // namespace EMotionFX

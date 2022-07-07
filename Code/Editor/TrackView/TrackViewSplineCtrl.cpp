@@ -57,7 +57,6 @@ protected:
     }
 
     int GetSize() override { return sizeof(*this); }
-    QString GetDescription() override { return "UndoTrackViewSplineCtrl"; };
 
     void Undo(bool bUndo) override
     {
@@ -611,7 +610,6 @@ void CTrackViewSplineCtrl::mouseMoveEvent(QMouseEvent* event)
 
     CTrackViewSequenceNotificationContext context(pSequence);
 
-    QPoint cMousePosPrev = m_cMousePos;
     m_cMousePos = point;
 
     if (m_editMode == NothingMode)

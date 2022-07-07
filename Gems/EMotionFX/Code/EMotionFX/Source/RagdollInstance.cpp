@@ -433,7 +433,6 @@ namespace EMotionFX
         }
 
         const EMotionFX::TransformData* transformData = m_actorInstance->GetTransformData();
-        const size_t transformCount = transformData->GetNumTransforms();
         const EMotionFX::Skeleton* skeleton = m_actorInstance->GetActor()->GetSkeleton();
         const size_t jointCount = skeleton->GetNumNodes();
 
@@ -498,9 +497,7 @@ namespace EMotionFX
                     const AZ::Vector3 currentPos = currentNodeState.m_position;
                     const AZ::Vector3 currentParentPos = currentParentJointPose.m_position;
 
-                    const Physics::RagdollNodeState& targetJointPose = ragdollTargetPose[ragdollJointIndex.GetValue()];
                     const Physics::RagdollNodeState& targetParentJointPose = ragdollTargetPose[ragdollParentJointIndex.GetValue()];
-                    const float strength = targetJointPose.m_strength;
 
                     if (targetParentJointPose.m_simulationType == Physics::SimulationType::Dynamic)
                     {

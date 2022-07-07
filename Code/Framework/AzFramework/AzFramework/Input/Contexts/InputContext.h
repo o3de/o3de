@@ -56,6 +56,10 @@ namespace AzFramework
         AZ_CLASS_ALLOCATOR(InputContext, AZ::SystemAllocator, 0);
 
         ////////////////////////////////////////////////////////////////////////////////////////////
+        // Type Info
+        AZ_RTTI(InputContext, "{D17A85B2-405F-40AB-BBA7-F118256D39AB}", InputDevice);
+
+        ////////////////////////////////////////////////////////////////////////////////////////////
         //! Constructor
         //! \param[in] name Unique, will be truncated if exceeds InputDeviceId::MAX_NAME_LENGTH = 64
         explicit InputContext(const char* name);

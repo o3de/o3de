@@ -52,16 +52,16 @@ namespace GraphCanvas
             required.push_back(AZ_CRC("GraphCanvas_SlotService", 0x701eaf6b));
         }
 
-        void Init();
-        void Activate();
-        void Deactivate();
+        void Init() override;
+        void Activate() override;
+        void Deactivate() override;
         ////
         
         // VisualRequestBus
         QGraphicsItem* AsGraphicsItem() override;
         QGraphicsLayoutItem* AsGraphicsLayoutItem() override;
 
-        bool Contains(const AZ::Vector2& position) const;
+        bool Contains(const AZ::Vector2& position) const override;
         void SetVisible(bool visible) override;
         bool IsVisible() const override;
         ////

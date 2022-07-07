@@ -14,11 +14,14 @@
 #include <QQueue>
 #endif
 
+// #define ADD_REMOTE_PROJECT_ENABLED
+
 QT_FORWARD_DECLARE_CLASS(QPaintEvent)
 QT_FORWARD_DECLARE_CLASS(QFrame)
 QT_FORWARD_DECLARE_CLASS(QStackedWidget)
 QT_FORWARD_DECLARE_CLASS(QLayout)
 QT_FORWARD_DECLARE_CLASS(FlowLayout)
+QT_FORWARD_DECLARE_CLASS(QFileSystemWatcher)
 
 namespace O3DE::ProjectManager
 {
@@ -44,8 +47,10 @@ namespace O3DE::ProjectManager
     protected slots:
         void HandleNewProjectButton();
         void HandleAddProjectButton();
+        void HandleAddRemoteProjectButton();
         void HandleOpenProject(const QString& projectPath);
         void HandleEditProject(const QString& projectPath);
+        void HandleEditProjectGems(const QString& projectPath);
         void HandleCopyProject(const ProjectInfo& projectInfo);
         void HandleRemoveProject(const QString& projectPath);
         void HandleDeleteProject(const QString& projectPath);
@@ -57,6 +62,8 @@ namespace O3DE::ProjectManager
         void ProjectBuildDone(bool success = true);
 
         void paintEvent(QPaintEvent* event) override;
+
+        void HandleProjectFilePathChanged(const QString& path);
 
     private:
         QFrame* CreateFirstTimeContent();
@@ -73,10 +80,14 @@ namespace O3DE::ProjectManager
 
         QAction* m_createNewProjectAction = nullptr;
         QAction* m_addExistingProjectAction = nullptr;
+#ifdef ADD_REMOTE_PROJECT_ENABLED
+        QAction* m_addRemoteProjectAction = nullptr;
+#endif
         QPixmap m_background;
         QFrame* m_firstTimeContent = nullptr;
         QFrame* m_projectsContent = nullptr;
         FlowLayout* m_projectsFlowLayout = nullptr;
+        QFileSystemWatcher* m_fileSystemWatcher = nullptr;
         QStackedWidget* m_stack = nullptr;
         QHash<QString, ProjectButton*> m_projectButtons;
         QList<ProjectInfo> m_requiresBuild;

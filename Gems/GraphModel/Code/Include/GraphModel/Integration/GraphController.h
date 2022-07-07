@@ -78,8 +78,8 @@ namespace GraphModelIntegration
         GraphModel::NodePtrList GetSelectedNodes() override;
         void SetSelected(GraphModel::NodePtrList nodes, bool selected) override;
         void ClearSelection() override;
-        void EnableNode(GraphModel::NodePtr node);
-        void DisableNode(GraphModel::NodePtr node);
+        void EnableNode(GraphModel::NodePtr node) override;
+        void DisableNode(GraphModel::NodePtr node) override;
         void CenterOnNodes(GraphModel::NodePtrList nodes) override;
         AZ::Vector2 GetMajorPitch() const override;
 
@@ -152,13 +152,11 @@ namespace GraphModelIntegration
         ////////////////////////////////////////////////////////////////////////////////////
         // GraphCanvas::GraphModelRequestBus, undo
 
-        // CJS TODO: I put this stuff in to handle making the file as dirty, but it looks like I might be able to get OnSaveDataDirtied to do that instead.
         void RequestUndoPoint() override;
         void RequestPushPreventUndoStateUpdate() override;
         void RequestPopPreventUndoStateUpdate() override;
-        void TriggerUndo() override {}
-        void TriggerRedo() override {}
-
+        void TriggerUndo() override;
+        void TriggerRedo() override;
 
         ////////////////////////////////////////////////////////////////////////////////////
         // GraphCanvas::GraphModelRequestBus, other
@@ -166,7 +164,7 @@ namespace GraphModelIntegration
         void EnableNodes(const AZStd::unordered_set<GraphCanvas::NodeId>& nodeIds) override;
         void DisableNodes(const AZStd::unordered_set<GraphCanvas::NodeId>& nodeIds) override;
 
-        AZStd::string GetDataTypeString(const AZ::Uuid& typeId);
+        AZStd::string GetDataTypeString(const AZ::Uuid& typeId) override;
 
         //! This is where we find all of the graph metadata (like node positions, comments, etc) and store it in the node graph for serialization
         // CJS TODO: Use this instead of the above undo functions
@@ -281,6 +279,7 @@ namespace GraphModelIntegration
         AZStd::unordered_map<GraphCanvas::NodeId, AZStd::unordered_map<GraphCanvas::ExtenderId, GraphModel::SlotName>> m_nodeExtenderIds;
 
         bool m_isCreatingConnectionUi = false;
+        int m_preventUndoStateUpdateCount = 0;
     };
        
 

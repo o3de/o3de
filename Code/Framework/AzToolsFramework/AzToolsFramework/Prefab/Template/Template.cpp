@@ -66,7 +66,16 @@ namespace AzToolsFramework
 
         bool Template::IsValid() const
         {
-            return !m_prefabDom.IsNull() && !m_filePath.empty();
+            if (m_prefabDom.IsNull() || m_filePath.empty())
+            {
+                return false;
+            }
+            else if (!m_prefabDom.IsObject())
+            {
+                return false;
+            }
+            auto source = m_prefabDom.FindMember(PrefabDomUtils::SourceName);
+            return (source != m_prefabDom.MemberEnd());
         }
 
         bool Template::IsLoadedWithErrors() const
@@ -175,10 +184,34 @@ namespace AzToolsFramework
             return findInstancesResult->get();
         }
 
+        bool Template::IsProcedural() const
+        {
+            if (m_isProcedural.has_value())
+            {
+                return m_isProcedural.value();
+            }
+            else if (!IsValid())
+            {
+                return false;
+            }
+            auto source = m_prefabDom.FindMember(PrefabDomUtils::SourceName);
+            if (!source->value.IsString())
+            {
+                return false;
+            }
+            AZ::IO::PathView path(source->value.GetString());
+            m_isProcedural = AZStd::make_optional(path.Extension().Match(".procprefab"));
+            return m_isProcedural.value();
+        }
+
         const AZ::IO::Path& Template::GetFilePath() const
         {
             return m_filePath;
         }
 
+        void Template::SetFilePath(const AZ::IO::PathView& path)
+        {
+            m_filePath = path;
+        }
     } // namespace Prefab
 } // namespace AzToolsFramework

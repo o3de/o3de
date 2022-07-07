@@ -9,6 +9,7 @@
 #include <PhysXCharacters/Components/CharacterGameplayComponent.h>
 #include <AzFramework/Physics/CharacterBus.h>
 #include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
+#include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <PhysX/PhysXLocks.h>
 #include <PhysX/Utils.h>
@@ -32,7 +33,7 @@ namespace PhysX
                     "PhysX Character Gameplay Configuration", "PhysX Character Gameplay Configuration")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &CharacterGameplayConfiguration::m_gravityMultiplier,
-                        "Gravity Multiplier", "Multiplier to be combined with the world gravity value for applying character gravity")
+                        "Gravity Multiplier", "Multiplier for global gravity value that applies only to this character entity.")
                     ->Attribute(AZ::Edit::Attributes::Step, 0.1f)
                     ;
             }
@@ -41,18 +42,18 @@ namespace PhysX
 
     void CharacterGameplayComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("PhysXCharacterGameplayService", 0xfacd7876));
+        provided.push_back(AZ_CRC_CE("PhysicsCharacterGameplayService"));
     }
 
     void CharacterGameplayComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("PhysXCharacterGameplayService", 0xfacd7876));
+        incompatible.push_back(AZ_CRC_CE("PhysicsCharacterGameplayService"));
         incompatible.push_back(AZ_CRC_CE("NonUniformScaleService"));
     }
 
     void CharacterGameplayComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC("PhysXCharacterControllerService", 0x428de4fa));
+        required.push_back(AZ_CRC_CE("PhysicsCharacterControllerService"));
     }
 
     void CharacterGameplayComponent::GetDependentServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& dependent)

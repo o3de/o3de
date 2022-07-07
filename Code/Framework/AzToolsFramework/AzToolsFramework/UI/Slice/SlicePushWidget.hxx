@@ -235,7 +235,7 @@ namespace AzToolsFramework
         void PopulateFieldTreeRemovedEntities();
 
         /// Event filter for key presses.
-        bool eventFilter(QObject* target, QEvent *event);
+        bool eventFilter(QObject* target, QEvent *event) override;
 
         /// Conduct the push operation for all selected fields.
         bool PushSelectedFields();

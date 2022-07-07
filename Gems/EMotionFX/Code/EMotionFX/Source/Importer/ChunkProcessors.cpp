@@ -16,7 +16,7 @@
 #include <AzCore/Serialization/Json/RegistrationContext.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
 #include <AzCore/Serialization/Json/JsonSerializationResult.h>
-#include <AzFramework/FileFunc/FileFunc.h>
+#include <AzCore/Serialization/Json/JsonUtils.h>
 
 #include <EMotionFX/Source/Parameter/GroupParameter.h>
 #include <EMotionFX/Source/Parameter/ParameterFactory.h>
@@ -44,7 +44,6 @@
 #include "../MotionEventTable.h"
 #include "../Skeleton.h"
 #include "../AnimGraph.h"
-#include "../AnimGraphGameControllerSettings.h"
 #include "../AnimGraphManager.h"
 #include "../AnimGraphObjectFactory.h"
 #include "../AnimGraphNode.h"
@@ -1081,11 +1080,11 @@ namespace EMotionFX
         file->Read(&buffer[0], fileEventTable.m_size);
         AZStd::string_view bufferStringView(&buffer[0], buffer.size());
 
-        auto readJsonOutcome = AzFramework::FileFunc::ReadJsonFromString(bufferStringView);
+        auto readJsonOutcome = AZ::JsonSerializationUtils::ReadJsonString(bufferStringView);
         AZStd::string errorMsg;
         if (!readJsonOutcome.IsSuccess())
         {
-            AZ_Error("EMotionFX", false, "Loading motion event table failed due to ReadJsonFromString. %s", readJsonOutcome.TakeError().c_str());
+            AZ_Error("EMotionFX", false, "Loading motion event table failed due to ReadJsonString. %s", readJsonOutcome.TakeError().c_str());
             return false;
         }
         rapidjson::Document document = readJsonOutcome.TakeValue();
@@ -1585,9 +1584,6 @@ namespace EMotionFX
             // get the expression name
             const char* morphTargetName = SharedHelperData::ReadString(file, importParams.m_sharedData, endianType);
 
-            // get the level of detail of the expression part
-            const uint32 morphTargetLOD = morphTargetChunk.m_lod;
-
             if (GetLogging())
             {
                 MCore::LogDetailedInfo("  + Morph Target:");
@@ -1731,9 +1727,6 @@ namespace EMotionFX
 
             // get the expression name
             const char* morphTargetName = SharedHelperData::ReadString(file, importParams.m_sharedData, endianType);
-
-            // get the level of detail of the expression part
-            const uint32 morphTargetLOD = morphTargetChunk.m_lod;
 
             if (GetLogging())
             {

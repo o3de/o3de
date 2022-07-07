@@ -17,8 +17,10 @@ set(FILES
     Asset/MockLoadAssetCatalogAndHandler.h
     Asset/TestAssetTypes.h
     AssetJsonSerializerTests.cpp
+    EBus/EBusSharedDispatchMutexTests.cpp
     EBus/ScheduledEventTests.cpp
     AssetManager.cpp
+    AttributeDomInteropTests.cpp
     TestCatalog.h
     TestCatalog.cpp
     AssetSerializerTests.cpp
@@ -37,6 +39,7 @@ set(FILES
     FileIOBaseTestTypes.h
     Geometry2DUtils.cpp
     Interface.cpp
+    IO/FileReaderTests.cpp
     IO/Path/PathTests.cpp
     IPC.cpp
     Jobs.cpp
@@ -60,6 +63,9 @@ set(FILES
     Slice.cpp
     State.cpp
     Statistics.cpp
+    StatisticalProfilerBenchmarks.cpp
+    StatisticalProfilerHelpers.h
+    StatisticalProfilerTests.cpp
     StreamerTests.cpp
     StringFunc.cpp
     SystemFile.cpp
@@ -67,17 +73,20 @@ set(FILES
     TickBusTest.cpp
     UUIDTests.cpp
     XML.cpp
-    Debug/AssetTracking.cpp
     Debug/LocalFileEventLoggerTests.cpp
     Debug/Trace.cpp
+    Debug/UnhandledExceptions.cpp
     Name/NameJsonSerializerTests.cpp
+    Name/NameBenchmarks.cpp
     Name/NameTests.cpp
     RTTI/TypeSafeIntegralTests.cpp
-    SettingsRegistryTests.cpp
-    SettingsRegistryMergeUtilsTests.cpp
     Settings/CommandLineTests.cpp
+    Settings/ConfigurableStackTests.cpp
+    Settings/SettingsRegistryTests.cpp
     Settings/SettingsRegistryConsoleUtilsTests.cpp
+    Settings/SettingsRegistryMergeUtilsTests.cpp
     Settings/SettingsRegistryScriptUtilsTests.cpp
+    Settings/SettingsRegistryVisitorUtilsTests.cpp
     Streamer/BlockCacheTests.cpp
     Streamer/DedicatedCacheTests.cpp
     Streamer/FullDecompressorTests.cpp
@@ -108,6 +117,7 @@ set(FILES
     Serialization/Json/MapSerializerTests.cpp
     Serialization/Json/MathVectorSerializerTests.cpp
     Serialization/Json/MathMatrixSerializerTests.cpp
+    Serialization/Json/PathSerializerTests.cpp
     Serialization/Json/SmartPointerSerializerTests.cpp
     Serialization/Json/StringSerializerTests.cpp
     Serialization/Json/TestCases.h
@@ -117,6 +127,7 @@ set(FILES
     Serialization/Json/TestCases_Classes.cpp
     Serialization/Json/TestCases_Compare.cpp
     Serialization/Json/TestCases_Enum.cpp
+    Serialization/Json/TestCases_Importing.cpp
     Serialization/Json/TestCases_Patching.cpp
     Serialization/Json/TestCases_Pointers.h
     Serialization/Json/TestCases_Pointers.cpp
@@ -126,14 +137,21 @@ set(FILES
     Serialization/Json/UnorderedSetSerializerTests.cpp
     Serialization/Json/UnsupportedTypesSerializerTests.cpp
     Serialization/Json/UuidSerializerTests.cpp
+    Time/TimeTests.cpp
     Math/AabbTests.cpp
+    Math/CapsuleTests.cpp
     Math/ColorTests.cpp
     Math/CrcTests.cpp
     Math/CrcTestsCompileTimeLiterals.h
     Math/FrustumTests.cpp
     Math/FrustumPerformanceTests.cpp
+    Math/IntersectionPerformanceTests.cpp
+    Math/IntersectionTestHelpers.cpp
+    Math/IntersectionTestHelpers.h
     Math/IntersectionTests.cpp
     Math/MathIntrinsicsTests.cpp
+    Math/IntersectPointTest.cpp
+    Math/MathStringsTests.cpp
     Math/MathUtilsTests.cpp
     Math/Matrix3x3PerformanceTests.cpp
     Math/Matrix3x3Tests.cpp
@@ -142,6 +160,7 @@ set(FILES
     Math/Matrix4x4PerformanceTests.cpp
     Math/Matrix4x4Tests.cpp
     Math/MatrixUtilsTests.cpp
+    Math/MathTest.h
     Math/MathTestData.h
     Math/ObbPerformanceTests.cpp
     Math/ObbTests.cpp
@@ -155,6 +174,8 @@ set(FILES
     Math/SfmtTests.cpp
     Math/SimdMathTests.cpp
     Math/SphereTests.cpp
+    Math/RayTests.cpp
+    Math/LineSegmentTests.cpp
     Math/SplineTests.cpp
     Math/TransformPerformanceTests.cpp
     Math/TransformTests.cpp
@@ -164,6 +185,7 @@ set(FILES
     Math/Vector3Tests.cpp
     Math/Vector4PerformanceTests.cpp
     Math/Vector4Tests.cpp
+    Memory/AllocatorBenchmarks.cpp
     Memory/AllocatorManager.cpp
     Memory/HphaSchema.cpp
     Memory/HphaSchemaErrorDetection.cpp
@@ -174,6 +196,7 @@ set(FILES
     AZStd/Atomics.cpp
     AZStd/Any.cpp
     AZStd/Bitset.cpp
+    AZStd/ConceptsTests.cpp
     AZStd/CreateDestroy.cpp
     AZStd/ConcurrentAllocators.cpp
     AZStd/ConcurrentContainers.cpp
@@ -191,14 +214,19 @@ set(FILES
     AZStd/LockFreeQueues.cpp
     AZStd/LockFreeStacks.cpp
     AZStd/LockTests.cpp
+    AZStd/Math.cpp
     AZStd/Numeric.cpp
     AZStd/Ordered.cpp
     AZStd/Optional.cpp
     AZStd/Pair.cpp
     AZStd/Parallel.cpp
+    AZStd/RangesAlgorithmTests.cpp
+    AZStd/RangesTests.cpp
+    AZStd/RangesViewTests.cpp
     AZStd/ScopedLockTests.cpp
     AZStd/SetsIntrusive.cpp
     AZStd/SmartPtr.cpp
+    AZStd/SpanTests.cpp
     AZStd/String.cpp
     AZStd/TypeTraits.cpp
     AZStd/Tuple.cpp
@@ -206,10 +234,23 @@ set(FILES
     AZStd/Variant.cpp
     AZStd/VariantSerialization.cpp
     AZStd/VectorAndArray.cpp
+    DOM/DomFixtures.cpp
+    DOM/DomFixtures.h
+    DOM/DomJsonTests.cpp
+    DOM/DomJsonBenchmarks.cpp
+    DOM/DomPathTests.cpp
+    DOM/DomPathBenchmarks.cpp
+    DOM/DomPatchTests.cpp
+    DOM/DomPatchBenchmarks.cpp
+    DOM/DomValueTests.cpp
+    DOM/DomValueBenchmarks.cpp
+    DOM/DomPrefixTreeTests.cpp
+    DOM/DomPrefixTreeBenchmarks.cpp
 )
 
 # Prevent the following files from being grouped in UNITY builds
 set(SKIP_UNITY_BUILD_INCLUSION_FILES
+    EnumTests.cpp
     Memory/HphaSchema.cpp
     Memory/HphaSchemaErrorDetection.cpp
 )

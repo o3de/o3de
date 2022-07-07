@@ -67,7 +67,7 @@ namespace AzFramework
         bool InsertDeltaCatalogBefore(AZStd::shared_ptr<AzFramework::AssetRegistry> deltaCatalog, AZStd::shared_ptr<AzFramework::AssetRegistry> afterDeltaCatalog) override;
         bool RemoveDeltaCatalog(AZStd::shared_ptr<AzFramework::AssetRegistry> deltaCatalog) override;
         static bool SaveAssetBundleManifest(const char* assetBundleManifestFile, AzFramework::AssetBundleManifest* bundleManifest);
-        bool CreateBundleManifest(const AZStd::string& deltaCatalogPath, const AZStd::vector<AZStd::string>& dependentBundleNames, const AZStd::string& fileDirectory, int bundleVersion, const AZStd::vector<AZStd::string>& levelDirs) override;
+        bool CreateBundleManifest(const AZStd::string& deltaCatalogPath, const AZStd::vector<AZStd::string>& dependentBundleNames, const AZStd::string& fileDirectory, int bundleVersion, const AZStd::vector<AZ::IO::Path>& levelDirs) override;
         bool CreateDeltaCatalog(const AZStd::vector<AZStd::string>& files, const AZStd::string& filePath) override;
         void AddExtension(const char* extension) override;
 
@@ -134,7 +134,6 @@ namespace AzFramework
 
         AZStd::atomic_bool m_shutdownThreadSignal;                  ///< Signals the monitoring thread to stop.
         AZStd::thread m_thread;                                     ///< Monitoring thread
-        AZStd::string m_assetRoot;                                  ///< Asset root the catalog is bound to.
         AZStd::unordered_set<AZStd::string> m_extensions;           ///< Valid asset extensions.
         mutable AZStd::recursive_mutex m_registryMutex;
         AZStd::unique_ptr<AssetRegistry> m_registry;

@@ -7,7 +7,6 @@
  */
 #pragma once
 
-#include <IRenderer.h>
 #include <LyShine/ILyShine.h>
 #include <LyShine/Bus/UiCursorBus.h>
 #include <AzCore/Math/Vector2.h>
@@ -38,7 +37,6 @@ struct IConsoleCmdArgs;
 //! CLyShine is the full implementation of the ILyShine interface
 class CLyShine
     : public ILyShine
-    , public IRenderDebugListener
     , public UiCursorBus::Handler
     , public AzFramework::InputChannelEventListener
     , public AzFramework::InputTextEventListener
@@ -50,7 +48,7 @@ class CLyShine
 public:
 
     //! Create the LyShine object, the given system pointer is stored internally
-    CLyShine(ISystem* system);
+    CLyShine();
 
     // ILyShine
 
@@ -72,8 +70,9 @@ public:
     void ReleaseCanvasDeferred(AZ::EntityId canvas) override;
 
     ISprite* LoadSprite(const AZStd::string& pathname) override;
-    ISprite* CreateSprite(const AZStd::string& renderTargetName) override;
+    ISprite* CreateSprite(const AZ::Data::Asset<AZ::RPI::AttachmentImageAsset>& attachmentImageAsset) override;
     bool DoesSpriteTextureAssetExist(const AZStd::string& pathname) override;
+    AZ::Data::Instance<AZ::RPI::Image> LoadTexture(const AZStd::string& pathname) override;
 
     void PostInit() override;
 
@@ -87,13 +86,6 @@ public:
     void OnLoadScreenUnloaded() override;
 
     // ~ILyShine
-
-    // IRenderDebugListener
-
-    //! Renders any debug displays currently enabled for the UI system
-    void OnDebugDraw() override;
-
-    // ~IRenderDebugListener
 
     // UiCursorInterface
     void IncrementVisibleCounter() override;
@@ -154,8 +146,6 @@ private:  // static member functions
 #endif
 
 private: // data
-
-    ISystem* m_system;     // store a pointer to system rather than relying on env.pSystem
 
     std::unique_ptr<CDraw2d> m_draw2d;  // using a pointer rather than an instance to avoid including Draw2d.h
     std::unique_ptr<UiRenderer> m_uiRenderer;  // using a pointer rather than an instance to avoid including UiRenderer.h

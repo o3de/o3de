@@ -52,7 +52,7 @@ class Dashboard:
                 max_width=aws_metrics_constants.DASHBOARD_MAX_WIDGET_WIDTH)
         )
 
-        dashboard_output = core.CfnOutput(
+        core.CfnOutput(
             stack,
             id='DashboardName',
             description='CloudWatch dashboard to monitor the operational health and real-time metrics',

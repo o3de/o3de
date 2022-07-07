@@ -140,7 +140,7 @@ namespace AZ {
     SymRegisterCallback64_t     g_SymRegisterCallback64;
     HMODULE                     g_dbgHelpDll;
 
-#define LOAD_FUNCTION(A)    { g_##A = (A##_t)GetProcAddress(g_dbgHelpDll, #A); AZ_Assert(g_##A != 0, ("Can not load %s function!",#A)); }
+#define LOAD_FUNCTION(A)    { g_##A = (A##_t)GetProcAddress(g_dbgHelpDll, #A); AZ_Assert(g_##A != 0, "Can not load %s function!",#A); }
 
     using namespace AZ::Debug;
 
@@ -596,7 +596,7 @@ namespace AZ {
                 result = GetLastError();
             }
             ULONGLONG fileVersion = 0;
-            if (szImg != NULL)
+            if (szImg[0]) // !szImg.empty()
             {
                 // try to retrieve the file-version:
                 VS_FIXEDFILEINFO* fInfo = NULL;
@@ -621,43 +621,6 @@ namespace AZ {
                             }
                         }
                         free(vData);
-                    }
-                }
-
-                // Retrive some additional-infos about the module
-                IMAGEHLP_MODULE64 Module;
-                const char* szSymType = "-unknown-";
-                if (GetModuleInfo(hProcess, baseAddr, &Module) != FALSE)
-                {
-                    switch (Module.SymType)
-                    {
-                    case SymNone:
-                        szSymType = "-nosymbols-";
-                        break;
-                    case SymCoff:
-                        szSymType = "COFF";
-                        break;
-                    case SymCv:
-                        szSymType = "CV";
-                        break;
-                    case SymPdb:
-                        szSymType = "PDB";
-                        break;
-                    case SymExport:
-                        szSymType = "-exported-";
-                        break;
-                    case SymDeferred:
-                        szSymType = "-deferred-";
-                        break;
-                    case SymSym:
-                        szSymType = "SYM";
-                        break;
-                    case 8: //SymVirtual:
-                        szSymType = "Virtual";
-                        break;
-                    case 9: // SymDia:
-                        szSymType = "DIA";
-                        break;
                     }
                 }
 
@@ -1048,9 +1011,9 @@ cleanup:
     unsigned int
     StackRecorder::Record(StackFrame* frames, unsigned int maxNumOfFrames, unsigned int suppressCount, void* nativeThread)
     {
-#if defined(AZ_ENABLE_DEBUG_TOOLS)
         unsigned int numFrames = 0;
 
+#if defined(AZ_ENABLE_DEBUG_TOOLS)
         if (nativeThread == NULL)
         {
             ++suppressCount; // Skip current call
@@ -1073,15 +1036,14 @@ cleanup:
             }
 
             HANDLE hThread = nativeThread;
-            CONTEXT alignas(8) context; // Without this alignment the function randomly crashes in release.
+            alignas(alignof(CONTEXT)) CONTEXT context; // Without this alignment the function randomly crashes in release.
             context.ContextFlags = CONTEXT_ALL;
             GetThreadContext(hThread, &context);
 
             STACKFRAME64 sf;
             memset(&sf, 0, sizeof(STACKFRAME64));
-            DWORD imageType;
+            DWORD imageType = IMAGE_FILE_MACHINE_AMD64;
 
-            imageType = IMAGE_FILE_MACHINE_AMD64;
             sf.AddrPC.Offset = context.Rip;
             sf.AddrPC.Mode = AddrModeFlat;
             sf.AddrFrame.Offset = context.Rsp;
@@ -1090,8 +1052,7 @@ cleanup:
             sf.AddrStack.Mode = AddrModeFlat;
 
             EnterCriticalSection(&g_csDbgHelpDll);
-            s32 frame = -(s32)suppressCount;
-            for (; frame < (s32)maxNumOfFrames; ++frame)
+            for (s32 frame = -static_cast<s32>(suppressCount); frame < static_cast<s32>(maxNumOfFrames); ++frame)
             {
                 if (!g_StackWalk64(imageType, g_currentProcess, hThread, &sf, &context, 0, g_SymFunctionTableAccess64, g_SymGetModuleBase64, 0))
                 {
@@ -1111,15 +1072,68 @@ cleanup:
             }
 
             LeaveCriticalSection(&g_csDbgHelpDll);
-        }
-        return numFrames;
+        }        
 #else
-        (void)frames;
-        (void)maxNumOfFrames;
-        (void)suppressCount;
-        (void)nativeThread;
-        return 0;
+        AZ_UNUSED(frames);
+        AZ_UNUSED(maxNumOfFrames);
+        AZ_UNUSED(suppressCount);
+        AZ_UNUSED(nativeThread);
 #endif // AZ_ENABLE_DEBUG_TOOLS
+
+        return numFrames;
+    }
+
+    unsigned int StackConverter::FromNative(StackFrame* frames, unsigned int maxNumOfFrames, void* nativeContext)
+    {
+        unsigned int numFrames = 0;
+
+#if defined(AZ_ENABLE_DEBUG_TOOLS)
+        if (!g_dbgHelpLoaded)
+        {
+            LoadDbgHelp();
+        }
+
+        HANDLE hThread;
+        DuplicateHandle(GetCurrentProcess(), GetCurrentThread(), GetCurrentProcess(), &hThread, 0, false, DUPLICATE_SAME_ACCESS);       
+
+        PCONTEXT nativeContextType = reinterpret_cast<PCONTEXT>(nativeContext);
+        STACKFRAME64 sf;
+        memset(&sf, 0, sizeof(STACKFRAME64));
+
+        DWORD imageType = IMAGE_FILE_MACHINE_AMD64;
+
+        sf.AddrPC.Offset = nativeContextType->Rip;
+        sf.AddrPC.Mode = AddrModeFlat;
+        sf.AddrFrame.Offset = nativeContextType->Rsp;
+        sf.AddrFrame.Mode = AddrModeFlat;
+        sf.AddrStack.Offset = nativeContextType->Rsp;
+        sf.AddrStack.Mode = AddrModeFlat;
+
+        EnterCriticalSection(&g_csDbgHelpDll);
+        for (unsigned int frame = 0; frame < maxNumOfFrames; ++frame)
+        {
+            if (!g_StackWalk64(imageType, g_currentProcess, hThread, &sf, nativeContext, 0, g_SymFunctionTableAccess64, g_SymGetModuleBase64, 0))
+            {
+                break;
+            }
+
+            if (sf.AddrPC.Offset == sf.AddrReturn.Offset)
+            {
+                // "StackWalk64-Endless-Callstack!"
+                break;
+            }
+
+            frames[numFrames++].m_programCounter = sf.AddrPC.Offset;
+        }
+
+        LeaveCriticalSection(&g_csDbgHelpDll);
+#else
+        AZ_UNUSED(frames);
+        AZ_UNUSED(maxNumOfFrames);
+        AZ_UNUSED(nativeContext);
+#endif
+
+        return numFrames;
     }
 
     //////////////////////////////////////////////////////////////////////////

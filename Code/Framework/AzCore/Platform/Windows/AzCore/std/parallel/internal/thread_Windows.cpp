@@ -16,9 +16,10 @@ namespace AZStd
 {
     namespace Platform
     {
-        void PostThreadRun()
+        unsigned __stdcall PostThreadRun()
         {
             _endthreadex(0);
+            return 0;
         }
 
         HANDLE CreateThread(unsigned stackSize, unsigned (__stdcall* threadRunFunction)(void*), AZStd::Internal::thread_info* ti, unsigned int* id)

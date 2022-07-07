@@ -488,11 +488,12 @@ void CUiAnimViewSequence::SelectSelectedNodesInViewport()
     assert(UiAnimUndo::IsRecording());
 
     CUiAnimViewAnimNodeBundle selectedNodes = GetSelectedAnimNodes();
-    const unsigned int numSelectedNodes = selectedNodes.GetCount();
 
     std::vector<CBaseObject*> entitiesToBeSelected;
 
 #if UI_ANIMATION_REMOVED // lights
+    const unsigned int numSelectedNodes = selectedNodes.GetCount();
+
     // Also select objects that refer to light animation
     const bool bLightAnimationSetActive = GetFlags() & IUiAnimSequence::eSeqFlags_LightAnimationSet;
     if (bLightAnimationSetActive)

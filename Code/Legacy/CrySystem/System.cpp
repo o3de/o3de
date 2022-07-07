@@ -16,22 +16,25 @@
 #include <AzCore/Console/Console.h>
 #include <AzCore/IO/IStreamer.h>
 #include <AzCore/IO/SystemFile.h>
-#include "CryLibrary.h"
+#include <AzCore/Debug/Budget.h>
 #include <CryPath.h>
 #include <CrySystemBus.h>
 #include <CryCommon/IFont.h>
+#include <CryCommon/MiniQueue.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/API/ApplicationAPI_Platform.h>
 #include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>
 #include <AzCore/Debug/Profiler.h>
-#include <AzCore/Debug/EventTrace.h>
 #include <AzCore/Debug/Trace.h>
 #include <AzCore/Debug/IEventLogger.h>
 #include <AzCore/Interface/Interface.h>
+#include <AzCore/std/algorithm.h>
+#include <AzCore/Time/ITime.h>
 #include <AzFramework/Logging/MissingAssetLogger.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <AzCore/Interface/Interface.h>
 
+AZ_DEFINE_BUDGET(CrySystem);
 
 #if defined(AZ_RESTRICTED_PLATFORM)
 #undef AZ_RESTRICTED_SECTION
@@ -113,8 +116,6 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 #include <IMovieSystem.h>
 #include <ILog.h>
 #include <IAudioSystem.h>
-#include <IProcess.h>
-#include <LyShine/ILyShine.h>
 
 #include <LoadScreenBus.h>
 
@@ -123,28 +124,21 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 #include "Log.h"
 
 #include "XML/xml.h"
-#include "XML/ReadWriteXMLSink.h"
 
 #include "LocalizedStringManager.h"
 #include "XML/XmlUtils.h"
 #include "SystemEventDispatcher.h"
-#include "HMDBus.h"
 
-#include "zlib.h"
 #include "RemoteConsole/RemoteConsole.h"
 
 #include <PNoise3.h>
 
-#include <LyShine/Bus/UiCursorBus.h>
 #include <AzFramework/Asset/AssetSystemBus.h>
 #include <AzFramework/Input/Buses/Requests/InputSystemRequestBus.h>
 
 #ifdef WIN32
 
 #include <AzFramework/Input/Buses/Notifications/RawInputNotificationBus_Platform.h>
-
-// To enable profiling with vtune (https://software.intel.com/en-us/intel-vtune-amplifier-xe), make sure the line below is not commented out
-//#define  PROFILE_WITH_VTUNE
 
 #include <process.h>
 #include <malloc.h>
@@ -154,86 +148,29 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 #include <AzFramework/IO/LocalFileIO.h>
 
-// profilers api.
-VTuneFunction VTResume = NULL;
-VTuneFunction VTPause = NULL;
-
 // Define global cvars.
 SSystemCVars g_cvars;
-
-#include <IViewSystem.h>
 
 #include <AzCore/Module/Environment.h>
 #include <AzCore/Component/ComponentApplication.h>
 #include "AZCoreLogSink.h"
 
-#if defined(ANDROID)
 namespace
 {
-    struct Callstack
+    float GetMovieFrameDeltaTime()
     {
-        Callstack()
-            : addrs(NULL)
-            , ignore(0)
-            , count(0)
-        {
-        }
-        Callstack(void** addrs, size_t ignore, size_t count)
-        {
-            this->addrs = addrs;
-            this->ignore = ignore;
-            this->count = count;
-        }
-        void** addrs;
-        size_t ignore;
-        size_t count;
-    };
-
-    static _Unwind_Reason_Code trace_func(struct _Unwind_Context* context, void* arg)
-    {
-        Callstack* cs = static_cast<Callstack*>(arg);
-        if (cs->count)
-        {
-            void* ip = (void*) _Unwind_GetIP(context);
-            if (ip)
-            {
-                if (cs->ignore)
-                {
-                    cs->ignore--;
-                }
-                else
-                {
-                    cs->addrs[0] = ip;
-                    cs->addrs++;
-                    cs->count--;
-                }
-            }
-        }
-        return _URC_NO_REASON;
-    }
-
-    static int Backtrace(void** addrs, size_t ignore, size_t size)
-    {
-        Callstack cs(addrs, ignore, size);
-        _Unwind_Backtrace(trace_func, (void*) &cs);
-        return size - cs.count;
+        // Use GetRealTickDeltaTimeUs for CryMovie, because it should not be affected by pausing game time
+        const AZ::TimeUs delta = AZ::GetRealTickDeltaTimeUs();
+        return AZ::TimeUsToSeconds(delta);
     }
 }
-#endif
 
 /////////////////////////////////////////////////////////////////////////////////
 // System Implementation.
 //////////////////////////////////////////////////////////////////////////
-CSystem::CSystem(SharedEnvironmentInstance* pSharedEnvironment)
+CSystem::CSystem()
 {
     CrySystemRequestBus::Handler::BusConnect();
-
-    if (!pSharedEnvironment)
-    {
-        CryFatalError("No shared environment instance provided. "
-            "Cross-module sharing of EBuses and allocators "
-            "is not possible.");
-    }
 
     m_systemGlobalState = ESYSTEM_GLOBAL_STATE_UNKNOWN;
     m_iHeight = 0;
@@ -257,47 +194,22 @@ CSystem::CSystem(SharedEnvironmentInstance* pSharedEnvironment)
     //////////////////////////////////////////////////////////////////////////
     // Initialize global environment interface pointers.
     m_env.pSystem = this;
-    m_env.pTimer = &m_Time;
     m_env.bIgnoreAllAsserts = false;
     m_env.bNoAssertDialog = false;
 
-    m_env.pSharedEnvironment = pSharedEnvironment;
     //////////////////////////////////////////////////////////////////////////
 
-    m_pIFont = NULL;
-    m_pIFontUi = NULL;
-    m_rWidth = NULL;
-    m_rHeight = NULL;
-    m_rWidthAndHeightAsFractionOfScreenSize = NULL;
-    m_rMaxWidth = NULL;
-    m_rMaxHeight = NULL;
-    m_rColorBits = NULL;
-    m_rDepthBits = NULL;
-    m_cvSSInfo = NULL;
-    m_rStencilBits = NULL;
-    m_rFullscreen = NULL;
     m_sysNoUpdate = NULL;
-    m_pProcess = NULL;
     m_pCmdLine = NULL;
     m_pLevelSystem = NULL;
-    m_pViewSystem = NULL;
     m_pLocalizationManager = NULL;
 #if defined(AZ_RESTRICTED_PLATFORM)
 #define AZ_RESTRICTED_SECTION SYSTEM_CPP_SECTION_2
 #include AZ_RESTRICTED_FILE(System_cpp)
 #endif
-    m_sys_min_step = 0;
-    m_sys_max_step = 0;
-
-    m_cvAIUpdate = NULL;
 
     m_pUserCallback = NULL;
-    m_sys_memory_debug = NULL;
-    m_sysWarnings = NULL;
-    m_sysKeyboard = NULL;
     m_sys_firstlaunch = NULL;
-    m_sys_enable_budgetmonitoring = NULL;
-    m_sys_preload = NULL;
 
     //  m_sys_filecache = NULL;
     m_gpu_particle_physics = NULL;
@@ -312,22 +224,11 @@ CSystem::CSystem(SharedEnvironmentInstance* pSharedEnvironment)
     m_bNoCrashDialog = false;
     m_bNoErrorReportWindow = false;
 
-    m_pCVarQuit = NULL;
-
-    m_bForceNonDevMode = false;
-    m_bWasInDevMode = false;
     m_bInDevMode = false;
     m_bGameFolderWritable = false;
 
-    m_bDrawConsole = true;
-    m_bDrawUI = true;
-
-    m_nServerConfigSpec = CONFIG_VERYHIGH_SPEC;
-    m_nMaxConfigSpec = CONFIG_VERYHIGH_SPEC;
-
     m_bPaused = false;
     m_bNoUpdate = false;
-    m_nUpdateCounter = 0;
     m_iApplicationInstance = -1;
 
 
@@ -349,7 +250,6 @@ CSystem::CSystem(SharedEnvironmentInstance* pSharedEnvironment)
 
     m_bHasRenderedErrorMessage = false;
 
-    m_pDataProbe = nullptr;
 #if AZ_LEGACY_CRYSYSTEM_TRAIT_USE_MESSAGE_HANDLER
     RegisterWindowMessageHandler(this);
 #endif
@@ -383,8 +283,6 @@ CSystem::~CSystem()
         AZ::AllocatorInstance<AZ::OSAllocator>::Destroy();
     }
 
-    AZ::Environment::Detach();
-
     m_env.pSystem = 0;
     gEnv = 0;
 }
@@ -392,23 +290,7 @@ CSystem::~CSystem()
 //////////////////////////////////////////////////////////////////////////
 void CSystem::Release()
 {
-    //Disconnect the render bus
-    AZ::RenderNotificationsBus::Handler::BusDisconnect();
-
     delete this;
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CSystem::FreeLib(AZStd::unique_ptr<AZ::DynamicModuleHandle>& hLibModule)
-{
-    if (hLibModule)
-    {
-        if (hLibModule->IsLoaded())
-        {
-            hLibModule->Unload();
-        }
-        hLibModule.release();
-    }
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -418,28 +300,8 @@ IRemoteConsole* CSystem::GetIRemoteConsole()
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CSystem::SetForceNonDevMode(const bool bValue)
-{
-    m_bForceNonDevMode = bValue;
-    if (bValue)
-    {
-        SetDevMode(false);
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
-bool CSystem::GetForceNonDevMode() const
-{
-    return m_bForceNonDevMode;
-}
-
-//////////////////////////////////////////////////////////////////////////
 void CSystem::SetDevMode(bool bEnable)
 {
-    if (bEnable)
-    {
-        m_bWasInDevMode = true;
-    }
     m_bInDevMode = bEnable;
 }
 
@@ -499,23 +361,12 @@ void CSystem::ShutDown()
         m_pSystemEventDispatcher->OnSystemEvent(ESYSTEM_EVENT_FULL_SHUTDOWN, 0, 0);
     }
 
-    // Shutdown any running VR devices.
-    EBUS_EVENT(AZ::VR::HMDInitRequestBus, Shutdown);
-
-    if (gEnv && gEnv->pLyShine)
-    {
-        gEnv->pLyShine->Release();
-        gEnv->pLyShine = nullptr;
-    }
-
     SAFE_RELEASE(m_env.pMovieSystem);
-    SAFE_RELEASE(m_env.pLyShine);
     SAFE_RELEASE(m_env.pCryFont);
     if (m_env.pConsole)
     {
         ((CXConsole*)m_env.pConsole)->FreeRenderResources();
     }
-    SAFE_RELEASE(m_pViewSystem);
     SAFE_RELEASE(m_pLevelSystem);
 
     if (m_env.pLog)
@@ -527,30 +378,12 @@ void CSystem::ShutDown()
 
     // Release console variables.
 
-    SAFE_RELEASE(m_pCVarQuit);
-    SAFE_RELEASE(m_rWidth);
-    SAFE_RELEASE(m_rHeight);
-    SAFE_RELEASE(m_rWidthAndHeightAsFractionOfScreenSize);
-    SAFE_RELEASE(m_rMaxWidth);
-    SAFE_RELEASE(m_rMaxHeight);
-    SAFE_RELEASE(m_rColorBits);
-    SAFE_RELEASE(m_rDepthBits);
-    SAFE_RELEASE(m_cvSSInfo);
-    SAFE_RELEASE(m_rStencilBits);
-    SAFE_RELEASE(m_rFullscreen);
-
-    SAFE_RELEASE(m_sysWarnings);
-    SAFE_RELEASE(m_sysKeyboard);
     SAFE_RELEASE(m_sys_firstlaunch);
-    SAFE_RELEASE(m_sys_enable_budgetmonitoring);
 
 #if defined(AZ_RESTRICTED_PLATFORM)
 #define AZ_RESTRICTED_SECTION SYSTEM_CPP_SECTION_3
 #include AZ_RESTRICTED_FILE(System_cpp)
 #endif
-
-    SAFE_RELEASE(m_sys_min_step);
-    SAFE_RELEASE(m_sys_max_step);
 
     SAFE_DELETE(m_pLocalizationManager);
 
@@ -567,13 +400,11 @@ void CSystem::ShutDown()
     // Log must be last thing released.
     if (m_env.pLog)
     {
-        m_env.pLog->FlushAndClose();
+        m_env.pLog->Flush();
     }
     SAFE_RELEASE(m_env.pLog);   // creates log backup
 
     ShutdownFileSystem();
-
-    ShutdownModuleLibraries();
 
     EBUS_EVENT(CrySystemEventBus, OnCrySystemPostShutdown);
 }
@@ -597,36 +428,13 @@ void CSystem::Quit()
         m_pUserCallback->OnQuit();
     }
 
-    gEnv->pLog->FlushAndClose();
+    gEnv->pLog->Flush();
 
     // Latest possible place to flush any pending messages to disk before the forceful termination.
     if (auto logger = AZ::Interface<AZ::Debug::IEventLogger>::Get(); logger)
     {
         logger->Flush();
     }
-
-    /*
-    * TODO: This call to _exit, _Exit, TerminateProcess etc. needs to
-    * eventually be removed. This causes an extremely early exit before we
-    * actually perform cleanup. When this gets called most managers are
-    * simply never deleted and we leave it to the OS to clean up our mess
-    * which is just really bad practice. However there are LOTS of issues
-    * with shutdown at the moment. Removing this will simply cause
-    * a crash when either the Editor or Launcher initiate shutdown. Both
-    * applications crash differently too. Bugs will be logged about those
-    * issues.
-    */
-#if defined(AZ_RESTRICTED_PLATFORM)
-#define AZ_RESTRICTED_SECTION SYSTEM_CPP_SECTION_4
-#include AZ_RESTRICTED_FILE(System_cpp)
-#endif
-#if defined(AZ_RESTRICTED_SECTION_IMPLEMENTED)
-#undef AZ_RESTRICTED_SECTION_IMPLEMENTED
-#elif defined(WIN32) || defined(WIN64)
-    TerminateProcess(GetCurrentProcess(), m_env.retCode);
-#else
-    exit(m_env.retCode);
-#endif
 
 #ifdef WIN32
     //Post a WM_QUIT message to the Win32 api which causes the message loop to END
@@ -645,14 +453,6 @@ bool CSystem::IsQuitting() const
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CSystem::SetIProcess(IProcess* process)
-{
-    m_pProcess = process;
-    //if (m_pProcess)
-    //m_pProcess->SetPMessage("");
-}
-
-//////////////////////////////////////////////////////////////////////////
 ISystem* CSystem::GetCrySystem()
 {
     return this;
@@ -661,14 +461,15 @@ ISystem* CSystem::GetCrySystem()
 //////////////////////////////////////////////////////////////////////////
 void CSystem::SleepIfNeeded()
 {
-    ITimer* const pTimer = gEnv->pTimer;
     static bool firstCall = true;
 
     typedef MiniQueue<CTimeValue, 32> PrevNow;
     static PrevNow prevNow;
     if (firstCall)
     {
-        m_lastTickTime = pTimer->GetAsyncTime();
+        const AZ::TimeMs timeMs = AZ::GetRealElapsedTimeMs();
+        const double timeSec = AZ::TimeMsToSecondsDouble(timeMs);
+        m_lastTickTime = CTimeValue(timeSec);
         prevNow.Push(m_lastTickTime);
         firstCall = false;
         return;
@@ -676,8 +477,10 @@ void CSystem::SleepIfNeeded()
 
     const float maxRate = m_svDedicatedMaxRate->GetFVal();
     const float minTime = 1.0f / maxRate;
-    CTimeValue now = pTimer->GetAsyncTime();
-    float elapsed = (now - m_lastTickTime).GetSeconds();
+    const AZ::TimeMs nowTimeMs = AZ::GetRealElapsedTimeMs();
+    const double nowTimeSec = AZ::TimeMsToSecondsDouble(nowTimeMs);
+    const CTimeValue now = CTimeValue(nowTimeSec);
+    const float elapsed = (now - m_lastTickTime).GetSeconds();
 
     if (prevNow.Full())
     {
@@ -689,23 +492,27 @@ void CSystem::SleepIfNeeded()
     if (elapsed > minTime && allowStallCatchup)
     {
         allowStallCatchup = false;
-        m_lastTickTime = pTimer->GetAsyncTime();
+        const AZ::TimeMs lastTimeMs = AZ::GetRealElapsedTimeMs();
+        const double lastTimeSec = AZ::TimeMsToSecondsDouble(lastTimeMs);
+        m_lastTickTime = CTimeValue(lastTimeSec);
         return;
     }
     allowStallCatchup = true;
 
     float totalElapsed = (now - prevNow.Front()).GetSeconds();
-    float wantSleepTime = CLAMP(minTime * (prevNow.Size() - 1) - totalElapsed, 0, (minTime - elapsed) * 0.9f);
+    float wantSleepTime = AZStd::clamp(minTime * (prevNow.Size() - 1) - totalElapsed, 0.0f, (minTime - elapsed) * 0.9f);
     static float sleepTime = 0;
     sleepTime = (15 * sleepTime + wantSleepTime) / 16;
     int sleepMS = (int)(1000.0f * sleepTime + 0.5f);
     if (sleepMS > 0)
     {
-        AZ_PROFILE_FUNCTION(System);
+        AZ_PROFILE_FUNCTION(CrySystem);
         Sleep(sleepMS);
     }
 
-    m_lastTickTime = pTimer->GetAsyncTime();
+    const AZ::TimeMs lastTimeMs = AZ::GetRealElapsedTimeMs();
+    const double lastTimeSec = AZ::TimeMsToSecondsDouble(lastTimeMs);
+    m_lastTickTime = CTimeValue(lastTimeSec);
 }
 
 extern DWORD g_idDebugThreads[];
@@ -738,9 +545,8 @@ bool CSystem::UpdatePreTickBus(int updateFlags, int nPauseMode)
     _mm_setcsr(_mm_getcsr() & ~0x280 | (g_cvars.sys_float_exceptions > 0 ? 0 : 0x280));
 #endif //WIN32
 
-    AZ_TRACE_METHOD();
+    AZ_PROFILE_FUNCTION(CrySystem);
 
-    m_nUpdateCounter++;
 #ifndef EXCLUDE_UPDATE_ON_CONSOLE
     if (m_pUserCallback)
     {
@@ -776,31 +582,6 @@ bool CSystem::UpdatePreTickBus(int updateFlags, int nPauseMode)
     {
         m_bPaused = false;
     }
-
-#ifdef PROFILE_WITH_VTUNE
-    if (m_bInDevMode)
-    {
-        if (VTPause != NULL && VTResume != NULL)
-        {
-            static bool bVtunePaused = true;
-
-            const AzFramework::InputChannel* inputChannelScrollLock = AzFramework::InputChannelRequests::FindInputChannel(AzFramework::InputDeviceKeyboard::Key::WindowsSystemScrollLock);
-            const bool bPaused = (inputChannelScrollLock ? inputChannelScrollLock->IsActive() : false);
-
-            {
-                if (bVtunePaused && !bPaused)
-                {
-                    GetIProfilingSystem()->VTuneResume();
-                }
-                if (!bVtunePaused && bPaused)
-                {
-                    GetIProfilingSystem()->VTunePause();
-                }
-                bVtunePaused = bPaused;
-            }
-        }
-    }
-#endif //PROFILE_WITH_VTUNE
 
 #ifndef EXCLUDE_UPDATE_ON_CONSOLE
     if (m_bIgnoreUpdates)
@@ -857,23 +638,20 @@ bool CSystem::UpdatePreTickBus(int updateFlags, int nPauseMode)
 
             if (maxFPS > 0 && vSync == 0)
             {
-                CTimeValue timeFrameMax;
                 const float safeMarginFPS = 0.5f;//save margin to not drop below 30 fps
-                static CTimeValue sTimeLast = gEnv->pTimer->GetAsyncTime();
-                timeFrameMax.SetMilliSeconds((int64)(1000.f / ((float)maxFPS + safeMarginFPS)));
-                const CTimeValue timeLast = timeFrameMax + sTimeLast;
-                while (timeLast.GetValue() > gEnv->pTimer->GetAsyncTime().GetValue())
+                static AZ::TimeMs sTimeLast = AZ::GetRealElapsedTimeMs();
+                const AZ::TimeMs timeFrameMax(static_cast<AZ::TimeMs>(
+                    (int64)(1000.f / ((float)maxFPS + safeMarginFPS))
+                    ));
+                const AZ::TimeMs timeLast = timeFrameMax + sTimeLast;
+                while (timeLast > AZ::GetRealElapsedTimeMs())
                 {
                     CrySleep(0);
                 }
-                sTimeLast = gEnv->pTimer->GetAsyncTime();
+                sTimeLast = AZ::GetRealElapsedTimeMs();
             }
         }
     }
-
-    //////////////////////////////////////////////////////////////////////
-    //update time subsystem
-    m_Time.UpdateOnFrameStart();
 
     //////////////////////////////////////////////////////////////////////
     //update console system
@@ -888,13 +666,10 @@ bool CSystem::UpdatePreTickBus(int updateFlags, int nPauseMode)
         return false;
     }
 
-    // Use UI timer for CryMovie, because it should not be affected by pausing game time
-    const float fMovieFrameTime = m_Time.GetFrameTime(ITimer::ETIMER_UI);
-
     // Run movie system pre-update
     if (!bNoUpdate)
     {
-        UpdateMovieSystem(updateFlags, fMovieFrameTime, true);
+        UpdateMovieSystem(updateFlags, GetMovieFrameDeltaTime(), true);
     }
 
     return !IsQuitting();
@@ -903,13 +678,14 @@ bool CSystem::UpdatePreTickBus(int updateFlags, int nPauseMode)
 //////////////////////////////////////////////////////////////////////
 bool CSystem::UpdatePostTickBus(int updateFlags, int /*nPauseMode*/)
 {
-    CTimeValue updateStart = gEnv->pTimer->GetAsyncTime();
+    const AZ::TimeMs updateStartTimeMs = AZ::GetRealElapsedTimeMs();
+    const double updateStartTimeSec = AZ::TimeMsToSecondsDouble(updateStartTimeMs);
+    const CTimeValue updateStart(updateStartTimeSec);
 
     // Run movie system post-update
     if (!m_bNoUpdate)
     {
-        const float fMovieFrameTime = m_Time.GetFrameTime(ITimer::ETIMER_UI);
-        UpdateMovieSystem(updateFlags, fMovieFrameTime, false);
+        UpdateMovieSystem(updateFlags, GetMovieFrameDeltaTime(), false);
     }
 
     //////////////////////////////////////////////////////////////////////
@@ -920,7 +696,9 @@ bool CSystem::UpdatePostTickBus(int updateFlags, int /*nPauseMode*/)
     }
 
     //Now update frame statistics
-    CTimeValue cur_time = gEnv->pTimer->GetAsyncTime();
+    const AZ::TimeMs curTimeMs = AZ::GetRealElapsedTimeMs();
+    const double curTimeSec = AZ::TimeMsToSecondsDouble(curTimeMs);
+    const CTimeValue cur_time(curTimeSec);
 
     CTimeValue a_second(g_cvars.sys_update_profile_time);
     std::vector< std::pair<CTimeValue, float> >::iterator it = m_updateTimes.begin();
@@ -963,7 +741,10 @@ bool CSystem::UpdateLoadtime()
 
 void CSystem::UpdateAudioSystems()
 {
-    Audio::AudioSystemRequestBus::Broadcast(&Audio::AudioSystemRequestBus::Events::ExternalUpdate);
+    if (auto audioSystem = AZ::Interface<Audio::IAudioSystem>::Get(); audioSystem != nullptr)
+    {
+        audioSystem->ExternalUpdate();
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1032,15 +813,12 @@ IXmlUtils* CSystem::GetXmlUtils()
 //////////////////////////////////////////////////////////////////////////
 XmlNodeRef CSystem::LoadXmlFromFile(const char* sFilename, bool bReuseStrings)
 {
-    LOADING_TIME_PROFILE_SECTION_ARGS(sFilename);
-
     return m_pXMLUtils->LoadXmlFromFile(sFilename, bReuseStrings);
 }
 
 //////////////////////////////////////////////////////////////////////////
 XmlNodeRef CSystem::LoadXmlFromBuffer(const char* buffer, size_t size, bool bReuseStrings, bool bSuppressWarnings)
 {
-    LOADING_TIME_PROFILE_SECTION
     return m_pXMLUtils->LoadXmlFromBuffer(buffer, size, bReuseStrings, bSuppressWarnings);
 }
 
@@ -1064,13 +842,16 @@ void CSystem::Warning(EValidatorModule module, EValidatorSeverity severity, int 
 }
 
 //////////////////////////////////////////////////////////////////////////
-int CSystem::ShowMessage(const char* text, const char* caption, unsigned int uType)
+void CSystem::ShowMessage(const char* text, const char* caption, unsigned int uType)
 {
     if (m_pUserCallback)
     {
-        return m_pUserCallback->ShowMessage(text, caption, uType);
+        m_pUserCallback->ShowMessage(text, caption, uType);
     }
-    return CryMessageBox(text, caption, uType);
+    else
+    {
+        CryMessageBox(text, caption, uType);
+    }
 }
 
 inline const char* ValidatorModuleToString(EValidatorModule module)
@@ -1147,22 +928,18 @@ void CSystem::WarningV(EValidatorModule module, EValidatorSeverity severity, int
     default:
         break;
     }
-    char szBuffer[MAX_WARNING_LENGTH];
-    vsnprintf_s(szBuffer, sizeof(szBuffer), sizeof(szBuffer) - 1, format, args);
+
+    AZStd::fixed_string<MAX_WARNING_LENGTH> fmt;
+    vsnprintf_s(fmt.data(), MAX_WARNING_LENGTH, MAX_WARNING_LENGTH - 1, format, args);
 
     if (file && *file)
     {
-        AZStd::fixed_string<MAX_WARNING_LENGTH> fmt = szBuffer;
         fmt += " [File=";
         fmt += file;
         fmt += "]";
 
-        m_env.pLog->LogWithType(ltype, flags | VALIDATOR_FLAG_SKIP_VALIDATOR, "%s", fmt.c_str());
     }
-    else
-    {
-        m_env.pLog->LogWithType(ltype, flags | VALIDATOR_FLAG_SKIP_VALIDATOR, "%s", szBuffer);
-    }
+    m_env.pLog->LogWithType(ltype, flags | VALIDATOR_FLAG_SKIP_VALIDATOR, "%s", fmt.c_str());
 
     if (bDbgBreak && g_cvars.sys_error_debugbreak)
     {
@@ -1248,35 +1025,6 @@ ILocalizationManager* CSystem::GetLocalizationManager()
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CSystem::debug_GetCallStackRaw(void** callstack, uint32& callstackLength)
-{
-    uint32 callstackCapacity = callstackLength;
-    uint32 nNumStackFramesToSkip = 1;
-
-    memset(callstack, 0, sizeof(void*) * callstackLength);
-
-#if !defined(ANDROID)
-    callstackLength = 0;
-#endif
-
-#if AZ_LEGACY_CRYSYSTEM_TRAIT_CAPTURESTACK
-    if (callstackCapacity > 0x40)
-    {
-        callstackCapacity = 0x40;
-    }
-    callstackLength = RtlCaptureStackBackTrace(nNumStackFramesToSkip, callstackCapacity, callstack, NULL);
-#elif defined(AZ_RESTRICTED_PLATFORM)
-#define AZ_RESTRICTED_SECTION SYSTEM_CPP_SECTION_7
-#include AZ_RESTRICTED_FILE(System_cpp)
-#endif
-
-    if (callstackLength > 0)
-    {
-        std::reverse(callstack, callstack + callstackLength);
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
 void CSystem::ExecuteCommandLine(bool deferred)
 {
     if (m_executedCommandLine)
@@ -1286,7 +1034,7 @@ void CSystem::ExecuteCommandLine(bool deferred)
 
     m_executedCommandLine = true;
 
-    // execute command line arguments e.g. +g_gametype ASSAULT +map "testy"
+    // execute command line arguments e.g. +g_gametype ASSAULT +LoadLevel "testy"
 
     ICmdLine* pCmdLine = GetICmdLine();
     assert(pCmdLine);
@@ -1315,12 +1063,6 @@ void CSystem::ExecuteCommandLine(bool deferred)
 }
 
 //////////////////////////////////////////////////////////////////////////
-ESystemConfigSpec CSystem::GetMaxConfigSpec() const
-{
-    return m_nMaxConfigSpec;
-}
-
-//////////////////////////////////////////////////////////////////////////
 void CSystem::SetConfigPlatform(const ESystemConfigPlatform platform)
 {
     m_ConfigPlatform = platform;
@@ -1337,30 +1079,6 @@ CPNoise3* CSystem::GetNoiseGen()
 {
     static CPNoise3 m_pNoiseGen;
     return &m_pNoiseGen;
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CProfilingSystem::VTuneResume()
-{
-#ifdef PROFILE_WITH_VTUNE
-    if (VTResume)
-    {
-        CryLogAlways("VTune Resume");
-        VTResume();
-    }
-#endif
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CProfilingSystem::VTunePause()
-{
-#ifdef PROFILE_WITH_VTUNE
-    if (VTPause)
-    {
-        VTPause();
-        CryLogAlways("VTune Pause");
-    }
-#endif
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -1517,19 +1235,16 @@ const char* CSystem::GetSystemGlobalStateName(const ESystemGlobalState systemGlo
 
 void CSystem::SetSystemGlobalState(const ESystemGlobalState systemGlobalState)
 {
-    static CTimeValue s_startTime = CTimeValue();
+    static AZ::TimeMs s_startTime = AZ::Time::ZeroTimeMs;
     if (systemGlobalState != m_systemGlobalState)
     {
-        if (gEnv && gEnv->pTimer)
-        {
-            const CTimeValue endTime = gEnv->pTimer->GetAsyncTime();
-            const float numSeconds = endTime.GetDifferenceInSeconds(s_startTime);
-            CryLog("SetGlobalState %d->%d '%s'->'%s' %3.1f seconds",
-                m_systemGlobalState, systemGlobalState,
-                CSystem::GetSystemGlobalStateName(m_systemGlobalState), CSystem::GetSystemGlobalStateName(systemGlobalState),
-                numSeconds);
-            s_startTime = gEnv->pTimer->GetAsyncTime();
-        }
+        const AZ::TimeMs endTime = AZ::GetRealElapsedTimeMs();
+        [[maybe_unused]] const double numSeconds = AZ::TimeMsToSecondsDouble(endTime - s_startTime);
+        CryLog("SetGlobalState %d->%d '%s'->'%s' %3.1f seconds",
+            m_systemGlobalState, systemGlobalState,
+            CSystem::GetSystemGlobalStateName(m_systemGlobalState), CSystem::GetSystemGlobalStateName(systemGlobalState),
+            numSeconds);
+        s_startTime = AZ::GetRealElapsedTimeMs();
     }
     m_systemGlobalState = systemGlobalState;
 
@@ -1539,23 +1254,6 @@ void CSystem::SetSystemGlobalState(const ESystemGlobalState systemGlobalState)
         EBUS_EVENT(LoadScreenBus, Stop);
     }
 #endif // if AZ_LOADSCREENCOMPONENT_ENABLED
-}
-
-//////////////////////////////////////////////////////////////////////////
-void* CSystem::GetRootWindowMessageHandler()
-{
-#if defined(AZ_RESTRICTED_PLATFORM)
-    #define AZ_RESTRICTED_SECTION SYSTEM_CPP_SECTION_9
-    #include AZ_RESTRICTED_FILE(System_cpp)
-#endif
-#if defined(AZ_RESTRICTED_SECTION_IMPLEMENTED)
-#undef AZ_RESTRICTED_SECTION_IMPLEMENTED
-#elif defined(WIN32)
-    return reinterpret_cast<void*>(&WndProc);
-#else
-    CRY_ASSERT(false && "This platform does not support window message handlers");
-    return NULL;
-#endif
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1573,10 +1271,7 @@ void CSystem::RegisterWindowMessageHandler(IWindowMessageHandler* pHandler)
 void CSystem::UnregisterWindowMessageHandler(IWindowMessageHandler* pHandler)
 {
 #if AZ_LEGACY_CRYSYSTEM_TRAIT_USE_MESSAGE_HANDLER
-#if !defined(NDEBUG)
-    bool bRemoved =
-#endif
-        stl::find_and_erase(m_windowMessageHandlers, pHandler);
+    [[maybe_unused]] bool bRemoved = stl::find_and_erase(m_windowMessageHandlers, pHandler);
     assert(pHandler && bRemoved && "This IWindowMessageHandler was not registered");
 #else
     CRY_ASSERT(false && "This platform does not support window message handlers");
@@ -1667,7 +1362,6 @@ bool CSystem::HandleMessage([[maybe_unused]] HWND hWnd, UINT uMsg, WPARAM wParam
     // Fall through intended
     case WM_ENTERMENULOOP:
     {
-        UiCursorBus::Broadcast(&UiCursorInterface::IncrementVisibleCounter);
         return true;
     }
     case WM_CAPTURECHANGED:
@@ -1685,7 +1379,6 @@ bool CSystem::HandleMessage([[maybe_unused]] HWND hWnd, UINT uMsg, WPARAM wParam
     // Fall through intended
     case WM_EXITMENULOOP:
     {
-        UiCursorBus::Broadcast(&UiCursorInterface::DecrementVisibleCounter);
         return (uMsg != WM_CAPTURECHANGED);
     }
     case WM_SYSKEYUP:
@@ -1708,10 +1401,10 @@ bool CSystem::HandleMessage([[maybe_unused]] HWND hWnd, UINT uMsg, WPARAM wParam
         AZStd::array<BYTE, sizeof(RAWINPUT)> rawInputBytesArray;
         LPBYTE rawInputBytes = rawInputBytesArray.data();
 
-        const UINT bytesCopied = GetRawInputData((HRAWINPUT)lParam, RID_INPUT, rawInputBytes, &rawInputSize, rawInputHeaderSize);
+        [[maybe_unused]] const UINT bytesCopied = GetRawInputData((HRAWINPUT)lParam, RID_INPUT, rawInputBytes, &rawInputSize, rawInputHeaderSize);
         CRY_ASSERT(bytesCopied == rawInputSize);
 
-        RAWINPUT* rawInput = (RAWINPUT*)rawInputBytes;
+        [[maybe_unused]] RAWINPUT* rawInput = (RAWINPUT*)rawInputBytes;
         CRY_ASSERT(rawInput);
 
         AzFramework::RawInputNotificationBusWindows::Broadcast(&AzFramework::RawInputNotificationsWindows::OnRawInputEvent, *rawInput);
@@ -1740,16 +1433,6 @@ bool CSystem::HandleMessage([[maybe_unused]] HWND hWnd, UINT uMsg, WPARAM wParam
 }
 
 #endif
-
-std::shared_ptr<AZ::IO::FileIOBase> CSystem::CreateLocalFileIO()
-{
-    return std::make_shared<AZ::IO::LocalFileIO>();
-}
-
-IViewSystem* CSystem::GetIViewSystem()
-{
-    return m_pViewSystem;
-}
 
 ILevelSystem* CSystem::GetILevelSystem()
 {

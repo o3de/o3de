@@ -11,7 +11,7 @@
 #include <Atom/RHI.Reflect/Base.h>
 #include <Atom/RHI.Reflect/Handle.h>
 
-#include <AtomCore/std/containers/array_view.h>
+#include <AzCore/std/containers/span.h>
 
 #include <AzCore/std/containers/bitset.h>
 
@@ -36,7 +36,7 @@ namespace AZ
         using DrawListMask = AZStd::bitset<RHI::Limits::Pipeline::DrawListTagCountMax>;
 
         using DrawList = AZStd::vector<RHI::DrawItemProperties>;
-        using DrawListView = AZStd::array_view<RHI::DrawItemProperties>;
+        using DrawListView = AZStd::span<const RHI::DrawItemProperties>;
 
         /// Contains a table of draw lists, indexed by the tag.
         using DrawListsByTag = AZStd::array<DrawList, RHI::Limits::Pipeline::DrawListTagCountMax>;

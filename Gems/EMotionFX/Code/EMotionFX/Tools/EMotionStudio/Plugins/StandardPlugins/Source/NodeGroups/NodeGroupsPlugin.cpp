@@ -8,7 +8,6 @@
 
 // include required headers
 #include "NodeGroupsPlugin.h"
-#include "../../../../EMStudioSDK/Source/EMStudioCore.h"
 #include <MCore/Source/LogManager.h>
 #include <EMotionFX/CommandSystem/Source/CommandManager.h>
 #include <EMotionFX/CommandSystem/Source/NodeGroupCommands.h>
@@ -61,15 +60,6 @@ namespace EMStudio
         // clear dialogstack and delete afterwards
         delete m_dialogStack;
     }
-
-
-    // clone the log window
-    EMStudioPlugin* NodeGroupsPlugin::Clone()
-    {
-        NodeGroupsPlugin* newPlugin = new NodeGroupsPlugin();
-        return newPlugin;
-    }
-
 
     // init after the parent dock window has been created
     bool NodeGroupsPlugin::Init()

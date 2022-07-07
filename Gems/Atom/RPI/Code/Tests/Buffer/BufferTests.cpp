@@ -616,7 +616,6 @@ namespace UnitTest
         Data::Asset<RPI::BufferAsset> asset;
         creator.End(asset);
 
-        bufferInfo.m_bufferDescriptor.m_byteCount;
         Data::Instance<RPI::Buffer> bufferInst = RPI::Buffer::FindOrCreate(asset);
         ASSERT_NE(bufferInst.get(), nullptr);
 

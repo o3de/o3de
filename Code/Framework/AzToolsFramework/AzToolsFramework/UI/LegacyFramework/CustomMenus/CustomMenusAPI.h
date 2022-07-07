@@ -35,12 +35,6 @@ namespace LegacyFramework
             static const AZ::Crc32 Edit;
             static const AZ::Crc32 Build;
         };
-        struct Driller
-        {
-            static const AZ::Crc32 Application;
-            static const AZ::Crc32 DrillerMenu;
-            static const AZ::Crc32 Channels;
-        };
         struct LUAEditor
         {
             static const AZ::Crc32 Application;

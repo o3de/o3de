@@ -8,7 +8,7 @@
 
 
 #include "EditorDefs.h"
-#include "Resource.h"
+#include "Editor/Resource.h"
 #include "UiEditorAnimationBus.h"
 #include "UiAnimViewNodes.h"
 #include "UiAnimViewDopeSheetBase.h"
@@ -1095,9 +1095,6 @@ void CUiAnimViewNodesCtrl::AddGroupNodeAddItems(UiAnimContextMenu& contextMenu, 
         contextMenu.main.addAction("Add Selected UI Element(s)")->setData(eMI_AddSelectedUiElements);
         contextMenu.main.addAction("Add Event Node")->setData(eMI_AddEvent);
     }
-
-    const bool bIsDirectorOrSequence = (pAnimNode->GetType() == eUiAnimNodeType_Director || pAnimNode->GetNodeType() == eUiAVNT_Sequence);
-
 
 #if UI_ANIMATION_REMOVED
     contextMenu.main.addAction("Add Comment Node")->setData(eMI_AddCommentNode);

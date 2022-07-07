@@ -147,6 +147,8 @@ namespace EMotionFX
     // update motion queue and instances
     void MotionSystem::Update(float timePassed, bool updateNodes)
     {
+        AZ_PROFILE_SCOPE(Animation, "MotionSystem::Update");
+
         MCORE_UNUSED(updateNodes);
 
         // update the motion queue

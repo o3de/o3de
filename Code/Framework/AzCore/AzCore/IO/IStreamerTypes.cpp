@@ -21,7 +21,7 @@ namespace AZ::IO::IStreamerTypes
         : m_allocator(AZ::AllocatorInstance<AZ::SystemAllocator>::Get())
     {}
 
-    DefaultRequestMemoryAllocator::DefaultRequestMemoryAllocator(AZ::IAllocatorAllocate& allocator)
+    DefaultRequestMemoryAllocator::DefaultRequestMemoryAllocator(AZ::IAllocator& allocator)
         : m_allocator(allocator)
     {}
 

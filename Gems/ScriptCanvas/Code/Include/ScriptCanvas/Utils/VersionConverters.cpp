@@ -7,16 +7,18 @@
  */
 #include "VersionConverters.h"
 
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Serialization/Utils.h>
 
+#include <ScriptCanvas/Asset/RuntimeAsset.h>
 #include <ScriptCanvas/Core/Contracts/DisallowReentrantExecutionContract.h>
 #include <ScriptCanvas/Core/Node.h>
 #include <ScriptCanvas/Core/NodeableNode.h>
 #include <ScriptCanvas/Core/SlotMetadata.h>
-#include <ScriptCanvas/Utils/SerializationUtils.h>
 #include <ScriptCanvas/Internal/Nodes/BaseTimerNode.h>
 #include <ScriptCanvas/Libraries/Core/EBusEventHandler.h>
-#include <ScriptCanvas/Libraries/Core/Repeater.h>
+#include <ScriptCanvas/Libraries/Deprecated/Time/Repeater.h>
+#include <ScriptCanvas/Utils/SerializationUtils.h>
 
 namespace ScriptCanvas
 {

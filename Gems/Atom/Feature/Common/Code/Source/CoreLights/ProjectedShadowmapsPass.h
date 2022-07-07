@@ -9,7 +9,7 @@
 
 #include <Atom/Feature/CoreLights/CoreLightsConstants.h>
 #include <Atom/RPI.Public/Pass/ParentPass.h>
-#include <AtomCore/std/containers/array_view.h>
+#include <AzCore/std/containers/span.h>
 #include <AzCore/std/containers/vector.h>
 #include <CoreLights/ShadowmapAtlas.h>
 #include <CoreLights/ShadowmapPass.h>

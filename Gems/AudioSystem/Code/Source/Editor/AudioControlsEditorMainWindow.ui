@@ -28,101 +28,105 @@
    </property>
    <layout class="QHBoxLayout" name="horizontalLayout">
     <item>
-     <widget class="QDockWidget" name="m_pATLControlsDockWidget">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
-        <horstretch>1</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
+     <widget class="QSplitter" name="splitter">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
       </property>
-      <property name="features">
-       <set>QDockWidget::NoDockWidgetFeatures</set>
-      </property>
-      <property name="windowTitle">
-       <string>ATL Controls</string>
-      </property>
-      <widget class="QWidget" name="m_pATLControlsWidget">
-       <layout class="QVBoxLayout" name="m_pATLControlsDockLayout">
-        <property name="leftMargin">
-         <number>4</number>
-        </property>
-        <property name="topMargin">
-         <number>9</number>
-        </property>
-        <property name="rightMargin">
-         <number>4</number>
-        </property>
-        <property name="bottomMargin">
-         <number>9</number>
-        </property>
-       </layout>
-      </widget>
-     </widget>
-    </item>
-    <item>
-     <widget class="QDockWidget" name="m_pInspectorDockWidget">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
-        <horstretch>2</horstretch>
-        <verstretch>1</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="features">
-       <set>QDockWidget::NoDockWidgetFeatures</set>
-      </property>
-      <property name="windowTitle">
-       <string>Inspector</string>
-      </property>
-      <widget class="QWidget" name="m_pInspectorWidget">
-       <layout class="QVBoxLayout" name="m_pInspectorDockLayout">
-        <property name="leftMargin">
-         <number>4</number>
-        </property>
-        <property name="topMargin">
-         <number>9</number>
-        </property>
-        <property name="rightMargin">
-         <number>4</number>
-        </property>
-        <property name="bottomMargin">
-         <number>9</number>
-        </property>
-       </layout>
-      </widget>
-     </widget>
-    </item>
-    <item>
-     <widget class="QDockWidget" name="m_pMiddlewareDockWidget">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
-        <horstretch>1</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="floating">
+      <property name="childrenCollapsible">
        <bool>false</bool>
       </property>
-      <property name="features">
-       <set>QDockWidget::NoDockWidgetFeatures</set>
-      </property>
-      <property name="windowTitle">
-       <string>Audio Middleware Controls</string>
-      </property>
-      <widget class="QWidget" name="m_pMiddlewareWidget">
-       <layout class="QVBoxLayout" name="m_pMiddlewareDockLayout">
-        <property name="leftMargin">
-         <number>4</number>
-        </property>
-        <property name="topMargin">
-         <number>9</number>
-        </property>
-        <property name="rightMargin">
-         <number>4</number>
-        </property>
-        <property name="bottomMargin">
-         <number>9</number>
-        </property>
-       </layout>
+      <widget class="QDockWidget" name="m_pATLControlsDockWidget">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+         <horstretch>1</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="features">
+        <set>QDockWidget::NoDockWidgetFeatures</set>
+       </property>
+       <property name="windowTitle">
+        <string>ATL Controls</string>
+       </property>
+       <widget class="QWidget" name="m_pATLControlsWidget">
+        <layout class="QVBoxLayout" name="m_pATLControlsDockLayout">
+         <property name="leftMargin">
+          <number>4</number>
+         </property>
+         <property name="topMargin">
+          <number>9</number>
+         </property>
+         <property name="rightMargin">
+          <number>4</number>
+         </property>
+         <property name="bottomMargin">
+          <number>9</number>
+         </property>
+        </layout>
+       </widget>
+      </widget>
+      <widget class="QDockWidget" name="m_pInspectorDockWidget">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+         <horstretch>2</horstretch>
+         <verstretch>1</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="features">
+        <set>QDockWidget::NoDockWidgetFeatures</set>
+       </property>
+       <property name="windowTitle">
+        <string>Inspector</string>
+       </property>
+       <widget class="QWidget" name="m_pInspectorWidget">
+        <layout class="QVBoxLayout" name="m_pInspectorDockLayout">
+         <property name="leftMargin">
+          <number>4</number>
+         </property>
+         <property name="topMargin">
+          <number>9</number>
+         </property>
+         <property name="rightMargin">
+          <number>4</number>
+         </property>
+         <property name="bottomMargin">
+          <number>9</number>
+         </property>
+        </layout>
+       </widget>
+      </widget>
+      <widget class="QDockWidget" name="m_pMiddlewareDockWidget">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+         <horstretch>1</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="floating">
+        <bool>false</bool>
+       </property>
+       <property name="features">
+        <set>QDockWidget::NoDockWidgetFeatures</set>
+       </property>
+       <property name="windowTitle">
+        <string>Audio Middleware Controls</string>
+       </property>
+       <widget class="QWidget" name="m_pMiddlewareWidget">
+        <layout class="QVBoxLayout" name="m_pMiddlewareDockLayout">
+         <property name="leftMargin">
+          <number>4</number>
+         </property>
+         <property name="topMargin">
+          <number>9</number>
+         </property>
+         <property name="rightMargin">
+          <number>4</number>
+         </property>
+         <property name="bottomMargin">
+          <number>9</number>
+         </property>
+        </layout>
+       </widget>
       </widget>
      </widget>
     </item>
@@ -134,7 +138,7 @@
      <x>0</x>
      <y>0</y>
      <width>972</width>
-     <height>21</height>
+     <height>26</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -143,6 +147,7 @@
     </property>
     <addaction name="actionSaveAll"/>
     <addaction name="actionReload"/>
+    <addaction name="actionRefreshAudioSystem"/>
    </widget>
    <addaction name="menuFile"/>
   </widget>
@@ -154,6 +159,9 @@
    <property name="text">
     <string>Save All</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+S</string>
+   </property>
   </action>
   <action name="actionReload">
    <property name="icon">
@@ -162,6 +170,17 @@
    </property>
    <property name="text">
     <string>Reload</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+R</string>
+   </property>
+  </action>
+  <action name="actionRefreshAudioSystem">
+   <property name="text">
+    <string>Refresh Audio System</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+R</string>
    </property>
   </action>
  </widget>
@@ -190,6 +209,22 @@
    <signal>triggered()</signal>
    <receiver>MainWindow</receiver>
    <slot>Reload()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>485</x>
+     <y>336</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionRefreshAudioSystem</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>RefreshAudioSystem()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>

@@ -1,0 +1,44 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "MultiplatformPresetSettings",
+    "ClassData": {
+        "DefaultPreset": {
+            "UUID": "{3791319D-043B-4011-8B6F-3DE96D0C4309}",
+            "Name": "LUT_RG8",
+            "SourceColor": "Linear",
+            "DestColor": "Linear",
+            "PixelFormat": "R8G8"
+        },
+        "PlatformsPresets": {
+            "android": {
+                "UUID": "{3791319D-043B-4011-8B6F-3DE96D0C4309}",
+                "Name": "LUT_RG8",
+                "SourceColor": "Linear",
+                "DestColor": "Linear",
+                "PixelFormat": "R8G8"
+            },
+            "ios": {
+                "UUID": "{3791319D-043B-4011-8B6F-3DE96D0C4309}",
+                "Name": "LUT_RG8",
+                "SourceColor": "Linear",
+                "DestColor": "Linear",
+                "PixelFormat": "R8G8"
+            },
+            "mac": {
+                "UUID": "{3791319D-043B-4011-8B6F-3DE96D0C4309}",
+                "Name": "LUT_RG8",
+                "SourceColor": "Linear",
+                "DestColor": "Linear",
+                "PixelFormat": "R8G8"
+            },
+            "provo": {
+                "UUID": "{3791319D-043B-4011-8B6F-3DE96D0C4309}",
+                "Name": "LUT_RG8",
+                "SourceColor": "Linear",
+                "DestColor": "Linear",
+                "PixelFormat": "R8G8"
+            }
+        }
+    }
+}

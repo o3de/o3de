@@ -107,27 +107,9 @@ namespace ScriptCanvas
             m_translationDuration = AZStd::chrono::microseconds(AZStd::chrono::system_clock::now() - m_translationStartTime).count();
         }
 
-        AZStd::string GraphToX::ResolveScope(const AZStd::vector<AZStd::string>& namespaces)
+        AZStd::vector<ValidationConstPtr>&& GraphToX::MoveErrors()
         {
-            AZStd::string resolution;
-
-            if (!namespaces.empty())
-            {
-                resolution = Grammar::ToIdentifier(namespaces[0]);
-
-                for (size_t index = 1; index < namespaces.size(); ++index)
-                {
-                    resolution += m_configuration.m_lexicalScopeDelimiter;
-                    resolution += Grammar::ToIdentifier(namespaces[index]);
-                }
-            }
-
-            return resolution;
-        }
-
-        void GraphToX::SingleLineComment(Writer& writer)
-        {
-            writer.Write(m_configuration.m_singleLineComment);
+            return AZStd::move(m_errors);
         }
 
         void GraphToX::OpenBlockComment(Writer& writer)
@@ -158,6 +140,29 @@ namespace ScriptCanvas
         {
             writer.WriteLineIndented(m_configuration.m_scopeOpen);
             writer.Indent();
+        }
+
+        AZStd::string GraphToX::ResolveScope(const AZStd::vector<AZStd::string>& namespaces)
+        {
+            AZStd::string resolution;
+
+            if (!namespaces.empty())
+            {
+                resolution = Grammar::ToIdentifier(namespaces[0]);
+
+                for (size_t index = 1; index < namespaces.size(); ++index)
+                {
+                    resolution += m_configuration.m_lexicalScopeDelimiter;
+                    resolution += Grammar::ToIdentifier(namespaces[index]);
+                }
+            }
+
+            return resolution;
+        }
+
+        void GraphToX::SingleLineComment(Writer& writer)
+        {
+            writer.Write(m_configuration.m_singleLineComment);
         }
 
         void GraphToX::WriteCopyright(Writer& writer)

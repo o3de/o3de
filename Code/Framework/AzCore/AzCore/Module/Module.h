@@ -14,6 +14,7 @@
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Console/Console.h>
 #include <AzCore/Console/ConsoleFunctor.h>
+#include <AzCore/Name/NameDictionary.h>
 
 namespace AZ
 {
@@ -62,7 +63,7 @@ namespace AZ
          * DO NOT OVERRIDE. This method will return in the future, but at this point things reflected here are not unreflected for all ReflectContexts (Serialize, Editor, Network, Script, etc.)
          * Place all calls to non-component reflect functions inside of a component reflect function to ensure that your types are unreflected.
          */
-        virtual void Reflect(AZ::ReflectContext*) final { }
+        void Reflect(AZ::ReflectContext*) {}
 
         /**
          * Override to require specific components on the system entity.
@@ -110,6 +111,10 @@ namespace AZ
         {                                                                                        \
              console->LinkDeferredFunctors(AZ::ConsoleFunctorBase::GetDeferredHead());           \
              console->ExecuteDeferredConsoleCommands();                                          \
+        }                                                                                        \
+        if (AZ::NameDictionary::IsReady(false))                                                  \
+        {                                                                                        \
+            AZ::NameDictionary::Instance().LoadDeferredNames(AZ::Name::GetDeferredHead());       \
         }                                                                                        \
         return aznew MODULE_CLASSNAME;                                                           \
     }                                                                                            \

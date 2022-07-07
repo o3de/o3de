@@ -25,10 +25,10 @@ from azpy.constants import ENVAR_DCCSI_DEV_MODE
 
 # --------------------------------------------------------------------------
 # -- Global Definitions --
-_DCCSI_DCC_APP = None
+_DCCSI_G_DCC_APP = None
 
 # set up global space, logging etc.
-_G_DEBUG = env_bool(ENVAR_DCCSI_GDEBUG, False)
+_DCCSI_GDEBUG = env_bool(ENVAR_DCCSI_GDEBUG, False)
 _DCCSI_DEV_MODE = env_bool(ENVAR_DCCSI_DEV_MODE, False)
 
 _MODULENAME = 'azpy.dev.utils.check.maya_app'
@@ -43,14 +43,14 @@ _LOGGER = _logging.getLogger(_MODULENAME)
 def set_dcc_app(dcc_app='maya'):
     """
     azpy.dev.utils.check.maya.set_dcc_app()
-    this will set global _DCCSI_DCC_APP = 'maya'
-    and os.environ["DCCSI_DCC_APP"] = 'maya'
+    this will set global _DCCSI_G_DCC_APP = 'maya'
+    and os.environ["DCCSI_G_DCC_APP"] = 'maya'
     """
-    _DCCSI_DCC_APP = dcc_app
+    _DCCSI_G_DCC_APP = dcc_app
 
-    _LOGGER.info('Setting DCCSI_DCC_APP to: {0}'.format(dcc_app))
+    _LOGGER.info('Setting DCCSI_G_DCC_APP to: {0}'.format(dcc_app))
 
-    return _DCCSI_DCC_APP
+    return _DCCSI_G_DCC_APP
 # -------------------------------------------------------------------------
 
 
@@ -58,44 +58,44 @@ def set_dcc_app(dcc_app='maya'):
 def clear_dcc_app(dcc_app=False):
     """
     azpy.dev.utils.check.maya.set_dcc_app()
-    this will set global _DCCSI_DCC_APP = False
-    and os.environ["DCCSI_DCC_APP"] = False
+    this will set global _DCCSI_G_DCC_APP = False
+    and os.environ["DCCSI_G_DCC_APP"] = False
     """
-    _DCCSI_DCC_APP = dcc_app
+    _DCCSI_G_DCC_APP = dcc_app
 
-    _LOGGER.info('Setting DCCSI_DCC_APP to: {0}'.format(dcc_app))
+    _LOGGER.info('Setting DCCSI_G_DCC_APP to: {0}'.format(dcc_app))
 
-    return _DCCSI_DCC_APP
+    return _DCCSI_G_DCC_APP
 # -------------------------------------------------------------------------
 
 
 # -------------------------------------------------------------------------
-def validate_state(DCCSI_DCC_APP=_DCCSI_DCC_APP):
+def validate_state(DCCSI_G_DCC_APP=_DCCSI_G_DCC_APP):
     '''
     This will detect if we are running in Maya or not,
     then will call either, set_dcc_app('maya') or clear_dcc_app(dcc_app=False)
     '''
 
-    if _G_DEBUG:
+    if _DCCSI_GDEBUG:
         _LOGGER.debug(autolog())
 
     try:
         import maya.cmds as cmds
-        DCCSI_DCC_APP = set_dcc_app('maya')
+        DCCSI_G_DCC_APP = set_dcc_app('maya')
     except ImportError as e:
         _LOGGER.warning('Can not perform: import maya.cmds as cmds')
-        DCCSI_DCC_APP = clear_dcc_app()
+        DCCSI_G_DCC_APP = clear_dcc_app()
     else:
         try:
             if cmds.about(batch=True):
-                DCCSI_DCC_APP = set_dcc_app('maya')
+                DCCSI_G_DCC_APP = set_dcc_app('maya')
         except AttributeError as e:
             _LOGGER.warning("maya.cmds module isn't fully loaded/populated, "
                             "(cmds populates only in batch, maya.standalone, or maya GUI)")
             # NO Maya
-            DCCSI_DCC_APP=clear_dcc_app()
+            DCCSI_G_DCC_APP=clear_dcc_app()
 
-    return DCCSI_DCC_APP
+    return DCCSI_G_DCC_APP
 # -------------------------------------------------------------------------
 
 
@@ -120,7 +120,7 @@ def autolog():
 
 # -------------------------------------------------------------------------
 # run the check on import
-_DCCSI_DCC_APP = validate_state()
+_DCCSI_G_DCC_APP = validate_state()
 # -------------------------------------------------------------------------
 
 
@@ -130,7 +130,7 @@ _DCCSI_DCC_APP = validate_state()
 if __name__ == '__main__':
     # there are not really tests to run here due to this being a list of
     # constants for shared use.
-    _G_DEBUG = True
+    _DCCSI_GDEBUG = True
     _DCCSI_DEV_MODE = True
     _LOGGER.setLevel(_logging.DEBUG)  # force debugging
 
@@ -150,5 +150,5 @@ if __name__ == '__main__':
     _LOGGER.info('{} ... Running script as __main__'.format(_MODULENAME))
     _LOGGER.info(STR_CROSSBAR)
 
-    _DCCSI_DCC_APP = validate_state()
-    _LOGGER.info('Is Maya Running? _DCCSI_DCC_APP = {}'.format(_DCCSI_DCC_APP))
+    _DCCSI_G_DCC_APP = validate_state()
+    _LOGGER.info('Is Maya Running? _DCCSI_G_DCC_APP = {}'.format(_DCCSI_G_DCC_APP))

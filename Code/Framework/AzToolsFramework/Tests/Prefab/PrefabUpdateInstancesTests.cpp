@@ -120,7 +120,7 @@ namespace UnitTest
 
         // Create an enclosing Template with 0 entities and 1 nested Instance.
         AZStd::unique_ptr<Instance> nestedInstance1 = m_prefabSystemComponent->InstantiatePrefab(newNestedTemplateId);
-        AZStd::unique_ptr<Instance> newEnclosingInstance = m_prefabSystemComponent->CreatePrefab({}, MakeInstanceList( AZStd::move(nestedInstance1) ), PrefabMockFilePath);
+        AZStd::unique_ptr<Instance> newEnclosingInstance = m_prefabSystemComponent->CreatePrefab({}, MakeInstanceList(AZStd::move(nestedInstance1)), PrefabMockFilePath);
         TemplateId newEnclosingTemplateId = newEnclosingInstance->GetTemplateId();
         EXPECT_TRUE(newEnclosingTemplateId != InvalidTemplateId);
         PrefabDom& newEnclosingTemplateDom = m_prefabSystemComponent->FindTemplateDom(newEnclosingTemplateId);
@@ -284,7 +284,7 @@ namespace UnitTest
         AZStd::unique_ptr<Instance> nestedInstance2 = m_prefabSystemComponent->InstantiatePrefab(newNestedTemplateId);
         AZStd::unique_ptr<Instance> newEnclosingInstance = m_prefabSystemComponent->CreatePrefab(
             {},
-            MakeInstanceList( AZStd::move(nestedInstance1), AZStd::move(nestedInstance2) ),
+            MakeInstanceList(AZStd::move(nestedInstance1), AZStd::move(nestedInstance2)),
             PrefabMockFilePath);
         TemplateId newEnclosingTemplateId = newEnclosingInstance->GetTemplateId();
         EXPECT_TRUE(newEnclosingTemplateId != InvalidTemplateId);

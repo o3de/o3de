@@ -42,8 +42,6 @@ namespace AZ
 
         void NullDescriptorManager::Shutdown()
         {
-            const Device& device = static_cast<Device&>(GetDevice());
-
             m_nullImages.clear();
             m_nullBuffer.m_memoryView = {};
             m_nullMtlSamplerState = nil;
@@ -94,7 +92,6 @@ namespace AZ
                 textureSizeAndAlign.size = memoryRequirements.m_sizeInBytes;
                 
                 const size_t alignedHeapSize = RHI::AlignUp(heapSize, textureSizeAndAlign.align);
-                const uint32_t bytesPerPixel = RHI::GetFormatSize(m_nullImages[imageIndex].m_imageDescriptor.m_format);
                 if(imageIndex == static_cast<uint32_t>(NullDescriptorManager::ImageTypes::TextureBuffer))
                 {
                     m_nullImages[imageIndex].m_memoryView = device.CreateImagePlaced(m_nullImages[imageIndex].m_imageDescriptor, m_nullDescriptorHeap, alignedHeapSize, textureSizeAndAlign, MTLTextureTypeTextureBuffer);

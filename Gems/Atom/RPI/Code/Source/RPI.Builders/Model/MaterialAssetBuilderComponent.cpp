@@ -13,7 +13,6 @@
 #include <AzCore/Math/Color.h>
 
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
-#include <AzToolsFramework/Debug/TraceContext.h>
 
 #include <SceneAPI/SceneCore/Containers/Scene.h>
 #include <SceneAPI/SceneCore/Containers/SceneManifest.h>
@@ -28,6 +27,7 @@
 
 #include <Atom/RPI.Edit/Material/MaterialSourceData.h>
 #include <Atom/RPI.Edit/Material/MaterialConverterBus.h>
+#include <Atom/RPI.Edit/Material/MaterialUtils.h>
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
 
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
@@ -37,14 +37,15 @@ namespace AZ
 {
     namespace RPI
     {
-        static const char* MaterialExporterName = "Scene Material Builder";
+        [[maybe_unused]] static const char* MaterialExporterName = "Scene Material Builder";
 
         void MaterialAssetDependenciesComponent::Reflect(ReflectContext* context)
         {
             if (auto* serialize = azrtti_cast<SerializeContext*>(context))
             {
                 serialize->Class<MaterialAssetDependenciesComponent, Component>()
-                    ->Version(4)
+                    ->Version(5) // <<<<< If you have made changes to material code and need to force scene files to be reprocessed, this probably is
+                                 // NOT the version number you want to bump . What you're looking for is MaterialAssetBuilderComponent::Reflect below.
                     ->Attribute(Edit::Attributes::SystemComponentTags, AZStd::vector<Crc32>({ AssetBuilderSDK::ComponentTags::AssetBuilder }));
             }
         }
@@ -87,7 +88,18 @@ namespace AZ
                 jobDependency.m_jobKey = "Atom Material Builder";
                 jobDependency.m_sourceFile = materialTypeSource;
                 jobDependency.m_platformIdentifier = platformIdentifier;
-                jobDependency.m_type = AssetBuilderSDK::JobDependencyType::Order;
+                jobDependency.m_productSubIds.push_back(0);
+
+                // If FinalizeMaterialAssets is true, then a job dependency is needed so the material builder can validate
+                // MaterialAsset properties against the MaterialTypeAsset at asset build time. If FinalizeMaterialAssets is false, the
+                // material properties will be validated at runtime when the material is loaded, so the job dependency is needed only for
+                // first-time processing to set up the initial MaterialAsset. This speeds up AP processing time when a materialtype file is
+                // edited (e.g. 10s when editing StandardPBR.materialtype on AtomTest project from 45s).
+                
+                // If we aren't finalizing material assets, then a normal job dependency isn't needed because the MaterialTypeAsset data won't be used.
+                // However, we do still need at least an OrderOnce dependency to ensure the Asset Processor knows about the material type asset so the builder can get it's AssetId.
+                // This can significantly reduce AP processing time when a material type or its shaders are edited.
+                jobDependency.m_type = MaterialUtils::BuildersShouldFinalizeMaterialAssets() ? AssetBuilderSDK::JobDependencyType::Order : AssetBuilderSDK::JobDependencyType::OrderOnce;
 
                 jobDependencyList.push_back(jobDependency);
             }
@@ -97,16 +109,11 @@ namespace AZ
         {
             // This will cause scene files to be reprocessed whenever the global MaterialConverter settings change.
 
-            bool conversionEnabled = false;
-            RPI::MaterialConverterBus::BroadcastResult(conversionEnabled, &RPI::MaterialConverterBus::Events::IsEnabled);
-            fingerprintInfo.insert(AZStd::string::format("[MaterialConverter enabled=%d]", conversionEnabled));
-
-            if (!conversionEnabled)
-            {
-                AZStd::string defaultMaterialPath;
-                RPI::MaterialConverterBus::BroadcastResult(defaultMaterialPath, &RPI::MaterialConverterBus::Events::GetDefaultMaterialPath);
-                fingerprintInfo.insert(AZStd::string::format("[MaterialConverter defaultMaterial=%s]", defaultMaterialPath.c_str()));
-            }
+            AZStd::string conversionInfo = "[Material conversion info missing]";
+            RPI::MaterialConverterBus::BroadcastResult(conversionInfo, &RPI::MaterialConverterBus::Events::GetFingerprintInfo);
+            fingerprintInfo.insert(conversionInfo);
+             
+            fingerprintInfo.insert(AZStd::string::format("[BuildersShouldFinalizeMaterialAssets=%d]", MaterialUtils::BuildersShouldFinalizeMaterialAssets()));
         }
 
         void MaterialAssetBuilderComponent::Reflect(ReflectContext* context)
@@ -114,7 +121,7 @@ namespace AZ
             if (auto* serialize = azrtti_cast<SerializeContext*>(context))
             {
                 serialize->Class<MaterialAssetBuilderComponent, SceneAPI::SceneCore::ExportingComponent>()
-                    ->Version(16);  // Optional material conversion 
+                    ->Version(26);  // Add productSubId dependency for materialtype
             }
         }
         
@@ -218,6 +225,8 @@ namespace AZ
                     }
                 }
             }
+            
+            MaterialAssetProcessingMode processingMode = MaterialUtils::BuildersShouldFinalizeMaterialAssets() ? MaterialAssetProcessingMode::PreBake : MaterialAssetProcessingMode::DeferredBake;
 
             // Build material assets. 
             for (auto& itr : materialSourceDataByUid)
@@ -226,7 +235,7 @@ namespace AZ
                 Data::AssetId assetId(sourceSceneUuid, GetMaterialAssetSubId(materialUid));
 
                 auto materialSourceData = itr.second;
-                Outcome<Data::Asset<MaterialAsset>> result = materialSourceData.m_data.CreateMaterialAsset(assetId, "", false);
+                Outcome<Data::Asset<MaterialAsset>> result = materialSourceData.m_data.CreateMaterialAsset(assetId, "", processingMode, false);
                 if (result.IsSuccess())
                 {
                     context.m_outputMaterialsByUid[materialUid] = { result.GetValue(), materialSourceData.m_name };
@@ -253,7 +262,6 @@ namespace AZ
             }
 
             const auto& scene = context.m_scene;
-            const Uuid sourceSceneUuid = scene.GetSourceGuid();
             const auto& sceneGraph = scene.GetGraph();
 
             auto names = sceneGraph.GetNameStorage();

@@ -6,22 +6,23 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_CRYCOMMON_IMOVIESYSTEM_H
-#define CRYINCLUDE_CRYCOMMON_IMOVIESYSTEM_H
 #pragma once
 
 #include <AzCore/Component/ComponentBus.h>
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/Math/Crc.h>
 #include <AzCore/Math/Quaternion.h>
+#include <AzCore/Math/Vector2.h>
+#include <AzCore/Math/Vector3.h>
+#include <AzCore/Math/Vector4.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
 #include <Range.h>
 #include <AnimKey.h>
 #include <ISplines.h>
-#include <Cry_Camera.h>
-#include <VectorSet.h>
+
+#define DEFAULT_NEAR 0.2f
+#define DEFAULT_FOV (75.0f * gf_PI / 180.0f)
 
 // forward declaration.
 struct IAnimTrack;
@@ -256,8 +257,6 @@ struct SAnimContext
     // TODO: Mask should be stored with dynamic length
     uint32 trackMask;       //!< To update certain types of tracks only
     float startTime;        //!< The start time of this playing sequence
-
-    void Serialize(XmlNodeRef& xmlNode, bool loading);
 };
 
 /** Parameters for cut-scene cameras
@@ -458,8 +457,20 @@ struct IAnimTrack
     // Applies a scale multiplier set in SetMultiplier(), if requested
     //////////////////////////////////////////////////////////////////////////
     virtual void GetValue(float time, float& value, bool applyMultiplier=false) = 0;
+    /**
+     * O3DE_DEPRECATION_NOTICE(GHI-9133)
+     * use equivalent GetValue that accepts AZ::Vector3  
+     **/
     virtual void GetValue(float time, Vec3& value, bool applyMultiplier = false) = 0;
+    /**
+     * O3DE_DEPRECATION_NOTICE(GHI-9133)
+     * use equivalent GetValue that accepts AZ::Vector4  
+     **/
     virtual void GetValue(float time, Vec4& value, bool applyMultiplier = false) = 0;
+        /**
+     * O3DE_DEPRECATION_NOTICE(GHI-9133)
+     * use equivalent GetValue that accepts AZ::Quaternion  
+     **/
     virtual void GetValue(float time, Quat& value) = 0;
     virtual void GetValue(float time, bool& value) = 0;
     virtual void GetValue(float time, Maestro::AssetBlends<AZ::Data::AssetData>& value) = 0;
@@ -470,6 +481,12 @@ struct IAnimTrack
         Vec3 vec3;
         GetValue(time, vec3, applyMultiplier);
         value.Set(vec3.x, vec3.y, vec3.z);
+    }
+    void GetValue(float time, AZ::Vector4& value, bool applyMultiplier = false)
+    {
+        Vec4 vec4;
+        GetValue(time, vec4, applyMultiplier);
+        value.Set(vec4.x, vec4.y, vec4.z, vec4.w);
     }
     void GetValue(float time, AZ::Quaternion& value)
     {
@@ -483,22 +500,39 @@ struct IAnimTrack
     // Adds new keys if required.
     //////////////////////////////////////////////////////////////////////////
     virtual void SetValue(float time, const float& value, bool bDefault = false, bool applyMultiplier = false) = 0;
+    /**
+     * O3DE_DEPRECATION_NOTICE(GHI-9133)
+     * use equivalent SetValue that accepts AZ::Vector3  
+     **/
     virtual void SetValue(float time, const Vec3& value, bool bDefault = false, bool applyMultiplier = false) = 0;
+    /**
+     * O3DE_DEPRECATION_NOTICE(GHI-9133)
+     * use equivalent SetValue that accepts AZ::Vector4  
+     **/
     virtual void SetValue(float time, const Vec4& value, bool bDefault = false, bool applyMultiplier = false) = 0;
+    /**
+     * O3DE_DEPRECATION_NOTICE(GHI-9133)
+     * use equivalent SetValue that accepts AZ::Quaternion  
+     **/
     virtual void SetValue(float time, const Quat& value, bool bDefault = false) = 0;
     virtual void SetValue(float time, const bool& value, bool bDefault = false) = 0;
     virtual void SetValue(float time, const Maestro::AssetBlends<AZ::Data::AssetData>& value, bool bDefault = false) = 0;
 
     // support for AZ:: vector types - re-route to legacy types
+    void SetValue(float time, AZ::Vector4& value, bool bDefault = false, bool applyMultiplier = false)
+    {
+        Vec4 vec4(value.GetX(), value.GetY(), value.GetZ(), value.GetW());
+        SetValue(time, vec4, bDefault, applyMultiplier);
+    }
     void SetValue(float time, AZ::Vector3& value, bool bDefault = false, bool applyMultiplier = false)
     {
         Vec3 vec3(value.GetX(), value.GetY(), value.GetZ());
         SetValue(time, vec3, bDefault, applyMultiplier);
     }
-    void SetValue(float time, AZ::Quaternion& value, [[maybe_unused]] bool bDefault = false)
+    void SetValue(float time, AZ::Quaternion& value, bool bDefault = false)
     {
         Quat quat(value.GetW(), value.GetX(), value.GetY(), value.GetZ());
-        SetValue(time, quat);
+        SetValue(time, quat, bDefault);
     }
 
     // Only for position tracks, offset all track keys by this amount.
@@ -642,7 +676,7 @@ public:
     virtual void SetName(const char* name) = 0;
 
     //! Get node name.
-    virtual const char* GetName() = 0;
+    virtual const char* GetName() const = 0;
 
     // Get Type of this node.
     virtual AnimNodeType GetType() const = 0;
@@ -686,6 +720,34 @@ public:
     //! Scale entity node.
     virtual void SetScale(float time, const Vec3& scale) = 0;
 
+    /**
+     * O3DE_DEPRECATION_NOTICE(GHI-9326)
+     * use equivalent SetPos that accepts AZ::Vector3  
+     **/
+    void SetPos(float time, const AZ::Vector3& pos)
+    {
+        Vec3 vec3(pos.GetX(), pos.GetY(), pos.GetZ());
+        SetPos(time, vec3);
+    }
+    /**
+     * O3DE_DEPRECATION_NOTICE(GHI-9326)
+     * use equivalent SetRotate that accepts AZ::Quaternion  
+     **/
+    void SetRotate(float time, const AZ::Quaternion& rot)
+    {
+        Quat quat(rot.GetX(), rot.GetY(), rot.GetZ(), rot.GetW());
+        SetRotate(time, quat);
+    }
+    /**
+     * O3DE_DEPRECATION_NOTICE(GHI-9326)
+     * use equivalent SetScale that accepts AZ::Vector3  
+     **/
+    void SetScale(float time, const AZ::Vector3& scale)
+    {
+        Vec3 vec3(scale.GetX(), scale.GetY(), scale.GetZ());
+        SetScale(time, vec3);
+    }
+
     //! Compute and return the offset which brings the current position to the given position
     virtual Vec3 GetOffsetPosition(const Vec3& position) { return position - GetPos(); }
 
@@ -704,11 +766,57 @@ public:
     virtual bool SetParamValue(float time, CAnimParamType param, float value) = 0;
     virtual bool SetParamValue(float time, CAnimParamType param, const Vec3& value) = 0;
     virtual bool SetParamValue(float time, CAnimParamType param, const Vec4& value) = 0;
+    
+    /**
+     * O3DE_DEPRECATION_NOTICE(GHI-9326)
+     * use equivalent SetParamValue that accepts AZ::Vector3  
+     **/
+    bool SetParamValue(float time, CAnimParamType param, const AZ::Vector3& value) 
+    {
+        Vec3 vec3(value.GetX(), value.GetY(), value.GetZ());
+        return SetParamValue(time, param, vec3);
+    }
+
+    /**
+     * O3DE_DEPRECATION_NOTICE(GHI-9326)
+     * use equivalent SetParamValue that accepts AZ::Vector4  
+     **/
+    bool SetParamValue(float time, CAnimParamType param, const AZ::Vector4& value) 
+    {
+        Vec4 vec4(value.GetX(), value.GetY(), value.GetZ(), value.GetW());
+        return SetParamValue(time, param, vec4);
+    }
+
+    
     // Get float/vec3/vec4 parameter at given time.
     // @return true if parameter exist, false if this parameter not exist in node.
     virtual bool GetParamValue(float time, CAnimParamType param, float& value) = 0;
     virtual bool GetParamValue(float time, CAnimParamType param, Vec3& value) = 0;
     virtual bool GetParamValue(float time, CAnimParamType param, Vec4& value) = 0;
+
+    /**
+     * O3DE_DEPRECATION_NOTICE(GHI-9326)
+     * use equivalent GetParamValue that accepts AZ::Vector4  
+     **/
+    bool GetParamValue(float time, CAnimParamType param, AZ::Vector3& value) 
+    {
+        Vec3 vec3;
+        const bool result = GetParamValue(time, param, vec3);
+        value.Set(vec3.x, vec3.y, vec3.z);
+        return result;
+    }
+
+    /**
+     * O3DE_DEPRECATION_NOTICE(GHI-9326)
+     * use equivalent GetParamValue that accepts AZ::Vector4  
+     **/
+    bool GetParamValue(float time, CAnimParamType param, AZ::Vector4& value) 
+    {
+        Vec4 vec4;
+        const bool result = GetParamValue(time, param, vec4);
+        value.Set(vec4.x, vec4.y, vec4.z, vec4.w);
+        return result;
+    }
 
     //! Evaluate animation node while not playing animation.
     virtual void StillUpdate() = 0;
@@ -802,10 +910,16 @@ public:
     virtual void SetNodeOwner(IAnimNodeOwner* pOwner) = 0;
     virtual IAnimNodeOwner* GetNodeOwner() = 0;
 
-    // Serialize this animation node to XML.
+    /**
+     * O3DE_DEPRECATION_NOTICE(GHI-9326)
+     * Serialization for Sequence data in Component Entity Sequences now occurs through AZ::SerializeContext and the Sequence Component
+     **/
     virtual void Serialize(XmlNodeRef& xmlNode, bool bLoading, bool bLoadEmptyTracks) = 0;
 
-    // Serialize only the tracks in this animation node to/from XML
+    /**
+     * O3DE_DEPRECATION_NOTICE(GHI-9326)
+     * Serialization for Sequence data in Component Entity Sequences now occurs through AZ::SerializeContext and the Sequence Component
+     **/
     virtual void SerializeAnims(XmlNodeRef& xmlNode, bool bLoading, bool bLoadEmptyTracks) = 0;
 
     // Sets up internal pointers post load from Sequence Component
@@ -892,7 +1006,6 @@ struct ITrackEventListener
     //      event - Track event added
     //      pUserData - Data to accompany reason
     virtual void OnTrackEvent(IAnimSequence* sequence, int reason, const char* event, void* pUserData) = 0;
-    virtual void GetMemoryUsage([[maybe_unused]] ICrySizer* pSizer) const{};
     // </interfuscator:shuffle>
 };
 
@@ -1153,8 +1266,6 @@ struct IMovieListener
     //! callback on movie events
     virtual void OnMovieEvent(EMovieEvent movieEvent, IAnimSequence* pAnimSequence) = 0;
     // </interfuscator:shuffle>
-
-    void GetMemoryUsage([[maybe_unused]] ICrySizer* pSizer) const{}
 };
 
 /** Movie System interface.
@@ -1327,7 +1438,6 @@ struct IMovieSystem
     virtual bool IsRecording() const = 0;
 
     virtual void EnableCameraShake(bool bEnabled) = 0;
-    virtual bool IsCameraShakeEnabled() const = 0;
 
     // Pause any playing sequences.
     virtual void Pause() = 0;
@@ -1382,8 +1492,6 @@ struct IMovieSystem
     virtual void EnableBatchRenderMode(bool bOn) = 0;
     virtual bool IsInBatchRenderMode() const = 0;
 
-    virtual ILightAnimWrapper* CreateLightAnimWrapper(const char* name) const = 0;
-
     virtual void LoadParamTypeFromXml(CAnimParamType& animParamType, const XmlNodeRef& xmlNode, const uint version) = 0;
     virtual void SaveParamTypeToXml(const CAnimParamType& animParamType, XmlNodeRef& xmlNode) = 0;
 
@@ -1409,40 +1517,6 @@ struct IMovieSystem
     // </interfuscator:shuffle>
 };
 
-inline void SAnimContext::Serialize(XmlNodeRef& xmlNode, bool bLoading)
-{
-    if (bLoading)
-    {
-        XmlString name;
-        if (xmlNode->getAttr("sequence", name))
-        {
-            sequence = gEnv->pMovieSystem->FindLegacySequenceByName(name.c_str());
-        }
-        xmlNode->getAttr("dt", dt);
-        xmlNode->getAttr("fps", fps);
-        xmlNode->getAttr("time", time);
-        xmlNode->getAttr("bSingleFrame", singleFrame);
-        xmlNode->getAttr("bResetting", resetting);
-        xmlNode->getAttr("trackMask", trackMask);
-        xmlNode->getAttr("startTime", startTime);
-    }
-    else
-    {
-        if (sequence)
-        {
-            AZStd::string fullname = sequence->GetName();
-            xmlNode->setAttr("sequence", fullname.c_str());
-        }
-        xmlNode->setAttr("dt", dt);
-        xmlNode->setAttr("fps", fps);
-        xmlNode->setAttr("time", time);
-        xmlNode->setAttr("bSingleFrame", singleFrame);
-        xmlNode->setAttr("bResetting", resetting);
-        xmlNode->setAttr("trackMask", trackMask);
-        xmlNode->setAttr("startTime", startTime);
-    }
-}
-
 inline void CAnimParamType::SaveToXml(XmlNodeRef& xmlNode) const
 {
     gEnv->pMovieSystem->SaveParamTypeToXml(*this, xmlNode);
@@ -1457,5 +1531,3 @@ inline void CAnimParamType::Serialize(XmlNodeRef& xmlNode, bool bLoading, const 
 {
     gEnv->pMovieSystem->SerializeParamType(*this, xmlNode, bLoading, version);
 }
-
-#endif // CRYINCLUDE_CRYCOMMON_IMOVIESYSTEM_H

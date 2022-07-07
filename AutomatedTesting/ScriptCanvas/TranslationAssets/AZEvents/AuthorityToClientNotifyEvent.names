@@ -1,0 +1,56 @@
+{
+    "entries": [
+        {
+            "base": "AuthorityToClient Notify Event",
+            "context": "AZEventHandler",
+            "variant": "",
+            "details": {
+                "name": "Authority To Client Notify Event"
+            },
+            "slots": [
+                {
+                    "base": "someFloat",
+                    "details": {
+                        "name": "someFloat"
+                    }
+                },
+                {
+                    "base": "AuthorityToClient Notify Event",
+                    "details": {
+                        "name": "AuthorityToClient Notify Event"
+                    }
+                },
+                {
+                    "base": "Connect",
+                    "details": {
+                        "name": "Connect"
+                    }
+                },
+                {
+                    "base": "Disconnect",
+                    "details": {
+                        "name": "Disconnect"
+                    }
+                },
+                {
+                    "base": "On Connected",
+                    "details": {
+                        "name": "On Connected"
+                    }
+                },
+                {
+                    "base": "On Disconnected",
+                    "details": {
+                        "name": "On Disconnected"
+                    }
+                },
+                {
+                    "base": "OnEvent",
+                    "details": {
+                        "name": "OnEvent"
+                    }
+                }
+            ]
+        }
+    ]
+}

@@ -21,12 +21,14 @@ namespace GraphCanvas
         
         ManageUnusedSlotsMenuAction(QObject* parent, bool hideSlots);
         virtual ~ManageUnusedSlotsMenuAction() = default;
-        
+
+        using NodeContextMenuAction::RefreshAction;
         void RefreshAction(const GraphId& grpahId, const AZ::EntityId& targetId) override;
+
+        using NodeContextMenuAction::TriggerAction;
         SceneReaction TriggerAction(const GraphId& graphId, const AZ::Vector2&) override;
         
     private:
-    
         bool         m_hideSlots = true;
         AZ::EntityId m_targetId;
     };    

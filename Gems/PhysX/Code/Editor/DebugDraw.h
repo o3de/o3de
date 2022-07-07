@@ -38,7 +38,8 @@ namespace PhysX
         class DisplayCallback
         {
         public:
-            virtual void Display(AzFramework::DebugDisplayRequests& debugDisplayRequests) const = 0;
+            virtual void Display(const AzFramework::ViewportInfo& viewportInfo,
+                AzFramework::DebugDisplayRequests& debugDisplay) const = 0;
         protected:
             ~DisplayCallback() = default;
         };
@@ -61,6 +62,8 @@ namespace PhysX
 
             bool HasCachedGeometry() const;
             void ClearCachedGeometry();
+
+            void SetDisplayFlag(bool enable);
 
             void BuildMeshes(const Physics::ShapeConfiguration& shapeConfig, AZ::u32 geomIndex) const;
 
@@ -104,7 +107,14 @@ namespace PhysX
                 const AZ::Vector3& meshScale,
                 AZ::u32 geomIndex) const;
 
-            void DrawPolygonPrism(AzFramework::DebugDisplayRequests& debugDisplay,
+            void DrawHeightfield(
+                AzFramework::DebugDisplayRequests& debugDisplay,
+                const AZ::Vector3& aabbCenterLocalBody,
+                float drawDistance,
+                const AZStd::shared_ptr<const Physics::Shape>& shape) const;
+
+            void DrawPolygonPrism(
+                AzFramework::DebugDisplayRequests& debugDisplay,
                 const Physics::ColliderConfiguration& colliderConfig, const AZStd::vector<AZ::Vector3>& points) const;
 
             AZ::Transform GetColliderLocalTransform(const Physics::ColliderConfiguration& colliderConfig,
@@ -145,7 +155,6 @@ namespace PhysX
 
             AZStd::string GetEntityName() const;
 
-            bool m_globalButtonState = false; //!< Button linked to the global debug preference.
             bool m_locallyEnabled = true; //!< Local setting to enable displaying the collider in editor view.
             AZ::EntityId m_entityId;
             const DisplayCallback* m_displayCallback = nullptr;

@@ -18,11 +18,6 @@
 #include "ScopedVariableSetter.h"
 #include "GridUtils.h"
 
-
-static const QColor timeMarkerCol = QColor(255, 0, 255);
-static const QColor textCol = QColor(0, 0, 0);
-static const QColor ltgrayCol = QColor(110, 110, 110);
-
 QColor InterpolateColor(const QColor& c1, const QColor& c2, float fraction)
 {
     const int r = static_cast<int>(static_cast<float>(c2.red() - c1.red()) * fraction + c1.red());
@@ -131,7 +126,6 @@ void TimelineWidget::DrawTicks(QPainter* painter)
     const QPen pOldPen = painter->pen();
 
     const QPen ltgray(QColor(110, 110, 110));
-    const QPen black(palette().color(QPalette::Normal, QPalette::Text));
     const QPen redpen(QColor(255, 0, 255));
 
     // Draw time ticks every tick step seconds.
@@ -603,7 +597,6 @@ void TimelineWidget::DrawSecondTicks(QPainter* painter)
 {
     const QPen ltgray(QColor(110, 110, 110));
     const QPen black(palette().color(QPalette::Normal, QPalette::Text));
-    const QPen redpen(QColor(255, 0, 255));
 
     for (int gx = m_grid.firstGridLine.x(); gx < m_grid.firstGridLine.x() + m_grid.numGridLines.x() + 1; gx++)
     {

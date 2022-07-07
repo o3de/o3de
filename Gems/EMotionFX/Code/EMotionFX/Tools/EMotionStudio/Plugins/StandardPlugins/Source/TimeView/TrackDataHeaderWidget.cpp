@@ -37,7 +37,6 @@
 #include <EMotionFX/Source/MotionManager.h>
 #include <EMotionFX/Source/AnimGraphManager.h>
 #include <EMotionFX/CommandSystem/Source/MotionEventCommands.h>
-#include "../MotionWindow/MotionWindowPlugin.h"
 #include "../MotionEvents/MotionEventsPlugin.h"
 #include "../../../../EMStudioSDK/Source/EMStudioManager.h"
 #include "../../../../EMStudioSDK/Source/MainWindow.h"
@@ -219,10 +218,10 @@ namespace EMStudio
             }
             else
             {
-                const AZStd::vector<EMotionFX::MotionInstance*>& motionInstances = MotionWindowPlugin::GetSelectedMotionInstances();
-                if (motionInstances.size() == 1)
+                const AZStd::vector<EMotionFX::MotionInstance*>& selectedMotionInstances = CommandSystem::GetCommandManager()->GetCurrentSelection().GetSelectedMotionInstances();
+                if (selectedMotionInstances.size() == 1)
                 {
-                    EMotionFX::MotionInstance* motionInstance = motionInstances[0];
+                    EMotionFX::MotionInstance* motionInstance = selectedMotionInstances[0];
                     motionInstance->SetCurrentTime(aznumeric_cast<float>(m_plugin->GetCurrentTime()), false);
                     motionInstance->SetPause(true);
                     emit m_plugin->ManualTimeChange(aznumeric_cast<float>(m_plugin->GetCurrentTime()));
@@ -284,8 +283,6 @@ namespace EMStudio
     {
         m_plugin->SetRedrawFlag();
 
-        const bool ctrlPressed = event->modifiers() & Qt::ControlModifier;
-        const bool shiftPressed = event->modifiers() & Qt::ShiftModifier;
         const bool altPressed = event->modifiers() & Qt::AltModifier;
 
         // store the last clicked position
@@ -327,10 +324,10 @@ namespace EMStudio
                 }
                 else
                 {
-                    const AZStd::vector<EMotionFX::MotionInstance*>& motionInstances = MotionWindowPlugin::GetSelectedMotionInstances();
-                    if (motionInstances.size() == 1)
+                    const AZStd::vector<EMotionFX::MotionInstance*>& selectedMotionInstances = CommandSystem::GetCommandManager()->GetCurrentSelection().GetSelectedMotionInstances();
+                    if (selectedMotionInstances.size() == 1)
                     {
-                        EMotionFX::MotionInstance* motionInstance = motionInstances[0];
+                        EMotionFX::MotionInstance* motionInstance = selectedMotionInstances[0];
                         motionInstance->SetCurrentTime(aznumeric_cast<float>(m_plugin->GetCurrentTime()), false);
                         motionInstance->SetPause(true);
                         m_plugin->GetTimeViewToolBar()->UpdateInterface();
@@ -369,8 +366,6 @@ namespace EMStudio
         {
             m_plugin->GetTimeInfoWidget()->SetIsOverwriteMode(false);
         }
-
-        const bool ctrlPressed = event->modifiers() & Qt::ControlModifier;
 
         if (event->button() == Qt::RightButton)
         {
@@ -455,10 +450,10 @@ namespace EMStudio
         double dropTime = m_plugin->PixelToTime(mousePos.x());
         m_plugin->SetCurrentTime(dropTime);
 
-        const AZStd::vector<EMotionFX::MotionInstance*>& motionInstances = MotionWindowPlugin::GetSelectedMotionInstances();
-        if (motionInstances.size() == 1)
+        const AZStd::vector<EMotionFX::MotionInstance*>& selectedMotionInstances = CommandSystem::GetCommandManager()->GetCurrentSelection().GetSelectedMotionInstances();
+        if (selectedMotionInstances.size() == 1)
         {
-            EMotionFX::MotionInstance* motionInstance = motionInstances[0];
+            EMotionFX::MotionInstance* motionInstance = selectedMotionInstances[0];
             motionInstance->SetCurrentTime(aznumeric_cast<float>(dropTime), false);
             motionInstance->Pause();
         }

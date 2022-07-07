@@ -42,7 +42,7 @@ namespace SceneLoggingExample
         }
 
         // In this example, no system components are added. You can use system components 
-        // to set global settings for this gem from the Project Configurator.
+        // to set global settings for this gem.
         // For functionality that should always be available to the SceneAPI, we recommend 
         // that you use a BehaviorComponent instead.
         AZ::ComponentTypeList GetRequiredSystemComponents() const override

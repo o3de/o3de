@@ -1,5 +1,5 @@
 {
-    "Source": "MSAAResolveCustom",
+    "Source": "MSAAResolveCustom.azsl",
 
     "DepthStencilState" : {
         "Depth" : { "Enable" : false }
@@ -18,7 +18,5 @@
           "type": "Fragment"
         }
       ]
-    },
-
-    "ProgramVariants": []
+    }
 }

@@ -5,7 +5,7 @@
     "ClassData": {
         "PassTemplate": {
             "Name": "ReflectionScreenSpaceTracePassTemplate",
-            "PassClass": "FullScreenTriangle",
+            "PassClass": "ReflectionScreenSpaceTracePass",
             "Slots": [
                 {
                     "Name": "DepthStencilTextureInput",
@@ -28,24 +28,52 @@
                     "ScopeAttachmentUsage": "Shader"
                 },
                 {
-                    "Name": "DepthStencilInput",
+                    "Name": "ReflectionInputOutput",
                     "SlotType": "Input",
-                    "ScopeAttachmentUsage": "DepthStencil",
-                    "ImageViewDesc": {
-                        "AspectFlags": [
-                            "Stencil"
-                        ]
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "PreviousFrameInputOutput",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "ScreenSpaceReflectionOutput",
+                    "SlotType": "Output",
+                    "ScopeAttachmentUsage": "RenderTarget",
+                    "LoadStoreAction": {
+                        "ClearValue": {
+                            "Value": [
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0
+                            ]
+                        },
+                        "LoadAction": "Clear"
                     }
                 },
                 {
-                    "Name": "Output",
+                    "Name": "DownsampledDepthOutput",
                     "SlotType": "Output",
-                    "ScopeAttachmentUsage": "RenderTarget"
+                    "ScopeAttachmentUsage": "DepthStencil",
+                    "LoadStoreAction": {
+                        "ClearValue": {
+                            "Type": "DepthStencil",
+                            "Value": [
+                                1.0,
+                                {},
+                                {},
+                                {}
+                            ]
+                        },
+                        "LoadAction": "Clear"
+                    }
                 }
             ],
             "ImageAttachments": [
                 {
-                    "Name": "TraceImage",
+                    "Name": "ScreenSpaceReflectionImage",
                     "SizeSource": {
                         "Source": {
                             "Pass": "This",
@@ -56,9 +84,40 @@
                             "HeightMultiplier": 0.5
                         }
                     },
-                    "MultisampleSource": {
-                        "Pass": "This",
-                        "Attachment": "SpecularF0Input"
+                    "ImageDescriptor": {
+                        "Format": "R16G16B16A16_FLOAT",
+                        "MipLevels": "5",
+                        "SharedQueueMask": "Graphics"
+                    }
+                },
+                {
+                    "Name": "DownsampledDepthImage",
+                    "SizeSource": {
+                        "Source": {
+                            "Pass": "Parent",
+                            "Attachment": "DepthStencilInput"
+                        },
+                        "Multipliers": {
+                            "WidthMultiplier": 0.5,
+                            "HeightMultiplier": 0.5
+                        }
+                    },
+                    "FormatSource": {
+                        "Pass": "Parent",
+                        "Attachment": "DepthStencilInput"
+                    },
+                    "ImageDescriptor": {
+                        "MipLevels": "5",
+                        "SharedQueueMask": "Graphics"
+                    }
+                },
+                {
+                    "Name": "PreviousFrameImage",
+                    "SizeSource": {
+                        "Source": {
+                            "Pass": "Parent",
+                            "Attachment": "SpecularInput"
+                        }
                     },
                     "ImageDescriptor": {
                         "Format": "R16G16B16A16_FLOAT",
@@ -68,15 +127,28 @@
             ],
             "Connections": [
                 {
-                    "LocalSlot": "Output",
+                    "LocalSlot": "ScreenSpaceReflectionOutput",
                     "AttachmentRef": {
                         "Pass": "This",
-                        "Attachment": "TraceImage"
+                        "Attachment": "ScreenSpaceReflectionImage"
+                    }
+                },
+                {
+                    "LocalSlot": "DownsampledDepthOutput",
+                    "AttachmentRef": {
+                        "Pass": "This",
+                        "Attachment": "DownsampledDepthImage"
+                    }
+                },
+                {
+                    "LocalSlot": "PreviousFrameInputOutput",
+                    "AttachmentRef": {
+                        "Pass": "This",
+                        "Attachment": "PreviousFrameImage"
                     }
                 }
             ],
-            "PassData":
-            {
+            "PassData": {
                 "$type": "FullscreenTrianglePassData",
                 "ShaderAsset": {
                     "FilePath": "Shaders/Reflections/ReflectionScreenSpaceTrace.shader"

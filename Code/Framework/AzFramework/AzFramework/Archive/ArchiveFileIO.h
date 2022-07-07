@@ -13,7 +13,6 @@
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/containers/fixed_vector.h>
 #include <AzCore/std/parallel/mutex.h>
-#include <AzCore/std/string/osstring.h>
 
 
 namespace AZ::IO
@@ -64,8 +63,9 @@ namespace AZ::IO
         IO::Result FindFiles(const char* filePath, const char* filter, FindFilesCallbackType callback) override;
         void SetAlias(const char* alias, const char* path) override;
         void ClearAlias(const char* alias) override;
+        void SetDeprecatedAlias(AZStd::string_view oldAlias, AZStd::string_view newAlias) override;
         AZStd::optional<AZ::u64> ConvertToAlias(char* inOutBuffer, AZ::u64 bufferLength) const override;
-        bool ConvertToAlias(AZ::IO::FixedMaxPath& convertedPath, const AZ::IO::PathView& path) const;
+        bool ConvertToAlias(AZ::IO::FixedMaxPath& convertedPath, const AZ::IO::PathView& path) const override;
         using FileIOBase::ConvertToAlias;
         const char* GetAlias(const char* alias) const override;
         bool ResolvePath(const char* path, char* resolvedPath, AZ::u64 resolvedPathSize) const override;
@@ -78,7 +78,7 @@ namespace AZ::IO
     protected:
         // we keep a list of file names ever opened so that we can easily return it.
         mutable AZStd::recursive_mutex m_operationGuard;
-        AZStd::unordered_map<IO::HandleType, AZ::OSString, AZStd::hash<IO::HandleType>, AZStd::equal_to<IO::HandleType>, AZ::OSStdAllocator> m_trackedFiles;
+        AZStd::unordered_map<IO::HandleType, AZ::IO::Path> m_trackedFiles;
         AZStd::fixed_vector<char, ArchiveFileIoMaxBuffersize> m_copyBuffer;
         IArchive* m_archive;
     };

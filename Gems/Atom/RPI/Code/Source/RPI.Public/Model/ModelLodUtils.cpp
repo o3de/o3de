@@ -10,7 +10,9 @@
 
 #include <Atom/RPI.Public/Model/Model.h>
 #include <Atom/RPI.Public/View.h>
+#include <Atom/RPI.Reflect/Model/ModelAsset.h>
 
+#include <AzCore/Math/Aabb.h>
 #include <AzCore/Math/Transform.h>
 #include <AzCore/Math/Vector2.h>
 
@@ -27,7 +29,7 @@ namespace AZ
 
             ModelLodIndex SelectLod(const View* view, const Vector3& position, const Model& model, ModelLodIndex lodOverride)
             {
-                AZ_PROFILE_FUNCTION(RPI);
+                AZ_PROFILE_SCOPE(RPI, "ModelLodUtils: SelectLod");
                 ModelLodIndex lodIndex;
                 if (model.GetLodCount() == 1)
                 {

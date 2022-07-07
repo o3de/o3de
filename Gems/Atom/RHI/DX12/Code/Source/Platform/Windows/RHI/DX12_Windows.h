@@ -16,12 +16,16 @@
 
 #include <d3d12.h>
 #include <dxgi1_6.h>
+
+AZ_PUSH_DISABLE_WARNING(4265, "-Wunknown-warning-option") // class has virtual functions, but its non-trivial destructor is not virtual; 
 #include <wrl.h>
+AZ_POP_DISABLE_WARNING
 
 #include <d3dx12.h>
+#include <d3dcommon.h>
 
-// This define is enabled if winpixeventruntime SDK is downloaded and it's path is hooked up to Environment var ATOM_PIX_PATH.
-// Enabling this define will allow the runtime code to add PIX markers which will hel pwith pix and renderdoc gpu captures
+// This define is enabled if LY_PIX_ENABLED is enabled during configure. You can use LY_PIX_PATH to point where pix is downloaded.
+// Enabling this define will allow the runtime code to add PIX markers which will help with pix and renderdoc gpu captures
 #ifdef USE_PIX
     #include <WinPixEventRuntime/pix3.h>
 #else
@@ -30,10 +34,13 @@
     #define PIXEndEvent(...)
 #endif //USE_PIX
 
-// This define controls whether ID3D12PipelineLibrary instances are used to de-duplicate
-// pipeline states. This feature was added in the Windows Anniversary Update, so if you
-// have an older version of windows this will need to be disabled.
-#define AZ_DX12_USE_PIPELINE_LIBRARY
+// Wrapper around PipelineLibrary code
+// We have disabled PSO caching for DX12 as there is a bug where the same PSO hash for a shader (like StandardPBR_ForwardPass_EDS) yields a different PipelineLibrary binary file
+// when written out from different user flows. For example a D3D12_GRAPHICS_PIPELINE_STATE_DESC with the same hash  when written out from ASV full test suite will yield
+// a different binary when compared to the one written out from Editor user flow. The only difference between the two workflows is that the shader options differ but in the
+// end both the flows should yield the same bytecode as they should pick the same shader vairant yet the cached pso differs for some reason.
+// This seems like a driver bug that we suspect is causing flickering issues. Need to follow up with Microsoft with this issue.
+//#define AZ_DX12_USE_PIPELINE_LIBRARY
 
 // Enabling this define will force every scope into its own command list that
 // is explicitly flushed through the GPU before the next scope is processed.
@@ -51,6 +58,9 @@
 
 // This define controls whether DXR ray tracing support is available on the platform.
 #define AZ_DX12_DXR_SUPPORT
+
+// This define is used to initialize the D3D12_ROOT_SIGNATURE_DESC::Flags property.
+#define AZ_DX12_ROOT_SIGNATURE_FLAGS D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT
 
 using ID3D12CommandAllocatorX = ID3D12CommandAllocator;
 using ID3D12CommandQueueX = ID3D12CommandQueue;

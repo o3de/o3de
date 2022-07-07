@@ -1,0 +1,1423 @@
+{
+    "entries": [
+        {
+            "base": "BloomRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "Bloom",
+                "category": "Rendering"
+            },
+            "methods": [
+                {
+                    "base": "GetTintStage0Override",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Tint Stage 0 Override"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Tint Stage 0 Override is invoked"
+                    },
+                    "details": {
+                        "name": "Get Tint Stage 0 Override"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Value"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetTintStage0Override",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Tint Stage 0 Override"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Tint Stage 0 Override is invoked"
+                    },
+                    "details": {
+                        "name": "Set Tint Stage 0 Override"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Value"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetTintStage1",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Tint Stage 1"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Tint Stage 1 is invoked"
+                    },
+                    "details": {
+                        "name": "Set Tint Stage 1"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Value"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetTintStage0",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Tint Stage 0"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Tint Stage 0 is invoked"
+                    },
+                    "details": {
+                        "name": "Set Tint Stage 0"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Value"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetKernelSizeStage3Override",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Kernel Size Stage 3 Override"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Kernel Size Stage 3 Override is invoked"
+                    },
+                    "details": {
+                        "name": "Get Kernel Size Stage 3 Override"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Value"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetTintStage3Override",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Tint Stage 3 Override"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Tint Stage 3 Override is invoked"
+                    },
+                    "details": {
+                        "name": "Get Tint Stage 3 Override"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Value"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetKernelSizeScaleOverride",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Kernel Size Scale Override"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Kernel Size Scale Override is invoked"
+                    },
+                    "details": {
+                        "name": "Set Kernel Size Scale Override"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Value"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetKernelSizeStage2",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Kernel Size Stage 2"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Kernel Size Stage 2 is invoked"
+                    },
+                    "details": {
+                        "name": "Set Kernel Size Stage 2"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Value"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetKernelSizeStage4",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Kernel Size Stage 4"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Kernel Size Stage 4 is invoked"
+                    },
+                    "details": {
+                        "name": "Get Kernel Size Stage 4"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Value"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetTintStage0",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Tint Stage 0"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Tint Stage 0 is invoked"
+                    },
+                    "details": {
+                        "name": "Get Tint Stage 0"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Value"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetTintStage4Override",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Tint Stage 4 Override"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Tint Stage 4 Override is invoked"
+                    },
+                    "details": {
+                        "name": "Set Tint Stage 4 Override"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Value"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetKernelSizeScale",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Kernel Size Scale"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Kernel Size Scale is invoked"
+                    },
+                    "details": {
+                        "name": "Get Kernel Size Scale"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Value"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetKernelSizeStage2",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Kernel Size Stage 2"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Kernel Size Stage 2 is invoked"
+                    },
+                    "details": {
+                        "name": "Get Kernel Size Stage 2"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Value"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetTintStage1Override",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Tint Stage 1 Override"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Tint Stage 1 Override is invoked"
+                    },
+                    "details": {
+                        "name": "Set Tint Stage 1 Override"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Value"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetTintStage3",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Tint Stage 3"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Tint Stage 3 is invoked"
+                    },
+                    "details": {
+                        "name": "Set Tint Stage 3"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Value"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetEnabledOverride",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Enabled Override"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Enabled Override is invoked"
+                    },
+                    "details": {
+                        "name": "Get Enabled Override"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Enabled"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetTintStage3Override",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Tint Stage 3 Override"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Tint Stage 3 Override is invoked"
+                    },
+                    "details": {
+                        "name": "Set Tint Stage 3 Override"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Value"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetEnabledOverride",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Enabled Override"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Enabled Override is invoked"
+                    },
+                    "details": {
+                        "name": "Set Enabled Override"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Enabled"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetKernelSizeStage0",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Kernel Size Stage 0"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Kernel Size Stage 0 is invoked"
+                    },
+                    "details": {
+                        "name": "Set Kernel Size Stage 0"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Value"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetKernelSizeStage0Override",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Kernel Size Stage 0 Override"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Kernel Size Stage 0 Override is invoked"
+                    },
+                    "details": {
+                        "name": "Get Kernel Size Stage 0 Override"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Value"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetKernelSizeStage4Override",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Kernel Size Stage 4 Override"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Kernel Size Stage 4 Override is invoked"
+                    },
+                    "details": {
+                        "name": "Set Kernel Size Stage 4 Override"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Value"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetTintStage2",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Tint Stage 2"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Tint Stage 2 is invoked"
+                    },
+                    "details": {
+                        "name": "Get Tint Stage 2"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Value"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetTintStage4Override",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Tint Stage 4 Override"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Tint Stage 4 Override is invoked"
+                    },
+                    "details": {
+                        "name": "Get Tint Stage 4 Override"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Value"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetKernelSizeStage0Override",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Kernel Size Stage 0 Override"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Kernel Size Stage 0 Override is invoked"
+                    },
+                    "details": {
+                        "name": "Set Kernel Size Stage 0 Override"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Value"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetKernelSizeStage4Override",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Kernel Size Stage 4 Override"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Kernel Size Stage 4 Override is invoked"
+                    },
+                    "details": {
+                        "name": "Get Kernel Size Stage 4 Override"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Value"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetTintStage2Override",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Tint Stage 2 Override"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Tint Stage 2 Override is invoked"
+                    },
+                    "details": {
+                        "name": "Get Tint Stage 2 Override"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Value"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetTintStage3",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Tint Stage 3"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Tint Stage 3 is invoked"
+                    },
+                    "details": {
+                        "name": "Get Tint Stage 3"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Value"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetKernelSizeScale",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Kernel Size Scale"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Kernel Size Scale is invoked"
+                    },
+                    "details": {
+                        "name": "Set Kernel Size Scale"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Value"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetIntensity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Intensity"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Intensity is invoked"
+                    },
+                    "details": {
+                        "name": "Get Intensity"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Value"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetBicubicEnabledOverride",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Bicubic Enabled Override"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Bicubic Enabled Override is invoked"
+                    },
+                    "details": {
+                        "name": "Get Bicubic Enabled Override"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Enabled"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetKernelSizeStage4",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Kernel Size Stage 4"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Kernel Size Stage 4 is invoked"
+                    },
+                    "details": {
+                        "name": "Set Kernel Size Stage 4"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Value"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetBicubicEnabled",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Bicubic Enabled"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Bicubic Enabled is invoked"
+                    },
+                    "details": {
+                        "name": "Set Bicubic Enabled"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Enabled"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetKernelSizeStage1Override",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Kernel Size Stage 1 Override"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Kernel Size Stage 1 Override is invoked"
+                    },
+                    "details": {
+                        "name": "Get Kernel Size Stage 1 Override"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Value"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetThresholdOverride",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Threshold Override"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Threshold Override is invoked"
+                    },
+                    "details": {
+                        "name": "Get Threshold Override"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Value"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetIntensity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Intensity"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Intensity is invoked"
+                    },
+                    "details": {
+                        "name": "Set Intensity"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Value"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetBicubicEnabledOverride",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Bicubic Enabled Override"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Bicubic Enabled Override is invoked"
+                    },
+                    "details": {
+                        "name": "Set Bicubic Enabled Override"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Enabled"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetKernelSizeStage1",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Kernel Size Stage 1"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Kernel Size Stage 1 is invoked"
+                    },
+                    "details": {
+                        "name": "Get Kernel Size Stage 1"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Value"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetKernelSizeStage2Override",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Kernel Size Stage 2 Override"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Kernel Size Stage 2 Override is invoked"
+                    },
+                    "details": {
+                        "name": "Get Kernel Size Stage 2 Override"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Value"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetTintStage4",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Tint Stage 4"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Tint Stage 4 is invoked"
+                    },
+                    "details": {
+                        "name": "Set Tint Stage 4"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Value"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetKernelSizeStage1",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Kernel Size Stage 1"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Kernel Size Stage 1 is invoked"
+                    },
+                    "details": {
+                        "name": "Set Kernel Size Stage 1"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Value"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetThresholdOverride",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Threshold Override"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Threshold Override is invoked"
+                    },
+                    "details": {
+                        "name": "Set Threshold Override"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Value"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetTintStage1",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Tint Stage 1"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Tint Stage 1 is invoked"
+                    },
+                    "details": {
+                        "name": "Get Tint Stage 1"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Value"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetKnee",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Knee"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Knee is invoked"
+                    },
+                    "details": {
+                        "name": "Get Knee"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Value"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetThreshold",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Threshold"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Threshold is invoked"
+                    },
+                    "details": {
+                        "name": "Set Threshold"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Value"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetIntensityOverride",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Intensity Override"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Intensity Override is invoked"
+                    },
+                    "details": {
+                        "name": "Set Intensity Override"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Value"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetEnabled",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Enabled"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Enabled is invoked"
+                    },
+                    "details": {
+                        "name": "Get Enabled"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Enabled"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetKernelSizeStage1Override",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Kernel Size Stage 1 Override"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Kernel Size Stage 1 Override is invoked"
+                    },
+                    "details": {
+                        "name": "Set Kernel Size Stage 1 Override"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Value"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetKernelSizeStage0",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Kernel Size Stage 0"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Kernel Size Stage 0 is invoked"
+                    },
+                    "details": {
+                        "name": "Get Kernel Size Stage 0"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Value"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetTintStage2Override",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Tint Stage 2 Override"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Tint Stage 2 Override is invoked"
+                    },
+                    "details": {
+                        "name": "Set Tint Stage 2 Override"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Value"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetTintStage4",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Tint Stage 4"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Tint Stage 4 is invoked"
+                    },
+                    "details": {
+                        "name": "Get Tint Stage 4"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Value"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetKernelSizeScaleOverride",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Kernel Size Scale Override"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Kernel Size Scale Override is invoked"
+                    },
+                    "details": {
+                        "name": "Get Kernel Size Scale Override"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Value"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetKernelSizeStage2Override",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Kernel Size Stage 2 Override"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Kernel Size Stage 2 Override is invoked"
+                    },
+                    "details": {
+                        "name": "Set Kernel Size Stage 2 Override"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Value"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetKernelSizeStage3",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Kernel Size Stage 3"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Kernel Size Stage 3 is invoked"
+                    },
+                    "details": {
+                        "name": "Get Kernel Size Stage 3"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Value"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetTintStage1Override",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Tint Stage 1 Override"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Tint Stage 1 Override is invoked"
+                    },
+                    "details": {
+                        "name": "Get Tint Stage 1 Override"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Value"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetTintStage2",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Tint Stage 2"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Tint Stage 2 is invoked"
+                    },
+                    "details": {
+                        "name": "Set Tint Stage 2"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Value"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetKneeOverride",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Knee Override"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Knee Override is invoked"
+                    },
+                    "details": {
+                        "name": "Get Knee Override"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Value"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetKnee",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Knee"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Knee is invoked"
+                    },
+                    "details": {
+                        "name": "Set Knee"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Value"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetIntensityOverride",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Intensity Override"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Intensity Override is invoked"
+                    },
+                    "details": {
+                        "name": "Get Intensity Override"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Value"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetEnabled",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Enabled"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Enabled is invoked"
+                    },
+                    "details": {
+                        "name": "Set Enabled"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Enabled"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetThreshold",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Threshold"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Threshold is invoked"
+                    },
+                    "details": {
+                        "name": "Get Threshold"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Value"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetKernelSizeStage3",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Kernel Size Stage 3"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Kernel Size Stage 3 is invoked"
+                    },
+                    "details": {
+                        "name": "Set Kernel Size Stage 3"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Value"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetKernelSizeStage3Override",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Kernel Size Stage 3 Override"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Kernel Size Stage 3 Override is invoked"
+                    },
+                    "details": {
+                        "name": "Set Kernel Size Stage 3 Override"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Value"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetKneeOverride",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Knee Override"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Knee Override is invoked"
+                    },
+                    "details": {
+                        "name": "Set Knee Override"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Value"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetBicubicEnabled",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Bicubic Enabled"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Bicubic Enabled is invoked"
+                    },
+                    "details": {
+                        "name": "Get Bicubic Enabled"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Enabled"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

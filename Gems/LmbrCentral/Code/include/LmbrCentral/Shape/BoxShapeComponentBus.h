@@ -21,13 +21,22 @@ namespace LmbrCentral
     /// Type ID for the EditorBoxShapeComponent
     static const AZ::Uuid EditorBoxShapeComponentTypeId = "{2ADD9043-48E8-4263-859A-72E0024372BF}";
 
+    /// Type ID for the BoxShapeConfig
+    static const AZ::Uuid BoxShapeConfigTypeId = "{F034FBA2-AC2F-4E66-8152-14DFB90D6283}";
+
+    /// Type ID for the AxisAlignedBoxShapeComponent
+    static const AZ::Uuid AxisAlignedBoxShapeComponentTypeId = "{641D817E-1BC6-406A-BBB2-218541808E45}";
+
+    /// Type ID for the EditorAxisAlignedBoxShapeComponent
+    static const AZ::Uuid EditorAxisAlignedBoxShapeComponentTypeId = "{8C027DF6-E157-4159-9BF8-F1B925466F1F}";
+
     /// Configuration data for BoxShapeComponent
     class BoxShapeConfig
         : public ShapeComponentConfig
     {
     public:
         AZ_CLASS_ALLOCATOR(BoxShapeConfig, AZ::SystemAllocator, 0)
-        AZ_RTTI(BoxShapeConfig, "{F034FBA2-AC2F-4E66-8152-14DFB90D6283}", ShapeComponentConfig)
+        AZ_RTTI(BoxShapeConfig, BoxShapeConfigTypeId, ShapeComponentConfig)
 
         static void Reflect(AZ::ReflectContext* context);
 

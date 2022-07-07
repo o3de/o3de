@@ -20,7 +20,7 @@
 
 #include <Editor/Include/ScriptCanvas/Bus/RequestBus.h>
 
-namespace ScriptCanvasDeveloper
+namespace ScriptCanvas::Developer
 {
     /////////////////////
     // FindNodePosition
@@ -187,7 +187,6 @@ namespace ScriptCanvasDeveloper
 
     DeleteVariableRowFromPaletteState::DeleteVariableRowFromPaletteState(int row)
         : NamedAutomationState("DeleteVariableRowFromPaletteState")
-        , m_row(row)
         , m_clickAction(Qt::MouseButton::LeftButton)
         , m_deleteAction(VK_DELETE)
     {

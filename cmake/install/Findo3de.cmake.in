@@ -12,7 +12,15 @@ include(FindPackageHandleStandardArgs)
 
 # This will be called from within the installed engine's CMakeLists.txt
 macro(ly_find_o3de_packages)
-@FIND_PACKAGES_PLACEHOLDER@
+    if(LY_MONOLITHIC_GAME)
+        set(monolithic_file "${LY_ROOT_FOLDER}/cmake/Platform/${PAL_PLATFORM_NAME}/Monolithic/o3de_subdirectories_${PAL_PLATFORM_NAME_LOWERCASE}.cmake")
+        if(NOT EXISTS ${monolithic_file})
+            message(FATAL_ERROR "O3DE SDK was not generated to support monolithic builds")
+        endif()
+        include("${monolithic_file}")
+    else()
+        include("${LY_ROOT_FOLDER}/cmake/Platform/${PAL_PLATFORM_NAME}/Default/o3de_subdirectories_${PAL_PLATFORM_NAME_LOWERCASE}.cmake")
+    endif()
     find_package(LauncherGenerator)
 endmacro()
 
@@ -21,6 +29,13 @@ function(o3de_current_file_path path)
     set(${path} ${CMAKE_CURRENT_FUNCTION_LIST_DIR} PARENT_SCOPE)
 endfunction()
 
+
+o3de_current_file_path(find_o3de_path)
+cmake_path(SET engine_root_folder NORMALIZE ${find_o3de_path}/..)
+set_property(GLOBAL PROPERTY O3DE_ENGINE_ROOT_FOLDER "${engine_root_folder}")
+
+# Inject the CompilerSettings.cmake to be included before the project command
+set(CMAKE_PROJECT_INCLUDE_BEFORE "${engine_root_folder}cmake/CompilerSettings.cmake")
 
 # We are using the engine's CMakeLists.txt to handle initialization/importing targets
 # Since this is external to the project's source, we need to specify an output directory

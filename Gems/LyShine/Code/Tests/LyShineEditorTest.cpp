@@ -60,7 +60,7 @@ AZ_UNIT_TEST_HOOK(DEFAULT_UNIT_TEST_ENV);
 using namespace AZ;
 using ::testing::NiceMock;
 
-class LyShineSystemTestComponent 
+class LyShineSystemTestComponent
     : public LyShine::LyShineSystemComponent
 {
     friend class LyShineEditorTest;
@@ -85,23 +85,29 @@ protected:
         AZ::SettingsRegistryInterface* registry = AZ::SettingsRegistry::Get();
         auto projectPathKey =
             AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) + "/project_path";
-        registry->Set(projectPathKey, "AutomatedTesting");
+        AZ::IO::FixedMaxPath enginePath;
+        registry->Get(enginePath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
+        registry->Set(projectPathKey, (enginePath / "AutomatedTesting").Native());
         AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*registry);
 
         m_app.Start(m_descriptor);
         // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
-        // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash 
+        // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash
         // in the unit tests.
         AZ::UserSettingsComponentRequestBus::Broadcast(&AZ::UserSettingsComponentRequests::DisableSaveOnFinalize);
 
         const AZStd::string engineRoot = AZ::Test::GetEngineRootPath();
 
-        AZ::IO::FileIOBase::GetInstance()->SetAlias("@engroot@", engineRoot.c_str());   
+        auto fileIo = AZ::IO::FileIOBase::GetInstance();
+        fileIo->SetAlias("@engroot@", engineRoot.c_str());
 
         AZ::IO::Path assetRoot(AZ::Utils::GetProjectPath());
         assetRoot /= "Cache";
 
-        AZ::IO::FileIOBase::GetInstance()->SetAlias("@root@", assetRoot.c_str());   
+        AZ::IO::FileIOBase::GetInstance()->SetAlias("@products@", assetRoot.c_str());
+
+        // Set the @gemroot:<gem-name> alias for active gems
+        AZ::Test::AddActiveGem("LyShine", *registry, fileIo);
 
         AZ::SerializeContext* context = nullptr;
         ComponentApplicationBus::BroadcastResult(context, &ComponentApplicationBus::Events::GetSerializeContext);
@@ -219,7 +225,7 @@ protected:
 
 AZStd::string GetTestFileAliasedPath(AZStd::string_view fileName)
 {
-    constexpr char testFileFolder[] = "@engroot@/Gems/LyShine/Code/Tests/";
+    constexpr char testFileFolder[] = "@gemroot:LyShine@/Code/Tests/";
     return AZStd::string::format("%s%.*s", testFileFolder, aznumeric_cast<int>(fileName.size()), fileName.data());
 }
 
@@ -266,10 +272,10 @@ TEST_F(LyShineEditorTest, FindLoadedCanvasByPathName_FT)
     UiCanvasManager canvasManager;
 
     //find loaded canvas, should return invalid id
-    AZ::EntityId entityId = canvasManager.FindLoadedCanvasByPathName("@engroot@/Gems/LyShine/Code/Tests/TestAssets/Canvases/empty.uicanvas", false);
+    AZ::EntityId entityId = canvasManager.FindLoadedCanvasByPathName("@gemroot:LyShine@/Code/Tests/TestAssets/Canvases/empty.uicanvas", false);
     EXPECT_FALSE(entityId.IsValid());
 
     //load a new canvas
-    entityId = canvasManager.FindLoadedCanvasByPathName("@engroot@/Gems/LyShine/Code/Tests/TestAssets/Canvases/empty.uicanvas", true);
+    entityId = canvasManager.FindLoadedCanvasByPathName("@gemroot:LyShine@/Code/Tests/TestAssets/Canvases/empty.uicanvas", true);
     EXPECT_TRUE(entityId.IsValid());
 }

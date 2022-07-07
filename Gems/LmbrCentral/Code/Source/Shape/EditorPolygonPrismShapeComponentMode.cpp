@@ -114,20 +114,19 @@ namespace LmbrCentral
         // initialize height manipulator
         m_heightManipulator = LinearManipulator::MakeShared(m_currentTransform);
         m_heightManipulator->AddEntityComponentIdPair(GetEntityComponentIdPair());
-        m_heightManipulator->SetSpace(AzToolsFramework::TransformUniformScale(m_currentTransform));
+        m_heightManipulator->SetSpace(m_currentTransform);
         m_heightManipulator->SetNonUniformScale(m_currentNonUniformScale);
         m_heightManipulator->SetLocalTransform(
             AZ::Transform::CreateTranslation(CalculateHeightManipulatorPosition(*polygonPrism)));
         m_heightManipulator->SetAxis(AZ::Vector3::CreateAxisZ());
 
         const float lineLength = 0.5f;
-        const float lineWidth = 0.05f;
         const float coneLength = 0.28f;
         const float coneRadius = 0.07f;
         ManipulatorViews views;
         views.emplace_back(CreateManipulatorViewLine(
             *m_heightManipulator, AZ::Color(0.0f, 0.0f, 1.0f, 1.0f),
-            lineLength, lineWidth));
+            lineLength, AzToolsFramework::ManipulatorLineBoundWidth()));
         views.emplace_back(CreateManipulatorViewCone(*m_heightManipulator,
             AZ::Color(0.0f, 0.0f, 1.0f, 1.0f), m_heightManipulator->GetAxis() *
             (lineLength - coneLength), coneLength, coneRadius));

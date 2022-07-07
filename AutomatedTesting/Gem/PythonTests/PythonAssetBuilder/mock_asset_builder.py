@@ -23,7 +23,7 @@ def create_jobs(request):
     jobDescriptorList = []
     for platformInfo in request.enabledPlatforms:
         jobDesc = azlmbr.asset.builder.JobDescriptor()
-        jobDesc.jobKey = jobKeyName
+        jobDesc.jobKey = f'{jobKeyName}-{platformInfo.identifier}'
         jobDesc.set_platform_identifier(platformInfo.identifier)
         jobDescriptorList.append(jobDesc)
 
@@ -38,7 +38,7 @@ def on_create_jobs(args):
         return create_jobs(request)
     except:
         log_exception_traceback()
-    # returing back a default CreateJobsResponse() records an asset error
+    # returning back a default CreateJobsResponse() records an asset error
     return azlmbr.asset.builder.CreateJobsResponse()
 
 def process_file(request):
@@ -58,6 +58,7 @@ def process_file(request):
     fileOutput = open(tempFilename, "w")
     fileOutput.write('{}')
     fileOutput.close()
+    print(f'Wrote mock asset file: {tempFilename}')
 
     # generate a product asset file entry
     subId = binascii.crc32(mockFilename.encode())

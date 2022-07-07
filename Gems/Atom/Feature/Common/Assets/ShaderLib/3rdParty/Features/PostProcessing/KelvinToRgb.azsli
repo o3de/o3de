@@ -1,0 +1,42 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: (Apache-2.0 OR MIT) AND Creative Commons 3.0
+ *
+ */
+
+// Ref: https://www.shadertoy.com/view/lsSXW1
+// ported by Renaud Bédard (@renaudbedard) from original code from Tanner Helland
+// http://www.tannerhelland.com/4435/convert-temperature-rgb-algorithm-code/
+
+// color space functions translated from HLSL versions on Chilli Ant (by Ian Taylor)
+// http://www.chilliant.com/rgb2hsv.html
+
+// licensed and released under Creative Commons 3.0 Attribution
+// https://creativecommons.org/licenses/by/3.0/
+
+// Color temperature
+float3 KelvinToRgb(float kelvin)
+{
+    float3 ret;
+    kelvin = clamp(kelvin, 1000.0f, 40000.0f) / 100.0f;
+    if(kelvin <= 66.0f)
+    {
+        ret.r = 1.0f;
+        ret.g = saturate(0.39008157876901960784f * log(kelvin) - 0.63184144378862745098f);
+    }
+    else
+    {
+        float t = max(kelvin - 60.0f, 0.0f);
+        ret.r = saturate(1.29293618606274509804f * pow(t, -0.1332047592f));
+        ret.g = saturate(1.12989086089529411765f * pow(t, -0.0755148492f));
+    }
+    if(kelvin >= 66.0f)
+        ret.b = 1.0f;
+    else if(kelvin < 19.0f)
+        ret.b = 0.0f;
+    else
+        ret.b = saturate(0.54320678911019607843f * log(kelvin - 10.0f) - 1.19625408914f);
+    return ret;
+}

@@ -26,8 +26,12 @@
 #include <AzToolsFramework/API/EditorWindowRequestBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/API/EntityPropertyEditorRequestsBus.h>
+#include <AzToolsFramework/API/ViewportEditorModeTrackerNotificationBus.h>
 #include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
+#include <AzToolsFramework/ContainerEntity/ContainerEntityInterface.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
+#include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntityBus.h>
+#include <AzToolsFramework/FocusMode/FocusModeNotificationBus.h>
 #include <AzToolsFramework/ToolsComponents/ComponentMimeData.h>
 #include <AzToolsFramework/ToolsComponents/EditorInspectorComponentBus.h>
 #include <AzQtComponents/Components/O3DEStylesheet.h>
@@ -59,8 +63,12 @@ namespace AzToolsFramework
 {
     class ComponentEditor;
     class ComponentPaletteWidget;
+    class ComponentModeCollectionInterface;
     struct SourceControlFileInfo;
-
+    class ReadOnlyEntityPublicInterface;
+    class FocusModeInterface;
+    class ContainerEntityInterface;
+ 
     namespace AssetBrowser
     {
         class ProductAssetBrowserEntry;
@@ -69,6 +77,7 @@ namespace AzToolsFramework
     namespace Prefab
     {
         class PrefabPublicInterface;
+        class InstanceUpdateExecutorInterface;
     };
 
     namespace UndoSystem
@@ -108,11 +117,14 @@ namespace AzToolsFramework
         , public AzToolsFramework::EditorEntityContextNotificationBus::Handler
         , public AzToolsFramework::EntityPropertyEditorRequestBus::Handler
         , public AzToolsFramework::PropertyEditorEntityChangeNotificationBus::MultiHandler
+        , private AzToolsFramework::ViewportEditorModeNotificationsBus::Handler
         , public EditorInspectorComponentNotificationBus::MultiHandler
         , private AzToolsFramework::ComponentModeFramework::EditorComponentModeNotificationBus::Handler
         , public AZ::EntitySystemBus::Handler
         , public AZ::TickBus::Handler
         , private EditorWindowUIRequestBus::Handler
+        , private ReadOnlyEntityPublicNotificationBus::Handler
+        , public FocusModeNotificationBus::Handler
     {
         Q_OBJECT;
     public:
@@ -139,8 +151,8 @@ namespace AzToolsFramework
         EntityPropertyEditor(QWidget* pParent = NULL, Qt::WindowFlags flags = Qt::WindowFlags(), bool isLevelEntityEditor = false);
         virtual ~EntityPropertyEditor();
 
-        virtual void BeforeUndoRedo();
-        virtual void AfterUndoRedo();
+        void BeforeUndoRedo() override;
+        void AfterUndoRedo() override;
 
         static void Reflect(AZ::ReflectContext* context);
 
@@ -152,6 +164,9 @@ namespace AzToolsFramework
         void SetPropertyEditingActive(InstanceDataNode* pNode) override;
         void SetPropertyEditingComplete(InstanceDataNode* pNode) override;
         void SealUndoStack() override;
+
+        // FocusModeNotificationBus overrides ...
+        void OnEditorFocusChanged(AZ::EntityId previousFocusEntityId, AZ::EntityId newFocusEntityId) override;
 
         // Context menu population for entity component properties.
         void RequestPropertyContextMenu(InstanceDataNode* node, const QPoint& globalPos) override;
@@ -231,9 +246,13 @@ namespace AzToolsFramework
         //////////////////////////////////////////////////////////////////////////
 
         // EditorComponentModeNotificationBus
-        void EnteredComponentMode(const AZStd::vector<AZ::Uuid>& componentModeTypes) override;
-        void LeftComponentMode(const AZStd::vector<AZ::Uuid>& componentModeTypes) override;
         void ActiveComponentModeChanged(const AZ::Uuid& componentType) override;
+
+        // ViewportEditorModeNotificationsBus overrides ...
+        void OnEditorModeActivated(
+            const AzToolsFramework::ViewportEditorModesInterface& editorModeState, AzToolsFramework::ViewportEditorMode mode) override;
+        void OnEditorModeDeactivated(
+            const AzToolsFramework::ViewportEditorModesInterface& editorModeState, AzToolsFramework::ViewportEditorMode mode) override;
 
         // EntityPropertEditorRequestBus
         void GetSelectedAndPinnedEntities(EntityIdList& selectedEntityIds) override;
@@ -246,11 +265,14 @@ namespace AzToolsFramework
         // EditorWindowRequestBus overrides
         void SetEditorUiEnabled(bool enable) override;
 
+        // ReadOnlyEntityPublicNotificationBus overrides ...
+        void OnReadOnlyEntityStatusChanged(const AZ::EntityId& entityId, bool readOnly) override;
+
         bool IsEntitySelected(const AZ::EntityId& id) const;
         bool IsSingleEntitySelected(const AZ::EntityId& id) const;
 
-        virtual void GotSceneSourceControlStatus(AzToolsFramework::SourceControlFileInfo& fileInfo);
-        virtual void PerformActionsBasedOnSceneStatus(bool sceneIsNew, bool readOnly);
+        void GotSceneSourceControlStatus(AzToolsFramework::SourceControlFileInfo& fileInfo) override;
+        void PerformActionsBasedOnSceneStatus(bool sceneIsNew, bool readOnly) override;
 
         // enable/disable editor
         void EnableEditor(bool enabled);
@@ -347,7 +369,8 @@ namespace AzToolsFramework
             OnlyLayerEntities,
             OnlyPrefabEntities,
             Mixed,
-            LevelEntity
+            LevelEntity,
+            ContainerEntityOfFocusedPrefab
         };
         /**
          * Returns what kinds of entities are in the current selection. This is used because mixed selection
@@ -357,7 +380,7 @@ namespace AzToolsFramework
         SelectionEntityTypeInfo GetSelectionEntityTypeInfo(const EntityIdList& selection) const;
 
         /**
-         * Returns true if a selection matching the passed in selection informatation allows components to be added.
+         * Returns true if a selection matching the passed in selection information allows components to be added.
          */
         bool CanAddComponentsToSelection(const SelectionEntityTypeInfo& selectionEntityTypeInfo) const;
 
@@ -574,9 +597,10 @@ namespace AzToolsFramework
 
         enum class InspectorLayout
         {
-            ENTITY = 0,     // All selected entities are regular entities
-            LEVEL,          // The selected entity is the level prefab container entity
-            INVALID         // Other entities are selected alongside the level prefab container entity
+            Entity = 0,                     // All selected entities are regular entities.
+            Level,                          // The selected entity is the prefab container entity for the level prefab, or the slice level entity.
+            ContainerEntityOfFocusedPrefab, // The selected entity is the prefab container entity for the focused prefab.
+            Invalid                         // Other entities are selected alongside the level prefab container entity.
         };
 
         InspectorLayout GetCurrentInspectorLayout() const;
@@ -612,10 +636,17 @@ namespace AzToolsFramework
         EntityIdSet m_overrideSelectedEntityIds;
 
         Prefab::PrefabPublicInterface* m_prefabPublicInterface = nullptr;
+        Prefab::InstanceUpdateExecutorInterface* m_instanceUpdateExecutorInterface = nullptr;
         bool m_prefabsAreEnabled = false;
+
+        ReadOnlyEntityPublicInterface* m_readOnlyEntityPublicInterface = nullptr;
+        bool m_selectionContainsReadOnlyEntity = false;
 
         // Reordering row widgets within the RPE.
         static constexpr float MoveFadeSeconds = 0.5f;
+
+        FocusModeInterface* m_focusModeInterface = nullptr;
+        ContainerEntityInterface* m_containerEntityInterface = nullptr;
 
         ReorderState m_currentReorderState = ReorderState::Inactive;
         ComponentEditor* m_reorderRowWidgetEditor = nullptr;
@@ -626,6 +657,8 @@ namespace AzToolsFramework
         QPixmap m_reorderRowImage;
         float m_moveFadeSecondsRemaining;
         AZStd::vector<int> m_indexMapOfMovedRow;
+
+        AzToolsFramework::ComponentModeCollectionInterface* m_componentModeCollection = nullptr;
 
         // When m_initiatingPropertyChangeNotification is set to true, it means this EntityPropertyEditor is
         // broadcasting a change to all listeners about a property change for a given entity.  This is needed

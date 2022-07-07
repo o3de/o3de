@@ -58,7 +58,11 @@ namespace Camera
         private:
             AZStd::vector<CameraListItem> m_cameraItems;
             AZ::EntityId m_sequenceCameraEntityId;
-            bool m_sequenceCameraSelected;
+            AZ::EntityId m_lastActiveCamera;
+
+            //Value to check that is the first time that we remove a camera before adding a new one.
+            //So we can update m_lastActiveCamera properly
+            bool m_firstEntry = true;
         };
 
         struct ViewportCameraSelectorWindow

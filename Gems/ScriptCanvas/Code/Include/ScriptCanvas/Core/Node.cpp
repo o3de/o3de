@@ -1160,8 +1160,8 @@ namespace ScriptCanvas
                 if (!slot->IsDynamicSlot() || slot->HasDisplayType())
                 {
                     InitializeVariableReference((*slot), {});
-        }
-    }
+                }
+            }
             else
             {
                 ModifiableDatumView datumView;
@@ -1258,31 +1258,6 @@ namespace ScriptCanvas
     {
         
         OnReconfigurationEnd();        
-    }
-
-    Signal Node::CreateNodeInputSignal(const SlotId& slotId) const
-    {
-        return Signal(CreateGraphInfo(GetOwningScriptCanvasId(), GetGraphIdentifier()), GetInputNodeType(slotId), CreateNamedEndpoint(slotId), CreateInputMap());
-    }
-
-    Signal Node::CreateNodeOutputSignal(const SlotId& slotId) const
-    {
-        return Signal(CreateGraphInfo(GetOwningScriptCanvasId(), GetGraphIdentifier()), GetOutputNodeType(slotId), CreateNamedEndpoint(slotId), CreateOutputMap());
-    }
-
-    NodeStateChange Node::CreateNodeStateUpdate() const
-    {
-        return NodeStateChange();
-    }
-
-    VariableChange Node::CreateVariableChange(const GraphVariable& graphVariable) const
-    {
-        return CreateVariableChange((*graphVariable.GetDatum()), graphVariable.GetVariableId());
-    }
-
-    VariableChange Node::CreateVariableChange(const Datum& /*datum*/, const VariableId& /*variableId*/) const
-    {
-        return VariableChange{};
     }
 
     void Node::ClearDisplayType(const AZ::Crc32& dynamicGroup, ExploredDynamicGroupCache& exploredGroupCache)
@@ -1466,8 +1441,6 @@ namespace ScriptCanvas
         {
             return slot.GetDataType();
         }
-
-        Endpoint endpoint = slot.GetEndpoint();
 
         auto connectedNodes = GetConnectedNodes(slot);
 
@@ -2294,11 +2267,15 @@ namespace ScriptCanvas
             return AZ::Failure(AZStd::string("Trying to add a slot with an Invalid Slot Descriptor"));
         }
 
-        auto slotNameIter = m_slotNameMap.find(slotConfiguration.m_name);
-        if (slotConfiguration.m_addUniqueSlotByNameAndType && slotNameIter != m_slotNameMap.end() && slotNameIter->second->GetDescriptor() == slotConfiguration.GetSlotDescriptor())
+        auto findResult = m_slotNameMap.equal_range(slotConfiguration.m_name);
+        for (auto slotNameIter = findResult.first; slotNameIter != findResult.second; ++slotNameIter)
         {
-            iterOut = slotNameIter->second;
-            return AZ::Failure(AZStd::string::format("Slot with name %s already exist", slotConfiguration.m_name.data()));
+            if (slotConfiguration.m_addUniqueSlotByNameAndType &&
+                slotNameIter->second->GetDescriptor() == slotConfiguration.GetSlotDescriptor())
+            {
+                iterOut = slotNameIter->second;
+                return AZ::Failure(AZStd::string::format("Slot with name %s already exist", slotConfiguration.m_name.data()));
+            }
         }
 
         SlotIterator insertIter = (insertIndex < 0 || insertIndex >= azlossy_cast<AZ::s64>(m_slots.size())) ? m_slots.end() : AZStd::next(m_slots.begin(), insertIndex);
@@ -2393,7 +2370,8 @@ namespace ScriptCanvas
 
             if (variableIds.count(variableId) > 0)
             {
-                InitializeVariableReference(slot, variableIds);
+                slot.ClearVariableReference();
+                NodeNotificationsBus::Event(GetEntityId(), &NodeNotifications::OnSlotInputChanged, slot.GetId());
             }
         }
 
@@ -2578,11 +2556,11 @@ namespace ScriptCanvas
         }
     }
 
-    bool Node::ConvertSlotToReference(const SlotId& slotId)
+    bool Node::ConvertSlotToReference(const SlotId& slotId, bool isNewSlot)
     {
         Slot* slot = GetSlot(slotId);
 
-        if (slot && slot->ConvertToReference())
+        if (slot && slot->ConvertToReference(isNewSlot))
         {
             InitializeVariableReference((*slot), {});
             return true;
@@ -2703,7 +2681,8 @@ namespace ScriptCanvas
             {
                 if (foundIndex == index)
                 {
-                    return FindModifiableDatumView(slot.GetId(), controller);
+                    FindModifiableDatumView(slot.GetId(), controller);
+                    return;
                 }
 
                 ++foundIndex;
@@ -2764,9 +2743,9 @@ namespace ScriptCanvas
         }
 
         return datum;
-    }    
+    }
 
-    void Node::FindModifiableDatumView(const SlotId& slotId, ModifiableDatumView& datumView)
+    bool Node::FindModifiableDatumView(const SlotId& slotId, ModifiableDatumView& datumView)
     {
         auto slotIter = m_slotIdIteratorCache.find(slotId);
 
@@ -2781,6 +2760,7 @@ namespace ScriptCanvas
                 if (variable)
                 {
                     datumView.ConfigureView((*variable));
+                    return true;
                 }
                 else
                 {
@@ -2792,9 +2772,12 @@ namespace ScriptCanvas
                 if (slotIter->second.HasDatum())
                 {
                     datumView.ConfigureView((*slotIter->second.GetDatum()));
+                    return true;
                 }
             }
         }
+
+        return false;
     }
 
     SlotId Node::FindSlotIdForDescriptor(AZStd::string_view slotName, const SlotDescriptor& descriptor) const
@@ -2887,7 +2870,7 @@ namespace ScriptCanvas
             if (node == nullptr)
             {                
                 AZStd::string assetName = m_graphRequestBus->GetAssetName();
-                AZ::EntityId assetNodeId = m_graphRequestBus->FindAssetNodeIdByRuntimeNodeId(endpoint.GetNodeId());
+                [[maybe_unused]] AZ::EntityId assetNodeId = m_graphRequestBus->FindAssetNodeIdByRuntimeNodeId(endpoint.GetNodeId());
                 AZ_Warning("Script Canvas", false, "Unable to find node with id (id: %s) in the graph '%s'. Most likely the node was serialized with a type that is no longer reflected",
                     assetNodeId.ToString().data(), assetName.data());
 
@@ -2902,7 +2885,7 @@ namespace ScriptCanvas
             if (!endpointSlot)
             {
                 AZStd::string assetName = m_graphRequestBus->GetAssetName();
-                AZ::EntityId assetNodeId = m_graphRequestBus->FindAssetNodeIdByRuntimeNodeId(endpoint.GetNodeId());
+                [[maybe_unused]] AZ::EntityId assetNodeId = m_graphRequestBus->FindAssetNodeIdByRuntimeNodeId(endpoint.GetNodeId());
                 AZ_Warning("Script Canvas", false, "Endpoint was missing slot. id (id: %s) in the graph '%s'.",
                     assetNodeId.ToString().data(), assetName.data());
 
@@ -2936,7 +2919,7 @@ namespace ScriptCanvas
             if (node == nullptr)
             {
                 AZStd::string assetName = m_graphRequestBus->GetAssetName();
-                AZ::EntityId assetNodeId = m_graphRequestBus->FindAssetNodeIdByRuntimeNodeId(endpoint.GetNodeId());
+                [[maybe_unused]] AZ::EntityId assetNodeId = m_graphRequestBus->FindAssetNodeIdByRuntimeNodeId(endpoint.GetNodeId());
 
                 AZ_Error("Script Canvas", false, "Unable to find node with id (id: %s) in the graph '%s'. Most likely the node was serialized with a type that is no longer reflected",
                     assetNodeId.ToString().data(), assetName.data());
@@ -2962,6 +2945,11 @@ namespace ScriptCanvas
                 callable(*nodeSlotPair.first, nodeSlotPair.second);
             }
         }
+    }
+
+    AZStd::string Node::GetNodeTypeName() const
+    {
+        return RTTI_GetTypeName();
     }
 
     AZStd::string Node::GetDebugName() const
@@ -3525,6 +3513,11 @@ namespace ScriptCanvas
     VariableId Node::GetVariableIdWritten(const Slot*) const
     {
         return {};
+    }
+
+    const Slot* Node::GetVariableInputSlot() const
+    {
+        return nullptr;
     }
 
     const Slot* Node::GetVariableOutputSlot() const

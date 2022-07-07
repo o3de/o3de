@@ -10,6 +10,7 @@
 #ifndef AZSTD_FUNCTION_BASE_HEADER
 #define AZSTD_FUNCTION_BASE_HEADER
 
+#include <AzCore/std/allocator.h>
 #include <AzCore/std/base.h>
 #include <AzCore/std/utils.h>
 #include <AzCore/std/function/function_fwd.h>
@@ -18,10 +19,11 @@
 #include <AzCore/std/typetraits/is_member_pointer.h>
 #include <AzCore/std/typetraits/is_const.h>
 #include <AzCore/std/typetraits/remove_cvref.h>
+#include <AzCore/std/typetraits/is_volatile.h>
 #include <AzCore/std/createdestroy.h>
 
 #define AZSTD_FUNCTION_TARGET_FIX(x)
-#define AZSTD_FUNCTION_ENABLE_IF_NOT_INTEGRAL(Functor, Type)  AZStd::enable_if_t<!std::is_integral_v<Functor>, Type>
+#define AZSTD_FUNCTION_ENABLE_IF_NOT_INTEGRAL(Functor, Type)  AZStd::enable_if_t<!std::is_integral_v<Functor> && !std::is_null_pointer_v<Functor>, Type>
 
 
 
@@ -277,11 +279,11 @@ namespace AZStd
                             reinterpret_cast<functor_type*>(&in_buffer.data);
                         if (op == clone_functor_tag)
                         {
-                            new ((void*)&out_buffer.data)functor_type(*in_functor);
+                            AZStd::construct_at(reinterpret_cast<functor_type*>(&out_buffer), functor_type(*in_functor));
                         }
                         else if (op == move_functor_tag)
                         {
-                            new ((void*)&out_buffer.data)functor_type(AZStd::move(*in_functor));
+                            AZStd::construct_at(reinterpret_cast<functor_type*>(&out_buffer), functor_type(AZStd::move(*in_functor)));
                             // Casting via union to get around compiler warnings (strict type on GCC, unused variable on MSVC)
                             union
                             {
@@ -590,8 +592,8 @@ namespace AZStd
 
             Internal::function_util::function_buffer type_result;
             type_result.type.type = aztypeid(Functor);
-            type_result.type.const_qualified = is_const<Functor>::value;
-            type_result.type.volatile_qualified = is_volatile<Functor>::value;
+            type_result.type.const_qualified = AZStd::is_const<Functor>::value;
+            type_result.type.volatile_qualified = AZStd::is_volatile<Functor>::value;
             vtable->manager(functor, type_result, Internal::function_util::check_functor_type_tag);
             return static_cast<Functor*>(type_result.obj_ptr);
         }
@@ -607,7 +609,7 @@ namespace AZStd
             Internal::function_util::function_buffer type_result;
             type_result.type.type = aztypeid(Functor);
             type_result.type.const_qualified = true;
-            type_result.type.volatile_qualified = is_volatile<Functor>::value;
+            type_result.type.volatile_qualified = AZStd::is_volatile<Functor>::value;
             vtable->manager(functor, type_result, Internal::function_util::check_functor_type_tag);
             // GCC 2.95.3 gets the CV qualifiers wrong here, so we
             // can't do the static_cast that we should do.

@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/PlatformIncl.h>
 #include "CryFile.h"
 #include "PerforceSourceControl.h"
 #include "PasswordDlg.h"

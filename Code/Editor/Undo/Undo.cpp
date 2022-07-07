@@ -62,17 +62,6 @@ public:
         }
     }
 
-    // to get memory statistics
-    void GetMemoryUsage(ICrySizer* pSizer)
-    {
-        for (int i = 0; i < m_undoSteps.size(); i++)
-        {
-            m_undoSteps[i]->GetMemoryUsage(pSizer);
-        }
-
-        pSizer->Add(*this);
-    }
-
 private:
     //! Undo steps included in this step.
     std::vector<CUndoStep*> m_undoSteps;
@@ -746,31 +735,6 @@ int CUndoManager::GetMaxUndoStep() const
     return GetIEditor()->GetEditorSettings()->undoLevels;
 }
 
-void CUndoManager::GetMemoryUsage(ICrySizer* pSizer)
-{
-    if (m_currentUndo)
-    {
-        m_currentUndo->GetMemoryUsage(pSizer);
-    }
-
-    if (m_superUndo)
-    {
-        m_superUndo->GetMemoryUsage(pSizer);
-    }
-
-    for (std::list<CUndoStep*>::const_iterator it = m_undoStack.begin(); it != m_undoStack.end(); it++)
-    {
-        (*it)->GetMemoryUsage(pSizer);
-    }
-
-    for (std::list<CUndoStep*>::const_iterator it = m_redoStack.begin(); it != m_redoStack.end(); it++)
-    {
-        (*it)->GetMemoryUsage(pSizer);
-    }
-
-    pSizer->Add(*this);
-}
-
 void CUndoManager::AddListener(IUndoManagerListener* pListener)
 {
     stl::push_back_unique(m_listeners, pListener);
@@ -837,4 +801,14 @@ bool CUndoManager::IsUndoRecording() const
 bool CUndoManager::IsUndoSuspended() const
 {
     return m_suspendCount != 0;
+}
+
+CScopedSuspendUndo::CScopedSuspendUndo()
+{
+    GetIEditor()->SuspendUndo();
+}
+
+CScopedSuspendUndo::~CScopedSuspendUndo()
+{
+    GetIEditor()->ResumeUndo();
 }

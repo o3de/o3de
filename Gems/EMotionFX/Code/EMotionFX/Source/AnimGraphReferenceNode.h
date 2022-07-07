@@ -82,8 +82,8 @@ namespace EMotionFX
         AnimGraphReferenceNode();
         ~AnimGraphReferenceNode();
 
-        void Reinit();
-        void RecursiveReinit();
+        void Reinit() override;
+        void RecursiveReinit() override;
         bool InitAfterLoading(AnimGraph* animGraph) override;
 
         AnimGraphObjectData* CreateUniqueData(AnimGraphInstance* animGraphInstance) override { return aznew UniqueData(this, animGraphInstance); }

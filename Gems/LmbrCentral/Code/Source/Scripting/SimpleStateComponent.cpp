@@ -29,7 +29,7 @@ namespace LmbrCentral
         AZ_EBUS_BEHAVIOR_BINDER(BehaviorSimpleStateComponentNotificationBusHandler, "{F935125C-AE4E-48C1-BB60-24A0559BC4D2}", AZ::SystemAllocator,
             OnStateChanged);
 
-        void OnStateChanged(const char* oldState, const char* newState)
+        void OnStateChanged(const char* oldState, const char* newState) override
         {
             Call(FN_OnStateChanged, oldState, newState);
         }
@@ -204,7 +204,7 @@ namespace LmbrCentral
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
                         ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/SimpleState.svg")
                         ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/SimpleState.svg")
-                        ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/simple-state/")
+                        ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/gameplay/simple-state/")
                     ->DataElement(AZ::Edit::UIHandlers::ComboBox, &SimpleStateComponent::m_initialStateName, "Initial state", "The initial active state")
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ_CRC("RefreshAttributesAndValues", 0xcbc2147c))
                         ->Attribute(AZ::Edit::Attributes::StringList, &SimpleStateComponent::GetStateNames)

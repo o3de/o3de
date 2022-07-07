@@ -191,7 +191,6 @@ private:
     void OnEditorNotifyEvent(EEditorNotifyEvent event) override;
 
     QScopedPointer<Ui::Console> ui;
-    int m_richEditTextLength;
 
     Lines m_lines;
     static Lines s_pendingLines;

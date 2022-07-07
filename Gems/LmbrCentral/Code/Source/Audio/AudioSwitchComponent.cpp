@@ -78,7 +78,11 @@ namespace LmbrCentral
             if (stateName && stateName[0] != '\0')
             {
                 Audio::TAudioSwitchStateID stateID = INVALID_AUDIO_SWITCH_STATE_ID;
-                Audio::AudioSystemRequestBus::BroadcastResult(stateID, &Audio::AudioSystemRequestBus::Events::GetAudioSwitchStateID, m_defaultSwitchID, stateName);
+                if (auto audioSystem = AZ::Interface<Audio::IAudioSystem>::Get(); audioSystem != nullptr)
+                {
+                    stateID = audioSystem->GetAudioSwitchStateID(m_defaultSwitchID, stateName);
+                }
+
                 if (stateID != INVALID_AUDIO_SWITCH_STATE_ID)
                 {
                     AudioProxyComponentRequestBus::Event(GetEntityId(), &AudioProxyComponentRequestBus::Events::SetSwitchState, m_defaultSwitchID, stateID);
@@ -96,13 +100,19 @@ namespace LmbrCentral
         // lookup switch...
         if (switchName && switchName[0] != '\0')
         {
-            Audio::AudioSystemRequestBus::BroadcastResult(switchID, &Audio::AudioSystemRequestBus::Events::GetAudioSwitchID, switchName);
+            if (auto audioSystem = AZ::Interface<Audio::IAudioSystem>::Get(); audioSystem != nullptr)
+            {
+                switchID = audioSystem->GetAudioSwitchID(switchName);
+            }
         }
 
         // using the switchID (if found), lookup the state...
         if (switchID != INVALID_AUDIO_CONTROL_ID && stateName && stateName[0] != '\0')
         {
-            Audio::AudioSystemRequestBus::BroadcastResult(stateID, &Audio::AudioSystemRequestBus::Events::GetAudioSwitchStateID, switchID, stateName);
+            if (auto audioSystem = AZ::Interface<Audio::IAudioSystem>::Get(); audioSystem != nullptr)
+            {
+                stateID = audioSystem->GetAudioSwitchStateID(switchID, stateName);
+            }
         }
 
         // if both IDs found, make the call...
@@ -118,7 +128,10 @@ namespace LmbrCentral
         m_defaultSwitchID = INVALID_AUDIO_CONTROL_ID;
         if (!m_defaultSwitchName.empty())
         {
-            Audio::AudioSystemRequestBus::BroadcastResult(m_defaultSwitchID, &Audio::AudioSystemRequestBus::Events::GetAudioSwitchID, m_defaultSwitchName.c_str());
+            if (auto audioSystem = AZ::Interface<Audio::IAudioSystem>::Get(); audioSystem != nullptr)
+            {
+                m_defaultSwitchID = audioSystem->GetAudioSwitchID(m_defaultSwitchName.c_str());
+            }
         }
     }
 
@@ -128,7 +141,10 @@ namespace LmbrCentral
         m_defaultStateID = INVALID_AUDIO_SWITCH_STATE_ID;
         if (!m_defaultStateName.empty() && m_defaultSwitchID != INVALID_AUDIO_CONTROL_ID)
         {
-            Audio::AudioSystemRequestBus::BroadcastResult(m_defaultStateID, &Audio::AudioSystemRequestBus::Events::GetAudioSwitchStateID, m_defaultSwitchID, m_defaultStateName.c_str());
+            if (auto audioSystem = AZ::Interface<Audio::IAudioSystem>::Get(); audioSystem != nullptr)
+            {
+                m_defaultStateID = audioSystem->GetAudioSwitchStateID(m_defaultSwitchID, m_defaultStateName.c_str());
+            }
         }
     }
 

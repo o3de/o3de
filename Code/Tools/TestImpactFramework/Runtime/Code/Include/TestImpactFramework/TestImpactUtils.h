@@ -103,4 +103,43 @@ namespace TestImpact
 
     //! User-friendly names for the client test result types.
     AZStd::string ClientTestResultAsString(Client::TestResult result);
+
+    //! User-friendly names for the suite types.
+    SuiteType SuiteTypeFromString(const AZStd::string& suiteType);
+
+    //! Returns the sequence report type for the specified string.
+    Client::SequenceReportType SequenceReportTypeFromString(const AZStd::string& type);
+
+    //! Returns the test run result for the specified string.
+    Client::TestRunResult TestRunResultFromString(const AZStd::string& result);
+
+    //! Returns the test result for the specified string.
+    Client::TestResult TestResultFromString(const AZStd::string& result);
+
+    //! Returns the test sequence result for the specified string.
+    TestSequenceResult TestSequenceResultFromString(const AZStd::string& result);
+
+    //! Returns the execution failure policy for the specified string.
+    Policy::ExecutionFailure ExecutionFailurePolicyFromString(const AZStd::string& executionFailurePolicy);
+
+    //! Returns the failed test coverage policy for the specified string.
+    Policy::FailedTestCoverage FailedTestCoveragePolicyFromString(const AZStd::string& failedTestCoveragePolicy);
+
+    //! Returns the test prioritization policy for the specified string.
+    Policy::TestPrioritization TestPrioritizationPolicyFromString(const AZStd::string& testPrioritizationPolicy);
+
+    //! Returns the test failure policy for the specified string.
+    Policy::TestFailure TestFailurePolicyFromString(const AZStd::string& testFailurePolicy);
+
+    //! Returns the integrity failure policy for the specified string.
+    Policy::IntegrityFailure IntegrityFailurePolicyFromString(const AZStd::string& integrityFailurePolicy);
+
+    //! Returns the dynamic dependency map policy for the specified string.
+    Policy::DynamicDependencyMap DynamicDependencyMapPolicyFromString(const AZStd::string& dynamicDependencyMapPolicy);
+
+    //! Returns the test sharding policy for the specified string.
+    Policy::TestSharding TestShardingPolicyFromString(const AZStd::string& testShardingPolicy);
+
+    //! Returns the target output capture policy for the specified string.
+    Policy::TargetOutputCapture TargetOutputCapturePolicyFromString(const AZStd::string& targetOutputCapturePolicy);
 } // namespace TestImpact

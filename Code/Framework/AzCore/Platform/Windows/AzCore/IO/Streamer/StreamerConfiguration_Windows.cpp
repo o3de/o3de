@@ -267,6 +267,7 @@ namespace AZ::IO
                     SettingsRegistryInterface::VisitResponse::Continue : SettingsRegistryInterface::VisitResponse::Skip;
             }
 
+            using SettingsRegistryInterface::Visitor::Visit;
             void Visit([[maybe_unused]] AZStd::string_view path, [[maybe_unused]] AZStd::string_view valueName,
                 [[maybe_unused]] AZ::SettingsRegistryInterface::Type type, AZStd::string_view value) override
             {

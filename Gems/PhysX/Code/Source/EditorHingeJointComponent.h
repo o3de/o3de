@@ -41,7 +41,7 @@ namespace PhysX
         // PhysX::EditorJointRequests
         float GetLinearValue(const AZStd::string& parameterName) override;
         AngleLimitsFloatPair GetLinearValuePair(const AZStd::string& parameterName) override;
-        bool IsParameterUsed(const AZStd::string& parameterName) override;
+        AZStd::vector<JointsComponentModeCommon::SubModeParamaterState> GetSubComponentModesState() override;
         void SetBoolValue(const AZStd::string& parameterName, bool value) override;
         void SetLinearValue(const AZStd::string& parameterName, float value) override;
         void SetLinearValuePair(const AZStd::string& parameterName, const AngleLimitsFloatPair& valuePair) override;

@@ -852,7 +852,7 @@ namespace AzQtComponents
         {
             FilterCriteriaButton* button = createCriteriaButton(filter, index);
             connect(button, &FilterCriteriaButton::RequestClose, this, [this, index]() { SetFilterStateByIndex(index, false); });
-            connect(button, &FilterCriteriaButton::ExtraButtonClicked, this, [this, index](FilterCriteriaButton::ExtraButtonType type)
+            connect(button, &FilterCriteriaButton::ExtraButtonClicked, this, [](FilterCriteriaButton::ExtraButtonType type)
             {
                 switch (type)
                 {
@@ -961,6 +961,7 @@ namespace AzQtComponents
                 const auto enabled = settings.value(g_enabledKey);
                 SetFilterState(category.toString(), displayName.toString(), enabled.toBool());
             }
+            settings.endArray();
         }
 
         emit TextFilterChanged(textFilter());

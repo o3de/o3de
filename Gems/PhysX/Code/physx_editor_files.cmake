@@ -8,6 +8,7 @@
 
 set(FILES
     Include/PhysX/EditorColliderComponentRequestBus.h
+    Include/PhysX/EditorHeightfieldColliderRequestBus.h
     Include/PhysX/EditorJointBus.h
     Source/ComponentDescriptors.cpp
     Source/ComponentDescriptors.h
@@ -27,8 +28,14 @@ set(FILES
     Source/EditorFixedJointComponent.h
     Source/EditorHingeJointComponent.cpp
     Source/EditorHingeJointComponent.h
+    Source/EditorHeightfieldColliderComponent.cpp
+    Source/EditorHeightfieldColliderComponent.h
     Source/EditorJointComponent.cpp
     Source/EditorJointComponent.h
+    Source/EditorPhysXJointInterface.cpp
+    Source/EditorPhysXJointInterface.h
+    Source/EditorJointOptimizer.cpp
+    Source/EditorJointOptimizer.h
     Source/Pipeline/MeshExporter.cpp
     Source/Pipeline/MeshExporter.h
     Source/Pipeline/MeshGroup.cpp
@@ -64,8 +71,6 @@ set(FILES
     Editor/CollisionFilteringWidget.cpp
     Editor/PropertyTypes.h
     Editor/PropertyTypes.cpp
-    Editor/MaterialIdWidget.h
-    Editor/MaterialIdWidget.cpp
     Editor/EditorClassConverters.cpp
     Editor/EditorClassConverters.h
     Editor/PvdWidget.h
@@ -74,15 +79,10 @@ set(FILES
     Editor/DocumentationLinkWidget.cpp
     Editor/InertiaPropertyHandler.h
     Editor/InertiaPropertyHandler.cpp
-    Editor/ConfigStringLineEditCtrl.h
-    Editor/ConfigStringLineEditCtrl.cpp
-    Editor/UniqueStringContainer.h
-    Editor/UniqueStringContainer.cpp
     Editor/ComboBoxEditButtonPair.h
     Editor/ComboBoxEditButtonPair.cpp
     Editor/ColliderComponentMode.h
     Editor/ColliderComponentMode.cpp
-    Editor/ColliderSubComponentMode.h
     Editor/ColliderOffsetMode.h
     Editor/ColliderOffsetMode.cpp
     Editor/ColliderBoxMode.h
@@ -99,36 +99,46 @@ set(FILES
     Editor/DebugDraw.h
     Editor/PolygonPrismMeshUtils.cpp
     Editor/PolygonPrismMeshUtils.h
-    Editor/EditorJointComponentMode.cpp
-    Editor/EditorJointComponentMode.h
+    Editor/EditorJointCommon.h
     Editor/EditorJointConfiguration.cpp
     Editor/EditorJointConfiguration.h
-    Editor/EditorJointTypeDrawer.cpp
-    Editor/EditorJointTypeDrawer.h
-    Editor/EditorJointTypeDrawerBus.h
-    Editor/EditorSubComponentModeAngleCone.cpp
-    Editor/EditorSubComponentModeAngleCone.h
-    Editor/EditorSubComponentModeAnglePair.cpp
-    Editor/EditorSubComponentModeAnglePair.h
-    Editor/EditorSubComponentModeBase.cpp
-    Editor/EditorSubComponentModeBase.h
-    Editor/EditorSubComponentModeLinear.cpp
-    Editor/EditorSubComponentModeLinear.h
-    Editor/EditorSubComponentModeRotation.cpp
-    Editor/EditorSubComponentModeRotation.h
-    Editor/EditorSubComponentModeSnap.cpp
-    Editor/EditorSubComponentModeSnap.h
-    Editor/EditorSubComponentModeSnapPosition.cpp
-    Editor/EditorSubComponentModeSnapPosition.h
-    Editor/EditorSubComponentModeSnapRotation.cpp
-    Editor/EditorSubComponentModeSnapRotation.h
-    Editor/EditorSubComponentModeVec3.cpp
-    Editor/EditorSubComponentModeVec3.h
     Editor/EditorViewportEntityPicker.cpp
     Editor/EditorViewportEntityPicker.h
 
     Editor/Source/Components/EditorSystemComponent.h
     Editor/Source/Components/EditorSystemComponent.cpp
+    Editor/Source/ComponentModes/Joints/JointsComponentMode.h
+    Editor/Source/ComponentModes/Joints/JointsComponentMode.cpp
+    Editor/Source/ComponentModes/Joints/JointsComponentModeCommon.h
+    Editor/Source/ComponentModes/Joints/JointsComponentModeCommon.cpp
+    Editor/Source/ComponentModes/PhysXSubComponentModeBase.h
+    Editor/Source/ComponentModes/Joints/JointsSubComponentModeAngleCone.h
+    Editor/Source/ComponentModes/Joints/JointsSubComponentModeAngleCone.cpp
+    Editor/Source/ComponentModes/Joints/JointsSubComponentModeAnglePair.h
+    Editor/Source/ComponentModes/Joints/JointsSubComponentModeAnglePair.cpp
+    Editor/Source/ComponentModes/Joints/JointsSubComponentModeLinearFloat.h
+    Editor/Source/ComponentModes/Joints/JointsSubComponentModeLinearFloat.cpp
+    Editor/Source/ComponentModes/Joints/JointsSubComponentModeRotation.h
+    Editor/Source/ComponentModes/Joints/JointsSubComponentModeRotation.cpp
+    Editor/Source/ComponentModes/Joints/JointsSubComponentModeSnap.h
+    Editor/Source/ComponentModes/Joints/JointsSubComponentModeSnap.cpp
+    Editor/Source/ComponentModes/Joints/JointsSubComponentModeSnapPosition.h
+    Editor/Source/ComponentModes/Joints/JointsSubComponentModeSnapPosition.cpp
+    Editor/Source/ComponentModes/Joints/JointsSubComponentModeSnapRotation.h
+    Editor/Source/ComponentModes/Joints/JointsSubComponentModeSnapRotation.cpp
+    Editor/Source/ComponentModes/Joints/JointsSubComponentModeTranslate.h
+    Editor/Source/ComponentModes/Joints/JointsSubComponentModeTranslate.cpp
     Editor/Source/Configuration/PhysXEditorSettingsRegistryManager.h
     Editor/Source/Configuration/PhysXEditorSettingsRegistryManager.cpp
+    Editor/Source/Material/PhysXEditorMaterialAsset.cpp
+    Editor/Source/Material/PhysXEditorMaterialAsset.h
+    Editor/Source/Material/PhysXEditorMaterialAssetBuilder.cpp
+    Editor/Source/Material/PhysXEditorMaterialAssetBuilder.h
+    Editor/Source/Material/Conversion/LegacyPhysicsMaterialLibraryConversion.cpp
+    Editor/Source/Material/Conversion/LegacyPhysicsMaterialLibraryConversion.h
+    Editor/Source/Material/Conversion/LegacyPhysicsMaterialAssetsConversion.cpp
+    Editor/Source/Material/Conversion/LegacyPhysicsMaterialPrefabConversion.cpp
+    Editor/Source/Material/Conversion/LegacyPhysicsMaterialPrefabConversion.h
+    Editor/Source/Material/Conversion/LegacyPhysicsMaterialFbxManifestConversion.cpp
+    Editor/Source/Material/Conversion/LegacyPhysicsMaterialFbxManifestConversion.h
 )

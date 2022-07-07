@@ -23,7 +23,7 @@ namespace AZ
         public:
             virtual SystemInformation GetSystemInformation() override
             {
-                SystemInformation result;
+                SystemInformation result {0, 0};
                 return result;
             }
 

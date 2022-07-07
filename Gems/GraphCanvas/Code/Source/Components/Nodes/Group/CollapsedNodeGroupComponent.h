@@ -94,7 +94,7 @@ namespace GraphCanvas
         ////
 
         // GeometryNotifications
-        void OnBoundsChanged();
+        void OnBoundsChanged() override;
         void OnPositionChanged(const AZ::EntityId& targetEntity, const AZ::Vector2& position) override;
         ////
 
@@ -117,7 +117,7 @@ namespace GraphCanvas
 
         AZ::EntityId GetSourceGroup() const override;
 
-        AZStd::vector< Endpoint > GetRedirectedEndpoints() const;
+        AZStd::vector< Endpoint > GetRedirectedEndpoints() const override;
         void ForceEndpointRedirection(const AZStd::vector< Endpoint >& endpoints) override;
         ////
 

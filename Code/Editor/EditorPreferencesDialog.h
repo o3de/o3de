@@ -19,6 +19,8 @@ namespace Ui
 
 class EditorPreferencesTreeWidgetItem;
 
+bool WidgetConsumesKeyPressEvent(QKeyEvent* event);
+
 class EditorPreferencesDialog
     : public QDialog
     , public AzToolsFramework::IPropertyEditorNotify
@@ -37,6 +39,7 @@ public:
 
 protected:
     void showEvent(QShowEvent* event) override;
+    void keyPressEvent(QKeyEvent* event) override;
 
 private:
     void CreateImages();

@@ -25,14 +25,12 @@
 
 #include <AtomLyIntegration/CommonFeatures/Material/MaterialComponentBus.h>
 #include <AtomLyIntegration/CommonFeatures/Mesh/MeshComponentBus.h>
+#include <AtomLyIntegration/CommonFeatures/Mesh/MeshHandleStateBus.h>
 
 namespace AZ
 {
     namespace Render
     {
-
-
-
         //! A configuration structure for the MeshComponentController
         class MeshComponentConfig final
             : public AZ::ComponentConfig
@@ -53,7 +51,7 @@ namespace AZ
             RHI::DrawItemSortKey m_sortKey = 0;
             bool m_excludeFromReflectionCubeMaps = false;
             bool m_useForwardPassIblSpecular = false;
-
+            bool m_isRayTracingEnabled = true;
             RPI::Cullable::LodType m_lodType = RPI::Cullable::LodType::Default;
             RPI::Cullable::LodOverride m_lodOverride = aznumeric_cast<RPI::Cullable::LodOverride>(0);
             float m_minimumScreenCoverage = 1.0f / 1080.0f;
@@ -62,6 +60,7 @@ namespace AZ
 
         class MeshComponentController final
             : private MeshComponentRequestBus::Handler
+            , private MeshHandleStateRequestBus::Handler
             , public AzFramework::BoundsRequestBus::Handler
             , public AzFramework::RenderGeometry::IntersectionRequestBus::Handler
             , private TransformNotificationBus::Handler
@@ -92,7 +91,7 @@ namespace AZ
         private:
             AZ_DISABLE_COPY(MeshComponentController);
 
-            // MeshComponentRequestBus::Handler overrides ...
+            // MeshComponentRequestBus overrides ...
             void SetModelAsset(Data::Asset<RPI::ModelAsset> modelAsset) override;
             Data::Asset<const RPI::ModelAsset> GetModelAsset() const override;
             void SetModelAssetId(Data::AssetId modelAssetId) override;
@@ -101,23 +100,29 @@ namespace AZ
             AZStd::string GetModelAssetPath() const override;
             AZ::Data::Instance<RPI::Model> GetModel() const override;
 
+            // AtomMeshRequestBus overrides ...
+            const MeshFeatureProcessorInterface::MeshHandle* GetMeshHandle() const override;
+
             void SetSortKey(RHI::DrawItemSortKey sortKey) override;
             RHI::DrawItemSortKey GetSortKey() const override;
 
             void SetLodType(RPI::Cullable::LodType lodType) override;
             RPI::Cullable::LodType GetLodType() const override;
 
-            virtual void SetLodOverride(RPI::Cullable::LodOverride lodOverride);
-            virtual RPI::Cullable::LodOverride GetLodOverride() const;
+            void SetLodOverride(RPI::Cullable::LodOverride lodOverride) override;
+            RPI::Cullable::LodOverride GetLodOverride() const override;
 
-            virtual void SetMinimumScreenCoverage(float minimumScreenCoverage);
-            virtual float GetMinimumScreenCoverage() const;
+            void SetMinimumScreenCoverage(float minimumScreenCoverage) override;
+            float GetMinimumScreenCoverage() const override;
 
-            virtual void SetQualityDecayRate(float qualityDecayRate);
-            virtual float GetQualityDecayRate() const;
+            void SetQualityDecayRate(float qualityDecayRate) override;
+            float GetQualityDecayRate() const override;
 
             void SetVisibility(bool visible) override;
             bool GetVisibility() const override;
+
+            void SetRayTracingEnabled(bool enabled) override;
+            bool GetRayTracingEnabled() const override;
 
             // BoundsRequestBus and MeshComponentRequestBus overrides ...
             AZ::Aabb GetWorldBounds() override;
@@ -130,10 +135,10 @@ namespace AZ
             void OnTransformChanged(const AZ::Transform& local, const AZ::Transform& world) override;
 
             // MaterialReceiverRequestBus::Handler overrides ...
-            virtual MaterialAssignmentId FindMaterialAssignmentId(
+            MaterialAssignmentId FindMaterialAssignmentId(
                 const MaterialAssignmentLodIndex lod, const AZStd::string& label) const override;
-            RPI::ModelMaterialSlotMap GetModelMaterialSlots() const override;
-            MaterialAssignmentMap GetMaterialAssignments() const override;
+            MaterialAssignmentLabelMap GetMaterialLabels() const override;
+            MaterialAssignmentMap GetDefautMaterialMap() const override;
             AZStd::unordered_set<AZ::Name> GetModelUvNames() const override;
 
             // MaterialComponentNotificationBus::Handler overrides ...
@@ -162,6 +167,8 @@ namespace AZ
             bool m_isVisible = true;
             MeshComponentConfig m_configuration;
             AZ::Vector3 m_cachedNonUniformScale = AZ::Vector3::CreateOne();
+            //! Cached bus to use to notify RenderGeometry::Intersector the entity/component has changed.
+            AzFramework::RenderGeometry::IntersectionNotificationBus::BusPtr m_intersectionNotificationBus;
 
             MeshFeatureProcessorInterface::ModelChangedEvent::Handler m_changeEventHandler
             {
@@ -173,6 +180,5 @@ namespace AZ
                 [&](const AZ::Vector3& nonUniformScale) { HandleNonUniformScaleChange(nonUniformScale); }
             };
         };
-
     } // namespace Render
 } // namespace AZ

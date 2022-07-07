@@ -9,8 +9,6 @@
 #include "CommandBarPlugin.h"
 #include "../../../../EMStudioSDK/Source/EMStudioManager.h"
 #include <MCore/Source/LogManager.h>
-#include "../MotionWindow/MotionWindowPlugin.h"
-#include "../MotionWindow/MotionListWindow.h"
 #include <AzQtComponents/Components/Widgets/Slider.h>
 #include <QAction>
 #include <QDir>
@@ -47,11 +45,6 @@ namespace EMStudio
         }
     }
 
-    const char* CommandBarPlugin::GetCompileDate() const
-    {
-        return MCORE_DATE;
-    }
-
     const char* CommandBarPlugin::GetName() const
     {
         return "Command Bar";
@@ -60,22 +53,6 @@ namespace EMStudio
     uint32 CommandBarPlugin::GetClassID() const
     {
         return CommandBarPlugin::CLASS_ID;
-    }
-
-    const char* CommandBarPlugin::GetCreatorName() const
-    {
-        return "O3DE";
-    }
-
-    float CommandBarPlugin::GetVersion() const
-    {
-        return 1.0f;
-    }
-
-    EMStudioPlugin* CommandBarPlugin::Clone()
-    {
-        CommandBarPlugin* newPlugin = new CommandBarPlugin();
-        return newPlugin;
     }
 
     // init after the parent dock window has been created

@@ -8,6 +8,11 @@
             "PassClass": "ReflectionScreenSpaceBlurChildPass",
             "Slots": [
                 {
+                    "Name": "DepthInput",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
                     "Name": "Input",
                     "SlotType": "InputOutput",
                     "ScopeAttachmentUsage": "Shader"
@@ -16,6 +21,20 @@
                     "Name": "Output",
                     "SlotType": "InputOutput",
                     "ScopeAttachmentUsage": "RenderTarget"
+                },
+                {
+                    "Name": "DownsampledDepthOutput",
+                    "SlotType": "InputOutput",
+                    "ScopeAttachmentUsage": "DepthStencil"
+                }
+            ],
+            "Connections": [
+                {
+                    "LocalSlot": "DepthInput",
+                    "AttachmentRef": {
+                        "Pass": "Parent",
+                        "Attachment": "DepthInput"
+                    }
                 }
             ],
             "PassData": {

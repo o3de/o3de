@@ -7,6 +7,7 @@
  */
 
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Asset/AssetSerializer.h>
 #include <Components/BlastMeshDataComponent.h>
 
 namespace Blast

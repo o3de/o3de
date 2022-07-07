@@ -21,25 +21,10 @@
 #include "Util/Image.h"
 #include "Util/ImageUtil.h"
 
-#include <IStatObj.h>
-
 #define HELPER_MATERIAL "Objects/Helper"
 
 namespace
 {
-    // Object names in this array must correspond to EObject enumeration.
-    const char* g_ObjectNames[eStatObject_COUNT] =
-    {
-        "Objects/Arrow.cgf",
-        "Objects/Axis.cgf",
-        "Objects/Sphere.cgf",
-        "Objects/Anchor.cgf",
-        "Objects/entrypoint.cgf",
-        "Objects/hidepoint.cgf",
-        "Objects/hidepoint_sec.cgf",
-        "Objects/reinforcement_point.cgf",
-    };
-
     const char* g_IconNames[eIcon_COUNT] =
     {
         "Icons/ScaleWarning.png",
@@ -51,7 +36,6 @@ namespace
 CIconManager::CIconManager()
 {
     ZeroStruct(m_icons);
-    ZeroStruct(m_objects);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -74,16 +58,7 @@ void CIconManager::Done()
 void CIconManager::Reset()
 {
     // Do not unload objects. but clears them.
-    int i;
-    for (i = 0; i < sizeof(m_objects) / sizeof(m_objects[0]); i++)
-    {
-        if (m_objects[i])
-        {
-            m_objects[i]->Release();
-        }
-        m_objects[i] = nullptr;
-    }
-    for (i = 0; i < eIcon_COUNT; i++)
+    for (int i = 0; i < eIcon_COUNT; i++)
     {
         m_icons[i] = 0;
     }
@@ -124,12 +99,6 @@ int CIconManager::GetIconTexture(EIcon icon)
 
     m_icons[icon] = GetIconTexture(g_IconNames[icon]);
     return m_icons[icon];
-}
-
-//////////////////////////////////////////////////////////////////////////
-IStatObj*   CIconManager::GetObject(EStatObject)
-{
-    return nullptr;
 }
 
 //////////////////////////////////////////////////////////////////////////

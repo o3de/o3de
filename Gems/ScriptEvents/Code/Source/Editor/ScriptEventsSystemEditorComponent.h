@@ -22,7 +22,6 @@ namespace AzToolsFramework { class PropertyHandlerBase; }
 
 namespace ScriptEventsEditor
 {
-
     // This is the ScriptEvent asset handler used by the Asset Editor, it does additional validation that is not
     // needed when saving the asset through the builder
     class ScriptEventAssetHandler 
@@ -46,7 +45,7 @@ namespace ScriptEventsEditor
 
         // AssetEditorValidationRequestBus::Handler
         AZ::Outcome<bool, AZStd::string> IsAssetDataValid(const AZ::Data::Asset<AZ::Data::AssetData>& asset) override;
-        void PreAssetSave(AZ::Data::Asset<AZ::Data::AssetData> asset);
+        void PreAssetSave(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
         void BeforePropertyEdit(AzToolsFramework::InstanceDataNode* node, AZ::Data::Asset<AZ::Data::AssetData> asset) override;
 
         void SetSaveAsBinary(bool saveAsBinary) { m_saveAsBinary = saveAsBinary; }

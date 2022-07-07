@@ -16,18 +16,6 @@
     <verstretch>0</verstretch>
    </sizepolicy>
   </property>
-  <property name="minimumSize">
-   <size>
-    <width>0</width>
-    <height>450</height>
-   </size>
-  </property>
-  <property name="maximumSize">
-   <size>
-    <width>16777215</width>
-    <height>450</height>
-   </size>
-  </property>
   <property name="windowTitle">
    <string>Inspector Panel</string>
   </property>
@@ -104,7 +92,7 @@
      <property name="frameShadow">
       <enum>QFrame::Plain</enum>
      </property>
-     <layout class="QVBoxLayout" name="verticalLayout">
+     <layout class="QVBoxLayout" name="m_connectionPropertiesLayout">
       <property name="spacing">
        <number>0</number>
       </property>

@@ -161,8 +161,8 @@ namespace AZ
             RHI::ResultCode InitInternal(RHI::PhysicalDevice& physicalDevice) override;
             void ShutdownInternal() override;
             void CompileMemoryStatisticsInternal(RHI::MemoryStatisticsBuilder& builder) override;
-            void UpdateCpuTimingStatisticsInternal(RHI::CpuTimingStatistics& cpuTimingStatistics) const override;
-            void BeginFrameInternal() override;
+            void UpdateCpuTimingStatisticsInternal() const override;
+            RHI::ResultCode BeginFrameInternal() override;
             void EndFrameInternal() override;
             void WaitForIdleInternal() override;
             AZStd::chrono::microseconds GpuTimestampToMicroseconds(uint64_t gpuTimestamp, RHI::HardwareQueueClass queueClass) const override;

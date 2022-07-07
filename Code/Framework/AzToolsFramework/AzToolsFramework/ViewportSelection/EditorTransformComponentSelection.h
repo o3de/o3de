@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/Component/TransformBus.h>
+#include <AzCore/Console/IConsole.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/optional.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
@@ -16,9 +17,11 @@
 #include <AzFramework/Viewport/ClickDetector.h>
 #include <AzFramework/Viewport/CursorState.h>
 #include <AzToolsFramework/API/EditorCameraBus.h>
+#include <AzToolsFramework/API/ViewportEditorModeTrackerNotificationBus.h>
 #include <AzToolsFramework/Commands/EntityManipulatorCommand.h>
-#include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
 #include <AzToolsFramework/Editor/EditorContextMenuBus.h>
+#include <AzToolsFramework/Entity/EntityTypes.h>
+#include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntityBus.h>
 #include <AzToolsFramework/Manipulators/BaseManipulator.h>
 #include <AzToolsFramework/ToolsComponents/EditorLockComponentBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorVisibilityBus.h>
@@ -32,9 +35,7 @@
 
 namespace AzToolsFramework
 {
-    class EditorVisibleEntityDataCache;
-
-    using EntityIdSet = AZStd::unordered_set<AZ::EntityId>; //!< Alias for unordered_set of EntityIds.
+    class EditorVisibleEntityDataCacheInterface;
 
     //! Entity related data required by manipulators during action.
     struct EntityIdManipulatorLookup
@@ -63,24 +64,9 @@ namespace AzToolsFramework
     //! Temporary manipulator frame used during selection.
     struct OptionalFrame
     {
-        //! What part of the transform did we pick (when using ditto on
-        //! the manipulator). This will depend on the transform mode we're in.
-        struct PickType
-        {
-            enum : AZ::u8
-            {
-                None = 0,
-                Orientation = 1 << 0,
-                Translation = 1 << 1
-            };
-        };
-
         bool HasTranslationOverride() const;
         bool HasOrientationOverride() const;
         bool HasTransformOverride() const;
-        bool HasEntityOverride() const;
-        bool PickedTranslation() const;
-        bool PickedOrientation() const;
 
         //! Clear all state associated with the frame.
         void Reset();
@@ -89,10 +75,16 @@ namespace AzToolsFramework
         //! Clear only picked orientation state.
         void ResetPickedOrientation();
 
-        AZ::EntityId m_pickedEntityIdOverride; //!< 'Picked' Entity - frame and parent space relative to this if active.
         AZStd::optional<AZ::Vector3> m_translationOverride; //!< Translation override, if set, reset when selection is empty.
         AZStd::optional<AZ::Quaternion> m_orientationOverride; //!< Orientation override, if set, reset when selection is empty.
-        AZ::u8 m_pickTypes = PickType::None; //!< What mode(s) were we in when picking an EntityId override.
+    };
+
+    //! How a manipulator should treat an adjustment.
+    //! @note Determines if a transform is applied to an individual entity or the whole group.
+    enum class Influence
+    {
+        Group,
+        Individual
     };
 
     //! What frame/space is the manipulator currently operating in.
@@ -144,19 +136,20 @@ namespace AzToolsFramework
         , private EditorTransformComponentSelectionRequestBus::Handler
         , private ToolsApplicationNotificationBus::Handler
         , private Camera::EditorCameraNotificationBus::Handler
-        , private ComponentModeFramework::EditorComponentModeNotificationBus::Handler
+        , private ViewportEditorModeNotificationsBus::Handler
         , private EditorEntityContextNotificationBus::Handler
         , private EditorEntityVisibilityNotificationBus::Router
         , private EditorEntityLockComponentNotificationBus::Router
         , private EditorManipulatorCommandUndoRedoRequestBus::Handler
         , private AZ::TransformNotificationBus::MultiHandler
         , private ViewportInteraction::ViewportSettingsNotificationBus::Handler
+        , private ReadOnlyEntityPublicNotificationBus::Handler
     {
     public:
         AZ_CLASS_ALLOCATOR_DECL
 
         EditorTransformComponentSelection() = default;
-        explicit EditorTransformComponentSelection(const EditorVisibleEntityDataCache* entityDataCache);
+        explicit EditorTransformComponentSelection(const EditorVisibleEntityDataCacheInterface* entityDataCache);
         EditorTransformComponentSelection(const EditorTransformComponentSelection&) = delete;
         EditorTransformComponentSelection& operator=(const EditorTransformComponentSelection&) = delete;
         virtual ~EditorTransformComponentSelection();
@@ -170,14 +163,11 @@ namespace AzToolsFramework
 
         //! ViewportInteraction::ViewportSelectionRequests
         //! Intercept all viewport mouse events and respond to inputs.
-        bool HandleMouseInteraction(
-            const ViewportInteraction::MouseInteractionEvent& mouseInteraction) override;
+        bool HandleMouseInteraction(const ViewportInteraction::MouseInteractionEvent& mouseInteraction) override;
         void DisplayViewportSelection(
-            const AzFramework::ViewportInfo& viewportInfo,
-            AzFramework::DebugDisplayRequests& debugDisplay) override;
+            const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay) override;
         void DisplayViewportSelection2d(
-            const AzFramework::ViewportInfo& viewportInfo,
-            AzFramework::DebugDisplayRequests& debugDisplay) override;
+            const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay) override;
 
         //! Add an entity to the current selection
         void AddEntityToSelection(AZ::EntityId entityId);
@@ -206,7 +196,8 @@ namespace AzToolsFramework
         bool IsEntitySelected(AZ::EntityId entityId) const;
         void SetSelectedEntities(const EntityIdList& entityIds);
         void DeselectEntities();
-        bool SelectDeselect(AZ::EntityId entityIdUnderCursor);
+        bool SelectDeselect(AZ::EntityId entityId);
+        void ChangeSelectedEntity(AZ::EntityId entityId);
 
         void RefreshSelectedEntityIds();
         void RefreshSelectedEntityIds(const EntityIdList& selectedEntityIds);
@@ -235,7 +226,7 @@ namespace AzToolsFramework
         // can be returned to its previous state after an undo/redo operation
         void CreateEntityManipulatorDeselectCommand(ScopedUndoBatch& undoBatch);
 
-        // EditorTransformComponentSelectionRequestBus ...
+        // EditorTransformComponentSelectionRequestBus overrides ...
         Mode GetTransformMode() override;
         void SetTransformMode(Mode mode) override;
         void RefreshManipulators(RefreshType refreshType) override;
@@ -252,38 +243,36 @@ namespace AzToolsFramework
         void CopyScaleToSelectedEntitiesIndividualWorld(float scale) override;
         void SnapSelectedEntitiesToWorldGrid(float gridSize) override;
 
-        // EditorManipulatorCommandUndoRedoRequestBus ...
-        void UndoRedoEntityManipulatorCommand(
-            AZ::u8 pivotOverride, const AZ::Transform& transform, AZ::EntityId entityId) override;
+        // EditorManipulatorCommandUndoRedoRequestBus overrides ...
+        void UndoRedoEntityManipulatorCommand(AZ::u8 pivotOverride, const AZ::Transform& transform) override;
 
-        // EditorContextMenuBus...
-        void PopulateEditorGlobalContextMenu(QMenu* menu, const AZ::Vector2 & point, int flags) override;
+        // EditorContextMenuBus overrides ...
+        void PopulateEditorGlobalContextMenu(QMenu* menu, const AZ::Vector2& point, int flags) override;
         int GetMenuPosition() const override;
         AZStd::string GetMenuIdentifier() const override;
 
-        // EditorEventsBus ...
+        // EditorEventsBus overrides ...
         void OnEscape() override;
 
-        // ToolsApplicationNotificationBus ...
+        // ToolsApplicationNotificationBus overrides ...
         void BeforeEntitySelectionChanged() override;
-        void AfterEntitySelectionChanged(
-            const EntityIdList& newlySelectedEntities, const EntityIdList& newlyDeselectedEntities) override;
+        void AfterEntitySelectionChanged(const EntityIdList& newlySelectedEntities, const EntityIdList& newlyDeselectedEntities) override;
 
-        // TransformNotificationBus ...
+        // TransformNotificationBus overrides ...
         void OnTransformChanged(const AZ::Transform& localTM, const AZ::Transform& worldTM) override;
 
-        // Camera::EditorCameraNotificationBus ...
-        void OnViewportViewEntityChanged(const AZ::EntityId& newViewId) override;
+        // Camera::EditorCameraNotificationBus overrides ...
+        void OnViewportViewEntityChanged(const AZ::EntityId& viewEntityId) override;
 
-        // EditorContextVisibilityNotificationBus ...
+        // EditorContextVisibilityNotificationBus overrides ...
         void OnEntityVisibilityChanged(bool visibility) override;
 
-        // EditorContextLockComponentNotificationBus ...
+        // EditorContextLockComponentNotificationBus overrides ...
         void OnEntityLockChanged(bool locked) override;
 
-        // EditorComponentModeNotificationBus ...
-        void EnteredComponentMode(const AZStd::vector<AZ::Uuid>& componentModeTypes) override;
-        void LeftComponentMode(const AZStd::vector<AZ::Uuid>& componentModeTypes) override;
+        // ViewportEditorModeNotificationsBus overrides ...
+        void OnEditorModeActivated(const ViewportEditorModesInterface& editorModeState, ViewportEditorMode mode) override;
+        void OnEditorModeDeactivated(const ViewportEditorModesInterface& editorModeState, ViewportEditorMode mode) override;
 
         // EditorEntityContextNotificationBus overrides ...
         void OnStartPlayInEditor() override;
@@ -292,44 +281,61 @@ namespace AzToolsFramework
         // ViewportSettingsNotificationBus overrides ...
         void OnGridSnappingChanged(bool enabled) override;
 
-        // Helpers to safely interact with the TransformBus (requests).
+        // ReadOnlyEntityPublicNotificationBus overrides ...
+        void OnReadOnlyEntityStatusChanged(const AZ::EntityId& entityId, bool readOnly) override;
+
+        //!@{
+        //! Helpers to safely interact with the TransformBus (requests).
         void SetEntityWorldTranslation(AZ::EntityId entityId, const AZ::Vector3& worldTranslation);
         void SetEntityLocalTranslation(AZ::EntityId entityId, const AZ::Vector3& localTranslation);
         void SetEntityWorldTransform(AZ::EntityId entityId, const AZ::Transform& worldTransform);
         void SetEntityLocalScale(AZ::EntityId entityId, float localScale);
         void SetEntityLocalRotation(AZ::EntityId entityId, const AZ::Vector3& localRotation);
         void SetEntityLocalRotation(AZ::EntityId entityId, const AZ::Quaternion& localRotation);
+        //!@}
+
+        // Note: 'Ditto' is an immediate copy (it updates part of one entity transform to perfectly match
+        // another depending on the transform mode - translate/rotate/scale).
+        bool PerformGroupDitto(AZ::EntityId entityId);
+        bool PerformIndividualDitto(AZ::EntityId entityId);
+        //! ManipulatorTranslationFn returns the position to use when 'dittoing' the manipulator.
+        //! @note: signature - AZ::Vector3(void).
+        template<typename ManipulatorTranslationFn>
+        void PerformManipulatorDitto(AZ::EntityId entityId, ManipulatorTranslationFn&& manipulatorTranslationFn);
+        void PerformSnapToSurface(const ViewportInteraction::MouseInteractionEvent& mouseInteraction);
 
         //! Responsible for keeping the space cluster in sync with the current reference frame.
         void UpdateSpaceCluster(ReferenceFrame referenceFrame);
 
-        //! Hides/Shows all viewportUi toolbars.
+        //! Hides/Shows all viewportUi tool bars.
         void SetAllViewportUiVisible(bool visible);
 
         AZ::EntityId m_hoveredEntityId; //!< What EntityId is the mouse currently hovering over (if any).
-        AZ::EntityId m_cachedEntityIdUnderCursor; //!< Store the EntityId on each mouse move for use in Display.
+        AZ::EntityId m_currentEntityIdUnderCursor; //!< Store the EntityId on each mouse move for use in Display.
         AZ::EntityId m_editorCameraComponentEntityId; //!< The EditorCameraComponent EntityId if it is set.
         EntityIdSet m_selectedEntityIds; //!< Represents the current entities in the selection.
-
-        const EditorVisibleEntityDataCache* m_entityDataCache = nullptr; //!< A cache of packed EntityData that can be
-                                                                         //!< iterated over efficiently without the need
-                                                                         //!< to make individual EBus calls.
+        //! A cache of packed EntityData that can be iterated over efficiently without the need to make individual EBus calls.
+        const EditorVisibleEntityDataCacheInterface* m_entityDataCache = nullptr;
         AZStd::unique_ptr<EditorHelpers> m_editorHelpers; //!< Editor visualization of entities (icons, shapes, debug visuals etc).
         EntityIdManipulators m_entityIdManipulators; //!< Mapping from a Manipulator to potentially many EntityIds.
 
         EditorBoxSelect m_boxSelect; //!< Type responsible for handling box select.
-        AZStd::unique_ptr<EntityManipulatorCommand> m_manipulatorMoveCommand; //!< Track adjustments to manipulator translation and orientation (during mouse press/move).
+        //! Track adjustments to manipulator translation and orientation (during mouse press/move).
+        AZStd::unique_ptr<EntityManipulatorCommand> m_manipulatorMoveCommand;
         AZStd::vector<AZStd::unique_ptr<QAction>> m_actions; //!< What actions are tied to this handler.
         ViewportInteraction::KeyboardModifiers m_previousModifiers; //!< What modifiers were held last frame.
         EditorContextMenu m_contextMenu; //!< Viewport right click context menu.
         OptionalFrame m_pivotOverrideFrame; //!< Has a pivot override been set.
         Mode m_mode = Mode::Translation; //!< Manipulator mode - default to translation.
         Pivot m_pivotMode = Pivot::Object; //!< Entity pivot mode - default to object (authored root).
-        ReferenceFrame m_referenceFrame = ReferenceFrame::Parent; //!< What reference frame is the Manipulator currently operating in.
+        ReferenceFrame m_referenceFrame = ReferenceFrame::Local; //!< What reference frame is the Manipulator currently operating in.
+        Influence m_influence = Influence::Group; //!< What sphere of influence does the Manipulator have.
         Frame m_axisPreview; //!< Axes of entity at the time of mouse down to indicate delta of translation.
         bool m_triedToRefresh = false; //!< Did a refresh event occur to recalculate the current Manipulator transform.
-        bool m_didSetSelectedEntities = false; //!< Was EditorTransformComponentSelection responsible for the most recent entity selection change.
-        bool m_selectedEntityIdsAndManipulatorsDirty = false; //!< Do the active manipulators need to recalculated after a modification (lock/visibility etc).
+        //! Was EditorTransformComponentSelection responsible for the most recent entity selection change.
+        bool m_didSetSelectedEntities = false;
+        //! Do the active manipulators need to recalculated after a modification (lock/visibility etc).
+        bool m_selectedEntityIdsAndManipulatorsDirty = false;
         bool m_transformChangedInternally = false; //!< Was an OnTransformChanged event triggered internally or not.
         ViewportUi::ClusterId m_transformModeClusterId; //!< Id of the Viewport UI cluster for changing transform mode.
         ViewportUi::ButtonId m_translateButtonId; //!< Id of the Viewport UI button for translate mode.
@@ -343,10 +349,27 @@ namespace AzToolsFramework
         bool m_viewportUiVisible = true; //!< Used to hide/show the viewport ui elements.
     };
 
-    //! The ETCS (EntityTransformComponentSelection) namespace contains functions and data used exclusively by
+    //! Bundles viewport state that impacts how accents are added/removed in HandleAccents.
+    struct HandleAccentsContext
+    {
+        bool m_hasSelectedEntities;
+        bool m_ctrlHeld;
+        bool m_usingBoxSelect;
+        bool m_usingStickySelect;
+    };
+
+    //! Updates whether accents (icon highlights) are added/removed for a given entity based on the cursor position.
+    void HandleAccents(
+        AZ::EntityId currentEntityIdUnderCursor,
+        AZ::EntityId& hoveredEntityIdUnderCursor,
+        const HandleAccentsContext& handleAccentsContext,
+        ViewportInteraction::MouseButtons mouseButtons,
+        const AZStd::function<void(AZ::EntityId, bool)>& setEntityAccentedFn);
+
+    //! The Etcs (EntityTransformComponentSelection) namespace contains functions and data used exclusively by
     //! the EditorTransformComponentSelection type. Functions in this namespace are exposed to facilitate testing
     //! and should not be used outside of EditorTransformComponentSelection or EditorTransformComponentSelectionTests.
-    namespace ETCS
+    namespace Etcs
     {
         //! The result from calculating the entity (transform component) orientation.
         //! Does the entity have a parent or not, and what orientation should the manipulator have when
@@ -363,15 +386,13 @@ namespace AzToolsFramework
 
         //! Calculate the orientation for a group of entities based on the incoming reference frame.
         template<typename EntityIdMap>
-        PivotOrientationResult CalculatePivotOrientationForEntityIds(
-            const EntityIdMap& entityIdMap, const ReferenceFrame referenceFrame);
+        PivotOrientationResult CalculatePivotOrientationForEntityIds(const EntityIdMap& entityIdMap, const ReferenceFrame referenceFrame);
 
         //! Calculate the orientation for a group of entities based on the incoming
         //! reference frame with possible pivot override.
         template<typename EntityIdMap>
         PivotOrientationResult CalculateSelectionPivotOrientation(
-            const EntityIdMap& entityIdMap, const OptionalFrame& pivotOverrideFrame,
-            const ReferenceFrame referenceFrame);
+            const EntityIdMap& entityIdMap, const OptionalFrame& pivotOverrideFrame, const ReferenceFrame referenceFrame);
 
         void SetEntityWorldTranslation(AZ::EntityId entityId, const AZ::Vector3& worldTranslation, bool& internal);
         void SetEntityLocalTranslation(AZ::EntityId entityId, const AZ::Vector3& localTranslation, bool& internal);
@@ -379,5 +400,5 @@ namespace AzToolsFramework
         void SetEntityLocalScale(AZ::EntityId entityId, float localScale, bool& internal);
         void SetEntityLocalRotation(AZ::EntityId entityId, const AZ::Vector3& localRotation, bool& internal);
         void SetEntityLocalRotation(AZ::EntityId entityId, const AZ::Quaternion& localRotation, bool& internal);
-    } // namespace ETCS
+    } // namespace Etcs
 } // namespace AzToolsFramework

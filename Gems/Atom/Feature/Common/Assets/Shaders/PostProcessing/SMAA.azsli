@@ -157,7 +157,7 @@
  *         #define SMAA_RT_METRICS float4(1.0 / 1280.0, 1.0 / 720.0, 1280.0, 720.0)
  *         #define SMAA_HLSL_4
  *         #define SMAA_PRESET_HIGH
- *         #include "SMAA.h"
+ *         include "SMAA.h" ('#' symbol before 'include' was removed on purpose to avoid parsing this azsli file during ShaderAssetBuilder::CreateJobs)
  *
  *     Note that SMAA_RT_METRICS doesn't need to be a macro, it can be a
  *     uniform variable. The code is designed to minimize the impact of not

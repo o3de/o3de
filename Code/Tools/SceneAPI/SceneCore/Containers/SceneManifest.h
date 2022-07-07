@@ -41,6 +41,8 @@ namespace AZ
 
                 AZ_RTTI(SceneManifest, "{9274AD17-3212-4651-9F3B-7DCCB080E467}");
                 
+                static constexpr size_t MaxSceneManifestFileSizeInBytes = AZStd::numeric_limits<size_t>::max();
+
                 virtual ~SceneManifest();
                 
                 static AZStd::shared_ptr<const DataTypes::IManifestObject> SceneManifestConstDataConverter(

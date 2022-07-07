@@ -21,6 +21,8 @@
 #define mallocAligned(sze)  _aligned_malloc(sze, 16)
 #define freeAligned(ptr)      _aligned_free(ptr)
 
+AZ_PUSH_DISABLE_WARNING_GCC("-Wunused-value")
+
 /* ####################################################################################################################
  */
 
@@ -209,18 +211,18 @@ namespace ImageProcessingAtom
         /* addition of c-pointers already takes care of datatype-sizes */                                                                                                                      \
         const signed long int dy = /*parm->mirror ? -1 :*/ 1;                                                                                                                                  \
         const unsigned int stridei = parm->incols  * 1 * 1;                                                                                                                                    \
-        const unsigned int stridet = parm->subcols * 1 * 1;                                                                                                                                    \
-        const unsigned int strideo = parm->outcols * 1 * 1;                                                                                                                                    \
+        [[maybe_unused]] const unsigned int stridet = parm->subcols * 1 * 1;                                                                                                                   \
+        [[maybe_unused]] const unsigned int strideo = parm->outcols * 1 * 1;                                                                                                                   \
         /* offset and shift calculations still require the unmodified values */                                                                                                                \
         const unsigned int strideiraw = parm->incols;                                                                                                                                          \
-        const unsigned int stridetraw = parm->subcols;                                                                                                                                         \
+        [[maybe_unused]] const unsigned int stridetraw = parm->subcols;                                                                                                                        \
         const unsigned int strideoraw = parm->outcols;                                                                                                                                         \
                                                                                                                                                                                                \
         class Plane2D<dtyp> tmp(tmpcols, tmprows, 4);                                                                                                                                          \
         dtyp*** t = (dtyp***)tmp;                                                                                                                                                              \
         int srcPos, dstPos;                                                                                                                                                                    \
-        bool plusminush = false; const bool of = true;                                                                                                                                         \
-        bool plusminusv = false; const bool nc = false;                                                                                                                                        \
+        bool plusminush = false; [[maybe_unused]] const bool of = true;                                                                                                                        \
+        bool plusminusv = false; [[maybe_unused]] const bool nc = false;                                                                                                                       \
         FilterWeights<wtyp>* fwh = calculateFilterWeights<wtyp>(parm->resample.colrem, parm->caged ? 0 : 0 - parm->region.subtop, parm->caged ? srccols : parm->subrows - parm->region.subtop, \
             parm->resample.colquo,               0,               dstcols, reps, parm->resample.colblur, parm->resample.wf, parm->resample.operation != eWindowEvaluation_Sum, plusminush);    \
         FilterWeights<wtyp>* fwv = calculateFilterWeights<wtyp>(parm->resample.rowrem, parm->caged ? 0 : 0 - parm->region.intop, parm->caged ? srcrows : parm->inrows  - parm->region.intop,   \
@@ -833,7 +835,7 @@ namespace ImageProcessingAtom
 
     #define filterRowFetch(srcOffs, srcSize, srcSkip, dstOffs, dstSize, dstSkip) \
         /* vertical stride, horizontal fetch */                                  \
-        getCxNFromStreamSwapped(srcSkip, i);                                     \
+        /* getCxNFromStreamSwapped(srcSkip, i); Expands to nothing */            \
         getCxNFromStream(srcSkip, i);                                            \
         getCxNFromPlane(1);                                                      \
                                                                                  \
@@ -935,7 +937,7 @@ namespace ImageProcessingAtom
         comcpyCHistogram();                                                      \
                                                                                  \
         /* horizontal stride, vertical store */                                  \
-        putCxNToStreamSwapped(dstSkip, o);                                       \
+        /* putCxNToStreamSwapped(dstSkip, o); Expands to nothing */              \
         putCxNToStream(dstSkip, o);                                              \
         putCxNToPlane(1);                                                        \
                                                                                  \
@@ -999,79 +1001,81 @@ namespace ImageProcessingAtom
     }
 
     // TODO: not working yet, debug and enable
-    //static void SplitAlgorithm(const void* i, void* o, struct prcparm* templ, int threads = 8)
-    //{
-    //    struct prcparm fraction[32];
-    //    int t, istart = 0, sstart = 0, ostart = 0;
-    //    const bool scaler = true;
+    /*
+      static void SplitAlgorithm(const void* i, void* o, struct prcparm* templ, int threads = 8)
+      {
+          struct prcparm fraction[32];
+          int t, istart = 0, sstart = 0, ostart = 0;
+          const bool scaler = true;
 
-    //    int theight = 0;
+          int theight = 0;
 
-    //    /* prepare data to be emitted to the threads */
-    //    for (t = 0; t < threads; t++)
-    //    {
-    //        fraction[t] = *templ;
+          // prepare data to be emitted to the threads
+          for (t = 0; t < threads; t++)
+          {
+              fraction[t] = *templ;
 
-    //        /* adjust the processing-region according to the available threads */
-    //        {
-    //#undef  split       /* only prefix-threads need aligned transpose (for not trashing suffix-thread data) */
-    //#define split(rows) !scaler                                         \
-    //    ? ((rows * (t + 1)) / threads) & (~(t != threads - 1 ? 15 : 0)) \
-    //    : ((rows * (t + 1)) / threads) & (~0)
+              // adjust the processing-region according to the available threads
+              {
+      #undef  split       // only prefix-threads need aligned transpose (for not trashing suffix-thread data)
+      #define split(rows) !scaler                                         \
+          ? ((rows * (t + 1)) / threads) & (~(t != threads - 1 ? 15 : 0)) \
+          : ((rows * (t + 1)) / threads) & (~0)
 
-    //            /* area covered */
-    //            const int  inrows = (fraction[t].regional ? fraction[t].region.inrows  : fraction[t].inrows);
-    //            const int  incols = (fraction[t].regional ? fraction[t].region.incols  : fraction[t].incols);
-    //            const int subrows = (fraction[t].regional ? fraction[t].region.subrows : fraction[t].subrows);
-    //            const int subcols = (fraction[t].regional ? fraction[t].region.subcols : fraction[t].subcols);
-    //            const int outrows = (fraction[t].regional ? fraction[t].region.outrows : fraction[t].outrows);
-    //            const int outcols = (fraction[t].regional ? fraction[t].region.outcols : fraction[t].outcols);
+                  // area covered
+                  const int  inrows = (fraction[t].regional ? fraction[t].region.inrows  : fraction[t].inrows);
+                  const int  incols = (fraction[t].regional ? fraction[t].region.incols  : fraction[t].incols);
+                  const int subrows = (fraction[t].regional ? fraction[t].region.subrows : fraction[t].subrows);
+                  const int subcols = (fraction[t].regional ? fraction[t].region.subcols : fraction[t].subcols);
+                  const int outrows = (fraction[t].regional ? fraction[t].region.outrows : fraction[t].outrows);
+                  const int outcols = (fraction[t].regional ? fraction[t].region.outcols : fraction[t].outcols);
 
-    //            /* splitting blocks */
-    //            const int istop = split(inrows), sstop = split(subrows), ostop = split(outrows);
-    //            const int irows = istop - istart, srows = sstop - sstart, orows = ostop - ostart;
-    //            const int icols = incols, scols = subcols, ocols = outcols;
+                  // splitting blocks
+                  const int istop = split(inrows), sstop = split(subrows), ostop = split(outrows);
+                  const int irows = istop - istart, srows = sstop - sstart, orows = ostop - ostart;
+                  const int icols = incols, scols = subcols, ocols = outcols;
 
-    //            AZ_Assert(irows > 0, "%s: Expect row count to be above zero!", __FUNCTION__);
-    //            AZ_Assert(orows > 0, "%s: Expect row count to be above zero!", __FUNCTION__);
-    //            AZ_Assert(icols > 0, "%s: Expect column count to be above zero!", __FUNCTION__);
-    //            AZ_Assert(ocols > 0, "%s: Expect column count to be above zero!", __FUNCTION__);
+                  AZ_Assert(irows > 0, "%s: Expect row count to be above zero!", __FUNCTION__);
+                  AZ_Assert(orows > 0, "%s: Expect row count to be above zero!", __FUNCTION__);
+                  AZ_Assert(icols > 0, "%s: Expect column count to be above zero!", __FUNCTION__);
+                  AZ_Assert(ocols > 0, "%s: Expect column count to be above zero!", __FUNCTION__);
 
-    //            /* now we are regional */
-    //            fraction[t].regional       = true;
+                  // now we are regional
+                  fraction[t].regional       = true;
 
-    //            /* take previous regionality into account */
-    //            fraction[t].region.intop += istart;
-    //            fraction[t].region.subtop += sstart;
-    //            fraction[t].region.outtop += ostart;
-    //            fraction[t].region.inrows = irows;
-    //            fraction[t].region.subrows = srows;
-    //            fraction[t].region.outrows = orows;
+                  // take previous regionality into account
+                  fraction[t].region.intop += istart;
+                  fraction[t].region.subtop += sstart;
+                  fraction[t].region.outtop += ostart;
+                  fraction[t].region.inrows = irows;
+                  fraction[t].region.subrows = srows;
+                  fraction[t].region.outrows = orows;
 
-    //            /* take previous regionality into account */
-    //            fraction[t].region.inleft += 0;
-    //            fraction[t].region.subleft += 0;
-    //            fraction[t].region.outleft += 0;
-    //            fraction[t].region.incols  = icols;
-    //            fraction[t].region.subcols  = scols;
-    //            fraction[t].region.outcols  = ocols;
+                  // take previous regionality into account
+                  fraction[t].region.inleft += 0;
+                  fraction[t].region.subleft += 0;
+                  fraction[t].region.outleft += 0;
+                  fraction[t].region.incols  = icols;
+                  fraction[t].region.subcols  = scols;
+                  fraction[t].region.outcols  = ocols;
 
-    //            /* advance block */
-    //            istart = istop;
-    //            sstart = sstop;
-    //            ostart = ostop;
+                  // advance block
+                  istart = istop;
+                  sstart = sstop;
+                  ostart = ostop;
 
-    //            /* check */
-    //            theight += irows;
-    //        }
+                  // check
+                  theight += irows;
+              }
 
-    //        // the algorithm supports "i" and "o" pointing to the same memory
-    //        CheckBoundaries((float*)i, (float*)o, &fraction[t]);
-    //        RunAlgorithm((float*)i, (float*)o, &fraction[t]);
-    //    }
+              // the algorithm supports "i" and "o" pointing to the same memory
+              CheckBoundaries((float*)i, (float*)o, &fraction[t]);
+              RunAlgorithm((float*)i, (float*)o, &fraction[t]);
+          }
 
-    //    AZ_Assert(theight >= (templ->regional ? templ->region.inrows : templ->inrows), "%s: Invalid height!", __FUNCTION__);
-    //}
+          AZ_Assert(theight >= (templ->regional ? templ->region.inrows : templ->inrows), "%s: Invalid height!", __FUNCTION__);
+      }
+    */
 
     /* #################################################################################################################### \
      */
@@ -1277,3 +1281,5 @@ namespace ImageProcessingAtom
         FilterImage(filterIndex, filterOp, blurH, blurV, srcImg, srcMip, dstImg, dstMip, srcRect, dstRect);
     }
 }
+
+AZ_POP_DISABLE_WARNING_GCC

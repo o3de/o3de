@@ -22,37 +22,69 @@ namespace AZ
             : public ComponentBus
         {
         public:
+            //! Sets the model asset used by the component.
             virtual void SetModelAsset(Data::Asset<RPI::ModelAsset> modelAsset) = 0;
+            //! Returns the model asset used by the component.
             virtual Data::Asset<const RPI::ModelAsset> GetModelAsset() const = 0;
 
+            //! Sets the model used by the component via its AssetId.
             virtual void SetModelAssetId(Data::AssetId modelAssetId) = 0;
+            //! Returns the AssetId for the model used by the component.
             virtual Data::AssetId GetModelAssetId() const = 0;
 
+            //! Sets the model used by the component via its path.
             virtual void SetModelAssetPath(const AZStd::string& path) = 0;
+            //! Returns the path for the model used by the component.
             virtual AZStd::string GetModelAssetPath() const = 0;
 
+            //! Returns the model instance used by the component.
             virtual Data::Instance<RPI::Model> GetModel() const = 0;
 
+            //! Sets the sort key for the component.
+            //! Transparent models are drawn in order first by sort key, then depth.
+            //! Use this to force certain transparent models to draw before or after others.
             virtual void SetSortKey(RHI::DrawItemSortKey sortKey) = 0;
+            //! Returns the sort key for the component.
             virtual RHI::DrawItemSortKey GetSortKey() const = 0;
 
+            //! Sets the LodType, which determines how Lods will be selected during rendering.
             virtual void SetLodType(RPI::Cullable::LodType lodType) = 0;
+            //! Returns the LodType.
             virtual RPI::Cullable::LodType GetLodType() const = 0;
 
+            //! Sets the Lod that is rendered for all views when used with LodType::SpecificLod.
             virtual void SetLodOverride(RPI::Cullable::LodOverride lodOverride) = 0;
+            //! Returns the LodOverride.
             virtual RPI::Cullable::LodOverride GetLodOverride() const = 0;
 
+            //! Sets the minimum screen coverage. the minimum proportion of screen area an entity takes up when used with LodType::ScreenCoverage.
+            //! If the entity is smaller than the minimum coverage, it is culled.
             virtual void SetMinimumScreenCoverage(float minimumScreenCoverage) = 0;
+            //! Returns the minimum screen coverage.
             virtual float GetMinimumScreenCoverage() const = 0;
 
+            //! Sets the quality rate at which mesh quality decays.
+            //! (0 -> always stay highest quality lod, 1 -> quality falls off to lowest quality lod immediately).
             virtual void SetQualityDecayRate(float qualityDecayRate) = 0;
+            //! Returns the quality decay rate.
             virtual float GetQualityDecayRate() const = 0;
 
+            //! Sets if the model should be visible (true) or hidden (false).
             virtual void SetVisibility(bool visible) = 0;
+            //! Returns the visibility. If the model is visible (true), that only means that it has not been explicitly hidden.
+            //! The model may still not be visible by any views being rendered. If it is not visible (false), it will not be rendered by any views,
+            //! regardless of whether or not the model is in the view frustum.
             virtual bool GetVisibility() const = 0;
 
+            //! Enables (true) or disables (false) ray tracing for this model.
+            virtual void SetRayTracingEnabled(bool enabled) = 0;
+            //! Returns whether ray tracing is enabled (true) or disabled (false) for this model.
+            virtual bool GetRayTracingEnabled() const = 0;
+
+            //! Returns the axis-aligned bounding box for the model at its world position.
             virtual AZ::Aabb GetWorldBounds() = 0;
 
+            //! Returns the axis-aligned bounding box in model space.
             virtual AZ::Aabb GetLocalBounds() = 0;
         };
         using MeshComponentRequestBus = EBus<MeshComponentRequests>;
@@ -64,7 +96,11 @@ namespace AZ
             : public ComponentBus
         {
         public:
+            //! Notifies listeners when a model has been loaded.
+            //! If the model is already loaded when first connecting to the MeshComponentNotificationBus,
+            //! the OnModelReady event will occur when connecting.
             virtual void OnModelReady(const Data::Asset<RPI::ModelAsset>& modelAsset, const Data::Instance<RPI::Model>& model) = 0;
+            //! Notifies listeners when the instance of the model for this component is about to be released.
             virtual void OnModelPreDestroy() {}
 
             /**

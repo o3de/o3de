@@ -28,7 +28,7 @@ public:
     CTrackViewSplineCtrl(QWidget* parent);
     virtual ~CTrackViewSplineCtrl();
 
-    virtual void ClearSelection();
+    void ClearSelection() override;
 
     void AddSpline(ISplineInterpolator* pSpline, CTrackViewTrack* pTrack, const QColor& color);
     void AddSpline(ISplineInterpolator * pSpline, CTrackViewTrack * pTrack, QColor anColorArray[4]);
@@ -53,12 +53,12 @@ protected:
     void wheelEvent(QWheelEvent* event) override;
 
 private:
-    virtual void SelectKey(ISplineInterpolator* pSpline, int nKey, int nDimension, bool bSelect) override;
-    virtual void SelectRectangle(const QRect& rc, bool bSelect) override;
+    void SelectKey(ISplineInterpolator* pSpline, int nKey, int nDimension, bool bSelect) override;
+    void SelectRectangle(const QRect& rc, bool bSelect) override;
 
     std::vector<CTrackViewTrack*> m_tracks;
 
-    virtual bool GetTangentHandlePts(QPoint& inTangentPt, QPoint& pt, QPoint& outTangentPt,
+    bool GetTangentHandlePts(QPoint& inTangentPt, QPoint& pt, QPoint& outTangentPt,
         int nSpline, int nKey, int nDimension) override;
     void ComputeIncomingTangentAndEaseTo(float& ds, float& easeTo, QPoint inTangentPt,
         int nSpline, int nKey, int nDimension);
@@ -67,7 +67,7 @@ private:
     void AdjustTCB(float d_tension, float d_continuity, float d_bias);
     void MoveSelectedTangentHandleTo(const QPoint& point);
 
-    virtual ISplineCtrlUndo* CreateSplineCtrlUndoObject(std::vector<ISplineInterpolator*>& splineContainer);
+    ISplineCtrlUndo* CreateSplineCtrlUndoObject(std::vector<ISplineInterpolator*>& splineContainer) override;
 
     bool m_bKeysFreeze;
     bool m_bTangentsFreeze;

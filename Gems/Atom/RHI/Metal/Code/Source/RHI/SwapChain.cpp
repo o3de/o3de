@@ -6,10 +6,10 @@
  *
  */
 
+#include <AzCore/Debug/Profiler.h>
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/std/string/string.h>
 #include <AzFramework/Windowing/WindowBus.h>
-#include <Atom/RHI/CpuProfiler.h>
 #include <RHI/Device.h>
 #include <RHI/Image.h>
 #include <RHI/SwapChain.h>
@@ -68,7 +68,8 @@ namespace AZ
                         
                 Platform::AttachViewController(m_nativeWindow, m_viewController, m_metalView);
                 
-                m_metalView.metalLayer.drawableSize = CGSizeMake(descriptor.m_dimensions.m_imageWidth, descriptor.m_dimensions.m_imageHeight);
+                m_drawableSize = CGSizeMake(descriptor.m_dimensions.m_imageWidth, descriptor.m_dimensions.m_imageHeight);
+                m_metalView.metalLayer.drawableSize = m_drawableSize;
             }
             else
             {
@@ -123,9 +124,6 @@ namespace AZ
 
         RHI::ResultCode SwapChain::InitImageInternal(const InitImageRequest& request)
         {
-            const RHI::SwapChainDescriptor& descriptor = GetDescriptor();
-            Device& device = GetDevice();
-            
             Name name(AZStd::string::format("SwapChainImage_%d", request.m_imageIndex));
             Image& image = static_cast<Image&>(*request.m_image);
             
@@ -171,7 +169,8 @@ namespace AZ
         {
             if(m_metalView)
             {
-                Platform::ResizeInternal(m_metalView, CGSizeMake(dimensions.m_imageWidth, dimensions.m_imageHeight));
+                //Cache the new dimensions. We update the layer right before requesting the drawable.
+                m_drawableSize = CGSizeMake(dimensions.m_imageWidth, dimensions.m_imageHeight);
             }
             else
             {
@@ -195,7 +194,7 @@ namespace AZ
     
         id<MTLTexture> SwapChain::RequestDrawable(bool isFrameCaptureEnabled)
         {
-            AZ_ATOM_PROFILE_FUNCTION("RHI", "SwapChain::RequestDrawable");
+            AZ_PROFILE_SCOPE(RHI, "SwapChain::RequestDrawable");
             m_metalView.metalLayer.framebufferOnly = !isFrameCaptureEnabled;
             const uint32_t currentImageIndex = GetCurrentImageIndex();
             if(m_drawables[currentImageIndex])
@@ -206,6 +205,12 @@ namespace AZ
             }
             else
             {
+                //Resize the layer if the dimensions dont align.
+                if(m_drawableSize.width != m_metalView.metalLayer.drawableSize.width ||
+                   m_drawableSize.height != m_metalView.metalLayer.drawableSize.height)
+                {
+                    Platform::ResizeInternal(m_metalView, m_drawableSize);
+                }
                 m_drawables[currentImageIndex] = [m_metalView.metalLayer nextDrawable];
                 AZ_Assert(m_drawables[currentImageIndex], "Drawable can not be null");
                 

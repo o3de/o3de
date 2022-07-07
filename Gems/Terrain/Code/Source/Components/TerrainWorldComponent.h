@@ -11,6 +11,8 @@
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Component/Component.h>
 #include <AzCore/Math/Vector3.h>
+#include <AzCore/Serialization/Json/BaseJsonSerializer.h>
+#include <AzCore/Serialization/Json/RegistrationContext.h>
 #include <TerrainSystem/TerrainSystem.h>
 
 namespace LmbrCentral
@@ -21,6 +23,18 @@ namespace LmbrCentral
 
 namespace Terrain
 {
+    // Custom JSON serializer for TerrainWorldConfig to handle version conversion
+    class JsonTerrainWorldConfigSerializer : public AZ::BaseJsonSerializer
+    {
+    public:
+        AZ_RTTI(Terrain::JsonTerrainWorldConfigSerializer, "{910BC31F-CD49-488E-8004-227D9FEB5A16}", AZ::BaseJsonSerializer);
+        AZ_CLASS_ALLOCATOR_DECL;
+
+        AZ::JsonSerializationResult::Result Load(
+            void* outputValue, const AZ::Uuid& outputValueTypeId, const rapidjson::Value& inputValue,
+            AZ::JsonDeserializerContext& context) override;
+    };
+
     class TerrainWorldConfig
         : public AZ::ComponentConfig
     {
@@ -31,7 +45,27 @@ namespace Terrain
 
         AZ::Vector3 m_worldMin{ 0.0f, 0.0f, 0.0f };
         AZ::Vector3 m_worldMax{ 1024.0f, 1024.0f, 1024.0f };
-        AZ::Vector2 m_heightQueryResolution{ 1.0f, 1.0f };
+        float m_heightQueryResolution{ 1.0f };
+        float m_surfaceDataQueryResolution{ 1.0f };
+
+        static AZ::Outcome<void, AZStd::string> ValidateBounds(AZ::Vector3& minBounds, AZ::Vector3& maxBounds)
+        {
+            if (!minBounds.IsLessEqualThan(maxBounds))
+            {
+                return AZ::Failure(AZStd::string("World bounds min must be less than max."));
+            }
+            return AZ::Success();
+        }
+
+        AZ::Outcome<void, AZStd::string> ValidateBoundsMin(void* newValue, [[maybe_unused]] const AZ::Uuid& valueType)
+        {
+            return ValidateBounds(*static_cast<AZ::Vector3*>(newValue), m_worldMax);
+        }
+
+        AZ::Outcome<void, AZStd::string> ValidateBoundsMax(void* newValue, [[maybe_unused]] const AZ::Uuid& valueType)
+        {
+            return ValidateBounds(m_worldMin, *static_cast<AZ::Vector3*>(newValue));
+        }
     };
 
 

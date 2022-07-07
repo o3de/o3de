@@ -11,6 +11,8 @@
 #include <AzCore/Script/ScriptSystemBus.h>
 #include <Editor/Framework/ScriptCanvasTraceUtilities.h>
 #include <Editor/Framework/ScriptCanvasReporter.h>
+#include <ScriptCanvas/Assets/ScriptCanvasFileHandling.h>
+#include <ScriptCanvas/Core/Core.h>
 
 namespace ScriptCanvas
 {

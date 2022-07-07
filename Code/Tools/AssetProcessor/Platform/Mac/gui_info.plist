@@ -11,8 +11,8 @@
 	<key>CFBundleSignature</key>
 	<string>ASPR</string>
 	<key>CFBundleExecutable</key>
-	<string>AssetProcessorDummy</string>
+	<string>AssetProcessor</string>
 	<key>CFBundleIdentifier</key>
-	<string>com.Amazon.AssetProcessor</string>
+	<string>com.O3DE.AssetProcessor</string>
 </dict>
 </plist>

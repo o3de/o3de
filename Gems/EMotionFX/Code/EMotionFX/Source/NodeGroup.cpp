@@ -6,11 +6,9 @@
  *
  */
 
-// include the required headers
 #include "NodeGroup.h"
 #include "ActorInstance.h"
 #include <EMotionFX/Source/Allocators.h>
-
 
 namespace EMotionFX
 {
@@ -104,10 +102,7 @@ namespace EMotionFX
     // remove a given node by its node number
     void NodeGroup::RemoveNodeByNodeIndex(uint16 nodeIndex)
     {
-        if (const auto found = AZStd::find(begin(m_nodes), end(m_nodes), nodeIndex); found)
-        {
-            m_nodes.erase(found);
-        }
+        m_nodes.erase(AZStd::remove(m_nodes.begin(), m_nodes.end(), nodeIndex), m_nodes.end());
     }
 
 

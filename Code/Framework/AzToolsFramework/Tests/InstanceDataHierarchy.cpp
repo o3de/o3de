@@ -104,15 +104,15 @@ namespace UnitTest
                 if (AZ::EditContext* edit = serializeContext->GetEditContext())
                 {
                     edit->Class<TestComponent>("Test Component", "A test component")
-                        ->DataElement(0, &TestComponent::m_float, "Float Field", "A float field")
-                        ->DataElement(0, &TestComponent::m_string, "String Field", "A string field")
-                        ->DataElement(0, &TestComponent::m_normalContainer, "Normal Container", "A container")
-                        ->DataElement(0, &TestComponent::m_pointerContainer, "Pointer Container", "A container")
-                        ->DataElement(0, &TestComponent::m_subData, "Struct Field", "A sub data type")
+                        ->DataElement(nullptr, &TestComponent::m_float, "Float Field", "A float field")
+                        ->DataElement(nullptr, &TestComponent::m_string, "String Field", "A string field")
+                        ->DataElement(nullptr, &TestComponent::m_normalContainer, "Normal Container", "A container")
+                        ->DataElement(nullptr, &TestComponent::m_pointerContainer, "Pointer Container", "A container")
+                        ->DataElement(nullptr, &TestComponent::m_subData, "Struct Field", "A sub data type")
                         ;
 
                     edit->Class<SubData>("Test Component", "A test component")
-                        ->DataElement(0, &SubData::m_int, "Int Field", "An int")
+                        ->DataElement(nullptr, &SubData::m_int, "Int Field", "An int")
                         ;
                 }
             }
@@ -156,7 +156,7 @@ namespace UnitTest
         {
         }
 
-        ~InstanceDataHierarchyBasicTest()
+        ~InstanceDataHierarchyBasicTest() override
         {
         }
 
@@ -481,7 +481,7 @@ namespace UnitTest
         {
         }
 
-        ~InstanceDataHierarchyCopyContainerChangesTest()
+        ~InstanceDataHierarchyCopyContainerChangesTest() override
         {
         }
 
@@ -680,8 +680,8 @@ namespace UnitTest
                         ;
 
                     edit->Class<EnumContainer>("Enum Container", "Test container that has an external enum")
-                        ->DataElement(0, &EnumContainer::m_enum, "Enum Field", "An enum value")
-                        ->DataElement(0, &EnumContainer::m_enumVector, "Enum Vector Field", "A vector of enum values")
+                        ->DataElement(nullptr, &EnumContainer::m_enum, "Enum Field", "An enum value")
+                        ->DataElement(nullptr, &EnumContainer::m_enumVector, "Enum Vector Field", "A vector of enum values")
                         ;
                 }
             }
@@ -710,7 +710,7 @@ namespace UnitTest
 
             auto getEnumData = [&ec](const AzToolsFramework::InstanceDataNode& node) -> Uuid
             {
-                Uuid id;
+                Uuid id = Uuid::CreateNull();
                 auto attribute = node.GetElementMetadata()->FindAttribute(AZ_CRC("EnumType"));
                 auto attributeData = azrtti_cast<AttributeData<AZ::TypeId>*>(attribute);
                 if (attributeData)
@@ -776,21 +776,21 @@ namespace UnitTest
                 {
                     edit->Class<GroupTestComponent>("Group Test Component", "Testing normal groups and toggle groups")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->DataElement(0, &GroupTestComponent::m_float, "Float Field", "A float field")
+                        ->DataElement(nullptr, &GroupTestComponent::m_float, "Float Field", "A float field")
                         ->ClassElement(AZ::Edit::ClassElements::Group, "Normal Group")
-                        ->DataElement(0, &GroupTestComponent::m_groupFloat, "Float Field", "A float field")
-                        ->DataElement(0, &GroupTestComponent::m_subGroupForNormal, "Struct Field", "A sub data type")
+                        ->DataElement(nullptr, &GroupTestComponent::m_groupFloat, "Float Field", "A float field")
+                        ->DataElement(nullptr, &GroupTestComponent::m_subGroupForNormal, "Struct Field", "A sub data type")
                         ->GroupElementToggle("Group Toggle", &GroupTestComponent::m_groupToggle)
-                        ->DataElement(0, &GroupTestComponent::m_toggleGroupInt, "Normal Integer", "An Integer")
-                        ->DataElement(0, &GroupTestComponent::m_subGroupForToggle, "Struct Field", "A sub data type")
+                        ->DataElement(nullptr, &GroupTestComponent::m_toggleGroupInt, "Normal Integer", "An Integer")
+                        ->DataElement(nullptr, &GroupTestComponent::m_subGroupForToggle, "Struct Field", "A sub data type")
                         ;
 
                     edit->Class<SubData>("SubGroup Test Component", "Testing nested normal groups and toggle groups")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->ClassElement(AZ::Edit::ClassElements::Group, "Normal SubGroup")
-                        ->DataElement(0, &SubData::m_int, "SubGroup Int Field", "An int")
+                        ->DataElement(nullptr, &SubData::m_int, "SubGroup Int Field", "An int")
                         ->GroupElementToggle("SubGroup Toggle", &SubData::m_bool)
-                        ->DataElement(0, &SubData::m_float, "SubGroup Float Field", "An int")
+                        ->DataElement(nullptr, &SubData::m_float, "SubGroup Float Field", "An int")
                         ;
                 }
             }
@@ -974,7 +974,7 @@ namespace UnitTest
             {
             }
 
-            void InsertAndVerifyKeys(AZ::SerializeContext::IDataContainer* container, void* key, void* instance, const AZ::SerializeContext::ClassElement* classElement) const
+            void InsertAndVerifyKeys(AZ::SerializeContext::IDataContainer* container, void* key, void* instance, const AZ::SerializeContext::ClassElement* classElement) const override
             {
                 T* keyContainer = reinterpret_cast<T*>(key);
                 for (const T& keyToInsert : keysToInsert)
@@ -1242,27 +1242,35 @@ namespace UnitTest
     {
     public:
         class UIElementContainer
+            : public AZ::Component
         {
         public:
-            AZ_TYPE_INFO(UIElementContainer, "{83B7BDFD-8B60-4C52-B7C5-BF3C824620F5}");
-            AZ_CLASS_ALLOCATOR(UIElementContainer, AZ::SystemAllocator, 0);
+            AZ_COMPONENT(UIElementContainer, "{83B7BDFD-8B60-4C52-B7C5-BF3C824620F5}", AZ::Component);
 
             int m_data;
 
-            static void Reflect(AZ::SerializeContext& context)
+            static void Reflect(AZ::ReflectContext* context)
             {
-                context.Class<UIElementContainer>()
-                    ->Field("data", &UIElementContainer::m_data);
-
-                if (auto editContext = context.GetEditContext())
+                if (auto serialize = azrtti_cast<AZ::SerializeContext*>(context))
                 {
-                    editContext->Class<UIElementContainer>("Test", "")
-                        ->UIElement("TestHandler", "UIElement")
-                        ->DataElement(0, &UIElementContainer::m_data)
-                        ->UIElement(AZ_CRC("TestHandler2"), "UIElement2")
-                    ;
+                    serialize->Class<UIElementContainer, AZ::Component>()
+                        ->Field("data", &UIElementContainer::m_data)
+                        ;
+
+                    if (auto editContext = serialize->GetEditContext())
+                    {
+                        editContext->Class<UIElementContainer>("Test", "")
+                            ->UIElement("TestHandler", "UIElement")
+                            ->DataElement(nullptr, &UIElementContainer::m_data)
+                            ->UIElement(AZ_CRC("TestHandler2"), "UIElement2")
+                            ;
+                    }
                 }
             }
+
+            // AZ::Component overrides ...
+            void Activate() override {}
+            void Deactivate() override {}
         };
 
         void run()
@@ -1271,7 +1279,8 @@ namespace UnitTest
 
             AZ::SerializeContext serializeContext;
             serializeContext.CreateEditContext();
-            UIElementContainer::Reflect(serializeContext);
+            AZ::Entity::Reflect(&serializeContext);
+            UIElementContainer::Reflect(&serializeContext);
 
             UIElementContainer test;
             InstanceDataHierarchy idh;
@@ -1279,22 +1288,128 @@ namespace UnitTest
             idh.Build(&serializeContext, 0);
 
             auto children = idh.GetChildren();
-            ASSERT_EQ(children.size(), 3);
+            ASSERT_EQ(children.size(), 4);
             auto it = children.begin();
 
+            // The first child will be the AZ::Component Id data that isn't
+            // exposed to the EditContext, so it has no edit metadata
+            EXPECT_STREQ(it->GetElementMetadata()->m_name, "BaseClass1");
+            EXPECT_EQ(it->GetElementEditMetadata(), nullptr);
+
+            ++it;
             Crc32 uiHandler = 0;
             EXPECT_EQ(it->ReadAttribute(AZ::Edit::UIHandlers::Handler, uiHandler), true);
             EXPECT_EQ(uiHandler, AZ_CRC("TestHandler"));
             EXPECT_STREQ(it->GetElementMetadata()->m_name, "UIElement");
             EXPECT_EQ(it->GetElementMetadata()->m_nameCrc, AZ_CRC("UIElement"));
 
+            // The "data" element is in between the two UIElements
+            ++it;
+            EXPECT_STREQ(it->GetElementMetadata()->m_name, "data");
+
+            ++it;
             uiHandler = 0;
-            ++it;
-            ++it;
             EXPECT_EQ(it->ReadAttribute(AZ::Edit::UIHandlers::Handler, uiHandler), true);
             EXPECT_EQ(uiHandler, AZ_CRC("TestHandler2"));
             EXPECT_STREQ(it->GetElementMetadata()->m_name, "UIElement2");
             EXPECT_EQ(it->GetElementMetadata()->m_nameCrc, AZ_CRC("UIElement2"));
+        }
+    };
+
+    class InstanceDataHierarchyEndGroupTest
+        : public AllocatorsFixture
+    {
+    public:
+        class EndGroupContainer
+            : public AZ::Component
+        {
+        public:
+            AZ_COMPONENT(EndGroupContainer, "{0CFC7838-9B01-4E25-8932-1C1EE4FCEC77}", AZ::Component);
+
+            int m_rootData;
+            bool m_otherRootData;
+            int m_group1Data;
+            int m_group2Data;
+            int m_finalRootData;
+
+            static void Reflect(AZ::ReflectContext* context)
+            {
+                if (auto serialize = azrtti_cast<AZ::SerializeContext*>(context))
+                {
+                    serialize->Class<EndGroupContainer, AZ::Component>()
+                        ->Field("rootData", &EndGroupContainer::m_rootData)
+                        ->Field("otherRootData", &EndGroupContainer::m_otherRootData)
+                        ->Field("group1Data", &EndGroupContainer::m_group1Data)
+                        ->Field("group2Data", &EndGroupContainer::m_group2Data)
+                        ->Field("finalRootData", &EndGroupContainer::m_finalRootData)
+                        ;
+
+                    if (auto editContext = serialize->GetEditContext())
+                    {
+                        editContext->Class<EndGroupContainer>("EndGroupTest", "")
+                            ->DataElement(nullptr, &EndGroupContainer::m_rootData)
+                            ->DataElement(nullptr, &EndGroupContainer::m_otherRootData)
+
+                            ->ClassElement(AZ::Edit::ClassElements::Group, "First Group")
+                            ->DataElement(nullptr, &EndGroupContainer::m_group1Data)
+
+                            ->ClassElement(AZ::Edit::ClassElements::Group, "Second Group")
+                            ->DataElement(nullptr, &EndGroupContainer::m_group2Data)
+                            ->EndGroup()
+
+                            ->DataElement(nullptr, &EndGroupContainer::m_finalRootData)
+                            ;
+                    }
+                }
+            }
+
+            // AZ::Component overrides ...
+            void Activate() override {}
+            void Deactivate() override {}
+        };
+
+        void run()
+        {
+            AZ::SerializeContext serializeContext;
+            serializeContext.CreateEditContext();
+            AZ::Entity::Reflect(&serializeContext);
+            EndGroupContainer::Reflect(&serializeContext);
+
+            EndGroupContainer test;
+            AzToolsFramework::InstanceDataHierarchy idh;
+            idh.AddRootInstance(&test, azrtti_typeid<EndGroupContainer>());
+            idh.Build(&serializeContext, 0);
+
+            auto children = idh.GetChildren();
+            ASSERT_EQ(children.size(), 6);
+            auto it = children.begin();
+
+            // The first child will be the AZ::Component Id data,
+            // which we don't care about for this test
+            ++it;
+
+            // The next two children are root data, which both should
+            // have no group element
+            EXPECT_STREQ(it->GetElementMetadata()->m_name, "rootData");
+            EXPECT_EQ(it->GetGroupElementMetadata(), nullptr);
+            ++it;
+            EXPECT_STREQ(it->GetElementMetadata()->m_name, "otherRootData");
+            EXPECT_EQ(it->GetGroupElementMetadata(), nullptr);
+
+            // The next data should be in the first group
+            ++it;
+            EXPECT_STREQ(it->GetElementMetadata()->m_name, "group1Data");
+            EXPECT_STREQ(it->GetGroupElementMetadata()->m_description, "First Group");
+
+            // The following data should be in the second group
+            ++it;
+            EXPECT_STREQ(it->GetElementMetadata()->m_name, "group2Data");
+            EXPECT_STREQ(it->GetGroupElementMetadata()->m_description, "Second Group");
+
+            // The final data should have no group since we ended the second group
+            ++it;
+            EXPECT_STREQ(it->GetElementMetadata()->m_name, "finalRootData");
+            EXPECT_EQ(it->GetGroupElementMetadata(), nullptr);
         }
     };
 
@@ -1322,8 +1437,8 @@ namespace UnitTest
                 {
                     // By default, DataElements accept multi-edit and UIElements do not
                     editContext->Class<AggregatedContainer>("Test", "")
-                        ->DataElement(0, &AggregatedContainer::m_aggregated)
-                        ->DataElement(0, &AggregatedContainer::m_notAggregated)
+                        ->DataElement(nullptr, &AggregatedContainer::m_aggregated)
+                        ->DataElement(nullptr, &AggregatedContainer::m_notAggregated)
                             ->Attribute(AZ::Edit::Attributes::AcceptsMultiEdit, false)
                         ->UIElement("TestHandler", "aggregatedUIElement")
                             ->Attribute(AZ::Edit::Attributes::AcceptsMultiEdit, true)
@@ -1454,6 +1569,11 @@ namespace UnitTest
     }
 
     TEST_F(InstanceDataHierarchyElementTest, TestLayingOutUIAndDataElements)
+    {
+        run();
+    }
+
+    TEST_F(InstanceDataHierarchyEndGroupTest, TestEndGroup)
     {
         run();
     }

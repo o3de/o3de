@@ -15,45 +15,6 @@
 #include "Util/GuidUtil.h"
 #include <map>
 
-//! Derive from this class to decrease the amount of work for creating a new class description
-//! Provides standard reference counter implementation for IUnknown
-class CRefCountClassDesc
-    : public IClassDesc
-{
-public:
-    virtual ~CRefCountClassDesc() { }
-    HRESULT STDMETHODCALLTYPE QueryInterface([[maybe_unused]] const IID& riid, [[maybe_unused]] void** ppvObj)
-    {
-        return E_NOINTERFACE;
-    }
-
-    ULONG STDMETHODCALLTYPE AddRef()
-    {
-        ++m_nRefCount;
-        return m_nRefCount;
-    }
-
-    ULONG STDMETHODCALLTYPE Release()
-    {
-        int refs = m_nRefCount;
-
-        if (--m_nRefCount <= 0)
-        {
-            delete this;
-        }
-
-        return refs;
-    }
-
-private:
-    int m_nRefCount;
-};
-
-
-// Use this for debugging unregistration problems.
-//#define DEBUG_CLASS_NAME_REGISTRATION
-
-
 //! Class factory is a common repository of all registered plugin classes,
 //! Classes here can found by their class ID or all classes of given system class retrieved
 class CRYEDIT_API CClassFactory
@@ -71,8 +32,6 @@ public:
     IClassDesc* FindClass(const char* className) const;
     //! Find class in the factory by class ID
     IClassDesc* FindClass(const GUID& rClassID) const;
-    //! Find View Pane Class in the factory by pane title
-    IViewPaneClass* FindViewPaneClassByTitle(const char* pPaneTitle) const;
     void UnregisterClass(const char* pClassName);
     void UnregisterClass(const GUID& rClassID);
     //! Get classes matching specific requirements ordered alphabetically by name.
@@ -134,11 +93,5 @@ public:
 // Use this define to automatically register a new class description.
 #define REGISTER_CLASS_DESC(ClassDesc) \
     CAutoRegisterClassHelper g_AutoRegHelper##ClassDesc(new ClassDesc);
-
-#define REGISTER_QT_CLASS_DESC(ClassDesc, name, category) \
-    CAutoRegisterClassHelper g_AutoRegHelper##ClassDesc(new CQtViewClass<ClassDesc>(name, category));
-
-#define REGISTER_QT_CLASS_DESC_SYSTEM_ID(ClassDesc, name, category, systemid) \
-    CAutoRegisterClassHelper g_AutoRegHelper##ClassDesc(new CQtViewClass<ClassDesc>(name, category, systemid));
 
 #endif // CRYINCLUDE_EDITOR_PLUGIN_H

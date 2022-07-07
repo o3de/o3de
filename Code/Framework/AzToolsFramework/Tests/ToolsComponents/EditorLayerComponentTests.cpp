@@ -401,7 +401,7 @@ namespace AzToolsFramework
 
     TEST_F(EditorLayerComponentTest, LayerTests_TwoLayersUniqueNames_LayerNameIsValid)
     {
-        EntityAndLayerComponent secondLayer = CreateEntityWithLayer("UniqueLayerName");
+        CreateEntityWithLayer("UniqueLayerName");
         bool isLayerNameValid = true;
         AzToolsFramework::Layers::EditorLayerComponentRequestBus::EventResult(
             isLayerNameValid,
@@ -412,7 +412,7 @@ namespace AzToolsFramework
 
     TEST_F(EditorLayerComponentTest, LayerTests_TwoLayersConflictingNames_LayerNameIsNotValid)
     {
-        EntityAndLayerComponent secondLayer = CreateEntityWithLayer(m_entityName);
+        CreateEntityWithLayer(m_entityName);
         bool isLayerNameValid = true;
         AzToolsFramework::Layers::EditorLayerComponentRequestBus::EventResult(
             isLayerNameValid,

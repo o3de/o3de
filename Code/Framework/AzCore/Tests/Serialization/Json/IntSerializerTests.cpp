@@ -544,6 +544,7 @@ namespace JsonSerializationTests
 
         ResultCode result = this->m_serializer->Store(convertedValue, &value, nullptr,
             azrtti_typeid<typename SerializerInfo<TypeParam>::DataType>(), *this->m_jsonSerializationContext);
+        EXPECT_EQ(Outcomes::Success, result.GetOutcome());
 
         if constexpr (AZStd::is_signed<typename SerializerInfo<TypeParam>::DataType>::value)
         {

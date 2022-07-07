@@ -19,18 +19,29 @@ Json Utils provide related functions to read/write/serialize/deserialize json fo
 """
 logger = logging.getLogger(__name__)
 
+# resource mapping json content constants
 _RESOURCE_MAPPING_JSON_KEY_NAME: str = "AWSResourceMappings"
 _RESOURCE_MAPPING_TYPE_JSON_KEY_NAME: str = "Type"
 _RESOURCE_MAPPING_NAMEID_JSON_KEY_NAME: str = "Name/ID"
-_RESOURCE_MAPPING_ACCOUNTID_JSON_KEY_NAME: str = "AccountId"
 _RESOURCE_MAPPING_REGION_JSON_KEY_NAME: str = "Region"
 _RESOURCE_MAPPING_VERSION_JSON_KEY_NAME: str = "Version"
-_RESOURCE_MAPPING_JSON_FORMAT_VERSION: str = "1.0.0"
+_RESOURCE_MAPPING_JSON_FORMAT_VERSION: str = "1.1.0"
+RESOURCE_MAPPING_ACCOUNTID_JSON_KEY_NAME: str = "AccountId"
+RESOURCE_MAPPING_ACCOUNTID_TEMPLATE_VALUE: str = "EMPTY"
 
-_RESOURCE_MAPPING_ACCOUNTID_PATTERN: str = "^[0-9]{12}$"
-_RESOURCE_MAPPING_REGION_PATTERN: str = "^[a-z]{2}-[a-z]{4,9}-[0-9]{1}$"
-_RESOURCE_MAPPING_VERSION_PATTERN: str = "^[0-9]{1}.[0-9]{1}.[0-9]{1}$"
-
+# resource mapping json schema constants
+_RESOURCE_MAPPING_SCHEMA_ACCOUNTID_KEY_NAME: str = "AccountIdString"
+_RESOURCE_MAPPING_SCHEMA_REGION_KEY_NAME: str = "RegionString"
+_RESOURCE_MAPPING_SCHEMA_REQUIRED_PROPERTIES_KEY_NAME: str = "required"
+_RESOURCE_MAPPING_SCHEMA_PROPERTIES_KEY_NAME: str = "properties"
+_RESOURCE_MAPPING_SCHEMA_PATTERN_PROPERTIES_KEY_NAME: str = "patternProperties"
+_RESOURCE_MAPPING_SCHEMA_PROPERTY_PATTERN_KEY_NAME: str = "pattern"
+_RESOURCE_MAPPING_SCHEMA: Dict[str, any] = {}
+_RESOURCE_MAPPING_SCHEMA_REQUIRED_ROOT_PROPERTIES: List[str] = []
+_RESOURCE_MAPPING_SCHEMA_REQUIRED_RESOURCE_PROPERTIES: List[str] = []
+_RESOURCE_MAPPING_SCHEMA_ACCOUNTID_PATTERN: str = ""
+_RESOURCE_MAPPING_SCHEMA_REGION_PATTERN: str = ""
+_RESOURCE_MAPPING_SCHEMA_VERSION_PATTERN: str = ""
 
 def _add_validation_error_message(errors: Dict[int, List[str]], row: int, error_message: str) -> None:
     if row in errors.keys():
@@ -64,9 +75,9 @@ def _validate_required_key_in_json_dict(json_dict: Dict[str, any], json_dict_nam
 
 def convert_resources_to_json_dict(resources: List[ResourceMappingAttributes],
                                    old_json_dict: Dict[str, any]) -> Dict[str, any]:
-    default_account_id: str = old_json_dict[_RESOURCE_MAPPING_ACCOUNTID_JSON_KEY_NAME]
+    default_account_id: str = old_json_dict[RESOURCE_MAPPING_ACCOUNTID_JSON_KEY_NAME]
     default_region: str = old_json_dict[_RESOURCE_MAPPING_REGION_JSON_KEY_NAME]
-    json_dict: Dict[str, any] = {_RESOURCE_MAPPING_ACCOUNTID_JSON_KEY_NAME: default_account_id,
+    json_dict: Dict[str, any] = {RESOURCE_MAPPING_ACCOUNTID_JSON_KEY_NAME: default_account_id,
                                  _RESOURCE_MAPPING_REGION_JSON_KEY_NAME: default_region,
                                  _RESOURCE_MAPPING_VERSION_JSON_KEY_NAME: _RESOURCE_MAPPING_JSON_FORMAT_VERSION,
                                  _RESOURCE_MAPPING_JSON_KEY_NAME: {}}
@@ -76,7 +87,7 @@ def convert_resources_to_json_dict(resources: List[ResourceMappingAttributes],
         json_resource_attributes = {_RESOURCE_MAPPING_TYPE_JSON_KEY_NAME: resource.type,
                                     _RESOURCE_MAPPING_NAMEID_JSON_KEY_NAME: resource.name_id}
         if not resource.account_id == default_account_id:
-            json_resource_attributes[_RESOURCE_MAPPING_ACCOUNTID_JSON_KEY_NAME] = resource.account_id
+            json_resource_attributes[RESOURCE_MAPPING_ACCOUNTID_JSON_KEY_NAME] = resource.account_id
 
         if not resource.region == default_region:
             json_resource_attributes[_RESOURCE_MAPPING_REGION_JSON_KEY_NAME] = resource.region
@@ -88,7 +99,7 @@ def convert_resources_to_json_dict(resources: List[ResourceMappingAttributes],
 
 
 def convert_json_dict_to_resources(json_dict: Dict[str, any]) -> List[ResourceMappingAttributes]:
-    default_account_id: str = json_dict[_RESOURCE_MAPPING_ACCOUNTID_JSON_KEY_NAME]
+    default_account_id: str = json_dict[RESOURCE_MAPPING_ACCOUNTID_JSON_KEY_NAME]
     default_region: str = json_dict[_RESOURCE_MAPPING_REGION_JSON_KEY_NAME]
 
     resources: List[ResourceMappingAttributes] = []
@@ -102,8 +113,8 @@ def convert_json_dict_to_resources(json_dict: Dict[str, any]) -> List[ResourceMa
                 .build_type(resource_value[_RESOURCE_MAPPING_TYPE_JSON_KEY_NAME]) \
                 .build_name_id(resource_value[_RESOURCE_MAPPING_NAMEID_JSON_KEY_NAME])
 
-            if _RESOURCE_MAPPING_ACCOUNTID_JSON_KEY_NAME in resource_value.keys():
-                resource_builder.build_account_id(resource_value[_RESOURCE_MAPPING_ACCOUNTID_JSON_KEY_NAME])
+            if RESOURCE_MAPPING_ACCOUNTID_JSON_KEY_NAME in resource_value.keys():
+                resource_builder.build_account_id(resource_value[RESOURCE_MAPPING_ACCOUNTID_JSON_KEY_NAME])
             else:
                 resource_builder.build_account_id(default_account_id)
 
@@ -119,12 +130,24 @@ def convert_json_dict_to_resources(json_dict: Dict[str, any]) -> List[ResourceMa
     return resources
 
 
-def create_empty_resource_mapping_file(file_name: str, account_id: str, region: str) -> None:
-    json_dict: Dict[str, any] = {_RESOURCE_MAPPING_JSON_KEY_NAME: {},
-                                 _RESOURCE_MAPPING_ACCOUNTID_JSON_KEY_NAME: account_id,
-                                 _RESOURCE_MAPPING_REGION_JSON_KEY_NAME: region,
-                                 _RESOURCE_MAPPING_VERSION_JSON_KEY_NAME: _RESOURCE_MAPPING_JSON_FORMAT_VERSION}
-    write_into_json_file(file_name, json_dict)
+def load_resource_mapping_json_schema(schema_path: str) -> None:
+    global _RESOURCE_MAPPING_SCHEMA, _RESOURCE_MAPPING_SCHEMA_REQUIRED_ROOT_PROPERTIES, _RESOURCE_MAPPING_SCHEMA_REQUIRED_RESOURCE_PROPERTIES,\
+        _RESOURCE_MAPPING_SCHEMA_ACCOUNTID_PATTERN, _RESOURCE_MAPPING_SCHEMA_REGION_PATTERN, _RESOURCE_MAPPING_SCHEMA_VERSION_PATTERN
+
+    if not _RESOURCE_MAPPING_SCHEMA:
+        # assume schema should be in correct format, and manually load expected pattern; tool will log error if schema is invalid
+        _RESOURCE_MAPPING_SCHEMA = read_from_json_file(schema_path)
+        _RESOURCE_MAPPING_SCHEMA_REQUIRED_ROOT_PROPERTIES = _RESOURCE_MAPPING_SCHEMA[_RESOURCE_MAPPING_SCHEMA_REQUIRED_PROPERTIES_KEY_NAME]
+        schema_properties: Dict[str, any] = _RESOURCE_MAPPING_SCHEMA[_RESOURCE_MAPPING_SCHEMA_PROPERTIES_KEY_NAME]
+        schema_pattern_properties: Dict[str, any] = \
+            schema_properties[_RESOURCE_MAPPING_JSON_KEY_NAME][_RESOURCE_MAPPING_SCHEMA_PATTERN_PROPERTIES_KEY_NAME]
+        _RESOURCE_MAPPING_SCHEMA_REQUIRED_RESOURCE_PROPERTIES = list(schema_pattern_properties.values())[0][_RESOURCE_MAPPING_SCHEMA_REQUIRED_PROPERTIES_KEY_NAME]
+        _RESOURCE_MAPPING_SCHEMA_ACCOUNTID_PATTERN = \
+            _RESOURCE_MAPPING_SCHEMA[_RESOURCE_MAPPING_SCHEMA_ACCOUNTID_KEY_NAME][_RESOURCE_MAPPING_SCHEMA_PROPERTY_PATTERN_KEY_NAME]
+        _RESOURCE_MAPPING_SCHEMA_REGION_PATTERN = \
+            _RESOURCE_MAPPING_SCHEMA[_RESOURCE_MAPPING_SCHEMA_REGION_KEY_NAME][_RESOURCE_MAPPING_SCHEMA_PROPERTY_PATTERN_KEY_NAME]
+        _RESOURCE_MAPPING_SCHEMA_VERSION_PATTERN = \
+            schema_properties[_RESOURCE_MAPPING_VERSION_JSON_KEY_NAME][_RESOURCE_MAPPING_SCHEMA_PROPERTY_PATTERN_KEY_NAME]
 
 
 def read_from_json_file(file_name: str) -> Dict[str, any]:
@@ -174,20 +197,20 @@ def validate_resources_according_to_json_schema(resources: List[ResourceMappingA
                 invalid_resources, row_count,
                 error_messages.INVALID_FORMAT_DUPLICATED_KEY_ERROR_MESSAGE.format(resource.key_name))
 
-        if not re.match(_RESOURCE_MAPPING_ACCOUNTID_PATTERN, resource.account_id):
+        if not re.match(_RESOURCE_MAPPING_SCHEMA_ACCOUNTID_PATTERN, resource.account_id):
             _add_validation_error_message(
                 invalid_resources, row_count,
                 error_messages.INVALID_FORMAT_UNEXPECTED_VALUE_IN_TABLE_ERROR_MESSAGE.format(
                     resource.account_id,
-                    _RESOURCE_MAPPING_ACCOUNTID_JSON_KEY_NAME,
-                    _RESOURCE_MAPPING_ACCOUNTID_PATTERN))
+                    RESOURCE_MAPPING_ACCOUNTID_JSON_KEY_NAME,
+                    _RESOURCE_MAPPING_SCHEMA_ACCOUNTID_PATTERN))
 
-        if not re.match(_RESOURCE_MAPPING_REGION_PATTERN, resource.region):
+        if not re.match(_RESOURCE_MAPPING_SCHEMA_REGION_PATTERN, resource.region):
             _add_validation_error_message(
                 invalid_resources, row_count,
                 error_messages.INVALID_FORMAT_UNEXPECTED_VALUE_IN_TABLE_ERROR_MESSAGE.format(
                     resource.region, _RESOURCE_MAPPING_REGION_JSON_KEY_NAME,
-                    _RESOURCE_MAPPING_REGION_PATTERN))
+                    _RESOURCE_MAPPING_SCHEMA_REGION_PATTERN))
 
         row_count += 1
 
@@ -195,30 +218,32 @@ def validate_resources_according_to_json_schema(resources: List[ResourceMappingA
 
 
 def validate_json_dict_according_to_json_schema(json_dict: Dict[str, any]) -> None:
-    _validate_required_key_in_json_dict(json_dict, "root", _RESOURCE_MAPPING_VERSION_JSON_KEY_NAME)
-    _validate_required_key_in_json_dict(json_dict, "root", _RESOURCE_MAPPING_JSON_KEY_NAME)
+    # The reason we keep this manual json schema validation is python missing supportive feature in default libs
+    # When it is ready, we should be able to replace this with straightforward lib function call
+    root_property: str
+    for root_property in _RESOURCE_MAPPING_SCHEMA_REQUIRED_ROOT_PROPERTIES:
+        _validate_required_key_in_json_dict(json_dict, "root", root_property)
 
-    _validate_required_key_in_json_dict(json_dict, "root", _RESOURCE_MAPPING_ACCOUNTID_JSON_KEY_NAME)
-    if not re.match(_RESOURCE_MAPPING_ACCOUNTID_PATTERN, json_dict[_RESOURCE_MAPPING_ACCOUNTID_JSON_KEY_NAME]):
+    if not re.match(_RESOURCE_MAPPING_SCHEMA_ACCOUNTID_PATTERN, json_dict[RESOURCE_MAPPING_ACCOUNTID_JSON_KEY_NAME]):
         raise ValueError(error_messages.INVALID_FORMAT_UNEXPECTED_VALUE_IN_FILE_ERROR_MESSAGE.format(
-            json_dict[_RESOURCE_MAPPING_ACCOUNTID_JSON_KEY_NAME],
-            f"root/{_RESOURCE_MAPPING_ACCOUNTID_JSON_KEY_NAME}",
-            _RESOURCE_MAPPING_ACCOUNTID_PATTERN))
+            json_dict[RESOURCE_MAPPING_ACCOUNTID_JSON_KEY_NAME],
+            f"root/{RESOURCE_MAPPING_ACCOUNTID_JSON_KEY_NAME}",
+            _RESOURCE_MAPPING_SCHEMA_ACCOUNTID_PATTERN))
 
-    _validate_required_key_in_json_dict(json_dict, "root", _RESOURCE_MAPPING_REGION_JSON_KEY_NAME)
-    if not re.match(_RESOURCE_MAPPING_REGION_PATTERN, json_dict[_RESOURCE_MAPPING_REGION_JSON_KEY_NAME]):
+    if not re.match(_RESOURCE_MAPPING_SCHEMA_REGION_PATTERN, json_dict[_RESOURCE_MAPPING_REGION_JSON_KEY_NAME]):
         raise ValueError(error_messages.INVALID_FORMAT_UNEXPECTED_VALUE_IN_FILE_ERROR_MESSAGE.format(
             json_dict[_RESOURCE_MAPPING_REGION_JSON_KEY_NAME],
             f"root/{_RESOURCE_MAPPING_REGION_JSON_KEY_NAME}",
-            _RESOURCE_MAPPING_REGION_PATTERN))
+            _RESOURCE_MAPPING_SCHEMA_REGION_PATTERN))
 
     json_resources: Dict[str, any] = json_dict[_RESOURCE_MAPPING_JSON_KEY_NAME]
     if json_resources:
         resource_key: str
         resource_value: Dict[str, str]
         for resource_key, resource_value in json_resources.items():
-            _validate_required_key_in_json_dict(resource_value, resource_key, _RESOURCE_MAPPING_TYPE_JSON_KEY_NAME)
-            _validate_required_key_in_json_dict(resource_value, resource_key, _RESOURCE_MAPPING_NAMEID_JSON_KEY_NAME)
+            resource_property: str
+            for resource_property in _RESOURCE_MAPPING_SCHEMA_REQUIRED_RESOURCE_PROPERTIES:
+                _validate_required_key_in_json_dict(resource_value, resource_key, resource_property)
 
 
 def write_into_json_file(file_name: str, json_dict: Dict[str, any]) -> None:

@@ -17,6 +17,8 @@ namespace AZ
 {
     namespace Render
     {
+        // Pass Creation ...
+
         CascadedShadowmapsPass::CascadedShadowmapsPass(const RPI::PassDescriptor& descriptor)
             : Base(descriptor)
         {
@@ -29,7 +31,7 @@ namespace AZ
                 m_basePipelineViewTag = passData->m_pipelineViewTag;
             }
 
-            QueueForUpdateShadowmapImageSize(ShadowmapSize::None, 1);
+            SetShadowmapSize(ShadowmapSize::None, 1);
         }
 
         CascadedShadowmapsPass::~CascadedShadowmapsPass()
@@ -46,121 +48,115 @@ namespace AZ
             return aznew CascadedShadowmapsPass(descriptor);
         }
 
-        void CascadedShadowmapsPass::SetCameraViewName(const AZStd::string& viewName)
-        {
-            if (m_cameraViewName != viewName)
-            {
-                m_cameraViewName = viewName;
-                m_childrenPipelineViewTags.clear();
-                RemoveChildren();
+        // Child pass creation ...
 
-                if (m_numberOfCascades)
-                {
-                    // No need to remove children as if the cascaded number changed it will
-                    // be updated by SetCascadesCount that will remove and adjust the children.
-                    // We keep it in place to be on the safe side as this is a new camera view
-                    // and we rather start fresh.
-                    GetPipelineViewTags();
-                    SetCascadesCount(m_numberOfCascades);
-                }
-                else
-                {   // This should not really happen - the minimum is 1
-                    AZ_RPI_PASS_WARNING(false,
-                        "CascadedShadowmapsPass::SetCameraViewName - cascaded shadows amount should be greater than 0");
-                } 
+        void CascadedShadowmapsPass::CreateChildShadowMapPass(u16 cascadeIndex)
+        {
+            const Name passName{ AZStd::string::format("%d", cascadeIndex) };
+            auto passData = AZStd::make_shared<RPI::RasterPassData>();
+            passData->m_drawListTag = m_drawListTagName;
+            passData->m_pipelineViewTag = GetPipelineViewTags()[cascadeIndex];
+
+            auto pass = ShadowmapPass::CreateWithPassRequest(passName, passData);
+
+            const RHI::Size imageSize
+            {
+                aznumeric_cast<uint32_t>(m_shadowmapSize),
+                aznumeric_cast<uint32_t>(m_shadowmapSize),
+                m_numCascades
+            };
+            pass->SetViewportScissorFromImageSize(imageSize);
+            pass->SetArraySlice(cascadeIndex);
+
+            AddChild(pass);
+        }
+
+        void CascadedShadowmapsPass::CreateChildPassesInternal()
+        {
+            for (u16 childIdx = 0; childIdx < m_numCascades; ++childIdx)
+            {
+                CreateChildShadowMapPass(childIdx);
             }
         }
 
-        const AZStd::array_view<RPI::PipelineViewTag> CascadedShadowmapsPass::GetPipelineViewTags()
+        void CascadedShadowmapsPass::BuildInternal()
         {
-            if (m_childrenPipelineViewTags.size() != Shadow::MaxNumberOfCascades)
-            {
-                m_childrenPipelineViewTags.resize(Shadow::MaxNumberOfCascades);
-                for (uint16_t cascadeIndex = 0; cascadeIndex < Shadow::MaxNumberOfCascades; ++cascadeIndex)
-                {
-                    // These pipeline view tags are used to distinguish transient views,
-                    // so we offer distinct tag for each cascade index and for each camera view.
-                    m_childrenPipelineViewTags[cascadeIndex] =
-                        AZStd::string::format("%s_%d_%s",
-                            m_basePipelineViewTag.GetCStr(),
-                            cascadeIndex,
-                            m_cameraViewName.c_str());
-                }
-            }
-            return m_childrenPipelineViewTags;
+            UpdateShadowmapImageSize();
+            Base::BuildInternal();
         }
 
-        void CascadedShadowmapsPass::QueueForUpdateShadowmapImageSize(ShadowmapSize shadowmapSize, uint32_t arraySize)
+        void CascadedShadowmapsPass::SetShadowmapSize(ShadowmapSize shadowmapSize, u16 numCascades)
         {
+            AZ_Assert(numCascades > 0, "The number of cascades must be positive.");
+
+            bool rebuildPasses = (numCascades != m_numCascades) || (shadowmapSize != m_shadowmapSize);
+            m_numCascades = numCascades;
             m_shadowmapSize = shadowmapSize;
-            m_arraySize = arraySize;
-            m_updateChildren = true;
 
-            QueueForBuildAndInitialization();
+            if (rebuildPasses)
+            {
+                m_flags.m_createChildren = true;
+                QueueForBuildAndInitialization();
+            }
 
             m_atlas.Initialize();
-            for (size_t cascadeIndex = 0; cascadeIndex < m_arraySize; ++cascadeIndex)
+            for (size_t cascadeIndex = 0; cascadeIndex < m_numCascades; ++cascadeIndex)
             {
                 m_atlas.SetShadowmapSize(cascadeIndex, m_shadowmapSize);
             }
             m_atlas.Finalize();
         }
 
-        void CascadedShadowmapsPass::UpdateChildren()
+        void CascadedShadowmapsPass::UpdateShadowmapImageSize()
         {
-            if (!m_updateChildren)
-            {
-                return;
-            }
-            m_updateChildren = false;
+            // [GFX TODO][ATOM-2470] stop caring about attachment
+            RPI::Ptr<RPI::PassAttachment> attachment = m_ownedAttachments.front();
+            AZ_Assert(attachment, "[CascadedShadowmapsPass %s] Cannot find shadowmap image attachment.", GetPathName().GetCStr());
+            AZ_Assert(attachment->m_descriptor.m_type == RHI::AttachmentType::Image, "[CascadedShadowmapsPass %s] requires an image attachment", GetPathName().GetCStr());
 
-            if (m_atlas.GetBaseShadowmapSize() == ShadowmapSize::None)
-            {
-                // Even when no shadow is given, an execution of child
-                // is required to transit the shadowmap image resource.
-                SetCascadesCount(1);
-                auto* pass = static_cast<ShadowmapPass*>(GetChildren()[0].get());
-                pass->SetArraySlice(0);
-                const RHI::Size imageSize{ 1, 1, 1 };
-                pass->SetViewportScissorFromImageSize(imageSize);
-                return;
-            }
+            RPI::PassAttachmentBinding& binding = GetOutputBinding(0);
+            binding.SetAttachment(attachment);
 
-            SetCascadesCount(static_cast<uint16_t>(m_arraySize));
-            const RHI::Size imageSize
+            RHI::ImageDescriptor& imageDescriptor = attachment->m_descriptor.m_image;
+            const uint32_t shadowmapWidth = static_cast<uint32_t>(m_atlas.GetBaseShadowmapSize());
+            imageDescriptor.m_size = RHI::Size(shadowmapWidth, shadowmapWidth, 1);
+            imageDescriptor.m_arraySize = m_atlas.GetArraySliceCount();
+        }
+
+        // View related ...
+
+        void CascadedShadowmapsPass::SetCameraViewName(const AZStd::string& viewName)
+        {
+            if (m_cameraViewName != viewName)
             {
-                aznumeric_cast<uint32_t>(m_shadowmapSize),
-                aznumeric_cast<uint32_t>(m_shadowmapSize),
-                m_arraySize
-            };
-            for (RPI::Ptr<RPI::Pass> child : GetChildren())
-            {
-                auto* shadowmapPass = static_cast<ShadowmapPass*>(child.get());
-                shadowmapPass->SetViewportScissorFromImageSize(imageSize);
+                m_cameraViewName = viewName;
+                m_childrenPipelineViewTags.clear();
+                GetPipelineViewTags();
+                for (size_t i = 0; i < m_children.size(); ++i)
+                {
+                    ShadowmapPass* shadowPass = azrtti_cast<ShadowmapPass*>(m_children[i].get());
+                    shadowPass->UpdatePipelineViewTag(GetPipelineViewTags()[i]);
+                }
             }
         }
 
-        ShadowmapAtlas& CascadedShadowmapsPass::GetShadowmapAtlas()
+        const AZStd::span<const RPI::PipelineViewTag> CascadedShadowmapsPass::GetPipelineViewTags()
         {
-            return m_atlas;
-        }
-
-        void CascadedShadowmapsPass::BuildInternal()
-        {
-            UpdateChildren();
-
-            if (GetChildren().empty())
+            if (m_childrenPipelineViewTags.size() != Shadow::MaxNumberOfCascades)
             {
-                SetCascadesCount(1);
+                m_childrenPipelineViewTags.resize(Shadow::MaxNumberOfCascades);
+                for (uint16_t cascadeIndex = 0; cascadeIndex < Shadow::MaxNumberOfCascades; ++cascadeIndex)
+                {
+                    // These pipeline view tags are used to distinguish transient views, so we offer distinct tag for each cascade index and for each camera view.
+                    m_childrenPipelineViewTags[cascadeIndex] = AZStd::string::format("%s_%d_%s", m_basePipelineViewTag.GetCStr(), cascadeIndex, m_cameraViewName.c_str());
+                }
             }
-
-            UpdateShadowmapImageSize();
-            Base::BuildInternal();
+            return m_childrenPipelineViewTags;
         }
 
         void CascadedShadowmapsPass::GetPipelineViewTags(RPI::SortedPipelineViewTags& outTags) const
         {
-            for (size_t childIndex = 0; childIndex < m_numberOfCascades; ++childIndex)
+            for (size_t childIndex = 0; childIndex < m_numCascades; ++childIndex)
             {
                 outTags.insert(m_childrenPipelineViewTags[childIndex]);
             }
@@ -177,65 +173,6 @@ namespace AZ
                 outPassesByDrawList[m_drawListTag] = this;
                 outDrawListMask.set(m_drawListTag.GetIndex());
             }
-        }
-
-        RPI::Ptr<ShadowmapPass> CascadedShadowmapsPass::CreateChild(uint16_t cascadeIndex)
-        {
-            const AZStd::array_view<RPI::PipelineViewTag> childrenViewTags = GetPipelineViewTags();
-            const Name passName{ AZStd::string::format("DirectionalLightShadowmapPass.%d", cascadeIndex) };
-
-            auto passData = AZStd::make_shared<RPI::RasterPassData>();
-            passData->m_drawListTag = m_drawListTagName;
-            passData->m_pipelineViewTag = childrenViewTags[cascadeIndex];            
-
-            auto pass = ShadowmapPass::CreateWithPassRequest(passName, passData);
-            pass->SetArraySlice(cascadeIndex);
-            return pass;
-        }
-
-        void CascadedShadowmapsPass::SetCascadesCount(uint16_t cascadesCount)
-        {
-            AZ_Assert(cascadesCount > 0, "The number of cascades must be positive.");
-
-            // Orphans unnecessary children.
-            while (GetChildren().size() > cascadesCount)
-            {
-                RemoveChild(GetChildren()[cascadesCount]);
-            }
-
-            // Creates new children.
-            const uint16_t oldCascadeCount = aznumeric_cast<uint16_t>(GetChildren().size());
-            for (uint16_t cascadeIndex = oldCascadeCount; cascadeIndex < cascadesCount; ++cascadeIndex)
-            {
-                RPI::Ptr<ShadowmapPass> child = CreateChild(cascadeIndex);
-                AZ_RPI_PASS_WARNING(child, "CascadedShadowmapsPass child Pass creation failed for %d", cascadeIndex);
-                if (child)
-                {
-                    child->QueueForBuildAndInitialization();
-                    AddChild(child);
-                }
-            }
-            m_numberOfCascades = cascadesCount;
-        }
-
-        void CascadedShadowmapsPass::UpdateShadowmapImageSize()
-        {
-            // [GFX TODO][ATOM-2470] stop caring about attachment
-            RPI::Ptr<RPI::PassAttachment> attachment = m_ownedAttachments.front();
-            if (!attachment)
-            {
-                AZ_Assert(false, "[CascadedShadowmapsPass %s] Cannot find shadowmap image attachment.", GetPathName().GetCStr());
-                return;
-            }
-            AZ_Assert(attachment->m_descriptor.m_type == RHI::AttachmentType::Image, "[CascadedShadowmapsPass %s] requires an image attachment", GetPathName().GetCStr());
-
-            RPI::PassAttachmentBinding& binding = GetOutputBinding(0);
-            binding.m_attachment = attachment;
-
-            RHI::ImageDescriptor& imageDescriptor = attachment->m_descriptor.m_image;
-            const uint32_t shadowmapWidth = static_cast<uint32_t>(m_atlas.GetBaseShadowmapSize());
-            imageDescriptor.m_size = RHI::Size(shadowmapWidth, shadowmapWidth, 1);
-            imageDescriptor.m_arraySize = m_atlas.GetArraySliceCount();
         }
 
     } // namespace Render

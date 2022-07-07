@@ -6,9 +6,14 @@
  *
  */
 
-#include <AzFramework/Physics/ShapeConfiguration.h>
+#include <AzCore/Asset/AssetSerializer.h>
+#include <AzCore/Math/Capsule.h>
+#include <AzCore/Math/Obb.h>
+#include <AzCore/Math/Sphere.h>
+#include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzFramework/Physics/PropertyTypes.h>
+#include <AzFramework/Physics/ShapeConfiguration.h>
 #include <AzFramework/Physics/SystemBus.h>
 
 namespace Physics
@@ -35,6 +40,7 @@ namespace Physics
             REFLECT_SHAPETYPE_ENUM_VALUE(Sphere);
             REFLECT_SHAPETYPE_ENUM_VALUE(Cylinder);
             REFLECT_SHAPETYPE_ENUM_VALUE(PhysicsAsset);
+            REFLECT_SHAPETYPE_ENUM_VALUE(Heightfield);
 
             #undef REFLECT_SHAPETYPE_ENUM_VALUE
         }
@@ -71,6 +77,11 @@ namespace Physics
     {
     }
 
+    AZ::Sphere SphereShapeConfiguration::ToSphere(const AZ::Transform& transform) const
+    {
+        return AZ::Sphere(transform.GetTranslation(), m_radius);
+    }
+
     void BoxShapeConfiguration::Reflect(AZ::ReflectContext* context)
     {
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
@@ -100,6 +111,11 @@ namespace Physics
     BoxShapeConfiguration::BoxShapeConfiguration(const AZ::Vector3& boxDimensions)
         : m_dimensions(boxDimensions)
     {
+    }
+
+    AZ::Obb BoxShapeConfiguration::ToObb(const AZ::Transform& transform) const
+    {
+        return AZ::Obb::CreateFromPositionRotationAndHalfLengths(transform.GetTranslation(), transform.GetRotation(), 0.5f * m_dimensions);
     }
 
     void CapsuleShapeConfiguration::Reflect(AZ::ReflectContext* context)
@@ -152,6 +168,14 @@ namespace Physics
     {
         // check that the radius is less than half the height
         m_radius = AZ::GetMin(m_radius, (0.5f - AZ::Constants::FloatEpsilon) * m_height);
+    }
+
+    AZ::Capsule CapsuleShapeConfiguration::ToCapsule(const AZ::Transform& transform) const
+    {
+        const float halfAxisLength = 0.5f * m_height - m_radius;
+        const AZ::Vector3 firstHemisphereCenter = transform.TransformPoint(AZ::Vector3::CreateAxisZ(-halfAxisLength));
+        const AZ::Vector3 secondHemisphereCenter = transform.TransformPoint(AZ::Vector3::CreateAxisZ(halfAxisLength));
+        return AZ::Capsule(firstHemisphereCenter, secondHemisphereCenter, m_radius);
     }
 
     void PhysicsAssetShapeConfiguration::Reflect(AZ::ReflectContext* context)
@@ -283,13 +307,23 @@ namespace Physics
         return m_type;
     }
 
-    void* CookedMeshShapeConfiguration::GetCachedNativeMesh() const
+    const void* CookedMeshShapeConfiguration::GetCachedNativeMesh() const
     {
         return m_cachedNativeMesh;
     }
 
-    void CookedMeshShapeConfiguration::SetCachedNativeMesh(void* cachedNativeMesh) const
+    void* CookedMeshShapeConfiguration::GetCachedNativeMesh()
     {
+        return m_cachedNativeMesh;
+    }
+
+    void CookedMeshShapeConfiguration::SetCachedNativeMesh(void* cachedNativeMesh)
+    {
+        if (m_cachedNativeMesh == cachedNativeMesh)
+        {
+            return;
+        }
+        ReleaseCachedNativeMesh();
         m_cachedNativeMesh = cachedNativeMesh;
     }
 
@@ -303,4 +337,179 @@ namespace Physics
             m_cachedNativeMesh = nullptr;
         }
     }
-}
+
+    void HeightfieldShapeConfiguration::Reflect(AZ::ReflectContext* context)
+    {
+        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serializeContext
+                ->RegisterGenericType<AZStd::shared_ptr<HeightfieldShapeConfiguration>>();
+
+            serializeContext->Class<HeightfieldShapeConfiguration, ShapeConfiguration>()
+                ->Version(1);
+        }
+    }
+
+    HeightfieldShapeConfiguration::~HeightfieldShapeConfiguration()
+    {
+        SetCachedNativeHeightfield(nullptr);
+    }
+
+    HeightfieldShapeConfiguration::HeightfieldShapeConfiguration(const HeightfieldShapeConfiguration& other)
+        : ShapeConfiguration(other)
+        , m_gridResolution(other.m_gridResolution)
+        , m_numColumns(other.m_numColumns)
+        , m_numRows(other.m_numRows)
+        , m_samples(other.m_samples)
+        , m_minHeightBounds(other.m_minHeightBounds)
+        , m_maxHeightBounds(other.m_maxHeightBounds)
+        , m_cachedNativeHeightfield(nullptr)
+    {
+    }
+
+    HeightfieldShapeConfiguration& HeightfieldShapeConfiguration::operator=(const HeightfieldShapeConfiguration& other)
+    {
+        ShapeConfiguration::operator=(other);
+
+        m_gridResolution = other.m_gridResolution;
+        m_numColumns = other.m_numColumns;
+        m_numRows = other.m_numRows;
+        m_samples = other.m_samples;
+        m_minHeightBounds = other.m_minHeightBounds;
+        m_maxHeightBounds = other.m_maxHeightBounds;
+
+        // Prevent raw pointer from being copied
+        m_cachedNativeHeightfield = nullptr;
+
+        return *this;
+    }
+
+    const void* HeightfieldShapeConfiguration::GetCachedNativeHeightfield() const
+    {
+        return m_cachedNativeHeightfield;
+    }
+
+    void* HeightfieldShapeConfiguration::GetCachedNativeHeightfield()
+    {
+        return m_cachedNativeHeightfield;
+    }
+
+    void HeightfieldShapeConfiguration::SetCachedNativeHeightfield(void* cachedNativeHeightfield)
+    {
+        if (m_cachedNativeHeightfield == cachedNativeHeightfield)
+        {
+            return;
+        }
+
+        if (m_cachedNativeHeightfield)
+        {
+            Physics::SystemRequestBus::Broadcast(&Physics::SystemRequests::ReleaseNativeHeightfieldObject, m_cachedNativeHeightfield);
+        }
+
+        m_cachedNativeHeightfield = cachedNativeHeightfield;
+    }
+
+    const AZ::Vector2& HeightfieldShapeConfiguration::GetGridResolution() const
+    {
+        return m_gridResolution;
+    }
+
+    void HeightfieldShapeConfiguration::SetGridResolution(const AZ::Vector2& gridResolution)
+    {
+        m_gridResolution = gridResolution;
+    }
+
+    size_t HeightfieldShapeConfiguration::GetNumColumnVertices() const
+    {
+        return m_numColumns;
+    }
+
+    void HeightfieldShapeConfiguration::SetNumColumnVertices(size_t numColumns)
+    {
+        AZ_Assert(
+            (numColumns == 0) || (numColumns >= 2),
+            "A non-empty heightfield must have at least 2 column vertices to define 1 square. Num columns provided: %d", numColumns);
+        m_numColumns = aznumeric_cast<uint32_t>(numColumns);
+
+        if (m_numColumns < 2)
+        {
+            m_numColumns = 0;
+        }
+    }
+
+    size_t HeightfieldShapeConfiguration::GetNumRowVertices() const
+    {
+        return m_numRows;
+    }
+
+    void HeightfieldShapeConfiguration::SetNumRowVertices(size_t numRows)
+    {
+        AZ_Assert(
+            (numRows == 0) || (numRows >= 2),
+            "A non-empty heightfield must have at least 2 row vertices to define 1 square. Num rows provided: %d", numRows);
+        m_numRows = aznumeric_cast<uint32_t>(numRows);
+
+        if (m_numRows < 2)
+        {
+            m_numRows = 0;
+        }
+    }
+
+    size_t HeightfieldShapeConfiguration::GetNumColumnSquares() const
+    {
+        // If we have N vertices, we have N - 1 squares ( ex: *--*--* is 3 vertices but 2 squares)
+        return (m_numColumns > 1) ? m_numColumns - 1 : 0;
+    }
+
+    size_t HeightfieldShapeConfiguration::GetNumRowSquares() const
+    {
+        // If we have N vertices, we have N - 1 squares ( ex: *--*--* is 3 vertices but 2 squares)
+        return (m_numRows > 1) ? m_numRows - 1 : 0;
+    }
+
+    const AZStd::vector<Physics::HeightMaterialPoint>& HeightfieldShapeConfiguration::GetSamples() const
+    {
+        return m_samples;
+    }
+
+    void HeightfieldShapeConfiguration::ModifySample(size_t column, size_t row, const Physics::HeightMaterialPoint& point)
+    {
+        const size_t index = row * m_numColumns + column;
+        if (row < m_numRows && column < m_numColumns && index < m_samples.size())
+        {
+            m_samples[index] = point;
+        }
+        else
+        {
+            AZ_Error("HeightfieldShapeConfiguration", false,
+                "Trying to modify a sample out of range. Row: %d, Col: %d, NumColumns: %d, NumRows: %d",
+                row, column, m_numColumns, m_numRows);
+        }
+    }
+
+    void HeightfieldShapeConfiguration::SetSamples(const AZStd::vector<Physics::HeightMaterialPoint>& samples)
+    {
+        m_samples = samples;
+    }
+
+    float HeightfieldShapeConfiguration::GetMinHeightBounds() const
+    {
+        return m_minHeightBounds;
+    }
+
+    void HeightfieldShapeConfiguration::SetMinHeightBounds(float minBounds)
+    {
+        m_minHeightBounds = minBounds;
+    }
+
+    float HeightfieldShapeConfiguration::GetMaxHeightBounds() const
+    {
+        return m_maxHeightBounds;
+    }
+
+    void HeightfieldShapeConfiguration::SetMaxHeightBounds(float maxBounds)
+    {
+        m_maxHeightBounds = maxBounds;
+    }
+} // namespace Physics
+

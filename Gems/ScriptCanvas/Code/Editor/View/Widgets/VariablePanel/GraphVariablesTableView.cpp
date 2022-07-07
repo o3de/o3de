@@ -411,10 +411,7 @@ namespace ScriptCanvasEditor
 
         case Qt::TextAlignmentRole:
         {
-            if (index.column() == ColumnIndex::Type)
-            {
-                return QVariant(Qt::AlignLeft | Qt::AlignVCenter);
-            }
+            return QVariant(Qt::AlignLeft | Qt::AlignVCenter);
         }
         break;
 
@@ -719,10 +716,6 @@ namespace ScriptCanvasEditor
     void GraphVariablesModel::SetActiveScene(const ScriptCanvas::ScriptCanvasId& scriptCanvasId)
     {
         ScriptCanvas::GraphVariableManagerNotificationBus::Handler::BusDisconnect();
-
-        m_assetType = AZ::Data::AssetType::CreateNull();
-        ScriptCanvas::GraphRequestBus::EventResult(m_assetType, scriptCanvasId, &ScriptCanvas::GraphRequests::GetAssetType);
-
         m_scriptCanvasId = scriptCanvasId;
 
         if (m_scriptCanvasId.IsValid())
@@ -880,6 +873,11 @@ namespace ScriptCanvasEditor
             return tr(m_columnNames[section]);
         }
 
+        if (role == Qt::TextAlignmentRole)
+        {
+            return QVariant(Qt::AlignLeft | Qt::AlignVCenter);
+        }
+
         return QAbstractItemModel::headerData(section, orientation, role);
     }
 
@@ -918,11 +916,6 @@ namespace ScriptCanvasEditor
         }
 
         return -1;
-    }
-
-    bool GraphVariablesModel::IsFunction()const
-    {
-        return m_assetType == azrtti_typeid<ScriptCanvas::SubgraphInterfaceAsset>();
     }
 
     ////////////////////////////////////////////

@@ -13,10 +13,10 @@ set(FILES
     Instance/InstanceData.h
     Instance/InstanceData.cpp
     Instance/InstanceDatabase.h
-    std/containers/array_view.h
     std/containers/fixed_vector_set.h
     std/containers/lru_cache.h
     std/containers/vector_set.h
     std/containers/vector_set_base.h
     std/parallel/concurrency_checker.h
+    Utils/ScopedValue.h
 )

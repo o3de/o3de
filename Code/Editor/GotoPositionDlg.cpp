@@ -6,7 +6,6 @@
  *
  */
 
-
 #include "GotoPositionDlg.h"
 #include "EditorDefs.h"
 
@@ -24,6 +23,17 @@
 AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 #include <ui_GotoPositionDlg.h>
 AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
+
+void GotoPositionPitchConstraints::DeterminePitchRange(const AngleRangeConfigureFn& configurePitchRangeFn) const
+{
+    const auto [pitchMinRadians, pitchMaxRadians] = AzFramework::CameraPitchMinMaxRadians();
+    configurePitchRangeFn(AZ::RadToDeg(pitchMinRadians), AZ::RadToDeg(pitchMaxRadians));
+}
+
+float GotoPositionPitchConstraints::PitchClampedRadians(float pitchDegrees) const
+{
+    return AzFramework::ClampPitchRotation(AZ::DegToRad(pitchDegrees));
+}
 
 GotoPositionDialog::GotoPositionDialog(QWidget* parent)
     : QDialog(parent)
@@ -55,20 +65,23 @@ void GotoPositionDialog::OnInitDialog()
     const auto yawDegrees = AZ::RadToDeg(cameraRotation.GetZ());
 
     // position
-    m_ui->m_dymX->setRange(-64000.0, 64000.0);
+    const double CameraPositionExtent = 64000.0;
+    m_ui->m_dymX->setRange(-CameraPositionExtent, CameraPositionExtent);
     m_ui->m_dymX->setValue(cameraTranslation.GetX());
-
-    m_ui->m_dymY->setRange(-64000.0, 64000.0);
+    m_ui->m_dymY->setRange(-CameraPositionExtent, CameraPositionExtent);
     m_ui->m_dymY->setValue(cameraTranslation.GetY());
-
-    m_ui->m_dymZ->setRange(-64000.0, 64000.0);
+    m_ui->m_dymZ->setRange(-CameraPositionExtent, CameraPositionExtent);
     m_ui->m_dymZ->setValue(cameraTranslation.GetZ());
 
     // rotation
-    m_ui->m_dymAnglePitch->setRange(-180.0, 180.0);
+    m_gotoPositionPitchConstraints.DeterminePitchRange(
+        [this](const float minPitchDegrees, const float maxPitchDegrees)
+        {
+            m_ui->m_dymAnglePitch->setRange(minPitchDegrees, maxPitchDegrees);
+        });
     m_ui->m_dymAnglePitch->setValue(pitchDegrees);
 
-    m_ui->m_dymAngleYaw->setRange(-180.0, 180.0);
+    m_ui->m_dymAngleYaw->setRange(-360, 360);
     m_ui->m_dymAngleYaw->setValue(yawDegrees);
 
     // ensure the goto button is highlighted correctly.
@@ -108,12 +121,13 @@ void GotoPositionDialog::OnUpdateNumbers()
 
 void GotoPositionDialog::accept()
 {
-    SandboxEditor::InterpolateDefaultViewportCameraToTransform(
-        AZ::Vector3(
-            aznumeric_cast<float>(m_ui->m_dymX->value()), aznumeric_cast<float>(m_ui->m_dymY->value()),
-            aznumeric_cast<float>(m_ui->m_dymZ->value())),
-        AZ::DegToRad(aznumeric_cast<float>(m_ui->m_dymAnglePitch->value())),
-        AZ::DegToRad(aznumeric_cast<float>(m_ui->m_dymAngleYaw->value())));
+    const auto position = AZ::Vector3(
+        aznumeric_cast<float>(m_ui->m_dymX->value()), aznumeric_cast<float>(m_ui->m_dymY->value()),
+        aznumeric_cast<float>(m_ui->m_dymZ->value()));
+    const auto pitchRadians = m_gotoPositionPitchConstraints.PitchClampedRadians(aznumeric_cast<float>(m_ui->m_dymAnglePitch->value()));
+    const auto yawRadians = AZ::DegToRad(aznumeric_cast<float>(m_ui->m_dymAngleYaw->value()));
+
+    SandboxEditor::InterpolateDefaultViewportCameraToTransform(position, pitchRadians, yawRadians);
 
     QDialog::accept();
 }

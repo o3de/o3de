@@ -37,32 +37,32 @@ public:
 
     //-----------------------------------------------------------------------------
     //!
-    virtual void SerializeAnims(XmlNodeRef& xmlNode, bool bLoading, bool bLoadEmptyTracks);
+    void SerializeAnims(XmlNodeRef& xmlNode, bool bLoading, bool bLoadEmptyTracks) override;
 
     //-----------------------------------------------------------------------------
     //!
-    virtual unsigned int GetParamCount() const;
-    virtual CAnimParamType GetParamType(unsigned int nIndex) const;
+    unsigned int GetParamCount() const override;
+    CAnimParamType GetParamType(unsigned int nIndex) const override;
 
     //-----------------------------------------------------------------------------
     //!
 
     //-----------------------------------------------------------------------------
     //!
-    virtual void CreateDefaultTracks();
+    void CreateDefaultTracks() override;
 
-    virtual void OnReset();
+    void OnReset() override;
 
     //-----------------------------------------------------------------------------
     //!
-    virtual void Animate(SAnimContext& ac);
+    void Animate(SAnimContext& ac) override;
 
     void InitPostLoad(IAnimSequence* sequence) override;
 
     static void Reflect(AZ::ReflectContext* context);
 
 protected:
-    virtual bool GetParamInfoFromType(const CAnimParamType& paramId, SParamInfo& info) const;
+    bool GetParamInfoFromType(const CAnimParamType& paramId, SParamInfo& info) const override;
 
     typedef std::map< AnimNodeType, _smart_ptr<CFXNodeDescription> > FxNodeDescriptionMap;
     static StaticInstance<FxNodeDescriptionMap> s_fxNodeDescriptions;

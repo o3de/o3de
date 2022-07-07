@@ -29,22 +29,24 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PUBLIC
             Gem::ScriptCanvas
-            Gem::ScriptCanvasEditor
+            Gem::ScriptCanvas.Editor
             Gem::GraphCanvasWidgets
             Gem::ScriptEvents.Editor
+            Gem::ScriptCanvas.Extensions
         PRIVATE
             AZ::AzCore
             AZ::AzFramework
             AZ::AzToolsFramework
             AZ::AssetBuilderSDK
         AUTOGEN_RULES
-            *.ScriptCanvasGrammar.xml,ScriptCanvasGrammar_Header.jinja,$path/$fileprefix.generated.h
-            *.ScriptCanvasGrammar.xml,ScriptCanvasGrammar_Source.jinja,$path/$fileprefix.generated.cpp
+            *.ScriptCanvasFunction.xml,ScriptCanvasFunctionRegistry_Header.jinja,TestAutoGenFunctionRegistry.generated.h
+            *.ScriptCanvasFunction.xml,ScriptCanvasFunctionRegistry_Source.jinja,TestAutoGenFunctionRegistry.generated.cpp
             *.ScriptCanvasNodeable.xml,ScriptCanvasNodeable_Header.jinja,$path/$fileprefix.generated.h
             *.ScriptCanvasNodeable.xml,ScriptCanvasNodeable_Source.jinja,$path/$fileprefix.generated.cpp
+            *.ScriptCanvasNodeable.xml,ScriptCanvasNodeableRegistry_Header.jinja,TestAutoGenNodeableRegistry.generated.h
+            *.ScriptCanvasNodeable.xml,ScriptCanvasNodeableRegistry_Source.jinja,TestAutoGenNodeableRegistry.generated.cpp
     RUNTIME_DEPENDENCIES
         Gem::ScriptCanvas.Editor
-        Gem::ScriptCanvasEditor
         Gem::GraphCanvasWidgets
         Gem::ScriptEvents
 )
@@ -77,6 +79,7 @@ ly_add_target(
 
 # By default, the above module is used only in tools:
 ly_create_alias(NAME ScriptCanvasTesting.Tools  NAMESPACE Gem TARGETS Gem::ScriptCanvasTesting.Editor)
+ly_create_alias(NAME ScriptCanvasTesting.Builders  NAMESPACE Gem TARGETS Gem::ScriptCanvasTesting.Editor)
 
 ################################################################################
 # Tests

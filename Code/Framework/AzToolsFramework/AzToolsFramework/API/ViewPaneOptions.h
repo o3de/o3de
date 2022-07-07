@@ -40,7 +40,7 @@ namespace AzToolsFramework
         bool isDisabledInSimMode = false;                               ///< set to true if the view pane should not be openable from level editor menu when editor is in simulation mode.
 
         bool showOnToolsToolbar = false;                                ///< set to true if the view pane should create a button on the tools toolbar to open/close the pane
-        QString toolbarIcon;                                            ///< path to the icon to use for the toolbar button - only used if showOnToolsToolbar is set to true
+        AZStd::string toolbarIcon;                                      ///< path to the icon to use for the toolbar button - only used if showOnToolsToolbar is set to true
     };
 
 } // namespace AzToolsFramework

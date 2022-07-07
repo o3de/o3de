@@ -139,7 +139,9 @@ public:
         AZ::SettingsRegistryInterface* registry = AZ::SettingsRegistry::Get();
         auto projectPathKey =
             AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) + "/project_path";
-        registry->Set(projectPathKey, "AutomatedTesting");
+        AZ::IO::FixedMaxPath enginePath;
+        registry->Get(enginePath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
+        registry->Set(projectPathKey, (enginePath / "AutomatedTesting").Native());
         AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*registry);
 
         m_app.Start(AZ::ComponentApplication::Descriptor());
@@ -177,7 +179,7 @@ private:
         module->Load(false);
         if (auto init = module->GetFunction<AZ::InitializeDynamicModuleFunction>(AZ::InitializeDynamicModuleFunctionName); init)
         {
-            AZStd::invoke(init, AZ::Environment::GetInstance());
+            AZStd::invoke(init);
         }
         return module;
     }

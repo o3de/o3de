@@ -202,7 +202,6 @@ private:
 
     // Drag and drop
     CTrackViewAnimNodeBundle m_draggedNodes;
-    CTrackViewAnimNode* m_pDragTarget;
 
     std::unordered_map<unsigned int, CAnimParamType> m_menuParamTypeMap;
     std::unordered_map<const CTrackViewNode*, CRecord*> m_nodeToRecordMap;

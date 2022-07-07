@@ -51,10 +51,12 @@ namespace AZ
             VirtualAddress Allocate(size_t byteCount, size_t byteAlignment) override;
             void DeAllocate(VirtualAddress allocation) override;
             void GarbageCollect() override;
-            void GarbageCollectForce();
+            void GarbageCollectForce() override;
             size_t GetAllocationCount() const override;
             size_t GetAllocatedByteCount() const override;
             const Descriptor& GetDescriptor() const override;
+            float ComputeFragmentation() const override;
+            void Clone(RHI::Allocator* newAllocator)  override;
             //////////////////////////////////////////////////////////////////////////
 
         private:
@@ -112,7 +114,8 @@ namespace AZ
                 size_t requestedAlignment,
                 size_t addressOffset);
 
-            NodeHandle GetFirstFreeHandle();
+            NodeHandle GetFirstFreeHandle() const;
+            const Node& GetNode(NodeHandle handle) const;
             Node& GetNode(NodeHandle handle);
 
             struct Allocation

@@ -135,7 +135,7 @@ public:
             if (auto editContext = serializeContext->GetEditContext())
             {
                 editContext->Class<SimpleKeyedContainer>("SimpleKeyContainer", "")
-                    ->DataElement(0, &SimpleKeyedContainer::m_map, "map", "")
+                    ->DataElement(nullptr, &SimpleKeyedContainer::m_map, "map", "")
                         ->ElementAttribute(AZ::Edit::Attributes::ShowAsKeyValuePairs, true);
             }
         }

@@ -17,6 +17,7 @@ function GetMaterialPropertyDependencies()
         "blend.enableLayer2",
         "blend.enableLayer3",
         "parallax.enable",
+        "parallax.pdo",
         "layer1_parallax.textureMap",
         "layer2_parallax.textureMap",
         "layer3_parallax.textureMap",
@@ -88,7 +89,7 @@ end
 -- @return a table with two values {min,max}. Negative values are below the surface and positive values are above the surface.
 function CalcOverallHeightRange(context)
     
-    local heightMinMax = {nil, nil}
+    local heightMinMax = {}
 
     local function GetMergedHeightRange(heightMinMax, offset, factor)
         top = offset
@@ -138,7 +139,8 @@ function CalcOverallHeightRange(context)
         if(enableLayer3) then GetMergedHeightRange(heightMinMax, offsetLayer3, factorLayer3) end
 
     else
-        heightMinMax = {0,0}
+        heightMinMax[0] = 0
+        heightMinMax[1] = 0
     end
 
     return heightMinMax
@@ -173,8 +175,14 @@ function ProcessEditor(context)
     context:SetMaterialPropertyVisibility("parallax.algorithm", parallaxSettingVisibility)
     context:SetMaterialPropertyVisibility("parallax.quality", parallaxSettingVisibility)
     context:SetMaterialPropertyVisibility("parallax.pdo", parallaxSettingVisibility)
+    context:SetMaterialPropertyVisibility("parallax.shadowFactor", parallaxSettingVisibility)
     context:SetMaterialPropertyVisibility("parallax.showClipping", parallaxSettingVisibility)
     
+    local pdoEnabled = context:GetMaterialPropertyValue_bool("parallax.pdo")
+    if(not pdoEnabled) then
+        context:SetMaterialPropertyVisibility("parallax.shadowFactor", MaterialPropertyVisibility_Hidden)
+    end
+
     if BlendSourceUsesDisplacement(context) then
         context:SetMaterialPropertyVisibility("blend.displacementBlendDistance", MaterialPropertyVisibility_Enabled)
     else

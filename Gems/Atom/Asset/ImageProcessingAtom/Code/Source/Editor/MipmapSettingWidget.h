@@ -47,7 +47,7 @@ namespace ImageProcessingAtomEditor
     protected:
         ////////////////////////////////////////////////////////////////////////
         //EditorInternalNotificationBus
-        void OnEditorSettingsChanged(bool needRefresh, const AZStd::string& platform);
+        void OnEditorSettingsChanged(bool needRefresh, const AZStd::string& platform) override;
         ////////////////////////////////////////////////////////////////////////
 
     private:

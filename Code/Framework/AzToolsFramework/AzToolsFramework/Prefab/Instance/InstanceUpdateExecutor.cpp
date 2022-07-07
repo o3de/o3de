@@ -12,6 +12,7 @@
 #include <AzCore/Interface/Interface.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
+#include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipInterface.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
 #include <AzToolsFramework/Prefab/Instance/TemplateInstanceMapperInterface.h>
@@ -20,6 +21,7 @@
 #include <AzToolsFramework/Prefab/PrefabPublicNotificationBus.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
 #include <AzToolsFramework/Prefab/Template/Template.h>
+#include <AzToolsFramework/Prefab/PrefabPublicRequestBus.h>
 
 namespace AzToolsFramework
 {
@@ -27,7 +29,12 @@ namespace AzToolsFramework
     {
         InstanceUpdateExecutor::InstanceUpdateExecutor(int instanceCountToUpdateInBatch)
             : m_instanceCountToUpdateInBatch(instanceCountToUpdateInBatch)
-        { 
+            , m_GameModeEventHandler(
+                  [this](GameModeState state)
+                  {
+                      m_shouldPausePropagation = (state == GameModeState::Started);
+                  })
+        {
         }
 
         void InstanceUpdateExecutor::RegisterInstanceUpdateExecutorInterface()
@@ -49,10 +56,11 @@ namespace AzToolsFramework
 
         void InstanceUpdateExecutor::UnregisterInstanceUpdateExecutorInterface()
         {
+            m_GameModeEventHandler.Disconnect();
             AZ::Interface<InstanceUpdateExecutorInterface>::Unregister(this);
         }
 
-        void InstanceUpdateExecutor::AddTemplateInstancesToQueue(TemplateId instanceTemplateId, InstanceOptionalReference instanceToExclude)
+        void InstanceUpdateExecutor::AddTemplateInstancesToQueue(TemplateId instanceTemplateId, InstanceOptionalConstReference instanceToExclude)
         {
             auto findInstancesResult =
                 m_templateInstanceMapperInterface->FindInstancesOwnedByTemplate(instanceTemplateId);
@@ -66,7 +74,7 @@ namespace AzToolsFramework
                 return;
             }
 
-            Instance* instanceToExcludePtr = nullptr;
+            const Instance* instanceToExcludePtr = nullptr;
             if (instanceToExclude.has_value())
             {
                 instanceToExcludePtr = &(instanceToExclude->get());
@@ -88,11 +96,25 @@ namespace AzToolsFramework
                 return entry == instance;
             });
         }
-
+        void InstanceUpdateExecutor::LazyConnectGameModeEventHandler()
+        {
+            PrefabEditorEntityOwnershipInterface* prefabEditorEntityOwnershipInterface =
+                AZ::Interface<PrefabEditorEntityOwnershipInterface>::Get();
+            
+            if (!m_GameModeEventHandler.IsConnected() && prefabEditorEntityOwnershipInterface)
+            {
+                prefabEditorEntityOwnershipInterface->RegisterGameModeEventHandler(m_GameModeEventHandler);
+            }
+            
+        }
         bool InstanceUpdateExecutor::UpdateTemplateInstancesInQueue()
         {
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
+
+            LazyConnectGameModeEventHandler();
+
             bool isUpdateSuccessful = true;
-            if (!m_updatingTemplateInstancesInQueue)
+            if (!m_updatingTemplateInstancesInQueue && !m_shouldPausePropagation)
             {
                 m_updatingTemplateInstancesInQueue = true;
 
@@ -153,7 +175,7 @@ namespace AzToolsFramework
                             continue;
                         }
 
-                        Instance::EntityList newEntities;
+                        EntityList newEntities;
 
                         // Climb up to the root of the instance hierarchy from this instance
                         InstanceOptionalConstReference rootInstance = *instanceToUpdate;
@@ -189,7 +211,7 @@ namespace AzToolsFramework
                             continue;
                         }
 
-                        PrefabDomValueReference instanceDomFromRoot = *instanceDomFromRootValue;
+                        PrefabDomValueConstReference instanceDomFromRoot = *instanceDomFromRootValue;
                         if (!instanceDomFromRoot.has_value())
                         {
                             AZ_Assert(
@@ -204,7 +226,7 @@ namespace AzToolsFramework
                         // If a link was created for a nested instance before the changes were propagated,
                         // then we associate it correctly here
                         instanceDomFromRootDocument.CopyFrom(instanceDomFromRoot->get(), instanceDomFromRootDocument.GetAllocator());
-                        if (PrefabDomUtils::LoadInstanceFromPrefabDom(*instanceToUpdate, newEntities, instanceDomFromRootDocument))
+                        if (PrefabDomUtils::LoadInstanceFromPrefabDom(*instanceToUpdate, newEntities, instanceDomFromRootDocument, PrefabDomUtils::LoadFlags::UseSelectiveDeserialization))
                         {
                             Template& currentTemplate = currentTemplateReference->get();
                             instanceToUpdate->GetNestedInstances([&](AZStd::unique_ptr<Instance>& nestedInstance) 
@@ -232,6 +254,13 @@ namespace AzToolsFramework
 
                             AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
                                 &AzToolsFramework::EditorEntityContextRequests::HandleEntitiesAdded, newEntities);
+
+                            if (!m_isRootPrefabInstanceLoaded &&
+                                instanceToUpdate->GetTemplateSourcePath() == m_rootPrefabInstanceSourcePath)
+                            {
+                                PrefabPublicNotificationBus::Broadcast(&PrefabPublicNotifications::OnRootPrefabInstanceLoaded);
+                                m_isRootPrefabInstanceLoaded = true;
+                            }
                         }
                     }
                     for (auto entityIdIterator = selectedEntityIds.begin(); entityIdIterator != selectedEntityIds.end(); entityIdIterator++)
@@ -244,16 +273,31 @@ namespace AzToolsFramework
                             selectedEntityIds.erase(entityIdIterator--);
                         }
                     }
-                    ToolsApplicationRequestBus::Broadcast(&ToolsApplicationRequests::SetSelectedEntities, selectedEntityIds);
 
-                    // Notify Propagation has ended
+                    // Notify Propagation has ended, then update selection (which is frozen during propagation, so this order matters)
                     PrefabPublicNotificationBus::Broadcast(&PrefabPublicNotifications::OnPrefabInstancePropagationEnd);
+                    ToolsApplicationRequestBus::Broadcast(&ToolsApplicationRequests::SetSelectedEntities, selectedEntityIds);
                 }
 
                 m_updatingTemplateInstancesInQueue = false;
             }
 
             return isUpdateSuccessful;
+        }
+
+        void InstanceUpdateExecutor::QueueRootPrefabLoadedNotificationForNextPropagation()
+        {
+            m_isRootPrefabInstanceLoaded = false;
+
+            PrefabEditorEntityOwnershipInterface* prefabEditorEntityOwnershipInterface =
+                AZ::Interface<PrefabEditorEntityOwnershipInterface>::Get();
+            m_rootPrefabInstanceSourcePath =
+                prefabEditorEntityOwnershipInterface->GetRootPrefabInstance()->get().GetTemplateSourcePath();
+        }
+
+        void InstanceUpdateExecutor::SetShouldPauseInstancePropagation(bool shouldPausePropagation)
+        {
+            m_shouldPausePropagation = shouldPausePropagation;
         }
     }
 }

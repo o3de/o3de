@@ -14,9 +14,7 @@
 
 #include "CameraComponent.h"
 
-#include <MathConversion.h>
 #include <AzCore/Math/MatrixUtils.h>
-#include <IRenderer.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 
 namespace Camera
@@ -108,6 +106,10 @@ namespace Camera
                 ->Event("SetOrthographic", &CameraRequestBus::Events::SetOrthographic)
                 ->Event("GetOrthographicHalfWidth", &CameraRequestBus::Events::GetOrthographicHalfWidth)
                 ->Event("SetOrthographicHalfWidth", &CameraRequestBus::Events::SetOrthographicHalfWidth)
+                ->Event("ScreenToWorld", &CameraRequestBus::Events::ScreenToWorld)
+                ->Event("ScreenNdcToWorld", &CameraRequestBus::Events::ScreenNdcToWorld)
+                ->Event("WorldToScreen", &CameraRequestBus::Events::WorldToScreen)
+                ->Event("WorldToScreenNdc", &CameraRequestBus::Events::WorldToScreenNdc)
                 ->VirtualProperty("FieldOfView","GetFovDegrees","SetFovDegrees")
                 ->VirtualProperty("NearClipDistance", "GetNearClipDistance", "SetNearClipDistance")
                 ->VirtualProperty("FarClipDistance", "GetFarClipDistance", "SetFarClipDistance")

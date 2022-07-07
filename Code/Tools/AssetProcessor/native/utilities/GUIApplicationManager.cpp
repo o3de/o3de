@@ -12,8 +12,7 @@
 #include "native/resourcecompiler/rccontroller.h"
 #include "native/FileServer/fileServer.h"
 #include "native/AssetManager/assetScanner.h"
-#include "native/shadercompiler/shadercompilerManager.h"
-#include "native/shadercompiler/shadercompilerModel.h"
+#include <native/utilities/PlatformConfiguration.h>
 
 #include <QApplication>
 #include <QDialogButtonBox>
@@ -38,6 +37,7 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QSettings>
+#include <ui/MessageWindow.h>
 
 using namespace AssetProcessor;
 
@@ -55,7 +55,7 @@ namespace
         {
             moduleFileInfo.setFile(executableDirectory);
         }
-        
+
         QDir binaryDir = moduleFileInfo.absoluteDir();
         // strip extension
         QString applicationBase = moduleFileInfo.completeBaseName();
@@ -70,9 +70,28 @@ namespace
             binaryDir.remove(tempFile);
         }
     }
-    
+
 }
 
+ErrorCollector::~ErrorCollector()
+{
+    if (!m_errorMessages.isEmpty())
+    {
+        MessageWindow messageWindow(m_parent);
+        messageWindow.SetHeaderText("The following errors occurred during startup:");
+        messageWindow.SetMessageText(m_errorMessages);
+        messageWindow.SetTitleText("Startup Errors");
+        messageWindow.exec();
+    }
+}
+
+void ErrorCollector::AddError(AZStd::string message)
+{
+    QString qMessage(message.c_str());
+    qMessage = qMessage.trimmed();
+
+    m_errorMessages << qMessage;
+}
 
 GUIApplicationManager::GUIApplicationManager(int* argc, char*** argv, QObject* parent)
     : ApplicationManagerBase(argc, argv, parent)
@@ -95,6 +114,8 @@ GUIApplicationManager::~GUIApplicationManager()
 
 ApplicationManager::BeforeRunStatus GUIApplicationManager::BeforeRun()
 {
+    AssetProcessor::MessageInfoBus::Handler::BusConnect();
+
     ApplicationManager::BeforeRunStatus status = ApplicationManagerBase::BeforeRun();
     if (status != ApplicationManager::BeforeRunStatus::Status_Success)
     {
@@ -104,17 +125,16 @@ ApplicationManager::BeforeRunStatus GUIApplicationManager::BeforeRun()
     // The build process may leave behind some temporaries, try to delete them
     RemoveTemporaries();
 
-    QDir devRoot;
-    AssetUtilities::ComputeAssetRoot(devRoot);
+    QDir projectAssetRoot;
+    AssetUtilities::ComputeAssetRoot(projectAssetRoot);
 #if defined(EXTERNAL_CRASH_REPORTING)
-    CrashHandler::ToolsCrashHandler::InitCrashHandler("AssetProcessor", devRoot.absolutePath().toStdString());
+    CrashHandler::ToolsCrashHandler::InitCrashHandler("AssetProcessor", projectAssetRoot.absolutePath().toStdString());
 #endif
-    AssetProcessor::MessageInfoBus::Handler::BusConnect();
 
     // we have to monitor both the cache folder and the database file and restart AP if either of them gets deleted
     // It is important to note that we are monitoring the parent folder and not the actual cache folder itself since
     // we want to handle the use case on Mac OS if the user moves the cache folder to the trash.
-    m_qtFileWatcher.addPath(devRoot.absolutePath());
+    m_qtFileWatcher.addPath(projectAssetRoot.absolutePath());
 
     QDir projectCacheRoot;
     AssetUtilities::ComputeProjectCacheRoot(projectCacheRoot);
@@ -133,6 +153,8 @@ ApplicationManager::BeforeRunStatus GUIApplicationManager::BeforeRun()
 
 void GUIApplicationManager::Destroy()
 {
+    m_startupErrorCollector = nullptr;
+
     if (m_mainWindow)
     {
         delete m_mainWindow;
@@ -144,8 +166,6 @@ void GUIApplicationManager::Destroy()
 
     DestroyIniConfiguration();
     DestroyFileServer();
-    DestroyShaderCompilerManager();
-    DestroyShaderCompilerModel();
 }
 
 
@@ -191,7 +211,7 @@ bool GUIApplicationManager::Run()
     wrapper->enableSaveRestoreGeometry(GetOrganizationName(), GetApplicationName(), "MainWindow", restoreOnFirstShow);
 
     AzQtComponents::StyleManager::setStyleSheet(m_mainWindow, QStringLiteral("style:AssetProcessor.qss"));
-    
+
     auto refreshStyleSheets = [styleManager]()
     {
         styleManager->Refresh();
@@ -321,19 +341,11 @@ bool GUIApplicationManager::Run()
 
     qApp->setQuitOnLastWindowClosed(false);
 
-    QTimer::singleShot(0, this, [this]()
-    {
-        if (!PostActivate())
-        {
-            QuitRequested();
-            m_startedSuccessfully = false;
-        }
-    });
-
     m_duringStartup = false;
+    m_startedSuccessfully = true;
 
     int resultCode =  qApp->exec(); // this blocks until the last window is closed.
-    
+
     if(!InitiatedShutdown())
     {
         // if we are here it implies that AP did not stop the Qt event loop and is shutting down prematurely
@@ -426,7 +438,20 @@ bool GUIApplicationManager::OnError(const char* /*window*/, const char* message)
         return true;
     }
 
-    // If we're the main thread, then consider showing the message box directly.  
+    if (m_startupErrorCollector)
+    {
+        m_startupErrorCollector->AddError(message);
+        return true;
+    }
+
+    if (!InitiatedShutdown())
+    {
+        // During quitting, we don't pop up error message boxes.
+        // instead, we're going to return true, which will cause it to
+        // process to the log file instead.
+        return true;
+    }
+    // If we're the main thread, then consider showing the message box directly.
     // note that all other threads will PAUSE if they emit a message while the main thread is showing this box
     // due to the way the trace system EBUS is mutex-protected.
     Qt::ConnectionType connection = Qt::DirectConnection;
@@ -436,98 +461,7 @@ bool GUIApplicationManager::OnError(const char* /*window*/, const char* message)
         connection = Qt::QueuedConnection;
     }
 
-    if (m_isCurrentlyLoadingGems)
-    {
-        // if something goes wrong during gem initialization, this is a special case and we need to be extra helpful.
-        const char* userSettingsFile = "_WAF_/user_settings.options";
-        const char* defaultSettingsFile = "_WAF_/default_settings.json";
-
-        QDir engineRoot;
-        AssetUtilities::ComputeEngineRoot(engineRoot);
-
-        QString settingsPath = engineRoot.absoluteFilePath(userSettingsFile);
-        QString friendlyErrorMessage;
-        bool usingDefaults = false;
-
-        if (QFile::exists(settingsPath))
-        {
-            QSettings loader(settingsPath, QSettings::IniFormat);
-            QVariant settingValue = loader.value("Game Projects/enabled_game_projects");
-            QStringList compiledProjects = settingValue.toStringList();
-
-            if (compiledProjects.isEmpty())
-            {
-                QByteArray byteArray;
-                QFile jsonFile;
-                jsonFile.setFileName(engineRoot.absoluteFilePath(defaultSettingsFile));
-                jsonFile.open(QIODevice::ReadOnly | QIODevice::Text);
-                byteArray = jsonFile.readAll();
-                jsonFile.close();
-
-                QJsonObject settingsObject = QJsonDocument::fromJson(byteArray).object();
-                QJsonArray projectsArray = settingsObject["Game Projects"].toArray();
-
-                if (!projectsArray.isEmpty())
-                {
-                    auto projectObject = projectsArray[0].toObject();
-                    QString projects = projectObject["default_value"].toString();
-
-                    if (!projects.isEmpty())
-                    {
-                        compiledProjects = projects.split(',');
-                        usingDefaults = true;
-                    }
-                }
-            }
-
-            for (int i = 0; i < compiledProjects.size(); ++i)
-            {
-                compiledProjects[i] = compiledProjects[i].trimmed();
-            }
-
-            QString enabledProject = AssetUtilities::ComputeProjectName();
-
-            if (!compiledProjects.contains(enabledProject))
-            {
-                QString projectSourceLine;
-
-                if (usingDefaults)
-                {
-                    projectSourceLine = QString("The currently compiled projects according to the defaults in %1 are '%2'").arg(defaultSettingsFile);
-                }
-                else
-                {
-                    projectSourceLine = QString("The currently compiled projects according to %1 are '%2'").arg(userSettingsFile);
-                }
-
-                projectSourceLine = projectSourceLine.arg(compiledProjects.join(", "));
-                friendlyErrorMessage = QString("An error occurred while loading gems.\n"
-                    "The enabled game project is not in the list of compiled projects.\n"
-                    "Please configure the enabled project to be compiled and rebuild or change the enabled project.\n"
-                    "The currently enabled game project (from bootstrap.cfg or /%4 command-line parameter) is '%1'.\n"
-                    "%2\n"
-                    "Full error text:\n"
-                    "%3"
-                ).arg(enabledProject).arg(projectSourceLine).arg(message).arg(AssetUtilities::ProjectPathOverrideParameter);
-            }
-        }
-
-        if (friendlyErrorMessage.isEmpty())
-        {
-            friendlyErrorMessage = QString("An error occurred while loading gems.\n"
-                "This can happen when new gems are added to a project, but those gems need to be built in order to function.\n"
-                "This can also happen when switching to a different project, one which uses gems which are not yet built.\n"
-                "To continue, please build the current project before attempting to run Asset Processor again.\n\n"
-                "Full error text:\n"
-                "%1").arg(message);
-        }
-        QMetaObject::invokeMethod(this, "ShowMessageBox", connection, Q_ARG(QString, QString("Error")), Q_ARG(QString, friendlyErrorMessage), Q_ARG(bool, true));
-    }
-    else
-    {
-        QMetaObject::invokeMethod(this, "ShowMessageBox", connection, Q_ARG(QString, QString("Error")), Q_ARG(QString, QString(message)), Q_ARG(bool, true));
-    }
-    
+    QMetaObject::invokeMethod(this, "ShowMessageBox", connection, Q_ARG(QString, QString("Error")), Q_ARG(QString, QString(message)), Q_ARG(bool, true));
 
     return true;
 }
@@ -553,6 +487,8 @@ bool GUIApplicationManager::OnAssert(const char* message)
 
 bool GUIApplicationManager::Activate()
 {
+    m_startupErrorCollector = AZStd::make_unique<ErrorCollector>(m_mainWindow);
+
     AZ::SerializeContext* context;
     EBUS_EVENT_RESULT(context, AZ::ComponentApplicationBus, GetSerializeContext);
     AZ_Assert(context, "No serialize context");
@@ -560,7 +496,7 @@ bool GUIApplicationManager::Activate()
     AssetUtilities::ComputeProjectCacheRoot(projectCacheRoot);
     m_localUserSettings.Load(projectCacheRoot.filePath("AssetProcessorUserSettings.xml").toUtf8().data(), context);
     m_localUserSettings.Activate(AZ::UserSettings::CT_LOCAL);
-    
+
     InitIniConfiguration();
     InitFileServer();
 
@@ -569,9 +505,6 @@ bool GUIApplicationManager::Activate()
     {
         return false;
     }
-    
-    InitShaderCompilerModel();
-    InitShaderCompilerManager();
 
     return true;
 }
@@ -580,11 +513,14 @@ bool GUIApplicationManager::PostActivate()
 {
     if (!ApplicationManagerBase::PostActivate())
     {
+        m_startupErrorCollector = nullptr;
+        m_startedSuccessfully = false;
         return false;
     }
 
-    m_fileWatcher.StartWatching();
+    m_fileWatcher->StartWatching();
 
+    m_startupErrorCollector = nullptr;
     return true;
 }
 
@@ -615,7 +551,6 @@ void GUIApplicationManager::DirectoryChanged([[maybe_unused]] QString path)
 
 void GUIApplicationManager::FileChanged(QString path)
 {
-    QDir devRoot = ApplicationManager::GetSystemRoot();
     QDir projectCacheRoot;
     AssetUtilities::ComputeProjectCacheRoot(projectCacheRoot);
     QString assetDbPath = projectCacheRoot.filePath("assetdb.sqlite");
@@ -697,7 +632,7 @@ void GUIApplicationManager::InitConnectionManager()
     QObject::connect(m_fileServer, SIGNAL(AddRenameRequest(unsigned int, bool)), m_connectionManager, SLOT(AddRenameRequest(unsigned int, bool)));
     QObject::connect(m_fileServer, SIGNAL(AddFindFileNamesRequest(unsigned int, bool)), m_connectionManager, SLOT(AddFindFileNamesRequest(unsigned int, bool)));
     QObject::connect(m_fileServer, SIGNAL(UpdateConnectionMetrics()), m_connectionManager, SLOT(UpdateConnectionMetrics()));
-    
+
     m_connectionManager->RegisterService(ShowAssetProcessorRequest::MessageType,
         std::bind([this](unsigned int /*connId*/, unsigned int /*type*/, unsigned int /*serial*/, QByteArray /*payload*/)
     {
@@ -752,40 +687,6 @@ void GUIApplicationManager::DestroyFileServer()
     }
 }
 
-void GUIApplicationManager::InitShaderCompilerManager()
-{
-    m_shaderCompilerManager = new ShaderCompilerManager();
-    
-    //Shader compiler stuff
-    m_connectionManager->RegisterService(AssetUtilities::ComputeCRC32Lowercase("ShaderCompilerProxyRequest"), std::bind(&ShaderCompilerManager::process, m_shaderCompilerManager, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4));
-    QObject::connect(m_shaderCompilerManager, SIGNAL(sendErrorMessageFromShaderJob(QString, QString, QString, QString)), m_shaderCompilerModel, SLOT(addShaderErrorInfoEntry(QString, QString, QString, QString)));
-
-    
-}
-
-void GUIApplicationManager::DestroyShaderCompilerManager()
-{
-    if (m_shaderCompilerManager)
-    {
-        delete m_shaderCompilerManager;
-        m_shaderCompilerManager = nullptr;
-    }
-}
-
-void GUIApplicationManager::InitShaderCompilerModel()
-{
-    m_shaderCompilerModel = new ShaderCompilerModel();
-}
-
-void GUIApplicationManager::DestroyShaderCompilerModel()
-{
-    if (m_shaderCompilerModel)
-    {
-        delete m_shaderCompilerModel;
-        m_shaderCompilerModel = nullptr;
-    }
-}
-
 IniConfiguration* GUIApplicationManager::GetIniConfiguration() const
 {
     return m_iniConfiguration;
@@ -794,14 +695,6 @@ IniConfiguration* GUIApplicationManager::GetIniConfiguration() const
 FileServer* GUIApplicationManager::GetFileServer() const
 {
     return m_fileServer;
-}
-ShaderCompilerManager* GUIApplicationManager::GetShaderCompilerManager() const
-{
-    return m_shaderCompilerManager;
-}
-ShaderCompilerModel* GUIApplicationManager::GetShaderCompilerModel() const
-{
-    return m_shaderCompilerModel;
 }
 
 void GUIApplicationManager::ShowTrayIconErrorMessage(QString msg)
@@ -819,6 +712,13 @@ void GUIApplicationManager::ShowTrayIconErrorMessage(QString msg)
                 QSystemTrayIcon::Critical, 3000);
         }
     }
+}
+
+void GUIApplicationManager::QuitRequested()
+{
+    m_startupErrorCollector = nullptr;
+
+    ApplicationManagerBase::QuitRequested();
 }
 
 void GUIApplicationManager::ShowTrayIconMessage(QString msg)
@@ -851,6 +751,7 @@ void GUIApplicationManager::Reflect()
     EBUS_EVENT_RESULT(context, AZ::ComponentApplicationBus, GetSerializeContext);
     AZ_Assert(context, "No serialize context");
     AzToolsFramework::LogPanel::BaseLogPanel::Reflect(context);
+    AssetProcessor::PlatformConfiguration::Reflect(context);
 }
 
 const char* GUIApplicationManager::GetLogBaseName()

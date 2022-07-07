@@ -95,14 +95,14 @@ void FileServer::ConnectionAdded(unsigned int connId, Connection* connection)
     Q_UNUSED(connection);
 
     // Connection has not completed negotiation yet, register to be notified
-    // when we know what platform is connected and map the @assets@ alias then
+    // when we know what platform is connected and map the @products@ alias then
     connect(connection, &Connection::AssetPlatformChanged, this, [this, connection]()
         {
             auto fileIO = m_fileIOs[connection->ConnectionId()];
             if ((fileIO) && (!connection->AssetPlatforms().isEmpty())) // when someone disconnects, the asset platform may be cleared before disconnect is set.
             {
                 QDir projectCacheRoot;
-                // Because the platform based aliases below can only be one platform at at a time we need to prefer a single platform in case multiple listening platforms
+                // Because the platform based aliases below can only be one platform at a time we need to prefer a single platform in case multiple listening platforms
                 // exist on the same connection
                 QString assetPlatform = connection->AssetPlatforms().first();
                 if (!AssetUtilities::ComputeProjectCacheRoot(projectCacheRoot))
@@ -113,9 +113,8 @@ void FileServer::ConnectionAdded(unsigned int connId, Connection* connection)
                 {
                     projectCacheRoot = QDir(projectCacheRoot.absoluteFilePath(assetPlatform));
                 }
-                const char* projectCachePath = projectCacheRoot.absolutePath().toUtf8().data();
-                fileIO->SetAlias("@assets@", projectCachePath);
-                fileIO->SetAlias("@root@", projectCachePath);
+
+                fileIO->SetAlias("@products@", projectCacheRoot.absolutePath().toUtf8().data());
 
                 if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
                 {
@@ -955,10 +954,10 @@ void FileServer::ProcessFileTreeRequest(unsigned int connId, unsigned int, unsig
     FileTreeResponse::FolderList folders;
 
     AZStd::vector<AZ::OSString> untestedFolders;
-    if (fileIO->IsDirectory("@assets@"))
+    if (fileIO->IsDirectory("@products@"))
     {
-        folders.push_back("@assets@");
-        untestedFolders.push_back("@assets@");
+        folders.push_back("@products@");
+        untestedFolders.push_back("@products@");
     }
     if (fileIO->IsDirectory("@usercache@"))
     {
@@ -974,11 +973,6 @@ void FileServer::ProcessFileTreeRequest(unsigned int connId, unsigned int, unsig
     {
         folders.push_back("@log@");
         untestedFolders.push_back("@log@");
-    }
-    if (fileIO->IsDirectory("@root@"))
-    {
-        folders.push_back("@root@");
-        untestedFolders.push_back("@root@");
     }
 
     AZ::IO::Result res = ResultCode::Success;

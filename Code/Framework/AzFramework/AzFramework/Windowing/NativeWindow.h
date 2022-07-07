@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/std/smart_ptr/unique_ptr.h>
 
 #include <AzFramework/Windowing/WindowBus.h>
 
@@ -131,6 +132,7 @@ namespace AzFramework
         void ToggleFullScreenState() override;
         float GetDpiScaleFactor() const override;
         uint32_t GetSyncInterval() const override;
+        bool SetSyncInterval(uint32_t newSyncInterval) override;
         uint32_t GetDisplayRefreshRate() const override;
 
         //! Get the full screen state of the default window.

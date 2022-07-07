@@ -211,7 +211,7 @@ namespace Vegetation
         {
             return AZ::Failure(
                 AZStd::string::format("The combination of View Area Grid Size and Sector Point Density will create %" PRId64 " instances.  Only a max of %" PRId64 " instances is allowed.",
-                static_cast<AZ::u64>(totalInstances), static_cast<AZ::u64>(s_maxVegetationInstances)));
+                totalInstances, s_maxVegetationInstances));
         }
 
         return AZ::Success();
@@ -235,7 +235,7 @@ namespace Vegetation
         {
             return AZ::Failure(
                 AZStd::string::format("The combination of View Area Grid Size and Sector Point Density will create %" PRId64 " instances.  Only a max of %" PRId64 " instances is allowed.",
-                static_cast<AZ::u64>(totalInstances), static_cast<AZ::u64>(s_maxVegetationInstances)));
+                totalInstances, s_maxVegetationInstances));
         }
 
         const float instancesPerMeter = static_cast<float>(sectorDensity) / static_cast<float>(m_sectorSizeInMeters);
@@ -356,7 +356,6 @@ namespace Vegetation
         AreaSystemRequestBus::Handler::BusConnect();
         GradientSignal::SectorDataRequestBus::Handler::BusConnect();
         SystemConfigurationRequestBus::Handler::BusConnect();
-        InstanceStatObjEventBus::Handler::BusConnect();
         CrySystemEventBus::Handler::BusConnect();
         AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusConnect();
         SurfaceData::SurfaceDataSystemNotificationBus::Handler::BusConnect();
@@ -378,7 +377,6 @@ namespace Vegetation
         AreaSystemRequestBus::Handler::BusDisconnect();
         GradientSignal::SectorDataRequestBus::Handler::BusDisconnect();
         SystemConfigurationRequestBus::Handler::BusDisconnect();
-        InstanceStatObjEventBus::Handler::BusDisconnect();
         CrySystemEventBus::Handler::BusDisconnect();
         AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusDisconnect();
         SurfaceData::SurfaceDataSystemNotificationBus::Handler::BusDisconnect();
@@ -595,7 +593,11 @@ namespace Vegetation
             });
     }
 
-    void AreaSystemComponent::OnSurfaceChanged(const AZ::EntityId& /*entityId*/, const AZ::Aabb& oldBounds, const AZ::Aabb& newBounds)
+    void AreaSystemComponent::OnSurfaceChanged(
+        [[maybe_unused]] const AZ::EntityId& entityId,
+        const AZ::Aabb& oldBounds,
+        const AZ::Aabb& newBounds,
+        [[maybe_unused]] const SurfaceData::SurfaceTagSet& changedSurfaceTags)
     {
         m_vegTasks.QueueVegetationTask([oldBounds, newBounds](UpdateContext* context, PersistentThreadData* threadData, VegetationThreadTasks* vegTasks)
         {
@@ -1093,7 +1095,7 @@ namespace Vegetation
         const float vegStep = sectorSizeInMeters / static_cast<float>(sectorDensity);
 
         //build a free list of all points in the sector for areas to consume
-        sectorInfo.m_baseContext.m_masks.clear();
+        sectorInfo.m_baseContext.m_masks.Clear();
         sectorInfo.m_baseContext.m_availablePoints.clear();
         sectorInfo.m_baseContext.m_availablePoints.reserve(sectorDensity * sectorDensity);
 
@@ -1101,7 +1103,7 @@ namespace Vegetation
         // 0 = lower left corner, 0.5 = center
         const float texelOffset = (sectorPointSnapMode == SnapMode::Center) ? 0.5f : 0.0f;
 
-        SurfaceData::SurfacePointListPerPosition availablePointsPerPosition;
+        SurfaceData::SurfacePointList availablePointsPerPosition;
         AZ::Vector2 stepSize(vegStep, vegStep);
         AZ::Vector3 regionOffset(texelOffset * vegStep, texelOffset * vegStep, 0.0f);
         AZ::Aabb regionBounds = sectorInfo.m_bounds;
@@ -1115,31 +1117,26 @@ namespace Vegetation
         regionBounds.SetMax(regionBounds.GetMin() + AZ::Vector3(vegStep * (sectorDensity - 0.5f),
             vegStep * (sectorDensity - 0.5f), 0.0f));
 
-        SurfaceData::SurfaceDataSystemRequestBus::Broadcast(
-            &SurfaceData::SurfaceDataSystemRequestBus::Events::GetSurfacePointsFromRegion,
+        AZ::Interface<SurfaceData::SurfaceDataSystem>::Get()->GetSurfacePointsFromRegion(
             regionBounds,
             stepSize,
             SurfaceData::SurfaceTagVector(),
             availablePointsPerPosition);
 
-        AZ_Assert(availablePointsPerPosition.size() == (sectorDensity * sectorDensity),
-            "Veg sector ended up with unexpected density (%d points created, %d expected)", availablePointsPerPosition.size(),
-            (sectorDensity * sectorDensity));
-
         uint claimIndex = 0;
-        for (auto& availablePoints : availablePointsPerPosition)
-        {
-            for (auto& surfacePoint : availablePoints.second)
+        availablePointsPerPosition.EnumeratePoints([this, &sectorInfo, &claimIndex]
+        ([[maybe_unused]] size_t inPositionIndex, const AZ::Vector3& position,
+            const AZ::Vector3& normal, const SurfaceData::SurfaceTagWeights& masks) -> bool
             {
                 sectorInfo.m_baseContext.m_availablePoints.push_back();
                 ClaimPoint& claimPoint = sectorInfo.m_baseContext.m_availablePoints.back();
                 claimPoint.m_handle = CreateClaimHandle(sectorInfo, ++claimIndex);
-                claimPoint.m_position = surfacePoint.m_position;
-                claimPoint.m_normal = surfacePoint.m_normal;
-                claimPoint.m_masks = surfacePoint.m_masks;
-                SurfaceData::AddMaxValueForMasks(sectorInfo.m_baseContext.m_masks, surfacePoint.m_masks);
-            }
-        }
+                claimPoint.m_position = position;
+                claimPoint.m_normal = normal;
+                claimPoint.m_masks = masks;
+                sectorInfo.m_baseContext.m_masks.AddSurfaceTagWeights(masks);
+                return true;
+            });
     }
 
     void AreaSystemComponent::VegetationThreadTasks::UpdateSectorCallbacks(SectorInfo& sectorInfo)

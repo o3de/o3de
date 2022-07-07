@@ -61,7 +61,7 @@ namespace AZ
             {
                 const auto& [first, second, third] = triangleIndices;
 
-                const AZStd::array_view<float>& positionBuffer = m_meshes[nObjIndex].m_vertexData;
+                const AZStd::span<const float>& positionBuffer = m_meshes[nObjIndex].m_vertexData;
 
                 if (positionBuffer.empty())
                 {
@@ -114,19 +114,15 @@ namespace AZ
 
             for (AZ::u8 meshIndex = 0, meshCount = aznumeric_caster(m_meshes.size()); meshIndex < meshCount; ++meshIndex)
             {
-                const AZStd::array_view<float> positionBuffer = m_meshes[meshIndex].m_vertexData;
+                const AZStd::span<const float> positionBuffer = m_meshes[meshIndex].m_vertexData;
                 for (size_t positionIndex = 0; positionIndex < positionBuffer.size(); positionIndex += 3)
                 {
                     entireBoundBox.AddPoint({positionBuffer[positionIndex], positionBuffer[positionIndex + 1], positionBuffer[positionIndex + 2]});
                 }
 
-                // The view returned by GetIndexBuffer returns a tuple<uint32_t, uint32_t, uint32_t>, in order to read
-                // 3 values at a time from the raw index buffer. It uses a reinterpret_cast to accomplish this. The
-                // cast results in the order of the indices being reversed, which is why they are read [third, second,
-                // first] here.
-                for (const auto& [thirdIndex, secondIndex, firstIndex] : GetIndexBuffer(*m_meshes[meshIndex].m_mesh))
+                for (const TriangleIndices& triangleIndices : GetIndexBuffer(*m_meshes[meshIndex].m_mesh))
                 {
-                    indices.emplace_back(meshIndex, TriangleIndices{firstIndex, secondIndex, thirdIndex});
+                    indices.emplace_back(meshIndex, triangleIndices);
                 }
             }
 
@@ -137,14 +133,14 @@ namespace AZ
             return true;
         }
 
-        AZStd::array_view<float> ModelKdTree::GetPositionsBuffer(const ModelLodAsset::Mesh& mesh)
+        AZStd::span<const float> ModelKdTree::GetPositionsBuffer(const ModelLodAsset::Mesh& mesh)
         {
-            AZStd::array_view<float> positionBuffer = mesh.GetSemanticBufferTyped<float>(AZ::Name{"POSITION"});
+            AZStd::span<const float> positionBuffer = mesh.GetSemanticBufferTyped<float>(AZ::Name{"POSITION"});
             AZ_Warning("ModelKdTree", !positionBuffer.empty(), "Could not find position buffers in a mesh");
             return positionBuffer;
         }
 
-        AZStd::array_view<ModelKdTree::TriangleIndices> ModelKdTree::GetIndexBuffer(const ModelLodAsset::Mesh& mesh)
+        AZStd::span<const ModelKdTree::TriangleIndices> ModelKdTree::GetIndexBuffer(const ModelLodAsset::Mesh& mesh)
         {
             return mesh.GetIndexBufferTyped<ModelKdTree::TriangleIndices>();
         }
@@ -226,7 +222,6 @@ namespace AZ
             AZ::Vector3& normal) const
         {
             using Intersect::IntersectRayAABB2;
-            using Intersect::IntersectSegmentTriangleCCW;
             using Intersect::ISECT_RAY_AABB_NONE;
 
             if (!pNode)
@@ -258,13 +253,16 @@ namespace AZ
                     return false;
                 }
 
+                const AZ::Vector3 rayEnd = raySrc + rayDir;
+                Intersect::SegmentTriangleHitTester hitTester(raySrc, rayEnd);
+
                 float nearestDistanceNormalized = distanceNormalized;
                 for (AZ::u32 i = 0; i < nVBuffSize; ++i)
                 {
                     const auto& [first, second, third] = pNode->GetVertexIndex(i);
                     const AZ::u32 nObjIndex = pNode->GetObjIndex(i);
 
-                    const AZStd::array_view<float> positionBuffer = m_meshes[nObjIndex].m_vertexData;
+                    const AZStd::span<const float> positionBuffer = m_meshes[nObjIndex].m_vertexData;
 
                     if (positionBuffer.empty())
                     {
@@ -279,9 +277,8 @@ namespace AZ
 
                     float hitDistanceNormalized;
                     AZ::Vector3 intersectionNormal;
-                    const AZ::Vector3 rayEnd = raySrc + rayDir;
-                    if (IntersectSegmentTriangleCCW(raySrc, rayEnd, trianglePoints[0], trianglePoints[1], trianglePoints[2],
-                        intersectionNormal, hitDistanceNormalized) != ISECT_RAY_AABB_NONE)
+                    if (hitTester.IntersectSegmentTriangleCCW(trianglePoints[0], trianglePoints[1], trianglePoints[2],
+                        intersectionNormal, hitDistanceNormalized))
                     {
                         if (nearestDistanceNormalized > hitDistanceNormalized)
                         {

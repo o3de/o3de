@@ -90,6 +90,9 @@ namespace AZ
             AssertSuccess(result);
             RETURN_RESULT_IF_UNSUCCESSFUL(ConvertResult(result));
 
+            m_hash = TypeHash64(m_imageSubresourceRange.GetHash(), m_hash);
+            m_hash = TypeHash64(m_format, m_hash);
+
             SetName(GetName());
             return RHI::ResultCode::Success;
         }
@@ -117,10 +120,10 @@ namespace AZ
             const auto& device = static_cast<const Device&>(GetDevice());
             const auto& physicalDevice = static_cast<const PhysicalDevice&>(GetDevice().GetPhysicalDevice());
 
-            const uint16_t width = static_cast<uint16_t>(imgDesc.m_size.m_width);
-            const uint16_t height = static_cast<uint16_t>(imgDesc.m_size.m_height);
+            [[maybe_unused]] const uint16_t width = static_cast<uint16_t>(imgDesc.m_size.m_width);
+            [[maybe_unused]] const uint16_t height = static_cast<uint16_t>(imgDesc.m_size.m_height);
             const uint16_t depth = AZStd::min(static_cast<uint16_t>(imgViewDesc.m_depthSliceMax - imgViewDesc.m_depthSliceMin), static_cast<uint16_t>(imgDesc.m_size.m_depth - 1)) + 1;
-            const uint16_t samples = imgDesc.m_multisampleState.m_samples;
+            [[maybe_unused]] const uint16_t samples = imgDesc.m_multisampleState.m_samples;
             const uint16_t arrayLayers = AZStd::min(static_cast<uint16_t>(imgViewDesc.m_arraySliceMax - imgViewDesc.m_arraySliceMin), static_cast<uint16_t>(imgDesc.m_arraySize - 1)) + 1;
             // We cannot only use the number of layers of the ImageView to determinate if is a texture array. You can have a texture array with only 1 layer and the shader expects
             // an array type instead of a normal image type.

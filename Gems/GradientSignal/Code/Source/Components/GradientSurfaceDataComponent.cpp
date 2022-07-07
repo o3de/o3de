@@ -6,13 +6,14 @@
  *
  */
 
-#include "GradientSurfaceDataComponent.h"
+#include <GradientSignal/Components/GradientSurfaceDataComponent.h>
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <SurfaceData/SurfaceDataSystemRequestBus.h>
 #include <SurfaceData/Utility/SurfaceDataUtility.h>
+#include <SurfaceData/MixedStackHeapAllocator.h>
 
 namespace GradientSignal
 {
@@ -94,17 +95,23 @@ namespace GradientSignal
 
     void GradientSurfaceDataComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("SurfaceDataModifierService", 0x68f8aa72));
+        services.push_back(AZ_CRC_CE("SurfaceDataModifierService"));
     }
 
     void GradientSurfaceDataComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("SurfaceDataModifierService", 0x68f8aa72));
+        services.push_back(AZ_CRC_CE("SurfaceDataModifierService"));
     }
 
     void GradientSurfaceDataComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("GradientService", 0x21c18d23));
+        services.push_back(AZ_CRC_CE("GradientService"));
+    }
+
+    void GradientSurfaceDataComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& services)
+    {
+        // If there's a shape on this entity, start it before this component just in case it's the shape that we're using as our bounds.
+        services.push_back(AZ_CRC_CE("ShapeService"));
     }
 
     void GradientSurfaceDataComponent::Reflect(AZ::ReflectContext* context)
@@ -164,12 +171,13 @@ namespace GradientSignal
         m_gradientSampler.m_ownerEntityId = GetEntityId();
 
         LmbrCentral::DependencyNotificationBus::Handler::BusConnect(GetEntityId());
-        GradientSurfaceDataRequestBus::Handler::BusConnect(GetEntityId());
 
         if (m_configuration.m_shapeConstraintEntityId.IsValid())
         {
             LmbrCentral::ShapeComponentNotificationsBus::Handler::BusConnect(m_configuration.m_shapeConstraintEntityId);
         }
+
+        GradientSurfaceDataRequestBus::Handler::BusConnect(GetEntityId());
 
         // Register with the SurfaceData system and update our cached shape information if necessary.
         m_modifierHandle = SurfaceData::InvalidSurfaceDataRegistryHandle;
@@ -179,12 +187,13 @@ namespace GradientSignal
 
     void GradientSurfaceDataComponent::Deactivate()
     {
+        GradientSurfaceDataRequestBus::Handler::BusDisconnect();
+
         LmbrCentral::ShapeComponentNotificationsBus::Handler::BusDisconnect();
         LmbrCentral::DependencyNotificationBus::Handler::BusDisconnect();
-        SurfaceData::SurfaceDataSystemRequestBus::Broadcast(&SurfaceData::SurfaceDataSystemRequestBus::Events::UnregisterSurfaceDataModifier, m_modifierHandle);
+        AZ::Interface<SurfaceData::SurfaceDataSystem>::Get()->UnregisterSurfaceDataModifier(m_modifierHandle);
         SurfaceData::SurfaceDataModifierRequestBus::Handler::BusDisconnect();
         m_modifierHandle = SurfaceData::InvalidSurfaceDataRegistryHandle;
-        GradientSurfaceDataRequestBus::Handler::BusDisconnect();
     }
 
     bool GradientSurfaceDataComponent::ReadInConfig(const AZ::ComponentConfig* baseConfig)
@@ -207,55 +216,73 @@ namespace GradientSignal
         return false;
     }
 
-    void GradientSurfaceDataComponent::ModifySurfacePoints(SurfaceData::SurfacePointList& surfacePointList) const
+    void GradientSurfaceDataComponent::ModifySurfacePoints(
+            AZStd::span<const AZ::Vector3> positions,
+            [[maybe_unused]] AZStd::span<const AZ::EntityId> creatorEntityIds,
+            AZStd::span<SurfaceData::SurfaceTagWeights> weights) const
     {
-        if (!m_configuration.m_modifierTags.empty())
+        AZ_Assert(
+            (positions.size() == creatorEntityIds.size()) && (positions.size() == weights.size()),
+            "Sizes of the passed-in spans don't match");
+
+        // If we don't have any modifier tags, there's nothing to modify.
+        if (m_configuration.m_modifierTags.empty())
         {
-            // This method can be called from the vegetation thread, but our shape bounds can get updated from the main thread.
-            // If we have an optional constraining shape bounds, grab a copy of it with minimized mutex lock times.  Avoid mutex
-            // locking entirely if we aren't using the shape bounds option at all.
-            // (m_validShapeBounds is an atomic bool, so it can be queried outside of the mutex)
-            bool validShapeBounds = false;
-            AZ::Aabb shapeConstraintBounds;
-            if (m_validShapeBounds)
-            {
-                AZStd::lock_guard<decltype(m_cacheMutex)> lock(m_cacheMutex);
-                shapeConstraintBounds = m_cachedShapeConstraintBounds;
-                validShapeBounds = m_cachedShapeConstraintBounds.IsValid();
-            }
+            return;
+        }
 
-            const AZ::EntityId entityId = GetEntityId();
-            for (auto& point : surfacePointList)
-            {
-                if (point.m_entityId != entityId)
+        // This method can be called from any thread, but our shape bounds can get updated from the main thread.
+        // If we have an optional constraining shape bounds, grab a copy of it with minimized mutex lock times.  Avoid mutex
+        // locking entirely if we aren't using the shape bounds option at all.
+        // (m_validShapeBounds is an atomic bool, so it can be queried outside of the mutex)
+        AZ::Aabb shapeConstraintBounds = AZ::Aabb::CreateNull();
+        if (m_validShapeBounds)
+        {
+            AZStd::lock_guard<decltype(m_cacheMutex)> lock(m_cacheMutex);
+            shapeConstraintBounds = m_cachedShapeConstraintBounds;
+        }
+
+        // Optimization: For our temporary vectors, if the input is below a certain size, allocate the temporary data off the stack.
+        // Otherwise, allocate from the heap.
+        constexpr size_t SmallQuerySize = 16;
+
+        // Start by assuming an unbounded surface modifier and default to allowing *all* points through the shape check.
+        AZStd::vector<bool, SurfaceData::mixed_stack_heap_allocator<bool, SmallQuerySize>> inBounds;
+
+        // If we have an optional shape bounds, adjust the inBounds flags based on whether or not each point is inside the bounds.
+        if (shapeConstraintBounds.IsValid())
+        {
+            LmbrCentral::ShapeComponentRequestsBus::Event(
+                m_configuration.m_shapeConstraintEntityId,
+                [positions, shapeConstraintBounds, &inBounds](LmbrCentral::ShapeComponentRequestsBus::Events* shape)
                 {
-                    bool inBounds = true;
+                    inBounds.resize(positions.size(), false);
 
-                    // If we have an optional shape bounds, verify the point exists inside of it before querying the gradient value.
-                    // Otherwise, assume an unbounded surface modifier and allow *all* points through the shape check.
-                    if (validShapeBounds)
+                    for (size_t index = 0; index < positions.size(); index++)
                     {
-                        inBounds = false;
-                        if (shapeConstraintBounds.Contains(point.m_position))
+                        // Check the AABB first.
+                        if (shapeConstraintBounds.Contains(positions[index]))
                         {
-                            LmbrCentral::ShapeComponentRequestsBus::EventResult(inBounds, m_configuration.m_shapeConstraintEntityId,
-                                                                                &LmbrCentral::ShapeComponentRequestsBus::Events::IsPointInside, point.m_position);
+                            // The point is in the AABB, so check against the actual shape geometry.
+                            inBounds[index] = shape->IsPointInside(positions[index]);
                         }
                     }
+                });
+        }
 
-                    // If the point is within our allowed shape bounds, verify that it meets the gradient thresholds.
-                    // If so, then add the value to the surface tags.
-                    if (inBounds)
-                    {
-                        const GradientSampleParams sampleParams = { point.m_position };
-                        const float value = m_gradientSampler.GetValue(sampleParams);
-                        if (value >= m_configuration.m_thresholdMin &&
-                            value <= m_configuration.m_thresholdMax)
-                        {
-                            SurfaceData::AddMaxValueForMasks(point.m_masks, m_configuration.m_modifierTags, value);
-                        }
-                    }
+        // Get all of the potential gradient values in one bulk call.
+        AZStd::vector<float, SurfaceData::mixed_stack_heap_allocator<float, SmallQuerySize>> gradientValues(positions.size());
+        m_gradientSampler.GetValues(positions, gradientValues);
 
+        for (size_t index = 0; index < positions.size(); index++)
+        {
+            // If the point is within our allowed shape bounds, verify that it meets the gradient thresholds.
+            // If so, then add the value to the surface tags.
+            if (inBounds.empty() || inBounds[index])
+            {
+                if (gradientValues[index] >= m_configuration.m_thresholdMin && gradientValues[index] <= m_configuration.m_thresholdMax)
+                {
+                    weights[index].AddSurfaceTagWeights(m_configuration.m_modifierTags, gradientValues[index]);
                 }
             }
         }
@@ -338,16 +365,12 @@ namespace GradientSignal
         if (registryHandle == SurfaceData::InvalidSurfaceDataRegistryHandle)
         {
             // Register with the SurfaceData system and get a valid registryHandle.
-            SurfaceData::SurfaceDataSystemRequestBus::BroadcastResult(registryHandle,
-                &SurfaceData::SurfaceDataSystemRequestBus::Events::RegisterSurfaceDataModifier, registryEntry);
+            registryHandle = AZ::Interface<SurfaceData::SurfaceDataSystem>::Get()->RegisterSurfaceDataModifier(registryEntry);
         }
         else
         {
             // Update the registry entry with the SurfaceData system using the existing registryHandle.
-            SurfaceData::SurfaceDataSystemRequestBus::Broadcast(
-                &SurfaceData::SurfaceDataSystemRequestBus::Events::UpdateSurfaceDataModifier,
-                registryHandle, registryEntry);
-
+            AZ::Interface<SurfaceData::SurfaceDataSystem>::Get()->UpdateSurfaceDataModifier(registryHandle, registryEntry);
         }
     }
 

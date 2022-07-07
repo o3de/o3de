@@ -6,13 +6,9 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_CRYCOMMON_MULTITHREAD_CONTAINERS_H
-#define CRYINCLUDE_CRYCOMMON_MULTITHREAD_CONTAINERS_H
 #pragma once
 
 #include "StlUtils.h"
-#include "BitFiddling.h"
 
 #include <queue>
 #include <set>
@@ -43,8 +39,6 @@ namespace CryMT
         const T& back() const { AutoLock lock(m_cs);    return v.back(); }
         void    push(const T& x)    { AutoLock lock(m_cs); return v.push_back(x); };
         void reserve(const size_t n) { AutoLock lock(m_cs); v.reserve(n); };
-        // classic pop function of queue should not be used for thread safety, use try_pop instead
-        //void  pop()                           { AutoLock lock(m_cs); return v.erase(v.begin()); };
 
         AZStd::recursive_mutex& get_lock() const { return m_cs; }
 
@@ -69,27 +63,6 @@ namespace CryMT
             return false;
         };
 
-        //////////////////////////////////////////////////////////////////////////
-        bool try_remove(const T& value)
-        {
-            AutoLock lock(m_cs);
-            if (!v.empty())
-            {
-                typename container_type::iterator it = std::find(v.begin(), v.end(), value);
-                if (it != v.end())
-                {
-                    v.erase(it);
-                    return true;
-                }
-            }
-            return false;
-        };
-
-        template<typename Sizer>
-        void GetMemoryUsage(Sizer* pSizer) const
-        {
-            pSizer->AddObject(v);
-        }
     private:
         container_type v;
         mutable AZStd::recursive_mutex m_cs;
@@ -104,6 +77,3 @@ namespace stl
         v.free_memory();
     }
 }
-
-
-#endif // CRYINCLUDE_CRYCOMMON_MULTITHREAD_CONTAINERS_H

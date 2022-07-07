@@ -108,7 +108,7 @@ namespace AZ
         VkAccelerationStructureKHR BufferView::GetNativeAccelerationStructure() const
         {
             bool hasOverrideFlags = GetDescriptor().m_overrideBindFlags != RHI::BufferBindFlags::None;
-            const RHI::BufferBindFlags bindFlags = hasOverrideFlags ? GetDescriptor().m_overrideBindFlags : GetBuffer().GetDescriptor().m_bindFlags;
+            [[maybe_unused]] const RHI::BufferBindFlags bindFlags = hasOverrideFlags ? GetDescriptor().m_overrideBindFlags : GetBuffer().GetDescriptor().m_bindFlags;
 
             AZ_Assert(RHI::CheckBitsAll(bindFlags, RHI::BufferBindFlags::RayTracingAccelerationStructure),
                 "GetNativeAccelerationStructure() is only valid for buffers with the RayTracingAccelerationStructure bind flag");
