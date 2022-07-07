@@ -34,11 +34,6 @@
                 "$type": "EditorDisabledCompositionComponent",
                 "Id": 16239496886950819870
             },
-            "Component_[2716220239187023532]": {
-                "$type": "LocalViewBookmarkComponent",
-                "Id": 2716220239187023532,
-                "LocalBookmarkFileName": "Core_511588228792.setreg"
-            },
             "Component_[5688118765544765547]": {
                 "$type": "EditorEntityIconComponent",
                 "Id": 5688118765544765547
@@ -439,17 +434,6 @@
                 "Component_[15900837685796817138]": {
                     "$type": "EditorVisibilityComponent",
                     "Id": 15900837685796817138
-                },
-                "Component_[2529173134543008478]": {
-                    "$type": "EditorScriptCanvasComponent",
-                    "Id": 2529173134543008478,
-                    "configuration": {
-                        "sourceHandle": {
-                            "id": "{588CE2F8-D1F8-525A-8555-E1B62F2B96A1}",
-                            "path": "git/o3de/AutomatedTesting/ScriptCanvas/smoloperator.scriptcanvas"
-                        },
-                        "sourceName": "smoloperator.scriptcanvas"
-                    }
                 },
                 "Component_[3298767348226484884]": {
                     "$type": "EditorOnlyEntityComponent",
