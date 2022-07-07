@@ -25,6 +25,7 @@
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/std/numeric.h>
 #include <AzCore/StringFunc/StringFunc.h>
+#include <AzCore/std/sort.h>
 
 #include <QDir>
 
@@ -456,7 +457,7 @@ namespace O3DE::ProjectManager
             return AZ::Failure();
         }
 
-        std::sort(engines.begin(), engines.end());
+        AZStd::sort(engines.begin(), engines.end());
         return AZ::Success(AZStd::move(engines));
     }
 
@@ -509,7 +510,7 @@ namespace O3DE::ProjectManager
     {
         EngineInfo engineInfo;
         bool result = ExecuteWithLock([&] {
-            auto enginePathResult = m_manifest.attr("get_project_engine")(QString_To_Py_Path(projectPath));
+            auto enginePathResult = m_manifest.attr("get_project_engine_path")(QString_To_Py_Path(projectPath));
 
             // if a valid registered object is not found None is returned
             if (!pybind11::isinstance<pybind11::none>(enginePathResult))
@@ -613,7 +614,7 @@ namespace O3DE::ProjectManager
             return AZ::Failure<AZStd::string>(result.GetError().c_str());
         }
 
-        std::sort(gems.begin(), gems.end());
+        AZStd::sort(gems.begin(), gems.end());
         return AZ::Success(AZStd::move(gems));
     }
 
@@ -638,7 +639,7 @@ namespace O3DE::ProjectManager
             return AZ::Failure<AZStd::string>(result.GetError().c_str());
         }
 
-        std::sort(gems.begin(), gems.end());
+        AZStd::sort(gems.begin(), gems.end());
         return AZ::Success(AZStd::move(gems));
     }
 
@@ -936,7 +937,7 @@ namespace O3DE::ProjectManager
                     }
                 }
 
-                auto enginePathResult = m_manifest.attr("get_project_engine")(path);
+                auto enginePathResult = m_manifest.attr("get_project_engine_path")(path);
                 if (!pybind11::isinstance<pybind11::none>(enginePathResult))
                 {
                     projectInfo.m_enginePath = Py_To_String(enginePathResult);
@@ -1298,7 +1299,7 @@ namespace O3DE::ProjectManager
             return AZ::Failure<AZStd::string>(result.GetError().c_str());
         }
 
-        std::sort(gemRepos.begin(), gemRepos.end());
+        AZStd::sort(gemRepos.begin(), gemRepos.end());
         return AZ::Success(AZStd::move(gemRepos));
     }
 
