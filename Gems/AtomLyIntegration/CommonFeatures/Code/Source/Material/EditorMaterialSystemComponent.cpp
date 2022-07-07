@@ -202,8 +202,11 @@ namespace AZ
                 static constexpr const char* DefaultModelPath = "models/sphere.azmodel";
                 static constexpr const char* DefaultLightingPresetPath = "lightingpresets/thumbnail.lightingpreset.azasset";
 
-                for (const auto& [entityId, materialAssignmentId] : m_materialPreviewRequests)
+                for (const auto& materialPreviewRequestPair : m_materialPreviewRequests)
                 {
+                    const auto& entityId = materialPreviewRequestPair.first;
+                    const auto& materialAssignmentId = materialPreviewRequestPair.second;
+
                     AZ::Data::AssetId materialAssetId = {};
                     MaterialComponentRequestBus::EventResult(
                         materialAssetId, entityId, &MaterialComponentRequestBus::Events::GetMaterialAssetId, materialAssignmentId);
