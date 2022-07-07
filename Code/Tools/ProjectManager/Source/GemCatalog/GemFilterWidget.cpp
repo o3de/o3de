@@ -80,14 +80,13 @@ namespace O3DE::ProjectManager
                 elementWidget->setLayout(elementLayout);
 
                 QCheckBox* checkbox = new QCheckBox(elementNames[i]);
-                checkbox->setStyleSheet("font-size: 12px;");
                 m_buttonGroup->addButton(checkbox);
                 elementLayout->addWidget(checkbox);
 
                 elementLayout->addSpacerItem(new QSpacerItem(0, 0, QSizePolicy::Expanding));
 
                 QLabel* countLabel = new QLabel(QString::number(elementCounts[i]));
-                countLabel->setStyleSheet("font-size: 12px; background-color: #333333; border-radius: 3px; color: #94D2FF;");
+                countLabel->setObjectName("CountLabel");
                 elementLayout->addWidget(countLabel);
 
                 m_elementWidgets.push_back(elementWidget);
@@ -205,7 +204,7 @@ namespace O3DE::ProjectManager
         mainWidget->setLayout(mainLayout);
 
         QLabel* filterByLabel = new QLabel("Filter by");
-        filterByLabel->setStyleSheet("font-size: 16px;");
+        filterByLabel->setObjectName("FilterByLabel");
         mainLayout->addWidget(filterByLabel);
 
         QWidget* filterSection = new QWidget(this);
