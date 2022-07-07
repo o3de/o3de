@@ -18,7 +18,6 @@ from scripting_utils.scripting_constants import WAIT_TIME_3
 
 # fmt: off
 class Tests():
-    level_created   = ("Successfully created temporary level", "Failed to create temporary level")
     entity_created  = ("Successfully created test entity",     "Failed to create test entity")
     enter_game_mode = ("Successfully entered game mode",       "Failed to enter game mode")
     lines_found     = ("Successfully found expected message",  "Failed to find expected message")
@@ -43,7 +42,7 @@ class ScriptEvents_ReturnSetType_Successfully:
      After entering game mode, the graph on the entity should print an expected message to the console
 
     Test Steps:
-     1) Create test level
+     1) Open the base level
      2) Create test entity
      3) Start Tracer
      4) Enter Game Mode
