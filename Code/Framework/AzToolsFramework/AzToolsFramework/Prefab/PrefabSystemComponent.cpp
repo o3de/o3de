@@ -178,6 +178,7 @@ namespace AzToolsFramework
             if (found != m_templateFilePathToIdMap.end())
             {
                 m_prefabLoader.ReloadTemplateFromFile(relativePath.c_str());
+                PropagateTemplateChanges(found->second);
             }
         }
 

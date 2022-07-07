@@ -5,7 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-
+#pragma optimize("", off)
 #include <AzToolsFramework/Prefab/PrefabLoader.h>
 
 #include <AzCore/Component/Entity.h>
@@ -107,6 +107,9 @@ namespace AzToolsFramework
                     "Terminating any further loading of this branch of its prefab hierarchy.",
                     AZ_STRING_ARG(relativePath.Native()));
             }
+
+            TemplateId loadedTemplateId = m_prefabSystemComponentInterface->GetTemplateIdFromFilePath(relativePath);
+
             // Read Template's prefab file from disk and parse Prefab DOM from file.
             AZ::Outcome<PrefabDom, AZStd::string> readPrefabFileResult = AZ::JsonSerializationUtils::ReadJsonString(readResult.GetValue());
             if (!readPrefabFileResult.IsSuccess())
@@ -120,21 +123,230 @@ namespace AzToolsFramework
             // Add or replace the Source parameter in the dom
             PrefabDomPath sourcePath = PrefabDomPath((AZStd::string("/") + PrefabDomUtils::SourceName).c_str());
             sourcePath.Set(readPrefabFileResult.GetValue(), relativePath.Native().data());
-            
+
             // Create new Template with the Prefab DOM.
             auto prefabDom = readPrefabFileResult.TakeValue();
 
             // Mark the file as being in progress.
             progressedFilePathsSet.emplace(relativePath);
 
-            SanitizeLoadedTemplate(prefabDom);
+            //Retrieving dom from the loaded template
+            TemplateReference existingTemplateReference = m_prefabSystemComponentInterface->FindTemplate(loadedTemplateId);
+            PrefabDom& existingTemplateDom = existingTemplateReference->get().GetPrefabDom();
+
+            //Copy over the container entities from the updated prefab dom 
+            PrefabDomValueReference existingContainerReference =
+                PrefabDomUtils::FindPrefabDomValue(existingTemplateDom, PrefabDomUtils::ContainerEntityName);
+
+            PrefabDomValueReference containerEntityReference = PrefabDomUtils::FindPrefabDomValue(prefabDom, PrefabDomUtils::ContainerEntityName);
+            existingContainerReference->get().CopyFrom(containerEntityReference->get(), existingTemplateDom.GetAllocator());
+
+            // Copy over the entities from the updated prefab dom
+             PrefabDomValueReference existingEntitiesReference =
+                PrefabDomUtils::FindPrefabDomValue(existingTemplateDom, PrefabDomUtils::EntitiesName);
+
+            PrefabDomValueReference entitiesReference =
+                PrefabDomUtils::FindPrefabDomValue(prefabDom, PrefabDomUtils::EntitiesName);
+             existingEntitiesReference->get().CopyFrom(entitiesReference->get(), existingTemplateDom.GetAllocator());
+
+            PrefabDomValueConstReference instancesReference = PrefabDomUtils::GetInstancesValue(prefabDom);
+            if (instancesReference.has_value())
+            {
+               const PrefabDomValue& instances = instancesReference->get();
+
+                // For each instance value in 'instances', try to create source Templates for target Template's nested instance data.
+                // Also create Links between source/target Templates if source Template loaded successfully.
+               for (PrefabDomValue::ConstMemberIterator instanceIterator = instances.MemberBegin();
+                    instanceIterator != instances.MemberEnd(); ++instanceIterator)
+                {
+                    if (!ReloadNestedInstance(instanceIterator, loadedTemplateId, progressedFilePathsSet))
+                    {
+                        AZ_Error(
+                            "Prefab", false,
+                            "PrefabLoader::ReloadTemplateFrom - "
+                            "Reloading nested instance '%s' in target Template '%u' from Prefab file '%.*s' failed.",
+                            instanceIterator->name.GetString(), loadedTemplateId, AZ_STRING_ARG(relativePath.Native()));
+                    }
+                }
+            }
+
+            SanitizeLoadedTemplate(existingTemplateDom);
 
             // Un-mark the file as being in progress.
             progressedFilePathsSet.erase(relativePath);
+        }
 
-            // Directly return loaded Template id.
-            TemplateId loadedTemplateId = m_prefabSystemComponentInterface->GetTemplateIdFromFilePath(relativePath);
-            m_prefabSystemComponentInterface->UpdatePrefabTemplate(loadedTemplateId, prefabDom);
+        bool PrefabLoader::ReloadNestedInstance(
+            PrefabDomValue::ConstMemberIterator& instanceIterator,
+            TemplateId targetTemplateId,
+            AZStd::unordered_set<AZ::IO::Path>& progressedFilePathsSet)
+        {
+            //Using the template id to get the existing dom
+            PrefabDom& templateDom = m_prefabSystemComponentInterface->FindTemplateDom(targetTemplateId);
+            const PrefabDomValue& fileDom = instanceIterator->value;
+
+            //Retrieving the instance path from the existing dom
+            PrefabDomPath instanceRetriever = PrefabDomUtils::GetPrefabDomInstancePath(instanceIterator->name.GetString());
+            if (instanceRetriever.IsValid())
+            {
+                PrefabDomValueConstReference templateInstance = *instanceRetriever.Get(templateDom);
+                const PrefabDomValue& nestedTemplateDom = templateInstance->get();
+
+                PrefabDomValueConstReference sourceOnFile = PrefabDomUtils::FindPrefabDomValue(fileDom, PrefabDomUtils::SourceName);
+                PrefabDomValueConstReference nestedTemplateSource =
+                    PrefabDomUtils::FindPrefabDomValue(nestedTemplateDom, PrefabDomUtils::SourceName);
+
+                if (!nestedTemplateSource.has_value() || !nestedTemplateSource->get().IsString() ||
+                    nestedTemplateSource->get().GetStringLength() == 0)
+                {
+                    AZ_Error(
+                        "Prefab", false,
+                        "PrefabLoader::ReloadNestedInstance - "
+                        "Can't get '%s' string value in Instance value '%s' of Template's Prefab DOM from file '%s'.",
+                        PrefabDomUtils::SourceName, instanceIterator->name.GetString(),
+                        m_prefabSystemComponentInterface->FindTemplate(targetTemplateId)->get().GetFilePath().c_str());
+                    return false;
+                }
+
+                //locating the link id in the existing nested dom
+                PrefabDomValueConstReference linkIdReference =
+                    PrefabDomUtils::FindPrefabDomValue(nestedTemplateDom, PrefabDomUtils::LinkIdName);
+                if (!linkIdReference.has_value() || !linkIdReference->get().IsUint64())
+                {
+                    AZ_Error(
+                        "Prefab", false,
+                        "PrefabLoader::ReloadNestedInstance - "
+                        "Can't get '%s' Uint64 value in Instance value '%s' of Template's Prefab DOM from file '%s'.",
+                        PrefabDomUtils::LinkIdName, instanceIterator->name.GetString(),
+                        m_prefabSystemComponentInterface->FindTemplate(targetTemplateId)->get().GetFilePath().c_str());
+                    return false;
+                }
+
+                //Using link id to get the existing link
+                LinkId targetLinkId = linkIdReference->get().GetUint64();
+                LinkReference targetLinkReference = m_prefabSystemComponentInterface->FindLink(targetLinkId);
+                if (!targetLinkReference.has_value())
+                {
+                    AZ_Error(
+                        "Prefab", false,
+                        "PrefabLoader::ReloadNestedInstance - "
+                        "Link cannot be found in Instance value '%s' of Template's Prefab DOM from file '%s'.",
+                        instanceIterator->name.GetString(),
+                        m_prefabSystemComponentInterface->FindTemplate(targetTemplateId)->get().GetFilePath().c_str());
+                    return false;
+                }
+                Link& targetLink = targetLinkReference->get();
+                //Applying the updated patches to the existing link for matching source
+                if(nestedTemplateSource->get() == sourceOnFile->get())
+                {
+                    targetLink.SetLinkDom(fileDom);
+                    targetLink.UpdateTarget();
+                    return true;
+                }
+                else
+                {
+                    const PrefabDomValue& newSource = sourceOnFile->get();
+                    AZStd::string_view nestedTemplatePath(newSource.GetString(), newSource.GetStringLength());
+                    TemplateId newSourceTemplateId = LoadTemplateFromFile(nestedTemplatePath, progressedFilePathsSet);
+                    targetLink.SetSourceTemplateId(newSourceTemplateId);
+                }
+            }
+            else
+            {
+                //TODO: Add a new link
+            }
+
+            
+            
+            //TODO: Check if instance keys match
+           
+            // Get source path from the dom on file.
+
+            //Get the existing dom from editor
+            
+            //gets the path of the instance and locates it in the
+
+            //if (templateInstance.has_value())
+            //{
+            //    
+            //    }
+            //    else
+            //    {
+            //        //TemplateId sourceTemplateId = LoadTemplateFromString()
+            //    }
+            //    
+            //    
+            //}
+            //else
+            //{
+            //   //TODO: Add a new link
+            //}
+            /*
+             * - get access to templatedom
+             *
+             * - Find instance path within the existing dom - look for /Instances/Instance_[abc]
+             *  if (path is found in existing dom)
+             * {
+             *    - PrefabDomValue& nestedom = nested dom within existing dom
+             *    - get the source path
+             *    - check again in the existing nested dom for source string
+             *    - if (source string matches)
+             *       {
+             *           get nested dom from file - newNestedDom
+             *           find existing link from dom ("linkId")
+             *           prefabsytemcomponent->findLink()
+             *           link->setLinkdom(newNestedDom)
+             *           link->updateTarget()
+             *
+             *       }
+             *       else (//string is different)
+             *       {
+             *           load template of new string//
+             *           - change sourceTemplateId in Link object
+             *           - SetlinkDom()
+             *       }
+             * }
+             * else
+             * {
+             *      LoadNestedInstnce() ///similar to regular load
+             * }
+            */
+
+            // Get Template id of nested instance from its path.
+            // If source Template is already loaded, get the id from Template File Path To Id Map,
+            // else load the source Template by calling 'LoadTemplate' recursively.
+
+            /*TemplateId nestedTemplateId = LoadTemplateFromFile(nestedTemplatePath, progressedFilePathsSet);
+            TemplateReference nestedTemplateReference = m_prefabSystemComponentInterface->FindTemplate(nestedTemplateId);
+            if (!nestedTemplateReference.has_value() || !nestedTemplateReference->get().IsValid())
+            {
+                AZ_Error(
+                    "Prefab", false,
+                    "PrefabLoader::LoadNestedInstance - "
+                    "Error occurred while loading nested Prefab file '%.*s' from Prefab file '%s'.",
+                    AZ_STRING_ARG(nestedTemplatePath),
+                    m_prefabSystemComponentInterface->FindTemplate(targetTemplateId)->get().GetFilePath().c_str());
+                return false;
+            }*/
+
+            // After source template has been loaded, create Link between source/target Template.
+            /*LinkId newLinkId =
+                m_prefabSystemComponentInterface->AddLink(nestedTemplateId, targetTemplateId, instanceIterator, AZStd::nullopt);
+            if (newLinkId == InvalidLinkId)
+            {
+                AZ_Error(
+                    "Prefab", false,
+                    "PrefabLoader::LoadNestedInstance - "
+                    "Failed to add a new Link to Nested Template Instance '%s' which connects source Template '%.*s' and target Template "
+                    "'%s'.",
+                    instanceIterator->name.GetString(), AZ_STRING_ARG(nestedTemplatePath),
+                    m_prefabSystemComponentInterface->FindTemplate(targetTemplateId)->get().GetFilePath().c_str());
+
+                return false;
+            }*/
+
+            // Let the new Template carry up the error flag of its nested Prefab.
+            return false;
         }
 
         TemplateId PrefabLoader::LoadTemplateFromFile(AZ::IO::PathView filePath, AZStd::unordered_set<AZ::IO::Path>& progressedFilePathsSet)
@@ -788,3 +1000,4 @@ namespace AzToolsFramework
 
     } // namespace Prefab
 } // namespace AzToolsFramework
+#pragma optimize("", on)

@@ -62,6 +62,18 @@ namespace AzToolsFramework
             void ReloadTemplateFromFile(AZ::IO::PathView relativePath);
 
             /**
+             * Reload nested instance given a nested instance value iterator and target Template with its id.
+             * @param instanceIterator A nested instance value iterator.
+             * @param targetTemplateId A unique id of target Template.
+             * @param progressedFilePathsSet An unordered_set to track if there's any cyclical dependency between Templates.
+             * @return If reloading the nested instance pointed by instanceIt on targetTemplate succeeded or not.
+             */
+            bool ReloadNestedInstance(
+                PrefabDomValue::ConstMemberIterator& instanceIterator,
+                TemplateId targetTemplateId,
+                AZStd::unordered_set<AZ::IO::Path>& progressedFilePathsSet);
+
+            /**
              * Load Prefab Template from given content string to memory and return the id of loaded Template.
              * Converts .prefab form into Prefab Template form by expanding source path and patch info
              * into fully formed nested template info.
