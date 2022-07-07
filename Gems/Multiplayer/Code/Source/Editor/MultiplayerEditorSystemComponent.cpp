@@ -171,14 +171,11 @@ namespace Multiplayer
             if (m_serverProcessWatcher)
             {
                 m_serverProcessWatcher->TerminateProcess(0);
-                if (m_serverProcessTracePrinter)
-                {
-                    m_serverProcessTracePrinter->Pump();
-                    m_serverProcessTracePrinter->WriteCurrentString(true);
-                    m_serverProcessTracePrinter->WriteCurrentString(false);
-                }
-                m_serverProcessWatcher = nullptr;
+
+                // The TracePrinter hangs onto a pointer to an object that is owned by
+                // the ProcessWatcher.  Make sure to destroy the TracePrinter first, before ProcessWatcher.
                 m_serverProcessTracePrinter = nullptr;
+                m_serverProcessWatcher = nullptr;
             }
 
             const AZ::Name editorInterfaceName = AZ::Name(MpEditorInterfaceName);
