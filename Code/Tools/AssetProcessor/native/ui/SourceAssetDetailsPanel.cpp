@@ -150,8 +150,7 @@ namespace AssetProcessor
                             return true;
                         });
                     
-                //AssetUtilities::ProductPath productPath = AssetUtilities::ProductPath::FromDatabasePath(productEntry.m_productName);
-                AZStd::string sourceIntermediateAssetPath = AssetUtilities::StripAssetPlatformNoCopy(productEntry.m_productName);
+                    AZStd::string sourceIntermediateAssetPath = AssetUtilities::StripAssetPlatformNoCopy(productEntry.m_productName);
 
                     // Qt handles cleanup automatically, setting this as the parent means
                     // when this panel is torn down, these widgets will be destroyed.

@@ -1843,6 +1843,14 @@ namespace AssetUtilities
         ++m_warningCount;
     }
 
+    AZStd::string GetProductPathForIntermediateSourcePath(AZStd::string_view sourcePath)
+    {
+        AZStd::string productPath((AZ::IO::FixedMaxPath(AssetBuilderSDK::CommonPlatformName) / sourcePath).StringAsPosix());
+        // Product paths are always lowercase
+        AZStd::to_lower(productPath.begin(), productPath.end());
+        return productPath;
+    }
+
     ProductPath::ProductPath(AZStd::string scanfolderRelativeProductPath, AZStd::string platformIdentifier)
     {
         AZ_Assert(AZ::IO::PathView(scanfolderRelativeProductPath).IsRelative(), "scanfolderRelativeProductPath is not relative: %s", scanfolderRelativeProductPath.c_str());

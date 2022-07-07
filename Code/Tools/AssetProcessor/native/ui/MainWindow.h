@@ -40,6 +40,7 @@ namespace AssetProcessor
     class AssetTreeFilterModel;
     class JobSortFilterProxyModel;
     class JobsModel;
+    class AssetTreeItem;
     class ProductAssetTreeModel;
     class SourceAssetTreeModel;
     class ProductDependencyTreeItem;
@@ -195,6 +196,10 @@ private:
 
     void ShowProductAssetContextMenu(const QPoint& pos);
     void ShowSourceAssetContextMenu(const QPoint& pos);
+    void ShowIntermediateAssetContextMenu(const QPoint& pos);
+
+    void BuildSourceAssetTreeContextMenu(QMenu& menu, const AssetProcessor::AssetTreeItem& sourceAssetTreeItem);
+
     // Helper function that retrieves the item selected in outgoing/incoming dependency TreeView
     AssetProcessor::ProductDependencyTreeItem* GetProductAssetFromDependencyTreeView(bool isOutgoing, const QPoint& pos);
     void ShowOutgoingProductDependenciesContextMenu(const QPoint& pos);
