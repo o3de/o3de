@@ -54,6 +54,10 @@ namespace AzToolsFramework
         {
             // Retrieve focused instance
             auto focusedInstance = m_prefabFocusInterface->GetFocusedPrefabInstance(s_editorEntityContextId);
+            if (!focusedInstance.has_value())
+            {
+                return false;
+            }
 
             auto climbUpToDomSourceInstanceeResult = PrefabInstanceUtils::ClimbUpToTargetInstance(instance, &focusedInstance->get());
             auto domSourceInstance = climbUpToDomSourceInstanceeResult.first;
