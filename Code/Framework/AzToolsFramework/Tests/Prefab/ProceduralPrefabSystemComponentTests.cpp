@@ -17,6 +17,7 @@
 #include <Utils/Utils.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzToolsFramework/Entity/EditorEntityContextComponent.h>
+#include <AzToolsFramework/ToolsComponents/TransformComponent.h>
 
 namespace UnitTest
 {
@@ -103,6 +104,21 @@ namespace UnitTest
             AllocatorsTestFixture::TearDown();
 
             TestRunner::Instance().ResetSuppressionSettingsToDefault();
+
+            CreateRootPrefab();
+        }
+
+        void CreateRootPrefab()
+        {
+            auto entityOwnershipService = AZ::Interface<AzToolsFramework::PrefabEditorEntityOwnershipInterface>::Get();
+            ASSERT_TRUE(entityOwnershipService != nullptr);
+            entityOwnershipService->CreateNewLevelPrefab("UnitTestRoot.prefab", "");
+            auto rootEntityReference = entityOwnershipService->GetRootPrefabInstance()->get().GetContainerEntity();
+            ASSERT_TRUE(rootEntityReference.has_value());
+            auto& rootEntity = rootEntityReference->get();
+            rootEntity.Deactivate();
+            rootEntity.CreateComponent<AzToolsFramework::Components::TransformComponent>();
+            rootEntity.Activate();
         }
 
         // ComponentApplicationBus
