@@ -41,6 +41,7 @@
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/Settings/SettingsRegistryScriptUtils.h>
 #include <AzCore/Settings/SettingsRegistryVisitorUtils.h>
+#include <AzCore/Settings/SettingsRegistryOriginTracker.h>
 #include <AzCore/StringFunc/StringFunc.h>
 
 #include <AzCore/Module/Module.h>
@@ -469,6 +470,8 @@ namespace AZ
         {
             SettingsRegistry::Register(m_settingsRegistry.get());
         }
+
+        m_settingsRegistryOriginTracker = AZStd::make_unique<SettingsRegistryOriginTracker>(*m_settingsRegistry);
 
         // Add the Command Line arguments into the SettingsRegistry
         SettingsRegistryMergeUtils::StoreCommandLineToRegistry(*m_settingsRegistry, m_commandLine);

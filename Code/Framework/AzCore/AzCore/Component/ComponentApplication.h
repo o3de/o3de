@@ -25,6 +25,7 @@
 #include <AzCore/Settings/CommandLine.h>
 #include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/Settings/SettingsRegistryConsoleUtils.h>
+#include <AzCore/Settings/SettingsRegistryOriginTracker.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/std/string/conversions.h>
@@ -358,6 +359,7 @@ namespace AZ
         AZStd::unique_ptr<ModuleManager>            m_moduleManager;
         AZStd::unique_ptr<NameDictionary>           m_nameDictionary;
         AZStd::unique_ptr<SettingsRegistryInterface> m_settingsRegistry;
+        AZStd::unique_ptr<SettingsRegistryOriginTracker> m_settingsRegistryOriginTracker;
         AZStd::unique_ptr<AZ::IConsole>             m_console;
         EntityAddedEvent                            m_entityAddedEvent;
         EntityRemovedEvent                          m_entityRemovedEvent;

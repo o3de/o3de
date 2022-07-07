@@ -583,6 +583,8 @@ set(FILES
     Settings/SettingsRegistryImpl.h
     Settings/SettingsRegistryMergeUtils.cpp
     Settings/SettingsRegistryMergeUtils.h
+    Settings/SettingsRegistryOriginTracker.cpp
+    Settings/SettingsRegistryOriginTracker.h
     Settings/SettingsRegistryScriptUtils.cpp
     Settings/SettingsRegistryScriptUtils.h
     Settings/SettingsRegistryVisitorUtils.cpp

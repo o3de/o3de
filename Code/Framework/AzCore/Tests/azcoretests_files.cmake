@@ -85,6 +85,7 @@ set(FILES
     Settings/SettingsRegistryTests.cpp
     Settings/SettingsRegistryConsoleUtilsTests.cpp
     Settings/SettingsRegistryMergeUtilsTests.cpp
+    Settings/SettingsRegistryOriginTrackerTests.cpp
     Settings/SettingsRegistryScriptUtilsTests.cpp
     Settings/SettingsRegistryVisitorUtilsTests.cpp
     Streamer/BlockCacheTests.cpp
