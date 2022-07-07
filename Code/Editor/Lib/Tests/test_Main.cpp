@@ -25,16 +25,12 @@ protected:
     {
         ::UnitTest::TraceBusHook::SetupEnvironment();
 
-        AZ::Environment::Create(nullptr);
         AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
-        AttachEditorAZEnvironment(AZ::Environment::GetInstance());
     }
 
     void TeardownEnvironment() override
     {
-        DetachEditorAZEnvironment();
         AZ::AllocatorInstance<AZ::SystemAllocator>::Destroy();
-        AZ::Environment::Destroy();
 
         ::UnitTest::TraceBusHook::TeardownEnvironment();
     }
