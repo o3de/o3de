@@ -22,6 +22,7 @@
 #include <AzToolsFramework/Prefab/PrefabPublicNotificationBus.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
 #include <Prefab/ProceduralPrefabSystemComponentInterface.h>
+#include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipInterface.h>
 
 namespace AzToolsFramework
 {

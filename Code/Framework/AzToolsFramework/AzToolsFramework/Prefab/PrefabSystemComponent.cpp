@@ -184,7 +184,21 @@ namespace AzToolsFramework
         void PrefabSystemComponent::SourceFileRemoved(
             AZStd::string relativePath, AZStd::string scanFolder, [[maybe_unused]] AZ::Uuid sourceUUID)
         {
-           //TODO notify user when file is removed for next steps
+            auto found = m_templateFilePathToIdMap.find(relativePath.c_str());
+            if (found != m_templateFilePathToIdMap.end())
+            {
+                RemoveTemplate(found->second);
+
+                PrefabEditorEntityOwnershipInterface* prefabEditorEntityOwnershipInterface =
+                    AZ::Interface<PrefabEditorEntityOwnershipInterface>::Get();
+
+                if (prefabEditorEntityOwnershipInterface != nullptr)
+                {
+                     TemplateId rootTemplateId = prefabEditorEntityOwnershipInterface->GetRootPrefabTemplateId();
+                     PropagateTemplateChanges(rootTemplateId);
+                }
+                
+            }
         }
 
         void PrefabSystemComponent::PropagateTemplateChanges(TemplateId templateId, InstanceOptionalConstReference instanceToExclude)
