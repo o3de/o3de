@@ -61,7 +61,7 @@ namespace EMStudio
         sceneDesc.m_nameId = AZ::Name("AnimViewport");
         m_scene = AZ::RPI::Scene::CreateScene(sceneDesc);
         m_scene->EnableAllFeatureProcessors();
-        // Disable the terrian feature processor as we don't need terrian in anim editor.
+        // Disable the terrain feature processor as we don't need terrian in anim editor.
         const AZ::Name terrainFeatureProcessor("TerrainFeatureProcessor");
         if (m_scene->GetFeatureProcessor(terrainFeatureProcessor))
         {
