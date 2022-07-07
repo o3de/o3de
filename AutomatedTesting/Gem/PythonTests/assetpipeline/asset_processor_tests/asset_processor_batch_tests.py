@@ -644,12 +644,8 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
 
     @pytest.mark.BAT
     @pytest.mark.assetpipeline
-    @pytest.mark.SUITE_sandbox
     def test_validateDirectPreloadDependency_Found(self, asset_processor, ap_setup_fixture, workspace):
         """
-        Sandboxed: GHI 8,365 - Update assets from .prefab to a different type that allows for preload cyclical
-        dependencies
-
         Tests processing an asset with a circular dependency and verifies that Asset Processor will return an error
         notifying the user about a circular dependency.
 
@@ -665,19 +661,19 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
 
         success, output = asset_processor.batch_process(capture_output=True, expect_failure=False)
         log = APOutputParser(output)
-        for _ in log.get_lines(-1, ["Preload circular dependency detected", "testc.prefab"]):
+        for _ in log.get_lines(-1, ["Preload circular dependency detected", "testb.auto_test_asset"]):
             error_line_found = True
+
+        if not error_line_found:
+            for line in output:
+                print(line)
 
         assert error_line_found, "The error could not be found in the newest run of the AP Batch log."
 
     @pytest.mark.BAT
     @pytest.mark.assetpipeline
-    @pytest.mark.SUITE_sandbox
     def test_validateNestedPreloadDependency_Found(self, asset_processor, ap_setup_fixture, workspace):
         """
-        Sandboxed: GHI 8,365 - Update assets from .prefab to a different type that allows for nested preload
-        dependencies
-
         Tests processing of a nested preload circular dependency and verifies that Asset Processor will return an error
         notifying the user about a circular dependency.
 
@@ -694,8 +690,13 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
 
         success, output = asset_processor.batch_process(capture_output=True, expect_failure=False)
         log = APOutputParser(output)
-        for _ in log.get_lines(-1, ["Preload circular dependency detected", "testa.prefab"]):
+        for _ in log.get_lines(-1, ["Preload circular dependency detected", "testa.auto_test_asset"]):
             error_line_found = True
+
+        if not error_line_found:
+            for line in output:
+                print(line)
+
 
         assert error_line_found, "The error could not be found in the newest run of the AP Batch log."
 

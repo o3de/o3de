@@ -305,6 +305,7 @@ namespace GraphCanvas
 
     void GraphCanvasTreeModel::ChildAboutToBeAdded(GraphCanvasTreeItem* parentItem, int position)
     {
+        layoutAboutToBeChanged();
         if (position < 0)
         {
             position = parentItem->GetChildCount() - 1;
@@ -317,6 +318,7 @@ namespace GraphCanvas
     {
         endInsertRows();
         Q_EMIT(OnTreeItemAdded(itemAdded));
+        layoutChanged();
     }
 
     #include <StaticLib/GraphCanvas/Widgets/moc_GraphCanvasTreeModel.cpp>
