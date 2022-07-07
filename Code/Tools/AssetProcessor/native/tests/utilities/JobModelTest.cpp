@@ -168,7 +168,7 @@ void JobModelUnitTests::SetUp()
         m_data.reset(new StaticData());
 
         //! Setup temporary database
-        m_data->m_temporaryDatabaseDir = QDir(m_data->m_databaseDir.path());
+        m_data->m_temporaryDatabaseDir = QDir(m_data->m_temporaryDir.path());
         QString canonicalTempDirPath = AssetUtilities::NormalizeDirectoryPath(m_data->m_temporaryDatabaseDir.canonicalPath());
         m_data->m_temporaryDatabaseDir = QDir(canonicalTempDirPath);
         m_data->m_temporaryDatabasePath = m_data->m_temporaryDatabaseDir.absoluteFilePath("test_database.sqlite").toUtf8().data();

@@ -55,7 +55,7 @@ public:
 protected:
     struct StaticData
     {
-        QTemporaryDir m_databaseDir;
+        QTemporaryDir m_temporaryDir;
         QDir m_temporaryDatabaseDir;
         AZStd::string m_temporaryDatabasePath;
 
