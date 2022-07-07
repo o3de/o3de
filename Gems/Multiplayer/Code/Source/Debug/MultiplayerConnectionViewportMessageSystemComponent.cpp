@@ -18,7 +18,7 @@
 
 namespace Multiplayer
 {
-    const float defaultConnectionMessageFontSize = 0.7f;
+    constexpr float defaultConnectionMessageFontSize = 0.7f;
     AZ_CVAR_SCOPED(float, editorsv_connectionMessageFontSize, defaultConnectionMessageFontSize, nullptr, AZ::ConsoleFunctorFlags::Null, 
         "The font size used for displaying updates on screen while the multiplayer editor is connecting to the server.");
     

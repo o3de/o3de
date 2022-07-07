@@ -34,22 +34,6 @@ namespace AzNetworking
         , Connecting
     );
 
-    inline const char* GetEnumString(ConnectionState connectionState)
-    {
-        switch(connectionState)
-        {
-        case ConnectionState::Disconnected:
-            return "Disconnected";
-        case ConnectionState::Disconnecting:
-            return "Disconnecting";
-        case ConnectionState::Connected:
-            return "Connected";
-        case ConnectionState::Connecting:
-            return "Connecting";
-        }
-        return "INVALID";
-    }
-
     AZ_ENUM_CLASS(DisconnectReason
         , None
         , Unknown
