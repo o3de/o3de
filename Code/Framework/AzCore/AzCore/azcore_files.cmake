@@ -516,6 +516,8 @@ set(FILES
     Serialization/DataPatchBus.h
     Serialization/DataPatchUpgradeManager.h
     Serialization/DataPatchUpgradeManager.cpp
+    Serialization/Json/AnySerializer.h
+    Serialization/Json/AnySerializer.cpp
     Serialization/Json/ArraySerializer.h
     Serialization/Json/ArraySerializer.cpp
     Serialization/Json/BaseJsonSerializer.h

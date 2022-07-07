@@ -12,7 +12,6 @@
 namespace AZ
 {
     AZ_CLASS_ALLOCATOR_IMPL(JsonUnsupportedTypesSerializer, SystemAllocator, 0);
-    AZ_CLASS_ALLOCATOR_IMPL(JsonAnySerializer, SystemAllocator, 0);
     AZ_CLASS_ALLOCATOR_IMPL(JsonVariantSerializer, SystemAllocator, 0);
     AZ_CLASS_ALLOCATOR_IMPL(JsonOptionalSerializer, SystemAllocator, 0);
     AZ_CLASS_ALLOCATOR_IMPL(JsonBitsetSerializer, SystemAllocator, 0);
@@ -29,13 +28,6 @@ namespace AZ
     {
         namespace JSR = JsonSerializationResult;
         return context.Report(JSR::Tasks::WriteValue, JSR::Outcomes::Invalid, GetMessage());
-    }
-
-    AZStd::string_view JsonAnySerializer::GetMessage() const
-    {
-        return "The Json Serialization doesn't support AZStd::any by design. The Json Serialization attempts to minimize the use of $type, "
-               "in particular the guid version, but no way has yet been found to use AZStd::any without explicitly and always requiring "
-               "one.";
     }
 
     AZStd::string_view JsonVariantSerializer::GetMessage() const
