@@ -1871,12 +1871,13 @@ void MainWindow::BuildSourceAssetTreeContextMenu(QMenu& menu, const AssetProcess
     
     int intermediateCount = 0;
     int productCount = 0;
+    AZStd::string sourceName(sourceItemData->m_assetDbName);
     m_sharedDbConnection->QueryJobBySourceID(sourceItemData->m_sourceInfo.m_sourceID,
-        [&](AzToolsFramework::AssetDatabase::JobDatabaseEntry& jobEntry)
+        [&,sourceName](AzToolsFramework::AssetDatabase::JobDatabaseEntry& jobEntry)
     {
-        QAction* jobAction = jobMenu->addAction(tr("with key %1 for platform %2").arg(jobEntry.m_jobKey.c_str(), jobEntry.m_platform.c_str()), this, [&, jobEntry]()
+        QAction* jobAction = jobMenu->addAction(tr("with key %1 for platform %2").arg(jobEntry.m_jobKey.c_str(), jobEntry.m_platform.c_str()), this, [&, jobEntry, sourceName]()
         {
-            QModelIndex jobIndex = m_jobsModel->GetJobFromSourceAndJobInfo(sourceItemData->m_assetDbName, jobEntry.m_platform, jobEntry.m_jobKey);
+            QModelIndex jobIndex = m_jobsModel->GetJobFromSourceAndJobInfo(sourceName, jobEntry.m_platform, jobEntry.m_jobKey);
             SelectJobAndMakeVisible(jobIndex);
         });
         jobAction->setToolTip(tr("Show this job in the Jobs tab."));
