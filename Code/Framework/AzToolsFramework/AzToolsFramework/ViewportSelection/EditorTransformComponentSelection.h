@@ -36,6 +36,7 @@
 namespace AzToolsFramework
 {
     class ActionManagerInterface;
+    class MenuManagerInterface;
     class EditorVisibleEntityDataCacheInterface;
 
     //! Entity related data required by manipulators during action.
@@ -210,9 +211,6 @@ namespace AzToolsFramework
         void RegisterActions();
         void UnregisterActions();
 
-        // New ActionManager
-        void RegisterEditorActions();
-
         void BeginRecordManipulatorCommand();
         void EndRecordManipulatorCommand();
 
@@ -258,6 +256,7 @@ namespace AzToolsFramework
 
         // EditorEventsBus overrides ...
         void OnEscape() override;
+        void NotifyMainWindowInitialized(QMainWindow* mainWindow) override;
 
         // ToolsApplicationNotificationBus overrides ...
         void BeforeEntitySelectionChanged() override;
@@ -354,6 +353,7 @@ namespace AzToolsFramework
         bool m_viewportUiVisible = true; //!< Used to hide/show the viewport ui elements.
 
         ActionManagerInterface* m_actionManagerInterface = nullptr;
+        MenuManagerInterface* m_menuManagerInterface = nullptr;
     };
 
     //! Bundles viewport state that impacts how accents are added/removed in HandleAccents.

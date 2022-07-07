@@ -20,6 +20,7 @@
 #include <AzFramework/Viewport/ViewportScreen.h>
 #include <AzQtComponents/Components/Style.h>
 #include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
+#include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
 #include <AzToolsFramework/Commands/EntityManipulatorCommand.h>
 #include <AzToolsFramework/Commands/SelectionCommand.h>
 #include <AzToolsFramework/Editor/ActionManagerUtils.h>
@@ -46,6 +47,8 @@
 #include <QRect>
 
 static constexpr AZStd::string_view EditorMainWindowActionContextIdentifier = "o3de.context.editor.mainwindow";
+static constexpr AZStd::string_view EditMenuIdentifier = "o3de.menu.editor.edit";
+static constexpr AZStd::string_view EditModifyModesMenuIdentifier = "o3de.menu.editor.edit.modify.modes";
 
 namespace AzToolsFramework
 {
@@ -101,8 +104,12 @@ namespace AzToolsFramework
     static const char* const ManipulatorUndoRedoName = "Manipulator Adjustment";
     static const char* const LockSelectionTitle = "Lock Selection";
     static const char* const LockSelectionDesc = "Lock the selected entities so that they can't be selected in the viewport";
+    static const char* const UnlockSelectionTitle = "Unlock Selection";
+    static const char* const UnlockSelectionDesc = "Unlock the selected entities so that they can be selected in the viewport";
     static const char* const HideSelectionTitle = "Hide Selection";
     static const char* const HideSelectionDesc = "Hide the selected entities so that they don't appear in the viewport";
+    static const char* const ShowSelectionTitle = "Show Selection";
+    static const char* const ShowSelectionDesc = "Show the selected entities so that they appear in the viewport";
     static const char* const UnlockAllTitle = "Unlock All Entities";
     static const char* const UnlockAllDesc = "Unlock all entities the level";
     static const char* const ShowAllTitle = "Show All";
@@ -1041,7 +1048,9 @@ namespace AzToolsFramework
             AZ_Assert(
                 m_actionManagerInterface, "PrefabCould not get ActionManagerInterface on EditorTransformComponentSelection construction.");
 
-            RegisterEditorActions();
+            m_menuManagerInterface = AZ::Interface<MenuManagerInterface>::Get();
+            AZ_Assert(
+                m_menuManagerInterface, "PrefabCould not get MenuManagerInterface on EditorTransformComponentSelection construction.");
         }
         else
         {
@@ -2502,8 +2511,15 @@ namespace AzToolsFramework
         EditorMenuRequestBus::Broadcast(&EditorMenuRequests::RestoreEditMenuToDefault);
     }
 
-    void EditorTransformComponentSelection::RegisterEditorActions()
+    void EditorTransformComponentSelection::NotifyMainWindowInitialized([[maybe_unused]] QMainWindow* mainWindow)
     {
+        if (!IsNewActionManagerEnabled())
+        {
+            return;
+        }
+
+        m_menuManagerInterface->AddSeparatorToMenu(EditMenuIdentifier, 300);
+
         // Duplicate
         {
             AzToolsFramework::ActionProperties actionProperties;
@@ -2530,6 +2546,8 @@ namespace AzToolsFramework
                     // selection update handled in AfterEntitySelectionChanged
                 }
             );
+
+            m_menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.edit.duplicate", 400);
         }
 
         // Delete
@@ -2558,7 +2576,11 @@ namespace AzToolsFramework
                     m_pivotOverrideFrame.Reset();
                 }
             );
+
+            m_menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.edit.delete", 500);
         }
+
+        m_menuManagerInterface->AddSeparatorToMenu(EditMenuIdentifier, 600);
 
         // Select All
         {
@@ -2608,6 +2630,8 @@ namespace AzToolsFramework
                     RegenerateManipulators();
                 }
             );
+
+            m_menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.edit.selectAll", 700);
         }
 
         // Invert Selection
@@ -2665,7 +2689,11 @@ namespace AzToolsFramework
                     RegenerateManipulators();
                 }
             );
+
+            m_menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.edit.invertSelection", 800);
         }
+
+        m_menuManagerInterface->AddSeparatorToMenu(EditMenuIdentifier, 900);
 
         // Toggle Pivot Location
         {
@@ -2683,6 +2711,8 @@ namespace AzToolsFramework
                     ToggleCenterPivotSelection();
                 }
             );
+
+            m_menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.edit.togglePivot", 1000);
         }
 
         // Reset Entity Transform
@@ -2712,9 +2742,11 @@ namespace AzToolsFramework
                     }
                 }
             );
+
+            m_menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.edit.resetEntityTransform", 1100);
         }
 
-        // Toggle Pivot Location
+        // Reset Manipulator
         {
             AzToolsFramework::ActionProperties actionProperties;
             actionProperties.m_name = ResetManipulatorTitle;
@@ -2730,6 +2762,8 @@ namespace AzToolsFramework
                     DelegateClearManipulatorOverride();
                 }
             );
+
+            m_menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.edit.resetManipulator", 1200);
         }
 
         const auto showHide = [this](const bool show)
@@ -2754,6 +2788,24 @@ namespace AzToolsFramework
             RegenerateManipulators();
         };
 
+        // Show Selection
+        {
+            AzToolsFramework::ActionProperties actionProperties;
+            actionProperties.m_name = ShowSelectionTitle;
+            actionProperties.m_description = ShowSelectionDesc;
+            actionProperties.m_category = "Edit";
+
+            m_actionManagerInterface->RegisterAction(
+                EditorMainWindowActionContextIdentifier,
+                "o3de.action.edit.showSelection",
+                actionProperties,
+                [showHide]()
+                {
+                    showHide(true);
+                }
+            );
+        }
+
         // Hide Selection
         {
             AzToolsFramework::ActionProperties actionProperties;
@@ -2770,6 +2822,8 @@ namespace AzToolsFramework
                     showHide(false);
                 }
             );
+
+            m_menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.edit.hideSelection", 1300);
         }
 
         // Show All
@@ -2798,9 +2852,9 @@ namespace AzToolsFramework
                     );
                 }
             );
-        }
 
-        // Lock Selection
+            m_menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.edit.showAll", 1400);
+        }
 
         const auto lockUnlock = [this](const bool lock)
         {
@@ -2824,6 +2878,7 @@ namespace AzToolsFramework
             RegenerateManipulators();
         };
 
+        // Lock Selection
         {
             AzToolsFramework::ActionProperties actionProperties;
             actionProperties.m_name = LockSelectionTitle;
@@ -2837,6 +2892,26 @@ namespace AzToolsFramework
                 [lockUnlock]()
                 {
                     lockUnlock(true);
+                }
+            );
+
+            m_menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.edit.lockSelection", 1500);
+        }
+
+        // Unlock Selection
+        {
+            AzToolsFramework::ActionProperties actionProperties;
+            actionProperties.m_name = UnlockSelectionTitle;
+            actionProperties.m_description = UnlockSelectionDesc;
+            actionProperties.m_category = "Edit";
+
+            m_actionManagerInterface->RegisterAction(
+                EditorMainWindowActionContextIdentifier,
+                "o3de.action.edit.unlockSelection",
+                actionProperties,
+                [lockUnlock]()
+                {
+                    lockUnlock(false);
                 }
             );
         }
@@ -2867,7 +2942,11 @@ namespace AzToolsFramework
                     );
                 }
             );
+
+            auto outcome = m_menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.edit.unlockAllEntities", 1600);
         }
+
+        m_menuManagerInterface->AddSeparatorToMenu(EditMenuIdentifier, 1700);
 
         // Transform Mode - Move
         {
@@ -2892,6 +2971,8 @@ namespace AzToolsFramework
             );
 
             // TODO - Update when the transform mode changes.
+
+            m_menuManagerInterface->AddActionToMenu(EditModifyModesMenuIdentifier, "o3de.action.edit.transform.move", 100);
         }
 
         // Transform Mode - Rotate
@@ -2917,6 +2998,8 @@ namespace AzToolsFramework
             );
 
             // TODO - Update when the transform mode changes.
+
+            m_menuManagerInterface->AddActionToMenu(EditModifyModesMenuIdentifier, "o3de.action.edit.transform.rotate", 200);
         }
 
         // Transform Mode - Scale
@@ -2942,6 +3025,8 @@ namespace AzToolsFramework
             );
 
             // TODO - Update when the transform mode changes.
+
+            m_menuManagerInterface->AddActionToMenu(EditModifyModesMenuIdentifier, "o3de.action.edit.transform.scale", 300);
         }
     }
 

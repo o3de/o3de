@@ -1050,21 +1050,7 @@ void EditorActionsHandler::InitializeMenus()
     {
         m_menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.edit.undo", 100);
         m_menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.edit.redo", 200);
-        m_menuManagerInterface->AddSeparatorToMenu(EditMenuIdentifier, 300);
-        m_menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.edit.duplicate", 400);
-        m_menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.edit.delete", 500);
-        m_menuManagerInterface->AddSeparatorToMenu(EditMenuIdentifier, 600);
-        m_menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.edit.selectAll", 700);
-        m_menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.edit.invertSelection", 800);
-        m_menuManagerInterface->AddSeparatorToMenu(EditMenuIdentifier, 900);
-        m_menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.edit.togglePivot", 1000);
-        m_menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.edit.resetEntityTransform", 1100);
-        m_menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.edit.resetManipulator", 1200);
-        m_menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.edit.hideSelection", 1300);
-        m_menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.edit.showAll", 1400);
-        m_menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.edit.lockSelection", 1500);
-        m_menuManagerInterface->AddActionToMenu(EditMenuIdentifier, "o3de.action.edit.unlockAllEntities", 1600);
-        m_menuManagerInterface->AddSeparatorToMenu(EditMenuIdentifier, 1700);
+
         m_menuManagerInterface->AddSubMenuToMenu(EditMenuIdentifier, EditModifyMenuIdentifier, 1800);
         {
             m_menuManagerInterface->AddSubMenuToMenu(EditModifyMenuIdentifier, EditModifySnapMenuIdentifier, 100);
@@ -1073,11 +1059,6 @@ void EditorActionsHandler::InitializeMenus()
                 m_menuManagerInterface->AddActionToMenu(EditModifySnapMenuIdentifier, "o3de.action.edit.snap.gridSnapping", 200);
             }
             m_menuManagerInterface->AddSubMenuToMenu(EditModifyMenuIdentifier, EditModifyModesMenuIdentifier, 200);
-            {
-                m_menuManagerInterface->AddActionToMenu(EditModifySnapMenuIdentifier, "o3de.action.edit.transform.move", 100);
-                m_menuManagerInterface->AddActionToMenu(EditModifySnapMenuIdentifier, "o3de.action.edit.transform.rotate", 200);
-                m_menuManagerInterface->AddActionToMenu(EditModifySnapMenuIdentifier, "o3de.action.edit.transform.scale", 300);
-            }
         }
         m_menuManagerInterface->AddSeparatorToMenu(EditMenuIdentifier, 1900);
         m_menuManagerInterface->AddSubMenuToMenu(EditMenuIdentifier, EditSettingsMenuIdentifier, 2000);
