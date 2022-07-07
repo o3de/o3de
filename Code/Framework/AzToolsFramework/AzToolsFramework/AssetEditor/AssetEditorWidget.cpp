@@ -48,6 +48,7 @@ AZ_POP_DISABLE_WARNING
 
 #include <UI/PropertyEditor/PropertyRowWidget.hxx>
 #include <UI/PropertyEditor/ReflectedPropertyEditor.hxx>
+#include <UI/PropertyEditor/PropertyAssetCtrlBus.h>
 
 #include <AzFramework/DocumentPropertyEditor/ReflectionAdapter.h>
 #include <UI/DocumentPropertyEditor/DocumentPropertyEditor.h>
@@ -300,8 +301,11 @@ namespace AzToolsFramework
             AZ::SystemTickBus::Handler::BusDisconnect();
         }
 
-        void AssetEditorWidget::CreateAsset(AZ::Data::AssetType assetType)
+        void AssetEditorWidget::CreateAsset(AZ::Data::AssetType assetType, const AZ::EntityId& interestedEntityId, const AZ::ComponentId& interestedComponentId)
         {
+            m_waitingEntityId = interestedEntityId;
+            m_waitingComponentId = interestedComponentId;
+
             auto typeIter = AZStd::find_if(
                 m_genericAssetTypes.begin(),
                 m_genericAssetTypes.end(),
@@ -831,6 +835,13 @@ namespace AzToolsFramework
 
                 m_sourceAssetId = assetId;
             }
+
+            PropertyAssetCtrlRequestsBus::Broadcast(
+                &PropertyAssetCtrlRequests::OnExpectedCatalogAssetAdded,
+                m_sourceAssetId,
+                m_waitingEntityId,
+                m_waitingComponentId
+            );
         }
 
         void AssetEditorWidget::OnCatalogAssetRemoved(const AZ::Data::AssetId& /*assetId*/, const AZ::Data::AssetInfo& assetInfo)

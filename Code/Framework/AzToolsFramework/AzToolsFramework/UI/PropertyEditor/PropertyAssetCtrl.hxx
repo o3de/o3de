@@ -24,6 +24,7 @@
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/ToolsComponents/EditorAssetReference.h>
 #include <AzToolsFramework/AssetBrowser/AssetSelectionModel.h>
+#include <AzToolsFramework/UI/PropertyEditor/PropertyAssetCtrlBus.h>
 
 AZ_PUSH_DISABLE_WARNING(4244 4251, "-Wunknown-warning-option")
 #include <QCompleter>
@@ -56,6 +57,7 @@ namespace AzToolsFramework
         : public QWidget
         , private AssetSystemBus::Handler
         , private AzFramework::AssetCatalogEventBus::Handler
+        , private AzToolsFramework::PropertyAssetCtrlRequestsBus::Handler
     {
         Q_OBJECT
 
@@ -169,6 +171,9 @@ namespace AzToolsFramework
         bool m_showThumbnailDropDownButton = false;
         EditCallbackType* m_thumbnailCallback = nullptr;
 
+        AZ::EntityId m_entityId;
+        AZ::ComponentId m_componentId;
+
         // ! Default suffix used in the field's placeholder text when a default value is set.
         const char* m_DefaultSuffix = " (default)";
 
@@ -200,6 +205,11 @@ namespace AzToolsFramework
         //////////////////////////////////////////////////////////////////////////
 
         //////////////////////////////////////////////////////////////////////////
+        // AzFramework::PropertyAssetCtrlRequestsBus::Handler interface overrides...
+        void OnExpectedCatalogAssetAdded(
+            const AZ::Data::AssetId& assetId, const AZ::EntityId& entityId, const AZ::ComponentId& componentId) override;
+        
+        //////////////////////////////////////////////////////////////////////////
         // AzFramework::AssetCatalogEventBus::Handler interface overrides...
         void OnCatalogAssetAdded(const AZ::Data::AssetId& assetId) override;
         void OnCatalogAssetChanged(const AZ::Data::AssetId& assetId) override;
@@ -221,6 +231,7 @@ namespace AzToolsFramework
         void SetBrowseButtonVisible(bool visible);
         void SetClearButtonEnabled(bool enable);
         void SetClearButtonVisible(bool visible);
+        void SetContainingEntityAndComponentIds(const AZ::EntityId& entityId, const AZ::ComponentId& componentId);
 
         // Otherwise source asset name will shown.
         void SetShowProductAssetName(bool enable);

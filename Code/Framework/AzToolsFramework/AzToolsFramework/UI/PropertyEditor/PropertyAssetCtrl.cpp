@@ -49,6 +49,7 @@ AZ_POP_DISABLE_WARNING
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/UI/Logging/GenericLogPanel.h>
 #include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
+#include <AzToolsFramework/UI/PropertyEditor/PropertyAssetCtrlBus.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/Thumbnails/ThumbnailWidget.h>
 #include <AzToolsFramework/Thumbnails/ThumbnailerBus.h>
@@ -119,6 +120,8 @@ namespace AzToolsFramework
         setContextMenuPolicy(Qt::CustomContextMenu);
         connect(this, SIGNAL(customContextMenuRequested(const QPoint&)),
             this, SLOT(ShowContextMenu(const QPoint&)));
+
+        AzToolsFramework::PropertyAssetCtrlRequestsBus::Handler::BusConnect();
     }
 
     void PropertyAssetCtrl::ConfigureAutocompleter()
@@ -639,26 +642,30 @@ namespace AzToolsFramework
         }
     }
 
+    void PropertyAssetCtrl::OnExpectedCatalogAssetAdded(
+        const AZ::Data::AssetId& assetId,
+        const AZ::EntityId& entityId,
+        const AZ::ComponentId& componentId)
+    {
+        if (m_entityId != entityId || m_componentId != componentId)
+        {
+            return;
+        }
+
+        AZ::Data::AssetInfo assetInfo;
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetInfo, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetInfoById, assetId);
+
+        if (assetInfo.m_assetType == GetCurrentAssetType())
+        {
+            SetSelectedAssetID(assetId);
+        }
+    }
+
     void PropertyAssetCtrl::OnCatalogAssetAdded(const AZ::Data::AssetId& assetId)
     {
         if (GetCurrentAssetID() == assetId)
         {
             UpdateAssetDisplay();
-        }
-        else if (!m_selectedAssetID.IsValid())
-        {
-            // If we get here without a valid assetId, it means the user has pressed the create button and we're waiting for an asset to be created.
-            // Use it if it's of the correct type.
-            AzFramework::AssetCatalogEventBus::Handler::BusDisconnect();
-
-            AZ::Data::AssetInfo assetInfo;
-            AZ::Data::AssetCatalogRequestBus::BroadcastResult(
-                assetInfo, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetInfoById, assetId);
-
-            if (assetInfo.m_assetType == GetCurrentAssetType())
-            {
-                SetSelectedAssetID(assetId);
-            }
         }
     }
 
@@ -759,8 +766,8 @@ namespace AzToolsFramework
 
     PropertyAssetCtrl::~PropertyAssetCtrl()
     {
+        AzToolsFramework::PropertyAssetCtrlRequestsBus::Handler::BusDisconnect();
         AssetSystemBus::Handler::BusDisconnect();
-        AzFramework::AssetCatalogEventBus::Handler::BusDisconnect();
     }
 
     void PropertyAssetCtrl::OnEditButtonClicked()
@@ -785,8 +792,7 @@ namespace AzToolsFramework
                     if (!assetID.IsValid())
                     {
                         // No Asset Id selected - Open editor and create new asset for them
-                        AssetEditor::AssetEditorRequestsBus::Broadcast(&AssetEditor::AssetEditorRequests::CreateNewAsset, GetCurrentAssetType());
-                        AzFramework::AssetCatalogEventBus::Handler::BusConnect();
+                        AssetEditor::AssetEditorRequestsBus::Broadcast(&AssetEditor::AssetEditorRequests::CreateNewAsset, GetCurrentAssetType(), m_entityId, m_componentId);
                     }
                     else
                     {
@@ -1269,6 +1275,12 @@ namespace AzToolsFramework
         SetClearButtonEnabled(visible);
     }
 
+    void PropertyAssetCtrl::SetContainingEntityAndComponentIds(const AZ::EntityId& entityId, const AZ::ComponentId& componentId)
+    {
+        m_entityId = entityId;
+        m_componentId = componentId;
+    }
+
     void PropertyAssetCtrl::SetShowProductAssetName(bool enable)
     {
         m_showProductAssetName = enable;
@@ -1627,9 +1639,33 @@ namespace AzToolsFramework
         GUI->SetEditNotifyTarget(node->GetParent()->GetInstance(0));
 
         GUI->blockSignals(false);
+
+        // Dig out the ComponentId and the owning EntityId to use to identify this control.
+        InstanceDataNode* componentNode = node;
+
+        while (componentNode->GetParent())
+        {
+            componentNode = componentNode->GetParent();
+        }
+
+        AZ::SerializeContext* serializeContext = nullptr;
+        EBUS_EVENT_RESULT(serializeContext, AZ::ComponentApplicationBus, GetSerializeContext);
+
+        if (serializeContext)
+        {
+            AZ::Component* componentInstance =
+                serializeContext->Cast<AZ::Component*>(componentNode->GetInstance(0), componentNode->GetClassMetadata()->m_typeId);
+
+            if (componentInstance)
+            {
+                GUI->SetContainingEntityAndComponentIds(componentInstance->GetEntityId(), componentInstance->GetId());
+            }
+        }
+
         return false;
     }
 
+    
     bool AssetPropertyHandlerDefault::ReadValuesIntoGUI(size_t index, PropertyAssetCtrl* GUI, const property_t& instance, InstanceDataNode* node)
     {
         return ReadValuesIntoGUIInternal(index, GUI, instance, node);
