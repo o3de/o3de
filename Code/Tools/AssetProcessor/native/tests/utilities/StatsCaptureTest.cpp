@@ -196,5 +196,26 @@ TEST_F(StatsCaptureOutputTest, StatsCaptureTest_Sanity)
     EXPECT_TRUE(foundFoo2) << "The expected CreateJobs.foo2.mybuilder2 did not appear in the output";
 }
 
+// If BeginCaptureStat was called for a certain statName, EndCaptureStat returns with a AZStd::optional containing just-measured duration as
+// its value. If BeginCaptureStat was not called for a certain statName, EndCaptureStat returns with a AZStd::optional without a value.
+TEST_F(StatsCaptureOutputTest, StatsCaptureTest_ReturnsLastDuration)
+{
+    AssetProcessor::StatsCapture::BeginCaptureStat("O3");
+    auto o3Result = AssetProcessor::StatsCapture::EndCaptureStat("O3");
+    auto deResult = AssetProcessor::StatsCapture::EndCaptureStat("DE");
+    EXPECT_TRUE(o3Result.has_value());
+    EXPECT_FALSE(deResult.has_value());
 }
+
+// Stat does not exist in asset database if EndCaptureStat persistToDb param is not specified or is false, and exist in asset database if
+// persistToDb param is true.
+TEST_F(StatsCaptureOutputTest, StatsCaptureTest_PersistToDb)
+{
+    AssetProcessor::StatsCapture::BeginCaptureStat("O3");
+    AssetProcessor::StatsCapture::EndCaptureStat("O3");
+
+    AssetProcessor::StatsCapture::g
+}
+
+} // namespace AssetProcessor
 

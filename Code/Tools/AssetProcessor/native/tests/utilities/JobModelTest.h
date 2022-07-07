@@ -10,6 +10,7 @@
 
 #include <native/resourcecompiler/JobsModel.h>
 #include <native/tests/AssetProcessorTest.h>
+#include <AzToolsFramework/API/AssetDatabaseBus.h>
 #include <QCoreApplication>
 
 class UnitTestJobModel 
@@ -25,6 +26,12 @@ public:
     friend class JobModelUnitTests;
 };
 
+class JobModelTestMockDatabaseLocationListener : public AzToolsFramework::AssetDatabase::AssetDatabaseRequests::Bus::Handler
+{
+public:
+    MOCK_METHOD1(GetAssetDatabaseLocation, bool(AZStd::string&));
+};
+
 class JobModelUnitTests
     : public AssetProcessor::AssetProcessorTest
 {
@@ -35,5 +42,14 @@ public:
     void VerifyModel();
 
     UnitTestJobModel* m_unitTestJobModel;
+
+protected:
+    struct StaticData
+    {
+        testing::NiceMock<JobModelTestMockDatabaseLocationListener> m_databaseLocationListener;
+        AssetProcessor::AssetDatabaseConnection m_connection;
+    };
+    AZStd::unique_ptr<StaticData> m_data;
+    void PopulateDatabaseTestData();
 };
 

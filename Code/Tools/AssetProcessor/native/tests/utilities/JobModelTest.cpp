@@ -7,6 +7,7 @@
  */
 
 #include <native/tests/utilities/JobModelTest.h>
+#include <AzCore/std/string/string.h>
 
 TEST_F(JobModelUnitTests, Test_RemoveMiddleJob)
 {
@@ -130,9 +131,24 @@ TEST_F(JobModelUnitTests, Test_RemoveAllJobsBySource)
     }
 }
 
+TEST_F(JobModelUnitTests, Test_PopulateJobsFromDatabase)
+{
+
+}
+
 void JobModelUnitTests::SetUp()
 {
     AssetProcessorTest::SetUp();
+
+    {
+        //! Setup Asset Database connection
+        using namespace testing;
+        m_data.reset(new StaticData());
+        m_data->m_databaseLocationListener.BusConnect();
+        ON_CALL(m_data->m_databaseLocationListener, GetAssetDatabaseLocation(_))
+            .WillByDefault(DoAll(SetArgReferee<0>(":memory:"), Return(true)));
+        m_data->m_connection.ClearData();
+    }
 
     m_unitTestJobModel = new UnitTestJobModel();
     AssetProcessor::CachedJobInfo* jobInfo1 = new AssetProcessor::CachedJobInfo();
@@ -183,6 +199,9 @@ void JobModelUnitTests::TearDown()
 {
     delete m_unitTestJobModel;
 
+    m_data->m_databaseLocationListener.BusDisconnect();
+    m_data.reset();
+
     AssetProcessorTest::TearDown();
 }
 
@@ -206,5 +225,39 @@ void JobModelUnitTests::VerifyModel()
         int expectedIndex = m_unitTestJobModel->m_cachedJobsLookup[key];
         ASSERT_LT(expectedIndex, m_unitTestJobModel->m_cachedJobs.size());
         ASSERT_EQ(m_unitTestJobModel->m_cachedJobs[expectedIndex]->m_elementId, key);
+    }
+}
+
+void JobModelUnitTests::PopulateDatabaseTestData()
+{
+    using namespace AzToolsFramework::AssetDatabase;
+    ScanFolderDatabaseEntry scanFolderEntry;
+    SourceDatabaseEntry sourceEntry;
+    const AZStd::string sourceName{ "theFile.fbx" };
+    AZStd::vector<JobDatabaseEntry> jobEntries;
+    StatDatabaseEntry statEntry;
+
+    scanFolderEntry = { "c:/O3DE/dev", "dev", "rootportkey" };
+    ASSERT_TRUE(m_data->m_connection.SetScanFolder(scanFolderEntry));
+    sourceEntry = { scanFolderEntry.m_scanFolderID, sourceName.c_str(), AZ::Uuid::CreateRandom(), "AFPAFPAFP1" };
+    ASSERT_TRUE(m_data->m_connection.SetSource(sourceEntry));
+
+    jobEntries.emplace_back(
+        sourceEntry.m_sourceID, "jobKey1", 123, "pc", AZ::Uuid::CreateRandom(), AzToolsFramework::AssetSystem::JobStatus::Completed, 1);
+    jobEntries.emplace_back(
+        sourceEntry.m_sourceID, "jobKey2", 456, "linux", AZ::Uuid::CreateRandom(), AzToolsFramework::AssetSystem::JobStatus::Failed, 2);
+    jobEntries.emplace_back(
+        sourceEntry.m_sourceID, "jobKey3", 789, "mac", AZ::Uuid::CreateRandom(), AzToolsFramework::AssetSystem::JobStatus::Completed, 3);
+    for (auto& jobEntry : jobEntries)
+    {
+        ASSERT_TRUE(m_data->m_connection.SetJob(jobEntry));
+    }
+
+    for (const auto& jobEntry : jobEntries)
+    {
+        statEntry = { "ProcessJobs," + sourceName + "," + jobEntry.m_jobKey + "," + jobEntry.m_platform,
+                      aznumeric_cast<AZ::s64>(jobEntry.m_fingerprint),
+                      aznumeric_cast<AZ::s64>(jobEntry.m_jobRunKey) };
+        ASSERT_TRUE(m_data->m_connection.ReplaceStat(statEntry));
     }
 }
