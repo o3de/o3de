@@ -133,7 +133,30 @@ TEST_F(JobModelUnitTests, Test_RemoveAllJobsBySource)
 
 TEST_F(JobModelUnitTests, Test_PopulateJobsFromDatabase)
 {
+    VerifyModel(); // verify up front for sanity.
 
+    CreateDatabaseTestData();
+    m_unitTestJobModel->PopulateJobsFromDatabase();
+
+    for (const auto& jobEntry : m_data->m_jobEntries)
+    {
+        AssetProcessor::QueueElementID elementId(m_data->m_sourceName.c_str(), jobEntry.m_platform.c_str(), jobEntry.m_jobKey.c_str());
+        auto iter = m_unitTestJobModel->m_cachedJobsLookup.find(elementId);
+        ASSERT_NE(iter, m_unitTestJobModel->m_cachedJobsLookup.end());
+
+        //! expect the three jobs from database are populated into m_unitTestJobModel
+        EXPECT_EQ(m_unitTestJobModel->m_cachedJobs.at(iter.value())->m_elementId, elementId);
+
+        //! and that they have a valid m_processDuration, which is set to be equivalent to jobEntry.m_fingerprint
+        EXPECT_EQ(
+            m_unitTestJobModel->m_cachedJobs.at(iter.value())->m_processDuration.msecsSinceStartOfDay(),
+            aznumeric_cast<int>(jobEntry.m_fingerprint));
+    }
+
+    // expect one AZ_Warning emitted, because we have one stat entry in the database that has 5 tokens.
+    m_errorAbsorber->ExpectWarnings(1);
+
+    VerifyModel();
 }
 
 void JobModelUnitTests::SetUp()
@@ -141,12 +164,23 @@ void JobModelUnitTests::SetUp()
     AssetProcessorTest::SetUp();
 
     {
-        //! Setup Asset Database connection
         using namespace testing;
         m_data.reset(new StaticData());
+
+        //! Setup temporary database
+        m_data->m_temporaryDatabaseDir = QDir(m_data->m_databaseDir.path());
+        QString canonicalTempDirPath = AssetUtilities::NormalizeDirectoryPath(m_data->m_temporaryDatabaseDir.canonicalPath());
+        m_data->m_temporaryDatabaseDir = QDir(canonicalTempDirPath);
+        m_data->m_temporaryDatabasePath = m_data->m_temporaryDatabaseDir.absoluteFilePath("test_database.sqlite").toUtf8().data();
+
+        //! Setup Asset Database connection.
+        //! There will be two database connection: one for CreateDatabaseTestData, and one inside UnitTestJobModel::PopulateJobsFromDatabase.
+        //! In-memory databases can have only a single connection, so we need a file-backed SQLite database to serve the needs.
         m_data->m_databaseLocationListener.BusConnect();
         ON_CALL(m_data->m_databaseLocationListener, GetAssetDatabaseLocation(_))
-            .WillByDefault(DoAll(SetArgReferee<0>(":memory:"), Return(true)));
+            .WillByDefault(DoAll(
+                SetArgReferee<0>(m_data->m_temporaryDatabasePath.c_str()),
+                Return(true)));
         m_data->m_connection.ClearData();
     }
 
@@ -228,36 +262,43 @@ void JobModelUnitTests::VerifyModel()
     }
 }
 
-void JobModelUnitTests::PopulateDatabaseTestData()
+void JobModelUnitTests::CreateDatabaseTestData()
 {
+    //! This method puts jobs and ProcessJob metrics into the database.
+
     using namespace AzToolsFramework::AssetDatabase;
     ScanFolderDatabaseEntry scanFolderEntry;
     SourceDatabaseEntry sourceEntry;
-    const AZStd::string sourceName{ "theFile.fbx" };
-    AZStd::vector<JobDatabaseEntry> jobEntries;
     StatDatabaseEntry statEntry;
 
     scanFolderEntry = { "c:/O3DE/dev", "dev", "rootportkey" };
     ASSERT_TRUE(m_data->m_connection.SetScanFolder(scanFolderEntry));
-    sourceEntry = { scanFolderEntry.m_scanFolderID, sourceName.c_str(), AZ::Uuid::CreateRandom(), "AFPAFPAFP1" };
+    sourceEntry = { scanFolderEntry.m_scanFolderID, m_data->m_sourceName.c_str(), AZ::Uuid::CreateRandom(), "AFPAFPAFP1" };
     ASSERT_TRUE(m_data->m_connection.SetSource(sourceEntry));
 
-    jobEntries.emplace_back(
+    //! Insert job entries
+    m_data->m_jobEntries.clear();
+    m_data->m_jobEntries.emplace_back(
         sourceEntry.m_sourceID, "jobKey1", 123, "pc", AZ::Uuid::CreateRandom(), AzToolsFramework::AssetSystem::JobStatus::Completed, 1);
-    jobEntries.emplace_back(
+    m_data->m_jobEntries.emplace_back(
         sourceEntry.m_sourceID, "jobKey2", 456, "linux", AZ::Uuid::CreateRandom(), AzToolsFramework::AssetSystem::JobStatus::Failed, 2);
-    jobEntries.emplace_back(
+    m_data->m_jobEntries.emplace_back(
         sourceEntry.m_sourceID, "jobKey3", 789, "mac", AZ::Uuid::CreateRandom(), AzToolsFramework::AssetSystem::JobStatus::Completed, 3);
-    for (auto& jobEntry : jobEntries)
+    for (auto& jobEntry : m_data->m_jobEntries)
     {
         ASSERT_TRUE(m_data->m_connection.SetJob(jobEntry));
     }
 
-    for (const auto& jobEntry : jobEntries)
+    //! Insert valid stat entries, one per job
+    for (const auto& jobEntry : m_data->m_jobEntries)
     {
-        statEntry = { "ProcessJobs," + sourceName + "," + jobEntry.m_jobKey + "," + jobEntry.m_platform,
-                      aznumeric_cast<AZ::s64>(jobEntry.m_fingerprint),
-                      aznumeric_cast<AZ::s64>(jobEntry.m_jobRunKey) };
+        statEntry = { "ProcessJob," + m_data->m_sourceName + "," + jobEntry.m_jobKey + "," + jobEntry.m_platform /* StatName */,
+                      aznumeric_cast<AZ::s64>(jobEntry.m_fingerprint) /* StatValue */,
+                      aznumeric_cast<AZ::s64>(jobEntry.m_jobRunKey) /* LastLogTime */ };
         ASSERT_TRUE(m_data->m_connection.ReplaceStat(statEntry));
     }
+
+    //! Insert an invalid stat entry (5 tokens)
+    statEntry = { "ProcessJob,apple,banana,carrot,dog", 123, 456 };
+    ASSERT_TRUE(m_data->m_connection.ReplaceStat(statEntry));
 }
