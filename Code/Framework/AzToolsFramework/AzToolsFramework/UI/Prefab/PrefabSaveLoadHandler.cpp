@@ -96,6 +96,13 @@ namespace AzToolsFramework
                 return;
             }
 
+            m_instanceEntityMapperInterface = AZ::Interface<InstanceEntityMapperInterface>::Get();
+            if (m_instanceEntityMapperInterface == nullptr)
+            {
+                AZ_Assert(false, "InstanceEntityMapperInterface - could not get InstanceEntityMapperInterface on construction.");
+                return;
+            }
+
             AssetBrowser::AssetBrowserSourceDropBus::Handler::BusConnect(s_prefabFileExtension);
         }
 
@@ -153,10 +160,7 @@ namespace AzToolsFramework
 
         void PrefabSaveHandler::ExecuteSavePrefabDialog(AZ::EntityId entityId)
         {
-            auto instanceEntityMapper = AZ::Interface<InstanceEntityMapperInterface>::Get();
-            AZ_Assert(instanceEntityMapper, "Prefab - PrefabSaveHandler - could not get InstanceEntityMapperInterface when saving prefab.");
-
-            if (const InstanceOptionalReference instance = instanceEntityMapper->FindOwningInstance(entityId); instance.has_value())
+            if (const InstanceOptionalReference instance = m_instanceEntityMapperInterface->FindOwningInstance(entityId); instance.has_value())
             {
                 ExecuteSavePrefabDialog(instance->get().GetTemplateId(), true);
             }
