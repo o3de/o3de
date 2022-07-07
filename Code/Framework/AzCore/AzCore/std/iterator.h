@@ -20,7 +20,7 @@
 
 namespace AZStd
 {
-    // Everything unless specified is based on C++ standard 20 (lib.iterators).
+    // Everything unless specified is based on C++ 20 (lib.iterators).
 
     /// Identifying tag for input iterators.
     using input_iterator_tag = std::input_iterator_tag;
@@ -35,6 +35,11 @@ namespace AZStd
     /// Identifying tag for contagious iterators
     struct contiguous_iterator_tag
         : public random_access_iterator_tag {};
+
+
+    /// Add the default_sentinel struct from C++20
+    struct default_sentinel_t {};
+    inline constexpr default_sentinel_t default_sentinel{};
 }
 
 namespace AZStd::Internal
@@ -125,7 +130,7 @@ namespace AZStd
     using std::front_inserter;
     using std::insert_iterator;
     using std::inserter;
-  
+
     enum iterator_status_flag
     {
         isf_none = 0x00,     ///< Iterator is invalid.
@@ -153,7 +158,7 @@ namespace AZStd
     // Both functions are constexpr as of C++17
     using std::next;
     using std::prev;
-    
+
     //////////////////////////////////////////////////////////////////////////
 
     //////////////////////////////////////////////////////////////////////////
@@ -175,7 +180,7 @@ namespace AZStd
     using std::size;
     using std::empty;
     using std::data;
-   
+
     namespace Debug
     {
         // Keep macros around for backwards compatibility

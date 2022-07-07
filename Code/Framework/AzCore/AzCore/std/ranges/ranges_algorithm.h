@@ -30,7 +30,7 @@ namespace AZStd::ranges
         template<class T2, class = enable_if_t<convertible_to<T, T2>>>
         constexpr operator min_max_result<T2>()&&
         {
-            return { std::move(min), std::move(max) };
+            return { AZStd::move(min), AZStd::move(max) };
         }
     };
     template<class T>
@@ -38,6 +38,25 @@ namespace AZStd::ranges
 
     template<class I>
     using minmax_element_result = min_max_result<I>;
+
+    template<class I, class F>
+    struct in_fun_result
+    {
+        AZ_NO_UNIQUE_ADDRESS I in;
+        AZ_NO_UNIQUE_ADDRESS F fun;
+
+        template<class I2, class F2, class = enable_if_t<convertible_to<const I&, I2>&& convertible_to<const F&, F2>>>
+        constexpr operator in_fun_result<I2, F2>() const&
+        {
+            return { in, fun };
+        }
+
+        template<class I2, class F2, enable_if_t<convertible_to<I, I2>&& convertible_to<F, F2>>>
+        constexpr operator in_fun_result<I2, F2>() &&
+        {
+            return { AZStd::move(in), AZStd::move(fun) };
+        }
+    };
 
     namespace Internal
     {
@@ -1058,4 +1077,145 @@ namespace AZStd::ranges
     {
         inline constexpr Internal::any_of_fn any_of;
     } // namespace customization_point_object
+
+
+    // ranges::for_each
+    // ranges::for_each_n
+    template<class I, class F>
+    using for_each_result = in_fun_result<I, F>;
+    template<class I, class F>
+    using for_each_n_result = in_fun_result<I, F>;
+
+    namespace Internal
+    {
+        struct for_each_fn
+        {
+            template<class I, class S, class Proj = identity, class Fun,
+                class = enable_if_t<conjunction_v<
+                bool_constant<input_iterator<I>>,
+                bool_constant<sentinel_for<S, I>>,
+                bool_constant<indirectly_unary_invocable<Fun, projected<I, Proj>>>
+                >> >
+            constexpr for_each_result<I, Fun> operator()(I first, S last, Fun f, Proj proj = {}) const
+            {
+                for (; first != last; ++first)
+                {
+                    AZStd::invoke(f, AZStd::invoke(proj, *first));
+                }
+
+                return { AZStd::move(first), AZStd::move(f) };
+            }
+
+            template<class R, class Proj = identity, class Fun,
+                class = enable_if_t<conjunction_v<
+                bool_constant<input_range<R>>,
+                bool_constant<indirectly_unary_invocable<Fun, projected<iterator_t<R>, Proj>>>
+                >> >
+            constexpr for_each_result<borrowed_iterator_t<R>, Fun> operator()(R&& r, Fun f, Proj proj = {}) const
+            {
+                return operator()(AZStd::ranges::begin(r), AZStd::ranges::end(r), AZStd::move(f), AZStd::move(proj));
+            }
+        };
+
+        struct for_each_n_fn
+        {
+            template<class I, class Proj = identity, class Fun,
+                class = enable_if_t<conjunction_v<
+                bool_constant<input_iterator<I>>,
+                bool_constant<indirectly_unary_invocable<Fun, projected<I, Proj>>>
+                >> >
+            constexpr for_each_n_result<I, Fun> operator()(I first, iter_difference_t<I> n, Fun f, Proj proj = {}) const
+            {
+                for (; n > 0; ++first, --n)
+                {
+                    AZStd::invoke(f, AZStd::invoke(proj, *first));
+                }
+
+                return { first, AZStd::move(f) };
+            }
+
+        };
+    }
+    inline namespace customization_point_object
+    {
+        constexpr Internal::for_each_fn for_each{};
+        constexpr Internal::for_each_n_fn for_each_n{};
+    }
+
+
+    // ranges::count
+    // ranges::count_if
+    namespace Internal
+    {
+        struct count_fn
+        {
+            template<class I, class S, class T, class Proj = identity,
+                class = enable_if_t<conjunction_v<
+                bool_constant<input_iterator<I>>,
+                bool_constant<sentinel_for<S, I>>,
+                bool_constant<indirect_binary_predicate<ranges::equal_to, projected<I, Proj>, const T*>>
+                >> >
+            constexpr iter_difference_t<I> operator()(I first, S last, const T& value, Proj proj = {}) const
+            {
+                iter_difference_t<I> counter{};
+                for (; first != last; ++first)
+                {
+                    if (AZStd::invoke(proj, *first) == value)
+                    {
+                        ++counter;
+                    }
+                }
+
+                return counter;
+            }
+
+            template<class R, class T, class Proj = identity,
+                class = enable_if_t<conjunction_v<
+                bool_constant<input_range<R>>,
+                bool_constant<indirect_binary_predicate<ranges::equal_to, projected<iterator_t<R>, Proj>, const T*>>
+                >> >
+            constexpr range_difference_t<R> operator()(R&& r, const T& value, Proj proj = {}) const
+            {
+                return operator()(AZStd::ranges::begin(r), AZStd::ranges::end(r), value, AZStd::move(proj));
+            }
+        };
+
+        struct count_if_fn
+        {
+            template<class I, class S, class Proj = identity, class Pred,
+                class = enable_if_t<conjunction_v<
+                bool_constant<input_iterator<I>>,
+                bool_constant<sentinel_for<S, I>>,
+                bool_constant<indirect_unary_predicate<Pred, projected<I, Proj>>>
+                >> >
+            constexpr iter_difference_t<I> operator()(I first, S last, Pred pred, Proj proj = {}) const
+            {
+                iter_difference_t<I> counter{};
+                for (; first != last; ++first)
+                {
+                    if (AZStd::invoke(pred, AZStd::invoke(proj, *first)))
+                    {
+                        ++counter;
+                    }
+                }
+
+                return counter;
+            }
+
+            template<class R, class Proj = identity, class Pred,
+                class = enable_if_t<conjunction_v<
+                bool_constant<input_range<R>>,
+                bool_constant<indirect_unary_predicate<Pred, projected<iterator_t<R>, Proj>>>
+                >> >
+            constexpr range_difference_t<R> operator()(R&& r, Pred pred, Proj proj = {}) const
+            {
+                return operator()(AZStd::ranges::begin(r), AZStd::ranges::end(r), AZStd::move(pred), AZStd::move(proj));
+            }
+        };
+    }
+    inline namespace customization_point_object
+    {
+        constexpr Internal::count_fn count{};
+        constexpr Internal::count_if_fn count_if{};
+    }
 } // namespace AZStd::ranges
