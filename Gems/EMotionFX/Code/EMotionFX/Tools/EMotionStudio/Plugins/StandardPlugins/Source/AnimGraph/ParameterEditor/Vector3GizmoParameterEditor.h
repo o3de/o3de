@@ -13,6 +13,7 @@
 #include <QPointer>
 
 class QPushButton;
+
 namespace EMStudio
 {
     class Vector3GizmoParameterEditor
@@ -40,17 +41,14 @@ namespace EMStudio
 
     private:
         void OnValueChanged();
-        void UpdateAnimGraphInstanceAttributes();
         void ToggleTranslationGizmo();
 
         AZ::Vector3 GetMinValue() const;
         AZ::Vector3 GetMaxValue() const;
 
-        void OnManipulatorMoved(const AZ::Vector3& position);
-
     private:
         AZ::Vector3 m_currentValue = AZ::Vector3::CreateZero();
-        QPushButton* m_gizmoButton = nullptr;
+        QPointer<QPushButton> m_gizmoButton;
 
         AzToolsFramework::TranslationManipulators m_translationManipulators;
         AZStd::function<void()> m_manipulatorCallback;

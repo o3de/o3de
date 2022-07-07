@@ -132,6 +132,7 @@ struct ILog
 #endif
 
     virtual void FlushAndClose() = 0;
+    virtual void Flush() = 0;
 };
 
 #if !defined(SUPPORT_LOG_IDENTER)
