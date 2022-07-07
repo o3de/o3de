@@ -1236,6 +1236,18 @@ namespace AssetProcessor
         AZ_CLASS_ALLOCATOR(AssetCacheServerMatcher, AZ::SystemAllocator, 0);
         AZ_TYPE_INFO(AssetCacheServerMatcher, "{329A59C9-755E-4FA9-AADB-05C50AC62FD5}");
 
+        static void Reflect(AZ::SerializeContext* serializeContext)
+        {
+            serializeContext->Class<AssetCacheServerMatcher>()->Version(0)
+                ->Field("name", &AssetCacheServerMatcher::m_name)
+                ->Field("glob", &AssetCacheServerMatcher::m_glob)
+                ->Field("pattern", &AssetCacheServerMatcher::m_pattern)
+                ->Field("productAssetType", &AssetCacheServerMatcher::m_productAssetType)
+                ->Field("checkServer", &AssetCacheServerMatcher::m_checkServer);
+
+            serializeContext->RegisterGenericType<AZStd::unordered_map<AZStd::string, AssetCacheServerMatcher>>();
+        }
+
         AZStd::string m_name;
         AZStd::string m_glob;
         AZStd::string m_pattern;
@@ -1245,10 +1257,6 @@ namespace AssetProcessor
 
     bool PlatformConfiguration::ConvertToJson(const RecognizerContainer& recognizerContainer, AZStd::string& jsonText)
     {
-        AZ::JsonSerializerSettings settings;
-        AZ::ComponentApplicationBus::BroadcastResult(settings.m_serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
-        settings.m_registrationContext = nullptr;
-
         AZStd::unordered_map<AZStd::string, AssetCacheServerMatcher> assetCacheServerMatcherMap;
         
         for (const auto& recognizer : recognizerContainer)
@@ -1268,6 +1276,10 @@ namespace AssetProcessor
             }
             assetCacheServerMatcherMap.insert({"ACS " + recognizer.first, matcher});
         }
+
+        AZ::JsonSerializerSettings settings;
+        AZ::ComponentApplicationBus::BroadcastResult(settings.m_serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
+        settings.m_registrationContext = nullptr;
 
         rapidjson::Document jsonDocument;
         auto jsonResult = AZ::JsonSerialization::Store(jsonDocument, jsonDocument.GetAllocator(), assetCacheServerMatcherMap, settings);
@@ -1289,12 +1301,12 @@ namespace AssetProcessor
             return false;
         }
 
-        AZ::JsonSerializerSettings settings;
+        AZ::JsonDeserializerSettings settings;
         AZ::ComponentApplicationBus::BroadcastResult(settings.m_serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
         settings.m_registrationContext = nullptr;
 
         AZStd::unordered_map<AZStd::string, AssetCacheServerMatcher> assetCacheServerMatcherMap;
-        auto resultCode = AZ::JsonSerialization::Load(assetCacheServerMatcherMap, assetCacheServerMatcherDoc, {});        
+        auto resultCode = AZ::JsonSerialization::Load(assetCacheServerMatcherMap, assetCacheServerMatcherDoc, settings);
         if (!resultCode.HasDoneWork())
         {
             return false;
@@ -1326,34 +1338,7 @@ namespace AssetProcessor
     {
         if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serializeContext->Class<AssetBuilderSDK::FilePatternMatcher>()->Version(0);
-
-            serializeContext->Class<AssetInternalSpec>()->Version(0);                
-
-            // needs to serialize in/out 'glob' and 'pattern'
-            serializeContext->Class<AssetRecognizer>()->Version(0)
-                ->Field("checkServer", &AssetRecognizer::m_checkServer)
-                ->Field("isCritical", &AssetRecognizer::m_isCritical)
-                ->Field("name", &AssetRecognizer::m_name)
-                ->Field("outputProductDependencies", &AssetRecognizer::m_outputProductDependencies)
-                ->Field("patternMatcher", &AssetRecognizer::m_patternMatcher)
-                ->Field("platformSpecs", &AssetRecognizer::m_platformSpecs)
-                ->Field("priority", &AssetRecognizer::m_priority)
-                ->Field("productAssetType", &AssetRecognizer::m_productAssetType)
-                ->Field("supportsCreateJobs", &AssetRecognizer::m_supportsCreateJobs)
-                ->Field("testLockSource", &AssetRecognizer::m_testLockSource)
-                ->Field("version", &AssetRecognizer::m_version);
-
-            serializeContext->Class<AssetCacheServerMatcher>()->Version(0)
-                ->Field("name", &AssetCacheServerMatcher::m_name)
-                ->Field("glob", &AssetCacheServerMatcher::m_glob)
-                ->Field("pattern", &AssetCacheServerMatcher::m_pattern)
-                ->Field("productAssetType", &AssetCacheServerMatcher::m_productAssetType)
-                ->Field("checkServer", &AssetCacheServerMatcher::m_checkServer);
-
-            serializeContext->RegisterGenericType<AZStd::unordered_map<AZStd::string, AssetRecognizer>>();
-            serializeContext->RegisterGenericType<AZStd::unordered_map<AZStd::string, AssetInternalSpec>>();
-            serializeContext->RegisterGenericType<AZStd::unordered_map<AZStd::string, AssetCacheServerMatcher>>();
+            AssetCacheServerMatcher::Reflect(serializeContext);
         }
     }
 
