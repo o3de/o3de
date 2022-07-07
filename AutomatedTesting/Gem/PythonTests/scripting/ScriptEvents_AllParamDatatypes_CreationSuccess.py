@@ -88,7 +88,7 @@ class TestScriptEvents_AllParamDatatypes_CreationSuccess():
 
     def set_name_field_names(self):
         """
-        function for assigning a name to each of the parameters in the script event.
+        function for assigning a name to each of the parameters name fields
 
         returns None
         """
