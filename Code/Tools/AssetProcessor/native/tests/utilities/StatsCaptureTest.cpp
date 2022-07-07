@@ -214,7 +214,7 @@ TEST_F(StatsCaptureOutputTest, StatsCaptureTest_PersistToDb)
     AssetProcessor::StatsCapture::BeginCaptureStat("O3");
     AssetProcessor::StatsCapture::EndCaptureStat("O3");
 
-    AssetProcessor::StatsCapture::g
+    /*AssetProcessor::StatsCapture::g*/
 }
 
 } // namespace AssetProcessor
