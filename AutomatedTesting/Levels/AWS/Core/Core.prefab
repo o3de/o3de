@@ -22,7 +22,6 @@
                     "Entity_[1176639161715]",
                     "Entity_[1386540226381]",
                     "Entity_[1390835193677]",
-                    "Entity_[1395130160973]",
                     "Entity_[1395130160973]"
                 ]
             },
@@ -34,6 +33,11 @@
             "Component_[16239496886950819870]": {
                 "$type": "EditorDisabledCompositionComponent",
                 "Id": 16239496886950819870
+            },
+            "Component_[2716220239187023532]": {
+                "$type": "LocalViewBookmarkComponent",
+                "Id": 2716220239187023532,
+                "LocalBookmarkFileName": "Core_511588228792.setreg"
             },
             "Component_[5688118765544765547]": {
                 "$type": "EditorEntityIconComponent",
@@ -436,6 +440,17 @@
                     "$type": "EditorVisibilityComponent",
                     "Id": 15900837685796817138
                 },
+                "Component_[2529173134543008478]": {
+                    "$type": "EditorScriptCanvasComponent",
+                    "Id": 2529173134543008478,
+                    "configuration": {
+                        "sourceHandle": {
+                            "id": "{588CE2F8-D1F8-525A-8555-E1B62F2B96A1}",
+                            "path": "git/o3de/AutomatedTesting/ScriptCanvas/smoloperator.scriptcanvas"
+                        },
+                        "sourceName": "smoloperator.scriptcanvas"
+                    }
+                },
                 "Component_[3298767348226484884]": {
                     "$type": "EditorOnlyEntityComponent",
                     "Id": 3298767348226484884
@@ -577,15 +592,18 @@
                 "Component_[17553238493971510581]": {
                     "$type": "EditorScriptCanvasComponent",
                     "Id": 17553238493971510581,
-                    "m_name": "s3demo.scriptcanvas",
-                    "runtimeDataIsValid": true,
-                    "runtimeDataOverrides": {
-                        "source": {
-                            "id": "{D72821C5-1C31-5AE5-891D-30371C49B9E0}"
+                    "configuration": {
+                        "sourceHandle": {
+                            "id": "{D72821C5-1C31-5AE5-891D-30371C49B9E0}",
+                            "path": "ScriptCanvas/s3demo.scriptcanvas"
+                        },
+                        "sourceName": "s3demo.scriptcanvas",
+                        "propertyOverrides": {
+                            "source": {
+                                "id": "{D72821C5-1C31-5AE5-891D-30371C49B9E0}",
+                                "path": "ScriptCanvas/s3demo.scriptcanvas"
+                            }
                         }
-                    },
-                    "sourceHandle": {
-                        "id": "{D72821C5-1C31-5AE5-891D-30371C49B9E0}"
                     }
                 },
                 "Component_[17621265899133139471]": {
@@ -653,15 +671,18 @@
                 "Component_[4890242568951925088]": {
                     "$type": "EditorScriptCanvasComponent",
                     "Id": 4890242568951925088,
-                    "m_name": "dynamodbdemo.scriptcanvas",
-                    "runtimeDataIsValid": true,
-                    "runtimeDataOverrides": {
-                        "source": {
-                            "id": "{004B97C6-75F3-5B95-ADA4-EBF751EEF697}"
+                    "configuration": {
+                        "sourceHandle": {
+                            "id": "{004B97C6-75F3-5B95-ADA4-EBF751EEF697}",
+                            "path": "ScriptCanvas/dynamodbdemo.scriptcanvas"
+                        },
+                        "sourceName": "dynamodbdemo.scriptcanvas",
+                        "propertyOverrides": {
+                            "source": {
+                                "id": "{004B97C6-75F3-5B95-ADA4-EBF751EEF697}",
+                                "path": "ScriptCanvas/dynamodbdemo.scriptcanvas"
+                            }
                         }
-                    },
-                    "sourceHandle": {
-                        "id": "{004B97C6-75F3-5B95-ADA4-EBF751EEF697}"
                     }
                 },
                 "Component_[7140725680315799866]": {
@@ -737,15 +758,18 @@
                 "Component_[6251151424244415885]": {
                     "$type": "EditorScriptCanvasComponent",
                     "Id": 6251151424244415885,
-                    "m_name": "lambdademo.scriptcanvas",
-                    "runtimeDataIsValid": true,
-                    "runtimeDataOverrides": {
-                        "source": {
-                            "id": "{3DCA213D-534E-5C86-9308-2F7675A08029}"
+                    "configuration": {
+                        "sourceHandle": {
+                            "id": "{3DCA213D-534E-5C86-9308-2F7675A08029}",
+                            "path": "ScriptCanvas/lambdademo.scriptcanvas"
+                        },
+                        "sourceName": "lambdademo.scriptcanvas",
+                        "propertyOverrides": {
+                            "source": {
+                                "id": "{3DCA213D-534E-5C86-9308-2F7675A08029}",
+                                "path": "ScriptCanvas/lambdademo.scriptcanvas"
+                            }
                         }
-                    },
-                    "sourceHandle": {
-                        "id": "{3DCA213D-534E-5C86-9308-2F7675A08029}"
                     }
                 },
                 "Component_[6526999075003995619]": {
