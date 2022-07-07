@@ -105,7 +105,7 @@ class TestScriptEvents_AllParamDatatypes_CreationSuccess():
 
         # 1) Open Asset Editor
         # Initially close the Asset Editor and then reopen to ensure we don't have any existing assets open
-        general.close_pane(ASSET_EDITOR_UI) # this doesn't close a file that was previously open if you had just run a test that created an asset
+        general.close_pane(ASSET_EDITOR_UI)
         result = tools.open_asset_editor()
         Report.result(Tests.asset_editor_opened, result)
         tools.initialize_editor_object(self)
