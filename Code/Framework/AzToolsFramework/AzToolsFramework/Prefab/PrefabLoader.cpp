@@ -5,7 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#pragma optimize("", off)
+
 #include <AzToolsFramework/Prefab/PrefabLoader.h>
 
 #include <AzCore/Component/Entity.h>
@@ -255,97 +255,6 @@ namespace AzToolsFramework
             {
                 //TODO: Add a new link
             }
-
-            
-            
-            //TODO: Check if instance keys match
-           
-            // Get source path from the dom on file.
-
-            //Get the existing dom from editor
-            
-            //gets the path of the instance and locates it in the
-
-            //if (templateInstance.has_value())
-            //{
-            //    
-            //    }
-            //    else
-            //    {
-            //        //TemplateId sourceTemplateId = LoadTemplateFromString()
-            //    }
-            //    
-            //    
-            //}
-            //else
-            //{
-            //   //TODO: Add a new link
-            //}
-            /*
-             * - get access to templatedom
-             *
-             * - Find instance path within the existing dom - look for /Instances/Instance_[abc]
-             *  if (path is found in existing dom)
-             * {
-             *    - PrefabDomValue& nestedom = nested dom within existing dom
-             *    - get the source path
-             *    - check again in the existing nested dom for source string
-             *    - if (source string matches)
-             *       {
-             *           get nested dom from file - newNestedDom
-             *           find existing link from dom ("linkId")
-             *           prefabsytemcomponent->findLink()
-             *           link->setLinkdom(newNestedDom)
-             *           link->updateTarget()
-             *
-             *       }
-             *       else (//string is different)
-             *       {
-             *           load template of new string//
-             *           - change sourceTemplateId in Link object
-             *           - SetlinkDom()
-             *       }
-             * }
-             * else
-             * {
-             *      LoadNestedInstnce() ///similar to regular load
-             * }
-            */
-
-            // Get Template id of nested instance from its path.
-            // If source Template is already loaded, get the id from Template File Path To Id Map,
-            // else load the source Template by calling 'LoadTemplate' recursively.
-
-            /*TemplateId nestedTemplateId = LoadTemplateFromFile(nestedTemplatePath, progressedFilePathsSet);
-            TemplateReference nestedTemplateReference = m_prefabSystemComponentInterface->FindTemplate(nestedTemplateId);
-            if (!nestedTemplateReference.has_value() || !nestedTemplateReference->get().IsValid())
-            {
-                AZ_Error(
-                    "Prefab", false,
-                    "PrefabLoader::LoadNestedInstance - "
-                    "Error occurred while loading nested Prefab file '%.*s' from Prefab file '%s'.",
-                    AZ_STRING_ARG(nestedTemplatePath),
-                    m_prefabSystemComponentInterface->FindTemplate(targetTemplateId)->get().GetFilePath().c_str());
-                return false;
-            }*/
-
-            // After source template has been loaded, create Link between source/target Template.
-            /*LinkId newLinkId =
-                m_prefabSystemComponentInterface->AddLink(nestedTemplateId, targetTemplateId, instanceIterator, AZStd::nullopt);
-            if (newLinkId == InvalidLinkId)
-            {
-                AZ_Error(
-                    "Prefab", false,
-                    "PrefabLoader::LoadNestedInstance - "
-                    "Failed to add a new Link to Nested Template Instance '%s' which connects source Template '%.*s' and target Template "
-                    "'%s'.",
-                    instanceIterator->name.GetString(), AZ_STRING_ARG(nestedTemplatePath),
-                    m_prefabSystemComponentInterface->FindTemplate(targetTemplateId)->get().GetFilePath().c_str());
-
-                return false;
-            }*/
-
-            // Let the new Template carry up the error flag of its nested Prefab.
             return false;
         }
 
@@ -1000,4 +909,3 @@ namespace AzToolsFramework
 
     } // namespace Prefab
 } // namespace AzToolsFramework
-#pragma optimize("", on)
