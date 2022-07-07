@@ -139,23 +139,44 @@ inline namespace AZ_JOIN(EnumTypeName, Namespace) \
 
 namespace AZ::Internal
 {
+    template <class T, class = void>
+    inline constexpr bool HasGetAzEnumTraits = false;
+    template <class T>
+    inline constexpr bool HasGetAzEnumTraits<T, AZStd::enable_if_t<!AZStd::is_void_v<decltype(GetAzEnumTraits(AZStd::declval<T>()))>>> = true;
+
     // Deleted function to provide the AZ::Internal namespace with the GetAzEnumTraits symbol
     // This is to make an overload which the AzEnumTraitsImpl would use with its
     // template parameter to use Argument Dependent Lookup to find the GetAzEnumTraits
     // function for the Enum Type in the correct namespace.
     template<typename T>
     void GetAzEnumTraits(T&&) = delete;
-    template<typename T>
-    struct AzEnumTraitsImpl
+
+    template <class T, class = void>
+    struct GetAzEnumTraits_Impl {};
+    template <class T>
+    struct GetAzEnumTraits_Impl<T, AZStd::enable_if_t<HasGetAzEnumTraits<T>>>
     {
-        // The AZ_ENUM macros contrive a function which returns a struct
+        // The AZ_ENUM macros contain a function which returns a struct
         // with the enum traits within it
         // We use decltype here to get the type of that function
         using type = decltype(GetAzEnumTraits(AZStd::declval<T>()));
     };
+
+    template<class T, class = void>
+    inline constexpr bool HasAzEnumTraitsImpl = false;
+
+    template<class T>
+    inline constexpr bool HasAzEnumTraitsImpl<T, AZStd::enable_if_t<!AZStd::is_void_v<typename GetAzEnumTraits_Impl<T>::type>>> = true;
 } // namespace AZ::Internal
+
 namespace AZ
 {
-    template<typename T>
-    using AzEnumTraits = typename Internal::AzEnumTraitsImpl<T>::type;
+    template<class T>
+    using AzEnumTraits = typename Internal::GetAzEnumTraits_Impl<AZStd::remove_cvref_t<T>>::type;
+
+    template<class T>
+    using HasAzEnumTraits = AZStd::bool_constant<Internal::HasAzEnumTraitsImpl<AZStd::remove_cvref_t<T>>>;
+
+    template<class T>
+    /*concept*/ inline constexpr bool HasAzEnumTraits_v = HasAzEnumTraits<T>::value;
 }
