@@ -112,12 +112,6 @@ namespace O3DE::ProjectManager
     {
         m_stack->setCurrentIndex(ScreenOrder::Settings);
         Update();
-
-        // Gather the available gems that will be shown in the gem catalog.
-        m_projectGemCatalogScreen->ReinitForProject(m_projectInfo.m_path);
-
-        // make sure the gem repo has the latest repo details
-        m_gemRepoScreen->Reinit();
     }
 
     void UpdateProjectCtrl::OnChangeScreenRequest(ProjectManagerScreen screen)
@@ -125,10 +119,12 @@ namespace O3DE::ProjectManager
         if (screen == ProjectManagerScreen::GemRepos)
         {
             m_stack->setCurrentWidget(m_gemRepoScreen);
+            m_gemRepoScreen->Reinit();
             Update();
         }
         else if (screen == ProjectManagerScreen::ProjectGemCatalog)
         {
+            m_projectGemCatalogScreen->ReinitForProject(m_projectInfo.m_path);
             m_stack->setCurrentWidget(m_projectGemCatalogScreen);
             Update();
         }
@@ -147,6 +143,7 @@ namespace O3DE::ProjectManager
     {
         if (UpdateProjectSettings(true))
         {
+            m_projectGemCatalogScreen->ReinitForProject(m_projectInfo.m_path);
             m_stack->setCurrentWidget(m_projectGemCatalogScreen);
             Update();
         }

@@ -10,6 +10,13 @@
 
 #include <TerrainDetailHelpers.azsli>
 
+// Encoded into macro color alpha, to indicate if macro normal map is vailable.
+#define NO_NORMAL 0.0
+#define HAS_NORMAL 1.0
+// Encoded into detail color alpha, to indicate if detail material exists.
+#define NO_DETAIL 0.0
+#define HAS_DETAIL 1.0
+
 // Used for the debug overlay color for each clipmap level.
 // Only use 5 for better contrast, and we don't really care about far away maps.
 static const uint ClipmapLevelDebugColorCount = 6;
@@ -124,6 +131,7 @@ struct ClipmapSample
     float3 m_macroColor;
     float3 m_macroNormal;
     bool   m_hasMacro;  // false if world position is out of the clipmap range. Needs increasing max render distance.
+    bool   m_hasMacroNormal; // false if the normal map is not set.
     bool   m_hasDetail; // false if the position doesn't have detail or out of the clipmap range.
     DetailSurface m_detailSurface;
 };
@@ -399,10 +407,15 @@ ClipmapSample SampleClipmap(float2 worldPosition)
             GetMacroClipmapCenterInWorldSpace(macroClipmapLevel.m_closestLevel)
         );
 
-        data.m_macroColor = ColorBilinearSampling(
+        float4 macroColor = ColorBilinearSampling(
             TerrainSrg::m_macroColorClipmaps, macroClipmapUvs, macroClipmapLevel.m_closestLevel,
-            TerrainSrg::m_clipmapData.m_enableMacroClipmapOverlay).rgb;
-        data.m_macroNormal = NormalBilinearSampling(TerrainSrg::m_macroNormalClipmaps, macroClipmapUvs, macroClipmapLevel.m_closestLevel);
+            TerrainSrg::m_clipmapData.m_enableMacroClipmapOverlay);
+        data.m_macroColor = macroColor.rgb;
+        data.m_hasMacroNormal = macroColor.a == HAS_NORMAL;
+        if (data.m_hasMacroNormal)
+        {
+            data.m_macroNormal = NormalBilinearSampling(TerrainSrg::m_macroNormalClipmaps, macroClipmapUvs, macroClipmapLevel.m_closestLevel);
+        }
     }
     else
     {
@@ -420,10 +433,15 @@ ClipmapSample SampleClipmap(float2 worldPosition)
             GetMacroClipmapCenterInWorldSpace(macroClipmapLevel.m_nextLevel)
         );
 
-        data.m_macroColor = ColorTrilinearSampling(
+        float4 macroColor = ColorTrilinearSampling(
             TerrainSrg::m_macroColorClipmaps, macroClipmapUvs1, macroClipmapUvs2, macroClipmapLevel,
-            TerrainSrg::m_clipmapData.m_enableMacroClipmapOverlay).rgb;
-        data.m_macroNormal = NormalTrilinearSampling(TerrainSrg::m_macroNormalClipmaps, macroClipmapUvs1, macroClipmapUvs2, macroClipmapLevel);
+            TerrainSrg::m_clipmapData.m_enableMacroClipmapOverlay);
+        data.m_macroColor = macroColor.rgb;
+        data.m_hasMacroNormal = macroColor.a == HAS_NORMAL;
+        if (data.m_hasMacroNormal)
+        {
+            data.m_macroNormal = NormalTrilinearSampling(TerrainSrg::m_macroNormalClipmaps, macroClipmapUvs1, macroClipmapUvs2, macroClipmapLevel);
+        }
     }
 
     if (absDistance.x > TerrainSrg::m_clipmapData.m_detailClipmapMaxRenderRadius || absDistance.y > TerrainSrg::m_clipmapData.m_detailClipmapMaxRenderRadius)
@@ -447,7 +465,7 @@ ClipmapSample SampleClipmap(float2 worldPosition)
                 TerrainSrg::m_detailColorClipmaps, detailClipmapUvs, detailClipmapLevel.m_closestLevel,
                 TerrainSrg::m_clipmapData.m_enableDetailClipmapOverlay);
             // alpha represents hasDetailSurface, 1.0 for true and 0.0 for false.
-            data.m_hasDetail = detailColor.a == 1.0;
+            data.m_hasDetail = detailColor.a == HAS_DETAIL;
 
             if (data.m_hasDetail)
             {
@@ -480,7 +498,7 @@ ClipmapSample SampleClipmap(float2 worldPosition)
                 TerrainSrg::m_detailColorClipmaps, detailClipmapUvs1, detailClipmapUvs2, detailClipmapLevel,
                 TerrainSrg::m_clipmapData.m_enableDetailClipmapOverlay);
             // alpha represents hasDetailSurface, 1.0 for true and 0.0 for false.
-            data.m_hasDetail = detailColor.a == 1.0;
+            data.m_hasDetail = detailColor.a == HAS_DETAIL;
 
             if (data.m_hasDetail)
             {

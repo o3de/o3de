@@ -6,8 +6,13 @@
  *
  */
 
+#include <AzCore/Math/MathUtils.h>
+#include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Vector4.h>
+#include <AzCore/Math/Vector2.h>
 #include <AzCore/UnitTest/TestTypes.h>
+#include <AZTestShared/Math/MathTestHelpers.h>
+#include <AzCore/Math/SimdMath.h>
 
 using namespace AZ;
 
@@ -18,11 +23,25 @@ namespace UnitTest
     TEST(MATH_Vector4, TestConstructors)
     {
         Vector4 v1(0.0f);
-        AZ_TEST_ASSERT((v1.GetX() == 0.0f) && (v1.GetY() == 0.0f) && (v1.GetZ() == 0.0f) && (v1.GetW() == 0.0f));
+        EXPECT_FLOAT_EQ(v1.GetX(), 0.0f);
+        EXPECT_FLOAT_EQ(v1.GetY(), 0.0f);
+        EXPECT_FLOAT_EQ(v1.GetZ(), 0.0f);
+        EXPECT_FLOAT_EQ(v1.GetW(), 0.0f);
         Vector4 v2(5.0f);
-        AZ_TEST_ASSERT((v2.GetX() == 5.0f) && (v2.GetY() == 5.0f) && (v2.GetZ() == 5.0f) && (v2.GetW() == 5.0f));
+        EXPECT_FLOAT_EQ(v2.GetX(), 5.0f);
+        EXPECT_FLOAT_EQ(v2.GetY(), 5.0f);
+        EXPECT_FLOAT_EQ(v2.GetZ(), 5.0f);
+        EXPECT_FLOAT_EQ(v2.GetW(), 5.0f);
         Vector4 v3(1.0f, 2.0f, 3.0f, 4.0f);
-        AZ_TEST_ASSERT((v3.GetX() == 1.0f) && (v3.GetY() == 2.0f) && (v3.GetZ() == 3.0f) && (v3.GetW() == 4.0f));
+        EXPECT_FLOAT_EQ(v3.GetX(), 1.0f);
+        EXPECT_FLOAT_EQ(v3.GetY(), 2.0f);
+        EXPECT_FLOAT_EQ(v3.GetZ(), 3.0f);
+        EXPECT_FLOAT_EQ(v3.GetW(), 4.0f);
+        EXPECT_THAT(Vector4(Vector3(10.0f, 3.0f, 2.0f)), IsClose(Vector4(10.0f, 3.0f, 2.0f, 1.0f)));
+        EXPECT_THAT(Vector4(Vector3(10.0f, 3.0f, 2.0f), 5.0f), IsClose(Vector4(10.0f, 3.0f, 2.0f, 5.0f)));
+        EXPECT_THAT(Vector4(Vector2(10.0f, 3.0f)), IsClose(Vector4(10.0f, 3.0f, 0.0f, 1.0f)));
+        EXPECT_THAT(Vector4(Vector2(10.0f, 3.0f), 5.0f), IsClose(Vector4(10.0f, 3.0f, 5.0f, 1.0f)));
+        EXPECT_THAT(Vector4(Vector2(10.0f, 3.0f), 5.0f, 6.0f), IsClose(Vector4(10.0f, 3.0f, 5.0f, 6.0f)));
     }
 
     TEST(MATH_Vector4, TestCreateFrom)
