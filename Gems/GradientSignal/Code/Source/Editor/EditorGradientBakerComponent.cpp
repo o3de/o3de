@@ -117,6 +117,8 @@ namespace GradientSignal
         const AZ::Vector3 pixelToBoundsScale(
             inputBoundsExtentsX / static_cast<float>(imageResolutionX), inputBoundsExtentsY / static_cast<float>(imageResolutionY), 0.0f);
 
+        const AZ::Vector3 positionOffset = inputBoundsStart + scaledTexelOffset;
+
         // Generate a set of input positions that are inside the bounds along with
         // their corresponding x,y indices
         AZStd::vector<AZ::Vector3> inputPositions;
@@ -129,7 +131,7 @@ namespace GradientSignal
                 // imageBoundsY)
                 AZ::Vector3 uvw(static_cast<float>(x), static_cast<float>((imageResolutionY - 1) - y), 0.0f);
 
-                AZ::Vector3 position = inputBoundsStart + (uvw * pixelToBoundsScale) + scaledTexelOffset;
+                AZ::Vector3 position = positionOffset + (uvw * pixelToBoundsScale);
 
                 bool inBounds = true;
                 LmbrCentral::ShapeComponentRequestsBus::EventResult(
