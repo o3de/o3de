@@ -9,8 +9,8 @@
 
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/std/algorithm.h>
-#include <AzCore/std/concepts/concepts.h>
 #include <AzCore/std/createdestroy.h>
+#include <AzCore/std/ranges/ranges.h>
 #include <AzCore/std/typetraits/typetraits.h>
 
 namespace AZStd::Internal
@@ -437,10 +437,11 @@ namespace AZStd
             rhs.clear();
         }
 
-        // Extension csontructor for copying other vector like container types
-        // into a fixed_vector given that the type in question isn't the same type as this fixed_vector type
+        // Extension constructor for copying other container types that models a span
+        // into a fixed_vector
         template <typename VectorContainer, typename = AZStd::enable_if_t<!AZStd::is_same_v<VectorContainer, fixed_vector>
-            && !AZStd::is_convertible_v<VectorContainer, size_type>>>
+            && !AZStd::is_convertible_v<VectorContainer, size_type>
+            && AZStd::constructible_from<value_type, AZStd::ranges::range_reference_t<VectorContainer>>>>
         fixed_vector(VectorContainer&& rhs)
         {
             constexpr bool is_const_or_lvalue_reference = AZStd::is_lvalue_reference_v<VectorContainer>

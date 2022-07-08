@@ -224,6 +224,11 @@ namespace AssetProcessor
         // updates the modtime and hash for a file if it exists.  Only returns true if the row existed and was successfully updated
         bool UpdateFileModTimeAndHashByFileNameAndScanFolderId(QString fileName, AZ::s64 scanFolderId, AZ::u64 modTime, AZ::u64 hash);
         bool RemoveFile(AZ::s64 sourceID);
+
+        //Stats
+        bool GetStatByStatName(QString statName, AzToolsFramework::AssetDatabase::StatDatabaseEntryContainer& container);
+        bool GetStatLikeStatName(QString statName, AzToolsFramework::AssetDatabase::StatDatabaseEntryContainer& container);
+        bool ReplaceStat(AzToolsFramework::AssetDatabase::StatDatabaseEntry& stat);
     protected:
         void SetDatabaseVersion(AzToolsFramework::AssetDatabase::DatabaseVersion ver);
         void ExecuteCreateStatements();

@@ -48,7 +48,9 @@ namespace TestAssetBuilder
 
         if (serialize)
         {
-            serialize->Class<TestAsset, AZ::Data::AssetData>()->Field("ReferencedAsset", &TestAsset::m_referencedAsset);
+            serialize->Class<TestAsset, AZ::Data::AssetData>()
+                ->Version(1)
+                ->Field("ReferencedAssets", &TestAsset::m_referencedAssets);
         }
     }
 
@@ -154,21 +156,33 @@ namespace TestAssetBuilder
 
         if (!buffer.empty())
         {
-            bool result = false;
-            AZ::Data::AssetInfo assetInfo;
-            AZStd::string watchFolder;
-            AzToolsFramework::AssetSystemRequestBus::BroadcastResult(result, &AzToolsFramework::AssetSystemRequestBus::Events::GetSourceInfoBySourcePath, buffer.c_str(), assetInfo, watchFolder);
+            AZStd::vector<AZStd::string> tokens;
+            AZ::StringFunc::Tokenize(buffer, tokens, "|");
 
-            if (!result || !assetInfo.m_assetId.IsValid())
+            for (const AZStd::string& path : tokens)
             {
-                AZ_Error("TestDependencyBuilderComponent", false, "GetSourceInfoBySourcePath failed for %s", buffer.c_str());
-                return;
-            }
+                bool result = false;
+                AZ::Data::AssetInfo assetInfo;
+                AZStd::string watchFolder;
+                AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
+                    result,
+                    &AzToolsFramework::AssetSystemRequestBus::Events::GetSourceInfoBySourcePath,
+                    path.c_str(),
+                    assetInfo,
+                    watchFolder);
 
-            // It's not technically correct to use the source AssetId as a product asset reference, however we know the output will have a
-            // subId of 0 (the default) so we don't actually need that bit of data, we just need the UUID
-            outputAsset.m_referencedAsset = AZ::Data::Asset<TestAsset>(assetInfo.m_assetId, azrtti_typeid<TestAsset>(), buffer);
-            outputAsset.m_referencedAsset.SetAutoLoadBehavior(AZ::Data::PreLoad);
+                if (!result || !assetInfo.m_assetId.IsValid())
+                {
+                    AZ_Error("TestDependencyBuilderComponent", false, "GetSourceInfoBySourcePath failed for %s", path.c_str());
+                    return;
+                }
+
+                // It's not technically correct to use the source AssetId as a product asset reference, however we know the output will have
+                // a subId of 0 (the default) so we don't actually need that bit of data, we just need the UUID
+                auto assetRef = AZ::Data::Asset<TestAsset>(assetInfo.m_assetId, azrtti_typeid<TestAsset>(), path);
+                assetRef.SetAutoLoadBehavior(AZ::Data::PreLoad);
+                outputAsset.m_referencedAssets.push_back(AZStd::move(assetRef));
+            }
         }
 
         auto outputPath = AZ::IO::Path(request.m_tempDirPath) / request.m_sourceFile;

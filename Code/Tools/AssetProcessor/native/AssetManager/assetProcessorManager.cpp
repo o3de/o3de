@@ -243,7 +243,7 @@ namespace AssetProcessor
                 // without going thru the RC.
                 // as such, all the code in this block should be crafted to work regardless of whether its double called.
                 AZStd::optional<AZStd::sys_time_t> operationDuration =
-                    AssetProcessor::StatsCapture::EndCaptureStat(statKey.toUtf8().constData());
+                    AssetProcessor::StatsCapture::EndCaptureStat(statKey.toUtf8().constData(), true);
 
                 if (operationDuration)
                 {

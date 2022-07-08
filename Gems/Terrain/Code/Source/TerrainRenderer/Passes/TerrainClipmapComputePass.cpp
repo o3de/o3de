@@ -113,6 +113,11 @@ namespace Terrain
         return clipmapManager.HasMacroClipmapUpdate();
     }
 
+    bool TerrainMacroClipmapGenerationPass::ClipmapFeatureIsEnabled() const
+    {
+        return AZ::RPI::Pass::IsEnabled();
+    }
+
     AZ::RPI::Ptr<TerrainDetailClipmapGenerationPass> TerrainDetailClipmapGenerationPass::Create(const AZ::RPI::PassDescriptor& descriptor)
     {
         AZ::RPI::Ptr<TerrainDetailClipmapGenerationPass> pass = aznew TerrainDetailClipmapGenerationPass(descriptor);
@@ -233,5 +238,10 @@ namespace Terrain
         const TerrainClipmapManager& clipmapManager = terrainFeatureProcessor->GetClipmapManager();
 
         return clipmapManager.HasDetailClipmapUpdate();
+    }
+
+    bool TerrainDetailClipmapGenerationPass::ClipmapFeatureIsEnabled() const
+    {
+        return AZ::RPI::Pass::IsEnabled();
     }
 } // namespace Terrain

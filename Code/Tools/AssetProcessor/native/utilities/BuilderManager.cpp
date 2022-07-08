@@ -35,7 +35,7 @@ namespace AssetProcessor
         return m_connectionId > 0;
     }
 
-    bool Builder::WaitForConnection()
+    AZ::Outcome<void, AZStd::string> Builder::WaitForConnection()
     {
         if (m_startupWaitTimeS == 0)
         {
@@ -72,7 +72,7 @@ namespace AssetProcessor
 
             if (result)
             {
-                return true;
+                return AZ::Success();
             }
 
             AZ::u32 exitCode;
@@ -90,10 +90,10 @@ namespace AssetProcessor
                 AZ_Error("Builder", false, "AssetBuilder failed to connect within %d seconds", m_startupWaitTimeS);
             }
 
-            return false;
+            return AZ::Failure(AZStd::string::format("Connection failed to builder %.*s", AZ_STRING_ARG(UuidString())));
         }
 
-        return true;
+        return AZ::Success();
     }
 
     void Builder::SetConnection(AZ::u32 connId)
@@ -143,7 +143,7 @@ namespace AssetProcessor
         }
     }
 
-    bool Builder::Start(BuilderPurpose purpose)
+    AZ::Outcome<void, AZStd::string> Builder::Start(BuilderPurpose purpose)
     {
         // Get the current BinXXX folder based on the current running AP
         QString applicationDir = QCoreApplication::instance()->applicationDirPath();
@@ -157,7 +157,7 @@ namespace AssetProcessor
 
         if (m_quitListener.WasQuitRequested())
         {
-            return false;
+            return AZ::Failure(AZStd::string("Cannot start builder, quit was requested"));
         }
 
         const AZStd::vector<AZStd::string> params = BuildParams("resident", buildersFolder.c_str(), UuidString(), "", "", purpose);
@@ -166,7 +166,7 @@ namespace AssetProcessor
 
         if (!m_processWatcher)
         {
-            return false;
+            return AZ::Failure(AZStd::string::format("Failed to start process watcher for Builder %.*s.", AZ_STRING_ARG(UuidString())));
         }
 
         m_tracePrinter = AZStd::make_unique<ProcessCommunicatorTracePrinter>(m_processWatcher->GetCommunicator(), "AssetBuilder");
@@ -558,9 +558,10 @@ namespace AssetProcessor
             builderRef = BuilderRef(newBuilder);
         }
 
-        if (!newBuilder->Start(purpose))
+        AZ::Outcome<void, AZStd::string> builderStartResult = newBuilder->Start(purpose);
+        if (!builderStartResult.IsSuccess())
         {
-            AZ_Error("BuilderManager", false, "Builder failed to start");
+            AZ_Error("BuilderManager", false, "Builder failed to start with error %.*s", AZ_STRING_ARG(builderStartResult.GetError()));
 
             AZStd::unique_lock<AZStd::mutex> lock(m_buildersMutex);
 
