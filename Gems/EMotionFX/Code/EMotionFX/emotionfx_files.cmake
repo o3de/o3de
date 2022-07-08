@@ -117,6 +117,8 @@ set(FILES
     Source/SimulatedObjectBus.h
     Source/SimulatedObjectSetup.cpp
     Source/SimulatedObjectSetup.h
+    Source/SimulatedObjectSetup_Impl.inl
+    Source/SimulatedObjectSetup_Interface.inl
     Source/SingleThreadScheduler.cpp
     Source/SingleThreadScheduler.h
     Source/Skeleton.cpp
