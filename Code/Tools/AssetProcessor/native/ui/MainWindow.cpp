@@ -112,114 +112,6 @@ void ResizeProductAssetRightClickMenuList(QListWidget* productAssetList, int pro
     productAssetList->setFixedWidth(productAssetList->sizeHintForColumn(0));
 }
 
-void MainWindow::CacheServerData::Reset()
-{
-    auto* recognizerConfiguration = AZ::Interface<AssetProcessor::RecognizerConfiguration>::Get();
-    if (recognizerConfiguration)
-    {
-        m_patternContainer = recognizerConfiguration->GetAssetCacheRecognizerContainer();
-    }
-
-    using namespace AssetProcessor;
-    AssetServerBus::BroadcastResult(m_cachingMode, &AssetServerBus::Events::GetRemoteCachingMode);
-    AssetServerBus::BroadcastResult(m_serverAddress, &AssetServerBus::Events::GetServerAddress);
-    m_dirty = false;
-}
-
-bool MainWindow::CacheServerData::Save(MainWindow& mainWindow)
-{
-    // construct JSON for writing out a .setreg for current settings
-    rapidjson::Document doc;
-    doc.SetObject();
-
-    // this builds up the JSON doc for each key inside AssetProcessorSettingsKey
-    AZStd::string path;
-    AZ::StringFunc::TokenizeVisitor(
-        AssetProcessor::AssetProcessorSettingsKey,
-        [&doc, &path](AZStd::string_view elem)
-        {
-            auto key = rapidjson::StringRef(elem.data(), elem.size());
-            rapidjson::Value value(rapidjson::kObjectType);
-            if (path.empty())
-            {
-                doc.AddMember(key, value, doc.GetAllocator());
-            }
-            else
-            {
-                auto* node = rapidjson::Pointer(path.c_str(), path.size()).Get(doc);
-                node->AddMember(key, value, doc.GetAllocator());
-            }
-            path += "/";
-            path += elem;
-        },
-        '/');
-
-    // creates a rapidjson doc to hold the shared cache server settings
-    rapidjson::Value value(rapidjson::kObjectType);
-    auto* settings = rapidjson::Pointer(AssetProcessor::AssetProcessorSettingsKey).Get(doc);
-    settings->AddMember("Server", value, doc.GetAllocator());
-
-    auto server = settings->FindMember("Server");
-
-    server->value.AddMember(
-        rapidjson::StringRef(AssetProcessor::CacheServerAddressKey),
-        rapidjson::StringRef(m_serverAddress.c_str()),
-        doc.GetAllocator());
-
-    server->value.AddMember(
-        rapidjson::StringRef(AssetProcessor::AssetCacheServerModeKey),
-        rapidjson::StringRef(AssetProcessor::AssetServerHandler::GetAssetServerModeText(m_cachingMode)),
-        doc.GetAllocator());
-
-    // add the cache patterns
-    AZStd::string jsonText;
-    AssetProcessor::PlatformConfiguration::ConvertToJson(m_patternContainer, jsonText);
-    if (!jsonText.empty())
-    {
-        rapidjson::Document recognizerDoc;
-        recognizerDoc.Parse(jsonText.c_str());
-        for (auto member = recognizerDoc.MemberBegin(); member != recognizerDoc.MemberEnd(); ++member)
-        {
-            rapidjson::Value valuePattern;
-            valuePattern.CopyFrom(member->value, doc.GetAllocator(), true);
-            rapidjson::Value valueKey;
-            valueKey.CopyFrom(member->name, doc.GetAllocator(), true);
-            server->value.AddMember(AZStd::move(valueKey), AZStd::move(valuePattern), doc.GetAllocator());
-        }
-    }
-
-    // get project folder and construct Registry project folder
-    const char* assetCacheServerSettings = "asset_cache_server_settings.setreg";
-    AZ::IO::Path fullpath( mainWindow.m_guiApplicationManager->GetProjectPath().toUtf8().data() );
-    fullpath /= "Registry";
-    fullpath /= assetCacheServerSettings;
-
-    QFile file(fullpath.c_str());
-    bool result = file.open(QIODevice::ReadWrite);
-    if (result)
-    {
-        rapidjson::StringBuffer buffer;
-        rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(buffer);
-        doc.Accept(writer);
-
-        // rewrite the file contents
-        file.resize(0);
-        QTextStream stream(&file);
-        stream.setCodec("UTF-8");
-        stream << buffer.GetString();
-
-        m_errorLevel = CacheServerData::ErrorLevel::Notice;
-        m_errorMessage = AZStd::string::format("Updated settings file (%s)", fullpath.c_str());
-    }
-    else
-    {
-        m_errorLevel = CacheServerData::ErrorLevel::Error;
-        m_errorMessage = AZStd::string::format("**Error**: Could not write settings file (%s)", fullpath.c_str());
-    }
-    file.close();
-    return result;
-}
-
 MainWindow::Config MainWindow::loadConfig(QSettings& settings)
 {
     using namespace AzQtComponents;
@@ -751,7 +643,8 @@ void MainWindow::SetupAssetServerTab()
                 AssetServerBus::BroadcastResult(changedServerAddress, &AssetServerBus::Events::SetServerAddress, this->m_cacheServerData.m_serverAddress);
                 if (changedServerAddress)
                 {
-                    if (this->m_cacheServerData.Save(*this))
+                    AZ::IO::Path projectPath(m_guiApplicationManager->GetProjectPath().toUtf8().data());
+                    if (this->m_cacheServerData.Save(projectPath))
                     {
                         AssetServerBus::Broadcast(&AssetServerBus::Events::SetRemoteCachingMode, this->m_cacheServerData.m_cachingMode);
                         this->m_cacheServerData.Reset();
@@ -891,6 +784,8 @@ void MainWindow::AssembleAssetPatterns()
 
 void MainWindow::CheckAssetServerStates()
 {
+    using namespace AssetProcessor;
+
     if (m_cacheServerData.m_dirty)
     {
         ui->sharedCacheSubmitButton->setEnabled(true);
@@ -934,6 +829,8 @@ void MainWindow::CheckAssetServerStates()
 
 void MainWindow::ResetAssetServerView()
 {
+    using namespace AssetProcessor;
+
     ui->serverCacheModeOptions->setCurrentIndex(aznumeric_cast<int>(m_cacheServerData.m_cachingMode));
     ui->serverAddressText->setPlainText(QString(m_cacheServerData.m_serverAddress.c_str()));
 

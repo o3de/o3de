@@ -19,6 +19,7 @@
 #include <ui/BuilderListModel.h>
 #include <native/utilities/AssetUtilEBusHelper.h>
 #include <native/utilities/PlatformConfiguration.h>
+#include <native/ui/CacheServerData.h>
 #endif
 
 namespace AzToolsFramework
@@ -135,27 +136,6 @@ private:
         QSet<AzToolsFramework::Logging::LogLine::LogType> m_logTypes;
     };
 
-    struct CacheServerData
-    {
-        enum class ErrorLevel
-        {
-            None,
-            Notice,
-            Warning,
-            Error
-        };
-
-        bool m_dirty = false;
-        AssetProcessor::AssetServerMode m_cachingMode = AssetProcessor::AssetServerMode::Inactive;
-        AZStd::string m_serverAddress = "";
-        AssetProcessor::RecognizerContainer m_patternContainer;
-        ErrorLevel m_errorLevel = ErrorLevel::None;
-        AZStd::string m_errorMessage;
-
-        void Reset();
-        bool Save(MainWindow& mainWindow);
-    };
-
     Ui::MainWindow* ui;
     GUIApplicationManager* m_guiApplicationManager;
     AzToolsFramework::Logging::LogTableModel* m_logsModel;
@@ -173,7 +153,7 @@ private:
     Config m_config;
     BuilderListModel* m_builderList;
     BuilderListSortFilterProxy* m_builderListSortFilterProxy;
-    CacheServerData m_cacheServerData;
+    AssetProcessor::CacheServerData m_cacheServerData;
 
     void SetContextLogDetailsVisible(bool visible);
     void SetContextLogDetails(const QMap<QString, QString>& details);
