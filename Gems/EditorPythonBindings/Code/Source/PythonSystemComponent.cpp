@@ -775,7 +775,9 @@ namespace EditorPythonBindings
             return Result::Error_MissingFile;
         }
 
-        FILE* file = _Py_fopen(theFilename.data(), "rb");
+        FILE* file = nullptr;
+        azfopen(&file, theFilename.c_str(), "rb");
+
         if (!file)
         {
             AZ_Error("python", false, "Missing Python file named (%s)", theFilename.c_str());

@@ -21,7 +21,7 @@ AZStd::fixed_vector<{{ element.attrib['Type'] }}, {{ element.attrib['Count'] }}>
         static constexpr AzNetworking::PacketType Type = aznumeric_cast<AzNetworking::PacketType>({{ type }});
 
         {{ name }}() = default;
-{%  if (packetNode.getchildren()) | len > 0 %}
+{%  if packetNode | len > 0 %}
         explicit {{ name }}
         (
 {%          for Member in packetNode %}
@@ -61,7 +61,7 @@ AZStd::fixed_vector<{{ element.attrib['Type'] }}, {{ element.attrib['Count'] }}>
         AZStd::unique_ptr<AzNetworking::IPacket> Clone() const override;
         bool Serialize(AzNetworking::ISerializer& serializer) override;
         //! @}
-{%  if (packetNode.getchildren()) | len > 0 %}
+{%  if packetNode | len > 0 %}
 
     private:
 
