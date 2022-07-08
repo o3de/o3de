@@ -42,8 +42,6 @@ namespace AzToolsFramework
         {
             AZ::Interface<InstanceUpdateExecutorInterface>::Register(this);
 
-            m_instanceDomGenerator.RegisterInstanceDomGeneratorInterface();
-
             m_prefabSystemComponentInterface = AZ::Interface<PrefabSystemComponentInterface>::Get();
             AZ_Assert(m_prefabSystemComponentInterface != nullptr,
                 "Prefab - InstanceUpdateExecutor::RegisterInstanceUpdateExecutorInterface - "
@@ -70,8 +68,6 @@ namespace AzToolsFramework
             m_instanceDomGeneratorInterface = nullptr;
             m_templateInstanceMapperInterface = nullptr;
             m_prefabSystemComponentInterface = nullptr;
-
-            m_instanceDomGenerator.UnregisterInstanceDomGeneratorInterface();
 
             AZ::Interface<InstanceUpdateExecutorInterface>::Unregister(this);
         }
