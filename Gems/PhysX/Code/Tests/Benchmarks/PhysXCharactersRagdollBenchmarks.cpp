@@ -13,6 +13,8 @@
 #include <AzTest/Utils.h>
 
 #include <AzCore/Math/MathUtils.h>
+#include <AzCore/Settings/SettingsRegistryImpl.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 
 #include <Benchmarks/PhysXBenchmarksCommon.h>
 #include <Benchmarks/PhysXBenchmarksUtilities.h>
@@ -70,8 +72,7 @@ namespace PhysX::Benchmarks
     class PhysXCharactersRagdollBenchmarkFixture
         : public PhysX::Benchmarks::PhysXBaseBenchmarkFixture
     {
-    public:
-        virtual void SetUp([[maybe_unused]] const ::benchmark::State& state) override
+        void internalSetUp()
         {
             PhysX::Benchmarks::PhysXBaseBenchmarkFixture::SetUpInternal();
             //need to get the Physics::System to be able to spawn the rigid bodies
@@ -80,10 +81,29 @@ namespace PhysX::Benchmarks
             m_terrainEntity = PhysX::TestUtils::CreateFlatTestTerrain(m_testSceneHandle, RagdollConstants::TerrainSize, RagdollConstants::TerrainSize);
         }
 
-        virtual void TearDown([[maybe_unused]] const ::benchmark::State& state) override
+        void internalTearDown()
         {
             m_terrainEntity = nullptr;
             PhysX::Benchmarks::PhysXBaseBenchmarkFixture::TearDownInternal();
+        }
+
+    public:
+        void SetUp(const benchmark::State&) override
+        {
+            internalSetUp();
+        }
+        void SetUp(benchmark::State&) override
+        {
+            internalSetUp();
+        }
+
+        void TearDown(const benchmark::State&) override
+        {
+            internalTearDown();
+        }
+        void TearDown(benchmark::State&) override
+        {
+            internalTearDown();
         }
 
     protected:
@@ -121,8 +141,18 @@ namespace PhysX::Benchmarks
 
     PhysX::Ragdoll* CreateRagdoll(AzPhysics::SceneHandle sceneHandle)
     {
+        using FixedValueString = AZ::SettingsRegistryInterface::FixedValueString;
+        AZ::SettingsRegistryImpl localRegistry;
+        localRegistry.Set(AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder, AZ::Test::GetEngineRootPath());
+
+        // Look up the path to the PhysX Gem root
+        AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_ManifestGemsPaths(localRegistry);
+        AZ::IO::Path physXGemFolder;
+        localRegistry.Get(physXGemFolder.Native(), FixedValueString::format("%s/PhysX/Path",
+            AZ::SettingsRegistryMergeUtils::ManifestGemsRootKey));
+
         Physics::RagdollConfiguration* configuration =
-            AZ::Utils::LoadObjectFromFile<Physics::RagdollConfiguration>(AZ::Test::GetEngineRootPath() + "/Gems/PhysX/Code/Tests/RagdollConfiguration.xml");
+            AZ::Utils::LoadObjectFromFile<Physics::RagdollConfiguration>((physXGemFolder / "Code/Tests/RagdollConfiguration.xml").Native());
 
         configuration->m_initialState = GetTPose();
         configuration->m_parentIndices.reserve(configuration->m_nodes.size());
@@ -180,7 +210,7 @@ namespace PhysX::Benchmarks
         //setup the frame timer tracker
         AZStd::vector<double> tickTimes;
         tickTimes.reserve(RagdollConstants::GameFramesToSimulate);
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (AZ::u32 i = 0; i < RagdollConstants::GameFramesToSimulate; i++)
             {
@@ -225,7 +255,6 @@ namespace PhysX::Benchmarks
         }
 
         //enable and position the ragdolls
-        const int ragdollsPerCol = static_cast<const int>(RagdollConstants::TerrainSize / 10.0f) - 1;
         int idx = 0;
         for (auto& ragdoll : ragdolls)
         {
@@ -247,7 +276,7 @@ namespace PhysX::Benchmarks
         //setup the frame timer tracker
         AZStd::vector<double> tickTimes;
         tickTimes.reserve(RagdollConstants::GameFramesToSimulate);
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (AZ::u32 i = 0; i < RagdollConstants::GameFramesToSimulate; i++)
             {

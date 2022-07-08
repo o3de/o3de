@@ -24,5 +24,11 @@ namespace AZ
                     ;
             }
         }
+
+        DeviceDescriptor::~DeviceDescriptor()
+        {
+            m_platformLimitsDescriptor = nullptr;
+        }
+
     }
 }

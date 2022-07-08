@@ -35,27 +35,6 @@ namespace UnitTest
             : m_application { AZStd::make_unique<AzFramework::Application>() }
         {}
 
-        void SetUp() override
-        {
-            AZ::SettingsRegistryInterface* registry = AZ::SettingsRegistry::Get();
-
-            auto projectPathKey =
-                AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) + "/project_path";
-            registry->Set(projectPathKey, "AutomatedTesting");
-            AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*registry);
-
-            m_application->Start({});
-            // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
-            // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash 
-            // in the unit tests.
-            AZ::UserSettingsComponentRequestBus::Broadcast(&AZ::UserSettingsComponentRequests::DisableSaveOnFinalize);
-        }
-
-        void TearDown() override
-        {
-            m_application->Stop();
-        }
-
     private:
         AZStd::unique_ptr<AzFramework::Application> m_application;
     };
@@ -68,7 +47,7 @@ namespace UnitTest
             return false;
         }
 
-        if (!archive->OpenPack(path, AZ::IO::IArchive::FLAGS_PATH_REAL))
+        if (!archive->OpenPack(path))
         {
             return false;
         }
@@ -94,7 +73,7 @@ namespace UnitTest
         fileIo->Remove(testArchivePath.c_str());
 
         // ------------ BASIC TEST:  Create and read Empty Archive ------------
-        AZStd::intrusive_ptr<AZ::IO::INestedArchive> pArchive = archive->OpenArchive(testArchivePath.c_str(), nullptr, AZ::IO::INestedArchive::FLAGS_CREATE_NEW);
+        AZStd::intrusive_ptr<AZ::IO::INestedArchive> pArchive = archive->OpenArchive(testArchivePath.c_str(), {}, AZ::IO::INestedArchive::FLAGS_CREATE_NEW);
         EXPECT_NE(nullptr, pArchive);
         pArchive.reset();
         EXPECT_TRUE(IsPackValid(testArchivePath.c_str()));
@@ -122,7 +101,7 @@ namespace UnitTest
             checkSums[pos] = static_cast<uint8_t>(pos % 256);
         }
 
-        auto pArchive = archive->OpenArchive(testArchivePath.c_str(), nullptr, AZ::IO::INestedArchive::FLAGS_CREATE_NEW);
+        auto pArchive = archive->OpenArchive(testArchivePath.c_str(), {}, AZ::IO::INestedArchive::FLAGS_CREATE_NEW);
         EXPECT_NE(nullptr, pArchive);
 
         // the strategy here is to find errors related to file sizes, alignment, overwrites
@@ -143,7 +122,7 @@ namespace UnitTest
 
 
         // --------------------------------------------- read it back and verify
-        pArchive = archive->OpenArchive(testArchivePath.c_str(), nullptr, openFlags);
+        pArchive = archive->OpenArchive(testArchivePath.c_str(), {}, openFlags);
         EXPECT_NE(nullptr, pArchive);
 
         for (int j = 0; j < iterations; ++j)
@@ -241,7 +220,7 @@ namespace UnitTest
 
         // -------------------------------------------------------------------------------------------
         // read it back and verify
-        pArchive = archive->OpenArchive(testArchivePath.c_str(), nullptr, openFlags);
+        pArchive = archive->OpenArchive(testArchivePath.c_str(), {}, openFlags);
         EXPECT_NE(nullptr, pArchive);
 
         for (int j = 0; j < iterations; ++j)
@@ -298,7 +277,7 @@ namespace UnitTest
         }
 
         // first, reset the pack to the original state:
-        auto pArchive = archive->OpenArchive(testArchivePath.c_str(), nullptr, AZ::IO::INestedArchive::FLAGS_CREATE_NEW);
+        auto pArchive = archive->OpenArchive(testArchivePath.c_str(), {}, AZ::IO::INestedArchive::FLAGS_CREATE_NEW);
         EXPECT_NE(nullptr, pArchive);
 
         for (int j = 0; j < iterations; ++j)
@@ -382,7 +361,7 @@ namespace UnitTest
 
         // -------------------------------------------------------------------------------------------
         // read it back and verify
-        pArchive = archive->OpenArchive(testArchivePath.c_str(), nullptr, openFlags);
+        pArchive = archive->OpenArchive(testArchivePath.c_str(), {}, openFlags);
         EXPECT_NE(nullptr, pArchive);
 
         writeCount = 0;

@@ -8,6 +8,7 @@
 #pragma once
 
 #include <AzCore/EBus/EBus.h>
+#include <AzCore/Math/Vector2.h>
 #include <AzCore/Outcome/Outcome.h>
 #include <AzCore/std/any.h>
 #include <AzCore/std/string/string.h>

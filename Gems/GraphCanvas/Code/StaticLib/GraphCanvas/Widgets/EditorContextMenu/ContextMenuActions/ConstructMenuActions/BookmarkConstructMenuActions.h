@@ -20,6 +20,7 @@ namespace GraphCanvas
         AddBookmarkMenuAction(QObject* parent);
         virtual ~AddBookmarkMenuAction() = default;
 
+        using ConstructContextMenuAction::TriggerAction;
         SceneReaction TriggerAction(const AZ::Vector2& scenePos) override;
     };
 }

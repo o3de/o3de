@@ -41,10 +41,10 @@ namespace WhiteBox
                     ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/WhiteBox_collider.svg")
                     ->Attribute(
                         AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/WhiteBox_collider.png")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
+                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                     ->Attribute(
                         AZ::Edit::Attributes::HelpPageURL,
-                        "https://o3de.org/docs/user-guide/components/reference/white-box-collider/")
+                        "https://o3de.org/docs/user-guide/components/reference/shape/white-box-collider/")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &EditorWhiteBoxColliderComponent::m_physicsColliderConfiguration,
@@ -61,18 +61,20 @@ namespace WhiteBox
 
     void EditorWhiteBoxColliderComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("WhiteBoxColliderService", 0x480d5b06));
+        provided.push_back(AZ_CRC_CE("WhiteBoxColliderService"));
+        provided.push_back(AZ_CRC_CE("PhysicsStaticRigidBodyService"));
     }
 
     void EditorWhiteBoxColliderComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC("TransformService", 0x8ee22c50));
-        required.push_back(AZ_CRC("WhiteBoxService", 0x2f2f42b8));
+        required.push_back(AZ_CRC_CE("TransformService"));
+        required.push_back(AZ_CRC_CE("WhiteBoxService"));
     }
 
     void EditorWhiteBoxColliderComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
         incompatible.push_back(AZ_CRC_CE("NonUniformScaleService"));
+        incompatible.push_back(AZ_CRC_CE("WhiteBoxColliderService"));
     }
 
     void EditorWhiteBoxColliderComponent::Activate()
@@ -151,15 +153,17 @@ namespace WhiteBox
 
         if (m_sceneInterface)
         {
+            DestroyPhysics();
             m_rigidBodyHandle = m_sceneInterface->AddSimulatedBody(m_editorSceneHandle, &bodyConfiguration);
         }
     }
 
     void EditorWhiteBoxColliderComponent::DestroyPhysics()
     {
-        if (m_sceneInterface)
+        if (m_sceneInterface && m_rigidBodyHandle != AzPhysics::InvalidSimulatedBodyHandle)
         {
             m_sceneInterface->RemoveSimulatedBody(m_editorSceneHandle, m_rigidBodyHandle);
+            m_rigidBodyHandle = AzPhysics::InvalidSimulatedBodyHandle;
         }
     }
 
@@ -180,11 +184,11 @@ namespace WhiteBox
         // fill vertex position array
         size_t index = 0;
         const auto faceHandles = Api::MeshFaceHandles(whiteBox);
-        for (const auto faceHandle : faceHandles)
+        for (const auto& faceHandle : faceHandles)
         {
             const auto faceHalfedgeHandles = Api::FaceHalfedgeHandles(whiteBox, faceHandle);
 
-            for (const auto halfEdgeHandle : faceHalfedgeHandles)
+            for (const auto& halfEdgeHandle : faceHalfedgeHandles)
             {
                 const auto vh = Api::HalfedgeVertexHandleAtTip(whiteBox, halfEdgeHandle);
                 vertices[index] = Api::VertexPosition(whiteBox, vh);

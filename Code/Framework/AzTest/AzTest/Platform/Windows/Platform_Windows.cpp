@@ -9,6 +9,7 @@
 #include <string>
 #include <iostream>
 #include <AzTest/Platform.h>
+#include <AzCore/std/string/conversions.h>
 
 //-------------------------------------------------------------------------------------------------
 class ModuleHandle
@@ -151,13 +152,7 @@ namespace AZ
             va_start(mark, format);
             azvsnprintf(message, MAX_PRINT_MSG, format, mark);
             va_end(mark);
-            OutputDebugString(message);
-        }
-
-        AZ::EnvironmentInstance Platform::GetTestRunnerEnvironment()
-        {
-            // Not currently supported
-            return nullptr;
+            AZ::Debug::Platform::OutputToDebugger(nullptr, message);
         }
     } // Test
 } // AZ

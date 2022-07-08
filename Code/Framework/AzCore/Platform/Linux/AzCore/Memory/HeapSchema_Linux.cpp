@@ -8,13 +8,10 @@
 
 #include <AzCore/base.h>
 
-namespace AZ
+namespace AZ::Platform
 {
-    namespace Platform
+    size_t GetHeapCapacity()
     {
-        size_t GetHeapCapacity()
-        {
-            return 0;
-        }
+        return 0;
     }
-}
+} // namespace AZ::Platform

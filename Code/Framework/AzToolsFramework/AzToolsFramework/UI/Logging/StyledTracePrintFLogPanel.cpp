@@ -107,7 +107,7 @@ namespace AzToolsFramework
 
         void StyledTracePrintFLogTab::LogTraceMessage(Logging::LogLine::LogType type, const char* window, const char* message, bool alwaysShowMessage)
         {
-            // note:  This is responding to a trace driller bus message
+            // note:  This is responding to a TraceMessageBus message
             // as such, the mutex is already locked but we could be called from any thread at all, so we buffer the lines.
 
             // is it for this window?
@@ -128,10 +128,20 @@ namespace AzToolsFramework
                     bool wasQueued = m_alreadyQueuedDrainMessage.exchange(true, AZStd::memory_order_acq_rel);
                     if (!wasQueued)
                     {
-                        QTimer::singleShot(s_delayBetweenStyledTraceprintfUpdates, this, &StyledTracePrintFLogTab::DrainMessages);
+                        // this code is likely running in a listener thread, which cannot invoke
+                        // QTimer::singleShot and must instead place a message on the message queue.
+                        QMetaObject::invokeMethod(this, "ScheduleDrainMessages", Qt::QueuedConnection);
                     }
                 }
             }
+        }
+
+        // metaMethod to invoke when you are in a non-Qt thread and need
+        // to schedule messages to be drained.
+        void StyledTracePrintFLogTab::ScheduleDrainMessages()
+        {
+            // this is invoked on the actual thread of the UI, so it can call timer::singleShot.
+             QTimer::singleShot(s_delayBetweenStyledTraceprintfUpdates, this, &StyledTracePrintFLogTab::DrainMessages);
         }
 
         // we only tick when there's queue to drain.

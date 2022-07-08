@@ -22,7 +22,7 @@
                 },
                 // SwapChain here is only used to reference the frame height and format
                 {
-                    "Name": "SwapChainOutput",
+                    "Name": "PipelineOutput",
                     "SlotType": "InputOutput"
                 },
                 // Outputs...
@@ -44,8 +44,8 @@
                 {
                     "LocalSlot": "Output",
                     "AttachmentRef": {
-                        "Pass": "ContrastAdaptiveSharpeningPass",
-                        "Attachment": "OutputColor"
+                        "Pass": "ChromaticAberrationPass",
+                        "Attachment": "Output"
                     }
                 },
                 {
@@ -112,20 +112,42 @@
                         }
                     ]
                 },
+                // Todo: remove the old depth of field implementation and rename NewDepthOfField -> DepthOfField
+                //{
+                //    "Name": "DepthOfFieldPass",
+                //    "TemplateName": "DepthOfFieldTemplate",
+                //    "Enabled": true,
+                //    "Connections": [
+                //        {
+                //            "LocalSlot": "DoFColorInput",
+                //            "AttachmentRef": {
+                //                "Pass": "TaaPass",
+                //                "Attachment": "OutputColor"
+                //            }
+                //        },
+                //        {
+                //            "LocalSlot": "DoFDepthInput",
+                //            "AttachmentRef": {
+                //                "Pass": "Parent",
+                //                "Attachment": "Depth"
+                //            }
+                //        }
+                //    ]
+                //},
                 {
                     "Name": "DepthOfFieldPass",
-                    "TemplateName": "DepthOfFieldTemplate",
+                    "TemplateName": "NewDepthOfFieldTemplate",
                     "Enabled": true,
                     "Connections": [
                         {
-                            "LocalSlot": "DoFColorInput",
+                            "LocalSlot": "LightingBuffer",
                             "AttachmentRef": {
                                 "Pass": "TaaPass",
                                 "Attachment": "OutputColor"
                             }
                         },
                         {
-                            "LocalSlot": "DoFDepthInput",
+                            "LocalSlot": "Depth",
                             "AttachmentRef": {
                                 "Pass": "Parent",
                                 "Attachment": "Depth"
@@ -142,7 +164,7 @@
                             "LocalSlot": "InputOutput",
                             "AttachmentRef": {
                                 "Pass": "DepthOfFieldPass",
-                                "Attachment": "DoFOutput"
+                                "Attachment": "LightingBuffer"
                             }
                         }
                     ]
@@ -159,10 +181,10 @@
                             }
                         },
                         {
-                            "LocalSlot": "SwapChainOutput",
+                            "LocalSlot": "PipelineOutput",
                             "AttachmentRef": {
                                 "Pass": "Parent",
-                                "Attachment": "SwapChainOutput"
+                                "Attachment": "PipelineOutput"
                             }
                         }
                     ]
@@ -180,7 +202,20 @@
                             }
                         }
                     ]
-                }
+                },
+                {
+                    "Name": "ChromaticAberrationPass",
+                    "TemplateName": "ChromaticAberrationTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "Input",
+			                "AttachmentRef": {
+                                "Pass": "ContrastAdaptiveSharpeningPass",
+                                "Attachment": "OutputColor"
+			                }
+			            }
+		            ]
+		        }
             ]
         }
     }

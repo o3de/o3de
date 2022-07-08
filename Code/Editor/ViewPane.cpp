@@ -38,7 +38,6 @@
 #include "Viewport.h"
 #include "LayoutConfigDialog.h"
 #include "TopRendererWnd.h"
-#include "UserMessageDefines.h"
 #include "MainWindow.h"
 #include "QtViewPaneManager.h"
 #include "EditorViewportWidget.h"
@@ -88,29 +87,15 @@ public:
                                 }
 
                                 // Handle labels with submenus
-                                if (auto toolLabel = qobject_cast<QLabel*>(toolWidget))
+                                if (auto toolLabel = qobject_cast<QToolButton*>(toolWidget))
                                 {
                                     if (!toolLabel->isVisible())
                                     {
                                         // Manually turn the custom context menus into submenus
-                                        if (toolLabel->objectName() == "m_fovStaticCtrl")
+                                        if (toolLabel->menu())
                                         {
-                                            QAction* newAction = menu->addMenu(m_viewportDlg->GetFovMenu());
-                                            newAction->setText(QString("FOV: %1").arg(toolLabel->text()));
-                                        }
-                                        else if (toolLabel->objectName() == "m_ratioStaticCtrl")
-                                        {
-                                            QAction* newAction = menu->addMenu(m_viewportDlg->GetAspectMenu());
-                                            newAction->setText(QString("Ratio: %1").arg(toolLabel->text()));
-                                        }
-                                        else if (toolLabel->objectName() == "m_sizeStaticCtrl")
-                                        {
-                                            QAction* newAction = menu->addMenu(m_viewportDlg->GetResolutionMenu());
-                                            newAction->setText(QString("%1").arg(toolLabel->text()));
-                                        }
-                                        else
-                                        {
-                                            // Don't add actions for other Labels
+                                            QAction* action = menu->addMenu(toolLabel->menu());
+                                            action->setText(toolLabel->text());
                                             continue;
                                         }
                                     }
@@ -159,8 +144,8 @@ CLayoutViewPane::CLayoutViewPane(QWidget* parent)
     , m_viewportTitleDlg(this)
     , m_expanderWatcher(new ViewportTitleExpanderWatcher(this, &m_viewportTitleDlg))
 {
-    m_viewport = 0;
-    m_active = 0;
+    m_viewport = nullptr;
+    m_active = false;
     m_nBorder = VIEW_BORDER;
 
     m_bFullscreen = false;
@@ -180,12 +165,23 @@ CLayoutViewPane::CLayoutViewPane(QWidget* parent)
     toolbar->installEventFilter(&m_viewportTitleDlg);
     toolbar->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(toolbar, &QWidget::customContextMenuRequested, &m_viewportTitleDlg, &QWidget::customContextMenuRequested);
-
     setContextMenuPolicy(Qt::NoContextMenu);
-
+    
     if (QToolButton* expansion = AzQtComponents::ToolBar::getToolBarExpansionButton(toolbar))
     {
         expansion->installEventFilter(m_expanderWatcher);
+    }
+
+    AzQtComponents::BreadCrumbs* prefabsBreadcrumbs =
+        qobject_cast<AzQtComponents::BreadCrumbs*>(toolbar->findChild<QWidget*>("m_prefabFocusPath"));
+    QToolButton* backButton = qobject_cast<QToolButton*>(toolbar->findChild<QWidget*>("m_prefabFocusBackButton"));
+
+    AZ_Assert(prefabsBreadcrumbs, "Could not find Prefabs Breadcrumbs widget on CLayoutViewPane initialization!");
+    AZ_Assert(backButton, "Could not find Prefabs Breadcrumbs back button on CLayoutViewPane initialization!");
+
+    if (prefabsBreadcrumbs && backButton)
+    {
+        m_viewportTitleDlg.InitializePrefabViewportFocusPathHandler(prefabsBreadcrumbs, backButton);
     }
 
     m_id = -1;
@@ -305,10 +301,6 @@ void CLayoutViewPane::AttachViewport(QWidget* pViewport)
         {
             vp->SetViewportId(GetId());
             vp->SetViewPane(this);
-            if (CRenderViewport* renderViewport = viewport_cast<CRenderViewport*>(vp))
-            {
-                renderViewport->ConnectViewportInteractionRequestBus();
-            }
             if (EditorViewportWidget* renderViewport = viewport_cast<EditorViewportWidget*>(vp))
             {
                 renderViewport->ConnectViewportInteractionRequestBus();
@@ -338,7 +330,7 @@ void CLayoutViewPane::DetachViewport()
 {
     DisconnectRenderViewportInteractionRequestBus();
     OnFOVChanged(gSettings.viewports.fDefaultFov);
-    m_viewport = 0;
+    m_viewport = nullptr;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -348,7 +340,7 @@ void CLayoutViewPane::ReleaseViewport()
     {
         DisconnectRenderViewportInteractionRequestBus();
         m_viewport->deleteLater();
-        m_viewport = 0;
+        m_viewport = nullptr;
     }
 }
 
@@ -356,10 +348,6 @@ void CLayoutViewPane::DisconnectRenderViewportInteractionRequestBus()
 {
     if (QtViewport* vp = qobject_cast<QtViewport*>(m_viewport))
     {
-        if (CRenderViewport* renderViewport = viewport_cast<CRenderViewport*>(vp))
-        {
-            renderViewport->DisconnectViewportInteractionRequestBus();
-        }
         if (EditorViewportWidget* renderViewport = viewport_cast<EditorViewportWidget*>(vp))
         {
             renderViewport->DisconnectViewportInteractionRequestBus();
@@ -467,27 +455,20 @@ void CLayoutViewPane::SetAspectRatio(unsigned int x, unsigned int y)
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CLayoutViewPane::SetViewportFOV(float fov)
+void CLayoutViewPane::SetViewportFOV(const float fovDegrees)
 {
-    if (CRenderViewport* pRenderViewport = qobject_cast<CRenderViewport*>(m_viewport))
-    {
-        pRenderViewport->SetFOV(DEG2RAD(fov));
-
-        // if viewport camera is active, make selected fov new default
-        if (pRenderViewport->GetViewManager()->GetCameraObjectId() == GUID_NULL)
-        {
-            gSettings.viewports.fDefaultFov = DEG2RAD(fov);
-        }
-    }
     if (EditorViewportWidget* pRenderViewport = qobject_cast<EditorViewportWidget*>(m_viewport))
     {
-        pRenderViewport->SetFOV(DEG2RAD(fov));
+        const auto fovRadians = AZ::DegToRad(fovDegrees);
+        pRenderViewport->SetFOV(fovRadians);
 
         // if viewport camera is active, make selected fov new default
         if (pRenderViewport->GetViewManager()->GetCameraObjectId() == GUID_NULL)
         {
-            gSettings.viewports.fDefaultFov = DEG2RAD(fov);
+            gSettings.viewports.fDefaultFov = fovRadians;
         }
+
+        OnFOVChanged(fovRadians);
     }
 }
 
@@ -650,9 +631,9 @@ void CLayoutViewPane::SetFocusToViewport()
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CLayoutViewPane::OnFOVChanged(float fov)
+void CLayoutViewPane::OnFOVChanged(const float fovRadians)
 {
-    m_viewportTitleDlg.OnViewportFOVChanged(fov);
+    m_viewportTitleDlg.OnViewportFOVChanged(fovRadians);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -664,7 +645,7 @@ namespace
         if (viewPane && viewPane->GetViewport())
         {
             const QRect rcViewport = viewPane->GetViewport()->rect();
-            return AZ::Vector2(rcViewport.width(), rcViewport.height());
+            return AZ::Vector2(static_cast<float>(rcViewport.width()), static_cast<float>(rcViewport.height()));
         }
         else
         {
@@ -764,7 +745,7 @@ namespace
 
     void PySetActiveViewport(unsigned int viewportIndex)
     {
-        bool success = false;
+        [[maybe_unused]] bool success = false;
         CLayoutWnd* layout = GetIEditor()->GetViewManager()->GetLayout();
         if (layout)
         {
@@ -787,7 +768,9 @@ namespace
 
     void PySetViewPaneLayout(unsigned int layoutId)
     {
+        AZ_PUSH_DISABLE_WARNING(4296, "-Wunknown-warning-option")
         if ((layoutId >= ET_Layout0) && (layoutId <= ET_Layout8))
+        AZ_POP_DISABLE_WARNING
         {
             CLayoutWnd* layout = GetIEditor()->GetViewManager()->GetLayout();
             if (layout)

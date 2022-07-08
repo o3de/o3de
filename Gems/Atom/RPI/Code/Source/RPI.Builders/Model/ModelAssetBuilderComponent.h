@@ -120,8 +120,14 @@ namespace AZ
                 AZStd::vector<RPI::PackedCompressedMorphTargetDelta> m_morphTargetVertexData;
 
                 MaterialUid m_materialUid;
-                bool CanBeMerged() const { return m_clothData.empty(); }
-                bool m_hasMorphedColors = false;
+                uint32_t m_influencesPerVertex = 0;
+
+                bool CanBeMerged() const
+                {
+                    // Temporarily disable merging skinned meshes to avoid merging meshes that have different
+                    // per-vertex influence counts. This can be reverted when GHI-7588 is resolved 
+                    return m_clothData.empty() && m_influencesPerVertex == 0;
+                }
             };
             using ProductMeshContentList = AZStd::vector<ProductMeshContent>;
 
@@ -146,7 +152,8 @@ namespace AZ
                 size_t m_clothDataFloatCount = 0;
                 AZStd::vector<size_t> m_uvSetFloatCounts;
                 AZStd::vector<size_t> m_colorSetFloatCounts;
-                size_t m_skinInfluencesCount = 0;
+                size_t m_jointIdsCount = 0;
+                size_t m_jointWeightsCount = 0;
                 size_t m_morphTargetVertexDeltaCount = 0;
             };
 
@@ -189,7 +196,7 @@ namespace AZ
             //! This product list is not 1:1 but it is as close as we can get with minimal processing.
             //! Since a SouceMeshContent object may have faces that have multiple materials we have to break 
             //! that into a ProductMeshContent object for each material. No further processing is done
-            ProductMeshContentList SourceMeshListToProductMeshList(
+            AZ::Outcome<ProductMeshContentList> SourceMeshListToProductMeshList(
                 const ModelAssetBuilderContext& context,
                 const SourceMeshContentList& sourceMeshContentList,
                 AZStd::unordered_map<AZStd::string, uint16_t>& jointNameToIndexMap,
@@ -202,7 +209,7 @@ namespace AZ
             void PadVerticesForSkinning(ProductMeshContentList& productMeshList);
 
             //! Takes in a ProductMeshContentList and merges all elements that share the same MaterialUid.
-            ProductMeshContentList MergeMeshesByMaterialUid(
+            AZ::Outcome<ModelAssetBuilderComponent::ProductMeshContentList> MergeMeshesByMaterialUid(
                 const ProductMeshContentList& productMeshList);
 
             //! Simple helper to create a MeshView that views an entire given ProductMeshContent object as one mesh.
@@ -212,7 +219,7 @@ namespace AZ
             //! This also produces a ProductMeshViewList that contains views to all
             //! the original meshes described in the lodMeshList collection.
             void MergeMeshesToCommonBuffers(
-                const ProductMeshContentList& lodMeshList,
+                ProductMeshContentList& lodMeshList,
                 ProductMeshContent& lodMeshContent,
                 ProductMeshViewList& meshViewsPerLodBuffer);
 
@@ -270,10 +277,10 @@ namespace AZ
 
             //! Checks to see if a data buffer is the expected size
             template<typename T>
-            void ValidateStreamSize(size_t expectedVertexCount, const AZStd::vector<T>& bufferData, AZ::RHI::Format format, const char* streamName) const;
+            bool ValidateStreamSize(size_t expectedVertexCount, const AZStd::vector<T>& bufferData, AZ::RHI::Format format, const char* streamName) const;
 
             //! Checks to see if the vertex count for each stream within a mesh is the same
-            void ValidateStreamAlignment(const ProductMeshContent& mesh) const;
+            bool ValidateStreamAlignment(const ProductMeshContent& mesh) const;
 
             //! Takes a ProductMeshContent object, produces BufferAsset objects for each
             //! stream and then applies those to the given ModelLodAssetCreator as the
@@ -364,8 +371,7 @@ namespace AZ
             AZStd::string m_lodName;
             AZStd::string m_meshName;
 
-            size_t m_numSkinJointInfluencesPerVertex = 0;
-            float m_skinWeightThreshold = 0.0f;
+            SceneAPI::DataTypes::SkinRuleSettings m_skinRuleSettings;
 
             AZStd::set<uint32_t> m_createdSubId;
 
@@ -378,12 +384,17 @@ namespace AZ
 
         private:
             //! Collects skinning influences of a vertex from the SceneAPI source mesh and fills them in the resulting mesh
+            uint32_t CalculateMaxUsedSkinInfluencesPerVertex(
+                const SourceMeshContent& sourceMesh,
+                const AZStd::map<uint32_t, uint32_t>& oldToNewIndicesMap,
+                bool& warnedExcessOfSkinInfluences) const;
+
+            //! Collects skinning influences of a vertex from the SceneAPI source mesh and fills them in the resulting mesh
             void GatherVertexSkinningInfluences(
                 const SourceMeshContent& sourceMesh,
                 ProductMeshContent& productMesh,
                 AZStd::unordered_map<AZStd::string, uint16_t>& jointNameToIndexMap,
-                size_t vertexIndex,
-                bool& warnedExcessOfSkinInfluences) const;
+                size_t vertexIndex) const;
         };
     } // namespace RPI
 } // namespace AZ

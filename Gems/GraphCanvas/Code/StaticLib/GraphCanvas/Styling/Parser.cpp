@@ -47,7 +47,7 @@ namespace
     const QRegularExpression invalidStart(R"_(^\s*>\s*)_");
     const QRegularExpression invalidEnd(R"_(\s*>\s*$)_");
     const QRegularExpression splitNesting(R"_(\s*>\s*)_");
-    const QRegularExpression selector(R"_(^(?:(?:(\w+)?(\.\w+)?)|(#\w+)?)(:\w+)?$)_");
+    const QRegularExpression s_selectorRegex(R"_(^(?:(?:(\w+)?(\.\w+)?)|(#\w+)?)(:\w+)?$)_");
 
     AZStd::string QtToAz(const QString& source)
     {
@@ -291,8 +291,6 @@ namespace
 
     QColor ParseColor(const QString& color)
     {
-        QColor result;
-
         QRegularExpressionMatch match;
         if ((match = hexColor.match(color)).hasMatch())
         {
@@ -520,34 +518,6 @@ namespace
         }
     }
 
-    QFont::Capitalization ParseFontVariant(const QString& value)
-    {
-        if (QString::compare(value, QLatin1String("normal"), Qt::CaseInsensitive) == 0)
-        {
-            return QFont::MixedCase;
-        }
-        else if (QString::compare(value, QLatin1String("all-uppercase"), Qt::CaseInsensitive) == 0)
-        {
-            return QFont::AllUppercase;
-        }
-        else if (QString::compare(value, QLatin1String("all-lowercase"), Qt::CaseInsensitive) == 0)
-        {
-            return QFont::AllLowercase;
-        }
-        else if (QString::compare(value, QLatin1String("small-caps"), Qt::CaseInsensitive) == 0)
-        {
-            return QFont::SmallCaps;
-        }
-        else if (QString::compare(value, QLatin1String("capitalize"), Qt::CaseInsensitive) == 0)
-        {
-            return QFont::Capitalize;
-        }
-        else
-        {
-            return{};
-        }
-    }
-
     bool IsFontStyleValid(const QString& value)
     {
         if (QString::compare(value, QLatin1String("normal"), Qt::CaseInsensitive) == 0 ||
@@ -639,16 +609,6 @@ namespace
 
         return{};
     }
-
-    AZStd::string CreateStyleName(const Styling::Style& style)
-    {
-        const Styling::SelectorVector selectors = style.GetSelectors();
-        return std::accumulate(selectors.cbegin(), selectors.cend(), AZStd::string(), [](const AZStd::string& a, const Styling::Selector& s) {
-            return a + (a.empty() ? "" : ", ") + s.ToString();
-        });
-    }
-
-
 
 } // namespace
 
@@ -1053,7 +1013,7 @@ namespace GraphCanvas
                 nestedSelectors.reserve(parts.size());
                 for (const QString& part : parts)
                 {
-                    auto matches = selector.match(part);
+                    auto matches = s_selectorRegex.match(part);
                     if (!matches.hasMatch())
                     {
                         qWarning() << "Invalid selector:" << part << "in" << candidate;

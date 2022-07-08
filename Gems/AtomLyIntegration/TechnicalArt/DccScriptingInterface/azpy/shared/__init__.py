@@ -7,43 +7,39 @@
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
-# -- This line is 75 characters -------------------------------------------
+# -------------------------------------------------------------------------
+"""! @brief
+<DCCsi>/azpy/shared/__init__.py
 
-"""azpy.shared.__init__"""
+DCCsi package for shared packages.
+"""
+# standard imports
+from pathlib import Path
+import logging as _logging
+# -------------------------------------------------------------------------
 
-import os
+
+# -------------------------------------------------------------------------
+# global scope
+_PACKAGENAME = 'azpy.shared'
+_LOGGER = _logging.getLogger(_PACKAGENAME)
+_LOGGER.debug(f'Initializing: {_PACKAGENAME}')
+
+__all__ = ['common', 'ui', 'utils']
 
 from azpy.env_bool import env_bool
 from azpy.constants import ENVAR_DCCSI_GDEBUG
-from azpy.constants import ENVAR_DCCSI_DEV_MODE
+_DCCSI_GDEBUG = env_bool(ENVAR_DCCSI_GDEBUG, False)
 
-#  global space
-_G_DEBUG = env_bool(ENVAR_DCCSI_GDEBUG, False)
-_DCCSI_DEV_MODE = env_bool(ENVAR_DCCSI_DEV_MODE, False)
-
-_PACKAGENAME = __name__
-if _PACKAGENAME is '__main__':
-    _PACKAGENAME = 'azpy.shared'
-
-import azpy
-_LOGGER = azpy.initialize_logger(_PACKAGENAME)
-_LOGGER.debug('Invoking __init__.py for {0}.'.format({_PACKAGENAME}))
-
-# -------------------------------------------------------------------------
-
-__all__ = ['common', 'ui']
-
+_MODULE_PATH = Path(__file__)  # To Do: what if frozen?
+_LOGGER.debug(f'_MODULE_PATH: {_MODULE_PATH}')
 # -------------------------------------------------------------------------
 
 
 # -------------------------------------------------------------------------
-if _DCCSI_DEV_MODE:
+from azpy.shared.utils.init import test_imports
+if _DCCSI_GDEBUG:
     # If in dev mode this will test imports of __all__
-    from azpy import test_imports
-    _LOGGER.debug('Testing Imports from {0}'.format(_PACKAGENAME))
-    test_imports(__all__,
-                 _pkg=_PACKAGENAME,
-                 _logger=_LOGGER)
+    _LOGGER.debug(f'Testing Imports from {_PACKAGENAME}')
+    test_imports(_all=__all__,_pkg=_PACKAGENAME,_logger=_LOGGER)
 # -------------------------------------------------------------------------
-
-del _LOGGER

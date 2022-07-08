@@ -133,7 +133,7 @@ public:                                                                         
      * @param numBytes The number of bytes to fill.
      * @result The address as specified in the first parameter.
      */
-    MCORE_INLINE void* MemSet(void* address, const uint32 value, size_t numBytes)
+    MCORE_INLINE void* MemSet(void* address, const int value, size_t numBytes)
     {
         return memset(address, value, numBytes);
     }

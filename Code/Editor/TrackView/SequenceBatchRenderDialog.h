@@ -81,8 +81,8 @@ protected:
         bool disableDebugInfo;
         bool bCreateVideo;
         SRenderItem()
-            : pSequence(NULL)
-            , pDirectorNode(NULL)
+            : pSequence(nullptr)
+            , pDirectorNode(nullptr)
             , disableDebugInfo(false)
             , bCreateVideo(false) {}
         bool operator==(const SRenderItem& item)
@@ -155,7 +155,7 @@ protected:
             , expectedTotalTime(0)
             , spentTime(0)
             , flagBU(0)
-            , pActiveDirectorBU(NULL)
+            , pActiveDirectorBU(nullptr)
             , cvarCustomResWidthBU(0)
             , cvarCustomResHeightBU(0)
             , cvarDisplayInfoBU(0)
@@ -187,7 +187,7 @@ protected:
     int m_customFPS;
 
     void InitializeContext();
-    virtual void OnMovieEvent(IMovieListener::EMovieEvent event, IAnimSequence* pSequence);
+    void OnMovieEvent(IMovieListener::EMovieEvent event, IAnimSequence* pSequence) override;
 
     void CaptureItemStart();
 

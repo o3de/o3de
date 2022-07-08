@@ -51,8 +51,6 @@ namespace EMotionFX
         SoftSkinDeformer* CreateDeformer(Mesh* mesh);
 
     private:
-        //bool  mDetectedSSE;   /**< Does the cpu support SSE instructions? */
-
         /**
          * The constructor.
          * When constructed, the class checks if SSE is available on the hardware.

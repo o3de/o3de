@@ -48,10 +48,12 @@ namespace PhysXEditorTests
         void SetUp() override;
         void TearDown() override;
 
+        void ConnectToPVD();
+        void DisconnectFromPVD();
+
         // DefaultWorldBus
         AzPhysics::SceneHandle GetDefaultSceneHandle() const override;
        
-        AZ::ComponentDescriptor* m_dummyTerrainComponentDescriptor = nullptr;
         AzPhysics::SceneHandle m_defaultSceneHandle = AzPhysics::InvalidSceneHandle;
         AzPhysics::Scene* m_defaultScene = nullptr;
 

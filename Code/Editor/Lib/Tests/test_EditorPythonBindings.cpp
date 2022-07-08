@@ -12,6 +12,7 @@
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Debug/TraceMessageBus.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
+#include <AzCore/UnitTest/TestTypes.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 
 #include <AzToolsFramework/Application/ToolsApplication.h>
@@ -24,8 +25,6 @@
 #include <Mocks/ICVarMock.h>
 #include <Mocks/ISystemMock.h>
 #include <Mocks/IConsoleMock.h>
-#include <Mocks/ILogMock.h>
-#include <Mocks/ITimerMock.h>
 #include <Mocks/IConsoleMock.h>
 #include "IEditorMock.h"
 
@@ -80,7 +79,7 @@ namespace EditorPythonBindingsUnitTests
     };
 
     class EditorPythonBindingsFixture
-        : public testing::Test
+        : public ::UnitTest::ScopedAllocatorSetupFixture
     {
     public:
         AzToolsFramework::ToolsApplication m_app;
@@ -88,7 +87,6 @@ namespace EditorPythonBindingsUnitTests
         void SetUp() override
         {
             AzFramework::Application::Descriptor appDesc;
-            appDesc.m_enableDrilling = false;
 
             m_app.Start(appDesc);
             // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
@@ -217,7 +215,7 @@ namespace EditorPythonBindingsUnitTests
 
             const char* testCvar = "test.cvar.int";
             int intArg = 1;
-            AZStd::array<AZ::BehaviorValueParameter, 2> args;
+            AZStd::array<AZ::BehaviorArgument, 2> args;
             args[0].Set(&testCvar);
             args[1].Set(&intArg);
 
@@ -236,7 +234,7 @@ namespace EditorPythonBindingsUnitTests
 
             const char* testCvar = "test.cvar.float";
             float input = 1.234f;
-            AZStd::array<AZ::BehaviorValueParameter, 2> args;
+            AZStd::array<AZ::BehaviorArgument, 2> args;
             args[0].Set(&testCvar);
             args[1].Set(&input);
 
@@ -255,7 +253,7 @@ namespace EditorPythonBindingsUnitTests
 
             const char* testCvar = "test.cvar.string";
             const char* input = "testvalue";
-            AZStd::array<AZ::BehaviorValueParameter, 2> args;
+            AZStd::array<AZ::BehaviorArgument, 2> args;
             args[0].Set(&testCvar);
             args[1].Set(&input);
 
@@ -272,7 +270,7 @@ namespace EditorPythonBindingsUnitTests
             mockEditor.PrepareGetCVarString("atestvalue");
 
             const char* testCvar = "test.cvar.string";
-            AZStd::array<AZ::BehaviorValueParameter, 1> args;
+            AZStd::array<AZ::BehaviorArgument, 1> args;
             args[0].Set(&testCvar);
 
             const char* data;
@@ -280,7 +278,7 @@ namespace EditorPythonBindingsUnitTests
             obj.m_typeId = azrtti_typeid<const char*>();
             obj.m_address = &data;
     
-            AZ::BehaviorValueParameter result;
+            AZ::BehaviorArgument result;
             result.Set(&obj);
 
             context->m_methods.find("get_cvar")->second->Call(args.begin(), static_cast<unsigned int>(args.size()), &result);
@@ -298,7 +296,7 @@ namespace EditorPythonBindingsUnitTests
             ON_CALL(mockEditor.m_console, ExecuteString(_,_,_)).WillByDefault(Invoke([&data](const char* command, const bool, const bool) { data = command; }));
 
             const char* testCvar = "enable_feature game.sim";
-            AZStd::array<AZ::BehaviorValueParameter, 1> args;
+            AZStd::array<AZ::BehaviorArgument, 1> args;
             args[0].Set(&testCvar);
 
             context->m_methods.find("run_console")->second->Call(args.begin(), static_cast<unsigned int>(args.size()));

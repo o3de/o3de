@@ -8,11 +8,8 @@
 
 #include <SkyBox/SkyBoxFeatureProcessor.h>
 
-#include <AzCore/Debug/EventTrace.h>
-
 #include <AzFramework/Asset/AssetSystemBus.h>
 
-#include <Atom/RHI/CpuProfiler.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/DrawPacketBuilder.h>
 #include <Atom/RHI/RHISystemInterface.h>
@@ -105,7 +102,7 @@ namespace AZ
 
         void SkyBoxFeatureProcessor::Simulate(const FeatureProcessor::SimulatePacket& packet)
         {
-            AZ_ATOM_PROFILE_FUNCTION("RPI", "SkyBoxFeatureProcessor: Simulate");
+            AZ_PROFILE_SCOPE(RPI, "SkyBoxFeatureProcessor: Simulate");
             AZ_UNUSED(packet);
 
             m_sceneSrg->SetConstant(m_skyboxEnableIndex, m_enable);
@@ -191,7 +188,7 @@ namespace AZ
 
         void SkyBoxFeatureProcessor::Render(const FeatureProcessor::RenderPacket& packet)
         {
-             AZ_TRACE_METHOD();
+             AZ_PROFILE_FUNCTION(AzRender);
              AZ_UNUSED(packet);
         }
 

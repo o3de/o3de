@@ -70,8 +70,6 @@ namespace AZ
 
         void ReflectSamplerStateEnums(ReflectContext* context);
 
-        AZ_ASSERT_NO_ALIGNMENT_PADDING_BEGIN
-
         class SamplerState
         {
         public:
@@ -107,8 +105,6 @@ namespace AZ
             float m_mipLodBias = 0.0f;
             BorderColor m_borderColor = BorderColor::TransparentBlack;
         };
-
-        AZ_ASSERT_NO_ALIGNMENT_PADDING_END
     }
 
     AZ_TYPE_INFO_SPECIALIZE(RHI::FilterMode, "{CFAE2156-0293-4D71-87D5-68F5C9F98884}");

@@ -31,7 +31,12 @@ namespace AZ
         {
             return static_cast<Device&>(Base::GetDevice());
         }
-
+        
+        FrameGraphExecuter::FrameGraphExecuter()
+        {
+            SetJobPolicy(RHI::JobPolicy::Parallel);
+        }
+        
         RHI::ResultCode FrameGraphExecuter::InitInternal(const RHI::FrameGraphExecuterDescriptor& descriptor)
         {
             const RHI::ConstPtr<RHI::PlatformLimitsDescriptor> rhiPlatformLimitsDescriptor = descriptor.m_platformLimitsDescriptor;
@@ -76,7 +81,7 @@ namespace AZ
                 const uint32_t CommandListCostThreshold =
                     AZStd::max(
                         m_frameGraphExecuterData.m_commandListCostThresholdMin,
-                        RHI::DivideByMultiple(estimatedItemCount, m_frameGraphExecuterData.m_commandListsPerScopeMax));
+                        AZ::DivideAndRoundUp(estimatedItemCount, m_frameGraphExecuterData.m_commandListsPerScopeMax));
 
                 /**
                     * Computes a cost heuristic based on the number of items and number of attachments in
@@ -130,11 +135,26 @@ namespace AZ
                 // Not mergeable, create a dedicated context group for it.
                 else
                 {
-                    // And then create a new group for the current scope with dedicated [1, N] command lists.
-                    const uint32_t commandListCount = AZStd::max(RHI::DivideByMultiple(totalScopeCost, CommandListCostThreshold), 1u);
+                    // GHI-9465 - https://github.com/o3de/o3de/issues/9465
+                    // FrameGraphExecuteGroup assumes a renderpass with a non-null framebuffer,
+                    // as a workaround use a merged group (which doesn't assume a framebuffer) 
+                    // until we can add support for a null framebuffer to FrameGraphExecuteGroup.
+                    if (scope.UsesRenderpass())
+                    {
+                        // And then create a new group for the current scope with dedicated [1, N] command lists.
+                        const uint32_t commandListCount = AZStd::max(AZ::DivideAndRoundUp(totalScopeCost, CommandListCostThreshold), 1u);
 
-                    FrameGraphExecuteGroup* scopeContextGroup = AddGroup<FrameGraphExecuteGroup>();
-                    scopeContextGroup->Init(device, scope, commandListCount, GetJobPolicy());
+                        FrameGraphExecuteGroup* scopeContextGroup = AddGroup<FrameGraphExecuteGroup>();
+                        scopeContextGroup->Init(device, scope, commandListCount, GetJobPolicy());
+                    }
+                    else
+                    {
+                        // non-renderpass's are only supported through the merged group
+                        AZStd::vector<const Scope*> nonRenderPassScopes;
+                        nonRenderPassScopes.push_back(&scope);
+                        FrameGraphExecuteGroupMerged* multiScopeContextGroup = AddGroup<FrameGraphExecuteGroupMerged>();
+                        multiScopeContextGroup->Init(device, AZStd::move(nonRenderPassScopes));
+                    }
                 }
                 scopePrev = &scope;
             }
@@ -149,6 +169,8 @@ namespace AZ
 
             // Create the handlers to manage the execute groups.
             auto groups = GetGroups();
+            AZStd::vector<RHI::FrameGraphExecuteGroup*> groupRefs;
+            groupRefs.reserve(groups.size());
             RHI::GraphGroupId groupId;
             uint32_t initGroupIndex = 0;
             for (uint32_t i = 0; i < groups.size(); ++i)
@@ -156,14 +178,24 @@ namespace AZ
                 const FrameGraphExecuteGroupBase* group = static_cast<const FrameGraphExecuteGroupBase*>(groups[i].get());
                 if (groupId != group->GetGroupId())
                 {
-                    AddExecuteGroupHandler(groupId, { groups.begin() + initGroupIndex, groups.begin() + i });
+                    groupRefs.clear();
+                    for (size_t groupRefIndex = initGroupIndex; groupRefIndex < i; ++groupRefIndex)
+                    {
+                        groupRefs.push_back(groups[groupRefIndex].get());
+                    }
+                    AddExecuteGroupHandler(groupId, groupRefs);
                     groupId = group->GetGroupId();
                     initGroupIndex = i;
                 }
             }
 
             // Add the final handler for the remaining groups.
-            AddExecuteGroupHandler(groupId, { groups.begin() + initGroupIndex, groups.end() });
+            groupRefs.clear();
+            for (size_t groupRefIndex = initGroupIndex; groupRefIndex < groups.size(); ++groupRefIndex)
+            {
+                groupRefs.push_back(groups[groupRefIndex].get());
+            }
+            AddExecuteGroupHandler(groupId, groupRefs);
         }
 
         void FrameGraphExecuter::ExecuteGroupInternal(RHI::FrameGraphExecuteGroup& groupBase)
@@ -172,8 +204,8 @@ namespace AZ
             auto findIter = m_groupHandlers.find(group.GetGroupId());
             AZ_Assert(findIter != m_groupHandlers.end(), "Could not find group handler for groupId %d", group.GetGroupId().GetIndex());
             FrameGraphExecuteGroupHandlerBase* handler = findIter->second.get();
-            // Wait until all execute groups of the handler has finished.
-            if (handler->IsComplete())
+            // Wait until all execute groups of the handler has finished and also make sure that the handler itself hasn't executed already (which is possible for parallel encoding).
+            if (!handler->IsExecuted() && handler->IsComplete())
             {
                 // This will execute the recorded work into the queue.
                 handler->End();

@@ -9,7 +9,7 @@
 set(FILES
     BuiltInPackages.cmake
     FindOpenGLInterface.cmake
-    FindRadTelemetry.cmake
+    FindPIX.cmake
     FindVkValidation.cmake
     FindWwise.cmake
 )

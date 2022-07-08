@@ -10,8 +10,7 @@
  * @file
  * Header file for internal EBus classes.
  * For more information about EBuses, see AZ::EBus and AZ::EBusTraits in this guide and
- * [Event Bus](http://docs.aws.amazon.com/lumberyard/latest/developerguide/asset-pipeline-ebus.html)
- * in the *Open 3D Engine Developer Guide*.
+ * [Event Bus documentation](https://www.o3de.org/docs/user-guide/programming/ebus/).
  */
 
 #pragma once
@@ -160,8 +159,8 @@ namespace AZ
             /**
              * Locking primitive that is used when executing events in the event queue.
              */
-            using EventQueueMutexType = typename AZStd::Utils::if_c<AZStd::is_same<typename Traits::EventQueueMutexType, NullMutex>::value, // if EventQueueMutexType==NullMutex use MutexType otherwise EventQueueMutexType
-                MutexType, typename Traits::EventQueueMutexType>::type;
+            using EventQueueMutexType = AZStd::conditional_t<AZStd::is_same<typename Traits::EventQueueMutexType, NullMutex>::value, // if EventQueueMutexType==NullMutex use MutexType otherwise EventQueueMutexType
+                MutexType, typename Traits::EventQueueMutexType>;
 
             /**
              * Pointer to an address on the bus.
@@ -180,14 +179,45 @@ namespace AZ
              * `<BusName>::ExecuteQueuedEvents()`.
              * By default, the event queue is disabled.
              */
-            static const bool EnableEventQueue = Traits::EnableEventQueue;
-            static const bool EventQueueingActiveByDefault = Traits::EventQueueingActiveByDefault;
-            static const bool EnableQueuedReferences = Traits::EnableQueuedReferences;
+            static constexpr bool EnableEventQueue = Traits::EnableEventQueue;
+            static constexpr bool EventQueueingActiveByDefault = Traits::EventQueueingActiveByDefault;
+            static constexpr bool EnableQueuedReferences = Traits::EnableQueuedReferences;
 
             /**
              * True if the EBus supports more than one address. Otherwise, false.
              */
-            static const bool HasId = Traits::AddressPolicy != EBusAddressPolicy::Single;
+            static constexpr bool HasId = Traits::AddressPolicy != EBusAddressPolicy::Single;
+
+            /**
+             * The following Lock Guard classes are exposed so that it's possible to override them with custom lock/unlock functionality
+             * when using custom types for the EBus MutexType.
+             */
+
+            /**
+            * Template Lock Guard class that wraps around the Mutex
+            * The EBus uses for Dispatching Events.
+            * This is not the EBus Context Mutex if LocklessDispatch is true
+            */
+            template <typename DispatchMutex>
+            using DispatchLockGuard = typename Traits::template DispatchLockGuard<DispatchMutex, Traits::LocklessDispatch>;
+
+            /**
+             * Template Lock Guard class that protects connection / disconnection. 
+             */
+            template<typename ContextMutex>
+            using ConnectLockGuard = typename Traits::template ConnectLockGuard<ContextMutex>;
+
+            /**
+             * Template Lock Guard class that protects bind calls. 
+             */
+            template<typename ContextMutex>
+            using BindLockGuard = typename Traits::template BindLockGuard<ContextMutex>;
+
+            /**
+             * Template Lock Guard class that protects callstack tracking.
+             */
+            template<typename ContextMutex>
+            using CallstackTrackerLockGuard = typename Traits::template CallstackTrackerLockGuard<ContextMutex>;
         };
 
         /**
@@ -460,7 +490,7 @@ namespace AZ
             using BusPtr = typename Traits::BusPtr;
 
             /**
-             * Helper to queue an event by BusIdType only when function queueing is enabled 
+             * Helper to queue an event by BusIdType only when function queueing is enabled
              * @param id            Address ID. Handlers that are connected to this ID will receive the event.
              * @param func          Function pointer of the event to dispatch.
              * @param args          Function arguments that are passed to each handler.
@@ -581,7 +611,7 @@ namespace AZ
             , public EBusBroadcaster<Bus, Traits>
             , public EBusEventer<Bus, Traits>
             , public EBusEventEnumerator<Bus, Traits>
-            , public AZStd::Utils::if_c<Traits::EnableEventQueue, EBusEventQueue<Bus, Traits>, EBusNullQueue>::type
+            , public AZStd::conditional_t<Traits::EnableEventQueue, EBusEventQueue<Bus, Traits>, EBusNullQueue>
         {
         };
 
@@ -599,7 +629,7 @@ namespace AZ
             : public EventDispatcher<Bus, Traits>
             , public EBusBroadcaster<Bus, Traits>
             , public EBusBroadcastEnumerator<Bus, Traits>
-            , public AZStd::Utils::if_c<Traits::EnableEventQueue, EBusBroadcastQueue<Bus, Traits>, EBusNullQueue>::type
+            , public AZStd::conditional_t<Traits::EnableEventQueue, EBusBroadcastQueue<Bus, Traits>, EBusNullQueue>
         {
         };
 
@@ -607,7 +637,7 @@ namespace AZ
         inline void EBusEventer<Bus, Traits>::Bind(BusPtr& ptr, const BusIdType& id)
         {
             auto& context = Bus::GetOrCreateContext();
-            AZStd::scoped_lock<decltype(context.m_contextMutex)> lock(context.m_contextMutex);
+            typename Traits::template BindLockGuard<decltype(context.m_contextMutex)> lock(context.m_contextMutex);
             context.m_buses.Bind(ptr, id);
         }
 
@@ -655,7 +685,7 @@ namespace AZ
                 static void Validate() {}
             };
 
-            template <class Function, bool IsBindExpression = AZStd::is_bind_expression_v<Function>>
+            template <class Function>
             struct ArgumentValidatorHelper
             {
                 constexpr static void Validate()
@@ -672,13 +702,6 @@ namespace AZ
                     static_assert(!AZStd::disjunction_v<is_non_const_lvalue_reference<AZStd::function_traits_get_arg_t<Function, ArgIndices>>...>,
                         "It is not safe to queue a function call with non-const lvalue ref arguments");
                 }
-            };
-
-            // bind has already copied/bound its arguments, we can't validate them further in any reasonable way
-            template <class Function>
-            struct ArgumentValidatorHelper<Function, true>
-            {
-                constexpr static void Validate() {}
             };
 
             template <class Function>

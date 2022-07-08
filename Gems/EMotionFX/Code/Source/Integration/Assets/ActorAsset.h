@@ -15,7 +15,6 @@
 
 #include <Integration/Assets/AssetCommon.h>
 #include <Integration/Rendering/RenderActor.h>
-#include <EMotionFX/Source/AutoRegisteredActor.h>
 
 
 namespace EMotionFX
@@ -58,7 +57,7 @@ namespace EMotionFX
             void InitRenderActor();
 
         private:
-            AutoRegisteredActor m_emfxActor; ///< Pointer to shared EMotionFX actor
+            AZStd::shared_ptr<Actor> m_emfxActor;
             AZStd::unique_ptr<RenderActor> m_renderActor;
         };
 
@@ -81,6 +80,8 @@ namespace EMotionFX
             const char* GetBrowserIcon() const override;
         };
     } // namespace Integration
+
+    using ActorAssetData = AZ::Data::Asset<Integration::ActorAsset>;
 } // namespace EMotionFX
 
 namespace AZ

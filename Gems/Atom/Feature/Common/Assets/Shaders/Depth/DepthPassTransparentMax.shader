@@ -9,8 +9,15 @@
         "Depth" : { "Enable" : true, "CompareFunc" : "LessEqual" }
     },
 
-
-    "CompilerHints" : {
+    "ProgramSettings" : 
+    {
+        "EntryPoints":
+        [
+            {
+                "name": "DepthPassVS",
+                "type" : "Vertex"
+            }
+        ] 
     },
 
     "DrawList" : "depthTransparentMax"

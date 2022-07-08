@@ -6,15 +6,15 @@
  *
  */
 
-#include "Vector3GizmoParameterEditor.h"
+#include <EMotionFX/Tools/EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/ParameterEditor/Vector3GizmoParameterEditor.h>
 
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
-#include <EMotionFX/Rendering/Common/TranslateManipulator.h>
 #include <EMotionFX/Source/Parameter/Vector3Parameter.h>
 #include <EMotionStudio/EMStudioSDK/Source/Allocators.h>
 #include <EMotionStudio/EMStudioSDK/Source/EMStudioManager.h>
 #include <MCore/Source/AttributeVector3.h>
+#include <QPushButton>
 
 namespace EMStudio
 {
@@ -23,18 +23,18 @@ namespace EMStudio
     Vector3GizmoParameterEditor::Vector3GizmoParameterEditor(EMotionFX::AnimGraph* animGraph, const EMotionFX::ValueParameter* valueParameter, const AZStd::vector<MCore::Attribute*>& attributes)
         : ValueParameterEditor(animGraph, valueParameter, attributes)
         , m_currentValue(0.0f, 0.0f, 0.0f)
-        , m_gizmoButton(nullptr)
-        , m_transformationGizmo(nullptr)
+        , m_gizmoButton()
+        , m_translationManipulators(
+              AzToolsFramework::TranslationManipulators::Dimensions::Three, AZ::Transform::Identity(), AZ::Vector3::CreateOne())
     {
         UpdateValue();
     }
 
     Vector3GizmoParameterEditor::~Vector3GizmoParameterEditor()
     {
-        if (m_transformationGizmo)
+        if (m_translationManipulators.Registered())
         {
-            GetManager()->RemoveTransformationManipulator(m_transformationGizmo);
-            delete m_transformationGizmo;
+            m_translationManipulators.Unregister();
         }
     }
 
@@ -83,6 +83,7 @@ namespace EMStudio
             const EMotionFX::Vector3Parameter* parameter = static_cast<const EMotionFX::Vector3Parameter*>(m_valueParameter);
             m_currentValue = parameter->GetDefaultValue();
         }
+        m_translationManipulators.SetLocalPosition(m_currentValue);
     }
 
     void Vector3GizmoParameterEditor::setIsReadOnly(bool isReadOnly)
@@ -102,13 +103,28 @@ namespace EMStudio
         m_gizmoButton->setCheckable(true);
         m_gizmoButton->setEnabled(!IsReadOnly());
         m_manipulatorCallback = manipulatorCallback;
+
+        // Setup the translation manipulator
+        AzToolsFramework::ConfigureTranslationManipulatorAppearance3d(&m_translationManipulators);
+        auto mouseMoveHandlerFn = [this](const auto& action) {
+            SetValue(action.LocalPosition());
+            if (m_manipulatorCallback)
+            {
+                m_manipulatorCallback();
+            }
+        };
+        
+        m_translationManipulators.InstallLinearManipulatorMouseMoveCallback(mouseMoveHandlerFn);
+        m_translationManipulators.InstallPlanarManipulatorMouseMoveCallback(mouseMoveHandlerFn);
+        m_translationManipulators.InstallSurfaceManipulatorMouseMoveCallback(mouseMoveHandlerFn);
+
         return m_gizmoButton;
     }
 
     void Vector3GizmoParameterEditor::SetValue(const AZ::Vector3& value)
     {
         m_currentValue = value;
-        UpdateAnimGraphInstanceAttributes();
+        OnValueChanged();
     }
 
     AZ::Vector3 Vector3GizmoParameterEditor::GetMinValue() const
@@ -125,51 +141,13 @@ namespace EMStudio
 
     void Vector3GizmoParameterEditor::OnValueChanged()
     {
-        UpdateAnimGraphInstanceAttributes();
-
-        if (m_transformationGizmo)
-        {
-            m_transformationGizmo->Init(m_currentValue);
-        }
-    }
-
-    void Vector3GizmoParameterEditor::UpdateAnimGraphInstanceAttributes()
-    {
         for (MCore::Attribute* attribute : m_attributes)
         {
             MCore::AttributeVector3* typedAttribute = static_cast<MCore::AttributeVector3*>(attribute);
             typedAttribute->SetValue(m_currentValue);
         }
+        m_translationManipulators.SetLocalPosition(m_currentValue);
     }
-
-    class GizmoCallback
-        : public MCommon::ManipulatorCallback
-    {
-    public:
-        GizmoCallback(const AZStd::function<void()>& manipulatorCallback, const AZ::Vector3& oldValue, Vector3GizmoParameterEditor* parentEditor = nullptr)
-            : MCommon::ManipulatorCallback(nullptr, oldValue)
-            , m_parentEditor(parentEditor)
-            , m_manipulatorCallback(manipulatorCallback)
-        {}
-
-        void Update(const AZ::Vector3& value) override
-        {
-            // call the base class update function
-            MCommon::ManipulatorCallback::Update(value);
-
-            // update the value of the attribute
-            m_parentEditor->SetValue(value);
-
-            if (m_manipulatorCallback)
-            {
-                m_manipulatorCallback();
-            }
-        }
-
-    private:
-        Vector3GizmoParameterEditor* m_parentEditor;
-        const AZStd::function<void()>& m_manipulatorCallback;
-    };
 
     void Vector3GizmoParameterEditor::ToggleTranslationGizmo()
     {
@@ -182,18 +160,16 @@ namespace EMStudio
             EMStudioManager::MakeTransparentButton(m_gizmoButton, "Images/Icons/Vector3GizmoDisabled.png", "Show/Hide translation gizmo for visual manipulation");
         }
 
-        if (!m_transformationGizmo)
+        // These will enable/disable the translation manipulator for atom render viewport.
+        if (m_translationManipulators.Registered())
         {
-            m_transformationGizmo = static_cast<MCommon::TranslateManipulator*>(GetManager()->AddTransformationManipulator(new MCommon::TranslateManipulator(70.0f, true)));
-            m_transformationGizmo->Init(m_currentValue);
-            m_transformationGizmo->SetCallback(new GizmoCallback(m_manipulatorCallback, m_currentValue, this));
-            m_transformationGizmo->SetName(m_valueParameter->GetName());
+            m_translationManipulators.Unregister();
         }
         else
         {
-            GetManager()->RemoveTransformationManipulator(m_transformationGizmo);
-            delete m_transformationGizmo;
-            m_transformationGizmo = nullptr;
+            m_translationManipulators.Register(g_animManipulatorManagerId);
         }
+
     }
+
 }

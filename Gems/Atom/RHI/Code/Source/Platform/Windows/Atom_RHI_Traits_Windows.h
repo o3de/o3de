@@ -8,3 +8,4 @@
 #pragma once
 
 #define AZ_TRAIT_RENDERDOC_MODULE "renderdoc.dll"
+#define AZ_TRAIT_PIX_MODULE "WinPixGpuCapturer.dll"

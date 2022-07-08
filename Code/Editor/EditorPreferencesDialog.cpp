@@ -27,8 +27,8 @@
 #include "EditorPreferencesPageGeneral.h"
 #include "EditorPreferencesPageFiles.h"
 #include "EditorPreferencesPageViewportGeneral.h"
-#include "EditorPreferencesPageViewportGizmo.h"
-#include "EditorPreferencesPageViewportMovement.h"
+#include "EditorPreferencesPageViewportManipulator.h"
+#include "EditorPreferencesPageViewportCamera.h"
 #include "EditorPreferencesPageViewportDebug.h"
 #include "EditorPreferencesPageExperimentalLighting.h"
 #include "EditorPreferencesPageAWS.h"
@@ -65,8 +65,8 @@ EditorPreferencesDialog::EditorPreferencesDialog(QWidget* pParent)
             CEditorPreferencesPage_General::Reflect(*serializeContext);
             CEditorPreferencesPage_Files::Reflect(*serializeContext);
             CEditorPreferencesPage_ViewportGeneral::Reflect(*serializeContext);
-            CEditorPreferencesPage_ViewportGizmo::Reflect(*serializeContext);
-            CEditorPreferencesPage_ViewportMovement::Reflect(*serializeContext);
+            CEditorPreferencesPage_ViewportManipulator::Reflect(*serializeContext);
+            CEditorPreferencesPage_ViewportCamera::Reflect(*serializeContext);
             CEditorPreferencesPage_ViewportDebug::Reflect(*serializeContext);
             CEditorPreferencesPage_ExperimentalLighting::Reflect(*serializeContext);
             CEditorPreferencesPage_AWS::Reflect(*serializeContext);
@@ -110,6 +110,33 @@ void EditorPreferencesDialog::showEvent(QShowEvent* event)
     CreatePages();
     ui->pageTree->setCurrentItem(ui->pageTree->topLevelItem(0));
     QDialog::showEvent(event);
+}
+
+bool WidgetConsumesKeyPressEvent(QKeyEvent* event)
+{
+    // If the enter key is pressed during any text input, the dialog box will close
+    // making it inconvenient to do multiple edits. This routine captures the
+    // Key_Enter or Key_Return and clears the focus to give a visible cue that
+    // editing of that field has finished and then doesn't propagate it.
+    if (event->key() != Qt::Key::Key_Enter && event->key() != Qt::Key::Key_Return)
+    {
+        return false;
+    }
+   
+    if (QWidget* editWidget = QApplication::focusWidget())
+    {
+        editWidget->clearFocus();
+    }
+
+    return true;
+}
+
+void EditorPreferencesDialog::keyPressEvent(QKeyEvent* event)
+{
+    if (!WidgetConsumesKeyPressEvent(event))
+    {
+        QDialog::keyPressEvent(event);
+    }
 }
 
 void EditorPreferencesDialog::OnTreeCurrentItemChanged()
@@ -264,6 +291,9 @@ void EditorPreferencesDialog::SetFilter(const QString& filter)
     else if (m_currentPageItem)
     {
         m_currentPageItem->UpdateEditorFilter(ui->propertyEditor, m_filter);
+
+        // Refresh the Stylesheet - when using search functionality.
+        AzQtComponents::StyleManager::repolishStyleSheet(this);
     }
 }
 
@@ -282,7 +312,7 @@ void EditorPreferencesDialog::CreatePages()
     {
         auto pUnknown = classes[i];
 
-        IPreferencesPageCreator* pPageCreator = 0;
+        IPreferencesPageCreator* pPageCreator = nullptr;
         if (FAILED(pUnknown->QueryInterface(&pPageCreator)))
         {
             continue;

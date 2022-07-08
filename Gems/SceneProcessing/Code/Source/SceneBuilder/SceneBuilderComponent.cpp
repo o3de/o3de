@@ -28,7 +28,7 @@ namespace SceneBuilder
 
         AZStd::unordered_set<AZStd::string> extensions;
         AssetImportRequestBus::Broadcast(&AssetImportRequestBus::Events::GetSupportedFileExtensions, extensions);
-        
+
         AssetBuilderSDK::AssetBuilderDesc builderDescriptor;
         builderDescriptor.m_name = "Scene Builder";
         for (const AZStd::string& extension : extensions)
@@ -44,11 +44,11 @@ namespace SceneBuilder
         builderDescriptor.m_createJobFunction = AZStd::bind(&SceneBuilderWorker::CreateJobs, &m_sceneBuilder, AZStd::placeholders::_1, AZStd::placeholders::_2);
         builderDescriptor.m_processJobFunction = AZStd::bind(&SceneBuilderWorker::ProcessJob, &m_sceneBuilder, AZStd::placeholders::_1, AZStd::placeholders::_2);
 
-        builderDescriptor.m_version = 6; // bump this to rebuild everything.
+        builderDescriptor.m_version = 7; // bump this to rebuild everything.
         builderDescriptor.m_analysisFingerprint = m_sceneBuilder.GetFingerprint(); // bump this to at least re-analyze everything.
 
         m_sceneBuilder.BusConnect(builderDescriptor.m_busId);
-        
+
         AssetBuilderSDK::AssetBuilderBus::Broadcast(&AssetBuilderSDK::AssetBuilderBus::Events::RegisterBuilderInformation, builderDescriptor);
 
         AZ_TracePrintf(AssetBuilderSDK::InfoWindow, "Creating entity with scene system components.\n");
@@ -71,6 +71,13 @@ namespace SceneBuilder
     void BuilderPluginComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
         required.emplace_back(AZ_CRC_CE("AssetImportRequestHandler"));
+    }
+
+    void BuilderPluginComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& services)
+    {
+        // Any components that can modify the analysis fingerprint via SceneBuilderDependencyRequests::AddFingerprintInfo must be activated first,
+        // so they contribute to the fingerprint calculated in BuilderPluginComponent::Activate().
+        services.emplace_back(AZ_CRC_CE("FingerprintModification"));
     }
 
     void BuilderPluginComponent::Reflect(AZ::ReflectContext* context)

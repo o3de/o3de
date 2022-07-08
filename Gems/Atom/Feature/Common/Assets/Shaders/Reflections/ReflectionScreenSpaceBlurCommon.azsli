@@ -6,11 +6,31 @@
  *
  */
 
-// 7-tap Gaussian Kernel (Sigma 1.1)
-static const uint GaussianKernelSize = 7;
-static const int2  TexelOffsetsV[GaussianKernelSize] = {{0, -3}, {0, -2}, {0, -1}, {0, 0}, {0, 1}, {0, 2}, {0, 3}};
-static const int2  TexelOffsetsH[GaussianKernelSize] = {{-3, 0}, {-2, 0}, {-1, 0}, {0, 0}, {1, 0}, {2, 0}, {3, 0}};
-static const float TexelWeights[GaussianKernelSize] = {0.010805f, 0.074929f, 0.238727f, 0.351078f, 0.238727f, 0.074929f, 0.010805f};
+// Gaussian Kernel Radius 9, Sigma 1.8
+static const uint GaussianKernelSize = 19;
+static const int2  TexelOffsetsV[GaussianKernelSize] = {{0, -9}, {0, -8}, {0, -7}, {0, -6}, {0, -5}, {0, -4}, {0, -3}, {0, -2}, {0, -1}, {0, 0}, {0, 1}, {0, 2}, {0, 3}, {0, 4}, {0, 5}, {0, 6}, {0, 7}, {0, 8}, {0, 9}};
+static const int2  TexelOffsetsH[GaussianKernelSize] = {{-9, 0}, {-8, 0}, {-7, 0}, {-6, 0}, {-5, 0}, {-4, 0}, {-3, 0}, {-2, 0}, {-1, 0}, {0, 0}, {1, 0}, {2, 0}, {3, 0}, {4, 0}, {5, 0}, {6, 0}, {7, 0}, {8, 0}, {9, 0}};
+static const float TexelWeights[GaussianKernelSize] = {
+    0.0000011022801820635918f,
+    0.000014295732881160677f,
+    0.0001370168487067367f,
+    0.0009708086495991633f,
+    0.005086391900047703f,
+    0.019711193240183777f,
+    0.056512463228943335f,
+    0.11989501853796679f,
+    0.18826323520204147f,
+    0.21881694875889543f,
+    0.18826323520204147f,
+    0.11989501853796679f,
+    0.056512463228943335f,
+    0.019711193240183777f,
+    0.005086391900047703f,
+    0.0009708086495991633f,
+    0.0001370168487067367f,
+    0.000014295732881160677f,
+    0.0000011022801820635918f
+};
 
 float3 GaussianFilter(uint2 screenCoords, int2 texelOffsets[GaussianKernelSize], RWTexture2D<float4> inputImage)
 {

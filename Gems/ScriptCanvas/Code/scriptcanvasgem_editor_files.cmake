@@ -15,22 +15,10 @@ set(FILES
     Editor/SystemComponent.h
     Editor/SystemComponent.cpp
     Editor/QtMetaTypes.h
-    Editor/Assets/ScriptCanvasAssetTracker.cpp
-    Editor/Assets/ScriptCanvasAssetTracker.h
-    Editor/Assets/ScriptCanvasAssetTrackerBus.h
     Editor/Assets/ScriptCanvasAssetHelpers.h
     Editor/Assets/ScriptCanvasAssetHelpers.cpp
-    Editor/Assets/ScriptCanvasAssetTrackerDefinitions.h
-    Editor/Include/ScriptCanvas/Assets/ScriptCanvasAsset.h
-    Editor/Assets/ScriptCanvasAsset.cpp
-    Editor/Include/ScriptCanvas/Assets/ScriptCanvasAssetBus.h
-    Editor/Include/ScriptCanvas/Assets/ScriptCanvasAssetTypes.h
-    Editor/Include/ScriptCanvas/Assets/ScriptCanvasAssetHandler.h
-    Editor/Assets/ScriptCanvasAssetHandler.cpp
-    Editor/Assets/ScriptCanvasAssetHolder.h
-    Editor/Assets/ScriptCanvasAssetHolder.cpp
-    Editor/Assets/ScriptCanvasMemoryAsset.h
-    Editor/Assets/ScriptCanvasMemoryAsset.cpp
+    Editor/Include/ScriptCanvas/Assets/ScriptCanvasFileHandling.h
+    Editor/Assets/ScriptCanvasFileHandling.cpp
     Editor/Assets/ScriptCanvasUndoHelper.h
     Editor/Assets/ScriptCanvasUndoHelper.cpp
     Editor/Include/ScriptCanvas/Bus/RequestBus.h
@@ -52,7 +40,11 @@ set(FILES
     Editor/Include/ScriptCanvas/Components/EditorGraphVariableManagerComponent.h
     Editor/Components/EditorGraphVariableManagerComponent.cpp
     Editor/Include/ScriptCanvas/Components/EditorScriptCanvasComponent.h
+    Editor/Include/ScriptCanvas/Components/EditorDeprecationData.h
+    Editor/Include/ScriptCanvas/Components/EditorDeprecationData.cpp
     Editor/Components/EditorScriptCanvasComponent.cpp
+    Editor/Include/ScriptCanvas/Components/EditorScriptCanvasComponentSerializer.h
+    Editor/Include/ScriptCanvas/Components/EditorScriptCanvasComponentSerializer.cpp
     Editor/Components/IconComponent.h
     Editor/Components/IconComponent.cpp
     Editor/Include/ScriptCanvas/GraphCanvas/DynamicSlotBus.h
@@ -102,12 +94,10 @@ set(FILES
     Editor/GraphCanvas/DataInterfaces/ScriptCanvasAssetIdDataInterface.h
     Editor/GraphCanvas/DataInterfaces/ScriptCanvasBoolDataInterface.h
     Editor/GraphCanvas/DataInterfaces/ScriptCanvasEntityIdDataInterface.h
-    Editor/GraphCanvas/DataInterfaces/ScriptCanvasEnumDataInterface.h
     Editor/GraphCanvas/DataInterfaces/ScriptCanvasDataInterface.h
     Editor/GraphCanvas/DataInterfaces/ScriptCanvasColorDataInterface.h
     Editor/GraphCanvas/DataInterfaces/ScriptCanvasCRCDataInterface.h
     Editor/GraphCanvas/DataInterfaces/ScriptCanvasNumericDataInterface.h
-    Editor/GraphCanvas/DataInterfaces/ScriptCanvasReadOnlyDataInterface.h
     Editor/GraphCanvas/DataInterfaces/ScriptCanvasStringDataInterface.h
     Editor/GraphCanvas/DataInterfaces/ScriptCanvasVectorDataInterface.h
     Editor/GraphCanvas/DataInterfaces/ScriptCanvasVariableDataInterface.h
@@ -116,8 +106,6 @@ set(FILES
     Editor/GraphCanvas/PropertyInterfaces/ScriptCanvasStringPropertyDataInterface.h
     Editor/Model/EntityMimeDataHandler.h
     Editor/Model/EntityMimeDataHandler.cpp
-    Editor/Model/LibraryDataModel.h
-    Editor/Model/LibraryDataModel.cpp
     Editor/Model/UnitTestBrowserFilterModel.h
     Editor/Model/UnitTestBrowserFilterModel.cpp
     Editor/Nodes/NodeCreateUtils.h
@@ -126,22 +114,18 @@ set(FILES
     Editor/Nodes/NodeDisplayUtils.cpp
     Editor/Nodes/NodeUtils.h
     Editor/Nodes/NodeUtils.cpp
+    Editor/Translation/TranslationHelper.cpp
     Editor/Translation/TranslationHelper.h
     Editor/Undo/ScriptCanvasGraphCommand.cpp
     Editor/Undo/ScriptCanvasGraphCommand.h
     Editor/Undo/ScriptCanvasUndoManager.cpp
     Editor/Undo/ScriptCanvasUndoManager.h
-    Editor/Utilities/Command.h
-    Editor/Utilities/Command.cpp
     Editor/Utilities/CommonSettingsConfigurations.h
     Editor/Utilities/CommonSettingsConfigurations.cpp
     Editor/Utilities/RecentFiles.h
     Editor/Utilities/RecentFiles.cpp
     Editor/Utilities/RecentAssetPath.h
     Editor/Utilities/RecentAssetPath.cpp
-    Editor/View/Dialogs/NewGraphDialog.h
-    Editor/View/Dialogs/NewGraphDialog.cpp
-    Editor/View/Dialogs/NewGraphDialog.ui
     Editor/View/Dialogs/SettingsDialog.h
     Editor/View/Dialogs/SettingsDialog.cpp
     Editor/View/Dialogs/SettingsDialog.ui
@@ -176,7 +160,8 @@ set(FILES
     Editor/View/Widgets/ScriptCanvasNodePaletteDockWidget.h
     Editor/View/Widgets/ScriptCanvasNodePaletteDockWidget.cpp
     Editor/View/Widgets/ScriptCanvasNodePaletteToolbar.ui
-    Editor/View/Widgets/WidgetBus.h
+    Editor/View/Widgets/SourceHandlePropertyAssetCtrl.h
+    Editor/View/Widgets/SourceHandlePropertyAssetCtrl.cpp
     Editor/View/Widgets/DataTypePalette/DataTypePaletteModel.cpp
     Editor/View/Widgets/DataTypePalette/DataTypePaletteModel.h
     Editor/View/Widgets/NodePalette/CreateNodeMimeEvent.cpp
@@ -198,7 +183,6 @@ set(FILES
     Editor/View/Widgets/NodePalette/VariableNodePaletteTreeItemTypes.h
     Editor/View/Widgets/LoggingPanel/LoggingDataAggregator.cpp
     Editor/View/Widgets/LoggingPanel/LoggingDataAggregator.h
-    Editor/View/Widgets/LoggingPanel/LoggingTypes.cpp
     Editor/View/Widgets/LoggingPanel/LoggingTypes.h
     Editor/View/Widgets/LoggingPanel/LoggingWindow.cpp
     Editor/View/Widgets/LoggingPanel/LoggingWindow.h
@@ -212,10 +196,6 @@ set(FILES
     Editor/View/Widgets/LoggingPanel/LiveWindowSession/LiveLoggingDataAggregator.h
     Editor/View/Widgets/LoggingPanel/LiveWindowSession/LiveLoggingWindowSession.cpp
     Editor/View/Widgets/LoggingPanel/LiveWindowSession/LiveLoggingWindowSession.h
-    Editor/View/Widgets/LoggingPanel/AssetWindowSession/LoggingAssetDataAggregator.cpp
-    Editor/View/Widgets/LoggingPanel/AssetWindowSession/LoggingAssetDataAggregator.h
-    Editor/View/Widgets/LoggingPanel/AssetWindowSession/LoggingAssetWindowSession.cpp
-    Editor/View/Widgets/LoggingPanel/AssetWindowSession/LoggingAssetWindowSession.h
     Editor/View/Widgets/LoggingPanel/PivotTree/PivotTreeWidget.cpp
     Editor/View/Widgets/LoggingPanel/PivotTree/PivotTreeWidget.h
     Editor/View/Widgets/LoggingPanel/PivotTree/PivotTreeWidget.ui
@@ -239,9 +219,9 @@ set(FILES
     Editor/View/Widgets/VariablePanel/VariableDockWidget.ui
     Editor/View/Widgets/VariablePanel/VariablePaletteTableView.cpp
     Editor/View/Widgets/VariablePanel/VariablePaletteTableView.h
-    Editor/View/Widgets/VariablePanel/SlotTypeSelectorWidget.cpp
-    Editor/View/Widgets/VariablePanel/SlotTypeSelectorWidget.h
-    Editor/View/Widgets/VariablePanel/SlotTypeSelectorWidget.ui    
+    Editor/View/Widgets/VariablePanel/VariableConfigurationWidget.cpp
+    Editor/View/Widgets/VariablePanel/VariableConfigurationWidget.h
+    Editor/View/Widgets/VariablePanel/VariableConfigurationWidget.ui    
     Editor/View/Widgets/UnitTestPanel/UnitTestDockWidget.cpp
     Editor/View/Widgets/UnitTestPanel/UnitTestDockWidget.h
     Editor/View/Widgets/UnitTestPanel/UnitTestDockWidget.ui
@@ -253,19 +233,36 @@ set(FILES
     Editor/View/Windows/MainWindow.cpp
     Editor/View/Windows/MainWindow.h
     Editor/View/Windows/mainwindow.ui
-    Editor/View/Windows/MainWindowBus.h
     Editor/View/Windows/ScriptCanvasContextMenus.cpp
     Editor/View/Windows/ScriptCanvasContextMenus.h
     Editor/View/Windows/ScriptCanvasEditorResources.qrc
-    Editor/View/Windows/Tools/UpgradeTool/UpgradeHelper.h
+    Editor/View/Windows/ScriptEventMenu.cpp
+    Editor/View/Windows/ScriptEventMenu.h
+    Editor/View/Windows/Tools/InterpreterWidget/InterpreterWidget.cpp
+    Editor/View/Windows/Tools/InterpreterWidget/InterpreterWidget.h
+    Editor/View/Windows/Tools/InterpreterWidget/InterpreterWidget.ui
+    Editor/View/Windows/Tools/UpgradeTool/Controller.cpp
+    Editor/View/Windows/Tools/UpgradeTool/Controller.h
+    Editor/View/Windows/Tools/UpgradeTool/FileSaver.cpp
+    Editor/View/Windows/Tools/UpgradeTool/FileSaver.h
+    Editor/View/Windows/Tools/UpgradeTool/LogTraits.h
+    Editor/View/Windows/Tools/UpgradeTool/Model.cpp
+    Editor/View/Windows/Tools/UpgradeTool/Model.h
+    Editor/View/Windows/Tools/UpgradeTool/Modifier.cpp
+    Editor/View/Windows/Tools/UpgradeTool/Modifier.h
+    Editor/View/Windows/Tools/UpgradeTool/ModelTraits.h
+    Editor/View/Windows/Tools/UpgradeTool/Scanner.cpp
+    Editor/View/Windows/Tools/UpgradeTool/Scanner.h
     Editor/View/Windows/Tools/UpgradeTool/UpgradeHelper.cpp
+    Editor/View/Windows/Tools/UpgradeTool/UpgradeHelper.h
     Editor/View/Windows/Tools/UpgradeTool/UpgradeHelper.ui
-    Editor/View/Windows/Tools/UpgradeTool/UpgradeTool.cpp
-    Editor/View/Windows/Tools/UpgradeTool/UpgradeTool.h
-    Editor/View/Windows/Tools/UpgradeTool/UpgradeTool.ui
-    Editor/View/Windows/Tools/UpgradeTool/VersionExplorer.h
-    Editor/View/Windows/Tools/UpgradeTool/VersionExplorer.cpp
-    Editor/View/Windows/Tools/UpgradeTool/VersionExplorer.ui
+    Editor/View/Windows/Tools/UpgradeTool/VersionExplorerLog.cpp
+    Editor/View/Windows/Tools/UpgradeTool/VersionExplorerLog.h
+    Editor/View/Windows/Tools/UpgradeTool/View.ui
+    Editor/Framework/Configuration.cpp
+    Editor/Framework/Configuration.h
+    Editor/Framework/Interpreter.cpp
+    Editor/Framework/Interpreter.h
     Editor/Framework/ScriptCanvasGraphUtilities.inl
     Editor/Framework/ScriptCanvasGraphUtilities.h
     Editor/Framework/ScriptCanvasTraceUtilities.h

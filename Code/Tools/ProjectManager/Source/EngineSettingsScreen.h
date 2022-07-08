@@ -24,14 +24,11 @@ namespace O3DE::ProjectManager
         ~EngineSettingsScreen() = default;
 
         ProjectManagerScreen GetScreenEnum() override;
-        QString GetTabText() override;
-        bool IsTab() override;
 
     protected slots:
         void OnTextChanged();
 
     private:
-        FormLineEditWidget* m_engineVersion;
         FormBrowseEditWidget* m_thirdParty;
         FormBrowseEditWidget* m_defaultProjects;
         FormBrowseEditWidget* m_defaultGems;

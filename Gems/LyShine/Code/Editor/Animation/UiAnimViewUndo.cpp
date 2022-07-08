@@ -546,7 +546,7 @@ void CUndoAnimNodeReparent::AddParentsInChildren(CUiAnimViewAnimNode* pCurrentNo
 }
 
 //////////////////////////////////////////////////////////////////////////
-CUndoAnimNodeRename::CUndoAnimNodeRename(CUiAnimViewAnimNode* pNode, const string& oldName)
+CUndoAnimNodeRename::CUndoAnimNodeRename(CUiAnimViewAnimNode* pNode, const AZStd::string& oldName)
     : m_pNode(pNode)
     , m_newName(pNode->GetName())
     , m_oldName(oldName)
@@ -556,13 +556,13 @@ CUndoAnimNodeRename::CUndoAnimNodeRename(CUiAnimViewAnimNode* pNode, const strin
 //////////////////////////////////////////////////////////////////////////
 void CUndoAnimNodeRename::Undo([[maybe_unused]] bool bUndo)
 {
-    m_pNode->SetName(m_oldName);
+    m_pNode->SetName(m_oldName.c_str());
 }
 
 //////////////////////////////////////////////////////////////////////////
 void CUndoAnimNodeRename::Redo()
 {
-    m_pNode->SetName(m_newName);
+    m_pNode->SetName(m_newName.c_str());
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -596,9 +596,9 @@ CUndoTrackEventRemove::CUndoTrackEventRemove(CUiAnimViewSequence* pSequence, con
 void CUndoTrackEventRemove::Undo(bool bUndo)
 {
     AZ_UNUSED(bUndo);
-    const char* rawName = m_eventName.toUtf8().data();
+    const AZStd::string rawName = m_eventName.toUtf8().data();
 
-    m_pSequence->AddTrackEvent(rawName);
+    m_pSequence->AddTrackEvent(rawName.c_str());
 
     const uint numKeys = m_changedKeys.GetKeyCount();
     for (uint keyIndex = 0; keyIndex < numKeys; ++keyIndex)

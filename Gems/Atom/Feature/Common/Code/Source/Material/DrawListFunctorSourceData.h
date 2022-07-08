@@ -16,6 +16,7 @@ namespace AZ
 {
     namespace Render
     {
+        // Deprecated, use LuaMaterialFunctorSourceData with SetDrawListTagOverride() instead
         //! Builds a DrawListFunctor.
         //! Materials can use this functor to overwrite draw list for a shader.
         class DrawListFunctorSourceData final
@@ -27,6 +28,7 @@ namespace AZ
 
             static void Reflect(ReflectContext* context);
 
+            using RPI::MaterialFunctorSourceData::CreateFunctor;
             FunctorResult CreateFunctor(const RuntimeContext& context) const override;
 
         private:

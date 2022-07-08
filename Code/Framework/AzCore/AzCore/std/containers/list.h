@@ -5,14 +5,16 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZSTD_LIST_H
-#define AZSTD_LIST_H 1
+
+#pragma once
 
 #include <AzCore/std/allocator.h>
+#include <AzCore/std/allocator_traits.h>
 #include <AzCore/std/algorithm.h>
 #include <AzCore/std/createdestroy.h>
 #include <AzCore/std/typetraits/alignment_of.h>
 #include <AzCore/std/typetraits/is_constructible.h>
+#include <AzCore/std/typetraits/is_integral.h>
 
 namespace AZStd
 {
@@ -314,7 +316,7 @@ namespace AZStd
         }
 
         AZ_FORCE_INLINE size_type   size() const            { return m_numElements; }
-        AZ_FORCE_INLINE size_type   max_size() const        { return m_allocator.max_size() / sizeof(node_type); }
+        AZ_FORCE_INLINE size_type   max_size() const        { return AZStd::allocator_traits<allocator_type>::max_size(m_allocator) / sizeof(node_type); }
         AZ_FORCE_INLINE bool    empty() const               { return (m_numElements == 0); }
 
         AZ_FORCE_INLINE iterator begin()                    { return iterator(AZSTD_CHECKED_ITERATOR(iterator_impl, m_head.m_next)); }
@@ -1338,12 +1340,14 @@ namespace AZStd
         return !(left == right);
     }
 
+    template<class T, class Allocator, class U>
+    decltype(auto) erase(list<T, Allocator>& container, const U& value)
+    {
+        return container.remove(value);
+    }
     template<class T, class Allocator, class Predicate>
     decltype(auto) erase_if(list<T, Allocator>& container, Predicate predicate)
     {
         return container.remove_if(predicate);
     }
 }
-
-#endif // AZSTD_LIST_H
-#pragma once

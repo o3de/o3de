@@ -15,6 +15,7 @@
 #include <Atom/RPI.Public/Material/MaterialSystem.h>
 #include <Atom/RPI.Public/Model/ModelSystem.h>
 #include <Atom/RPI.Public/Pass/PassSystem.h>
+#include <Atom/RPI.Public/XR/XRRenderingInterface.h>
 #include <Atom/RHI/RHISystem.h>
 #include <Atom/RPI.Public/RPISystemInterface.h>
 #include <Atom/RPI.Public/Scene.h>
@@ -68,9 +69,11 @@ namespace AZ
             // RPISystemInterface overrides...
             bool IsInitialized() const override;
             void InitializeSystemAssets() override;
+            bool IsNullRenderer() const override;
             void RegisterScene(ScenePtr scene) override;
             void UnregisterScene(ScenePtr scene) override;
-            ScenePtr GetScene(const SceneId& sceneId) const override;
+            Scene* GetScene(const SceneId& sceneId) const override;
+            Scene* GetSceneByName(const AZ::Name& name) const override;
             ScenePtr GetDefaultScene() const override;
             RenderPipelinePtr GetRenderPipelineForWindow(AzFramework::NativeWindowHandle windowHandle) override;
             Data::Asset<ShaderAsset> GetCommonShaderAssetForSrgs() const override;
@@ -85,10 +88,18 @@ namespace AZ
             const RPISystemDescriptor& GetDescriptor() const override;
             Name GetRenderApiName() const override;
             uint64_t GetCurrentTick() const override;
+            void SetApplicationMultisampleState(const RHI::MultisampleState& multisampleState) override;
+            const RHI::MultisampleState& GetApplicationMultisampleState() const override;
 
             // AZ::Debug::TraceMessageBus::Handler overrides...
             bool OnPreAssert(const char* fileName, int line, const char* func, const char* message) override;
 
+            // Register/Unregister xr system with RPI and RHI
+            void RegisterXRSystem(XRRenderingInterface* xrSystemInterface);
+            void UnregisterXRSystem();
+
+            // Get the Xr system
+            XRRenderingInterface* GetXRSystem() const override;
         private:
             // Initializes the system assets for tests. Should only be called from tests
             void InitializeSystemAssetsForTests();
@@ -96,8 +107,7 @@ namespace AZ
             // SystemTickBus::OnTick
             void OnSystemTick() override;
 
-            // Fill system time and game time information for simulation or rendering
-            void FillTickTimeInfo();
+            float GetCurrentTime() const;
 
             // The set of core asset handlers registered by the system.
             AZStd::vector<AZStd::unique_ptr<Data::AssetHandler>> m_assetHandlers;
@@ -123,7 +133,7 @@ namespace AZ
             // The job policy used for feature processor's rendering prepare
             RHI::JobPolicy m_prepareRenderJobPolicy = RHI::JobPolicy::Parallel;
 
-            TickTimeInfo m_tickTime;
+            float m_currentSimulationTime = 0.0f;
 
             RPISystemDescriptor m_descriptor;
 
@@ -136,6 +146,12 @@ namespace AZ
             bool m_systemAssetsInitialized = false;
 
             uint64_t m_renderTick = 0;
+
+            // Application multisample state
+            RHI::MultisampleState m_multisampleState;
+
+            //XR System
+            XRRenderingInterface* m_xrSystem = nullptr;
         };
 
     } // namespace RPI

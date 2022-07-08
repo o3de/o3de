@@ -10,6 +10,7 @@
 #include "EditorDefs.h"
 
 #include "Settings.h"
+#include "EditorViewportSettings.h"
 
 // Qt
 #include <QGuiApplication>
@@ -26,6 +27,7 @@
 
 // AzFramework
 #include <AzFramework/API/ApplicationAPI.h>
+#include <AzToolsFramework/API/ToolsApplicationAPI.h>
 
 // AzToolsFramework
 #include <AzToolsFramework/SourceControl/SourceControlAPI.h>
@@ -34,7 +36,6 @@
 #include "CryEdit.h"
 #include "MainWindow.h"
 
-#pragma comment(lib, "Gdi32.lib")
 
 //////////////////////////////////////////////////////////////////////////
 // Global Instance of Editor settings.
@@ -82,7 +83,6 @@ private:
 
 namespace
 {
-
     class QtApplicationListener
         : public AzToolsFramework::EditorEvents::Bus::Handler
     {
@@ -99,20 +99,8 @@ namespace
             delete this;
         }
     };
-
 }
 
-//////////////////////////////////////////////////////////////////////////
-SGizmoSettings::SGizmoSettings()
-{
-    axisGizmoSize = 0.2f;
-    axisGizmoText = true;
-    axisGizmoMaxCount = 50;
-    helpersScale = 1.f;
-    tagpointScaleMulti = 0.5f;
-    rulerSphereScale = 0.5f;
-    rulerSphereTrans = 0.5f;
-}
 //////////////////////////////////////////////////////////////////////////
 SEditorSettings::SEditorSettings()
 {
@@ -124,8 +112,6 @@ SEditorSettings::SEditorSettings()
     m_showCircularDependencyError = true;
     bAutoloadLastLevelAtStartup = false;
     bMuteAudio = false;
-    bEnableGameModeVR = false;
-
 
     objectHideMask = 0;
     objectSelectMask = 0xFFFFFFFF; // Initially all selectable.
@@ -135,15 +121,11 @@ SEditorSettings::SEditorSettings()
     autoBackupMaxCount = 3;
     autoRemindTime = 0;
 
-    bAutoSaveTagPoints = false;
-
     bNavigationContinuousUpdate = false;
     bNavigationShowAreas = true;
     bNavigationDebugDisplay = false;
     bVisualizeNavigationAccessibility = false;
     navigationDebugAgentType = 0;
-
-    editorConfigSpec = CONFIG_VERYHIGH_SPEC;  //arbitrary choice, but lets assume that we want things to initially look as good as possible in the editor.
 
     viewports.bAlwaysShowRadiuses = false;
     viewports.bSync2DViews = false;
@@ -156,9 +138,6 @@ SEditorSettings::SEditorSettings()
     viewports.bShowMeshStatsOnMouseOver = false;
     viewports.bDrawEntityLabels = false;
     viewports.bShowTriggerBounds = false;
-    viewports.bShowIcons = true;
-    viewports.bDistanceScaleIcons = true;
-    viewports.bShowSizeBasedIcons = false;
     viewports.nShowFrozenHelpers = true;
     viewports.bFillSelectedShapes = false;
     viewports.nTopMapTextureResolution = 512;
@@ -183,8 +162,6 @@ SEditorSettings::SEditorSettings()
     bPreviewGeometryWindow = true;
     bBackupOnSave = true;
     backupOnSaveMaxCount = 3;
-    bApplyConfigSpecInEditor = true;
-    useLowercasePaths = 0;
     showErrorDialogOnLoad = 1;
 
     consoleBackgroundColorTheme = AzToolsFramework::ConsoleColorTheme::Dark;
@@ -196,7 +173,7 @@ SEditorSettings::SEditorSettings()
     strStandardTempDirectory = "Temp";
 
     // Init source safe params.
-    enableSourceControl = true;
+    enableSourceControl = false;
 
 #if AZ_TRAIT_OS_PLATFORM_APPLE
     textEditorForScript = "TextEdit";
@@ -244,7 +221,7 @@ SEditorSettings::SEditorSettings()
 
     gui.nToolbarIconSize = static_cast<int>(AzQtComponents::ToolBar::ToolBarIconSize::Default);
 
-    int lfHeight = 8;// -MulDiv(8, GetDeviceCaps(GetDC(NULL), LOGPIXELSY), 72);
+    int lfHeight = 8;// -MulDiv(8, GetDeviceCaps(GetDC(nullptr), LOGPIXELSY), 72);
     gui.nDefaultFontHieght = lfHeight;
     gui.hSystemFont = QFont("Ms Shell Dlg 2", lfHeight, QFont::Normal);
     gui.hSystemFontBold = QFont("Ms Shell Dlg 2", lfHeight, QFont::Bold);
@@ -254,6 +231,7 @@ SEditorSettings::SEditorSettings()
     g_TemporaryLevelName = nullptr;
 
     sliceSettings.dynamicByDefault = false;
+    levelSaveSettings.saveAllPrefabsPreference = AzToolsFramework::Prefab::SaveAllPrefabsPreference::AskEveryTime;
 }
 
 void SEditorSettings::Connect()
@@ -393,7 +371,7 @@ void SEditorSettings::LoadValue(const char* sSection, const char* sKey, float& v
     {
         const SettingsGroup sg(sSection);
         const QString defaultVal = s_editorSettings()->value(sKey, QString::number(value)).toString();
-        value = defaultVal.toDouble();
+        value = defaultVal.toFloat();
 
         if (GetIEditor()->GetSettingsManager())
         {
@@ -451,41 +429,7 @@ void SEditorSettings::LoadValue(const char* sSection, const char* sKey, QString&
 }
 
 //////////////////////////////////////////////////////////////////////////
-void SEditorSettings::LoadValue(const char* sSection, const char* sKey, ESystemConfigSpec& value)
-{
-    if (bSettingsManagerMode)
-    {
-        int valueCheck = 0;
-
-        if (GetIEditor()->GetSettingsManager())
-        {
-            GetIEditor()->GetSettingsManager()->LoadSetting(sSection, sKey, valueCheck);
-        }
-
-        if (valueCheck >= CONFIG_AUTO_SPEC && valueCheck < END_CONFIG_SPEC_ENUM)
-        {
-            value = (ESystemConfigSpec)valueCheck;
-            SaveValue(sSection, sKey, value);
-        }
-    }
-    else
-    {
-        const SettingsGroup sg(sSection);
-        auto valuecheck = static_cast<ESystemConfigSpec>(s_editorSettings()->value(sKey, QVariant::fromValue<int>(value)).toInt());
-        if (valuecheck >= CONFIG_AUTO_SPEC && valuecheck < END_CONFIG_SPEC_ENUM)
-        {
-            value = valuecheck;
-
-            if (GetIEditor()->GetSettingsManager())
-            {
-                GetIEditor()->GetSettingsManager()->SaveSetting(sSection, sKey, value);
-            }
-        }
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
-void SEditorSettings::Save()
+void SEditorSettings::Save(bool isEditorClosing)
 {
     QString strStringPlaceholder;
 
@@ -510,7 +454,6 @@ void SEditorSettings::Save()
     SaveValue("Settings", "BrMultiplier", fBrMultiplier);
     SaveValue("Settings", "CameraFastMoveSpeed", cameraFastMoveSpeed);
     SaveValue("Settings", "PreviewGeometryWindow", bPreviewGeometryWindow);
-    SaveValue("Settings", "AutoSaveTagPoints", bAutoSaveTagPoints);
 
     SaveValue("Settings\\Navigation", "NavigationContinuousUpdate", bNavigationContinuousUpdate);
     SaveValue("Settings\\Navigation", "NavigationShowAreas", bNavigationShowAreas);
@@ -520,9 +463,6 @@ void SEditorSettings::Save()
 
     SaveValue("Settings", "BackupOnSave", bBackupOnSave);
     SaveValue("Settings", "SaveBackupMaxCount", backupOnSaveMaxCount);
-    SaveValue("Settings", "ApplyConfigSpecInEditor", bApplyConfigSpecInEditor);
-
-    SaveValue("Settings", "editorConfigSpec", editorConfigSpec);
 
     SaveValue("Settings", "TemporaryDirectory", strStandardTempDirectory);
 
@@ -533,7 +473,7 @@ void SEditorSettings::Save()
     SaveValue("Settings", "ShowTimeInConsole", bShowTimeInConsole);
 
     SaveValue("Settings", "EnableSceneInspector", enableSceneInspector);
-    
+
     //////////////////////////////////////////////////////////////////////////
     // Viewport settings.
     //////////////////////////////////////////////////////////////////////////
@@ -548,8 +488,6 @@ void SEditorSettings::Save()
     SaveValue("Settings", "ShowMeshStatsOnMouseOver", viewports.bShowMeshStatsOnMouseOver);
     SaveValue("Settings", "DrawEntityLabels", viewports.bDrawEntityLabels);
     SaveValue("Settings", "ShowTriggerBounds", viewports.bShowTriggerBounds);
-    SaveValue("Settings", "ShowIcons", viewports.bShowIcons);
-    SaveValue("Settings", "ShowSizeBasedIcons", viewports.bShowSizeBasedIcons);
     SaveValue("Settings", "ShowFrozenHelpers", viewports.nShowFrozenHelpers);
     SaveValue("Settings", "FillSelectedShapes", viewports.bFillSelectedShapes);
     SaveValue("Settings", "MapTextureResolution", viewports.nTopMapTextureResolution);
@@ -562,18 +500,6 @@ void SEditorSettings::Save()
     SaveValue("Settings", "WarningIconsDrawDistance", viewports.fWarningIconsDrawDistance);
     SaveValue("Settings", "ShowScaleWarnings", viewports.bShowScaleWarnings);
     SaveValue("Settings", "ShowRotationWarnings", viewports.bShowRotationWarnings);
-
-    //////////////////////////////////////////////////////////////////////////
-    // Gizmos.
-    //////////////////////////////////////////////////////////////////////////
-    SaveValue("Settings", "AxisGizmoSize", gizmo.axisGizmoSize);
-    SaveValue("Settings", "AxisGizmoText", gizmo.axisGizmoText);
-    SaveValue("Settings", "AxisGizmoMaxCount", gizmo.axisGizmoMaxCount);
-    SaveValue("Settings", "HelpersScale", gizmo.helpersScale);
-    SaveValue("Settings", "TagPointScaleMulti", gizmo.tagpointScaleMulti);
-    SaveValue("Settings", "RulerSphereScale", gizmo.rulerSphereScale);
-    SaveValue("Settings", "RulerSphereTrans", gizmo.rulerSphereTrans);
-    //////////////////////////////////////////////////////////////////////////
 
     SaveValue("Settings", "TextEditorScript", textEditorForScript);
     SaveValue("Settings", "TextEditorShaders", textEditorForShaders);
@@ -626,7 +552,7 @@ void SEditorSettings::Save()
     SaveValue("Settings\\AssetBrowser", "AutoFilterFromViewportSelection", sAssetBrowserSettings.bAutoFilterFromViewportSelection);
     SaveValue("Settings\\AssetBrowser", "VisibleColumnNames", sAssetBrowserSettings.sVisibleColumnNames);
     SaveValue("Settings\\AssetBrowser", "ColumnNames", sAssetBrowserSettings.sColumnNames);
-      
+
     //////////////////////////////////////////////////////////////////////////
     // Deep Selection Settings
     //////////////////////////////////////////////////////////////////////////
@@ -659,36 +585,30 @@ void SEditorSettings::Save()
     //////////////////////////////////////////////////////////////////////////
     SaveValue("Settings\\Slices", "DynamicByDefault", sliceSettings.dynamicByDefault);
 
-    /*
-    //////////////////////////////////////////////////////////////////////////
-    // Save paths.
-    //////////////////////////////////////////////////////////////////////////
-    for (int id = 0; id < EDITOR_PATH_LAST; id++)
-    {
-        for (int i = 0; i < searchPaths[id].size(); i++)
-        {
-            CString path = searchPaths[id][i];
-            CString key;
-            key.Format( "Paths","Path_%.2d_%.2d",id,i );
-            SaveValue( "Paths",key,path );
-        }
-    }
-    */
-
     s_editorSettings()->sync();
 
     // --- Settings Registry values
 
     // Prefab System UI
-    AzFramework::ApplicationRequests::Bus::Broadcast(
-        &AzFramework::ApplicationRequests::SetPrefabSystemEnabled, prefabSystem);
+    AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::SetPrefabSystemEnabled, prefabSystem);
 
-    SaveSettingsRegistryFile();
+    AzToolsFramework::Prefab::PrefabLoaderInterface* prefabLoaderInterface =
+        AZ::Interface<AzToolsFramework::Prefab::PrefabLoaderInterface>::Get();
+    prefabLoaderInterface->SetSaveAllPrefabsPreference(levelSaveSettings.saveAllPrefabsPreference);
+
+    if (!isEditorClosing)
+    {
+        SaveSettingsRegistryFile();
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////
 void SEditorSettings::Load()
 {
+    AzToolsFramework::Prefab::PrefabLoaderInterface* prefabLoaderInterface =
+        AZ::Interface<AzToolsFramework::Prefab::PrefabLoaderInterface>::Get();
+    levelSaveSettings.saveAllPrefabsPreference = prefabLoaderInterface->GetSaveAllPrefabsPreference();
+
     // Load from Settings Registry
     AzFramework::ApplicationRequests::Bus::BroadcastResult(
         prefabSystem, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
@@ -705,7 +625,7 @@ void SEditorSettings::Load()
     QString     strPlaceholderString;
     // Load settings from registry.
     LoadValue("Settings", "UndoLevels", undoLevels);
-    LoadValue("Settings", "UndoSliceOverrideSaveValue", m_undoSliceOverrideSaveValue);  
+    LoadValue("Settings", "UndoSliceOverrideSaveValue", m_undoSliceOverrideSaveValue);
     LoadValue("Settings", "ShowWelcomeScreenAtStartup", bShowDashboardAtStartup);
     LoadValue("Settings", "ShowCircularDependencyError", m_showCircularDependencyError);
     LoadValue("Settings", "LoadLastLevelAtStartup", bAutoloadLastLevelAtStartup);
@@ -724,7 +644,6 @@ void SEditorSettings::Load()
     LoadValue("Settings", "BrMultiplier", fBrMultiplier);
     LoadValue("Settings", "CameraFastMoveSpeed", cameraFastMoveSpeed);
     LoadValue("Settings", "PreviewGeometryWindow", bPreviewGeometryWindow);
-    LoadValue("Settings", "AutoSaveTagPoints", bAutoSaveTagPoints);
 
     LoadValue("Settings\\Navigation", "NavigationContinuousUpdate", bNavigationContinuousUpdate);
     LoadValue("Settings\\Navigation", "NavigationShowAreas", bNavigationShowAreas);
@@ -734,9 +653,6 @@ void SEditorSettings::Load()
 
     LoadValue("Settings", "BackupOnSave", bBackupOnSave);
     LoadValue("Settings", "SaveBackupMaxCount", backupOnSaveMaxCount);
-    LoadValue("Settings", "ApplyConfigSpecInEditor", bApplyConfigSpecInEditor);
-    LoadValue("Settings", "editorConfigSpec", editorConfigSpec);
-
 
     LoadValue("Settings", "TemporaryDirectory", strStandardTempDirectory);
 
@@ -768,8 +684,6 @@ void SEditorSettings::Load()
     LoadValue("Settings", "ShowMeshStatsOnMouseOver", viewports.bShowMeshStatsOnMouseOver);
     LoadValue("Settings", "DrawEntityLabels", viewports.bDrawEntityLabels);
     LoadValue("Settings", "ShowTriggerBounds", viewports.bShowTriggerBounds);
-    LoadValue("Settings", "ShowIcons", viewports.bShowIcons);
-    LoadValue("Settings", "ShowSizeBasedIcons", viewports.bShowSizeBasedIcons);
     LoadValue("Settings", "ShowFrozenHelpers", viewports.nShowFrozenHelpers);
     LoadValue("Settings", "FillSelectedShapes", viewports.bFillSelectedShapes);
     LoadValue("Settings", "MapTextureResolution", viewports.nTopMapTextureResolution);
@@ -782,18 +696,6 @@ void SEditorSettings::Load()
     LoadValue("Settings", "WarningIconsDrawDistance", viewports.fWarningIconsDrawDistance);
     LoadValue("Settings", "ShowScaleWarnings", viewports.bShowScaleWarnings);
     LoadValue("Settings", "ShowRotationWarnings", viewports.bShowRotationWarnings);
-
-    //////////////////////////////////////////////////////////////////////////
-    // Gizmos.
-    //////////////////////////////////////////////////////////////////////////
-    LoadValue("Settings", "AxisGizmoSize", gizmo.axisGizmoSize);
-    LoadValue("Settings", "AxisGizmoText", gizmo.axisGizmoText);
-    LoadValue("Settings", "AxisGizmoMaxCount", gizmo.axisGizmoMaxCount);
-    LoadValue("Settings", "HelpersScale", gizmo.helpersScale);
-    LoadValue("Settings", "TagPointScaleMulti", gizmo.tagpointScaleMulti);
-    LoadValue("Settings", "RulerSphereScale", gizmo.rulerSphereScale);
-    LoadValue("Settings", "RulerSphereTrans", gizmo.rulerSphereTrans);
-    //////////////////////////////////////////////////////////////////////////
 
     LoadValue("Settings", "TextEditorScript", textEditorForScript);
     LoadValue("Settings", "TextEditorShaders", textEditorForShaders);
@@ -929,6 +831,7 @@ void SEditorSettings::Load()
 
 //////////////////////////////////////////////////////////////////////////
 AZ_CVAR(bool, ed_previewGameInFullscreen_once, false, nullptr, AZ::ConsoleFunctorFlags::IsInvisible, "Preview the game (Ctrl+G, \"Play Game\", etc.) in fullscreen once");
+AZ_CVAR(bool, ed_lowercasepaths, false, nullptr, AZ::ConsoleFunctorFlags::Null, "Convert CCryFile paths to lowercase on Open");
 
 void SEditorSettings::PostInitApply()
 {
@@ -940,13 +843,11 @@ void SEditorSettings::PostInitApply()
     // Create CVars.
     REGISTER_CVAR2("ed_highlightGeometry", &viewports.bHighlightMouseOverGeometry, viewports.bHighlightMouseOverGeometry, 0, "Highlight geometry when mouse over it");
     REGISTER_CVAR2("ed_showFrozenHelpers", &viewports.nShowFrozenHelpers, viewports.nShowFrozenHelpers, 0, "Show helpers of frozen objects");
-    REGISTER_CVAR2("ed_lowercasepaths", &useLowercasePaths, useLowercasePaths, 0, "generate paths in lowercase");
     gEnv->pConsole->RegisterInt("fe_fbx_savetempfile", 0, 0, "When importing an FBX file into Facial Editor, this will save out a conversion FSQ to the Animations/temp folder for trouble shooting");
 
     REGISTER_CVAR2_CB("ed_toolbarIconSize", &gui.nToolbarIconSize, gui.nToolbarIconSize, VF_NULL, "Override size of the toolbar icons 0-default, 16,32,...", ToolbarIconSizeChanged);
 
-    GetIEditor()->SetEditorConfigSpec(editorConfigSpec, GetISystem()->GetConfigPlatform());
-    REGISTER_CVAR2("ed_backgroundUpdatePeriod", &backgroundUpdatePeriod, backgroundUpdatePeriod, 0, "Delay between frame updates (ms) when window is out of focus but not minimized. 0 = disable background update");
+    REGISTER_CVAR2("ed_backgroundUpdatePeriod", &backgroundUpdatePeriod, backgroundUpdatePeriod, 0, "Delay between frame updates (ms) when window is out of focus but not minimized. 0 = disable background update. -1 = update with no delay.");
     REGISTER_CVAR2("ed_showErrorDialogOnLoad", &showErrorDialogOnLoad, showErrorDialogOnLoad, 0, "Show error dialog on level load");
     REGISTER_CVAR2_CB("ed_keepEditorActive", &keepEditorActive, 0, VF_NULL, "Keep the editor active, even if no focus is set", KeepEditorActiveChanged);
     REGISTER_CVAR2("g_TemporaryLevelName", &g_TemporaryLevelName, "temp_level", VF_NULL, "Temporary level named used for experimental levels.");
@@ -978,8 +879,9 @@ void SEditorSettings::LoadDefaultGamePaths()
         searchPaths[EDITOR_PATH_MATERIALS].push_back((Path::GetEditingGameDataFolder() + "/Materials").c_str());
     }
 
-    AZStd::string iconsPath;
-    AZ::StringFunc::Path::Join(Path::GetEditingRootFolder().c_str(), "Editor/UI/Icons", iconsPath);
+    auto iconsPath = AZ::IO::Path(AZ::Utils::GetEnginePath()) / "Assets";
+    iconsPath /= "Editor/UI/Icons";
+    iconsPath.MakePreferred();
     searchPaths[EDITOR_PATH_UI_ICONS].push_back(iconsPath.c_str());
 }
 
@@ -1074,7 +976,7 @@ void SEditorSettings::ConvertPath(const AZStd::string_view sourcePath, AZStd::st
     // The reason for the difference is to have this API be consistent with the path syntax in Open 3D Engine Python APIs.
 
     // Find the last pipe separator ("|") in the path
-    int lastSeparator = sourcePath.find_last_of("|");
+    size_t lastSeparator = sourcePath.find_last_of("|");
 
     // Everything before the last separator is the category (since only the category is hierarchical)
     category = sourcePath.substr(0, lastSeparator);
@@ -1161,18 +1063,24 @@ void SEditorSettings::SaveSettingsRegistryFile()
 
     AZ::SettingsRegistryMergeUtils::DumperSettings dumperSettings;
     dumperSettings.m_prettifyOutput = true;
-    dumperSettings.m_jsonPointerPrefix = "/Amazon/Preferences";
+    dumperSettings.m_includeFilter = [](AZStd::string_view path)
+    {
+        AZStd::string_view amazonPrefixPath("/Amazon/Preferences");
+        AZStd::string_view o3dePrefixPath("/O3DE/Preferences");
+        return amazonPrefixPath.starts_with(path.substr(0, amazonPrefixPath.size())) ||
+            o3dePrefixPath.starts_with(path.substr(0, o3dePrefixPath.size()));
+    };
 
     AZStd::string stringBuffer;
     AZ::IO::ByteContainerStream stringStream(&stringBuffer);
-    if (!AZ::SettingsRegistryMergeUtils::DumpSettingsRegistryToStream(*registry, "/Amazon/Preferences", stringStream, dumperSettings))
+    if (!AZ::SettingsRegistryMergeUtils::DumpSettingsRegistryToStream(*registry, "", stringStream, dumperSettings))
     {
         AZ_Warning("SEditorSettings", false, R"(Unable to save changes to the Editor Preferences registry file at "%s"\n)",
             editorPreferencesFilePath.c_str());
         return;
     }
 
-    bool saved{};
+    [[maybe_unused]] bool saved = false;
     constexpr auto configurationMode = AZ::IO::SystemFile::SF_OPEN_CREATE
         | AZ::IO::SystemFile::SF_OPEN_CREATE_PATH
         | AZ::IO::SystemFile::SF_OPEN_WRITE_ONLY;
@@ -1208,4 +1116,9 @@ bool SEditorSettings::GetSettingsRegistry_Bool(const char* key, bool& value)
 AzToolsFramework::ConsoleColorTheme SEditorSettings::GetConsoleColorTheme() const
 {
     return consoleBackgroundColorTheme;
+}
+
+AZ::u64 SEditorSettings::GetMaxNumberOfItemsShownInSearchView() const
+{
+    return SandboxEditor::MaxItemsShownInAssetBrowserSearch();
 }

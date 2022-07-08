@@ -19,8 +19,6 @@ namespace AZ
 
     namespace RHI
     {
-        AZ_ASSERT_NO_ALIGNMENT_PADDING_BEGIN
-
         //! Buffer views describe how to interpret a region of memory in a buffer.
         struct BufferViewDescriptor
         {
@@ -85,7 +83,5 @@ namespace AZ
             // manual alignment padding
             char m_pad0 = 0, m_pad1 = 0, m_pad2 = 0;
         };
-
-        AZ_ASSERT_NO_ALIGNMENT_PADDING_END
     }
 }

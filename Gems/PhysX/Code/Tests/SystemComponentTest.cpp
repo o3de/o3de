@@ -21,8 +21,6 @@ namespace PhysXEditorTests
 
         // Initialize new configs with some non-default values.
         const AZ::Vector3 newGravity(2.f, 5.f, 7.f);
-        const float newFixedTimeStep = 0.008f;
-        const float newMaxTimeStep = 0.034f;
 
         AzPhysics::SceneConfiguration newConfiguration;
 

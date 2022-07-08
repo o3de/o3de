@@ -9,8 +9,6 @@
 
 #include <Cry_Geo.h>
 #include <Include/IPlugin.h>
-#include <IRenderer.h>
-#include <ISerialize.h>
 #include <QtWidgets/QMainWindow>
 #include <LyShine/IDraw2d.h>
 #include <LyShine/ILyShine.h>
@@ -34,8 +32,6 @@
 #include <AzToolsFramework/UI/PropertyEditor/ReflectedPropertyEditor.hxx>
 #include <AzToolsFramework/Undo/UndoSystem.h>
 
-#pragma warning(disable: 4355) // 'this' : used in base member initializer list
-
 class CanvasSizeToolbarSection;
 class CommandCanvasPropertiesChange;
 class CommandCanvasSizeToolbarIndex;
@@ -46,10 +42,8 @@ class CommandHierarchyItemRename;
 class CommandHierarchyItemReparent;
 class CommandHierarchyItemToggleIsExpanded;
 class CommandHierarchyItemToggleIsSelectable;
-class CommandHierarchyItemToggleIsSelected;
 class CommandHierarchyItemToggleIsVisible;
 class CommandPropertiesChange;
-class CommandViewportInteractionMode;
 class ComponentButton;
 class CoordinateSystemToolbarSection;
 class EditorMenu;
@@ -127,10 +121,8 @@ enum class FusibleCommand
 #include "CommandHierarchyItemReparent.h"
 #include "CommandHierarchyItemToggleIsExpanded.h"
 #include "CommandHierarchyItemToggleIsSelectable.h"
-#include "CommandHierarchyItemToggleIsSelected.h"
 #include "CommandHierarchyItemToggleIsVisible.h"
 #include "CommandPropertiesChange.h"
-#include "CommandViewportInteractionMode.h"
 #include "ComponentButton.h"
 #include "CoordinateSystemToolbarSection.h"
 #include "EditorWindow.h"

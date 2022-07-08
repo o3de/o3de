@@ -16,11 +16,8 @@
 #include <QVBoxLayout>
 #include <QHeaderView>
 
-
 namespace EMotionFX
 {
-    int SkeletonOutlinerPlugin::s_iconSize = 16;
-
     SkeletonOutlinerPlugin::SkeletonOutlinerPlugin()
         : EMStudio::DockWidgetPlugin()
         , m_mainWidget(nullptr)
@@ -30,19 +27,25 @@ namespace EMotionFX
 
     SkeletonOutlinerPlugin::~SkeletonOutlinerPlugin()
     {
+        // Reset selection on close.
+        if (m_skeletonModel)
+        {
+            m_skeletonModel->GetSelectionModel().clearSelection();
+            m_skeletonModel.reset();
+        }
+
         for (MCore::Command::Callback* callback : m_commandCallbacks)
         {
             CommandSystem::GetCommandManager()->RemoveCommandCallback(callback, true);
         }
         m_commandCallbacks.clear();
 
-        SkeletonOutlinerNotificationBus::Broadcast(&SkeletonOutlinerNotifications::SingleNodeSelectionChanged, nullptr, nullptr);
         EMotionFX::SkeletonOutlinerRequestBus::Handler::BusDisconnect();
     }
 
     bool SkeletonOutlinerPlugin::Init()
     {
-        m_mainWidget = new QWidget(mDock);
+        m_mainWidget = new QWidget(m_dock);
 
         QVBoxLayout* mainLayout = new QVBoxLayout();
         m_mainWidget->setLayout(mainLayout);
@@ -112,7 +115,7 @@ namespace EMotionFX
         connect(m_searchWidget, &AzQtComponents::FilteredSearchWidget::TypeFilterChanged, this, &SkeletonOutlinerPlugin::OnTypeFilterChanged);
 
         mainLayout->addWidget(m_treeView);
-        mDock->setWidget(m_mainWidget);
+        m_dock->setWidget(m_mainWidget);
 
         EMotionFX::SkeletonOutlinerRequestBus::Handler::BusConnect();
         Reinit();
@@ -211,15 +214,15 @@ namespace EMotionFX
 
     AZ::Outcome<const QModelIndexList&> SkeletonOutlinerPlugin::GetSelectedRowIndices()
     {
-        return AZ::Success(m_selectedRows);
+        return AZ::Success(m_treeView->selectionModel()->selectedRows());
     }
 
     void SkeletonOutlinerPlugin::OnSelectionChanged([[maybe_unused]] const QItemSelection& selected, [[maybe_unused]] const QItemSelection& deselected)
     {
-        m_selectedRows = m_treeView->selectionModel()->selectedRows();
-        if (m_selectedRows.size() == 1)
+        QModelIndexList selectedRows = m_treeView->selectionModel()->selectedRows();
+        if (selectedRows.size() == 1)
         {
-            const QModelIndex& modelIndex = m_selectedRows[0];
+            const QModelIndex& modelIndex = selectedRows[0];
             Node* selectedNode = modelIndex.data(SkeletonModel::ROLE_POINTER).value<Node*>();
             Actor* selectedActor = modelIndex.data(SkeletonModel::ROLE_ACTOR_POINTER).value<Actor*>();
             SkeletonOutlinerNotificationBus::Broadcast(&SkeletonOutlinerNotifications::SingleNodeSelectionChanged, selectedActor, selectedNode);

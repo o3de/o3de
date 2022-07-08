@@ -42,18 +42,15 @@ namespace EMStudio
         ~NodeGroupsPlugin();
 
         // overloaded
-        const char* GetCompileDate() const override         { return MCORE_DATE; }
         const char* GetName() const override                { return "Node Groups"; }
         uint32 GetClassID() const override                  { return NodeGroupsPlugin::CLASS_ID; }
-        const char* GetCreatorName() const override         { return "O3DE"; }
-        float GetVersion() const override                   { return 1.0f;  }
         bool GetIsClosable() const override                 { return true;  }
         bool GetIsFloatable() const override                { return true;  }
         bool GetIsVertical() const override                 { return false; }
 
         // overloaded main init function
         bool Init() override;
-        EMStudioPlugin* Clone() override;
+        EMStudioPlugin* Clone() const override { return new NodeGroupsPlugin(); }
 
         // update the node groups window based on the current selection
         void ReInit();
@@ -74,22 +71,22 @@ namespace EMStudio
         MCORE_DEFINECOMMANDCALLBACK(CommandAddNodeGroupCallback);
         MCORE_DEFINECOMMANDCALLBACK(CommandRemoveNodeGroupCallback);
 
-        CommandSelectCallback*                  mSelectCallback;
-        CommandUnselectCallback*                mUnselectCallback;
-        CommandClearSelectionCallback*          mClearSelectionCallback;
-        CommandAdjustNodeGroupCallback*         mAdjustNodeGroupCallback;
-        CommandAddNodeGroupCallback*            mAddNodeGroupCallback;
-        CommandRemoveNodeGroupCallback*         mRemoveNodeGroupCallback;
+        CommandSelectCallback*                  m_selectCallback;
+        CommandUnselectCallback*                m_unselectCallback;
+        CommandClearSelectionCallback*          m_clearSelectionCallback;
+        CommandAdjustNodeGroupCallback*         m_adjustNodeGroupCallback;
+        CommandAddNodeGroupCallback*            m_addNodeGroupCallback;
+        CommandRemoveNodeGroupCallback*         m_removeNodeGroupCallback;
 
         // current selected actor
-        EMotionFX::Actor*                       mCurrentActor;
+        EMotionFX::Actor*                       m_currentActor;
 
         // the dialog stack widgets
-        NodeGroupWidget*                        mNodeGroupWidget;
-        NodeGroupManagementWidget*              mNodeGroupManagementWidget;
+        NodeGroupWidget*                        m_nodeGroupWidget;
+        NodeGroupManagementWidget*              m_nodeGroupManagementWidget;
 
         // some qt stuff
-        MysticQt::DialogStack*                  mDialogStack;
-        QLabel*                                 mInfoText;
+        MysticQt::DialogStack*                  m_dialogStack;
+        QLabel*                                 m_infoText;
     };
 } // namespace EMStudio

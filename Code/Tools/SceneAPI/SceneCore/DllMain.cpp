@@ -12,6 +12,7 @@
 #include <AzCore/Component/Entity.h>
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Module/Environment.h>
+#include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
 #include <SceneAPI/SceneCore/Components/BehaviorComponent.h>
@@ -137,7 +138,7 @@ namespace AZ
 
                 // Check if this library hasn't already been reflected. This can happen as the ResourceCompilerScene needs
                 //      to explicitly load and reflect the SceneAPI libraries to discover the available extension, while
-                //      Gems with system components need to do the same in the Project Configurator.
+                //      Gems with system components need to do the same in the Project Manager.
                 if (context && (context->IsRemovingReflection() || !context->FindClassData(AZ::SceneAPI::DataTypes::IGroup::TYPEINFO_Uuid())))
                 {
                     AZ::SceneAPI::DataTypes::IManifestObject::Reflect(context);
@@ -186,6 +187,7 @@ namespace AZ
 
                     // Register utilities
                     AZ::SceneAPI::SceneCore::PatternMatcher::Reflect(context);
+                    AZ::SceneAPI::Utilities::DebugSceneGraph::Reflect(context);
                 }
             }
 
@@ -282,14 +284,15 @@ namespace AZ
     } // namespace SceneAPI
 } // namespace AZ
 
-extern "C" AZ_DLL_EXPORT void InitializeDynamicModule(void* env)
+static bool g_sceneCoreInitialized = false;
+
+extern "C" AZ_DLL_EXPORT void InitializeDynamicModule()
 {
-    if (AZ::Environment::IsReady())
+    if (g_sceneCoreInitialized)
     {
         return;
     }
-
-    AZ::Environment::Attach(static_cast<AZ::EnvironmentInstance>(env));
+    g_sceneCoreInitialized = true;
 
     AZ::SceneAPI::SceneCore::Initialize();
 }
@@ -321,10 +324,12 @@ extern "C" AZ_DLL_EXPORT void Deactivate()
 
 extern "C" AZ_DLL_EXPORT void UninitializeDynamicModule()
 {
-    if (!AZ::Environment::IsReady())
+    if (!g_sceneCoreInitialized)
     {
         return;
     }
+    g_sceneCoreInitialized = false;
+
     AZ::SceneAPI::SceneCore::Uninitialize();
 
     // This module does not own these allocators, but must clear its cached EnvironmentVariables
@@ -337,8 +342,6 @@ extern "C" AZ_DLL_EXPORT void UninitializeDynamicModule()
     {
         AZ::AllocatorInstance<AZ::OSAllocator>::Destroy();
     }
-
-    AZ::Environment::Detach();
 }
 
 #endif // !defined(AZ_MONOLITHIC_BUILD)

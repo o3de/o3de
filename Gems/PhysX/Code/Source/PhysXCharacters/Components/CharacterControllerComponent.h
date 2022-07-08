@@ -48,24 +48,24 @@ namespace PhysX
 
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("PhysicsWorldBodyService", 0x944da0cc));
-            provided.push_back(AZ_CRC("PhysXCharacterControllerService", 0x428de4fa));
+            provided.push_back(AZ_CRC_CE("PhysicsWorldBodyService"));
+            provided.push_back(AZ_CRC_CE("PhysicsCharacterControllerService"));
         }
 
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
         {
-            incompatible.push_back(AZ_CRC("PhysXCharacterControllerService", 0x428de4fa));
+            incompatible.push_back(AZ_CRC_CE("PhysicsCharacterControllerService"));
             incompatible.push_back(AZ_CRC_CE("NonUniformScaleService"));
         }
 
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
         {
-            required.push_back(AZ_CRC("TransformService", 0x8ee22c50));
+            required.push_back(AZ_CRC_CE("TransformService"));
         }
 
         static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
         {
-            dependent.push_back(AZ_CRC("PhysXColliderService", 0x4ff43f7c));
+            dependent.push_back(AZ_CRC_CE("PhysicsColliderService"));
         }
 
         Physics::CharacterConfiguration& GetCharacterConfiguration()
@@ -108,7 +108,7 @@ namespace PhysX
         // CharacterControllerRequestBus
         void Resize(float height) override;
         float GetHeight() override;
-        void SetHeight(float height);
+        void SetHeight(float height) override;
         float GetRadius() override;
         void SetRadius(float radius) override;
         float GetHalfSideExtent() override;

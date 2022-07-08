@@ -9,8 +9,6 @@
 #include <RHI/Device.h>
 #include <Atom/RHI/MemoryStatisticsBuilder.h>
 
-#include <AzCore/Debug/EventTrace.h>
-
 namespace AZ
 {
     namespace DX12
@@ -55,7 +53,7 @@ namespace AZ
 
         void StagingMemoryAllocator::GarbageCollect()
         {
-            AZ_ATOM_PROFILE_FUNCTION("DX12", "StagingMemoryAllocator: GarbageCollect");
+            AZ_PROFILE_SCOPE(RHI, "StagingMemoryAllocator: GarbageCollect(DX12)");
             m_mediumBlockAllocators.ForEach([](MemoryLinearSubAllocator& subAllocator)
             {
                 subAllocator.GarbageCollect();
@@ -124,7 +122,7 @@ namespace AZ
 
         MemoryView StagingMemoryAllocator::AllocateUnique(size_t sizeInBytes)
         {
-            AZ_TRACE_METHOD();
+            AZ_PROFILE_FUNCTION(RHI);
             RHI::BufferDescriptor descriptor;
             descriptor.m_byteCount = sizeInBytes;
             MemoryView memoryView = m_device->CreateBufferCommitted(descriptor, D3D12_RESOURCE_STATE_GENERIC_READ, D3D12_HEAP_TYPE_UPLOAD);

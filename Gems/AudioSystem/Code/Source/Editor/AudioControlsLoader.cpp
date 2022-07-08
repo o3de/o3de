@@ -31,7 +31,6 @@ namespace AudioControls
     namespace LoaderStrings
     {
         static constexpr const char* LevelsSubFolder = "levels";
-        static constexpr const char* PathAttribute = "path";
 
     } // namespace LoaderStrings
 
@@ -86,8 +85,7 @@ namespace AudioControls
         const CUndoSuspend suspendUndo;
 
         // Get the relative path (under asset root) where the controls live.
-        const char* controlsPath = nullptr;
-        Audio::AudioSystemRequestBus::BroadcastResult(controlsPath, &Audio::AudioSystemRequestBus::Events::GetControlsPath);
+        const char* controlsPath = AZ::Interface<Audio::IAudioSystem>::Get()->GetControlsPath();
 
         // Get the full path up to asset root.
         AZ::IO::FixedMaxPath controlsFullPath = AZ::Utils::GetProjectPath();
@@ -475,7 +473,7 @@ namespace AudioControls
                     control->AddConnection(connection);
                 }
 
-                control->m_connectionNodes.push_back(SRawConnectionData(childNode, connection != nullptr));
+                control->m_connectionNodes.emplace_back(childNode, connection != nullptr);
 
                 childNode = childNode->next_sibling();
             }
@@ -517,7 +515,7 @@ namespace AudioControls
                     {
                         control->AddConnection(connection);
                     }
-                    control->m_connectionNodes.push_back(SRawConnectionData(connectionNode, connection != nullptr));
+                    control->m_connectionNodes.emplace_back(connectionNode, connection != nullptr);
                     connectionNode = connectionNode->next_sibling();
                 }
                 configGroupNode = configGroupNode->next_sibling();
@@ -534,7 +532,7 @@ namespace AudioControls
                 {
                     control->AddConnection(connection);
                 }
-                control->m_connectionNodes.push_back(SRawConnectionData(connectionNode, connection != nullptr));
+                control->m_connectionNodes.emplace_back(connectionNode, connection != nullptr);
                 connectionNode = connectionNode->next_sibling();
             }
         }
@@ -576,7 +574,7 @@ namespace AudioControls
 
         requestNode->append_node(valueNode);
 
-        childControl->m_connectionNodes.push_back(SRawConnectionData(requestNode, false));
+        childControl->m_connectionNodes.emplace_back(requestNode, false);
         return childControl;
     }
 

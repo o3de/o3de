@@ -1,0 +1,203 @@
+{
+    "entries": [
+        {
+            "base": "UiScrollerBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "UI Scroller Bus",
+                "category": "UI"
+            },
+            "methods": [
+                {
+                    "base": "GetValueChangedActionName",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Value Changed Action Name"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Value Changed Action Name is invoked"
+                    },
+                    "details": {
+                        "name": "Get Value Changed Action Name",
+                        "tooltip": "Gets the name of the action triggered when the value has changed"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::string"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetOrientation",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Orientation"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Orientation is invoked"
+                    },
+                    "details": {
+                        "name": "Set Orientation",
+                        "tooltip": "Sets the orientation of the scroller"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Orientation",
+                                "tooltip": "The orientation of the scroller (0=Horizontal, 1=Vertical)"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetOrientation",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Orientation"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Orientation is invoked"
+                    },
+                    "details": {
+                        "name": "Get Orientation",
+                        "tooltip": "Gets the orientation of the scroller"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetValueChangingActionName",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Value Changing Action Name"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Value Changing Action Name is invoked"
+                    },
+                    "details": {
+                        "name": "Get Value Changing Action Name",
+                        "tooltip": "Gets the name of the action triggered while the value is changing"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::string"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetValueChangingActionName",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Value Changing Action Name"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Value Changing Action Name is invoked"
+                    },
+                    "details": {
+                        "name": "Set Value Changing Action Name",
+                        "tooltip": "Sets the name of the action triggered while the value is changing"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Name",
+                                "tooltip": "The name of the action triggered while the value is changing"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetValue",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Value"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Value is invoked"
+                    },
+                    "details": {
+                        "name": "Set Value",
+                        "tooltip": "Sets the value of the scroller"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Value",
+                                "tooltip": "The value of the scroller [0-1]"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetValue",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Value"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Value is invoked"
+                    },
+                    "details": {
+                        "name": "Get Value",
+                        "tooltip": "Gets the value of the scroller"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetValueChangedActionName",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Value Changed Action Name"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Value Changed Action Name is invoked"
+                    },
+                    "details": {
+                        "name": "Set Value Changed Action Name",
+                        "tooltip": "Sets the name of the action triggered when the value has changed"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Name",
+                                "tooltip": "The name of the action triggered when the value has changed"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

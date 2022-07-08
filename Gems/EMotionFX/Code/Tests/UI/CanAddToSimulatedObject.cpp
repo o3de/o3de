@@ -23,6 +23,7 @@
 #include <Editor/ReselectingTreeView.h>
 #include <Tests/TestAssetCode/SimpleActors.h>
 #include <Tests/TestAssetCode/ActorFactory.h>
+#include <Tests/TestAssetCode/TestActorAssets.h>
 #include <Tests/UI/ModalPopupHandler.h>
 #include <Tests/UI/UIFixture.h>
 #include <Tests/D6JointLimitConfiguration.h>
@@ -33,27 +34,19 @@ namespace EMotionFX
     class CanAddToSimulatedObjectFixture
         : public UIFixture
     {
-    public:
-        void SetUp() override
-        {
-            SetupQtAndFixtureBase();
-
-            AZ::SerializeContext* serializeContext = nullptr;
-            AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
-
-            D6JointLimitConfiguration::Reflect(serializeContext);
-
-            SetupPluginWindows();
-        }
+    protected:
+        virtual bool ShouldReflectPhysicSystem() override { return true; }
     };
 
     TEST_F(CanAddToSimulatedObjectFixture, CanAddExistingJointsAndUnaddedChildren)
     {
         RecordProperty("test_case_id", "C14603914");
 
-        AutoRegisteredActor actor = ActorFactory::CreateAndInit<SimpleJointChainActor>(7, "CanAddToSimulatedObjectActor");
-
-        ActorInstance* actorInstance = ActorInstance::Create(actor.get());
+        AZ::Data::AssetId actorAssetId("{5060227D-B6F4-422E-BF82-41AAC5F228A5}");
+        AZ::Data::Asset<Integration::ActorAsset> actorAsset =
+            TestActorAssets::CreateActorAssetAndRegister<SimpleJointChainActor>(actorAssetId, 7, "CanAddToSimulatedObjectActor");
+        Actor* actor = actorAsset->GetActor();
+        ActorInstance* actorInstance = ActorInstance::Create(actor);
 
         // Change the Editor mode to Simulated Objects
         EMStudio::GetMainWindow()->ApplicationModeChanged("SimulatedObjects");
@@ -164,9 +157,11 @@ namespace EMotionFX
                 });
 
         RecordProperty("test_case_id", "C13291807");
-        AutoRegisteredActor actor = ActorFactory::CreateAndInit<SimpleJointChainActor>(7, "CanAddToSimulatedObjectActor");
-
-        ActorInstance* actorInstance = ActorInstance::Create(actor.get());
+        AZ::Data::AssetId actorAssetId("{5060227D-B6F4-422E-BF82-41AAC5F228A5}");
+        AZ::Data::Asset<Integration::ActorAsset> actorAsset =
+            TestActorAssets::CreateActorAssetAndRegister<SimpleJointChainActor>(actorAssetId, 7, "CanAddToSimulatedObjectActor");
+        Actor* actor = actorAsset->GetActor();
+        ActorInstance* actorInstance = ActorInstance::Create(actor);
 
         // Change the Editor mode to Physics
         EMStudio::GetMainWindow()->ApplicationModeChanged("Physics");

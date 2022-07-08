@@ -7,6 +7,7 @@
  */
 
 #include <AzCore/Component/Entity.h>
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/RTTI/BehaviorContext.h>
@@ -17,6 +18,7 @@
 
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
+#include <AzToolsFramework/API/EntityCompositionRequestBus.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 
@@ -30,7 +32,10 @@
 #include <EMotionFX/CommandSystem/Source/SelectionList.h>
 #include <EMotionFX/Source/TransformData.h>
 #include <EMotionFX/Source/AttachmentNode.h>
+#include <EMotionFX/Source/AttachmentSkin.h>
+#include <EMotionFX/Source/Mesh.h>
 #include <MCore/Source/AzCoreConversions.h>
+#include <AtomLyIntegration/CommonFeatures/Material/MaterialComponentConstants.h>
 
 namespace EMotionFX
 {
@@ -62,39 +67,40 @@ namespace EMotionFX
                 {
                     editContext->Class<ActorComponent::BoundingBoxConfiguration>("Actor Bounding Box Config", "")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-
                         ->DataElement(AZ::Edit::UIHandlers::ComboBox, &ActorComponent::BoundingBoxConfiguration::m_boundsType,
                                       "Bounds type",
-                                      "The method used to compute the Actor bounding box. NOTE: ordered by least expensive to compute to most expensive to compute."
-                        )
-                        ->EnumAttribute(ActorInstance::BOUNDS_STATIC_BASED, "Static bounds (source-asset bounds)")
-                        ->EnumAttribute(ActorInstance::BOUNDS_NODE_BASED, "Bone position-based")
-                        ->EnumAttribute(ActorInstance::BOUNDS_NODEOBB_BASED, "Bone local bounding box-based")
-                        ->EnumAttribute(ActorInstance::BOUNDS_MESH_BASED, "Render mesh vertex position-based (VERY EXPENSIVE)")
-
-                        ->DataElement(0, &ActorComponent::BoundingBoxConfiguration::m_autoUpdateBounds,
+                                      "The method used to compute the Actor bounding box. NOTE: ordered by least expensive to compute to most expensive to compute.")
+                            ->EnumAttribute(ActorInstance::BOUNDS_STATIC_BASED, "Static (Recommended)")
+                            ->EnumAttribute(ActorInstance::BOUNDS_NODE_BASED, "Bone position-based")
+                            ->EnumAttribute(ActorInstance::BOUNDS_MESH_BASED, "Mesh vertex-based (VERY EXPENSIVE)")
+                            ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &ActorComponent::BoundingBoxConfiguration::m_expandBy,
+                            "Expand by",
+                            "Percentage that the calculated bounding box should be automatically expanded with. "
+                            "This can be used to add a tolerance area to the calculated bounding box to avoid clipping the character too early. "
+                            "A static bounding box together with the expansion is the recommended way for maximum performance. (Default = 25%)")
+                            ->Attribute(AZ::Edit::Attributes::Suffix, " %")
+                            ->Attribute(AZ::Edit::Attributes::Min, -100.0f + AZ::Constants::Tolerance)
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &ActorComponent::BoundingBoxConfiguration::m_autoUpdateBounds,
                                       "Automatically update bounds?",
-                                      "If true, bounds are automatically updated based on some frequency. Otherwise bounds are computed only at creation or when triggered manually"
-                        )
-                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
-
-                        ->DataElement(0, &ActorComponent::BoundingBoxConfiguration::m_updateTimeFrequency,
+                                      "If true, bounds are automatically updated based on some frequency. Otherwise bounds are computed only at creation or when triggered manually")
+                            ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
+                        ->Attribute(AZ::Edit::Attributes::Visibility, &ActorComponent::BoundingBoxConfiguration::GetVisibilityAutoUpdate)
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &ActorComponent::BoundingBoxConfiguration::m_updateTimeFrequency,
                                       "Update frequency",
-                                      "How often to update bounds automatically"
-                        )
-                        ->Attribute(AZ::Edit::Attributes::Suffix, " Hz")
-                        ->Attribute(AZ::Edit::Attributes::Min, 0.f)
-                        ->Attribute(AZ::Edit::Attributes::Step, 0.001f)
-                        ->Attribute(AZ::Edit::Attributes::Visibility, &ActorComponent::BoundingBoxConfiguration::m_autoUpdateBounds)
-
-                        ->DataElement(0, &ActorComponent::BoundingBoxConfiguration::m_updateItemFrequency,
+                                      "How often to update bounds automatically")
+                            ->Attribute(AZ::Edit::Attributes::Suffix, " Hz")
+                            ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
+                            ->Attribute(AZ::Edit::Attributes::Max, FLT_MAX)
+                            ->Attribute(AZ::Edit::Attributes::Step, 0.1f)
+                            ->Attribute(AZ::Edit::Attributes::Visibility, &ActorComponent::BoundingBoxConfiguration::GetVisibilityAutoUpdateSettings)
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &ActorComponent::BoundingBoxConfiguration::m_updateItemFrequency,
                                       "Update item skip factor",
                                       "How many items (bones or vertices) to skip when automatically updating bounds."
-                                      " <br> i.e. =1 uses every single item, =2 uses every 2nd item, =3 uses every 3rd item... "
-                        )
-                        ->Attribute(AZ::Edit::Attributes::Suffix, " items")
-                        ->Attribute(AZ::Edit::Attributes::Min, (AZ::u32)1)
-                        ->Attribute(AZ::Edit::Attributes::Visibility, &ActorComponent::BoundingBoxConfiguration::m_autoUpdateBounds)
+                                      " <br> i.e. =1 uses every single item, =2 uses every 2nd item, =3 uses every 3rd item...")
+                            ->Attribute(AZ::Edit::Attributes::Suffix, " items")
+                            ->Attribute(AZ::Edit::Attributes::Min, (AZ::u32)1)
+                            ->Attribute(AZ::Edit::Attributes::Visibility, &ActorComponent::BoundingBoxConfiguration::GetVisibilityAutoUpdateSettings)
                         ;
 
                     editContext->Class<EditorActorComponent>("Actor", "The Actor component manages an instance of an Actor")
@@ -105,7 +111,7 @@ namespace EMotionFX
                         ->Attribute(AZ::Edit::Attributes::ViewportIcon, ":/EMotionFX/Viewport/ActorComponent.svg")
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                        ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/actor/")
+                        ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/animation/actor/")
                         ->DataElement(0, &EditorActorComponent::m_actorAsset,
                             "Actor asset", "Assigned actor asset")
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorActorComponent::OnAssetSelected)
@@ -122,12 +128,12 @@ namespace EMotionFX
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->DataElement(0, &EditorActorComponent::m_renderCharacter,
                             "Draw character", "Toggles rendering of character mesh.")
-                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorActorComponent::OnDebugDrawFlagChanged)
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorActorComponent::OnRenderFlagChanged)
                         ->DataElement(0, &EditorActorComponent::m_renderSkeleton,
                             "Draw skeleton", "Toggles rendering of skeleton.")
-                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorActorComponent::OnDebugDrawFlagChanged)
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorActorComponent::OnRenderFlagChanged)
                         ->DataElement(0, &EditorActorComponent::m_renderBounds, "Draw bounds", "Toggles rendering of world space bounding boxes.")
-                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorActorComponent::OnDebugDrawFlagChanged)
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorActorComponent::OnRenderFlagChanged)
                         ->DataElement(AZ::Edit::UIHandlers::ComboBox, &EditorActorComponent::m_skinningMethod,
                             "Skinning method", "Choose the skinning method this actor is using")
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorActorComponent::OnSkinningMethodChanged)
@@ -155,6 +161,11 @@ namespace EMotionFX
                         ->DataElement(0, &EditorActorComponent::m_bboxConfig,
                                       "Bounding box configuration", "")
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorActorComponent::OnBBoxConfigChanged)
+                        ->UIElement(AZ::Edit::UIHandlers::Button, "Add Material Component", "Add Material Component")
+                        ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")
+                        ->Attribute(AZ::Edit::Attributes::ButtonText, "Add Material Component")
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorActorComponent::AddEditorMaterialComponent)
+                        ->Attribute(AZ::Edit::Attributes::Visibility, &EditorActorComponent::GetEditorMaterialComponentVisibility)
                         ;
                 }
             }
@@ -193,6 +204,9 @@ namespace EMotionFX
         //////////////////////////////////////////////////////////////////////////
         void EditorActorComponent::Activate()
         {
+            AzToolsFramework::Components::EditorComponentBase::Activate();
+
+            UpdateRenderFlags();
             LoadActorAsset();
 
             const AZ::EntityId entityId = GetEntityId();
@@ -220,9 +234,12 @@ namespace EMotionFX
             AZ::TransformNotificationBus::Handler::BusDisconnect();
             AZ::TickBus::Handler::BusDisconnect();
             AZ::Data::AssetBus::Handler::BusDisconnect();
+            ActorComponentNotificationBus::Handler::BusDisconnect();
 
             DestroyActorInstance();
             m_actorAsset.Release();
+
+            AzToolsFramework::Components::EditorComponentBase::Deactivate();
         }
 
         //////////////////////////////////////////////////////////////////////////
@@ -242,6 +259,14 @@ namespace EMotionFX
         }
 
         //////////////////////////////////////////////////////////////////////////
+        bool EditorActorComponent::GetRenderActorVisible() const
+        {
+            if (m_renderActorInstance)
+            {
+                return m_renderActorInstance->IsVisible();
+            }
+            return false;
+        }
         size_t EditorActorComponent::GetNumJoints() const
         {
             const Actor* actor = m_actorAsset->GetActor();
@@ -277,6 +302,8 @@ namespace EMotionFX
         //////////////////////////////////////////////////////////////////////////
         void EditorActorComponent::DestroyActorInstance()
         {
+            DetachFromEntity();
+
             if (m_actorInstance)
             {
                 ActorComponentNotificationBus::Event(
@@ -348,8 +375,9 @@ namespace EMotionFX
         }
 
         //////////////////////////////////////////////////////////////////////////
-        void EditorActorComponent::OnDebugDrawFlagChanged()
+        void EditorActorComponent::OnRenderFlagChanged()
         {
+            UpdateRenderFlags();
             if (m_renderSkeleton || m_renderBounds || m_renderCharacter)
             {
                 AZ::TickBus::Handler::BusConnect();
@@ -409,9 +437,9 @@ namespace EMotionFX
         {
             if (!IsValidAttachment(GetEntityId(), m_attachmentTarget))
             {
-                m_attachmentTarget.SetInvalid();
                 AZ_Error("EMotionFX", false, "You cannot attach to yourself or create circular dependencies! Attachment cannot be performed.");
             }
+            CheckAttachToEntity();
             return AZ::Edit::PropertyRefreshLevels::AttributesAndValues;
         }
 
@@ -518,12 +546,7 @@ namespace EMotionFX
         void EditorActorComponent::SetActorAsset(AZ::Data::Asset<ActorAsset> actorAsset)
         {
             m_actorAsset = actorAsset;
-
-            Actor* actor = m_actorAsset->GetActor();
-            if (actor)
-            {
-                CheckActorCreation();
-            }
+            CheckActorCreation();
         }
 
         void EditorActorComponent::InitializeMaterial(ActorAsset& actorAsset)
@@ -558,6 +581,23 @@ namespace EMotionFX
             ToolsApplicationEvents::Bus::Broadcast(&ToolsApplicationEvents::InvalidatePropertyDisplay, Refresh_EntireTree);
         }
 
+        void EditorActorComponent::UpdateRenderFlags()
+        {
+            m_renderFlags = ActorRenderFlags::None;
+            if (m_renderCharacter)
+            {
+                m_renderFlags |= ActorRenderFlags::Solid;
+            }
+            if (m_renderBounds)
+            {
+                m_renderFlags |= ActorRenderFlags::AABB;
+            }
+            if (m_renderSkeleton)
+            {
+                m_renderFlags |= ActorRenderFlags::LineSkeleton;
+            }
+        }
+
         //////////////////////////////////////////////////////////////////////////
         void EditorActorComponent::OnTransformChanged(const AZ::Transform& local, const AZ::Transform& world)
         {
@@ -577,7 +617,15 @@ namespace EMotionFX
             if (asset)
             {
                 m_actorAsset = asset;
-                OnAssetSelected();
+
+                // SetPrimaryAsset function can be called while this component is not activated
+                // due to incompatible services. For example by dragging and dropping a FBX to an
+                // entity that already has an actor or mesh component in it. Only proceed to load actor
+                // asset if the component is activated (by checking if it's connected to EditorActorComponentRequestBus).
+                if (EditorActorComponentRequestBus::Handler::BusIsConnected())
+                {
+                    OnAssetSelected();
+                }
             }
         }
 
@@ -593,23 +641,16 @@ namespace EMotionFX
             {
                 m_renderActorInstance->OnTick(deltaTime);
                 m_renderActorInstance->UpdateBounds();
-
-                RenderActorInstance::DebugOptions debugOptions;
-                debugOptions.m_drawAABB = m_renderBounds;
-                debugOptions.m_drawSkeleton = m_renderSkeleton;
-                debugOptions.m_emfxDebugDraw = true;
-                m_renderActorInstance->DebugDraw(debugOptions);
+                m_renderActorInstance->DebugDraw(m_renderFlags);
             }
         }
 
         void EditorActorComponent::BuildGameEntity(AZ::Entity* gameEntity)
         {
+            UpdateRenderFlags();
             ActorComponent::Configuration cfg;
             cfg.m_actorAsset = m_actorAsset;
             cfg.m_materialPerLOD = m_materialPerLOD;
-            cfg.m_renderSkeleton = m_renderSkeleton;
-            cfg.m_renderCharacter = m_renderCharacter;
-            cfg.m_renderBounds = m_renderBounds;
             cfg.m_attachmentType = m_attachmentType;
             cfg.m_attachmentTarget = m_attachmentTarget;
             cfg.m_attachmentJointIndex = m_attachmentJointIndex;
@@ -617,6 +658,7 @@ namespace EMotionFX
             cfg.m_skinningMethod = m_skinningMethod;
             cfg.m_bboxConfig = m_bboxConfig;
             cfg.m_forceUpdateJointsOOV = m_forceUpdateJointsOOV;
+            cfg.m_renderFlags = m_renderFlags;
 
             gameEntity->AddComponent(aznew ActorComponent(&cfg));
         }
@@ -679,11 +721,10 @@ namespace EMotionFX
             bool isHit = false;
 
             // Iterate through the meshes in the actor, looking for the closest hit
-            const AZ::u32 lodLevel = m_actorInstance->GetLODLevel();
+            const size_t lodLevel = m_actorInstance->GetLODLevel();
             Actor* actor = m_actorAsset.Get()->GetActor();
-            const uint32 numNodes = actor->GetNumNodes();
-            const uint32 numLods = actor->GetNumLODLevels();
-            for (uint32 nodeIndex = 0; nodeIndex < numNodes; ++nodeIndex)
+            const size_t numNodes = actor->GetNumNodes();
+            for (size_t nodeIndex = 0; nodeIndex < numNodes; ++nodeIndex)
             {
                 Mesh* mesh = actor->GetMesh(lodLevel, nodeIndex);
                 if (!mesh || mesh->GetIsCollisionMesh())
@@ -802,7 +843,7 @@ namespace EMotionFX
                 Node* node = jointName ? targetActorInstance->GetActor()->GetSkeleton()->FindNodeByName(jointName) : targetActorInstance->GetActor()->GetSkeleton()->GetNode(0);
                 if (node)
                 {
-                    const AZ::u32 jointIndex = node->GetNodeIndex();
+                    const size_t jointIndex = node->GetNodeIndex();
                     Attachment* attachment = AttachmentNode::Create(targetActorInstance, jointIndex, m_actorInstance.get(), true /* Managed externally, by this component. */);
                     targetActorInstance->AddAttachment(attachment);
                 }
@@ -840,7 +881,15 @@ namespace EMotionFX
         void EditorActorComponent::CheckActorCreation()
         {
             // Enable/disable debug drawing.
-            OnDebugDrawFlagChanged();
+            OnRenderFlagChanged();
+
+            if (m_actorInstance)
+            {
+                ActorComponentNotificationBus::Event(
+                    GetEntityId(), &ActorComponentNotificationBus::Events::OnActorInstanceDestroyed, m_actorInstance.get());
+                m_renderActorInstance.reset(nullptr);
+                m_actorInstance.reset();
+            }
 
             // Create actor instance.
             auto* actorAsset = m_actorAsset.GetAs<ActorAsset>();
@@ -848,14 +897,6 @@ namespace EMotionFX
             if (!actorAsset)
             {
                 return;
-            }
-
-            if (m_actorInstance)
-            {
-                ActorComponentNotificationBus::Event(
-                    GetEntityId(),
-                    &ActorComponentNotificationBus::Events::OnActorInstanceDestroyed,
-                    m_actorInstance.get());
             }
 
             m_actorInstance = actorAsset->CreateInstance(GetEntity());
@@ -936,11 +977,123 @@ namespace EMotionFX
                 }
             }
 
+            // Remember the parent entity before we re-parent (attach) it.
+            AZ::TransformBus::EventResult(m_attachmentPreviousParent, GetEntityId(), &AZ::TransformBus::Events::GetParentId);
+
             // Reattach all attachments
             for (AZ::EntityId& attachment : m_attachments)
             {
                 LmbrCentral::AttachmentComponentRequestBus::Event(attachment, &LmbrCentral::AttachmentComponentRequestBus::Events::Reattach, true);
             }
+
+            CheckAttachToEntity();
+        }
+
+        void EditorActorComponent::CheckAttachToEntity()
+        {
+            if (m_actorInstance)
+            {
+                if (m_attachmentTarget.IsValid())
+                {
+                    // Create the attachment if the target instance is already created.
+                    // Otherwise, listen to the actor instance creation event.
+                    ActorInstance* targetActorInstance = nullptr;
+                    ActorComponentRequestBus::EventResult(targetActorInstance, m_attachmentTarget, &ActorComponentRequestBus::Events::GetActorInstance);
+                    if (targetActorInstance)
+                    {
+                        AttachToInstance(targetActorInstance);
+                    }
+                    else
+                    {
+                        ActorComponentNotificationBus::Handler::BusDisconnect();
+                        ActorComponentNotificationBus::Handler::BusConnect(m_attachmentTarget);
+                    }
+                }
+                else
+                {
+                    DetachFromEntity();
+                }
+            }
+        }
+
+        void EditorActorComponent::SetRenderFlag(ActorRenderFlags renderFlags)
+        {
+            m_renderFlags = renderFlags;
+        }
+
+        AZ::Crc32 EditorActorComponent::AddEditorMaterialComponent()
+        {
+            const AZStd::vector<AZ::EntityId> entityList = { GetEntityId() };
+            const AZ::ComponentTypeList componentsToAdd = { AZ::Uuid(AZ::Render::EditorMaterialComponentTypeId) };
+
+            AzToolsFramework::EntityCompositionRequests::AddComponentsOutcome outcome =
+                AZ::Failure(AZStd::string("Failed to add AZ::Render::EditorMaterialComponentTypeId"));
+            AzToolsFramework::EntityCompositionRequestBus::BroadcastResult(outcome, &AzToolsFramework::EntityCompositionRequests::AddComponentsToEntities, entityList, componentsToAdd);
+            return AZ::Edit::PropertyRefreshLevels::EntireTree;
+        }
+
+        bool EditorActorComponent::HasEditorMaterialComponent() const
+        {
+            return GetEntity() && GetEntity()->FindComponent(AZ::Uuid(AZ::Render::EditorMaterialComponentTypeId)) != nullptr;
+        }
+
+        AZ::u32 EditorActorComponent::GetEditorMaterialComponentVisibility() const
+        {
+            return HasEditorMaterialComponent() ? AZ::Edit::PropertyVisibility::Hide : AZ::Edit::PropertyVisibility::Show;
+        }
+
+        void EditorActorComponent::DetachFromEntity()
+        {
+            if (!m_actorInstance)
+            {
+                return;
+            }
+
+            ActorInstance* attachedTo = m_actorInstance->GetAttachedTo();
+            if (attachedTo)
+            {
+                attachedTo->RemoveAttachment(m_actorInstance.get());
+                AZ::TransformBus::Event(GetEntityId(), &AZ::TransformBus::Events::SetParent, m_attachmentPreviousParent);
+            }
+        }
+
+        void EditorActorComponent::OnActorInstanceCreated(ActorInstance* actorInstance)
+        {
+            auto attachmentIt = AZStd::find(m_attachments.begin(), m_attachments.end(), actorInstance->GetEntityId());
+            if (attachmentIt != m_attachments.end())
+            {
+                if (m_actorInstance)
+                {
+                    LmbrCentral::AttachmentComponentRequestBus::Event(actorInstance->GetEntityId(), &LmbrCentral::AttachmentComponentRequestBus::Events::Reattach, true);
+                }
+            }
+            else
+            {
+                AttachToInstance(actorInstance);
+            }
+        }
+
+        void EditorActorComponent::OnActorInstanceDestroyed([[maybe_unused]] ActorInstance* actorInstance)
+        {
+            DetachFromEntity();
+        }
+
+        void EditorActorComponent::AttachToInstance(ActorInstance* targetActorInstance)
+        {
+            if (!targetActorInstance)
+            {
+                return;
+            }
+
+            // Remember the parent entity before we re-parent (attach) it.
+            AZ::TransformBus::EventResult(m_attachmentPreviousParent, GetEntityId(), &AZ::TransformBus::Events::GetParentId);
+
+            DetachFromEntity();
+            Attachment* attachmentSkin = AttachmentSkin::Create(targetActorInstance, m_actorInstance.get());
+            m_actorInstance->SetLocalSpaceTransform(Transform::CreateIdentity());
+            targetActorInstance->AddAttachment(attachmentSkin);
+            AZ::TransformBus::Event(GetEntityId(), &AZ::TransformBus::Events::SetParent, targetActorInstance->GetEntityId());
+            AZ::TransformBus::Event(GetEntityId(), &AZ::TransformBus::Events::SetLocalTM, AZ::Transform::CreateIdentity());
         }
     } //namespace Integration
 } // namespace EMotionFX

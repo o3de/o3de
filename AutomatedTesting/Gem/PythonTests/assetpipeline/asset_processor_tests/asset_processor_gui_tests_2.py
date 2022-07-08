@@ -24,12 +24,10 @@ import ly_test_tools.launchers.launcher_helper as launcher_helper
 from ly_test_tools.o3de.asset_processor import ASSET_PROCESSOR_PLATFORM_MAP, ASSET_PROCESSOR_SETTINGS_ROOT_KEY
 
 # Import fixtures
+from ..ap_fixtures.ap_fast_scan_setting_backup_fixture import ap_fast_scan_setting_backup_fixture
 from ..ap_fixtures.asset_processor_fixture import asset_processor as asset_processor
 from ..ap_fixtures.ap_setup_fixture import ap_setup_fixture as ap_setup_fixture
 from ..ap_fixtures.ap_idle_fixture import TimestampChecker
-from ..ap_fixtures.ap_fast_scan_setting_backup_fixture import (
-    ap_fast_scan_setting_backup_fixture as fast_scan_backup,
-)
 
 
 # Import LyShared
@@ -63,6 +61,7 @@ def ap_idle(workspace, ap_setup_fixture):
 @pytest.mark.usefixtures("local_resources")
 @pytest.mark.parametrize("project", targetProjects)
 @pytest.mark.assetpipeline
+@pytest.mark.SUITE_periodic
 class TestsAssetProcessorGUI_WindowsAndMac(object):
     """
     Specific Tests for Asset Processor GUI To Only Run on Windows and Mac
@@ -71,7 +70,7 @@ class TestsAssetProcessorGUI_WindowsAndMac(object):
     @pytest.mark.test_case_id("C3540434")
     @pytest.mark.BAT
     @pytest.mark.assetpipeline
-    def test_WindowsAndMacPlatforms_GUIFastScanNoSettingSet_FastScanSettingCreated(self, asset_processor, fast_scan_backup):
+    def test_WindowsAndMacPlatforms_GUIFastScanNoSettingSet_FastScanSettingCreated(self, asset_processor, ap_fast_scan_setting_backup_fixture):
         """
          Tests that a fast scan settings entry gets created for the AP if it does not exist
          and ensures that the entry is defaulted to fast-scan enabled
@@ -85,7 +84,7 @@ class TestsAssetProcessorGUI_WindowsAndMac(object):
         """
 
         asset_processor.create_temp_asset_root()
-        fast_scan_setting = fast_scan_backup
+        fast_scan_setting = ap_fast_scan_setting_backup_fixture
 
         # Delete registry value (if it exists)
         fast_scan_setting.delete_entry()
@@ -113,10 +112,9 @@ class TestsAssetProcessorGUI_WindowsAndMac(object):
     @pytest.mark.test_case_id("C3635822")
     @pytest.mark.BAT
     @pytest.mark.assetpipeline
-    @pytest.mark.skip("Not working in Jenkins")
     # fmt:off
     def test_WindowsMacPlatforms_GUIFastScanEnabled_GameLauncherWorksWithAP(self, asset_processor, workspace,
-                                                                            fast_scan_backup):
+                                                                            ap_fast_scan_setting_backup_fixture):
         # fmt:on
         """
         Make sure game launcher working with Asset Processor set to turbo mode
@@ -134,14 +132,14 @@ class TestsAssetProcessorGUI_WindowsAndMac(object):
         CHECK_ALIVE_SECONDS = 15
 
         # AP is running in turbo mode
-        fast_scan = fast_scan_backup
+        fast_scan = ap_fast_scan_setting_backup_fixture
         fast_scan.set_value("True")
 
         value = fast_scan.get_value()
         assert value.lower() == "true", f"The fast scan setting found is {value}"
 
         # Launch GameLauncher.exe with Null Renderer enabled so that Non-GPU Automation Nodes don't fail on the renderer
-        launcher = launcher_helper.create_launcher(workspace, ["-NullRenderer"])
+        launcher = launcher_helper.create_game_launcher(workspace, args=["-NullRenderer"])
         launcher.start()
 
         # Validate that no fatal errors (crashes) are reported within a certain time frame (10 seconds timeout)
@@ -149,27 +147,32 @@ class TestsAssetProcessorGUI_WindowsAndMac(object):
         time.sleep(CHECK_ALIVE_SECONDS)
         launcher_name = f"{workspace.project.title()}.GameLauncher"
         # fmt:off
-        assert process_utils.process_exists(launcher_name, ignore_extensions=True), \
-            f"{launcher_name} was not live during the check."
-        assert process_utils.process_exists("AssetProcessor", ignore_extensions=True), \
-            "AssetProcessor was not live during the check."
-        # fmt:on
+
+        launcher_exists = False
+        asset_processor_exists = False
+        if process_utils.process_exists(launcher_name, ignore_extensions=True):
+            launcher_exists = True
+        if process_utils.process_exists("AssetProcessor", ignore_extensions=True):
+            asset_processor_exists = True
 
         launcher.stop()
 
+        assert launcher_exists, f"{launcher_name} was not live during the check."
+        assert asset_processor_exists, "AssetProcessor was not live during the check."
+        # fmt:on
 
 @pytest.mark.usefixtures("asset_processor")
 @pytest.mark.usefixtures("ap_setup_fixture")
 @pytest.mark.usefixtures("local_resources")
 @pytest.mark.parametrize("project", targetProjects)
 @pytest.mark.assetpipeline
+@pytest.mark.SUITE_periodic
 class TestsAssetProcessorGUI_AllPlatforms(object):
     """
     Tests for Asset Processor GUI To Run on All Supported Host Platforms
     """
 
     @pytest.mark.test_case_id("C1591337")
-    @pytest.mark.SUITE_sandbox
     @pytest.mark.BAT
     @pytest.mark.assetpipeline
     # fmt:off
@@ -177,7 +180,7 @@ class TestsAssetProcessorGUI_AllPlatforms(object):
                                                                         asset_processor):
         # fmt:on
         """
-        Deleting slices and uicanvases while AP is running
+        Deleting files while AP is running
 
         Test Steps:
         1. Create temporary testing environment with test assets
@@ -190,7 +193,7 @@ class TestsAssetProcessorGUI_AllPlatforms(object):
         env = ap_setup_fixture
 
         # Copy test assets to project folder and verify test assets folder exists in project folder
-        test_assets_folder, cache_folder = asset_processor.prepare_test_environment(env["tests_dir"], "C1591337")
+        test_assets_folder, cache_folder = asset_processor.prepare_test_environment(env["tests_dir"], os.path.join("TestAssets", "single_working_prefab"))
         assert os.path.exists(test_assets_folder), f"Test assets folder was not found {test_assets_folder}"
 
         # Launch Asset Processor and wait for it to go idle
@@ -214,14 +217,13 @@ class TestsAssetProcessorGUI_AllPlatforms(object):
         asset_processor.stop()
 
     @pytest.mark.test_case_id("C4874115")
-    @pytest.mark.SUITE_sandbox
     @pytest.mark.BAT
     @pytest.mark.assetpipeline
     def test_AllSupportedPlatforms_AddScanFolder_AssetsProcessed(
         self, ap_setup_fixture, asset_processor, workspace, request
     ):
         """
-        Process slice files and uicanvas files from the additional scanfolder
+        Process files from the additional scanfolder
 
         Test Steps:
         1. Create temporary testing environment
@@ -264,7 +266,7 @@ class TestsAssetProcessorGUI_AllPlatforms(object):
 
         # Run AP GUI and read the config file we just modified to pick up our scan folder
         # Pass in a pattern so we don't spend time processing unrelated folders
-        result, _ = asset_processor.gui_process(quitonidle=True, add_config_scan_folders=True,
+        result, _ = asset_processor.gui_process(add_config_scan_folders=True,
                                                 scan_folder_pattern="*C4874115*",
                                                 extra_params=test_scan_folder_params)
         assert result, "AP GUI failed"
@@ -275,7 +277,6 @@ class TestsAssetProcessorGUI_AllPlatforms(object):
     @pytest.mark.test_case_id("C4874114")
     @pytest.mark.BAT
     @pytest.mark.assetpipeline
-    @pytest.mark.skip("Flaky test")
     def test_AllSupportedPlatforms_InvalidAddress_AssetsProcessed(self, workspace, request, asset_processor):
         """
         Launch AP with invalid address in bootstrap.cfg
@@ -295,11 +296,10 @@ class TestsAssetProcessorGUI_AllPlatforms(object):
         extra_params.append(f'--regset="/Amazon/AzCore/Bootstrap/remote_ip={test_ip_address}"')
 
         # Run AP Gui to verify that assets process regardless of the new address
-        result, _ = asset_processor.gui_process(quitonidle=True)
+        result, _ = asset_processor.gui_process()
         assert result, "AP GUI failed"
 
     @pytest.mark.test_case_id("C24168802")
-    @pytest.mark.SUITE_sandbox
     @pytest.mark.BAT
     @pytest.mark.assetpipeline
     def test_AllSupportedPlatforms_ModifyAssetInfo_AssetsReprocessed(self, ap_setup_fixture, asset_processor):
@@ -318,8 +318,8 @@ class TestsAssetProcessorGUI_AllPlatforms(object):
 
         # Expected test asset sources and products
         # *.assetinfo and *.fbx files are not produced in cache, and file.fbx produces file.actor in cache
-        expected_test_assets = ["jack.cdf", "Jack.fbx", "Jack.fbx.assetinfo", "Jack.mtl"]
-        expected_cache_assets = ["jack.actor", "jack.cdf", "jack.mtl"]
+        expected_test_assets = ["Jack.fbx", "Jack.fbx.assetinfo"]
+        expected_cache_assets = ["jack.actor"]
 
         # Copy test assets to project folder and verify test assets folder exists
         test_assets_folder, cache_folder = asset_processor.prepare_test_environment(env["tests_dir"], "C24168802")
@@ -330,7 +330,7 @@ class TestsAssetProcessorGUI_AllPlatforms(object):
         assert utils.compare_lists(test_assets_list, expected_test_assets), "Test assets are not as expected"
 
         # Run AP Gui
-        result, _ = asset_processor.gui_process(run_until_idle=True)
+        result, _ = asset_processor.gui_process(run_until_idle=True, extra_params="--regset=\"/O3DE/SceneAPI/AssetImporter/SkipAtomOutput=true\"")
         assert result, "AP GUI failed"
 
         # Verify test assets in cache folder

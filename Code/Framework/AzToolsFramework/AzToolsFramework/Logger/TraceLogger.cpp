@@ -5,11 +5,9 @@
  *
  */
 
-#include <AzToolsFramework/Logger/TraceLogger.h>
-
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzFramework/StringFunc/StringFunc.h>
-
+#include <AzToolsFramework/Logger/TraceLogger.h>
 
 namespace AzToolsFramework
 {
@@ -25,6 +23,22 @@ namespace AzToolsFramework
 
     bool TraceLogger::OnOutput(const char* window, const char* message)
     {
+        for (const auto& filter : m_windowFilters)
+        {
+            if (AZ::StringFunc::Contains(window, filter))
+            {
+                return true;
+            }
+        }
+
+        for (const auto& filter : m_messageFilters)
+        {
+            if (AZ::StringFunc::Contains(message, filter))
+            {
+                return true;
+            }
+        }
+
         if (m_logFile)
         {
             m_logFile->AppendLog(AzFramework::LogFile::SEV_NORMAL, window, message);
@@ -36,10 +50,10 @@ namespace AzToolsFramework
         return false;
     }
 
-    void TraceLogger::WriteStartupLog(const AZStd::string& logFileName)
-    {    
+    void TraceLogger::OpenLogFile(const AZStd::string& logFileName, bool clearLogFile)
+    {
         using namespace AzFramework;
-        
+
         AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance();
         AZ_Assert(fileIO != nullptr, "FileIO should be running at this point");
 
@@ -52,14 +66,14 @@ namespace AzToolsFramework
         StringFunc::Path::Join(resolveBuffer, "log", logDirectory);
         fileIO->SetAlias("@log@", logDirectory.c_str());
 
-        fileIO->CreatePath("@root@");
+        fileIO->CreatePath("@products@");
         fileIO->CreatePath("@user@");
         fileIO->CreatePath("@log@");
 
         AZStd::string logPath;
         StringFunc::Path::Join(logDirectory.c_str(), logFileName.c_str(), logPath);
 
-        m_logFile.reset(aznew LogFile(logPath.c_str()));
+        m_logFile.reset(aznew LogFile(logPath.c_str(), clearLogFile));
         if (m_logFile)
         {
             m_logFile->SetMachineReadable(false);
@@ -67,8 +81,38 @@ namespace AzToolsFramework
             {
                 m_logFile->AppendLog(LogFile::SEV_NORMAL, message.window.c_str(), message.message.c_str());
             }
-            m_startupLogSink = {};
+            m_startupLogSink.clear();
             m_logFile->FlushLog();
         }
+    }
+
+    void TraceLogger::AddWindowFilter(const AZStd::string& filter)
+    {
+        m_windowFilters.insert(filter);
+    }
+
+    void TraceLogger::RemoveWindowFilter(const AZStd::string& filter)
+    {
+        m_windowFilters.erase(filter);
+    }
+
+    void TraceLogger::ClearWindowFilter()
+    {
+        m_windowFilters.clear();
+    }
+
+    void TraceLogger::AddMessageFilter(const AZStd::string& filter)
+    {
+        m_messageFilters.insert(filter);
+    }
+
+    void TraceLogger::RemoveMessageFilter(const AZStd::string& filter)
+    {
+        m_messageFilters.erase(filter);
+    }
+
+    void TraceLogger::ClearMessageFilter()
+    {
+        m_messageFilters.clear();
     }
 } // namespace AzToolsFramework

@@ -1,0 +1,44 @@
+{
+    "entries": [
+        {
+            "base": "{0E37D3CA-2862-4667-BFDB-7393DD48241B}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Once",
+                "category": "Logic",
+                "tooltip": "An execution flow gate that will only activate once. The gate will reopen if it receives a Reset pulse."
+            },
+            "slots": [
+                {
+                    "base": "Input_In_0",
+                    "details": {
+                        "name": "In",
+                        "tooltip": "Input signal"
+                    }
+                },
+                {
+                    "base": "Input_Reset_1",
+                    "details": {
+                        "name": "Reset",
+                        "tooltip": "Reset signal"
+                    }
+                },
+                {
+                    "base": "Output_Out_0",
+                    "details": {
+                        "name": "Out",
+                        "tooltip": "Output signal"
+                    }
+                },
+                {
+                    "base": "Output_On Reset_1",
+                    "details": {
+                        "name": "On Reset",
+                        "tooltip": "Triggered when Reset"
+                    }
+                }
+            ]
+        }
+    ]
+}

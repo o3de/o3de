@@ -11,23 +11,15 @@
 #include <AzCore/base.h>
 #include <AzCore/UnitTest/UnitTest.h>
 
+#include <AzCore/Debug/BudgetTracker.h>
 #include <AzCore/Memory/SystemAllocator.h>
-#include <AzCore/Driller/Driller.h>
-#include <AzCore/Memory/MemoryDriller.h>
 #include <AzCore/Memory/AllocationRecords.h>
 
 #if defined(HAVE_BENCHMARK)
 
-#if defined(AZ_COMPILER_CLANG)
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-#endif // clang
-
+AZ_PUSH_DISABLE_WARNING(, "-Wdeprecated-declarations", "-Wdeprecated-declarations")
 #include <benchmark/benchmark.h>
-
-#if defined(AZ_COMPILER_CLANG)
-#pragma clang diagnostic pop
-#endif // clang
+AZ_POP_DISABLE_WARNING
 
 #endif // HAVE_BENCHMARK
 
@@ -38,22 +30,20 @@ namespace UnitTest
     */
     class AllocatorsBase
     {
-        AZ::Debug::DrillerManager* m_drillerManager;
         bool m_ownsAllocator{};
     public:
 
         virtual ~AllocatorsBase() = default;
 
-        void SetupAllocator()
+        void SetupAllocator(const AZ::SystemAllocator::Descriptor& allocatorDesc = {})
         {
-            m_drillerManager = AZ::Debug::DrillerManager::Create();
-            m_drillerManager->Register(aznew AZ::Debug::MemoryDriller);
+            AZ::AllocatorManager::Instance().EnterProfilingMode();
             AZ::AllocatorManager::Instance().SetDefaultTrackingMode(AZ::Debug::AllocationRecords::RECORD_FULL);
 
             // Only create the SystemAllocator if it s not ready
             if (!AZ::AllocatorInstance<AZ::SystemAllocator>::IsReady())
             {
-                AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
+                AZ::AllocatorInstance<AZ::SystemAllocator>::Create(allocatorDesc);
                 m_ownsAllocator = true;
             }
         }
@@ -67,32 +57,49 @@ namespace UnitTest
                 AZ::AllocatorInstance<AZ::SystemAllocator>::Destroy();
             }
             m_ownsAllocator = false;
-            AZ::Debug::DrillerManager::Destroy(m_drillerManager);
 
             AZ::AllocatorManager::Instance().SetDefaultTrackingMode(AZ::Debug::AllocationRecords::RECORD_NO_RECORDS);
+            AZ::AllocatorManager::Instance().ExitProfilingMode();
         }
     };
 
     /**
-    * RAII wrapper of AllocatorBase.
-    * The benefit of using this wrapper instead of AllocatorsTestFixture is that SetUp/TearDown of the allocator is managed
-    * on construction/destruction, allowing member variables of derived classes to exist as value (and do heap allocation).
-    */
-    class ScopedAllocatorSetupFixture 
-        : public ::testing::Test
-        , AllocatorsBase
+     * RAII wrapper of AllocatorBase.
+     * The benefit of using this wrapper instead of AllocatorsTestFixture is that SetUp/TearDown of the allocator is managed
+     * on construction/destruction, allowing member variables of derived classes to exist as value (and do heap allocation).
+     */
+    class ScopedAllocatorFixture : AllocatorsBase
     {
     public:
-        ScopedAllocatorSetupFixture() { SetupAllocator(); }
-        ~ScopedAllocatorSetupFixture() { TeardownAllocator(); }
+        ScopedAllocatorFixture()
+        {
+            SetupAllocator();
+        }
+        explicit ScopedAllocatorFixture(const AZ::SystemAllocator::Descriptor& allocatorDesc)
+        {
+            SetupAllocator(allocatorDesc);
+        }
+        ~ScopedAllocatorFixture() override
+        {
+            TeardownAllocator();
+        }
+    };
+
+    // Like ScopedAllocatorFixture, but includes the Test base class
+    class ScopedAllocatorSetupFixture
+        : public ::testing::Test
+        , public ScopedAllocatorFixture
+    {
+    public:
+        ScopedAllocatorSetupFixture() = default;
+        explicit ScopedAllocatorSetupFixture(const AZ::SystemAllocator::Descriptor& allocatorDesc) : ScopedAllocatorFixture(allocatorDesc){}
     };
 
     /**
     * Helper class to handle the boiler plate of setting up a test fixture that uses the system allocators
     * If you wish to do additional setup and tear down be sure to call the base class SetUp first and TearDown
     * last.
-    * By default memory tracking through driller is enabled.
-    * Defaults to a heap size of 15 MB
+    * By default memory tracking is enabled.
     */
 
     class AllocatorsTestFixture
@@ -117,34 +124,70 @@ namespace UnitTest
     using AllocatorsFixture = AllocatorsTestFixture;
 
 #if defined(HAVE_BENCHMARK)
+
     /**
     * Helper class to handle the boiler plate of setting up a benchmark fixture that uses the system allocators
     * If you wish to do additional setup and tear down be sure to call the base class SetUp first and TearDown
     * last.
-    * By default memory tracking through driller is disabled.
-    * Defaults to a heap size of 15 MB
+    * By default memory tracking is enabled.
     */
     class AllocatorsBenchmarkFixture
         : public ::benchmark::Fixture
         , public AllocatorsBase
     {
     public:
-        // Bring in both const and non-const SetUp and TearDown function into scope to resolve warning 4266
-        // no override available for virtual member function from base 'benchmark::Fixture'; function is hidden
-        using ::benchmark::Fixture::SetUp, ::benchmark::Fixture::TearDown;
-
         //Benchmark interface
+        void SetUp(const ::benchmark::State& st) override
+        {
+            AZ_UNUSED(st);
+            SetupAllocator();
+        }
         void SetUp(::benchmark::State& st) override
         {
             AZ_UNUSED(st);
             SetupAllocator();
         }
 
+        void TearDown(const ::benchmark::State& st) override
+        {
+            AZ_UNUSED(st);
+            TeardownAllocator();
+        }
         void TearDown(::benchmark::State& st) override
         {
             AZ_UNUSED(st);
             TeardownAllocator();
         }
+    };
+
+    /**
+    * RAII wrapper around a BenchmarkEnvironmentBase to encapsulate
+    * the creation and destuction of the SystemAllocator
+    * SetUpBenchmark and TearDownBenchmark can still be used for custom
+    * benchmark environment setup
+    */
+    class ScopedAllocatorBenchmarkEnvironment
+        : public AZ::Test::BenchmarkEnvironmentBase
+    {
+    public:
+        ScopedAllocatorBenchmarkEnvironment()
+        {
+            // Only create the allocator if it doesn't exist
+            if (!AZ::AllocatorInstance<AZ::SystemAllocator>::IsReady())
+            {
+                AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
+                m_ownsAllocator = true;
+            }
+        }
+        ~ScopedAllocatorBenchmarkEnvironment() override
+        {
+            if (m_ownsAllocator)
+            {
+                AZ::AllocatorInstance<AZ::SystemAllocator>::Destroy();
+            }
+        }
+    private:
+        bool m_ownsAllocator{};
     };
 #endif
 
@@ -162,7 +205,7 @@ namespace UnitTest
     struct CreationCounter
     {
         AZ_TYPE_INFO(CreationCounter, "{E9E35486-4366-4066-86E5-1A8CEB44198B}");
-        AZ_ALIGN(int test[size / sizeof(int)], alignment);
+        alignas(alignment) int test[size / sizeof(int)];
 
         static int s_count;
         static int s_copied;
@@ -216,7 +259,7 @@ namespace UnitTest
         static constexpr bool sHasPadding = size < alignment;
         AZStd::enable_if<sHasPadding, char[(alignment - size) % alignment]> mPadding;
     };
-    
+
     template <AZ::u32 size, AZ::u8 instance, size_t alignment>
     int CreationCounter<size, instance, alignment>::s_count = 0;
     template <AZ::u32 size, AZ::u8 instance, size_t alignment>

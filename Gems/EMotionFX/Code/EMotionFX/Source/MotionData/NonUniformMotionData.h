@@ -55,8 +55,8 @@ namespace EMotionFX
         AZ::u32 GetStreamSaveVersion() const override;
         const char* GetSceneSettingsName() const override;
 
-        Transform SampleJointTransform(const SampleSettings& settings, AZ::u32 jointSkeletonIndex) const override;
-        void SamplePose(const SampleSettings& settings, Pose* outputPose) const override;
+        Transform SampleJointTransform(const MotionDataSampleSettings& settings, size_t jointSkeletonIndex) const override;
+        void SamplePose(const MotionDataSampleSettings& settings, Pose* outputPose) const override;
 
         Transform SampleJointTransform(float sampleTime, size_t jointDataIndex) const override;
         AZ::Vector3 SampleJointPosition(float sampleTime, size_t jointDataIndex) const override;
@@ -129,6 +129,7 @@ namespace EMotionFX
         void SetJointScaleSamples(size_t jointDataIndex, const Vector3Track& track);
         AZ::Vector3 SampleJointScale(float sampleTime, size_t jointDataIndex) const override;
 #endif
+        void ExtractMotion(size_t sampleJointDataIndex, size_t rootJointDataIndex, bool transitionZeroXAxis, bool transitionZeroYAxis, bool extractRotation) override;
 
         NonUniformMotionData& operator=(const NonUniformMotionData& sourceMotionData);
 

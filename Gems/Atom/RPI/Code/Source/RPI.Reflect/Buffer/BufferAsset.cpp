@@ -8,6 +8,7 @@
 
 #include <Atom/RPI.Reflect/Buffer/BufferAsset.h>
 
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
@@ -48,9 +49,9 @@ namespace AZ
             }
         }
 
-        AZStd::array_view<uint8_t> BufferAsset::GetBuffer() const
+        AZStd::span<const uint8_t> BufferAsset::GetBuffer() const
         {
-            return AZStd::array_view<uint8_t>(m_buffer);
+            return AZStd::span<const uint8_t>(m_buffer);
         }
 
         const RHI::BufferDescriptor& BufferAsset::GetBufferDescriptor() const

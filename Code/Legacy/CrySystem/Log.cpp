@@ -18,11 +18,11 @@
 #include <ISystem.h>
 #include "System.h"
 #include "CryPath.h"                    // PathUtil::ReplaceExtension()
-#include "UnicodeFunctions.h"
 
 #include <AzFramework/IO/FileOperations.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/IO/Path/Path.h>
+#include <AzCore/Time/ITime.h>
 
 #ifdef WIN32
 #include <time.h>
@@ -31,17 +31,6 @@
 #if defined(LINUX) || defined(APPLE)
 #include <syslog.h>
 #endif
-
-
-// Only accept logging from the main thread.
-#ifdef WIN32
-
-#define THREAD_SAFE_LOG
-//#define THREAD_SAFE_LOG  CryAutoCriticalSection scope_lock(m_logCriticalSection);
-
-#else
-#define THREAD_SAFE_LOG
-#endif //WIN32
 
 #define LOG_BACKUP_PATH "@log@/LogBackups"
 
@@ -56,7 +45,7 @@ namespace LogCVars
     int max_backup_directory_size_mb = 200; //200MB default
 };
 
-#ifndef _RELEASE
+#if defined(SUPPORT_LOG_IDENTER)
 static CLog::LogStringType indentString ("    ");
 #endif
 
@@ -84,10 +73,6 @@ CLog::CLog(ISystem* pSystem)
 #endif
 
     m_nMainThreadId = CryGetCurrentThreadId();
-
-#if defined(KEEP_LOG_FILE_OPEN)
-    m_bFirstLine = true;
-#endif
 
     m_iLastHistoryItem = 0;
     memset(m_history, 0, sizeof(m_history));
@@ -197,7 +182,7 @@ void CLog::CloseLogFile()
 }
 
 //////////////////////////////////////////////////////////////////////////
-bool CLog::OpenLogFile(const char* filename, int mode)
+bool CLog::OpenLogFile(const char* filename, AZ::IO::OpenMode mode)
 {
     if (m_logFileHandle.IsOpen())
     {
@@ -212,28 +197,16 @@ bool CLog::OpenLogFile(const char* filename, int mode)
         return false;
     }
 
-    // it is assumed that @log@ points at the appropriate place (so for apple, to the user profile dir)
-    AZ::IO::FileIOBase* fileSystem = AZ::IO::FileIOBase::GetDirectInstance();
-    if (AZ::IO::FixedMaxPath logFilePath; fileSystem->ReplaceAlias(logFilePath, filename))
-    {
-        logFilePath = logFilePath.LexicallyNormal();
-        m_logFileHandle.Open(logFilePath.c_str(), mode);
-    }
+    bool opened = m_logFileHandle.Open(filename, mode);
 
-    if (m_logFileHandle.IsOpen())
-    {
-#if defined(KEEP_LOG_FILE_OPEN)
-        m_bFirstLine = true;
-#endif
-    }
-    else
-    {
 #if defined(LINUX) || defined(APPLE)
-        syslog(LOG_NOTICE, "Failed to open log file [%s], mode [%d]", filename, mode);
-#endif
+    if (!opened)
+    {
+        syslog(LOG_NOTICE, "Failed to open log file [%s], mode [%d]", filename, static_cast<int>(mode));
     }
+#endif
 
-    return m_logFileHandle.IsOpen();
+    return opened;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -408,8 +381,6 @@ void CLog::LogV(const ELogType type, [[maybe_unused]]int flags, const char* szFo
         }
     }
 
-    FUNCTION_PROFILER(GetISystem(), PROFILE_SYSTEM);
-    LOADING_TIME_PROFILE_SECTION(GetISystem());
 
     bool bfile = false, bconsole = false;
     const char* szCommand = szFormat;
@@ -456,8 +427,6 @@ void CLog::LogV(const ELogType type, [[maybe_unused]]int flags, const char* szFo
         return;
     }
 
-    LogStringType tempString;
-
     char szBuffer[MAX_WARNING_LENGTH + 32];
     char* szString = szBuffer;
     char* szAfterColour = szString;
@@ -466,7 +435,7 @@ void CLog::LogV(const ELogType type, [[maybe_unused]]int flags, const char* szFo
     {
     case eWarning:
     case eWarningAlways:
-        cry_strcpy(szString, MAX_WARNING_LENGTH, "$6[Warning] ");
+        azstrcpy(szString, MAX_WARNING_LENGTH, "$6[Warning] ");
         szString += 12;     // strlen("$6[Warning] ");
         szAfterColour += 2;
         prefixSize = 12;
@@ -474,7 +443,7 @@ void CLog::LogV(const ELogType type, [[maybe_unused]]int flags, const char* szFo
 
     case eError:
     case eErrorAlways:
-        cry_strcpy(szString, MAX_WARNING_LENGTH, "$4[Error] ");
+        azstrcpy(szString, MAX_WARNING_LENGTH, "$4[Error] ");
         szString += 10;     // strlen("$4[Error] ");
         szAfterColour += 2;
         prefixSize = 10;
@@ -509,7 +478,7 @@ void CLog::LogV(const ELogType type, [[maybe_unused]]int flags, const char* szFo
             stack_string s = szBuffer;
             s += "\t<Scope> ";
             s += sAssetScope;
-            cry_strcpy(szBuffer, s.c_str());
+            azstrcpy(szBuffer, AZ_ARRAY_SIZE(szBuffer), s.c_str());
         }
     }
 
@@ -519,7 +488,8 @@ void CLog::LogV(const ELogType type, [[maybe_unused]]int flags, const char* szFo
     {
         const int sz = sizeof(m_history) / sizeof(m_history[0]);
         int i, j;
-        float time = m_pSystem->GetITimer()->GetCurrTime();
+        const AZ::TimeMs realTimeMs = AZ::GetRealElapsedTimeMs();
+        const float time = AZ::TimeMsToSeconds(realTimeMs);
         for (i = m_iLastHistoryItem, j = 0; m_history[i].time > time - dt && j < sz; j++, i = i - 1 & sz - 1)
         {
             if (m_history[i].type != type)
@@ -532,7 +502,7 @@ void CLog::LogV(const ELogType type, [[maybe_unused]]int flags, const char* szFo
             }
         }
         i = m_iLastHistoryItem = m_iLastHistoryItem + 1 & sz - 1;
-        cry_strcpy(m_history[i].str, m_history[i].ptr = szSpamCheck);
+        azstrcpy(m_history[i].str, AZ_ARRAY_SIZE(m_history[i].str), m_history[i].ptr = szSpamCheck);
         m_history[i].type = type;
         m_history[i].time = time;
     }
@@ -587,8 +557,6 @@ void CLog::LogPlus(const char* szFormat, ...)
         return;
     }
 
-    LOADING_TIME_PROFILE_SECTION(GetISystem());
-
     if (!szFormat)
     {
         return;
@@ -611,11 +579,11 @@ void CLog::LogPlus(const char* szFormat, ...)
 
     if (bfile)
     {
-        LogToFilePlus(szTemp);
+        LogToFilePlus("%s", szTemp);
     }
     if (bconsole)
     {
-        LogToConsolePlus(szTemp);
+        LogToConsolePlus("%s", szTemp);
     }
 }
 
@@ -762,7 +730,7 @@ void CLog::LogToConsolePlus(const char* szFormat, ...)
 
 
 //////////////////////////////////////////////////////////////////////
-static void RemoveColorCodeInPlace(CLog::LogStringType& rStr)
+[[maybe_unused]] static void RemoveColorCodeInPlace(CLog::LogStringType& rStr)
 {
     char* s = (char*)rStr.c_str();
     char* d = s;
@@ -822,13 +790,13 @@ void CLog::PushAssetScopeName(const char* sAssetType, const char* sName)
     SAssetScopeInfo as;
     as.sType = sAssetType;
     as.sName = sName;
-    CryAutoCriticalSection scope_lock(m_assetScopeQueueLock);
+    AZStd::scoped_lock scope_lock(m_assetScopeQueueLock);
     m_assetScopeQueue.push_back(as);
 }
 
 void CLog::PopAssetScopeName()
 {
-    CryAutoCriticalSection scope_lock(m_assetScopeQueueLock);
+    AZStd::scoped_lock scope_lock(m_assetScopeQueueLock);
     assert(!m_assetScopeQueue.empty());
     if (!m_assetScopeQueue.empty())
     {
@@ -839,7 +807,7 @@ void CLog::PopAssetScopeName()
 //////////////////////////////////////////////////////////////////////////
 const char* CLog::GetAssetScopeString()
 {
-    CryAutoCriticalSection scope_lock(m_assetScopeQueueLock);
+    AZStd::scoped_lock scope_lock(m_assetScopeQueueLock);
 
     m_assetScopeString.clear();
     for (size_t i = 0; i < m_assetScopeQueue.size(); i++)
@@ -863,7 +831,8 @@ bool CLog::LogToMainThread(const char* szString, ELogType logType, bool bAdd, SL
     {
         // When logging from other thread then main, push all log strings to queue.
         SLogMsg msg;
-        cry_strcpy(msg.msg, szString);
+        constexpr size_t maxArraySize = AZ_ARRAY_SIZE(msg.msg);
+        azstrncpy(msg.msg, maxArraySize, szString, maxArraySize - 1);
         msg.bAdd = bAdd;
         msg.destination = destination;
         msg.logType = logType;
@@ -886,7 +855,7 @@ void CLog::LogStringToFile(const char* szString, ELogType logType, bool bAdd, [[
         return;
     }
 
-    if (!m_pSystem)
+    if (!m_pSystem || !AZ::IO::FileIOBase::GetInstance())
     {
         return;
     }
@@ -925,7 +894,7 @@ void CLog::LogStringToFile(const char* szString, ELogType logType, bool bAdd, [[
     }
 #endif
 
-    if (m_pLogIncludeTime && gEnv && gEnv->pTimer)
+    if (m_pLogIncludeTime)
     {
         uint32 dwCVarState = m_pLogIncludeTime->GetIVal();
         //      char szTemp[MAX_TEMP_LENGTH_SIZE];
@@ -950,13 +919,13 @@ void CLog::LogStringToFile(const char* szString, ELogType logType, bool bAdd, [[
         }
         else if (dwCVarState == 2)     // Log_IncludeTime
         {
-            static CTimeValue lasttime;
-            CTimeValue currenttime = gEnv->pTimer->GetAsyncTime();
-            if (lasttime != CTimeValue())
+            static AZ::TimeMs lasttime = AZ::Time::ZeroTimeMs;
+            const AZ::TimeMs currenttime = AZ::GetRealElapsedTimeMs();
+            if (lasttime != AZ::Time::ZeroTimeMs)
             {
                 timeStr.clear();
-                uint32 dwMs = (uint32)((currenttime - lasttime).GetMilliSeconds());
-                timeStr.Format("<%3d.%.3d>: ", dwMs / 1000, dwMs % 1000);
+                uint32 dwMs = aznumeric_cast<uint32>(currenttime - lasttime);
+                timeStr = AZStd::string::format("<%3d.%.3d>: ", dwMs / 1000, dwMs % 1000);
                 tempString = timeStr + tempString;
             }
             lasttime = currenttime;
@@ -977,13 +946,13 @@ void CLog::LogStringToFile(const char* szString, ELogType logType, bool bAdd, [[
 #endif
             tempString = LogStringType(sTime) + tempString;
 
-            static CTimeValue lasttime;
-            CTimeValue currenttime = gEnv->pTimer->GetAsyncTime();
-            if (lasttime != CTimeValue())
+            static AZ::TimeMs lasttime = AZ::Time::ZeroTimeMs;
+            const AZ::TimeMs currenttime = AZ::GetRealElapsedTimeMs();
+            if (lasttime != AZ::Time::ZeroTimeMs)
             {
                 timeStr.clear();
-                uint32 dwMs = (uint32)((currenttime - lasttime).GetMilliSeconds());
-                timeStr.Format("<%3d.%.3d>: ", dwMs / 1000, dwMs % 1000);
+                uint32 dwMs = (uint32)(currenttime - lasttime);
+                timeStr = AZStd::string::format("<%3d.%.3d>: ", dwMs / 1000, dwMs % 1000);
                 tempString = timeStr + tempString;
             }
             lasttime = currenttime;
@@ -992,22 +961,19 @@ void CLog::LogStringToFile(const char* szString, ELogType logType, bool bAdd, [[
         {
             static bool bFirst = true;
 
-            if (gEnv->pTimer)
+            static AZ::TimeMs lasttime = AZ::Time::ZeroTimeMs;
+            const AZ::TimeMs currenttime = AZ::GetRealElapsedTimeMs();
+            if (lasttime != AZ::Time::ZeroTimeMs)
             {
-                static CTimeValue lasttime;
-                CTimeValue currenttime = gEnv->pTimer->GetAsyncTime();
-                if (lasttime != CTimeValue())
-                {
-                    timeStr.clear();
-                    uint32 dwMs = (uint32)((currenttime - lasttime).GetMilliSeconds());
-                    timeStr.Format("<%3d.%.3d>: ", dwMs / 1000, dwMs % 1000);
-                    tempString = timeStr + tempString;
-                }
-                if (bFirst)
-                {
-                    lasttime = currenttime;
-                    bFirst = false;
-                }
+                timeStr.clear();
+                uint32 dwMs = (uint32)(currenttime - lasttime);
+                timeStr = AZStd::string::format("<%3d.%.3d>: ", dwMs / 1000, dwMs % 1000);
+                tempString = timeStr + tempString;
+            }
+            if (bFirst)
+            {
+                lasttime = currenttime;
+                bFirst = false;
             }
         }
         else if (dwCVarState == 5)             // Log_IncludeTime
@@ -1052,13 +1018,7 @@ void CLog::LogStringToFile(const char* szString, ELogType logType, bool bAdd, [[
 #if !defined(_RELEASE)
     if (queueState == MessageQueueState::NotQueued)
     {
-        // Note: OutputDebugString(A) only accepts current ANSI code-page, and the W variant will call the A variant internally.
-        // Here we replace non-ASCII characters with '?', which is the same as OutputDebugStringW will do for non-ANSI.
-        // Thus, we discard slightly more characters (ie, those inside the current ANSI code-page, but outside ASCII).
-        // In exchange, we save double-converting that would have happened otherwise (UTF-8 -> UTF-16 -> ANSI).
-        LogStringType asciiString;
-        Unicode::ConvertSafe<Unicode::EErrorRecovery::eErrorRecovery_FallbackLatin1ThenDiscard, Unicode::eEncoding_ASCII, Unicode::eEncoding_UTF8>(asciiString, tempString);
-        OutputDebugString(asciiString.c_str());
+        AZ::Debug::Platform::OutputToDebugger(nullptr, tempString.c_str());
     }
 
     if (!bIsMainThread)
@@ -1088,26 +1048,17 @@ void CLog::LogStringToFile(const char* szString, ELogType logType, bool bAdd, [[
     {
         if (!m_logFileHandle.IsOpen())
         {
-            constexpr auto openMode = AZ::IO::SystemFile::OpenMode::SF_OPEN_APPEND
-                | AZ::IO::SystemFile::OpenMode::SF_OPEN_CREATE
-                | AZ::IO::SystemFile::OpenMode::SF_OPEN_WRITE_ONLY;
-            OpenLogFile(m_szFilename, openMode);
+            OpenLogFile(m_szFilename, AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeCreatePath);
         }
 
         if (m_logFileHandle.IsOpen())
         {
-#if defined(KEEP_LOG_FILE_OPEN)
-            if (m_bFirstLine)
-            {
-                m_bFirstLine = false;
-            }
-#endif
             if (bAdd)
             {
                 // if adding to a prior line erase the \n at the end.
-                m_logFileHandle.Seek(-2, AZ::IO::SystemFile::SeekMode::SF_SEEK_END);
+                m_logFileHandle.Seek(-2, AZ::IO::GenericStream::SeekMode::ST_SEEK_END);
             }
-            m_logFileHandle.Write(tempString.c_str(), tempString.size());
+            m_logFileHandle.Write(tempString.size(), tempString.c_str());
 #if !defined(KEEP_LOG_FILE_OPEN)
             CloseLogFile();
 #endif
@@ -1206,7 +1157,6 @@ void CLog::LogToFile(const char* szFormat, ...)
 //////////////////////////////////////////////////////////////////////
 void CLog::CreateBackupFile() const
 {
-    LOADING_TIME_PROFILE_SECTION;
     if (!m_backupLogs)
     {
         return;
@@ -1218,14 +1168,14 @@ void CLog::CreateBackupFile() const
 
     // boswej: only create a backup if logging to the engine root, otherwise the
     // log output has been overridden and the user is responsible
-    string logDir = PathUtil::RemoveSlash(PathUtil::ToUnixPath(PathUtil::GetParentDirectory(m_szFilename)));
+    AZStd::string logDir = PathUtil::RemoveSlash(PathUtil::ToUnixPath(PathUtil::GetParentDirectory(m_szFilename)));
 
-    string sExt = PathUtil::GetExt(m_szFilename);
-    string sFileWithoutExt = PathUtil::GetFileName(m_szFilename);
+    AZStd::string sExt = PathUtil::GetExt(m_szFilename);
+    AZStd::string sFileWithoutExt = PathUtil::GetFileName(m_szFilename);
 
     {
-        assert(::strstr(sFileWithoutExt, ":") == 0);
-        assert(::strstr(sFileWithoutExt, "\\") == 0);
+        assert(::strstr(sFileWithoutExt.c_str(), ":") == 0);
+        assert(::strstr(sFileWithoutExt.c_str(), "\\") == 0);
     }
 
     PathUtil::RemoveExtension(sFileWithoutExt);
@@ -1234,18 +1184,18 @@ void CLog::CreateBackupFile() const
     AZ::IO::HandleType inFileHandle = AZ::IO::InvalidHandle;
     fileSystem->Open(m_szFilename, AZ::IO::OpenMode::ModeRead | AZ::IO::OpenMode::ModeBinary, inFileHandle);
 
-    string sBackupNameAttachment;
+    AZStd::string sBackupNameAttachment;
 
     // parse backup name attachment
     // e.g. BackupNameAttachment="attachment name"
     if (inFileHandle != AZ::IO::InvalidHandle)
     {
         bool bKeyFound = false;
-        string sName;
+        AZStd::string sName;
 
         while (!fileSystem->Eof(inFileHandle))
         {
-            uint8 c = AZ::IO::GetC(inFileHandle);
+            uint8 c = static_cast<uint8>(AZ::IO::GetC(inFileHandle));
 
             if (c == '\"')
             {
@@ -1253,13 +1203,11 @@ void CLog::CreateBackupFile() const
                 {
                     bKeyFound = true;
 
-                    if (sName.find("BackupNameAttachment=") == string::npos)
+                    if (sName.find("BackupNameAttachment=") == AZStd::string::npos)
                     {
-#ifdef WIN32
-                        OutputDebugString("Log::CreateBackupFile ERROR '");
-                        OutputDebugString(sName.c_str());
-                        OutputDebugString("' not recognized \n");
-#endif
+                        AZ::Debug::Platform::OutputToDebugger("CrySystem Log", "Log::CreateBackupFile ERROR '");
+                        AZ::Debug::Platform::OutputToDebugger(nullptr, sName.c_str());
+                        AZ::Debug::Platform::OutputToDebugger(nullptr, "' not recognized \n");
                         assert(0);      // broken log file? - first line should include this name - written by LogVersion()
                         return;
                     }
@@ -1284,12 +1232,12 @@ void CLog::CreateBackupFile() const
         fileSystem->Close(inFileHandle);
     }
 
-    string bakdest = PathUtil::Make(LOG_BACKUP_PATH, sFileWithoutExt + sBackupNameAttachment + "." + sExt);
+    AZStd::string bakdest = PathUtil::Make(LOG_BACKUP_PATH, sFileWithoutExt + sBackupNameAttachment + "." + sExt);
     fileSystem->CreatePath(LOG_BACKUP_PATH);
-    cry_strcpy(m_sBackupFilename, bakdest.c_str());
+    azstrcpy(m_sBackupFilename, AZ_ARRAY_SIZE(m_sBackupFilename), bakdest.c_str());
     // Remove any existing backup file with the same name first since the copy will fail otherwise.
     fileSystem->Remove(m_sBackupFilename);
-    fileSystem->Copy(m_szFilename, bakdest);
+    fileSystem->Copy(m_szFilename, bakdest.c_str());
 #endif // AZ_LEGACY_CRYSYSTEM_TRAIT_ALLOW_CREATE_BACKUP_LOG_FILE
 }
 
@@ -1316,7 +1264,7 @@ void CLog::CheckAndPruneBackupLogs() const
     AZStd::list<fileInfo> fileInfoList;
 
     // Now that we've copied the new log over, lets check the size of the backup folder and trim it as necessary to keep it within appropriate limits
-    AZ::IO::Result res = fileSystem->FindFiles(LOG_BACKUP_PATH, "*",
+    fileSystem->FindFiles(LOG_BACKUP_PATH, "*",
         [&totalBackupDirectorySize, &fileSystem, &fileInfoList](const char* fileName)
     {
         AZ::u64 size;
@@ -1354,24 +1302,22 @@ bool CLog::SetFileName(const char* fileNameOrAbsolutePath, bool backupLogs)
     {
         return false;
     }
+
+    AZStd::string previousFilename = m_szFilename;
     azstrncpy(m_szFilename, AZ_ARRAY_SIZE(m_szFilename), fileNameOrAbsolutePath, sizeof(m_szFilename));
 
     CreateBackupFile();
 
-    AZ::IO::FileIOBase* fileSystem = AZ::IO::FileIOBase::GetDirectInstance();
-    AZ::IO::FixedMaxPath newLogFilePath;
-    if (fileSystem->ReplaceAlias(newLogFilePath, m_szFilename))
+    if (m_logFileHandle.IsOpen() && m_szFilename != previousFilename)
     {
-        newLogFilePath = newLogFilePath.LexicallyNormal();
-    }
-    if (m_logFileHandle.IsOpen() && newLogFilePath != m_logFileHandle.Name())
-    {
-        constexpr auto openMode = AZ::IO::SystemFile::OpenMode::SF_OPEN_APPEND
-            | AZ::IO::SystemFile::OpenMode::SF_OPEN_CREATE
-            | AZ::IO::SystemFile::OpenMode::SF_OPEN_WRITE_ONLY;
-        if(AZ::IO::SystemFile newLogFile; newLogFile.Open(m_szFilename, openMode))
+        CloseLogFile();
+        if (!OpenLogFile(m_szFilename, AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeCreatePath))
         {
-            m_logFileHandle = AZStd::move(newLogFile);
+            // Failed to open/create the new file. Go back to the previous
+            // state of the log appending to the previous file.
+            azstrncpy(m_szFilename, AZ_ARRAY_SIZE(m_szFilename), previousFilename.c_str(), sizeof(m_szFilename));
+            OpenLogFile(m_szFilename, AZ::IO::OpenMode::ModeAppend);
+            return false;
         }
     }
 
@@ -1464,13 +1410,11 @@ void CLog::RemoveCallback(ILogCallback* pCallback)
 //////////////////////////////////////////////////////////////////////////
 void CLog::Update()
 {
-    FUNCTION_PROFILER_FAST(m_pSystem, PROFILE_SYSTEM, g_bProfilerEnabled);
-
     if (CryGetCurrentThreadId() == m_nMainThreadId)
     {
         if (!m_threadSafeMsgQueue.empty())
         {
-            CryAutoCriticalSection lock(m_threadSafeMsgQueue.get_lock());   // Get the lock and hold onto it until we clear the entire queue (prevents other threads adding more things in while we clear it)
+            AZStd::scoped_lock lock(m_threadSafeMsgQueue.get_lock());   // Get the lock and hold onto it until we clear the entire queue (prevents other threads adding more things in while we clear it)
             // Must be called from main thread
             SLogMsg msg;
             while (m_threadSafeMsgQueue.try_pop(msg))
@@ -1493,9 +1437,10 @@ void CLog::Update()
 
         if (LogCVars::s_log_tick != 0)
         {
-            static CTimeValue t0 = GetISystem()->GetITimer()->GetAsyncTime();
-            CTimeValue t1 = GetISystem()->GetITimer()->GetAsyncTime();
-            if (fabs((t1 - t0).GetSeconds()) > LogCVars::s_log_tick)
+            static AZ::TimeUs t0 = AZ::GetElapsedTimeUs();
+            const AZ::TimeUs t1 = AZ::GetElapsedTimeUs();
+            const float tSec = AZ::TimeUsToSeconds(t1 - t0);
+            if (tSec > LogCVars::s_log_tick)
             {
                 t0 = t1;
 
@@ -1529,10 +1474,14 @@ const char* CLog::GetModuleFilter()
 void CLog::FlushAndClose()
 {
 #if defined(KEEP_LOG_FILE_OPEN)
-    if (m_logFileHandle.IsOpen())
-    {
-        CloseLogFile();
-    }
+    CloseLogFile();
+#endif
+}
+
+void CLog::Flush()
+{
+#if defined(KEEP_LOG_FILE_OPEN)
+    m_logFileHandle.Flush();
 #endif
 }
 
@@ -1541,7 +1490,7 @@ void CLog::LogFlushFile([[maybe_unused]] IConsoleCmdArgs* pArgs)
 {
     if ((gEnv) && (gEnv->pLog))
     {
-        gEnv->pLog->FlushAndClose();
+        gEnv->pLog->Flush();
     }
 }
 #endif

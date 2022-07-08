@@ -40,12 +40,11 @@ Configures several useful environment config settings and paths,
     [key]               : [value]
 
     # this is the required base environment
-    LY_PROJECT          : name of project (project directory)
-    LY_DEV              : path to Lumberyard \dev root
-    LY_PROJECT_PATH     : path to project dir
-    DCCSIG_PATH         : path to the DCCsi Gem root
-    DCCSI_AZPY_PATH *   : path to azpy Python API (code)
-    DCCSI_SDK_PATH      : path to associated (non-api code) DCC SDK
+    O3DE_PROJECT          : name of project (project directory)
+    O3DE_DEV              : path to Lumberyard \dev root
+    PATH_O3DE_PROJECT     : path to project dir
+    PATH_DCCSIG         : path to the DCCsi Gem root
+    PATH_DCCSI_TOOLS      : path to associated (non-api code) DCC SDK
 
     # nice to haves in base env to define core support
     DCCSI_GDEBUG        : sets global debug prints
@@ -59,7 +58,7 @@ Configures several useful environment config settings and paths,
 
     :: Default version py37 has a launcher
     (activates the env, starts py interpreter)
-    set DCCSI_PY_BASE=%DCCSI_PYTHON_INSTALL%\python.exe
+    set DCCSI_PY_BASE=%PATH_O3DE_PYTHON_INSTALL%\python.exe
 
     :: shared location for 64bit python 3.7 BASE location 
     set DCCSI_PY_DCCSI=%DCCSI_LAUNCHERS_PATH%\Launch_pyBASE.bat
@@ -74,7 +73,7 @@ Configures several useful environment config settings and paths,
     :: shared location for 64bit DCCSI_PY_MAYA python 2.7 DEV location
     set DCCSI_PY_MAYA=%MAYA_LOCATION%\bin\mayapy.exe
     :: wingIDE can use more then one defined/managed interpreters
-    :: allowing you to _G_DEBUG code in multiple runtimes in one session
+    :: allowing you to _DCCSI_GDEBUG code in multiple runtimes in one session
     ${DCCSI_PY_MAYA}
 
     # related to the WING as the default DCCSI_GDEBUGGER
@@ -92,8 +91,9 @@ import os
 import sys
 import site
 import re
-#import inspect
+import inspect
 import json
+import importlib.util
 
 import logging as _logging
 from collections import OrderedDict
@@ -107,38 +107,36 @@ from collections import OrderedDict
 os.environ['PYTHONINSPECT'] = 'True'
 
 _MODULE_PATH = os.path.realpath(__file__)  # To Do: what if frozen?
-_DCCSIG_PATH = os.path.normpath(os.path.join(_MODULE_PATH, '../..'))
-_DCCSIG_PATH = os.getenv('DCCSIG_PATH', _DCCSIG_PATH)
-site.addsitedir(_DCCSIG_PATH)
-print(_DCCSIG_PATH)
+_PATH_DCCSIG = os.path.normpath(os.path.join(_MODULE_PATH, '../..'))
+_PATH_DCCSIG = os.getenv('PATH_DCCSIG', _PATH_DCCSIG)
+site.addsitedir(_PATH_DCCSIG)
 # -------------------------------------------------------------------------
 
 
 # -------------------------------------------------------------------------
-# Lumberyard extensions
+# O3DE extensions
 from pathlib import Path
 
 # set up global space, logging etc.
-import azpy
-from azpy.env_bool import env_bool
+import azpy.env_bool as env_bool
 from azpy.constants import ENVAR_DCCSI_GDEBUG
 from azpy.constants import ENVAR_DCCSI_DEV_MODE
+from azpy.constants import FRMT_LOG_LONG
 
-_G_DEBUG = env_bool(ENVAR_DCCSI_GDEBUG, False)
-_DCCSI_DEV_MODE = env_bool(ENVAR_DCCSI_DEV_MODE, False)
+_DCCSI_GDEBUG = env_bool.env_bool(ENVAR_DCCSI_GDEBUG, False)
+_DCCSI_DEV_MODE = env_bool.env_bool(ENVAR_DCCSI_DEV_MODE, False)
 
-_PACKAGENAME = 'DCCsi.azpy.sunthetic_env'
+_PACKAGENAME = 'DCCsi.azpy.synthetic_env'
 
-_log_level = int(20)
-if _G_DEBUG:
-    _log_level = int(10)
-_LOGGER = azpy.initialize_logger(_PACKAGENAME,
-                                 log_to_file=True,
-                                 default_log_level=_log_level)
+# set up module logging
+for handler in _logging.root.handlers[:]:
+    _logging.root.removeHandler(handler)
+_LOGGER = _logging.getLogger(_PACKAGENAME)
+_logging.basicConfig(format=FRMT_LOG_LONG)
+_LOGGER.debug('Initializing: {0}.'.format({_PACKAGENAME}))
 
-_LOGGER.debug('Starting up:  {0}.'.format({_PACKAGENAME}))
-_LOGGER.debug('_DCCSIG_PATH: {}'.format(_DCCSIG_PATH))
-_LOGGER.debug('_G_DEBUG: {}'.format(_G_DEBUG))
+_LOGGER.debug('_PATH_DCCSIG: {}'.format(_PATH_DCCSIG))
+_LOGGER.debug('_DCCSI_GDEBUG: {}'.format(_DCCSI_GDEBUG))
 _LOGGER.debug('_DCCSI_DEV_MODE: {}'.format(_DCCSI_DEV_MODE))
 
 if _DCCSI_DEV_MODE:
@@ -148,7 +146,7 @@ if _DCCSI_DEV_MODE:
 # we can go ahead and just make sure the the DCCsi env is set
 # config is SO generic this ensures we are importing a specific one
 _spec_dccsi_config = importlib.util.spec_from_file_location("dccsi.config",
-                                                            Path(_DCCSIG_PATH,
+                                                            Path(_PATH_DCCSIG,
                                                                  "config.py"))
 _dccsi_config = importlib.util.module_from_spec(_spec_dccsi_config)
 _spec_dccsi_config.loader.exec_module(_dccsi_config)
@@ -161,16 +159,16 @@ from azpy.constants import *
 from azpy.shared.common.core_utils import walk_up_dir
 from azpy.shared.common.core_utils import get_stub_check_path
 
-_DCCSI_PYTHON_LIB_PATH = os.getenv(ENVAR_DCCSI_PYTHON_LIB_PATH,
-                                   PATH_DCCSI_PYTHON_LIB_PATH)
-_LOGGER.debug('Dccsi Lib Path: {0}'.format(_DCCSI_PYTHON_LIB_PATH))
+_PATH_DCCSI_PYTHON_LIB = os.getenv(ENVAR_PATH_DCCSI_PYTHON_LIB,
+                                   PATH_DCCSI_PYTHON_LIB)
+_LOGGER.debug('Dccsi Lib Path: {0}'.format(_PATH_DCCSI_PYTHON_LIB))
 
-if os.path.exists(_DCCSI_PYTHON_LIB_PATH):
-    site.addsitedir(_DCCSI_PYTHON_LIB_PATH)  # add access
+if os.path.exists(_PATH_DCCSI_PYTHON_LIB):
+    site.addsitedir(_PATH_DCCSI_PYTHON_LIB)  # add access
 
 # -------------------------------------------------------------------------
 #  post-bootstrap global space
-_G_DEBUG = env_bool(ENVAR_DCCSI_GDEBUG, False)
+_DCCSI_GDEBUG = env_bool(ENVAR_DCCSI_GDEBUG, False)
 _DCCSI_DEV_MODE = env_bool(ENVAR_DCCSI_DEV_MODE, False)
 # -------------------------------------------------------------------------
 
@@ -225,7 +223,7 @@ def return_stub(stub='dccsi_stub'):
                 break
             if (len(tail) == 0):
                 path = ""
-                if _G_DEBUG:
+                if _DCCSI_GDEBUG:
                     _LOGGER.debug('~Not able to find the path to that file '
                                   '(stub) in a walk-up from currnet path.')
                 break
@@ -262,7 +260,7 @@ def get_stub_check_path(in_path, check_stub='engineroot.txt'):
 
 # -------------------------------------------------------------------------
 # TO DO: Move to a util package or module
-def resolve_envar_path(envar='LY_DEV',
+def resolve_envar_path(envar='O3DE_DEV',
                        start_path=__file__,
                        check_stub='engineroot.txt',
                        dir_name='dev',
@@ -276,7 +274,7 @@ def resolve_envar_path(envar='LY_DEV',
 
     That is a pretty safe indicator that we found the right '\dev'
 
-    Second it checks if the env var 'LY_DEV' is set, use that instead!
+    Second it checks if the env var 'O3DE_DEV' is set, use that instead!
 
     """
 
@@ -360,14 +358,14 @@ def stash_env(_SYNTH_ENV_DICT = OrderedDict()):
 
     # <ly>\dev Lumberyard ROOT PATH
     # someone decided to use this as a root stub (for similar reasons in C++?)
-    # STUB_LY_DEV = str('engineroot.txt')
+    # STUB_O3DE_DEV = str('engineroot.txt')
     #  I don't own \dev so I didn't want to check in anything new there
-    _LY_DEV = resolve_envar_path(ENVAR_LY_DEV,  # envar
+    _O3DE_DEV = resolve_envar_path(ENVAR_O3DE_DEV,  # envar
                                  _THIS_MODULE_PATH,  # search path
-                                 STUB_LY_DEV,  # stub
-                                 TAG_DIR_LY_DEV)  # dir
+                                 STUB_O3DE_DEV,  # stub
+                                 TAG_DIR_O3DE_DEV)  # dir
 
-    _SYNTH_ENV_DICT[ENVAR_LY_DEV] = _LY_DEV.as_posix()
+    _SYNTH_ENV_DICT[ENVAR_O3DE_DEV] = _O3DE_DEV.as_posix()
 
     # project name is a string, it should be project dir name
     # for siloed testing and a purely synthetc env (nothing previously set)
@@ -376,17 +374,17 @@ def stash_env(_SYNTH_ENV_DICT = OrderedDict()):
     # for testing overrides of the default synthetic env
 
     # we can do two things here,
-    # first we can try to fetch from the env os.getenv('LY_PROJECT')
+    # first we can try to fetch from the env os.getenv('O3DE_PROJECT')
     # If comes back None, allows you to specify a default fallback
     # changed to just make the fallback what is set in boostrap
     # so now it's less of a fallnack and more correct if not
     # explicitly set
-    _LY_PROJECT = os.getenv(ENVAR_LY_PROJECT)
-    _SYNTH_ENV_DICT[ENVAR_LY_PROJECT] = _LY_PROJECT
+    _O3DE_PROJECT = os.getenv(ENVAR_O3DE_PROJECT)
+    _SYNTH_ENV_DICT[ENVAR_O3DE_PROJECT] = _O3DE_PROJECT
     
-    _LY_BUILD_DIR_NAME = os.getenv(ENVAR_LY_BUILD_DIR_NAME,
-                                   TAG_DIR_LY_BUILD)
-    _SYNTH_ENV_DICT[ENVAR_LY_BUILD_DIR_NAME] = _LY_BUILD_DIR_NAME
+    _O3DE_BUILD_DIR_NAME = os.getenv(ENVAR_O3DE_BUILD_DIR_NAME,
+                                   TAG_DIR_O3DE_BUILD_FOLDER)
+    _SYNTH_ENV_DICT[ENVAR_O3DE_BUILD_DIR_NAME] = _O3DE_BUILD_DIR_NAME
 
     #  pattern for the above is (and will be repeated)
     #  _SOME_ENVAR = resolve_envar_path('ENVAR',
@@ -406,53 +404,53 @@ def stash_env(_SYNTH_ENV_DICT = OrderedDict()):
     # so we guess based on how I set up the original dev environment
 
     # -- envar --
-    _LY_BUILD_PATH = Path(os.getenv(ENVAR_LY_BUILD_PATH,
-                                    PATH_LY_BUILD_PATH))
-    _SYNTH_ENV_DICT[ENVAR_LY_BUILD_PATH] = _LY_BUILD_PATH.as_posix()
+    _PATH_O3DE_BUILD = Path(os.getenv(ENVAR_PATH_O3DE_BUILD,
+                                    PATH_O3DE_BUILD))
+    _SYNTH_ENV_DICT[ENVAR_PATH_O3DE_BUILD] = _PATH_O3DE_BUILD.as_posix()
 
     # -- envar --
-    _LY_BIN_PATH = Path(os.getenv(ENVAR_LY_BIN_PATH,
-                                  PATH_LY_BIN_PATH))
+    _PATH_O3DE_BIN = Path(os.getenv(ENVAR_PATH_O3DE_BIN,
+                                  PATH_O3DE_BIN))
     # some of these need hard checks
-    if not _LY_BIN_PATH.exists():
-        raise Exception('LY_BIN_PATH does NOT exist: {0}'.format(_LY_BIN_PATH))
+    if not _PATH_O3DE_BIN.exists():
+        raise Exception('PATH_O3DE_BIN does NOT exist: {0}'.format(_PATH_O3DE_BIN))
     else:
-        _SYNTH_ENV_DICT[ENVAR_LY_BIN_PATH] = _LY_BIN_PATH.as_posix()
+        _SYNTH_ENV_DICT[ENVAR_PATH_O3DE_BIN] = _PATH_O3DE_BIN.as_posix()
         # adding to sys.path apparently doesn't work for .dll locations like Qt
-        os.environ['PATH'] = _LY_BIN_PATH.as_posix() + os.pathsep + os.environ['PATH']
+        os.environ['PATH'] = _PATH_O3DE_BIN.as_posix() + os.pathsep + os.environ['PATH']
 
     # -- envar --
     # if that stub marker doesn't exist assume DCCsi path (fallback 1)
-    _LY_PROJECT_PATH = Path(os.getenv(ENVAR_LY_PROJECT_PATH,
-                                      Path(_LY_DEV, _LY_PROJECT)))
-    _SYNTH_ENV_DICT[ENVAR_LY_PROJECT_PATH] = _LY_PROJECT_PATH.as_posix()
+    _PATH_O3DE_PROJECT = Path(os.getenv(ENVAR_PATH_O3DE_PROJECT,
+                                      Path(_O3DE_DEV, _O3DE_PROJECT)))
+    _SYNTH_ENV_DICT[ENVAR_PATH_O3DE_PROJECT] = _PATH_O3DE_PROJECT.as_posix()
 
     # -- envar --
-    _DCCSIG_PATH = resolve_envar_path(ENVAR_DCCSIG_PATH,  # envar
+    _PATH_DCCSIG = resolve_envar_path(ENVAR_PATH_DCCSIG,  # envar
                                            _THIS_MODULE_PATH,  # search path
-                                           STUB_LY_ROOT_DCCSI,  # stub name
+                                           STUB_O3DE_ROOT_DCCSI,  # stub name
                                          TAG_DEFAULT_PROJECT)  # dir
-    _SYNTH_ENV_DICT[ENVAR_DCCSIG_PATH] = _DCCSIG_PATH.as_posix()
+    _SYNTH_ENV_DICT[ENVAR_PATH_DCCSIG] = _PATH_DCCSIG.as_posix()
 
     # -- envar --
     _AZPY_PATH = Path(os.getenv(ENVAR_DCCSI_AZPY_PATH,
-                                Path(_DCCSIG_PATH, TAG_DIR_DCCSI_AZPY)))
+                                Path(_PATH_DCCSIG, TAG_DIR_DCCSI_AZPY)))
     _SYNTH_ENV_DICT[ENVAR_DCCSI_AZPY_PATH] = _AZPY_PATH.as_posix()
 
     # -- envar --
-    _DCCSI_SDK_PATH = Path(os.getenv(ENVAR_DCCSI_SDK_PATH,
-                                     Path(_DCCSIG_PATH, TAG_DIR_DCCSI_SDK)))
-    _SYNTH_ENV_DICT[ENVAR_DCCSI_SDK_PATH] = _DCCSI_SDK_PATH.as_posix()
+    _PATH_DCCSI_TOOLS = Path(os.getenv(ENVAR_PATH_DCCSI_TOOLS,
+                                     Path(_PATH_DCCSIG, TAG_DIR_DCCSI_TOOLS)))
+    _SYNTH_ENV_DICT[ENVAR_PATH_DCCSI_TOOLS] = _PATH_DCCSI_TOOLS.as_posix()
 
     # -- envar --
     # external dccsi site-packages
-    _DCCSI_PYTHON_LIB_PATH = Path(os.getenv(ENVAR_DCCSI_PYTHON_LIB_PATH,
-                                            PATH_DCCSI_PYTHON_LIB_PATH))
-    _SYNTH_ENV_DICT[ENVAR_DCCSI_PYTHON_LIB_PATH] = _DCCSI_PYTHON_LIB_PATH.as_posix()
+    _PATH_DCCSI_PYTHON_LIB = Path(os.getenv(ENVAR_PATH_DCCSI_PYTHON_LIB,
+                                            PATH_DCCSI_PYTHON_LIB))
+    _SYNTH_ENV_DICT[ENVAR_PATH_DCCSI_PYTHON_LIB] = _PATH_DCCSI_PYTHON_LIB.as_posix()
 
     # -- envar --
     # extend to py36 (conda env) and interpreter (wrapped as a .bat file)
-    _DEFAULT_PY_PATH = Path(_DCCSIG_PATH, TAG_DEFAULT_PY)
+    _DEFAULT_PY_PATH = Path(_PATH_DCCSIG, TAG_DEFAULT_PY)
     _DEFAULT_PY_PATH = Path(os.getenv(ENVAR_DCCSI_PY_DEFAULT,
                                       _DEFAULT_PY_PATH))
     _SYNTH_ENV_DICT[ENVAR_DCCSI_PY_DEFAULT] = _DEFAULT_PY_PATH.as_posix()
@@ -497,7 +495,7 @@ def init_ly_pyside(env_dict=_SYNTH_ENV_DICT):
 
   
     
-    QTFORPYTHON_PATH = Path.joinpath(LY_DEV,
+    QTFORPYTHON_PATH = Path.joinpath(O3DE_DEV,
                                      'Gems',
                                      'QtForPython',
                                      '3rdParty',
@@ -509,16 +507,16 @@ def init_ly_pyside(env_dict=_SYNTH_ENV_DICT):
     sys.path.insert(1, str(QTFORPYTHON_PATH))
     site.addsitedir(str(QTFORPYTHON_PATH))
 
-    LY_BIN_PATH = Path.joinpath(LY_DEV,
-                                'windows_vs2019',
+    PATH_O3DE_BIN = Path.joinpath(O3DE_DEV,
+                                'windows',
                                 'bin',
                                 'profile').resolve()
-    os.environ["DYNACONF_LY_BIN_PATH"] = str(LY_BIN_PATH)
-    os.environ["LY_BIN_PATH"] = str(LY_BIN_PATH)
-    site.addsitedir(str(LY_BIN_PATH))
-    sys.path.insert(1, str(LY_BIN_PATH))
+    os.environ["DYNACONF_PATH_O3DE_BIN"] = str(PATH_O3DE_BIN)
+    os.environ["PATH_O3DE_BIN"] = str(PATH_O3DE_BIN)
+    site.addsitedir(str(PATH_O3DE_BIN))
+    sys.path.insert(1, str(PATH_O3DE_BIN))
 
-    QT_PLUGIN_PATH = Path.joinpath(LY_BIN_PATH,
+    QT_PLUGIN_PATH = Path.joinpath(PATH_O3DE_BIN,
                                    'EditorPlugins').resolve()
     os.environ["DYNACONF_QT_PLUGIN_PATH"] = str(QT_PLUGIN_PATH)
     os.environ["QT_PLUGIN_PATH"] = str(QT_PLUGIN_PATH)
@@ -536,7 +534,7 @@ def init_ly_pyside(env_dict=_SYNTH_ENV_DICT):
     if sys.platform.startswith('win'):
         path = os.environ['PATH']
         newPath = ''
-        newPath += str(LY_BIN_PATH) + os.pathsep
+        newPath += str(PATH_O3DE_BIN) + os.pathsep
         newPath += str(Path.joinpath(QTFORPYTHON_PATH,
                                      'shiboken2').resolve()) + os.pathsep
         newPath += str(Path.joinpath(QTFORPYTHON_PATH,
@@ -591,12 +589,12 @@ def set_env(dict_object):
 def test_Qt():
     try:
         import PySide2
-        print('PySide2: {0}'.format(Path(PySide2.__file__).as_posix()))
+        _LOGGER.info('PySide2: {0}'.format(Path(PySide2.__file__).as_posix()))
         # builtins.ImportError: DLL load failed: The specified procedure could not be found.
         from PySide2 import QtCore
         from PySide2 import QtWidgets
     except IOError as e:
-        print('ERROR: {0}'.format(e))
+        _LOGGER.error('ERROR: {0}'.format(e))
         raise e
     
     try:
@@ -610,7 +608,7 @@ def test_Qt():
         qapp.instance().quit
         qapp.exit()
     except Exception as e:
-        print('ERROR: {0}'.format(e))
+        _LOGGER.error('ERROR: {0}'.format(e))
         raise e
 # -------------------------------------------------------------------------
 
@@ -620,14 +618,14 @@ def main(argv, env_dict_object, debug=False, devmode=False):
     import getopt
     try:
         opts, args = getopt.getopt(argv, "hvt:", ["verbose=", "test="])
-    except getopt.GetoptError:
+    except getopt.GetoptError as e:
         # not logging, print to cmd line console
-        print('synthetic_env.py -v <print_dict> -t <run_test>')
+        _LOGGER.error('synthetic_env.py -v <print_dict> -t <run_test>')
         sys.exit(2)
 
     for opt, arg in opts:
         if opt == '-h':
-            print('synthetic_env.py -v <print_dict> -t <run test>')
+            _LOGGER.info('synthetic_env.py -v <print_dict> -t <run test>')
             sys.exit()
             
         elif opt in ("-t", "--test"):
@@ -639,14 +637,14 @@ def main(argv, env_dict_object, debug=False, devmode=False):
             try:
                 from box import Box
             except ImportError as e:
-                print('ERROR: {0}'.format(e))
+                _LOGGER.error('ERROR: {0}'.format(e))
                 raise e
             try:
                 env_dict_object = Box(env_dict_object)
-                print(str(env_dict_object.to_json(sort_keys=False,
+                _LOGGER.info(str(env_dict_object.to_json(sort_keys=False,
                                               indent=4)))
             except Exception as e:
-                print('ERROR: {0}'.format(e))
+                _LOGGER.error('ERROR: {0}'.format(e))
                 raise e
 # -------------------------------------------------------------------------
 
@@ -656,16 +654,16 @@ def main(argv, env_dict_object, debug=False, devmode=False):
 # -------------------------------------------------------------------------
 if __name__ == '__main__':
     # run simple tests?
-    _G_DEBUG = True
+    _DCCSI_GDEBUG = True
     _DCCSI_DEV_MODE = True
     
     if _DCCSI_DEV_MODE:
         try:
             import azpy.test.entry_test
-            print('SUCCESS: import azpy.test.entry_test')
+            _LOGGER.info('SUCCESS: import azpy.test.entry_test')
             azpy.test.entry_test.main(verbose=True, connect_debugger=True)            
         except ImportError as e:
-            print('ERROR: {0}'.format(e))
+            _LOGGER.error('ERROR: {0}'.format(e))
             raise e  
 
     # init, stash and then activate
@@ -673,11 +671,11 @@ if __name__ == '__main__':
     _SYNTH_ENV_DICT = stash_env(_SYNTH_ENV_DICT)
     _SYNTH_ENV_DICT = set_env(_SYNTH_ENV_DICT)      
 
-    main(sys.argv[1:], _SYNTH_ENV_DICT, _G_DEBUG, _DCCSI_DEV_MODE)
+    main(sys.argv[1:], _SYNTH_ENV_DICT, _DCCSI_GDEBUG, _DCCSI_DEV_MODE)
 
-    if _G_DEBUG:
+    if _DCCSI_GDEBUG:
 
-        tempBoxJsonFilePath = Path(_SYNTH_ENV_DICT['DCCSIG_PATH'], '.temp')
+        tempBoxJsonFilePath = Path(_SYNTH_ENV_DICT['PATH_DCCSIG'], '.temp')
         tempBoxJsonFilePath = Path(tempBoxJsonFilePath, 'boxDumpTest.json')
         _LOGGER.info(f'tempBoxJsonFilePath: {tempBoxJsonFilePath}')
 

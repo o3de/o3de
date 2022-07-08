@@ -71,8 +71,8 @@ public:
 
     void ResizeViewport(int width, int height);
     void SetAspectRatio(unsigned int x, unsigned int y);
-    void SetViewportFOV(float fov);
-    void OnFOVChanged(float fov);
+    void SetViewportFOV(float fovDegrees);
+    void OnFOVChanged(float fovRadians);
 
     enum class ViewportExpansionPolicy
     {
@@ -118,7 +118,6 @@ private:
 
     int m_id;
     int m_nBorder;
-    int m_titleHeight;
 
     QWidget* m_viewport;
     QScrollArea* m_viewportScrollArea = nullptr;

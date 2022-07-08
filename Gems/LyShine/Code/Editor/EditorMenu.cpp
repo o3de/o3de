@@ -6,7 +6,6 @@
  *
  */
 #include "EditorCommon.h"
-#include "FeedbackDialog.h"
 #include <AzQtComponents/Buses/ShortcutDispatch.h>
 #include <AzToolsFramework/Slice/SliceUtilities.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
@@ -606,7 +605,7 @@ void EditorWindow::AddMenu_View()
             [this]([[maybe_unused]] bool checked)
             {
                 // Clear guides
-                AZStd::string canvasUndoXml = CanvasHelpers::BeginUndoableCanvasChange(GetCanvas());            
+                AZStd::string canvasUndoXml = CanvasHelpers::BeginUndoableCanvasChange(GetCanvas());
                 EBUS_EVENT_ID(GetCanvas(), UiEditorCanvasBus, RemoveAllGuides);
                 CanvasHelpers::EndUndoableCanvasChange(this, "clear guides", canvasUndoXml);
             });
@@ -704,7 +703,7 @@ void EditorWindow::AddMenu_View()
         action->setEnabled(canvasLoaded);
         QObject::connect(action,
             &QAction::triggered,
-            [this]([[maybe_unused]] bool checked)
+            []([[maybe_unused]] bool checked)
         {
             gEnv->pCryFont->ReloadAllFonts();
         });
@@ -724,7 +723,7 @@ void EditorWindow::AddMenu_View_LanguageSetting(QMenu* viewMenu)
     // Iterate through the subdirectories of the localization folder. Each
     // directory corresponds to a different language containing localization
     // translations for that language.
-    string fullLocPath(string(gEnv->pFileIO->GetAlias("@assets@")) + "/" + string(m_startupLocFolderName.toUtf8().constData()));
+    AZStd::string fullLocPath(AZStd::string(gEnv->pFileIO->GetAlias("@products@")) + "/" + AZStd::string(m_startupLocFolderName.toUtf8().constData()));
     QDir locDir(fullLocPath.c_str());
     locDir.setFilter(QDir::Dirs | QDir::NoDotAndDotDot);
     locDir.setSorting(QDir::Name);
@@ -733,7 +732,7 @@ void EditorWindow::AddMenu_View_LanguageSetting(QMenu* viewMenu)
     {
         QString directoryName(subDirectory.fileName().toLower());
 
-        // The loc system expects XML assets stored in a language-specific 
+        // The loc system expects XML assets stored in a language-specific
         // folder with an "_xml" suffix in the name. Truncate the displayed
         // name so the user just sees the language name (this isn't required
         // though).
@@ -754,7 +753,7 @@ void EditorWindow::AddMenu_View_LanguageSetting(QMenu* viewMenu)
         {
             // First try to locate the directory by name, without the "_xml"
             // suffix (in case it actually exists by this name).
-            QString fullLocPath(QString(gEnv->pFileIO->GetAlias("@assets@")) + "/" + m_startupLocFolderName + "/" + directoryName);
+            QString fullLocPath(QString(gEnv->pFileIO->GetAlias("@products@")) + "/" + m_startupLocFolderName + "/" + directoryName);
             QDir locDir(fullLocPath);
 
             // Try the directory with the expected suffix
@@ -780,7 +779,7 @@ void EditorWindow::AddMenu_View_LanguageSetting(QMenu* viewMenu)
                     "This used to be set to CSystem::OnLocalizationFolderCVarChanged but is now missing. "
                     "UI Editor language-switching features are no longer working.");
             }
-            
+
             // Update the language setting; this will allow font families to
             // load language-specific font assets
             ICVar* languageCvar = gEnv->pConsole->GetCVar("g_language");
@@ -871,7 +870,7 @@ void EditorWindow::AddMenu_Help()
 {
     const char* documentationUrl = "https://o3de.org/docs/user-guide/interactivity/user-interface/";
     const char* tutorialsUrl = "https://o3de.org/docs/learning-guide/tutorials/";
-    const char* forumUrl = "https://o3deorg.netlify.app/community/";
+    const char* forumUrl = "https://o3de.org/community/";
 
     QMenu* menu = menuBar()->addMenu("&Help");
     menu->setStyleSheet(UICANVASEDITOR_QMENU_ITEM_DISABLED_STYLESHEET);
@@ -916,22 +915,6 @@ void EditorWindow::AddMenu_Help()
             [forumUrl]([[maybe_unused]] bool checked)
             {
                 QDesktopServices::openUrl(QUrl(forumUrl));
-            });
-        menu->addAction(action);
-        addAction(action); // Also add the action to the window until the shortcut dispatcher can find the menu action
-    }
-
-    // Give Us Feedback
-    {
-        QAction* action = new QAction("&Give Us Feedback", this);
-
-        QObject::connect(action,
-            &QAction::triggered,
-            this,
-            [this]([[maybe_unused]] bool checked)
-            {
-                FeedbackDialog dialog(this);
-                dialog.exec();
             });
         menu->addAction(action);
         addAction(action); // Also add the action to the window until the shortcut dispatcher can find the menu action

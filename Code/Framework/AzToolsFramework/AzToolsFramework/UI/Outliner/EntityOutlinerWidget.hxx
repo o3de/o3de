@@ -14,7 +14,7 @@
 
 #include <AzToolsFramework/API/EditorWindowRequestBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
-#include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
+#include <AzToolsFramework/API/ViewportEditorModeTrackerNotificationBus.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Prefab/PrefabPublicNotificationBus.h>
@@ -41,7 +41,10 @@ namespace AzToolsFramework
 {
     class EditorEntityUiInterface;
     class EntityOutlinerListModel;
+    class EntityOutlinerContainerProxyModel;
     class EntityOutlinerSortFilterProxyModel;
+    class FocusModeInterface;
+    class ReadOnlyEntityPublicInterface;
 
     namespace EntityOutliner
     {
@@ -58,7 +61,7 @@ namespace AzToolsFramework
         , private ToolsApplicationEvents::Bus::Handler
         , private EditorEntityContextNotificationBus::Handler
         , private EditorEntityInfoNotificationBus::Handler
-        , private ComponentModeFramework::EditorComponentModeNotificationBus::Handler
+        , private ViewportEditorModeNotificationsBus::Handler
         , private Prefab::PrefabPublicNotificationBus::Handler
         , private EditorWindowUIRequestBus::Handler
     {
@@ -100,13 +103,16 @@ namespace AzToolsFramework
         void OnEntityInfoUpdatedAddChildEnd(AZ::EntityId /*parentId*/, AZ::EntityId /*childId*/) override;
         void OnEntityInfoUpdatedName(AZ::EntityId entityId, const AZStd::string& /*name*/) override;
 
-        // EditorComponentModeNotificationBus
-        void EnteredComponentMode(const AZStd::vector<AZ::Uuid>& componentModeTypes) override;
-        void LeftComponentMode(const AZStd::vector<AZ::Uuid>& componentModeTypes) override;
+        // ViewportEditorModeNotificationsBus overrides ...
+        void OnEditorModeActivated(
+            const AzToolsFramework::ViewportEditorModesInterface& editorModeState, AzToolsFramework::ViewportEditorMode mode) override;
+        void OnEditorModeDeactivated(
+            const AzToolsFramework::ViewportEditorModesInterface& editorModeState, AzToolsFramework::ViewportEditorMode mode) override;
 
         // PrefabPublicNotificationBus
         void OnPrefabInstancePropagationBegin() override;
         void OnPrefabInstancePropagationEnd() override;
+        void OnPrefabTemplateDirtyFlagUpdated(Prefab::TemplateId templateId, bool status) override;
 
         // EditorWindowUIRequestBus overrides
         void SetEditorUiEnabled(bool enable) override;
@@ -117,6 +123,7 @@ namespace AzToolsFramework
 
         Ui::EntityOutlinerWidgetUI* m_gui;
         EntityOutlinerListModel* m_listModel;
+        EntityOutlinerContainerProxyModel* m_containerModel;
         EntityOutlinerSortFilterProxyModel* m_proxyModel;
         AZ::u64 m_selectionContextId;
         AZStd::vector<AZ::EntityId> m_selectedEntityIds;
@@ -149,7 +156,6 @@ namespace AzToolsFramework
         void OnTreeItemDoubleClicked(const QModelIndex& index);
         void OnTreeItemExpanded(const QModelIndex& index);
         void OnTreeItemCollapsed(const QModelIndex& index);
-        void OnExpandEntity(const AZ::EntityId& entityId, bool expand);
         void OnSelectEntity(const AZ::EntityId& entityId, bool selected);
         void OnEnableSelectionUpdates(bool enable);
         void OnDropEvent();
@@ -199,7 +205,11 @@ namespace AzToolsFramework
         EntityOutliner::DisplaySortMode m_sortMode;
         bool m_sortContentQueued;
 
+        AzFramework::EntityContextId m_editorEntityContextId = AzFramework::EntityContextId::CreateNull();
+
         EditorEntityUiInterface* m_editorEntityUiInterface = nullptr;
+        FocusModeInterface* m_focusModeInterface = nullptr;
+        ReadOnlyEntityPublicInterface* m_readOnlyEntityPublicInterface = nullptr;
     };
 
 }

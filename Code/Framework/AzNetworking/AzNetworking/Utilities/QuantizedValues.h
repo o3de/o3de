@@ -176,7 +176,7 @@ namespace AzNetworking
         //! Takes a quantized integral value and stores the floating point representation.
         void DecodeQuantizedValues();
 
-        AZ_PUSH_DISABLE_WARNING(4201 4324, "-Wunknown-warning-option") // anonymous union, structure was padded due to alignment
+        AZ_PUSH_DISABLE_WARNING(4324, "-Wunknown-warning-option") // structure was padded due to alignment
         union
         {
             float m_quantizedValues[NUM_ELEMENTS];

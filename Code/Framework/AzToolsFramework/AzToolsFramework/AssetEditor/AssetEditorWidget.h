@@ -18,6 +18,10 @@
 namespace AZ
 {
     class SerializeContext;
+    namespace DocumentPropertyEditor
+    {
+        class ReflectionAdapter;
+    }
 }
 
 namespace AzQtComponents
@@ -37,6 +41,7 @@ class QMenu;
 namespace AzToolsFramework
 {
     class ReflectedPropertyEditor;
+    class DocumentPropertyEditor;
 
     namespace AssetEditor
     {
@@ -126,9 +131,27 @@ namespace AzToolsFramework
             void OnSystemTick() override;
             void CloseOnNextTick();
 
-            AZStd::vector<AZ::Data::AssetType> m_genericAssetTypes;
-            AZ::SerializeContext* m_serializeContext = nullptr;
             AzQtComponents::TabWidget* m_tabs;
+            AZStd::vector<AZ::Data::AssetType>  m_genericAssetTypes;
+            AZ::Data::AssetId                    m_sourceAssetId;
+            AZ::Data::Asset<AZ::Data::AssetData> m_inMemoryAsset;
+            Ui::AssetEditorHeader* m_header;
+            ReflectedPropertyEditor* m_propertyEditor;
+            AZStd::shared_ptr<AZ::DocumentPropertyEditor::ReflectionAdapter> m_adapter;
+            DocumentPropertyEditor* m_dpe;
+            AZ::SerializeContext* m_serializeContext = nullptr;
+
+            // Ids can change when an asset goes from in-memory to saved on disk.
+            // If there is a failure, the asset will be removed from the catalog.
+            // The only reliable mechanism to be certain the asset being added/removed 
+            // from the catalog is the same one that was added is to compare its file path.
+            AZStd::string m_expectedAddedAssetPath; 
+            AZStd::string m_recentlyAddedAssetPath;
+
+            bool m_dirty = false;
+            bool m_useDPE = false;
+            
+            QString m_currentAsset;
 
             QAction* m_saveAssetAction;
             QAction* m_saveAsAssetAction;

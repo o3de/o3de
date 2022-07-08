@@ -27,24 +27,12 @@ namespace EMotionFX
     DualQuatSkinDeformer::DualQuatSkinDeformer(Mesh* mesh)
         : MeshDeformer(mesh)
     {
+        AZ::TaskGraphActiveInterface* taskGraphActiveInterface = AZ::Interface<AZ::TaskGraphActiveInterface>::Get();
+        m_useTaskGraph = taskGraphActiveInterface && taskGraphActiveInterface->IsTaskGraphActive();
     }
 
     DualQuatSkinDeformer::~DualQuatSkinDeformer()
     {
-    }
-
-    AZ::Outcome<size_t> DualQuatSkinDeformer::FindLocalBoneIndex(uint32 nodeIndex) const
-    {
-        const size_t numBones = m_bones.size();
-        for (size_t i = 0; i < numBones; ++i)
-        {
-            if (m_bones[i].mNodeNr == nodeIndex)
-            {
-                return AZ::Success(i);
-            }
-        }
-
-        return AZ::Failure();
     }
 
     DualQuatSkinDeformer* DualQuatSkinDeformer::Create(Mesh* mesh)
@@ -62,7 +50,7 @@ namespace EMotionFX
         return SUBTYPE_ID;
     }
 
-    MeshDeformer* DualQuatSkinDeformer::Clone(Mesh* mesh)
+    MeshDeformer* DualQuatSkinDeformer::Clone(Mesh* mesh) const
     {
         // create the new cloned deformer
         DualQuatSkinDeformer* result = aznew DualQuatSkinDeformer(mesh);
@@ -79,37 +67,47 @@ namespace EMotionFX
     {
         const Actor* actor = actorInstance->GetActor();
         const Pose* pose = actorInstance->GetTransformData()->GetCurrentPose();
-        const uint32 numVertices = mMesh->GetNumVertices();
 
-        // pre-calculate the skinning matrices
+        // Calculate the skinning matrices based on the current pose.
         for (BoneInfo& boneInfo : m_bones)
         {
-            const uint32 nodeIndex = boneInfo.mNodeNr;
+            const size_t nodeIndex = boneInfo.m_nodeNr;
             const Transform skinTransform = actor->GetInverseBindPoseTransform(nodeIndex) * pose->GetModelSpaceTransform(nodeIndex);
-            boneInfo.mDualQuat.FromRotationTranslation(skinTransform.mRotation, skinTransform.mPosition);
+            boneInfo.m_dualQuat.FromRotationTranslation(skinTransform.m_rotation, skinTransform.m_position);
         }
 
-        AZ::JobCompletion jobCompletion;
-
-        // Split up the skinned vertices into batches.
-        const AZ::u32 numBatches = aznumeric_caster(ceilf(aznumeric_cast<float>(numVertices) / aznumeric_cast<float>(s_numVerticesPerBatch)));
-        for (AZ::u32 batchIndex = 0; batchIndex < numBatches; ++batchIndex)
+        if (m_useTaskGraph)
         {
-            const AZ::u32 startVertex = batchIndex * s_numVerticesPerBatch;
-            const AZ::u32 endVertex = AZStd::min(startVertex + s_numVerticesPerBatch, numVertices);
-
-            // Create a job for every batch and skin them simultaneously.
-            AZ::JobContext* jobContext = nullptr;
-            AZ::Job* job = AZ::CreateJobFunction([this, startVertex, endVertex]()
-                {
-                    SkinRange(mMesh, startVertex, endVertex, m_bones);
-                }, /*isAutoDelete=*/true, jobContext);
-
-            job->SetDependent(&jobCompletion);
-            job->Start();
+            // Skin the vertices by executing the task graph.
+            AZ::TaskGraphEvent finishedEvent;
+            m_taskGraph.Submit(&finishedEvent);
+            finishedEvent.Wait();
         }
+        else
+        {
+            AZ::JobCompletion jobCompletion;
 
-        jobCompletion.StartAndWaitForCompletion();
+            // Split up the skinned vertices into batches.
+            const uint32 numVertices = m_mesh->GetNumVertices();
+            const AZ::u32 numBatches = aznumeric_caster(ceilf(aznumeric_cast<float>(numVertices) / aznumeric_cast<float>(s_numVerticesPerBatch)));
+            for (AZ::u32 batchIndex = 0; batchIndex < numBatches; ++batchIndex)
+            {
+                const AZ::u32 startVertex = batchIndex * s_numVerticesPerBatch;
+                const AZ::u32 endVertex = AZStd::min(startVertex + s_numVerticesPerBatch, numVertices);
+
+                // Create a job for every batch and skin them simultaneously.
+                AZ::JobContext* jobContext = nullptr;
+                AZ::Job* job = AZ::CreateJobFunction([this, startVertex, endVertex]()
+                    {
+                        SkinRange(m_mesh, startVertex, endVertex, m_bones);
+                    }, /*isAutoDelete=*/true, jobContext);
+
+                job->SetDependent(&jobCompletion);
+                job->Start();
+            }
+
+            jobCompletion.StartAndWaitForCompletion();
+        }
     }
 
     void DualQuatSkinDeformer::SkinRange(Mesh* mesh, AZ::u32 startVertex, AZ::u32 endVertex, const AZStd::vector<BoneInfo>& boneInfos)
@@ -145,7 +143,7 @@ namespace EMotionFX
                 if (numInfluences > 0)
                 {
                     // get the pivot quat, used for the dot product check
-                    const MCore::DualQuaternion& pivotQuat = boneInfos[ layer->GetInfluence(orgVertex, 0)->GetBoneNr() ].mDualQuat;
+                    const MCore::DualQuaternion& pivotQuat = boneInfos[ layer->GetInfluence(orgVertex, 0)->GetBoneNr() ].m_dualQuat;
 
                     // our skinning dual quaternion
                     MCore::DualQuaternion skinQuat(AZ::Quaternion(0, 0, 0, 0), AZ::Quaternion(0, 0, 0, 0));
@@ -156,8 +154,8 @@ namespace EMotionFX
                         weight = influence->GetWeight();
 
                         // check if we need to invert the dual quat
-                        MCore::DualQuaternion influenceQuat = boneInfos[ influence->GetBoneNr() ].mDualQuat;
-                        if (influenceQuat.mReal.Dot(pivotQuat.mReal) < 0.0f)
+                        MCore::DualQuaternion influenceQuat = boneInfos[ influence->GetBoneNr() ].m_dualQuat;
+                        if (influenceQuat.m_real.Dot(pivotQuat.m_real) < 0.0f)
                         {
                             influenceQuat *= -1.0f;
                         }
@@ -202,7 +200,7 @@ namespace EMotionFX
                 if (numInfluences > 0)
                 {
                     // get the pivot quat, used for the dot product check
-                    const MCore::DualQuaternion& pivotQuat = boneInfos[ layer->GetInfluence(orgVertex, 0)->GetBoneNr() ].mDualQuat;
+                    const MCore::DualQuaternion& pivotQuat = boneInfos[ layer->GetInfluence(orgVertex, 0)->GetBoneNr() ].m_dualQuat;
 
                     // our skinning dual quaternion
                     MCore::DualQuaternion skinQuat(AZ::Quaternion(0, 0, 0, 0), AZ::Quaternion(0, 0, 0, 0));
@@ -213,8 +211,8 @@ namespace EMotionFX
                         weight = influence->GetWeight();
 
                         // check if we need to invert the dual quat
-                        MCore::DualQuaternion influenceQuat = boneInfos[ influence->GetBoneNr() ].mDualQuat;
-                        if (influenceQuat.mReal.Dot(pivotQuat.mReal) < 0.0f)
+                        MCore::DualQuaternion influenceQuat = boneInfos[ influence->GetBoneNr() ].m_dualQuat;
+                        if (influenceQuat.m_real.Dot(pivotQuat.m_real) < 0.0f)
                         {
                             influenceQuat *= -1.0f;
                         }
@@ -255,7 +253,7 @@ namespace EMotionFX
                 if (numInfluences > 0)
                 {
                     // get the pivot quat, used for the dot product check
-                    const MCore::DualQuaternion& pivotQuat = boneInfos[ layer->GetInfluence(orgVertex, 0)->GetBoneNr() ].mDualQuat;
+                    const MCore::DualQuaternion& pivotQuat = boneInfos[ layer->GetInfluence(orgVertex, 0)->GetBoneNr() ].m_dualQuat;
 
                     // our skinning dual quaternion
                     MCore::DualQuaternion skinQuat(AZ::Quaternion(0, 0, 0, 0), AZ::Quaternion(0, 0, 0, 0));
@@ -266,8 +264,8 @@ namespace EMotionFX
                         weight = influence->GetWeight();
 
                         // check if we need to invert the dual quat
-                        MCore::DualQuaternion influenceQuat = boneInfos[ influence->GetBoneNr() ].mDualQuat;
-                        if (influenceQuat.mReal.Dot(pivotQuat.mReal) < 0.0f)
+                        MCore::DualQuaternion influenceQuat = boneInfos[ influence->GetBoneNr() ].m_dualQuat;
+                        if (influenceQuat.m_real.Dot(pivotQuat.m_real) < 0.0f)
                         {
                             influenceQuat *= -1.0f;
                         }
@@ -294,7 +292,7 @@ namespace EMotionFX
     }
 
     // initialize the mesh deformer
-    void DualQuatSkinDeformer::Reinitialize(Actor* actor, Node* node, uint32 lodLevel)
+    void DualQuatSkinDeformer::Reinitialize(Actor* actor, Node* node, size_t lodLevel, uint16 highestJointIndex)
     {
         MCORE_UNUSED(actor);
         MCORE_UNUSED(node);
@@ -304,16 +302,19 @@ namespace EMotionFX
         m_bones.clear();
 
         // if there is no mesh
-        if (mMesh == nullptr)
+        if (m_mesh == nullptr)
         {
             return;
         }
 
-        SkinningInfoVertexAttributeLayer* skinningLayer = (SkinningInfoVertexAttributeLayer*)mMesh->FindSharedVertexAttributeLayer(SkinningInfoVertexAttributeLayer::TYPE_ID);
+        SkinningInfoVertexAttributeLayer* skinningLayer = (SkinningInfoVertexAttributeLayer*)m_mesh->FindSharedVertexAttributeLayer(SkinningInfoVertexAttributeLayer::TYPE_ID);
         MCORE_ASSERT(skinningLayer);
 
+        constexpr uint16 invalidBoneIndex = AZStd::numeric_limits<uint16>::max();
+        AZStd::vector<uint16> localBoneMap(highestJointIndex + 1, invalidBoneIndex);
+
         // find out what bones this mesh uses
-        const uint32 numOrgVerts = mMesh->GetNumOrgVertices();
+        const uint32 numOrgVerts = m_mesh->GetNumOrgVertices();
         for (uint32 i = 0; i < numOrgVerts; i++)
         {
             // now we have located the skinning information for this vertex, we can see if our bones array
@@ -323,21 +324,47 @@ namespace EMotionFX
             for (size_t a = 0; a < numInfluences; ++a)
             {
                 SkinInfluence* influence = skinningLayer->GetInfluence(i, a);
+                const uint16 nodeIndex = influence->GetNodeNr();
 
-                AZ::Outcome<size_t> boneIndexOutcome = FindLocalBoneIndex(influence->GetNodeNr());
-                if (boneIndexOutcome.IsSuccess())
-                {
-                    influence->SetBoneNr(static_cast<uint16>(boneIndexOutcome.GetValue()));
-                }
-                else
+                // get the bone index in the array
+                uint16 boneIndex = localBoneMap[nodeIndex];
+                // if the bone is not found in our array
+                if (boneIndex == invalidBoneIndex)
                 {
                     // add the bone to the array of bones in this deformer
                     BoneInfo lastBone;
-                    lastBone.mNodeNr = influence->GetNodeNr();
-                    lastBone.mDualQuat.Identity();
+                    lastBone.m_nodeNr = nodeIndex;
+                    lastBone.m_dualQuat.Identity();
                     m_bones.emplace_back(lastBone);
-                    influence->SetBoneNr(static_cast<AZ::u16>(m_bones.size() - 1));
+                    boneIndex = static_cast<AZ::u16>(m_bones.size() - 1);
+                    localBoneMap[nodeIndex] = boneIndex;
                 }
+                
+                // set the bone number in the influence
+                influence->SetBoneNr(boneIndex);
+            }
+        }
+
+        if (m_useTaskGraph)
+        {
+            // Prepare the task graph
+            // Split up the to be skinned vertices into batches. As the mesh does not change at runtime, the task graph can
+            // be prepared at init time and be reused at runtime.
+            const uint32 numVertices = m_mesh->GetNumVertices();
+            const AZ::u32 numBatches = aznumeric_caster(ceilf(aznumeric_cast<float>(numVertices) / aznumeric_cast<float>(s_numVerticesPerBatch)));
+            for (AZ::u32 batchIndex = 0; batchIndex < numBatches; ++batchIndex)
+            {
+                const AZ::u32 startVertex = batchIndex * s_numVerticesPerBatch;
+                const AZ::u32 endVertex = AZStd::min(startVertex + s_numVerticesPerBatch, numVertices);
+
+                // Create a task for every batch and skin them simultaneously.
+                AZ::TaskDescriptor taskDescriptor{"DualQuatSkinRange", "Animation"};
+                m_taskGraph.AddTask(
+                    taskDescriptor,
+                    [this, startVertex, endVertex]()
+                    {
+                        SkinRange(m_mesh, startVertex, endVertex, m_bones);
+                    });
             }
         }
     }

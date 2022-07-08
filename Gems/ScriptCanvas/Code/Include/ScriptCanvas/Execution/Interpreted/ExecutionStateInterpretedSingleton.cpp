@@ -10,13 +10,5 @@
 
 namespace ScriptCanvas
 {   
-    void ExecutionStateInterpretedSingleton::Reflect(AZ::ReflectContext* reflectContext)
-    {
-        if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(reflectContext))
-        {
-            behaviorContext->Class<ExecutionStateInterpretedSingleton>()
-                ;
-        }
-    }
-
+  
 } 

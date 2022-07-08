@@ -43,7 +43,7 @@ namespace EMotionFX
         bool GetIsFloatable() const override                { return true;  }
         bool GetIsVertical() const override                 { return false; }
         bool Init() override;
-        EMStudioPlugin* Clone() override;
+        EMStudioPlugin* Clone() const override              { return new RagdollNodeInspectorPlugin(); }
 
         // SkeletonOutlinerNotificationBus overrides
         void OnContextMenu(QMenu* menu, const QModelIndexList& selectedRowIndices) override;
@@ -54,23 +54,6 @@ namespace EMotionFX
         static void AddCollider(const QModelIndexList& modelIndices, const AZ::TypeId& colliderType);
         static void CopyColliders(const QModelIndexList& modelIndices, PhysicsSetup::ColliderConfigType copyFrom);
 
-        void Render(EMStudio::RenderPlugin* renderPlugin, RenderInfo* renderInfo) override;
-        void RenderRagdoll(ActorInstance* actorInstance, bool renderColliders, bool renderJointLimits, EMStudio::RenderPlugin* renderPlugin, RenderInfo* renderInfo);
-        void RenderJointLimit(
-            const AzPhysics::JointConfiguration& jointConfiguration,
-            const ActorInstance* actorInstance,
-            const Node* node,
-            const Node* parentNode,
-            EMStudio::RenderPlugin* renderPlugin,
-            EMStudio::EMStudioPlugin::RenderInfo* renderInfo,
-            const MCore::RGBAColor& color);
-        void RenderJointFrame(
-            const AzPhysics::JointConfiguration& jointConfiguration,
-            const ActorInstance* actorInstance,
-            const Node* node,
-            const Node* parentNode,
-            EMStudio::EMStudioPlugin::RenderInfo* renderInfo,
-            const MCore::RGBAColor& color);
 
     public slots:
         void OnAddToRagdoll();
@@ -80,16 +63,8 @@ namespace EMotionFX
         void OnPasteJointLimits();
 
     private:
-        bool PhysXGemAvailable() const;
+        bool IsPhysXGemAvailable() const;
 
-        RagdollNodeWidget*          m_nodeWidget;
-
-        static float                s_scale;
-        static AZ::u32              s_angularSubdivisions;
-        static AZ::u32              s_radialSubdivisions;
-        AZStd::vector<AZ::Vector3>  m_vertexBuffer;
-        AZStd::vector<AZ::u32>      m_indexBuffer;
-        AZStd::vector<AZ::Vector3>  m_lineBuffer;
-        AZStd::vector<bool>         m_lineValidityBuffer;
+        RagdollNodeWidget* m_nodeWidget;
     };
 } // namespace EMotionFX

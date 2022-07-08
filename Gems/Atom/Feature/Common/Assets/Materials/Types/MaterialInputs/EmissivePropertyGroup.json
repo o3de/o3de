@@ -1,0 +1,94 @@
+{
+    "name": "emissive",
+    "displayName": "Emissive",
+    "description": "Properties to add light emission, independent of other lights in the scene.",
+    "properties": [
+        {
+            "name": "enable",
+            "displayName": "Enable",
+            "description": "Enable the emissive group",
+            "type": "Bool",
+            "defaultValue": false
+        },
+        {
+            "name": "unit",
+            "displayName": "Units",
+            "description": "The photometric units of the Intensity property.",
+            "type": "Enum",
+            "enumValues": ["Ev100"],
+            "defaultValue": "Ev100"
+        },
+        {
+            "name": "color",
+            "displayName": "Color",
+            "description": "Color is displayed as sRGB but the values are stored as linear color.",
+            "type": "Color",
+            "defaultValue": [ 1.0, 1.0, 1.0 ],
+            "connection": {
+                "type": "ShaderInput",
+                "name": "m_emissiveColor"
+            }
+        },
+        {
+            "name": "intensity",
+            "displayName": "Intensity",
+            "description": "The amount of energy emitted.",
+            "type": "Float",
+            "defaultValue": 4,
+            "min": -10,
+            "max": 20,
+            "softMin": -6,
+            "softMax": 16
+        },
+        {
+            "name": "textureMap",
+            "displayName": "Texture",
+            "description": "Texture for defining emissive area.",
+            "type": "Image",
+            "connection": {
+                "type": "ShaderInput",
+                "name": "m_emissiveMap"
+            }
+        },
+        {
+            "name": "useTexture",
+            "displayName": "Use Texture",
+            "description": "Whether to use the texture.",
+            "type": "Bool",
+            "defaultValue": true
+        },
+        {
+            "name": "textureMapUv",
+            "displayName": "UV",
+            "description": "Emissive map UV set",
+            "type": "Enum",
+            "enumIsUv": true,
+            "defaultValue": "Tiled",
+            "connection": {
+                "type": "ShaderInput",
+                "name": "m_emissiveMapUvIndex"
+            }
+        }
+    ],
+    "functors": [
+        {
+            // Convert emissive unit.
+            "type": "ConvertEmissiveUnit",
+            "args": {
+                "intensityProperty": "intensity",
+                "lightUnitProperty": "unit",
+                "shaderInput": "m_emissiveIntensity",
+                "ev100Index": 0,
+                "nitIndex" : 1,
+                "ev100MinMax": [-10, 20],
+                "nitMinMax": [0.001, 100000.0]
+            }
+        },
+        {
+            "type": "Lua",
+            "args": {
+                "file": "Materials/Types/StandardPBR_EmissiveState.lua"
+            }
+        }
+    ]
+}

@@ -1,5 +1,5 @@
 {
-    "Source" : "SkyBox_TwoOutputs",
+    "Source" : "SkyBox_TwoOutputs.azsl",
 
     "DepthStencilState" : { 
         "Depth" : { "Enable" : true, "CompareFunc" : "GreaterEqual" }

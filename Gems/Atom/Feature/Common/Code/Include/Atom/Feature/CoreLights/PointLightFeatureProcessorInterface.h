@@ -33,7 +33,12 @@ namespace AZ
 
             static const int NumShadowFaces = 6;
             AZStd::array<uint16_t, NumShadowFaces> m_shadowIndices = {{0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF}};
-            uint32_t m_padding;
+            float m_affectsGIFactor = 1.0f;
+
+            bool m_affectsGI = true;
+            float m_padding0 = 0.0f;
+            float m_padding1 = 0.0f;
+            float m_padding2 = 0.0f;
         };
 
         //! PointLightFeatureProcessorInterface provides an interface to acquire, release, and update a point light.
@@ -70,18 +75,16 @@ namespace AZ
             virtual void SetShadowBias(LightHandle handle, float bias) = 0;
             //! Specifies filter method of shadows.
             virtual void SetShadowFilterMethod(LightHandle handle, ShadowFilterMethod method) = 0;
-            //! Specifies the width of boundary between shadowed area and lit area in radians. The degree ofshadowed gradually changes on
-            //! the boundary. 0 disables softening.
-            virtual void SetSofteningBoundaryWidthAngle(LightHandle handle, float boundaryWidthRadians) = 0;
-            //! Sets sample count to predict boundary of shadow (up to 16). It will be clamped to be less than or equal to the filtering
-            //! sample count.
-            virtual void SetPredictionSampleCount(LightHandle handle, uint16_t count) = 0;
             //! Sets sample count for filtering of shadow boundary (up to 64)
             virtual void SetFilteringSampleCount(LightHandle handle, uint16_t count) = 0;
-            //! Sets the shadowmap Pcf (percentage closer filtering) method.
-            virtual void SetPcfMethod(LightHandle handle, PcfMethod method) = 0;
             //! Sets the Esm exponent to use. Higher values produce a steeper falloff in the border areas between light and shadow.
             virtual void SetEsmExponent(LightHandle handle, float exponent) = 0;
+            //! Sets the normal shadow bias. Reduces acne by biasing the shadowmap lookup along the geometric normal.
+            virtual void SetNormalShadowBias(LightHandle handle, float bias) = 0;
+            //! Specifies if this light affects the diffuse global illumination in the scene.
+            virtual void SetAffectsGI(LightHandle handle, bool affectsGI) = 0;
+            //! Specifies the contribution of this light to the diffuse global illumination in the scene.
+            virtual void SetAffectsGIFactor(LightHandle handle, float affectsGIFactor) = 0;
             //! Sets all of the the point data for the provided LightHandle.
             virtual void SetPointData(LightHandle handle, const PointLightData& data) = 0;
         };

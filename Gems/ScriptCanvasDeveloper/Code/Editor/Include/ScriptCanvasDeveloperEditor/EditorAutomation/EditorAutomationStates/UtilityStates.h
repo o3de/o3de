@@ -14,7 +14,7 @@
 #include <ScriptCanvasDeveloperEditor/EditorAutomation/EditorAutomationActions/WidgetActions.h>
 #include <ScriptCanvasDeveloperEditor/EditorAutomation/EditorAutomationActions/ScriptCanvasActions/EditorViewActions.h>
 
-namespace ScriptCanvasDeveloper
+namespace ScriptCanvas::Developer
 {
     struct FindPositionOffsets
     {
@@ -139,7 +139,6 @@ namespace ScriptCanvasDeveloper
         void OnStateActionsComplete() override;
 
     private:
-        int m_row = 0;
         int m_rowCount = 0;
 
         MoveMouseToViewRowAction* m_mouseToRow = nullptr;

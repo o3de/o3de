@@ -238,11 +238,11 @@ namespace EMotionFX
             const char* sourceNodeName = "";
             for (const AnimGraphNode::Port& port : inputPorts)
             {
-                if (port.mConnection)
+                if (port.m_connection)
                 {
-                    if (port.mPortID == paramWeights[i].GetPortId())
+                    if (port.m_portId == paramWeights[i].GetPortId())
                     {
-                        sourceNodeName = port.mConnection->GetSourceNode()->GetName();
+                        sourceNodeName = port.m_connection->GetSourceNode()->GetName();
                     }
                 }
             }

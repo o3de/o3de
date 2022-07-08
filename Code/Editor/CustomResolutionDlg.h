@@ -12,8 +12,6 @@
 //  Notice     : Refer to ViewportTitleDlg.cpp for a use case.
 
 
-#ifndef CRYINCLUDE_EDITOR_CUSTOMRESOLUTIONDLG_H
-#define CRYINCLUDE_EDITOR_CUSTOMRESOLUTIONDLG_H
 #pragma once
 
 #if !defined(Q_MOC_RUN)
@@ -28,6 +26,7 @@ namespace Ui
 class CCustomResolutionDlg
     : public QDialog
 {
+    Q_OBJECT
 public:
     CCustomResolutionDlg(int w, int h, QWidget* pParent = nullptr);
     ~CCustomResolutionDlg();
@@ -42,5 +41,3 @@ protected:
 
     QScopedPointer<Ui::CustomResolutionDlg> m_ui;
 };
-
-#endif // CRYINCLUDE_EDITOR_CUSTOMRESOLUTIONDLG_H

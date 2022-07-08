@@ -69,7 +69,8 @@ namespace AssetBundler
             assetInfo = AzToolsFramework::AssetSeedManager::GetAssetInfoById(
                 seed.m_assetId,
                 AzFramework::PlatformHelper::GetPlatformIndicesInterpreted(seed.m_platformFlags)[0],
-                absolutePath);
+                absolutePath,
+                seed.m_assetRelativePath);
             platformList = QString(m_seedListManager->GetReadablePlatformList(seed).c_str());
 
             m_additionalSeedInfoMap[seed.m_assetId].reset(new AdditionalSeedInfo(assetInfo.m_relativePath.c_str(), platformList));

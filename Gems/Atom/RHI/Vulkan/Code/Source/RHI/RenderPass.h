@@ -38,8 +38,6 @@ namespace AZ
             ~RenderPass() = default;
             static RHI::Ptr<RenderPass> Create();
 
-            AZ_ASSERT_NO_ALIGNMENT_PADDING_BEGIN
-
             enum class AttachmentType : uint32_t
             {
                 Color,              // Color render target attachment
@@ -98,8 +96,6 @@ namespace AZ
                 SubpassAttachment m_depthStencilAttachment;
             };
 
-            AZ_ASSERT_NO_ALIGNMENT_PADDING_END
-
             struct Descriptor
             {
                 size_t GetHash() const;
@@ -151,7 +147,7 @@ namespace AZ
             void BuildSubpassDescriptions(const AZStd::vector<SubpassReferences>& subpassReferences, AZStd::vector<VkSubpassDescription>& subpassDescriptions) const;
             void BuildSubpassDependencies(AZStd::vector<VkSubpassDependency>& subpassDependencies) const;
 
-            AZStd::array_view<SubpassAttachment> GetSubpassAttachments(const uint32_t subpassIndex, const AttachmentType type) const;
+            AZStd::span<const SubpassAttachment> GetSubpassAttachments(const uint32_t subpassIndex, const AttachmentType type) const;
 
             Descriptor m_descriptor;
             VkRenderPass m_nativeRenderPass = VK_NULL_HANDLE;
@@ -161,7 +157,7 @@ namespace AZ
         template<RenderPass::AttachmentType type>
         void RenderPass::BuildAttachmentReferences(uint32_t subpassIndex, SubpassReferences& subpasReferences) const
         {
-            AZStd::array_view<SubpassAttachment> subpassAttachmentList = GetSubpassAttachments(subpassIndex, type);
+            AZStd::span<const SubpassAttachment> subpassAttachmentList = GetSubpassAttachments(subpassIndex, type);
             AZStd::vector<VkAttachmentReference>& attachmentReferenceList = subpasReferences.m_attachmentReferences[static_cast<uint32_t>(type)];
             attachmentReferenceList.resize(subpassAttachmentList.size());
             for (uint32_t index = 0; index < subpassAttachmentList.size(); ++index)

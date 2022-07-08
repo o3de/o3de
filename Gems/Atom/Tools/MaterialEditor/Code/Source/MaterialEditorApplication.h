@@ -8,48 +8,39 @@
 
 #pragma once
 
-#include <Atom/Document/MaterialDocumentSystemRequestBus.h>
-#include <Atom/Window/MaterialEditorWindowNotificationBus.h>
-#include <AtomToolsFramework/Application/AtomToolsApplication.h>
-
-#include <QTimer>
+#include <AtomToolsFramework/Document/AtomToolsDocumentApplication.h>
+#include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportSettingsSystem.h>
+#include <AzToolsFramework/API/EditorWindowRequestBus.h>
+#include <Window/MaterialEditorMainWindow.h>
 
 namespace MaterialEditor
 {
-    class MaterialThumbnailRenderer;
-
     class MaterialEditorApplication
-        : public AtomToolsFramework::AtomToolsApplication
-        , private MaterialEditorWindowNotificationBus::Handler
+        : public AtomToolsFramework::AtomToolsDocumentApplication
+        , private AzToolsFramework::EditorWindowRequestBus::Handler
     {
     public:
         AZ_TYPE_INFO(MaterialEditor::MaterialEditorApplication, "{30F90CA5-1253-49B5-8143-19CEE37E22BB}");
 
-        using Base = AtomToolsFramework::AtomToolsApplication;
+        using Base = AtomToolsFramework::AtomToolsDocumentApplication;
 
         MaterialEditorApplication(int* argc, char*** argv);
-        virtual ~MaterialEditorApplication();
+        ~MaterialEditorApplication();
 
-        //////////////////////////////////////////////////////////////////////////
-        // AzFramework::Application
-        void CreateStaticModules(AZStd::vector<AZ::Module*>& outModules) override;
+        // AzFramework::Application overrides...
+        void Reflect(AZ::ReflectContext* context) override;
         const char* GetCurrentConfigurationName() const override;
-        void Stop() override;
+        void StartCommon(AZ::Entity* systemEntity) override;
+        void Destroy() override;
+
+        // AtomToolsFramework::AtomToolsApplication overrides...
+        AZStd::vector<AZStd::string> GetCriticalAssetFilters() const override;
+
+        // AzToolsFramework::EditorWindowRequests::Bus::Handler
+        QWidget* GetAppMainWindow() override;
 
     private:
-        //////////////////////////////////////////////////////////////////////////
-        // MaterialEditorWindowNotificationBus::Handler overrides...
-        void OnMaterialEditorWindowClosing() override;
-        //////////////////////////////////////////////////////////////////////////
-
-        //////////////////////////////////////////////////////////////////////////
-        // AzFramework::Application overrides...
-        void Destroy() override;
-        //////////////////////////////////////////////////////////////////////////
-
-        void ProcessCommandLine(const AZ::CommandLine& commandLine) override;
-        void StartInternal() override;
-        AZStd::string GetBuildTargetName() const override;
-        AZStd::vector<AZStd::string> GetCriticalAssetFilters() const override;
-     };
+        AZStd::unique_ptr<MaterialEditorMainWindow> m_window;
+        AZStd::unique_ptr<AtomToolsFramework::EntityPreviewViewportSettingsSystem> m_viewportSettingsSystem;
+    };
 } // namespace MaterialEditor

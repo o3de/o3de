@@ -34,24 +34,20 @@ namespace UnitTest
             AllocatorInstance<ThreadPoolAllocator>::Create();
             ComponentApplication::Descriptor desc;
             desc.m_useExistingAllocator = true;
-            desc.m_enableDrilling = false; // we already created a memory driller for the test (AllocatorsFixture)
-            m_app.Create(desc);
+            m_app.reset(aznew ComponentApplication);
+            m_app->Create(desc);
         }
 
         void TearDown() override
         {
-            m_app.Destroy();
+            m_app->Destroy();
+            m_app.reset();
             AllocatorInstance<PoolAllocator>::Destroy();
             AllocatorInstance<ThreadPoolAllocator>::Destroy();
             AllocatorsFixture::TearDown();
         }
 
-        virtual ~Base64Test()
-        {
-            
-        }
-
-        ComponentApplication m_app;
+        AZStd::unique_ptr<ComponentApplication> m_app;
     };
 
     TEST_F(Base64Test, EmptyStringEncodeTest)

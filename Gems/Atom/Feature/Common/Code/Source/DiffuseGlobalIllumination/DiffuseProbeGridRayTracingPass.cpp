@@ -19,6 +19,7 @@
 #include <Atom/RPI.Public/Pass/PassUtils.h>
 #include <Atom/RPI.Public/RPIUtils.h>
 #include <Atom/RPI.Public/View.h>
+#include <Atom_Feature_Traits_Platform.h>
 #include <Atom/Feature/TransformService/TransformServiceFeatureProcessor.h>
 #include <DiffuseGlobalIllumination/DiffuseProbeGridFeatureProcessor.h>
 #include <DiffuseGlobalIllumination/DiffuseProbeGridRayTracingPass.h>
@@ -38,9 +39,9 @@ namespace AZ
             : RPI::RenderPass(descriptor)
         {
             RHI::Ptr<RHI::Device> device = RHI::RHISystemInterface::Get()->GetDevice();
-            if (device->GetFeatures().m_rayTracing == false)
+            if (device->GetFeatures().m_rayTracing == false || !AZ_TRAIT_DIFFUSE_GI_PASSES_SUPPORTED)
             {
-                // raytracing is not supported on this platform
+                // raytracing or GI is not supported on this platform
                 SetEnabled(false);
             }
         }
@@ -52,7 +53,7 @@ namespace AZ
             // load the ray tracing shader
             // Note: the shader may not be available on all platforms
             AZStd::string shaderFilePath = "Shaders/DiffuseGlobalIllumination/DiffuseProbeGridRayTracing.azshader";
-            m_rayTracingShader = RPI::LoadShader(shaderFilePath);
+            m_rayTracingShader = RPI::LoadCriticalShader(shaderFilePath);
             if (m_rayTracingShader == nullptr)
             {
                 return;
@@ -64,7 +65,7 @@ namespace AZ
 
             // closest hit shader
             AZStd::string closestHitShaderFilePath = "Shaders/DiffuseGlobalIllumination/DiffuseProbeGridRayTracingClosestHit.azshader";
-            m_closestHitShader = RPI::LoadShader(closestHitShaderFilePath);
+            m_closestHitShader = RPI::LoadCriticalShader(closestHitShaderFilePath);
 
             auto closestHitShaderVariant = m_closestHitShader->GetVariant(RPI::ShaderAsset::RootShaderVariantStableId);
             RHI::PipelineStateDescriptorForRayTracing closestHitShaderDescriptor;
@@ -72,7 +73,7 @@ namespace AZ
 
             // miss shader
             AZStd::string missShaderFilePath = "Shaders/DiffuseGlobalIllumination/DiffuseProbeGridRayTracingMiss.azshader";
-            m_missShader = RPI::LoadShader(missShaderFilePath);
+            m_missShader = RPI::LoadCriticalShader(missShaderFilePath);
 
             auto missShaderVariant = m_missShader->GetVariant(RPI::ShaderAsset::RootShaderVariantStableId);
             RHI::PipelineStateDescriptorForRayTracing missShaderDescriptor;
@@ -106,14 +107,39 @@ namespace AZ
             m_rayTracingPipelineState->Init(*device.get(), &descriptor);
         }
 
+        bool DiffuseProbeGridRayTracingPass::IsEnabled() const
+        {
+            if (!RenderPass::IsEnabled())
+            {
+                return false;
+            }
+
+            RPI::Scene* scene = m_pipeline->GetScene();
+            if (!scene)
+            {
+                return false;
+            }
+
+            RayTracingFeatureProcessor* rayTracingFeatureProcessor = scene->GetFeatureProcessor<RayTracingFeatureProcessor>();
+            if (!rayTracingFeatureProcessor)
+            {
+                return false;
+            }
+
+            DiffuseProbeGridFeatureProcessor* diffuseProbeGridFeatureProcessor = scene->GetFeatureProcessor<DiffuseProbeGridFeatureProcessor>();
+            if (!diffuseProbeGridFeatureProcessor || diffuseProbeGridFeatureProcessor->GetVisibleRealTimeProbeGrids().empty())
+            {
+                // no diffuse probe grids
+                return false;
+            }
+
+            return true;
+        }
+
         void DiffuseProbeGridRayTracingPass::FrameBeginInternal(FramePrepareParams params)
         {
             RPI::Scene* scene = m_pipeline->GetScene();
             RayTracingFeatureProcessor* rayTracingFeatureProcessor = scene->GetFeatureProcessor<RayTracingFeatureProcessor>();
-            if (!rayTracingFeatureProcessor)
-            {
-                return;
-            }
 
             if (!m_initialized)
             {
@@ -128,13 +154,6 @@ namespace AZ
 
                 m_rayTracingShaderTable = RHI::Factory::Get().CreateRayTracingShaderTable();
                 m_rayTracingShaderTable->Init(*device.get(), rayTracingBufferPools);
-            }
-
-            DiffuseProbeGridFeatureProcessor* diffuseProbeGridFeatureProcessor = scene->GetFeatureProcessor<DiffuseProbeGridFeatureProcessor>();
-            if (!diffuseProbeGridFeatureProcessor || diffuseProbeGridFeatureProcessor->GetVisibleRealTimeProbeGrids().empty())
-            {
-                // no diffuse probe grids
-                return;
             }
 
             RenderPass::FrameBeginInternal(params);
@@ -155,9 +174,13 @@ namespace AZ
                 // TLAS
                 {
                     AZ::RHI::AttachmentId tlasAttachmentId = rayTracingFeatureProcessor->GetTlasAttachmentId();
-                    if (frameGraph.GetAttachmentDatabase().IsAttachmentValid(tlasAttachmentId))
+                    const RHI::Ptr<RHI::Buffer>& rayTracingTlasBuffer = rayTracingFeatureProcessor->GetTlas()->GetTlasBuffer();
+                    if (rayTracingTlasBuffer)
                     {
-                        uint32_t tlasBufferByteCount = aznumeric_cast<uint32_t>(rayTracingFeatureProcessor->GetTlas()->GetTlasBuffer()->GetDescriptor().m_byteCount);
+                        [[maybe_unused]] RHI::ResultCode result = frameGraph.GetAttachmentDatabase().ImportBuffer(tlasAttachmentId, rayTracingTlasBuffer);
+                        AZ_Assert(result == RHI::ResultCode::Success, "Failed to import ray tracing TLAS buffer with error %d", result);
+
+                        uint32_t tlasBufferByteCount = aznumeric_cast<uint32_t>(rayTracingTlasBuffer->GetDescriptor().m_byteCount);
                         RHI::BufferViewDescriptor tlasBufferViewDescriptor = RHI::BufferViewDescriptor::CreateRaw(0, tlasBufferByteCount);
 
                         RHI::BufferScopeAttachmentDescriptor desc;
@@ -167,6 +190,16 @@ namespace AZ
 
                         frameGraph.UseShaderAttachment(desc, RHI::ScopeAttachmentAccess::ReadWrite);
                     }
+                }
+
+                // grid data
+                {
+                    RHI::BufferScopeAttachmentDescriptor desc;
+                    desc.m_attachmentId = diffuseProbeGrid->GetGridDataBufferAttachmentId();
+                    desc.m_bufferViewDescriptor = diffuseProbeGrid->GetRenderData()->m_gridDataBufferViewDescriptor;
+                    desc.m_loadStoreAction.m_loadAction = AZ::RHI::AttachmentLoadAction::Load;
+
+                    frameGraph.UseShaderAttachment(desc, RHI::ScopeAttachmentAccess::Read);
                 }
 
                 // probe raytrace
@@ -190,10 +223,10 @@ namespace AZ
                     RHI::ImageScopeAttachmentDescriptor desc;
                     desc.m_attachmentId = diffuseProbeGrid->GetIrradianceImageAttachmentId();
                     desc.m_imageViewDescriptor = diffuseProbeGrid->GetRenderData()->m_probeIrradianceImageViewDescriptor;
-                    if (diffuseProbeGrid->GetIrradianceClearRequired())
+
+                    if (diffuseProbeGrid->GetTextureClearRequired())
                     {
                         desc.m_loadStoreAction.m_loadAction = AZ::RHI::AttachmentLoadAction::Clear;
-                        diffuseProbeGrid->ResetIrradianceClearRequired();
                     }
                     else
                     {
@@ -211,36 +244,41 @@ namespace AZ
                     RHI::ImageScopeAttachmentDescriptor desc;
                     desc.m_attachmentId = diffuseProbeGrid->GetDistanceImageAttachmentId();
                     desc.m_imageViewDescriptor = diffuseProbeGrid->GetRenderData()->m_probeDistanceImageViewDescriptor;
-                    desc.m_loadStoreAction.m_loadAction = AZ::RHI::AttachmentLoadAction::DontCare;
+
+                    if (diffuseProbeGrid->GetTextureClearRequired())
+                    {
+                        desc.m_loadStoreAction.m_loadAction = AZ::RHI::AttachmentLoadAction::Clear;
+                    }
+                    else
+                    {
+                        desc.m_loadStoreAction.m_loadAction = AZ::RHI::AttachmentLoadAction::Load;
+                    }
 
                     frameGraph.UseShaderAttachment(desc, RHI::ScopeAttachmentAccess::ReadWrite);
                 }
 
-                // probe relocation
+                // probe data
                 {
-                    [[maybe_unused]] RHI::ResultCode result = frameGraph.GetAttachmentDatabase().ImportImage(diffuseProbeGrid->GetRelocationImageAttachmentId(), diffuseProbeGrid->GetRelocationImage());
-                    AZ_Assert(result == RHI::ResultCode::Success, "Failed to import probeRelocationImage");
+                    [[maybe_unused]] RHI::ResultCode result = frameGraph.GetAttachmentDatabase().ImportImage(diffuseProbeGrid->GetProbeDataImageAttachmentId(), diffuseProbeGrid->GetProbeDataImage());
+                    AZ_Assert(result == RHI::ResultCode::Success, "Failed to import ProbeDataImage");
 
                     RHI::ImageScopeAttachmentDescriptor desc;
-                    desc.m_attachmentId = diffuseProbeGrid->GetRelocationImageAttachmentId();
-                    desc.m_imageViewDescriptor = diffuseProbeGrid->GetRenderData()->m_probeRelocationImageViewDescriptor;
-                    desc.m_loadStoreAction.m_loadAction = AZ::RHI::AttachmentLoadAction::Load;
+                    desc.m_attachmentId = diffuseProbeGrid->GetProbeDataImageAttachmentId();
+                    desc.m_imageViewDescriptor = diffuseProbeGrid->GetRenderData()->m_probeDataImageViewDescriptor;
+
+                    if (diffuseProbeGrid->GetTextureClearRequired())
+                    {
+                        desc.m_loadStoreAction.m_loadAction = AZ::RHI::AttachmentLoadAction::Clear;
+                    }
+                    else
+                    {
+                        desc.m_loadStoreAction.m_loadAction = AZ::RHI::AttachmentLoadAction::Load;
+                    }
 
                     frameGraph.UseShaderAttachment(desc, RHI::ScopeAttachmentAccess::ReadWrite);
                 }
 
-                // probe classification
-                {
-                    [[maybe_unused]] RHI::ResultCode result = frameGraph.GetAttachmentDatabase().ImportImage(diffuseProbeGrid->GetClassificationImageAttachmentId(), diffuseProbeGrid->GetClassificationImage());
-                    AZ_Assert(result == RHI::ResultCode::Success, "Failed to import probeClassificationImage");
-
-                    RHI::ImageScopeAttachmentDescriptor desc;
-                    desc.m_attachmentId = diffuseProbeGrid->GetClassificationImageAttachmentId();
-                    desc.m_imageViewDescriptor = diffuseProbeGrid->GetRenderData()->m_probeClassificationImageViewDescriptor;
-                    desc.m_loadStoreAction.m_loadAction = AZ::RHI::AttachmentLoadAction::Load;
-
-                    frameGraph.UseShaderAttachment(desc, RHI::ScopeAttachmentAccess::ReadWrite);
-                }
+                diffuseProbeGrid->ResetTextureClearRequired();
             }
         }
 
@@ -249,10 +287,10 @@ namespace AZ
             RPI::Scene* scene = m_pipeline->GetScene();
             DiffuseProbeGridFeatureProcessor* diffuseProbeGridFeatureProcessor = scene->GetFeatureProcessor<DiffuseProbeGridFeatureProcessor>();
             RayTracingFeatureProcessor* rayTracingFeatureProcessor = scene->GetFeatureProcessor<RayTracingFeatureProcessor>();
-            const Data::Instance<RPI::Buffer> meshInfoBuffer = rayTracingFeatureProcessor->GetMeshInfoBuffer();
+            const Data::Instance<RPI::Buffer> meshInfoBuffer = rayTracingFeatureProcessor->GetMeshInfoGpuBuffer();
 
-            if (rayTracingFeatureProcessor->GetTlas()->GetTlasBuffer() &&
-                rayTracingFeatureProcessor->GetMeshInfoBuffer() &&
+            if (meshInfoBuffer &&
+                rayTracingFeatureProcessor->GetTlas()->GetTlasBuffer() &&
                 rayTracingFeatureProcessor->GetSubMeshCount())
             {
                 for (auto& diffuseProbeGrid : diffuseProbeGridFeatureProcessor->GetVisibleRealTimeProbeGrids())
@@ -275,15 +313,10 @@ namespace AZ
                 if (rayTracingFeatureProcessor->GetSubMeshCount())
                 {
                     // build the ray tracing shader table descriptor
-                    RHI::RayTracingShaderTableDescriptor* descriptorBuild = descriptor->Build(AZ::Name("RayTracingShaderTable"), m_rayTracingPipelineState)
+                    descriptor->Build(AZ::Name("RayTracingShaderTable"), m_rayTracingPipelineState)
                         ->RayGenerationRecord(AZ::Name("RayGen"))
-                        ->MissRecord(AZ::Name("Miss"));
-
-                    // add a hit group for each mesh to the shader table
-                    for (uint32_t i = 0; i < rayTracingFeatureProcessor->GetSubMeshCount(); ++i)
-                    {
-                        descriptorBuild->HitGroupRecord(AZ::Name("HitGroup"));
-                    }
+                        ->MissRecord(AZ::Name("Miss"))
+                        ->HitGroupRecord(AZ::Name("HitGroup"));
                 }
 
                 m_rayTracingShaderTable->Build(descriptor);
@@ -302,16 +335,23 @@ namespace AZ
                 rayTracingFeatureProcessor->GetSubMeshCount() &&
                 m_rayTracingShaderTable)
             {
-                // submit the DispatchRaysItem for each DiffuseProbeGrid
-                for (auto& diffuseProbeGrid : diffuseProbeGridFeatureProcessor->GetVisibleRealTimeProbeGrids())
+                // compute the index range to process for this command list
+                uint32_t numGrids = aznumeric_cast<uint32_t>(diffuseProbeGridFeatureProcessor->GetVisibleRealTimeProbeGrids().size());
+                uint32_t startIndex = (context.GetCommandListIndex() * numGrids) / context.GetCommandListCount();
+                uint32_t endIndex = ((context.GetCommandListIndex() + 1) * numGrids) / context.GetCommandListCount();
+
+                // submit the DispatchRaysItems for each DiffuseProbeGrid in this range
+                for (uint32_t index = startIndex; index < endIndex; ++index)
                 {
+                    AZStd::shared_ptr<DiffuseProbeGrid> diffuseProbeGrid = diffuseProbeGridFeatureProcessor->GetVisibleRealTimeProbeGrids()[index];
+
                     const RHI::ShaderResourceGroup* shaderResourceGroups[] = {
                         diffuseProbeGrid->GetRayTraceSrg()->GetRHIShaderResourceGroup(),
                         rayTracingFeatureProcessor->GetRayTracingSceneSrg()->GetRHIShaderResourceGroup()
                     };
 
                     RHI::DispatchRaysItem dispatchRaysItem;
-                    dispatchRaysItem.m_width = diffuseProbeGrid->GetNumRaysPerProbe();
+                    dispatchRaysItem.m_width = diffuseProbeGrid->GetNumRaysPerProbe().m_rayCount;
                     dispatchRaysItem.m_height = diffuseProbeGrid->GetTotalProbeCount();
                     dispatchRaysItem.m_depth = 1;
                     dispatchRaysItem.m_rayTracingPipelineState = m_rayTracingPipelineState.get();

@@ -121,12 +121,12 @@ namespace AZ
         {
             delete attrIt.second;
         }
-        
+
         if (m_overload)
         {
             delete m_overload;
         }
-        
+
         m_attributes.clear();
     }
 
@@ -180,7 +180,7 @@ namespace AZ
         if (GetNumArguments() == overload->GetNumArguments())
         {
             bool anyDifference = false;
-            
+
             for (size_t i(0), sentinel(GetNumArguments()); !anyDifference && i < sentinel; ++i)
             {
                 const BehaviorParameter* thisArg = GetArgument(i);
@@ -223,6 +223,48 @@ namespace AZ
         }
 
         return false;
+    }
+
+    void BehaviorMethod::ProcessAuxiliaryMethods(BehaviorContext* context, BehaviorMethod& method)
+    {
+        if (Attribute* attribute = AZ::FindAttribute(ScriptCanvasAttributes::CheckedOperation, method.m_attributes))
+        {
+            CheckedOperationInfo checkedOperationInfo;
+            if (AttributeReader(nullptr, attribute).Read<CheckedOperationInfo>(checkedOperationInfo))
+            {
+                auto iter = context->m_methods.find(checkedOperationInfo.m_safetyCheckName);
+                if (iter != context->m_methods.end())
+                {
+                    context->m_checksByOperations.insert(AZStd::make_pair(&method, AZStd::make_pair(iter->second, nullptr)));
+                }
+                else
+                {
+                    AZ_Error("BehaviorContext", false, "Method %s declared safety check %s, but it was not found in context.s",
+                        m_name.c_str(), checkedOperationInfo.m_safetyCheckName.c_str());
+                }
+            }
+        }
+
+        if (Attribute* attribute = AZ::FindAttribute(ScriptCanvasAttributes::BranchOnResult, method.m_attributes))
+        {
+            BranchOnResultInfo branchOnResultInfo;
+            if (AttributeReader(nullptr, attribute).Read<BranchOnResultInfo>(branchOnResultInfo))
+            {
+                if (!branchOnResultInfo.m_nonBooleanResultCheckName.empty())
+                {
+                    auto iter = context->m_methods.find(branchOnResultInfo.m_nonBooleanResultCheckName);
+                    if (iter != context->m_methods.end())
+                    {
+                        context->m_checksByOperations.insert(AZStd::make_pair(&method, AZStd::make_pair(iter->second, nullptr)));
+                    }
+                    else
+                    {
+                        AZ_Error("BehaviorContext", false, "Method %s declared safety check %s, but it was not found in context.",
+                            m_name.c_str(), branchOnResultInfo.m_nonBooleanResultCheckName.c_str());
+                    }
+                }
+            }
+        }
     }
 
     //=========================================================================
@@ -273,7 +315,7 @@ namespace AZ
         auto attributes = AZStd::move(m_attributes);
 
         // Actually delete everything
-        for (auto propertyIt : events)
+        for (const auto &propertyIt : events)
         {
             delete propertyIt.second.m_broadcast;
             delete propertyIt.second.m_event;
@@ -321,6 +363,7 @@ namespace AZ
 
         if (m_method)
         {
+            m_method->ProcessAuxiliaryMethods(Base::m_context, *m_method);
             if (MethodReturnsAzEventByReferenceOrPointer(*m_method))
             {
                 ValidateAzEventDescription(*Base::m_context, *m_method);
@@ -519,20 +562,20 @@ namespace AZ
     AZStd::vector<BehaviorMethod*> BehaviorClass::GetOverloads(const AZStd::string& name) const
     {
         AZStd::vector<BehaviorMethod*> overloads;
-        
+
         auto methodIter = m_methods.find(name);
         if (methodIter != m_methods.end())
         {
             overloads = GetOverloadsIncludeMethod(methodIter->second);
-        }        
-        
+        }
+
         return overloads;
     }
 
     AZStd::vector<BehaviorMethod*> BehaviorClass::GetOverloadsIncludeMethod(BehaviorMethod* method) const
     {
         AZStd::vector<BehaviorMethod*> overloads;
-       
+
         auto iter = method;
         while (iter)
         {
@@ -546,7 +589,7 @@ namespace AZ
     AZStd::vector<BehaviorMethod*> BehaviorClass::GetOverloadsExcludeMethod(BehaviorMethod* method) const
     {
         AZStd::vector<BehaviorMethod*> overloads;
-        
+
         auto iter = method->m_overload;
         while (iter)
         {
@@ -972,5 +1015,5 @@ namespace AZ
             return enumRttiHelper.GetTypeId();
         }
     }
- 
+
 } // namespace AZ

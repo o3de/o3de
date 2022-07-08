@@ -6,11 +6,14 @@
  *
  */
 
-#include <AzFramework/Session/SessionConfig.h>
+#include <Multiplayer/Session/SessionConfig.h>
 
 #include <Activity/AWSGameLiftSearchSessionsActivity.h>
 #include <AWSGameLiftClientFixture.h>
 #include <AWSGameLiftSessionConstants.h>
+
+#include <aws/core/utils/Outcome.h>
+#include <aws/gamelift/model/SearchGameSessionsRequest.h>
 
 using namespace AWSGameLift;
 
@@ -42,7 +45,7 @@ TEST_F(AWSGameLiftSearchSessionsActivityTest, BuildAWSGameLiftSearchGameSessions
 TEST_F(AWSGameLiftSearchSessionsActivityTest, ValidateSearchSessionsRequest_CallWithBaseType_GetFalseResult)
 {
     AZ_TEST_START_TRACE_SUPPRESSION;
-    auto result = SearchSessionsActivity::ValidateSearchSessionsRequest(AzFramework::SearchSessionsRequest());
+    auto result = SearchSessionsActivity::ValidateSearchSessionsRequest(Multiplayer::SearchSessionsRequest());
     AZ_TEST_STOP_TRACE_SUPPRESSION(1); // capture 1 error message    
     EXPECT_FALSE(result);
 }

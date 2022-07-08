@@ -22,6 +22,7 @@
 #include <LmbrCentral/Shape/SphereShapeComponentBus.h>
 #include <LmbrCentral/Shape/CylinderShapeComponentBus.h>
 #include <LmbrCentral/Shape/PolygonPrismShapeComponentBus.h>
+#include <LmbrCentral/Shape/QuadShapeComponentBus.h>
 #include <PhysX/SystemComponentBus.h>
 #include <Source/Utils.h>
 #include <AzCore/Math/Geometry2DUtils.h>
@@ -40,28 +41,30 @@ namespace PhysX
                 AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&AzToolsFramework::PropertyEditorGUIMessages::RequestRefresh,
                     AzToolsFramework::PropertyModificationRefreshLevel::Refresh_AttributesAndValues);
             })
-        , m_onMaterialLibraryChangedEventHandler(
-            [this](const AZ::Data::AssetId& defaultMaterialLibrary)
-            {
-                m_colliderConfig.m_materialSelection.OnMaterialLibraryChanged(defaultMaterialLibrary);
-                Physics::ColliderComponentEventBus::Event(GetEntityId(), &Physics::ColliderComponentEvents::OnColliderChanged);
-
-                AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&AzToolsFramework::PropertyEditorGUIMessages::RequestRefresh,
-                    AzToolsFramework::PropertyModificationRefreshLevel::Refresh_AttributesAndValues);
-            })
         , m_nonUniformScaleChangedHandler([this](const AZ::Vector3& scale) {OnNonUniformScaleChanged(scale);})
     {
         m_colliderConfig.SetPropertyVisibility(Physics::ColliderConfiguration::Offset, false);
     }
 
-    AZ::Crc32 EditorShapeColliderComponent::SubdivisionCountVisibility()
+    AZ::Crc32 EditorShapeColliderComponent::SubdivisionCountVisibility() const
     {
         if (m_shapeType == ShapeType::Cylinder)
         {
-            return AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Show;
+            return AZ::Edit::PropertyVisibility::Show;
         }
         
-        return AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Hide;
+        return AZ::Edit::PropertyVisibility::Hide;
+    }
+
+    AZ::Crc32 EditorShapeColliderComponent::SingleSidedVisibility() const
+    {
+        if ((m_shapeType == ShapeType::QuadSingleSided || m_shapeType == ShapeType::QuadDoubleSided)
+            && GetEntity()->FindComponent<EditorRigidBodyComponent>() == nullptr)
+        {
+            return AZ::Edit::PropertyVisibility::Show;
+        }
+
+        return AZ::Edit::PropertyVisibility::Hide;
     }
 
     void EditorShapeColliderComponent::Reflect(AZ::ReflectContext* context)
@@ -74,30 +77,37 @@ namespace PhysX
                 ->Field("DebugDrawSettings", &EditorShapeColliderComponent::m_colliderDebugDraw)
                 ->Field("ShapeConfigs", &EditorShapeColliderComponent::m_shapeConfigs)
                 ->Field("SubdivisionCount", &EditorShapeColliderComponent::m_subdivisionCount)
+                ->Field("SingleSided", &EditorShapeColliderComponent::m_singleSided)
                 ;
 
             if (auto editContext = serializeContext->GetEditContext())
             {
                 editContext->Class<EditorShapeColliderComponent>(
-                    "PhysX Shape Collider", "Creates geometry in the PhysX simulation based on an attached shape component")
+                    "PhysX Shape Collider", "Create a PhysX collider using a shape provided by a Shape component.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
                         ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/PhysXCollider.svg")
                         ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/PhysXCollider.svg")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
+                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
+                        ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/physx/shape-collider/")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorShapeColliderComponent::m_colliderConfig,
-                        "Collider configuration", "Configuration of the collider")
+                        "Collider configuration", "Configuration of the collider.")
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorShapeColliderComponent::OnConfigurationChanged)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorShapeColliderComponent::m_colliderDebugDraw,
-                        "Debug draw settings", "Debug draw settings")
+                        "Debug draw settings", "Debug draw settings.")
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorShapeColliderComponent::m_subdivisionCount, "Subdivision count", "Number of angular subdivisions in the PhysX cylinder")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorShapeColliderComponent::m_subdivisionCount, "Subdivision count",
+                        "Number of angular subdivisions in the PhysX cylinder.")
                         ->Attribute(AZ::Edit::Attributes::Min, Utils::MinFrustumSubdivisions)
                         ->Attribute(AZ::Edit::Attributes::Max, Utils::MaxFrustumSubdivisions)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorShapeColliderComponent::OnSubdivisionCountChange)
                         ->Attribute(AZ::Edit::Attributes::Visibility, &EditorShapeColliderComponent::SubdivisionCountVisibility)
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorShapeColliderComponent::m_singleSided, "Single sided",
+                        "If enabled, planar shapes will only collide from one direction (not valid for shapes attached to dynamic rigid bodies)")
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorShapeColliderComponent::OnSingleSidedChange)
+                        ->Attribute(AZ::Edit::Attributes::Visibility, &EditorShapeColliderComponent::SingleSidedVisibility)
                     ;
             }
         }
@@ -105,22 +115,26 @@ namespace PhysX
 
     void EditorShapeColliderComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("PhysicsWorldBodyService", 0x944da0cc));
-        provided.push_back(AZ_CRC("PhysXColliderService", 0x4ff43f7c));
-        provided.push_back(AZ_CRC("PhysXTriggerService", 0x3a117d7b));
-        provided.push_back(AZ_CRC("PhysXShapeColliderService", 0x98a7e779));
+        provided.push_back(AZ_CRC_CE("PhysicsWorldBodyService"));
+        provided.push_back(AZ_CRC_CE("PhysicsColliderService"));
+        provided.push_back(AZ_CRC_CE("PhysicsTriggerService"));
+        provided.push_back(AZ_CRC_CE("PhysicsShapeColliderService"));
     }
 
     void EditorShapeColliderComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC("TransformService", 0x8ee22c50));
-        required.push_back(AZ_CRC("ShapeService", 0xe86aa5fe));
+        required.push_back(AZ_CRC_CE("TransformService"));
+        required.push_back(AZ_CRC_CE("ShapeService"));
     }
 
     void EditorShapeColliderComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("LegacyCryPhysicsService", 0xbb370351));
-        incompatible.push_back(AZ_CRC("PhysXShapeColliderService", 0x98a7e779));
+        incompatible.push_back(AZ_CRC_CE("PhysicsShapeColliderService"));
+        incompatible.push_back(AZ_CRC_CE("AxisAlignedBoxShapeService"));
+        incompatible.push_back(AZ_CRC_CE("CompoundShapeService"));
+        incompatible.push_back(AZ_CRC_CE("DiskShapeService"));
+        incompatible.push_back(AZ_CRC_CE("TubeShapeService"));
+        incompatible.push_back(AZ_CRC_CE("ReferenceShapeService"));
     }
 
     const AZStd::vector<AZ::Vector3>& EditorShapeColliderComponent::GetSamplePoints() const
@@ -196,6 +210,12 @@ namespace PhysX
                 }
             }
 
+            break;
+        }
+        case ShapeType::QuadSingleSided:
+        case ShapeType::QuadDoubleSided:
+        {
+            // a quad shape has no interior, just return an empty vector of sample points
             break;
         }
         default:
@@ -281,7 +301,7 @@ namespace PhysX
 
     AZ::u32 EditorShapeColliderComponent::OnConfigurationChanged()
     {
-        m_colliderConfig.m_materialSelection.SetMaterialSlots(Physics::MaterialSelection::SlotsArray());
+        m_colliderConfig.m_materialSlots.SetSlots(Physics::MaterialDefaultSlot::Default);
         CreateStaticEditorCollider();
         return AZ::Edit::PropertyRefreshLevels::None;
     }
@@ -323,6 +343,11 @@ namespace PhysX
             UpdateCylinderConfig(uniformScale);
         }
 
+        else if (shapeCrc == ShapeConstants::Quad)
+        {
+            UpdateQuadConfig(overallScale);
+        }
+
         else
         {
             m_shapeType = !shapeCrc ? ShapeType::None : ShapeType::Unsupported;
@@ -340,22 +365,63 @@ namespace PhysX
         LmbrCentral::BoxShapeComponentRequestsBus::EventResult(boxDimensions, GetEntityId(),
             &LmbrCentral::BoxShapeComponentRequests::GetBoxDimensions);
 
-        if (m_shapeType != ShapeType::Box)
-        {
-            m_shapeConfigs.clear();
-            m_shapeConfigs.emplace_back(AZStd::make_shared<Physics::BoxShapeConfiguration>(boxDimensions));
-
-            m_shapeType = ShapeType::Box;
-        }
-        else
-        {
-            Physics::BoxShapeConfiguration& configuration =
-                static_cast<Physics::BoxShapeConfiguration&>(*m_shapeConfigs.back());
-            configuration = Physics::BoxShapeConfiguration(boxDimensions);
-        }
+        SetShapeConfig(ShapeType::Box, Physics::BoxShapeConfiguration(boxDimensions));
 
         m_shapeConfigs.back()->m_scale = scale;
         m_geometryCache.m_boxDimensions = scale * boxDimensions;
+    }
+
+    void EditorShapeColliderComponent::UpdateQuadConfig(const AZ::Vector3& scale)
+    {
+        LmbrCentral::QuadShapeConfig quadShapeConfig;
+        LmbrCentral::QuadShapeComponentRequestBus::EventResult(quadShapeConfig, GetEntityId(),
+            &LmbrCentral::QuadShapeComponentRequests::GetQuadConfiguration);
+
+        const float minDimension = 1e-3f; // used to prevent the dimensions being 0 in any direction
+        const float xDim = AZ::GetMax(minDimension, quadShapeConfig.m_width);
+        const float yDim = AZ::GetMax(minDimension, quadShapeConfig.m_height);
+
+        if (m_singleSided)
+        {
+            AZStd::vector<AZ::u8> cookedData;
+
+            constexpr AZ::u32 vertexCount = 4;
+            const AZ::Vector3 vertices[vertexCount] =
+            {
+                AZ::Vector3(-0.5f * xDim, -0.5f * yDim, 0.0f),
+                AZ::Vector3(-0.5f * xDim, 0.5f * yDim, 0.0f),
+                AZ::Vector3(0.5f * xDim, 0.5f * yDim, 0.0f),
+                AZ::Vector3(0.5f * xDim, -0.5f * yDim, 0.0f),
+            };
+
+            constexpr AZ::u32 indexCount = 6;
+            const AZ::u32 indices[indexCount] =
+            {
+                0, 2, 1,
+                0, 3, 2
+            };
+
+            bool cookingResult = false;
+            Physics::SystemRequestBus::BroadcastResult(cookingResult, &Physics::SystemRequests::CookTriangleMeshToMemory,
+                vertices, vertexCount, indices, indexCount, cookedData);
+
+            Physics::CookedMeshShapeConfiguration shapeConfig;
+            shapeConfig.SetCookedMeshData(cookedData.data(), cookedData.size(),
+                Physics::CookedMeshShapeConfiguration::MeshType::TriangleMesh);
+            shapeConfig.m_scale = scale;
+
+            SetShapeConfig(ShapeType::QuadSingleSided, shapeConfig);
+        }
+        else
+        {
+            // it's not possible to create a perfectly 2d convex in PhysX, so the best we can do is a very thin box
+            const float zDim = AZ::GetMax(minDimension, 1e-3f * AZ::GetMin(xDim, yDim));
+            const AZ::Vector3 boxDimensions(xDim, yDim, zDim);
+
+            SetShapeConfig(ShapeType::QuadDoubleSided, Physics::BoxShapeConfiguration(boxDimensions));
+
+            m_shapeConfigs.back()->m_scale = scale;
+        }
     }
 
     void EditorShapeColliderComponent::UpdateCapsuleConfig(const AZ::Vector3& scale)
@@ -366,19 +432,7 @@ namespace PhysX
         const Physics::CapsuleShapeConfiguration& capsuleShapeConfig =
             Utils::ConvertFromLmbrCentralCapsuleConfig(lmbrCentralCapsuleShapeConfig);
 
-        if (m_shapeType != ShapeType::Capsule)
-        {
-            m_shapeConfigs.clear();
-            m_shapeConfigs.emplace_back(AZStd::make_shared<Physics::CapsuleShapeConfiguration>(capsuleShapeConfig));
-
-            m_shapeType = ShapeType::Capsule;
-        }
-        else
-        {
-            Physics::CapsuleShapeConfiguration& configuration =
-                static_cast<Physics::CapsuleShapeConfiguration&>(*m_shapeConfigs.back());
-            configuration = capsuleShapeConfig;
-        }
+        SetShapeConfig(ShapeType::Capsule, capsuleShapeConfig);
 
         m_shapeConfigs.back()->m_scale = scale;
         const float scalarScale = scale.GetMaxElement();
@@ -392,19 +446,7 @@ namespace PhysX
         LmbrCentral::SphereShapeComponentRequestsBus::EventResult(radius, GetEntityId(),
             &LmbrCentral::SphereShapeComponentRequests::GetRadius);
 
-        if (m_shapeType != ShapeType::Sphere)
-        {
-            m_shapeConfigs.clear();
-            m_shapeConfigs.emplace_back(AZStd::make_shared<Physics::SphereShapeConfiguration>(radius));
-
-            m_shapeType = ShapeType::Sphere;
-        }
-        else
-        {
-            Physics::SphereShapeConfiguration& configuration =
-                static_cast<Physics::SphereShapeConfiguration&>(*m_shapeConfigs.back());
-            configuration = Physics::SphereShapeConfiguration(radius);
-        }
+        SetShapeConfig(ShapeType::Sphere, Physics::SphereShapeConfiguration(radius));
         
         m_shapeConfigs.back()->m_scale = scale;
         m_geometryCache.m_radius = scale.GetMaxElement() * radius;
@@ -447,22 +489,16 @@ namespace PhysX
 
         if (shapeConfig.has_value())
         {
-            if (m_shapeType != ShapeType::Cylinder)
-            {
-                m_shapeConfigs.clear();
-                m_shapeConfigs.push_back(AZStd::make_shared<Physics::CookedMeshShapeConfiguration>(shapeConfig.value()));
-
-                m_shapeType = ShapeType::Cylinder;
-            }
-            else
-            {
-                Physics::CookedMeshShapeConfiguration& configuration =
-                    static_cast<Physics::CookedMeshShapeConfiguration&>(*m_shapeConfigs.back());
-                configuration = Physics::CookedMeshShapeConfiguration(shapeConfig.value());
-            }
+            SetShapeConfig(ShapeType::Cylinder, shapeConfig.value());
 
             CreateStaticEditorCollider();
         }
+    }
+
+    void EditorShapeColliderComponent::OnSingleSidedChange()
+    {
+        UpdateShapeConfigs();
+        CreateStaticEditorCollider();
     }
 
     AZ::u32 EditorShapeColliderComponent::OnSubdivisionCountChange()
@@ -655,7 +691,9 @@ namespace PhysX
             m_editorSceneHandle = m_sceneInterface->GetSceneHandle(AzPhysics::EditorPhysicsSceneName);
         }
 
+        UpdateSingleSidedSettings();
         UpdateShapeConfigs();
+        UpdateTriggerSettings();
 
         // Debug drawing
         m_colliderDebugDraw.Connect(GetEntityId());
@@ -675,7 +713,6 @@ namespace PhysX
         LmbrCentral::ShapeComponentNotificationsBus::Handler::BusDisconnect();
         AZ::TransformNotificationBus::Handler::BusDisconnect();
         AzToolsFramework::EntitySelectionEvents::Bus::Handler::BusDisconnect();
-        AzFramework::EntityDebugDisplayEventBus::Handler::BusDisconnect();
         AzToolsFramework::Components::EditorComponentBase::Deactivate();
 
         if (m_sceneInterface && m_editorBodyHandle != AzPhysics::InvalidSimulatedBodyHandle)
@@ -693,16 +730,11 @@ namespace PhysX
             {
                 physXSystem->RegisterSystemConfigurationChangedEvent(m_physXConfigChangedHandler);
             }
-            if (!m_onMaterialLibraryChangedEventHandler.IsConnected())
-            {
-                physXSystem->RegisterOnMaterialLibraryChangedEventHandler(m_onMaterialLibraryChangedEventHandler);
-            }
         }
     }
 
     void EditorShapeColliderComponent::OnDeselected()
     {
-        m_onMaterialLibraryChangedEventHandler.Disconnect();
         m_physXConfigChangedHandler.Disconnect();
     }
 
@@ -808,6 +840,7 @@ namespace PhysX
         if (changeReason == LmbrCentral::ShapeComponentNotifications::ShapeChangeReasons::ShapeChanged)
         {
             UpdateShapeConfigs();
+            UpdateTriggerSettings();
 
             CreateStaticEditorCollider();
             Physics::ColliderComponentEventBus::Event(GetEntityId(), &Physics::ColliderComponentEvents::OnColliderChanged);
@@ -815,7 +848,8 @@ namespace PhysX
     }
 
     // DisplayCallback
-    void EditorShapeColliderComponent::Display(AzFramework::DebugDisplayRequests& debugDisplay) const
+    void EditorShapeColliderComponent::Display([[maybe_unused]] const AzFramework::ViewportInfo& viewportInfo,
+        AzFramework::DebugDisplayRequests& debugDisplay) const
     {
         // polygon prism is a special case
         if (m_shapeType == ShapeType::PolygonPrism)
@@ -889,5 +923,47 @@ namespace PhysX
     bool EditorShapeColliderComponent::IsTrigger()
     {
         return m_colliderConfig.m_isTrigger;
+    }
+
+    void EditorShapeColliderComponent::UpdateTriggerSettings()
+    {
+        if (m_shapeType == ShapeType::QuadSingleSided || m_shapeType == ShapeType::QuadDoubleSided)
+        {
+            if (!m_previousIsTrigger.has_value())
+            {
+                m_previousIsTrigger = m_colliderConfig.m_isTrigger;
+                m_colliderConfig.m_isTrigger = false;
+            }
+            m_colliderConfig.SetPropertyVisibility(Physics::ColliderConfiguration::PropertyVisibility::IsTrigger, false);
+        }
+        else
+        {
+            if (m_previousIsTrigger.has_value())
+            {
+                m_colliderConfig.m_isTrigger = m_previousIsTrigger.value();
+                m_previousIsTrigger.reset();
+            }
+            m_colliderConfig.SetPropertyVisibility(Physics::ColliderConfiguration::PropertyVisibility::IsTrigger, true);
+        }
+    }
+
+    void EditorShapeColliderComponent::UpdateSingleSidedSettings()
+    {
+        if (GetEntity()->FindComponent<EditorRigidBodyComponent>())
+        {
+            if (!m_previousSingleSided.has_value())
+            {
+                m_previousSingleSided = m_singleSided;
+            }
+            m_singleSided = false;
+        }
+        else
+        {
+            if (m_previousSingleSided.has_value())
+            {
+                m_singleSided = m_previousSingleSided.value();
+                m_previousSingleSided.reset();
+            }
+        }
     }
 } // namespace PhysX

@@ -6,7 +6,7 @@
  *
  */
 #include <Atom/RPI.Public/Shader/Metrics/ShaderMetrics.h>
-#include <AtomCore/Serialization/Json/JsonUtils.h>
+#include <AzCore/Serialization/Json/JsonUtils.h>
 
 namespace AZ
 {

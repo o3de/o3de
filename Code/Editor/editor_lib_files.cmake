@@ -249,8 +249,6 @@ set(FILES
     CryEditPy.cpp
     CryEdit.cpp
     CryEdit.h
-    CVarMenu.cpp
-    CVarMenu.h
     EditorToolsApplication.cpp
     EditorToolsApplication.h
     EditorToolsApplicationAPI.h
@@ -259,6 +257,8 @@ set(FILES
     MainWindow.cpp
     MainWindow.h
     MainWindow.qrc
+    Core/EditorActionsHandler.cpp
+    Core/EditorActionsHandler.h
     Core/QtEditorApplication.cpp
     Core/QtEditorApplication.h
     Core/LevelEditorMenuHandler.cpp
@@ -269,17 +269,9 @@ set(FILES
     LevelTreeModel.h
     Include/Command.h
     Include/HitContext.h
-    Include/IAnimationCompressionManager.h
-    Include/IAssetItem.h
-    Include/IAssetItemDatabase.h
     Include/ICommandManager.h
-    Include/IConsoleConnectivity.h
-    Include/IDataBaseItem.h
-    Include/IDataBaseLibrary.h
-    Include/IDataBaseManager.h
     Include/IDisplayViewport.h
     Include/IEditorClassFactory.h
-    Include/IEventLoopHook.h
     Include/IExportManager.h
     Include/IGizmoManager.h
     Include/IIconManager.h
@@ -288,19 +280,12 @@ set(FILES
     Include/IObjectManager.h
     Include/IPlugin.h
     Include/IPreferencesPage.h
-    Include/IRenderListener.h
-    Include/IResourceSelectorHost.h
     Include/ISourceControl.h
-    Include/ISubObjectSelectionReferenceFrameCalculator.h
-    Include/ITextureDatabaseUpdater.h
     Include/ITransformManipulator.h
-    Include/IViewPane.h
     Include/ObjectEvent.h
     Util/AffineParts.cpp
     Objects/BaseObject.cpp
     Objects/BaseObject.h
-    Animation/AnimationBipedBoneNames.cpp
-    Animation/AnimationBipedBoneNames.h
     AnimationContext.cpp
     AnimationContext.h
     AzAssetBrowser/AzAssetBrowserRequestHandler.cpp
@@ -330,54 +315,32 @@ set(FILES
     AssetEditor/AssetEditorWindow.ui
     Commands/CommandManager.cpp
     Commands/CommandManager.h
-    Controls/BitmapToolTip.cpp
-    Controls/BitmapToolTip.h
-    Controls/ColorGradientCtrl.cpp
-    Controls/ColorGradientCtrl.h
     Controls/ConsoleSCB.cpp
     Controls/ConsoleSCB.h
     Controls/ConsoleSCB.ui
     Controls/ConsoleSCB.qrc
     Controls/FolderTreeCtrl.cpp
     Controls/FolderTreeCtrl.h
-    Controls/HotTrackingTreeCtrl.cpp
-    Controls/HotTrackingTreeCtrl.h
     Controls/ImageHistogramCtrl.cpp
     Controls/ImageHistogramCtrl.h
-    Controls/ImageListCtrl.cpp
-    Controls/ImageListCtrl.h
-    Controls/MultiMonHelper.cpp
-    Controls/MultiMonHelper.h
-    Controls/NumberCtrl.cpp
-    Controls/NumberCtrl.h
-    Controls/NumberCtrl.h
     Controls/SplineCtrl.cpp
     Controls/SplineCtrl.h
     Controls/SplineCtrlEx.cpp
     Controls/SplineCtrlEx.h
-    Controls/TextEditorCtrl.cpp
-    Controls/TextEditorCtrl.h
     Controls/TimelineCtrl.cpp
     Controls/TimelineCtrl.h
     Controls/WndGridHelper.h
-    Controls/ReflectedPropertyControl/PropertyAnimationCtrl.cpp
-    Controls/ReflectedPropertyControl/PropertyAnimationCtrl.h
     Controls/ReflectedPropertyControl/PropertyGenericCtrl.cpp
     Controls/ReflectedPropertyControl/PropertyGenericCtrl.h
     Controls/ReflectedPropertyControl/PropertyMiscCtrl.cpp
     Controls/ReflectedPropertyControl/PropertyMiscCtrl.h
     Controls/ReflectedPropertyControl/PropertyMotionCtrl.cpp
     Controls/ReflectedPropertyControl/PropertyMotionCtrl.h
-    Controls/ReflectedPropertyControl/PropertyResourceCtrl.cpp
-    Controls/ReflectedPropertyControl/PropertyResourceCtrl.h
     Controls/ReflectedPropertyControl/PropertyCtrl.cpp
     Controls/ReflectedPropertyControl/PropertyCtrl.h
-    Controls/ReflectedPropertyControl/ReflectedPropertiesPanel.cpp
-    Controls/ReflectedPropertyControl/ReflectedPropertiesPanel.h
     MainStatusBar.cpp
     MainStatusBar.h
     MainStatusBarItems.h
-    CrtDebug.cpp
     CryEdit.rc
     CryEditDoc.cpp
     CryEditDoc.h
@@ -388,14 +351,10 @@ set(FILES
     LogFile.cpp
     LogFile.h
     Resource.h
-    UserMessageDefines.h
     ActionManager.cpp
     ActionManager.h
     ShortcutDispatcher.cpp
     ShortcutDispatcher.h
-    BaseLibraryManager.cpp
-    BaseLibraryItem.h
-    BaseLibraryManager.h
     CheckOutDialog.cpp
     CheckOutDialog.h
     CheckOutDialog.ui
@@ -427,12 +386,6 @@ set(FILES
     QuickAccessBar.cpp
     QuickAccessBar.h
     QuickAccessBar.ui
-    ResizeResolutionDialog.cpp
-    ResizeResolutionDialog.h
-    ResizeResolutionDialog.ui
-    SelectEAXPresetDlg.cpp
-    SelectEAXPresetDlg.h
-    SelectEAXPresetDlg.ui
     SelectLightAnimationDialog.cpp
     SelectLightAnimationDialog.h
     SelectSequenceDialog.cpp
@@ -454,9 +407,6 @@ set(FILES
     IconListDialog.ui
     UndoDropDown.cpp
     UndoDropDown.h
-    DimensionsDialog.cpp
-    DimensionsDialog.h
-    DimensionsDialog.ui
     NewLevelDialog.cpp
     NewLevelDialog.h
     NewLevelDialog.ui
@@ -465,8 +415,6 @@ set(FILES
     Dialogs/PythonScriptsDialog.ui
     Dialogs/Generic/UserOptions.cpp
     Dialogs/Generic/UserOptions.h
-    EditMode/SubObjectSelectionReferenceFrameCalculator.cpp
-    EditMode/SubObjectSelectionReferenceFrameCalculator.h
     Export/ExportManager.cpp
     Export/ExportManager.h
     Export/OBJExporter.cpp
@@ -480,41 +428,25 @@ set(FILES
     GameResourcesExporter.cpp
     GameExporter.h
     GameResourcesExporter.h
-    Geometry/TriMesh.cpp
-    Geometry/TriMesh.h
     AboutDialog.h
     AboutDialog.ui
     DocMultiArchive.h
-    EditMode/DeepSelection.h
     FBXExporterDialog.h
     FileTypeUtils.h
     GridUtils.h
-    IObservable.h
     IPostRenderer.h
-    LightmapCompiler/SimpleTriangleRasterizer.h
     ToolBox.h
     TrackViewNewSequenceDialog.h
-    UndoConfigSpec.h
-    UndoViewPosition.h
-    UndoViewRotation.h
     Util/GeometryUtil.h
-    Util/IXmlHistoryManager.h
-    Util/KDTree.h
-    Util/XmlHistoryManager.h
-    WipFeaturesDlg.h
-    WipFeaturesDlg.ui
-    WipFeaturesDlg.qrc
     LevelIndependentFileMan.cpp
     LevelIndependentFileMan.h
     LogFileImpl.cpp
     LogFileImpl.h
     Objects/ClassDesc.cpp
     Objects/ClassDesc.h
-    Objects/IEntityObjectListener.h
+    Objects/DisplayContextShared.inl
     Objects/SelectionGroup.cpp
     Objects/SelectionGroup.h
-    Objects/SubObjSelection.cpp
-    Objects/SubObjSelection.h
     Objects/ObjectLoader.cpp
     Objects/ObjectLoader.h
     Objects/ObjectManager.cpp
@@ -539,8 +471,6 @@ set(FILES
     PythonEditorFuncs.h
     QtUI/QCollapsibleGroupBox.h
     QtUI/QCollapsibleGroupBox.cpp
-    QtUI/ClickableLabel.h
-    QtUI/ClickableLabel.cpp
     QtUI/PixmapLabelPreview.h
     QtUI/PixmapLabelPreview.cpp
     QtUI/WaitCursor.h
@@ -563,10 +493,10 @@ set(FILES
     EditorPreferencesPageFiles.cpp
     EditorPreferencesPageViewportGeneral.h
     EditorPreferencesPageViewportGeneral.cpp
-    EditorPreferencesPageViewportGizmo.h
-    EditorPreferencesPageViewportGizmo.cpp
-    EditorPreferencesPageViewportMovement.h
-    EditorPreferencesPageViewportMovement.cpp
+    EditorPreferencesPageViewportManipulator.h
+    EditorPreferencesPageViewportManipulator.cpp
+    EditorPreferencesPageViewportCamera.h
+    EditorPreferencesPageViewportCamera.cpp
     EditorPreferencesPageViewportDebug.h
     EditorPreferencesPageViewportDebug.cpp
     EditorPreferencesPageExperimentalLighting.h
@@ -587,22 +517,12 @@ set(FILES
     AboutDialog.cpp
     ErrorReportTableModel.h
     ErrorReportTableModel.cpp
-    EditMode/DeepSelection.cpp
     FBXExporterDialog.cpp
     FBXExporterDialog.ui
     FileTypeUtils.cpp
-    LightmapCompiler/SimpleTriangleRasterizer.cpp
-    ResourceSelectorHost.cpp
-    ResourceSelectorHost.h
     ToolBox.cpp
     TrackViewNewSequenceDialog.cpp
     TrackViewNewSequenceDialog.ui
-    UndoConfigSpec.cpp
-    UndoViewPosition.cpp
-    UndoViewRotation.cpp
-    WipFeatureManager.cpp
-    WipFeatureManager.h
-    WipFeaturesDlg.cpp
     Dialogs/ErrorsDlg.cpp
     Dialogs/ErrorsDlg.h
     Dialogs/ErrorsDlg.ui
@@ -614,13 +534,8 @@ set(FILES
     ErrorReport.h
     IconManager.cpp
     IconManager.h
-    LevelInfo.cpp
-    LevelInfo.h
     ProcessInfo.cpp
     ProcessInfo.h
-    Report.h
-    SurfaceTypeValidator.cpp
-    SurfaceTypeValidator.h
     TrackView/AtomOutputFrameCapture.cpp
     TrackView/AtomOutputFrameCapture.h
     TrackView/TrackViewDialog.qrc
@@ -667,10 +582,10 @@ set(FILES
     TrackView/TVCustomizeTrackColorsDlg.cpp
     TrackView/TVCustomizeTrackColorsDlg.h
     TrackViewFBXImportPreviewDialog.h
+    TrackView/KeyUIControls.h
     TrackView/2DBezierKeyUIControls.cpp
     TrackView/AssetBlendKeyUIControls.cpp
     TrackView/CaptureKeyUIControls.cpp
-    TrackView/CharacterKeyUIControls.cpp
     TrackView/ConsoleKeyUIControls.cpp
     TrackView/EventKeyUIControls.cpp
     TrackView/GotoKeyUIControls.cpp
@@ -700,16 +615,12 @@ set(FILES
     TrackView/TrackViewSequence.h
     TrackView/TrackViewNodeFactories.h
     TrackView/TrackViewEventNode.h
-    ConfigGroup.cpp
-    ConfigGroup.h
     Util/AffineParts.h
     Util/AutoLogTime.cpp
     Util/AutoLogTime.h
     Util/AutoDirectoryRestoreFileDialog.h
     Util/AutoDirectoryRestoreFileDialog.cpp
     Util/CryMemFile.h
-    Util/DynamicArray2D.cpp
-    Util/DynamicArray2D.h
     Util/EditorAutoLevelLoadTest.cpp
     Util/EditorAutoLevelLoadTest.h
     Util/EditorUtils.cpp
@@ -718,38 +629,24 @@ set(FILES
     Util/FileEnum.h
     Util/FileUtil.cpp
     Util/FileUtil.h
-    Util/GdiUtil.cpp
-    Util/GdiUtil.h
     Util/GeometryUtil.cpp
     Util/GuidUtil.cpp
     Util/GuidUtil.h
-    Util/IObservable.h
-    Util/IndexedFiles.cpp
-    Util/IndexedFiles.h
-    Util/KDTree.cpp
     Util/Mailer.h
     Util/NamedData.cpp
     Util/NamedData.h
-    Util/Observable.h
     Util/PakFile.cpp
     Util/PakFile.h
     Util/PredefinedAspectRatios.cpp
     Util/PredefinedAspectRatios.h
     Util/StringHelpers.cpp
     Util/StringHelpers.h
-    Util/StringNoCasePredicate.h
-    Util/TRefCountBase.h
-    Util/Triangulate.cpp
-    Util/Triangulate.h
     Util/Util.h
     Util/XmlArchive.cpp
     Util/XmlArchive.h
-    Util/XmlHistoryManager.cpp
     Util/XmlTemplate.cpp
     Util/XmlTemplate.h
-    Util/bitarray.h
     Util/fastlib.h
-    Util/smartptr.h
     WaitProgress.cpp
     WaitProgress.h
     Util/FileUtil_impl.h
@@ -778,17 +675,11 @@ set(FILES
     Util/FileChangeMonitor.h
     Util/ImageUtil.cpp
     Util/ImageUtil.h
-    Util/ImageASC.cpp
-    Util/ImageASC.h
-    Util/ImageBT.cpp
-    Util/ImageBT.h
     Util/ImageGif.cpp
     Util/ImageGif.h
     Util/ImageTIF.cpp
     Util/ImageTIF.h
     Util/Math.h
-    Util/UIEnumerations.cpp
-    Util/UIEnumerations.h
     WelcomeScreen/WelcomeScreenDialog.h
     WelcomeScreen/WelcomeScreenDialog.cpp
     WelcomeScreen/WelcomeScreenDialog.ui
@@ -803,12 +694,11 @@ set(FILES
     EditorViewportSettings.h
     EditorViewportCamera.cpp
     EditorViewportCamera.h
+    EditorModularViewportCameraComposer.cpp
+    EditorModularViewportCameraComposer.h
+    EditorModularViewportCameraComposerBus.h
     ViewportManipulatorController.cpp
     ViewportManipulatorController.h
-    LegacyViewportCameraController.cpp
-    LegacyViewportCameraController.h
-    RenderViewport.cpp
-    RenderViewport.h
     TopRendererWnd.cpp
     TopRendererWnd.h
     ViewManager.cpp
@@ -822,9 +712,6 @@ set(FILES
     ViewportTitleDlg.h
     EditorEnvironment.cpp
     EditorEnvironment.h
-    IEditorPanelUtils.h
-    EditorPanelUtils.h
-    EditorPanelUtils.cpp
 )
 
 

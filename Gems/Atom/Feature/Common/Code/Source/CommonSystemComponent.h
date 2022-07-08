@@ -12,19 +12,20 @@
 
 #include <Atom/RPI.Public/Pass/PassSystemInterface.h>
 
-#if AZ_TRAIT_LUXCORE_SUPPORTED
-#include "LuxCore/LuxCoreRenderer.h"
-#endif
-
 namespace AZ
 {
     namespace Render
     {
+        class ModelReloaderSystem;
+
         class CommonSystemComponent
             : public AZ::Component
         {
         public:
             AZ_COMPONENT(CommonSystemComponent, "{BFB8FE2B-C952-4D0C-8E32-4FE7C7A97757}");
+
+            CommonSystemComponent();
+            ~CommonSystemComponent();
 
             static void Reflect(AZ::ReflectContext* context);
 
@@ -44,10 +45,7 @@ namespace AZ
 
             RPI::PassSystemInterface::OnReadyLoadTemplatesEvent::Handler m_loadTemplatesHandler;
 
-#if AZ_TRAIT_LUXCORE_SUPPORTED
-            // LuxCore
-            LuxCoreRenderer m_luxCore;
-#endif
+            AZStd::unique_ptr<ModelReloaderSystem> m_modelReloaderSystem;
         };
     } // namespace Render
 } // namespace AZ

@@ -47,6 +47,6 @@ namespace EMotionFX
     private:
         void*                                       m_object;
         AzToolsFramework::ReflectedPropertyEditor*  m_propertyEditor;
-        static const int                            m_propertyLabelWidth;
+        static const int                            s_propertyLabelWidth;
     };
 } // namespace EMotionFX

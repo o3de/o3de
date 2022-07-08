@@ -75,7 +75,7 @@ namespace AzFramework
     {
     public:
         AZ_RTTI(GenericAssetHandlerBase, "{B153B8B5-25CC-4BB7-A2BD-9A47ECF4123C}", AZ::Data::AssetHandler);
-        virtual ~GenericAssetHandlerBase() {}
+        virtual ~GenericAssetHandlerBase() = default;
     };
 
     template <typename AssetType>
@@ -186,7 +186,7 @@ namespace AzFramework
             }
         }
 
-        bool CanHandleAsset(const AZ::Data::AssetId& id) const
+        bool CanHandleAsset(const AZ::Data::AssetId& id) const override
         {
             AZStd::string assetPath;
             EBUS_EVENT_RESULT(assetPath, AZ::Data::AssetCatalogRequestBus, GetAssetPathById, id);

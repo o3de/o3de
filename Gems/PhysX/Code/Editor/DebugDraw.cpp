@@ -13,12 +13,12 @@
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
-#include <AzFramework/Physics/MaterialBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <LyViewPaneNames.h>
 #include <LmbrCentral/Geometry/GeometrySystemComponentBus.h>
 #include <Source/Utils.h>
 
+#include <PhysX/Material/PhysXMaterial.h>
 #include <PhysX/Debug/PhysXDebugInterface.h>
 #include <PhysX/MathConversion.h>
 
@@ -56,9 +56,9 @@ namespace PhysX
         bool IsDrawColliderReadOnly()
         {
             bool helpersVisible = false;
-            AzToolsFramework::EditorRequestBus::BroadcastResult(helpersVisible,
-                &AzToolsFramework::EditorRequests::DisplayHelpersVisible);
-            // if helpers are visible, draw colliders is NOT read only and can be changed.
+            AzToolsFramework::ViewportInteraction::ViewportSettingsRequestBus::BroadcastResult(
+                helpersVisible, &AzToolsFramework::ViewportInteraction::ViewportSettingsRequestBus::Events::HelpersVisible);
+            // if helpers are visible, draw colliders is not read only and can be changed
             return !helpersVisible;
         }
 
@@ -139,7 +139,6 @@ namespace PhysX
                 serializeContext->Class<Collider>()
                     ->Version(1)
                     ->Field("LocallyEnabled", &Collider::m_locallyEnabled)
-                    ->Field("GlobalButtonState", &Collider::m_globalButtonState)
                     ;
 
                 if (auto editContext = serializeContext->GetEditContext())
@@ -148,16 +147,16 @@ namespace PhysX
                     using VisibilityFunc = bool(*)();
 
                     editContext->Class<Collider>(
-                        "PhysX Collider Debug Draw", "Manages global and per-collider debug draw settings and logic")
+                        "PhysX Collider Debug Draw", "Global and per-collider debug draw preferences.")
                         ->DataElement(AZ::Edit::UIHandlers::CheckBox, &Collider::m_locallyEnabled, "Draw collider",
-                            "Shows the geometry for the collider in the viewport")
+                            "Display collider geometry in the viewport.")
                             ->Attribute(AZ::Edit::Attributes::CheckboxTooltip,
                                 "If set, the geometry of this collider is visible in the viewport. 'Draw Helpers' needs to be enabled to use.")
                             ->Attribute(AZ::Edit::Attributes::Visibility,
                                 VisibilityFunc{ []() { return IsGlobalColliderDebugCheck(GlobalCollisionDebugState::Manual); } })
                             ->Attribute(AZ::Edit::Attributes::ReadOnly, &IsDrawColliderReadOnly)
-                        ->DataElement(AZ::Edit::UIHandlers::Button, &Collider::m_globalButtonState, "Draw collider",
-                            "Shows the geometry for the collider in the viewport")
+                        ->UIElement(AZ::Edit::UIHandlers::Button, "Draw collider",
+                            "Display collider geometry in the viewport.")
                             ->Attribute(AZ::Edit::Attributes::ButtonText, "Global override")
                             ->Attribute(AZ::Edit::Attributes::ButtonTooltip,
                                 "A global setting is overriding this property (to disable the override, "
@@ -216,6 +215,11 @@ namespace PhysX
             m_geometry.clear();
         }
 
+        void Collider::SetDisplayFlag(bool enable)
+        {
+            m_locallyEnabled = enable;
+        }
+
         void Collider::BuildMeshes(const Physics::ShapeConfiguration& shapeConfig, AZ::u32 geomIndex) const
         {
             if (m_geometry.size() <= geomIndex)
@@ -264,7 +268,11 @@ namespace PhysX
             case Physics::ShapeType::CookedMesh:
             {
                 const auto& cookedMeshConfig = static_cast<const Physics::CookedMeshShapeConfiguration&>(shapeConfig);
-                physx::PxBase* meshData = static_cast<physx::PxBase*>(cookedMeshConfig.GetCachedNativeMesh());
+                const physx::PxBase* constMeshData = static_cast<const physx::PxBase*>(cookedMeshConfig.GetCachedNativeMesh());
+
+                // Specifically removing the const from the meshData pointer because the physx APIs expect this pointer to be non-const.
+                physx::PxBase* meshData = const_cast<physx::PxBase*>(constMeshData);
+
                 if (meshData)
                 {
                     if (meshData->is<physx::PxTriangleMesh>())
@@ -438,16 +446,13 @@ namespace PhysX
             {
             case GlobalCollisionDebugColorMode::MaterialColor:
             {
-                const Physics::MaterialId materialId = colliderConfig.m_materialSelection.GetMaterialId(elementDebugInfo.m_materialSlotIndex);
+                const auto materialAsset = colliderConfig.m_materialSlots.GetMaterialAsset(elementDebugInfo.m_materialSlotIndex);
 
-                AZStd::shared_ptr<Physics::Material> physicsMaterial;
-                Physics::PhysicsMaterialRequestBus::BroadcastResult(
-                    physicsMaterial,
-                    &Physics::PhysicsMaterialRequestBus::Events::GetMaterialById,
-                    materialId);
-                if (physicsMaterial)
+                AZStd::shared_ptr<Material> material = Material::FindOrCreateMaterial(materialAsset);
+
+                if (material)
                 {
-                    debugColor = physicsMaterial->GetDebugColor();
+                    debugColor = material->GetDebugColor();
                 }
                 break;
             }
@@ -676,7 +681,59 @@ namespace PhysX
             }
         }
 
-        AZ::Transform Collider::GetColliderLocalTransform(const Physics::ColliderConfiguration& colliderConfig,
+        void Collider::DrawHeightfield(
+            AzFramework::DebugDisplayRequests& debugDisplay,
+            const AZ::Vector3& aabbCenterLocalBody,
+            float drawDistance,
+            const AZStd::shared_ptr<const Physics::Shape>& shape) const
+        {
+            // Shape::GetGeometry expects the bounding box in local space
+            const AZ::Vector3 shapeOffset = shape->GetLocalPose().first;
+            const AZ::Vector3 aabbCenterLocalShape = aabbCenterLocalBody - shapeOffset;
+
+            // Create the bounds box of the required size
+            const AZ::Aabb boundsAabb = AZ::Aabb::CreateCenterRadius(aabbCenterLocalShape, drawDistance);
+            if (!boundsAabb.IsValid())
+            {
+                return;
+            }
+
+            // Extract the heightfield geometry within the bounds
+            AZStd::vector<AZ::Vector3> vertices;
+            AZStd::vector<AZ::u32> indices;
+            shape->GetGeometry(vertices, indices, &boundsAabb);
+
+            if (!vertices.empty())
+            {
+                // Each heightfield quad consists of 6 vertices, or 2 triangles.
+                // If we naively draw each triangle, we'll need 6 lines per quad. However, the diagonal line would be drawn twice,
+                // and the quad borders with adjacent quads would also be drawn twice, so we can reduce this down to 3 lines, so
+                // that we're drawing a per-quad pattern like this:
+                // 2 --- 3
+                //   |\
+                // 0 | \ 1
+                //  
+                // To draw 3 lines, we need 6 vertices. Because our results *already* have 6 vertices per quad, we just need to make
+                // sure each set of 6 is the *right* set of vertices for what we want to draw, and then we can submit the entire set
+                // directly to DrawLines().
+                // We currently get back 6 vertices in the pattern 0-1-2, 1-3-2, for our two triangles. The lines we want to draw
+                // are 0-2, 2-1, and 3-2. We can create this pattern by just copying the third vertex onto the second vertex for
+                // every quad so that 0 1 2 1 3 2 becomes 0 2 2 1 3 2.
+                for (size_t vertex = 0; vertex < vertices.size(); vertex += 6)
+                {
+                    vertices[vertex + 1] = vertices[vertex + 2];
+                }
+
+                // Returned vertices are in the shape-local space, so need to adjust the debug display matrix
+                const AZ::Transform shapeOffsetTransform = AZ::Transform::CreateTranslation(shapeOffset);
+                debugDisplay.PushMatrix(shapeOffsetTransform);
+                debugDisplay.DrawLines(vertices, AZ::Colors::White);
+                debugDisplay.PopMatrix();
+            }
+        }
+
+        AZ::Transform Collider::GetColliderLocalTransform(
+            const Physics::ColliderConfiguration& colliderConfig,
             const AZ::Vector3& colliderScale) const
         {
             // Apply entity world transform scale to collider offset
@@ -714,8 +771,7 @@ namespace PhysX
         }
 
         // AzFramework::EntityDebugDisplayEventBus
-        void Collider::DisplayEntityViewport(
-            [[maybe_unused]] const AzFramework::ViewportInfo& viewportInfo,
+        void Collider::DisplayEntityViewport(const AzFramework::ViewportInfo& viewportInfo,
             AzFramework::DebugDisplayRequests& debugDisplay)
         {
             if (!m_displayCallback)
@@ -748,7 +804,7 @@ namespace PhysX
                     || (proximityVisualization.m_enabled && colliderIsInRange))
                 {
                     debugDisplay.PushMatrix(entityWorldTransformWithoutScale);
-                    m_displayCallback->Display(debugDisplay);
+                    m_displayCallback->Display(viewportInfo, debugDisplay);
                     debugDisplay.PopMatrix();
                 }
             }

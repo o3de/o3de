@@ -10,22 +10,19 @@
 
 namespace AzNetworking
 {
-    StringifySerializer::StringifySerializer(char delimeter, bool outputFieldNames, const AZStd::string& seperator)
-        : m_delimeter(delimeter)
-        , m_outputFieldNames(outputFieldNames)
-        , m_separator(seperator)
+    StringifySerializer::StringifySerializer()
     {
         ;
     }
 
-    const AZStd::string& StringifySerializer::GetString() const
+    StringifySerializer::~StringifySerializer()
     {
-        return m_string;
+        ;
     }
 
-    const StringifySerializer::StringMap& StringifySerializer::GetValueMap() const
+    const StringifySerializer::ValueMap& StringifySerializer::GetValueMap() const
     {
-        return m_map;
+        return m_valueMap;
     }
 
     SerializerMode StringifySerializer::GetSerializerMode() const
@@ -104,7 +101,7 @@ namespace AzNetworking
         return false;
     }
 
-    bool StringifySerializer::BeginObject(const char* name, const char*)
+    bool StringifySerializer::BeginObject(const char* name)
     {
         m_prefixSizeStack.push_back(m_prefix.size());
         m_prefix += name;
@@ -112,7 +109,7 @@ namespace AzNetworking
         return true;
     }
 
-    bool StringifySerializer::EndObject(const char*, const char*)
+    bool StringifySerializer::EndObject(const char*)
     {
         m_prefix.resize(m_prefixSizeStack.back());
         m_prefixSizeStack.pop_back();
@@ -137,22 +134,9 @@ namespace AzNetworking
     template <typename T>
     bool StringifySerializer::ProcessData(const char* name, const T& value)
     {
-        // Only add delimeters after we have processed at least one element
-        if (!m_string.empty())
-        {
-            m_string += m_delimeter;
-        }
-
-        if (m_outputFieldNames)
-        {
-            m_string += m_prefix;
-            m_string += name;
-            m_string += m_separator;
-        }
-
-        AZ::CVarFixedString string = AZ::ConsoleTypeHelpers::ValueToString(value);
-        m_string += string.c_str();
-        m_map[m_prefix + name] = string.c_str();
+        const AZStd::string keyString = m_prefix + name;
+        AZ::CVarFixedString valueString = AZ::ConsoleTypeHelpers::ValueToString(value);
+        m_valueMap[keyString] = valueString.c_str();
         return true;
     }
 }

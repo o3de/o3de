@@ -110,7 +110,7 @@ namespace EMotionFX
         {
             AZStd::unique_ptr<EMotionFX::Parameter> newParameter(EMotionFX::ParameterFactory::Create(azrtti_typeid<FloatSliderParameter>()));
             newParameter->SetName("Parameter1");
-            CommandSystem::ConstructCreateParameterCommand(commandString, m_animGraph.get(), newParameter.get(), MCORE_INVALIDINDEX32);
+            CommandSystem::ConstructCreateParameterCommand(commandString, m_animGraph.get(), newParameter.get(), InvalidIndex);
             EXPECT_TRUE(commandManager.ExecuteCommand(commandString, result)) << result.c_str();
         }
 
@@ -119,7 +119,7 @@ namespace EMotionFX
         {
             AZStd::unique_ptr<EMotionFX::Parameter> newParameter(EMotionFX::ParameterFactory::Create(azrtti_typeid<FloatSliderParameter>()));
             newParameter->SetName(parameterName);
-            CommandSystem::ConstructCreateParameterCommand(commandString, m_animGraph.get(), newParameter.get(), MCORE_INVALIDINDEX32);
+            CommandSystem::ConstructCreateParameterCommand(commandString, m_animGraph.get(), newParameter.get(), InvalidIndex);
             EXPECT_TRUE(commandManager.ExecuteCommand(commandString, result)) << result.c_str();
         }
 
@@ -127,7 +127,8 @@ namespace EMotionFX
         action->Reinit();
 
         AZ::Outcome<size_t> parameterIndex = m_animGraph->FindValueParameterIndexByName(parameterName);
-        EXPECT_TRUE(parameterIndex.IsSuccess() && parameterIndex.GetValue() == 1) << "Parameter2 should be at the 2nd position.";
+        ASSERT_TRUE(parameterIndex.IsSuccess());
+        EXPECT_EQ(parameterIndex.GetValue(), 1) << "Parameter2 should be at the 2nd position.";
 
         // 1. Move Parameter2 from the 2nd place to the 1st place.
         commandString = AZStd::string::format("AnimGraphMoveParameter -animGraphID %d -name \"%s\" -index %d ",
@@ -136,19 +137,19 @@ namespace EMotionFX
             0);
         EXPECT_TRUE(commandManager.ExecuteCommand(commandString, result)) << result.c_str();
         parameterIndex = m_animGraph->FindValueParameterIndexByName(parameterName);
-        EXPECT_TRUE(parameterIndex.IsSuccess() && parameterIndex.GetValue() == 0) << "Parameter2 should now be at the 1st position.";
+        ASSERT_TRUE(parameterIndex.IsSuccess() && parameterIndex.GetValue() == 0) << "Parameter2 should now be at the 1st position.";
         EXPECT_EQ(parameterIndex.GetValue(), action->GetParameterIndex().GetValue()) << "The action should now refer to the 1st parameter in the anim graph.";
 
         // 2. Undo.
         EXPECT_TRUE(commandManager.Undo(result)) << result.c_str();
         parameterIndex = m_animGraph->FindValueParameterIndexByName(parameterName);
-        EXPECT_TRUE(parameterIndex.IsSuccess() && parameterIndex.GetValue() == 1) << "Parameter2 should now be back at the 2nd position.";
+        ASSERT_TRUE(parameterIndex.IsSuccess() && parameterIndex.GetValue() == 1) << "Parameter2 should now be back at the 2nd position.";
         EXPECT_EQ(parameterIndex.GetValue(), action->GetParameterIndex().GetValue()) << "The action should now refer to the 2nd parameter in the anim graph.";
 
         // 3. Redo.
         EXPECT_TRUE(commandManager.Redo(result)) << result.c_str();
         parameterIndex = m_animGraph->FindValueParameterIndexByName(parameterName);
-        EXPECT_TRUE(parameterIndex.IsSuccess() && parameterIndex.GetValue() == 0) << "Parameter2 should now be back at the 1st position.";
+        ASSERT_TRUE(parameterIndex.IsSuccess() && parameterIndex.GetValue() == 0) << "Parameter2 should now be back at the 1st position.";
         EXPECT_EQ(parameterIndex.GetValue(), action->GetParameterIndex().GetValue()) << "The action should now refer to the 1st parameter in the anim graph.";
     }
 }

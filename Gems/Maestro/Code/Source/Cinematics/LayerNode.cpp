@@ -57,8 +57,6 @@ void CLayerNode::Initialize()
 //-----------------------------------------------------------------------------
 void CLayerNode::Animate(SAnimContext& ec)
 {
-    bool bVisibilityModified = false;
-
     int trackCount = NumTracks();
     for (int paramIndex = 0; paramIndex < trackCount; paramIndex++)
     {
@@ -93,14 +91,12 @@ void CLayerNode::Animate(SAnimContext& ec)
                     if (visible != m_bPreVisibility)
                     {
                         m_bPreVisibility = visible;
-                        bVisibilityModified = true;
                     }
                 }
                 else
                 {
                     m_bInit = true;
                     m_bPreVisibility = visible;
-                    bVisibilityModified = true;
                 }
             }
             break;
@@ -144,7 +140,7 @@ unsigned int CLayerNode::GetParamCount() const
 //-----------------------------------------------------------------------------
 CAnimParamType CLayerNode::GetParamType(unsigned int nIndex) const
 {
-    if (nIndex >= 0 && nIndex < (int)s_nodeParams.size())
+    if (nIndex < (int)s_nodeParams.size())
     {
         return s_nodeParams[nIndex].paramType;
     }

@@ -27,8 +27,8 @@ namespace GraphCanvas
 
         void AddIconColorPalette(const AZStd::string& colorPalette);
         
-        void OnStylesUnloaded();
-        void OnStylesLoaded();
+        void OnStylesUnloaded() override;
+        void OnStylesLoaded() override;
             
     protected:
 

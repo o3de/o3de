@@ -45,6 +45,7 @@ namespace AZ
             void BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context) override;
 
             // Pass overrides
+            bool IsEnabled() const override;
             void FrameBeginInternal(FramePrepareParams params) override;
 
             // revision number of the ray tracing TLAS when the shader table was built

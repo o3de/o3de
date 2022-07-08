@@ -6,9 +6,16 @@
  *
  */
 
+#include <AzCore/Interface/Interface.h>
+#include <AzCore/std/smart_ptr/shared_ptr.h>
+
 #include <Activity/AWSGameLiftActivityUtils.h>
 #include <Activity/AWSGameLiftCreateSessionActivity.h>
 #include <AWSGameLiftSessionConstants.h>
+#include <Request/IAWSGameLiftInternalRequests.h>
+
+#include <aws/core/utils/Outcome.h>
+#include <aws/gamelift/model/CreateGameSessionRequest.h>
 
 namespace AWSGameLift
 {
@@ -48,7 +55,7 @@ namespace AWSGameLift
             {
                 request.SetFleetId(createSessionRequest.m_fleetId.c_str());
             }
-            request.SetMaximumPlayerSessionCount(createSessionRequest.m_maxPlayer);
+            request.SetMaximumPlayerSessionCount(static_cast<int>(createSessionRequest.m_maxPlayer));
 
             AZ_TracePrintf(AWSGameLiftCreateSessionActivityName,
                 "Built CreateGameSessionRequest with CreatorId=%s, Name=%s, IdempotencyToken=%s, GameProperties=%s, AliasId=%s, FleetId=%s and MaximumPlayerSessionCount=%d",
@@ -63,15 +70,21 @@ namespace AWSGameLift
             return request;
         }
 
-        AZStd::string CreateSession(
-            const Aws::GameLift::GameLiftClient& gameliftClient,
-            const AWSGameLiftCreateSessionRequest& createSessionRequest)
+        AZStd::string CreateSession(const AWSGameLiftCreateSessionRequest& createSessionRequest)
         {
+            AZStd::string result = "";
+
+            auto gameliftClient = AZ::Interface<IAWSGameLiftInternalRequests>::Get()->GetGameLiftClient();
+            if (!gameliftClient)
+            {
+                AZ_Error(AWSGameLiftCreateSessionActivityName, false, AWSGameLiftClientMissingErrorMessage);
+                return result;
+            }
+
             AZ_TracePrintf(AWSGameLiftCreateSessionActivityName, "Requesting CreateGameSession against Amazon GameLift service ...");
 
-            AZStd::string result = "";
             Aws::GameLift::Model::CreateGameSessionRequest request = BuildAWSGameLiftCreateGameSessionRequest(createSessionRequest);
-            auto createSessionOutcome = gameliftClient.CreateGameSession(request);
+            auto createSessionOutcome = gameliftClient->CreateGameSession(request);
             AZ_TracePrintf(AWSGameLiftCreateSessionActivityName, "CreateGameSession request against Amazon GameLift service is complete");
 
             if (createSessionOutcome.IsSuccess())
@@ -86,11 +99,11 @@ namespace AWSGameLift
             return result;
         }
 
-        bool ValidateCreateSessionRequest(const AzFramework::CreateSessionRequest& createSessionRequest)
+        bool ValidateCreateSessionRequest(const Multiplayer::CreateSessionRequest& createSessionRequest)
         {
             auto gameliftCreateSessionRequest = azrtti_cast<const AWSGameLiftCreateSessionRequest*>(&createSessionRequest);
 
-            return gameliftCreateSessionRequest && gameliftCreateSessionRequest->m_maxPlayer >= 0 &&
+            return gameliftCreateSessionRequest &&
                 (!gameliftCreateSessionRequest->m_aliasId.empty() || !gameliftCreateSessionRequest->m_fleetId.empty());
         }
     } // namespace CreateSessionActivity

@@ -1,15 +1,10 @@
 {
-    "description": "",
     "materialType": "Materials/Types/StandardMultilayerPBR.materialtype",
+    "materialTypeVersion": 3,
     "parentMaterial": "TestData/Materials/StandardMultilayerPbrTestCases/005_UseDisplacement.material",
-    "propertyLayoutVersion": 3,
-    "properties": {
-        "blend": {
-            "blendSource": "Displacement_With_BlendMaskVertexColors",
-            "displacementBlendDistance": 0.02387000061571598
-        },
-        "parallax": {
-            "enable": false
-        }
+    "propertyValues": {
+        "blend.blendSource": "Displacement_With_BlendMaskVertexColors",
+        "blend.displacementBlendDistance": 0.02387000061571598,
+        "parallax.enable": false
     }
 }

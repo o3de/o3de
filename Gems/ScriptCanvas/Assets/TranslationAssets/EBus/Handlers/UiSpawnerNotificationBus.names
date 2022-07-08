@@ -1,0 +1,132 @@
+{
+    "entries": [
+        {
+            "base": "UiSpawnerNotificationBus",
+            "context": "EBusHandler",
+            "variant": "",
+            "details": {
+                "name": "UI Spawner",
+                "category": "UI"
+            },
+            "methods": [
+                {
+                    "base": "OnSpawnBegin",
+                    "details": {
+                        "name": "On Spawn Begin",
+                        "tooltip": "Executes when the slice has been spawned, but entities have not yet been activated. \"On Entity Spawned\" events are about to be dispatched"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{E6E7C0C5-07C9-44BB-A38C-930431948667}",
+                            "details": {
+                                "name": "Slice Instantiation Ticket",
+                                "tooltip": "The slice instantiation ticket. These can be compared in order to know which spawn request it relates to"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "OnEntitySpawned",
+                    "details": {
+                        "name": "On Entity Spawned",
+                        "tooltip": "Executes when an entity has been created during a spawn. Called once for each entity created while spawning a slice"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{E6E7C0C5-07C9-44BB-A38C-930431948667}",
+                            "details": {
+                                "name": "Slice Instantiation Ticket",
+                                "tooltip": "The slice instantiation ticket. These can be compared in order to know which spawn request it relates to"
+                            }
+                        },
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Spawned EntityID",
+                                "tooltip": "The spawned entity"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "OnEntitiesSpawned",
+                    "details": {
+                        "name": "On Entities Spawned",
+                        "tooltip": "Executes when all entities have been created during a spawn.\n\nCalled only once for each spawn request. Called after the \"On Entity Spawned\" calls and before the \"On Spawn End\" call"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{E6E7C0C5-07C9-44BB-A38C-930431948667}",
+                            "details": {
+                                "name": "Slice Instantiation Ticket",
+                                "tooltip": "The slice instantiation ticket. These can be compared in order to know which spawn request it relates to"
+                            }
+                        },
+                        {
+                            "typeid": "{4841CFF0-7A5C-519C-BD16-D3625E99605E}",
+                            "details": {
+                                "name": "Spawned EntityIDs",
+                                "tooltip": "A list of all entities that were created during the spawn"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "OnTopLevelEntitiesSpawned",
+                    "details": {
+                        "name": "On Top Level Entities Spawned",
+                        "tooltip": "Executes when all top-level entities have been created during the spawn.\n\nTop-level entities are entities that do not have any parent within the slice. Typically, there is only one top-level entity for each slice.\n\nCalled only once for each spawn request. Called after the \"On Entity Spawned\" calls and before the \"On Spawn End\" call"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{E6E7C0C5-07C9-44BB-A38C-930431948667}",
+                            "details": {
+                                "name": "Slice Instantiation Ticket",
+                                "tooltip": "The slice instantiation ticket. These can be compared in order to know which spawn request it relates to"
+                            }
+                        },
+                        {
+                            "typeid": "{4841CFF0-7A5C-519C-BD16-D3625E99605E}",
+                            "details": {
+                                "name": "Spawned EntityIDs",
+                                "tooltip": "A list of all top-level entities that were created during the spawn"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "OnSpawnEnd",
+                    "details": {
+                        "name": "On Spawn End",
+                        "tooltip": "Executes when a slice has been spawned. Called once for each spawn request. All \"On Entity Spawned\" events have been dispatched"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{E6E7C0C5-07C9-44BB-A38C-930431948667}",
+                            "details": {
+                                "name": "Slice Instantiation Ticket",
+                                "tooltip": "The slice instantiation ticket. These can be compared in order to know which spawn request it relates to"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "OnSpawnFailed",
+                    "details": {
+                        "name": "On Spawn Failed",
+                        "tooltip": "Executes when a spawn request has failed"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{E6E7C0C5-07C9-44BB-A38C-930431948667}",
+                            "details": {
+                                "name": "Slice Instantiation Ticket",
+                                "tooltip": "The slice instantiation ticket. These can be compared in order to know which spawn request it relates to"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

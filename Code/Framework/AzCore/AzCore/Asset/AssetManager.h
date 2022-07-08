@@ -12,7 +12,6 @@
 #include <AzCore/Asset/AssetContainer.h>
 #include <AzCore/Asset/AssetDataStream.h>
 #include <AzCore/Asset/AssetManagerBus.h>
-#include <AzCore/IO/Streamer/FileRequest.h>
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/Memory/SystemAllocator.h> // used as allocator for most components
 #include <AzCore/std/parallel/mutex.h>
@@ -169,14 +168,14 @@ namespace AZ
             /// Register handler with the system for a particular asset type.
             /// A handler should be registered for each asset type it handles.
             /// Please note that all the handlers are registered just once during app startup from the main thread
-            /// and therefore this is not a thread safe method and should not be invoked from different threads. 
+            /// and therefore this is not a thread safe method and should not be invoked from different threads.
             void RegisterHandler(AssetHandler* handler, const AssetType& assetType);
             /// Unregister handler from the asset system.
             /// Please note that all the handlers are unregistered just once during app shutdown from the main thread
             /// and therefore this is not a thread safe method and should not be invoked from different threads.
             void UnregisterHandler(AssetHandler* handler);
             // @}
-            
+
             // @{ Asset catalog management
             /// Register a catalog with the system for a particular asset type.
             /// A catalog should be registered for each asset type it is responsible for.
@@ -295,7 +294,7 @@ namespace AZ
             /**
             * Old 'legacy' assetIds and asset hints can be automatically replaced  with new ones during deserialize / assignment.
             * This operation can be somewhat costly, and its only useful if the program subsequently re-saves the files its loading so that
-            * the asset hints and assetIds actually persist.  Thus, it can be disabled in situations where you know you are not going to be 
+            * the asset hints and assetIds actually persist.  Thus, it can be disabled in situations where you know you are not going to be
             * saving over or creating new source files (for example builders/background apps)
             * By default, it is enabled.
             */
@@ -316,7 +315,7 @@ namespace AZ
             * This method must be invoked before you start unregistering handlers manually and shutting down the asset manager.
             * This method ensures that all jobs in flight are either canceled or completed.
             * This method is automatically called in the destructor but if you are unregistering handlers manually,
-            * you must invoke it yourself. 
+            * you must invoke it yourself.
             */
             void        PrepareShutDown();
 
@@ -349,10 +348,13 @@ namespace AZ
             void AddBlockingRequest(AssetId assetId, WaitForAsset* blockingRequest);
             void RemoveBlockingRequest(AssetId assetId, WaitForAsset* blockingRequest);
 
-            void ValidateAndPostLoad(AZ::Data::Asset < AZ::Data::AssetData>& asset, bool loadSucceeded, bool isReload, AZ::Data::AssetHandler* assetHandler = nullptr);
-            void PostLoad(AZ::Data::Asset < AZ::Data::AssetData>& asset, bool loadSucceeded, bool isReload, AZ::Data::AssetHandler* assetHandler = nullptr);
+            void ValidateAndPostLoad(AZ::Data::Asset<AZ::Data::AssetData>& asset, bool loadSucceeded, bool isReload, AZ::Data::AssetHandler* assetHandler = nullptr);
+            void PostLoad(AZ::Data::Asset<AZ::Data::AssetData>& asset, bool loadSucceeded, bool isReload, AZ::Data::AssetHandler* assetHandler = nullptr);
 
             Asset<AssetData> GetAssetInternal(const AssetId& assetId, const AssetType& assetType, AssetLoadBehavior assetReferenceLoadBehavior, const AssetLoadParameters& loadParams = AssetLoadParameters{}, AssetInfo assetInfo = AssetInfo(), bool signalLoaded = false);
+            // Alternative path to GetAssetInternal intended to be called by the AssetContainer when reloading an asset
+            // Assumes the asset is already ready to go and just needs to be set up for loading
+            void QueueAssetReload(AZ::Data::Asset<AZ::Data::AssetData> asset, bool signalLoaded);
 
             void UpdateDebugStatus(const AZ::Data::Asset<AZ::Data::AssetData>& asset);
 
@@ -362,11 +364,11 @@ namespace AZ
             * \param loadFilter optional filter predicate for dependent asset loads.
             * If the asset container is already loaded just hand back a new shared ptr
             **/
-            AZStd::shared_ptr<AssetContainer> GetAssetContainer(Asset<AssetData> asset, const AssetLoadParameters& loadParams = AssetLoadParameters{});
+            AZStd::shared_ptr<AssetContainer> GetAssetContainer(Asset<AssetData> asset, const AssetLoadParameters& loadParams = AssetLoadParameters{}, bool isReload = false);
             /**
             * Creates a new shared AssetContainer with an optional loadFilter
             * **/
-            AZStd::shared_ptr<AssetContainer> CreateAssetContainer(Asset<AssetData> asset, const AssetLoadParameters& loadParams = AssetLoadParameters{}) const;
+            virtual AZStd::shared_ptr<AssetContainer> CreateAssetContainer(Asset<AssetData> asset, const AssetLoadParameters& loadParams = AssetLoadParameters{}, bool isReload = false) const;
 
 
             /**
@@ -452,7 +454,7 @@ namespace AZ
 
 
             // Variant of RegisterAssetLoading used for jobs which have been queued and need to verify the status of the asset
-            // before loading in order to prevent cases where a load is queued, then a blocking load goes through, then the queued 
+            // before loading in order to prevent cases where a load is queued, then a blocking load goes through, then the queued
             // load is processed.  This validation step leaves the loaded (And potentially modified) data as is in that case.
             bool ValidateAndRegisterAssetLoading(const Asset<AssetData>& asset);
 
@@ -482,7 +484,7 @@ namespace AZ
          * the blocking. That will result in a single thread deadlock.
          *
          * If you need to queue work, the logic needs to be similar to this:
-         * 
+         *
          AssetHandler::LoadResult MyAssetHandler::LoadAssetData(const Asset<AssetData>& asset, AZStd::shared_ptr<AssetDataStream> stream,
                                                                 const AZ::Data::AssetFilterCB& assetLoadFilterCB)
          {
@@ -496,13 +498,13 @@ namespace AZ
             }
             else
             {
-                // queue job to load asset in thread identified by m_loadingThreadId 
+                // queue job to load asset in thread identified by m_loadingThreadId
                 auto* queuedJob = QueueLoadingOnOtherThread(...);
 
                 // block waiting for queued job to complete
                 queuedJob->BlockUntilComplete();
             }
-            
+
             .
             .
             .
@@ -525,7 +527,7 @@ namespace AZ
             //! Result from LoadAssetData - it either finished loading, didn't finish and is waiting for more data, or had an error.
             enum class LoadResult : u8
             {
-                
+
                 Error,              // The provided data failed to load correctly
                 MoreDataRequired,   // The provided data loaded correctly, but more data is required to finish the asset load
                 LoadComplete        // The provided data loaded correctly, and the asset has been created
@@ -571,7 +573,7 @@ namespace AZ
             //! Asset Handlers have the ability to provide custom asset buffer allocators for any non-standard allocation needs.
             virtual IO::IStreamerTypes::RequestMemoryAllocator* GetAssetBufferAllocator() { return nullptr; }
 
-            virtual void GetDefaultAssetLoadPriority([[maybe_unused]] AssetType type, AZStd::chrono::milliseconds& defaultDeadline,
+            virtual void GetDefaultAssetLoadPriority([[maybe_unused]] AssetType type, IO::IStreamerTypes::Deadline& defaultDeadline,
                 AZ::IO::IStreamerTypes::Priority& defaultPriority) const
             {
                 defaultDeadline = IO::IStreamerTypes::s_noDeadline;

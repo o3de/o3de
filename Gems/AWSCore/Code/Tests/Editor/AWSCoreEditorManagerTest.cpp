@@ -34,8 +34,6 @@ class AWSCoreEditorManagerTest
 
 TEST_F(AWSCoreEditorManagerTest, AWSCoreEditorManager_Constructor_HaveExpectedUIResourcesCreated)
 {
-    AZ_TEST_START_TRACE_SUPPRESSION;
     AWSCoreEditorManager testManager;
-    AZ_TEST_STOP_TRACE_SUPPRESSION(1); // expect the above have thrown an AZ_Error
     EXPECT_TRUE(testManager.GetAWSCoreEditorMenu());
 }

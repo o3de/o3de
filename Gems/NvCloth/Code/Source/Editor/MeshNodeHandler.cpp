@@ -9,6 +9,7 @@
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 
 #include <AtomLyIntegration/CommonFeatures/Mesh/MeshComponentBus.h>
+#include <Atom/RPI.Reflect/Model/ModelAsset.h>
 
 #include <Editor/PropertyTypes.h>
 #include <Editor/MeshNodeHandler.h>

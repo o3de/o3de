@@ -1,0 +1,105 @@
+{
+    "entries": [
+        {
+            "base": "BlastActorData",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "Actor Data",
+                "category": "Blast"
+            },
+            "methods": [
+                {
+                    "base": "GetEntityId",
+                    "details": {
+                        "name": "Get Entity Id"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A23453D5-79A8-49C8-B9F0-9CC35D711DD4}",
+                            "details": {
+                                "name": "Blast Actor Data*",
+                                "tooltip": "Represents Blast Actor in a Script Canvas friendly format."
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity Id",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetEntityId",
+                    "details": {
+                        "name": "Set Entity Id"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A23453D5-79A8-49C8-B9F0-9CC35D711DD4}",
+                            "details": {
+                                "name": "Blast Actor Data*",
+                                "tooltip": "Represents Blast Actor in a Script Canvas friendly format."
+                            }
+                        },
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity Id",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetIsStatic",
+                    "details": {
+                        "name": "Get Is Static"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A23453D5-79A8-49C8-B9F0-9CC35D711DD4}",
+                            "details": {
+                                "name": "Blast Actor Data*",
+                                "tooltip": "Represents Blast Actor in a Script Canvas friendly format."
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Is Static"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetIsStatic",
+                    "details": {
+                        "name": "Set Is Static"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A23453D5-79A8-49C8-B9F0-9CC35D711DD4}",
+                            "details": {
+                                "name": "Blast Actor Data*",
+                                "tooltip": "Represents Blast Actor in a Script Canvas friendly format."
+                            }
+                        },
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Is Static"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

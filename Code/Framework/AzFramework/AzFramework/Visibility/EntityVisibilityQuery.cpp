@@ -34,7 +34,7 @@ namespace AzFramework
 {
     void EntityVisibilityQuery::UpdateVisibility(const AzFramework::CameraState& cameraState)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzFramework);
+        AZ_PROFILE_FUNCTION(AzFramework);
 
         auto* visSystem = AZ::Interface<AzFramework::IVisibilitySystem>::Get();
         if (!visSystem)

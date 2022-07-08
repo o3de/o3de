@@ -5,21 +5,21 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+#include <Request/AWSGameLiftJoinSessionRequest.h>
 
+#include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
-
-#include <Request/AWSGameLiftJoinSessionRequest.h>
 
 namespace AWSGameLift
 {
     void AWSGameLiftJoinSessionRequest::Reflect(AZ::ReflectContext* context)
     {
-        AzFramework::JoinSessionRequest::Reflect(context);
+        Multiplayer::JoinSessionRequest::Reflect(context);
 
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serializeContext->Class<AWSGameLiftJoinSessionRequest, AzFramework::JoinSessionRequest>()
+            serializeContext->Class<AWSGameLiftJoinSessionRequest, Multiplayer::JoinSessionRequest>()
                 ->Version(0)
                 ;
 
@@ -34,7 +34,7 @@ namespace AWSGameLift
 
         if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
-            behaviorContext->Class<AzFramework::JoinSessionRequest>("JoinSessionRequest")
+            behaviorContext->Class<Multiplayer::JoinSessionRequest>("JoinSessionRequest")
                 ->Attribute(AZ::Script::Attributes::Storage, AZ::Script::Attributes::StorageType::Value)
                 // Expose base type to BehaviorContext, but hide it to be used directly
                 ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)

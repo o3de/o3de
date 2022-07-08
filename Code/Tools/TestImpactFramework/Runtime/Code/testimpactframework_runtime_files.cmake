@@ -16,11 +16,14 @@ set(FILES
     Include/TestImpactFramework/TestImpactChangelist.h
     Include/TestImpactFramework/TestImpactChangelistSerializer.h
     Include/TestImpactFramework/TestImpactChangelistException.h
+    Include/TestImpactFramework/TestImpactPolicy.h
     Include/TestImpactFramework/TestImpactTestSequence.h
     Include/TestImpactFramework/TestImpactClientTestSelection.h
     Include/TestImpactFramework/TestImpactClientTestRun.h
-    Include/TestImpactFramework/TestImpactClientFailureReport.h
-    Include/TestImpactFramework/TestImpactFileUtils.h
+    Include/TestImpactFramework/TestImpactClientSequenceReport.h
+    Include/TestImpactFramework/TestImpactUtils.h
+    Include/TestImpactFramework/TestImpactClientSequenceReportSerializer.h
+    Include/TestImpactFramework/TestImpactSequenceReportException.h
     Source/Artifact/TestImpactArtifactException.h
     Source/Artifact/Factory/TestImpactBuildTargetDescriptorFactory.cpp
     Source/Artifact/Factory/TestImpactBuildTargetDescriptorFactory.h
@@ -32,7 +35,6 @@ set(FILES
     Source/Artifact/Factory/TestImpactTestTargetMetaMapFactory.h
     Source/Artifact/Factory/TestImpactModuleCoverageFactory.cpp
     Source/Artifact/Factory/TestImpactModuleCoverageFactory.h
-    Source/Artifact/Static/TestImpactBuildTargetDescriptor.cpp
     Source/Artifact/Static/TestImpactBuildTargetDescriptor.h
     Source/Artifact/Static/TestImpactTargetDescriptorCompiler.cpp
     Source/Artifact/Static/TestImpactTargetDescriptorCompiler.h
@@ -87,8 +89,6 @@ set(FILES
     Source/TestEngine/Enumeration/TestImpactTestEnumerationSerializer.h
     Source/TestEngine/Enumeration/TestImpactTestEnumerator.cpp
     Source/TestEngine/Enumeration/TestImpactTestEnumerator.h
-    Source/TestEngine/Run/TestImpactTestRunSerializer.cpp
-    Source/TestEngine/Run/TestImpactTestRunSerializer.h
     Source/TestEngine/Run/TestImpactTestRunner.cpp
     Source/TestEngine/Run/TestImpactTestRunner.h
     Source/TestEngine/Run/TestImpactInstrumentedTestRunner.cpp
@@ -123,7 +123,9 @@ set(FILES
     Source/TestImpactRuntimeUtils.h
     Source/TestImpactClientTestSelection.cpp
     Source/TestImpactClientTestRun.cpp
-    Source/TestImpactClientFailureReport.cpp
+    Source/TestImpactClientSequenceReport.cpp
     Source/TestImpactChangeListSerializer.cpp
+    Source/TestImpactClientSequenceReportSerializer.cpp
     Source/TestImpactRepoPath.cpp
+    Source/TestImpactUtils.cpp
 )

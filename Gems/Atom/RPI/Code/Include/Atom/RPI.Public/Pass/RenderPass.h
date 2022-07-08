@@ -13,9 +13,7 @@
 #include <Atom/RHI/DrawList.h>
 #include <Atom/RHI/ScopeProducer.h>
 
-#include <Atom/RPI.Public/Pass/AttachmentReadback.h>
 #include <Atom/RPI.Public/Pass/Pass.h>
-#include <Atom/RPI.Public/Pass/Specific/ImageAttachmentPreviewPass.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 
 namespace AZ
@@ -29,7 +27,6 @@ namespace AZ
 
     namespace RPI
     {
-        class ImageAttachmentCopy;
         class RenderPass;
         class Query;
 
@@ -40,8 +37,6 @@ namespace AZ
             public RHI::ScopeProducer
         {
             AZ_RPI_PASS(RenderPass);
-
-            friend class ImageAttachmentPreviewPass;
 
             using ScopeQuery = AZStd::array<RHI::Ptr<Query>, static_cast<size_t>(ScopeQueryType::Count)>;
 
@@ -66,6 +61,10 @@ namespace AZ
             //! Return the View if this pass is associated with a pipeline view via PipelineViewTag.
             //! It may return nullptr if this pass is independent with any views.
             ViewPtr GetView() const;
+
+            // Add a srg to srg list to be bound for this pass
+            void BindSrg(const RHI::ShaderResourceGroup* srg);
+            
 
         protected:
             explicit RenderPass(const PassDescriptor& descriptor);
@@ -100,9 +99,6 @@ namespace AZ
             // Clear the srg list
             void ResetSrgs();
 
-            // Add a srg to srg list to be bound for this pass
-            void BindSrg(const RHI::ShaderResourceGroup* srg);
-            
             // Set srgs for pass's execution
             void SetSrgsForDraw(RHI::CommandList* commandList);
             void SetSrgsForDispatch(RHI::CommandList* commandList);
@@ -117,9 +113,12 @@ namespace AZ
             // The shader resource group for this pass
             Data::Instance<ShaderResourceGroup> m_shaderResourceGroup = nullptr;
 
+            // Determines which hardware queue the pass will run on
+            RHI::HardwareQueueClass m_hardwareQueueClass = RHI::HardwareQueueClass::Graphics;
+
         private:
             // Helper function that binds a single attachment to the pass shader resource group
-            void BindAttachment(const RHI::FrameGraphCompileContext& context, const PassAttachmentBinding& binding, int16_t& imageIndex, int16_t& bufferIndex);
+            void BindAttachment(const RHI::FrameGraphCompileContext& context, PassAttachmentBinding& binding, int16_t& imageIndex, int16_t& bufferIndex);
 
             // Helper function to get the query by the scope index and query type
             RHI::Ptr<Query> GetQuery(ScopeQueryType queryType);
@@ -142,8 +141,6 @@ namespace AZ
 
             // Readback the results from the ScopeQueries
             void ReadbackScopeQueryResults();
-
-            AZStd::weak_ptr<ImageAttachmentCopy> m_attachmentCopy;
 
             // Readback results from the Timestamp queries
             TimestampResult m_timestampResult;

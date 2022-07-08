@@ -32,7 +32,7 @@ class CTrackViewFindDlg
     Q_OBJECT
     // Construction
 public:
-    CTrackViewFindDlg(const char* title = NULL, QWidget* pParent = NULL);   // standard constructor
+    CTrackViewFindDlg(const char* title = nullptr, QWidget* pParent = nullptr);   // standard constructor
     ~CTrackViewFindDlg();
 
     //Functions

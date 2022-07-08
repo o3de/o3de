@@ -36,33 +36,33 @@ namespace MCore
         static AttributeFloat* Create(float value = 0.0f);
 
         // adjust values
-        MCORE_INLINE float GetValue() const                         { return mValue; }
-        MCORE_INLINE void SetValue(float value)                     { mValue = value; }
+        MCORE_INLINE float GetValue() const                         { return m_value; }
+        MCORE_INLINE void SetValue(float value)                     { m_value = value; }
 
-        MCORE_INLINE uint8* GetRawDataPointer()                     { return reinterpret_cast<uint8*>(&mValue); }
-        MCORE_INLINE uint32 GetRawDataSize() const                  { return sizeof(float); }
+        MCORE_INLINE uint8* GetRawDataPointer()                     { return reinterpret_cast<uint8*>(&m_value); }
+        MCORE_INLINE size_t GetRawDataSize() const                  { return sizeof(float); }
 
         // overloaded from the attribute base class
-        Attribute* Clone() const override                           { return AttributeFloat::Create(mValue); }
+        Attribute* Clone() const override                           { return AttributeFloat::Create(m_value); }
         const char* GetTypeString() const override                  { return "AttributeFloat"; }
         bool InitFrom(const Attribute* other) override;
         bool InitFromString(const AZStd::string& valueString) override
         {
-            return AzFramework::StringFunc::LooksLikeFloat(valueString.c_str(), &mValue);
+            return AzFramework::StringFunc::LooksLikeFloat(valueString.c_str(), &m_value);
         }
-        bool ConvertToString(AZStd::string& outString) const override      { outString = AZStd::string::format("%.8f", mValue); return true; }
-        uint32 GetClassSize() const override                        { return sizeof(AttributeFloat); }
-        uint32 GetDefaultInterfaceType() const override             { return ATTRIBUTE_INTERFACETYPE_FLOATSPINNER; }
+        bool ConvertToString(AZStd::string& outString) const override      { outString = AZStd::string::format("%.8f", m_value); return true; }
+        size_t GetClassSize() const override                        { return sizeof(AttributeFloat); }
+        AZ::u32 GetDefaultInterfaceType() const override             { return ATTRIBUTE_INTERFACETYPE_FLOATSPINNER; }
 
     private:
-        float   mValue;     /**< The float value. */
+        float   m_value;     /**< The float value. */
 
         AttributeFloat()
             : Attribute(TYPE_ID)
-            , mValue(0.0f)  {}
+            , m_value(0.0f)  {}
         AttributeFloat(float value)
             : Attribute(TYPE_ID)
-            , mValue(value) {}
+            , m_value(value) {}
         ~AttributeFloat() {}
     };
 }   // namespace MCore

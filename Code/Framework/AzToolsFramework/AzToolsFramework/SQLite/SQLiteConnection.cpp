@@ -65,6 +65,9 @@ namespace AzToolsFramework
 
         bool Connection::Open(const AZStd::string& filename, bool readOnly)
         {
+            AZ_Assert(sqlite3_libversion_number() == SQLITE_VERSION_NUMBER, "Sqlite header version number does not match library");
+            AZ_Assert(strncmp(sqlite3_sourceid(), SQLITE_SOURCE_ID, 80) == 0, "Sqlite header source id does not match library");
+            AZ_Assert(strcmp(sqlite3_libversion(), SQLITE_VERSION) == 0, "Sqlite header version does not match library");
             AZ_Assert(m_db == NULL, "You have to close the database prior to opening a new one.");
             if (m_db)
             {
@@ -346,7 +349,7 @@ namespace AzToolsFramework
                 return false;
             }
 
-            StatementPrototype stmt("SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name=:1;");
+            StatementPrototype stmt("SELECT COUNT(*) FROM sqlite_schema WHERE type='table' AND name=:1;");
             Statement* execute = stmt.Prepare(m_db); // execute now belongs to stmt and will die when stmt leaves scope.
             if (!execute->Prepared())
             {
@@ -498,7 +501,7 @@ namespace AzToolsFramework
             //    https://www.sqlite.org/c3ref/prepare.html                                      ^^^^^^^^^
 
             int res = sqlite3_prepare_v2(db, m_parentPrototype->GetSqlText().c_str(), (int)m_parentPrototype->GetSqlText().length() + 1, &m_statement, NULL);
-            
+
             AZ_Assert(res == SQLITE_OK, "Statement::PrepareFirstTime: failed! %s ( prototype is '%s'). Error code returned is %d.", sqlite3_errmsg(db), m_parentPrototype->GetSqlText().c_str(), res);
             return ((res == SQLITE_OK)&&(m_statement));
         }
@@ -700,7 +703,7 @@ namespace AzToolsFramework
             int res = sqlite3_clear_bindings(m_statement);
             AZ_Assert(res == SQLITE_OK, "Statement::sqlite3_clear_bindings: failed!");
             return (res == SQLITE_OK);
-            
+
         }
 
         int Statement::GetNamedParamIdx(const char* name)

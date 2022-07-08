@@ -6,21 +6,17 @@
  *
  */
 
-#ifndef __EMSTUDIO_MOTIONEXTRACTIONWINDOW_H
-#define __EMSTUDIO_MOTIONEXTRACTIONWINDOW_H
+#pragma once
 
-// include MCore
 #if !defined(Q_MOC_RUN)
-#include "../StandardPluginsConfig.h"
-#include <MCore/Source/StandardHeaders.h>
-#include "../../../../EMStudioSDK/Source/NodeSelectionWindow.h"
+#include <EMotionStudio/EMStudioSDK/Source/NodeSelectionWindow.h>
+#include <EMotionStudio/Plugins/StandardPlugins/Source/StandardPluginsConfig.h>
 #include <AzQtComponents/Components/Widgets/BrowseEdit.h>
 #include <EMotionFX/Source/PlayBackInfo.h>
+#include <MCore/Source/StandardHeaders.h>
 #include <QWidget>
 #endif
 
-
-QT_FORWARD_DECLARE_CLASS(QPushButton)
 QT_FORWARD_DECLARE_CLASS(QCheckBox)
 QT_FORWARD_DECLARE_CLASS(QVBoxLayout)
 
@@ -31,17 +27,13 @@ namespace MysticQt
 
 namespace EMStudio
 {
-    // forward declarations
-    class MotionWindowPlugin;
-
-    class MotionExtractionWindow
-        : public QWidget
+    class MotionExtractionWindow : public QWidget
     {
-        Q_OBJECT
+        Q_OBJECT // AUTOMOC
         MCORE_MEMORYOBJECTCATEGORY(MotionExtractionWindow, MCore::MCORE_DEFAULT_ALIGNMENT, MEMCATEGORY_STANDARDPLUGINS);
 
     public:
-        MotionExtractionWindow(QWidget* parent, MotionWindowPlugin* motionWindowPlugin);
+        MotionExtractionWindow(QWidget* parent);
         ~MotionExtractionWindow();
 
         void Init();
@@ -53,42 +45,50 @@ namespace EMStudio
         void OnMotionExtractionFlagsUpdated();
 
         void OnSelectMotionExtractionNode();
-        void OnMotionExtractionNodeSelected(MCore::Array<SelectionItem> selection);
+        void OnMotionExtractionNodeSelected(AZStd::vector<SelectionItem> selection);
 
     private:
-        // callbacks
-        MCORE_DEFINECOMMANDCALLBACK(CommandSelectCallback);
-        MCORE_DEFINECOMMANDCALLBACK(CommandUnselectCallback);
-        MCORE_DEFINECOMMANDCALLBACK(CommandClearSelectionCallback);
-        MCORE_DEFINECOMMANDCALLBACK(CommandAdjustActorCallback);
-        CommandSelectCallback*          mSelectCallback;
-        CommandUnselectCallback*        mUnselectCallback;
-        CommandClearSelectionCallback*  mClearSelectionCallback;
-        CommandAdjustActorCallback*     mAdjustActorCallback;
-
-        // general
-        MotionWindowPlugin*             mMotionWindowPlugin;
-        QCheckBox*                      mAutoMode;
-
-        // flags widget
-        QWidget*                        mFlagsWidget;
-        QCheckBox*                      mCaptureHeight;
-
-        //
-        QVBoxLayout*                    mMainVerticalLayout;
-        QVBoxLayout*                    mChildVerticalLayout;
-        QWidget*                        mWarningWidget;
-        bool                            mWarningShowed;
-
-        // motion extraction node selection
-        NodeSelectionWindow*            mMotionExtractionNodeSelectionWindow;
-        AzQtComponents::BrowseEdit*     mWarningSelectNodeLink;
-
         // helper functions
         void CreateFlagsWidget();
         void CreateWarningWidget();
+
+        // flags widget
+        QWidget* m_flagsWidget = nullptr;
+        QCheckBox* m_captureHeight = nullptr;
+
+        //
+        QVBoxLayout* m_mainVerticalLayout = nullptr;
+        QVBoxLayout* m_childVerticalLayout = nullptr;
+        QWidget* m_warningWidget = nullptr;
+        bool m_warningShowed = false;
+
+        // motion extraction node selection
+        NodeSelectionWindow* m_motionExtractionNodeSelectionWindow = nullptr;
+        AzQtComponents::BrowseEdit* m_warningSelectNodeLink = nullptr;
+
+        // Command callbacks
+        class SelectActorCallback : public MCore::Command::Callback
+        {
+        public:
+            SelectActorCallback(MotionExtractionWindow* motionExtractionWindow);
+            bool Execute(MCore::Command* command, const MCore::CommandLine& commandLine);
+            bool Undo(MCore::Command* command, const MCore::CommandLine& commandLine);
+
+        private:
+            MotionExtractionWindow* m_motionExtractionWindow = nullptr;
+        };
+
+        class UpdateMotionExtractionWindowCallback : public MCore::Command::Callback
+        {
+        public:
+            UpdateMotionExtractionWindowCallback(MotionExtractionWindow* motionExtractionWindow);
+            bool Execute(MCore::Command* command, const MCore::CommandLine& commandLine);
+            bool Undo(MCore::Command* command, const MCore::CommandLine& commandLine);
+
+        private:
+            MotionExtractionWindow* m_motionExtractionWindow = nullptr;
+        };
+
+        AZStd::vector<MCore::Command::Callback*> m_commandCallbacks;
     };
 } // namespace EMStudio
-
-
-#endif

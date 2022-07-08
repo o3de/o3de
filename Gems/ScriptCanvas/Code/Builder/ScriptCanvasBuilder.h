@@ -10,16 +10,19 @@
 
 #include <AzCore/Asset/AssetCommon.h>
 #include <ScriptCanvas/Asset/RuntimeAsset.h>
+#include <ScriptCanvas/Core/Core.h>
 #include <ScriptCanvas/Grammar/PrimitivesDeclarations.h>
 #include <ScriptCanvas/Variable/VariableCore.h>
 
-namespace ScriptCanvasEditor
+namespace ScriptCanvas
 {
-    class ScriptCanvasAsset;
+    class SourceTree;
 }
 
 namespace ScriptCanvasBuilder
 {
+    using SourceHandle = ScriptCanvas::SourceHandle;
+
     class BuildVariableOverrides
     {
     public:
@@ -38,9 +41,11 @@ namespace ScriptCanvasBuilder
         // use this to initialize the new data, and make sure they have a editor graph variable for proper editor display
         void PopulateFromParsedResults(ScriptCanvas::Grammar::AbstractCodeModelConstPtr abstractCodeModel, const ScriptCanvas::VariableData& variables);
 
-        // #functions2 provide an identifier for the node/variable in the source that caused the dependency. the root will not have one.
-        AZ::Data::Asset<ScriptCanvasEditor::ScriptCanvasAsset> m_source;
+        void SetHandlesToDescription();
 
+        // #functions2 provide an identifier for the node/variable in the source that caused the dependency. the root will not have one.
+        SourceHandle m_source;
+        
         // all of the variables here are overrides
         AZStd::vector<ScriptCanvas::GraphVariable> m_variables;
         // the values here may or may not be overrides
@@ -48,30 +53,23 @@ namespace ScriptCanvasBuilder
         // these two variable lists are all that gets exposed to the edit context
         AZStd::vector<ScriptCanvas::GraphVariable> m_overrides;
         AZStd::vector<ScriptCanvas::GraphVariable> m_overridesUnused;
-        // AZStd::vector<size_t> m_entityIdRuntimeInputIndices; since all of the entity ids need to go in, they may not need indices
         AZStd::vector<BuildVariableOverrides> m_dependencies;
-    };
 
-    class EditorAssetTree
-    {
-    public:
-        AZ_CLASS_ALLOCATOR(EditorAssetTree, AZ::SystemAllocator, 0);
-
-        EditorAssetTree* m_parent = nullptr;
-        AZStd::vector<EditorAssetTree> m_dependencies;
-        AZ::Data::Asset<ScriptCanvasEditor::ScriptCanvasAsset> m_asset;
-
-        EditorAssetTree* ModRoot();
-
-        void SetParent(EditorAssetTree& parent);
-
-        AZStd::string ToString(size_t depth = 0) const;
+        // #scriptcanvas_component_extension
+        bool m_isComponentScript = false;
     };
 
     // copy the variables overridden during editor / prefab build time back to runtime data
     ScriptCanvas::RuntimeDataOverrides ConvertToRuntime(const BuildVariableOverrides& overrides);
+    /// Replace the provided overrides asset hierarchy with the provided loaded one.
+    /// Returns false if there is a size mismatch in dependencies or if any of the asset has not yet loaded
+    bool ReplaceAsset(ScriptCanvas::RuntimeDataOverrides& overrides, ScriptCanvas::RuntimeAssetPtr asset);
 
-    AZ::Outcome<EditorAssetTree, AZStd::string> LoadEditorAssetTree(AZ::Data::AssetId editorAssetId, AZStd::string_view assetHint, EditorAssetTree* parent = nullptr);
-
-    AZ::Outcome<BuildVariableOverrides, AZStd::string> ParseEditorAssetTree(const EditorAssetTree& editorAssetTree);
+    AZ::Outcome<BuildVariableOverrides, AZStd::string> ParseEditorAssetTree(const ScriptCanvas::SourceTree& editorAssetTree);
 }
+
+namespace AZStd
+{
+    AZStd::string to_string(const ScriptCanvasBuilder::BuildVariableOverrides& overrides);
+}
+

@@ -1,0 +1,12 @@
+{
+    "entries": [
+        {
+            "base": "ViewPaneOptions",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "ViewPaneOptions"
+            }
+        }
+    ]
+}

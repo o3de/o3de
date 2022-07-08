@@ -8,14 +8,16 @@
 
 add_subdirectory(NumericalMethods)
 
-ly_get_list_relative_pal_filename(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME})
+o3de_pal_dir(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME} "${gem_restricted_path}" "${gem_path}" "${gem_parent_relative_path}")
 
 include(${pal_source_dir}/PAL_${PAL_PLATFORM_NAME_LOWERCASE}.cmake) # for PAL_TRAIT_PHYSX_SUPPORTED
+set(LY_PHYSX_ENABLE_RUNNING_BENCHMARKS OFF CACHE BOOL "Adds a target to allow running of the physx benchmarks.")
 
 if(PAL_TRAIT_PHYSX_SUPPORTED)
     set(physx_dependency 3rdParty::PhysX)
     set(physx_files physx_files.cmake)
     set(physx_shared_files physx_shared_files.cmake)
+    set(physx_mock_files physx_mocks_files.cmake)
     set(physx_editor_files physx_editor_files.cmake)
 else()
     set(physx_files physx_unsupported_files.cmake)
@@ -83,6 +85,8 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         AUTOUIC
         FILES_CMAKE
             ${physx_editor_files}
+        PLATFORM_INCLUDE_FILES
+            ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/Common/${PAL_TRAIT_COMPILER_ID}/physx_editor_static_${PAL_TRAIT_COMPILER_ID_LOWERCASE}.cmake
         COMPILE_DEFINITIONS
             PUBLIC
                 PHYSX_EDITOR
@@ -103,7 +107,6 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 AZ::AzCore
                 AZ::AzFramework
                 AZ::AzToolsFramework
-                AZ::GFxFramework
                 AZ::AssetBuilderSDK
                 AZ::SceneCore
                 AZ::SceneData
@@ -150,8 +153,16 @@ endif()
 # Tests
 ################################################################################
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
-
-    
+    ly_add_target(
+        NAME PhysX.Mocks HEADERONLY
+        NAMESPACE Gem
+        OUTPUT_NAME PhysX.Mocks.Gem
+        FILES_CMAKE
+            physx_mocks_files.cmake
+        INCLUDE_DIRECTORIES
+            INTERFACE
+                Mocks
+    )
 
     ly_add_target(
         NAME PhysX.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
@@ -172,22 +183,19 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             Gem::LmbrCentral
     )
 
-    if(PAL_TRAIT_JOINTS_TYPED_TEST_CASE)
-        ly_add_source_properties(
-            SOURCES Tests/PhysXJointsTest.cpp
-            PROPERTY COMPILE_DEFINITIONS 
-            VALUES ENABLE_JOINTS_TYPED_TEST_CASE
-        )
-    endif()
-
     ly_add_googletest(
         NAME Gem::PhysX.Tests
     )
-    ly_add_googlebenchmark(
-        NAME Gem::PhysX.Benchmarks
-        TARGET Gem::PhysX.Tests
-        TIMEOUT 1500 #25mins
-    )
+
+    # Only add the physx benchmarks if this flag is set. The benchmark code is still built, as it is part of the PhysX.Tests project.
+    # Currently jenkins has a 1500sec(25min) timeout, our benchmarks can sometimes take over 1500sec and cause a build failure for timeout.
+    # Jenkins currently doesn't upload the results of the benchmarks, so this is ok.
+    if(LY_PHYSX_ENABLE_RUNNING_BENCHMARKS)
+        ly_add_googlebenchmark(
+            NAME Gem::PhysX.Benchmarks
+            TARGET Gem::PhysX.Tests
+        )
+    endif()
 
     list(APPEND testTargets PhysX.Tests)
     
@@ -209,7 +217,9 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                     AZ::AzTestShared
                     AZ::AzTest
                     AZ::AzToolsFrameworkTestCommon
+                    AZ::AzManipulatorTestFramework.Static
                     Gem::PhysX.Static
+                    Gem::PhysX.Mocks
                     Gem::PhysX.Editor.Static
             RUNTIME_DEPENDENCIES
                 Gem::LmbrCentral.Editor
@@ -228,12 +238,3 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             Test.Assets/Gems/PhysX/Code/Tests
             )
 endif()
-
-ly_add_source_properties(
-    SOURCES
-        Editor/CollisionLayersWidget.cpp
-        Source/Collision.cpp
-        Source/Configuration/PhysXConfiguration.cpp
-    PROPERTY COMPILE_DEFINITIONS 
-    VALUES TOUCHBENDING_LAYER_BIT=${LY_TOUCHBENDING_LAYER_BIT}
-)

@@ -55,11 +55,35 @@ namespace BarrierInput
         void Eat(int len) { data += len; }
 
         void InsertString(const char* str) { int len = static_cast<int>(strlen(str)); memcpy(end, str, len); end += len; }
-        void InsertU32(int a) { end[0] = a >> 24; end[1] = a >> 16; end[2] = a >> 8; end[3] = a; end += 4; }
-        void InsertU16(int a) { end[0] = a >> 8; end[1] = a; end += 2; }
-        void InsertU8(int a) { end[0] = a; end += 1; }
+        void InsertU32(int a)
+        {
+            end[0] = static_cast<AZ::u8>(a >> 24);
+            end[1] = static_cast<AZ::u8>(a >> 16);
+            end[2] = static_cast<AZ::u8>(a >> 8);
+            end[3] = static_cast<AZ::u8>(a);
+            end += 4;
+        }
+        void InsertU16(int a)
+        {
+            end[0] = static_cast<AZ::u8>(a >> 8);
+            end[1] = static_cast<AZ::u8>(a);
+            end += 2;
+        }
+        void InsertU8(int a)
+        {
+            end[0] = static_cast<AZ::u8>(a);
+            end += 1;
+        }
         void OpenPacket() { packet = end; end += 4; }
-        void ClosePacket() { int len = GetLength() - sizeof(AZ::u32); packet[0] = len >> 24; packet[1] = len >> 16; packet[2] = len >> 8; packet[3] = len; packet = NULL; }
+        void ClosePacket()
+        {
+            int len = GetLength() - sizeof(AZ::u32);
+            packet[0] = static_cast<AZ::u8>(len >> 24);
+            packet[1] = static_cast<AZ::u8>(len >> 16);
+            packet[2] = static_cast<AZ::u8>(len >> 8);
+            packet[3] = static_cast<AZ::u8>(len);
+            packet = nullptr;
+        }
     };
 
     enum ArgType
@@ -230,7 +254,7 @@ namespace BarrierInput
 
     static bool barrierBye([[maybe_unused]]BarrierClient* pContext, [[maybe_unused]]int* pArgs, [[maybe_unused]]Stream* pStream, [[maybe_unused]]int streamLeft)
     {
-        AZLOG_INFO("BarrierClient: Server said bye. Disconnecting\n");
+        AZLOG_INFO("BarrierClient: Server said bye. Disconnecting");
         return false;
     }
 
@@ -260,7 +284,7 @@ namespace BarrierInput
             const char* packetStart = stream.GetData();
             if (packetLength > streamLength)
             {
-                AZLOG_INFO("BarrierClient: Packet overruns buffer (Packet Length: %d Buffer Length: %d), probably lots of data on clipboard?\n", packetLength, streamLength);
+                AZLOG_INFO("BarrierClient: Packet overruns buffer (Packet Length: %d Buffer Length: %d), probably lots of data on clipboard?", packetLength, streamLength);
                 return false;
             }
 
@@ -323,7 +347,7 @@ namespace BarrierInput
     {
         AZStd::thread_desc threadDesc;
         threadDesc.m_name = "BarrierInputClientThread";
-        m_threadHandle = AZStd::thread(AZStd::bind(&BarrierClient::Run, this), &threadDesc);
+        m_threadHandle = AZStd::thread(threadDesc, AZStd::bind(&BarrierClient::Run, this));
     }
     
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -353,7 +377,7 @@ namespace BarrierInput
             const int lengthReceived = AZ::AzSock::Recv(m_socket, stream.GetBuffer(), stream.GetBufferSize(), 0);
             if (lengthReceived <= 0)
             {
-                AZLOG_INFO("BarrierClient: Receive failed, reconnecting.\n");
+                AZLOG_INFO("BarrierClient: Receive failed, reconnecting.");
                 connected = false;
                 continue;
             }
@@ -362,7 +386,7 @@ namespace BarrierInput
             stream.SetLength(lengthReceived);
             if (!ProcessPackets(this, stream))
             {
-                AZLOG_INFO("BarrierClient: Packet processing failed, reconnecting.\n");
+                AZLOG_INFO("BarrierClient: Packet processing failed, reconnecting.");
                 connected = false;
                 continue;
             }
@@ -381,7 +405,7 @@ namespace BarrierInput
         if (AZ::AzSock::IsAzSocketValid(m_socket))
         {
             AZ::AzSock::AzSocketAddress socketAddress;
-            if (socketAddress.SetAddress(m_serverHostName.c_str(), m_connectionPort))
+            if (socketAddress.SetAddress(m_serverHostName.c_str(), static_cast<AZ::u16>(m_connectionPort)))
             {
                 const int result = AZ::AzSock::Connect(m_socket, socketAddress);
                 if (!AZ::AzSock::SocketErrorOccured(result))

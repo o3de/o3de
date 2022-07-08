@@ -55,7 +55,7 @@ namespace AZ::Render
         };
 
         TaaConstants cb;
-        RHI::Size inputSize = m_lastFrameAccumulationBinding->m_attachment->m_descriptor.m_image.m_size;
+        RHI::Size inputSize = m_lastFrameAccumulationBinding->GetAttachment()->m_descriptor.m_image.m_size;
         cb.m_size[0] = inputSize.m_width;
         cb.m_size[1] = inputSize.m_height;
         cb.m_rcpSize[0] = 1.0f / inputSize.m_width;
@@ -75,8 +75,8 @@ namespace AZ::Render
     
     void TaaPass::FrameBeginInternal(FramePrepareParams params)
     {
-        RHI::Size inputSize = m_inputColorBinding->m_attachment->m_descriptor.m_image.m_size;
-        Vector2 rcpInputSize = Vector2(1.0 / inputSize.m_width, 1.0 / inputSize.m_height);
+        RHI::Size inputSize = m_inputColorBinding->GetAttachment()->m_descriptor.m_image.m_size;
+        Vector2 rcpInputSize = Vector2(1.0f / inputSize.m_width, 1.0f / inputSize.m_height);
 
         RPI::ViewPtr view = GetRenderPipeline()->GetDefaultView();
         m_offsetIndex = (m_offsetIndex + 1) % m_subPixelOffsets.size();
@@ -133,7 +133,7 @@ namespace AZ::Render
 
         // Set up the attachment for last frame accumulation and output color if it's never been done to
         // ensure SRG indices are set up correctly by the pass system.
-        if (m_lastFrameAccumulationBinding->m_attachment == nullptr)
+        if (m_lastFrameAccumulationBinding->GetAttachment() == nullptr)
         {
             m_lastFrameAccumulationBinding->SetAttachment(m_accumulationAttachments[0]);
             m_outputColorBinding->SetAttachment(m_accumulationAttachments[1]);
@@ -168,7 +168,6 @@ namespace AZ::Render
         // The ImageViewDescriptor must be specified to make sure the frame graph compiler doesn't treat this as a transient image.
         RHI::ImageViewDescriptor viewDesc = RHI::ImageViewDescriptor::Create(imageDesc.m_format, 0, 0);
         viewDesc.m_aspectFlags = RHI::ImageAspectFlags::Color;
-        viewDesc.m_overrideBindFlags = RHI::ImageBindFlags::ShaderReadWrite;
 
         // The full path name is needed for the attachment image so it's not deduplicated from accumulation images in different pipelines.
         AZStd::string imageName = RPI::ConcatPassString(GetPathName(), attachment->m_path);

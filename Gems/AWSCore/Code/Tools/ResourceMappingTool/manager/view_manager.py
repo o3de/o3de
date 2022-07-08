@@ -44,7 +44,7 @@ class ViewManager(object):
     def __init__(self) -> None:
         if ViewManager.__instance is None:
             self._main_window: QMainWindow = QMainWindow()
-            self._main_window.setWindowIcon(QIcon(":/Application/res/o3de_editor.ico"))
+            self._main_window.setWindowIcon(QIcon(":/Application/o3de_application_reverse.svg"))
             self._main_window.setWindowTitle("Resource Mapping")
             self._main_window.setGeometry(0, 0,
                                           view_size_constants.TOOL_APPLICATION_MAIN_WINDOW_WIDTH,

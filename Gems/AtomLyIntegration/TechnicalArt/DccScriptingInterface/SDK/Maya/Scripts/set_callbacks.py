@@ -42,7 +42,7 @@ from azpy.constants import ENVAR_DCCSI_GDEBUG
 from azpy.constants import ENVAR_DCCSI_DEV_MODE
 
 #  global space
-_G_DEBUG = env_bool(ENVAR_DCCSI_GDEBUG, True)
+_DCCSI_GDEBUG = env_bool(ENVAR_DCCSI_GDEBUG, True)
 _DCCSI_DEV_MODE = env_bool(ENVAR_DCCSI_DEV_MODE, True)
 
 _MODULENAME = r'DCCsi.SDK.Maya.Scripts.set_callbacks'

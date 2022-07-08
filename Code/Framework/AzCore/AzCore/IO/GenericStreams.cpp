@@ -11,6 +11,7 @@
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/IO/IOUtils.h>
 #include <AzCore/std/algorithm.h>
+#include <AzCore/Casting/numeric_cast.h>
 
 namespace AZ::IO
 {
@@ -135,8 +136,8 @@ namespace AZ::IO
         /*
          * StreamerStream
          */
-            
-            
+
+
     /*
      * SystemFileStream
      */
@@ -359,8 +360,13 @@ namespace AZ::IO
 
     AZ::IO::OpenMode StdoutStream::GetModeFlags() const
     {
-        // Avoid including FileIO.h to retrieve values for OpenMode enum 
+        // Avoid including FileIO.h to retrieve values for OpenMode enum
         constexpr AZ::IO::OpenMode modeWrite{ 1 << 1 };
         return modeWrite;
+    }
+
+    const char* StdoutStream::GetFilename() const
+    {
+        return "<stdout>";
     }
 }   // namespace AZ::IO

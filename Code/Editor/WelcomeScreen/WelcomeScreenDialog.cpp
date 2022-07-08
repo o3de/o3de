@@ -25,8 +25,6 @@
 
 #include <AzCore/Utils/Utils.h>
 
-// AzFramework
-#include <AzFramework/API/ApplicationAPI.h>
 
 // AzToolsFramework
 #include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
@@ -34,6 +32,7 @@
 // AzQtComponents
 #include <AzQtComponents/Components/Widgets/CheckBox.h>
 #include <AzQtComponents/Components/WindowDecorationWrapper.h>
+#include <AzQtComponents/Utilities/PixmapScaleUtilities.h>
 
 // Editor
 #include "Settings.h"
@@ -79,8 +78,11 @@ WelcomeScreenDialog::WelcomeScreenDialog(QWidget* pParent)
     {
         projectPreviewPath = ":/WelcomeScreenDialog/DefaultProjectImage.png";
     }
+    
     ui->activeProjectIcon->setPixmap(
-        QPixmap(projectPreviewPath).scaled(
+        AzQtComponents::ScalePixmapForScreenDpi(
+            QPixmap(projectPreviewPath),
+            screen(),
             ui->activeProjectIcon->size(),
             Qt::KeepAspectRatioByExpanding,
             Qt::SmoothTransformation
@@ -168,9 +170,6 @@ void WelcomeScreenDialog::SetRecentFileList(RecentFileList* pList)
     }
 
     m_pRecentList = pList;
-
-    const char* engineRoot;
-    EBUS_EVENT_RESULT(engineRoot, AzFramework::ApplicationRequests::Bus, GetEngineRoot);
 
     auto projectPath = AZ::Utils::GetProjectPath();
     QString gamePath{projectPath.c_str()};

@@ -9,7 +9,6 @@
 #include "ShaderAssetBuilder.h"
 
 #include <CommonFiles/Preprocessor.h>
-#include <CommonFiles/GlobalBuildOptions.h>
 
 #include <Atom/RPI.Reflect/Shader/ShaderAsset.h>
 #include <Atom/RPI.Reflect/Shader/ShaderAssetCreator.h>
@@ -20,11 +19,12 @@
 #include <Atom/RHI.Edit/ShaderPlatformInterface.h>
 #include <Atom/RPI.Edit/Common/JsonReportingHelper.h>
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
+#include <Atom/RPI.Edit/Common/JsonUtils.h>
 #include <Atom/RHI.Reflect/ConstantsLayout.h>
 #include <Atom/RHI.Reflect/PipelineLayoutDescriptor.h>
 #include <Atom/RHI.Reflect/ShaderStageFunction.h>
 
-#include <AtomCore/Serialization/Json/JsonUtils.h>
+#include <AzCore/Serialization/Json/JsonUtils.h>
 
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/Debug/TraceContext.h>
@@ -43,12 +43,13 @@
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/sort.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
+#include <AzCore/Debug/Timer.h>
 
 #include "AzslCompiler.h"
 #include "ShaderVariantAssetBuilder.h"
 #include "ShaderBuilderUtility.h"
 #include "ShaderPlatformInterfaceRequest.h"
-#include "AtomShaderConfig.h"
+#include "ShaderBuildArgumentsManager.h"
 
 #include <AssetBuilderSDK/AssetBuilderSDK.h>
 #include <AssetBuilderSDK/SerializationDependencies.h>
@@ -59,23 +60,112 @@ namespace AZ
         static constexpr char ShaderAssetBuilderName[] = "ShaderAssetBuilder";
         static constexpr uint32_t ShaderAssetBuildTimestampParam = 0;
 
-        void ShaderAssetBuilder::CreateJobs(const AssetBuilderSDK::CreateJobsRequest& request, AssetBuilderSDK::CreateJobsResponse& response) const
+        //! The search will start in @currentFolderPath.
+        //! if the file is not found then it searches in order of appearence in @includeDirectories.
+        //! If the search yields no existing file it returns an empty string.
+        static AZStd::string DiscoverFullPath(AZStd::string_view normalizedRelativePath, AZStd::string_view currentFolderPath, const AZStd::vector<AZStd::string>& includeDirectories)
         {
             AZStd::string fullPath;
-            AzFramework::StringFunc::Path::ConstructFull(request.m_watchFolder.data(), request.m_sourceFile.data(), fullPath, true);
+            AzFramework::StringFunc::Path::Join(currentFolderPath.data(), normalizedRelativePath.data(), fullPath);
+            if (AZ::IO::SystemFile::Exists(fullPath.c_str()))
+            {
+                return fullPath;
+            }
 
-            AZ_TracePrintf(ShaderAssetBuilderName, "CreateJobs for Shader \"%s\"\n", fullPath.data());
+            for (const auto &includeDir : includeDirectories)
+            {
+                AzFramework::StringFunc::Path::Join(includeDir.c_str(), normalizedRelativePath.data(), fullPath);
+                if (AZ::IO::SystemFile::Exists(fullPath.c_str()))
+                {
+                    return fullPath;
+                }
+            }
+
+            return "";
+        }
+
+        // Appends to @includedFiles normalized paths of possible future locations of the file @normalizedRelativePath.
+        // The future locations are each directory listed in @includeDirectories joined with @normalizedRelativePath.
+        // This function is called when an included file doesn't exist but We need to declare source dependency so a .shader
+        // asset is rebuilt when the missing file appears in the future.
+        static void AppendListOfPossibleFutureLocations(AZStd::unordered_set<AZStd::string>& includedFiles, AZStd::string_view normalizedRelativePath, AZStd::string_view currentFolderPath, const AZStd::vector<AZStd::string>& includeDirectories)
+        {
+            AZStd::string fullPath;
+            AzFramework::StringFunc::Path::Join(currentFolderPath.data(), normalizedRelativePath.data(), fullPath);
+            includedFiles.insert(fullPath);
+            for (const auto &includeDir : includeDirectories)
+            {
+                AzFramework::StringFunc::Path::Join(includeDir.c_str(), normalizedRelativePath.data(), fullPath);
+                includedFiles.insert(fullPath);
+            }
+        }
+
+        //! Parses, using depth-first recursive approach, azsl files. Looks for '#include <foo/bar/blah.h>' or '#include "foo/bar/blah.h"' lines
+        //! and in turn parses the included files.
+        //! The included files are searched in the directories listed in @includeDirectories. Basically it's a similar approach
+        //! as how most C-preprocessors would find included files.
+        static void GetListOfIncludedFiles(AZStd::string_view sourceFilePath, const AZStd::vector<AZStd::string>& includeDirectories,
+            const ShaderBuilderUtility::IncludedFilesParser& includedFilesParser, AZStd::unordered_set<AZStd::string>& includedFiles)
+        {
+            auto outcome = includedFilesParser.ParseFileAndGetIncludedFiles(sourceFilePath);
+            if (!outcome.IsSuccess())
+            {
+                AZ_Warning(ShaderAssetBuilderName, false, outcome.GetError().c_str());
+                return;
+            }
+
+            // Cache the path of the folder where @sourceFilePath is located.
+            AZStd::string sourceFileFolderPath;
+            {
+                AZStd::string drive;
+                AzFramework::StringFunc::Path::Split(sourceFilePath.data(), &drive, &sourceFileFolderPath);
+                if (!drive.empty())
+                {
+                    AzFramework::StringFunc::Path::Join(drive.c_str(), sourceFileFolderPath.c_str(), sourceFileFolderPath);
+                }
+            }
+
+            auto listOfRelativePaths = outcome.TakeValue();
+            for (auto relativePath : listOfRelativePaths)
+            {
+                auto fullPath = DiscoverFullPath(relativePath, sourceFileFolderPath, includeDirectories);
+                if (fullPath.empty())
+                {
+                    // The file doesn't exist in any of the includeDirectories. It doesn't exist in @sourceFileFolderPath either.
+                    // The file may appear in the future in one of those directories, We must build an exhaustive list
+                    // of full file paths where the file may appear in the future.
+                    AppendListOfPossibleFutureLocations(includedFiles, relativePath, sourceFileFolderPath, includeDirectories);
+                    continue;
+                }
+
+                // Add the file to the list and keep parsing recursively.
+                if (includedFiles.count(fullPath))
+                {
+                    continue;
+                }
+                includedFiles.insert(fullPath);
+                GetListOfIncludedFiles(fullPath, includeDirectories, includedFilesParser, includedFiles);
+            }
+        }
+
+        void ShaderAssetBuilder::CreateJobs(const AssetBuilderSDK::CreateJobsRequest& request, AssetBuilderSDK::CreateJobsResponse& response) const
+        {
+            AZStd::string shaderAssetSourceFileFullPath;
+            AzFramework::StringFunc::Path::ConstructFull(request.m_watchFolder.data(), request.m_sourceFile.data(), shaderAssetSourceFileFullPath, true);
+            ShaderBuilderUtility::IncludedFilesParser includedFilesParser;
+
+            AZ_TracePrintf(ShaderAssetBuilderName, "CreateJobs for Shader \"%s\"\n", shaderAssetSourceFileFullPath.data());
 
             // Used to synchronize versions of the ShaderAsset and ShaderVariantTreeAsset, especially during hot-reload.
             // Note it's probably important for this to be set once outside the platform loop so every platform's ShaderAsset
             // has the same value, because later the ShaderVariantTreeAsset job will fetch this value from the local ShaderAsset
             // which could cross platforms (i.e. building an android ShaderVariantTreeAsset on PC would fetch the tiemstamp from
             // the PC's ShaderAsset).
-            AZStd::sys_time_t shaderAssetBuildTimestamp = AZStd::GetTimeNowMicroSecond();
+            AZ::u64 shaderAssetBuildTimestamp = AZStd::GetTimeUTCMilliSecond();
 
             // Need to get the name of the azsl file from the .shader source asset, to be able to declare a dependency to SRG Layout Job.
             // and the macro options to preprocess.
-            auto descriptorParseOutcome = ShaderBuilderUtility::LoadShaderDataJson(fullPath);
+            auto descriptorParseOutcome = ShaderBuilderUtility::LoadShaderDataJson(shaderAssetSourceFileFullPath);
             if (!descriptorParseOutcome.IsSuccess())
             {
                 AZ_Error(
@@ -87,43 +177,33 @@ namespace AZ
             RPI::ShaderSourceData shaderSourceData = descriptorParseOutcome.TakeValue();
 
             AZStd::string azslFullPath;
-            ShaderBuilderUtility::GetAbsolutePathToAzslFile(fullPath, shaderSourceData.m_source, azslFullPath);
-            if (!IO::FileIOBase::GetInstance()->Exists(azslFullPath.c_str()))
-            {
-                AZ_Error(
-                    ShaderAssetBuilderName, false, "Shader program listed as the source entry does not exist: %s.", azslFullPath.c_str());
-                response.m_result = AssetBuilderSDK::CreateJobsResultCode::Failed;
-                return;
-            }
-
-
-            GlobalBuildOptions buildOptions = ReadBuildOptions(ShaderAssetBuilderName);
-
-            // [GFX TODO] [ATOM-14966] In principle, based on macro definitions, included files can change per supervariant.
-            //                         So, the list of source asset dependencies must be collected by running MCPP on each supervariant.
-            //                         For now, we will run MCPP only once because CreateJobs() should be as light as possible.
-            // 
-            // Regardless of the PlatformInfo and enabled ShaderPlatformInterfaces, the azsl file will be preprocessed
-            // with the sole purpose of extracting all included files. For each included file a SourceDependency will be declared.
-            PreprocessorData output;
-            buildOptions.m_compilerArguments.Merge(shaderSourceData.m_compiler);
-            PreprocessFile(azslFullPath, output, buildOptions.m_preprocessorSettings, true, true);
-            for (auto includePath : output.includedPaths)
-            {
-                // m_sourceFileDependencyList does not support paths with "." or ".." for relative lookup, but the preprocessor
-                // may produce path strings like "C:/a/b/c/../../d/file.azsli" so we have to normalize
-                AzFramework::StringFunc::Path::Normalize(includePath);
-
-                AssetBuilderSDK::SourceFileDependency includeFileDependency;
-                includeFileDependency.m_sourceFileDependencyPath = includePath;
-                response.m_sourceFileDependencyList.emplace_back(includeFileDependency);
-            }
+            ShaderBuilderUtility::GetAbsolutePathToAzslFile(shaderAssetSourceFileFullPath, shaderSourceData.m_source, azslFullPath);
 
             {
                 // Add the AZSL as source dependency
                 AssetBuilderSDK::SourceFileDependency azslFileDependency;
                 azslFileDependency.m_sourceFileDependencyPath = azslFullPath;
                 response.m_sourceFileDependencyList.emplace_back(azslFileDependency);
+            }
+
+            if (!IO::FileIOBase::GetInstance()->Exists(azslFullPath.c_str()))
+            {
+                AZ_Error(
+                    ShaderAssetBuilderName, false, "Shader program listed as the source entry does not exist: %s.", azslFullPath.c_str());
+                // Even though there was an error here, don't stop, because we need to report the SourceFileDependency so when the azsl
+                // file shows up the AP will try to recompile. We will go ahead and create the job anyway, and then ProcessJob can
+                // report the failure.
+            }
+
+            auto projectIncludePaths = BuildListOfIncludeDirectories(ShaderAssetBuilderName);
+
+            AZStd::unordered_set<AZStd::string> includedFiles;
+            GetListOfIncludedFiles(azslFullPath, projectIncludePaths, includedFilesParser, includedFiles);
+            for (auto includePath : includedFiles)
+            {
+                AssetBuilderSDK::SourceFileDependency includeFileDependency;
+                includeFileDependency.m_sourceFileDependencyPath = includePath;
+                response.m_sourceFileDependencyList.emplace_back(includeFileDependency);
             }
 
             for (const AssetBuilderSDK::PlatformInfo& platformInfo : request.m_enabledPlatforms)
@@ -139,14 +219,17 @@ namespace AZ
 
                 AssetBuilderSDK::JobDescriptor jobDescriptor;
                 jobDescriptor.m_priority = 2;
-                // [GFX TODO][ATOM-2830] Set 'm_critical' back to 'false' once proper fix for Atom startup issues are in 
-                jobDescriptor.m_critical = true;
+                jobDescriptor.m_critical = false;
                 jobDescriptor.m_jobKey = ShaderAssetBuilderJobKey;
                 jobDescriptor.SetPlatformIdentifier(platformInfo.m_identifier.c_str());
                 jobDescriptor.m_jobParameters.emplace(ShaderAssetBuildTimestampParam, AZStd::to_string(shaderAssetBuildTimestamp));
 
                 response.m_createJobOutputs.push_back(jobDescriptor);
             }  // for all request.m_enabledPlatforms
+
+            AZ_TracePrintf(
+                ShaderAssetBuilderName, "CreateJobs for %s took %llu milliseconds", shaderAssetSourceFileFullPath.c_str(),
+                AZStd::GetTimeUTCMilliSecond() - shaderAssetBuildTimestamp);
 
             response.m_result = AssetBuilderSDK::CreateJobsResultCode::Success;
         }
@@ -227,11 +310,9 @@ namespace AZ
 
             if (!hasRasterProgram && !hasComputeProgram && !hasRayTracingProgram)
             {
-                AZStd::string entryPointNames = ShaderBuilderUtility::GetAcceptableDefaultEntryPointNames(azslData);
                 return AZ::Failure(
-                    AZStd::string::format( "Shader asset descriptor has a program variant that does not define any entry points. Either declare entry "
-                    "points in the .shader file, or use one of the available default names (not case-sensitive): [%s]",
-                    entryPointNames.c_str()));
+                    AZStd::string( "Shader asset descriptor has a program variant that does not define any entry points."
+                        " Please declare entry points in the .shader file."));
             }
 
             return AZ::Success(attributeMaps);
@@ -239,7 +320,9 @@ namespace AZ
 
         void ShaderAssetBuilder::ProcessJob(const AssetBuilderSDK::ProcessJobRequest& request, AssetBuilderSDK::ProcessJobResponse& response) const
         {
-            const AZStd::sys_time_t startTime = AZStd::GetTimeNowTicks();
+            AZ::Debug::Timer timer;
+            timer.Stamp();
+
             AZStd::string shaderFullPath;
             AzFramework::StringFunc::Path::ConstructFull(request.m_watchFolder.c_str(), request.m_sourceFile.c_str(), shaderFullPath, true);
             // Save .shader file name (no extension and no parent directory path)
@@ -256,7 +339,15 @@ namespace AZ
             // The directory where the Azsl file was found must be added to the list of include paths
             AZStd::string azslFolderPath;
             AzFramework::StringFunc::Path::GetFolderPath(azslFullPath.c_str(), azslFolderPath);
-            GlobalBuildOptions buildOptions = ReadBuildOptions(ShaderAssetBuilderName, azslFolderPath.c_str());
+            auto projectIncludePaths = BuildListOfIncludeDirectories(ShaderAssetBuilderName, azslFolderPath.c_str());
+
+            ShaderBuildArgumentsManager buildArgsManager;
+            buildArgsManager.Init();
+            // A job always runs on behalf of an Asset Processing platform (aka PlatformInfo).
+            // Let's merge the shader build arguments of the current PlatformInfo with the global
+            // set of arguments.
+            const auto platformName = ShaderBuilderUtility::GetPlatformNameFromPlatformInfo(request.m_platformInfo);
+            buildArgsManager.PushArgumentScope(platformName);
 
             // Request the list of valid shader platform interfaces for the target platform.
             AZStd::vector<RHI::ShaderPlatformInterface*> platformInterfaces = ShaderBuilderUtility::DiscoverEnabledShaderPlatformInterfaces(
@@ -271,8 +362,8 @@ namespace AZ
                 return;
             }
 
-            // Get the time stamp string as sys_time_t, and also convert back to string to make sure it was converted correctly.
-            AZStd::sys_time_t shaderAssetBuildTimestamp = 0;
+            // Get the time stamp string as u64, and also convert back to string to make sure it was converted correctly.
+            AZ::u64 shaderAssetBuildTimestamp = 0;
             auto shaderAssetBuildTimestampIterator = request.m_jobDescription.m_jobParameters.find(ShaderAssetBuildTimestampParam);
             if (shaderAssetBuildTimestampIterator != request.m_jobDescription.m_jobParameters.end())
             {
@@ -284,6 +375,13 @@ namespace AZ
                     AZ_Assert(false, "Incorrect conversion of ShaderAssetBuildTimestampParam");
                     return;
                 }
+            }
+            else
+            {
+                // CreateJobs was not successful if there's no timestamp property in m_jobParameters.
+                response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed;
+                AZ_Assert(false, "Missing ShaderAssetBuildTimestampParam");
+                return;
             }
 
             auto supervariantList = ShaderBuilderUtility::GetSupervariantListFromShaderSourceData(shaderSourceData);
@@ -319,14 +417,14 @@ namespace AZ
             // Remark: In general, the work done by the ShaderVariantAssetBuilder is similar, but it will start from the HLSL file created; in step 2, mentioned above; by this builder,
             // for each supervariant. 
 
-            // At this moment We have global build options that should be merged with the build options that are common
-            // to all the supervariants of this shader.
-            buildOptions.m_compilerArguments.Merge(shaderSourceData.m_compiler);
-
             for (RHI::ShaderPlatformInterface* shaderPlatformInterface : platformInterfaces)
             {
                 AZStd::string apiName(shaderPlatformInterface->GetAPIName().GetCStr());
                 AZ_TraceContext("Platform API", apiName);
+
+                buildArgsManager.PushArgumentScope(apiName);
+                buildArgsManager.PushArgumentScope(shaderSourceData.m_removeBuildArguments, shaderSourceData.m_addBuildArguments, shaderSourceData.m_definitions);
+
                 // Signal the begin of shader data for an RHI API.
                 shaderAssetCreator.BeginAPI(shaderPlatformInterface->GetAPIType());
 
@@ -346,21 +444,12 @@ namespace AZ
                     return;
                 }
 
-                // Cache common AZSLC invokation arguments related with the current RHI Backend.
-                // Each supervariant can, optionally, remove or add more arguments for AZSLc.
-                AZStd::string commonAzslcCompilerParameters =
-                    shaderPlatformInterface->GetAzslCompilerParameters(buildOptions.m_compilerArguments);
-                commonAzslcCompilerParameters += " ";
-                commonAzslcCompilerParameters +=
-                    shaderPlatformInterface->GetAzslCompilerWarningParameters(buildOptions.m_compilerArguments);
-                AtomShaderConfig::AddParametersFromConfigFile(commonAzslcCompilerParameters, request.m_platformInfo);
-
                 // The register number only makes sense if the platform uses "spaces",
                 // since the register Id of the resource will not change even if the pipeline layout changes.
                 // We can pass in a default ShaderCompilerArguments because all we care about is whether the shaderPlatformInterface
                 // appends the "--use-spaces" flag.
-                const bool platformUsesRegisterSpaces =
-                    (AzFramework::StringFunc::Find(commonAzslcCompilerParameters, "--use-spaces") != AZStd::string::npos);
+                const auto& azslcArguments = buildArgsManager.GetCurrentArguments().m_azslcArguments;
+                const bool platformUsesRegisterSpaces = RHI::ShaderBuildArguments::HasArgument(azslcArguments, "--use-spaces");
 
                 uint32_t supervariantIndex = 0;
                 for (const auto& supervariantInfo : supervariantList)
@@ -372,22 +461,15 @@ namespace AZ
                         return;
                     }
 
+                    buildArgsManager.PushArgumentScope(supervariantInfo.m_removeBuildArguments, supervariantInfo.m_addBuildArguments, supervariantInfo.m_definitions);
+
                     shaderAssetCreator.BeginSupervariant(supervariantInfo.m_name);
 
-                    // Let's combine the global macro definitions, with the macro definitions particular to this
-                    // supervariant. Two steps:
-                    // 1- Supervariants can specify which macros to remove from the global definitions.
-                    AZStd::vector<AZStd::string> macroDefinitionNamesToRemove = supervariantInfo.GetCombinedListOfMacroDefinitionNamesToRemove();
-                    PreprocessorOptions preprocessorOptions = buildOptions.m_preprocessorSettings;
-                    preprocessorOptions.RemovePredefinedMacros(macroDefinitionNamesToRemove);
-                    // 2- Supervariants can specify which macros to add.
-                    AZStd::vector<AZStd::string> macroDefinitionsToAdd = supervariantInfo.GetMacroDefinitionsToAdd();
-                    preprocessorOptions.m_predefinedMacros.insert(
-                        preprocessorOptions.m_predefinedMacros.end(), macroDefinitionsToAdd.begin(), macroDefinitionsToAdd.end());
                     // Run the preprocessor.
                     PreprocessorData output;
-                    PreprocessFile(prependedAzslFilePath, output, preprocessorOptions, true, true);
-                    RHI::ReportErrorMessages(ShaderAssetBuilderName, output.diagnostics);
+                    auto preprocessorArguments = AppendIncludePathsToArgumentList(buildArgsManager.GetCurrentArguments().m_preprocessorArguments, projectIncludePaths);
+                    const bool preprocessorSuccess = PreprocessFile(prependedAzslFilePath, output, preprocessorArguments,  true);
+                    RHI::ReportMessages(ShaderAssetBuilderName, output.diagnostics, !preprocessorSuccess);
                     // Dump the preprocessed string as a flat AZSL file with extension .azslin, which will be given to AZSLc to generate the HLSL file.
                     AZStd::string superVariantAzslinStemName = shaderFileName;
                     if (!supervariantInfo.m_name.IsEmpty())
@@ -404,15 +486,11 @@ namespace AZ
                     }
                     AZ_TracePrintf(ShaderAssetBuilderName, "Preprocessed AZSL File: %s \n", prependedAzslFilePath.c_str());
 
-                    // Before transpiling the flat-AZSL(.azslin) file into HLSL it is necessary
-                    // to setup the AZSLc arguments as required by the current supervariant.
-                    AZStd::string azslcCompilerParameters = supervariantInfo.GetCustomizedArgumentsForAzslc(commonAzslcCompilerParameters);
-
                     // Ready to transpile the azslin file into HLSL.
                     ShaderBuilder::AzslCompiler azslc(azslinFullPath);
                     AZStd::string hlslFullPath = AZStd::string::format("%s_%s.hlsl", superVariantAzslinStemName.c_str(), apiName.c_str());
                     AzFramework::StringFunc::Path::Join(request.m_tempDirPath.c_str(), hlslFullPath.c_str(), hlslFullPath, true);
-                    auto emitFullOutcome = azslc.EmitFullData(azslcCompilerParameters, hlslFullPath);
+                    auto emitFullOutcome = azslc.EmitFullData(buildArgsManager.GetCurrentArguments().m_azslcArguments, hlslFullPath);
                     if (!emitFullOutcome.IsSuccess())
                     {
                         response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed;
@@ -462,7 +540,7 @@ namespace AZ
                     {
                         finalShaderOptionGroupLayout = shaderOptionGroupLayout;
                         shaderAssetCreator.SetShaderOptionGroupLayout(finalShaderOptionGroupLayout);
-                        const uint32_t usedShaderOptionBits = shaderOptionGroupLayout->GetBitSize();
+                        [[maybe_unused]] const uint32_t usedShaderOptionBits = shaderOptionGroupLayout->GetBitSize();
                         AZ_TracePrintf(
                             ShaderAssetBuilderName, "Note: This shader uses %u of %u available shader variant key bits. \n",
                             usedShaderOptionBits, RPI::ShaderVariantKeyBitCount);
@@ -479,21 +557,18 @@ namespace AZ
                         }
                     }
 
-                    // Discover entry points & type of programs.
-                    MapOfStringToStageType shaderEntryPoints;
                     if (shaderSourceData.m_programSettings.m_entryPoints.empty())
                     {
-                        AZ_TracePrintf(
-                            ShaderAssetBuilderName,
-                            "ProgramSettings do not specify entry points, will use GetDefaultEntryPointsFromShader()\n");
-                        ShaderBuilderUtility::GetDefaultEntryPointsFromFunctionDataList(azslData.m_functions, shaderEntryPoints);
+                        AZ_Error( ShaderAssetBuilderName, false, "ProgramSettings must specify entry points.");
+                        response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed;
+                        return;
                     }
-                    else
+
+                    // Discover entry points & type of programs.
+                    MapOfStringToStageType shaderEntryPoints;
+                    for (const auto& entryPoint : shaderSourceData.m_programSettings.m_entryPoints)
                     {
-                        for (const auto& entryPoint : shaderSourceData.m_programSettings.m_entryPoints)
-                        {
-                            shaderEntryPoints[entryPoint.m_name] = entryPoint.m_type;
-                        }
+                        shaderEntryPoints[entryPoint.m_name] = entryPoint.m_type;
                     }
 
                     bool hasRasterProgram = false;
@@ -517,7 +592,7 @@ namespace AZ
 
                     RHI::Ptr<RHI::PipelineLayoutDescriptor> pipelineLayoutDescriptor =
                         ShaderBuilderUtility::BuildPipelineLayoutDescriptorForApi(
-                            ShaderAssetBuilderName, srgLayoutList, shaderEntryPoints, buildOptions.m_compilerArguments, rootConstantData,
+                            ShaderAssetBuilderName, srgLayoutList, shaderEntryPoints, buildArgsManager.GetCurrentArguments(), rootConstantData,
                             shaderPlatformInterface, bindingDependencies);
                     if (!pipelineLayoutDescriptor)
                     {
@@ -558,7 +633,7 @@ namespace AZ
                         shaderAssetCreator.SetRenderStates(renderStates);
                     }
 
-                    Outcome<AZStd::string, AZStd::string> hlslSourceCodeOutcome = Utils::ReadFile(hlslFullPath);
+                    Outcome<AZStd::string, AZStd::string> hlslSourceCodeOutcome = Utils::ReadFile(hlslFullPath, AZ::RPI::JsonUtils::DefaultMaxFileSize);
                     if (!hlslSourceCodeOutcome.IsSuccess())
                     {
                         AZ_Error(
@@ -583,9 +658,9 @@ namespace AZ
                     ShaderVariantCreationContext shaderVariantCreationContext = {
                         *shaderPlatformInterface,
                         request.m_platformInfo,
-                        buildOptions.m_compilerArguments,
+                        buildArgsManager.GetCurrentArguments(),
                         request.m_tempDirPath,
-                        startTime,
+                        shaderAssetBuildTimestamp,
                         shaderSourceData,
                         *shaderOptionGroupLayout.get(),
                         shaderEntryPoints,
@@ -643,11 +718,13 @@ namespace AZ
                         }
                     }
 
-
+                    buildArgsManager.PopArgumentScope();
                     supervariantIndex++;
 
                 } // end for the supervariant
 
+                buildArgsManager.PopArgumentScope(); // Pop  .shader arguments
+                buildArgsManager.PopArgumentScope(); // Pop rhi api arguments.
                 shaderAssetCreator.EndAPI();
 
             } // end for all ShaderPlatformInterfaces
@@ -666,12 +743,8 @@ namespace AZ
             }
             
             response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
-            
-            const AZStd::sys_time_t endTime = AZStd::GetTimeNowTicks();
-            const AZStd::sys_time_t deltaTime = endTime - startTime;
-            const float elapsedTimeSeconds = (float)(deltaTime) / (float)AZStd::GetTimeTicksPerSecond();
-            
-            AZ_TracePrintf(ShaderAssetBuilderName, "Finished processing %s in %.2f seconds\n", request.m_sourceFile.c_str(), elapsedTimeSeconds);
+                        
+            AZ_TracePrintf(ShaderAssetBuilderName, "Finished processing %s in %.3f seconds\n", request.m_sourceFile.c_str(), timer.GetDeltaTimeInSeconds());
             
             ShaderBuilderUtility::LogProfilingData(ShaderAssetBuilderName, shaderFileName);
         }

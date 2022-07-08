@@ -10,6 +10,8 @@ set(FILES
     dllmain.cpp
     ComponentEntityEditorPlugin.h
     ComponentEntityEditorPlugin.cpp
+    ContextMenuHandlers.h
+    ContextMenuHandlers.cpp
     SandboxIntegration.h
     SandboxIntegration.cpp
     UI/QComponentEntityEditorMainWindow.h
@@ -20,19 +22,7 @@ set(FILES
     UI/QComponentEntityEditorOutlinerWindow.cpp
     UI/AssetCatalogModel.h
     UI/AssetCatalogModel.cpp
-    UI/ComponentPalette/CategoriesList.h
-    UI/ComponentPalette/CategoriesList.cpp
-    UI/ComponentPalette/ComponentDataModel.h
-    UI/ComponentPalette/ComponentDataModel.cpp
     UI/ComponentPalette/ComponentPaletteSettings.h
-    UI/ComponentPalette/ComponentPaletteWindow.h
-    UI/ComponentPalette/ComponentPaletteWindow.cpp
-    UI/ComponentPalette/FavoriteComponentList.h
-    UI/ComponentPalette/FavoriteComponentList.cpp
-    UI/ComponentPalette/FilteredComponentList.h
-    UI/ComponentPalette/FilteredComponentList.cpp
-    UI/ComponentPalette/InformationPanel.h
-    UI/ComponentPalette/InformationPanel.cpp
     UI/Outliner/OutlinerDisplayOptionsMenu.h
     UI/Outliner/OutlinerDisplayOptionsMenu.cpp
     UI/Outliner/OutlinerTreeView.hxx

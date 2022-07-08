@@ -13,7 +13,7 @@
 #include <AzCore/Module/Environment.h>
 
 #if defined(PLATFORM_SUPPORTS_AWS_NATIVE_SDK)
-
+#include <AzCore/PlatformIncl.h>
 // The AWS Native SDK AWSAllocator triggers a warning due to accessing members of std::allocator directly.
 // AWSAllocator.h(70): warning C4996: 'std::allocator<T>::pointer': warning STL4010: Various members of std::allocator are deprecated in C++17.
 // Use std::allocator_traits instead of accessing these members directly.

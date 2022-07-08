@@ -16,19 +16,21 @@ namespace AzPhysics
 {
     class CollisionGroup;
     class CollisionLayer;
-}
+} // namespace AzPhysics
 
 namespace physx
 {
     class PxScene;
     class PxSceneDesc;
     class PxConvexMesh;
+    class PxHeightField;
     class PxTriangleMesh;
     class PxShape;
     class PxCooking;
     class PxControllerManager;
     struct PxFilterData;
-}
+    struct PxHeightFieldSample;
+} // namespace physx
 
 namespace PhysX
 {
@@ -41,6 +43,8 @@ namespace PhysX
     public:
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
+
+        using MutexType = AZStd::recursive_mutex;
 
         virtual ~SystemRequests() = default;
 
@@ -62,6 +66,13 @@ namespace PhysX
         /// @param bufferSize Size of the cookedMeshData buffer in bytes.
         /// @return Pointer to the created mesh.
         virtual physx::PxTriangleMesh* CreateTriangleMeshFromCooked(const void* cookedMeshData, AZ::u32 bufferSize) = 0;
+
+        /// Creates a new heightfield.
+        /// @param samples Pointer to beginning of heightfield sample data.
+        /// @param numColumns Number of columns in the heightfield.
+        /// @param numRows Number of rows in the heightfield.
+        /// @return Pointer to the created heightfield.
+        virtual physx::PxHeightField* CreateHeightField(const physx::PxHeightFieldSample* samples, size_t numColumns, size_t numRows) = 0;
 
         /// Creates PhysX collision filter data from generic collision filtering settings.
         /// @param layer The collision layer the object belongs to.

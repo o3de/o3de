@@ -9,6 +9,9 @@
 
 #include "CrySystem_precompiled.h"
 #include "SystemEventDispatcher.h"
+#include <AzCore/Debug/Profiler.h>
+
+AZ_DECLARE_BUDGET(CrySystem);
 
 CSystemEventDispatcher::CSystemEventDispatcher()
     : m_listeners(0)
@@ -17,17 +20,17 @@ CSystemEventDispatcher::CSystemEventDispatcher()
 
 bool CSystemEventDispatcher::RegisterListener(ISystemEventListener* pListener)
 {
-    m_listenerRegistrationLock.Lock();
+    m_listenerRegistrationLock.lock();
     bool ret = m_listeners.Add(pListener);
-    m_listenerRegistrationLock.Unlock();
+    m_listenerRegistrationLock.unlock();
     return ret;
 }
 
 bool CSystemEventDispatcher::RemoveListener(ISystemEventListener* pListener)
 {
-    m_listenerRegistrationLock.Lock();
+    m_listenerRegistrationLock.lock();
     m_listeners.Remove(pListener);
-    m_listenerRegistrationLock.Unlock();
+    m_listenerRegistrationLock.unlock();
     return true;
 }
 
@@ -35,12 +38,12 @@ bool CSystemEventDispatcher::RemoveListener(ISystemEventListener* pListener)
 //////////////////////////////////////////////////////////////////////////
 void CSystemEventDispatcher::OnSystemEventAnyThread(ESystemEvent event, UINT_PTR wparam, UINT_PTR lparam)
 {
-    m_listenerRegistrationLock.Lock();
+    m_listenerRegistrationLock.lock();
     for (TSystemEventListeners::Notifier notifier(m_listeners); notifier.IsValid(); notifier.Next())
     {
         notifier->OnSystemEventAnyThread(event, wparam, lparam);
     }
-    m_listenerRegistrationLock.Unlock();
+    m_listenerRegistrationLock.unlock();
 }
 
 
@@ -71,7 +74,7 @@ void CSystemEventDispatcher::OnSystemEvent(ESystemEvent event, UINT_PTR wparam, 
 //////////////////////////////////////////////////////////////////////////
 void CSystemEventDispatcher::Update()
 {
-    AZ_TRACE_METHOD();
+    AZ_PROFILE_FUNCTION(CrySystem);
     assert(gEnv && gEnv->mMainThreadId == CryGetCurrentThreadId());
 
     SEventParams params;

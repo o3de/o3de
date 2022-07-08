@@ -7,9 +7,16 @@
  */
 
 #include <Source/ReplicationWindows/NullReplicationWindow.h>
+#include <Source/AutoGen/Multiplayer.AutoPackets.h>
 
 namespace Multiplayer
 {
+    NullReplicationWindow::NullReplicationWindow(AzNetworking::IConnection* connection)
+        : m_connection(connection)
+    {
+        ;
+    }
+
     bool NullReplicationWindow::ReplicationSetUpdateReady()
     {
         return true;
@@ -34,6 +41,48 @@ namespace Multiplayer
     void NullReplicationWindow::UpdateWindow()
     {
         ;
+    }
+
+    AzNetworking::PacketId NullReplicationWindow::SendEntityUpdateMessages(NetworkEntityUpdateVector& entityUpdateVector)
+    {
+        MultiplayerPackets::EntityUpdates entityUpdatePacket;
+        entityUpdatePacket.SetHostTimeMs(GetNetworkTime()->GetHostTimeMs());
+        entityUpdatePacket.SetHostFrameId(GetNetworkTime()->GetHostFrameId());
+        entityUpdatePacket.SetEntityMessages(entityUpdateVector);
+        return m_connection->SendUnreliablePacket(entityUpdatePacket);
+    }
+
+    void NullReplicationWindow::SendEntityRpcs(NetworkEntityRpcVector& entityRpcVector, bool reliable)
+    {
+        MultiplayerPackets::EntityRpcs entityRpcsPacket;
+        entityRpcsPacket.SetEntityRpcs(entityRpcVector);
+        if (reliable)
+        {
+            m_connection->SendReliablePacket(entityRpcsPacket);
+        }
+        else
+        {
+            m_connection->SendUnreliablePacket(entityRpcsPacket);
+        }
+    }
+
+    void NullReplicationWindow::SendEntityResets(const NetEntityIdSet& resetIds)
+    {
+        MultiplayerPackets::RequestReplicatorReset entityResetPacket;
+        for (NetEntityId entityId : resetIds)
+        {
+            if (entityResetPacket.GetEntityIds().full())
+            {
+                m_connection->SendUnreliablePacket(entityResetPacket);
+                entityResetPacket.ModifyEntityIds().clear();
+            }
+            entityResetPacket.ModifyEntityIds().push_back(entityId);
+        }
+
+        if (!entityResetPacket.GetEntityIds().empty())
+        {
+            m_connection->SendUnreliablePacket(entityResetPacket);
+        }
     }
 
     void NullReplicationWindow::DebugDraw() const

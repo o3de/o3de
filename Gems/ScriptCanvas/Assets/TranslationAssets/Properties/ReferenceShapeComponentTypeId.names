@@ -1,0 +1,29 @@
+{
+    "entries": [
+        {
+            "base": "ReferenceShapeComponentTypeId",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "Reference Shape Component Type Id",
+                "category": "Constants/Editor"
+            },
+            "methods": [
+                {
+                    "base": "GetReferenceShapeComponentTypeId",
+                    "details": {
+                        "name": "Get Reference Shape Component Type Id"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                                "name": "AZ:: Uuid"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

@@ -1,0 +1,4 @@
+*.ptx filter=lfs diff=lfs merge=lfs -text
+*.tfx filter=lfs diff=lfs merge=lfs -text
+*.tfxbone filter=lfs diff=lfs merge=lfs -text
+*.tfxmesh filter=lfs diff=lfs merge=lfs -text

@@ -50,9 +50,9 @@ namespace EMStudio
         void FadeOutFinished();
 
     private:
-        QLabel*         mMessageLabel;
-        QToolButton*    mIcon;
-        QTimer*         mTimer;
-        int             mOpacity;
+        QLabel*         m_messageLabel;
+        QToolButton*    m_icon;
+        QTimer*         m_timer;
+        int             m_opacity;
     };
 } // namespace EMStudio

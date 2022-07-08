@@ -16,6 +16,7 @@
 #include <AzToolsFramework/API/EditorEntityAPI.h>
 #include <AzToolsFramework/Application/EditorEntityManager.h>
 #include <AzToolsFramework/Commands/PreemptiveUndoCache.h>
+#include <AzToolsFramework/Prefab/PrefabPublicNotificationBus.h>
 
 #pragma once
 
@@ -29,6 +30,7 @@ namespace AzToolsFramework
     class ToolsApplication
         : public AzFramework::Application
         , public ToolsApplicationRequests::Bus::Handler
+        , public AzToolsFramework::Prefab::PrefabPublicNotificationBus::Handler
     {
     public:
         AZ_RTTI(ToolsApplication, "{2895561E-BE90-4CC3-8370-DD46FCF74C01}", AzFramework::Application);
@@ -37,7 +39,7 @@ namespace AzToolsFramework
         ToolsApplication(int* argc = nullptr, char*** argv = nullptr);
         ~ToolsApplication();
 
-        void Stop();
+        void Stop() override;
         void CreateReflectionManager() override;
         void Reflect(AZ::ReflectContext* context) override;
 
@@ -115,6 +117,7 @@ namespace AzToolsFramework
         AZ::EntityId CreateNewEntity(AZ::EntityId parentId = AZ::EntityId()) override;
         AZ::EntityId CreateNewEntityAtPosition(const AZ::Vector3& pos, AZ::EntityId parentId = AZ::EntityId()) override;
         AZ::EntityId GetExistingEntity(AZ::u64 id) override;
+        bool EntityExists(AZ::EntityId id) override;
         void DeleteSelected() override;
         void DeleteEntityById(AZ::EntityId entityId) override;
         void DeleteEntities(const EntityIdList& entities) override;
@@ -168,6 +171,14 @@ namespace AzToolsFramework
         };
         //////////////////////////////////////////////////////////////////////////
 
+        //////////////////////////////////////////////////////////////////////////
+        // PrefabPublicNotificationBus::Handler
+
+        void OnPrefabInstancePropagationBegin() override;
+        void OnPrefabInstancePropagationEnd() override;
+
+        //////////////////////////////////////////////////////////////////////////
+
         void CreateUndosForDirtyEntities();
         void ConsistencyCheckUndoCache();
         AZ::Aabb                            m_selectionBounds;
@@ -180,6 +191,7 @@ namespace AzToolsFramework
         bool                                m_isDuringUndoRedo;
         bool                                m_isInIsolationMode;
         EntityIdSet                         m_isolatedEntityIdSet;
+        bool                                m_freezeSelectionUpdates = false;
 
         EditorEntityAPI* m_editorEntityAPI = nullptr;
 

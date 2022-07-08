@@ -12,8 +12,12 @@
 #include <NewProjectSettingsScreen.h>
 #include <GemCatalog/GemCatalogScreen.h>
 #include <ProjectsScreen.h>
+#include <ProjectGemCatalogScreen.h>
 #include <UpdateProjectSettingsScreen.h>
+#include <GemsGemRepoScreen.h>
+#include <EngineScreenCtrl.h>
 #include <EngineSettingsScreen.h>
+#include <GemRepo/GemRepoScreen.h>
 
 namespace O3DE::ProjectManager
 {
@@ -32,6 +36,9 @@ namespace O3DE::ProjectManager
         case (ProjectManagerScreen::GemCatalog):
             newScreen = new GemCatalogScreen(parent);
             break;
+        case (ProjectManagerScreen::ProjectGemCatalog):
+            newScreen = new ProjectGemCatalogScreen(parent);
+            break;
         case (ProjectManagerScreen::Projects):
             newScreen = new ProjectsScreen(parent);
             break;
@@ -41,8 +48,17 @@ namespace O3DE::ProjectManager
         case (ProjectManagerScreen::UpdateProjectSettings):
             newScreen = new UpdateProjectSettingsScreen(parent);
             break;
+        case (ProjectManagerScreen::GemsGemRepos):
+            newScreen = new GemsGemRepoScreen(parent);
+            break;
+        case (ProjectManagerScreen::Engine):
+            newScreen = new EngineScreenCtrl(parent);
+            break;
         case (ProjectManagerScreen::EngineSettings):
             newScreen = new EngineSettingsScreen(parent);
+            break;
+        case (ProjectManagerScreen::GemRepos):
+            newScreen = new GemRepoScreen(parent);
             break;
         case (ProjectManagerScreen::Empty):
         default:

@@ -181,9 +181,78 @@ namespace UnitTest
         EXPECT_EQ(instance, instance3);
     }
 
-    void ParallelInstanceCreateHelper(size_t threadCountMax, size_t assetIdCount, size_t durationSeconds)
+    TEST_F(InstanceDatabaseTest, InstanceOrphan)
     {
-        printf("Testing threads=%zu assetIds=%zu ... ", threadCountMax, assetIdCount);
+        auto& assetManager = AssetManager::Instance();
+        auto& instanceDatabase = InstanceDatabase<TestInstanceA>::Instance();
+
+        Asset<TestAssetType> someAsset = assetManager.CreateAsset<TestAssetType>(s_assetId0, AZ::Data::AssetLoadBehavior::Default);
+
+        Instance<TestInstanceA> orphanedInstance = instanceDatabase.FindOrCreate(s_instanceId0, someAsset);
+        EXPECT_NE(orphanedInstance, nullptr);
+
+        instanceDatabase.TEMPOrphan(s_instanceId0);
+        // After orphan, the instance should not be found in the database, but it should still be valid
+        EXPECT_EQ(instanceDatabase.Find(s_instanceId0), nullptr);
+        EXPECT_NE(orphanedInstance, nullptr);
+
+        instanceDatabase.TEMPOrphan(s_instanceId0);
+        // Orphaning twice should be a no-op
+        EXPECT_EQ(instanceDatabase.Find(s_instanceId0), nullptr);
+        EXPECT_NE(orphanedInstance, nullptr);
+
+        Instance<TestInstanceA> instance2 = instanceDatabase.FindOrCreate(s_instanceId0, someAsset);
+        // Creating another instance with the same id should return a different instance than the one that was orphaned
+        EXPECT_NE(orphanedInstance, instance2);
+    }
+
+    enum class ParallelInstanceTestCases
+    {
+        Create,
+        CreateAndDeferRemoval,
+        CreateAndOrphan,
+        CreateDeferRemovalAndOrphan
+    };
+
+    enum class ParralleInstanceCurrentAction
+    {
+        Create,
+        DeferredRemoval,
+        Orphan
+    };
+
+    ParralleInstanceCurrentAction ParallelInstanceGetCurrentAction(const ParallelInstanceTestCases& testCase)
+    {
+        switch (testCase)
+        {
+        case ParallelInstanceTestCases::CreateAndDeferRemoval:
+            switch (rand() % 2)
+            {
+            case 0: return ParralleInstanceCurrentAction::Create;
+            case 1: return ParralleInstanceCurrentAction::DeferredRemoval;
+            }
+        case ParallelInstanceTestCases::CreateAndOrphan:
+            switch (rand() % 2)
+            {
+            case 0: return ParralleInstanceCurrentAction::Create;
+            case 1: return ParralleInstanceCurrentAction::Orphan;
+            }
+        case ParallelInstanceTestCases::CreateDeferRemovalAndOrphan:
+            switch (rand() % 3)
+            {
+            case 0: return ParralleInstanceCurrentAction::Create;
+            case 1: return ParralleInstanceCurrentAction::DeferredRemoval;
+            case 2: return ParralleInstanceCurrentAction::Orphan;
+            }
+        case ParallelInstanceTestCases::Create:
+        default:
+            return ParralleInstanceCurrentAction::Create;
+        }
+    }
+
+    void ParallelInstanceCreateHelper(const size_t& threadCountMax, const size_t& assetIdCount, const uint32_t& iterations, const ParallelInstanceTestCases& testCase)
+    {
+        //printf("Testing threads=%zu assetIds=%zu ... ", threadCountMax, assetIdCount);
 
         AZ::Debug::Timer timer;
         timer.Stamp();
@@ -192,6 +261,7 @@ namespace UnitTest
         auto& instanceManager = InstanceDatabase<TestInstanceA>::Instance();
 
         AZStd::vector<Uuid> guids;
+        AZStd::vector<Data::Instance<Data::InstanceData>> instances;
         AZStd::vector<Asset<TestAssetType>> assets;
 
         for (size_t i = 0; i < assetIdCount; ++i)
@@ -199,6 +269,7 @@ namespace UnitTest
             Uuid guid = Uuid::CreateRandom();
 
             guids.emplace_back(guid);
+            instances.emplace_back(nullptr);
 
             // Pre-create asset so we don't attempt to load it from the catalog.
             assets.emplace_back(assetManager.CreateAsset<TestAssetType>(guid, AZ::Data::AssetLoadBehavior::Default));
@@ -206,6 +277,7 @@ namespace UnitTest
 
         AZStd::vector<AZStd::thread> threads;
         AZStd::mutex mutex;
+        AZStd::mutex referenceTableMutex;
         AZStd::atomic<int> threadCount((int)threadCountMax);
         AZStd::condition_variable cv;
         AZStd::atomic_bool keepDispatching(true);
@@ -225,23 +297,49 @@ namespace UnitTest
         for (size_t i = 0; i < threadCountMax; ++i)
         {
             threads.emplace_back(
-                [&instanceManager, &threadCount, &cv, &guids, &assets, &durationSeconds]()
+                [&instanceManager, &threadCount, &cv, &guids, &instances, &assets, &iterations, &testCase, &referenceTableMutex]()
                 {
-                    AZ::Debug::Timer timer;
-                    timer.Stamp();
 
-                    while (timer.GetDeltaTimeInSeconds() < durationSeconds)
+                    bool deferRemoval = testCase == ParallelInstanceTestCases::CreateAndDeferRemoval ||
+                            testCase == ParallelInstanceTestCases::CreateDeferRemovalAndOrphan;
+
+                    for (uint32_t i = 0; i < iterations; ++i) // queue up a bunch of work
                     {
                         const size_t index = rand() % guids.size();
                         const Uuid uuid = guids[index];
                         const InstanceId instanceId{ uuid };
                         const AssetId assetId{ uuid };
 
-                        Instance<TestInstanceA> instance =
-                            instanceManager.FindOrCreate(instanceId, Asset<TestAssetType>(assetId, azrtti_typeid<TestAssetType>()));
-                        EXPECT_NE(instance, nullptr);
-                        EXPECT_EQ(instance->GetId(), instanceId);
-                        EXPECT_EQ(instance->m_asset, assets[index]);
+                        ParralleInstanceCurrentAction currentAction = ParallelInstanceGetCurrentAction(testCase);
+
+                        if (currentAction == ParralleInstanceCurrentAction::Orphan)
+                        {
+                            // Orphan the instance, but don't decrease its refcount
+                            instanceManager.TEMPOrphan(instanceId);
+                        }
+                        else if (currentAction == ParralleInstanceCurrentAction::DeferredRemoval)
+                        {
+                            // Drop the refcount to zero so the instance will be released
+                            referenceTableMutex.lock();
+                            instances[index] = nullptr;
+                            referenceTableMutex.unlock();
+                        }
+                        else
+                        {
+                            // Otherwise, add a new instance
+                            Instance<TestInstanceA> instance = instanceManager.FindOrCreate(instanceId, assets[index]);
+                            EXPECT_NE(instance, nullptr);
+                            EXPECT_EQ(instance->GetId(), instanceId);
+                            EXPECT_EQ(instance->m_asset, assets[index]);
+
+                            if (deferRemoval)
+                            {
+                                // Keep a reference to the instance alive so it can be removed later
+                                referenceTableMutex.lock();
+                                instances[index] = instance;
+                                referenceTableMutex.unlock();
+                            }
+                        }
                     }
 
                     threadCount--;
@@ -257,7 +355,7 @@ namespace UnitTest
             AZStd::unique_lock<AZStd::mutex> lock(mutex);
             timedOut =
                 (AZStd::cv_status::timeout ==
-                 cv.wait_until(lock, AZStd::chrono::system_clock::now() + AZStd::chrono::seconds(durationSeconds * 2)));
+                 cv.wait_until(lock, AZStd::chrono::system_clock::now() + AZStd::chrono::seconds(1)));
         }
 
         EXPECT_TRUE(threadCount == 0) << "One or more threads appear to be deadlocked at " << timer.GetDeltaTimeInSeconds() << " seconds";
@@ -270,48 +368,68 @@ namespace UnitTest
         keepDispatching = false;
         dispatchThread.join();
 
-        printf("Took %f seconds\n", timer.GetDeltaTimeInSeconds());
+        //printf("Took %f seconds\n", timer.GetDeltaTimeInSeconds());
     }
 
-    TEST_F(InstanceDatabaseTest, ParallelInstanceCreate)
+    void ParallelCreateTest(const ParallelInstanceTestCases& testCase)
     {
         // This is the original test scenario from when InstanceDatabase was first implemented
         //                           threads, AssetIds,  seconds
-        ParallelInstanceCreateHelper(8, 100, 5);
+        ParallelInstanceCreateHelper(8, 100, 5, testCase);
 
         // This value is checked in as 1 so this test doesn't take too much time, but can be increased locally to soak the test.
         const size_t attempts = 1;
 
         for (size_t i = 0; i < attempts; ++i)
         {
-            printf("Attempt %zu of %zu... \n", i, attempts);
+            //printf("Attempt %zu of %zu... \n", i, attempts);
 
             // The idea behind this series of tests is that there are two threads sharing one Instance, and both threads try to
             // create or release that instance at the same time.
             // At the time, this set of scenarios has something like a 10% failure rate.
-            const size_t duration = 2;
-            //                           threads, AssetIds, seconds
-            ParallelInstanceCreateHelper(2, 1, duration);
-            ParallelInstanceCreateHelper(4, 1, duration);
-            ParallelInstanceCreateHelper(8, 1, duration);
+            const uint32_t iterations = 1000;
+            //                           threads, AssetIds, iterations
+            ParallelInstanceCreateHelper(2, 1, iterations, testCase);
+            ParallelInstanceCreateHelper(4, 1, iterations, testCase);
+            ParallelInstanceCreateHelper(8, 1, iterations, testCase);
         }
 
         for (size_t i = 0; i < attempts; ++i)
         {
-            printf("Attempt %zu of %zu... \n", i, attempts);
+            //printf("Attempt %zu of %zu... \n", i, attempts);
 
             // Here we try a bunch of different threadCount:assetCount ratios to be thorough
-            const size_t duration = 2;
-            //                           threads, AssetIds, seconds
-            ParallelInstanceCreateHelper(2, 1, duration);
-            ParallelInstanceCreateHelper(4, 1, duration);
-            ParallelInstanceCreateHelper(4, 2, duration);
-            ParallelInstanceCreateHelper(4, 4, duration);
-            ParallelInstanceCreateHelper(8, 1, duration);
-            ParallelInstanceCreateHelper(8, 2, duration);
-            ParallelInstanceCreateHelper(8, 3, duration);
-            ParallelInstanceCreateHelper(8, 4, duration);
+            const uint32_t iterations = 1000;
+            //                           threads, AssetIds, iterations
+            ParallelInstanceCreateHelper(2, 1, iterations, testCase);
+            ParallelInstanceCreateHelper(4, 1, iterations, testCase);
+            ParallelInstanceCreateHelper(4, 2, iterations, testCase);
+            ParallelInstanceCreateHelper(4, 4, iterations, testCase);
+            ParallelInstanceCreateHelper(8, 1, iterations, testCase);
+            ParallelInstanceCreateHelper(8, 2, iterations, testCase);
+            ParallelInstanceCreateHelper(8, 3, iterations, testCase);
+            ParallelInstanceCreateHelper(8, 4, iterations, testCase);
         }
+    }
+
+    TEST_F(InstanceDatabaseTest, ParallelInstanceCreate)
+    {
+        ParallelCreateTest(ParallelInstanceTestCases::Create);
+    }
+
+    TEST_F(InstanceDatabaseTest, ParallelInstanceCreateAndDeferRemoval)
+    {
+        ParallelCreateTest(ParallelInstanceTestCases::CreateAndDeferRemoval);
+    }
+
+    TEST_F(InstanceDatabaseTest, ParallelInstanceCreateAndOrphan)
+    {
+        ParallelCreateTest(ParallelInstanceTestCases::CreateAndOrphan);
+    }
+
+    TEST_F(InstanceDatabaseTest, ParallelInstanceCreateDeferRemovalAndOrphan)
+    {
+        ParallelCreateTest(ParallelInstanceTestCases::CreateDeferRemovalAndOrphan);
     }
 
     TEST_F(InstanceDatabaseTest, InstanceCreateNoDatabase)
@@ -324,7 +442,7 @@ namespace UnitTest
 
             // Tests whether the deleter actually calls delete properly without
             // a parent database.
-            instance->m_onDeleteCallback = [this, &m_deleted]()
+            instance->m_onDeleteCallback = [&m_deleted]()
             {
                 m_deleted = true;
             };

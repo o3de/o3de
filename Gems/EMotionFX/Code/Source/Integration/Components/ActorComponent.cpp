@@ -6,11 +6,13 @@
  *
  */
 
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Math/Transform.h>
+#include <AzCore/Preprocessor/EnumReflectUtils.h>
 
 #include <AzFramework/Physics/Ragdoll.h>
 #include <AzFramework/Physics/RagdollPhysicsBus.h>
@@ -58,27 +60,32 @@ namespace EMotionFX
         };
 
         //////////////////////////////////////////////////////////////////////////
-        void ActorComponent::BoundingBoxConfiguration::Set(ActorInstance* actor) const
+        void ActorComponent::BoundingBoxConfiguration::Set(ActorInstance* actorInstance) const
         {
+            actorInstance->SetExpandBoundsBy(m_expandBy * 0.01f); // Normalize percentage for internal use. (1% == 0.01f)
+
             if (m_autoUpdateBounds)
             {
-                actor->SetupAutoBoundsUpdate(m_updateTimeFrequency, m_boundsType, m_updateItemFrequency);
+                actorInstance->SetupAutoBoundsUpdate(m_updateTimeFrequency, m_boundsType, m_updateItemFrequency);
             }
             else
             {
-                actor->SetBoundsUpdateType(m_boundsType);
-                actor->SetBoundsUpdateEnabled(false);
+                actorInstance->SetBoundsUpdateType(m_boundsType);
+                actorInstance->SetBoundsUpdateEnabled(false);
             }
         }
 
-        void ActorComponent::BoundingBoxConfiguration::SetAndUpdate(ActorInstance* actor) const
+        void ActorComponent::BoundingBoxConfiguration::SetAndUpdate(ActorInstance* actorInstance) const
         {
-            Set(actor);
-            const AZ::u32 freq = actor->GetBoundsUpdateEnabled() ? actor->GetBoundsUpdateItemFrequency() : 1;
-            actor->UpdateBounds(0, actor->GetBoundsUpdateType(), freq);
+            Set(actorInstance);
+
+            const AZ::u32 updateFrequency = actorInstance->GetBoundsUpdateEnabled() ? actorInstance->GetBoundsUpdateItemFrequency() : 1;
+            const ActorInstance::EBoundsType boundUpdateType = actorInstance->GetBoundsUpdateType();
+
+            actorInstance->UpdateBounds(actorInstance->GetLODLevel(), boundUpdateType, updateFrequency);
         }
 
-        void ActorComponent::BoundingBoxConfiguration::Reflect(AZ::ReflectContext * context)
+        void ActorComponent::BoundingBoxConfiguration::Reflect(AZ::ReflectContext* context)
         {
             if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
@@ -105,11 +112,30 @@ namespace EMotionFX
                     ->Field("m_autoUpdateBounds", &BoundingBoxConfiguration::m_autoUpdateBounds)
                     ->Field("m_updateTimeFrequency", &BoundingBoxConfiguration::m_updateTimeFrequency)
                     ->Field("m_updateItemFrequency", &BoundingBoxConfiguration::m_updateItemFrequency)
+                    ->Field("expandBy", &BoundingBoxConfiguration::m_expandBy)
                     ;
             }
         }
 
+        AZ::Crc32 ActorComponent::BoundingBoxConfiguration::GetVisibilityAutoUpdate() const
+        {
+            return m_boundsType != EMotionFX::ActorInstance::BOUNDS_STATIC_BASED ? AZ::Edit::PropertyVisibility::Show : AZ::Edit::PropertyVisibility::Hide;
+        }
+
+        AZ::Crc32 ActorComponent::BoundingBoxConfiguration::GetVisibilityAutoUpdateSettings() const
+        {
+            if (m_boundsType == EMotionFX::ActorInstance::BOUNDS_STATIC_BASED || m_autoUpdateBounds == false)
+            {
+                return AZ::Edit::PropertyVisibility::Hide;
+            }
+
+            return AZ::Edit::PropertyVisibility::Show;
+        }
+
+
         //////////////////////////////////////////////////////////////////////////
+        AZ_ENUM_DEFINE_REFLECT_UTILITIES(ActorRenderFlags);
+
         void ActorComponent::Configuration::Reflect(AZ::ReflectContext* context)
         {
             BoundingBoxConfiguration::Reflect(context);
@@ -117,19 +143,19 @@ namespace EMotionFX
             auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
             if (serializeContext)
             {
+                ActorRenderFlagsReflect(*serializeContext);
+
                 serializeContext->Class<Configuration>()
-                    ->Version(4)
+                    ->Version(5)
                     ->Field("ActorAsset", &Configuration::m_actorAsset)
                     ->Field("MaterialPerLOD", &Configuration::m_materialPerLOD)
-                    ->Field("RenderSkeleton", &Configuration::m_renderSkeleton)
-                    ->Field("RenderCharacter", &Configuration::m_renderCharacter)
-                    ->Field("RenderBounds", &Configuration::m_renderBounds)
                     ->Field("AttachmentType", &Configuration::m_attachmentType)
                     ->Field("AttachmentTarget", &Configuration::m_attachmentTarget)
                     ->Field("SkinningMethod", &Configuration::m_skinningMethod)
                     ->Field("LODLevel", &Configuration::m_lodLevel)
                     ->Field("BoundingBoxConfig", &Configuration::m_bboxConfig)
                     ->Field("ForceJointsUpdateOOV", &Configuration::m_forceUpdateJointsOOV)
+                    ->Field("RenderFlags", &Configuration::m_renderFlags)
                 ;
             }
         }
@@ -187,9 +213,9 @@ namespace EMotionFX
                     ->Event("GetJointTransform", &ActorComponentRequestBus::Events::GetJointTransform)
                     ->Event("AttachToEntity", &ActorComponentRequestBus::Events::AttachToEntity)
                     ->Event("DetachFromEntity", &ActorComponentRequestBus::Events::DetachFromEntity)
-                    ->Event("DebugDrawRoot", &ActorComponentRequestBus::Events::DebugDrawRoot)
                     ->Event("GetRenderCharacter", &ActorComponentRequestBus::Events::GetRenderCharacter)
                     ->Event("SetRenderCharacter", &ActorComponentRequestBus::Events::SetRenderCharacter)
+                    ->Event("GetRenderActorVisible", &ActorComponentRequestBus::Events::GetRenderActorVisible)
                     ->VirtualProperty("RenderCharacter", "GetRenderCharacter", "SetRenderCharacter")
                 ;
 
@@ -205,18 +231,12 @@ namespace EMotionFX
         void ActorComponent::SetActorAsset(AZ::Data::Asset<ActorAsset> actorAsset)
         {
             m_configuration.m_actorAsset = actorAsset;
-
-            Actor* actor = m_configuration.m_actorAsset->GetActor();
-            if (actor)
-            {
-                CheckActorCreation();
-            }
+            CheckActorCreation();
         }
 
         //////////////////////////////////////////////////////////////////////////
         ActorComponent::ActorComponent(const Configuration* configuration)
-            : m_debugDrawRoot(false)
-            , m_sceneFinishSimHandler([this]([[maybe_unused]] AzPhysics::SceneHandle sceneHandle,
+            : m_sceneFinishSimHandler([this]([[maybe_unused]] AzPhysics::SceneHandle sceneHandle,
                 float fixedDeltatime)
                 {
                     if (m_actorInstance)
@@ -253,6 +273,7 @@ namespace EMotionFX
             AZ::TickBus::Handler::BusConnect();
 
             const AZ::EntityId entityId = GetEntityId();
+            ActorComponentRequestBus::Handler::BusConnect(entityId);
             LmbrCentral::AttachmentComponentNotificationBus::Handler::BusConnect(entityId);
             AzFramework::CharacterPhysicsDataRequestBus::Handler::BusConnect(entityId);
             AzFramework::RagdollPhysicsNotificationBus::Handler::BusConnect(entityId);
@@ -285,11 +306,12 @@ namespace EMotionFX
         {
             if (targetEntityId.IsValid() && targetEntityId != GetEntityId())
             {
+                m_attachmentTargetEntityId = targetEntityId;
+
                 ActorComponentNotificationBus::Handler::BusDisconnect();
                 ActorComponentNotificationBus::Handler::BusConnect(targetEntityId);
 
                 AZ::TransformNotificationBus::MultiHandler::BusConnect(targetEntityId);
-                m_attachmentTargetEntityId = targetEntityId;
 
                 // There's no guarantee that we will receive a on transform change call for the target entity because of the entity activate order.
                 // Enforce a transform query on target to get the correct initial transform.
@@ -307,10 +329,16 @@ namespace EMotionFX
         //////////////////////////////////////////////////////////////////////////
         void ActorComponent::DetachFromEntity()
         {
-            if (m_attachmentTargetActor)
+            if (!m_actorInstance)
             {
-                m_attachmentTargetActor->RemoveAttachment(m_actorInstance.get());
-                AZ::TransformBus::Event(GetEntityId(), &AZ::TransformBus::Events::SetParent, AZ::EntityId());
+                return;
+            }
+
+            ActorInstance* attachedTo = m_actorInstance->GetAttachedTo();
+            if (attachedTo)
+            {
+                attachedTo->RemoveAttachment(m_actorInstance.get());
+                AZ::TransformBus::Event(GetEntityId(), &AZ::TransformBus::Events::SetParent, m_attachmentPreviousParent);
                 AZ::TransformBus::Event(GetEntityId(), &AZ::TransformBus::Events::SetLocalTM, AZ::Transform::CreateIdentity());
 
                 AZ::TransformNotificationBus::MultiHandler::BusDisconnect(m_attachmentTargetEntityId);
@@ -319,32 +347,38 @@ namespace EMotionFX
         }
 
         //////////////////////////////////////////////////////////////////////////
-        void ActorComponent::DebugDrawRoot(bool enable)
-        {
-            m_debugDrawRoot = enable;
-        }
-
-        //////////////////////////////////////////////////////////////////////////
         bool ActorComponent::GetRenderCharacter() const
         {
-            return m_configuration.m_renderCharacter;
+            return AZ::RHI::CheckBitsAny(m_configuration.m_renderFlags, ActorRenderFlags::Solid);
         }
 
         //////////////////////////////////////////////////////////////////////////
         void ActorComponent::SetRenderCharacter(bool enable)
         {
-            if (m_configuration.m_renderCharacter != enable)
+            if (enable)
             {
-                m_configuration.m_renderCharacter = enable;
+                m_configuration.m_renderFlags |= ActorRenderFlags::Solid;
+            }
+            else
+            {
+                m_configuration.m_renderFlags &= ~ActorRenderFlags::Solid;
+            }
 
-                if (m_renderActorInstance)
-                {
-                    m_renderActorInstance->SetIsVisible(m_configuration.m_renderCharacter);
-                }
+            if (m_renderActorInstance)
+            {
+                m_renderActorInstance->SetIsVisible(enable);
             }
         }
 
         //////////////////////////////////////////////////////////////////////////
+        bool ActorComponent::GetRenderActorVisible() const
+        {
+            if (m_renderActorInstance)
+            {
+                return m_renderActorInstance->IsVisible();
+            }
+            return false;
+        }
         SkinningMethod ActorComponent::GetSkinningMethod() const
         {
             return m_configuration.m_skinningMethod;
@@ -369,8 +403,15 @@ namespace EMotionFX
             return m_sceneFinishSimHandler.IsConnected();
         }
 
+        void ActorComponent::SetRenderFlag(ActorRenderFlags renderFlags)
+        {
+            m_configuration.m_renderFlags = renderFlags;
+        }
+
         void ActorComponent::CheckActorCreation()
         {
+            DestroyActor();
+
             // Create actor instance.
             auto* actorAsset = m_configuration.m_actorAsset.GetAs<ActorAsset>();
             AZ_Error("EMotionFX", actorAsset, "Actor asset is not valid.");
@@ -379,16 +420,12 @@ namespace EMotionFX
                 return;
             }
 
-            DestroyActor();
-
             m_actorInstance = actorAsset->CreateInstance(GetEntity());
             if (!m_actorInstance)
             {
                 AZ_Error("EMotionFX", actorAsset, "Failed to create actor instance.");
                 return;
             }
-
-            ActorComponentRequestBus::Handler::BusConnect(GetEntityId());
 
             ActorComponentNotificationBus::Event(
                 GetEntityId(),
@@ -426,9 +463,12 @@ namespace EMotionFX
 
                 if (m_renderActorInstance)
                 {
-                    m_renderActorInstance->SetIsVisible(m_configuration.m_renderCharacter);
+                    m_renderActorInstance->SetIsVisible(AZ::RHI::CheckBitsAny(m_configuration.m_renderFlags, ActorRenderFlags::Solid));
                 }
             }
+
+            // Remember the parent entity before we re-parent (attach) it.
+            AZ::TransformBus::EventResult(m_attachmentPreviousParent, GetEntityId(), &AZ::TransformBus::Events::GetParentId);
 
             // Reattach all attachments
             for (AZ::EntityId& attachment : m_attachments)
@@ -451,38 +491,53 @@ namespace EMotionFX
         void ActorComponent::CheckAttachToEntity()
         {
             // Attach to the target actor if we're both ready.
-            // Note that m_attachmentTargetActor will always be null if we're not configured to attach to anything.
-            if (m_actorInstance && m_attachmentTargetActor)
+            if (m_actorInstance)
             {
-                DetachFromEntity();
-
-                // Make sure we don't generate some circular loop by attaching to each other.
-                if (!m_attachmentTargetActor.get()->CheckIfCanHandleAttachment(m_actorInstance.get()))
+                if (m_attachmentTargetEntityId.IsValid())
                 {
-                    AZ_Error("EMotionFX", false, "You cannot attach to yourself or create circular dependencies!\n");
-                    return;
-                }
+                    // Create the attachment if the target instance is already created.
+                    // Otherwise, listen to the actor instance creation event.
+                    ActorInstance* targetActorInstance = nullptr;
+                    ActorComponentRequestBus::EventResult(targetActorInstance, m_attachmentTargetEntityId, &ActorComponentRequestBus::Events::GetActorInstance);
+                    if (targetActorInstance)
+                    {
+                        DetachFromEntity();
 
-                // Create the attachment.
-                AZ_Assert(m_configuration.m_attachmentType == AttachmentType::SkinAttachment, "Expected a skin attachment.");
-                Attachment* attachment = AttachmentSkin::Create(m_attachmentTargetActor.get(), m_actorInstance.get());
-                m_actorInstance->SetLocalSpaceTransform(Transform::CreateIdentity());
-                m_attachmentTargetActor->AddAttachment(attachment);
-                AZ::TransformBus::Event(GetEntityId(), &AZ::TransformBus::Events::SetParent, m_attachmentTargetActor->GetEntityId());
-                AZ::TransformBus::Event(GetEntityId(), &AZ::TransformBus::Events::SetLocalTM, AZ::Transform::CreateIdentity());
+                        // Make sure we don't generate some circular loop by attaching to each other.
+                        if (!targetActorInstance->CheckIfCanHandleAttachment(m_actorInstance.get()))
+                        {
+                            AZ_Error("EMotionFX", false, "You cannot attach to yourself or create circular dependencies!\n");
+                            return;
+                        }
+
+                        // Remember the parent entity before we re-parent (attach) it.
+                        AZ::TransformBus::EventResult(m_attachmentPreviousParent, GetEntityId(), &AZ::TransformBus::Events::GetParentId);
+
+                        // Create the attachment.
+                        AZ_Assert(m_configuration.m_attachmentType == AttachmentType::SkinAttachment, "Expected a skin attachment.");
+                        Attachment* attachment = AttachmentSkin::Create(targetActorInstance, m_actorInstance.get());
+                        m_actorInstance->SetLocalSpaceTransform(Transform::CreateIdentity());
+                        targetActorInstance->AddAttachment(attachment);
+                        AZ::TransformBus::Event(GetEntityId(), &AZ::TransformBus::Events::SetParent, targetActorInstance->GetEntityId());
+                        AZ::TransformBus::Event(GetEntityId(), &AZ::TransformBus::Events::SetLocalTM, AZ::Transform::CreateIdentity());
+                    }
+                }
+                else
+                {
+                    DetachFromEntity();
+                }
             }
         }
 
         //////////////////////////////////////////////////////////////////////////
         void ActorComponent::DestroyActor()
         {
+            DetachFromEntity();
+
             m_renderActorInstance.reset();
 
             if (m_actorInstance)
             {
-                DetachFromEntity();
-
-                m_attachmentTargetActor = nullptr;
 
                 ActorComponentNotificationBus::Event(
                     GetEntityId(),
@@ -505,14 +560,14 @@ namespace EMotionFX
                 if (m_actorInstance)
                 {
                     const Transform localTransform = m_actorInstance->GetParentWorldSpaceTransform().Inversed() * Transform(world);
-                    m_actorInstance->SetLocalSpacePosition(localTransform.mPosition);
-                    m_actorInstance->SetLocalSpaceRotation(localTransform.mRotation);
+                    m_actorInstance->SetLocalSpacePosition(localTransform.m_position);
+                    m_actorInstance->SetLocalSpaceRotation(localTransform.m_rotation);
 
                     // Disable updating the scale to prevent feedback from adding up.
                     // We need to find a better way to handle this or to prevent this feedback loop.
                     EMFX_SCALECODE
                     (
-                        m_actorInstance->SetLocalSpaceScale(localTransform.mScale);
+                        m_actorInstance->SetLocalSpaceScale(localTransform.m_scale);
                     )
                 }
             }
@@ -521,7 +576,7 @@ namespace EMotionFX
         //////////////////////////////////////////////////////////////////////////
         void ActorComponent::OnTick(float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Animation);
+            AZ_PROFILE_FUNCTION(Animation);
 
             if (!m_actorInstance || !m_actorInstance->GetIsEnabled())
             {
@@ -534,21 +589,20 @@ namespace EMotionFX
                 m_renderActorInstance->UpdateBounds();
                 AZ::Interface<AzFramework::IEntityBoundsUnion>::Get()->RefreshEntityLocalBoundsUnion(GetEntityId());
 
+                const bool isInCameraFrustum = m_renderActorInstance->IsInCameraFrustum();
+                const bool renderActorSolid = AZ::RHI::CheckBitsAny(m_configuration.m_renderFlags, ActorRenderFlags::Solid);
+                m_renderActorInstance->SetIsVisible(isInCameraFrustum && renderActorSolid);
+
                 // Optimization: Set the actor instance invisible when character is out of camera view. This will stop the joint transforms update, except the root joint.
                 // Calling it after the bounds on the render actor updated.
                 if (!m_configuration.m_forceUpdateJointsOOV)
                 {
-                    const bool isInCameraFrustum = m_renderActorInstance->IsInCameraFrustum();
-                    m_actorInstance->SetIsVisible(isInCameraFrustum && m_configuration.m_renderCharacter);
+                    // Update the skeleton in case solid mesh rendering or any of the debug visualizations are enabled and the character is in the camera frustum.
+                    const bool updateTransforms = AZ::RHI::CheckBitsAny(m_configuration.m_renderFlags, s_requireUpdateTransforms);
+                    m_actorInstance->SetIsVisible(isInCameraFrustum && updateTransforms);
                 }
 
-                RenderActorInstance::DebugOptions debugOptions;
-                debugOptions.m_drawAABB = m_configuration.m_renderBounds;
-                debugOptions.m_drawSkeleton = m_configuration.m_renderSkeleton;
-                debugOptions.m_drawRootTransform = m_debugDrawRoot;
-                debugOptions.m_rootWorldTransform = GetEntity()->GetTransform()->GetWorldTM();
-                debugOptions.m_emfxDebugDraw = true;
-                m_renderActorInstance->DebugDraw(debugOptions);
+                m_renderActorInstance->DebugDraw(m_configuration.m_renderFlags);
             }
         }
 
@@ -570,8 +624,6 @@ namespace EMotionFX
             }
             else
             {
-                m_attachmentTargetActor.reset(actorInstance);
-
                 CheckAttachToEntity();
             }
         }
@@ -579,8 +631,6 @@ namespace EMotionFX
         void ActorComponent::OnActorInstanceDestroyed([[maybe_unused]] ActorInstance* actorInstance)
         {
             DetachFromEntity();
-
-            m_attachmentTargetActor = nullptr;
         }
 
         //////////////////////////////////////////////////////////////////////////
@@ -642,8 +692,8 @@ namespace EMotionFX
                 if (emfxNode)
                 {
                     const Transform& nodeTransform = emfxPose->GetModelSpaceTransform(emfxNode->GetNodeIndex());
-                    physicsPose[nodeIndex].m_position = nodeTransform.mPosition;
-                    physicsPose[nodeIndex].m_orientation = nodeTransform.mRotation;
+                    physicsPose[nodeIndex].m_position = nodeTransform.m_position;
+                    physicsPose[nodeIndex].m_orientation = nodeTransform.m_rotation;
                 }
             }
 
@@ -701,10 +751,10 @@ namespace EMotionFX
         {
             AZ_Assert(m_actorInstance, "The actor instance needs to be valid.");
 
-            const AZ::u32 index = static_cast<AZ::u32>(jointIndex);
-            const AZ::u32 numNodes = m_actorInstance->GetActor()->GetNumNodes();
+            const size_t index = jointIndex;
+            const size_t numNodes = m_actorInstance->GetActor()->GetNumNodes();
 
-            AZ_Error("EMotionFX", index < numNodes, "GetJointTransform: The joint index %d is out of bounds [0;%d]. Entity: %s",
+            AZ_Error("EMotionFX", index < numNodes, "GetJointTransform: The joint index %zu is out of bounds [0;%zu]. Entity: %s",
                 index, numNodes, GetEntity()->GetName().c_str());
 
             if (index >= numNodes)
@@ -741,10 +791,10 @@ namespace EMotionFX
         {
             AZ_Assert(m_actorInstance, "The actor instance needs to be valid.");
 
-            const AZ::u32 index = static_cast<AZ::u32>(jointIndex);
-            const AZ::u32 numNodes = m_actorInstance->GetActor()->GetNumNodes();
+            const size_t index = jointIndex;
+            const size_t numNodes = m_actorInstance->GetActor()->GetNumNodes();
 
-            AZ_Error("EMotionFX", index < numNodes, "GetJointTransformComponents: The joint index %d is out of bounds [0;%d]. Entity: %s",
+            AZ_Error("EMotionFX", index < numNodes, "GetJointTransformComponents: The joint index %zu is out of bounds [0;%zu]. Entity: %s",
                 index, numNodes, GetEntity()->GetName().c_str());
 
             if (index >= numNodes)
@@ -759,11 +809,11 @@ namespace EMotionFX
             case Space::LocalSpace:
             {
                 const Transform& localTransform = currentPose->GetLocalSpaceTransform(index);
-                outPosition = localTransform.mPosition;
-                outRotation = localTransform.mRotation;
+                outPosition = localTransform.m_position;
+                outRotation = localTransform.m_rotation;
                 EMFX_SCALECODE
                 (
-                    outScale = localTransform.mScale;
+                    outScale = localTransform.m_scale;
                 )
                 return;
             }
@@ -771,11 +821,11 @@ namespace EMotionFX
             case Space::ModelSpace:
             {
                 const Transform& modelTransform = currentPose->GetModelSpaceTransform(index);
-                outPosition = modelTransform.mPosition;
-                outRotation = modelTransform.mRotation;
+                outPosition = modelTransform.m_position;
+                outRotation = modelTransform.m_rotation;
                 EMFX_SCALECODE
                 (
-                    outScale = modelTransform.mScale;
+                    outScale = modelTransform.m_scale;
                 )
                 return;
             }
@@ -783,11 +833,11 @@ namespace EMotionFX
             case Space::WorldSpace:
             {
                 const Transform worldTransform = currentPose->GetWorldSpaceTransform(index);
-                outPosition = worldTransform.mPosition;
-                outRotation = worldTransform.mRotation;
+                outPosition = worldTransform.m_position;
+                outRotation = worldTransform.m_rotation;
                 EMFX_SCALECODE
                 (
-                    outScale = worldTransform.mScale;
+                    outScale = worldTransform.m_scale;
                 )
                 return;
             }
@@ -849,7 +899,7 @@ namespace EMotionFX
                 Node* node = jointName ? m_actorInstance->GetActor()->GetSkeleton()->FindNodeByName(jointName) : m_actorInstance->GetActor()->GetSkeleton()->GetNode(0);
                 if (node)
                 {
-                    const AZ::u32 jointIndex = node->GetNodeIndex();
+                    const size_t jointIndex = node->GetNodeIndex();
                     Attachment* attachment = AttachmentNode::Create(m_actorInstance.get(), jointIndex, targetActorInstance, true /* Managed externally, by this component. */);
                     m_actorInstance->AddAttachment(attachment);
                 }

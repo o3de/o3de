@@ -1,0 +1,45 @@
+{
+    "entries": [
+        {
+            "base": "BlastFamilyComponentNotificationBus",
+            "context": "EBusHandler",
+            "variant": "",
+            "details": {
+                "name": "Blast Family",
+                "category": "Blast"
+            },
+            "methods": [
+                {
+                    "base": "OnActorCreated",
+                    "details": {
+                        "name": "On Actor Created"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A23453D5-79A8-49C8-B9F0-9CC35D711DD4}",
+                            "details": {
+                                "name": "Blast Actor Data",
+                                "tooltip": "Represents Blast Actor in a Script Canvas friendly format."
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "OnActorDestroyed",
+                    "details": {
+                        "name": "On Actor Destroyed"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A23453D5-79A8-49C8-B9F0-9CC35D711DD4}",
+                            "details": {
+                                "name": "Blast Actor Data",
+                                "tooltip": "Represents Blast Actor in a Script Canvas friendly format."
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

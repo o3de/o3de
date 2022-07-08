@@ -54,6 +54,21 @@ namespace FastNoiseGem
         return AZ::Edit::PropertyVisibility::Hide;
     }
 
+    bool FastNoiseGradientConfig::operator==(const FastNoiseGradientConfig& rhs) const
+    {
+        return (m_cellularDistanceFunction == rhs.m_cellularDistanceFunction)
+        && (m_cellularJitter == rhs.m_cellularJitter)
+        && (m_cellularReturnType == rhs.m_cellularReturnType)
+        && (m_fractalType == rhs.m_fractalType)
+        && (m_frequency == rhs.m_frequency)
+        && (m_gain == rhs.m_gain)
+        && (m_interp == rhs.m_interp)
+        && (m_lacunarity == rhs.m_lacunarity)
+        && (m_noiseType == rhs.m_noiseType)
+        && (m_octaves == rhs.m_octaves)
+        && (m_seed == rhs.m_seed);
+    }
+
     void FastNoiseGradientConfig::Reflect(AZ::ReflectContext* context)
     {
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
@@ -108,7 +123,8 @@ namespace FastNoiseGem
                     ->Attribute(AZ::Edit::Attributes::Visibility, &FastNoiseGradientConfig::GetFrequencyParameterVisbility)
                     ->DataElement(AZ::Edit::UIHandlers::Slider, &FastNoiseGradientConfig::m_octaves, "Octaves", "Number of recursions in the pattern generation, higher octaves refine the pattern")
                     ->Attribute(AZ::Edit::Attributes::Min, 0)
-                    ->Attribute(AZ::Edit::Attributes::Max, 8)
+                    ->Attribute(AZ::Edit::Attributes::Max, 20)
+                    ->Attribute(AZ::Edit::Attributes::SoftMax, 8)
                     ->Attribute(AZ::Edit::Attributes::Visibility, &FastNoiseGradientConfig::GetFractalParameterVisbility)
                     ->DataElement(AZ::Edit::UIHandlers::Slider, &FastNoiseGradientConfig::m_lacunarity, "Lacunarity", "The frequency multiplier between each octave")
                     ->Attribute(AZ::Edit::Attributes::Min, 0.f)
@@ -249,6 +265,9 @@ namespace FastNoiseGem
 
     void FastNoiseGradientComponent::Activate()
     {
+        // This will immediately call OnGradientTransformChanged and initialize m_gradientTransform.
+        GradientSignal::GradientTransformNotificationBus::Handler::BusConnect(GetEntityId());
+
         // Some platforms require random seeds to be > 0.  Clamp to a positive range to ensure we're always safe.
         m_generator.SetSeed(AZ::GetMax(m_configuration.m_seed, 1));
         m_generator.SetFrequency(m_configuration.m_frequency);
@@ -264,14 +283,19 @@ namespace FastNoiseGem
         m_generator.SetCellularReturnType(m_configuration.m_cellularReturnType);
         m_generator.SetCellularJitter(m_configuration.m_cellularJitter);
 
-        GradientSignal::GradientRequestBus::Handler::BusConnect(GetEntityId());
         FastNoiseGradientRequestBus::Handler::BusConnect(GetEntityId());
+
+        // Connect to GradientRequestBus last so that everything is initialized before listening for gradient queries.
+        GradientSignal::GradientRequestBus::Handler::BusConnect(GetEntityId());
     }
 
     void FastNoiseGradientComponent::Deactivate()
     {
+        // Disconnect from GradientRequestBus first to ensure no queries are in process when deactivating.
         GradientSignal::GradientRequestBus::Handler::BusDisconnect();
+
         FastNoiseGradientRequestBus::Handler::BusDisconnect();
+        GradientSignal::GradientTransformNotificationBus::Handler::BusDisconnect();
     }
 
     bool FastNoiseGradientComponent::ReadInConfig(const AZ::ComponentConfig* baseConfig)
@@ -294,29 +318,63 @@ namespace FastNoiseGem
         return false;
     }
 
+    void FastNoiseGradientComponent::OnGradientTransformChanged(const GradientSignal::GradientTransform& newTransform)
+    {
+        AZStd::unique_lock lock(m_queryMutex);
+        m_gradientTransform = newTransform;
+    }
+
     float FastNoiseGradientComponent::GetValue(const GradientSignal::GradientSampleParams& sampleParams) const
     {
-        AZ::Vector3 uvw = sampleParams.m_position;
-
+        AZ::Vector3 uvw;
         bool wasPointRejected = false;
-        const bool shouldNormalizeOutput = false;
-        GradientSignal::GradientTransformRequestBus::Event(
-            GetEntityId(), &GradientSignal::GradientTransformRequestBus::Events::TransformPositionToUVW, sampleParams.m_position, uvw, shouldNormalizeOutput, wasPointRejected);
 
-        if (!wasPointRejected)
+        AZStd::shared_lock lock(m_queryMutex);
+
+        m_gradientTransform.TransformPositionToUVW(sampleParams.m_position, uvw, wasPointRejected);
+
+        // Generator returns a range between [-1, 1], map that to [0, 1]
+        return wasPointRejected ?
+            0.0f :
+            AZ::GetClamp((m_generator.GetNoise(uvw.GetX(), uvw.GetY(), uvw.GetZ()) + 1.0f) / 2.0f, 0.0f, 1.0f);
+    }
+
+    void FastNoiseGradientComponent::GetValues(AZStd::span<const AZ::Vector3> positions, AZStd::span<float> outValues) const
+    {
+        if (positions.size() != outValues.size())
         {
-            // Generator returns a range between [-1, 1], map that to [0, 1]
-            return AZ::GetClamp((m_generator.GetNoise(uvw.GetX(), uvw.GetY(), uvw.GetZ()) + 1.0f) / 2.0f, 0.0f, 1.0f);
+            AZ_Assert(false, "input and output lists are different sizes (%zu vs %zu).", positions.size(), outValues.size());
+            return;
         }
 
-        return 0.0f;
+        AZStd::shared_lock lock(m_queryMutex);
+        AZ::Vector3 uvw;
+
+        for (size_t index = 0; index < positions.size(); index++)
+        {
+            bool wasPointRejected = false;
+
+            m_gradientTransform.TransformPositionToUVW(positions[index], uvw, wasPointRejected);
+
+            // Generator returns a range between [-1, 1], map that to [0, 1]
+            outValues[index] = wasPointRejected ?
+                0.0f :
+                AZ::GetClamp((m_generator.GetNoise(uvw.GetX(), uvw.GetY(), uvw.GetZ()) + 1.0f) / 2.0f, 0.0f, 1.0f);
+        }
     }
 
     template <typename TValueType, TValueType FastNoiseGradientConfig::*TConfigMember, void (FastNoise::*TMethod)(TValueType)>
     void FastNoiseGradientComponent::SetConfigValue(TValueType value)
     {
-        m_configuration.*TConfigMember = value;
-        ((&m_generator)->*TMethod)(value);
+        // Only hold the lock while we're changing the data. Don't hold onto it during the OnCompositionChanged call, because that can
+        // execute an arbitrary amount of logic, including calls back to this component.
+        {
+            AZStd::unique_lock lock(m_queryMutex);
+
+            m_configuration.*TConfigMember = value;
+            ((&m_generator)->*TMethod)(value);
+        }
+
         LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
     }
 

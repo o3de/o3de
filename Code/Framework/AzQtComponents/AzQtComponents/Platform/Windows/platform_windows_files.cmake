@@ -9,6 +9,7 @@
 set(FILES
     ../../natvis/qt.natvis
     ../../../Platform/Windows/AzQtComponents/Utilities/HandleDpiAwareness_Windows.cpp
+    ../../../Platform/Windows/AzQtComponents/Utilities/DesktopUtilities_Windows.cpp
     ../../Utilities/MouseHider_win.cpp
     ../../Utilities/QtWindowUtilities_win.cpp
     ../../Utilities/ScreenGrabber_win.cpp
@@ -17,4 +18,6 @@ set(FILES
     ../../Components/TitleBarOverdrawScreenHandler_win.h
     ../../Components/TitleBarOverdrawScreenHandler_win.cpp
     ../../../Platform/Windows/AzQtComponents/Components/StyledDockWidget_Windows.cpp
+    ../../../Platform/Windows/AzQtComponents/AzQtComponents_Traits_Windows.h
+    ../../../Platform/Windows/AzQtComponents/AzQtComponents_Traits_Platform.h
 )

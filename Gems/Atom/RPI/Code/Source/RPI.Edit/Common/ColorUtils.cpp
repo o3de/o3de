@@ -14,14 +14,14 @@ namespace AZ
     {
         namespace ColorUtils
         {
+            enum ColorSpace : uint32_t
+            {
+                LinearSRGB,
+                SRGB
+            };
+
             AzToolsFramework::ColorEditorConfiguration GetLinearRgbEditorConfig()
             {
-                enum ColorSpace : uint32_t
-                {
-                    LinearSRGB,
-                    SRGB
-                };
-                
                 AzToolsFramework::ColorEditorConfiguration configuration;
                 configuration.m_colorPickerDialogConfiguration = AzQtComponents::ColorPicker::Configuration::RGB;
 
@@ -55,6 +55,15 @@ namespace AZ
                         return color;
                     }
                 };
+
+                return configuration;
+            }
+
+            AzToolsFramework::ColorEditorConfiguration GetRgbEditorConfig()
+            {
+                AzToolsFramework::ColorEditorConfiguration configuration = GetLinearRgbEditorConfig();
+
+                configuration.m_propertyColorSpaceId = ColorSpace::SRGB;
 
                 return configuration;
             }

@@ -8,7 +8,7 @@
 
 
 #include "UiEditorAnimationBus.h"
-#include "UiEditorDLLBus.h"
+#include <LyShine/UiEditorDLLBus.h>
 #include "UiAnimViewSequenceManager.h"
 #include "UiAnimViewUndo.h"
 #include "AnimationContext.h"
@@ -58,7 +58,7 @@ CUiAnimViewSequence* CUiAnimViewSequenceManager::GetSequenceByName(QString name)
     {
         CUiAnimViewSequence* pSequence = (*iter).get();
 
-        if (pSequence->GetName() == name)
+        if (QString::fromUtf8(pSequence->GetName().c_str()) == name)
         {
             return pSequence;
         }
@@ -156,8 +156,8 @@ void CUiAnimViewSequenceManager::SortSequences()
     std::stable_sort(m_sequences.begin(), m_sequences.end(),
         [](const std::unique_ptr<CUiAnimViewSequence>& a, const std::unique_ptr<CUiAnimViewSequence>& b) -> bool
         {
-            QString aName = a.get()->GetName();
-            QString bName = b.get()->GetName();
+            QString aName = QString::fromUtf8(a.get()->GetName().c_str());
+            QString bName = QString::fromUtf8(b.get()->GetName().c_str());
             return aName < bName;
         });
 }

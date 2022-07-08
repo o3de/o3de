@@ -104,7 +104,7 @@ namespace ImageProcessingAtomEditor
         }
     }
 
-    QString ResolutionSettingItemWidget::GetFinalFormat([[maybe_unused]] const AZ::Uuid& presetId)
+    QString ResolutionSettingItemWidget::GetFinalFormat([[maybe_unused]] const ImageProcessingAtom::PresetName& preset)
     {
         if (m_preset && m_preset->m_pixelFormat >= 0 && m_preset->m_pixelFormat < ePixelFormat_Count)
         {

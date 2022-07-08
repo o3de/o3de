@@ -9,6 +9,8 @@
 #pragma once
 
 #include <AzCore/PlatformIncl.h>
+#include <AzCore/IO/Path/Path.h>
+#include <AzCore/IO/Streamer/RequestPath.h>
 #include <AzCore/IO/Streamer/Statistics.h>
 #include <AzCore/IO/Streamer/StreamerConfiguration.h>
 #include <AzCore/IO/Streamer/StreamStackEntry.h>
@@ -18,6 +20,12 @@
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/string/string_view.h>
 #include <AzCore/Statistics/RunningStatistic.h>
+
+namespace AZ::IO::Requests
+{
+    struct ReadData;
+    struct ReportData;
+}
 
 namespace AZ::IO
 {
@@ -40,7 +48,7 @@ namespace AZ::IO
             //! make adjustments. For the most optimal performance align read buffers to the physicalSectorSize.
             u8 m_enableUnbufferedReads : 1;
             //! Globally enable file sharing. This allows files to used outside AZ::IO::Streamer, including other applications
-            //! while in use by AZ::IO::Streamer. 
+            //! while in use by AZ::IO::Streamer.
             u8 m_enableSharing : 1;
             //! If true, only information that's explicitly requested or issues are reported. If false, status information
             //! such as when drives are created and destroyed is reported as well.
@@ -99,7 +107,7 @@ namespace AZ::IO
             FileRequest* m_request{ nullptr };
             void* m_sectorAlignedOutput{ nullptr };    // Internally allocated buffer that is sector aligned.
             size_t m_copyBackOffset{ 0 };
-            
+
             void AllocateAlignedBuffer(size_t size, size_t sectorSize);
             void Clear();
         };
@@ -111,7 +119,7 @@ namespace AZ::IO
             CacheFull
         };
 
-        OpenFileResult OpenFile(HANDLE& fileHandle, size_t& cacheSlot, FileRequest* request, const FileRequest::ReadData& data);
+        OpenFileResult OpenFile(HANDLE& fileHandle, size_t& cacheSlot, FileRequest* request, const Requests::ReadData& data);
         bool ReadRequest(FileRequest* request);
         bool ReadRequest(FileRequest* request, size_t readSlot);
         bool CancelRequest(FileRequest* cancelRequest, FileRequestPtr& target);
@@ -122,7 +130,7 @@ namespace AZ::IO
         size_t FindAvailableReadSlot();
         size_t FindInMetaDataCache(const RequestPath& filePath) const;
         size_t GetNextMetaDataCacheSlot();
-        bool IsServicedByThisDrive(const char* filePath) const;
+        bool IsServicedByThisDrive(AZ::IO::PathView filePath) const;
 
         void EstimateCompletionTimeForRequest(FileRequest* request, AZStd::chrono::system_clock::time_point& startTime,
             const RequestPath*& activeFile, u64& activeOffset) const;
@@ -137,7 +145,7 @@ namespace AZ::IO
         void FinalizeSingleRequest(FileReadStatus& status, size_t readSlot, DWORD numBytesTransferred,
             bool isCanceled, bool encounteredError);
 
-        void Report(const FileRequest::ReportData& data) const;
+        void Report(const Requests::ReportData& data) const;
 
         TimedAverageWindow<s_statisticsWindowSize> m_fileOpenCloseTimeAverage;
         TimedAverageWindow<s_statisticsWindowSize> m_getFileExistsTimeAverage;

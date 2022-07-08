@@ -11,6 +11,9 @@ set(FILES
     AzTest.cpp
     ColorizedOutput.cpp
     Platform.h
+    Printers.h
+    Printers.inl
+    Printers.cpp
     Utils.h
     Utils.cpp
     GemTestEnvironment.cpp

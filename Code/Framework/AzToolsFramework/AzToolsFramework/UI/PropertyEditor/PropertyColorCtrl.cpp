@@ -18,8 +18,7 @@ AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option")
 #include <QPainter> 
 AZ_POP_DISABLE_WARNING
 #include <QtWidgets/QToolButton>
-
-#include "../UICore/ColorPickerDelegate.hxx"
+#include <QtGui/QRegExpValidator>
 
 namespace AzToolsFramework
 {
@@ -162,7 +161,7 @@ namespace AzToolsFramework
         }
     }
 
-    QRegExpValidator* PropertyColorCtrl::CreateTextEditValidator() const
+    QRegExpValidator* PropertyColorCtrl::CreateTextEditValidator()
     {
         /*Use regex to validate the input
         *\d\d?    Match 0-99
@@ -175,11 +174,11 @@ namespace AzToolsFramework
 
         int numInitialChannelComponents = m_alphaChannelEnabled ? 3 : 2;
 
-        AZStd::string regex = AZStd::string::format(
-            "^\\s*((25[0-5]|2[0-4]\\d|1\\d\\d|\\d\\d?)\\s*,\\s*){%d}(25[0-5]|2[0-4]\\d|1\\d\\d|\\d\\d?)\\s*$",
-            numInitialChannelComponents);
+        const QString regex = QString(
+            R"(^\s*((25[0-5]|2[0-4]\d|1\d\d|\d\d?)\s*,\s*){%1}(25[0-5]|2[0-4]\d|1\d\d|\d\d?)\s*$)"
+        ).arg(numInitialChannelComponents);
 
-        return new QRegExpValidator(QRegExp(regex.c_str()));
+        return new QRegExpValidator(QRegExp(regex), this);
     }
 
     void PropertyColorCtrl::CreateColorDialog()
@@ -373,8 +372,8 @@ namespace AzToolsFramework
 
     void AZColorPropertyHandler::WriteGUIValuesIntoProperty(size_t index, PropertyColorCtrl* GUI, property_t& instance, InstanceDataNode* node)
     {
-        (int)index;
-        (void)node;
+        AZ_UNUSED(index);
+        AZ_UNUSED(node);
         QColor val = GUI->value();
         AZ::Color asAZColor((float)val.redF(), (float)val.greenF(), (float)val.blueF(), (float)val.alphaF());
         instance = static_cast<property_t>(asAZColor);
@@ -382,8 +381,8 @@ namespace AzToolsFramework
 
     bool AZColorPropertyHandler::ReadValuesIntoGUI(size_t index, PropertyColorCtrl* GUI, const property_t& instance, InstanceDataNode* node)
     {
-        (int)index;
-        (void)node;
+        AZ_UNUSED(index);
+        AZ_UNUSED(node);
         AZ::Vector4 asVector4 = static_cast<AZ::Vector4>(instance);
         QColor asQColor;
         asQColor.setRedF((qreal)asVector4.GetX());
@@ -401,7 +400,12 @@ namespace AzToolsFramework
             {
                 EBUS_EVENT(PropertyEditorGUIMessages::Bus, RequestWrite, newCtrl);
             });
-        // note:  Qt automatically disconnects objects from each other when either end is destroyed, no need to worry about delete.
+        connect(newCtrl, &PropertyColorCtrl::editingFinished, this, [newCtrl]()
+            {
+                AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
+                    &PropertyEditorGUIMessages::OnEditingFinished, newCtrl);
+            });
+        // note: Qt automatically disconnects objects from each other when either end is destroyed, no need to worry about delete.
 
         return newCtrl;
     }
@@ -410,8 +414,8 @@ namespace AzToolsFramework
     }
     void Vector3ColorPropertyHandler::WriteGUIValuesIntoProperty(size_t index, PropertyColorCtrl* GUI, property_t& instance, InstanceDataNode* node)
     {
-        (int)index;
-        (void)node;
+        AZ_UNUSED(index);
+        AZ_UNUSED(node);
         QColor val = GUI->value();
         AZ::Vector3 asVector3((float)val.redF(), (float)val.greenF(), (float)val.blueF());
         instance = static_cast<property_t>(asVector3);
@@ -419,8 +423,8 @@ namespace AzToolsFramework
 
     bool Vector3ColorPropertyHandler::ReadValuesIntoGUI(size_t index, PropertyColorCtrl* GUI, const property_t& instance, InstanceDataNode* node)
     {
-        (int)index;
-        (void)node;
+        AZ_UNUSED(index);
+        AZ_UNUSED(node);
         AZ::Vector3 asVector3 = static_cast<AZ::Vector3>(instance);
         QColor asQColor;
         asQColor.setRedF((qreal)asVector3.GetX());

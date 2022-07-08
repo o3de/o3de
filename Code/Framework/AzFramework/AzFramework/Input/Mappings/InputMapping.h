@@ -12,6 +12,7 @@
 #include <AzFramework/Input/Devices/InputDevice.h>
 
 #include <AzCore/std/containers/unordered_set.h>
+#include <AzCore/std/smart_ptr/shared_ptr.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace AzFramework
@@ -26,6 +27,111 @@ namespace AzFramework
     class InputMapping : public InputChannel
     {
     public:
+        ////////////////////////////////////////////////////////////////////////////////////////////
+        //! Convenience class that allows for selection of an input channel name filtered by device.
+        struct InputChannelNameFilteredByDeviceType
+        {
+        public:
+            ////////////////////////////////////////////////////////////////////////////////////////
+            // Allocator
+            AZ_CLASS_ALLOCATOR(InputChannelNameFilteredByDeviceType, AZ::SystemAllocator, 0);
+
+            ////////////////////////////////////////////////////////////////////////////////////////
+            // Type Info
+            AZ_RTTI(InputChannelNameFilteredByDeviceType, "{68CC4865-1C0E-4E2E-BDAE-AF42EA30DBE8}");
+
+            ////////////////////////////////////////////////////////////////////////////////////////
+            // Reflection
+            static void Reflect(AZ::ReflectContext* context);
+
+            ////////////////////////////////////////////////////////////////////////////////////////////
+            //! Constructor
+            InputChannelNameFilteredByDeviceType();
+
+            ////////////////////////////////////////////////////////////////////////////////////////////
+            //! Destructor
+            virtual ~InputChannelNameFilteredByDeviceType() = default;
+
+            ////////////////////////////////////////////////////////////////////////////////////////////
+            //! Get the currently selected input device type.
+            //! \return Currently selected input device type.
+            inline const AZStd::string& GetInputDeviceType() const { return m_inputDeviceType; }
+
+            ////////////////////////////////////////////////////////////////////////////////////////////
+            //! Get the currently selected input channel name.
+            //! \return Currently selected input channel name.
+            inline const AZStd::string& GetInputChannelName() const { return m_inputChannelName; }
+
+        protected:
+            ////////////////////////////////////////////////////////////////////////////////////////////
+            //! Called when an input device type is selected.
+            //! \return The AZ::Edit::PropertyRefreshLevels to apply to the property tree view.
+            virtual AZ::Crc32 OnInputDeviceTypeSelected();
+
+            ////////////////////////////////////////////////////////////////////////////////////////////
+            //! Get the name label override to display.
+            //! \return Name label override to display.
+            virtual AZStd::string GetNameLabelOverride() const;
+
+            ////////////////////////////////////////////////////////////////////////////////////////////
+            //! Get the valid input device types for this input mapping.
+            //! \return Valid input device types for this input mapping.
+            virtual AZStd::vector<AZStd::string> GetValidInputDeviceTypes() const;
+
+            ////////////////////////////////////////////////////////////////////////////////////////////
+            //! Get the valid input channel names for this input mapping given the selected device type.
+            //! \return Valid input channel names for this input mapping given the selected device type.
+            virtual AZStd::vector<AZStd::string> GetValidInputChannelNamesBySelectedDevice() const;
+
+        private:
+            ////////////////////////////////////////////////////////////////////////////////////////////
+            // Variables
+            AZStd::string m_inputDeviceType;    //!< The currently selected input device type.
+            AZStd::string m_inputChannelName;   //!< The currently selected input channel name.
+        };
+
+        ////////////////////////////////////////////////////////////////////////////////////////////
+        //! Base class for input mapping configuration values that are exposed to the editor.
+        class ConfigBase
+        {
+        public:
+            ////////////////////////////////////////////////////////////////////////////////////////
+            // Allocator
+            AZ_CLASS_ALLOCATOR(ConfigBase, AZ::SystemAllocator, 0);
+
+            ////////////////////////////////////////////////////////////////////////////////////////
+            // Type Info
+            AZ_RTTI(ConfigBase, "{72EBBBCC-D57E-4085-AFD9-4910506010B6}");
+
+            ////////////////////////////////////////////////////////////////////////////////////////
+            // Reflection
+            static void Reflect(AZ::ReflectContext* context);
+
+            ////////////////////////////////////////////////////////////////////////////////////////////
+            //! Destructor
+            virtual ~ConfigBase() = default;
+
+            ////////////////////////////////////////////////////////////////////////////////////////
+            //! Create an input mapping and add it to the input context.
+            //! \param[in] inputContext Input context that the input mapping will be added to.
+            AZStd::shared_ptr<InputMapping> CreateInputMappingAndAddToContext(InputContext& inputContext) const;
+
+            ////////////////////////////////////////////////////////////////////////////////////////
+            //! Override to create the relevant input mapping.
+            //! \param[in] inputContext Input context that owns the input mapping.
+            virtual AZStd::shared_ptr<InputMapping> CreateInputMapping(const InputContext& inputContext) const = 0;
+
+            ////////////////////////////////////////////////////////////////////////////////////////////
+            //! Get the name label override to display.
+            //! \return Name label override to display.
+            virtual AZStd::string GetNameLabelOverride() const;
+
+        protected:
+            ////////////////////////////////////////////////////////////////////////////////////////
+            //! The unique input channel name (event) output by the input mapping.
+            AZStd::string m_outputInputChannelName;
+        };
+
         ////////////////////////////////////////////////////////////////////////////////////////////
         // Allocator
         AZ_CLASS_ALLOCATOR(InputMapping, AZ::SystemAllocator, 0);

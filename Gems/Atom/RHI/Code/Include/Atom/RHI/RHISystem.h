@@ -8,13 +8,12 @@
 
 #pragma once
 
-#include <Atom/RHI/CpuProfilerImpl.h>
 #include <Atom/RHI/Device.h>
 #include <Atom/RHI/DrawListTagRegistry.h>
 #include <Atom/RHI/FrameScheduler.h>
 #include <Atom/RHI/PipelineStateCache.h>
 #include <Atom/RHI/RHISystemInterface.h>
-#include <Atom/RHI.Reflect/RHISystemDescriptor.h>
+#include <Atom/RHI/XRRenderingInterface.h>
 
 namespace AZ
 {
@@ -33,7 +32,7 @@ namespace AZ
             void InitDevice();
 
             //! This function initializes the rest of the RHI/RHI backend. 
-            void Init(const RHISystemDescriptor& descriptor);
+            void Init();
             void Shutdown();
 
             //! An external callback to build the frame graph.
@@ -42,6 +41,10 @@ namespace AZ
             //! Invokes the frame scheduler. The provided callback is invoked prior to compilation of the graph.
             void FrameUpdate(FrameGraphCallback frameGraphCallback);
 
+            // Register/Unregister xr system
+            void RegisterXRSystem(XRRenderingInterface* xrRenderingInterface);
+            void UnregisterXRSystem();
+
             //////////////////////////////////////////////////////////////////////////
             // RHISystemInterface Overrides
             RHI::Device* GetDevice() override;
@@ -49,12 +52,14 @@ namespace AZ
             RHI::PipelineStateCache* GetPipelineStateCache() override;
             const RHI::FrameSchedulerCompileRequest& GetFrameSchedulerCompileRequest() const override;
             void ModifyFrameSchedulerStatisticsFlags(RHI::FrameSchedulerStatisticsFlags statisticsFlags, bool enableFlags) override;
-            const RHI::CpuTimingStatistics* GetCpuTimingStatistics() const override;
+            double GetCpuFrameTime() const override;
             const RHI::TransientAttachmentStatistics* GetTransientAttachmentStatistics() const override;
             const RHI::MemoryStatistics* GetMemoryStatistics() const override;
             const RHI::TransientAttachmentPoolDescriptor* GetTransientAttachmentPoolDescriptor() const override;
             ConstPtr<PlatformLimitsDescriptor> GetPlatformLimitsDescriptor() const override;
             void QueueRayTracingShaderTableForBuild(RayTracingShaderTable* rayTracingShaderTable) override;
+            const PhysicalDeviceDescriptor& GetPhysicalDeviceDescriptor() override;
+            XRRenderingInterface* GetXRSystem() const override;
             //////////////////////////////////////////////////////////////////////////
 
         private:
@@ -67,9 +72,8 @@ namespace AZ
             RHI::Ptr<RHI::PipelineStateCache> m_pipelineStateCache;
             RHI::FrameScheduler m_frameScheduler;
             RHI::FrameSchedulerCompileRequest m_compileRequest;
-
-            ConstPtr<PlatformLimitsDescriptor> m_platformLimitsDescriptor = nullptr;
-            RHI::CpuProfilerImpl m_cpuProfiler;
+            PhysicalDeviceDescriptor m_physicalDeviceDescriptor;
+            XRRenderingInterface* m_xrSystem = nullptr;
         };
     } // namespace RPI
 } // namespace AZ

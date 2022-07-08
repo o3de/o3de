@@ -24,6 +24,8 @@ namespace AZ
 {
     namespace RPI
     {
+        class ModelAsset;
+
         class Model final
             : public Data::InstanceData
         {
@@ -35,6 +37,10 @@ namespace AZ
 
             static Data::Instance<Model> FindOrCreate(const Data::Asset<ModelAsset>& modelAsset);
 
+            //! Orphan the model, its lods, and all their buffers so that they can be replaced in the instance database
+            //! This is a temporary function, that will be removed once the Model/ModelAsset classes no longer need it
+            static void TEMPOrphanFromDatabase(const Data::Asset<ModelAsset>& modelAsset);
+
             ~Model() = default;
 
             //! Blocks the CPU until the streaming upload is complete. Returns immediately if no
@@ -45,7 +51,7 @@ namespace AZ
             size_t GetLodCount() const;
 
             //! Returns the full list of Lods, where index 0 is the most detailed, and N-1 is the least.
-            AZStd::array_view<Data::Instance<ModelLod>> GetLods() const;
+            AZStd::span<const Data::Instance<ModelLod>> GetLods() const;
 
             //! Returns whether a buffer upload is pending.
             bool IsUploadPending() const;

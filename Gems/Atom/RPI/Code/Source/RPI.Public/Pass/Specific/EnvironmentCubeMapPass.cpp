@@ -49,7 +49,7 @@ namespace AZ
             childRequest.m_passName = "Child";
             
             PassConnection childInputConnection;
-            childInputConnection.m_localSlot = "Output";
+            childInputConnection.m_localSlot = "PipelineOutput";
             childInputConnection.m_attachmentRef.m_pass = "Parent";
             childInputConnection.m_attachmentRef.m_attachment = "Output";
             childRequest.m_connections.emplace_back(childInputConnection);
@@ -122,8 +122,8 @@ namespace AZ
             PassAttachmentBinding outputAttachment;
             outputAttachment.m_name = "Output";
             outputAttachment.m_slotType = PassSlotType::InputOutput;
-            outputAttachment.m_attachment = m_passAttachment;
             outputAttachment.m_scopeAttachmentUsage = RHI::ScopeAttachmentUsage::RenderTarget;
+            outputAttachment.SetAttachment(m_passAttachment);
 
             m_attachmentBindings.push_back(outputAttachment);
 

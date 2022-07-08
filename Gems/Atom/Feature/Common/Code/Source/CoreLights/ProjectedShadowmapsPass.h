@@ -9,7 +9,7 @@
 
 #include <Atom/Feature/CoreLights/CoreLightsConstants.h>
 #include <Atom/RPI.Public/Pass/ParentPass.h>
-#include <AtomCore/std/containers/array_view.h>
+#include <AzCore/std/containers/span.h>
 #include <AzCore/std/containers/vector.h>
 #include <CoreLights/ShadowmapAtlas.h>
 #include <CoreLights/ShadowmapPass.h>
@@ -30,7 +30,7 @@ namespace AZ
             AZ_CLASS_ALLOCATOR(ProjectedShadowmapsPass, SystemAllocator, 0);
             AZ_RTTI(ProjectedShadowmapsPass, "00024B13-1095-40FA-BEC3-B0F68110BEA2", Base);
 
-            static constexpr uint16_t InvalidIndex = ~0;
+            static constexpr uint16_t InvalidIndex = std::numeric_limits<uint16_t>::max();
             struct ShadowmapSizeWithIndices
             {
                 ShadowmapSize m_size = ShadowmapSize::None;

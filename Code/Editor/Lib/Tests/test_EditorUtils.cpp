@@ -11,6 +11,7 @@
 #include <AzCore/base.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Debug/TraceMessageBus.h>
+#include <AzCore/UnitTest/TestTypes.h>
 
 namespace EditorUtilsTest
 {
@@ -23,12 +24,12 @@ namespace EditorUtilsTest
             BusConnect();
         }
 
-        ~WarningDetector()
+        ~WarningDetector() override
         {
             BusDisconnect();
         }
 
-        virtual bool OnWarning(const char* /*window*/, const char* /*message*/) override 
+        bool OnWarning(const char* /*window*/, const char* /*message*/) override 
         {
             m_gotWarning = true;
             return true;
@@ -39,7 +40,7 @@ namespace EditorUtilsTest
 
 
     class TestWarningAbsorber
-        : public testing::Test
+        : public ::UnitTest::ScopedAllocatorSetupFixture
     {
     };
 

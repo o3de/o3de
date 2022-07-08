@@ -99,7 +99,7 @@ namespace GameStateSamples
             return;
         }
 
-        string localizedMessage;
+        AZStd::string localizedMessage;
         const char* localizationKey = "@PRIMARY_CONTROLLER_DISCONNECTED_LOC_KEY";
         bool wasLocalized = false;
         LocalizationManagerRequestBus::BroadcastResult(wasLocalized,

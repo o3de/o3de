@@ -52,7 +52,7 @@ class CTrackViewDialog
 public:
     friend CMovieCallback;
 
-    CTrackViewDialog(QWidget* pParent = NULL);
+    CTrackViewDialog(QWidget* pParent = nullptr);
     ~CTrackViewDialog();
 
     static void RegisterViewClass();
@@ -69,10 +69,10 @@ public:
     void UpdateSequenceLockStatus();
 
     // IAnimationContextListener
-    virtual void OnSequenceChanged(CTrackViewSequence* pNewSequence) override;
+    void OnSequenceChanged(CTrackViewSequence* pNewSequence) override;
 
     // ITrackViewSequenceListener
-    virtual void OnSequenceSettingsChanged(CTrackViewSequence* pSequence) override;
+    void OnSequenceSettingsChanged(CTrackViewSequence* pSequence) override;
 
     void UpdateDopeSheetTime(CTrackViewSequence* pSequence);
 
@@ -183,7 +183,7 @@ private:
     void OnAddEntityNodeMenu();
 
     void OnEditorNotifyEvent(EEditorNotifyEvent event) override;
-    BOOL OnInitDialog();
+    bool OnInitDialog();
 
     void SaveLayouts();
     void SaveMiscSettings() const;
@@ -197,8 +197,8 @@ private:
     bool processRawInput(MSG* pMsg);
 #endif
 
-    virtual void OnNodeSelectionChanged(CTrackViewSequence* pSequence) override;
-    virtual void OnNodeRenamed(CTrackViewNode* pNode, const char* pOldName) override;
+    void OnNodeSelectionChanged(CTrackViewSequence* pSequence) override;
+    void OnNodeRenamed(CTrackViewNode* pNode, const char* pOldName) override;
 
     void OnSequenceAdded(CTrackViewSequence* pSequence) override;
     void OnSequenceRemoved(CTrackViewSequence* pSequence) override;
@@ -209,8 +209,8 @@ private:
     void AddDialogListeners();
     void RemoveDialogListeners();
 
-    virtual void BeginUndoTransaction();
-    virtual void EndUndoTransaction();
+    void BeginUndoTransaction() override;
+    void EndUndoTransaction() override;
     void SaveCurrentSequenceToFBX();
     void SaveSequenceTimingToXML();
 

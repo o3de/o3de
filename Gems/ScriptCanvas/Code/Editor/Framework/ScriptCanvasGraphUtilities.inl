@@ -10,14 +10,13 @@
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/IO/FileIO.h>
-#include <AzCore/IO/FileIOEventBus.h>
 #include <AzCore/Script/ScriptAsset.h>
 #include <AzCore/Script/ScriptContext.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <Editor/Framework/ScriptCanvasReporter.h>
 #include <ScriptCanvas/Asset/RuntimeAsset.h>
 #include <ScriptCanvas/Asset/RuntimeAssetHandler.h>
-#include <ScriptCanvas/Assets/ScriptCanvasAsset.h>
+
 #include <ScriptCanvas/Execution/ExecutionState.h>
 #include <ScriptCanvas/Execution/Interpreted/ExecutionInterpretedAPI.h>
 #include <ScriptCanvas/Execution/RuntimeComponent.h>
@@ -31,8 +30,8 @@ namespace ScriptCanvasEditor
     // over to the override data to simulate build step that does this when building prefabs
     AZ_INLINE void CopyAssetEntityIdsToOverrides(RuntimeDataOverrides& runtimeDataOverrides)
     {
-        runtimeDataOverrides.m_entityIds.reserve(runtimeDataOverrides.m_runtimeAsset->GetData().m_input.m_entityIds.size());
-        for (auto& varEntityPar : runtimeDataOverrides.m_runtimeAsset->GetData().m_input.m_entityIds)
+        runtimeDataOverrides.m_entityIds.reserve(runtimeDataOverrides.m_runtimeAsset->m_runtimeData.m_input.m_entityIds.size());
+        for (auto& varEntityPar : runtimeDataOverrides.m_runtimeAsset->m_runtimeData.m_input.m_entityIds)
         {
             runtimeDataOverrides.m_entityIds.push_back(varEntityPar.second);
         }
@@ -75,7 +74,7 @@ namespace ScriptCanvasEditor
                 AZ_Assert(loadResult.m_runtimeAsset, "failed to load dependent asset");
 
                 AZ::Outcome<ScriptCanvas::Translation::LuaAssetResult, AZStd::string> luaAssetOutcome = AZ::Failure(AZStd::string("lua asset creation for function failed"));
-                ScriptCanvasEditor::EditorAssetConversionBus::BroadcastResult(luaAssetOutcome, &ScriptCanvasEditor::EditorAssetConversionBusTraits::CreateLuaAsset, loadResult.m_editorAsset, loadResult.m_graphPath);
+                ScriptCanvasEditor::EditorAssetConversionBus::BroadcastResult(luaAssetOutcome, &ScriptCanvasEditor::EditorAssetConversionBusTraits::CreateLuaAsset, loadResult.m_editorAsset, loadResult.m_editorAsset.RelativePath().c_str());
                 AZ_Assert(luaAssetOutcome.IsSuccess(), "failed to create Lua asset");
 
                 AZStd::string modulePath = namespacePath[0].data();
@@ -112,21 +111,22 @@ namespace ScriptCanvasEditor
 
     AZ_INLINE LoadTestGraphResult LoadTestGraph(AZStd::string_view graphPath)
     {
-        AZ::Data::Asset<ScriptCanvasEditor::ScriptCanvasAsset> editorAsset;
-        ScriptCanvasEditor::EditorAssetConversionBus::BroadcastResult(editorAsset, &ScriptCanvasEditor::EditorAssetConversionBusTraits::LoadAsset, graphPath);
-
-        if (editorAsset.GetData())
+        if (auto fileLoadResult = LoadFromFile(graphPath))
         {
-            AZ::Outcome< AZ::Data::Asset<ScriptCanvas::RuntimeAsset>, AZStd::string> assetOutcome = AZ::Failure(AZStd::string("asset creation failed"));
-            ScriptCanvasEditor::EditorAssetConversionBus::BroadcastResult(assetOutcome, &ScriptCanvasEditor::EditorAssetConversionBusTraits::CreateRuntimeAsset, editorAsset);
+            auto& source = fileLoadResult.m_handle;
+            auto testableSource = SourceHandle::FromRelativePath(source, AZ::Uuid::CreateRandom(), source.RelativePath().c_str());
+
+            AZ::Outcome<AZ::Data::Asset<ScriptCanvas::RuntimeAsset>, AZStd::string> assetOutcome(AZ::Failure(AZStd::string("asset create failed")));
+            ScriptCanvasEditor::EditorAssetConversionBus::BroadcastResult(assetOutcome
+                , &ScriptCanvasEditor::EditorAssetConversionBusTraits::CreateRuntimeAsset, testableSource);
+
             if (assetOutcome.IsSuccess())
             {
-                LoadTestGraphResult result;
-                result.m_graphPath = graphPath;
-                result.m_editorAsset = editorAsset;
-                result.m_runtimeAsset = assetOutcome.GetValue();
-                result.m_entity = AZStd::make_unique<AZ::Entity>("Loaded Graph");
-                return result;
+                LoadTestGraphResult loadTestGraphResult;
+                loadTestGraphResult.m_editorAsset = AZStd::move(testableSource);
+                loadTestGraphResult.m_runtimeAsset = assetOutcome.GetValue();
+                loadTestGraphResult.m_entity = AZStd::make_unique<AZ::Entity>("Loaded Graph");
+                return loadTestGraphResult;
             }
         }
 
@@ -149,37 +149,33 @@ namespace ScriptCanvasEditor
         }
     }
 
-    AZ_INLINE void RunEditorAsset(AZ::Data::Asset<AZ::Data::AssetData> asset, Reporter& reporter, ScriptCanvas::ExecutionMode mode)
+    AZ_INLINE void RunEditorAsset(SourceHandle asset, Reporter& reporter, ScriptCanvas::ExecutionMode mode)
     {
-        if (asset.IsReady())
+        AZ::Data::AssetId assetId = asset.Id();
+        AZ::Data::AssetId runtimeAssetId(assetId.m_guid, RuntimeDataSubId);
+        AZ::Data::Asset<ScriptCanvas::RuntimeAsset> runtimeAsset;
+        if (!runtimeAsset.Create(runtimeAssetId, true))
         {
-            AZ::Data::AssetId assetId = asset.GetId();
-            AZ::Data::AssetId runtimeAssetId(assetId.m_guid, AZ_CRC("RuntimeData", 0x163310ae));
-            AZ::Data::Asset<ScriptCanvas::RuntimeAsset> runtimeAsset;
-            if (!runtimeAsset.Create(runtimeAssetId, true))
-            {
-                return;
-            }
-
-            reporter.SetExecutionMode(mode);
-
-            LoadTestGraphResult loadResult;
-            loadResult.m_graphPath = asset.GetHint().c_str();
-            loadResult.m_editorAsset = asset;
-            AZ::EntityId scriptCanvasId;
-            loadResult.m_entity = AZStd::make_unique<AZ::Entity>("Loaded test graph");
-            loadResult.m_runtimeAsset = runtimeAsset;
-
-            RunGraphSpec runGraphSpec;
-            runGraphSpec.dirPath = "";
-            runGraphSpec.graphPath = asset.GetHint().c_str();
-            runGraphSpec.runSpec.duration.m_spec = eDuration::Ticks;
-            runGraphSpec.runSpec.duration.m_ticks = 10;
-            runGraphSpec.runSpec.execution = mode;
-            runGraphSpec.runSpec.release = true;
-            runGraphSpec.runSpec.debug = runGraphSpec.runSpec.traced = false;
-            RunGraphImplementation(runGraphSpec, loadResult, reporter);
+            return;
         }
+
+        reporter.SetExecutionMode(mode);
+
+        LoadTestGraphResult loadResult;
+        loadResult.m_editorAsset = SourceHandle::FromRelativePath(nullptr, assetId.m_guid, asset.RelativePath());
+        AZ::EntityId scriptCanvasId;
+        loadResult.m_entity = AZStd::make_unique<AZ::Entity>("Loaded test graph");
+        loadResult.m_runtimeAsset = runtimeAsset;
+
+        RunGraphSpec runGraphSpec;
+        runGraphSpec.dirPath = "";
+        runGraphSpec.graphPath = asset.RelativePath().c_str();
+        runGraphSpec.runSpec.duration.m_spec = eDuration::Ticks;
+        runGraphSpec.runSpec.duration.m_ticks = 10;
+        runGraphSpec.runSpec.execution = mode;
+        runGraphSpec.runSpec.release = true;
+        runGraphSpec.runSpec.debug = runGraphSpec.runSpec.traced = false;
+        RunGraphImplementation(runGraphSpec, loadResult, reporter);
     }
 
     AZ_INLINE void RunGraphImplementation(const RunGraphSpec& runGraphSpec, Reporter& reporter)
@@ -206,7 +202,8 @@ namespace ScriptCanvasEditor
             {
                 ScopedOutputSuppression outputSuppressor;
                 AZ::Outcome<ScriptCanvas::Translation::LuaAssetResult, AZStd::string> luaAssetOutcome = AZ::Failure(AZStd::string("lua asset creation failed"));
-                ScriptCanvasEditor::EditorAssetConversionBus::BroadcastResult(luaAssetOutcome, &ScriptCanvasEditor::EditorAssetConversionBusTraits::CreateLuaAsset, loadResult.m_editorAsset, loadResult.m_graphPath);
+                ScriptCanvasEditor::EditorAssetConversionBus::BroadcastResult(luaAssetOutcome
+                    , &ScriptCanvasEditor::EditorAssetConversionBusTraits::CreateLuaAsset, loadResult.m_editorAsset, loadResult.m_editorAsset.RelativePath().c_str());
                 reporter.MarkParseAttemptMade();
 
                 if (luaAssetOutcome.IsSuccess())
@@ -220,18 +217,13 @@ namespace ScriptCanvasEditor
                     {
                         RuntimeDataOverrides runtimeDataOverrides;
                         runtimeDataOverrides.m_runtimeAsset = loadResult.m_runtimeAsset;
+                        runtimeDataOverrides.m_runtimeAsset.SetHint("original");
+                        runtimeDataOverrides.m_runtimeAsset.Get()->m_runtimeData.m_script.SetHint("original");
 
 #if defined(LINUX) //////////////////////////////////////////////////////////////////////////
-                        // Temporarily disable testing on the Linux build until the file name casing discrepancy
-                        // is sorted out through the SC build and testing pipeline.
                         if (!luaAssetResult.m_dependencies.source.userSubgraphs.empty())
                         {
-                            auto graphEntityId = AZ::Entity::MakeId();
-                            reporter.SetGraph(graphEntityId);
-                            loadResult.m_entity->Activate();
-                            ScriptCanvas::UnitTesting::EventSender::MarkComplete(graphEntityId, "");
-                            loadResult.m_entity->Deactivate();
-                            reporter.FinishReport();
+                            reporter.MarkLinuxDependencyTestBypass();
                             ScriptCanvas::SystemRequestBus::Broadcast(&ScriptCanvas::SystemRequests::MarkScriptUnitTestEnd);
                             return;
                         }
@@ -265,31 +257,31 @@ namespace ScriptCanvasEditor
 
                                 RuntimeDataOverrides dependencyRuntimeDataOverrides;
                                 dependencyRuntimeDataOverrides.m_runtimeAsset = dependency.runtimeAsset;
+                                AZStd::string dependencyHint = AZStd::string::format("dependency_%zu", index);
+                                dependencyRuntimeDataOverrides.m_runtimeAsset.SetHint(dependencyHint);
+                                dependencyRuntimeDataOverrides.m_runtimeAsset.Get()->m_runtimeData.m_script.SetHint(dependencyHint);
+
                                 runtimeDataOverrides.m_dependencies.push_back(dependencyRuntimeDataOverrides);
 
                                 RuntimeData& dependencyData = dependencyDataBuffer[index];
                                 dependencyData.m_input = depencyAssetResult.m_runtimeInputs;
                                 dependencyData.m_debugMap = depencyAssetResult.m_debugMap;
                                 dependencyData.m_script = depencyAssetResult.m_scriptAsset;
-                                Execution::Context::InitializeActivationData(dependencyData);
+                                Execution::Context::InitializeStaticActivationData(dependencyData);
                                 Execution::InitializeInterpretedStatics(dependencyData);
                             }
                         }
 #endif //////////////////////////////////////////////////////////////////////////////////////
 
                         loadResult.m_scriptAsset = luaAssetResult.m_scriptAsset;
-                        loadResult.m_runtimeAsset.Get()->GetData().m_script = loadResult.m_scriptAsset;
-                        loadResult.m_runtimeAsset.Get()->GetData().m_input = luaAssetResult.m_runtimeInputs;
-                        loadResult.m_runtimeAsset.Get()->GetData().m_debugMap = luaAssetResult.m_debugMap;
+                        loadResult.m_runtimeAsset.Get()->m_runtimeData.m_script = loadResult.m_scriptAsset;
+                        loadResult.m_runtimeAsset.Get()->m_runtimeData.m_input = luaAssetResult.m_runtimeInputs;
+                        loadResult.m_runtimeAsset.Get()->m_runtimeData.m_debugMap = luaAssetResult.m_debugMap;
                         loadResult.m_runtimeComponent = loadResult.m_entity->CreateComponent<ScriptCanvas::RuntimeComponent>();
                         CopyAssetEntityIdsToOverrides(runtimeDataOverrides);
-                        loadResult.m_runtimeComponent->SetRuntimeDataOverrides(runtimeDataOverrides);
-                        Execution::Context::InitializeActivationData(loadResult.m_runtimeAsset->GetData());
-                        Execution::InitializeInterpretedStatics(loadResult.m_runtimeAsset->GetData());
-                    }
-                    else
-                    {
-                        reporter.SetGraph(AZ::Entity::MakeId());
+                        loadResult.m_runtimeComponent->TakeRuntimeDataOverrides(AZStd::move(runtimeDataOverrides));
+                        Execution::Context::InitializeStaticActivationData(loadResult.m_runtimeAsset->m_runtimeData);
+                        Execution::InitializeInterpretedStatics(loadResult.m_runtimeAsset->m_runtimeData);
                     }
                 }
             }
@@ -303,7 +295,7 @@ namespace ScriptCanvasEditor
                 else
                 {
                     loadResult.m_entity->Init();
-                    reporter.SetGraph(loadResult.m_runtimeComponent->GetScriptCanvasId());
+                    reporter.SetGraph(loadResult.m_runtimeAsset.GetId());
 
                     {
                         ScopedOutputSuppression outputSuppressor;

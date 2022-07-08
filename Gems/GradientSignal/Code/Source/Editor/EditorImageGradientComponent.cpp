@@ -14,4 +14,13 @@ namespace GradientSignal
     {
         EditorGradientComponentBase::ReflectSubClass<EditorImageGradientComponent, BaseClassType>(context);
     }
+
+    void EditorImageGradientComponent::OnCompositionChanged()
+    {
+        m_component.WriteOutConfig(&m_configuration);
+        SetDirty();
+
+        AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
+            &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_AttributesAndValues);
+    }
 }

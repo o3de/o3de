@@ -7,6 +7,8 @@
  */
 
 #include <AzCore/Math/MathUtils.h>
+#include <AzCore/Math/Vector4.h>
+#include <AzCore/Math/Vector2.h>
 
 namespace AZ
 {
@@ -30,13 +32,27 @@ namespace AZ
         ;
     }
 
+    AZ_MATH_INLINE Vector3::Vector3(const Vector2& source)
+        : m_value(Simd::Vec3::FromVec2(source.GetSimdValue()))
+    {
+        m_z = 0.0f;
+    }
+
+    AZ_MATH_INLINE Vector3::Vector3(const Vector2& source, float z)
+        : m_value(Simd::Vec3::FromVec2(source.GetSimdValue()))
+    {
+        m_z = z;
+    }
+
+    AZ_MATH_INLINE Vector3::Vector3(const Vector4& source)
+        : m_value(Simd::Vec4::ToVec3(source.GetSimdValue()))
+    {
+    }
 
     AZ_MATH_INLINE Vector3::Vector3(Simd::Vec3::FloatArgType value)
         : m_value(value)
     {
-        ;
     }
-
 
     AZ_MATH_INLINE Vector3 Vector3::CreateZero()
     {
@@ -186,7 +202,7 @@ namespace AZ
     }
 
 
-    AZ_MATH_INLINE void Vector3::Set(float values[])
+    AZ_MATH_INLINE void Vector3::Set(const float values[])
     {
         m_value = Simd::Vec3::LoadImmediate(values[0], values[1], values[2]);
     }
@@ -478,6 +494,24 @@ namespace AZ
     AZ_MATH_INLINE bool Vector3::IsGreaterEqualThan(const Vector3& rhs) const
     {
         return Simd::Vec3::CmpAllGtEq(m_value, rhs.m_value);
+    }
+
+
+    AZ_MATH_INLINE Vector3 Vector3::GetFloor() const
+    {
+        return Vector3(Simd::Vec3::Floor(m_value));
+    }
+
+
+    AZ_MATH_INLINE Vector3 Vector3::GetCeil() const
+    {
+        return Vector3(Simd::Vec3::Ceil(m_value));
+    }
+
+
+    AZ_MATH_INLINE Vector3 Vector3::GetRound() const
+    {
+        return Vector3(Simd::Vec3::Round(m_value));
     }
 
 

@@ -16,7 +16,7 @@
 #include <AzCore/Serialization/Utils.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 
-#include <AtomCore/Serialization/Json/JsonUtils.h>
+#include <AzCore/Serialization/Json/JsonUtils.h>
 
 #include <Atom/RHI.Reflect/ReflectSystemComponent.h>
 
@@ -111,9 +111,6 @@ namespace UnitTest
         // Verify job success
         EXPECT_TRUE(response.m_resultCode == AssetBuilderSDK::ProcessJobResult_Success);
         EXPECT_TRUE(response.m_outputProducts.size() == 1);
-
-        // Verify the dependency was registered
-        EXPECT_TRUE(response.m_outputProducts[0].m_dependencies.size() == 1);
 
         // Verify input and output names are the same
         Data::Asset<Data::AssetData> readAsset = LoadAssetFromFile(response.m_outputProducts[0].m_productFileName.c_str());

@@ -21,8 +21,6 @@
 #include <AzFramework/Components/EditorEntityEvents.h>
 #include "CameraComponent.h"
 #include "CameraComponentController.h"
-#include <IViewSystem.h>
-#include <Cry_Camera.h>
 
 #include <Atom/RPI.Public/Base.h>
 
@@ -37,7 +35,6 @@ namespace Camera
         : public EditorCameraComponentBase
         , public EditorCameraViewRequestBus::Handler
         , private AzFramework::EntityDebugDisplayEventBus::Handler
-        , private EditorCameraNotificationBus::Handler
     {
     public:
         AZ_EDITOR_COMPONENT(EditorCameraComponent, EditorCameraComponentTypeId, AzToolsFramework::Components::EditorComponentBase);
@@ -45,29 +42,28 @@ namespace Camera
 
         static void Reflect(AZ::ReflectContext* reflection);
 
-        // AZ::Component interface
+        // AZ::Component overrides ...
         void Activate() override;
         void Deactivate() override;
         AZ::u32 OnConfigurationChanged() override;
 
-        // AzFramework::DebugDisplayRequestBus::Handler interface
+        // AzFramework::DebugDisplayRequestBus::Handler overrides ...
         void DisplayEntityViewport(
             const AzFramework::ViewportInfo& viewportInfo,
             AzFramework::DebugDisplayRequests& debugDisplay) override;
 
-        /// EditorCameraNotificationBus::Handler interface
-        void OnViewportViewEntityChanged(const AZ::EntityId& newViewId) override;
-
-        /// EditorCameraViewRequestBus::Handler interface
-        void ToggleCameraAsActiveView() override { OnPossessCameraButtonClicked(); }
+        /// EditorCameraViewRequestBus::Handler overrides ...
+        void ToggleCameraAsActiveView() override;
+        void MatchViewport() override;
+        bool IsActiveCamera() const override;
         bool GetCameraState(AzFramework::CameraState& cameraState) override;
 
     protected:
         void EditorDisplay(AzFramework::DebugDisplayRequests& displayInterface, const AZ::Transform& world);
         AZ::Crc32 OnPossessCameraButtonClicked();
+        AZ::Crc32 OnMatchViewportClicked();
         AZStd::string GetCameraViewButtonText() const;
 
-        bool m_isActiveEditorCamera = false;
         float m_frustumViewPercentLength = 1.f;
         AZ::Color m_frustumDrawColor = AzFramework::ViewportColors::HoverColor;
     };

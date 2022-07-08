@@ -6,52 +6,54 @@
  *
  */
 
-#include <AzCore/IO/Path/Path.h>
+#include <AtomToolsFramework/Document/AtomToolsDocumentSystemRequestBus.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
-#include <AzCore/Utils/Utils.h>
-#include <AzFramework/IO/LocalFileIO.h>
-#include <AzFramework/Network/AssetProcessorConnection.h>
-#include <AzFramework/StringFunc/StringFunc.h>
-#include <AzToolsFramework/API/EditorPythonConsoleBus.h>
-#include <AzToolsFramework/API/EditorPythonRunnerRequestsBus.h>
-#include <AzToolsFramework/Asset/AssetSystemComponent.h>
-#include <AzToolsFramework/AssetBrowser/AssetBrowserComponent.h>
-#include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
-#include <AzToolsFramework/AzToolsFrameworkModule.h>
-#include <AzToolsFramework/SourceControl/PerforceComponent.h>
-#include <AzToolsFramework/SourceControl/SourceControlAPI.h>
-#include <AzToolsFramework/Thumbnails/ThumbnailerComponent.h>
-#include <AzToolsFramework/UI/PropertyEditor/PropertyManagerComponent.h>
-#include <AzToolsFramework/UI/UICore/QTreeViewStateSaver.hxx>
-#include <AzToolsFramework/UI/UICore/QWidgetSavedState.h>
-
-#include <AtomToolsFramework/Util/Util.h>
-
-#include <Atom/RPI.Edit/Common/AssetUtils.h>
-#include <Atom/RPI.Public/RPISystemInterface.h>
-
-#include <Atom/Document/ShaderManagementConsoleDocumentModule.h>
-#include <Atom/Document/ShaderManagementConsoleDocumentSystemRequestBus.h>
-#include <Atom/Window/ShaderManagementConsoleWindowModule.h>
-#include <Atom/Window/ShaderManagementConsoleWindowRequestBus.h>
-
 #include <ShaderManagementConsoleApplication.h>
-#include <ShaderManagementConsole_Traits_Platform.h>
 
-AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
-#include <QMessageBox>
-#include <QObject>
-AZ_POP_DISABLE_WARNING
+#include <Document/ShaderManagementConsoleDocument.h>
+#include <Window/ShaderManagementConsoleTableView.h>
+#include <Window/ShaderManagementConsoleWindow.h>
+
+void InitShaderManagementConsoleResources()
+{
+    // Must register qt resources from other modules
+    Q_INIT_RESOURCE(ShaderManagementConsole);
+    Q_INIT_RESOURCE(InspectorWidget);
+    Q_INIT_RESOURCE(AtomToolsAssetBrowser);
+}
 
 namespace ShaderManagementConsole
 {
-    //! This function returns the build system target name of "ShaderManagementConsole
-    AZStd::string ShaderManagementConsoleApplication::GetBuildTargetName() const
+    static const char* GetBuildTargetName()
     {
 #if !defined(LY_CMAKE_TARGET)
 #error "LY_CMAKE_TARGET must be defined in order to add this source file to a CMake executable target"
 #endif
-        return AZStd::string_view{ LY_CMAKE_TARGET };
+        return LY_CMAKE_TARGET;
+    }
+
+    ShaderManagementConsoleApplication::ShaderManagementConsoleApplication(int* argc, char*** argv)
+        : Base(GetBuildTargetName(), argc, argv)
+    {
+        InitShaderManagementConsoleResources();
+
+        QApplication::setOrganizationName("O3DE");
+        QApplication::setApplicationName("O3DE Shader Management Console");
+        QApplication::setWindowIcon(QIcon(":/Icons/application.svg"));
+
+        AzToolsFramework::EditorWindowRequestBus::Handler::BusConnect();
+    }
+
+    ShaderManagementConsoleApplication::~ShaderManagementConsoleApplication()
+    {
+        AzToolsFramework::EditorWindowRequestBus::Handler::BusDisconnect();
+        m_window.reset();
+    }
+
+    void ShaderManagementConsoleApplication::Reflect(AZ::ReflectContext* context)
+    {
+        Base::Reflect(context);
+        ShaderManagementConsoleDocument::Reflect(context);
     }
 
     const char* ShaderManagementConsoleApplication::GetCurrentConfigurationName() const
@@ -65,41 +67,25 @@ namespace ShaderManagementConsole
 #endif
     }
 
-    ShaderManagementConsoleApplication::ShaderManagementConsoleApplication(int* argc, char*** argv)
-        : AtomToolsApplication(argc, argv)
+    void ShaderManagementConsoleApplication::StartCommon(AZ::Entity* systemEntity)
     {
-        QApplication::setApplicationName("O3DE Shader Management Console");
+        Base::StartCommon(systemEntity);
 
-        // The settings registry has been created at this point, so add the CMake target
-        AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddBuildSystemTargetSpecialization(
-            *AZ::SettingsRegistry::Get(), GetBuildTargetName());
-    }
+        // Overriding default document type info to provide a custom view
+        auto documentTypeInfo = ShaderManagementConsoleDocument::BuildDocumentTypeInfo();
+        documentTypeInfo.m_documentViewFactoryCallback = [this](const AZ::Crc32& toolId, const AZ::Uuid& documentId) {
+            return m_window->AddDocumentTab(documentId, new ShaderManagementConsoleTableView(toolId, documentId, m_window.get()));
+        };
+        AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Event(
+            m_toolId, &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Handler::RegisterDocumentType, documentTypeInfo);
 
-    ShaderManagementConsoleApplication::~ShaderManagementConsoleApplication()
-    {
-        ShaderManagementConsoleWindowNotificationBus::Handler::BusDisconnect();
-    }
-
-    void ShaderManagementConsoleApplication::CreateStaticModules(AZStd::vector<AZ::Module*>& outModules)
-    {
-        Base::CreateStaticModules(outModules);
-        outModules.push_back(aznew ShaderManagementConsoleDocumentModule);
-        outModules.push_back(aznew ShaderManagementConsoleWindowModule);
-    }
-
-    void ShaderManagementConsoleApplication::OnShaderManagementConsoleWindowClosing()
-    {
-        ExitMainLoop();
+        m_window.reset(aznew ShaderManagementConsoleWindow(m_toolId));
+        m_window->show();
     }
 
     void ShaderManagementConsoleApplication::Destroy()
     {
-        // before modules are unloaded, destroy UI to free up any assets it cached
-        ShaderManagementConsole::ShaderManagementConsoleWindowRequestBus::Broadcast(
-            &ShaderManagementConsole::ShaderManagementConsoleWindowRequestBus::Handler::DestroyShaderManagementConsoleWindow);
-
-        ShaderManagementConsoleWindowNotificationBus::Handler::BusDisconnect();
-
+        m_window.reset();
         Base::Destroy();
     }
 
@@ -108,36 +94,8 @@ namespace ShaderManagementConsole
         return AZStd::vector<AZStd::string>({ "passes/", "config/" });
     }
 
-    void ShaderManagementConsoleApplication::ProcessCommandLine(const AZ::CommandLine& commandLine)
+    QWidget* ShaderManagementConsoleApplication::GetAppMainWindow()
     {
-        // Process command line options for opening one or more documents on startup
-        size_t openDocumentCount = commandLine.GetNumMiscValues();
-        for (size_t openDocumentIndex = 0; openDocumentIndex < openDocumentCount; ++openDocumentIndex)
-        {
-            const AZStd::string openDocumentPath = commandLine.GetMiscValue(openDocumentIndex);
-
-            AZ_Printf(GetBuildTargetName().c_str(), "Opening document: %s", openDocumentPath.c_str());
-            ShaderManagementConsoleDocumentSystemRequestBus::Broadcast(&ShaderManagementConsoleDocumentSystemRequestBus::Events::OpenDocument, openDocumentPath);
-        }
-
-        Base::ProcessCommandLine(commandLine);
-    }
-
-    void ShaderManagementConsoleApplication::StartInternal()
-    {
-        Base::StartInternal();
-
-        ShaderManagementConsoleWindowNotificationBus::Handler::BusConnect();
-
-        ShaderManagementConsole::ShaderManagementConsoleWindowRequestBus::Broadcast(
-            &ShaderManagementConsole::ShaderManagementConsoleWindowRequestBus::Handler::CreateShaderManagementConsoleWindow);
-    }
-
-    void ShaderManagementConsoleApplication::Stop()
-    {
-        ShaderManagementConsole::ShaderManagementConsoleWindowRequestBus::Broadcast(
-            &ShaderManagementConsole::ShaderManagementConsoleWindowRequestBus::Handler::DestroyShaderManagementConsoleWindow);
-
-        Base::Stop();
+        return m_window.get();
     }
 } // namespace ShaderManagementConsole

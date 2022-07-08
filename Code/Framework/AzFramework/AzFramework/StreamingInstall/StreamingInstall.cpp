@@ -7,6 +7,7 @@
  */
 
 #include <AzFramework/StreamingInstall/StreamingInstallNotifications.h>
+#include <AzCore/RTTI/BehaviorContext.h>
 #include "StreamingInstall.h"
 
 namespace AzFramework

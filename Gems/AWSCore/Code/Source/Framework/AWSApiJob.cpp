@@ -22,10 +22,6 @@ namespace AWSCore
     {
     }
 
-    AwsApiJob::~AwsApiJob()
-    {
-    }
-
     AwsApiJob::Config* AwsApiJob::GetDefaultConfig()
     {
         static AwsApiJobConfigHolder<AwsApiJob::Config> s_configHolder{};

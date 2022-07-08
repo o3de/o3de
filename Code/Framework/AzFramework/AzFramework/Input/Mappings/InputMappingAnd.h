@@ -20,6 +20,38 @@ namespace AzFramework
     {
     public:
         ////////////////////////////////////////////////////////////////////////////////////////////
+        //! The input mapping configuration values that are exposed to the editor.
+        class Config : public InputMapping::ConfigBase
+        {
+        public:
+            ////////////////////////////////////////////////////////////////////////////////////////
+            // Allocator
+            AZ_CLASS_ALLOCATOR(Config, AZ::SystemAllocator, 0);
+
+            ////////////////////////////////////////////////////////////////////////////////////////
+            // Type Info
+            AZ_RTTI(Config, "{54E972F3-0477-4E2E-93F5-4E06ED755DF6}", InputMapping::ConfigBase);
+
+            ////////////////////////////////////////////////////////////////////////////////////////
+            // Reflection
+            static void Reflect(AZ::ReflectContext* context);
+
+            ////////////////////////////////////////////////////////////////////////////////////////////
+            //! Destructor
+            ~Config() override = default;
+
+        protected:
+            ////////////////////////////////////////////////////////////////////////////////////////
+            //! \ref AzFramework::InputMapping::Type::CreateInputMapping
+            AZStd::shared_ptr<InputMapping> CreateInputMapping(const InputContext& inputContext) const override;
+
+        private:
+            ////////////////////////////////////////////////////////////////////////////////////////
+            //! The source input channel names that will be mapped to the output input channel name.
+            AZStd::vector<InputChannelNameFilteredByDeviceType> m_sourceInputChannelNames;
+        };
+
+        ////////////////////////////////////////////////////////////////////////////////////////////
         // Allocator
         AZ_CLASS_ALLOCATOR(InputMappingAnd, AZ::SystemAllocator, 0);
 

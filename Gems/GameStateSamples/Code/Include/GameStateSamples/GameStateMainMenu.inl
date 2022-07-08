@@ -257,7 +257,7 @@ namespace GameStateSamples
     ////////////////////////////////////////////////////////////////////////////////////////////////
     inline const char* GameStateMainMenu::GetMainMenuCanvasAssetPath()
     {
-        return "@assets@/ui/canvases/defaultmainmenuscreen.uicanvas";
+        return "@products@/ui/canvases/defaultmainmenuscreen.uicanvas";
     }
 
 
@@ -277,7 +277,7 @@ namespace GameStateSamples
 
             bool usePrefabSystemForLevels = false;
             AzFramework::ApplicationRequests::Bus::BroadcastResult(
-                usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemForLevelsEnabled);
+                usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
 
             if (usePrefabSystemForLevels)
             {

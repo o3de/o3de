@@ -10,6 +10,9 @@
 
 #include <ScriptCanvas/Core/Attributes.h>
 
+#include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/Serialization/SerializeContext.h>
+
 namespace ScriptCanvasTestingNodes
 {
     //! This object is used to test the use of BehaviorContext classes
@@ -45,6 +48,7 @@ namespace ScriptCanvasTestingNodes
             if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
             {
                 behaviorContext->Class<BehaviorContextObjectTest>()
+                    ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
                     ->Attribute(AZ::Script::Attributes::Category, "Tests/Behavior Context")
                     ->Method("SetString", &BehaviorContextObjectTest::SetString)
                     ->Method("GetString", &BehaviorContextObjectTest::GetString)

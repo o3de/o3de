@@ -11,12 +11,12 @@
 #include <AzFramework/Process/ProcessWatcher.h>
 #include <AzFramework/Process/ProcessCommunicator.h>
 
-#include <AzFramework/StringFunc/StringFunc.h>
-
 #include <AzCore/base.h>
 #include <AzCore/IO/SystemFile.h>
+#include <AzCore/std/containers/fixed_vector.h>
 #include <AzCore/std/parallel/thread.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
+#include <AzCore/StringFunc/StringFunc.h>
 
 #include <iostream>
 #include <errno.h>
@@ -24,7 +24,9 @@
 #include <sys/ioctl.h>
 #include <sys/resource.h> // for iopolicy
 #include <time.h>
+#include <unistd.h>
 
+extern char **environ;
 
 namespace AzFramework
 {
@@ -45,7 +47,7 @@ namespace AzFramework
             // result == 0 means child PID is still running, nothing to check
             if (result == -1)
             {
-                AZ_TracePrintf("ProcessWatcher", "IsChildProcessDone could not determine child process status (waitpid errno %d). assuming process either failed to launch or terminated unexpectedly\n", errno);
+                AZ_TracePrintf("ProcessWatcher", "IsChildProcessDone could not determine child process status (waitpid errno %d(%s)). assuming process either failed to launch or terminated unexpectedly\n", errno, strerror(errno));
                 exitCode = 0;
             }
             else if (result == childProcessId)
@@ -202,53 +204,56 @@ namespace AzFramework
 
     bool ProcessLauncher::LaunchProcess(const ProcessLaunchInfo& processLaunchInfo, ProcessData& processData)
     {
-        bool result = false;
-
         // note that the convention here is that it uses windows-shell style escaping of combined args with spaces in it
         // (so surrounding with quotes like param="hello world")
         // this is so that the callers (which could be numerous) do not have to worry about this and sprinkle ifdefs
         // all over their code.
         // We'll convert this to UNIX style command line parameters by counting and eliminating quotes:
-        
+
+        // Struct uses overloaded operator() to quote command line arguments based
+        // on whether a string or a vector<string> was supplied
+        struct EscapeCommandArguments
+        {
+            void operator()(const AZStd::string& commandParameterString)
+            {
+                AZStd::string outputString;
+                bool inQuotes = false;
+                for (size_t pos = 0; pos < commandParameterString.size(); ++pos)
+                {
+                    char currentChar = commandParameterString[pos];
+                    if (currentChar == '"')
+                    {
+                        inQuotes = !inQuotes;
+                    }
+                    else if ((currentChar == ' ') && (!inQuotes))
+                    {
+                        // its a space outside of quotes, so it ends the current parameter
+                        commandArray.push_back(outputString);
+                        outputString.clear();
+                    }
+                    else
+                    {
+                        // Its a normal character, or its a space inside quotes
+                        outputString.push_back(currentChar);
+                    }
+                }
+
+                if (!outputString.empty())
+                {
+                    commandArray.push_back(outputString);
+                    outputString.clear();
+                }
+            }
+
+            void operator()(const AZStd::vector<AZStd::string>& commandParameterArray)
+            {
+                commandArray = commandParameterArray;
+            }
+            AZStd::vector<AZStd::string>& commandArray;
+        };
+
         AZStd::vector<AZStd::string> commandTokens;
-        
-        AZStd::string outputString;
-        bool inQuotes = false;
-        for (size_t pos = 0; pos < processLaunchInfo.m_commandlineParameters.size(); ++pos)
-        {
-            char currentChar = processLaunchInfo.m_commandlineParameters[pos];
-            if (currentChar == '"')
-            {
-                // Allow quote literals to go through as quotes which do NOT alter our "in quotes" bool below
-                // This is to conform with our PC parameter strings which will sometimes include path parameters which
-                // Can have spaces and commas and need to be output as paramname="\"Some pa,ram\"" in order to capture both correctly
-                if (outputString.length() && outputString.back() == '\\')
-                {
-                    outputString.back() = currentChar;
-                }
-                else
-                {
-                    inQuotes = !inQuotes;
-                }
-            }
-            else if ((currentChar == ' ') && (!inQuotes))
-            {
-                // its a space outside of quotes, so it ends the current parameter
-                commandTokens.push_back(outputString);
-                outputString.clear();
-            }
-            else
-            {
-                // Its a normal character, or its a space inside quotes
-                outputString.push_back(currentChar);
-            }
-        }
-        
-        if (!outputString.empty())
-        {
-            commandTokens.push_back(outputString);
-            outputString.clear();
-        }
+        AZStd::visit(EscapeCommandArguments{ commandTokens }, processLaunchInfo.m_commandlineParameters);
         
         if (!processLaunchInfo.m_processExecutableString.empty())
         {
@@ -274,43 +279,33 @@ namespace AzFramework
             azstrcat(commandAndArgs[i], token.size(), token.c_str());
         }
         commandAndArgs[commandTokens.size()] = nullptr;
-
-        char** environmentVariables = nullptr;
-        int numEnvironmentVars = 0;
+        
+        constexpr int MaxEnvVariables = 128;
+        using EnvironmentVariableContainer = AZStd::fixed_vector<char*, MaxEnvVariables>;
+        EnvironmentVariableContainer environmentVariables;
+        for (char **env = ::environ; *env; env++)
+        {
+            environmentVariables.push_back(*env);
+        }
         if (processLaunchInfo.m_environmentVariables)
         {
-            const int numEnvironmentVars = processLaunchInfo.m_environmentVariables->size();
-            // Adding one more as exec expects the array to have a nullptr as the last element
-            environmentVariables = new char*[numEnvironmentVars + 1];
-            for (int i = 0; i < numEnvironmentVars; i++)
+            for (AZStd::string& processLaunchEnv : *processLaunchInfo.m_environmentVariables)
             {
-                const AZStd::string& envVarString = processLaunchInfo.m_environmentVariables->at(i);
-                environmentVariables[i] = new char[envVarString.size() + 1];
-                environmentVariables[i][0] = '\0';
-                azstrcat(environmentVariables[i], envVarString.size(), envVarString.c_str());
+                environmentVariables.push_back(processLaunchEnv.data());
             }
-            environmentVariables[numEnvironmentVars] = NULL;
         }
+        environmentVariables.push_back(nullptr);
 
         pid_t child_pid = fork();
         if (IsIdChildProcess(child_pid))
         {
-            ExecuteCommandAsChild(commandAndArgs, environmentVariables, processLaunchInfo, processData.m_startupInfo);
+            ExecuteCommandAsChild(commandAndArgs, environmentVariables.data(), processLaunchInfo, processData.m_startupInfo);
         }
 
         processData.m_childProcessId = child_pid;
 
         // Close these handles as they are only to be used by the child process
         processData.m_startupInfo.CloseAllHandles();
-
-        if (processLaunchInfo.m_environmentVariables)
-        {
-            for (int i = 0; i < numEnvironmentVars; i++)
-            {
-                delete [] environmentVariables[i];
-            }
-            delete [] environmentVariables;
-        }
 
         for (int i = 0; i < commandTokens.size(); i++)
         {
@@ -425,6 +420,25 @@ namespace AzFramework
 
         kill(m_pWatcherData->m_childProcessId, SIGKILL);
         waitpid(m_pWatcherData->m_childProcessId, NULL, 0);
+    }
+
+    AZStd::string ProcessLauncher::ProcessLaunchInfo::GetCommandLineParametersAsString() const
+    {
+        struct CommandLineParametersVisitor
+        {
+            AZStd::string operator()(const AZStd::string& commandLine) const
+            {
+                return commandLine;
+            }
+
+            AZStd::string operator()(const AZStd::vector<AZStd::string>& commandLineArray) const
+            {
+                AZStd::string commandLineResult;
+                AZ::StringFunc::Join(commandLineResult, commandLineArray.begin(), commandLineArray.end(), " ");
+                return commandLineResult;
+            }
+        };
+        return AZStd::visit(CommandLineParametersVisitor{}, m_commandlineParameters);
     }
 } //namespace AzFramework
 

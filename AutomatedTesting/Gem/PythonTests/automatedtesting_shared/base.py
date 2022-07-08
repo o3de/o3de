@@ -8,9 +8,11 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 
 import os
 import logging
-import subprocess
+import sys
 import pytest
 import time
+
+from os import path
 
 import ly_test_tools.environment.file_system as file_system
 import ly_test_tools.environment.process_utils as process_utils
@@ -47,12 +49,14 @@ class TestAutomationBase:
             time_info_str += f"{testcase_name}: (Full:{t} sec, Editor:{editor_t} sec)\n"
             
         logger.info(time_info_str)
+        if cls.asset_processor is not None:
+            cls.asset_processor.teardown()
+
         # Kill all ly processes
-        cls.asset_processor.teardown()
-        cls._kill_ly_processes()
+        cls._kill_ly_processes(include_asset_processor=True)
 
-
-    def _run_test(self, request, workspace, editor, testcase_module, extra_cmdline_args=[], use_null_renderer=True):
+    def _run_test(self, request, workspace, editor, testcase_module, extra_cmdline_args=[], batch_mode=True,
+                  autotest_mode=True, use_null_renderer=True):
         test_starttime = time.time()
         self.logger = logging.getLogger(__name__)
         errors = []
@@ -60,14 +64,16 @@ class TestAutomationBase:
         
         #########
         # Setup #
-        
         if self.asset_processor is None:
+            self._kill_ly_processes(include_asset_processor=True)
             self.__class__.asset_processor = AssetProcessor(workspace)
             self.asset_processor.backup_ap_settings()
-        
-        self._kill_ly_processes(include_asset_processor=False)
-        self.asset_processor.start()    
-        self.asset_processor.wait_for_idle()
+        else:
+            self._kill_ly_processes(include_asset_processor=False)
+
+        if not self.asset_processor.process_exists():
+            self.asset_processor.start()
+            self.asset_processor.wait_for_idle()
 
         def teardown():
             if os.path.exists(workspace.paths.editor_log()):
@@ -76,7 +82,7 @@ class TestAutomationBase:
                 file_system.restore_backup(workspace.paths.editor_log(), workspace.paths.project_log())
             except FileNotFoundError as e:
                 self.logger.debug(f"File restoration failed, editor log could not be found.\nError: {e}")
-            editor.kill()
+            editor.stop()
 
         request.addfinalizer(teardown)
 
@@ -90,9 +96,17 @@ class TestAutomationBase:
         editor_starttime = time.time()
         self.logger.debug("Running automated test")
         testcase_module_filepath = self._get_testcase_module_filepath(testcase_module)
-        pycmd = ["--runpythontest", testcase_module_filepath, "-BatchMode", "-autotest_mode", f"-pythontestcase={request.node.originalname}"]
+        pycmd = ["--runpythontest", testcase_module_filepath, f"-pythontestcase={request.node.name}",
+                 "--regset=/Amazon/Preferences/EnablePrefabSystem=true",
+                 f"--regset-file={path.join(workspace.paths.engine_root(), 'Registry', 'prefab.test.setreg')}"]
+
         if use_null_renderer:
             pycmd += ["-rhi=null"]
+        if batch_mode:
+            pycmd += ["-BatchMode"]
+        if autotest_mode:
+            pycmd += ["-autotest_mode"]
+
         pycmd += extra_cmdline_args
         editor.args.extend(pycmd) # args are added to the WinLauncher start command
         editor.start(backupFiles = False, launch_ap = False)
@@ -100,7 +114,7 @@ class TestAutomationBase:
             editor.wait(TestAutomationBase.MAX_TIMEOUT)
         except WaitTimeoutError:
             errors.append(TestRunError("TIMEOUT", f"Editor did not close after {TestAutomationBase.MAX_TIMEOUT} seconds, verify the test is ending and the application didn't freeze"))
-            editor.kill()
+            editor.stop()
             
         output = editor.get_output()
         self.logger.debug("Test output:\n" + output)
@@ -119,7 +133,8 @@ class TestAutomationBase:
             errors.append(TestRunError("FAILED TEST", error_str))
             if return_code and return_code != TestAutomationBase.TEST_FAIL_RETCODE: # Crashed
                 crash_info = "-- No crash log available --"
-                crash_log = os.path.join(workspace.paths.project_log(), 'error.log')
+                crash_log = workspace.paths.crash_log()
+
                 try:
                     waiter.wait_for(lambda: os.path.exists(crash_log), timeout=TestAutomationBase.WAIT_FOR_CRASH_LOG)
                 except AssertionError:                    
@@ -161,14 +176,14 @@ class TestAutomationBase:
                     for line in f.readlines():
                         error_str += f"|{log_basename}| {line}"                        
             except Exception as ex:
-                error_str += "-- No log available --"
+                error_str += f"-- No log available ({ex})--"
 
             pytest.fail(error_str)     
         
     @staticmethod
     def _kill_ly_processes(include_asset_processor=True):
         LY_PROCESSES = [
-            'Editor', 'Profiler', 'RemoteConsole',
+            'Editor', 'Profiler', 'RemoteConsole', 'AutomatedTesting.ServerLauncher', 'o3de'
         ]
         AP_PROCESSES = [
             'AssetProcessor', 'AssetProcessorBatch', 'AssetBuilder', 'CrySCompileServer',

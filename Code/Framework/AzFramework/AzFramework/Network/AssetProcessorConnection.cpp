@@ -73,10 +73,10 @@ namespace AzFramework
             m_retryAfterDisconnect = false;
             m_isBusyDisconnecting = false;
 
-            m_sendThread.m_desc.m_name = "APConnection::SendThread";
+            m_sendThread.m_desc.m_name = "APConnectSend";
             m_sendThread.m_main = AZStd::bind(&AssetProcessorConnection::SendThread, this);
 
-            m_recvThread.m_desc.m_name = "APConnection::RecvThread";
+            m_recvThread.m_desc.m_name = "APConnectRecv";
             m_recvThread.m_main = AZStd::bind(&AssetProcessorConnection::RecvThread, this);
             
             // Put the AP send and receive threads on a core not shared by the main thread or render thread.
@@ -136,7 +136,7 @@ namespace AzFramework
             AZStd::array<char, MaxMessageSize> buffer;
             azsnprintf(buffer.data(), buffer.size(), "(%p/%#" PRIxPTR "): %s\n", this, numericThreadId, msg.data());
 
-            Platform::DebugOutput(buffer.data());
+            AZ::Debug::Platform::OutputToDebugger("AssetProcessorConnection", buffer.data());
 #else // ASSETPROCESORCONNECTION_VERBOSE_LOGGING is not defined
             (void)format;
 #endif
@@ -177,7 +177,7 @@ namespace AzFramework
         //trying to connect, if any error occurs start the disconnect thread
         void AssetProcessorConnection::ConnectThread()
         {
-            static constexpr char ConnectThreadWindow[] = "AssetProcessorConnection::ConnectThread";
+            [[maybe_unused]] static constexpr char ConnectThreadWindow[] = "AssetProcessorConnection::ConnectThread";
 
             //check for join before doing an op
             if (m_connectThread.m_join)
@@ -593,7 +593,7 @@ namespace AzFramework
             
             DebugMessage("StartThread: Starting %s", thread.m_desc.m_name);
             thread.m_join = false;
-            thread.m_thread = AZStd::thread(thread.m_main, &thread.m_desc);
+            thread.m_thread = AZStd::thread(thread.m_desc, thread.m_main);
         }
 
         void AssetProcessorConnection::JoinThread(ThreadState& thread, AZStd::condition_variable* wakeUpCondition /* = nullptr */)

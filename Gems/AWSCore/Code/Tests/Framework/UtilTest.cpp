@@ -6,14 +6,12 @@
  *
  */
 
-#include <AzTest/AzTest.h>
-
 #include <Framework/Util.h>
 #include <TestFramework/AWSCoreFixture.h>
 
 using namespace AWSCoreTestingUtils;
 
-using FrameworkUtilTest = UnitTest::ScopedAllocatorSetupFixture;
+using FrameworkUtilTest = AWSCoreFixture;
 
 TEST_F(FrameworkUtilTest, ToAwsString_UseAzString_GetExpectedAwsString)
 {

@@ -14,7 +14,7 @@
 #include <QCoreApplication>
 
 #include <native/unittests/UnitTestRunner.h> // for UnitTestUtils like CreateDummyFile / AssertAbsorber.
-#include <native/resourcecompiler/RCBuilder.h> // for defines like BUILDER_ID_RC
+#include <native/resourcecompiler/RCBuilder.h>
 
 #include "AssetManager/FileStateCache.h"
 
@@ -128,7 +128,9 @@ namespace AssetProcessor
             settingsRegistry->Set(cacheRootKey, m_data->m_temporarySourceDir.absoluteFilePath("Cache").toUtf8().constData());
             auto projectPathKey =
                 AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) + "/project_path";
-            settingsRegistry->Set(projectPathKey, "AutomatedTesting");
+            AZ::IO::FixedMaxPath enginePath;
+            settingsRegistry->Get(enginePath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
+            settingsRegistry->Set(projectPathKey, (enginePath / "AutomatedTesting").Native());
             AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*settingsRegistry);
             AssetUtilities::ComputeProjectCacheRoot(m_data->m_cacheRootDir);
             QString normalizedCacheRoot = AssetUtilities::NormalizeDirectoryPath(m_data->m_cacheRootDir.absolutePath());
@@ -245,43 +247,32 @@ namespace AssetProcessor
 
             config.AddMetaDataType("exportsettings", QString());
 
-            AZ::Uuid buildIDRcLegacy;
-            BUILDER_ID_RC.GetUuid(buildIDRcLegacy);
-
             AssetRecognizer rec;
-            AssetPlatformSpec specpc;
-            AssetPlatformSpec specandroid;
 
-            specandroid.m_extraRCParams = "somerandomparam";
             rec.m_name = "random files";
             rec.m_patternMatcher = AssetBuilderSDK::FilePatternMatcher("*.random", AssetBuilderSDK::AssetBuilderPattern::Wildcard);
-            rec.m_platformSpecs.insert("pc", specpc);
+            rec.m_platformSpecs.insert({"pc", AssetInternalSpec::Copy});
             config.AddRecognizer(rec);
-
-            specpc.m_extraRCParams = ""; // blank must work
-            specandroid.m_extraRCParams = "testextraparams";
 
             const char* builderTxt1Name = "txt files";
             rec.m_name = builderTxt1Name;
             rec.m_patternMatcher = AssetBuilderSDK::FilePatternMatcher("*.txt", AssetBuilderSDK::AssetBuilderPattern::Wildcard);
-            rec.m_platformSpecs.insert("pc", specpc);
-            rec.m_platformSpecs.insert("android", specandroid);
+            rec.m_platformSpecs.insert({"pc", AssetInternalSpec::Copy});
+            rec.m_platformSpecs.insert({"android", AssetInternalSpec::Copy});
 
             config.AddRecognizer(rec);
 
             // Ignore recognizer
-            AssetPlatformSpec ignore_spec;
-            ignore_spec.m_extraRCParams = "skip";
             AssetRecognizer ignore_rec;
             ignore_rec.m_name = "ignore files";
             ignore_rec.m_patternMatcher = AssetBuilderSDK::FilePatternMatcher("*.ignore", AssetBuilderSDK::AssetBuilderPattern::Wildcard);
-            ignore_rec.m_platformSpecs.insert("pc", specpc);
-            ignore_rec.m_platformSpecs.insert("android", ignore_spec);
+            ignore_rec.m_platformSpecs.insert({"pc", AssetInternalSpec::Copy});
+            ignore_rec.m_platformSpecs.insert({"android", AssetInternalSpec::Skip});
             config.AddRecognizer(ignore_rec);
 
             ExcludeAssetRecognizer excludeRecogniser;
             excludeRecogniser.m_name = "backup";
-            excludeRecogniser.m_patternMatcher = AssetBuilderSDK::FilePatternMatcher(".*\\/savebackup\\/.*", AssetBuilderSDK::AssetBuilderPattern::Regex);
+            excludeRecogniser.m_patternMatcher = AssetBuilderSDK::FilePatternMatcher("(^|.+/)savebackup/.*", AssetBuilderSDK::AssetBuilderPattern::Regex);
             config.AddExcludeRecognizer(excludeRecogniser);
         }
 
@@ -766,7 +757,7 @@ namespace AssetProcessor
     TEST_F(AssetCatalogTest_GetFullSourcePath, AliasedCachePath_ReturnsAbsolutePathToSource)
     {
         //feed it a path with alias and asset id
-        QString fileToCheck = "@assets@/subfolder3/randomfileoutput.random1";
+        QString fileToCheck = "@products@/subfolder3/randomfileoutput.random1";
         EXPECT_TRUE(TestGetFullSourcePath(fileToCheck, m_data->m_temporarySourceDir, true, "subfolder3/somerandomfile.random"));
     }
 
@@ -787,7 +778,7 @@ namespace AssetProcessor
     TEST_F(AssetCatalogTest_GetFullSourcePath, InvalidSourcePathContainingCacheAlias_ReturnsAbsolutePathToSource)
     {
         //feed it a path with alias and input name
-        QString fileToCheck = "@assets@/somerandomfile.random";
+        QString fileToCheck = "@products@/somerandomfile.random";
         EXPECT_TRUE(TestGetFullSourcePath(fileToCheck, m_data->m_temporarySourceDir, true, "subfolder3/somerandomfile.random"));
     }
 
@@ -1063,10 +1054,10 @@ namespace AssetProcessor
 
         AZStd::thread_desc threadDesc;
         threadDesc.m_name = "AssetCatalog Thread";
-        AZStd::thread catalogThread([this]()
+        AZStd::thread catalogThread(threadDesc, [this]()
             {
                 m_data->m_assetCatalog->BuildRegistry();
-            }, &threadDesc
+            }
         );
 
         AssetNotificationMessage message("some/path/image.png", AssetNotificationMessage::NotificationType::AssetChanged, AZ::Data::AssetType::CreateRandom(), "pc");

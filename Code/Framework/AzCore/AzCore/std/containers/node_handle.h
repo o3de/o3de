@@ -7,8 +7,11 @@
  */
 #pragma once
 
-#include <AzCore/std/optional.h>
 #include <AzCore/std/allocator_traits.h>
+#include <AzCore/std/iterator.h>
+#include <AzCore/std/optional.h>
+#include <AzCore/std/utils.h>
+#include <AzCore/std/typetraits/add_const.h>
 
 namespace AZStd
 {
@@ -123,7 +126,8 @@ namespace AZStd
                 }
             }
 
-            friend void swap(node_handle& lhs, node_handle& rhs);
+            template <typename SwapNodeTraits, template <typename, typename> class SwapMapOrSetNodeHandleBase> 
+                friend void swap(node_handle<SwapNodeTraits, SwapMapOrSetNodeHandleBase>& lhs, node_handle<SwapNodeTraits, SwapMapOrSetNodeHandleBase>& rhs);
 
         private:
             node_handle(node_pointer_type node, const allocator_type& allocator)
@@ -152,8 +156,8 @@ namespace AZStd
             optional<allocator_type> m_allocator;
         };
 
-        template <typename NodeTraits, template <typename, typename> class MapOrSetNodeHandleBase>
-        void swap(node_handle<NodeTraits, MapOrSetNodeHandleBase>& lhs, node_handle<NodeTraits, MapOrSetNodeHandleBase>& rhs)
+        template <typename SwapNodeTraits, template <typename, typename> class SwapMapOrSetNodeHandleBase>
+        void swap(node_handle<SwapNodeTraits, SwapMapOrSetNodeHandleBase>& lhs, node_handle<SwapNodeTraits, SwapMapOrSetNodeHandleBase>& rhs)
         {
             lhs.swap(rhs);
         }
@@ -191,5 +195,24 @@ namespace AZStd
 
         template <typename NodeTraits>
         using map_node_handle = node_handle<NodeTraits, map_node_base>;
+    }
+
+    inline namespace AssociativeInternal
+    {
+        // deduction guide helpers
+        template<class InputIterator>
+        using iter_value_type = typename iterator_traits<InputIterator>::value_type::second_type;
+
+        template<class InputIterator>
+        using iter_key_type = remove_const_t<typename iterator_traits<InputIterator>::value_type::first_type>;
+
+        template<class InputIterator>
+        using iter_mapped_type = typename iterator_traits<InputIterator>::value_type::second_type;
+
+        template<class InputIterator>
+        using iter_to_alloc_type = pair<
+            add_const_t<typename iterator_traits<InputIterator>::value_type::first_type>,
+            typename iterator_traits<InputIterator>::value_type::second_type
+        >;
     }
 }

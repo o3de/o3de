@@ -13,20 +13,24 @@
 
 #if !defined(Q_MOC_RUN)
 #include "DocMultiArchive.h"
+#include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipInterface.h>
 #include <AzToolsFramework/Entity/SliceEditorEntityOwnershipServiceBus.h>
+#include <AzToolsFramework/Prefab/PrefabLoaderInterface.h>
+#include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
+#include <AzToolsFramework/UI/Prefab/PrefabIntegrationInterface.h>
 #include <AzCore/Component/Component.h>
+#include <AzQtComponents/Components/Widgets/Card.h>
 #include <TimeValue.h>
 #include <IEditor.h>
 #endif
 
-class CClouds;
 struct LightingSettings;
 struct IVariable;
 struct ICVar;
 
 // Filename of the temporary file used for the hold / fetch operation
 // conform to the "$tmp[0-9]_" naming convention
-#define HOLD_FETCH_FILE "$tmp_hold" 
+#define HOLD_FETCH_FILE "$tmp_hold"
 
 class CCryEditDoc
     : public QObject
@@ -36,7 +40,7 @@ class CCryEditDoc
     Q_PROPERTY(bool modified READ IsModified WRITE SetModifiedFlag);
     Q_PROPERTY(QString pathName READ GetLevelPathName WRITE SetPathName);
     Q_PROPERTY(QString title READ GetTitle WRITE SetTitle);
- 
+
 public: // Create from serialization only
     enum DocumentEditingMode
     {
@@ -82,7 +86,7 @@ public: // Create from serialization only
 
     bool DoSave(const QString& pathName, bool replace);
     SANDBOX_API bool Save();
-    virtual BOOL DoFileSave();
+    virtual bool DoFileSave();
     bool SaveModified();
 
     virtual bool BackupBeforeSave(bool bForce = false);
@@ -102,7 +106,7 @@ public: // Create from serialization only
     bool IsLevelExported() const;
     void SetLevelExported(bool boExported = true);
 
-    BOOL CanCloseFrame();
+    bool CanCloseFrame();
 
     enum class FetchPolicy
     {
@@ -119,7 +123,6 @@ public: // Create from serialization only
     const char* GetTemporaryLevelName() const;
     void DeleteTemporaryLevel();
 
-    CClouds* GetClouds() { return m_pClouds; }
     void SetWaterColor(const QColor& col) { m_waterColor = col; }
     QColor GetWaterColor() const { return m_waterColor; }
     XmlNodeRef& GetFogTemplate() { return m_fogTemplate; }
@@ -129,11 +132,10 @@ public: // Create from serialization only
     void RegisterListener(IDocListener* listener);
     void UnregisterListener(IDocListener* listener);
 
-    void GetMemoryUsage(ICrySizer* pSizer) const;
-
     static bool IsBackupOrTempLevelSubdirectory(const QString& folderName);
-protected:
+    virtual void OnFileSaveAs();
 
+protected:
     virtual void DeleteContents();
 
     struct TOpenDocContext
@@ -144,7 +146,7 @@ protected:
     };
     bool BeforeOpenDocument(const QString& lpszPathName, TOpenDocContext& context);
     bool DoOpenDocument(TOpenDocContext& context);
-    virtual BOOL LoadXmlArchiveArray(TDocMultiArchive& arrXmlAr, const QString& absoluteLevelPath, const QString& levelPath);
+    virtual bool LoadXmlArchiveArray(TDocMultiArchive& arrXmlAr, const QString& absoluteLevelPath, const QString& levelPath);
     virtual void ReleaseXmlArchiveArray(TDocMultiArchive& arrXmlAr);
 
     virtual void Load(TDocMultiArchive& arrXmlAr, const QString& szFilename);
@@ -160,7 +162,6 @@ protected:
     bool LoadEntitiesFromSlice(const QString& sliceFile);
     void SerializeFogSettings(CXmlArchive& xmlAr);
     virtual void SerializeViewSettings(CXmlArchive& xmlAr);
-    void SerializeNameSelection(CXmlArchive& xmlAr);
     void LogLoadTime(int time) const;
 
     struct TSaveDocContext
@@ -173,14 +174,11 @@ protected:
     bool AfterSaveDocument(const QString& lpszPathName, TSaveDocContext& context, bool bShowPrompt = true);
 
     virtual bool OnSaveDocument(const QString& lpszPathName);
-    virtual void OnFileSaveAs();
     //! called immediately after saving the level.
     void AfterSave();
-    void RegisterConsoleVariables();
     void OnStartLevelResourceList();
-    static void OnValidateSurfaceTypesChanged(ICVar*);
 
-    QString GetCryIndexPath(const LPCTSTR levelFilePath) const;
+    QString GetCryIndexPath(const char* levelFilePath) const;
 
     //////////////////////////////////////////////////////////////////////////
     // SliceEditorEntityOwnershipServiceNotificationBus::Handler
@@ -192,10 +190,8 @@ protected:
     QColor m_waterColor = QColor(0, 0, 255);
     XmlNodeRef m_fogTemplate;
     XmlNodeRef m_environmentTemplate;
-    CClouds* m_pClouds;
     std::list<IDocListener*> m_listeners;
     bool m_bDocumentReady = false;
-    ICVar* doc_validate_surface_types = nullptr;
     int m_modifiedModuleFlags;
     // On construction, it assumes loaded levels have already been exported. Can be a big fat lie, though.
     // The right way would require us to save to the level folder the export status of the level.
@@ -204,11 +200,14 @@ protected:
     QString m_pathName;
     QString m_slicePathName;
     QString m_title;
-    AZ::Data::AssetId m_envProbeSliceAssetId;
     float m_terrainSize;
     const char* m_envProbeSliceRelativePath = "EngineAssets/Slices/DefaultLevelSetup.slice";
     const float m_envProbeHeight = 200.0f;
     bool m_hasErrors = false; ///< This is used to warn the user that they may lose work when they go to save.
+    AzToolsFramework::Prefab::PrefabSystemComponentInterface* m_prefabSystemComponentInterface = nullptr;
+    AzToolsFramework::PrefabEditorEntityOwnershipInterface* m_prefabEditorEntityOwnershipInterface = nullptr;
+    AzToolsFramework::Prefab::PrefabLoaderInterface* m_prefabLoaderInterface = nullptr;
+    AzToolsFramework::Prefab::PrefabIntegrationInterface* m_prefabIntegrationInterface = nullptr;
 };
 
 class CAutoDocNotReady

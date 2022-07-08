@@ -1,5 +1,5 @@
 { 
-    "Source" : "DisplayMapper",
+    "Source" : "DisplayMapper.azsl",
 
     "DepthStencilState" : {
         "Depth" : { "Enable" : false }

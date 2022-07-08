@@ -8,7 +8,6 @@
 #pragma once
 
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
-#include <AzCore/Serialization/SerializeContext.h>
 
 namespace AzToolsFramework
 {
@@ -17,7 +16,9 @@ namespace AzToolsFramework
         class EditorPrefabComponent : public AzToolsFramework::Components::EditorComponentBase
         {
         public:
-            AZ_COMPONENT(EditorPrefabComponent, "{756E5F9C-3E08-4F8D-855C-A5AEEFB6FCDD}", EditorComponentBase);
+            static constexpr const char* const EditorPrefabComponentTypeId = "{756E5F9C-3E08-4F8D-855C-A5AEEFB6FCDD}";
+
+            AZ_COMPONENT(EditorPrefabComponent, EditorPrefabComponentTypeId, EditorComponentBase);
 
             static void Reflect(AZ::ReflectContext* context);
             static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services);

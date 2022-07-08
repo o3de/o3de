@@ -10,7 +10,7 @@
 #include <Atom/RHI.Reflect/AttachmentEnums.h>
 #include <Atom/RHI.Reflect/QueryPoolDescriptor.h>
 
-#include <AtomCore/std/containers/array_view.h>
+#include <AzCore/std/containers/span.h>
 
 #include <AzCore/Name/Name.h>
 
@@ -65,7 +65,7 @@ namespace AZ
             static void Reflect(AZ::ReflectContext* context);
 
             PipelineStatisticsResult() = default;
-            PipelineStatisticsResult(AZStd::array_view<PipelineStatisticsResult>&& statisticsResultArray);
+            PipelineStatisticsResult(AZStd::span<const PipelineStatisticsResult>&& statisticsResultArray);
 
             PipelineStatisticsResult& operator+=(const PipelineStatisticsResult& rhs);
 

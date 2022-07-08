@@ -6,6 +6,10 @@
 #
 #
 
+if(LY_MONOLITHIC_GAME)
+    return()
+endif()
+
 ly_add_target(
     NAME TestImpact.Frontend.Console.Static STATIC
     NAMESPACE AZ

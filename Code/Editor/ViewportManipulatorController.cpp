@@ -8,12 +8,18 @@
 
 #include "ViewportManipulatorController.h"
 
+#include <AzCore/Script/ScriptTimePoint.h>
+#include <AzFramework/Input/Buses/Requests/InputSystemCursorRequestBus.h>
+#include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>
+#include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
+#include <AzFramework/Viewport/ScreenGeometry.h>
+#include <AzFramework/Viewport/ViewportScreen.h>
 #include <AzToolsFramework/Manipulators/ManipulatorManager.h>
 #include <AzToolsFramework/ViewportSelection/EditorInteractionSystemViewportSelectionRequestBus.h>
-#include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
-#include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>
-#include <AzFramework/Viewport/ScreenGeometry.h>
-#include <AzCore/Script/ScriptTimePoint.h>
+#include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
+#include <AzToolsFramework/Viewport/ViewportInteractionHelpers.h>
+#include <AzToolsFramework/Input/QtEventToAzInputMapper.h>
+#include <Editor/EditorViewportSettings.h>
 
 #include <QApplication>
 
@@ -28,52 +34,7 @@ namespace SandboxEditor
     {
     }
 
-    AzToolsFramework::ViewportInteraction::MouseButton ViewportManipulatorControllerInstance::GetMouseButton(
-        const AzFramework::InputChannel& inputChannel)
-    {
-        using AzToolsFramework::ViewportInteraction::MouseButton;
-        using InputButton = AzFramework::InputDeviceMouse::Button;
-        const auto& id = inputChannel.GetInputChannelId();
-        if (id == InputButton::Left)
-        {
-            return MouseButton::Left;
-        }
-        if (id == InputButton::Middle)
-        {
-            return MouseButton::Middle;
-        }
-        if (id == InputButton::Right)
-        {
-            return MouseButton::Right;
-        }
-        return MouseButton::None;
-    }
-
-    bool ViewportManipulatorControllerInstance::IsMouseMove(const AzFramework::InputChannel& inputChannel)
-    {
-        return inputChannel.GetInputChannelId() == AzFramework::InputDeviceMouse::SystemCursorPosition;
-    }
-
-    AzToolsFramework::ViewportInteraction::KeyboardModifier ViewportManipulatorControllerInstance::GetKeyboardModifier(
-        const AzFramework::InputChannel& inputChannel)
-    {
-        using AzToolsFramework::ViewportInteraction::KeyboardModifier;
-        using Key = AzFramework::InputDeviceKeyboard::Key;
-        const auto& id = inputChannel.GetInputChannelId();
-        if (id == Key::ModifierAltL || id == Key::ModifierAltR)
-        {
-            return KeyboardModifier::Alt;
-        }
-        if (id == Key::ModifierCtrlL || id == Key::ModifierCtrlR)
-        {
-            return KeyboardModifier::Ctrl;
-        }
-        if (id == Key::ModifierShiftL || id == Key::ModifierShiftR)
-        {
-            return KeyboardModifier::Shift;
-        }
-        return KeyboardModifier::None;
-    }
+    ViewportManipulatorControllerInstance::~ViewportManipulatorControllerInstance() = default;
 
     bool ViewportManipulatorControllerInstance::HandleInputChannelEvent(const AzFramework::ViewportControllerInputEvent& event)
     {
@@ -84,8 +45,15 @@ namespace SandboxEditor
         }
 
         using InteractionBus = AzToolsFramework::EditorInteractionSystemViewportSelectionRequestBus;
-        using namespace AzToolsFramework::ViewportInteraction;
         using AzFramework::InputChannel;
+        using AzToolsFramework::ViewportInteraction::KeyboardModifier;
+        using AzToolsFramework::ViewportInteraction::MouseButton;
+        using AzToolsFramework::ViewportInteraction::MouseEvent;
+        using AzToolsFramework::ViewportInteraction::MouseInteraction;
+        using AzToolsFramework::ViewportInteraction::MouseInteractionEvent;
+        using AzToolsFramework::ViewportInteraction::ProjectedViewportRay;
+        using AzToolsFramework::ViewportInteraction::ViewportInteractionRequestBus;
+        using AzToolsFramework::ViewportInteraction::Helpers;
 
         bool interactionHandled = false;
         float wheelDelta = 0.0f;
@@ -98,29 +66,47 @@ namespace SandboxEditor
         const bool finishedProcessingEvents = event.m_priority == InteractionPriority;
 
         const auto state = event.m_inputChannel.GetState();
-        if (IsMouseMove(event.m_inputChannel))
+        if (Helpers::IsMouseMove(event.m_inputChannel))
         {
             // Cache the ray trace results when doing manipulator interaction checks, no need to recalculate after
             if (event.m_priority == ManipulatorPriority)
             {
-                AzFramework::ScreenPoint screenPosition = AzFramework::ScreenPoint(0, 0);
-                ViewportMouseCursorRequestBus::EventResult(
-                    screenPosition, GetViewportId(), &ViewportMouseCursorRequestBus::Events::ViewportCursorScreenPosition);
+                const auto* position = event.m_inputChannel.GetCustomData<AzFramework::InputChannel::PositionData2D>();
+                AZ_Assert(position, "Expected PositionData2D but found nullptr");
 
-                m_mouseInteraction.m_mousePick.m_screenCoordinates = screenPosition;
-                AZStd::optional<ProjectedViewportRay> ray;
-                ViewportInteractionRequestBus::EventResult(
-                    ray, GetViewportId(), &ViewportInteractionRequestBus::Events::ViewportScreenToWorldRay, screenPosition);
+                AzFramework::WindowSize windowSize;
+                AzFramework::WindowRequestBus::EventResult(
+                    windowSize, event.m_windowHandle, &AzFramework::WindowRequestBus::Events::GetClientAreaSize);
 
-                if (ray.has_value())
+                if (SandboxEditor::ManipulatorMouseWrap() && event.m_priority == ManipulatorPriority)
                 {
-                    m_mouseInteraction.m_mousePick.m_rayOrigin = ray.value().origin;
-                    m_mouseInteraction.m_mousePick.m_rayDirection = ray.value().direction;
+                    if (m_virtualNormalizedPosition)
+                    {
+                        (*m_virtualNormalizedPosition) += position->m_normalizedPositionDelta;
+                    }
+                    else
+                    {
+                        m_virtualNormalizedPosition = { position->m_normalizedPosition };
+                    }
                 }
+
+                const auto normalizedPosition = m_virtualNormalizedPosition.value_or(position->m_normalizedPosition);
+                const auto screenPoint = AzFramework::ScreenPointFromVector2(AZ::Vector2(
+                    normalizedPosition.GetX() * aznumeric_cast<float>(windowSize.m_width),
+                    normalizedPosition.GetY() * aznumeric_cast<float>(windowSize.m_height)));
+
+                ProjectedViewportRay ray{};
+                ViewportInteractionRequestBus::EventResult(
+                    ray, GetViewportId(), &ViewportInteractionRequestBus::Events::ViewportScreenToWorldRay, screenPoint);
+
+                m_mouseInteraction.m_mousePick.m_rayOrigin = ray.m_origin;
+                m_mouseInteraction.m_mousePick.m_rayDirection = ray.m_direction;
+                m_mouseInteraction.m_mousePick.m_screenCoordinates = screenPoint;
             }
+
             eventType = MouseEvent::Move;
         }
-        else if (auto mouseButton = GetMouseButton(event.m_inputChannel); mouseButton != MouseButton::None)
+        else if (auto mouseButton = Helpers::GetMouseButton(event.m_inputChannel); mouseButton != MouseButton::None)
         {
             const AZ::u32 mouseButtonValue = static_cast<AZ::u32>(mouseButton);
             overrideButton = mouseButton;
@@ -141,16 +127,22 @@ namespace SandboxEditor
                     // Only insert the double click timing once we're done processing events, to avoid a false IsDoubleClick positive
                     if (finishedProcessingEvents)
                     {
-                        m_pendingDoubleClicks[mouseButton] = m_curTime;
+                        m_pendingDoubleClicks[mouseButton] = { m_currentTime, m_mouseInteraction.m_mousePick.m_screenCoordinates };
                     }
                     eventType = MouseEvent::Down;
+                }
+                if (SandboxEditor::ManipulatorMouseWrap() && event.m_priority == ManipulatorPriority)
+                {
+                    AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::Event(
+                        GetViewportId(), &AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::Events::SetCursorMode,
+                        AzToolsFramework::CursorInputMode::CursorModeWrapped);
                 }
             }
             else if (state == InputChannel::State::Ended)
             {
                 // If we've actually logged a mouse down event, forward a mouse up event.
-                // This prevents corner cases like the context menu thinking it should be opened even though no one clicked in this viewport,
-                // due to RenderViewportWidget ensuring all controllers get InputChannel::State::Ended events.
+                // This prevents corner cases like the context menu thinking it should be opened even though no one clicked in this
+                // viewport, due to RenderViewportWidget ensuring all controllers get InputChannel::State::Ended events.
                 if (m_mouseInteraction.m_mouseButtons.m_mouseButtons & mouseButtonValue)
                 {
                     // Erase the button from our state if we're done processing events.
@@ -160,9 +152,16 @@ namespace SandboxEditor
                     }
                     eventType = MouseEvent::Up;
                 }
+                if (SandboxEditor::ManipulatorMouseWrap() && event.m_priority == ManipulatorPriority)
+                {
+                    AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::Event(
+                        GetViewportId(), &AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::Events::SetCursorMode,
+                        AzToolsFramework::CursorInputMode::CursorModeNone);
+                    m_virtualNormalizedPosition = AZStd::nullopt;
+                }
             }
         }
-        else if (auto keyboardModifier = GetKeyboardModifier(event.m_inputChannel); keyboardModifier != KeyboardModifier::None)
+        else if (auto keyboardModifier = Helpers::GetKeyboardModifier(event.m_inputChannel); keyboardModifier != KeyboardModifier::None)
         {
             if (state == InputChannel::State::Began || state == InputChannel::State::Updated)
             {
@@ -197,28 +196,34 @@ namespace SandboxEditor
                 ? &InteractionBus::Events::InternalHandleMouseManipulatorInteraction
                 : &InteractionBus::Events::InternalHandleMouseViewportInteraction;
 
-            const auto mouseInteractionEvent = [mouseInteraction, event = eventType.value(), wheelDelta] {
+            auto currentCursorState = AzFramework::SystemCursorState::Unknown;
+            AzFramework::InputSystemCursorRequestBus::EventResult(
+                currentCursorState, event.m_inputChannel.GetInputDevice().GetInputDeviceId(),
+                &AzFramework::InputSystemCursorRequestBus::Events::GetSystemCursorState);
+
+            const auto mouseInteractionEvent = [mouseInteraction, event = eventType.value(), wheelDelta,
+                                                cursorCaptured = currentCursorState == AzFramework::SystemCursorState::ConstrainedAndHidden]
+            {
                 switch (event)
                 {
                 case MouseEvent::Up:
                 case MouseEvent::Down:
                 case MouseEvent::Move:
                 case MouseEvent::DoubleClick:
-                    return MouseInteractionEvent(AZStd::move(mouseInteraction), event);
+                    return MouseInteractionEvent(AZStd::move(mouseInteraction), event, cursorCaptured);
                 case MouseEvent::Wheel:
                     return MouseInteractionEvent(AZStd::move(mouseInteraction), wheelDelta);
                 }
 
                 AZ_Assert(false, "Unhandled MouseEvent");
-                return MouseInteractionEvent(MouseInteraction{}, MouseEvent::Up);
+                return MouseInteractionEvent(MouseInteraction{}, MouseEvent::Up, false);
             }();
 
             InteractionBus::EventResult(
                 interactionHandled, AzToolsFramework::GetEntityContextId(), targetInteractionEvent, mouseInteractionEvent);
         }
 
-        // Only filter button/key press events, not release events
-        return interactionHandled && event.m_inputChannel.IsActive();
+        return interactionHandled;
     }
 
     void ViewportManipulatorControllerInstance::ResetInputChannels()
@@ -229,17 +234,22 @@ namespace SandboxEditor
 
     void ViewportManipulatorControllerInstance::UpdateViewport(const AzFramework::ViewportControllerUpdateEvent& event)
     {
-        m_curTime = event.m_time;
+        m_currentTime = event.m_time;
     }
 
     bool ViewportManipulatorControllerInstance::IsDoubleClick(AzToolsFramework::ViewportInteraction::MouseButton button) const
     {
-        auto clickIt = m_pendingDoubleClicks.find(button);
-        if (clickIt == m_pendingDoubleClicks.end())
+        if (auto clickIt = m_pendingDoubleClicks.find(button); clickIt != m_pendingDoubleClicks.end())
         {
-            return false;
+            const double doubleClickThresholdMilliseconds = qApp->doubleClickInterval();
+            const bool insideTimeThreshold =
+                (m_currentTime.GetMilliseconds() - clickIt->second.m_time.GetMilliseconds()) < doubleClickThresholdMilliseconds;
+            const bool insideDistanceThreshold =
+                AzFramework::ScreenVectorLength(clickIt->second.m_position - m_mouseInteraction.m_mousePick.m_screenCoordinates) <
+                AzFramework::DefaultMouseMoveDeadZone;
+            return insideTimeThreshold && insideDistanceThreshold;
         }
-        const double doubleClickThresholdMilliseconds = qApp->doubleClickInterval();
-        return (m_curTime.GetMilliseconds() - clickIt->second.GetMilliseconds()) < doubleClickThresholdMilliseconds;
+
+        return false;
     }
-} //namespace SandboxEditor
+} // namespace SandboxEditor

@@ -1,0 +1,94 @@
+{
+    "description": "A simple default base material for Atom testing.",
+    "version": 1,
+    "propertyLayout": {
+        "groups": [
+            {
+                "name": "general",
+                "displayName": "General Settings",
+                "description": "General settings."
+            }
+        ],
+        "properties": {
+            "general": [
+                {
+                    "name": "debugVertexStream",
+                    "displayName": "Display Vertex Stream",
+                    "description": "Display vertex stream interpolated over the triangle.",
+                    "type": "Enum",
+                    "defaultValue": "Normals",
+                    "enumValues": [ "Normals", "Tangents", "Bitangents", "Uvs", "TangentW" ],
+                    "connection": {
+                        "type": "ShaderOption",
+                        "name": "o_debugVertexStream"
+                    }
+                },
+                {
+                    "name": "tangentOptions",
+                    "displayName": "Tangent Options",
+                    "description": "Use the data from the vertices or use the Surface Gradient technique for calculating tangents.",
+                    "type": "Enum",
+                    "defaultValue": "UseVertexData",
+                    "enumValues": [ "UseVertexData", "UseSurfaceGradient"],
+                    "connection": {
+                        "type": "ShaderOption",
+                        "name": "o_tangentOptions"
+                    }
+                },
+                {
+                    "name": "bitangentOptions",
+                    "displayName": "Bitangent Options",
+                    "description": "Use the data from the vertices, use the Surface Gradient technique for calculating bitangents, or use the cross product to reconstruct the bitangents.",
+                    "type": "Enum",
+                    "defaultValue": "UseVertexData",
+                    "enumValues": [ "UseVertexData", "UseSurfaceGradient", "ReconstructBitangent" ],
+                    "connection": {
+                        "type": "ShaderOption",
+                        "name": "o_bitangentOptions"
+                    }
+                },
+                {
+                    "name": "colorDisplayMode",
+                    "displayName": "Display Mode",
+                    "description": "Offset the vector into the 0-1 range (ColorSpace), or display the raw unit vector including negative values (UnitSpace)",
+                    "type": "Enum",
+                    "defaultValue": "ColorSpace",
+                    "enumValues": [ "ColorSpace", "UnitSpace"],
+                    "connection": {
+                        "type": "ShaderOption",
+                        "name": "o_colorDisplayMode"
+                    }
+                },
+                {
+                    "name": "uvIndex",
+                    "displayName": "UV Index",
+                    "description": "UV set to display and use for tangents/bitangents.",
+                    "type": "Enum",
+                    "enumIsUv": true,
+                    "defaultValue": "Tiled",
+                    "connection": {
+                        "type": "ShaderInput",
+                        "name": "m_uvIndex"
+                    }
+                }
+            ]
+        }
+    },
+    "shaders": [
+        {
+            "file": "Materials/Special/DebugVertexStreams.shader"
+        }
+    ],
+    "functors": [
+        {
+            "type": "Lua",
+            "args": {
+                "file": "DebugVertexStreams_IncompatibleEnums.lua"
+            }
+        }
+    ],
+    "uvNameMap": {
+        "UV0": "Tiled",
+        "UV1": "Unwrapped"
+    }
+}

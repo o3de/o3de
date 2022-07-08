@@ -9,6 +9,8 @@
 #include <ProjectUtils.h>
 #include <ProjectManagerDefs.h>
 #include <PythonBindingsInterface.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
+#include <AzCore/IO/Path/Path.h>
 
 #include <QFileDialog>
 #include <QDir>
@@ -21,6 +23,14 @@
 #include <QProgressDialog>
 #include <QSpacerItem>
 #include <QGridLayout>
+#include <QTextEdit>
+#include <QByteArray>
+#include <QScrollBar>
+#include <QProgressBar>
+#include <QLabel>
+#include <QStandardPaths>
+
+#include <AzCore/std/chrono/chrono.h>
 
 namespace O3DE::ProjectManager
 {
@@ -117,7 +127,7 @@ namespace O3DE::ProjectManager
                     const int updateStatusEvery = 64;
                     if (outFileCount % updateStatusEvery == 0)
                     {
-                        statusCallback(outFileCount, outTotalSizeInBytes);
+                        statusCallback(outFileCount, static_cast<int>(outTotalSizeInBytes));
                     }
                 }
             }
@@ -141,7 +151,7 @@ namespace O3DE::ProjectManager
 
             for (const QString& directory : original.entryList(QDir::Dirs | QDir::NoDotAndDotDot))
             {
-                if (progressDialog->wasCanceled())
+                if (progressDialog && progressDialog->wasCanceled())
                 {
                     return false;
                 }
@@ -163,10 +173,10 @@ namespace O3DE::ProjectManager
             }
 
             QLocale locale;
-            const float progressDialogRangeHalf = qFabs(progressDialog->maximum() - progressDialog->minimum()) * 0.5f;
+            const float progressDialogRangeHalf = progressDialog ? static_cast<float>(qFabs(progressDialog->maximum() - progressDialog->minimum()) * 0.5f) : 0.f;
             for (const QString& file : original.entryList(QDir::Files))
             {
-                if (progressDialog->wasCanceled())
+                if (progressDialog && progressDialog->wasCanceled())
                 {
                     return false;
                 }
@@ -179,17 +189,18 @@ namespace O3DE::ProjectManager
                 }
 
                 // Progress window update
+                if (progressDialog)
                 {
                     // Weight in the number of already copied files as well as the copied bytes to get a better progress indication
                     // for cases combining many small files and some really large files.
                     const float normalizedNumFiles = static_cast<float>(outNumCopiedFiles) / filesToCopyCount;
                     const float normalizedFileSize = static_cast<float>(outCopiedFileSize) / totalSizeToCopy;
-                    const int progress = normalizedNumFiles * progressDialogRangeHalf + normalizedFileSize * progressDialogRangeHalf;
+                    const int progress = static_cast<int>(normalizedNumFiles * progressDialogRangeHalf + normalizedFileSize * progressDialogRangeHalf);
                     progressDialog->setValue(progress);
 
                     const QString copiedFileSizeString = locale.formattedDataSize(outCopiedFileSize);
                     const QString totalFileSizeString = locale.formattedDataSize(totalSizeToCopy);
-                    progressDialog->setLabelText(QString("Coping file %1 of %2 (%3 of %4) ...").arg(QString::number(outNumCopiedFiles),
+                    progressDialog->setLabelText(QString("Copying file %1 of %2 (%3 of %4) ...").arg(QString::number(outNumCopiedFiles),
                         QString::number(filesToCopyCount),
                         copiedFileSizeString,
                         totalFileSizeString));
@@ -321,7 +332,7 @@ namespace O3DE::ProjectManager
             return copyResult;
         }
 
-        bool CopyProject(const QString& origPath, const QString& newPath, QWidget* parent, bool skipRegister)
+        bool CopyProject(const QString& origPath, const QString& newPath, QWidget* parent, bool skipRegister, bool showProgress)
         {
             // Disallow copying from or into subdirectory
             if (IsDirectoryDescedent(origPath, newPath) || IsDirectoryDescedent(newPath, origPath))
@@ -337,28 +348,35 @@ namespace O3DE::ProjectManager
                 ProjectCacheDirectoryName
             };
 
-            QProgressDialog* progressDialog = new QProgressDialog(parent);
-            progressDialog->setAutoClose(true);
-            progressDialog->setValue(0);
-            progressDialog->setRange(0, 1000);
-            progressDialog->setModal(true);
-            progressDialog->setWindowTitle(QObject::tr("Copying project ..."));
-            progressDialog->show();
+            QProgressDialog* progressDialog = nullptr;
+            if (showProgress)
+            {
+                progressDialog = new QProgressDialog(parent);
+                progressDialog->setAutoClose(true);
+                progressDialog->setValue(0);
+                progressDialog->setRange(0, 1000);
+                progressDialog->setModal(true);
+                progressDialog->setWindowTitle(QObject::tr("Copying project ..."));
+                progressDialog->show();
+            }
 
             QLocale locale;
             QStringList getFilesSkippedPaths(skippedPaths);
             RecursiveGetAllFiles(origPath, getFilesSkippedPaths, filesToCopyCount, totalSizeInBytes, [=](int fileCount, int sizeInBytes)
                 {
-                    // Create a human-readable version of the file size.
-                    const QString fileSizeString = locale.formattedDataSize(sizeInBytes);
+                    if (progressDialog)
+                    {
+                        // Create a human-readable version of the file size.
+                        const QString fileSizeString = locale.formattedDataSize(sizeInBytes);
 
-                    progressDialog->setLabelText(QString("%1 ... %2 %3, %4 %5.")
-                        .arg(QObject::tr("Indexing files"))
-                        .arg(QString::number(fileCount))
-                        .arg(QObject::tr("files found"))
-                        .arg(fileSizeString)
-                        .arg(QObject::tr("to copy")));
-                    qApp->processEvents(QEventLoop::ExcludeUserInputEvents);
+                        progressDialog->setLabelText(QString("%1 ... %2 %3, %4 %5.")
+                            .arg(QObject::tr("Indexing files"))
+                            .arg(QString::number(fileCount))
+                            .arg(QObject::tr("files found"))
+                            .arg(fileSizeString)
+                            .arg(QObject::tr("to copy")));
+                        qApp->processEvents(QEventLoop::ExcludeUserInputEvents);
+                    }
                 });
 
             int numFilesCopied = 0;
@@ -377,13 +395,19 @@ namespace O3DE::ProjectManager
 
             if (!success)
             {
-                progressDialog->setLabelText(QObject::tr("Duplicating project failed/cancelled, removing already copied files ..."));
-                qApp->processEvents(QEventLoop::ExcludeUserInputEvents);
+                if (progressDialog)
+                {
+                    progressDialog->setLabelText(QObject::tr("Duplicating project failed/cancelled, removing already copied files ..."));
+                    qApp->processEvents(QEventLoop::ExcludeUserInputEvents);
+                }
 
                 DeleteProjectFiles(newPath, true);
             }
 
-            progressDialog->deleteLater();
+            if (progressDialog)
+            {
+                progressDialog->deleteLater();
+            }
             return success;
         }
 
@@ -402,7 +426,7 @@ namespace O3DE::ProjectManager
             return false;
         }
 
-        bool MoveProject(QString origPath, QString newPath, QWidget* parent, bool skipRegister)
+        bool MoveProject(QString origPath, QString newPath, QWidget* parent, bool skipRegister, bool showProgress)
         {
             origPath = QDir::toNativeSeparators(origPath);
             newPath = QDir::toNativeSeparators(newPath);
@@ -420,7 +444,7 @@ namespace O3DE::ProjectManager
             if (!newDirectory.rename(origPath, newPath))
             {
                 // Likely failed because trying to move to another partition, try copying
-                if (!CopyProject(origPath, newPath, parent))
+                if (!CopyProject(origPath, newPath, parent, skipRegister, showProgress))
                 {
                     return false;
                 }
@@ -441,7 +465,7 @@ namespace O3DE::ProjectManager
             return true;
         }
 
-        bool ReplaceFile(const QString& origFile, const QString& newFile, QWidget* parent, bool interactive)
+        bool ReplaceProjectFile(const QString& origFile, const QString& newFile, QWidget* parent, bool interactive)
         {
             QFileInfo original(origFile);
             if (original.exists())
@@ -506,6 +530,183 @@ namespace O3DE::ProjectManager
             }
 
             return ProjectManagerScreen::Invalid;
+        }
+
+        AZ::Outcome<QString, QString> ExecuteCommandResultModalDialog(
+            const QString& cmd,
+            const QStringList& arguments,
+            const QString& title)
+        {
+            QString resultOutput;
+            QProcess execProcess;
+            execProcess.setProcessChannelMode(QProcess::MergedChannels);
+
+            QProgressDialog dialog(title, QObject::tr("Cancel"), /*minimum=*/0, /*maximum=*/0);
+            dialog.setMinimumWidth(500);
+            dialog.setAutoClose(false);
+
+            QProgressBar* bar = new QProgressBar(&dialog);
+            bar->setTextVisible(false);
+            bar->setMaximum(0); // infinite
+            dialog.setBar(bar);
+
+            QLabel* progressLabel = new QLabel(&dialog);
+            QVBoxLayout* layout = new QVBoxLayout();
+
+            // pre-fill the field with the title and command
+            const QString commandOutput = QString("%1<br>%2 %3<br>").arg(title).arg(cmd).arg(arguments.join(' '));
+
+            // replace the label with a scrollable text edit
+            QTextEdit* detailTextEdit = new QTextEdit(commandOutput, &dialog);
+            detailTextEdit->setReadOnly(true);
+            layout->addWidget(detailTextEdit);
+            layout->setMargin(0);
+            progressLabel->setLayout(layout);
+            progressLabel->setMinimumHeight(150);
+            dialog.setLabel(progressLabel);
+
+            auto readConnection = QObject::connect(&execProcess, &QProcess::readyReadStandardOutput,
+                [&]()
+                {
+                    QScrollBar* scrollBar = detailTextEdit->verticalScrollBar();
+                    bool autoScroll = scrollBar->value() == scrollBar->maximum();
+
+                    QString output = execProcess.readAllStandardOutput();
+                    detailTextEdit->append(output);
+                    resultOutput.append(output);
+
+                    if (autoScroll)
+                    {
+                        scrollBar->setValue(scrollBar->maximum());
+                    }
+                });
+
+            auto exitConnection = QObject::connect(&execProcess,
+                QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
+                [&](int exitCode, [[maybe_unused]] QProcess::ExitStatus exitStatus)
+                {
+                    QScrollBar* scrollBar = detailTextEdit->verticalScrollBar();
+                    dialog.setMaximum(100);
+                    dialog.setValue(dialog.maximum());
+                    if (exitCode == 0 && scrollBar->value() == scrollBar->maximum())
+                    {
+                        dialog.close();
+                    }
+                    else
+                    {
+                        // keep the dialog open so the user can look at the output
+                        dialog.setCancelButtonText(QObject::tr("Continue"));
+                    }
+                });
+
+            execProcess.start(cmd, arguments);
+
+            dialog.exec();
+
+            QObject::disconnect(readConnection);
+            QObject::disconnect(exitConnection);
+
+            if (execProcess.state() == QProcess::Running)
+            {
+                execProcess.kill();
+                return AZ::Failure(QObject::tr("Process for command '%1' was canceled").arg(cmd));
+            }
+
+            int resultCode = execProcess.exitCode();
+            if (resultCode != 0)
+            {
+                return AZ::Failure(QObject::tr("Process for command '%1' failed (result code %2").arg(cmd).arg(resultCode));
+            }
+
+            return AZ::Success(resultOutput);
+        }
+
+        AZ::Outcome<QString, QString> ExecuteCommandResult(
+            const QString& cmd,
+            const QStringList& arguments,
+            int commandTimeoutSeconds /*= ProjectCommandLineTimeoutSeconds*/)
+        {
+            QProcess execProcess;
+            execProcess.setProcessChannelMode(QProcess::MergedChannels);
+            execProcess.start(cmd, arguments);
+            if (!execProcess.waitForStarted())
+            {
+                return AZ::Failure(QObject::tr("Unable to start process for command '%1'").arg(cmd));
+            }
+
+            if (!execProcess.waitForFinished(commandTimeoutSeconds * 1000 /* Milliseconds per second */))
+            {
+                return AZ::Failure(QObject::tr("Process for command '%1' timed out at %2 seconds").arg(cmd).arg(commandTimeoutSeconds));
+            }
+            int resultCode = execProcess.exitCode();
+            QString resultOutput = execProcess.readAllStandardOutput();
+            if (resultCode != 0)
+            {
+                return AZ::Failure(QObject::tr("Process for command '%1' failed (result code %2) %3").arg(cmd).arg(resultCode).arg(resultOutput));
+            }
+            return AZ::Success(resultOutput);
+        }
+
+        AZ::Outcome<QString, QString> GetProjectBuildPath(const QString& projectPath)
+        {
+            auto registry = AZ::SettingsRegistry::Get();
+
+            // the project_build_path should be in the user settings registry inside the project folder
+            AZ::IO::FixedMaxPath projectUserPath(projectPath.toUtf8().constData());
+            projectUserPath /= AZ::SettingsRegistryInterface::DevUserRegistryFolder;
+            if (!QDir(projectUserPath.c_str()).exists())
+            {
+                return AZ::Failure(QObject::tr("Failed to find the user registry folder %1").arg(projectUserPath.c_str()));
+            }
+
+            AZ::SettingsRegistryInterface::Specializations specializations;
+            if(!registry->MergeSettingsFolder(projectUserPath.Native(), specializations, AZ_TRAIT_OS_PLATFORM_CODENAME))
+            {
+                return AZ::Failure(QObject::tr("Failed to merge registry settings in user registry folder %1").arg(projectUserPath.c_str()));
+            }
+
+            AZ::IO::FixedMaxPath projectBuildPath;
+            if (!registry->Get(projectBuildPath.Native(), AZ::SettingsRegistryMergeUtils::ProjectBuildPath))
+            {
+                return AZ::Failure(QObject::tr("No project build path setting was found in the user registry folder %1").arg(projectUserPath.c_str()));
+            }
+
+            return AZ::Success(QString(projectBuildPath.c_str()));
+        }
+
+    QString GetDefaultProjectPath()
+    {
+        QString defaultPath = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
+        AZ::Outcome<EngineInfo> engineInfoResult = PythonBindingsInterface::Get()->GetEngineInfo();
+        if (engineInfoResult.IsSuccess())
+        {
+            QDir path(QDir::toNativeSeparators(engineInfoResult.GetValue().m_defaultProjectsFolder));
+            if (path.exists())
+            {
+                defaultPath = path.absolutePath();
+            }
+        }
+        return defaultPath;
+    }
+
+        void DisplayDetailedError(const QString& title, const AZ::Outcome<void, AZStd::pair<AZStd::string, AZStd::string>>& outcome, QWidget* parent)
+        {
+            const AZStd::string& generalError = outcome.GetError().first;
+            const AZStd::string& detailedError = outcome.GetError().second;
+
+            if (!detailedError.empty())
+            {
+                QMessageBox errorDialog(parent);
+                errorDialog.setIcon(QMessageBox::Critical);
+                errorDialog.setWindowTitle(title);
+                errorDialog.setText(generalError.c_str());
+                errorDialog.setDetailedText(detailedError.c_str());
+                errorDialog.exec();
+            }
+            else
+            {
+                QMessageBox::critical(parent, title, generalError.c_str());
+            }
         }
     } // namespace ProjectUtils
 } // namespace O3DE::ProjectManager

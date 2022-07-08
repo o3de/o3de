@@ -1,0 +1,122 @@
+{
+    "entries": [
+        {
+            "base": "FrameCaptureRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "Frame Capture"
+            },
+            "methods": [
+                {
+                    "base": "CaptureScreenshot",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke CaptureScreenshot"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after CaptureScreenshot is invoked"
+                    },
+                    "details": {
+                        "name": "CaptureScreenshot"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::string"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "CaptureScreenshotWithPreview",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke CaptureScreenshotWithPreview"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after CaptureScreenshotWithPreview is invoked"
+                    },
+                    "details": {
+                        "name": "CaptureScreenshotWithPreview"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::string"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "CapturePassAttachment",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke CapturePassAttachment"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after CapturePassAttachment is invoked"
+                    },
+                    "details": {
+                        "name": "CapturePassAttachment"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{99DAD0BC-740E-5E82-826B-8FC7968CC02C}",
+                            "details": {
+                                "name": "AZStd::vector"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::string"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::string"
+                            }
+                        },
+                        {
+                            "typeid": "{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}",
+                            "details": {
+                                "name": "unsigned char"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

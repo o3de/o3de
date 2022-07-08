@@ -11,6 +11,7 @@
 #include <AzCore/Component/Component.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
+#include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <LyShine/LyShineBus.h>
 
 namespace LyShineEditor
@@ -18,6 +19,7 @@ namespace LyShineEditor
     class LyShineEditorSystemComponent
         : public AZ::Component
         , protected AzToolsFramework::EditorEvents::Bus::Handler
+        , protected AzToolsFramework::EditorEntityContextNotificationBus::Handler
         , protected AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler
         , protected LyShine::LyShineRequestBus::Handler
     {
@@ -57,6 +59,11 @@ namespace LyShineEditor
         ////////////////////////////////////////////////////////////////////////
         // LyShineRequestBus interface implementation
         void EditUICanvas(const AZStd::string_view& canvasPath) override;
+        ////////////////////////////////////////////////////////////////////////
+
+        ////////////////////////////////////////////////////////////////////////
+        // EditorEntityContextNotificationBus
+        void OnStopPlayInEditor() override;
         ////////////////////////////////////////////////////////////////////////
     };
 }

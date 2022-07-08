@@ -110,7 +110,7 @@ namespace NvCloth
 
         AZ_Assert(!m_isSimulating, "Please make sure the ongoing simulation is finished before attempting to start a new one");
 
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Cloth);
+        AZ_PROFILE_FUNCTION(Cloth);
 
         m_deltaTime = deltaTime;
         m_simulationCompletion.Reset(true /*isClearDependent*/);
@@ -147,7 +147,7 @@ namespace NvCloth
             return;
         }
 
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Cloth);
+        AZ_PROFILE_FUNCTION(Cloth);
 
         // Waiting for the simulation pass completition.
         m_simulationCompletion.StartAndWaitForCompletion();
@@ -191,14 +191,14 @@ namespace NvCloth
 
     void Solver::ClothsSimulationJob::Process()
     {
-        AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::Cloth, "NvCloth::BeginSimulationJob");
+        AZ_PROFILE_SCOPE(Cloth, "NvCloth::BeginSimulationJob");
 
         if (m_solver->beginSimulation(m_deltaTime))
         {
             // Setup the end simulation job.
             AZ::Job* endSimulationJob = AZ::CreateJobFunction([solver = m_solver]
             {
-                AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::Cloth, "NvCloth::EndSimulationJob");
+                AZ_PROFILE_SCOPE(Cloth, "NvCloth::EndSimulationJob");
                 solver->endSimulation();
             }, true /*isAutoDelete*/);
 
@@ -209,7 +209,7 @@ namespace NvCloth
             {
                 AZ::Job* chunkSimulationJob = AZ::CreateJobFunction([solver = m_solver, chunkIndex]
                 {
-                    AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::Cloth, "NvCloth::ChunkSimulationJob");
+                    AZ_PROFILE_SCOPE(Cloth, "NvCloth::ChunkSimulationJob");
                     solver->simulateChunk(chunkIndex);
                 }, true /*isAutoDelete*/);
 
@@ -241,7 +241,7 @@ namespace NvCloth
         {
             AZ::Job* eventSignalJob = AZ::CreateJobFunction([cloth, deltaTime = m_deltaTime]
             {
-                AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::Cloth, "NvCloth::PostSimulationJob");
+                AZ_PROFILE_SCOPE(Cloth, "NvCloth::PostSimulationJob");
 
                 // Update the cloth data after the simulation
                 cloth->Update();
@@ -270,7 +270,7 @@ namespace NvCloth
         {
             AZ::Job* eventSignalJob = AZ::CreateJobFunction([cloth, deltaTime = m_deltaTime]
             {
-                AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::Cloth, "NvCloth::PreSimulationJob");
+                AZ_PROFILE_SCOPE(Cloth, "NvCloth::PreSimulationJob");
 
                 // Issue pre-simulation events
                 cloth->m_preSimulationEvent.Signal(cloth->GetId(), deltaTime);

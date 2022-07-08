@@ -14,7 +14,7 @@
 #include <ScriptCanvasDeveloperEditor/EditorAutomation/EditorAutomationModelIds.h>
 #include <ScriptCanvasDeveloperEditor/EditorAutomation/EditorAutomationActions/ScriptCanvasActions/CreateElementsActions.h>
 
-namespace ScriptCanvasDeveloper
+namespace ScriptCanvas::Developer
 {
     /**
         EditorAutomationState that will create the specified node from the NodePalette either at the specified point, or via splicing
@@ -131,7 +131,7 @@ namespace ScriptCanvasDeveloper
 
         QString m_nodeName;
 
-        AutomationStateModelId m_endpointId = nullptr;
+        AutomationStateModelId m_endpointId;
 
         AutomationStateModelId m_scenePointId;
         AutomationStateModelId m_nodeOutputId;

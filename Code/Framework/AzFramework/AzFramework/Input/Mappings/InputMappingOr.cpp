@@ -8,9 +8,73 @@
 
 #include <AzFramework/Input/Mappings/InputMappingOr.h>
 
+#include <AzCore/Serialization/EditContext.h>
+#include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/std/smart_ptr/make_shared.h>
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace AzFramework
 {
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    void InputMappingOr::Config::Reflect(AZ::ReflectContext* context)
+    {
+        if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serializeContext->Class<InputMappingOr::Config, InputMapping::ConfigBase>()
+                ->Version(0)
+                ->Field("Source Input Channel Names", &Config::m_sourceInputChannelNames)
+            ;
+
+            if (AZ::EditContext* editContext = serializeContext->GetEditContext())
+            {
+                editContext->Class<InputMappingOr::Config>("Input Mapping: Or",
+                    "Maps multiple different input sources to a single output using 'OR' logic.")
+                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                        ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
+                        ->Attribute(AZ::Edit::Attributes::NameLabelOverride, &InputMappingOr::Config::GetNameLabelOverride)
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &Config::m_sourceInputChannelNames, "Source Input Channel Names",
+                        "The source input channel names that will be mapped to the output input channel name.")
+                        ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                ;
+            }
+        }
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    AZStd::shared_ptr<InputMapping> InputMappingOr::Config::CreateInputMapping(const InputContext& inputContext) const
+    {
+        if (m_outputInputChannelName.empty())
+        {
+            AZ_Error("InputMappingOr::Config", false, "Cannot create input mapping with empty name.");
+            return nullptr;
+        }
+
+        if (InputChannelRequests::FindInputChannel(InputChannelId(m_outputInputChannelName.c_str())))
+        {
+            AZ_Error("InputMappingOr::Config", false,
+                     "Cannot create input mapping '%s' with non-unique name.", m_outputInputChannelName.c_str());
+            return nullptr;
+        }
+
+        if (m_sourceInputChannelNames.empty())
+        {
+            AZ_Error("InputMappingOr::Config", false,
+                     "Cannot create input mapping '%s' with no source inputs.", m_outputInputChannelName.c_str());
+            return nullptr;
+        }
+
+        const InputChannelId outputInputChannelId(m_outputInputChannelName.c_str());
+        AZStd::shared_ptr<InputMappingOr> inputMapping = AZStd::make_shared<InputMappingOr>(outputInputChannelId,
+                                                                                            inputContext);
+        for (const InputChannelNameFilteredByDeviceType& sourceInputChannelName : m_sourceInputChannelNames)
+        {
+            const InputChannelId sourceInputChannelId(sourceInputChannelName.GetInputChannelName().c_str());
+            inputMapping->AddSourceInput(sourceInputChannelId);
+        }
+        return inputMapping;
+    }
+
     ////////////////////////////////////////////////////////////////////////////////////////////////
     InputMappingOr::InputMappingOr(const InputChannelId& inputChannelId, const InputContext& inputContext)
         : InputMapping(inputChannelId, inputContext)

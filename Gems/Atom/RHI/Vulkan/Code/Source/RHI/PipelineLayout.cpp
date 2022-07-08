@@ -48,7 +48,7 @@ namespace AZ
         template<class T>
         void AddShaderInputs(
             RHI::ShaderResourceGroupLayout& srgLayout,
-            AZStd::array_view<T> shaderInputs,
+            AZStd::span<const T> shaderInputs,
             const uint32_t bindingSlot,
             const RHI::ShaderResourceGroupBindingInfo& srgBidingInfo)
         {
@@ -134,7 +134,7 @@ namespace AZ
 
                 uint32_t bindingSlot = srgLayout->GetBindingSlot();
                 m_indexToSlot[bindingInfo.m_spaceId].set(bindingSlot);
-                m_slotToIndex[bindingSlot] = bindingInfo.m_spaceId;
+                m_slotToIndex[bindingSlot] = static_cast<uint8_t>(bindingInfo.m_spaceId);
             }
 
             m_descriptorSetLayouts.reserve(srgCount);

@@ -6,15 +6,12 @@
  *
  */
 
-#include "RenderOptions.h"
+#include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzToolsFramework/UI/PropertyEditor/ReflectedPropertyEditor.hxx>
-#include <EMotionFX/Rendering/Common/OrbitCamera.h>
 #include <EMotionFX/Source/EMotionFXManager.h>
-#include <EMotionStudio/EMStudioSDK/Source/EMStudioManager.h>
-#include <EMotionStudio/EMStudioSDK/Source/GUIOptions.h>
-#include <EMotionStudio/EMStudioSDK/Source/MainWindow.h>
+#include <Integration/Rendering/RenderActorSettings.h>
 #include <MysticQt/Source/MysticQtConfig.h>
 
 #include <QColor>
@@ -55,8 +52,6 @@ namespace EMStudio
     const char* RenderOptions::s_nodeAABBColorOptionName = "nodeAABBColor";
     const char* RenderOptions::s_staticAABBColorOptionName = "staticAABBColor";
     const char* RenderOptions::s_meshAABBColorOptionName = "meshAABBColor";
-    const char* RenderOptions::s_collisionMeshAABBColorOptionName = "collisionMeshAABBColor";
-    const char* RenderOptions::s_OBBsColorOptionName = "OBBsColor";
     const char* RenderOptions::s_lineSkeletonColorOptionName = "lineSkeletonColor_v2";
     const char* RenderOptions::s_skeletonColorOptionName = "skeletonColor";
     const char* RenderOptions::s_selectionColorOptionName = "selectionColor";
@@ -84,6 +79,9 @@ namespace EMStudio
         , m_tangentsScale(1.0f)
         , m_nodeOrientationScale(1.0f)
         , m_scaleBonesOnLength(true)
+        , m_nearClipPlaneDistance(0.1f)
+        , m_farClipPlaneDistance(200.0f)
+        , m_fov(55.0f)
         , m_mainLightIntensity(1.0f)
         , m_mainLightAngleA(0.0f)
         , m_mainLightAngleB(0.0f)
@@ -108,8 +106,6 @@ namespace EMStudio
         , m_nodeAABBColor(1.0f, 0.0f, 0.0f, 1.0f)
         , m_staticAABBColor(0.0f, 0.7f, 0.7f, 1.0f)
         , m_meshAABBColor(0.0f, 0.0f, 0.7f, 1.0f)
-        , m_collisionMeshAABBColor(0.0f, 0.7f, 0.0f, 1.0f)
-        , m_OBBsColor(1.0f, 1.0f, 0.0f, 1.0f)
         , m_lineSkeletonColor(0.33333f, 1.0f, 0.0f, 1.0f)
         , m_skeletonColor(0.19f, 0.58f, 0.19f, 1.0f)
         , m_selectionColor(1.0f, 1.0f, 1.0f, 1.0f)
@@ -131,10 +127,6 @@ namespace EMStudio
         , m_lastUsedLayout("Single")
         , m_renderSelectionBox(true)
     {
-        MCommon::OrbitCamera tempCam;
-        m_nearClipPlaneDistance = tempCam.GetNearClipDistance();
-        m_farClipPlaneDistance = tempCam.GetFarClipDistance();
-        m_FOV = tempCam.GetFOV();
     }
 
     RenderOptions& RenderOptions::operator=(const RenderOptions& other)
@@ -169,8 +161,6 @@ namespace EMStudio
         SetNodeAABBColor(other.GetNodeAABBColor());
         SetStaticAABBColor(other.GetStaticAABBColor());
         SetMeshAABBColor(other.GetMeshAABBColor());
-        SetCollisionMeshAABBColor(other.GetCollisionMeshAABBColor());
-        SetOBBsColor(other.GetOBBsColor());
         SetLineSkeletonColor(other.GetLineSkeletonColor());
         SetSkeletonColor(other.GetSkeletonColor());
         SetSelectionColor(other.GetSelectionColor());
@@ -185,6 +175,10 @@ namespace EMStudio
         SetNearClipPlaneDistance(other.GetNearClipPlaneDistance());
         SetFarClipPlaneDistance(other.GetFarClipPlaneDistance());
         SetFOV(other.GetFOV());
+        SetRenderFlags(other.GetRenderFlags());
+        SetManipulatorMode(other.GetManipulatorMode());
+        SetCameraViewMode(other.GetCameraViewMode());
+        SetCameraFollowUp(other.GetCameraFollowUp());
         return *this;
     }
 
@@ -206,9 +200,7 @@ namespace EMStudio
         settings->setValue(s_nodeAABBColorOptionName, ColorToString(m_nodeAABBColor));
         settings->setValue(s_staticAABBColorOptionName, ColorToString(m_staticAABBColor));
         settings->setValue(s_meshAABBColorOptionName, ColorToString(m_meshAABBColor));
-        settings->setValue(s_collisionMeshAABBColorOptionName, ColorToString(m_collisionMeshAABBColor));
         settings->setValue(s_collisionMeshColorOptionName, ColorToString(m_collisionMeshColor));
-        settings->setValue(s_OBBsColorOptionName, ColorToString(m_OBBsColor));
         settings->setValue(s_lineSkeletonColorOptionName, ColorToString(m_lineSkeletonColor));
         settings->setValue(s_skeletonColorOptionName, ColorToString(m_skeletonColor));
         settings->setValue(s_selectionColorOptionName, ColorToString(m_selectionColor));
@@ -237,7 +229,7 @@ namespace EMStudio
         settings->setValue(s_tangentsScaleOptionName, (double)m_tangentsScale);
         settings->setValue(s_nearClipPlaneDistanceOptionName, (double)m_nearClipPlaneDistance);
         settings->setValue(s_farClipPlaneDistanceOptionName, (double)m_farClipPlaneDistance);
-        settings->setValue(s_FOVOptionName, (double)m_FOV);
+        settings->setValue(s_FOVOptionName, (double)m_fov);
         settings->setValue(s_showFPSOptionName, m_showFPS);
 
         settings->setValue(s_lastUsedLayoutOptionName, m_lastUsedLayout.c_str());
@@ -257,6 +249,11 @@ namespace EMStudio
         settings->setValue(s_renderSelectionBoxOptionName, m_renderSelectionBox);
 
         settings->setValue("manipulatorMode", static_cast<int>(m_manipulatorMode));
+        settings->setValue("cameraViewMode", static_cast<int>(m_cameraViewMode));
+        settings->setValue("cameraFollowUp", m_cameraFollowUp);
+
+        // Save render flags
+        settings->setValue("renderFlags", static_cast<AZ::u32>(m_renderFlags));
     }
 
     RenderOptions RenderOptions::Load(QSettings* settings)
@@ -275,9 +272,7 @@ namespace EMStudio
         options.m_nodeAABBColor = StringToColor(settings->value(s_nodeAABBColorOptionName, ColorToString(options.m_nodeAABBColor)).toString());
         options.m_staticAABBColor = StringToColor(settings->value(s_staticAABBColorOptionName, ColorToString(options.m_staticAABBColor)).toString());
         options.m_meshAABBColor = StringToColor(settings->value(s_meshAABBColorOptionName, ColorToString(options.m_meshAABBColor)).toString());
-        options.m_collisionMeshAABBColor = StringToColor(settings->value(s_collisionMeshAABBColorOptionName, ColorToString(options.m_collisionMeshAABBColor)).toString());
         options.m_collisionMeshColor = StringToColor(settings->value(s_collisionMeshColorOptionName, ColorToString(options.m_collisionMeshColor)).toString());
-        options.m_OBBsColor = StringToColor(settings->value(s_OBBsColorOptionName, ColorToString(options.m_OBBsColor)).toString());
         options.m_lineSkeletonColor = StringToColor(settings->value(s_lineSkeletonColorOptionName, ColorToString(options.m_lineSkeletonColor)).toString());
         options.m_skeletonColor = StringToColor(settings->value(s_skeletonColorOptionName, ColorToString(options.m_skeletonColor)).toString());
         options.m_selectionColor = StringToColor(settings->value(s_selectionColorOptionName, ColorToString(options.m_selectionColor)).toString());
@@ -310,7 +305,7 @@ namespace EMStudio
 
         options.m_nearClipPlaneDistance = (float)settings->value(s_nearClipPlaneDistanceOptionName, (double)options.m_nearClipPlaneDistance).toDouble();
         options.m_farClipPlaneDistance = (float)settings->value(s_farClipPlaneDistanceOptionName, (double)options.m_farClipPlaneDistance).toDouble();
-        options.m_FOV = (float)settings->value(s_FOVOptionName, (double)options.m_FOV).toDouble();
+        options.m_fov = (float)settings->value(s_FOVOptionName, (double)options.m_fov).toDouble();
 
         options.m_mainLightIntensity = (float)settings->value(s_mainLightIntensityOptionName, (double)options.m_mainLightIntensity).toDouble();
         options.m_mainLightAngleA = (float)settings->value(s_mainLightAngleAOptionName, (double)options.m_mainLightAngleA).toDouble();
@@ -327,6 +322,14 @@ namespace EMStudio
         options.m_renderSelectionBox = settings->value(s_renderSelectionBoxOptionName, options.m_renderSelectionBox).toBool();
 
         options.m_manipulatorMode = static_cast<ManipulatorMode>(settings->value("manipulatorMode", options.m_manipulatorMode).toInt());
+        options.m_cameraViewMode = static_cast<CameraViewMode>(settings->value("cameraViewMode", options.m_cameraViewMode).toInt());
+        options.m_cameraFollowUp = settings->value("CameraFollowUp", options.m_cameraFollowUp).toBool();
+
+        // Read render flags
+        options.m_renderFlags =
+            EMotionFX::ActorRenderFlags(settings->value("RenderFlags", static_cast<int>(EMotionFX::ActorRenderFlags::Default)).toInt());
+
+        options.CopyToRenderActorSettings(EMotionFX::GetRenderActorSettings());
 
         return options;
     }
@@ -368,7 +371,7 @@ namespace EMStudio
             ->Field(s_scaleBonesOnLengthOptionName, &RenderOptions::m_scaleBonesOnLength)
             ->Field(s_nearClipPlaneDistanceOptionName, &RenderOptions::m_nearClipPlaneDistance)
             ->Field(s_farClipPlaneDistanceOptionName, &RenderOptions::m_farClipPlaneDistance)
-            ->Field(s_FOVOptionName, &RenderOptions::m_FOV)
+            ->Field(s_FOVOptionName, &RenderOptions::m_fov)
             ->Field(s_mainLightIntensityOptionName, &RenderOptions::m_mainLightIntensity)
             ->Field(s_mainLightAngleAOptionName, &RenderOptions::m_mainLightAngleA)
             ->Field(s_mainLightAngleBOptionName, &RenderOptions::m_mainLightAngleB)
@@ -393,8 +396,6 @@ namespace EMStudio
             ->Field(s_nodeAABBColorOptionName, &RenderOptions::m_nodeAABBColor)
             ->Field(s_staticAABBColorOptionName, &RenderOptions::m_staticAABBColor)
             ->Field(s_meshAABBColorOptionName, &RenderOptions::m_meshAABBColor)
-            ->Field(s_collisionMeshAABBColorOptionName, &RenderOptions::m_collisionMeshAABBColor)
-            ->Field(s_OBBsColorOptionName, &RenderOptions::m_OBBsColor)
             ->Field(s_lineSkeletonColorOptionName, &RenderOptions::m_lineSkeletonColor)
             ->Field(s_skeletonColorOptionName, &RenderOptions::m_skeletonColor)
             ->Field(s_selectionColorOptionName, &RenderOptions::m_selectionColor)
@@ -461,7 +462,7 @@ namespace EMStudio
             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &RenderOptions::OnFarClipPlaneDistanceChangedCallback)
             ->Attribute(AZ::Edit::Attributes::Min, 1.0f)
             ->Attribute(AZ::Edit::Attributes::Max, 100000.0f)
-            ->DataElement(AZ::Edit::UIHandlers::Default, &RenderOptions::m_FOV, "Field of view",
+            ->DataElement(AZ::Edit::UIHandlers::Default, &RenderOptions::m_fov, "Field of view",
                 "Angle in degrees of the field of view.")
             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &RenderOptions::OnFOVChangedCallback)
             ->Attribute(AZ::Edit::Attributes::Min, 1.0f)
@@ -552,17 +553,12 @@ namespace EMStudio
             ->DataElement(AZ::Edit::UIHandlers::Default, &RenderOptions::m_meshAABBColor, "Mesh based AABB color",
                 "Color for the runtime-updated AABB calculated based on the deformed meshes.")
             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &RenderOptions::OnMeshAABBColorChangedCallback)
-            ->DataElement(AZ::Edit::UIHandlers::Default, &RenderOptions::m_collisionMeshAABBColor, "CollisionMesh based AABB color",
-                "Color for the runtime-updated AABB calculated based on the deformed collision meshes.")
-            ->Attribute(AZ::Edit::Attributes::ChangeNotify, &RenderOptions::OnCollisionMeshAABBColorChangedCallback)
-            ->DataElement(AZ::Edit::UIHandlers::Default, &RenderOptions::m_OBBsColor, "Joint OBB color",
-                "Color used for the pre-calculated joint oriented bounding boxes.")
-            ->Attribute(AZ::Edit::Attributes::ChangeNotify, &RenderOptions::OnOBBsColorChangedCallback)
             ->DataElement(AZ::Edit::UIHandlers::Default, &RenderOptions::m_lineSkeletonColor, "Line based skeleton color",
                 "Line-based skeleton color.")
             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &RenderOptions::OnLineSkeletonColorChangedCallback)
             ->DataElement(AZ::Edit::UIHandlers::Default, &RenderOptions::m_skeletonColor, "Solid skeleton color",
                 "Solid skeleton color.")
+            ->Attribute(AZ_CRC("AlphaChannel", 0xa0cab5cf), true)
             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &RenderOptions::OnSkeletonColorChangedCallback)
             ->DataElement(AZ::Edit::UIHandlers::Default, &RenderOptions::m_selectionColor, "Selection gizmo color",
                 "Selection gizmo color")
@@ -680,9 +676,9 @@ namespace EMStudio
 
     void RenderOptions::SetFOV(float FOV)
     {
-        if (!AZ::IsClose(FOV, m_FOV, std::numeric_limits<float>::epsilon()))
+        if (!AZ::IsClose(FOV, m_fov, std::numeric_limits<float>::epsilon()))
         {
-            m_FOV = FOV;
+            m_fov = FOV;
             OnFOVChangedCallback();
         }
     }
@@ -903,24 +899,6 @@ namespace EMStudio
         }
     }
 
-    void RenderOptions::SetCollisionMeshAABBColor(const AZ::Color& collisionMeshAABBColor)
-    {
-        if (!collisionMeshAABBColor.IsClose(m_collisionMeshAABBColor))
-        {
-            m_collisionMeshAABBColor = collisionMeshAABBColor;
-            OnCollisionMeshAABBColorChangedCallback();
-        }
-    }
-
-    void RenderOptions::SetOBBsColor(const AZ::Color& OBBsColor)
-    {
-        if (!OBBsColor.IsClose(m_OBBsColor))
-        {
-            m_OBBsColor = OBBsColor;
-            OnOBBsColorChangedCallback();
-        }
-    }
-
     void RenderOptions::SetLineSkeletonColor(const AZ::Color& lineSkeletonColor)
     {
         if (!lineSkeletonColor.IsClose(m_lineSkeletonColor))
@@ -1093,6 +1071,73 @@ namespace EMStudio
         return m_manipulatorMode;
     }
 
+    void RenderOptions::SetCameraViewMode(CameraViewMode mode)
+    {
+        m_cameraViewMode = mode;
+    }
+
+    RenderOptions::CameraViewMode RenderOptions::GetCameraViewMode() const
+    {
+        return m_cameraViewMode;
+    }
+
+    void RenderOptions::SetCameraFollowUp(bool followUp)
+    {
+        m_cameraFollowUp = followUp;
+    }
+
+    bool RenderOptions::GetCameraFollowUp() const
+    {
+        return m_cameraFollowUp;
+    }
+
+    void RenderOptions::ToggerRenderFlag(uint8 index)
+    {
+        m_renderFlags ^= EMotionFX::ActorRenderFlags(AZ_BIT(index));
+    }
+
+    void RenderOptions::SetRenderFlags(EMotionFX::ActorRenderFlags renderFlags)
+    {
+        m_renderFlags = renderFlags;
+    }
+
+    EMotionFX::ActorRenderFlags RenderOptions::GetRenderFlags() const
+    {
+        return m_renderFlags;
+    }
+
+    void RenderOptions::CopyToRenderActorSettings(AZ::Render::RenderActorSettings& settings) const
+    {
+        settings.m_vertexNormalsScale = m_vertexNormalsScale;
+        settings.m_faceNormalsScale = m_faceNormalsScale;
+        settings.m_tangentsScale = m_tangentsScale;
+        settings.m_nodeOrientationScale = m_nodeOrientationScale;
+
+        settings.m_vertexNormalsColor = m_vertexNormalsColor;
+        settings.m_faceNormalsColor = m_faceNormalsColor;
+        settings.m_tangentsColor = m_tangentsColor;
+        settings.m_mirroredBitangentsColor = m_mirroredBitangentsColor;
+        settings.m_bitangentsColor = m_bitangentsColor;
+        settings.m_wireframeColor = m_wireframeColor;
+        settings.m_nodeAABBColor = m_nodeAABBColor;
+        settings.m_meshAABBColor = m_meshAABBColor;
+        settings.m_staticAABBColor = m_staticAABBColor;
+        settings.m_skeletonColor = m_skeletonColor;
+        settings.m_lineSkeletonColor = m_lineSkeletonColor;
+
+        settings.m_hitDetectionColliderColor = m_hitDetectionColliderColor;
+        settings.m_selectedHitDetectionColliderColor = m_selectedHitDetectionColliderColor;
+        settings.m_ragdollColliderColor = m_ragdollColliderColor;
+        settings.m_selectedRagdollColliderColor = m_selectedRagdollColliderColor;
+        settings.m_violatedJointLimitColor = m_violatedJointLimitColor;
+        settings.m_clothColliderColor = m_clothColliderColor;
+        settings.m_selectedClothColliderColor = m_selectedClothColliderColor;
+        settings.m_simulatedObjectColliderColor = m_simulatedObjectColliderColor;
+        settings.m_selectedSimulatedObjectColliderColor = m_selectedSimulatedObjectColliderColor;
+        settings.m_jointNameColor = m_nodeNameColor;
+        settings.m_trajectoryPathColor = m_trajectoryArrowInnerColor;
+    }
+
     void RenderOptions::OnGridUnitSizeChangedCallback() const
     {
         PluginOptionsNotificationsBus::Event(s_gridUnitSizeOptionName, &PluginOptionsNotificationsBus::Events::OnOptionChanged, s_gridUnitSizeOptionName);
@@ -1101,21 +1146,25 @@ namespace EMStudio
     void RenderOptions::OnVertexNormalsScaleChangedCallback() const
     {
         PluginOptionsNotificationsBus::Event(s_vertexNormalsScaleOptionName, &PluginOptionsNotificationsBus::Events::OnOptionChanged, s_vertexNormalsScaleOptionName);
+        CopyToRenderActorSettings(EMotionFX::GetRenderActorSettings());
     }
 
     void RenderOptions::OnFaceNormalsScaleChangedCallback() const
     {
         PluginOptionsNotificationsBus::Event(s_faceNormalsScaleOptionName, &PluginOptionsNotificationsBus::Events::OnOptionChanged, s_faceNormalsScaleOptionName);
+        CopyToRenderActorSettings(EMotionFX::GetRenderActorSettings());
     }
 
     void RenderOptions::OnTangentsScaleChangedCallback() const
     {
         PluginOptionsNotificationsBus::Event(s_tangentsScaleOptionName, &PluginOptionsNotificationsBus::Events::OnOptionChanged, s_tangentsScaleOptionName);
+        CopyToRenderActorSettings(EMotionFX::GetRenderActorSettings());
     }
 
     void RenderOptions::OnNodeOrientationScaleChangedCallback() const
     {
         PluginOptionsNotificationsBus::Event(s_nodeOrientationScaleOptionName, &PluginOptionsNotificationsBus::Events::OnOptionChanged, s_nodeOrientationScaleOptionName);
+        CopyToRenderActorSettings(EMotionFX::GetRenderActorSettings());
     }
 
     void RenderOptions::OnScaleBonesOnLengthChangedCallback() const
@@ -1211,6 +1260,7 @@ namespace EMStudio
     void RenderOptions::OnWireframeColorChangedCallback() const
     {
         PluginOptionsNotificationsBus::Event(s_wireframeColorOptionName, &PluginOptionsNotificationsBus::Events::OnOptionChanged, s_wireframeColorOptionName);
+        CopyToRenderActorSettings(EMotionFX::GetRenderActorSettings());
     }
 
     void RenderOptions::OnCollisionMeshColorChangedCallback() const
@@ -1221,26 +1271,31 @@ namespace EMStudio
     void RenderOptions::OnVertexNormalsColorChangedCallback() const
     {
         PluginOptionsNotificationsBus::Event(s_vertexNormalsColorOptionName, &PluginOptionsNotificationsBus::Events::OnOptionChanged, s_vertexNormalsColorOptionName);
+        CopyToRenderActorSettings(EMotionFX::GetRenderActorSettings());
     }
 
     void RenderOptions::OnFaceNormalsColorChangedCallback() const
     {
         PluginOptionsNotificationsBus::Event(s_faceNormalsColorOptionName, &PluginOptionsNotificationsBus::Events::OnOptionChanged, s_faceNormalsColorOptionName);
+        CopyToRenderActorSettings(EMotionFX::GetRenderActorSettings());
     }
 
     void RenderOptions::OnTangentsColorChangedCallback() const
     {
         PluginOptionsNotificationsBus::Event(s_tangentsColorOptionName, &PluginOptionsNotificationsBus::Events::OnOptionChanged, s_tangentsColorOptionName);
+        CopyToRenderActorSettings(EMotionFX::GetRenderActorSettings());
     }
 
     void RenderOptions::OnMirroredBitangentsColorChangedCallback() const
     {
         PluginOptionsNotificationsBus::Event(s_mirroredBitangentsColorOptionName, &PluginOptionsNotificationsBus::Events::OnOptionChanged, s_mirroredBitangentsColorOptionName);
+        CopyToRenderActorSettings(EMotionFX::GetRenderActorSettings());
     }
 
     void RenderOptions::OnBitangentsColorChangedCallback() const
     {
         PluginOptionsNotificationsBus::Event(s_bitangentsColorOptionName, &PluginOptionsNotificationsBus::Events::OnOptionChanged, s_bitangentsColorOptionName);
+        CopyToRenderActorSettings(EMotionFX::GetRenderActorSettings());
     }
 
     void RenderOptions::OnNodeAABBColorChangedCallback() const
@@ -1251,6 +1306,7 @@ namespace EMStudio
     void RenderOptions::OnStaticAABBColorChangedCallback() const
     {
         PluginOptionsNotificationsBus::Event(s_staticAABBColorOptionName, &PluginOptionsNotificationsBus::Events::OnOptionChanged, s_staticAABBColorOptionName);
+        CopyToRenderActorSettings(EMotionFX::GetRenderActorSettings());
     }
 
     void RenderOptions::OnMeshAABBColorChangedCallback() const
@@ -1258,24 +1314,16 @@ namespace EMStudio
         PluginOptionsNotificationsBus::Event(s_meshAABBColorOptionName, &PluginOptionsNotificationsBus::Events::OnOptionChanged, s_meshAABBColorOptionName);
     }
 
-    void RenderOptions::OnCollisionMeshAABBColorChangedCallback() const
-    {
-        PluginOptionsNotificationsBus::Event(s_collisionMeshAABBColorOptionName, &PluginOptionsNotificationsBus::Events::OnOptionChanged, s_collisionMeshAABBColorOptionName);
-    }
-
-    void RenderOptions::OnOBBsColorChangedCallback() const
-    {
-        PluginOptionsNotificationsBus::Event(s_OBBsColorOptionName, &PluginOptionsNotificationsBus::Events::OnOptionChanged, s_OBBsColorOptionName);
-    }
-
     void RenderOptions::OnLineSkeletonColorChangedCallback() const
     {
         PluginOptionsNotificationsBus::Event(s_lineSkeletonColorOptionName, &PluginOptionsNotificationsBus::Events::OnOptionChanged, s_lineSkeletonColorOptionName);
+        CopyToRenderActorSettings(EMotionFX::GetRenderActorSettings());
     }
 
     void RenderOptions::OnSkeletonColorChangedCallback() const
     {
         PluginOptionsNotificationsBus::Event(s_skeletonColorOptionName, &PluginOptionsNotificationsBus::Events::OnOptionChanged, s_skeletonColorOptionName);
+        CopyToRenderActorSettings(EMotionFX::GetRenderActorSettings());
     }
 
     void RenderOptions::OnSelectionColorChangedCallback() const
@@ -1291,6 +1339,7 @@ namespace EMStudio
     void RenderOptions::OnNodeNameColorChangedCallback() const
     {
         PluginOptionsNotificationsBus::Event(s_nodeNameColorOptionName, &PluginOptionsNotificationsBus::Events::OnOptionChanged, s_nodeNameColorOptionName);
+        CopyToRenderActorSettings(EMotionFX::GetRenderActorSettings());
     }
 
     void RenderOptions::OnGridColorChangedCallback() const

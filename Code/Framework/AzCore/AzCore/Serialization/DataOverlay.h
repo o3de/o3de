@@ -9,7 +9,7 @@
 #define AZCORE_DATA_OVERLAY_H
 
 #include <AzCore/std/containers/vector.h>
-#include <AzCore/RTTI/TypeInfo.h>
+#include <AzCore/RTTI/TypeInfoSimple.h>
 
 namespace AZ
 {

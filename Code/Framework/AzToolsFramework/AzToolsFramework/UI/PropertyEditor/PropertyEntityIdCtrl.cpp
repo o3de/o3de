@@ -119,11 +119,12 @@ namespace AzToolsFramework
 
             // replace the default input handler with one specific for dealing with
             // entity selection in the viewport
+
             EditorInteractionSystemViewportSelectionRequestBus::Event(
                 GetEntityContextId(), &EditorInteractionSystemViewportSelection::SetHandler,
-                [](const EditorVisibleEntityDataCache* entityDataCache)
+                [](const EditorVisibleEntityDataCacheInterface* entityDataCache, ViewportEditorModeTrackerInterface* viewportEditorModeTracker)
             {
-                return AZStd::make_unique<EditorPickEntitySelection>(entityDataCache);
+                    return AZStd::make_unique<EditorPickEntitySelection>(entityDataCache, viewportEditorModeTracker);
             });
 
             if (!pickModeEntityContextId.IsNull())
@@ -330,6 +331,7 @@ namespace AzToolsFramework
 
     void PropertyEntityIdCtrl::SetCurrentEntityId(const AZ::EntityId& newEntityId, bool emitChange, const AZStd::string& nameOverride)
     {
+        m_entityIdLineEdit->setClearButtonEnabled(HasClearButton());
         m_entityIdLineEdit->SetEntityId(newEntityId, nameOverride);
         m_componentsSatisfyingServices.clear();
 
@@ -514,12 +516,20 @@ namespace AzToolsFramework
                 GUI->SetIncompatibleServices(incompatibleServices);
             }
         }
+        else if (attrib == AZ::Edit::Attributes::ShowClearButtonHandler)
+        {
+            bool value;
+            if (attrValue->Read<bool>(value))
+            {
+                GUI->SetHasClearButton(value);
+            }
+        }
     }
 
     void EntityIdPropertyHandler::WriteGUIValuesIntoProperty(size_t index, PropertyEntityIdCtrl* GUI, property_t& instance, InstanceDataNode* node)
     {
-        (int)index;
-        (void)node;
+        AZ_UNUSED(index);
+        AZ_UNUSED(node);
         instance = GUI->GetEntityId();
     }
 

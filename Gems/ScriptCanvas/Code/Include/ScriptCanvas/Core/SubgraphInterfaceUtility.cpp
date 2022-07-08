@@ -9,11 +9,9 @@
 #include "SubgraphInterfaceUtility.h"
 
 #include <AzCore/RTTI/BehaviorContext.h>
-#include <ScriptCanvas/Libraries/Core/MethodUtility.h>
 
 namespace SubgraphInterfaceUtilityCpp
 {
-    const constexpr size_t k_uniqueOutIndex = 0;
     const constexpr size_t k_signatureIndex = 1;
     const constexpr AZ::u64 k_defaultOutIdSignature = 0x3ACF20E73ACF20E7ull;
 

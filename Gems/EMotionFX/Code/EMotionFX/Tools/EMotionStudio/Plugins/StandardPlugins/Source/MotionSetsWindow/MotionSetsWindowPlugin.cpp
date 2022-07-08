@@ -18,332 +18,124 @@
 #include <QContextMenuEvent>
 #include <QTableWidget>
 #include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/Commands.h>
-#include "../../../../EMStudioSDK/Source/EMStudioCore.h"
+#include <EMotionFX/CommandSystem/Source/MotionCommands.h>
 #include "../../../../EMStudioSDK/Source/MainWindow.h"
-#include "../../../../EMStudioSDK/Source/SaveChangedFilesManager.h"
 #include "../../../../EMStudioSDK/Source/FileManager.h"
 #include <MCore/Source/LogManager.h>
 #include <MCore/Source/IDGenerator.h>
 #include <Editor/AnimGraphEditorBus.h>
 #include <EMotionFX/Source/MotionManager.h>
+#include <EMotionFX/Source/MotionSystem.h>
 #include <EMotionFX/Source/MotionSet.h>
 #include "../../../../EMStudioSDK/Source/EMStudioManager.h"
-#include "../MotionWindow/MotionListWindow.h"
+#include <EMotionStudio/Plugins/StandardPlugins/Source/MotionWindow/MotionPropertiesWindow.h>
+#include <Editor/SaveDirtyFilesCallbacks.h>
 
 #include <AzCore/Debug/Trace.h>
 #include <AzFramework/API/ApplicationAPI.h>
 
 namespace EMStudio
 {
-    class SaveDirtyMotionSetFilesCallback
-        : public SaveDirtyFilesCallback
-    {
-        MCORE_MEMORYOBJECTCATEGORY(SaveDirtyMotionSetFilesCallback, MCore::MCORE_DEFAULT_ALIGNMENT, MEMCATEGORY_STANDARDPLUGINS)
-
-    public:
-        SaveDirtyMotionSetFilesCallback(MotionSetsWindowPlugin* plugin)
-            : SaveDirtyFilesCallback()  { mPlugin = plugin; }
-        ~SaveDirtyMotionSetFilesCallback()                                                      {}
-
-        enum
-        {
-            TYPE_ID = 0x00000002
-        };
-        uint32 GetType() const override                                         { return TYPE_ID; }
-        uint32 GetPriority() const override                                     { return 2; }
-        bool GetIsPostProcessed() const override                                { return false; }
-
-        void GetDirtyFileNames(AZStd::vector<AZStd::string>* outFileNames, AZStd::vector<ObjectPointer>* outObjects) override
-        {
-            const uint32 numMotionSets = EMotionFX::GetMotionManager().GetNumMotionSets();
-            for (uint32 i = 0; i < numMotionSets; ++i)
-            {
-                EMotionFX::MotionSet* motionSet = EMotionFX::GetMotionManager().GetMotionSet(i);
-
-                if (motionSet->GetIsOwnedByRuntime())
-                {
-                    continue;
-                }
-
-                // only save root motion sets
-                if (motionSet->GetParentSet())
-                {
-                    continue;
-                }
-
-                // return in case we found a dirty file
-                if (motionSet->GetDirtyFlag())
-                {
-                    // add the filename to the dirty filenames array
-                    outFileNames->push_back(motionSet->GetFilename());
-
-                    // add the link to the actual object
-                    ObjectPointer objPointer;
-                    objPointer.mMotionSet = motionSet;
-                    outObjects->push_back(objPointer);
-                }
-            }
-        }
-
-        int SaveDirtyFiles(const AZStd::vector<AZStd::string>& filenamesToSave, const AZStd::vector<ObjectPointer>& objects, MCore::CommandGroup* commandGroup) override
-        {
-            MCORE_UNUSED(filenamesToSave);
-
-            const size_t numObjects = objects.size();
-            for (size_t i = 0; i < numObjects; ++i)
-            {
-                // get the current object pointer and skip directly if the type check fails
-                ObjectPointer objPointer = objects[i];
-                if (objPointer.mMotionSet == nullptr)
-                {
-                    continue;
-                }
-
-                EMotionFX::MotionSet* motionSet = objPointer.mMotionSet;
-                if (mPlugin->SaveDirtyMotionSet(motionSet, commandGroup, false) == DirtyFileManager::CANCELED)
-                {
-                    return DirtyFileManager::CANCELED;
-                }
-            }
-
-            return DirtyFileManager::FINISHED;
-        }
-
-        const char* GetExtension() const override       { return "motionset"; }
-        const char* GetFileType() const override        { return "motion set"; }
-        const AZ::Uuid GetFileRttiType() const override
-        {
-            return azrtti_typeid<EMotionFX::MotionSet>();
-        }
-
-    private:
-        MotionSetsWindowPlugin* mPlugin;
-    };
-
-
-    // constructor
     MotionSetsWindowPlugin::MotionSetsWindowPlugin()
         : EMStudio::DockWidgetPlugin()
     {
-        mDialogStack                    = nullptr;
-        mSelectedSet                    = nullptr;
-        mCreateMotionSetCallback        = nullptr;
-        m_reinitCallback                = nullptr;
-        mAdjustMotionSetCallback        = nullptr;
-        mMotionSetAddMotionCallback     = nullptr;
-        mMotionSetRemoveMotionCallback  = nullptr;
-        mMotionSetAdjustMotionCallback  = nullptr;
-        mLoadMotionSetCallback          = nullptr;
-        //mStringIDWindow               = nullptr;
-        mMotionSetManagementWindow      = nullptr;
-        mMotionSetWindow                = nullptr;
-        mDirtyFilesCallback             = nullptr;
+        m_dialogStack                    = nullptr;
+        m_selectedSet                    = nullptr;
+        m_motionSetManagementWindow      = nullptr;
+        m_motionSetWindow                = nullptr;
     }
 
-
-    // destructor
     MotionSetsWindowPlugin::~MotionSetsWindowPlugin()
     {
-        GetCommandManager()->RemoveCommandCallback(mCreateMotionSetCallback, false);
-        GetCommandManager()->RemoveCommandCallback(m_reinitCallback, false);
-        GetCommandManager()->RemoveCommandCallback(mAdjustMotionSetCallback, false);
-        GetCommandManager()->RemoveCommandCallback(mMotionSetAddMotionCallback, false);
-        GetCommandManager()->RemoveCommandCallback(mMotionSetRemoveMotionCallback, false);
-        GetCommandManager()->RemoveCommandCallback(mMotionSetAdjustMotionCallback, false);
-        GetCommandManager()->RemoveCommandCallback(mLoadMotionSetCallback, false);
+        delete m_motionPropertiesWindow;
+        m_motionPropertiesWindow = nullptr;
 
-        delete mCreateMotionSetCallback;
-        delete m_reinitCallback;
-        delete mAdjustMotionSetCallback;
-        delete mMotionSetAddMotionCallback;
-        delete mMotionSetRemoveMotionCallback;
-        delete mMotionSetAdjustMotionCallback;
-        delete mLoadMotionSetCallback;
-
-        GetMainWindow()->GetDirtyFileManager()->RemoveCallback(mDirtyFilesCallback, false);
-        delete mDirtyFilesCallback;
+        for (MCore::Command::Callback* callback : m_callbacks)
+        {
+            GetCommandManager()->RemoveCommandCallback(callback, false);
+            delete callback;
+        }
     }
-
-
-    // clone the log window
-    EMStudioPlugin* MotionSetsWindowPlugin::Clone()
-    {
-        MotionSetsWindowPlugin* newPlugin = new MotionSetsWindowPlugin();
-        return newPlugin;
-    }
-
 
     // init after the parent dock window has been created
     bool MotionSetsWindowPlugin::Init()
     {
-        mCreateMotionSetCallback        = new CommandCreateMotionSetCallback(false);
-        m_reinitCallback                = new CommandReinitCallback(false);
-        mAdjustMotionSetCallback        = new CommandAdjustMotionSetCallback(false);
-        mMotionSetAddMotionCallback     = new CommandMotionSetAddMotionCallback(false);
-        mMotionSetRemoveMotionCallback  = new CommandMotionSetRemoveMotionCallback(false);
-        mMotionSetAdjustMotionCallback  = new CommandMotionSetAdjustMotionCallback(false);
-        mLoadMotionSetCallback          = new CommandLoadMotionSetCallback(false);
-
-        GetCommandManager()->RegisterCommandCallback("CreateMotionSet", mCreateMotionSetCallback);
-        GetCommandManager()->RegisterCommandCallback("RemoveMotionSet", m_reinitCallback);
-        GetCommandManager()->RegisterCommandCallback("AdjustMotionSet", mAdjustMotionSetCallback);
-
-        GetCommandManager()->RegisterCommandCallback("MotionSetAddMotion", mMotionSetAddMotionCallback);
-        GetCommandManager()->RegisterCommandCallback("MotionSetRemoveMotion", mMotionSetRemoveMotionCallback);
-        GetCommandManager()->RegisterCommandCallback("MotionSetAdjustMotion", mMotionSetAdjustMotionCallback);
-        GetCommandManager()->RegisterCommandCallback("LoadMotionSet", mLoadMotionSetCallback);
-
-        GetCommandManager()->RegisterCommandCallback("RemoveMotion", m_reinitCallback);
+        CommandSystem::CommandManager* commandManager = GetCommandManager();
+        commandManager->RegisterCommandCallback<CommandReinitCallback>("RemoveMotionSet", m_callbacks, false);
+        commandManager->RegisterCommandCallback<CommandReinitCallback>("RemoveMotion", m_callbacks, false);
+        commandManager->RegisterCommandCallback<CommandAdjustMotionSetCallback>("AdjustMotionSet", m_callbacks, false);
+        commandManager->RegisterCommandCallback<CommandMotionSetAddMotionCallback>("MotionSetAddMotion", m_callbacks, false);
+        commandManager->RegisterCommandCallback<CommandMotionSetRemoveMotionCallback>("MotionSetRemoveMotion", m_callbacks, false);
+        commandManager->RegisterCommandCallback<CommandMotionSetAdjustMotionCallback>("MotionSetAdjustMotion", m_callbacks, false);
+        commandManager->RegisterCommandCallback<CommandCreateMotionSetCallback>("CreateMotionSet", m_callbacks, false);
+        commandManager->RegisterCommandCallback<CommandLoadMotionSetCallback>("LoadMotionSet", m_callbacks, false);
+        commandManager->RegisterCommandCallback<CommandAdjustMotionCallback>("AdjustMotion", m_callbacks, false);
+        commandManager->RegisterCommandCallback<CommandAdjustDefaultPlayBackInfoCallback>("AdjustDefaultPlayBackInfo", m_callbacks, false);
+        commandManager->RegisterCommandCallback<CommandSaveMotionAssetInfoCallback>("SaveMotionAssetInfo", m_callbacks, false);
 
         // create the dialog stack
-        assert(mDialogStack == nullptr);
-        mDialogStack = new MysticQt::DialogStack(mDock);
-        mDock->setWidget(mDialogStack);
+        assert(m_dialogStack == nullptr);
+        m_dialogStack = new MysticQt::DialogStack(m_dock);
+        m_dock->setWidget(m_dialogStack);
 
         // connect the window activation signal to refresh if reactivated
-        connect(mDock, &QDockWidget::visibilityChanged, this, &MotionSetsWindowPlugin::WindowReInit);
+        connect(m_dock, &QDockWidget::visibilityChanged, this, &MotionSetsWindowPlugin::WindowReInit);
+
+        m_motionPropertiesWindow = new MotionPropertiesWindow(nullptr);
+        m_motionPropertiesWindow->hide();
 
         // create the set management window
-        mMotionSetManagementWindow = new MotionSetManagementWindow(this, mDialogStack);
-        mMotionSetManagementWindow->Init();
-        mDialogStack->Add(mMotionSetManagementWindow, "Motion Set Management", false, true, true, false);
+        m_motionSetManagementWindow = new MotionSetManagementWindow(this, m_dialogStack);
+        m_motionSetManagementWindow->Init();
+        m_dialogStack->Add(m_motionSetManagementWindow, "Motion Set Management", /*closed=*/false, /*maximizeSize=*/false, /*closable=*/true, /*strecthWhenMaximize=*/false);
 
         // create the motion set properties window
-        mMotionSetWindow = new MotionSetWindow(this, mDialogStack);
-        mMotionSetWindow->Init();
-        mDialogStack->Add(mMotionSetWindow, "Motion Set", false, true);
+        m_motionSetWindow = new MotionSetWindow(this, m_dialogStack);
+        m_motionSetWindow->Init();
+        m_dialogStack->Add(m_motionSetWindow, "Motion Set", /*closed=*/false, /*maximizeSize=*/true);
 
         ReInit();
-        SetSelectedSet(nullptr);
-
-        // initialize the dirty files callback
-        mDirtyFilesCallback = new SaveDirtyMotionSetFilesCallback(this);
-        GetMainWindow()->GetDirtyFileManager()->AddCallback(mDirtyFilesCallback);
+        CommandSystem::CreateDefaultMotionSet();
 
         return true;
     }
 
-
     EMotionFX::MotionSet* MotionSetsWindowPlugin::GetSelectedSet() const
     {
-        if (EMotionFX::GetMotionManager().FindMotionSetIndex(mSelectedSet) == MCORE_INVALIDINDEX32)
+        if (EMotionFX::GetMotionManager().FindMotionSetIndex(m_selectedSet) == InvalidIndex)
         {
             return nullptr;
         }
 
-        return mSelectedSet;
+        return m_selectedSet;
     }
 
 
     void MotionSetsWindowPlugin::ReInit()
     {
         // Validate existence of selected motion set and reset selection in case selection is invalid.
-        if (EMotionFX::GetMotionManager().FindMotionSetIndex(mSelectedSet) == MCORE_INVALIDINDEX32)
+        if (EMotionFX::GetMotionManager().FindMotionSetIndex(m_selectedSet) == InvalidIndex)
         {
-            mSelectedSet = nullptr;
+            m_selectedSet = nullptr;
         }
 
-        SetSelectedSet(mSelectedSet);
-        mMotionSetManagementWindow->ReInit();
-        mMotionSetWindow->ReInit();
+        SetSelectedSet(m_selectedSet);
+        m_motionSetManagementWindow->ReInit();
+        m_motionSetWindow->ReInit();
     }
 
-
-    int MotionSetsWindowPlugin::SaveDirtyMotionSet(EMotionFX::MotionSet* motionSet, MCore::CommandGroup* commandGroup, bool askBeforeSaving, bool showCancelButton)
+    void MotionSetsWindowPlugin::SetSelectedSet(EMotionFX::MotionSet* motionSet, bool clearSelectionUpfront)
     {
-        // only save root motion sets
-        if (motionSet->GetParentSet())
-        {
-            return DirtyFileManager::NOFILESTOSAVE;
-        }
-
-        // only process changed files
-        if (motionSet->GetDirtyFlag() == false)
-        {
-            return DirtyFileManager::NOFILESTOSAVE;
-        }
-
-        if (askBeforeSaving)
-        {
-            EMStudio::GetApp()->setOverrideCursor(QCursor(Qt::ArrowCursor));
-
-            QMessageBox msgBox(GetMainWindow());
-            AZStd::string text;
-            const AZStd::string& filename = motionSet->GetFilenameString();
-            AZStd::string extension;
-            AzFramework::StringFunc::Path::GetExtension(filename.c_str(), extension, false /* include dot */);
-
-            if (!filename.empty() && !extension.empty())
-            {
-                text = AZStd::string::format("Save changes to '%s'?", motionSet->GetFilename());
-            }
-            else if (!motionSet->GetNameString().empty())
-            {
-                text = AZStd::string::format("Save changes to the motion set named '%s'?", motionSet->GetName());
-            }
-            else
-            {
-                text = "Save changes to untitled motion set?";
-            }
-
-            msgBox.setText(text.c_str());
-            msgBox.setWindowTitle("Save Changes");
-
-            if (showCancelButton)
-            {
-                msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
-            }
-            else
-            {
-                msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Discard);
-            }
-
-            msgBox.setDefaultButton(QMessageBox::Save);
-            msgBox.setIcon(QMessageBox::Question);
-
-
-            int messageBoxResult = msgBox.exec();
-            switch (messageBoxResult)
-            {
-            case QMessageBox::Save:
-            {
-                GetMainWindow()->GetFileManager()->SaveMotionSet(GetManagementWindow(), motionSet, commandGroup);
-                break;
-            }
-            case QMessageBox::Discard:
-            {
-                EMStudio::GetApp()->restoreOverrideCursor();
-                return DirtyFileManager::FINISHED;
-            }
-            case QMessageBox::Cancel:
-            {
-                EMStudio::GetApp()->restoreOverrideCursor();
-                return DirtyFileManager::CANCELED;
-            }
-            }
-        }
-        else
-        {
-            // save without asking first
-            GetMainWindow()->GetFileManager()->SaveMotionSet(GetManagementWindow(), motionSet, commandGroup);
-        }
-
-        return DirtyFileManager::FINISHED;
-    }
-
-
-    void MotionSetsWindowPlugin::SetSelectedSet(EMotionFX::MotionSet* motionSet)
-    {
-        mSelectedSet = motionSet;
+        m_selectedSet = motionSet;
 
         if (motionSet)
         {
-            mMotionSetManagementWindow->SelectItemsById(motionSet->GetID());
+            m_motionSetManagementWindow->SelectItemsById(motionSet->GetID(), clearSelectionUpfront);
         }
-        mMotionSetManagementWindow->ReInit();
-        mMotionSetManagementWindow->UpdateInterface();
-        mMotionSetWindow->ReInit();
-        mMotionSetWindow->UpdateInterface();
+        m_motionSetManagementWindow->ReInit();
+        m_motionSetManagementWindow->UpdateInterface();
+        m_motionSetWindow->ReInit();
+        m_motionSetWindow->UpdateInterface();
     }
 
 
@@ -385,45 +177,36 @@ namespace EMStudio
     //-----------------------------------------------------------------------------------------
     // Command callbacks
     //-----------------------------------------------------------------------------------------
-    bool ReInitMotionSetsPlugin()
+    MotionSetsWindowPlugin* GetMotionSetWindowPlugin()
     {
         EMStudioPlugin* plugin = EMStudio::GetPluginManager()->FindActivePlugin(MotionSetsWindowPlugin::CLASS_ID);
-        if (plugin == nullptr)
+        if (plugin)
         {
-            return false;
+            return static_cast<MotionSetsWindowPlugin*>(plugin);
         }
+        return nullptr;
+    }
 
-        MotionSetsWindowPlugin* motionSetsPlugin = (MotionSetsWindowPlugin*)plugin;
-
-        // is the plugin visible? only update it if it is visible
-        if (motionSetsPlugin->GetDockWidget()->visibleRegion().isEmpty() == false)
+    bool ReInitMotionSetsPlugin()
+    {
+        MotionSetsWindowPlugin* motionSetsPlugin = GetMotionSetWindowPlugin();
+        if (motionSetsPlugin)
         {
             motionSetsPlugin->ReInit();
         }
-
         return true;
     }
 
-
     bool UpdateMotionSetsPlugin()
     {
-        EMStudioPlugin* plugin = EMStudio::GetPluginManager()->FindActivePlugin(MotionSetsWindowPlugin::CLASS_ID);
-        if (plugin == nullptr)
-        {
-            return false;
-        }
-
-        MotionSetsWindowPlugin* motionSetsPlugin = (MotionSetsWindowPlugin*)plugin;
-
-        // is the plugin visible? only update it if it is visible
-        if (motionSetsPlugin->GetDockWidget()->visibleRegion().isEmpty() == false)
+        MotionSetsWindowPlugin* motionSetsPlugin = GetMotionSetWindowPlugin();
+        if (motionSetsPlugin)
         {
             motionSetsPlugin->SetSelectedSet(motionSetsPlugin->GetSelectedSet());
         }
 
         return true;
     }
-
 
     bool MotionSetsWindowPlugin::GetMotionSetCommandInfo(MCore::Command* command, const MCore::CommandLine& parameters, EMotionFX::MotionSet** outMotionSet, MotionSetsWindowPlugin** outPlugin)
     {
@@ -488,7 +271,7 @@ namespace EMStudio
 
         // If motion entry is still not found, look through all motion sets not owned by runtime.
         const EMotionFX::MotionManager& motionManager = EMotionFX::GetMotionManager();
-        for(AZ::u32 i = 0; i < motionManager.GetNumMotionSets(); ++i)
+        for(size_t i = 0; i < motionManager.GetNumMotionSets(); ++i)
         {
             motionSet = motionManager.GetMotionSet(i);
             if (motionSet->GetIsOwnedByRuntime())
@@ -504,26 +287,13 @@ namespace EMStudio
         return nullptr;
     }
 
-
-    bool MotionSetsWindowPlugin::CommandCreateMotionSetCallback::Execute([[maybe_unused]] MCore::Command* command, const MCore::CommandLine& commandLine)
-    {
-        MCORE_UNUSED(commandLine);
-        return ReInitMotionSetsPlugin();
-    }
-
-
-    bool MotionSetsWindowPlugin::CommandCreateMotionSetCallback::Undo(MCore::Command* command, const MCore::CommandLine& commandLine)                   { MCORE_UNUSED(command); MCORE_UNUSED(commandLine); return ReInitMotionSetsPlugin(); }
-
-
     bool MotionSetsWindowPlugin::CommandReinitCallback::Execute([[maybe_unused]] MCore::Command* command, const MCore::CommandLine& commandLine)
     {
         MCORE_UNUSED(commandLine);
         return ReInitMotionSetsPlugin();
     }
 
-
     bool MotionSetsWindowPlugin::CommandReinitCallback::Undo(MCore::Command* command, const MCore::CommandLine& commandLine)                   { MCORE_UNUSED(command); MCORE_UNUSED(commandLine); return ReInitMotionSetsPlugin(); }
-
 
     bool MotionSetsWindowPlugin::CommandAdjustMotionSetCallback::Execute(MCore::Command* command, const MCore::CommandLine& commandLine)
     {
@@ -544,7 +314,6 @@ namespace EMStudio
 
         return true;
     }
-
 
     bool MotionSetsWindowPlugin::CommandAdjustMotionSetCallback::Undo(MCore::Command* command, const MCore::CommandLine& commandLine)
     {
@@ -651,6 +420,25 @@ namespace EMStudio
         return true;
     }
 
+    bool MotionSetsWindowPlugin::CommandCreateMotionSetCallback::Execute(MCore::Command* command, [[maybe_unused]] const MCore::CommandLine& commandLine)
+    {
+        MotionSetsWindowPlugin* motionSetsPlugin = GetMotionSetWindowPlugin();
+        if (motionSetsPlugin)
+        {
+            CommandSystem::CommandCreateMotionSet* createCommand = static_cast<CommandSystem::CommandCreateMotionSet*>(command);
+            EMotionFX::MotionSet* motionSet = EMotionFX::GetMotionManager().FindMotionSetByID(createCommand->m_previouslyUsedId);
+            if (motionSet)
+            {
+                motionSetsPlugin->SetSelectedSet(motionSet, /*clearSelectionUpfront=*/true);
+            }
+        }
+        return true;
+    }
+
+    bool MotionSetsWindowPlugin::CommandCreateMotionSetCallback::Undo([[maybe_unused]] MCore::Command* command, [[maybe_unused]] const MCore::CommandLine& commandLine)
+    {
+        return true;
+    }
 
     bool MotionSetsWindowPlugin::CommandLoadMotionSetCallback::Execute(MCore::Command* command, const MCore::CommandLine& commandLine)
     {
@@ -669,36 +457,19 @@ namespace EMStudio
             return false;
         }
 
-        EMStudioPlugin* plugin = EMStudio::GetPluginManager()->FindActivePlugin(MotionSetsWindowPlugin::CLASS_ID);
-        if (plugin == nullptr)
+        if (!ReInitMotionSetsPlugin())
         {
             return false;
         }
 
-        MotionSetsWindowPlugin* motionSetsPlugin = (MotionSetsWindowPlugin*)plugin;
-
-        // select the first motion set
-        if (EMotionFX::GetMotionManager().GetNumMotionSets() > 0)
+        MotionSetsWindowPlugin* motionSetsPlugin = GetMotionSetWindowPlugin();
+        if (motionSetsPlugin)
         {
-            const uint32 numMotionSets = EMotionFX::GetMotionManager().GetNumMotionSets();
-
-            for (uint32 i = 0; i < numMotionSets; ++i)
-            {
-                EMotionFX::MotionSet* motionSet2 = EMotionFX::GetMotionManager().GetMotionSet(0);
-
-                if (motionSet2->GetIsOwnedByRuntime())
-                {
-                    continue;
-                }
-
-                motionSetsPlugin->SetSelectedSet(motionSet2);
-                break;
-            }
+            motionSetsPlugin->SetSelectedSet(motionSet, /*clearSelectionUpfront=*/true);
         }
 
-        return ReInitMotionSetsPlugin();
+        return true;
     }
-
 
     bool MotionSetsWindowPlugin::CommandLoadMotionSetCallback::Undo(MCore::Command* command, const MCore::CommandLine& commandLine)
     {
@@ -707,6 +478,56 @@ namespace EMStudio
         return ReInitMotionSetsPlugin();
     }
 
+    bool MotionSetsWindowPlugin::CommandAdjustMotionCallback::Execute(MCore::Command* command, [[maybe_unused]] const MCore::CommandLine& commandLine)
+    {
+        MotionSetsWindowPlugin* motionSetsPlugin = GetMotionSetWindowPlugin();
+        if (motionSetsPlugin)
+        {
+            CommandSystem::CommandAdjustMotion* adjustMotionCommand = static_cast<CommandSystem::CommandAdjustMotion*>(command);
+            motionSetsPlugin->GetMotionSetWindow()->SyncMotionDirtyFlag(adjustMotionCommand->GetMotionID());
+        }
+        return true;
+    }
+
+    bool MotionSetsWindowPlugin::CommandAdjustMotionCallback::Undo(MCore::Command* command, [[maybe_unused]] const MCore::CommandLine& commandLine)
+    {
+        return Execute(command, commandLine);
+    }
+
+    bool MotionSetsWindowPlugin::CommandAdjustDefaultPlayBackInfoCallback::Execute(MCore::Command* command, const MCore::CommandLine& commandLine)
+    {
+        MotionSetsWindowPlugin* motionSetsPlugin = GetMotionSetWindowPlugin();
+        if (motionSetsPlugin)
+        {
+            EMotionFX::Motion* motion = CommandSystem::CommandAdjustDefaultPlayBackInfo::GetMotionFromFilenameParameter(command, commandLine);
+            if (motion)
+            {
+                motionSetsPlugin->GetMotionSetWindow()->SyncMotionDirtyFlag(motion->GetID());
+            }
+        }
+        return true;
+    }
+
+    bool MotionSetsWindowPlugin::CommandAdjustDefaultPlayBackInfoCallback::Undo(MCore::Command* command, const MCore::CommandLine& commandLine)
+    {
+        return Execute(command, commandLine);
+    }
+
+    bool MotionSetsWindowPlugin::CommandSaveMotionAssetInfoCallback::Execute(MCore::Command* command, const MCore::CommandLine& commandLine)
+    {
+        MotionSetsWindowPlugin* motionSetsPlugin = GetMotionSetWindowPlugin();
+        if (motionSetsPlugin)
+        {
+            const int32 motionId = commandLine.GetValueAsInt("motionID", command);
+            motionSetsPlugin->GetMotionSetWindow()->SyncMotionDirtyFlag(motionId);
+        }
+        return true;
+    }
+
+    bool MotionSetsWindowPlugin::CommandSaveMotionAssetInfoCallback::Undo(MCore::Command* command, const MCore::CommandLine& commandLine)
+    {
+        return Execute(command, commandLine);
+    }
 
     int MotionSetsWindowPlugin::OnSaveDirtyMotionSets()
     {
@@ -718,5 +539,3 @@ namespace EMStudio
         ReInitMotionSetsPlugin();
     }
 } // namespace EMStudio
-
-#include <EMotionFX/Tools/EMotionStudio/Plugins/StandardPlugins/Source/MotionSetsWindow/moc_MotionSetsWindowPlugin.cpp>

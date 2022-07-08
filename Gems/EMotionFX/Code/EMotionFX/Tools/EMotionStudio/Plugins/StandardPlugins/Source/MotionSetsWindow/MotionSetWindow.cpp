@@ -6,6 +6,7 @@
  *
  */
 
+#include "AzCore/std/algorithm.h"
 #include "MotionSetsWindowPlugin.h"
 #include <AzQtComponents/Components/FilteredSearchWidget.h>
 #include <AzCore/IO/FileIO.h>
@@ -27,7 +28,6 @@
 #include <QDesktopWidget>
 #include <QToolBar>
 #include <EMotionFX/CommandSystem/Source/MotionCommands.h>
-#include "../../../../EMStudioSDK/Source/EMStudioCore.h"
 #include <MCore/Source/LogManager.h>
 #include <MCore/Source/IDGenerator.h>
 #include "../../../../EMStudioSDK/Source/EMStudioManager.h"
@@ -36,9 +36,9 @@
 #include <EMotionFX/Source/MotionManager.h>
 #include <EMotionFX/Source/MotionData/MotionData.h>
 #include <MCore/Source/FileSystem.h>
-#include "../MotionWindow/MotionListWindow.h"
 #include "MotionSetManagementWindow.h"
-
+#include <AzQtComponents/Utilities/DesktopUtilities.h>
+#include <Editor/SaveDirtyFilesCallbacks.h>
 
 namespace EMStudio
 {
@@ -123,11 +123,11 @@ namespace EMStudio
     RenameMotionEntryWindow::RenameMotionEntryWindow(QWidget* parent, EMotionFX::MotionSet* motionSet, const AZStd::string& motionId)
         : QDialog(parent)
     {
-        mMotionSet = motionSet;
+        m_motionSet = motionSet;
         m_motionId = motionId;
 
         // Build a list of unique string id values from all motion set entries.
-        mMotionSet->BuildIdStringList(m_existingIds);
+        m_motionSet->BuildIdStringList(m_existingIds);
 
         // Set the window title and minimum width.
         setWindowTitle("Enter new motion ID");
@@ -135,25 +135,25 @@ namespace EMStudio
 
         QVBoxLayout* layout = new QVBoxLayout();
 
-        mLineEdit = new QLineEdit();
-        connect(mLineEdit, &QLineEdit::textEdited, this, &RenameMotionEntryWindow::TextEdited);
-        layout->addWidget(mLineEdit);
+        m_lineEdit = new QLineEdit();
+        connect(m_lineEdit, &QLineEdit::textEdited, this, &RenameMotionEntryWindow::TextEdited);
+        layout->addWidget(m_lineEdit);
 
         // Set the old motion id as text and select all so that the user can directly start typing.
-        mLineEdit->setText(m_motionId.c_str());
-        mLineEdit->selectAll();
+        m_lineEdit->setText(m_motionId.c_str());
+        m_lineEdit->selectAll();
 
         QHBoxLayout* buttonLayout   = new QHBoxLayout();
-        mOKButton                   = new QPushButton("OK");
+        m_okButton                   = new QPushButton("OK");
         QPushButton* cancelButton   = new QPushButton("Cancel");
-        buttonLayout->addWidget(mOKButton);
+        buttonLayout->addWidget(m_okButton);
         buttonLayout->addWidget(cancelButton);
 
         // Allow pressing the enter key as alternative to pressing the ok button for faster workflow.
-        mOKButton->setAutoDefault(true);
-        mOKButton->setDefault(true);
+        m_okButton->setAutoDefault(true);
+        m_okButton->setDefault(true);
 
-        connect(mOKButton, &QPushButton::clicked, this, &RenameMotionEntryWindow::Accepted);
+        connect(m_okButton, &QPushButton::clicked, this, &RenameMotionEntryWindow::Accepted);
         connect(cancelButton, &QPushButton::clicked, this, &RenameMotionEntryWindow::reject);
 
         layout->addLayout(buttonLayout);
@@ -168,24 +168,22 @@ namespace EMStudio
         // Disable the ok button and put the text edit in error state in case the new motion id is either empty or does already exist in the motion set.
         if (newId.empty() || AZStd::find(m_existingIds.begin(), m_existingIds.end(), newId) != m_existingIds.end())
         {
-            //mErrorMsg->setVisible(false);
-            mOKButton->setEnabled(false);
-            GetManager()->SetWidgetAsInvalidInput(mLineEdit);
+            m_okButton->setEnabled(false);
+            GetManager()->SetWidgetAsInvalidInput(m_lineEdit);
             return;
         }
 
-        //mErrorMsg->setVisible(false);
-        mOKButton->setEnabled(true);
-        mLineEdit->setStyleSheet("");
+        m_okButton->setEnabled(true);
+        m_lineEdit->setStyleSheet("");
     }
 
 
     void RenameMotionEntryWindow::Accepted()
     {
         AZStd::string commandString = AZStd::string::format("MotionSetAdjustMotion -motionSetID %i -idString \"%s\" -newIDString \"%s\" -updateMotionNodeStringIDs true",
-                mMotionSet->GetID(),
+                m_motionSet->GetID(),
                 m_motionId.c_str(),
-                mLineEdit->text().toUtf8().data());
+                m_lineEdit->text().toUtf8().data());
 
         AZStd::string result;
         if (!EMStudio::GetCommandManager()->ExecuteCommand(commandString, result))
@@ -201,7 +199,7 @@ namespace EMStudio
     MotionSetWindow::MotionSetWindow(MotionSetsWindowPlugin* parentPlugin, QWidget* parent)
         : QWidget(parent)
     {
-        mPlugin             = parentPlugin;
+        m_plugin             = parentPlugin;
     }
 
 
@@ -236,9 +234,16 @@ namespace EMStudio
             tr("Add entries by selecting motions."),
             this, &MotionSetWindow::OnLoadEntries);
 
+        m_saveAction = toolBar->addAction(MysticQt::GetMysticQt()->FindIcon("Images/Menu/FileSave.svg"),
+            tr("Save selected motions"),
+            this, &MotionSetWindow::OnSave);
+
+        toolBar->addSeparator();
+
         m_editAction = toolBar->addAction(MysticQt::GetMysticQt()->FindIcon("Images/Icons/Edit.svg"),
             tr("Batch edit selected motion IDs"),
             this, &MotionSetWindow::OnEditButton);
+
 
         QWidget* spacerWidget = new QWidget();
         spacerWidget->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed);
@@ -252,7 +257,7 @@ namespace EMStudio
 
 
         // left side
-        m_tableWidget = new MotionSetTableWidget(mPlugin, this);
+        m_tableWidget = new MotionSetTableWidget(m_plugin, this);
         m_tableWidget->setObjectName("EMFX.MotionSetWindow.TableWidget");
         tableLayout->addWidget(m_tableWidget);
         m_tableWidget->setAlternatingRowColors(true);
@@ -327,11 +332,11 @@ namespace EMStudio
 
     void MotionSetWindow::ReInit()
     {
-        EMotionFX::MotionSet* selectedSet = mPlugin->GetSelectedSet();
-        const uint32 selectedSetIndex = EMotionFX::GetMotionManager().FindMotionSetIndex(selectedSet);
-        if (selectedSetIndex != MCORE_INVALIDINDEX32)
+        EMotionFX::MotionSet* selectedSet = m_plugin->GetSelectedSet();
+        const size_t selectedSetIndex = EMotionFX::GetMotionManager().FindMotionSetIndex(selectedSet);
+        if (selectedSetIndex != InvalidIndex)
         {
-            UpdateMotionSetTable(m_tableWidget, mPlugin->GetSelectedSet());
+            UpdateMotionSetTable(m_tableWidget, m_plugin->GetSelectedSet());
         }
         else
         {
@@ -343,14 +348,10 @@ namespace EMStudio
     bool MotionSetWindow::AddMotion(EMotionFX::MotionSet* motionSet, EMotionFX::MotionSet::MotionEntry* motionEntry)
     {
         // check if the motion set is the one we currently see in the interface, if not there is nothing to do
-        if (mPlugin->GetSelectedSet() == motionSet)
+        if (m_plugin->GetSelectedSet() == motionSet)
         {
             InsertRow(motionSet, motionEntry, m_tableWidget, false);
         }
-
-        // check if the motion set is the one we currently see in the interface in the right table, if not there is nothing to do
-        //if (mRightSelectedSet == motionSet)
-        //  InsertRow(motionSet, motionEntry, mMotionSetTableRight, true);
 
         UpdateInterface();
         return true;
@@ -372,7 +373,7 @@ namespace EMStudio
         }
 
         // Check if the motion set is the one we currently see in the interface, if not there is nothing to do.
-        if (mPlugin->GetSelectedSet() == motionSet)
+        if (m_plugin->GetSelectedSet() == motionSet)
         {
             FillRow(motionSet, motionEntry, rowIndex, m_tableWidget, false);
         }
@@ -385,7 +386,7 @@ namespace EMStudio
     bool MotionSetWindow::RemoveMotion(EMotionFX::MotionSet* motionSet, EMotionFX::MotionSet::MotionEntry* motionEntry)
     {
         // Check if the motion set is the one we currently see in the interface, if not there is nothing to do.
-        if (mPlugin->GetSelectedSet() == motionSet)
+        if (m_plugin->GetSelectedSet() == motionSet)
         {
             RemoveRow(motionSet, motionEntry, m_tableWidget);
         }
@@ -408,16 +409,16 @@ namespace EMStudio
 
         commandGroup.AddCommandString("Unselect -motionIndex SELECT_ALL");
 
-        command = AZStd::string::format("Select -motionIndex %d", EMotionFX::GetMotionManager().FindMotionIndexByID(motion->GetID()));
+        command = AZStd::string::format("Select -motionIndex %zu", EMotionFX::GetMotionManager().FindMotionIndexByID(motion->GetID()));
         commandGroup.AddCommandString(command);
 
         EMotionFX::PlayBackInfo* defaultPlayBackInfo = motion->GetDefaultPlayBackInfo();
         if (defaultPlayBackInfo)
         {
             // Don't blend in and out of the for previewing animations. We might only see a short bit of it for animations smaller than the blend in/out time.
-            defaultPlayBackInfo->mBlendInTime = 0.0f;
-            defaultPlayBackInfo->mBlendOutTime = 0.0f;
-            defaultPlayBackInfo->mFreezeAtLastFrame = (defaultPlayBackInfo->mNumLoops != EMFX_LOOPFOREVER);
+            defaultPlayBackInfo->m_blendInTime = 0.0f;
+            defaultPlayBackInfo->m_blendOutTime = 0.0f;
+            defaultPlayBackInfo->m_freezeAtLastFrame = (defaultPlayBackInfo->m_numLoops != EMFX_LOOPFOREVER);
             commandParameters = CommandSystem::CommandPlayMotion::PlayBackInfoToCommandParameters(defaultPlayBackInfo);
         }
 
@@ -666,9 +667,9 @@ namespace EMStudio
         AZStd::string tempString;
         int row = 0;
         const EMotionFX::MotionSet::MotionEntries& motionEntries = motionSet->GetMotionEntries();
-        for (const auto& item : motionEntries)
+        for (const auto& motionEntryPair : motionEntries)
         {
-            const EMotionFX::MotionSet::MotionEntry* motionEntry = item.second;
+            const EMotionFX::MotionSet::MotionEntry* motionEntry = motionEntryPair.second;
 
             // Was the motion entry selected before?
             const bool isSelected = AZStd::find(selectedMotionIds.begin(), selectedMotionIds.end(), motionEntry->GetId().c_str()) != selectedMotionIds.end();
@@ -800,6 +801,12 @@ namespace EMStudio
                 tableWidget->hideRow(row);
             }
 
+            // Set all row items italic in case the motion is dirty.
+            if (motion && motion->GetDirtyFlag())
+            {
+                SetRowItalic(row, true);
+            }
+
             row++;
         }
 
@@ -807,65 +814,92 @@ namespace EMStudio
         tableWidget->setSortingEnabled(true);
     }
 
+    void MotionSetWindow::SyncMotionDirtyFlag(int motionId)
+    {
+        EMotionFX::MotionSet::MotionEntry* motionEntry = FindMotionEntryByMotionId(motionId);
+        if (motionEntry)
+        {
+            QTableWidgetItem* item = FindTableWidgetItemByEntry(motionEntry);
+            if (item)
+            {
+                const EMotionFX::Motion* motion = motionEntry->GetMotion();
+                if (motion)
+                {
+                    SetRowItalic(item->row(), motion->GetDirtyFlag());
+                }
+            }
+        }
+    }
+
+    void MotionSetWindow::SetRowItalic(int row, bool italic)
+    {
+        QTableWidgetItem* defaultItem = m_tableWidget->item(row, 0);
+        if (!defaultItem)
+        {
+            return;
+        }
+
+        QFont italicFont = defaultItem->font();
+        italicFont.setItalic(italic);
+
+        const int columnCount = m_tableWidget->columnCount();
+        for (int i = 0; i < columnCount; ++i)
+        {
+            QTableWidgetItem* item = m_tableWidget->item(row, i);
+            item->setFont(italicFont);
+        }
+    }
 
     void MotionSetWindow::UpdateInterface()
     {
-        EMotionFX::MotionSet* motionSet = mPlugin->GetSelectedSet();
+        EMotionFX::MotionSet* motionSet = m_plugin->GetSelectedSet();
+        const QList<QTableWidgetItem*> selectedItems = m_tableWidget->selectedItems();
 
         const bool isEnabled = (motionSet != nullptr);
+        m_tableWidget->setEnabled(isEnabled);
         m_addAction->setEnabled(isEnabled);
         m_loadAction->setEnabled(isEnabled);
         m_editAction->setEnabled(isEnabled);
-        m_tableWidget->setEnabled(isEnabled);
+
+        const bool isToolbarEnabled = (isEnabled && !selectedItems.empty());
+        m_saveAction->setEnabled(isToolbarEnabled);
 
         if (!motionSet)
         {
             return;
         }
 
-        const QList<QTableWidgetItem*> selectedItems = m_tableWidget->selectedItems();
-        const uint32 numSelectedItems = selectedItems.count();
-
-        // Get the row indices from the selected items.
-        AZStd::vector<int> rowIndices;
-        GetRowIndices(selectedItems, rowIndices);
-
-        // actions which need at least one motion
-        const bool hasMotions = m_tableWidget->rowCount() > 0;
-        m_editAction->setEnabled(hasMotions);
+        MCore::CommandGroup commandGroup("Select motion");
+        commandGroup.AddCommandString("Unselect -motionIndex SELECT_ALL");
 
         // Inform the time view plugin about the motion selection change.
-        const bool hasSelectedRows = rowIndices.size() > 0;
-        if (hasSelectedRows)
+        for (QTableWidgetItem* selectedItem : selectedItems)
         {
-            QTableWidgetItem* firstSelectedItem = selectedItems[0];
-            EMotionFX::MotionSet::MotionEntry* motionEntry = FindMotionEntry(firstSelectedItem);
+            EMotionFX::MotionSet::MotionEntry* motionEntry = FindMotionEntry(selectedItem);
             if (motionEntry)
             {
                 EMotionFX::Motion* motion = motionEntry->GetMotion();
                 if (motion)
                 {
-                    MCore::CommandGroup commandGroup("Select motion");
-                    commandGroup.AddCommandString("Unselect -motionIndex SELECT_ALL");
-                    const AZ::u32 motionIndex = EMotionFX::GetMotionManager().FindMotionIndexByFileName(motion->GetFileName());
-                    commandGroup.AddCommandString(AZStd::string::format("Select -motionIndex %d", motionIndex));
-
-                    AZStd::string result;
-                    if (!EMStudio::GetCommandManager()->ExecuteCommandGroup(commandGroup, result, false))
-                    {
-                        AZ_Error("EMotionFX", false, result.c_str());
-                    }
-
-                    emit MotionSelectionChanged();
+                    const size_t motionIndex = EMotionFX::GetMotionManager().FindMotionIndexByFileName(motion->GetFileName());
+                    commandGroup.AddCommandString(AZStd::string::format("Select -motionIndex %zu", motionIndex));
                 }
             }
         }
+
+        AZStd::string result;
+        if (!EMStudio::GetCommandManager()->ExecuteCommandGroup(commandGroup, result, false))
+        {
+            AZ_Error("EMotionFX", false, result.c_str());
+        }
+
+        emit MotionSelectionChanged();
     }
 
 
     void MotionSetWindow::OnAddNewEntry()
     {
-        EMotionFX::MotionSet* selectedSet = mPlugin->GetSelectedSet();
+        EMotionFX::MotionSet* selectedSet = m_plugin->GetSelectedSet();
         if (!selectedSet)
         {
             return;
@@ -902,7 +936,7 @@ namespace EMStudio
 
     void MotionSetWindow::AddMotions(const AZStd::vector<AZStd::string>& filenames)
     {
-        EMotionFX::MotionSet* selectedSet = mPlugin->GetSelectedSet();
+        EMotionFX::MotionSet* selectedSet = m_plugin->GetSelectedSet();
         if (!selectedSet)
         {
             return;
@@ -913,7 +947,7 @@ namespace EMStudio
 
         // Build a list of unique string id values from all motion set entries.
         AZStd::vector<AZStd::string> idStrings;
-        idStrings.reserve(selectedSet->GetNumMotionEntries() + (uint32)numFileNames);
+        idStrings.reserve(selectedSet->GetNumMotionEntries() + numFileNames);
         selectedSet->BuildIdStringList(idStrings);
 
         AZStd::string parameterString;
@@ -1067,7 +1101,7 @@ namespace EMStudio
 
     void MotionSetWindow::OnRemoveMotions()
     {
-        EMotionFX::MotionSet* motionSet = mPlugin->GetSelectedSet();
+        EMotionFX::MotionSet* motionSet = m_plugin->GetSelectedSet();
         if (!motionSet)
         {
             return;
@@ -1084,67 +1118,34 @@ namespace EMStudio
         // Get the row indices from the selected items.
         AZStd::vector<int> rowIndices;
         GetRowIndices(selectedItems, rowIndices);
-        const size_t numRowIndices = rowIndices.size();
-
-        // remove motion from motion window, too?
-        bool removeMotion = false;
-
-        // Construct message box title.
-        AZStd::string msgBoxTitle;
-        if (rowIndices.size() == 1)
-        {
-            msgBoxTitle = "<p align='center'>Also Remove The Selected Motion From Motions Window?</p>";
-        }
-        else
-        {
-            msgBoxTitle = "<p align='center'>Also Remove The Selected Motions From Motions Window?</p>";
-        }
-
-        // ask to remove motions
-        QMessageBox* question = new QMessageBox(this);
-        question->setText(tr(msgBoxTitle.c_str()));
-        question->setWindowTitle("Remove From Workspace?");
-        QAbstractButton* removeInAllButton = question->addButton(tr("Yes (Recommended)"), QMessageBox::YesRole);
-        removeInAllButton->setObjectName("EMFX.MotionSet.RemoveMotionMessageBox.YesButton");
-        QAbstractButton* removeInMotionSetButton = question->addButton(tr("No"), QMessageBox::NoRole);
-        removeInMotionSetButton->setObjectName("EMFX.MotionSet.RemoveMotionMessageBox.NoButton");
-        QAbstractButton* cancelActionButton = question->addButton(tr("Cancel"), QMessageBox::RejectRole);
-        cancelActionButton->setObjectName("EMFX.MotionSet.RemoveMotionMessageBox.CancelButton");
-
-        question->exec();
 
         // Create the failed remove motions array.
         AZStd::vector<EMotionFX::Motion*> failedRemoveMotions;
         failedRemoveMotions.reserve(rowIndices.size());
 
+        AZStd::vector<EMotionFX::MotionSet::MotionEntry*> motionEntriesToRemove;
+        motionEntriesToRemove.reserve(rowIndices.size());
+
         // Iterate over all motions and add them.
         AZStd::string motionIdsToRemoveString;
-        AZStd::vector<AZStd::string> removeMotionCommands;
-        AZStd::string commandString, motionFilename;
-
-        if (question->clickedButton() == removeInAllButton)
+        for (const int rowIndex : rowIndices)
         {
-            removeMotion = true;
-        }
-
-        if (question->clickedButton() == cancelActionButton)
-        {
-            failedRemoveMotions.clear();
-            return;
-        }
-
-        for (uint32 i = 0; i < numRowIndices; ++i)
-        {
-            QTableWidgetItem* idItem = m_tableWidget->item(rowIndices[i], 1);
+            QTableWidgetItem* idItem = m_tableWidget->item(rowIndex, 1);
             EMotionFX::MotionSet::MotionEntry* motionEntry = motionSet->FindMotionEntryById(idItem->text().toUtf8().data());
 
             // Check if the motion exists in multiple motion sets.
-            const AZ::u32 numMotionSets = EMotionFX::GetMotionManager().GetNumMotionSets();
-            AZ::u32 numMotionSetContainsMotion = 0;
+            const size_t numMotionSets = EMotionFX::GetMotionManager().GetNumMotionSets();
+            size_t numMotionSetContainsMotion = 0;
 
-            for (AZ::u32 motionSetId = 0; motionSetId < numMotionSets; motionSetId++)
+            for (size_t motionSetId = 0; motionSetId < numMotionSets; motionSetId++)
             {
                 EMotionFX::MotionSet* motionSet2 = EMotionFX::GetMotionManager().GetMotionSet(motionSetId);
+
+                if (motionSet2->GetIsOwnedByRuntime())
+                {
+                    continue;
+                }
+
                 if (motionSet2->FindMotionEntryById(motionEntry->GetId()))
                 {
                     numMotionSetContainsMotion++;
@@ -1153,12 +1154,6 @@ namespace EMStudio
                         break;
                     }
                 }
-            }
-
-            // If motion exists in multiple motion sets, then it should not be removed from motions window.
-            if (removeMotion && numMotionSetContainsMotion > 1)
-            {
-                continue;
             }
 
             // check the reference counter if only one reference registered
@@ -1177,18 +1172,22 @@ namespace EMStudio
             }
             motionIdsToRemoveString += motionEntry->GetId();
 
+            // If motion exists in multiple motion sets, then it should not be removed from motions window.
+            if (numMotionSetContainsMotion > 1)
+            {
+                continue;
+            }
+
             // Check if the motion is not valid, that means the motion is not loaded.
-            if (removeMotion && motionEntry->GetMotion())
+            if (EMotionFX::Motion* motion = motionEntry->GetMotion())
             {
                 // Calculcate how many motion sets except than the provided one use the given motion.
-                uint32 numExternalUses = CalcNumMotionEntriesUsingMotionExcluding(motionEntry->GetFilename(), motionSet);
+                size_t numExternalUses = CalcNumMotionEntriesUsingMotionExcluding(motionEntry->GetFilename(), motionSet);
 
                 // Remove the motion in case it was only used by the given motion set.
                 if (numExternalUses == 0)
                 {
-                    motionFilename = motionSet->ConstructMotionFilename(motionEntry);
-                    commandString = AZStd::string::format("RemoveMotion -filename \"%s\"", motionFilename.c_str());
-                    removeMotionCommands.emplace_back(commandString);
+                    motionEntriesToRemove.push_back(motionEntry);
                 }
                 else if (numExternalUses > 0)
                 {
@@ -1199,16 +1198,16 @@ namespace EMStudio
 
         // Find the lowest row selected.
         int lowestRowSelected = -1;
-        for (uint32 i = 0; i < numRowIndices; ++i)
+        for (int selectedRowIndex : rowIndices)
         {
-            if (rowIndices[i] < lowestRowSelected)
+            if (selectedRowIndex < lowestRowSelected)
             {
-                lowestRowSelected = rowIndices[i];
+                lowestRowSelected = selectedRowIndex;
             }
         }
 
-
         MCore::CommandGroup commandGroup("Motion set remove motions");
+        AZStd::string commandString;
 
         // 1. Remove motion entries from the motion set.
         commandString = AZStd::string::format("MotionSetRemoveMotion -motionSetID %i -motionIds \"", motionSet->GetID());
@@ -1217,9 +1216,14 @@ namespace EMStudio
         commandGroup.AddCommandString(commandString);
 
         // 2. Then get rid of the actual motions itself.
-        for (const AZStd::string& command : removeMotionCommands)
+        for (EMotionFX::MotionSet::MotionEntry* motionEntry : motionEntriesToRemove)
         {
-            commandGroup.AddCommandString(command);
+            // In case we modified the motion, ask if the user wants to save changes it before removing it.
+            const AZStd::string motionFilename = motionSet->ConstructMotionFilename(motionEntry);
+            SaveDirtyMotionFilesCallback::SaveDirtyMotion(motionEntry->GetMotion(), /*commandGroup=*/nullptr, /*askBeforeSaving=*/true, /*showCancelButton=*/false);
+
+            commandString = AZStd::string::format("RemoveMotion -filename \"%s\"", motionFilename.c_str());
+            commandGroup.AddCommandString(commandString);
         }
 
         AZStd::string result;
@@ -1227,7 +1231,6 @@ namespace EMStudio
         {
             AZ_Error("EMotionFX", false, result.c_str());
         }
-
 
         // selected the next row
         if (lowestRowSelected > (m_tableWidget->rowCount() - 1))
@@ -1254,7 +1257,7 @@ namespace EMStudio
         EMotionFX::MotionSet::MotionEntry* motionEntry = FindMotionEntry(item);
 
         // Show the entry renaming window.
-        RenameMotionEntryWindow window(this, mPlugin->GetSelectedSet(), motionEntry->GetId().c_str());
+        RenameMotionEntryWindow window(this, m_plugin->GetSelectedSet(), motionEntry->GetId().c_str());
         window.exec();
     }
 
@@ -1274,7 +1277,7 @@ namespace EMStudio
 
     void MotionSetWindow::OnUnassignMotions()
     {
-        EMotionFX::MotionSet* motionSet = mPlugin->GetSelectedSet();
+        EMotionFX::MotionSet* motionSet = m_plugin->GetSelectedSet();
         if (!motionSet)
         {
             return;
@@ -1319,10 +1322,9 @@ namespace EMStudio
         QApplication::clipboard()->setText(item->text());
     }
 
-
     void MotionSetWindow::OnClearMotions()
     {
-        EMotionFX::MotionSet* motionSet = mPlugin->GetSelectedSet();
+        EMotionFX::MotionSet* motionSet = m_plugin->GetSelectedSet();
         if (!motionSet)
         {
             return;
@@ -1355,8 +1357,7 @@ namespace EMStudio
         AZStd::vector<EMotionFX::Motion*> failedRemoveMotions;
         failedRemoveMotions.reserve(numMotionEntries);
 
-        // ask to remove motions
-        if (QMessageBox::question(this, "Remove Motions From Project?", "Remove the motions from the project entirely? This would also remove them from the motion list. Pressing no will remove them from the motion set but keep them inside the motion list inside the motions window.", QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes) == QMessageBox::Yes)
+        // Remove motions.
         {
             AZStd::string motionFileName;
             AZStd::string tempString;
@@ -1371,7 +1372,7 @@ namespace EMStudio
                 }
 
                 // Calculcate how many motion sets except than the provided one use the given motion.
-                uint32 numExternalUses = CalcNumMotionEntriesUsingMotionExcluding(motionEntry->GetFilename(), motionSet);
+                size_t numExternalUses = CalcNumMotionEntriesUsingMotionExcluding(motionEntry->GetFilename(), motionSet);
 
                 // Remove the motion in case it was only used by the given motion set.
                 if (numExternalUses == 0)
@@ -1407,24 +1408,20 @@ namespace EMStudio
         // get the current selection
         const QList<QTableWidgetItem*> selectedItems = m_tableWidget->selectedItems();
 
-        // get the number of selected items
-        const uint32 numSelectedItems = selectedItems.count();
-
         // Get the row indices from the selected items.
         AZStd::vector<int> rowIndices;
         GetRowIndices(selectedItems, rowIndices);
 
         // get the selected motion set
-        EMotionFX::MotionSet* motionSet = mPlugin->GetSelectedSet();
+        EMotionFX::MotionSet* motionSet = m_plugin->GetSelectedSet();
 
         // generate the motions IDs array
         AZStd::vector<AZStd::string> motionIDs;
-        const size_t numSelectedRows = rowIndices.size();
-        if (numSelectedRows > 0)
+        if (!rowIndices.empty())
         {
-            for (int i = 0; i < numSelectedRows; ++i)
+            for (const int rowIndex : rowIndices)
             {
-                QTableWidgetItem* item = m_tableWidget->item(rowIndices[i], 1);
+                QTableWidgetItem* item = m_tableWidget->item(rowIndex, 1);
                 motionIDs.push_back(item->text().toUtf8().data());
             }
         }
@@ -1443,10 +1440,40 @@ namespace EMStudio
         motionEditStringIDWindow.exec();
     }
 
+    void MotionSetWindow::OnSave()
+    {
+        const CommandSystem::SelectionList& selectionList = GetCommandManager()->GetCurrentSelection();
+        const size_t numMotions = selectionList.GetNumSelectedMotions();
+        if (numMotions == 0)
+        {
+            return;
+        }
+
+        // Collect motion ids of the motion to be saved.
+        AZStd::vector<AZ::u32> motionIds;
+        motionIds.reserve(numMotions);
+        for (size_t i = 0; i < numMotions; ++i)
+        {
+            const EMotionFX::Motion* motion = selectionList.GetMotion(i);
+            motionIds.push_back(motion->GetID());
+        }
+
+        // Save all selected motions.
+        for (const AZ::u32 motionId : motionIds)
+        {
+            const EMotionFX::Motion* motion = EMotionFX::GetMotionManager().FindMotionByID(motionId);
+            AZ_Assert(motion, "Expected to find the motion pointer for motion with id %d.", motionId);
+            if (motion->GetDirtyFlag())
+            {
+                GetMainWindow()->GetFileManager()->SaveMotion(motionId);
+            }
+        }
+    }
+
 
     void MotionSetWindow::OnEntryDoubleClicked(QTableWidgetItem* item)
     {
-        const EMotionFX::MotionSet* motionSet = mPlugin->GetSelectedSet();
+        const EMotionFX::MotionSet* motionSet = m_plugin->GetSelectedSet();
         if (!motionSet)
         {
             return;
@@ -1556,8 +1583,7 @@ namespace EMStudio
         const QList<QTableWidgetItem*> selectedItems = m_tableWidget->selectedItems();
 
         // get the number of selected items
-        const uint32 numSelectedItems = selectedItems.count();
-        if (numSelectedItems == 0)
+        if (selectedItems.empty())
         {
             return;
         }
@@ -1583,6 +1609,17 @@ namespace EMStudio
             // add the copy selected motion ID action
             QAction* copySelectedMotionIDAction = menu.addAction("Copy Selected Motion ID");
             connect(copySelectedMotionIDAction, &QAction::triggered, this, &MotionSetWindow::OnCopyMotionID);
+
+            QAction* browserAction = menu.addAction(AzQtComponents::fileBrowserActionName());
+            connect(browserAction, &QAction::triggered, this, []()
+                {
+                    const CommandSystem::SelectionList& selection = GetCommandManager()->GetCurrentSelection();
+                    for (size_t i = 0; i < selection.GetNumSelectedMotions(); ++i)
+                    {
+                        EMotionFX::Motion* motion = selection.GetMotion(i);
+                        AzQtComponents::ShowFileOnDesktop(motion->GetFileName());
+                    }
+                });
         }
         else if (rowIndices.size() > 1)
         {
@@ -1590,6 +1627,10 @@ namespace EMStudio
             QAction* unassignMotionAction = menu.addAction("Unassign Motions");
             connect(unassignMotionAction, &QAction::triggered, this, &MotionSetWindow::OnUnassignMotions);
         }
+
+        QAction* saveMotionsAction = menu.addAction("Save Selected Motions");
+        saveMotionsAction->setObjectName("EMFX.MotionSetTableWidget.SaveSelectedMotionsAction");
+        connect(saveMotionsAction, &QAction::triggered, this, &MotionSetWindow::OnSave);
 
         menu.addSeparator();
 
@@ -1608,7 +1649,7 @@ namespace EMStudio
         : QTableWidget(parent)
     {
         // keep the parent plugin
-        mPlugin = parentPlugin;
+        m_plugin = parentPlugin;
 
         // enable drop only
         setAcceptDrops(true);
@@ -1625,7 +1666,7 @@ namespace EMStudio
 
     void MotionSetTableWidget::dropEvent(QDropEvent* event)
     {
-        mPlugin->GetMotionSetWindow()->dropEvent(event);
+        m_plugin->GetMotionSetWindow()->dropEvent(event);
     }
 
 
@@ -1644,7 +1685,7 @@ namespace EMStudio
     // return the mime data
     QMimeData* MotionSetTableWidget::mimeData(const QList<QTableWidgetItem*> items) const
     {
-        EMotionFX::MotionSet* motionSet = mPlugin->GetSelectedSet();
+        EMotionFX::MotionSet* motionSet = m_plugin->GetSelectedSet();
         if (motionSet == nullptr)
         {
             return nullptr;
@@ -1687,13 +1728,13 @@ namespace EMStudio
         : QDialog(parent)
     {
         // save the motion set and the motion IDs
-        mMotionSet = motionSet;
-        mMotionIDs = motionIDs;
+        m_motionSet = motionSet;
+        m_motionIDs = motionIDs;
 
         // Reserve space.
-        mValids.reserve(mMotionIDs.size());
-        mMotionToModifiedMap.reserve(mMotionIDs.size());
-        mModifiedMotionIDs.reserve(motionSet->GetNumMotionEntries());
+        m_valids.reserve(m_motionIDs.size());
+        m_motionToModifiedMap.reserve(m_motionIDs.size());
+        m_modifiedMotionIDs.reserve(motionSet->GetNumMotionEntries());
 
         // set the window title
         setWindowTitle("Batch Edit Motion IDs");
@@ -1706,113 +1747,113 @@ namespace EMStudio
         spacerWidget->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed);
 
         // create the combobox
-        mComboBox = new QComboBox();
-        mComboBox->addItem("Replace All");
-        mComboBox->addItem("Replace First");
-        mComboBox->addItem("Replace Last");
+        m_comboBox = new QComboBox();
+        m_comboBox->addItem("Replace All");
+        m_comboBox->addItem("Replace First");
+        m_comboBox->addItem("Replace Last");
 
         // connect the combobox
-        connect(mComboBox, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &MotionEditStringIDWindow::CurrentIndexChanged);
+        connect(m_comboBox, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &MotionEditStringIDWindow::CurrentIndexChanged);
 
         // create the string line edits
-        mStringALineEdit = new QLineEdit();
-        mStringBLineEdit = new QLineEdit();
+        m_stringALineEdit = new QLineEdit();
+        m_stringBLineEdit = new QLineEdit();
 
         // connect the line edit
-        connect(mStringALineEdit, &QLineEdit::textChanged, this, &MotionEditStringIDWindow::StringABChanged);
-        connect(mStringBLineEdit, &QLineEdit::textChanged, this, &MotionEditStringIDWindow::StringABChanged);
+        connect(m_stringALineEdit, &QLineEdit::textChanged, this, &MotionEditStringIDWindow::StringABChanged);
+        connect(m_stringBLineEdit, &QLineEdit::textChanged, this, &MotionEditStringIDWindow::StringABChanged);
 
         // add the operation layout
         QHBoxLayout* operationLayout = new QHBoxLayout();
         operationLayout->addWidget(new QLabel("Operation:"));
-        operationLayout->addWidget(mComboBox);
+        operationLayout->addWidget(m_comboBox);
         operationLayout->addWidget(spacerWidget);
         operationLayout->addWidget(new QLabel("StringA:"));
-        operationLayout->addWidget(mStringALineEdit);
+        operationLayout->addWidget(m_stringALineEdit);
         operationLayout->addWidget(new QLabel("StringB:"));
-        operationLayout->addWidget(mStringBLineEdit);
+        operationLayout->addWidget(m_stringBLineEdit);
         layout->addLayout(operationLayout);
 
         // create the table widget
-        mTableWidget = new QTableWidget();
-        mTableWidget->setAlternatingRowColors(true);
-        mTableWidget->setGridStyle(Qt::SolidLine);
-        mTableWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
-        mTableWidget->setSelectionMode(QAbstractItemView::SingleSelection);
-        mTableWidget->setEditTriggers(QAbstractItemView::NoEditTriggers);
+        m_tableWidget = new QTableWidget();
+        m_tableWidget->setAlternatingRowColors(true);
+        m_tableWidget->setGridStyle(Qt::SolidLine);
+        m_tableWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
+        m_tableWidget->setSelectionMode(QAbstractItemView::SingleSelection);
+        m_tableWidget->setEditTriggers(QAbstractItemView::NoEditTriggers);
 
         // set the table widget columns
-        mTableWidget->setColumnCount(2);
+        m_tableWidget->setColumnCount(2);
         QStringList headerLabels;
         headerLabels.append("Before");
         headerLabels.append("After");
-        mTableWidget->setHorizontalHeaderLabels(headerLabels);
-        mTableWidget->horizontalHeader()->setStretchLastSection(true);
-        mTableWidget->horizontalHeader()->setDefaultAlignment(Qt::AlignLeft);
-        mTableWidget->horizontalHeader()->setSortIndicator(0, Qt::AscendingOrder);
+        m_tableWidget->setHorizontalHeaderLabels(headerLabels);
+        m_tableWidget->horizontalHeader()->setStretchLastSection(true);
+        m_tableWidget->horizontalHeader()->setDefaultAlignment(Qt::AlignLeft);
+        m_tableWidget->horizontalHeader()->setSortIndicator(0, Qt::AscendingOrder);
 
         // Set the row count
-        const size_t numMotionIDs = mMotionIDs.size();
-        mTableWidget->setRowCount(static_cast<int>(numMotionIDs));
+        const size_t numMotionIDs = m_motionIDs.size();
+        m_tableWidget->setRowCount(static_cast<int>(numMotionIDs));
 
         // disable the sorting
-        mTableWidget->setSortingEnabled(false);
+        m_tableWidget->setSortingEnabled(false);
 
         // initialize the table
         for (size_t i = 0; i < numMotionIDs; ++i)
         {
             // create the before and after table widget items
-            QTableWidgetItem* beforeTableWidgetItem = new QTableWidgetItem(mMotionIDs[i].c_str());
-            QTableWidgetItem* afterTableWidgetItem = new QTableWidgetItem(mMotionIDs[i].c_str());
+            QTableWidgetItem* beforeTableWidgetItem = new QTableWidgetItem(m_motionIDs[i].c_str());
+            QTableWidgetItem* afterTableWidgetItem = new QTableWidgetItem(m_motionIDs[i].c_str());
 
             // set the text of the row
             const int row = static_cast<int>(i);
-            mTableWidget->setItem(row, 0, beforeTableWidgetItem);
-            mTableWidget->setItem(row, 1, afterTableWidgetItem);
+            m_tableWidget->setItem(row, 0, beforeTableWidgetItem);
+            m_tableWidget->setItem(row, 1, afterTableWidgetItem);
         }
 
-        mTableWidget->setSortingEnabled(true);
-        mTableWidget->resizeColumnToContents(0);
-        mTableWidget->setCornerButtonEnabled(false);
+        m_tableWidget->setSortingEnabled(true);
+        m_tableWidget->resizeColumnToContents(0);
+        m_tableWidget->setCornerButtonEnabled(false);
 
-        layout->addWidget(mTableWidget);
+        layout->addWidget(m_tableWidget);
 
         // create the num motion IDs label
         // this label never change, it's the total of motion ID in the table
-        mNumMotionIDsLabel = new QLabel();
-        mNumMotionIDsLabel->setAlignment(Qt::AlignLeft);
-        mNumMotionIDsLabel->setText(QString("Number of motion IDs: %1").arg(numMotionIDs));
+        m_numMotionIDsLabel = new QLabel();
+        m_numMotionIDsLabel->setAlignment(Qt::AlignLeft);
+        m_numMotionIDsLabel->setText(QString("Number of motion IDs: %1").arg(numMotionIDs));
 
         // create the num modified IDs label
-        mNumModifiedIDsLabel = new QLabel();
-        mNumModifiedIDsLabel->setAlignment(Qt::AlignCenter);
-        mNumModifiedIDsLabel->setText("Number of modified IDs: 0");
+        m_numModifiedIDsLabel = new QLabel();
+        m_numModifiedIDsLabel->setAlignment(Qt::AlignCenter);
+        m_numModifiedIDsLabel->setText("Number of modified IDs: 0");
 
         // create the num duplicate IDs label
-        mNumDuplicateIDsLabel = new QLabel();
-        mNumDuplicateIDsLabel->setAlignment(Qt::AlignRight);
-        mNumDuplicateIDsLabel->setText("Number of duplicate IDs: 0");
+        m_numDuplicateIDsLabel = new QLabel();
+        m_numDuplicateIDsLabel->setAlignment(Qt::AlignRight);
+        m_numDuplicateIDsLabel->setText("Number of duplicate IDs: 0");
 
         // add the stats layout
         QHBoxLayout* statsLayout = new QHBoxLayout();
-        statsLayout->addWidget(mNumMotionIDsLabel);
-        statsLayout->addWidget(mNumModifiedIDsLabel);
-        statsLayout->addWidget(mNumDuplicateIDsLabel);
+        statsLayout->addWidget(m_numMotionIDsLabel);
+        statsLayout->addWidget(m_numModifiedIDsLabel);
+        statsLayout->addWidget(m_numDuplicateIDsLabel);
         layout->addLayout(statsLayout);
 
         // add the bottom buttons
         QHBoxLayout* buttonLayout   = new QHBoxLayout();
-        mApplyButton                = new QPushButton("Apply");
+        m_applyButton                = new QPushButton("Apply");
         QPushButton* closeButton    = new QPushButton("Close");
-        buttonLayout->addWidget(mApplyButton);
+        buttonLayout->addWidget(m_applyButton);
         buttonLayout->addWidget(closeButton);
         layout->addLayout(buttonLayout);
 
         // apply button is disabled because nothing is changed
-        mApplyButton->setEnabled(false);
+        m_applyButton->setEnabled(false);
 
         // connect the buttons
-        connect(mApplyButton, &QPushButton::clicked, this, &MotionEditStringIDWindow::Accepted);
+        connect(m_applyButton, &QPushButton::clicked, this, &MotionEditStringIDWindow::Accepted);
         connect(closeButton, &QPushButton::clicked, this, &MotionEditStringIDWindow::reject);
 
         setLayout(layout);
@@ -1828,14 +1869,13 @@ namespace EMStudio
 
         // add each command
         AZStd::string commandString;
-        const size_t numValid = mValids.size();
-        for (size_t i = 0; i < numValid; ++i)
+        for (size_t validID : m_valids)
         {
             // get the motion ID and the modified ID
-            AZStd::string& motionID = mMotionIDs[mValids[i]];
-            const AZStd::string& modifiedID = mModifiedMotionIDs[mMotionToModifiedMap[mValids[i]]];
+            AZStd::string& motionID = m_motionIDs[validID];
+            const AZStd::string& modifiedID = m_modifiedMotionIDs[m_motionToModifiedMap[validID]];
 
-            commandString = AZStd::string::format("MotionSetAdjustMotion -motionSetID %i -idString \"%s\" -newIDString \"%s\" -updateMotionNodeStringIDs true", mMotionSet->GetID(), motionID.c_str(), modifiedID.c_str());
+            commandString = AZStd::string::format("MotionSetAdjustMotion -motionSetID %i -idString \"%s\" -newIDString \"%s\" -updateMotionNodeStringIDs true", m_motionSet->GetID(), motionID.c_str(), modifiedID.c_str());
             motionID = modifiedID;
 
             // add the command in the group
@@ -1850,46 +1890,46 @@ namespace EMStudio
         }
 
         // block signals for the reset
-        mStringALineEdit->blockSignals(true);
-        mStringBLineEdit->blockSignals(true);
+        m_stringALineEdit->blockSignals(true);
+        m_stringBLineEdit->blockSignals(true);
 
         // reset the string line edits
-        mStringALineEdit->setText("");
-        mStringBLineEdit->setText("");
+        m_stringALineEdit->setText("");
+        m_stringBLineEdit->setText("");
 
         // enable signals after the reset
-        mStringALineEdit->blockSignals(false);
-        mStringBLineEdit->blockSignals(false);
+        m_stringALineEdit->blockSignals(false);
+        m_stringBLineEdit->blockSignals(false);
 
         // disable the sorting
-        mTableWidget->setSortingEnabled(false);
+        m_tableWidget->setSortingEnabled(false);
 
         // set the new table using modified motion IDs
-        const size_t numMotionIDs = mMotionIDs.size();
+        const size_t numMotionIDs = m_motionIDs.size();
         for (size_t i = 0; i < numMotionIDs; ++i)
         {
             // create the before and after table widget items
-            QTableWidgetItem* beforeTableWidgetItem = new QTableWidgetItem(mMotionIDs[i].c_str());
-            QTableWidgetItem* afterTableWidgetItem = new QTableWidgetItem(mMotionIDs[i].c_str());
+            QTableWidgetItem* beforeTableWidgetItem = new QTableWidgetItem(m_motionIDs[i].c_str());
+            QTableWidgetItem* afterTableWidgetItem = new QTableWidgetItem(m_motionIDs[i].c_str());
 
             // set the text of the row
             const int row = static_cast<int>(i);
-            mTableWidget->setItem(row, 0, beforeTableWidgetItem);
-            mTableWidget->setItem(row, 1, afterTableWidgetItem);
+            m_tableWidget->setItem(row, 0, beforeTableWidgetItem);
+            m_tableWidget->setItem(row, 1, afterTableWidgetItem);
         }
 
         // enable the sorting
-        mTableWidget->setSortingEnabled(true);
+        m_tableWidget->setSortingEnabled(true);
 
         // resize before column
-        mTableWidget->resizeColumnToContents(0);
+        m_tableWidget->resizeColumnToContents(0);
 
         // reset the stats
-        mNumModifiedIDsLabel->setText("Number of modified IDs: 0");
-        mNumDuplicateIDsLabel->setText("Number of duplicate IDs: 0");
+        m_numModifiedIDsLabel->setText("Number of modified IDs: 0");
+        m_numDuplicateIDsLabel->setText("Number of duplicate IDs: 0");
 
         // apply button is disabled because nothing is changed
-        mApplyButton->setEnabled(false);
+        m_applyButton->setEnabled(false);
     }
 
 
@@ -1910,10 +1950,10 @@ namespace EMStudio
     void MotionEditStringIDWindow::UpdateTableAndButton()
     {
         // get the number of motion IDs
-        const size_t numMotionIDs = mMotionIDs.size();
+        const size_t numMotionIDs = m_motionIDs.size();
 
         // Remember the selected motion IDs so we can restore selection after swapping the table items.
-        const QList<QTableWidgetItem*> selectedItems = mTableWidget->selectedItems();
+        const QList<QTableWidgetItem*> selectedItems = m_tableWidget->selectedItems();
         const int numSelectedItems = selectedItems.size();
         QVector<QString> selectedMotionIds(numSelectedItems);
         for (int i = 0; i < numSelectedItems; ++i)
@@ -1922,117 +1962,117 @@ namespace EMStudio
         }
 
         // special case where the string A and B are empty, nothing is replaced
-        if ((mStringALineEdit->text().isEmpty()) && (mStringBLineEdit->text().isEmpty()))
+        if ((m_stringALineEdit->text().isEmpty()) && (m_stringBLineEdit->text().isEmpty()))
         {
             // disable the sorting
-            mTableWidget->setSortingEnabled(false);
+            m_tableWidget->setSortingEnabled(false);
 
             // reset the table
             for (size_t i = 0; i < numMotionIDs; ++i)
             {
                 // create the before and after table widget items
-                QTableWidgetItem* beforeTableWidgetItem = new QTableWidgetItem(mMotionIDs[i].c_str());
-                QTableWidgetItem* afterTableWidgetItem = new QTableWidgetItem(mMotionIDs[i].c_str());
+                QTableWidgetItem* beforeTableWidgetItem = new QTableWidgetItem(m_motionIDs[i].c_str());
+                QTableWidgetItem* afterTableWidgetItem = new QTableWidgetItem(m_motionIDs[i].c_str());
 
                 // set the text of the row
                 const int row = static_cast<int>(i);
-                mTableWidget->setItem(row, 0, beforeTableWidgetItem);
-                mTableWidget->setItem(row, 1, afterTableWidgetItem);
+                m_tableWidget->setItem(row, 0, beforeTableWidgetItem);
+                m_tableWidget->setItem(row, 1, afterTableWidgetItem);
             }
 
             // enable the sorting
-            mTableWidget->setSortingEnabled(true);
+            m_tableWidget->setSortingEnabled(true);
 
             // reset the stats
-            mNumModifiedIDsLabel->setText("Number of modified IDs: 0");
-            mNumDuplicateIDsLabel->setText("Number of duplicate IDs: 0");
+            m_numModifiedIDsLabel->setText("Number of modified IDs: 0");
+            m_numDuplicateIDsLabel->setText("Number of duplicate IDs: 0");
 
             // apply button is disabled because nothing is changed
-            mApplyButton->setEnabled(false);
+            m_applyButton->setEnabled(false);
 
             // stop here
             return;
         }
 
-        // found flags
-        uint32 numDuplicateFound = 0;
-
         // Clear the arrays but keep the memory to avoid alloc.
-        mValids.clear();
-        mModifiedMotionIDs.clear();
-        mMotionToModifiedMap.clear();
+        m_valids.clear();
+        m_modifiedMotionIDs.clear();
+        m_motionToModifiedMap.clear();
 
         // Copy all motion IDs from the motion set in the modified array.
-        const EMotionFX::MotionSet::MotionEntries& motionEntries = mMotionSet->GetMotionEntries();
+        const EMotionFX::MotionSet::MotionEntries& motionEntries = m_motionSet->GetMotionEntries();
         for (const auto& item : motionEntries)
         {
             const EMotionFX::MotionSet::MotionEntry* motionEntry = item.second;
 
-            mModifiedMotionIDs.push_back(motionEntry->GetId().c_str());
+            m_modifiedMotionIDs.push_back(motionEntry->GetId().c_str());
         }
 
         // Modify each ID using the operation in the modified array.
         AZStd::string newMotionID;
         AZStd::string tempString;
-        for (uint32 i = 0; i < numMotionIDs; ++i)
+        for (const AZStd::string& motionID : m_motionIDs)
         {
             // 0=Replace All, 1=Replace First, 2=Replace Last
-            const int operationMode = mComboBox->currentIndex();
+            const int operationMode = m_comboBox->currentIndex();
 
             // compute the new text
             switch (operationMode)
             {
                 case 0:
                 {
-                    tempString = mMotionIDs[i].c_str();
-                    AzFramework::StringFunc::Replace(tempString, mStringALineEdit->text().toUtf8().data(), mStringBLineEdit->text().toUtf8().data(), true /* case sensitive */);
+                    tempString = motionID.c_str();
+                    AzFramework::StringFunc::Replace(tempString, m_stringALineEdit->text().toUtf8().data(), m_stringBLineEdit->text().toUtf8().data(), true /* case sensitive */);
                     newMotionID = tempString.c_str();
                     break;
                 }
 
                 case 1:
                 {
-                    tempString = mMotionIDs[i].c_str();
-                    AzFramework::StringFunc::Replace(tempString, mStringALineEdit->text().toUtf8().data(), mStringBLineEdit->text().toUtf8().data(), true /* case sensitive */, true /* replace first */, false /* replace last */);
+                    tempString = motionID.c_str();
+                    AzFramework::StringFunc::Replace(tempString, m_stringALineEdit->text().toUtf8().data(), m_stringBLineEdit->text().toUtf8().data(), true /* case sensitive */, true /* replace first */, false /* replace last */);
                     newMotionID = tempString.c_str();
                     break;
                 }
 
                 case 2:
                 {
-                    tempString = mMotionIDs[i].c_str();
-                    AzFramework::StringFunc::Replace(tempString, mStringALineEdit->text().toUtf8().data(), mStringBLineEdit->text().toUtf8().data(), true /* case sensitive */, false /* replace first */, true /* replace last */);
+                    tempString = motionID.c_str();
+                    AzFramework::StringFunc::Replace(tempString, m_stringALineEdit->text().toUtf8().data(), m_stringBLineEdit->text().toUtf8().data(), true /* case sensitive */, false /* replace first */, true /* replace last */);
                     newMotionID = tempString.c_str();
                     break;
                 }
             }
 
             // change the value in the array and add the mapping motion to modified
-            auto iterator = AZStd::find(mModifiedMotionIDs.begin(), mModifiedMotionIDs.end(), mMotionIDs[i]);
-            const size_t modifiedIndex = iterator - mModifiedMotionIDs.begin();
-            mModifiedMotionIDs[modifiedIndex] = newMotionID;
-            mMotionToModifiedMap.push_back(static_cast<uint32>(modifiedIndex));
+            auto iterator = AZStd::find(m_modifiedMotionIDs.begin(), m_modifiedMotionIDs.end(), motionID);
+            const size_t modifiedIndex = iterator - m_modifiedMotionIDs.begin();
+            m_modifiedMotionIDs[modifiedIndex] = newMotionID;
+            m_motionToModifiedMap.push_back(modifiedIndex);
         }
 
         // disable the sorting
-        mTableWidget->setSortingEnabled(false);
+        m_tableWidget->setSortingEnabled(false);
+
+        // found flags
+        size_t numDuplicateFound = 0;
 
         // update each row
-        for (uint32 i = 0; i < numMotionIDs; ++i)
+        for (size_t i = 0; i < numMotionIDs; ++i)
         {
             // find the index in the motion set
-            const AZStd::string& modifiedID = mModifiedMotionIDs[mMotionToModifiedMap[i]];
+            const AZStd::string& modifiedID = m_modifiedMotionIDs[m_motionToModifiedMap[i]];
 
             // create the before and after table widget items
-            QTableWidgetItem* beforeTableWidgetItem = new QTableWidgetItem(mMotionIDs[i].c_str());
+            QTableWidgetItem* beforeTableWidgetItem = new QTableWidgetItem(m_motionIDs[i].c_str());
             QTableWidgetItem* afterTableWidgetItem = new QTableWidgetItem(modifiedID.c_str());
 
             // find duplicate
-            uint32 itemFoundCounter = 0;
-            const AZ::u32 numMotionEntries = static_cast<AZ::u32>(mMotionSet->GetNumMotionEntries());
-            for (uint32 k = 0; k < numMotionEntries; ++k)
+            size_t itemFoundCounter = 0;
+            const size_t numMotionEntries = m_motionSet->GetNumMotionEntries();
+            for (size_t k = 0; k < numMotionEntries; ++k)
             {
-                if (mModifiedMotionIDs[k] == modifiedID)
+                if (m_modifiedMotionIDs[k] == modifiedID)
                 {
                     ++itemFoundCounter;
                     if (itemFoundCounter > 1)
@@ -2051,55 +2091,69 @@ namespace EMStudio
             }
             else
             {
-                if (modifiedID != mMotionIDs[i])
+                if (modifiedID != m_motionIDs[i])
                 {
                     // set the row green
                     beforeTableWidgetItem->setForeground(Qt::green);
                     afterTableWidgetItem->setForeground(Qt::green);
 
                     // add a valid
-                    mValids.push_back(i);
+                    m_valids.push_back(i);
                 }
             }
 
             // set the text of the row
-            mTableWidget->setItem(i, 0, beforeTableWidgetItem);
-            mTableWidget->setItem(i, 1, afterTableWidgetItem);
+            m_tableWidget->setItem(aznumeric_caster(i), 0, beforeTableWidgetItem);
+            m_tableWidget->setItem(aznumeric_caster(i), 1, afterTableWidgetItem);
         }
 
         // enable the sorting
-        mTableWidget->setSortingEnabled(true);
+        m_tableWidget->setSortingEnabled(true);
 
         // update the num modified label
-        mNumModifiedIDsLabel->setText(QString("Number of modified IDs: %1").arg(mValids.size()));
+        m_numModifiedIDsLabel->setText(QString("Number of modified IDs: %1").arg(m_valids.size()));
 
         // update the num duplicate label
         // the number is in red if at least one found
         if (numDuplicateFound > 0)
         {
-            mNumDuplicateIDsLabel->setText(QString("Number of duplicate IDs: <font color='red'>%1</font>").arg(numDuplicateFound));
+            m_numDuplicateIDsLabel->setText(QString("Number of duplicate IDs: <font color='red'>%1</font>").arg(numDuplicateFound));
         }
         else
         {
-            mNumDuplicateIDsLabel->setText("Number of duplicate IDs: 0");
+            m_numDuplicateIDsLabel->setText("Number of duplicate IDs: 0");
         }
 
         // enable or disable the apply button
-        mApplyButton->setEnabled((mValids.size() > 0) && (numDuplicateFound == 0));
+        m_applyButton->setEnabled((!m_valids.empty()) && (numDuplicateFound == 0));
 
         // Reselect the remembered motions.
-        mTableWidget->clearSelection();
-        const int rowCount = mTableWidget->rowCount();
+        m_tableWidget->clearSelection();
+        const int rowCount = m_tableWidget->rowCount();
         for (int i = 0; i < rowCount; ++i)
         {
-            const QTableWidgetItem* item = mTableWidget->item(i, 0);
+            const QTableWidgetItem* item = m_tableWidget->item(i, 0);
             if (AZStd::find(selectedMotionIds.begin(), selectedMotionIds.end(), item->text()) != selectedMotionIds.end())
             {
-                mTableWidget->selectRow(i);
+                m_tableWidget->selectRow(i);
             }
         }
     }
 
+    void MotionSetWindow::Select(EMotionFX::MotionSet::MotionEntry* motionEntry)
+    {
+        m_tableWidget->clearSelection();
+
+        const int rowCount = m_tableWidget->rowCount();
+        for (int i = 0; i < rowCount; ++i)
+        {
+            const QTableWidgetItem* item = m_tableWidget->item(i, 1);
+            if (item->text() == motionEntry->GetId().c_str())
+            {
+                m_tableWidget->selectRow(i);
+            }
+        }
+    }
 
     EMotionFX::MotionSet::MotionEntry* MotionSetWindow::FindMotionEntry(QTableWidgetItem* item) const
     {
@@ -2108,7 +2162,7 @@ namespace EMStudio
             return nullptr;
         }
 
-        const EMotionFX::MotionSet* motionSet = mPlugin->GetSelectedSet();
+        const EMotionFX::MotionSet* motionSet = m_plugin->GetSelectedSet();
         if (!motionSet)
         {
             return nullptr;
@@ -2124,15 +2178,53 @@ namespace EMStudio
         return motionEntry;
     }
 
+    EMotionFX::MotionSet::MotionEntry* MotionSetWindow::FindMotionEntryByMotionId(AZ::u32 motionId) const
+    {
+        const EMotionFX::MotionSet* motionSet = m_plugin->GetSelectedSet();
+        if (!motionSet)
+        {
+            return nullptr;
+        }
+
+        const EMotionFX::MotionSet::MotionEntries& motionEntries = motionSet->GetMotionEntries();
+        for (const auto& pair : motionEntries)
+        {
+            EMotionFX::MotionSet::MotionEntry* entry = pair.second;
+            const EMotionFX::Motion* motion = entry->GetMotion();
+            if (motion &&
+                motionId == motion->GetID())
+            {
+                return entry;
+            }
+        }
+
+        return nullptr;
+    }
+
+    QTableWidgetItem* MotionSetWindow::FindTableWidgetItemByEntry(EMotionFX::MotionSet::MotionEntry* motionEntry) const
+    {
+        const AZStd::string& motionEntryId = motionEntry->GetId();
+        const int rowCount = m_tableWidget->rowCount();
+        for (int i = 0; i < rowCount; ++i)
+        {
+            QTableWidgetItem* item = m_tableWidget->item(i, 1);
+            if (item->text() == motionEntryId.c_str())
+            {
+                return item;
+            }
+        }
+
+        return nullptr;
+    }
 
     void MotionSetWindow::GetRowIndices(const QList<QTableWidgetItem*>& items, AZStd::vector<int>& outRowIndices)
     {
         const int numItems = items.size();
         outRowIndices.reserve(numItems);
 
-        for (int i = 0; i < numItems; ++i)
+        for (const QTableWidgetItem* item : items)
         {
-            const int rowIndex = items[i]->row();
+            const int rowIndex = item->row();
             if (AZStd::find(outRowIndices.begin(), outRowIndices.end(), rowIndex) == outRowIndices.end())
             {
                 outRowIndices.push_back(rowIndex);
@@ -2141,7 +2233,7 @@ namespace EMStudio
     }
 
 
-    uint32 MotionSetWindow::CalcNumMotionEntriesUsingMotionExcluding(const AZStd::string& motionFilename, EMotionFX::MotionSet* excludedMotionSet)
+    size_t MotionSetWindow::CalcNumMotionEntriesUsingMotionExcluding(const AZStd::string& motionFilename, EMotionFX::MotionSet* excludedMotionSet)
     {
         if (motionFilename.empty())
         {
@@ -2149,9 +2241,9 @@ namespace EMStudio
         }
 
         // Iterate through all available motion sets and count how many entries are refering to the given motion file.
-        AZ::u32 counter = 0;
-        const uint32 numMotionSets = EMotionFX::GetMotionManager().GetNumMotionSets();
-        for (uint32 i = 0; i < numMotionSets; ++i)
+        size_t counter = 0;
+        const size_t numMotionSets = EMotionFX::GetMotionManager().GetNumMotionSets();
+        for (size_t i = 0; i < numMotionSets; ++i)
         {
             EMotionFX::MotionSet* motionSet = EMotionFX::GetMotionManager().GetMotionSet(i);
             if (motionSet->GetIsOwnedByRuntime())
@@ -2178,5 +2270,3 @@ namespace EMStudio
         return counter;
     }
 } // namespace EMStudio
-
-#include <EMotionFX/Tools/EMotionStudio/Plugins/StandardPlugins/Source/MotionSetsWindow/moc_MotionSetWindow.cpp>

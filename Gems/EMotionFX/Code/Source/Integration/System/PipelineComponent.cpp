@@ -21,14 +21,14 @@ namespace EMotionFX
         AZ::EnvironmentVariable<EMotionFXAllocatorInitializer> PipelineComponent::s_eMotionFXAllocatorInitializer = nullptr;
 
         PipelineComponent::PipelineComponent()
-            : m_EMotionFXInited(false)
+            : m_eMotionFxInited(false)
         {
 
         }
 
         void PipelineComponent::Activate()
         {
-            if (!m_EMotionFXInited)
+            if (!m_eMotionFxInited)
             {
                 // Start EMotionFX allocator or increase the reference counting
                 s_eMotionFXAllocatorInitializer = AZ::Environment::CreateVariable<EMotionFXAllocatorInitializer>(EMotionFXAllocatorInitializer::EMotionFXAllocatorInitializerTag);
@@ -42,7 +42,7 @@ namespace EMotionFX
 
                 // Initialize EMotion FX runtime.
                 EMotionFX::Initializer::InitSettings emfxSettings;
-                emfxSettings.mUnitType = MCore::Distance::UNITTYPE_METERS;
+                emfxSettings.m_unitType = MCore::Distance::UNITTYPE_METERS;
 
                 if (!EMotionFX::Initializer::Init(&emfxSettings))
                 {
@@ -52,15 +52,15 @@ namespace EMotionFX
 
                 // Initialize the EMotionFX command system.
                 m_commandManager = AZStd::make_unique<CommandSystem::CommandManager>();
-                m_EMotionFXInited = true;
+                m_eMotionFxInited = true;
             }
         }
 
         void PipelineComponent::Deactivate()
         {
-            if (m_EMotionFXInited)
+            if (m_eMotionFxInited)
             {
-                m_EMotionFXInited = false;
+                m_eMotionFxInited = false;
                 m_commandManager.reset();
                 EMotionFX::Initializer::Shutdown();
                 MCore::Initializer::Shutdown();

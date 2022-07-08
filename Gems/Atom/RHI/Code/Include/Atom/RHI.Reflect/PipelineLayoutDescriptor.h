@@ -10,7 +10,7 @@
 #include <Atom/RHI.Reflect/ShaderResourceGroupLayout.h>
 #include <Atom/RHI.Reflect/ConstantsLayout.h>
 
-#include <AtomCore/std/containers/array_view.h>
+#include <AzCore/std/containers/span.h>
 
 #include <AzCore/Name/Name.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -22,7 +22,6 @@ namespace AZ
 {
     namespace RHI
     {
-        AZ_ASSERT_NO_ALIGNMENT_PADDING_BEGIN
         struct ResourceBindingInfo
         {
             AZ_TYPE_INFO(ResourceBindingInfo, "{2B25FA97-21C2-4567-8F01-6A64F7B9DFF6}");
@@ -45,7 +44,6 @@ namespace AZ
             /// Register id of a resource.
             Register                m_registerId = InvalidRegister;
         };
-        AZ_ASSERT_NO_ALIGNMENT_PADDING_END
 
         /**
          * This class describes binding information about the Shader Resource Group

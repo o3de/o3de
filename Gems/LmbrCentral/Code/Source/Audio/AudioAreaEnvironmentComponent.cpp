@@ -8,6 +8,7 @@
 
 #include "AudioAreaEnvironmentComponent.h"
 
+#include <AzCore/Interface/Interface.h>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Math/MathUtils.h>
 #include <AzCore/Math/Transform.h>
@@ -59,7 +60,10 @@ namespace LmbrCentral
         m_environmentId = INVALID_AUDIO_ENVIRONMENT_ID;
         if (!m_environmentName.empty())
         {
-            Audio::AudioSystemRequestBus::BroadcastResult(m_environmentId, &Audio::AudioSystemRequestBus::Events::GetAudioEnvironmentID, m_environmentName.c_str());
+            if (auto audioSystem = AZ::Interface<Audio::IAudioSystem>::Get(); audioSystem != nullptr)
+            {
+                m_environmentId = audioSystem->GetAudioEnvironmentID(m_environmentName.c_str());
+            }
         }
 
         if (m_broadPhaseTriggerArea.IsValid())

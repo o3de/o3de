@@ -84,9 +84,12 @@ namespace PhysX
 
         AZStd::shared_ptr<Physics::ShapeConfiguration> CloneCurrent() const;
 
+    private:
         bool ShowingSubdivisionLevel() const;
-
+        AZ::u32 OnShapeTypeChanged();
         AZ::u32 OnConfigurationChanged();
+
+        Physics::ShapeType m_lastShapeType = Physics::ShapeType::PhysicsAsset;
     };
 
     class EditorColliderComponentDescriptor;
@@ -97,12 +100,13 @@ namespace PhysX
         , protected DebugDraw::DisplayCallback
         , protected AzToolsFramework::EntitySelectionEvents::Bus::Handler
         , private AzToolsFramework::BoxManipulatorRequestBus::Handler
-        , private AZ::Data::AssetBus::MultiHandler
+        , private AZ::Data::AssetBus::Handler
         , private PhysX::MeshColliderComponentRequestsBus::Handler
         , private AZ::TransformNotificationBus::Handler
         , private PhysX::ColliderShapeRequestBus::Handler
         , private AZ::Render::MeshComponentNotificationBus::Handler
         , private PhysX::EditorColliderComponentRequestBus::Handler
+        , private PhysX::EditorColliderValidationRequestBus::Handler
         , private AzPhysics::SimulatedBodyComponentRequestsBus::Handler
     {
     public:
@@ -140,8 +144,10 @@ namespace PhysX
         void OnSelected() override;
         void OnDeselected() override;
 
-        // DisplayCallback
-        void Display(AzFramework::DebugDisplayRequests& debugDisplay) const;
+        // DisplayCallback overrides...
+        void Display(const AzFramework::ViewportInfo& viewportInfo,
+            AzFramework::DebugDisplayRequests& debugDisplay) const override;
+
         void DisplayMeshCollider(AzFramework::DebugDisplayRequests& debugDisplay) const;
         void DisplayUnscaledPrimitiveCollider(AzFramework::DebugDisplayRequests& debugDisplay) const;
         void DisplayScaledPrimitiveCollider(AzFramework::DebugDisplayRequests& debugDisplay) const;
@@ -152,9 +158,7 @@ namespace PhysX
 
         // PhysXMeshColliderComponentRequestBus
         AZ::Data::Asset<Pipeline::MeshAsset> GetMeshAsset() const override;
-        Physics::MaterialId GetMaterialId() const override;
         void SetMeshAsset(const AZ::Data::AssetId& id) override;
-        void SetMaterialId(const Physics::MaterialId& id) override;
         void UpdateMaterialSlotsFromMeshAsset();
 
         // TransformBus
@@ -167,6 +171,7 @@ namespace PhysX
         AZ::Vector3 GetDimensions() override;
         void SetDimensions(const AZ::Vector3& dimensions) override;
         AZ::Transform GetCurrentTransform() override;
+        AZ::Transform GetCurrentLocalTransform() override;
         AZ::Vector3 GetBoxScale() override;
 
         // AZ::Render::MeshComponentNotificationBus
@@ -194,6 +199,9 @@ namespace PhysX
         void SetAssetScale(const AZ::Vector3& scale) override;
         AZ::Vector3 GetAssetScale() override;
 
+        // PhysX::EditorColliderValidationRequestBus overrides ...
+        void ValidateRigidBodyMeshGeometryType() override;
+
         AZ::Transform GetColliderLocalTransform() const;
 
         EditorProxyShapeConfig m_shapeConfiguration;
@@ -220,8 +228,6 @@ namespace PhysX
 
         void BuildDebugDrawMesh() const;
 
-        void ValidateRigidBodyMeshGeometryType();
-
         AZ::ComponentDescriptor::StringWarningArray GetComponentWarnings() const { return m_componentWarnings; };
 
         using ComponentModeDelegate = AzToolsFramework::ComponentModeFramework::ComponentModeDelegate;
@@ -246,7 +252,6 @@ namespace PhysX
         DebugDraw::Collider m_colliderDebugDraw;
 
         AzPhysics::SystemEvents::OnConfigurationChangedEvent::Handler m_physXConfigChangedHandler;
-        AzPhysics::SystemEvents::OnMaterialLibraryChangedEvent::Handler m_onMaterialLibraryChangedEventHandler;
         AZ::Transform m_cachedWorldTransform;
 
         AZ::NonUniformScaleChangedEvent::Handler m_nonUniformScaleChangedHandler; //!< Responds to changes in non-uniform scale.

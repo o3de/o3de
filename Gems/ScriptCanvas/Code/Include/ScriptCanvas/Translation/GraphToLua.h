@@ -60,7 +60,7 @@ namespace ScriptCanvas
             static AZStd::string SanitizeFunctionCallName(AZStd::string_view name);
 
             RuntimeInputs m_runtimeInputs;
-            BuildConfiguration m_executionConfig = BuildConfiguration::Release;
+            BuildConfiguration m_buildConfiguration = BuildConfiguration::Release;
             FunctionBlockConfig m_functionBlockConfig = FunctionBlockConfig::Ignored;
             Context m_context;
             AZStd::string m_tableName;
@@ -72,6 +72,7 @@ namespace ScriptCanvas
             const AZStd::string& FindAbbreviation(AZStd::string_view dependency) const;
             const AZStd::string& FindLibrary(AZStd::string_view dependency) const;
             AZStd::string_view GetOperatorString(Grammar::ExecutionTreeConstPtr execution);
+            bool IsConstructCallRequired() const;
             bool IsDebugInfoWritten() const;
 
             enum class NilCheck
@@ -88,6 +89,7 @@ namespace ScriptCanvas
             void TranslateBody(BuildConfiguration configuration);
             void TranslateClassClose();
             void TranslateClassOpen();
+            void TranslateConstructMethod();
             void TranslateConstruction();
             void TranslateDependencies();
             void TranslateDestruction();
@@ -108,8 +110,13 @@ namespace ScriptCanvas
             void TranslateFunctionBlock(Grammar::ExecutionTreeConstPtr execution, FunctionBlockConfig functionBlockConfig, IsNamed lex);
             void TranslateFunctionDefinition(Grammar::ExecutionTreeConstPtr execution, IsNamed lex);
             void TranslateInheritance();
-            void TranslateNodeableOut(Grammar::VariableConstPtr host, Grammar::ExecutionTreeConstPtr execution);
-            void TranslateNodeableOuts(Grammar::VariableConstPtr host, Grammar::ExecutionTreeConstPtr execution);
+            enum class OutSourceType
+            {
+                Nodeable,
+                InterpretedClass,
+            };
+            void TranslateExecutionOut(Grammar::VariableConstPtr host, Grammar::ExecutionTreeConstPtr execution, OutSourceType sourceType);
+            void TranslateExecutionOuts(Grammar::VariableConstPtr host, Grammar::ExecutionTreeConstPtr execution);
             void TranslateNodeableParse();
             void TranslateStaticInitialization();
             void TranslateVariableInitialization(AZStd::string_view leftValue);
@@ -119,7 +126,9 @@ namespace ScriptCanvas
             enum class IsLeadingCommaRequired { No, Yes };
             void WriteConstructionArgs();
             void WriteConstructionDependencyArgs();
+            // currently used for both parameters and arguments, since for Lua, they are the same
             void WriteConstructionInput();
+            void WriteConstructMethod();
             void WriteCycleBegin(Grammar::ExecutionTreeConstPtr execution);
             void WriteDebugInfoIn(Grammar::ExecutionTreeConstPtr execution, AZStd::string_view);
             void WriteDebugInfoIn(Grammar::ExecutionTreeConstPtr execution, AZStd::string_view, size_t inputCountOverride);
@@ -147,6 +156,8 @@ namespace ScriptCanvas
             void WriteHeader();
             void WriteInfiniteLoopCheckPost(Grammar::ExecutionTreeConstPtr execution);
             void WriteInfiniteLoopCheckPre(Grammar::ExecutionTreeConstPtr execution);
+            // #scriptcanvas_component_extension
+            void WriteInitializeLocalSelfEntityId();
             void WriteLocalInputCreation(Grammar::ExecutionTreeConstPtr execution);
             void WriteLocalOutputInitialization(Grammar::ExecutionTreeConstPtr execution);
             void WriteLocalVariableInitializion(Grammar::ExecutionTreeConstPtr execution);

@@ -78,26 +78,6 @@ namespace ScriptCanvas
             return output;
         }
         
-        template<typename... t_Args, AZStd::size_t... Is>
-        Out CreateOutHelper(const AZStd::string& name, const AZStd::vector<AZStd::string>& outputNames, AZStd::index_sequence<Is...>)
-        {
-            Out out;
-            SetDisplayAndParsedName(out, name);
-            out.outputs.reserve(sizeof...(Is));
-
-            int dummy[]{ 0, (out.outputs.emplace_back(CreateOutput<t_Args>(outputNames[Is])), 0)... };
-            static_cast<void>(dummy); /* avoid warning for unused variable */
-
-            return out;
-        }
-
-        template<typename... t_Args>
-        Out CreateOut(const AZStd::string& name, const AZStd::vector<AZStd::string>& outputNames = {})
-        {
-            return CreateOutHelper<t_Args...>(name, outputNames, AZStd::make_index_sequence<sizeof...(t_Args)>());
-        }
-
-
         template<typename t_Return, typename... t_Args, AZStd::size_t... Is>
         Out CreateOutReturnHelper(const AZStd::string& name, const AZStd::string& returnName, const AZStd::vector<AZStd::string>& outputNames, AZStd::index_sequence<Is...>)
         {

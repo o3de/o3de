@@ -34,11 +34,11 @@ namespace EMStudio
         ~BlendTreeVisualNode();
 
         void Sync() override;
-        uint32 GetType() const      { return BlendTreeVisualNode::TYPE_ID; }
+        uint32 GetType() const override { return BlendTreeVisualNode::TYPE_ID; }
 
         void Render(QPainter& painter, QPen* pen, bool renderShadow) override;
 
-        int32 CalcRequiredHeight() const;
+        int32 CalcRequiredHeight() const override;
 
     private:
         QColor GetPortColor(const EMotionFX::AnimGraphNode::Port& port) const;

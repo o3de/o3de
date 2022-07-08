@@ -7,7 +7,6 @@
  */
 #pragma once
 
-#include <Atom/RHI.Reflect/CpuTimingStatistics.h>
 #include <Atom/RHI.Reflect/FrameSchedulerEnums.h>
 #include <Atom/RHI.Reflect/MemoryStatistics.h>
 #include <Atom/RHI/FrameGraphBuilder.h>
@@ -23,6 +22,7 @@
 namespace AZ
 {
     class Job;
+    class TaskGraphActiveInterface;
 
     namespace RHI
     {
@@ -164,22 +164,26 @@ namespace AZ
             //!                   it will defer to the platform for parallel dispatch support.
             void Execute(JobPolicy jobPolicy);
 
-            /// Returns the timing statistics for the previous frame.
+            //! Returns the timing statistics for the previous frame.
             const TransientAttachmentStatistics* GetTransientAttachmentStatistics() const;
 
-            /// Returns cpu timing statistics for the previous frame.
-            const CpuTimingStatistics* GetCpuTimingStatistics() const;
+            //! Returns current CPU frame to frame time in milliseconds.
+            double GetCpuFrameTime() const;
 
-            /// Returns memory statistics for the previous frame.
+            //! Returns memory statistics for the previous frame.
             const MemoryStatistics* GetMemoryStatistics() const;
 
-            /// Returns the implicit root scope id.
+            //! Returns the implicit root scope id.
             ScopeId GetRootScopeId() const;
 
+            //! Returns the descriptor which has information on the properties of a TransientAttachmentPool.
             const TransientAttachmentPoolDescriptor* GetTransientAttachmentPoolDescriptor() const;
 
             //! Adds a RayTracingShaderTable to be built this frame
             void QueueRayTracingShaderTableForBuild(RayTracingShaderTable* rayTracingShaderTable);
+
+            //! Returns PhysicalDeviceDescriptor which can be used to extract vendor/driver information
+            const PhysicalDeviceDescriptor& GetPhysicalDeviceDescriptor();
 
         private:
             const ScopeId m_rootScopeId{"Root"};
@@ -215,7 +219,6 @@ namespace AZ
 
             Ptr<TransientAttachmentPool> m_transientAttachmentPool;
 
-            CpuTimingStatistics m_cpuTimingStatistics;
             AZStd::sys_time_t m_lastFrameEndTime{};
             MemoryStatistics m_memoryStatistics;
 
@@ -228,6 +231,8 @@ namespace AZ
 
             // list of RayTracingShaderTables that should be built this frame
             AZStd::vector<RHI::Ptr<RayTracingShaderTable>> m_rayTracingShaderTablesToBuild;
+
+            AZ::TaskGraphActiveInterface* m_taskGraphActive = nullptr;
         };
     }
 }

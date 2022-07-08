@@ -36,12 +36,12 @@ namespace AZ
             AzFramework::WindowNotificationBus::Handler::BusConnect(nativeWindow);
             AzFramework::ViewportRequestBus::Handler::BusConnect(id);
 
-            m_onProjectionMatrixChangedHandler = ViewportContext::MatrixChangedEvent::Handler([this](const AZ::Matrix4x4& matrix)
+            m_onProjectionMatrixChangedHandler = MatrixChangedEvent::Handler([this](const AZ::Matrix4x4& matrix)
             {
                 m_projectionMatrixChangedEvent.Signal(matrix);
             });
 
-            m_onViewMatrixChangedHandler = ViewportContext::MatrixChangedEvent::Handler([this](const AZ::Matrix4x4& matrix)
+            m_onViewMatrixChangedHandler = MatrixChangedEvent::Handler([this](const AZ::Matrix4x4& matrix)
             {
                 m_viewMatrixChangedEvent.Signal(matrix);
             });
@@ -201,6 +201,11 @@ namespace AZ
         const AZ::Matrix4x4& ViewportContext::GetCameraViewMatrix() const
         {
             return GetDefaultView()->GetWorldToViewMatrix();
+        }
+
+        AZ::Matrix3x4 ViewportContext::GetCameraViewMatrixAsMatrix3x4() const
+        {
+            return GetDefaultView()->GetWorldToViewMatrixAsMatrix3x4();
         }
 
         void ViewportContext::SetCameraViewMatrix(const AZ::Matrix4x4& matrix)

@@ -148,9 +148,8 @@ namespace EMStudio
         {
             return;
         }
-
-        m_zoomScale = MCore::LinearInterpolate<float>(1.0f, s_maxZoomScale, m_zoomFactor);
-
+        m_zoomScale = AZ::Lerp(1.0f, s_maxZoomScale, m_zoomFactor);
+        
         // Detect if the node is in an active blend tree. Checking if the parent is ready is
         // more stable since a non-connected blend space node wont be ready
         EMotionFX::AnimGraphNode* nodeThatShouldBeReady = m_currentNode->GetParentNode()
@@ -364,8 +363,6 @@ namespace EMStudio
 
         const int rectLeft = m_drawRect.left();
         const int rectRight = m_drawRect.right();
-        const int rectBottom = m_drawRect.bottom();
-        const int xValueTop = rectBottom + 4;
         const int xAxisLabelTop = m_drawCenterY + 15;
         const char numFormat = 'g';
         const int  numPrecision = 4;

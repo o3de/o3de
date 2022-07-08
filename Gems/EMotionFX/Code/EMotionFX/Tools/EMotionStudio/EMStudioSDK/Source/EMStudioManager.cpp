@@ -14,6 +14,9 @@
 #include "MotionEventPresetManager.h"
 #include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/Commands.h>
 #include <EMotionStudio/EMStudioSDK/Source/Allocators.h>
+#include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.h>
+#include <EMotionFX/CommandSystem/Source/MotionCommands.h>
+#include <EMotionFX/CommandSystem/Source/MotionSetCommands.h>
 
 // include MCore related
 #include <MCore/Source/LogManager.h>
@@ -47,14 +50,9 @@ AZ_POP_DISABLE_WARNING
 namespace EMStudio
 {
     //--------------------------------------------------------------------------
-    // globals
-    //--------------------------------------------------------------------------
-    EMStudioManager* gEMStudioMgr = nullptr;
-
-
-    //--------------------------------------------------------------------------
     // class EMStudioManager
     //--------------------------------------------------------------------------
+    AZ_CLASS_ALLOCATOR_IMPL(EMStudioManager, AZ::SystemAllocator, 0)
 
     // constructor
     EMStudioManager::EMStudioManager(QApplication* app, [[maybe_unused]] int& argc, [[maybe_unused]] char* argv[])
@@ -62,12 +60,12 @@ namespace EMStudio
         // Flag that we have an editor around
         EMotionFX::GetEMotionFX().SetIsInEditorMode(true);
 
-        mHTMLLinkString.reserve(32768);
-        mEventProcessingCallback = nullptr;
-        mAutoLoadLastWorkspace = false;
-        mAvoidRendering = false;
+        m_htmlLinkString.reserve(32768);
+        m_eventProcessingCallback = nullptr;
+        m_autoLoadLastWorkspace = false;
+        m_avoidRendering = false;
 
-        mApp = app;
+        m_app = app;
 
         AZ::AllocatorInstance<UIAllocator>::Create();
         
@@ -86,60 +84,65 @@ namespace EMStudio
         MCore::GetLogManager().SetLogLevels(MCore::LogCallback::LOGLEVEL_ALL);
 
         // Register editor specific commands.
-        mCommandManager = new CommandSystem::CommandManager();
-        mCommandManager->RegisterCommand(new CommandSaveActorAssetInfo());
-        mCommandManager->RegisterCommand(new CommandSaveMotionAssetInfo());
-        mCommandManager->RegisterCommand(new CommandSaveMotionSet());
-        mCommandManager->RegisterCommand(new CommandSaveAnimGraph());
-        mCommandManager->RegisterCommand(new CommandSaveWorkspace());
-        mCommandManager->RegisterCommand(new CommandEditorLoadAnimGraph());
-        mCommandManager->RegisterCommand(new CommandEditorLoadMotionSet());
+        m_commandManager = new CommandSystem::CommandManager();
+        m_commandManager->RegisterCommand(new CommandSaveActorAssetInfo());
+        m_commandManager->RegisterCommand(new CommandSaveMotionAssetInfo());
+        m_commandManager->RegisterCommand(new CommandSaveMotionSet());
+        m_commandManager->RegisterCommand(new CommandSaveAnimGraph());
+        m_commandManager->RegisterCommand(new CommandSaveWorkspace());
+        m_commandManager->RegisterCommand(new CommandEditorLoadAnimGraph());
+        m_commandManager->RegisterCommand(new CommandEditorLoadMotionSet());
 
-        mEventPresetManager         = new MotionEventPresetManager();
-        mPluginManager              = new PluginManager();
-        mLayoutManager              = new LayoutManager();
-        mNotificationWindowManager  = new NotificationWindowManager();
-        mCompileDate = AZStd::string::format("%s", MCORE_DATE);
+        m_eventPresetManager         = new MotionEventPresetManager();
+        m_pluginManager              = new PluginManager();
+        m_layoutManager              = new LayoutManager();
+        m_notificationWindowManager  = new NotificationWindowManager();
+        m_compileDate = AZStd::string::format("%s", MCORE_DATE);
 
         EMotionFX::SkeletonOutlinerNotificationBus::Handler::BusConnect();
+        EMotionFX::JointSelectionRequestBus::Handler::BusConnect();
 
         // log some information
         LogInfo();
-    }
 
+        AZ::Interface<EMStudioManager>::Register(this);
+    }
 
     // destructor
     EMStudioManager::~EMStudioManager()
     {
+        EMotionFX::JointSelectionRequestBus::Handler::BusDisconnect();
         EMotionFX::SkeletonOutlinerNotificationBus::Handler::BusDisconnect();
 
-        if (mEventProcessingCallback)
+        if (m_eventProcessingCallback)
         {
-            EMStudio::GetCommandManager()->RemoveCallback(mEventProcessingCallback, false);
-            delete mEventProcessingCallback;
+            EMStudio::GetCommandManager()->RemoveCallback(m_eventProcessingCallback, false);
+            delete m_eventProcessingCallback;
         }
 
         // delete all animgraph instances etc
         ClearScene();
 
-        delete mEventPresetManager;
-        delete mPluginManager;
-        delete mLayoutManager;
-        delete mNotificationWindowManager;
-        delete mMainWindow;
-        delete mCommandManager;
+        delete m_eventPresetManager;
+        delete m_pluginManager;
+        delete m_layoutManager;
+        delete m_notificationWindowManager;
+        delete m_mainWindow;
+        delete m_commandManager;
 
         AZ::AllocatorInstance<UIAllocator>::Destroy();
+
+        AZ::Interface<EMStudioManager>::Unregister(this);
     }
 
     MainWindow* EMStudioManager::GetMainWindow()
     {
-        if (mMainWindow.isNull())
+        if (m_mainWindow.isNull())
         {
-            mMainWindow = new MainWindow();
-            mMainWindow->Init();
+            m_mainWindow = new MainWindow();
+            m_mainWindow->Init();
         }
-        return mMainWindow;
+        return m_mainWindow;
     }
 
 
@@ -149,7 +152,8 @@ namespace EMStudio
         GetMainWindow()->Reset();
         EMotionFX::GetAnimGraphManager().RemoveAllAnimGraphInstances(true);
         EMotionFX::GetAnimGraphManager().RemoveAllAnimGraphs(true);
-        EMotionFX::GetMotionManager().Clear(true);
+        CommandSystem::ClearMotionSetsCommand();
+        CommandSystem::ClearMotions();
     }
 
 
@@ -166,55 +170,57 @@ namespace EMStudio
 
     int EMStudioManager::ExecuteApp()
     {
-        MCORE_ASSERT(mApp);
-        MCORE_ASSERT(mMainWindow);
+        MCORE_ASSERT(m_app);
+        MCORE_ASSERT(m_mainWindow);
 
 #if !defined(EMFX_EMSTUDIOLYEMBEDDED)
         // try to load all plugins
         AZStd::string pluginDir = MysticQt::GetAppDir() + "Plugins/";
 
-        mPluginManager->LoadPluginsFromDirectory(pluginDir.c_str());
+        m_pluginManager->LoadPluginsFromDirectory(pluginDir.c_str());
 #endif // EMFX_EMSTUDIOLYEMBEDDED
 
-        // Give a chance to every plugin to reflect data
-        const uint32 numPlugins = mPluginManager->GetNumPlugins();
-        if (numPlugins)
+        AZ::SerializeContext* serializeContext = nullptr;
+        AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
+        AZ_Error("EMotionFX", serializeContext, "Can't get serialize context from component application.");
+        if (serializeContext)
         {
-            AZ::SerializeContext* serializeContext = nullptr;
-            AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
-            if (!serializeContext)
+            // Reflect plugin related data.
+            const PluginManager::PluginVector& registeredPlugins = m_pluginManager->GetRegisteredPlugins();
+            for (EMStudioPlugin* plugin : registeredPlugins)
             {
-                AZ_Error("EMotionFX", false, "Can't get serialize context from component application.");
+                plugin->Reflect(serializeContext);
             }
-            else
+
+            const PluginManager::PersistentPluginVector& persistentPlugins = m_pluginManager->GetPersistentPlugins();
+            for (const AZStd::unique_ptr<PersistentPlugin>& plugin : persistentPlugins)
             {
-                for (uint32 i = 0; i < numPlugins; ++i)
-                {
-                    EMStudioPlugin* plugin = mPluginManager->GetPlugin(i);
-                    plugin->Reflect(serializeContext);
-                }
+                plugin->Reflect(serializeContext);
             }
+
+            // Reflect shared data that might be used by multiple plugins.
+            RenderOptions::Reflect(serializeContext);
         }
         
         // Register the command event processing callback.
-        mEventProcessingCallback = new EventProcessingCallback();
-        EMStudio::GetCommandManager()->RegisterCallback(mEventProcessingCallback);
+        m_eventProcessingCallback = new EventProcessingCallback();
+        EMStudio::GetCommandManager()->RegisterCallback(m_eventProcessingCallback);
 
         // Update the main window create window item with, so that it shows all loaded plugins.
-        mMainWindow->UpdateCreateWindowMenu();
+        m_mainWindow->UpdateCreateWindowMenu();
 
         // Set the recover save path.
-        MCore::FileSystem::mSecureSavePath = GetManager()->GetRecoverFolder().c_str();
+        MCore::FileSystem::s_secureSavePath = GetManager()->GetRecoverFolder().c_str();
 
         // Show the main dialog and wait until it closes.
         MCore::LogInfo("EMotion Studio initialized...");
 
 #if !defined(EMFX_EMSTUDIOLYEMBEDDED)
-        mMainWindow->show();
+        m_mainWindow->show();
 #endif // EMFX_EMSTUDIOLYEMBEDDED
 
         // Show the recover window in case we have some .recover files in the recovery folder.
-        const QString secureSavePath = MCore::FileSystem::mSecureSavePath.c_str();
+        const QString secureSavePath = MCore::FileSystem::s_secureSavePath.c_str();
         const QStringList recoverFileList = QDir(secureSavePath).entryList(QStringList("*.recover"), QDir::Files);
         if (!recoverFileList.empty())
         {
@@ -240,16 +246,16 @@ namespace EMStudio
             // Show the recover files window only in case there is a valid file to recover.
             if (!recoverStringArray.empty())
             {
-                RecoverFilesWindow* recoverFilesWindow = new RecoverFilesWindow(mMainWindow, recoverStringArray);
+                RecoverFilesWindow* recoverFilesWindow = new RecoverFilesWindow(m_mainWindow, recoverStringArray);
                 recoverFilesWindow->exec();
             }
         }
 
-        mApp->processEvents();
+        m_app->processEvents();
 
 #if !defined(EMFX_EMSTUDIOLYEMBEDDED)
         // execute the application
-        return mApp->exec();
+        return m_app->exec();
 #else
         return 0;
 #endif // EMFX_EMSTUDIOLYEMBEDDED
@@ -263,12 +269,12 @@ namespace EMStudio
 
     const char* EMStudioManager::ConstructHTMLLink(const char* text, const MCore::RGBAColor& color)
     {
-        int32 r = aznumeric_cast<int32>(color.r * 256);
-        int32 g = aznumeric_cast<int32>(color.g * 256);
-        int32 b = aznumeric_cast<int32>(color.b * 256);
+        int32 r = aznumeric_cast<int32>(color.m_r * 256);
+        int32 g = aznumeric_cast<int32>(color.m_g * 256);
+        int32 b = aznumeric_cast<int32>(color.m_b * 256);
 
-        mHTMLLinkString = AZStd::string::format("<qt><style>a { color: rgb(%i, %i, %i); } a:hover { color: rgb(40, 40, 40); }</style><a href='%s'>%s</a></qt>", r, g, b, text, text);
-        return mHTMLLinkString.c_str();
+        m_htmlLinkString = AZStd::string::format("<qt><style>a { color: rgb(%i, %i, %i); } a:hover { color: rgb(40, 40, 40); }</style><a href='%s'>%s</a></qt>", r, g, b, text, text);
+        return m_htmlLinkString.c_str();
     }
 
 
@@ -320,12 +326,12 @@ namespace EMStudio
     }
 
 
-    void EMStudioManager::SetVisibleJointIndices(const AZStd::unordered_set<AZ::u32>& visibleJointIndices)
+    void EMStudioManager::SetVisibleJointIndices(const AZStd::unordered_set<size_t>& visibleJointIndices)
     {
         m_visibleJointIndices = visibleJointIndices;
     }
 
-    void EMStudioManager::SetSelectedJointIndices(const AZStd::unordered_set<AZ::u32>& selectedJointIndices)
+    void EMStudioManager::SetSelectedJointIndices(const AZStd::unordered_set<size_t>& selectedJointIndices)
     {
         m_selectedJointIndices = selectedJointIndices;
     }
@@ -422,34 +428,10 @@ namespace EMStudio
     }
 
 
-    // function to add a gizmo to the manager
-    MCommon::TransformationManipulator* EMStudioManager::AddTransformationManipulator(MCommon::TransformationManipulator* manipulator)
+    EMStudioManager* EMStudioManager::GetInstance()
     {
-        // check if manipulator exists
-        if (manipulator == nullptr)
-        {
-            return nullptr;
-        }
-
-        // add and return the manipulator
-        mTransformationManipulators.Add(manipulator);
-        return manipulator;
+        return AZ::Interface<EMStudioManager>().Get();
     }
-
-
-    // remove the given gizmo from the array
-    void EMStudioManager::RemoveTransformationManipulator(MCommon::TransformationManipulator* manipulator)
-    {
-        mTransformationManipulators.RemoveByValue(manipulator);
-    }
-
-
-    // returns the gizmo array
-    MCore::Array<MCommon::TransformationManipulator*>* EMStudioManager::GetTransformationManipulators()
-    {
-        return &mTransformationManipulators;
-    }
-
 
     // new temporary helper function for text drawing
     void EMStudioManager::RenderText(QPainter& painter, const QString& text, const QColor& textColor, const QFont& font, const QFontMetrics& fontMetrics, Qt::Alignment textAlignment, const QRect& rect)
@@ -491,30 +473,51 @@ namespace EMStudio
         painter.drawPath(path);
     }
 
-    //--------------------------------------------------------------------------
-    // class Initializer
-    //--------------------------------------------------------------------------
-    // initialize EMotion Studio
-    bool Initializer::Init(QApplication* app, int& argc, char* argv[])
+    const AzToolsFramework::ManipulatorManagerId g_animManipulatorManagerId =
+        AzToolsFramework::ManipulatorManagerId(AZ::Crc32("AnimManipulatorManagerId"));
+
+    // shortcuts
+    QApplication* GetApp()
     {
-        // do nothing if we already have initialized
-        if (gEMStudioMgr)
-        {
-            return true;
-        }
-
-        // create the new EMStudio object
-        gEMStudioMgr = new EMStudioManager(app, argc, argv);
-
-        // return success
-        return true;
+        return EMStudioManager::GetInstance()->GetApp();
+    }
+    EMStudioManager* GetManager()
+    {
+        return EMStudioManager::GetInstance();
     }
 
-
-    // the shutdown function
-    void Initializer::Shutdown()
+    bool HasMainWindow()
     {
-        delete gEMStudioMgr;
-        gEMStudioMgr = nullptr;
+        return EMStudioManager::GetInstance()->HasMainWindow();
+    }
+
+    MainWindow* GetMainWindow()
+    {
+        return EMStudioManager::GetInstance()->GetMainWindow();
+    }
+
+    PluginManager* GetPluginManager()
+    {
+        return EMStudioManager::GetInstance()->GetPluginManager();
+    }
+
+    LayoutManager* GetLayoutManager()
+    {
+        return EMStudioManager::GetInstance()->GetLayoutManager();
+    }
+
+    NotificationWindowManager* GetNotificationWindowManager()
+    {
+        return EMStudioManager::GetInstance()->GetNotificationWindowManager();
+    }
+
+    MotionEventPresetManager* GetEventPresetManager()
+    {
+        return EMStudioManager::GetInstance()->GetEventPresetManger();
+    }
+
+    CommandSystem::CommandManager* GetCommandManager()
+    {
+        return EMStudioManager::GetInstance()->GetCommandManager();
     }
 } // namespace EMStudio

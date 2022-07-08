@@ -1,5 +1,5 @@
 {
-    "Source": "BloomCompositeCS",
+    "Source": "BloomCompositeCS.azsl",
     
     "DrawList" : "forward",
 

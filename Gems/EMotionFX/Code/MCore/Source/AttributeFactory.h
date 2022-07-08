@@ -30,13 +30,13 @@ namespace MCore
         void UnregisterAttribute(Attribute* attribute, bool delFromMem = true);
         void RegisterStandardTypes();
 
-        size_t GetNumRegisteredAttributes() const                  { return mRegistered.size(); }
-        Attribute* GetRegisteredAttribute(uint32 index) const      { return mRegistered[index]; }
+        size_t GetNumRegisteredAttributes() const                  { return m_registered.size(); }
+        Attribute* GetRegisteredAttribute(size_t index) const      { return m_registered[index]; }
 
-        uint32 FindAttributeIndexByType(uint32 typeID) const;
-        Attribute* CreateAttributeByType(uint32 typeID) const;
+        size_t FindAttributeIndexByType(size_t typeID) const;
+        Attribute* CreateAttributeByType(size_t typeID) const;
 
     private:
-        AZStd::vector<Attribute*> mRegistered;
+        AZStd::vector<Attribute*> m_registered;
     };
 }   // namespace MCore

@@ -345,7 +345,7 @@ namespace AudioControls
         {
             for (auto& connectionNode : m_connectionNodes)
             {
-                if (TConnectionPtr connection = audioSystemImpl->CreateConnectionFromXMLNode(connectionNode.m_xmlNode.get(), m_type))
+                if (TConnectionPtr connection = audioSystemImpl->CreateConnectionFromXMLNode(connectionNode.m_xmlNode, m_type))
                 {
                     AddConnection(connection);
                     connectionNode.m_isValid = true;
@@ -366,6 +366,38 @@ namespace AudioControls
         {
             SetScope(m_parent->GetScope());
         }
+    }
+
+    bool CATLControl::SwitchStateConnectionCheck(IAudioSystemControl* middlewareControl)
+    {
+        if (IAudioSystemEditor* audioSystemImpl = CAudioControlsEditorPlugin::GetImplementationManager()->GetImplementation())
+        {
+            CID parentID = middlewareControl->GetParent()->GetId();
+            EACEControlType compatibleType = audioSystemImpl->ImplTypeToATLType(middlewareControl->GetType());
+            if (compatibleType == EACEControlType::eACET_SWITCH_STATE && m_type == EACEControlType::eACET_SWITCH)
+            {
+                for (auto& child : m_children)
+                {
+                    for (int j = 0; child && j < child->ConnectionCount(); ++j)
+                    {
+                        TConnectionPtr tmpConnection = child->GetConnectionAt(j);
+                        if (tmpConnection)
+                        {
+                            IAudioSystemControl* tmpMiddlewareControl = audioSystemImpl->GetControl(tmpConnection->GetID());
+                            EACEControlType controlType = audioSystemImpl->ImplTypeToATLType(tmpMiddlewareControl->GetType());
+                            if (tmpMiddlewareControl && controlType == EACEControlType::eACET_SWITCH_STATE)
+                            {
+                                if (parentID != ACE_INVALID_CID && tmpMiddlewareControl->GetParent()->GetId() != parentID)
+                                {
+                                    return false;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return true;
     }
 
 } // namespace AudioControls

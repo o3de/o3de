@@ -9,9 +9,10 @@
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/JSON/schema.h>
 #include <AzCore/JSON/prettywriter.h>
+#include <AzCore/Serialization/Json/JsonUtils.h>
 #include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/Settings/SettingsRegistryImpl.h>
-#include <AzFramework/FileFunc/FileFunc.h>
+#include <AzCore/Utils/Utils.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 
 #include <AWSCoreInternalBus.h>
@@ -22,11 +23,15 @@
 
 namespace AWSCore
 {
+    namespace Platform
+    {
+        AZ::IO::Path GetJsonSchemaPath();
+    }
+
     AWSResourceMappingManager::AWSResourceMappingManager()
         : m_status(Status::NotLoaded)
         , m_defaultAccountId("")
         , m_defaultRegion("")
-        , m_resourceMappings()
     {
     }
 
@@ -164,7 +169,7 @@ namespace AWSCore
         m_defaultRegion = jsonDocument.FindMember(ResourceMappingRegionKeyName)->value.GetString();
 
         auto resourceMappings = jsonDocument.FindMember(ResourceMappingResourcesKeyName)->value.GetObject();
-        for (auto mappingIter = resourceMappings.MemberBegin(); mappingIter != resourceMappings.MemberEnd(); mappingIter++)
+        for (auto mappingIter = resourceMappings.MemberBegin(); mappingIter != resourceMappings.MemberEnd(); ++mappingIter)
         {
             auto mappingValue = mappingIter->value.GetObject();
             if (mappingValue.MemberCount() != 0)
@@ -211,8 +216,7 @@ namespace AWSCore
         }
 
         AzFramework::StringFunc::Path::Normalize(configJsonPath);
-        AZ::IO::Path configJsonFileIOPath(configJsonPath);
-        auto readJsonOutcome = AzFramework::FileFunc::ReadJsonFile(configJsonFileIOPath);
+        auto readJsonOutcome = AZ::JsonSerializationUtils::ReadJsonFile(configJsonPath);
         if (readJsonOutcome.IsSuccess())
         {
             auto jsonDocument = readJsonOutcome.TakeValue();
@@ -246,14 +250,17 @@ namespace AWSCore
 
     bool AWSResourceMappingManager::ValidateJsonDocumentAgainstSchema(const rapidjson::Document& jsonDocument)
     {
-        rapidjson::Document jsonSchemaDocument;
-        if (jsonSchemaDocument.Parse(ResourceMappingJsonSchema).HasParseError())
+        AZ::IO::Path executablePath = AZ::IO::PathView(AZ::Utils::GetExecutableDirectory());
+        AZ::IO::Path jsonSchemaPath = Platform::GetJsonSchemaPath();
+
+        AZ::Outcome<rapidjson::Document, AZStd::string> readJsonOutcome = AZ::JsonSerializationUtils::ReadJsonFile(jsonSchemaPath.c_str());
+        if (!readJsonOutcome.IsSuccess() || readJsonOutcome.TakeValue().ObjectEmpty())
         {
             AZ_Error(AWSResourceMappingManagerName, false, ResourceMappingFileInvalidSchemaErrorMessage);
             return false;
         }
 
-        auto jsonSchema = rapidjson::SchemaDocument(jsonSchemaDocument);
+        auto jsonSchema = rapidjson::SchemaDocument(readJsonOutcome.TakeValue());
         rapidjson::SchemaValidator validator(jsonSchema);
 
         if (!jsonDocument.Accept(validator))

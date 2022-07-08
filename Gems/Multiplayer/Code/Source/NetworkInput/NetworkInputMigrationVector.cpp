@@ -6,7 +6,7 @@
  *
  */
 
-#include <Source/NetworkInput/NetworkInputMigrationVector.h>
+#include <Multiplayer/NetworkInput/NetworkInputMigrationVector.h>
 #include <Multiplayer/IMultiplayer.h>
 #include <AzNetworking/Serialization/ISerializer.h>
 

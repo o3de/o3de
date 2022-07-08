@@ -47,6 +47,16 @@ namespace AZ
                 return m_sourceGuid;
             }
 
+            void Scene::SetWatchFolder(const AZStd::string& watchFolder)
+            {
+                m_watchFolder = watchFolder;
+            }
+
+            const AZStd::string& Scene::GetWatchFolder() const
+            {
+                return m_watchFolder;
+            }
+
             void Scene::SetManifestFilename(const AZStd::string& name)
             {
                 m_manifestFilename = name;
@@ -111,6 +121,7 @@ namespace AZ
                         ->Property("sourceGuid", BehaviorValueGetter(&Scene::m_sourceGuid), nullptr)
                         ->Property("graph", BehaviorValueGetter(&Scene::m_graph), nullptr)
                         ->Property("manifest", BehaviorValueGetter(&Scene::m_manifest), nullptr)
+                        ->Property("watchFolder", BehaviorValueGetter(&Scene::m_watchFolder), nullptr)
                         ->Constant("SceneOrientation_YUp", BehaviorConstant(SceneOrientation::YUp))
                         ->Constant("SceneOrientation_ZUp", BehaviorConstant(SceneOrientation::ZUp))
                         ->Constant("SceneOrientation_XUp", BehaviorConstant(SceneOrientation::XUp))

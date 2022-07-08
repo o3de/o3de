@@ -5,7 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "Platform.h"
+#include <AzTest/Platform.h>
 #include <iostream>
 
 class ModuleHandle
@@ -92,12 +92,6 @@ namespace AZ
         void Platform::Printf(const char* format, ...)
         {
             // Not currently supported
-        }
-
-        AZ::EnvironmentInstance Platform::GetTestRunnerEnvironment()
-        {
-            // Not currently supported
-            return nullptr;
         }
     } // Test
 } // AZ

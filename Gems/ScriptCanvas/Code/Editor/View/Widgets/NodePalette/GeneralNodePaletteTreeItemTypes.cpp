@@ -82,32 +82,29 @@ namespace ScriptCanvasEditor
         , m_isOverload(isOverload)
         , m_propertyStatus(propertyStatus)
     {
-        AZStd::string displayMethodName = TranslationHelper::GetKeyTranslation(TranslationContextGroup::ClassMethod, m_className.toUtf8().data(), m_methodName.toUtf8().data(), TranslationItemType::Node, TranslationKeyId::Name);
+        GraphCanvas::TranslationKey key;
 
-        if (displayMethodName.empty())
-        {
-            SetName(m_methodName);
-        }
-        else
-        {
-            SetName(displayMethodName.c_str());
-        }
 
-        if (propertyStatus == ScriptCanvas::PropertyStatus::Getter)
+        AZStd::string updatedMethodName;
+        AZStd::string methodContext;
+        if (propertyStatus != ScriptCanvas::PropertyStatus::None)
         {
-            SetName(AZStd::string::format("Get %s", GetName().toUtf8().data()).data());
-        }
-        else if (propertyStatus == ScriptCanvas::PropertyStatus::Setter)
-        {
-            SetName(AZStd::string::format("Set %s", GetName().toUtf8().data()).data());
+            updatedMethodName = (propertyStatus == ScriptCanvas::PropertyStatus::Getter) ? "Get" : "Set";
+            methodContext = (propertyStatus == ScriptCanvas::PropertyStatus::Getter) ? "Getter" : "Setter";
         }
 
-        AZStd::string displayEventTooltip = TranslationHelper::GetKeyTranslation(TranslationContextGroup::ClassMethod, m_className.toUtf8().data(), m_methodName.toUtf8().data(), TranslationItemType::Node, TranslationKeyId::Tooltip);
+        updatedMethodName.append(methodName);
 
-        if (!displayEventTooltip.empty())
-        {
-            SetToolTip(displayEventTooltip.c_str());
-        }
+        key << ScriptCanvasEditor::TranslationHelper::AssetContext::BehaviorClassContext << className << "methods" << updatedMethodName << methodContext << "details";
+
+        GraphCanvas::TranslationRequests::Details details;
+        details.m_name = methodName;
+        details.m_subtitle = className;
+
+        GraphCanvas::TranslationRequestBus::BroadcastResult(details, &GraphCanvas::TranslationRequests::GetDetails, key, details);
+
+        SetName(details.m_name.c_str());
+        SetToolTip(details.m_tooltip.c_str());
 
         SetTitlePalette("MethodNodeTitlePalette");
     }
@@ -125,6 +122,27 @@ namespace ScriptCanvasEditor
     AZStd::string ClassMethodEventPaletteTreeItem::GetMethodName() const
     {
         return m_methodName.toUtf8().data();
+    }
+
+    AZ::IO::Path ClassMethodEventPaletteTreeItem::GetTranslationDataPath() const
+    {
+        AZStd::string fileName = GetClassMethodName();
+        return ScriptCanvasEditor::TranslationHelper::GetTranslationFilePath(fileName);
+    }
+
+    void ClassMethodEventPaletteTreeItem::GenerateTranslationData()
+    {
+        AZ::BehaviorContext* behaviorContext{};
+        AZ::ComponentApplicationBus::BroadcastResult(behaviorContext, &AZ::ComponentApplicationRequests::GetBehaviorContext);
+
+        const AZStd::string className = GetClassMethodName();
+        if (behaviorContext->m_classes.contains(className))
+        {
+            auto behaviorClass = behaviorContext->m_classes.find(className);
+
+            ScriptCanvasEditorTools::TranslationGeneration translation;
+            translation.TranslateBehaviorClass(behaviorClass->second);
+        }
     }
 
     bool ClassMethodEventPaletteTreeItem::IsOverload() const
@@ -147,43 +165,80 @@ namespace ScriptCanvasEditor
             serializeContext->Class<CreateGlobalMethodMimeEvent, GraphCanvas::GraphCanvasMimeEvent>()
                 ->Version(0)
                 ->Field("MethodName", &CreateGlobalMethodMimeEvent::m_methodName)
+                ->Field("IsProperty", &CreateGlobalMethodMimeEvent::m_isProperty)
                 ;
         }
     }
 
-    CreateGlobalMethodMimeEvent::CreateGlobalMethodMimeEvent(AZStd::string methodName)
+    CreateGlobalMethodMimeEvent::CreateGlobalMethodMimeEvent(AZStd::string methodName, bool isProperty)
         : m_methodName{ AZStd::move(methodName) }
+        , m_isProperty{ isProperty }
     {
     }
 
     ScriptCanvasEditor::NodeIdPair CreateGlobalMethodMimeEvent::CreateNode(const ScriptCanvas::ScriptCanvasId& scriptCanvasId) const
     {
-        return Nodes::CreateGlobalMethodNode(m_methodName, scriptCanvasId);
+        return Nodes::CreateGlobalMethodNode(m_methodName, m_isProperty, scriptCanvasId);
     }
 
     //! Global Method Palette Tree Item implementation
     GlobalMethodEventPaletteTreeItem::GlobalMethodEventPaletteTreeItem(const GlobalMethodNodeModelInformation& nodeModelInformation)
         : DraggableNodePaletteTreeItem(nodeModelInformation.m_methodName, ScriptCanvasEditor::AssetEditorId)
         , m_methodName{ nodeModelInformation.m_methodName }
+        , m_isProperty{ nodeModelInformation.m_isProperty }
     {
-        SetToolTip(QString::fromUtf8(nodeModelInformation.m_displayName.data(),
-            aznumeric_cast<int>(nodeModelInformation.m_displayName.size())));
-
         SetToolTip(QString::fromUtf8(nodeModelInformation.m_toolTip.data(),
             aznumeric_cast<int>(nodeModelInformation.m_toolTip.size())));
 
         SetTitlePalette("MethodNodeTitlePalette");
+        if (!nodeModelInformation.m_displayName.empty())
+        {
+            SetName(nodeModelInformation.m_displayName.c_str());
+        }
     }
 
     GraphCanvas::GraphCanvasMimeEvent* GlobalMethodEventPaletteTreeItem::CreateMimeEvent() const
     {
-        return aznew CreateGlobalMethodMimeEvent(m_methodName);
+        return aznew CreateGlobalMethodMimeEvent(m_methodName, m_isProperty);
     }
 
 
     const AZStd::string& GlobalMethodEventPaletteTreeItem::GetMethodName() const
     {
         return m_methodName;
+    }
+
+    AZ::IO::Path GlobalMethodEventPaletteTreeItem::GetTranslationDataPath() const
+    {
+        AZStd::string fileName = "";
+        if (m_isProperty)
+        {
+            AZStd::string propertyName = m_methodName;
+            AZ::StringFunc::Replace(propertyName, "::Getter", "");
+            AZ::StringFunc::Replace(propertyName, "::Setter", "");
+            fileName = GraphCanvas::TranslationKey::Sanitize(propertyName);
+        }
+        else
+        {
+            fileName = GraphCanvas::TranslationKey::Sanitize(m_methodName);
+        }
+        return ScriptCanvasEditor::TranslationHelper::GetTranslationFilePath(fileName);
+    }
+
+    void GlobalMethodEventPaletteTreeItem::GenerateTranslationData()
+    {
+        ScriptCanvasEditorTools::TranslationGeneration translation;
+        if (m_isProperty)
+        {
+            AZStd::string propertyName = m_methodName;
+            AZ::StringFunc::Replace(propertyName, "::Getter", "");
+            AZ::StringFunc::Replace(propertyName, "::Setter", "");
+            translation.TranslateBehaviorProperty(propertyName);
+        }
+        else
+        {
+            translation.TranslateBehaviorGlobalMethod(m_methodName);
+        }
     }
 
     //////////////////////////////
@@ -230,9 +285,10 @@ namespace ScriptCanvasEditor
     // CustomNodePaletteTreeItem
     //////////////////////////////
 
-    CustomNodePaletteTreeItem::CustomNodePaletteTreeItem(const AZ::Uuid& typeId, AZStd::string_view nodeName)
-        : DraggableNodePaletteTreeItem(nodeName, ScriptCanvasEditor::AssetEditorId)
-        , m_typeId(typeId)
+    CustomNodePaletteTreeItem::CustomNodePaletteTreeItem(const ScriptCanvasEditor::CustomNodeModelInformation& info)
+        : DraggableNodePaletteTreeItem(info.m_displayName, ScriptCanvasEditor::AssetEditorId)
+        , m_info(info)
+        , m_typeId(info.m_typeId)
     {
     }
 
@@ -244,5 +300,18 @@ namespace ScriptCanvasEditor
     AZ::Uuid CustomNodePaletteTreeItem::GetTypeId() const
     {
         return m_typeId;
+    }
+
+    AZ::IO::Path CustomNodePaletteTreeItem::GetTranslationDataPath() const
+    {
+        AZStd::string fileName =
+            ScriptCanvasEditor::TranslationHelper::SanitizeCustomNodeFileName(GetName().toUtf8().data(), GetInfo().m_typeId);
+        return ScriptCanvasEditor::TranslationHelper::GetTranslationFilePath(fileName);
+    }
+
+    void CustomNodePaletteTreeItem::GenerateTranslationData()
+    {
+        ScriptCanvasEditorTools::TranslationGeneration translation;
+        translation.TranslateNode(m_typeId);
     }
 }

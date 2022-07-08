@@ -120,10 +120,7 @@ def verify_layout(layout_dir, platform_name, project_path, asset_mode, asset_typ
         warning_count += _warn(f"'system_{platform_name_lower}_{asset_type}.cfg' is missing from {str(layout_path)}")
         system_config_values = None
     else:
-        system_config_values = common.get_config_file_values(str(platform_system_cfg_file), ['r_ShadersRemoteCompiler',
-                                                                                             'r_ShadersAllowCompilation',
-                                                                                             'r_AssetProcessorShaderCompiler',
-                                                                                             'r_ShaderCompilerServer'])
+        system_config_values = common.get_config_file_values(str(platform_system_cfg_file), [])
 
     if bootstrap_values:
 
@@ -146,24 +143,23 @@ def verify_layout(layout_dir, platform_name, project_path, asset_mode, asset_typ
 
         elif system_config_values is not None:
 
-            shaders_remote_compiler = system_config_values.get('r_ShadersRemoteCompiler') or '0'
+            shaders_remote_compiler = '0'
             asset_processor_shader_compiler = system_config_values.get('r_AssetProcessorShaderCompiler') or '0'
-            shader_compiler_server = system_config_values.get('r_ShaderCompilerServer') or LOCAL_HOST
+            shader_compiler_server = LOCAL_HOST
             shaders_allow_compilation = system_config_values.get('r_ShadersAllowCompilation')
 
             def _validate_remote_shader_settings():
 
-                if shader_compiler_server == LOCAL_HOST:
-                    if asset_processor_shader_compiler != '1':
-                        return _warn(f"Connection to the remote shader compiler (r_ShaderCompilerServer) is not properly "
-                                     f"set in system_{platform_name_lower}_{asset_type}.cfg. If it is set to {LOCAL_HOST}, then "
-                                     f"r_AssetProcessorShaderCompiler must be set to 1.")
+                if asset_processor_shader_compiler != '1':
+                    return _warn(f"Connection to the remote shader compiler (r_ShaderCompilerServer) is not properly "
+                                 f"set in system_{platform_name_lower}_{asset_type}.cfg. If it is set to {LOCAL_HOST}, then "
+                                 f"r_AssetProcessorShaderCompiler must be set to 1.")
 
 
-                    else:
-                        if _validate_remote_ap(remote_ip, remote_connect, False) > 0:
-                            return _warn(f"The system_{platform_name_lower}_{asset_type}.cfg file is configured to connect to the"
-                                         f" shader compiler server through the remote connection to the Asset Processor.")
+                else:
+                    if _validate_remote_ap(remote_ip, remote_connect, False) > 0:
+                        return _warn(f"The system_{platform_name_lower}_{asset_type}.cfg file is configured to connect to the"
+                                     f" shader compiler server through the remote connection to the Asset Processor.")
                 return 0
 
             # Validation steps based on the asset mode
@@ -181,16 +177,9 @@ def verify_layout(layout_dir, platform_name, project_path, asset_mode, asset_typ
                     warning_count += _warn("No pak files found for PAK mode deployment")
                     # Check if the shader paks are set
                 if has_shader_pak:
-                    # If the shader paks are set, make sure that the remote shader compiler connection settings are set
-                    # or that it is going through AP
-                    if shaders_remote_compiler == '1':
-                        warning_count += _warn(f"Shader paks are set for project {project_name} but remote shader compiling "
-                                               f"(r_ShadersRemoteCompiler) is still enabled "
-                                               f"for it in system_{platform_name_lower}_{asset_type}.cfg.")
-                    else:
-                        # Since we are not connecting to the shader compiler, also make sure bootstrap is not configured to
-                        # connect to Asset Processor remotely
-                        warning_count += _validate_remote_ap(remote_ip, remote_connect, False)
+                    # Since we are not connecting to the shader compiler, also make sure bootstrap is not configured to
+                    # connect to Asset Processor remotely
+                    warning_count += _validate_remote_ap(remote_ip, remote_connect, False)
 
                     if shaders_allow_compilation is not None and shaders_allow_compilation == '1':
                         warning_count += _warn(f"Shader paks are set for project {project_name} but shader compiling "
@@ -255,7 +244,11 @@ def copy_asset_files_to_layout(project_asset_folder, target_platform, layout_tar
                             abs_dst)
             continue
 
-        if os.path.isfile(abs_dst):
+        # If the target file doesn't exist, copy it
+        if not os.path.exists(abs_dst):
+            logging.debug("Copying %s -> %s", abs_src, abs_dst)
+            shutil.copy2(abs_src, abs_dst)
+        elif os.path.isfile(abs_dst):
             # The target is a file, do a fingerprint check
             # TODO: Evaluate if we want to just junction the files instead of doing a copy
             src_hash = common.file_fingerprint(abs_src)
@@ -418,10 +411,11 @@ def sync_layout_vfs(target_platform, project_path, asset_type, warning_on_missin
     # Create the link
     create_link(vfs_asset_source, temp_vfs_layout_project_config_path, copy)
 
-    # Create the assets to the layout
-    copy_asset_files_to_layout(project_asset_folder=project_asset_folder,
-                               target_platform=target_platform,
-                               layout_target=layout_target)
+    # Copy minimum assets to the layout necessary for vfs
+    root_assets = ['engine.json', 'bootstrap.game.debug.setreg', 'bootstrap.game.profile.setreg', 'bootstrap.game.release.setreg']
+    for root_asset in root_assets:
+        logging.debug("Copying %s -> %s",  os.path.join(project_asset_folder, root_asset), layout_target)
+        shutil.copy2(os.path.join(project_asset_folder, root_asset), layout_target)
 
     # Reset the 'gems' junction if any in the layout
     layout_gems_folder_src = os.path.join(project_asset_folder, 'gems')

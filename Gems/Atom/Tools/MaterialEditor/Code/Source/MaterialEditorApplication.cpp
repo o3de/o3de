@@ -6,54 +6,53 @@
  *
  */
 
-#include <AzCore/IO/Path/Path.h>
+#include <AtomToolsFramework/Document/AtomToolsDocumentSystemRequestBus.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
-#include <AzCore/Utils/Utils.h>
-#include <AzFramework/IO/LocalFileIO.h>
-#include <AzFramework/Network/AssetProcessorConnection.h>
-#include <AzFramework/StringFunc/StringFunc.h>
-#include <AzToolsFramework/API/EditorPythonConsoleBus.h>
-#include <AzToolsFramework/API/EditorPythonRunnerRequestsBus.h>
-#include <AzToolsFramework/Asset/AssetSystemComponent.h>
-#include <AzToolsFramework/AssetBrowser/AssetBrowserComponent.h>
-#include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
-#include <AzToolsFramework/AzToolsFrameworkModule.h>
-#include <AzToolsFramework/SourceControl/PerforceComponent.h>
-#include <AzToolsFramework/SourceControl/SourceControlAPI.h>
-#include <AzToolsFramework/Thumbnails/ThumbnailerComponent.h>
-#include <AzToolsFramework/UI/PropertyEditor/PropertyManagerComponent.h>
-#include <AzToolsFramework/UI/UICore/QTreeViewStateSaver.hxx>
-#include <AzToolsFramework/UI/UICore/QWidgetSavedState.h>
-
-#include <AtomToolsFramework/Util/Util.h>
-
-#include <Atom/RPI.Edit/Common/AssetUtils.h>
-#include <Atom/RPI.Public/RPISystemInterface.h>
-
-#include <Atom/Document/MaterialDocumentModule.h>
-#include <Atom/Document/MaterialDocumentSystemRequestBus.h>
-#include <Atom/Viewport/MaterialViewportModule.h>
-#include <Atom/Window/MaterialEditorWindowFactoryRequestBus.h>
-#include <Atom/Window/MaterialEditorWindowModule.h>
-#include <Atom/Window/MaterialEditorWindowRequestBus.h>
-
 #include <MaterialEditorApplication.h>
-#include <MaterialEditor_Traits_Platform.h>
 
-AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
-#include <QMessageBox>
-#include <QObject>
-AZ_POP_DISABLE_WARNING
+#include <Document/MaterialDocument.h>
+#include <Window/MaterialEditorMainWindow.h>
+
+void InitMaterialEditorResources()
+{
+    // Must register qt resources from other modules
+    Q_INIT_RESOURCE(MaterialEditor);
+    Q_INIT_RESOURCE(InspectorWidget);
+    Q_INIT_RESOURCE(AtomToolsAssetBrowser);
+}
 
 namespace MaterialEditor
 {
-    //! This function returns the build system target name of "MaterialEditor
-    AZStd::string MaterialEditorApplication::GetBuildTargetName() const
+    static const char* GetBuildTargetName()
     {
 #if !defined(LY_CMAKE_TARGET)
 #error "LY_CMAKE_TARGET must be defined in order to add this source file to a CMake executable target"
 #endif
-        return AZStd::string{ LY_CMAKE_TARGET };
+        return LY_CMAKE_TARGET;
+    }
+
+    MaterialEditorApplication::MaterialEditorApplication(int* argc, char*** argv)
+        : Base(GetBuildTargetName(), argc, argv)
+    {
+        InitMaterialEditorResources();
+
+        QApplication::setOrganizationName("O3DE");
+        QApplication::setApplicationName("O3DE Material Editor");
+        QApplication::setWindowIcon(QIcon(":/Icons/application.svg"));
+
+        AzToolsFramework::EditorWindowRequestBus::Handler::BusConnect();
+    }
+
+    MaterialEditorApplication::~MaterialEditorApplication()
+    {
+        AzToolsFramework::EditorWindowRequestBus::Handler::BusDisconnect();
+        m_window.reset();
+    }
+
+    void MaterialEditorApplication::Reflect(AZ::ReflectContext* context)
+    {
+        Base::Reflect(context);
+        MaterialDocument::Reflect(context);
     }
 
     const char* MaterialEditorApplication::GetCurrentConfigurationName() const
@@ -67,87 +66,41 @@ namespace MaterialEditor
 #endif
     }
 
-    MaterialEditorApplication::MaterialEditorApplication(int* argc, char*** argv)
-        : AtomToolsApplication(argc, argv)
+    void MaterialEditorApplication::StartCommon(AZ::Entity* systemEntity)
     {
-        QApplication::setApplicationName("O3DE Material Editor");
+        Base::StartCommon(systemEntity);
 
-        // The settings registry has been created at this point, so add the CMake target
-        AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddBuildSystemTargetSpecialization(
-            *AZ::SettingsRegistry::Get(), GetBuildTargetName());
-    }
+        // Overriding default document type info to provide a custom view
+        auto documentTypeInfo = MaterialDocument::BuildDocumentTypeInfo();
+        documentTypeInfo.m_documentViewFactoryCallback = [this]([[maybe_unused]] const AZ::Crc32& toolId, const AZ::Uuid& documentId) {
+            auto emptyWidget = new QWidget(m_window.get());
+            emptyWidget->setContentsMargins(0, 0, 0, 0);
+            emptyWidget->setFixedSize(0, 0);
+            return m_window->AddDocumentTab(documentId, emptyWidget);
+        };
+        AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Event(
+            m_toolId, &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Handler::RegisterDocumentType, documentTypeInfo);
 
-    MaterialEditorApplication::~MaterialEditorApplication()
-    {
-        MaterialEditorWindowNotificationBus::Handler::BusDisconnect();
-    }
+        m_viewportSettingsSystem.reset(aznew AtomToolsFramework::EntityPreviewViewportSettingsSystem(m_toolId));
 
-    void MaterialEditorApplication::CreateStaticModules(AZStd::vector<AZ::Module*>& outModules)
-    {
-        Base::CreateStaticModules(outModules);
-        outModules.push_back(aznew MaterialDocumentModule);
-        outModules.push_back(aznew MaterialViewportModule);
-        outModules.push_back(aznew MaterialEditorWindowModule);
-    }
-
-    void MaterialEditorApplication::OnMaterialEditorWindowClosing()
-    {
-        ExitMainLoop();
+        m_window.reset(aznew MaterialEditorMainWindow(m_toolId));
+        m_window->show();
     }
 
     void MaterialEditorApplication::Destroy()
     {
-        // before modules are unloaded, destroy UI to free up any assets it cached
-        MaterialEditor::MaterialEditorWindowFactoryRequestBus::Broadcast(
-            &MaterialEditor::MaterialEditorWindowFactoryRequestBus::Handler::DestroyMaterialEditorWindow);
-
-        MaterialEditorWindowNotificationBus::Handler::BusDisconnect();
-
+        m_window.reset();
+        m_viewportSettingsSystem.reset();
         Base::Destroy();
     }
 
     AZStd::vector<AZStd::string> MaterialEditorApplication::GetCriticalAssetFilters() const
     {
-        return AZStd::vector<AZStd::string>({ "passes/", "config/", "MaterialEditor" });
+        return AZStd::vector<AZStd::string>({ "passes/", "config/", "MaterialEditor/" });
     }
 
-    void MaterialEditorApplication::ProcessCommandLine(const AZ::CommandLine& commandLine)
+    QWidget* MaterialEditorApplication::GetAppMainWindow()
     {
-        const AZStd::string activateWindowSwitchName = "activatewindow";
-        if (commandLine.HasSwitch(activateWindowSwitchName))
-        {
-            MaterialEditor::MaterialEditorWindowRequestBus::Broadcast(
-                &MaterialEditor::MaterialEditorWindowRequestBus::Handler::ActivateWindow);
-        }
-
-        // Process command line options for opening one or more documents on startup
-        size_t openDocumentCount = commandLine.GetNumMiscValues();
-        for (size_t openDocumentIndex = 0; openDocumentIndex < openDocumentCount; ++openDocumentIndex)
-        {
-            const AZStd::string openDocumentPath = commandLine.GetMiscValue(openDocumentIndex);
-
-            AZ_Printf(GetBuildTargetName().c_str(), "Opening document: %s", openDocumentPath.c_str());
-            MaterialDocumentSystemRequestBus::Broadcast(&MaterialDocumentSystemRequestBus::Events::OpenDocument, openDocumentPath);
-        }
-
-        Base::ProcessCommandLine(commandLine);
-    }
-
-    void MaterialEditorApplication::StartInternal()
-    {
-        Base::StartInternal();
-
-        MaterialEditorWindowNotificationBus::Handler::BusConnect();
-
-        MaterialEditor::MaterialEditorWindowFactoryRequestBus::Broadcast(
-            &MaterialEditor::MaterialEditorWindowFactoryRequestBus::Handler::CreateMaterialEditorWindow);
-    }
-
-    void MaterialEditorApplication::Stop()
-    {
-        MaterialEditor::MaterialEditorWindowFactoryRequestBus::Broadcast(
-            &MaterialEditor::MaterialEditorWindowFactoryRequestBus::Handler::DestroyMaterialEditorWindow);
-
-        Base::Stop();
+        return m_window.get();
     }
 } // namespace MaterialEditor

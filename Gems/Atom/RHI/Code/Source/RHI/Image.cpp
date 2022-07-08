@@ -61,7 +61,7 @@ namespace AZ
             imageStats->m_bindFlags = descriptor.m_bindFlags;
 
             ImageSubresourceRange subresourceRange;
-            subresourceRange.m_mipSliceMin = GetResidentMipLevel();
+            subresourceRange.m_mipSliceMin = static_cast<uint16_t>(GetResidentMipLevel());
             GetSubresourceLayouts(subresourceRange, nullptr, &imageStats->m_sizeInBytes);
         }
     
@@ -73,6 +73,16 @@ namespace AZ
         ImageAspectFlags Image::GetAspectFlags() const
         {
             return m_aspectFlags;
+        }
+
+        const HashValue64 Image::GetHash() const
+        {
+            HashValue64 hash = HashValue64{ 0 };
+            hash = m_descriptor.GetHash();
+            hash = TypeHash64(m_supportedQueueMask, hash);
+            hash = TypeHash64(m_residentMipLevel, hash);
+            hash = TypeHash64(m_aspectFlags, hash);
+            return hash;
         }
     }
 }

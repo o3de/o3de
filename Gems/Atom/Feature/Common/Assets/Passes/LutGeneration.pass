@@ -1,0 +1,47 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "LutGenerationTemplate",
+            "PassClass": "LutGenerationPass",
+            "Slots": [
+                {
+                    "Name": "LutOutput",
+                    "SlotType": "Output",
+                    "ScopeAttachmentUsage": "RenderTarget",
+                    "LoadStoreAction": {
+                        "LoadAction": "DontCare"
+                    }
+                }
+            ],
+            "ImageAttachments": [
+                {
+                    "Name": "ColorGradingLut",
+                    "ImageDescriptor": {
+                        "Format": "R32G32B32A32_FLOAT",
+                        "BindFlags": [
+                            "ShaderWrite"
+                        ]
+                    }
+                }
+            ],
+            "Connections": [
+                {
+                    "LocalSlot": "LutOutput",
+                    "AttachmentRef": {
+                        "Pass": "This",
+                        "Attachment": "ColorGradingLut"
+                    }
+                }
+            ],
+            "PassData": {
+                "$type": "FullscreenTrianglePassData",
+                "ShaderAsset": {
+                    "FilePath": "Shaders/ColorGrading/LutGeneration.shader"
+                }
+            }
+        }
+    }
+}

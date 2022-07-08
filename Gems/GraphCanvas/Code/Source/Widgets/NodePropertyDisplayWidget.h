@@ -45,7 +45,7 @@ namespace GraphCanvas
         ////
 
         // RootGraphicsItemNotificationBus
-        void OnDisplayStateChanged(RootGraphicsItemDisplayState oldState, RootGraphicsItemDisplayState newState);
+        void OnDisplayStateChanged(RootGraphicsItemDisplayState oldState, RootGraphicsItemDisplayState newState) override;
         ////
         
         // NodePropertiesRequestBus
@@ -56,7 +56,7 @@ namespace GraphCanvas
         ////
         
         // NodePropertyRequestBus
-        void SetDisabled(bool disabled);
+        void SetDisabled(bool disabled) override;
         
         void SetNodePropertyDisplay(NodePropertyDisplay* nodePropertyDisplay) override;
         NodePropertyDisplay* GetNodePropertyDisplay() const override;

@@ -51,8 +51,6 @@ namespace Twitch
 
     void TwitchSystemComponent::SetApplicationID(const AZStd::string& twitchApplicationID)
     {
-        bool success = false;
-
         /*
         ** THIS CAN ONLY BE SET ONCE!!!!!!
         */
@@ -62,7 +60,6 @@ namespace Twitch
             if (IsValidTwitchAppID(twitchApplicationID))
             {
                 m_applicationID = twitchApplicationID;
-                success = true;
             }
             else
             {

@@ -171,7 +171,7 @@ namespace AzToolsFramework
         //! Snap the selected vertices to the terrain.
         //! Note: With a multi-selection the manipulator will be translated to the picked
         //! terrain position with all vertices moved relative to it.
-        void SnapVerticesToTerrain(const ViewportInteraction::MouseInteractionEvent& mouseInteraction);
+        void SnapVerticesToSurface(const ViewportInteraction::MouseInteractionEvent& mouseInteraction);
 
         //! The Actions provided by the EditorVertexSelection while it is active.
         //! e.g. Vertex deletion, duplication etc.

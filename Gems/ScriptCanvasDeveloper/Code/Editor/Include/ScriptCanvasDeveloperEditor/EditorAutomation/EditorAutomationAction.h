@@ -18,7 +18,7 @@
 
 class QMainWindow;
 
-namespace ScriptCanvasDeveloper
+namespace ScriptCanvas::Developer
 {
     typedef AZ::Outcome<void, AZStd::string> ActionReport;
 

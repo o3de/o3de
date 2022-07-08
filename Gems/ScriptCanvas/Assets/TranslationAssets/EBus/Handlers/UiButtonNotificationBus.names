@@ -1,0 +1,22 @@
+{
+    "entries": [
+        {
+            "base": "UiButtonNotificationBus",
+            "context": "EBusHandler",
+            "variant": "",
+            "details": {
+                "name": "UI Button",
+                "category": "UI"
+            },
+            "methods": [
+                {
+                    "base": "OnButtonClick",
+                    "details": {
+                        "name": "On Button Click",
+                        "tooltip": "Executes when the button has been clicked"
+                    }
+                }
+            ]
+        }
+    ]
+}

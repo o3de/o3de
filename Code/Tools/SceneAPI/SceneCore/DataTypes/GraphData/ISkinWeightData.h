@@ -28,6 +28,12 @@ namespace AZ
                 {
                     int boneId;
                     float weight;
+
+                    bool IsClose(const Link& other, float tolerance) const
+                    {
+                        return boneId == other.boneId &&
+                            AZ::IsClose(weight, other.weight, tolerance);
+                    }
                 };
 
                 virtual ~ISkinWeightData() override = default;

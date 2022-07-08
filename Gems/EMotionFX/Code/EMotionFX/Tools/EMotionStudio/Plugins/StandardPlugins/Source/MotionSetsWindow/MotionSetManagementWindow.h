@@ -43,7 +43,7 @@ namespace EMStudio
         MCORE_MEMORYOBJECTCATEGORY(MotionSetManagementRemoveMotionsFailedWindow, MCore::MCORE_DEFAULT_ALIGNMENT, MEMCATEGORY_STANDARDPLUGINS);
 
     public:
-        MotionSetManagementRemoveMotionsFailedWindow(QWidget* parent, const MCore::Array<EMotionFX::Motion*>& motions);
+        MotionSetManagementRemoveMotionsFailedWindow(QWidget* parent, const AZStd::vector<EMotionFX::Motion*>& motions);
     };
 
 
@@ -61,10 +61,9 @@ namespace EMStudio
         void Accepted();
 
     private:
-        EMotionFX::MotionSet*   mMotionSet;
-        QLineEdit*              mLineEdit;
-        QPushButton*            mOKButton;
-        //QLabel*               mErrorMsg;
+        EMotionFX::MotionSet*   m_motionSet;
+        QLineEdit*              m_lineEdit;
+        QPushButton*            m_okButton;
     };
 
 
@@ -81,7 +80,7 @@ namespace EMStudio
         bool Init();
         void ReInit();
 
-        void SelectItemsById(uint32 motionSetId);
+        void SelectItemsById(uint32 motionSetId, bool clearSelectionUpfront = false);
         void GetSelectedMotionSets(AZStd::vector<EMotionFX::MotionSet*>& outSelectedMotionSets) const;
 
         static void RecursiveRemoveMotionsFromSet(EMotionFX::MotionSet* motionSet, MCore::CommandGroup& commandGroup, AZStd::vector<EMotionFX::Motion*>& failedRemoveMotions);
@@ -95,8 +94,6 @@ namespace EMStudio
         void OnClearMotionSets();
 
         void OnSelectionChanged();
-
-        //void OnAdjustMotionSetDirectory();
 
         void OnOpen();
         void OnSave();
@@ -113,8 +110,7 @@ namespace EMStudio
         void contextMenuEvent(QContextMenuEvent* event) override;
 
     private:
-        QVBoxLayout* mVLayout = nullptr;
-        QTreeWidget* mMotionSetsTree = nullptr;
+        QTreeWidget* m_motionSetsTree = nullptr;
         QAction* m_addAction = nullptr;
         QAction* m_openAction = nullptr;
         QAction* m_saveMenuAction = nullptr;
@@ -122,6 +118,6 @@ namespace EMStudio
         QAction* m_saveAsAction = nullptr;
         AzQtComponents::FilteredSearchWidget* m_searchWidget = nullptr;
         AZStd::string m_searchWidgetText;
-        MotionSetsWindowPlugin* mPlugin = nullptr;
+        MotionSetsWindowPlugin* m_plugin = nullptr;
     };
 } // namespace EMStudio

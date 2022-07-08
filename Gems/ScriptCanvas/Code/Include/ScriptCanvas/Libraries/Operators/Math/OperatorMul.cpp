@@ -7,7 +7,6 @@
  */
 
 #include "OperatorMul.h"
-#include <ScriptCanvas/Libraries/Core/MethodUtility.h>
 #include <ScriptCanvas/Core/Contracts/MathOperatorContract.h>
 #include <AzCore/Math/MathUtils.h>
 #include <ScriptCanvas/Data/NumericData.h>
@@ -58,7 +57,7 @@ namespace ScriptCanvas
 
             void OperatorMul::Operator(Data::eType type, const ArithmeticOperands& operands, Datum& result)
             {
-                AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::ScriptCanvas);
+                AZ_PROFILE_FUNCTION(ScriptCanvas);
 
                 switch (type)
                 {

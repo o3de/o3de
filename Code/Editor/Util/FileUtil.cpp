@@ -23,9 +23,9 @@
 // AzCore
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
+#include <AzCore/Utils/Utils.h>
 
 // AzFramework
-#include <AzFramework/API/ApplicationAPI.h>
 
 // AzQtComponents
 #include <AzQtComponents/Utilities/DesktopUtilities.h>
@@ -42,8 +42,6 @@
 #include "CheckOutDialog.h"
 #include "ISourceControl.h"
 #include "Dialogs/Generic/UserOptions.h"
-#include "IAssetItem.h"
-#include "IAssetItemDatabase.h"
 #include "Include/IObjectManager.h"
 #include "UsedResources.h"
 #include "Objects/BaseObject.h"
@@ -54,92 +52,14 @@
 #include <Shellapi.h>
 #endif
 
-bool CFileUtil::s_singleFileDlgPref[IFileUtil::EFILE_TYPE_LAST] = { true, true, true, true, true };
-bool CFileUtil::s_multiFileDlgPref[IFileUtil::EFILE_TYPE_LAST] = { true, true, true, true, true };
+bool CFileUtil::s_singleFileDlgPref[IFileUtil::EFILE_TYPE_LAST] = { true, true, true, true };
+bool CFileUtil::s_multiFileDlgPref[IFileUtil::EFILE_TYPE_LAST] = { true, true, true, true };
 
 CAutoRestorePrimaryCDRoot::~CAutoRestorePrimaryCDRoot()
 {
     QDir::setCurrent(GetIEditor()->GetPrimaryCDFolder());
 }
 
-bool CFileUtil::CompileLuaFile(const char* luaFilename)
-{
-    QString luaFile = luaFilename;
-
-    if (luaFile.isEmpty())
-    {
-        return false;
-    }
-
-    // Check if this file is in Archive.
-    {
-        CCryFile file;
-        if (file.Open(luaFilename, "rb"))
-        {
-            // Check if in pack.
-            if (file.IsInPak())
-            {
-                return true;
-            }
-        }
-    }
-
-    luaFile = Path::GamePathToFullPath(luaFilename);
-
-    // First try compiling script and see if it have any errors.
-    QString LuaCompiler;
-    QString CompilerOutput;
-
-    // Create the filepath of the lua compiler
-    QString szExeFileName = qApp->applicationFilePath();
-    QString exePath = Path::GetPath(szExeFileName);
-
-#if defined(AZ_PLATFORM_WINDOWS)
-    const char* luaCompiler = "LuaCompiler.exe";
-#else
-    const char* luaCompiler = "lua";
-#endif
-    LuaCompiler = Path::AddPathSlash(exePath) + luaCompiler + " ";
-
-    AZStd::string path = luaFile.toUtf8().data();
-    EBUS_EVENT(AzFramework::ApplicationRequests::Bus, NormalizePath, path);
-
-    QString finalPath = path.c_str();
-    finalPath = "\"" + finalPath + "\"";
-
-    // Add the name of the Lua file
-    QString cmdLine = LuaCompiler + finalPath;
-
-    // Execute the compiler and capture the output
-    if (!GetIEditor()->ExecuteConsoleApp(cmdLine, CompilerOutput))
-    {
-        QMessageBox::critical(QApplication::activeWindow(), QString(), QObject::tr("Error while executing '%1', make sure the file is in" \
-            " your Primary CD folder !").arg(luaCompiler));
-        return false;
-    }
-
-    // Check return string
-    if (!CompilerOutput.isEmpty())
-    {
-        // Errors while compiling file.
-
-        // Show output from Lua compiler
-        if (QMessageBox::critical(QApplication::activeWindow(), QObject::tr("Lua Compiler"),
-            QObject::tr("Error output from Lua compiler:\r\n%1\r\nDo you want to edit the file ?").arg(CompilerOutput), QMessageBox::Yes | QMessageBox::No) == QMessageBox::Yes)
-        {
-            int line = 0;
-            int index = CompilerOutput.indexOf("at line");
-            if (index >= 0)
-            {
-                azsscanf(CompilerOutput.mid(index).toUtf8().data(), "at line %d", &line);
-            }
-            // Open the Lua file for editing
-            EditTextFile(luaFile.toUtf8().data(), line);
-        }
-        return false;
-    }
-    return true;
-}
 //////////////////////////////////////////////////////////////////////////
 bool CFileUtil::ExtractFile(QString& file, bool bMsgBoxAskForExtraction, const char* pDestinationFilename)
 {
@@ -149,12 +69,13 @@ bool CFileUtil::ExtractFile(QString& file, bool bMsgBoxAskForExtraction, const c
         // Check if in pack.
         if (cryfile.IsInPak())
         {
-            const char* sPakName = cryfile.GetPakPath();
-
             if (bMsgBoxAskForExtraction)
             {
+                AZ::IO::FixedMaxPath sPakName{ cryfile.GetPakPath() };
                 // Cannot edit file in pack, suggest to extract it for editing.
-                if (QMessageBox::critical(QApplication::activeWindow(), QString(), QObject::tr("File %1 is inside a PAK file %2\r\nDo you want it to be extracted for editing ?").arg(file, sPakName), QMessageBox::Yes | QMessageBox::No) == QMessageBox::No)
+                if (QMessageBox::critical(QApplication::activeWindow(), QString(),
+                    QObject::tr("File %1 is inside a PAK file %2\r\nDo you want it to be extracted for editing ?").arg(file, sPakName.c_str()),
+                    QMessageBox::Yes | QMessageBox::No) == QMessageBox::No)
                 {
                     return false;
                 }
@@ -173,10 +94,9 @@ bool CFileUtil::ExtractFile(QString& file, bool bMsgBoxAskForExtraction, const c
             if (diskFile.open(QFile::WriteOnly))
             {
                 // Copy data from packed file to disk file.
-                char* data = new char[cryfile.GetLength()];
-                cryfile.ReadRaw(data, cryfile.GetLength());
-                diskFile.write(data, cryfile.GetLength());
-                delete []data;
+                auto data = AZStd::make_unique<char[]>(cryfile.GetLength());
+                cryfile.ReadRaw(data.get(), cryfile.GetLength());
+                diskFile.write(data.get(), cryfile.GetLength());
             }
             else
             {
@@ -185,7 +105,14 @@ bool CFileUtil::ExtractFile(QString& file, bool bMsgBoxAskForExtraction, const c
         }
         else
         {
-            file = cryfile.GetAdjustedFilename();
+
+            if (auto fileIoBase = AZ::IO::FileIOBase::GetInstance(); fileIoBase != nullptr)
+            {
+                if (AZ::IO::FixedMaxPath resolvedFilePath; fileIoBase->ResolvePath(resolvedFilePath, cryfile.GetFilename()))
+                {
+                    file = QString::fromUtf8(resolvedFilePath.c_str(), static_cast<int>(resolvedFilePath.Native().size()));
+                }
+            }
         }
 
         return true;
@@ -198,7 +125,7 @@ void CFileUtil::EditTextFile(const char* txtFile, int line, IFileUtil::ETextFile
 {
     QString file = txtFile;
 
-    QString fullPathName =  Path::GamePathToFullPath(file);
+    QString fullPathName = Path::GamePathToFullPath(file);
     ExtractFile(fullPathName);
     QString cmd(fullPathName);
 #if defined (AZ_PLATFORM_WINDOWS)
@@ -264,7 +191,7 @@ void CFileUtil::EditTextureFile(const char* textureFile, [[maybe_unused]] bool b
     }
 
     bool failedToLaunch = true;
-    QByteArray textureEditorPath = gSettings.textureEditor.toUtf8();
+    const QString& textureEditorPath = gSettings.textureEditor;
 
     // Give the user a warning if they don't have a texture editor configured
     if (textureEditorPath.isEmpty())
@@ -278,8 +205,7 @@ void CFileUtil::EditTextureFile(const char* textureFile, [[maybe_unused]] bool b
     // Use the Win32 API calls to open the right editor; the OS knows how to do this even better than
     // Qt does.
     QString fullTexturePathFixedForWindows = QString(fullTexturePath.data()).replace('/', '\\');
-    QByteArray fullTexturePathFixedForWindowsUtf8 = fullTexturePathFixedForWindows.toUtf8();
-    HINSTANCE hInst = ShellExecute(NULL, "open", textureEditorPath.data(), fullTexturePathFixedForWindowsUtf8.data(), NULL, SW_SHOWNORMAL);
+    HINSTANCE hInst = ShellExecuteW(nullptr, L"open", textureEditorPath.toStdWString().c_str(), fullTexturePathFixedForWindows.toStdWString().c_str(), nullptr, SW_SHOWNORMAL);
     failedToLaunch = ((DWORD_PTR)hInst <= 32);
 #elif defined(AZ_PLATFORM_MAC)
     failedToLaunch = QProcess::execute(QString("/usr/bin/open"), {"-a", gSettings.textureEditor, QString(fullTexturePath.data()) }) != 0;
@@ -296,167 +222,9 @@ void CFileUtil::EditTextureFile(const char* textureFile, [[maybe_unused]] bool b
 }
 
 //////////////////////////////////////////////////////////////////////////
-bool CFileUtil::EditMayaFile(const char* filepath, const bool bExtractFromPak, const bool bUseGameFolder)
-{
-    QString dosFilepath = QtUtil::ToQString(PathUtil::ToDosPath(filepath));
-    if (bExtractFromPak)
-    {
-        ExtractFile(dosFilepath);
-    }
-
-    if (bUseGameFolder)
-    {
-        const QString sGameFolder = Path::GetEditingGameDataFolder().c_str();
-        int nLength = sGameFolder.toUtf8().count();
-        if (azstrnicmp(filepath, sGameFolder.toUtf8().data(), nLength) != 0)
-        {
-            dosFilepath = sGameFolder + '\\' + filepath;
-        }
-
-        dosFilepath = PathUtil::ToDosPath(dosFilepath.toUtf8().data());
-    }
-
-    const char* engineRoot;
-    EBUS_EVENT_RESULT(engineRoot, AzFramework::ApplicationRequests::Bus, GetEngineRoot);
-
-    const QString fullPath = QString(engineRoot) + '\\' + dosFilepath;
-
-    if (gSettings.animEditor.isEmpty())
-    {
-        AzQtComponents::ShowFileOnDesktop(fullPath);
-    }
-    else
-    {
-        if (!QProcess::startDetached(gSettings.animEditor, { fullPath }))
-        {
-            CryMessageBox("Can't open the file. You can specify a source editor in Sandbox Preferences or create an association in Windows.", "Cannot open file!", MB_OK | MB_ICONERROR);
-        }
-    }
-    return TRUE;
-}
-
-//////////////////////////////////////////////////////////////////////////
-bool CFileUtil::EditFile(const char* filePath, const bool bExtrackFromPak, const bool bUseGameFolder)
-{
-    QString extension = filePath;
-    extension.remove(0, extension.lastIndexOf('.'));
-
-    if (extension.compare(".ma") == 0)
-    {
-        return EditMayaFile(filePath, bExtrackFromPak, bUseGameFolder);
-    }
-    else if ((extension.compare(".bspace") == 0) || (extension.compare(".comb") == 0))
-    {
-        EditTextFile(filePath, 0, IFileUtil::FILE_TYPE_BSPACE);
-        return TRUE;
-    }
-
-    return FALSE;
-}
-
-//////////////////////////////////////////////////////////////////////////
-bool CFileUtil::CalculateDccFilename(const QString& assetFilename, QString& dccFilename)
-{
-    if (ExtractDccFilenameFromAssetDatabase(assetFilename, dccFilename))
-    {
-        return true;
-    }
-
-    if (ExtractDccFilenameUsingNamingConventions(assetFilename, dccFilename))
-    {
-        return true;
-    }
-
-    GetIEditor()->GetEnv()->pLog->LogError("Failed to find psd file for texture: '%s'", assetFilename.toUtf8().data());
-    return false;
-}
-
-//////////////////////////////////////////////////////////////////////////
-bool CFileUtil::ExtractDccFilenameFromAssetDatabase(const QString& assetFilename, QString& dccFilename)
-{
-    IAssetItemDatabase* pCurrentDatabaseInterface = NULL;
-    std::vector<IClassDesc*> assetDatabasePlugins;
-    IEditorClassFactory* pClassFactory = GetIEditor()->GetClassFactory();
-    pClassFactory->GetClassesByCategory("Asset Item DB", assetDatabasePlugins);
-
-    for (size_t i = 0; i < assetDatabasePlugins.size(); ++i)
-    {
-        if (assetDatabasePlugins[i]->QueryInterface(__uuidof(IAssetItemDatabase), (void**)&pCurrentDatabaseInterface) == S_OK)
-        {
-            if (!pCurrentDatabaseInterface)
-            {
-                continue;
-            }
-
-            QString assetDatabaseDccFilename;
-            IAssetItem* pAssetItem = pCurrentDatabaseInterface->GetAsset(assetFilename.toUtf8().data());
-            if (pAssetItem)
-            {
-                if ((pAssetItem->GetFlags() & IAssetItem::eFlag_Cached))
-                {
-                    QVariant v = pAssetItem->GetAssetFieldValue("dccfilename");
-                    assetDatabaseDccFilename = v.toString();
-                    if (!v.isNull())
-                    {
-                        dccFilename = assetDatabaseDccFilename;
-                        dccFilename = Path::GetRelativePath(dccFilename, false);
-
-                        uint32 attr = CFileUtil::GetAttributes(dccFilename.toUtf8().data());
-
-                        if (CFileUtil::FileExists(dccFilename))
-                        {
-                            return true;
-                        }
-                        else if (GetIEditor()->IsSourceControlAvailable() && (attr & SCC_FILE_ATTRIBUTE_MANAGED))
-                        {
-                            return CFileUtil::GetLatestFromSourceControl(dccFilename.toUtf8().data());
-                        }
-                    }
-                }
-            }
-        }
-    }
-    return false;
-}
-
-//////////////////////////////////////////////////////////////////////////
-bool CFileUtil::ExtractDccFilenameUsingNamingConventions(const QString& assetFilename, QString& dccFilename)
-{
-    //else to try find it by naming conventions
-    QString tempStr = assetFilename;
-    int foundSplit = -1;
-    if ((foundSplit = tempStr.lastIndexOf('.')) > 0)
-    {
-        QString first = tempStr.mid(0, foundSplit);
-        tempStr = first + ".psd";
-    }
-    if (CFileUtil::FileExists(tempStr))
-    {
-        dccFilename = tempStr;
-        return true;
-    }
-
-    //else try to find it by replacing post fix _<description> with .psd
-    tempStr = assetFilename;
-    foundSplit = -1;
-    if ((foundSplit = tempStr.lastIndexOf('_')) > 0)
-    {
-        QString first = tempStr.mid(0, foundSplit);
-        tempStr = first + ".psd";
-    }
-    if (CFileUtil::FileExists(tempStr))
-    {
-        dccFilename = tempStr;
-        return true;
-    }
-
-    return false;
-}
-
-//////////////////////////////////////////////////////////////////////////
 void CFileUtil::FormatFilterString(QString& filter)
 {
-    const int numPipeChars = std::count(filter.begin(), filter.end(), '|');
+    const int numPipeChars = static_cast<int>(std::count(filter.begin(), filter.end(), '|'));
     if (numPipeChars == 1)
     {
         filter = QStringLiteral("%1||").arg(filter);
@@ -592,7 +360,7 @@ inline bool ScanDirectoryFiles(const QString& root, const QString& path, const Q
 
     /*
     CFileFind finder;
-    BOOL bWorking = finder.FindFile( Path::Make(dir,fileSpec) );
+    bool bWorking = finder.FindFile( Path::Make(dir,fileSpec) );
     while (bWorking)
     {
         bWorking = finder.FindNextFile();
@@ -663,7 +431,7 @@ inline int ScanDirectoryRecursive(const QString& root, const QString& path, cons
     {
         /*
         CFileFind finder;
-        BOOL bWorking = finder.FindFile( Path::Make(dir,"*.*") );
+        bool bWorking = finder.FindFile( Path::Make(dir,"*.*") );
         while (bWorking)
         {
             bWorking = finder.FindNextFile();
@@ -847,12 +615,12 @@ void BlockAndWait(const bool& opComplete, QWidget* parent, const char* message)
             {
                 // note that 16ms below is not the amount of time to wait, its the maximum time that
                 // processEvents is allowed to keep processing them if they just keep being emitted.
-                // adding a maximum time here means that we get an opportunity to pump the TickBus 
+                // adding a maximum time here means that we get an opportunity to pump the TickBus
                 // periodically even during a flood of events.
                 QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents, 16);
                 AZ::TickBus::ExecuteQueuedEvents();
             }
-            
+
             // if we are not the main thread then the above will be done by the main thread, and we can just wait for it to happen.
             // its fairly important we don't sleep for really long because this legacy code is often invoked in a blocking loop
             // for many items, and in the worst case, any time we spend sleeping here will be added to each item.
@@ -1189,7 +957,7 @@ bool   CFileUtil::IsFileExclusivelyAccessable(const QString& strFilePath)
 //////////////////////////////////////////////////////////////////////////
 bool   CFileUtil::CreatePath(const QString& strPath)
 {
-#if defined(AZ_PLATFORM_MAC)
+#if !AZ_TRAIT_OS_USE_WINDOWS_FILE_PATHS
     bool pathCreated = true;
 
     QString cleanPath = QDir::cleanPath(strPath);
@@ -1206,10 +974,10 @@ bool   CFileUtil::CreatePath(const QString& strPath)
     QString                                 strFilename;
     QString                                 strExtension;
     QString                                 strCurrentDirectoryPath;
-    QStringList        cstrDirectoryQueue;
+    QStringList                             cstrDirectoryQueue;
     size_t                                  nCurrentPathQueue(0);
     size_t                                  nTotalPathQueueElements(0);
-    BOOL                                        bnLastDirectoryWasCreated(FALSE);
+    bool                                    bnLastDirectoryWasCreated(false);
 
     if (PathExists(strPath))
     {
@@ -1222,15 +990,14 @@ bool   CFileUtil::CreatePath(const QString& strPath)
     if (!strDriveLetter.isEmpty())
     {
         strCurrentDirectoryPath = strDriveLetter;
-        strCurrentDirectoryPath += "\\";
+        strCurrentDirectoryPath += AZ_CORRECT_FILESYSTEM_SEPARATOR_STRING;
     }
-
 
     nTotalPathQueueElements = cstrDirectoryQueue.size();
     for (nCurrentPathQueue = 0; nCurrentPathQueue < nTotalPathQueueElements; ++nCurrentPathQueue)
     {
-        strCurrentDirectoryPath += cstrDirectoryQueue[nCurrentPathQueue];
-        strCurrentDirectoryPath += "\\";
+        strCurrentDirectoryPath += cstrDirectoryQueue[static_cast<int>(nCurrentPathQueue)];
+        strCurrentDirectoryPath += AZ_CORRECT_FILESYSTEM_SEPARATOR_STRING;
         // The value which will go out of this loop is the result of the attempt to create the
         // last directory, only.
 
@@ -1247,7 +1014,7 @@ bool   CFileUtil::CreatePath(const QString& strPath)
     }
 
     return true;
-#endif
+#endif // !AZ_TRAIT_OS_USE_WINDOWS_FILE_PATHS
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1304,7 +1071,7 @@ IFileUtil::ECopyTreeResult CFileUtil::CopyTree(const QString& strSourceDirectory
     // all with the same names and all with the same files names inside. If you would make a depth-first search
     // you could end up with the files from the deepest folder in ALL your folders.
 
-    std::vector<string> ignoredPatterns;
+    std::vector<AZStd::string> ignoredPatterns;
     StringHelpers::Split(ignoreFilesAndFolders, "|", false, ignoredPatterns);
 
     QDirIterator::IteratorFlags flags = QDirIterator::NoIteratorFlags;
@@ -1330,7 +1097,7 @@ IFileUtil::ECopyTreeResult CFileUtil::CopyTree(const QString& strSourceDirectory
         const QString fileName = QFileInfo(filePath).fileName();
 
         bool ignored = false;
-        for (const string& ignoredFile : ignoredPatterns)
+        for (const AZStd::string& ignoredFile : ignoredPatterns)
         {
             if (StringHelpers::CompareIgnoreCase(fileName.toStdString().c_str(), ignoredFile.c_str()) == 0)
             {
@@ -1361,7 +1128,7 @@ IFileUtil::ECopyTreeResult CFileUtil::CopyTree(const QString& strSourceDirectory
     nTotal = cFiles.size();
     for (nCurrent = 0; nCurrent < nTotal; ++nCurrent)
     {
-        BOOL        bnLastFileWasCopied(FALSE);
+        bool        bnLastFileWasCopied(false);
 
 
         if (eCopyResult == IFileUtil::ETREECOPYUSERCANCELED)
@@ -1369,8 +1136,8 @@ IFileUtil::ECopyTreeResult CFileUtil::CopyTree(const QString& strSourceDirectory
             return eCopyResult;
         }
 
-        QString sourceName = sourceDir.absoluteFilePath(cFiles[nCurrent]);
-        QString targetName = targetDir.absoluteFilePath(cFiles[nCurrent]);
+        QString sourceName = sourceDir.absoluteFilePath(cFiles[static_cast<int>(nCurrent)]);
+        QString targetName = targetDir.absoluteFilePath(cFiles[static_cast<int>(nCurrent)]);
 
         if (boConfirmOverwrite)
         {
@@ -1388,7 +1155,7 @@ IFileUtil::ECopyTreeResult CFileUtil::CopyTree(const QString& strSourceDirectory
                         const int ret = QMessageBox::question(AzToolsFramework::GetActiveWindow(),
                             QObject::tr("Confirm file overwrite?"),
                             QObject::tr("There is already a file named \"%1\" in the target folder. Do you want to move this file anyway replacing the old one?")
-                                .arg(cFiles[nCurrent]),
+                                .arg(cFiles[static_cast<int>(nCurrent)]),
                             QMessageBox::YesToAll | QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
 
                         switch (ret) {
@@ -1447,10 +1214,10 @@ IFileUtil::ECopyTreeResult CFileUtil::CopyTree(const QString& strSourceDirectory
             return eCopyResult;
         }
 
-        BOOL        bnLastDirectoryWasCreated(FALSE);
+        bool        bnLastDirectoryWasCreated(false);
 
-        QString sourceName = sourceDir.absoluteFilePath(cDirectories[nCurrent]);
-        QString targetName = targetDir.absoluteFilePath(cDirectories[nCurrent]);
+        QString sourceName = sourceDir.absoluteFilePath(cDirectories[static_cast<int>(nCurrent)]);
+        QString targetName = targetDir.absoluteFilePath(cDirectories[static_cast<int>(nCurrent)]);
 
         bnLastDirectoryWasCreated = QDir().mkpath(targetName);
 
@@ -1474,7 +1241,7 @@ IFileUtil::ECopyTreeResult CFileUtil::CopyTree(const QString& strSourceDirectory
                         const int ret = QMessageBox::question(AzToolsFramework::GetActiveWindow(),
                             QObject::tr("Confirm directory overwrite?"),
                             QObject::tr("There is already a folder named \"%1\" in the target folder. Do you want to move this folder anyway?")
-                                .arg(cDirectories[nCurrent]),
+                                .arg(cDirectories[static_cast<int>(nCurrent)]),
                             QMessageBox::YesToAll | QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
 
                         switch (ret) {
@@ -1529,7 +1296,7 @@ IFileUtil::ECopyTreeResult   CFileUtil::CopyFile(const QString& strSourceFile, c
     CUserOptions                            oFileOptions;
     IFileUtil::ECopyTreeResult                      eCopyResult(IFileUtil::ETREECOPYOK);
 
-    BOOL                                            bnLastFileWasCopied(FALSE);
+    bool                                        bnLastFileWasCopied(false);
     QString                                     name(strSourceFile);
     QString                                     strQueryFilename;
     QString                                     strFullStargetName;
@@ -1658,7 +1425,7 @@ IFileUtil::ECopyTreeResult   CFileUtil::CopyFile(const QString& strSourceFile, c
                 }
                 if (pfnProgress)
                 {
-                    pfnProgress(source.size(), totalRead, 0, 0, 0, 0, 0, 0, 0);
+                    pfnProgress(source.size(), totalRead, 0, 0, 0, 0, nullptr, nullptr, nullptr);
                 }
             }
             if (totalRead != source.size())
@@ -1742,9 +1509,9 @@ IFileUtil::ECopyTreeResult   CFileUtil::MoveTree(const QString& strSourceDirecto
             return eCopyResult;
         }
 
-        BOOL        bnLastFileWasCopied(FALSE);
-        QString sourceName(sourceDir.absoluteFilePath(cFiles[nCurrent]));
-        QString targetName(targetDir.absoluteFilePath(cFiles[nCurrent]));
+        bool    bnLastFileWasCopied(false);
+        QString sourceName(sourceDir.absoluteFilePath(cFiles[static_cast<int>(nCurrent)]));
+        QString targetName(targetDir.absoluteFilePath(cFiles[static_cast<int>(nCurrent)]));
 
         if (boConfirmOverwrite)
         {
@@ -1762,7 +1529,7 @@ IFileUtil::ECopyTreeResult   CFileUtil::MoveTree(const QString& strSourceDirecto
                         const int ret = QMessageBox::question(AzToolsFramework::GetActiveWindow(),
                             QObject::tr("Confirm file overwrite?"),
                             QObject::tr("There is already a file named \"%1\" in the target folder. Do you want to move this file anyway replacing the old one?")
-                                .arg(cFiles[nCurrent]),
+                                .arg(cFiles[static_cast<int>(nCurrent)]),
                             QMessageBox::YesToAll | QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
 
                         switch (ret) {
@@ -1816,15 +1583,15 @@ IFileUtil::ECopyTreeResult   CFileUtil::MoveTree(const QString& strSourceDirecto
     nTotal = cDirectories.size();
     for (nCurrent = 0; nCurrent < nTotal; ++nCurrent)
     {
-        BOOL        bnLastDirectoryWasCreated(FALSE);
+        bool        bnLastDirectoryWasCreated(false);
 
         if (eCopyResult == IFileUtil::ETREECOPYUSERCANCELED)
         {
             return eCopyResult;
         }
 
-        QString sourceName(sourceDir.absoluteFilePath(cDirectories[nCurrent]));
-        QString targetName(targetDir.absoluteFilePath(cDirectories[nCurrent]));
+        QString sourceName(sourceDir.absoluteFilePath(cDirectories[static_cast<int>(nCurrent)]));
+        QString targetName(targetDir.absoluteFilePath(cDirectories[static_cast<int>(nCurrent)]));
 
         bnLastDirectoryWasCreated = QDir().mkdir(targetName);
 
@@ -1848,7 +1615,7 @@ IFileUtil::ECopyTreeResult   CFileUtil::MoveTree(const QString& strSourceDirecto
                         const int ret = QMessageBox::question(AzToolsFramework::GetActiveWindow(),
                             QObject::tr("Confirm directory overwrite?"),
                             QObject::tr("There is already a folder named \"%1\" in the target folder. Do you want to move this folder anyway?")
-                                .arg(cDirectories[nCurrent]),
+                                .arg(cDirectories[static_cast<int>(nCurrent)]),
                             QMessageBox::YesToAll | QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
 
                         switch (ret) {
@@ -1900,74 +1667,23 @@ IFileUtil::ECopyTreeResult   CFileUtil::MoveTree(const QString& strSourceDirecto
     return eCopyResult;
 }
 
-QString CFileUtil::PopupQMenu(const QString& filename, const QString& fullGamePath, QWidget* parent)
+void CFileUtil::PopulateQMenu(QWidget* caller, QMenu* menu, AZStd::string_view fullGamePath)
 {
-    QStringList extraItemsFront;
-    return PopupQMenu(filename, fullGamePath, parent, nullptr, extraItemsFront);
+    PopulateQMenu(caller, menu, fullGamePath, nullptr);
 }
 
-QString CFileUtil::PopupQMenu(const QString& filename, const QString& fullGamePath, QWidget* parent, [[maybe_unused]] bool* pIsSelected, const QStringList& extraItemsFront)
+void CFileUtil::PopulateQMenu(QWidget* caller, QMenu* menu, AZStd::string_view fullGamePath, bool* isSelected)
 {
-    QStringList extraItemsBack;
-    return PopupQMenu(filename, fullGamePath, parent, nullptr, extraItemsFront, extraItemsBack);
-}
+    // Normalize the full path so we get consistent separators
+    AZStd::string fullFilePath(fullGamePath);
+    AzFramework::StringFunc::Path::Normalize(fullFilePath);
 
-QString CFileUtil::PopupQMenu(const QString& filename, const QString& fullGamePath, QWidget* parent, bool* pIsSelected, const QStringList& extraItemsFront, const QStringList& extraItemsBack)
-{
-    QMenu menu;
-
-    foreach(QString text, extraItemsFront)
-    {
-        if (!text.isEmpty())
-        {
-            menu.addAction(text);
-        }
-    }
-    if (extraItemsFront.count())
-    {
-        menu.addSeparator();
-    }
-
-    PopulateQMenu(parent, &menu, filename, fullGamePath, pIsSelected);
-    if (extraItemsBack.count())
-    {
-        menu.addSeparator();
-    }
-    foreach(QString text, extraItemsBack)
-    {
-        if (!text.isEmpty())
-        {
-            menu.addAction(text);
-        }
-    }
-
-    QAction* result = menu.exec(QCursor::pos());
-    return result ? result->text() : QString();
-}
-
-void CFileUtil::PopulateQMenu(QWidget* caller, QMenu* menu, const QString& filename, const QString& fullGamePath)
-{
-    PopulateQMenu(caller, menu, filename, fullGamePath, nullptr);
-}
-
-void CFileUtil::PopulateQMenu(QWidget* caller, QMenu* menu, const QString& filename, const QString& fullGamePath, bool* isSelected)
-{
-    QString fullPath;
+    QString fullPath(fullFilePath.c_str());
+    QFileInfo fileInfo(fullPath);
 
     if (isSelected)
     {
         *isSelected = false;
-    }
-
-    if (!filename.isEmpty())
-    {
-        QString path = Path::MakeGamePath(fullGamePath);
-        path = Path::AddSlash(path) + filename;
-        fullPath = Path::GamePathToFullPath(path);
-    }
-    else
-    {
-        fullPath = fullGamePath;
     }
 
     uint32 nFileAttr = CFileUtil::GetAttributes(fullPath.toUtf8().data());
@@ -2005,21 +1721,13 @@ void CFileUtil::PopulateQMenu(QWidget* caller, QMenu* menu, const QString& filen
 
     action = menu->addAction(QObject::tr("Copy Name To Clipboard"), [=]()
     {
-        if (filename.isEmpty())
-        {
-            QFileInfo fi(fullGamePath);
-            QString file = fi.completeBaseName();
-            QApplication::clipboard()->setText(file);
-        }
-        else
-        {
-            QApplication::clipboard()->setText(filename);
-        }
+        QString fileName = fileInfo.completeBaseName();
+        QApplication::clipboard()->setText(fileName);
     });
 
     action = menu->addAction(QObject::tr("Copy Path To Clipboard"), [fullPath]() { QApplication::clipboard()->setText(fullPath); });
 
-    if (!filename.isEmpty() && GetIEditor()->IsSourceControlAvailable() && nFileAttr != SCC_FILE_ATTRIBUTE_INVALID)
+    if (fileInfo.isFile() && GetIEditor()->IsSourceControlAvailable() && nFileAttr != SCC_FILE_ATTRIBUTE_INVALID)
     {
         bool isEnableSC = nFileAttr & SCC_FILE_ATTRIBUTE_MANAGED;
         bool isInPak = nFileAttr & SCC_FILE_ATTRIBUTE_INPAK;
@@ -2218,13 +1926,13 @@ uint32 CFileUtil::GetAttributes(const char* filename, bool bUseSourceControl /*=
         return SCC_FILE_ATTRIBUTE_READONLY | SCC_FILE_ATTRIBUTE_INPAK;
     }
 
-    DWORD dwAttrib = ::GetFileAttributes(file.GetAdjustedFilename());
-    if (dwAttrib == INVALID_FILE_ATTRIBUTES)
+    auto fileIoBase = AZ::IO::FileIOBase::GetInstance();
+    if (!fileIoBase->Exists(file.GetFilename()))
     {
         return SCC_FILE_ATTRIBUTE_INVALID;
     }
 
-    if (dwAttrib & FILE_ATTRIBUTE_READONLY)
+    if (fileIoBase->IsReadOnly(file.GetFilename()))
     {
         return SCC_FILE_ATTRIBUTE_NORMAL | SCC_FILE_ATTRIBUTE_READONLY;
     }

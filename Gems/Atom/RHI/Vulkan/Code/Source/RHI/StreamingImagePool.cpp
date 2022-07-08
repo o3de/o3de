@@ -76,11 +76,18 @@ namespace AZ
                 return RHI::ResultCode::OutOfMemory;
             }
 
+            auto memoryView = m_memoryAllocator.Allocate(memoryRequirements.size, memoryRequirements.alignment);
+            if (!memoryView.IsValid())
+            {
+                memoryUsage.m_reservedInBytes -= memoryRequirements.size;
+                return RHI::ResultCode::OutOfMemory;
+            }
+
             RHI::ResultCode result = image.Init(device, imageDescriptor);
             RETURN_RESULT_IF_UNSUCCESSFUL(result);
 
             result = image.BindMemoryView(
-                m_memoryAllocator.Allocate(image.m_memoryRequirements.size, image.m_memoryRequirements.alignment), 
+                memoryView, 
                 m_memoryAllocator.GetDescriptor().m_heapMemoryLevel);
             RETURN_RESULT_IF_UNSUCCESSFUL(result);
 
@@ -108,7 +115,7 @@ namespace AZ
 
             WaitFinishUploading(image);
 
-            const uint16_t residentMipLevelBefore = image.GetResidentMipLevel();
+            const uint16_t residentMipLevelBefore = static_cast<uint16_t>(image.GetResidentMipLevel());
             const uint16_t residentMipLevelAfter = residentMipLevelBefore - static_cast<uint16_t>(request.m_mipSlices.size());
             const VkMemoryRequirements memoryRequirements = GetMemoryRequirements(image.GetDescriptor(), residentMipLevelAfter);
 
@@ -149,11 +156,10 @@ namespace AZ
             // Set streamed mip level to target mip level.
             if (image.GetStreamedMipLevel() < targetMipLevel)
             {
-                image.SetStreamedMipLevel(targetMipLevel);
+                image.SetStreamedMipLevel(static_cast<uint16_t>(targetMipLevel));
             }
 
             const VkMemoryRequirements memoryRequirements = GetMemoryRequirements(image.GetDescriptor(), targetMipLevel);
-            const uint16_t residentMipLevelBefore = image.GetResidentMipLevel();
 
             RHI::HeapMemoryUsage& memoryUsage = m_memoryUsage.GetHeapMemoryUsage(RHI::HeapMemoryLevel::Device);
             const size_t imageSizeBefore = image.GetResidentSizeInBytes();
@@ -188,6 +194,12 @@ namespace AZ
             image.Invalidate();
         }
 
+        void StreamingImagePool::ComputeFragmentation() const
+        {
+            const RHI::HeapMemoryUsage& memoryUsage = m_memoryUsage.GetHeapMemoryUsage(RHI::HeapMemoryLevel::Device);
+            memoryUsage.m_fragmentation = m_memoryAllocator.ComputeFragmentation();
+        }
+
         void StreamingImagePool::OnFrameEnd()
         {
             m_memoryAllocator.GarbageCollect();
@@ -203,7 +215,7 @@ namespace AZ
             residentImageDescriptor.m_size = imageDescriptor.m_size.GetReducedMip(residentMipLevel);
             residentImageDescriptor.m_size.m_width = RHI::AlignUp(residentImageDescriptor.m_size.m_width, alignment);
             residentImageDescriptor.m_size.m_height = RHI::AlignUp(residentImageDescriptor.m_size.m_height, alignment);
-            residentImageDescriptor.m_mipLevels = imageDescriptor.m_mipLevels - residentMipLevel;
+            residentImageDescriptor.m_mipLevels = imageDescriptor.m_mipLevels - static_cast<uint16_t>(residentMipLevel);
 
             return device.GetImageMemoryRequirements(imageDescriptor);
         }

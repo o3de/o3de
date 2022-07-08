@@ -10,7 +10,6 @@ AzToolsFramework--EntityOutlinerWidget #m_display_options
 {
     qproperty-icon: url(:/stylesheet/img/UI20/menu-centered.svg);
     qproperty-iconSize: 16px 16px;
-    qproperty-flat: true;
 }
 
 AzToolsFramework--EntityOutlinerWidget QTreeView
@@ -18,18 +17,19 @@ AzToolsFramework--EntityOutlinerWidget QTreeView
     selection-background-color: transparent;
 }
 
+
+/* 	
+ *  Entity Outliner handles hover and selected state of items via code,
+ *  so we need to override the AzQtComponents::Treeview style.
+ */
 AzToolsFramework--EntityOutlinerWidget QTreeView::branch:hover
 , AzToolsFramework--EntityOutlinerWidget QTreeView::item:hover
-{
-    background: rgba(255, 255, 255, 30);
-}
-
-AzToolsFramework--EntityOutlinerWidget QTreeView::branch:selected
+, AzToolsFramework--EntityOutlinerWidget QTreeView::branch:selected
 , AzToolsFramework--EntityOutlinerWidget QTreeView::item:selected
 , AzToolsFramework--EntityOutlinerWidget QTreeView::branch:selected:active
 , AzToolsFramework--EntityOutlinerWidget QTreeView::item:selected:active
 {
-    background: rgba(255, 255, 255, 45);
+    background: transparent;
 }
 
 
@@ -43,7 +43,6 @@ AzToolsFramework--EntityOutlinerCheckBox
     padding: 0;
 	padding-right: 2px;
     line-height: 0px;
-    font-size: 0px;
     margin: 0px;
     max-height: 20px;
     max-width: 18px;
@@ -59,7 +58,6 @@ AzToolsFramework--EntityOutlinerCheckBox::indicator
     spacing: 0px;
     padding: 0px;
     line-height: 0px;
-    font-size: 0px;
     margin: 3px 0 0 0;
     max-width: 18px;
     width: 18px;

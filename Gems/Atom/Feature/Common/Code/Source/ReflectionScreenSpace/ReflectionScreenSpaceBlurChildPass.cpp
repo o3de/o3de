@@ -30,7 +30,7 @@ namespace AZ
         void ReflectionScreenSpaceBlurChildPass::FrameBeginInternal(FramePrepareParams params)
         {
             // get attachment size
-            RPI::PassAttachment* inputAttachment = GetInputOutputBinding(0).m_attachment.get();
+            RPI::PassAttachment* inputAttachment = GetInputOutputBinding(0).GetAttachment().get();
             AZ_Assert(inputAttachment, "ReflectionScreenSpaceBlurChildPass: Input binding has no attachment!");
 
             RHI::Size size = inputAttachment->m_descriptor.m_image.m_size;
@@ -38,14 +38,14 @@ namespace AZ
             if (m_imageSize != size)
             {
                 m_imageSize = size;
-                m_outputScale = (m_passType == PassType::Vertical) ? pow(2.0f, m_mipLevel) : 1.0f;
+                m_outputScale = (m_passType == PassType::Vertical) ? static_cast<float>(pow(2.0f, m_mipLevel)) : 1.0f;
 
                 m_updateSrg = true;
             }
 
             float inverseScale = 1.0f / m_outputScale;
-            uint32_t outputWidth = m_imageSize.m_width * inverseScale;
-            uint32_t outputHeight = m_imageSize.m_height * inverseScale;
+            uint32_t outputWidth = static_cast<uint32_t>(m_imageSize.m_width * inverseScale);
+            uint32_t outputHeight = static_cast<uint32_t>(m_imageSize.m_height * inverseScale);
 
             params.m_viewportState = RHI::Viewport(0, static_cast<float>(outputWidth), 0, static_cast<float>(outputHeight));
             params.m_scissorState = RHI::Scissor(0, 0, outputWidth, outputHeight);

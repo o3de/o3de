@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <AzCore/RTTI/TypeInfo.h>
+#include <AzCore/RTTI/TypeInfoSimple.h>
 #include <AzCore/RTTI/TypeSafeIntegral.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 

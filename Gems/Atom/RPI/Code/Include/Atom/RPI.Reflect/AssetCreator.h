@@ -28,6 +28,7 @@ namespace AZ
             // [GFX TODO] We need to iterate on this concept at some point. We may want to expose it through cvars or something
             // like that, or we may not need this at all. For now it's helpful for testing.
             void SetElevateWarnings(bool elevated);
+            bool GetElevateWarnings() const { return m_warningsElevated; }
 
             int GetErrorCount() const { return m_errorCount; }
             int GetWarningCount() const { return m_warningCount; }
@@ -118,7 +119,7 @@ namespace AZ
 
             ResetIssueCounts(); // Because the asset creator can be used multiple times
 
-            m_asset = Data::AssetManager::Instance().CreateAsset<AssetDataT>(assetId, AZ::Data::AssetLoadBehavior::PreLoad);
+            m_asset = Data::Asset<AssetDataT>(assetId, aznew AssetDataT, AZ::Data::AssetLoadBehavior::PreLoad);
             m_beginCalled = true;
 
             if (!m_asset)
@@ -138,6 +139,7 @@ namespace AZ
             }
             else
             {
+                Data::AssetManager::Instance().AssignAssetData(m_asset);
                 result = AZStd::move(m_asset);
                 success = true;
             }
@@ -153,7 +155,9 @@ namespace AZ
         void AssetCreator<AssetDataT>::ReportError([[maybe_unused]] const char* format, [[maybe_unused]] Args... args)
         {
             ++m_errorCount;
+#if defined(AZ_ENABLE_TRACING) // disabling since it requires argument expansion in this context
             AZ_Error(m_assetClassName, false, format, args...);
+#endif
         }
 
         template<typename AssetDataT>
@@ -161,7 +165,9 @@ namespace AZ
         void AssetCreator<AssetDataT>::ReportWarning([[maybe_unused]] const char* format, [[maybe_unused]] Args... args)
         {
             ++m_warningCount;
+#if defined(AZ_ENABLE_TRACING) // disabling since it requires argument expansion in this context
             AZ_Warning(m_assetClassName, false, format, args...);
+#endif
         }
 
         template<typename AssetDataT>

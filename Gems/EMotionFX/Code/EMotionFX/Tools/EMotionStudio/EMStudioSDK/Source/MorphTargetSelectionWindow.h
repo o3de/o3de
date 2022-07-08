@@ -38,9 +38,9 @@ namespace EMStudio
         void OnSelectionChanged();
 
     private:
-        AZStd::vector<uint32>   mSelection;
-        QListWidget*            mListWidget;
-        QPushButton*            mOKButton;
-        QPushButton*            mCancelButton;
+        AZStd::vector<uint32>   m_selection;
+        QListWidget*            m_listWidget;
+        QPushButton*            m_okButton;
+        QPushButton*            m_cancelButton;
     };
 } // namespace EMStudio

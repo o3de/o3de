@@ -92,35 +92,11 @@ namespace AZ::Render
         }
     }
 
-    void SphereLightDelegate::SetSofteningBoundaryWidthAngle(float widthInDegrees)
-    {
-        if (GetShadowsEnabled() && GetLightHandle().IsValid())
-        {
-            GetFeatureProcessor()->SetSofteningBoundaryWidthAngle(GetLightHandle(), DegToRad(widthInDegrees));
-        }
-    }
-
-    void SphereLightDelegate::SetPredictionSampleCount(uint32_t count)
-    {
-        if (GetShadowsEnabled() && GetLightHandle().IsValid())
-        {
-            GetFeatureProcessor()->SetPredictionSampleCount(GetLightHandle(), count);
-        }
-    }
-
     void SphereLightDelegate::SetFilteringSampleCount(uint32_t count)
     {
         if (GetShadowsEnabled() && GetLightHandle().IsValid())
         {
-            GetFeatureProcessor()->SetFilteringSampleCount(GetLightHandle(), count);
-        }
-    }
-
-    void SphereLightDelegate::SetPcfMethod(PcfMethod method)
-    {
-        if (GetShadowsEnabled() && GetLightHandle().IsValid())
-        {
-            GetFeatureProcessor()->SetPcfMethod(GetLightHandle(), method);
+            GetFeatureProcessor()->SetFilteringSampleCount(GetLightHandle(), static_cast<uint16_t>(count));
         }
     }
 
@@ -131,4 +107,29 @@ namespace AZ::Render
             GetFeatureProcessor()->SetEsmExponent(GetLightHandle(), esmExponent);
         }
     }
+
+    void SphereLightDelegate::SetNormalShadowBias(float bias)
+    {
+        if (GetShadowsEnabled() && GetLightHandle().IsValid())
+        {
+            GetFeatureProcessor()->SetNormalShadowBias(GetLightHandle(), bias);
+        }
+    }
+
+    void SphereLightDelegate::SetAffectsGI(bool affectsGI)
+    {
+        if (GetLightHandle().IsValid())
+        {
+            GetFeatureProcessor()->SetAffectsGI(GetLightHandle(), affectsGI);
+        }
+    }
+
+    void SphereLightDelegate::SetAffectsGIFactor(float affectsGIFactor)
+    {
+        if (GetLightHandle().IsValid())
+        {
+            GetFeatureProcessor()->SetAffectsGIFactor(GetLightHandle(), affectsGIFactor);
+        }
+    }
+
 } // namespace AZ::Render

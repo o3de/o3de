@@ -16,7 +16,7 @@
 
 #include <CryAssert.h>
 
-namespace AZ
+namespace AZ::Debug
 {
     AZ_CVAR_EXTERNED(int, bg_traceLogLevel);
 }
@@ -31,9 +31,15 @@ class AZCoreLogSink
     : public AZ::Debug::TraceMessageBus::Handler
 {
 public:
-    inline static void Connect()
+    ~AZCoreLogSink()
+    {
+        Disconnect();
+    }
+
+    inline static void Connect(bool suppressSystemOutput)
     {
         GetInstance().m_ignoredAsserts = new IgnoredAssertMap();
+        GetInstance().m_suppressSystemOutput = suppressSystemOutput;
         GetInstance().BusConnect();
     }
 
@@ -41,6 +47,7 @@ public:
     {
         GetInstance().BusDisconnect();
         delete GetInstance().m_ignoredAsserts;
+        GetInstance().m_ignoredAsserts = nullptr;
     }
 
     static AZCoreLogSink& GetInstance()
@@ -51,14 +58,14 @@ public:
 
     static bool IsCryLogReady()
     {
-        static bool hasSetCVar = false;
         bool ready = gEnv && gEnv->pSystem && gEnv->pLog;
 
 #ifdef _RELEASE
+        static bool hasSetCVar = false;
         if(!hasSetCVar && ready)
         {
             // AZ logging only has a concept of 3 levels (error, warning, info) but cry logging has 4 levels (..., messaging).  If info level is set, we'll turn on messaging as well
-            int logLevel = AZ::bg_traceLogLevel == AZ::Debug::LogLevel::Info ? 4 : AZ::bg_traceLogLevel;
+            int logLevel = AZ::Debug::bg_traceLogLevel == AZ::Debug::LogLevel::Info ? 4 : AZ::Debug::bg_traceLogLevel;
 
             gEnv->pConsole->GetCVar("log_WriteToFileVerbosity")->Set(logLevel);
             hasSetCVar = true;
@@ -70,64 +77,11 @@ public:
 
     bool OnPreAssert(const char* fileName, int line, const char* func, const char* message) override
     {
-#if defined(USE_CRY_ASSERT) && AZ_LEGACY_CRYSYSTEM_TRAIT_DO_PREASSERT
-        AZ::Crc32 crc;
-        crc.Add(&line, sizeof(line));
-        if (fileName)
-        {
-            crc.Add(fileName, strlen(fileName));
-        }
-
-        bool* ignore = nullptr;
-        auto foundIter = m_ignoredAsserts->find(crc);
-        if (foundIter == m_ignoredAsserts->end())
-        {
-            ignore = &((*m_ignoredAsserts)[crc]);
-            *ignore = false;
-        }
-        else
-        {
-            ignore = &((*m_ignoredAsserts)[crc]);
-        }
-
-        if (!(*ignore))
-        {
-            using namespace AZ::Debug;
-
-            Trace::Output(nullptr, "\n==================================================================\n");
-            AZ::OSString outputMsg = AZ::OSString::format("Trace::Assert\n %s(%d): '%s'\n%s\n", fileName, line, func, message);
-            Trace::Output(nullptr, outputMsg.c_str());
-
-            // Suppress 3 in stack depth - this function, the bus broadcast that got us here, and Trace::Assert
-            Trace::Output(nullptr, "------------------------------------------------\n");
-            Trace::PrintCallstack(nullptr, 3);
-            Trace::Output(nullptr, "\n==================================================================\n");
-
-            AZ::EnvironmentVariable<bool> inEditorBatchMode = AZ::Environment::FindVariable<bool>("InEditorBatchMode");
-            if (!inEditorBatchMode.IsConstructed() || !inEditorBatchMode.Get())
-            {
-                // Note - CryAssertTrace doesn't actually print any info to logging
-                // it just stores the message internally for the message box in CryAssert to use
-                CryAssertTrace("%s", message);
-                if (CryAssert("Assertion failed", fileName, line, ignore) || Trace::IsDebuggerPresent())
-                {
-                    Trace::Break();
-                }
-            }
-        }
-        else
-        {
-            CryLogAlways("%s", message);
-        }
-
-        return true; // suppress default AzCore behavior.
-#else
         AZ_UNUSED(fileName);
         AZ_UNUSED(line);
         AZ_UNUSED(func);
         AZ_UNUSED(message);
         return false; // allow AZCore to do its default behavior.   This usually results in an application shutdown.
-#endif
     }
 
     bool OnPreError(const char* window, const char* fileName, int line, const char* func, const char* message) override
@@ -140,7 +94,7 @@ public:
             return false; // allow AZCore to do its default behavior.
         }
         gEnv->pLog->LogError("(%s) - %s", window, message);
-        return true; // suppress default AzCore behavior.
+        return m_suppressSystemOutput;
     }
 
     bool OnPreWarning(const char* window, const char* fileName, int line, const char* func, const char* message) override
@@ -155,7 +109,7 @@ public:
         }
 
         CryWarning(VALIDATOR_MODULE_UNKNOWN, VALIDATOR_WARNING, "(%s) - %s", window, message);
-        return true; // suppress default AzCore behavior.
+        return m_suppressSystemOutput;
     }
 
     bool OnOutput(const char* window, const char* message)  override
@@ -173,12 +127,13 @@ public:
         {
             CryLog("(%s) - %s", window, message);
         }
-
-        return true; // suppress default AzCore behavior.
+        
+        return m_suppressSystemOutput;
     }
 
 private:
 
     using IgnoredAssertMap = AZStd::unordered_map<AZ::Crc32, bool, AZStd::hash<AZ::Crc32>, AZStd::equal_to<AZ::Crc32>, AZ::OSStdAllocator>;
     IgnoredAssertMap* m_ignoredAsserts;
+    bool m_suppressSystemOutput = true;
 };

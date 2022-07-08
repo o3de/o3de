@@ -33,13 +33,29 @@ namespace AzToolsFramework
     {
     }
 
-    void AssetCompleterModel::SetFilter(AZ::Data::AssetType filterType)
+    void AssetCompleterModel::SetFilter(const AZ::Data::AssetType& assetType)
     {
-        AssetTypeFilter* typeFilter = new AssetTypeFilter();
-        typeFilter->SetAssetType(filterType);
-        typeFilter->SetFilterPropagation(AssetBrowserEntryFilter::PropagateDirection::Down);
+        SetFilter(AZStd::vector<AZ::Data::AssetType>{ assetType });
+    }
 
-        m_assetBrowserFilterModel->SetFilter(FilterConstType(typeFilter));
+    void AssetCompleterModel::SetFilter(const AZStd::vector<AZ::Data::AssetType>& assetTypes)
+    {
+        CompositeFilter* anyAssetTypeFilter = new CompositeFilter(CompositeFilter::LogicOperatorType::OR);
+        anyAssetTypeFilter->SetFilterPropagation(AssetBrowserEntryFilter::PropagateDirection::Down);
+
+        for (const auto& assetType : assetTypes)
+        {
+            AssetTypeFilter* assetTypeFilter = new AssetTypeFilter();
+            assetTypeFilter->SetAssetType(assetType);
+            anyAssetTypeFilter->AddFilter(FilterConstType(assetTypeFilter));
+        }
+
+        SetFilter(FilterConstType(anyAssetTypeFilter));
+    }
+
+    void AssetCompleterModel::SetFilter(FilterConstType filter)
+    {
+        m_assetBrowserFilterModel->SetFilter(filter);
 
         RefreshAssetList();
     }
@@ -120,9 +136,6 @@ namespace AzToolsFramework
         int rows = m_assetBrowserFilterModel->rowCount(index);
         if (rows == 0)
         {
-            if (index != QModelIndex()) {
-                AZ_Error("AssetCompleterModel", false, "No children detected in FetchResources()");
-            }
             return;
         }
 
@@ -131,7 +144,7 @@ namespace AzToolsFramework
             QModelIndex childIndex = m_assetBrowserFilterModel->index(i, 0, index);
             AssetBrowserEntry* childEntry = GetAssetEntry(m_assetBrowserFilterModel->mapToSource(childIndex));
 
-            if (childEntry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Product)
+            if (childEntry->GetEntryType() == m_entryType)
             {
                 ProductAssetBrowserEntry* productEntry = static_cast<ProductAssetBrowserEntry*>(childEntry);
                 AZStd::string assetName;
@@ -167,7 +180,6 @@ namespace AzToolsFramework
         return m_assets[index.row()].m_displayName;
     }
 
-
     const AZ::Data::AssetId AssetCompleterModel::GetAssetIdFromIndex(const QModelIndex& index) 
     {
         if (!index.isValid())
@@ -176,5 +188,20 @@ namespace AzToolsFramework
         }
 
         return m_assets[index.row()].m_assetId;
+    }
+
+    const AZStd::string_view AssetCompleterModel::GetPathFromIndex(const QModelIndex& index)
+    {
+        if (!index.isValid())
+        {
+            return "";
+        }
+
+        return m_assets[index.row()].m_path;
+    }
+
+    void AssetCompleterModel::SetFetchEntryType(AssetBrowserEntry::AssetEntryType entryType)
+    {
+        m_entryType = entryType;
     }
 }

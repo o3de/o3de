@@ -21,7 +21,7 @@
 #include <QDragEnterEvent>
 
 HierarchyWidget::HierarchyWidget(EditorWindow* editorWindow)
-    : QTreeWidget()
+    : AzQtComponents::StyledTreeWidget()
     , m_isDeleting(false)
     , m_editorWindow(editorWindow)
     , m_entityItemMap()
@@ -391,7 +391,7 @@ void HierarchyWidget::startDrag(Qt::DropActions supportedActions)
     // Remember the current selection so that we can revert back to it when the items are dragged back into the hierarchy
     m_dragSelection = selectedItems();
 
-    QTreeView::startDrag(supportedActions);
+    AzQtComponents::StyledTreeWidget::startDrag(supportedActions);
 }
 
 void HierarchyWidget::dragEnterEvent(QDragEnterEvent* event)
@@ -1239,11 +1239,13 @@ void HierarchyWidget::AddElement(const QTreeWidgetItemRawPtrQList& selectedItems
         this,
         selectedItems,
         childIndex,
-        [optionalPos](AZ::Entity* element)
+        [this, optionalPos](AZ::Entity* element)
         {
             if (optionalPos)
             {
-                EntityHelpers::MoveElementToGlobalPosition(element, *optionalPos);
+                // Convert position to render viewport coords
+                QPoint scaledPosition = *optionalPos * GetEditorWindow()->GetViewport()->WidgetToViewportFactor();
+                EntityHelpers::MoveElementToGlobalPosition(element, scaledPosition);
             }
         });
 }

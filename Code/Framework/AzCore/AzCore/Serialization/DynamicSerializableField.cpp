@@ -98,14 +98,14 @@ namespace AZ
         return nullptr;
     }
     //-------------------------------------------------------------------------
-    void DynamicSerializableField::CopyDataFrom(const DynamicSerializableField& other)
+    void DynamicSerializableField::CopyDataFrom(const DynamicSerializableField& other, SerializeContext* useContext)
     {
         DestroyData();
         m_typeId    = other.m_typeId;        
-        m_data      = other.CloneData();
+        m_data      = other.CloneData(useContext);
     }
     //-------------------------------------------------------------------------
-    bool DynamicSerializableField::IsEqualTo(const DynamicSerializableField& other, SerializeContext* useContext)
+    bool DynamicSerializableField::IsEqualTo(const DynamicSerializableField& other, SerializeContext* useContext) const
     {
         if (other.m_typeId != m_typeId)
         {

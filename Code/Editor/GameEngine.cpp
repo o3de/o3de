@@ -18,6 +18,7 @@
 // AzCore
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/IO/IStreamer.h>
+#include <AzCore/IO/Streamer/FileRequest.h>
 #include <AzCore/std/parallel/binary_semaphore.h>
 #include <AzCore/Console/IConsole.h>
 
@@ -35,7 +36,6 @@
 
 // CryCommon
 #include <CryCommon/INavigationSystem.h>
-#include <CryCommon/LyShine/ILyShine.h>
 #include <CryCommon/MainThreadRenderRequestBus.h>
 
 // Editor
@@ -43,26 +43,21 @@
 
 #include "ViewManager.h"
 #include "AnimationContext.h"
-#include "UndoViewPosition.h"
-#include "UndoViewRotation.h"
 #include "MainWindow.h"
 #include "Include/IObjectManager.h"
 #include "ActionManager.h"
-
-// Including this too early will result in a linker error
-#include <CryCommon/CryLibrary.h>
 
 // Implementation of System Callback structure.
 struct SSystemUserCallback
     : public ISystemUserCallback
 {
     SSystemUserCallback(IInitializeUIInfo* logo) : m_threadErrorHandler(this) { m_pLogo = logo; };
-    virtual void OnSystemConnect(ISystem* pSystem)
+    void OnSystemConnect(ISystem* pSystem) override
     {
         ModuleInitISystem(pSystem, "Editor");
     }
 
-    virtual bool OnError(const char* szErrorString)
+    bool OnError(const char* szErrorString) override
     {
         // since we show a message box, we have to use the GUI thread
         if (QThread::currentThread() != qApp->thread())
@@ -95,7 +90,7 @@ struct SSystemUserCallback
 
         int res = IDNO;
 
-        ICVar* pCVar = gEnv->pConsole ? gEnv->pConsole->GetCVar("sys_no_crash_dialog") : NULL;
+        ICVar* pCVar = gEnv->pConsole ? gEnv->pConsole->GetCVar("sys_no_crash_dialog") : nullptr;
 
         if (!pCVar || pCVar->GetIVal() == 0)
         {
@@ -116,7 +111,7 @@ struct SSystemUserCallback
         return true;
     }
 
-    virtual bool OnSaveDocument()
+    bool OnSaveDocument() override
     {
         bool success = false;
 
@@ -133,7 +128,7 @@ struct SSystemUserCallback
         return success;
     }
 
-    virtual bool OnBackupDocument()
+    bool OnBackupDocument() override
     {
         CCryEditDoc* level = GetIEditor() ? GetIEditor()->GetDocument() : nullptr;
         if (level)
@@ -144,7 +139,7 @@ struct SSystemUserCallback
         return false;
     }
 
-    virtual void OnProcessSwitch()
+    void OnProcessSwitch() override
     {
         if (GetIEditor()->IsInGameMode())
         {
@@ -152,7 +147,7 @@ struct SSystemUserCallback
         }
     }
 
-    virtual void OnInitProgress(const char* sProgressMsg)
+    void OnInitProgress(const char* sProgressMsg) override
     {
         if (m_pLogo)
         {
@@ -160,25 +155,20 @@ struct SSystemUserCallback
         }
     }
 
-    virtual int ShowMessage(const char* text, const char* caption, unsigned int uType)
+    void ShowMessage(const char* text, const char* caption, unsigned int uType) override
     {
         if (CCryEditApp::instance()->IsInAutotestMode())
         {
-            return IDOK;
+            return;
         }
 
         const UINT kMessageBoxButtonMask = 0x000f;
         if (!GetIEditor()->IsInGameMode() && (uType == 0 || uType == MB_OK || !(uType & kMessageBoxButtonMask)))
         {
             static_cast<CEditorImpl*>(GetIEditor())->AddErrorMessage(text, caption);
-            return IDOK;
+            return;
         }
-        return CryMessageBox(text, caption, uType);
-    }
-
-    virtual void GetMemoryUsage(ICrySizer* pSizer)
-    {
-        GetIEditor()->GetMemoryUsage(pSizer);
+        CryMessageBox(text, caption, uType);
     }
 
     void OnSplashScreenDone()
@@ -215,7 +205,7 @@ public:
     {
         AzFramework::AssetSystemConnectionNotificationsBus::Handler::BusConnect();
     };
-    ~AssetProcessConnectionStatus()
+    ~AssetProcessConnectionStatus() override
     {
         AzFramework::AssetSystemConnectionNotificationsBus::Handler::BusDisconnect();
     }
@@ -247,18 +237,17 @@ private:
 
 AZ_PUSH_DISABLE_WARNING(4273, "-Wunknown-warning-option")
 CGameEngine::CGameEngine()
-    : m_gameDll(0)
-    , m_bIgnoreUpdates(false)
+    : m_bIgnoreUpdates(false)
     , m_ePendingGameMode(ePGM_NotPending)
     , m_modalWindowDismisser(nullptr)
 AZ_POP_DISABLE_WARNING
 {
-    m_pISystem = NULL;
+    m_pISystem = nullptr;
     m_bLevelLoaded = false;
     m_bInGameMode = false;
     m_bSimulationMode = false;
     m_bSyncPlayerPosition = true;
-    m_hSystemHandle = 0;
+    m_hSystemHandle.reset(nullptr);
     m_bJustCreated = false;
     m_levelName = "Untitled";
     m_levelExtension = EditorUtils::LevelFile::GetDefaultFileExtension();
@@ -271,20 +260,12 @@ CGameEngine::~CGameEngine()
 {
 AZ_POP_DISABLE_WARNING
     GetIEditor()->UnregisterNotifyListener(this);
-    m_pISystem->GetIMovieSystem()->SetCallback(NULL);
-
-    if (m_gameDll)
-    {
-        CryFreeLibrary(m_gameDll);
-    }
+    m_pISystem->GetIMovieSystem()->SetCallback(nullptr);
 
     delete m_pISystem;
-    m_pISystem = NULL;
+    m_pISystem = nullptr;
 
-    if (m_hSystemHandle)
-    {
-        CryFreeLibrary(m_hSystemHandle);
-    }
+    m_hSystemHandle.reset(nullptr);
 
     delete m_pSystemUserCallback;
 }
@@ -352,18 +333,19 @@ AZ::Outcome<void, AZStd::string> CGameEngine::Init(
     HWND hwndForInputSystem)
 {
     m_pSystemUserCallback = new SSystemUserCallback(logo);
-    m_hSystemHandle = CryLoadLibraryDefName("CrySystem");
 
-    if (!m_hSystemHandle)
+    constexpr const char* crySystemLibraryName = AZ_TRAIT_OS_DYNAMIC_LIBRARY_PREFIX  "CrySystem" AZ_TRAIT_OS_DYNAMIC_LIBRARY_EXTENSION;
+
+    m_hSystemHandle = AZ::DynamicModuleHandle::Create(crySystemLibraryName);
+    if (!m_hSystemHandle->Load(true))
     {
-        auto errorMessage = AZStd::string::format("%s Loading Failed", CryLibraryDefName("CrySystem"));
+        auto errorMessage = AZStd::string::format("%s Loading Failed", crySystemLibraryName);
         Error(errorMessage.c_str());
         return AZ::Failure(errorMessage);
     }
 
     PFNCREATESYSTEMINTERFACE pfnCreateSystemInterface =
-        (PFNCREATESYSTEMINTERFACE)CryGetProcAddress(m_hSystemHandle, "CreateSystemInterface");
-
+        m_hSystemHandle->GetFunction<PFNCREATESYSTEMINTERFACE>("CreateSystemInterface");
 
     SSystemInitParams sip;
 
@@ -373,8 +355,6 @@ AZ::Outcome<void, AZStd::string> CGameEngine::Init(
     sip.bPreview = bPreviewMode;
     sip.bTestMode = bTestMode;
     sip.hInstance = nullptr;
-
-    sip.pSharedEnvironment = AZ::Environment::GetInstance();
 
 #ifdef AZ_PLATFORM_MAC
     // Create a hidden QWidget. Would show a black window on macOS otherwise.
@@ -459,7 +439,7 @@ AZ::Outcome<void, AZStd::string> CGameEngine::Init(
     REGISTER_COMMAND("quit", CGameEngine::HandleQuitRequest, VF_RESTRICTEDMODE, "Quit/Shutdown the engine");
 
     EBUS_EVENT(CrySystemEventBus, OnCryEditorInitialized);
-    
+
     return AZ::Success();
 }
 
@@ -482,7 +462,7 @@ void CGameEngine::SetLevelPath(const QString& path)
     const char* oldExtension = EditorUtils::LevelFile::GetOldCryFileExtension();
     const char* defaultExtension = EditorUtils::LevelFile::GetDefaultFileExtension();
 
-    // Store off if 
+    // Store off if
     if (QFileInfo(path + oldExtension).exists())
     {
         m_levelExtension = oldExtension;
@@ -495,10 +475,9 @@ void CGameEngine::SetLevelPath(const QString& path)
 
 bool CGameEngine::LoadLevel(
     [[maybe_unused]] bool bDeleteAIGraph,
-    bool bReleaseResources)
+    [[maybe_unused]] bool bReleaseResources)
 {
-    LOADING_TIME_PROFILE_SECTION(GetIEditor()->GetSystem());
-    m_bLevelLoaded = false;
+     m_bLevelLoaded = false;
     CLogFile::FormatLine("Loading map '%s' into engine...", m_levelPath.toUtf8().data());
     // Switch the current directory back to the Primary CD folder first.
     // The engine might have trouble to find some files when the current
@@ -508,7 +487,7 @@ bool CGameEngine::LoadLevel(
 
     bool usePrefabSystemForLevels = false;
     AzFramework::ApplicationRequests::Bus::BroadcastResult(
-        usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemForLevelsEnabled);
+        usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
 
     if (!usePrefabSystemForLevels)
     {
@@ -519,22 +498,6 @@ bool CGameEngine::LoadLevel(
         {
             CryWarning(VALIDATOR_MODULE_EDITOR, VALIDATOR_WARNING, "Level Pack File %s Not Found", pakFile.toUtf8().data());
         }
-    }
-
-    // Initialize physics grid.
-    if (bReleaseResources)
-    {
-        AZ::Aabb terrainAabb = AZ::Aabb::CreateFromPoint(AZ::Vector3::CreateZero());
-        AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(terrainAabb, &AzFramework::Terrain::TerrainDataRequests::GetTerrainAabb);
-        int physicsEntityGridSize = static_cast<int>(terrainAabb.GetXExtent());
-
-        //CryPhysics under performs if physicsEntityGridSize < nTerrainSize.
-        if (physicsEntityGridSize <= 0)
-        {
-            ICVar* pCvar = m_pISystem->GetIConsole()->GetCVar("e_PhysEntityGridSizeDefault");
-            physicsEntityGridSize = pCvar ? pCvar->GetIVal() : 4096;
-        }
-
     }
 
     // Audio: notify audio of level loading start?
@@ -571,8 +534,6 @@ void CGameEngine::SwitchToInGame()
 
     m_pISystem->GetIMovieSystem()->EnablePhysicsEvents(true);
     m_bInGameMode = true;
-
-    gEnv->pSystem->GetViewCamera().SetMatrix(m_playerViewTM);
 
     // Disable accelerators.
     GetIEditor()->EnableAcceleratos(false);
@@ -614,25 +575,11 @@ void CGameEngine::SwitchToInEditor()
     // Enable accelerators.
     GetIEditor()->EnableAcceleratos(true);
 
-
-    // reset UI system
-    if (gEnv->pLyShine)
-    {
-        gEnv->pLyShine->Reset();
-    }
-
     // [Anton] - order changed, see comments for CGameEngine::SetSimulationMode
     //! Send event to switch out of game.
     GetIEditor()->GetObjectManager()->SendEvent(EVENT_OUTOFGAME);
 
     m_bInGameMode = false;
-
-    // save the current gameView matrix for editor
-    if (pGameViewport)
-    {
-        Matrix34 gameView = gEnv->pSystem->GetViewCamera().GetMatrix();
-        pGameViewport->SetGameTM(gameView);
-    }
 
     // Out of game in Editor mode.
     if (pGameViewport)
@@ -848,7 +795,7 @@ void CGameEngine::Update()
         if (gEnv->pSystem)
         {
             gEnv->pSystem->UpdatePreTickBus();
-            componentApplication->Tick(gEnv->pTimer->GetFrameTime(ITimer::ETIMER_GAME));
+            componentApplication->Tick();
             gEnv->pSystem->UpdatePostTickBus();
         }
 
@@ -864,7 +811,7 @@ void CGameEngine::Update()
         unsigned int updateFlags = ESYSUPDATE_EDITOR;
         GetIEditor()->GetAnimation()->Update();
         GetIEditor()->GetSystem()->UpdatePreTickBus(updateFlags);
-        componentApplication->Tick(gEnv->pTimer->GetFrameTime(ITimer::ETIMER_GAME));
+        componentApplication->Tick();
         GetIEditor()->GetSystem()->UpdatePostTickBus(updateFlags);
     }
 }
@@ -875,7 +822,7 @@ void CGameEngine::OnEditorNotifyEvent(EEditorNotifyEvent event)
     {
     case eNotify_OnSplashScreenDestroyed:
     {
-        if (m_pSystemUserCallback != NULL)
+        if (m_pSystemUserCallback != nullptr)
         {
             m_pSystemUserCallback->OnSplashScreenDone();
         }

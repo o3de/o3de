@@ -1,0 +1,135 @@
+{
+    "entries": [
+        {
+            "base": "UiCanvasManagerBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "UI Canvas Manager",
+                "category": "UI"
+            },
+            "methods": [
+                {
+                    "base": "CreateCanvas",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Create Canvas"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Create Canvas is invoked"
+                    },
+                    "details": {
+                        "name": "Create Canvas",
+                        "tooltip": "Creates an empty canvas"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "EntityId",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "LoadCanvas",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Load Canvas"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Load Canvas is invoked"
+                    },
+                    "details": {
+                        "name": "Load Canvas",
+                        "tooltip": "Loads a canvas"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Pathname",
+                                "tooltip": "The pathname of the canvas"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "EntityId",
+                                "tooltip": "The pathname of the canvas"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "UnloadCanvas",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Unload Canvas"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Unload Canvas is invoked"
+                    },
+                    "details": {
+                        "name": "Unload Canvas",
+                        "tooltip": "Unloads a loaded canvas"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Canvas EntityID",
+                                "tooltip": "The canvas to unload"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "FindLoadedCanvasByPathName",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Find Loaded Canvas By Pathname"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Find Loaded Canvas By Pathname is invoked"
+                    },
+                    "details": {
+                        "name": "Find Loaded Canvas By Pathname",
+                        "tooltip": "Finds a loaded canvas by its pathname"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Pathname",
+                                "tooltip": "The pathname of the loaded canvas"
+                            }
+                        },
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "EntityId",
+                                "tooltip": "The pathname of the loaded canvas"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

@@ -16,6 +16,7 @@
 #include <QPushButton>
 #include "PropertyEditorAPI.h"
 #include <AzCore/Asset/AssetCommon.h>
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzFramework/Asset/SimpleAsset.h>
 #include <AzFramework/Asset/AssetCatalogBus.h>
@@ -108,6 +109,8 @@ namespace AzToolsFramework
 
         AZ::Data::AssetType m_currentAssetType;
 
+        AZStd::vector<AZ::Data::AssetType> m_supportedAssetTypes;
+
         AzQtComponents::BrowseEdit* m_browseEdit = nullptr;
 
         AZStd::string m_defaultAssetHint;
@@ -158,6 +161,10 @@ namespace AzToolsFramework
         //! By default the asset picker shows both on an AZ::Asset<> property. You can hide product assets with this flag.
         bool m_hideProductFilesInAssetPicker = false;
 
+        //! True to disable the edit button when there is no asset currently selected.
+        bool m_disableEditButtonWhenNoAssetSelected = false;
+
+        bool m_showEditButton = false;
         bool m_showThumbnail = false;
         bool m_showThumbnailDropDownButton = false;
         EditCallbackType* m_thumbnailCallback = nullptr;
@@ -167,18 +174,24 @@ namespace AzToolsFramework
 
         bool IsCorrectMimeData(const QMimeData* pData, AZ::Data::AssetId* pAssetId = nullptr, AZ::Data::AssetType* pAssetType = nullptr) const;
         void ClearErrorButton();
-        void UpdateErrorButton(const AZStd::string& errorLog);
+        void UpdateErrorButton();
+        void UpdateErrorButtonWithLog(const AZStd::string& errorLog);
+        void UpdateErrorButtonWithMessage(const AZStd::string& message);
         virtual const AZStd::string GetFolderSelection() const { return AZStd::string(); }
         virtual void SetFolderSelection(const AZStd::string& /* folderPath */) {}
         virtual void ClearAssetInternal();
 
-        void ConfigureAutocompleter();
+        virtual void ConfigureAutocompleter();
         void RefreshAutocompleter();
         void EnableAutocompleter();
         void DisableAutocompleter();
+        const QModelIndex GetSourceIndex(const QModelIndex& index);
 
         void HandleFieldClear();
         AZStd::string AddDefaultSuffix(const AZStd::string& filename);
+
+        //! Whether this property can have the input asset id&type as its value
+        virtual bool CanAcceptAsset(const AZ::Data::AssetId& assetId, const AZ::Data::AssetType& assetType) const;
 
         //////////////////////////////////////////////////////////////////////////
         // AssetSystemBus
@@ -216,32 +229,45 @@ namespace AzToolsFramework
         void SetHideProductFilesInAssetPicker(bool hide);
         bool GetHideProductFilesInAssetPicker() const;
 
+        void SetDisableEditButtonWhenNoAssetSelected(bool disableEditButtonWhenNoAssetSelected);
+        bool GetDisableEditButtonWhenNoAssetSelected() const;
+
+        // Enable and configure a thumbnail widget that displays an asset preview and dropdown arrow for a dropdown menu
         void SetShowThumbnail(bool enable);
         bool GetShowThumbnail() const;
         void SetShowThumbnailDropDownButton(bool enable);
         bool GetShowThumbnailDropDownButton() const;
         void SetThumbnailCallback(EditCallbackType* editNotifyCallback);
 
+        // If enabled, replaces the thumbnail widget content with a custom pixmap
+        void SetCustomThumbnailEnabled(bool enabled);
+        void SetCustomThumbnailPixmap(const QPixmap& pixmap);
+
+        void SetSupportedAssetTypes(const AZStd::vector<AZ::Data::AssetType>& supportedAssetTypes);
+        const AZStd::vector<AZ::Data::AssetType>& GetSupportedAssetTypes() const;
+        AZStd::vector<AZ::Data::AssetType> GetSelectableAssetTypes() const;
+
         void SetSelectedAssetID(const AZ::Data::AssetId& newID);
         void SetCurrentAssetType(const AZ::Data::AssetType& newType);
         void SetSelectedAssetID(const AZ::Data::AssetId& newID, const AZ::Data::AssetType& newType);
         void SetCurrentAssetHint(const AZStd::string& hint);
         void SetDefaultAssetID(const AZ::Data::AssetId& defaultID);
-        void PopupAssetPicker();
+        virtual void PopupAssetPicker();
+        virtual void PickAssetSelectionFromDialog(AssetSelectionModel& selection, QWidget* parent);
         void OnClearButtonClicked();
-        void UpdateAssetDisplay();
+        virtual void UpdateAssetDisplay();
         void OnLineEditFocus(bool focus);
         virtual void OnEditButtonClicked();
         void OnThumbnailClicked();
         void OnCompletionModelReset();
-        void OnAutocomplete(const QModelIndex& index);
+        virtual void OnAutocomplete(const QModelIndex& index);
         void OnTextChange(const QString& text);
         void OnReturnPressed();
         void ShowContextMenu(const QPoint& pos);
 
     private:
-        const QModelIndex GetSourceIndex(const QModelIndex& index);
         void UpdateThumbnail();
+        void UpdateEditButton();
     };
 
     class AssetPropertyHandlerDefault
@@ -262,9 +288,21 @@ namespace AzToolsFramework
         virtual void UpdateWidgetInternalTabbing(PropertyAssetCtrl* widget) override { widget->UpdateTabOrder(); }
 
         virtual QWidget* CreateGUI(QWidget* pParent) override;
-        virtual void ConsumeAttribute(PropertyAssetCtrl* GUI, AZ::u32 attrib, PropertyAttributeReader* attrValue, const char* debugName) override;
+        static void ConsumeAttributeInternal(PropertyAssetCtrl* GUI, AZ::u32 attrib, PropertyAttributeReader* attrValue, const char* debugName);
+        void ConsumeAttribute(PropertyAssetCtrl* GUI, AZ::u32 attrib, PropertyAttributeReader* attrValue, const char* debugName) override;
+        static void WriteGUIValuesIntoPropertyInternal(size_t index, PropertyAssetCtrl* GUI, property_t& instance, InstanceDataNode* node);
         virtual void WriteGUIValuesIntoProperty(size_t index, PropertyAssetCtrl* GUI, property_t& instance, InstanceDataNode* node) override;
+        static bool ReadValuesIntoGUIInternal(size_t index, PropertyAssetCtrl* GUI, const property_t& instance, InstanceDataNode* node);
         virtual bool ReadValuesIntoGUI(size_t index, PropertyAssetCtrl* GUI, const property_t& instance, InstanceDataNode* node)  override;
+    protected:
+        AZ::Data::Asset<AZ::Data::AssetData>* CastTo(void* instance, const InstanceDataNode* node, const AZ::Uuid& /*fromId*/, const AZ::Uuid& /*toId*/) const override
+        {
+            if (node->GetElementMetadata()->m_genericClassInfo && node->GetElementMetadata()->m_genericClassInfo->GetGenericTypeId() == AZ::GetAssetClassId())
+            {
+                return static_cast<AZ::Data::Asset<AZ::Data::AssetData>*>(instance);
+            }
+            return nullptr;
+        }
     };
 
     class SimpleAssetPropertyHandlerDefault

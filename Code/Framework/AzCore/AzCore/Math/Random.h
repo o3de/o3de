@@ -9,8 +9,10 @@
 #pragma once
 
 #include <AzCore/base.h>
-#include <AzCore/RTTI/TypeInfo.h>
+#include <AzCore/RTTI/TypeInfoSimple.h>
 #include <AzCore/Math/Random_Platform.h>
+#include <AzCore/Casting/numeric_cast.h>
+#include <AzCore/std/containers/array.h>
 
 namespace AZ
 {

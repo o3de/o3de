@@ -6,21 +6,33 @@
  *
  */
 
-
 #pragma once
 
 #if !defined(Q_MOC_RUN)
 #include <QDialog>
 #endif
 
+#include <SandboxAPI.h>
+
+#include <AzCore/std/functional.h>
+
 namespace Ui
 {
     class GotoPositionDialog;
 }
 
+//! Utility to deal with ensuring camera pitch values are in the expected range.
+struct GotoPositionPitchConstraints
+{
+    using AngleRangeConfigureFn = AZStd::function<void(float, float)>;
+    //! Notify a callback with the min and max camera pitch constraints (no tolerance included).
+    SANDBOX_API void DeterminePitchRange(const AngleRangeConfigureFn& configurePitchRangeFn) const;
+    //! Returns the clamped pitch value (including tolerance with range extents).
+    SANDBOX_API float PitchClampedRadians(float pitchDegrees) const;
+};
+
 //! GotoPositionDialog for setting camera position and rotation.
-class GotoPositionDialog
-    : public QDialog
+class GotoPositionDialog : public QDialog
 {
     Q_OBJECT
 
@@ -39,5 +51,6 @@ public:
     QString m_transform;
 
 private:
+    GotoPositionPitchConstraints m_gotoPositionPitchConstraints;
     QScopedPointer<Ui::GotoPositionDialog> m_ui;
 };

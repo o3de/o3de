@@ -6,10 +6,11 @@
  *
  */
 
-#include "RCJobTest.h"
-
 #include <native/tests/AssetProcessorTest.h>
+#include <native/tests/UnitTestUtilities.h>
 #include <native/resourcecompiler/rcjob.h>
+#include <AzCore/Serialization/SerializeContext.h>
+#include <tests/assetmanager/AssetManagerTestingBase.h>
 
 namespace UnitTests
 {
@@ -19,23 +20,17 @@ namespace UnitTests
     using namespace AssetProcessor;
     using namespace AssetBuilderSDK;
 
-    class MockDiskSpaceResponder : public DiskSpaceInfoBus::Handler
-    {
-    public:
-        MOCK_METHOD3(CheckSufficientDiskSpace, bool(const QString&, qint64, bool));
-    };
-
     class IgnoreNotifyTracker : public ProcessingJobInfoBus::Handler
     {
     public:
-        // Will notify other systems which old product is just about to get removed from the cache 
-        // before we copy the new product instead along. 
+        // Will notify other systems which old product is just about to get removed from the cache
+        // before we copy the new product instead along.
         void BeginCacheFileUpdate(const char* productPath) override
         {
             m_capturedStartPaths.push_back(productPath);
         }
-        
-        // Will notify other systems which product we are trying to copy in the cache 
+
+        // Will notify other systems which product we are trying to copy in the cache
         // along with status of whether that copy succeeded or failed.
         void EndCacheFileUpdate(const char* productPath, bool /*queueAgainForProcessing*/) override
         {
@@ -55,23 +50,19 @@ namespace UnitTests
             m_data.reset(new StaticData());
             m_data->tempDirPath = QDir(m_data->m_tempDir.path());
             m_data->m_absolutePathToTempInputFolder = m_data->tempDirPath.absoluteFilePath("InputFolder").toUtf8().constData();
-            // note that the case of OutputFolder is intentionally upper/lower case becuase
+            // note that the case of OutputFolder is intentionally upper/lower case because
             // while files inside the output folder should be lowercased, the path to there should not be lowercased by RCJob.
             m_data->m_absolutePathToTempOutputFolder = m_data->tempDirPath.absoluteFilePath("OutputFolder").toUtf8().constData();
             m_data->tempDirPath.mkpath(QString::fromUtf8(m_data->m_absolutePathToTempInputFolder.c_str()));
-            m_data->m_diskSpaceResponder.BusConnect();
             m_data->m_notifyTracker.BusConnect();
 
             // this can be overridden in each test but if you don't override it, then this fixture will do it.
-            ON_CALL(m_data->m_diskSpaceResponder, CheckSufficientDiskSpace(_, _, _))
+            ON_CALL(m_data->m_diskSpaceResponder, CheckSufficientDiskSpace(_, _))
                 .WillByDefault(Return(true));
-
-            
         }
 
         void TearDown() override
         {
-            m_data->m_diskSpaceResponder.BusDisconnect();
             m_data->m_notifyTracker.BusDisconnect();
             m_data.reset();
             AssetProcessorTest::TearDown();
@@ -108,7 +99,7 @@ namespace UnitTests
         ProcessJobResponse response;
         response.m_resultCode = ProcessJobResult_Success;
         response.m_outputProducts.push_back({ "file1.txt" }); // make sure that there is at least one product so that it doesn't early out.
-        
+
         // set only the input path, not the output path:
         builderParams.m_processJobRequest.m_tempDirPath = m_data->m_absolutePathToTempInputFolder.c_str(); // input working scratch space folder
 
@@ -125,8 +116,9 @@ namespace UnitTests
 
         // set the input dir to be a broken invalid dir:
         builderParams.m_processJobRequest.m_tempDirPath = AZ::Uuid::CreateRandom().ToString<AZStd::string>();
-        builderParams.m_finalOutputDir = QString::fromUtf8(m_data->m_absolutePathToTempOutputFolder.c_str());  // output folder in the 'cache'
-        
+        builderParams.m_cacheOutputDir = m_data->m_absolutePathToTempOutputFolder;  // output folder in the 'cache'
+        builderParams.m_intermediateOutputDir = AssetUtilities::GetIntermediateAssetsFolder(m_data->m_absolutePathToTempOutputFolder.c_str());
+
         EXPECT_FALSE(RCJob::CopyCompiledAssets(builderParams, response));
         EXPECT_EQ(m_errorAbsorber->m_numAssertsAbsorbed, 1);
     }
@@ -138,7 +130,8 @@ namespace UnitTests
         response.m_resultCode = ProcessJobResult_Success;
         // set only the output path, but not the input path:
         builderParams.m_processJobRequest.m_tempDirPath = m_data->m_absolutePathToTempInputFolder.c_str(); // input working scratch space folder
-        builderParams.m_finalOutputDir = QString::fromUtf8(m_data->m_absolutePathToTempOutputFolder.c_str());  // output folder in the 'cache'
+        builderParams.m_cacheOutputDir = m_data->m_absolutePathToTempOutputFolder;  // output folder in the 'cache'
+        builderParams.m_intermediateOutputDir = AssetUtilities::GetIntermediateAssetsFolder(m_data->m_absolutePathToTempOutputFolder.c_str());
 
         // give it an overly long file name:
         AZStd::string reallyLongFileName;
@@ -157,15 +150,17 @@ namespace UnitTests
         response.m_resultCode = ProcessJobResult_Success;
         // set only the output path, but not the input path:
         builderParams.m_processJobRequest.m_tempDirPath = m_data->m_absolutePathToTempInputFolder.c_str(); // input working scratch space folder
-        builderParams.m_finalOutputDir = QString::fromUtf8(m_data->m_absolutePathToTempOutputFolder.c_str());  // output folder in the 'cache'
+        builderParams.m_cacheOutputDir = m_data->m_absolutePathToTempOutputFolder;  // output folder in the 'cache'
+        builderParams.m_intermediateOutputDir =
+            AssetUtilities::GetIntermediateAssetsFolder(m_data->m_absolutePathToTempOutputFolder.c_str());
         response.m_resultCode = ProcessJobResult_Success;
         response.m_outputProducts.push_back({ "file1.txt" }); // make sure that there is at least one product so that it doesn't early out.
         UnitTestUtils::CreateDummyFile(QDir(m_data->m_absolutePathToTempInputFolder.c_str()).absoluteFilePath("file1.txt"), "output of file 1");
         response.m_outputProducts.push_back({ "file2.txt" }); // make sure that there is at least one product so that it doesn't early out.
         UnitTestUtils::CreateDummyFile(QDir(m_data->m_absolutePathToTempInputFolder.c_str()).absoluteFilePath("file2.txt"), "output of file 2");
 
-        // we exepct exactly one call to check for disk space, (not once for each file), and in this case, we'll return false.
-        EXPECT_CALL(m_data->m_diskSpaceResponder, CheckSufficientDiskSpace(_,_,_))
+        // we expect exactly one call to check for disk space, (not once for each file), and in this case, we'll return false.
+        EXPECT_CALL(m_data->m_diskSpaceResponder, CheckSufficientDiskSpace(_,_))
             .Times(1)
             .WillRepeatedly(Return(false));
 
@@ -194,7 +189,8 @@ namespace UnitTests
         response.m_resultCode = ProcessJobResult_Success;
         // set only the output path, but not the input path:
         builderParams.m_processJobRequest.m_tempDirPath = m_data->m_absolutePathToTempInputFolder.c_str(); // input working scratch space folder
-        builderParams.m_finalOutputDir = QString::fromUtf8(m_data->m_absolutePathToTempOutputFolder.c_str());  // output folder in the 'cache'
+        builderParams.m_cacheOutputDir = m_data->m_absolutePathToTempOutputFolder;  // output folder in the 'cache'
+        builderParams.m_intermediateOutputDir = AssetUtilities::GetIntermediateAssetsFolder(m_data->m_absolutePathToTempOutputFolder.c_str());
         response.m_resultCode = ProcessJobResult_Success;
         response.m_outputProducts.push_back({ "FiLe1.TxT" }); // make sure that there is at least one product so that it doesn't early out.
         UnitTestUtils::CreateDummyFile(QDir(m_data->m_absolutePathToTempInputFolder.c_str()).absoluteFilePath("FiLe1.TxT"), "output of file 1");
@@ -219,7 +215,9 @@ namespace UnitTests
         response.m_resultCode = ProcessJobResult_Success;
         // set only the output path, but not the input path:
         builderParams.m_processJobRequest.m_tempDirPath = m_data->m_absolutePathToTempInputFolder.c_str(); // input working scratch space folder
-        builderParams.m_finalOutputDir = QString::fromUtf8(m_data->m_absolutePathToTempOutputFolder.c_str());  // output folder in the 'cache'
+        builderParams.m_cacheOutputDir = m_data->m_absolutePathToTempOutputFolder;  // output folder in the 'cache'
+        builderParams.m_intermediateOutputDir = AssetUtilities::GetIntermediateAssetsFolder(m_data->m_absolutePathToTempOutputFolder.c_str());
+        builderParams.m_relativePath = "";
         response.m_resultCode = ProcessJobResult_Success;
 
         // make up a completely different random path to put an absolute file in:
@@ -253,7 +251,8 @@ namespace UnitTests
         response.m_resultCode = ProcessJobResult_Success;
         // set only the output path, but not the input path:
         builderParams.m_processJobRequest.m_tempDirPath = m_data->m_absolutePathToTempInputFolder.c_str(); // input working scratch space folder
-        builderParams.m_finalOutputDir = QString::fromUtf8(m_data->m_absolutePathToTempOutputFolder.c_str());  // output folder in the 'cache'
+        builderParams.m_cacheOutputDir = m_data->m_absolutePathToTempOutputFolder;  // output folder in the 'cache'
+        builderParams.m_intermediateOutputDir = AssetUtilities::GetIntermediateAssetsFolder(m_data->m_absolutePathToTempOutputFolder.c_str());
         response.m_resultCode = ProcessJobResult_Success;
         response.m_outputProducts.push_back({ "FiLe1.TxT" }); // make sure that there is at least one product so that it doesn't early out.
         UnitTestUtils::CreateDummyFile(QDir(m_data->m_absolutePathToTempInputFolder.c_str()).absoluteFilePath("FiLe1.TxT"), "output of file 1");
@@ -282,5 +281,60 @@ namespace UnitTests
         EXPECT_STREQ(normalizedStopPath.toUtf8().constData(), m_data->m_notifyTracker.m_capturedStopPaths[0].c_str());
     }
 
+    TEST_F(RCJobTest, BeforeStoringJobResult_NonNormalPath_Succeeds)
+    {
+        auto serializeContext = AZStd::make_unique<AZ::SerializeContext>();
+        AssetBuilderSDK::ProcessJobResponse::Reflect(&*serializeContext);
+        AssetBuilderSDK::JobProduct::Reflect(&*serializeContext);
+        AzToolsFramework::AssetSystem::AssetJobLogResponse::Reflect(&*serializeContext);
+        AzFramework::AssetSystem::BaseAssetProcessorMessage::Reflect(&*serializeContext);
+
+        auto mockComponentApplication = NiceMock<::UnitTests::MockComponentApplication>();
+        ON_CALL(mockComponentApplication, GetSerializeContext()).WillByDefault(Return(serializeContext.get()));
+
+        AssetProcessor::RCJob rcJob;
+
+        BuilderParams builderParams(&rcJob);
+        builderParams.m_processJobRequest.m_tempDirPath = m_data->m_absolutePathToTempInputFolder.c_str(); // input working scratch space folder
+
+        AZStd::string backSlashedPath = builderParams.m_processJobRequest.m_tempDirPath;
+        AZStd::replace(backSlashedPath.begin(), backSlashedPath.end(), '/', '\\');
+
+        AZStd::string frontSlashedPath = builderParams.m_processJobRequest.m_tempDirPath;
+        AZStd::replace(frontSlashedPath.begin(), frontSlashedPath.end(), '\\', '/');
+
+        AZStd::string mixedSlashedPath = builderParams.m_processJobRequest.m_tempDirPath;
+        auto slashPos = mixedSlashedPath.find_first_of('\\');
+        if (slashPos == AZStd::string::npos)
+        {
+            slashPos = mixedSlashedPath.find_first_of('/');
+            ASSERT_TRUE(slashPos != AZStd::string::npos);
+            mixedSlashedPath.replace(slashPos, 1, 1, '\\');
+        }
+        else
+        {
+            mixedSlashedPath.replace(slashPos, 1, 1, '/');
+        }
+
+        AssetBuilderSDK::ProcessJobResponse jobResponse;
+        jobResponse.m_outputProducts.push_back({ (AZ::IO::Path(backSlashedPath) / "file1.txt").c_str() });
+        jobResponse.m_outputProducts.push_back({ (AZ::IO::Path(frontSlashedPath) / "file2.txt").c_str() });
+        jobResponse.m_outputProducts.push_back({ (AZ::IO::Path(mixedSlashedPath) / "file3.txt").c_str() });
+
+        auto outcome = RCJob::BeforeStoringJobResult(builderParams, jobResponse);
+
+        EXPECT_TRUE(outcome.IsSuccess());
+
+        AZStd::string responseFilePath;
+        AzFramework::StringFunc::Path::ConstructFull(builderParams.m_processJobRequest.m_tempDirPath.c_str(), AssetBuilderSDK::s_processJobResponseFileName, responseFilePath, true);
+        const auto* responseOnDisk = AZ::Utils::LoadObjectFromFile<AssetBuilderSDK::ProcessJobResponse>(responseFilePath);
+        ASSERT_TRUE(responseOnDisk);
+
+        EXPECT_STREQ(responseOnDisk->m_outputProducts[0].m_productFileName.c_str(), (AZ::IO::Path("%TEMP%") / "file1.txt").c_str());
+        EXPECT_STREQ(responseOnDisk->m_outputProducts[1].m_productFileName.c_str(), (AZ::IO::Path("%TEMP%") / "file2.txt").c_str());
+        EXPECT_STREQ(responseOnDisk->m_outputProducts[2].m_productFileName.c_str(), (AZ::IO::Path("%TEMP%") / "file3.txt").c_str());
+
+        delete responseOnDisk;
+    }
 
 } // end namespace UnitTests

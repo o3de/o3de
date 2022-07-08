@@ -18,7 +18,7 @@
 
 //////////////////////////////////////////////////////////////////////////
 CMemoryBlock::CMemoryBlock()
-    : m_buffer(0)
+    : m_buffer(nullptr)
     , m_size(0)
     , m_uncompressedSize(0)
     , m_owns(false)
@@ -54,7 +54,7 @@ CMemoryBlock& CMemoryBlock::operator=(const CMemoryBlock& mem)
     }
     else
     {
-        m_buffer = 0;
+        m_buffer = nullptr;
         m_size = 0;
         m_owns = false;
     }
@@ -78,7 +78,7 @@ bool CMemoryBlock::Allocate(int size, int uncompressedSize)
     {
         QString str;
         str = QStringLiteral("CMemoryBlock::Allocate failed to allocate %1Mb of Memory").arg(size / (1024 * 1024));
-        CryLogAlways(str.toUtf8().data());
+        CryLogAlways("%s", str.toUtf8().data());
 
         QMessageBox::critical(QApplication::activeWindow(), QString(), str + QString("\r\nSandbox will try to reduce its working memory set to free memory for this allocation."));
         GetIEditor()->ReduceMemory();
@@ -104,7 +104,7 @@ bool CMemoryBlock::Allocate(int size, int uncompressedSize)
     m_size = size;
     m_uncompressedSize = uncompressedSize;
     // Check if allocation failed.
-    if (m_buffer == 0)
+    if (m_buffer == nullptr)
     {
         return false;
     }
@@ -118,7 +118,7 @@ void CMemoryBlock::Free()
     {
         free(m_buffer);
     }
-    m_buffer = 0;
+    m_buffer = nullptr;
     m_owns = false;
     m_size = 0;
     m_uncompressedSize = 0;
@@ -170,12 +170,9 @@ void CMemoryBlock::Uncompress(CMemoryBlock& toBlock) const
     toBlock.Allocate(m_uncompressedSize);
     toBlock.m_uncompressedSize = 0;
     unsigned long destSize = m_uncompressedSize;
-#if !defined(NDEBUG)
-    int result =
-#endif
-        uncompress((unsigned char*)toBlock.GetBuffer(), &destSize, (unsigned char*)GetBuffer(), GetSize());
+    [[maybe_unused]] int result = uncompress((unsigned char*)toBlock.GetBuffer(), &destSize, (unsigned char*)GetBuffer(), GetSize());
     assert(result == Z_OK);
-    assert(destSize == m_uncompressedSize);
+    assert(destSize == static_cast<unsigned long>(m_uncompressedSize));
 }
 
 //////////////////////////////////////////////////////////////////////////

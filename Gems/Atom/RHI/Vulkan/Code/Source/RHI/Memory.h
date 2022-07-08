@@ -37,6 +37,7 @@ namespace AZ
             {
                 VkDeviceSize m_sizeInBytes = 0;
                 uint32_t m_memoryTypeIndex = 0;
+                RHI::BufferBindFlags m_bufferBindFlags = RHI::BufferBindFlags::None;
             };
 
             ~Memory() = default;

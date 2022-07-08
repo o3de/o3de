@@ -30,7 +30,7 @@ void UiTextComponentOffsetsSelector::ParseBatchLine(const UiTextComponent::DrawB
     {
         // Iterate character by character over DrawBatch string contents,
         // looking for m_firstIndex and m_lastIndex.
-        Unicode::CIterator<const char*, false> pChar(drawBatch.text.c_str());
+        Utf8::Unchecked::octet_iterator pChar(drawBatch.text.data());
         while (uint32_t ch = *pChar)
         {
             ++pChar;

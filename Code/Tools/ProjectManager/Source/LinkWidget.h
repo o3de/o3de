@@ -22,10 +22,10 @@ namespace O3DE::ProjectManager
     class LinkLabel
         : public QLabel
     {
-        Q_OBJECT // AUTOMOC
+        Q_OBJECT
 
     public:
-        LinkLabel(const QString& text = {}, const QUrl& url = {}, QWidget* parent = nullptr);
+        LinkLabel(const QString& text = {}, const QUrl& url = {}, int fontSize = 10, QWidget* parent = nullptr);
 
         void SetUrl(const QUrl& url);
 
@@ -40,5 +40,6 @@ namespace O3DE::ProjectManager
 
     private:
         QUrl m_url;
+        int m_fontSize;
     };
 } // namespace O3DE::ProjectManager

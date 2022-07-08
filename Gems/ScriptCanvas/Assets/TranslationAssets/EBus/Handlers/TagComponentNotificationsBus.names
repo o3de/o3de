@@ -1,0 +1,47 @@
+{
+    "entries": [
+        {
+            "base": "TagComponentNotificationsBus",
+            "context": "EBusHandler",
+            "variant": "",
+            "details": {
+                "name": "Tag",
+                "category": "Gameplay"
+            },
+            "methods": [
+                {
+                    "base": "OnTagAdded",
+                    "details": {
+                        "name": "On Tag Added",
+                        "tooltip": "Executes when a tag is added to the source entity"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{9F4E062E-06A0-46D4-85DF-E0DA96467D3A}",
+                            "details": {
+                                "name": "Tag",
+                                "tooltip": "The tag that was added to the source entity"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "OnTagRemoved",
+                    "details": {
+                        "name": "On Tag Removed",
+                        "tooltip": "Executes when a tag is removed from the source entity"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{9F4E062E-06A0-46D4-85DF-E0DA96467D3A}",
+                            "details": {
+                                "name": "Tag",
+                                "tooltip": "The tag that was removed from the source entity"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

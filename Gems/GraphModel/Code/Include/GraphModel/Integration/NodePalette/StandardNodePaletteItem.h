@@ -34,7 +34,7 @@ namespace GraphModelIntegration
 
         //! Constructor
         //! \param nodeName Name of the node that will show up in the Palette
-        //! \param editorId Unique name of the client system editor (ex: AZ_CRC("ShaderCanvas", 0xa6d1a85a))
+        //! \param editorId Unique name of the client system editor (ex: AZ_CRC("ShaderCanvas", 0x0a1dff96))
         StandardNodePaletteItem(AZStd::string_view nodeName, GraphCanvas::EditorId editorId)
             : DraggableNodePaletteTreeItem(nodeName, editorId)
         {
@@ -59,7 +59,7 @@ namespace GraphModelIntegration
         : public GraphCanvas::GraphCanvasMimeEvent
     {
     public:
-        AZ_RTTI( ( (CreateStandardNodeMimeEvent<NodeType>), "{DF6213A0-5C60-4C22-88F1-4CEA6D8A17EF}", NodeType), GraphCanvas::GraphCanvasMimeEvent);
+        AZ_RTTI((CreateStandardNodeMimeEvent, "{DF6213A0-5C60-4C22-88F1-4CEA6D8A17EF}", NodeType), GraphCanvas::GraphCanvasMimeEvent);
         AZ_CLASS_ALLOCATOR(CreateStandardNodeMimeEvent, AZ::SystemAllocator, 0);
 
         static void Reflect(AZ::ReflectContext* reflectContext)

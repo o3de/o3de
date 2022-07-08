@@ -45,6 +45,7 @@ class TestAssetProcessor(object):
     @mock.patch('subprocess.Popen')
     @mock.patch('ly_test_tools.o3de.asset_processor.AssetProcessor.connect_socket')
     @mock.patch('ly_test_tools.o3de.asset_processor.ASSET_PROCESSOR_PLATFORM_MAP', {'foo': 'bar'})
+    @mock.patch('time.sleep', mock.MagicMock())
     def test_Start_NoneRunning_ProcStarted(self, mock_connect, mock_popen, mock_workspace):
         mock_ap_path = 'mock_ap_path'
         mock_workspace.asset_processor_platform = 'foo'
@@ -54,14 +55,15 @@ class TestAssetProcessor(object):
         under_test = ly_test_tools.o3de.asset_processor.AssetProcessor(mock_workspace)
         under_test.enable_asset_processor_platform = mock.MagicMock()
         under_test.wait_for_idle = mock.MagicMock()
+        mock_proc_object = mock.MagicMock()
+        mock_proc_object.poll.return_value = None
+        mock_popen.return_value = mock_proc_object
 
         under_test.start(connect_to_ap=True)
 
         assert under_test._ap_proc is not None
-        mock_popen.assert_called_once_with([mock_ap_path, '--zeroAnalysisMode',
-                                            f'--regset="/Amazon/AzCore/Bootstrap/project_path={mock_project_path}"',
-                                            '--logDir', under_test.log_root(),
-                                            '--acceptInput', '--platforms', 'bar'], cwd=os.path.dirname(mock_ap_path))
+        mock_popen.assert_called_once()
+        assert '--zeroAnalysisMode' in mock_popen.call_args[0][0]
         mock_connect.assert_called()
 
     @mock.patch('ly_test_tools._internal.managers.workspace.AbstractWorkspaceManager')
@@ -103,6 +105,50 @@ class TestAssetProcessor(object):
         assert under_test._ap_proc is None
 
     @mock.patch('ly_test_tools._internal.managers.workspace.AbstractWorkspaceManager')
+    @mock.patch('ly_test_tools.o3de.asset_processor.waiter.wait_for')
+    @pytest.mark.test_case_id('NOT_RUNNING')
+    @pytest.mark.test_case_id('NO_CONTROL')
+    @pytest.mark.test_case_id('NO_QUIT')
+    @pytest.mark.test_case_id('IO_ERROR')
+    @pytest.mark.test_case_id('TIMEOUT')
+    @pytest.mark.test_case_id('NO_STOP')
+    @pytest.mark.parametrize(
+        "test_id,_ap_proc,_control_connection,send_quit,timesout,no_stop",
+        [
+            ('NOT_RUNNING', None, None, False, 0, False),
+            ('NO_CONTROL', mock.MagicMock(), None, False, 0, False),
+            ('NO_QUIT', mock.MagicMock(), mock.MagicMock(), mock.MagicMock(return_value=False), 0, False),
+            (
+            'IO_ERROR', mock.MagicMock(), mock.MagicMock(), mock.MagicMock(return_value=False, side_effect=IOError),
+            0, False),
+            ('TIMEOUT', mock.MagicMock(), mock.MagicMock(), mock.MagicMock(return_value=True), 0, False),
+            ('NO_STOP', mock.MagicMock(), mock.MagicMock(), mock.MagicMock(return_value=True), 0, True),
+        ],
+    )
+    def test_Stop_ReturnsStopReason(self, mock_waiter, mock_workspace, test_id, _ap_proc, _control_connection,
+                                    send_quit, timesout, no_stop):
+        AssetProcessorError = ly_test_tools.o3de.asset_processor.AssetProcessorError
+        StopProcess = ly_test_tools.o3de.asset_processor.StopReason
+        ly_test_tools.environment.waiter.wait_for = mock.MagicMock(side_effect=AssetProcessorError)
+        under_test = ly_test_tools.o3de.asset_processor.AssetProcessor(mock_workspace)
+        if _ap_proc:
+            under_test.get_process_list = mock.MagicMock(return_value=[mock.MagicMock()])
+        else:
+            under_test.get_process_list = None
+
+        under_test._ap_proc = _ap_proc
+        under_test._control_connection = _control_connection
+        under_test.send_quit = send_quit
+
+        if no_stop:
+            under_test.process_exists = mock.MagicMock()
+            under_test.stop(timeout=timesout) == StopProcess.__getattr__(test_id)
+        else:
+            assert under_test.stop(timeout=timesout) == StopProcess.__getattr__(test_id)
+
+        assert under_test._ap_proc is None
+
+    @mock.patch('ly_test_tools._internal.managers.workspace.AbstractWorkspaceManager')
     @mock.patch('subprocess.run')
     def test_BatchProcess_NoFastscanBatchCompletes_Success(self, mock_run, mock_workspace):
         mock_workspace.project = None
@@ -114,7 +160,7 @@ class TestAssetProcessor(object):
 
         assert result
         mock_run.assert_called_once_with([apb_path,
-                                          f'--regset="/Amazon/AzCore/Bootstrap/project_path={mock_project_path}"', 
+                                          f'--regset="/Amazon/AzCore/Bootstrap/project_path={mock_project_path}"',
                                           '--logDir', under_test.log_root()],
                                          close_fds=True, capture_output=False,
                                          timeout=1)
@@ -150,10 +196,8 @@ class TestAssetProcessor(object):
         result, _ = under_test.batch_process(None, False)
 
         assert not result
-        mock_run.assert_called_once_with([apb_path,
-                                          f'--regset="/Amazon/AzCore/Bootstrap/project_path={mock_project_path}"',
-                                          '--logDir', under_test.log_root()],
-                                         close_fds=True, capture_output=False, timeout=28800.0)
+        mock_run.assert_called_once()
+        assert f'--regset="/Amazon/AzCore/Bootstrap/project_path={mock_project_path}"' in mock_run.call_args[0][0]
 
 
     @mock.patch('ly_test_tools._internal.managers.workspace.AbstractWorkspaceManager')

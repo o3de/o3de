@@ -93,11 +93,11 @@ def ScriptCanvasComponent_OnEntityActivatedDeactivated_PrintMessage():
             if entity_dict["name"] == "Controller":
                 sc_component.get_property_tree()
                 sc_component.set_component_property_value(
-                    "Properties|Variable Fields|Variables|[0]|Name,Value|Datum|Datum|EntityToActivate",
+                    "Properties|Variables|EntityToActivate|Datum|Datum|value|EntityToActivate",
                     entity_to_activate.id,
                 )
                 sc_component.set_component_property_value(
-                    "Properties|Variable Fields|Variables|[1]|Name,Value|Datum|Datum|EntityToDeactivate",
+                    "Properties|Variables|EntityToDeactivate|Datum|Datum|value|EntityToDeactivate",
                     entity_to_deactivate.id,
                 )
             return entity

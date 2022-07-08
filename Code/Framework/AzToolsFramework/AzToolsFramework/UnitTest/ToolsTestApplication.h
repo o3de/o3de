@@ -18,6 +18,7 @@ namespace UnitTest
     {
     public:
         explicit ToolsTestApplication(AZStd::string applicationName);
+        ToolsTestApplication(AZStd::string applicationName, int argc, char** argv);
         void SetSettingsRegistrySpecializations(AZ::SettingsRegistryInterface::Specializations& specializations) override;
 
     protected:

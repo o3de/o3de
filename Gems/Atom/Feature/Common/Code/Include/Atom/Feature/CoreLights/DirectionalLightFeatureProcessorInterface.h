@@ -149,25 +149,39 @@ namespace AZ
             //! @param method filter method.
             virtual void SetShadowFilterMethod(LightHandle handle, ShadowFilterMethod method) = 0;
 
-            //! This sets sample count to predict boundary of shadow.
-            //! @param handle the light handle.
-            //! @param count Sample Count for prediction of whether the pixel is on the boundary (up to 16)
-            //! The value should be less than or equal to m_filteringSampleCount.
-            virtual void SetPredictionSampleCount(LightHandle handle, uint16_t count) = 0;
-
             //! This sets sample count for filtering of shadow boundary.
             //! @param handle the light handle.
             //! @param count Sample Count for filtering (up to 64)
             virtual void SetFilteringSampleCount(LightHandle handle, uint16_t count) = 0;
 
-            //! This specifies the width of boundary between shadowed area and lit area.
-            //! @param handle the light handle.
-            //! @param width Boundary width. The shadow is gradually changed the degree of shadowed.
-            //! If width == 0, softening edge is disabled. Units are in meters.
-            virtual void SetShadowBoundaryWidth(LightHandle handle, float boundaryWidth) = 0;
+            //! Sets whether the directional shadowmap should use receiver plane bias.
+            //! This attempts to reduce shadow acne when using large pcf filters.
+            virtual void SetShadowReceiverPlaneBiasEnabled(LightHandle handle, bool enable) = 0;
 
-            //! Sets the shadowmap Pcf method.
-            virtual void SetPcfMethod(LightHandle handle, PcfMethod method) = 0;
+            //! Reduces acne by applying a small amount of bias along shadow-space z.
+            virtual void SetShadowBias(LightHandle handle, float bias) = 0;
+
+            //! Reduces acne by biasing the shadowmap lookup along the geometric normal.
+            virtual void SetNormalShadowBias(LightHandle handle, float normalShadowBias) = 0;
+
+            //! Sets whether or not blending between shadow map cascades is enabled.
+            virtual void SetCascadeBlendingEnabled(LightHandle handle, bool enable) = 0;
+
+            //! Sets whether or not to apply fullscreen blur after fullscreen shadow pass
+            virtual void SetFullscreenBlurEnabled(LightHandle handle, bool enable) = 0;
+
+            //! Sets the amount of constant falloff on the fullscreen shadow blur
+            virtual void SetFullscreenBlurConstFalloff(LightHandle handle, float blurConstFalloff) = 0;
+
+            //! Sets the strength of the depth falloff on the fullscreen shadow blur
+            virtual void SetFullscreenBlurDepthFalloffStrength(LightHandle handle, float blurDepthFalloffStrength) = 0;
+
+            //! Specifies if this light affects the diffuse global illumination in the scene.
+            virtual void SetAffectsGI(LightHandle handle, bool affectsGI) = 0;
+
+            //! Specifies the contribution of this light to the diffuse global illumination in the scene.
+            virtual void SetAffectsGIFactor(LightHandle handle, float affectsGIFactor) = 0;
+
         };
     } // namespace Render
 } // namespace AZ

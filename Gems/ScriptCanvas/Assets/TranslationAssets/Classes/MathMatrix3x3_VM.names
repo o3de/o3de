@@ -1,0 +1,1158 @@
+{
+    "entries": [
+        {
+            "base": "MathMatrix3x3_VM",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "MathMatrix3x3_VM"
+            },
+            "methods": [
+                {
+                    "base": "Transpose",
+                    "context": "MathMatrix3x3_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Transpose"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Transpose is invoked"
+                    },
+                    "details": {
+                        "name": "MathMatrix3x3_VM::Transpose",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{15A4332F-7C3F-4A58-AC35-50E1CE53FB9C}",
+                            "details": {
+                                "name": "const Matrix3x3&"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{15A4332F-7C3F-4A58-AC35-50E1CE53FB9C}",
+                            "details": {
+                                "name": "Matrix3x3"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Zero",
+                    "context": "MathMatrix3x3_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Zero"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Zero is invoked"
+                    },
+                    "details": {
+                        "name": "MathMatrix3x3_VM::Zero",
+                        "category": "Other"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{15A4332F-7C3F-4A58-AC35-50E1CE53FB9C}",
+                            "details": {
+                                "name": "Matrix3x3"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Subtract",
+                    "context": "MathMatrix3x3_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Subtract"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Subtract is invoked"
+                    },
+                    "details": {
+                        "name": "MathMatrix3x3_VM::Subtract",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{15A4332F-7C3F-4A58-AC35-50E1CE53FB9C}",
+                            "details": {
+                                "name": "const Matrix3x3&"
+                            }
+                        },
+                        {
+                            "typeid": "{15A4332F-7C3F-4A58-AC35-50E1CE53FB9C}",
+                            "details": {
+                                "name": "const Matrix3x3&"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{15A4332F-7C3F-4A58-AC35-50E1CE53FB9C}",
+                            "details": {
+                                "name": "Matrix3x3"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetElement",
+                    "context": "MathMatrix3x3_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetElement"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetElement is invoked"
+                    },
+                    "details": {
+                        "name": "MathMatrix3x3_VM::GetElement",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{15A4332F-7C3F-4A58-AC35-50E1CE53FB9C}",
+                            "details": {
+                                "name": "const Matrix3x3&"
+                            }
+                        },
+                        {
+                            "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                            "details": {
+                                "name": "double"
+                            }
+                        },
+                        {
+                            "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                            "details": {
+                                "name": "double"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                            "details": {
+                                "name": "double"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Invert",
+                    "context": "MathMatrix3x3_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Invert"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Invert is invoked"
+                    },
+                    "details": {
+                        "name": "MathMatrix3x3_VM::Invert",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{15A4332F-7C3F-4A58-AC35-50E1CE53FB9C}",
+                            "details": {
+                                "name": "const Matrix3x3&"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{15A4332F-7C3F-4A58-AC35-50E1CE53FB9C}",
+                            "details": {
+                                "name": "Matrix3x3"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetDiagonal",
+                    "context": "MathMatrix3x3_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetDiagonal"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetDiagonal is invoked"
+                    },
+                    "details": {
+                        "name": "MathMatrix3x3_VM::GetDiagonal",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{15A4332F-7C3F-4A58-AC35-50E1CE53FB9C}",
+                            "details": {
+                                "name": "const Matrix3x3&"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector3"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetColumn",
+                    "context": "MathMatrix3x3_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetColumn"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetColumn is invoked"
+                    },
+                    "details": {
+                        "name": "MathMatrix3x3_VM::GetColumn",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{15A4332F-7C3F-4A58-AC35-50E1CE53FB9C}",
+                            "details": {
+                                "name": "const Matrix3x3&"
+                            }
+                        },
+                        {
+                            "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                            "details": {
+                                "name": "double"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector3"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "MultiplyByVector",
+                    "context": "MathMatrix3x3_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke MultiplyByVector"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after MultiplyByVector is invoked"
+                    },
+                    "details": {
+                        "name": "MathMatrix3x3_VM::MultiplyByVector",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{15A4332F-7C3F-4A58-AC35-50E1CE53FB9C}",
+                            "details": {
+                                "name": "const Matrix3x3&"
+                            }
+                        },
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "const Vector3&"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector3"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Add",
+                    "context": "MathMatrix3x3_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Add"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Add is invoked"
+                    },
+                    "details": {
+                        "name": "MathMatrix3x3_VM::Add",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{15A4332F-7C3F-4A58-AC35-50E1CE53FB9C}",
+                            "details": {
+                                "name": "const Matrix3x3&"
+                            }
+                        },
+                        {
+                            "typeid": "{15A4332F-7C3F-4A58-AC35-50E1CE53FB9C}",
+                            "details": {
+                                "name": "const Matrix3x3&"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{15A4332F-7C3F-4A58-AC35-50E1CE53FB9C}",
+                            "details": {
+                                "name": "Matrix3x3"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "IsFinite",
+                    "context": "MathMatrix3x3_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke IsFinite"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after IsFinite is invoked"
+                    },
+                    "details": {
+                        "name": "MathMatrix3x3_VM::IsFinite",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{15A4332F-7C3F-4A58-AC35-50E1CE53FB9C}",
+                            "details": {
+                                "name": "const Matrix3x3&"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "DivideByNumber",
+                    "context": "MathMatrix3x3_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke DivideByNumber"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after DivideByNumber is invoked"
+                    },
+                    "details": {
+                        "name": "MathMatrix3x3_VM::DivideByNumber",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{15A4332F-7C3F-4A58-AC35-50E1CE53FB9C}",
+                            "details": {
+                                "name": "const Matrix3x3&"
+                            }
+                        },
+                        {
+                            "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                            "details": {
+                                "name": "double"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{15A4332F-7C3F-4A58-AC35-50E1CE53FB9C}",
+                            "details": {
+                                "name": "Matrix3x3"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "ToAdjugate",
+                    "context": "MathMatrix3x3_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke ToAdjugate"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after ToAdjugate is invoked"
+                    },
+                    "details": {
+                        "name": "MathMatrix3x3_VM::ToAdjugate",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{15A4332F-7C3F-4A58-AC35-50E1CE53FB9C}",
+                            "details": {
+                                "name": "const Matrix3x3&"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{15A4332F-7C3F-4A58-AC35-50E1CE53FB9C}",
+                            "details": {
+                                "name": "Matrix3x3"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "IsClose",
+                    "context": "MathMatrix3x3_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke IsClose"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after IsClose is invoked"
+                    },
+                    "details": {
+                        "name": "MathMatrix3x3_VM::IsClose",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{15A4332F-7C3F-4A58-AC35-50E1CE53FB9C}",
+                            "details": {
+                                "name": "const Matrix3x3&"
+                            }
+                        },
+                        {
+                            "typeid": "{15A4332F-7C3F-4A58-AC35-50E1CE53FB9C}",
+                            "details": {
+                                "name": "const Matrix3x3&"
+                            }
+                        },
+                        {
+                            "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                            "details": {
+                                "name": "double"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "MultiplyByMatrix",
+                    "context": "MathMatrix3x3_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke MultiplyByMatrix"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after MultiplyByMatrix is invoked"
+                    },
+                    "details": {
+                        "name": "MathMatrix3x3_VM::MultiplyByMatrix",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{15A4332F-7C3F-4A58-AC35-50E1CE53FB9C}",
+                            "details": {
+                                "name": "const Matrix3x3&"
+                            }
+                        },
+                        {
+                            "typeid": "{15A4332F-7C3F-4A58-AC35-50E1CE53FB9C}",
+                            "details": {
+                                "name": "const Matrix3x3&"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{15A4332F-7C3F-4A58-AC35-50E1CE53FB9C}",
+                            "details": {
+                                "name": "Matrix3x3"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "IsOrthogonal",
+                    "context": "MathMatrix3x3_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke IsOrthogonal"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after IsOrthogonal is invoked"
+                    },
+                    "details": {
+                        "name": "MathMatrix3x3_VM::IsOrthogonal",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{15A4332F-7C3F-4A58-AC35-50E1CE53FB9C}",
+                            "details": {
+                                "name": "const Matrix3x3&"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Orthogonalize",
+                    "context": "MathMatrix3x3_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Orthogonalize"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Orthogonalize is invoked"
+                    },
+                    "details": {
+                        "name": "MathMatrix3x3_VM::Orthogonalize",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{15A4332F-7C3F-4A58-AC35-50E1CE53FB9C}",
+                            "details": {
+                                "name": "const Matrix3x3&"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{15A4332F-7C3F-4A58-AC35-50E1CE53FB9C}",
+                            "details": {
+                                "name": "Matrix3x3"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetRows",
+                    "context": "MathMatrix3x3_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetRows"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetRows is invoked"
+                    },
+                    "details": {
+                        "name": "MathMatrix3x3_VM::GetRows",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{15A4332F-7C3F-4A58-AC35-50E1CE53FB9C}",
+                            "details": {
+                                "name": "const Matrix3x3&"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{93942742-473F-5EE3-8420-D8F22C612221}",
+                            "details": {
+                                "name": "tuple<Vector3 Vector3 Vector3 >"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "FromCrossProduct",
+                    "context": "MathMatrix3x3_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke FromCrossProduct"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after FromCrossProduct is invoked"
+                    },
+                    "details": {
+                        "name": "MathMatrix3x3_VM::FromCrossProduct",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "const Vector3&"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{15A4332F-7C3F-4A58-AC35-50E1CE53FB9C}",
+                            "details": {
+                                "name": "Matrix3x3"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetColumns",
+                    "context": "MathMatrix3x3_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetColumns"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetColumns is invoked"
+                    },
+                    "details": {
+                        "name": "MathMatrix3x3_VM::GetColumns",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{15A4332F-7C3F-4A58-AC35-50E1CE53FB9C}",
+                            "details": {
+                                "name": "const Matrix3x3&"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{93942742-473F-5EE3-8420-D8F22C612221}",
+                            "details": {
+                                "name": "tuple<Vector3 Vector3 Vector3 >"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "FromTransform",
+                    "context": "MathMatrix3x3_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke FromTransform"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after FromTransform is invoked"
+                    },
+                    "details": {
+                        "name": "MathMatrix3x3_VM::FromTransform",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{5D9958E9-9F1E-4985-B532-FFFDE75FEDFD}",
+                            "details": {
+                                "name": "const Transform&"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{15A4332F-7C3F-4A58-AC35-50E1CE53FB9C}",
+                            "details": {
+                                "name": "Matrix3x3"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "FromScale",
+                    "context": "MathMatrix3x3_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke FromScale"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after FromScale is invoked"
+                    },
+                    "details": {
+                        "name": "MathMatrix3x3_VM::FromScale",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "const Vector3&"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{15A4332F-7C3F-4A58-AC35-50E1CE53FB9C}",
+                            "details": {
+                                "name": "Matrix3x3"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "ToScale",
+                    "context": "MathMatrix3x3_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke ToScale"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after ToScale is invoked"
+                    },
+                    "details": {
+                        "name": "MathMatrix3x3_VM::ToScale",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{15A4332F-7C3F-4A58-AC35-50E1CE53FB9C}",
+                            "details": {
+                                "name": "const Matrix3x3&"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector3"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "FromQuaternion",
+                    "context": "MathMatrix3x3_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke FromQuaternion"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after FromQuaternion is invoked"
+                    },
+                    "details": {
+                        "name": "MathMatrix3x3_VM::FromQuaternion",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{73103120-3DD3-4873-BAB3-9713FA2804FB}",
+                            "details": {
+                                "name": "const Quaternion&"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{15A4332F-7C3F-4A58-AC35-50E1CE53FB9C}",
+                            "details": {
+                                "name": "Matrix3x3"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "MultiplyByNumber",
+                    "context": "MathMatrix3x3_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke MultiplyByNumber"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after MultiplyByNumber is invoked"
+                    },
+                    "details": {
+                        "name": "MathMatrix3x3_VM::MultiplyByNumber",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{15A4332F-7C3F-4A58-AC35-50E1CE53FB9C}",
+                            "details": {
+                                "name": "const Matrix3x3&"
+                            }
+                        },
+                        {
+                            "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                            "details": {
+                                "name": "double"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{15A4332F-7C3F-4A58-AC35-50E1CE53FB9C}",
+                            "details": {
+                                "name": "Matrix3x3"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetRow",
+                    "context": "MathMatrix3x3_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetRow"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetRow is invoked"
+                    },
+                    "details": {
+                        "name": "MathMatrix3x3_VM::GetRow",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{15A4332F-7C3F-4A58-AC35-50E1CE53FB9C}",
+                            "details": {
+                                "name": "const Matrix3x3&"
+                            }
+                        },
+                        {
+                            "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                            "details": {
+                                "name": "double"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector3"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "FromRotationYDegrees",
+                    "context": "MathMatrix3x3_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke FromRotationYDegrees"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after FromRotationYDegrees is invoked"
+                    },
+                    "details": {
+                        "name": "MathMatrix3x3_VM::FromRotationYDegrees",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                            "details": {
+                                "name": "double"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{15A4332F-7C3F-4A58-AC35-50E1CE53FB9C}",
+                            "details": {
+                                "name": "Matrix3x3"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "FromRows",
+                    "context": "MathMatrix3x3_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke FromRows"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after FromRows is invoked"
+                    },
+                    "details": {
+                        "name": "MathMatrix3x3_VM::FromRows",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "const Vector3&"
+                            }
+                        },
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "const Vector3&"
+                            }
+                        },
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "const Vector3&"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{15A4332F-7C3F-4A58-AC35-50E1CE53FB9C}",
+                            "details": {
+                                "name": "Matrix3x3"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "FromDiagonal",
+                    "context": "MathMatrix3x3_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke FromDiagonal"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after FromDiagonal is invoked"
+                    },
+                    "details": {
+                        "name": "MathMatrix3x3_VM::FromDiagonal",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "const Vector3&"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{15A4332F-7C3F-4A58-AC35-50E1CE53FB9C}",
+                            "details": {
+                                "name": "Matrix3x3"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "FromRotationZDegrees",
+                    "context": "MathMatrix3x3_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke FromRotationZDegrees"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after FromRotationZDegrees is invoked"
+                    },
+                    "details": {
+                        "name": "MathMatrix3x3_VM::FromRotationZDegrees",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                            "details": {
+                                "name": "double"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{15A4332F-7C3F-4A58-AC35-50E1CE53FB9C}",
+                            "details": {
+                                "name": "Matrix3x3"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "FromMatrix4x4",
+                    "context": "MathMatrix3x3_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke FromMatrix4x4"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after FromMatrix4x4 is invoked"
+                    },
+                    "details": {
+                        "name": "MathMatrix3x3_VM::FromMatrix4x4",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{157193C7-B673-4A2B-8B43-5681DCC3DEC3}",
+                            "details": {
+                                "name": "const Matrix4x4&"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{15A4332F-7C3F-4A58-AC35-50E1CE53FB9C}",
+                            "details": {
+                                "name": "Matrix3x3"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "FromColumns",
+                    "context": "MathMatrix3x3_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke FromColumns"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after FromColumns is invoked"
+                    },
+                    "details": {
+                        "name": "MathMatrix3x3_VM::FromColumns",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "const Vector3&"
+                            }
+                        },
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "const Vector3&"
+                            }
+                        },
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "const Vector3&"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{15A4332F-7C3F-4A58-AC35-50E1CE53FB9C}",
+                            "details": {
+                                "name": "Matrix3x3"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "FromRotationXDegrees",
+                    "context": "MathMatrix3x3_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke FromRotationXDegrees"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after FromRotationXDegrees is invoked"
+                    },
+                    "details": {
+                        "name": "MathMatrix3x3_VM::FromRotationXDegrees",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                            "details": {
+                                "name": "double"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{15A4332F-7C3F-4A58-AC35-50E1CE53FB9C}",
+                            "details": {
+                                "name": "Matrix3x3"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "ToDeterminant",
+                    "context": "MathMatrix3x3_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke ToDeterminant"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after ToDeterminant is invoked"
+                    },
+                    "details": {
+                        "name": "MathMatrix3x3_VM::ToDeterminant",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{15A4332F-7C3F-4A58-AC35-50E1CE53FB9C}",
+                            "details": {
+                                "name": "const Matrix3x3&"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                            "details": {
+                                "name": "double"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

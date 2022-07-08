@@ -13,6 +13,7 @@
 #include <SceneAPI/SceneCore/Events/AssetImportRequest.h>
 #include <SceneAPI/SceneCore/Events/GraphMetaInfoBus.h>
 #include <SceneAPI/SceneCore/Events/ManifestMetaInfoBus.h>
+#include <SceneAPI/SceneData/SceneDataConfiguration.h>
 
 namespace AZ
 {
@@ -27,7 +28,7 @@ namespace AZ
         {
             class LodRule;
 
-            class LodRuleBehavior
+            class SCENE_DATA_CLASS LodRuleBehavior
                 : public SceneCore::BehaviorComponent
                 , public Events::ManifestMetaInfoBus::Handler
                 , public Events::AssetImportRequestBus::Handler
@@ -36,18 +37,19 @@ namespace AZ
             public:
                 AZ_COMPONENT(LodRuleBehavior, "{D2E19864-9A4B-41FD-8ACC-DA6756728CB3}", SceneCore::BehaviorComponent);
 
-                ~LodRuleBehavior() override = default;
+                SCENE_DATA_API ~LodRuleBehavior() override = default;
 
-                void Activate() override;
-                void Deactivate() override;
+                SCENE_DATA_API void Activate() override;
+                SCENE_DATA_API void Deactivate() override;
                 static void Reflect(ReflectContext* context);
 
-                void InitializeObject(const Containers::Scene& scene, DataTypes::IManifestObject& target) override;
-                Events::ProcessingResult UpdateManifest(Containers::Scene& scene, ManifestAction action,
+                SCENE_DATA_API void InitializeObject(const Containers::Scene& scene, DataTypes::IManifestObject& target) override;
+                SCENE_DATA_API Events::ProcessingResult UpdateManifest(
+                    Containers::Scene& scene, ManifestAction action,
                     RequestingApplication requester) override;
 
-                void GetVirtualTypeName(AZStd::string& name, Crc32 type) override;
-                void GetAllVirtualTypes(AZStd::set<Crc32>& types) override;
+                SCENE_DATA_API void GetVirtualTypeName(AZStd::string& name, Crc32 type) override;
+                SCENE_DATA_API void GetAllVirtualTypes(AZStd::set<Crc32>& types) override;
 
             private:
                 size_t SelectLodMeshes(const Containers::Scene& scene, DataTypes::ISceneNodeSelectionList& selection, size_t lodLevel) const;

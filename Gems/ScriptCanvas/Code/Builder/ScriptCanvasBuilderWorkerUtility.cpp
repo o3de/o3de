@@ -20,7 +20,6 @@
 #include <ScriptCanvas/Asset/SubgraphInterfaceAssetHandler.h>
 #include <ScriptCanvas/Asset/RuntimeAsset.h>
 #include <ScriptCanvas/Asset/RuntimeAssetHandler.h>
-#include <ScriptCanvas/Assets/ScriptCanvasAssetHandler.h>
 #include <ScriptCanvas/Components/EditorGraph.h>
 #include <ScriptCanvas/Components/EditorGraphVariableManagerComponent.h>
 #include <ScriptCanvas/Core/Connection.h>
@@ -29,19 +28,19 @@
 #include <ScriptCanvas/Results/ErrorText.h>
 #include <ScriptCanvas/Utils/BehaviorContextUtils.h>
 #include <Source/Components/SceneComponent.h>
+#include <ScriptCanvas/Core/Core.h>
+#include <AzCore/Asset/AssetManagerBus.h>
 
 namespace ScriptCanvasBuilder
 {
     AssetHandlers::AssetHandlers(SharedHandlers& source)
-        : m_editorAssetHandler(source.m_editorAssetHandler.first)
-        , m_editorFunctionAssetHandler(source.m_editorFunctionAssetHandler.first)
+        : m_editorFunctionAssetHandler(source.m_editorFunctionAssetHandler.first)
         , m_runtimeAssetHandler(source.m_runtimeAssetHandler.first)
         , m_subgraphInterfaceHandler(source.m_subgraphInterfaceHandler.first)
     {}
 
     void SharedHandlers::DeleteOwnedHandlers()
     {
-        DeleteIfOwned(m_editorAssetHandler);
         DeleteIfOwned(m_editorFunctionAssetHandler);
         DeleteIfOwned(m_runtimeAssetHandler);
         DeleteIfOwned(m_subgraphInterfaceHandler);
@@ -77,56 +76,40 @@ namespace ScriptCanvasBuilder
         return ScriptCanvas::Translation::ParseGraph(request);
     }
 
-    AZ::Outcome<ScriptCanvas::Translation::LuaAssetResult, AZStd::string> CreateLuaAsset(AZ::Entity* buildEntity, AZ::Data::AssetId scriptAssetId, AZStd::string_view rawLuaFilePath)
+    AZ::Outcome<ScriptCanvas::Translation::LuaAssetResult, AZStd::string> CreateLuaAsset(const SourceHandle& editAsset, AZStd::string_view rawLuaFilePath)
     {
         AZStd::string fullPath(rawLuaFilePath);
         AZStd::string fileNameOnly;
         AzFramework::StringFunc::Path::GetFullFileName(rawLuaFilePath.data(), fileNameOnly);
         AzFramework::StringFunc::Path::Normalize(fullPath);
 
-        auto sourceGraph = PrepareSourceGraph(buildEntity);
+        auto sourceGraph = PrepareSourceGraph(editAsset.Mod()->GetEntity());
 
         ScriptCanvas::Grammar::Request request;
-        request.scriptAssetId = scriptAssetId;
+        request.scriptAssetId = editAsset.Id();
         request.graph = sourceGraph;
         request.name = fileNameOnly;
         request.rawSaveDebugOutput = ScriptCanvas::Grammar::g_saveRawTranslationOuputToFile;
         request.printModelToConsole = ScriptCanvas::Grammar::g_printAbstractCodeModel;
         request.path = fullPath;
 
-        bool pathFound = false;
-        AZStd::string relativePath;
-        AzToolsFramework::AssetSystemRequestBus::BroadcastResult
-            ( pathFound
-            , &AzToolsFramework::AssetSystem::AssetSystemRequest::GetRelativeProductPathFromFullSourceOrProductPath
-            , fullPath.c_str(), relativePath);
-
-        if (!pathFound)
-        {
-            AZ::Failure(AZStd::string::format("Failed to get engine relative path from %s", fullPath.c_str()));
-        }
-
-        request.namespacePath = relativePath;
         const ScriptCanvas::Translation::Result translationResult = TranslateToLua(request);
 
         auto isSuccessOutcome = translationResult.IsSuccess(ScriptCanvas::Translation::TargetFlags::Lua);
-
         if (!isSuccessOutcome.IsSuccess())
         {
             return AZ::Failure(isSuccessOutcome.TakeError());
         }
-        auto& translation = translationResult.m_translations.find(ScriptCanvas::Translation::TargetFlags::Lua)->second;
 
+        auto& translation = translationResult.m_translations.find(ScriptCanvas::Translation::TargetFlags::Lua)->second;
         AZ::Data::Asset<AZ::ScriptAsset> asset;
-        scriptAssetId.m_subId = AZ::ScriptAsset::CompiledAssetSubId;
+        AZ::Data::AssetId scriptAssetId(editAsset.Id(), AZ::ScriptAsset::CompiledAssetSubId);
         asset.Create(scriptAssetId);
-        auto writeStream = asset.Get()->CreateWriteStream();
 
         AZ::IO::MemoryStream inputStream(translation.m_text.data(), translation.m_text.size());
         AzFramework::ScriptCompileRequest compileRequest;
         compileRequest.m_errorWindow = s_scriptCanvasBuilder;
         compileRequest.m_input = &inputStream;
-        compileRequest.m_output = &writeStream;
 
         AzFramework::ConstructScriptAssetPaths(compileRequest);
         auto compileOutcome = AzFramework::CompileScript(compileRequest);
@@ -134,6 +117,8 @@ namespace ScriptCanvasBuilder
         {
             return AZ::Failure(AZStd::string(compileOutcome.TakeError()));
         }
+
+        asset->m_data = compileRequest.m_luaScriptDataOut;
 
         ScriptCanvas::Translation::LuaAssetResult result;
         result.m_scriptAsset = asset;
@@ -145,249 +130,17 @@ namespace ScriptCanvasBuilder
         return AZ::Success(result);
     }
 
-    AZ::Outcome<AZ::Data::Asset<ScriptCanvas::RuntimeAsset>, AZStd::string> CreateRuntimeAsset(const AZ::Data::Asset<ScriptCanvasEditor::ScriptCanvasAsset>& editAsset)
+    AZ::Outcome<AZ::Data::Asset<ScriptCanvas::RuntimeAsset>, AZStd::string> CreateRuntimeAsset(const SourceHandle& editAsset)
     {
         // Flush asset manager events to ensure no asset references are held by closures queued on Ebuses.
         AZ::Data::AssetManager::Instance().DispatchEvents();
 
-        auto runtimeAssetId = editAsset.GetId();
-        runtimeAssetId.m_subId = AZ_CRC("RuntimeData", 0x163310ae);
+        AZ::Data::AssetId runtimeAssetId = editAsset.Id();
+        runtimeAssetId.m_subId = ScriptCanvas::RuntimeDataSubId;
         AZ::Data::Asset<ScriptCanvas::RuntimeAsset> runtimeAsset;
         runtimeAsset.Create(runtimeAssetId);
 
         return AZ::Success(runtimeAsset);
-    }
-
-    AZ::Outcome<ScriptCanvas::GraphData, AZStd::string> CompileGraphData(AZ::Entity* scriptCanvasEntity)
-    {
-        typedef AZStd::pair< ScriptCanvas::Node*, AZ::Entity* > NodeEntityPair;
-
-        if (!scriptCanvasEntity)
-        {
-            return AZ::Failure(AZStd::string("Cannot compile graph data from a nullptr Script Canvas Entity"));
-        }
-
-        auto sourceGraph = AZ::EntityUtils::FindFirstDerivedComponent<ScriptCanvasEditor::Graph>(scriptCanvasEntity);
-        if (!sourceGraph)
-        {
-            return AZ::Failure(AZStd::string("Failed to find Script Canvas Graph Component"));
-        }
-
-        const ScriptCanvas::GraphData& sourceGraphData = *sourceGraph->GetGraphDataConst();
-        ScriptCanvas::GraphData compiledGraphData;
-        auto serializeContext = AZ::EntityUtils::GetApplicationSerializeContext();
-        serializeContext->CloneObjectInplace(compiledGraphData, &sourceGraphData);
-
-        AZStd::unordered_set<ScriptCanvas::Endpoint> disabledEndpoints;
-        AZStd::unordered_set<AZ::Entity*> disabledNodeEntities;
-
-        AZStd::unordered_map<AZ::EntityId, NodeEntityPair > nodeLookUpMap;
-
-        AZStd::unordered_set<AZ::EntityId> deletedNodeEntities;
-
-        {
-            auto nodeIter = compiledGraphData.m_nodes.begin();
-
-            while (nodeIter != compiledGraphData.m_nodes.end())
-            {
-                AZ::Entity* nodeEntity = (*nodeIter);
-                auto nodeComponent = AZ::EntityUtils::FindFirstDerivedComponent<ScriptCanvas::Node>(nodeEntity);
-
-                if (nodeComponent == nullptr)
-                {
-                    deletedNodeEntities.insert(nodeEntity->GetId());
-
-                    delete nodeEntity;
-                    nodeIter = compiledGraphData.m_nodes.erase(nodeIter);
-
-                    continue;
-                }
-
-                bool disabledNode = false;
-
-                if (!nodeComponent->IsNodeEnabled())
-                {
-                    disabledNode = true;
-                    auto nodeSlots = nodeComponent->GetAllSlots();
-
-                    for (const ScriptCanvas::Slot* slot : nodeSlots)
-                    {
-                        // While slot has a GetEndpoint method. It uses the Node pointer which has not been set yet.
-                        // Bypass it for the more manual way in the builder.
-                        disabledEndpoints.insert(ScriptCanvas::Endpoint(nodeEntity->GetId(), slot->GetId()));
-                    }
-                }
-
-                if (disabledNode)
-                {
-                    delete nodeEntity;
-                    nodeIter = compiledGraphData.m_nodes.erase(nodeIter);
-                }
-                else
-                {
-                    // Keep them in the map to make future look-ups easier.
-                    nodeLookUpMap[nodeEntity->GetId()] = AZStd::make_pair(nodeComponent, nodeEntity);
-                    ++nodeIter;
-                }
-            }
-        }
-
-        // Keep track of all the endpoints we've fully removed so we can cleanse out all of the invalid connections
-        AZStd::unordered_set<ScriptCanvas::Endpoint> fullyRemovedEndpoints;
-
-        while (!disabledEndpoints.empty())
-        {
-            // Keep track of the list of all the potentially disabled nodes that are a result of any of the current batch of disabled endpoints
-            AZStd::unordered_set< NodeEntityPair > potentiallyDisabledNodes;
-
-            for (const ScriptCanvas::Endpoint& disabledEndpoint : disabledEndpoints)
-            {
-                fullyRemovedEndpoints.insert(disabledEndpoint);
-
-                AZStd::unordered_set<ScriptCanvas::Endpoint> reversedEndpoints;
-
-                auto mapRange = compiledGraphData.m_endpointMap.equal_range(disabledEndpoint);
-
-                // Start by looking up all of our connected endpoints so we can clean-up this map
-                for (auto endpointIter = mapRange.first; endpointIter != mapRange.second; ++endpointIter)
-                {
-                    reversedEndpoints.insert(endpointIter->second);
-                }
-
-                // Remove all of the endpoint entries relating to the currently disabled map.
-                compiledGraphData.m_endpointMap.erase(disabledEndpoint);
-
-                // Go through all of the reversed connections and find all of the corresponding entries that
-                // match our removed connection and remove them as well.
-                for (auto disconnectedEndpoint : reversedEndpoints)
-                {
-                    auto mapRange2 = compiledGraphData.m_endpointMap.equal_range(disconnectedEndpoint);
-
-                    for (auto endpointIter = mapRange2.first; endpointIter != mapRange2.second; ++endpointIter)
-                    {
-                        if (endpointIter->second == disabledEndpoint)
-                        {
-                            compiledGraphData.m_endpointMap.erase(endpointIter);
-                            break;
-                        }
-                    }
-
-                    // Look up the node so we can do some introspection on the slot.
-                    auto nodeIter = nodeLookUpMap.find(disconnectedEndpoint.GetNodeId());
-
-                    if (nodeIter != nodeLookUpMap.end())
-                    {
-                        ScriptCanvas::Node* node = nodeIter->second.first;
-
-                        ScriptCanvas::Slot* slot = node->GetSlot(disconnectedEndpoint.GetSlotId());
-
-                        // If the slot is an input, we want to recurse on that as a potentially disabled node. So keep track of it and we'll parse it in the next step.
-                        if (slot && slot->IsExecution() && slot->IsInput())
-                        {
-                            // If we no longer have any active connections. We can also strip out this node to simplify down the graph further.
-                            if (compiledGraphData.m_endpointMap.count(disconnectedEndpoint) == 0)
-                            {
-                                potentiallyDisabledNodes.insert(nodeIter->second);
-                            }
-                        }
-                    }
-                }
-            }
-
-            disabledEndpoints.clear();
-
-            for (const NodeEntityPair& nodePair : potentiallyDisabledNodes)
-            {
-                ScriptCanvas::Node* node = nodePair.first;
-                auto inputSlots = node->GetAllSlotsByDescriptor(ScriptCanvas::SlotDescriptors::ExecutionIn());
-
-                bool hasExecutionIn = false;
-
-                for (const ScriptCanvas::Slot* slot : inputSlots)
-                {
-                    // Can't use the slot method since it requires the node to be registered which has not happened yet.
-                    ScriptCanvas::Endpoint endpoint = { nodePair.second->GetId(), slot->GetId() };
-                    if (compiledGraphData.m_endpointMap.count(endpoint) > 0)
-                    {
-                        hasExecutionIn = true;
-                        break;
-                    }
-                }
-
-                // Once here we know the node has no input but was apart of the previous chain so we can just disable the entire node.
-                // Since it will no longer have any incoming data via the disabled checks from above.
-                if (!hasExecutionIn)
-                {
-                    auto disabledSlots = node->GetAllSlots();
-
-                    for (auto disabledSlot : disabledSlots)
-                    {
-                        ScriptCanvas::Endpoint endpoint = { nodePair.second->GetId(), disabledSlot->GetId() };
-                        disabledEndpoints.insert(endpoint);
-                    }
-
-                    nodeLookUpMap.erase(nodePair.second->GetId());
-                    [[maybe_unused]] size_t eraseCount = compiledGraphData.m_nodes.erase(nodePair.second);
-                    AZ_Assert(eraseCount == 1, "Failed to erase node from compiled graph data");
-
-                    delete node;
-                }
-            }
-
-            potentiallyDisabledNodes.clear();
-        }
-
-        {
-            auto connectionIter = compiledGraphData.m_connections.begin();
-
-            while (connectionIter != compiledGraphData.m_connections.end())
-            {
-                AZ::Entity* connectionEntity = (*connectionIter);
-                auto connection = AZ::EntityUtils::FindFirstDerivedComponent<ScriptCanvas::Connection>(connectionEntity);
-                AZ_Assert(connection, "Connection is missing connection component.");
-
-                if (connection == nullptr)
-                {
-                    delete connectionEntity;
-                    connectionIter = compiledGraphData.m_connections.erase(connectionIter);
-                    continue;
-                }
-
-                ScriptCanvas::Endpoint targetEndpoint = connection->GetTargetEndpoint();
-                ScriptCanvas::Endpoint sourceEndpoint = connection->GetSourceEndpoint();
-
-                if (fullyRemovedEndpoints.count(targetEndpoint) > 0
-                    || fullyRemovedEndpoints.count(sourceEndpoint) > 0
-                    || deletedNodeEntities.count(targetEndpoint.GetNodeId()) > 0
-                    || deletedNodeEntities.count(sourceEndpoint.GetNodeId()) > 0)
-                {
-                    delete connectionEntity;
-                    connectionIter = compiledGraphData.m_connections.erase(connectionIter);
-                }
-                else
-                {
-                    ++connectionIter;
-                }
-            }
-        }
-
-        return AZ::Success(compiledGraphData);
-    }
-
-    AZ::Outcome<ScriptCanvas::VariableData, AZStd::string> CompileVariableData(AZ::Entity* scriptCanvasEntity)
-    {
-        if (!scriptCanvasEntity)
-        {
-            return AZ::Failure(AZStd::string("Cannot compile variable data from a nullptr Script Canvas Entity"));
-        }
-
-        auto sourceGraphVariableManager = AZ::EntityUtils::FindFirstDerivedComponent<ScriptCanvasEditor::EditorGraphVariableManagerComponent>(scriptCanvasEntity);
-        if (!sourceGraphVariableManager)
-        {
-            return AZ::Failure(AZStd::string("Failed to find Editor Script Canvas Graph Variable Manager Component"));
-        }
-
-        return AZ::Success(*sourceGraphVariableManager->GetVariableData());
     }
 
     int GetBuilderVersion()
@@ -399,48 +152,9 @@ namespace ScriptCanvasBuilder
             ;
     }
 
-    AZ::Outcome < AZ::Data::Asset<ScriptCanvasEditor::ScriptCanvasAsset>, AZStd::string> LoadEditorAsset(AZStd::string_view filePath, AZ::Data::AssetId assetId, AZ::Data::AssetFilterCB assetFilterCB)
+    ScriptCanvasEditor::EditorGraph* PrepareSourceGraph(AZ::Entity* const buildEntity)
     {
-        AZStd::shared_ptr<AZ::Data::AssetDataStream> assetDataStream = AZStd::make_shared<AZ::Data::AssetDataStream>();
-
-        // Read the asset into a memory buffer, then hand ownership of the buffer to assetDataStream
-        {
-            AZ::IO::FileIOStream stream(filePath.data(), AZ::IO::OpenMode::ModeRead);
-            if (!AZ::IO::RetryOpenStream(stream))
-            {
-                AZ_Warning(s_scriptCanvasBuilder, false, "CreateJobs for \"%s\" failed because the source file could not be opened.", filePath.data());
-                AZ::Failure(AZStd::string::format("Failed to load ScriptCavas asset: %s", filePath.data()));
-            }
-            AZStd::vector<AZ::u8> fileBuffer(stream.GetLength());
-            size_t bytesRead = stream.Read(fileBuffer.size(), fileBuffer.data());
-            if (bytesRead != stream.GetLength())
-            {
-                AZ_Warning(s_scriptCanvasBuilder, false, "CreateJobs for \"%s\" failed because the source file could not be read.", filePath.data());
-                AZ::Failure(AZStd::string::format("Failed to load ScriptCavas asset: %s", filePath.data()));
-            }
-
-            assetDataStream->Open(AZStd::move(fileBuffer));
-        }
-
-        ScriptCanvasEditor::ScriptCanvasAssetHandler editorAssetHandler;
-
-        AZ::SerializeContext* context{};
-        AZ::ComponentApplicationBus::BroadcastResult(context, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
-
-        AZ::Data::Asset<ScriptCanvasEditor::ScriptCanvasAsset> asset;
-        asset.Create(assetId);
-
-        if (editorAssetHandler.LoadAssetData(asset, assetDataStream, assetFilterCB) != AZ::Data::AssetHandler::LoadResult::LoadComplete)
-        {
-            return AZ::Failure(AZStd::string::format("Failed to load ScriptCavas asset: %s", filePath.data()));
-        }
-
-        return AZ::Success(asset);
-    }
-
-    ScriptCanvasEditor::Graph* PrepareSourceGraph(AZ::Entity* const buildEntity)
-    {
-        auto sourceGraph = AZ::EntityUtils::FindFirstDerivedComponent<ScriptCanvasEditor::Graph>(buildEntity);
+        auto sourceGraph = AZ::EntityUtils::FindFirstDerivedComponent<ScriptCanvasEditor::EditorGraph>(buildEntity);
         if (!sourceGraph)
         {
             return nullptr;
@@ -481,12 +195,14 @@ namespace ScriptCanvasBuilder
             buildEntity->Activate();
         }
 
+        AZ_Assert(buildEntity->GetState() == AZ::Entity::State::Active, "build entity not active");
         return sourceGraph;
     }
 
     AZ::Outcome<void, AZStd::string> ProcessTranslationJob(ProcessTranslationJobInput& input)
     {
-        const bool saveRawLua{ true };
+        using namespace ScriptCanvas;
+
         auto sourceGraph = PrepareSourceGraph(input.buildEntity);
 
         auto version = sourceGraph->GetVersion();
@@ -528,8 +244,7 @@ namespace ScriptCanvasBuilder
         AzFramework::ConstructScriptAssetPaths(compileRequest);
 
         // compiles in input stream Lua in memory, writes output to disk
-        constexpr bool writeAssetInfo{ true };
-        auto compileOutcome = AzFramework::CompileScriptAndSaveAsset(compileRequest, writeAssetInfo);
+        auto compileOutcome = AzFramework::CompileScriptAndSaveAsset(compileRequest);
         if (!compileOutcome.IsSuccess())
         {
             return AZ::Failure(compileOutcome.GetError());
@@ -544,7 +259,8 @@ namespace ScriptCanvasBuilder
         input.response->m_outputProducts.push_back(AZStd::move(jobProduct));
 
         const AZ::Data::AssetId scriptAssetId(input.assetID.m_guid, jobProduct.m_productSubID);
-        const AZ::Data::Asset<AZ::ScriptAsset> scriptAsset(scriptAssetId, jobProduct.m_productAssetType, {});
+        AZ::Data::Asset<AZ::ScriptAsset> scriptAsset(scriptAssetId, jobProduct.m_productAssetType, {});
+        scriptAsset.SetAutoLoadBehavior(AZ::Data::AssetLoadBehavior::PreLoad);
         input.runtimeDataOut.m_script = scriptAsset;
 
         const ScriptCanvas::OrderedDependencies& orderedDependencies = translationResult.m_model->GetOrderedDependencies();
@@ -552,14 +268,16 @@ namespace ScriptCanvasBuilder
 
         for (const auto& subgraphAssetID : orderedDependencies.orderedAssetIds)
         {
-            const AZ::Data::AssetId dependentSubgraphAssetID(subgraphAssetID.m_guid, AZ_CRC("RuntimeData", 0x163310ae));
-            const AZ::Data::Asset<ScriptCanvas::RuntimeAsset> subgraphAsset(dependentSubgraphAssetID, azrtti_typeid<ScriptCanvas::RuntimeAsset>(), {});
+            const AZ::Data::AssetId dependentSubgraphAssetID(subgraphAssetID.m_guid, RuntimeDataSubId);
+            AZ::Data::Asset<ScriptCanvas::RuntimeAsset> subgraphAsset(dependentSubgraphAssetID, azrtti_typeid<ScriptCanvas::RuntimeAsset>());
+            subgraphAsset.SetAutoLoadBehavior(AZ::Data::AssetLoadBehavior::PreLoad);
             input.runtimeDataOut.m_requiredAssets.push_back(subgraphAsset);
         }
 
         for (const auto& scriptEventAssetID : dependencyReport.scriptEventsAssetIds)
         {
-            const AZ::Data::Asset<ScriptEvents::ScriptEventsAsset> subgraphAsset(scriptEventAssetID, azrtti_typeid<ScriptEvents::ScriptEventsAsset>(), {});
+            AZ::Data::Asset<ScriptEvents::ScriptEventsAsset> subgraphAsset(scriptEventAssetID, azrtti_typeid<ScriptEvents::ScriptEventsAsset>());
+            subgraphAsset.SetAutoLoadBehavior(AZ::Data::AssetLoadBehavior::PreLoad);
             input.runtimeDataOut.m_requiredScriptEvents.push_back(subgraphAsset);
         }
 
@@ -574,7 +292,7 @@ namespace ScriptCanvasBuilder
     {
         AZ::Data::Asset<ScriptCanvas::SubgraphInterfaceAsset> runtimeAsset;
         runtimeAsset.Create(AZ::Data::AssetId(input.assetID.m_guid, AZ_CRC("SubgraphInterface", 0xdfe6dc72)));
-        runtimeAsset.Get()->SetData(subgraphInterface);
+        runtimeAsset.Get()->m_interfaceData = subgraphInterface;
 
         AZStd::vector<AZ::u8> byteBuffer;
         AZ::IO::ByteContainerStream<decltype(byteBuffer)> byteStream(&byteBuffer);
@@ -609,8 +327,8 @@ namespace ScriptCanvasBuilder
     AZ::Outcome<void, AZStd::string> SaveRuntimeAsset(ProcessTranslationJobInput& input, ScriptCanvas::RuntimeData& runtimeData)
     {
         AZ::Data::Asset<ScriptCanvas::RuntimeAsset> runtimeAsset;
-        runtimeAsset.Create(AZ::Data::AssetId(input.assetID.m_guid, AZ_CRC("RuntimeData", 0x163310ae)));
-        runtimeAsset.Get()->SetData(runtimeData);
+        runtimeAsset.Create(AZ::Data::AssetId(input.assetID.m_guid, ScriptCanvas::RuntimeDataSubId));
+        runtimeAsset.Get()->m_runtimeData = runtimeData;
 
         AZStd::vector<AZ::u8> byteBuffer;
         AZ::IO::ByteContainerStream<decltype(byteBuffer)> byteStream(&byteBuffer);
@@ -641,24 +359,19 @@ namespace ScriptCanvasBuilder
             azrtti_typeid<decltype(runtimeData.m_input)>(),
             input.runtimeScriptCanvasOutputPath,
             azrtti_typeid<ScriptCanvas::RuntimeAsset>(),
-            AZ_CRC("RuntimeData", 0x163310ae), jobProduct);
+            ScriptCanvas::RuntimeDataSubId, jobProduct);
 
         // Output Object marks dependencies as handled.
-        // We still have more to evaluate
+        // We still have more to evaluate, so mark false, until complete
         jobProduct.m_dependenciesHandled = false;
 
-        jobProduct.m_dependencies.push_back({ runtimeData.m_script.GetId(), {} });
+        jobProduct.m_dependencies.push_back({ runtimeData.m_script.GetId(), AZ::Data::ProductDependencyInfo::CreateFlags(AZ::Data::AssetLoadBehavior::PreLoad) });
 
         for (const auto& assetDependency : runtimeData.m_requiredAssets)
         {
-            auto filterScripts = [](const AZ::Data::Asset<AZ::Data::AssetData>& asset)
-            {
-                return asset.GetType() != azrtti_typeid<AZ::ScriptAsset>();
-            };
-
             if (AZ::Data::AssetManager::Instance().GetAsset(assetDependency.GetId(), assetDependency.GetType(), AZ::Data::AssetLoadBehavior::PreLoad))
             {
-                jobProduct.m_dependencies.push_back({ assetDependency.GetId(), {} });
+                jobProduct.m_dependencies.push_back({ assetDependency.GetId(), AZ::Data::ProductDependencyInfo::CreateFlags(AZ::Data::AssetLoadBehavior::PreLoad) });
             }
             else
             {
@@ -670,7 +383,7 @@ namespace ScriptCanvasBuilder
         {
             if (AZ::Data::AssetManager::Instance().GetAsset(scriptEventDependency.GetId(), scriptEventDependency.GetType(), AZ::Data::AssetLoadBehavior::PreLoad))
             {
-                jobProduct.m_dependencies.push_back({ scriptEventDependency.GetId(), {} });
+                jobProduct.m_dependencies.push_back({ scriptEventDependency.GetId(), AZ::Data::ProductDependencyInfo::CreateFlags(AZ::Data::AssetLoadBehavior::PreLoad) });
             }
             else
             {

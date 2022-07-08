@@ -53,7 +53,7 @@ namespace AZ
             // Helper struct for easy initialization of the frame iteration.
             struct FrameIteration
             {
-                uint64_t m_frameIteration = ~0;
+                uint64_t m_frameIteration = std::numeric_limits<uint64_t>::max();
             };
 
             // Utility function that merges multiple ShaderResoruceGroup data into one.

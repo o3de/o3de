@@ -257,7 +257,7 @@ namespace AZ
             state.srcAlphaBlendFactor = ConvertBlendFactor(targetBlendState.m_blendAlphaSource);
             state.dstAlphaBlendFactor = ConvertBlendFactor(targetBlendState.m_blendAlphaDest);
             state.alphaBlendOp = ConvertBlendOp(targetBlendState.m_blendAlphaOp);
-            state.colorWriteMask = ConvertComponentFlags(targetBlendState.m_writeMask);
+            state.colorWriteMask = ConvertComponentFlags(static_cast<uint8_t>(targetBlendState.m_writeMask));
         }
 
         VkBlendFactor ConvertBlendFactor(const RHI::BlendFactor& blendFactor)
@@ -696,8 +696,7 @@ namespace AZ
                 usageFlags |=
                     VK_BUFFER_USAGE_INDEX_BUFFER_BIT |
                     VK_BUFFER_USAGE_VERTEX_BUFFER_BIT |
-                    VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR |
-                    VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT;
+                    VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR;
             }
 
             if (RHI::CheckBitsAny(bindFlags, BindFlags::Constant))
@@ -737,15 +736,27 @@ namespace AZ
 
             if (RHI::CheckBitsAny(bindFlags, BindFlags::RayTracingAccelerationStructure))
             {
-                usageFlags |= VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_STORAGE_BIT_KHR;
+                usageFlags |= VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_STORAGE_BIT_KHR | VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR;
             }
 
             if (RHI::CheckBitsAny(bindFlags, BindFlags::RayTracingShaderTable))
             {
-                usageFlags |= VK_BUFFER_USAGE_SHADER_BINDING_TABLE_BIT_KHR | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT;
+                usageFlags |= VK_BUFFER_USAGE_SHADER_BINDING_TABLE_BIT_KHR;
+            }
+
+            if (ShouldApplyDeviceAddressBit(bindFlags))
+            {
+                usageFlags |=  VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT;
             }
 
             return usageFlags;
+        }
+
+        bool ShouldApplyDeviceAddressBit(RHI::BufferBindFlags bindFlags)
+        {
+            return RHI::CheckBitsAny(
+                bindFlags,
+                RHI::BufferBindFlags::InputAssembly | RHI::BufferBindFlags::DynamicInputAssembly | RHI::BufferBindFlags::RayTracingShaderTable | RHI::BufferBindFlags::RayTracingAccelerationStructure | RHI::BufferBindFlags::RayTracingScratchBuffer);
         }
 
         VkPipelineStageFlags GetSupportedPipelineStages(RHI::PipelineStateType type)
@@ -792,10 +803,6 @@ namespace AZ
             if (RHI::CheckBitsAny(formatFeatureFlags, static_cast<VkFormatFeatureFlags>(VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT)))
             {
                 usageFlags |= VK_IMAGE_USAGE_SAMPLED_BIT;
-            }
-            if (RHI::CheckBitsAny(formatFeatureFlags, static_cast<VkFormatFeatureFlags>(VK_FORMAT_FEATURE_STORAGE_IMAGE_BIT)))
-            {
-                usageFlags |= VK_IMAGE_USAGE_STORAGE_BIT;
             }
             if (RHI::CheckBitsAny(formatFeatureFlags, static_cast<VkFormatFeatureFlags>(VK_FORMAT_FEATURE_STORAGE_IMAGE_BIT)))
             {
@@ -1125,10 +1132,21 @@ namespace AZ
         VkImageLayout GetImageAttachmentLayout(const RHI::ImageScopeAttachment& imageAttachment)
         {
             const AZStd::vector<RHI::ScopeAttachmentUsageAndAccess>& usagesAndAccesses = imageAttachment.GetUsageAndAccess();
+
             if (usagesAndAccesses.size() > 1)
             {
-                //[GFX TODO][ATOM-4779] -Multiple Usage/Access can be further optimized. For now VK_IMAGE_LAYOUT_GENERAL is the fallback.
-                return VK_IMAGE_LAYOUT_GENERAL;
+                // The Attachment is used multiple times: If all usages/accesses are the same type, we can determine the
+                // vk image layout from the first usage. If not, use the fallback VK_IMAGE_LAYOUT_GENERAL for now.
+                // [GFX TODO][ATOM-4779] -Multiple Usage/Access can be further optimized.
+
+                const auto& first = usagesAndAccesses.front();
+                for (int i = 1; i < usagesAndAccesses.size(); ++i)
+                {
+                    if (usagesAndAccesses[i].m_access != first.m_access || usagesAndAccesses[i].m_usage != first.m_usage)
+                    {
+                        return VK_IMAGE_LAYOUT_GENERAL;
+                    }
+                }
             }
 
             const RHI::ImageView* imageView = imageAttachment.GetImageView();
@@ -1143,15 +1161,20 @@ namespace AZ
                 return RHI::CheckBitsAny(usagesAndAccesses.front().m_access, RHI::ScopeAttachmentAccess::Write) ? VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL : VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
             case RHI::ScopeAttachmentUsage::Shader:
             case RHI::ScopeAttachmentUsage::SubpassInput:
-                // If we are reading from a depth/stencil texture, then we use the depth/stencil read optimal layout instead of the generic shader read one.
-                if (RHI::CheckBitsAny(imageAspects, RHI::ImageAspectFlags::DepthStencil))
                 {
-                    return RHI::CheckBitsAny(usagesAndAccesses.front().m_access, RHI::ScopeAttachmentAccess::Write) ? VK_IMAGE_LAYOUT_GENERAL : VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
+                    // always set VK_IMAGE_LAYOUT_GENERAL if the Image is ShaderWrite, even in a read scope
+                    if (RHI::CheckBitsAny(usagesAndAccesses.front().m_access, RHI::ScopeAttachmentAccess::Write) ||
+                        RHI::CheckBitsAny(imageView->GetImage().GetDescriptor().m_bindFlags, RHI::ImageBindFlags::ShaderWrite))
+                    {
+                        return VK_IMAGE_LAYOUT_GENERAL;
+                    }
+                    else
+                    {
+                        // if we are reading from a depth/stencil texture, then we use the depth/stencil read optimal layout instead of the generic shader read one
+                        return RHI::CheckBitsAny(imageAspects, RHI::ImageAspectFlags::DepthStencil) ?
+                            VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL : VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+                    }
                 }
-                else
-                {
-                    return RHI::CheckBitsAny(usagesAndAccesses.front().m_access, RHI::ScopeAttachmentAccess::Write) ? VK_IMAGE_LAYOUT_GENERAL : VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-                }                
             case RHI::ScopeAttachmentUsage::Copy:
                 return RHI::CheckBitsAny(usagesAndAccesses.front().m_access, RHI::ScopeAttachmentAccess::Write) ? VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL : VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
             default:

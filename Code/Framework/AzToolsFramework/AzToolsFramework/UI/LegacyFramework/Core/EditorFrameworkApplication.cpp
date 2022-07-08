@@ -35,10 +35,6 @@
 #include <AzFramework/Asset/AssetCatalogComponent.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzFramework/TargetManagement/TargetManagementComponent.h>
-#include <AzFramework/Driller/RemoteDrillerInterface.h>
-
-#include <AzCore/Driller/Driller.h>
-#include <AzCore/Debug/ProfilerDriller.h>
 
 #ifdef AZ_PLATFORM_WINDOWS
 #include "shlobj.h"
@@ -50,7 +46,7 @@
 
 AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 'QFileInfo::d_ptr': class 'QSharedDataPointer<QFileInfoPrivate>' needs to have dll-interface to be used by clients of class 'QFileInfo'
 #include <QFileInfo>
-AZ_POP_DISABLE_OVERRIDE_WARNING
+AZ_POP_DISABLE_WARNING
 #include <QSharedMemory>
 #include <QStandardPaths>
 #include <QtWidgets/QApplication>
@@ -59,7 +55,6 @@ namespace LegacyFramework
 {
     ApplicationDesc::ApplicationDesc(const char* name, int argc, char** argv)
         : m_applicationModule(nullptr)
-        , m_enableGridmate(true)
         , m_enablePerforce(true)
         , m_enableGUI(true)
         , m_enableProjectManager(true)
@@ -89,7 +84,6 @@ namespace LegacyFramework
 
         m_applicationModule = other.m_applicationModule;
         m_enableGUI = other.m_enableGUI;
-        m_enableGridmate = other.m_enableGridmate;
         m_enablePerforce = other.m_enablePerforce;
         azstrcpy(m_applicationName, AZ_MAX_PATH_LEN, other.m_applicationName);
         m_enableProjectManager = other.m_enableProjectManager;
@@ -101,6 +95,10 @@ namespace LegacyFramework
     }
 
     Application::Application()
+        : Application(0, nullptr)
+    {}
+    Application::Application(int argc, char** argv)
+        : ComponentApplication(argc, argv)
     {
         m_isPrimary = true;
         m_desiredExitCode = 0;
@@ -195,9 +193,6 @@ namespace LegacyFramework
         ::SetConsoleCtrlHandler(CTRL_BREAK_HandlerRoutine, true);
 #endif
 
-        m_ptrCommandLineParser = aznew AzFramework::CommandLine();
-        m_ptrCommandLineParser->Parse(m_desc.m_argc, m_desc.m_argv);
-
         // If we don't have one create a serialize context
         if (GetSerializeContext() == nullptr)
         {
@@ -210,7 +205,7 @@ namespace LegacyFramework
         m_ptrSystemEntity->Activate();
 
         // If we aren't the primary, RunAsAnotherInstance unless we are being forcestarted
-        if (!m_isPrimary && !m_ptrCommandLineParser->HasSwitch("forcestart"))
+        if (!m_isPrimary && !m_commandLine.HasSwitch("forcestart"))
         {
             // Required for the application component to handle RunAsAnotherInstance
             CreateApplicationComponent();
@@ -239,7 +234,7 @@ namespace LegacyFramework
         {
             m_applicationEntity->Deactivate();
             delete m_applicationEntity;
-            m_applicationEntity = NULL;
+            m_applicationEntity = nullptr;
         }
 
         AZ::SystemTickBus::ExecuteQueuedEvents();
@@ -249,9 +244,6 @@ namespace LegacyFramework
         // clean up!
         ::SetConsoleCtrlHandler(CTRL_BREAK_HandlerRoutine, false);
 #endif
-
-        delete m_ptrCommandLineParser;
-        m_ptrCommandLineParser = NULL;
 
         CoreMessageBus::Handler::BusDisconnect();
         FrameworkApplicationMessages::Handler::BusDisconnect();
@@ -271,13 +263,8 @@ namespace LegacyFramework
         {
             m_applicationEntity->Deactivate();
             delete m_applicationEntity;
-            m_applicationEntity = NULL;
+            m_applicationEntity = nullptr;
         }
-    }
-
-    const AzFramework::CommandLine* Application::GetCommandLineParser()
-    {
-        return m_ptrCommandLineParser;
     }
 
     // returns TRUE if the component already existed, FALSE if it had to create one.
@@ -484,9 +471,7 @@ namespace LegacyFramework
 
     void Application::CreateApplicationComponents()
     {
-        EnsureComponentCreated(AzFramework::TargetManagementComponent::RTTI_Type());
-        EnsureComponentCreated(AzFramework::DrillerNetworkConsoleComponent::RTTI_Type());
-        EnsureComponentCreated(AzFramework::DrillerNetworkAgentComponent::RTTI_Type());
+        ;
     }
 
     void Application::CreateSystemComponents()
@@ -507,8 +492,6 @@ namespace LegacyFramework
         ComponentApplication::RegisterCoreComponents();
 
         RegisterComponentDescriptor(AzFramework::TargetManagementComponent::CreateDescriptor());
-        RegisterComponentDescriptor(AzFramework::DrillerNetworkConsoleComponent::CreateDescriptor());
-        RegisterComponentDescriptor(AzFramework::DrillerNetworkAgentComponent::CreateDescriptor());
         RegisterComponentDescriptor(AzToolsFramework::Framework::CreateDescriptor());
     }
 }

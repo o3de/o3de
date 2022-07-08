@@ -5,13 +5,14 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <AzCore/Debug/EventTraceDrillerBus.h>
+
 #include <RHI/CommandList.h>
 #include <RHI/CommandQueue.h>
 #include <RHI/Conversion.h>
 #include <RHI/Device.h>
 #include <RHI/SwapChain.h>
-#include <Atom/RHI.Reflect/CpuTimingStatistics.h>
+
+#include <AzCore/Debug/Timer.h>
 
 namespace AZ
 {
@@ -42,20 +43,11 @@ namespace AZ
 
         void CommandQueue::ExecuteWork(const RHI::ExecuteWorkRequest& rhiRequest)
         {
-#if defined(PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB)
-            for (RHI::SwapChain* swapChain : rhiRequest.m_swapChainsToPresent)
-            {
-                if (!swapChain->m_resized)
-                {
-                    return;
-                }
-            }
-#endif // PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB
             const ExecuteWorkRequest& request = static_cast<const ExecuteWorkRequest&>(rhiRequest);
             QueueCommand([=](void* queue) 
             {
-                AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzRender, "ExecuteWork");
-                AZ_PROFILE_RHI_VARIABLE(m_lastExecuteDuration);
+                AZ_PROFILE_SCOPE(RHI, "ExecuteWork");
+                AZ::Debug::ScopedTimer executionTimer(m_lastExecuteDuration);
 
                 Queue* vulkanQueue = static_cast<Queue*>(queue);
 
@@ -89,7 +81,7 @@ namespace AZ
                 }
 
                 {
-                    AZ_PROFILE_RHI_VARIABLE(m_lastPresentDuration);
+                    AZ::Debug::ScopedTimer presentTimer(m_lastPresentDuration);
 
                     // present the image of the current frame.
                     for (RHI::SwapChain* swapChain : request.m_swapChainsToPresent)
@@ -109,7 +101,7 @@ namespace AZ
         {
             // The queue doesn't have an explicit way to signal a fence, so
             // we submit an empty work batch with only a fence to signal.
-            QueueCommand([this, &fence](void* queue)
+            QueueCommand([&fence](void* queue)
             {
                 Queue* vulkanQueue = static_cast<Queue*>(queue);
                 vulkanQueue->SubmitCommandBuffers(

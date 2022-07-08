@@ -421,9 +421,9 @@ namespace ScriptCanvas
         return datum;
     }
 
-    void Slot::FindModifiableDatumView(ModifiableDatumView& datumView)
+    bool Slot::FindModifiableDatumView(ModifiableDatumView& datumView)
     {
-        m_node->FindModifiableDatumView(GetId(), datumView);
+        return m_node->FindModifiableDatumView(GetId(), datumView);
     }
 
     bool Slot::IsVariableReference() const
@@ -460,14 +460,14 @@ namespace ScriptCanvas
             && GetDataType() != Data::Type::BehaviorContextObject(GraphScopedVariableId::TYPEINFO_Uuid());
     }
 
-    bool Slot::CanConvertToReference() const
-    {        
-        return !m_isUserAdded && CanConvertTypes() && !m_isVariableReference && !m_node->HasConnectedNodes((*this));
+    bool Slot::CanConvertToReference(bool isNewSlot) const
+    {
+        return (!m_isUserAdded || isNewSlot) && CanConvertTypes() && !m_isVariableReference && !m_node->HasConnectedNodes((*this));
     }
 
-    bool Slot::ConvertToReference()
+    bool Slot::ConvertToReference(bool isNewSlot)
     {
-        if (CanConvertToReference())
+        if (CanConvertToReference(isNewSlot))
         {
             m_isVariableReference = true;
 
@@ -480,14 +480,14 @@ namespace ScriptCanvas
         return m_isVariableReference;
     }
 
-    void Slot::SetVariableReference(const VariableId& variableId)
+    void Slot::SetVariableReference(const VariableId& variableId, IsVariableTypeChange isTypeChange)
     {
         if (!IsVariableReference() && !ConvertToReference())
         {
             return;
         }
 
-        if (m_variableReference == variableId)
+        if ((m_variableReference == variableId) && (isTypeChange != IsVariableTypeChange::Yes))
         {
             return;
         }
@@ -498,7 +498,7 @@ namespace ScriptCanvas
 
         if (IsDynamicSlot())
         {
-            if (!HasDisplayType())
+            if (!HasDisplayType() || isTypeChange == IsVariableTypeChange::Yes)
             {
                 GraphVariable* variable = m_node->FindGraphVariable(m_variableReference);
 

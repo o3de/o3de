@@ -16,13 +16,14 @@ partial ShaderResourceGroup ViewSrg
     {
         float3 m_position;
         float m_opacity;
+        
         float4 m_quaternion;
         float3 m_halfSize;
         float m_angleAttenuation;
+        float m_normalMapOpacity;
         uint m_sortKeyPacked;
         uint m_textureArrayIndex;
         uint m_textureIndex;
-        uint m_padding[1];
     };
 
     StructuredBuffer<Decal> m_decals; 
@@ -31,12 +32,18 @@ partial ShaderResourceGroup ViewSrg
     // e.g. m_decalTextureArray0 might store 24 textures @128x128, 
     // m_decalTextureArray1 might store 16 * 256x256 
     // and m_decalTextureArray2 might store 4 @ 512x512
-    
-    Texture2DArray<float4> m_decalTextureArray0;
-    Texture2DArray<float4> m_decalTextureArray1;
-    Texture2DArray<float4> m_decalTextureArray2;
-    Texture2DArray<float4> m_decalTextureArray3;
-    Texture2DArray<float4> m_decalTextureArray4;
+    // This must match the variable NumTextureArrays in DecalTextureArrayFeatureProcessor.h
+    Texture2DArray<float4> m_decalTextureArrayDiffuse0;
+    Texture2DArray<float4> m_decalTextureArrayDiffuse1;
+    Texture2DArray<float4> m_decalTextureArrayDiffuse2;
+    Texture2DArray<float4> m_decalTextureArrayDiffuse3;
+    Texture2DArray<float4> m_decalTextureArrayDiffuse4;
+
+    Texture2DArray<float4> m_decalTextureArrayNormalMaps0;
+    Texture2DArray<float4> m_decalTextureArrayNormalMaps1;
+    Texture2DArray<float4> m_decalTextureArrayNormalMaps2;
+    Texture2DArray<float4> m_decalTextureArrayNormalMaps3;
+    Texture2DArray<float4> m_decalTextureArrayNormalMaps4;
 
     uint m_decalCount;  
 }

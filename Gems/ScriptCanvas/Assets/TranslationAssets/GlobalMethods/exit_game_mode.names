@@ -1,0 +1,31 @@
+{
+    "entries": [
+        {
+            "base": "exit_game_mode",
+            "context": "Method",
+            "variant": "",
+            "details": {
+                "name": "",
+                "category": "Globals"
+            },
+            "methods": [
+                {
+                    "base": "exit_game_mode",
+                    "context": "Global",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke exit_game_mode"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after exit_game_mode is invoked"
+                    },
+                    "details": {
+                        "name": "exit_game_mode",
+                        "category": "Other"
+                    }
+                }
+            ]
+        }
+    ]
+}

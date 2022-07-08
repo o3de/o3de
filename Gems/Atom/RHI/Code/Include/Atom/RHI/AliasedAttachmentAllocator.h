@@ -248,7 +248,7 @@ namespace AZ
             // The no allocation heap is used when doing a 2 pass strategy.
             Internal::NoAllocationAliasedHeap::Descriptor heapAllocator;
             heapAllocator.m_alignment = descriptor.m_alignment;
-            heapAllocator.m_budgetInBytes = ~0;
+            heapAllocator.m_budgetInBytes = std::numeric_limits<AZ::u64>::max();
             m_noAllocationHeap.Init(device, heapAllocator);
 
             typename decltype(m_garbageCollector)::Descriptor collectorDescriptor;

@@ -72,19 +72,15 @@ namespace GraphCanvas
         const AZ::EntityId& GetNode() const override;
         void SetNode(const AZ::EntityId&) override;
 
-        Endpoint GetEndpoint() const;
+        Endpoint GetEndpoint() const override;
 
-        const AZStd::string GetName() const  override { return m_slotConfiguration.m_name.GetDisplayString(); }
+        const AZStd::string GetName() const override { return m_slotConfiguration.m_name; }
         void SetName(const AZStd::string& name) override;
 
-        TranslationKeyedString GetTranslationKeyedName() const override { return m_slotConfiguration.m_name; }
-        void SetTranslationKeyedName(const TranslationKeyedString&) override;
+        void SetDetails(const AZStd::string& name, const AZStd::string& tooltip) override;
 
-        const AZStd::string GetTooltip() const override { return m_slotConfiguration.m_tooltip.GetDisplayString(); }
+        const AZStd::string GetTooltip() const override { return m_slotConfiguration.m_tooltip; }
         void SetTooltip(const AZStd::string& tooltip)  override;
-
-        TranslationKeyedString GetTranslationKeyedTooltip() const override { return m_slotConfiguration.m_tooltip; }
-        void SetTranslationKeyedTooltip(const TranslationKeyedString&) override;
 
         void DisplayProposedConnection(const AZ::EntityId& connectionId, const Endpoint& endpoint) override;
         void RemoveProposedConnection(const AZ::EntityId& connectionId, const Endpoint& endpoint) override;

@@ -27,7 +27,6 @@ namespace AZ
             // running under the debugger or has a debugger attached post facto).
             bool IsDebuggerPresent()
             {
-                int                 junk;
                 int                 mib[4];
                 struct kinfo_proc   info;
                 size_t              size;
@@ -48,12 +47,19 @@ namespace AZ
                 // Call sysctl.
 
                 size = sizeof(info);
-                junk = sysctl(mib, sizeof(mib) / sizeof(*mib), &info, &size, NULL, 0);
-                assert(junk == 0);
+                [[maybe_unused]] int sysctlResult = sysctl(mib, sizeof(mib) / sizeof(*mib), &info, &size, NULL, 0);
+                assert(sysctlResult == 0);
 
                 // We're being debugged if the P_TRACED flag is set.
 
                 return ((info.kp_proc.p_flag & P_TRACED) != 0);
+            }
+
+            bool AttachDebugger()
+            {
+                // Not supported yet
+                AZ_Assert(false, "AttachDebugger() is not supported for Mac platform yet");
+                return false;
             }
 
             void HandleExceptions(bool)
@@ -72,6 +78,7 @@ namespace AZ
 
             void OutputToDebugger(const char*, const char*)
             {
+                // std::cout << title << ": " << message;
             }
         }
     }

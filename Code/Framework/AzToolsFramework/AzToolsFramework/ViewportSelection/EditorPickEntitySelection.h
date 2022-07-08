@@ -13,6 +13,9 @@
 
 namespace AzToolsFramework
 {
+    class EditorVisibleEntityDataCacheInterface;
+    class ViewportEditorModeTrackerInterface;
+
     //! Viewport interaction that will handle assigning an entity in the viewport to
     //! an entity field in the entity inspector.
     class EditorPickEntitySelection : public ViewportInteraction::InternalViewportSelectionRequests
@@ -20,7 +23,8 @@ namespace AzToolsFramework
     public:
         AZ_CLASS_ALLOCATOR_DECL
 
-        EditorPickEntitySelection(const EditorVisibleEntityDataCache* entityDataCache);
+        EditorPickEntitySelection(
+            const EditorVisibleEntityDataCacheInterface* entityDataCache, ViewportEditorModeTrackerInterface* viewportEditorModeTracker);
         ~EditorPickEntitySelection();
 
     private:
@@ -32,5 +36,7 @@ namespace AzToolsFramework
         AZStd::unique_ptr<EditorHelpers> m_editorHelpers; //!< Editor visualization of entities (icons, shapes, debug visuals etc).
         AZ::EntityId m_hoveredEntityId; //!< What EntityId is the mouse currently hovering over (if any).
         AZ::EntityId m_cachedEntityIdUnderCursor; //!< Store the EntityId on each mouse move for use in Display.
+        //! Tracker for activating/deactivating viewport editor modes.
+        ViewportEditorModeTrackerInterface* m_viewportEditorModeTracker = nullptr;
     };
 } // namespace AzToolsFramework

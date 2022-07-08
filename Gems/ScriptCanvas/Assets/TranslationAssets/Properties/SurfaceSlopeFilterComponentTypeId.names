@@ -1,0 +1,29 @@
+{
+    "entries": [
+        {
+            "base": "SurfaceSlopeFilterComponentTypeId",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "Surface Slope Filter Component Type Id",
+                "category": "Constants/Editor"
+            },
+            "methods": [
+                {
+                    "base": "GetSurfaceSlopeFilterComponentTypeId",
+                    "details": {
+                        "name": "Get Surface Slope Filter Component Type Id"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                                "name": "AZ:: Uuid"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

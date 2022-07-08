@@ -87,7 +87,7 @@ namespace AzFramework
          */
         virtual void Stop();
 
-        void Tick(float deltaOverride = -1.f) override;
+        void Tick() override;
 
 
         AZ::ComponentTypeList GetRequiredSystemComponents() const override;
@@ -95,10 +95,9 @@ namespace AzFramework
 
         //////////////////////////////////////////////////////////////////////////
         //! ApplicationRequests::Bus::Handler
-        const char* GetEngineRoot() const override { return m_engineRoot.c_str(); }
-        const char* GetAppRoot() const override;
         void ResolveEnginePath(AZStd::string& engineRelativePath) const override;
         void CalculateBranchTokenForEngineRoot(AZStd::string& token) const override;
+        bool IsEditorModeFeedbackEnabled() const override;
         bool IsPrefabSystemEnabled() const override;
         bool ArePrefabWipFeaturesEnabled() const override;
         void SetPrefabSystemEnabled(bool enable) override;
@@ -146,8 +145,6 @@ namespace AzFramework
          */
         void SetFileIOAliases();
 
-        void PreModuleLoad() override;
-
         //////////////////////////////////////////////////////////////////////////
         //! AZ::ComponentApplication
         void RegisterCoreComponents() override;
@@ -181,13 +178,9 @@ namespace AzFramework
         bool m_ownsConsole = false;
 
         bool m_exitMainLoopRequested = false;
-        
-        enum class RootPathType
-        {
-            AppRoot,
-            EngineRoot
-        };
-        void SetRootPath(RootPathType type, const char* source);
+
     };
 } // namespace AzFramework
+
+AZ_DECLARE_BUDGET(AzFramework);
 

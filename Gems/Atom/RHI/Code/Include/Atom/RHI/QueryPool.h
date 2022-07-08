@@ -107,6 +107,7 @@ namespace AZ
             // ResourcePool overrides
             void ShutdownInternal() override;
             void ShutdownResourceInternal(Resource& resource) override;
+            void ComputeFragmentation() const override {}
             //////////////////////////////////////////////////////////////////////////
 
         private:

@@ -15,7 +15,7 @@
 #include <ScriptCanvasDeveloperEditor/EditorAutomation/EditorAutomationActions/WidgetActions.h>
 
 
-namespace ScriptCanvasDeveloper
+namespace ScriptCanvas::Developer
 {
     /**
         EditorAutomationState that will move the mouse to a particular point in the scene.
@@ -70,7 +70,7 @@ namespace ScriptCanvasDeveloper
         FindViewCenterState(AutomationStateModelId outputId);
         ~FindViewCenterState() override = default;
 
-        void OnCustomAction();
+        void OnCustomAction() override;
 
     private:
 

@@ -9,7 +9,7 @@
 #pragma once
 
 #include <AzCore/Math/Internal/MathTypes.h>
-#include <AzCore/RTTI/TypeInfo.h>
+#include <AzCore/RTTI/TypeInfoSimple.h>
 
 namespace AZ
 {
@@ -42,8 +42,13 @@ namespace AZ
 
         Vector3(float x, float y, float z);
 
+        //! Sets x,y components from a Vector2, sets z to 0.0.
         explicit Vector3(const Vector2& source);
 
+        //! Sets x,y components from a Vector2, specify z separately.
+        Vector3(const Vector2& source, float z);
+
+        //! Sets x,y,z components from a Vector4.
         explicit Vector3(const Vector4& source);
 
         //! For internal use only, arrangement of values in SIMD type is not guaranteed.
@@ -100,7 +105,7 @@ namespace AZ
         void Set(float x, float y, float z);
 
         //! Sets components from an array of 3 floats in xyz order.
-        void Set(float values[]);
+        void Set(const float values[]);
 
         //! Indexed access using operator(), just for convenience.
         float operator()(int32_t index) const;
@@ -211,6 +216,13 @@ namespace AZ
         bool IsGreaterEqualThan(const Vector3& rhs) const;
         //! @}
 
+        //! Floor/Ceil/Round functions, operate on each component individually, result will be a new Vector3.
+        //! @{
+        Vector3 GetFloor() const;
+        Vector3 GetCeil() const;
+        Vector3 GetRound() const; // Ties to even (banker's rounding)
+        //! @}
+
         //! Min/Max functions, operate on each component individually, result will be a new Vector3.
         //! @{
         Vector3 GetMin(const Vector3& v) const;
@@ -312,10 +324,6 @@ namespace AZ
 
     private:
 
-#ifdef AZ_COMPILER_MSVC
-#   pragma warning(push)
-#   pragma warning(disable:4201) // anonymous union
-#endif
         union
         {
             Simd::Vec3::FloatType m_value;
@@ -328,9 +336,6 @@ namespace AZ
                 float m_z;
             };
         };
-#ifdef AZ_COMPILER_MSVC
-#   pragma warning(pop)
-#endif
     };
 
     //! Non member functionality belonging to the AZ namespace.

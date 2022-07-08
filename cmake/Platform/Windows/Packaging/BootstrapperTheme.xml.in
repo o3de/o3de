@@ -4,15 +4,15 @@
     <Window Width="672" Height="500" HexStyle="100a0000" FontId="2">#(loc.WindowTitle)</Window>
 
     <!-- header font -->
-    <Font Id="0" Height="-24" Weight="500" Foreground="000000">Open Sans</Font>
+    <Font Id="0" Height="-24" Weight="500" Foreground="000000">Segoe UI</Font>
     <!-- body font -->
-    <Font Id="1" Height="-12" Weight="500" Foreground="000000">Open Sans</Font>
+    <Font Id="1" Height="-12" Weight="500" Foreground="000000">Segoe UI</Font>
     <!-- special font -->
-    <Font Id="2" Height="-12" Weight="500" Foreground="000000" Background="FFFFFF">Open Sans</Font>
+    <Font Id="2" Height="-12" Weight="500" Foreground="000000" Background="FFFFFF">Segoe UI</Font>
     <!-- throwaway font for button bar -->
-    <Font Id="3" Height="-12" Weight="500" Foreground="EEEEEE" Background="EEEEEE">Open Sans</Font>
+    <Font Id="3" Height="-12" Weight="500" Foreground="EEEEEE" Background="EEEEEE">Segoe UI</Font>
     <!-- special font for install warning title -->
-    <Font Id="4" Height="-14" Weight="500" Foreground="000000">Open Sans</Font>
+    <Font Id="4" Height="-14" Weight="500" Foreground="000000">Segoe UI</Font>
 
     <!-- top banner -->
     <Image X="28" Y="24" Width="168" Height="64" ImageFile="logo.png" Visible="yes"/>

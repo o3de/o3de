@@ -80,7 +80,7 @@ namespace CommandSystem
         {
             if (*m_nodeAction == NodeAction::Replace)
             {
-                nodeGroup->GetNodeArray().Clear();
+                nodeGroup->GetNodeArray().clear();
             }
             for (const AZStd::string& nodeName : *m_nodeNames)
             {
@@ -146,12 +146,12 @@ namespace CommandSystem
         if (m_nodeNames.has_value())
         {
             // clear previous nodes
-            nodeGroup->GetNodeArray().Clear();
-            const uint16 numNodes = m_oldNodeGroup->GetNumNodes();
+            nodeGroup->GetNodeArray().clear();
+            const size_t numNodes = m_oldNodeGroup->GetNumNodes();
             nodeGroup->SetNumNodes(numNodes);
 
             // add all nodes to the group
-            for (uint16 i = 0; i < numNodes; ++i)
+            for (size_t i = 0; i < numNodes; ++i)
             {
                 nodeGroup->SetNode(i, m_oldNodeGroup->GetNode(i));
             }
@@ -264,7 +264,7 @@ namespace CommandSystem
         actor->AddNodeGroup(nodeGroup);
 
         // save the current dirty flag and tell the actor that something got changed
-        mOldDirtyFlag = actor->GetDirtyFlag();
+        m_oldDirtyFlag = actor->GetDirtyFlag();
         actor->SetDirtyFlag(true);
         return true;
     }
@@ -295,7 +295,7 @@ namespace CommandSystem
         }
 
         // set the dirty flag back to the old value
-        actor->SetDirtyFlag(mOldDirtyFlag);
+        actor->SetDirtyFlag(m_oldDirtyFlag);
         return true;
     }
 
@@ -322,7 +322,7 @@ namespace CommandSystem
     // constructor
     CommandRemoveNodeGroup::CommandRemoveNodeGroup(MCore::Command* orgCommand)
         : MCore::Command("RemoveNodeGroup", orgCommand)
-        , mOldNodeGroup(nullptr)
+        , m_oldNodeGroup(nullptr)
     {
     }
 
@@ -330,7 +330,7 @@ namespace CommandSystem
     // destructor
     CommandRemoveNodeGroup::~CommandRemoveNodeGroup()
     {
-        delete mOldNodeGroup;
+        delete m_oldNodeGroup;
     }
 
 
@@ -360,14 +360,14 @@ namespace CommandSystem
         }
 
         // copy the old node group for undo
-        delete mOldNodeGroup;
-        mOldNodeGroup = aznew EMotionFX::NodeGroup(*nodeGroup);
+        delete m_oldNodeGroup;
+        m_oldNodeGroup = aznew EMotionFX::NodeGroup(*nodeGroup);
 
         // remove the node group
         actor->RemoveNodeGroup(nodeGroup);
 
         // save the current dirty flag and tell the actor that something got changed
-        mOldDirtyFlag = actor->GetDirtyFlag();
+        m_oldDirtyFlag = actor->GetDirtyFlag();
         actor->SetDirtyFlag(true);
         return true;
     }
@@ -377,7 +377,7 @@ namespace CommandSystem
     bool CommandRemoveNodeGroup::Undo(const MCore::CommandLine& parameters, AZStd::string& outResult)
     {
         // check if old node group exists
-        if (!mOldNodeGroup)
+        if (!m_oldNodeGroup)
         {
             return false;
         }
@@ -397,13 +397,13 @@ namespace CommandSystem
         }
 
         // add the node to the group again
-        if (name == mOldNodeGroup->GetName())
+        if (name == m_oldNodeGroup->GetName())
         {
-            actor->AddNodeGroup(aznew EMotionFX::NodeGroup(*mOldNodeGroup));
+            actor->AddNodeGroup(aznew EMotionFX::NodeGroup(*m_oldNodeGroup));
         }
 
         // set the dirty flag back to the old value
-        actor->SetDirtyFlag(mOldDirtyFlag);
+        actor->SetDirtyFlag(m_oldDirtyFlag);
         return true;
     }
 

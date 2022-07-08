@@ -15,10 +15,16 @@
 #include <Atom/RPI.Edit/Material/MaterialTypeSourceData.h>
 #include <Atom/RPI.Edit/Material/MaterialUtils.h>
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
+#include <Atom/RPI.Reflect/Material/MaterialNameContext.h>
 #include <Atom/RPI.Reflect/Material/MaterialPropertiesLayout.h>
 #include <Atom/RPI.Reflect/Material/MaterialTypeAsset.h>
+#include <AtomLyIntegration/CommonFeatures/Material/MaterialComponentBus.h>
+#include <AtomToolsFramework/Util/MaterialPropertyUtil.h>
+#include <AtomToolsFramework/Util/Util.h>
+#include <AzCore/std/ranges/elements_view.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
+#include <AzToolsFramework/API/EntityPropertyEditorRequestsBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 
 namespace AZ
@@ -91,93 +97,199 @@ namespace AZ
                     AZ_Error("AZ::Render::EditorMaterialComponentUtil", false, "Failed to load material type source data: %s", editData.m_materialTypeSourcePath.c_str());
                     return false;
                 }
-                editData.m_materialTypeSourceData = materialTypeOutcome.GetValue();
+                editData.m_materialTypeSourceData = materialTypeOutcome.TakeValue();
                 return true;
             }
 
             bool SaveSourceMaterialFromEditData(const AZStd::string& path, const MaterialEditData& editData)
             {
-                // Construct the material source data object that will be exported
-                AZ::RPI::MaterialSourceData exportData;
-                exportData.m_propertyLayoutVersion = editData.m_materialTypeSourceData.m_propertyLayout.m_version;
-
-                // Converting absolute material paths to relative paths
-                bool result = false;
-                AZ::Data::AssetInfo info;
-                AZStd::string watchFolder;
-                AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
-                    result, &AzToolsFramework::AssetSystemRequestBus::Events::GetSourceInfoBySourcePath,
-                    editData.m_materialTypeSourcePath.c_str(), info, watchFolder);
-                if (!result)
+                if (path.empty() || !editData.m_materialAsset.IsReady() || !editData.m_materialTypeAsset.IsReady() ||
+                    editData.m_materialTypeSourcePath.empty())
                 {
-                    AZ_Error(
-                        "AZ::Render::EditorMaterialComponentUtil", false,
-                        "Failed to get material type source file info while attempting to export: %s", path.c_str());
+                    AZ_Error("AZ::Render::EditorMaterialComponentUtil", false, "Can not export: %s", path.c_str());
                     return false;
                 }
 
-                exportData.m_materialType = info.m_relativePath;
-
-                if (!editData.m_materialParentSourcePath.empty())
-                {
-                    result = false;
-                    AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
-                        result, &AzToolsFramework::AssetSystemRequestBus::Events::GetSourceInfoBySourcePath,
-                        editData.m_materialParentSourcePath.c_str(), info, watchFolder);
-                    if (!result)
-                    {
-                        AZ_Error(
-                            "AZ::Render::EditorMaterialComponentUtil", false,
-                            "Failed to get parent material source file info while attempting to export: %s", path.c_str());
-                        return false;
-                    }
-
-                    exportData.m_parentMaterial = info.m_relativePath;
-                }
+                // Construct the material source data object that will be exported
+                AZ::RPI::MaterialSourceData exportData;
+                exportData.m_materialTypeVersion = editData.m_materialTypeAsset->GetVersion();
+                exportData.m_materialType = AtomToolsFramework::GetPathToExteralReference(path, editData.m_materialTypeSourcePath);
+                exportData.m_parentMaterial = AtomToolsFramework::GetPathToExteralReference(path, editData.m_materialParentSourcePath);
 
                 // Copy all of the properties from the material asset to the source data that will be exported
-                result = true;
-                editData.m_materialTypeSourceData.EnumerateProperties([&](const AZStd::string& groupNameId, const AZStd::string& propertyNameId, const auto& propertyDefinition) {
-                    const AZ::RPI::MaterialPropertyId propertyId(groupNameId, propertyNameId);
-                    const AZ::RPI::MaterialPropertyIndex propertyIndex =
-                        editData.m_materialAsset->GetMaterialPropertiesLayout()->FindPropertyIndex(propertyId.GetFullName());
-
-                    AZ::RPI::MaterialPropertyValue propertyValue = editData.m_materialAsset->GetPropertyValues()[propertyIndex.GetIndex()];
-
-                    AZ::RPI::MaterialPropertyValue propertyValueDefault = propertyDefinition.m_value;
-                    if (editData.m_materialParentAsset.IsReady())
+                bool result = true;
+                editData.m_materialTypeSourceData.EnumerateProperties([&](const AZ::RPI::MaterialTypeSourceData::PropertyDefinition* propertyDefinition, const AZ::RPI::MaterialNameContext& nameContext)
                     {
-                        propertyValueDefault = editData.m_materialParentAsset->GetPropertyValues()[propertyIndex.GetIndex()];
-                    }
+                        AZ::Name propertyId{propertyDefinition->GetName()};
+                        nameContext.ContextualizeProperty(propertyId);
 
-                    // Check for and apply any property overrides before saving property values
-                    auto propertyOverrideItr = editData.m_materialPropertyOverrideMap.find(propertyId.GetFullName());
-                    if(propertyOverrideItr != editData.m_materialPropertyOverrideMap.end())
-                    {
-                        propertyValue = AZ::RPI::MaterialPropertyValue::FromAny(propertyOverrideItr->second);
-                    }
+                        const AZ::RPI::MaterialPropertyIndex propertyIndex =
+                            editData.m_materialAsset->GetMaterialPropertiesLayout()->FindPropertyIndex(propertyId);
 
-                    if (!editData.m_materialTypeSourceData.ConvertPropertyValueToSourceDataFormat(propertyDefinition, propertyValue))
-                    {
-                        AZ_Error("AZ::Render::EditorMaterialComponentUtil", false, "Failed to export: %s", path.c_str());
-                        result = false;
-                        return false;
-                    }
+                        AZ::RPI::MaterialPropertyValue propertyValue =
+                            editData.m_materialAsset->GetPropertyValues()[propertyIndex.GetIndex()];
 
-                    // Don't export values if they are the same as the material type or parent
-                    if (propertyValueDefault == propertyValue)
-                    {
+                        AZ::RPI::MaterialPropertyValue propertyValueDefault = propertyDefinition->m_value;
+                        if (editData.m_materialParentAsset.IsReady())
+                        {
+                            propertyValueDefault = editData.m_materialParentAsset->GetPropertyValues()[propertyIndex.GetIndex()];
+                        }
+
+                        // Check for and apply any property overrides before saving property values
+                        auto propertyOverrideItr = editData.m_materialPropertyOverrideMap.find(propertyId);
+                        if (propertyOverrideItr != editData.m_materialPropertyOverrideMap.end())
+                        {
+                            propertyValue = AZ::RPI::MaterialPropertyValue::FromAny(propertyOverrideItr->second);
+                        }
+
+                        if (!AtomToolsFramework::ConvertToExportFormat(path, propertyId, *propertyDefinition, propertyValue))
+                        {
+                            AZ_Error("AZ::Render::EditorMaterialComponentUtil", false, "Failed to export: %s", path.c_str());
+                            result = false;
+                            return false;
+                        }
+
+                        // Don't export values if they are the same as the material type or parent
+                        if (propertyValueDefault == propertyValue)
+                        {
+                            return true;
+                        }
+
+                        exportData.SetPropertyValue(propertyId, propertyValue);
                         return true;
-                    }
-
-                    exportData.m_properties[groupNameId][propertyDefinition.m_nameId].m_value = propertyValue;
-                    return true;
-                });
+                    });
 
                 return result && AZ::RPI::JsonUtils::SaveObjectToFile(path, exportData);
+            }
+
+            AZ::Data::AssetId GetMaterialTypeAssetIdFromMaterialAssetId(const AZ::Data::AssetId& materialAssetId)
+            {
+                if (materialAssetId.IsValid())
+                {
+                    AZ::Outcome<AZStd::vector<AZ::Data::ProductDependency>, AZStd::string> dependencyResult = AZ::Failure(AZStd::string());
+                    AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+                        dependencyResult, &AZ::Data::AssetCatalogRequestBus::Events::GetAllProductDependencies, materialAssetId);
+                    if (dependencyResult)
+                    {
+                        for (const auto& dependency : dependencyResult.GetValue())
+                        {
+                            AZ::Data::AssetInfo info;
+                            AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+                                info, &AZ::Data::AssetCatalogRequests::GetAssetInfoById, dependency.m_assetId);
+                            if (info.m_assetType == azrtti_typeid<AZ::RPI::MaterialTypeAsset>())
+                            {
+                                // Immediately return the first material type that's encountered because the material system currently
+                                // supports only one material type for any hierarchy of materials.
+                                return info.m_assetId;
+                            }
+                        }
+                    }
+                }
+
+                return {};
+            }
+
+            bool DoEntitiesHaveMatchingMaterialTypes(
+                const AZ::EntityId& primaryEntityId,
+                const AzToolsFramework::EntityIdSet& secondaryEntityIds,
+                const MaterialAssignmentId& materialAssignmentId)
+            {
+                AZ::Data::AssetId primaryMaterialAssetId = {};
+                MaterialComponentRequestBus::EventResult(
+                    primaryMaterialAssetId, primaryEntityId, &MaterialComponentRequestBus::Events::GetMaterialAssetId,
+                    materialAssignmentId);
+                AZ::Data::AssetId primaryMaterialTypeAssetId = GetMaterialTypeAssetIdFromMaterialAssetId(primaryMaterialAssetId);
+
+                return primaryMaterialTypeAssetId.IsValid() && AZStd::all_of(
+                    secondaryEntityIds.begin(), secondaryEntityIds.end(),
+                    [&](const AZ::EntityId& secondaryEntityId)
+                    {
+                        AZ::Data::AssetId secondaryMaterialAssetId = {};
+                        MaterialComponentRequestBus::EventResult(
+                            secondaryMaterialAssetId, secondaryEntityId, &MaterialComponentRequestBus::Events::GetMaterialAssetId,
+                            materialAssignmentId);
+                        AZ::Data::AssetId secondaryMaterialTypeAssetId = GetMaterialTypeAssetIdFromMaterialAssetId(secondaryMaterialAssetId);
+                        return primaryMaterialTypeAssetId == secondaryMaterialTypeAssetId;
+                    });
+            }
+
+            bool DoEntitiesHaveMatchingMaterials(
+                const AZ::EntityId& primaryEntityId,
+                const AzToolsFramework::EntityIdSet& secondaryEntityIds,
+                const MaterialAssignmentId& materialAssignmentId)
+            {
+                AZ::Data::AssetId primaryMaterialAssetId = {};
+                MaterialComponentRequestBus::EventResult(
+                    primaryMaterialAssetId, primaryEntityId, &MaterialComponentRequestBus::Events::GetMaterialAssetId,
+                    materialAssignmentId);
+
+                return primaryMaterialAssetId.IsValid() && AZStd::all_of(
+                    secondaryEntityIds.begin(), secondaryEntityIds.end(),
+                    [&](const AZ::EntityId& secondaryEntityId)
+                    {
+                        AZ::Data::AssetId secondaryMaterialAssetId = {};
+                        MaterialComponentRequestBus::EventResult(
+                            secondaryMaterialAssetId, secondaryEntityId, &MaterialComponentRequestBus::Events::GetMaterialAssetId,
+                            materialAssignmentId);
+                        return primaryMaterialAssetId == secondaryMaterialAssetId;
+                    });
+            }
+
+            bool DoEntitiesHaveMatchingMaterialSlots(
+                const AZ::EntityId& primaryEntityId, const AzToolsFramework::EntityIdSet& secondaryEntityIds)
+            {
+                MaterialAssignmentMap primaryMaterialSlots;
+                MaterialComponentRequestBus::EventResult(
+                    primaryMaterialSlots, primaryEntityId, &MaterialComponentRequestBus::Events::GetDefautMaterialMap);
+
+                return AZStd::all_of(
+                    secondaryEntityIds.begin(), secondaryEntityIds.end(),
+                    [&](const AZ::EntityId& secondaryEntityId)
+                    {
+                        MaterialAssignmentMap secondaryMaterialSlots;
+                        MaterialComponentRequestBus::EventResult(
+                            secondaryMaterialSlots, secondaryEntityId,
+                            &MaterialComponentRequestBus::Events::GetDefautMaterialMap);
+
+                        if (primaryMaterialSlots.size() != secondaryMaterialSlots.size())
+                        {
+                            return false;
+                        }
+
+                        for (const auto& slotPair : primaryMaterialSlots)
+                        {
+                            const auto& slotItr = secondaryMaterialSlots.find(slotPair.first);
+                            if (slotItr == secondaryMaterialSlots.end())
+                            {
+                                return false;
+                            }
+                        }
+                        return true;
+                    });
+            }
+
+            AzToolsFramework::EntityIdSet GetSelectedEntitiesFromActiveInspector()
+            {
+                AzToolsFramework::EntityIdList entityIds;
+                AzToolsFramework::EntityPropertyEditorRequestBus::Broadcast(
+                    &AzToolsFramework::EntityPropertyEditorRequestBus::Events::GetSelectedAndPinnedEntities, entityIds);
+                return AzToolsFramework::EntityIdSet(entityIds.begin(), entityIds.end());
+            }
+
+            AzToolsFramework::EntityIdSet GetEntitiesMatchingMaterialSlots(
+                const AZ::EntityId& primaryEntityId, const AzToolsFramework::EntityIdSet& secondaryEntityIds)
+            {
+                AzToolsFramework::EntityIdSet entityIds = secondaryEntityIds;
+
+                AZStd::erase_if(
+                    entityIds,
+                    [&](const AZ::EntityId& secondaryEntityId)
+                    {
+                        return !DoEntitiesHaveMatchingMaterialSlots(primaryEntityId, { secondaryEntityId });
+                    });
+
+                return entityIds;
             }
         } // namespace EditorMaterialComponentUtil
     } // namespace Render
 } // namespace AZ
-
-//#include <AtomLyIntegration/CommonFeatures/moc_EditorMaterialComponentUtil.cpp>

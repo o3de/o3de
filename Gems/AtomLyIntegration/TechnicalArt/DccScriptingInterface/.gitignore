@@ -2,6 +2,7 @@
 .temp
 __downloads__
 __pycache__
+__tmp__
 *.pyc
 *.pyo
 workspace.xml
@@ -9,3 +10,5 @@ workspace.xml
 .secrets.*
 settings.local.json
 azpy/_sample_package_/*
+.env
+settings_export.json.tmp

@@ -8,9 +8,8 @@
 #include "VegetationSystemComponent.h"
 
 #include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/Serialization/EditContext.h>
 
-#include <GradientSignal/ImageSettings.h>
-#include <GradientSignal/ImageAsset.h>
 #include <Vegetation/DescriptorListAsset.h>
 #include <Vegetation/AreaComponentBase.h>
 #include <AzFramework/Asset/GenericAssetHandler.h>
@@ -19,7 +18,6 @@
 #include <Vegetation/Ebuses/InstanceSystemRequestBus.h>
 #include <Vegetation/InstanceSpawner.h>
 #include <Vegetation/EmptyInstanceSpawner.h>
-#include <Vegetation/DynamicSliceInstanceSpawner.h>
 #include <Vegetation/PrefabInstanceSpawner.h>
 
 namespace Vegetation
@@ -47,26 +45,30 @@ namespace Vegetation
 
     void VegetationSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("VegetationSystemService", 0xa2322728));
+        services.push_back(AZ_CRC_CE("VegetationSystemService"));
     }
 
     void VegetationSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("VegetationSystemService", 0xa2322728));
+        services.push_back(AZ_CRC_CE("VegetationSystemService"));
     }
 
     void VegetationSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("VegetationAreaSystemService", 0x36da2b62));
-        services.push_back(AZ_CRC("VegetationInstanceSystemService", 0x823a6007));
-        services.push_back(AZ_CRC("SurfaceDataProviderService", 0xfe9fb95e));
+        services.push_back(AZ_CRC_CE("VegetationAreaSystemService"));
+        services.push_back(AZ_CRC_CE("VegetationInstanceSystemService"));
+        services.push_back(AZ_CRC_CE("SurfaceDataSystemService"));
+    }
+
+    void VegetationSystemComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& services)
+    {
+        services.push_back(AZ_CRC_CE("SurfaceDataProviderService"));
     }
 
     void VegetationSystemComponent::Reflect(AZ::ReflectContext* context)
     {
         InstanceSpawner::Reflect(context);
         EmptyInstanceSpawner::Reflect(context);
-        DynamicSliceInstanceSpawner::Reflect(context);
         PrefabInstanceSpawner::Reflect(context);
         Descriptor::Reflect(context);
         AreaConfig::Reflect(context);

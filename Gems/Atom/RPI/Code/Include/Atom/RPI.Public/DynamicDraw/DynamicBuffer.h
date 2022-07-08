@@ -25,8 +25,8 @@ namespace AZ
         //! DynamicBuffers are allocated by DynamicBufferAllocator. Check the description of DynamicBufferAllocator class for detail. 
         //! The typical usage:
         //!     // For every frame
-        //!     auto buffer = DynamicDrawInterface::Get()->GetDynamicBuffer(size);
-        //!     if (buffer) // the buffer could be empty if the allocation failed.e
+        //!     auto buffer = DynamicDrawInterface::Get()->GetDynamicBuffer(size, RHI::Alignment::InputAssembly);
+        //!     if (buffer) // the buffer could be empty if the allocation failed.
         //!     {
         //!         // write data to the buffer
         //!         buffer->Write(data, size);

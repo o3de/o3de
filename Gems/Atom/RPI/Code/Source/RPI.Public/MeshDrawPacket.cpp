@@ -15,6 +15,7 @@
 #include <Atom/RHI/DrawPacketBuilder.h>
 #include <Atom/RHI/RHISystemInterface.h>
 #include <AzCore/Console/Console.h>
+#include <Atom/RPI.Public/Shader/ShaderReloadDebugTracker.h>
 
 namespace AZ
 {   
@@ -48,7 +49,7 @@ namespace AZ
             }
         }
 
-        Data::Instance<Material> MeshDrawPacket::GetMaterial()
+        Data::Instance<Material> MeshDrawPacket::GetMaterial() const
         {
             return m_material;
         }
@@ -88,7 +89,7 @@ namespace AZ
                     }
                     else
                     {
-                        itEntry->second == value;
+                        itEntry->second = value;
                     }
                 }
             }
@@ -103,7 +104,7 @@ namespace AZ
             //      - Material::SetPropertyValue("foo",...). This bumps the material's CurrentChangeId()
             //      - Material::Compile() updates all the material's outputs (SRG data, shader selection, shader options, etc).
             //      - Material::SetPropertyValue("bar",...). This bumps the materials' CurrentChangeId() again.
-            //      - We do not process Material::Compile() a second time because because you can only call SRG::Compile() once per frame. Material::Compile()
+            //      - We do not process Material::Compile() a second time because you can only call SRG::Compile() once per frame. Material::Compile()
             //        will be processed on the next frame. (See implementation of Material::Compile())
             //      - MeshDrawPacket::Update() is called. It runs DoUpdate() to rebuild the draw packet, but everything is still in the state when "foo" was
             //        set. The "bar" changes haven't been applied yet. It also sets m_materialChangeId to GetCurrentChangeId(), which corresponds to "bar" not "foo".
@@ -124,7 +125,6 @@ namespace AZ
 
         bool MeshDrawPacket::DoUpdate(const Scene& parentScene)
         {
-            AZ_PROFILE_FUNCTION(Debug::ProfileCategory::AzRender);
             const ModelLod::Mesh& mesh = m_modelLod->GetMeshes()[m_modelLodMeshIndex];
 
             if (!m_material)
@@ -132,6 +132,8 @@ namespace AZ
                 AZ_Warning("MeshDrawPacket", false, "No material provided for mesh. Skipping.");
                 return false;
             }
+            
+            ShaderReloadDebugTracker::ScopedSection reloadSection("MeshDrawPacket::DoUpdate");
 
             RHI::DrawPacketBuilder drawPacketBuilder;
             drawPacketBuilder.Begin(nullptr);
@@ -155,8 +157,6 @@ namespace AZ
 
             auto appendShader = [&](const ShaderCollection::Item& shaderItem)
             {
-                AZ_PROFILE_SCOPE(Debug::ProfileCategory::AzRender, "appendShader()");
-
                 // Skip the shader item without creating the shader instance
                 // if the mesh is not going to be rendered based on the draw tag
                 RHI::RHISystemInterface* rhiSystem = RHI::RHISystemInterface::Get();
@@ -224,8 +224,8 @@ namespace AZ
                     }
                 }
 
-                const ShaderVariantId finalVariantId = shaderOptions.GetShaderVariantId();
-                const ShaderVariant& variant = r_forceRootShaderVariantUsage ? shader->GetRootVariant() : shader->GetVariant(finalVariantId);
+                const ShaderVariantId requestedVariantId = shaderOptions.GetShaderVariantId();
+                const ShaderVariant& variant = r_forceRootShaderVariantUsage ? shader->GetRootVariant() : shader->GetVariant(requestedVariantId);
 
                 RHI::PipelineStateDescriptorForDraw pipelineStateDescriptor;
                 variant.ConfigurePipelineState(pipelineStateDescriptor);
@@ -256,7 +256,6 @@ namespace AZ
                 Data::Instance<ShaderResourceGroup> drawSrg;
                 if (drawSrgLayout)
                 {
-                    AZ_PROFILE_SCOPE(Debug::ProfileCategory::AzRender, "create drawSrg");
                     // If the DrawSrg exists we must create and bind it, otherwise the CommandList will fail validation for SRG being null
                     drawSrg = RPI::ShaderResourceGroup::Create(shader->GetAsset(), shader->GetSupervariantIndex(), drawSrgLayout->GetName());
 
@@ -300,24 +299,17 @@ namespace AZ
                     m_perDrawSrgs.push_back(drawSrg);
                 }
                 drawPacketBuilder.AddDrawItem(drawRequest);
-
-                shaderList.emplace_back(AZStd::move(shader));
+                
+                ShaderData shaderData;
+                shaderData.m_shader = AZStd::move(shader);
+                shaderData.m_requestedShaderVariantId = requestedVariantId;
+                shaderData.m_activeShaderVariantId = variant.GetShaderVariantId();
+                shaderList.emplace_back(AZStd::move(shaderData));
 
                 return true;
             };
 
-            // [GFX TODO][ATOM-5625] This really needs to be optimized to put the burden on setting global shader options, not applying global shader options.
-            // For example, make the shader system collect a map of all shaders and ShaderVaraintIds, and look up the shader option names at set-time.
-            RPI::ShaderSystemInterface* shaderSystem = RPI::ShaderSystemInterface::Get();
-            for (auto iter : shaderSystem->GetGlobalShaderOptions())
-            {
-                const AZ::Name& shaderOptionName = iter.first;
-                ShaderOptionValue value = iter.second;
-                if (!m_material->SetSystemShaderOption(shaderOptionName, value).IsSuccess())
-                {
-                    AZ_Warning("MeshDrawPacket", false, "Shader option '%s' is owned by this this material. Global value for this option was ignored.", shaderOptionName.GetCStr());
-                }
-            }
+            m_material->ApplyGlobalShaderOptions();
 
             for (auto& shaderItem : m_material->GetShaderCollection())
             {

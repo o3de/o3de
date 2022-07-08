@@ -12,15 +12,15 @@
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/IO/IStreamer.h>
+#include <AzCore/IO/Streamer/FileRequest.h>
+#include <AzCore/Debug/Profiler.h>
 
 #include <IAudioInterfacesCommonData.h>
 #include <AkPlatformFuncs_Platform.h>
 #include <AudioEngineWwise_Traits_Platform.h>
 #include <cinttypes>
 
-#define MAX_NUMBER_STRING_SIZE      (10)    // 4G
-#define ID_TO_STRING_FORMAT_BANK    AKTEXT("%u.bnk")
-#define ID_TO_STRING_FORMAT_WEM     AKTEXT("%u.wem")
+#define MAX_NUMBER_STRING_SIZE      (10)    // max digits in u32 base-10 number
 #define MAX_EXTENSION_SIZE          (4)     // .xxx
 #define MAX_FILETITLE_SIZE          (MAX_NUMBER_STRING_SIZE + MAX_EXTENSION_SIZE + 1)   // null-terminated
 
@@ -69,7 +69,7 @@ namespace Audio
 
         AkDeviceSettings deviceSettings;
         AK::StreamMgr::GetDefaultDeviceSettings(deviceSettings);
-        deviceSettings.uIOMemorySize = poolSize;
+        deviceSettings.uIOMemorySize = aznumeric_cast<AkUInt32>(poolSize);
         deviceSettings.uSchedulerTypeFlags = AK_SCHEDULER_BLOCKING;
         Platform::SetThreadProperties(deviceSettings.threadProperties);
 
@@ -146,11 +146,11 @@ namespace Audio
         }
 
         AZ::u64 bytesRead = 0;
-        fileIO->Read(fileHandle, buffer, aznumeric_cast<AZ::u64>(transferInfo.uRequestedSize), &bytesRead);
+        fileIO->Read(fileHandle, buffer, aznumeric_cast<AZ::u64>(transferInfo.uRequestedSize), false, &bytesRead);
         const bool readOk = (bytesRead == aznumeric_cast<AZ::u64>(transferInfo.uRequestedSize));
 
-        AZ_Assert(readOk, 
-            "Number of bytes read (%" PRIu64 ") for read request doesn't match the requested size (%u).",
+        AZ_Assert(readOk,
+            "Number of bytes read (%llu) for read request doesn't match the requested size (%u).",
             bytesRead, transferInfo.uRequestedSize);
         return readOk ? AK_Success : AK_Fail;
     }
@@ -175,7 +175,7 @@ namespace Audio
         const bool writeOk = (bytesWritten == aznumeric_cast<AZ::u64>(transferInfo.uRequestedSize));
 
         AZ_Error("Wwise", writeOk,
-                "Number of bytes written (%" PRIu64 ") for write request doesn't match the requested size (%u).",
+                "Number of bytes written (%llu) for write request doesn't match the requested size (%u).",
                 bytesWritten, transferInfo.uRequestedSize);
         return writeOk ? AK_Success : AK_Fail;
     }
@@ -198,9 +198,9 @@ namespace Audio
         deviceDesc.bCanWrite = true;
         deviceDesc.deviceID = m_deviceID;
         AK_CHAR_TO_UTF16(deviceDesc.szDeviceName, "IO::IArchive", AZ_ARRAY_SIZE(deviceDesc.szDeviceName));
-        deviceDesc.uStringSize = AKPLATFORM::AkUtf16StrLen(deviceDesc.szDeviceName);
+        deviceDesc.uStringSize = aznumeric_cast<AkUInt32>(AKPLATFORM::AkUtf16StrLen(deviceDesc.szDeviceName));
     }
-    
+
     AkUInt32 CBlockingDevice_wwise::GetDeviceData()
     {
         return 1;
@@ -219,7 +219,7 @@ namespace Audio
 
         AkDeviceSettings deviceSettings;
         AK::StreamMgr::GetDefaultDeviceSettings(deviceSettings);
-        deviceSettings.uIOMemorySize = poolSize;
+        deviceSettings.uIOMemorySize = aznumeric_cast<AkUInt32>(poolSize);
         deviceSettings.uSchedulerTypeFlags = AK_SCHEDULER_DEFERRED_LINED_UP;
         Platform::SetThreadProperties(deviceSettings.threadProperties);
 
@@ -265,7 +265,7 @@ namespace Audio
 
         auto callback = [&transferInfo](AZ::IO::FileRequestHandle request)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Audio);
+            AZ_PROFILE_FUNCTION(Audio);
             AZ::IO::IStreamerTypes::RequestStatus status = AZ::Interface<AZ::IO::IStreamer>::Get()->GetRequestStatus(request);
             switch (status)
             {
@@ -290,7 +290,7 @@ namespace Audio
         static_assert(AZ::IO::IStreamerTypes::s_priorityHighest == 255, "The priority range for AZ::IO::Streamer has changed, please update Wwise to match.");
         AZ::u16 wwisePriority = aznumeric_caster(heuristics.priority);
         AZ::u8 priority = aznumeric_caster(
-              (wwisePriority << 1) // 100 -> 200 
+              (wwisePriority << 1) // 100 -> 200
             + (wwisePriority >> 1) // 200 -> 250
             + (wwisePriority >> 4) // 250 -> 256
             - (wwisePriority >> 6));  // 256 -> 255
@@ -336,7 +336,7 @@ namespace Audio
         deviceDesc.bCanWrite = false;
         deviceDesc.deviceID = m_deviceID;
         AK_CHAR_TO_UTF16(deviceDesc.szDeviceName, "IO::IStreamer", AZ_ARRAY_SIZE(deviceDesc.szDeviceName));
-        deviceDesc.uStringSize = AKPLATFORM::AkUtf16StrLen(deviceDesc.szDeviceName);
+        deviceDesc.uStringSize = aznumeric_cast<AkUInt32>(AKPLATFORM::AkUtf16StrLen(deviceDesc.szDeviceName));
     }
 
     AkUInt32 CStreamingDevice_wwise::GetDeviceData()
@@ -441,11 +441,16 @@ namespace Audio
                 }
             }
 
-            AkOSChar fileName[MAX_FILETITLE_SIZE] = { '\0' };
+            AkOSChar fileName[MAX_FILETITLE_SIZE] = { 0 };
 
-            const AkOSChar* const filenameFormat = (flags->uCodecID == AKCODECID_BANK ? ID_TO_STRING_FORMAT_BANK : ID_TO_STRING_FORMAT_WEM);
-
-            AK_OSPRINTF(fileName, MAX_FILETITLE_SIZE, filenameFormat, static_cast<int unsigned>(fileID));
+            if (flags->uCodecID == AKCODECID_BANK)
+            {
+                AK_OSPRINTF(fileName, MAX_FILETITLE_SIZE, AKTEXT("%u.bnk"), static_cast<unsigned int>(fileID));
+            }
+            else
+            {
+                AK_OSPRINTF(fileName, MAX_FILETITLE_SIZE, AKTEXT("%u.wem"), static_cast<unsigned int>(fileID));
+            }
 
             AKPLATFORM::SafeStrCat(finalFilePath, fileName, AK_MAX_PATH);
 

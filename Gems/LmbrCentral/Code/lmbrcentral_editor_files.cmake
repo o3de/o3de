@@ -8,7 +8,6 @@
 
 set(FILES
     include/LmbrCentral/Rendering/EditorCameraCorrectionBus.h
-    include/LmbrCentral/Rendering/EditorLightComponentBus.h
     include/LmbrCentral/Shape/EditorPolygonPrismShapeComponentBus.h
     include/LmbrCentral/Shape/EditorSplineComponentBus.h
     include/LmbrCentral/Shape/EditorTubeShapeComponentBus.h
@@ -50,6 +49,8 @@ set(FILES
     Source/Shape/EditorDiskShapeComponent.cpp
     Source/Shape/EditorBoxShapeComponent.h
     Source/Shape/EditorBoxShapeComponent.cpp
+    Source/Shape/EditorAxisAlignedBoxShapeComponent.h
+    Source/Shape/EditorAxisAlignedBoxShapeComponent.cpp
     Source/Shape/EditorCylinderShapeComponent.h
     Source/Shape/EditorCylinderShapeComponent.cpp
     Source/Shape/EditorCapsuleShapeComponent.h
@@ -58,6 +59,8 @@ set(FILES
     Source/Shape/EditorCompoundShapeComponent.cpp
     Source/Shape/EditorQuadShapeComponent.h
     Source/Shape/EditorQuadShapeComponent.cpp
+    Source/Shape/EditorReferenceShapeComponent.h
+    Source/Shape/EditorReferenceShapeComponent.cpp
     Source/Shape/EditorSplineComponent.h
     Source/Shape/EditorSplineComponent.cpp
     Source/Shape/EditorSplineComponentMode.h
@@ -114,8 +117,6 @@ set(FILES
     Source/Builders/LevelBuilder/LevelBuilderComponent.h
     Source/Builders/LevelBuilder/LevelBuilderWorker.cpp
     Source/Builders/LevelBuilder/LevelBuilderWorker.h
-    Source/Builders/MaterialBuilder/MaterialBuilderComponent.cpp
-    Source/Builders/MaterialBuilder/MaterialBuilderComponent.h
     Source/Builders/SliceBuilder/SliceBuilderComponent.cpp
     Source/Builders/SliceBuilder/SliceBuilderComponent.h
     Source/Builders/SliceBuilder/SliceBuilderWorker.cpp

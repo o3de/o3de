@@ -6,15 +6,13 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_EDITORCORE_UNDO_UNDO_H
-#define CRYINCLUDE_EDITORCORE_UNDO_UNDO_H
 #pragma once
 
+#include "EditorCoreAPI.h"
 #include "IUndoManagerListener.h"
-#include "CrySizer.h"                           // ICrySizer
 #include "IUndoObject.h"
 #include <AzCore/Asset/AssetManager.h>
+#include <CryCommon/StlUtils.h>
 
 struct IUndoObject;
 class CSuperUndoStep;
@@ -79,20 +77,6 @@ public:
         }
     }
 
-    // to get memory statistics
-    void GetMemoryUsage(ICrySizer* pSizer)
-    {
-        size_t nThisSize = sizeof(*this);
-
-        for (int i = 0; i < m_undoObjects.size(); i++)
-        {
-            nThisSize += m_undoObjects[i]->GetSize();
-        }
-
-        pSizer->Add(m_name);
-        pSizer->Add(this, nThisSize);
-    }
-
     // get undo object at index i
     IUndoObject* GetUndoObject(int i = 0)
     {
@@ -116,7 +100,7 @@ public:
                 continue;
             }
 
-            if (m_undoObjects[i]->GetObjectName() == NULL)
+            if (m_undoObjects[i]->GetObjectName() == nullptr)
             {
                 continue;
             }
@@ -209,7 +193,7 @@ public:
 
     bool IsHaveUndo() const;
     bool IsHaveRedo() const;
-    
+
     void SetMaxUndoStep(int steps);
     int GetMaxUndoStep() const;
 
@@ -240,9 +224,6 @@ public:
 
     void ClearUndoStack(int num);
     void ClearRedoStack(int num);
-
-    // to get memory statistics
-    void GetMemoryUsage(ICrySizer* pSizer);
 
     void AddListener(IUndoManagerListener* pListener);
     void RemoveListener(IUndoManagerListener* pListener);
@@ -282,12 +263,9 @@ private: // ---------------------------------------------------------------
     AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 };
 
-
 class CScopedSuspendUndo
 {
 public:
-    CScopedSuspendUndo() { GetIEditor()->SuspendUndo(); }
-    ~CScopedSuspendUndo() { GetIEditor()->ResumeUndo(); }
+    EDITOR_CORE_API CScopedSuspendUndo();
+    EDITOR_CORE_API ~CScopedSuspendUndo();
 };
-
-#endif // CRYINCLUDE_EDITORCORE_UNDO_UNDO_H

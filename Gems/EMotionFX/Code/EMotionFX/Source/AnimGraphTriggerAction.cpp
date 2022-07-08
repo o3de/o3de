@@ -30,9 +30,9 @@ namespace EMotionFX
 
     AnimGraphTriggerAction::~AnimGraphTriggerAction()
     {
-        if (mAnimGraph)
+        if (m_animGraph)
         {
-            mAnimGraph->RemoveObject(this);
+            m_animGraph->RemoveObject(this);
         }
     }
 

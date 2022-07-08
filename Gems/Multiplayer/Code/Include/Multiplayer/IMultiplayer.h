@@ -11,6 +11,10 @@
 #include <AzCore/RTTI/RTTI.h>
 #include <AzNetworking/ConnectionLayer/IConnection.h>
 #include <AzNetworking/DataStructures/ByteBuffer.h>
+#include <AzNetworking/Serialization/NetworkInputSerializer.h>
+#include <AzNetworking/Serialization/NetworkOutputSerializer.h>
+#include <AzNetworking/Serialization/TrackChangedSerializer.h>
+#include <AzNetworking/Serialization/TypeValidatingSerializer.h>
 #include <Multiplayer/NetworkEntity/IFilterEntityManager.h>
 #include <Multiplayer/Components/MultiplayerComponentRegistry.h>
 #include <Multiplayer/NetworkEntity/INetworkEntityManager.h>
@@ -24,6 +28,19 @@ namespace AzNetworking
 
 namespace Multiplayer
 {
+#ifdef AZ_RELEASE_BUILD
+    // Disable serializer type validation in release
+    using InputSerializer = AzNetworking::NetworkInputSerializer;
+    using OutputSerializer = AzNetworking::TrackChangedSerializer<AzNetworking::NetworkOutputSerializer>;
+    using RpcInputSerializer = AzNetworking::NetworkInputSerializer;
+    using RpcOutputSerializer = AzNetworking::NetworkOutputSerializer;
+#else
+    using InputSerializer = AzNetworking::TypeValidatingSerializer<AzNetworking::NetworkInputSerializer>;
+    using OutputSerializer = AzNetworking::TypeValidatingSerializer<AzNetworking::TrackChangedSerializer<AzNetworking::NetworkOutputSerializer>>;
+    using RpcInputSerializer = AzNetworking::TypeValidatingSerializer<AzNetworking::NetworkInputSerializer>;
+    using RpcOutputSerializer = AzNetworking::TypeValidatingSerializer<AzNetworking::NetworkOutputSerializer>;
+#endif
+
     //! Collection of types of Multiplayer Connections
     enum class MultiplayerAgentType
     {
@@ -42,8 +59,13 @@ namespace Multiplayer
         AzNetworking::ByteBuffer<2048> m_userData;
     };
 
-    using ClientDisconnectedEvent = AZ::Event<>;
+    using ClientMigrationStartEvent = AZ::Event<ClientInputId>;
+    using ClientMigrationEndEvent = AZ::Event<>;
+    using EndpointDisonnectedEvent = AZ::Event<MultiplayerAgentType>;
+    using NotifyClientMigrationEvent = AZ::Event<AzNetworking::ConnectionId, const HostId&, uint64_t, ClientInputId, NetEntityId>;
+    using NotifyEntityMigrationEvent = AZ::Event<const ConstNetworkEntityHandle&, const HostId&>;
     using ConnectionAcquiredEvent = AZ::Event<MultiplayerAgentDatum>;
+    using ServerAcceptanceReceivedEvent = AZ::Event<>;
     using SessionInitEvent = AZ::Event<AzNetworking::INetworkInterface*>;
     using SessionShutdownEvent = AZ::Event<AzNetworking::INetworkInterface*>;
 
@@ -78,29 +100,49 @@ namespace Multiplayer
         //! @param state The state of this connection
         virtual void InitializeMultiplayer(MultiplayerAgentType state) = 0;
 
-        //! Starts hosting a server
+        //! Starts hosting a server.
         //! @param port The port to listen for connection on
         //! @param isDedicated Whether the server is dedicated or client hosted
         //! @return if the application successfully started hosting
         virtual bool StartHosting(uint16_t port, bool isDedicated = true) = 0;
 
-        //! Connects to the specified IP as a Client
+        //! Connects to the specified IP as a Client.
         //! @param remoteAddress The domain or IP to connect to
         //! @param port The port to connect to
         //! @result if a connection was successfully created
-        virtual bool Connect(AZStd::string remoteAddress, uint16_t port) = 0;
+        virtual bool Connect(const AZStd::string& remoteAddress, uint16_t port) = 0;
 
-        // Disconnects all multiplayer connections, stops listening on the server and invokes handlers appropriate to network context
+        // Disconnects all multiplayer connections, stops listening on the server and invokes handlers appropriate to network context.
         //! @param reason The reason for terminating connections
         virtual void Terminate(AzNetworking::DisconnectReason reason) = 0;
 
-        //! Adds a ClientDisconnectedEvent Handler which is invoked on the client when a disconnection occurs
-        //! @param handler The ClientDisconnectedEvent Handler to add
-        virtual void AddClientDisconnectedHandler(ClientDisconnectedEvent::Handler& handler) = 0;
+        //! Adds a ClientMigrationStartEvent Handler which is invoked at the start of a client migration.
+        //! @param handler The ClientMigrationStartEvent Handler to add
+        virtual void AddClientMigrationStartEventHandler(ClientMigrationStartEvent::Handler& handler) = 0;
+
+        //! Adds a ClientMigrationEndEvent Handler which is invoked when a client completes migration.
+        //! @param handler The ClientMigrationEndEvent Handler to add
+        virtual void AddClientMigrationEndEventHandler(ClientMigrationEndEvent::Handler& handler) = 0;
+
+        //! Adds a EndpointDisonnectedEvent Handler which is invoked on the client when a disconnection occurs.
+        //! @param handler The EndpointDisonnectedEvent Handler to add
+        virtual void AddEndpointDisonnectedHandler(EndpointDisonnectedEvent::Handler& handler) = 0;
+
+        //! Adds a NotifyClientMigrationEvent Handler which is invoked when a client migrates from one host to another.
+        //! @param handler The NotifyClientMigrationEvent Handler to add
+        virtual void AddNotifyClientMigrationHandler(NotifyClientMigrationEvent::Handler& handler) = 0;
+
+        //! Adds a NotifyEntityMigrationEvent Handler which is invoked when an entity migrates from one host to another.
+        //! @param handler The NotifyEntityMigrationEvent Handler to add
+        virtual void AddNotifyEntityMigrationEventHandler(NotifyEntityMigrationEvent::Handler& handler) = 0;
 
         //! Adds a ConnectionAcquiredEvent Handler which is invoked when a new endpoint connects to the session.
         //! @param handler The ConnectionAcquiredEvent Handler to add
         virtual void AddConnectionAcquiredHandler(ConnectionAcquiredEvent::Handler& handler) = 0;
+
+        //! Adds a ServerAcceptanceReceived Handler which is invoked when the client receives the accept packet from the server.
+        //! @param handler The ServerAcceptanceReceived Handler to add
+        virtual void AddServerAcceptanceReceivedHandler(ServerAcceptanceReceivedEvent::Handler& handler) = 0;
 
         //! Adds a SessionInitEvent Handler which is invoked when a new network session starts.
         //! @param handler The SessionInitEvent Handler to add
@@ -110,7 +152,20 @@ namespace Multiplayer
         //! @param handler The SessionShutdownEvent handler to add
         virtual void AddSessionShutdownHandler(SessionShutdownEvent::Handler& handler) = 0;
 
-        //! Sends a packet telling if entity update messages can be sent
+        //! Signals a NotifyClientMigrationEvent with the provided parameters.
+        //! @param connectionId       the connection id of the client that is migrating
+        //! @param hostId             the host id of the host the client is migrating to
+        //! @param userIdentifier     the user identifier the client will provide the new host to validate identity
+        //! @param lastClientInputId  the last processed clientInputId by the current host
+        //! @param controlledEntityId the entityId of the clients autonomous entity
+        virtual void SendNotifyClientMigrationEvent(AzNetworking::ConnectionId connectionId, const HostId& hostId, uint64_t userIdentifier, ClientInputId lastClientInputId, NetEntityId controlledEntityId) = 0;
+
+        //! Signals a NotifyEntityMigrationEvent with the provided parameters.
+        //! @param entityHandle the network entity handle of the entity being migrated
+        //! @param remoteHostId the host id of the host the entity is migrating to
+        virtual void SendNotifyEntityMigrationEvent(const ConstNetworkEntityHandle& entityHandle, const HostId& remoteHostId) = 0;
+
+        //! Sends a packet telling if entity update messages can be sent.
         //! @param readyForEntityUpdates Ready for entity updates or not
         virtual void SendReadyForEntityUpdates(bool readyForEntityUpdates) = 0;
 
@@ -122,7 +177,7 @@ namespace Multiplayer
         //! @return the current server time in milliseconds
         virtual AZ::TimeMs GetCurrentHostTimeMs() const = 0;
 
-        //! Returns the current blend factor for client side interpolation
+        //! Returns the current blend factor for client side interpolation.
         //! This value is only relevant on the client and is used to smooth between host frames
         //! @return the current blend factor
         virtual float GetCurrentBlendFactor() const = 0;
@@ -135,14 +190,28 @@ namespace Multiplayer
         //! @return pointer to the network entity manager instance bound to this multiplayer instance
         virtual INetworkEntityManager* GetNetworkEntityManager() = 0;
 
-        //! Sets user-defined filtering manager for entities.
-        //! This allows selectively choosing which entities to replicate on a per client connection.
-        //! See IFilterEntityManager for details.
-        //! @param entityFilter non-owning pointer, the caller is responsible for memory management.
-        virtual void SetFilterEntityManager(IFilterEntityManager* entityFilter) = 0;
+        //! Registers a temp userId to allow a host to look up a players controlled entity in the event of a rejoin or migration event.
+        //! @param temporaryUserIdentifier the temporary user identifier used to identify a player across hosts
+        //! @param controlledEntityId      the controlled entityId of the players autonomous entity
+        virtual void RegisterPlayerIdentifierForRejoin(uint64_t temporaryUserIdentifier, NetEntityId controlledEntityId) = 0;
 
-        //! @return pointer to the user-defined filtering manager of entities. By default, this isn't set and returns nullptr.
-        virtual IFilterEntityManager* GetFilterEntityManager() = 0;
+        //! Completes a client migration event by informing the appropriate client to migrate between hosts.
+        //! @param temporaryUserIdentifier the temporary user identifier used to identify a player across hosts
+        //! @param connectionId            the connection id of the player being migrated
+        //! @param publicHostId            the public address of the new host the client should connect to
+        //! @param migratedClientInputId   the last clientInputId processed prior to migration
+        virtual void CompleteClientMigration(uint64_t temporaryUserIdentifier, AzNetworking::ConnectionId connectionId, const HostId& publicHostId, ClientInputId migratedClientInputId) = 0;
+
+        //! Enables or disables automatic instantiation of netbound entities.
+        //! This setting is controlled by the networking layer and should not be touched
+        //! If enabled, netbound entities will instantiate as spawnables are loaded into the game world, generally true for the server
+        //! If disabled, netbound entities will only stream from a host, always true for a client
+        //! @param value boolean value controlling netbound entity instantiation behaviour
+        virtual void SetShouldSpawnNetworkEntities(bool value) = 0;
+
+        //! Retrieves the current network entity instantiation behaviour.
+        //! @return boolean true if netbound entities should be auto instantiated, false if not
+        virtual bool GetShouldSpawnNetworkEntities() const = 0;
 
         //! Retrieve the stats object bound to this multiplayer instance.
         //! @return the stats object bound to this multiplayer instance
@@ -193,19 +262,17 @@ namespace Multiplayer
             m_previousHostFrameId = time->GetHostFrameId();
             m_previousHostTimeMs = time->GetHostTimeMs();
             m_previousRewindConnectionId = time->GetRewindingConnectionId();
-            time->AlterTime(frameId, timeMs, connectionId);
             m_previousBlendFactor = time->GetHostBlendFactor();
-            time->AlterBlendFactor(blendFactor);
+            time->AlterTime(frameId, timeMs, blendFactor, connectionId);
         }
         inline ~ScopedAlterTime()
         {
             INetworkTime* time = GetNetworkTime();
-            time->AlterTime(m_previousHostFrameId, m_previousHostTimeMs, m_previousRewindConnectionId);
-            time->AlterBlendFactor(m_previousBlendFactor);
+            time->AlterTime(m_previousHostFrameId, m_previousHostTimeMs, m_previousBlendFactor, m_previousRewindConnectionId);
         }
     private:
         HostFrameId m_previousHostFrameId = InvalidHostFrameId;
-        AZ::TimeMs m_previousHostTimeMs = AZ::TimeMs{ 0 };
+        AZ::TimeMs m_previousHostTimeMs = AZ::Time::ZeroTimeMs;
         AzNetworking::ConnectionId m_previousRewindConnectionId = AzNetworking::InvalidConnectionId;
         float m_previousBlendFactor = DefaultBlendFactor;
     };

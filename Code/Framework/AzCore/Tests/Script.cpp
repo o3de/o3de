@@ -523,7 +523,7 @@ namespace UnitTest
         return data + 30;
     }
 
-    void OnEventGenericHook(void* userData, const char* eventName, int eventIndex, BehaviorValueParameter* result, int numParameters, BehaviorValueParameter* parameters)
+    void OnEventGenericHook(void* userData, const char* eventName, int eventIndex, BehaviorArgument* result, int numParameters, BehaviorArgument* parameters)
     {
         (void)userData; (void)numParameters; (void)result; (void)eventName; (void)eventIndex;
         AZ_Assert(result == nullptr || strstr(eventName, "OnEventWithResult"), "We don't exepct result here");
@@ -772,8 +772,8 @@ namespace UnitTest
             // EBus
             const AZStd::string_view defaultStringViewValue = "DEFAULT!!!!";
             AZStd::string expectedDefaultValueAndStringResult = AZStd::string::format("Default Value: %s", defaultStringViewValue.data());
-            BehaviorDefaultValuePtr defaultStringViewBehaviorValue = aznew BehaviorDefaultValue(defaultStringViewValue);
-            BehaviorDefaultValuePtr superDefaultStringViewBehaviorValue = aznew BehaviorDefaultValue(AZStd::string_view("SUPER DEFAULT!!!!"));
+            BehaviorDefaultValuePtr defaultStringViewBehaviorValue = m_behaviorContext->MakeDefaultValue(defaultStringViewValue);
+            BehaviorDefaultValuePtr superDefaultStringViewBehaviorValue = m_behaviorContext->MakeDefaultValue(AZStd::string_view("SUPER DEFAULT!!!!"));
 
             m_behaviorContext->EBus<BehaviorTestBus>("TestBus")
                     ->Attribute("EBusAttr", 40)
@@ -1382,7 +1382,7 @@ namespace UnitTest
     static int s_errorCount = 0;
 
     IncompleteType* s_globalIncompletePtr = static_cast<IncompleteType*>(AZ_INVALID_POINTER);
-    IncompleteType* s_globalIncompletePtr1 = 0;
+    IncompleteType* s_globalIncompletePtr1 = nullptr;
 
     void GlobalVarSet(int v)
     {
@@ -2234,7 +2234,7 @@ namespace UnitTest
 
         // incomplete types passed by a light-user data (pointer reference)
         AZ_TEST_ASSERT(s_globalIncompletePtr == reinterpret_cast<IncompleteType*>(AZ_INVALID_POINTER));
-        AZ_TEST_ASSERT(s_globalIncompletePtr1 == 0);
+        AZ_TEST_ASSERT(s_globalIncompletePtr1 == nullptr);
 
         script.Execute("globalIncomplete1 = globalIncomplete");
         AZ_TEST_ASSERT(s_globalIncompletePtr1 == s_globalIncompletePtr);
@@ -3157,7 +3157,7 @@ namespace UnitTest
                 char stackOutput[2048];
                 debugContext->StackTrace(stackOutput, AZ_ARRAY_SIZE(stackOutput));
                 AZ_Printf("Script", "%s", stackOutput);
-                AZ_TEST_ASSERT(strstr(stackOutput, "GlobalFunction") != 0);
+                AZ_TEST_ASSERT(strstr(stackOutput, "GlobalFunction") != nullptr);
                 AZ_TEST_ASSERT(breakpoint->m_lineNumber == 20);
             }
             else if (m_numBreakpointHits == 2)
@@ -3193,7 +3193,7 @@ namespace UnitTest
                 char stackOutput[2048];
                 debugContext->StackTrace(stackOutput, AZ_ARRAY_SIZE(stackOutput));
                 AZ_Printf("Script", "%s", stackOutput);
-                AZ_TEST_ASSERT(strstr(stackOutput, "GlobalMult") != 0);
+                AZ_TEST_ASSERT(strstr(stackOutput, "GlobalMult") != nullptr);
                 AZ_TEST_ASSERT(breakpoint->m_lineNumber == 23);
             }
 

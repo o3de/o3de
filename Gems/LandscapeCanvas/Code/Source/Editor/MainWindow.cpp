@@ -19,12 +19,16 @@
 #include <AzToolsFramework/API/ComponentEntityObjectBus.h>
 #include <AzToolsFramework/API/EntityCompositionRequestBus.h>
 #include <AzToolsFramework/Commands/EntityStateCommand.h>
+#include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
+#include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntityInterface.h>
+#include <AzToolsFramework/Prefab/PrefabFocusPublicInterface.h>
 #include <AzToolsFramework/PropertyTreeEditor/PropertyTreeEditor.h>
 #include <AzToolsFramework/ToolsComponents/EditorDisabledCompositionBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorPendingCompositionBus.h>
 #include <AzToolsFramework/UI/ComponentPalette/ComponentPaletteUtil.hxx>
+#include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
 #include <AzToolsFramework/Undo/UndoSystem.h>
 #include <IEditor.h>
 
@@ -36,6 +40,7 @@
 
 // Qt
 #include <QApplication>
+#include <QMessageBox>
 #include <QStringList>
 #include <QTimer>
 #include <QVBoxLayout>
@@ -79,6 +84,7 @@
 #include <Editor/Nodes/Gradients/AltitudeGradientNode.h>
 #include <Editor/Nodes/Gradients/ConstantGradientNode.h>
 #include <Editor/Nodes/Gradients/FastNoiseGradientNode.h>
+#include <Editor/Nodes/Gradients/GradientBakerNode.h>
 #include <Editor/Nodes/Gradients/ImageGradientNode.h>
 #include <Editor/Nodes/Gradients/PerlinNoiseGradientNode.h>
 #include <Editor/Nodes/Gradients/RandomNoiseGradientNode.h>
@@ -103,6 +109,8 @@
 #include <Editor/Nodes/UI/GradientPreviewThumbnailItem.h>
 #include <EditorLandscapeCanvasComponent.h>
 
+#include <LmbrCentral/Shape/ReferenceShapeComponentBus.h>
+
 namespace LandscapeCanvasEditor
 {
     static const int NODE_OFFSET_X_PIXELS = 350;
@@ -111,6 +119,7 @@ namespace LandscapeCanvasEditor
     static const char* PreviewEntityElementName = "PreviewEntity";
     static const char* GradientIdElementName = "GradientId";
     static const char* ShapeEntityIdElementName = "ShapeEntityId";
+    static const char* InputBoundsEntityIdElementName = "InputBounds";
     static const char* VegetationAreaEntityIdElementName = "element";
 
     static IEditor* GetLegacyEditor()
@@ -200,15 +209,34 @@ namespace LandscapeCanvasEditor
     {
         using namespace AzToolsFramework;
 
-        static const QStringList preferredCategories = {
-            "Vegetation",
-            "Atom"
-        };
+        // A map of category names with preferred component names.
+        // There may be multiple component names for a category, as long as they provide different services.
+        const AZStd::map<QString, AZStd::vector<QString>> preferredComponentsByCategory = { { "Shape", { "Shape Reference" } } };
+
+        // Scan through the preferred categories to see whether any exist in the componentDataTable.
+        for (const auto& preferredComponentPair : preferredComponentsByCategory)
+        {
+            auto candidateDataTablePair = componentDataTable.find(preferredComponentPair.first);
+            if (candidateDataTablePair != componentDataTable.end())
+            {
+                // Now check all the preferred components for that category, and return the first one that exists in the candidate componentDataTable.
+                for (const auto& preferredComponentName : preferredComponentPair.second)
+                {
+                    const auto& candidateComponent = candidateDataTablePair->second.find(preferredComponentName);
+                    if (candidateComponent != candidateDataTablePair->second.end())
+                    {
+                        return candidateComponent->second->m_typeId;
+                    }
+                }
+            }
+        }
 
         // There are a couple of cases where we prefer certain categories of Components
-        // to be added over others (e.g. a Vegetation Shape Reference instead of actual LmbrCentral shapes),
+        // to be added over others,
         // so if those there are components in those categories, then choose them first.
         // Otherwise, just pick the first one in the list.
+        static const QStringList preferredCategories = { "Vegetation", "Atom" };
+
         ComponentPaletteUtil::ComponentDataTable::const_iterator categoryIt;
         for (const auto& categoryName : preferredCategories)
         {
@@ -316,6 +344,7 @@ namespace LandscapeCanvasEditor
         gradientCategory->SetTitlePalette("GradientNodeTitlePalette");
         REGISTER_NODE_PALETTE_ITEM(gradientCategory, AltitudeGradientNode, editorId);
         REGISTER_NODE_PALETTE_ITEM(gradientCategory, ConstantGradientNode, editorId);
+        REGISTER_NODE_PALETTE_ITEM(gradientCategory, GradientBakerNode, editorId);
         REGISTER_NODE_PALETTE_ITEM(gradientCategory, ImageGradientNode, editorId);
         REGISTER_NODE_PALETTE_ITEM(gradientCategory, PerlinNoiseGradientNode, editorId);
         REGISTER_NODE_PALETTE_ITEM(gradientCategory, RandomNoiseGradientNode, editorId);
@@ -426,6 +455,8 @@ namespace LandscapeCanvasEditor
         return config;
     }
 
+    AzFramework::EntityContextId MainWindow::s_editorEntityContextId = AzFramework::EntityContextId::CreateNull();
+    
     MainWindow::MainWindow(QWidget* parent)
         : GraphModelIntegration::EditorMainWindow(GetDefaultConfig(), parent)
     {
@@ -448,6 +479,15 @@ namespace LandscapeCanvasEditor
         AZ::ComponentApplicationBus::BroadcastResult(m_serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
         AZ_Assert(m_serializeContext, "Failed to acquire application serialize context.");
 
+        AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
+            s_editorEntityContextId, &AzToolsFramework::EditorEntityContextRequests::GetEditorEntityContextId);
+
+        m_prefabFocusPublicInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabFocusPublicInterface>::Get();
+        AZ_Assert(m_prefabFocusPublicInterface, "LandscapeCanvas - could not get PrefabFocusPublicInterface on construction.");
+
+        m_readOnlyEntityPublicInterface = AZ::Interface<AzToolsFramework::ReadOnlyEntityPublicInterface>::Get();
+        AZ_Assert(m_readOnlyEntityPublicInterface, "LandscapeCanvas - could not get ReadOnlyEntityPublicInterface on construction.");
+
         const GraphCanvas::EditorId& editorId = GetEditorId();
 
         // Register unique color palettes for our connections (data types)
@@ -459,6 +499,7 @@ namespace LandscapeCanvasEditor
         AzToolsFramework::EditorPickModeNotificationBus::Handler::BusConnect(AzToolsFramework::GetEntityContextId());
         AzToolsFramework::EntityCompositionNotificationBus::Handler::BusConnect();
         AzToolsFramework::ToolsApplicationNotificationBus::Handler::BusConnect();
+        AzToolsFramework::Prefab::PrefabFocusNotificationBus::Handler::BusConnect(AzToolsFramework::GetEntityContextId());
         AzToolsFramework::Prefab::PrefabPublicNotificationBus::Handler::BusConnect();
         CrySystemEventBus::Handler::BusConnect();
         AZ::EntitySystemBus::Handler::BusConnect();
@@ -484,6 +525,7 @@ namespace LandscapeCanvasEditor
         AZ::EntitySystemBus::Handler::BusDisconnect();
         CrySystemEventBus::Handler::BusDisconnect();
         AzToolsFramework::Prefab::PrefabPublicNotificationBus::Handler::BusDisconnect();
+        AzToolsFramework::Prefab::PrefabFocusNotificationBus::Handler::BusDisconnect();
         AzToolsFramework::ToolsApplicationNotificationBus::Handler::BusDisconnect();
         AzToolsFramework::EditorPickModeNotificationBus::Handler::BusDisconnect();
         AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusDisconnect();
@@ -492,7 +534,7 @@ namespace LandscapeCanvasEditor
         LandscapeCanvas::LandscapeCanvasRequestBus::Handler::BusDisconnect();
     }
 
-    GraphModel::IGraphContextPtr MainWindow::GetGraphContext() const
+    GraphModel::GraphContextPtr MainWindow::GetGraphContext() const
     {
         return LandscapeCanvas::GraphContext::GetInstance();
     }
@@ -810,6 +852,26 @@ namespace LandscapeCanvasEditor
     {
         using namespace AzFramework::Terrain;
 
+        // Detect if it's possible to create a new entity in the current context
+        AZ::EntityId focusRootEntityId = m_prefabFocusPublicInterface->GetFocusedPrefabContainerEntityId(s_editorEntityContextId);
+        if (m_readOnlyEntityPublicInterface->IsReadOnly(focusRootEntityId))
+        {
+            // Abort
+            CloseEditor(dockWidget->GetDockWidgetId());
+
+            QWidget* activeWindow = AzToolsFramework::GetActiveWindow();
+
+            QMessageBox::warning(
+                activeWindow,
+                QString("Landscape Canvas Asset Creation Error"),
+                QString("Could not create new Landscape Canvas asset under read-only entity."),
+                QMessageBox::Ok,
+                QMessageBox::Ok
+            );
+
+            return;
+        }
+
         // Invoke the GraphCanvas base instead of the GraphModelIntegration::EditorMainWindow so that we
         // can do our own custom handling when opening an existing graph
         GraphCanvas::AssetEditorMainWindow::OnEditorOpened(dockWidget);
@@ -955,14 +1017,14 @@ namespace LandscapeCanvasEditor
 
             auto redoAction = new QAction(QObject::tr("&Redo"), this);
             redoAction->setShortcut(AzQtComponents::RedoKeySequence);
-            QObject::connect(redoAction, &QAction::triggered, [this] {
+            QObject::connect(redoAction, &QAction::triggered, [] {
                 GetLegacyEditor()->Redo();
             });
             menu->insertAction(separatorAction, redoAction);
 
             auto undoAction = new QAction(QObject::tr("&Undo"), this);
             undoAction->setShortcut(QKeySequence::Undo);
-            QObject::connect(undoAction, &QAction::triggered, [this] {
+            QObject::connect(undoAction, &QAction::triggered, [] {
                 GetLegacyEditor()->Undo();
             });
             menu->insertAction(redoAction, undoAction);
@@ -1168,6 +1230,7 @@ namespace LandscapeCanvasEditor
         static const char* PreviewEntityIdPropertyPath = "Preview Settings|Pin Preview to Shape";
         static const char* GradientEntityIdPropertyPath = "Gradient|Gradient Entity Id";
         static const char* ShapeEntityIdPropertyPath = "Shape Entity Id";
+        static const char* InputBoundsEntityIdPropertyPath = "Input Bounds";
         static const char* PinToShapeEntityIdPropertyPath = "Pin To Shape Entity Id";
         static const char* VegetationAreasPropertyPath = "Vegetation Areas";
 
@@ -1191,6 +1254,10 @@ namespace LandscapeCanvasEditor
             else if (slotName == LandscapeCanvas::PIN_TO_SHAPE_SLOT_ID)
             {
                 propertyPath = PinToShapeEntityIdPropertyPath;
+            }
+            else if (slotName == LandscapeCanvas::INPUT_BOUNDS_SLOT_ID)
+            {
+                propertyPath = InputBoundsEntityIdPropertyPath;
             }
         } break;
         case LandscapeCanvas::LandscapeCanvasDataTypeEnum::Gradient:
@@ -1284,6 +1351,19 @@ namespace LandscapeCanvasEditor
             return;
         }
 
+        // Calling UpdateConnectionData will result in a component property being modified,
+        // which in turn will result in prefab propagation. Because that is delayed until the next
+        // tick, there is a point in time where the OnEntityComponentPropertyChanged event will
+        // be triggered but the property won't be set yet, so when UpdateConnections gets called,
+        // it will think the connection corresponding to that property needs to be removed. So
+        // we need to handle this case by ignoring the next component property change for this entity
+        // since it will already be up-to-date by UpdateConnectionData being invoked
+        if (targetNode)
+        {
+            auto targetBaseNode = static_cast<LandscapeCanvas::BaseNode*>(targetNode.get());
+            m_ignoreEntityComponentPropertyChanges.push_back(targetBaseNode->GetVegetationEntityId());
+        }
+
         // If our target is an extendable slot (e.g. gradient mixer, area blender, etc...) then the element that needs
         // to be set is actually in a container, and might need to be added
         bool elementInContainer = targetSlot->SupportsExtendability();
@@ -1297,7 +1377,7 @@ namespace LandscapeCanvasEditor
             }
 
             // Special case for the Vegetation Area Placement Bounds, the slot actually represents a separate
-            // Vegetation Reference Shape or actual Shape component on the same Entity
+            // Reference Shape or actual Shape component on the same Entity
             AZ::Component* component = nullptr;
             auto targetBaseNode = static_cast<LandscapeCanvas::BaseNode*>(targetNode.get());
             if (targetBaseNode->GetBaseNodeType() == LandscapeCanvas::BaseNode::BaseNodeType::VegetationArea && targetSlot->GetName() == LandscapeCanvas::PLACEMENT_BOUNDS_SLOT_ID)
@@ -1373,7 +1453,7 @@ namespace LandscapeCanvasEditor
                     AzToolsFramework::EditorDisabledCompositionRequestBus::Event(targetEntityId, &AzToolsFramework::EditorDisabledCompositionRequests::GetDisabledComponents, disabledComponents);
                     for (auto disabledComponent : disabledComponents)
                     {
-                        if (disabledComponent->RTTI_GetType() == Vegetation::EditorReferenceShapeComponentTypeId)
+                        if (disabledComponent->RTTI_GetType() == LmbrCentral::EditorReferenceShapeComponentTypeId)
                         {
                             component = disabledComponent;
 
@@ -1395,7 +1475,7 @@ namespace LandscapeCanvasEditor
                     // If 'component' is still null then that means there is no Reference Shape component on our Entity, so we need to add one
                     if (!component)
                     {
-                        AZ::ComponentId componentId = AddComponentTypeIdToEntity(targetEntityId, Vegetation::EditorReferenceShapeComponentTypeId);
+                        AZ::ComponentId componentId = AddComponentTypeIdToEntity(targetEntityId, LmbrCentral::EditorReferenceShapeComponentTypeId);
 
                         component = targetEntity->FindComponent(componentId);
                     }
@@ -1460,13 +1540,15 @@ namespace LandscapeCanvasEditor
                 }, {},
                 AZ::SerializeContext::ENUM_ACCESS_FOR_WRITE, nullptr/* errorHandler */);
 
-            // Update the property with the new EntityId
-            AzToolsFramework::ScopedUndoBatch undoBatch("Update Component Property");
+            {
+                // Update the property with the new EntityId
+                AzToolsFramework::ScopedUndoBatch undoBatch("Update Component Property");
 
-            AzToolsFramework::PropertyTreeEditor pte = AzToolsFramework::PropertyTreeEditor(reinterpret_cast<void*>(component), component->RTTI_GetType());
-            pte.SetProperty(propertyPath.toUtf8().constData(), AZStd::any(newEntityId));
+                AzToolsFramework::PropertyTreeEditor pte = AzToolsFramework::PropertyTreeEditor(reinterpret_cast<void*>(component), component->RTTI_GetType());
+                pte.SetProperty(propertyPath.toUtf8().constData(), AZStd::any(newEntityId));
 
-            undoBatch.MarkEntityDirty(targetBaseNode->GetVegetationEntityId());
+                undoBatch.MarkEntityDirty(targetBaseNode->GetVegetationEntityId());
+            }
 
             // Trigger property editors to update attributes/values or else they might be showing stale data
             // since we are updating the property value directly.
@@ -2458,6 +2540,12 @@ namespace LandscapeCanvasEditor
 
         const AZ::EntityId changedEntityId = *AzToolsFramework::PropertyEditorEntityChangeNotificationBus::GetCurrentBusId();
 
+        auto ignoreIt = AZStd::find(m_ignoreEntityComponentPropertyChanges.begin(), m_ignoreEntityComponentPropertyChanges.end(), changedEntityId);
+        if (ignoreIt != m_ignoreEntityComponentPropertyChanges.end())
+        {
+            return;
+        }
+
         GraphModel::NodePtrList matchingNodes = GetAllNodesMatchingEntity(changedEntityId);
         for (auto node : matchingNodes)
         {
@@ -2500,6 +2588,24 @@ namespace LandscapeCanvasEditor
         }
     }
 
+    void MainWindow::OnPrefabFocusChanged()
+    {
+        // Make sure to close any open graphs that aren't currently in prefab focus
+        // to prevent the user from making modifications outside of the allowed focus scope
+        AZStd::vector<GraphCanvas::DockWidgetId> dockWidgetsToClose;
+        for (auto [entityId, dockWidgetId] : m_dockWidgetsByEntity)
+        {
+            if (!m_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(entityId))
+            {
+                dockWidgetsToClose.push_back(dockWidgetId);
+            }
+        }
+        for (auto dockWidgetId : dockWidgetsToClose)
+        {
+            CloseEditor(dockWidgetId);
+        }
+    }
+
     void MainWindow::OnPrefabInstancePropagationBegin()
     {
         // Ignore graph updates during prefab propagation because the entities will be
@@ -2512,6 +2618,30 @@ namespace LandscapeCanvasEditor
     {
         // See comment above in OnPrefabInstancePropagationBegin
         m_prefabPropagationInProgress = false;
+
+        // Clear our list of EntityIds to ignore component property change notifications
+        // from since the prefab propagation has completed
+        m_ignoreEntityComponentPropertyChanges.clear();
+
+        // After prefab propagation is complete, the entity tied to one of our open
+        // graphs might have been deleted (e.g. if a prefab was created from that entity).
+        // Any open graphs tied to an entity that no longer exists will need to be closed.
+        // We need to close them in a separate iterator because the CloseEditor API will
+        // end up modifying m_dockWidgetsByEntity.
+        AZStd::vector<GraphCanvas::DockWidgetId> dockWidgetsToDelete;
+        for (auto [entityId, dockWidgetId] : m_dockWidgetsByEntity)
+        {
+            AZ::Entity* entity = nullptr;
+            AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationRequests::FindEntity, entityId);
+            if (!entity)
+            {
+                dockWidgetsToDelete.push_back(dockWidgetId);
+            }
+        }
+        for (auto dockWidgetId : dockWidgetsToDelete)
+        {
+            CloseEditor(dockWidgetId);
+        }
     }
 
     void MainWindow::OnCryEditorEndCreate()
@@ -2852,7 +2982,7 @@ namespace LandscapeCanvasEditor
         // For any node with an Entity Name slot, we need to replace the string property display with a read-only version
         // instead until we have support for listening for GraphModel slot value changes.  We need to delay this because
         // when the node is added, the slots haven't been added to the element map yet.
-        QTimer::singleShot(0, [this, node, graphId]() {
+        QTimer::singleShot(0, [node, graphId]() {
             GraphModel::SlotPtr slot = node->GetSlot(LandscapeCanvas::ENTITY_NAME_SLOT_ID);
             if (slot)
             {
@@ -2976,7 +3106,7 @@ namespace LandscapeCanvasEditor
         AzToolsFramework::EntityIdList vegetationAreaIds;
         m_serializeContext->EnumerateObject(component,
             // beginElemCB
-            [this, &previewEntityId, &inboundShapeEntityId, &gradientSamplerIds, &vegetationAreaIds](void *instance, [[maybe_unused]] const AZ::SerializeContext::ClassData *classData, const AZ::SerializeContext::ClassElement *classElement) -> bool
+            [&previewEntityId, &inboundShapeEntityId, &gradientSamplerIds, &vegetationAreaIds](void *instance, [[maybe_unused]] const AZ::SerializeContext::ClassData *classData, const AZ::SerializeContext::ClassElement *classElement) -> bool
         {
             if (classElement && (classElement->m_typeId == azrtti_typeid<AZ::EntityId>()))
             {
@@ -3000,6 +3130,11 @@ namespace LandscapeCanvasEditor
                     inboundShapeEntityId = *reinterpret_cast<AZ::EntityId*>(instance);
                     return false;
                 }
+                else if (strcmp(classElement->m_name, InputBoundsEntityIdElementName) == 0)
+                {
+                    inboundShapeEntityId = *reinterpret_cast<AZ::EntityId*>(instance);
+                    return false;
+                }
             }
 
             return true;
@@ -3018,12 +3153,16 @@ namespace LandscapeCanvasEditor
         // Connect any inbound shape slots to the corresponding shape bounds
         if (inboundShapeEntityId.IsValid())
         {
-            // We have two different inbound shape slots that share the same underlying property,
+            // We have multiple inbound shape slots that share the same underlying property,
             // so we need to figure out which kind of inbound shape slot this node has
             GraphModel::SlotId shapeSlotId(LandscapeCanvas::INBOUND_SHAPE_SLOT_ID);
             if (!node->GetSlot(shapeSlotId))
             {
                 shapeSlotId = GraphModel::SlotId(LandscapeCanvas::PIN_TO_SHAPE_SLOT_ID);
+                if (!node->GetSlot(shapeSlotId))
+                {
+                    shapeSlotId = GraphModel::SlotId(LandscapeCanvas::INPUT_BOUNDS_SLOT_ID);
+                }
             }
 
             shapeSlotEntityPairs.push_back(AZStd::make_pair(shapeSlotId, inboundShapeEntityId));
@@ -3172,7 +3311,7 @@ namespace LandscapeCanvasEditor
                 // some magic that takes place where they each support an Invalid data type as well as
                 // their specific data type, so instead of comparing the current slot->GetDataType() directly
                 // we need to check the possible data types instead for a  match.
-                const auto& dataTypes = slot->GetPossibleDataTypes();
+                const auto& dataTypes = slot->GetSupportedDataTypes();
                 auto iter = AZStd::find(dataTypes.begin(), dataTypes.end(), dataType);
                 if (iter != dataTypes.end())
                 {

@@ -16,11 +16,12 @@
 
 // Editor
 #include "TrackView/TrackViewDialog.h"
-#include "RenderViewport.h"
 #include "ViewManager.h"
 #include "Objects/SelectionGroup.h"
 #include "Include/IObjectManager.h"
 #include "Objects/EntityObject.h"
+
+#include <AzCore/Time/ITime.h>
 
 //////////////////////////////////////////////////////////////////////////
 // Movie Callback.
@@ -29,7 +30,7 @@ class CMovieCallback
     : public IMovieCallback
 {
 protected:
-    virtual void OnMovieCallback(ECallbackReason reason, [[maybe_unused]] IAnimNode* pNode)
+    void OnMovieCallback(ECallbackReason reason, [[maybe_unused]] IAnimNode* pNode) override
     {
         switch (reason)
         {
@@ -49,7 +50,7 @@ protected:
         }
     }
 
-    void OnSetCamera(const SCameraParams& Params)
+    void OnSetCamera(const SCameraParams& Params) override
     {
         // Only switch camera when in Play mode.
         GUID camObjId = GUID_NULL;
@@ -61,15 +62,6 @@ protected:
             {
                 camObjId = pEditorEntity->GetId();
             }
-
-            CViewport* pViewport = GetIEditor()->GetViewManager()->GetSelectedViewport();
-            if (CRenderViewport* rvp = viewport_cast<CRenderViewport*>(pViewport))
-            {
-                if (!rvp->IsSequenceCamera())
-                {
-                    return;
-                }
-            }
         }
 
         // Switch camera in active rendering view.
@@ -79,14 +71,14 @@ protected:
         }
     };
 
-    bool IsSequenceCamUsed() const
+    bool IsSequenceCamUsed() const override
     {
         if (gEnv->IsEditorGameMode() == true)
         {
             return true;
         }
 
-        if (GetIEditor()->GetViewManager() == NULL)
+        if (GetIEditor()->GetViewManager() == nullptr)
         {
             return false;
         }
@@ -113,7 +105,7 @@ public:
     CAnimationContextPostRender(CAnimationContext* pAC)
         : m_pAC(pAC){}
 
-    void OnPostRender() const { assert(m_pAC); m_pAC->OnPostRender(); }
+    void OnPostRender() const override { assert(m_pAC); m_pAC->OnPostRender(); }
 
 protected:
     CAnimationContext* m_pAC;
@@ -231,7 +223,7 @@ void CAnimationContext::SetSequence(CTrackViewSequence* sequence, bool force, bo
         m_pSequence->UnBindFromEditorObjects();
     }
     m_pSequence = sequence;
-    
+
     // Notify a new sequence was just selected.
     Maestro::EditorSequenceNotificationBus::Broadcast(&Maestro::EditorSequenceNotificationBus::Events::OnSequenceSelected, m_pSequence ? m_pSequence->GetSequenceComponentEntityId() : AZ::EntityId());
 
@@ -347,7 +339,7 @@ void CAnimationContext::OnSequenceActivated(AZ::EntityId entityId)
                     {
                         // Hang onto this because SetSequence() will reset it.
                         float lastTime = m_mostRecentSequenceTime;
-                        
+
                         SetSequence(sequence, false, false);
 
                         // Restore the current time.
@@ -509,25 +501,24 @@ void CAnimationContext::Update()
         return;
     }
 
-    ITimer* pTimer = GetIEditor()->GetSystem()->GetITimer();
+    const AZ::TimeUs frameDeltaTimeUs = AZ::GetSimulationTickDeltaTimeUs();
+    const float frameDeltaTime = AZ::TimeUsToSeconds(frameDeltaTimeUs);
 
     if (!m_bAutoRecording)
     {
         AnimateActiveSequence();
 
-        float dt = pTimer->GetFrameTime();
-        m_currTime += dt * m_fTimeScale;
+        m_currTime += frameDeltaTime * m_fTimeScale;
 
         if (!m_recording)
         {
-            GetIEditor()->GetMovieSystem()->PreUpdate(dt);
-            GetIEditor()->GetMovieSystem()->PostUpdate(dt);
+            GetIEditor()->GetMovieSystem()->PreUpdate(frameDeltaTime);
+            GetIEditor()->GetMovieSystem()->PostUpdate(frameDeltaTime);
         }
     }
     else
     {
-        float dt = pTimer->GetFrameTime();
-        m_fRecordingCurrTime += dt * m_fTimeScale;
+        m_fRecordingCurrTime += frameDeltaTime * m_fTimeScale;
         if (fabs(m_fRecordingCurrTime - m_currTime) > m_fRecordingTimeStep)
         {
             m_currTime += m_fRecordingTimeStep;
@@ -638,7 +629,7 @@ void CAnimationContext::GoToFrameCmd(IConsoleCmdArgs* pArgs)
     float targetFrame = (float)atof(pArgs->GetArg(1));
     if (pSeq->GetTimeRange().start > targetFrame || targetFrame > pSeq->GetTimeRange().end)
     {
-        gEnv->pLog->LogError("GoToFrame: requested time %f is outside the range of sequence %s (%f, %f)", targetFrame, pSeq->GetName(), pSeq->GetTimeRange().start, pSeq->GetTimeRange().end);
+        gEnv->pLog->LogError("GoToFrame: requested time %f is outside the range of sequence %s (%f, %f)", targetFrame, pSeq->GetName().c_str(), pSeq->GetTimeRange().start, pSeq->GetTimeRange().end);
         return;
     }
     GetIEditor()->GetAnimation()->m_currTime = targetFrame;
@@ -654,7 +645,9 @@ void CAnimationContext::OnPostRender()
     {
         SAnimContext ac;
         ac.dt = 0;
-        ac.fps = GetIEditor()->GetSystem()->GetITimer()->GetFrameRate();
+        const AZ::TimeUs frameDeltaTimeUs = AZ::GetSimulationTickDeltaTimeUs();
+        const float frameDeltaTime = AZ::TimeUsToSeconds(frameDeltaTimeUs);
+        ac.fps = 1.0f / frameDeltaTime;
         ac.time = m_currTime;
         ac.singleFrame = true;
         ac.forcePlay = true;
@@ -807,7 +800,9 @@ void CAnimationContext::AnimateActiveSequence()
 
     SAnimContext ac;
     ac.dt = 0;
-    ac.fps = GetIEditor()->GetSystem()->GetITimer()->GetFrameRate();
+    const AZ::TimeUs frameDeltaTimeUs = AZ::GetSimulationTickDeltaTimeUs();
+    const float frameDeltaTime = AZ::TimeUsToSeconds(frameDeltaTimeUs);
+    ac.fps = 1.0f / frameDeltaTime;
     ac.time = m_currTime;
     ac.singleFrame = true;
     ac.forcePlay = true;

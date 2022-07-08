@@ -45,7 +45,7 @@ namespace GraphCanvas
             m_valueSet.clear();
         }
 
-        bool HasState() const
+        bool HasState() const override
         {
             return !m_valueSet.empty();
         }
@@ -85,7 +85,7 @@ namespace GraphCanvas
             return releasedValue;
         }
 
-        const T& GetCalculatedState() const
+        const T& GetCalculatedState() const override
         {
             auto valueIter = m_valueSet.begin();
             return (*valueIter);

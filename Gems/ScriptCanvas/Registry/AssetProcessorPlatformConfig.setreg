@@ -1,0 +1,13 @@
+{
+    "Amazon": {
+        "AssetProcessor": {
+            "Settings": {
+                "RC names": {
+                    "glob": "*.names",
+                    "params": "copy",
+                    "productAssetType": "{6A1A3B00-3DF2-4297-96BB-3BA067A978E6}"
+                }
+            }
+        }
+    }
+}

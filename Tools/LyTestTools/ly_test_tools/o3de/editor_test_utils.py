@@ -3,32 +3,42 @@ Copyright (c) Contributors to the Open 3D Engine Project.
 For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
-"""
 
-import os
-import time
+Utility functions mostly for the editor_test module. They can also be used for assisting Editor tests.
+"""
+from __future__ import annotations
 import logging
+import os
+import re
+import time
 
 import ly_test_tools.environment.process_utils as process_utils
 import ly_test_tools.environment.waiter as waiter
 
 logger = logging.getLogger(__name__)
 
-def kill_all_ly_processes(include_asset_processor=True):
-    LY_PROCESSES = [
-        'Editor', 'Profiler', 'RemoteConsole',
+
+def kill_all_ly_processes(include_asset_processor: bool = True) -> None:
+    """
+    Kills all common O3DE processes such as the Editor, Game Launchers, and optionally Asset Processor. Defaults to
+    killing the Asset Processor.
+    :param include_asset_processor: Boolean flag whether or not to kill the AP
+    :return: None
+    """
+    ly_processes = [
+        'Editor', 'Profiler', 'RemoteConsole', 'o3de', 'AutomatedTesting.ServerLauncher'
     ]
-    AP_PROCESSES = [
+    ap_processes = [
         'AssetProcessor', 'AssetProcessorBatch', 'AssetBuilder'
     ]
     
     if include_asset_processor:
-        process_utils.kill_processes_named(LY_PROCESSES+AP_PROCESSES, ignore_extensions=True)
+        process_utils.kill_processes_named(ly_processes+ap_processes, ignore_extensions=True)
     else:
-        process_utils.kill_processes_named(LY_PROCESSES, ignore_extensions=True)
+        process_utils.kill_processes_named(ly_processes, ignore_extensions=True)
 
-def get_testcase_module_filepath(testcase_module):
-    # type: (Module) -> str
+
+def get_testcase_module_filepath(testcase_module: types.ModuleType) -> str:
     """
     return the full path of the test module using always '.py' extension
     :param testcase_module: The testcase python module being tested
@@ -36,8 +46,8 @@ def get_testcase_module_filepath(testcase_module):
     """
     return os.path.splitext(testcase_module.__file__)[0] + ".py"
 
-def get_module_filename(testcase_module):
-    # type: (Module) -> str
+
+def get_module_filename(testcase_module: types.ModuleType) -> str:
     """
     return The filename of the module without path
     Note: This is differs from module.__name__ in the essence of not having the package directory.
@@ -47,7 +57,8 @@ def get_module_filename(testcase_module):
     """
     return os.path.splitext(os.path.basename(testcase_module.__file__))[0]
 
-def retrieve_log_path(run_id : int, workspace):
+
+def retrieve_log_path(run_id: int, workspace: ly_test_tools._internal.managers.workspace.AbstractWorkspaceManager) -> str:
     """
     return the log/ project path for this test run.
     :param run_id: editor id that will be used for differentiating paths
@@ -56,16 +67,20 @@ def retrieve_log_path(run_id : int, workspace):
     """
     return os.path.join(workspace.paths.project(), "user", f"log_test_{run_id}")
 
-def retrieve_crash_output(run_id : int, workspace, timeout : float):
+
+def retrieve_crash_output(run_id: int, workspace: ly_test_tools._internal.managers.workspace.AbstractWorkspaceManager,
+                          timeout: float = 10) -> str:
     """
     returns the crash output string for the given test run.
     :param run_id: editor id that will be used for differentiating paths
     :param workspace: Workspace fixture
-    :timeout: Maximum time (seconds) to wait for crash output file to appear
+    :param timeout: Maximum time (seconds) to wait for crash output file to appear
     :return str: The contents of the editor crash file (error.log)
     """
     crash_info = "-- No crash log available --"
-    crash_log = os.path.join(retrieve_log_path(run_id, workspace), 'error.log')
+    # Grab the file name of the crash log which can be different depending on platform
+    crash_file_name = os.path.basename(workspace.paths.crash_log())
+    crash_log = os.path.join(retrieve_log_path(run_id, workspace), crash_file_name)
     try:
         waiter.wait_for(lambda: os.path.exists(crash_log), timeout=timeout)
     except AssertionError:                    
@@ -79,14 +94,15 @@ def retrieve_crash_output(run_id : int, workspace, timeout : float):
         crash_info += f"\n{str(ex)}"
     return crash_info
 
-def cycle_crash_report(run_id : int, workspace):
+
+def cycle_crash_report(run_id: int, workspace: ly_test_tools._internal.managers.workspace.AbstractWorkspaceManager) -> None:
     """
     Attempts to rename error.log and error.dmp(crash files) into new names with the timestamp on it.
     :param run_id: editor id that will be used for differentiating paths
     :param workspace: Workspace fixture
     """
     log_path = retrieve_log_path(run_id, workspace)
-    files_to_cycle = ['error.log', 'error.dmp']
+    files_to_cycle = ['crash.log', 'error.log', 'error.dmp']
     for filename in files_to_cycle:
         filepath = os.path.join(log_path, filename)
         name, ext = os.path.splitext(filename)
@@ -99,12 +115,16 @@ def cycle_crash_report(run_id : int, workspace):
             except Exception as ex:
                 logger.warning(f"Couldn't cycle file {filepath}. Error: {str(ex)}")
 
-def retrieve_editor_log_content(run_id : int, log_name : str, workspace, timeout=10):
+
+def retrieve_editor_log_content(run_id: int, log_name: str,
+                                workspace: ly_test_tools._internal.managers.workspace.AbstractWorkspaceManager,
+                                timeout: int = 10) -> str:
     """
     Retrieves the contents of the given editor log file.
     :param run_id: editor id that will be used for differentiating paths
+    :log_name: The name of the editor log to retrieve
     :param workspace: Workspace fixture
-    :timeout: Maximum time to wait for the log file to appear
+    :param timeout: Maximum time to wait for the log file to appear
     :return str: The contents of the log
     """
     editor_info = "-- No editor log available --"
@@ -119,17 +139,18 @@ def retrieve_editor_log_content(run_id : int, log_name : str, workspace, timeout
         with open(editor_log) as f:
             editor_info = ""
             for line in f:
-                editor_info += f"[editor.log]  {line}"
+                editor_info += f"[{log_name}]  {line}"
     except Exception as ex:
-        editor_info = f"-- Error reading editor.log: {str(ex)} --"
+        editor_info = f"-- Error reading {log_name}: {str(ex)} --"
     return editor_info
 
-def retrieve_last_run_test_index_from_output(test_spec_list, output : str):
+
+def retrieve_last_run_test_index_from_output(test_spec_list: list[EditorTest], output: str) -> int:
     """
     Finds out what was the last test that was run by inspecting the input.
     This is used for determining what was the batched test has crashed the editor
     :param test_spec_list: List of tests that were run in this editor
-    :output: Editor output to inspect
+    :param output: Editor output to inspect
     :return: Index in the given test_spec_list of the last test that ran
     """
     index = -1
@@ -137,8 +158,52 @@ def retrieve_last_run_test_index_from_output(test_spec_list, output : str):
     for test_spec in test_spec_list:
         find_pos = output.find(test_spec.__name__, find_pos)
         if find_pos == -1:
-            index = max(index, 0) # <- if we didn't even find the first test, assume its been the first one that crashed
+            index = max(index, 0)  # didn't even find the first test, assume the first one immediately crashed
             return index
         else:
             index += 1
     return index
+
+
+def save_failed_asset_joblogs(workspace: ly_test_tools._internal.managers.workspace.AbstractWorkspaceManager) -> None:
+    """
+    Checks all asset logs in the JobLogs directory to see if the asset has any warnings or errors. If so, the asset is
+    saved via ArtifactManager.
+
+    :param workspace: The AbstractWorkspace to access the JobLogs path
+    :return: None
+    """
+    for walk_tuple in os.walk(workspace.paths.ap_job_logs()):
+        for log_file in walk_tuple[2]:
+            full_log_path = os.path.join(walk_tuple[0], log_file)
+            # Only save asset logs that contain errors or warnings
+            if _check_log_errors_warnings(full_log_path):
+                try:
+                    workspace.artifact_manager.save_artifact(full_log_path)
+                except Exception as e:  # Purposefully broad
+                    logger.warning(f"Error when saving log at path: {full_log_path}\n{e}")
+
+
+def _check_log_errors_warnings(log_path: str) -> bool:
+    """
+    Checks to see if the asset log contains any errors or warnings. Also returns True is no regex is found because
+    something probably went wrong.
+    Example log lines: ~~1643759303647~~1~~00000000000009E0~~AssetBuilder~~S: 0 errors, 1 warnings
+
+    :param log_path: The full path to the asset log file to read
+    :return: True if the regex finds an error or warning, else False
+    """
+    regex_match = None
+    if not os.path.exists(log_path):
+        logger.warning(f"Could not find path {log_path} during asset log collection.")
+        return False
+    log_regex = "(\\d+) errors, (\\d+) warnings"
+    with open(log_path, 'r', encoding='UTF-8', errors='ignore') as opened_asset_log:
+        for log_line in opened_asset_log:
+            regex_match = re.search(log_regex, log_line)
+            if regex_match is not None:
+                break
+    # If we match any non zero numbers in: n error, n warnings
+    if regex_match is None or int(regex_match.group(1)) != 0 or int(regex_match.group(2)) != 0:
+        return True
+    return False

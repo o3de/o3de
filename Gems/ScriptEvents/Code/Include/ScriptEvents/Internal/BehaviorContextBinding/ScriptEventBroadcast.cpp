@@ -71,7 +71,7 @@ namespace ScriptEvents
         //AZ_TracePrintf("Script Events", "Script Broadcast Method: %s %s::%s (Arguments: %zu)\n", m_returnType.ToString<AZStd::string>().c_str(), busName.c_str(), m_name.c_str(), method.GetParameters().size());
     }
 
-    bool ScriptEventBroadcast::Call(AZ::BehaviorValueParameter* params, unsigned int paramCount, AZ::BehaviorValueParameter* returnValue) const
+    bool ScriptEventBroadcast::Call(AZ::BehaviorArgument* params, unsigned int paramCount, AZ::BehaviorArgument* returnValue) const
     {
         Internal::BindingRequest::BindingParameters parameters;
         parameters.m_eventName = m_name;
@@ -111,7 +111,7 @@ namespace ScriptEvents
     {
         // Iterate from end of parameters and count the number of consecutive valid BehaviorValue objects
         size_t numDefaultArguments = 0;
-        for (size_t i = GetNumArguments() - 1; i >= 0 && GetDefaultValue(i); --i, ++numDefaultArguments)
+        for (int i = static_cast<int>(GetNumArguments()) - 1; i >= 0 && GetDefaultValue(static_cast<size_t>(i)); --i, ++numDefaultArguments)
         {
         }
         return GetNumArguments() - numDefaultArguments;

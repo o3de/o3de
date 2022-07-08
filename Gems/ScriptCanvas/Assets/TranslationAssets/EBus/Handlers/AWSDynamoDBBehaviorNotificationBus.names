@@ -1,0 +1,43 @@
+{
+    "entries": [
+        {
+            "base": "AWSDynamoDBBehaviorNotificationBus",
+            "context": "EBusHandler",
+            "variant": "",
+            "details": {
+                "name": "AWS Dynamo DB",
+                "category": "AWS Core"
+            },
+            "methods": [
+                {
+                    "base": "OnGetItemSuccess",
+                    "details": {
+                        "name": "On Get Item Success"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{F8A7460C-2CC2-5755-AFDA-49B1109A751E}",
+                            "details": {
+                                "name": "Result"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "OnGetItemError",
+                    "details": {
+                        "name": "On Get Item Error"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Error"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

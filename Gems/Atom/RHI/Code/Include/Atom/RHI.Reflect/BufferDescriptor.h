@@ -61,13 +61,15 @@ namespace AZ
             (RayTracingAccelerationStructure , AZ_BIT(9)),
 
             /// Supports ray tracing shader table usage.
-            (RayTracingShaderTable , AZ_BIT(10)));
+            (RayTracingShaderTable , AZ_BIT(10)),
+
+            /// Supports ray tracing scratch buffer usage.
+            (RayTracingScratchBuffer, AZ_BIT(11)));
+
 
         AZ_DEFINE_ENUM_BITWISE_OPERATORS(AZ::RHI::BufferBindFlags);
 
         BufferBindFlags GetBufferBindFlags(ScopeAttachmentUsage usage, ScopeAttachmentAccess access);
-
-        AZ_ASSERT_NO_ALIGNMENT_PADDING_BEGIN
 
         /**
          * A buffer corresponds to a region of linear memory and used for rendering operations.
@@ -103,8 +105,6 @@ namespace AZ
             /// The mask of queue classes supporting shared access of this resource.
             HardwareQueueClassMask m_sharedQueueMask = HardwareQueueClassMask::All;
         };
-
-        AZ_ASSERT_NO_ALIGNMENT_PADDING_END
     }
 
 

@@ -11,6 +11,7 @@
 #include <Process/TestImpactProcessException.h>
 
 #include <AzCore/std/parallel/lock.h>
+#include <AzCore/std/string/conversions.h>
 
 namespace TestImpact
 {
@@ -55,9 +56,11 @@ namespace TestImpact
 
         CreatePipes(sa, si);
 
-        if (!CreateProcess(
+        AZStd::wstring argsW;
+        AZStd::to_wstring(argsW, args.c_str());
+        if (!CreateProcessW(
             NULL,
-            &args[0],
+            argsW.data(),
             NULL,
             NULL,
             IsPiping(),

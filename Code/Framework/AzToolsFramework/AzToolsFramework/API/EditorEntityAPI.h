@@ -11,10 +11,10 @@
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
+#include <AzToolsFramework/Entity/EntityTypes.h>
+
 namespace AzToolsFramework
 {
-    using EntityIdList = AZStd::vector<AZ::EntityId>;
-
     /*!
     * EditorEntityAPI
     * Handles basic Entity operations
