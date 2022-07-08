@@ -16,8 +16,6 @@
 #include <Prefab/ProceduralPrefabSystemComponent.h>
 #include <Utils/Utils.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
-#include <AzToolsFramework/Entity/EditorEntityContextComponent.h>
-#include <AzToolsFramework/ToolsComponents/TransformComponent.h>
 
 namespace UnitTest
 {
@@ -54,14 +52,11 @@ namespace UnitTest
 
             m_prefabSystem = PrefabSystemComponent::CreateDescriptor();
             m_procSystem = ProceduralPrefabSystemComponent::CreateDescriptor();
-            m_editorEntityContext = AzToolsFramework::EditorEntityContextComponent::CreateDescriptor();
 
             m_prefabSystem->Reflect(&m_context);
             m_prefabSystem->Reflect(&m_jsonContext);
             m_procSystem->Reflect(&m_context);
             m_procSystem->Reflect(&m_jsonContext);
-            m_editorEntityContext->Reflect(&m_context);
-            m_editorEntityContext->Reflect(&m_jsonContext);
 
             AZ::Entity::Reflect(&m_context);
             AZ::Entity::Reflect(&m_jsonContext);
@@ -70,7 +65,6 @@ namespace UnitTest
             m_systemEntity = AZStd::make_unique<AZ::Entity>();
             m_systemEntity->CreateComponent<PrefabSystemComponent>();
             m_systemEntity->CreateComponent<ProceduralPrefabSystemComponent>();
-            m_systemEntity->CreateComponent<AzToolsFramework::EditorEntityContextComponent>();
 
             m_systemEntity->Init();
             m_systemEntity->Activate();
@@ -89,7 +83,6 @@ namespace UnitTest
             AZ::JsonSystemComponent::Reflect(&m_jsonContext);
             m_prefabSystem->Reflect(&m_jsonContext);
             m_procSystem->Reflect(&m_jsonContext);
-            m_editorEntityContext->Reflect(&m_jsonContext);
             AZ::Entity::Reflect(&m_jsonContext);
             m_jsonContext.DisableRemoveReflection();
 
@@ -104,21 +97,6 @@ namespace UnitTest
             AllocatorsTestFixture::TearDown();
 
             TestRunner::Instance().ResetSuppressionSettingsToDefault();
-
-            CreateRootPrefab();
-        }
-
-        void CreateRootPrefab()
-        {
-            auto entityOwnershipService = AZ::Interface<AzToolsFramework::PrefabEditorEntityOwnershipInterface>::Get();
-            ASSERT_TRUE(entityOwnershipService != nullptr);
-            entityOwnershipService->CreateNewLevelPrefab("UnitTestRoot.prefab", "");
-            auto rootEntityReference = entityOwnershipService->GetRootPrefabInstance()->get().GetContainerEntity();
-            ASSERT_TRUE(rootEntityReference.has_value());
-            auto& rootEntity = rootEntityReference->get();
-            rootEntity.Deactivate();
-            rootEntity.CreateComponent<AzToolsFramework::Components::TransformComponent>();
-            rootEntity.Activate();
         }
 
         // ComponentApplicationBus
@@ -187,7 +165,6 @@ namespace UnitTest
 
         AZ::ComponentDescriptor* m_prefabSystem{};
         AZ::ComponentDescriptor* m_procSystem{};
-        AZ::ComponentDescriptor* m_editorEntityContext{};
         AZStd::unique_ptr<AZ::SettingsRegistryImpl> m_settingsRegistry;
         AZ::SerializeContext m_context;
         AZ::JsonRegistrationContext m_jsonContext;

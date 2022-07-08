@@ -54,12 +54,13 @@ namespace AzToolsFramework
         {
             // Retrieve focused instance
             auto focusedInstance = m_prefabFocusInterface->GetFocusedPrefabInstance(s_editorEntityContextId);
-            if (!focusedInstance.has_value())
+            Instance* targetInstance = nullptr;
+            if (focusedInstance.has_value())
             {
-                return false;
+                targetInstance = &(focusedInstance->get());
             }
 
-            auto climbUpToDomSourceInstanceeResult = PrefabInstanceUtils::ClimbUpToTargetInstance(instance, &focusedInstance->get());
+            auto climbUpToDomSourceInstanceeResult = PrefabInstanceUtils::ClimbUpToTargetInstance(instance, targetInstance);
             auto domSourceInstance = climbUpToDomSourceInstanceeResult.first;
             AZStd::string& relativePathToDomSourceInstance = climbUpToDomSourceInstanceeResult.second;
 
@@ -77,15 +78,15 @@ namespace AzToolsFramework
             instanceDom.CopyFrom(*instanceDomValueFromSource, instanceDom.GetAllocator());
 
             // If the focused instance is not an ancestor of our instance, verify if it's a descendant.
-            if (domSourceInstance != &focusedInstance->get())
+            if (domSourceInstance != targetInstance)
             {
                 auto climbUpToFocusedInstanceAncestorResult =
-                    PrefabInstanceUtils::ClimbUpToTargetInstance(&focusedInstance->get(), instance);
+                    PrefabInstanceUtils::ClimbUpToTargetInstance(targetInstance, instance);
                 auto focusedInstanceAncestor = climbUpToFocusedInstanceAncestorResult.first;
                 AZStd::string& relativePathToFocusedInstanceAncestor = climbUpToFocusedInstanceAncestorResult.second;
 
                 // If the focused instance is a descendant (or the instance itself), we need to replace its portion of the dom with the template one.
-                if (focusedInstanceAncestor == instance)
+                if (focusedInstanceAncestor != nullptr && focusedInstanceAncestor == instance)
                 {
                     // Get the dom for the focused instance from its template.
                     PrefabDom focusedInstanceDom;
