@@ -320,7 +320,7 @@ namespace Terrain
 
                 if (m_macroMaterialManager.IsInitialized())
                 {
-                    m_macroMaterialManager.Update(m_terrainSrg);
+                    m_macroMaterialManager.Update(mainView, m_terrainSrg);
                 }
 
                 if (m_detailMaterialManager.IsInitialized())
@@ -387,6 +387,7 @@ namespace Terrain
     void TerrainFeatureProcessor::SetMeshConfiguration(const MeshConfiguration& config)
     {
         m_meshManager.SetConfiguration(config);
+        m_macroMaterialManager.SetRenderDistance(config.m_renderDistance);
     }
     
     void TerrainFeatureProcessor::CachePasses()
