@@ -73,14 +73,8 @@ namespace EMStudio
             case EMotionFX::Mesh::ATTRIB_UVCOORDS:
                 tmpString = "Vertex uv coordinates";
                 break;
-            case EMotionFX::Mesh::ATTRIB_COLORS32:
-                tmpString = "Vertex colors in 32-bits";
-                break;
             case EMotionFX::Mesh::ATTRIB_ORGVTXNUMBERS:
                 tmpString = "Original vertex numbers";
-                break;
-            case EMotionFX::Mesh::ATTRIB_COLORS128:
-                tmpString = "Vertex colors in 128-bits";
                 break;
             case EMotionFX::Mesh::ATTRIB_BITANGENTS:
                 tmpString = "Vertex bitangents";
