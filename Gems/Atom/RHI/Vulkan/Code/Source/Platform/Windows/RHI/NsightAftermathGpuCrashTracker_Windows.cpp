@@ -14,7 +14,7 @@
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 
-#if defined(USE_NSIGHT_AFTERMATH)   // To enable nsight aftermath, download and install Nsight AfterMath and add 'ATOM_AFTERMATH_PATH=%path_to_the_install_folder%' to environment variables
+#if defined(USE_NSIGHT_AFTERMATH)   // To enable nsight aftermath, download and install Nsight AfterMath and add 'ATOM_AFTERMATH_PATH=%path_to_the_install_folder%' to environment variables (or alternatively set LY_AFTERMATH_PATH in CMake options)
 GpuCrashTracker::~GpuCrashTracker()
 {
     // If initialized, disable GPU crash dumps
@@ -22,11 +22,6 @@ GpuCrashTracker::~GpuCrashTracker()
     {
         GFSDK_Aftermath_DisableGpuCrashDumps();
     }
-}
-
-void GpuCrashTracker::AddContext(GFSDK_Aftermath_ContextHandle cntxHndl)
-{
-    m_contextHandles.push_back(cntxHndl);
 }
 
 void GpuCrashTracker::EnableGPUCrashDumps()
@@ -42,7 +37,7 @@ void GpuCrashTracker::EnableGPUCrashDumps()
     // ShaderDebugInfoCallback will be called for every shader that is compiled.
     GFSDK_Aftermath_Result result = GFSDK_Aftermath_EnableGpuCrashDumps(
         GFSDK_Aftermath_Version_API,
-        GFSDK_Aftermath_GpuCrashDumpWatchedApiFlags_DX,
+        GFSDK_Aftermath_GpuCrashDumpWatchedApiFlags_Vulkan,
         GFSDK_Aftermath_GpuCrashDumpFeatureFlags_DeferDebugInfoCallbacks, // Let the Nsight Aftermath library cache shader debug information.
         GpuCrashDumpCallback,                                             // Register callback for GPU crash dumps.
         ShaderDebugInfoCallback,                                          // Register callback for shader debug information.
@@ -77,7 +72,7 @@ void GpuCrashTracker::OnShaderDebugInfo(const void* pShaderDebugInfo, const uint
     {
         return;
     }
-        
+
     // Get shader debug information identifier
     GFSDK_Aftermath_ShaderDebugInfoIdentifier identifier = {};
     if (GFSDK_Aftermath_SUCCEED(GFSDK_Aftermath_GetShaderDebugInfoIdentifier(
@@ -86,10 +81,6 @@ void GpuCrashTracker::OnShaderDebugInfo(const void* pShaderDebugInfo, const uint
         shaderDebugInfoSize,
         &identifier)))
     {
-        // Store information for decoding of GPU crash dumps with shader address mapping
-        // from within the application.
-        std::vector<uint8_t> data((uint8_t*)pShaderDebugInfo, (uint8_t*)pShaderDebugInfo + shaderDebugInfoSize);
-
         // Write to file for later in-depth analysis of crash dumps with Nsight Graphics
         WriteShaderDebugInformationToFile(identifier, pShaderDebugInfo, shaderDebugInfoSize);
     }
@@ -161,7 +152,7 @@ void GpuCrashTracker::WriteGpuCrashDumpToFile(const void* pGpuCrashDump, const u
         this,
         &jsonSize);
     AssertOnError(result);
-    
+
     // Step 2: Allocate a buffer and fetch the generated JSON.
     AZStd::unique_ptr<char[]> json = AZStd::make_unique<char[]>(jsonSize);
     result = GFSDK_Aftermath_GpuCrashDump_GetJSON(
