@@ -50,5 +50,14 @@ namespace ScriptCanvasEditor
         AZStd::string SanitizeCustomNodeFileName(const AZStd::string& nodeName, const AZ::Uuid& nodeUuid);
 
         AZStd::string GetSafeTypeName(ScriptCanvas::Data::Type dataType);
+
+        //! Utility function to get the path to the specified gem asset folder
+        AZ::IO::Path GetGemAssetPath(const AZStd::string& gemName);
+
+        //! Utility function to get translation file default folder path
+        AZ::IO::Path GetTranslationDefaultFolderPath();
+
+        //! Utility function to look for translation file path based on file name
+        AZ::IO::Path GetTranslationFilePath(const AZStd::string& fileName);
     }
 }

@@ -19,6 +19,7 @@
 #include <CryEdit.h>
 #include <GameEngine.h>
 #include <LmbrCentral/Audio/AudioSystemComponentBus.h>
+#include <MainWindow.h>
 #include <QtViewPaneManager.h>
 
 #include <QDesktopServices>
@@ -35,10 +36,12 @@ static constexpr AZStd::string_view EditorMainWindowActionContextIdentifier = "o
 static constexpr AZStd::string_view EntitySelectionChangedUpdaterIdentifier = "o3de.updater.onEntitySelectionChanged";
 static constexpr AZStd::string_view GameModeStateChangedUpdaterIdentifier = "o3de.updater.onGameModeStateChanged";
 static constexpr AZStd::string_view LevelLoadedUpdaterIdentifier = "o3de.updater.onLevelLoaded";
+static constexpr AZStd::string_view RecentFilesChangedUpdaterIdentifier = "o3de.updater.onRecentFilesChanged";
 
 static constexpr AZStd::string_view EditorMainWindowMenuBarIdentifier = "o3de.menubar.editor.mainwindow";
 
 static constexpr AZStd::string_view FileMenuIdentifier = "o3de.menu.editor.file";
+static constexpr AZStd::string_view RecentFilesMenuIdentifier = "o3de.menu.editor.file.recent";
 static constexpr AZStd::string_view EditMenuIdentifier = "o3de.menu.editor.edit";
 static constexpr AZStd::string_view GameMenuIdentifier = "o3de.menu.editor.game";
 static constexpr AZStd::string_view PlayGameMenuIdentifier = "o3de.menu.editor.game.play";
@@ -52,6 +55,8 @@ static constexpr AZStd::string_view HelpGameDevResourcesMenuIdentifier = "o3de.m
 
 static constexpr AZStd::string_view ToolsToolBarIdentifier = "o3de.toolbar.editor.tools";
 static constexpr AZStd::string_view PlayControlsToolBarIdentifier = "o3de.toolbar.editor.playcontrols";
+
+static const int maxRecentFiles = 10;
 
 bool IsLevelLoaded()
 {
@@ -75,10 +80,19 @@ void EditorActionsHandler::Initialize(QMainWindow* mainWindow)
 
     m_actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
     AZ_Assert(m_actionManagerInterface, "EditorActionsHandler - could not get ActionManagerInterface on EditorActionsHandler construction.");
-        
+
+    m_actionManagerInternalInterface = AZ::Interface<AzToolsFramework::ActionManagerInternalInterface>::Get();
+    AZ_Assert(
+        m_actionManagerInternalInterface,
+        "EditorActionsHandler - could not get ActionManagerInternalInterface on EditorActionsHandler construction.");
+    
     m_menuManagerInterface = AZ::Interface<AzToolsFramework::MenuManagerInterface>::Get();
     AZ_Assert(m_menuManagerInterface, "EditorActionsHandler - could not get MenuManagerInterface on EditorActionsHandler construction.");
-        
+    
+    m_menuManagerInternalInterface = AZ::Interface<AzToolsFramework::MenuManagerInternalInterface>::Get();
+    AZ_Assert(
+        m_menuManagerInternalInterface, "EditorActionsHandler - could not get MenuManagerInternalInterface on EditorActionsHandler construction.");
+    
     m_toolBarManagerInterface = AZ::Interface<AzToolsFramework::ToolBarManagerInterface>::Get();
     AZ_Assert(m_toolBarManagerInterface, "EditorActionsHandler - could not get ToolBarManagerInterface on EditorActionsHandler construction.");
 
@@ -125,8 +139,9 @@ void EditorActionsHandler::InitializeActionUpdaters()
 {
     m_actionManagerInterface->RegisterActionUpdater(EntitySelectionChangedUpdaterIdentifier);
     m_actionManagerInterface->RegisterActionUpdater(GameModeStateChangedUpdaterIdentifier);
+    m_actionManagerInterface->RegisterActionUpdater(RecentFilesChangedUpdaterIdentifier);
 
-    // If the Prefab system is not enable, have a backup to update actions based on level loading.
+    // If the Prefab system is not enabled, have a backup to update actions based on level loading.
     AzFramework::ApplicationRequests::Bus::BroadcastResult(
         m_isPrefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
 
@@ -138,7 +153,7 @@ void EditorActionsHandler::InitializeActionUpdaters()
 
 void EditorActionsHandler::InitializeActions()
 {
-    // --- Level Actions
+    // --- File Actions
 
     // New Level
     {
@@ -148,7 +163,7 @@ void EditorActionsHandler::InitializeActions()
         actionProperties.m_category = "Level";
 
         m_actionManagerInterface->RegisterAction(
-            EditorMainWindowActionContextIdentifier, "o3de.action.level.new", actionProperties,
+            EditorMainWindowActionContextIdentifier, "o3de.action.file.new", actionProperties,
             [cryEdit = m_cryEditApp]()
             {
                 cryEdit->OnCreateLevel();
@@ -164,10 +179,88 @@ void EditorActionsHandler::InitializeActions()
         actionProperties.m_category = "Level";
 
         m_actionManagerInterface->RegisterAction(
-            EditorMainWindowActionContextIdentifier, "o3de.action.level.open", actionProperties,
+            EditorMainWindowActionContextIdentifier, "o3de.action.file.open", actionProperties,
             [cryEdit = m_cryEditApp]()
             {
                 cryEdit->OnOpenLevel();
+            }
+        );
+    }
+
+    // Recent Files
+    {
+        RecentFileList* recentFiles = m_cryEditApp->GetRecentFileList();
+        const int recentFilesSize = recentFiles->GetSize();
+
+        for (int index = 0; index < maxRecentFiles; ++index)
+        {
+            AzToolsFramework::ActionProperties actionProperties;
+            if (index < recentFilesSize)
+            {
+                actionProperties.m_name = AZStd::string::format("%i | %s", index + 1, (*recentFiles)[index].toUtf8().data());
+            }
+            else
+            {
+                actionProperties.m_name = AZStd::string::format("Recent File #%i", index + 1);
+            }
+            actionProperties.m_category = "Level";
+
+            AZStd::string actionIdentifier = AZStd::string::format("o3de.action.file.recent.file%i", index + 1);
+
+            m_actionManagerInterface->RegisterAction(
+                EditorMainWindowActionContextIdentifier,
+                actionIdentifier,
+                actionProperties,
+                [cryEdit = m_cryEditApp, index]()
+                {
+                    RecentFileList* recentFiles = cryEdit->GetRecentFileList();
+                    const int recentFilesSize = recentFiles->GetSize();
+
+                    if (index < recentFilesSize)
+                    {
+                        cryEdit->OpenDocumentFile((*recentFiles)[index].toUtf8().data(), true, COpenSameLevelOptions::ReopenLevelIfSame);
+                    }
+                }
+            );
+
+            m_actionManagerInterface->InstallEnabledStateCallback(
+                actionIdentifier,
+                [&, index]() -> bool
+                {
+                    return IsRecentFileActionActive(index);
+                }
+            );
+
+            m_actionManagerInterface->AddActionToUpdater(RecentFilesChangedUpdaterIdentifier, actionIdentifier);
+        }
+    }
+
+    // Clear Recent Files
+    {
+        AzToolsFramework::ActionProperties actionProperties;
+        actionProperties.m_name = "Clear All";
+        actionProperties.m_description = "Clear the recent files list.";
+        actionProperties.m_category = "Level";
+
+        m_actionManagerInterface->RegisterAction(
+            EditorMainWindowActionContextIdentifier,
+            "o3de.action.file.recent.clearAll",
+            actionProperties,
+            [&]()
+            {
+                RecentFileList* mruList = CCryEditApp::instance()->GetRecentFileList();
+
+                // remove everything from the mru list
+                for (int i = mruList->GetSize(); i > 0; i--)
+                {
+                    mruList->Remove(i - 1);
+                }
+
+                // save the settings immediately to the registry
+                mruList->WriteList();
+
+                // re-update the menus
+                UpdateRecentFileActions();
             }
         );
     }
@@ -178,12 +271,166 @@ void EditorActionsHandler::InitializeActions()
         actionProperties.m_name = "Save";
         actionProperties.m_description = "Save the current level";
         actionProperties.m_category = "Level";
+        actionProperties.m_hideFromMenusWhenDisabled = false;
 
         m_actionManagerInterface->RegisterAction(
-            EditorMainWindowActionContextIdentifier, "o3de.action.level.save", actionProperties,
+            EditorMainWindowActionContextIdentifier, "o3de.action.file.save", actionProperties,
             [cryEdit = m_cryEditApp]()
             {
                 cryEdit->OnFileSave();
+            }
+        );
+
+        m_actionManagerInterface->InstallEnabledStateCallback("o3de.action.file.save", IsLevelLoaded);
+        m_actionManagerInterface->AddActionToUpdater(LevelLoadedUpdaterIdentifier, "o3de.action.file.save");
+    }
+
+    // Save As...
+    {
+        AzToolsFramework::ActionProperties actionProperties;
+        actionProperties.m_name = "Save As...";
+        actionProperties.m_description = "Save the current level";
+        actionProperties.m_category = "Level";
+        actionProperties.m_hideFromMenusWhenDisabled = false;
+
+        m_actionManagerInterface->RegisterAction(
+            EditorMainWindowActionContextIdentifier, "o3de.action.file.saveAs", actionProperties,
+            []()
+            {
+                CCryEditDoc* pDoc = GetIEditor()->GetDocument();
+                pDoc->OnFileSaveAs();
+            }
+        );
+
+        m_actionManagerInterface->InstallEnabledStateCallback("o3de.action.file.saveAs", IsLevelLoaded);
+        m_actionManagerInterface->AddActionToUpdater(LevelLoadedUpdaterIdentifier, "o3de.action.file.saveAs");
+    }
+
+    // Save Level Statistics
+    {
+        AzToolsFramework::ActionProperties actionProperties;
+        actionProperties.m_name = "Save Level Statistics";
+        actionProperties.m_description = "Logs Editor memory usage.";
+        actionProperties.m_category = "Level";
+        actionProperties.m_hideFromMenusWhenDisabled = false;
+
+        m_actionManagerInterface->RegisterAction(
+            EditorMainWindowActionContextIdentifier, "o3de.action.file.saveLevelStatistics", actionProperties,
+            [cryEdit = m_cryEditApp]()
+            {
+                cryEdit->OnToolsLogMemoryUsage();
+            }
+        );
+
+        // This action is required by python tests, but is always disabled.
+        m_actionManagerInterface->InstallEnabledStateCallback(
+            "o3de.action.file.saveLevelStatistics",
+            []() -> bool
+            {
+                return false;
+            }
+        );
+    }
+
+    // Edit Project Settings
+    {
+        AzToolsFramework::ActionProperties actionProperties;
+        actionProperties.m_name = "Edit Project Settings...";
+        actionProperties.m_description = "Open the Project Settings panel.";
+        actionProperties.m_category = "Project";
+
+        m_actionManagerInterface->RegisterAction(
+            EditorMainWindowActionContextIdentifier, "o3de.action.project.editSettings", actionProperties,
+            [cryEdit = m_cryEditApp]()
+            {
+                cryEdit->OnOpenProjectManagerSettings();
+            }
+        );
+    }
+
+    // Edit Platform Settings
+    {
+        AzToolsFramework::ActionProperties actionProperties;
+        actionProperties.m_name = "Edit Platform Settings...";
+        actionProperties.m_description = "Open the Platform Settings panel.";
+        actionProperties.m_category = "Platform";
+
+        m_actionManagerInterface->RegisterAction(
+            EditorMainWindowActionContextIdentifier, "o3de.action.platform.editSettings", actionProperties,
+            [qtViewPaneManager = m_qtViewPaneManager]()
+            {
+                qtViewPaneManager->OpenPane(LyViewPane::ProjectSettingsTool);
+            }
+        );
+    }
+
+    // New Project
+    {
+        AzToolsFramework::ActionProperties actionProperties;
+        actionProperties.m_name = "New Project...";
+        actionProperties.m_description = "Create a new project in the Project Manager.";
+        actionProperties.m_category = "Project";
+
+        m_actionManagerInterface->RegisterAction(
+            EditorMainWindowActionContextIdentifier,
+            "o3de.action.project.new",
+            actionProperties,
+            [cryEdit = m_cryEditApp]()
+            {
+                cryEdit->OnOpenProjectManagerNew();
+            }
+        );
+    }
+
+    // Open Project
+    {
+        AzToolsFramework::ActionProperties actionProperties;
+        actionProperties.m_name = "Open Project...";
+        actionProperties.m_description = "Open a different project in the Project Manager.";
+        actionProperties.m_category = "Project";
+
+        m_actionManagerInterface->RegisterAction(
+            EditorMainWindowActionContextIdentifier,
+            "o3de.action.project.open",
+            actionProperties,
+            [cryEdit = m_cryEditApp]()
+            {
+                cryEdit->OnOpenProjectManager();
+            }
+        );
+    }
+
+    // Show Log File
+    {
+        AzToolsFramework::ActionProperties actionProperties;
+        actionProperties.m_name = "Show Log File";
+        actionProperties.m_category = "Project";
+
+        m_actionManagerInterface->RegisterAction(
+            EditorMainWindowActionContextIdentifier,
+            "o3de.action.file.showLog",
+            actionProperties,
+            [cryEdit = m_cryEditApp]()
+            {
+                cryEdit->OnFileEditLogFile();
+            }
+        );
+    }
+
+    // Editor Exit
+    {
+        AzToolsFramework::ActionProperties actionProperties;
+        actionProperties.m_name = "Exit";
+        actionProperties.m_description = "Open a different project in the Project Manager.";
+        actionProperties.m_category = "Project";
+
+        m_actionManagerInterface->RegisterAction(
+            EditorMainWindowActionContextIdentifier,
+            "o3de.action.editor.exit",
+            actionProperties,
+            [=]()
+            {
+                m_mainWindow->window()->close();
             }
         );
     }
@@ -211,7 +458,6 @@ void EditorActionsHandler::InitializeActions()
         );
 
         m_actionManagerInterface->InstallEnabledStateCallback("o3de.action.game.play", IsLevelLoaded);
-
         m_actionManagerInterface->AddActionToUpdater(LevelLoadedUpdaterIdentifier, "o3de.action.game.play");
         m_actionManagerInterface->AddActionToUpdater(GameModeStateChangedUpdaterIdentifier, "o3de.action.game.play");
     }
@@ -236,7 +482,6 @@ void EditorActionsHandler::InitializeActions()
         );
 
         m_actionManagerInterface->InstallEnabledStateCallback("o3de.action.game.playMaximized", IsLevelLoaded);
-
         m_actionManagerInterface->AddActionToUpdater(LevelLoadedUpdaterIdentifier, "o3de.action.game.playMaximized");
         m_actionManagerInterface->AddActionToUpdater(GameModeStateChangedUpdaterIdentifier, "o3de.action.game.playMaximized");
     }
@@ -262,7 +507,6 @@ void EditorActionsHandler::InitializeActions()
         );
 
         m_actionManagerInterface->InstallEnabledStateCallback("o3de.action.game.simulate", IsLevelLoaded);
-
         m_actionManagerInterface->AddActionToUpdater(LevelLoadedUpdaterIdentifier, "o3de.action.game.simulate");
         m_actionManagerInterface->AddActionToUpdater(GameModeStateChangedUpdaterIdentifier, "o3de.action.game.simulate");
     }
@@ -273,6 +517,7 @@ void EditorActionsHandler::InitializeActions()
         actionProperties.m_name = "Export Selected Objects";
         actionProperties.m_description = "Export Selected Objects.";
         actionProperties.m_category = "Game";
+        actionProperties.m_hideFromMenusWhenDisabled = false;
 
         m_actionManagerInterface->RegisterAction(
             EditorMainWindowActionContextIdentifier, "o3de.action.game.exportSelectedObjects", actionProperties,
@@ -283,7 +528,6 @@ void EditorActionsHandler::InitializeActions()
         );
 
         m_actionManagerInterface->InstallEnabledStateCallback("o3de.action.game.exportSelectedObjects", IsEntitySelected);
-
         m_actionManagerInterface->AddActionToUpdater(EntitySelectionChangedUpdaterIdentifier, "o3de.action.game.exportSelectedObjects");
     }
 
@@ -518,6 +762,23 @@ void EditorActionsHandler::InitializeMenus()
         menuProperties.m_name = "&File";
         m_menuManagerInterface->RegisterMenu(FileMenuIdentifier, menuProperties);
     }
+        {
+            AzToolsFramework::MenuProperties menuProperties;
+            menuProperties.m_name = "Open Recent";
+            m_menuManagerInterface->RegisterMenu(RecentFilesMenuIdentifier, menuProperties);
+
+            // Legacy - the menu should update when the files list is changed.
+            QMenu* menu = m_menuManagerInternalInterface->GetMenu(FileMenuIdentifier);
+            QObject::connect(
+                menu,
+                &QMenu::aboutToShow,
+                m_mainWindow,
+                [&]()
+                {
+                    UpdateRecentFileActions();
+                }
+            );
+        }
     {
         AzToolsFramework::MenuProperties menuProperties;
         menuProperties.m_name = "&Edit";
@@ -579,15 +840,38 @@ void EditorActionsHandler::InitializeMenus()
     m_menuManagerInterface->AddMenuToMenuBar(EditorMainWindowMenuBarIdentifier, HelpMenuIdentifier, 600);
 
     // Set the menu bar for this window
-    m_mainWindow->setMenuBar(m_menuManagerInterface->GetMenuBar(EditorMainWindowMenuBarIdentifier));
+    m_mainWindow->setMenuBar(m_menuManagerInternalInterface->GetMenuBar(EditorMainWindowMenuBarIdentifier));
 
     // Add actions to each menu
 
     // File
     {
-        m_menuManagerInterface->AddActionToMenu(FileMenuIdentifier, "o3de.action.level.new", 100);
-        m_menuManagerInterface->AddActionToMenu(FileMenuIdentifier, "o3de.action.level.open", 200);
-        m_menuManagerInterface->AddActionToMenu(FileMenuIdentifier, "o3de.action.level.save", 300);
+        m_menuManagerInterface->AddActionToMenu(FileMenuIdentifier, "o3de.action.file.new", 100);
+        m_menuManagerInterface->AddActionToMenu(FileMenuIdentifier, "o3de.action.file.open", 200);
+        m_menuManagerInterface->AddSubMenuToMenu(FileMenuIdentifier, RecentFilesMenuIdentifier, 300);
+        {
+            for (int index = 0; index < maxRecentFiles; ++index)
+            {
+                AZStd::string actionIdentifier = AZStd::string::format("o3de.action.file.recent.file%i", index + 1);
+                m_menuManagerInterface->AddActionToMenu(RecentFilesMenuIdentifier, actionIdentifier, 100);
+            }
+            m_menuManagerInterface->AddSeparatorToMenu(RecentFilesMenuIdentifier, 200);
+            m_menuManagerInterface->AddActionToMenu(RecentFilesMenuIdentifier, "o3de.action.file.recent.clearAll", 300);
+        }
+        m_menuManagerInterface->AddSeparatorToMenu(FileMenuIdentifier, 400);
+        m_menuManagerInterface->AddActionToMenu(FileMenuIdentifier, "o3de.action.file.save", 500);
+        m_menuManagerInterface->AddActionToMenu(FileMenuIdentifier, "o3de.action.file.saveAs", 600);
+        m_menuManagerInterface->AddActionToMenu(FileMenuIdentifier, "o3de.action.file.saveLevelStatistics", 700);
+        m_menuManagerInterface->AddSeparatorToMenu(FileMenuIdentifier, 800);
+        m_menuManagerInterface->AddActionToMenu(FileMenuIdentifier, "o3de.action.project.editSettings", 900);
+        m_menuManagerInterface->AddActionToMenu(FileMenuIdentifier, "o3de.action.platform.editSettings", 1000);
+        m_menuManagerInterface->AddSeparatorToMenu(FileMenuIdentifier, 1100);
+        m_menuManagerInterface->AddActionToMenu(FileMenuIdentifier, "o3de.action.project.new", 1200);
+        m_menuManagerInterface->AddActionToMenu(FileMenuIdentifier, "o3de.action.project.open", 1300);
+        m_menuManagerInterface->AddSeparatorToMenu(FileMenuIdentifier, 1400);
+        m_menuManagerInterface->AddActionToMenu(FileMenuIdentifier, "o3de.action.file.showLog", 1500);
+        m_menuManagerInterface->AddSeparatorToMenu(FileMenuIdentifier, 1600);
+        m_menuManagerInterface->AddActionToMenu(FileMenuIdentifier, "o3de.action.editor.exit", 1700);
     }
 
     // Game
@@ -613,7 +897,6 @@ void EditorActionsHandler::InitializeMenus()
         m_menuManagerInterface->AddSubMenuToMenu(GameMenuIdentifier, GameDebuggingMenuIdentifier, 1100);
         {
         }
-
     }
 
     // Help - Search Documentation Widget
@@ -719,7 +1002,7 @@ QWidget* EditorActionsHandler::CreateDocsSearchWidget()
     };
     QObject::connect(lineEdit, &QLineEdit::returnPressed, m_mainWindow, searchAction);
 
-    QMenu* helpMenu = m_menuManagerInterface->GetMenu(HelpMenuIdentifier);
+    QMenu* helpMenu = m_menuManagerInternalInterface->GetMenu(HelpMenuIdentifier);
 
     QObject::connect(helpMenu, &QMenu::aboutToHide, lineEdit, &QLineEdit::clear);
     QObject::connect(helpMenu, &QMenu::aboutToShow, lineEdit, &QLineEdit::clearFocus);
@@ -772,6 +1055,36 @@ void EditorActionsHandler::AfterEntitySelectionChanged(
     m_actionManagerInterface->TriggerActionUpdater(EntitySelectionChangedUpdaterIdentifier);
 }
 
+bool EditorActionsHandler::IsRecentFileActionActive(int index)
+{
+    RecentFileList* recentFiles = m_cryEditApp->GetRecentFileList();
+    return (index < recentFiles->GetSize());
+}
+
+void EditorActionsHandler::UpdateRecentFileActions()
+{
+    RecentFileList* recentFiles = m_cryEditApp->GetRecentFileList();
+    const int recentFilesSize = recentFiles->GetSize();
+
+    // Update all names
+    for (int index = 0; index < maxRecentFiles; ++index)
+    {
+        AZStd::string actionIdentifier = AZStd::string::format("o3de.action.file.recent.file%i", index + 1);
+        if (index < recentFilesSize)
+        {
+            m_actionManagerInterface->SetActionName(
+                actionIdentifier, AZStd::string::format("%i | %s", index + 1, (*recentFiles)[index].toUtf8().data()));
+        }
+        else
+        {
+            m_actionManagerInterface->SetActionName(actionIdentifier, AZStd::string::format("Recent File #%i", index + 1));
+        }
+    }
+
+    // Trigger the updater
+    m_actionManagerInterface->TriggerActionUpdater(RecentFilesChangedUpdaterIdentifier);
+}
+
 void EditorActionsHandler::RefreshToolActions()
 {
     // If the tools are being displayed in the menu or toolbar already, remove them.
@@ -799,7 +1112,7 @@ void EditorActionsHandler::RefreshToolActions()
         AZStd::string toolActionIdentifier = AZStd::string::format("o3de.action.tool.%s", viewpane.m_name.toUtf8().data());
 
         // Create the action if it does not already exist.
-        if (m_actionManagerInterface->GetAction(toolActionIdentifier) == nullptr)
+        if (m_actionManagerInternalInterface->GetAction(toolActionIdentifier) == nullptr)
         {
             AzToolsFramework::ActionProperties actionProperties;
             actionProperties.m_name =

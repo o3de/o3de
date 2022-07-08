@@ -47,6 +47,25 @@ namespace Terrain
         AZ::Vector3 m_worldMax{ 1024.0f, 1024.0f, 1024.0f };
         float m_heightQueryResolution{ 1.0f };
         float m_surfaceDataQueryResolution{ 1.0f };
+
+        static AZ::Outcome<void, AZStd::string> ValidateBounds(AZ::Vector3& minBounds, AZ::Vector3& maxBounds)
+        {
+            if (!minBounds.IsLessEqualThan(maxBounds))
+            {
+                return AZ::Failure(AZStd::string("World bounds min must be less than max."));
+            }
+            return AZ::Success();
+        }
+
+        AZ::Outcome<void, AZStd::string> ValidateBoundsMin(void* newValue, [[maybe_unused]] const AZ::Uuid& valueType)
+        {
+            return ValidateBounds(*static_cast<AZ::Vector3*>(newValue), m_worldMax);
+        }
+
+        AZ::Outcome<void, AZStd::string> ValidateBoundsMax(void* newValue, [[maybe_unused]] const AZ::Uuid& valueType)
+        {
+            return ValidateBounds(m_worldMin, *static_cast<AZ::Vector3*>(newValue));
+        }
     };
 
 

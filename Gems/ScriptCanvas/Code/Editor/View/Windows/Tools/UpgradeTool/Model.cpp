@@ -100,7 +100,7 @@ namespace ScriptCanvasEditor
                 return;
             }
 
-            if (!modification.modifySingleAsset.Path().empty())
+            if (!modification.modifySingleAsset.RelativePath().empty())
             {
                 const auto& results = m_scanner->GetResult();
                 auto iter = AZStd::find_if

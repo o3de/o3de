@@ -74,10 +74,12 @@ namespace AssetProcessor
         PopulateJobStateCache();
 
         AssetProcessor::ProcessingJobInfoBus::Handler::BusConnect();
+        AZ::Interface<AssetProcessor::RecognizerConfiguration>::Register(m_platformConfig);
     }
 
     AssetProcessorManager::~AssetProcessorManager()
     {
+        AZ::Interface<AssetProcessor::RecognizerConfiguration>::Unregister(m_platformConfig);
         AssetProcessor::ProcessingJobInfoBus::Handler::BusDisconnect();
     }
 
@@ -181,14 +183,21 @@ namespace AssetProcessor
         else if ((status == AssetProcessor::AssetScanningStatus::Completed) ||
                  (status == AssetProcessor::AssetScanningStatus::Stopped))
         {
-            m_isCurrentlyScanning = false;
             AssetProcessor::StatsCapture::EndCaptureStat("AssetScanning");
-
-            // we cannot invoke this immediately - the scanner might be done, but we aren't actually ready until we've processed all remaining messages:
-            QMetaObject::invokeMethod(this, "CheckMissingFiles", Qt::QueuedConnection);
+            // place a message in the queue that will cause us to transition
+            // into a "no longer scanning" state and then continue with the next phase
+            // we place this at the end of the queue rather than calling it immediately, becuase
+            // other messages may still be in the queue such as the incoming file list.
+            QMetaObject::invokeMethod(this, "FinishAssetScan", Qt::QueuedConnection);
         }
     }
 
+    void AssetProcessorManager::FinishAssetScan()
+    {
+        AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Initial Scan complete, checking for missing files...\n");
+        m_isCurrentlyScanning = false;
+        CheckMissingFiles();
+    }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // JOB STATUS REQUEST HANDLING
@@ -233,7 +242,14 @@ namespace AssetProcessor
                 // because sometimes jobs take a short cut from "started" -> "failed" or "started" -> "complete
                 // without going thru the RC.
                 // as such, all the code in this block should be crafted to work regardless of whether its double called.
-                AssetProcessor::StatsCapture::EndCaptureStat(statKey.toUtf8().constData());
+                AZStd::optional<AZStd::sys_time_t> operationDuration =
+                    AssetProcessor::StatsCapture::EndCaptureStat(statKey.toUtf8().constData(), true);
+
+                if (operationDuration)
+                {
+                    Q_EMIT JobProcessDurationChanged(
+                        jobEntry, QTime::fromMSecsSinceStartOfDay(aznumeric_cast<int>(operationDuration.value())));
+                }
 
                 m_jobRunKeyToJobInfoMap.erase(jobEntry.m_jobRunKey);
                 Q_EMIT SourceFinished(sourceUUID, legacySourceUUID);
@@ -267,7 +283,12 @@ namespace AssetProcessor
         JobInfo jobInfo;
 
         bool hasSpace = false;
-        AssetProcessor::DiskSpaceInfoBus::BroadcastResult(hasSpace, &AssetProcessor::DiskSpaceInfoBusTraits::CheckSufficientDiskSpace, m_cacheRootDir.absolutePath().toUtf8().data(), 0, false);
+        auto* diskSpaceInfoBus = AZ::Interface<IDiskSpaceInfo>::Get();
+
+        if(diskSpaceInfoBus)
+        {
+            hasSpace = diskSpaceInfoBus->CheckSufficientDiskSpace(0, false);
+        }
 
         if (!hasSpace)
         {
@@ -1237,25 +1258,16 @@ namespace AssetProcessor
             // we need to delete these product files from the disk as they no longer exist and inform everyone we did so
             for (const auto& priorProduct : priorProducts)
             {
-                // product name will be in the form "platform/relativeProductPath"
-                // and will always already be a lowercase string, because its relative to the cache.
-                QString productName = priorProduct.m_productName.c_str();
-
-                // the full file path is gotten by adding the product name to the cache root.
-                // this is case sensitive since it refers to a real location on disk.
-                QString fullProductPath = m_cacheRootDir.absoluteFilePath(productName);
-
-                // Strip the <asset_platform> from the front of a relative product path
-                AZStd::string_view relativeProductPath = AssetUtilities::StripAssetPlatformNoCopy(priorProduct.m_productName);
+                auto productPath = AssetUtilities::ProductPath::FromDatabasePath(priorProduct.m_productName);
+                auto productWrapper = ProductAssetWrapper(priorProduct, productPath);
 
                 AZ::Data::AssetId assetId(source.m_sourceGuid, priorProduct.m_subID);
 
                 // also compute the legacy ids that used to refer to this asset
-
                 AZ::Data::AssetId legacyAssetId(priorProduct.m_legacyGuid, 0);
                 AZ::Data::AssetId legacySourceAssetId(AssetUtilities::CreateSafeSourceUUIDFromName(source.m_sourceName.c_str(), false), priorProduct.m_subID);
 
-                AssetNotificationMessage message(relativeProductPath, AssetNotificationMessage::AssetRemoved, priorProduct.m_assetType, processedAsset.m_entry.m_platformInfo.m_identifier.c_str());
+                AssetNotificationMessage message(productPath.GetRelativePath(), AssetNotificationMessage::AssetRemoved, priorProduct.m_assetType, processedAsset.m_entry.m_platformInfo.m_identifier.c_str());
                 message.m_assetId = assetId;
 
                 if (legacyAssetId != assetId)
@@ -1285,63 +1297,15 @@ namespace AssetProcessor
                 //delete the full file path
                 if (shouldDeleteFile)
                 {
-                    if (!QFile::exists(fullProductPath))
-                    {
-                        AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Was expecting to delete %s ... but it already appears to be gone. \n", fullProductPath.toUtf8().constData());
-
-                        // we still need to tell everyone that its gone!
-
-                        Q_EMIT AssetMessage(message); // we notify that we are aware of a missing product either way.
-                    }
-                    else
-                    {
-                        AssetProcessor::ProcessingJobInfoBus::Broadcast(&AssetProcessor::ProcessingJobInfoBus::Events::BeginCacheFileUpdate, fullProductPath.toUtf8().data());
-                        bool wasRemoved = QFile::remove(fullProductPath);
-                        AssetProcessor::ProcessingJobInfoBus::Broadcast(&AssetProcessor::ProcessingJobInfoBus::Events::EndCacheFileUpdate, fullProductPath.toUtf8().data(), false);
-                        if (!wasRemoved)
-                        {
-                            AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Was unable to delete file %s will retry next time...\n", fullProductPath.toUtf8().constData());
-                            continue; // do not update database
-                        }
-                        else
-                        {
-                            AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Deleting file %s because the recompiled input file no longer emitted that product.\n", fullProductPath.toUtf8().constData());
-                            Q_EMIT AssetMessage(message); // we notify that we are aware of a missing product either way.
-                        }
-                    }
+                    DeleteProducts({ priorProduct });
                 }
                 else
                 {
-                    AZ_TracePrintf(AssetProcessor::ConsoleChannel, "File %s was replaced with a new, but different file.\n", fullProductPath.toUtf8().constData());
+                    AZ_TracePrintf(AssetProcessor::ConsoleChannel, "File %s was replaced with a new, but different file.\n", productPath.GetCachePath().c_str());
                     // Don't report that the file has been removed as it's still there, but as a different kind of file (different sub id, type, etc.).
                 }
 
-                //trace that we are about to remove a lingering prior product from the database
-                // because of On Delete Cascade this will also remove any legacy subIds associated with that product automatically.
-                if (!m_stateData->RemoveProduct(priorProduct.m_productID))
-                {
-                    //somethings wrong...
-                    AZ_Error(AssetProcessor::ConsoleChannel, false, "Failed to remove lingering prior products from the database!!! %s", priorProduct.ToString().c_str());
-                }
-                else
-                {
-                    AZ_TracePrintf(AssetProcessor::DebugChannel, "Removed lingering prior product %s\n", priorProduct.ToString().c_str());
-
-                    AZStd::vector<AzToolsFramework::AssetDatabase::ProductDependencyDatabaseEntry> unresolvedProductDependencies;
-                    auto queryFunc = [&](AzToolsFramework::AssetDatabase::ProductDependencyDatabaseEntry& productDependencyData)
-                    {
-                        if (!productDependencyData.m_unresolvedPath.empty())
-                        {
-                            unresolvedProductDependencies.push_back(productDependencyData);
-                        }
-                        return true;
-                    };
-
-                    m_stateData->QueryProductDependencyByProductId(priorProduct.m_productID, queryFunc);
-                }
-
-                QString parentFolderName = QFileInfo(fullProductPath).absolutePath();
-                m_checkFoldersToRemove.insert(parentFolderName);
+                AZ_TracePrintf(AssetProcessor::DebugChannel, "Removed lingering prior product %s\n", priorProduct.ToString().c_str());
             }
 
             //trace that we are about to update the products in the database
@@ -2329,7 +2293,10 @@ namespace AssetProcessor
 
     void AssetProcessorManager::UpdateForCacheServer(JobDetails& jobDetails)
     {
-        if (AssetUtilities::ServerAddress().isEmpty())
+        AssetServerMode assetServerMode = AssetServerMode::Inactive;
+        AssetServerBus::BroadcastResult(assetServerMode, &AssetServerBus::Events::GetRemoteCachingMode);
+
+        if (assetServerMode == AssetServerMode::Inactive)
         {
             // Asset Cache Server mode feature is turned off
             return;
@@ -2341,21 +2308,20 @@ namespace AssetProcessor
         }
 
         auto& cacheRecognizerContainer = m_platformConfig->GetAssetCacheRecognizerContainer();
-        for(auto&& cacheRecognizer : cacheRecognizerContainer)
+        for(const auto& cacheRecognizerPair : cacheRecognizerContainer)
         {
-            auto matchingPatternIt = AZStd::find_if(
-                jobDetails.m_assetBuilderDesc.m_patterns.begin(),
-                jobDetails.m_assetBuilderDesc.m_patterns.end(),
-                [cacheRecognizer](const AssetBuilderSDK::AssetBuilderPattern& pattern)
-                {
-                    return cacheRecognizer.m_patternMatcher.GetBuilderPattern().m_type == pattern.m_type &&
-                           cacheRecognizer.m_patternMatcher.GetBuilderPattern().m_pattern == pattern.m_pattern;
-                }
-            );
+            auto& cacheRecognizer = cacheRecognizerPair.second;
 
-            if (matchingPatternIt != jobDetails.m_assetBuilderDesc.m_patterns.end())
+            bool matchFound =
+                cacheRecognizer.m_patternMatcher.MatchesPath(jobDetails.m_jobEntry.m_databaseSourceName.toUtf8().data());
+
+            bool builderNameMatches =
+                cacheRecognizer.m_name.compare(jobDetails.m_assetBuilderDesc.m_name.c_str()) == 0;
+
+            if (matchFound || builderNameMatches)
             {
                 jobDetails.m_checkServer = cacheRecognizer.m_checkServer;
+                return;
             }
         }
     }
@@ -3124,14 +3090,92 @@ namespace AssetProcessor
         }
     }
 
+    // The file cache is used before actually hitting physical media to determine the
+    // existence of files and to retrieve the file's hash.
+    // It assumes that the presence of a file in the cache means the file exists.
+    // Because of this, it also monitors for file notifications from the operating system
+    // (such as changed, deleted, etc) and invalidates its cache, removing hashes or file entries
+    // as appropriate.
+    // This means we can 'warm up the cache' from the prior known file list in the database, BUT
+    // can only populate the entries discovered by the file scanner (so they are known to exist)
+    // and we can only populate the hashes in the cache for files which are known to exist AND
+    // whos modtime has not changed.
+    void AssetProcessorManager::WarmUpFileCache(QSet<AssetFileInfo> filePaths)
+    {
+        // if the 'skipping feature' is disabled, do not pre-populate the cache
+        // This will cause it to rehash everything every time.
+        if (!m_allowModtimeSkippingFeature)
+        {
+            return;
+        }
+        
+        IFileStateRequests* fileStateCache = AZ::Interface<IFileStateRequests>::Get();
+        if (!fileStateCache)
+        {
+            return;
+        }
+        
+        // the strategy here is to only warm up the file cache if absolutely everything
+        // is okay - the mod time must match last time, the file must exist, the hash must be present
+        // and non zero from last time.  If anything at all is not correct, we will not warm the
+        // cache up and this will cause it to refetch on demand.
+        for (const AssetFileInfo& fileInfo : filePaths)
+        {
+            // fileInfo represents an file found in the bulk scanning (so it actually exists)
+            // m_fileModTimes is a list of last-known modtimes from the database from last run.
+            auto fileItr = m_fileModTimes.find(fileInfo.m_filePath.toUtf8().data());
+            if (fileItr != m_fileModTimes.end())
+            {
+                AZ::u64 databaseModTime = fileItr->second;
+                if(databaseModTime != 0)
+                {
+                    auto thisModTime = aznumeric_cast<decltype(databaseModTime)>(AssetUtilities::AdjustTimestamp(fileInfo.m_modTime));
+                    if (thisModTime == databaseModTime)
+                    {
+                        // the actual modtime of the file has not changed since last and the file still exists.
+                        // does the database know what its hash was last time?
+                        auto hashItr = m_fileHashes.find(fileInfo.m_filePath.toUtf8().constData());
+                        if(hashItr != m_fileHashes.end())
+                        {
+                            AZ::u64 databaseHashValue = hashItr->second;
+                            if (databaseHashValue != 0)
+                            {
+                                // we have a valid database hash value and mod time has not changed.
+                                // cache it so that future calls to GetFileHash and the like
+                                // use this cached value.
+                                if (fileStateCache)
+                                {
+                                    fileStateCache->WarmUpCache(fileInfo, databaseHashValue);
+                                    continue;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            // Note that the 'continue' statement above, which happens if all conditions are met
+            // causes it to skip over the following line.  If the execution ends up here, it means
+            // that the database's modtime was probably stale or this is a new file or some other
+            // disqualifying condition.  However, the fileInfo is still a real file on disk that
+            // came from the bulk scan, so we can still warm up the file cache with this info.
+            fileStateCache->WarmUpCache(fileInfo);
+        }
+    }
+
     // this means a file is definitely coming from the file scanner, and not the file monitor.
     // the file scanner does not scan the cache.
     // the scanner should be omitting directory changes.
-
     void AssetProcessorManager::AssessFilesFromScanner(QSet<AssetFileInfo> filePaths)
     {
+        AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Received %i files from the scanner.  Assessing...\n", static_cast<int>(filePaths.size()));
+        AssetProcessor::StatsCapture::BeginCaptureStat("WarmingFileCache");
+        WarmUpFileCache(filePaths);
+        AssetProcessor::StatsCapture::EndCaptureStat("WarmingFileCache");
+        
         int processedFileCount = 0;
-
+        
+        AssetProcessor::StatsCapture::BeginCaptureStat("InitialFileAssessment");
+        
         for (const AssetFileInfo& fileInfo : filePaths)
         {
             if (m_allowModtimeSkippingFeature)
@@ -3167,6 +3211,8 @@ namespace AssetProcessor
         {
             AZ_TracePrintf(AssetProcessor::DebugChannel, "%d files reported from scanner.  %d unchanged files skipped, %d files processed\n", filePaths.size(), filePaths.size() - processedFileCount, processedFileCount);
         }
+        
+        AssetProcessor::StatsCapture::EndCaptureStat("InitialFileAssessment");
     }
 
     void AssetProcessorManager::RecordFoldersFromScanner(QSet<AssetFileInfo> folderPaths)
@@ -3546,7 +3592,7 @@ namespace AssetProcessor
                 AzToolsFramework::AssetDatabase::JobDatabaseEntryContainer jobs;
                 if (m_stateData->GetJobsBySourceName(sourceFileDependency.m_sourceFileDependencyPath.c_str(), jobs, AZ::Uuid::CreateNull(), jobDependencyInternal->m_jobDependency.m_jobKey.c_str(), jobDependencyInternal->m_jobDependency.m_platformIdentifier.c_str(), AzToolsFramework::AssetSystem::JobStatus::Completed))
                 {
-                    jobDependencyInternal = job.m_jobDependencyList.erase(jobDependencyInternal);
+                    job.m_jobDependencyList.erase(jobDependencyInternal);
                     continue;
                 }
 
@@ -3834,19 +3880,12 @@ namespace AssetProcessor
                         {
                             if (auto result = jobDependenciesDuplicateCheck.insert(jobDependency); !result.second)
                             {
-                                auto warningMessage = AZStd::string::format(
-                                    "Builder `%s` declared duplicate Job Dependencies for file `%s`.  Dependency: (`%s` `%s` `%s`).  Duplicates will be skipped.  "
-                                    "Please update the builder or content to remove the duplicates.",
-                                    builderInfo.m_name.c_str(),
-                                    actualRelativePath.toUtf8().constData(),
-                                    jobDependency.m_sourceFile.ToString().c_str(),
-                                    jobDependency.m_jobKey.c_str(),
-                                    jobDependency.m_platformIdentifier.c_str());
-
-                                AZ_Warning(AssetProcessor::DebugChannel, false, "%s", warningMessage.c_str());
-
-                                newJob.m_warnings.push_back(AZStd::move(warningMessage));
-
+                                // It is not an error or warning to supply the same job dependency
+                                // repeatedly as a duplicate.  It is common for builders to be parsing
+                                // source files which may mention the same dependency repeatedly.
+                                // Rather than require all of them do filtering on their end, it is
+                                // cleaner to do the de-duplication here and drop the duplicates.
+                                
                                 continue;
                             }
 

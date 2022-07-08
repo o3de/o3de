@@ -31,6 +31,8 @@ ShaderResourceGroup TerrainSrg : SRG_Terrain
         float3 m_mainCameraPosition;
         float m_firstLodDistance;
         float m_rcpClodDistance;
+        float m_rcpGridSize;
+        float m_gridToQuadScale;
     };
 
     struct DetailMaterialData
@@ -219,10 +221,9 @@ ShaderResourceGroup TerrainSrg : SRG_Terrain
     // Clipmap Sampler
     Sampler m_clipmapSampler
     {
-        MaxAnisotropy = 16;
-        AddressU = Wrap;
-        AddressV = Wrap;
-        AddressW = Wrap;
+        AddressU = Clamp;
+        AddressV = Clamp;
+        AddressW = Clamp;
     };
     
     // The region of the clipmap that needs update.

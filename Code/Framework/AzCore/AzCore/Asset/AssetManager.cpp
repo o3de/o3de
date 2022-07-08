@@ -177,7 +177,6 @@ namespace AZ::Data
 
             if (m_signalLoaded && loadSucceeded)
             {
-                AZ_Assert(!m_isReload, "OnAssetDataLoaded signal isn't supported for asset reloads.");
                 // This asset has preload dependencies, we need to evaluate whether they're all ready before calling PostLoad
                 AssetLoadBus::Event(asset.GetId(), &AssetLoadBus::Events::OnAssetDataLoaded, asset);
             }
@@ -917,7 +916,8 @@ namespace AZ::Data
         m_ownedAssetContainers.insert({ container.get(), container });
 
         // Only insert a new entry into m_ownedAssetContainerLookup if one doesn't already exist for this container.
-        // Because it's a multimap, it is possible to add duplicate entries by mistake.
+        // Because it's a multimap, it is possible to add duplicate copies of the same AssetContainer by mistake.
+        // Note that the same AssetId can have multiple containers due to different load settings
         bool entryExists = false;
         auto rangeItr = m_ownedAssetContainerLookup.equal_range(assetId);
         for (auto itr = rangeItr.first; itr != rangeItr.second; ++itr)
@@ -1114,6 +1114,59 @@ namespace AZ::Data
         }
 
         return asset;
+    }
+
+    void AssetManager::QueueAssetReload(AZ::Data::Asset<AZ::Data::AssetData> newAsset, bool signalLoaded)
+    {
+        AssetHandler* handler = nullptr;
+
+        // Resolve the asset handler and allocate new data for the reload.
+        {
+            AssetHandlerMap::iterator handlerIt = m_handlers.find(newAsset.GetType());
+
+            if (handlerIt == m_handlers.end())
+            {
+                AZ_Assert(false, "No handler was registered for this asset [type:%s id:%s]!",
+                    newAsset.GetType().ToString<AZ::OSString>().c_str(), newAsset.GetId().ToString<AZ::OSString>().c_str());
+                return;
+            }
+
+            handler = handlerIt->second;
+        }
+
+        AZStd::shared_ptr<AssetDataStream> dataStream;
+        AssetStreamInfo loadInfo = GetModifiedLoadStreamInfoForAsset(newAsset, handler);
+        constexpr bool isReload = true;
+        if (loadInfo.IsValid())
+        {
+            // Create the AssetDataStream instance here so it can claim an asset reference inside the lock (for a total
+            // count of 2 before starting the load), otherwise the refcount will be 1, and the load could be canceled
+            // before it is started, which creates state consistency issues.
+
+            dataStream = AZStd::make_shared<AssetDataStream>(handler->GetAssetBufferAllocator());
+            if (dataStream)
+            {
+                // Currently there isn't a clear use case for needing to adjust priority for reloads so the default load priority is used
+                QueueAsyncStreamLoad(newAsset, dataStream, loadInfo, isReload, handler, {}, signalLoaded);
+            }
+            else
+            {
+                AZ_Assert(
+                    false, "Failed to create dataStream to reload asset %s (%s)", newAsset.GetId().ToString<AZ::OSString>().c_str(),
+                    newAsset.GetHint().c_str());
+                return;
+            }
+        }
+        else
+        {
+            // Asset creation was successful, but asset loading isn't, so trigger the OnAssetError notification
+            AZ_Error(
+                "AssetDatabase", false, "Failed to retrieve required load stream information for asset %s (%s)",
+                newAsset.GetId().ToString<AZ::OSString>().c_str(), newAsset.GetHint().c_str());
+
+            constexpr bool loadSucceeded = false;
+            AssetManager::Instance().PostLoad(newAsset, loadSucceeded, isReload, handler);
+        }
     }
 
     void AssetManager::UpdateDebugStatus(const AZ::Data::Asset<AZ::Data::AssetData>& asset)
@@ -1325,126 +1378,123 @@ namespace AZ::Data
     //=========================================================================
     void AssetManager::ReloadAsset(const AssetId& assetId, AssetLoadBehavior assetReferenceLoadBehavior, bool isAutoReload)
     {
-        AZStd::scoped_lock<AZStd::recursive_mutex> assetLock(m_assetMutex);
-        auto assetIter = m_assets.find(assetId);
+        AZStd::shared_ptr<AssetContainer> container;
+        Asset<AssetData> newAsset;
 
-        if (assetIter == m_assets.end() || assetIter->second->IsLoading())
         {
-            // Only existing assets can be reloaded.
-            return;
-        }
+            AZStd::scoped_lock<AZStd::recursive_mutex> assetLock(m_assetMutex);
+            auto assetIter = m_assets.find(assetId);
 
-        auto reloadIter = m_reloads.find(assetId);
-        if (reloadIter != m_reloads.end())
-        {
-            auto curStatus = reloadIter->second.GetData()->GetStatus();
-            // We don't need another reload if we're in "Queued" state because that reload has not actually begun yet.
-            // If it is in Loading state we want to pass by and allow the new assetData to be created and start the new reload
-            // As the current load could already be stale
-            if (curStatus == AssetData::AssetStatus::Queued)
+            if (assetIter == m_assets.end() || assetIter->second->IsLoading())
             {
+                // Only existing assets can be reloaded.
                 return;
             }
-            else if (curStatus == AssetData::AssetStatus::Loading || curStatus == AssetData::AssetStatus::StreamReady)
+
+            auto reloadIter = m_reloads.find(assetId);
+            if (reloadIter != m_reloads.end())
             {
-                // Don't flood the tick bus - this value will be checked when the asset load completes
-                reloadIter->second->SetRequeue(true);
+                auto curStatus = reloadIter->second.GetData()->GetStatus();
+                // We don't need another reload if we're in "Queued" state because that reload has not actually begun yet.
+                // If it is in Loading state we want to pass by and allow the new assetData to be created and start the new reload
+                // As the current load could already be stale
+                if (curStatus == AssetData::AssetStatus::Queued)
+                {
+                    return;
+                }
+                else if (curStatus == AssetData::AssetStatus::Loading || curStatus == AssetData::AssetStatus::StreamReady)
+                {
+                    // Don't flood the tick bus - this value will be checked when the asset load completes
+                    reloadIter->second->SetRequeue(true);
+                    return;
+                }
+            }
+
+            AssetData* newAssetData = nullptr;
+            AssetHandler* handler = nullptr;
+
+            bool preventAutoReload = isAutoReload && assetIter->second && !assetIter->second->HandleAutoReload();
+
+            // when Asset<T>'s constructor is called (the one that takes an AssetData), it updates the AssetID
+            // of the Asset<T> to be the real latest canonical assetId of the asset, so we cache that here instead of have it happen
+            // implicitly and repeatedly for anything we call.
+            Asset<AssetData> currentAsset(assetIter->second, AZ::Data::AssetLoadBehavior::Default);
+
+            if (!assetIter->second->IsRegisterReadonlyAndShareable() && !preventAutoReload)
+            {
+                // Reloading an "instance asset" is basically a no-op.
+                // We'll simply notify users to reload the asset.
+                AssetBus::QueueFunction(&AssetManager::NotifyAssetReloaded, this, currentAsset);
                 return;
-            }
-        }
-
-        AssetData* newAssetData = nullptr;
-        AssetHandler* handler = nullptr;
-
-        bool preventAutoReload = isAutoReload && assetIter->second && !assetIter->second->HandleAutoReload();
-
-        // when Asset<T>'s constructor is called (the one that takes an AssetData), it updates the AssetID
-        // of the Asset<T> to be the real latest canonical assetId of the asset, so we cache that here instead of have it happen
-        // implicitly and repeatedly for anything we call.
-        Asset<AssetData> currentAsset(assetIter->second, AZ::Data::AssetLoadBehavior::Default);
-
-        if (!assetIter->second->IsRegisterReadonlyAndShareable() && !preventAutoReload)
-        {
-            // Reloading an "instance asset" is basically a no-op.
-            // We'll simply notify users to reload the asset.
-            AssetBus::QueueFunction(&AssetManager::NotifyAssetReloaded, this, currentAsset);
-            return;
-        }
-        else
-        {
-            AssetBus::QueueFunction(&AssetManager::NotifyAssetPreReload, this, currentAsset);
-        }
-
-        // Current AssetData has requested not to be auto reloaded
-        if (preventAutoReload)
-        {
-            return;
-        }
-
-        // Resolve the asset handler and allocate new data for the reload.
-        {
-            AssetHandlerMap::iterator handlerIt = m_handlers.find(currentAsset.GetType());
-            AZ_Assert(handlerIt != m_handlers.end(), "No handler was registered for this asset [type:%s id:%s]!",
-                currentAsset.GetType().ToString<AZ::OSString>().c_str(), currentAsset.GetId().ToString<AZ::OSString>().c_str());
-            handler = handlerIt->second;
-
-            newAssetData = handler->CreateAsset(currentAsset.GetId(), currentAsset.GetType());
-            if (newAssetData)
-            {
-                newAssetData->m_assetId = currentAsset.GetId();
-                newAssetData->RegisterWithHandler(handler);
-            }
-        }
-
-        if (newAssetData)
-        {
-            // For reloaded assets, we need to hold an internal reference to ensure the data
-            // isn't immediately destroyed. Since reloads are not a shipping feature, we'll
-            // hold this reference indefinitely, but we'll only hold the most recent one for
-            // a given asset Id.
-
-            newAssetData->m_status = AssetData::AssetStatus::Queued;
-            Asset<AssetData> newAsset(newAssetData, assetReferenceLoadBehavior);
-
-            m_reloads[newAsset.GetId()] = newAsset;
-
-            UpdateDebugStatus(newAsset);
-
-            AZStd::shared_ptr<AssetDataStream> dataStream;
-            AssetStreamInfo loadInfo = GetModifiedLoadStreamInfoForAsset(newAsset, handler);
-            constexpr bool isReload = true;
-            if (loadInfo.IsValid())
-            {
-                // Create the AssetDataStream instance here so it can claim an asset reference inside the lock (for a total
-                // count of 2 before starting the load), otherwise the refcount will be 1, and the load could be canceled
-                // before it is started, which creates state consistency issues.
-
-                dataStream = AZStd::make_shared<AssetDataStream>(handler->GetAssetBufferAllocator());
-                if (dataStream)
-                {
-                    // Currently there isn't a clear use case for needing to adjust priority for reloads so the default load priority is used
-                    constexpr bool signalLoaded = false;    // this is a reload, so don't signal dependent-asset loads
-                    QueueAsyncStreamLoad(newAsset, dataStream, loadInfo, isReload,
-                        handler, {}, signalLoaded);
-                }
-                else
-                {
-                    AZ_Assert(false, "Failed to create dataStream to reload asset %s (%s)",
-                        newAsset.GetId().ToString<AZ::OSString>().c_str(),
-                        newAsset.GetHint().c_str());
-                }
             }
             else
             {
-                // Asset creation was successful, but asset loading isn't, so trigger the OnAssetError notification
-                AZ_Error("AssetDatabase", false, "Failed to retrieve required information for asset %s (%s)",
-                    newAsset.GetId().ToString<AZ::OSString>().c_str(),
-                    newAsset.GetHint().c_str());
-
-                constexpr bool loadSucceeded = false;
-                AssetManager::Instance().PostLoad(newAsset, loadSucceeded, isReload, handler);
+                AssetBus::QueueFunction(&AssetManager::NotifyAssetPreReload, this, currentAsset);
             }
 
+            // Current AssetData has requested not to be auto reloaded
+            if (preventAutoReload)
+            {
+                return;
+            }
+
+            // Resolve the asset handler and allocate new data for the reload.
+            {
+                AssetHandlerMap::iterator handlerIt = m_handlers.find(currentAsset.GetType());
+                AZ_Assert(handlerIt != m_handlers.end(), "No handler was registered for this asset [type:%s id:%s]!",
+                    currentAsset.GetType().ToString<AZ::OSString>().c_str(), currentAsset.GetId().ToString<AZ::OSString>().c_str());
+                handler = handlerIt->second;
+
+                newAssetData = handler->CreateAsset(currentAsset.GetId(), currentAsset.GetType());
+                if (newAssetData)
+                {
+                    newAssetData->m_assetId = currentAsset.GetId();
+                    newAssetData->RegisterWithHandler(handler);
+                }
+            }
+
+            if (newAssetData)
+            {
+                // For reloaded assets, we need to hold an internal reference to ensure the data
+                // isn't immediately destroyed. Since reloads are not a shipping feature, we'll
+                // hold this reference indefinitely, but we'll only hold the most recent one for
+                // a given asset Id.
+
+                newAssetData->m_status = AssetData::AssetStatus::Queued;
+                newAsset = Asset<AssetData>(newAssetData, assetReferenceLoadBehavior);
+
+                m_reloads[newAsset.GetId()] = newAsset;
+
+                UpdateDebugStatus(newAsset);
+            }
+        }
+
+        AZStd::scoped_lock lock(m_assetContainerMutex);
+        container = GetAssetContainer(newAsset, {}, true);
+
+        if (container)
+        {
+            m_ownedAssetContainers.insert({ container.get(), container });
+
+            // Only insert a new entry into m_ownedAssetContainerLookup if one doesn't already exist for this container.
+            // Because it's a multimap, it is possible to add duplicate copies of the same AssetContainer by mistake.
+            // Note that the same AssetId can have multiple containers due to different load settings
+            bool entryExists = false;
+            auto rangeItr = m_ownedAssetContainerLookup.equal_range(assetId);
+            for (auto itr = rangeItr.first; itr != rangeItr.second; ++itr)
+            {
+                if (itr->second == container.get())
+                {
+                    entryExists = true;
+                    break;
+                }
+            }
+
+            // Entry for this container doesn't exist yet, so add it.
+            if (!entryExists)
+            {
+                m_ownedAssetContainerLookup.insert({ assetId, container.get() });
+            }
         }
     }
 
@@ -2148,7 +2198,7 @@ namespace AZ::Data
         UnregisterAssetLoading(asset);
     }
 
-    AZStd::shared_ptr<AssetContainer> AssetManager::GetAssetContainer(Asset<AssetData> asset, const AssetLoadParameters& loadParams)
+    AZStd::shared_ptr<AssetContainer> AssetManager::GetAssetContainer(Asset<AssetData> asset, const AssetLoadParameters& loadParams, bool isReload)
     {
         // If we're doing a custom load through a filter just hand back a one off container
         if (loadParams.m_assetLoadFilterCB)
@@ -2163,24 +2213,26 @@ namespace AZ::Data
         if (curIter != m_assetContainers.end())
         {
             auto newRef = curIter->second.lock();
-            if (newRef && newRef->IsValid())
+            // Note, is isReload is true, then do not attempt to return an existing container.
+            // The reload system will only request a container when it really wants a new container.
+            if (newRef && newRef->IsValid() && !isReload)
             {
                 return newRef;
             }
-            auto newContainer = CreateAssetContainer(asset, loadParams);
+            auto newContainer = CreateAssetContainer(asset, loadParams, isReload);
             curIter->second = newContainer;
             return newContainer;
         }
-        auto newContainer = CreateAssetContainer(asset, loadParams);
+        auto newContainer = CreateAssetContainer(asset, loadParams, isReload);
 
         m_assetContainers.insert({ containerKey, newContainer });
 
         return newContainer;
     }
 
-    AZStd::shared_ptr<AssetContainer> AssetManager::CreateAssetContainer(Asset<AssetData> asset, const AssetLoadParameters& loadParams) const
+    AZStd::shared_ptr<AssetContainer> AssetManager::CreateAssetContainer(Asset<AssetData> asset, const AssetLoadParameters& loadParams, bool isReload) const
     {
-        return AZStd::shared_ptr<AssetContainer>( aznew AssetContainer(AZStd::move(asset), loadParams));
+        return AZStd::shared_ptr<AssetContainer>( aznew AssetContainer(AZStd::move(asset), loadParams, isReload));
     }
 } // namespace AZ::Data
 

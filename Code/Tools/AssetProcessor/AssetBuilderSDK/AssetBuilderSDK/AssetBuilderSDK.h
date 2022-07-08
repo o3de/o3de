@@ -201,6 +201,9 @@ namespace AssetBuilderSDK
     class FilePatternMatcher
     {
     public:
+        AZ_CLASS_ALLOCATOR(FilePatternMatcher, AZ::SystemAllocator, 0);
+        AZ_TYPE_INFO(FilePatternMatcher, "{3649C0D9-D9D5-4878-B14B-C7E1E1137894}");
+
         FilePatternMatcher() = default;
         explicit FilePatternMatcher(const AssetBuilderSDK::AssetBuilderPattern& pattern);
         FilePatternMatcher(const AZStd::string& pattern, AssetBuilderSDK::AssetBuilderPattern::PatternType type);
