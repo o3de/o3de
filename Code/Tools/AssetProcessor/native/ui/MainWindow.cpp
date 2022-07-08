@@ -458,6 +458,11 @@ void MainWindow::Activate()
     connect(m_guiApplicationManager->GetRCController(), &AssetProcessor::RCController::JobStatusChanged, m_jobsModel, &AssetProcessor::JobsModel::OnJobStatusChanged);
     connect(m_guiApplicationManager->GetAssetProcessorManager(), &AssetProcessor::AssetProcessorManager::JobRemoved, m_jobsModel, &AssetProcessor::JobsModel::OnJobRemoved);
     connect(m_guiApplicationManager->GetAssetProcessorManager(), &AssetProcessor::AssetProcessorManager::SourceDeleted, m_jobsModel, &AssetProcessor::JobsModel::OnSourceRemoved);
+    connect(
+        m_guiApplicationManager->GetAssetProcessorManager(),
+        &AssetProcessor::AssetProcessorManager::JobProcessDurationChanged,
+        m_jobsModel,
+        &AssetProcessor::JobsModel::OnJobProcessDurationChanged);
 
     connect(ui->jobTreeView, &AzQtComponents::TableView::customContextMenuRequested, this, &MainWindow::ShowJobViewContextMenu);
     connect(ui->jobContextLogTableView, &AzQtComponents::TableView::customContextMenuRequested, this, &MainWindow::ShowLogLineContextMenu);

@@ -15,6 +15,7 @@ import subprocess
 import sys
 import time
 import pathlib
+import shutil
 
 from distutils.version import LooseVersion
 
@@ -48,7 +49,7 @@ class AndroidDeployment(object):
     DEPLOY_ASSETS_ONLY = 'ASSETS'
     DEPLOY_BOTH = 'BOTH'
 
-    def __init__(self, dev_root, build_dir, configuration, android_device_filter, clean_deploy, android_sdk_path, deployment_type, game_name=None, asset_mode=None, asset_type=None, embedded_assets=True, is_unit_test=False):
+    def __init__(self, dev_root, build_dir, configuration, android_device_filter, clean_deploy, android_sdk_path, deployment_type, game_name=None, asset_mode=None, asset_type=None, embedded_assets=True, is_unit_test=False, kill_adb_server=False):
         """
         Initialize the Android Deployment Worker
 
@@ -62,6 +63,7 @@ class AndroidDeployment(object):
         :param asset_type:              The asset type. None if is_test_project is True
         :param embedded_assets:         Boolean to indicate if the assets are embedded in the APK or not
         :param is_unit_test:            Boolean to indicate if this is a unit test deployment
+        :param kill_adb_server:         Boolean to indicate if it should kill adb server at the end of deployment
         """
 
         self.dev_root = pathlib.Path(dev_root)
@@ -84,17 +86,23 @@ class AndroidDeployment(object):
 
         self.is_test_project = is_unit_test
 
-        if not self.is_test_project:
+        self.kill_adb_server = kill_adb_server
 
-            if embedded_assets:
-                # If the assets are embedded, then warn that both APK and ASSETS will be deployed even if 'BOTH' is not specified
-                if deployment_type in (AndroidDeployment.DEPLOY_APK_ONLY, AndroidDeployment.DEPLOY_ASSETS_ONLY):
-                    logging.warning(f"Deployment type of {deployment_type} set but the assets are embedded in the APK. Both the APK and the Assets will be deployed.")
+        if self.embedded_assets:
+            if self.deployment_type == AndroidDeployment.DEPLOY_ASSETS_ONLY:
+                raise common.LmbrCmdError(f"Deployment type {deployment_type} set but the assets are embedded in the APK. To deploy assets, build the APK again.")
+
+            # If assets are embedded in the APK then deploying both (apk and assets) just means deploy the APK.
+            if self.deployment_type == AndroidDeployment.DEPLOY_BOTH:
+                self.deployment_type = AndroidDeployment.DEPLOY_APK_ONLY
+
+        if not self.is_test_project:
 
             if asset_mode == 'PAK':
                 self.local_asset_path = self.dev_root / 'Pak' / f'{game_name.lower()}_{asset_type}_paks'
             else:
-                self.local_asset_path = self.dev_root / game_name / 'Cache' / asset_type
+                # Assets layout folder when assets are not included into APK is 'app/src/assets'
+                self.local_asset_path = self.build_dir / 'app/src/assets'
 
             assert game_name is not None, f"'game_name' is required"
             self.game_name = game_name
@@ -129,14 +137,14 @@ class AndroidDeployment(object):
     @staticmethod
     def read_android_settings(dev_root, game_name):
         """
-        Read and parse the project.json file into a dictionary to process the specific attributes needed for the manifest template
+        Read and parse the android_project.json file into a dictionary to process the specific attributes needed for the manifest template
 
         :param dev_root:    The dev root we are working from
         :param game_name:   Name of the game under the dev root
         :return: The android settings for the game project if any
         """
         game_folder = dev_root / game_name
-        game_folder_project_properties_path = game_folder / 'project.json'
+        game_folder_project_properties_path = game_folder / 'Platform' / 'Android' / 'android_project.json'
         game_project_properties_content = game_folder_project_properties_path.resolve(strict=True)\
                                                                              .read_text(encoding=common.DEFAULT_TEXT_READ_ENCODING,
                                                                                         errors=common.ENCODING_ERROR_HANDLINGS)
@@ -149,15 +157,20 @@ class AndroidDeployment(object):
     @staticmethod
     def resolve_adb_tool(android_sdk_path):
         """
-        Resolve the location of the adb tool based on the input Android SDK Path
+        Resolve the location of the adb tool, first check if the system can
+        find one, otherwise look for it based on the input Android SDK Path.
         :param android_sdk_path: The android SDK path to search for the adb tool
         :return: The absolute path to the adb tool
         """
-        adb_target = 'adb.exe' if platform.system() == 'Windows' else 'adb'
-        check_adb_target = android_sdk_path / 'platform-tools' / adb_target
-        if not check_adb_target.exists():
-            raise common.LmbrCmdError(f"Invalid Android SDK path '{str(android_sdk_path)}': Unable to locate '{adb_target}'.")
-        return check_adb_target
+        adb_target = shutil.which('adb')
+        if adb_target:
+            return pathlib.Path(adb_target)
+        else:
+            adb_target = 'adb.exe' if platform.system() == 'Windows' else 'adb'
+            check_adb_target = android_sdk_path / 'platform-tools' / adb_target
+            if not check_adb_target.exists():
+                raise common.LmbrCmdError(f"Invalid Android SDK path '{str(android_sdk_path)}': Unable to locate '{adb_target}'.")
+            return check_adb_target
 
     def get_android_project_settings(self, key_name, default_value):
         return self.android_settings.get(key_name, default_value)
@@ -437,8 +450,8 @@ class AndroidDeployment(object):
 
         android_package_name = self.get_android_project_settings(key_name='package_name',
                                                                  default_value='org.o3de.sdk')
-        relative_assets_path = f'Android/data/{android_package_name}/files'
-        output_target = f'{detected_storage}/{relative_assets_path}'
+        output_package = f'{detected_storage}/Android/data/{android_package_name}'
+        output_target = f'{output_package}/files'
         device_timestamp_file = f'{output_target}/{ANDROID_TARGET_TIMESTAMP_FILENAME}'
 
         # Track the current timestamp if possible to see if we can incrementally push files rather
@@ -452,22 +465,27 @@ class AndroidDeployment(object):
                            device_id=target_device)
             logging.info(f"Device '{target_device}': Target cleaned.")
 
-        settings_registry_src = self.build_dir / 'app/src/main/assets/Registry'
-        settings_registry_dst = f'{output_target}/Registry'
+        # On certain devices pushing files with adb fails with 'remote secure_mkdirs failed' error.
+        # Creating all dirs first on target to surpass the issue.
+        self.adb_shell(command=f'mkdir {output_package}', device_id=target_device)
+        self.adb_shell(command=f'mkdir {output_target}', device_id=target_device)
+        for asset_path in self.files_in_asset_path:
+            if asset_path.is_dir():
+                relative_path = asset_path.relative_to(self.local_asset_path).as_posix()
+                target_path = f"{output_target}/{relative_path}"
+                self.adb_shell(command=f'mkdir {target_path}', device_id=target_device)
 
         if self.clean_deploy or not target_timestamp:
-            logging.info(f"Device '{target_device}': Pushing {len(self.files_in_asset_path)} files from {str(self.local_asset_path.resolve())} to device ...")
-            paths_to_deploy = [(str(self.local_asset_path.resolve()), output_target),
-                               (str(settings_registry_src), settings_registry_dst)]
-            for path_to_deploy, target_path in paths_to_deploy:
-                try:
-                    self.adb_call(arg_list=['push', str(path_to_deploy), target_path],
-                                  device_id=target_device)
-                except common.LmbrCmdError as err:
-                    # Something went wrong, clean up before leaving
-                    self.adb_shell(command=f'rm -rf {output_target}',
-                                   device_id=target_device)
-                    raise err
+            logging.info(f"Device '{target_device}': Pushing {len(self.files_in_asset_path)} files from {str(self.local_asset_path)} to device {output_target} ...")
+            try:
+                # '/.' is necessary in the source path to not copy folder 'assets' to destination, but its content.
+                self.adb_call(arg_list=['push', f'{str(self.local_asset_path)}/.', output_target],
+                                device_id=target_device)
+            except common.LmbrCmdError as err:
+                # Something went wrong, clean up before leaving
+                self.adb_shell(command=f'rm -rf {output_target}',
+                                device_id=target_device)
+                raise err
 
         else:
             # If no clean was specified, individually inspect all files to see if it needs to be updated
@@ -478,17 +496,13 @@ class AndroidDeployment(object):
                     files_to_copy.append(asset_file)
 
             if len(files_to_copy) > 0:
-                logging.info(f"Copying {len(files_to_copy)} assets to device  {target_device}")
+                logging.info(f"Copying {len(files_to_copy)} assets to device {target_device}")
 
             for src_path in files_to_copy:
-                relative_path = os.path.relpath(str(src_path), str(self.local_asset_path)).replace('\\', '/')
+                relative_path = src_path.relative_to(self.local_asset_path).as_posix()
                 target_path = f"{output_target}/{relative_path}"
                 self.adb_call(arg_list=['push', str(src_path), target_path],
                               device_id=target_device)
-
-            # Always update the settings registry
-            self.adb_call(arg_list=['push', str(settings_registry_src), settings_registry_dst],
-                          device_id=target_device)
 
         self.update_device_file_timestamp(relative_assets_path=output_target,
                                           device_id=target_device)
@@ -502,11 +516,11 @@ class AndroidDeployment(object):
             if not self.apk_path.is_file():
                 raise common.LmbrCmdError(f"Missing apk for {android_support.TEST_RUNNER_PROJECT} ({str(self.apk_path)}). Make sure it is built and is set as a signed APK.")
         else:
-            if self.embedded_assets or self.deployment_type in (AndroidDeployment.DEPLOY_APK_ONLY, AndroidDeployment.DEPLOY_BOTH):
+            if self.deployment_type in (AndroidDeployment.DEPLOY_APK_ONLY, AndroidDeployment.DEPLOY_BOTH):
                 if not self.apk_path.is_file():
                     raise common.LmbrCmdError(f"Missing apk for game {self.game_name} ({str(self.apk_path)}). Make sure it is built and is set as a signed APK.")
 
-            if not self.embedded_assets or self.deployment_type in (AndroidDeployment.DEPLOY_ASSETS_ONLY, AndroidDeployment.DEPLOY_BOTH):
+            if self.deployment_type in (AndroidDeployment.DEPLOY_ASSETS_ONLY, AndroidDeployment.DEPLOY_BOTH):
                 if not self.local_asset_path.is_dir():
                     raise common.LmbrCmdError(f"Missing {self.asset_type} assets for game {self.game_name} .")
 
@@ -532,23 +546,22 @@ class AndroidDeployment(object):
                     self.install_apk_to_device(target_device=target_device)
                 else:
                     # Otherwise install the apk and assets based on the deployment type
-                    if self.embedded_assets or self.deployment_type in (AndroidDeployment.DEPLOY_APK_ONLY, AndroidDeployment.DEPLOY_BOTH):
+                    if self.deployment_type in (AndroidDeployment.DEPLOY_APK_ONLY, AndroidDeployment.DEPLOY_BOTH):
                         self.install_apk_to_device(target_device=target_device)
 
-                    if not self.embedded_assets and self.deployment_type in (AndroidDeployment.DEPLOY_ASSETS_ONLY, AndroidDeployment.DEPLOY_BOTH):
-                        if self.deployment_type == AndroidDeployment.DEPLOY_ASSETS_ONLY:
-                            # If we are deploying assets only without an APK, make sure the APK is even installed first
-                            android_package_name = self.get_android_project_settings(key_name='package_name',
-                                                                                     default_value='org.o3de.sdk')
-                            if not self.check_package_installed(package_name=android_package_name,
-                                                                target_device=target_device):
-                                raise common.LmbrCmdError(f"Unable to locate APK for {self.game_name} on device '{target_device}'. Make sure it is installed "
-                                                          f"first before installing the assets.")
+                    if self.deployment_type in (AndroidDeployment.DEPLOY_ASSETS_ONLY, AndroidDeployment.DEPLOY_BOTH):
+                        # Make sure the APK is installed first
+                        android_package_name = self.get_android_project_settings(key_name='package_name',
+                                                                                    default_value='org.o3de.sdk')
+                        if not self.check_package_installed(package_name=android_package_name,
+                                                            target_device=target_device):
+                            raise common.LmbrCmdError(f"Unable to locate APK for {self.game_name} on device '{target_device}'. Make sure it is installed "
+                                                        f"first before installing the assets.")
 
                         self.install_assets_to_device(detected_storage=detected_storage,
                                                       target_device=target_device)
 
                 logging.info(f"{self.game_name} deployed to device {target_device}")
         finally:
-            if self.adb_started:
+            if self.adb_started and self.kill_adb_server:
                 self.adb_call('kill-server')

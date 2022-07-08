@@ -129,6 +129,7 @@ namespace EMotionFX
         void SetJointScaleSamples(size_t jointDataIndex, const Vector3Track& track);
         AZ::Vector3 SampleJointScale(float sampleTime, size_t jointDataIndex) const override;
 #endif
+        void ExtractMotion(size_t sampleJointDataIndex, size_t rootJointDataIndex, bool transitionZeroXAxis, bool transitionZeroYAxis, bool extractRotation) override;
 
         NonUniformMotionData& operator=(const NonUniformMotionData& sourceMotionData);
 

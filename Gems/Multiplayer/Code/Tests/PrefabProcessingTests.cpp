@@ -53,7 +53,7 @@ namespace UnitTest
             entities.emplace_back(CreateSourceEntity(m_netEntityName.c_str(), true, AZ::Transform::CreateIdentity()));
 
             // Convert the entities into prefab. Note: This will transfer the ownership of AZ::Entity* into Prefab
-            ConvertEntitiesToPrefab(entities, m_prefabDom);
+            ConvertEntitiesToPrefab(entities, m_prefabDom, "test/path");
         }
 
         void TearDown() override
@@ -61,10 +61,10 @@ namespace UnitTest
             AZ::Interface<AzToolsFramework::Prefab::PrefabSystemComponentInterface>::Get()->RemoveAllTemplates();
         }
 
-        static void ConvertEntitiesToPrefab(const AZStd::vector<AZ::Entity*>& entities, AzToolsFramework::Prefab::PrefabDom& prefabDom)
+        static void ConvertEntitiesToPrefab(const AZStd::vector<AZ::Entity*>& entities, AzToolsFramework::Prefab::PrefabDom& prefabDom, AZ::IO::PathView filePath)
         {
             auto* prefabSystem = AZ::Interface<AzToolsFramework::Prefab::PrefabSystemComponentInterface>::Get();
-            AZStd::unique_ptr<AzToolsFramework::Prefab::Instance> sourceInstance(prefabSystem->CreatePrefab(entities, {}, "test/path"));
+            AZStd::unique_ptr<AzToolsFramework::Prefab::Instance> sourceInstance(prefabSystem->CreatePrefab(entities, {}, filePath));
             ASSERT_TRUE(sourceInstance);
 
             auto& prefabTemplateDom = prefabSystem->FindTemplateDom(sourceInstance->GetTemplateId());
@@ -92,6 +92,27 @@ namespace UnitTest
             }
 
             return entity;
+        }
+
+        static bool IsChildAfterParent(const AZStd::string& childName, const AZStd::string& parentName, const AzFramework::Spawnable::EntityList& entityList)
+        {
+            int parentIndex = -1;
+            int childIndex = -1;
+            for (int i = 0; i < entityList.size(); ++i)
+            {
+                if ((entityList[i]->GetName() == parentName) && (parentIndex == -1))
+                {
+                    parentIndex = i;
+                }
+                if ((entityList[i]->GetName() == childName) && (childIndex == -1))
+                {
+                    childIndex = i;
+                }
+            }
+
+            EXPECT_NE(childIndex, -1);
+            EXPECT_NE(parentIndex, -1);
+            return childIndex > parentIndex;
         }
 
         const AZStd::string m_staticEntityName = "static_floor";
@@ -167,5 +188,63 @@ namespace UnitTest
         const EntityAliasStore& alias = aliases[0];
         EXPECT_EQ(alias.m_aliasType, AzFramework::Spawnable::EntityAliasType::Replace);
         EXPECT_EQ(alias.m_tag, Multiplayer::NetworkEntityManager::NetworkEntityTag);
+    }
+
+    TEST_F(PrefabProcessingTestFixture, NetworkPrefabProcessor_ProcessPrefabEntityHierarchy_EntitiesSorted)
+    {
+        using AzToolsFramework::Prefab::PrefabConversionUtils::PrefabProcessorContext;
+
+        const AZStd::string parentName = "static_parent";
+        const AZStd::string childName = "networked_child";
+        const AZStd::string childOfChildName = "networked_childOfChild";
+
+        // Create test entities with the following hierarchy:
+        // static parent
+        // + networked child
+        //   + networked child
+        AZStd::vector<AZ::Entity*> entities;
+        AZ::Entity* parent = entities.emplace_back(CreateSourceEntity(parentName.c_str(), false, AZ::Transform::CreateIdentity()));
+        AZ::Entity* child = entities.emplace_back(CreateSourceEntity(childName.c_str(), true, AZ::Transform::CreateIdentity(), parent));
+        entities.emplace_back(CreateSourceEntity(childOfChildName.c_str(), true, AZ::Transform::CreateIdentity(), child));
+
+        // Convert the entities into prefab. Note: This will transfer the ownership of AZ::Entity* into Prefab
+        AzToolsFramework::Prefab::PrefabDom prefabDom;
+        ConvertEntitiesToPrefab(entities, prefabDom, "test_entities_sorted/path");
+
+        // Add the prefab into the Prefab Processor Context
+        const AZStd::string prefabName = "testPrefab";
+        TestPrefabProcessorContext prefabProcessorContext{ AZ::Uuid::CreateRandom() };
+        AzToolsFramework::Prefab::PrefabConversionUtils::PrefabDocument prefabDocument(prefabName);
+        ASSERT_TRUE(prefabDocument.SetPrefabDom(AZStd::move(prefabDom)));
+        prefabProcessorContext.AddPrefab(AZStd::move(prefabDocument));
+
+        // Request NetworkPrefabProcessor and PrefabCatchmentProcessor to process the prefab
+        Multiplayer::NetworkPrefabProcessor processor;
+        processor.Process(prefabProcessorContext);
+        AzToolsFramework::Prefab::PrefabConversionUtils::PrefabCatchmentProcessor prefabCatchmentProcessor;
+        prefabCatchmentProcessor.Process(prefabProcessorContext);
+        EXPECT_TRUE(prefabProcessorContext.HasCompletedSuccessfully());
+
+        // Verify entities are ordered by parent/child hierarchy
+        const auto& processedObjects = prefabProcessorContext.GetProcessedObjects();
+
+        // Static spawnable
+        {
+            const AZ::Data::AssetData& spawnableAsset = processedObjects[0].GetAsset();
+            const AzFramework::Spawnable* spawnable = azrtti_cast<const AzFramework::Spawnable*>(&spawnableAsset);
+            const AzFramework::Spawnable::EntityList& entityList = spawnable->GetEntities();
+
+            EXPECT_TRUE(IsChildAfterParent(childName, parentName, entityList));
+            EXPECT_TRUE(IsChildAfterParent(childOfChildName, childName, entityList));
+        }
+
+        // Network spawnable
+        {
+            const AZ::Data::AssetData& spawnableAsset = processedObjects[1].GetAsset();
+            const AzFramework::Spawnable* spawnable = azrtti_cast<const AzFramework::Spawnable*>(&spawnableAsset);
+            const AzFramework::Spawnable::EntityList& entityList = spawnable->GetEntities();
+
+            EXPECT_TRUE(IsChildAfterParent(childOfChildName, childName, entityList));
+        }
     }
 } // namespace UnitTest

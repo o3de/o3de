@@ -15,6 +15,9 @@
 #include <AzQtComponents/Components/Widgets/TabWidget.h>
 #endif
 
+class QDragEnterEvent;
+class QDragLeaveEvent;
+class QDropEvent;
 class QMenu;
 
 namespace AtomToolsFramework
@@ -84,6 +87,8 @@ namespace AtomToolsFramework
         void CreateMenus(QMenuBar* menuBar) override;
         void UpdateMenus(QMenuBar* menuBar) override;
 
+        AZStd::vector<AZStd::shared_ptr<DynamicPropertyGroup>> GetSettingsDialogGroups() const override;
+
     protected:
         void AddDocumentTabBar();
         void UpdateRecentFileMenu();
@@ -99,6 +104,10 @@ namespace AtomToolsFramework
         void OnDocumentSaved(const AZ::Uuid& documentId) override;
 
         void closeEvent(QCloseEvent* closeEvent) override;
+        void dragEnterEvent(QDragEnterEvent* event) override;
+        void dragMoveEvent(QDragMoveEvent* event) override;
+        void dragLeaveEvent(QDragLeaveEvent* event) override;
+        void dropEvent(QDropEvent* event) override;
 
         template<typename Functor>
         QAction* CreateActionAtPosition(

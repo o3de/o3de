@@ -261,4 +261,56 @@ namespace UnitTest
         EXPECT_TRUE(AZStd::ranges::any_of(numbers, [](int i) { return i == 3; })) << "At least one number should equal 3";
         EXPECT_FALSE(AZStd::ranges::any_of(numbers, [](int i) { return i == 6; })) << "No number should equal 6";
     }
+
+    TEST_F(RangesAlgorithmTestFixture, RangesForEach_LoopsOverElements_Success)
+    {
+        constexpr AZStd::string_view expectedString = "HelloWorldLongString";
+        constexpr AZStd::array words{ "Hello", "World", "Long", "String" };
+
+        {
+            // Check for_each which accepts iterators
+            AZStd::string resultString;
+            AZStd::ranges::for_each(words.begin(), words.end(), [&resultString](AZStd::string_view elem) { resultString += elem; });
+            EXPECT_EQ(expectedString, resultString);
+        }
+        {
+            // Check for_each which accepts a range
+            AZStd::string resultString;
+            AZStd::ranges::for_each(words, [&resultString](AZStd::string_view elem) { resultString += elem; });
+            EXPECT_EQ(expectedString, resultString);
+        }
+        {
+            // Check for_each_n which accepts an iterator and a count
+            constexpr AZStd::string_view expectedForEachString = "HelloWorld";
+            AZStd::string resultString;
+            AZStd::ranges::for_each_n(words.begin(), 2, [&resultString](AZStd::string_view elem) { resultString += elem; });
+            EXPECT_EQ(expectedForEachString, resultString);
+        }
+    }
+    TEST_F(RangesAlgorithmTestFixture, RangesCount_CountsCharactes_Success)
+    {
+        constexpr AZStd::string_view sourceString = "HelloWorldLongString";
+        constexpr size_t expectedChar_o_count = 3;
+
+        {
+            // Check count which accepts iterators
+            EXPECT_EQ(expectedChar_o_count, AZStd::ranges::count(sourceString.begin(), sourceString.end(), 'o'));
+        }
+        {
+            // Check count which accepts a range
+            EXPECT_EQ(expectedChar_o_count, AZStd::ranges::count(sourceString, 'o'));
+        }
+        {
+            // Check count_if which accepts iterators and a unary predicate
+            constexpr size_t expectedChar_l_count = 3;
+            auto CountLetter_l = [](char elem) { return elem == 'l'; };
+            EXPECT_EQ(expectedChar_l_count, AZStd::ranges::count_if(sourceString.begin(), sourceString.end(), AZStd::move(CountLetter_l)));
+        }
+        {
+            // Check count_if which accepts a range and a unary predicate
+            constexpr size_t expectedChar_r_count = 2;
+            auto CountLetter_r = [](char elem) { return elem == 'r'; };
+            EXPECT_EQ(expectedChar_r_count, AZStd::ranges::count_if(sourceString, AZStd::move(CountLetter_r)));
+        }
+    }
 }

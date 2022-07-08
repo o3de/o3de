@@ -38,7 +38,7 @@ public:
         virtual void GetDefault(bool& val) const = 0;
         virtual void GetDefault(Vec4& val) const = 0;
 
-        AZStd::string m_name;
+        std::string m_name;
 
     protected:
         virtual ~CControlParamBase(){}

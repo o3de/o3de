@@ -51,12 +51,12 @@ namespace EMotionFX::MotionMatching
         void DebugDraw(AzFramework::DebugDisplayRequests& debugDisplay,
             const Pose& currentPose,
             const FeatureMatrix& featureMatrix,
+            const FeatureMatrixTransformer* featureTransformer,
             size_t frameIndex) override;
 
         static void Reflect(AZ::ReflectContext* context);
 
         size_t GetNumDimensions() const override;
         AZStd::string GetDimensionName(size_t index) const override;
-        AZ::Vector3 GetFeatureData(const FeatureMatrix& featureMatrix, size_t frameIndex) const;
     };
 } // namespace EMotionFX::MotionMatching

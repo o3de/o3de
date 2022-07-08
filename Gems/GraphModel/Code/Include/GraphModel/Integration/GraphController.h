@@ -152,13 +152,11 @@ namespace GraphModelIntegration
         ////////////////////////////////////////////////////////////////////////////////////
         // GraphCanvas::GraphModelRequestBus, undo
 
-        // CJS TODO: I put this stuff in to handle making the file as dirty, but it looks like I might be able to get OnSaveDataDirtied to do that instead.
         void RequestUndoPoint() override;
         void RequestPushPreventUndoStateUpdate() override;
         void RequestPopPreventUndoStateUpdate() override;
-        void TriggerUndo() override {}
-        void TriggerRedo() override {}
-
+        void TriggerUndo() override;
+        void TriggerRedo() override;
 
         ////////////////////////////////////////////////////////////////////////////////////
         // GraphCanvas::GraphModelRequestBus, other
@@ -281,6 +279,7 @@ namespace GraphModelIntegration
         AZStd::unordered_map<GraphCanvas::NodeId, AZStd::unordered_map<GraphCanvas::ExtenderId, GraphModel::SlotName>> m_nodeExtenderIds;
 
         bool m_isCreatingConnectionUi = false;
+        int m_preventUndoStateUpdateCount = 0;
     };
        
 

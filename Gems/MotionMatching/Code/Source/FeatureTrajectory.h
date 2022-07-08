@@ -70,6 +70,7 @@ namespace EMotionFX::MotionMatching
         void DebugDraw(AzFramework::DebugDisplayRequests& debugDisplay,
             const Pose& currentPose,
             const FeatureMatrix& featureMatrix,
+            const FeatureMatrixTransformer* featureTransformer,
             size_t frameIndex) override;
 
         void SetNumPastSamplesPerFrame(size_t numHistorySamples);
@@ -121,8 +122,14 @@ namespace EMotionFX::MotionMatching
         Sample GetFeatureData(const FeatureMatrix& featureMatrix, size_t frameIndex, size_t sampleIndex) const;
         void SetFeatureData(FeatureMatrix& featureMatrix, size_t frameIndex, size_t sampleIndex, const Sample& sample);
 
+        Sample GetFeatureDataInverseTransformed(const FeatureMatrix& featureMatrix,
+            const FeatureMatrixTransformer* featureTransformer,
+            size_t frameIndex,
+            size_t sampleIndex) const;
+
         void DebugDrawTrajectory(AzFramework::DebugDisplayRequests& debugDisplay,
             const FeatureMatrix& featureMatrix,
+            const FeatureMatrixTransformer* featureTransformer,
             size_t frameIndex,
             const Transform& transform,
             const AZ::Color& color,

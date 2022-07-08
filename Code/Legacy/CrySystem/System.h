@@ -129,7 +129,7 @@ class CSystem
     , public CrySystemRequestBus::Handler
 {
 public:
-    CSystem(SharedEnvironmentInstance* pSharedEnvironment);
+    CSystem();
     ~CSystem();
 
     static void OnLanguageCVarChanged(ICVar* language);

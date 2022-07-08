@@ -1351,6 +1351,19 @@ namespace LandscapeCanvasEditor
             return;
         }
 
+        // Calling UpdateConnectionData will result in a component property being modified,
+        // which in turn will result in prefab propagation. Because that is delayed until the next
+        // tick, there is a point in time where the OnEntityComponentPropertyChanged event will
+        // be triggered but the property won't be set yet, so when UpdateConnections gets called,
+        // it will think the connection corresponding to that property needs to be removed. So
+        // we need to handle this case by ignoring the next component property change for this entity
+        // since it will already be up-to-date by UpdateConnectionData being invoked
+        if (targetNode)
+        {
+            auto targetBaseNode = static_cast<LandscapeCanvas::BaseNode*>(targetNode.get());
+            m_ignoreEntityComponentPropertyChanges.push_back(targetBaseNode->GetVegetationEntityId());
+        }
+
         // If our target is an extendable slot (e.g. gradient mixer, area blender, etc...) then the element that needs
         // to be set is actually in a container, and might need to be added
         bool elementInContainer = targetSlot->SupportsExtendability();
@@ -1527,13 +1540,15 @@ namespace LandscapeCanvasEditor
                 }, {},
                 AZ::SerializeContext::ENUM_ACCESS_FOR_WRITE, nullptr/* errorHandler */);
 
-            // Update the property with the new EntityId
-            AzToolsFramework::ScopedUndoBatch undoBatch("Update Component Property");
+            {
+                // Update the property with the new EntityId
+                AzToolsFramework::ScopedUndoBatch undoBatch("Update Component Property");
 
-            AzToolsFramework::PropertyTreeEditor pte = AzToolsFramework::PropertyTreeEditor(reinterpret_cast<void*>(component), component->RTTI_GetType());
-            pte.SetProperty(propertyPath.toUtf8().constData(), AZStd::any(newEntityId));
+                AzToolsFramework::PropertyTreeEditor pte = AzToolsFramework::PropertyTreeEditor(reinterpret_cast<void*>(component), component->RTTI_GetType());
+                pte.SetProperty(propertyPath.toUtf8().constData(), AZStd::any(newEntityId));
 
-            undoBatch.MarkEntityDirty(targetBaseNode->GetVegetationEntityId());
+                undoBatch.MarkEntityDirty(targetBaseNode->GetVegetationEntityId());
+            }
 
             // Trigger property editors to update attributes/values or else they might be showing stale data
             // since we are updating the property value directly.
@@ -2525,6 +2540,12 @@ namespace LandscapeCanvasEditor
 
         const AZ::EntityId changedEntityId = *AzToolsFramework::PropertyEditorEntityChangeNotificationBus::GetCurrentBusId();
 
+        auto ignoreIt = AZStd::find(m_ignoreEntityComponentPropertyChanges.begin(), m_ignoreEntityComponentPropertyChanges.end(), changedEntityId);
+        if (ignoreIt != m_ignoreEntityComponentPropertyChanges.end())
+        {
+            return;
+        }
+
         GraphModel::NodePtrList matchingNodes = GetAllNodesMatchingEntity(changedEntityId);
         for (auto node : matchingNodes)
         {
@@ -2597,6 +2618,10 @@ namespace LandscapeCanvasEditor
     {
         // See comment above in OnPrefabInstancePropagationBegin
         m_prefabPropagationInProgress = false;
+
+        // Clear our list of EntityIds to ignore component property change notifications
+        // from since the prefab propagation has completed
+        m_ignoreEntityComponentPropertyChanges.clear();
 
         // After prefab propagation is complete, the entity tied to one of our open
         // graphs might have been deleted (e.g. if a prefab was created from that entity).
@@ -3286,7 +3311,7 @@ namespace LandscapeCanvasEditor
                 // some magic that takes place where they each support an Invalid data type as well as
                 // their specific data type, so instead of comparing the current slot->GetDataType() directly
                 // we need to check the possible data types instead for a  match.
-                const auto& dataTypes = slot->GetPossibleDataTypes();
+                const auto& dataTypes = slot->GetSupportedDataTypes();
                 auto iter = AZStd::find(dataTypes.begin(), dataTypes.end(), dataType);
                 if (iter != dataTypes.end())
                 {

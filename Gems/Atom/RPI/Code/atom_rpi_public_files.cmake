@@ -14,6 +14,7 @@ set(FILES
     Include/Atom/RPI.Public/FeatureProcessor.h
     Include/Atom/RPI.Public/FeatureProcessorFactory.h
     Include/Atom/RPI.Public/MeshDrawPacket.h
+    Include/Atom/RPI.Public/PipelinePassChanges.h
     Include/Atom/RPI.Public/PipelineState.h
     Include/Atom/RPI.Public/RenderPipeline.h
     Include/Atom/RPI.Public/RPISystem.h
@@ -106,6 +107,7 @@ set(FILES
     Source/RPI.Public/FeatureProcessor.cpp
     Source/RPI.Public/FeatureProcessorFactory.cpp
     Source/RPI.Public/MeshDrawPacket.cpp
+    Source/RPI.Public/PipelinePassChanges.cpp
     Source/RPI.Public/PipelineState.cpp
     Source/RPI.Public/RenderPipeline.cpp
     Source/RPI.Public/RPISystem.cpp

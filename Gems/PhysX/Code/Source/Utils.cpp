@@ -212,8 +212,6 @@ namespace PhysX
         void CreatePxGeometryFromHeightfield(
             Physics::HeightfieldShapeConfiguration& heightfieldConfig, physx::PxGeometryHolder& pxGeometry)
         {
-            physx::PxHeightField* heightfield = nullptr;
-
             const AZ::Vector2& gridSpacing = heightfieldConfig.GetGridResolution();
 
             const size_t numCols = heightfieldConfig.GetNumColumnVertices();
@@ -245,10 +243,17 @@ namespace PhysX
             const float scaleFactor = (maxHeightBounds <= minHeightBounds) ? 1.0f : AZStd::numeric_limits<int16_t>::max() / halfBounds;
             const float heightScale{ 1.0f / scaleFactor };
 
-            // Delete the cached heightfield object if it is there, and create a new one and save in the shape configuration
-            heightfieldConfig.SetCachedNativeHeightfield(nullptr);
+            if (physx::PxHeightField* cachedHeightfield
+                = static_cast<physx::PxHeightField*>(heightfieldConfig.GetCachedNativeHeightfield()))
+            {
+                physx::PxHeightFieldGeometry hfGeom(cachedHeightfield, physx::PxMeshGeometryFlags(), heightScale, rowScale, colScale);
+                pxGeometry.storeAny(hfGeom);
+                return;
+            }
 
             AZStd::vector<physx::PxHeightFieldSample> physxSamples = ConvertHeightfieldSamples(heightfieldConfig, 0, 0, numCols, numRows);
+
+            physx::PxHeightField* heightfield = nullptr;
 
             if (!physxSamples.empty())
             {
@@ -1917,7 +1922,7 @@ namespace PhysX
         {
             // Allow to create runtime StaticRigidBodyComponent if there are no components
             // using 'PhysXColliderService' attached to entity.
-            const AZ::Crc32 physxColliderServiceId = AZ_CRC("PhysXColliderService", 0x4ff43f7c);
+            const AZ::Crc32 physxColliderServiceId = AZ_CRC_CE("PhysicsColliderService");
 
             return !EntityHasComponentsUsingService(editorEntity, physxColliderServiceId);
         }
