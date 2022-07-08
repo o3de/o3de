@@ -17,7 +17,7 @@ namespace TrackView
     //! A new pipeline is created (and associated with the scene provided), a callback can be
     //! provided to handle the attachment readback (what to do with the captured frame) and also
     //! what to do after an individual capture fully completes (called in OnCaptureFinished).
-    class AtomOutputFrameCapture : private AZ::Render::FrameCaptureNotificationBus::Handler
+    class AtomOutputFrameCapture : private AZ::Render::FrameCaptureNotificationBus::MultiHandler
     {
     public:
         AtomOutputFrameCapture() = default;
@@ -47,10 +47,10 @@ namespace TrackView
         AZ::RPI::ViewPtr m_targetView; //!< The view that this render pipeline will mimic.
         AZStd::vector<AZStd::string> m_passHierarchy; //!< Pass hierarchy (includes pipelineName and CopyToSwapChain).
         CaptureFinishedCallback m_captureFinishedCallback; //!< Stored callback called from OnCaptureFinished.
-        uint32_t m_frameCaptureId = AZ::Render::FrameCaptureRequests::s_InvalidFrameCaptureId;
+        AZ::Render::FrameCaptureId m_frameCaptureId = AZ::Render::InvalidFrameCaptureId;
 
         // FrameCaptureNotificationBus overrides ...
-        void OnCaptureFinished(uint32_t frameCaptureId, AZ::Render::FrameCaptureResult result, const AZStd::string& info) override;
+        void OnFrameCaptureFinished(AZ::Render::FrameCaptureId frameCaptureId, AZ::Render::FrameCaptureResult result, const AZStd::string& info) override;
     };
 
     inline AZ::EntityId ActiveCameraEntityId()

@@ -1381,7 +1381,14 @@ namespace AZ
 
         virtual bool Connect(BehaviorArgument* id = nullptr) = 0;
 
-        virtual void Disconnect() = 0;
+        virtual void Disconnect(BehaviorArgument* id = nullptr) = 0;
+
+        template<class BusId>
+        bool Disconnect(BusId id)
+        {
+            BehaviorArgument p(&id);
+            return Disconnect(&p);
+        }
 
         virtual bool IsConnected() = 0;
         virtual bool IsConnectedId(BehaviorArgument* id) = 0;
@@ -1991,8 +1998,8 @@ namespace AZ
         AZ_SEQ_FOR_EACH(AZ_BEHAVIOR_EBUS_FUNC_INDEX, AZ_EBUS_SEQ(__VA_ARGS__))\
         return -1;\
     }\
-    void Disconnect() override {\
-        _Handler::BusDisconnect();\
+    void Disconnect(AZ::BehaviorArgument* id = nullptr) override {\
+        AZ::Internal::EBusConnector<_Handler>::Disconnect(this, id);\
     }\
     _Handler(){\
         m_events.resize(FN_MAX);\
@@ -2021,8 +2028,8 @@ namespace AZ
         AZ_SEQ_FOR_EACH(AZ_BEHAVIOR_EBUS_FUNC_INDEX, AZ_EBUS_SEQ(__VA_ARGS__))\
         return -1;\
     }\
-    void Disconnect() override {\
-        _Handler::BusDisconnect();\
+    void Disconnect(AZ::BehaviorArgument* id = nullptr) override {\
+        AZ::Internal::EBusConnector<_Handler>::Disconnect(this, id);\
     }\
     _Handler(){\
         m_events.resize(FN_MAX);\
@@ -2087,8 +2094,8 @@ namespace AZ
         AZ_BEHAVIOR_EBUS_MACRO_CALLER(AZ_BEHAVIOR_EBUS_FUNC_INDEX, __VA_ARGS__)\
         return -1;\
     }\
-    void Disconnect() override {\
-        BusDisconnect();\
+    void Disconnect(AZ::BehaviorArgument* id = nullptr) override {\
+        AZ::Internal::EBusConnector<_Handler>::Disconnect(this, id);\
     }\
     _Handler(){\
         m_events.resize(FN_MAX);\
@@ -4829,6 +4836,16 @@ namespace AZ
                 return false;
             }
 
+            static bool Disconnect(BusHandler* handler, BehaviorArgument* id)
+            {
+                if (id && id->ConvertTo<typename BusHandler::BusType::BusIdType>())
+                {
+                    handler->BusDisconnect(*id->GetAsUnsafe<typename BusHandler::BusType::BusIdType>());
+                    return true;
+                }
+                return false;
+            }
+
             static bool IsConnected(BusHandler* handler)
             {
                 return handler->BusIsConnected();
@@ -4856,6 +4873,13 @@ namespace AZ
             {
                 (void)id;
                 handler->BusConnect();
+                return true;
+            }
+
+            static bool Disconnect(BusHandler* handler, BehaviorArgument* id)
+            {
+                (void)id;
+                handler->BusDisconnect();
                 return true;
             }
 
