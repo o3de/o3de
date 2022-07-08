@@ -28,6 +28,7 @@
 #include <EMotionFX/Source/EMotionFXManager.h>
 #include <EMotionFX/Source/Node.h>
 #include <EMotionFX/Source/SimulatedObjectSetup.h>
+#include <EMotionFX/Source/SimulatedObjectBus.h>
 #include <EMotionFX/Source/AnimGraphStateTransition.h>
 #include <EMotionFX/Source/AnimGraphTransitionCondition.h>
 #include <MCore/Source/Command.h>
@@ -37,16 +38,6 @@
 
 namespace CommandAdjustSimulatedObjectTests
 {
-    namespace AZStd
-    {
-        using namespace ::AZStd;
-    } // namespace AZStd
-    namespace AZ
-    {
-        using namespace ::AZ;
-    } // namespace AZ
-
-
     namespace EMotionFX
     {
         // Import real types from the production namespace
@@ -57,6 +48,7 @@ namespace CommandAdjustSimulatedObjectTests
         using ::EMotionFX::ValueParameter;
         using ::EMotionFX::CommandAllocator;
         using ::EMotionFX::PhysicsSetup;
+        using ::EMotionFX::SimulatedObjectNotificationBus;
 
         // Forward-declare types that will be mocked
         class Actor;
@@ -94,8 +86,10 @@ namespace EMotionFX
 #include <Tests/Mocks/SimulatedJoint.h>
 #include <Tests/Mocks/SimulatedObject.h>
 #include <Tests/Mocks/SimulatedObjectSetup.h>
-#include <EMotionFX/CommandSystem/Source/ParameterMixins.cpp>
-#include <EMotionFX/CommandSystem/Source/SimulatedObjectCommands.cpp>
+#include <EMotionFX/CommandSystem/Source/ParameterMixins_Interface.inl>
+#include <EMotionFX/CommandSystem/Source/ParameterMixins_Impl.inl>
+#include <EMotionFX/CommandSystem/Source/SimulatedObjectCommands_Interface.inl>
+#include <EMotionFX/CommandSystem/Source/SimulatedObjectCommands_Impl.inl>
 } // namespace CommandAdjustSimulatedObjectTests
 
 namespace EMotionFX

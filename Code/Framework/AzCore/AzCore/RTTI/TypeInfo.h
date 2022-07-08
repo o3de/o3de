@@ -8,6 +8,7 @@
 #pragma once
 
 #include <AzCore/std/containers/array.h>
+#include <AzCore/Preprocessor/Enum.h>
 #include <AzCore/std/typetraits/is_pointer.h>
 #include <AzCore/std/typetraits/is_const.h>
 #include <AzCore/std/typetraits/is_enum.h>
@@ -510,7 +511,17 @@ namespace AZ
     struct AzTypeInfo<T, true /* is_enum */>
     {
         typedef typename AZStd::RemoveEnum<T>::type UnderlyingType;
-        static constexpr const char* Name() { return "<enum>"; }
+        static constexpr const char* Name()
+        {
+            if constexpr (AZ::HasAzEnumTraits_v<T>)
+            {
+                return AzEnumTraits<T>::EnumName.data();
+            }
+            else
+            {
+                return "[enum]";
+            }
+        }
         template<typename TypeIdResolverTag = CanonicalTypeIdTag>
         static const AZ::TypeId& Uuid() { static AZ::TypeId nullUuid = AZ::TypeId::CreateNull(); return nullUuid; }
         static constexpr TypeTraits GetTypeTraits()

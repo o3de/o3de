@@ -166,7 +166,7 @@ namespace AzToolsFramework
 
                 QObject::connect(
                     m_actions.back().get(), &QAction::triggered, m_actions.back().get(),
-                    []
+                    [this]
                     {
                         AzToolsFramework::EntityIdList selectedEntities;
                         AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(
@@ -205,7 +205,7 @@ namespace AzToolsFramework
 
                 QObject::connect(
                     m_actions.back().get(), &QAction::triggered, m_actions.back().get(),
-                    []
+                    [this]
                     {
                         ContextMenu_ClosePrefab();
                     });
@@ -291,7 +291,7 @@ namespace AzToolsFramework
 
                                 QObject::connect(
                                     editAction, &QAction::triggered, editAction,
-                                    [selectedEntity]
+                                    [this, selectedEntity]
                                     {
                                         ContextMenu_EditPrefab(selectedEntity);
                                     }
@@ -306,7 +306,7 @@ namespace AzToolsFramework
 
                                 QObject::connect(
                                     editAction, &QAction::triggered, editAction,
-                                    [selectedEntity]
+                                    [this, selectedEntity]
                                     {
                                         ContextMenu_EditPrefab(selectedEntity);
                                     }
@@ -322,7 +322,7 @@ namespace AzToolsFramework
 
                             QObject::connect(
                                 closeAction, &QAction::triggered, closeAction,
-                                []
+                                [this]
                                 {
                                     ContextMenu_ClosePrefab();
                                 }
@@ -369,7 +369,7 @@ namespace AzToolsFramework
 
                             QObject::connect(
                                 createAction, &QAction::triggered, createAction,
-                                [selectedEntities]
+                                [this, selectedEntities]
                                 {
                                     ContextMenu_CreatePrefab(selectedEntities);
                                 }
@@ -389,7 +389,7 @@ namespace AzToolsFramework
                 QAction* detachPrefabAction = menu->addAction(QObject::tr("Detach Prefab..."));
                 QObject::connect(
                     detachPrefabAction, &QAction::triggered, detachPrefabAction,
-                    [selectedEntityId]
+                    [this, selectedEntityId]
                     {
                         ContextMenu_DetachPrefab(selectedEntityId);
                     }
@@ -405,7 +405,7 @@ namespace AzToolsFramework
 
                 QObject::connect(
                     instantiateAction, &QAction::triggered, instantiateAction,
-                    []
+                    [this]
                     {
                         ContextMenu_InstantiatePrefab();
                     }
@@ -419,7 +419,7 @@ namespace AzToolsFramework
 
                     QObject::connect(
                         action, &QAction::triggered, action,
-                        []
+                        [this]
                         {
                             ContextMenu_InstantiateProceduralPrefab();
                         }
@@ -453,7 +453,7 @@ namespace AzToolsFramework
 
                             QObject::connect(
                                 saveAction, &QAction::triggered, saveAction,
-                                [selectedEntity]
+                                [this, selectedEntity]
                                 {
                                     ContextMenu_SavePrefab(selectedEntity);
                                 }
@@ -487,7 +487,7 @@ namespace AzToolsFramework
                     duplicateAction->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_D));
                     QObject::connect(
                         duplicateAction, &QAction::triggered, duplicateAction,
-                        []
+                        [this]
                         {
                             ContextMenu_Duplicate();
                         }
@@ -504,7 +504,7 @@ namespace AzToolsFramework
                 deleteAction->setShortcut(QKeySequence(Qt::Key_Delete));
                 QObject::connect(
                     deleteAction, &QAction::triggered, deleteAction,
-                    []
+                    [this]
                     {
                         ContextMenu_DeleteSelected();
                     }
@@ -710,14 +710,7 @@ namespace AzToolsFramework
 
         void PrefabIntegrationManager::ContextMenu_SavePrefab(AZ::EntityId containerEntity)
         {
-            auto prefabPath = s_prefabPublicInterface->GetOwningInstancePrefabPath(containerEntity);
-
-            auto savePrefabOutcome = s_prefabPublicInterface->SavePrefab(prefabPath);
-
-            if (!savePrefabOutcome.IsSuccess())
-            {
-                WarningDialog("Prefab Save Error", savePrefabOutcome.GetError());
-            }
+            m_prefabSaveHandler.ExecuteSavePrefabDialog(containerEntity);
         }
 
         void PrefabIntegrationManager::ContextMenu_Duplicate()

@@ -275,6 +275,8 @@ namespace LandscapeCanvasEditor
         AZStd::unordered_map<GraphCanvas::GraphId, DeletedNodePositionsMap> m_deletedNodePositions;
         AzToolsFramework::EntityIdList m_queuedEntityDeletes;
 
+        AzToolsFramework::EntityIdList m_ignoreEntityComponentPropertyChanges;
+
         AZStd::unordered_map<AZ::Uuid, AZ::u32> m_wrappedNodeLayoutOrderMap;
 
         /// Keep track of the dock widget for the graph that represents the Vegetation Entity

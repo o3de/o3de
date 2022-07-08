@@ -17,6 +17,7 @@
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/AssetBrowser/AssetSelectionModel.h>
 #include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
+#include <AzToolsFramework/Prefab/Instance/InstanceEntityMapperInterface.h>
 #include <AzToolsFramework/Prefab/PrefabLoaderInterface.h>
 #include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
@@ -77,21 +78,28 @@ namespace AzToolsFramework
             s_prefabLoaderInterface = AZ::Interface<PrefabLoaderInterface>::Get();
             if (s_prefabLoaderInterface == nullptr)
             {
-                AZ_Assert(false, "Prefab - could not get PrefabLoaderInterface on PrefabSaveHandler construction.");
+                AZ_Assert(false, "PrefabSaveHandler - could not get PrefabLoaderInterface on construction.");
                 return;
             }
 
             s_prefabPublicInterface = AZ::Interface<PrefabPublicInterface>::Get();
             if (s_prefabPublicInterface == nullptr)
             {
-                AZ_Assert(false, "Prefab - could not get PrefabPublicInterface on PrefabSaveHandler construction.");
+                AZ_Assert(false, "PrefabSaveHandler - could not get PrefabPublicInterface on construction.");
                 return;
             }
-
+           
             s_prefabSystemComponentInterface = AZ::Interface<PrefabSystemComponentInterface>::Get();
             if (s_prefabSystemComponentInterface == nullptr)
             {
-                AZ_Assert(false, "Prefab - could not get PrefabSystemComponentInterface on PrefabSaveHandler construction.");
+                AZ_Assert(false, "PrefabSaveHandler - could not get PrefabSystemComponentInterface on construction.");
+                return;
+            }
+
+            m_instanceEntityMapperInterface = AZ::Interface<InstanceEntityMapperInterface>::Get();
+            if (m_instanceEntityMapperInterface == nullptr)
+            {
+                AZ_Assert(false, "InstanceEntityMapperInterface - could not get InstanceEntityMapperInterface on construction.");
                 return;
             }
 
@@ -148,6 +156,14 @@ namespace AzToolsFramework
             }
 
             return QDialogButtonBox::DestructiveRole;
+        }
+
+        void PrefabSaveHandler::ExecuteSavePrefabDialog(AZ::EntityId entityId)
+        {
+            if (const InstanceOptionalReference instance = m_instanceEntityMapperInterface->FindOwningInstance(entityId); instance.has_value())
+            {
+                ExecuteSavePrefabDialog(instance->get().GetTemplateId(), true);
+            }
         }
 
         void PrefabSaveHandler::ExecuteSavePrefabDialog(TemplateId templateId, bool useSaveAllPrefabsPreference)
