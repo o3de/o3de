@@ -367,6 +367,34 @@ void CFileUtil::EditTextureFile(const char* textureFile, [[maybe_unused]] bool b
 
 //////////////////////////////////////////////////////////////////////////
 
+void CFileUtil::EditFile(const QString& filename, const Common::EditFileType fileType)
+{
+    QString editor = GetEditorForFileTypeFromPreferences(fileType);
+
+    if (editor.isEmpty())
+    {
+        editor = HandleNoEditorAssigned(fileType);
+    }
+
+    // If editor is still not set, just drop out.
+    if (editor.isEmpty())
+    {
+        return;
+    }
+
+    // Keep trying to open the file if the user changes the editor. If not, just drop out.
+    while (!Platform::RunEditorWithArg(editor, filename))
+    {
+        editor = HandleEditorOpenFailure(fileType, editor);
+        if (editor.isEmpty())
+        {
+            return;
+        }
+    }
+}
+
+//////////////////////////////////////////////////////////////////////////
+
 void CFileUtil::FormatFilterString(QString& filter)
 {
     const int numPipeChars = static_cast<int>(std::count(filter.begin(), filter.end(), '|'));

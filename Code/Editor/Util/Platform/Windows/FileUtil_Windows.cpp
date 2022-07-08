@@ -68,7 +68,7 @@ namespace Platform
         QString strExtension;
         QString strCurrentDirectoryPath;
         QStringList cstrDirectoryQueue;
-        size_t nCurrentPathQueue(0);
+        int nCurrentPathQueue(0);
         size_t nTotalPathQueueElements(0);
         BOOL bnLastDirectoryWasCreated(FALSE);
 
