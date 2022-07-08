@@ -90,7 +90,7 @@ namespace AZ
 #include <Atom/Feature/ScreenSpace/DeferredFogParams.inl>
 #include <Atom/Feature/ParamMacros/EndParams.inl>
 
-            bool m_enabled = false;
+            bool m_enabled = true;
             bool m_useNoiseTextureShaderOption = false;
             bool m_enableFogLayerShaderOption = false;
         };
