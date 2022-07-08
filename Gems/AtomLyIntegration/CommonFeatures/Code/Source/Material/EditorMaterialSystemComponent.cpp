@@ -199,8 +199,12 @@ namespace AZ
         {
             if (auto previewRenderer = AZ::Interface<AtomToolsFramework::PreviewRendererInterface>::Get())
             {
-                static constexpr const char* DefaultModelPath = "models/sphere.azmodel";
-                static constexpr const char* DefaultLightingPresetPath = "lightingpresets/thumbnail.lightingpreset.azasset";
+                // All material previews use the same model and lighting preset assets
+                AZ::Data::Asset<AZ::RPI::ModelAsset> modelAsset;
+                modelAsset.Create(AZ::RPI::AssetUtils::GetAssetIdForProductPath("models/sphere.azmodel"));
+
+                AZ::Data::Asset<AZ::RPI::AnyAsset> lightingPresetAsset;
+                lightingPresetAsset.Create(AZ::RPI::AssetUtils::GetAssetIdForProductPath("lightingpresets/thumbnail.lightingpreset.azasset"));
 
                 for (const auto& materialPreviewRequestPair : m_materialPreviewRequests)
                 {
@@ -210,10 +214,6 @@ namespace AZ
                     AZ::Data::AssetId materialAssetId = {};
                     MaterialComponentRequestBus::EventResult(
                         materialAssetId, entityId, &MaterialComponentRequestBus::Events::GetMaterialAssetId, materialAssignmentId);
-                    if (!materialAssetId.IsValid())
-                    {
-                        return;
-                    }
 
                     AZ::Render::MaterialPropertyOverrideMap propertyOverrides;
                     AZ::Render::MaterialComponentRequestBus::EventResult(
@@ -222,14 +222,9 @@ namespace AZ
                         &AZ::Render::MaterialComponentRequestBus::Events::GetPropertyValues,
                         materialAssignmentId);
 
-                    AZ::Data::Asset<AZ::RPI::ModelAsset> modelAsset;
-                    modelAsset.Create(AZ::RPI::AssetUtils::GetAssetIdForProductPath(DefaultModelPath));
-
+                    // Having an invalid material asset will use the default asset on the model.
                     AZ::Data::Asset<AZ::RPI::MaterialAsset> materialAsset;
                     materialAsset.Create(materialAssetId);
-
-                    AZ::Data::Asset<AZ::RPI::AnyAsset> lightingPresetAsset;
-                    lightingPresetAsset.Create(AZ::RPI::AssetUtils::GetAssetIdForProductPath(DefaultLightingPresetPath));
 
                     previewRenderer->AddCaptureRequest(
                         { MaterialPreviewResolution,
@@ -252,6 +247,15 @@ namespace AZ
                                   "RenderMaterialPreview capture failed for entity %s slot %s.",
                                   entityId.ToString().c_str(),
                                   materialAssignmentId.ToString().c_str());
+
+                              // If the capture failed to render substitute it with a black image
+                              QPixmap pixmap(1, 1);
+                              pixmap.fill(Qt::black);
+                              AZ::Render::EditorMaterialSystemComponentNotificationBus::Broadcast(
+                                  &AZ::Render::EditorMaterialSystemComponentNotificationBus::Events::OnRenderMaterialPreviewRendered,
+                                  entityId,
+                                  materialAssignmentId,
+                                  pixmap);
                           },
                           [entityId, materialAssignmentId](const QPixmap& pixmap)
                           {
