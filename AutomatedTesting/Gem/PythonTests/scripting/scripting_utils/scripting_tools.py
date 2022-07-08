@@ -10,13 +10,16 @@ from PySide2 import QtWidgets, QtTest, QtCore
 from PySide2.QtCore import Qt
 from editor_python_test_tools.utils import Report
 import editor_python_test_tools.pyside_utils as pyside_utils
+import editor_python_test_tools.hydra_editor_utils as hydra
 import azlmbr.editor as editor
+import azlmbr.math as math
 import azlmbr.bus as bus
+import azlmbr.scriptcanvas as scriptcanvas
 from scripting_utils.scripting_constants import (SCRIPT_CANVAS_UI, ASSET_EDITOR_UI, NODE_PALETTE_UI, NODE_PALETTE_QT,
                                                  TREE_VIEW_QT, SEARCH_FRAME_QT, SEARCH_FILTER_QT, SAVE_STRING,
                                                  SAVE_ASSET_AS, WAIT_TIME_3, NODE_INSPECTOR_TITLE_KEY, WAIT_FRAMES,
                                                  VARIABLE_MANAGER_QT, NODE_INSPECTOR_QT, NODE_INSPECTOR_UI, VARIABLE_PALETTE_QT,
-                                                 ADD_BUTTON_QT, VARIABLE_TYPES)
+                                                 ADD_BUTTON_QT, VARIABLE_TYPES, SCRIPT_CANVAS_COMPONENT_PROPERTY_PATH)
 
 
 def click_menu_option(window, option_text):
@@ -271,3 +274,23 @@ def get_sc_editor_node_inspector(sc_editor):
 
     return node_inspector_widget
 
+def create_entity_with_sc_component_asset(entity_name, source_file, position = math.Vector3(512.0, 512.0, 32.0)):
+    """
+    function for creating a new entity in the scene w/ a script canvas component. Function also adds as
+    script canvas file to the script canvas component's source file property.
+
+    param entity_name: the name you want to assign the entity
+    param source_file: the path to  script canvas file to be added to the script canvas component
+    param position: the translation property of the new entity's transform
+
+    returns: the entity created by this function
+    """
+    sourcehandle = scriptcanvas.SourceHandleFromPath(source_file)
+
+    entity = hydra.Entity(entity_name)
+    entity.create_entity(position, ["Script Canvas"])
+
+    script_canvas_component = entity.components[0]
+    hydra.set_component_property_value(script_canvas_component, SCRIPT_CANVAS_COMPONENT_PROPERTY_PATH, sourcehandle)
+
+    return entity
