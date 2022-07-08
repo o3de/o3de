@@ -1304,7 +1304,7 @@ namespace AZ
                 return;
             }
 
-            AZ_Assert(m_state == PassState::Idle, "Pass::FrameBegin - Pass [%s] is attempting to render, but is not in the Idle state.", m_path.GetCStr());
+            AZ_Error("PassSystem", m_state == PassState::Idle, "Pass::FrameBegin - Pass [%s] is attempting to render, but is not in the Idle state.", m_path.GetCStr());
 
             m_state = PassState::Rendering;
 

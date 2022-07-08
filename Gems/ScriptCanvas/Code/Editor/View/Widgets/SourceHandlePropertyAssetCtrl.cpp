@@ -161,7 +161,7 @@ namespace ScriptCanvasEditor
 
         GUI->blockSignals(true);
 
-        GUI->SetSelectedSourcePath(instance.Path());
+        GUI->SetSelectedSourcePath(instance.RelativePath());
         GUI->SetEditNotifyTarget(node->GetParent()->GetInstance(0));
 
         GUI->blockSignals(false);

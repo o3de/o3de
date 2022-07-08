@@ -19,11 +19,22 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
             AutomatedTesting.Assets
     )
 
+    #ly_add_pytest(
+    #    NAME AutomatedTesting::PrefabTests_Periodic
+    #    TEST_SUITE periodic
+    #    TEST_SERIAL
+    #    PATH ${CMAKE_CURRENT_LIST_DIR}/TestSuite_Periodic.py
+    #    RUNTIME_DEPENDENCIES
+    #        Legacy::Editor
+    #        AZ::AssetProcessor
+    #        AutomatedTesting.Assets
+    #)
+
     ly_add_pytest(
-        NAME AutomatedTesting::PrefabTests_Periodic
-        TEST_SUITE periodic
+        NAME AutomatedTesting::PrefabTests_Sandbox
+        TEST_SUITE sandbox
         TEST_SERIAL
-        PATH ${CMAKE_CURRENT_LIST_DIR}/TestSuite_Periodic.py
+        PATH ${CMAKE_CURRENT_LIST_DIR}/TestSuite_Sandbox.py
         RUNTIME_DEPENDENCIES
             Legacy::Editor
             AZ::AssetProcessor

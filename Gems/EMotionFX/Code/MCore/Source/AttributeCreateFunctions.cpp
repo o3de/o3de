@@ -35,7 +35,7 @@ namespace MCore
         return aznew AttributeColor(); 
     }
     
-    AttributeColor* AttributeColor::Create(const RGBAColor& value)
+    AttributeColor* AttributeColor::Create(const AZ::Color& value)
     { 
         AttributeColor* result = aznew AttributeColor();
         result->SetValue(value); 

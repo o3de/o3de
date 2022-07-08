@@ -144,9 +144,9 @@ namespace ScriptCanvasEditor
                 configuration.m_sourceHandle = fromOverrides;
             }
 
-            if (configuration.m_sourceHandle.Path().HasFilename())
+            if (configuration.m_sourceHandle.RelativePath().HasFilename())
             {
-                configuration.m_sourceName = configuration.m_sourceHandle.Path().Native();
+                configuration.m_sourceName = configuration.m_sourceHandle.RelativePath().Native();
             }
 
             if (-1 == rootElement.AddElementWithData(serializeContext, "configuration", overrides))

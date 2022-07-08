@@ -218,7 +218,6 @@ namespace O3DE::ProjectManager
             m_templateIncludedGems->setObjectName("includedGems");
             templateDetailsLayout->addWidget(m_templateIncludedGems);
 
-#ifdef TEMPLATE_GEM_CONFIGURATION_ENABLED
             QLabel* moreGemsLabel = new QLabel(tr("Looking for more Gems?"), this);
             moreGemsLabel->setObjectName("moreGems");
             templateDetailsLayout->addWidget(moreGemsLabel);
@@ -230,11 +229,10 @@ namespace O3DE::ProjectManager
 
             QPushButton* configureGemsButton = new QPushButton(tr("Configure with more Gems"), this);
             connect(configureGemsButton, &QPushButton::clicked, this, [=]()
-                    {
-                        emit ChangeScreenRequest(ProjectManagerScreen::GemCatalog);
-                    });
+                {
+                    emit ChangeScreenRequest(ProjectManagerScreen::ProjectGemCatalog);
+                });
             templateDetailsLayout->addWidget(configureGemsButton);
-#endif // TEMPLATE_GEM_CONFIGURATION_ENABLED 
         }
         projectTemplateDetails->setLayout(templateDetailsLayout);
         return projectTemplateDetails;

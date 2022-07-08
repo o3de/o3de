@@ -538,10 +538,13 @@ namespace AssetProcessor
                     bool runProcessJob = true;
                     if (m_jobDetails.m_checkServer)
                     {
+                        AssetServerMode assetServerMode = AssetServerMode::Inactive;
+                        AssetServerBus::BroadcastResult(assetServerMode, &AssetServerBus::Events::GetRemoteCachingMode);
+
                         QFileInfo fileInfo(builderParams.m_processJobRequest.m_sourceFile.c_str());
                         builderParams.m_serverKey = QString("%1_%2_%3_%4").arg(fileInfo.completeBaseName(), builderParams.m_processJobRequest.m_jobDescription.m_jobKey.c_str(), builderParams.m_processJobRequest.m_platformInfo.m_identifier.c_str()).arg(builderParams.m_rcJob->GetOriginalFingerprint());
                         bool operationResult = false;
-                        if (AssetUtilities::InServerMode())
+                        if (assetServerMode == AssetServerMode::Server)
                         {
                             // sending process job command to the builder
                             builderParams.m_assetBuilderDesc.m_processJobFunction(builderParams.m_processJobRequest, result);
@@ -566,7 +569,7 @@ namespace AssetProcessor
                                 }
                             }
                         }
-                        else
+                        else if (assetServerMode == AssetServerMode::Client)
                         {
                             // running as client, check with the server whether it has already
                             // processed this asset, if not or if the operation fails then process locally

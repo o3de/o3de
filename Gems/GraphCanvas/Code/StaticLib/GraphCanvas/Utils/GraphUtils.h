@@ -52,7 +52,16 @@ namespace GraphCanvas
         ~ScopedGraphUndoBlocker();
 
     private:
+        GraphId m_graphId;
+    };
 
+    class ScopedGraphUndoBatch
+    {
+    public:
+        ScopedGraphUndoBatch(const GraphId& graphId);
+        ~ScopedGraphUndoBatch();
+
+    private:
         GraphId m_graphId;
     };
 

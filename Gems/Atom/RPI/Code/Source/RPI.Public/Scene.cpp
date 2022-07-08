@@ -183,7 +183,7 @@ namespace AZ
             {
                 if (renderPipeline->m_descriptor.m_allowModification)
                 {
-                    renderPipeline->SetPassNeedsRecreate();
+                    renderPipeline->MarkPipelinePassChanges(PipelinePassChanges::PipelineChangedByFeatureProcessor);
                 }
             }
         }

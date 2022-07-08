@@ -35,7 +35,7 @@ namespace AssetProcessor
         return m_connectionId > 0;
     }
 
-    bool Builder::WaitForConnection()
+    AZ::Outcome<void, AZStd::string> Builder::WaitForConnection()
     {
         if (m_startupWaitTimeS == 0)
         {
@@ -72,7 +72,7 @@ namespace AssetProcessor
 
             if (result)
             {
-                return true;
+                return AZ::Success();
             }
 
             AZ::u32 exitCode;
@@ -90,10 +90,10 @@ namespace AssetProcessor
                 AZ_Error("Builder", false, "AssetBuilder failed to connect within %d seconds", m_startupWaitTimeS);
             }
 
-            return false;
+            return AZ::Failure(AZStd::string::format("Connection failed to builder %.*s", AZ_STRING_ARG(UuidString())));
         }
 
-        return true;
+        return AZ::Success();
     }
 
     void Builder::SetConnection(AZ::u32 connId)
@@ -143,7 +143,7 @@ namespace AssetProcessor
         }
     }
 
-    bool Builder::Start(bool doRegistration)
+    AZ::Outcome<void, AZStd::string> Builder::Start(BuilderPurpose purpose)
     {
         // Get the current BinXXX folder based on the current running AP
         QString applicationDir = QCoreApplication::instance()->applicationDirPath();
@@ -157,16 +157,16 @@ namespace AssetProcessor
 
         if (m_quitListener.WasQuitRequested())
         {
-            return false;
+            return AZ::Failure(AZStd::string("Cannot start builder, quit was requested"));
         }
 
-        const AZStd::vector<AZStd::string> params = BuildParams("resident", buildersFolder.c_str(), UuidString(), "", "", doRegistration);
+        const AZStd::vector<AZStd::string> params = BuildParams("resident", buildersFolder.c_str(), UuidString(), "", "", purpose);
 
         m_processWatcher = LaunchProcess(fullExePathString.c_str(), params);
 
         if (!m_processWatcher)
         {
-            return false;
+            return AZ::Failure(AZStd::string::format("Failed to start process watcher for Builder %.*s.", AZ_STRING_ARG(UuidString())));
         }
 
         m_tracePrinter = AZStd::make_unique<ProcessCommunicatorTracePrinter>(m_processWatcher->GetCommunicator(), "AssetBuilder");
@@ -184,7 +184,7 @@ namespace AssetProcessor
         return !m_processWatcher || (m_processWatcher && m_processWatcher->IsProcessRunning(exitCode));
     }
 
-    AZStd::vector<AZStd::string> Builder::BuildParams(const char* task, const char* moduleFilePath, const AZStd::string& builderGuid, const AZStd::string& jobDescriptionFile, const AZStd::string& jobResponseFile, bool doRegistration) const
+    AZStd::vector<AZStd::string> Builder::BuildParams(const char* task, const char* moduleFilePath, const AZStd::string& builderGuid, const AZStd::string& jobDescriptionFile, const AZStd::string& jobResponseFile, BuilderPurpose purpose) const
     {
         QDir projectCacheRoot;
         AssetUtilities::ComputeProjectCacheRoot(projectCacheRoot);
@@ -205,7 +205,7 @@ namespace AssetProcessor
         params.emplace_back(AZStd::string::format(R"(-engine-path="%s")", enginePath.c_str()));
         params.emplace_back(AZStd::string::format("-port=%d", portNumber));
 
-        if(doRegistration)
+        if (purpose == BuilderPurpose::Registration)
         {
             params.emplace_back("--register");
         }
@@ -500,18 +500,33 @@ namespace AssetProcessor
         m_builderDebugOutput[builderId].m_assetsProcessed.push_back(sourceAsset);
     }
 
-    BuilderRef BuilderManager::GetBuilder(bool doRegistration)
+    BuilderRef BuilderManager::GetBuilder(BuilderPurpose purpose)
     {
         AZStd::shared_ptr<Builder> newBuilder;
         BuilderRef builderRef;
+        if (m_quitListener.WasQuitRequested())
+        {
+            // don't hand out new builders if we're quitting.
+            return builderRef;
+        }
 
+        // the below scope is intentional, to contain the scoped lock.
         {
             AZStd::unique_lock<AZStd::mutex> lock(m_buildersMutex);
 
-            if (!doRegistration)
+            if (purpose != BuilderPurpose::Registration)
             {
                 for (auto itr = m_builders.begin(); itr != m_builders.end();)
                 {
+                    if (itr == m_builders.begin() && purpose != BuilderPurpose::CreateJobs)
+                    {
+                        // The first builder is always reserved for create jobs.
+                        // Since there is only ever 1 CreateJobs process happening at once, this means CreateJobs will never have to wait to
+                        // start up a new builder. This is important since CreateJobs is meant to be quick.
+                        ++itr;
+                        continue;
+                    }
+
                     auto& builder = itr->second;
 
                     if (!builder->m_busy)
@@ -543,9 +558,10 @@ namespace AssetProcessor
             builderRef = BuilderRef(newBuilder);
         }
 
-        if (!newBuilder->Start(doRegistration))
+        AZ::Outcome<void, AZStd::string> builderStartResult = newBuilder->Start(purpose);
+        if (!builderStartResult.IsSuccess())
         {
-            AZ_Error("BuilderManager", false, "Builder failed to start");
+            AZ_Error("BuilderManager", false, "Builder failed to start with error %.*s", AZ_STRING_ARG(builderStartResult.GetError()));
 
             AZStd::unique_lock<AZStd::mutex> lock(m_buildersMutex);
 

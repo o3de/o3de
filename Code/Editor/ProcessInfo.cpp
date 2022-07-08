@@ -15,6 +15,14 @@
 #include <mach/mach.h>
 #endif
 
+
+#if defined(AZ_PLATFORM_LINUX)
+#include <AzCore/StringFunc/StringFunc.h>
+#include <AzCore/std/string/string_view.h>
+#include <sys/resource.h>
+#include <stdio.h>
+#endif
+
 #if defined(AZ_PLATFORM_WINDOWS)
 #include "Psapi.h"
 void UnloadPSApi();
@@ -98,5 +106,49 @@ void CProcessInfo::QueryMemInfo(ProcessMemInfo& meminfo)
     {
         meminfo.PageFaultCount = events_info.faults;
     }
+#elif defined(AZ_PLATFORM_LINUX)
+
+    auto parseSize = [](const char* target, const AZStd::string_view& line, int* value)
+    {
+        if (line.starts_with(target))
+        {
+            auto substr = line.substr(strlen(target));
+            if (!substr.empty())
+            {
+                (*value) = (AZ::StringFunc::ToInt(substr.begin()) * 1024);
+                return true;
+            }
+        }
+        return false;
+    };
+
+    FILE* file = fopen("/proc/self/status", "r");
+    char line[128];
+    while (fgets(line, 128, file) != NULL)
+    {
+        const AZStd::string_view currentLine(line);
+        int size = 0;
+        if (parseSize("VmSize:", line, &size))
+        {
+            meminfo.PagefileUsage = size;
+        }
+
+        if (parseSize("VmRSS:", line, &size))
+        {
+            meminfo.WorkingSet = size;
+        }
+
+        if (parseSize("VmPeak:", line, &size))
+        {
+            meminfo.PeakWorkingSet = size;
+        }
+    }
+    struct rusage usage;
+    if (getrusage(RUSAGE_SELF, &usage))
+    {
+        meminfo.PageFaultCount = usage.ru_majflt + usage.ru_minflt;
+    }
+    fclose(file);
+
 #endif
 }

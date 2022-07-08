@@ -57,7 +57,8 @@ void GatherSurfaceDataFromMaterials(
     // ------- Macro Data -------
     float2 positionDdx = ddx(position);
     float2 positionDdy = ddy(position);
-    SampleMacroTexture(position, positionDdx, positionDdy, macroColor, macroNormal);
+    bool hasNormal;
+    SampleMacroTexture(position, positionDdx, positionDdy, macroColor, macroNormal, hasNormal);
 
     // ------- Detail Data -------
     float2 detailUv = position.xy * TerrainMaterialSrg::m_detailTextureMultiplier;
@@ -86,7 +87,10 @@ void GatherSurfaceDataFromClipmaps(
     if (clipmapSample.m_hasMacro)
     {
         macroColor = clipmapSample.m_macroColor;
-        macroNormal = clipmapSample.m_macroNormal;
+        if (clipmapSample.m_hasMacroNormal)
+        {
+            macroNormal = clipmapSample.m_macroNormal;
+        }
     }
     if (detailFactor < 1.0)
     {
