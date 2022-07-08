@@ -100,7 +100,9 @@ namespace AzToolsFramework
             bool m_loaded;
             bool m_addingEntry;
             bool m_removingEntry;
+
             bool GetEntryIndex(AssetBrowserEntry* entry, QModelIndex& index) const;
+            int GetLeftmostColumnInFilter() const;
         };
     } // namespace AssetBrowser
 } // namespace AzToolsFramework
