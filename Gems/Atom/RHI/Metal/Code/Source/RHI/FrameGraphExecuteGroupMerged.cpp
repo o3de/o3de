@@ -30,11 +30,11 @@ namespace AZ
             m_workRequest.m_waitFenceValues = m_scopes.front()->GetWaitFences();
             m_workRequest.m_signalFenceValue = m_scopes.back()->GetSignalFenceValue();
             
-            AZStd::vector<RHI::ScopeId> scopeIds;
-            scopeIds.reserve(m_scopes.size());
+            AZStd::vector<InitMergedRequest::ScopeEntry> scopeEntries;
+            scopeEntries.reserve(m_scopes.size());
             for (const Scope* scope : m_scopes)
             {
-                scopeIds.push_back(scope->GetId());
+                scopeEntries.push_back({ scope->GetId(), scope->GetEstimatedItemCount() });
                 
                 m_workRequest.m_swapChainsToPresent.reserve(m_workRequest.m_swapChainsToPresent.size() + scope->GetSwapChainsToPresent().size());
                 for (RHI::SwapChain* swapChain : scope->GetSwapChainsToPresent())
@@ -51,8 +51,8 @@ namespace AZ
             }
 
             InitMergedRequest request;
-            request.m_scopeIds = scopeIds.data();
-            request.m_scopeCount = static_cast<AZ::u32>(scopeIds.size());
+            request.m_scopeEntries = scopeEntries.data();
+            request.m_scopeCount = static_cast<uint32_t>(scopeEntries.size());
             
             m_commandBuffer.Init(device.GetCommandQueueContext().GetCommandQueue(m_hardwareQueueClass).GetPlatformQueue());
             

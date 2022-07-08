@@ -101,13 +101,13 @@ namespace AZ
                 /// user wishes to fill in the command list at context creation time.
                 CommandList* m_commandList = nullptr;
 
-                /// An ordered list of scope ids and submit counts in the group.
                 struct ScopeEntry
                 {
                     ScopeId m_scopeId;
                     uint32_t m_submitCount = 0;
                 };
 
+                /// An ordered list of scope ids and submit counts in the group.
                 const ScopeEntry* m_scopeEntries = nullptr;
 
                 /// The number of scopes in the ScopeEntry array.

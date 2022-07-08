@@ -39,16 +39,16 @@ namespace AZ
             FrameGraphExecuteContext(const Descriptor& descriptor);
 
             /// Returns the scope id associated with this context.
-            const ScopeId& GetScopeId() const;
+            const ScopeId& GetScopeId() const { return m_descriptor.m_scopeId; }
 
             /// Returns the index of the command list in the batch.
-            uint32_t GetCommandListIndex() const;
+            uint32_t GetCommandListIndex() const { return m_descriptor.m_commandListIndex; }
 
             /// Returns the total number of command lists in the batch.
-            uint32_t GetCommandListCount() const;
+            uint32_t GetCommandListCount() const { return m_descriptor.m_commandListCount; }
 
             /// Returns the command list associated with the index in the batch.
-            CommandList* GetCommandList() const;
+            CommandList* GetCommandList() const { return m_descriptor.m_commandList; }
 
             /// Returns the submit range for this context.
             const CommandList::SubmitRange& GetSubmitRange() const { return m_descriptor.m_submitRange; }

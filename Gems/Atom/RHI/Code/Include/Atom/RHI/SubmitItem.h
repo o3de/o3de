@@ -11,12 +11,12 @@ namespace AZ
 {
     namespace RHI
     {
-        /// Base for the command list Submit item types.
-        /// This holds the submission index which is validated against the range for the command list.
+        //! Base for the command list Submit item types.
+        //! This holds the submission index which is validated against the range for the command list.
         struct SubmitItem
         {
-            // the submitIndex must be in the range specified in the FrameGraphExecuteContext for the command list
-            // (see CommandList::SubmitRange for more information)
+            //! the submitIndex must be in the range specified in the FrameGraphExecuteContext for the command list
+            //! (see CommandList::SubmitRange for more information)
             mutable uint32_t m_submitIndex = 0;
         };
     }

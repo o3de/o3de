@@ -42,6 +42,8 @@ namespace AZ
             descriptor.m_scopeId = request.m_scopeId;
             descriptor.m_commandListCount = request.m_commandListCount;
 
+            // build the execute contexts
+            // Note: each context includes a submission range, with the number of items in range equal to (submitCount / commandListCount)
             uint32_t submitCount = request.m_submitCount;
             uint32_t commandListCount = request.m_commandListCount;
             for (uint32_t i = 0; i < request.m_commandListCount; ++i)

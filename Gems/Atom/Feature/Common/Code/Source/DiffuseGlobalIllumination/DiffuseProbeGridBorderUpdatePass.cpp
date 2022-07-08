@@ -174,6 +174,7 @@ namespace AZ
             uint32_t index = context.GetSubmitRange().m_startIndex;
             while (index < context.GetSubmitRange().m_endIndex)
             {
+                // Note: there are 4 submits per grid, so we need to calculate the diffuseProbeGridIndex in the list as (submit index / 4)
                 AZ_Assert(index % 4 == 0, "Incorrect number of submits in DiffuseProbeGridBorderUpdatePass::BuildCommandListInternal");
                 uint32_t diffuseProbeGridIndex = index / 4;
                 AZStd::shared_ptr<DiffuseProbeGrid> diffuseProbeGrid = diffuseProbeGridFeatureProcessor->GetVisibleRealTimeProbeGrids()[diffuseProbeGridIndex];
