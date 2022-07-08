@@ -236,7 +236,7 @@ private:
     void ShutdownAssetTabFilterRefresh();
 
     void SetupAssetServerTab();
-    void AddPatternRow(AZStd::string_view name, AssetBuilderSDK::AssetBuilderPattern::PatternType type, AZStd::string_view pattern);
+    void AddPatternRow(AZStd::string_view name, AssetBuilderSDK::AssetBuilderPattern::PatternType type, AZStd::string_view pattern, bool enable);
     void AssembleAssetPatterns();
     void CheckAssetServerStates();
     void ResetAssetServerView();

@@ -1274,7 +1274,7 @@ namespace AssetProcessor
             {
                 matcher.m_pattern = recognizer.second.m_patternMatcher.GetBuilderPattern().m_pattern;
             }
-            assetCacheServerMatcherMap.insert({"ACS " + recognizer.first, matcher});
+            assetCacheServerMatcherMap.insert({"ACS " + matcher.m_name, matcher});
         }
 
         AZ::JsonSerializerSettings settings;
@@ -1328,7 +1328,7 @@ namespace AssetProcessor
             {
                 assetRecognizer.m_patternMatcher = { matcher.second.m_pattern , AssetBuilderSDK::AssetBuilderPattern::Regex };
             }
-            recognizerContainer.insert({ "ACS " + assetRecognizer.m_name, assetRecognizer });
+            recognizerContainer.insert({ "ACS " + matcher.second.m_name, assetRecognizer });
         }
 
         return !recognizerContainer.empty();
@@ -2116,7 +2116,16 @@ namespace AssetProcessor
 
     bool PlatformConfiguration::AddAssetCacheRecognizerContainer(const RecognizerContainer& recognizerContainer)
     {
-        m_assetCacheServerRecognizers.insert(recognizerContainer.begin(), recognizerContainer.end());
+        bool addedEntries = false;
+        for (const auto& recognizer : recognizerContainer)
+        {
+            auto entryIter = m_assetCacheServerRecognizers.find(recognizer.first);
+            if (entryIter != m_assetCacheServerRecognizers.end())
+            {
+                m_assetCacheServerRecognizers.insert(recognizer);
+                addedEntries = true;
+            }
+        }
         return true;
     }
 

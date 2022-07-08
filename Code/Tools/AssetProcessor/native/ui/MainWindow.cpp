@@ -182,7 +182,9 @@ bool MainWindow::CacheServerData::Save(MainWindow& mainWindow)
         {
             rapidjson::Value valuePattern;
             valuePattern.CopyFrom(member->value, doc.GetAllocator(), true);
-            server->value.AddMember(member->name, valuePattern, doc.GetAllocator());
+            rapidjson::Value valueKey;
+            valueKey.CopyFrom(member->name, doc.GetAllocator(), true);
+            server->value.AddMember(AZStd::move(valueKey), AZStd::move(valuePattern), doc.GetAllocator());
         }
     }
 
@@ -753,6 +755,13 @@ void MainWindow::SetupAssetServerTab()
                     {
                         AssetServerBus::Broadcast(&AssetServerBus::Events::SetRemoteCachingMode, this->m_cacheServerData.m_cachingMode);
                         this->m_cacheServerData.Reset();
+
+                        // Clear the save message after a few moments
+                        QTimer::singleShot(1000 * 5, this, [this] {
+                                this->m_cacheServerData.m_errorLevel = CacheServerData::ErrorLevel::None;
+                                this->m_cacheServerData.m_errorMessage.clear();
+                                this->CheckAssetServerStates();
+                            });
                     }
                 }
                 else if (this->m_cacheServerData.m_cachingMode != AssetServerMode::Inactive)
@@ -775,7 +784,7 @@ void MainWindow::SetupAssetServerTab()
     QObject::connect(ui->sharedCacheAddPattern, &QPushButton::clicked, this,
         [this]()
         {
-            AddPatternRow("New Name", AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard, "");
+            AddPatternRow("New Name", AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard, "", true);
             this->m_cacheServerData.m_dirty = true;
             this->CheckAssetServerStates();
         });
@@ -788,13 +797,19 @@ void MainWindow::SetupAssetServerTab()
     CheckAssetServerStates();
 }
 
-void MainWindow::AddPatternRow(AZStd::string_view name, AssetBuilderSDK::AssetBuilderPattern::PatternType type, AZStd::string_view pattern)
+void MainWindow::AddPatternRow(AZStd::string_view name, AssetBuilderSDK::AssetBuilderPattern::PatternType type, AZStd::string_view pattern, bool enable)
 {
     using namespace AssetBuilderSDK;
     using namespace MainWindowInternal;
 
     int row = ui->sharedCacheTable->rowCount();
     ui->sharedCacheTable->insertRow(row);
+
+    auto updateStatus = [this](int)
+    {
+        this->m_cacheServerData.m_dirty = true;
+        this->CheckAssetServerStates();
+    };
 
     QObject::connect(ui->sharedCacheTable, &QTableWidget::cellChanged, this,
         [this](int, int)
@@ -805,22 +820,26 @@ void MainWindow::AddPatternRow(AZStd::string_view name, AssetBuilderSDK::AssetBu
 
     // Enabled check mark
     auto* enableChackmark = new QCheckBox();
-    enableChackmark->setChecked(true);
+    enableChackmark->setChecked(enable);
+    QObject::connect(enableChackmark, &QCheckBox::stateChanged, ui->sharedCacheTable, updateStatus);
     ui->sharedCacheTable->setCellWidget(row, aznumeric_cast<int>(PatternColumns::Enabled), enableChackmark);
     ui->sharedCacheTable->setColumnWidth(aznumeric_cast<int>(PatternColumns::Enabled), 8);
 
     // Name
-    ui->sharedCacheTable->setItem(row, aznumeric_cast<int>(PatternColumns::Name), new QTableWidgetItem(name.data()));
+    auto* nameWidgetItem = new QTableWidgetItem(name.data());
+    ui->sharedCacheTable->setItem(row, aznumeric_cast<int>(PatternColumns::Name), nameWidgetItem);
 
     // Type combo
     auto* combo = new QComboBox();
+    QObject::connect(combo, QOverload<int>::of(&QComboBox::currentIndexChanged), ui->sharedCacheTable, updateStatus);
     combo->addItem("Wildcard", QVariant(AssetBuilderPattern::PatternType::Wildcard));
     combo->addItem("Regex", QVariant(AssetBuilderPattern::PatternType::Regex));
     combo->setCurrentIndex(aznumeric_cast<int>(type));
     ui->sharedCacheTable->setCellWidget(row, aznumeric_cast<int>(PatternColumns::Type), combo);
 
     // Pattern
-    ui->sharedCacheTable->setItem(row, aznumeric_cast<int>(PatternColumns::Pattern), new QTableWidgetItem(pattern.data()));
+    auto* patternWidgetItem = new QTableWidgetItem(pattern.data());
+    ui->sharedCacheTable->setItem(row, aznumeric_cast<int>(PatternColumns::Pattern), patternWidgetItem);
 
     // Remove button
     auto* button = new QPushButton();
@@ -850,6 +869,7 @@ void MainWindow::AssembleAssetPatterns()
         auto* itemName = ui->sharedCacheTable->item(row, aznumeric_cast<int>(PatternColumns::Name));
         auto* itemPattern = ui->sharedCacheTable->item(row, aznumeric_cast<int>(PatternColumns::Pattern));
         auto* itemType = qobject_cast<QComboBox*>(ui->sharedCacheTable->cellWidget(row, aznumeric_cast<int>(PatternColumns::Type)));
+        auto* itemCheck = qobject_cast<QCheckBox*>(ui->sharedCacheTable->cellWidget(row, aznumeric_cast<int>(PatternColumns::Enabled)));
 
         pattern.first = itemName->text().toUtf8().data();
 
@@ -861,6 +881,7 @@ void MainWindow::AssembleAssetPatterns()
             patternType = AssetBuilderPattern::PatternType::Regex;
         }
         pattern.second.m_patternMatcher = { filePattern, patternType };
+        pattern.second.m_checkServer = (itemCheck->checkState() == Qt::CheckState::Checked);
 
         patternContainer.emplace(AZStd::move(pattern));
     }
@@ -920,9 +941,10 @@ void MainWindow::ResetAssetServerView()
     for (const auto& pattern : m_cacheServerData.m_patternContainer)
     {
         AddPatternRow(
-            pattern.first,
+            pattern.second.m_name,
             pattern.second.m_patternMatcher.GetBuilderPattern().m_type,
-            pattern.second.m_patternMatcher.GetBuilderPattern().m_pattern);
+            pattern.second.m_patternMatcher.GetBuilderPattern().m_pattern,
+            pattern.second.m_checkServer);
     }
 
     m_cacheServerData.m_dirty = false;

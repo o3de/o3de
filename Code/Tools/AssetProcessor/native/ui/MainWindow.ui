@@ -1504,6 +1504,15 @@
              <property name="sizeConstraint">
               <enum>QLayout::SetDefaultConstraint</enum>
              </property>
+             <property name="leftMargin">
+              <number>10</number>
+             </property>
+             <property name="rightMargin">
+              <number>10</number>
+             </property>
+             <property name="bottomMargin">
+              <number>10</number>
+             </property>
              <item row="5" column="4">
               <widget class="QPushButton" name="serverAddressButton">
                <property name="maximumSize">
@@ -1625,6 +1634,23 @@
                </property>
               </widget>
              </item>
+             <item row="0" column="0">
+              <widget class="QLabel" name="sharedCacheTitle">
+               <property name="font">
+                <font>
+                 <pointsize>10</pointsize>
+                 <weight>75</weight>
+                 <bold>true</bold>
+                </font>
+               </property>
+               <property name="text">
+                <string># Shared Cache Settings</string>
+               </property>
+               <property name="textFormat">
+                <enum>Qt::MarkdownText</enum>
+               </property>
+              </widget>
+             </item>
              <item row="9" column="4">
               <widget class="QPushButton" name="sharedCacheDiscardButton">
                <property name="maximumSize">
@@ -1694,24 +1720,7 @@
                </property>
               </widget>
              </item>
-             <item row="0" column="0">
-              <widget class="QLabel" name="sharedCacheTitle">
-               <property name="font">
-                <font>
-                 <pointsize>10</pointsize>
-                 <weight>75</weight>
-                 <bold>true</bold>
-                </font>
-               </property>
-               <property name="text">
-                <string># Shared Cache Settings</string>
-               </property>
-               <property name="textFormat">
-                <enum>Qt::MarkdownText</enum>
-               </property>
-              </widget>
-             </item>
-             <item row="0" column="2">
+             <item row="0" column="2" colspan="3">
               <widget class="QLabel" name="sharedCacheStatus">
                <property name="font">
                 <font>
