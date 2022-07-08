@@ -81,6 +81,7 @@ namespace AzToolsFramework
         //! returns the last descendent of this row in its own layout
         DPERowWidget* GetLastDescendantInLayout();
 
+        void SetExpanded(bool expanded, bool recurseToChildRows = false);
         bool IsExpanded() const;
 
     protected slots:
@@ -127,6 +128,9 @@ namespace AzToolsFramework
         void SetSavedExpanderStateForRow(DPERowWidget* row, ExpanderState expanderState);
         ExpanderState GetSavedExpanderStateForRow(DPERowWidget* row) const;
         void RemoveExpanderStateForRow(DPERowWidget* row);
+        void ExpandAll();
+        void CollapseAll();
+
         AZ::Dom::Value GetDomValueForRow(DPERowWidget* row) const;
 
         void ReleaseHandler(AZStd::unique_ptr<PropertyHandlerWidgetInterface>&& handler);
@@ -136,9 +140,12 @@ namespace AzToolsFramework
         // but can be overridden here
         void SetSpawnDebugView(bool shouldSpawn);
 
+        static bool ShouldReplaceRPE();
+
     public slots:
         //! set the DOM adapter for this DPE to inspect
         void SetAdapter(AZ::DocumentPropertyEditor::DocumentAdapterPtr theAdapter);
+        void Clear();
 
     protected:
         QVBoxLayout* GetVerticalLayout();

@@ -32,6 +32,11 @@ namespace AZ
 {
     class Component;
     class SerializeContext;
+
+    namespace DocumentPropertyEditor
+    {
+        class ReflectionAdapter;
+    }
 }
 
 namespace AzToolsFramework
@@ -39,6 +44,7 @@ namespace AzToolsFramework
     class ComponentEditorHeader;
     class IPropertyEditorNotify;
     class ReflectedPropertyEditor;
+    class DocumentPropertyEditor;
     enum PropertyModificationRefreshLevel : int;
 
     /**
@@ -135,7 +141,10 @@ namespace AzToolsFramework
 
         ReflectedPropertyEditor* m_propertyEditor = nullptr;
 
-        AZ::SerializeContext* m_serializeContext;
+        AZStd::shared_ptr<AZ::DocumentPropertyEditor::ReflectionAdapter> m_adapter;
+        DocumentPropertyEditor* m_dpe = nullptr;
+
+        AZ::SerializeContext* m_serializeContext = nullptr;
 
         /// Type of component being shown
         AZ::Uuid m_componentType = AZ::Uuid::CreateNull();
