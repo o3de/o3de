@@ -35,6 +35,7 @@ namespace AZ
 namespace AssetProcessor
 {
     inline constexpr const char* AssetProcessorSettingsKey{ "/Amazon/AssetProcessor/Settings" };
+    inline constexpr const char* AssetProcessorServerKey{ "/O3DE/AssetProcessor/Settings/Server" };
     class PlatformConfiguration;
     class ScanFolderInfo;
     extern const char AssetConfigPlatformDir[];

@@ -701,12 +701,11 @@ namespace AssetProcessor
         AZ::SettingsRegistryInterface::VisitAction action, AZ::SettingsRegistryInterface::Type)
     {
         constexpr AZStd::string_view ACSNamePrefix = "ACS ";
-        constexpr AZ::SettingsRegistryInterface::FixedValueString key(AssetProcessorSettingsKey);
         switch (action)
         {
         case AZ::SettingsRegistryInterface::VisitAction::Begin:
         {
-            if (jsonPath == key + "/Server")
+            if (jsonPath == AssetProcessorServerKey)
             {
                 return AZ::SettingsRegistryInterface::VisitResponse::Continue;
             }
@@ -724,7 +723,7 @@ namespace AssetProcessor
         {
             if (valueName.starts_with(ACSNamePrefix))
             {
-                AZ_Assert(!m_nameStack.empty(), "RC name stack should not be empty. More stack pops, than pushes");
+                AZ_Assert(!m_nameStack.empty(), "Name stack should not be empty. More stack pops, than pushes");
                 m_nameStack.pop();
             }
         }
@@ -1500,8 +1499,7 @@ namespace AssetProcessor
         }
 
         ACSVisitor acsVistor;
-        AZ::SettingsRegistryInterface::FixedValueString key(AssetProcessor::AssetProcessorSettingsKey);
-        settingsRegistry->Visit(acsVistor, key + "/Server");
+        settingsRegistry->Visit(acsVistor, AssetProcessorServerKey);
         for (auto&& acsRecognizer : acsVistor.m_assetRecognizers)
         {
             m_assetCacheServerRecognizers[acsRecognizer.m_name] = AZStd::move(acsRecognizer);

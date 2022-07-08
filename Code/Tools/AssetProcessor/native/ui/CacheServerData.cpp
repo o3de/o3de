@@ -42,7 +42,7 @@ namespace AssetProcessor
         // this builds up the JSON doc for each key inside AssetProcessorSettingsKey
         AZStd::string path;
         AZ::StringFunc::TokenizeVisitor(
-            AssetProcessor::AssetProcessorSettingsKey,
+            AssetProcessor::AssetProcessorServerKey,
             [&doc, &path](AZStd::string_view elem)
             {
                 auto key = rapidjson::StringRef(elem.data(), elem.size());
@@ -63,17 +63,14 @@ namespace AssetProcessor
 
         // creates a rapidjson doc to hold the shared cache server settings
         rapidjson::Value value(rapidjson::kObjectType);
-        auto* settings = rapidjson::Pointer(AssetProcessor::AssetProcessorSettingsKey).Get(doc);
-        settings->AddMember("Server", value, doc.GetAllocator());
+        auto server = rapidjson::Pointer(AssetProcessor::AssetProcessorServerKey).Get(doc);
 
-        auto server = settings->FindMember("Server");
-
-        server->value.AddMember(
+        server->AddMember(
             rapidjson::StringRef(AssetProcessor::CacheServerAddressKey),
             rapidjson::StringRef(m_serverAddress.c_str()),
             doc.GetAllocator());
 
-        server->value.AddMember(
+        server->AddMember(
             rapidjson::StringRef(AssetProcessor::AssetCacheServerModeKey),
             rapidjson::StringRef(AssetProcessor::AssetServerHandler::GetAssetServerModeText(m_cachingMode)),
             doc.GetAllocator());
@@ -91,7 +88,7 @@ namespace AssetProcessor
                 valuePattern.CopyFrom(member->value, doc.GetAllocator(), true);
                 rapidjson::Value valueKey;
                 valueKey.CopyFrom(member->name, doc.GetAllocator(), true);
-                server->value.AddMember(AZStd::move(valueKey), AZStd::move(valuePattern), doc.GetAllocator());
+                server->AddMember(AZStd::move(valueKey), AZStd::move(valuePattern), doc.GetAllocator());
             }
         }
 
