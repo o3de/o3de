@@ -53,7 +53,11 @@ namespace ScriptCanvas
         void ClientTransceiver::AddBreakpoint(const Breakpoint& breakpoint)
         {
             SCRIPT_CANVAS_DEBUGGER_TRACE_CLIENT("TRX sending AddBreakpoint Request %s", breakpoint.ToString().data());
-            RemoteToolsInterface::Get()->SendRemoteToolsMessage(m_currentTarget, Message::AddBreakpointRequest(breakpoint));
+            AzFramework::IRemoteTools* remoteTools = RemoteToolsInterface::Get();
+            if (remoteTools)
+            {
+                remoteTools->SendRemoteToolsMessage(m_currentTarget, Message::AddBreakpointRequest(breakpoint));
+            }
         }
 
         void ClientTransceiver::AddVariableChangeBreakpoint(const VariableChangeBreakpoint&)
@@ -134,7 +138,11 @@ namespace ScriptCanvas
         void ClientTransceiver::DiscoverNetworkTargets()
         {
             AzFramework::RemoteToolsEndpointContainer targets;
-            RemoteToolsInterface::Get()->EnumTargetInfos(ScriptCanvas::RemoteToolsKey, targets);
+            AzFramework::IRemoteTools* remoteTools = RemoteToolsInterface::Get();
+            if (remoteTools)
+            {
+                remoteTools->EnumTargetInfos(ScriptCanvas::RemoteToolsKey, targets);
+            }
 
             AzFramework::RemoteToolsEndpointContainer connectableTargets;
             
@@ -161,7 +169,13 @@ namespace ScriptCanvas
 
         AzFramework::RemoteToolsEndpointInfo ClientTransceiver::GetNetworkTarget()
         {
-            AzFramework::RemoteToolsEndpointInfo targetInfo = RemoteToolsInterface::Get()->GetDesiredEndpoint(ScriptCanvas::RemoteToolsKey);
+            AzFramework::RemoteToolsEndpointInfo targetInfo;
+            AzFramework::IRemoteTools* remoteTools = RemoteToolsInterface::Get();
+            if (remoteTools)
+            {
+                targetInfo = RemoteToolsInterface::Get()->GetDesiredEndpoint(ScriptCanvas::RemoteToolsKey);
+            }
+
             if (!targetInfo.GetPersistentId())
             {
                 SCRIPT_CANVAS_DEBUGGER_TRACE_CLIENT("Debugger TRX The user has not chosen a target to connect to.\n");
@@ -432,13 +446,17 @@ namespace ScriptCanvas
 
         void ClientTransceiver::OnSystemTick()
         {
-            RemoteToolsInterface::Get()->SendRemoteToolsMessage(m_currentTarget, Message::AddTargetsRequest(m_addCache));
-            m_connectionState.Merge(m_addCache);
-            m_addCache.Clear();
+            AzFramework::IRemoteTools* remoteTools = RemoteToolsInterface::Get();
+            if (remoteTools)
+            {
+                remoteTools->SendRemoteToolsMessage(m_currentTarget, Message::AddTargetsRequest(m_addCache));
+                m_connectionState.Merge(m_addCache);
+                m_addCache.Clear();
 
-            RemoteToolsInterface::Get()->SendRemoteToolsMessage(m_currentTarget, Message::RemoveTargetsRequest(m_removeCache));
-            m_connectionState.Remove(m_removeCache);
-            m_removeCache.Clear();
+                remoteTools->SendRemoteToolsMessage(m_currentTarget, Message::RemoveTargetsRequest(m_removeCache));
+                m_connectionState.Remove(m_removeCache);
+                m_removeCache.Clear();
+            }
 
             AZ::SystemTickBus::Handler::BusDisconnect();
         }
@@ -448,8 +466,12 @@ namespace ScriptCanvas
             if (!m_currentTarget.IsValid())
             {
                 m_resetDesiredTarget = true;
-                m_previousDesiredInfo = RemoteToolsInterface::Get()->GetDesiredEndpoint(ScriptCanvas::RemoteToolsKey);
-                RemoteToolsInterface::Get()->SetDesiredEndpointInfo(ScriptCanvas::RemoteToolsKey, m_selfTarget);
+                AzFramework::IRemoteTools* remoteTools = RemoteToolsInterface::Get();
+                if (remoteTools)
+                {
+                    m_previousDesiredInfo = remoteTools->GetDesiredEndpoint(ScriptCanvas::RemoteToolsKey);
+                    remoteTools->SetDesiredEndpointInfo(ScriptCanvas::RemoteToolsKey, m_selfTarget);
+                }
             }
         }
 
@@ -475,7 +497,11 @@ namespace ScriptCanvas
 
         void ClientTransceiver::StopLogging()
         {
-            RemoteToolsInterface::Get()->SendRemoteToolsMessage(m_currentTarget, Message::StopLoggingRequest());
+            AzFramework::IRemoteTools* remoteTools = RemoteToolsInterface::Get();
+            if (remoteTools)
+            {
+                remoteTools->SendRemoteToolsMessage(m_currentTarget, Message::StopLoggingRequest());
+            }
 
             m_connectionState.m_logExecution = false;
             m_connectionState.Clear();
