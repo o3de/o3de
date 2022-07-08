@@ -30,17 +30,20 @@ namespace AzToolsFramework
                 "Instance Entity Mapper Interface could not be found. "
                 "Check that it is being correctly initialized.");
 
-
             //use system component to grab template dom
             m_prefabSystemComponentInterface = AZ::Interface<PrefabSystemComponentInterface>::Get();
             AZ_Assert(m_prefabSystemComponentInterface,
                 "Prefab - InstanceToTemplateInterface - "
                 "Prefab System Component Interface could not be found. "
                 "Check that it is being correctly initialized.");
+
+            m_instanceDomGenerator.RegisterInstanceDomGeneratorInterface();
         }
 
         void InstanceToTemplatePropagator::UnregisterInstanceToTemplateInterface()
         {
+            m_instanceDomGenerator.UnregisterInstanceDomGeneratorInterface();
+
             AZ::Interface<InstanceToTemplateInterface>::Unregister(this);
         }
 

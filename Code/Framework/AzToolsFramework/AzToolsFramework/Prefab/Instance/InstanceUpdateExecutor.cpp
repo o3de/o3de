@@ -194,9 +194,6 @@ namespace AzToolsFramework
 
                         bool instanceDomGenerated = m_instanceDomGeneratorInterface->GenerateInstanceDom(
                             instanceToUpdate, instanceDom);
-
-                        /*bool instanceDomGenerated = m_instanceDomGenerator.GenerateInstanceDom(
-                            instanceToUpdate, instanceDom);*/
                         if (!instanceDomGenerated)
                         {
                             AZ_Assert(

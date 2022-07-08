@@ -9,6 +9,7 @@
 #pragma once
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/RTTI/RTTI.h>
+#include <AzToolsFramework/Prefab/Instance/InstanceDomGenerator.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceToTemplateInterface.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceEntityMapperInterface.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
@@ -49,6 +50,7 @@ namespace AzToolsFramework
         private:
             InstanceEntityMapperInterface* m_instanceEntityMapperInterface = nullptr;
             PrefabSystemComponentInterface* m_prefabSystemComponentInterface = nullptr;
+            InstanceDomGenerator m_instanceDomGenerator;
         };
     }
 }

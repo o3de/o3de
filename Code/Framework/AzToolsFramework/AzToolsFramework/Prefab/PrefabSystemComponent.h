@@ -17,7 +17,6 @@
 #include <AzCore/std/string/string.h>
 #include <AzToolsFramework/Entity/EntityTypes.h>
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
-#include <AzToolsFramework/Prefab/Instance/InstanceDomGenerator.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceEntityMapper.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceUpdateExecutor.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceToTemplatePropagator.h>
@@ -413,8 +412,6 @@ namespace AzToolsFramework
 
             // Handles the public Prefab API used by UI and scripting.
             PrefabPublicHandler m_prefabPublicHandler;
-
-            // InstanceDomGenerator m_instanceDomGenerator;
 
             // Used for updating Instances of Prefab Template.
             InstanceUpdateExecutor m_instanceUpdateExecutor;

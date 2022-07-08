@@ -17,8 +17,6 @@
 #include <AzToolsFramework/Prefab/PrefabDomTypes.h>
 #include <AzToolsFramework/Prefab/PrefabIdTypes.h>
 
-#include <AzToolsFramework/Prefab/Instance/InstanceDomGenerator.h>
-
 namespace AzToolsFramework
 {
     namespace Prefab
@@ -63,7 +61,6 @@ namespace AzToolsFramework
             bool m_isRootPrefabInstanceLoaded = false;
             bool m_shouldPausePropagation = false;
             bool m_updatingTemplateInstancesInQueue { false };
-            InstanceDomGenerator m_instanceDomGenerator;
         };
     }
 }
