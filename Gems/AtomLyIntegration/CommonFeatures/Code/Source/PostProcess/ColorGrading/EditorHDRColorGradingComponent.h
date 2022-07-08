@@ -27,7 +27,7 @@ namespace AZ
             : public AzToolsFramework::Components::
                   EditorComponentAdapter<HDRColorGradingComponentController, HDRColorGradingComponent, HDRColorGradingComponentConfig>
             , private TickBus::Handler
-            , private FrameCaptureNotificationBus::Handler
+            , private FrameCaptureNotificationBus::MultiHandler
             , private EditorHDRColorGradingRequestBus::Handler
         {
         public:
