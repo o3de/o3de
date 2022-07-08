@@ -117,6 +117,10 @@ namespace GradientSignal
         const AZ::Vector3 pixelToBoundsScale(
             inputBoundsExtentsX / static_cast<float>(imageResolutionX), inputBoundsExtentsY / static_cast<float>(imageResolutionY), 0.0f);
 
+        // Generate a set of input positions that are inside the bounds along with
+        // their corresponding x,y indices
+        AZStd::vector<AZ::Vector3> inputPositions;
+        AZStd::vector<AZStd::pair<int, int>> indices;
         for (int y = 0; !m_shouldCancel && (y < imageResolutionY); ++y)
         {
             for (int x = 0; !m_shouldCancel && (x < imageResolutionX); ++x)
@@ -125,60 +129,80 @@ namespace GradientSignal
                 // imageBoundsY)
                 AZ::Vector3 uvw(static_cast<float>(x), static_cast<float>((imageResolutionY - 1) - y), 0.0f);
 
-                GradientSampleParams sampleParams;
-                sampleParams.m_position = inputBoundsStart + (uvw * pixelToBoundsScale) + scaledTexelOffset;
+                AZ::Vector3 position = inputBoundsStart + (uvw * pixelToBoundsScale) + scaledTexelOffset;
 
                 bool inBounds = true;
                 LmbrCentral::ShapeComponentRequestsBus::EventResult(
-                    inBounds, m_boundsEntityId, &LmbrCentral::ShapeComponentRequestsBus::Events::IsPointInside, sampleParams.m_position);
+                    inBounds, m_boundsEntityId, &LmbrCentral::ShapeComponentRequestsBus::Events::IsPointInside, position);
 
-                float sample = inBounds ? m_configuration.m_gradientSampler.GetValue(sampleParams) : 0.0f;
-
-                // Write out the sample value for the pixel based on output format
-                int index = ((y * imageResolutionX) + x) * channels;
-                switch (m_configuration.m_outputFormat)
+                if (!inBounds)
                 {
-                case OutputFormat::R8:
-                {
-                    AZ::u8 value = static_cast<AZ::u8>(sample * std::numeric_limits<AZ::u8>::max());
-                    pixels[index] = value; // R
+                    continue;
+                }
 
-                    if (channels == 4)
-                    {
-                        pixels[index + 1] = value; // G
-                        pixels[index + 2] = value; // B
-                        pixels[index + 3] = std::numeric_limits<AZ::u8>::max(); // A
-                    }
-                    break;
-                }
-                case OutputFormat::R16:
-                {
-                    auto actualMem = reinterpret_cast<AZ::u16*>(pixels.data());
-                    AZ::u16 value = static_cast<AZ::u16>(sample * std::numeric_limits<AZ::u16>::max());
-                    actualMem[index] = value; // R
+                // Keep track of this input position + the x,y indices
+                inputPositions.push_back(position);
+                indices.push_back(AZStd::make_pair(x, y));
+            }
+        }
 
-                    if (channels == 4)
-                    {
-                        actualMem[index + 1] = value; // G
-                        actualMem[index + 2] = value; // B
-                        actualMem[index + 3] = std::numeric_limits<AZ::u16>::max(); // A
-                    }
-                    break;
-                }
-                case OutputFormat::R32:
-                {
-                    auto actualMem = reinterpret_cast<float*>(pixels.data());
-                    actualMem[index] = sample; // R
+        // Retrieve all the gradient values for the input positions
+        const size_t numPositions = inputPositions.size();
+        AZStd::vector<float> outputValues(numPositions);
+        m_configuration.m_gradientSampler.GetValues(inputPositions, outputValues);
 
-                    if (channels == 4)
-                    {
-                        actualMem[index + 1] = sample; // G
-                        actualMem[index + 2] = sample; // B
-                        actualMem[index + 3] = 1.0f; // A
-                    }
-                    break;
+        // Write out all the gradient values to our output image
+        for (int i = 0; !m_shouldCancel && (i < numPositions); ++i)
+        {
+            const float& sample = outputValues[i];
+            const auto& indicesPair = indices[i];
+            const auto& x = indicesPair.first;
+            const auto& y = indicesPair.second;
+
+            // Write out the sample value for the pixel based on output format
+            int index = ((y * imageResolutionX) + x) * channels;
+            switch (m_configuration.m_outputFormat)
+            {
+            case OutputFormat::R8:
+            {
+                AZ::u8 value = static_cast<AZ::u8>(sample * std::numeric_limits<AZ::u8>::max());
+                pixels[index] = value; // R
+
+                if (channels == 4)
+                {
+                    pixels[index + 1] = value; // G
+                    pixels[index + 2] = value; // B
+                    pixels[index + 3] = std::numeric_limits<AZ::u8>::max(); // A
                 }
+                break;
+            }
+            case OutputFormat::R16:
+            {
+                auto actualMem = reinterpret_cast<AZ::u16*>(pixels.data());
+                AZ::u16 value = static_cast<AZ::u16>(sample * std::numeric_limits<AZ::u16>::max());
+                actualMem[index] = value; // R
+
+                if (channels == 4)
+                {
+                    actualMem[index + 1] = value; // G
+                    actualMem[index + 2] = value; // B
+                    actualMem[index + 3] = std::numeric_limits<AZ::u16>::max(); // A
                 }
+                break;
+            }
+            case OutputFormat::R32:
+            {
+                auto actualMem = reinterpret_cast<float*>(pixels.data());
+                actualMem[index] = sample; // R
+
+                if (channels == 4)
+                {
+                    actualMem[index + 1] = sample; // G
+                    actualMem[index + 2] = sample; // B
+                    actualMem[index + 3] = 1.0f; // A
+                }
+                break;
+            }
             }
         }
 
