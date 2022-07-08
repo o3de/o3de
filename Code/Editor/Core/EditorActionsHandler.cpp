@@ -39,6 +39,7 @@ static constexpr AZStd::string_view EditorMainWindowActionContextIdentifier = "o
 
 static constexpr AZStd::string_view EntitySelectionChangedUpdaterIdentifier = "o3de.updater.onEntitySelectionChanged";
 static constexpr AZStd::string_view GameModeStateChangedUpdaterIdentifier = "o3de.updater.onGameModeStateChanged";
+static constexpr AZStd::string_view GridSnappingStateChangedUpdaterIdentifier = "o3de.updater.onGridSnappingStateChanged";
 static constexpr AZStd::string_view LevelLoadedUpdaterIdentifier = "o3de.updater.onLevelLoaded";
 static constexpr AZStd::string_view RecentFilesChangedUpdaterIdentifier = "o3de.updater.onRecentFilesChanged";
 
@@ -147,6 +148,7 @@ void EditorActionsHandler::InitializeActionUpdaters()
 {
     m_actionManagerInterface->RegisterActionUpdater(EntitySelectionChangedUpdaterIdentifier);
     m_actionManagerInterface->RegisterActionUpdater(GameModeStateChangedUpdaterIdentifier);
+    m_actionManagerInterface->RegisterActionUpdater(GridSnappingStateChangedUpdaterIdentifier);
     m_actionManagerInterface->RegisterActionUpdater(RecentFilesChangedUpdaterIdentifier);
 
     // If the Prefab system is not enabled, have a backup to update actions based on level loading.
@@ -550,7 +552,7 @@ void EditorActionsHandler::InitializeActions()
             }
         );
 
-        // TODO - trigger update when the grid snapping changes?
+        m_actionManagerInterface->AddActionToUpdater(GridSnappingStateChangedUpdaterIdentifier, "o3de.action.edit.snap.gridSnapping");
     }
 
     // Global Preferences
@@ -1247,6 +1249,11 @@ void EditorActionsHandler::AfterEntitySelectionChanged(
     [[maybe_unused]] const AzToolsFramework::EntityIdList& newlyDeselectedEntities)
 {
     m_actionManagerInterface->TriggerActionUpdater(EntitySelectionChangedUpdaterIdentifier);
+}
+
+void EditorActionsHandler::OnGridSnappingChanged([[maybe_unused]] bool enabled)
+{
+    m_actionManagerInterface->TriggerActionUpdater(GridSnappingStateChangedUpdaterIdentifier);
 }
 
 bool EditorActionsHandler::IsRecentFileActionActive(int index)
