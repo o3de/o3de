@@ -20,7 +20,11 @@ namespace AtomToolsFramework
 
     PreviewRendererCaptureState::~PreviewRendererCaptureState()
     {
-        AZ::Render::FrameCaptureNotificationBus::Handler::BusDisconnect();
+        if (m_frameCaptureId != AZ::Render::InvalidFrameCaptureId)
+        {
+            AZ::Render::FrameCaptureNotificationBus::MultiHandler::BusDisconnect(m_frameCaptureId);
+            m_frameCaptureId = AZ::Render::InvalidFrameCaptureId;
+        }
         AZ::SystemTickBus::Handler::BusDisconnect();
         m_renderer->EndCapture();
     }
@@ -30,23 +34,21 @@ namespace AtomToolsFramework
         if (m_ticksToCapture-- <= 0)
         {
             m_frameCaptureId = m_renderer->StartCapture();
-            if (m_frameCaptureId != AZ::Render::FrameCaptureRequests::s_InvalidFrameCaptureId)
+            if (m_frameCaptureId != AZ::Render::InvalidFrameCaptureId)
             {
-                AZ::Render::FrameCaptureNotificationBus::Handler::BusConnect();
+                AZ::Render::FrameCaptureNotificationBus::MultiHandler::BusConnect(m_frameCaptureId);
                 AZ::SystemTickBus::Handler::BusDisconnect();
             }
             // if the start capture call fails the capture will be retried next tick.
         }
     }
 
-    void PreviewRendererCaptureState::OnCaptureFinished( uint32_t frameCaptureId,
+    void PreviewRendererCaptureState::OnFrameCaptureFinished(AZ::Render::FrameCaptureId frameCaptureId,
         [[maybe_unused]] AZ::Render::FrameCaptureResult result, [[maybe_unused]] const AZStd::string& info)
     {
-        if (frameCaptureId == m_frameCaptureId) // validate this event is for the frame capture request this state made
-        {
-            m_renderer->CompleteCaptureRequest();
-            m_frameCaptureId = AZ::Render::FrameCaptureRequests::s_InvalidFrameCaptureId;
-        }
+        AZ::Render::FrameCaptureNotificationBus::MultiHandler::BusDisconnect(frameCaptureId);
+        m_renderer->CompleteCaptureRequest();
+        m_frameCaptureId = AZ::Render::InvalidFrameCaptureId;
     }
 } // namespace AtomToolsFramework
 

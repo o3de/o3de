@@ -27,7 +27,7 @@ namespace AZ
             : public AzToolsFramework::Components::
                   EditorComponentAdapter<HDRColorGradingComponentController, HDRColorGradingComponent, HDRColorGradingComponentConfig>
             , private TickBus::Handler
-            , private FrameCaptureNotificationBus::Handler
+            , private FrameCaptureNotificationBus::MultiHandler
             , private EditorHDRColorGradingRequestBus::Handler
         {
         public:
@@ -50,7 +50,7 @@ namespace AZ
             void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
 
             // FrameCaptureNotificationBus overrides ...
-            void OnCaptureFinished(uint32_t frameCaptureId, AZ::Render::FrameCaptureResult result, const AZStd::string& info) override;
+            void OnFrameCaptureFinished(AZ::Render::FrameCaptureId frameCaptureId, AZ::Render::FrameCaptureResult result, const AZStd::string& info) override;
 
             //! EditorHDRColorGradingRequestBus overrides...
             void GenerateLutAsync() override;
@@ -62,7 +62,7 @@ namespace AZ
             bool GetGeneratedLutVisibilitySettings();
 
             bool m_waitOneFrame = false;
-            uint32_t m_frameCaptureId = AZ::Render::FrameCaptureRequests::s_InvalidFrameCaptureId;
+            uint32_t m_frameCaptureId = AZ::Render::InvalidFrameCaptureId;
             AZStd::string m_currentTiffFilePath;
             AZStd::string m_currentLutFilePath;
 

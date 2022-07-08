@@ -91,18 +91,19 @@ namespace TrackView
     bool AtomOutputFrameCapture::BeginCapture(
         const AZ::RPI::AttachmentReadback::CallbackFunction& attachmentReadbackCallback, CaptureFinishedCallback captureFinishedCallback)
     {
-        AZ_Assert(m_frameCaptureId == AZ::Render::FrameCaptureRequests::s_InvalidFrameCaptureId, "Attempting to start a 2nd frame capture while one is in progress");
-        AZ::Render::FrameCaptureNotificationBus::Handler::BusConnect();
+        AZ_Assert(m_frameCaptureId == AZ::Render::InvalidFrameCaptureId, "Attempting to start a 2nd frame capture while one is in progress");
 
         m_captureFinishedCallback = AZStd::move(captureFinishedCallback);
 
         // note: "Output" (slot name) maps to MainPipeline.pass CopyToSwapChain
-        uint32_t frameCaptureId = AZ::Render::FrameCaptureRequests::s_InvalidFrameCaptureId;
+        uint32_t frameCaptureId = AZ::Render::InvalidFrameCaptureId;
         AZ::Render::FrameCaptureRequestBus::BroadcastResult(
             frameCaptureId, &AZ::Render::FrameCaptureRequestBus::Events::CapturePassAttachmentWithCallback, m_passHierarchy,
             AZStd::string("Output"), attachmentReadbackCallback, AZ::RPI::PassAttachmentReadbackOption::Output);
-        if (frameCaptureId != AZ::Render::FrameCaptureRequests::s_InvalidFrameCaptureId)
+        if (frameCaptureId != AZ::Render::InvalidFrameCaptureId)
         {
+            AZ::Render::FrameCaptureNotificationBus::MultiHandler::BusConnect(frameCaptureId);
+
             m_frameCaptureId = frameCaptureId;
             return true;
         }
@@ -110,16 +111,11 @@ namespace TrackView
         return false;
     }
 
-    void AtomOutputFrameCapture::OnCaptureFinished(
-        uint32_t frameCaptureId, [[maybe_unused]] AZ::Render::FrameCaptureResult result, [[maybe_unused]] const AZStd::string& info)
+    void AtomOutputFrameCapture::OnFrameCaptureFinished(
+        AZ::Render::FrameCaptureId frameCaptureId, [[maybe_unused]] AZ::Render::FrameCaptureResult result, [[maybe_unused]] const AZStd::string& info)
     {
-        // ignore captures from other systems.
-        if (m_frameCaptureId == AZ::Render::FrameCaptureRequests::s_InvalidFrameCaptureId || frameCaptureId != m_frameCaptureId)
-        {
-            return;
-        }
+        AZ::Render::FrameCaptureNotificationBus::MultiHandler::BusDisconnect(frameCaptureId);
         m_captureFinishedCallback();
-        AZ::Render::FrameCaptureNotificationBus::Handler::BusDisconnect();
     }
 
     AZ::Matrix3x4 TransformFromEntityId(const AZ::EntityId entityId)
