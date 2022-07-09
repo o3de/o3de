@@ -50,7 +50,7 @@ namespace AzToolsFramework
             , public AZ::TickBus::Handler
             , public AssetSystemBus::Handler
             , public AssetBrowserInteractionNotificationBus::Handler
-            , public AssetBrowserFileCreationNotificationBus::Handler
+            , private AssetBrowserFileCreationNotificationBus::Handler
         {
         public:
             AZ_COMPONENT(AssetBrowserComponent, "{4BC5F93F-2F9E-412E-B00A-396C68CFB5FB}")
@@ -103,11 +103,6 @@ namespace AzToolsFramework
             SourceFileDetails GetSourceFileDetails(const char* fullSourceFileName) override;
             //////////////////////////////////////////////////////////////////////////
 
-            //////////////////////////////////////////////////////////////////////////
-            // AssetBrowserFileCreationNotificationsBus
-            void HandleAssetCreatedInEditor(const AZStd::string& assetPath, const AZ::Crc32& creatorBusId /*= AZ::Crc32()*/) override;
-            //////////////////////////////////////////////////////////////////////////
-
             void AddFile(const AZ::s64& fileId);
             void RemoveFile(const AZ::s64& fileId);
 
@@ -134,12 +129,17 @@ namespace AzToolsFramework
 
             AzFramework::SocketConnection::TMessageCallbackHandle m_cbHandle = 0;
 
+            AzQtComponents::StyledBusyLabel* m_styledBusyLabel;
+
             //! Notify to start the query thread
             void NotifyUpdateThread();
 
             void HandleFileInfoNotification(const void* buffer, unsigned int bufferSize);
 
-            AzQtComponents::StyledBusyLabel* m_styledBusyLabel;
+            //////////////////////////////////////////////////////////////////////////
+            // AssetBrowserFileCreationNotificationBus
+            void HandleAssetCreatedInEditor(const AZStd::string_view assetPath, const AZ::Crc32& creatorBusId /*= AZ::Crc32()*/) override;
+            //////////////////////////////////////////////////////////////////////////
         };
     }
 } // namespace AssetBrowser

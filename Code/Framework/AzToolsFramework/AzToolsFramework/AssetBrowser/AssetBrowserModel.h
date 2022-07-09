@@ -81,7 +81,6 @@ namespace AzToolsFramework
             void EndAddEntry(AssetBrowserEntry* parent) override;
             void BeginRemoveEntry(AssetBrowserEntry* entry) override;
             void EndRemoveEntry() override;
-            void HandleAssetCreatedInEditor(const AZStd::string& assetPath, const AZ::Crc32& creatorBusId /*= AZ::Crc32()*/) override;
 
             //////////////////////////////////////////////////////////////////////////
             // TickBus
@@ -98,8 +97,10 @@ namespace AzToolsFramework
             static void SourceIndexesToAssetIds(const QModelIndexList& indexes, AZStd::vector<AZ::Data::AssetId>& assetIds);
             static void SourceIndexesToAssetDatabaseEntries(const QModelIndexList& indexes, AZStd::vector<AssetBrowserEntry*>& entries);
 
+            void HandleAssetCreatedInEditor(const AZStd::string& assetPath, const AZ::Crc32& creatorBusId = AZ::Crc32());
+
         Q_SIGNALS:
-            void AssetCreatedFromEditor(const QModelIndex& index);
+            void RequestOpenItemForEditing(const QModelIndex& index);
 
         private:
             //Non owning pointer 

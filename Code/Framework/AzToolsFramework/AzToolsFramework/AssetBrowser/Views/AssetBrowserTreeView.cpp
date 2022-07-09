@@ -483,6 +483,11 @@ namespace AzToolsFramework
         {
             auto entries = GetSelectedAssets();
 
+            if (entries.empty())
+            {
+                return;
+            }
+
             // Create the callback to pass to the SourceControlAPI
             AzToolsFramework::SourceControlResponseCallback callback =
                 []([[maybe_unused]] bool success, [[maybe_unused]] const AzToolsFramework::SourceControlFileInfo& info)

@@ -102,7 +102,7 @@ namespace AzToolsFramework
 
                 MakeFilenameUnique(fullSourceFolderNameInCallback, defaultScriptName, fullFilepath);
 
-                AZStd::string scriptBoilerplate = GenerateLuaComponentBoilerplate(defaultScriptName);
+                AZStd::string scriptBoilerplate = GenerateLuaComponentBoilerplate(AZ::IO::Path(fullFilepath).Stem().Native());
 
                 auto outcome = SaveLuaScriptFile(fullFilepath, scriptBoilerplate);
                 if (outcome.IsSuccess())
@@ -123,9 +123,9 @@ namespace AzToolsFramework
         }
 
         void LuaEditorSystemComponent::AddSourceFileOpeners(
-            [[maybe_unused]] const char* fullSourceFileName,
+            const char* fullSourceFileName,
             [[maybe_unused]] const AZ::Uuid& sourceUUID,
-            [[maybe_unused]] AzToolsFramework::AssetBrowser::SourceFileOpenerList& openers)
+            AzToolsFramework::AssetBrowser::SourceFileOpenerList& openers)
         {
             if (AZ::IO::Path(fullSourceFileName).Extension() == LuaExtension)
             {
@@ -139,7 +139,7 @@ namespace AzToolsFramework
             }
         }
 
-        void LuaEditorSystemComponent::HandleInitialFilenameChange(const AZStd::string& fullFilepath)
+        void LuaEditorSystemComponent::HandleInitialFilenameChange(const AZStd::string_view fullFilepath)
         {
             AZ::IO::Path filepath = AZ::IO::Path(fullFilepath);
             if (filepath.Extension() == LuaExtension)

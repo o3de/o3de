@@ -228,7 +228,7 @@ namespace AzToolsFramework
             using SCCommandBus = AzToolsFramework::SourceControlCommandBus;
             SCCommandBus::Broadcast(
                 &SCCommandBus::Events::RequestRename, oldPath.c_str(), newPath.c_str(),
-                [this, index](bool success, [[maybe_unused]] const AzToolsFramework::SourceControlFileInfo& info)
+                [&, index, item, newPath](bool success, [[maybe_unused]] const AzToolsFramework::SourceControlFileInfo& info)
                 {
                     if (success)
                     {
@@ -239,11 +239,11 @@ namespace AzToolsFramework
                             AzToolsFramework::AssetBrowser::AssetBrowserFileCreationNotificationBus::Event(
                                 m_assetEntriesToCreatorBusIds[item],
                                 &AzToolsFramework::AssetBrowser::AssetBrowserFileCreationNotifications::HandleInitialFilenameChange,
-                                item->GetFullPath());
-
-                            m_assetEntriesToCreatorBusIds.erase(item);
+                                newPath.c_str());
                         }
                     }
+
+                    m_assetEntriesToCreatorBusIds.erase(item);
                 });
             return false;
         }
@@ -387,28 +387,29 @@ namespace AzToolsFramework
                 m_addingEntry = false;
                 endInsertRows();
 
+                // we have to also invalidate our parent all the way up the chain.
+                // since in this model, the children's data is actually relevant to the filtering of a parent
+                // since a parent "matches" the filter if its children do.
+                if (m_rootEntry && !m_rootEntry->IsInitialUpdate())
+                {
+                    // this is only necessary if its not the initial refresh.
+                    AssetBrowserEntry* cursor = parent;
+                    while (cursor)
+                    {
+                        QModelIndex parentIndex;
+                        if (GetEntryIndex(cursor, parentIndex))
+                        {
+                            Q_EMIT dataChanged(parentIndex, parentIndex);
+                        }
+                        cursor = cursor->GetParent();
+                    }
+                }
+
                 if (!m_newlyCreatedAssetPathsToCreatorBusIds.empty())
                 {
                     // Gets the newest child with the assumption that BeginAddEntry still adds entries at GetChildCount
                     AssetBrowserEntry* newestChildEntry = parent->GetChild(parent->GetChildCount() - 1);
                     WatchForExpectedAssets(newestChildEntry);
-                }
-
-                // we have to also invalidate our parent all the way up the chain.
-                // since in this model, the children's data is actually relevant to the filtering of a parent
-                // since a parent "matches" the filter if its children do.
-                if ((m_rootEntry) && (!m_rootEntry->IsInitialUpdate()))
-                {
-                    // this is only necessary if its not the initial refresh.
-                    while (parent)
-                    {
-                        QModelIndex parentIndex;
-                        if (GetEntryIndex(parent, parentIndex))
-                        {
-                            Q_EMIT dataChanged(parentIndex, parentIndex);
-                        }
-                        parent = parent->GetParent();
-                    }
                 }
             }
         }
@@ -438,7 +439,7 @@ namespace AzToolsFramework
             QModelIndex index = findIndex(assetPath.c_str());
             if (index.isValid())
             {
-                emit AssetCreatedFromEditor(index);
+                emit RequestOpenItemForEditing(index);
             }
             else
             {
@@ -511,7 +512,7 @@ namespace AzToolsFramework
                         QModelIndex index;
                         if (GetEntryIndex(entry, index))
                         {
-                            emit AssetCreatedFromEditor(index);
+                            emit RequestOpenItemForEditing(index);
                         }
                     });
             }
