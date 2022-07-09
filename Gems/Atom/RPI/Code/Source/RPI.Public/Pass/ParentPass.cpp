@@ -54,7 +54,8 @@ namespace AZ
 
         void ParentPass::AddChild(const Ptr<Pass>& child, [[maybe_unused]] bool skipStateCheckWhenRunningTests)
         {
-            AZ_Error("PassSystem", GetPassState() == PassState::Building || IsRootPass() || skipStateCheckWhenRunningTests, "Do not add child passes outside of build phase");
+            // Todo: investigate if there's a way for this to not trigger on edge cases such as testing, then turn back into an Error instead of Warning.
+            AZ_Warning("PassSystem", GetPassState() == PassState::Building || IsRootPass() || skipStateCheckWhenRunningTests, "Do not add child passes outside of build phase");
 
             if (child->m_parent != nullptr)
             {
