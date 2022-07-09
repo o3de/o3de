@@ -10,6 +10,7 @@
 
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TickBus.h>
+#include <AzFramework/Font/FontInterface.h>
 #include <Multiplayer/IMultiplayer.h>
 #include <Multiplayer/IMultiplayerConnectionViewportMessage.h>
 
@@ -49,6 +50,11 @@ namespace Multiplayer
         void StopCenterViewportDebugMessaging() override;
         //! @}
 
+        void DrawConnectionStatus(AzNetworking::ConnectionState connectionState);
+
         AZStd::string m_centerViewportDebugText;
+        AzFramework::FontDrawInterface* m_fontDrawInterface = nullptr;
+        AzFramework::TextDrawParameters m_drawParams;
+        float m_lineSpacing = 0.0f;
     };
 }

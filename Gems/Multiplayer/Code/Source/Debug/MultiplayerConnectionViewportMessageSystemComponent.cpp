@@ -19,7 +19,7 @@
 namespace Multiplayer
 {
     constexpr float defaultConnectionMessageFontSize = 0.7f;
-    const AZ::Vector2 viewportConnectionTopLeftBorderPadding(40.0f, 22.0f);
+    const AZ::Vector2 viewportConnectionBottomRightBorderPadding(-40.0f, -40.0f);
 
     AZ_CVAR_SCOPED(bool, cl_viewportConnectionStatus, true, nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
         "This will enable displaying connection status in the client's viewport while running multiplayer.");
@@ -74,58 +74,65 @@ namespace Multiplayer
             return;
         }
 
+        auto fontQueryInterface = AZ::Interface<AzFramework::FontQueryInterface>::Get();
+        if (!fontQueryInterface)
+        {
+            return;
+        }
+
+        m_fontDrawInterface = fontQueryInterface->GetDefaultFontDrawInterface();
+        if (!m_fontDrawInterface)
+        {
+            return;
+        }
+
+        m_drawParams.m_drawViewportId = viewport->GetId();
+        m_drawParams.m_scale = AZ::Vector2(cl_viewportConnectionMessageFontSize);
+        m_lineSpacing = 0.5f*m_fontDrawInterface->GetTextSize(m_drawParams, " ").GetY();
+
+        AzFramework::WindowSize viewportSize = viewport->GetViewportSize();
+
         // Display the custom center viewport text
         if (!m_centerViewportDebugText.empty())
         {            
-            AzFramework::WindowSize viewportSize = viewport->GetViewportSize();
-            const float dpiScalingFactor = viewport->GetDpiScalingFactor();
             const float center_screenposition_x = 0.5f*viewportSize.m_width;
             const float center_screenposition_y = 0.5f*viewportSize.m_height;
-            const float screenposition_title_y = center_screenposition_y-9;
-            const float screenposition_debugtext_y = screenposition_title_y+18*dpiScalingFactor;
 
-            AzFramework::DebugDisplayRequestBus::Broadcast(&AzFramework::DebugDisplayRequestBus::Events::SetColor, AZ::Colors::Yellow);
-            AzFramework::DebugDisplayRequestBus::Broadcast(&AzFramework::DebugDisplayRequestBus::Events::Draw2dTextLabel, 
-                center_screenposition_x / dpiScalingFactor, screenposition_title_y / dpiScalingFactor, cl_viewportConnectionMessageFontSize, "Multiplayer Editor", true);
-
-            AzFramework::DebugDisplayRequestBus::Broadcast(&AzFramework::DebugDisplayRequestBus::Events::SetColor, AZ::Colors::White);
-            AzFramework::DebugDisplayRequestBus::Broadcast(&AzFramework::DebugDisplayRequestBus::Events::Draw2dTextLabel, 
-                center_screenposition_x / dpiScalingFactor, screenposition_debugtext_y / dpiScalingFactor, cl_viewportConnectionMessageFontSize, m_centerViewportDebugText.c_str(), true);
+            // Draw title
+            const char* centerViewportDebugTextTitle = "Multiplayer Editor";
+            const float textHeight = m_fontDrawInterface->GetTextSize(m_drawParams, centerViewportDebugTextTitle).GetY();
+            const float screenposition_title_y = center_screenposition_y-textHeight*0.5f;
+            m_drawParams.m_position = AZ::Vector3(center_screenposition_x, screenposition_title_y, 1.0f);
+            m_drawParams.m_hAlign = AzFramework::TextHorizontalAlignment::Center;
+            m_drawParams.m_color = AZ::Colors::Yellow;
+            m_fontDrawInterface->DrawScreenAlignedText2d(m_drawParams, centerViewportDebugTextTitle);
+            
+            // Draw center debug text under the title
+            // Calculate line spacing based on the font's actual line height
+            m_drawParams.m_color = AZ::Colors::White;
+            m_drawParams.m_position.SetY(m_drawParams.m_position.GetY() + textHeight + m_lineSpacing);
+            m_fontDrawInterface->DrawScreenAlignedText2d(m_drawParams, m_centerViewportDebugText.c_str());
         }
 
         // Build the connection status string (just show client connected or disconnected status for now)
         const auto multiplayerSystemComponent = AZ::Interface<IMultiplayer>::Get();
         MultiplayerAgentType agentType = multiplayerSystemComponent->GetAgentType();        
-        if (agentType != MultiplayerAgentType::Client)
-        {
-            return;
-        }
-        
-        // Display the connection status to the top-left viewport
-        if (AzNetworking::INetworkInterface* networkInterface = AZ::Interface<AzNetworking::INetworking>::Get()->RetrieveNetworkInterface(AZ::Name(MpNetworkInterfaceName)))
-        {
-            AzNetworking::IConnectionSet& connectionSet = networkInterface->GetConnectionSet();
-            if (connectionSet.GetConnectionCount() > 0)
+        if (agentType == MultiplayerAgentType::Client)
+        {        
+            // Display the connection status in the bottom-right viewport
+            if (AzNetworking::INetworkInterface* networkInterface = AZ::Interface<AzNetworking::INetworking>::Get()->RetrieveNetworkInterface(AZ::Name(MpNetworkInterfaceName)))
             {
-                // Display the connection status (calling VisitConnections(), but there's only 1 since we're a client)
-                auto displayConnectionStatus = [](AzNetworking::IConnection& connection)
+                AzNetworking::IConnectionSet& connectionSet = networkInterface->GetConnectionSet();
+                if (connectionSet.GetConnectionCount() > 0)
                 {
-                    AZStd::string connectionStatusText = AZStd::string::format("Operating as multiplayer Client: %s", ToString(connection.GetConnectionState()).data());
-                    AzFramework::DebugDisplayRequestBus::Broadcast(&AzFramework::DebugDisplayRequestBus::Events::SetColor, AZ::Colors::White);
-                    AzFramework::DebugDisplayRequestBus::Broadcast(&AzFramework::DebugDisplayRequestBus::Events::Draw2dTextLabel, 
-                        viewportConnectionTopLeftBorderPadding.GetX(), viewportConnectionTopLeftBorderPadding.GetY(), cl_viewportConnectionMessageFontSize, 
-                        connectionStatusText.c_str(), false);
-                };
-                connectionSet.VisitConnections(displayConnectionStatus);
-            }
-            else
-            {
-                // If we're a client yet are lacking a connection then we've been unintentionally disconnected
-                // Display a disconnect message in the viewport
-                AzFramework::DebugDisplayRequestBus::Broadcast(&AzFramework::DebugDisplayRequestBus::Events::SetColor, AZ::Colors::Red);
-                AzFramework::DebugDisplayRequestBus::Broadcast(&AzFramework::DebugDisplayRequestBus::Events::Draw2dTextLabel, 
-                    viewportConnectionTopLeftBorderPadding.GetX(), viewportConnectionTopLeftBorderPadding.GetY(), cl_viewportConnectionMessageFontSize, 
-                    "Multiplayer Client Disconnected!", false);
+                    connectionSet.VisitConnections([this](AzNetworking::IConnection& connection){ this->DrawConnectionStatus(connection.GetConnectionState()); });
+                }
+                else
+                {
+                    // If we're a client yet are lacking a connection then we've been unintentionally disconnected
+                    // Display a disconnect message in the viewport
+                    DrawConnectionStatus(AzNetworking::ConnectionState::Disconnected);
+                }
             }
         }
     }
@@ -144,5 +151,45 @@ namespace Multiplayer
     void MultiplayerConnectionViewportMessageSystemComponent::StopCenterViewportDebugMessaging()
     {
         m_centerViewportDebugText = "";
+    }
+
+    void MultiplayerConnectionViewportMessageSystemComponent::DrawConnectionStatus(AzNetworking::ConnectionState connectionState)
+    {
+        AZ::RPI::ViewportContextPtr viewport = AZ::RPI::ViewportContextRequests::Get()->GetDefaultViewportContext();
+        if (!viewport)
+        {
+            return;
+        }
+
+        // Draw the status (example: Connected or Disconnected)
+        const char* connectionStateText = ToString(connectionState).data();
+        const AzFramework::WindowSize viewportSize = viewport->GetViewportSize();
+        m_drawParams.m_hAlign = AzFramework::TextHorizontalAlignment::Right;
+        m_drawParams.m_position = AZ::Vector3(static_cast<float>(viewportSize.m_width), static_cast<float>(viewportSize.m_height), 1.0f) + AZ::Vector3(viewportConnectionBottomRightBorderPadding) * viewport->GetDpiScalingFactor();
+        
+        switch (connectionState)
+        {
+        case AzNetworking::ConnectionState::Connecting:
+            m_drawParams.m_color = AZ::Colors::Yellow;
+            break;
+        case AzNetworking::ConnectionState::Connected:
+            m_drawParams.m_color = AZ::Colors::Green;
+            break;
+        case AzNetworking::ConnectionState::Disconnecting:
+            m_drawParams.m_color = AZ::Colors::Orange;
+            break;
+        case AzNetworking::ConnectionState::Disconnected:
+            m_drawParams.m_color = AZ::Colors::Red;
+            break;
+        default: m_drawParams.m_color = AZ::Colors::White;
+        }
+
+        m_fontDrawInterface->DrawScreenAlignedText2d(m_drawParams, connectionStateText);
+
+        // Draw the status title above the current status
+        const float textHeight = m_fontDrawInterface->GetTextSize(m_drawParams, connectionStateText).GetY();
+        m_drawParams.m_color = AZ::Colors::White;
+        m_drawParams.m_position.SetY(m_drawParams.m_position.GetY() - textHeight - m_lineSpacing);
+        m_fontDrawInterface->DrawScreenAlignedText2d(m_drawParams, "Multiplayer Client Status:");
     }
 }
