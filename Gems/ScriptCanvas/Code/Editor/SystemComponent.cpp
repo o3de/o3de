@@ -204,13 +204,13 @@ namespace ScriptCanvasEditor
         , [[maybe_unused]] const AZ::Uuid& sourceUUID
         , AzToolsFramework::AssetBrowser::SourceFileCreatorList& creators)
     {
-        auto scriptCavnasAssetCreator = [](const char* fullSourceFolderNameInCallback, [[maybe_unused]] const AZ::Uuid& sourceUUID)
+        auto scriptCavnasAssetCreator = [](const AZStd::string& fullSourceFolderNameInCallback, [[maybe_unused]] const AZ::Uuid& sourceUUID)
         {
             AZStd::string defaultFilename = "NewScript";
             AZStd::string scriptCanvasExtension = ScriptCanvasEditor::SourceDescription::GetFileExtension();
 
             AZStd::string fullFilepath;
-            AZ::StringFunc::Path::ConstructFull(fullSourceFolderNameInCallback
+            AZ::StringFunc::Path::ConstructFull(fullSourceFolderNameInCallback.c_str()
                 , defaultFilename.c_str()
                 , scriptCanvasExtension.c_str()
                 , fullFilepath);
@@ -221,7 +221,7 @@ namespace ScriptCanvasEditor
                 fileCounter++;
                 AZStd::string incrementalFilename = defaultFilename + AZStd::to_string(fileCounter);
 
-                AZ::StringFunc::Path::ConstructFull(fullSourceFolderNameInCallback
+                AZ::StringFunc::Path::ConstructFull(fullSourceFolderNameInCallback.c_str()
                     , incrementalFilename.c_str()
                     , scriptCanvasExtension.c_str()
                     , fullFilepath);

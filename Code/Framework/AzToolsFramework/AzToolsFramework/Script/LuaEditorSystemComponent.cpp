@@ -61,12 +61,13 @@ namespace AzToolsFramework
             [[maybe_unused]] const AZ::Uuid& sourceUUID,
             AzToolsFramework::AssetBrowser::SourceFileCreatorList& creators)
         {
-            auto luaAssetCreator = [&](const char* fullSourceFolderNameInCallback, [[maybe_unused]] const AZ::Uuid& sourceUUID)
+            auto luaAssetCreator = [&](const AZStd::string& fullSourceFolderNameInCallback, [[maybe_unused]] const AZ::Uuid& sourceUUID)
             {
                 AZStd::string defaultScriptName = "NewScript";
 
                 AZStd::string fullFilepath;
-                AZ::StringFunc::Path::ConstructFull(fullSourceFolderNameInCallback,
+                AZ::StringFunc::Path::ConstructFull(
+                    fullSourceFolderNameInCallback.c_str(),
                     defaultScriptName.c_str(),
                     LuaExtension,
                     fullFilepath);
@@ -90,12 +91,12 @@ namespace AzToolsFramework
 
             creators.push_back({ "Lua_creator", "Lua Script", QIcon(), luaAssetCreator });
 
-            auto luaComponentAssetCreator = [&](const char* fullSourceFolderNameInCallback, [[maybe_unused]] const AZ::Uuid& sourceUUID)
+            auto luaComponentAssetCreator = [&](const AZStd::string& fullSourceFolderNameInCallback, [[maybe_unused]] const AZ::Uuid& sourceUUID)
             {
                 AZStd::string defaultScriptName = "NewComponent";
 
                 AZStd::string fullFilepath;
-                AZ::StringFunc::Path::ConstructFull(fullSourceFolderNameInCallback,
+                AZ::StringFunc::Path::ConstructFull(fullSourceFolderNameInCallback.c_str(),
                     defaultScriptName.c_str(),
                     LuaExtension,
                     fullFilepath);
