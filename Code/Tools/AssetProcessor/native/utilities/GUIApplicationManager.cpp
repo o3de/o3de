@@ -12,6 +12,7 @@
 #include "native/resourcecompiler/rccontroller.h"
 #include "native/FileServer/fileServer.h"
 #include "native/AssetManager/assetScanner.h"
+#include <native/utilities/PlatformConfiguration.h>
 
 #include <QApplication>
 #include <QDialogButtonBox>
@@ -443,6 +444,13 @@ bool GUIApplicationManager::OnError(const char* /*window*/, const char* message)
         return true;
     }
 
+    if (!InitiatedShutdown())
+    {
+        // During quitting, we don't pop up error message boxes.
+        // instead, we're going to return true, which will cause it to
+        // process to the log file instead.
+        return true;
+    }
     // If we're the main thread, then consider showing the message box directly.
     // note that all other threads will PAUSE if they emit a message while the main thread is showing this box
     // due to the way the trace system EBUS is mutex-protected.
@@ -743,6 +751,7 @@ void GUIApplicationManager::Reflect()
     EBUS_EVENT_RESULT(context, AZ::ComponentApplicationBus, GetSerializeContext);
     AZ_Assert(context, "No serialize context");
     AzToolsFramework::LogPanel::BaseLogPanel::Reflect(context);
+    AssetProcessor::PlatformConfiguration::Reflect(context);
 }
 
 const char* GUIApplicationManager::GetLogBaseName()

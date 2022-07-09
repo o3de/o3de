@@ -520,28 +520,6 @@ TEST_F(AssetUtilitiesTest, GetFileFingerprint_NonExistentFiles)
     EXPECT_STREQ(AssetUtilities::GetFileFingerprint(nonExistentFile1, "Name").c_str(), AssetUtilities::GetFileFingerprint(nonExistentFile1, "Name").c_str());
 }
 
-TEST_F(AssetUtilitiesTest, GetServerAddress_ReadFromConfig_Valid)
-{
-    QTemporaryDir tempDir;
-    QDir tempPath(tempDir.path());
-    QString assetServerAddress("T:/AssetServerCacheDummyFolder");
-    QString assetProcesorPlatformConfigPath = tempPath.absoluteFilePath("AssetProcessorPlatformConfig.ini");
-    UnitTestUtils::CreateDummyFile(assetProcesorPlatformConfigPath, QString("[Server]\ncacheServerAddress=%1\n").arg(assetServerAddress));
-
-    AssetUtilities::ResetAssetRoot();
-    QDir newRoot;
-    AssetUtilities::ComputeEngineRoot(newRoot, &tempPath);
-
-    auto settingsRegistry = AZ::SettingsRegistry::Get();
-    AZ::SettingsRegistryMergeUtils::ConfigParserSettings configParserSettings;
-    configParserSettings.m_registryRootPointerPath = AssetProcessor::AssetProcessorSettingsKey;
-    AssetProcessor::PlatformConfiguration::MergeConfigFileToSettingsRegistry(*settingsRegistry,
-        assetProcesorPlatformConfigPath.toUtf8().data());
-    QString assetServerAddressReturned = AssetUtilities::ServerAddress();
-    EXPECT_STREQ(assetServerAddressReturned.toUtf8().data(), assetServerAddress.toUtf8().data());
-}
-
-
 TEST_F(AssetUtilitiesTest, CreateDirWithTimeout_Valid)
 {
     QTemporaryDir tempDir;

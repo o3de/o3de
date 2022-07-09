@@ -37,8 +37,8 @@ namespace Terrain
                 ->Attribute(AZ::Script::Attributes::Category, "Terrain")
                 ->Attribute(AZ::Script::Attributes::Module, "terrain")
                 ->Constructor()
-                ->Property("gradientEntityId", BehaviorValueProperty(&TerrainSurfaceGradientMapping::m_gradientEntityId))
-                ->Property("surfaceTag", BehaviorValueProperty(&TerrainSurfaceGradientMapping::m_surfaceTag));
+                ->Property("GradientEntityId", BehaviorValueProperty(&TerrainSurfaceGradientMapping::m_gradientEntityId))
+                ->Property("SurfaceTag", BehaviorValueProperty(&TerrainSurfaceGradientMapping::m_surfaceTag));
         }
     }
 

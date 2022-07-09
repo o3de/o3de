@@ -92,15 +92,15 @@ namespace AzToolsFramework
             ProceduralPrefabReadOnlyHandler m_proceduralPrefabReadOnlyHandler;
 
             // Context menu item handlers
-            static void ContextMenu_CreatePrefab(AzToolsFramework::EntityIdList selectedEntities);
-            static void ContextMenu_InstantiatePrefab();
-            static void ContextMenu_InstantiateProceduralPrefab();
-            static void ContextMenu_ClosePrefab();
-            static void ContextMenu_EditPrefab(AZ::EntityId containerEntity);
-            static void ContextMenu_SavePrefab(AZ::EntityId containerEntity);
-            static void ContextMenu_Duplicate();
-            static void ContextMenu_DeleteSelected();
-            static void ContextMenu_DetachPrefab(AZ::EntityId containerEntity);
+            void ContextMenu_CreatePrefab(AzToolsFramework::EntityIdList selectedEntities);
+            void ContextMenu_InstantiatePrefab();
+            void ContextMenu_InstantiateProceduralPrefab();
+            void ContextMenu_ClosePrefab();
+            void ContextMenu_EditPrefab(AZ::EntityId containerEntity);
+            void ContextMenu_SavePrefab(AZ::EntityId containerEntity);
+            void ContextMenu_Duplicate();
+            void ContextMenu_DeleteSelected();
+            void ContextMenu_DetachPrefab(AZ::EntityId containerEntity);
 
             // Shortcut setup handlers
             void InitializeShortcuts();

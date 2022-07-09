@@ -24,6 +24,7 @@ AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnin
 AZ_POP_DISABLE_WARNING
 
 class QImage;
+class QMimeData;
 class QWidget;
 
 namespace AtomToolsFramework
@@ -181,4 +182,7 @@ namespace AtomToolsFramework
 
     //! Helper function to convert a full path into one containing an alias
     AZStd::string GetPathWithAlias(const AZStd::string& path);
+
+    //! Collect a set of file paths contained within asset browser entry or URL mine data
+    AZStd::set<AZStd::string> GetPathsFromMimeData(const QMimeData* mimeData);
 } // namespace AtomToolsFramework

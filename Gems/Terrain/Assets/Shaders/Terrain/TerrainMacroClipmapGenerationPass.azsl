@@ -57,9 +57,10 @@ void MainCS(
 
             float3 macroColor = TerrainMaterialSrg::m_baseColor.rgb;
             float3 macroNormal = float3(0.0, 0.0, 1.0);
-            SampleMacroTexture(worldPosition, positionDdx, positionDdy, macroColor, macroNormal);
+            bool hasNormal;
+            SampleMacroTexture(worldPosition, positionDdx, positionDdy, macroColor, macroNormal, hasNormal);
 
-            PassSrg::m_macroColorClipmaps[texelIndex] = float4(macroColor, 1.0);
+            PassSrg::m_macroColorClipmaps[texelIndex] = float4(macroColor, hasNormal ? HAS_NORMAL : NO_NORMAL);
             PassSrg::m_macroNormalClipmaps[texelIndex] = macroNormal.xy;
         }
     }
