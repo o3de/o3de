@@ -50,11 +50,17 @@ namespace AssetProcessor
         void AssetDataSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected);
     protected:
 
-        void PopulateOutgoingProductDependencies(ProductDependencyTreeItem* parent, AZ::s64 parentProductId);
-        void PopulateIncomingProductDependencies(ProductDependencyTreeItem* parent, AZ::s64 parentProductId);
+        // visitedDependencies is intentionally a copy because we need to independently track the chain for each branch in the graph
+        void PopulateOutgoingProductDependencies(ProductDependencyTreeItem* parent, AZ::s64 parentProductId, QSet<AZ::s64> visitedDependencies);
+        void PopulateIncomingProductDependencies(ProductDependencyTreeItem* parent, AZ::s64 parentProductId, QSet<AZ::s64> visitedDependencies);
 
         AZStd::shared_ptr<AzToolsFramework::AssetDatabase::AssetDatabaseConnection> m_sharedDbConnection;
-        AZStd::shared_ptr<AssetTreeFilterModel> m_productFilterModel = nullptr;
+        
+        // Note that the following pointer is passed in down from the main window.
+        // We cache the raw pointer here as this window does not own it and is not
+        // responsible for destroying it (the main window will).
+        AssetTreeFilterModel* m_productFilterModel = nullptr;
+        
         AZStd::unique_ptr<ProductDependencyTreeItem> m_root;
         AZStd::unordered_set<AZ::s64> m_trackedProductIds;
         DependencyTreeType m_treeType;

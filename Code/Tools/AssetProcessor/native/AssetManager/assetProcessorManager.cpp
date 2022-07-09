@@ -74,10 +74,12 @@ namespace AssetProcessor
         PopulateJobStateCache();
 
         AssetProcessor::ProcessingJobInfoBus::Handler::BusConnect();
+        AZ::Interface<AssetProcessor::RecognizerConfiguration>::Register(m_platformConfig);
     }
 
     AssetProcessorManager::~AssetProcessorManager()
     {
+        AZ::Interface<AssetProcessor::RecognizerConfiguration>::Unregister(m_platformConfig);
         AssetProcessor::ProcessingJobInfoBus::Handler::BusDisconnect();
     }
 
@@ -240,7 +242,14 @@ namespace AssetProcessor
                 // because sometimes jobs take a short cut from "started" -> "failed" or "started" -> "complete
                 // without going thru the RC.
                 // as such, all the code in this block should be crafted to work regardless of whether its double called.
-                AssetProcessor::StatsCapture::EndCaptureStat(statKey.toUtf8().constData());
+                AZStd::optional<AZStd::sys_time_t> operationDuration =
+                    AssetProcessor::StatsCapture::EndCaptureStat(statKey.toUtf8().constData(), true);
+
+                if (operationDuration)
+                {
+                    Q_EMIT JobProcessDurationChanged(
+                        jobEntry, QTime::fromMSecsSinceStartOfDay(aznumeric_cast<int>(operationDuration.value())));
+                }
 
                 m_jobRunKeyToJobInfoMap.erase(jobEntry.m_jobRunKey);
                 Q_EMIT SourceFinished(sourceUUID, legacySourceUUID);
@@ -2284,7 +2293,10 @@ namespace AssetProcessor
 
     void AssetProcessorManager::UpdateForCacheServer(JobDetails& jobDetails)
     {
-        if (AssetUtilities::ServerAddress().isEmpty())
+        AssetServerMode assetServerMode = AssetServerMode::Inactive;
+        AssetServerBus::BroadcastResult(assetServerMode, &AssetServerBus::Events::GetRemoteCachingMode);
+
+        if (assetServerMode == AssetServerMode::Inactive)
         {
             // Asset Cache Server mode feature is turned off
             return;
@@ -2296,21 +2308,20 @@ namespace AssetProcessor
         }
 
         auto& cacheRecognizerContainer = m_platformConfig->GetAssetCacheRecognizerContainer();
-        for(auto&& cacheRecognizer : cacheRecognizerContainer)
+        for(const auto& cacheRecognizerPair : cacheRecognizerContainer)
         {
-            auto matchingPatternIt = AZStd::find_if(
-                jobDetails.m_assetBuilderDesc.m_patterns.begin(),
-                jobDetails.m_assetBuilderDesc.m_patterns.end(),
-                [cacheRecognizer](const AssetBuilderSDK::AssetBuilderPattern& pattern)
-                {
-                    return cacheRecognizer.m_patternMatcher.GetBuilderPattern().m_type == pattern.m_type &&
-                           cacheRecognizer.m_patternMatcher.GetBuilderPattern().m_pattern == pattern.m_pattern;
-                }
-            );
+            auto& cacheRecognizer = cacheRecognizerPair.second;
 
-            if (matchingPatternIt != jobDetails.m_assetBuilderDesc.m_patterns.end())
+            bool matchFound =
+                cacheRecognizer.m_patternMatcher.MatchesPath(jobDetails.m_jobEntry.m_databaseSourceName.toUtf8().data());
+
+            bool builderNameMatches =
+                cacheRecognizer.m_name.compare(jobDetails.m_assetBuilderDesc.m_name.c_str()) == 0;
+
+            if (matchFound || builderNameMatches)
             {
                 jobDetails.m_checkServer = cacheRecognizer.m_checkServer;
+                return;
             }
         }
     }
@@ -3869,19 +3880,12 @@ namespace AssetProcessor
                         {
                             if (auto result = jobDependenciesDuplicateCheck.insert(jobDependency); !result.second)
                             {
-                                auto warningMessage = AZStd::string::format(
-                                    "Builder `%s` declared duplicate Job Dependencies for file `%s`.  Dependency: (`%s` `%s` `%s`).  Duplicates will be skipped.  "
-                                    "Please update the builder or content to remove the duplicates.",
-                                    builderInfo.m_name.c_str(),
-                                    actualRelativePath.toUtf8().constData(),
-                                    jobDependency.m_sourceFile.ToString().c_str(),
-                                    jobDependency.m_jobKey.c_str(),
-                                    jobDependency.m_platformIdentifier.c_str());
-
-                                AZ_Warning(AssetProcessor::DebugChannel, false, "%s", warningMessage.c_str());
-
-                                newJob.m_warnings.push_back(AZStd::move(warningMessage));
-
+                                // It is not an error or warning to supply the same job dependency
+                                // repeatedly as a duplicate.  It is common for builders to be parsing
+                                // source files which may mention the same dependency repeatedly.
+                                // Rather than require all of them do filtering on their end, it is
+                                // cleaner to do the de-duplication here and drop the duplicates.
+                                
                                 continue;
                             }
 

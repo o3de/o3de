@@ -10,6 +10,7 @@
 #include <AzCore/std/ranges/all_view.h>
 #include <AzCore/std/ranges/ranges_adaptor.h>
 #include <AzCore/std/ranges/ranges_functional.h>
+#include <AzCore/std/typetraits/is_reference.h>
 
 namespace AZStd::ranges
 {
@@ -85,7 +86,7 @@ namespace AZStd::ranges
             return iterator<true>{ *this, ranges::begin(m_base) };
         }
 
-        constexpr decltype(auto) end()
+        constexpr auto end()
         {
             if constexpr (forward_range<View> && is_reference_v<InnerRange> &&
                 forward_range<InnerRange> && common_range<View> && common_range<InnerRange>)
@@ -126,26 +127,47 @@ namespace AZStd::ranges
     struct join_view_iterator_category {};
     template<class View, bool Const>
     struct join_view_iterator_category<View, Const, enable_if_t<conjunction_v<
-        is_reference<range_reference_t<Internal::maybe_const<Const, View>>>,
+        /*ref-is-glvalue*/ is_reference<range_reference_t<Internal::maybe_const<Const, View>>>,
         bool_constant<forward_range<Internal::maybe_const<Const, View>>>,
         bool_constant<forward_range<range_reference_t<Internal::maybe_const<Const, View>>>>
         >>>
     {
     private:
-        using Base = Internal::maybe_const<Const, View>;
-        using OuterC = typename iterator_traits<iterator_t<Base>>::iterator_category;
-        using InnerC = typename iterator_traits<iterator_t<range_reference_t<Base>>>::iterator_category;
+        // Use a "function" to check the type traits of the join view iterators
+        // and return an instance of the correct tag type
+        // The function will only be used in the unevaluated context of decltype
+        // to determine the type.
+        // It is a form of template metaprogramming which uses actual code
+        // to create an instance of a type and then uses decltype to extract the type
+        static constexpr auto get_iterator_category()
+        {
+            using Base = Internal::maybe_const<Const, View>;
+            using InnerBase = range_reference_t<Base>;
+
+            using OuterIter = iterator_t<Base>;
+            using InnerIter = iterator_t<InnerBase>;
+
+            using OuterC = typename iterator_traits<OuterIter>::iterator_category;
+            using InnerC = typename iterator_traits<InnerIter>::iterator_category;
+
+            if constexpr (derived_from<OuterC, bidirectional_iterator_tag>
+                && derived_from<InnerC, bidirectional_iterator_tag>
+                && common_range<InnerBase>)
+            {
+                return bidirectional_iterator_tag{};
+            }
+            else if constexpr (derived_from<OuterC, forward_iterator_tag>
+                && derived_from<InnerC, forward_iterator_tag>)
+            {
+                return forward_iterator_tag{};
+            }
+            else
+            {
+                return input_iterator_tag{};
+            }
+        }
     public:
-        using iterator_category = conditional_t<conjunction_v<
-                bool_constant<derived_from<OuterC, bidirectional_iterator_tag>>,
-                bool_constant<derived_from<InnerC, bidirectional_iterator_tag>>,
-                bool_constant<common_range<range_reference_t<Base>>> >,
-                bidirectional_iterator_tag,
-                conditional_t<conjunction_v<
-                    bool_constant<derived_from<OuterC, forward_iterator_tag>>,
-                    bool_constant<derived_from<InnerC, forward_iterator_tag>> >,
-                    forward_iterator_tag,
-                    input_iterator_tag>>;
+        using iterator_category = decltype(get_iterator_category());
     };
 
 
@@ -183,11 +205,23 @@ namespace AZStd::ranges
         using difference_type = common_type_t<range_difference_t<Base>,
             range_difference_t<range_reference_t<Base>>>;
 
+    // libstdc++ std::reverse_iterator use pre C++ concept when the concept feature is off
+    // which requires that the iterator type has the aliases
+    // of difference_type, value_type, pointer, reference, iterator_category,
+    // With C++20, the iterator concept support is used to deduce the traits
+    // needed, therefore alleviating the need to special std::iterator_traits
+    // The following code allows std::reverse_iterator(which is aliased into AZStd namespace)
+    // to work with the AZStd range views
+    #if !__cpp_lib_concepts
+        using pointer = void;
+        using reference = range_reference_t<range_reference_t<Base>>;
+    #endif
+
         template<bool Enable = default_initializable<OuterIter> && default_initializable<InnerIter>,
             class = enable_if_t<Enable>>
         iterator() {}
 
-        constexpr iterator(join_view& parent, OuterIter outer)
+        constexpr iterator(Parent& parent, OuterIter outer)
             : m_parent(addressof(parent))
             , m_outer(AZStd::move(outer))
         {
@@ -243,14 +277,23 @@ namespace AZStd::ranges
             return *this;
         }
 
-        constexpr void operator++(int)
+        constexpr auto operator++(int)
         {
-            ++(*this);
+            if constexpr (ref_is_glvalue && forward_range<Base> && forward_range<range_reference_t<Base>>)
+            {
+                auto tmp = *this;
+                ++(*this);
+                return tmp;
+            }
+            else
+            {
+                ++(*this);
+            }
         }
 
         template<bool Enable = ref_is_glvalue && bidirectional_range<Base> && bidirectional_range<range_reference_t<Base>>,
             class = enable_if_t<Enable && common_range<range_reference_t<Base>>>>
-        constexpr iterator& operator--() const
+        constexpr iterator& operator--()
         {
             if (m_outer == ranges::end(m_parent->m_base))
             {
@@ -261,14 +304,14 @@ namespace AZStd::ranges
             while (m_inner == ranges::begin(*m_outer))
             {
                 m_inner = ranges::end(*--m_outer);
-                --m_inner;
             }
+            --m_inner;
             return *this;
         }
 
         template<bool Enable = ref_is_glvalue && bidirectional_range<Base> && bidirectional_range<range_reference_t<Base>>,
             class = enable_if_t<Enable && common_range<range_reference_t<Base>>>>
-        constexpr iterator operator--(int) const
+        constexpr iterator operator--(int)
         {
             auto tmp = *this;
             --(*this);
@@ -311,9 +354,9 @@ namespace AZStd::ranges
     private:
         constexpr void satisfy()
         {
-            // dereference the outer iterator if the inner iterato is a reference
-            // or make a copy of deref ference of outer iterator
-            auto update_inner = [this](const iterator_t<Base>& x) constexpr -> auto&&
+            // dereference the outer iterator if the inner iterator is a reference
+            // or make a copy of the dereference of outer iterator
+            auto update_inner = [this](const OuterIter& x) constexpr -> auto&&
             {
                 if constexpr (ref_is_glvalue)     // *x is a reference
                 {
@@ -330,7 +373,6 @@ namespace AZStd::ranges
 
             for (; m_outer != ranges::end(m_parent->m_base); ++m_outer)
             {
-
                 auto&& inner = update_inner(m_outer);
                 m_inner = ranges::begin(inner);
                 // m_inner is end then the inner range is empty
@@ -351,7 +393,7 @@ namespace AZStd::ranges
         //! iterator to the actually range element which is wrapped by the view
         InnerIter m_inner{};
         //! reference to parent join_view
-        join_view<View>* m_parent{};
+        Parent* m_parent{};
     };
 
 

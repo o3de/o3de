@@ -25,6 +25,8 @@ set(FILES
     Behaviors/LodRuleBehavior.cpp
     Behaviors/SkeletonOptimizationRuleBehavior.h
     Behaviors/SkeletonOptimizationRuleBehavior.cpp
+    Behaviors/RootMotionExtractionRuleBehavior.h
+    Behaviors/RootMotionExtractionRuleBehavior.cpp
     Rules/ActorPhysicsSetupRule.h
     Rules/ActorPhysicsSetupRule.cpp
     Rules/IActorScaleRule.h

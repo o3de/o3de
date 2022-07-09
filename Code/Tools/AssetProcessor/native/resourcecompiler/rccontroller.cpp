@@ -79,6 +79,9 @@ namespace AssetProcessor
     void RCController::QuitRequested()
     {
         m_shuttingDown = true;
+        
+        // cancel all jobs:
+        AssetBuilderSDK::JobCommandBus::Broadcast(&AssetBuilderSDK::JobCommandBus::Events::Cancel);
 
         if (m_RCJobListModel.jobsInFlight() == 0)
         {

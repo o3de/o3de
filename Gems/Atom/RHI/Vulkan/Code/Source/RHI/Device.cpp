@@ -220,6 +220,23 @@ namespace AZ
                 deviceInfo.pNext = &descriptorIndexingFeatures;
             }
 
+#if defined(USE_NSIGHT_AFTERMATH)
+            requiredExtensions.push_back(VK_NV_DEVICE_DIAGNOSTICS_CONFIG_EXTENSION_NAME);
+
+            // Set up device creation info for Aftermath feature flag configuration.
+            VkDeviceDiagnosticsConfigFlagsNV aftermathFlags =
+                VK_DEVICE_DIAGNOSTICS_CONFIG_ENABLE_RESOURCE_TRACKING_BIT_NV | // Enable tracking of resources.
+                VK_DEVICE_DIAGNOSTICS_CONFIG_ENABLE_AUTOMATIC_CHECKPOINTS_BIT_NV | // Capture call stacks for all draw calls, compute
+                                                                                   // dispatches, and resource copies.
+                VK_DEVICE_DIAGNOSTICS_CONFIG_ENABLE_SHADER_DEBUG_INFO_BIT_NV; // Generate debug information for shaders.
+
+            VkDeviceDiagnosticsConfigCreateInfoNV aftermathInfo = {};
+            aftermathInfo.sType = VK_STRUCTURE_TYPE_DEVICE_DIAGNOSTICS_CONFIG_CREATE_INFO_NV;
+            aftermathInfo.flags = aftermathFlags;
+            aftermathInfo.pNext = deviceInfo.pNext;
+            deviceInfo.pNext = &aftermathInfo;
+#endif
+
             // set raytracing features if we are running Vulkan >= 1.2
             VkPhysicalDeviceAccelerationStructureFeaturesKHR accelerationStructureFeatures = {};
             VkPhysicalDeviceRayTracingPipelineFeaturesKHR rayTracingPipelineFeatures = {};
