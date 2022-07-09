@@ -230,7 +230,8 @@ namespace ScriptCanvasEditor
             AZ::IO::Path fullAzFilePath = fullFilepath;
             ScriptCanvas::DataPtr graph = EditorGraph::Create();
             const AZ::Uuid assetId = AZ::Uuid::CreateRandom();
-            SourceHandle source = SourceHandle(graph, assetId, fullAzFilePath);
+            SourceHandle source = SourceHandle(graph, assetId);
+            source = SourceHandle::MarkAbsolutePath(source, fullAzFilePath);
 
             AZ::IO::FileIOStream fileStream(fullAzFilePath.c_str(), AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeText);
             if (fileStream.IsOpen())
@@ -245,7 +246,7 @@ namespace ScriptCanvasEditor
                     AzToolsFramework::AssetBrowser::AssetBrowserFileCreationNotificationBus::Event(
                         AzToolsFramework::AssetBrowser::AssetBrowserFileCreationNotifications::FileCreationNotificationBusId
                         , &AzToolsFramework::AssetBrowser::AssetBrowserFileCreationNotifications::HandleAssetCreatedInEditor
-                        , source.Path().Native()
+                        , source.AbsolutePath().Native()
                         , AZ::Crc32());
                 }
 
@@ -257,7 +258,7 @@ namespace ScriptCanvasEditor
             }
         };
 
-        creators.push_back({ "ScriptCanvas_creator", "ScriptCanvas", QIcon(), scriptCavnasAssetCreator });
+        creators.push_back({ "ScriptCanvas_creator", "ScriptCanvas Graph", QIcon(), scriptCavnasAssetCreator });
     }
 
     void SystemComponent::AddSourceFileOpeners
