@@ -65,14 +65,14 @@ namespace AZ
             
             // EMotionFX source gives 16 bit indices and 32 bit float weights
             // Atom consumes 32 bit uint indices and 32 bit float weights (range 0-1)
-            const uint32_t* sourceOriginalVertex = static_cast<uint32_t*>(mesh->FindOriginalVertexData(EMotionFX::Mesh::ATTRIB_ORGVTXNUMBERS));
+            auto orignalVertexAttr = mesh->GetVertexAttribute<EMotionFX::AttributeType::OrginalVertexNumber>();
             const uint32_t vertexCount = subMesh->GetNumVertices();
             const uint32_t vertexStart = subMesh->GetStartVertex();
             if (sourceSkinningInfo)
             {
                 for (uint32_t vertexIndex = 0; vertexIndex < vertexCount; ++vertexIndex)
                 {
-                    const uint32_t originalVertex = sourceOriginalVertex[vertexIndex + vertexStart];
+                    const uint32_t originalVertex = orignalVertexAttr->GetOrignal()[vertexIndex + vertexStart];
                     const uint32_t influenceCount = AZStd::GetMin<uint32_t>(
                         maxInfluencesPerVertex, static_cast<uint32_t>(sourceSkinningInfo->GetNumInfluences(originalVertex)));
 

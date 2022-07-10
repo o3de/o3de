@@ -46,10 +46,11 @@ namespace EMotionFX
         void ScaleMesh(Mesh* mesh)
         {
             const uint32 vertexCount = mesh->GetNumVertices();
-            AZ::Vector3* positions = static_cast<AZ::Vector3*>(mesh->FindOriginalVertexData(EMotionFX::Mesh::ATTRIB_POSITIONS));
+
+            const auto positionAttribute = mesh->GetVertexAttribute<EMotionFX::AttributeType::Position>();
             for (uint32 vertexNum = 0; vertexNum < vertexCount; ++vertexNum)
             {
-                positions[vertexNum] *= m_scaleFactor;
+                positionAttribute->GetOrignal()[vertexNum] *= m_scaleFactor;
             }
         }
 
@@ -165,13 +166,13 @@ namespace EMotionFX
 
         const Mesh* mesh = m_actor->GetMesh(0, 0);
         const uint32 vertexCount = mesh->GetNumOrgVertices();
-        const AZ::Vector3* positions = static_cast<AZ::Vector3*>(mesh->FindVertexData(EMotionFX::Mesh::ATTRIB_POSITIONS));
+        auto positionAttr = mesh->GetVertexAttribute<AttributeType::Position>();
 
-        const AZStd::vector<AZ::Vector3> neutralPoints = [vertexCount, &positions](){
+        const AZStd::vector<AZ::Vector3> neutralPoints = [vertexCount, &positionAttr](){
             AZStd::vector<AZ::Vector3> p;
             for (uint32 vertexNum = 0; vertexNum < vertexCount; ++vertexNum)
             {
-                p.emplace_back(positions[vertexNum]);
+                p.emplace_back(positionAttr->GetData()[vertexNum]);
             }
             return p;
         }();
@@ -191,7 +192,7 @@ namespace EMotionFX
 
             for (uint32 vertexNum = 0; vertexNum < vertexCount; ++vertexNum)
             {
-                gotWeightedPoints.emplace_back(positions[vertexNum]);
+                gotWeightedPoints.emplace_back(positionAttr->GetData()[vertexNum]);
             }
 
             for (const AZ::Vector3& neutralPoint : neutralPoints)

@@ -57,6 +57,7 @@ set(FILES
     Source/MeshDeformer.h
     Source/MeshDeformerStack.cpp
     Source/MeshDeformerStack.h
+    Source/VertexAttributeLayerBuffer.h
     Source/MorphMeshDeformer.cpp
     Source/MorphMeshDeformer.h
     Source/MorphSetup.cpp
@@ -145,8 +146,6 @@ set(FILES
     Source/Velocity.h
     Source/VertexAttributeLayer.cpp
     Source/VertexAttributeLayer.h
-    Source/VertexAttributeLayerAbstractData.cpp
-    Source/VertexAttributeLayerAbstractData.h
     Source/AnimGraph.cpp
     Source/AnimGraph.h
     Source/AnimGraphBus.h

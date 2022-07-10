@@ -15,7 +15,6 @@
 #include <EMotionFX/Source/Node.h>
 #include <EMotionFX/Source/SkinningInfoVertexAttributeLayer.h>
 #include <EMotionFX/Source/SubMesh.h>
-#include <EMotionFX/Source/VertexAttributeLayerAbstractData.h>
 #include <Integration/Assets/ActorAsset.h>
 #include <Tests/TestAssetCode/MeshFactory.h>
 

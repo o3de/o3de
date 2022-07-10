@@ -136,42 +136,42 @@ namespace EMotionFX
             }
 
             // output data
-            AZ::Vector3* positions   = static_cast<AZ::Vector3*>(m_mesh->FindVertexData(Mesh::ATTRIB_POSITIONS));
-            AZ::Vector3* normals     = static_cast<AZ::Vector3*>(m_mesh->FindVertexData(Mesh::ATTRIB_NORMALS));
-            AZ::Vector4* tangents    = static_cast<AZ::Vector4*>(m_mesh->FindVertexData(Mesh::ATTRIB_TANGENTS));
-            AZ::Vector3* bitangents  = static_cast<AZ::Vector3*>(m_mesh->FindVertexData(Mesh::ATTRIB_BITANGENTS));
+            auto positionsAttr = m_mesh->GetVertexAttribute<AttributeType::Position>();
+            auto normalsAttr = m_mesh->GetVertexAttribute<AttributeType::Normal>();
+            auto tangentsAttr = m_mesh->GetVertexAttribute<AttributeType::Tangent>();
+            auto bitangentsAttr = m_mesh->GetVertexAttribute<AttributeType::Bitangent>();
 
             // input data
             const MorphTargetStandard::DeformData::VertexDelta* deltas = deformData->m_deltas;
             const float minValue = deformData->m_minValue;
             const float maxValue = deformData->m_maxValue;
 
-            if (tangents && bitangents)
+            if (tangentsAttr && bitangentsAttr)
             {
                 // process all vertices that we need to deform
                 for (uint32 v = 0; v < numDeformVerts; ++v)
                 {
                     uint32 vtxNr = deltas[v].m_vertexNr;
 
-                    positions [vtxNr] = positions[vtxNr] + deltas[v].m_position.ToVector3(minValue, maxValue) * weight;
-                    normals   [vtxNr] = normals[vtxNr] + deltas[v].m_normal.ToVector3(-2.0f, 2.0f) * weight;
-                    bitangents[vtxNr] = bitangents[vtxNr] + deltas[v].m_bitangent.ToVector3(-2.0f, 2.0f) * weight;
+                    positionsAttr->GetData() [vtxNr] = positionsAttr->GetData()[vtxNr] + deltas[v].m_position.ToVector3(minValue, maxValue) * weight;
+                    normalsAttr->GetData() [vtxNr] = normalsAttr->GetData() [vtxNr] + deltas[v].m_normal.ToVector3(-2.0f, 2.0f) * weight;
+                    bitangentsAttr->GetData()[vtxNr] = bitangentsAttr->GetData()[vtxNr] + deltas[v].m_bitangent.ToVector3(-2.0f, 2.0f) * weight;
 
                     const AZ::Vector3 tangentDirVector = deltas[v].m_tangent.ToVector3(-2.0f, 2.0f);
-                    tangents[vtxNr] += AZ::Vector4(tangentDirVector.GetX()*weight, tangentDirVector.GetY()*weight, tangentDirVector.GetZ()*weight, 0.0f);
+                    tangentsAttr->GetData()[vtxNr] += AZ::Vector4(tangentDirVector.GetX()*weight, tangentDirVector.GetY()*weight, tangentDirVector.GetZ()*weight, 0.0f);
                 }
             }
-            else if (tangents && !bitangents) // tangents but no bitangents
+            else if (tangentsAttr && !bitangentsAttr) // tangents but no bitangents
             {
                 for (uint32 v = 0; v < numDeformVerts; ++v)
                 {
                     uint32 vtxNr = deltas[v].m_vertexNr;
 
-                    positions[vtxNr] = positions[vtxNr] + deltas[v].m_position.ToVector3(minValue, maxValue) * weight;
-                    normals  [vtxNr] = normals[vtxNr] + deltas[v].m_normal.ToVector3(-2.0f, 2.0f) * weight;
+                    positionsAttr->GetData()[vtxNr] = positionsAttr->GetData()[vtxNr] + deltas[v].m_position.ToVector3(minValue, maxValue) * weight;
+                    normalsAttr->GetData() [vtxNr] = normalsAttr->GetData() [vtxNr] + deltas[v].m_normal.ToVector3(-2.0f, 2.0f) * weight;
 
                     const AZ::Vector3 tangentDirVector = deltas[v].m_tangent.ToVector3(-2.0f, 2.0f);
-                    tangents[vtxNr] += AZ::Vector4(tangentDirVector.GetX()*weight, tangentDirVector.GetY()*weight, tangentDirVector.GetZ()*weight, 0.0f);
+                    tangentsAttr->GetData()[vtxNr] += AZ::Vector4(tangentDirVector.GetX()*weight, tangentDirVector.GetY()*weight, tangentDirVector.GetZ()*weight, 0.0f);
                 }
             }
             else // no tangents
@@ -181,8 +181,8 @@ namespace EMotionFX
                 {
                     uint32 vtxNr = deltas[v].m_vertexNr;
 
-                    positions[vtxNr] = positions[vtxNr] + deltas[v].m_position.ToVector3(minValue, maxValue) * weight;
-                    normals[vtxNr]   = normals[vtxNr] + deltas[v].m_normal.ToVector3(-2.0f, 2.0f) * weight;
+                    positionsAttr->GetData()[vtxNr] = positionsAttr->GetData()[vtxNr] + deltas[v].m_position.ToVector3(minValue, maxValue) * weight;
+                    normalsAttr->GetData()[vtxNr]   = normalsAttr->GetData()[vtxNr] + deltas[v].m_normal.ToVector3(-2.0f, 2.0f) * weight;
                 }
             }
         }

@@ -98,12 +98,17 @@ namespace EMotionFX
         AZ_Assert(layer, "Cannot find skinning info");
 
         // Perform the skinning.
-        AZ::Vector3* __restrict positions    = static_cast<AZ::Vector3*>(m_mesh->FindVertexData(Mesh::ATTRIB_POSITIONS));
-        AZ::Vector3* __restrict normals      = static_cast<AZ::Vector3*>(m_mesh->FindVertexData(Mesh::ATTRIB_NORMALS));
-        AZ::Vector4* __restrict tangents     = static_cast<AZ::Vector4*>(m_mesh->FindVertexData(Mesh::ATTRIB_TANGENTS));
-        AZ::Vector3* __restrict bitangents   = static_cast<AZ::Vector3*>(m_mesh->FindVertexData(Mesh::ATTRIB_BITANGENTS));
-        AZ::u32*     __restrict orgVerts     = static_cast<AZ::u32*>(m_mesh->FindVertexData(Mesh::ATTRIB_ORGVTXNUMBERS));
-        SkinVertexRange(0, m_mesh->GetNumVertices(), positions, normals, tangents, bitangents, orgVerts, layer);
+        auto* __restrict positionsAttr    = m_mesh->GetVertexAttribute<AttributeType::Position>();
+        auto* __restrict normalsAttr      = m_mesh->GetVertexAttribute<AttributeType::Normal>();
+        auto* __restrict tangentsAttr     = m_mesh->GetVertexAttribute<AttributeType::Tangent>();
+        auto* __restrict bitangentsAttr   = m_mesh->GetVertexAttribute<AttributeType::Bitangent>();
+        auto* __restrict orgVertsAttr     = m_mesh->GetVertexAttribute<AttributeType::OrginalVertexNumber>();
+        SkinVertexRange(0, m_mesh->GetNumVertices(), 
+            positionsAttr->GetData().data(), 
+            normalsAttr->GetData().data(), 
+            tangentsAttr->GetData().data(), 
+            bitangentsAttr->GetData().data(), 
+            orgVertsAttr->GetData().data(), layer);
     }
 
 

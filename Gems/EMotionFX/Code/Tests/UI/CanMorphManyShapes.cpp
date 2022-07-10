@@ -32,10 +32,10 @@ namespace EMotionFX
         void ScaleMesh(Mesh* mesh)
         {
             const uint32 vertexCount = mesh->GetNumVertices();
-            AZ::Vector3* positions = static_cast<AZ::Vector3*>(mesh->FindOriginalVertexData(EMotionFX::Mesh::ATTRIB_POSITIONS));
+            auto positionAttr = mesh->GetVertexAttribute<AttributeType::Position>();
             for (uint32 vertexNum = 0; vertexNum < vertexCount; ++vertexNum)
             {
-                positions[vertexNum] *= m_scaleFactor;
+                positionAttr->GetOrignal()[vertexNum] *= m_scaleFactor;
             }
         }
 

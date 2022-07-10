@@ -8,6 +8,15 @@
 
 #pragma once
 
+#include <EMotionFX/Source/VertexAttributeLayerBuffer.h>
+#include <AzCore/Name/Name.h>
+#include <AzCore/std/containers/array.h>
+#include <AzCore/std/containers/span.h>
+#include <AzCore/std/containers/variant.h>
+#include <AzCore/std/iterator.h>
+#include <AzCore/std/optional.h>
+#include <AzCore/std/smart_ptr/unique_ptr.h>
+#include <AzCore/std/utility/move.h>
 #include "EMotionFXConfig.h"
 #include <AzCore/Math/Aabb.h>
 #include <AzCore/std/containers/vector.h>
@@ -18,9 +27,7 @@
 #include "Transform.h"
 
 #include <MCore/Source/Vector.h>
-#include <AzCore/std/containers/vector.h>
 #include <MCore/Source/Ray.h>
-#include <MCore/Source/Color.h>
 
 namespace AZ::RPI
 {
@@ -60,6 +67,11 @@ namespace EMotionFX
         AZ_CLASS_ALLOCATOR_DECL
 
     public:
+        using VertexAttributes = AZStd::variant<
+            AZStd::unique_ptr<VertexAttributeLayerBuffer<AZ::Vector3>>,
+            AZStd::unique_ptr<VertexAttributeLayerBuffer<AZ::u32>>,
+            AZStd::unique_ptr<VertexAttributeLayerBuffer<AZ::Vector2>>,
+            AZStd::unique_ptr<VertexAttributeLayerBuffer<AZ::Vector4>>>;
         /**
          * VertexAttributeLayerAbstractData::GetType() values for the vertex data
          * Use these with the Mesh::FindVertexData() and Mesh::FindOriginalVertexData() methods.
@@ -70,9 +82,7 @@ namespace EMotionFX
             ATTRIB_NORMALS          = 1,    /**< Vertex normals. Typecast to AZ::Vector3. Normals are always exist. */
             ATTRIB_TANGENTS         = 2,    /**< Vertex tangents. Typecast to <b> AZ::Vector4 </b>. */
             ATTRIB_UVCOORDS         = 3,    /**< Vertex uv coordinates. Typecast to AZ::Vector2. */
-            ATTRIB_COLORS32         = 4,    /**< Vertex colors in 32-bits. Typecast to uint32. */
             ATTRIB_ORGVTXNUMBERS    = 5,    /**< Original vertex numbers. Typecast to uint32. Original vertex numbers always exist. */
-            ATTRIB_COLORS128        = 6,    /**< Vertex colors in 128-bits. */
             ATTRIB_BITANGENTS       = 7,    /**< Vertex bitangents (aka binormal). Typecast to AZ::Vector3. When tangents exists bitangents may still not exist! */
         };
 
@@ -104,46 +114,6 @@ namespace EMotionFX
         static Mesh* CreateFromModelLod(const AZ::Data::Asset<AZ::RPI::ModelLodAsset>& sourceModelLod, const AZStd::unordered_map<AZ::u16, AZ::u16>& skinToSkeletonIndexMap);
 
         /**
-         * Recalculates the vertex normals.
-         * @param useDuplicates Setting this to true will cause hard borders at vertices that have been duplicated. Setting to false (default) will use the original mesh vertex positions only
-         *                      which results in the mesh being fully smoothed. On a cube however that would not work well, as it won't preserve the hard face normals, but it will smooth the normals.
-         *                      Most of the time on character you would want to set this to false though, to prevent seams from showing up in areas between the neck and body.
-         */
-        void CalcNormals(bool useDuplicates = false);
-
-        /**
-         * Calculates the tangent vectors which can be used for per pixel lighting.
-         * These are vectors also known as S and T, used in per pixel lighting techniques, like bumpmapping.
-         * You can calculate the bitangent for the given tangent by taking the cross product between the
-         * normal and the tangent for the given vertex. These three vectors (normal, tangent and bitangent) are
-         * used to build a matrix which transforms the lights into tangent space.
-         * You can only call this method after you have passed all other vertex and index data to the mesh.
-         * So after all that has been initialized, call this method to calculate these vectors automatically.
-         * If you specify a UV set that doesn't exist, this method will fall back to UV set 0.
-         * @param uvLayer[in] The UV texture coordinate layer number. This is not the vertex attribute layer number, but the UV layer number.
-         *                    This means that 0 means the first UV set, and 1 would mean the second UV set, etc.
-         *                    When the UV layer doesn't exist, this method does nothing.
-         * @param storeBitangents Set to true when you want the mesh to store its bitangents in its own layer. This will generate a bitangents layer inside the mesh. False will no do this.
-         * @result Returns true on success, or false on failure. A failure can happen when no UV data can be found.
-         */
-        bool CalcTangents(uint32 uvLayer = 0, bool storeBitangents = false);
-
-        /**
-         * Calculates the tangent and bitangent for a given triangle.
-         * @param posA The position of the first vertex.
-         * @param posB The position of the second vertex.
-         * @param posC The position of the third vertex.
-         * @param uvA The texture coordinate of the first vertex.
-         * @param uvB The texture coordinate of the second vertex.
-         * @param uvC The texture coordinate of the third vertex.
-         * @param outTangent A pointer to the vector to store the calculated tangent vector.
-         * @param outBitangent A pointer to the vector to store the calculated bitangent vector (calculated using the gradients).
-         */
-        static void CalcTangentAndBitangentForFace(const AZ::Vector3& posA, const AZ::Vector3& posB, const AZ::Vector3& posC,
-            const AZ::Vector2& uvA,  const AZ::Vector2& uvB,  const AZ::Vector2& uvC,
-            AZ::Vector3* outTangent, AZ::Vector3* outBitangent);
-
-        /**
          * Allocate mesh data. If there is already data allocated, this data will be deleted first.
          * Please keep in mind this does not create and add any layers for position, normal, uv and tangent data etc.
          * Only indices will be allocated.
@@ -165,21 +135,6 @@ namespace EMotionFX
          * @result The number of vertices.
          */
         MCORE_INLINE uint32 GetNumVertices() const;
-
-        /**
-         * Extract the number of UV coordinate layers.
-         * It is recommended NOT to put this function inside a loop, because it is not very fast.
-         * @result The number of UV layers/sets currently present inside this mesh.
-         */
-        size_t CalcNumUVLayers() const;
-
-        /**
-         * Calculate the number of vertex attribute layers of the given type.
-         * It is recommended NOT to put this function inside a loop, because it is not very fast.
-         * @param[in] type The type of the vertex attribute layer to count.
-         * @result The number of layers/sets currently present inside this mesh.
-         */
-        size_t CalcNumAttributeLayers(uint32 type) const;
 
         /**
          * Get the number of original vertices. This can be lower compared to the value returned by GetNumVertices().
@@ -340,60 +295,6 @@ namespace EMotionFX
          */
         size_t GetNumVertexAttributeLayers() const;
 
-        /**
-         * Get the vertex attribute data of a given layer.
-         * The number of arrays inside the array returned equals the value returned by GetNumVertices().
-         * @param layerNr The layer number to get the attributes from. Must be below the value returned by GetNumVertexAttributeLayers().
-         * @result A pointer to the array of vertex attributes. You can typecast this pointer if you know the type of the vertex attributes.
-         */
-        VertexAttributeLayer* GetVertexAttributeLayer(size_t layerNr);
-
-        /**
-         * Adds a new layer of vertex attributes.
-         * The data will automatically be deleted from memory on destruction of the mesh.
-         * @param layer The layer to add. The array must contain GetNumVertices() elements.
-         */
-        void AddVertexAttributeLayer(VertexAttributeLayer* layer);
-
-        /**
-         * Reserve space for the given amount of vertex attribute layers.
-         * This just pre-allocates array data to prevent reallocs.
-         * @param numLayers The number of layers to reserve space for.
-         */
-        void ReserveVertexAttributeLayerSpace(uint32 numLayers);
-
-        /**
-         * Find and return the non-shared vertex attribute layer of a given type.
-         * If you like to find the first layer of the given type, the occurence parameter must be set to a value of 0.
-         * If you like to find the second layer of this type, the occurence parameter must be set to a value of of 1, etc.
-         * This function will return nullptr when the layer cannot be found.
-         * @param layerTypeID the layer type ID to search for.
-         * @param occurrence The occurence to search for. Set to 0 when you want the first layer of this type, set to 1 if you
-         *                  want the second layer of the given type, etc.
-         * @result The vertex attribute layer index number that you can pass to GetSharedVertexAttributeLayer. A value of MCORE_INVALIDINDEX32 os returned
-         *         when no result could be found.
-         */
-        size_t FindVertexAttributeLayerNumber(uint32 layerTypeID, size_t occurrence = 0) const;
-
-        size_t FindVertexAttributeLayerNumberByName(uint32 layerTypeID, const char* name) const;
-        VertexAttributeLayer* FindVertexAttributeLayerByName(uint32 layerTypeID, const char* name) const;
-
-
-        /**
-         * Find and return the non-shared vertex attribute layer of a given type.
-         * If you like to find the first layer of the given type, the occurence parameter must be set to a value of 0.
-         * If you like to find the second layer of this type, the occurence parameter must be set to a value of of 1, etc.
-         * This function will return nullptr when the layer cannot be found.
-         * @param layerTypeID the layer type ID to search for.
-         * @param occurence The occurence to search for. Set to 0 when you want the first layer of this type, set to 1 if you
-         *                  want the second layer of the given type, etc.
-         * @result A pointer to the vertex attribute layer, or nullptr when none could be found.
-         */
-        VertexAttributeLayer* FindVertexAttributeLayer(uint32 layerTypeID, size_t occurence = 0) const;
-
-        size_t FindVertexAttributeLayerIndexByName(const char* name) const;
-        size_t FindVertexAttributeLayerIndexByNameString(const AZStd::string& name) const;
-        size_t FindVertexAttributeLayerIndexByNameID(uint32 nameID) const;
 
         size_t FindSharedVertexAttributeLayerIndexByName(const char* name) const;
         size_t FindSharedVertexAttributeLayerIndexByNameString(const AZStd::string& name) const;
@@ -404,13 +305,6 @@ namespace EMotionFX
          * The previously allocated attributes will be deleted from memory automatically.
          */
         void RemoveAllVertexAttributeLayers();
-
-        /**
-         * Remove a layer of vertex attributes.
-         * Automatically deletes the data from memory.
-         * @param layerNr The layer number to remove, must be below the value returned by GetNumVertexAttributeLayers().
-         */
-        void RemoveVertexAttributeLayer(size_t layerNr);
 
         //---------------------------------------------------
 
@@ -488,82 +382,12 @@ namespace EMotionFX
         Mesh* Clone();
 
         /**
-         * Swap two vertices. This will swap all data elements, such as position and normals.
-         * Not only it will swap the basic data like position and normals, but also all vertex attributes.
-         * This method is used by the  meshes support inside GetEMotionFX().
-         * @param vertexA The first vertex number.
-         * @param vertexB The second vertex number.
-         * @note This does NOT update the index buffer!
-         */
-        void SwapVertex(uint32 vertexA, uint32 vertexB);
-
-        /**
-         * Remove a specific range of vertices from the mesh.
-         * This also might change all pointers to vertex and index data returned by this mesh and its submeshes.
-         * This automatically also adjusts the index buffer as well.
-         * Please note that the specified end vertex will also be removed!
-         * @param startVertexNr The vertex number to start removing from.
-         * @param endVertexNr The last vertex number to remove, this value must be bigger or equal than the start vertex number.
-         * @param changeIndexBuffer If this is set to true, the index buffer will be modified on such a way that all vertex
-         *                          number indexed by the index buffer, which are above the startVertexNr parameter value,
-         *                          will be decreased by the amount of removed vertices.
-         * @param removeEmptySubMeshes When set to true (default) submeshes that become empty will be removed from memory.
-         */
-        void RemoveVertices(uint32 startVertexNr, uint32 endVertexNr, bool changeIndexBuffer = true, bool removeEmptySubMeshes = false);
-
-        /**
          * Remove all empty submeshes.
          * A submesh is either empty if it has no vertices or no indices or a combination of both.
          * @param onlyRemoveOnZeroVertsAndTriangles Only remove when both the number of vertices and number of indices/triangles are zero.
          * @result Returns the number of removed submeshes.
          */
         size_t RemoveEmptySubMeshes(bool onlyRemoveOnZeroVertsAndTriangles = true);
-
-        /**
-         * Find specific current vertex data in the mesh. This contains the vertex data after mesh deformers have been
-         * applied to them. If you want the vertex data before any mesh deformers have been applied to it, use the
-         * method named FindOriginalVertexData instead.
-         * Here are some examples to get common vertex data:
-         *
-         * <pre>
-         * Vector3* positions = (Vector3*)mesh->FindVertexData( Mesh::ATTRIB_POSITIONS );   // the positions
-         * Vector3* normals   = (Vector3*)mesh->FindVertexData( Mesh::ATTRIB_NORMALS   );   // the normals
-         * Vector4* tangents  = (Vector4*)mesh->FindVertexData( Mesh::ATTRIB_TANGENTS  );   // first set of tangents, can be nullptr, and note the Vector4!
-         * AZ::Vector2* uvCoords  = static_cast<AZ::Vector2*>(mesh->FindVertexData( Mesh::ATTRIB_UVCOORDS  ));  // the first set of UVs, can be nullptr
-         * AZ::Vector2* uvCoords2 = static_cast<AZ::Vector2*>(mesh->FindVertexData( Mesh::ATTRIB_UVCOORDS, 1 ));    // the second set of UVs, can be nullptr
-         * </pre>
-         *
-         * @param layerID The layer type ID to get the information from.
-         * @param occurrence The layer number to get. Where 0 means the first layer, 1 means the second, etc. This is used
-         *                   when there are multiple layers of the same type. An example is a mesh having multiple UV layers.
-         * @result A void pointer to the layer data. You have to typecast yourself.
-         */
-        void* FindVertexData(uint32 layerID, size_t occurrence = 0) const;
-
-        void* FindVertexDataByName(uint32 layerID, const char* name) const;
-
-        /**
-         * Find specific original vertex data in the mesh.
-         * The difference between the original vertex data and current vertex data as returned by FindVertexData is that the
-         * original vertex data is the data stored in the base pose, before any mesh deformers are being applied to it.
-         * Here are some examples to get common vertex data:
-         *
-         * <pre>
-         * Vector3* positions = (Vector3*)mesh->FindOriginalVertexData( Mesh::ATTRIB_POSITIONS );   // the positions
-         * Vector3* normals   = (Vector3*)mesh->FindOriginalVertexData( Mesh::ATTRIB_NORMALS   );   // the normals
-         * Vector4* tangents  = (Vector4*)mesh->FindOriginalVertexData( Mesh::ATTRIB_TANGENTS  );   // first set of tangents, can be nullptr, and note the Vector4!
-         * AZ::Vector2* uvCoords  = static_cast<AZ::Vector2*>(mesh->FindOriginalVertexData( Mesh::ATTRIB_UVCOORDS  ));  // the first set of UVs, can be nullptr
-         * AZ::Vector2* uvCoords2 = static_cast<AZ::Vector2*>(mesh->FindOriginalVertexData( Mesh::ATTRIB_UVCOORDS, 1 ));    // the second set of UVs, can be nullptr
-         * </pre>
-         *
-         * @param layerID The layer type ID to get the information from.
-         * @param occurrence The layer number to get. Where 0 means the first layer, 1 means the second, etc. This is used
-         *                   when there are multiple layers of the same type. An example is a mesh having multiple UV layers.
-         * @result A void pointer to the layer data. You have to typecast yourself.
-         */
-        void* FindOriginalVertexData(uint32 layerID, size_t occurrence = 0) const;
-
-        void* FindOriginalVertexDataByName(uint32 layerID, const char* name) const;
 
         /**
          * Calculate the axis aligned bounding box of this mesh, after transforming the positions with the provided transform.
@@ -574,50 +398,12 @@ namespace EMotionFX
          */
         void CalcAabb(AZ::Aabb* outBoundingBox, const Transform& transform, uint32 vertexFrequency = 1);
 
-        /**
-         * The mesh type used to indicate if a mesh is either static, like a cube or building, cpu deformed, if it needs to be processed on the CPU, or GPU deformed if it can be processed fully on the GPU.
-         */
-        enum EMeshType
-        {
-            MESHTYPE_STATIC         = 0,    /**< Static rigid mesh, like a cube or building (can still be position/scale/rotation animated though). */
-            MESHTYPE_CPU_DEFORMED   = 1,    /**< Deformed on the CPU. */
-            MESHTYPE_GPU_DEFORMED   = 2     /**< Deformed on the GPU. */
-        };
-
-        /**
-         * Check for a given mesh how we categorize it. A mesh can be either static, like a cube or building, dynamic if it has mesh deformers which
-         * have to be processed on the CPU like a morphing deformer or gpu skinned if they only have a skinning deformer applied.
-         * There are additional criteria like the maximum number of influences and the maximum number of bones per submesh to make it fit to different hardware specifications.
-         * @param lodLevel The geometry LOD level of the mesh to check.
-         * @param actor The actor where this mesh belongs to.
-         * @param nodeIndex The index of the node that has this mesh.
-         * @param forceCPUSkinning If true the function will never return MESHTYPE_GPUSKINNED which means that no hardware processing will be used.
-         * @param maxInfluences The maximum number of influences per vertex that can be processed on hardware. If there will be more influences the mesh will be processed in software which will be very slow.
-         * @param maxBonesPerSubMesh The maximum number of bones per submesh can be processed on hardware. If there will be more bones per submesh the mesh will be processed in software which will be very slow.
-         * @return The mesh type meaning if the given mesh is static like a cube or building or if is deformed by the GPU or CPU.
-         */
-        EMeshType ClassifyMeshType(size_t lodLevel, Actor* actor, size_t nodeIndex, bool forceCPUSkinning, uint32 maxInfluences, uint32 maxBonesPerSubMesh) const;
-
+    
         /**
          * Debug log information.
          * Information will be logged using LOGLEVEL_DEBUG.
          */
         void Log();
-
-        /**
-         * Convert the 32-bit vertex indices to 16-bit index values.
-         * Do not call this function more than once per mesh. The number of indices will stay the same
-         * while the size of the index buffer will be half as big as before.
-         * When calling GetIndices() make sure to type-cast the returned pointer to an uint16*.
-         * @return True in case all indices have been ported correctly, false if any of the indices was out of the 16-bit range.
-         */
-        bool ConvertTo16BitIndices();
-
-        /**
-         * Convert RGBAColors consisting of 4 floats to 32bit DWORD color
-         * if 32bit colors do not exist yet and if 128bit colors do exist.
-         */
-        void ConvertTo32BitColors();
 
         /**
          * Check if this mesh is a pure triangle mesh.
@@ -632,13 +418,6 @@ namespace EMotionFX
          * @result Returns true in case this mesh contains only quads, otherwise false is returned.
          */
         bool CheckIfIsQuadMesh() const;
-
-        /**
-         * Calculate how many triangles this mesh has.
-         * In case the mesh contains polygons of more than 3 vertices, triangulation will be taken into account.
-         * @result The number of triangles that are needed to draw this mesh.
-         */
-        uint32 CalcNumTriangles() const;
 
         /**
          * Scale all positional data.
@@ -670,6 +449,35 @@ namespace EMotionFX
         MCORE_INLINE bool GetIsCollisionMesh() const            { return m_isCollisionMesh; }
         void SetIsCollisionMesh(bool isCollisionMesh)           { m_isCollisionMesh = isCollisionMesh; }
 
+        template<AttributeType TType> 
+        void CreateVertexAttribute(const AZStd::vector<typename AttributeTrait<TType>::TargetType>& buffer, bool original) {
+            size_t index = static_cast<size_t>(TType);
+            m_vertexAttributeLayer[index] = AZStd::make_unique<VertexAttributeLayerBuffer<typename AttributeTrait<TType>::TargetType>>(TType, buffer, original);
+        }
+
+        VertexAttributes& GetVertexAttribute(AttributeType attrType) {
+            size_t index = static_cast<size_t>(attrType);
+            return m_vertexAttributeLayer[index];
+        }
+
+        AZStd::span<VertexAttributes> GetVertexAttributes() {
+            return m_vertexAttributeLayer;
+        }
+
+        template<AttributeType TType>
+        VertexAttributeLayerBuffer<typename AttributeTrait<TType>::TargetType>* GetVertexAttribute() const {
+            size_t index = static_cast<size_t>(TType);
+            if(auto attrib = AZStd::get_if<AZStd::unique_ptr<VertexAttributeLayerBuffer<typename AttributeTrait<TType>::TargetType>>>(&m_vertexAttributeLayer[index])) {
+                return {attrib->get()};
+            }
+            return nullptr;
+        }
+
+        template<AttributeType TType>
+        VertexAttributeLayerBuffer<typename AttributeTrait<TType>::TargetType>* GetVertexAttribute() {
+            return const_cast<VertexAttributeLayerBuffer<typename AttributeTrait<TType>::TargetType>*>(const_cast<const Mesh*>(this)->GetVertexAttribute<TType>());
+        }
+
     protected:
 
         AZStd::vector<SubMesh*> m_subMeshes;         /**< The collection of sub meshes. */
@@ -693,7 +501,7 @@ namespace EMotionFX
          * The array of non-shared vertex attribute layers.
          * The number of attributes in each shared layer will be equal to the value returned by Mesh::GetNumVertices().
          */
-        AZStd::vector< VertexAttributeLayer* >   m_vertexAttributes;
+        AZStd::array<VertexAttributes, NumAttributes> m_vertexAttributeLayer ;
 
         /**
          * Default constructor.

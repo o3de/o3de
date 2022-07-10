@@ -345,7 +345,7 @@ namespace AZ::Render
 
         // Get the number of vertices and the data
         const uint32 numVertices = m_currentMesh->GetNumVertices();
-        AZ::Vector3* positions = (AZ::Vector3*)m_currentMesh->FindVertexData(EMotionFX::Mesh::ATTRIB_POSITIONS);
+        auto positionAttr = m_currentMesh->GetVertexAttribute<EMotionFX::AttributeType::Position>();
 
         // Check if the vertices fits in our buffer
         if (m_worldSpacePositions.size() < numVertices)
@@ -356,7 +356,7 @@ namespace AZ::Render
         // Pre-calculate the world space positions
         for (uint32 i = 0; i < numVertices; ++i)
         {
-            m_worldSpacePositions[i] = worldTM.TransformPoint(positions[i]);
+            m_worldSpacePositions[i] = worldTM.TransformPoint(positionAttr->GetData()[i]);
         }
     }
 
@@ -585,7 +585,7 @@ namespace AZ::Render
 
         PrepareForMesh(mesh, worldTM);
 
-        AZ::Vector3* normals = (AZ::Vector3*)mesh->FindVertexData(EMotionFX::Mesh::ATTRIB_NORMALS);
+        auto normalsAttr = mesh->GetVertexAttribute<EMotionFX::AttributeType::Normal>();
 
         // Render face normals
         if (faceNormals)
@@ -648,7 +648,7 @@ namespace AZ::Render
                 {
                     const uint32 vertexIndex = j + startVertex;
                     const AZ::Vector3& position = m_worldSpacePositions[vertexIndex];
-                    const AZ::Vector3 normal = worldTM.TransformVector(normals[vertexIndex]).GetNormalizedSafe() *
+                    const AZ::Vector3 normal = worldTM.TransformVector(normalsAttr->GetData()[vertexIndex]).GetNormalizedSafe() *
                         vertexNormalsScale * scaleMultiplier;
 
                     m_auxVertices.emplace_back(position);
@@ -687,17 +687,17 @@ namespace AZ::Render
         }
 
         // Get the tangents and check if this mesh actually has tangents
-        AZ::Vector4* tangents = static_cast<AZ::Vector4*>(mesh->FindVertexData(EMotionFX::Mesh::ATTRIB_TANGENTS));
-        if (!tangents)
+        auto tangentAttr = mesh->GetVertexAttribute<EMotionFX::AttributeType::Tangent>();
+        if (!tangentAttr)
         {
             return;
         }
 
-        AZ::Vector3* bitangents = static_cast<AZ::Vector3*>(mesh->FindVertexData(EMotionFX::Mesh::ATTRIB_BITANGENTS));
+        auto bitangentAttr = mesh->GetVertexAttribute<EMotionFX::AttributeType::Bitangent>();
 
         PrepareForMesh(mesh, worldTM);
 
-        AZ::Vector3* normals = (AZ::Vector3*)mesh->FindVertexData(EMotionFX::Mesh::ATTRIB_NORMALS);
+        auto normalAttr = mesh->GetVertexAttribute<EMotionFX::AttributeType::Normal>();
         const uint32 numVertices = mesh->GetNumVertices();
 
         m_auxVertices.clear();
@@ -709,16 +709,16 @@ namespace AZ::Render
         AZ::Vector3 orgTangent, tangent, bitangent;
         for (uint32 i = 0; i < numVertices; ++i)
         {
-            orgTangent.Set(tangents[i].GetX(), tangents[i].GetY(), tangents[i].GetZ());
+            orgTangent.Set(tangentAttr->GetData()[i].GetX(), tangentAttr->GetData()[i].GetY(), tangentAttr->GetData()[i].GetZ());
             tangent = (worldTM.TransformVector(orgTangent)).GetNormalized();
 
-            if (bitangents)
+            if (bitangentAttr)
             {
-                bitangent = bitangents[i];
+                bitangent = bitangentAttr->GetData()[i];
             }
             else
             {
-                bitangent = tangents[i].GetW() * normals[i].Cross(orgTangent);
+                bitangent = tangentAttr->GetData()[i].GetW() * normalAttr->GetData()[i].Cross(orgTangent);
             }
             bitangent = (worldTM.TransformVector(bitangent)).GetNormalizedSafe();
 
@@ -727,7 +727,7 @@ namespace AZ::Render
             m_auxVertices.emplace_back(m_worldSpacePositions[i] + (tangent * tangentsScale * scaleMultiplier));
             m_auxColors.emplace_back(tangentsColor);
 
-            if (tangents[i].GetW() < 0.0f)
+            if (tangentAttr->GetData()[i].GetW() < 0.0f)
             {
                 m_auxVertices.emplace_back(m_worldSpacePositions[i]);
                 m_auxColors.emplace_back(mirroredBitangentsColor);
@@ -768,7 +768,7 @@ namespace AZ::Render
         }
 
         PrepareForMesh(mesh, worldTM);
-        const AZ::Vector3* normals = (AZ::Vector3*)mesh->FindVertexData(EMotionFX::Mesh::ATTRIB_NORMALS);
+        auto normalAttr = mesh->GetVertexAttribute<EMotionFX::AttributeType::Normal>();
 
         const size_t numSubMeshes = mesh->GetNumSubMeshes();
         for (uint32 subMeshIndex = 0; subMeshIndex < numSubMeshes; ++subMeshIndex)
@@ -788,9 +788,9 @@ namespace AZ::Render
                 const uint32 indexB = indices[triangleStartIndex + 1] + startVertex;
                 const uint32 indexC = indices[triangleStartIndex + 2] + startVertex;
 
-                const AZ::Vector3 posA = m_worldSpacePositions[indexA] + normals[indexA] * scale;
-                const AZ::Vector3 posB = m_worldSpacePositions[indexB] + normals[indexB] * scale;
-                const AZ::Vector3 posC = m_worldSpacePositions[indexC] + normals[indexC] * scale;
+                const AZ::Vector3 posA = m_worldSpacePositions[indexA] + normalAttr->GetData()[indexA] * scale;
+                const AZ::Vector3 posB = m_worldSpacePositions[indexB] + normalAttr->GetData()[indexB] * scale;
+                const AZ::Vector3 posC = m_worldSpacePositions[indexC] + normalAttr->GetData()[indexC] * scale;
 
                 m_auxVertices.emplace_back(posA);
                 m_auxVertices.emplace_back(posB);

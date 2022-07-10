@@ -26,7 +26,6 @@ namespace EMotionFX
     class Motion;
     class ChunkProcessor;
     class SharedData;
-    class VertexAttributeLayerAbstractData;
     class NodeMap;
     class Motion;
     class AnimGraph;

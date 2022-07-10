@@ -1055,8 +1055,11 @@ namespace EMotionFX
                 }
 
                 // get shortcuts to the original vertex numbers
-                const uint32* orgVertices = (uint32*)mesh->FindOriginalVertexData(Mesh::ATTRIB_ORGVTXNUMBERS);
-
+                auto orgVertices = mesh->GetVertexAttribute<AttributeType::OrginalVertexNumber>();
+                if(!orgVertices) 
+                {
+                    continue;
+                }
                 // for all submeshes
                 const size_t numSubMeshes = mesh->GetNumSubMeshes();
                 for (size_t s = 0; s < numSubMeshes; ++s)
@@ -1069,7 +1072,7 @@ namespace EMotionFX
                     for (uint32 v = 0; v < numVertices; ++v)
                     {
                         const uint32 vertexIndex    = startVertex + v;
-                        const uint32 orgVertex      = orgVertices[vertexIndex];
+                        const uint32 orgVertex      = orgVertices->GetOrignal()[vertexIndex];
 
                         // for all skinning influences of the vertex
                         const size_t numInfluences = layer->GetNumInfluences(orgVertex);
@@ -1096,7 +1099,7 @@ namespace EMotionFX
                         // if they all use the same bone, just make one influence of it with weight 1.0
                         for (uint32 x = 0; x < numVertices; ++x)
                         {
-                            layer->CollapseInfluences(orgVertices[startVertex + x]);
+                            layer->CollapseInfluences(orgVertices->GetOrignal()[startVertex + x]);
                         }
                     } // for all verts
 
@@ -1401,8 +1404,8 @@ namespace EMotionFX
             }
 
             // get shortcuts to the original vertex numbers
-            const uint32* orgVertices = (uint32*)mesh->FindOriginalVertexData(Mesh::ATTRIB_ORGVTXNUMBERS);
-            AZ::Vector3* positions = (AZ::Vector3*)mesh->FindVertexData(EMotionFX::Mesh::ATTRIB_POSITIONS);
+            auto orgVertexAttr = mesh->GetVertexAttribute<AttributeType::OrginalVertexNumber>();
+            auto positionAttr = mesh->GetVertexAttribute<AttributeType::Position>();
 
             // for all submeshes
             const size_t numSubMeshes = mesh->GetNumSubMeshes();
@@ -1415,7 +1418,7 @@ namespace EMotionFX
                 const uint32 numVertices = subMesh->GetNumVertices();
                 for (uint32 vertexIndex = 0; vertexIndex < numVertices; ++vertexIndex)
                 {
-                    const uint32 orgVertex = orgVertices[startVertex + vertexIndex];
+                    const uint32 orgVertex = orgVertexAttr->GetOrignal()[startVertex + vertexIndex];
 
                     // for all skinning influences of the vertex
                     const size_t numInfluences = layer->GetNumInfluences(orgVertex);
@@ -1434,7 +1437,7 @@ namespace EMotionFX
 
                     if (maxWeightNodeIndex == node->GetNodeIndex())
                     {
-                        outPoints.push_back(positions[vertexIndex + startVertex]);
+                        outPoints.push_back(positionAttr->GetData()[vertexIndex + startVertex]);
                     }
                 } // for all verts
             } // for all submeshes

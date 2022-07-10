@@ -232,15 +232,15 @@ namespace EMotionFX
             const AZ::SceneAPI::Containers::SceneGraph& graph = m_scene->GetGraph();
 
             // Verify that the unmorphed vertices are what we expect
-            const AZ::Vector3* const positions = static_cast<AZ::Vector3*>(mesh->FindVertexData(EMotionFX::Mesh::ATTRIB_POSITIONS));
+            auto positionAttribute = mesh->GetVertexAttribute<EMotionFX::AttributeType::Position>();
             AZStd::vector<AZ::Vector3> gotUnmorphedVertices;
             uint32 numVertices = mesh->GetNumVertices();
             for (uint32 vertexNum = 0; vertexNum < numVertices; ++vertexNum)
             {
                 gotUnmorphedVertices.emplace_back(
-                    positions[vertexNum].GetX(),
-                    positions[vertexNum].GetY(),
-                    positions[vertexNum].GetZ()
+                    positionAttribute->GetData()[vertexNum].GetX(),
+                    positionAttribute->GetData()[vertexNum].GetY(),
+                    positionAttribute->GetData()[vertexNum].GetZ()
                 );
             }
 
@@ -261,15 +261,15 @@ namespace EMotionFX
             actorInstance->UpdateTransformations(0.0f, true);
             actorInstance->UpdateMeshDeformers(0.0f);
 
-            const AZ::Vector3* const morphedPositions = static_cast<AZ::Vector3*>(mesh->FindVertexData(EMotionFX::Mesh::ATTRIB_POSITIONS));
+            const auto morphedPositions = mesh->GetVertexAttribute<EMotionFX::AttributeType::Position>();
             AZStd::vector<AZ::Vector3> gotMorphedVertices;
             numVertices = mesh->GetNumVertices();
             for (uint32 vertexNum = 0; vertexNum < numVertices; ++vertexNum)
             {
                 gotMorphedVertices.emplace_back(
-                    morphedPositions[vertexNum].GetX(),
-                    morphedPositions[vertexNum].GetY(),
-                    morphedPositions[vertexNum].GetZ()
+                    morphedPositions->GetData()[vertexNum].GetX(),
+                    morphedPositions->GetData()[vertexNum].GetY(),
+                    morphedPositions->GetData()[vertexNum].GetZ()
                 );
             }
 

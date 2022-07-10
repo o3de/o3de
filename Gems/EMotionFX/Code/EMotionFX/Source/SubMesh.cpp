@@ -69,7 +69,7 @@ namespace EMotionFX
         m_bones.clear();
 
         // get shortcuts to the original vertex numbers
-        const uint32* orgVertices = (uint32*)m_parentMesh->FindOriginalVertexData(Mesh::ATTRIB_ORGVTXNUMBERS);
+        auto orgVertexAttr = m_parentMesh->GetVertexAttribute<AttributeType::OrginalVertexNumber>();
 
         // for all vertices in the submesh
         const uint32 startVertex = GetStartVertex();
@@ -77,7 +77,7 @@ namespace EMotionFX
         for (uint32 v = 0; v < numVertices; ++v)
         {
             const uint32 vertexIndex = startVertex + v;
-            const uint32 orgVertex  = orgVertices[vertexIndex];
+            const uint32 orgVertex  = orgVertexAttr->GetOrignal()[vertexIndex];
 
             // for all skinning influences of the vertex
             const size_t numInfluences = skinLayer->GetNumInfluences(orgVertex);

@@ -872,8 +872,8 @@ namespace EMotionFX
                 // calculate the normal at the intersection point
                 if (outNormal)
                 {
-                    AZ::Vector3* normals = (AZ::Vector3*)mesh->FindVertexData(Mesh::ATTRIB_NORMALS);
-                    AZ::Vector3  norm = MCore::BarycentricInterpolate<AZ::Vector3>(closestBaryU, closestBaryV, normals[closestIndices[0]], normals[closestIndices[1]], normals[closestIndices[2]]);
+                    auto normalAttribute = mesh->GetVertexAttribute<EMotionFX::AttributeType::Normal>();
+                    AZ::Vector3  norm = MCore::BarycentricInterpolate<AZ::Vector3>(closestBaryU, closestBaryV, normalAttribute->GetData()[closestIndices[0]], normalAttribute->GetData()[closestIndices[1]], normalAttribute->GetData()[closestIndices[2]]);
                     norm = closestTransform.TransformVector(norm);
                     norm.Normalize();
                     *outNormal = norm;
@@ -883,11 +883,12 @@ namespace EMotionFX
                 if (outUV)
                 {
                     // get the UV coordinates of the first layer
-                    AZ::Vector2* uvData = static_cast<AZ::Vector2*>(mesh->FindVertexData(Mesh::ATTRIB_UVCOORDS, 0));
-                    if (uvData)
+                    auto uvAttribute = mesh->GetVertexAttribute<EMotionFX::AttributeType::UVCoords>();
+                    if (uvAttribute)
                     {
                         // calculate the interpolated texture coordinate
-                        *outUV = MCore::BarycentricInterpolate<AZ::Vector2>(closestBaryU, closestBaryV, uvData[closestIndices[0]], uvData[closestIndices[1]], uvData[closestIndices[2]]);
+                        *outUV = MCore::BarycentricInterpolate<AZ::Vector2>(closestBaryU, closestBaryV, 
+                            uvAttribute->GetData()[closestIndices[0]], uvAttribute->GetData()[closestIndices[1]], uvAttribute->GetData()[closestIndices[2]]);
                     }
                 }
             }
@@ -1031,10 +1032,10 @@ namespace EMotionFX
                 // calculate the normal at the intersection point
                 if (outNormal)
                 {
-                    AZ::Vector3* normals = (AZ::Vector3*)mesh->FindVertexData(Mesh::ATTRIB_NORMALS);
+                    auto normalAttr = mesh->GetVertexAttribute<EMotionFX::AttributeType::Normal>();
                     AZ::Vector3  norm = MCore::BarycentricInterpolate<AZ::Vector3>(
                             closestBaryU, closestBaryV,
-                            normals[closestIndices[0]], normals[closestIndices[1]], normals[closestIndices[2]]);
+                            normalAttr->GetData()[closestIndices[0]], normalAttr->GetData()[closestIndices[1]], normalAttr->GetData()[closestIndices[2]]);
                     norm = closestTransform.TransformVector(norm);
                     norm.Normalize();
                     *outNormal = norm;
@@ -1044,11 +1045,12 @@ namespace EMotionFX
                 if (outUV)
                 {
                     // get the UV coordinates of the first layer
-                    AZ::Vector2* uvData = static_cast<AZ::Vector2*>(mesh->FindVertexData(Mesh::ATTRIB_UVCOORDS, 0));
-                    if (uvData)
+                    auto uvAttr = mesh->GetVertexAttribute<EMotionFX::AttributeType::UVCoords>();
+                    if (uvAttr)
                     {
                         // calculate the interpolated texture coordinate
-                        *outUV = MCore::BarycentricInterpolate<AZ::Vector2>(closestBaryU, closestBaryV, uvData[closestIndices[0]], uvData[closestIndices[1]], uvData[closestIndices[2]]);
+                        *outUV = MCore::BarycentricInterpolate<AZ::Vector2>(closestBaryU, closestBaryV, 
+                            uvAttr->GetData()[closestIndices[0]], uvAttr->GetData()[closestIndices[1]], uvAttr->GetData()[closestIndices[2]]);
                     }
                 }
             }
