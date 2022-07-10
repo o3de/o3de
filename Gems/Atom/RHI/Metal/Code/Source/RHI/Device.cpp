@@ -122,6 +122,7 @@ namespace AZ
         RHI::ResultCode Device::BeginFrameInternal()
         {
             TryCreateAutoreleasePool();
+            m_commandQueueContext.Begin();
             return RHI::ResultCode::Success;
         }
 
