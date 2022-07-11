@@ -66,14 +66,12 @@ namespace GraphCanvas
     protected:
 
         void UpdateLayoutParameters();
-        void SwitchToHorizontalLayout();
+        void UpdateHorizontalLayout();
 
         QGraphicsLinearLayout* m_title;
         QGraphicsLinearLayout* m_slots;
 
         QGraphicsLinearLayout* m_inputSlots;
         QGraphicsLinearLayout* m_outputSlots;
-
-        bool m_hasSwitchedToHorizontalLayout;
     };
 }

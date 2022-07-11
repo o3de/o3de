@@ -322,7 +322,7 @@ namespace ScriptCanvasEditor
 
     void CreateDataDrivenNodeMimeEvent::Reflect(AZ::ReflectContext* reflectContext)
     {
-        ScriptCanvasEditor::Nodes::SmallOperatorCreationData::Reflect(reflectContext);
+        ScriptCanvasEditor::Nodes::DataDrivenNodeCreationData::Reflect(reflectContext);
 
 
         AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(reflectContext);
@@ -330,34 +330,32 @@ namespace ScriptCanvasEditor
         {
             serializeContext->Class<CreateDataDrivenNodeMimeEvent, GraphCanvas::GraphCanvasMimeEvent>()
                 ->Version(0)
-                ->Field("NodeLexicalId", &CreateDataDrivenNodeMimeEvent::m_nodeLexicalId)
-                ->Field("UserData", &CreateDataDrivenNodeMimeEvent::m_userData);
+                ->Field("NodeData", &CreateDataDrivenNodeMimeEvent::m_nodeData);
         }
     }
 
-    CreateDataDrivenNodeMimeEvent::CreateDataDrivenNodeMimeEvent(const AZ::Crc32& nodeLexicalId, const AZStd::any& nodeData)
-        : m_nodeLexicalId(nodeLexicalId)
-        , m_userData(nodeData)
+    CreateDataDrivenNodeMimeEvent::CreateDataDrivenNodeMimeEvent(const ScriptCanvasEditor::Nodes::DataDrivenNodeCreationData& nodeData)
+        : m_nodeData(nodeData)
     {
     }
 
     ScriptCanvasEditor::NodeIdPair CreateDataDrivenNodeMimeEvent::CreateNode(const ScriptCanvas::ScriptCanvasId& scriptCanvasId) const
     {
-        return Nodes::CreateDataDrivenNode(m_userData, m_nodeLexicalId, scriptCanvasId);
+        return Nodes::CreateDataDrivenNode(m_nodeData, scriptCanvasId);
     }
 
     //////////////////////////////
     // DataDrivenNodePaletteTreeItem
     //////////////////////////////
 
-    DataDrivenNodePaletteTreeItem::DataDrivenNodePaletteTreeItem(const ScriptCanvasEditor::DataDrivenNodeModelInformation& info)
-        : DraggableNodePaletteTreeItem(info.m_displayName, ScriptCanvasEditor::AssetEditorId)
-        , m_info(info)
+    DataDrivenNodePaletteTreeItem::DataDrivenNodePaletteTreeItem(const ScriptCanvasEditor::DataDrivenNodeModelInformation& nodeData)
+        : DraggableNodePaletteTreeItem(nodeData.m_displayName, ScriptCanvasEditor::AssetEditorId)
+        , m_nodeModelInformation(nodeData)
     {
     }
 
     GraphCanvas::GraphCanvasMimeEvent* DataDrivenNodePaletteTreeItem::CreateMimeEvent() const
     {
-        return aznew CreateDataDrivenNodeMimeEvent(m_info.m_nodeLexicalId, m_info.m_userData);
+        return aznew CreateDataDrivenNodeMimeEvent(m_nodeModelInformation.m_nodeData);
     }
 }

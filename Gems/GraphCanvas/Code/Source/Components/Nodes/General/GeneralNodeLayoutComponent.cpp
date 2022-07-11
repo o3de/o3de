@@ -80,8 +80,6 @@ namespace GraphCanvas
 
         m_layout = new QGraphicsLinearLayout(Qt::Vertical);
         m_layout->setInstantInvalidatePropagation(true);
-
-        m_hasSwitchedToHorizontalLayout = false;
     }
 
     void GeneralNodeLayoutComponent::Activate()
@@ -100,18 +98,13 @@ namespace GraphCanvas
     
     void GeneralNodeLayoutComponent::OnStyleChanged()
     {
-        if (!m_hasSwitchedToHorizontalLayout)
-        {
-            Styling::StyleHelper style(GetEntityId());
-            Qt::Orientation layoutOrientation = style.GetAttribute(Styling::Attribute::LayoutOrientation, Qt::Vertical);
+        Styling::StyleHelper style(GetEntityId());
+        Qt::Orientation layoutOrientation = style.GetAttribute(Styling::Attribute::LayoutOrientation, Qt::Vertical);
 
-            if (layoutOrientation == Qt::Horizontal)
-            {
-                SwitchToHorizontalLayout();
-                m_hasSwitchedToHorizontalLayout = true;
-            }
+        if (layoutOrientation == Qt::Horizontal)
+        {
+            UpdateHorizontalLayout();
         }
-        
         UpdateLayoutParameters();
     }
 
@@ -140,7 +133,7 @@ namespace GraphCanvas
         UpdateLayoutParameters();
     }
 
-    void GeneralNodeLayoutComponent::SwitchToHorizontalLayout()
+    void GeneralNodeLayoutComponent::UpdateHorizontalLayout()
     {
         QGraphicsLinearLayout* slotLayout;
         QGraphicsWidget* horizontalSpacer;
@@ -150,28 +143,29 @@ namespace GraphCanvas
 
         GetLayoutAs<QGraphicsLinearLayout>()->setOrientation(Qt::Horizontal);
 
-        if (slotLayout && horizontalSpacer)
+        if (slotLayout && horizontalSpacer && horizontalSpacer->parentLayoutItem() == slotLayout)
         {
             slotLayout->removeItem(horizontalSpacer);
         }
 
-        GetLayoutAs<QGraphicsLinearLayout>()->removeItem(m_title);
-        GetLayoutAs<QGraphicsLinearLayout>()->removeItem(m_slots);
+        if (m_title->parentLayoutItem() == GetLayoutAs<QGraphicsLinearLayout>())
+        {
+            GetLayoutAs<QGraphicsLinearLayout>()->removeItem(m_title);
 
+            // Insert the title into slot layout so it appears between the input and output slots
+            if (slotLayout)
+            {
+                slotLayout->insertItem(1, m_title);
+                slotLayout->setContentsMargins(0, 0, 0, 0);
+            }
+        }
+        
         m_title->setSpacing(0);
         m_title->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
         m_title->setPreferredSize(0, 0);
         m_title->setContentsMargins(0, 0, 0, 0);
 
-        // Insert the title into slot layout so it appears between the input and output slots
-        if (slotLayout)
-        {
-            slotLayout->insertItem(1, m_title);
-            slotLayout->setContentsMargins(0, 0, 0, 0);
-        }
-
         m_slots->setContentsMargins(3.0, 0, 3.0, 0);
-        GetLayoutAs<QGraphicsLinearLayout>()->addItem(m_slots);
     }
 
     void GeneralNodeLayoutComponent::UpdateLayoutParameters()

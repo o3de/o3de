@@ -2967,7 +2967,7 @@ namespace ScriptCanvas
 
     AZStd::string Node::GetNodeName() const
     {
-        if (m_name == "")
+        if (m_name.empty())
         {
             AZ::SerializeContext* serializeContext = nullptr;
             AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
@@ -3018,7 +3018,7 @@ namespace ScriptCanvas
         m_nodeStyle = nodeStyle;
     }
 
-    void Node::SetNodenodeLexicalId(const AZ::Crc32& nodeLexicalId)
+    void Node::SetNodeLexicalId(const AZ::Crc32& nodeLexicalId)
     {
         m_nodeLexicalId = nodeLexicalId;
     }

@@ -547,7 +547,7 @@ namespace ScriptCanvas
         virtual void SetNodeName(const AZStd::string& name);
         virtual void SetNodeToolTip(const AZStd::string& toolTip);
         virtual void SetNodeStyle(const AZStd::string& nodeStyle);
-        virtual void SetNodenodeLexicalId(const AZ::Crc32& nodeLexicalId);
+        virtual void SetNodeLexicalId(const AZ::Crc32& nodeLexicalId);
 
         AZStd::string GetSlotName(const SlotId& slotId) const;
 

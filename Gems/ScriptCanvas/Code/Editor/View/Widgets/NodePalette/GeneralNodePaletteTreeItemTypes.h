@@ -177,15 +177,14 @@ namespace ScriptCanvasEditor
         static void Reflect(AZ::ReflectContext* reflectContext);
 
         CreateDataDrivenNodeMimeEvent() = default;
-        CreateDataDrivenNodeMimeEvent(const AZ::Crc32& nodeLexicalId, const AZStd::any& nodeData);
+        CreateDataDrivenNodeMimeEvent(const ScriptCanvasEditor::Nodes::DataDrivenNodeCreationData& nodeData);
         ~CreateDataDrivenNodeMimeEvent() = default;
 
     protected:
         ScriptCanvasEditor::NodeIdPair CreateNode(const ScriptCanvas::ScriptCanvasId& scriptCanvasId) const override;
 
     private:
-        const AZ::Crc32 m_nodeLexicalId;
-        const AZStd::any m_userData;
+        const ScriptCanvasEditor::Nodes::DataDrivenNodeCreationData m_nodeData;
     };
 
     class DataDrivenNodePaletteTreeItem : public GraphCanvas::DraggableNodePaletteTreeItem
@@ -201,11 +200,11 @@ namespace ScriptCanvasEditor
 
         const ScriptCanvasEditor::DataDrivenNodeModelInformation& GetInfo() const
         {
-            return m_info;
+            return m_nodeModelInformation;
         }
 
     private:
-        ScriptCanvasEditor::DataDrivenNodeModelInformation m_info;
+        ScriptCanvasEditor::DataDrivenNodeModelInformation m_nodeModelInformation;
 
     };
 

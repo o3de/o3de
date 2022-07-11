@@ -53,23 +53,20 @@ namespace ScriptCanvasEditor
         AZStd::string                    m_titlePaletteOverride;
     };
 
+    struct DataDrivenNodeModelInformation : public NodePaletteModelInformation
+    {
+        AZ_RTTI(DataDrivenNodeModelInformation, "{D44D697D-7462-456B-B305-E9931FC02E6B}", NodePaletteModelInformation);
+        AZ_CLASS_ALLOCATOR(DataDrivenNodeModelInformation, AZ::SystemAllocator, 0);
+
+        Nodes::DataDrivenNodeCreationData m_nodeData;
+    };
+
     struct CategoryInformation
     {
         AZStd::string m_styleOverride;
         AZStd::string m_paletteOverride = GraphCanvas::NodePaletteTreeItem::DefaultNodeTitlePalette;
 
         AZStd::string m_tooltip;
-    };
-
-    struct RegisterSmallOperatorNodeInformation
-    {
-        AZ::Crc32 m_nodeLexicalId;
-        AZStd::string m_nodeTitle;
-        AZStd::string m_nodeToolTip;
-        ScriptCanvas::Data::Type m_nodeDataType;
-        AZStd::string m_paletteTitle = m_nodeTitle;
-        AZStd::string m_paletteToolTip = m_nodeToolTip;
-        AZStd::string m_palettePath = "Math/Small Operators";
     };
 
     class NodePaletteModel
@@ -90,8 +87,7 @@ namespace ScriptCanvasEditor
 
         void RepopulateModel();
 
-        void RegisterSmallOperatorNode(const RegisterSmallOperatorNodeInformation& info);
-        void RegisterDataDrivenNode(NodePaletteModelInformation* nodeInformation, const ScriptCanvas::NodeTypeIdentifier& id);
+        void RegisterDataDrivenNode(DataDrivenNodeModelInformation* nodePaletteItemInformation);
 
         void RegisterCustomNode(const AZ::SerializeContext::ClassData* classData, const AZStd::string& categoryPath = "Nodes");
         void RegisterClassNode(const AZStd::string& categoryPath, const AZStd::string& methodClass, const AZStd::string& methodName, const AZ::BehaviorMethod* behaviorMethod, const AZ::BehaviorContext* behaviorContext, ScriptCanvas::PropertyStatus propertyStatus, bool isOverload);
@@ -213,16 +209,6 @@ namespace ScriptCanvasEditor
         ScriptCanvas::EBusBusId m_busId;
         ScriptCanvas::EBusEventId m_eventId;
         ScriptCanvas::PropertyStatus m_propertyStatus = ScriptCanvas::PropertyStatus::None;
-    };
-
-    struct DataDrivenNodeModelInformation
-        : public NodePaletteModelInformation
-    {
-        AZ_RTTI(DataDrivenNodeModelInformation, "{D44D697D-7462-456B-B305-E9931FC02E6B}", NodePaletteModelInformation);
-        AZ_CLASS_ALLOCATOR(DataDrivenNodeModelInformation, AZ::SystemAllocator, 0);
-
-        AZ::Crc32 m_nodeLexicalId;
-        AZStd::any m_userData;
     };
 
     struct ScriptEventHandlerNodeModelInformation
