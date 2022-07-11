@@ -21,17 +21,7 @@ logger = get_logger(__file__)
 
 class TestImpact:
 
-    _runtime_args = []
-    persistent_storage = None
-    _change_list = {"createdFiles": [], "updatedFiles": [], "deletedFiles": []}
-    _src_branch = None
-    _dst_branch = None
-    _dst_commit = None
-    _src_commit = None
-    _instance_id = None
-    _has_change_list = False
-    _use_test_impact_analysis = False
-    _can_rerun_with_instrumentation = False
+    
 
     def __init__(self, config_file: str, args: dict):
         """
@@ -40,6 +30,11 @@ class TestImpact:
         @param config_file: The runtime config file to obtain the runtime configuration data from.
         @param args: The arguments to be parsed and applied to this TestImpact object.
         """
+
+        self._runtime_args = []
+        self._change_list = {"createdFiles": [], "updatedFiles": [], "deletedFiles": []}
+        self._has_change_list = False
+        self._use_test_impact_analysis = False
 
         # Unique instance id to be used as part of the report name.
         self._instance_id = uuid.uuid4().hex
