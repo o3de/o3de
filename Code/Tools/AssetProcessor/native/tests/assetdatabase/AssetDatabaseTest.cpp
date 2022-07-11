@@ -2588,7 +2588,7 @@ namespace UnitTests
     {
         const unsigned int StatCountPerPrefix = 5;
         AZStd::array<AZStd::string, 4> prefixes{ "Apple_", "Banana_", "Orange_", "Grape_" };
-        for (const auto prefix : prefixes)
+        for (const auto& prefix : prefixes)
         {
             InsertStatsTestData(StatCountPerPrefix, prefix);
         }
@@ -2606,7 +2606,7 @@ namespace UnitTests
         }
         
         //! Query StatName like prefixes
-        for (const auto prefix : prefixes)
+        for (const auto& prefix : prefixes)
         {
             StatDatabaseEntryContainer container;
             EXPECT_TRUE(m_data->m_connection.GetStatLikeStatName((prefix + "%").c_str(), container));
