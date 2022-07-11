@@ -38,8 +38,8 @@ namespace AzFramework::Scripts
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     // m_asset
                     ->DataElement(AZ::Edit::UIHandlers::Default, &SpawnableScriptAssetRef::m_asset, "asset", "")
-                    ->Attribute(AZ::Edit::Attributes::ShowProductAssetFileName, false)
-                    ->Attribute(AZ::Edit::Attributes::HideProductFilesInAssetPicker, true)
+                    ->Attribute(AZ::Edit::Attributes::ShowProductAssetFileName, true)
+                    ->Attribute(AZ::Edit::Attributes::HideProductFilesInAssetPicker, false)
                     ->Attribute(AZ::Edit::Attributes::AssetPickerTitle, "Spawnable Asset")
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &SpawnableScriptAssetRef::OnSpawnAssetChanged);
             }
