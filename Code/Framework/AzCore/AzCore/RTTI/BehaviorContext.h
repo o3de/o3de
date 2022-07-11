@@ -1384,10 +1384,10 @@ namespace AZ
         virtual void Disconnect(BehaviorArgument* id = nullptr) = 0;
 
         template<class BusId>
-        bool Disconnect(BusId id)
+        void Disconnect(BusId id)
         {
             BehaviorArgument p(&id);
-            return Disconnect(&p);
+            Disconnect(&p);
         }
 
         virtual bool IsConnected() = 0;
