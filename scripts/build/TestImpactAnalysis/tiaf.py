@@ -128,10 +128,10 @@ class TestImpact:
         logger.info(f"Sequence type is set to '{sequence_type}'.")
 
         if args.get('safe_mode'):
-            args.append("--safemode=on")
+            runtime_args.append("--safemode=on")
             logger.info("Safe mode set to 'on'.")
         else:
-            args.append("--safemode=off")
+            runtime_args.append("--safemode=off")
             logger.info("Safe mode set to 'off'.")
 
         # Test failure policy
