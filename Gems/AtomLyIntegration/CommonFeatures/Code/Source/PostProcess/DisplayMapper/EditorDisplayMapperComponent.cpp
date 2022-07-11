@@ -152,7 +152,7 @@ namespace AZ
 
                     editContext->Class<DisplayMapperComponentConfig>("ToneMapperComponentConfig", "")
                         ->ClassElement(Edit::ClassElements::EditorData, "")
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &DisplayMapperComponentConfig::m_displayMapperOperation, "Type", "Display Mapper Type.")
+                        ->DataElement(AZ::Edit::UIHandlers::ComboBox, &DisplayMapperComponentConfig::m_displayMapperOperation, "Type", "Display Mapper Type.")
                             ->Attribute(AZ::Edit::Attributes::EnumValues, AZ::Edit::GetEnumConstantsFromTraits<DisplayMapperOperationType>())
                             ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
                         ->DataElement(Edit::UIHandlers::CheckBox,
