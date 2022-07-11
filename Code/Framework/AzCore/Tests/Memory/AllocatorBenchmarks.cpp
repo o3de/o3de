@@ -11,7 +11,6 @@
 #include <AzCore/PlatformIncl.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/RTTI/TypeInfo.h>
-#include <AzCore/Memory/BestFitExternalMapAllocator.h>
 #include <AzCore/Memory/HeapSchema.h>
 #include <AzCore/Memory/HphaSchema.h>
 #include <AzCore/Memory/MallocSchema.h>
@@ -581,7 +580,6 @@ namespace Benchmark
     BM_REGISTER_ALLOCATOR(HphaSchemaAllocator, HphaSchemaAllocator);
     BM_REGISTER_ALLOCATOR(SystemAllocator, TestSystemAllocator);
     
-    //BM_REGISTER_ALLOCATOR(BestFitExternalMapAllocator, BestFitExternalMapAllocator); // Requires to pre-allocate blocks and cannot work as a general-purpose allocator
     //BM_REGISTER_ALLOCATOR(HeapSchemaAllocator, TestHeapSchemaAllocator); // Requires to pre-allocate blocks and cannot work as a general-purpose allocator
     //BM_REGISTER_SCHEMA(PoolSchema); // Requires special alignment requests while allocating
     // BM_REGISTER_ALLOCATOR(OSAllocator, OSAllocator); // Requires special treatment to initialize since it will be already initialized, maybe creating a different instance?

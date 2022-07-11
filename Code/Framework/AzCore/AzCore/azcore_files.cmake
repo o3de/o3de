@@ -400,10 +400,6 @@ set(FILES
     Memory/AllocatorManager.h
     Memory/AllocatorWrapper.h
     Memory/AllocatorScope.h
-    Memory/BestFitExternalMapAllocator.cpp
-    Memory/BestFitExternalMapAllocator.h
-    Memory/BestFitExternalMapSchema.cpp
-    Memory/BestFitExternalMapSchema.h
     Memory/Config.h
     Memory/dlmalloc.inl
     Memory/HeapSchema.cpp

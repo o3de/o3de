@@ -8,7 +8,6 @@
 #include <AzCore/PlatformIncl.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Memory/PoolAllocator.h>
-#include <AzCore/Memory/BestFitExternalMapAllocator.h>
 #include <AzCore/Memory/HeapSchema.h>
 #include <AzCore/Memory/HphaSchema.h>
 
@@ -798,53 +797,6 @@ namespace UnitTest
     TEST_F(ThreadPoolAllocatorStaticPagesTest, Test)
     {
         run();
-    }
-
-    TEST(BestFitExternalMap, Test)
-    {
-        SystemAllocator::Descriptor sysDesc;
-        sysDesc.m_heap.m_numFixedMemoryBlocks = 1;
-        sysDesc.m_heap.m_fixedMemoryBlocksByteSize[0] = 5 * 1024 * 1024;
-        sysDesc.m_heap.m_fixedMemoryBlocks[0] = AZ_OS_MALLOC(sysDesc.m_heap.m_fixedMemoryBlocksByteSize[0], sysDesc.m_heap.m_memoryBlockAlignment);
-        AllocatorInstance<SystemAllocator>::Create(sysDesc);
-
-        BestFitExternalMapAllocator::Descriptor desc;
-        desc.m_mapAllocator = nullptr; // use the system allocator
-        desc.m_memoryBlockByteSize = 4 * 1024 * 1024;
-        desc.m_memoryBlock = azmalloc(desc.m_memoryBlockByteSize, desc.m_memoryBlockAlignment);
-
-        AllocatorInstance<BestFitExternalMapAllocator>::Create(desc);
-        IAllocator& bfAlloc = AllocatorInstance<BestFitExternalMapAllocator>::Get();
-
-        EXPECT_EQ( desc.m_memoryBlockByteSize, bfAlloc.Capacity() );
-        EXPECT_EQ( 0, bfAlloc.NumAllocatedBytes() );
-        EXPECT_EQ( desc.m_memoryBlockByteSize, bfAlloc.GetMaxAllocationSize() );
-
-        void* addr = bfAlloc.Allocate(desc.m_memoryBlockByteSize, 16, 0);
-
-        EXPECT_NE(nullptr, addr);
-        EXPECT_EQ( desc.m_memoryBlockByteSize, bfAlloc.Capacity() );
-        EXPECT_EQ( desc.m_memoryBlockByteSize, bfAlloc.NumAllocatedBytes() );
-        EXPECT_EQ( 0, bfAlloc.GetMaxAllocationSize() );
-
-        // enable assert mode
-        //void* addr2 = bfAlloc.Allocate(1,1,0);
-        //EXPECT_EQ(NULL, addr2);
-
-        bfAlloc.DeAllocate(addr);
-        EXPECT_EQ( desc.m_memoryBlockByteSize, bfAlloc.Capacity() );
-        EXPECT_EQ( 0, bfAlloc.NumAllocatedBytes() );
-        EXPECT_EQ( desc.m_memoryBlockByteSize, bfAlloc.GetMaxAllocationSize() );
-
-        //bfAlloc.DeAllocate(addr2);
-
-        // add more tests !!!
-
-        AllocatorInstance<BestFitExternalMapAllocator>::Destroy();
-
-        azfree(desc.m_memoryBlock);
-
-        AllocatorInstance<SystemAllocator>::Destroy();
     }
 
     /**
