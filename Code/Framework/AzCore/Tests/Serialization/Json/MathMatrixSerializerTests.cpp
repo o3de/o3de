@@ -159,26 +159,32 @@ namespace JsonSerializationTests
 
         AZStd::shared_ptr<MatrixType> CreateFullySetInstance() override
         {
-            auto angles = AZ::Vector3 { 0.0f, 0.0f, 0.0f };
-            auto scale = 10.0f;
-            auto translation = AZ::Vector3{ 10.0f, 20.0f, 30.0f };
-            auto matrix = DataHelper::BuildMatrix<MatrixType>(angles, scale, translation);
-            return AZStd::make_shared<MatrixType>(matrix);
+            auto matrix = AZStd::make_shared<MatrixType>();
+            float elementValue = 1.0f;
+            for (size_t rowIndex = 0; rowIndex < RowCount; ++rowIndex)
+            {
+                for (size_t columnIndex = 0; columnIndex < ColumnCount; ++columnIndex)
+                {
+                    matrix->SetElement(aznumeric_caster(rowIndex), aznumeric_caster(columnIndex), elementValue);
+                    elementValue += 1.0f;
+                }
+            }
+            return matrix;
         }
 
         AZStd::string_view GetJsonForFullySetInstance() override
         {
             if constexpr (RowCount * ColumnCount == 9)
             {
-                return "{\"roll\":0.0,\"pitch\":0.0,\"yaw\":0.0,\"scale\":10.0}";
+                return "[1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0]";
             }
             else if constexpr (RowCount * ColumnCount == 12)
             {
-                return "{\"roll\":0.0,\"pitch\":0.0,\"yaw\":0.0,\"scale\":10.0,\"x\":10.0,\"y\":20.0,\"z\":30.0}";
+                return "[1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0]";
             }
             else if constexpr (RowCount * ColumnCount == 16)
             {
-                return "{\"roll\":0.0,\"pitch\":0.0,\"yaw\":0.0,\"scale\":10.0,\"x\":10.0,\"y\":20.0,\"z\":30.0}";
+                return "[1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0]";
             }
             else
             {
