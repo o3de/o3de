@@ -14,6 +14,7 @@
 #include <Atom/RPI.Public/View.h>
 #include <Atom/RPI.Public/Pass/PassFilter.h>
 #include <DiffuseGlobalIllumination/DiffuseProbeGridFeatureProcessor.h>
+#include <Atom_Feature_Traits_Platform.h>
 #include <Atom/Feature/TransformService/TransformServiceFeatureProcessor.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/RHISystemInterface.h>
