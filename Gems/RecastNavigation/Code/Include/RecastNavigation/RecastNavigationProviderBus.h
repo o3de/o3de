@@ -30,7 +30,8 @@ namespace RecastNavigation
         //! @param borderSize An additional extent in each dimension around each tile. In order for navigation tiles to connect
         //!               to their respective neighboring tiles, they need additional geometry in the near vicinity.
         //! @param tileCallback will be called once for each tile with geometry data and one last time to indicate the end of the operation with an empty shared_ptr
-        virtual void CollectGeometryAsync(float tileSize, float borderSize,
+        //! @returns true if an async operation was scheduled, false otherwise
+        virtual bool CollectGeometryAsync(float tileSize, float borderSize,
             AZStd::function<void(AZStd::shared_ptr<TileGeometry>)> tileCallback) = 0;
 
         //! A navigation mesh is made up of tiles. Each tile is a square of the same size.

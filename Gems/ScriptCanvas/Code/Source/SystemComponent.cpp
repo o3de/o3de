@@ -33,8 +33,12 @@
 #endif
 
 #include <AutoGenFunctionRegistry.generated.h>
+#include <AutoGenNodeableRegistry.generated.h>
+#include <AutoGenGrammarRegistry.generated.h>
 
 REGISTER_SCRIPTCANVAS_AUTOGEN_FUNCTION(ScriptCanvasStatic);
+REGISTER_SCRIPTCANVAS_AUTOGEN_NODEABLE(ScriptCanvasStatic);
+REGISTER_SCRIPTCANVAS_AUTOGEN_GRAMMAR(ScriptCanvasStatic);
 
 namespace ScriptCanvasSystemComponentCpp
 {
@@ -63,7 +67,7 @@ namespace ScriptCanvas
 {
     void SystemComponent::Reflect(AZ::ReflectContext* context)
     {
-        AutoGenRegistry::Reflect(context);
+        REFLECT_SCRIPTCANVAS_AUTOGEN(ScriptCanvasStatic, context);
         VersionData::Reflect(context);
         Nodeable::Reflect(context);
         SourceHandle::Reflect(context);

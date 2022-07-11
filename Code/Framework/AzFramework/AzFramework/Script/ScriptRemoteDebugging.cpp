@@ -24,6 +24,7 @@
 #include <AzCore/Math/Crc.h>
 #include <AzCore/std/parallel/thread.h>
 #include <AzCore/std/parallel/atomic.h>
+#include <AzNetworking/Framework/INetworking.h>
 
 namespace AzFramework
 {
@@ -425,6 +426,7 @@ namespace AzFramework
             {
                 EBUS_EVENT(TargetManager::Bus, DispatchMessages, AZ_CRC("ScriptDebugAgent", 0xb6be0836));
                 Process();
+                AZ::Interface<AzNetworking::INetworking>::Get()->ForceUpdate();
                 AZStd::this_thread::yield();
             }
         }

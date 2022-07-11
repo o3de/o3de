@@ -466,6 +466,8 @@ namespace UnitTest
         EXPECT_EQ(assetStatus5.m_reloaded, 0);
         EXPECT_EQ(assetStatus6.m_reloaded, 0);
 
+        EXPECT_EQ(m_testAssetManager->GetAssetContainers().size(), 0);
+
         // This should process
         m_testAssetManager->ReloadAsset(MyAsset1Id, AZ::Data::AssetLoadBehavior::Default);
         // This should process
@@ -504,6 +506,7 @@ namespace UnitTest
         EXPECT_EQ(assetStatus5.m_reloaded, 0);
         EXPECT_EQ(assetStatus6.m_reloaded, 0);
 
+        EXPECT_EQ(m_testAssetManager->GetAssetContainers().size(), 0);
 
         OnAssetReadyListener delayLoadAssetStatus(DelayLoadAssetId, azrtti_typeid<AssetWithAssetReference>());
 
@@ -516,7 +519,7 @@ namespace UnitTest
         maxTimeout = AZStd::chrono::system_clock::now() + timeoutSeconds;
         while (!delayLoadAssetStatus.m_ready)
         {
-            AssetBus::ExecuteQueuedEvents();
+            m_testAssetManager->DispatchEvents();
             if (AZStd::chrono::system_clock::now() > maxTimeout)
             {
                 timedOut = true;
@@ -527,13 +530,14 @@ namespace UnitTest
         ASSERT_FALSE(timedOut);
 
         EXPECT_EQ(delayLoadAssetStatus.m_ready, 1);
+        EXPECT_EQ(m_testAssetManager->GetAssetContainers().size(), 0);
 
         // This should go through to loading
         m_testAssetManager->ReloadAsset(DelayLoadAssetId, AZ::Data::AssetLoadBehavior::Default);
         maxTimeout = AZStd::chrono::system_clock::now() + timeoutSeconds;
         while (m_testAssetManager->GetReloadStatus(DelayLoadAssetId) != AZ::Data::AssetData::AssetStatus::Loading)
         {
-            AssetBus::ExecuteQueuedEvents();
+            m_testAssetManager->DispatchEvents();
             if (AZStd::chrono::system_clock::now() > maxTimeout)
             {
                 timedOut = true;
@@ -2257,11 +2261,12 @@ namespace UnitTest
 
         struct MockAssetContainer : AssetContainer
         {
-            MockAssetContainer(Asset<AssetData> assetData, const AssetLoadParameters& loadParams)
+            MockAssetContainer(Asset<AssetData> assetData, const AssetLoadParameters& loadParams, bool isReload)
             {
                 // Copying the code in the original constructor, we can't call that constructor because it will not invoke our virtual method
                 m_rootAsset = AssetInternal::WeakAsset<AssetData>(assetData);
                 m_containerAssetId = m_rootAsset.GetId();
+                m_isReload = isReload;
 
                 AddDependentAssets(assetData, loadParams);
             }
@@ -2288,9 +2293,9 @@ namespace UnitTest
             }
 
         protected:
-            AZStd::shared_ptr<AssetContainer> CreateAssetContainer(Asset<AssetData> asset, const AssetLoadParameters& loadParams) const override
+            AZStd::shared_ptr<AssetContainer> CreateAssetContainer(Asset<AssetData> asset, const AssetLoadParameters& loadParams, bool isReload) const override
             {
-                return AZStd::shared_ptr<AssetContainer>(aznew MockAssetContainer(asset, loadParams));
+                return AZStd::shared_ptr<AssetContainer>(aznew MockAssetContainer(asset, loadParams, isReload));
             }
         };
 

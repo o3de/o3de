@@ -125,6 +125,13 @@ SHAPER_TYPE = {
     'pq': 7,
 }
 
+# Hair Lighting Model
+HAIR_LIGHTING_MODEL = {
+    'GGX': 0,
+    'Marschner': 1,
+    'Kajiya': 2,
+}
+
 # Level list used in Editor Level Load Test
 # WARNING: "Sponza" level is sandboxed due to an intermittent failure.
 LEVEL_LIST = ["hermanubis", "hermanubis_high", "macbeth_shaderballs", "PbrMaterialChart", "ShadowTest"]
@@ -239,6 +246,18 @@ class AtomComponentProperties:
         properties = {
             'name': 'Camera',
             'Field of view': 'Controller|Configuration|Field of view'
+        }
+        return properties[property]
+
+    @staticmethod
+    def cube_map_capture(property: str = 'name') -> str:
+        """
+        CubeMap capture component properties.
+        :param property: From the last element of the property tree path. Default 'name' for component name string.
+        :return: Full property path OR component name if no property specified.
+        """
+        properties = {
+            'name': 'CubeMap Capture'
         }
         return properties[property]
 
@@ -590,6 +609,62 @@ class AtomComponentProperties:
           - 'requires' a list of component names as strings required by this component.
             Use editor_entity_utils EditorEntity.add_components(list) to add this list of requirements.
           - 'Hair Asset' Asset.id of the hair TressFX asset.
+          - 'Enable Area Lights' (bool default True)
+          - 'Enable Azimuth' Azimuth Contribution (bool default True)
+          - 'Enable Directional Lights' (bool default True)
+          - 'Enable IBL' imaged-based lighting for hair (bool default True)
+          - 'Enable Longitude' Longitude Contribution (bool default True)
+          - 'Enable Marschner R' (bool default True)
+          - 'Enable Marschner TRT' (bool default True)
+          - 'Enable Marschner TT' (bool default True)
+          - 'Enable Punctual Lights' (bool default True)
+          - 'Enable Shadows' (bool default True)
+          - 'Hair Lighting Model' simulation algorithm selected from atom_constants.py HAIR_LIGHTING_MODEL (default 'Marschner')
+          - 'Base Albedo Asset' Asset.id of the base albedo texture asset (streamingimage or supported texture format)
+          - 'Base Color' base color of the hair (math.Color RGBA, default 255,255,255,161)
+          - 'Enable Hair LOD' Level of Detail usage for the hair (bool default False)
+          - 'Enable Hair LOD(Shadow)' Level of Detail usage for the shadow of hair (bool default False)
+          - 'Enable Strand Tangent' (bool default False)
+          - 'Enable Strand UV' usage of Strand Albedo (bool default False)
+          - 'Enable Thin Tip' end of the hair will narrow or be squared off (bool default True)
+          - 'Fiber Radius' Diameter of the fiber (float 0.0 to 0.01, default 0.002)
+          - 'Fiber Spacing' spacing between the fibers (float 0.0.to 1.0, default 0.4)
+          - 'Fiber ratio' extent to which the hair strand will taper (float 0.01 to 1.0, default 0.06)
+          - 'Hair Cuticle Angle' determins how the light refraction behaves (float radians 0.05 to 0.15, default 0.08)
+          - 'Hair Ex1' Specular power to use for the calculated specular root value (float 0.0 to 100.0, default 14.4)
+          - 'Hair Ex2' Specular power to use for the calculated specular tip value (float 0.0 to 100.0, default 11.8)
+          - 'Hair Kdiffuse' Diffuse coefficient, think of it as a gain value (float 0.0 to 1.0, deafult 0.22)
+          - 'Hair Ks1' Primary specular reflection coefficient (float 0.0 to 1.0, default 0.001)
+          - 'Hair Ks2' Secondary specular reflection coefficient (float 0.0 to 1.0, default 0.136)
+          - 'Hair Roughness' (float 0.4 to 0.9, default 0.65)
+          - 'Hair Shadow Alpha' attenuate hair shadows based on depth into strands (float 0.0 to 1.0, default 0.35)
+          - 'LOD End Distance' Distance in centimeters where LOD will be its maximum reduction/multiplier (float 0.0 to inf, default 5.0)
+          - 'LOD Start Distance' Distance to begin LOD in centimeters camera to hair. (float 0.0 to inf, default 1.0)
+          - 'Mat Tip Color' blend from root to tip (math.Color RGBA, default 255,255,255,161)
+          - 'Max LOD Reduction' Maximum amount of reduction as a percentage of the original (float 0.0 to 1.0, default 0.5)
+          - 'Max LOD Strand Width Multiplier' Maximum amount the strand width would be multiplied by (float 0.0 to 10.0, default 2.0)
+          - 'Max Shadow Fibers' shadow attenuation calculation cutoff (int 0 to 100, default 50)
+          - 'Shadow LOD End Distance' Distance where shadow LOD should be at its maximum (float 0.0 to inf, default 5.0)
+          - 'Shadow LOD Start Distance' Distance to begin shadow LOD (float 0.0 to inf, default 1.0)
+          - 'Shadow Max LOD Reduction' max reduction as a percentage of the original (float 0.0 to 1.0, default 0.5)
+          - 'Shadow Max LOD Strand Width Multiplier' max amount the shadow width cast by the strand would be multiplied by (float 0.0 to 10.0, default 2.0)
+          - 'Strand Albedo Asset' Asset.id of the texture asset used for strands (streamingimage)
+          - 'Strand UVTiling Factor' Amount of tiling to use (float 0.0 to 10.0, default 1.0)
+          - 'Tip Percentage' amount of lerp blend between Base Scalp Albedo and Mat Tip Color (float 0.0 default to 1.0)
+          - 'Clamp Velocity' limits the displacement of hair segments per frame (float 1.0 to 24.0, default 20.0)
+          - 'Damping' smooths out the motion of the hair (float 0.0 to 1.0, default 0.08)
+          - 'Global Constraint Range' global shape stiffness (float 0.0 to 1.0, default 0.308)
+          - 'Global Constraint Stiffness' stiffness of a strand (float 0.0 to 1.0, default 0.408)
+          - 'Gravity Magnitude' gravitational pseudo value approximating force on strands (float 0.0 to 1.0 default 0.19)
+          - 'Length Constraint Iterations' simulation time (iterations) toward keeping the global hair shape (int 1 to 10, default 3)
+          - 'Local Constraint Iterations' more simulation time (iterations) toward keeping the local hair shape (int 1 to 10, default 3)
+          - 'Local Constraint Stiffness' Controls the stiffness of a strand (float 0.0 to 1.0, default 0.908)
+          - 'Tip Separation' Forces the tips of the strands away from each other (float 0.0 to 1.0, default 0.1)
+          - 'Vsp Accel Threshold' Velocity Shock Propagation acceleration threshold (float 0.0 to 10.0, default 1.208)
+          - 'Vsp Coeffs' Velocity Shock Propagation (float 0.0 to 1.0, default 0.758)
+          - 'Wind Angle Radians' (float radians 0.0 to 1.0, default 0.698)
+          - 'Wind Direction' (math.Vector3 XYZ world space default 0.0, 1.0, 0.0)
+          - 'Wind Magnitude' wind multiplier (float 0.0 default to 1.0)
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
@@ -597,6 +672,62 @@ class AtomComponentProperties:
             'name': 'Atom Hair',
             'requires': [AtomComponentProperties.actor()],
             'Hair Asset': 'Controller|Configuration|Hair Asset',
+            'Enable Area Lights': 'Controller|Configuration|Hair Global Settings|Enable Area Lights',
+            'Enable Azimuth': 'Controller|Configuration|Hair Global Settings|Enable Azimuth',
+            'Enable Directional Lights': 'Controller|Configuration|Hair Global Settings|Enable Directional Lights',
+            'Enable IBL': 'Controller|Configuration|Hair Global Settings|Enable IBL',
+            'Enable Longitude': 'Controller|Configuration|Hair Global Settings|Enable Longitude',
+            'Enable Marschner R': 'Controller|Configuration|Hair Global Settings|Enable Marschner R',
+            'Enable Marschner TRT': 'Controller|Configuration|Hair Global Settings|Enable Marschner TRT',
+            'Enable Marschner TT': 'Controller|Configuration|Hair Global Settings|Enable Marschner TT',
+            'Enable Punctual Lights': 'Controller|Configuration|Hair Global Settings|Enable Punctual Lights',
+            'Enable Shadows': 'Controller|Configuration|Hair Global Settings|Enable Shadows',
+            'Hair Lighting Model': 'Controller|Configuration|Hair Global Settings|Hair Lighting Model',
+            'Base Albedo Asset': 'Controller|Configuration|TressFX Render Settings|Base Albedo Asset',
+            'Base Color': 'Controller|Configuration|TressFX Render Settings|Base Color',
+            'Enable Hair LOD': 'Controller|Configuration|TressFX Render Settings|Enable Hair LOD',
+            'Enable Hair LOD(Shadow)': 'Controller|Configuration|TressFX Render Settings|Enable Hair LOD(Shadow)',
+            'Enable Strand Tangent': 'Controller|Configuration|TressFX Render Settings|Enable Strand Tangent',
+            'Enable Strand UV': 'Controller|Configuration|TressFX Render Settings|Enable Strand UV',
+            'Enable Thin Tip': 'Controller|Configuration|TressFX Render Settings|Enable Thin Tip',
+            'Fiber Radius': 'Controller|Configuration|TressFX Render Settings|Fiber Radius',
+            'Fiber Spacing': 'Controller|Configuration|TressFX Render Settings|Fiber Spacing',
+            'Fiber ratio': 'Controller|Configuration|TressFX Render Settings|Fiber ratio',
+            'Hair Cuticle Angle': 'Controller|Configuration|TressFX Render Settings|Hair Cuticle Angle',
+            'Hair Ex1': 'Controller|Configuration|TressFX Render Settings|Hair Ex1',
+            'Hair Ex2': 'Controller|Configuration|TressFX Render Settings|Hair Ex2',
+            'Hair Kdiffuse': 'Controller|Configuration|TressFX Render Settings|Hair Kdiffuse',
+            'Hair Ks1': 'Controller|Configuration|TressFX Render Settings|Hair Ks1',
+            'Hair Ks2': 'Controller|Configuration|TressFX Render Settings|Hair Ks2',
+            'Hair Roughness': 'Controller|Configuration|TressFX Render Settings|Hair Roughness',
+            'Hair Shadow Alpha': 'Controller|Configuration|TressFX Render Settings|Hair Shadow Alpha',
+            'LOD End Distance': 'Controller|Configuration|TressFX Render Settings|LOD End Distance',
+            'LOD Start Distance': 'Controller|Configuration|TressFX Render Settings|LOD Start Distance',
+            'Mat Tip Color': 'Controller|Configuration|TressFX Render Settings|Mat Tip Color',
+            'Max LOD Reduction': 'Controller|Configuration|TressFX Render Settings|Max LOD Reduction',
+            'Max LOD Strand Width Multiplier': 'Controller|Configuration|TressFX Render Settings|Max LOD Strand Width Multiplier',
+            'Max Shadow Fibers': 'Controller|Configuration|TressFX Render Settings|Max Shadow Fibers',
+            'Shadow LOD End Distance': 'Controller|Configuration|TressFX Render Settings|Shadow LOD End Distance',
+            'Shadow LOD Start Distance': 'Controller|Configuration|TressFX Render Settings|Shadow LOD Start Distance',
+            'Shadow Max LOD Reduction': 'Controller|Configuration|TressFX Render Settings|Shadow Max LOD Reduction',
+            'Shadow Max LOD Strand Width Multiplier': 'Controller|Configuration|TressFX Render Settings|Shadow Max LOD Strand Width Multiplier',
+            'Strand Albedo Asset': 'Controller|Configuration|TressFX Render Settings|Strand Albedo Asset',
+            'Strand UVTiling Factor': 'Controller|Configuration|TressFX Render Settings|Strand UVTiling Factor',
+            'Tip Percentage': 'Controller|Configuration|TressFX Render Settings|Tip Percentage',
+            'Clamp Velocity': 'Controller|Configuration|TressFX Sim Settings|Clamp Velocity',
+            'Damping': 'Controller|Configuration|TressFX Sim Settings|Damping',
+            'Global Constraint Range': 'Controller|Configuration|TressFX Sim Settings|Global Constraint Range',
+            'Global Constraint Stiffness': 'Controller|Configuration|TressFX Sim Settings|Global Constraint Stiffness',
+            'Gravity Magnitude': 'Controller|Configuration|TressFX Sim Settings|Gravity Magnitude',
+            'Length Constraint Iterations': 'Controller|Configuration|TressFX Sim Settings|Length Constraint Iterations',
+            'Local Constraint Iterations': 'Controller|Configuration|TressFX Sim Settings|Local Constraint Iterations',
+            'Local Constraint Stiffness': 'Controller|Configuration|TressFX Sim Settings|Local Constraint Stiffness',
+            'Tip Separation': 'Controller|Configuration|TressFX Sim Settings|Tip Separation',
+            'Vsp Accel Threshold': 'Controller|Configuration|TressFX Sim Settings|Vsp Accel Threshold',
+            'Vsp Coeffs': 'Controller|Configuration|TressFX Sim Settings|Vsp Coeffs',
+            'Wind Angle Radians': 'Controller|Configuration|TressFX Sim Settings|Wind Angle Radians',
+            'Wind Direction': 'Controller|Configuration|TressFX Sim Settings|Wind Direction',
+            'Wind Magnitude': 'Controller|Configuration|TressFX Sim Settings|Wind Magnitude',
         }
         return properties[property]
 

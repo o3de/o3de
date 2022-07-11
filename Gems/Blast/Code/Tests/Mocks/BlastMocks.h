@@ -396,6 +396,16 @@ namespace Blast
             return {};
         }
 
+        AZ::Matrix3x3 GetInertiaWorld() const override
+        {
+            return {};
+        }
+
+        AZ::Matrix3x3 GetInertiaLocal() const override
+        {
+            return {};
+        }
+
         AZ::Matrix3x3 GetInverseInertiaWorld() const override
         {
             return {};
@@ -697,6 +707,8 @@ namespace Blast
         MOCK_CONST_METHOD0(IsPhysicsEnabled, bool());
         MOCK_CONST_METHOD0(GetCenterOfMassWorld, AZ::Vector3());
         MOCK_CONST_METHOD0(GetCenterOfMassLocal, AZ::Vector3());
+        MOCK_CONST_METHOD0(GetInertiaWorld, AZ::Matrix3x3());
+        MOCK_CONST_METHOD0(GetInertiaLocal, AZ::Matrix3x3());
         MOCK_CONST_METHOD0(GetInverseInertiaWorld, AZ::Matrix3x3());
         MOCK_CONST_METHOD0(GetInverseInertiaLocal, AZ::Matrix3x3());
         MOCK_CONST_METHOD0(GetMass, float());

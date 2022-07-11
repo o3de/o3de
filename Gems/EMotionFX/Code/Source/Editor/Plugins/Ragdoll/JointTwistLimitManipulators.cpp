@@ -23,17 +23,6 @@ namespace EMotionFX
     static const float ManipulatorWidth = 0.05f;
     static const float ManipulatorQuadWidth = 0.1f;
 
-    JointTwistLimitManipulators::JointTwistLimitManipulators()
-    {
-        m_adjustJointLimitCallback = AZStd::make_unique<PhysicsSetupManipulatorCommandCallback>(this, false);
-        EMStudio::GetCommandManager()->RegisterCommandCallback("AdjustJointLimit", m_adjustJointLimitCallback.get());
-    }
-
-    JointTwistLimitManipulators::~JointTwistLimitManipulators()
-    {
-        EMStudio::GetCommandManager()->RemoveCommandCallback(m_adjustJointLimitCallback.get(), false);
-    }
-
     float GetAngleDeltaDegrees(const AzToolsFramework::AngularManipulator::Action& action)
     {
         float angleDeltaRadians = 0.0f;
@@ -61,8 +50,7 @@ namespace EMotionFX
         AzFramework::DebugDisplayRequestBus::Bind(debugDisplayBus, m_viewportId);
         m_debugDisplay = AzFramework::DebugDisplayRequestBus::FindFirstHandler(debugDisplayBus);
 
-        const AZ::Transform parentWorldTransform = m_physicsSetupManipulatorData.m_nodeWorldTransform *
-            AZ::Transform::CreateFromQuaternion(m_physicsSetupManipulatorData.m_jointConfiguration->m_parentLocalRotation);
+        const AZ::Transform parentWorldTransform = m_physicsSetupManipulatorData.GetJointParentFrameWorld();
 
         // lower limit manipulator
         m_twistLimitLowerManipulator = AzToolsFramework::AngularManipulator::MakeShared(parentWorldTransform);
@@ -140,14 +128,15 @@ namespace EMotionFX
 
         AZ::TickBus::Handler::BusConnect();
         PhysicsSetupManipulatorRequestBus::Handler::BusConnect();
+        m_adjustJointLimitCallback = AZStd::make_unique<PhysicsSetupManipulatorCommandCallback>(this, false);
+        EMStudio::GetCommandManager()->RegisterCommandCallback("AdjustJointLimit", m_adjustJointLimitCallback.get());
     }
 
     void JointTwistLimitManipulators::Refresh()
     {
         if (m_physicsSetupManipulatorData.HasJointLimit())
         {
-            const AZ::Transform parentWorldTransform = m_physicsSetupManipulatorData.m_nodeWorldTransform *
-                AZ::Transform::CreateFromQuaternion(m_physicsSetupManipulatorData.m_jointConfiguration->m_parentLocalRotation);
+            const AZ::Transform parentWorldTransform = m_physicsSetupManipulatorData.GetJointParentFrameWorld();
             m_twistLimitLowerManipulator->SetSpace(parentWorldTransform);
             m_twistLimitUpperManipulator->SetSpace(parentWorldTransform);
         }
@@ -155,10 +144,18 @@ namespace EMotionFX
 
     void JointTwistLimitManipulators::Teardown()
     {
+        EMStudio::GetCommandManager()->RemoveCommandCallback(m_adjustJointLimitCallback.get(), false);
+        m_adjustJointLimitCallback.reset();
         PhysicsSetupManipulatorRequestBus::Handler::BusDisconnect();
         AZ::TickBus::Handler::BusDisconnect();
-        m_twistLimitLowerManipulator->Unregister();
-        m_twistLimitUpperManipulator->Unregister();
+        if (m_twistLimitLowerManipulator)
+        {
+            m_twistLimitLowerManipulator->Unregister();
+        }
+        if (m_twistLimitUpperManipulator)
+        {
+            m_twistLimitUpperManipulator->Unregister();
+        }
         m_twistLimitLowerManipulator.reset();
         m_twistLimitUpperManipulator.reset();
         m_debugDisplay = nullptr;
@@ -203,11 +200,7 @@ namespace EMotionFX
         AZ::u32 previousState = m_debugDisplay->GetState();
         m_debugDisplay->CullOff();
         m_debugDisplay->SetAlpha(AzPhysics::JointVisualizationDefaults::Alpha);
-
-        const AZ::Transform parentWorldTransform = m_physicsSetupManipulatorData.m_nodeWorldTransform *
-            AZ::Transform::CreateFromQuaternion(m_physicsSetupManipulatorData.m_jointConfiguration->m_parentLocalRotation);
-
-        m_debugDisplay->PushMatrix(parentWorldTransform);
+        m_debugDisplay->PushMatrix(m_physicsSetupManipulatorData.GetJointParentFrameWorld());
 
         if (twistLimitLower.has_value())
         {

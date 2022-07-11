@@ -10,6 +10,8 @@
 #include <AzCore/Module/Module.h>
 
 #include <Builder/TestAssetBuilderComponent.h>
+#include <Builder/TestIntermediateAssetBuilderComponent.h>
+#include <Builder/TestDependencyBuilderComponent.h>
 
 namespace TestAssetBuilder
 {
@@ -25,6 +27,8 @@ namespace TestAssetBuilder
         {
             m_descriptors.insert(m_descriptors.end(), {
                 TestAssetBuilderComponent::CreateDescriptor(),
+                TestIntermediateAssetBuilderComponent::CreateDescriptor(),
+                TestDependencyBuilderComponent::CreateDescriptor(),
             });
         }
     };

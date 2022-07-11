@@ -362,6 +362,7 @@ namespace AzToolsFramework
             if (parentInfo.HasChild(childId))
             {
                 ReparentChild(childId, entityId, AZ::EntityId());
+                AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(&ToolsApplicationRequests::RemoveDirtyEntity, childId);
             }
         }
 
@@ -389,6 +390,7 @@ namespace AzToolsFramework
         for (auto childId : children)
         {
             ReparentChild(childId, AZ::EntityId(), entityId);
+            AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(&ToolsApplicationRequests::RemoveDirtyEntity, childId);
             m_entityOrphanTable[entityId].insert(childId);
         }
 

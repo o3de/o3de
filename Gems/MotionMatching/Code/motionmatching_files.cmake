@@ -22,6 +22,11 @@ set(FILES
     Source/Feature.h
     Source/FeatureMatrix.cpp
     Source/FeatureMatrix.h
+    Source/FeatureMatrixMinMaxScaler.cpp
+    Source/FeatureMatrixMinMaxScaler.h
+    Source/FeatureMatrixTransformer.h
+    Source/FeatureAngularVelocity.cpp
+    Source/FeatureAngularVelocity.h
     Source/FeaturePosition.cpp
     Source/FeaturePosition.h
     Source/FeatureSchema.cpp

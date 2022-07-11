@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/Console/IConsole.h>
 #include <AzCore/Debug/Trace.h>
 #include <AzCore/StringFunc/StringFunc.h>
 #include <AzCore/Settings/CommandLine.h>
@@ -18,7 +19,7 @@
 void PrintHelp()
 {
     AZ_Printf("Help", "Serialize Context Tool\n");
-    AZ_Printf("Help", "  <action> [-config] <action arguments>*\n");
+    AZ_Printf("Help", "  <action> [-config] [misc options] <action arguments>*\n");
     AZ_Printf("Help", "  [opt] -config=<path>: optional path to application's config file. Default is 'config/editor.xml'.\n");
     AZ_Printf("Help", "  [opt] -specializations=<prefix>: <comma or semicolon>-separated list of optional Registry project\n");
     AZ_Printf("Help", "         specializations, such as 'editor' or 'game' or 'editor;test'.  Default is none. \n");
@@ -33,7 +34,17 @@ void PrintHelp()
     AZ_Printf("Help", "\n");
     AZ_Printf("Help", "  'dumpsc': Dump the content of the Serialize and Edit Context to a JSON file.\n");
     AZ_Printf("Help", "    [opt] -output=<path>: Path to the folder to write to instead of next to the original file.\n");
-    AZ_Printf("Help", "    example: 'dumpsc -output=../TargetFolder/SerializeContext.json\n");
+    AZ_Printf("Help", "    example: 'dumpsc -output=../TargetFolder/SerializeContext.json'\n");
+    AZ_Printf("Help", "\n");
+    AZ_Printf("Help", "  'dumptypes': Dump the list of reflected types to stdout or a file.\n");
+    AZ_Printf("Help", "    [opt] --sort=<WORD> : Sorts the reflected type by <WORD> where word can be one of the following values.\n");
+    AZ_Printf("Help", R"(          "name", "typeid", "none")" "\n")
+    AZ_Printf("Help", "          sorts by name if not specified .\n");
+    AZ_Printf("Help", "    [opt] --output-file=<filepath>: Path to the file to output reflected types.\n");
+    AZ_Printf("Help", "          If not specfied, output is written to stdout.\n");
+    AZ_Printf("Help", R"(    example: 'dumptypes')" "\n");
+    AZ_Printf("Help", R"(    example: 'dumptypes --sort=typeid)" "\n");
+    AZ_Printf("Help", R"(    example: 'dumptypes --output-file=reflectedtypes.txt)" "\n");
     AZ_Printf("Help", "\n");
     AZ_Printf("Help", "  'convert': Converts a file with an ObjectStream to the new JSON formats.\n");
     AZ_Printf("Help", "    [arg] -files=<path>: <comma or semicolon>-separated list of files to verify. Supports wildcards.\n");
@@ -45,22 +56,8 @@ void PrintHelp()
     AZ_Printf("Help", "           On Windows the <prefix> should be in quotes, as \"/\" is treated as command option prefix\n");
     AZ_Printf("Help", "    [opt] -json-prefix=prefix: Json pointer path prefix to use as a \"root\" for settings.\n");
     AZ_Printf("Help", "    [opt] -verbose: Report additional details during the conversion process.\n");
-    AZ_Printf("Help", "    example: 'convert -file=*.slice;*.uislice -ext=slice2\n");
+    AZ_Printf("Help", "    example: 'convert -file=*.slice;*.uislice -ext=slice2'\n");
     AZ_Printf("Help", "\n");
-    AZ_Printf("Help", "  'convertad': Converts an Application Descriptor to the new JSON formats.\n");
-    AZ_Printf("Help", "    [opt] -dryrun: Processes as normal, but doesn't write files.\n");
-    AZ_Printf("Help", "    [opt] -skipgems: No module entities will be converted and no data will be written to gems.\n");
-    AZ_Printf("Help", "    [opt] -skipsystem: No system information is converted and no data will be written to the game registry.\n");
-    AZ_Printf("Help", "    [opt] -keepdefaults: Fields are written if a default value was found.\n");
-    AZ_Printf("Help", "    [opt] -json-prefix=<prefix>: JSON pointer path prefix to anchor the JSON output underneath.\n");
-    AZ_Printf("Help", "           On Windows the <prefix> should be in quotes, as \"/\" is treated as command option prefix\n");
-    AZ_Printf("Help", "    [opt] -verbose: Report additional details during the conversion process.\n");
-    AZ_Printf("Help", "    [opt] -regset <setreg_key>=<setreg_value>: Set setreg_value at key setreg_key within the settings registry.\n");
-    AZ_Printf("Help", "           This can be used for example to override the Active Game Project in the settings registry.\n");
-    AZ_Printf("Help", "           instead of using the project_path value from the bootstrap.cfg.\n");
-    AZ_Printf("Help", R"(           Ex. -regset "/Amazon/AzCore/Bootstrap/project_path=AutomatedTesting"\n)");
-    AZ_Printf("Help", "           This sets the active game project as AutomatedTesting, overrideing the value in the bootstrap.cfg\n");
-    AZ_Printf("Help", "    example: 'convertad -config=config/game.xml -dryrun\n");
     AZ_Printf("Help", R"(  'convert-ini': Converts windows-style INI file to a json format file.)" "\n");
     AZ_Printf("Help", R"(                 The converted file is suitable for being loaded into the Settings Registry.)" "\n");
     AZ_Printf("Help", R"(                 Can be used to convert .cfg/.ini files.)" "\n");
@@ -79,6 +76,26 @@ void PrintHelp()
     AZ_Printf("Help", "    example: 'convert-slice -files=*.slice -specializations=editor\n");
     AZ_Printf("Help", "    example: 'convert-slice -files=Levels/TestLevel/TestLevel.ly -specializations=editor\n");
     AZ_Printf("Help", "\n");
+    AZ_Printf("Help", "  'createtype': Create a default constructed object using Json Serialization and output the contents.\n");
+    AZ_Printf("Help", "    [arg] --type-name=<string>: Name of type to construct and output.\n");
+    AZ_Printf("Help", "          The type must be registered with the Json Registration or Serialize Context.\n");
+    AZ_Printf("Help", "          Cannot be specified with the -type-id parameter.\n");
+    AZ_Printf("Help", "    [arg] --type-id=<uuid>: Uuid of type to construct and output.\n");
+    AZ_Printf("Help", "          The type must be registered with the Json Registration or Serialize Context.\n");
+    AZ_Printf("Help", "          Cannot be specified with the -type-name parameter.\n");
+    AZ_Printf("Help", "    [opt] --output-file=<filepath>: Path to the file to output constructed object.\n");
+    AZ_Printf("Help", "          If not supplied, output is written to stdout.\n");
+    AZ_Printf("Help", R"(    [opt] --json-prefix=<prefix>: JSON pointer path prefix to anchor the JSON output underneath.)" "\n");
+    AZ_Printf("Help", R"(    example: 'createtype --type-name="AZ::Entity"')" "\n");
+    AZ_Printf("Help", R"(    example: 'createtype --type-id="{75651658-8663-478D-9090-2432DFCAFA44}"')" "\n");
+    AZ_Printf("Help", R"(    example: 'createtype --type-name="AZ::Entity" --json-prefix="/My/Anchor"')" "\n");
+    AZ_Printf("Help", R"(    example: 'createtype --type-name="AZ::Entity" --output-file=object.json)" "\n");
+    AZ_Printf("Help", "\n");
+    AZ_Printf("Help", "  Miscellaneous Options:\n");
+    AZ_Printf("Help", "  This options can be used with any of the above actions:\n");
+    AZ_Printf("Help", "    [opt] --regset <setreg_key>=<setreg_value>: Set setreg_value at key setreg_key within the settings registry.\n");
+    AZ_Printf("Help", "    [opt] --project-path <project_path>: Sets the path to the active project. Used to load gems associated with project\n");
+    AZ_Printf("Help", "\n");
 }
 
 int main(int argc, char** argv)
@@ -87,6 +104,13 @@ int main(int argc, char** argv)
 
     bool result = false;
     Application application(argc, argv);
+    // Direct Raw Debug Trace Messages to stderr
+    if (auto console = AZ::Interface<AZ::IConsole>::Get(); console != nullptr)
+    {
+        constexpr auto traceRedirectStream = AZ::Debug::RedirectCStream::Stderr;
+        console->PerformCommand("bg_redirectrawoutput",
+            { AZ::CVarFixedString::format("%d", static_cast<int>(traceRedirectStream)) });
+    }
     AZ::ComponentApplication::StartupParameters startupParameters;
     application.Start({}, startupParameters);
 
@@ -107,13 +131,13 @@ int main(int argc, char** argv)
         {
             result = Dumper::DumpSerializeContext(application);
         }
+        else if (AZ::StringFunc::Equal("dumptypes", action.c_str()))
+        {
+            result = Dumper::DumpTypes(application);
+        }
         else if (AZ::StringFunc::Equal("convert", action.c_str()))
         {
             result = Converter::ConvertObjectStreamFiles(application);
-        }
-        else if (AZ::StringFunc::Equal("convertad", action.c_str()))
-        {
-            result = Converter::ConvertApplicationDescriptor(application);
         }
         else if (AZ::StringFunc::Equal("convert-ini", action.c_str()))
         {
@@ -123,6 +147,10 @@ int main(int argc, char** argv)
         {
             SliceConverter sliceConverter;
             result = sliceConverter.ConvertSliceFiles(application);
+        }
+        else if (AZ::StringFunc::Equal("createtype", action.c_str()))
+        {
+            result = Dumper::CreateType(application);
         }
         else
         {

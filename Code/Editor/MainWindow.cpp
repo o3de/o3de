@@ -16,13 +16,10 @@
 #include <QAbstractEventDispatcher>
 #endif
 #include <QDebug>
-#include <QDesktopServices>
 #include <QHBoxLayout>
 #include <QInputDialog>
 #include <QMenuBar>
 #include <QMessageBox>
-#include <QUrl>
-#include <QUrlQuery>
 
 // AzCore
 #include <AzCore/Component/ComponentApplication.h>
@@ -41,9 +38,6 @@
 #include <AzFramework/Viewport/CameraInput.h>
 
 // AzToolsFramework
-#include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
-#include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
-#include <AzToolsFramework/ActionManager/ToolBar/ToolBarManagerInterface.h>
 #include <AzToolsFramework/API/EditorCameraBus.h>
 #include <AzToolsFramework/Application/Ticker.h>
 #include <AzToolsFramework/API/EditorWindowRequestBus.h>
@@ -58,7 +52,6 @@
 // AzQtComponents
 #include <AzQtComponents/Buses/ShortcutDispatch.h>
 #include <AzQtComponents/Components/DockMainWindow.h>
-#include <AzQtComponents/Components/SearchLineEdit.h>
 #include <AzQtComponents/Components/Style.h>
 #include <AzQtComponents/Components/Widgets/SpinBox.h>
 #include <AzQtComponents/Components/WindowDecorationWrapper.h>
@@ -116,19 +109,6 @@ using namespace AzToolsFramework;
 #define LAYOUTS_EXTENSION ".layout"
 #define LAYOUTS_WILDCARD "*.layout"
 #define DUMMY_LAYOUT_NAME "Dummy_Layout"
-
-static constexpr AZStd::string_view EditorMainWindowActionContextIdentifier = "o3de.context.editor.mainwindow";
-
-static constexpr AZStd::string_view EditorMainWindowMenuBarIdentifier = "o3de.menubar.editor.mainwindow";
-
-static constexpr AZStd::string_view FileMenuIdentifier = "o3de.menu.editor.file";
-static constexpr AZStd::string_view EditMenuIdentifier = "o3de.menu.editor.edit";
-static constexpr AZStd::string_view GameMenuIdentifier = "o3de.menu.editor.game";
-static constexpr AZStd::string_view ToolsMenuIdentifier = "o3de.menu.editor.tools";
-static constexpr AZStd::string_view ViewMenuIdentifier = "o3de.menu.editor.view";
-static constexpr AZStd::string_view HelpMenuIdentifier = "o3de.menu.editor.help";
-static constexpr AZStd::string_view HelpDocumentationMenuIdentifier = "o3de.menu.editor.help.documentation";
-static constexpr AZStd::string_view HelpGameDevResourcesMenuIdentifier = "o3de.menu.editor.help.gamedevresources";
 
 class CEditorOpenViewCommand
     : public _i_reference_target_t
@@ -429,11 +409,6 @@ MainWindow::~MainWindow()
 {
     AzToolsFramework::SourceControlNotificationBus::Handler::BusDisconnect();
 
-    if (m_toolbarManager)
-    {
-        delete m_toolbarManager;
-    }
-
     m_connectionListener.reset();
     GetIEditor()->UnregisterNotifyListener(this);
 
@@ -442,6 +417,14 @@ MainWindow::~MainWindow()
         GetEntityContextId(), &ActionOverrideRequests::TeardownActionOverrideHandler);
 
     m_instance = nullptr;
+    
+    if (!IsNewActionManagerEnabled())
+    {
+        delete m_levelEditorMenuHandler;
+        delete m_toolbarManager;
+        delete m_actionManager;
+        delete m_shortcutDispatcher;
+    }
 }
 
 void MainWindow::InitCentralWidget()
@@ -496,24 +479,7 @@ void MainWindow::Initialize()
     }
     else
     {
-        m_actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
-        if(m_actionManagerInterface)
-        {
-            InitializeActionContext();
-            InitializeActions();
-
-            m_menuManagerInterface = AZ::Interface<AzToolsFramework::MenuManagerInterface>::Get();
-            if (m_menuManagerInterface)
-            {
-                InitializeMenus();
-            }
-
-            m_toolBarManagerInterface = AZ::Interface<AzToolsFramework::ToolBarManagerInterface>::Get();
-            if (m_toolBarManagerInterface)
-            {
-                InitializeToolBars();
-            }
-        }
+        m_editorActionsHandler.Initialize(this);
     }
 
     InitStatusBar();
@@ -1416,6 +1382,11 @@ void MainWindow::AdjustToolBarIconSize(AzQtComponents::ToolBar::ToolBarIconSize 
 
 void MainWindow::OnGameModeChanged(bool inGameMode)
 {
+    if (IsNewActionManagerEnabled())
+    {
+        return;
+    }
+
     menuBar()->setDisabled(inGameMode);
     m_toolbarManager->SetEnabled(!inGameMode);
 
@@ -1478,7 +1449,7 @@ void MainWindow::OnEditorNotifyEvent(EEditorNotifyEvent ev)
         break;
     // Remove track view option to avoid starting in bad state
     case eNotify_OnBeginSimulationMode:
-        if (m_actionManager->HasAction(ID_OPEN_TRACKVIEW))
+        if (m_actionManager && m_actionManager->HasAction(ID_OPEN_TRACKVIEW))
         {
             QAction* tvAction = m_actionManager->GetAction(ID_OPEN_TRACKVIEW);
             if (tvAction)
@@ -1488,7 +1459,7 @@ void MainWindow::OnEditorNotifyEvent(EEditorNotifyEvent ev)
         }
         break;
     case eNotify_OnEndSimulationMode:
-        if (m_actionManager->HasAction(ID_OPEN_TRACKVIEW))
+        if (m_actionManager && m_actionManager->HasAction(ID_OPEN_TRACKVIEW))
         {
             QAction* tvAction = m_actionManager->GetAction(ID_OPEN_TRACKVIEW);
             if (tvAction)
@@ -2134,347 +2105,6 @@ bool MainWindow::focusNextPrevChild(bool next)
     }
 
     return QMainWindow::focusNextPrevChild(next);
-}
-
-void MainWindow::InitializeActionContext()
-{
-    ActionContextProperties contextProperties;
-    contextProperties.m_name = "O3DE Editor";
-
-    m_actionManagerInterface->RegisterActionContext("", EditorMainWindowActionContextIdentifier, contextProperties, this);
-}
-
-void MainWindow::InitializeActions()
-{
-    auto cryEdit = CCryEditApp::instance();
-
-    // --- Level Actions
-
-    // New Level
-    {
-        ActionProperties actionProperties;
-        actionProperties.m_name = "New Level";
-        actionProperties.m_description = "Create a new level";
-        actionProperties.m_category = "Level";
-
-        m_actionManagerInterface->RegisterAction(
-            EditorMainWindowActionContextIdentifier, "o3de.action.level.new", actionProperties,
-            [cryEdit]()
-            {
-                cryEdit->OnCreateLevel();
-            }
-        );
-    }
-
-    // Open Level
-    {
-        ActionProperties actionProperties;
-        actionProperties.m_name = "Open Level...";
-        actionProperties.m_description = "Open an existing level";
-        actionProperties.m_category = "Level";
-
-        m_actionManagerInterface->RegisterAction(
-            EditorMainWindowActionContextIdentifier, "o3de.action.level.open", actionProperties,
-            [cryEdit]()
-            {
-                cryEdit->OnOpenLevel();
-            }
-        );
-    }
-
-    // Save
-    {
-        ActionProperties actionProperties;
-        actionProperties.m_name = "Save";
-        actionProperties.m_description = "Save the current level";
-        actionProperties.m_category = "Level";
-
-        m_actionManagerInterface->RegisterAction(
-            EditorMainWindowActionContextIdentifier, "o3de.action.level.save", actionProperties,
-            [cryEdit]()
-            {
-                cryEdit->OnFileSave();
-            }
-        );
-    }
-
-    // --- Help Actions
-
-    // Tutorials
-    {
-        ActionProperties actionProperties;
-        actionProperties.m_name = "Tutorials";
-        actionProperties.m_category = "Help";
-
-        m_actionManagerInterface->RegisterAction(
-            EditorMainWindowActionContextIdentifier, "o3de.action.help.tutorials", actionProperties,
-            [cryEdit]()
-            {
-                cryEdit->OnDocumentationTutorials();
-            }
-        );
-    }
-
-    // Open 3D Engine Documentation
-    {
-        ActionProperties actionProperties;
-        actionProperties.m_name = "Open 3D Engine Documentation";
-        actionProperties.m_category = "Help";
-
-        m_actionManagerInterface->RegisterAction(
-            EditorMainWindowActionContextIdentifier, "o3de.action.help.documentation.o3de", actionProperties,
-            [cryEdit]()
-            {
-                cryEdit->OnDocumentationO3DE();
-            }
-        );
-    }
-
-    // GameLift Documentation
-    {
-        ActionProperties actionProperties;
-        actionProperties.m_name = "GameLift Documentation";
-        actionProperties.m_category = "Help";
-
-        m_actionManagerInterface->RegisterAction(
-            EditorMainWindowActionContextIdentifier, "o3de.action.help.documentation.gamelift", actionProperties,
-            [cryEdit]()
-            {
-                cryEdit->OnDocumentationGamelift();
-            }
-        );
-    }
-
-    // Release Notes
-    {
-        ActionProperties actionProperties;
-        actionProperties.m_name = "Release Notes";
-        actionProperties.m_category = "Help";
-
-        m_actionManagerInterface->RegisterAction(
-            EditorMainWindowActionContextIdentifier, "o3de.action.help.documentation.releasenotes", actionProperties,
-            [cryEdit]()
-            {
-                cryEdit->OnDocumentationReleaseNotes();
-            }
-        );
-    }
-
-    // GameDev Blog
-    {
-        ActionProperties actionProperties;
-        actionProperties.m_name = "GameDev Blog";
-        actionProperties.m_category = "Help";
-
-        m_actionManagerInterface->RegisterAction(
-            EditorMainWindowActionContextIdentifier, "o3de.action.help.resources.gamedevblog", actionProperties,
-            [cryEdit]()
-            {
-                cryEdit->OnDocumentationGameDevBlog();
-            }
-        );
-    }
-
-    // Forums
-    {
-        ActionProperties actionProperties;
-        actionProperties.m_name = "Forums";
-        actionProperties.m_category = "Help";
-
-        m_actionManagerInterface->RegisterAction(
-            EditorMainWindowActionContextIdentifier, "o3de.action.help.resources.forums", actionProperties,
-            [cryEdit]()
-            {
-                cryEdit->OnDocumentationForums();
-            }
-        );
-    }
-
-    // AWS Support
-    {
-        ActionProperties actionProperties;
-        actionProperties.m_name = "AWS Support";
-        actionProperties.m_category = "Help";
-
-        m_actionManagerInterface->RegisterAction(
-            EditorMainWindowActionContextIdentifier, "o3de.action.help.resources.awssupport", actionProperties,
-            [cryEdit]()
-            {
-                cryEdit->OnDocumentationAWSSupport();
-            }
-        );
-    }
-
-    // About O3DE
-    {
-        ActionProperties actionProperties;
-        actionProperties.m_name = "&About O3DE";
-        actionProperties.m_category = "Help";
-
-        m_actionManagerInterface->RegisterAction(
-            EditorMainWindowActionContextIdentifier, "o3de.action.help.abouto3de", actionProperties,
-            [cryEdit]()
-            {
-                cryEdit->OnAppAbout();
-            }
-        );
-    }
-
-    // Welcome
-    {
-        ActionProperties actionProperties;
-        actionProperties.m_name = "&Welcome";
-        actionProperties.m_category = "Help";
-
-        m_actionManagerInterface->RegisterAction(
-            EditorMainWindowActionContextIdentifier, "o3de.action.help.welcome", actionProperties,
-            [cryEdit]()
-            {
-                cryEdit->OnAppShowWelcomeScreen();
-            }
-        );
-    }
-
-}
-
-void MainWindow::InitializeMenus()
-{
-    // Register MenuBar
-    m_menuManagerInterface->RegisterMenuBar(EditorMainWindowMenuBarIdentifier);
-
-    // Initialize Menus
-    {
-        MenuProperties menuProperties;
-        menuProperties.m_name = "&File";
-        m_menuManagerInterface->RegisterMenu(FileMenuIdentifier, menuProperties);
-    }
-    {
-        MenuProperties menuProperties;
-        menuProperties.m_name = "&Edit";
-        m_menuManagerInterface->RegisterMenu(EditMenuIdentifier, menuProperties);
-    }
-    {
-        MenuProperties menuProperties;
-        menuProperties.m_name = "&Game";
-        m_menuManagerInterface->RegisterMenu(GameMenuIdentifier, menuProperties);
-    }
-    {
-        MenuProperties menuProperties;
-        menuProperties.m_name = "&Tools";
-        m_menuManagerInterface->RegisterMenu(ToolsMenuIdentifier, menuProperties);
-    }
-    {
-        MenuProperties menuProperties;
-        menuProperties.m_name = "&View";
-        m_menuManagerInterface->RegisterMenu(ViewMenuIdentifier, menuProperties);
-    }
-    {
-        MenuProperties menuProperties;
-        menuProperties.m_name = "&Help";
-        m_menuManagerInterface->RegisterMenu(HelpMenuIdentifier, menuProperties);
-    }
-    {
-        MenuProperties menuProperties;
-        menuProperties.m_name = "Documentation";
-        m_menuManagerInterface->RegisterMenu(HelpDocumentationMenuIdentifier, menuProperties);
-    }
-    {
-        MenuProperties menuProperties;
-        menuProperties.m_name = "GameDev Resources";
-        m_menuManagerInterface->RegisterMenu(HelpGameDevResourcesMenuIdentifier, menuProperties);
-    }
-
-    // Add Menus to MenuBar
-    // We space the sortkeys by 100 to allow external systems to add menus in-between.
-    m_menuManagerInterface->AddMenuToMenuBar(EditorMainWindowMenuBarIdentifier, FileMenuIdentifier, 100);
-    m_menuManagerInterface->AddMenuToMenuBar(EditorMainWindowMenuBarIdentifier, EditMenuIdentifier, 200);
-    m_menuManagerInterface->AddMenuToMenuBar(EditorMainWindowMenuBarIdentifier, GameMenuIdentifier, 300);
-    m_menuManagerInterface->AddMenuToMenuBar(EditorMainWindowMenuBarIdentifier, ToolsMenuIdentifier, 400);
-    m_menuManagerInterface->AddMenuToMenuBar(EditorMainWindowMenuBarIdentifier, ViewMenuIdentifier, 500);
-    m_menuManagerInterface->AddMenuToMenuBar(EditorMainWindowMenuBarIdentifier, HelpMenuIdentifier, 600);
-
-    // Set the menu bar for this window
-    setMenuBar(m_menuManagerInterface->GetMenuBar(EditorMainWindowMenuBarIdentifier));
-
-    // Add actions to each menu
-
-    // File
-    {
-        m_menuManagerInterface->AddActionToMenu(FileMenuIdentifier, "o3de.action.level.new", 20);
-        m_menuManagerInterface->AddActionToMenu(FileMenuIdentifier, "o3de.action.level.open", 40);
-        m_menuManagerInterface->AddActionToMenu(FileMenuIdentifier, "o3de.action.level.save", 60);
-    }
-
-    // Help - Search Documentation Widget
-    {
-        auto containerWidget = new QWidget(this);
-        auto lineEdit = new AzQtComponents::SearchLineEdit(this);
-        QHBoxLayout* layout = new QHBoxLayout;
-        layout->setContentsMargins(0, 0, 0, 0);
-        layout->addWidget(lineEdit);
-        containerWidget->setLayout(layout);
-        containerWidget->setContentsMargins(2, 0, 2, 0);
-        lineEdit->setPlaceholderText(tr("Search documentation..."));
-
-        auto searchAction = [lineEdit]()
-        {
-            auto text = lineEdit->text();
-            if (text.isEmpty())
-            {
-                QDesktopServices::openUrl(QUrl("https://www.o3de.org/docs/"));
-            }
-            else
-            {
-                QUrl docSearchUrl("https://www.o3de.org/search/");
-                QUrlQuery docSearchQuery;
-                docSearchQuery.addQueryItem("query", text);
-                docSearchUrl.setQuery(docSearchQuery);
-                QDesktopServices::openUrl(docSearchUrl);
-            }
-            lineEdit->clear();
-        };
-        connect(lineEdit, &QLineEdit::returnPressed, this, searchAction);
-
-        QMenu* helpMenu = m_menuManagerInterface->GetMenu(HelpMenuIdentifier);
-
-        connect(helpMenu, &QMenu::aboutToHide, lineEdit, &QLineEdit::clear);
-        connect(helpMenu, &QMenu::aboutToShow, lineEdit, &QLineEdit::clearFocus);
-
-        m_menuManagerInterface->AddWidgetToMenu(HelpMenuIdentifier, containerWidget, 100);
-    }
-
-    // Help
-    {
-        m_menuManagerInterface->AddActionToMenu(HelpMenuIdentifier, "o3de.action.help.tutorials", 200);
-        m_menuManagerInterface->AddSubMenuToMenu(HelpMenuIdentifier, HelpDocumentationMenuIdentifier, 300);
-        {
-            m_menuManagerInterface->AddActionToMenu(HelpDocumentationMenuIdentifier, "o3de.action.help.documentation.o3de", 100);
-            m_menuManagerInterface->AddActionToMenu(HelpDocumentationMenuIdentifier, "o3de.action.help.documentation.gamelift", 200);
-            m_menuManagerInterface->AddActionToMenu(HelpDocumentationMenuIdentifier, "o3de.action.help.documentation.releasenotes", 300);
-        }
-        m_menuManagerInterface->AddSubMenuToMenu(HelpMenuIdentifier, HelpGameDevResourcesMenuIdentifier, 400);
-        {
-            m_menuManagerInterface->AddActionToMenu(HelpGameDevResourcesMenuIdentifier, "o3de.action.help.resources.gamedevblog", 100);
-            m_menuManagerInterface->AddActionToMenu(HelpGameDevResourcesMenuIdentifier, "o3de.action.help.resources.forums", 200);
-            m_menuManagerInterface->AddActionToMenu(HelpGameDevResourcesMenuIdentifier, "o3de.action.help.resources.awssupport", 300);
-        }
-        m_menuManagerInterface->AddSeparatorToMenu(HelpMenuIdentifier, 500);
-        m_menuManagerInterface->AddActionToMenu(HelpMenuIdentifier, "o3de.action.help.abouto3de", 600);
-        m_menuManagerInterface->AddActionToMenu(HelpMenuIdentifier, "o3de.action.help.welcome", 700);
-    }
-}
-
-void MainWindow::InitializeToolBars()
-{
-    // Initialize ToolBars
-    {
-        ToolBarProperties toolBarProperties;
-        toolBarProperties.m_name = "Play Controls";
-        m_toolBarManagerInterface->RegisterToolBar("o3de.toolbar.editor.playcontrols", toolBarProperties);
-    }
-
-    // Set the toolbar
-    this->addToolBar(Qt::ToolBarArea::TopToolBarArea, m_toolBarManagerInterface->GetToolBar("o3de.toolbar.editor.playcontrols"));
 }
 
 namespace AzToolsFramework

@@ -56,6 +56,74 @@ namespace UnitTest
         EXPECT_FALSE(outcome.IsSuccess());
     }
 
+    TEST_F(ActionManagerFixture, AddActionsToToolBar)
+    {
+        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
+        m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {}, []{});
+        m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test2", {}, []{});
+        m_toolBarManagerInterface->RegisterToolBar("o3de.toolbar.test", {});
+        
+        AZStd::vector<AZStd::pair<AZStd::string, int>> actions;
+        actions.push_back(AZStd::make_pair("o3de.action.test", 42));
+        actions.push_back(AZStd::make_pair("o3de.action.test2", 1));
+
+        auto outcome = m_toolBarManagerInterface->AddActionsToToolBar("o3de.toolbar.test", actions);
+        EXPECT_TRUE(outcome.IsSuccess());
+    }
+
+    TEST_F(ActionManagerFixture, RemoveActionFromToolBar)
+    {
+        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
+        m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {}, []{});
+        m_toolBarManagerInterface->RegisterToolBar("o3de.toolbar.test", {});
+        
+        m_toolBarManagerInterface->AddActionToToolBar("o3de.toolbar.test", "o3de.action.test", 42);
+        
+        auto outcome = m_toolBarManagerInterface->RemoveActionFromToolBar("o3de.toolbar.test", "o3de.action.test");
+        EXPECT_TRUE(outcome.IsSuccess());
+    }
+
+    TEST_F(ActionManagerFixture, RemoveMissingActionFromToolBar)
+    {
+        m_toolBarManagerInterface->RegisterToolBar("o3de.toolbar.test", {});
+        
+        auto outcome = m_toolBarManagerInterface->RemoveActionFromToolBar("o3de.toolbar.test", "o3de.action.test");
+        EXPECT_FALSE(outcome.IsSuccess());
+    }
+
+    TEST_F(ActionManagerFixture, RemoveActionsFromToolBar)
+    {
+        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
+        m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {}, []{});
+        m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test2", {}, []{});
+        m_toolBarManagerInterface->RegisterToolBar("o3de.toolbar.test", {});
+        
+        AZStd::vector<AZStd::pair<AZStd::string, int>> actions;
+        actions.push_back(AZStd::make_pair("o3de.action.test", 42));
+        actions.push_back(AZStd::make_pair("o3de.action.test2", 1));
+
+        m_toolBarManagerInterface->AddActionsToToolBar("o3de.toolbar.test", actions);
+
+        auto outcome = m_toolBarManagerInterface->RemoveActionsFromToolBar("o3de.toolbar.test", { "o3de.action.test", "o3de.action.test2" });
+        EXPECT_TRUE(outcome.IsSuccess());
+    }
+
+    TEST_F(ActionManagerFixture, RemoveMissingActionsFromToolBar)
+    {
+        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
+        m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {}, []{});
+        m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test2", {}, []{});
+        m_toolBarManagerInterface->RegisterToolBar("o3de.toolbar.test", {});
+        
+        AZStd::vector<AZStd::pair<AZStd::string, int>> actions;
+        actions.push_back(AZStd::make_pair("o3de.action.test", 42));
+
+        m_toolBarManagerInterface->AddActionsToToolBar("o3de.toolbar.test", actions);
+
+        auto outcome = m_toolBarManagerInterface->RemoveActionsFromToolBar("o3de.toolbar.test", { "o3de.action.test", "o3de.action.test2" });
+        EXPECT_FALSE(outcome.IsSuccess());
+    }
+
     TEST_F(ActionManagerFixture, GetUnregisteredToolBar)
     {
         QToolBar* toolBar = m_toolBarManagerInterface->GetToolBar("o3de.toolbar.test");
@@ -82,7 +150,10 @@ namespace UnitTest
         m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {}, []{});
         auto outcome = m_toolBarManagerInterface->AddActionToToolBar("o3de.toolbar.test", "o3de.action.test", 42);
 
-        // Verify the action is now in the menu.
+        // Manually trigger ToolBar refresh - Editor will call this once per tick.
+        m_toolBarManagerInternalInterface->RefreshToolBars();
+
+        // Verify the action is now in the toolbar.
         EXPECT_EQ(toolBar->actions().size(), 1);
     }
 
@@ -100,12 +171,15 @@ namespace UnitTest
         m_toolBarManagerInterface->AddActionToToolBar("o3de.toolbar.test", "o3de.action.test2", 42);
         m_toolBarManagerInterface->AddActionToToolBar("o3de.toolbar.test", "o3de.action.test1", 1);
 
-        // Verify the actions are now in the menu.
+        // Manually trigger ToolBar refresh - Editor will call this once per tick.
+        m_toolBarManagerInternalInterface->RefreshToolBars();
+
+        // Verify the actions are now in the toolbar.
         EXPECT_EQ(toolBar->actions().size(), 2);
 
         // Verify the order is correct.
-        QAction* test1 = m_actionManagerInterface->GetAction("o3de.action.test1");
-        QAction* test2 = m_actionManagerInterface->GetAction("o3de.action.test2");
+        QAction* test1 = m_actionManagerInternalInterface->GetAction("o3de.action.test1");
+        QAction* test2 = m_actionManagerInternalInterface->GetAction("o3de.action.test2");
 
         const auto& actions = toolBar->actions();
         EXPECT_EQ(actions[0], test1);
@@ -126,12 +200,15 @@ namespace UnitTest
         m_toolBarManagerInterface->AddActionToToolBar("o3de.toolbar.test", "o3de.action.test2", 42);
         m_toolBarManagerInterface->AddActionToToolBar("o3de.toolbar.test", "o3de.action.test1", 42);
 
-        // Verify the actions are now in the menu.
+        // Manually trigger ToolBar refresh - Editor will call this once per tick.
+        m_toolBarManagerInternalInterface->RefreshToolBars();
+
+        // Verify the actions are now in the toolbar.
         EXPECT_EQ(toolBar->actions().size(), 2);
 
         // Verify the order is correct (when a collision happens, items should be in order of addition).
-        QAction* test1 = m_actionManagerInterface->GetAction("o3de.action.test1");
-        QAction* test2 = m_actionManagerInterface->GetAction("o3de.action.test2");
+        QAction* test1 = m_actionManagerInternalInterface->GetAction("o3de.action.test1");
+        QAction* test2 = m_actionManagerInternalInterface->GetAction("o3de.action.test2");
 
         const auto& actions = toolBar->actions();
         EXPECT_EQ(actions[0], test2);
@@ -145,14 +222,50 @@ namespace UnitTest
         QToolBar* toolBar = m_toolBarManagerInterface->GetToolBar("o3de.toolbar.test");
         EXPECT_EQ(toolBar->actions().size(), 0);
 
-        // Add a separator to the menu.
+        // Add a separator to the toolbar.
         m_toolBarManagerInterface->AddSeparatorToToolBar("o3de.toolbar.test", 42);
 
-        // Verify the separator is now in the menu.
+        // Manually trigger ToolBar refresh - Editor will call this once per tick.
+        m_toolBarManagerInternalInterface->RefreshToolBars();
+
+        // Verify the separator is now in the toolbar.
         const auto& actions = toolBar->actions();
 
         EXPECT_EQ(actions.size(), 1);
         EXPECT_TRUE(actions[0]->isSeparator());
+    }
+
+    TEST_F(ActionManagerFixture, AddNullWidgetInToolBar)
+    {
+        // Register toolbar.
+        m_toolBarManagerInterface->RegisterToolBar("o3de.toolbar.test", {});
+
+        // Try to add a nullptr widget.
+        auto outcome = m_toolBarManagerInterface->AddWidgetToToolBar("o3de.toolbar.test", nullptr, 42);
+        EXPECT_FALSE(outcome.IsSuccess());
+    }
+
+    TEST_F(ActionManagerFixture, VerifyWidgetInToolBar)
+    {
+        // Register toolbar and create a QWidget.
+        m_toolBarManagerInterface->RegisterToolBar("o3de.toolbar.test", {});
+        QWidget* widget = new QWidget();
+
+        // Add the widget to the toolbar.
+        m_toolBarManagerInterface->AddWidgetToToolBar("o3de.toolbar.test", widget, 42);
+
+        // Manually trigger ToolBar refresh - Editor will call this once per tick.
+        m_toolBarManagerInternalInterface->RefreshToolBars();
+
+        // Verify the separator is now in the menu.
+        QToolBar* toolBar = m_toolBarManagerInterface->GetToolBar("o3de.toolbar.test");
+        const auto& actions = toolBar->actions();
+
+        EXPECT_EQ(actions.size(), 1);
+
+        QWidgetAction* widgetAction = qobject_cast<QWidgetAction*>(actions[0]);
+        EXPECT_TRUE(widgetAction != nullptr);
+        EXPECT_TRUE(widgetAction->defaultWidget() == widget);
     }
 
     TEST_F(ActionManagerFixture, VerifyComplexToolBar)
@@ -174,8 +287,11 @@ namespace UnitTest
 
         // Verify the actions are now in the toolbar in the expected order.
         QToolBar* toolBar = m_toolBarManagerInterface->GetToolBar("o3de.toolbar.test");
-        QAction* test1 = m_actionManagerInterface->GetAction("o3de.action.test1");
-        QAction* test2 = m_actionManagerInterface->GetAction("o3de.action.test2");
+        QAction* test1 = m_actionManagerInternalInterface->GetAction("o3de.action.test1");
+        QAction* test2 = m_actionManagerInternalInterface->GetAction("o3de.action.test2");
+
+        // Manually trigger ToolBar refresh - Editor will call this once per tick.
+        m_toolBarManagerInternalInterface->RefreshToolBars();
 
         // Note: separators and sub-menus are still QActions in the context of the toolbar.
         const auto& actions = toolBar->actions();
@@ -220,6 +336,87 @@ namespace UnitTest
         // Verify the API fails as the action is registered but was not added to the toolbar.
         auto outcome = m_toolBarManagerInterface->GetSortKeyOfActionInToolBar("o3de.toolbar.test", "o3de.action.test");
         EXPECT_FALSE(outcome.IsSuccess());
+    }
+
+    TEST_F(ActionManagerFixture, VerifyHideFromToolBarsWhenDisabledTrue)
+    {
+        // Register toolbar, get it and verify it's empty.
+        m_toolBarManagerInterface->RegisterToolBar("o3de.toolbar.test", {});
+        QToolBar* toolBar = m_toolBarManagerInterface->GetToolBar("o3de.toolbar.test");
+        EXPECT_EQ(toolBar->actions().size(), 0);
+
+        // Register a new action and add it to the menu. Have HideFromToolBarsWhenDisabled set to true.
+        AzToolsFramework::ActionProperties actionProperties;
+        actionProperties.m_hideFromToolBarsWhenDisabled = true;
+
+        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
+        m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", actionProperties, []{});
+        m_toolBarManagerInterface->AddActionToToolBar("o3de.toolbar.test", "o3de.action.test", 42);
+
+        // Add enabled state callback.
+        bool enabledState = true;
+        m_actionManagerInterface->InstallEnabledStateCallback(
+            "o3de.action.test",
+            [&]()
+            {
+                return enabledState;
+            }
+        );
+
+        // Manually trigger ToolBar refresh - Editor will call this once per tick.
+        m_toolBarManagerInternalInterface->RefreshToolBars();
+
+        // Verify the action is now in the menu.
+        EXPECT_EQ(toolBar->actions().size(), 1);
+
+        // Set the action as disabled.
+        enabledState = false;
+        m_actionManagerInterface->UpdateAction("o3de.action.test");
+
+        // Manually trigger ToolBar refresh - Editor will call this once per tick.
+        m_toolBarManagerInternalInterface->RefreshToolBars();
+
+        // Verify the action is no longer in the toolbar.
+        EXPECT_EQ(toolBar->actions().size(), 0);
+    }
+
+    TEST_F(ActionManagerFixture, VerifyHideFromToolBarsWhenDisabledFalse)
+    {
+        // Register toolbar, get it and verify it's empty.
+        m_toolBarManagerInterface->RegisterToolBar("o3de.toolbar.test", {});
+        QToolBar* toolBar = m_toolBarManagerInterface->GetToolBar("o3de.toolbar.test");
+        EXPECT_EQ(toolBar->actions().size(), 0);
+
+        // Register a new action and add it to the menu. HideFromToolBarsWhenDisabled is set to false by default.
+        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
+        m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {}, []{});
+        m_toolBarManagerInterface->AddActionToToolBar("o3de.toolbar.test", "o3de.action.test", 42);
+
+        // Add enabled state callback.
+        bool enabledState = true;
+        m_actionManagerInterface->InstallEnabledStateCallback(
+            "o3de.action.test",
+            [&]()
+            {
+                return enabledState;
+            }
+        );
+
+        // Manually trigger ToolBar refresh - Editor will call this once per tick.
+        m_toolBarManagerInternalInterface->RefreshToolBars();
+
+        // Verify the action is now in the menu.
+        EXPECT_EQ(toolBar->actions().size(), 1);
+
+        // Set the action as disabled.
+        enabledState = false;
+        m_actionManagerInterface->UpdateAction("o3de.action.test");
+
+        // Manually trigger ToolBar refresh - Editor will call this once per tick.
+        m_toolBarManagerInternalInterface->RefreshToolBars();
+
+        // Verify the action is still in the toolbar.
+        EXPECT_EQ(toolBar->actions().size(), 1);
     }
 
 } // namespace UnitTest

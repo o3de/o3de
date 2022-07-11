@@ -37,12 +37,6 @@ namespace UnitTest
 
         void SetupAllocator(const AZ::SystemAllocator::Descriptor& allocatorDesc = {})
         {
-            // Make sure an instance of AZ::Environment exists for AZ::AllocatorManager
-            if (!AZ::Environment::IsReady())
-            {
-                AZ::Environment::Create(nullptr);
-            }
-
             AZ::AllocatorManager::Instance().EnterProfilingMode();
             AZ::AllocatorManager::Instance().SetDefaultTrackingMode(AZ::Debug::AllocationRecords::RECORD_FULL);
 

@@ -11,10 +11,6 @@
 
 namespace ProjectSettingsTool
 {
-    using namespace AZ;
-    using XmlDocument = rapidxml::xml_document<char>;
-    using XmlNode = rapidxml::xml_node<char>;
-
     PlistDictionary::PlistDictionary(XmlDocument* plist)
         : m_document(plist)
         , m_dict(plist->first_node("plist")->first_node("dict"))
@@ -25,7 +21,7 @@ namespace ProjectSettingsTool
     {
         return m_document->allocate_node
         (
-            rapidxml::node_element,
+            AZ::rapidxml::node_element,
             m_document->allocate_string(name),
             m_document->allocate_string(value)
         );
@@ -33,7 +29,7 @@ namespace ProjectSettingsTool
 
     XmlNode* PlistDictionary::MakeNode()
     {
-        return m_document->allocate_node(rapidxml::node_element);
+        return m_document->allocate_node(AZ::rapidxml::node_element);
     }
 
     XmlNode* PlistDictionary::GetPropertyKeyNode(const char* key)

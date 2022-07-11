@@ -52,6 +52,8 @@ namespace ScriptCanvasEditor
 
     void EditorScriptCanvasComponent::Activate()
     {
+        using namespace AzToolsFramework;
+
         EditorComponentBase::Activate();
         AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusConnect();
         m_handlerSourceCompiled = m_configuration.ConnectToSourceCompiled([](const Configuration&)
@@ -127,6 +129,6 @@ namespace ScriptCanvasEditor
 
     void EditorScriptCanvasComponent::SetPrimaryAsset(const AZ::Data::AssetId& assetId)
     {
-        m_configuration.Refresh(SourceHandle(nullptr, assetId.m_guid, {}));
+        m_configuration.Refresh(SourceHandle(nullptr, assetId.m_guid));
     }
 }

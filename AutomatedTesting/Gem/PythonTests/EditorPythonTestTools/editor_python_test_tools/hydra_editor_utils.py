@@ -307,6 +307,9 @@ class Entity:
         if old_value is not None:
             print(f"SUCCESS: Retrieved property Value for {self.name}")
         else:
+            print("FAILURE: failed to find path in component. Existing Paths:\n")
+            paths = editor.EditorComponentAPIBus(bus.Broadcast, 'BuildComponentPropertyList', component)
+            print(paths)
             print(f"FAILURE: Failed to find value in {self.name} {path}")
             return False
 
@@ -315,7 +318,6 @@ class Entity:
                     "The set results will be inconclusive."))
 
         editor.EditorComponentAPIBus(bus.Broadcast, "SetComponentProperty", component, path, value)
-
         new_value = get_component_property_value(self.components[component_index], path)
 
         if new_value is not None:

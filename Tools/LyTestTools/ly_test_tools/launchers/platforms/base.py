@@ -91,7 +91,7 @@ class Launcher(object):
                     # our code reading the contents of the file
                     elif artifact_ext == '.log':
                         open(os.path.join(self.workspace.paths.project_log(), artifact), 'w').close() # clear it
-                        log.info(f"Clearing pre-existing artifact {artifact} from calling Launcher.setup()")
+                        log.debug(f"Clearing pre-existing artifact {artifact} from calling Launcher.setup()")
                 except PermissionError:
                     log.warning(f'Unable to remove artifact: {artifact}, skipping.')
                     pass

@@ -26,8 +26,6 @@ public:
 protected:
     void SetUp() override;
     void TearDown() override;
-    UnitTestUtils::AssertAbsorber m_absorber;
-    AssetProcessor::FileStatePassthrough m_fileStateCache;
 
 private:
     int         m_argc;

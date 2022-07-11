@@ -23,6 +23,7 @@ namespace RecastNavigation
     class RecastNavigationPhysXProviderComponentController
         : public RecastNavigationProviderRequestBus::Handler
     {
+        friend class EditorRecastNavigationPhysXProviderComponent;
     public:
         AZ_CLASS_ALLOCATOR(RecastNavigationPhysXProviderComponentController, AZ::SystemAllocator, 0);
         AZ_RTTI(RecastNavigationPhysXProviderComponentController, "{182D93F8-9E76-409B-9939-6816509A6F52}");
@@ -45,7 +46,7 @@ namespace RecastNavigation
         //! RecastNavigationProviderRequestBus overrides ...
         //! @{
         AZStd::vector<AZStd::shared_ptr<TileGeometry>> CollectGeometry(float tileSize, float borderSize) override;
-        void CollectGeometryAsync(float tileSize, float borderSize, AZStd::function<void(AZStd::shared_ptr<TileGeometry>)> tileCallback) override;
+        bool CollectGeometryAsync(float tileSize, float borderSize, AZStd::function<void(AZStd::shared_ptr<TileGeometry>)> tileCallback) override;
         AZ::Aabb GetWorldBounds() const override;
         int GetNumberOfTiles(float tileSize) const override;
         //! @}
@@ -77,7 +78,8 @@ namespace RecastNavigation
         //! @param borderSize an additional extend in all direction around the tile volume, this additional geometry will allow Recast to connect tiles together
         //! @param worldVolume worldVolume the overall volume to collect static PhysX geometry
         //! @param tileCallback an empty tile indicates the end of the operation, otherwise a valid shared_ptr is returned with tile geometry
-        void CollectGeometryAsyncImpl(
+        //! @returns true if an async operation was scheduled, false otherwise
+        bool CollectGeometryAsyncImpl(
             float tileSize,
             float borderSize,
             const AZ::Aabb& worldVolume,
@@ -97,11 +99,18 @@ namespace RecastNavigation
         const char* GetSceneName() const;
 
     protected:
+        void OnConfigurationChanged();
+
         AZ::EntityComponentIdPair m_entityComponentIdPair;
         RecastNavigationPhysXProviderConfig m_config;
 
+        AzPhysics::CollisionGroup m_collisionGroup;
+
         //! A way to check if we should stop tile processing (because we might be deactivating, for example).
         AZStd::atomic<bool> m_shouldProcessTiles{ true };
+
+        //! If true, an update operation is in progress.
+        AZStd::atomic<bool> m_updateInProgress{ false };
 
         //! Task graph objects to collect geometry data in tiles over a grid.
         AZ::TaskGraph m_taskGraph;

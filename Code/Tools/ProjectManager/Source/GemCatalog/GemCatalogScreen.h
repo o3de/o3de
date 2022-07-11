@@ -34,19 +34,15 @@ namespace O3DE::ProjectManager
         : public ScreenWidget
     {
     public:
-        explicit GemCatalogScreen(QWidget* parent = nullptr);
+        explicit GemCatalogScreen(bool readOnly = false, QWidget* parent = nullptr);
         ~GemCatalogScreen() = default;
         ProjectManagerScreen GetScreenEnum() override;
 
         void ReinitForProject(const QString& projectPath);
 
-        enum class EnableDisableGemsResult 
-        {
-            Failed = 0,
-            Success,
-            Cancel
-        };
-        EnableDisableGemsResult EnableDisableGemsForProject(const QString& projectPath);
+        QString GetTabText() override;
+        bool IsTab() override;
+        void NotifyCurrentScreen() override;
 
         GemModel* GetGemModel() const { return m_gemModel; }
         DownloadController* GetDownloadController() const { return m_downloadController; }
@@ -67,6 +63,9 @@ namespace O3DE::ProjectManager
         void resizeEvent(QResizeEvent* event) override;
         void moveEvent(QMoveEvent* event) override;
 
+        GemModel* m_gemModel = nullptr;
+        QSet<QString> m_gemsToRegisterWithProject;
+
     private slots:
         void HandleOpenGemRepo();
         void UpdateAndShowGemCart(QWidget* cartWidget);
@@ -82,18 +81,16 @@ namespace O3DE::ProjectManager
         void FillModel(const QString& projectPath);
 
         AZStd::unique_ptr<AzToolsFramework::ToastNotificationsView> m_notificationsView;
-
         GemListView* m_gemListView = nullptr;
         QStackedWidget* m_rightPanelStack = nullptr;
         GemInspector* m_gemInspector = nullptr;
-        GemModel* m_gemModel = nullptr;
         GemCatalogHeaderWidget* m_headerWidget = nullptr;
         GemSortFilterProxyModel* m_proxyModel = nullptr;
         QVBoxLayout* m_filterWidgetLayout = nullptr;
         GemFilterWidget* m_filterWidget = nullptr;
         DownloadController* m_downloadController = nullptr;
         bool m_notificationsEnabled = true;
-        QSet<QString> m_gemsToRegisterWithProject;
         QString m_projectPath;
+        bool m_readOnly;
     };
 } // namespace O3DE::ProjectManager

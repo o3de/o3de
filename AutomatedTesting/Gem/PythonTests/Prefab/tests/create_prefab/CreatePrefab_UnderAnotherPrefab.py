@@ -32,8 +32,9 @@ def CreatePrefab_UnderAnotherPrefab():
     entity.add_component("PhysX Collider")
     assert entity.has_component("PhysX Collider"), "Failed to add a PhysX Collider"
 
-    # Create a prefab based on that entity
+    # Create a prefab based on that entity and focus it
     outer_prefab, outer_instance = Prefab.create_prefab([entity], OUTER_PREFAB_FILE_NAME)
+    outer_instance.container_entity.focus_on_owning_prefab()
     # The test should be now inside the outer prefab instance.
     entity = outer_instance.get_direct_child_entities()[0]
     # We track if that is the same entity by checking the name and if it still contains the component that we created before

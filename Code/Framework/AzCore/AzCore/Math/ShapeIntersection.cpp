@@ -154,4 +154,14 @@ namespace AZ::ShapeIntersection
             overlapsAxis(zAxis1.Cross(yAxis2)) &&
             overlapsAxis(zAxis1.Cross(zAxis2));
     }
+
+    bool Overlaps(const Obb& obb, const Capsule& capsule)
+    {
+        return Overlaps(capsule, obb);
+    }
+
+    bool Overlaps(const Obb& obb, const Sphere& sphere)
+    {
+        return Overlaps(sphere, obb);
+    }
 } // namespace AZ::ShapeIntersection

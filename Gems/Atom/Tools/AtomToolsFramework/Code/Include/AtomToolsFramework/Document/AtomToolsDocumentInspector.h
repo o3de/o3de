@@ -44,10 +44,12 @@ namespace AtomToolsFramework
     private:
         // AtomToolsDocumentNotificationBus::Handler implementation
         void OnDocumentObjectInfoChanged(const AZ::Uuid& documentId, const DocumentObjectInfo& objectInfo, bool rebuilt) override;
+        void OnDocumentObjectInfoInvalidated(const AZ::Uuid& documentId) override;
+        void OnDocumentModified(const AZ::Uuid& documentId) override;
 
         // AzToolsFramework::IPropertyEditorNotify overrides...
         void BeforePropertyModified(AzToolsFramework::InstanceDataNode* pNode) override;
-        void AfterPropertyModified([[maybe_unused]] AzToolsFramework::InstanceDataNode* pNode) override {}
+        void AfterPropertyModified([[maybe_unused]] AzToolsFramework::InstanceDataNode* pNode) override;
         void SetPropertyEditingActive([[maybe_unused]] AzToolsFramework::InstanceDataNode* pNode) override {}
         void SetPropertyEditingComplete(AzToolsFramework::InstanceDataNode* pNode) override;
         void SealUndoStack() override {}

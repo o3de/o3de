@@ -31,16 +31,6 @@
 
 namespace SimulatedObjectSetupTests
 {
-    namespace AZStd
-    {
-        using namespace ::AZStd;
-    } // namespace AZStd
-
-    namespace AZ
-    {
-        using namespace ::AZ;
-    } // namespace AZ
-
     // Import real implementations
     namespace EMotionFX
     {
@@ -53,7 +43,8 @@ namespace SimulatedObjectSetupTests
 
 #include <Tests/Prefabs/LeftArmSkeleton.h>
 
-#include <EMotionFX/Source/SimulatedObjectSetup.cpp>
+#include <EMotionFX/Source/SimulatedObjectSetup_Interface.inl>
+#include <EMotionFX/Source/SimulatedObjectSetup_Impl.inl>
 
     using namespace EMotionFX;
 

@@ -184,8 +184,8 @@ namespace UnitTest
 
         createSerializer.ClearTrackedChangesFlag(); //NO-OP
         EXPECT_FALSE(createSerializer.GetTrackedChangesFlag());
-        EXPECT_TRUE(createSerializer.BeginObject("CreateSerializer", "Begin"));
-        EXPECT_TRUE(createSerializer.EndObject("CreateSerializer", "End"));
+        EXPECT_TRUE(createSerializer.BeginObject("CreateSerializer"));
+        EXPECT_TRUE(createSerializer.EndObject("CreateSerializer"));
     }
 
     TEST_F(DeltaSerializerTests, DeltaArraySize)
@@ -217,7 +217,7 @@ namespace UnitTest
 
         applySerializer.ClearTrackedChangesFlag(); //NO-OP
         EXPECT_FALSE(applySerializer.GetTrackedChangesFlag());
-        EXPECT_TRUE(applySerializer.BeginObject("CreateSerializer", "Begin"));
-        EXPECT_TRUE(applySerializer.EndObject("CreateSerializer", "End"));
+        EXPECT_TRUE(applySerializer.BeginObject("CreateSerializer"));
+        EXPECT_TRUE(applySerializer.EndObject("CreateSerializer"));
     }
 }

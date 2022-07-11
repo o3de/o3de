@@ -57,6 +57,10 @@ def DetachPrefab_UnderAnotherPrefab():
         _, wheel = Prefab.create_prefab(
             wheel_prefab_entities, WHEEL_PREFAB_FILE_NAME)
 
+        # Ensure focus gets set on the prefab you want to parent under. This mirrors how users would do
+        # reparenting in the editor.
+        car.container_entity.focus_on_owning_prefab()
+
         # Reparents the wheel prefab instance to the container entity of the car prefab instance
         await wheel.ui_reparent_prefab_instance(car.container_entity.id)
 

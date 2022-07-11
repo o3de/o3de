@@ -36,9 +36,9 @@ namespace RecastNavigation
     {
         RecastNavigationMeshConfig::Reflect(context);
 
-        if (auto serialize = azrtti_cast<AZ::SerializeContext*>(context))
+        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serialize->Class<RecastNavigationMeshComponentController>()
+            serializeContext->Class<RecastNavigationMeshComponentController>()
                 ->Field("Configuration", &RecastNavigationMeshComponentController::m_configuration)
                 ->Version(1)
                 ;
@@ -75,6 +75,9 @@ namespace RecastNavigation
         RecastNavigationProviderRequestBus::EventResult(tiles, m_entityComponentIdPair.GetEntityId(),
             &RecastNavigationProviderRequests::CollectGeometry,
             m_configuration.m_tileSize, aznumeric_cast<float>(m_configuration.m_borderSize) * m_configuration.m_cellSize);
+
+        RecastNavigationMeshNotificationBus::Event(m_entityComponentIdPair.GetEntityId(),
+            &RecastNavigationMeshNotificationBus::Events::OnNavigationMeshBeganRecalculating, m_entityComponentIdPair.GetEntityId());
 
         {
             for (AZStd::shared_ptr<TileGeometry>& tile : tiles)
@@ -118,13 +121,20 @@ namespace RecastNavigation
         {
             AZ_PROFILE_SCOPE(Navigation, "Navigation: UpdateNavigationMeshAsync");
 
-            RecastNavigationProviderRequestBus::Event(m_entityComponentIdPair.GetEntityId(),
+            bool operationScheduled = false;
+            RecastNavigationProviderRequestBus::EventResult(operationScheduled, m_entityComponentIdPair.GetEntityId(),
                 &RecastNavigationProviderRequests::CollectGeometryAsync,
                 m_configuration.m_tileSize, aznumeric_cast<float>(m_configuration.m_borderSize) * m_configuration.m_cellSize,
                 [this](AZStd::shared_ptr<TileGeometry> tile)
                 {
                     OnTileProcessedEvent(tile);
                 });
+
+            if (!operationScheduled)
+            {
+                m_updateInProgress = false;
+                return false;
+            }
             return true;
         }
 
@@ -143,9 +153,9 @@ namespace RecastNavigation
 
         // It is safe to create the navigation mesh object now.
         // The actual navigation data will be passed at a later time.
-        CreateNavigationMesh(m_entityComponentIdPair.GetEntityId(), m_configuration.m_tileSize);
+        CreateNavigationMesh(m_entityComponentIdPair.GetEntityId());
 
-        if (cl_navmesh_debug || m_configuration.m_enableDebugDraw)
+        if (IsDebugDrawEnabled())
         {
             m_tickEvent.Enqueue(AZ::TimeMs{ 0 }, true);
         }
@@ -156,17 +166,22 @@ namespace RecastNavigation
 
     void RecastNavigationMeshComponentController::Deactivate()
     {
-        m_shouldProcessTiles = false;
-        if (m_taskGraphEvent && m_taskGraphEvent->IsSignaled() == false)
-        {
-            // If the tasks are still in progress, wait until the task graph is finished.
-            m_taskGraphEvent->Wait();
-        }
-
         m_tickEvent.RemoveFromQueue();
 
-        m_context = {};
-        m_navObject = {};
+        if (m_updateInProgress)
+        {
+            m_shouldProcessTiles = false;
+            if (m_taskGraphEvent && m_taskGraphEvent->IsSignaled() == false)
+            {
+                // If the tasks are still in progress, wait until the task graph is finished.
+                m_taskGraphEvent->Wait();
+            }
+        }
+
+        m_context.reset();
+        m_navObject.reset();
+        m_taskGraphEvent.reset();
+        m_updateInProgress = false;
 
         RecastNavigationMeshRequestBus::Handler::BusDisconnect();
     }
@@ -183,21 +198,33 @@ namespace RecastNavigation
 
     void RecastNavigationMeshComponentController::OnSendNotificationTick()
     {
-        RecastNavigationMeshNotificationBus::Event(m_entityComponentIdPair.GetEntityId(),
-            &RecastNavigationMeshNotifications::OnNavigationMeshUpdated, m_entityComponentIdPair.GetEntityId());
-        m_updateInProgress = false;
+        if (m_updateInProgress)
+        {
+            RecastNavigationMeshNotificationBus::Event(m_entityComponentIdPair.GetEntityId(),
+                &RecastNavigationMeshNotifications::OnNavigationMeshUpdated, m_entityComponentIdPair.GetEntityId());
+            m_updateInProgress = false;
+        }
     }
+
+    bool RecastNavigationMeshComponentController::IsDebugDrawEnabled() const
+    {
+        return cl_navmesh_debug || m_configuration.m_enableDebugDraw || m_configuration.m_enableEditorPreview;
+    }
+
     void RecastNavigationMeshComponentController::OnDebugDrawTick()
     {
-        NavMeshQuery::LockGuard lock(*m_navObject);
-
-        if (lock.GetNavMesh() && (cl_navmesh_debug || m_configuration.m_enableDebugDraw))
+        if (IsDebugDrawEnabled())
         {
-            AZ::Transform cameraTransform = AZ::Transform::CreateIdentity();
-            Camera::ActiveCameraRequestBus::BroadcastResult(cameraTransform, &Camera::ActiveCameraRequestBus::Events::GetActiveCameraTransform);
-            m_customDebugDraw.SetViewableAabb(AZ::Aabb::CreateCenterRadius(cameraTransform.GetTranslation(), cl_navmesh_debugRadius));
+            NavMeshQuery::LockGuard lock(*m_navObject);
 
-            duDebugDrawNavMesh(&m_customDebugDraw, *lock.GetNavMesh(), DU_DRAWNAVMESH_COLOR_TILES);
+            if (lock.GetNavMesh())
+            {
+                AZ::Transform cameraTransform = AZ::Transform::CreateIdentity();
+                Camera::ActiveCameraRequestBus::BroadcastResult(cameraTransform, &Camera::ActiveCameraRequestBus::Events::GetActiveCameraTransform);
+                m_customDebugDraw.SetViewableAabb(AZ::Aabb::CreateCenterRadius(cameraTransform.GetTranslation(), cl_navmesh_debugRadius));
+
+                duDebugDrawNavMesh(&m_customDebugDraw, *lock.GetNavMesh(), DU_DRAWNAVMESH_COLOR_TILES);
+            }
         }
     }
 
@@ -210,9 +237,12 @@ namespace RecastNavigation
     {
         if (tile)
         {
-            // Store tile data until we received all of them.
-            AZStd::lock_guard lock(m_tileProcessingMutex);
-            m_tilesToBeProcessed.push_back(tile);
+            if (m_shouldProcessTiles)
+            {
+                // Store tile data until we received all of them.
+                AZStd::lock_guard lock(m_tileProcessingMutex);
+                m_tilesToBeProcessed.push_back(tile);
+            }
         }
         else
         {
@@ -284,7 +314,7 @@ namespace RecastNavigation
     {
     }
 
-    bool RecastNavigationMeshComponentController::CreateNavigationMesh(AZ::EntityId meshEntityId, float tileSize)
+    bool RecastNavigationMeshComponentController::CreateNavigationMesh(AZ::EntityId meshEntityId)
     {
         AZ_PROFILE_SCOPE(Navigation, "Navigation: create mesh");
 
@@ -303,11 +333,11 @@ namespace RecastNavigation
         const RecastVector3 worldCenter = RecastVector3::CreateFromVector3SwapYZ(worldVolume.GetMin());
         rcVcopy(params.orig, worldCenter.m_xyz);
 
-        RecastNavigationProviderRequestBus::EventResult(params.maxTiles, meshEntityId, &RecastNavigationProviderRequests::GetNumberOfTiles, tileSize);
+        RecastNavigationProviderRequestBus::EventResult(params.maxTiles, meshEntityId, &RecastNavigationProviderRequests::GetNumberOfTiles, m_configuration.m_tileSize);
 
         // in world units
-        params.tileWidth = tileSize;
-        params.tileHeight = tileSize;
+        params.tileWidth = m_configuration.m_tileSize;
+        params.tileHeight = m_configuration.m_tileSize;
 
         dtStatus status = navMesh->init(&params);
         if (dtStatusFailed(status))
@@ -325,7 +355,19 @@ namespace RecastNavigation
             return false;
         }
 
-        m_navObject = AZStd::make_shared<NavMeshQuery>(navMesh.release(), navQuery.release());
+        const AZStd::shared_ptr<NavMeshQuery> object = GetNavigationObject();
+        if (object)
+        {
+            NavMeshQuery::LockGuard lock(*object);
+            m_navObject = AZStd::make_shared<NavMeshQuery>(navMesh.release(), navQuery.release());
+        }
+        else
+        {
+            m_navObject = AZStd::make_shared<NavMeshQuery>(navMesh.release(), navQuery.release());
+        }
+
+        m_shouldProcessTiles = false;
+        m_updateInProgress = false;
 
         return true;
     }
@@ -351,7 +393,7 @@ namespace RecastNavigation
 
     void RecastNavigationMeshComponentController::ReceivedAllNewTilesImpl(const RecastNavigationMeshConfig& config, AZ::ScheduledEvent& sendNotificationEvent)
     {
-        if (!m_taskGraphEvent || m_taskGraphEvent->IsSignaled())
+        if (m_shouldProcessTiles && (!m_taskGraphEvent || m_taskGraphEvent->IsSignaled()))
         {
             AZ_PROFILE_SCOPE(Navigation, "Navigation: OnReceivedAllNewTiles");
 
@@ -382,17 +424,18 @@ namespace RecastNavigation
                         NavigationTileData navigationTileData = CreateNavigationTile(tile.get(),
                             config, m_context.get());
 
+                        {
+                            NavMeshQuery::LockGuard lock(*m_navObject);
+                            if (const dtTileRef tileRef = lock.GetNavMesh()->getTileRefAt(tile->m_tileX, tile->m_tileY, 0))
+                            {
+                                lock.GetNavMesh()->removeTile(tileRef, nullptr, nullptr);
+                            }
+                        }
+
                         if (navigationTileData.IsValid())
                         {
                             AZ_PROFILE_SCOPE(Navigation, "Navigation: UpdateNavigationMeshAsync - tile callback");
 
-                            {
-                                NavMeshQuery::LockGuard lock(*m_navObject);
-                                if (const dtTileRef tileRef = lock.GetNavMesh()->getTileRefAt(tile->m_tileX, tile->m_tileY, 0))
-                                {
-                                    lock.GetNavMesh()->removeTile(tileRef, nullptr, nullptr);
-                                }
-                            }
                             if (navigationTileData.IsValid())
                             {
                                 AttachNavigationTileToMesh(navigationTileData);
@@ -415,6 +458,9 @@ namespace RecastNavigation
             }
 
             m_taskGraph.SubmitOnExecutor(m_taskExecutor, m_taskGraphEvent.get());
+
+            RecastNavigationMeshNotificationBus::Event(m_entityComponentIdPair.GetEntityId(),
+                &RecastNavigationMeshNotificationBus::Events::OnNavigationMeshBeganRecalculating, m_entityComponentIdPair.GetEntityId());
         }
     }
 } // namespace RecastNavigation

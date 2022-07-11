@@ -33,10 +33,13 @@
 # @section Launcher Notes
 # - Comments are Doxygen compatible
 
+# To DO: Check for invalid Bone.oo1 names. Fix the not selected bug. No we need Bone Ends?
+
 bl_info = {
     "name": "O3DE_DCCSI_BLENDER_SCENE_EXPORTER",
     "author": "shawstar@amazon",
-    "version": (1, 2),
+    "version": (1, 3),
+
     "blender": (3, 00, 0),
     "location": "",
     "description": "Export Scene Assets to O3DE",
@@ -74,7 +77,7 @@ def register():
         description="Export File Name",
         default="o3de_export"
     )
-    bpy.types.TOPBAR_MT_file_export.append(ui.file_export_menu_add)  # Blender Specific Class and Naming Convention.
+    bpy.types.TOPBAR_MT_file_export.append(ui.file_export_menu_add)  # Blender Specific Class and Naming Convention. 
     bpy.types.Scene.selected_o3de_project_path = ''
     bpy.types.Scene.export_textures_folder = True
     bpy.types.Scene.animation_export = constants.NO_ANIMATION
@@ -98,7 +101,7 @@ def unregister():
     bpy.utils.unregister_class(ui.SceneExporterFileMenu)
     bpy.utils.unregister_class(ui.ExportOptionsListDropDown)
     bpy.utils.unregister_class(ui.AnimationOptionsListDropDown)
-    bpy.types.TOPBAR_MT_file_export.remove(ui.file_export_menu_add)  # Blender Specific Class and Naming Convention.
+    bpy.types.TOPBAR_MT_file_export.remove(ui.file_export_menu_add)  # Blender Specific Class and Naming Convention. 
     del bpy.types.Scene.export_file_name_o3de
     del bpy.types.Scene.selected_o3de_project_path
     del bpy.types.Scene.o3de_projects_list

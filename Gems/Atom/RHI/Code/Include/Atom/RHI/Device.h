@@ -176,7 +176,7 @@ namespace AZ
             virtual void ShutdownInternal() = 0;
 
             //! Called when the device is beginning a frame for processing.
-            virtual void BeginFrameInternal() = 0;
+            virtual AZ::RHI::ResultCode BeginFrameInternal() = 0;
 
             //! Called when the device is ending a frame for processing.
             virtual void EndFrameInternal() = 0;

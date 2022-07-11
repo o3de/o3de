@@ -10,12 +10,16 @@
 
 #include <QDirIterator>
 
+#include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/Settings/SettingsRegistryVisitorUtils.h>
+#include <AzCore/Serialization/Json/JsonUtils.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Gem/GemInfo.h>
 #include <AzToolsFramework/Asset/AssetUtils.h>
+
+#include <AzCore/Serialization/SerializeContext.h>
 
 namespace
 {
@@ -365,10 +369,11 @@ namespace AssetProcessor
         }
     }
 
-    AZ::SettingsRegistryInterface::VisitResponse RCVisitor::Traverse(AZStd::string_view jsonPath, AZStd::string_view valueName,
+    AZ::SettingsRegistryInterface::VisitResponse SimpleJobVisitor::Traverse(AZStd::string_view jsonPath, AZStd::string_view valueName,
         AZ::SettingsRegistryInterface::VisitAction action, AZ::SettingsRegistryInterface::Type)
     {
-        constexpr AZStd::string_view RCNamePrefix = "RC ";
+        constexpr AZStd::string_view RCNamePrefix = "RC "; // RC = Resource Compiler
+        constexpr AZStd::string_view SJNamePrefix = "SJ "; // SJ = Simple Job
         switch (action)
         {
         case AZ::SettingsRegistryInterface::VisitAction::Begin:
@@ -377,24 +382,24 @@ namespace AssetProcessor
             {
                 return AZ::SettingsRegistryInterface::VisitResponse::Continue;
             }
-            if (valueName.starts_with(RCNamePrefix))
+            if (valueName.starts_with(RCNamePrefix) || valueName.starts_with(SJNamePrefix))
             {
                 // Extract the substr that is part of the valueName "Exclude *"
-                AZStd::string rcName = valueName.substr(RCNamePrefix.size());
-                m_rcNameStack.push(rcName);
+                AZStd::string rcName = valueName.substr(SJNamePrefix.size());
+                m_simpleJobNameStack.push(rcName);
 
-                RCAssetRecognizer& assetRecognizer = m_assetRecognizers.emplace_back();
-                assetRecognizer.m_recognizer.m_name = QString::fromUtf8(rcName.c_str(), aznumeric_cast<int>(rcName.size()));
+                auto& assetRecognizer = m_assetRecognizers.emplace_back();
+                assetRecognizer.m_recognizer.m_name = rcName;
             }
         }
         break;
         case AZ::SettingsRegistryInterface::VisitAction::End:
         {
-            if (valueName.starts_with(RCNamePrefix))
+            if (valueName.starts_with(RCNamePrefix) || valueName.starts_with(SJNamePrefix))
             {
-                AZ_Assert(!m_rcNameStack.empty(), "RC name stack should not be empty. More stack pops, than pushes");
+                AZ_Assert(!m_simpleJobNameStack.empty(), "SimpleJob name stack should not be empty. More stack pops, than pushes");
                 ApplyParamsOverrides(jsonPath);
-                m_rcNameStack.pop();
+                m_simpleJobNameStack.pop();
             }
         }
         break;
@@ -403,32 +408,31 @@ namespace AssetProcessor
             break;
         }
 
-        return !m_rcNameStack.empty() ? AZ::SettingsRegistryInterface::VisitResponse::Continue
+        return !m_simpleJobNameStack.empty() ? AZ::SettingsRegistryInterface::VisitResponse::Continue
             : AZ::SettingsRegistryInterface::VisitResponse::Skip;
     }
 
-    void RCVisitor::Visit([[maybe_unused]] AZStd::string_view path, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, bool value)
+    void SimpleJobVisitor::Visit([[maybe_unused]] AZStd::string_view path, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, bool value)
     {
-        if (m_rcNameStack.empty())
+        if (m_simpleJobNameStack.empty())
         {
             return;
         }
 
-        AZStd::string_view rcNameView = m_rcNameStack.top();
-        auto rcName = QString::fromUtf8(rcNameView.data(), aznumeric_cast<int>(rcNameView.size()));
+        AZStd::string_view sjNameView = m_simpleJobNameStack.top();
 
         // Find AssetRecognizer identified by the top entry in the name stack
         auto assetRecognizerEntryIt = AZStd::find_if(m_assetRecognizers.rbegin(), m_assetRecognizers.rend(),
-            [&rcName](const RCAssetRecognizer& assetRecognizer)
+            [&sjNameView](const auto& assetRecognizer)
         {
-            return assetRecognizer.m_recognizer.m_name == rcName;
+            return assetRecognizer.m_recognizer.m_name == sjNameView;
         });
         if (assetRecognizerEntryIt == m_assetRecognizers.rend())
         {
             return;
         }
 
-        RCAssetRecognizer& assetRecognizer = *assetRecognizerEntryIt;
+        auto& assetRecognizer = *assetRecognizerEntryIt;
         if (valueName == "ignore")
         {
             assetRecognizer.m_ignore = value;
@@ -455,56 +459,55 @@ namespace AssetProcessor
         }
     }
 
-    void RCVisitor::Visit([[maybe_unused]] AZStd::string_view path, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, AZ::s64 value)
+    void SimpleJobVisitor::Visit([[maybe_unused]] AZStd::string_view path, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, AZ::s64 value)
     {
-        if (m_rcNameStack.empty())
+        if (m_simpleJobNameStack.empty())
         {
             return;
         }
 
-        AZStd::string_view rcNameView = m_rcNameStack.top();
-        auto rcName = QString::fromUtf8(rcNameView.data(), aznumeric_cast<int>(rcNameView.size()));
+        AZStd::string_view sjNameView = m_simpleJobNameStack.top();
 
         // Find AssetRecognizer identified by the top entry in the name stack
         auto assetRecognizerEntryIt = AZStd::find_if(m_assetRecognizers.rbegin(), m_assetRecognizers.rend(),
-            [&rcName](const RCAssetRecognizer& assetRecognizer)
-        {
-            return assetRecognizer.m_recognizer.m_name == rcName;
-        });
+            [&sjNameView](const auto& assetRecognizer)
+            {
+            return assetRecognizer.m_recognizer.m_name == sjNameView;
+            });
         if (assetRecognizerEntryIt == m_assetRecognizers.rend())
         {
             return;
         }
 
-        RCAssetRecognizer& assetRecognizer = *assetRecognizerEntryIt;
+        auto& assetRecognizer = *assetRecognizerEntryIt;
         if (valueName == "priority")
         {
             assetRecognizer.m_recognizer.m_priority = static_cast<int>(value);
         }
     }
 
-    void RCVisitor::Visit([[maybe_unused]] AZStd::string_view path, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, AZStd::string_view value)
+    void SimpleJobVisitor::Visit([[maybe_unused]] AZStd::string_view path, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, AZStd::string_view value)
     {
-        if (m_rcNameStack.empty())
+        if (m_simpleJobNameStack.empty())
         {
             return;
         }
 
-        // Find AssetRecognizer identified by the top entry in the name stack
-        AZStd::string_view rcNameView = m_rcNameStack.top();
-        auto rcName = QString::fromUtf8(rcNameView.data(), aznumeric_cast<int>(rcNameView.size()));
+        AZStd::string_view sjNameView = m_simpleJobNameStack.top();
+        
 
+        // Find AssetRecognizer identified by the top entry in the name stack
         auto assetRecognizerEntryIt = AZStd::find_if(m_assetRecognizers.rbegin(), m_assetRecognizers.rend(),
-            [&rcName](const RCAssetRecognizer& assetRecognizer)
-        {
-            return assetRecognizer.m_recognizer.m_name == rcName;
-        });
+            [&sjNameView](const SimpleJobAssetRecognizer& assetRecognizer)
+            {
+                return assetRecognizer.m_recognizer.m_name == sjNameView;
+            });
         if (assetRecognizerEntryIt == m_assetRecognizers.rend())
         {
             return;
         }
 
-        RCAssetRecognizer& assetRecognizer = *assetRecognizerEntryIt;
+        auto& assetRecognizer = *assetRecognizerEntryIt;
 
         // The "pattern" and "glob" entries were previously parsed by QSettings which un-escapes the values
         // To compensate for it the AssetProcessorPlatformConfig.ini was escaping the
@@ -553,7 +556,7 @@ namespace AssetProcessor
         }
         else if (valueName == "version")
         {
-            assetRecognizer.m_recognizer.m_version = QString::fromUtf8(value.data(), aznumeric_cast<int>(value.size()));
+            assetRecognizer.m_recognizer.m_version = value;
         }
         else if (valueName == "productAssetType")
         {
@@ -572,28 +575,28 @@ namespace AssetProcessor
         }
     }
 
-    void RCVisitor::ApplyParamsOverrides(AZStd::string_view path)
+    void SimpleJobVisitor::ApplyParamsOverrides(AZStd::string_view path)
     {
-        if (m_rcNameStack.empty())
+        if (m_simpleJobNameStack.empty())
         {
             return;
         }
 
-        AZStd::string_view rcNameView = m_rcNameStack.top();
-        auto rcName = QString::fromUtf8(rcNameView.data(), aznumeric_cast<int>(rcNameView.size()));
+        AZStd::string_view sjNameView = m_simpleJobNameStack.top();
+
 
         // Find AssetRecognizer identified by the top entry in the name stack
         auto assetRecognizerEntryIt = AZStd::find_if(m_assetRecognizers.rbegin(), m_assetRecognizers.rend(),
-            [&rcName](const RCAssetRecognizer& assetRecognizer)
+            [&sjNameView](const SimpleJobAssetRecognizer& assetRecognizer)
         {
-            return assetRecognizer.m_recognizer.m_name == rcName;
+            return assetRecognizer.m_recognizer.m_name == sjNameView;
         });
         if (assetRecognizerEntryIt == m_assetRecognizers.rend())
         {
             return;
         }
 
-        RCAssetRecognizer& assetRecognizer = *assetRecognizerEntryIt;
+        auto& assetRecognizer = *assetRecognizerEntryIt;
 
         /* so in this particular case we want to end up with an AssetPlatformSpec struct that
             has only got the platforms that 'matter' in it
@@ -606,7 +609,7 @@ namespace AssetProcessor
             tags=mobile
 
             and you encounter a recognizer like:
-            [RC blahblah]
+            [SJ blahblah]
             pattern=whatever
             params=abc
             mac=skip
@@ -631,17 +634,23 @@ namespace AssetProcessor
         */
         for (const AssetBuilderSDK::PlatformInfo& platform : m_enabledPlatforms)
         {
-            AZStd::string_view currentRCParams = assetRecognizer.m_defaultParams;
-            // The "/Amazon/AssetProcessor/Settings/RC */<platform>" entry will be queried
+            // Exclude the common platform from the internal copy builder, we don't support it as an output for assets currently
+            if(platform.m_identifier == AssetBuilderSDK::CommonPlatformName)
+            {
+                continue;
+            }
+
+            AZStd::string_view currentParams = assetRecognizer.m_defaultParams;
+            // The "/Amazon/AssetProcessor/Settings/SJ */<platform>" entry will be queried
             AZ::IO::Path overrideParamsKey = AZ::IO::Path(AZ::IO::PosixPathSeparator);
             overrideParamsKey /= path;
             overrideParamsKey /= platform.m_identifier;
 
             AZ::SettingsRegistryInterface::FixedValueString overrideParamsValue;
-            // Check if the enabled platform identifier matches a key within the "RC *" object
+            // Check if the enabled platform identifier matches a key within the "SJ *" object
             if (m_registry.Get(overrideParamsValue, overrideParamsKey.Native()))
             {
-                currentRCParams = overrideParamsValue;
+                currentParams = overrideParamsValue;
             }
             else
             {
@@ -652,33 +661,16 @@ namespace AssetProcessor
                     if (m_registry.Get(overrideParamsValue, overrideParamsKey.Native()))
                     {
                         // if we get here it means we found a tag that applies to this platform
-                        currentRCParams = overrideParamsValue;
+                        currentParams = overrideParamsValue;
                         break;
                     }
                 }
             }
 
             // now generate a platform spec as long as we're not skipping
-            if (!AZ::StringFunc::Equal(currentRCParams, "skip"))
+            if (!AZ::StringFunc::Equal(currentParams, "skip"))
             {
-                auto platformIdentifier = QString::fromUtf8(platform.m_identifier.data(),
-                    aznumeric_cast<int>(platform.m_identifier.size()));
-                AssetPlatformSpec spec;
-                // a special case exists where this is "overriding" an underlying version.
-                // in this case, unless some string was specified for the overrider, we use the underlying one
-                if (!currentRCParams.empty())
-                {
-                    spec.m_extraRCParams = QString::fromUtf8(currentRCParams.data(), aznumeric_cast<int>(currentRCParams.size()));
-                }
-                else
-                {
-                    if (assetRecognizer.m_recognizer.m_platformSpecs.contains(platformIdentifier))
-                    {
-                        // carry over the prior
-                        spec.m_extraRCParams = assetRecognizer.m_recognizer.m_platformSpecs[platformIdentifier].m_extraRCParams;
-                    }
-                }
-                assetRecognizer.m_recognizer.m_platformSpecs[platformIdentifier] = spec;
+                assetRecognizer.m_recognizer.m_platformSpecs[platform.m_identifier] = AssetInternalSpec::Copy;
             }
         }
     }
@@ -691,13 +683,12 @@ namespace AssetProcessor
             return nullptr;
         }
 
-        AZStd::string_view nameView = m_nameStack.top();
-        auto rcName = QString::fromUtf8(nameView.data(), aznumeric_cast<int>(nameView.size()));
+        auto& nameView = m_nameStack.top();
 
         auto assetRecognizerEntryIt = AZStd::find_if(m_assetRecognizers.rbegin(), m_assetRecognizers.rend(),
-            [&rcName](const AssetRecognizer& assetRecognizer)
+            [&nameView](const AssetRecognizer& assetRecognizer)
             {
-                return assetRecognizer.m_name == rcName;
+                return assetRecognizer.m_name == nameView;
             });
         if (assetRecognizerEntryIt == m_assetRecognizers.rend())
         {
@@ -725,7 +716,7 @@ namespace AssetProcessor
                 m_nameStack.push(name);
 
                 AssetRecognizer& assetRecognizer = m_assetRecognizers.emplace_back();
-                assetRecognizer.m_name = QString::fromUtf8(name.c_str(), aznumeric_cast<int>(name.size()));
+                assetRecognizer.m_name = name;
             }
         }
         break;
@@ -843,7 +834,7 @@ namespace AssetProcessor
         }
         else if (valueName == "version")
         {
-            assetRecognizer->m_version = QString::fromUtf8(value.data(), aznumeric_cast<int>(value.size()));
+            assetRecognizer->m_version = value;
         }
         else if (valueName == "productAssetType")
         {
@@ -958,6 +949,13 @@ namespace AssetProcessor
 
         FinalizeEnabledPlatforms();
 
+        if(!m_enabledPlatforms.empty())
+        {
+            // Add the common platform if we have some other platforms enabled.  For now, this is only intended for intermediate assets
+            // So we don't want to enable it unless at least one actual platform is available, to avoid hiding an error state of no real platforms being active
+            EnableCommonPlatform();
+        }
+
         if (scanFolderOverride)
         {
             AZStd::vector<AssetBuilderSDK::PlatformInfo> platforms;
@@ -978,6 +976,7 @@ namespace AssetProcessor
                     true));
             }
         }
+
         // Then read recognizers (which depend on platforms)
         if (!ReadRecognizersFromSettingsRegistry(absoluteAssetRoot, noConfigScanFolders, scanFolderPatterns))
         {
@@ -987,6 +986,14 @@ namespace AssetProcessor
             }
             return IsValid();
         }
+
+        if(!m_scanFolders.empty())
+        {
+            // Enable the intermediate scanfolder if we have some other scanfolders.  Since this is hardcoded we don't want to hide an error state
+            // where no other scanfolders are enabled besides this one.  It wouldn't make sense for the intermediate scanfolder to be the only enabled scanfolder
+            AddIntermediateScanFolder();
+        }
+
         if (!noGemScanFolders && addGemsConfigs)
         {
             if (settingsRegistry == nullptr || !AzFramework::GetGemsInfo(m_gemInfoList, *settingsRegistry))
@@ -1144,6 +1151,12 @@ namespace AssetProcessor
             // Add all enabled platforms
             for (const AssetBuilderSDK::PlatformInfo& platform : m_enabledPlatforms)
             {
+                if(platform.m_identifier == AssetBuilderSDK::CommonPlatformName)
+                {
+                    // The common platform is not included in any scanfolder to avoid builders by-default producing jobs for it
+                    continue;
+                }
+
                 if (AZStd::find(platformsList.begin(), platformsList.end(), platform) == platformsList.end())
                 {
                     platformsList.push_back(platform);
@@ -1156,6 +1169,12 @@ namespace AssetProcessor
             {
                 for (const AssetBuilderSDK::PlatformInfo& platform : m_enabledPlatforms)
                 {
+                    if(platform.m_identifier == AssetBuilderSDK::CommonPlatformName)
+                    {
+                        // The common platform is not included in any scanfolder to avoid builders by-default producing jobs for it
+                        continue;
+                    }
+
                     bool addPlatform = (QString::compare(identifier, platform.m_identifier.c_str(), Qt::CaseInsensitive) == 0) ||
                         platform.m_tags.find(identifier.toLower().toUtf8().data()) != platform.m_tags.end();
 
@@ -1182,6 +1201,159 @@ namespace AssetProcessor
                     platformsList.erase(AZStd::remove(platformsList.begin(), platformsList.end(), platform), platformsList.end());
                 }
             }
+        }
+    }
+
+    void PlatformConfiguration::CacheIntermediateAssetsScanFolderId()
+    {
+        for (const auto& scanfolder : m_scanFolders)
+        {
+            if (scanfolder.GetPortableKey() == IntermediateAssetsFolderName)
+            {
+                m_intermediateAssetScanFolderId = scanfolder.ScanFolderID();
+                return;
+            }
+        }
+
+        AZ_Error(
+            "PlatformConfiguration", false,
+            "CacheIntermediateAssetsScanFolderId: Failed to find Intermediate Assets folder in scanfolder list");
+    }
+
+    AZStd::optional<AZ::s64> PlatformConfiguration::GetIntermediateAssetsScanFolderId() const
+    {
+        if (m_intermediateAssetScanFolderId >= 0)
+        {
+            return m_intermediateAssetScanFolderId;
+        }
+
+        return AZStd::nullopt;
+    }
+
+    // used to save our the AssetCacheServer settings to a remote location
+    struct AssetCacheServerMatcher
+    {
+        AZ_CLASS_ALLOCATOR(AssetCacheServerMatcher, AZ::SystemAllocator, 0);
+        AZ_TYPE_INFO(AssetCacheServerMatcher, "{329A59C9-755E-4FA9-AADB-05C50AC62FD5}");
+
+        AZStd::string m_name;
+        AZStd::string m_glob;
+        AZStd::string m_pattern;
+        AZ::Uuid m_productAssetType = AZ::Uuid::CreateNull();
+        bool m_checkServer = false;
+    };
+
+    bool PlatformConfiguration::ConvertToJson(const RecognizerContainer& recognizerContainer, AZStd::string& jsonText)
+    {
+        AZ::JsonSerializerSettings settings;
+        AZ::ComponentApplicationBus::BroadcastResult(settings.m_serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
+        settings.m_registrationContext = nullptr;
+
+        AZStd::unordered_map<AZStd::string, AssetCacheServerMatcher> assetCacheServerMatcherMap;
+        
+        for (const auto& recognizer : recognizerContainer)
+        {
+            AssetCacheServerMatcher matcher;
+            matcher.m_name = recognizer.first;
+            matcher.m_checkServer = recognizer.second.m_checkServer;
+            matcher.m_productAssetType = recognizer.second.m_productAssetType;
+
+            if (recognizer.second.m_patternMatcher.GetBuilderPattern().m_type == AssetBuilderSDK::AssetBuilderPattern::Wildcard)
+            {
+                matcher.m_glob = recognizer.second.m_patternMatcher.GetBuilderPattern().m_pattern;
+            }
+            else if (recognizer.second.m_patternMatcher.GetBuilderPattern().m_type == AssetBuilderSDK::AssetBuilderPattern::Regex)
+            {
+                matcher.m_pattern = recognizer.second.m_patternMatcher.GetBuilderPattern().m_pattern;
+            }
+            assetCacheServerMatcherMap.insert({"ACS " + recognizer.first, matcher});
+        }
+
+        rapidjson::Document jsonDocument;
+        auto jsonResult = AZ::JsonSerialization::Store(jsonDocument, jsonDocument.GetAllocator(), assetCacheServerMatcherMap, settings);
+        if (jsonResult.GetProcessing() == AZ::JsonSerializationResult::Processing::Halted)
+        {
+            return false;
+        }
+
+        auto saveToFileOutcome = AZ::JsonSerializationUtils::WriteJsonString(jsonDocument, jsonText);
+        return saveToFileOutcome.IsSuccess();
+    }
+
+    bool PlatformConfiguration::ConvertFromJson(const AZStd::string& jsonText, RecognizerContainer& recognizerContainer)
+    {
+        rapidjson::Document assetCacheServerMatcherDoc;
+        assetCacheServerMatcherDoc.Parse(jsonText.c_str());
+        if (assetCacheServerMatcherDoc.HasParseError())
+        {
+            return false;
+        }
+
+        AZ::JsonSerializerSettings settings;
+        AZ::ComponentApplicationBus::BroadcastResult(settings.m_serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
+        settings.m_registrationContext = nullptr;
+
+        AZStd::unordered_map<AZStd::string, AssetCacheServerMatcher> assetCacheServerMatcherMap;
+        auto resultCode = AZ::JsonSerialization::Load(assetCacheServerMatcherMap, assetCacheServerMatcherDoc, {});        
+        if (!resultCode.HasDoneWork())
+        {
+            return false;
+        }
+
+        recognizerContainer.clear();
+        for (const auto& matcher : assetCacheServerMatcherMap)
+        {
+            AssetRecognizer assetRecognizer;
+            assetRecognizer.m_checkServer = matcher.second.m_checkServer;
+            assetRecognizer.m_name = matcher.second.m_name;
+            assetRecognizer.m_productAssetType = matcher.second.m_productAssetType;
+
+            if (!matcher.second.m_glob.empty())
+            {
+                assetRecognizer.m_patternMatcher = { matcher.second.m_glob , AssetBuilderSDK::AssetBuilderPattern::Wildcard };
+            }
+            else if (!matcher.second.m_pattern.empty())
+            {
+                assetRecognizer.m_patternMatcher = { matcher.second.m_pattern , AssetBuilderSDK::AssetBuilderPattern::Regex };
+            }
+            recognizerContainer.insert({ "ACS " + assetRecognizer.m_name, assetRecognizer });
+        }
+
+        return !recognizerContainer.empty();
+    }
+
+    void PlatformConfiguration::Reflect(AZ::ReflectContext* context)
+    {
+        if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serializeContext->Class<AssetBuilderSDK::FilePatternMatcher>()->Version(0);
+
+            serializeContext->Class<AssetInternalSpec>()->Version(0);                
+
+            // needs to serialize in/out 'glob' and 'pattern'
+            serializeContext->Class<AssetRecognizer>()->Version(0)
+                ->Field("checkServer", &AssetRecognizer::m_checkServer)
+                ->Field("isCritical", &AssetRecognizer::m_isCritical)
+                ->Field("name", &AssetRecognizer::m_name)
+                ->Field("outputProductDependencies", &AssetRecognizer::m_outputProductDependencies)
+                ->Field("patternMatcher", &AssetRecognizer::m_patternMatcher)
+                ->Field("platformSpecs", &AssetRecognizer::m_platformSpecs)
+                ->Field("priority", &AssetRecognizer::m_priority)
+                ->Field("productAssetType", &AssetRecognizer::m_productAssetType)
+                ->Field("supportsCreateJobs", &AssetRecognizer::m_supportsCreateJobs)
+                ->Field("testLockSource", &AssetRecognizer::m_testLockSource)
+                ->Field("version", &AssetRecognizer::m_version);
+
+            serializeContext->Class<AssetCacheServerMatcher>()->Version(0)
+                ->Field("name", &AssetCacheServerMatcher::m_name)
+                ->Field("glob", &AssetCacheServerMatcher::m_glob)
+                ->Field("pattern", &AssetCacheServerMatcher::m_pattern)
+                ->Field("productAssetType", &AssetCacheServerMatcher::m_productAssetType)
+                ->Field("checkServer", &AssetCacheServerMatcher::m_checkServer);
+
+            serializeContext->RegisterGenericType<AZStd::unordered_map<AZStd::string, AssetRecognizer>>();
+            serializeContext->RegisterGenericType<AZStd::unordered_map<AZStd::string, AssetInternalSpec>>();
+            serializeContext->RegisterGenericType<AZStd::unordered_map<AZStd::string, AssetCacheServerMatcher>>();
         }
     }
 
@@ -1332,17 +1504,13 @@ namespace AssetProcessor
             m_excludeAssetRecognizers[excludeRecognizer.m_name] = AZStd::move(excludeRecognizer);
         }
 
-        RCVisitor rcVisitor(*settingsRegistry, m_enabledPlatforms);
-        settingsRegistry->Visit(rcVisitor, AssetProcessorSettingsKey);
-        for (auto&& rcRecognizer : rcVisitor.m_assetRecognizers)
+        SimpleJobVisitor simpleJobVisitor(*settingsRegistry, m_enabledPlatforms);
+        settingsRegistry->Visit(simpleJobVisitor, AssetProcessorSettingsKey);
+        for (auto&& sjRecognizer : simpleJobVisitor.m_assetRecognizers)
         {
-            if (rcRecognizer.m_ignore)
+            if (!sjRecognizer.m_recognizer.m_platformSpecs.empty() && !sjRecognizer.m_ignore)
             {
-                m_assetRecognizers.remove(rcRecognizer.m_recognizer.m_name);
-            }
-            else if (!rcRecognizer.m_recognizer.m_platformSpecs.empty())
-            {
-                m_assetRecognizers[rcRecognizer.m_recognizer.m_name] = rcRecognizer.m_recognizer;
+                m_assetRecognizers[sjRecognizer.m_recognizer.m_name] = AZStd::move(sjRecognizer.m_recognizer);
             }
         }
 
@@ -1481,8 +1649,9 @@ namespace AssetProcessor
             //if the file is excluded than return false;
             return false;
         }
-        for (const AssetRecognizer& recognizer : m_assetRecognizers)
+        for (const auto& assetRecognizer : m_assetRecognizers)
         {
+            const AssetRecognizer& recognizer = assetRecognizer.second;
             if (recognizer.m_patternMatcher.MatchesPath(fileName.toUtf8().constData()))
             {
                 // found a match
@@ -1547,12 +1716,12 @@ namespace AssetProcessor
 
     void PlatformConfiguration::AddRecognizer(const AssetRecognizer& source)
     {
-        m_assetRecognizers.insert(source.m_name, source);
+        m_assetRecognizers.insert({source.m_name, source});
     }
 
     void PlatformConfiguration::RemoveRecognizer(QString name)
     {
-        auto found = m_assetRecognizers.find(name);
+        auto found = m_assetRecognizers.find(name.toUtf8().data());
         m_assetRecognizers.erase(found);
     }
 
@@ -1634,7 +1803,7 @@ namespace AssetProcessor
         return QString();
     }
 
-    QString PlatformConfiguration::FindFirstMatchingFile(QString relativeName) const
+    QString PlatformConfiguration::FindFirstMatchingFile(QString relativeName, bool skipIntermediateScanFolder) const
     {
         if (relativeName.isEmpty())
         {
@@ -1643,9 +1812,19 @@ namespace AssetProcessor
 
         auto* fileStateInterface = AZ::Interface<AssetProcessor::IFileStateRequests>::Get();
 
+        QDir cacheRoot;
+        AssetUtilities::ComputeProjectCacheRoot(cacheRoot);
+
         for (int pathIdx = 0; pathIdx < m_scanFolders.size(); ++pathIdx)
         {
             AssetProcessor::ScanFolderInfo scanFolderInfo = m_scanFolders[pathIdx];
+
+            if (skipIntermediateScanFolder && AssetUtilities::GetIntermediateAssetsFolder(cacheRoot.absolutePath().toUtf8().constData()) == AZ::IO::PathView(scanFolderInfo.ScanPath().toUtf8().constData()))
+            {
+                // There's only 1 intermediate assets folder, if we've skipped it, theres no point continuing to check every folder afterwards
+                skipIntermediateScanFolder = false;
+                continue;
+            }
 
             QString tempRelativeName(relativeName);
 
@@ -1835,6 +2014,38 @@ namespace AssetProcessor
         return m_maxJobs;
     }
 
+    void PlatformConfiguration::EnableCommonPlatform()
+    {
+        EnablePlatform(AssetBuilderSDK::PlatformInfo{ AssetBuilderSDK::CommonPlatformName, AZStd::unordered_set<AZStd::string>{ "common" } });
+    }
+
+    void PlatformConfiguration::AddIntermediateScanFolder()
+    {
+        auto settingsRegistry = AZ::SettingsRegistry::Get();
+        AZ::SettingsRegistryInterface::FixedValueString cacheRootFolder;
+        settingsRegistry->Get(cacheRootFolder, AZ::SettingsRegistryMergeUtils::FilePathKey_CacheProjectRootFolder);
+
+        AZ::IO::Path scanfolderPath = cacheRootFolder.c_str();
+        scanfolderPath /= IntermediateAssetsFolderName;
+
+        AZStd::vector<AssetBuilderSDK::PlatformInfo> platforms;
+        PopulatePlatformsForScanFolder(platforms);
+
+        // By default the project scanfolder is recursive with an order of 0
+        // The intermediate assets folder needs to be higher priority since its a subfolder (otherwise GetScanFolderForFile won't pick the right scanfolder)
+        constexpr int order = -1;
+
+        AddScanFolder(ScanFolderInfo{
+            scanfolderPath.c_str(),
+            IntermediateAssetsFolderName,
+            IntermediateAssetsFolderName,
+            false,
+            true,
+            platforms,
+            order
+        });
+    }
+
     void PlatformConfiguration::AddGemScanFolders(const AZStd::vector<AzFramework::GemInfo>& gemInfoList)
     {
         int gemOrder = g_gemStartingOrder;
@@ -1917,6 +2128,14 @@ namespace AssetProcessor
     {
         return m_excludeAssetRecognizers;
     }
+
+    bool PlatformConfiguration::AddAssetCacheRecognizerContainer(const RecognizerContainer& recognizerContainer)
+    {
+        m_assetCacheServerRecognizers.insert(recognizerContainer.begin(), recognizerContainer.end());
+        return true;
+    }
+
+    // AssetProcessor
 
     void AssetProcessor::PlatformConfiguration::AddExcludeRecognizer(const ExcludeAssetRecognizer& recogniser)
     {

@@ -83,17 +83,12 @@ void PlatformConfigurationTests::StartTest()
 
 
         AssetRecognizer rec;
-        AssetPlatformSpec specpc;
-        AssetPlatformSpec specandroid;
-        AssetPlatformSpec specfandago; 
-        specpc.m_extraRCParams = ""; // blank must work
-        specandroid.m_extraRCParams = "testextraparams";
 
         rec.m_name = "txt files";
         rec.m_patternMatcher = AssetBuilderSDK::FilePatternMatcher("*.txt", AssetBuilderSDK::AssetBuilderPattern::Wildcard);
-        rec.m_platformSpecs.insert("pc", specpc);
-        rec.m_platformSpecs.insert("android", specandroid);
-        rec.m_platformSpecs.insert("fandago", specfandago); 
+        rec.m_platformSpecs.insert({"pc", AssetInternalSpec::Copy});
+        rec.m_platformSpecs.insert({"android", AssetInternalSpec::Copy});
+        rec.m_platformSpecs.insert({"fandago", AssetInternalSpec::Copy});
         config.AddRecognizer(rec);
 
         // test dual-recognisers - two recognisers for the same pattern.

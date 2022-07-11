@@ -20,33 +20,33 @@
 #include <QGraphicsLinearLayout>
 
 // Graph Canvas
-#include <GraphCanvas/GraphCanvasBus.h>
-#include <GraphCanvas/Components/GridBus.h>
-#include <GraphCanvas/Components/ViewBus.h>
-#include <GraphCanvas/Components/Slots/Extender/ExtenderSlotBus.h>
-#include <GraphCanvas/Types/EntitySaveData.h>
 #include <GraphCanvas/Components/GeometryBus.h>
-#include <GraphCanvas/Components/Nodes/NodeTitleBus.h>
+#include <GraphCanvas/Components/GridBus.h>
 #include <GraphCanvas/Components/Nodes/NodeBus.h>
 #include <GraphCanvas/Components/Nodes/NodeLayoutBus.h>
+#include <GraphCanvas/Components/Nodes/NodeTitleBus.h>
 #include <GraphCanvas/Components/Nodes/Wrapper/WrapperNodeBus.h>
+#include <GraphCanvas/Components/Slots/Extender/ExtenderSlotBus.h>
+#include <GraphCanvas/Components/ViewBus.h>
+#include <GraphCanvas/GraphCanvasBus.h>
+#include <GraphCanvas/Types/EntitySaveData.h>
 
 // Graph Model
-#include <GraphModel/Model/Node.h>
+#include <GraphModel/Integration/BooleanDataInterface.h>
+#include <GraphModel/Integration/FloatDataInterface.h>
+#include <GraphModel/Integration/GraphCanvasMetadata.h>
+#include <GraphModel/Integration/GraphController.h>
+#include <GraphModel/Integration/Helpers.h>
+#include <GraphModel/Integration/IntegerDataInterface.h>
+#include <GraphModel/Integration/IntegrationBus.h>
+#include <GraphModel/Integration/StringDataInterface.h>
+#include <GraphModel/Integration/ThumbnailImageItem.h>
+#include <GraphModel/Integration/VectorDataInterface.inl>
 #include <GraphModel/Model/Connection.h>
+#include <GraphModel/Model/DataType.h>
 #include <GraphModel/Model/Graph.h>
 #include <GraphModel/Model/GraphContext.h>
-#include <GraphModel/Model/DataType.h>
-#include <GraphModel/Integration/BooleanDataInterface.h>
-#include <GraphModel/Integration/IntegerDataInterface.h>
-#include <GraphModel/Integration/FloatDataInterface.h>
-#include <GraphModel/Integration/VectorDataInterface.inl>
-#include <GraphModel/Integration/StringDataInterface.h>
-#include <GraphModel/Integration/GraphController.h>
-#include <GraphModel/Integration/GraphCanvasMetadata.h>
-#include <GraphModel/Integration/Helpers.h>
-#include <GraphModel/Integration/IntegrationBus.h>
-#include <GraphModel/Integration/ThumbnailImageItem.h>
+#include <GraphModel/Model/Node.h>
 
 namespace GraphModelIntegration
 {
@@ -64,7 +64,6 @@ namespace GraphModelIntegration
         m_uiToGraphElement[graphCanvasId] = graphElement;
     }
 
-
     void GraphController::GraphElementMap::Remove(AZ::EntityId graphCanvasId)
     {
         auto iter = m_uiToGraphElement.find(graphCanvasId);
@@ -74,7 +73,6 @@ namespace GraphModelIntegration
             m_uiToGraphElement.erase(iter);
         }
     }
-
 
     void GraphController::GraphElementMap::Remove(GraphModel::ConstGraphElementPtr graphElement)
     {
@@ -86,13 +84,11 @@ namespace GraphModelIntegration
         }
     }
 
-
     GraphModel::GraphElementPtr GraphController::GraphElementMap::Find(AZ::EntityId graphCanvasId)
     {
         auto iter = m_uiToGraphElement.find(graphCanvasId);
         return iter != m_uiToGraphElement.end() ? iter->second : nullptr;
     }
-
 
     GraphModel::ConstGraphElementPtr GraphController::GraphElementMap::Find(AZ::EntityId graphCanvasId) const
     {
@@ -100,18 +96,17 @@ namespace GraphModelIntegration
         return iter != m_uiToGraphElement.end() ? iter->second : nullptr;
     }
 
-
     AZ::EntityId GraphController::GraphElementMap::Find(GraphModel::ConstGraphElementPtr graphElement) const
     {
         auto iter = m_graphElementToUi.find(graphElement.get());
         return iter != m_graphElementToUi.end() ? iter->second : AZ::EntityId();
     }
 
-
     ////////////////////////////////////////////////////////////////////////////////////
     // GraphElementMapCollection
 
-    const GraphController::GraphElementMap* GraphController::GraphElementMapCollection::GetMapFor(GraphModel::ConstGraphElementPtr graphElement) const
+    const GraphController::GraphElementMap* GraphController::GraphElementMapCollection::GetMapFor(
+        GraphModel::ConstGraphElementPtr graphElement) const
     {
         using namespace GraphModel;
 
@@ -134,14 +129,12 @@ namespace GraphModelIntegration
         }
     }
 
-
     GraphController::GraphElementMap* GraphController::GraphElementMapCollection::GetMapFor(GraphModel::ConstGraphElementPtr graphElement)
     {
         // Non-const overload implementation
         const GraphElementMapCollection* constThis = this;
         return const_cast<GraphController::GraphElementMap*>(constThis->GetMapFor(graphElement));
     }
-
 
     void GraphController::GraphElementMapCollection::Add(AZ::EntityId graphCanvasId, GraphModel::GraphElementPtr graphElement)
     {
@@ -153,7 +146,6 @@ namespace GraphModelIntegration
         }
     }
 
-
     void GraphController::GraphElementMapCollection::Remove(AZ::EntityId graphCanvasId)
     {
         for (GraphElementMap* map : m_allMaps)
@@ -162,18 +154,15 @@ namespace GraphModelIntegration
         }
     }
 
-
     void GraphController::GraphElementMapCollection::Remove(GraphModel::ConstGraphElementPtr graphElement)
     {
         GetMapFor(graphElement)->Remove(graphElement);
     }
 
-
     AZ::EntityId GraphController::GraphElementMapCollection::Find(GraphModel::ConstGraphElementPtr graphElement) const
     {
         return GetMapFor(graphElement)->Find(graphElement);
     }
-
 
     ////////////////////////////////////////////////////////////////////////////////////
     // GraphController
@@ -196,7 +185,6 @@ namespace GraphModelIntegration
 
         return connectionType;
     }
-
 
     GraphCanvas::SlotGroup ToGraphCanvasSlotGroup(const GraphModel::SlotType& slotType)
     {
@@ -234,7 +222,6 @@ namespace GraphModelIntegration
         CreateFullGraphUi();
     }
 
-
     GraphController::~GraphController()
     {
         GraphControllerRequestBus::Handler::BusDisconnect();
@@ -251,13 +238,15 @@ namespace GraphModelIntegration
         // Load graph canvas metadata for the scene
         if (graphCanvasMetadata->m_sceneMetadata)
         {
-            GraphCanvas::EntitySaveDataRequestBus::Event(GetGraphCanvasSceneId(), &GraphCanvas::EntitySaveDataRequests::ReadSaveData, *graphCanvasMetadata->m_sceneMetadata);
+            GraphCanvas::EntitySaveDataRequestBus::Event(
+                GetGraphCanvasSceneId(), &GraphCanvas::EntitySaveDataRequests::ReadSaveData, *graphCanvasMetadata->m_sceneMetadata);
         }
 
         // Load graph canvas metadata for non data model elements like comment nodes
         for (auto& pair : graphCanvasMetadata->m_otherMetadata)
         {
-            GraphCanvas::EntitySaveDataRequestBus::Event(AZ::Entity::MakeId(), &GraphCanvas::EntitySaveDataRequests::ReadSaveData, *pair.second);
+            GraphCanvas::EntitySaveDataRequestBus::Event(
+                AZ::Entity::MakeId(), &GraphCanvas::EntitySaveDataRequests::ReadSaveData, *pair.second);
         }
 
         // Create UI for all the Nodes
@@ -267,7 +256,7 @@ namespace GraphModelIntegration
             NodePtr node = pair.second;
 
             // Search the metadata to find the saved position of the Node
-            auto getScenePosition = [this,nodeId, graphCanvasMetadata](AZ::EntityId nodeUiId)
+            auto getScenePosition = [this, nodeId, graphCanvasMetadata](AZ::EntityId nodeUiId)
             {
                 AZ::Vector2 position(0, 0);
 
@@ -276,7 +265,8 @@ namespace GraphModelIntegration
                 if (metadataIter != graphCanvasMetadata->m_nodeMetadata.end())
                 {
                     AZStd::shared_ptr<GraphCanvas::EntitySaveDataContainer> saveDataContainer = metadataIter->second;
-                    GraphCanvas::EntitySaveDataRequestBus::Event(nodeUiId, &GraphCanvas::EntitySaveDataRequests::ReadSaveData, (*saveDataContainer));
+                    GraphCanvas::EntitySaveDataRequestBus::Event(
+                        nodeUiId, &GraphCanvas::EntitySaveDataRequests::ReadSaveData, (*saveDataContainer));
                 }
                 else
                 {
@@ -306,7 +296,6 @@ namespace GraphModelIntegration
         {
             CreateConnectionUi(connection);
         }
-
     }
 
     AZ::Entity* GraphController::CreateSlotUi(GraphModel::SlotPtr slot, AZ::EntityId nodeUiId)
@@ -338,19 +327,22 @@ namespace GraphModelIntegration
                 GraphCanvas::DataSlotConfiguration dataConfig(slotConfig);
                 dataConfig.m_dataSlotType = GraphCanvas::DataSlotType::Value;
                 dataConfig.m_typeId = slot->GetDataType()->GetTypeUuid();
-                GraphCanvas::GraphCanvasRequestBus::BroadcastResult(graphCanvasSlotEntity, &GraphCanvas::GraphCanvasRequests::CreateSlot, stylingParent, dataConfig);
+                GraphCanvas::GraphCanvasRequestBus::BroadcastResult(
+                    graphCanvasSlotEntity, &GraphCanvas::GraphCanvasRequests::CreateSlot, stylingParent, dataConfig);
             }
 
             break;
         case SlotType::Event:
             {
                 GraphCanvas::ExecutionSlotConfiguration eventConfig(slotConfig);
-                GraphCanvas::GraphCanvasRequestBus::BroadcastResult(graphCanvasSlotEntity, &GraphCanvas::GraphCanvasRequests::CreateSlot, stylingParent, eventConfig);
+                GraphCanvas::GraphCanvasRequestBus::BroadcastResult(
+                    graphCanvasSlotEntity, &GraphCanvas::GraphCanvasRequests::CreateSlot, stylingParent, eventConfig);
             }
             break;
         case SlotType::Property:
             {
-                GraphCanvas::GraphCanvasRequestBus::BroadcastResult(graphCanvasSlotEntity, &GraphCanvas::GraphCanvasRequests::CreatePropertySlot, stylingParent, 0, slotConfig);
+                GraphCanvas::GraphCanvasRequestBus::BroadcastResult(
+                    graphCanvasSlotEntity, &GraphCanvas::GraphCanvasRequests::CreatePropertySlot, stylingParent, 0, slotConfig);
             }
             break;
         default:
@@ -369,8 +361,10 @@ namespace GraphModelIntegration
         return graphCanvasSlotEntity;
     }
 
-
-    AZ::EntityId GraphController::CreateNodeUi([[maybe_unused]] GraphModel::NodeId nodeId, GraphModel::NodePtr node, AZStd::function<AZ::Vector2(AZ::EntityId/*nodeUiId*/)> getScenePosition)
+    AZ::EntityId GraphController::CreateNodeUi(
+        [[maybe_unused]] GraphModel::NodeId nodeId,
+        GraphModel::NodePtr node,
+        AZStd::function<AZ::Vector2(AZ::EntityId /*nodeUiId*/)> getScenePosition)
     {
         using namespace GraphModel;
 
@@ -381,11 +375,13 @@ namespace GraphModelIntegration
         switch (nodeType)
         {
         case NodeType::GeneralNode:
-            GraphCanvas::GraphCanvasRequestBus::BroadcastResult(graphCanvasNode, &GraphCanvas::GraphCanvasRequests::CreateGeneralNodeAndActivate, nodeStyle);
+            GraphCanvas::GraphCanvasRequestBus::BroadcastResult(
+                graphCanvasNode, &GraphCanvas::GraphCanvasRequests::CreateGeneralNodeAndActivate, nodeStyle);
             break;
 
         case NodeType::WrapperNode:
-            GraphCanvas::GraphCanvasRequestBus::BroadcastResult(graphCanvasNode, &GraphCanvas::GraphCanvasRequests::CreateWrapperNodeAndActivate, nodeStyle);
+            GraphCanvas::GraphCanvasRequestBus::BroadcastResult(
+                graphCanvasNode, &GraphCanvas::GraphCanvasRequests::CreateWrapperNodeAndActivate, nodeStyle);
             break;
         }
 
@@ -405,16 +401,17 @@ namespace GraphModelIntegration
 
         // Add the node to the scene at a specific position...
         //     We have to use a callback function (getScenePosition) to do this because:
-        //     At some point, we need to get the node's position from GraphCanvasMetadataMap. It would be nice if we could do this either before or after
-        //     CreateNodeUi(). But we can't because of two ordering issues:
-        //     1) We have to use the GraphCanvas node EntityId to get the position data from GraphCanvasMetadataMap. This EntityId isn't available until the
+        //     At some point, we need to get the node's position from GraphCanvasMetadataMap. It would be nice if we could do this either
+        //     before or after CreateNodeUi(). But we can't because of two ordering issues: 1) We have to use the GraphCanvas node EntityId
+        //     to get the position data from GraphCanvasMetadataMap. This EntityId isn't available until the
         //        GraphCanvas node is created (a couple lines up).
-        //     2) We have to call AddNodeUiToScene() before creating all the GraphCavnas slots (below), because there's a bug where creating the slots
+        //     2) We have to call AddNodeUiToScene() before creating all the GraphCavnas slots (below), because there's a bug where creating
+        //     the slots
         //        first will cause the node to be stretched way too wide.
         AddNodeUiToScene(nodeUiId, getScenePosition(nodeUiId));
-        
+
         // Create the slots...
-        //    Note that SlotDefinitions are stored in a list in the order defined by the author. 
+        //    Note that SlotDefinitions are stored in a list in the order defined by the author.
         //    That's why we loop through SlotDefinitions instead of the actual Slots, which are stored in a map.
         for (SlotDefinitionPtr slotDefinition : node->GetSlotDefinitions())
         {
@@ -461,7 +458,8 @@ namespace GraphModelIntegration
 
                 const AZ::EntityId stylingParent = nodeUiId;
                 AZ::Entity* extensionEntity = nullptr;
-                GraphCanvas::GraphCanvasRequestBus::BroadcastResult(extensionEntity, &GraphCanvas::GraphCanvasRequests::CreateSlot, stylingParent, extenderConfig);
+                GraphCanvas::GraphCanvasRequestBus::BroadcastResult(
+                    extensionEntity, &GraphCanvas::GraphCanvasRequests::CreateSlot, stylingParent, extenderConfig);
 
                 extensionEntity->Init();
                 extensionEntity->Activate();
@@ -471,7 +469,6 @@ namespace GraphModelIntegration
         }
 
         return nodeUiId;
-
     }
 
     void GraphController::AddNodeUiToScene(AZ::EntityId nodeUiId, const AZ::Vector2& scenePosition)
@@ -479,7 +476,6 @@ namespace GraphModelIntegration
         GraphCanvas::SceneRequestBus::Event(GetGraphCanvasSceneId(), &GraphCanvas::SceneRequests::AddNode, nodeUiId, scenePosition, false);
         GraphCanvas::SceneMemberUIRequestBus::Event(nodeUiId, &GraphCanvas::SceneMemberUIRequests::SetSelected, true);
     }
-
 
     void GraphController::CreateConnectionUi(GraphModel::ConnectionPtr connection)
     {
@@ -492,14 +488,17 @@ namespace GraphModelIntegration
         m_isCreatingConnectionUi = true;
 
         AZ::EntityId connectionUiId;
-        GraphCanvas::SceneRequestBus::EventResult(connectionUiId, GetGraphCanvasSceneId(), &GraphCanvas::SceneRequests::CreateConnectionBetween,
-            GraphCanvas::Endpoint(sourceNodeUiId, sourceSlotUiId), GraphCanvas::Endpoint(targetNodeUiId, targetSlotUiId));
+        GraphCanvas::SceneRequestBus::EventResult(
+            connectionUiId,
+            GetGraphCanvasSceneId(),
+            &GraphCanvas::SceneRequests::CreateConnectionBetween,
+            GraphCanvas::Endpoint(sourceNodeUiId, sourceSlotUiId),
+            GraphCanvas::Endpoint(targetNodeUiId, targetSlotUiId));
 
         m_elementMap.Add(connectionUiId, connection);
 
         m_isCreatingConnectionUi = false;
     }
-
 
     GraphCanvas::NodeId GraphController::AddNode(GraphModel::NodePtr node, AZ::Vector2& sceneDropPosition)
     {
@@ -507,9 +506,16 @@ namespace GraphModelIntegration
 
         const GraphModel::NodeId nodeId = m_graph->AddNode(node);
 
-        AZ::EntityId graphCanvasNodeId = CreateNodeUi(nodeId, node, [sceneDropPosition](AZ::EntityId) { return sceneDropPosition; });
+        AZ::EntityId graphCanvasNodeId = CreateNodeUi(
+            nodeId,
+            node,
+            [sceneDropPosition](AZ::EntityId)
+            {
+                return sceneDropPosition;
+            });
 
-        // Offset the sceneDropPosition so if multiple nodes are dragged into the scene at the same time, the don't stack exactly on top of each other 
+        // Offset the sceneDropPosition so if multiple nodes are dragged into the scene at the same time, the don't stack exactly on top of
+        // each other
         AZ::EntityId gridId;
         GraphCanvas::SceneRequestBus::EventResult(gridId, GetGraphCanvasSceneId(), &GraphCanvas::SceneRequests::GetGrid);
         AZ::Vector2 offset;
@@ -518,7 +524,6 @@ namespace GraphModelIntegration
 
         return graphCanvasNodeId;
     }
-
 
     bool GraphController::RemoveNode(GraphModel::NodePtr node)
     {
@@ -534,7 +539,6 @@ namespace GraphModelIntegration
         return false;
     }
 
-
     AZ::Vector2 GraphController::GetPosition(GraphModel::NodePtr node) const
     {
         AZ::Vector2 position = AZ::Vector2::CreateZero();
@@ -546,7 +550,6 @@ namespace GraphModelIntegration
 
         return position;
     }
-
 
     void GraphController::WrapNodeInternal(GraphModel::NodePtr wrapperNode, GraphModel::NodePtr node, AZ::u32 layoutOrder)
     {
@@ -570,21 +573,19 @@ namespace GraphModelIntegration
 
         WrapNodeUi(wrapperNode, node, layoutOrder);
 
-        GraphModelIntegration::GraphControllerNotificationBus::Event(m_graphCanvasSceneId, &GraphModelIntegration::GraphControllerNotifications::OnGraphModelNodeWrapped, wrapperNode, node);
+        GraphControllerNotificationBus::Event(
+            m_graphCanvasSceneId, &GraphControllerNotifications::OnGraphModelNodeWrapped, wrapperNode, node);
     }
-
 
     void GraphController::WrapNode(GraphModel::NodePtr wrapperNode, GraphModel::NodePtr node)
     {
         WrapNodeInternal(wrapperNode, node);
     }
 
-
     void GraphController::WrapNodeOrdered(GraphModel::NodePtr wrapperNode, GraphModel::NodePtr node, AZ::u32 layoutOrder)
     {
         WrapNodeInternal(wrapperNode, node, layoutOrder);
     }
-
 
     void GraphController::UnwrapNode(GraphModel::NodePtr wrapperNode, GraphModel::NodePtr node)
     {
@@ -601,9 +602,9 @@ namespace GraphModelIntegration
         GraphCanvas::WrappedNodeConfiguration configuration;
         GraphCanvas::WrapperNodeRequestBus::Event(wrapperNodeUiId, &GraphCanvas::WrapperNodeRequests::UnwrapNode, nodeUiId);
 
-        GraphModelIntegration::GraphControllerNotificationBus::Event(m_graphCanvasSceneId, &GraphModelIntegration::GraphControllerNotifications::OnGraphModelNodeUnwrapped, wrapperNode, node);
+        GraphControllerNotificationBus::Event(
+            m_graphCanvasSceneId, &GraphControllerNotifications::OnGraphModelNodeUnwrapped, wrapperNode, node);
     }
-
 
     void GraphController::WrapNodeUi(GraphModel::NodePtr wrapperNode, GraphModel::NodePtr node, AZ::u32 layoutOrder)
     {
@@ -620,7 +621,6 @@ namespace GraphModelIntegration
         GraphCanvas::WrapperNodeRequestBus::Event(wrapperNodeUiId, &GraphCanvas::WrapperNodeRequests::WrapNode, nodeUiId, configuration);
     }
 
-
     void GraphController::SetWrapperNodeActionString(GraphModel::NodePtr node, const char* actionString)
     {
         AZ::EntityId nodeUiId = m_elementMap.Find(node);
@@ -631,7 +631,6 @@ namespace GraphModelIntegration
 
         GraphCanvas::WrapperNodeRequestBus::Event(nodeUiId, &GraphCanvas::WrapperNodeRequests::SetActionString, actionString);
     }
-
 
     GraphModel::ConnectionPtr GraphController::AddConnection(GraphModel::SlotPtr sourceSlot, GraphModel::SlotPtr targetSlot)
     {
@@ -644,15 +643,14 @@ namespace GraphModelIntegration
         return newConnection;
     }
 
-
-    GraphModel::ConnectionPtr GraphController::AddConnectionBySlotId(GraphModel::NodePtr sourceNode, GraphModel::SlotId sourceSlotId, GraphModel::NodePtr targetNode, GraphModel::SlotId targetSlotId)
+    GraphModel::ConnectionPtr GraphController::AddConnectionBySlotId(
+        GraphModel::NodePtr sourceNode, GraphModel::SlotId sourceSlotId, GraphModel::NodePtr targetNode, GraphModel::SlotId targetSlotId)
     {
         GraphModel::SlotPtr sourceSlot = sourceNode->GetSlot(sourceSlotId);
         GraphModel::SlotPtr targetSlot = targetNode->GetSlot(targetSlotId);
 
         return AddConnection(sourceSlot, targetSlot);
     }
-
 
     bool GraphController::RemoveConnection(GraphModel::ConnectionPtr connection)
     {
@@ -671,7 +669,6 @@ namespace GraphModelIntegration
         return false;
     }
 
-
     GraphModel::SlotId GraphController::ExtendSlot(GraphModel::NodePtr node, GraphModel::SlotName slotName)
     {
         GraphModel::SlotPtr newSlot = node->AddExtendedSlot(slotName);
@@ -686,12 +683,10 @@ namespace GraphModelIntegration
         return GraphModel::SlotId();
     }
 
-
     GraphModel::NodePtr GraphController::GetNodeById(const GraphCanvas::NodeId& nodeId)
     {
         return m_elementMap.Find<GraphModel::Node>(nodeId);
     }
-
 
     GraphModel::NodePtrList GraphController::GetNodesFromGraphNodeIds(const AZStd::vector<GraphCanvas::NodeId>& nodeIds)
     {
@@ -707,7 +702,6 @@ namespace GraphModelIntegration
         return nodeList;
     }
 
-
     GraphCanvas::NodeId GraphController::GetNodeIdByNode(GraphModel::NodePtr node) const
     {
         GraphCanvas::NodeId nodeId = m_elementMap.Find(node);
@@ -719,7 +713,6 @@ namespace GraphModelIntegration
         return GraphCanvas::NodeId();
     }
 
-
     GraphCanvas::SlotId GraphController::GetSlotIdBySlot(GraphModel::SlotPtr slot) const
     {
         GraphCanvas::SlotId slotId = m_elementMap.Find(slot);
@@ -730,7 +723,6 @@ namespace GraphModelIntegration
 
         return GraphCanvas::SlotId();
     }
-
 
     GraphModel::NodePtrList GraphController::GetNodes()
     {
@@ -746,7 +738,6 @@ namespace GraphModelIntegration
         return nodes;
     }
 
-
     GraphModel::NodePtrList GraphController::GetSelectedNodes()
     {
         AzToolsFramework::EntityIdList selectedNodeIds;
@@ -754,7 +745,6 @@ namespace GraphModelIntegration
 
         return GetNodesFromGraphNodeIds(selectedNodeIds);
     }
-
 
     void GraphController::SetSelected(GraphModel::NodePtrList nodes, bool selected)
     {
@@ -768,12 +758,10 @@ namespace GraphModelIntegration
         }
     }
 
-
     void GraphController::ClearSelection()
     {
         GraphCanvas::SceneRequestBus::Event(m_graphCanvasSceneId, &GraphCanvas::SceneRequests::ClearSelection);
     }
-
 
     void GraphController::EnableNode(GraphModel::NodePtr node)
     {
@@ -784,7 +772,6 @@ namespace GraphModelIntegration
         }
     }
 
-
     void GraphController::DisableNode(GraphModel::NodePtr node)
     {
         AZ::EntityId nodeId = m_elementMap.Find(node);
@@ -793,7 +780,6 @@ namespace GraphModelIntegration
             GraphCanvas::SceneRequestBus::Event(m_graphCanvasSceneId, &GraphCanvas::SceneRequests::Disable, nodeId);
         }
     }
-
 
     void GraphController::CenterOnNodes(GraphModel::NodePtrList nodes)
     {
@@ -838,7 +824,6 @@ namespace GraphModelIntegration
         GraphCanvas::ViewRequestBus::Event(viewId, &GraphCanvas::ViewRequests::CenterOnArea, boundingRect);
     }
 
-
     AZ::Vector2 GraphController::GetMajorPitch() const
     {
         AZ::EntityId gridId;
@@ -849,16 +834,14 @@ namespace GraphModelIntegration
         return gridMajorPitch;
     }
 
-
     void GraphController::OnNodeAdded(const AZ::EntityId& nodeUiId, bool)
     {
         const GraphModel::NodePtr node = m_elementMap.Find<GraphModel::Node>(nodeUiId);
         if (node)
         {
-            GraphModelIntegration::GraphControllerNotificationBus::Event(m_graphCanvasSceneId, &GraphModelIntegration::GraphControllerNotifications::OnGraphModelNodeAdded, node);
+            GraphControllerNotificationBus::Event(m_graphCanvasSceneId, &GraphControllerNotifications::OnGraphModelNodeAdded, node);
         }
     }
-
 
     void GraphController::OnNodeRemoved(const AZ::EntityId& nodeUiId)
     {
@@ -879,20 +862,18 @@ namespace GraphModelIntegration
             m_graph->RemoveNode(node);
             m_elementMap.Remove(node);
 
-            GraphModelIntegration::GraphControllerNotificationBus::Event(m_graphCanvasSceneId, &GraphModelIntegration::GraphControllerNotifications::OnGraphModelNodeRemoved, node);
+            GraphControllerNotificationBus::Event(m_graphCanvasSceneId, &GraphControllerNotifications::OnGraphModelNodeRemoved, node);
         }
     }
-
 
     void GraphController::PreOnNodeRemoved(const AZ::EntityId& nodeUiId)
     {
         const GraphModel::NodePtr node = m_elementMap.Find<GraphModel::Node>(nodeUiId);
         if (node)
         {
-            GraphModelIntegration::GraphControllerNotificationBus::Event(m_graphCanvasSceneId, &GraphModelIntegration::GraphControllerNotifications::PreOnGraphModelNodeRemoved, node);
+            GraphControllerNotificationBus::Event(m_graphCanvasSceneId, &GraphControllerNotifications::PreOnGraphModelNodeRemoved, node);
         }
     }
-
 
     void GraphController::OnConnectionRemoved(const AZ::EntityId& connectionUiId)
     {
@@ -902,10 +883,10 @@ namespace GraphModelIntegration
             m_graph->RemoveConnection(connection);
             m_elementMap.Remove(connection);
 
-            GraphModelIntegration::GraphControllerNotificationBus::Event(m_graphCanvasSceneId, &GraphModelIntegration::GraphControllerNotifications::OnGraphModelConnectionRemoved, connection);
+            GraphControllerNotificationBus::Event(
+                m_graphCanvasSceneId, &GraphControllerNotifications::OnGraphModelConnectionRemoved, connection);
         }
     }
-
 
     void GraphController::OnEntitiesSerialized(GraphCanvas::GraphSerialization& serializationTarget)
     {
@@ -957,7 +938,6 @@ namespace GraphModelIntegration
 
         GraphManagerRequestBus::Broadcast(&GraphManagerRequests::SetSerializedMappings, serialization);
     }
-
 
     void GraphController::OnEntitiesDeserialized(const GraphCanvas::GraphSerialization& serializationSource)
     {
@@ -1012,7 +992,6 @@ namespace GraphModelIntegration
         }
     }
 
-
     void GraphController::OnEntitiesDeserializationComplete(const GraphCanvas::GraphSerialization& serializationSource)
     {
         GraphModelSerialization serialization;
@@ -1039,7 +1018,6 @@ namespace GraphModelIntegration
         }
     }
 
-
     GraphModel::ConnectionPtr GraphController::CreateConnection(GraphModel::SlotPtr sourceSlot, GraphModel::SlotPtr targetSlot)
     {
         if (!sourceSlot || !targetSlot)
@@ -1057,12 +1035,13 @@ namespace GraphModelIntegration
         }
 
         GraphModel::ConnectionPtr newConnection = m_graph->AddConnection(sourceSlot, targetSlot);
-        GraphModelIntegration::GraphControllerNotificationBus::Event(m_graphCanvasSceneId, &GraphModelIntegration::GraphControllerNotifications::OnGraphModelConnectionAdded, newConnection);
+        GraphControllerNotificationBus::Event(
+            m_graphCanvasSceneId, &GraphControllerNotifications::OnGraphModelConnectionAdded, newConnection);
         return newConnection;
     }
 
-
-    bool GraphController::CreateConnection(const AZ::EntityId& connectionUiId, const GraphCanvas::Endpoint& sourcePoint, const GraphCanvas::Endpoint& targetPoint)
+    bool GraphController::CreateConnection(
+        const AZ::EntityId& connectionUiId, const GraphCanvas::Endpoint& sourcePoint, const GraphCanvas::Endpoint& targetPoint)
     {
         using namespace GraphModel;
 
@@ -1103,7 +1082,7 @@ namespace GraphModelIntegration
                 OnConnectionRemoved(connectionUiId);
             }
         }
-        
+
         ConnectionPtr newConnection = CreateConnection(sourceSlot, targetSlot);
         if (newConnection)
         {
@@ -1113,7 +1092,6 @@ namespace GraphModelIntegration
 
         return false;
     }
-
 
     bool GraphController::CheckForLoopback(GraphModel::NodePtr sourceNode, GraphModel::NodePtr targetNode) const
     {
@@ -1150,7 +1128,6 @@ namespace GraphModelIntegration
         return false;
     }
 
-
     bool GraphController::IsValidConnection(const GraphCanvas::Endpoint& sourcePoint, const GraphCanvas::Endpoint& targetPoint) const
     {
         if (!sourcePoint.IsValid() || !targetPoint.IsValid())
@@ -1174,8 +1151,10 @@ namespace GraphModelIntegration
         {
             // If both data types are null, this means the slots are both event types,
             // so this is considered valid
-            AZ_Assert(sourceSlot->GetSlotType() == GraphModel::SlotType::Event, "Source slot has a null data type but is not an Event type slot");
-            AZ_Assert(targetSlot->GetSlotType() == GraphModel::SlotType::Event, "Target slot has a null data type but is not an Event type slot");
+            AZ_Assert(
+                sourceSlot->GetSlotType() == GraphModel::SlotType::Event, "Source slot has a null data type but is not an Event type slot");
+            AZ_Assert(
+                targetSlot->GetSlotType() == GraphModel::SlotType::Event, "Target slot has a null data type but is not an Event type slot");
             dataTypesMatch = true;
         }
         else if (sourceSlotDataType == nullptr || targetSlotDataType == nullptr)
@@ -1185,8 +1164,8 @@ namespace GraphModelIntegration
         }
         else
         {
-            // Both data types are valid so check if they match
-            dataTypesMatch = *sourceSlotDataType == *targetSlotDataType;
+            // The source slot data type must be supported by the target slot
+            dataTypesMatch = targetSlot->IsSupportedDataType(sourceSlotDataType);
         }
 
         return dataTypesMatch && !CheckForLoopback(sourceSlot->GetParentNode(), targetSlot->GetParentNode());
@@ -1204,7 +1183,8 @@ namespace GraphModelIntegration
         {
             GraphCanvas::NodePropertyDisplay* dataDisplay = nullptr;
             GraphCanvas::DataInterface* dataInterface = aznew DataInterfaceType(inputSlot);
-            GraphCanvas::GraphCanvasRequestBus::BroadcastResult(dataDisplay, createDisplayFunction, static_cast<DataInterfaceType*>(dataInterface));
+            GraphCanvas::GraphCanvasRequestBus::BroadcastResult(
+                dataDisplay, createDisplayFunction, static_cast<DataInterfaceType*>(dataInterface));
             if (!dataDisplay)
             {
                 delete dataInterface;
@@ -1217,28 +1197,37 @@ namespace GraphModelIntegration
         }
     }
 
-    GraphCanvas::NodePropertyDisplay* GraphController::CreatePropertySlotPropertyDisplay([[maybe_unused]] const AZ::Crc32& propertyId, [[maybe_unused]] const GraphCanvas::NodeId& nodeUiId, const GraphCanvas::SlotId& slotUiId) const
+    GraphCanvas::NodePropertyDisplay* GraphController::CreatePropertySlotPropertyDisplay(
+        [[maybe_unused]] const AZ::Crc32& propertyId,
+        [[maybe_unused]] const GraphCanvas::NodeId& nodeUiId,
+        const GraphCanvas::SlotId& slotUiId) const
     {
-        // CONST CAST WARNING: The CreatePropertySlotPropertyDisplay graph canvas interface is const, but probably shouldn't be, because it expects a non-const NodePropertyDisplay*.
-        // We need non-const version of m_elementMap in order to create a non-const NodePropertyDisplay
+        // CONST CAST WARNING: The CreatePropertySlotPropertyDisplay graph canvas interface is const, but probably shouldn't be, because it
+        // expects a non-const NodePropertyDisplay*. We need non-const version of m_elementMap in order to create a non-const
+        // NodePropertyDisplay
         GraphModel::SlotPtr inputSlot = const_cast<GraphController*>(this)->m_elementMap.Find<GraphModel::Slot>(slotUiId);
 
         return CreateSlotPropertyDisplay(inputSlot);
     }
 
-    GraphCanvas::NodePropertyDisplay* GraphController::CreateDataSlotPropertyDisplay([[maybe_unused]] const AZ::Uuid& dataTypeUuid, [[maybe_unused]] const GraphCanvas::NodeId& nodeUiId, const GraphCanvas::SlotId& slotUiId) const
+    GraphCanvas::NodePropertyDisplay* GraphController::CreateDataSlotPropertyDisplay(
+        [[maybe_unused]] const AZ::Uuid& dataTypeUuid,
+        [[maybe_unused]] const GraphCanvas::NodeId& nodeUiId,
+        const GraphCanvas::SlotId& slotUiId) const
     {
 #if defined(AZ_ENABLE_TRACING)
         GraphModel::DataTypePtr dataType = m_graph->GetContext()->GetDataType(dataTypeUuid);
-        AZ_Assert(dataType->GetTypeUuid() == dataTypeUuid, "Creating property display for mismatched type. dataTypeUuid=%s. Slot TypeName=%s TypeID=%s.",
+        AZ_Assert(
+            dataType->GetTypeUuid() == dataTypeUuid,
+            "Creating property display for mismatched type. dataTypeUuid=%s. Slot TypeName=%s TypeID=%s.",
             dataTypeUuid.ToString<AZStd::string>().c_str(),
             dataType->GetCppName().c_str(),
-            dataType->GetTypeUuidString().c_str()
-        );
-#endif //AZ_ENABLE_TRACING
+            dataType->GetTypeUuidString().c_str());
+#endif // AZ_ENABLE_TRACING
 
-        // CONST CAST WARNING: The CreateDataSlotPropertyDisplay graph canvas interface is const, but probably shouldn't be, because it expects a non-const NodePropertyDisplay*.
-        // We need non-const version of m_elementMap in order to create a non-const NodePropertyDisplay
+        // CONST CAST WARNING: The CreateDataSlotPropertyDisplay graph canvas interface is const, but probably shouldn't be, because it
+        // expects a non-const NodePropertyDisplay*. We need non-const version of m_elementMap in order to create a non-const
+        // NodePropertyDisplay
         GraphModel::SlotPtr inputSlot = const_cast<GraphController*>(this)->m_elementMap.Find<GraphModel::Slot>(slotUiId);
 
         return CreateSlotPropertyDisplay(inputSlot);
@@ -1251,82 +1240,101 @@ namespace GraphModelIntegration
             return nullptr;
         }
 
-        AZ_Assert(inputSlot->GetSlotDirection() == GraphModel::SlotDirection::Input, "Property value displays are only meant for input slots");
+        AZ_Assert(
+            inputSlot->GetSlotDirection() == GraphModel::SlotDirection::Input, "Property value displays are only meant for input slots");
 
         GraphCanvas::NodePropertyDisplay* dataDisplay = nullptr;
         AZ::Uuid dataTypeUuid = inputSlot->GetDataType()->GetTypeUuid();
 
-        // We cannot use SHADER_CANVAS_DATA_MACRO here because there is not code alignment between the type and the GraphCanvasRequest function.
+        // We cannot use SHADER_CANVAS_DATA_MACRO here because there is not code alignment between the type and the GraphCanvasRequest
+        // function.
 
         if (dataTypeUuid == azrtti_typeid<bool>())
         {
-            dataDisplay = CreatePropertyDisplay<BooleanDataInterface>(inputSlot, &GraphCanvas::GraphCanvasRequests::CreateBooleanNodePropertyDisplay);
+            dataDisplay =
+                CreatePropertyDisplay<BooleanDataInterface>(inputSlot, &GraphCanvas::GraphCanvasRequests::CreateBooleanNodePropertyDisplay);
         }
         else if (dataTypeUuid == azrtti_typeid<int>())
         {
-            dataDisplay = CreatePropertyDisplay<IntegerDataInterface>(inputSlot, &GraphCanvas::GraphCanvasRequests::CreateNumericNodePropertyDisplay);
+            dataDisplay =
+                CreatePropertyDisplay<IntegerDataInterface>(inputSlot, &GraphCanvas::GraphCanvasRequests::CreateNumericNodePropertyDisplay);
         }
         else if (dataTypeUuid == azrtti_typeid<float>())
         {
-            dataDisplay = CreatePropertyDisplay<FloatDataInterface>(inputSlot, &GraphCanvas::GraphCanvasRequests::CreateNumericNodePropertyDisplay);
+            dataDisplay =
+                CreatePropertyDisplay<FloatDataInterface>(inputSlot, &GraphCanvas::GraphCanvasRequests::CreateNumericNodePropertyDisplay);
         }
         else if (dataTypeUuid == azrtti_typeid<AZ::Vector2>())
         {
-            dataDisplay = CreatePropertyDisplay<VectorDataInterface<AZ::Vector2, 2>>(inputSlot, &GraphCanvas::GraphCanvasRequests::CreateVectorNodePropertyDisplay);
+            dataDisplay = CreatePropertyDisplay<VectorDataInterface<AZ::Vector2, 2>>(
+                inputSlot, &GraphCanvas::GraphCanvasRequests::CreateVectorNodePropertyDisplay);
         }
         else if (dataTypeUuid == azrtti_typeid<AZ::Vector3>())
         {
-            dataDisplay = CreatePropertyDisplay<VectorDataInterface<AZ::Vector3, 3>>(inputSlot, &GraphCanvas::GraphCanvasRequests::CreateVectorNodePropertyDisplay);
+            dataDisplay = CreatePropertyDisplay<VectorDataInterface<AZ::Vector3, 3>>(
+                inputSlot, &GraphCanvas::GraphCanvasRequests::CreateVectorNodePropertyDisplay);
         }
         else if (dataTypeUuid == azrtti_typeid<AZ::Vector4>())
         {
-            dataDisplay = CreatePropertyDisplay<VectorDataInterface<AZ::Vector4, 4>>(inputSlot, &GraphCanvas::GraphCanvasRequests::CreateVectorNodePropertyDisplay);
+            dataDisplay = CreatePropertyDisplay<VectorDataInterface<AZ::Vector4, 4>>(
+                inputSlot, &GraphCanvas::GraphCanvasRequests::CreateVectorNodePropertyDisplay);
         }
         else if (dataTypeUuid == azrtti_typeid<AZStd::string>())
         {
-            dataDisplay = CreatePropertyDisplay<StringDataInterface>(inputSlot, &GraphCanvas::GraphCanvasRequests::CreateStringNodePropertyDisplay);
+            dataDisplay =
+                CreatePropertyDisplay<StringDataInterface>(inputSlot, &GraphCanvas::GraphCanvasRequests::CreateStringNodePropertyDisplay);
         }
 
         return dataDisplay;
     }
 
-
     void GraphController::RequestUndoPoint()
     {
-        // TODO: Currently we don't support undo/redo, so just signal that our scene is dirty.
-        IntegrationBus::Broadcast(&IntegrationBusInterface::SignalSceneDirty, m_graphCanvasSceneId);
+        if (m_preventUndoStateUpdateCount <= 0)
+        {
+            m_preventUndoStateUpdateCount = 0;
+            GraphControllerNotificationBus::Event(m_graphCanvasSceneId, &GraphControllerNotifications::OnGraphModelRequestUndoPoint);
+            IntegrationBus::Broadcast(&IntegrationBusInterface::SignalSceneDirty, m_graphCanvasSceneId);
+        }
     }
-
 
     void GraphController::RequestPushPreventUndoStateUpdate()
     {
-        // TODO: Nothing to do here yet since we don't support undo/redo.
+        ++m_preventUndoStateUpdateCount;
     }
-
 
     void GraphController::RequestPopPreventUndoStateUpdate()
     {
-        // TODO: Nothing to do here yet since we don't support undo/redo.
+        if (m_preventUndoStateUpdateCount > 0)
+        {
+            --m_preventUndoStateUpdateCount;
+        }
     }
 
+    void GraphController::TriggerUndo()
+    {
+        GraphControllerNotificationBus::Event(m_graphCanvasSceneId, &GraphControllerNotifications::OnGraphModelTriggerUndo);
+    }
+
+    void GraphController::TriggerRedo()
+    {
+        GraphControllerNotificationBus::Event(m_graphCanvasSceneId, &GraphControllerNotifications::OnGraphModelTriggerRedo);
+    }
 
     void GraphController::EnableNodes(const AZStd::unordered_set<GraphCanvas::NodeId>& nodeIds)
     {
         AZ_UNUSED(nodeIds);
     }
 
-
     void GraphController::DisableNodes(const AZStd::unordered_set<GraphCanvas::NodeId>& nodeIds)
     {
         AZ_UNUSED(nodeIds);
     }
 
-
-    AZStd::string GraphController::GetDataTypeString(const AZ::Uuid& typeId) 
+    AZStd::string GraphController::GetDataTypeString(const AZ::Uuid& typeId)
     {
         return m_graph->GetContext()->GetDataType(typeId)->GetDisplayName();
     }
-
 
     GraphCanvasMetadata* GraphController::GetGraphMetadata()
     {
@@ -1335,12 +1343,10 @@ namespace GraphModelIntegration
         return graphCanvasMetadata;
     }
 
-
     void GraphController::OnSaveDataDirtied(const AZ::EntityId& savedElement)
     {
         SaveMetadata(savedElement);
     }
-
 
     void GraphController::ResetSlotToDefaultValue(const GraphCanvas::Endpoint& endpoint)
     {
@@ -1351,7 +1357,6 @@ namespace GraphModelIntegration
             slot->SetValue(slot->GetDefaultValue());
         }
     }
-
 
     void GraphController::RemoveSlot(const GraphCanvas::Endpoint& endpoint)
     {
@@ -1364,11 +1369,11 @@ namespace GraphModelIntegration
         {
             node->DeleteSlot(slot);
 
-            // We need to actually remove the slot, the GraphModelRequestBus::RemoveSlot is a request, not a notification that the slot has been removed
+            // We need to actually remove the slot, the GraphModelRequestBus::RemoveSlot is a request, not a notification that the slot has
+            // been removed
             GraphCanvas::NodeRequestBus::Event(nodeId, &GraphCanvas::NodeRequests::RemoveSlot, slotId);
         }
     }
-
 
     bool GraphController::IsSlotRemovable(const GraphCanvas::Endpoint& endpoint) const
     {
@@ -1383,8 +1388,8 @@ namespace GraphModelIntegration
         return false;
     }
 
-
-    GraphCanvas::SlotId GraphController::RequestExtension(const GraphCanvas::NodeId& nodeId, const GraphCanvas::ExtenderId& extenderId, GraphModelRequests::ExtensionRequestReason )
+    GraphCanvas::SlotId GraphController::RequestExtension(
+        const GraphCanvas::NodeId& nodeId, const GraphCanvas::ExtenderId& extenderId, GraphModelRequests::ExtensionRequestReason)
     {
         GraphCanvas::SlotId graphCanvasSlotId;
 
@@ -1418,7 +1423,6 @@ namespace GraphModelIntegration
         return graphCanvasSlotId;
     }
 
-
     bool GraphController::ShouldWrapperAcceptDrop(const GraphCanvas::NodeId& wrapperNode, const QMimeData* mimeData) const
     {
         AZ_UNUSED(wrapperNode);
@@ -1426,23 +1430,20 @@ namespace GraphModelIntegration
         return false;
     }
 
-
     void GraphController::AddWrapperDropTarget(const GraphCanvas::NodeId& wrapperNode)
     {
         AZ_UNUSED(wrapperNode);
     }
-
 
     void GraphController::RemoveWrapperDropTarget(const GraphCanvas::NodeId& wrapperNode)
     {
         AZ_UNUSED(wrapperNode);
     }
 
-
     void GraphController::SaveMetadata(const AZ::EntityId& graphCanvasElement)
     {
         using namespace GraphModel;
-        
+
         GraphCanvasMetadata* graphCanvasMetadata = GetGraphMetadata();
 
         NodePtr node = m_elementMap.Find<Node>(graphCanvasElement);
@@ -1466,9 +1467,10 @@ namespace GraphModelIntegration
                 container = mapIter->second;
             }
 
-            GraphCanvas::EntitySaveDataRequestBus::Event(graphCanvasElement, &GraphCanvas::EntitySaveDataRequests::WriteSaveData, (*container));
+            GraphCanvas::EntitySaveDataRequestBus::Event(
+                graphCanvasElement, &GraphCanvas::EntitySaveDataRequests::WriteSaveData, (*container));
 
-            GraphModelIntegration::GraphControllerNotificationBus::Event(m_graphCanvasSceneId, &GraphModelIntegration::GraphControllerNotifications::OnGraphModelGraphModified, node);
+            GraphControllerNotificationBus::Event(m_graphCanvasSceneId, &GraphControllerNotifications::OnGraphModelGraphModified, node);
         }
         // Save into m_sceneMetadata
         else if (graphCanvasElement == GetGraphCanvasSceneId())
@@ -1478,9 +1480,10 @@ namespace GraphModelIntegration
                 graphCanvasMetadata->m_sceneMetadata = AZStd::make_shared<GraphCanvas::EntitySaveDataContainer>();
             }
 
-            GraphCanvas::EntitySaveDataRequestBus::Event(graphCanvasElement, &GraphCanvas::EntitySaveDataRequests::WriteSaveData, (*graphCanvasMetadata->m_sceneMetadata));
+            GraphCanvas::EntitySaveDataRequestBus::Event(
+                graphCanvasElement, &GraphCanvas::EntitySaveDataRequests::WriteSaveData, (*graphCanvasMetadata->m_sceneMetadata));
 
-            GraphModelIntegration::GraphControllerNotificationBus::Event(m_graphCanvasSceneId, &GraphModelIntegration::GraphControllerNotifications::OnGraphModelGraphModified, nullptr);
+            GraphControllerNotificationBus::Event(m_graphCanvasSceneId, &GraphControllerNotifications::OnGraphModelGraphModified, nullptr);
         }
         // Save into m_otherMetadata
         else
@@ -1499,12 +1502,12 @@ namespace GraphModelIntegration
                 container = mapIter->second;
             }
 
-            GraphCanvas::EntitySaveDataRequestBus::Event(graphCanvasElement, &GraphCanvas::EntitySaveDataRequests::WriteSaveData, (*container));
+            GraphCanvas::EntitySaveDataRequestBus::Event(
+                graphCanvasElement, &GraphCanvas::EntitySaveDataRequests::WriteSaveData, (*container));
 
-            GraphModelIntegration::GraphControllerNotificationBus::Event(m_graphCanvasSceneId, &GraphModelIntegration::GraphControllerNotifications::OnGraphModelGraphModified, nullptr);
+            GraphControllerNotificationBus::Event(m_graphCanvasSceneId, &GraphControllerNotifications::OnGraphModelGraphModified, nullptr);
         }
     }
-
 
     QGraphicsLinearLayout* GraphController::GetLayoutFromNode(GraphModel::NodePtr node)
     {
@@ -1522,7 +1525,6 @@ namespace GraphModelIntegration
 
         return nullptr;
     }
-
 
     void GraphController::SetThumbnailImageOnNode(GraphModel::NodePtr node, const QPixmap& image)
     {
@@ -1551,7 +1553,6 @@ namespace GraphModelIntegration
         }
     }
 
-
     void GraphController::SetThumbnailOnNode(GraphModel::NodePtr node, ThumbnailItem* item)
     {
         // Remove any existing thumbnail on this node if one already exists
@@ -1572,7 +1573,6 @@ namespace GraphModelIntegration
         layout->insertItem(NODE_THUMBNAIL_INDEX, item);
         m_nodeThumbnails[node->GetId()] = item;
     }
-
 
     void GraphController::RemoveThumbnailFromNode(GraphModel::NodePtr node)
     {

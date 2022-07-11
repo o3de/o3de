@@ -18,14 +18,7 @@ namespace EMotionFX
     JointLimitRotationManipulators::JointLimitRotationManipulators(JointLimitFrame jointLimitFrame)
         : m_jointLimitFrame(jointLimitFrame)
     {
-        m_adjustJointLimitCallback = AZStd::make_unique<PhysicsSetupManipulatorCommandCallback>(this, false);
-        EMStudio::GetCommandManager()->RegisterCommandCallback("AdjustJointLimit", m_adjustJointLimitCallback.get());
         m_rotationManipulators.SetCircleBoundWidth(AzToolsFramework::ManipulatorCicleBoundWidth());
-    }
-
-    JointLimitRotationManipulators::~JointLimitRotationManipulators()
-    {
-        EMStudio::GetCommandManager()->RemoveCommandCallback(m_adjustJointLimitCallback.get(), false);
     }
 
     void JointLimitRotationManipulators::Setup(const PhysicsSetupManipulatorData& physicsSetupManipulatorData)
@@ -37,7 +30,6 @@ namespace EMotionFX
             return;
         }
 
-        m_rotationManipulators.SetSpace(physicsSetupManipulatorData.m_nodeWorldTransform);
         Refresh();
         m_rotationManipulators.Register(EMStudio::g_animManipulatorManagerId);
         m_rotationManipulators.SetLocalAxes(AZ::Vector3::CreateAxisX(), AZ::Vector3::CreateAxisY(), AZ::Vector3::CreateAxisZ());
@@ -65,12 +57,25 @@ namespace EMotionFX
 
         AZ::TickBus::Handler::BusConnect();
         PhysicsSetupManipulatorRequestBus::Handler::BusConnect();
+        m_adjustJointLimitCallback = AZStd::make_unique<PhysicsSetupManipulatorCommandCallback>(this, false);
+        EMStudio::GetCommandManager()->RegisterCommandCallback("AdjustJointLimit", m_adjustJointLimitCallback.get());
     }
 
     void JointLimitRotationManipulators::Refresh()
     {
         if (m_physicsSetupManipulatorData.HasJointLimit())
         {
+            if (m_jointLimitFrame == JointLimitFrame::Parent)
+            {
+                m_rotationManipulators.SetSpace(AZ::Transform::CreateFromQuaternionAndTranslation(
+                    m_physicsSetupManipulatorData.m_parentWorldTransform.GetRotation(),
+                    m_physicsSetupManipulatorData.m_nodeWorldTransform.GetTranslation()));
+            }
+            else
+            {
+                m_rotationManipulators.SetSpace(m_physicsSetupManipulatorData.m_nodeWorldTransform);
+            }
+
             m_rotationManipulators.SetLocalPosition(AZ::Vector3::CreateZero());
             m_rotationManipulators.SetLocalOrientation(GetLocalOrientation());
         }
@@ -78,6 +83,13 @@ namespace EMotionFX
 
     void JointLimitRotationManipulators::Teardown()
     {
+        if (!m_physicsSetupManipulatorData.HasJointLimit())
+        {
+            return;
+        }
+
+        EMStudio::GetCommandManager()->RemoveCommandCallback(m_adjustJointLimitCallback.get(), false);
+        m_adjustJointLimitCallback.reset();
         PhysicsSetupManipulatorRequestBus::Handler::BusDisconnect();
         AZ::TickBus::Handler::BusDisconnect();
         m_rotationManipulators.Unregister();

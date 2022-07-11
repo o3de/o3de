@@ -171,19 +171,9 @@ namespace PhysXEditorTests
         AZStd::vector<AZ::Vector3> vertices;
         AZStd::vector<AZ::u32> indices;
 
-        auto physicsSystem = AZ::Interface<Physics::System>::Get();
-
         // Given there is a shape
-        const PhysX::PointList testPoints = PhysX::TestUtils::GeneratePyramidPoints(1.0f);
-        AZStd::vector<AZ::u8> cookedData;
-        EXPECT_TRUE(physicsSystem->CookConvexMeshToMemory(testPoints.data(), 
-            static_cast<AZ::u32>(testPoints.size()), cookedData));
+        auto shape = PhysX::TestUtils::CreatePyramidShape(1.0f);
 
-        Physics::CookedMeshShapeConfiguration shapeConfig;
-        shapeConfig.SetCookedMeshData(cookedData.data(), cookedData.size(), 
-            Physics::CookedMeshShapeConfiguration::MeshType::Convex);
-        auto shape = physicsSystem->CreateShape(Physics::ColliderConfiguration(), shapeConfig);
-        
         // When geometry is requested
         shape->GetGeometry(vertices, indices);
 

@@ -17,6 +17,10 @@ class TestAutomation(EditorTestSuite):
     class AtomEditorComponents_BloomAdded(EditorBatchedTest):
         from Atom.tests import hydra_AtomEditorComponents_BloomAdded as test_module
 
+    @pytest.mark.test_case_id("C36553393")
+    class AtomEditorComponents_CubeMapCaptureAdded(EditorBatchedTest):
+        from Atom.tests import hydra_AtomEditorComponents_CubeMapCaptureAdded as test_module
+
     @pytest.mark.test_case_id("C32078118")
     class AtomEditorComponents_DecalAdded(EditorBatchedTest):
         from Atom.tests import hydra_AtomEditorComponents_DecalAdded as test_module

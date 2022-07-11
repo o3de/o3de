@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzCore/Preprocessor/Enum.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/typetraits/is_function.h>
 
@@ -833,6 +834,18 @@ namespace AZ
             UnderlyingType m_value;
             AZStd::string m_description;
         };
+
+        // Automatically generate a list of EnumConstant from AzEnumTraits
+        template<typename EnumType, typename UnderlyingType = AZStd::underlying_type_t<EnumType>>
+        AZStd::vector<EnumConstant<UnderlyingType>> GetEnumConstantsFromTraits()
+        {
+            AZStd::vector<EnumConstant<UnderlyingType>> enumValues;
+            for (const auto& member : AZ::AzEnumTraits<EnumType>::Members)
+            {
+                enumValues.emplace_back(aznumeric_cast<UnderlyingType>(member.m_value), member.m_string.data());
+            }
+            return enumValues;
+        }
     } // namespace Edit
 
     //=========================================================================

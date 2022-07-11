@@ -111,6 +111,12 @@ namespace AzToolsFramework::Prefab::SpawnableUtils
                 AZ_STRING_ARG(alias), AZ_STRING_ARG(sourcePrefabName));
             // A new entity id can be used for the placeholder as `ReplaceEntity` will swap the entity ids.
             auto placeholder = AZStd::make_unique<AZ::Entity>(AZ::Entity::MakeId(), entityData->get().GetName());
+            // Keep a transform component on the placeholder to maintain parent/child relationship.
+            // This is used during prefab processing to sort the corresponding spawnable's entities by hierarchy
+            auto transformComponent = aznew AzFramework::TransformComponent();
+            auto entityTransformComponent = entityData->get().FindComponent<AzFramework::TransformComponent>();
+            transformComponent->SetParentRelative(entityTransformComponent->GetParentId());
+            placeholder->AddComponent(transformComponent);
             return instance->ReplaceEntity(AZStd::move(placeholder), alias);
         }
 

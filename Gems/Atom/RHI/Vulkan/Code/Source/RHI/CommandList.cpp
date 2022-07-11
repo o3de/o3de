@@ -927,11 +927,16 @@ namespace AZ
             const RHI::PipelineLayoutDescriptor& pipelineLayoutDescriptor = pipelineLayout->GetPipelineLayoutDescriptor();
             for (uint32_t i = 0; i < pipelineLayout->GetDescriptorSetLayoutCount(); ++i)
             {
-                uint32_t slot = pipelineLayout->GetAZSLBindingSlotOfIndex(i);
-                const ShaderResourceGroup* shaderResourceGroup = bindings.m_SRGByAzslBindingSlot[slot];
-                AZ_Assert(shaderResourceGroup != nullptr, "NULL srg bound");
-                
-                m_validator.ValidateShaderResourceGroup(*shaderResourceGroup, pipelineLayoutDescriptor.GetShaderResourceGroupBindingInfo(i));
+                const auto& srgBitset = pipelineLayout->GetAZSLBindingSlotsOfIndex(i);
+                for (uint32_t bindingSlot = 0; bindingSlot < srgBitset.size(); ++bindingSlot)
+                {
+                    if (srgBitset[bindingSlot])
+                    {
+                        const ShaderResourceGroup* shaderResourceGroup = bindings.m_SRGByAzslBindingSlot[bindingSlot];
+                        AZ_Assert(shaderResourceGroup != nullptr, "NULL srg bound");
+                        m_validator.ValidateShaderResourceGroup(*shaderResourceGroup, pipelineLayoutDescriptor.GetShaderResourceGroupBindingInfo(i));
+                    }
+                }
             }
 #endif
         }

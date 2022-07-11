@@ -53,6 +53,7 @@ namespace EMotionFX
         friend class Attachment;
 
     public:
+        AZ_RTTI(EMotionFX::ActorInstance, "{280A0170-EB6A-4E90-B2F1-E18D8EAEFB36}", BaseObject);
         /**
          * The bounding volume generation types.
          */
