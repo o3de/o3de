@@ -317,7 +317,7 @@ namespace AZ::JsonMathMatrixSerializerInternal
             "MathMatrixSerializer only support Matrix3x3, Matrix3x4 and Matrix4x4.");
 
         const MatrixType* matrix = reinterpret_cast<const MatrixType*>(inputValue);
-        AZ_Assert(matrix, "Input value for JsonVector%zux%zuSerializer can't be null.", RowCount, ColumnCount);
+        AZ_Assert(matrix, "Input value for JsonMatrix%zux%zuSerializer can't be null.", RowCount, ColumnCount);
         const MatrixType* defaultMatrix = reinterpret_cast<const MatrixType*>(defaultValue);
 
         if (!context.ShouldKeepDefaults() && defaultMatrix && *matrix == *defaultMatrix)
