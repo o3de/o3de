@@ -160,9 +160,7 @@ if __name__ == "__main__":
             s3_top_level_dir = "tiaf"
 
         tiaf = TestImpact(args.config, vars(args))
-        tiaf_result = tiaf.run(args.commit, args.src_branch, args.dst_branch, args.s3_bucket, s3_top_level_dir, args.suite,
-                               args.test_failure_policy, args.safe_mode, args.test_timeout, args.global_timeout, args.exclude_file)
-        #result = tiaf.get_test_result()
+        tiaf_result = tiaf.run()
         if args.mars_index_prefix:
             logger.info("Transmitting report to MARS...")
             mars_utils.transmit_report_to_mars(
