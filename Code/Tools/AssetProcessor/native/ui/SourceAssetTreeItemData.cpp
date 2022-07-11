@@ -14,17 +14,6 @@
 
 namespace AssetProcessor
 {
-
-    AZStd::shared_ptr<SourceAssetTreeItemData> SourceAssetTreeItemData::MakeShared(
-        const AzToolsFramework::AssetDatabase::SourceDatabaseEntry* sourceInfo,
-        const AzToolsFramework::AssetDatabase::ScanFolderDatabaseEntry* scanFolderInfo,
-        const AZStd::string& assetDbName,
-        QString name,
-        bool isFolder)
-    {
-        return AZStd::make_shared<SourceAssetTreeItemData>(sourceInfo, scanFolderInfo, assetDbName, name, isFolder);
-    }
-
     SourceAssetTreeItemData::SourceAssetTreeItemData(
         const AzToolsFramework::AssetDatabase::SourceDatabaseEntry* sourceInfo,
         const AzToolsFramework::AssetDatabase::ScanFolderDatabaseEntry* scanFolderInfo,

@@ -143,7 +143,8 @@ namespace AssetProcessor
                     Q_ASSERT(checkIndex(parentIndex));
                     beginInsertRows(parentIndex, parentItem->getChildCount(), parentItem->getChildCount());
                 }
-                nextParent = parentItem->CreateChild(SourceAssetTreeItemData::MakeShared(nullptr, nullptr, currentFullFolderPath.Native(), currentPath.c_str(), true));
+                nextParent = parentItem->CreateChild(AZStd::make_shared<SourceAssetTreeItemData>(
+                    nullptr, nullptr, currentFullFolderPath.Native(), currentPath.c_str(), true));
                 m_sourceToTreeItem[currentFullFolderPath.Native()] = nextParent;
                 // Folders don't have source IDs, don't add to m_sourceIdToTreeItem
                 if (!modelIsResetting)
@@ -161,8 +162,8 @@ namespace AssetProcessor
             beginInsertRows(parentIndex, parentItem->getChildCount(), parentItem->getChildCount());
         }
 
-        m_sourceToTreeItem[source.m_sourceName] =
-            parentItem->CreateChild(AZStd::make_shared<SourceAssetTreeItemData>(&source, &scanFolder, source.m_sourceName, AZ::IO::FixedMaxPathString(filename.Native()).c_str(), false, analysisJobDuration));
+        m_sourceToTreeItem[source.m_sourceName] = parentItem->CreateChild(AZStd::make_shared<SourceAssetTreeItemData>(
+            &source, &scanFolder, source.m_sourceName, AZ::IO::FixedMaxPathString(filename.Native()).c_str(), false, analysisJobDuration));
         m_sourceIdToTreeItem[source.m_sourceID] = m_sourceToTreeItem[source.m_sourceName];
         if (!modelIsResetting)
         {

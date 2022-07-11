@@ -24,13 +24,6 @@ namespace AssetProcessor
     public:
         AZ_RTTI(SourceAssetTreeItemData, "{EF56D1E6-4C13-4494-9CB7-02B39A8E3639}", AssetTreeItemData);
 
-        static AZStd::shared_ptr<SourceAssetTreeItemData> MakeShared(
-            const AzToolsFramework::AssetDatabase::SourceDatabaseEntry* sourceInfo,
-            const AzToolsFramework::AssetDatabase::ScanFolderDatabaseEntry* scanFolderInfo,
-            const AZStd::string& assetDbName,
-            QString name,
-            bool isFolder);
-
         SourceAssetTreeItemData(
             const AzToolsFramework::AssetDatabase::SourceDatabaseEntry* sourceInfo,
             const AzToolsFramework::AssetDatabase::ScanFolderDatabaseEntry* scanFolderInfo,
