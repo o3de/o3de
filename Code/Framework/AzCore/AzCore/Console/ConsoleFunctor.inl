@@ -43,7 +43,7 @@ namespace AZ
             return resultCode;
         }
 
-        return ConsoleTypeHelpers::StringToValue(outResult, buffer)
+        return ConsoleTypeHelpers::ToValue(outResult, buffer)
             ? GetValueResult::Success
             : GetValueResult::TypeNotConvertible;
     }

@@ -583,14 +583,14 @@ ApplicationManager::BeforeRunStatus ApplicationManager::BeforeRun()
         return ApplicationManager::BeforeRunStatus::Status_Failure;
     }
 
-    // enable stats capture from this point on
-    AssetProcessor::StatsCapture::Initialize();
-
     return ApplicationManager::BeforeRunStatus::Status_Success;
 }
 
 bool ApplicationManager::Activate()
 {
+    // enable stats capture from this point on
+    AssetProcessor::StatsCapture::Initialize();
+
     if (!AssetUtilities::ComputeAssetRoot(m_systemRoot))
     {
         AZ_Error(AssetProcessor::ConsoleChannel, false, "Unable to compute the asset root for the project, this application cannot launch until this is fixed.");
