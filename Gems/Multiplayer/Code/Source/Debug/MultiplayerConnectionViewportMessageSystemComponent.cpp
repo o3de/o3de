@@ -36,16 +36,6 @@ namespace Multiplayer
         }
     }
     
-    MultiplayerConnectionViewportMessageSystemComponent::MultiplayerConnectionViewportMessageSystemComponent()
-    {
-        AZ::Interface<IMultiplayerConnectionViewportMessage>::Register(this);
-    }
-
-    MultiplayerConnectionViewportMessageSystemComponent::~MultiplayerConnectionViewportMessageSystemComponent()
-    {
-        AZ::Interface<IMultiplayerConnectionViewportMessage>::Unregister(this);
-    }
-
     void MultiplayerConnectionViewportMessageSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
         required.push_back(AZ_CRC_CE("MultiplayerService"));

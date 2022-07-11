@@ -20,7 +20,7 @@ namespace Multiplayer
     //! System component that draws viewport messaging as the editor attempts connection to the editor-server while starting up game-mode.
     class MultiplayerConnectionViewportMessageSystemComponent final
         : public AZ::Component
-        , public IMultiplayerConnectionViewportMessage
+        , public AZ::Interface<IMultiplayerConnectionViewportMessage>::Registrar
         , public AZ::RPI::ViewportContextNotificationBus::Handler
     {
     public:
@@ -28,9 +28,6 @@ namespace Multiplayer
 
         static void Reflect(AZ::ReflectContext* context);
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
-
-        MultiplayerConnectionViewportMessageSystemComponent();
-        ~MultiplayerConnectionViewportMessageSystemComponent() override;
 
         //! AZ::Component overrides.
         //! @{
