@@ -18,7 +18,7 @@ namespace AtomToolsFramework
     class PreviewRendererCaptureState final
         : public PreviewRendererState
         , public AZ::SystemTickBus::Handler
-        , public AZ::Render::FrameCaptureNotificationBus::MultiHandler
+        , public AZ::Render::FrameCaptureNotificationBus::Handler
     {
     public:
         PreviewRendererCaptureState(PreviewRenderer* renderer);
@@ -33,6 +33,5 @@ namespace AtomToolsFramework
 
         //! This is necessary to suspend capture until preview scene is ready
         int m_ticksToCapture = 1;
-        uint32_t m_frameCaptureId = AZ::Render::InvalidFrameCaptureId;
     };
 } // namespace AtomToolsFramework
