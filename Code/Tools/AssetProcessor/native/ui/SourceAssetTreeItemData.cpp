@@ -63,7 +63,23 @@ namespace AssetProcessor
         switch (column)
         {
         case aznumeric_cast<int>(SourceAssetTreeColumns::AnalysisJobDuration):
-            return m_analysisDuration;
+            if (!m_analysisDuration.isValid())
+            {
+                return "";
+            }
+            if (m_analysisDuration.hour() > 0)
+            {
+                return m_analysisDuration.toString("zzz' ms, 'ss' sec, 'mm' min, 'hh' hr'");
+            }
+            if (m_analysisDuration.minute() > 0)
+            {
+                return m_analysisDuration.toString("zzz' ms, 'ss' sec, 'mm' min'");
+            }
+            if (m_analysisDuration.second() > 0)
+            {
+                return m_analysisDuration.toString("zzz' ms, 'ss' sec'");
+            }
+            return m_analysisDuration.toString("zzz' ms'");
         default:
             return AssetTreeItemData::GetDataForColumn(column);
         }
