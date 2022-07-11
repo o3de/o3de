@@ -384,6 +384,8 @@ void MainWindow::Activate()
     m_sourceModel->Reset();
     m_sourceAssetTreeFilterModel->setSourceModel(m_sourceModel);
     ui->SourceAssetsTreeView->setModel(m_sourceAssetTreeFilterModel);
+    ui->SourceAssetsTreeView->setColumnWidth(aznumeric_cast<int>(AssetTreeColumns::Extension), 80);
+    ui->SourceAssetsTreeView->setColumnWidth(aznumeric_cast<int>(SourceAssetTreeColumns::AnalysisJobDuration), 170);
     connect(ui->assetDataFilteredSearchWidget, &AzQtComponents::FilteredSearchWidget::TextFilterChanged,
         m_sourceAssetTreeFilterModel, static_cast<void (QSortFilterProxyModel::*)(const QString&)>(&AssetTreeFilterModel::FilterChanged));
 
@@ -392,6 +394,7 @@ void MainWindow::Activate()
     m_productModel->Reset();
     m_productAssetTreeFilterModel->setSourceModel(m_productModel);
     ui->ProductAssetsTreeView->setModel(m_productAssetTreeFilterModel);
+    ui->ProductAssetsTreeView->setColumnWidth(aznumeric_cast<int>(AssetTreeColumns::Extension), 80);
     connect(ui->assetDataFilteredSearchWidget, &AzQtComponents::FilteredSearchWidget::TextFilterChanged,
         m_productAssetTreeFilterModel, static_cast<void (QSortFilterProxyModel::*)(const QString&)>(&AssetTreeFilterModel::FilterChanged));
 
