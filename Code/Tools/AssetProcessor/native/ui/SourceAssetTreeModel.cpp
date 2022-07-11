@@ -33,6 +33,10 @@ namespace AssetProcessor
 
     void SourceAssetTreeModel::ResetModel()
     {
+        // We need m_root to contain SourceAssetTreeItemData to show the stat column
+        m_root.reset(new AssetTreeItem(
+            AZStd::make_shared<SourceAssetTreeItemData>(nullptr, nullptr, "", "", true), m_errorIcon, m_folderIcon, m_fileIcon));
+
         if (ap_disableAssetTreeView)
         {
             return;
