@@ -132,6 +132,7 @@ namespace AzToolsFramework
             AzQtComponents::TabWidget::applySecondaryStyle(m_tabs, false);
             m_tabs->setContentsMargins(0, 0, 0, 0);
             m_tabs->setTabsClosable(true);
+            m_tabs->setMovable(true);
             mainLayout->addWidget(m_tabs);
 
             connect(m_tabs, &QTabWidget::tabCloseRequested, this, &AssetEditorWidget::onTabCloseButtonPressed);
