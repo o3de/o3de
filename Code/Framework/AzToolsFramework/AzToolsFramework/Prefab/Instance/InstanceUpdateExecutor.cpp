@@ -52,12 +52,10 @@ namespace AzToolsFramework
                 "Check that it is being correctly initialized.");
 
             AZ::Interface<InstanceUpdateExecutorInterface>::Register(this);
-            PropertyEditorGUIMessages::Bus::Handler::BusConnect();
         }
 
         void InstanceUpdateExecutor::UnregisterInstanceUpdateExecutorInterface()
         {
-            PropertyEditorGUIMessages::Bus::Handler::BusDisconnect();
             m_GameModeEventHandler.Disconnect();
             AZ::Interface<InstanceUpdateExecutorInterface>::Unregister(this);
         }
@@ -287,16 +285,6 @@ namespace AzToolsFramework
             return isUpdateSuccessful;
         }
 
-        void InstanceUpdateExecutor::RequestWrite(QWidget*)
-        {
-            m_shouldPausePropagation = true;
-        }
-
-        void InstanceUpdateExecutor::OnEditingFinished(QWidget*)
-        {
-            m_shouldPausePropagation = false;
-        }
-
         void InstanceUpdateExecutor::QueueRootPrefabLoadedNotificationForNextPropagation()
         {
             m_isRootPrefabInstanceLoaded = false;
@@ -305,6 +293,11 @@ namespace AzToolsFramework
                 AZ::Interface<PrefabEditorEntityOwnershipInterface>::Get();
             m_rootPrefabInstanceSourcePath =
                 prefabEditorEntityOwnershipInterface->GetRootPrefabInstance()->get().GetTemplateSourcePath();
+        }
+
+        void InstanceUpdateExecutor::SetShouldPauseInstancePropagation(bool shouldPausePropagation)
+        {
+            m_shouldPausePropagation = shouldPausePropagation;
         }
     }
 }

@@ -54,12 +54,17 @@ namespace EMotionFX::MotionMatching
     void FeaturePosition::DebugDraw(AzFramework::DebugDisplayRequests& debugDisplay,
         const Pose& currentPose,
         const FeatureMatrix& featureMatrix,
+        const FeatureMatrixTransformer* featureTransformer,
         size_t frameIndex)
     {
         const Transform jointModelTM = currentPose.GetModelSpaceTransform(m_jointIndex);
         const Transform relativeToWorldTM = currentPose.GetWorldSpaceTransform(m_relativeToNodeIndex);
 
-        const AZ::Vector3 position = GetFeatureData(featureMatrix, frameIndex);
+        AZ::Vector3 position = GetFeatureData(featureMatrix, frameIndex);
+        if (featureTransformer)
+        {
+            position = featureTransformer->InverseTransform(position, m_featureColumnOffset);
+        }
         const AZ::Vector3 transformedPos = relativeToWorldTM.TransformPoint(position);
 
         constexpr float markerSize = 0.03f;

@@ -85,7 +85,7 @@ namespace AZ
 
         void SwapChainPass::BuildInternal()
         {
-            if (m_windowContext->GetSwapChainsSize() == 0)
+            if (m_windowContext->GetSwapChain(m_swapChainMode) == nullptr)
             {
                 return;
             }
@@ -103,7 +103,7 @@ namespace AZ
             params.m_scissorState = m_scissorState;
             params.m_viewportState = m_viewportState;
 
-            if (m_windowContext->GetSwapChainsSize() == 0 ||
+            if (m_windowContext->GetSwapChain(m_swapChainMode) == nullptr ||
                 m_windowContext->GetSwapChain(m_swapChainMode)->GetImageCount() == 0)
             {
                 return;

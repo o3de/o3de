@@ -782,4 +782,56 @@ namespace UnitTests
         ProcessSingleStep();
         CheckProduct("test.stage4"); // Same product result at the end
     }
+
+    TEST_F(IntermediateAssetTests, UpdateSource_OutputDoesntChange_IntermediateDoesNotReprocess)
+    {
+        using namespace AssetBuilderSDK;
+
+        // Custom builder with fixed product output
+        m_builderInfoHandler.CreateBuilderDesc(
+            "stage1",
+            AZ::Uuid::CreateRandom().ToFixedString().c_str(),
+            { AssetBuilderPattern{ "*.stage1", AssetBuilderPattern::Wildcard } },
+            CreateJobStage("stage1", true),
+            [](const ProcessJobRequest& request, ProcessJobResponse& response)
+            {
+                AZ::IO::Path outputFile = request.m_sourceFile;
+                outputFile.ReplaceExtension("stage2");
+
+                auto* fileIo = AZ::IO::LocalFileIO::GetInstance();
+                AZ::IO::HandleType fileHandle;
+                AZStd::string data = "hello world"; // We'll output the same product every time no matter what the input source is
+
+                fileIo->Open((AZ::IO::Path(request.m_tempDirPath) / outputFile).c_str(), AZ::IO::OpenMode::ModeWrite, fileHandle);
+                fileIo->Write(fileHandle, data.data(), data.size());
+                fileIo->Close(fileHandle);
+
+                auto product = JobProduct{ outputFile.c_str(), AZ::Data::AssetType::CreateName("stage2"), 1 };
+
+                product.m_outputFlags = ProductOutputFlags::IntermediateAsset;
+                product.m_dependenciesHandled = true;
+                response.m_outputProducts.push_back(product);
+
+                response.m_resultCode = ProcessJobResult_Success;
+            }, "fingerprint");
+
+        CreateBuilder("stage2", "*.stage2", "stage3", true, ProductOutputFlags::IntermediateAsset);
+        CreateBuilder("stage3", "*.stage3", "stage4", false, ProductOutputFlags::ProductAsset);
+
+        // Process once
+        ProcessFileMultiStage(3, true);
+
+        // Modify the source file
+        UnitTestUtils::CreateDummyFile(m_testFilePath.c_str(), "modified unit test file");
+
+        // Start processing the test.stage1 file again
+        QMetaObject::invokeMethod(
+            m_assetProcessorManager.get(), "AssessAddedFile", Qt::QueuedConnection, Q_ARG(QString, m_testFilePath.c_str()));
+        QCoreApplication::processEvents();
+
+        // Process test.stage1, which should queue up test.stage2
+        ProcessSingleStep();
+        // Start processing test.stage2, this shouldn't create a job since the input is the same
+        RunFile(0, 1, 0);
+    }
 } // namespace UnitTests

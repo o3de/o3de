@@ -60,7 +60,7 @@ namespace
         AzFramework::WindowSize newSize = AzFramework::WindowSize(aznumeric_cast<int32_t>(value.GetX()), aznumeric_cast<int32_t>(value.GetY()));
         AzFramework::WindowRequestBus::Broadcast(&AzFramework::WindowRequestBus::Events::ResizeClientArea, newSize);
     }
-    
+
     AZ_CVAR(AZ::Vector2, r_viewportPos, AZ::Vector2::CreateZero(), CVar_OnViewportPosition, AZ::ConsoleFunctorFlags::DontReplicate,
         "The default position for the launcher viewport, 0 0 means top left corner of your main desktop");
 
@@ -238,9 +238,9 @@ namespace O3DELauncher
     {
         if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
         {
-            AZ::ComponentApplicationLifecycle::SignalEvent(*settingsRegistry, "CriticalAssetsCompiled", R"({})");
             // Reload the assetcatalog.xml at this point again
-            // Start Monitoring Asset changes over the network and load the AssetCatalog
+            // Start Monitoring Asset changes over the network and load the AssetCatalog.
+            // Note: When using VFS this is the first time catalog will be loaded using remote's catalog file.
             auto LoadCatalog = [settingsRegistry](AZ::Data::AssetCatalogRequests* assetCatalogRequests)
             {
                 if (AZ::IO::FixedMaxPath assetCatalogPath;
@@ -251,6 +251,9 @@ namespace O3DELauncher
                 }
             };
             AZ::Data::AssetCatalogRequestBus::Broadcast(AZStd::move(LoadCatalog));
+
+            // Broadcast that critical assets are ready
+            AZ::ComponentApplicationLifecycle::SignalEvent(*settingsRegistry, "CriticalAssetsCompiled", R"({})");
         }
     }
 
@@ -305,13 +308,29 @@ namespace O3DELauncher
             AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey, "remote_filesystem");
         if (allowRemoteFilesystem != 0)
         {
-            // The SetInstance calls below will assert if this has already been set and we don't clear first
+            using FixedValueString = AZ::SettingsRegistryInterface::FixedValueString;
+
             // Application::StartCommon will set a LocalFileIO base first.
             // This provides an opportunity for the RemoteFileIO to override the direct instance
             auto remoteFileIo = new AZ::IO::RemoteFileIO(AZ::IO::FileIOBase::GetDirectInstance()); // Wrap LocalFileIO the direct instance
+
+            // SetDirectInstance will assert if this has already been set and we don't clear first
             AZ::IO::FileIOBase::SetDirectInstance(nullptr);
             // Wrap AZ:IO::LocalFileIO the direct instance
             AZ::IO::FileIOBase::SetDirectInstance(remoteFileIo);
+
+            // Set file paths to uses aliases, they will be resolved by the remote file system.
+            // Prefixing alias with / so they are treated as absolute paths by Path class,
+            // otherwise odd concatenations of aliases happen leading to invalid paths when
+            // resolved by the remote system.
+            settingsRegistry->Set(FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) + "/engine_path", "/@engroot@");
+            settingsRegistry->Set(FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) + "/project_path", "/@projectroot@");
+            settingsRegistry->Set(AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder, "/@engroot@");
+            settingsRegistry->Set(AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectPath, "/@projectroot@");
+            settingsRegistry->Set(AZ::SettingsRegistryMergeUtils::FilePathKey_CacheRootFolder, "/@products@");
+            settingsRegistry->Set(AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectUserPath, "/@user@");
+            settingsRegistry->Set(AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectLogPath, "/@log@");
+            settingsRegistry->Set(AZ::SettingsRegistryMergeUtils::FilePathKey_DevWriteStorage, "/@usercache@");
         }
     }
 
@@ -489,11 +508,15 @@ namespace O3DELauncher
             AZ::Interface<AZ::IConsole>::Get()->PerformCommand("sv_isDedicated false");
         }
 
-        bool remoteFileSystemEnabled{};
+        AZ::s64 remoteFileSystemEnabled{};
         AZ::SettingsRegistryMergeUtils::PlatformGet(*settingsRegistry, remoteFileSystemEnabled,
             AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey, "remote_filesystem");
-        if (remoteFileSystemEnabled)
+        if (remoteFileSystemEnabled != 0)
         {
+            // Reset local variable pathToAssets now that it's using remote file system
+            pathToAssets = "";
+            settingsRegistry->Get(pathToAssets, AZ::SettingsRegistryMergeUtils::FilePathKey_CacheRootFolder);
+
             AZ_TracePrintf("Launcher", "Application is configured for VFS");
             AZ_TracePrintf("Launcher", "Log and cache files will be written to the Cache directory on your host PC");
 

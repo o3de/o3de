@@ -63,7 +63,7 @@ namespace AtomToolsFramework
                     if (AZ::StringFunc::EndsWith(assetInfo.m_relativePath.c_str(), extension))
                     {
                         const AZStd::string& configPath =
-                            ConvertPathToAlias(AZ::RPI::AssetUtils::GetSourcePathByAssetId(assetInfo.m_assetId));
+                            GetPathWithAlias(AZ::RPI::AssetUtils::GetSourcePathByAssetId(assetInfo.m_assetId));
                         configPaths.insert(configPath);
                         AZ_TracePrintf("DynamicNodeManager", "DynamicNodeConfig \"%s\" discovered.\n", configPath.c_str());
                         break;
