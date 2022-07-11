@@ -29,7 +29,9 @@ namespace AssetProcessor
         const AzToolsFramework::AssetDatabase::ScanFolderDatabaseEntry* scanFolderInfo,
         const AZStd::string& assetDbName,
         QString name,
-        bool isFolder) :
+        bool isFolder,
+        AZ::s64 analysisJobDuration)
+        :
         AssetTreeItemData(assetDbName, name, isFolder, sourceInfo ? sourceInfo->m_sourceGuid : AZ::Uuid::CreateNull())
     {
         if (sourceInfo && scanFolderInfo)
@@ -41,6 +43,11 @@ namespace AssetProcessor
         else
         {
             m_hasDatabaseInfo = false;
+        }
+
+        if (analysisJobDuration >= 0)
+        {
+            m_analysisDuration = QTime::fromMSecsSinceStartOfDay(aznumeric_cast<int>(analysisJobDuration));
         }
 
     }
