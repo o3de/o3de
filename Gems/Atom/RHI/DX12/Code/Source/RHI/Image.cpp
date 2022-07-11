@@ -31,7 +31,7 @@ namespace AZ
 
         bool Image::IsTiled() const
         {
-            return !m_tiles.empty();
+            return m_tileLayout.m_tileCount > 0;
         }
 
         void Image::SetNameInternal(const AZStd::string_view& name)

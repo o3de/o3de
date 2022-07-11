@@ -512,39 +512,14 @@ namespace AZ
             }
         }
 
-        void AsyncUploadQueue::QueueTileMapping(CommandList::TileMapRequest& request)
+        void AsyncUploadQueue::QueueTileMapping(const CommandList::TileMapRequest& request)
         {
             m_copyQueue->QueueCommand([=](void* commandQueue)
             {
                 AZ_PROFILE_SCOPE(RHI, "QueueTileMapping");
 
                 ID3D12CommandQueue* dx12CommandQueue = static_cast<ID3D12CommandQueue*>(commandQueue);
-                const uint32_t tileCount = request.m_sourceRegionSize.NumTiles;
-
-                // DX12 requires that we pass the full array of range counts (even though they are all 1).
-                if (m_rangeCounts.size() < tileCount)
-                {
-                    m_rangeCounts.resize(tileCount, 1);
-                }
-
-                // Same with range flags, except that we can skip if they are all 'None'.
-                D3D12_TILE_RANGE_FLAGS* rangeFlags = nullptr;
-                if (!request.m_destinationHeap)
-                {
-                    if (m_rangeFlags.size() < tileCount)
-                    {
-                        m_rangeFlags.resize(tileCount, D3D12_TILE_RANGE_FLAG_NULL);
-                    }
-                    rangeFlags = m_rangeFlags.data();
-                }
-
-                // Maps a single range of source tiles to N disjoint destination tiles on a heap (or null, if no heap is specified).
-                dx12CommandQueue->UpdateTileMappings(
-                    request.m_sourceMemory,
-                    1, &request.m_sourceCoordinate, &request.m_sourceRegionSize,
-                    request.m_destinationHeap,
-                    tileCount, rangeFlags, request.m_destinationTileMap.data(), m_rangeCounts.data(),
-                    D3D12_TILE_MAPPING_FLAG_NONE);
+                UpdateTileMap(dx12CommandQueue, request);
             });
         }
     }

@@ -98,7 +98,7 @@ namespace AZ
                 return GetObjectCount();
             }
 
-            size_t GetPageSize() const
+            uint32_t GetPageSize() const
             {
                 return GetFactory().GetDescriptor().m_pageSizeInBytes;
             }
@@ -107,6 +107,7 @@ namespace AZ
         // a structure to represent continous number of tiles in a heap
         struct Tiles
         {
+        public:
             Tiles(uint32_t offset, uint32_t count)
                 : m_offset(offset)
                 , m_tileCount(count)
@@ -126,7 +127,7 @@ namespace AZ
             AZStd::list<Tiles> TryAllocate(uint32_t tileCount, /*out*/ uint32_t& allocatedTileCount);
 
             // DeAllocate multiple group of tiles 
-            void DeAllocate(AZStd::vector<Tiles>& tiles);
+            void DeAllocate(const AZStd::vector<Tiles>& tiles);
 
             // DeAllocate one group of tiles 
             void DeAllocate(Tiles tiles);
@@ -145,9 +146,11 @@ namespace AZ
             std::vector<Tiles> m_freeList;
         };
 
-        struct HeapTiles : public Tiles
+        struct HeapTiles
         {
             RHI::Ptr<Heap> m_heap;
+            AZStd::vector<Tiles> m_tilesList;
+            uint32_t m_totalTileCount = 0;
         };
 
          //! An allocator which can allocate multiple tiles from multiple heap pages at once.
@@ -176,25 +179,28 @@ namespace AZ
             void Init(const Descriptor& descriptor, HeapAllocator& heapAllocator);
 
             //! Allocate tiles. it may returen tiles from different heaps.
-            AZStd::vector<HeapTiles> Allocate(size_t tileCount);
+            AZStd::vector<HeapTiles> Allocate(uint32_t tileCount);
 
             //! DeAllocate multiple group of tiles 
-            void DeAllocate(AZStd::vector<HeapTiles>& tiles) ;
+            void DeAllocate(const AZStd::vector<HeapTiles>& tiles);
 
             //! reset the allocator to a state before initialization
             void Shutdown();
 
             //! get total allocated tile count
-            size_t GetAllocatedTileCount() const;
+            uint32_t GetAllocatedTileCount() const;
 
             //! Get heap memory usage
-            size_t GetMemoryUsage() const;
+            uint32_t GetMemoryUsage() const;
 
             const Descriptor& GetDescriptor() const;
 
-        private:
-            // add tiles to the free list, defragment if it adjacted to other freed tiles
-            void FreeTiles(const HeapTiles& tiles);
+            //! Release free heap page to HeapAllocator and run garbage collect for HeapAllocator
+            //! It may release unused heap ages
+            void GarbageCollect();
+
+        private:            
+            uint32_t AllocateFromFreeList(uint32_t tileCount, AZStd::vector<HeapTiles>& output);
 
             Descriptor m_descriptor;
 
@@ -207,10 +213,11 @@ namespace AZ
             AZStd::unordered_map<RHI::Ptr<Heap>, PageTileAllocator> m_pageContexts;
 
             // a list of heaps which have free tiles
-            AZStd::vector<RHI::Ptr<Heap>> m_freeList;
+            AZStd::set<RHI::Ptr<Heap>> m_freeList;
 
-            // statistics
+            // tile counts
             uint32_t m_allocatedTileCount = 0;
+            uint32_t m_freeTileCount = 0;
 
             HeapAllocator* m_heapAllocator = nullptr;
         };

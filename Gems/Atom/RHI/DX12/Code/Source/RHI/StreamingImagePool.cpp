@@ -158,7 +158,7 @@ namespace AZ
                 
                 HeapAllocator::Descriptor heapPageAllocatorDesc;
                 heapPageAllocatorDesc.m_device = &device;
-                heapPageAllocatorDesc.m_pageSizeInBytes = D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT * 1024; // 64M
+                heapPageAllocatorDesc.m_pageSizeInBytes = D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT * 256; // 16M per page, 256 tiles
                 heapPageAllocatorDesc.m_getHeapMemoryUsageFunction = [this]() { return &m_memoryAllocatorUsage;};
                 heapPageAllocatorDesc.m_resourceTypeFlags = ImageResourceTypeFlags::Image;
                 heapPageAllocatorDesc.m_collectLatency = 0;
@@ -166,9 +166,7 @@ namespace AZ
                 m_heapPageAllocator.Init(heapPageAllocatorDesc);
 
                 TileAllocator::Descriptor tileAllocatorDesc;
-                tileAllocatorDesc.m_elementSize = D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT;
-                tileAllocatorDesc.m_alignmentInBytes = D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT;
-                tileAllocatorDesc.m_capacityInBytes = heapPageAllocatorDesc.m_pageSizeInBytes;
+                tileAllocatorDesc.m_tileSizeInBytes = D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT;
                 m_tileAllocator.Init(tileAllocatorDesc, m_heapPageAllocator);
             }
 #endif
@@ -186,61 +184,76 @@ namespace AZ
 
         void StreamingImagePool::AllocateImageTilesInternal(Image& image, uint32_t subresourceIndex)
         {
+            uint32_t imageTileOffset = 0;
             CommandList::TileMapRequest request;
             request.m_sourceMemory = image.GetMemoryView().GetMemory();
-
-            uint32_t imageTileOffset = 0;
             image.m_tileLayout.GetSubresourceTileInfo(subresourceIndex, imageTileOffset, request.m_sourceCoordinate, request.m_sourceRegionSize);
 
-            request.m_destinationTileMap.resize(request.m_sourceRegionSize.NumTiles);
-            request.m_destinationHeap = nullptr;
+            AZ_Assert(image.m_heapTiles[subresourceIndex].size() == 0, "Stoping on an existing tile allocation. This will leak.");
 
-            // Allocate tiles from the tile pool.
-            for (uint32_t subresourceTileIndex = 0; subresourceTileIndex < request.m_sourceRegionSize.NumTiles; ++subresourceTileIndex)
+            uint32_t totalTiles = request.m_sourceRegionSize.NumTiles;
+            image.m_heapTiles[subresourceIndex] = m_tileAllocator.Allocate(totalTiles);
+
+            // send tile map request for each heap
+            bool needSkipRange = image.m_heapTiles[subresourceIndex].size() > 1;
+            uint32_t tileOffsetStart = 0;
+            for (auto& heapTiles : image.m_heapTiles[subresourceIndex])
             {
-                const uint32_t imageTileIndex = imageTileOffset + subresourceTileIndex;
-
-                // Make sure the tile is actually null so we don't leak.
-                AZ_Assert(image.m_tiles[imageTileIndex].m_size == 0, "Stomping on an existing tile allocation. This will leak.");
-
-                Tile tile = m_tileAllocator.Allocate(D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT, D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT);
-                AZ_Assert(tile.m_memory.get(), "Exceeded size of tile heap. The budget checks should have caught this.");
-
-                // Store the allocation in the image (using image-relative index).
-                image.m_tiles[imageTileIndex] = tile;
-
-                // Store the allocation into the map request (using subresource-relative index).
-                if (tile.m_memory.get() != request.m_destinationHeap && request.m_destinationHeap != nullptr)
+                size_t rangeCount = heapTiles.m_tilesList.size();
+                uint32_t startRangeIndex = 0;
+                if (needSkipRange)
                 {
-                    AZ_Assert(false, "allocated in more than one heap");
+                    rangeCount += 2;
+                    startRangeIndex = 1;
                 }
-                request.m_destinationHeap = tile.m_memory.get();
-                request.m_destinationTileMap[subresourceTileIndex] = static_cast<uint32_t>(tile.m_offset/D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT);
+
+                request.m_rangeFlags.resize(rangeCount);
+                request.m_rangeStartOffsets.resize(rangeCount);
+                request.m_rangeTileCounts.resize(rangeCount);
+                request.m_destinationHeap = heapTiles.m_heap.get();
+
+                // skip tiles which are not mapped by current heap
+                if (needSkipRange)
+                {
+                    request.m_rangeFlags[0] = D3D12_TILE_RANGE_FLAG_SKIP;
+                    request.m_rangeStartOffsets[0] = 0;
+                    request.m_rangeTileCounts[0] = tileOffsetStart;
+
+                    size_t lastIndex = rangeCount-1;
+                    request.m_rangeFlags[lastIndex] = D3D12_TILE_RANGE_FLAG_SKIP;
+                    request.m_rangeStartOffsets[lastIndex] = tileOffsetStart;
+                    request.m_rangeTileCounts[lastIndex] = totalTiles - tileOffsetStart;
+                }
+
+                uint32_t rangeIdx = startRangeIndex;
+                for (auto& tiles : heapTiles.m_tilesList)
+                {
+                    request.m_rangeFlags[rangeIdx] = D3D12_TILE_RANGE_FLAG_NONE;
+                    request.m_rangeStartOffsets[rangeIdx] = tiles.m_offset;
+                    request.m_rangeTileCounts[rangeIdx] = tiles.m_tileCount;
+                    rangeIdx++;
+                }
+
+                tileOffsetStart += heapTiles.m_totalTileCount;
+                GetDevice().GetAsyncUploadQueue().QueueTileMapping(request);
             }
-
-            GetDevice().GetAsyncUploadQueue().QueueTileMapping(request);
-
-            // Garbage collect the allocator immediately.
-            m_tileAllocator.GarbageCollect();
         }
 
         void StreamingImagePool::DeAllocateImageTilesInternal(Image& image, uint32_t subresourceIndex)
         {
-            D3D12_TILED_RESOURCE_COORDINATE sourceCoordinate;
-            D3D12_TILE_REGION_SIZE sourceRegionSize;
+            auto& heapTiles = image.m_heapTiles[subresourceIndex];
+            AZ_Assert(heapTiles.size() > 0, "Attempting to map a tile to null when it's already null.");
+
+            // map all the tiles to NULL
+            CommandList::TileMapRequest request;
             uint32_t imageTileOffset = 0;
-            image.m_tileLayout.GetSubresourceTileInfo(subresourceIndex, imageTileOffset, sourceCoordinate, sourceRegionSize);
+            request.m_sourceMemory = image.GetMemoryView().GetMemory();
+            image.m_tileLayout.GetSubresourceTileInfo(subresourceIndex, imageTileOffset, request.m_sourceCoordinate, request.m_sourceRegionSize);
+            GetDevice().GetAsyncUploadQueue().QueueTileMapping(request);
 
-            for (uint32_t subresourceTileIndex = 0; subresourceTileIndex < sourceRegionSize.NumTiles; ++subresourceTileIndex)
-            {
-                const uint32_t imageTileIndex = imageTileOffset + subresourceTileIndex;
-
-                // De-allocate the tile and reset it null.
-                AZ_Assert(image.m_tiles[imageTileIndex].m_memory.get(), "Attempting to map a tile to null when it's already null.");
-
-                m_tileAllocator.DeAllocate(image.m_tiles[imageTileIndex]);
-                image.m_tiles[imageTileIndex] = {};
-            }
+            // deallocate tiles and update image's sub-resource info
+            m_tileAllocator.DeAllocate(heapTiles);
+            image.m_heapTiles[subresourceIndex] = {};
 
             // Garbage collect the allocator immediately.
             m_tileAllocator.GarbageCollect();
@@ -364,7 +377,6 @@ namespace AZ
 
             memoryView.SetName(image.GetName().GetStringView());
 
-            image.m_tiles.resize(image.m_tileLayout.m_tileCount);
             image.m_residentSizeInBytes = allocationInfo.SizeInBytes;
             image.m_memoryView = AZStd::move(memoryView);
             image.GenerateSubresourceLayouts();
@@ -417,14 +429,13 @@ namespace AZ
             if (image.IsTiled())
             {
                 m_tileMutex.lock();
-                for (auto address : image.m_tiles)
+                for (auto& heapTiles : image.m_heapTiles)
                 {
-                    m_tileAllocator.DeAllocate(address);
+                    m_tileAllocator.DeAllocate(heapTiles.second);
                 }
                 m_tileAllocator.GarbageCollect();
                 m_tileMutex.unlock();
-                image.m_tiles.clear();
-                image.m_tiles.shrink_to_fit();
+                image.m_heapTiles.clear();
                 image.m_tileLayout = ImageTileLayout();
             }
 

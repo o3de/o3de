@@ -119,7 +119,7 @@ namespace AZ
             return allocatedTiles;
         }
 
-        void PageTileAllocator::DeAllocate(AZStd::vector<Tiles>& tilesList)
+        void PageTileAllocator::DeAllocate(const AZStd::vector<Tiles>& tilesList)
         {
             for (auto tiles : tilesList)
             {
@@ -135,29 +135,34 @@ namespace AZ
                 }
             };
 
+            // update tile count before the tiles get changed
+            m_allocatedTileCount -= tiles.m_tileCount;
+
             auto itr = AZStd::upper_bound(AZStd::begin(m_freeList), AZStd::end(m_freeList), tiles, Comp());
 
-            auto pos = itr - m_freeList.begin();
+            int64_t pos = itr - m_freeList.begin();
 
             if (pos > 0)
             {
+                // check if the tile can merge with the element in front of 
                 auto front = m_freeList.at(pos - 1);
                 if (front.m_offset + front.m_tileCount == tiles.m_offset)
                 {
                     tiles.m_offset = front.m_offset;
                     tiles.m_tileCount += front.m_tileCount;
-                    // remvoe front
+                    // remvoe front 
                     m_freeList.erase(itr-1);
                 }
             }
 
-            if (pos < m_freeList.size())
+            if (pos < aznumeric_cast<int64_t>(m_freeList.size()))
             {
+                // check if the tile can merge with the following element
                 auto after = m_freeList.at(pos);
                 if (tiles.m_offset + tiles.m_tileCount == after.m_offset)
                 {
                     tiles.m_tileCount += after.m_tileCount;
-                    // remvoe after
+                    // remvoe the following element
                     itr = m_freeList.erase(itr);
                 }
             }
@@ -194,81 +199,136 @@ namespace AZ
             m_tileCountPerPage = m_heapAllocator->GetPageSize()/descriptor.m_tileSizeInBytes;
         }
 
-        AZStd::vector<HeapTiles> TileAllocator::Allocate(size_t tileCount)
+        uint32_t TileAllocator::AllocateFromFreeList(uint32_t tileCount, AZStd::vector<HeapTiles>& output)
+        {
+            uint32_t allocatedTileCount = 0;
+
+            while ( !m_freeList.empty() && allocatedTileCount < tileCount)
+            {
+                uint32_t neededTileCount = tileCount - allocatedTileCount;
+                auto heap = *m_freeList.begin();
+                auto itr = m_pageContexts.find(heap);
+
+                if (itr != m_pageContexts.end())
+                {
+                    uint32_t allocated = 0;
+                    auto tilesGroups = itr->second.TryAllocate(neededTileCount, allocated);
+
+                    if (itr->second.GetFreeTileCount() == 0)
+                    {
+                        m_freeList.erase(0);
+                    }
+
+                    if (allocated == 0)
+                    {
+                        AZ_Assert(false, "Implementation error: heap page in free list doesn't have tiles available");
+                    }
+
+                    // add tiles to result
+                    HeapTiles heapTiles;
+                    for (auto& tiles:tilesGroups)
+                    {
+                        heapTiles.m_tilesList.push_back(tiles);
+                        heapTiles.m_totalTileCount += tiles.m_tileCount;
+                    }
+                    heapTiles.m_heap = itr->first;
+                    output.emplace_back(heapTiles);
+                }
+                else
+                {
+                    AZ_Assert(false, "Implementation error: heap page context is missing.");
+                }
+            }
+            return allocatedTileCount;
+        }
+
+        AZStd::vector<HeapTiles> TileAllocator::Allocate(uint32_t tileCount)
         {
             AZStd::vector<HeapTiles> tilesList;
 
-            size_t pageIdx = 0;
-            RHI::VirtualAddress address;
-
-            size_t allocatedTileCount = 0;
-
-            // Allocate from free list first
-            while ( !m_freeList.empty() && allocatedTileCount < tileCount)
+            // Create new pages if there aren't enough free tiles available
+            if (m_freeTileCount < tileCount)
             {
-                PageContext& pageContext = m_pageContexts[pageIdx];
+                uint32_t newPageCount = (tileCount - m_freeTileCount + m_tileCountPerPage - 1)/m_tileCountPerPage;
 
-                address = pageContext.m_allocator.Allocate(sizeInBytes, alignmentInBytes);
-                if (address.IsValid())
+                for (uint32_t pageIdx = 0; pageIdx < newPageCount; pageIdx++)
                 {
-                    pageContext.m_inactiveCycleCount = 0;
-                    break;
+                    auto heap = m_heapAllocator->Allocate();
+                    if (!heap)
+                    {
+                        // Return directly if we can't create more heaps
+                        AZ_Error("TileAllocator", false, "Failed to create a heap page");
+                        return AZStd::vector<HeapTiles>();
+                    }
+
+                    // setup page context for new heap page
+                    auto& pageTileAllocator = m_pageContexts[heap];
+                    pageTileAllocator.Init(m_tileCountPerPage);
+
+                    // add page to free list
+                    m_freeList.insert(heap);
+                    m_freeTileCount += m_tileCountPerPage;
                 }
             }
 
-            /// Create a new page if none of our current ones can service the request.
-            if (address.IsNull())
-            {
-                memory_type_pointer newPage = m_pageAllocator->Allocate();
-                if (newPage == nullptr)
-                {
-                    return memory_allocation();
-                }
-
-                m_pages.emplace_back(newPage);
-                m_pageContexts.emplace_back();
-
-                PageContext& pageContext = m_pageContexts.back();
-                pageContext.m_allocator.Init(m_descriptor);
-
-                address = pageContext.m_allocator.Allocate(sizeInBytes, alignmentInBytes);
-                AZ_Assert(address.IsValid(), "Failed to allocate from fresh page.");
-            }
-                        
-            return memory_allocation(m_pages[pageIdx], address.m_ptr, sizeInBytes, alignmentInBytes);
-
+            // allocate from free list
+            uint32_t allocatedTileCount = 0;
+            allocatedTileCount = AllocateFromFreeList(tileCount, tilesList);
+            AZ_Assert(allocatedTileCount == tileCount, "Implementation error: heap page context is missing.");
+            m_freeTileCount -= tileCount;
+            m_allocatedTileCount += tileCount;
 
             return tilesList;
         }
 
-        void TileAllocator::DeAllocate(AZStd::vector<Tiles>& tiles)
+        void TileAllocator::DeAllocate(const AZStd::vector<HeapTiles>& tilesGroups)
         {
+            for (auto& heapTiles : tilesGroups)
+            {
+                auto itr = m_pageContexts.find(heapTiles.m_heap);
+                if (itr == m_pageContexts.end())
+                {
+                    AZ_Assert(false, "Heap wasn't allocated by this allocator");
+                }
+                else
+                {
+                    itr->second.DeAllocate(heapTiles.m_tilesList);
+                    AZ_Assert(itr->second.GetFreeTileCount() > 0, "De-allocate tiles from heap failed");
+                    m_freeList.insert(itr->first);
 
+                    m_allocatedTileCount -= heapTiles.m_totalTileCount;
+                }
+            }
+        }
+
+        void TileAllocator::GarbageCollect()
+        {
+            auto itr = m_pageContexts.begin();
+            while (itr != m_pageContexts.end())
+            {
+                if (itr->second.IsPageFree())
+                {
+                    m_freeList.erase(itr->first);
+                    itr = m_pageContexts.erase(itr);
+                    m_freeTileCount -= m_tileCountPerPage;
+                }
+                else
+                {
+                    itr++;
+                }
+            }
+
+            m_heapAllocator->Collect();
         }
 
         void TileAllocator::Shutdown()
         {
 
         }
-
-        size_t TileAllocator::GetAllocatedTileCount() const
+        
+        uint32_t TileAllocator::GetAllocatedTileCount() const
         {
-
-        }
-
-        size_t TileAllocator::GetAllocatedByteCount() const
-        {
-
-        }
-
-        const Descriptor& TileAllocator::GetDescriptor() const
-        {
-            return m_descriptor;
-        }
-
-        void TileAllocator::FreeTiles(const Tile& tiles)
-        {
-
+            return m_allocatedTileCount;
         }
 
     }

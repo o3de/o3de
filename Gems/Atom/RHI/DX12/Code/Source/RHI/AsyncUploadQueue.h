@@ -59,7 +59,7 @@ namespace AZ
             
             // Queue tile mapping to map tiles from allocate heap for reserved resource. This is usually required before upload data to 
             // reserved resource in this copy queue
-            void QueueTileMapping(CommandList::TileMapRequest& request);
+            void QueueTileMapping(const CommandList::TileMapRequest& request);
 
             bool IsUploadFinished(uint64_t fenceValue);
             void WaitForUpload(uint64_t fenceValue);
@@ -98,10 +98,6 @@ namespace AZ
             // Fence for external upload request
             Fence m_uploadFence;
             FenceEvent m_uploadFenceEvent{ "Wait For Upload" };
-
-            // For tile mapping command
-            AZStd::vector<D3D12_TILE_RANGE_FLAGS> m_rangeFlags;
-            AZStd::vector<uint32_t> m_rangeCounts;
 
             // pending upload callbacks and their corresponding fence values
             AZStd::queue<AZStd::pair<AZStd::function<void()>, uint64_t>> m_callbacks;
