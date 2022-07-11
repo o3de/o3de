@@ -4,7 +4,7 @@
     "ClassName": "PassAsset",
     "ClassData": {
         "PassTemplate": {
-            "Name": "DepthMSAAParentTemplate",
+            "Name": "DepthParentTemplate",
             "PassClass": "ParentPass",
             "Slots": [
                 // Inputs...
@@ -35,7 +35,7 @@
                 {
                     "LocalSlot": "DepthMSAA",
                     "AttachmentRef": {
-                        "Pass": "DepthMSAAPass",
+                        "Pass": "DepthPass",
                         "Attachment": "Output"
                     }
                 },
@@ -56,7 +56,7 @@
             ],
             "PassRequests": [
                 {
-                    "Name": "DepthMSAAPass",
+                    "Name": "DepthPass",
                     "TemplateName": "DepthMSAAPassTemplate",
                     "PassData": {
                         "$type": "RasterPassData",
@@ -80,7 +80,7 @@
                         {
                             "LocalSlot": "Input",
                             "AttachmentRef": {
-                                "Pass": "DepthMSAAPass",
+                                "Pass": "DepthPass",
                                 "Attachment": "Output"
                             }
                         }
