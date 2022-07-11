@@ -21,9 +21,6 @@
 #include <AzToolsFramework/Input/QtEventToAzInputMapper.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 
-#pragma optimize("", off)
-#pragma inline_depth(0)
-
 namespace AtomToolsFramework
 {
     AZ::Transform TransformFromMatrix4x4(const AZ::Matrix4x4& matrix)
@@ -205,34 +202,24 @@ namespace AtomToolsFramework
 
     bool ModularViewportCameraControllerInstance::HandleInputChannelEvent(const AzFramework::ViewportControllerInputEvent& event)
     {
-        // before
-        // auto modifierKeyStates = AzFramework::ModifierKeyStates{};
-        // const auto* inputDevice =
-        //     AzFramework::InputDeviceRequests::FindInputDevice(AzToolsFramework::GetSyntheticKeyboardDeviceId(event.m_viewportId));
+        auto modifierKeyStates = AzFramework::ModifierKeyStates{};
+        const auto* inputDevice =
+            AzFramework::InputDeviceRequests::FindInputDevice(AzToolsFramework::GetSyntheticKeyboardDeviceId(event.m_viewportId));
 
-        // if (auto it = inputDevice->GetInputChannelsById().find(AzFramework::InputDeviceKeyboard::Key::ModifierAltL);
-        //     it != inputDevice->GetInputChannelsById().end())
-        // {
-        //     modifierKeyStates = [customData = it->second->GetCustomData<AzFramework::ModifierKeyStates>()]
-        //     {
-        //         if (customData)
-        //         {
-        //             return *customData;
-        //         }
-
-        //         return AzFramework::ModifierKeyStates();
-        //     }();
-        // }
-
-        const auto modifierKeyStates = [modifiers = event.m_inputChannel.GetCustomData<AzFramework::ModifierKeyStates>()]
+        // grab keyboard channel (not important which) and check the modifier state (modifier state is shared for all keyboard channels)
+        if (const auto it = inputDevice->GetInputChannelsById().find(AzFramework::InputDeviceKeyboard::Key::Alphanumeric0);
+            it != inputDevice->GetInputChannelsById().end())
         {
-            if (modifiers)
+            modifierKeyStates = [customData = it->second->GetCustomData<AzFramework::ModifierKeyStates>()]
             {
-                return *modifiers;
-            }
+                if (customData)
+                {
+                    return *customData;
+                }
 
-            return AzFramework::ModifierKeyStates{};
-        }();
+                return AzFramework::ModifierKeyStates();
+            }();
+        }
 
         if (event.m_priority == m_priorityFn(m_cameraSystem))
         {
@@ -240,8 +227,7 @@ namespace AtomToolsFramework
             AzFramework::WindowRequestBus::EventResult(
                 windowSize, event.m_windowHandle, &AzFramework::WindowRequestBus::Events::GetClientAreaSize);
 
-            auto cameraState = AzFramework::BuildInputEvent(event.m_inputChannel, modifierKeyStates, windowSize);
-            return m_cameraSystem.HandleEvents(cameraState);
+            return m_cameraSystem.HandleEvents(AzFramework::BuildInputEvent(event.m_inputChannel, modifierKeyStates, windowSize));
         }
 
         return false;
@@ -275,7 +261,8 @@ namespace AtomToolsFramework
             m_cameraAnimation.m_time = AZ::GetClamp(
                 m_cameraAnimation.m_time +
                     (event.m_deltaTime.count() / ModularViewportCameraControllerRequests::InterpolateToTransformDuration),
-                0.0f, 1.0f);
+                0.0f,
+                1.0f);
 
             const auto& [transformStart, transformEnd, animationTime] = m_cameraAnimation;
 
@@ -418,6 +405,3 @@ namespace AtomToolsFramework
         return m_camera.Transform() * AZ::Transform::CreateFromMatrix3x3(AZ::Matrix3x3::CreateRotationY(m_targetRoll));
     }
 } // namespace AtomToolsFramework
-
-#pragma optimize("", on)
-#pragma inline_depth()

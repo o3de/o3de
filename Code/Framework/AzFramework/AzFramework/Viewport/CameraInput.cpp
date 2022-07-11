@@ -1039,6 +1039,6 @@ namespace AzFramework
             return InputState{ DiscreteInputEvent{ inputChannelId, inputChannel.GetState() }, modifiers };
         }
 
-        return { AZStd::monostate{}, modifiers };
+        return { AZStd::monostate{}, ModifierKeyStates{} };
     }
 } // namespace AzFramework

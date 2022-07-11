@@ -371,7 +371,7 @@ namespace AzFramework
         static void Reflect(AZ::ReflectContext* context);
 
         ////////////////////////////////////////////////////////////////////////////////////////////
-        // Foward declare the internal Implementation class so it can be passed into the constructor
+        // Forward declare the internal Implementation class so it can be passed into the constructor
         class Implementation;
 
         ////////////////////////////////////////////////////////////////////////////////////////////
