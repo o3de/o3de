@@ -108,8 +108,6 @@ namespace AzToolsFramework
                     AZ_STRING_ARG(relativePath.Native()));
             }
 
-            TemplateId loadedTemplateId = m_prefabSystemComponentInterface->GetTemplateIdFromFilePath(relativePath);
-
             // Read Template's prefab file from disk and parse Prefab DOM from file.
             AZ::Outcome<PrefabDom, AZStd::string> readPrefabFileResult = AZ::JsonSerializationUtils::ReadJsonString(readResult.GetValue());
             if (!readPrefabFileResult.IsSuccess())
@@ -125,31 +123,72 @@ namespace AzToolsFramework
             sourcePath.Set(readPrefabFileResult.GetValue(), relativePath.Native().data());
 
             // Create new Template with the Prefab DOM.
-            auto prefabDom = readPrefabFileResult.TakeValue();
+            auto loadedDomFromFile = readPrefabFileResult.TakeValue();
 
             // Mark the file as being in progress.
             progressedFilePathsSet.emplace(relativePath);
 
-            //Retrieving dom from the loaded template
+            // Retrieving dom from the loaded template
+            TemplateId loadedTemplateId = m_prefabSystemComponentInterface->GetTemplateIdFromFilePath(relativePath);
             TemplateReference existingTemplateReference = m_prefabSystemComponentInterface->FindTemplate(loadedTemplateId);
+            if (!existingTemplateReference.has_value())
+            {
+                AZ_Error(
+                    "Prefab", false,
+                    "PrefabLoader::ReloadTemplateFromFile - Failed to load template dom from '%.*s'.",
+                    AZ_STRING_ARG(relativePath.Native()));
+            }
             PrefabDom& existingTemplateDom = existingTemplateReference->get().GetPrefabDom();
 
-            //Copy over the container entities from the updated prefab dom 
+            // Copy over the container entities from the updated prefab dom 
             PrefabDomValueReference existingContainerReference =
                 PrefabDomUtils::FindPrefabDomValue(existingTemplateDom, PrefabDomUtils::ContainerEntityName);
+            if (existingContainerReference.has_value())
+            {
+                AZ_Error(
+                    "Prefab", false,
+                    "PrefabLoader::ReloadTemplateFromFile - "
+                    "Can't get '%s' of Template's Prefab DOM from file '%s'.",
+                    PrefabDomUtils::ContainerEntityName, AZ_STRING_ARG(relativePath.Native()));
+            }
 
-            PrefabDomValueReference containerEntityReference = PrefabDomUtils::FindPrefabDomValue(prefabDom, PrefabDomUtils::ContainerEntityName);
+            PrefabDomValueReference containerEntityReference =
+                PrefabDomUtils::FindPrefabDomValue(loadedDomFromFile, PrefabDomUtils::ContainerEntityName);
+            if (existingContainerReference.has_value())
+            {
+                AZ_Error(
+                    "Prefab", false,
+                    "PrefabLoader::ReloadTemplateFromFile - "
+                    "Can't get '%s' of Prefab DOM from file '%s'.",
+                    PrefabDomUtils::ContainerEntityName, AZ_STRING_ARG(relativePath.Native()));
+            }
             existingContainerReference->get().CopyFrom(containerEntityReference->get(), existingTemplateDom.GetAllocator());
 
             // Copy over the entities from the updated prefab dom
              PrefabDomValueReference existingEntitiesReference =
                 PrefabDomUtils::FindPrefabDomValue(existingTemplateDom, PrefabDomUtils::EntitiesName);
+            if (existingEntitiesReference.has_value())
+            {
+                AZ_Error(
+                    "Prefab", false,
+                    "PrefabLoader::ReloadTemplateFromFile - "
+                    "Can't get '%s' of Template's Prefab DOM from file '%s'.",
+                    PrefabDomUtils::EntitiesName, AZ_STRING_ARG(relativePath.Native()));
+            }
 
             PrefabDomValueReference entitiesReference =
-                PrefabDomUtils::FindPrefabDomValue(prefabDom, PrefabDomUtils::EntitiesName);
+                 PrefabDomUtils::FindPrefabDomValue(loadedDomFromFile, PrefabDomUtils::EntitiesName);
+            if (entitiesReference.has_value())
+            {
+                AZ_Error(
+                    "Prefab", false,
+                    "PrefabLoader::ReloadTemplateFromFile - "
+                    "Can't get '%s' of Prefab DOM from file '%s'.",
+                    PrefabDomUtils::EntitiesName, AZ_STRING_ARG(relativePath.Native()));
+            }
              existingEntitiesReference->get().CopyFrom(entitiesReference->get(), existingTemplateDom.GetAllocator());
 
-            PrefabDomValueConstReference instancesReference = PrefabDomUtils::GetInstancesValue(prefabDom);
+            PrefabDomValueConstReference instancesReference = PrefabDomUtils::GetInstancesValue(loadedDomFromFile);
             if (instancesReference.has_value())
             {
                const PrefabDomValue& instances = instancesReference->get();
@@ -181,23 +220,24 @@ namespace AzToolsFramework
             TemplateId targetTemplateId,
             AZStd::unordered_set<AZ::IO::Path>& progressedFilePathsSet)
         {
-            //Using the template id to get the existing dom
+            // Using the template id to get the existing dom
             PrefabDom& templateDom = m_prefabSystemComponentInterface->FindTemplateDom(targetTemplateId);
             const PrefabDomValue& fileDom = instanceIterator->value;
 
-            //Retrieving the instance path from the existing dom
+            // Retrieving the instance path from the existing dom
             PrefabDomPath instanceRetriever = PrefabDomUtils::GetPrefabDomInstancePath(instanceIterator->name.GetString());
             if (instanceRetriever.IsValid())
             {
                 PrefabDomValueConstReference templateInstance = *instanceRetriever.Get(templateDom);
                 const PrefabDomValue& nestedTemplateDom = templateInstance->get();
 
-                PrefabDomValueConstReference sourceOnFile = PrefabDomUtils::FindPrefabDomValue(fileDom, PrefabDomUtils::SourceName);
-                PrefabDomValueConstReference nestedTemplateSource =
+                PrefabDomValueConstReference sourceValueInDomFromFile =
+                    PrefabDomUtils::FindPrefabDomValue(fileDom, PrefabDomUtils::SourceName);
+                PrefabDomValueConstReference sourceValueInExistingDom =
                     PrefabDomUtils::FindPrefabDomValue(nestedTemplateDom, PrefabDomUtils::SourceName);
 
-                if (!nestedTemplateSource.has_value() || !nestedTemplateSource->get().IsString() ||
-                    nestedTemplateSource->get().GetStringLength() == 0)
+                if (!sourceValueInExistingDom.has_value() || !sourceValueInExistingDom->get().IsString() ||
+                    sourceValueInExistingDom->get().GetStringLength() == 0)
                 {
                     AZ_Error(
                         "Prefab", false,
@@ -208,7 +248,7 @@ namespace AzToolsFramework
                     return false;
                 }
 
-                //locating the link id in the existing nested dom
+                // locating the link id in the existing nested dom
                 PrefabDomValueConstReference linkIdReference =
                     PrefabDomUtils::FindPrefabDomValue(nestedTemplateDom, PrefabDomUtils::LinkIdName);
                 if (!linkIdReference.has_value() || !linkIdReference->get().IsUint64())
@@ -222,7 +262,7 @@ namespace AzToolsFramework
                     return false;
                 }
 
-                //Using link id to get the existing link
+                // Using link id to get the existing link
                 LinkId targetLinkId = linkIdReference->get().GetUint64();
                 LinkReference targetLinkReference = m_prefabSystemComponentInterface->FindLink(targetLinkId);
                 if (!targetLinkReference.has_value())
@@ -236,20 +276,17 @@ namespace AzToolsFramework
                     return false;
                 }
                 Link& targetLink = targetLinkReference->get();
-                //Applying the updated patches to the existing link for matching source
-                if(nestedTemplateSource->get() == sourceOnFile->get())
+                // Applying the updated patches to the existing link for matching source
+                if (sourceValueInExistingDom->get() != sourceValueInDomFromFile->get())
                 {
-                    targetLink.SetLinkDom(fileDom);
-                    targetLink.UpdateTarget();
-                    return true;
-                }
-                else
-                {
-                    const PrefabDomValue& newSource = sourceOnFile->get();
+                    const PrefabDomValue& newSource = sourceValueInDomFromFile->get();
                     AZStd::string_view nestedTemplatePath(newSource.GetString(), newSource.GetStringLength());
                     TemplateId newSourceTemplateId = LoadTemplateFromFile(nestedTemplatePath, progressedFilePathsSet);
                     targetLink.SetSourceTemplateId(newSourceTemplateId);
                 }
+                targetLink.SetLinkDom(fileDom);
+                targetLink.UpdateTarget();
+                return true;
             }
             else
             {
