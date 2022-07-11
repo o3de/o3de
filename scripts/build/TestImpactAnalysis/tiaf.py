@@ -38,211 +38,202 @@ class TestImpact:
         Initializes the test impact model with the commit, branches as runtime configuration.
 
         @param config_file: The runtime config file to obtain the runtime configuration data from.
+        @param args: The arguments to be parsed and applied to this TestImpact object.
         """
+
+        # Unique instance id to be used as part of the report name.
+        self._instance_id = uuid.uuid4().hex
+
+        self._s3_bucket = args.get('s3_bucket')
+        self._suite = args.get('suite')
+
         self._config = self._parse_config_file(config_file)
-        return
-        self._determine_source_of_truth(args)
 
-        self._dst_commit = args.get('commit')
+        # Initialise branches
+        self._src_branch = args.get("src_branch")
+        self._dst_branch = args.get("dst_branch")
+        logger.info(f"Src branch: '{self._src_branch}'.")
+        logger.info(f"Dst branch: '{self._dst_branch}'.")
+
+        # Determine our source of truth. Also initialises our source of truth property.
+        self._determine_source_of_truth()
+
+        # Initialise commit info
+        self._dst_commit = args.get("commit")
         logger.info(f"Commit: '{self._dst_commit}'.")
+        self._src_commit = None
+        self._commit_distance = None
 
+        # Default to a regular sequence run unless otherwise specified
+        sequence_type = "regular"
+
+        # If flag is set for us to use TIAF
         if self._use_test_impact_analysis:
             logger.info("Test impact analysis is enabled.")
-            self._persistent_storage = self._link_persistent_storage(args)
+            self._persistent_storage = self._initialise_persistent_storage(
+                s3_bucket=self._s3_bucket, suite=self._suite, s3_top_level_dir=args.get('s3_top_level_dir'))
 
-        self._runtime_args += self._get_sequence_args(args)
-        self._runtime_args += self._extract_runtime_args(args)
+            # If persistent storage initialised correctly
+            if self._persistent_storage:
 
-        self._configure_historic_data()
-        self.test_result = self._run_code(self._runtime_args)
-
-    def get_test_result(self):
-        if self.test_result:
-            return self.test_result
-        else:
-            raise SystemError(
-                "Error! No test result was found. Something has gone very wrong, please report this to the code maintainer")
-
-    def _run_code(self, runtime_args):
-        unpacked_args = " ".join(runtime_args)
-        logger.info(f"Args: {unpacked_args}")
-        runtime_result = subprocess.run([str(self._tiaf_bin)] + runtime_args)
-        report = None
-        # If the sequence completed (with or without failures) we will update the historical meta-data
-        if runtime_result.returncode == 0 or runtime_result.returncode == 7:
-            logger.info("Test impact analysis runtime returned successfully.")
-
-            # Get the sequence report the runtime generated
-            with open(self._report_file) as json_file:
-                report = json.load(json_file)
-
-            # Attempt to store the historic data for this branch and sequence
-            if self._is_source_of_truth_branch and self._persistent_storage:
-                self._persistent_storage.update_and_store_historic_data()
-        else:
-            logger.error(
-                f"The test impact analysis runtime returned with error: '{runtime_result.returncode}'.")
-
-        return self._generate_result(self._s3_bucket, self._suite, runtime_result.returncode, report, runtime_args)
-
-    def _handle_rerun(self):
-        if self._persistent_storage:
-
-            # Flag for corner case where:
-            # 1. TIAF was already run previously for this commit.
-            # 2. There was no last commit hash when TIAF last ran on this commit (due to no coverage data existing yet for this branch)
-            # 3. TIAF has not been run on any other commits between the run for this commit and the last run for this commit.
-            # The above results in TIAF being stuck in a state of generating an empty change list (and thus doing no work until another
-            # commit comes in) which is problematic if the commit needs to be re-run for whatever reason so in these conditions we revert
-            # back to a regular test run until another commit comes in
-            self._can_rerun_with_instrumentation = True
-
-            if self._persistent_storage.has_historic_data:
-                logger.info("Historic data found.")
-                self._src_commit = self._persistent_storage.last_commit_hash
-
-                # Check to see if this is a re-run for this commit before any other changes have come in
-                if self._persistent_storage.is_last_commit_hash_equal_to_this_commit_hash:
-                    if self._persistent_storage.has_previous_last_commit_hash:
-                        logger.info(
-                            f"This sequence is being re-run before any other changes have come in so the last commit '{self._persistent_storage.this_commit_last_commit_hash}' used for the previous sequence will be used instead.")
-                        self._src_commit = self._persistent_storage.this_commit_last_commit_hash
-                    else:
-                        logger.info(
-                            f"This sequence is being re-run before any other changes have come in but there is no useful historic data. A regular sequence will be performed instead.")
-                        self._persistent_storage = None
-                        self._can_rerun_with_instrumentation = False
+                # Historic Data Handling:
+                # This flag is used to help handle our corner cases if we have historic data.
+                self._can_rerun_with_instrumentation = True
+                if self._persistent_storage.has_historic_data:
+                    logger.info("Historic data found.")
+                    self._handle_historic_data()
                 else:
-                    self._attempt_to_generate_change_list()
-            else:
-                logger.info("No historic data found.")
+                    logger.info("No historic data found.")
 
-    def _extract_runtime_args(self, args: dict):
-        args_to_configure = []
+                # Determining our sequence type:
+                if self._has_change_list:
+                    if self._is_source_of_truth_branch:
+                        # Use TIA sequence (instrumented subset of tests) for coverage updating branches so we can update the coverage data with the generated coverage
+                        sequence_type = "tia"
+                    else:
+                        # Use TIA no-write sequence (regular subset of tests) for non coverage updating branche
+                        sequence_type = "tianowrite"
+                        # Ignore integrity failures for non coverage updating branches as our confidence in the
+                        self._runtime_args.append("--ipolicy=continue")
+                        logger.info(
+                            "Integration failure policy is set to 'continue'.")
+                else:
+                    if self._is_source_of_truth_branch and self._can_rerun_with_instrumentation:
+                        # Use seed sequence (instrumented all tests) for coverage updating branches so we can generate the coverage bed for future sequences
+                        sequence_type = "seed"
+                        # We always continue after test failures when seeding to ensure we capture the coverage for all test targets
+                        args['test_failure_policy'] = "continue"
+                    else:
+                        # Use regular sequence (regular all tests) for non coverage updating branches as we have no coverage to use nor coverage to update
+                        sequence_type = "regular"
+                        # Ignore integrity failures for non coverage updating branches as our confidence in the
+                        self._runtime_args.append("--ipolicy=continue")
+                        logger.info(
+                            "Integration failure policy is set to 'continue'.")
+
+        self._parse_arguments_to_runtime(
+            args, sequence_type, self._runtime_args)
+
+    def _parse_arguments_to_runtime(self, args, sequence_type, runtime_args):
+        """
+        Fetches the relevant keys from the provided dict, and applies the values of the arguments(or applies them as a flag) to our runtime_args list
+
+        @param args: Dict containing the arguments passed to this TestImpact object. Will contain all the runtime arguments we need to apply.
+        @sequence_type: The sequence type as determined when initialising this TestImpact object.
+        @runtime_args: A list of strings that will become the arguments for our runtime.
+        """
+        runtime_args.append(f"--sequence={sequence_type}")
+        logger.info(f"Sequence type is set to '{sequence_type}'.")
+
+        # Test failure policy
+        test_failure_policy = args.get('test_failure_policy')
+        runtime_args.append(f"--fpolicy={test_failure_policy}")
+        logger.info(f"Test failure policy is set to '{test_failure_policy}'.")
 
         # Sequence report
         self._report_file = pathlib.PurePath(self._temp_workspace).joinpath(
             f"report.{self._instance_id}.json")
-        args_to_configure.append(f"--report={self._report_file}")
+        runtime_args.append(f"--report={self._report_file}")
         logger.info(f"Sequence report file is set to '{self._report_file}'.")
 
         # Suite
         suite = args.get('suite')
-        args_to_configure.append(f"--suite={suite}")
+        runtime_args.append(f"--suite={suite}")
         logger.info(f"Test suite is set to '{suite}'.")
 
         # Exclude tests
         exclude_file = args.get('exclude_file')
         if exclude_file:
-            args_to_configure.append(f"--exclude_file={exclude_file}")
+            runtime_args.append(f"--exclude_file={exclude_file}")
             logger.info(
                 f"Exclude file found, excluding the tests stored at '{exclude_file}'.")
         else:
             logger.info(f'Exclude file not found, skipping.')
 
-        # Safe mode
-        safe_mode = args.get('safe_mode')
-        if safe_mode:
-            args_to_configure.append("--safemode=on")
-            logger.info("Safe mode set to 'on'.")
-        else:
-            args_to_configure.append("--safemode=off")
-            logger.info("Safe mode set to 'off'.")
-
         # Timeouts
         test_timeout = args.get('test_timeout')
         if test_timeout:
-            args_to_configure.append(f"--ttimeout={test_timeout}")
+            runtime_args.append(f"--ttimeout={test_timeout}")
             logger.info(
                 f"Test target timeout is set to {test_timeout} seconds.")
 
-        global_timeout = args.get('test_timeout')
+        global_timeout = args.get('global_timeout')
         if global_timeout:
-            args_to_configure.append(f"--gtimeout={global_timeout}")
+            runtime_args.append(f"--gtimeout={global_timeout}")
             logger.info(
-                f"Global sequence timeout is set to {global_timeout} seconds.")
+                f"Global sequence timeout is set to {test_timeout} seconds.")
 
-        return args_to_configure
+    def _handle_historic_data(self):
+        """
+        This method handles the different cases of when we have historic data, and carries out the desired action.
+        Case 1:
+            This commit is different to the last commit in our historic data. Action: Generate change-list
+        Case 2:
+            This commit has already been run in TIAF, and we have useful historic data. Action: Use that data for our TIAF run.
+        Case 3:
+            This commit has already been run in TIAF, but we have no useful historic data for it. Action: A regular sequence is performed instead. Persistent storage is set to none and rerun_with_instrumentation is set to false.
+        """
+        # src commit is set to the commit hash of the last commit we have historic data for
+        self._src_commit = self._persistent_storage.last_commit_hash
 
-    def _get_sequence_args(self, args: dict):
-        args_to_configure = []
-        test_failure_policy = args.get('test_failure_policy')
+        # Check to see if this is a re-run for this commit before any other changes have come in
+        # if the last commit hash in our historic data is the same as our current commit hash
+        if self._persistent_storage.is_last_commit_hash_equal_to_this_commit_hash:
 
-        if self._use_test_impact_analysis and self._persistent_storage:
-            if self._has_change_list:
-                if self._is_source_of_truth_branch:
-                    # Use TIA sequence (instrumented subset of tests) for coverage updating branches so we can update the coverage data with the generated coverage
-                    sequence_type = "tia"
-                else:
-                    # Use TIA no-write sequence (regular subset of tests) for non coverage updating branche
-                    sequence_type = "tianowrite"
-                    # Ignore integrity failures for non coverage updating branches as our confidence in the
-                    args_to_configure.append("--ipolicy=continue")
-                    logger.info(
-                        "Integration failure policy is set to 'continue'.")
-                # Change list
-                args_to_configure.append(
-                    f"--changelist={self._change_list_path}")
+            # if we have the last commit hash of our previous run in our json then we will just use the data from that run
+            if self._persistent_storage.has_previous_last_commit_hash:
                 logger.info(
-                    f"Change list is set to '{self._change_list_path}'.")
+                    f"This sequence is being re-run before any other changes have come in so the last commit '{self._persistent_storage.this_commit_last_commit_hash}' used for the previous sequence will be used instead.")
+                self._src_commit = self._persistent_storage.this_commit_last_commit_hash
             else:
-                if self._is_source_of_truth_branch and args.get('can_rerun_with_instrumentation'):
-                    # Use seed sequence (instrumented all tests) for coverage updating branches so we can generate the coverage bed for future sequences
-                    sequence_type = "seed"
-                    # We always continue after test failures when seeding to ensure we capture the coverage for all test targets
-                    test_failure_policy = "continue"
-                else:
-                    # Use regular sequence (regular all tests) for non coverage updating branches as we have no coverage to use nor coverage to update
-                    sequence_type = "regular"
-                    # Ignore integrity failures for non coverage updating branches as our confidence in the
-                    args_to_configure.append("--ipolicy=continue")
-                    logger.info(
-                        "Integration failure policy is set to 'continue'.")
+                # If we don't have the last commit hash of our previous run then we do a regular run as there will be no change list and no historic coverage data to use
+                logger.info(
+                    f"This sequence is being re-run before any other changes have come in but there is no useful historic data. A regular sequence will be performed instead.")
+                self._persistent_storage = None
+                self._can_rerun_with_instrumentation = False
         else:
-            sequence_type = "regular"
+            # if this commit is different to the last commit in our historic data, we can diff the commits to get our change list
+            self._attempt_to_generate_change_list()
 
-        args_to_configure.append(f"--sequence={sequence_type}")
-        logger.info(f"Sequence type is set to '{sequence_type}'.")
+    def _initialise_persistent_storage(self, suite: str,  s3_bucket: str = None, s3_top_level_dir: str = None):
+        """
+        Initialise our persistent storage object. Defaults to initialising local storage, unless the s3_bucket argument is not None. 
+        Returns PersistentStorage object or None if initialisation failed.
 
-        args_to_configure.append(f"--fpolicy={test_failure_policy}")
-        logger.info(f"Test failure policy is set to '{test_failure_policy}'.")
-        return args_to_configure
+        @param suite: The testing suite we are using.
+        @param s3_bucket: the name of the S3 bucket to connect to. Can be set to none.
+        @param s3_top_level_dir: The name of the top level directory to use in the s3 bucket.
 
-    def _link_persistent_storage(self, args: dict):
-        self._suite = args.get('suite')
-        self._dst_commit = args.get('commit')
-        self._s3_bucket = args.get('s3_bucket')
-        self._s3_top_level_dir = args.get('s3_top_level_dir')
-
+        @returns: Returns a persistent storage object, or None if a SystemError exception occurs while initialising the object.
+        """
         try:
-            # Persistent storage location
-            if self._s3_bucket:
+            if s3_bucket:
                 return PersistentStorageS3(
-                    self._config, self._suite, self._dst_commit, self._s3_bucket, self._s3_top_level_dir, self._source_of_truth_branch)
+                    self._config, suite, self._dst_commit, s3_bucket, s3_top_level_dir, self._source_of_truth_branch)
             else:
                 return PersistentStorageLocal(
-                    self._config, self._suite, self._dst_commit)
+                    self._config, suite, self._dst_commit)
         except SystemError as e:
             logger.warning(
                 f"The persistent storage encountered an irrecoverable error, test impact analysis will be disabled: '{e}'")
             return None
 
-    def _determine_source_of_truth(self, args: dict):
-        # Branches
-        self._src_branch = args.get('src_branch')
-        self._dst_branch = args.get('dst_branch')
-        logger.info(f"Src branch: '{self._src_branch}'.")
-        logger.info(f"Dst branch: '{self._dst_branch}'.")
-
+    def _determine_source_of_truth(self):
+        """
+        Determines whether the branch we are executing TIAF on is the source of truth(the branch from which the coverage data will be stored/retrieved from) or not.        
+        """
         # Source of truth (the branch from which the coverage data will be stored/retrieved from)
         if not self._dst_branch or self._src_branch == self._dst_branch:
             # Branch builds are their own source of truth and will update the coverage data for the source of truth after any instrumented sequences complete
             self._source_of_truth_branch = self._src_branch
-            self._is_source_of_truth = True
         else:
             # Pull request builds use their destination as the source of truth and never update the coverage data for the source of truth
             self._source_of_truth_branch = self._dst_branch
-            self._is_source_of_truth = False
+
+        logger.info(
+            f"Source of truth branch: '{self._source_of_truth_branch}'.")
+        logger.info(
+            f"Is source of truth branch: '{self._is_source_of_truth_branch}'.")
 
     def _parse_config_file(self, config_file: str):
         """
@@ -282,7 +273,7 @@ class TestImpact:
 
     def _attempt_to_generate_change_list(self):
         """
-        Attempts to determine the change list bewteen now and the last tiaf run (if any).
+        Attempts to determine the change list between now and the last tiaf run (if any).
         """
 
         self._has_change_list = False
@@ -394,224 +385,52 @@ class TestImpact:
         result["change_list"] = self._change_list
         return result
 
-    def run(self, commit: str, src_branch: str, dst_branch: str, s3_bucket: str, s3_top_level_dir: str, suite: str, test_failure_policy: str, safe_mode: bool, test_timeout: int, global_timeout: int, exclude_file: str):
+    def run(self):
         """
-        Determines the type of sequence to run based on the commit, source branch and test branch before running the
-        sequence with the specified values.
+        Builds our runtime argument string based on the initialisation state, then executes the runtime with those arguments.
+        Stores the report of this run locally.
+        Updates and stores historic data if storage is initialised and source branch is source of truth.
+        Returns the runtime result as a dict.
 
-        @param commit:              The commit hash of the changes to run test impact analysis on. 
-        @param src_branch:          If not equal to dst_branch, the branch that is being built.
-        @param dst_branch:          If not equal to src_branch, the destination branch for the PR being built.
-        @param s3_bucket:           Location of S3 bucket to use for persistent storage, otherwise local disk storage will be used.
-        @param s3_top_level_dir:    Top level directory to use in the S3 bucket.
-        @param suite:               Test suite to run.
-        @param test_failure_policy: Test failure policy for regular and test impact sequences (ignored when seeding).
-        @param safe_mode:           Flag to run impact analysis tests in safe mode (ignored when seeding).
-        @param test_timeout:        Maximum run time (in seconds) of any test target before being terminated (unlimited if None).
-        @param global_timeout:      Maximum run time of the sequence before being terminated (unlimited if None).
-        @param exclude_file:        Path to exclude file, containing a list of tests to exclude from this run.
+        @return: Runtime results in a dict.
         """
 
-        args = []
-        persistent_storage = None
-        self._has_historic_data = False
-        self._change_list = {}
-        self._change_list["createdFiles"] = []
-        self._change_list["updatedFiles"] = []
-        self._change_list["deletedFiles"] = []
-
-        # Branches
-        self._src_branch = src_branch
-        self._dst_branch = dst_branch
-        logger.info(f"Src branch: '{self._src_branch}'.")
-        logger.info(f"Dst branch: '{self._dst_branch}'.")
-
-        # Source of truth (the branch from which the coverage data will be stored/retrieved from)
-        if not self._dst_branch or self._src_branch == self._dst_branch:
-            # Branch builds are their own source of truth and will update the coverage data for the source of truth after any instrumented sequences complete
-            self._is_source_of_truth_branch = True
-            self._source_of_truth_branch = self._src_branch
-        else:
-            # Pull request builds use their destination as the source of truth and never update the coverage data for the source of truth
-            self._is_source_of_truth_branch = False
-            self._source_of_truth_branch = self._dst_branch
-
-        logger.info(
-            f"Source of truth branch: '{self._source_of_truth_branch}'.")
-        logger.info(
-            f"Is source of truth branch: '{self._is_source_of_truth_branch}'.")
-
-        # Commit
-        self._dst_commit = commit
-        logger.info(f"Commit: '{self._dst_commit}'.")
-        self._src_commit = None
-        self._commit_distance = None
-
-        # Generate a unique ID to be used as part of the file name for required runtime dynamic artifacts.
-        self._instance_id = uuid.uuid4().hex
-
-        if self._use_test_impact_analysis:
-            logger.info("Test impact analysis is enabled.")
-            # extract intialise storage method
-            # TODO
-            try:
-                # Persistent storage location
-                if s3_bucket:
-                    persistent_storage = PersistentStorageS3(
-                        self._config, suite, self._dst_commit, s3_bucket, s3_top_level_dir, self._source_of_truth_branch)
-                else:
-                    persistent_storage = PersistentStorageLocal(
-                        self._config, suite, self._dst_commit)
-            except SystemError as e:
-                logger.warning(
-                    f"The persistent storage encountered an irrecoverable error, test impact analysis will be disabled: '{e}'")
-                persistent_storage = None
-            
-            # extract and have persistent storage handle this?
-            # TODO
-            if persistent_storage:
-
-                # Flag for corner case where:
-                # 1. TIAF was already run previously for this commit.
-                # 2. There was no last commit hash when TIAF last ran on this commit (due to no coverage data existing yet for this branch)
-                # 3. TIAF has not been run on any other commits between the run for this commit and the last run for this commit.
-                # The above results in TIAF being stuck in a state of generating an empty change list (and thus doing no work until another
-                # commit comes in) which is problematic if the commit needs to be re-run for whatever reason so in these conditions we revert
-                # back to a regular test run until another commit comes in
-                can_rerun_with_instrumentation = True
-
-                # if historic data has been found and accessed successfully
-                if persistent_storage.has_historic_data:
-                    logger.info("Historic data found.")
-                    # src commit is set to the commit hash of the last commit we have historic data for
-                    self._src_commit = persistent_storage.last_commit_hash
-
-                    # Check to see if this is a re-run for this commit before any other changes have come in
-                    # if the last commit hash in our historic data is the same as our current commit hash
-                    if persistent_storage.is_last_commit_hash_equal_to_this_commit_hash:
-
-                        # if we have the last commit hash of our previous run in our json then we will just use the data from that run
-                        if persistent_storage.has_previous_last_commit_hash:
-                            logger.info(
-                                f"This sequence is being re-run before any other changes have come in so the last commit '{persistent_storage.this_commit_last_commit_hash}' used for the previous sequence will be used instead.")
-                            self._src_commit = persistent_storage.this_commit_last_commit_hash
-                        else:
-                            # If we don't have the last commit hash of our previous run then we do a regular run as there will be no change list and no historic coverage data to use
-                            logger.info(
-                                f"This sequence is being re-run before any other changes have come in but there is no useful historic data. A regular sequence will be performed instead.")
-                            persistent_storage = None
-                            can_rerun_with_instrumentation = False
-                    else:
-                        # if this commit is different to the last commit in our historic data, we can diff the commits to get our change list
-                        self._attempt_to_generate_change_list()
-                else:
-                    # no historic data has been founds
-                    logger.info("No historic data found.")
-
-                # Sequence type
-                # TODO
-                # have this as a method?
-                if self._has_change_list:
-                    if self._is_source_of_truth_branch:
-                        # Use TIA sequence (instrumented subset of tests) for coverage updating branches so we can update the coverage data with the generated coverage
-                        sequence_type = "tia"
-                    else:
-                        # Use TIA no-write sequence (regular subset of tests) for non coverage updating branche
-                        sequence_type = "tianowrite"
-                        # Ignore integrity failures for non coverage updating branches as our confidence in the
-                        args.append("--ipolicy=continue")
-                        logger.info(
-                            "Integration failure policy is set to 'continue'.")
-                    # Safe mode
-                    if safe_mode:
-                        args.append("--safemode=on")
-                        logger.info("Safe mode set to 'on'.")
-                    else:
-                        args.append("--safemode=off")
-                        logger.info("Safe mode set to 'off'.")
-                    # Change list
-                    args.append(f"--changelist={self._change_list_path}")
-                    logger.info(
-                        f"Change list is set to '{self._change_list_path}'.")
-                else:
-                    if self._is_source_of_truth_branch and can_rerun_with_instrumentation:
-                        # Use seed sequence (instrumented all tests) for coverage updating branches so we can generate the coverage bed for future sequences
-                        sequence_type = "seed"
-                        # We always continue after test failures when seeding to ensure we capture the coverage for all test targets
-                        test_failure_policy = "continue"
-                    else:
-                        # Use regular sequence (regular all tests) for non coverage updating branches as we have no coverage to use nor coverage to update
-                        sequence_type = "regular"
-                        # Ignore integrity failures for non coverage updating branches as our confidence in the
-                        args.append("--ipolicy=continue")
-                        logger.info(
-                            "Integration failure policy is set to 'continue'.")
-            else:
-                # Use regular sequence (regular all tests) when the persistent storage fails to avoid wasting time generating seed data that will not be preserved
-                sequence_type = "regular"
-        else:
-            # Use regular sequence (regular all tests) when test impact analysis is disabled
-            sequence_type = "regular"
-
-        # can we extract out these arguments into some easy dict that shortens our code?
-        # TODO
-        # maybe something like store the value in a dict as values['sequence_type'] = value; then have our commandline argument in a seperate dict
-        # argument_text['sequence_type'] = '--sequence="; would this allow easy adding of arguments?
-        args.append(f"--sequence={sequence_type}")
-        logger.info(f"Sequence type is set to '{sequence_type}'.")
-
-        # Test failure policy
-        args.append(f"--fpolicy={test_failure_policy}")
-        logger.info(f"Test failure policy is set to '{test_failure_policy}'.")
-
-        # Sequence report
-        report_file = pathlib.PurePath(self._temp_workspace).joinpath(
-            f"report.{self._instance_id}.json")
-        args.append(f"--report={report_file}")
-        logger.info(f"Sequence report file is set to '{report_file}'.")
-
-        # Suite
-        args.append(f"--suite={suite}")
-        logger.info(f"Test suite is set to '{suite}'.")
-
-        # Exclude tests
-        if exclude_file:
-            args.append(f"--exclude_file={exclude_file}")
-            logger.info(
-                f"Exclude file found, excluding the tests stored at '{exclude_file}'.")
-        else:
-            logger.info(f'Exclude file not found, skipping.')
-
-        # Timeouts
-        if test_timeout:
-            args.append(f"--ttimeout={test_timeout}")
-            logger.info(
-                f"Test target timeout is set to {test_timeout} seconds.")
-        if global_timeout:
-            args.append(f"--gtimeout={global_timeout}")
-            logger.info(
-                f"Global sequence timeout is set to {test_timeout} seconds.")
-
-        # Run sequence
-        # TODO
-        # This should be the only code in the run command in my opinion
-        unpacked_args = " ".join(args)
+        unpacked_args = " ".join(self._runtime_args)
         logger.info(f"Args: {unpacked_args}")
-        runtime_result = subprocess.run([str(self._tiaf_bin)] + args)
+        runtime_result = subprocess.run(
+            [str(self._tiaf_bin)] + self._runtime_args)
         report = None
         # If the sequence completed (with or without failures) we will update the historical meta-data
         if runtime_result.returncode == 0 or runtime_result.returncode == 7:
             logger.info("Test impact analysis runtime returned successfully.")
 
             # Get the sequence report the runtime generated
-            with open(report_file) as json_file:
+            with open(self._report_file) as json_file:
                 report = json.load(json_file)
 
             # Attempt to store the historic data for this branch and sequence
-            if self._is_source_of_truth_branch and persistent_storage:
-                persistent_storage.update_and_store_historic_data()
+            if self._is_source_of_truth_branch and self._persistent_storage:
+                self._persistent_storage.update_and_store_historic_data()
         else:
             logger.error(
                 f"The test impact analysis runtime returned with error: '{runtime_result.returncode}'.")
 
-        return self._generate_result(s3_bucket, suite, runtime_result.returncode, report, args)
+        return self._generate_result(self._s3_bucket, self._suite, runtime_result.returncode, report, self._runtime_args)
+
+    @property
+    def _is_source_of_truth_branch(self):
+        """
+        True if the source branch the source of truth
+        False otherwise
+        """
+        return self._source_of_truth_branch == self._src_branch
+
+    @property
+    def _has_historic_data(self):
+        """
+        True if persistent storage is not None and it has historic data
+        False otherwise
+        """
+        if self._persistent_storage:
+            return self._persistent_storage.has_historic_data
+        return False
