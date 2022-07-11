@@ -266,7 +266,7 @@ namespace AssetProcessor
         switch (section)
         {
         case aznumeric_cast<int>(SourceAssetTreeColumns::AnalysisJobDuration):
-            return tr("Analysis Job Duration");
+            return tr("Last Analysis Job Duration");
         default:
             return AssetTreeModel::headerData(section, orientation, role);
         }
