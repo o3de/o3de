@@ -50,7 +50,7 @@ namespace Multiplayer
 
         void DrawConnectionStatus(AzNetworking::ConnectionState connectionState);
 
-        AZStd::string m_centerViewportDebugText;
+        AZStd::fixed_string<128> m_centerViewportDebugText;
         AzFramework::FontDrawInterface* m_fontDrawInterface = nullptr;
         AzFramework::TextDrawParameters m_drawParams;
         float m_lineSpacing = 0.0f;
