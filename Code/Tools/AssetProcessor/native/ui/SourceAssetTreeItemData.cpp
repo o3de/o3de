@@ -45,6 +45,11 @@ namespace AssetProcessor
 
     }
 
+    int SourceAssetTreeItemData::GetColumnCount() const
+    {
+        return aznumeric_cast<int>(SourceAssetTreeColumns::Max);
+    }
+
     QString BuildAbsolutePathToFile(const AZStd::shared_ptr<const SourceAssetTreeItemData> file)
     {
         QDir scanFolder(file->m_scanFolderInfo.m_scanFolder.c_str());

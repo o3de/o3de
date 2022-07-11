@@ -12,6 +12,12 @@
 
 namespace AssetProcessor
 {
+    enum class SourceAssetTreeColumns
+    {
+        AnalysisJobDuration = aznumeric_cast<int>(AssetTreeColumns::Max),
+        Max
+    };
+
     class SourceAssetTreeItemData : public AssetTreeItemData
     {
     public:
@@ -32,6 +38,7 @@ namespace AssetProcessor
             bool isFolder);
 
         ~SourceAssetTreeItemData() override {}
+        int GetColumnCount() const override;
 
         AzToolsFramework::AssetDatabase::SourceDatabaseEntry m_sourceInfo;
         AzToolsFramework::AssetDatabase::ScanFolderDatabaseEntry m_scanFolderInfo;

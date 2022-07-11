@@ -12,6 +12,7 @@
 #include <QFileIconProvider>
 #include <QStyle>
 #include <QVariant>
+#include <AzCore/Casting/numeric_cast.h>
 
 namespace AssetProcessor
 {
@@ -24,6 +25,11 @@ namespace AssetProcessor
     {
         QFileInfo fileInfo(name);
         m_extension = fileInfo.completeSuffix();
+    }
+
+    int AssetTreeItemData::GetColumnCount() const
+    {
+        return aznumeric_cast<int>(AssetTreeColumns::Max);
     }
 
     AssetTreeItem::AssetTreeItem(
@@ -96,7 +102,7 @@ namespace AssetProcessor
 
     int AssetTreeItem::GetColumnCount() const
     {
-        return static_cast<int>(AssetTreeColumns::Max);
+        return m_data->GetColumnCount();
     }
 
     QVariant AssetTreeItem::GetDataForColumn(int column) const
