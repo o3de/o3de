@@ -20,15 +20,18 @@ logger = get_logger(__file__)
 
 
 class TestImpact:
+
     _runtime_args = []
     persistent_storage = None
-    _has_historic_data = False
-    _change_list = {"createdFiles": [], "updatedFiles": [], "deletedFiles" : []}
+    _change_list = {"createdFiles": [], "updatedFiles": [], "deletedFiles": []}
+    _src_branch = None
+    _dst_branch = None
+    _dst_commit = None
     _src_commit = None
-    _commit_distance = None
-    _instance_id = uuid.uuid4().hex
-    _config = None
+    _instance_id = None
     _has_change_list = False
+    _use_test_impact_analysis = False
+    _can_rerun_with_instrumentation = False
 
     def __init__(self, config_file: str, args: dict):
         """
