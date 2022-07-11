@@ -10,6 +10,7 @@
 #include <AzCore/std/smart_ptr/make_shared.h>
 
 #include <QDir>
+#include <QVariant>
 
 namespace AssetProcessor
 {
@@ -55,6 +56,17 @@ namespace AssetProcessor
     int SourceAssetTreeItemData::GetColumnCount() const
     {
         return aznumeric_cast<int>(SourceAssetTreeColumns::Max);
+    }
+
+    QVariant SourceAssetTreeItemData::GetDataForColumn(int column) const
+    {
+        switch (column)
+        {
+        case aznumeric_cast<int>(SourceAssetTreeColumns::AnalysisJobDuration):
+            return m_analysisDuration;
+        default:
+            return AssetTreeItemData::GetDataForColumn(column);
+        }
     }
 
     QString BuildAbsolutePathToFile(const AZStd::shared_ptr<const SourceAssetTreeItemData> file)

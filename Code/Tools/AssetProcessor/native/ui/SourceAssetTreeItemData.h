@@ -41,6 +41,7 @@ namespace AssetProcessor
 
         ~SourceAssetTreeItemData() override {}
         int GetColumnCount() const override;
+        QVariant GetDataForColumn(int column) const override;
 
         AzToolsFramework::AssetDatabase::SourceDatabaseEntry m_sourceInfo;
         AzToolsFramework::AssetDatabase::ScanFolderDatabaseEntry m_scanFolderInfo;
