@@ -97,6 +97,8 @@ class TestImpact:
                         self._runtime_args.append("--ipolicy=continue")
                         logger.info(
                             "Integration failure policy is set to 'continue'.")
+                    self._runtime_args.append(f"--changelist={self._change_list_path}")
+                    logger.info(f"Change list is set to '{self._change_list_path}'.")
                 else:
                     if self._is_source_of_truth_branch and self._can_rerun_with_instrumentation:
                         # Use seed sequence (instrumented all tests) for coverage updating branches so we can generate the coverage bed for future sequences
@@ -124,6 +126,13 @@ class TestImpact:
         """
         runtime_args.append(f"--sequence={sequence_type}")
         logger.info(f"Sequence type is set to '{sequence_type}'.")
+
+        if args.get('safe_mode'):
+            args.append("--safemode=on")
+            logger.info("Safe mode set to 'on'.")
+        else:
+            args.append("--safemode=off")
+            logger.info("Safe mode set to 'off'.")
 
         # Test failure policy
         test_failure_policy = args.get('test_failure_policy')
