@@ -39,7 +39,7 @@ namespace AssetProcessor
         AzToolsFramework::AssetDatabase::SourceDatabaseEntry m_sourceInfo;
         AzToolsFramework::AssetDatabase::ScanFolderDatabaseEntry m_scanFolderInfo;
         bool m_hasDatabaseInfo = false;
-        QTime m_analysisDuration;
+        AZ::s64 m_analysisDuration;
     };
 
     AZ::Outcome<QString> GetAbsolutePathToSource(const AssetTreeItem& source);

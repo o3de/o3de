@@ -91,10 +91,8 @@ namespace AssetProcessor
             // This item already exists, refresh the related data.
             sourceItemData->m_scanFolderInfo = scanFolder;
             sourceItemData->m_sourceInfo = source;
-            if (analysisJobDuration >= 0)
-            {
-                sourceItemData->m_analysisDuration = QTime::fromMSecsSinceStartOfDay(aznumeric_cast<int>(analysisJobDuration));
-            }
+            sourceItemData->m_analysisDuration = analysisJobDuration;
+
             QModelIndex existingIndexStart = createIndex(existingEntry->second->GetRow(), 0, existingEntry->second);
             QModelIndex existingIndexEnd = createIndex(existingEntry->second->GetRow(), existingEntry->second->GetColumnCount() - 1, existingEntry->second);
             dataChanged(existingIndexStart, existingIndexEnd);

@@ -21,8 +21,8 @@ namespace AssetProcessor
         QString name,
         bool isFolder,
         AZ::s64 analysisJobDuration)
-        :
-        AssetTreeItemData(assetDbName, name, isFolder, sourceInfo ? sourceInfo->m_sourceGuid : AZ::Uuid::CreateNull())
+        : AssetTreeItemData(assetDbName, name, isFolder, sourceInfo ? sourceInfo->m_sourceGuid : AZ::Uuid::CreateNull())
+        , m_analysisDuration(analysisJobDuration)
     {
         if (sourceInfo && scanFolderInfo)
         {
@@ -34,12 +34,6 @@ namespace AssetProcessor
         {
             m_hasDatabaseInfo = false;
         }
-
-        if (analysisJobDuration >= 0)
-        {
-            m_analysisDuration = QTime::fromMSecsSinceStartOfDay(aznumeric_cast<int>(analysisJobDuration));
-        }
-
     }
 
     int SourceAssetTreeItemData::GetColumnCount() const
@@ -49,27 +43,29 @@ namespace AssetProcessor
 
     QVariant SourceAssetTreeItemData::GetDataForColumn(int column) const
     {
-        switch (column)
+        if (column == aznumeric_cast<int>(SourceAssetTreeColumns::AnalysisJobDuration))
         {
-        case aznumeric_cast<int>(SourceAssetTreeColumns::AnalysisJobDuration):
-            if (!m_analysisDuration.isValid())
+            if (m_analysisDuration < 0)
             {
                 return "";
             }
-            if (m_analysisDuration.hour() > 0)
+            QTime duration = QTime::fromMSecsSinceStartOfDay(aznumeric_cast<int>(m_analysisDuration));
+            if (duration.hour() > 0)
             {
-                return m_analysisDuration.toString("zzz' ms, 'ss' sec, 'mm' min, 'hh' hr'");
+                return duration.toString("zzz' ms, 'ss' sec, 'mm' min, 'hh' hr'");
             }
-            if (m_analysisDuration.minute() > 0)
+            if (duration.minute() > 0)
             {
-                return m_analysisDuration.toString("zzz' ms, 'ss' sec, 'mm' min'");
+                return duration.toString("zzz' ms, 'ss' sec, 'mm' min'");
             }
-            if (m_analysisDuration.second() > 0)
+            if (duration.second() > 0)
             {
-                return m_analysisDuration.toString("zzz' ms, 'ss' sec'");
+                return duration.toString("zzz' ms, 'ss' sec'");
             }
-            return m_analysisDuration.toString("zzz' ms'");
-        default:
+            return duration.toString("zzz' ms'");
+        }
+        else
+        {
             return AssetTreeItemData::GetDataForColumn(column);
         }
     }
