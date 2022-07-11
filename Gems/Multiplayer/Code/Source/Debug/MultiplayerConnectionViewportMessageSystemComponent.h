@@ -8,11 +8,12 @@
 
 #pragma once
 
+#include <Atom/RPI.Public/ViewportContextBus.h>
 #include <AzCore/Component/Component.h>
-#include <AzCore/Component/TickBus.h>
 #include <AzFramework/Font/FontInterface.h>
 #include <Multiplayer/IMultiplayer.h>
 #include <Multiplayer/IMultiplayerConnectionViewportMessage.h>
+
 
 namespace Multiplayer
 {
@@ -20,7 +21,7 @@ namespace Multiplayer
     class MultiplayerConnectionViewportMessageSystemComponent final
         : public AZ::Component
         , public IMultiplayerConnectionViewportMessage
-        , private AZ::TickBus::Handler
+        , public AZ::RPI::ViewportContextNotificationBus::Handler
     {
     public:
         AZ_COMPONENT(MultiplayerConnectionViewportMessageSystemComponent, "{7600cfcf-e380-4876-aa90-8120e57205e9}", IMultiplayerConnectionViewportMessage);
@@ -39,9 +40,9 @@ namespace Multiplayer
 
 
     private:
-        //! AZ::TickBus::Handler
+        //! AZ::RPI::ViewportContextNotificationBus::Handler overrides.
         //! @{
-        void OnTick(float, AZ::ScriptTimePoint) override;
+        void OnRenderTick() override;
         //! @}
 
         //! IMultiplayerConnectionViewportMessage overrides.

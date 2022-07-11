@@ -53,15 +53,16 @@ namespace Multiplayer
 
     void MultiplayerConnectionViewportMessageSystemComponent::Activate()
     {
-        AZ::TickBus::Handler::BusConnect();
+        AZ::RPI::ViewportContextNotificationBus::Handler::BusConnect(
+            AZ::RPI::ViewportContextRequests::Get()->GetDefaultViewportContextName());
     }
 
     void MultiplayerConnectionViewportMessageSystemComponent::Deactivate()
     {
-        AZ::TickBus::Handler::BusDisconnect();
+        AZ::RPI::ViewportContextNotificationBus::Handler::BusDisconnect();
     }
 
-    void MultiplayerConnectionViewportMessageSystemComponent::OnTick(float, AZ::ScriptTimePoint)
+    void MultiplayerConnectionViewportMessageSystemComponent::OnRenderTick()
     {
         if (!cl_viewportConnectionStatus)
         {
@@ -150,7 +151,7 @@ namespace Multiplayer
     
     void MultiplayerConnectionViewportMessageSystemComponent::StopCenterViewportDebugMessaging()
     {
-        m_centerViewportDebugText = "";
+        m_centerViewportDebugText.clear();
     }
 
     void MultiplayerConnectionViewportMessageSystemComponent::DrawConnectionStatus(AzNetworking::ConnectionState connectionState)
