@@ -6,5 +6,8 @@
 #
 #
 
-add_subdirectory(Native)
-add_subdirectory(Python)
+set(FILES
+Tests/TestEngine/TestImpactPythonTestEngineTest.cpp
+Tests/TestRunner/TestImpactPythonTestRunnerTest.cpp
+Tests/TestImpactPythonRuntimeTestMain.cpp
+)
