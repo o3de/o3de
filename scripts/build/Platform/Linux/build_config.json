@@ -39,7 +39,7 @@
   },
   "validation": {
     "TAGS": [],
-    "COMMAND": "python_linux.cmd",
+    "COMMAND": "python_linux.sh",
     "PARAMETERS": {
       "SCRIPT_PATH": "scripts/commit_validation/validate_file_or_folder.py"
     }
