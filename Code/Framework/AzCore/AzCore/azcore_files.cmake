@@ -416,8 +416,6 @@ set(FILES
     Memory/NewAndDelete.inl
     Memory/OSAllocator.cpp
     Memory/OSAllocator.h
-    Memory/OverrunDetectionAllocator.cpp
-    Memory/OverrunDetectionAllocator.h
     Memory/PoolAllocator.h
     Memory/PoolSchema.cpp
     Memory/PoolSchema.h

@@ -19,7 +19,6 @@
 
 #include <AzCore/Memory/AllocationRecords.h>
 
-#include <AzCore/Memory/OverrunDetectionAllocator.h>
 #include <AzCore/Memory/AllocatorManager.h>
 #include <AzCore/Memory/MallocSchema.h>
 
@@ -111,8 +110,6 @@ namespace AZ
 
     AZ_CONSOLEFREEFUNC(PrintEntityName, AZ::ConsoleFunctorFlags::Null,
         "Parameter: EntityId value, Prints the name of the entity to the console");
-
-    static EnvironmentVariable<OverrunDetectionSchema> s_overrunDetectionSchema;
 
     static EnvironmentVariable<MallocSchema> s_mallocSchema;
 
@@ -924,7 +921,6 @@ namespace AZ
             m_isSystemAllocatorOwner = false;
         }
 
-        s_overrunDetectionSchema.Reset();
         s_mallocSchema.Reset();
         if (m_isOSAllocatorOwner)
         {
