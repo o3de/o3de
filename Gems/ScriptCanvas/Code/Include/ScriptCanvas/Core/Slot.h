@@ -237,7 +237,7 @@ namespace ScriptCanvas
         AZ::Crc32 m_displayGroup;
         AZ::Crc32 m_dynamicGroup;
 
-        bool m_canHaveInputField = false;
+        bool m_canHaveInputField = true;
 
         bool               m_isLatentSlot  = false;
         SlotDescriptor     m_descriptor;
