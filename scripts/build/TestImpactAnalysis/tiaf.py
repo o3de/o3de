@@ -113,7 +113,7 @@ class TestImpact:
 
     def _parse_arguments_to_runtime(self, args, sequence_type, runtime_args):
         """
-        Fetches the relevant keys from the provided dict, and applies the values of the arguments(or applies them as a flag) to our runtime_args list
+        Fetches the relevant keys from the provided dict, and applies the values of the arguments(or applies them as a flag) to our runtime_args list.
 
         @param args: Dict containing the arguments passed to this TestImpact object. Will contain all the runtime arguments we need to apply.
         @sequence_type: The sequence type as determined when initialising this TestImpact object.
@@ -171,7 +171,7 @@ class TestImpact:
         """
         This method handles the different cases of when we have historic data, and carries out the desired action.
         Case 1:
-            This commit is different to the last commit in our historic data. Action: Generate change-list
+            This commit is different to the last commit in our historic data. Action: Generate change-list.
         Case 2:
             This commit has already been run in TIAF, and we have useful historic data. Action: Use that data for our TIAF run.
         Case 3:
@@ -181,10 +181,11 @@ class TestImpact:
         self._src_commit = self._persistent_storage.last_commit_hash
 
         # Check to see if this is a re-run for this commit before any other changes have come in
-        # if the last commit hash in our historic data is the same as our current commit hash
+
+        # If the last commit hash in our historic data is the same as our current commit hash
         if self._persistent_storage.is_last_commit_hash_equal_to_this_commit_hash:
 
-            # if we have the last commit hash of our previous run in our json then we will just use the data from that run
+            # If we have the last commit hash of our previous run in our json then we will just use the data from that run
             if self._persistent_storage.has_previous_last_commit_hash:
                 logger.info(
                     f"This sequence is being re-run before any other changes have come in so the last commit '{self._persistent_storage.this_commit_last_commit_hash}' used for the previous sequence will be used instead.")
@@ -196,7 +197,7 @@ class TestImpact:
                 self._persistent_storage = None
                 self._can_rerun_with_instrumentation = False
         else:
-            # if this commit is different to the last commit in our historic data, we can diff the commits to get our change list
+            # If this commit is different to the last commit in our historic data, we can diff the commits to get our change list
             self._attempt_to_generate_change_list()
 
     def _initialise_persistent_storage(self, suite: str,  s3_bucket: str = None, s3_top_level_dir: str = None):
@@ -424,16 +425,16 @@ class TestImpact:
     @property
     def _is_source_of_truth_branch(self):
         """
-        True if the source branch the source of truth
-        False otherwise
+        True if the source branch the source of truth.
+        False otherwise.
         """
         return self._source_of_truth_branch == self._src_branch
 
     @property
     def _has_historic_data(self):
         """
-        True if persistent storage is not None and it has historic data
-        False otherwise
+        True if persistent storage is not None and it has historic data.
+        False otherwise.
         """
         if self._persistent_storage:
             return self._persistent_storage.has_historic_data
