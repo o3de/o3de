@@ -31,6 +31,11 @@ namespace Terrain
     {
     }
 
+    bool TerrainMacroMaterialManager::MacroMaterialData2D::Overlaps(const AZ::Vector2& min, const AZ::Vector2& max)
+    {
+        return m_minBounds.IsLessThan(max) && m_maxBounds.IsGreaterThan(min);
+    }
+
     void TerrainMacroMaterialManager::Initialize(
         const AZStd::shared_ptr<AZ::Render::BindlessImageArrayHandler>& bindlessImageHandler,
         AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>& terrainSrg)
@@ -333,33 +338,31 @@ namespace Terrain
     }
 
     template<typename Callback>
-    void TerrainMacroMaterialManager::ForMacroMaterialsInBounds(const AZ::Vector2& minBounds, const AZ::Vector2& maxBounds, Callback callback)
+    void TerrainMacroMaterialManager::ForMacroMaterialsInRegion(const ClipmapBoundsRegion& region, Callback callback)
     {
-        // Get the bounds in integer coordinates
-        float startCoordXf = AZStd::floorf(minBounds.GetX() / MacroMaterialGridSize);
-        int32_t startCoordX = aznumeric_cast<int32_t>(startCoordXf);
-        int32_t startCoordY = aznumeric_cast<int32_t>(AZStd::floorf(minBounds.GetY() / MacroMaterialGridSize));
-        int32_t endCoordX = aznumeric_cast<int32_t>(AZStd::ceilf(maxBounds.GetX() / MacroMaterialGridSize)) + 1;
-        int32_t endCoordY = aznumeric_cast<int32_t>(AZStd::ceilf(maxBounds.GetY() / MacroMaterialGridSize)) + 1;
+        AZ::Vector2 regionCorner = AZ::Vector2(region.m_worldAabb.GetMin());
+        Vector2i extents = region.m_localAabb.m_max - region.m_localAabb.m_min;
 
-        // Clamp the bounds
-        startCoordX = AZStd::GetMax(m_startCoord.m_x, startCoordX);
-        startCoordY = AZStd::GetMax(m_startCoord.m_y, startCoordY);
-        endCoordX = AZStd::GetMin(m_startCoord.m_x + m_tiles1D, endCoordX);
-        endCoordY = AZStd::GetMin(m_startCoord.m_y + m_tiles1D, endCoordY);
-
-        AZ_Printf("TerrainMacroMaterialManager", "Updating materials from (%i, %i) to (%i, %i)", startCoordX, startCoordY, endCoordX, endCoordY);
-
-        for (int32_t worldY = startCoordY; worldY < endCoordY; ++worldY)
+        for (int32_t y = 0; y < extents.m_y; ++y)
         {
-            for (int32_t worldX = startCoordX; worldX < endCoordX; ++worldX)
+            for (int32_t x = 0; x < extents.m_x; ++x)
             {
-                uint32_t localX = ((worldX % m_tiles1D) + m_tiles1D) % m_tiles1D;
-                uint32_t localY = ((worldY % m_tiles1D) + m_tiles1D) % m_tiles1D;
-                uint32_t idx = (localY * m_tiles1D + localX);
-                const AZ::Vector2 corner = AZ::Vector2(worldX * MacroMaterialGridSize, worldY * MacroMaterialGridSize);
+                const Vector2i local = region.m_localAabb.m_min + Vector2i(x, y);
+                uint32_t idx = (local.m_y * m_tiles1D + local.m_x);
+                const AZ::Vector2 corner = regionCorner + AZ::Vector2(x * MacroMaterialGridSize, y * MacroMaterialGridSize);
                 callback(idx, corner);
             }
+        }
+    }
+
+    template<typename Callback>
+    void TerrainMacroMaterialManager::ForMacroMaterialsInBounds(const AZ::Vector2& minBounds, const AZ::Vector2& maxBounds, Callback callback)
+    {
+        auto updateRegionsList = m_macroMaterialTileBounds.TransformRegion(minBounds, maxBounds);
+
+        for (const auto& region : updateRegionsList)
+        {
+            ForMacroMaterialsInRegion(region, callback);
         }
     }
 
@@ -376,28 +379,20 @@ namespace Terrain
 
     void TerrainMacroMaterialManager::Update(const AZ::RPI::ViewPtr mainView, AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>& terrainSrg)
     {
-        const Vector2i newStartCoord = [&]()
-        {
-            AZ::Vector3 cameraPosition = mainView->GetCameraTransform().GetTranslation();
-            uint32_t halfTileCount = m_tiles1D / 2;
-            const int32_t startCoordX = aznumeric_cast<int32_t>(AZStd::floorf((cameraPosition.GetX()) / MacroMaterialGridSize)) - halfTileCount;
-            const int32_t startCoordY = aznumeric_cast<int32_t>(AZStd::floorf((cameraPosition.GetY()) / MacroMaterialGridSize)) - halfTileCount;
-
-            auto coordCheck = [&](int32_t newStartCoord, int32_t lodStartCoord) -> int32_t
-            {
-                return
-                    newStartCoord > lodStartCoord + 1 ? newStartCoord - 1 :
-                    newStartCoord < lodStartCoord ? newStartCoord :
-                    lodStartCoord;
-            };
-
-            return Vector2i(coordCheck(startCoordX, m_startCoord.m_x), coordCheck(startCoordY, m_startCoord.m_y));
-        }();
+        AZ::Vector3 mainCameraPosition = mainView->GetCameraTransform().GetTranslation();
 
         if (m_terrainSizeChanged)
         {
             m_terrainSizeChanged = false;
-            m_startCoord = newStartCoord;
+            m_bufferNeedsUpdate = true;
+
+            ClipmapBoundsDescriptor desc;
+            desc.m_clipmapToWorldScale = MacroMaterialGridSize;
+            desc.m_clipmapUpdateMultiple = 1;
+            desc.m_size = m_tiles1D;
+            desc.m_worldSpaceCenter = AZ::Vector2(mainCameraPosition);
+
+            m_macroMaterialTileBounds = ClipmapBounds(desc);
 
             // Rebuild the macro material tiles from scratch when the world size changes. This could be made more efficient
             // but is fine for now since world resizes are rare.
@@ -424,104 +419,53 @@ namespace Terrain
         }
         else
         {
-            if (newStartCoord != m_startCoord)
+            auto updateRegionList = m_macroMaterialTileBounds.UpdateCenter(AZ::Vector2(mainCameraPosition));
+            for (const auto& updateRegion : updateRegionList)
             {
-                auto UpdateTile = [this](int32_t worldX, int32_t worldY)
+                AZStd::vector<MacroMaterial> affectedMaterials;
+                affectedMaterials.reserve(AZStd::GetMin(m_macroMaterials.size(), 128ull));
+                AZ::Vector2 regionMin = AZ::Vector2(updateRegion.m_worldAabb.GetMin());
+                AZ::Vector2 regionMax = AZ::Vector2(updateRegion.m_worldAabb.GetMax());
+
+                // Do a coarse check of which materials might affect this region's tiles by gathering all
+                // macro materials that overlap the region. This should reduce the number of checks that need
+                // to be done per-tile.
+
+                for (auto& [entityId, macroMaterial] : m_macroMaterials)
                 {
-                    uint32_t localX = ((worldX % m_tiles1D) + m_tiles1D) % m_tiles1D;
-                    uint32_t localY = ((worldY % m_tiles1D) + m_tiles1D) % m_tiles1D;
-                    uint32_t tileIndex = localY * m_tiles1D + localX;
-                    AZ::Vector2 tileMinBounds = AZ::Vector2(worldX * MacroMaterialGridSize, worldY * MacroMaterialGridSize);
-                    AZ::Vector2 tileMaxBounds = tileMinBounds + AZ::Vector2(MacroMaterialGridSize);
-
-                    MacroMaterialRefs& refs = m_materialRefGridShaderData.at(tileIndex);
-                    refs = DefaultRefs; // clear out current refs
-
-                    for (auto& macroMaterial : m_macroMaterials)
+                    //if (macroMaterial.m_data.Overlaps(regionMin, regionMax))
                     {
-                        const AZ::Vector2& minBounds = macroMaterial.second.m_data.m_minBounds;
-                        const AZ::Vector2& maxBounds = macroMaterial.second.m_data.m_maxBounds;
+                        affectedMaterials.push_back(macroMaterial);
+                    }
+                }
 
-                        bool overlaps =
-                            minBounds.IsLessThan(tileMaxBounds) &&
-                            maxBounds.IsGreaterThan(tileMinBounds);
+                // Check the list of macro materials against all the tiles in this region.
 
-                        if (overlaps)
+                ForMacroMaterialsInRegion(updateRegion,
+                    [&](uint32_t idx, const AZ::Vector2& tileMin)
+                    {
+                        AZ::Vector2 tileMax = tileMin + AZ::Vector2(MacroMaterialGridSize);
+                        MacroMaterialRefs& refs = m_materialRefGridShaderData.at(idx);
+                        refs = DefaultRefs; // clear out current refs
+
+                        for (MacroMaterial macroMaterial : affectedMaterials)
                         {
-                            AZ_Printf("TerrainMacroMaterialManager", "Adding macro material %u to tile at world (%i, %i), local (%u, %u), idx %u",
-                                macroMaterial.second.m_materialRef, worldX, worldY, localX, localY, tileIndex);
-
-                            for (uint16_t& ref : refs)
+                            if (macroMaterial.m_data.Overlaps(tileMin, tileMax))
                             {
-                                if (ref == InvalidMacroMaterialRef)
+                                for (uint16_t& ref : refs)
                                 {
-                                    ref = macroMaterial.second.m_materialRef;
-                                    break;
+                                    if (ref == InvalidMacroMaterialRef)
+                                    {
+                                        ref = macroMaterial.m_materialRef;
+                                        break;
+                                    }
                                 }
+
                             }
                         }
                     }
-                };
+                );
 
-                // Update column strip
-                int32_t minX = 0;
-                int32_t maxX = 0;
-                int32_t minX2 = 0;
-                int32_t maxX2 = 0;
-                if (newStartCoord.m_x < m_startCoord.m_x)
-                {
-                    minX = newStartCoord.m_x;
-                    maxX = m_startCoord.m_x;
-                    minX2 = maxX;
-                    maxX2 = newStartCoord.m_x + m_tiles1D;
-                }
-                else
-                {
-                    minX = m_startCoord.m_x + m_tiles1D;
-                    maxX = newStartCoord.m_x + m_tiles1D;
-                    minX2 = newStartCoord.m_x;
-                    maxX2 = minX;
-                }
-                if (minX != maxX)
-                {
-                    for (int32_t y = newStartCoord.m_y; y < newStartCoord.m_y + m_tiles1D; ++y)
-                    {
-                        for (int32_t x = minX; x < maxX; ++x)
-                        {
-                            UpdateTile(x, y);
-                        }
-                    }
-                    AZ_Printf("TerrainMacroMaterialManager", "Updating material Y strip from (%i, %i) to (%i, %i)", minX, newStartCoord.m_y, maxX, newStartCoord.m_y + m_tiles1D);
-                }
-
-                // Update row strip, except the tiles already updated in the column strip
-                int32_t minY = 0;
-                int32_t maxY = 0;
-                if (newStartCoord.m_y < m_startCoord.m_y)
-                {
-                    minY = newStartCoord.m_y;
-                    maxY = m_startCoord.m_y;
-                }
-                else
-                {
-                    minY = m_startCoord.m_y + m_tiles1D;
-                    maxY = newStartCoord.m_y + m_tiles1D;
-                }
-
-                if (minY != maxY)
-                {
-                    for (int32_t y = minY; y < maxY; ++y)
-                    {
-                        for (int32_t x = minX2; x <= maxX2; ++x)
-                        {
-                            UpdateTile(x, y);
-                        }
-                    }
-
-                    AZ_Printf("TerrainMacroMaterialManager", "Updating material X strip from (%i, %i) to (%i, %i)", minX2, minY, maxX2, maxY);
-                }
-
-                m_startCoord = newStartCoord;
                 m_bufferNeedsUpdate = true;
             }
         }

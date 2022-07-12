@@ -19,6 +19,7 @@
 #include <TerrainRenderer/BindlessImageArrayHandler.h>
 #include <TerrainRenderer/TerrainMacroMaterialBus.h>
 #include <TerrainRenderer/Vector2i.h>
+#include <TerrainRenderer/ClipmapBounds.h>
 
 namespace Terrain
 {
@@ -78,6 +79,8 @@ namespace Terrain
             MacroMaterialData2D() = default;
             MacroMaterialData2D(const MacroMaterialData& data);
 
+            bool Overlaps(const AZ::Vector2& min, const AZ::Vector2& max);
+
             AZ::Vector2 m_minBounds{ AZ::Vector2::CreateZero() };
             AZ::Vector2 m_maxBounds{ AZ::Vector2::CreateZero() };
 
@@ -110,6 +113,8 @@ namespace Terrain
         void RemoveMacroMaterialShaderEntry(uint16_t shaderDataIdx, MacroMaterialRefs& materialRefs);
 
         template<typename Callback>
+        void ForMacroMaterialsInRegion(const ClipmapBoundsRegion& region, Callback callback);
+        template<typename Callback>
         void ForMacroMaterialsInBounds(const AZ::Vector2& minBounds, const AZ::Vector2& maxBounds, Callback callback);
 
         void RemoveAllImages();
@@ -123,7 +128,7 @@ namespace Terrain
         AZStd::map<AZ::EntityId, MacroMaterial> m_macroMaterials; // Used for looking up macro materials by entity id when the data isn't provided by a bus.
 
         int32_t m_tiles1D{ 0 };
-        Vector2i m_startCoord;
+        ClipmapBounds m_macroMaterialTileBounds;
 
         AZStd::shared_ptr<AZ::Render::BindlessImageArrayHandler> m_bindlessImageHandler;
         AZ::Render::GpuBufferHandler m_materialDataBuffer;
