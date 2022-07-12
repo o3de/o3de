@@ -46,20 +46,6 @@ namespace AZ
             return nullptr;
         }
 
-        bool PassTemplate::AttachmentFitsSlot(const RHI::UnifiedAttachmentDescriptor& attachmentDesc, Name slotName) const
-        {
-            // Check input slots
-            for (const PassSlot& slot : m_slots)
-            {
-                if (slotName == slot.m_name)
-                {
-                    return (slot.AcceptsFormat(attachmentDesc) &&
-                            slot.AcceptsDimension(attachmentDesc));
-                }
-            }
-            return false;
-        }
-
         void PassTemplate::AddSlot(PassSlot passSlot)
         {
             m_slots.push_back(passSlot);

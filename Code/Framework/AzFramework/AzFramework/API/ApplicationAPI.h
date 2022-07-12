@@ -103,6 +103,9 @@ namespace AzFramework
         virtual void CalculateBranchTokenForEngineRoot(AZStd::string& token) const = 0;
 
         /// Returns true if Prefab System is enabled, false if Legacy Slice System is enabled
+        virtual bool IsEditorModeFeedbackEnabled() const { return false; }
+
+        /// Returns true if Prefab System is enabled, false if Legacy Slice System is enabled
         virtual bool IsPrefabSystemEnabled() const { return true; }
 
         /// Returns true if the additional work in progress Prefab features are enabled, false otherwise

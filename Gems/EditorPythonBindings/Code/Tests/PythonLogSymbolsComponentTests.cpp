@@ -167,19 +167,12 @@ namespace UnitTest
             return AZStd::string::format(AZ_STRING_FORMAT, AZ_STRING_ARG(s));
         };
 
-        auto uuidHelper = [](const AZ::Uuid& uuid)
-        {
-            char buffer[AZ::Uuid::MaxStringBuffer];
-            uuid.ToString(buffer, AZ::Uuid::MaxStringBuffer, true, true);
-            return AZStd::string(buffer);
-        };
-
         for (auto& typeInfo : typesToTest)
         {
             AZStd::string_view result = pythonLogSymbolsComponent.FetchPythonTypeAndTraitsWrapper(AZStd::get<0>(typeInfo), AZStd::get<1>(typeInfo));
             EXPECT_EQ(result, AZStd::get<2>(typeInfo))
                 << "Expected '" << stringViewHelper(AZStd::get<2>(typeInfo)).c_str()
-                << "' when converting type with id " << uuidHelper(AZStd::get<0>(typeInfo)).c_str()
+                << "' when converting type with id " << AZStd::get<0>(typeInfo).ToFixedString().c_str()
                 << " but got '" << stringViewHelper(result).c_str() << "'.";
         }
     }

@@ -11,11 +11,6 @@
         "BlendDest" : "AlphaSourceInverse",
         "BlendOp" : "Add"
     },
-
-    "CompilerHints":
-    {
-        "DisableOptimizations":false
-    },
     
     "ProgramSettings":
     {

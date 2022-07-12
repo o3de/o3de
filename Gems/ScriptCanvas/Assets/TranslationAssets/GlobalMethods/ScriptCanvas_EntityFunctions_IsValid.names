@@ -1,0 +1,40 @@
+{
+    "entries": [
+        {
+            "base": "ScriptCanvas_EntityFunctions_IsValid",
+            "context": "BehaviorMethod",
+            "variant": "",
+            "details": {
+                "name": "Is Valid",
+                "category": "Entity/Entity"
+            },
+            "methods": [
+                {
+                    "base": "ScriptCanvas_EntityFunctions_IsValid",
+                    "details": {
+                        "name": "Is Valid",
+                        "tooltip": "Returns true if Source is valid, else false."
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity Id",
+                                "tooltip": "The entity to check."
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Result",
+                                "tooltip": "true if entity is valid, false otherwise."
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

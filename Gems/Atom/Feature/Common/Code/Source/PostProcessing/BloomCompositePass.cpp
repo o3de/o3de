@@ -76,8 +76,8 @@ namespace AZ
             // in the pass file, which could result in errors during following passes' initialization
             AZ_Assert(GetInputOutputCount() > 0, "[BloomCompositePass '%s']: must have an output", GetPathName().GetCStr());
 
-            RPI::PassAttachment* inAttachment = GetInputBinding(0).m_attachment.get();
-            RPI::PassAttachment* outAttachment = GetInputOutputBinding(0).m_attachment.get();
+            RPI::PassAttachment* inAttachment = GetInputBinding(0).GetAttachment().get();
+            RPI::PassAttachment* outAttachment = GetInputOutputBinding(0).GetAttachment().get();
 
             if (inAttachment != nullptr && outAttachment != nullptr)
             {
@@ -118,10 +118,10 @@ namespace AZ
         void BloomCompositePass::CreateBinding(BloomCompositeChildPass* pass, uint32_t mipLevel)
         {
             RPI::PassAttachmentBinding& parentInBinding = GetInputBinding(0);
-            RPI::Ptr<RPI::PassAttachment>& parentInAttachment = parentInBinding.m_attachment;
+            const RPI::Ptr<RPI::PassAttachment>& parentInAttachment = parentInBinding.GetAttachment();
 
             RPI::PassAttachmentBinding& parentInOutBinding = GetInputOutputBinding(0);
-            RPI::Ptr<RPI::PassAttachment>& parentInOutAttachment = parentInOutBinding.m_attachment;
+            const RPI::Ptr<RPI::PassAttachment>& parentInOutAttachment = parentInOutBinding.GetAttachment();
 
             // Create input binding, from downsampling pass
             RPI::PassAttachmentBinding inBinding;
@@ -129,13 +129,14 @@ namespace AZ
             inBinding.m_shaderInputName = "m_inputTexture";
             inBinding.m_slotType = RPI::PassSlotType::Input;
             inBinding.m_scopeAttachmentUsage = RHI::ScopeAttachmentUsage::Shader;
-            inBinding.m_attachment = parentInAttachment;
             inBinding.m_connectedBinding = &parentInBinding;
 
             RHI::ImageViewDescriptor inViewDesc;
             inViewDesc.m_mipSliceMin = static_cast<uint16_t>(mipLevel);
             inViewDesc.m_mipSliceMax = static_cast<uint16_t>(mipLevel);
             inBinding.m_unifiedScopeDesc.SetAsImage(inViewDesc);
+            inBinding.SetAttachment(parentInAttachment);
+
 
             pass->AddAttachmentBinding(inBinding);
 
@@ -145,15 +146,21 @@ namespace AZ
             outBinding.m_shaderInputName = "m_outputTexture";
             outBinding.m_slotType = RPI::PassSlotType::Output;
             outBinding.m_scopeAttachmentUsage = RHI::ScopeAttachmentUsage::Shader;
-            outBinding.m_attachment = (mipLevel == 0) ? parentInOutAttachment : parentInAttachment;
-            outBinding.m_connectedBinding = (mipLevel == 0) ? &parentInOutBinding : &parentInBinding;
 
-            if (mipLevel != 0)
+            if (mipLevel == 0)
             {
+                outBinding.m_connectedBinding = &parentInOutBinding;
+                outBinding.SetAttachment(parentInOutAttachment);
+            }
+            else
+            {
+                outBinding.m_connectedBinding = &parentInBinding;
+
                 RHI::ImageViewDescriptor outViewDesc;
                 outViewDesc.m_mipSliceMin = static_cast<uint16_t>(mipLevel - 1);
                 outViewDesc.m_mipSliceMax = static_cast<uint16_t>(mipLevel - 1);
                 outBinding.m_unifiedScopeDesc.SetAsImage(outViewDesc);
+                outBinding.SetAttachment(parentInAttachment);
             }
             
             pass->AddAttachmentBinding(outBinding);

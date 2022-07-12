@@ -273,6 +273,7 @@ namespace EMStudio
 
         for (QAction* action : m_actions)
         {
+            action->setShortcutContext(Qt::WidgetShortcut);
             addAction(action);
         }
 
@@ -293,7 +294,8 @@ namespace EMStudio
 
             QAction* action = new QAction(
                 QIcon(":/EMotionFX/Open.svg"),
-                tr("Open"));
+                tr("Open"),
+                this);
             action->setMenu(m_openMenu);
 
             QToolButton* button = new QToolButton();
@@ -312,7 +314,8 @@ namespace EMStudio
 
             QAction* saveMenuAction = new QAction(
                 QIcon(":/EMotionFX/Save.svg"),
-                tr("Save anim graph"));
+                tr("Save anim graph"),
+                this);
             saveMenuAction->setMenu(contextMenu);
 
             QToolButton* button = new QToolButton();

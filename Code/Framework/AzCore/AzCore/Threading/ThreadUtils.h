@@ -16,7 +16,8 @@ namespace AZ::Threading
     //!         result = max (minNumWorkerThreads, workerThreadsRatio * (num_hardware_threads - reservedNumThreads))
     //! @param workerThreadsRatio scale applied to the calculated maximum number of threads available after reserved threads have been accounted for. Clamped between 0 and 1.
     //! @param minNumWorkerThreads minimum value that will be returned. Value is unclamped and can be more than num_hardware_threads.
+    //! @param maxNumWorkerThreads maximum value that will be returned. Ignored if 0 and overrides maximum derived from other parameters.
     //! @param reservedNumThreads number of hardware threads to reserve for O3DE system threads. Value clamped to num_hardware_threads.
     //! @return number of worker threads for the calling system to allocate
-    uint32_t CalcNumWorkerThreads(float workerThreadsRatio, uint32_t minNumWorkerThreads, uint32_t reservedNumThreads);
+    uint32_t CalcNumWorkerThreads(float workerThreadsRatio, uint32_t minNumWorkerThreads, uint32_t maxNumWorkerThreads, uint32_t reservedNumThreads);
 };

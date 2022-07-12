@@ -93,7 +93,6 @@ namespace EMotionFX
             /*numVerts=*/      mesh->GetNumVertices(),
             /*numIndices=*/    mesh->GetNumIndices(),
             /*numPolygons=*/   mesh->GetNumPolygons(),
-            /*materialIndex=*/ 0,
             /*numBones=*/      aznumeric_caster(skinningInfo.size())
         );
         mesh->AddSubMesh(subMesh);

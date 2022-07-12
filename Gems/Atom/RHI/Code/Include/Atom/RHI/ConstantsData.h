@@ -228,7 +228,7 @@ namespace AZ
         {
             AZStd::span<const uint8_t> constantBytes = GetConstantRaw(inputIndex);
             const size_t elementSize = sizeof(T);
-            const size_t elementCount = DivideByMultiple(constantBytes.size(), elementSize);
+            const size_t elementCount = AZ::DivideAndRoundUp(constantBytes.size(), elementSize);
             const size_t sizeInBytes = elementCount * elementSize;
             if (ValidateConstantAccess(inputIndex, ValidateConstantAccessExpect::Complete, 0, sizeInBytes))
             {

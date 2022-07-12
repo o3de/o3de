@@ -75,7 +75,7 @@ namespace AZ
             AZ_CLASS_ALLOCATOR(LightingPreset, AZ::SystemAllocator, 0);
             static void Reflect(AZ::ReflectContext* context);
 
-            AZStd::string m_displayName;
+            static constexpr const char* Extension = "lightingpreset.azasset";
             AZ::Data::Asset<AZ::RPI::StreamingImageAsset> m_iblDiffuseImageAsset;
             AZ::Data::Asset<AZ::RPI::StreamingImageAsset> m_iblSpecularImageAsset;
             AZ::Data::Asset<AZ::RPI::StreamingImageAsset> m_skyboxImageAsset;
@@ -95,9 +95,7 @@ namespace AZ
                 DirectionalLightFeatureProcessorInterface* directionalLightFeatureProcessor,
                 const Camera::Configuration& cameraConfig,
                 AZStd::vector<DirectionalLightFeatureProcessorInterface::LightHandle>& lightHandles,
-                Data::Instance<AZ::RPI::Material> shadowCatcherMaterial = nullptr,
-                RPI::MaterialPropertyIndex shadowCatcherOpacityPropertyIndex = RPI::MaterialPropertyIndex(),
-                bool enableAlternateSkybox = false) const;
+                bool enableAlternateSkybox) const;
         };
 
         using LightingPresetPtr = AZStd::shared_ptr<LightingPreset>;

@@ -12,6 +12,7 @@
 #include <AzFramework/XcbEventHandler.h>
 #include <AzFramework/XcbConnectionManager.h>
 #include <qpa/qplatformnativeinterface.h>
+#include <AzFramework/XcbEventHandler.h>
 #endif
 
 namespace Editor
@@ -55,6 +56,21 @@ namespace Editor
 #ifdef PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB
             AzFramework::XcbEventHandlerBus::Broadcast(
                 &AzFramework::XcbEventHandler::HandleXcbEvent, static_cast<xcb_generic_event_t*>(message));
+
+            const auto event = static_cast<xcb_generic_event_t*>(message);
+            if ((event->response_type & AzFramework::s_XcbResponseTypeMask) == XCB_CLIENT_MESSAGE)
+            {
+                // Do not filter out XCB_CLIENT_MESSAGE events. These include
+                // _NET_WM_PING events, which window managers use to detect if
+                // an application is still responding. When Qt creates the
+                // window, it sets the _NET_WM_PING atom of the WM_PROTOCOLS
+                // property, so window managers will expect the application to
+                // support this protocol. By skipping the filtering of this
+                // event, Qt processes the ping event normally, so that window
+                // managers do not think that the Editor has stopped
+                // responding.
+                return false;
+            }
 #endif
             return true;
         }

@@ -202,29 +202,14 @@ namespace RedirectOutput
 
     PyObject* s_RedirectModule = nullptr;
 
-    void Intialize(PyObject* module)
+    void Intialize(PyObject* module, RedirectOutputFunc stdoutFunction, RedirectOutputFunc stderrFunction)
     {
         s_RedirectModule = module;
 
-        SetRedirection("stdout", g_redirect_stdout_saved, g_redirect_stdout, []([[maybe_unused]] const char* msg) {
-            AZ_TracePrintf("Python", msg);
-        });
+        SetRedirection("stdout", g_redirect_stdout_saved, g_redirect_stdout, stdoutFunction);
+        SetRedirection("stderr", g_redirect_stderr_saved, g_redirect_stderr, stderrFunction);
 
-        SetRedirection("stderr", g_redirect_stderr_saved, g_redirect_stderr, []([[maybe_unused]] const char* msg) {
-            AZStd::string lastPythonError = msg;
-            constexpr const char* pythonErrorPrefix = "ERROR:root:";
-            constexpr size_t lengthOfErrorPrefix = AZStd::char_traits<char>::length(pythonErrorPrefix);
-            auto errorPrefix = lastPythonError.find(pythonErrorPrefix);
-            if (errorPrefix != AZStd::string::npos)
-            {
-                lastPythonError.erase(errorPrefix, lengthOfErrorPrefix);
-            }
-            O3DE::ProjectManager::PythonBindingsInterface::Get()->AddErrorString(lastPythonError);
-
-            AZ_TracePrintf("Python", msg);
-        });
-
-        PySys_WriteStdout("RedirectOutput installed");
+        PySys_WriteStdout("RedirectOutput installed\n");
     }
 
     void Shutdown()
@@ -248,6 +233,25 @@ namespace O3DE::ProjectManager
     PythonBindings::~PythonBindings()
     {
         StopPython();
+    }
+
+    void PythonBindings::OnStdOut(const char* msg)
+    {
+        AZ::Debug::Trace::Output("Python", msg);
+    }
+
+    void PythonBindings::OnStdError(const char* msg)
+    {
+        AZStd::string_view lastPythonError{ msg };
+        if (constexpr AZStd::string_view pythonErrorPrefix = "ERROR:root:";
+            lastPythonError.starts_with(pythonErrorPrefix))
+        {
+            lastPythonError = lastPythonError.substr(pythonErrorPrefix.size());
+        }
+
+        PythonBindingsInterface::Get()->AddErrorString(lastPythonError);
+
+        AZ::Debug::Trace::Output("Python", msg);
     }
 
     bool PythonBindings::PythonStarted()
@@ -294,7 +298,7 @@ namespace O3DE::ProjectManager
             const bool initializeSignalHandlers = true;
             pybind11::initialize_interpreter(initializeSignalHandlers);
 
-            RedirectOutput::Intialize(PyImport_ImportModule("azlmbr_redirect"));
+            RedirectOutput::Intialize(PyImport_ImportModule("azlmbr_redirect"), &PythonBindings::OnStdOut, &PythonBindings::OnStdError);
 
             // Acquire GIL before calling Python code
             AZStd::lock_guard<decltype(m_lock)> lock(m_lock);
@@ -337,10 +341,7 @@ namespace O3DE::ProjectManager
             RedirectOutput::Shutdown();
             pybind11::finalize_interpreter();
         }
-        else
-        {
-            AZ_Warning("ProjectManagerWindow", false, "Did not finalize since Py_IsInitialized() was false");
-        }
+
         return !PyErr_Occurred();
     }
 
@@ -724,16 +725,19 @@ namespace O3DE::ProjectManager
         return result && registrationResult;
     }
 
-    AZ::Outcome<ProjectInfo> PythonBindings::CreateProject(const QString& projectTemplatePath, const ProjectInfo& projectInfo)
+    AZ::Outcome<ProjectInfo> PythonBindings::CreateProject(const QString& projectTemplatePath, const ProjectInfo& projectInfo, bool registerProject)
     {
+        using namespace pybind11::literals;
+
         ProjectInfo createdProjectInfo;
         bool result = ExecuteWithLock([&] {
             auto projectPath = QString_To_Py_Path(projectInfo.m_path);
 
             auto createProjectResult = m_engineTemplate.attr("create_project")(
-                projectPath,
-                QString_To_Py_String(projectInfo.m_projectName), // project_path
-                QString_To_Py_Path(projectTemplatePath)          // template_path
+                "project_path"_a = projectPath,
+                "project_name"_a = QString_To_Py_String(projectInfo.m_projectName),
+                "template_path"_a = QString_To_Py_Path(projectTemplatePath),
+                "no_register"_a = !registerProject
             );
             if (createProjectResult.cast<int>() == 0)
             {
@@ -1356,11 +1360,18 @@ namespace O3DE::ProjectManager
 
     IPythonBindings::ErrorPair PythonBindings::GetErrorPair()
     {
-        AZStd::string detailedString = m_pythonErrorStrings.size() == 1
-            ? ""
-            : AZStd::accumulate(m_pythonErrorStrings.begin(), m_pythonErrorStrings.end(), AZStd::string(""));
+        if (const size_t errorSize = m_pythonErrorStrings.size())
+        {
+            AZStd::string detailedString =
+                errorSize == 1 ? "" : AZStd::accumulate(m_pythonErrorStrings.begin(), m_pythonErrorStrings.end(), AZStd::string(""));
 
-        return IPythonBindings::ErrorPair(m_pythonErrorStrings.front(), detailedString);
+            return IPythonBindings::ErrorPair(m_pythonErrorStrings.front(), detailedString);
+        }
+        // If no error was found
+        else
+        {
+            return IPythonBindings::ErrorPair(AZStd::string("Unknown Python Bindings Error"), AZStd::string(""));
+        }
     }
 
     void PythonBindings::AddErrorString(AZStd::string errorString)
@@ -1372,4 +1383,4 @@ namespace O3DE::ProjectManager
     {
         m_pythonErrorStrings.clear();
     }
-}
+} // namespace O3DE::ProjectManager

@@ -33,5 +33,7 @@ namespace ScriptCanvasEditor
         void Activate();
         void Deactivate();
         ////
+
+        void ReflectEventTypes();
     };
 }

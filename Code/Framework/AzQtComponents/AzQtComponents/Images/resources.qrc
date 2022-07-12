@@ -1,4 +1,16 @@
 <!DOCTYPE RCC><RCC version="1.0">
+    <qresource prefix="/Application">
+        <file alias="popout-overlay.svg">Application/popout-overlay.svg</file>
+        <file alias="popout-overlay-hover.svg">Application/popout-overlay-hover.svg</file>
+        <file alias="titlebar-close.svg">Application/titlebar-close.svg</file>
+        <file alias="titlebar-maximize.svg">Application/titlebar-maximize.svg</file>
+        <file alias="titlebar-minimize.svg">Application/titlebar-minimize.svg</file>
+        <file alias="titlebar-popout-hover.svg">Application/titlebar-popout-hover.svg</file>
+        <file alias="titlebar-popout.svg">Application/titlebar-popout.svg</file>
+        <file alias="titlebar-popout-small.svg">Application/titlebar-popout-small.svg</file>
+        <file alias="titlebar-restore-hover.svg">Application/titlebar-restore-hover.svg</file>
+        <file alias="titlebar-restore.svg">Application/titlebar-restore.svg</file>
+    </qresource>
     <qresource prefix="/Entity">
         <file alias="entity.svg">Entity/entity.svg</file>
         <file alias="entity_editoronly.svg">Entity/entity_editoronly.svg</file>

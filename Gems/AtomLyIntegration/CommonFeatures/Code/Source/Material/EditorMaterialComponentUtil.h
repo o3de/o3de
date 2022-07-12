@@ -15,6 +15,7 @@
 #include <Atom/RPI.Reflect/Material/MaterialTypeAsset.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/std/string/string.h>
+#include <AzToolsFramework/Entity/EntityTypes.h>
 
 namespace AZ
 {
@@ -38,6 +39,48 @@ namespace AZ
 
             bool LoadMaterialEditDataFromAssetId(const AZ::Data::AssetId& assetId, MaterialEditData& editData);
             bool SaveSourceMaterialFromEditData(const AZStd::string& path, const MaterialEditData& editData);
+
+            //! Retrieves the material type asset ID for a given material asset ID
+            AZ::Data::AssetId GetMaterialTypeAssetIdFromMaterialAssetId(const AZ::Data::AssetId& materialAssetId);
+
+            //! Determines if a set of entities have the same active material type on a given material slot
+            //! @param primaryEntityId The entity whose material types will be compared against all others in the set
+            //! @param secondaryEntityIds Set of entities that will be compared against material types on the primaryEntityId
+            //! @param materialAssignmentId ID of the material type slot that will be tested for quality
+            //! @returns True if all of the entities share the same active material type asset on the specified slot
+            bool DoEntitiesHaveMatchingMaterialTypes(
+                const AZ::EntityId& primaryEntityId,
+                const AzToolsFramework::EntityIdSet& secondaryEntityIds,
+                const MaterialAssignmentId& materialAssignmentId);
+
+            //! Determines if a set of entities have the same active material on a given material slot
+            //! @param primaryEntityId The entity whose materials will be compared against all others in the set
+            //! @param secondaryEntityIds Set of entities that will be compared against materials on the primaryEntityId
+            //! @param materialAssignmentId ID of the material slot that will be tested for quality
+            //! @returns True if all of the entities share the same active material asset on the specified slot
+            bool DoEntitiesHaveMatchingMaterials(
+                const AZ::EntityId& primaryEntityId,
+                const AzToolsFramework::EntityIdSet& secondaryEntityIds,
+                const MaterialAssignmentId& materialAssignmentId);
+
+            //! Determines if a set of entities have the same material slot configuration, LODs, etc 
+            //! @param primaryEntityId The entity whose material slots will be compared against all others in the set
+            //! @param secondaryEntityIds Set of entities that will be compared against material slots on the primaryEntityId
+            //! @returns True if all of the entities share the same material slot configuration
+            bool DoEntitiesHaveMatchingMaterialSlots(const AZ::EntityId& primaryEntityId, const AzToolsFramework::EntityIdSet& entityIds);
+
+            //! Returns the set of entities selected or pinned in the active entity inspector
+            //! This function is only reliable when called from context menu or edit context attribute handlers guaranteed to be called from
+            //! within the inspector
+            AzToolsFramework::EntityIdSet GetSelectedEntitiesFromActiveInspector();
+
+            //! Removes all entries from a set of entity IDs that do not have the same material slot configuration as the primary entity
+            //! @param primaryEntityId The entity whose material slots will be compared against all others in the set
+            //! @param secondaryEntityIds Set of entities that will be compared against material slots on the primaryEntityId
+            //! @returns All of the entity IDs contained within secondaryEntityIds except for the ones whose materials did not match
+            //! primaryEntityId
+            AzToolsFramework::EntityIdSet GetEntitiesMatchingMaterialSlots(
+                const AZ::EntityId& primaryEntityId, const AzToolsFramework::EntityIdSet& secondaryEntityIds);
         } // namespace EditorMaterialComponentUtil
     } // namespace Render
 } // namespace AZ

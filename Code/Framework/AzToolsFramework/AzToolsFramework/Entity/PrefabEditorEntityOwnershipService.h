@@ -12,17 +12,19 @@
 #include <AzFramework/Entity/SliceEntityOwnershipServiceBus.h>
 #include <AzFramework/Slice/SliceEntityBus.h>
 #include <AzFramework/Spawnable/SpawnableEntitiesContainer.h>
+#include <AzToolsFramework/Entity/EntityTypes.h>
 #include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipInterface.h>
 #include <AzToolsFramework/Entity/SliceEditorEntityOwnershipServiceBus.h>
-#include <AzToolsFramework/Prefab/Spawnable/InMemorySpawnableAssetContainer.h>
+#include <AzToolsFramework/Prefab/Spawnable/PrefabInMemorySpawnableConverter.h>
 
 namespace AzToolsFramework
 {
     namespace Prefab
     {
         class Instance;
-        class PrefabSystemComponentInterface;
+        class PrefabFocusInterface;
         class PrefabLoaderInterface;
+        class PrefabSystemComponentInterface;
     }
 
     //////////////////////////////////////////////////////////////////////////
@@ -97,12 +99,9 @@ namespace AzToolsFramework
         , private AzFramework::SliceEntityRequestBus::MultiHandler
     {
     public:
-        using EntityList = AzFramework::EntityList;
         using OnEntitiesAddedCallback = AzFramework::OnEntitiesAddedCallback;
         using OnEntitiesRemovedCallback = AzFramework::OnEntitiesRemovedCallback;
         using ValidateEntitiesCallback = AzFramework::ValidateEntitiesCallback;
-
-        static inline constexpr const char* DefaultMainSpawnableName = "Root";
 
         PrefabEditorEntityOwnershipService(
             const AzFramework::EntityContextId& entityContextId, AZ::SerializeContext* serializeContext);
@@ -173,6 +172,11 @@ namespace AzToolsFramework
         bool GetInstancesInRootAliasPath(
             Prefab::RootAliasPath rootAliasPath, const AZStd::function<bool(const Prefab::InstanceOptionalReference)>& callback) const override;
 
+        void RegisterGameModeEventHandler(AZ::Event<GameModeState>::Handler& handler) override
+        {
+            handler.Connect(m_gameModeEvent);
+        }
+
     protected:
 
         AZ::SliceComponent::SliceInstanceAddress GetOwningSlice() override;
@@ -182,7 +186,7 @@ namespace AzToolsFramework
 
         struct PlayInEditorData
         {
-            AzToolsFramework::Prefab::PrefabConversionUtils::InMemorySpawnableAssetContainer m_assetsCache;
+            AzToolsFramework::Prefab::PrefabConversionUtils::PrefabInMemorySpawnableConverter m_assetsCache;
             AZStd::vector<AZ::Entity*> m_deactivatedEntities;
             AzFramework::SpawnableEntitiesContainer m_entities;
             bool m_isEnabled{ false };
@@ -201,7 +205,7 @@ namespace AzToolsFramework
         Prefab::InstanceOptionalReference GetRootPrefabInstance() override;
         Prefab::TemplateId GetRootPrefabTemplateId() override;
 
-        const Prefab::PrefabConversionUtils::InMemorySpawnableAssetContainer::SpawnableAssets& GetPlayInEditorAssetData() const override;
+        const AzFramework::InMemorySpawnableAssetContainer::SpawnableAssets& GetPlayInEditorAssetData() const override;
         //////////////////////////////////////////////////////////////////////////
 
         void OnEntityRemoved(AZ::EntityId entityId);
@@ -215,10 +219,13 @@ namespace AzToolsFramework
 
         AZStd::string m_rootPath;
         AZStd::unique_ptr<Prefab::Instance> m_rootInstance;
-        Prefab::PrefabSystemComponentInterface* m_prefabSystemComponent;
-        Prefab::PrefabLoaderInterface* m_loaderInterface;
+
+        Prefab::PrefabFocusInterface* m_prefabFocusInterface = nullptr;
+        Prefab::PrefabSystemComponentInterface* m_prefabSystemComponent = nullptr;
+        Prefab::PrefabLoaderInterface* m_loaderInterface = nullptr;
         AzFramework::EntityContextId m_entityContextId;
         AZ::SerializeContext m_serializeContext;
+        AZ::Event<GameModeState> m_gameModeEvent;
         bool m_isRootPrefabAssigned = false;
     };
 }

@@ -69,6 +69,20 @@ namespace AZ::SceneAPI::Containers
         double m_value = 0.0;
     };
 
+    class MockIGraphObjectTester final
+        : public DataTypes::IGraphObject
+    {
+    public:
+        AZ_RTTI(MockIGraphObjectTester, "{E112D82D-D98C-4506-9495-1E4254FD6335}", DataTypes::IGraphObject);
+
+        MockIGraphObjectTester() = default;
+        ~MockIGraphObjectTester() override = default;
+        void CloneAttributesFrom([[maybe_unused]] const IGraphObject* sourceObject) override {}
+
+        int m_buffer[64] = {1,2,3};
+        AZStd::string m_string {"test text buffer"};
+    };
+
     struct MockBuilder final
     {
         AZ_TYPE_INFO(MockBuilder, "{ECF0FB2C-E5C0-4B89-993C-8511A7EF6894}");
@@ -117,7 +131,7 @@ namespace AZ::SceneAPI::Containers
             const auto indexK = graph.AddChild(indexB, "K", AZStd::make_shared<DataTypes::MockIGraphObject>(2));
             graph.AddChild(indexB, "I", AZStd::make_shared<DataTypes::MockIGraphObject>(9));
             graph.AddChild(indexB, "J", AZStd::make_shared<DataTypes::MockIGraphObject>(10));
-            graph.AddChild(indexK, "L", AZStd::make_shared<DataTypes::MockIGraphObject>(12));
+            graph.AddChild(indexK, "L", AZStd::make_shared<MockIGraphObjectTester>());
 
             m_scene->GetManifest().AddEntry(AZStd::make_shared<MockManifestRule>(0.1));
             m_scene->GetManifest().AddEntry(AZStd::make_shared<MockManifestRule>(2.3));
@@ -435,6 +449,26 @@ namespace AZ::SceneAPI::Containers
                     {
                         self.m_id = lhs + rhs;
                     });
+
+                behaviorContext->Class<MockIGraphObjectTester>("MockIGraphObjectTester")
+                    ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                    ->Attribute(AZ::Script::Attributes::Module, "scene.graph.test")
+                    ->Method("GetBigValue", [](const MockIGraphObjectTester& self)
+                    {
+                        return *(&self);
+                    })
+                    ->Method("GetViaAddress", [](const MockIGraphObjectTester& self)
+                    {
+                        return &self.m_buffer[0];
+                    })
+                    ->Method("GetViaReference", [](const MockIGraphObjectTester& self) -> const AZStd::string&
+                    {
+                        return self.m_string;
+                    })
+                    ->Method("GetIndex", [](const MockIGraphObjectTester& self, int index)
+                    {
+                        return self.m_buffer[index];
+                    });
             }
         }
 
@@ -443,6 +477,7 @@ namespace AZ::SceneAPI::Containers
             UnitTest::AllocatorsFixture::SetUp();
 
             m_serializeContext = AZStd::make_unique<AZ::SerializeContext>();
+            m_serializeContext->RegisterGenericType<AZStd::string>();
 
             m_behaviorContext = AZStd::make_unique<AZ::BehaviorContext>();
             m_behaviorContext->Method("TestExpectTrue", &TestExpectTrue);
@@ -584,6 +619,56 @@ namespace AZ::SceneAPI::Containers
         ExpectExecute("proxy:Invoke('AddAndSet', addArgs)");
         ExpectExecute("value = proxy:Invoke('GetId', vector_any())");
         ExpectExecute("TestExpectEquals(value, 17)");
+    }
+
+    TEST_F(SceneGraphBehaviorScriptTest, SceneGraphIGraphNode_GraphObjectProxy_InvokeGetBigValue)
+    {
+        ExpectExecute("builder = MockBuilder()");
+        ExpectExecute("builder:BuildSceneGraph()");
+        ExpectExecute("scene = builder:GetScene()");
+        ExpectExecute("node = scene.graph:FindWithPath('B.K.L')");
+        ExpectExecute("proxy = scene.graph:GetNodeContent(node)");
+        ExpectExecute("proxy:CastWithTypeName('MockIGraphObjectTester')");
+        ExpectExecute("value = proxy:Invoke('GetBigValue', vector_any())");
+        ExpectExecute("TestExpectTrue(value == false)");
+    }
+
+    TEST_F(SceneGraphBehaviorScriptTest, SceneGraphIGraphNode_GraphObjectProxy_InvokeGetViaAddress)
+    {
+        ExpectExecute("builder = MockBuilder()");
+        ExpectExecute("builder:BuildSceneGraph()");
+        ExpectExecute("scene = builder:GetScene()");
+        ExpectExecute("node = scene.graph:FindWithPath('B.K.L')");
+        ExpectExecute("proxy = scene.graph:GetNodeContent(node)");
+        ExpectExecute("proxy:CastWithTypeName('MockIGraphObjectTester')");
+        ExpectExecute("value = proxy:Invoke('GetViaAddress', vector_any())");
+        ExpectExecute("TestExpectTrue(value ~= nil)");
+    }
+
+    TEST_F(SceneGraphBehaviorScriptTest, SceneGraphIGraphNode_GraphObjectProxy_InvokeGetViaReference)
+    {
+        ExpectExecute("builder = MockBuilder()");
+        ExpectExecute("builder:BuildSceneGraph()");
+        ExpectExecute("scene = builder:GetScene()");
+        ExpectExecute("node = scene.graph:FindWithPath('B.K.L')");
+        ExpectExecute("proxy = scene.graph:GetNodeContent(node)");
+        ExpectExecute("proxy:CastWithTypeName('MockIGraphObjectTester')");
+        ExpectExecute("value = proxy:Invoke('GetViaReference', vector_any())");
+        ExpectExecute("TestExpectTrue(value ~= nil)");
+        ExpectExecute("TestExpectTrue(value == 'test text buffer')");
+    }
+
+    TEST_F(SceneGraphBehaviorScriptTest, SceneGraphIGraphNode_GraphObjectProxy_InvokeGetIndex)
+    {
+        ExpectExecute("builder = MockBuilder()");
+        ExpectExecute("builder:BuildSceneGraph()");
+        ExpectExecute("scene = builder:GetScene()");
+        ExpectExecute("node = scene.graph:FindWithPath('B.K.L')");
+        ExpectExecute("proxy = scene.graph:GetNodeContent(node)");
+        ExpectExecute("proxy:CastWithTypeName('MockIGraphObjectTester')");
+        ExpectExecute("args = vector_any(); args:push_back(1);");
+        ExpectExecute("value = proxy:Invoke('GetIndex', args)");
+        ExpectExecute("TestExpectTrue(value == 2)");
     }
 
     TEST_F(SceneGraphBehaviorScriptTest, GraphObjectProxy_GetClassInfo_Loads)

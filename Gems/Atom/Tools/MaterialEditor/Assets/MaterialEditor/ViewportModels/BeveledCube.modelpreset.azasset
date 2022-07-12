@@ -3,7 +3,6 @@
     "Version": 1,
     "ClassName": "AZ::Render::ModelPreset",
     "ClassData": {
-        "displayName": "Cube (Beveled)",
         "modelAsset": {
             "assetId": {
                 "guid": "{8F19FB6D-DF18-5CC0-B921-6755089004D7}",

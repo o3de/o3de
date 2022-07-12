@@ -9,5 +9,6 @@
 set(FILES
     Tests/AudioSystemTest.cpp
     Tests/Mocks/ATLEntitiesMock.h
+    Tests/Mocks/AudioSystemImplementationMock.h
     Tests/Mocks/FileCacheManagerMock.h
 )

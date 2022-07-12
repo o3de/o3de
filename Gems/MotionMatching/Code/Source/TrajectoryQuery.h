@@ -39,12 +39,13 @@ namespace EMotionFX::MotionMatching
             MODE_AUTOMATIC = 1
         };
 
-        void Update(const ActorInstance* actorInstance,
+        void Update(const ActorInstance& actorInstance,
             const FeatureTrajectory* trajectoryFeature,
             const TrajectoryHistory& trajectoryHistory,
             EMode mode,
-            AZ::Vector3 targetPos,
-            AZ::Vector3 targetFacingDir,
+            const AZ::Vector3& targetPos,
+            const AZ::Vector3& targetFacingDir,
+            bool useTargetFacingDir,
             float timeDelta,
             float pathRadius,
             float pathSpeed);
@@ -59,8 +60,18 @@ namespace EMotionFX::MotionMatching
             const AZStd::vector<ControlPoint>& controlPoints,
             const AZ::Color& color);
 
+        void PredictFutureTrajectory(const ActorInstance& actorInstance,
+            const FeatureTrajectory* trajectoryFeature,
+            const AZ::Vector3& targetPos,
+            const AZ::Vector3& targetFacingDir,
+            bool useTargetFacingDir);
+
         AZStd::vector<ControlPoint> m_pastControlPoints;
         AZStd::vector<ControlPoint> m_futureControlPoints;
+
+        float m_positionBias = 2.0f; //< Indicates how fast the curve will bend towards the target.
+        float m_rotationBias = 3.0f; //< Indicates how fast the facing direction matches the target facing direction.
+        float m_deadZone = 0.2f; //< Similarly to a joystick deadzone, this represents the area around the character that does not respond to movement.
 
         float m_automaticModePhase = 0.0f; //< Current phase for the automatic demo mode. Not needed by the target-driven mode.
     };

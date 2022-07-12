@@ -30,6 +30,15 @@ namespace AzToolsFramework
 
             // Remove an Instance from the waiting queue.
             virtual void RemoveTemplateInstanceFromQueue(const Instance* instance) = 0;
+
+            // A notification OnRootPrefabInstanceLoaded will fire during the propagation if root
+            // prefab instance is loaded for the first time after this function is called.
+            virtual void QueueRootPrefabLoadedNotificationForNextPropagation() = 0;
+
+            //! Sets whether to pause instance propagation or not.
+            //! When making property changes in the entity editor, pausing propagation during
+            //! editing will prevent the user from losing control of the properties they are editing.
+            virtual void SetShouldPauseInstancePropagation(bool shouldPausePropagation) = 0;
         };
     }
 }

@@ -144,7 +144,7 @@ namespace AZ
             if (descriptor.m_renderTargetBudgetInBytes || allowNoBudget)
             {
                 // Use an image descriptor of size 1x1 to get the memory requirements.
-                RHI::ImageBindFlags bindFlags = RHI::ImageBindFlags::Color | RHI::ImageBindFlags::DepthStencil | RHI::ImageBindFlags::ShaderRead;
+                RHI::ImageBindFlags bindFlags = RHI::ImageBindFlags::Color | RHI::ImageBindFlags::ShaderRead;
                 RHI::ImageDescriptor imageDescriptor = RHI::ImageDescriptor::Create2D(bindFlags, 1, 1, RHI::Format::R8G8B8A8_UNORM);
                 VkMemoryRequirements memRequirements = device.GetImageMemoryRequirements(imageDescriptor);
 

@@ -158,8 +158,10 @@ namespace AZ
                 }
 
                 ManifestAction action = ManifestAction::Update;
-                // If the result for manifest is ignored it means no manifest was found.
-                if (filesLoaded.GetManifestResult() == ProcessingResult::Failure || filesLoaded.GetManifestResult() == ProcessingResult::Ignored)
+                // If the result for manifest is ignored it means no manifest was found or it was empty.
+                if (filesLoaded.GetManifestResult() == ProcessingResult::Failure ||
+                    filesLoaded.GetManifestResult() == ProcessingResult::Ignored ||
+                    scene->GetManifest().IsEmpty())
                 {
                     scene->GetManifest().Clear();
                     action = ManifestAction::ConstructDefault;

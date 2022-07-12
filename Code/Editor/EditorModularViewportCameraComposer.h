@@ -33,6 +33,14 @@ namespace SandboxEditor
         SANDBOX_API AZStd::shared_ptr<AtomToolsFramework::ModularViewportCameraController> CreateModularViewportCameraController();
 
     private:
+        //! Display style/state for the pivot
+        enum class PivotDisplayState
+        {
+            Hidden, //!< Orbit camera inactive.
+            Faded, //!< Orbit camera active but not rotating.
+            Full //!< Orbit camera active and rotating.
+        };
+
         // AzFramework::ViewportDebugDisplayEventBus overrides ...
         void DisplayViewport(const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay) override;
 
@@ -56,15 +64,15 @@ namespace SandboxEditor
         AZStd::shared_ptr<AzFramework::OrbitCameraInput> m_orbitCamera;
         AZStd::shared_ptr<AzFramework::RotateCameraInput> m_orbitRotateCamera;
         AZStd::shared_ptr<AzFramework::TranslateCameraInput> m_orbitTranslateCamera;
-        AZStd::shared_ptr<AzFramework::OrbitDollyScrollCameraInput> m_orbitDollyScrollCamera;
-        AZStd::shared_ptr<AzFramework::OrbitDollyMotionCameraInput> m_orbitDollyMoveCamera;
+        AZStd::shared_ptr<AzFramework::OrbitScrollDollyCameraInput> m_orbitScrollDollyCamera;
+        AZStd::shared_ptr<AzFramework::OrbitMotionDollyCameraInput> m_orbitMotionDollyCamera;
         AZStd::shared_ptr<AzFramework::PanCameraInput> m_orbitPanCamera;
         AZStd::shared_ptr<AzFramework::FocusCameraInput> m_orbitFocusCamera;
 
         AzFramework::ViewportId m_viewportId;
 
-        float m_defaultOrbitOpacity = 0.0f; //!< The default orbit axes opacity (to fade in and out).
-        AZ::Vector3 m_defaultOrbitPoint = AZ::Vector3::CreateZero(); //!< The orbit point to use when no entity is selected.
-        bool m_defaultOrbiting = false; //!< Is the camera default orbiting (orbiting when there's no selected entity).
+        AZStd::optional<AZ::Vector3> m_pivot; //!< The picked pivot to orbit about in the viewport.
+        float m_orbitOpacity = 0.0f; //!< The picked pivot opacity (to fade in and out).
+        PivotDisplayState m_pivotDisplayState; //!< The state of the pivot for the orbit camera.
     };
 } // namespace SandboxEditor

@@ -116,46 +116,7 @@
                                 }
                             ]
                         }
-                    },
-                    "materialSlots": [
-                        {
-                            "id": {
-                                "materialSlotStableId": 902256226
-                            },
-                            "materialAsset": {
-                                "assetId": {
-                                    "guid": "{FF25E0FE-B695-5084-AE1E-65F095AA5C3F}"
-                                },
-                                "assetHint": "objects/cloth/environment/cloth_locked_edge.azmaterial"
-                            },
-                            "defaultMaterialAsset": {
-                                "assetId": {
-                                    "guid": "{9DCAD62C-7A35-5D7D-8276-870D646CD5E2}",
-                                    "subId": 902256226
-                                },
-                                "loadBehavior": "PreLoad",
-                                "assetHint": "objects/cloth/environment/cloth_locked_edge_lambert1_3614897150141879906.azmaterial"
-                            }
-                        }
-                    ],
-                    "materialSlotsByLod": [
-                        [
-                            {
-                                "id": {
-                                    "lodIndex": 0,
-                                    "materialSlotStableId": 902256226
-                                },
-                                "defaultMaterialAsset": {
-                                    "assetId": {
-                                        "guid": "{9DCAD62C-7A35-5D7D-8276-870D646CD5E2}",
-                                        "subId": 902256226
-                                    },
-                                    "loadBehavior": "PreLoad",
-                                    "assetHint": "objects/cloth/environment/cloth_locked_edge_lambert1_3614897150141879906.azmaterial"
-                                }
-                            }
-                        ]
-                    ]
+                    }
                 },
                 "Component_[14983280478781449966]": {
                     "$type": "SelectionComponent",
@@ -165,7 +126,7 @@
                     "$type": "EditorClothComponent",
                     "Id": 16595775512479337011,
                     "Configuration": {
-                        "Mesh Node": "pPlane1_1",
+                        "Mesh Node": "pPlane1",
                         "Damping": [
                             0.0,
                             0.0,

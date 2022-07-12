@@ -93,6 +93,11 @@ namespace GradientSignal
         outUVW = m_normalizeExtentsReciprocal * (outUVW - m_shapeBounds.GetMin());
     }
 
+    WrappingType GradientTransform::GetWrappingType() const
+    {
+        return m_wrappingType;
+    }
+
     AZ::Vector3 GradientTransform::NoTransform(const AZ::Vector3& point, const AZ::Aabb& /*bounds*/)
     {
         return point;

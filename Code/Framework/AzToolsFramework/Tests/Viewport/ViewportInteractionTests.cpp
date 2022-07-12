@@ -47,7 +47,7 @@ namespace UnitTest
     TEST_F(IndirectCallManipulatorViewportInteractionIntersectionFixture, FindClosestPickIntersectionReturnsExpectedSurfacePoint)
     {
         // camera - 21.00, 8.00, 11.00, -22.00, 150.00
-        m_cameraState.m_viewportSize = AZ::Vector2(1280.0f, 720.0f);
+        m_cameraState.m_viewportSize = AzFramework::ScreenSize(1280, 720);
         AzFramework::SetCameraTransform(
             m_cameraState,
             AZ::Transform::CreateFromMatrix3x3AndTranslation(

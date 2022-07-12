@@ -1681,15 +1681,11 @@ void CXConsole::DisplayHelp(const char* help, const char* name)
     }
     else
     {
-        char* start, * pos;
-        for (pos = strstr((char*)help, "\n"), start = (char*)help; pos; start = ++pos)
+        auto PrintHelpLine = [this](AZStd::string_view line)
         {
-            AZStd::string s = start;
-            s.resize(pos - start);
-            ConsoleLogInputResponse("    $3%s", s.c_str());
-            pos = strstr(pos, "\n");
-        }
-        ConsoleLogInputResponse("    $3%s", start);
+            ConsoleLogInputResponse("    $3%.*s", AZ_STRING_ARG(line));
+        };
+        AZ::StringFunc::TokenizeVisitor(help, PrintHelpLine, '\n');
     }
 }
 

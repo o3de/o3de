@@ -47,8 +47,7 @@ namespace EMotionFX
 {
     void MakeQtApplicationBase::SetUp()
     {
-        int argc = 0;
-        m_uiApp = new QApplication(argc, nullptr);
+        m_uiApp = new QApplication(s_argc, nullptr);
 
         AzToolsFramework::EditorEvents::Bus::Broadcast(&AzToolsFramework::EditorEvents::NotifyRegisterViews);
 
@@ -75,12 +74,10 @@ namespace EMotionFX
 
     void UIFixture::SetupPluginWindows()
     {
-        // Plugins have to be created after both the QApplication object and
-        // after the SystemComponent
-        const size_t numPlugins = EMStudio::GetPluginManager()->GetNumPlugins();
-        for (size_t i = 0; i < numPlugins; ++i)
+        // Plugins have to be created after both the QApplication object and after the SystemComponent
+        const EMStudio::PluginManager::PluginVector& registeredPlugins = EMStudio::GetPluginManager()->GetRegisteredPlugins();
+        for (EMStudio::EMStudioPlugin* plugin : registeredPlugins)
         {
-            EMStudio::EMStudioPlugin* plugin = EMStudio::GetPluginManager()->GetPlugin(i);
             EMStudio::GetPluginManager()->CreateWindowOfType(plugin->GetName());
         }
     }

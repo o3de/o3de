@@ -24,7 +24,7 @@
 
 #include <ScriptCanvasDeveloperEditor/EditorAutomation/EditorAutomationStates/CreateElementsStates.h>
 
-namespace ScriptCanvasDeveloper
+namespace ScriptCanvas::Developer
 {
     /**
         EditorautomationTest that will test out the AltClick to delete elements functionality for nodes, connected nodes, and connections

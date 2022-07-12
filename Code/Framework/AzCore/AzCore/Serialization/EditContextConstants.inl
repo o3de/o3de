@@ -124,6 +124,7 @@ namespace AZ
             //! Container attribute that is used to override labels for its elements given the index of the element
             const static AZ::Crc32 IndexedChildNameLabelOverride = AZ_CRC("IndexedChildNameLabelOverride", 0x5f313ac2);
             const static AZ::Crc32 DescriptionTextOverride = AZ_CRC("DescriptionTextOverride", 0x608b64a8);
+            const static AZ::Crc32 ContainerReorderAllow = AZ_CRC_CE("ContainerReorderAllow");
 
             const static AZ::Crc32 PrimaryAssetType = AZ_CRC("PrimaryAssetType", 0xa400a5ce);
             const static AZ::Crc32 DynamicElementType = AZ_CRC("DynamicElementType", 0x7c0b82f9);
@@ -194,6 +195,9 @@ namespace AZ
             //! For use with slice creation tools. See SliceCreationFlags below for details.
             const static AZ::Crc32 SliceFlags = AZ_CRC("SliceFlags", 0xa447e1fb);
 
+            //! Does the clear button in the LineEdit need to have a test for visibility.
+            const static AZ::Crc32 ShowClearButtonHandler = AZ_CRC_CE("ShowClearButtonHandler");
+
             //! For optional use on Getter Events used for Virtual Properties
             const static AZ::Crc32 PropertyPosition = AZ_CRC("Position", 0x462ce4f5);
             const static AZ::Crc32 PropertyRotation = AZ_CRC("Rotation", 0x297c98f1);
@@ -248,6 +252,7 @@ namespace AZ
             const static AZ::Crc32 Vector2 = AZ_CRC("Vector2", 0xe6775839);
             const static AZ::Crc32 Vector3 = AZ_CRC("Vector3", 0x917068af);
             const static AZ::Crc32 Vector4 = AZ_CRC("Vector4", 0x0f14fd0c);
+            const static AZ::Crc32 ExeSelectBrowseEdit = AZ_CRC("ExeSelectBrowseEdit", 0xa2feae94);
 
             // Maintained in the UIHandlers namespace for backwards compatibility; moved to the Attributes namespace now
             const static AZ::Crc32 Handler = Attributes::Handler;

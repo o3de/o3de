@@ -29,6 +29,24 @@
                         "RootShaderVariantAssetFileName": "diffuseprobegridrender_null_0.azshadervariant"
                     }
                 ]
+            },
+            {
+                "Name": "NoMSAA",
+                "RootShaderVariantAssets": 
+                [
+                    {
+                        "APIName": "dx12",
+                        "RootShaderVariantAssetFileName": "diffuseprobegridrender-nomsaa_dx12_0.azshadervariant"
+                    },
+                    {
+                        "APIName": "vulkan",
+                        "RootShaderVariantAssetFileName": "diffuseprobegridrender-nomsaa_vulkan_0.azshadervariant"
+                    },
+                    {
+                        "APIName": "null",
+                        "RootShaderVariantAssetFileName": "diffuseprobegridrender-nomsaa_null_0.azshadervariant"
+                    }
+                ]
             }
         ]
     }

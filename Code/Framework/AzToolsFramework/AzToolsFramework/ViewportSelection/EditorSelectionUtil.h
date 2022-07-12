@@ -54,6 +54,10 @@ namespace AzToolsFramework
     bool PickEntity(
         AZ::EntityId entityId, const ViewportInteraction::MouseInteraction& mouseInteraction, float& closestDistance, int viewportId);
 
+    //! Return if a mouse interaction (pick ray) did intersect the tested EntityId.
+    bool PickEntity(
+        AZ::EntityId entityId, const AZ::Vector3& rayOrigin, const AZ::Vector3& rayDirection, float& closestDistance, int viewportId);
+
     //! Wrapper for EBus call to return the CameraState for a given viewport.
     AzFramework::CameraState GetCameraState(int viewportId);
 

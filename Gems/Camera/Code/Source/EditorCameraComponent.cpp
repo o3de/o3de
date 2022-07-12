@@ -11,6 +11,7 @@
 
 #include "EditorCameraComponent.h"
 #include "ViewportCameraSelectorWindow.h"
+#include "Entity/EditorEntityHelpers.h"
 
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
@@ -117,8 +118,12 @@ namespace Camera
                     ->UIElement(AZ::Edit::UIHandlers::Button,"", "Sets the view to this camera")
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorCameraComponent::OnPossessCameraButtonClicked)
                         ->Attribute(AZ::Edit::Attributes::ButtonText, &EditorCameraComponent::GetCameraViewButtonText)
-                    ->ClassElement(AZ::Edit::ClassElements::Group, "Debug")
+                    ->UIElement(AZ::Edit::UIHandlers::Button,"", "Sets this camera to view")
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorCameraComponent::OnMatchViewportClicked)
+                        ->Attribute(AZ::Edit::Attributes::ButtonText,  "Match Viewport")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
+                        ->Attribute(AZ::Edit::Attributes::ReadOnly, &EditorCameraComponent::IsActiveCamera)
+                    ->ClassElement(AZ::Edit::ClassElements::Group, "Debug")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorCameraComponent::m_frustumViewPercentLength, "Frustum length", "Frustum length percent .01 to 100")
                         ->Attribute(AZ::Edit::Attributes::Min, 0.01f)
                         ->Attribute(AZ::Edit::Attributes::Max, 100.f)
@@ -137,6 +142,8 @@ namespace Camera
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
                 ->Attribute(AZ::Script::Attributes::Module, "camera")
                 ->Event("ToggleCameraAsActiveView", &EditorCameraViewRequests::ToggleCameraAsActiveView)
+                ->Event("MatchViewport", &EditorCameraViewRequests::MatchViewport)
+                ->Event("IsActiveCamera", &EditorCameraViewRequests::IsActiveCamera)
                 ;
         }
     }
@@ -156,13 +163,12 @@ namespace Camera
 
         {
             const AzFramework::WindowSize viewportSize = viewportContext->GetViewportSize();
-            cameraState.m_viewportSize =
-                AZ::Vector2{aznumeric_cast<float>(viewportSize.m_width), aznumeric_cast<float>(viewportSize.m_height)};
+            cameraState.m_viewportSize = AzFramework::ScreenSize(viewportSize.m_width, viewportSize.m_height);
         }
 
         if (config.m_orthographic)
         {
-            cameraState.m_fovOrZoom = cameraState.m_viewportSize.GetX() / (config.m_orthographicHalfWidth * 2.0f);
+            cameraState.m_fovOrZoom = aznumeric_cast<float>(cameraState.m_viewportSize.m_width) / (config.m_orthographicHalfWidth * 2.0f);
             cameraState.m_orthographic = true;
         }
         else
@@ -194,11 +200,35 @@ namespace Camera
         return AZ::Edit::PropertyRefreshLevels::AttributesAndValues;
     }
 
+    AZ::Crc32 EditorCameraComponent::OnMatchViewportClicked()
+    {
+        if (IsActiveCamera())
+        {
+            AZ_Warning("EditorCameraComponent", false, "Camera %s is already active.", GetEntity()->GetName().c_str());
+            return AZ::Edit::PropertyRefreshLevels::AttributesAndValues;
+        }
+        AZStd::optional<AZ::Transform> transform = AZStd::nullopt;
+        EditorCameraRequests::Bus::BroadcastResult(transform, &EditorCameraRequests::GetActiveCameraTransform);
+        if (!transform)
+        {
+            return AZ::Edit::PropertyRefreshLevels::AttributesAndValues;
+        }
+        AZStd::optional<float> fov = AZStd::nullopt;
+        EditorCameraRequests::Bus::BroadcastResult(fov, &EditorCameraRequests::GetCameraFoV);
+        if (!fov)
+        {
+            return AZ::Edit::PropertyRefreshLevels::AttributesAndValues;
+        }
+        const AZ::EntityId entityId = GetEntityId();
+        AZ::TransformBus::Event(entityId, &AZ::TransformInterface::SetWorldTM, transform.value());
+        CameraRequestBus::Event(entityId, &CameraComponentRequests::SetFovRadians, fov.value());
+        EditorCameraRequests::Bus::Broadcast(&EditorCameraRequests::SetViewFromEntityPerspective, entityId);
+        return AZ::Edit::PropertyRefreshLevels::AttributesAndValues;
+    }
+
     AZStd::string EditorCameraComponent::GetCameraViewButtonText() const
     {
-        AZ::EntityId currentViewEntity;
-        EditorCameraRequests::Bus::BroadcastResult(currentViewEntity, &EditorCameraRequests::GetCurrentViewEntityId);
-        if (currentViewEntity == GetEntityId())
+        if (IsActiveCamera())
         {
             return "Return to default editor camera";
         }
@@ -208,6 +238,7 @@ namespace Camera
         }
     }
 
+
     void EditorCameraComponent::DisplayEntityViewport(
         [[maybe_unused]] const AzFramework::ViewportInfo& viewportInfo,
         AzFramework::DebugDisplayRequests& debugDisplay)
@@ -215,6 +246,23 @@ namespace Camera
         AZ::Transform transform = AZ::Transform::CreateIdentity();
         AZ::TransformBus::EventResult(transform, GetEntityId(), &AZ::TransformInterface::GetWorldTM);
         EditorDisplay(debugDisplay, transform);
+    }
+
+    void EditorCameraComponent::ToggleCameraAsActiveView()
+    {
+        OnPossessCameraButtonClicked();
+    }
+
+    void EditorCameraComponent::MatchViewport()
+    {
+        OnMatchViewportClicked();
+    }
+
+    bool EditorCameraComponent::IsActiveCamera() const
+    {
+        AZ::EntityId currentViewEntity;
+        EditorCameraRequests::Bus::BroadcastResult(currentViewEntity, &EditorCameraRequests::GetCurrentViewEntityId);
+        return currentViewEntity == GetEntityId();
     }
 
     void EditorCameraComponent::EditorDisplay(

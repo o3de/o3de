@@ -115,7 +115,7 @@ namespace ScriptEvents
                 m_maxVersion = definition.GetVersion();
             }
 
-            AZ::BehaviorContextBus::Broadcast(&AZ::BehaviorContextBus::Events::OnAddEBus, m_busName.c_str(), bus);
+            AZ::BehaviorContextBus::Event(behaviorContext, &AZ::BehaviorContextBus::Events::OnAddEBus, m_busName.c_str(), bus);
             m_scriptEventBindings[m_assetId] = AZStd::make_unique<ScriptEventBinding>(behaviorContext, m_busName.c_str(), definition.GetAddressType());
 
             ScriptEventNotificationBus::Event(m_assetId, &ScriptEventNotifications::OnRegistered, definition);

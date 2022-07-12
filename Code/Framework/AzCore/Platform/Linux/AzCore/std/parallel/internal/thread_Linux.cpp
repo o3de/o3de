@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/std/string/fixed_string.h>
 #include <AzCore/std/parallel/thread.h>
 
 #include <sched.h>
@@ -53,7 +54,15 @@ namespace AZStd
 
         void PostCreateThread(pthread_t tId, const char* name, int)
         {
-            pthread_setname_np(tId, name);
+            if (const int result = pthread_setname_np(tId, name); result == ERANGE)
+            {
+                // The name was too long. pthread limits the name to 16
+                // characters (including the null terminator). Let's elide the
+                // middle.
+                const auto len = strlen(name);
+                const auto elidedName = AZStd::fixed_string<15>{name, 7} + "." + AZStd::fixed_string<15>{name + len - 7, 7};
+                pthread_setname_np(tId, elidedName.c_str());
+            }
         }
 
         uint8_t GetDefaultThreadPriority()

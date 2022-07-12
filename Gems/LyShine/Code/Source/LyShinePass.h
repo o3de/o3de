@@ -36,6 +36,7 @@ namespace LyShine
         // Pass behavior overrides
         void ResetInternal() override;
         void BuildInternal() override;
+        void CreateChildPassesInternal() override;
 
         // LyShinePassRequestBus overrides
         void RebuildRttChildren() override;

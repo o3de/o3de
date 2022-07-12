@@ -10,7 +10,7 @@
 
 namespace AZ
 {
-    struct BehaviorValueParameter;
+    struct BehaviorArgument;
 }
 
 namespace ScriptCanvas
@@ -19,7 +19,7 @@ namespace ScriptCanvas
     {
         static constexpr size_t MaxNodeableOutStackSize = 512;
 
-        using FunctorOut = AZStd::function<void(AZ::BehaviorValueParameter* result, AZ::BehaviorValueParameter* arguments, int numArguments)>;
+        using FunctorOut = AZStd::function<void(AZ::BehaviorArgument* result, AZ::BehaviorArgument* arguments, int numArguments)>;
 
         using ReturnTypeIsVoid = AZStd::true_type;
         using ReturnTypeIsNotVoid = AZStd::false_type;

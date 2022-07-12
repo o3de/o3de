@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScriptCanvas>
+    <Library
+        Include="Include/ScriptCanvas/Libraries/Math/Quaternion.h"
+        Namespace="ScriptCanvas::QuaternionFunctions"
+        Category="Math/Quaternion">
+        
+        <Function Name="Conjugate">
+            <Parameter Name="Source"/>
+        </Function>
+        
+        <Function Name="ConvertTransformToRotation">
+            <Parameter Name="Transform"/>
+        </Function>
+        
+        <Function Name="Dot">
+            <Parameter Name="A"/>
+            <Parameter Name="B"/>
+        </Function>
+        
+        <Function Name="FromAxisAngleDegrees">
+            <Parameter Name="Axis"/>
+            <Parameter Name="Degrees"/>
+        </Function>
+        
+        <Function Name="FromMatrix3x3">
+            <Parameter Name="Source"/>
+        </Function>
+        
+        <Function Name="FromMatrix4x4">
+            <Parameter Name="Source"/>
+        </Function>
+        
+        <Function Name="FromTransform">
+            <Parameter Name="Source"/>
+        </Function>
+        
+        <Function Name="InvertFull">
+            <Parameter Name="Source"/>
+        </Function>
+        
+        <Function Name="IsClose">
+            <Parameter Name="A"/>
+            <Parameter Name="B"/>
+            <Parameter Name="Tolerance" DefaultValue="0.01"/>
+        </Function>
+        
+        <Function Name="IsFinite">
+            <Parameter Name="Source"/>
+        </Function>
+        
+        <Function Name="IsIdentity">
+            <Parameter Name="Source"/>
+            <Parameter Name="Tolerance" DefaultValue="0.01"/>
+        </Function>
+        
+        <Function Name="IsZero">
+            <Parameter Name="Source"/>
+            <Parameter Name="Tolerance" DefaultValue="0.01"/>
+        </Function>
+        
+        <Function Name="LengthReciprocal">
+            <Parameter Name="Source"/>
+        </Function>
+        
+        <Function Name="LengthSquared">
+            <Parameter Name="Source"/>
+        </Function>
+        
+        <Function Name="Lerp">
+            <Parameter Name="From"/>
+            <Parameter Name="To"/>
+            <Parameter Name="T"/>
+        </Function>
+        
+        <Function Name="MultiplyByNumber">
+            <Parameter Name="Source"/>
+            <Parameter Name="Multiplier"/>
+        </Function>
+        
+        <Function Name="Negate">
+            <Parameter Name="Source"/>
+        </Function>
+        
+        <Function Name="Normalize">
+            <Parameter Name="Source"/>
+        </Function>
+        
+        <Function Name="RotationXDegrees">
+            <Parameter Name="Degrees"/>
+        </Function>
+        
+        <Function Name="RotationYDegrees">
+            <Parameter Name="Degrees"/>
+        </Function>
+        
+        <Function Name="RotationZDegrees">
+            <Parameter Name="Degrees"/>
+        </Function>
+        
+        <Function Name="ShortestArc">
+            <Parameter Name="From"/>
+            <Parameter Name="To"/>
+        </Function>
+        
+        <Function Name="Slerp">
+            <Parameter Name="From"/>
+            <Parameter Name="To"/>
+            <Parameter Name="T"/>
+        </Function>
+        
+        <Function Name="Squad">
+            <Parameter Name="From"/>
+            <Parameter Name="To"/>
+            <Parameter Name="In"/>
+            <Parameter Name="Out"/>
+            <Parameter Name="T"/>
+        </Function>
+        
+        <Function Name="ToAngleDegrees">
+            <Parameter Name="Source"/>
+        </Function>
+        
+        <Function Name="CreateFromEulerAngles">
+            <Parameter Name="Pitch"/>
+            <Parameter Name="Roll"/>
+            <Parameter Name="Yaw"/>
+        </Function>
+        
+        <Function Name="RotateVector3">
+            <Parameter Name="Quaternion"/>
+            <Parameter Name="Vector"/>
+        </Function>
+    </Library>
+</ScriptCanvas>

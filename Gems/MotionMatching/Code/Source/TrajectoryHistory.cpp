@@ -23,6 +23,11 @@ namespace EMotionFX::MotionMatching
         return {weight * sample.m_position, weight * sample.m_facingDirection};
     }
 
+    TrajectoryHistory::Sample operator-(TrajectoryHistory::Sample lhs, const TrajectoryHistory::Sample& rhs)
+    {
+        return {lhs.m_position - rhs.m_position, lhs.m_facingDirection - rhs.m_facingDirection};
+    }
+
     TrajectoryHistory::Sample operator+(TrajectoryHistory::Sample lhs, const TrajectoryHistory::Sample& rhs)
     {
         return {lhs.m_position + rhs.m_position, lhs.m_facingDirection + rhs.m_facingDirection};

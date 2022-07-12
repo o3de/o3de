@@ -1,0 +1,111 @@
+{
+    "name": "occlusion",
+    "displayName": "Occlusion",
+    "description": "Properties for baked textures that represent geometric occlusion of light.",
+    "properties": [
+        {
+            "name": "diffuseTextureMap",
+            "displayName": "Diffuse AO",
+            "description": "Texture for defining occlusion area for diffuse ambient lighting.",
+            "type": "Image",
+            "connection": {
+                "type": "ShaderInput",
+                "name": "m_diffuseOcclusionMap"
+            }
+        },
+        {
+            "name": "diffuseUseTexture",
+            "displayName": "    Use Texture",
+            "description": "Whether to use the Diffuse AO map.",
+            "type": "Bool",
+            "defaultValue": true
+        },
+        {
+            "name": "diffuseTextureMapUv",
+            "displayName": "    UV",
+            "description": "Diffuse AO map UV set.",
+            "type": "Enum",
+            "enumIsUv": true,
+            "defaultValue": "Tiled",
+            "connection": {
+                "type": "ShaderInput",
+                "name": "m_diffuseOcclusionMapUvIndex"
+            }
+        },
+        {
+            "name": "diffuseFactor",
+            "displayName": "    Factor",
+            "description": "Strength factor for scaling the values of Diffuse AO",
+            "type": "Float",
+            "defaultValue": 1.0,
+            "min": 0.0,
+            "softMax": 2.0,
+            "connection": {
+                "type": "ShaderInput",
+                "name": "m_diffuseOcclusionFactor"
+            }
+        },
+        {
+            "name": "specularTextureMap",
+            "displayName": "Specular Cavity",
+            "description": "Texture for defining occlusion area for specular lighting.",
+            "type": "Image",
+            "connection": {
+                "type": "ShaderInput",
+                "name": "m_specularOcclusionMap"
+            }
+        },
+        {
+            "name": "specularUseTexture",
+            "displayName": "    Use Texture",
+            "description": "Whether to use the Specular Cavity map.",
+            "type": "Bool",
+            "defaultValue": true
+        },
+        {
+            "name": "specularTextureMapUv",
+            "displayName": "    UV",
+            "description": "Specular Cavity map UV set.",
+            "type": "Enum",
+            "enumIsUv": true,
+            "defaultValue": "Tiled",
+            "connection": {
+                "type": "ShaderInput",
+                "name": "m_specularOcclusionMapUvIndex"
+            }
+        },
+        {
+            "name": "specularFactor",
+            "displayName": "    Factor",
+            "description": "Strength factor for scaling the values of Specular Cavity",
+            "type": "Float",
+            "defaultValue": 1.0,
+            "min": 0.0,
+            "softMax": 2.0,
+            "connection": {
+                "type": "ShaderInput",
+                "name": "m_specularOcclusionFactor"
+            }
+        }
+    ],
+    "functors": [
+        {
+            "type": "UseTexture",
+            "args": {
+                "textureProperty": "diffuseTextureMap",
+                "useTextureProperty": "diffuseUseTexture",
+                "dependentProperties": ["diffuseTextureMapUv", "diffuseFactor"],
+                "shaderOption": "o_diffuseOcclusion_useTexture"    
+            }
+        },
+        {
+            "type": "UseTexture",
+            "args": {
+                "textureProperty": "specularTextureMap",
+                "useTextureProperty": "specularUseTexture",
+                "dependentProperties": ["specularTextureMapUv", "specularFactor"],
+                "shaderOption": "o_specularOcclusion_useTexture"    
+            }
+        }
+    ]
+}

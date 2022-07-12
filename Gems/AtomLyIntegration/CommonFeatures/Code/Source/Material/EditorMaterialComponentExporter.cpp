@@ -42,10 +42,11 @@ namespace AZ
                 AZStd::string exportPath;
                 if (assetId.IsValid())
                 {
+
                     exportPath = AZ::RPI::AssetUtils::GetSourcePathByAssetId(assetId);
                     AZ::StringFunc::Path::StripExtension(exportPath);
                     exportPath += "_";
-                    exportPath += materialSlotName;
+                    exportPath += AZ::RPI::AssetUtils::SanitizeFileName(materialSlotName);
                     exportPath += ".";
                     exportPath += AZ::RPI::MaterialSourceData::Extension;
                     AZ::StringFunc::Path::Normalize(exportPath);
@@ -96,10 +97,8 @@ namespace AZ
                 int row = 0;
                 for (ExportItem& exportItem : exportItems)
                 {
-                    QFileInfo fileInfo(GetExportPathByAssetId(exportItem.GetOriginalAssetId(), exportItem.GetMaterialSlotName()).c_str());
-
                     // Configuring initial settings based on whether or not the target file already exists
-                    exportItem.SetExportPath(fileInfo.absoluteFilePath().toUtf8().constData());
+                    QFileInfo fileInfo(exportItem.GetExportPath().c_str());
                     exportItem.SetExists(fileInfo.exists());
                     exportItem.SetOverwrite(false);
 

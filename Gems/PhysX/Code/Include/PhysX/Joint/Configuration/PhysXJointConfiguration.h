@@ -20,6 +20,17 @@ namespace PhysX
         AZ_RTTI(D6JointLimitConfiguration, "{88E067B4-21E8-4FFA-9142-6C52605B704C}", AzPhysics::JointConfiguration);
         static void Reflect(AZ::ReflectContext* context);
 
+        // AzPhysics::JointConfiguration overrides ...
+        AZStd::optional<float> GetPropertyValue([[maybe_unused]] const AZ::Name& propertyName) override;
+        void SetPropertyValue([[maybe_unused]] const AZ::Name& propertyName, [[maybe_unused]] float value) override;
+
+        //! Ensure limit settings are valid.
+        //! @{
+        void ValidateSwingLimitY();
+        void ValidateSwingLimitZ();
+        void ValidateTwistLimits();
+        //! @}
+
         float m_swingLimitY = 45.0f; ///< Maximum angle in degrees from the Y axis of the joint frame.
         float m_swingLimitZ = 45.0f; ///< Maximum angle in degrees from the Z axis of the joint frame.
         float m_twistLimitLower = -45.0f; ///< Lower limit in degrees for rotation about the X axis of the joint frame.

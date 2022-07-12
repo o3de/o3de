@@ -34,9 +34,9 @@ namespace AZ
             auto attachmentDatabase = params.m_frameGraphBuilder->GetAttachmentDatabase();
             for (const RPI::PassAttachmentBinding& binding : m_attachmentBindings)
             {
-                if (binding.m_slotType == RPI::PassSlotType::Input && binding.m_attachment)
+                if (binding.m_slotType == RPI::PassSlotType::Input && binding.GetAttachment())
                 {
-                    auto& attachment = binding.m_attachment;
+                    const auto& attachment = binding.GetAttachment();
                     if (attachment->m_lifetime == RHI::AttachmentLifetimeType::Imported)
                     {
                         // make sure to only import the resource one time
@@ -72,14 +72,14 @@ namespace AZ
             {
                 if (binding.m_slotType == RPI::PassSlotType::Input)
                 {
-                    if (binding.m_attachment)
+                    if (binding.GetAttachment())
                     {
-                        if (binding.m_attachment->m_ownerPass)
+                        if (binding.GetAttachment()->m_ownerPass)
                         {
-                            const RPI::Ptr<CheckerboardPass> checkerboardPass = azrtti_cast<CheckerboardPass*>(binding.m_attachment->m_ownerPass);
+                            const RPI::Ptr<CheckerboardPass> checkerboardPass = azrtti_cast<CheckerboardPass*>(binding.GetAttachment()->m_ownerPass);
                             if (checkerboardPass)
                             {
-                                inputImage = checkerboardPass->GetAttachmentImage(binding.m_attachment->m_name, 1);
+                                inputImage = checkerboardPass->GetAttachmentImage(binding.GetAttachment()->m_name, 1);
                             }
                         }
                     }
@@ -142,17 +142,17 @@ namespace AZ
             Data::Instance<RPI::AttachmentImage> nextAttachmentImage;
             for (auto& binding : m_attachmentBindings)
             {
-                if (binding.m_slotType == RPI::PassSlotType::Input && binding.m_attachment)
+                if (binding.m_slotType == RPI::PassSlotType::Input && binding.GetAttachment())
                 {
-                    auto& attachment = binding.m_attachment;
+                    auto& attachment = binding.GetAttachment();
                     // Use the input from current frame to find the owner CheckerboardPass
                     // then find the output of previous frame from CheckerboardPass
                     // Save the output in nextAttachmentImage and uses it in next binding (in the else condition)
                     if (attachment->m_ownerPass != this) // input from current frame
                     {
-                        RPI::Ptr<CheckerboardPass> checkerboardPass = azrtti_cast<CheckerboardPass*>(binding.m_attachment->m_ownerPass);
-                        nextAttachmentImage = checkerboardPass->GetAttachmentImage(binding.m_attachment->m_name, m_frameOffset);
-                        AZ_Assert(nextAttachmentImage != binding.m_attachment->m_importedResource, "attachments shouldn't be same");
+                        RPI::Ptr<CheckerboardPass> checkerboardPass = azrtti_cast<CheckerboardPass*>(binding.GetAttachment()->m_ownerPass);
+                        nextAttachmentImage = checkerboardPass->GetAttachmentImage(binding.GetAttachment()->m_name, m_frameOffset);
+                        AZ_Assert(nextAttachmentImage != binding.GetAttachment()->m_importedResource, "attachments shouldn't be same");
                     }
                     else // input from previous frame
                     {
@@ -164,7 +164,7 @@ namespace AZ
 
                         for (auto& binding2 : m_attachmentBindings)
                         {
-                            if (binding2.m_attachment == attachment)
+                            if (binding2.GetAttachment() == attachment)
                             {
                                 binding2.m_unifiedScopeDesc.m_attachmentId = nextAttachmentImage->GetAttachmentId();
                                 break;

@@ -48,7 +48,6 @@ set(FILES
     Util/Image.cpp
     Util/ImageHistogram.h
     Util/Image.h
-    Util/ColorUtils.cpp
     Undo/Undo.cpp
     Undo/IUndoManagerListener.h
     Undo/IUndoObject.h

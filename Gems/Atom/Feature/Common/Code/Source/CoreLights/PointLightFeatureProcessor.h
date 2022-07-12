@@ -53,6 +53,8 @@ namespace AZ
             void SetFilteringSampleCount(LightHandle handle, uint16_t count) override;
             void SetEsmExponent(LightHandle handle, float esmExponent) override;
             void SetNormalShadowBias(LightHandle handle, float bias) override;
+            void SetAffectsGI(LightHandle handle, bool affectsGI) override;
+            void SetAffectsGIFactor(LightHandle handle, float affectsGIFactor) override;
             void SetPointData(LightHandle handle, const PointLightData& data) override;
 
             const Data::Instance<RPI::Buffer>  GetLightBuffer() const;

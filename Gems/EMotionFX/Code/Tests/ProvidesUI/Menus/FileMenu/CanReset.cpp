@@ -43,7 +43,7 @@ namespace EMotionFX
 
         RecordProperty("test_case_id", "C16302179");
 
-        const AZStd::string motionAsset("@engroot@/Gems/EMotionFX/Code/Tests/TestAssets/Rin/rin_idle.motion");
+        const AZStd::string motionAsset("@gemroot:EMotionFX@/Code/Tests/TestAssets/Rin/rin_idle.motion");
         const AZStd::string createAnimGraphCmd("CreateAnimGraph");
         const AZStd::string motionSetName("TestMotionSet");
         const AZStd::string createMotionSetCmd("CreateMotionSet -motionSetID 42 -name " + motionSetName);
@@ -53,7 +53,8 @@ namespace EMotionFX
         ASSERT_EQ(GetActorManager().GetNumActors(), 0) << "Expected to see no actors yet";
         ASSERT_EQ(GetActorManager().GetNumActorInstances(), 0) << "Expected to see no actor instances";
         ASSERT_EQ(GetAnimGraphManager().GetNumAnimGraphs(), 0) << "Anim graph manager should contain 0 anim graphs.";
-        ASSERT_EQ(GetMotionManager().GetNumMotionSets(), 0) << "Expected exactly zero motion sets";
+        const size_t oldNumMotionSets = GetMotionManager().GetNumMotionSets();
+        ASSERT_EQ(oldNumMotionSets, 1) << "Expected only the default motion set";
         ASSERT_EQ(GetMotionManager().GetNumMotions(), 0) << "Expected exactly zero motions";
 
         // Create Actor, AnimGraph, Motionset and Motion
@@ -72,7 +73,7 @@ namespace EMotionFX
         ASSERT_EQ(GetActorManager().GetNumActors(), 1) << "Expected to see one actor";
         ASSERT_EQ(GetActorManager().GetNumActorInstances(), 1) << "Expected to see one actor instance";
         ASSERT_EQ(GetAnimGraphManager().GetNumAnimGraphs(), 1) << "Anim graph manager should contain 1 anim graph.";
-        ASSERT_EQ(EMotionFX::GetMotionManager().GetNumMotionSets(), 1) << "Expected exactly one motion set";
+        ASSERT_EQ(EMotionFX::GetMotionManager().GetNumMotionSets(), oldNumMotionSets + 1) << "Expected the default and the newly created motion set";
         ASSERT_EQ(GetMotionManager().GetNumMotions(), 1) << "Expected exactly one motion";
 
         // Trigger reset from menu
@@ -95,7 +96,7 @@ namespace EMotionFX
         EXPECT_EQ(GetActorManager().GetNumActors(), 0) << "Expected to see no actors";
         EXPECT_EQ(GetActorManager().GetNumActorInstances(), 0) << "Expected to see no actor instances";
         EXPECT_EQ(EMotionFX::GetAnimGraphManager().GetNumAnimGraphs(), 0) << "Anim graph manager should contain 0 anim graphs.";
-        EXPECT_EQ(GetMotionManager().GetNumMotionSets(), 0) << "Expected exactly zero motion sets";
+        ASSERT_EQ(GetMotionManager().GetNumMotionSets(), 1) << "Expected only the default motion set";
         EXPECT_EQ(GetMotionManager().GetNumMotions(), 0) << "Expected exactly zero motions";
 
         QApplication::processEvents(QEventLoop::ExcludeUserInputEvents);

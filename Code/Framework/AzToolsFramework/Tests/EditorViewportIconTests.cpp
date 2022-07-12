@@ -38,7 +38,7 @@ namespace UnitTest
             m_viewportSettings->m_helpersVisible = false;
             m_viewportSettings->m_iconsVisible = true;
 
-            m_cameraState = AzFramework::CreateDefaultCamera(AZ::Transform::CreateIdentity(), AZ::Vector2(1024.0f, 768.0f));
+            m_cameraState = AzFramework::CreateDefaultCamera(AZ::Transform::CreateIdentity(), AzFramework::ScreenSize(1024, 768));
 
             using ::testing::_;
             using ::testing::Return;

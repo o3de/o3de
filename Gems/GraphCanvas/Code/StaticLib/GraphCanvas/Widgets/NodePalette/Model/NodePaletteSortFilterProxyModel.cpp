@@ -187,6 +187,68 @@ namespace GraphCanvas
         return showRow;
     }
 
+    bool NodePaletteSortFilterProxyModel::lessThan(const QModelIndex& source_left, const QModelIndex& source_right) const
+    {
+        QAbstractItemModel* model = sourceModel();
+        QString left = model->data(source_left).toString();
+        QString right = model->data(source_right).toString();
+
+        if (m_filter.isEmpty())
+        {
+            // When item has no children, put it at front; otherwise follow alphabetical order
+            if (model->hasChildren(source_left) && !model->hasChildren(source_right))
+            {
+                return false;
+            }
+            else if (!model->hasChildren(source_left) && model->hasChildren(source_right))
+            {
+                return true;
+            }
+            return left < right;
+        }
+        else
+        {
+            int leftScore = CalculateSortingScore(source_left);
+            int rightScore = CalculateSortingScore(source_right);
+            // When sorting score is equal, follow alphabetical order instead
+            if (leftScore == rightScore)
+            {
+                return left < right;
+            }
+            else
+            {
+                return leftScore < rightScore;
+            }
+        }
+    }
+
+    int NodePaletteSortFilterProxyModel::CalculateSortingScore(const QModelIndex& source) const
+    {
+        QAbstractItemModel* model = sourceModel();
+        QString sourceString = model->data(source).toString();
+        if (sourceString.compare(m_filter, Qt::CaseInsensitive) == 0)
+        {
+            return -1; // match has highest priority
+        }
+
+        int result = INT_MAX;
+        // Calculate the score from children if available
+        if (model->hasChildren(source))
+        {
+            for (int i = 0; i < model->rowCount(source); ++i)
+            {
+                QModelIndex child = model->index(i, 0, source);
+                result = AZStd::min(result, CalculateSortingScore(child));
+            }
+        }
+        // If name contains filter or filter regex, assuming shorter name has stronger relevance
+        if (sourceString.contains(m_filter) || sourceString.contains(m_filterRegex))
+        {
+            result = AZStd::min(result, sourceString.size());
+        }
+        return result;
+    }
+
     void NodePaletteSortFilterProxyModel::PopulateUnfilteredModel()
     {
         m_unfilteredAutoCompleteModel->beginResetModel();
@@ -282,13 +344,13 @@ namespace GraphCanvas
         // Then ignore all whitespace by adding \s* (regex optional whitespace match) in between every other character.
         // We use \s* instead of simply removing all whitespace from the filter and node-names in order to preserve the node-name and accurately highlight the matching portion.
         // Example: "OnGraphStart" or "On Graph Start"
-        m_filter = QRegExp::escape(filter.simplified().replace(" ", ""));
+        m_filter = filter.simplified().replace(" ", "");
         
-        QString regExIgnoreWhitespace(m_filter[0]);
+        QString regExIgnoreWhitespace = QRegExp::escape(QString(m_filter[0]));
         for (int i = 1; i < m_filter.size(); ++i)
         {
             regExIgnoreWhitespace.append("\\s*");
-            regExIgnoreWhitespace.append(m_filter[i]);
+            regExIgnoreWhitespace.append(QRegExp::escape(QString(m_filter[i])));
         }
         
         m_filterRegex = QRegExp(regExIgnoreWhitespace, Qt::CaseInsensitive);

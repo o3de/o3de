@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <Atom/Features/Debug.azsli>
+
 // This file provides utilities for common handling of inputs for roughness of PBR materials.
 
 // These macros can be used to declare common shader inputs for this feature. 
@@ -26,6 +28,11 @@ option bool prefix##o_roughness_useTexture;
 
 float GetRoughnessInput(Texture2D map, sampler mapSampler, float2 uv, float factor, float roughnessLowerBound, float roughnessUpperBound, bool useTexture)
 {
+    if(OverrideRoughnessEnabled())
+    {
+        return GetRoughnessOverride();
+    }
+
     // [GFX TODO][ATOM-1793]: Figure out how we want our base material to expect channels to be encoded, and apply that to the way we pack roughness.
     if (useTexture)
     {

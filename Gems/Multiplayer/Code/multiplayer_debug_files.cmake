@@ -7,10 +7,18 @@
 #
 
 set(FILES
+    Source/Debug/MultiplayerConnectionViewportMessageSystemComponent.h
+    Source/Debug/MultiplayerConnectionViewportMessageSystemComponent.cpp
+    Source/Debug/MultiplayerDebugAuditTrail.cpp
+    Source/Debug/MultiplayerDebugAuditTrail.h
     Source/Debug/MultiplayerDebugByteReporter.cpp
     Source/Debug/MultiplayerDebugByteReporter.h
     Source/Debug/MultiplayerDebugHierarchyReporter.cpp
     Source/Debug/MultiplayerDebugHierarchyReporter.h
+    Source/Debug/MultiplayerDebugMultiplayerMetrics.cpp
+    Source/Debug/MultiplayerDebugMultiplayerMetrics.h
+    Source/Debug/MultiplayerDebugNetworkMetrics.cpp
+    Source/Debug/MultiplayerDebugNetworkMetrics.h
     Source/Debug/MultiplayerDebugPerEntityReporter.cpp
     Source/Debug/MultiplayerDebugPerEntityReporter.h
     Source/Debug/MultiplayerDebugModule.cpp

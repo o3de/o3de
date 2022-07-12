@@ -65,7 +65,8 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         AZ_Assert(spawnable, "Failed to create a new spawnable.");
 
         object.GetReferencedAssets() = prefab.GetReferencedAssets();
-        Instance& instance = prefab.GetInstance();
+        AzToolsFramework::Prefab::Instance& instance = prefab.GetInstance();
+
         // Resolve entity aliases that store PrefabDOM information to use the spawnable instead. This is done before the entities are
         // moved from the instance as they'd otherwise can't be found.
         context.ResolveSpawnableEntityAliases(prefab.GetName(), *spawnable, instance);
@@ -93,6 +94,9 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
             });
 
         SpawnableUtils::SortEntitiesByTransformHierarchy(*spawnable);
+
+        context.SendSpawnablePostProcessEvent(prefab.GetName(), *spawnable);
+
         context.GetProcessedObjects().push_back(AZStd::move(object));
     }
 } // namespace AzToolsFramework::Prefab::PrefabConversionUtils

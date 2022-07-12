@@ -64,6 +64,10 @@ namespace Multiplayer
         //! @return value in const base type form
         const BASE_TYPE& GetPrevious() const;
 
+        //! Const base type retriever for value at last known serialized value or the nearest to it.
+        //! @return value in const base type form
+        const BASE_TYPE& GetLastSerializedValue() const;
+
         //! Base type retriever.
         //! @return value in base type form
         BASE_TYPE& Modify();
@@ -110,6 +114,7 @@ namespace Multiplayer
         AZStd::array<BASE_TYPE, REWIND_SIZE> m_history;
         AzNetworking::ConnectionId m_owningConnectionId = AzNetworking::InvalidConnectionId;
         HostFrameId m_headTime = HostFrameId{0};
+        HostFrameId m_lastSerializedTime = HostFrameId{0};
         uint32_t m_headIndex = 0;
     };
 }

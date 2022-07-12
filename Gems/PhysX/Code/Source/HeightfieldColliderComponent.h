@@ -16,6 +16,10 @@
 
 #include <PhysX/ColliderComponentBus.h>
 #include <PhysX/ColliderShapeBus.h>
+#include <PhysX/HeightFieldAsset.h>
+#include <AzCore/Asset/AssetCommon.h>
+
+#include <Source/HeightfieldCollider.h>
 
 namespace AzPhysics
 {
@@ -35,10 +39,8 @@ namespace PhysX
     class HeightfieldColliderComponent
         : public AZ::Component
         , public ColliderComponentRequestBus::Handler
-        , public AzPhysics::SimulatedBodyComponentRequestsBus::Handler
-        , protected PhysX::ColliderShapeRequestBus::Handler
         , protected Physics::CollisionFilteringRequestBus::Handler
-        , protected Physics::HeightfieldProviderNotificationBus::Handler
+        , private AZ::Data::AssetBus::Handler
     {
     public:
         using Configuration = Physics::HeightfieldShapeConfiguration;
@@ -53,22 +55,20 @@ namespace PhysX
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
 
         void Activate() override;
+
+        void InitHeightfieldCollider(HeightfieldCollider::DataSource heightfieldDataSource);
+
         void Deactivate() override;
 
-        void SetShapeConfiguration(const AzPhysics::ShapeColliderPair& shapeConfig);
+        void SetColliderConfiguration(const Physics::ColliderConfiguration& colliderConfig);
+        void SetBakedHeightfieldAsset(const AZ::Data::Asset<Pipeline::HeightFieldAsset>& heightfieldAsset);
+
+        void BlockOnPendingJobs();
 
     protected:
         // ColliderComponentRequestBus
         AzPhysics::ShapeColliderPairList GetShapeConfigurations() override;
         AZStd::vector<AZStd::shared_ptr<Physics::Shape>> GetShapes() override;
-
-        // ColliderShapeRequestBus
-        AZ::Aabb GetColliderShapeAabb() override;
-        bool IsTrigger() override
-        {
-            // PhysX Heightfields don't support triggers.
-            return false;
-        }
 
         // CollisionFilteringRequestBus
         void SetCollisionLayer(const AZStd::string& layerName, AZ::Crc32 filterTag) override;
@@ -77,28 +77,21 @@ namespace PhysX
         AZStd::string GetCollisionGroupName() override;
         void ToggleCollisionLayer(const AZStd::string& layerName, AZ::Crc32 filterTag, bool enabled) override;
 
-        // SimulatedBodyComponentRequestsBus
-        void EnablePhysics() override;
-        void DisablePhysics() override;
-        bool IsPhysicsEnabled() const override;
-        AZ::Aabb GetAabb() const override;
-        AzPhysics::SimulatedBodyHandle GetSimulatedBodyHandle() const override;
-        AzPhysics::SimulatedBody* GetSimulatedBody() override;
-        AzPhysics::SceneQueryHit RayCast(const AzPhysics::RayCastRequest& request) override;
-
-        // HeightfieldProviderNotificationBus
-        void OnHeightfieldDataChanged([[maybe_unused]] const AZ::Aabb& dirtyRegion) override;
+        // AZ::Data::AssetBus::Handler overrides ...
+        void OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset);
+        void OnAssetReload(AZ::Data::Asset<AZ::Data::AssetData> asset);
+        void OnAssetError(AZ::Data::Asset<AZ::Data::AssetData> asset);
 
     private:
         AZStd::shared_ptr<Physics::Shape> GetHeightfieldShape();
 
-        void ClearHeightfield();
-        void InitHeightfieldShapeConfiguration();
-        void InitStaticRigidBody();
-        void RefreshHeightfield();
+        //! Stores collision layers, whether the collider is a trigger, etc.
+        AZStd::shared_ptr<Physics::ColliderConfiguration> m_colliderConfig{ aznew Physics::ColliderConfiguration() };
+        //! Stores all of the cached information for the heightfield shape.
+        AZStd::shared_ptr<Physics::HeightfieldShapeConfiguration> m_shapeConfig{ aznew Physics::HeightfieldShapeConfiguration() };
+        //! Contains all of the runtime logic for creating / updating / destroying the heightfield collider.
+        AZStd::unique_ptr<HeightfieldCollider> m_heightfieldCollider;
+        AZ::Data::Asset<Pipeline::HeightFieldAsset> m_bakedHeightfieldAsset;
 
-        AzPhysics::ShapeColliderPair m_shapeConfig;
-        AzPhysics::SimulatedBodyHandle m_staticRigidBodyHandle = AzPhysics::InvalidSimulatedBodyHandle;
-        AzPhysics::SceneHandle m_attachedSceneHandle = AzPhysics::InvalidSceneHandle;
     };
 } // namespace PhysX

@@ -57,7 +57,7 @@ namespace UnitTest
         private:
             AZ::RHI::ResultCode InitInternal(AZ::RHI::PhysicalDevice&) override { return AZ::RHI::ResultCode::Success; }
             void ShutdownInternal() override {}
-            void BeginFrameInternal() override {}
+            AZ::RHI::ResultCode BeginFrameInternal() override { return AZ::RHI::ResultCode::Success;}
             void EndFrameInternal() override {}
             void WaitForIdleInternal() override {}
             void CompileMemoryStatisticsInternal(AZ::RHI::MemoryStatisticsBuilder&) override {}
@@ -178,6 +178,7 @@ namespace UnitTest
 
             AZ::RHI::ResultCode OrphanBufferInternal(AZ::RHI::Buffer&) override { return AZ::RHI::ResultCode::Success; }
             AZ::RHI::ResultCode StreamBufferInternal([[maybe_unused]] const AZ::RHI::BufferStreamRequest& request) override { return AZ::RHI::ResultCode::Success; }
+            void ComputeFragmentation() const override {}
         };
 
         class ImagePool
@@ -199,6 +200,8 @@ namespace UnitTest
         {
         public:
             AZ_CLASS_ALLOCATOR(StreamingImagePool, AZ::SystemAllocator, 0);
+
+            void ComputeFragmentation() const override {}
 
         private:
             AZ::RHI::ResultCode InitImageInternal([[maybe_unused]] const AZ::RHI::StreamingImageInitRequest& request) override { return AZ::RHI::ResultCode::Success; }

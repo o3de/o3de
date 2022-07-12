@@ -36,6 +36,7 @@ namespace WhiteBox
             AzFramework::DebugDisplayRequests& debugDisplay, const AzFramework::CameraState& cameraState,
             const AzToolsFramework::ViewportInteraction::MouseInteraction& mouseInteraction) override;
 
+        AZ::Transform m_polygonViewOverlapOffset;
         AZStd::vector<AZ::Vector3> m_triangles;
         Api::VertexPositionsCollection m_outlines;
 

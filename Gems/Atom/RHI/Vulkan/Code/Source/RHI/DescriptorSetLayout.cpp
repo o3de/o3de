@@ -159,6 +159,31 @@ namespace AZ
             const AZStd::span<const RHI::ShaderInputSamplerDescriptor> samplerDescs = m_shaderResourceGroupLayout->GetShaderInputListForSamplers();
             const AZStd::span<const RHI::ShaderInputStaticSamplerDescriptor>& staticSamplerDescs = m_shaderResourceGroupLayout->GetStaticSamplers();
 
+            // About VK_SHADER_STAGE_ALL...
+            // We attempted to configure the descriptor set with the actual resource visibility but it was problematic...
+            // Vulkan requires that the visibility flags used to create the VkDescriptorSet (RHI::ShaderResourceGroup) must exactly match the ones
+            // used to create the VkPipelineLayout (RHI::PipelineState).
+            // See https://www.khronos.org/registry/vulkan/specs/1.2-extensions/html/vkspec.html#VUID-vkCmdBindDescriptorSets-pDescriptorSets-00358
+            // But Atom currently expects to be able to use certain ShaderResourceGroup instances with many different pipeline states regardless of visibility.
+            // - ShaderResourceGroupLayouts for "SceneSrg" and "ViewSrg" are defined in a special SceneAndViewSrgs.shader file. This shader has no entry points
+            //   and the asset only exists to provide these SRG layouts. The runtime loads this special shader and uses it to instantiate the one
+            //   SceneSrg (and ViewSrg(s)) and uses this instance for many shaders with different resource visibilities.
+            // - Same for RayTracingSrgs.shader's "RayTracingSceneSrg" and "RayTracingMaterialSrg"
+            // - Same for ForwardPassSrg.shader's "PassSrg". (This one is especially problematic because, unlike the above cases, we can't just add some special
+            //   handling for the particular SRG name; "PassSrg" is widely used as the name for many different per-pass SRG layouts).
+            // - ShaderResourceGroupPool is intentionally set up to reuse SRGs regardless of visibility, per ShaderResourceGroup::MakeInstanceId which uses
+            //   the source file path in the unique ID (ex: "D:\o3de\Gems\Atom\RPI\Assets\ShaderLib\Atom\RPI\ShaderResourceGroups\DefaultDrawSrg.azsli")
+            //   so that any shader that uses this azsli file will share the same pool and thus share the same PipelineLayoutDescriptor.
+            // In order to address the above issues, one solution would be to update AZSLc to support some kind of attribute by which the shader-author can manually
+            // override the visibility for each resource. Or we add some new metadata to the .shader files to provide explicit overrides for particular resource
+            // visibilities. Either way, this would likely become error prone and difficult to maintain.
+            // 
+            // It is possible that even with the proposed solution above we could run into other issues not foreseen here. Instead a better path forward would be to
+            // see if Khronos can address the API requirement itself. A ticket has been opened with Khronos here: KhronosGroup/Vulkan-Docs#1790. For context the driver
+            // error when the visibility bit from PSO does not match the one from Descriptor set is as follows
+            // vkDebugMessage: [ERROR][Validation] Validation Error: [ VUID-vkCmdBindDescriptorSets-pDescriptorSets-00358 ] Object 0: handle = 0x59ffe0000000003d, type = VK_OBJECT_TYPE_DESCRIPTOR_SET; | MessageID = 0xe1b89b63 | vkCmdBindDescriptorSets(): descriptorSet #1 being bound is not compatible with overlapping descriptorSetLayout at index 1 of VkPipelineLayout 0x3cc1f30000000840[] due to: Binding 23 for VkDescriptorSetLayout 0xbd2b7d000000083e[] from pipeline layout has stageFlags VK_SHADER_STAGE_VERTEX_BIT but binding 23 for VkDescriptorSetLayout 0x4fac1c0000000032[], which is bound, has stageFlags Unhandled VkShaderStageFlagBits. The Vulkan spec states: Each element of pDescriptorSets must have been allocated with a VkDescriptorSetLayout that matches (is the same as, or identically defined as) the VkDescriptorSetLayout at set n in layout, where n is the sum of firstSet and the index into pDescriptorSets (https://www.khronos.org/registry/vulkan/specs/1.2-extensions/html/vkspec.html#VUID-vkCmdBindDescriptorSets-pDescriptorSets-00358)
+            static const VkShaderStageFlags DefaultShaderStageVisibility = VK_SHADER_STAGE_ALL;
+
             // The + 1 is for Constant Data.
             m_descriptorSetLayoutBindings.reserve(
                 1 +
@@ -183,7 +208,7 @@ namespace AZ
                 vbinding.binding = inputListForConstants[0].m_registerId;
                 vbinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
                 vbinding.descriptorCount = 1;
-                vbinding.stageFlags = VK_SHADER_STAGE_ALL; // [GFX TODO][ATOM-347] find a way to get an appropriate shader visibility. 
+                vbinding.stageFlags = DefaultShaderStageVisibility;
                 vbinding.pImmutableSamplers = nullptr;
                 m_layoutIndexOffset[static_cast<uint32_t>(ResourceType::ConstantData)] = 0;
             }
@@ -233,7 +258,7 @@ namespace AZ
                     return RHI::ResultCode::InvalidArgument;
                 }
                 vbinding.descriptorCount = desc.m_count;
-                vbinding.stageFlags = VK_SHADER_STAGE_ALL; // [GFX TODO][ATOM-347] find a way to get an appropriate shader visibility. 
+                vbinding.stageFlags = DefaultShaderStageVisibility;
                 vbinding.pImmutableSamplers = nullptr;
             }
 
@@ -268,7 +293,7 @@ namespace AZ
                         AZ_Assert(false, "ShaderInputImageAccess is illegal.");
                         return RHI::ResultCode::InvalidArgument;
                     }
-                    vbinding.stageFlags = VK_SHADER_STAGE_ALL; // [GFX TODO][ATOM-347]  find a way to get an appropriate shader visibility. 
+                    vbinding.stageFlags = DefaultShaderStageVisibility;
                 }
                
                 vbinding.descriptorCount = desc.m_count;
@@ -289,7 +314,7 @@ namespace AZ
                 vbinding.binding = desc.m_registerId;
                 vbinding.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLER;
                 vbinding.descriptorCount = desc.m_count;
-                vbinding.stageFlags = VK_SHADER_STAGE_ALL; // [GFX TODO][ATOM-347] find a way to get an appropriate shader visibility. 
+                vbinding.stageFlags = DefaultShaderStageVisibility;
                 vbinding.pImmutableSamplers = nullptr;
             }
 
@@ -312,7 +337,7 @@ namespace AZ
                     vbinding.binding = staticSamplerInput.m_registerId;
                     vbinding.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLER;
                     vbinding.descriptorCount = 1;
-                    vbinding.stageFlags = VK_SHADER_STAGE_ALL; // [GFX TODO][ATOM-347] find a way to get an appropriate shader visibility. 
+                    vbinding.stageFlags = DefaultShaderStageVisibility;
                     vbinding.pImmutableSamplers = &m_nativeSamplers[index];
                 }
             }
@@ -354,7 +379,7 @@ namespace AZ
                     return RHI::ResultCode::InvalidArgument;
                 }
                 vbinding.descriptorCount = MaxUnboundedArrayDescriptors;
-                vbinding.stageFlags = VK_SHADER_STAGE_ALL; // [GFX TODO][ATOM-347] find a way to get an appropriate shader visibility. 
+                vbinding.stageFlags = DefaultShaderStageVisibility;
                 vbinding.pImmutableSamplers = nullptr;
 
                 m_hasUnboundedArray = true;
@@ -387,7 +412,7 @@ namespace AZ
                     AZ_Assert(false, "ShaderInputImageAccess is illegal.");
                     return RHI::ResultCode::InvalidArgument;
                 }
-                vbinding.stageFlags = VK_SHADER_STAGE_ALL; // [GFX TODO][ATOM-347]  find a way to get an appropriate shader visibility. 
+                vbinding.stageFlags = DefaultShaderStageVisibility;
                 vbinding.descriptorCount = MaxUnboundedArrayDescriptors;
                 vbinding.pImmutableSamplers = nullptr;
 

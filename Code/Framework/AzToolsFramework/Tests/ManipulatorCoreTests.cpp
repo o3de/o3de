@@ -8,66 +8,95 @@
 
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/UnitTest/TestTypes.h>
+#include <AzManipulatorTestFramework/AzManipulatorTestFrameworkTestHelpers.h>
 #include <AzTest/AzTest.h>
 #include <AzToolsFramework/Application/ToolsApplication.h>
 #include <AzToolsFramework/Manipulators/LinearManipulator.h>
-#include <AzToolsFramework/ToolsComponents/TransformComponent.h>
 #include <AzToolsFramework/ToolsComponents/EditorLockComponent.h>
 #include <AzToolsFramework/ToolsComponents/EditorVisibilityComponent.h>
-#include <AzCore/UnitTest/TestTypes.h>
-
+#include <AzToolsFramework/ToolsComponents/TransformComponent.h>
 #include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
-
-using namespace AzToolsFramework;
 
 namespace UnitTest
 {
-    class ManipulatorCoreFixture
-        : public ToolsApplicationFixture
+    class ManipulatorCoreFixture : public AllocatorsTestFixture
     {
     public:
-        void SetUpEditorFixtureImpl() override
+        void SetUp() override
         {
-            m_linearManipulator = LinearManipulator::MakeShared(AZ::Transform::CreateIdentity());
+            AllocatorsTestFixture::SetUp();
 
-            m_entityId = CreateDefaultEditorEntity("Default", &m_entity);
+            m_serializeContext = AZStd::make_unique<AZ::SerializeContext>();
 
-            if (const auto* transformComponent = m_entity->FindComponent<Components::TransformComponent>())
+            m_transformComponentDescriptor =
+                AZStd::unique_ptr<AZ::ComponentDescriptor>(AzToolsFramework::Components::TransformComponent::CreateDescriptor());
+            m_transformComponentDescriptor->Reflect(&(*m_serializeContext));
+
+            m_lockComponentDescriptor =
+                AZStd::unique_ptr<AZ::ComponentDescriptor>(AzToolsFramework::Components::EditorLockComponent::CreateDescriptor());
+            m_lockComponentDescriptor->Reflect(&(*m_serializeContext));
+
+            m_visibilityComponentDescriptor =
+                AZStd::unique_ptr<AZ::ComponentDescriptor>(AzToolsFramework::Components::EditorVisibilityComponent::CreateDescriptor());
+            m_visibilityComponentDescriptor->Reflect(&(*m_serializeContext));
+
+            m_linearManipulator = AzToolsFramework::LinearManipulator::MakeShared(AZ::Transform::CreateIdentity());
+
+            m_entity = AZStd::make_unique<AZ::Entity>();
+            // add required components for the Editor entity
+            m_entity->CreateComponent<AzToolsFramework::Components::TransformComponent>();
+            m_entity->CreateComponent<AzToolsFramework::Components::EditorLockComponent>();
+            m_entity->CreateComponent<AzToolsFramework::Components::EditorVisibilityComponent>();
+
+            m_entity->Init();
+            m_entity->Activate();
+
+            if (const auto* transformComponent = m_entity->FindComponent<AzToolsFramework::Components::TransformComponent>())
             {
                 m_transformComponentId = transformComponent->GetId();
-                m_linearManipulator->AddEntityComponentIdPair(
-                    AZ::EntityComponentIdPair{ m_entityId, m_transformComponentId });
+                m_linearManipulator->AddEntityComponentIdPair(AZ::EntityComponentIdPair{ m_entityId, m_transformComponentId });
             }
 
-            if (const auto* lockComponent = m_entity->FindComponent<Components::EditorLockComponent>())
+            if (const auto* lockComponent = m_entity->FindComponent<AzToolsFramework::Components::EditorLockComponent>())
             {
                 m_lockComponentId = lockComponent->GetId();
-                m_linearManipulator->AddEntityComponentIdPair(
-                    AZ::EntityComponentIdPair{ m_entityId, m_lockComponentId });
+                m_linearManipulator->AddEntityComponentIdPair(AZ::EntityComponentIdPair{ m_entityId, m_lockComponentId });
             }
 
-            if (const auto* visibilityComponent = m_entity->FindComponent<Components::EditorVisibilityComponent>())
+            if (const auto* visibilityComponent = m_entity->FindComponent<AzToolsFramework::Components::EditorVisibilityComponent>())
             {
                 m_visibiltyComponentId = visibilityComponent->GetId();
-                m_linearManipulator->AddEntityComponentIdPair(
-                    AZ::EntityComponentIdPair{ m_entityId, m_visibiltyComponentId });
+                m_linearManipulator->AddEntityComponentIdPair(AZ::EntityComponentIdPair{ m_entityId, m_visibiltyComponentId });
             }
 
-            m_editorEntityComponentChangeDetector
-                = AZStd::make_unique<EditorEntityComponentChangeDetector>(m_entityId);
+            m_editorEntityComponentChangeDetector = AZStd::make_unique<EditorEntityComponentChangeDetector>(m_entityId);
         }
 
-        void TearDownEditorFixtureImpl() override
+        void TearDown() override
         {
+            m_editorEntityComponentChangeDetector.reset();
+            m_linearManipulator.reset();
+            m_entity.reset();
+            m_transformComponentDescriptor.reset();
+            m_lockComponentDescriptor.reset();
+            m_visibilityComponentDescriptor.reset();
+            m_serializeContext.reset();
+
+            AllocatorsTestFixture::TearDown();
         }
 
-        AZStd::shared_ptr<LinearManipulator> m_linearManipulator;
-        AZ::Entity* m_entity = nullptr;
         AZ::EntityId m_entityId;
+        AZStd::unique_ptr<AZ::Entity> m_entity;
+        AZStd::shared_ptr<AzToolsFramework::LinearManipulator> m_linearManipulator;
         AZStd::unique_ptr<EditorEntityComponentChangeDetector> m_editorEntityComponentChangeDetector;
+        AZStd::unique_ptr<AZ::SerializeContext> m_serializeContext;
         AZ::ComponentId m_transformComponentId;
+        AZStd::unique_ptr<AZ::ComponentDescriptor> m_transformComponentDescriptor;
         AZ::ComponentId m_lockComponentId;
+        AZStd::unique_ptr<AZ::ComponentDescriptor> m_lockComponentDescriptor;
         AZ::ComponentId m_visibiltyComponentId;
+        AZStd::unique_ptr<AZ::ComponentDescriptor> m_visibilityComponentDescriptor;
     };
 
     TEST_F(ManipulatorCoreFixture, AllEntityIdComponentPairsRemovedFromManipulatorAfterRemoveEntity)
@@ -98,7 +127,7 @@ namespace UnitTest
 
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // When
-         m_linearManipulator->RemoveEntityComponentIdPair(entityLockComponentIdPair);
+        m_linearManipulator->RemoveEntityComponentIdPair(entityLockComponentIdPair);
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -118,11 +147,9 @@ namespace UnitTest
 
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // When
-        m_linearManipulator->OnLeftMouseDown(
-            AzToolsFramework::ViewportInteraction::MouseInteraction{}, 0.0f);
+        m_linearManipulator->OnLeftMouseDown(AzToolsFramework::ViewportInteraction::MouseInteraction{}, 0.0f);
 
-        m_linearManipulator->OnLeftMouseUp(
-            AzToolsFramework::ViewportInteraction::MouseInteraction{});
+        m_linearManipulator->OnLeftMouseUp(AzToolsFramework::ViewportInteraction::MouseInteraction{});
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -133,5 +160,58 @@ namespace UnitTest
 
         EXPECT_TRUE(m_editorEntityComponentChangeDetector->PropertyDisplayInvalidated());
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    }
+
+    using ManipulatorCoreInteractionFixture = DirectCallManipulatorViewportInteractionFixtureMixin<ManipulatorCoreFixture>;
+
+    TEST_F(ManipulatorCoreInteractionFixture, TestInteraction)
+    {
+        // setup viewport/camera
+        m_cameraState.m_viewportSize = AzFramework::ScreenSize(1280, 720);
+        AzFramework::SetCameraTransform(m_cameraState, AZ::Transform::CreateIdentity());
+
+        AzToolsFramework::ManipulatorViews views;
+        views.emplace_back(AzToolsFramework::CreateManipulatorViewSphere(
+            // note: use a small radius for the manipulator view/bounds to ensure precise mouse movement
+            AZ::Color{}, 0.001f,
+            [](const AzToolsFramework::ViewportInteraction::MouseInteraction&, bool, const AZ::Color&)
+            {
+                return AZ::Color{};
+            }));
+
+        m_linearManipulator->SetViews(views);
+        m_linearManipulator->Register(m_viewportManipulatorInteraction->GetManipulatorManagerId());
+
+        // the initial starting position of the manipulator
+        const auto initialTransformWorld = AZ::Transform::CreateTranslation(AZ::Vector3(0.0f, 10.0f, 0.0f));
+        // where the linear manipulator should end up
+        const auto finalTransformWorld = AZ::Transform::CreateTranslation(AZ::Vector3(2.0f, 10.0f, 0.0f));
+
+        // calculate the position in screen space of the initial position of the manipulator
+        const auto initialPositionScreen = AzFramework::WorldToScreen(initialTransformWorld.GetTranslation(), m_cameraState);
+        // calculate the position in screen space of the final position of the manipulator
+        const auto finalPositionScreen = AzFramework::WorldToScreen(finalTransformWorld.GetTranslation(), m_cameraState);
+
+        m_linearManipulator->SetSpace(AZ::Transform::CreateIdentity());
+        m_linearManipulator->SetLocalTransform(initialTransformWorld);
+        m_linearManipulator->InstallMouseMoveCallback(
+            [this](const AzToolsFramework::LinearManipulator::Action& action)
+            {
+                // move the manipulator
+                m_linearManipulator->SetLocalPosition(action.LocalPosition());
+            });
+
+        // press and drag the mouse (starting where the surface manipulator is)
+        m_actionDispatcher->CameraState(m_cameraState)
+            ->MousePosition(initialPositionScreen)
+            ->MouseLButtonDown()
+            ->MousePosition(finalPositionScreen)
+            ->MouseLButtonUp();
+
+        // read back the position of the manipulator now
+        const AZ::Transform finalManipulatorTransform = m_linearManipulator->GetLocalTransform();
+
+        // ensure final world positions match
+        EXPECT_THAT(finalManipulatorTransform, IsCloseTolerance(finalTransformWorld, 0.01f));
     }
 } // namespace UnitTest

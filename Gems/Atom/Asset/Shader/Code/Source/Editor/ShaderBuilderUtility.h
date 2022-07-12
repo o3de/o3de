@@ -81,7 +81,7 @@ namespace AZ
                 const char* builderName,
                 const RPI::ShaderResourceGroupLayoutList& srgLayoutList,
                 const MapOfStringToStageType& shaderEntryPoints,
-                const RHI::ShaderCompilerArguments& shaderCompilerArguments,
+                const RHI::ShaderBuildArguments& shaderBuildArguments,
                 const RootConstantData& rootConstantData,
                 RHI::ShaderPlatformInterface* shaderPlatformInterface,
                 BindingDependencies& bindingDependencies /*inout*/);
@@ -141,6 +141,7 @@ namespace AZ
                 const uint32_t rhiUniqueIndex, const AZStd::string& platformIdentifier, const AZStd::string& shaderJsonPath,
                 const uint32_t supervariantIndex, RPI::ShaderAssetSubId shaderAssetSubId);
 
+            AZStd::string GetPlatformNameFromPlatformInfo(const AssetBuilderSDK::PlatformInfo& platformInfo);
 
             class IncludedFilesParser
             {

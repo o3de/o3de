@@ -112,7 +112,7 @@ endfunction()
 # the cmake project generation. This will provide a bridge to non-cmake tools to read the platform-specific cmake
 # project generation settings.
 #
-get_property(LY_PROJECTS_TARGET_NAME GLOBAL PROPERTY LY_PROJECTS_TARGET_NAME)
+get_property(O3DE_PROJECTS_NAME GLOBAL PROPERTY O3DE_PROJECTS_NAME)
 function(ly_update_platform_settings)
     # Update the <platform>.last file to keep track of the recent build_dir
     set(ly_platform_last_path "${CMAKE_BINARY_DIR}/platform.settings")
@@ -122,7 +122,7 @@ function(ly_update_platform_settings)
 
 [settings]
 platform=${PAL_PLATFORM_NAME}
-game_projects=${LY_PROJECTS_TARGET_NAME}
+game_projects=${O3DE_PROJECTS_NAME}
 asset_deploy_mode=${LY_ASSET_DEPLOY_MODE}
 asset_deploy_type=${LY_ASSET_DEPLOY_ASSET_TYPE}
 override_pak_root=${LY_ASSET_OVERRIDE_PAK_FOLDER_ROOT}

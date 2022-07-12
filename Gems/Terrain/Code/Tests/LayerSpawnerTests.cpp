@@ -15,63 +15,23 @@
 #include <Components/TerrainLayerSpawnerComponent.h>
 
 #include <Terrain/MockTerrain.h>
-#include <MockAxisAlignedBoxShapeComponent.h>
+#include <TerrainTestFixtures.h>
 
 using ::testing::NiceMock;
 using ::testing::AtLeast;
 using ::testing::_;
 
 class LayerSpawnerComponentTest
-    : public ::testing::Test
+    : public UnitTest::TerrainTestFixture
 {
 protected:
-    AZ::ComponentApplication m_app;
-
-    void SetUp() override
-    {
-        AZ::ComponentApplication::Descriptor appDesc;
-        appDesc.m_memoryBlocksByteSize = 20 * 1024 * 1024;
-        appDesc.m_recordingMode = AZ::Debug::AllocationRecords::RECORD_NO_RECORDS;
-        appDesc.m_stackRecordLevels = 20;
-
-        m_app.Create(appDesc);
-    }
-
-    void TearDown() override
-    {
-        m_app.Destroy();
-    }
-
-    AZStd::unique_ptr<AZ::Entity> CreateEntity()
-    {
-        auto entity = AZStd::make_unique<AZ::Entity>();
-        entity->Init();
-
-        return entity;
-    }
-
-    Terrain::TerrainLayerSpawnerComponent* AddLayerSpawnerToEntity(AZ::Entity* entity, const Terrain::TerrainLayerSpawnerConfig& config)
-    {
-        auto layerSpawnerComponent = entity->CreateComponent<Terrain::TerrainLayerSpawnerComponent>(config);
-        m_app.RegisterComponentDescriptor(layerSpawnerComponent->CreateDescriptor());
-
-        return layerSpawnerComponent;
-    }
-
-    UnitTest::MockAxisAlignedBoxShapeComponent* AddShapeComponentToEntity(AZ::Entity* entity)
-    {
-        UnitTest::MockAxisAlignedBoxShapeComponent* shapeComponent = entity->CreateComponent<UnitTest::MockAxisAlignedBoxShapeComponent>();
-        m_app.RegisterComponentDescriptor(shapeComponent->CreateDescriptor());
-
-        return shapeComponent;
-    }
+    constexpr static inline float TestBoxHalfBounds = 128.0f;
 };
 
 TEST_F(LayerSpawnerComponentTest, ActivateEntityWithoutShapeFails)
 {
     auto entity = CreateEntity();
-
-    AddLayerSpawnerToEntity(entity.get(), Terrain::TerrainLayerSpawnerConfig());
+    entity->CreateComponent<Terrain::TerrainLayerSpawnerComponent>(Terrain::TerrainLayerSpawnerConfig());
 
     const AZ::Entity::DependencySortOutcome sortOutcome = entity->EvaluateDependenciesGetDetails();
     EXPECT_FALSE(sortOutcome.IsSuccess());
@@ -81,12 +41,10 @@ TEST_F(LayerSpawnerComponentTest, ActivateEntityWithoutShapeFails)
 
 TEST_F(LayerSpawnerComponentTest, ActivateEntityActivateSuccess)
 {
-    auto entity = CreateEntity();
+    auto entity = CreateTestBoxEntity(TestBoxHalfBounds);
+    entity->CreateComponent<Terrain::TerrainLayerSpawnerComponent>(Terrain::TerrainLayerSpawnerConfig());
 
-    AddLayerSpawnerToEntity(entity.get(), Terrain::TerrainLayerSpawnerConfig());
-    AddShapeComponentToEntity(entity.get());
-
-    entity->Activate();
+    ActivateEntity(entity.get());
     EXPECT_EQ(entity->GetState(), AZ::Entity::State::Active);
 
     entity.reset();
@@ -94,11 +52,10 @@ TEST_F(LayerSpawnerComponentTest, ActivateEntityActivateSuccess)
 
 TEST_F(LayerSpawnerComponentTest, LayerSpawnerDefaultValuesCorrect)
 {
-    auto entity = CreateEntity();
-    AddLayerSpawnerToEntity(entity.get(), Terrain::TerrainLayerSpawnerConfig());
-    AddShapeComponentToEntity(entity.get());
+    auto entity = CreateTestBoxEntity(TestBoxHalfBounds);
+    entity->CreateComponent<Terrain::TerrainLayerSpawnerComponent>(Terrain::TerrainLayerSpawnerConfig());
 
-    entity->Activate();
+    ActivateEntity(entity.get());
 
     AZ::u32 priority = 999, layer = 999;
     Terrain::TerrainSpawnerRequestBus::Event(entity->GetId(), &Terrain::TerrainSpawnerRequestBus::Events::GetPriority, layer, priority);
@@ -118,7 +75,7 @@ TEST_F(LayerSpawnerComponentTest, LayerSpawnerDefaultValuesCorrect)
 
 TEST_F(LayerSpawnerComponentTest, LayerSpawnerConfigValuesCorrect)
 {
-    auto entity = CreateEntity();
+    auto entity = CreateTestBoxEntity(TestBoxHalfBounds);
 
     constexpr static AZ::u32 testPriority = 15;
     constexpr static AZ::u32 testLayer = 0;
@@ -128,10 +85,9 @@ TEST_F(LayerSpawnerComponentTest, LayerSpawnerConfigValuesCorrect)
     config.m_priority = testPriority;
     config.m_useGroundPlane = false;
 
-    AddLayerSpawnerToEntity(entity.get(), config);
-    AddShapeComponentToEntity(entity.get());
+    entity->CreateComponent<Terrain::TerrainLayerSpawnerComponent>(config);
 
-    entity->Activate();
+    ActivateEntity(entity.get());
 
     AZ::u32 priority = 999, layer = 999;
     Terrain::TerrainSpawnerRequestBus::Event(entity->GetId(), &Terrain::TerrainSpawnerRequestBus::Events::GetPriority, layer, priority);
@@ -151,51 +107,48 @@ TEST_F(LayerSpawnerComponentTest, LayerSpawnerConfigValuesCorrect)
 
 TEST_F(LayerSpawnerComponentTest, LayerSpawnerRegisterAreaUpdatesTerrainSystem)
 {
-    auto entity = CreateEntity();
+    auto entity = CreateTestBoxEntity(TestBoxHalfBounds);
 
     NiceMock<UnitTest::MockTerrainSystemService> terrainSystem;
 
     // The Activate call should register the area.
     EXPECT_CALL(terrainSystem, RegisterArea(_)).Times(1);
 
-    AddLayerSpawnerToEntity(entity.get(), Terrain::TerrainLayerSpawnerConfig());
-    AddShapeComponentToEntity(entity.get());
+    entity->CreateComponent<Terrain::TerrainLayerSpawnerComponent>(Terrain::TerrainLayerSpawnerConfig());
 
-    entity->Activate();
+    ActivateEntity(entity.get());
 
     entity.reset();
 }
 
 TEST_F(LayerSpawnerComponentTest, LayerSpawnerUnregisterAreaUpdatesTerrainSystem)
 {
-    auto entity = CreateEntity();
+    auto entity = CreateTestBoxEntity(TestBoxHalfBounds);
 
     NiceMock<UnitTest::MockTerrainSystemService> terrainSystem;
 
     // The Deactivate call should unregister the area.
     EXPECT_CALL(terrainSystem, UnregisterArea(_)).Times(1);
 
-    AddLayerSpawnerToEntity(entity.get(), Terrain::TerrainLayerSpawnerConfig());
-    AddShapeComponentToEntity(entity.get());
+    entity->CreateComponent<Terrain::TerrainLayerSpawnerComponent>(Terrain::TerrainLayerSpawnerConfig());
 
-    entity->Activate();
+    ActivateEntity(entity.get());
 
     entity.reset();
 }
 
 TEST_F(LayerSpawnerComponentTest, LayerSpawnerTransformChangedUpdatesTerrainSystem)
 {
-    auto entity = CreateEntity();
+    auto entity = CreateTestBoxEntity(TestBoxHalfBounds);
 
     NiceMock<UnitTest::MockTerrainSystemService> terrainSystem;
 
     // The TransformChanged call should refresh the area.
     EXPECT_CALL(terrainSystem, RefreshArea(_, _)).Times(1);
 
-    AddLayerSpawnerToEntity(entity.get(), Terrain::TerrainLayerSpawnerConfig());
-    AddShapeComponentToEntity(entity.get());
+    entity->CreateComponent<Terrain::TerrainLayerSpawnerComponent>(Terrain::TerrainLayerSpawnerConfig());
 
-    entity->Activate();
+    ActivateEntity(entity.get());
 
     // The component gets transform change notifications via the shape bus.
     LmbrCentral::ShapeComponentNotificationsBus::Event(
@@ -207,17 +160,16 @@ TEST_F(LayerSpawnerComponentTest, LayerSpawnerTransformChangedUpdatesTerrainSyst
 
 TEST_F(LayerSpawnerComponentTest, LayerSpawnerShapeChangedUpdatesTerrainSystem)
 {
-    auto entity = CreateEntity();
+    auto entity = CreateTestBoxEntity(TestBoxHalfBounds);
 
     NiceMock<UnitTest::MockTerrainSystemService> terrainSystem;
 
     // The ShapeChanged call should refresh the area.
     EXPECT_CALL(terrainSystem, RefreshArea(_, _)).Times(1);
 
-    AddLayerSpawnerToEntity(entity.get(), Terrain::TerrainLayerSpawnerConfig());
-    AddShapeComponentToEntity(entity.get());
+    entity->CreateComponent<Terrain::TerrainLayerSpawnerComponent>(Terrain::TerrainLayerSpawnerConfig());
 
-    entity->Activate();
+    ActivateEntity(entity.get());
 
     LmbrCentral::ShapeComponentNotificationsBus::Event(
         entity->GetId(), &LmbrCentral::ShapeComponentNotificationsBus::Events::OnShapeChanged,

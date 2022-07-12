@@ -34,8 +34,8 @@ namespace GraphModel
         //! Returns the Graph that owns this GraphElement
         GraphPtr GetGraph() const;
 
-        //! Returns the IGraphContext for this GraphElement
-        IGraphContextPtr GetGraphContext() const;
+        //! Returns the GraphContext for this GraphElement
+        GraphContextPtr GetGraphContext() const;
 
     protected:
 

@@ -46,36 +46,38 @@ namespace AZ
         ParentPass::~ParentPass()
         {
             // Explicitly remove children so we call their OnOrphan function
-            RemoveChildren();
+            constexpr bool callingFromDestructor = true;
+            RemoveChildren(callingFromDestructor);
         }
 
         // --- Child Pass Addition ---
 
-        void ParentPass::AddChild(const Ptr<Pass>& child)
+        void ParentPass::AddChild(const Ptr<Pass>& child, [[maybe_unused]] bool skipStateCheckWhenRunningTests)
         {
+            AZ_Error("PassSystem", GetPassState() == PassState::Building || IsRootPass() || skipStateCheckWhenRunningTests, "Do not add child passes outside of build phase");
+
             if (child->m_parent != nullptr)
             {
                 AZ_Assert(false, "Can't add Pass that already has a parent. Remove the Pass from it's parent before adding it to another Pass.");
                 return;
             }
 
+            child->m_parentChildIndex = static_cast<uint32_t>(m_children.size());
             m_children.push_back(child);
-            child->m_parent = this;
-            child->OnHierarchyChange();
-
-            QueueForBuildAndInitialization();
-
-            // Notify pipeline
-            if (m_pipeline)
-            {
-                m_pipeline->SetPassModified();
-
-                // Set child's pipeline if the parent has a owning pipeline
-                child->SetRenderPipeline(m_pipeline);
-            }
+            OnChildAdded(child);
         }
 
         bool ParentPass::InsertChild(const Ptr<Pass>& child, ChildPassIndex position)
+        {
+            if (!position.IsValid())
+            {
+                AZ_Assert(false, "Can't insert a child pass with invalid position");
+                return false;
+            }
+            return InsertChild(child, position.GetIndex());
+        }
+        
+        bool ParentPass::InsertChild(const Ptr<Pass>& child, uint32_t index)
         {
             if (child->m_parent != nullptr)
             {
@@ -83,15 +85,26 @@ namespace AZ
                 return false;
             }
 
-            if (!position.IsValid() || position.GetIndex() > m_children.size())
+            if (index > m_children.size())
             {
                 AZ_Assert(false, "Can't insert a child pass with invalid position");
                 return false;
             }
 
-            auto insertPos = m_children.cbegin() + position.GetIndex();
+            auto insertPos = m_children.cbegin() + index;
             m_children.insert(insertPos, child);
+            OnChildAdded(child);
 
+            for (; index < m_children.size(); ++index)
+            {
+                m_children[index]->m_parentChildIndex = index;
+            }
+
+            return true;
+        }
+
+        void ParentPass::OnChildAdded(const Ptr<Pass>& child)
+        {
             child->m_parent = this;
             child->OnHierarchyChange();
 
@@ -100,12 +113,11 @@ namespace AZ
             // Notify pipeline
             if (m_pipeline)
             {
-                m_pipeline->SetPassModified();
+                m_pipeline->MarkPipelinePassChanges(PipelinePassChanges::PassesAdded);
 
                 // Set child's pipeline if the parent has a owning pipeline
                 child->SetRenderPipeline(m_pipeline);
             }
-            return true;
         }
 
         void ParentPass::OnHierarchyChange()
@@ -127,6 +139,9 @@ namespace AZ
         void ParentPass::RemoveChild(Ptr<Pass> pass)
         {
             AZ_Assert(pass->m_parent == this, "Trying to remove a pass of which we are not the parent.");
+            AZ_Error("PassSystem", GetPassState() == PassState::Resetting || GetPassState() == PassState::Building || IsRootPass() ||
+                (GetPassTree() && GetPassTree()->GetPassTreeState() == PassTreeState::RemovingPasses),
+                "Do not remove child passes outside of the removal, reset, or build phases.");
 
             // Find child and move it to the end of the list
             [[maybe_unused]] auto it = AZStd::remove(m_children.begin(), m_children.end(), pass);
@@ -138,15 +153,25 @@ namespace AZ
             // Signal child that it was orphaned
             pass->OnOrphan();
 
+            // Update child indices
+            for (u32 index = 0; index < m_children.size(); ++index)
+            {
+                m_children[index]->m_parentChildIndex = index;
+            }
+
             // Notify pipeline
             if (m_pipeline)
             {
-                m_pipeline->SetPassModified();
+                m_pipeline->MarkPipelinePassChanges(PipelinePassChanges::PassesRemoved);
             }
         }
 
-        void ParentPass::RemoveChildren()
+        void ParentPass::RemoveChildren([[maybe_unused]] bool calledFromDestructor)
         {
+            AZ_Error("PassSystem", GetPassState() == PassState::Resetting || GetPassState() == PassState::Building || calledFromDestructor ||
+                (GetPassTree() && GetPassTree()->GetPassTreeState() == PassTreeState::RemovingPasses),
+                "Do not remove child passes outside of the removal, reset, or build phases.");
+
             for (auto child : m_children)
             {
                 child->OnOrphan();
@@ -156,7 +181,7 @@ namespace AZ
             // Notify pipeline
             if (m_pipeline)
             {
-                m_pipeline->SetPassModified();
+                m_pipeline->MarkPipelinePassChanges(PipelinePassChanges::PassesRemoved);
             }
         }
 
@@ -387,6 +412,11 @@ namespace AZ
 
         void ParentPass::SetRenderPipeline(RenderPipeline* pipeline)
         {
+            if (m_pipeline == pipeline)
+            {
+                return;
+            }
+
             // Call base implementation
             Pass::SetRenderPipeline(pipeline);
 

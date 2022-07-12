@@ -74,7 +74,7 @@
     <AlternativeType Name="AZStd::fixed_vector&lt;*,*&gt;" />
     <DisplayString>fixed_vector[{(size_t)m_size}] capacity {$T2}</DisplayString>
     <Expand>
-	  <Item Name="[size]">(size_t)m_size</Item>
+      <Item Name="[size]">(size_t)m_size</Item>
       <Item Name="[capacity]">$T2</Item>
       <ArrayItems>
         <Size>m_size</Size>
@@ -841,6 +841,59 @@
    
     <Type Name="AZ::Console">
         <DisplayString Condition="m_head != nullptr">{*m_head}</DisplayString>
+    </Type>
+
+    <Type Name="AZ::Name">
+        <DisplayString>{m_view,s}</DisplayString>
+    </Type>
+    
+    <Type Name="AZ::Dom::Value">
+        <Intrinsic Name="ValueUnion" Expression="m_value.m_impl.m_union_data" />
+        <Intrinsic Name="IsNull" Expression="m_value.index() == 0" />
+        <Intrinsic Name="IsInt64" Expression="m_value.index() == 1" />
+        <Intrinsic Name="Int64" Expression="ValueUnion().m_tail.m_head" />
+        <Intrinsic Name="IsUint64" Expression="m_value.index() == 2" />
+        <Intrinsic Name="Uint64" Expression="ValueUnion().m_tail.m_tail.m_head" />
+        <Intrinsic Name="IsDouble" Expression="m_value.index() == 3" />
+        <Intrinsic Name="Double" Expression="ValueUnion().m_tail.m_tail.m_tail.m_head" />
+        <Intrinsic Name="IsBool" Expression="m_value.index() == 4" />
+        <Intrinsic Name="Bool" Expression="ValueUnion().m_tail.m_tail.m_tail.m_tail.m_head" />
+        <Intrinsic Name="IsStringView" Expression="m_value.index() == 5" />
+        <Intrinsic Name="StringView" Expression="ValueUnion().m_tail.m_tail.m_tail.m_tail.m_tail.m_head" />
+        <Intrinsic Name="IsSharedString" Expression="m_value.index() == 6" />
+        <Intrinsic Name="SharedString" Expression="ValueUnion().m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_head.m_value" />
+        <Intrinsic Name="IsShortString" Expression="m_value.index() == 7" />
+        <Intrinsic Name="ShortString" Expression="ValueUnion().m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_head" />
+        <Intrinsic Name="IsObject" Expression="m_value.index() == 8" />
+        <Intrinsic Name="Object" Expression="ValueUnion().m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_head.m_value.px->m_values" />
+        <Intrinsic Name="IsArray" Expression="m_value.index() == 9" />
+        <Intrinsic Name="Array" Expression="ValueUnion().m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_head.m_value.px->m_values" />
+        <Intrinsic Name="IsNode" Expression="m_value.index() == 10" />
+        <Intrinsic Name="Node" Expression="ValueUnion().m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_head.m_value.px" />
+        <Intrinsic Name="IsOpaque" Expression="m_value.index() == 11" />
+        <Intrinsic Name="Opaque" Expression="ValueUnion().m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_head.m_value.px" />
+        
+        <DisplayString Condition="IsNull()">null</DisplayString>
+        <DisplayString Condition="IsInt64()">{Int64()}</DisplayString>
+        <DisplayString Condition="IsUint64()">{Uint64()}</DisplayString>
+        <DisplayString Condition="IsDouble()">{Double()}</DisplayString>
+        <DisplayString Condition="IsBool()">{Bool()}</DisplayString>
+        <DisplayString Condition="IsStringView()">{StringView(),s}</DisplayString>
+        <DisplayString Condition="IsSharedString()">{SharedString().px->m_start,[SharedString().px->m_last - SharedString().px->m_start]s}</DisplayString>
+        <DisplayString Condition="IsShortString()">{ShortString()}</DisplayString>
+        <DisplayString Condition="IsObject()">Object[{Object().m_last - Object().m_start}]</DisplayString>
+        <DisplayString Condition="IsArray()">Array[{Array().m_last - Array().m_start}]</DisplayString>
+        <DisplayString Condition="IsNode()">&lt;{Node()->m_name.m_view,sb}&gt;[{Node()->m_properties.m_last - Node()->m_properties.m_start} properties, {Node()->m_children.m_last - Node()->m_children.m_start} children]</DisplayString>
+        <DisplayString Condition="IsOpaque()">Opaque[{Opaque()}]"</DisplayString>
+
+        <Expand>
+            <ExpandedItem Condition="IsStringView()">StringView()</ExpandedItem>
+            <ExpandedItem Condition="IsSharedString()">SharedString()</ExpandedItem>
+            <ExpandedItem Condition="IsObject()">Object()</ExpandedItem>
+            <ExpandedItem Condition="IsArray()">Array()</ExpandedItem>
+            <ExpandedItem Condition="IsNode()">Node()</ExpandedItem>
+            <ExpandedItem Condition="IsOpaque()">Opaque()</ExpandedItem>
+        </Expand>
     </Type>
 
 </AutoVisualizer>

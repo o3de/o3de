@@ -45,6 +45,7 @@ namespace AZ
             // RHI::ResourcePool
             void ShutdownInternal() override;
             void ShutdownResourceInternal(RHI::Resource& resourceBase) override;
+            void ComputeFragmentation() const override {}
             //////////////////////////////////////////////////////////////////////////
         };
     }

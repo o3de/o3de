@@ -63,10 +63,8 @@ namespace AtomToolsFramework
         pipelineDesc.m_mainViewTagName = "MainCamera";
         pipelineDesc.m_name = pipelineName;
         pipelineDesc.m_rootPassTemplate = "ToolsPipelineRenderToTexture";
+        pipelineDesc.m_renderSettings.m_multisampleState = AZ::RPI::RPISystemInterface::Get()->GetApplicationMultisampleState();
 
-        // We have to set the samples to 4 to match the pipeline passes' setting, otherwise it may lead to device lost issue
-        // [GFX TODO] [ATOM-13551] Default value sand validation required to prevent pipeline crash and device lost
-        pipelineDesc.m_renderSettings.m_multisampleState.m_samples = 4;
         m_renderPipeline = AZ::RPI::RenderPipeline::CreateRenderPipeline(pipelineDesc);
         m_scene->AddRenderPipeline(m_renderPipeline);
         m_scene->Activate();
@@ -185,7 +183,7 @@ namespace AtomToolsFramework
         m_currentCaptureRequest.m_content->Update();
     }
 
-    bool PreviewRenderer::StartCapture()
+    uint32_t PreviewRenderer::StartCapture()
     {
         auto captureCompleteCallback = m_currentCaptureRequest.m_captureCompleteCallback;
         auto captureFailedCallback = m_currentCaptureRequest.m_captureFailedCallback;
@@ -196,8 +194,10 @@ namespace AtomToolsFramework
                 if (captureCompleteCallback)
                 {
                     captureCompleteCallback(QPixmap::fromImage(QImage(
-                        result.m_dataBuffer.get()->data(), result.m_imageDescriptor.m_size.m_width,
-                        result.m_imageDescriptor.m_size.m_height, QImage::Format_RGBA8888)));
+                        result.m_dataBuffer.get()->data(),
+                        result.m_imageDescriptor.m_size.m_width,
+                        result.m_imageDescriptor.m_size.m_height,
+                        QImage::Format_RGBA8888)));
                 }
             }
             else
@@ -216,11 +216,11 @@ namespace AtomToolsFramework
 
         m_renderPipeline->AddToRenderTickOnce();
 
-        bool startedCapture = false;
+        uint32_t frameCaptureId = AZ::Render::FrameCaptureRequests::s_InvalidFrameCaptureId;
         AZ::Render::FrameCaptureRequestBus::BroadcastResult(
-            startedCapture, &AZ::Render::FrameCaptureRequestBus::Events::CapturePassAttachmentWithCallback, m_passHierarchy,
+            frameCaptureId, &AZ::Render::FrameCaptureRequestBus::Events::CapturePassAttachmentWithCallback, m_passHierarchy,
             AZStd::string("Output"), captureCallback, AZ::RPI::PassAttachmentReadbackOption::Output);
-        return startedCapture;
+        return frameCaptureId;
     }
 
     void PreviewRenderer::EndCapture()

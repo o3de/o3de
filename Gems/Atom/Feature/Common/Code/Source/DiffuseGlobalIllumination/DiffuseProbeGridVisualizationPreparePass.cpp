@@ -147,6 +147,8 @@ namespace AZ
             RPI::Scene* scene = m_pipeline->GetScene();
             DiffuseProbeGridFeatureProcessor* diffuseProbeGridFeatureProcessor = scene->GetFeatureProcessor<DiffuseProbeGridFeatureProcessor>();
 
+            frameGraph.SetEstimatedItemCount(aznumeric_cast<uint32_t>(diffuseProbeGridFeatureProcessor->GetVisibleProbeGrids().size()));
+
             for (auto& diffuseProbeGrid : diffuseProbeGridFeatureProcessor->GetVisibleProbeGrids())
             {
                 if (!ShouldUpdate(diffuseProbeGrid))
@@ -200,6 +202,16 @@ namespace AZ
                         frameGraph.UseShaderAttachment(desc, RHI::ScopeAttachmentAccess::Write);
                     }
 
+                    // grid data
+                    {
+                        RHI::BufferScopeAttachmentDescriptor desc;
+                        desc.m_attachmentId = diffuseProbeGrid->GetGridDataBufferAttachmentId();
+                        desc.m_bufferViewDescriptor = diffuseProbeGrid->GetRenderData()->m_gridDataBufferViewDescriptor;
+                        desc.m_loadStoreAction.m_loadAction = AZ::RHI::AttachmentLoadAction::Load;
+
+                        frameGraph.UseShaderAttachment(desc, RHI::ScopeAttachmentAccess::Read);
+                    }
+
                     // probe data
                     {
                         AZ::RHI::AttachmentId attachmentId = diffuseProbeGrid->GetProbeDataImageAttachmentId();
@@ -246,8 +258,10 @@ namespace AZ
             RPI::Scene* scene = m_pipeline->GetScene();
             DiffuseProbeGridFeatureProcessor* diffuseProbeGridFeatureProcessor = scene->GetFeatureProcessor<DiffuseProbeGridFeatureProcessor>();
 
-            for (auto& diffuseProbeGrid : diffuseProbeGridFeatureProcessor->GetVisibleProbeGrids())
+            // submit the DispatchItems for each DiffuseProbeGrid in this range
+            for (uint32_t index = context.GetSubmitRange().m_startIndex; index < context.GetSubmitRange().m_endIndex; ++index)
             {
+                AZStd::shared_ptr<DiffuseProbeGrid> diffuseProbeGrid = diffuseProbeGridFeatureProcessor->GetVisibleProbeGrids()[index];
                 if (!ShouldUpdate(diffuseProbeGrid))
                 {
                     continue;
@@ -257,6 +271,7 @@ namespace AZ
                 commandList->SetShaderResourceGroupForDispatch(*shaderResourceGroup);
 
                 RHI::DispatchItem dispatchItem;
+                dispatchItem.m_submitIndex = index;
                 dispatchItem.m_arguments = m_dispatchArgs;
                 dispatchItem.m_pipelineState = m_pipelineState;
                 dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsX = diffuseProbeGrid->GetTotalProbeCount();

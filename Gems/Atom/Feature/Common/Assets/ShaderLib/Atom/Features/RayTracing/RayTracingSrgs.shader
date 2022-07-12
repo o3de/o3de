@@ -1,9 +1,8 @@
 { 
     "Source" : "RayTracingSrgs.azsl",
 
-    "CompilerHints":
-    {
-        "DxcAdditionalFreeArguments" : "-fspv-target-env=vulkan1.2"
+    "AddBuildArguments": {
+        "dxc": ["-fspv-target-env=vulkan1.2"]
     },
 
     "DepthStencilState" : 
@@ -37,8 +36,12 @@
     [
         {
             "Name": "",
-            "PlusArguments": "--no-alignment-validation",
-            "MinusArguments": "--strip-unused-srgs"
+            "AddBuildArguments": {
+                "azslc": ["--no-alignment-validation"]
+            },
+            "RemoveBuildArguments": {
+                "azslc": ["--strip-unused-srgs"]
+            }
         }
     ]  
 }

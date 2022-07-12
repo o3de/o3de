@@ -41,22 +41,20 @@ def Multiplayer_BasicConnectivity_Connects():
 
 
     level_name = "BasicConnectivity_Connects"
-    player_prefab_name = "Player"
-    player_prefab_path = f"levels/multiplayer/{level_name}/{player_prefab_name}.network.spawnable"
-
     helper.init_idle()
 
     # 1) Open Level
     helper.open_level("Multiplayer", level_name)
+    general.set_cvar_integer('editorsv_port', 33454)
 
     with Tracer() as section_tracer:
         # 2) Enter game mode
-        helper.multiplayer_enter_game_mode(TestConstants.enter_game_mode, player_prefab_path.lower())
+        helper.multiplayer_enter_game_mode(TestConstants.enter_game_mode)
 
         # 3) Make sure the network player was spawned
-        player_id = general.find_game_entity(player_prefab_name)
+        player_id = general.find_game_entity("Player")
         Report.critical_result(TestConstants.find_network_player, player_id.IsValid())
-    
+
     # Exit game mode
     helper.exit_game_mode(TestConstants.exit_game_mode)
 

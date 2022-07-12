@@ -384,9 +384,19 @@ def _safe_kill_processes(processes):
             logger.debug("Unexpected exception ignored while terminating process, with stacktrace:", exc_info=True)
 
     def on_terminate(proc):
-        logger.info(f"process '{proc.name()}' with id '{proc.pid}' terminated with exit code {proc.returncode}")
+        try:
+            logger.info(f"process '{proc.name()}' with id '{proc.pid}' terminated with exit code {proc.returncode}")
+        except psutil.AccessDenied:
+            logger.warning("Termination failed, Access Denied with stacktrace:", exc_info=True)
+        except psutil.NoSuchProcess:
+            logger.debug("Termination request ignored, process was already terminated during iteration with stacktrace:", exc_info=True)
+
     try:
         psutil.wait_procs(processes, timeout=30, callback=on_terminate)
+    except psutil.AccessDenied:
+        logger.warning("Termination failed, Access Denied with stacktrace:", exc_info=True)
+    except psutil.NoSuchProcess:
+        logger.debug("Termination request ignored, process was already terminated during iteration with stacktrace:", exc_info=True)
     except Exception:  # purposefully broad
         logger.debug("Unexpected exception while waiting for processes to terminate, with stacktrace:", exc_info=True)
 

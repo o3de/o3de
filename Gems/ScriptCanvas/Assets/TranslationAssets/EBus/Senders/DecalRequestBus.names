@@ -164,6 +164,28 @@
                     ]
                 },
                 {
+                    "base": "GetNormalMapOpacity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Normal Map Opacity"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Normal Map Opacity is invoked"
+                    },
+                    "details": {
+                        "name": "Get Normal Map Opacity"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Normal Map Opacity"
+                            }
+                        }
+                    ]
+                },
+                {
                     "base": "GetAttenuationAngle",
                     "entry": {
                         "name": "In",
@@ -181,6 +203,28 @@
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
                                 "name": "Attenuation Angle"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetNormalMapOpacity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Normal Map Opacity"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Normal Map Opacity is invoked"
+                    },
+                    "details": {
+                        "name": "Set Normal Map Opacity"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Normal Map Opacity"
                             }
                         }
                     ]

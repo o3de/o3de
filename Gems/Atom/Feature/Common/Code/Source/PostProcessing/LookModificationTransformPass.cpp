@@ -34,7 +34,7 @@ namespace AZ
 
         void LookModificationPass::BuildInternal()
         {
-            m_swapChainAttachmentBinding = FindAttachmentBinding(Name("SwapChainOutput"));
+            m_pipelineOutput = FindAttachmentBinding(Name("PipelineOutput"));
             ParentPass::BuildInternal();
         }
 
@@ -42,9 +42,9 @@ namespace AZ
         {
             // Get swap chain format
             RHI::Format swapChainFormat = RHI::Format::Unknown;
-            if (m_swapChainAttachmentBinding && m_swapChainAttachmentBinding->m_attachment)
+            if (m_pipelineOutput && m_pipelineOutput->GetAttachment())
             {
-                swapChainFormat = m_swapChainAttachmentBinding->m_attachment->GetTransientImageDescriptor().m_imageDescriptor.m_format;
+                swapChainFormat = m_pipelineOutput->GetAttachment()->m_descriptor.m_image.m_format;
             }
 
             // Update the children passes

@@ -40,7 +40,7 @@ namespace AzFramework
         const float nearPlane,
         const float farPlane,
         const float verticalFovRad,
-        const AZ::Vector2& viewportSize)
+        const ScreenSize& viewportSize)
     {
         AzFramework::CameraState cameraState;
 
@@ -51,7 +51,7 @@ namespace AzFramework
         return cameraState;
     }
 
-    AzFramework::CameraState CreateDefaultCamera(const AZ::Transform& transform, const AZ::Vector2& viewportSize)
+    AzFramework::CameraState CreateDefaultCamera(const AZ::Transform& transform, const ScreenSize& viewportSize)
     {
         AzFramework::CameraState cameraState;
 
@@ -62,12 +62,12 @@ namespace AzFramework
         return cameraState;
     }
 
-    AzFramework::CameraState CreateIdentityDefaultCamera(const AZ::Vector3& position, const AZ::Vector2& viewportSize)
+    AzFramework::CameraState CreateIdentityDefaultCamera(const AZ::Vector3& position, const ScreenSize& viewportSize)
     {
         return CreateDefaultCamera(AZ::Transform::CreateTranslation(position), viewportSize);
     }
 
-    AzFramework::CameraState CreateCameraFromWorldFromViewMatrix(const AZ::Matrix4x4& worldFromView, const AZ::Vector2& viewportSize)
+    AzFramework::CameraState CreateCameraFromWorldFromViewMatrix(const AZ::Matrix4x4& worldFromView, const ScreenSize& viewportSize)
     {
         AzFramework::CameraState cameraState;
         cameraState.m_viewportSize = viewportSize;

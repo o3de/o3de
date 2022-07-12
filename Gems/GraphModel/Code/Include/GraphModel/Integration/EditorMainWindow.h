@@ -34,7 +34,7 @@ namespace GraphModelIntegration
     protected:
         /// Subclasses must implement this method so that this class can
         /// create graphs on their behalf.
-        virtual GraphModel::IGraphContextPtr GetGraphContext() const = 0;
+        virtual GraphModel::GraphContextPtr GetGraphContext() const = 0;
 
         /// Helper method for retrieving the graph associated with a graphId.
         GraphModel::GraphPtr GetGraphById(GraphCanvas::GraphId graphId) const;

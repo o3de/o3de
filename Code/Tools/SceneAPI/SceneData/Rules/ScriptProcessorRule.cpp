@@ -21,16 +21,6 @@ namespace AZ
     {
         namespace SceneData
         {
-            const AZStd::string& ScriptProcessorRule::GetScriptFilename() const
-            {
-                return m_scriptFilename;
-            }
-
-            DataTypes::ScriptProcessorFallbackLogic ScriptProcessorRule::GetScriptProcessorFallbackLogic() const
-            {
-                return m_fallbackLogic;
-            }
-
             void ScriptProcessorRule::Reflect(AZ::ReflectContext* context)
             {
                 AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);

@@ -82,7 +82,7 @@ namespace AzToolsFramework
             });
             connect(m_ui->m_assetBrowserTreeViewWidget, &QAbstractItemView::doubleClicked, this, &AssetPickerDialog::DoubleClickedSlot);
             connect(m_ui->m_assetBrowserTreeViewWidget, &AssetBrowserTreeView::selectionChangedSignal, this,
-                [this](const QItemSelection&, const QItemSelection&){ AssetPickerDialog::SelectionChangedSlot(); });
+                [this](const QItemSelection&, const QItemSelection&){ SelectionChangedSlot(); });
             connect(m_ui->m_buttonBox, &QDialogButtonBox::accepted, this, &QDialog::accept);
             connect(m_ui->m_buttonBox, &QDialogButtonBox::rejected, this, &QDialog::reject);
 
@@ -153,7 +153,7 @@ namespace AzToolsFramework
                     m_ui->m_assetBrowserTableViewWidget, &AssetBrowserTableView::selectionChangedSignal, this,
                     [this](const QItemSelection&, const QItemSelection&)
                     {
-                        AssetPickerDialog::SelectionChangedSlot();
+                        SelectionChangedSlot();
                     });
 
                 connect(m_ui->m_assetBrowserTableViewWidget, &QAbstractItemView::doubleClicked, this, &AssetPickerDialog::DoubleClickedSlot);
@@ -174,8 +174,15 @@ namespace AzToolsFramework
                 m_tableModel->UpdateTableModelMaps();
             }
 
-            QTimer::singleShot(0, this, &AssetPickerDialog::RestoreState);
-            SelectionChangedSlot();
+            QTimer::singleShot(0, this, [this]() {
+                RestoreState();
+
+                // The selection doesn't propagate immediately, so we need to delay
+                // it as well so that the OK button can be updated appropriately.
+                // Otherwise, it will always be disabled when you first launch
+                // the asset picker dialog.
+                SelectionChangedSlot();
+            });
         }
 
         AssetPickerDialog::~AssetPickerDialog() = default;

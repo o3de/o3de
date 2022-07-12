@@ -1,0 +1,154 @@
+{
+    "name": "clearCoat",
+    "displayName": "Clear Coat",
+    "description": "Properties for configuring gloss clear coat",
+    "properties": [
+        {
+            "name": "enable",
+            "displayName": "Enable",
+            "description": "Enable clear coat",
+            "type": "Bool",
+            "defaultValue": false
+        },
+        {
+            "name": "factor",
+            "displayName": "Factor",
+            "description": "Strength factor for scaling the percentage of effect applied",
+            "type": "Float",
+            "defaultValue": 1.0,
+            "min": 0.0,
+            "max": 1.0,
+            "connection": {
+                "type": "ShaderInput",
+                "name": "m_clearCoatFactor"
+            }
+        },
+        {
+            "name": "influenceMap",
+            "displayName": "    Influence Map",
+            "description": "Strength factor texture",
+            "type": "Image",
+            "connection": {
+                "type": "ShaderInput",
+                "name": "m_clearCoatInfluenceMap"
+            }
+        },
+        {
+            "name": "useInfluenceMap",
+            "displayName": "    Use Texture",
+            "description": "Whether to use the texture, or just default to the Factor value.",
+            "type": "Bool",
+            "defaultValue": true
+        },
+        {
+            "name": "influenceMapUv",
+            "displayName": "    UV",
+            "description": "Strength factor map UV set",
+            "type": "Enum",
+            "enumIsUv": true,
+            "defaultValue": "Tiled",
+            "connection": {
+                "type": "ShaderInput",
+                "name": "m_clearCoatInfluenceMapUvIndex"
+            }
+        },
+        {
+            "name": "roughness",
+            "displayName": "Roughness",
+            "description": "Clear coat layer roughness",
+            "type": "Float",
+            "defaultValue": 0.0,
+            "min": 0.0,
+            "max": 1.0,
+            "connection": {
+                "type": "ShaderInput",
+                "name": "m_clearCoatRoughness"
+            }
+        },
+        {
+            "name": "roughnessMap",
+            "displayName": "    Roughness Map",
+            "description": "Texture for defining surface roughness",
+            "type": "Image",
+            "connection": {
+                "type": "ShaderInput",
+                "name": "m_clearCoatRoughnessMap"
+            }
+        },
+        {
+            "name": "useRoughnessMap",
+            "displayName": "    Use Texture",
+            "description": "Whether to use the texture, or just default to the roughness value.",
+            "type": "Bool",
+            "defaultValue": true
+        },
+        {
+            "name": "roughnessMapUv",
+            "displayName": "    UV",
+            "description": "Roughness map UV set",
+            "type": "Enum",
+            "enumIsUv": true,
+            "defaultValue": "Tiled",
+            "connection": {
+                "type": "ShaderInput",
+                "name": "m_clearCoatRoughnessMapUvIndex"
+            }
+        },
+        {
+            "name": "normalStrength",
+            "displayName": "Normal Strength",
+            "description": "Scales the impact of the clear coat normal map",
+            "type": "Float",
+            "defaultValue": 1.0,
+            "min": 0.0,
+            "max": 2.0,
+            "connection": {
+                "type": "ShaderInput",
+                "name": "m_clearCoatNormalStrength"
+            }
+        },
+        {
+            "name": "normalMap",
+            "displayName": "Normal Map",
+            "description": "Normal map for clear coat layer, as top layer material clear coat doesn't affect by base layer normal map",
+            "type": "Image",
+            "connection": {
+                "type": "ShaderInput",
+                "name": "m_clearCoatNormalMap"
+            }
+        },
+        {
+            "name": "useNormalMap",
+            "displayName": "    Use Texture",
+            "description": "Whether to use the normal map",
+            "type": "Bool",
+            "defaultValue": true
+        },
+        {
+            "name": "normalMapUv",
+            "displayName": "    UV",
+            "description": "Normal map UV set",
+            "type": "Enum",
+            "enumIsUv": true,
+            "defaultValue": "Tiled",
+            "connection": {
+                "type": "ShaderInput",
+                "name": "m_clearCoatNormalMapUvIndex"
+            }
+        }
+    ],
+    "functors": [
+        {
+            "type": "Lua",
+            "args": {
+                "file": "Materials/Types/StandardPBR_ClearCoatState.lua"
+            }
+        },
+        {
+            "type": "Lua",
+            "args": {
+                "file": "Materials/Types/StandardPBR_ClearCoatEnableFeature.lua"
+            }
+        }
+    ]
+}

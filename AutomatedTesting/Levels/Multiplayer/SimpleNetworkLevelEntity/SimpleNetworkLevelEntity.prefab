@@ -20,7 +20,9 @@
                 "Id": 14126657869720434043,
                 "Child Entity Order": [
                     "Entity_[1176639161715]",
-                    "Entity_[806656324666]"
+                    "Entity_[806656324666]",
+                    "Entity_[466169062109]",
+                    "Entity_[466169062109]"
                 ]
             },
             "Component_[15230859088967841193]": {
@@ -205,7 +207,7 @@
                     "Controller": {
                         "Configuration": {
                             "Field of View": 55.0,
-                            "EditorEntityId": 9021008456353177945
+                            "EditorEntityId": 8018936598036423587
                         }
                     }
                 },
@@ -477,6 +479,81 @@
                 }
             }
         },
+        "Entity_[466169062109]": {
+            "Id": "Entity_[466169062109]",
+            "Name": "NetworkingPlayerSpawner",
+            "Components": {
+                "Component_[11502128595337799037]": {
+                    "$type": "EditorPendingCompositionComponent",
+                    "Id": 11502128595337799037
+                },
+                "Component_[11502915893635796786]": {
+                    "$type": "SelectionComponent",
+                    "Id": 11502915893635796786
+                },
+                "Component_[14358528516538932766]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 14358528516538932766
+                },
+                "Component_[16107734271145281127]": {
+                    "$type": "EditorVisibilityComponent",
+                    "Id": 16107734271145281127
+                },
+                "Component_[2218100293944000608]": {
+                    "$type": "GenericComponentWrapper",
+                    "Id": 2218100293944000608,
+                    "m_template": {
+                        "$type": "NetworkPlayerSpawnerComponent",
+                        "SpawnableAsset": {
+                            "assetId": {
+                                "guid": "{30CDFFDB-7EA6-51ED-82CC-C425595E28B7}",
+                                "subId": 738868766
+                            },
+                            "assetHint": "levels/multiplayer/simplenetworklevelentity/player.network.spawnable"
+                        }
+                    }
+                },
+                "Component_[2302363447431428478]": {
+                    "$type": "GenericComponentWrapper",
+                    "Id": 2302363447431428478,
+                    "m_template": {
+                        "$type": "NetBindComponent"
+                    }
+                },
+                "Component_[2774627029910399896]": {
+                    "$type": "EditorEntitySortComponent",
+                    "Id": 2774627029910399896
+                },
+                "Component_[2997530550377249423]": {
+                    "$type": "EditorEntityIconComponent",
+                    "Id": 2997530550377249423
+                },
+                "Component_[3432128600507943997]": {
+                    "$type": "EditorDisabledCompositionComponent",
+                    "Id": 3432128600507943997
+                },
+                "Component_[4505391358486745947]": {
+                    "$type": "EditorInspectorComponent",
+                    "Id": 4505391358486745947
+                },
+                "Component_[564035604613919796]": {
+                    "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
+                    "Id": 564035604613919796,
+                    "Parent Entity": "Entity_[1146574390643]",
+                    "Transform Data": {
+                        "Translate": [
+                            0.0,
+                            0.10000228881835938,
+                            3.999903678894043
+                        ]
+                    }
+                },
+                "Component_[7697210733715986886]": {
+                    "$type": "EditorLockComponent",
+                    "Id": 7697210733715986886
+                }
+            }
+        },
         "Entity_[806656324666]": {
             "Id": "Entity_[806656324666]",
             "Name": "NetEntity",
@@ -485,16 +562,15 @@
                     "$type": "EditorScriptCanvasComponent",
                     "Id": 10272449525230713408,
                     "m_name": "SimpleNetworkLevelEntity.scriptcanvas",
-                    "runtimeDataIsValid": true,
                     "runtimeDataOverrides": {
                         "source": {
                             "id": "{C8F17F94-1225-5FFB-A89F-7C5546FF9DD2}",
-                            "path": "C:/prj/o3de/AutomatedTesting/Levels/Multiplayer/SimpleNetworkLevelEntity/SimpleNetworkLevelEntity.scriptcanvas"
+                            "path": "/home/gene/prj/o3de/AutomatedTesting/Levels/Multiplayer/SimpleNetworkLevelEntity/SimpleNetworkLevelEntity.scriptcanvas"
                         }
                     },
                     "sourceHandle": {
                         "id": "{C8F17F94-1225-5FFB-A89F-7C5546FF9DD2}",
-                        "path": "C:/prj/o3de/AutomatedTesting/Levels/Multiplayer/SimpleNetworkLevelEntity/SimpleNetworkLevelEntity.scriptcanvas"
+                        "path": "/home/gene/prj/o3de/AutomatedTesting/Levels/Multiplayer/SimpleNetworkLevelEntity/SimpleNetworkLevelEntity.scriptcanvas"
                     }
                 },
                 "Component_[12604265186664827718]": {

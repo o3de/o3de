@@ -151,6 +151,18 @@ namespace AZ::Dom
         return Value(value);
     }
 
+    Value Value::CreateNode(AZ::Name nodeName)
+    {
+        Value result(Type::Node);
+        result.SetNodeName(AZStd::move(nodeName));
+        return result;
+    }
+
+    Value Value::CreateNode(AZStd::string_view nodeName)
+    {
+        return CreateNode(AZ::Name(nodeName));
+    }
+
     Value::Value(int8_t value)
         : m_value(aznumeric_cast<int64_t>(value))
     {

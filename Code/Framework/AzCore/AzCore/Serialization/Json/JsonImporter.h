@@ -31,7 +31,8 @@ namespace AZ
 
         virtual JsonSerializationResult::ResultCode ResolveImport(rapidjson::Value* importPtr,
             rapidjson::Value& patch, const rapidjson::Value& importDirective,
-            const AZ::IO::FixedMaxPath& importedFilePath, rapidjson::Document::AllocatorType& allocator);
+            const AZ::IO::FixedMaxPath& importedFilePath, rapidjson::Document::AllocatorType& allocator,
+            JsonImportSettings& settings);
 
         virtual JsonSerializationResult::ResultCode RestoreImport(rapidjson::Value* importPtr,
             rapidjson::Value& patch, rapidjson::Document::AllocatorType& allocator,

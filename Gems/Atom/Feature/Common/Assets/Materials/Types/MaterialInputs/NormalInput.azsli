@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <Atom/Features/Debug.azsli>
 #include <Atom/RPI/TangentSpace.azsli>
 
 // This file provides utilities for common handling of inputs for normal maps for PBR materials.
@@ -31,6 +32,11 @@ option bool prefix##o_normal_useTexture;
 //! The returned XY values will be in the range [-1,1].
 float2 SampleNormalXY(Texture2D map, sampler mapSampler, float2 uv)
 {
+    if (!AreNormalMapsEnabled())
+    {
+        return float2(0, 0);
+    }
+
     float4 sampledValue = map.Sample(mapSampler, uv);
     
 #if AZ_TRAIT_ASTC_COMPRESSION
@@ -73,7 +79,7 @@ float3 AdjustBackFaceNormal(float3 normal, bool isFrontFace)
 float3 GetNormalInputWS(Texture2D map, sampler mapSampler, float2 uv, bool flipX, bool flipY, bool isFrontFace,
                         float3 normal, float3 tangent, float3 bitangent, float3x3 uvMatrix, bool useTexture, float normalStrength)
 {
-    if (useTexture)
+    if (useTexture && AreNormalMapsEnabled())
     {
         float2 sampledValue = SampleNormalXY(map, mapSampler, uv, flipX, flipY);
         normal = GetWorldSpaceNormal(sampledValue, normal, tangent, bitangent, uvMatrix, normalStrength);
@@ -90,7 +96,7 @@ float3 GetNormalInputWS(Texture2D map, sampler mapSampler, float2 uv, bool flipX
 // Get the input normal in tangent space
 float3 GetNormalInputTS(Texture2D map, sampler mapSampler, float2 uv, bool flipX, bool flipY, float3x3 uvMatrix, bool useTexture, float normalStrength)
 {
-    if (useTexture)
+    if (useTexture && AreNormalMapsEnabled())
     {
         float2 sampledValue = SampleNormalXY(map, mapSampler, uv, flipX, flipY);
         return GetTangentSpaceNormal(sampledValue, uvMatrix, normalStrength);

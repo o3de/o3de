@@ -55,7 +55,14 @@ namespace AZ
 
             m_descriptorSetAllocator = RHI::Ptr<DescriptorSetAllocator>(aznew DescriptorSetAllocator);
             // [GFX_TODO] ATOM-16891 - Refactor Descriptor management system
-            const uint32_t descriptorSetsPerPool = 20;
+            uint32_t descriptorSetsPerPool = 20;
+            // Reducing the initial allowed descriptor sets (i.e SRGs) with unbounded arrays per pool to 5 
+            // instead of 20. This significantly helps reduce descriptor waste as we allocate 900k descriptors 
+            // per an unbounded array entry.
+            if (layout.GetGroupSizeForBufferUnboundedArrays() > 0 || layout.GetGroupSizeForImageUnboundedArrays() > 0)
+            {
+                descriptorSetsPerPool = 5;
+            }
             DescriptorSetAllocator::Descriptor allocatorDescriptor;
             allocatorDescriptor.m_device = &device;
             allocatorDescriptor.m_layout = m_descriptorSetLayout.get();
@@ -104,11 +111,6 @@ namespace AZ
         RHI::ResultCode ShaderResourceGroupPool::CompileGroupInternal(RHI::ShaderResourceGroup& groupBase, const RHI::ShaderResourceGroupData& groupData)
         {
             auto& group = static_cast<ShaderResourceGroup&>(groupBase);
-
-            if (!groupData.IsAnyResourceTypeUpdated())
-            {
-                return RHI::ResultCode::Success;
-            }
 
             group.UpdateCompiledDataIndex(m_currentIteration);
             DescriptorSet& descriptorSet = *group.m_compiledData[group.GetCompileDataIndex()];

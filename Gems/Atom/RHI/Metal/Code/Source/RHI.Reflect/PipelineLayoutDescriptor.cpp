@@ -30,8 +30,8 @@ namespace AZ
             HashValue64 hash = TypeHash64(m_constantDataStageMask, seed);
             for (const auto& it : m_resourcesStageMask)
             {
-                hash = TypeHash64(it.first.GetHash(), seed);
-                hash = TypeHash64(it.second, seed);
+                hash = TypeHash64(it.first.GetCStr(), hash);
+                hash = TypeHash64(it.second, hash);
             }
 
             return hash;

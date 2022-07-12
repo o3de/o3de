@@ -36,7 +36,6 @@ namespace Audio::CVars
     AZ_CVAR_EXTERNED(bool, s_ShowActiveAudioObjectsOnly);
     AZ_CVAR_EXTERNED(AZ::CVarFixedString, s_AudioTriggersDebugFilter);
     AZ_CVAR_EXTERNED(AZ::CVarFixedString, s_AudioObjectsDebugFilter);
-    AZ_CVAR_EXTERNED(AZ::CVarFixedString, s_AudioLoggingOptions);
     AZ_CVAR_EXTERNED(AZ::CVarFixedString, s_DrawAudioDebug);
     inline Audio::Flags<AZ::u32> s_debugDrawOptions;
     AZ_CVAR_EXTERNED(AZ::CVarFixedString, s_FileCacheManagerDebugFilter);
@@ -44,3 +43,46 @@ namespace Audio::CVars
 #endif // !AUDIO_RELEASE
 
 } // namespace Audio::CVars
+
+
+#if !defined(AUDIO_RELEASE)
+// Flags for the debug draw cvars
+namespace Audio::DebugDraw
+{
+    enum class Options
+    {
+        None = 0,
+        DrawObjects = (1 << 0),
+        ObjectLabels = (1 << 1),
+        ObjectTriggers = (1 << 2),
+        ObjectStates = (1 << 3),
+        ObjectRtpcs = (1 << 4),
+        ObjectEnvironments = (1 << 5),
+        DrawRays = (1 << 6),
+        RayLabels = (1 << 7),
+        DrawListener = (1 << 8),
+        ActiveEvents = (1 << 9),
+        ActiveObjects = (1 << 10),
+        FileCacheInfo = (1 << 11),
+        MemoryInfo = (1 << 12),
+    };
+
+    AZ_DEFINE_ENUM_BITWISE_OPERATORS(Audio::DebugDraw::Options);
+
+} // namespace Audio::DebugDraw
+
+namespace Audio::FileCacheManagerDebugDraw
+{
+    enum class Options
+    {
+        All = 0,
+        Global = (1 << 0),
+        LevelSpecific = (1 << 1),
+        UseCounted = (1 << 2),
+        Loaded = (1 << 3),
+    };
+
+    AZ_DEFINE_ENUM_BITWISE_OPERATORS(Audio::FileCacheManagerDebugDraw::Options);
+
+} // namespace Audio::FileCacheManagerDebugDraw
+#endif // !AUDIO_RELEASE

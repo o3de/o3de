@@ -8,6 +8,10 @@
             "PassClass": "ParentPass",
             "PassRequests": [
                 {
+                    "Name": "DiffuseProbeGridPreparePass",
+                    "TemplateName": "DiffuseProbeGridPreparePassTemplate"
+                },
+                {
                     "Name": "DiffuseProbeGridRayTracingPass",
                     "TemplateName": "DiffuseProbeGridRayTracingPassTemplate"
                 },

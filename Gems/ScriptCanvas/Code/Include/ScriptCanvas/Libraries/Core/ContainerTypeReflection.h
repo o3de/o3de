@@ -12,6 +12,8 @@
 
 #include <AzFramework/Entity/EntityContextBus.h>
 
+#pragma once
+
 namespace ContainerTypeReflection
 {
     template<typename t_Type>

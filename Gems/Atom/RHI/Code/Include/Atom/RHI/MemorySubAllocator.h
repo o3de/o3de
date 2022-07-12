@@ -69,6 +69,10 @@ namespace AZ
 
             void Shutdown();
 
+            // The fragmentation of the memory sub allocator is defined by the *minimum* fragmentation measured
+            // across the owned pages
+            float ComputeFragmentation() const;
+
         private:
             page_allocator_pointer m_pageAllocator = nullptr;
             Descriptor m_descriptor;
@@ -199,6 +203,26 @@ namespace AZ
 
             m_pageAllocator->DeAllocate(m_pages.data(), m_pages.size());
             m_pages.clear();
+        }
+
+        template <class Traits>
+        float MemorySubAllocator<Traits>::ComputeFragmentation() const
+        {
+            if (m_pageContexts.empty())
+            {
+                return 0.f;
+            }
+
+            float fragmentation = 1.f;
+            for (const PageContext& pageContext : m_pageContexts)
+            {
+                float pageFragmentation = pageContext.m_allocator.ComputeFragmentation();
+                if (pageFragmentation < fragmentation)
+                {
+                    fragmentation = pageFragmentation;
+                }
+            }
+            return fragmentation;
         }
     }
 }

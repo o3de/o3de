@@ -45,36 +45,36 @@ def assetIdToPath(assetId):
 # List all slot ids
 def getIds(entityId):
     print("Get material ids")
-    return azlmbr.render.MaterialComponentRequestBus(azlmbr.bus.Event, 'GetOriginalMaterialAssignments', entityId)
+    return azlmbr.render.MaterialComponentRequestBus(azlmbr.bus.Event, 'GetDefautMaterialMap', entityId).keys()
 
 def printMaterials(entityId):
-    materials = azlmbr.render.MaterialComponentRequestBus(azlmbr.bus.Event, 'GetMaterialOverrides', entityId)
+    materials = azlmbr.render.MaterialComponentRequestBus(azlmbr.bus.Event, 'GetMaterialMap', entityId)
     print(f"Materials: {[(id.ToString(), override.ToString()) for id, override in materials.items()]}", sep='\n')
 
-def setMaterialOverrides(entityId, ids):
+def setMaterials(entityId, ids):
     print("Setting material overrides")
     for id in ids:
-        azlmbr.render.MaterialComponentRequestBus(azlmbr.bus.Event, 'SetMaterialOverride', entityId, id, getRandomMaterial())
+        azlmbr.render.MaterialComponentRequestBus(azlmbr.bus.Event, 'SetMaterialAssetId', entityId, id, getRandomMaterial())
 
 # Sets overrides of 3 types: float, color, and texture
-def setPropertyOverrides(entityId, ids):
+def setPropertyValues(entityId, ids):
     print("Setting property overrides")
     for id in ids:
         # factor override (float)
         factor = random.random()
-        propertyName = Name("baseColor.factor")
-        azlmbr.render.MaterialComponentRequestBus(azlmbr.bus.Event, 'SetPropertyOverride', entityId, id, propertyName, factor)
+        propertyName = "baseColor.factor"
+        azlmbr.render.MaterialComponentRequestBus(azlmbr.bus.Event, 'SetPropertyValue', entityId, id, propertyName, factor)
 
         # color override
         color = math.Color(random.random(), random.random(), random.random(), 1.0)
-        propertyName = Name("baseColor.color")
-        azlmbr.render.MaterialComponentRequestBus(azlmbr.bus.Event, 'SetPropertyOverride', entityId, id, propertyName, color)
+        propertyName = "baseColor.color"
+        azlmbr.render.MaterialComponentRequestBus(azlmbr.bus.Event, 'SetPropertyValue', entityId, id, propertyName, color)
 
         # texture override
         texturePath = random.choice(textures)
         assetId = azlmbr.asset.AssetCatalogRequestBus(azlmbr.bus.Broadcast, 'GetAssetIdByPath', texturePath, math.Uuid(), False)
-        propertyName = Name("baseColor.textureMap")
-        azlmbr.render.MaterialComponentRequestBus(azlmbr.bus.Event, 'SetPropertyOverride', entityId, id, propertyName, assetId)
+        propertyName = "baseColor.textureMap"
+        azlmbr.render.MaterialComponentRequestBus(azlmbr.bus.Event, 'SetPropertyValue', entityId, id, propertyName, assetId)
 
 # Convert property value to string
 def propertyValueToString(value):
@@ -82,28 +82,36 @@ def propertyValueToString(value):
         return value
     if value.typename == 'Color':
         return 'Color(r={:.2f}, g={:.2f}, b={:.2f}, a={:.2f})'.format(value.r, value.g, value.b, value.a)
+    if value.typename == 'Vector4':
+        return 'Vector4(x={:.2f}, y={:.2f}, z={:.2f}, w={:.2f})'.format(value.x, value.y, value.z, value.w)
+    if value.typename == 'Vector3':
+        return 'Vector3(x={:.2f}, y={:.2f}, z={:.2f})'.format(value.x, value.y, value.z)
+    if value.typename == 'Vector2':
+        return 'Vector2(x={:.2f}, y={:.2f})'.format(value.x, value.y)
     if value.typename == 'ImageBinding':
+        return assetIdToPath(value.GetAssetId())
+    if value.typename == 'Asset':
         return assetIdToPath(value.GetAssetId())
     if value.typename == 'AssetId':
         return assetIdToPath(value)
     return value
 
 # print all property overrides on a material component
-def printPropertyOverrides(entityId, ids):
+def printPropertyValues(entityId, ids):
     print("Property overrides:")
     for id in ids:
-        propertyOverrides = azlmbr.render.MaterialComponentRequestBus(azlmbr.bus.Event, 'GetPropertyOverrides', entityId, id)
+        propertyOverrides = azlmbr.render.MaterialComponentRequestBus(azlmbr.bus.Event, 'GetPropertyValues', entityId, id)
         print(f"{id.ToString(), [(name.ToString(), propertyValueToString(override)) for name, override in propertyOverrides.items()]}", sep='\n')
 
 # Clear property overrides for a single slot
-def clearPropertyOverrides(entityId, id):
+def clearPropertyValues(entityId, id):
     print(f"Clearing property overrides for slot <{id.ToString()}>")
-    azlmbr.render.MaterialComponentRequestBus(azlmbr.bus.Event, 'ClearPropertyOverrides', entityId, id)
+    azlmbr.render.MaterialComponentRequestBus(azlmbr.bus.Event, 'ClearPropertyValues', entityId, id)
 
 # Clear all property overrides for the material
-def clearAllPropertyOverrides(entityId):
+def clearAllPropertyValues(entityId):
     print("Clearing remaining property overrides")
-    azlmbr.render.MaterialComponentRequestBus(azlmbr.bus.Event, 'ClearAllPropertyOverrides', entityId)
+    azlmbr.render.MaterialComponentRequestBus(azlmbr.bus.Event, 'ClearAllPropertyValues', entityId)
 
 def run():
     searchFilter = azlmbr.entity.SearchFilter()
@@ -123,30 +131,30 @@ def run():
     printMaterials(entityId)
 
     # Set material overrides
-    setMaterialOverrides(entityId, ids)
+    setMaterials(entityId, ids)
 
     # Print current materials
     printMaterials(entityId)
 
     # Set property overrides
-    setPropertyOverrides(entityId, ids)
+    setPropertyValues(entityId, ids)
 
     # Print current property overrides
-    printPropertyOverrides(entityId, ids)
+    printPropertyValues(entityId, ids)
 
     # Clear property overrides for first slot
     for id in ids:
-        clearPropertyOverrides(entityId, id)
+        clearPropertyValues(entityId, id)
         break
 
     # Print current property overrides
-    printPropertyOverrides(entityId, ids)
+    printPropertyValues(entityId, ids)
 
     # Clear remaining property overrides
-    clearAllPropertyOverrides(entityId)
+    clearAllPropertyValues(entityId)
 
     # Print current property overrides
-    printPropertyOverrides(entityId, ids)
+    printPropertyValues(entityId, ids)
 
 if __name__ == "__main__":
     run()

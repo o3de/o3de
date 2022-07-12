@@ -15,9 +15,6 @@
 #include <AzCore/std/containers/array.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 
-using namespace AZStd;
-using namespace UnitTestInternal;
-
 #define AZ_TEST_VALIDATE_EMPTY_LIST(_List)        \
     AZ_TEST_ASSERT(_List.validate());             \
     AZ_TEST_ASSERT(_List.size() == 0);            \
@@ -32,6 +29,8 @@ using namespace UnitTestInternal;
 
 namespace UnitTest
 {
+    using namespace AZStd;
+    using namespace UnitTestInternal;
     /**
      * Tests AZSTD::list container.
      */

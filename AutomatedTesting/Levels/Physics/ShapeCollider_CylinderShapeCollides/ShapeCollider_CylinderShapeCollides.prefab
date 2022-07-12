@@ -1,0 +1,163 @@
+{
+    "ContainerEntity": {
+        "Id": "ContainerEntity",
+        "Name": "ShapeCollider_CylinderShapeCollides",
+        "Components": {
+            "Component_[10182366347512475253]": {
+                "$type": "EditorPrefabComponent",
+                "Id": 10182366347512475253
+            },
+            "Component_[12917798267488243668]": {
+                "$type": "EditorPendingCompositionComponent",
+                "Id": 12917798267488243668
+            },
+            "Component_[3261249813163778338]": {
+                "$type": "EditorOnlyEntityComponent",
+                "Id": 3261249813163778338
+            },
+            "Component_[3837204912784440039]": {
+                "$type": "EditorDisabledCompositionComponent",
+                "Id": 3837204912784440039
+            },
+            "Component_[4272963378099646759]": {
+                "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
+                "Id": 4272963378099646759,
+                "Parent Entity": ""
+            },
+            "Component_[4848458548047175816]": {
+                "$type": "EditorVisibilityComponent",
+                "Id": 4848458548047175816
+            },
+            "Component_[5787060997243919943]": {
+                "$type": "EditorInspectorComponent",
+                "Id": 5787060997243919943
+            },
+            "Component_[7804170251266531779]": {
+                "$type": "EditorLockComponent",
+                "Id": 7804170251266531779
+            },
+            "Component_[7874177159288365422]": {
+                "$type": "EditorEntitySortComponent",
+                "Id": 7874177159288365422
+            },
+            "Component_[8018146290632383969]": {
+                "$type": "EditorEntityIconComponent",
+                "Id": 8018146290632383969
+            },
+            "Component_[8452360690590857075]": {
+                "$type": "SelectionComponent",
+                "Id": 8452360690590857075
+            }
+        }
+    },
+    "Entities": {
+        "Entity_[286781895464]": {
+            "Id": "Entity_[286781895464]",
+            "Name": "PhysX_Cylinder",
+            "Components": {
+                "Component_[14567605152083288247]": {
+                    "$type": "EditorRigidBodyComponent",
+                    "Id": 14567605152083288247,
+                    "Configuration": {
+                        "entityId": "",
+                        "Compute Mass": false,
+                        "Inertia tensor": {
+                            "roll": 0.0,
+                            "pitch": 0.0,
+                            "yaw": 0.0,
+                            "scale": 6.932528972625732
+                        }
+                    }
+                },
+                "Component_[15048169206501936874]": {
+                    "$type": "EditorCylinderShapeComponent",
+                    "Id": 15048169206501936874,
+                    "GameView": true
+                },
+                "Component_[15312407558597751941]": {
+                    "$type": "SelectionComponent",
+                    "Id": 15312407558597751941
+                },
+                "Component_[16538583718637233137]": {
+                    "$type": "EditorVisibilityComponent",
+                    "Id": 16538583718637233137
+                },
+                "Component_[18023955156010597992]": {
+                    "$type": "EditorDisabledCompositionComponent",
+                    "Id": 18023955156010597992
+                },
+                "Component_[2122609272088991631]": {
+                    "$type": "EditorInspectorComponent",
+                    "Id": 2122609272088991631,
+                    "ComponentOrderEntryArray": [
+                        {
+                            "ComponentId": 5149722336324667684
+                        },
+                        {
+                            "ComponentId": 14567605152083288247,
+                            "SortIndex": 1
+                        },
+                        {
+                            "ComponentId": 8324313875605309932,
+                            "SortIndex": 2
+                        },
+                        {
+                            "ComponentId": 15048169206501936874,
+                            "SortIndex": 3
+                        }
+                    ]
+                },
+                "Component_[2161475126644851917]": {
+                    "$type": "EditorEntitySortComponent",
+                    "Id": 2161475126644851917
+                },
+                "Component_[2571103618762424060]": {
+                    "$type": "EditorLockComponent",
+                    "Id": 2571103618762424060
+                },
+                "Component_[27762289517686524]": {
+                    "$type": "EditorPendingCompositionComponent",
+                    "Id": 27762289517686524
+                },
+                "Component_[4451814694641423131]": {
+                    "$type": "EditorEntityIconComponent",
+                    "Id": 4451814694641423131
+                },
+                "Component_[5149722336324667684]": {
+                    "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
+                    "Id": 5149722336324667684,
+                    "Parent Entity": "ContainerEntity",
+                    "Transform Data": {
+                        "Translate": [
+                            64.0,
+                            84.19996643066406,
+                            35.54203796386719
+                        ]
+                    }
+                },
+                "Component_[7836383869513223013]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 7836383869513223013
+                },
+                "Component_[8324313875605309932]": {
+                    "$type": "EditorShapeColliderComponent",
+                    "Id": 8324313875605309932,
+                    "ColliderConfiguration": {
+                        "MaterialSelection": {
+                            "MaterialIds": [
+                                {}
+                            ]
+                        }
+                    },
+                    "ShapeConfigs": [
+                        {
+                            "$type": "CookedMeshShapeConfiguration",
+                            "CookedData": "TlhTAUNWWE0NAAAAAAAAAElDRQFDTEhMCQAAACAAAAAwAAAAEgAAAGAAAABeg+y+GO9DvgAAAD8AAAC/Lr07swAAAD8AAAC/Lr07swAAAL9eg+y+GO9DvgAAAL/yBLW+9AS1vgAAAL/yBLW+9AS1vgAAAD8a70M+XoPsvgAAAL/1BLU+8QS1vgAAAL/1BLU+8QS1vgAAAD8a70M+XoPsvgAAAD/jzYwzAAAAvwAAAD/jzYwzAAAAvwAAAL9gg+w+EO9DvgAAAL8AAAA/AAAAAAAAAL8AAAA/AAAAAAAAAD9gg+w+EO9DvgAAAD8U70M+X4PsPgAAAL8uvbuyAAAAPwAAAL8uvbuyAAAAPwAAAD8U70M+X4PsPgAAAD/zBLU+8wS1PgAAAD/zBLU+8wS1PgAAAL8X70O+XoPsPgAAAL/0BLW+8gS1PgAAAL/0BLW+8gS1PgAAAD8X70O+XoPsPgAAAD9eg+w+Fu9DPgAAAL9eg+w+Fu9DPgAAAD9fg+y+E+9DPgAAAL9fg+y+E+9DPgAAAD8R70O+X4PsvgAAAL8R70O+X4PsvgAAAD8AAAAAAAAAAAAAgL8AAAC/AAAQAL0Ue7/GxUe+AAAAAL8U+74QAAQNL9tUv9s5Dr8AAAAAvRT7vhQABBTeOQ4/L9tUvwAAAAC/FPu+GAAEF8bFRz6/FHu/AAAAAL8U+74cAAQRvxR7P7jFR74AAAAAvxT7viAABAEy21Q/2TkOvwAAAAC+FPu+JAAEF73FRz6/FHs/AAAAAL8U+74oAAQK2zkOPzLbVD8AAAAAwBT7viwABATbOQ6/MNtUPwAAAAC+FPu+MAAEBsbFR76/FHs/AAAAAL8U+740AAQGMttUP9o5Dj8AAAAAvxT7vjgABAC/FHs/xsVHPgAAAAC/FPu+PAAEAL8Ue7+8xUc+AAAAAL8U+75AAAQMMNtUv9k5Dj8AAAAAvBT7vkQABAfZOQ6/M9tUvwAAAAC/FPu+SAAEEL3FR76/FHu/AAAAAL8U+75MAAQQAAAAAAAAAAAAAIA/AAAAv1AAEAIcFxYREBUaDQwHBgseBAMCAAECAwADBAUGBwgJBgkKCwwNDg8MDwgHEBESExATFBUWFxgZFhkSERoVFBsaGw4NHAIBHRwdGBcfBQQeHx4LCh8KCQgPDhsUExIZGB0BAAUADgAJAAoABwAIAAsADAAFAAYAAwAEABAADwACAAEADQERAQ0BAgIPAhEDBgMRAwQEEQQQBQwFEQUGBhEHCgcRBwgIEQgLCQ4JEQkKChELEQsMDBENEQ0ODhEPEQ8QEBEBAhEBDREAAQ0AAQIAAg8CDxEAAwQAAwYDBhEDBBEEEBEABBAABQYABQwFDBEFBhEABwgABwoHChEHCBEICxEACAsACQoACQ4JDhEJChEACwwLDBEADQ4NDhEADxAPEBEAAAAAAAAAvwAAAL8AAAC/AAAAPwAAAD8AAAA/Fe9DP5Ma4j2hfSMwZyrMMKF9IzCTGuI9AACrI2cqzDAAAKsjX/a+PYCKirC8lJkxvPKUsQAAgL+8FPs+vxzNPjD2kD4w9pA+",
+                            "Type": 1
+                        }
+                    ]
+                }
+            }
+        }
+    }
+}

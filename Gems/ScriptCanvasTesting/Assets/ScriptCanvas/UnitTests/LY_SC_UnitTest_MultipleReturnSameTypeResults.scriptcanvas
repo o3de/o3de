@@ -1,0 +1,1443 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "ScriptCanvasData",
+    "ClassData": {
+        "m_scriptCanvas": {
+            "Id": {
+                "id": 585951519983
+            },
+            "Name": "Script Canvas Graph",
+            "Components": {
+                "Component_[13085539663696911957]": {
+                    "$type": "EditorGraph",
+                    "Id": 13085539663696911957,
+                    "m_graphData": {
+                        "m_nodes": [
+                            {
+                                "Id": {
+                                    "id": 28185411364079
+                                },
+                                "Name": "SC-Node(Expect Equal)",
+                                "Components": {
+                                    "Component_[15900766879979306551]": {
+                                        "$type": "MethodOverloaded",
+                                        "Id": 15900766879979306551,
+                                        "Slots": [
+                                            {
+                                                "isVisibile": false,
+                                                "id": {
+                                                    "m_id": "{8FADB4D9-8CC2-451E-A934-0EAF7DAD6172}"
+                                                },
+                                                "contracts": [
+                                                    {
+                                                        "$type": "SlotTypeContract"
+                                                    }
+                                                ],
+                                                "slotName": "EntityId: 0",
+                                                "DisplayDataType": {
+                                                    "m_type": 1
+                                                },
+                                                "Descriptor": {
+                                                    "ConnectionType": 1,
+                                                    "SlotType": 2
+                                                },
+                                                "DataType": 1
+                                            },
+                                            {
+                                                "id": {
+                                                    "m_id": "{8D3B13EB-8A74-4B2D-8DC5-0E53928DD289}"
+                                                },
+                                                "DynamicTypeOverride": 1,
+                                                "contracts": [
+                                                    {
+                                                        "$type": "SlotTypeContract"
+                                                    },
+                                                    {
+                                                        "$type": "OverloadContract"
+                                                    }
+                                                ],
+                                                "slotName": "Candidate",
+                                                "toolTip": "left of ==",
+                                                "DisplayDataType": {
+                                                    "m_type": 5
+                                                },
+                                                "Descriptor": {
+                                                    "ConnectionType": 1,
+                                                    "SlotType": 2
+                                                },
+                                                "DataType": 1
+                                            },
+                                            {
+                                                "id": {
+                                                    "m_id": "{300A6123-0EE9-4C2F-86B5-969E8328EE6F}"
+                                                },
+                                                "DynamicTypeOverride": 1,
+                                                "contracts": [
+                                                    {
+                                                        "$type": "SlotTypeContract"
+                                                    },
+                                                    {
+                                                        "$type": "OverloadContract"
+                                                    }
+                                                ],
+                                                "slotName": "Reference",
+                                                "toolTip": "right of ==",
+                                                "DisplayDataType": {
+                                                    "m_type": 5
+                                                },
+                                                "Descriptor": {
+                                                    "ConnectionType": 1,
+                                                    "SlotType": 2
+                                                },
+                                                "DataType": 1
+                                            },
+                                            {
+                                                "id": {
+                                                    "m_id": "{A927225D-8E22-420D-9177-1A181ACCF2DE}"
+                                                },
+                                                "contracts": [
+                                                    {
+                                                        "$type": "SlotTypeContract"
+                                                    }
+                                                ],
+                                                "slotName": "Report",
+                                                "toolTip": "additional notes for the test report",
+                                                "DisplayDataType": {
+                                                    "m_type": 5
+                                                },
+                                                "Descriptor": {
+                                                    "ConnectionType": 1,
+                                                    "SlotType": 2
+                                                },
+                                                "DataType": 1
+                                            },
+                                            {
+                                                "id": {
+                                                    "m_id": "{E42CE1D8-603B-48F0-9C82-D0E6B008CB01}"
+                                                },
+                                                "contracts": [
+                                                    {
+                                                        "$type": "SlotTypeContract"
+                                                    }
+                                                ],
+                                                "slotName": "In",
+                                                "Descriptor": {
+                                                    "ConnectionType": 1,
+                                                    "SlotType": 1
+                                                }
+                                            },
+                                            {
+                                                "id": {
+                                                    "m_id": "{895852CD-E327-488D-B086-D1B9D8B15FCF}"
+                                                },
+                                                "contracts": [
+                                                    {
+                                                        "$type": "SlotTypeContract"
+                                                    }
+                                                ],
+                                                "slotName": "Out",
+                                                "Descriptor": {
+                                                    "ConnectionType": 2,
+                                                    "SlotType": 1
+                                                }
+                                            }
+                                        ],
+                                        "Datums": [
+                                            {
+                                                "isOverloadedStorage": false,
+                                                "scriptCanvasType": {
+                                                    "m_type": 1
+                                                },
+                                                "isNullPointer": false,
+                                                "$type": "EntityId",
+                                                "value": {
+                                                    "id": 4276206253
+                                                }
+                                            },
+                                            {
+                                                "isOverloadedStorage": false,
+                                                "scriptCanvasType": {
+                                                    "m_type": 5
+                                                },
+                                                "isNullPointer": false,
+                                                "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                                                "value": "",
+                                                "label": "Candidate"
+                                            },
+                                            {
+                                                "isOverloadedStorage": false,
+                                                "scriptCanvasType": {
+                                                    "m_type": 5
+                                                },
+                                                "isNullPointer": false,
+                                                "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                                                "value": "test3",
+                                                "label": "Reference"
+                                            },
+                                            {
+                                                "isOverloadedStorage": false,
+                                                "scriptCanvasType": {
+                                                    "m_type": 5
+                                                },
+                                                "isNullPointer": false,
+                                                "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                                                "value": "expect test3",
+                                                "label": "Report"
+                                            }
+                                        ],
+                                        "methodType": 2,
+                                        "methodName": "Expect Equal",
+                                        "className": "Unit Testing",
+                                        "inputSlots": [
+                                            {
+                                                "m_id": "{8FADB4D9-8CC2-451E-A934-0EAF7DAD6172}"
+                                            },
+                                            {
+                                                "m_id": "{8D3B13EB-8A74-4B2D-8DC5-0E53928DD289}"
+                                            },
+                                            {
+                                                "m_id": "{300A6123-0EE9-4C2F-86B5-969E8328EE6F}"
+                                            },
+                                            {
+                                                "m_id": "{A927225D-8E22-420D-9177-1A181ACCF2DE}"
+                                            }
+                                        ],
+                                        "orderedInputSlotIds": [
+                                            {
+                                                "m_id": "{8FADB4D9-8CC2-451E-A934-0EAF7DAD6172}"
+                                            },
+                                            {
+                                                "m_id": "{8D3B13EB-8A74-4B2D-8DC5-0E53928DD289}"
+                                            },
+                                            {
+                                                "m_id": "{300A6123-0EE9-4C2F-86B5-969E8328EE6F}"
+                                            },
+                                            {
+                                                "m_id": "{A927225D-8E22-420D-9177-1A181ACCF2DE}"
+                                            }
+                                        ],
+                                        "outputSlotIds": [
+                                            {}
+                                        ]
+                                    }
+                                }
+                            },
+                            {
+                                "Id": {
+                                    "id": 11267535185135
+                                },
+                                "Name": "SC-Node(Mark Complete)",
+                                "Components": {
+                                    "Component_[17035140679204047408]": {
+                                        "$type": "{E42861BD-1956-45AE-8DD7-CCFC1E3E5ACF} Method",
+                                        "Id": 17035140679204047408,
+                                        "Slots": [
+                                            {
+                                                "isVisibile": false,
+                                                "id": {
+                                                    "m_id": "{20EDAFDB-0948-445B-8D39-CB7D0C040FFE}"
+                                                },
+                                                "contracts": [
+                                                    {
+                                                        "$type": "SlotTypeContract"
+                                                    },
+                                                    null
+                                                ],
+                                                "slotName": "EntityID: 0",
+                                                "Descriptor": {
+                                                    "ConnectionType": 1,
+                                                    "SlotType": 2
+                                                },
+                                                "DataType": 1
+                                            },
+                                            {
+                                                "id": {
+                                                    "m_id": "{82250078-A50F-417A-9C0F-A94608E736D7}"
+                                                },
+                                                "contracts": [
+                                                    {
+                                                        "$type": "SlotTypeContract"
+                                                    },
+                                                    null
+                                                ],
+                                                "slotName": "Report",
+                                                "toolTip": "additional notes for the test report",
+                                                "Descriptor": {
+                                                    "ConnectionType": 1,
+                                                    "SlotType": 2
+                                                },
+                                                "DataType": 1
+                                            },
+                                            {
+                                                "id": {
+                                                    "m_id": "{21ED3F17-7EC5-411C-A139-257082A0BBD1}"
+                                                },
+                                                "contracts": [
+                                                    {
+                                                        "$type": "SlotTypeContract"
+                                                    }
+                                                ],
+                                                "slotName": "In",
+                                                "Descriptor": {
+                                                    "ConnectionType": 1,
+                                                    "SlotType": 1
+                                                }
+                                            },
+                                            {
+                                                "id": {
+                                                    "m_id": "{7D9923F5-DD7E-449B-B2C3-F10D20D32F68}"
+                                                },
+                                                "contracts": [
+                                                    {
+                                                        "$type": "SlotTypeContract"
+                                                    }
+                                                ],
+                                                "slotName": "Out",
+                                                "Descriptor": {
+                                                    "ConnectionType": 2,
+                                                    "SlotType": 1
+                                                }
+                                            }
+                                        ],
+                                        "Datums": [
+                                            {
+                                                "scriptCanvasType": {
+                                                    "m_type": 1
+                                                },
+                                                "isNullPointer": false,
+                                                "$type": "EntityId",
+                                                "value": {
+                                                    "id": 4276206253
+                                                }
+                                            },
+                                            {
+                                                "scriptCanvasType": {
+                                                    "m_type": 5
+                                                },
+                                                "isNullPointer": false,
+                                                "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                                                "value": "test done",
+                                                "label": "Report"
+                                            }
+                                        ],
+                                        "methodType": 2,
+                                        "methodName": "Mark Complete",
+                                        "className": "Unit Testing",
+                                        "resultSlotIDs": [
+                                            {}
+                                        ],
+                                        "prettyClassName": "Unit Testing"
+                                    }
+                                }
+                            },
+                            {
+                                "Id": {
+                                    "id": 620311258351
+                                },
+                                "Name": "SC-Node(ScriptCanvasTesting_TestTupleMethods_GlobalThreeSameType)",
+                                "Components": {
+                                    "Component_[17379128009832900173]": {
+                                        "$type": "{E42861BD-1956-45AE-8DD7-CCFC1E3E5ACF} Method",
+                                        "Id": 17379128009832900173,
+                                        "Slots": [
+                                            {
+                                                "id": {
+                                                    "m_id": "{DFE39B98-2E9C-4B13-B521-8040292C2E4A}"
+                                                },
+                                                "contracts": [
+                                                    {
+                                                        "$type": "SlotTypeContract"
+                                                    }
+                                                ],
+                                                "slotName": "String: 0",
+                                                "Descriptor": {
+                                                    "ConnectionType": 1,
+                                                    "SlotType": 2
+                                                },
+                                                "DataType": 1
+                                            },
+                                            {
+                                                "id": {
+                                                    "m_id": "{27D0A446-9611-46C9-ADDC-518D2B628324}"
+                                                },
+                                                "contracts": [
+                                                    {
+                                                        "$type": "SlotTypeContract"
+                                                    }
+                                                ],
+                                                "slotName": "String: 1",
+                                                "Descriptor": {
+                                                    "ConnectionType": 1,
+                                                    "SlotType": 2
+                                                },
+                                                "DataType": 1
+                                            },
+                                            {
+                                                "id": {
+                                                    "m_id": "{FEF042C6-DC18-421D-99C0-C84955776367}"
+                                                },
+                                                "contracts": [
+                                                    {
+                                                        "$type": "SlotTypeContract"
+                                                    }
+                                                ],
+                                                "slotName": "String: 2",
+                                                "Descriptor": {
+                                                    "ConnectionType": 1,
+                                                    "SlotType": 2
+                                                },
+                                                "DataType": 1
+                                            },
+                                            {
+                                                "id": {
+                                                    "m_id": "{268D5FD1-89A8-4C65-B1BB-7AA3CE42540D}"
+                                                },
+                                                "contracts": [
+                                                    {
+                                                        "$type": "SlotTypeContract"
+                                                    }
+                                                ],
+                                                "slotName": "In",
+                                                "Descriptor": {
+                                                    "ConnectionType": 1,
+                                                    "SlotType": 1
+                                                }
+                                            },
+                                            {
+                                                "id": {
+                                                    "m_id": "{DC06CE44-EFED-466A-AB5A-C9D0ABC5564E}"
+                                                },
+                                                "contracts": [
+                                                    {
+                                                        "$type": "SlotTypeContract"
+                                                    }
+                                                ],
+                                                "slotName": "Out",
+                                                "Descriptor": {
+                                                    "ConnectionType": 2,
+                                                    "SlotType": 1
+                                                }
+                                            },
+                                            {
+                                                "id": {
+                                                    "m_id": "{465AECED-1E15-4ACA-AAB1-DB084C0C639D}"
+                                                },
+                                                "contracts": [
+                                                    {
+                                                        "$type": "SlotTypeContract"
+                                                    }
+                                                ],
+                                                "slotName": "String: 0",
+                                                "DisplayDataType": {
+                                                    "m_type": 5
+                                                },
+                                                "Descriptor": {
+                                                    "ConnectionType": 2,
+                                                    "SlotType": 2
+                                                },
+                                                "DataType": 1
+                                            },
+                                            {
+                                                "id": {
+                                                    "m_id": "{4421E5B7-0D06-48E2-B62B-9E3AC097C014}"
+                                                },
+                                                "contracts": [
+                                                    {
+                                                        "$type": "SlotTypeContract"
+                                                    }
+                                                ],
+                                                "slotName": "String: 1",
+                                                "DisplayDataType": {
+                                                    "m_type": 5
+                                                },
+                                                "Descriptor": {
+                                                    "ConnectionType": 2,
+                                                    "SlotType": 2
+                                                },
+                                                "DataType": 1
+                                            },
+                                            {
+                                                "id": {
+                                                    "m_id": "{812290A1-27D2-4279-A2B7-02DBF0D6B7BA}"
+                                                },
+                                                "contracts": [
+                                                    {
+                                                        "$type": "SlotTypeContract"
+                                                    }
+                                                ],
+                                                "slotName": "String: 2",
+                                                "DisplayDataType": {
+                                                    "m_type": 5
+                                                },
+                                                "Descriptor": {
+                                                    "ConnectionType": 2,
+                                                    "SlotType": 2
+                                                },
+                                                "DataType": 1
+                                            }
+                                        ],
+                                        "Datums": [
+                                            {
+                                                "isOverloadedStorage": false,
+                                                "scriptCanvasType": {
+                                                    "m_type": 5
+                                                },
+                                                "isNullPointer": false,
+                                                "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                                                "value": "test1",
+                                                "label": "String: 0"
+                                            },
+                                            {
+                                                "isOverloadedStorage": false,
+                                                "scriptCanvasType": {
+                                                    "m_type": 5
+                                                },
+                                                "isNullPointer": false,
+                                                "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                                                "value": "test2",
+                                                "label": "String: 1"
+                                            },
+                                            {
+                                                "isOverloadedStorage": false,
+                                                "scriptCanvasType": {
+                                                    "m_type": 5
+                                                },
+                                                "isNullPointer": false,
+                                                "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                                                "value": "test3",
+                                                "label": "String: 2"
+                                            }
+                                        ],
+                                        "methodType": 1,
+                                        "methodName": "ScriptCanvasTesting_TestTupleMethods_GlobalThreeSameType",
+                                        "inputSlots": [
+                                            {
+                                                "m_id": "{DFE39B98-2E9C-4B13-B521-8040292C2E4A}"
+                                            },
+                                            {
+                                                "m_id": "{27D0A446-9611-46C9-ADDC-518D2B628324}"
+                                            },
+                                            {
+                                                "m_id": "{FEF042C6-DC18-421D-99C0-C84955776367}"
+                                            }
+                                        ],
+                                        "prettyClassName": "ScriptCanvasTesting_TestTupleMethods_GlobalThreeSameType"
+                                    }
+                                }
+                            },
+                            {
+                                "Id": {
+                                    "id": 26699352679663
+                                },
+                                "Name": "SC-Node(Expect Equal)",
+                                "Components": {
+                                    "Component_[396775167694027678]": {
+                                        "$type": "MethodOverloaded",
+                                        "Id": 396775167694027678,
+                                        "Slots": [
+                                            {
+                                                "isVisibile": false,
+                                                "id": {
+                                                    "m_id": "{7072FB04-CF80-4D74-BAB0-896262948184}"
+                                                },
+                                                "contracts": [
+                                                    {
+                                                        "$type": "SlotTypeContract"
+                                                    }
+                                                ],
+                                                "slotName": "EntityId: 0",
+                                                "DisplayDataType": {
+                                                    "m_type": 1
+                                                },
+                                                "Descriptor": {
+                                                    "ConnectionType": 1,
+                                                    "SlotType": 2
+                                                },
+                                                "DataType": 1
+                                            },
+                                            {
+                                                "id": {
+                                                    "m_id": "{A3280A1E-5C2B-4564-B6E5-19168B233F09}"
+                                                },
+                                                "DynamicTypeOverride": 1,
+                                                "contracts": [
+                                                    {
+                                                        "$type": "SlotTypeContract"
+                                                    },
+                                                    {
+                                                        "$type": "OverloadContract"
+                                                    }
+                                                ],
+                                                "slotName": "Candidate",
+                                                "toolTip": "left of ==",
+                                                "DisplayDataType": {
+                                                    "m_type": 5
+                                                },
+                                                "Descriptor": {
+                                                    "ConnectionType": 1,
+                                                    "SlotType": 2
+                                                },
+                                                "DataType": 1
+                                            },
+                                            {
+                                                "id": {
+                                                    "m_id": "{6B070AE0-306A-4E07-ADFF-8E75CE311A6D}"
+                                                },
+                                                "DynamicTypeOverride": 1,
+                                                "contracts": [
+                                                    {
+                                                        "$type": "SlotTypeContract"
+                                                    },
+                                                    {
+                                                        "$type": "OverloadContract"
+                                                    }
+                                                ],
+                                                "slotName": "Reference",
+                                                "toolTip": "right of ==",
+                                                "DisplayDataType": {
+                                                    "m_type": 5
+                                                },
+                                                "Descriptor": {
+                                                    "ConnectionType": 1,
+                                                    "SlotType": 2
+                                                },
+                                                "DataType": 1
+                                            },
+                                            {
+                                                "id": {
+                                                    "m_id": "{1FB70C73-EF0F-4E0B-B442-A4BB61465D26}"
+                                                },
+                                                "contracts": [
+                                                    {
+                                                        "$type": "SlotTypeContract"
+                                                    }
+                                                ],
+                                                "slotName": "Report",
+                                                "toolTip": "additional notes for the test report",
+                                                "DisplayDataType": {
+                                                    "m_type": 5
+                                                },
+                                                "Descriptor": {
+                                                    "ConnectionType": 1,
+                                                    "SlotType": 2
+                                                },
+                                                "DataType": 1
+                                            },
+                                            {
+                                                "id": {
+                                                    "m_id": "{C68D83F6-02E9-44B5-A108-236408234403}"
+                                                },
+                                                "contracts": [
+                                                    {
+                                                        "$type": "SlotTypeContract"
+                                                    }
+                                                ],
+                                                "slotName": "In",
+                                                "Descriptor": {
+                                                    "ConnectionType": 1,
+                                                    "SlotType": 1
+                                                }
+                                            },
+                                            {
+                                                "id": {
+                                                    "m_id": "{B3AB36C5-72AF-4C8F-8998-1EC73970B5F5}"
+                                                },
+                                                "contracts": [
+                                                    {
+                                                        "$type": "SlotTypeContract"
+                                                    }
+                                                ],
+                                                "slotName": "Out",
+                                                "Descriptor": {
+                                                    "ConnectionType": 2,
+                                                    "SlotType": 1
+                                                }
+                                            }
+                                        ],
+                                        "Datums": [
+                                            {
+                                                "isOverloadedStorage": false,
+                                                "scriptCanvasType": {
+                                                    "m_type": 1
+                                                },
+                                                "isNullPointer": false,
+                                                "$type": "EntityId",
+                                                "value": {
+                                                    "id": 4276206253
+                                                }
+                                            },
+                                            {
+                                                "isOverloadedStorage": false,
+                                                "scriptCanvasType": {
+                                                    "m_type": 5
+                                                },
+                                                "isNullPointer": false,
+                                                "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                                                "value": "",
+                                                "label": "Candidate"
+                                            },
+                                            {
+                                                "isOverloadedStorage": false,
+                                                "scriptCanvasType": {
+                                                    "m_type": 5
+                                                },
+                                                "isNullPointer": false,
+                                                "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                                                "value": "test2",
+                                                "label": "Reference"
+                                            },
+                                            {
+                                                "isOverloadedStorage": false,
+                                                "scriptCanvasType": {
+                                                    "m_type": 5
+                                                },
+                                                "isNullPointer": false,
+                                                "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                                                "value": "expect test2",
+                                                "label": "Report"
+                                            }
+                                        ],
+                                        "methodType": 2,
+                                        "methodName": "Expect Equal",
+                                        "className": "Unit Testing",
+                                        "inputSlots": [
+                                            {
+                                                "m_id": "{7072FB04-CF80-4D74-BAB0-896262948184}"
+                                            },
+                                            {
+                                                "m_id": "{A3280A1E-5C2B-4564-B6E5-19168B233F09}"
+                                            },
+                                            {
+                                                "m_id": "{6B070AE0-306A-4E07-ADFF-8E75CE311A6D}"
+                                            },
+                                            {
+                                                "m_id": "{1FB70C73-EF0F-4E0B-B442-A4BB61465D26}"
+                                            }
+                                        ],
+                                        "orderedInputSlotIds": [
+                                            {
+                                                "m_id": "{7072FB04-CF80-4D74-BAB0-896262948184}"
+                                            },
+                                            {
+                                                "m_id": "{A3280A1E-5C2B-4564-B6E5-19168B233F09}"
+                                            },
+                                            {
+                                                "m_id": "{6B070AE0-306A-4E07-ADFF-8E75CE311A6D}"
+                                            },
+                                            {
+                                                "m_id": "{1FB70C73-EF0F-4E0B-B442-A4BB61465D26}"
+                                            }
+                                        ],
+                                        "outputSlotIds": [
+                                            {}
+                                        ]
+                                    }
+                                }
+                            },
+                            {
+                                "Id": {
+                                    "id": 25488171902191
+                                },
+                                "Name": "SC-Node(Expect Equal)",
+                                "Components": {
+                                    "Component_[5153532257154787812]": {
+                                        "$type": "MethodOverloaded",
+                                        "Id": 5153532257154787812,
+                                        "Slots": [
+                                            {
+                                                "isVisibile": false,
+                                                "id": {
+                                                    "m_id": "{C456B5D0-F50D-49E1-87EF-E04E47FDB01A}"
+                                                },
+                                                "contracts": [
+                                                    {
+                                                        "$type": "SlotTypeContract"
+                                                    }
+                                                ],
+                                                "slotName": "EntityId: 0",
+                                                "DisplayDataType": {
+                                                    "m_type": 1
+                                                },
+                                                "Descriptor": {
+                                                    "ConnectionType": 1,
+                                                    "SlotType": 2
+                                                },
+                                                "DataType": 1
+                                            },
+                                            {
+                                                "id": {
+                                                    "m_id": "{F0C0AFFD-50E4-42AC-8BD4-70B66EB6155D}"
+                                                },
+                                                "DynamicTypeOverride": 1,
+                                                "contracts": [
+                                                    {
+                                                        "$type": "SlotTypeContract"
+                                                    },
+                                                    {
+                                                        "$type": "OverloadContract"
+                                                    }
+                                                ],
+                                                "slotName": "Candidate",
+                                                "toolTip": "left of ==",
+                                                "DisplayDataType": {
+                                                    "m_type": 5
+                                                },
+                                                "Descriptor": {
+                                                    "ConnectionType": 1,
+                                                    "SlotType": 2
+                                                },
+                                                "DataType": 1
+                                            },
+                                            {
+                                                "id": {
+                                                    "m_id": "{D68B1303-59A7-482F-96D9-035EAA11B95D}"
+                                                },
+                                                "DynamicTypeOverride": 1,
+                                                "contracts": [
+                                                    {
+                                                        "$type": "SlotTypeContract"
+                                                    },
+                                                    {
+                                                        "$type": "OverloadContract"
+                                                    }
+                                                ],
+                                                "slotName": "Reference",
+                                                "toolTip": "right of ==",
+                                                "DisplayDataType": {
+                                                    "m_type": 5
+                                                },
+                                                "Descriptor": {
+                                                    "ConnectionType": 1,
+                                                    "SlotType": 2
+                                                },
+                                                "DataType": 1
+                                            },
+                                            {
+                                                "id": {
+                                                    "m_id": "{7356FA9A-5F3E-4AD3-9FA3-D17F71B22697}"
+                                                },
+                                                "contracts": [
+                                                    {
+                                                        "$type": "SlotTypeContract"
+                                                    }
+                                                ],
+                                                "slotName": "Report",
+                                                "toolTip": "additional notes for the test report",
+                                                "DisplayDataType": {
+                                                    "m_type": 5
+                                                },
+                                                "Descriptor": {
+                                                    "ConnectionType": 1,
+                                                    "SlotType": 2
+                                                },
+                                                "DataType": 1
+                                            },
+                                            {
+                                                "id": {
+                                                    "m_id": "{AADB2E5C-BCFC-46C8-9973-CF0F5DEE067C}"
+                                                },
+                                                "contracts": [
+                                                    {
+                                                        "$type": "SlotTypeContract"
+                                                    }
+                                                ],
+                                                "slotName": "In",
+                                                "Descriptor": {
+                                                    "ConnectionType": 1,
+                                                    "SlotType": 1
+                                                }
+                                            },
+                                            {
+                                                "id": {
+                                                    "m_id": "{9FCEFD8B-EB20-4A0D-98CA-9931094FCA4F}"
+                                                },
+                                                "contracts": [
+                                                    {
+                                                        "$type": "SlotTypeContract"
+                                                    }
+                                                ],
+                                                "slotName": "Out",
+                                                "Descriptor": {
+                                                    "ConnectionType": 2,
+                                                    "SlotType": 1
+                                                }
+                                            }
+                                        ],
+                                        "Datums": [
+                                            {
+                                                "isOverloadedStorage": false,
+                                                "scriptCanvasType": {
+                                                    "m_type": 1
+                                                },
+                                                "isNullPointer": false,
+                                                "$type": "EntityId",
+                                                "value": {
+                                                    "id": 4276206253
+                                                }
+                                            },
+                                            {
+                                                "isOverloadedStorage": false,
+                                                "scriptCanvasType": {
+                                                    "m_type": 5
+                                                },
+                                                "isNullPointer": false,
+                                                "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                                                "value": "",
+                                                "label": "Candidate"
+                                            },
+                                            {
+                                                "isOverloadedStorage": false,
+                                                "scriptCanvasType": {
+                                                    "m_type": 5
+                                                },
+                                                "isNullPointer": false,
+                                                "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                                                "value": "test1",
+                                                "label": "Reference"
+                                            },
+                                            {
+                                                "isOverloadedStorage": false,
+                                                "scriptCanvasType": {
+                                                    "m_type": 5
+                                                },
+                                                "isNullPointer": false,
+                                                "$type": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9} AZStd::string",
+                                                "value": "expect test1",
+                                                "label": "Report"
+                                            }
+                                        ],
+                                        "methodType": 2,
+                                        "methodName": "Expect Equal",
+                                        "className": "Unit Testing",
+                                        "inputSlots": [
+                                            {
+                                                "m_id": "{C456B5D0-F50D-49E1-87EF-E04E47FDB01A}"
+                                            },
+                                            {
+                                                "m_id": "{F0C0AFFD-50E4-42AC-8BD4-70B66EB6155D}"
+                                            },
+                                            {
+                                                "m_id": "{D68B1303-59A7-482F-96D9-035EAA11B95D}"
+                                            },
+                                            {
+                                                "m_id": "{7356FA9A-5F3E-4AD3-9FA3-D17F71B22697}"
+                                            }
+                                        ],
+                                        "orderedInputSlotIds": [
+                                            {
+                                                "m_id": "{C456B5D0-F50D-49E1-87EF-E04E47FDB01A}"
+                                            },
+                                            {
+                                                "m_id": "{F0C0AFFD-50E4-42AC-8BD4-70B66EB6155D}"
+                                            },
+                                            {
+                                                "m_id": "{D68B1303-59A7-482F-96D9-035EAA11B95D}"
+                                            },
+                                            {
+                                                "m_id": "{7356FA9A-5F3E-4AD3-9FA3-D17F71B22697}"
+                                            }
+                                        ],
+                                        "outputSlotIds": [
+                                            {}
+                                        ]
+                                    }
+                                }
+                            },
+                            {
+                                "Id": {
+                                    "id": 2132139746543
+                                },
+                                "Name": "SC-Node(Start)",
+                                "Components": {
+                                    "Component_[9353928754690246072]": {
+                                        "$type": "Start",
+                                        "Id": 9353928754690246072,
+                                        "Slots": [
+                                            {
+                                                "id": {
+                                                    "m_id": "{9DA89AC4-3416-44D9-B58B-1D981FF230EA}"
+                                                },
+                                                "contracts": [
+                                                    {
+                                                        "$type": "SlotTypeContract"
+                                                    }
+                                                ],
+                                                "slotName": "Out",
+                                                "toolTip": "Signaled when the entity that owns this graph is fully activated.",
+                                                "Descriptor": {
+                                                    "ConnectionType": 2,
+                                                    "SlotType": 1
+                                                }
+                                            }
+                                        ]
+                                    }
+                                }
+                            }
+                        ],
+                        "m_connections": [
+                            {
+                                "Id": {
+                                    "id": 2845104317679
+                                },
+                                "Name": "srcEndpoint=(On Graph Start: Out), destEndpoint=(ScriptCanvasTesting_TestTupleMethods_GlobalThreeSameType: In)",
+                                "Components": {
+                                    "Component_[5393538900354430762]": {
+                                        "$type": "{64CA5016-E803-4AC4-9A36-BDA2C890C6EB} Connection",
+                                        "Id": 5393538900354430762,
+                                        "sourceEndpoint": {
+                                            "nodeId": {
+                                                "id": 2132139746543
+                                            },
+                                            "slotId": {
+                                                "m_id": "{9DA89AC4-3416-44D9-B58B-1D981FF230EA}"
+                                            }
+                                        },
+                                        "targetEndpoint": {
+                                            "nodeId": {
+                                                "id": 620311258351
+                                            },
+                                            "slotId": {
+                                                "m_id": "{268D5FD1-89A8-4C65-B1BB-7AA3CE42540D}"
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            {
+                                "Id": {
+                                    "id": 26093762290927
+                                },
+                                "Name": "srcEndpoint=(ScriptCanvasTesting_TestTupleMethods_GlobalThreeSameType: String: 0), destEndpoint=(Expect Equal: Candidate)",
+                                "Components": {
+                                    "Component_[16420617378972331060]": {
+                                        "$type": "{64CA5016-E803-4AC4-9A36-BDA2C890C6EB} Connection",
+                                        "Id": 16420617378972331060,
+                                        "sourceEndpoint": {
+                                            "nodeId": {
+                                                "id": 620311258351
+                                            },
+                                            "slotId": {
+                                                "m_id": "{465AECED-1E15-4ACA-AAB1-DB084C0C639D}"
+                                            }
+                                        },
+                                        "targetEndpoint": {
+                                            "nodeId": {
+                                                "id": 25488171902191
+                                            },
+                                            "slotId": {
+                                                "m_id": "{F0C0AFFD-50E4-42AC-8BD4-70B66EB6155D}"
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            {
+                                "Id": {
+                                    "id": 26291330786543
+                                },
+                                "Name": "srcEndpoint=(ScriptCanvasTesting_TestTupleMethods_GlobalThreeSameType: Out), destEndpoint=(Expect Equal: In)",
+                                "Components": {
+                                    "Component_[6182918377569461228]": {
+                                        "$type": "{64CA5016-E803-4AC4-9A36-BDA2C890C6EB} Connection",
+                                        "Id": 6182918377569461228,
+                                        "sourceEndpoint": {
+                                            "nodeId": {
+                                                "id": 620311258351
+                                            },
+                                            "slotId": {
+                                                "m_id": "{DC06CE44-EFED-466A-AB5A-C9D0ABC5564E}"
+                                            }
+                                        },
+                                        "targetEndpoint": {
+                                            "nodeId": {
+                                                "id": 25488171902191
+                                            },
+                                            "slotId": {
+                                                "m_id": "{AADB2E5C-BCFC-46C8-9973-CF0F5DEE067C}"
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            {
+                                "Id": {
+                                    "id": 27300648101103
+                                },
+                                "Name": "srcEndpoint=(Expect Equal: Out), destEndpoint=(Expect Equal: In)",
+                                "Components": {
+                                    "Component_[4122606210180210519]": {
+                                        "$type": "{64CA5016-E803-4AC4-9A36-BDA2C890C6EB} Connection",
+                                        "Id": 4122606210180210519,
+                                        "sourceEndpoint": {
+                                            "nodeId": {
+                                                "id": 25488171902191
+                                            },
+                                            "slotId": {
+                                                "m_id": "{9FCEFD8B-EB20-4A0D-98CA-9931094FCA4F}"
+                                            }
+                                        },
+                                        "targetEndpoint": {
+                                            "nodeId": {
+                                                "id": 26699352679663
+                                            },
+                                            "slotId": {
+                                                "m_id": "{C68D83F6-02E9-44B5-A108-236408234403}"
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            {
+                                "Id": {
+                                    "id": 27820339143919
+                                },
+                                "Name": "srcEndpoint=(ScriptCanvasTesting_TestTupleMethods_GlobalThreeSameType: String: 1), destEndpoint=(Expect Equal: Candidate)",
+                                "Components": {
+                                    "Component_[4375389188822849218]": {
+                                        "$type": "{64CA5016-E803-4AC4-9A36-BDA2C890C6EB} Connection",
+                                        "Id": 4375389188822849218,
+                                        "sourceEndpoint": {
+                                            "nodeId": {
+                                                "id": 620311258351
+                                            },
+                                            "slotId": {
+                                                "m_id": "{4421E5B7-0D06-48E2-B62B-9E3AC097C014}"
+                                            }
+                                        },
+                                        "targetEndpoint": {
+                                            "nodeId": {
+                                                "id": 26699352679663
+                                            },
+                                            "slotId": {
+                                                "m_id": "{A3280A1E-5C2B-4564-B6E5-19168B233F09}"
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            {
+                                "Id": {
+                                    "id": 28786706785519
+                                },
+                                "Name": "srcEndpoint=(Expect Equal: Out), destEndpoint=(Expect Equal: In)",
+                                "Components": {
+                                    "Component_[13048637925492706763]": {
+                                        "$type": "{64CA5016-E803-4AC4-9A36-BDA2C890C6EB} Connection",
+                                        "Id": 13048637925492706763,
+                                        "sourceEndpoint": {
+                                            "nodeId": {
+                                                "id": 26699352679663
+                                            },
+                                            "slotId": {
+                                                "m_id": "{B3AB36C5-72AF-4C8F-8998-1EC73970B5F5}"
+                                            }
+                                        },
+                                        "targetEndpoint": {
+                                            "nodeId": {
+                                                "id": 28185411364079
+                                            },
+                                            "slotId": {
+                                                "m_id": "{E42CE1D8-603B-48F0-9C82-D0E6B008CB01}"
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            {
+                                "Id": {
+                                    "id": 29117419267311
+                                },
+                                "Name": "srcEndpoint=(Expect Equal: Out), destEndpoint=(Mark Complete: In)",
+                                "Components": {
+                                    "Component_[8338962236061931263]": {
+                                        "$type": "{64CA5016-E803-4AC4-9A36-BDA2C890C6EB} Connection",
+                                        "Id": 8338962236061931263,
+                                        "sourceEndpoint": {
+                                            "nodeId": {
+                                                "id": 28185411364079
+                                            },
+                                            "slotId": {
+                                                "m_id": "{895852CD-E327-488D-B086-D1B9D8B15FCF}"
+                                            }
+                                        },
+                                        "targetEndpoint": {
+                                            "nodeId": {
+                                                "id": 11267535185135
+                                            },
+                                            "slotId": {
+                                                "m_id": "{21ED3F17-7EC5-411C-A139-257082A0BBD1}"
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            {
+                                "Id": {
+                                    "id": 29538326062319
+                                },
+                                "Name": "srcEndpoint=(ScriptCanvasTesting_TestTupleMethods_GlobalThreeSameType: String: 2), destEndpoint=(Expect Equal: Candidate)",
+                                "Components": {
+                                    "Component_[1004913372139062596]": {
+                                        "$type": "{64CA5016-E803-4AC4-9A36-BDA2C890C6EB} Connection",
+                                        "Id": 1004913372139062596,
+                                        "sourceEndpoint": {
+                                            "nodeId": {
+                                                "id": 620311258351
+                                            },
+                                            "slotId": {
+                                                "m_id": "{812290A1-27D2-4279-A2B7-02DBF0D6B7BA}"
+                                            }
+                                        },
+                                        "targetEndpoint": {
+                                            "nodeId": {
+                                                "id": 28185411364079
+                                            },
+                                            "slotId": {
+                                                "m_id": "{8D3B13EB-8A74-4B2D-8DC5-0E53928DD289}"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    "m_assetType": "{F0EAB872-6E02-0000-0000-000002000000}",
+                    "versionData": {
+                        "_grammarVersion": 1,
+                        "_runtimeVersion": 1,
+                        "_fileVersion": 1
+                    },
+                    "GraphCanvasData": [
+                        {
+                            "Key": {
+                                "id": 585951519983
+                            },
+                            "Value": {
+                                "ComponentData": {
+                                    "{5F84B500-8C45-40D1-8EFC-A5306B241444}": {
+                                        "$type": "SceneComponentSaveData",
+                                        "ViewParams": {
+                                            "Scale": 0.8193732852141353,
+                                            "AnchorX": -220.90054321289063,
+                                            "AnchorY": 28.070234298706055
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "id": 620311258351
+                            },
+                            "Value": {
+                                "ComponentData": {
+                                    "{24CB38BB-1705-4EC5-8F63-B574571B4DCD}": {
+                                        "$type": "NodeSaveData"
+                                    },
+                                    "{328FF15C-C302-458F-A43D-E1794DE0904E}": {
+                                        "$type": "GeneralNodeTitleComponentSaveData",
+                                        "PaletteOverride": "MethodNodeTitlePalette"
+                                    },
+                                    "{7CC444B1-F9B3-41B5-841B-0C4F2179F111}": {
+                                        "$type": "GeometrySaveData",
+                                        "Position": [
+                                            20.0,
+                                            220.0
+                                        ]
+                                    },
+                                    "{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}": {
+                                        "$type": "StylingComponentSaveData",
+                                        "SubStyle": ".method"
+                                    },
+                                    "{B1F49A35-8408-40DA-B79E-F1E3B64322CE}": {
+                                        "$type": "PersistentIdComponentSaveData",
+                                        "PersistentId": "{60CBADAD-92B2-484B-B608-BE80804BDAC8}"
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "id": 2132139746543
+                            },
+                            "Value": {
+                                "ComponentData": {
+                                    "{24CB38BB-1705-4EC5-8F63-B574571B4DCD}": {
+                                        "$type": "NodeSaveData"
+                                    },
+                                    "{328FF15C-C302-458F-A43D-E1794DE0904E}": {
+                                        "$type": "GeneralNodeTitleComponentSaveData",
+                                        "PaletteOverride": "TimeNodeTitlePalette"
+                                    },
+                                    "{7CC444B1-F9B3-41B5-841B-0C4F2179F111}": {
+                                        "$type": "GeometrySaveData",
+                                        "Position": [
+                                            -180.0,
+                                            220.0
+                                        ]
+                                    },
+                                    "{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}": {
+                                        "$type": "StylingComponentSaveData"
+                                    },
+                                    "{B1F49A35-8408-40DA-B79E-F1E3B64322CE}": {
+                                        "$type": "PersistentIdComponentSaveData",
+                                        "PersistentId": "{EA6747E4-62DA-4871-9488-F271C36C6E34}"
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "id": 11267535185135
+                            },
+                            "Value": {
+                                "ComponentData": {
+                                    "{24CB38BB-1705-4EC5-8F63-B574571B4DCD}": {
+                                        "$type": "NodeSaveData"
+                                    },
+                                    "{328FF15C-C302-458F-A43D-E1794DE0904E}": {
+                                        "$type": "GeneralNodeTitleComponentSaveData",
+                                        "PaletteOverride": "MethodNodeTitlePalette"
+                                    },
+                                    "{7CC444B1-F9B3-41B5-841B-0C4F2179F111}": {
+                                        "$type": "GeometrySaveData",
+                                        "Position": [
+                                            960.0,
+                                            460.0
+                                        ]
+                                    },
+                                    "{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}": {
+                                        "$type": "StylingComponentSaveData",
+                                        "SubStyle": ".method"
+                                    },
+                                    "{B1F49A35-8408-40DA-B79E-F1E3B64322CE}": {
+                                        "$type": "PersistentIdComponentSaveData",
+                                        "PersistentId": "{B2F297F0-B785-4307-AEEF-7F2B03A0BFD7}"
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "id": 25488171902191
+                            },
+                            "Value": {
+                                "ComponentData": {
+                                    "{24CB38BB-1705-4EC5-8F63-B574571B4DCD}": {
+                                        "$type": "NodeSaveData"
+                                    },
+                                    "{328FF15C-C302-458F-A43D-E1794DE0904E}": {
+                                        "$type": "GeneralNodeTitleComponentSaveData",
+                                        "PaletteOverride": "MethodNodeTitlePalette"
+                                    },
+                                    "{7CC444B1-F9B3-41B5-841B-0C4F2179F111}": {
+                                        "$type": "GeometrySaveData",
+                                        "Position": [
+                                            640.0,
+                                            200.0
+                                        ]
+                                    },
+                                    "{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}": {
+                                        "$type": "StylingComponentSaveData",
+                                        "SubStyle": ".method"
+                                    },
+                                    "{B1F49A35-8408-40DA-B79E-F1E3B64322CE}": {
+                                        "$type": "PersistentIdComponentSaveData",
+                                        "PersistentId": "{413E0C78-C39F-4473-B090-068A24DAD170}"
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "id": 26699352679663
+                            },
+                            "Value": {
+                                "ComponentData": {
+                                    "{24CB38BB-1705-4EC5-8F63-B574571B4DCD}": {
+                                        "$type": "NodeSaveData"
+                                    },
+                                    "{328FF15C-C302-458F-A43D-E1794DE0904E}": {
+                                        "$type": "GeneralNodeTitleComponentSaveData",
+                                        "PaletteOverride": "MethodNodeTitlePalette"
+                                    },
+                                    "{7CC444B1-F9B3-41B5-841B-0C4F2179F111}": {
+                                        "$type": "GeometrySaveData",
+                                        "Position": [
+                                            1020.0,
+                                            200.0
+                                        ]
+                                    },
+                                    "{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}": {
+                                        "$type": "StylingComponentSaveData",
+                                        "SubStyle": ".method"
+                                    },
+                                    "{B1F49A35-8408-40DA-B79E-F1E3B64322CE}": {
+                                        "$type": "PersistentIdComponentSaveData",
+                                        "PersistentId": "{75D1666B-C99C-423F-BD71-D3997BC886D2}"
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "id": 28185411364079
+                            },
+                            "Value": {
+                                "ComponentData": {
+                                    "{24CB38BB-1705-4EC5-8F63-B574571B4DCD}": {
+                                        "$type": "NodeSaveData"
+                                    },
+                                    "{328FF15C-C302-458F-A43D-E1794DE0904E}": {
+                                        "$type": "GeneralNodeTitleComponentSaveData",
+                                        "PaletteOverride": "MethodNodeTitlePalette"
+                                    },
+                                    "{7CC444B1-F9B3-41B5-841B-0C4F2179F111}": {
+                                        "$type": "GeometrySaveData",
+                                        "Position": [
+                                            640.0,
+                                            460.0
+                                        ]
+                                    },
+                                    "{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}": {
+                                        "$type": "StylingComponentSaveData",
+                                        "SubStyle": ".method"
+                                    },
+                                    "{B1F49A35-8408-40DA-B79E-F1E3B64322CE}": {
+                                        "$type": "PersistentIdComponentSaveData",
+                                        "PersistentId": "{86F85279-7C6D-4D5F-BF03-27D23B18C45A}"
+                                    }
+                                }
+                            }
+                        }
+                    ],
+                    "StatisticsHelper": {
+                        "InstanceCounter": [
+                            {
+                                "Key": 4053150093067829293,
+                                "Value": 3
+                            },
+                            {
+                                "Key": 4199610336680704683,
+                                "Value": 1
+                            },
+                            {
+                                "Key": 10204019744198319120,
+                                "Value": 1
+                            },
+                            {
+                                "Key": 18367790618498189033,
+                                "Value": 1
+                            }
+                        ]
+                    }
+                },
+                "Component_[15736084273415986586]": {
+                    "$type": "EditorGraphVariableManagerComponent",
+                    "Id": 15736084273415986586
+                }
+            }
+        }
+    }
+}

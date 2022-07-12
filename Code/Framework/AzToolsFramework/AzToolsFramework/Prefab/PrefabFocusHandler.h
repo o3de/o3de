@@ -49,13 +49,16 @@ namespace AzToolsFramework::Prefab
 
         // PrefabFocusInterface overrides ...
         void InitializeEditorInterfaces() override;
-        PrefabFocusOperationResult FocusOnPrefabInstanceOwningEntityId(AZ::EntityId entityId) override;
+        PrefabFocusOperationResult FocusOnPrefabInstanceOwningEntityId(
+            AZ::EntityId entityId, FocusChangeBehavior focusChangeBehavior = FocusChangeBehavior::CloseCurrentlyFocusedItems) override;
         TemplateId GetFocusedPrefabTemplateId(AzFramework::EntityContextId entityContextId) const override;
         InstanceOptionalReference GetFocusedPrefabInstance(AzFramework::EntityContextId entityContextId) const override;
 
         // PrefabFocusPublicInterface and PrefabFocusPublicRequestBus overrides ...
         PrefabFocusOperationResult FocusOnOwningPrefab(AZ::EntityId entityId) override;
-        PrefabFocusOperationResult FocusOnParentOfFocusedPrefab(AzFramework::EntityContextId entityContextId) override;
+        PrefabFocusOperationResult FocusOnParentOfFocusedPrefab(
+            AzFramework::EntityContextId entityContextId,
+            FocusChangeBehavior focusChangeBehavior = FocusChangeBehavior::CloseCurrentlyFocusedItems) override;
         PrefabFocusOperationResult FocusOnPathIndex(AzFramework::EntityContextId entityContextId, int index) override;
         AZ::EntityId GetFocusedPrefabContainerEntityId(AzFramework::EntityContextId entityContextId) const override;
         bool IsOwningPrefabBeingFocused(AZ::EntityId entityId) const override;
@@ -74,7 +77,7 @@ namespace AzToolsFramework::Prefab
         void OnPrefabTemplateDirtyFlagUpdated(TemplateId templateId, bool status) override;
         
     private:
-        PrefabFocusOperationResult FocusOnPrefabInstance(InstanceOptionalReference focusedInstance);
+        PrefabFocusOperationResult FocusOnPrefabInstance(InstanceOptionalReference focusedInstance, FocusChangeBehavior focusChangeBehavior);
         void RefreshInstanceFocusPath();
 
         void SetInstanceContainersOpenState(const RootAliasPath& rootAliasPath, bool openState) const;
@@ -83,8 +86,6 @@ namespace AzToolsFramework::Prefab
 
         //! The alias path for the instance the editor is currently focusing on, starting from the root instance.
         RootAliasPath m_rootAliasFocusPath = RootAliasPath();
-        //! The templateId of the focused instance.
-        TemplateId m_focusedTemplateId;
         //! A path containing the filenames of the instances in the focus hierarchy, separated with a /.
         AZ::IO::Path m_filenameFocusPath;
         //! The length of the current focus path. Stored to simplify internal checks.

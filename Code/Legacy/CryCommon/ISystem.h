@@ -8,10 +8,12 @@
 
 #pragma once
 
+#include <AzCore/PlatformDef.h>
+
 #ifdef CRYSYSTEM_EXPORTS
-#define CRYSYSTEM_API DLL_EXPORT
+#define CRYSYSTEM_API AZ_DLL_EXPORT
 #else
-#define CRYSYSTEM_API DLL_IMPORT
+#define CRYSYSTEM_API AZ_DLL_IMPORT
 #endif
 #include <AzCore/IO/SystemFile.h>
 
@@ -48,10 +50,6 @@ struct IRemoteConsole;
 struct IRenderer;
 struct ICryFont;
 struct IMovieSystem;
-namespace Audio
-{
-    struct IAudioSystem;
-} // namespace Audio
 struct SFileVersion;
 struct INameTable;
 struct ILevelSystem;
@@ -470,8 +468,6 @@ namespace AZ
     } // namespace Internal
 } // namespace AZ
 
-typedef AZ::Internal::EnvironmentInterface SharedEnvironmentInstance;
-
 // Description:
 //  Structure passed to Init method of ISystem interface.
 struct SSystemInitParams
@@ -499,8 +495,6 @@ struct SSystemInitParams
 
     ISystem* pSystem;                                           // Pointer to existing ISystem interface, it will be reused if not NULL.
 
-    SharedEnvironmentInstance* pSharedEnvironment;
-
     // Summary:
     //  Initialization defaults.
     SSystemInitParams()
@@ -526,8 +520,6 @@ struct SSystemInitParams
         bToolMode = false;
 
         pSystem = NULL;
-
-        pSharedEnvironment = nullptr;
     }
 };
 
@@ -600,7 +592,6 @@ struct SSystemGlobalEnvironment
     ISystem*                   pSystem = nullptr;
     ILog*                      pLog;
     IMovieSystem*              pMovieSystem;
-    SharedEnvironmentInstance*      pSharedEnvironment;
 
 #if defined(AZ_RESTRICTED_PLATFORM)
     #define AZ_RESTRICTED_SECTION ISYSTEM_H_SECTION_4
@@ -963,7 +954,7 @@ struct ISystem
     //   Execute command line arguments.
     //   Should be after init game.
     // Example:
-    //   +g_gametype ASSAULT +map "testy"
+    //   +g_gametype ASSAULT +LoadLevel "testy"
     virtual void ExecuteCommandLine(bool deferred=true) = 0;
 
     // Description:
@@ -1051,7 +1042,10 @@ void* GetModuleShutdownISystemSymbol();
 //   Interface of the DLL.
 extern "C"
 {
-    CRYSYSTEM_API ISystem* CreateSystemInterface(const SSystemInitParams& initParams);
+#if !defined(AZ_MONOLITHIC_BUILD)
+    CRYSYSTEM_API
+#endif
+    ISystem* CreateSystemInterface(const SSystemInitParams& initParams);
 }
 
 // Description:

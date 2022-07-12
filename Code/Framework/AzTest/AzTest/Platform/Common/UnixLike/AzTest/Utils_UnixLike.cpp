@@ -12,14 +12,5 @@ namespace AZ
 {
     namespace Test
     {
-        bool SetEnv(const char* envname, const char* envvalue, bool overwrite)
-        {
-            return setenv(envname, envvalue, overwrite) != -1;
-        }
-
-        bool UnsetEnv(const char* envname)
-        {
-            return unsetenv(envname) != -1;
-        }
     }
 }

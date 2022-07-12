@@ -351,12 +351,13 @@ namespace AssetBundler
             return true;
         }
 
+        AZ::IO::Path seedAbsolutePath{seedAbsoluteFilePath};
         for (const AzFramework::GemInfo& gemInfo : gemInfoList)
         {
             for (const AZ::IO::Path& gemAbsoluteSourcePath : gemInfo.m_absoluteSourcePaths)
             {
                 // We want to check the path before going through the effort of creating the default Seed List file map
-                if (!AzFramework::StringFunc::StartsWith(seedAbsoluteFilePath, gemAbsoluteSourcePath.Native()))
+                if (!seedAbsolutePath.IsRelativeTo(gemAbsoluteSourcePath.LexicallyNormal()))
                 {
                     continue;
                 }

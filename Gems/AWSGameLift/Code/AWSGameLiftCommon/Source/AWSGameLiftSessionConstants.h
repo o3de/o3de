@@ -16,6 +16,9 @@ namespace AWSGameLift
     // Reference https://sdk.amazonaws.com/cpp/api/LATEST/_game_session_status_reason_8h.html
     static const char* AWSGameLiftSessionStatusReasons[2] = { "NotSet", "Interrupted" };
 
+    // Reference https://docs.aws.amazon.com/gamelift/latest/apireference/API_PlayerSession.html
+    static constexpr const char AWSGameLiftTLSEnabledDNSSuffix[] = ".amazongamelift.com";
+
     static constexpr const char AWSGameLiftErrorMessageTemplate[] = "Exception: %s, Message: %s";
     static constexpr const char AWSGameLiftClientMissingErrorMessage[] = "GameLift client is not configured yet.";
 } // namespace AWSGameLift

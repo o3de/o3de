@@ -193,6 +193,22 @@ namespace AZ
             m_deviceBufferNeedsUpdate = true;
         }
 
+        void QuadLightFeatureProcessor::SetAffectsGI(LightHandle handle, bool affectsGI)
+        {
+            AZ_Assert(handle.IsValid(), "Invalid LightHandle passed to QuadLightFeatureProcessor::SetAffectsGI().");
+
+            m_quadLightData.GetData(handle.GetIndex()).m_affectsGI = affectsGI;
+            m_deviceBufferNeedsUpdate = true;
+        }
+
+        void QuadLightFeatureProcessor::SetAffectsGIFactor(LightHandle handle, float affectsGIFactor)
+        {
+            AZ_Assert(handle.IsValid(), "Invalid LightHandle passed to QuadLightFeatureProcessor::SetAffectsGIFactor().");
+
+            m_quadLightData.GetData(handle.GetIndex()).m_affectsGIFactor = affectsGIFactor;
+            m_deviceBufferNeedsUpdate = true;
+        }
+
         void QuadLightFeatureProcessor::SetQuadData(LightHandle handle, const QuadLightData& data)
         {
             AZ_Assert(handle.IsValid(), "Invalid LightHandle passed to QuadLightFeatureProcessor::SetQuadData().");

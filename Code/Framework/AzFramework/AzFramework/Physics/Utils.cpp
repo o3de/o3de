@@ -6,11 +6,6 @@
  *
  */
 
-
-#include "Utils.h"
-#include "Material.h"
-#include "Shape.h"
-
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzFramework/Physics/AnimationConfiguration.h>
@@ -33,6 +28,8 @@
 #include <AzFramework/Physics/Configuration/SimulatedBodyConfiguration.h>
 #include <AzFramework/Physics/SimulatedBodies/RigidBody.h>
 #include <AzFramework/Physics/Common/PhysicsJoint.h>
+#include <AzFramework/Physics/Shape.h>
+#include <AzFramework/Physics/Utils.h>
 
 namespace Physics
 {
@@ -118,10 +115,6 @@ namespace Physics
             AzPhysics::CollisionEvent::Reflect(context);
             AzPhysics::TriggerEvent::Reflect(context);
             AzPhysics::SceneConfiguration::Reflect(context);
-            MaterialConfiguration::Reflect(context);
-            DefaultMaterialConfiguration::Reflect(context);
-            MaterialLibraryAsset::Reflect(context);
-            MaterialInfoReflectionWrapper::Reflect(context);
             AzPhysics::SimulatedBodyConfiguration::Reflect(context);
             AzPhysics::RigidBodyConfiguration::Reflect(context);
             AzPhysics::JointConfiguration::Reflect(context);

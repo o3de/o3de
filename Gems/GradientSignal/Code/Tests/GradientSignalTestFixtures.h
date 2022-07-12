@@ -9,6 +9,7 @@
 
 #include <Tests/GradientSignalTestMocks.h>
 #include <LmbrCentral/Shape/MockShapes.h>
+#include <Atom/RPI.Reflect/Asset/AssetHandler.h>
 #include <AzTest/GemTestEnvironment.h>
 
 namespace UnitTest
@@ -20,6 +21,7 @@ namespace UnitTest
     {
     public:
         void AddGemsAndComponents() override;
+        void PostCreateApplication() override;
     };
 
 #ifdef HAVE_BENCHMARK
@@ -89,7 +91,7 @@ namespace UnitTest
         AZStd::unique_ptr<AZ::Entity> BuildTestSurfaceMaskGradient(float shapeHalfBounds);
         AZStd::unique_ptr<AZ::Entity> BuildTestSurfaceSlopeGradient(float shapeHalfBounds);
 
-        UnitTest::ImageAssetMockAssetHandler* m_mockHandler = nullptr;
+        AZStd::fixed_vector<AZStd::unique_ptr<AZ::Data::AssetHandler>, 2> m_assetHandlers;
     };
 
     struct GradientSignalTest

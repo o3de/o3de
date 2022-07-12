@@ -11,6 +11,7 @@
  // Component includes
 #include <AzFramework/TargetManagement/TargetManagementComponent.h>
 
+#include <AzToolsFramework/ActionManager/ActionManagerSystemComponent.h>
 #include <AzToolsFramework/Archive/ArchiveComponent.h>
 #include <AzToolsFramework/Asset/AssetSystemComponent.h>
 #include <AzToolsFramework/AssetBundle/AssetBundleComponent.h>
@@ -56,6 +57,9 @@
 #include <AzToolsFramework/ViewportSelection/EditorInteractionSystemComponent.h>
 #include <AzToolsFramework/Entity/EntityUtilityComponent.h>
 #include <AzToolsFramework/Script/LuaSymbolsReporterSystemComponent.h>
+#include <AzToolsFramework/Viewport/SharedViewBookmarkComponent.h>
+#include <AzToolsFramework/Viewport/LocalViewBookmarkComponent.h>
+#include <AzToolsFramework/Viewport/ViewBookmarkSystemComponent.h>
 #include <Prefab/ProceduralPrefabSystemComponent.h>
 
 AZ_DEFINE_BUDGET(AzToolsFramework);
@@ -66,6 +70,7 @@ namespace AzToolsFramework
         : AZ::Module()
     {
         m_descriptors.insert(m_descriptors.end(), {
+            ActionManagerSystemComponent::CreateDescriptor(),
             Components::TransformComponent::CreateDescriptor(),
             Components::EditorNonUniformScaleComponent::CreateDescriptor(),
             Components::SelectionComponent::CreateDescriptor(),
@@ -84,6 +89,8 @@ namespace AzToolsFramework
             Prefab::PrefabSystemComponent::CreateDescriptor(),
             Prefab::EditorPrefabComponent::CreateDescriptor(),
             Prefab::ProceduralPrefabSystemComponent::CreateDescriptor(),
+            AzToolsFramework::ViewBookmarkSystemComponent::CreateDescriptor(),
+            AzToolsFramework::LocalViewBookmarkComponent::CreateDescriptor(),
             Components::EditorEntityActionComponent::CreateDescriptor(),
             Components::EditorEntityIconComponent::CreateDescriptor(),
             Components::EditorInspectorComponent::CreateDescriptor(),

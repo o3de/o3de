@@ -62,7 +62,7 @@ namespace AZ
             AddMaterialPropertyDependency(functor, functor->m_translateY);
             AddMaterialPropertyDependency(functor, functor->m_rotateDegrees);
 
-            functor->m_transformMatrix = context.GetShaderResourceGroupLayout()->FindShaderInputConstantIndex(Name{m_transformMatrix});
+            functor->m_transformMatrix = context.FindShaderInputConstantIndex(Name{m_transformMatrix});
 
             if (functor->m_transformMatrix.IsNull())
             {
@@ -74,7 +74,7 @@ namespace AZ
             // In that case, the.materialtype file will not provide the name of an inverse matrix because it doesn't have one.
             if (!m_transformMatrixInverse.empty())
             {
-                functor->m_transformMatrixInverse = context.GetShaderResourceGroupLayout()->FindShaderInputConstantIndex(Name{m_transformMatrixInverse});
+                functor->m_transformMatrixInverse = context.FindShaderInputConstantIndex(Name{m_transformMatrixInverse});
 
                 if (functor->m_transformMatrixInverse.IsNull())
                 {

@@ -7,4 +7,5 @@
 #
 
 set(FILES
+    Include/Atom/ImageProcessing/ImageProcessingDefines.h
 )

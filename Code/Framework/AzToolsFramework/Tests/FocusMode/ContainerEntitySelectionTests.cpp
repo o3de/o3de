@@ -15,7 +15,7 @@ namespace UnitTest
         // When no containers are in the way, the function will just return the entityId of the entity that was clicked.
 
         // Click on Car Entity
-        ClickAtWorldPositionOnViewport(WorldCarEntityPosition);
+        ClickAtWorldPositionOnViewport(s_worldCarEntityPosition);
 
         // Verify the correct entity is selected
         auto selectedEntitiesAfter = GetSelectedEntities();
@@ -29,7 +29,7 @@ namespace UnitTest
         m_containerEntityInterface->RegisterEntityAsContainer(m_entityMap[StreetEntityName]); // Containers are closed by default
 
         // Click on Car Entity
-        ClickAtWorldPositionOnViewport(WorldCarEntityPosition);
+        ClickAtWorldPositionOnViewport(s_worldCarEntityPosition);
 
         // Verify the correct entity is selected
         auto selectedEntitiesAfter = GetSelectedEntities();
@@ -47,7 +47,7 @@ namespace UnitTest
         m_containerEntityInterface->SetContainerOpen(m_entityMap[StreetEntityName], true);
 
         // Click on Car Entity
-        ClickAtWorldPositionOnViewport(WorldCarEntityPosition);
+        ClickAtWorldPositionOnViewport(s_worldCarEntityPosition);
 
         // Verify the correct entity is selected
         auto selectedEntitiesAfter = GetSelectedEntities();
@@ -65,7 +65,7 @@ namespace UnitTest
         m_containerEntityInterface->RegisterEntityAsContainer(m_entityMap[CityEntityName]);
 
         // Click on Car Entity
-        ClickAtWorldPositionOnViewport(WorldCarEntityPosition);
+        ClickAtWorldPositionOnViewport(s_worldCarEntityPosition);
 
         // Verify the correct entity is selected
         auto selectedEntitiesAfter = GetSelectedEntities();
@@ -85,7 +85,7 @@ namespace UnitTest
         m_containerEntityInterface->SetContainerOpen(m_entityMap[CityEntityName], true);
 
         // Click on Car Entity
-        ClickAtWorldPositionOnViewport(WorldCarEntityPosition);
+        ClickAtWorldPositionOnViewport(s_worldCarEntityPosition);
 
         // Verify the correct entity is selected
         auto selectedEntitiesAfter = GetSelectedEntities();

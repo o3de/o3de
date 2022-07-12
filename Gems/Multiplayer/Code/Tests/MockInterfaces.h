@@ -10,6 +10,7 @@
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Time/ITime.h>
 #include <AzNetworking/ConnectionLayer/IConnectionListener.h>
+#include <AzNetworking/Serialization/ISerializer.h>
 #include <AzTest/AzTest.h>
 #include <Multiplayer/IMultiplayer.h>
 #include <Multiplayer/NetworkEntity/NetworkEntityRpcMessage.h>
@@ -26,7 +27,7 @@ namespace UnitTest
         MOCK_METHOD1(Terminate, void(AzNetworking::DisconnectReason));
         MOCK_METHOD1(AddClientMigrationStartEventHandler, void(Multiplayer::ClientMigrationStartEvent::Handler&));
         MOCK_METHOD1(AddClientMigrationEndEventHandler, void(Multiplayer::ClientMigrationEndEvent::Handler&));
-        MOCK_METHOD1(AddClientDisconnectedHandler, void(AZ::Event<>::Handler&));
+        MOCK_METHOD1(AddEndpointDisonnectedHandler, void(Multiplayer::EndpointDisonnectedEvent::Handler&));
         MOCK_METHOD1(AddNotifyClientMigrationHandler, void(Multiplayer::NotifyClientMigrationEvent::Handler&));
         MOCK_METHOD1(AddNotifyEntityMigrationEventHandler, void(Multiplayer::NotifyEntityMigrationEvent::Handler&));
         MOCK_METHOD1(AddConnectionAcquiredHandler, void(Multiplayer::ConnectionAcquiredEvent::Handler&));
@@ -40,8 +41,6 @@ namespace UnitTest
         MOCK_CONST_METHOD0(GetCurrentBlendFactor, float());
         MOCK_METHOD0(GetNetworkTime, Multiplayer::INetworkTime* ());
         MOCK_METHOD0(GetNetworkEntityManager, Multiplayer::INetworkEntityManager* ());
-        MOCK_METHOD1(SetFilterEntityManager, void(Multiplayer::IFilterEntityManager*));
-        MOCK_METHOD0(GetFilterEntityManager, Multiplayer::IFilterEntityManager* ());
         MOCK_METHOD2(RegisterPlayerIdentifierForRejoin, void(uint64_t, Multiplayer::NetEntityId));
         MOCK_METHOD4(CompleteClientMigration, void(uint64_t, AzNetworking::ConnectionId, const Multiplayer::HostId&, Multiplayer::ClientInputId));
         MOCK_METHOD1(SetShouldSpawnNetworkEntities, void(bool));
@@ -89,6 +88,10 @@ namespace UnitTest
         MOCK_METHOD1(HandleLocalRpcMessage, void(Multiplayer::NetworkEntityRpcMessage&));
         MOCK_METHOD1(HandleEntitiesExitDomain, void(const Multiplayer::NetEntityIdSet&));
         MOCK_METHOD1(ForceAssumeAuthority, void(const Multiplayer::ConstNetworkEntityHandle&));
+        MOCK_METHOD2(MarkAlwaysRelevantToClients, void(const Multiplayer::ConstNetworkEntityHandle&, bool));
+        MOCK_METHOD2(MarkAlwaysRelevantToServers, void(const Multiplayer::ConstNetworkEntityHandle&, bool));
+        const Multiplayer::NetEntityHandleSet& GetAlwaysRelevantToClientsSet() const override { static Multiplayer::NetEntityHandleSet value; return value; }
+        const Multiplayer::NetEntityHandleSet& GetAlwaysRelevantToServersSet() const override { static Multiplayer::NetEntityHandleSet value; return value; }
         MOCK_METHOD1(SetMigrateTimeoutTimeMs, void(AZ::TimeMs));
         MOCK_CONST_METHOD0(DebugDraw, void());
     };
@@ -167,8 +170,8 @@ namespace UnitTest
         MOCK_METHOD4(Serialize, bool (float&, const char*, float, float));
         MOCK_METHOD4(Serialize, bool (double&, const char*, double, double));
         MOCK_METHOD5(SerializeBytes, bool (uint8_t*, uint32_t, bool, uint32_t&, const char*));
-        MOCK_METHOD2(BeginObject, bool (const char*, const char*));
-        MOCK_METHOD2(EndObject, bool (const char*, const char*));
+        MOCK_METHOD1(BeginObject, bool (const char*));
+        MOCK_METHOD1(EndObject, bool (const char*));
         MOCK_CONST_METHOD0(GetBuffer, const uint8_t* ());
         MOCK_CONST_METHOD0(GetCapacity, uint32_t ());
         MOCK_CONST_METHOD0(GetSize, uint32_t ());

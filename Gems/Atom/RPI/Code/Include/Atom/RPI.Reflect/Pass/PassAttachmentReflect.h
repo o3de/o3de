@@ -72,12 +72,6 @@ namespace AZ
             //! Returns the corresponding ScopeAttachmentAccess for this slot
             RHI::ScopeAttachmentAccess GetAttachmentAccess() const;
 
-            //! Returns true if the filters allow the given format
-            bool AcceptsFormat(const RHI::UnifiedAttachmentDescriptor& desc) const;
-
-            //! Returns true if the filters allow the given image dimension
-            bool AcceptsDimension(const RHI::UnifiedAttachmentDescriptor& desc) const;
-
             //! Name of the slot
             Name m_name;
 
@@ -121,12 +115,6 @@ namespace AZ
 
             //! List of formats to fallback to if the format specified in the view descriptor is not supported by the device
             AZStd::vector<RHI::Format> m_formatFallbacks;
-
-            //! List of allowed formats for the input. If list is empty, the input accepts all formats
-            AZStd::vector<RHI::Format> m_formatFilter;
-
-            //! List of allowed image dimensions for the input. If empty, the input accepts all dimensions
-            AZStd::vector<RHI::ImageDimension> m_dimensionFilter;
         };
 
         using PassSlotList = AZStd::vector<PassSlot>;
@@ -172,7 +160,7 @@ namespace AZ
         //! for the output when the pass is disabled so the output can present a valid attachments to subsequent passes.
         struct PassFallbackConnection final
         {
-            AZ_TYPE_INFO(PassConnection, "{281C6C09-2BB8-49C0-967E-DF6A57DE1095}");
+            AZ_TYPE_INFO(PassFallbackConnection, "{281C6C09-2BB8-49C0-967E-DF6A57DE1095}");
             static void Reflect(AZ::ReflectContext* context);
 
             //! Name of the input slot that will provide the fallback attachment

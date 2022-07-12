@@ -22,10 +22,12 @@ namespace Blast
         if (AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serialize->Class<EditorBlastFamilyComponent, EditorComponentBase>()
-                ->Version(1)
+                ->Version(4)
                 ->Field("BlastAsset", &EditorBlastFamilyComponent::m_blastAsset)
-                ->Field("BlastMaterial", &EditorBlastFamilyComponent::m_materialId)
-                ->Field("PhysicsMaterial", &EditorBlastFamilyComponent::m_physicsMaterialId)
+                ->Field("BlastMaterialAsset", &EditorBlastFamilyComponent::m_blastMaterialAsset)
+                ->Field("BlastMaterial", &EditorBlastFamilyComponent::m_legacyBlastMaterialId)
+                ->Field("PhysicsMaterialAsset", &EditorBlastFamilyComponent::m_physicsMaterialAsset)
+                ->Field("PhysicsMaterial", &EditorBlastFamilyComponent::m_legacyPhysicsMaterialId)
                 ->Field("ActorConfiguration", &EditorBlastFamilyComponent::m_actorConfiguration);
 
             if (AZ::EditContext* ec = serialize->GetEditContext())
@@ -36,25 +38,26 @@ namespace Blast
                     ->Attribute(AZ::Edit::Attributes::Category, "Destruction")
                     ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Box.png")
                     ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Box.png")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
-                    ->Attribute(
-                        AZ::Edit::Attributes::HelpPageURL,
-                        "https://o3de.org/docs/user-guide/components/reference/destruction/blast-family/")
+                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &EditorBlastFamilyComponent::m_blastAsset, "Blast asset",
                         "Assigned blast asset")
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &EditorBlastFamilyComponent::m_materialId, "Blast Material",
-                        "Assigned blast material from current material library")
-                    ->ElementAttribute(
-                        Attributes::BlastMaterialLibraryAssetId, &EditorBlastFamilyComponent::GetMaterialLibraryAssetId)
+                        AZ::Edit::UIHandlers::Default, &EditorBlastFamilyComponent::m_blastMaterialAsset, "Blast Material",
+                        "Assigned blast material asset")
+                        ->Attribute(AZ::Edit::Attributes::DefaultAsset, &EditorBlastFamilyComponent::GetDefaultBlastAssetId)
+                        ->Attribute(AZ_CRC_CE("EditButton"), "")
+                        ->Attribute(AZ_CRC_CE("EditDescription"), "Open in Asset Editor")
+                        ->Attribute(AZ_CRC_CE("DisableEditButtonWhenNoAssetSelected"), true)
+
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &EditorBlastFamilyComponent::m_physicsMaterialId,
-                        "Physics Material", "Assigned physics material from current physics material library")
-                    ->ElementAttribute(
-                        Physics::Attributes::MaterialLibraryAssetId,
-                        &EditorBlastFamilyComponent::GetPhysicsMaterialLibraryAssetId)
+                        AZ::Edit::UIHandlers::Default, &EditorBlastFamilyComponent::m_physicsMaterialAsset, "Physics Material",
+                        "Assigned physics material asset")
+                        ->Attribute(AZ::Edit::Attributes::DefaultAsset, &EditorBlastFamilyComponent::GetDefaultPhysicsAssetId)
+                        ->Attribute(AZ_CRC_CE("EditButton"), "")
+                        ->Attribute(AZ_CRC_CE("EditDescription"), "Open in Asset Editor")
+                        ->Attribute(AZ_CRC_CE("DisableEditButtonWhenNoAssetSelected"), true)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &EditorBlastFamilyComponent::m_actorConfiguration,
                         "Actor configuration", "Configurations for actors in this family");
@@ -85,9 +88,14 @@ namespace Blast
 
     void EditorBlastFamilyComponent::OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset)
     {
-        AZ_Assert(asset.GetId() == m_blastAsset.GetId(), "Got OnAssetReady for something other than our blast asset.");
-        // Fill in our missing m_assetData on our reference
-        m_blastAsset = asset;
+        if (asset == m_blastAsset)
+        {
+            m_blastAsset = asset;
+        }
+        else if (asset == m_blastMaterialAsset)
+        {
+            m_blastMaterialAsset = asset;
+        }
     }
 
     void EditorBlastFamilyComponent::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset)
@@ -104,6 +112,12 @@ namespace Blast
             AZ::Data::AssetBus::MultiHandler::BusConnect(m_blastAsset.GetId());
             m_blastAsset.QueueLoad();
         }
+
+        if (m_blastMaterialAsset.GetId().IsValid())
+        {
+            AZ::Data::AssetBus::MultiHandler::BusConnect(m_blastMaterialAsset.GetId());
+            m_blastMaterialAsset.QueueLoad();
+        }
     }
 
     void EditorBlastFamilyComponent::Deactivate()
@@ -116,16 +130,22 @@ namespace Blast
     void EditorBlastFamilyComponent::BuildGameEntity(AZ::Entity* gameEntity)
     {
         gameEntity->CreateComponent<BlastFamilyComponent>(
-            m_blastAsset, m_materialId, m_physicsMaterialId, m_actorConfiguration);
+            m_blastAsset, m_blastMaterialAsset, m_physicsMaterialAsset, m_actorConfiguration);
     }
 
-    AZ::Data::AssetId EditorBlastFamilyComponent::GetMaterialLibraryAssetId() const
+    AZ::Data::AssetId EditorBlastFamilyComponent::GetDefaultBlastAssetId() const
     {
-        return AZ::Interface<BlastSystemRequests>::Get()->GetGlobalConfiguration().m_materialLibrary.GetId();
+        // Used for Edit Context.
+        // When the blast material asset property doesn't have an asset assigned it
+        // will show "(default)" to indicate that the default material will be used.
+        return {};
     }
 
-    AZ::Data::AssetId EditorBlastFamilyComponent::GetPhysicsMaterialLibraryAssetId() const
+    AZ::Data::AssetId EditorBlastFamilyComponent::GetDefaultPhysicsAssetId() const
     {
-        return AZ::Interface<AzPhysics::SystemInterface>::Get()->GetConfiguration()->m_materialLibraryAsset.GetId();
+        // Used for Edit Context.
+        // When the physics material asset property doesn't have an asset assigned it
+        // will show "(default)" to indicate that the default material will be used.
+        return {};
     }
 } // namespace Blast

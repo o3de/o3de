@@ -70,5 +70,7 @@ namespace UnitTest
         void UnmapBufferInternal(AZ::RHI::Buffer& bufferBase) override;
 
         AZ::RHI::ResultCode StreamBufferInternal(const AZ::RHI::BufferStreamRequest& request) override;
+
+        void ComputeFragmentation() const override {}
     };
 }

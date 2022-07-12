@@ -6,30 +6,40 @@
  *
  */
 
+#include <AzCore/Console/IConsole.h>
 #include <AzCore/Debug/Timer.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
 #include <EMotionFX/Source/ActorInstance.h>
-#include <Allocators.h>
 #include <EMotionFX/Source/EMotionFXManager.h>
 #include <EMotionFX/Source/Motion.h>
 #include <EMotionFX/Source/MotionInstance.h>
 #include <EMotionFX/Source/MotionInstancePool.h>
-#include <MotionMatchingData.h>
-#include <MotionMatchingInstance.h>
+#include <EMotionFX/Source/Pose.h>
+#include <EMotionFX/Source/TransformData.h>
+
+#include <Allocators.h>
 #include <Feature.h>
 #include <FeatureSchema.h>
 #include <FeatureTrajectory.h>
-#include <KdTree.h>
+#include <FeatureVelocity.h>
 #include <ImGuiMonitorBus.h>
-#include <EMotionFX/Source/Pose.h>
-#include <EMotionFX/Source/TransformData.h>
+#include <KdTree.h>
+#include <MotionMatchingData.h>
+#include <MotionMatchingInstance.h>
 #include <PoseDataJointVelocities.h>
+
 
 namespace EMotionFX::MotionMatching
 {
+    AZ_CVAR_EXTERNED(bool, mm_debugDraw);
+    AZ_CVAR_EXTERNED(float, mm_debugDrawVelocityScale);
+    AZ_CVAR_EXTERNED(bool, mm_debugDrawQueryPose);
+    AZ_CVAR_EXTERNED(bool, mm_debugDrawQueryVelocities);
+    AZ_CVAR_EXTERNED(bool, mm_useKdTree);
+
     AZ_CLASS_ALLOCATOR_IMPL(MotionMatchingInstance, MotionMatchAllocator, 0)
 
     MotionMatchingInstance::~MotionMatchingInstance()
@@ -99,7 +109,8 @@ namespace EMotionFX::MotionMatching
 
         // Make sure we have enough space inside the frame floats array, which is used to search the kdTree.
         const size_t numValuesInKdTree = m_data->GetKdTree().GetNumDimensions();
-        m_queryFeatureValues.resize(numValuesInKdTree);
+        m_kdTreeQueryVector.Resize(numValuesInKdTree);
+        m_queryVector.Resize(m_data->GetFeatureMatrix().cols());
 
         // Initialize the trajectory history.
         if (m_cachedTrajectoryFeature)
@@ -118,6 +129,11 @@ namespace EMotionFX::MotionMatching
 
     void MotionMatchingInstance::DebugDraw(AzFramework::DebugDisplayRequests& debugDisplay)
     {
+        if (!mm_debugDraw)
+        {
+            return;
+        }
+
         AZ_PROFILE_SCOPE(Animation, "MotionMatchingInstance::DebugDraw");
 
         // Get the lowest cost frame index from the last search. As we're searching the feature database with a much lower
@@ -131,6 +147,7 @@ namespace EMotionFX::MotionMatching
 
         const FrameDatabase& frameDatabase = m_data->GetFrameDatabase();
         const FeatureSchema& featureSchema = m_data->GetFeatureSchema();
+        const FeatureMatrix& featureMatrix = m_data->GetFeatureMatrix();
 
         // Find the frame index in the frame database that belongs to the currently used pose.
         const size_t currentFrame = frameDatabase.FindFrameIndex(m_motionInstance->GetMotion(), m_motionInstance->GetCurrentTime());
@@ -138,11 +155,12 @@ namespace EMotionFX::MotionMatching
         // Render the feature debug visualizations for the current frame.
         if (currentFrame != InvalidIndex)
         {
+            const Pose& currentPose = *m_actorInstance->GetTransformData()->GetCurrentPose();
             for (Feature* feature: featureSchema.GetFeatures())
             {
                 if (feature->GetDebugDrawEnabled())
                 {
-                    feature->DebugDraw(debugDisplay, this, currentFrame);
+                    feature->DebugDraw(debugDisplay, currentPose, featureMatrix, m_data->GetFeatureTransformer(), currentFrame);
                 }
             }
         }
@@ -153,6 +171,42 @@ namespace EMotionFX::MotionMatching
 
         // Draw the trajectory history starting after the sampled version of the past trajectory.
         m_trajectoryHistory.DebugDraw(debugDisplay, trajectoryQueryColor, m_cachedTrajectoryFeature->GetPastTimeRange());
+
+        // Draw the input for the motion matching search.
+        DebugDrawQueryPose(debugDisplay, mm_debugDrawQueryPose, mm_debugDrawQueryVelocities);
+    }
+
+    void MotionMatchingInstance::DebugDrawQueryPose(AzFramework::DebugDisplayRequests& debugDisplay, bool drawPose, bool drawVelocities) const
+    {
+        const AZ::Color color = AZ::Color::CreateOne();
+
+        if (drawPose)
+        {
+            m_queryPose.DebugDraw(debugDisplay, color);
+        }
+
+        if (drawVelocities)
+        {
+            PoseDataJointVelocities* velocityPoseData = m_queryPose.GetPoseData<PoseDataJointVelocities>();
+            if (velocityPoseData)
+            {
+                const Skeleton* skeleton = m_actorInstance->GetActor()->GetSkeleton();
+                for (const Feature* feature : m_data->GetFeatureSchema().GetFeatures())
+                {
+                    if (const FeatureVelocity* velocityFeature = azdynamic_cast<const FeatureVelocity*>(feature))
+                    {
+                        Node* joint = skeleton->FindNodeByName(velocityFeature->GetJointName());
+                        if (joint)
+                        {
+                            const size_t jointIndex = joint->GetNodeIndex();
+                            const size_t relativeToJointIndex = feature->GetRelativeToNodeIndex();
+                            const AZ::Vector3& velocity = velocityPoseData->GetVelocities()[jointIndex];
+                            velocityFeature->DebugDraw(debugDisplay, m_queryPose, velocity, jointIndex, relativeToJointIndex, color);
+                        }
+                    }
+                }
+            }
+        }
     }
 
     void MotionMatchingInstance::SamplePose(MotionInstance* motionInstance, Pose& outputPose)
@@ -268,7 +322,13 @@ namespace EMotionFX::MotionMatching
         }
     }
 
-    void MotionMatchingInstance::Update(float timePassedInSeconds, const AZ::Vector3& targetPos, const AZ::Vector3& targetFacingDir, TrajectoryQuery::EMode mode, float pathRadius, float pathSpeed)
+    void MotionMatchingInstance::Update(float timePassedInSeconds,
+        const AZ::Vector3& targetPos,
+        const AZ::Vector3& targetFacingDir,
+        bool useTargetFacingDir,
+        TrajectoryQuery::EMode mode,
+        float pathRadius,
+        float pathSpeed)
     {
         AZ_PROFILE_SCOPE(Animation, "MotionMatchingInstance::Update");
 
@@ -289,12 +349,13 @@ namespace EMotionFX::MotionMatching
         m_trajectoryHistory.Update(timePassedInSeconds);
 
         // Update the trajectory query control points.
-        m_trajectoryQuery.Update(m_actorInstance,
+        m_trajectoryQuery.Update(*m_actorInstance,
             m_cachedTrajectoryFeature,
             m_trajectoryHistory,
             mode,
             targetPos,
             targetFacingDir,
+            useTargetFacingDir,
             timePassedInSeconds,
             pathRadius,
             pathSpeed);
@@ -333,6 +394,8 @@ namespace EMotionFX::MotionMatching
         {
             // Calculate the input query pose for the motion matching search algorithm.
             {
+                AZ_PROFILE_SCOPE(Animation, "MM::EvaluateQueryPose");
+
                 // Sample the pose for the new motion time as the motion instance has not been updated with the timeDelta from this frame yet.
                 SamplePose(m_motionInstance->GetMotion(), m_queryPose, newMotionTime);
 
@@ -349,16 +412,18 @@ namespace EMotionFX::MotionMatching
 
                 // Calculate the joint velocities for the sampled pose using the same method as we do for the frame database.
                 PoseDataJointVelocities* velocityPoseData = m_queryPose.GetAndPreparePoseData<PoseDataJointVelocities>(m_actorInstance);
-                velocityPoseData->CalculateVelocity(m_motionInstance, m_cachedTrajectoryFeature->GetRelativeToNodeIndex());
+                AnimGraphPosePool& posePool = GetEMotionFX().GetThreadData(m_actorInstance->GetThreadIndex())->GetPosePool();
+                velocityPoseData->CalculateVelocity(m_actorInstance, posePool, m_motionInstance->GetMotion(), newMotionTime, m_cachedTrajectoryFeature->GetRelativeToNodeIndex());
             }
 
             const FeatureMatrix& featureMatrix = m_data->GetFeatureMatrix();
             const FrameDatabase& frameDatabase = m_data->GetFrameDatabase();
 
-            Feature::FrameCostContext frameCostContext(featureMatrix, m_queryPose);
-            frameCostContext.m_trajectoryQuery = &m_trajectoryQuery;
-            frameCostContext.m_actorInstance = m_actorInstance;
-            const size_t lowestCostFrameIndex = FindLowestCostFrameIndex(frameCostContext);
+            Feature::QueryVectorContext queryVectorContext(m_queryPose, m_trajectoryQuery);
+            queryVectorContext.m_featureTransformer = m_data->GetFeatureTransformer();
+
+            Feature::FrameCostContext frameCostContext(m_queryVector, featureMatrix);
+            const size_t lowestCostFrameIndex = FindLowestCostFrameIndex(queryVectorContext, frameCostContext);
 
             const Frame& currentFrame = frameDatabase.GetFrame(currentFrameIndex);
             const Frame& lowestCostFrame = frameDatabase.GetFrame(lowestCostFrameIndex);
@@ -376,7 +441,7 @@ namespace EMotionFX::MotionMatching
                 // Store the current motion instance state, so we can sample this as source pose.
                 m_prevMotionInstance->SetMotion(m_motionInstance->GetMotion());
                 m_prevMotionInstance->SetMirrorMotion(m_motionInstance->GetMirrorMotion());
-                m_prevMotionInstance->SetCurrentTime(newMotionTime, true);
+                m_prevMotionInstance->SetCurrentTime(newMotionTime);
                 m_prevMotionInstance->SetLastCurrentTime(m_prevMotionInstance->GetCurrentTime() - timePassedInSeconds);
 
                 m_lowestCostFrameIndex = lowestCostFrameIndex;
@@ -387,8 +452,8 @@ namespace EMotionFX::MotionMatching
                 // The new motion time will become the current time after this frame while the current time
                 // becomes the last current time. As we just start playing at the search frame, calculate
                 // the last time based on the time delta.
-                m_motionInstance->SetCurrentTime(lowestCostFrame.GetSampleTime() -  timePassedInSeconds, true);
                 m_newMotionTime = lowestCostFrame.GetSampleTime();
+                m_motionInstance->SetCurrentTime(m_newMotionTime - timePassedInSeconds);
             }
 
             // Do this always, else wise we search for the lowest cost frame index too many times.
@@ -413,7 +478,7 @@ namespace EMotionFX::MotionMatching
         }
     }
 
-    size_t MotionMatchingInstance::FindLowestCostFrameIndex(const Feature::FrameCostContext& context)
+    size_t MotionMatchingInstance::FindLowestCostFrameIndex(const Feature::QueryVectorContext& queryVectorContext, const Feature::FrameCostContext& frameCostContext)
     {
         AZ::Debug::Timer timer;
         timer.Stamp();
@@ -424,19 +489,43 @@ namespace EMotionFX::MotionMatching
         const FeatureSchema& featureSchema = m_data->GetFeatureSchema();
         const FeatureTrajectory* trajectoryFeature = m_cachedTrajectoryFeature;
 
-        // 1. Broad-phase search using KD-tree
+        // 1. Build query vector
         {
+            AZ_PROFILE_SCOPE(Animation, "MM::BuildQueryVector");
+
             // Build the input query features that will be compared to every entry in the feature database in the motion matching search.
+            AZ_Assert(m_queryVector.GetSize() == aznumeric_cast<size_t>(m_data->GetFeatureMatrix().cols()),
+                "The query vector should have the same number of elements as the feature matrix has columns.");
+            for (Feature* feature : featureSchema.GetFeatures())
+            {
+                feature->FillQueryVector(m_queryVector, queryVectorContext);
+            }
+
+            if (FeatureMatrixTransformer* transformer = queryVectorContext.m_featureTransformer)
+            {
+                transformer->Transform(m_queryVector.GetData());
+            }
+        }
+
+        // 2. Broad-phase search using KD-tree
+        if (mm_useKdTree)
+        {
+            AZ_PROFILE_SCOPE(Animation, "MM::BroadPhaseKDTree");
+
+            AZStd::vector<float>& kdTreeQueryVector = m_kdTreeQueryVector.GetData();
+            const AZStd::vector<float>& queryVectorData = m_queryVector.GetData();
+
+            // For the kd-tree
             size_t startOffset = 0;
             for (Feature* feature : m_data->GetFeaturesInKdTree())
             {
-                feature->FillQueryFeatureValues(startOffset, m_queryFeatureValues, context);
+                memcpy(&kdTreeQueryVector[startOffset], & queryVectorData[feature->GetColumnOffset()], feature->GetNumDimensions() * sizeof(float));
                 startOffset += feature->GetNumDimensions();
             }
-            AZ_Assert(startOffset == m_queryFeatureValues.size(), "Frame float vector is not the expected size.");
+            AZ_Assert(startOffset == kdTreeQueryVector.size(), "Frame float vector is not the expected size.");
 
             // Find our nearest frames.
-            m_data->GetKdTree().FindNearestNeighbors(m_queryFeatureValues, m_nearestFrames);
+            m_data->GetKdTree().FindNearestNeighbors(kdTreeQueryVector, m_nearestFrames);
         }
 
         // 2. Narrow-phase, brute force find the actual best matching frame (frame with the minimal cost).
@@ -448,8 +537,10 @@ namespace EMotionFX::MotionMatching
         float minTrajectoryFutureCost = 0.0f;
 
         // Iterate through the frames filtered by the broad-phase search.
-        for (const size_t frameIndex : m_nearestFrames)
+        const size_t numFrames = mm_useKdTree ? m_nearestFrames.size() : frameDatabase.GetNumFrames();
+        for (size_t i = 0; i < numFrames; ++i)
         {
+            const size_t frameIndex = mm_useKdTree ? m_nearestFrames[i] : i;
             const Frame& frame = frameDatabase.GetFrame(frameIndex);
 
             // TODO: This shouldn't be there, we should be discarding the frames when extracting the features and not at runtime when checking the cost.
@@ -466,7 +557,7 @@ namespace EMotionFX::MotionMatching
                 Feature* feature = featureSchema.GetFeature(featureIndex);
                 if (feature->RTTI_GetType() != azrtti_typeid<FeatureTrajectory>())
                 {
-                    const float featureCost = feature->CalculateFrameCost(frameIndex, context);
+                    const float featureCost = feature->CalculateFrameCost(frameIndex, frameCostContext);
                     const float featureCostFactor = feature->GetCostFactor();
                     const float featureFinalCost = featureCost * featureCostFactor;
 
@@ -480,8 +571,8 @@ namespace EMotionFX::MotionMatching
             float trajectoryFutureCost = 0.0f;
             if (trajectoryFeature)
             {
-                trajectoryPastCost = trajectoryFeature->CalculatePastFrameCost(frameIndex, context) * trajectoryFeature->GetPastCostFactor();
-                trajectoryFutureCost = trajectoryFeature->CalculateFutureFrameCost(frameIndex, context) * trajectoryFeature->GetFutureCostFactor();
+                trajectoryPastCost = trajectoryFeature->CalculatePastFrameCost(frameIndex, frameCostContext) * trajectoryFeature->GetPastCostFactor();
+                trajectoryFutureCost = trajectoryFeature->CalculateFutureFrameCost(frameIndex, frameCostContext) * trajectoryFeature->GetFutureCostFactor();
                 frameCost += trajectoryPastCost;
                 frameCost += trajectoryFutureCost;
             }

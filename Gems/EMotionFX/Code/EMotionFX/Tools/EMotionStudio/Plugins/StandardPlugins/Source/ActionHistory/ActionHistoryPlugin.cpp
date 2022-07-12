@@ -35,12 +35,6 @@ namespace EMStudio
     }
 
 
-    const char* ActionHistoryPlugin::GetCompileDate() const
-    {
-        return MCORE_DATE;
-    }
-
-
     const char* ActionHistoryPlugin::GetName() const
     {
         return "Action History";
@@ -50,25 +44,6 @@ namespace EMStudio
     uint32 ActionHistoryPlugin::GetClassID() const
     {
         return ActionHistoryPlugin::CLASS_ID;
-    }
-
-
-    const char* ActionHistoryPlugin::GetCreatorName() const
-    {
-        return "O3DE";
-    }
-
-
-    float ActionHistoryPlugin::GetVersion() const
-    {
-        return 1.0f;
-    }
-
-
-    EMStudioPlugin* ActionHistoryPlugin::Clone()
-    {
-        ActionHistoryPlugin* newPlugin = new ActionHistoryPlugin();
-        return newPlugin;
     }
 
 
@@ -135,5 +110,3 @@ namespace EMStudio
         m_callback->OnSetCurrentCommand(index);
     }
 } // namespace EMStudio
-
-#include <EMotionFX/Tools/EMotionStudio/Plugins/StandardPlugins/Source/ActionHistory/moc_ActionHistoryPlugin.cpp>

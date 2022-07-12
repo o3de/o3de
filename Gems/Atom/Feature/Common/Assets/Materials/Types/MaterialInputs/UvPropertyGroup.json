@@ -1,0 +1,85 @@
+{
+    "name": "uv",
+    "displayName": "UVs",
+    "description": "Properties for configuring UV transforms.",
+    "properties": [
+        {
+            "name": "center",
+            "displayName": "Center",
+            "description": "Center point for scaling and rotation transformations.",
+            "type": "vector2",
+            "vectorLabels": [ "U", "V" ],
+            "defaultValue": [ 0.5, 0.5 ]
+        },
+        {
+            "name": "tileU",
+            "displayName": "Tile U",
+            "description": "Scales texture coordinates in U.",
+            "type": "float",
+            "defaultValue": 1.0,
+            "step": 0.1
+        },
+        {
+            "name": "tileV",
+            "displayName": "Tile V",
+            "description": "Scales texture coordinates in V.",
+            "type": "float",
+            "defaultValue": 1.0,
+            "step": 0.1
+        },
+        {
+            "name": "offsetU",
+            "displayName": "Offset U",
+            "description": "Offsets texture coordinates in the U direction.",
+            "type": "float",
+            "defaultValue": 0.0,
+            "min": -1.0,
+            "max": 1.0
+        },
+        {
+            "name": "offsetV",
+            "displayName": "Offset V",
+            "description": "Offsets texture coordinates in the V direction.",
+            "type": "float",
+            "defaultValue": 0.0,
+            "min": -1.0,
+            "max": 1.0
+        },
+        {
+            "name": "rotateDegrees",
+            "displayName": "Rotate",
+            "description": "Rotates the texture coordinates (degrees).",
+            "type": "float",
+            "defaultValue": 0.0,
+            "min": -180.0,
+            "max": 180.0,
+            "step": 1.0
+        },
+        {
+            "name": "scale",
+            "displayName": "Scale",
+            "description": "Scales texture coordinates in both U and V.",
+            "type": "float",
+            "defaultValue": 1.0,
+            "step": 0.1
+        }
+    ],
+    "functors": [
+        {
+            // Maps 2D scale, offset, and rotate properties into a float3x3 transform matrix.
+            "type": "Transform2D",
+            "args": {
+                "transformOrder": [ "Rotate", "Translate", "Scale" ],
+                "centerProperty": "center",
+                "scaleProperty": "scale",
+                "scaleXProperty": "tileU",
+                "scaleYProperty": "tileV",
+                "translateXProperty": "offsetU",
+                "translateYProperty": "offsetV",
+                "rotateDegreesProperty": "rotateDegrees",
+                "float3x3ShaderInput": "m_uvMatrix",
+                "float3x3InverseShaderInput": "m_uvMatrixInverse"
+            }
+        }
+    ]
+}

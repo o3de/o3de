@@ -19,6 +19,8 @@
 
 #include "native/utilities/JobDiagnosticTracker.h"
 
+#include <qstorageinfo.h>
+
 
 namespace
 {
@@ -60,7 +62,7 @@ using namespace AssetProcessor;
 
 bool Params::IsValidParams() const
 {
-    return (!m_finalOutputDir.isEmpty());
+    return !m_cacheOutputDir.empty() && !m_intermediateOutputDir.empty() && !m_relativePath.empty();
 }
 
 bool RCParams::IsValidParams() const
@@ -201,9 +203,19 @@ namespace AssetProcessor
         return m_jobDetails.m_jobEntry.m_sourceFileUUID;
     }
 
-    QString RCJob::GetFinalOutputPath() const
+    AZ::IO::Path RCJob::GetCacheOutputPath() const
     {
-        return m_jobDetails.m_destinationPath;
+        return m_jobDetails.m_cachePath;
+    }
+
+    AZ::IO::Path RCJob::GetIntermediateOutputPath() const
+    {
+        return m_jobDetails.m_intermediatePath;
+    }
+
+    AZ::IO::Path RCJob::GetRelativePath() const
+    {
+        return m_jobDetails.m_relativePath;
     }
 
     const AssetBuilderSDK::PlatformInfo& RCJob::GetPlatformInfo() const
@@ -278,7 +290,9 @@ namespace AssetProcessor
         PopulateProcessJobRequest(processJobRequest);
 
         builderParams.m_processJobRequest = processJobRequest;
-        builderParams.m_finalOutputDir = GetFinalOutputPath();
+        builderParams.m_cacheOutputDir = GetCacheOutputPath();
+        builderParams.m_intermediateOutputDir = GetIntermediateOutputPath();
+        builderParams.m_relativePath = GetRelativePath();
         builderParams.m_assetBuilderDesc = m_jobDetails.m_assetBuilderDesc;
 
         // when the job finishes, record the results and emit Finished()
@@ -328,6 +342,9 @@ namespace AssetProcessor
     {
         // Note: this occurs inside a worker thread.
 
+        // Signal start and end of the job
+        ScopedJobSignaler signaler;
+
         // listen for the user quitting (CTRL-C or otherwise)
         AssetUtilities::QuitListener listener;
         listener.BusConnect();
@@ -337,8 +354,8 @@ namespace AssetProcessor
 
         if (builderParams.m_rcJob->m_jobDetails.m_autoFail)
         {
-            // if this is an auto-fail job, we should avoid doing any additional work besides the work required to fail the job and 
-            // write the details into its log.  This is because Auto-fail jobs have 'incomplete' job descriptors, and only exist to 
+            // if this is an auto-fail job, we should avoid doing any additional work besides the work required to fail the job and
+            // write the details into its log.  This is because Auto-fail jobs have 'incomplete' job descriptors, and only exist to
             // force a job to fail with a reasonable log file stating the reason for failure.  An example of where it is useful to
             // use auto-fail jobs is when, after compilation was successful, something goes wrong integrating the result into the
             // cache.  (For example, files collide, or the product file name would be too long).  The job will have at that point
@@ -381,7 +398,7 @@ namespace AssetProcessor
         {
             builderParams.m_rcJob->SetOriginalFingerprint(fingerprint);
             QThread::msleep(g_sleepDurationForLockingAndFingerprintChecking);
-            
+
             if (listener.WasQuitRequested() || (ticker.elapsed() > g_jobMaximumWaitTime))
             {
                 result.m_resultCode = AssetBuilderSDK::ProcessJobResult_Cancelled;
@@ -390,7 +407,7 @@ namespace AssetProcessor
             }
 
             fingerprint = AssetUtilities::GenerateFingerprint(builderParams.m_rcJob->m_jobDetails);
-        }        
+        }
 
         Q_EMIT builderParams.m_rcJob->BeginWork();
         // We will actually start working on the job after this point and even if RcController gets the same job again, we will put it in the queue for processing
@@ -400,7 +417,7 @@ namespace AssetProcessor
 
     void RCJob::AutoFailJob(BuilderParams& builderParams)
     {
-        // force the fail data to be captured to the log file.  
+        // force the fail data to be captured to the log file.
         // because this is being executed in a thread worker, this won't stomp the main thread's job id.
         AssetProcessor::SetThreadLocalJobId(builderParams.m_rcJob->GetJobEntry().m_jobRunKey);
         AssetUtilities::JobLogTraceListener jobLogTraceListener(builderParams.m_rcJob->m_jobDetails.m_jobEntry);
@@ -421,10 +438,10 @@ namespace AssetProcessor
         }
         else
         {
-            // since we didn't have a custom auto-fail reason, add a token to the log file that will help with 
-            // forensic debugging to differentiate auto-fails from regular fails (although it should also be 
+            // since we didn't have a custom auto-fail reason, add a token to the log file that will help with
+            // forensic debugging to differentiate auto-fails from regular fails (although it should also be
             // obvious from the output in other ways)
-            AZ_TracePrintf("Debug", "(auto-failed)\n"); 
+            AZ_TracePrintf("Debug", "(auto-failed)\n");
         }
         auto failLogFile = builderParams.m_processJobRequest.m_jobDescription.m_jobParameters.find(AZ_CRC(AssetProcessor::AutoFailLogFile));
         if (failLogFile != builderParams.m_processJobRequest.m_jobDescription.m_jobParameters.end())
@@ -454,10 +471,10 @@ namespace AssetProcessor
         }
 #endif
 
-        // note that this line below is printed out to be consistent with the output from a job that normally failed, so 
+        // note that this line below is printed out to be consistent with the output from a job that normally failed, so
         // applications reading log file will find it.
-        AZ_Error(AssetBuilderSDK::ErrorWindow, false, "Builder indicated that the job has failed.\n"); 
-        
+        AZ_Error(AssetBuilderSDK::ErrorWindow, false, "Builder indicated that the job has failed.\n");
+
         if (builderParams.m_processJobRequest.m_jobDescription.m_jobParameters.find(AZ_CRC(AssetProcessor::AutoFailOmitFromDatabaseKey)) != builderParams.m_processJobRequest.m_jobDescription.m_jobParameters.end())
         {
             // we don't add Auto-fail jobs to the database if they have asked to be emitted.
@@ -479,16 +496,16 @@ namespace AssetProcessor
             result.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed; // failed by default
 
 #if defined(AZ_ENABLE_TRACING)
-            auto warningMessage = builderParams.m_processJobRequest.m_jobDescription.m_jobParameters.find(AZ_CRC(AssetProcessor::JobWarningKey));
-            if (warningMessage != builderParams.m_processJobRequest.m_jobDescription.m_jobParameters.end())
+            for (const auto& warningMessage : builderParams.m_rcJob->m_jobDetails.m_warnings)
             {
                 // you are allowed to have many lines in your warning message.
                 AZStd::vector<AZStd::string> delimited;
-                AzFramework::StringFunc::Tokenize(warningMessage->second.c_str(), delimited, "\n");
+                AzFramework::StringFunc::Tokenize(warningMessage.c_str(), delimited, "\n");
                 for (const AZStd::string& token : delimited)
                 {
                     AZ_Warning(AssetBuilderSDK::WarningWindow, false, "%s", token.c_str());
                 }
+                jobLogTraceListener.AddWarning();
             }
 #endif
 
@@ -508,7 +525,7 @@ namespace AssetProcessor
             builderParams.m_processJobRequest.m_tempDirPath = AZStd::string(workFolder.toUtf8().data());
 
             QString sourceFullPath(builderParams.m_processJobRequest.m_fullPath.c_str());
-            
+
             if (sourceFullPath.length() >= AP_MAX_PATH_LEN)
             {
                 AZ_Warning(AssetBuilderSDK::WarningWindow, false, "Source Asset: %s filepath length %d exceeds the maximum path length (%d) allowed.\n", sourceFullPath.toUtf8().data(), sourceFullPath.length(), AP_MAX_PATH_LEN);
@@ -521,10 +538,13 @@ namespace AssetProcessor
                     bool runProcessJob = true;
                     if (m_jobDetails.m_checkServer)
                     {
+                        AssetServerMode assetServerMode = AssetServerMode::Inactive;
+                        AssetServerBus::BroadcastResult(assetServerMode, &AssetServerBus::Events::GetRemoteCachingMode);
+
                         QFileInfo fileInfo(builderParams.m_processJobRequest.m_sourceFile.c_str());
                         builderParams.m_serverKey = QString("%1_%2_%3_%4").arg(fileInfo.completeBaseName(), builderParams.m_processJobRequest.m_jobDescription.m_jobKey.c_str(), builderParams.m_processJobRequest.m_platformInfo.m_identifier.c_str()).arg(builderParams.m_rcJob->GetOriginalFingerprint());
                         bool operationResult = false;
-                        if (AssetUtilities::InServerMode())
+                        if (assetServerMode == AssetServerMode::Server)
                         {
                             // sending process job command to the builder
                             builderParams.m_assetBuilderDesc.m_processJobFunction(builderParams.m_processJobRequest, result);
@@ -549,7 +569,7 @@ namespace AssetProcessor
                                 }
                             }
                         }
-                        else
+                        else if (assetServerMode == AssetServerMode::Client)
                         {
                             // running as client, check with the server whether it has already
                             // processed this asset, if not or if the operation fails then process locally
@@ -648,7 +668,6 @@ namespace AssetProcessor
         case AssetBuilderSDK::ProcessJobResult_Success:
             // make sure there's no subid collision inside a job.
             {
-                
                 if (!CopyCompiledAssets(builderParams, result))
                 {
                     result.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed;
@@ -693,27 +712,21 @@ namespace AssetProcessor
             return true;
         }
 
-        QDir outputDirectory(params.m_finalOutputDir);
-        QString         tempFolder = params.m_processJobRequest.m_tempDirPath.c_str();
-        QDir            tempDir(tempFolder);
+        AZ::IO::Path cacheDirectory = params.m_cacheOutputDir;
+        AZ::IO::Path intermediateDirectory = params.m_intermediateOutputDir;
+        AZ::IO::Path relativeFilePath = params.m_relativePath;
+        QString tempFolder = params.m_processJobRequest.m_tempDirPath.c_str();
+        QDir tempDir(tempFolder);
 
-        if (params.m_finalOutputDir.isEmpty())
+        if (params.m_cacheOutputDir.empty() || params.m_intermediateOutputDir.empty())
         {
-            AZ_Assert(false, "CopyCompiledAssets:  params.m_finalOutputDir is empty for an asset processor job.  This should not happen and is because of a recent code change.  Check history of any new builders or rcjob.cpp\n");
+            AZ_Assert(false, "CopyCompiledAssets:  params.m_finalOutputDir or m_intermediateOutputDir is empty for an asset processor job.  This should not happen and is because of a recent code change.  Check history of any new builders or rcjob.cpp\n");
             return false;
         }
 
         if (!tempDir.exists())
         {
-            AZ_Assert(false, "PCopyCompiledAssets:  params.m_processJobRequest.m_tempDirPath is empty for an asset processor job.  This should not happen and is because of a recent code change!  Check history of RCJob.cpp and any new builder code changes.\n");
-            return false;
-        }
-
-        // if outputDirectory does not exist then create it
-        unsigned int waitTimeInSecs = 3;
-        if (!AssetUtilities::CreateDirectoryWithTimeout(outputDirectory, waitTimeInSecs))
-        {
-            AZ_TracePrintf(AssetBuilderSDK::ErrorWindow, "Failed to create output directory: %s\n", outputDirectory.absolutePath().toUtf8().data());
+            AZ_Assert(false, "CopyCompiledAssets:  params.m_processJobRequest.m_tempDirPath is empty for an asset processor job.  This should not happen and is because of a recent code change!  Check history of RCJob.cpp and any new builder code changes.\n");
             return false;
         }
 
@@ -725,7 +738,10 @@ namespace AssetProcessor
         // and  the second is the product destination we intend to copy it to.
         QList< QPair<QString, QString> > outputsToCopy;
         outputsToCopy.reserve(static_cast<int>(response.m_outputProducts.size()));
-        qint64 totalFileSizeRequired = 0;
+        qint64 fileSizeRequired = 0;
+
+        bool needCacheDirectory = false;
+        bool needIntermediateDirectory = false;
 
         for (AssetBuilderSDK::JobProduct& product : response.m_outputProducts)
         {
@@ -745,43 +761,122 @@ namespace AssetProcessor
 
             QString absolutePathOfSource = fileInfo.absoluteFilePath();
             QString outputFilename = fileInfo.fileName();
-            QString productFile = AssetUtilities::NormalizeFilePath(outputDirectory.filePath(outputFilename.toLower()));
 
-            // Don't make productFile all lowercase for case-insensitive as this
-            // breaks macOS. The case is already setup properly when the job
-            // was created.
+            bool outputToCache = (product.m_outputFlags & AssetBuilderSDK::ProductOutputFlags::ProductAsset) == AssetBuilderSDK::ProductOutputFlags::ProductAsset;
+            bool outputToIntermediate = (product.m_outputFlags & AssetBuilderSDK::ProductOutputFlags::IntermediateAsset) ==
+                AssetBuilderSDK::ProductOutputFlags::IntermediateAsset;
 
-            if (productFile.length() >= AP_MAX_PATH_LEN)
+            if (outputToCache && outputToIntermediate)
             {
-                AZ_Error(AssetBuilderSDK::ErrorWindow, false, "Cannot copy file: Product '%s' path length (%d) exceeds the max path length (%d) allowed on disk\n", productFile.toUtf8().data(), productFile.length(), AP_MAX_PATH_LEN);
+                // We currently do not support both since intermediate outputs require the Common platform, which is not supported for cache outputs yet
+                AZ_Error(AssetProcessor::ConsoleChannel, false, "Outputting an asset as both a product and intermediate is not supported.  To output both, please split the job into two separate ones.");
                 return false;
             }
-            
-            QFileInfo inFile(absolutePathOfSource);
-            if (!inFile.exists())
+
+            if (!outputToCache && !outputToIntermediate)
             {
-                AZ_Error(AssetBuilderSDK::ErrorWindow, false, "Cannot copy file - product file with absolute path '%s' attempting to save into cache could not be found", absolutePathOfSource.toUtf8().constData());
+                AZ_Error(AssetProcessor::ConsoleChannel, false, "An output asset must be flagged as either a product or an intermediate asset.  "
+                    "Please update the output job to include either AssetBuilderSDK::ProductOutputFlags::ProductAsset "
+                    "or AssetBuilderSDK::ProductOutputFlags::IntermediateAsset");
                 return false;
             }
-            
-            totalFileSizeRequired += inFile.size();
-            outputsToCopy.push_back(qMakePair(absolutePathOfSource, productFile));
-            
-            // also update the product file name to be the final resting place of this product in the cache (normalized!)
-            product.m_productFileName = AssetUtilities::NormalizeFilePath(productFile).toUtf8().constData();
+
+            // Intermediates are required to output for the common platform only
+            if (outputToIntermediate && params.m_processJobRequest.m_platformInfo.m_identifier != AssetBuilderSDK::CommonPlatformName)
+            {
+                AZ_Error(AssetProcessor::ConsoleChannel, false, "Intermediate outputs are only supported for the %s platform.  "
+                    "Either change the Job platform to %s or change the output flag to AssetBuilderSDK::ProductOutputFlags::ProductAsset",
+                    AssetBuilderSDK::CommonPlatformName,
+                    AssetBuilderSDK::CommonPlatformName);
+                return false;
+            }
+
+            // Common platform is not currently supported for product assets
+            if (outputToCache && params.m_processJobRequest.m_platformInfo.m_identifier == AssetBuilderSDK::CommonPlatformName)
+            {
+                AZ_Error(
+                    AssetProcessor::ConsoleChannel, false,
+                    "Product asset outputs are not currently supported for the %s platform.  "
+                    "Either change the Job platform a normal platform or change the output flag to AssetBuilderSDK::ProductOutputFlags::IntermediateAsset",
+                    AssetBuilderSDK::CommonPlatformName);
+                return false;
+            }
+
+            if(outputToCache)
+            {
+                needCacheDirectory = true;
+
+                if(!product.m_outputPathOverride.empty())
+                {
+                    AZ_Error(AssetProcessor::ConsoleChannel, false, "%s specified m_outputPathOverride on a ProductAsset.  This is not supported."
+                    "  Please update the builder accordingly.", params.m_processJobRequest.m_sourceFile.c_str());
+                    return false;
+                }
+
+                if (!VerifyOutputProduct(
+                    QDir(cacheDirectory.c_str()), outputFilename, absolutePathOfSource, fileSizeRequired,
+                    outputsToCopy))
+                {
+                    return false;
+                }
+            }
+
+            if(outputToIntermediate)
+            {
+                needIntermediateDirectory = true;
+
+                if(!product.m_outputPathOverride.empty())
+                {
+                    relativeFilePath = product.m_outputPathOverride;
+                }
+
+                if (!VerifyOutputProduct(
+                    QDir(intermediateDirectory.c_str()), outputFilename, absolutePathOfSource,
+                    fileSizeRequired, outputsToCopy))
+                {
+                    return false;
+                }
+            }
+
+            // update the productFileName to be the scanfolder relative path (without the platform)
+            product.m_productFileName = (relativeFilePath / outputFilename.toUtf8().constData()).c_str();
         }
 
         // now we can check if there's enough space for ALL the files before we copy any.
+
         bool hasSpace = false;
-        AssetProcessor::DiskSpaceInfoBus::BroadcastResult(hasSpace, &AssetProcessor::DiskSpaceInfoBusTraits::CheckSufficientDiskSpace, outputDirectory.absolutePath(), totalFileSizeRequired, false);
+
+        auto* diskSpaceInfoInterface = AZ::Interface<AssetProcessor::IDiskSpaceInfo>::Get();
+
+        if (diskSpaceInfoInterface)
+        {
+            hasSpace = diskSpaceInfoInterface->CheckSufficientDiskSpace(fileSizeRequired, false);
+        }
 
         if (!hasSpace)
         {
-            AZ_Error(AssetProcessor::ConsoleChannel, false, "Cannot save file to cache, not enough disk space to save all the products of %s.  Total needed: %lli bytes", params.m_processJobRequest.m_sourceFile.c_str(), totalFileSizeRequired);
+            AZ_Error(
+                AssetProcessor::ConsoleChannel, false,
+                "Cannot save file(s) to cache, not enough disk space to save all the products of %s.  Total needed: %lli bytes",
+                params.m_processJobRequest.m_sourceFile.c_str(), fileSizeRequired);
             return false;
         }
 
         // if we get here, we are good to go in terms of disk space and sources existing, so we make the best attempt we can.
+
+        // if outputDirectory does not exist then create it
+        unsigned int waitTimeInSecs = 3;
+        if (needCacheDirectory && !AssetUtilities::CreateDirectoryWithTimeout(QDir(cacheDirectory.AsPosix().c_str()), waitTimeInSecs))
+        {
+            AZ_TracePrintf(AssetBuilderSDK::ErrorWindow, "Failed to create output directory: %s\n", cacheDirectory.c_str());
+            return false;
+        }
+
+        if (needIntermediateDirectory && !AssetUtilities::CreateDirectoryWithTimeout(QDir(intermediateDirectory.AsPosix().c_str()), waitTimeInSecs))
+        {
+            AZ_TracePrintf(AssetBuilderSDK::ErrorWindow, "Failed to create intermediate directory: %s\n", intermediateDirectory.c_str());
+            return false;
+        }
 
         bool anyFileFailed = false;
 
@@ -798,15 +893,53 @@ namespace AssetProcessor
                 anyFileFailed = true;
                 continue;
             }
-            
+
             //we now ensure that the file is writable - this is just a warning if it fails, not a complete failure.
             if (!AssetUtilities::MakeFileWritable(productAbsolutePath))
             {
                 AZ_TracePrintf(AssetBuilderSDK::WarningWindow, "Unable to change permission for the file: %s.\n", productAbsolutePath.toUtf8().data());
             }
         }
-        
+
         return !anyFileFailed;
+    }
+
+    bool RCJob::VerifyOutputProduct(
+        QDir outputDirectory,
+        QString outputFilename,
+        QString absolutePathOfSource,
+        qint64& totalFileSizeRequired,
+        QList<QPair<QString, QString>>& outputsToCopy)
+    {
+        QString productFile = AssetUtilities::NormalizeFilePath(outputDirectory.filePath(outputFilename.toLower()));
+
+        // Don't make productFile all lowercase for case-insensitive as this
+        // breaks macOS. The case is already setup properly when the job
+        // was created.
+
+        if (productFile.length() >= AP_MAX_PATH_LEN)
+        {
+            AZ_Error(
+                AssetBuilderSDK::ErrorWindow, false,
+                "Cannot copy file: Product '%s' path length (%d) exceeds the max path length (%d) allowed on disk\n",
+                productFile.toUtf8().data(), productFile.length(), AP_MAX_PATH_LEN);
+            return false;
+        }
+
+        QFileInfo inFile(absolutePathOfSource);
+        if (!inFile.exists())
+        {
+            AZ_Error(
+                AssetBuilderSDK::ErrorWindow, false,
+                "Cannot copy file - product file with absolute path '%s' attempting to save into cache could not be found",
+                absolutePathOfSource.toUtf8().constData());
+            return false;
+        }
+
+        totalFileSizeRequired += inFile.size();
+        outputsToCopy.push_back(qMakePair(absolutePathOfSource, productFile));
+
+        return true;
     }
 
     AZ::Outcome<AZStd::vector<AZStd::string>> RCJob::BeforeStoringJobResult(const BuilderParams& builderParams, AssetBuilderSDK::ProcessJobResponse jobResponse)
@@ -818,6 +951,7 @@ namespace AssetProcessor
         for (AssetBuilderSDK::JobProduct& product : jobResponse.m_outputProducts)
         {
             // Try to handle Absolute paths within the temp folder
+            AzFramework::StringFunc::Path::Normalize(product.m_productFileName);
             if (!AzFramework::StringFunc::Replace(product.m_productFileName, normalizedTempFolderPath.c_str(), s_tempString))
             {
                 // From CopyCompiledAssets:
@@ -829,14 +963,13 @@ namespace AssetProcessor
 
                 // We need to handle case 3 here (Case 2 was above, case 1 is treated as relative within temp)
                 // If the path was not absolute within the temp folder and not relative it should be an absolute path beneath our source (Including the source)
-                // meaning a copy job which needs to be added to our archive.  
+                // meaning a copy job which needs to be added to our archive.
                 if (!AzFramework::StringFunc::Path::IsRelative(product.m_productFileName.c_str()))
                 {
                     AZStd::string sourceFile{ builderParams.m_rcJob->GetJobEntry().GetAbsoluteSourcePath().toUtf8().data() };
                     AzFramework::StringFunc::Path::Normalize(sourceFile);
                     AzFramework::StringFunc::Path::StripFullName(sourceFile);
 
-                    AzFramework::StringFunc::Path::Normalize(product.m_productFileName);
                     size_t sourcePathPos = product.m_productFileName.find(sourceFile.c_str());
                     if(sourcePathPos != AZStd::string::npos)
                     {
@@ -845,7 +978,9 @@ namespace AssetProcessor
                     }
                     else
                     {
-                        AZ_Warning(AssetBuilderSDK::WarningWindow, false, "Failed to find source path %s or temp path %s in non relative path in %s", sourceFile.c_str(), normalizedTempFolderPath.c_str(), product.m_productFileName.c_str());
+                        AZ_Warning(AssetBuilderSDK::WarningWindow, false,
+                            "Failed to find source path %s or temp path %s in non relative path in %s",
+                            sourceFile.c_str(), normalizedTempFolderPath.c_str(), product.m_productFileName.c_str());
                     }
                 }
             }
@@ -886,7 +1021,7 @@ namespace AssetProcessor
             return false;
         }
 
-        //Ensure that ProcessJobResponse have the correct absolute paths 
+        //Ensure that ProcessJobResponse have the correct absolute paths
         for (AssetBuilderSDK::JobProduct& product : jobResponse.m_outputProducts)
         {
             AzFramework::StringFunc::Replace(product.m_productFileName, s_tempString, builderParams.m_processJobRequest.m_tempDirPath.c_str(), s_tempString);
@@ -909,10 +1044,10 @@ namespace AssetProcessor
 
             if(jobLogResponse.m_jobLog.find("No log file found") != AZStd::string::npos)
             {
-                AZ_TracePrintf(AssetProcessor::DebugChannel, "Unable to find job log from the server. This could happen if you are trying to use the server cache with a copy job,\
-please check the assetprocessorplatformconfig.ini file and ensure that server cache is disabled for the job.\n");
+                AZ_TracePrintf(AssetProcessor::DebugChannel, "Unable to find job log from the server. This could happen if you are trying to use the server cache with a copy job, "
+                    "please check the assetprocessorplatformconfig.ini file and ensure that server cache is disabled for the job.\n");
             }
-            
+
             return false;
         }
 
@@ -920,9 +1055,9 @@ please check the assetprocessorplatformconfig.ini file and ensure that server ca
         AZ_TracePrintf(AssetProcessor::DebugChannel, "------------SERVER BEGIN----------\n");
         AzToolsFramework::Logging::LogLine::ParseLog(jobLogResponse.m_jobLog.c_str(), jobLogResponse.m_jobLog.size(),
             [&jobLogTraceListener](AzToolsFramework::Logging::LogLine& line)
-        {
-            jobLogTraceListener.AppendLog(line);
-        });
+            {
+                jobLogTraceListener.AppendLog(line);
+            });
         AZ_TracePrintf(AssetProcessor::DebugChannel, "------------SERVER END----------\n");
         return true;
     }

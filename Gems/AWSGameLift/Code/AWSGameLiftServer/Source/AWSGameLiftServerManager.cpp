@@ -406,11 +406,39 @@ namespace AWSGameLift
 
     AZ::IO::Path AWSGameLiftServerManager::GetExternalSessionCertificate()
     {
-        // TODO: Add support to get TLS cert file path
-        return AZ::IO::Path();
+        auto certificateOutcome = m_gameLiftServerSDKWrapper->GetInstanceCertificate();
+        if (certificateOutcome.IsSuccess())
+        {
+            return AZ::IO::Path(certificateOutcome.GetResult().GetCertificatePath().c_str());
+        }
+        else
+        {
+            AZ_Error(AWSGameLiftServerManagerName, false, AWSGameLiftServerInstanceCertificateErrorMessage);
+            return AZ::IO::Path();
+        }
+    }
+
+    AZ::IO::Path AWSGameLiftServerManager::GetExternalSessionPrivateKey()
+    {
+        auto certificateOutcome = m_gameLiftServerSDKWrapper->GetInstanceCertificate();
+        if (certificateOutcome.IsSuccess())
+        {
+            return AZ::IO::Path(certificateOutcome.GetResult().GetPrivateKeyPath().c_str());
+        }
+        else
+        {
+            AZ_Error(AWSGameLiftServerManagerName, false, AWSGameLiftServerInstancePrivateKeyErrorMessage);
+            return AZ::IO::Path();
+        }
     }
 
     AZ::IO::Path AWSGameLiftServerManager::GetInternalSessionCertificate()
+    {
+        // GameLift doesn't support it, return empty path
+        return AZ::IO::Path();
+    }
+
+    AZ::IO::Path AWSGameLiftServerManager::GetInternalSessionPrivateKey()
     {
         // GameLift doesn't support it, return empty path
         return AZ::IO::Path();
@@ -537,6 +565,10 @@ namespace AWSGameLift
     {
         UpdateGameSessionData(gameSession);
         Multiplayer::SessionConfig sessionConfig = BuildSessionConfig(gameSession);
+        if (!AZ::Interface<Multiplayer::ISessionHandlingProviderRequests>::Get())
+        {
+            AZ::Interface<Multiplayer::ISessionHandlingProviderRequests>::Register(this);
+        }
 
         bool createSessionResult = true;
         AZ::EBusReduceResult<bool&, AZStd::logical_and<bool>> result(createSessionResult);
@@ -551,11 +583,6 @@ namespace AWSGameLift
             if (activationOutcome.IsSuccess())
             {
                 AZ_TracePrintf(AWSGameLiftServerManagerName, "ActivateGameSession request against Amazon GameLift service succeeded.");
-                // Register server manager as handler once game session has been activated
-                if (!AZ::Interface<Multiplayer::ISessionHandlingProviderRequests>::Get())
-                {
-                    AZ::Interface<Multiplayer::ISessionHandlingProviderRequests>::Register(this);
-                }
                 Multiplayer::SessionNotificationBus::Broadcast(&Multiplayer::SessionNotifications::OnCreateSessionEnd);
             }
             else

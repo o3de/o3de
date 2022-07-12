@@ -16,6 +16,7 @@ namespace AZ
         namespace
         {
             // Builds a wide-character name from a 64-bit hash.
+#if defined (AZ_DX12_USE_PIPELINE_LIBRARY)
             void HashToName(uint64_t hash, AZStd::wstring& name)
             {
                 static const wchar_t s_hexValues[] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f' };
@@ -33,6 +34,7 @@ namespace AZ
                     name[nibbleCount - nibbleIndex - 1] = s_hexValues[nibble];
                 }
             }
+#endif
         }
 
         RHI::Ptr<PipelineLibrary> PipelineLibrary::Create()
@@ -90,6 +92,7 @@ namespace AZ
                         break;
                     case DXGI_ERROR_DEVICE_REMOVED:
                         AZ_Assert(false, "Failed to use pipeline library blob due to DXGI_ERROR_DEVICE_REMOVED.");
+                        device.OnDeviceRemoved();
                         break;
                     default:
                         AZ_Warning("PipelineLibrary", false, "Failed to use pipeline library blob for unknown reason. Contents will be rebuilt.");
@@ -136,11 +139,11 @@ namespace AZ
                 if (pipelineStateComPtr)
                 {
                     hr = m_library->StorePipeline(name.c_str(), pipelineStateComPtr.Get());
-
                     if (!AssertSuccess(hr))
                     {
                         return nullptr;
                     }
+                    m_pipelineStates.emplace(AZStd::move(name), pipelineStateComPtr.Get());
                 }
             }
             else if (FAILED(hr))
@@ -148,7 +151,6 @@ namespace AZ
                 return nullptr;
             }
 
-            m_pipelineStates.emplace(AZStd::move(name), pipelineStateComPtr.Get());
             return pipelineStateComPtr.Get();
 #else
             Microsoft::WRL::ComPtr<ID3D12PipelineState> pipelineStateComPtr;
@@ -185,14 +187,13 @@ namespace AZ
                     {
                         return nullptr;
                     }
+                    m_pipelineStates.emplace(AZStd::move(name), pipelineStateComPtr.Get());
                 }
             }
             else if (FAILED(hr))
             {
                 return nullptr;
             }
-
-            m_pipelineStates.emplace(AZStd::move(name), pipelineStateComPtr.Get());
 
             return pipelineStateComPtr.Get();
 #else
@@ -248,15 +249,19 @@ namespace AZ
             AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
 
             AZStd::vector<uint8_t> serializedData(m_library->GetSerializedSize());
-
-            HRESULT hr = m_library->Serialize(serializedData.data(), serializedData.size());
-
-            if (!AssertSuccess(hr))
+            if (serializedData.size())
             {
-                return nullptr;
-            }
+            
+                HRESULT hr = m_library->Serialize(serializedData.data(), serializedData.size());
 
-            return RHI::PipelineLibraryData::Create(AZStd::move(serializedData));
+                if (!AssertSuccess(hr))
+                {
+                    return nullptr;
+                }
+
+                return RHI::PipelineLibraryData::Create(AZStd::move(serializedData));
+            }
+            return nullptr;
 #else
             return nullptr;
 #endif

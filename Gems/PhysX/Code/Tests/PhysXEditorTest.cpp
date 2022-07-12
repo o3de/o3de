@@ -7,6 +7,7 @@
  */
 
 #include <AzCore/UserSettings/UserSettingsComponent.h>
+#include <AzCore/Utils/Utils.h>
 #include <AzFramework/IO/LocalFileIO.h>
 #include <AzTest/GemTestEnvironment.h>
 #include <AzToolsFramework/Application/ToolsApplication.h>
@@ -69,12 +70,12 @@ namespace Physics
 
             AZ::IO::FileIOBase::SetInstance(m_fileIo.get());
 
-            char testDir[AZ_MAX_PATH_LEN];
-            m_fileIo->ConvertToAbsolutePath("../Gems/PhysX/Code/Tests", testDir, AZ_MAX_PATH_LEN);
-            m_fileIo->SetAlias("@test@", testDir);
+            AZ::IO::FixedMaxPath testDir = AZ::Utils::GetExecutableDirectory();
+            testDir /= "Test.Assets/Gems/PhysX/Code/Tests";
+            m_fileIo->SetAlias("@test@", testDir.c_str());
 
             //Test_PhysXSettingsRegistryManager will not do any file saving
-            m_physXSystem = AZStd::make_unique<PhysX::PhysXSystem>(new PhysX::TestUtils::Test_PhysXSettingsRegistryManager(), PhysX::PxCooking::GetEditTimeCookingParams());
+            m_physXSystem = AZStd::make_unique<PhysX::PhysXSystem>(AZStd::make_unique<PhysX::TestUtils::Test_PhysXSettingsRegistryManager>(), PhysX::PxCooking::GetEditTimeCookingParams());
         }
 
         /// Allows derived environments to override to perform additional steps after creating the application.

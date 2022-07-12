@@ -20,7 +20,9 @@ endif()
 
 
 ly_append_configurations_options(
-    DEFINES
+    DEFINES_PROFILE
+        _FORTIFY_SOURCE=2
+    DEFINES_RELEASE
         _FORTIFY_SOURCE=2
 
     COMPILATION_C
@@ -48,7 +50,7 @@ ly_append_configurations_options(
         ${LY_GCC_GCOV_FLAGS}
         ${LY_GCC_GPROF_FLAGS}
 
-        # Disabled warnings 
+        # Disabled warnings
         -Wno-array-bounds
         -Wno-attributes
         -Wno-class-memaccess

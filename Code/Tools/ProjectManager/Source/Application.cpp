@@ -22,6 +22,7 @@
 #include <QDir>
 #include <QMessageBox>
 #include <QInputDialog>
+#include <QIcon>
 
 namespace O3DE::ProjectManager
 {
@@ -30,7 +31,7 @@ namespace O3DE::ProjectManager
         TearDown();
     }
 
-    bool Application::Init(bool interactive)
+    bool Application::Init(bool interactive, AZStd::unique_ptr<PythonBindings> pythonBindings)
     {
         constexpr const char* applicationName { "O3DE" };
 
@@ -69,7 +70,11 @@ namespace O3DE::ProjectManager
             AZ_Warning("ProjectManager", false, "Failed to init logging");
         }
 
-        m_pythonBindings = AZStd::make_unique<PythonBindings>(GetEngineRoot());
+        // Set window icon after QGuiApplication is created otherwise QPixmap for the icon fails to intialize
+        QApplication::setWindowIcon(QIcon(":/ProjectManager-Icon.ico"));
+
+        // unit tests may provide custom python bindings 
+        m_pythonBindings = pythonBindings ? AZStd::move(pythonBindings) : AZStd::make_unique<PythonBindings>(GetEngineRoot());
 
         if (!m_pythonBindings->PythonStarted())
         {

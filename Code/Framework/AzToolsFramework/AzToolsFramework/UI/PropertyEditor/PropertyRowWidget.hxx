@@ -236,7 +236,6 @@ namespace AzToolsFramework
         bool m_isMultiSizeContainer = false;
         bool m_isFixedSizeOrSmartPtrContainer = false;
         bool m_custom = false;
-        bool m_canChildrenBeReordered = false;
 
         bool m_isSelected = false;
         bool m_selectionEnabled = false;
@@ -260,6 +259,8 @@ namespace AzToolsFramework
 
         QIcon m_iconOpen;
         QIcon m_iconClosed;
+
+        bool m_reorderAllow = false;
 
         /// Marks the field to be visualized as "overridden".
         void SetOverridden(bool overridden);

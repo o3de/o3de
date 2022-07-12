@@ -20,7 +20,6 @@
 
 namespace UnitTests
 {
-    using namespace testing;
     using ::testing::NiceMock;
     using namespace AssetProcessor;
 
@@ -43,11 +42,17 @@ namespace UnitTests
         MOCK_METHOD1(GetAssetDatabaseLocation, bool(AZStd::string&));
     };
 
-    class FileProcessorTests 
+    class FileProcessorTests
         : public AssetProcessorTest,
         public ConnectionBus::Handler
     {
     public:
+        FileProcessorTests() : m_coreApp(m_argc, nullptr), AssetProcessorTest()
+        {
+
+        }
+
+
         void SetUp() override;
         void TearDown() override;
 
@@ -73,38 +78,23 @@ namespace UnitTests
         void RemoveResponseHandler([[maybe_unused]] unsigned int serial) override {};
 
     protected:
-        struct StaticData
-        {
-            QTemporaryDir m_temporaryDir;
-            QDir m_temporarySourceDir;
+        QTemporaryDir m_temporaryDir;
+        QDir m_temporarySourceDir;
 
-            // these variables are created during SetUp() and destroyed during TearDown() and thus are always available during tests using this fixture:
-            AZStd::string m_databaseLocation;
-            NiceMock<FileProcessorTestsMockDatabaseLocationListener> m_databaseLocationListener;
-            AssetProcessor::AssetDatabaseConnection m_connection;
+        AZStd::string m_databaseLocation;
+        NiceMock<FileProcessorTestsMockDatabaseLocationListener> m_databaseLocationListener;
+        AssetProcessor::AssetDatabaseConnection m_connection;
 
-            AZStd::unique_ptr<AssetProcessor::PlatformConfiguration> m_config;
+        AZStd::unique_ptr<AssetProcessor::PlatformConfiguration> m_config;
 
-            // The following database entry variables are initialized only when you call coverage test data CreateCoverageTestData().
-            // Tests which don't need or want a pre-made database should not call CreateCoverageTestData() but note that in that case
-            // these entries will be empty and their identifiers will be -1.
-            ScanFolderDatabaseEntry m_scanFolder;
+        ScanFolderDatabaseEntry m_scanFolder;
+        ScanFolderDatabaseEntry m_scanFolder2;
 
-            AZStd::unique_ptr<FileProcessor> m_fileProcessor;
+        AZStd::unique_ptr<FileProcessor> m_fileProcessor;
 
-            FileDatabaseEntryContainer m_fileEntries;
-            QCoreApplication m_coreApp;
-            int m_argc = 0;
-            int m_messagesSent = 0;
-
-            StaticData() : m_coreApp(m_argc, nullptr)
-            {
-
-            }
-        };
-
-        // we store the above data in a unique_ptr so that its memory can be cleared during TearDown() in one call, before we destroy the memory
-        // allocator, reducing the chance of missing or forgetting to destroy one in the future.
-        AZStd::unique_ptr<StaticData> m_data;
+        FileDatabaseEntryContainer m_fileEntries;
+        QCoreApplication m_coreApp;
+        int m_argc = 0;
+        int m_messagesSent = 0;
     };
 }

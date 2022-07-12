@@ -38,7 +38,7 @@ namespace EMStudio
             return true;
         };
 
-        EMStudioPlugin* Clone()
+        EMStudioPlugin* Clone() const
         {
             return new MockAtomRenderPlugin();
         };

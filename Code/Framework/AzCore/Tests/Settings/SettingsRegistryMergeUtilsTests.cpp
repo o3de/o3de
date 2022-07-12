@@ -12,12 +12,13 @@
 #include <AzCore/Settings/CommandLine.h>
 #include <AzCore/Settings/SettingsRegistryImpl.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
+#include <AzCore/Settings/SettingsRegistryVisitorUtils.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/containers/variant.h>
-#include <AzCore/Utils/Utils.h>
 #include <AzCore/UnitTest/TestTypes.h>
+#include <AzCore/Utils/Utils.h>
 
 namespace SettingsRegistryMergeUtilsTests
 {
@@ -211,6 +212,26 @@ namespace SettingsRegistryMergeUtilsTests
             })
     );
 
+
+    static bool CreateTestFile(const AZ::IO::FixedMaxPath& testPath, AZStd::string_view content)
+    {
+        AZ::IO::SystemFile file;
+        if (!file.Open(testPath.c_str(), AZ::IO::SystemFile::OpenMode::SF_OPEN_CREATE
+            | AZ::IO::SystemFile::SF_OPEN_CREATE_PATH | AZ::IO::SystemFile::SF_OPEN_WRITE_ONLY))
+        {
+            AZ_Assert(false, "Unable to open test file for writing: %s", testPath.c_str());
+            return false;
+        }
+
+        if (file.Write(content.data(), content.size()) != content.size())
+        {
+            AZ_Assert(false, "Unable to write content to test file: %s", testPath.c_str());
+            return false;
+        }
+
+        return true;
+    }
+
     //! ConfigFile MergeUtils Test
     struct ConfigFileParams
     {
@@ -226,58 +247,14 @@ namespace SettingsRegistryMergeUtilsTests
         , public ::testing::WithParamInterface<ConfigFileParams>
     {
     public:
-        static void DeleteFolderRecursive(const AZ::IO::PathView& path)
-        {
-            auto callback = [&path](AZStd::string_view filename, bool isFile) -> bool
-            {
-                if (isFile)
-                {
-                    auto filePath = AZ::IO::FixedMaxPath(path) / filename;
-                    AZ::IO::SystemFile::Delete(filePath.c_str());
-                }
-                else
-                {
-                    if (filename != "." && filename != "..")
-                    {
-                        auto folderPath = AZ::IO::FixedMaxPath(path) / filename;
-                        DeleteFolderRecursive(folderPath);
-                    }
-                }
-                return true;
-            };
-            auto searchPath = AZ::IO::FixedMaxPath(path) / "*";
-            AZ::IO::SystemFile::FindFiles(searchPath.c_str(), callback);
-            AZ::IO::SystemFile::DeleteDir(AZ::IO::FixedMaxPathString(path.Native()).c_str());
-        }
-
-        static bool CreateTestFile(const AZ::IO::FixedMaxPath& testPath, AZStd::string_view content)
-        {
-            AZ::IO::SystemFile file;
-            if (!file.Open(testPath.c_str(), AZ::IO::SystemFile::OpenMode::SF_OPEN_CREATE
-                | AZ::IO::SystemFile::SF_OPEN_CREATE_PATH | AZ::IO::SystemFile::SF_OPEN_WRITE_ONLY))
-            {
-                AZ_Assert(false, "Unable to open test file for writing: %s", testPath.c_str());
-                return false;
-            }
-
-            if (file.Write(content.data(), content.size()) != content.size())
-            {
-                AZ_Assert(false, "Unable to write content to test file: %s", testPath.c_str());
-                return false;
-            }
-
-            return true;
-        }
 
         void SetUp() override
         {
             m_registry = AZStd::make_unique<AZ::SettingsRegistryImpl>();
-            if (AZ::Utils::GetExecutableDirectory(m_testFolder.Native().data(), m_testFolder.Native().capacity())
-                == AZ::Utils::ExecutablePathResult::Success)
-            {
-                m_testFolder.Native().resize_no_construct(AZStd::char_traits<char>::length(m_testFolder.Native().data()));
-            }
-            m_testFolder /= "SettingsRegistryTestFolder";
+            auto configFileParam = GetParam();
+            auto testPath = AZ::IO::FixedMaxPath(m_testFolder.GetDirectory()) / configFileParam.m_testConfigFileName;
+            // Create the test config file
+            ASSERT_TRUE(CreateTestFile(testPath, configFileParam.m_testConfigContents));
         }
 
         void TearDown() override
@@ -285,16 +262,14 @@ namespace SettingsRegistryMergeUtilsTests
             m_registry.reset();
         }
 
+    protected:
         AZStd::unique_ptr<AZ::SettingsRegistryImpl> m_registry;
-        AZ::IO::FixedMaxPath m_testFolder;
+        AZ::Test::ScopedAutoTempDirectory m_testFolder;
     };
 
     TEST_P(SettingsRegistryMergeUtilsConfigFileFixture, MergeSettingsToRegistry_ConfigFile_ParseContents_Successfully)
     {
         auto configFileParam = GetParam();
-        auto testPath = m_testFolder / configFileParam.m_testConfigFileName;
-        // Create the test config file
-        ASSERT_TRUE(CreateTestFile(testPath, configFileParam.m_testConfigContents));
 
         // Merge Config File to Settings Registry
         AZ::SettingsRegistryMergeUtils::ConfigParserSettings parserSettings;
@@ -310,9 +285,9 @@ namespace SettingsRegistryMergeUtilsTests
             }
             return line;
         };
+
+        auto testPath = AZ::IO::FixedMaxPath(m_testFolder.GetDirectory()) / configFileParam.m_testConfigFileName;
         AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_ConfigFile(*m_registry, testPath.Native(), parserSettings);
-        // Delete test config file
-        DeleteFolderRecursive(m_testFolder);
 
         // Validate that Settings Registry contains expected settings
         for (auto&& expectedSettingPair : configFileParam.m_expectedSettings)
@@ -491,6 +466,180 @@ tags=tools,renderer,metal)"
         }}
         )
     );
+
+    struct SettingsRegistryGemVisitParams
+    {
+        const char* m_o3deManifestJson{ "" };
+        const char* m_engineManifestJson{ "" };
+        const char* m_projectManifestJson{ "" };
+        AZStd::fixed_vector<AZStd::tuple<const char*, const char*>, 8> m_gemManifestJsons;
+        const char* m_activeGemJson{ "" };
+        AZStd::fixed_vector<const char*, 8> m_expectedActiveGemPaths;
+        AZStd::fixed_vector<const char*, 8> m_expectedManifestGemPaths;
+    };
+
+    class SettingsRegistryGemVisitFixture
+        : public UnitTest::ScopedAllocatorSetupFixture
+        , public ::testing::WithParamInterface<SettingsRegistryGemVisitParams>
+    {
+    public:
+        void SetUp() override
+        {
+            m_registry = AZStd::make_unique<AZ::SettingsRegistryImpl>();
+            // Create the manifest json files
+            const auto& gemVisitParams = GetParam();
+            auto tempRootFolder = AZ::IO::FixedMaxPath(m_testFolder.GetDirectory());
+            AZ::IO::FixedMaxPath o3deManifestFilePath = tempRootFolder / "o3de" / "o3de_manifest.json";
+            AZ::IO::FixedMaxPath engineManifestPath = tempRootFolder / "engine" / "engine.json";
+            AZ::IO::FixedMaxPath projectManifestPath = tempRootFolder / "project" / "project.json";
+            ASSERT_TRUE(CreateTestFile(o3deManifestFilePath, gemVisitParams.m_o3deManifestJson));
+            ASSERT_TRUE(CreateTestFile(engineManifestPath, gemVisitParams.m_engineManifestJson));
+            ASSERT_TRUE(CreateTestFile(projectManifestPath, gemVisitParams.m_projectManifestJson));
+
+            for (const auto& [gemRelativePath, gemManifestJson] : gemVisitParams.m_gemManifestJsons)
+            {
+                AZ::IO::FixedMaxPath gemManifestPath = tempRootFolder / gemRelativePath / "gem.json";
+                ASSERT_TRUE(CreateTestFile(gemManifestPath, gemManifestJson));
+            }
+
+            // Set the FilePathKeys for the o3de root, engine root and project root directories
+            m_registry->Set(AZ::SettingsRegistryMergeUtils::FilePathKey_O3deManifestRootFolder,
+                (tempRootFolder / "o3de").Native());
+            m_registry->Set(AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder,
+                (tempRootFolder / "engine").Native());
+            m_registry->Set(AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectPath,
+                (tempRootFolder / "project").Native());
+
+            // Merge the Active Gem Json data to the Settings Registry
+            EXPECT_TRUE(m_registry->MergeSettings(gemVisitParams.m_activeGemJson, AZ::SettingsRegistryInterface::Format::JsonMergePatch));
+            AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_ManifestGemsPaths(*m_registry);
+        }
+
+        void TearDown() override
+        {
+            m_registry.reset();
+        }
+    protected:
+        AZStd::unique_ptr<AZ::SettingsRegistryImpl> m_registry;
+        AZ::Test::ScopedAutoTempDirectory m_testFolder;
+    };
+
+    TEST_P(SettingsRegistryGemVisitFixture, SettingsRegistryMergeUtils_AllManifestGems_AreInSettingsRegistry)
+    {
+        AZStd::vector<AZ::IO::Path> manifestGemPaths;
+        auto GetManifestGemPaths = [&manifestGemPaths, this](AZStd::string_view pathKey,
+            AZStd::string_view, AZ::SettingsRegistryInterface::Type)
+        {
+            using FixedValueString = AZ::SettingsRegistryInterface::FixedValueString;
+            AZ::IO::Path gemPath;
+            EXPECT_TRUE(m_registry->Get(gemPath.Native(), FixedValueString(pathKey) + "/Path"));
+            manifestGemPaths.push_back(gemPath.LexicallyRelative(m_testFolder.GetDirectory()));
+        };
+
+        EXPECT_TRUE(AZ::SettingsRegistryVisitorUtils::VisitObject(*m_registry,
+            GetManifestGemPaths, AZ::SettingsRegistryMergeUtils::ManifestGemsRootKey));
+        const auto& gemVisitParams = GetParam();
+        EXPECT_THAT(manifestGemPaths, ::testing::UnorderedElementsAreArray(
+            gemVisitParams.m_expectedManifestGemPaths.begin(), gemVisitParams.m_expectedManifestGemPaths.end()));
+    }
+
+    TEST_P(SettingsRegistryGemVisitFixture, SettingsRegistryMergeUtils_VisitActiveGems_OnlyReturnsActiveGemPaths)
+    {
+        AZStd::vector<AZ::IO::Path> activeGemPaths;
+        auto GetActiveGems = [&activeGemPaths, this](AZStd::string_view, AZStd::string_view gemPath)
+        {
+            activeGemPaths.push_back(AZ::IO::Path(gemPath).LexicallyRelative(m_testFolder.GetDirectory()));
+        };
+        AZ::SettingsRegistryMergeUtils::VisitActiveGems(*m_registry, GetActiveGems);
+
+        const auto& gemVisitParams = GetParam();
+        EXPECT_THAT(activeGemPaths, ::testing::UnorderedElementsAreArray(
+            gemVisitParams.m_expectedActiveGemPaths.begin(), gemVisitParams.m_expectedActiveGemPaths.end()));
+    }
+
+    static auto MakeGemVisitTestingValues()
+    {
+        return AZStd::array{
+            SettingsRegistryGemVisitParams{
+                R"({
+                    "o3de_manifest_name": "testuser",
+                    "external_subdirectories": [
+                        "outerGem1",
+                        "outerGem2"
+                    ]
+                   })",
+                R"({
+                    "engine_name": "o3de",
+                    "external_subdirectories": [
+                        "engineGem1"
+                    ]
+                   })",
+                R"({
+                    "project_name": "TestProject",
+                    "external_subdirectories": [
+                        "projectGem1"
+                    ]
+                   })",
+                {
+                AZStd::make_tuple("o3de/outerGem1",
+                    R"({
+                            "gem_name": "outerGem1",
+                       })"
+                    ),
+                AZStd::make_tuple("o3de/outerGem2",
+                    R"({
+                        "gem_name": "outerGem2",
+                        "external_subdirectories": [
+                            "innerGem1"
+                        ]
+                       })"
+                    ),
+                AZStd::make_tuple("o3de/outerGem2/innerGem1",
+                    R"({
+                        "gem_name": "innerGem1",
+                       })"
+                    ),
+                AZStd::make_tuple("engine/engineGem1",
+                    R"({
+                        "gem_name": "engineGem1",
+                       })"
+                   ),
+                AZStd::make_tuple("project/projectGem1",
+                    R"({
+                        "gem_name": "projectGem1",
+                       })"
+                    ),
+                },
+                R"({
+                    "O3DE": {
+                        "Gems": {
+                            "outerGem1" : {},
+                            "innerGem1" : {},
+                            "engineGem1" : {},
+                            "projectGem1" : {},
+                        }
+                    }
+                   })",
+                {
+                    "o3de/outerGem1",
+                    "o3de/outerGem2/innerGem1",
+                    "engine/engineGem1",
+                    "project/projectGem1"
+                },
+                {
+                    "o3de/outerGem1",
+                    "o3de/outerGem2",
+                    "o3de/outerGem2/innerGem1",
+                    "engine/engineGem1",
+                    "project/projectGem1"
+                }
+            } };
+    }
+
+    INSTANTIATE_TEST_CASE_P(
+        MergeManifestJson,
+        SettingsRegistryGemVisitFixture,
+        ::testing::ValuesIn(MakeGemVisitTestingValues()));
 
     class SettingsRegistryMergeUtilsCommandLineFixture
         : public UnitTest::ScopedAllocatorSetupFixture

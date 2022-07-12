@@ -23,8 +23,8 @@ namespace AZ
 
             static RHI::Ptr<PipelineLibrary> Create();
             id<MTLBinaryArchive> GetNativePipelineCache() const;
-            id<MTLRenderPipelineState> CreateGraphicsPipelineState(uint64_t hash, MTLRenderPipelineDescriptor* pipelineStateDesc);
-            id<MTLComputePipelineState> CreateComputePipelineState(uint64_t hash, MTLComputePipelineDescriptor* pipelineStateDesc);
+            id<MTLRenderPipelineState> CreateGraphicsPipelineState(uint64_t hash, MTLRenderPipelineDescriptor* pipelineStateDesc, NSError** error);
+            id<MTLComputePipelineState> CreateComputePipelineState(uint64_t hash, MTLComputePipelineDescriptor* pipelineStateDesc, NSError** error);
             
         private:
             PipelineLibrary() = default;

@@ -135,9 +135,7 @@ namespace AZ::AtomBridge
         // Commented out function prototypes are remaining part of the api
         // waiting to be implemented.
         // work tracked in [ATOM-3459]
-        void SetColor(float r, float g, float b, float a = 1.f) override;
         void SetColor(const AZ::Color& color) override;
-        void SetColor(const AZ::Vector4& color) override;
         void SetAlpha(float a) override;
         void DrawQuad(const AZ::Vector3& p1, const AZ::Vector3& p2, const AZ::Vector3& p3, const AZ::Vector3& p4) override;
         void DrawQuad(float width, float height) override;

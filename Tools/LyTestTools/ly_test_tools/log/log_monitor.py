@@ -81,6 +81,13 @@ class LogMonitor(object):
         :param timeout: int time in seconds to search for expected/unexpected lines before raising LogMonitorException.
         :return: True if monitoring succeeded, raises a LogMonitorException otherwise.
         """
+        waiter.wait_for(
+            lambda: os.path.exists(self.log_file_path),
+            timeout=self.log_creation_max_wait_time,
+            exc=LogMonitorException(f"Log file '{self.log_file_path}' was never created by another process."),
+            interval=1,
+        )
+
         # Validation checks before monitoring the log file writes.
         launcher_class = ly_test_tools.launchers.platforms.base.Launcher
         if not os.path.exists(self.log_file_path):

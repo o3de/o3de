@@ -73,7 +73,7 @@ namespace AZ
         {
             const auto& binding = GetInputBinding(0);
             AZ_Assert(binding.m_name == AZ::Name("ColorInput"), "ColorInput was expected to be the first input");
-            const RPI::PassAttachment* colorBuffer = binding.m_attachment.get();
+            const RPI::PassAttachment* colorBuffer = binding.GetAttachment().get();
             return colorBuffer->m_descriptor.m_image.m_size;
         }
 

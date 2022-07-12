@@ -9,7 +9,7 @@
 #pragma once
 
 #include <AzCore/Debug/Trace.h>
-#include <AzCore/Math/ToString.h>
+#include <AzCore/Math/MathStringConversions.h>
 #include <AzCore/std/string/string.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 
@@ -46,9 +46,9 @@ namespace AzManipulatorTestFramework
         //! Send a double click event.
         DerivedDispatcherT* MouseLButtonDoubleClick();
         //! Set the keyboard modifier button down.
-        DerivedDispatcherT* KeyboardModifierDown(const AzToolsFramework::ViewportInteraction::KeyboardModifier& keyModifier);
+        DerivedDispatcherT* KeyboardModifierDown(AzToolsFramework::ViewportInteraction::KeyboardModifier keyModifier);
         //! Set the keyboard modifier button up.
-        DerivedDispatcherT* KeyboardModifierUp(const AzToolsFramework::ViewportInteraction::KeyboardModifier& keyModifier);
+        DerivedDispatcherT* KeyboardModifierUp(AzToolsFramework::ViewportInteraction::KeyboardModifier keyModifier);
         //! Set the mouse position to the specified screen space position.
         DerivedDispatcherT* MousePosition(const AzFramework::ScreenPoint& position);
         //! Expect the selected manipulator to be interacting.
@@ -81,8 +81,8 @@ namespace AzManipulatorTestFramework
         virtual void MouseMButtonUpImpl() = 0;
         virtual void MouseLButtonDoubleClickImpl() = 0;
         virtual void MousePositionImpl(const AzFramework::ScreenPoint& position) = 0;
-        virtual void KeyboardModifierDownImpl(const AzToolsFramework::ViewportInteraction::KeyboardModifier& keyModifier) = 0;
-        virtual void KeyboardModifierUpImpl(const AzToolsFramework::ViewportInteraction::KeyboardModifier& keyModifier) = 0;
+        virtual void KeyboardModifierDownImpl(AzToolsFramework::ViewportInteraction::KeyboardModifier keyModifier) = 0;
+        virtual void KeyboardModifierUpImpl(AzToolsFramework::ViewportInteraction::KeyboardModifier keyModifier) = 0;
         virtual void ExpectManipulatorBeingInteractedImpl() = 0;
         virtual void ExpectManipulatorNotBeingInteractedImpl() = 0;
         virtual void SetEntityWorldTransformImpl(AZ::EntityId entityId, const AZ::Transform& transform) = 0;
@@ -94,7 +94,7 @@ namespace AzManipulatorTestFramework
         bool m_logging = false;
 
     private:
-        const char* KeyboardModifierString(const AzToolsFramework::ViewportInteraction::KeyboardModifier& keyModifier);
+        const char* KeyboardModifierString(AzToolsFramework::ViewportInteraction::KeyboardModifier keyModifier);
         static void DebugPrint(const char* format, ...);
     };
 
@@ -215,7 +215,7 @@ namespace AzManipulatorTestFramework
 
     template<typename DerivedDispatcherT>
     const char* ActionDispatcher<DerivedDispatcherT>::KeyboardModifierString(
-        const AzToolsFramework::ViewportInteraction::KeyboardModifier& keyModifier)
+        const AzToolsFramework::ViewportInteraction::KeyboardModifier keyModifier)
     {
         using namespace AzToolsFramework::ViewportInteraction;
         switch (keyModifier)
@@ -235,7 +235,7 @@ namespace AzManipulatorTestFramework
 
     template<typename DerivedDispatcherT>
     DerivedDispatcherT* ActionDispatcher<DerivedDispatcherT>::KeyboardModifierDown(
-        const AzToolsFramework::ViewportInteraction::KeyboardModifier& keyModifier)
+        const AzToolsFramework::ViewportInteraction::KeyboardModifier keyModifier)
     {
         Log("Keyboard modifier down: %s", KeyboardModifierString(keyModifier));
         KeyboardModifierDownImpl(keyModifier);
@@ -244,7 +244,7 @@ namespace AzManipulatorTestFramework
 
     template<typename DerivedDispatcherT>
     DerivedDispatcherT* ActionDispatcher<DerivedDispatcherT>::KeyboardModifierUp(
-        const AzToolsFramework::ViewportInteraction::KeyboardModifier& keyModifier)
+        const AzToolsFramework::ViewportInteraction::KeyboardModifier keyModifier)
     {
         Log("Keyboard modifier up: %s", KeyboardModifierString(keyModifier));
         KeyboardModifierUpImpl(keyModifier);
@@ -278,7 +278,7 @@ namespace AzManipulatorTestFramework
     template<typename DerivedDispatcherT>
     DerivedDispatcherT* ActionDispatcher<DerivedDispatcherT>::SetEntityWorldTransform(AZ::EntityId entityId, const AZ::Transform& transform)
     {
-        Log("Setting entity world transform: %s", AZ::ToString(transform).c_str());
+        Log("Setting entity world transform: %s", AZStd::to_string(transform).c_str());
         SetEntityWorldTransformImpl(entityId, transform);
         return static_cast<DerivedDispatcherT*>(this);
     }

@@ -135,15 +135,6 @@
 
 #include <AzCore/PlatformDef.h>
 
-#if defined(AZ_MONOLITHIC_BUILD)
-    #define DLL_EXPORT
-    #define DLL_IMPORT
-#else // AZ_MONOLITHIC_BUILD
-    #define DLL_EXPORT AZ_DLL_EXPORT
-    #define DLL_IMPORT AZ_DLL_IMPORT
-#endif // AZ_MONOLITHIC_BUILD
-
-
 //////////////////////////////////////////////////////////////////////////
 // Define BIT macro for use in enums and bit masks.
 #define BIT(x) (1 << (x))

@@ -92,6 +92,7 @@ namespace AzToolsFramework
 
     EntityOutlinerListModel::~EntityOutlinerListModel()
     {
+        FocusModeNotificationBus::Handler::BusDisconnect();
         ContainerEntityNotificationBus::Handler::BusDisconnect();
         EditorEntityInfoNotificationBus::Handler::BusDisconnect();
         EditorEntityContextNotificationBus::Handler::BusDisconnect();
@@ -115,6 +116,7 @@ namespace AzToolsFramework
             editorEntityContextId, &AzToolsFramework::EditorEntityContextRequestBus::Events::GetEditorEntityContextId);
 
         ContainerEntityNotificationBus::Handler::BusConnect(editorEntityContextId);
+        FocusModeNotificationBus::Handler::BusConnect(editorEntityContextId);
 
         m_editorEntityUiInterface = AZ::Interface<AzToolsFramework::EditorEntityUiInterface>::Get();
         AZ_Assert(m_editorEntityUiInterface != nullptr, "EntityOutlinerListModel requires a EditorEntityUiInterface instance on Initialize.");
@@ -2007,6 +2009,12 @@ namespace AzToolsFramework
         m_beginStartPlayInEditor = false;
     }
 
+    void EntityOutlinerListModel::OnEditorFocusChanged([[maybe_unused]] AZ::EntityId previousFocusEntityId, AZ::EntityId newFocusEntityId)
+    {
+        // Ensure all descendants of the current focus root are expanded, so it is visible.
+        ExpandAncestors(newFocusEntityId);
+    }
+
     ////////////////////////////////////////////////////////////////////////////
     // OutlinerItemDelegate
     ////////////////////////////////////////////////////////////////////////////
@@ -2091,8 +2099,14 @@ namespace AzToolsFramework
             customOption.state ^= QStyle::State_HasFocus;
         }
 
+        // Don't allow to paint on the spacing column
+        if (index.column() == EntityOutlinerListModel::ColumnSpacing)
+        {
+            return;
+        }
+
         // Retrieve the Entity UI Handler
-        auto firstColumnIndex = index.siblingAtColumn(0);
+        auto firstColumnIndex = index.siblingAtColumn(EntityOutlinerListModel::ColumnName);
         AZ::EntityId entityId(firstColumnIndex.data(EntityOutlinerListModel::EntityIdRole).value<AZ::u64>());
         auto entityUiHandler = m_editorEntityFrameworkInterface->GetHandler(entityId);
 
@@ -2439,7 +2453,6 @@ namespace AzToolsFramework
         opt.rect.setWidth(m_toggleColumnWidth);
         style()->drawControl(QStyle::CE_CheckBox, &opt, painter, this);
     }
-
 }
 
 #include <UI/Outliner/moc_EntityOutlinerListModel.cpp>

@@ -21,7 +21,8 @@ namespace AZ
             const int16_t diffR = static_cast<int16_t>(abs(aznumeric_cast<int16_t>(bufferA[index]) - aznumeric_cast<int16_t>(bufferB[index])));
             const int16_t diffG = static_cast<int16_t>(abs(aznumeric_cast<int16_t>(bufferA[index + 1]) - aznumeric_cast<int16_t>(bufferB[index + 1])));
             const int16_t diffB = static_cast<int16_t>(abs(aznumeric_cast<int16_t>(bufferA[index + 2]) - aznumeric_cast<int16_t>(bufferB[index + 2])));
-            return AZ::GetMax(AZ::GetMax(diffR, diffG), diffB);
+            const int16_t diffA = static_cast<int16_t>(abs(aznumeric_cast<int16_t>(bufferA[index + 3]) - aznumeric_cast<int16_t>(bufferB[index + 3])));
+            return AZ::GetMax(AZ::GetMax(AZ::GetMax(diffR, diffG), diffB), diffA);
         }
 
         ImageDiffResultCode CalcImageDiffRms(

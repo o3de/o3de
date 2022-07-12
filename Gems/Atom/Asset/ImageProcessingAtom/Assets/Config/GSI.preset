@@ -7,6 +7,8 @@
             "UUID": "{C5E76E09-39FA-411F-B2E2-15B47BB6AB5F}",
             "Name": "GSI",
             "OutputTypeHandling": "UseInputFormat",
+            "SourceColor": "Linear",
+            "DestColor": "Linear",
             "IsPowerOf2": true,
             "MipMapSetting": {
                 "MipGenType": "Box"
@@ -18,6 +20,8 @@
                 "Name": "GSI",
                 "OutputTypeHandling": "UseInputFormat",
                 "MaxTextureSize": 2048,
+				"SourceColor": "Linear",
+				"DestColor": "Linear",
                 "IsPowerOf2": true,
                 "MipMapSetting": {
                     "MipGenType": "Box"
@@ -28,6 +32,8 @@
                 "Name": "GSI",
                 "OutputTypeHandling": "UseInputFormat",
                 "MaxTextureSize": 2048,
+				"SourceColor": "Linear",
+				"DestColor": "Linear",
                 "IsPowerOf2": true,
                 "MipMapSetting": {
                     "MipGenType": "Box"
@@ -37,6 +43,8 @@
                 "UUID": "{C5E76E09-39FA-411F-B2E2-15B47BB6AB5F}",
                 "Name": "GSI",
                 "OutputTypeHandling": "UseInputFormat",
+				"SourceColor": "Linear",
+				"DestColor": "Linear",
                 "IsPowerOf2": true,
                 "MipMapSetting": {
                     "MipGenType": "Box"
@@ -46,6 +54,8 @@
                 "UUID": "{C5E76E09-39FA-411F-B2E2-15B47BB6AB5F}",
                 "Name": "GSI",
                 "OutputTypeHandling": "UseInputFormat",
+				"SourceColor": "Linear",
+				"DestColor": "Linear",
                 "IsPowerOf2": true,
                 "MipMapSetting": {
                     "MipGenType": "Box"

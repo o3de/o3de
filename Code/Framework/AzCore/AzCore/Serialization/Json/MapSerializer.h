@@ -38,6 +38,10 @@ namespace AZ
             const Uuid& valueTypeId, JsonSerializerContext& context, bool sortResult);
 
         virtual bool CanBeConvertedToObject(const rapidjson::Value& outputValue);
+
+        //! When this function returns true then the container will be cleared before applying the data from the json document.
+        //! When returns false any elements in the container will be kept and not overwritten.
+        virtual bool ShouldClearContainer(const JsonDeserializerContext& context) const;
     };
 
     class JsonUnorderedMapSerializer

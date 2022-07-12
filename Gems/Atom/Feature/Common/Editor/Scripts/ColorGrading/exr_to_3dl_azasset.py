@@ -48,6 +48,29 @@ from ColorGrading import get_uv_coord
 
 from ColorGrading.azasset_converter_utils import generate_lut_values, write_3DL
 
+def exr_to_3dl_azasset(input_file, output_file):
+    # Read input image
+    # image_buffer = oiio.ImageBuf("linear_lut.exr")
+    image_buffer=oiio.ImageBuf(input_file)
+    image_spec=image_buffer.spec()
+    _LOGGER.info(f"Resolution is, x: {image_buffer.spec().width} and y: {image_buffer.spec().height}")
+
+    if image_spec.width != image_spec.height * image_spec.height:
+        _LOGGER.info(f"invalid input file dimensions. Expect lengthwise LUT with dimension W: s*s  X  H: s, where s is the size of the LUT")
+        return False
+
+    lut_intervals, lut_values = generate_lut_values(image_spec, image_buffer)
+
+    write_3DL(output_file, image_spec.height, lut_intervals, lut_values)
+
+    # write_azasset(file_path, lut_intervals, lut_values, azasset_json=AZASSET_LUT)
+    write_azasset(output_file, lut_intervals, lut_values)
+
+    # example from command line
+    # python % DCCSI_COLORGRADING_SCRIPTS %\lut_helper.py - -i C: \Depot\o3de\Gems\Atom\Feature\Common\Tools\ColorGrading\Resources\LUTs\linear_32_LUT.exr - -op pre - grading - -shaper Log2 - 48nits - -o C: \Depot\o3de\Gems\Atom\Feature\Common\Tools\ColorGrading\Resources\LUTs\base_Log2-48nits_32_LUT.exr
+
+    return True
+
 ###########################################################################
 # Main Code Block, runs this script as main (testing)
 # -------------------------------------------------------------------------
@@ -59,22 +82,5 @@ if __name__ == '__main__':
     parser.add_argument('--o', type=str, required=True, help='output file')
     args=parser.parse_args()
 
-    # Read input image
-    # image_buffer = oiio.ImageBuf("linear_lut.exr")
-    image_buffer=oiio.ImageBuf(args.i)
-    image_spec=image_buffer.spec()
-    _LOGGER.info(f"Resolution is, x: {image_buffer.spec().width} and y: {image_buffer.spec().height}")
-
-    if image_spec.width != image_spec.height * image_spec.height:
-        _LOGGER.info(f"invalid input file dimensions. Expect lengthwise LUT with dimension W: s*s  X  H: s, where s is the size of the LUT")
+    if not exr_to_3dl_azasset(args.i, args.o):
         sys.exit(1)
-
-    lut_intervals, lut_values = generate_lut_values(image_spec, image_buffer)
-
-    write_3DL(args.o, image_spec.height, lut_intervals, lut_values)
-    
-    # write_azasset(file_path, lut_intervals, lut_values, azasset_json=AZASSET_LUT)
-    write_azasset(args.o, lut_intervals, lut_values)
-
-    # example from command line
-    # python % DCCSI_COLORGRADING_SCRIPTS %\lut_helper.py - -i C: \Depot\o3de\Gems\Atom\Feature\Common\Tools\ColorGrading\Resources\LUTs\linear_32_LUT.exr - -op pre - grading - -shaper Log2 - 48nits - -o C: \Depot\o3de\Gems\Atom\Feature\Common\Tools\ColorGrading\Resources\LUTs\base_Log2-48nits_32_LUT.exr

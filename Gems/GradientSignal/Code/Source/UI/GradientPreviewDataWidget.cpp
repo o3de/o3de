@@ -11,7 +11,6 @@
 
 #include <AzCore/Component/EntityId.h>
 
-#include <QPushButton>
 #include <QVBoxLayout>
 
 namespace GradientSignal
@@ -110,16 +109,18 @@ namespace GradientSignal
         layout->setContentsMargins(QMargins());
         layout->setAlignment(Qt::AlignHCenter);
 
-        m_preview = new GradientPreviewWidget(this);
+        constexpr bool enablePopout = true;
+        m_preview = new GradientPreviewWidget(this, enablePopout);
         m_preview->setFixedSize(256, 256);
         layout->addWidget(m_preview);
 
-        QPushButton* popout = new QPushButton("Show Larger Preview");
-        layout->addWidget(popout);
-        connect(popout, &QPushButton::clicked, this, [this]()
+        QObject::connect(m_preview, &GradientPreviewWidget::popoutClicked, this, [this]()
         {
             delete m_previewWindow;
             m_previewWindow = new GradientPreviewWidget;
+
+            // Make sure our popout preview always stays on top
+            m_previewWindow->setWindowFlag(Qt::WindowStaysOnTopHint, true);
 
             // We need to call show() once before the resize to initialize the window frame width/height,
             // so that way the resize correctly takes them into account.  We then call show() a second time

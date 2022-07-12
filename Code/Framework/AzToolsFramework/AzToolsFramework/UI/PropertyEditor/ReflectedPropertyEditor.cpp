@@ -580,7 +580,7 @@ namespace AzToolsFramework
 
         return result;
     }
-    
+
     bool IsParentAssociativeContainer(InstanceDataNode* node)
     {
         return node->GetParent() && node->GetParent()->GetClassMetadata()->m_container && node->GetParent()->GetClassMetadata()->m_container->GetAssociativeContainerInterface();
@@ -716,7 +716,7 @@ namespace AzToolsFramework
             return;
         }
 
-        
+
         ReflectedPropertyEditorUpdateSentinel updateSentinel(m_editor, &m_editor->m_updateDepth);
 
         const bool isParentAssociativeContainer = IsParentAssociativeContainer(node);
@@ -726,7 +726,7 @@ namespace AzToolsFramework
         const bool isAssociativeContainerPair = isParentAssociativeContainer &&
             IsPairContainer(node) &&
             node->FindAttribute(AZ::Edit::InternalAttributes::ElementInstances);
-        
+
         PropertyRowWidget* pWidget = nullptr;
         if (visibility == NodeDisplayVisibility::Visible || visibility == NodeDisplayVisibility::HideChildren)
         {
@@ -1401,15 +1401,14 @@ namespace AzToolsFramework
             PropertyHandlerBase* handler = widget->GetHandler();
             if (handler)
             {
-                if (rowWidget->second->ShouldPreValidatePropertyChange())
+                if (widget->ShouldPreValidatePropertyChange())
                 {
-                    void* tempValue = rowWidget->first->GetClassMetadata()->m_factory->Create("Validate Attribute");
+                    AZStd::any tempValue = m_context->CreateAny(node->GetClassMetadata()->m_typeId);
+                    void* tempValueRef = AZStd::any_cast<void>(&tempValue);
 
-                    handler->WriteGUIValuesIntoTempProperty_Internal(editorGUI, tempValue, rowWidget->first->GetClassMetadata()->m_typeId, rowWidget->first->GetSerializeContext());
+                    handler->WriteGUIValuesIntoTempProperty_Internal(editorGUI, tempValueRef, node->GetClassMetadata()->m_typeId, m_context);
 
-                    bool validated = rowWidget->second->ValidatePropertyChange(tempValue, rowWidget->first->GetClassMetadata()->m_typeId);
-
-                    rowWidget->first->GetClassMetadata()->m_factory->Destroy(tempValue);
+                    bool validated = widget->ValidatePropertyChange(tempValueRef, node->GetClassMetadata()->m_typeId);
 
                     // Validate the change to make sure everything is okay before actually modifying the value on anything
                     if (!validated)
@@ -2253,7 +2252,7 @@ namespace AzToolsFramework
         // potentially before the second caller is ready for them.  This case should get examined to see why nested calls
         // are happening.  Either m_preventRefresh might need to turn into a refcount to allow nesting, or the assert might
         // be invalid, or the nesting shouldn't occur at all.
-        AZ_Assert(!(m_impl->m_preventRefresh && shouldPrevent), 
+        AZ_Assert(!(m_impl->m_preventRefresh && shouldPrevent),
                   "PreventRefresh set to 'true' twice.  If multiple different callers are setting this, it might need to become a refcount.");
 
         // Prevent property refreshes while we're disabled This avoids us accidentally refreshing during a destructive change.

@@ -11,8 +11,6 @@
 #include <EMotionFX/CommandSystem/Source/CommandManager.h>
 #include <EMotionFX/CommandSystem/Source/ColliderCommands.h>
 #include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.h>
-#include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderPlugin.h>
-#include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderViewWidget.h>
 #include <Editor/ColliderContainerWidget.h>
 #include <Editor/ColliderHelpers.h>
 #include <Editor/SkeletonModel.h>
@@ -33,12 +31,6 @@ namespace EMotionFX
     ClothJointInspectorPlugin::~ClothJointInspectorPlugin()
     {
         EMotionFX::SkeletonOutlinerNotificationBus::Handler::BusDisconnect();
-    }
-
-    EMStudio::EMStudioPlugin* ClothJointInspectorPlugin::Clone()
-    {
-        ClothJointInspectorPlugin* newPlugin = new ClothJointInspectorPlugin();
-        return newPlugin;
     }
 
     bool ClothJointInspectorPlugin::IsNvClothGemAvailable() const
@@ -171,40 +163,5 @@ namespace EMotionFX
         }
 
         ColliderHelpers::ClearColliders(selectedRowIndices, PhysicsSetup::Cloth);
-    }
-
-    void ClothJointInspectorPlugin::LegacyRender(EMStudio::RenderPlugin* renderPlugin, RenderInfo* renderInfo)
-    {
-        EMStudio::RenderViewWidget* activeViewWidget = renderPlugin->GetActiveViewWidget();
-        if (!activeViewWidget)
-        {
-            return;
-        }
-
-        const bool renderColliders = activeViewWidget->GetRenderFlag(EMStudio::RenderViewWidget::RENDER_CLOTH_COLLIDERS);
-        if (!renderColliders)
-        {
-            return;
-        }
-
-        const EMStudio::RenderOptions* renderOptions = renderPlugin->GetRenderOptions();
-
-        ColliderContainerWidget::LegacyRenderColliders(PhysicsSetup::Cloth,
-            renderOptions->GetClothColliderColor(),
-            renderOptions->GetSelectedClothColliderColor(),
-            renderPlugin,
-            renderInfo);
-    }
-
-    void ClothJointInspectorPlugin::Render(EMotionFX::ActorRenderFlagBitset renderFlags)
-    {
-        const bool renderColliders = renderFlags[RENDER_CLOTH_COLLIDERS];
-        if (!renderColliders)
-        {
-            return;
-        }
-
-        const AZ::Render::RenderActorSettings& settings = EMotionFX::GetRenderActorSettings();
-        ColliderContainerWidget::RenderColliders(PhysicsSetup::Cloth, settings.m_clothColliderColor, settings.m_selectedClothColliderColor);
     }
 } // namespace EMotionFX

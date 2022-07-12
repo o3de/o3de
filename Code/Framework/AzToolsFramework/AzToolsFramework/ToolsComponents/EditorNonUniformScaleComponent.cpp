@@ -6,7 +6,7 @@
  *
  */
 
-#include <AzCore/Math/ToString.h>
+#include <AzCore/Math/MathStringConversions.h>
 #include <AzCore/Math/Transform.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/RTTI/BehaviorContext.h>
@@ -112,7 +112,7 @@ namespace AzToolsFramework
                 AZ::Vector3 clampedScale = scale.GetClamp(AZ::Vector3(AZ::MinTransformScale), AZ::Vector3(AZ::MaxTransformScale));
                 AZ_Warning(
                     "Editor Non-uniform Scale Component", false, "SetScale value was clamped from %s to %s for entity %s",
-                    AZ::ToString(scale).c_str(), AZ::ToString(clampedScale).c_str(), GetEntity()->GetName().c_str());
+                    AZStd::to_string(scale).c_str(), AZStd::to_string(clampedScale).c_str(), GetEntity()->GetName().c_str());
                 m_scale = clampedScale;
             }
             m_scaleChangedEvent.Signal(m_scale);

@@ -19,7 +19,7 @@
 
 namespace AzToolsFramework
 {
-    namespace AssetDatabase 
+    namespace AssetDatabase
     {
         class FileDatabaseEntry;
     }
@@ -40,17 +40,17 @@ namespace AssetProcessor
     public Q_SLOTS:
         //! AssetScanner changed its status
         void OnAssetScannerStatusChange(AssetScanningStatus status);
-        
+
         //! AssetScanner found a file
         void AssessFilesFromScanner(QSet<AssetFileInfo> files);
-        
+
         //! AssetScanner found a folder
         void AssessFoldersFromScanner(QSet<AssetFileInfo> folders);
 
         //! FileWatcher detected added file
-        void AssessAddedFile(QString fileName);
+        virtual void AssessAddedFile(QString fileName);
         //! FileWatcher detected removed file
-        void AssessDeletedFile(QString fileName);
+        virtual void AssessDeletedFile(QString fileName);
         //! Synchronize AssetScanner data with Files table
         void Sync();
 

@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzCore/Memory/SystemAllocator.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/SourceControl/SourceControlAPI.h>
 

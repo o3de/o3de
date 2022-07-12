@@ -9,13 +9,33 @@
 # Wwise Install Path
 set(LY_WWISE_INSTALL_PATH "" CACHE PATH "Path to Wwise installation.")
 
-# Check for a known file in the SDK path to verify the path
+# Wwise Version
+set(WWISE_VERSION)
+set(MINIMUM_WWISE_VERSION "2021.1.1.0")
+
+# Inspect a file in the Wwise SDK, extract the version and check it...
 function(is_valid_sdk sdk_path is_valid)
     set(${is_valid} FALSE PARENT_SCOPE)
     if(EXISTS ${sdk_path})
         set(sdk_version_file ${sdk_path}/SDK/include/AK/AkWwiseSDKVersion.h)
         if(EXISTS ${sdk_version_file})
-            set(${is_valid} TRUE PARENT_SCOPE)
+            set(version_regex "^.*VERSION_(MAJOR|MINOR|SUBMINOR|BUILD)[ \t]+([0-9]+)")
+            file(STRINGS ${sdk_version_file} version_strings REGEX ${version_regex})
+            list(LENGTH version_strings num_parts)
+            if(num_parts EQUAL 4)
+                set(wwise_ver)
+                foreach(version_str ${version_strings})
+                    string(REGEX REPLACE ${version_regex} "\\2" version_part ${version_str})
+                    string(JOIN "." wwise_ver ${wwise_ver} ${version_part})
+                endforeach()
+
+                if(${wwise_ver} VERSION_GREATER_EQUAL ${MINIMUM_WWISE_VERSION})
+                    set(WWISE_VERSION ${wwise_ver} PARENT_SCOPE)
+                    set(${is_valid} TRUE PARENT_SCOPE)
+                else()
+                    message(STATUS "Minimum supported Wwise SDK version is ${MINIMUM_WWISE_VERSION}, but detected version ${wwise_ver}.")
+                endif()
+            endif()
         endif()
     endif()
 endfunction()
@@ -44,7 +64,7 @@ if(NOT found_sdk)
     return()
 endif()
 
-message(STATUS "Using Wwise SDK at ${LY_WWISE_INSTALL_PATH}")
+message(STATUS "Using Wwise SDK version ${WWISE_VERSION} at ${LY_WWISE_INSTALL_PATH}")
 
 set(WWISE_COMMON_LIB_NAMES
     # Core AK

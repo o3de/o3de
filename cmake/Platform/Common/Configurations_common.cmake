@@ -30,13 +30,13 @@ ly_append_configurations_options(
         _HAS_EXCEPTIONS=0
     DEFINES_DEBUG
         _DEBUG            # TODO: this should be able to removed since it gets added automatically by some compilation flags
-        AZ_DEBUG_BUILD=1
+        AZ_DEBUG_BUILD
         AZ_ENABLE_TRACING
         AZ_ENABLE_DEBUG_TOOLS
         AZ_BUILD_CONFIGURATION_TYPE="${LY_BUILD_CONFIGURATION_TYPE_DEBUG}"
     DEFINES_PROFILE
         _PROFILE
-        AZ_PROFILE_BUILD=1
+        AZ_PROFILE_BUILD
         NDEBUG
         AZ_ENABLE_TRACING
         AZ_ENABLE_DEBUG_TOOLS
@@ -44,6 +44,7 @@ ly_append_configurations_options(
     DEFINES_RELEASE
         _RELEASE
         RELEASE
+        AZ_RELEASE_BUILD
         NDEBUG
         AZ_BUILD_CONFIGURATION_TYPE="${LY_BUILD_CONFIGURATION_TYPE_RELEASE}"
 )
@@ -62,3 +63,8 @@ if(CMAKE_GENERATOR MATCHES "Ninja")
         ly_set(CMAKE_JOB_POOL_LINK link_job_pool)
     endif()
 endif()
+
+set(CMAKE_POSITION_INDEPENDENT_CODE True)
+
+include(CheckPIESupported)
+check_pie_supported()

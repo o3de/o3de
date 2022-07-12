@@ -67,15 +67,17 @@ namespace AzToolsFramework
 
     AZ::Vector3 FindClosestPickIntersection(const AzFramework::RenderGeometry::RayRequest& rayRequest, const float defaultDistance)
     {
+        using AzFramework::RenderGeometry::IntersectorBus;
+        using AzFramework::RenderGeometry::RayResult;
+        using AzFramework::RenderGeometry::RayResultClosestAggregator;
+        using AzFramework::Terrain::TerrainDataRequestBus;
+
         // attempt a ray intersection with any visible mesh or terrain and return the intersection position if successful
-        AZ::EBusReduceResult<AzFramework::RenderGeometry::RayResult, AzFramework::RenderGeometry::RayResultClosestAggregator> renderGeometryIntersectionResult;
-        AzFramework::RenderGeometry::IntersectorBus::EventResult(
-            renderGeometryIntersectionResult, AzToolsFramework::GetEntityContextId(),
-            &AzFramework::RenderGeometry::IntersectorBus::Events::RayIntersect, rayRequest);
-        AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
-            renderGeometryIntersectionResult,
-            &AzFramework::Terrain::TerrainDataRequests::GetClosestIntersection,
-            rayRequest);
+        AZ::EBusReduceResult<RayResult, RayResultClosestAggregator> renderGeometryIntersectionResult;
+        IntersectorBus::EventResult(
+            renderGeometryIntersectionResult, AzToolsFramework::GetEntityContextId(), &IntersectorBus::Events::RayIntersect, rayRequest);
+        TerrainDataRequestBus::BroadcastResult(
+            renderGeometryIntersectionResult, &TerrainDataRequestBus::Events::GetClosestIntersection, rayRequest);
 
         if (renderGeometryIntersectionResult.value)
         {

@@ -1,0 +1,25 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassRequest",
+    "ClassData": {
+        "Name": "LyShinePass",
+        "TemplateName": "LyShineParentTemplate",
+        "Connections": [
+            {
+                "LocalSlot": "ColorInputOutput",
+                "AttachmentRef": {
+                    "Pass": "AuxGeomPass",
+                    "Attachment": "ColorInputOutput"
+                }
+            },
+            {
+                "LocalSlot": "DepthInputOutput",
+                "AttachmentRef": {
+                    "Pass": "DepthPrePass",
+                    "Attachment": "Depth"
+                }
+            }
+        ]
+    }
+}

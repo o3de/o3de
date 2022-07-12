@@ -26,6 +26,9 @@ namespace AzManipulatorTestFramework
         // ManipulatorViewportInteractionInterface ...
         const ViewportInteractionInterface& GetViewportInteraction() const override;
         const ManipulatorManagerInterface& GetManipulatorManager() const override;
+        // make non-const overloads visible
+        using ManipulatorViewportInteraction::GetManipulatorManager;
+        using ManipulatorViewportInteraction::GetViewportInteraction;
 
     private:
         AZStd::shared_ptr<CustomManipulatorManager> m_customManager;

@@ -100,7 +100,7 @@ void ApplyDiskLight(ViewSrg::DiskLight light, Surface surface, inout LightingDat
             }
             else if (o_transmission_mode == TransmissionMode::ThinObject)
             {
-                transmissionDistance = ProjectedShadow::GetThickness(light.m_shadowIndex, surface.position - lightingData.shrinkFactor * surface.vertexNormal);
+                transmissionDistance = ProjectedShadow::GetThickness(light.m_shadowIndex, surface.position - surface.transmission.GetShrinkFactor() * surface.vertexNormal);
             }
 #endif
         }

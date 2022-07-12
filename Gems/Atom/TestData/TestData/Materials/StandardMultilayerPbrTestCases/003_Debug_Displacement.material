@@ -1,11 +1,8 @@
 {
-    "description": "",
     "materialType": "Materials/Types/StandardMultilayerPBR.materialtype",
-    "parentMaterial": "TestData/Materials/StandardMultilayerPbrTestCases/002_ParallaxPdo.material",
     "materialTypeVersion": 3,
-    "properties": {
-        "blend": {
-            "debugDrawMode": "Displacement"
-        }
+    "parentMaterial": "TestData/Materials/StandardMultilayerPbrTestCases/002_ParallaxPdo.material",
+    "propertyValues": {
+        "blend.debugDrawMode": "Displacement"
     }
 }

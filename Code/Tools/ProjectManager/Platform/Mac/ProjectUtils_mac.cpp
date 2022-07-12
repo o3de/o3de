@@ -39,6 +39,32 @@ namespace O3DE::ProjectManager
             return AZ::Success();
         }
 
+        AZ::Outcome<QString, QString> FindSupportedCMake()
+        {
+            // Validate that cmake is installed and is in the command line
+            auto whichCMakeResult = ProjectUtils::ExecuteCommandResult("which", QStringList{ ProjectCMakeCommand });
+            if (!whichCMakeResult.IsSuccess())
+            {
+                return AZ::Failure(
+                    QObject::tr("CMake not found. <br><br>"
+                                "Make sure that the minimum version of CMake is installed and available from the command prompt. "
+                                "Refer to the <a href='https://o3de.org/docs/welcome-guide/setup/requirements/#cmake'>O3DE "
+                                "requirements</a> page for more information."));
+            }
+
+            QString cmakeInstalledPath = whichCMakeResult.GetValue().split("\n")[0];
+
+            // Query the version of the installed cmake
+            auto queryCmakeVersionQuery = ExecuteCommandResult(cmakeInstalledPath, QStringList{ "--version" });
+            if (queryCmakeVersionQuery.IsSuccess())
+            {
+                AZ_TracePrintf(
+                    "Project Manager", "\"%s\" detected.", queryCmakeVersionQuery.GetValue().split("\n")[0].toUtf8().constData());
+            }
+
+            return AZ::Success(QString{ cmakeInstalledPath });
+        }
+
         AZ::Outcome<QString, QString> FindSupportedCompilerForPlatform()
         {
             AZ::Outcome processEnvResult = SetupCommandLineProcessEnvironment();
@@ -47,31 +73,20 @@ namespace O3DE::ProjectManager
                 return AZ::Failure(processEnvResult.GetError());
             }
 
-            // Validate that we have cmake installed first
-            auto queryCmakeInstalled = ExecuteCommandResult("which", QStringList{ProjectCMakeCommand});
-            if (!queryCmakeInstalled.IsSuccess())
-            {
-                return AZ::Failure(QObject::tr("Unable to detect CMake on this host."));
-            }
-            QString cmakeInstalledPath = queryCmakeInstalled.GetValue().split("\n")[0];
-
             // Query the version of the installed cmake
-            auto queryCmakeVersionQuery = ExecuteCommandResult(cmakeInstalledPath, QStringList{"-version"});
-            if (!queryCmakeVersionQuery.IsSuccess())
+            if (auto queryCmakeVersionQuery = FindSupportedCMake(); !queryCmakeVersionQuery.IsSuccess())
             {
-                return AZ::Failure(QObject::tr("Unable to determine the version of CMake on this host."));
+                return queryCmakeVersionQuery;
             }
-            AZ_TracePrintf("Project Manager", "Cmake version %s detected.", queryCmakeVersionQuery.GetValue().split("\n")[0].toUtf8().constData());
 
             // Query for the version of xcodebuild (if installed)
-            auto queryXcodeBuildVersion = ExecuteCommandResult("xcodebuild", QStringList{"-version"});
-            if (!queryCmakeInstalled.IsSuccess())
+            auto queryXcodeBuildVersion = ExecuteCommandResult("xcodebuild", QStringList{ "-version" });
+            if (!queryXcodeBuildVersion.IsSuccess())
             {
                 return AZ::Failure(QObject::tr("Unable to detect XCodeBuilder on this host."));
             }
             QString xcodeBuilderVersionNumber = queryXcodeBuildVersion.GetValue().split("\n")[0];
             AZ_TracePrintf("Project Manager", "XcodeBuilder version %s detected.", xcodeBuilderVersionNumber.toUtf8().constData());
-
 
             return AZ::Success(xcodeBuilderVersionNumber);
         }

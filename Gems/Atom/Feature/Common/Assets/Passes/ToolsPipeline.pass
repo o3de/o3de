@@ -8,11 +8,19 @@
             "PassClass": "ParentPass",
             "Slots": [
                 {
-                    "Name": "SwapChainOutput",
-                    "SlotType": "InputOutput",
-                    "ScopeAttachmentUsage": "RenderTarget"
+                    "Name": "PipelineOutput",
+                    "SlotType": "InputOutput"
                 }
             ],
+            "PassData": {
+                "$type": "PassData",
+                "PipelineGlobalConnections": [
+                    {
+                        "GlobalName": "PipelineOutput",
+                        "Slot": "PipelineOutput"
+                    }
+                ]
+            },
             "PassRequests": [
                 {
                     "Name": "MorphTargetPass",
@@ -44,7 +52,7 @@
                 },
                 {
                     "Name": "DepthPrePass",
-                    "TemplateName": "DepthMSAAParentTemplate",
+                    "TemplateName": "DepthParentTemplate",
                     "Connections": [
                         {
                             "LocalSlot": "SkinnedMeshes",
@@ -54,10 +62,10 @@
                             }
                         },
                         {
-                            "LocalSlot": "SwapChainOutput",
+                            "LocalSlot": "PipelineOutput",
                             "AttachmentRef": {
                                 "Pass": "Parent",
-                                "Attachment": "SwapChainOutput"
+                                "Attachment": "PipelineOutput"
                             }
                         }
                     ]
@@ -81,10 +89,10 @@
                             }
                         },
                         {
-                            "LocalSlot": "SwapChainOutput",
+                            "LocalSlot": "PipelineOutput",
                             "AttachmentRef": {
                                 "Pass": "Parent",
-                                "Attachment": "SwapChainOutput"
+                                "Attachment": "PipelineOutput"
                             }
                         }
                     ]
@@ -108,16 +116,16 @@
                             }
                         },
                         {
-                            "LocalSlot": "SwapChainOutput",
+                            "LocalSlot": "PipelineOutput",
                             "AttachmentRef": {
                                 "Pass": "Parent",
-                                "Attachment": "SwapChainOutput"
+                                "Attachment": "PipelineOutput"
                             }
                         }
                     ]
                 },
                 {
-                    "Name": "ShadowPass",
+                    "Name": "Shadows",
                     "TemplateName": "ShadowParentTemplate",
                     "Connections": [
                         {
@@ -128,10 +136,17 @@
                             }
                         },
                         {
-                            "LocalSlot": "SwapChainOutput",
+                            "LocalSlot": "PipelineOutput",
                             "AttachmentRef": {
                                 "Pass": "Parent",
-                                "Attachment": "SwapChainOutput"
+                                "Attachment": "PipelineOutput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "Depth",
+                            "AttachmentRef": {
+                                "Pass": "DepthPrePass",
+                                "Attachment": "DepthMSAA"
                             }
                         }
                     ]
@@ -143,28 +158,28 @@
                         {
                             "LocalSlot": "DirectionalShadowmap",
                             "AttachmentRef": {
-                                "Pass": "ShadowPass",
+                                "Pass": "Shadows",
                                 "Attachment": "DirectionalShadowmap"
                             }
                         },
                         {
                             "LocalSlot": "DirectionalESM",
                             "AttachmentRef": {
-                                "Pass": "ShadowPass",
+                                "Pass": "Shadows",
                                 "Attachment": "DirectionalESM"
                             }
                         },
                         {
                             "LocalSlot": "ProjectedShadowmap",
                             "AttachmentRef": {
-                                "Pass": "ShadowPass",
+                                "Pass": "Shadows",
                                 "Attachment": "ProjectedShadowmap"
                             }
                         },
                         {
                             "LocalSlot": "ProjectedESM",
                             "AttachmentRef": {
-                                "Pass": "ShadowPass",
+                                "Pass": "Shadows",
                                 "Attachment": "ProjectedESM"
                             }
                         },
@@ -197,10 +212,10 @@
                             }
                         },
                         {
-                            "LocalSlot": "SwapChainOutput",
+                            "LocalSlot": "PipelineOutput",
                             "AttachmentRef": {
                                 "Pass": "Parent",
-                                "Attachment": "SwapChainOutput"
+                                "Attachment": "PipelineOutput"
                             }
                         }
                     ]
@@ -212,28 +227,28 @@
                         {
                             "LocalSlot": "DirectionalShadowmap",
                             "AttachmentRef": {
-                                "Pass": "ShadowPass",
+                                "Pass": "Shadows",
                                 "Attachment": "DirectionalShadowmap"
                             }
                         },
                         {
                             "LocalSlot": "DirectionalESM",
                             "AttachmentRef": {
-                                "Pass": "ShadowPass",
+                                "Pass": "Shadows",
                                 "Attachment": "DirectionalESM"
                             }
                         },
                         {
                             "LocalSlot": "ProjectedShadowmap",
                             "AttachmentRef": {
-                                "Pass": "ShadowPass",
+                                "Pass": "Shadows",
                                 "Attachment": "ProjectedShadowmap"
                             }
                         },
                         {
                             "LocalSlot": "ProjectedESM",
                             "AttachmentRef": {
-                                "Pass": "ShadowPass",
+                                "Pass": "Shadows",
                                 "Attachment": "ProjectedESM"
                             }
                         },
@@ -349,10 +364,10 @@
                             }
                         },
                         {
-                            "LocalSlot": "SwapChainOutput",
+                            "LocalSlot": "PipelineOutput",
                             "AttachmentRef": {
                                 "Pass": "Parent",
-                                "Attachment": "SwapChainOutput"
+                                "Attachment": "PipelineOutput"
                             }
                         }
                     ]
@@ -452,7 +467,7 @@
                             "LocalSlot": "Output",
                             "AttachmentRef": {
                                 "Pass": "Parent",
-                                "Attachment": "SwapChainOutput"
+                                "Attachment": "PipelineOutput"
                             }
                         }
                     ]

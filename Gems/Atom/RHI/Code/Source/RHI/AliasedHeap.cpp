@@ -98,6 +98,12 @@ namespace AZ
             m_firstFitAllocator.Shutdown();
         }
 
+        void AliasedHeap::ComputeFragmentation() const
+        {
+            float fragmentation = m_firstFitAllocator.ComputeFragmentation();
+            m_memoryUsage.GetHeapMemoryUsage(HeapMemoryLevel::Device).m_fragmentation = fragmentation;
+        }
+
         ResultCode AliasedHeap::ActivateBuffer(
             const RHI::TransientBufferDescriptor& descriptor,
             Scope& scope,

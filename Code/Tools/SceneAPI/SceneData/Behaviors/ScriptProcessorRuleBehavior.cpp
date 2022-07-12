@@ -18,9 +18,6 @@
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzToolsFramework/API/EditorPythonConsoleBus.h>
 #include <AzToolsFramework/API/EditorPythonRunnerRequestsBus.h>
-#include <Entity/EntityUtilityComponent.h>
-#include <Prefab/PrefabSystemComponentInterface.h>
-#include <Prefab/PrefabSystemScriptingBus.h>
 #include <SceneAPI/SceneCore/Containers/Scene.h>
 #include <SceneAPI/SceneCore/Containers/SceneGraph.h>
 #include <SceneAPI/SceneCore/Containers/SceneManifest.h>
@@ -360,9 +357,6 @@ namespace AZ::SceneAPI::Behaviors
             {
                 return Events::ProcessingResult::Ignored;
             }
-
-            EntityUtilityBus::Broadcast(&EntityUtilityBus::Events::ResetEntityContext);
-            AZ::Interface<Prefab::PrefabSystemComponentInterface>::Get()->RemoveAllTemplates();
 
             // attempt to load the manifest string back to a JSON-scene-manifest
             auto sceneManifestLoader = AZStd::make_unique<AZ::SceneAPI::Containers::SceneManifest>();

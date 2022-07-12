@@ -22,6 +22,7 @@ if(CPACK_UPLOAD_URL)
 
     # Sign and regenerate checksum
     ly_sign_binaries("${CPACK_TOPLEVEL_DIRECTORY}/*.deb" "")
+    file(${CPACK_PACKAGE_CHECKSUM} ${CPACK_TOPLEVEL_DIRECTORY}/${CPACK_PACKAGE_FILE_NAME}.deb file_checksum)
     file(WRITE ${CPACK_TOPLEVEL_DIRECTORY}/${CPACK_PACKAGE_FILE_NAME}.deb.sha256 "${file_checksum}  ${CPACK_PACKAGE_FILE_NAME}.deb")
 
     # Copy the artifacts intended to be uploaded to a remote server into the folder specified

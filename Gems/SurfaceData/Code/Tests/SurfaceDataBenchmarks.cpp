@@ -49,7 +49,6 @@ namespace UnitTest
             AZStd::unique_ptr<AZ::Entity> entity = AZStd::make_unique<AZ::Entity>();
 
             auto transform = entity->CreateComponent<AzFramework::TransformComponent>();
-            transform->SetLocalTM(AZ::Transform::CreateTranslation(worldPos));
             transform->SetWorldTM(AZ::Transform::CreateTranslation(worldPos));
 
             SurfaceData::SurfaceDataShapeConfig surfaceConfig;
@@ -181,7 +180,7 @@ namespace UnitTest
         SurfaceData::SurfaceTagVector filterTags = CreateBenchmarkTagFilterList();
 
         // Query every point in our world at 1 meter intervals.
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             // This is declared outside the loop so that the list of points doesn't fully reallocate on every query.
             SurfaceData::SurfacePointList points;
@@ -192,9 +191,7 @@ namespace UnitTest
                 {
                     AZ::Vector3 queryPosition(x, y, 0.0f);
                     points.Clear();
-
-                    SurfaceData::SurfaceDataSystemRequestBus::Broadcast(
-                        &SurfaceData::SurfaceDataSystemRequestBus::Events::GetSurfacePoints, queryPosition, filterTags, points);
+                    AZ::Interface<SurfaceData::SurfaceDataSystem>::Get()->GetSurfacePoints(queryPosition, filterTags, points);
                     benchmark::DoNotOptimize(points);
                 }
             }
@@ -211,15 +208,13 @@ namespace UnitTest
         SurfaceData::SurfaceTagVector filterTags = CreateBenchmarkTagFilterList();
 
         // Query every point in our world at 1 meter intervals.
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
-            SurfaceData::SurfacePointLists points;
+            SurfaceData::SurfacePointList points;
 
             AZ::Aabb inRegion = AZ::Aabb::CreateFromMinMax(AZ::Vector3(0.0f), AZ::Vector3(worldSize));
             AZ::Vector2 stepSize(1.0f);
-            SurfaceData::SurfaceDataSystemRequestBus::Broadcast(
-                &SurfaceData::SurfaceDataSystemRequestBus::Events::GetSurfacePointsFromRegion, inRegion, stepSize, filterTags,
-                points);
+            AZ::Interface<SurfaceData::SurfaceDataSystem>::Get()->GetSurfacePointsFromRegion(inRegion, stepSize, filterTags, points);
             benchmark::DoNotOptimize(points);
         }
     }
@@ -235,7 +230,7 @@ namespace UnitTest
         SurfaceData::SurfaceTagVector filterTags = CreateBenchmarkTagFilterList();
 
         // Query every point in our world at 1 meter intervals.
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             AZStd::vector<AZ::Vector3> queryPositions;
             queryPositions.reserve(worldSizeInt * worldSizeInt);
@@ -248,10 +243,9 @@ namespace UnitTest
                 }
             }
 
-            SurfaceData::SurfacePointLists points;
+            SurfaceData::SurfacePointList points;
 
-            SurfaceData::SurfaceDataSystemRequestBus::Broadcast(
-                &SurfaceData::SurfaceDataSystemRequestBus::Events::GetSurfacePointsFromList, queryPositions, filterTags, points);
+            AZ::Interface<SurfaceData::SurfaceDataSystem>::Get()->GetSurfacePointsFromList(queryPositions, filterTags, points);
             benchmark::DoNotOptimize(points);
         }
     }
@@ -275,7 +269,7 @@ namespace UnitTest
     {
         AZ_PROFILE_FUNCTION(Entity);
 
-        AZ::Crc32 tags[SurfaceData::SurfaceTagWeights::MaxSurfaceWeights];
+        AZ::Crc32 tags[AzFramework::SurfaceData::Constants::MaxSurfaceWeights];
         AZ::SimpleLcgRandom randomGenerator(1234567);
 
         // Declare this outside the loop so that we aren't benchmarking creation and destruction.
@@ -289,7 +283,7 @@ namespace UnitTest
             tag = randomGenerator.GetRandom();
         }
 
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             // We'll benchmark this two ways:
             // 1. We clear each time, which means each AddSurfaceWeightIfGreater call will search the whole list then add.
@@ -316,7 +310,7 @@ namespace UnitTest
     {
         AZ_PROFILE_FUNCTION(Entity);
 
-        AZ::Crc32 tags[SurfaceData::SurfaceTagWeights::MaxSurfaceWeights];
+        AZ::Crc32 tags[AzFramework::SurfaceData::Constants::MaxSurfaceWeights];
         AZ::SimpleLcgRandom randomGenerator(1234567);
 
         // Declare this outside the loop so that we aren't benchmarking creation and destruction.
@@ -340,7 +334,7 @@ namespace UnitTest
             comparisonTags.emplace_back(tag ^ 0x01);
         }
 
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             // Test to see if any of our tags match.
             // All of comparison tags should get compared against all of the added tags.

@@ -18,6 +18,7 @@ class TestAutomation(EditorTestSuite):
     class test_AxisAlignedBoxShape_ConfigurationWorks(EditorSharedTest):
         from .EditorScripts import TerrainPhysicsCollider_ChangesSizeWithAxisAlignedBoxShapeChanges as test_module
 
+    @pytest.mark.skip(reason="GHI #9850: Test Periodically Fails")
     class test_Terrain_SupportsPhysics(EditorSharedTest):
         from .EditorScripts import Terrain_SupportsPhysics as test_module
 
@@ -32,3 +33,6 @@ class TestAutomation(EditorTestSuite):
 
     class test_TerrainWorld_ConfigurationWorks(EditorSharedTest):
         from .EditorScripts import Terrain_World_ConfigurationWorks as test_module
+
+    class test_TerrainPhysicsCollider_MaterialMapping_Works(EditorSharedTest):
+        from .EditorScripts import TerrainPhysicsCollider_MaterialMapping_Works as test_module

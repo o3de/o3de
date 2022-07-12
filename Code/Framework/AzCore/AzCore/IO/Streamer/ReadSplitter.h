@@ -20,6 +20,11 @@ namespace AZ
 {
     namespace IO
     {
+        namespace Requests
+        {
+            struct ReportData;
+        } // namespace Requests
+
         struct ReadSplitterConfig final :
             public IStreamerStackConfig
         {
@@ -96,6 +101,8 @@ namespace AZ
             
             void InitializeBuffer();
             u8* GetBufferSlot(size_t index);
+
+            void Report(const Requests::ReportData& data) const;
 
             AZ::Statistics::RunningStatistic m_averageNumSubReadsStat;
             AZ::Statistics::RunningStatistic m_alignedReadsStat;

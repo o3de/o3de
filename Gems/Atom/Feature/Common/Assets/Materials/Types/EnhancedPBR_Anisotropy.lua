@@ -11,9 +11,9 @@
 
 function GetMaterialPropertyDependencies()
     return {
-        "anisotropy.enableAnisotropy"
-        , "anisotropy.factor"
-        , "anisotropy.anisotropyAngle"
+        "enableAnisotropy"
+        , "factor"
+        , "anisotropyAngle"
     }
 end
  
@@ -22,12 +22,12 @@ function GetShaderOptionDependencies()
 end
 
 function Process(context)
-    local enableAnisotropy = context:GetMaterialPropertyValue_bool("anisotropy.enableAnisotropy")
+    local enableAnisotropy = context:GetMaterialPropertyValue_bool("enableAnisotropy")
 end
 
 function ProcessEditor(context)
     
-    local enableAnisotropy = context:GetMaterialPropertyValue_bool("anisotropy.enableAnisotropy")
+    local enableAnisotropy = context:GetMaterialPropertyValue_bool("enableAnisotropy")
         
     local visibility
     if(enableAnisotropy) then
@@ -36,6 +36,6 @@ function ProcessEditor(context)
         visibility = MaterialPropertyVisibility_Hidden
     end
 
-    context:SetMaterialPropertyVisibility("anisotropy.factor", visibility)
-    context:SetMaterialPropertyVisibility("anisotropy.anisotropyAngle", visibility)
+    context:SetMaterialPropertyVisibility("factor", visibility)
+    context:SetMaterialPropertyVisibility("anisotropyAngle", visibility)
 end

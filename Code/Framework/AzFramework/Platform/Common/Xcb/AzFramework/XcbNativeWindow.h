@@ -86,5 +86,7 @@ namespace AzFramework
         xcb_atom_t _NET_FRAME_EXTENTS;
         // This atom is used to allow WM to kill app if not responsive anymore
         xcb_atom_t _NET_WM_PID;
+        // This atom is used to inform the window manager that the window is responding
+        xcb_atom_t _NET_WM_PING;
     };
 } // namespace AzFramework

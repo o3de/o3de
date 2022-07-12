@@ -13,11 +13,11 @@
 #include <AzCore/std/parallel/allocator_concurrent_static.h>
 
 
-using namespace AZStd;
-using namespace UnitTestInternal;
-
 namespace UnitTest
 {
+    using namespace AZStd;
+    using namespace UnitTestInternal;
+
     static constexpr size_t s_allocatorCapacity = 1024;
     static constexpr size_t s_numberThreads = 4;
 

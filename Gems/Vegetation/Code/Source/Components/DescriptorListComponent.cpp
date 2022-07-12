@@ -56,6 +56,7 @@ namespace Vegetation
                     ->Attribute(AZ::Edit::Attributes::Visibility, &DescriptorListConfig::IsEmbeddedSource)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->Attribute(AZ::Edit::Attributes::ContainerCanBeModified, true)
+                    ->Attribute(AZ::Edit::Attributes::ContainerReorderAllow, true)
                     ->ElementAttribute(AZ::Edit::Attributes::NameLabelOverride, &Descriptor::GetDescriptorName)
                     ->ElementAttribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;

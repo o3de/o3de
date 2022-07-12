@@ -79,7 +79,7 @@ namespace AzFramework
         virtual uint32_t GetSyncInterval() const = 0;
 
         //! Sets the sync interval which tells the drivers the number of v-blanks to synchronize with
-        //! Returns if the sync interval was succesfully set
+        //! Returns if the sync interval was successfully set
         virtual bool SetSyncInterval(uint32_t newSyncInterval) = 0;
 
         //! Returns the refresh rate of the main display

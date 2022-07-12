@@ -54,7 +54,8 @@ namespace AzToolsFramework
 
         virtual ~BaseManipulator();
 
-        using EntityComponentIds = AZStd::unordered_set<AZ::EntityComponentIdPair>;
+        using UniqueEntityIds = AZStd::unordered_set<AZ::EntityId>;
+        using UniqueEntityComponentIds = AZStd::unordered_set<AZ::EntityComponentIdPair>;
 
         //! Callback for the event when the mouse pointer is over this manipulator and the left mouse button is pressed.
         //! @param interaction It contains various mouse states when the event happens, as well as a ray shooting from the viewing camera
@@ -137,7 +138,7 @@ namespace AzToolsFramework
         }
 
         //! Returns all EntityComponentIdPairs associated with this manipulator.
-        const EntityComponentIds& EntityComponentIdPairs() const
+        const UniqueEntityComponentIds& EntityComponentIdPairs() const
         {
             return m_entityComponentIdPairs;
         }
@@ -147,10 +148,10 @@ namespace AzToolsFramework
 
         //! Remove an entity from being affected by this manipulator.
         //! @note All components on this entity registered with the manipulator will be removed.
-        EntityComponentIds::iterator RemoveEntityId(AZ::EntityId entityId);
+        UniqueEntityComponentIds::iterator RemoveEntityId(AZ::EntityId entityId);
 
         //! Remove a specific component (via a EntityComponentIdPair) being affected by this manipulator.
-        EntityComponentIds::iterator RemoveEntityComponentIdPair(const AZ::EntityComponentIdPair& entityComponentIdPair);
+        UniqueEntityComponentIds::iterator RemoveEntityComponentIdPair(const AZ::EntityComponentIdPair& entityComponentIdPair);
 
         //! Is this entity currently being tracked by this manipulator.
         bool HasEntityId(AZ::EntityId entityId) const;

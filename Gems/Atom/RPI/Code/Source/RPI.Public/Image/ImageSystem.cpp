@@ -57,6 +57,7 @@ namespace AZ
 
         void ImageSystem::GetAssetHandlers(AssetHandlerPtrList& assetHandlers)
         {
+            assetHandlers.emplace_back(MakeAssetHandler<ImageAssetHandler>());
             assetHandlers.emplace_back(MakeAssetHandler<AttachmentImageAssetHandler>());
             assetHandlers.emplace_back(MakeAssetHandler<ImageMipChainAssetHandler>());
             assetHandlers.emplace_back(MakeAssetHandler<StreamingImageAssetHandler>());

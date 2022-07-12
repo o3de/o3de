@@ -37,16 +37,13 @@ class TestAutomation(EditorTestSuite):
     class test_AssetWeightSelector_InstancesExpressBasedOnWeight(EditorSharedTest):
         from .EditorScripts import AssetWeightSelector_InstancesExpressBasedOnWeight as test_module
 
-    @pytest.mark.xfail(reason="https://github.com/o3de/o3de/issues/4155")
+    @pytest.mark.skip(reason="https://github.com/o3de/o3de/issues/4155")
     class test_DistanceBetweenFilter_InstancesPlantAtSpecifiedRadius(EditorSharedTest):
         from .EditorScripts import DistanceBetweenFilter_InstancesPlantAtSpecifiedRadius as test_module
 
-    @pytest.mark.xfail(reason="https://github.com/o3de/o3de/issues/4155")
+    @pytest.mark.skip(reason="https://github.com/o3de/o3de/issues/4155")
     class test_DistanceBetweenFilterOverrides_InstancesPlantAtSpecifiedRadius(EditorSharedTest):
         from .EditorScripts import DistanceBetweenFilterOverrides_InstancesPlantAtSpecifiedRadius as test_module
-
-    class test_DynamicSliceInstanceSpawner_DynamicSliceSpawnerWorks(EditorSharedTest):
-        from .EditorScripts import DynamicSliceInstanceSpawner_DynamicSliceSpawnerWorks as test_module
 
     class test_EmptyInstanceSpawner_EmptySpawnerWorks(EditorSharedTest):
         from .EditorScripts import EmptyInstanceSpawner_EmptySpawnerWorks as test_module

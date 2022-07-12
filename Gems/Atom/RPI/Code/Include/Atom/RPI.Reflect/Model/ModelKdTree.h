@@ -25,7 +25,7 @@ namespace AZ
         {
         public:
 
-            using TriangleIndices = AZStd::tuple<uint32_t, uint32_t, uint32_t>;
+            struct TriangleIndices { uint32_t index1, index2, index3; };
             using ObjectIdTriangleIndices = AZStd::tuple<AZ::u8, TriangleIndices>;
 
             ModelKdTree() = default;

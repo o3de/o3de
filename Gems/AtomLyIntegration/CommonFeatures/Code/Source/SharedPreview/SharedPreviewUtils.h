@@ -29,10 +29,6 @@ namespace AZ
             //! Get assetInfo of source or product thumbnail key if asset type is supported by the shared preview
             AZ::Data::AssetInfo GetSupportedAssetInfo(AzToolsFramework::Thumbnailer::SharedThumbnailKey key);
 
-            //! Get assetId of source or product thumbnail key if asset type is supported by the shared preview
-            AZ::Data::AssetId GetSupportedAssetId(
-                AzToolsFramework::Thumbnailer::SharedThumbnailKey key, const AZ::Data::AssetId& defaultAssetId = {});
-
             //! Wraps AZ::RPI::AssetUtils::GetAssetIdForProductPath to handle empty productPath
             AZ::Data::AssetId GetAssetIdForProductPath(const AZStd::string_view productPath);
 

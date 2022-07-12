@@ -146,14 +146,12 @@ namespace AZ::Render
             return;
         }
 
+        const auto [viewportWidth, viewportHeight] = viewportContext->GetViewportSize();
+        const auto viewportSize = AzFramework::ScreenSize(viewportWidth, viewportHeight);
+
         // Initialize our shader
-        AZ::Vector2 viewportSize;
-        {
-            AzFramework::WindowSize viewportWindowSize = viewportContext->GetViewportSize();
-            viewportSize = AZ::Vector2{aznumeric_cast<float>(viewportWindowSize.m_width), aznumeric_cast<float>(viewportWindowSize.m_height)};
-        }
         AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> drawSrg = dynamicDraw->NewDrawSrg();
-        drawSrg->SetConstant(m_viewportSizeIndex,viewportSize);
+        drawSrg->SetConstant(m_viewportSizeIndex, AzFramework::Vector2FromScreenSize(viewportSize));
         drawSrg->SetImageView(m_textureParameterIndex, image->GetImageView());
         drawSrg->Compile();
 
@@ -180,7 +178,6 @@ namespace AZ::Render
             // Calculate our screen space position using the viewport size
             // We want this instead of RenderViewportWidget::WorldToScreen which works in QWidget virtual coordinate space
             const AzFramework::ScreenPoint screenPoint = AzFramework::ScreenPointFromNdc(AZ::Vector3ToVector2(ndcPoint), viewportSize);
-
             screenPosition = AzFramework::Vector3FromScreenPoint(screenPoint, ndcPoint.GetZ());
         }
 

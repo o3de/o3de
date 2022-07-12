@@ -6,7 +6,6 @@
  *
  */
 #include "EditorCommon.h"
-#include "FeedbackDialog.h"
 #include <AzQtComponents/Buses/ShortcutDispatch.h>
 #include <AzToolsFramework/Slice/SliceUtilities.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
@@ -871,7 +870,7 @@ void EditorWindow::AddMenu_Help()
 {
     const char* documentationUrl = "https://o3de.org/docs/user-guide/interactivity/user-interface/";
     const char* tutorialsUrl = "https://o3de.org/docs/learning-guide/tutorials/";
-    const char* forumUrl = "https://o3deorg.netlify.app/community/";
+    const char* forumUrl = "https://o3de.org/community/";
 
     QMenu* menu = menuBar()->addMenu("&Help");
     menu->setStyleSheet(UICANVASEDITOR_QMENU_ITEM_DISABLED_STYLESHEET);
@@ -916,22 +915,6 @@ void EditorWindow::AddMenu_Help()
             [forumUrl]([[maybe_unused]] bool checked)
             {
                 QDesktopServices::openUrl(QUrl(forumUrl));
-            });
-        menu->addAction(action);
-        addAction(action); // Also add the action to the window until the shortcut dispatcher can find the menu action
-    }
-
-    // Give Us Feedback
-    {
-        QAction* action = new QAction("&Give Us Feedback", this);
-
-        QObject::connect(action,
-            &QAction::triggered,
-            this,
-            [this]([[maybe_unused]] bool checked)
-            {
-                FeedbackDialog dialog(this);
-                dialog.exec();
             });
         menu->addAction(action);
         addAction(action); // Also add the action to the window until the shortcut dispatcher can find the menu action

@@ -79,6 +79,9 @@ namespace AssetProcessor
     void RCController::QuitRequested()
     {
         m_shuttingDown = true;
+        
+        // cancel all jobs:
+        AssetBuilderSDK::JobCommandBus::Broadcast(&AssetBuilderSDK::JobCommandBus::Events::Cancel);
 
         if (m_RCJobListModel.jobsInFlight() == 0)
         {
@@ -161,11 +164,6 @@ namespace AssetProcessor
     bool RCController::IsIdle()
     {
         return ((!m_RCQueueSortModel.GetNextPendingJob()) && (m_RCJobListModel.jobsInFlight() == 0));
-    }
-
-    void RCController::SetQueueSortOnDBSourceName()
-    {
-        m_RCQueueSortModel.SetQueueSortOnDBSourceName();
     }
 
     void RCController::JobSubmitted(JobDetails details)

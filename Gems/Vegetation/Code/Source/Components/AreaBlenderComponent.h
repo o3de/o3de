@@ -100,7 +100,6 @@ namespace Vegetation
     private:
         AreaBlenderConfig m_configuration;
         LmbrCentral::DependencyMonitor m_dependencyMonitor;
-        mutable bool m_isRequestInProgress = false; //prevent recursion in case user attaches cyclic dependences
 
         void SetupDependencies();
     };

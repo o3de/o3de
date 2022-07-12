@@ -46,13 +46,12 @@ namespace LandscapeCanvas
         BaseGradientNode::RegisterSlots();
 
         // Altitude Gradient has an additional input slot for an inbound shape
-        GraphModel::DataTypePtr invalidEntityDataType = GraphContext::GetInstance()->GetDataType(LandscapeCanvasDataTypeEnum::InvalidEntity);
-        GraphModel::DataTypePtr boundsDataType = GraphContext::GetInstance()->GetDataType(LandscapeCanvasDataTypeEnum::Bounds);
+        GraphModel::DataTypePtr boundsDataType = GetGraphContext()->GetDataType(LandscapeCanvasDataTypeEnum::Bounds);
 
         RegisterSlot(GraphModel::SlotDefinition::CreateInputData(
             PIN_TO_SHAPE_SLOT_ID,
             PIN_TO_SHAPE_SLOT_LABEL.toUtf8().constData(),
-            { boundsDataType, invalidEntityDataType },
+            { boundsDataType },
             AZStd::any(AZ::EntityId()),
             PIN_TO_SHAPE_INPUT_SLOT_DESCRIPTION.toUtf8().constData()));
     }

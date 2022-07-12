@@ -64,7 +64,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathMatrix4x4, CreateIdentity)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for ([[maybe_unused]] auto& testData : m_testDataArray)
             {
@@ -76,7 +76,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathMatrix4x4, CreateZero)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for ([[maybe_unused]] auto& testData : m_testDataArray)
             {
@@ -88,7 +88,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathMatrix4x4, GetRowX4)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& testData : m_testDataArray)
             {
@@ -106,7 +106,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathMatrix4x4, GetColumnX3)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& testData : m_testDataArray)
             {
@@ -124,7 +124,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathMatrix4x4, CreateFromValue)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for ([[maybe_unused]] auto& testData : m_testDataArray)
             {
@@ -136,7 +136,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathMatrix4x4, CreateFromRowMajorFloat16)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for ([[maybe_unused]] auto& testData : m_testDataArray)
             {
@@ -148,7 +148,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathMatrix4x4, CreateFromColumnMajorFloat9)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for ([[maybe_unused]] auto& testData : m_testDataArray)
             {
@@ -160,7 +160,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathMatrix4x4, CreateProjection)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for ([[maybe_unused]] auto& testData : m_testDataArray)
             {
@@ -172,7 +172,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathMatrix4x4, CreateProjectionFov)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for ([[maybe_unused]] auto& testData : m_testDataArray)
             {
@@ -184,7 +184,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathMatrix4x4, CreateInterpolated)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& testData : m_testDataArray)
             {
@@ -198,7 +198,7 @@ namespace Benchmark
     {
         float storeValues[16];
 
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& testData : m_testDataArray)
             {
@@ -212,7 +212,7 @@ namespace Benchmark
     {
         float storeValues[16];
 
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& testData : m_testDataArray)
             {
@@ -224,7 +224,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathMatrix4x4, CreateRotationX)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& testData : m_testDataArray)
             {
@@ -236,7 +236,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathMatrix4x4, CreateRotationY)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& testData : m_testDataArray)
             {
@@ -248,7 +248,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathMatrix4x4, CreateRotationZ)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& testData : m_testDataArray)
             {
@@ -260,7 +260,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathMatrix4x4, CreateFromQuaternion)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& testData : m_testDataArray)
             {
@@ -272,7 +272,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathMatrix4x4, CreateScale)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& testData : m_testDataArray)
             {
@@ -284,7 +284,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathMatrix4x4, CreateDiagonal)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& testData : m_testDataArray)
             {
@@ -296,7 +296,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathMatrix4x4, GetElement)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& testData : m_testDataArray)
             {
@@ -308,7 +308,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathMatrix4x4, SetElement)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& testData : m_testDataArray)
             {
@@ -321,7 +321,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathMatrix4x4, SetRowX3)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& testData : m_testDataArray)
             {
@@ -337,7 +337,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathMatrix4x4, SetColumnX3)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& testData : m_testDataArray)
             {
@@ -353,7 +353,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathMatrix4x4, GetBasisX)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& testData : m_testDataArray)
             {
@@ -365,7 +365,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathMatrix4x4, GetBasisY)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& testData : m_testDataArray)
             {
@@ -377,7 +377,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathMatrix4x4, GetBasisZ)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& testData : m_testDataArray)
             {
@@ -389,7 +389,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathMatrix4x4, CreateTranslation)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& testData : m_testDataArray)
             {
@@ -401,7 +401,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathMatrix4x4, SetTranslation)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& testData : m_testDataArray)
             {
@@ -414,7 +414,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathMatrix4x4, GetTranslation)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& testData : m_testDataArray)
             {
@@ -426,7 +426,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathMatrix4x4, OperatorAssign)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& testData : m_testDataArray)
             {
@@ -438,7 +438,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathMatrix4x4, OperatorMultiply)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& testData : m_testDataArray)
             {
@@ -450,7 +450,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathMatrix4x4, OperatorMultiplyAssign)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& testData : m_testDataArray)
             {
@@ -463,7 +463,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathMatrix4x4, OperatorMultiplyVector3)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& testData : m_testDataArray)
             {
@@ -475,7 +475,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathMatrix4x4, OperatorMultiplyVector4)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& testData : m_testDataArray)
             {
@@ -487,7 +487,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathMatrix4x4, TransposedMultiply3x3)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& testData : m_testDataArray)
             {
@@ -499,7 +499,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathMatrix4x4, Multiply3x3)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& testData : m_testDataArray)
             {
@@ -511,7 +511,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathMatrix4x4, Transpose)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& testData : m_testDataArray)
             {
@@ -524,7 +524,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathMatrix4x4, GetTranspose)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& testData : m_testDataArray)
             {
@@ -536,7 +536,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathMatrix4x4, GetInverseFast)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& testData : m_testDataArray)
             {
@@ -552,7 +552,7 @@ namespace Benchmark
         AZ::Matrix4x4 mat = AZ::Matrix4x4::CreateRotationX(1.0f);
         mat.SetElement(0, 1, 23.1234f);
 
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for ([[maybe_unused]] auto& testData : m_testDataArray)
             {
@@ -564,7 +564,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathMatrix4x4, GetInverseFull)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& testData : m_testDataArray)
             {
@@ -576,7 +576,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathMatrix4x4, SetRotationPartFromQuaternion)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& testData : m_testDataArray)
             {

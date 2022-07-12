@@ -86,7 +86,6 @@
 #define ID_PHYSICS_RESETPHYSICSSTATE               32938
 #define ID_GAME_SYNCPLAYER                         32941
 #define ID_FILE_SAVELEVELRESOURCES                 32942
-#define ID_VALIDATELEVEL                           32943
 #define ID_TERRAIN_RESIZE                          32944
 #define ID_TERRAIN_COLLISION                       32960
 #define ID_TOOL_FIRST                              32972
@@ -236,7 +235,6 @@
 #define ID_SNAP_TO_GRID_RANGE_END       34106
 #define ID_TOOLS_EXPORT_SHORTCUTS       34138
 #define ID_TOOLS_IMPORT_SHORTCUTS       34139
-#define ID_TOOLS_VALIDATEOBJECTPOSITIONS 34143
 #define ID_TOOLS_BATCH_RENDER           34151
 #define ID_TOOLS_SCRIPTHELP             34152
 #define ID_TV_MODE_OPENCURVEEDITOR      34153

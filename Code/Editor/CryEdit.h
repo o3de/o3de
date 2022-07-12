@@ -138,7 +138,6 @@ public:
     RecentFileList* GetRecentFileList();
     virtual void AddToRecentFileList(const QString& lpszPathName);
     ECreateLevelResult CreateLevel(const QString& levelName, QString& fullyQualifiedLevelName);
-    static void InitDirectory();
     bool FirstInstance(bool bForceNewInstance = false);
     void InitFromCommandLine(CEditCommandLineInfo& cmdInfo);
     bool CheckIfAlreadyRunning();
@@ -158,11 +157,6 @@ public:
 
     // Print to stdout even if there out has been redirected
     void PrintAlways(const AZStd::string& output);
-
-    //! Launches a detached process
-    //! \param process The path to the process to start
-    //! \param args Space separated list of arguments to pass to the process on start.
-    void StartProcessDetached(const char* process, const char* args);
 
     //! Launches the Lua Editor/Debugger
     //! \param files A space separated list of aliased paths
@@ -202,7 +196,6 @@ public:
     void OnDocumentationAWSSupport();
     void OnCommercePublish();
     void OnCommerceMerch();
-    void SaveTagLocations();
     void OnExportSelectedObjects();
     void OnEditHold();
     void OnEditFetch();
@@ -239,6 +232,7 @@ public:
     void OnUpdateNonGameMode(QAction* action);
     void OnUpdateNewLevel(QAction* action);
     void OnUpdatePlayGame(QAction* action);
+    void OnToolsLogMemoryUsage();
 
 protected:
     // ------- AzFramework::AssetSystemInfoBus::Handler ------
@@ -253,9 +247,6 @@ private:
 
     CMainFrame* GetMainFrame() const;
     void WriteConfig();
-    void TagLocation(int index);
-    void GotoTagLocation(int index);
-    void LoadTagLocations();
     bool UserExportToGame(bool bNoMsgBox = true);
     static void ShowSplashScreen(CCryEditApp* app);
     static void CloseSplashScreen();
@@ -311,10 +302,6 @@ private:
 
     CConsoleDialog* m_pConsoleDialog = nullptr;
 
-    AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
-    Vec3 m_tagLocations[12];
-    Ang3 m_tagAngles[12];
-    AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
     float m_fastRotateAngle = 45.0f;
     float m_moveSpeedStep = 0.1f;
 
@@ -365,33 +352,6 @@ private:
     void OnUpdateWireframe(QAction* action);
     void OnViewConfigureLayout();
 
-    // Tag Locations.
-    void OnTagLocation1();
-    void OnTagLocation2();
-    void OnTagLocation3();
-    void OnTagLocation4();
-    void OnTagLocation5();
-    void OnTagLocation6();
-    void OnTagLocation7();
-    void OnTagLocation8();
-    void OnTagLocation9();
-    void OnTagLocation10();
-    void OnTagLocation11();
-    void OnTagLocation12();
-
-    void OnGotoLocation1();
-    void OnGotoLocation2();
-    void OnGotoLocation3();
-    void OnGotoLocation4();
-    void OnGotoLocation5();
-    void OnGotoLocation6();
-    void OnGotoLocation7();
-    void OnGotoLocation8();
-    void OnGotoLocation9();
-    void OnGotoLocation10();
-    void OnGotoLocation11();
-    void OnGotoLocation12();
-    void OnToolsLogMemoryUsage();
     void OnCustomizeKeyboard();
     void OnToolsConfiguretools();
     void OnToolsScriptHelp();
@@ -399,7 +359,6 @@ private:
     void OnDisplayGotoPosition();
     void OnFileSavelevelresources();
     void OnClearRegistryData();
-    void OnValidatelevel();
     void OnToolsPreferences();
     void OnSwitchToDefaultCamera();
     void OnUpdateSwitchToDefaultCamera(QAction* action);
@@ -512,7 +471,7 @@ namespace AzToolsFramework
 
 } // namespace AzToolsFramework
 
-extern "C" AZ_DLL_EXPORT void InitializeDynamicModule(void* env);
+extern "C" AZ_DLL_EXPORT void InitializeDynamicModule();
 extern "C" AZ_DLL_EXPORT void UninitializeDynamicModule();
 
 #endif // CRYINCLUDE_EDITOR_CRYEDIT_H

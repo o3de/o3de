@@ -22,6 +22,7 @@
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
 #include <AzToolsFramework/Prefab/PrefabDomTypes.h>
 #include <AzToolsFramework/Prefab/Spawnable/EntityAliasTypes.h>
+#include <AzToolsFramework/Prefab/Spawnable/EntityIdPathMapperInterface.h>
 #include <AzToolsFramework/Prefab/Spawnable/PrefabDocument.h>
 #include <AzToolsFramework/Prefab/Spawnable/ProcesedObjectStore.h>
 
@@ -33,7 +34,9 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         AZ::Data::AssetLoadBehavior m_loadBehavior;
     };
 
-    class PrefabProcessorContext
+    using PrefabSpawnablePostProcessEvent = AZ::Event<const AZStd::string&, AzFramework::Spawnable&>;
+
+    class PrefabProcessorContext : private EntityIdPathMapperInterface
     {
     public:
         using ProcessedObjectStoreContainer = AZStd::vector<ProcessedObjectStore>;
@@ -43,7 +46,7 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         AZ_RTTI(PrefabProcessorContext, "{C7D77E3A-C544-486B-B774-7C82C38FE22F}");
 
         explicit PrefabProcessorContext(const AZ::Uuid& sourceUuid);
-        virtual ~PrefabProcessorContext() = default;
+        virtual ~PrefabProcessorContext();
 
         virtual bool AddPrefab(PrefabDocument&& document);
         virtual void ListPrefabs(const AZStd::function<void(PrefabDocument&)>& callback);
@@ -79,6 +82,13 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         virtual bool HasCompletedSuccessfully() const;
         virtual void ErrorEncountered();
 
+        //! EntityIdPathMapperInterface overrides
+        AZ::IO::PathView GetHashedPathUsedForEntityIdGeneration(const AZ::EntityId) override;
+        void SetHashedPathUsedForEntityIdGeneration(const AZ::EntityId, AZ::IO::PathView) override;
+
+        void AddPrefabSpawnablePostProcessEventHandler(PrefabSpawnablePostProcessEvent::Handler& handler);
+        void SendSpawnablePostProcessEvent(const AZStd::string& prefabName, AzFramework::Spawnable& spawnable);
+
     protected:
         using PrefabNames = AZStd::unordered_set<AZStd::string>;
         using PrefabContainer = AZStd::vector<PrefabDocument>;
@@ -86,12 +96,14 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
 
         AZ::Data::AssetLoadBehavior ToAssetLoadBehavior(EntityAliasSpawnableLoadBehavior loadBehavior) const;
 
+        AZStd::unordered_map<AZ::EntityId, AZ::IO::Path> m_entityIdToHashedPathMap;
         PrefabContainer m_prefabs;
         PrefabContainer m_pendingPrefabAdditions;
         PrefabNames m_prefabNames;
         SpawnableEntityAliasStore m_entityAliases;
         ProcessedObjectStoreContainer m_products;
         ProductAssetDependencyContainer m_registeredProductAssetDependencies;
+        PrefabSpawnablePostProcessEvent m_prefabPostProcessEvent;
 
         AZ::PlatformTagSet m_platformTags;
         AZ::Uuid m_sourceUuid;

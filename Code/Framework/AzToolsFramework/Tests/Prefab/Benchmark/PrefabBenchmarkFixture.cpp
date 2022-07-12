@@ -50,7 +50,7 @@ namespace Benchmark
         SetupPrefabSystem();
     }
 
-    void BM_Prefab::internalSetUp(const benchmark::State& state)
+    void BM_Prefab::SetupHarness(const benchmark::State& state)
     {
         AZ::Debug::TraceMessageBus::Handler::BusConnect();
 
@@ -59,7 +59,7 @@ namespace Benchmark
         SetupPrefabSystem();
     }
 
-    void BM_Prefab::internalTearDown(const benchmark::State& state)
+    void BM_Prefab::TeardownHarness(const benchmark::State& state)
     {
         m_paths = {};
 

@@ -61,18 +61,22 @@ namespace UnitTest
 
         MOCK_CONST_METHOD0(GetHeightsAndMaterials, AZStd::vector<Physics::HeightMaterialPoint>());
         MOCK_CONST_METHOD0(GetHeightfieldGridSpacing, AZ::Vector2());
-        MOCK_CONST_METHOD2(GetHeightfieldGridSize, void(int32_t&, int32_t&));
+        MOCK_CONST_METHOD2(GetHeightfieldGridSize, void(size_t&, size_t&));
         MOCK_CONST_METHOD2(GetHeightfieldHeightBounds, void(float&, float&));
         MOCK_CONST_METHOD0(GetHeightfieldTransform, AZ::Transform());
-        MOCK_CONST_METHOD0(GetMaterialList, AZStd::vector<Physics::MaterialId>());
+        MOCK_CONST_METHOD0(GetMaterialList, AZStd::vector<AZ::Data::Asset<Physics::MaterialAsset>>());
         MOCK_CONST_METHOD0(GetHeights, AZStd::vector<float>());
         MOCK_CONST_METHOD1(UpdateHeights, AZStd::vector<float>(const AZ::Aabb& dirtyRegion));
-        MOCK_CONST_METHOD1(UpdateHeightsAndMaterials, AZStd::vector<Physics::HeightMaterialPoint>(const AZ::Aabb& dirtyRegion));
         MOCK_CONST_METHOD0(GetHeightfieldAabb, AZ::Aabb());
         MOCK_CONST_METHOD0(GetHeightfieldMinHeight, float());
         MOCK_CONST_METHOD0(GetHeightfieldMaxHeight, float());
-        MOCK_CONST_METHOD0(GetHeightfieldGridColumns, int32_t());
-        MOCK_CONST_METHOD0(GetHeightfieldGridRows, int32_t());
+        MOCK_CONST_METHOD0(GetHeightfieldGridColumns, size_t());
+        MOCK_CONST_METHOD0(GetHeightfieldGridRows, size_t());
+        MOCK_CONST_METHOD5(GetHeightfieldIndicesFromRegion, void(const AZ::Aabb&, size_t&, size_t&, size_t&, size_t&));
+        MOCK_CONST_METHOD5(
+            UpdateHeightsAndMaterials, void(const Physics::UpdateHeightfieldSampleFunction&, size_t, size_t, size_t, size_t));
+        MOCK_CONST_METHOD6(
+            UpdateHeightsAndMaterialsAsync, void(const Physics::UpdateHeightfieldSampleFunction&,
+                const Physics::UpdateHeightfieldCompleteFunction&, size_t, size_t, size_t, size_t));
     };
-
 } // namespace UnitTest

@@ -360,18 +360,6 @@ void ReflectedPropertyControl::CreateItems(XmlNodeRef node, CVarBlockPtr& outBlo
                     textureVar->Set(textureName);
                 }
             }
-            else if (!azstricmp(type, "color"))
-            {
-                CSmartVariable<Vec3> colorVar;
-                AddVariable(group, colorVar, child->getTag(), humanReadableName.toUtf8().data(), strDescription.toUtf8().data(), func, pUserData, IVariable::DT_COLOR);
-                ColorB color;
-                if (child->getAttr("value", color))
-                {
-                    ColorF colorLinear = ColorGammaToLinear(QColor(color.r, color.g, color.b));
-                    Vec3 colorVec3(colorLinear.r, colorLinear.g, colorLinear.b);
-                    colorVar->Set(colorVec3);
-                }
-            }
         }
     }
 

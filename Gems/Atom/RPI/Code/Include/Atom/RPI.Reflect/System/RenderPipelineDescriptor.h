@@ -41,6 +41,9 @@ namespace AZ
 
             //! Flag indicating if this pipeline should execute one time and then be removed.
             bool m_executeOnce = false;
+
+            //! Flag indicating if this pipeline can accept modifications from scene's feature processors
+            bool m_allowModification = false;
         };
 
     } // namespace RPI

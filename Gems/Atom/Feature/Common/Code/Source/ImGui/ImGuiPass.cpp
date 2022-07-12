@@ -70,45 +70,17 @@ namespace AZ
             , m_tickHandlerFrameStart(*this)
             , m_tickHandlerFrameEnd(*this)
         {
-
             const ImGuiPassData* imguiPassData = RPI::PassUtils::GetPassData<ImGuiPassData>(descriptor);
-            if (imguiPassData)
-            {
-                // check if this is the default ImGui pass.
-                if (imguiPassData->m_isDefaultImGui)
-                {
-                    // Check to see if another default is already set.
-                    ImGuiPass* currentDefaultPass = nullptr;
-                    ImGuiSystemRequestBus::BroadcastResult(currentDefaultPass, &ImGuiSystemRequestBus::Events::GetDefaultImGuiPass);
-
-                    if (currentDefaultPass != nullptr && currentDefaultPass->GetRenderPipeline() == GetRenderPipeline())
-                    {
-                        // Only error when the pipelines match, meaning the default was set multiple times for the same pipeline. When the pipelines differ,
-                        // it's possible that multiple default ImGui passes are intentional, and only the first one to load should actually be set as default.
-                        AZ_Error("ImGuiPass", false, "Default ImGui pass is already set on this pipeline, ignoring request to set this pass as default. Only one ImGui pass should be marked as default in the pipeline.");
-                    }
-                    else
-                    {
-                        m_isDefaultImGuiPass = true;
-                        ImGuiSystemRequestBus::Broadcast(&ImGuiSystemRequestBus::Events::PushDefaultImGuiPass, this);
-                    }
-                }
-            }
-
-            auto imguiContextScope = ImguiContextScope(nullptr);
-
-            m_imguiContext = ImGui::CreateContext();
-            ImGui::StyleColorsDark();
-
-            Init();
-            ImGui::NewFrame();
-
-            AzFramework::InputChannelEventListener::Connect();
-            AzFramework::InputTextEventListener::Connect();
+            m_requestedAsDefaultImguiPass = imguiPassData != nullptr ? imguiPassData->m_isDefaultImGui : false;
         }
 
         ImGuiPass::~ImGuiPass()
         {
+            if (!m_imguiInitialized)
+            {
+                return;
+            }
+
             if (m_isDefaultImGuiPass)
             {
                 ImGuiSystemRequestBus::Broadcast(&ImGuiSystemRequestBus::Events::RemoveDefaultImGuiPass, this);
@@ -432,38 +404,37 @@ namespace AZ
             return shouldCaptureEvent;
         }
 
-        void ImGuiPass::FrameBeginInternal(FramePrepareParams params)
+        void ImGuiPass::InitializeImGui()
         {
-            auto imguiContextScope = ImguiContextScope(m_imguiContext);
+            if (m_requestedAsDefaultImguiPass)
+            {
+                // Check to see if another default is already set.
+                ImGuiPass* currentDefaultPass = nullptr;
+                ImGuiSystemRequestBus::BroadcastResult(currentDefaultPass, &ImGuiSystemRequestBus::Events::GetDefaultImGuiPass);
 
-            m_viewportWidth = static_cast<uint32_t>(params.m_viewportState.m_maxX - params.m_viewportState.m_minX);
-            m_viewportHeight = static_cast<uint32_t>(params.m_viewportState.m_maxY - params.m_viewportState.m_minY);
+                if (currentDefaultPass != nullptr && currentDefaultPass->GetRenderPipeline() == GetRenderPipeline())
+                {
+                    // Only error when the pipelines match, meaning the default was set multiple times for the same pipeline. When the pipelines differ,
+                    // it's possible that multiple default ImGui passes are intentional, and only the first one to load should actually be set as default.
+                    AZ_Error("ImGuiPass", false, "Default ImGui pass is already set on this pipeline, ignoring request to set this pass as default. Only one ImGui pass should be marked as default in the pipeline.");
+                }
+                else
+                {
+                    m_isDefaultImGuiPass = true;
+                    ImGuiSystemRequestBus::Broadcast(&ImGuiSystemRequestBus::Events::PushDefaultImGuiPass, this);
+                }
+            }
+
+            // This ImguiContextScope is just to ensure we set the imgui context to what it was previously at the end of this function
+            // The nullptr param is irrelevant as the imgui context gets set to the new context in ImGui::CreateContext
+            auto imguiContextScope = ImguiContextScope(nullptr);
+            m_imguiContext = ImGui::CreateContext();
+            ImGui::StyleColorsDark();
 
             auto& io = ImGui::GetIO();
-            io.DisplaySize.x = AZStd::max<float>(1.0f, static_cast<float>(m_viewportWidth));
-            io.DisplaySize.y = AZStd::max<float>(1.0f, static_cast<float>(m_viewportHeight));
-
-            Matrix4x4 projectionMatrix =
-                Matrix4x4::CreateFromRows(
-                    AZ::Vector4(2.0f / m_viewportWidth, 0.0f, 0.0f, -1.0f),
-                    AZ::Vector4(0.0f, -2.0f / m_viewportHeight, 0.0f, 1.0f),
-                    AZ::Vector4(0.0f, 0.0f, 0.5f, 0.5f),
-                    AZ::Vector4(0.0f, 0.0f, 0.0f, 1.0f));
-
-            m_resourceGroup->SetConstant(m_projectionMatrixIndex, projectionMatrix);
-
-            m_viewportState = params.m_viewportState;
-
-            Base::FrameBeginInternal(params);
-        }
-
-        void ImGuiPass::Init()
-        {
-            auto imguiContextScope = ImguiContextScope(m_imguiContext);
-            auto& io = ImGui::GetIO();
-        #if defined(AZ_TRAIT_IMGUI_INI_FILENAME)
+#if defined(AZ_TRAIT_IMGUI_INI_FILENAME)
             io.IniFilename = AZ_TRAIT_IMGUI_INI_FILENAME;
-        #endif
+#endif
 
             // ImGui IO Setup
             {
@@ -510,20 +481,22 @@ namespace AZ
                     ->Channel("POSITION", RHI::Format::R32G32_FLOAT)
                     ->Channel("UV", RHI::Format::R32G32_FLOAT)
                     ->Channel("COLOR", RHI::Format::R8G8B8A8_UNORM);
+                layoutBuilder.AddBuffer(RHI::StreamStepFunction::PerInstance)
+                    ->Channel("INSTANCE_DATA", RHI::Format::R8_UINT);
                 m_pipelineState->InputStreamLayout() = layoutBuilder.End();
 
             }
 
             // Get shader resource group
             {
-                auto perObjectSrgLayout = m_shader->FindShaderResourceGroupLayout(RPI::SrgBindingSlot::Object);
-                if (!perObjectSrgLayout)
+                auto perPassSrgLayout = m_shader->FindShaderResourceGroupLayout(RPI::SrgBindingSlot::Pass);
+                if (!perPassSrgLayout)
                 {
                     AZ_Error(PassName, false, "Failed to get shader resource group layout");
                     return;
                 }
 
-                m_resourceGroup = RPI::ShaderResourceGroup::Create(m_shader->GetAsset(), m_shader->GetSupervariantIndex(), perObjectSrgLayout->GetName());
+                m_resourceGroup = RPI::ShaderResourceGroup::Create(m_shader->GetAsset(), m_shader->GetSupervariantIndex(), perPassSrgLayout->GetName());
                 if (!m_resourceGroup)
                 {
                     AZ_Error(PassName, false, "Failed to create shader resource group");
@@ -560,17 +533,66 @@ namespace AZ
                 io.Fonts->AddFontDefault();
                 io.Fonts->Build();
             }
-            m_resourceGroup->SetImage(m_fontImageIndex, m_fontAtlas);
+
+            const uint32_t fontTextureIndex = 0;
+            m_resourceGroup->SetImage(m_texturesIndex, m_fontAtlas, fontTextureIndex);
             io.Fonts->TexID = reinterpret_cast<ImTextureID>(m_fontAtlas.get());
+            m_imguiFontTexId = io.Fonts->TexID;
+
+            // ImGuiPass will support binding 16 textures at most per frame. 
+            const uint8_t instanceData[16] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 };
+            RPI::CommonBufferDescriptor desc;
+            desc.m_poolType = RPI::CommonBufferPoolType::StaticInputAssembly;
+            desc.m_bufferName = "InstanceBuffer";
+            desc.m_elementSize = 1;
+            desc.m_byteCount = 16;
+            desc.m_bufferData = instanceData;
+            m_instanceBuffer = RPI::BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
+            m_instanceBufferView = RHI::StreamBufferView(*m_instanceBuffer->GetRHIBuffer(), 0, 16, 1);
+
+            ImGui::NewFrame();
+            AzFramework::InputChannelEventListener::Connect();
+            AzFramework::InputTextEventListener::Connect();
         }
 
         void ImGuiPass::InitializeInternal()
         {
+            if (!m_imguiInitialized)
+            {
+                InitializeImGui();
+                m_imguiInitialized = true;
+            }
+
             // Set output format and finalize pipeline state
             m_pipelineState->SetOutputFromPass(this);
             m_pipelineState->Finalize();
 
             Base::InitializeInternal();
+        }
+
+        void ImGuiPass::FrameBeginInternal(FramePrepareParams params)
+        {
+            auto imguiContextScope = ImguiContextScope(m_imguiContext);
+
+            m_viewportWidth = static_cast<uint32_t>(params.m_viewportState.m_maxX - params.m_viewportState.m_minX);
+            m_viewportHeight = static_cast<uint32_t>(params.m_viewportState.m_maxY - params.m_viewportState.m_minY);
+
+            auto& io = ImGui::GetIO();
+            io.DisplaySize.x = AZStd::max<float>(1.0f, static_cast<float>(m_viewportWidth));
+            io.DisplaySize.y = AZStd::max<float>(1.0f, static_cast<float>(m_viewportHeight));
+
+            Matrix4x4 projectionMatrix =
+                Matrix4x4::CreateFromRows(
+                    AZ::Vector4(2.0f / m_viewportWidth, 0.0f, 0.0f, -1.0f),
+                    AZ::Vector4(0.0f, -2.0f / m_viewportHeight, 0.0f, 1.0f),
+                    AZ::Vector4(0.0f, 0.0f, 0.5f, 0.5f),
+                    AZ::Vector4(0.0f, 0.0f, 0.0f, 1.0f));
+
+            m_resourceGroup->SetConstant(m_projectionMatrixIndex, projectionMatrix);
+
+            m_viewportState = params.m_viewportState;
+
+            Base::FrameBeginInternal(params);
         }
 
         void ImGuiPass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph)
@@ -587,12 +609,11 @@ namespace AZ
 
         void ImGuiPass::CompileResources([[maybe_unused]] const RHI::FrameGraphCompileContext& context)
         {
-            m_resourceGroup->Compile();
-
             // Create all the DrawIndexeds so they can be submitted in parallel on BuildCommandListInternal()
             uint32_t vertexOffset = 0;
             uint32_t indexOffset = 0;
-
+            
+            m_userTextures.clear();
             for (ImDrawData& drawData : m_drawData)
             {
                 for (int32_t cmdListIdx = 0; cmdListIdx < drawData.CmdListsCount; cmdListIdx++)
@@ -608,10 +629,28 @@ namespace AZ
                         //otherwise it is possible to have a frame where scissor bounds can be bigger than window's bounds if we resize the window
                         scissorMaxX = AZStd::min(scissorMaxX, m_viewportWidth);
                         scissorMaxY = AZStd::min(scissorMaxY, m_viewportHeight);
-                        
+
+                        // check if texture id needs to be bound to the srg
+                        uint32_t index = 0;
+                        if (drawCmd.TextureId && drawCmd.TextureId != m_imguiFontTexId)
+                        {
+                            if (m_userTextures.size() < MaxUserTextures)
+                            {
+                                Data::Instance<RPI::StreamingImage> img = reinterpret_cast<RPI::StreamingImage*>(drawCmd.TextureId);
+                                // Texture index 0 is reserved for the font atlas, so we start from 1 to 15 for user textures.
+                                index = aznumeric_cast<uint32_t>(m_userTextures.size() + 1);
+                                m_userTextures[img.get()] = index;
+                            }
+                            else
+                            {
+                                AZ_Warning("ImGuiPass", false, "The maximum number of textures ImGui can render per frame is %d", MaxUserTextures);
+                            }
+                        }
+
                         m_draws.push_back(
                             {
-                                RHI::DrawIndexed(1, 0, vertexOffset, drawCmd.ElemCount, indexOffset),
+                                // Instance offset is used to index to the correct texture in the shader
+                                RHI::DrawIndexed(1, index, vertexOffset, drawCmd.ElemCount, indexOffset),
                                 RHI::Scissor(
                                     static_cast<int32_t>(drawCmd.ClipRect.x),
                                     static_cast<int32_t>(drawCmd.ClipRect.y),
@@ -627,10 +666,16 @@ namespace AZ
                 }
             }
             m_drawData.clear();
-
+            
             auto imguiContextScope = ImguiContextScope(m_imguiContext);
             ImGui::GetIO().MouseWheel = m_lastFrameMouseWheel;
             m_lastFrameMouseWheel = 0.0;
+
+            for (auto& [streamingImage, index] : m_userTextures)
+            {
+                m_resourceGroup->SetImage(m_texturesIndex, streamingImage, index);
+            }
+            m_resourceGroup->Compile();
         }
 
         void ImGuiPass::BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context)
@@ -638,22 +683,16 @@ namespace AZ
             AZ_PROFILE_SCOPE(AzRender, "ImGuiPass: BuildCommandListInternal");
 
             context.GetCommandList()->SetViewport(m_viewportState);
+            context.GetCommandList()->SetShaderResourceGroupForDraw(*m_resourceGroup->GetRHIShaderResourceGroup());
 
-            const RHI::ShaderResourceGroup* shaderResourceGroups[] = { m_resourceGroup->GetRHIShaderResourceGroup() };
-
-            uint32_t numDraws = aznumeric_cast<uint32_t>(m_draws.size());
-            uint32_t firstIndex = (context.GetCommandListIndex() * numDraws) / context.GetCommandListCount();
-            uint32_t lastIndex = ((context.GetCommandListIndex() + 1) * numDraws) / context.GetCommandListCount();
-
-            for (uint32_t i = firstIndex; i < lastIndex; ++i)
+            for (uint32_t i = context.GetSubmitRange().m_startIndex; i < context.GetSubmitRange().m_endIndex; ++i)
             {
                 RHI::DrawItem drawItem;
+                drawItem.m_submitIndex = i;
                 drawItem.m_arguments = m_draws.at(i).m_drawIndexed;
                 drawItem.m_pipelineState = m_pipelineState->GetRHIPipelineState();
                 drawItem.m_indexBufferView = &m_indexBufferView;
-                drawItem.m_shaderResourceGroupCount = 1;
-                drawItem.m_shaderResourceGroups = shaderResourceGroups;
-                drawItem.m_streamBufferViewCount = 1;
+                drawItem.m_streamBufferViewCount = 2;
                 drawItem.m_streamBufferViews = m_vertexBufferView.data();
                 drawItem.m_scissorsCount = 1;
                 drawItem.m_scissors = &m_draws.at(i).m_scissor;
@@ -718,13 +757,14 @@ namespace AZ
                     memcpy(vertexBufferData + vertexBufferOffset, drawList->VtxBuffer.Data, vertexBufferByteSize);
                     vertexBufferOffset += drawList->VtxBuffer.size();
 
-                    ++drawCount;
+                    drawCount += drawList->CmdBuffer.size();
                 }
             }
 
             static_assert(indexSize == 2, "Expected index size from ImGui to be 2 to match RHI::IndexFormat::Uint16");
             m_indexBufferView = indexBuffer->GetIndexBufferView(RHI::IndexFormat::Uint16);
             m_vertexBufferView[0] = vertexBuffer->GetStreamBufferView(vertexSize);
+            m_vertexBufferView[1] = m_instanceBufferView;
 
             RHI::ValidateStreamBufferViews(m_pipelineState->ConstDescriptor().m_inputStreamLayout, m_vertexBufferView);
 

@@ -8,40 +8,40 @@
 #pragma once
 
 #include <AzCore/base.h>
+#include <AzCore/Component/ComponentBus.h>
+#include <AzCore/Component/Entity.h>
 #include <AzCore/Debug/Budget.h>
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Math/Aabb.h>
 #include <AzCore/Math/Uuid.h>
-#include <AzCore/Component/Entity.h>
-#include <AzCore/Component/EntityId.h>
-#include <AzCore/Component/ComponentBus.h>
+#include <AzCore/Outcome/Outcome.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/Slice/SliceComponent.h>
-#include <AzCore/Outcome/Outcome.h>
-#include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
-#include <AzToolsFramework/SourceControl/SourceControlAPI.h>
 
 #include <AzFramework/Entity/EntityContextBus.h>
+
+#include <AzToolsFramework/Entity/EntityTypes.h>
+#include <AzToolsFramework/SourceControl/SourceControlAPI.h>
+#include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 
 namespace AZ
 {
     class Entity;
     class Vector2;
-    class Entity;
-}
+} // namespace AZ
 
-class QMenu;
-class QWidget;
+struct IEditor;
 class QApplication;
 class QDockWidget;
 class QMainWindow;
-struct IEditor;
+class QMenu;
+class QWidget;
 
 namespace AzToolsFramework
 {
     struct ViewPaneOptions;
-    class PreemptiveUndoCache;
     class EntityPropertyEditor;
+    class PreemptiveUndoCache;
 
     namespace UndoSystem
     {
@@ -54,10 +54,7 @@ namespace AzToolsFramework
         class AssetSelectionModel;
     }
 
-    using EntityIdList = AZStd::vector<AZ::EntityId>;
-    using EntityList = AZStd::vector<AZ::Entity*>;
     using ClassDataList = AZStd::vector<const AZ::SerializeContext::ClassData*>;
-    using EntityIdSet = AZStd::unordered_set<AZ::EntityId>;
 
     //! Return true to accept this type of component.
     using ComponentFilter = AZStd::function<bool(const AZ::SerializeContext::ClassData&)>;
@@ -929,6 +926,12 @@ namespace AzToolsFramework
 
         /// Signal that an asset should be highlighted / selected
         virtual void SelectAsset(const QString& /* assetPath */) {}
+
+        // Notify that a viewpane has just been opened.
+        virtual void OnViewPaneOpened(const char* /*viewPaneName*/) {}
+
+        // Notify that a viewpane has just been closed.
+        virtual void OnViewPaneClosed(const char* /*viewPaneName*/) {}
     };
 
     using EditorEventsBus = AZ::EBus<EditorEvents>;

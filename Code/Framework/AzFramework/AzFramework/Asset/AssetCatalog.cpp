@@ -547,9 +547,11 @@ namespace AzFramework
             AZStd::lock_guard<AZStd::recursive_mutex> lock(m_registryMutex);
 
             // Get asset root from application.
+            AZStd::string assetRoot;
             if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
             {
-                settingsRegistry->Get(m_assetRoot, AZ::SettingsRegistryMergeUtils::FilePathKey_CacheRootFolder);
+
+                settingsRegistry->Get(assetRoot, AZ::SettingsRegistryMergeUtils::FilePathKey_CacheRootFolder);
             }
 
             // Reflect registry for serialization.
@@ -561,7 +563,7 @@ namespace AzFramework
                 AssetRegistry::ReflectSerialize(serializeContext);
             }
 
-            AZ_TracePrintf("AssetCatalog", "Initializing asset catalog with root \"%s\"", m_assetRoot.c_str());
+            AZ_TracePrintf("AssetCatalog", "Initializing asset catalog with root \"%s\"", assetRoot.c_str());
 
             // even though this could be a chunk of memory to allocate and deallocate, this is many times faster and more efficient
             // in terms of memory AND fragmentation than allowing it to perform thousands of reads on physical media.
@@ -690,7 +692,7 @@ namespace AzFramework
         {
             AZ::Data::AssetInfo assetInfo = GetAssetInfoById(assetId);
 
-            AZ::TickBus::QueueFunction([assetId, assetInfo = AZStd::move(assetInfo)]()
+            AZ::SystemTickBus::QueueFunction([assetId, assetInfo = AZStd::move(assetInfo)]()
             {
                 AzFramework::AssetCatalogEventBus::Broadcast(&AzFramework::AssetCatalogEventBus::Events::OnCatalogAssetRemoved, assetId, assetInfo);
             });
@@ -853,7 +855,7 @@ namespace AzFramework
             if (!isNewAsset)
             {
                 // the following deliveries must happen on the main thread of the application:
-                AZ::TickBus::QueueFunction([assetId]() 
+                AZ::SystemTickBus::QueueFunction([assetId]() 
                 {
                     AzFramework::AssetCatalogEventBus::Broadcast(&AzFramework::AssetCatalogEventBus::Events::OnCatalogAssetChanged, assetId);
                 });
@@ -861,7 +863,7 @@ namespace AzFramework
                 // in case someone has an ancient reference, notify on that too.
                 for (const auto& mapping : message.m_legacyAssetIds)
                 {
-                    AZ::TickBus::QueueFunction([mapping]()
+                    AZ::SystemTickBus::QueueFunction([mapping]()
                     {
                         AzFramework::AssetCatalogEventBus::Broadcast(&AzFramework::AssetCatalogEventBus::Events::OnCatalogAssetChanged, mapping);
                     });
@@ -870,13 +872,13 @@ namespace AzFramework
             }
             else
             {
-                AZ::TickBus::QueueFunction([assetId]()
+                AZ::SystemTickBus::QueueFunction([assetId]()
                 {
                     AzFramework::AssetCatalogEventBus::Broadcast(&AzFramework::AssetCatalogEventBus::Events::OnCatalogAssetAdded, assetId);
                 });
                 for (const auto& mapping : message.m_legacyAssetIds)
                 {
-                    AZ::TickBus::QueueFunction([mapping]()
+                    AZ::SystemTickBus::QueueFunction([mapping]()
                     {
                         AzFramework::AssetCatalogEventBus::Broadcast(&AzFramework::AssetCatalogEventBus::Events::OnCatalogAssetAdded, mapping);
                     });
@@ -887,7 +889,7 @@ namespace AzFramework
             
             if (AZ::Data::AssetManager::IsReady())
             {
-                AZ::TickBus::QueueFunction([assetId]()
+                AZ::SystemTickBus::QueueFunction([assetId]()
                 {
                     AZ::Data::AssetManager::Instance().ReloadAsset(assetId, AZ::Data::AssetLoadBehavior::Default, true);
                 });

@@ -17,7 +17,7 @@ namespace WhiteBox
 
     //! Function object alias for creating a RenderMeshInterface.
     //! @note Used by SetRenderMeshInterfaceBuilder in WhiteBoxRequests.
-    using RenderMeshInterfaceBuilderFn = AZStd::function<AZStd::unique_ptr<RenderMeshInterface>()>;
+    using RenderMeshInterfaceBuilderFn = AZStd::function<AZStd::unique_ptr<RenderMeshInterface>(AZ::EntityId)>;
 
     //! White Box system level requests.
     class WhiteBoxRequests : public AZ::EBusTraits
@@ -28,7 +28,7 @@ namespace WhiteBox
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
 
         //! Create a render mesh for use with white box data.
-        virtual AZStd::unique_ptr<RenderMeshInterface> CreateRenderMeshInterface() = 0;
+        virtual AZStd::unique_ptr<RenderMeshInterface> CreateRenderMeshInterface(AZ::EntityId) = 0;
         //! Control what concrete implementation of RenderMeshInterface CreateRenderMeshInterface returns.
         virtual void SetRenderMeshInterfaceBuilder(RenderMeshInterfaceBuilderFn builder) = 0;
 

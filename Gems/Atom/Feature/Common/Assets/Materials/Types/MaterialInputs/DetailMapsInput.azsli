@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <Atom/Features/Debug.azsli>
+
 // This file provides utilities for common handling of inputs for a detail layer of PBR materials.
 // This layer includes alternate base color, roughness, normal, etc maps that are tiled on top of the materialtype's main maps.
 
@@ -64,7 +66,7 @@ float3 ApplyNormalMapOverlayTS(bool applyOverlay, float3 vertexNormalWS, float3 
     Texture2D overlayNormalMap, sampler overlayMapSampler, float2 overlayUv, bool flipOverlayNormalX, bool flipOverlayNormalY, float overlayFactor, 
     float3 overlayTangent, float3 overlayBitangen, float3x3 overlayNormalUvMatrix)
 {
-    if(applyOverlay)
+    if(applyOverlay && AreDetailNormalMapsEnabled())
     {
         // Get overlay normal in its local tangent space
         float3 overlayNormalTS = GetNormalInputTS(overlayNormalMap, overlayMapSampler, overlayUv, flipOverlayNormalX, flipOverlayNormalY, overlayNormalUvMatrix, true, overlayFactor);
@@ -92,7 +94,7 @@ float3 ApplyNormalMapOverlayWS(bool applyOverlay, float3 vertexNormalWS, float3 
     Texture2D overlayNormalMap, sampler overlayMapSampler, float2 overlayUv, bool flipOverlayNormalX, bool flipOverlayNormalY, float overlayFactor, 
     float3 overlayTangent, float3 overlayBitangen, float3x3 overlayNormalUvMatrix)
 {
-    if(applyOverlay)
+    if(applyOverlay && AreDetailNormalMapsEnabled())
     {
         float3 normalTS = ApplyNormalMapOverlayTS(applyOverlay, vertexNormalWS, mainNormalTS, mainTangent, mainBitangent, overlayNormalMap, overlayMapSampler, overlayUv, flipOverlayNormalX, flipOverlayNormalY, overlayFactor, overlayTangent, overlayBitangen, overlayNormalUvMatrix);
         float3 normalWS = normalize( TangentSpaceToWorld(normalTS, vertexNormalWS, mainTangent, mainBitangent) );
@@ -110,6 +112,9 @@ float3 GetDetailedNormalInputWS(bool isFrontFace, float3 vertexNormalWS,
 {
     float3 normal;
     
+    useDetailNormalMap = useDetailNormalMap && AreDetailNormalMapsEnabled();
+    useMainNormalMap = useMainNormalMap && AreNormalMapsEnabled();
+
     if(useDetailNormalMap)
     {
         // Get normal in tangent space

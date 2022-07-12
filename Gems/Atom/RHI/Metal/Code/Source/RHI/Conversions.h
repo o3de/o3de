@@ -100,7 +100,7 @@ namespace AZ
         MTLTextureDescriptor* ConvertImageDescriptor(const RHI::ImageDescriptor& descriptor);
         MTLSamplePosition ConvertSampleLocation(const RHI::SamplePosition& position);
         MTLVisibilityResultMode ConvertVisibilityResult(RHI::QueryControlFlags flags);
-        MTLBlitOption GetBlitOption(RHI::Format format);
+        MTLBlitOption GetBlitOption(RHI::Format format, RHI::ImageAspect imageAspect);
         MTLResourceUsage GetImageResourceUsage(RHI::ShaderInputImageAccess imageAccess);
         MTLResourceUsage GetBufferResourceUsage(RHI::ShaderInputBufferAccess bufferAccess);
         MTLRenderStages GetRenderStages(RHI::ShaderStageMask shaderMask);

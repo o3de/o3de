@@ -22,7 +22,7 @@ class ${SanitizedCppName}Dialog(QDialog):
         self.mainLayout.addWidget(self.introLabel, 0, Qt.AlignCenter)
 
         self.helpText = str("For help getting started,"
-            "visit the <a href=\"https://o3de.org/docs/tools-ui/ui-dev-intro/\">UI Development</a> documentation<br/>"
+            "visit the <a href=\"https://o3de.org/docs/tools-ui/\">UI Development</a> documentation<br/>"
             "or come ask a question in the <a href=\"https://discord.gg/R77Wss3kHe\">sig-ui-ux channel</a> on Discord")
 
         self.helpLabel = QLabel()

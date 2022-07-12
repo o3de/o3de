@@ -8,7 +8,9 @@
 				"SupportedFileTypeExtensions":
 				[
 					".fbx",
-					".stl"
+					".stl",
+					".gltf",
+					".glb"
 				]
 			},
 			"MaterialConverter": 
@@ -20,6 +22,11 @@
 			{
 				"DefaultGenerationMethod": "FromSourceScene",
 				"DebugBitangentFlip": false
+			},
+			"SkinRule":
+			{
+				"DefaultMaxSkinInfluencesPerVertex": 8,
+                "DefaultWeightThreshold": 0.001
 			}
 		}
 	}

@@ -10,6 +10,16 @@
 
 namespace AzNetworking
 {
+    StringifySerializer::StringifySerializer()
+    {
+        ;
+    }
+
+    StringifySerializer::~StringifySerializer()
+    {
+        ;
+    }
+
     const StringifySerializer::ValueMap& StringifySerializer::GetValueMap() const
     {
         return m_valueMap;
@@ -91,7 +101,7 @@ namespace AzNetworking
         return false;
     }
 
-    bool StringifySerializer::BeginObject(const char* name, const char*)
+    bool StringifySerializer::BeginObject(const char* name)
     {
         m_prefixSizeStack.push_back(m_prefix.size());
         m_prefix += name;
@@ -99,7 +109,7 @@ namespace AzNetworking
         return true;
     }
 
-    bool StringifySerializer::EndObject(const char*, const char*)
+    bool StringifySerializer::EndObject(const char*)
     {
         m_prefix.resize(m_prefixSizeStack.back());
         m_prefixSizeStack.pop_back();

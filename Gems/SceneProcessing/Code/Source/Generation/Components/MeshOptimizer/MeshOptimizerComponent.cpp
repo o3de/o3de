@@ -535,7 +535,7 @@ namespace AZ::SceneGenerationComponents
             // the views provided by SceneAPI do not have a size() method, so compute it
             const size_t layerCount = AZStd::distance(dataView.begin(), dataView.end());
             AZStd::vector<ResultingLayerType*> layers(layerCount);
-            AZStd::generate(layers.begin(), layers.end(), [&meshBuilder, vertexCount]
+            AZStd::generate(layers.begin(), layers.end(), [&meshBuilder = meshBuilder, vertexCount = vertexCount]
             {
                 return meshBuilder.AddLayer<ResultingLayerType>(vertexCount);
             });
@@ -659,7 +659,7 @@ namespace AZ::SceneGenerationComponents
         }
 
         // Copy node attributes
-        AZStd::apply([](const auto&&... nodePairView) {
+        AZStd::apply([]([[maybe_unused]] const auto&&... nodePairView) {
             ((AZStd::for_each(begin(nodePairView), end(nodePairView), [](const auto& nodePair) {
                 auto& originalNode = nodePair.first;
                 auto& optimizedNode = nodePair.second;

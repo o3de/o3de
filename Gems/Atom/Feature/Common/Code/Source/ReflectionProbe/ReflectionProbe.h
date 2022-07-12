@@ -18,14 +18,12 @@
 #include <Atom/RPI.Public/PipelineState.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 #include <Atom/RPI.Public/Scene.h>
+#include <CubeMapCapture/CubeMapRenderer.h>
 
 namespace AZ
 {
     namespace Render
     {
-        class ReflectionProbeFeatureProcessor;
-        using BuildCubeMapCallback = AZStd::function<void(uint8_t* const* cubeMapTextureData, const RHI::Format cubeMapTextureFormat)>;
-
         // shared data for rendering reflections, loaded and stored by the ReflectionProbeFeatureProcessor and passed to all probes
         struct ReflectionRenderData
         {
@@ -66,8 +64,9 @@ namespace AZ
         };
 
         // ReflectionProbe manages all aspects of a single probe, including rendering, visualization, and cubemap generation
-        class ReflectionProbe final :
-            public AZ::Data::AssetBus::MultiHandler
+        class ReflectionProbe final
+            : public AZ::Data::AssetBus::MultiHandler
+            , private CubeMapRenderer
         {
         public:
             ReflectionProbe() = default;
@@ -75,6 +74,7 @@ namespace AZ
 
             void Init(RPI::Scene* scene, ReflectionRenderData* reflectionRenderData);
             void Simulate(uint32_t probeIndex);
+            void OnRenderEnd();
 
             const Vector3& GetPosition() const { return m_transform.GetTranslation(); }
             const AZ::Transform& GetTransform() const { return m_transform; }
@@ -97,9 +97,10 @@ namespace AZ
             bool GetUseParallaxCorrection() const { return m_useParallaxCorrection; }
             void SetUseParallaxCorrection(bool useParallaxCorrection) { m_useParallaxCorrection = useParallaxCorrection; }
 
-            // initiates the cubemap bake and invokes the callback when all faces of the cubemap are rendered
-            void BuildCubeMap(BuildCubeMapCallback callback);
-            bool IsBuildingCubeMap() { return m_buildingCubeMap; }
+            const AZ::Uuid& GetUuid() const { return m_uuid; }
+
+            // initiates the reflection probe bake and invokes the callback when the cubemap is finished rendering
+            void Bake(RenderCubeMapCallback callback);
 
             // called by the feature processor so the probe can set the default view for the pipeline
             void OnRenderPipelinePassesChanged(RPI::RenderPipeline* renderPipeline);
@@ -175,16 +176,7 @@ namespace AZ
 
             // culling
             RPI::Cullable m_cullable;
-
-            // probe baking
-            RPI::Ptr<RPI::EnvironmentCubeMapPass> m_environmentCubeMapPass = nullptr;
-            RPI::RenderPipelineId m_environmentCubeMapPipelineId;
-            BuildCubeMapCallback m_callback;
-            RHI::ShaderInputNameIndex m_globalIblExposureConstantIndex = "m_iblExposure";
-            RHI::ShaderInputNameIndex m_skyBoxExposureConstantIndex = "m_cubemapExposure";
-            float m_previousGlobalIblExposure = 0.0f;
-            float m_previousSkyBoxExposure = 0.0f;
-            bool m_buildingCubeMap = false;
+            AZ::Uuid m_uuid = AZ::Uuid::Create();
         };
 
     } // namespace Render

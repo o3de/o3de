@@ -13,6 +13,7 @@
 #include <Atom/Feature/Utils/GpuBufferHandler.h>
 #include <TerrainRenderer/BindlessImageArrayHandler.h>
 #include <TerrainRenderer/TerrainMacroMaterialBus.h>
+#include <Atom/Feature/Utils/SparseVector.h>
 
 namespace Terrain
 {
@@ -35,16 +36,18 @@ namespace Terrain
         void Update(AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>& terrainSrg);
 
     private:
-        
+
         static constexpr auto InvalidImageIndex = AZ::Render::BindlessImageArrayHandler::InvalidImageIndex;
         static constexpr float MacroMaterialGridSize = 64.0f;
         static constexpr uint16_t MacroMaterialsPerTile = 4;
+        static constexpr uint16_t InvalidMacroMaterialRef = AZStd::numeric_limits<uint16_t>::max();
+
+        using MacroMaterialRefs = AZStd::array<uint16_t, MacroMaterialsPerTile>;
 
         enum MacroMaterialShaderFlags : uint32_t
         {
-            IsUsed           = 0b0000'0000'0000'0000'0000'0000'0000'0001,
-            FlipMacroNormalX = 0b0000'0000'0000'0000'0000'0000'0000'0010,
-            FlipMacroNormalY = 0b0000'0000'0000'0000'0000'0000'0000'0100,
+            FlipMacroNormalX = 0b0000'0000'0000'0000'0000'0000'0000'0001,
+            FlipMacroNormalY = 0b0000'0000'0000'0000'0000'0000'0000'0010,
         };
 
         struct MacroMaterialShaderData
@@ -59,12 +62,13 @@ namespace Terrain
             AZStd::array<float, 2> m_boundsMax{ 0.0f, 0.0f };
         };
         static_assert(sizeof(MacroMaterialShaderData) % 16 == 0, "MacroMaterialShaderData must be 16 byte aligned.");
-        
+
         struct MacroMaterial
         {
             MacroMaterialData m_data;
-            uint16_t m_colorIndex{ 0xFFFF };
-            uint16_t m_normalIndex{ 0xFFFF };
+            uint16_t m_colorIndex{ InvalidImageIndex };
+            uint16_t m_normalIndex{ InvalidImageIndex };
+            uint16_t m_materialRef{ InvalidMacroMaterialRef };
         };
 
         struct MacroMaterialGridShaderData
@@ -84,8 +88,8 @@ namespace Terrain
         void OnTerrainMacroMaterialRegionChanged(AZ::EntityId entityId, const AZ::Aabb& oldRegion, const AZ::Aabb& newRegion) override;
         void OnTerrainMacroMaterialDestroyed(AZ::EntityId entityId) override;
         
-        void UpdateMacroMaterialShaderEntry(uint16_t shaderDataIdx, const MacroMaterial& macroMaterialData);
-        void RemoveMacroMaterialShaderEntry(uint16_t shaderDataIdx);
+        void UpdateMacroMaterialShaderEntry(MacroMaterialShaderData& shaderData, const MacroMaterial& macroMaterialData);
+        void RemoveMacroMaterialShaderEntry(uint16_t shaderDataIdx, MacroMaterialRefs& materialRefs);
 
         template<typename Callback>
         void ForMacroMaterialsInBounds(const AZ::Aabb& bounds, Callback callback);
@@ -97,16 +101,18 @@ namespace Terrain
 
         // Macro materials stored in a grid of (MacroMaterialGridCount * MacroMaterialGridCount) where each tile in the grid covers
         // an area of (MacroMaterialGridSize * MacroMaterialGridSize) and each tile can hold MacroMaterialsPerTile macro materials
-        AZStd::vector<MacroMaterialShaderData> m_macroMaterialShaderData;
-        AZStd::vector<AZ::EntityId> m_macroMaterialEntities; // Same as above, but used to track entity ids which aren't needed by the shader.
+        AZ::Render::SparseVector<MacroMaterialShaderData> m_materialShaderData; // Info about the macro material itself.
+        AZStd::vector<MacroMaterialRefs> m_materialRefGridShaderData; // A grid of macro material references that covers the world.
+
         AZStd::map<AZ::EntityId, MacroMaterial> m_macroMaterials; // Used for looking up macro materials by entity id when the data isn't provided by a bus.
         uint16_t m_tilesX{ 0 };
         uint16_t m_tilesY{ 0 };
 
         AZStd::shared_ptr<AZ::Render::BindlessImageArrayHandler> m_bindlessImageHandler;
-        AZ::Render::GpuBufferHandler m_macroMaterialDataBuffer;
+        AZ::Render::GpuBufferHandler m_materialDataBuffer;
+        AZ::Render::GpuBufferHandler m_materialRefGridDataBuffer;
 
-        AZ::RHI::ShaderInputConstantIndex m_macroMaterialGridIndex;
+        AZ::RHI::ShaderInputNameIndex m_macroMaterialGridIndex = "m_macroMaterialGridInfo";
 
         bool m_terrainSizeChanged{ false };
         bool m_bufferNeedsUpdate{ false };

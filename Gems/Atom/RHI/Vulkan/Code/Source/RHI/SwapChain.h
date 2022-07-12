@@ -99,9 +99,11 @@ namespace AZ
             void InvalidateSurface();
             //! Destroy the old swapchain.
             void InvalidateNativeSwapChain();
+            void InvalidateNativeSwapChainImmediately();
 
             RHI::Ptr<WSISurface> m_surface;
             VkSwapchainKHR m_nativeSwapChain = VK_NULL_HANDLE;
+            VkSwapchainKHR m_oldNativeSwapChain = VK_NULL_HANDLE;
             CommandQueue* m_presentationQueue = nullptr;
             FrameContext m_currentFrameContext;
 

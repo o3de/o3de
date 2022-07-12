@@ -2,5 +2,5 @@
     "description": "",
     "materialType": "Materials/Types/StandardPBR.materialtype",
     "parentMaterial": "",
-    "materialTypeVersion": 3
+    "materialTypeVersion": 5
 }

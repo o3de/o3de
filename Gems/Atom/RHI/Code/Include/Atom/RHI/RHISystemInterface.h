@@ -14,6 +14,7 @@
 #include <Atom/RHI.Reflect/FrameSchedulerEnums.h>
 #include <Atom/RHI.Reflect/MemoryStatistics.h>
 #include <Atom/RHI/DrawListTagRegistry.h>
+#include <Atom/RHI/XRRenderingInterface.h>
 
 AZ_DECLARE_BUDGET(RHI);
 
@@ -68,6 +69,8 @@ namespace AZ
             virtual void QueueRayTracingShaderTableForBuild(RayTracingShaderTable* rayTracingShaderTable) = 0;
             
             virtual const PhysicalDeviceDescriptor& GetPhysicalDeviceDescriptor() = 0;
+
+            virtual XRRenderingInterface* GetXRSystem() const = 0;
         };
 
         //! This bus exists to give RHI samples the ability to slot in scopes manually
@@ -76,7 +79,10 @@ namespace AZ
             : public AZ::EBusTraits
         {
         public:
-            virtual void OnFramePrepare(RHI::FrameGraphBuilder& frameGraphBuilder) = 0;
+            virtual void OnFramePrepare(RHI::FrameGraphBuilder& ) {};
+            
+            //! Notify that the input device was removed
+            virtual void OnDeviceRemoved(Device* ) {};
         };
 
         using RHISystemNotificationBus = AZ::EBus<RHISystemNotificiationInterface>;

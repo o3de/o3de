@@ -28,6 +28,7 @@ class TestAutomation(EditorTestSuite):
     class test_LandscapeCanvas_ComponentUpdates_UpdateGraph(EditorSharedTest):
         from .EditorScripts import ComponentUpdates_UpdateGraph as test_module
 
+    @pytest.mark.skip(reason="https://github.com/o3de/o3de/issues/10126")
     class test_LandscapeCanvas_Edit_DisabledNodeDuplication(EditorSharedTest):
         from .EditorScripts import Edit_DisabledNodeDuplication as test_module
 
@@ -62,10 +63,10 @@ class TestAutomation(EditorTestSuite):
     class test_LandscapeCanvas_GraphClosed_TabbedGraphClosesIndependently(EditorSharedTest):
         from .EditorScripts import GraphClosed_TabbedGraph as test_module
 
-    @pytest.mark.skip(reason="https://github.com/o3de/o3de/issues/7141" "https://github.com/o3de/o3de/issues/4872")
     class test_LandscapeCanvas_GraphUpdates_UpdateComponents(EditorSharedTest):
         from .EditorScripts import GraphUpdates_UpdateComponents as test_module
 
+    @pytest.mark.skip(reason="https://github.com/o3de/o3de/issues/10127")
     class test_LandscapeCanvas_LayerBlender_NodeConstruction(EditorSharedTest):
         from .EditorScripts import LayerBlender_NodeConstruction as test_module
 

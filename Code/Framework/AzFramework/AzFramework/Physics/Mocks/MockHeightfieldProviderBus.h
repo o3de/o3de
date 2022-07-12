@@ -28,6 +28,6 @@ namespace UnitTest
             Physics::HeightfieldProviderNotificationBus::Handler::BusDisconnect();
         }
 
-        MOCK_METHOD1(OnHeightfieldDataChanged, void(const AZ::Aabb&));
+        MOCK_METHOD2(OnHeightfieldDataChanged, void(const AZ::Aabb&, Physics::HeightfieldProviderNotifications::HeightfieldChangeMask));
     };
 } // namespace UnitTest

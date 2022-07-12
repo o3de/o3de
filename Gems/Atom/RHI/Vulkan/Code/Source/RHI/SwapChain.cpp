@@ -8,9 +8,12 @@
 
 #include "Atom_RHI_Vulkan_Platform.h"
 #include <Atom/RHI/PipelineStateDescriptor.h>
+#include <Atom/RHI/RHISystemInterface.h>
+#include <Atom/RHI/XRRenderingInterface.h>
 #include <Atom/RHI.Reflect/ClearValue.h>
 #include <Atom/RHI.Reflect/ImageScopeAttachmentDescriptor.h>
 #include <Atom/RHI.Reflect/ImagePoolDescriptor.h>
+#include <Atom/RHI.Reflect/Vulkan/XRVkDescriptors.h>
 #include <AzCore/std/algorithm.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <RHI/Conversion.h>
@@ -21,6 +24,7 @@
 #include <RHI/Queue.h>
 #include <RHI/RenderPass.h>
 #include <RHI/SwapChain.h>
+#include <RHI/ReleaseContainer.h>
 
 namespace AZ
 {
@@ -98,21 +102,30 @@ namespace AZ
             auto& device = static_cast<Device&>(GetDevice());
             m_dimensions = descriptor.m_dimensions;
 
-            result = BuildSurface(descriptor);
-            RETURN_RESULT_IF_UNSUCCESSFUL(result);
-
-            auto& presentationQueue = device.GetCommandQueueContext().GetOrCreatePresentationCommandQueue(*this);
-            m_presentationQueue = &presentationQueue;
-
-            result = CreateSwapchain();
-            RETURN_RESULT_IF_UNSUCCESSFUL(result);
-
-            if (nativeDimensions)
+            if (descriptor.m_isXrSwapChain)
             {
-                // Fill out the real swapchain dimensions to return
-                *nativeDimensions = m_dimensions;
-                nativeDimensions->m_imageFormat = ConvertFormat(m_surfaceFormat.format);
+                if (nativeDimensions)
+                {
+                    *nativeDimensions = m_dimensions;
+                }
             }
+            else
+            {
+                result = BuildSurface(descriptor);
+                RETURN_RESULT_IF_UNSUCCESSFUL(result);
+
+                auto& presentationQueue = device.GetCommandQueueContext().GetOrCreatePresentationCommandQueue(*this);
+                m_presentationQueue = &presentationQueue;
+
+                result = CreateSwapchain();
+                RETURN_RESULT_IF_UNSUCCESSFUL(result);
+                if (nativeDimensions)
+                {
+                    // Fill out the real swapchain dimensions to return
+                    *nativeDimensions = m_dimensions;
+                    nativeDimensions->m_imageFormat = ConvertFormat(m_surfaceFormat.format);
+                }
+            }    
 
             SetName(GetName());
             return result;
@@ -120,9 +133,14 @@ namespace AZ
 
         void SwapChain::ShutdownInternal()
         {
-            InvalidateNativeSwapChain();
-            InvalidateSurface();
+            //Nothing to clean as all the native objects for xr swapchain is handles by xr modules
+            if (GetDescriptor().m_isXrSwapChain)
+            {
+                return;
+            }
 
+            InvalidateNativeSwapChainImmediately();
+            InvalidateSurface();
             m_presentationQueue = nullptr;
 
             m_swapchainNativeImages.clear();
@@ -134,8 +152,27 @@ namespace AZ
             auto& device = static_cast<Device&>(GetDevice());
             Image* image = static_cast<Image*>(request.m_image);
             RHI::ImageDescriptor imageDesc = request.m_descriptor;
-            imageDesc.m_format = ConvertFormat(m_surfaceFormat.format);
-            RHI::ResultCode result = image->Init(device, m_swapchainNativeImages[request.m_imageIndex], imageDesc);
+            RHI::ResultCode result = RHI::ResultCode::Success;
+
+            // XR swapchains will retrieve the native swapchain image from xr system where as non-xr
+            // swapchains will use the images created internally (i.e RHI::Vulkan)
+            if (GetDescriptor().m_isXrSwapChain)
+            {
+                XRSwapChainDescriptor xrSwapChainDescriptor;
+                xrSwapChainDescriptor.m_inputData.m_swapChainIndex = GetDescriptor().m_xrSwapChainIndex;
+                xrSwapChainDescriptor.m_inputData.m_swapChainImageIndex = request.m_imageIndex;
+
+                result = GetXRSystem()->GetSwapChainImage(&xrSwapChainDescriptor);
+                AZ_Assert(result == RHI::ResultCode::Success, "Xr Session creation was not successful");
+
+                result = image->Init(device, xrSwapChainDescriptor.m_outputData.m_nativeImage, imageDesc);
+            }
+            else
+            {
+                imageDesc.m_format = ConvertFormat(m_surfaceFormat.format);
+                result = image->Init(device, m_swapchainNativeImages[request.m_imageIndex], imageDesc);
+            }
+
             if (result != RHI::ResultCode::Success)
             {
                 AZ_Assert(false, "Failed to initialize swapchain image %d", request.m_imageIndex);
@@ -176,6 +213,12 @@ namespace AZ
 
         uint32_t SwapChain::PresentInternal()
         {
+            // No need to present a xr swapchain
+            if (GetDescriptor().m_isXrSwapChain)
+            {
+                return 0;
+            }
+
             auto& device = static_cast<Device&>(GetDevice());
 
             const uint32_t imageIndex = GetCurrentImageIndex();
@@ -437,7 +480,7 @@ namespace AZ
             createInfo.compositeAlpha = m_compositeAlphaFlagBits;
             createInfo.presentMode = m_presentMode;
             createInfo.clipped = VK_FALSE;
-            createInfo.oldSwapchain = VK_NULL_HANDLE;
+            createInfo.oldSwapchain = m_oldNativeSwapChain;
 
             const VkResult result = vkCreateSwapchainKHR(device.GetNativeDevice(), &createInfo, nullptr, &m_nativeSwapChain);
             AssertSuccess(result);
@@ -483,7 +526,27 @@ namespace AZ
         void SwapChain::InvalidateNativeSwapChain()
         {
             auto& device = static_cast<Device&>(GetDevice());
-            auto presentCommand = [this,  &device]([[maybe_unused]] void* queue)
+            auto presentCommand = [this, &device]([[maybe_unused]] void* queue)
+            {
+                vkDeviceWaitIdle(device.GetNativeDevice());
+                if (m_nativeSwapChain != VK_NULL_HANDLE)
+                {
+                    //Add the swapchain on the release queue to be released later as we still need it in order to transition to the new swapchain
+                    device.QueueForRelease(
+                        new ReleaseContainer<VkSwapchainKHR>(device.GetNativeDevice(), m_nativeSwapChain, vkDestroySwapchainKHR));
+                    m_oldNativeSwapChain = m_nativeSwapChain;
+                    m_nativeSwapChain = VK_NULL_HANDLE;
+                }
+            };
+
+            m_presentationQueue->QueueCommand(AZStd::move(presentCommand));
+            m_presentationQueue->FlushCommands();
+        }
+
+        void SwapChain::InvalidateNativeSwapChainImmediately()
+        {
+            auto& device = static_cast<Device&>(GetDevice());
+            auto presentCommand = [this, &device]([[maybe_unused]] void* queue)
             {
                 vkDeviceWaitIdle(device.GetNativeDevice());
                 if (m_nativeSwapChain != VK_NULL_HANDLE)
@@ -525,7 +588,7 @@ namespace AZ
 
             RHI::ResultCode result = BuildNativeSwapChain(m_dimensions);
             RETURN_RESULT_IF_UNSUCCESSFUL(result);
-            AZ_TracePrintf("Swapchain", "Swapchain created. Width: %u, Height: %u.", m_dimensions.m_imageWidth, m_dimensions.m_imageHeight);
+            AZ_TracePrintf("Vulkan", "Swapchain created. Width: %u, Height: %u.\n", m_dimensions.m_imageWidth, m_dimensions.m_imageHeight);
 
             // Do not recycle the semaphore because they may not ever get signaled and since
             // we can't recycle Vulkan semaphores we just delete them.
@@ -551,13 +614,13 @@ namespace AZ
                 device.GetNativeDevice(), m_nativeSwapChain, &m_dimensions.m_imageCount, m_swapchainNativeImages.data());
             AssertSuccess(vkResult);
             RETURN_RESULT_IF_UNSUCCESSFUL(ConvertResult(vkResult));
-            AZ_TracePrintf("Swapchain", "Obtained presentable images.");
+            AZ_TracePrintf("Swapchain", "Obtained presentable images.\n");
 
             // Acquire the first image
             uint32_t imageIndex = 0;
             result = AcquireNewImage(&imageIndex);
             RETURN_RESULT_IF_UNSUCCESSFUL(result);
-            AZ_TracePrintf("Swapchain", "Acquired the first image.");
+            AZ_TracePrintf("Swapchain", "Acquired the first image.\n");
 
             return RHI::ResultCode::Success;
         }

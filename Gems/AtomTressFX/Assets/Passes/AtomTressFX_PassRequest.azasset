@@ -1,0 +1,96 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassRequest",
+    "ClassData": {
+        // NOTE: HairParentPass does not write into Depth MSAA from Opaque Pass. If new passes downstream
+        // of HairParentPass will need to use Depth MSAA, HairParentPass will need to be updated to use Depth MSAA
+        // instead of regular Depth as DepthStencil. Specifically, HairResolvePPLL.pass and the associated 
+        // .azsl file will need to be updated.
+        "Name": "HairParentPass",
+        // Note: The following two lines represent the choice of rendering pipeline for the hair.
+        // You can either choose to use PPLL or ShortCut by changing TemplateName to HairParentPassTemplate (for PPLL)
+        // or HairParentShortCutPassTemplate (for Shortcut)
+        // "TemplateName": "HairParentPassTemplate",
+        "TemplateName": "HairParentShortCutPassTemplate",
+        "Enabled": true,
+        "Connections": [
+            // Critical to keep DepthLinear as input - used to set the size of the Head PPLL image buffer.
+            // If DepthLinear is not available - connect to another viewport (non MSAA) image.
+            {
+                "LocalSlot": "DepthLinear",
+                "AttachmentRef": {
+                    "Pass": "DepthPrePass",
+                    "Attachment": "DepthLinear"
+                }
+            },
+            {
+                "LocalSlot": "Depth",
+                "AttachmentRef": {
+                    "Pass": "DepthPrePass",
+                    "Attachment": "Depth"
+                }
+            },
+            {
+                "LocalSlot": "RenderTargetInputOutput",
+                "AttachmentRef": {
+                    "Pass": "OpaquePass",
+                    "Attachment": "Output"
+                }
+            },
+            {
+                "LocalSlot": "RenderTargetInputOnly",
+                "AttachmentRef": {
+                    "Pass": "OpaquePass",
+                    "Attachment": "Output"
+                }
+            },
+
+            // Shadows resources
+            {
+                "LocalSlot": "DirectionalShadowmap",
+                "AttachmentRef": {
+                    "Pass": "Shadows",
+                    "Attachment": "DirectionalShadowmap"
+                }
+            },
+            {
+                "LocalSlot": "DirectionalESM",
+                "AttachmentRef": {
+                    "Pass": "Shadows",
+                    "Attachment": "DirectionalESM"
+                }
+            },
+            {
+                "LocalSlot": "ProjectedShadowmap",
+                "AttachmentRef": {
+                    "Pass": "Shadows",
+                    "Attachment": "ProjectedShadowmap"
+                }
+            },
+            {
+                "LocalSlot": "ProjectedESM",
+                "AttachmentRef": {
+                    "Pass": "Shadows",
+                    "Attachment": "ProjectedESM"
+                }
+            },
+
+            // Lighting Resources
+            {
+                "LocalSlot": "TileLightData",
+                "AttachmentRef": {
+                    "Pass": "LightCullingPass",
+                    "Attachment": "TileLightData"
+                }
+            },
+            {
+                "LocalSlot": "LightListRemapped",
+                "AttachmentRef": {
+                    "Pass": "LightCullingPass",
+                    "Attachment": "LightListRemapped"
+                }
+            }
+        ]
+    }
+}

@@ -698,9 +698,9 @@ namespace UnitTest
         // ensure the White Box request bus only returns a null render mesh
         WhiteBox::WhiteBoxRequestBus::Broadcast(
             &WhiteBox::WhiteBoxRequestBus::Events::SetRenderMeshInterfaceBuilder,
-            []()
+            [](AZ::EntityId entityId)
             {
-                return AZStd::make_unique<WhiteBox::WhiteBoxNullRenderMesh>();
+                return AZStd::make_unique<WhiteBox::WhiteBoxNullRenderMesh>(entityId);
             });
 
         // create an editor entity with a White Box component on it
@@ -751,9 +751,9 @@ namespace UnitTest
         // ensure the White Box request bus only returns a null render mesh
         WhiteBox::WhiteBoxRequestBus::Broadcast(
             &WhiteBox::WhiteBoxRequestBus::Events::SetRenderMeshInterfaceBuilder,
-            []()
+            [](AZ::EntityId entityId)
             {
-                return AZStd::make_unique<WhiteBox::WhiteBoxNullRenderMesh>();
+                return AZStd::make_unique<WhiteBox::WhiteBoxNullRenderMesh>(entityId);
             });
 
         // create an editor entity with a White Box component on it

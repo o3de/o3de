@@ -528,12 +528,12 @@ namespace EMotionFX
     // blend into another transform
     Transform& Transform::Blend(const Transform& dest, float weight)
     {
-        m_position = MCore::LinearInterpolate<AZ::Vector3>(m_position, dest.m_position, weight);
+        m_position = m_position.Lerp(dest.m_position, weight);
         m_rotation = MCore::NLerp(m_rotation, dest.m_rotation, weight);
 
         EMFX_SCALECODE
         (
-            m_scale          = MCore::LinearInterpolate<AZ::Vector3>(m_scale, dest.m_scale, weight);
+            m_scale = m_scale.Lerp(dest.m_scale, weight);
         )
 
         return *this;

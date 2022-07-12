@@ -150,7 +150,7 @@ namespace AZ::IO
         ~Archive();
 
         //! CompressionBus Handler implementation.
-        void FindCompressionInfo(bool& found, AZ::IO::CompressionInfo& info, const AZStd::string_view filename) override;
+        void FindCompressionInfo(bool& found, AZ::IO::CompressionInfo& info, const AZ::IO::PathView filePath) override;
 
         // Set the localization folder
         void SetLocalizationFolder(AZStd::string_view sLocalizationFolder) override;

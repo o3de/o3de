@@ -92,7 +92,7 @@ namespace AZ
 
         // --- Pass Creation Functions ---
 
-        Ptr<Pass> PassFactory::CreatePassFromIndex(CreatorIndex index, Name passName, const AZStd::shared_ptr<PassTemplate>& passTemplate, const PassRequest* passRequest)
+        Ptr<Pass> PassFactory::CreatePassFromIndex(CreatorIndex index, Name passName, const AZStd::shared_ptr<const PassTemplate>& passTemplate, const PassRequest* passRequest)
         {
             if (index.IsNull() || index.GetIndex() >= m_creationFunctions.size())
             {
@@ -112,7 +112,7 @@ namespace AZ
             return CreatePassFromIndex(index, passName, nullptr, nullptr);
         }
 
-        Ptr<Pass> PassFactory::CreatePassFromTemplate(const AZStd::shared_ptr<PassTemplate>& passTemplate, Name passName)
+        Ptr<Pass> PassFactory::CreatePassFromTemplate(const AZStd::shared_ptr<const PassTemplate>& passTemplate, Name passName)
         {
             if (!passTemplate)
             {
@@ -125,7 +125,7 @@ namespace AZ
 
         Ptr<Pass> PassFactory::CreatePassFromTemplate(Name templateName, Name passName)
         {
-            const AZStd::shared_ptr<PassTemplate>& passTemplate = m_passLibrary->GetPassTemplate(templateName);
+            const AZStd::shared_ptr<const PassTemplate>& passTemplate = m_passLibrary->GetPassTemplate(templateName);
             if (passTemplate == nullptr)
             {
                 AZ_Error("PassFactory", false, "FAILED TO CREATE PASS [%s]. Could not find pass template [%s]", passName.GetCStr(), templateName.GetCStr());
@@ -143,7 +143,7 @@ namespace AZ
                 return nullptr;
             }
 
-            const AZStd::shared_ptr<PassTemplate>& passTemplate = m_passLibrary->GetPassTemplate(passRequest->m_templateName);
+            const AZStd::shared_ptr<const PassTemplate>& passTemplate = m_passLibrary->GetPassTemplate(passRequest->m_templateName);
             if (passTemplate == nullptr)
             {
                 AZ_Error("PassFactory", false, "FAILED TO CREATE PASS [%s]. Could not find pass template [%s]", passRequest->m_passName.GetCStr(), passRequest->m_templateName.GetCStr());

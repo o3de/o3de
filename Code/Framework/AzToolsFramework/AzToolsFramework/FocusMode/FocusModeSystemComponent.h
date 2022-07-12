@@ -46,7 +46,8 @@ namespace AzToolsFramework
         void SetFocusRoot(AZ::EntityId entityId) override;
         void ClearFocusRoot(AzFramework::EntityContextId entityContextId) override;
         AZ::EntityId GetFocusRoot(AzFramework::EntityContextId entityContextId) override;
-        EntityIdList GetFocusedEntities(AzFramework::EntityContextId entityContextId) override;
+        bool IsFocusRoot(AZ::EntityId entityId) const override;
+        const EntityIdList& GetFocusedEntities(AzFramework::EntityContextId entityContextId) override;
         bool IsInFocusSubTree(AZ::EntityId entityId) const override;
 
         // EditorEntityInfoNotificationBus overrides ...

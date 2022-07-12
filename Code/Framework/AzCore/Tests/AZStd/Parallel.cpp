@@ -25,12 +25,13 @@
 
 #include <AzCore/Memory/SystemAllocator.h>
 
-using namespace AZStd;
-using namespace AZStd::placeholders;
-using namespace UnitTestInternal;
-
 namespace UnitTest
 {
+
+    using namespace AZStd;
+    using namespace AZStd::placeholders;
+    using namespace UnitTestInternal;
+
     /**
      * Synchronization primitives test.
      */

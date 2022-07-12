@@ -48,8 +48,8 @@ namespace AZ
 
         RHI::CopyItemType CopyPass::GetCopyItemType()
         {
-            RHI::AttachmentType inputType = GetInputBinding(0).m_attachment->GetAttachmentType();
-            RHI::AttachmentType outputType = GetOutputBinding(0).m_attachment->GetAttachmentType();
+            RHI::AttachmentType inputType = GetInputBinding(0).GetAttachment()->GetAttachmentType();
+            RHI::AttachmentType outputType = GetOutputBinding(0).GetAttachment()->GetAttachmentType();
 
             RHI::CopyItemType copyType = RHI::CopyItemType::Invalid;
 
@@ -88,7 +88,7 @@ namespace AZ
             // Create transient attachment based on input if required
             if (m_data.m_cloneInput)
             {
-                const Ptr<PassAttachment>& source = GetInputBinding(0).m_attachment;
+                const Ptr<PassAttachment>& source = GetInputBinding(0).GetAttachment();
                 Ptr<PassAttachment> dest = source->Clone();
 
                 // Set bind flags to CopyWrite. Other bind flags will be auto-inferred by pass system
@@ -155,14 +155,14 @@ namespace AZ
 
             // Source Buffer
             PassAttachmentBinding& copySource = GetInputBinding(0);
-            const AZ::RHI::Buffer* sourceBuffer = context.GetBuffer(copySource.m_attachment->GetAttachmentId());
+            const AZ::RHI::Buffer* sourceBuffer = context.GetBuffer(copySource.GetAttachment()->GetAttachmentId());
             copyDesc.m_sourceBuffer = sourceBuffer;
             copyDesc.m_size = static_cast<uint32_t>(sourceBuffer->GetDescriptor().m_byteCount);
             copyDesc.m_sourceOffset = m_data.m_bufferSourceOffset;
 
             // Destination Buffer
             PassAttachmentBinding& copyDest = GetOutputBinding(0);
-            copyDesc.m_destinationBuffer = context.GetBuffer(copyDest.m_attachment->GetAttachmentId());
+            copyDesc.m_destinationBuffer = context.GetBuffer(copyDest.GetAttachment()->GetAttachmentId());
             copyDesc.m_destinationOffset = m_data.m_bufferDestinationOffset;
 
             m_copyItem = copyDesc;
@@ -174,7 +174,7 @@ namespace AZ
 
             // Source Image
             PassAttachmentBinding& copySource = GetInputBinding(0);
-            const AZ::RHI::Image* sourceImage = context.GetImage(copySource.m_attachment->GetAttachmentId());
+            const AZ::RHI::Image* sourceImage = context.GetImage(copySource.GetAttachment()->GetAttachmentId());
             copyDesc.m_sourceImage = sourceImage;
             copyDesc.m_sourceSize = sourceImage->GetDescriptor().m_size;
             copyDesc.m_sourceOrigin = m_data.m_imageSourceOrigin;
@@ -182,7 +182,7 @@ namespace AZ
 
             // Destination Image
             PassAttachmentBinding& copyDest = GetOutputBinding(0);
-            copyDesc.m_destinationImage = context.GetImage(copyDest.m_attachment->GetAttachmentId());
+            copyDesc.m_destinationImage = context.GetImage(copyDest.GetAttachment()->GetAttachmentId());
             copyDesc.m_destinationOrigin = m_data.m_imageDestinationOrigin;
             copyDesc.m_destinationSubresource = m_data.m_imageDestinationSubresource;
 
@@ -195,7 +195,7 @@ namespace AZ
 
             // Source Buffer
             PassAttachmentBinding& copySource = GetInputBinding(0);
-            const AZ::RHI::Buffer* sourceBuffer = context.GetBuffer(copySource.m_attachment->GetAttachmentId());
+            const AZ::RHI::Buffer* sourceBuffer = context.GetBuffer(copySource.GetAttachment()->GetAttachmentId());
             copyDesc.m_sourceBuffer = sourceBuffer;
             copyDesc.m_sourceSize = m_data.m_sourceSize;
             copyDesc.m_sourceOffset = m_data.m_bufferSourceOffset;
@@ -204,7 +204,7 @@ namespace AZ
 
             // Destination Image
             PassAttachmentBinding& copyDest = GetOutputBinding(0);
-            copyDesc.m_destinationImage = context.GetImage(copyDest.m_attachment->GetAttachmentId());
+            copyDesc.m_destinationImage = context.GetImage(copyDest.GetAttachment()->GetAttachmentId());
             copyDesc.m_destinationOrigin = m_data.m_imageDestinationOrigin;
             copyDesc.m_destinationSubresource = m_data.m_imageDestinationSubresource;
 
@@ -217,7 +217,7 @@ namespace AZ
 
             // Source Image
             PassAttachmentBinding& copySource = GetInputBinding(0);
-            const AZ::RHI::Image* sourceImage = context.GetImage(copySource.m_attachment->GetAttachmentId());
+            const AZ::RHI::Image* sourceImage = context.GetImage(copySource.GetAttachment()->GetAttachmentId());
             copyDesc.m_sourceImage = sourceImage;
             copyDesc.m_sourceSize = sourceImage->GetDescriptor().m_size;
             copyDesc.m_sourceOrigin = m_data.m_imageSourceOrigin;
@@ -225,7 +225,7 @@ namespace AZ
 
             // Destination Buffer
             PassAttachmentBinding& copyDest = GetOutputBinding(0);
-            copyDesc.m_destinationBuffer = context.GetBuffer(copyDest.m_attachment->GetAttachmentId());
+            copyDesc.m_destinationBuffer = context.GetBuffer(copyDest.GetAttachment()->GetAttachmentId());
             copyDesc.m_destinationOffset = m_data.m_bufferDestinationOffset;
             copyDesc.m_destinationBytesPerRow = m_data.m_bufferDestinationBytesPerRow;
             copyDesc.m_destinationBytesPerImage = m_data.m_bufferDestinationBytesPerImage;

@@ -6,11 +6,11 @@
  *
  */
 
-#include <Atom/RPI.Edit/Shader/ShaderVariantListSourceData.h>
 #include <Atom/RPI.Edit/Common/JsonUtils.h>
+#include <Atom/RPI.Edit/Shader/ShaderVariantListSourceData.h>
 #include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
-
 
 namespace AZ
 {
@@ -18,9 +18,9 @@ namespace AZ
     {
         void ShaderVariantListSourceData::Reflect(ReflectContext* context)
         {
-            if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
+            if (auto serializeContext = azrtti_cast<SerializeContext*>(context))
             {
-                serializeContext->Class<ShaderVariantListSourceData::VariantInfo>()
+                serializeContext->Class<VariantInfo>()
                     ->Version(1)
                     ->Field("StableId", &VariantInfo::m_stableId)
                     ->Field("Options", &VariantInfo::m_options)
@@ -31,9 +31,33 @@ namespace AZ
                     ->Field("Shader", &ShaderVariantListSourceData::m_shaderFilePath)
                     ->Field("Variants", &ShaderVariantListSourceData::m_shaderVariants)
                     ;
+
+                if (auto editContext = serializeContext->GetEditContext())
+                {
+                    editContext->Class<VariantInfo>("VariantInfo", "")
+                        ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                        ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &VariantInfo::m_stableId, "Stable Id", "Unique identifier for this shader variant within the list")
+                            ->Attribute(AZ::Edit::Attributes::ReadOnly, true)
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &VariantInfo::m_options, "Options", "Table of shader options for configuring this variant")
+                            ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                            ->Attribute(AZ::Edit::Attributes::ContainerCanBeModified, false)
+                            ->Attribute(AZ::Edit::Attributes::ContainerReorderAllow, false)
+                        ;
+
+                    editContext->Class<ShaderVariantListSourceData>("ShaderVariantListSourceData", "")
+                        ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                        ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &ShaderVariantListSourceData::m_shaderFilePath, "Shader File Path", "Path to the shader source this variant list represents")
+                            ->Attribute(AZ::Edit::Attributes::ReadOnly, true)
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &ShaderVariantListSourceData::m_shaderVariants, "Shader Variants", "Container of all variants and options configured for the shader")
+                            ->Attribute(AZ::Edit::Attributes::ContainerCanBeModified, false)
+                            ->Attribute(AZ::Edit::Attributes::ContainerReorderAllow, false)
+                        ;
+                }
             }
 
-            if (BehaviorContext* behaviorContext = azrtti_cast<BehaviorContext*>(context))
+            if (auto behaviorContext = azrtti_cast<BehaviorContext*>(context))
             {
                 behaviorContext->Class<VariantInfo>("ShaderVariantInfo")
                     ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)

@@ -28,6 +28,24 @@ namespace EMotionFX::MotionMatching
 {
     AZ_CLASS_ALLOCATOR_IMPL(Feature, MotionMatchAllocator, 0)
 
+    Feature::ExtractFeatureContext::ExtractFeatureContext(FeatureMatrix& featureMatrix, AnimGraphPosePool& posePool)
+        : m_featureMatrix(featureMatrix)
+        , m_posePool(posePool)
+    {
+    }
+
+    Feature::QueryVectorContext::QueryVectorContext(const Pose& currentPose, const TrajectoryQuery& trajectoryQuery)
+        : m_currentPose(currentPose)
+        , m_trajectoryQuery(trajectoryQuery)
+    {
+    }
+
+    Feature::FrameCostContext::FrameCostContext(const QueryVector& queryVector, const FeatureMatrix& featureMatrix)
+        : m_queryVector(queryVector)
+        , m_featureMatrix(featureMatrix)
+    {
+    }
+
     bool Feature::Init(const InitSettings& settings)
     {
         const Actor* actor = settings.m_actorInstance->GetActor();
@@ -37,7 +55,7 @@ namespace EMotionFX::MotionMatching
         m_jointIndex = joint ? joint->GetNodeIndex() : InvalidIndex;
         if (m_jointIndex == InvalidIndex)
         {
-            AZ_Error("MotionMatching", false, "Feature::Init(): Cannot find index for joint named '%s'.", m_jointName.c_str());
+            AZ_Error("Motion Matching", false, "Feature::Init(): Cannot find index for joint named '%s'.", m_jointName.c_str());
             return false;
         }
 
@@ -45,7 +63,7 @@ namespace EMotionFX::MotionMatching
         m_relativeToNodeIndex = relativeToJoint ? relativeToJoint->GetNodeIndex() : InvalidIndex;
         if (m_relativeToNodeIndex == InvalidIndex)
         {
-            AZ_Error("MotionMatching", false, "Feature::Init(): Cannot find index for joint named '%s'.", m_relativeToJointName.c_str());
+            AZ_Error("Motion Matching", false, "Feature::Init(): Cannot find index for joint named '%s'.", m_relativeToJointName.c_str());
             return false;
         }
 
@@ -88,109 +106,6 @@ namespace EMotionFX::MotionMatching
     void Feature::SetRelativeToNodeIndex(size_t nodeIndex)
     {
         m_relativeToNodeIndex = nodeIndex;
-    }
-
-    void Feature::CalculateVelocity(size_t jointIndex, size_t relativeToJointIndex, MotionInstance* motionInstance, AZ::Vector3& outVelocity)
-    {
-        const float originalTime = motionInstance->GetCurrentTime();
-
-        // Prepare for sampling.
-        ActorInstance* actorInstance = motionInstance->GetActorInstance();
-        AnimGraphPosePool& posePool = GetEMotionFX().GetThreadData(actorInstance->GetThreadIndex())->GetPosePool();
-        AnimGraphPose* prevPose = posePool.RequestPose(actorInstance);
-        AnimGraphPose* currentPose = posePool.RequestPose(actorInstance);
-        Pose* bindPose = actorInstance->GetTransformData()->GetBindPose();
-
-        const size_t numSamples = 3;
-        const float timeRange = 0.05f; // secs
-        const float halfTimeRange = timeRange * 0.5f;
-        const float startTime = originalTime - halfTimeRange;
-        const float frameDelta = timeRange / numSamples;
-
-        AZ::Vector3 accumulatedVelocity = AZ::Vector3::CreateZero();
-
-        for (size_t sampleIndex = 0; sampleIndex < numSamples + 1; ++sampleIndex)
-        {
-            float sampleTime = startTime + sampleIndex * frameDelta;
-            if (sampleTime < 0.0f)
-            {
-                sampleTime = 0.0f;
-            }
-            if (sampleTime >= motionInstance->GetMotion()->GetDuration())
-            {
-                sampleTime = motionInstance->GetMotion()->GetDuration();
-            }
-
-            if (sampleIndex == 0)
-            {
-                motionInstance->SetCurrentTime(sampleTime);
-                motionInstance->GetMotion()->Update(bindPose, &prevPose->GetPose(), motionInstance);
-                continue;
-            }
-
-            motionInstance->SetCurrentTime(sampleTime);
-            motionInstance->GetMotion()->Update(bindPose, &currentPose->GetPose(), motionInstance);
-
-            const Transform inverseJointWorldTransform = currentPose->GetPose().GetWorldSpaceTransform(relativeToJointIndex).Inversed();
-
-            // Calculate the velocity.
-            const AZ::Vector3 prevPosition = prevPose->GetPose().GetWorldSpaceTransform(jointIndex).m_position;
-            const AZ::Vector3 currentPosition = currentPose->GetPose().GetWorldSpaceTransform(jointIndex).m_position;
-            const AZ::Vector3 velocity = CalculateLinearVelocity(prevPosition, currentPosition, frameDelta);
-
-            accumulatedVelocity += inverseJointWorldTransform.TransformVector(velocity);
-
-            *prevPose = *currentPose;
-        }
-
-        outVelocity = accumulatedVelocity / aznumeric_cast<float>(numSamples);
-
-        motionInstance->SetCurrentTime(originalTime); // set back to what it was
-
-        posePool.FreePose(prevPose);
-        posePool.FreePose(currentPose);
-    }
-
-    void Feature::CalculateVelocity(const ActorInstance* actorInstance, size_t jointIndex, size_t relativeToJointIndex, const Frame& frame, AZ::Vector3& outVelocity)
-    {
-        AnimGraphPosePool& posePool = GetEMotionFX().GetThreadData(actorInstance->GetThreadIndex())->GetPosePool();
-        AnimGraphPose* prevPose = posePool.RequestPose(actorInstance);
-        AnimGraphPose* currentPose = posePool.RequestPose(actorInstance);
-
-        const size_t numSamples = 3;
-        const float timeRange = 0.05f; // secs
-        const float halfTimeRange = timeRange * 0.5f;
-        const float frameDelta = timeRange / numSamples;
-
-        AZ::Vector3 accumulatedVelocity = AZ::Vector3::CreateZero();
-
-        for (size_t sampleIndex = 0; sampleIndex < numSamples + 1; ++sampleIndex)
-        {
-            const float sampleTimeOffset = (-halfTimeRange) + sampleIndex * frameDelta;
-
-            if (sampleIndex == 0)
-            {
-                frame.SamplePose(&prevPose->GetPose(), sampleTimeOffset);
-                continue;
-            }
-
-            frame.SamplePose(&currentPose->GetPose(), sampleTimeOffset);
-            const Transform inverseJointWorldTransform = currentPose->GetPose().GetWorldSpaceTransform(relativeToJointIndex).Inversed();
-
-            // Calculate the velocity.
-            const AZ::Vector3 prevPosition = prevPose->GetPose().GetWorldSpaceTransform(jointIndex).m_position;
-            const AZ::Vector3 currentPosition = currentPose->GetPose().GetWorldSpaceTransform(jointIndex).m_position;
-            const AZ::Vector3 velocity = CalculateLinearVelocity(prevPosition, currentPosition, frameDelta);
-
-            accumulatedVelocity += inverseJointWorldTransform.TransformVector(velocity);
-
-            *prevPose = *currentPose;
-        }
-
-        outVelocity = accumulatedVelocity / aznumeric_cast<float>(numSamples);
-
-        posePool.FreePose(prevPose);
-        posePool.FreePose(currentPose);
     }
 
     float Feature::GetNormalizedDirectionDifference(const AZ::Vector2& directionA, const AZ::Vector2& directionB) const

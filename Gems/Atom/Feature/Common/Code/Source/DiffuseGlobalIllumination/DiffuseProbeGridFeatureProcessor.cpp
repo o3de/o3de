@@ -14,6 +14,7 @@
 #include <Atom/RPI.Public/View.h>
 #include <Atom/RPI.Public/Pass/PassFilter.h>
 #include <DiffuseGlobalIllumination/DiffuseProbeGridFeatureProcessor.h>
+#include <Atom_Feature_Traits_Platform.h>
 #include <Atom/Feature/TransformService/TransformServiceFeatureProcessor.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/RHISystemInterface.h>
@@ -39,6 +40,12 @@ namespace AZ
 
         void DiffuseProbeGridFeatureProcessor::Activate()
         {
+            if (!AZ_TRAIT_DIFFUSE_GI_PASSES_SUPPORTED)
+            {
+                // GI is not supported on this platform
+                return;
+            }
+
             RHI::RHISystemInterface* rhiSystem = RHI::RHISystemInterface::Get();
             RHI::Ptr<RHI::Device> device = rhiSystem->GetDevice();
 
@@ -67,11 +74,24 @@ namespace AZ
                 AZ_Assert(result == RHI::ResultCode::Success, "Failed to initialize output image pool");
             }
 
+            // buffer pool
+            {
+                RHI::BufferPoolDescriptor bufferPoolDesc;
+                bufferPoolDesc.m_bindFlags = RHI::BufferBindFlags::ShaderReadWrite;
+
+                m_probeGridRenderData.m_bufferPool = RHI::Factory::Get().CreateBufferPool();
+                [[maybe_unused]] RHI::ResultCode result = m_probeGridRenderData.m_bufferPool->Init(*device, bufferPoolDesc);
+                AZ_Assert(result == RHI::ResultCode::Success, "Failed to initialize output buffer pool");
+            }
+
             // create image view descriptors
             m_probeGridRenderData.m_probeRayTraceImageViewDescriptor = RHI::ImageViewDescriptor::Create(DiffuseProbeGridRenderData::RayTraceImageFormat, 0, 0);
             m_probeGridRenderData.m_probeIrradianceImageViewDescriptor = RHI::ImageViewDescriptor::Create(DiffuseProbeGridRenderData::IrradianceImageFormat, 0, 0);
             m_probeGridRenderData.m_probeDistanceImageViewDescriptor = RHI::ImageViewDescriptor::Create(DiffuseProbeGridRenderData::DistanceImageFormat, 0, 0);
             m_probeGridRenderData.m_probeDataImageViewDescriptor = RHI::ImageViewDescriptor::Create(DiffuseProbeGridRenderData::ProbeDataImageFormat, 0, 0);
+
+            // create grid data buffer descriptor
+            m_probeGridRenderData.m_gridDataBufferViewDescriptor = RHI::BufferViewDescriptor::CreateStructured(0, 1, DiffuseProbeGridRenderData::GridDataBufferSize);
 
             // load shader
             // Note: the shader may not be available on all platforms
@@ -92,27 +112,40 @@ namespace AZ
                 AZ_Error("DiffuseProbeGridFeatureProcessor", m_probeGridRenderData.m_srgLayout != nullptr, "Failed to find ObjectSrg layout");
             }
 
-            // initialize the buffer pools for the DiffuseProbeGrid visualization
-            m_visualizationBufferPools = RHI::RayTracingBufferPools::CreateRHIRayTracingBufferPools();
-            m_visualizationBufferPools->Init(device);
-
-            // load probe visualization model, the BLAS will be created in OnAssetReady()
-            m_visualizationModelAsset = AZ::RPI::AssetUtils::GetAssetByProductPath<AZ::RPI::ModelAsset>(
-                "Models/DiffuseProbeSphere.azmodel",
-                AZ::RPI::AssetUtils::TraceLevel::Assert);
-
-            if (!m_visualizationModelAsset.IsReady())
+            if (device->GetFeatures().m_rayTracing)
             {
-                m_visualizationModelAsset.QueueLoad();
+                // initialize the buffer pools for the DiffuseProbeGrid visualization
+                m_visualizationBufferPools = RHI::RayTracingBufferPools::CreateRHIRayTracingBufferPools();
+                m_visualizationBufferPools->Init(device);
+
+                // load probe visualization model, the BLAS will be created in OnAssetReady()
+                m_visualizationModelAsset = AZ::RPI::AssetUtils::GetAssetByProductPath<AZ::RPI::ModelAsset>(
+                    "Models/DiffuseProbeSphere.azmodel",
+                    AZ::RPI::AssetUtils::TraceLevel::Assert);
+
+                if (!m_visualizationModelAsset.IsReady())
+                {
+                    m_visualizationModelAsset.QueueLoad();
+                }
+
+                Data::AssetBus::MultiHandler::BusConnect(m_visualizationModelAsset.GetId());
             }
 
-            Data::AssetBus::MultiHandler::BusConnect(m_visualizationModelAsset.GetId());
+            // query buffer attachmentId
+            AZStd::string uuidString = AZ::Uuid::CreateRandom().ToString<AZStd::string>();
+            m_queryBufferAttachmentId = AZStd::string::format("DiffuseProbeGridQueryBuffer_%s", uuidString.c_str());
 
             EnableSceneNotification();
         }
 
         void DiffuseProbeGridFeatureProcessor::Deactivate()
         {
+            if (!AZ_TRAIT_DIFFUSE_GI_PASSES_SUPPORTED)
+            {
+                // GI is not supported on this platform
+                return;
+            }
+
             AZ_Warning("DiffuseProbeGridFeatureProcessor", m_diffuseProbeGrids.size() == 0, 
                 "Deactivating the DiffuseProbeGridFeatureProcessor, but there are still outstanding probe grids probes. Components\n"
                 "using DiffuseProbeGridHandles should free them before the DiffuseProbeGridFeatureProcessor is deactivated.\n"
@@ -201,6 +234,31 @@ namespace AZ
             for (auto& diffuseProbeGrid : m_realTimeDiffuseProbeGrids)
             {
                 diffuseProbeGrid->ResetCullingVisibility();
+            }
+
+            // build the query buffer for the irradiance queries (if any)
+            if (m_irradianceQueries.size())
+            {
+                uint32_t numQueries = aznumeric_cast<uint32_t>(m_irradianceQueries.size());
+                uint32_t elementSize = sizeof(IrradianceQueryVector::value_type);
+                uint32_t bufferSize = elementSize * numQueries;
+
+                // advance to the next buffer in the array
+                m_currentBufferIndex = (m_currentBufferIndex + 1) % BufferFrameCount;
+
+                // create a new buffer
+                RPI::CommonBufferDescriptor desc;
+                desc.m_poolType = RPI::CommonBufferPoolType::ReadWrite;
+                desc.m_bufferName = "DiffuseQueryBuffer";
+                desc.m_byteCount = bufferSize;
+                desc.m_elementSize = elementSize;
+                m_queryBuffer[m_currentBufferIndex] = RPI::BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
+
+                // populate the buffer with the query position list
+                m_queryBuffer[m_currentBufferIndex]->UpdateData(m_irradianceQueries.data(), bufferSize);
+
+                // create the bufferview descriptor with the new number of elements
+                m_queryBufferViewDescriptor = RHI::BufferViewDescriptor::CreateStructured(0, numQueries, elementSize);
             }
         }
 
@@ -480,6 +538,12 @@ namespace AZ
             m_probeGridSortRequired = true;
         }
 
+        void DiffuseProbeGridFeatureProcessor::SetScrolling(const DiffuseProbeGridHandle& probeGrid, bool scrolling)
+        {
+            AZ_Assert(probeGrid.get(), "SetScrolling called with an invalid handle");
+            probeGrid->SetScrolling(scrolling);
+        }
+
         void DiffuseProbeGridFeatureProcessor::SetBakedTextures(const DiffuseProbeGridHandle& probeGrid, const DiffuseProbeGridBakedTextures& bakedTextures)
         {
             AZ_Assert(probeGrid.get(), "SetBakedTextures called with an invalid handle");
@@ -502,6 +566,17 @@ namespace AZ
         {
             AZ_Assert(probeGrid.get(), "SetVisualizationSphereRadius called with an invalid handle");
             probeGrid->SetVisualizationSphereRadius(visualizationSphereRadius);
+        }
+
+        uint32_t DiffuseProbeGridFeatureProcessor::AddIrradianceQuery(const AZ::Vector3& position, const AZ::Vector3& direction)
+        {
+            m_irradianceQueries.push_back({ position, direction });
+            return aznumeric_cast<uint32_t>(m_irradianceQueries.size()) - 1;
+        }
+
+        void DiffuseProbeGridFeatureProcessor::ClearIrradianceQueries()
+        {
+            m_irradianceQueries.clear();
         }
 
         void DiffuseProbeGridFeatureProcessor::CreateBoxMesh()
@@ -730,7 +805,10 @@ namespace AZ
 
             RHI::Ptr<RHI::Device> device = RHI::RHISystemInterface::Get()->GetDevice();
             m_visualizationBlas = AZ::RHI::RayTracingBlas::CreateRHIRayTracingBlas();
-            m_visualizationBlas->CreateBuffers(*device, &blasDescriptor, *m_visualizationBufferPools);
+            if (device->GetFeatures().m_rayTracing)
+            {
+                m_visualizationBlas->CreateBuffers(*device, &blasDescriptor, *m_visualizationBufferPools);
+            }
         }
 
         void DiffuseProbeGridFeatureProcessor::HandleAssetNotification(Data::Asset<Data::AssetData> asset, DiffuseProbeGridTextureNotificationType notificationType)

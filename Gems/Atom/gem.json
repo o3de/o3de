@@ -25,7 +25,9 @@
         "RHI",
         "RPI",
         "Tools/AtomToolsFramework",
-        "Tools/MaterialEditor"
+        "Tools/MaterialCanvas",
+        "Tools/MaterialEditor",
+        "Tools/ShaderManagementConsole"
     ],
     "dependencies": [
         "Atom_Feature_Common",
@@ -35,7 +37,9 @@
         "Atom_RHI",
         "Atom_RPI",
         "AtomToolsFramework",
+        "MaterialCanvas",
         "MaterialEditor",
+        "ShaderManagementConsole",
         "Atom_AtomBridge"
     ]
 }

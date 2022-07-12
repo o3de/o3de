@@ -45,10 +45,11 @@ namespace EMotionFX
 
 
     // reinitialize the mesh deformer
-    void MeshDeformer::Reinitialize(Actor* actor, Node* node, size_t lodLevel)
+    void MeshDeformer::Reinitialize(Actor* actor, Node* node, size_t lodLevel, uint16 highestJointIndex)
     {
         MCORE_UNUSED(actor);
         MCORE_UNUSED(node);
         MCORE_UNUSED(lodLevel);
+        MCORE_UNUSED(highestJointIndex);
     }
 } // namespace EMotionFX

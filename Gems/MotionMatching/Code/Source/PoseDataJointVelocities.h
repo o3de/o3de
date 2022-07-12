@@ -10,14 +10,13 @@
 
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Quaternion.h>
+#include <EMotionFX/Source/AnimGraphPosePool.h>
 #include <EMotionFX/Source/PoseData.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
 
 namespace EMotionFX::MotionMatching
 {
-    /**
-     * Extends a given pose with joint-relative linear and angular velocities.
-     **/
+    //! Extends a given pose with joint-relative linear and angular velocities.
     class EMFX_API PoseDataJointVelocities
         : public PoseData
     {
@@ -32,12 +31,22 @@ namespace EMotionFX::MotionMatching
 
         void LinkToActorInstance(const ActorInstance* actorInstance) override;
         void LinkToActor(const Actor* actor) override;
+
+        //! Zero all linear and angular velocities.
         void Reset() override;
 
         void CopyFrom(const PoseData* from) override;
         void Blend(const Pose* destPose, float weight) override;
 
-        void CalculateVelocity(MotionInstance* motionInstance, size_t relativeToJointIndex);
+        //! Calculate velocities for all joints in the pose.
+        //! @param[in] actorInstance The actor instance to use the skeleton and bind pose from.
+        //! @param[in] posePool Calculating velocities will require to sample the motion across a small window of time. The pose pool is used for storing temporary poses.
+        //!                     Note that the pose pool is not thread-safe.
+        //! @param[in] motion The source motion to use to calculate the velocities.
+        //! @param[in] requestedSampleTime The point in time in the motion to calculate the velocities for.
+        //! @param[in] relativeToJointIndex Calculate velocities relative to a given joint transform.
+        void CalculateVelocity(const ActorInstance* actorInstance, AnimGraphPosePool& posePool, Motion* motion, float requestedSampleTime, size_t relativeToJointIndex);
+
         void DebugDraw(AzFramework::DebugDisplayRequests& debugDisplay, const AZ::Color& color) const override;
 
         AZStd::vector<AZ::Vector3>& GetVelocities()                         { return m_velocities; }

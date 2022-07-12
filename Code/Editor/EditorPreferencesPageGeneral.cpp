@@ -67,7 +67,7 @@ void CEditorPreferencesPage_General::Reflect(AZ::SerializeContext& serialize)
     serialize.Class<CEditorPreferencesPage_General>()
         ->Version(1)
         ->Field("General Settings", &CEditorPreferencesPage_General::m_generalSettings)
-        ->Field("Level Save Settings", &CEditorPreferencesPage_General::m_levelSaveSettings)
+        ->Field("Prefab Save Settings", &CEditorPreferencesPage_General::m_levelSaveSettings)
         ->Field("Messaging", &CEditorPreferencesPage_General::m_messaging)
         ->Field("Undo", &CEditorPreferencesPage_General::m_undo)
         ->Field("Deep Selection", &CEditorPreferencesPage_General::m_deepSelection)
@@ -95,10 +95,10 @@ void CEditorPreferencesPage_General::Reflect(AZ::SerializeContext& serialize)
             ->DataElement(AZ::Edit::UIHandlers::CheckBox, &GeneralSettings::m_restoreViewportCamera, EditorPreferencesGeneralRestoreViewportCameraSettingName, "Keep the original editor viewport transform when exiting game mode.")
             ->DataElement(AZ::Edit::UIHandlers::CheckBox, &GeneralSettings::m_enableSceneInspector, "Enable Scene Inspector (EXPERIMENTAL)", "Enable the option to inspect the internal data loaded from scene files like .fbx. This is an experimental feature. Restart the Scene Settings if the option is not visible under the Help menu.");
 
-        editContext->Class<LevelSaveSettings>("Level Save Settings", "")
+        editContext->Class<LevelSaveSettings>("Prefab Save Settings", "")
             ->DataElement(
-                AZ::Edit::UIHandlers::ComboBox, &LevelSaveSettings::m_saveAllPrefabsPreference, "Save All Prefabs Preference",
-                    "This option controls whether prefabs should be saved along with the level")
+                AZ::Edit::UIHandlers::ComboBox, &LevelSaveSettings::m_saveAllPrefabsPreference, "Save All Nested Prefabs",
+                    "This option controls whether nested prefabs should be saved when a prefab is saved.")
                 ->EnumAttribute(AzToolsFramework::Prefab::SaveAllPrefabsPreference::AskEveryTime, "Ask every time")
                 ->EnumAttribute(AzToolsFramework::Prefab::SaveAllPrefabsPreference::SaveAll, "Save all")
                 ->EnumAttribute(AzToolsFramework::Prefab::SaveAllPrefabsPreference::SaveNone, "Save none");
@@ -126,7 +126,7 @@ void CEditorPreferencesPage_General::Reflect(AZ::SerializeContext& serialize)
             ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
             ->Attribute(AZ::Edit::Attributes::Visibility, AZ_CRC("PropertyVisibility_ShowChildrenOnly", 0xef428f20))
             ->DataElement(AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_General::m_generalSettings, "General Settings", "General Editor Preferences")
-            ->DataElement(AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_General::m_levelSaveSettings, "Level Save Settings", "File>Save")
+            ->DataElement(AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_General::m_levelSaveSettings, "Prefab Save Settings", "File>Save")
             ->DataElement(AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_General::m_messaging, "Messaging", "Messaging")
             ->DataElement(AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_General::m_undo, "Undo", "Undo Preferences")
             ->DataElement(AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_General::m_deepSelection, "Selection", "Selection")

@@ -81,18 +81,15 @@ private:
     //! Aftermath will require access to both the stripped and the not stripped
     //! shader binaries.
     void OnShaderLookup(
-        const GFSDK_Aftermath_ShaderHash& shaderHash,
+        const GFSDK_Aftermath_ShaderBinaryHash& shaderHash,
         PFN_GFSDK_Aftermath_SetData setShaderBinary) const;
 
-    //! Handler for shader instructions lookup callbacks.
-    //! This is used by the JSON decoder for mapping shader instruction
-    //! addresses to DXIL lines or HLSL source lines.
-    //! NOTE: If the application loads stripped shader binaries (-Qstrip_debug),
-    //! Aftermath will require access to both the stripped and the not stripped
-    //! shader binaries.
-    void OnShaderInstructionsLookup(
-        const GFSDK_Aftermath_ShaderInstructionsHash& shaderInstructionsHash,
-        PFN_GFSDK_Aftermath_SetData setShaderBinary) const;
+    //! Marker resolve callback
+    void OnResolveMarker(
+        const void* pMarker,
+        void** resolvedMarkerData,
+        uint32_t* markerSize) const;
+
 
     //! Handler for shader source debug info lookup callbacks.
     //! This is used by the JSON decoder for mapping shader instruction addresses to
@@ -131,15 +128,16 @@ private:
 
     //! Shader lookup callback.
     static void ShaderLookupCallback(
-        const GFSDK_Aftermath_ShaderHash* pShaderHash,
+        const GFSDK_Aftermath_ShaderBinaryHash* pShaderHash,
         PFN_GFSDK_Aftermath_SetData setShaderBinary,
         void* pUserData);
 
-    //! Shader instructions lookup callback.
-    static void ShaderInstructionsLookupCallback(
-        const GFSDK_Aftermath_ShaderInstructionsHash* pShaderInstructionsHash,
-        PFN_GFSDK_Aftermath_SetData setShaderBinary,
-        void* pUserData);
+    //! Marker resolve callback
+    static void ResolveMarkerCallback(
+        const void* pMarker,
+        void* pUserData,
+        void** resolvedMarkerData,
+        uint32_t* markerSize);
 
     //! Shader source debug info lookup callback.
     static void ShaderSourceDebugInfoLookupCallback(
@@ -156,6 +154,10 @@ private:
 
     //! For thread-safe access of GPU crash tracker state.
     mutable AZStd::mutex m_mutex;
+
+    // cache executable folder and project name
+    AZStd::string m_executableFolder;
+    AZStd::string m_projectName;
 
     //! Cache the handles which can be used to output the name of the last executing scope
     AZStd::vector<GFSDK_Aftermath_ContextHandle> m_contextHandles;

@@ -9,6 +9,8 @@
 
 #include <AzCore/RTTI/BehaviorContext.h>
 
+#include <AzFramework/API/ApplicationAPI.h>
+
 #include <LmbrCentral/Shape/ShapeComponentBus.h>
 #include <LmbrCentral/Scripting/SpawnerComponentBus.h>
 
@@ -30,29 +32,34 @@ namespace LmbrCentral
                 ;
         }
 
-        if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+        bool usePrefabSystem = false;
+        AzFramework::ApplicationRequests::Bus::BroadcastResult(usePrefabSystem, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
+        if (!usePrefabSystem)
         {
-            behaviorContext->EBus<RandomTimedSpawnerComponentRequestBus>("RandomTimedSpawnerRequestBus")
+            if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+            {
+                behaviorContext
+                    ->EBus<RandomTimedSpawnerComponentRequestBus>("RandomTimedSpawnerRequestBus")
 
-                ->Event("Enable", &RandomTimedSpawnerComponentRequestBus::Events::Enable)
-                ->Event("Disable", &RandomTimedSpawnerComponentRequestBus::Events::Disable)
-                ->Event("Toggle", &RandomTimedSpawnerComponentRequestBus::Events::Toggle)
-                ->Event("IsEnabled", &RandomTimedSpawnerComponentRequestBus::Events::IsEnabled)
+                    ->Event("Enable", &RandomTimedSpawnerComponentRequestBus::Events::Enable)
+                    ->Event("Disable", &RandomTimedSpawnerComponentRequestBus::Events::Disable)
+                    ->Event("Toggle", &RandomTimedSpawnerComponentRequestBus::Events::Toggle)
+                    ->Event("IsEnabled", &RandomTimedSpawnerComponentRequestBus::Events::IsEnabled)
 
-                ->Event("SetRandomDistribution", &RandomTimedSpawnerComponentRequestBus::Events::SetRandomDistribution)
-                ->Event("GetRandomDistribution", &RandomTimedSpawnerComponentRequestBus::Events::GetRandomDistribution)
-                ->VirtualProperty("RandomDistribution", "GetRandomDistribution", "SetRandomDistribution")
+                    ->Event("SetRandomDistribution", &RandomTimedSpawnerComponentRequestBus::Events::SetRandomDistribution)
+                    ->Event("GetRandomDistribution", &RandomTimedSpawnerComponentRequestBus::Events::GetRandomDistribution)
+                    ->VirtualProperty("RandomDistribution", "GetRandomDistribution", "SetRandomDistribution")
 
-                ->Event("SetSpawnDelay", &RandomTimedSpawnerComponentRequestBus::Events::SetSpawnDelay)
-                ->Event("GetSpawnDelay", &RandomTimedSpawnerComponentRequestBus::Events::GetSpawnDelay)
-                ->VirtualProperty("SpawnDelay", "GetSpawnDelay", "SetSpawnDelay")
+                    ->Event("SetSpawnDelay", &RandomTimedSpawnerComponentRequestBus::Events::SetSpawnDelay)
+                    ->Event("GetSpawnDelay", &RandomTimedSpawnerComponentRequestBus::Events::GetSpawnDelay)
+                    ->VirtualProperty("SpawnDelay", "GetSpawnDelay", "SetSpawnDelay")
 
-                ->Event("SetSpawnDelayVariation", &RandomTimedSpawnerComponentRequestBus::Events::SetSpawnDelayVariation)
-                ->Event("GetSpawnDelayVariation", &RandomTimedSpawnerComponentRequestBus::Events::GetSpawnDelayVariation)
-                ->VirtualProperty("SpawnDelayVariation", "GetSpawnDelayVariation", "SetSpawnDelayVariation")
-                ;
+                    ->Event("SetSpawnDelayVariation", &RandomTimedSpawnerComponentRequestBus::Events::SetSpawnDelayVariation)
+                    ->Event("GetSpawnDelayVariation", &RandomTimedSpawnerComponentRequestBus::Events::GetSpawnDelayVariation)
+                    ->VirtualProperty("SpawnDelayVariation", "GetSpawnDelayVariation", "SetSpawnDelayVariation");
 
-            behaviorContext->Class<RandomTimedSpawnerComponent>()->RequestBus("RandomTimedSpawnerRequestBus");
+                behaviorContext->Class<RandomTimedSpawnerComponent>()->RequestBus("RandomTimedSpawnerRequestBus");
+            }
         }
     }
 

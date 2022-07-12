@@ -6,8 +6,11 @@
  *
  */
 
+#include <AzCore/std/sort.h>
+
 #include <Atom/RPI.Reflect/Pass/RenderPassData.h>
 
+#include <Atom/RPI.Public/Pass/Pass.h>
 #include <Atom/RPI.Public/Pass/PassUtils.h>
 
 namespace AZ
@@ -35,6 +38,33 @@ namespace AZ
                     passData = descriptor.m_passData.get();
                 }
                 return passData;
+            }
+
+            AZStd::shared_ptr<PassData> GetPassDataPtr(const PassDescriptor& descriptor)
+            {
+                AZStd::shared_ptr<PassData> passData = nullptr;
+
+                if (descriptor.m_passRequest != nullptr)
+                {
+                    passData = descriptor.m_passRequest->m_passData;
+                }
+                if (passData == nullptr && descriptor.m_passTemplate != nullptr)
+                {
+                    passData = descriptor.m_passTemplate->m_passData;
+                }
+                if (passData == nullptr)
+                {
+                    passData = descriptor.m_passData;
+                }
+                return passData;
+            }
+
+            void ExtractPipelineGlobalConnections(const AZStd::shared_ptr<PassData>& passData, PipelineGlobalConnectionList& outList)
+            {
+                for (const PipelineGlobalConnection& connection : passData->m_pipelineGlobalConnections)
+                {
+                    outList.push_back(connection);
+                }
             }
 
             bool BindDataMappingsToSrg(const PassDescriptor& descriptor, ShaderResourceGroup* shaderResourceGroup)
@@ -73,7 +103,37 @@ namespace AZ
                 return success;
             }
 
+            // Sort so passes with less depth (closer to the root) are first. Used when changes 
+            // in the parent passes can affect the child passes, like with attachment building.
+            void SortPassListAscending(AZStd::vector< Ptr<Pass> >& passList)
+            {
+                AZStd::sort(passList.begin(), passList.end(),
+                    [](const Ptr<Pass>& lhs, const Ptr<Pass>& rhs)
+                    {
+                        if ((lhs->GetTreeDepth() == rhs->GetTreeDepth()))
+                        {
+                            return lhs->GetParentChildIndex() < rhs->GetParentChildIndex();
+                        }
 
-        }   // namespace PassUtils
-    }   // namespace RPI
-}   // namespace AZ
+                        return (lhs->GetTreeDepth() < rhs->GetTreeDepth());
+                    });
+            }
+
+            // Sort so passes with greater depth (further from the root) get called first. Used in the case of
+            // delete, as we want to avoid deleting the parent first since this invalidates the child pointer.
+            void SortPassListDescending(AZStd::vector< Ptr<Pass> >& passList)
+            {
+                AZStd::sort(passList.begin(), passList.end(),
+                    [](const Ptr<Pass>& lhs, const Ptr<Pass>& rhs)
+                    {
+                        if ((lhs->GetTreeDepth() == rhs->GetTreeDepth()))
+                        {
+                            return lhs->GetParentChildIndex() > rhs->GetParentChildIndex();
+                        }
+                        return (lhs->GetTreeDepth() > rhs->GetTreeDepth());
+                    }
+                );
+            }
+        }
+    }
+}

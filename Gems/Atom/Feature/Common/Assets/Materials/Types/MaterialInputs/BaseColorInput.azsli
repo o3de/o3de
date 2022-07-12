@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <Atom/Features/Debug.azsli>
 #include <Atom/Features/ColorManagement/TransformColor.azsli>
 #include <Atom/Features/BlendUtility.azsli>
 
@@ -29,6 +30,11 @@ option TextureBlendMode prefix##o_baseColorTextureBlendMode = TextureBlendMode::
 
 float3 GetBaseColorInput(Texture2D map, sampler mapSampler, float2 uv, float3 baseColor, bool useTexture)
 {
+    if(OverrideBaseColorEnabled())
+    {
+        return GetBaseColorOverride();
+    }
+
     if(useTexture)
     {
         float3 sampledAbledo = map.Sample(mapSampler, uv).rgb;
@@ -39,6 +45,11 @@ float3 GetBaseColorInput(Texture2D map, sampler mapSampler, float2 uv, float3 ba
 
 float3 BlendBaseColor(float3 sampledBaseColor, float3 baseColor, float factor, TextureBlendMode blendMode, bool useTexture)
 {
+    if(OverrideBaseColorEnabled())
+    {
+        return GetBaseColorOverride();
+    }
+
     // [GFX TODO][ATOM-1761] Figure out how we want our base material to expect channels to be encoded, and apply that to the way we pack alpha. 
     if (useTexture)
     {

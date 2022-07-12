@@ -28,7 +28,8 @@ namespace PhysX
         void ResetValues(const AZ::EntityComponentIdPair& idPair) override;
 
     private:
-        void OnManipulatorMoved(const AZ::Vector3& position, const AZ::EntityComponentIdPair& idPair);
+        void OnManipulatorMoved(
+            const AZ::Vector3& startPosition, const AZ::Vector3& offset, const AZ::EntityComponentIdPair& idPair);
 
         AzToolsFramework::TranslationManipulators m_translationManipulators;
     };

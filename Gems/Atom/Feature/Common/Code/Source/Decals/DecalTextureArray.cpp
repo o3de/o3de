@@ -23,15 +23,17 @@ namespace AZ
     {
         namespace
         {
-            static AZ::Name GetMapName(const DecalMapType mapType)
+            static const AZ::Name& GetMapName(const DecalMapType mapType)
             {
-                // Using local static to avoid cost of creating AZ::Name. Also so that this can be called from other static functions
-                static AZStd::array<AZ::Name, DecalMapType_Num> mapNames =
+                switch (mapType)
                 {
-                    AZ::Name("baseColor.textureMap"),
-                    AZ::Name("normal.textureMap")
-                };
-                return mapNames[mapType];
+                case DecalMapType_Diffuse:
+                    return AZ_NAME_LITERAL("baseColor.textureMap");
+                case DecalMapType_Normal:
+                    return AZ_NAME_LITERAL("normal.textureMap");
+                default:
+                    return AZ_NAME_LITERAL("");
+                }
             }
 
             static AZ::Data::AssetId GetImagePoolId()
@@ -68,12 +70,15 @@ namespace AZ
                 const auto& propertyValues = materialAsset.GetPropertyValues();
                 const AZ::RPI::MaterialPropertyValue& propertyValue = propertyValues[propertyIndex.GetIndex()];
                 auto imageAsset = propertyValue.GetValue<Data::Asset<RPI::ImageAsset>>();
-                imageAsset.QueueLoad();
-                // [GFX TODO][ATOM-14271] - DecalTextureArrayFeatureProcessor should use async loading
-                imageAsset.BlockUntilLoadComplete();
-
                 const auto& assetId = imageAsset.GetId();
-                if (!assetId.IsValid())
+
+                if (assetId.IsValid())
+                {
+                    imageAsset.QueueLoad();
+                    // [GFX TODO][ATOM-14271] - DecalTextureArrayFeatureProcessor should use async loading
+                    imageAsset.BlockUntilLoadComplete();
+                }
+                else
                 {
                     AZ_Warning("DecalTextureArray", false, "Material property: %s does not have a valid asset Id", propertyName.GetCStr());
                     return {};
@@ -200,7 +205,7 @@ namespace AZ
                 const DecalMapType mapType = aznumeric_cast<DecalMapType>(i);
                 if (!AreAllTextureMapsPresent(mapType))
                 {
-                    AZ_Warning("DecalTextureArray", true, "Missing decal texture maps for %s. Please make sure all maps of this type are present.\n", GetMapName(mapType).GetCStr());
+                    AZ_Warning("DecalTextureArray", false, "Missing decal texture maps for %s. Please make sure all maps of this type are present.\n", GetMapName(mapType).GetCStr());
                     m_textureArrayPacked[i] = nullptr;
                     continue;
                 }

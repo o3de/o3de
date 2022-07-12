@@ -1,0 +1,142 @@
+{
+    "description": "Material Type based on standard PBR with additional properites related to terrain.",
+    "version": 1,
+    "propertyLayout": {
+        "propertyGroups": [
+            { 
+                "$import": "../../../../Atom/Feature/Common/Assets/Materials/Types/MaterialInputs/BaseColorPropertyGroup.json"
+            },
+            { 
+                "$import": "../../../../Atom/Feature/Common/Assets/Materials/Types/MaterialInputs/MetallicPropertyGroup.json"
+            },
+            { 
+                "$import": "../../../../Atom/Feature/Common/Assets/Materials/Types/MaterialInputs/RoughnessPropertyGroup.json"
+            },
+            {
+                "$import": "../../../../Atom/Feature/Common/Assets/Materials/Types/MaterialInputs/SpecularPropertyGroup.json"
+            },
+            { 
+                "$import": "../../../../Atom/Feature/Common/Assets/Materials/Types/MaterialInputs/NormalPropertyGroup.json"
+            },
+            { 
+                "$import": "../../../../Atom/Feature/Common/Assets/Materials/Types/MaterialInputs/OcclusionPropertyGroup.json"
+            },
+            { 
+                "$import": "../../../../Atom/Feature/Common/Assets/Materials/Types/MaterialInputs/ParallaxPropertyGroup.json" 
+            },
+            {
+                "name": "terrain",
+                "displayName": "Terrain",
+                "description": "Terrain related properties",
+                "properties": [
+                    {
+                        "name": "overrideParallaxSettings",
+                        "displayName": "Override parallax settings",
+                        "description": "Override the height offset and bias from parallax",
+                        "type": "bool",
+                        "defaultValue": false
+                    },
+                    {
+                        "name": "heightOffset",
+                        "displayName": "Height offset",
+                        "description": "How much to offset the heights from 0.",
+                        "type": "float",
+                        "defaultValue": 0.0,
+                        "min": -1.0,
+                        "max": 1.0
+                    },
+                    {
+                        "name": "heightScale",
+                        "displayName": "Height scale",
+                        "description": "How much to scale the height map.",
+                        "type": "float",
+                        "defaultValue": 1.0,
+                        "min": 0.0,
+                        "max": 2.0
+                    },
+                    {
+                        "name": "blendFactor",
+                        "displayName": "Blend factor",
+                        "description": "Determines how hard the blend is between this material and other materials (lower is harder).",
+                        "type": "float",
+                        "defaultValue": 0.5,
+                        "min": 0.0,
+                        "max": 1.0
+                    },
+                    {
+                        "name": "weightClampFactor",
+                        "displayName": "Weight clamp factor",
+                        "description": "Determines the maximum weight value for when the height of the material begins to be clamped by the weight. For instance, a value of 0.1 means that when the weight is less than 0.1, the height will be reduced so the height is always 0 by the time the weight is 0.",
+                        "type": "float",
+                        "defaultValue": 0.1,
+                        "min": 0.0,
+                        "max": 1.0
+                    }
+                ],
+                "functors": [
+                    {
+                        "type": "Lua",
+                        "args": {
+                            "file": "TerrainOverrideParallax.lua"
+                        }
+                    }
+                ]
+            },
+            { 
+                "$import": "../../../../Atom/Feature/Common/Assets/Materials/Types/MaterialInputs/UvPropertyGroup.json"
+            },
+            { 
+                "$import": "../../../../Atom/Feature/Common/Assets/Materials/Types/MaterialInputs/IrradiancePropertyGroup.json"
+            },
+            { 
+                "$import": "../../../../Atom/Feature/Common/Assets/Materials/Types/MaterialInputs/GeneralCommonPropertyGroup.json"
+            }
+        ]
+    },
+    "shaders": [
+        {
+            "file": "Materials/Types/StandardPBR_ForwardPass.shader",
+            "tag": "ForwardPass"
+        },
+        {
+            "file": "Materials/Types/StandardPBR_ForwardPass_EDS.shader",
+            "tag": "ForwardPass_EDS"
+        },
+        {
+            "file": "Materials/Types/StandardPBR_LowEndForward.shader",
+            "tag": "LowEndForward"
+        },
+        {
+            "file": "Materials/Types/StandardPBR_LowEndForward_EDS.shader",
+            "tag": "LowEndForward_EDS"
+        },
+        {
+            "file": "Shaders/Shadow/Shadowmap.shader",
+            "tag": "Shadowmap"
+        },
+        {
+            "file": "Materials/Types/StandardPBR_Shadowmap_WithPS.shader",
+            "tag": "Shadowmap_WithPS"
+        },
+        {
+            "file": "Shaders/Depth/DepthPass.shader",
+            "tag": "DepthPass"
+        },
+        {
+            "file": "Materials/Types/StandardPBR_DepthPass_WithPS.shader",
+            "tag": "DepthPass_WithPS"
+        }
+    ],
+    "functors": [
+        {
+            "type": "Lua",
+            "args": {
+                "file": "Materials/Types/StandardPBR_ShaderEnable.lua"
+            }
+        }
+    ],
+    "uvNameMap": {
+        "UV0": "Tiled",
+        "UV1": "Unwrapped"
+    }
+}

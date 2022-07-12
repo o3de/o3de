@@ -276,7 +276,6 @@ namespace AzQtComponents
      */
     void FancyDocking::updateDockingGeometry()
     {
-        QRect totalScreenRect;
         int numScreens = QApplication::screens().count();
 
 #ifdef AZ_PLATFORM_WINDOWS
@@ -286,6 +285,9 @@ namespace AzQtComponents
         m_perScreenFullScreenWidgets.clear();
 #endif
 
+#if !defined(AZ_PLATFORM_WINDOWS)
+        QRect totalScreenRect;
+#endif
         for (int i = 0; i < numScreens; ++i)
         {
 #ifdef AZ_PLATFORM_WINDOWS

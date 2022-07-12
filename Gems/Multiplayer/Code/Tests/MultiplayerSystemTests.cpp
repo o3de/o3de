@@ -6,6 +6,8 @@
  *
  */
 
+#include <CommonHierarchySetup.h>
+#include <MockInterfaces.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/UnitTest/UnitTest.h>
 #include <AzCore/Name/NameDictionary.h>
@@ -15,6 +17,9 @@
 #include <AzTest/AzTest.h>
 #include <MultiplayerSystemComponent.h>
 #include <IMultiplayerConnectionMock.h>
+#include <IMultiplayerSpawnerMock.h>
+#include <ConnectionData/ServerToClientConnectionData.h>
+#include <ReplicationWindows/ServerToClientReplicationWindow.h>
 
 namespace UnitTest
 {
@@ -26,6 +31,10 @@ namespace UnitTest
         {
             SetupAllocator();
             AZ::NameDictionary::Create();
+
+            m_mockComponentApplicationRequests = AZStd::make_unique<testing::NiceMock<MockComponentApplicationRequests>>();
+            AZ::Interface<AZ::ComponentApplicationRequests>::Register(m_mockComponentApplicationRequests.get());
+
             m_netComponent = new AzNetworking::NetworkingSystemComponent();
             m_mpComponent = new Multiplayer::MultiplayerSystemComponent();
 
@@ -35,6 +44,8 @@ namespace UnitTest
             m_mpComponent->AddSessionShutdownHandler(m_shutdownHandler);
             m_connAcquiredHandler = Multiplayer::ConnectionAcquiredEvent::Handler([this](Multiplayer::MultiplayerAgentDatum value) { TestConnectionAcquiredEvent(value); });
             m_mpComponent->AddConnectionAcquiredHandler(m_connAcquiredHandler);
+            m_endpointDisonnectedHandler = Multiplayer::EndpointDisonnectedEvent::Handler([this](Multiplayer::MultiplayerAgentType value) { TestEndpointDisonnectedEvent(value); });
+            m_mpComponent->AddEndpointDisonnectedHandler(m_endpointDisonnectedHandler);
             m_mpComponent->Activate();
         }
 
@@ -43,6 +54,8 @@ namespace UnitTest
             m_mpComponent->Deactivate();
             delete m_mpComponent;
             delete m_netComponent;
+            AZ::Interface<AZ::ComponentApplicationRequests>::Unregister(m_mockComponentApplicationRequests.get());
+            m_mockComponentApplicationRequests.reset();
             AZ::NameDictionary::Destroy();
             TeardownAllocator();
         }
@@ -62,16 +75,27 @@ namespace UnitTest
             m_connectionAcquiredCount += aznumeric_cast<uint32_t>(datum.m_id);
         }
 
+        void TestEndpointDisonnectedEvent([[maybe_unused]] Multiplayer::MultiplayerAgentType value)
+        {
+            ++m_endpointDisonnectedCount;
+        }
+
         uint32_t m_initEventTriggerCount = 0;
         uint32_t m_shutdownEventTriggerCount = 0;
         uint32_t m_connectionAcquiredCount = 0;
+        uint32_t m_endpointDisonnectedCount = 0;
 
         Multiplayer::SessionInitEvent::Handler m_initHandler;
         Multiplayer::SessionShutdownEvent::Handler m_shutdownHandler;
         Multiplayer::ConnectionAcquiredEvent::Handler m_connAcquiredHandler;
+        Multiplayer::EndpointDisonnectedEvent::Handler m_endpointDisonnectedHandler;
 
         AzNetworking::NetworkingSystemComponent* m_netComponent = nullptr;
         Multiplayer::MultiplayerSystemComponent* m_mpComponent = nullptr;
+
+        AZStd::unique_ptr<testing::NiceMock<MockComponentApplicationRequests>> m_mockComponentApplicationRequests;
+
+        IMultiplayerSpawnerMock m_mpSpawnerMock;
     };
 
     TEST_F(MultiplayerSystemTests, TestInitEvent)
@@ -90,6 +114,7 @@ namespace UnitTest
         m_mpComponent->OnDisconnect(&connMock1, AzNetworking::DisconnectReason::None, AzNetworking::TerminationEndpoint::Local);
         m_mpComponent->OnDisconnect(&connMock2, AzNetworking::DisconnectReason::None, AzNetworking::TerminationEndpoint::Local);
 
+        EXPECT_EQ(m_endpointDisonnectedCount, 2);
         EXPECT_EQ(m_shutdownEventTriggerCount, 1);
     }
 
@@ -106,6 +131,29 @@ namespace UnitTest
         // Clean up connection data
         m_mpComponent->OnDisconnect(&connMock1, AzNetworking::DisconnectReason::None, AzNetworking::TerminationEndpoint::Local);
         m_mpComponent->OnDisconnect(&connMock2, AzNetworking::DisconnectReason::None, AzNetworking::TerminationEndpoint::Local);
+
+        EXPECT_EQ(m_endpointDisonnectedCount, 2);
+    }
+
+    TEST_F(MultiplayerSystemTests, TestSpawnerEvents)
+    {
+        AZ::Interface<Multiplayer::IMultiplayerSpawner>::Register(&m_mpSpawnerMock);
+        m_mpComponent->InitializeMultiplayer(Multiplayer::MultiplayerAgentType::ClientServer);
+
+        AZ_TEST_START_TRACE_SUPPRESSION;
+        // Setup mock connection and dummy connection data, this should raise two errors around entity validity
+        Multiplayer::NetworkEntityHandle controlledEntity;
+        IMultiplayerConnectionMock connMock =
+            IMultiplayerConnectionMock(AzNetworking::ConnectionId(), AzNetworking::IpAddress(), AzNetworking::ConnectionRole::Acceptor);
+        Multiplayer::ServerToClientConnectionData* connectionData = new Multiplayer::ServerToClientConnectionData(&connMock, *m_mpComponent);
+        connectionData->GetReplicationManager().SetReplicationWindow(AZStd::make_unique<Multiplayer::ServerToClientReplicationWindow>(controlledEntity, &connMock));
+        connMock.SetUserData(connectionData);
+
+        m_mpComponent->OnDisconnect(&connMock, AzNetworking::DisconnectReason::None, AzNetworking::TerminationEndpoint::Local);
+        AZ_TEST_STOP_TRACE_SUPPRESSION(2);
+
+        EXPECT_EQ(m_endpointDisonnectedCount, 1);
+        EXPECT_EQ(m_mpSpawnerMock.m_playerCount, 0);
+        AZ::Interface<Multiplayer::IMultiplayerSpawner>::Unregister(&m_mpSpawnerMock);
     }
 }
-

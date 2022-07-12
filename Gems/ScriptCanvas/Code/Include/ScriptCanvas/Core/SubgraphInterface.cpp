@@ -29,8 +29,10 @@ namespace SubgraphInterfaceCpp
         Functions_2_0,
         AddConstructionParameterRequirement,
         AddConstructionParameterRequirementForDependencies,
-        // add your entry above
-        Current
+        SeparateClassDefinitionFromNodeableDefinition,
+        Last,
+        // DO NOT VERSION
+        DoNotVersionAssetsBumpTheBuilderVersionInstead,
     };
 
     [[maybe_unused]] const size_t k_maxTabs = 20;
@@ -195,6 +197,25 @@ namespace ScriptCanvas
             return true;
         }
 
+        SubgraphInterface::SubgraphInterface(Ins&& ins)
+            : m_ins(ins)
+        {
+            Parse();
+        }
+
+        SubgraphInterface::SubgraphInterface(Ins&& ins, Outs&& latents)
+            : m_ins(ins)
+            , m_latents(latents)
+        {
+            Parse();
+        }
+
+        SubgraphInterface::SubgraphInterface(Outs&& latents)
+            : m_latents(latents)
+        {
+            Parse();
+        }
+
         void SubgraphInterface::AddIn(In&& in)
         {
             m_ins.push_back(in);
@@ -220,16 +241,55 @@ namespace ScriptCanvas
             }
         }
 
+        const Out* SubgraphInterface::FindImmediateOut(const AZStd::string& inName, const AZStd::string& outName) const
+        {
+            if (auto in = FindIn(inName))
+            {
+                auto iter = AZStd::find_if(in->outs.begin(), in->outs.end(), [&outName](const Out& out) { return out.displayName == outName; });
+
+                if (iter != in->outs.end())
+                {
+                    return iter;
+                }
+                else
+                {
+                    AZ_Error("ScriptCanvas", false, "No out named: %s with in named: %s", outName.data(), inName.data());
+                }
+            }
+
+            return nullptr;
+        }
+
         const In* SubgraphInterface::FindIn(const FunctionSourceId& sourceID) const
         {
             auto iter = AZStd::find_if(m_ins.begin(), m_ins.end(), [&sourceID](const In& in) { return in.sourceID == sourceID; });
             return iter != m_ins.end() ? iter : nullptr;
         }
 
+        const In* SubgraphInterface::FindIn(const AZStd::string& inName) const
+        {
+            return FindInByName(inName, *const_cast<Ins*>(&m_ins));
+        }
+
         const Out* SubgraphInterface::FindLatent(const FunctionSourceId& sourceID) const
         {
             auto iter = AZStd::find_if(m_latents.begin(), m_latents.end(), [&sourceID](const Out& latent) { return latent.sourceID == sourceID; });
             return iter != m_latents.end() ? iter : nullptr;
+        }
+
+        const Out* SubgraphInterface::FindLatentOut(const AZStd::string& latentName) const
+        {
+            auto iter = AZStd::find_if(m_latents.begin(), m_latents.end(), [&latentName](const Out& latent) { return latent.displayName == latentName; });
+
+            if (iter != m_latents.end())
+            {
+                return iter;
+            }
+            else
+            {
+                AZ_Error("ScriptCanvas", false, "No latent named: %s", latentName.data());
+                return nullptr;
+            }
         }
 
         ExecutionCharacteristics SubgraphInterface::GetExecutionCharacteristics() const
@@ -326,10 +386,16 @@ namespace ScriptCanvas
             return GetLexicalScope(in.isPure);
         }
 
-        AZStd::string SubgraphInterface::GetName() const
+        AZ::Outcome<AZStd::string, AZStd::string> SubgraphInterface::GetName() const
         {
-            AZ_Error("ScriptCanvas", !m_namespacePath.empty(), "Interface must have at least one name");
-            return !m_namespacePath.empty() ? m_namespacePath.back() : "error, empty interface name";
+            if (m_namespacePath.empty())
+            {
+                return AZ::Failure(AZStd::string("Interface namespace path was empty"));
+            }
+            else
+            {
+                return AZ::Success(m_namespacePath.back());
+            }
         }
 
         const NamespacePath& SubgraphInterface::GetNamespacePath() const
@@ -372,62 +438,10 @@ namespace ScriptCanvas
             return nullptr;
         }
 
-        SubgraphInterface::SubgraphInterface(Ins&& ins)
-            : m_ins(ins)
+        // meaningless (and empty) if not an object
+        const AZStd::string& SubgraphInterface::GetParentClassName() const
         {
-            Parse();
-        }
-
-        SubgraphInterface::SubgraphInterface(Ins&& ins, Outs&& latents)
-            : m_ins(ins)
-            , m_latents(latents)
-        {
-            Parse();
-        }
-
-        SubgraphInterface::SubgraphInterface(Outs&& latents)
-            : m_latents(latents)
-        {
-            Parse();
-        }
-
-        const Out* SubgraphInterface::FindImmediateOut(const AZStd::string& inName, const AZStd::string& outName) const
-        {
-            if (auto in = FindIn(inName))
-            {
-                auto iter = AZStd::find_if(in->outs.begin(), in->outs.end(), [&outName](const Out& out) { return out.displayName == outName; });
-
-                if (iter != in->outs.end())
-                {
-                    return iter;
-                }
-                else
-                {
-                    AZ_Error("ScriptCanvas", false, "No out named: %s with in named: %s", outName.data(), inName.data());
-                }
-            }
-
-            return nullptr;
-        }
-
-        const In* SubgraphInterface::FindIn(const AZStd::string& inName) const
-        {
-            return FindInByName(inName, *const_cast<Ins*>(&m_ins));
-        }
-
-        const Out* SubgraphInterface::FindLatentOut(const AZStd::string& latentName) const
-        {
-            auto iter = AZStd::find_if(m_latents.begin(), m_latents.end(), [&latentName](const Out& latent) { return latent.displayName == latentName; });
-
-            if (iter != m_latents.end())
-            {
-                return iter;
-            }
-            else
-            {
-                AZ_Error("ScriptCanvas", false, "No latent named: %s", latentName.data());
-                return nullptr;
-            }
+            return m_parentClassName;
         }
 
         bool SubgraphInterface::IsActiveDefaultObject() const
@@ -435,14 +449,14 @@ namespace ScriptCanvas
             return m_isActiveDefaultObject;
         }
 
+        bool SubgraphInterface::IsBaseClass() const
+        {
+            return IsClass() && m_isBaseClass;
+        }
+
         bool SubgraphInterface::IsUserNodeable() const
         {
             if (IsMarkedPure())
-            {
-                return false;
-            }
-
-            if (IsUserVariable())
             {
                 return false;
             }
@@ -455,9 +469,9 @@ namespace ScriptCanvas
             return true;
         }
 
-        bool SubgraphInterface::IsUserVariable() const
+        bool SubgraphInterface::IsClass() const
         {
-            return m_isUserVariable;
+            return m_isClass;
         }
 
         AZ::Outcome<bool> SubgraphInterface::IsBranch(const AZStd::string& inName) const
@@ -509,7 +523,7 @@ namespace ScriptCanvas
 
         bool SubgraphInterface::HasAnyFunctionality() const
         {
-            // \todo restore default object addition when ndoes can define an variable, as well
+            // \todo restore default object addition when nodes can define an variable, as well
             return /*IsActiveDefaultObject() || */ HasPublicFunctionality();
         }
 
@@ -528,7 +542,7 @@ namespace ScriptCanvas
 
         bool SubgraphInterface::HasIn(const FunctionSourceId& sourceID) const
         {
-            return ((!IsUserVariable()) && (IsFunctionSourceIdNodeable(sourceID) || IsFunctionSourceIdObject(sourceID)))
+            return ((!IsClass()) && (IsFunctionSourceIdNodeable(sourceID) || IsFunctionSourceIdObject(sourceID)))
                 || FindIn(sourceID) != nullptr;
         }
 
@@ -610,6 +624,11 @@ namespace ScriptCanvas
             m_isActiveDefaultObject = true;
         }
 
+        void SubgraphInterface::MarkRefersToSelfEntityId()
+        {
+            m_refersToSelfEntityId = true;
+        }
+
         void SubgraphInterface::MarkRequiresConstructionParameters()
         {
             m_requiresConstructionParameters = true;
@@ -620,9 +639,9 @@ namespace ScriptCanvas
             m_requiresConstructionParametersForDependencies = true;
         }
 
-        void SubgraphInterface::MarkUserVariable()
+        void SubgraphInterface::MarkClass()
         {
-            m_isUserVariable = true;
+            m_isClass = true;
         }
 
         void SubgraphInterface::MarkExecutionCharacteristics(ExecutionCharacteristics characteristics)
@@ -651,7 +670,7 @@ namespace ScriptCanvas
 
         bool SubgraphInterface::operator==(const SubgraphInterface& rhs) const
         {
-            if (m_isUserVariable != rhs.m_isUserVariable)
+            if (m_isClass != rhs.m_isClass)
             {
                 return false;
             }
@@ -682,6 +701,16 @@ namespace ScriptCanvas
             }
 
             if (m_executionCharacteristics != rhs.m_executionCharacteristics)
+            {
+                return false;
+            }
+
+            if (m_isBaseClass != rhs.m_isBaseClass)
+            {
+                return false;
+            }
+
+            if (m_parentClassName != rhs.m_parentClassName)
             {
                 return false;
             }
@@ -736,6 +765,11 @@ namespace ScriptCanvas
             return AZ::Success();
         }
 
+        bool SubgraphInterface::RefersToSelfEntityId() const
+        {
+            return m_refersToSelfEntityId;
+        }
+
         void SubgraphInterface::Reflect(AZ::ReflectContext* refectContext)
         {
             if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(refectContext))
@@ -774,7 +808,7 @@ namespace ScriptCanvas
                     ;
 
                 serializeContext->Class<SubgraphInterface>()
-                    ->Version(SubgraphInterfaceCpp::Version::Current)
+                    ->Version(SubgraphInterfaceCpp::Version::DoNotVersionAssetsBumpTheBuilderVersionInstead)
                     ->Field("areAllChildrenPure", &SubgraphInterface::m_areAllChildrenPure)
                     ->Field("hasOnGraphStart", &SubgraphInterface::m_hasOnGraphStart)
                     ->Field("isActiveDefaultObject", &SubgraphInterface::m_isActiveDefaultObject)
@@ -785,6 +819,9 @@ namespace ScriptCanvas
                     ->Field("executionCharacteristics", &SubgraphInterface::m_executionCharacteristics)
                     ->Field("requiresConstructionParameters", &SubgraphInterface::m_requiresConstructionParameters)
                     ->Field("requiresConstructionParametersForDependencies", &SubgraphInterface::m_requiresConstructionParametersForDependencies)
+                    ->Field("isBaseClass ", &SubgraphInterface::m_isBaseClass)
+                    ->Field("parentClassName", &SubgraphInterface::m_parentClassName)
+                    ->Field("refersToSelfEntityId", &SubgraphInterface::m_refersToSelfEntityId)
                     ;
             }
         }
@@ -797,6 +834,12 @@ namespace ScriptCanvas
         bool SubgraphInterface::RequiresConstructionParametersForDependencies() const
         {
             return m_requiresConstructionParametersForDependencies;
+        }
+
+        void SubgraphInterface::MarkBaseClass()
+        {
+            m_isBaseClass = true;
+            MarkClass();
         }
 
         void SubgraphInterface::SetNamespacePath(const NamespacePath& namespacePath)
@@ -930,8 +973,10 @@ namespace ScriptCanvas
 
         AZStd::string ToString(const SubgraphInterface& subgraphInterface)
         {
+            auto nameOutcome = subgraphInterface.GetName();
+
             AZStd::string result("\n");
-            result += subgraphInterface.GetName();
+            result += nameOutcome.IsSuccess() ? nameOutcome.TakeValue() : "Error: Automatic naming based on file path failed.";
             result += "\n";
             result += AZStd::string::format("Is Active By Default: %s\n", YorN(subgraphInterface.IsActiveDefaultObject()));
             result += AZStd::string::format("Is Latent: %s\n", YorN(subgraphInterface.IsLatent()));

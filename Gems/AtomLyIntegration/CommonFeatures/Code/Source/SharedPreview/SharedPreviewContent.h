@@ -29,9 +29,9 @@ namespace AZ
                 RPI::ScenePtr scene,
                 RPI::ViewPtr view,
                 AZ::Uuid entityContextId,
-                const Data::AssetId& modelAssetId,
-                const Data::AssetId& materialAssetId,
-                const Data::AssetId& lightingPresetAssetId,
+                const Data::Asset<RPI::ModelAsset>& modelAsset,
+                const Data::Asset<RPI::MaterialAsset>& materialAsset,
+                const Data::Asset<RPI::AnyAsset>& lightingPresetAsset,
                 const Render::MaterialPropertyOverrideMap& materialPropertyOverrides);
 
             ~SharedPreviewContent() override;
@@ -56,7 +56,7 @@ namespace AZ
             RPI::ScenePtr m_scene;
             RPI::ViewPtr m_view;
             AZ::Uuid m_entityContextId;
-            Entity* m_modelEntity = nullptr;
+            Entity* m_modelEntity = {};
 
             Data::Asset<RPI::ModelAsset> m_modelAsset;
             Data::Asset<RPI::MaterialAsset> m_materialAsset;

@@ -8,7 +8,7 @@
 #pragma once
 
 #include <AzCore/std/containers/vector.h>
-#include <AzFramework/Physics/Material.h>
+#include <AzFramework/Physics/Material/PhysicsMaterialId.h>
 #include <AzFramework/Physics/Configuration/RigidBodyConfiguration.h>
 
 namespace Nv::Blast

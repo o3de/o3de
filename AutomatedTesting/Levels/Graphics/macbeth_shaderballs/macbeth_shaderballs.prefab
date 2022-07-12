@@ -38,7 +38,10 @@
             },
             "Component_[7874177159288365422]": {
                 "$type": "EditorEntitySortComponent",
-                "Id": 7874177159288365422
+                "Id": 7874177159288365422,
+                "Child Entity Order": [
+                    "Entity_[471076350497]"
+                ]
             },
             "Component_[8018146290632383969]": {
                 "$type": "EditorEntityIconComponent",
@@ -110,34 +113,14 @@
                 "Component_[16871442125196328877]": {
                     "$type": "EditorEntitySortComponent",
                     "Id": 16871442125196328877,
-                    "ChildEntityOrderEntryArray": [
-                        {
-                            "EntityId": "Entity_[604220336673]"
-                        },
-                        {
-                            "EntityId": "Entity_[599925369377]",
-                            "SortIndex": 1
-                        },
-                        {
-                            "EntityId": "Entity_[475371317793]",
-                            "SortIndex": 2
-                        },
-                        {
-                            "EntityId": "Entity_[509731056161]",
-                            "SortIndex": 3
-                        },
-                        {
-                            "EntityId": "Entity_[505436088865]",
-                            "SortIndex": 4
-                        },
-                        {
-                            "EntityId": "Entity_[539795827233]",
-                            "SortIndex": 5
-                        },
-                        {
-                            "EntityId": "Entity_[569860598305]",
-                            "SortIndex": 6
-                        }
+                    "Child Entity Order": [
+                        "Entity_[604220336673]",
+                        "Entity_[599925369377]",
+                        "Entity_[475371317793]",
+                        "Entity_[509731056161]",
+                        "Entity_[505436088865]",
+                        "Entity_[539795827233]",
+                        "Entity_[569860598305]"
                     ]
                 },
                 "Component_[18389136819207633744]": {
@@ -263,10 +246,10 @@
                         "Configuration": {
                             "ModelAsset": {
                                 "assetId": {
-                                    "guid": "{D0F73AAF-52B7-507C-B045-DBE2FE2D4403}",
-                                    "subId": 268677693
+                                    "guid": "{FD340C30-755C-5911-92A3-19A3F7A77931}",
+                                    "subId": 281415304
                                 },
-                                "assetHint": "objects/shaderball_simple/shaberball_simple_1m.azmodel"
+                                "assetHint": "objects/shaderball/shaderball_default_1m.azmodel"
                             },
                             "LodOverride": 255
                         }
@@ -370,10 +353,10 @@
                         "Configuration": {
                             "ModelAsset": {
                                 "assetId": {
-                                    "guid": "{D0F73AAF-52B7-507C-B045-DBE2FE2D4403}",
-                                    "subId": 268677693
+                                    "guid": "{FD340C30-755C-5911-92A3-19A3F7A77931}",
+                                    "subId": 281415304
                                 },
-                                "assetHint": "objects/shaderball_simple/shaberball_simple_1m.azmodel"
+                                "assetHint": "objects/shaderball/shaderball_default_1m.azmodel"
                             },
                             "LodOverride": 255
                         }
@@ -477,10 +460,10 @@
                         "Configuration": {
                             "ModelAsset": {
                                 "assetId": {
-                                    "guid": "{D0F73AAF-52B7-507C-B045-DBE2FE2D4403}",
-                                    "subId": 268677693
+                                    "guid": "{FD340C30-755C-5911-92A3-19A3F7A77931}",
+                                    "subId": 281415304
                                 },
-                                "assetHint": "objects/shaderball_simple/shaberball_simple_1m.azmodel"
+                                "assetHint": "objects/shaderball/shaderball_default_1m.azmodel"
                             },
                             "LodOverride": 255
                         }
@@ -584,10 +567,10 @@
                         "Configuration": {
                             "ModelAsset": {
                                 "assetId": {
-                                    "guid": "{D0F73AAF-52B7-507C-B045-DBE2FE2D4403}",
-                                    "subId": 268677693
+                                    "guid": "{FD340C30-755C-5911-92A3-19A3F7A77931}",
+                                    "subId": 281415304
                                 },
-                                "assetHint": "objects/shaderball_simple/shaberball_simple_1m.azmodel"
+                                "assetHint": "objects/shaderball/shaderball_default_1m.azmodel"
                             },
                             "LodOverride": 255
                         }
@@ -691,10 +674,10 @@
                         "Configuration": {
                             "ModelAsset": {
                                 "assetId": {
-                                    "guid": "{D0F73AAF-52B7-507C-B045-DBE2FE2D4403}",
-                                    "subId": 268677693
+                                    "guid": "{FD340C30-755C-5911-92A3-19A3F7A77931}",
+                                    "subId": 281415304
                                 },
-                                "assetHint": "objects/shaderball_simple/shaberball_simple_1m.azmodel"
+                                "assetHint": "objects/shaderball/shaderball_default_1m.azmodel"
                             },
                             "LodOverride": 255
                         }
@@ -798,10 +781,10 @@
                         "Configuration": {
                             "ModelAsset": {
                                 "assetId": {
-                                    "guid": "{D0F73AAF-52B7-507C-B045-DBE2FE2D4403}",
-                                    "subId": 268677693
+                                    "guid": "{FD340C30-755C-5911-92A3-19A3F7A77931}",
+                                    "subId": 281415304
                                 },
-                                "assetHint": "objects/shaderball_simple/shaberball_simple_1m.azmodel"
+                                "assetHint": "objects/shaderball/shaderball_default_1m.azmodel"
                             },
                             "LodOverride": 255
                         }
@@ -905,10 +888,10 @@
                         "Configuration": {
                             "ModelAsset": {
                                 "assetId": {
-                                    "guid": "{D0F73AAF-52B7-507C-B045-DBE2FE2D4403}",
-                                    "subId": 268677693
+                                    "guid": "{FD340C30-755C-5911-92A3-19A3F7A77931}",
+                                    "subId": 281415304
                                 },
-                                "assetHint": "objects/shaderball_simple/shaberball_simple_1m.azmodel"
+                                "assetHint": "objects/shaderball/shaderball_default_1m.azmodel"
                             },
                             "LodOverride": 255
                         }
@@ -944,30 +927,13 @@
                 "Component_[11056805018150955063]": {
                     "$type": "EditorEntitySortComponent",
                     "Id": 11056805018150955063,
-                    "ChildEntityOrderEntryArray": [
-                        {
-                            "EntityId": "Entity_[488256219681]"
-                        },
-                        {
-                            "EntityId": "Entity_[483961252385]",
-                            "SortIndex": 1
-                        },
-                        {
-                            "EntityId": "Entity_[479666285089]",
-                            "SortIndex": 2
-                        },
-                        {
-                            "EntityId": "Entity_[492551186977]",
-                            "SortIndex": 3
-                        },
-                        {
-                            "EntityId": "Entity_[496846154273]",
-                            "SortIndex": 4
-                        },
-                        {
-                            "EntityId": "Entity_[501141121569]",
-                            "SortIndex": 5
-                        }
+                    "Child Entity Order": [
+                        "Entity_[488256219681]",
+                        "Entity_[483961252385]",
+                        "Entity_[479666285089]",
+                        "Entity_[492551186977]",
+                        "Entity_[496846154273]",
+                        "Entity_[501141121569]"
                     ]
                 },
                 "Component_[11466054095979053511]": {
@@ -1028,30 +994,13 @@
                 "Component_[11056805018150955063]": {
                     "$type": "EditorEntitySortComponent",
                     "Id": 11056805018150955063,
-                    "ChildEntityOrderEntryArray": [
-                        {
-                            "EntityId": "Entity_[522615958049]"
-                        },
-                        {
-                            "EntityId": "Entity_[518320990753]",
-                            "SortIndex": 1
-                        },
-                        {
-                            "EntityId": "Entity_[514026023457]",
-                            "SortIndex": 2
-                        },
-                        {
-                            "EntityId": "Entity_[526910925345]",
-                            "SortIndex": 3
-                        },
-                        {
-                            "EntityId": "Entity_[531205892641]",
-                            "SortIndex": 4
-                        },
-                        {
-                            "EntityId": "Entity_[535500859937]",
-                            "SortIndex": 5
-                        }
+                    "Child Entity Order": [
+                        "Entity_[522615958049]",
+                        "Entity_[518320990753]",
+                        "Entity_[514026023457]",
+                        "Entity_[526910925345]",
+                        "Entity_[531205892641]",
+                        "Entity_[535500859937]"
                     ]
                 },
                 "Component_[11466054095979053511]": {
@@ -1180,10 +1129,10 @@
                         "Configuration": {
                             "ModelAsset": {
                                 "assetId": {
-                                    "guid": "{D0F73AAF-52B7-507C-B045-DBE2FE2D4403}",
-                                    "subId": 268677693
+                                    "guid": "{FD340C30-755C-5911-92A3-19A3F7A77931}",
+                                    "subId": 281415304
                                 },
-                                "assetHint": "objects/shaderball_simple/shaberball_simple_1m.azmodel"
+                                "assetHint": "objects/shaderball/shaderball_default_1m.azmodel"
                             },
                             "LodOverride": 255
                         }
@@ -1287,10 +1236,10 @@
                         "Configuration": {
                             "ModelAsset": {
                                 "assetId": {
-                                    "guid": "{D0F73AAF-52B7-507C-B045-DBE2FE2D4403}",
-                                    "subId": 268677693
+                                    "guid": "{FD340C30-755C-5911-92A3-19A3F7A77931}",
+                                    "subId": 281415304
                                 },
-                                "assetHint": "objects/shaderball_simple/shaberball_simple_1m.azmodel"
+                                "assetHint": "objects/shaderball/shaderball_default_1m.azmodel"
                             },
                             "LodOverride": 255
                         }
@@ -1394,10 +1343,10 @@
                         "Configuration": {
                             "ModelAsset": {
                                 "assetId": {
-                                    "guid": "{D0F73AAF-52B7-507C-B045-DBE2FE2D4403}",
-                                    "subId": 268677693
+                                    "guid": "{FD340C30-755C-5911-92A3-19A3F7A77931}",
+                                    "subId": 281415304
                                 },
-                                "assetHint": "objects/shaderball_simple/shaberball_simple_1m.azmodel"
+                                "assetHint": "objects/shaderball/shaderball_default_1m.azmodel"
                             },
                             "LodOverride": 255
                         }
@@ -1501,10 +1450,10 @@
                         "Configuration": {
                             "ModelAsset": {
                                 "assetId": {
-                                    "guid": "{D0F73AAF-52B7-507C-B045-DBE2FE2D4403}",
-                                    "subId": 268677693
+                                    "guid": "{FD340C30-755C-5911-92A3-19A3F7A77931}",
+                                    "subId": 281415304
                                 },
-                                "assetHint": "objects/shaderball_simple/shaberball_simple_1m.azmodel"
+                                "assetHint": "objects/shaderball/shaderball_default_1m.azmodel"
                             },
                             "LodOverride": 255
                         }
@@ -1608,10 +1557,10 @@
                         "Configuration": {
                             "ModelAsset": {
                                 "assetId": {
-                                    "guid": "{D0F73AAF-52B7-507C-B045-DBE2FE2D4403}",
-                                    "subId": 268677693
+                                    "guid": "{FD340C30-755C-5911-92A3-19A3F7A77931}",
+                                    "subId": 281415304
                                 },
-                                "assetHint": "objects/shaderball_simple/shaberball_simple_1m.azmodel"
+                                "assetHint": "objects/shaderball/shaderball_default_1m.azmodel"
                             },
                             "LodOverride": 255
                         }
@@ -1715,10 +1664,10 @@
                         "Configuration": {
                             "ModelAsset": {
                                 "assetId": {
-                                    "guid": "{D0F73AAF-52B7-507C-B045-DBE2FE2D4403}",
-                                    "subId": 268677693
+                                    "guid": "{FD340C30-755C-5911-92A3-19A3F7A77931}",
+                                    "subId": 281415304
                                 },
-                                "assetHint": "objects/shaderball_simple/shaberball_simple_1m.azmodel"
+                                "assetHint": "objects/shaderball/shaderball_default_1m.azmodel"
                             },
                             "LodOverride": 255
                         }
@@ -1754,30 +1703,13 @@
                 "Component_[11056805018150955063]": {
                     "$type": "EditorEntitySortComponent",
                     "Id": 11056805018150955063,
-                    "ChildEntityOrderEntryArray": [
-                        {
-                            "EntityId": "Entity_[552680729121]"
-                        },
-                        {
-                            "EntityId": "Entity_[548385761825]",
-                            "SortIndex": 1
-                        },
-                        {
-                            "EntityId": "Entity_[544090794529]",
-                            "SortIndex": 2
-                        },
-                        {
-                            "EntityId": "Entity_[556975696417]",
-                            "SortIndex": 3
-                        },
-                        {
-                            "EntityId": "Entity_[561270663713]",
-                            "SortIndex": 4
-                        },
-                        {
-                            "EntityId": "Entity_[565565631009]",
-                            "SortIndex": 5
-                        }
+                    "Child Entity Order": [
+                        "Entity_[552680729121]",
+                        "Entity_[548385761825]",
+                        "Entity_[544090794529]",
+                        "Entity_[556975696417]",
+                        "Entity_[561270663713]",
+                        "Entity_[565565631009]"
                     ]
                 },
                 "Component_[11466054095979053511]": {
@@ -1906,10 +1838,10 @@
                         "Configuration": {
                             "ModelAsset": {
                                 "assetId": {
-                                    "guid": "{D0F73AAF-52B7-507C-B045-DBE2FE2D4403}",
-                                    "subId": 268677693
+                                    "guid": "{FD340C30-755C-5911-92A3-19A3F7A77931}",
+                                    "subId": 281415304
                                 },
-                                "assetHint": "objects/shaderball_simple/shaberball_simple_1m.azmodel"
+                                "assetHint": "objects/shaderball/shaderball_default_1m.azmodel"
                             },
                             "LodOverride": 255
                         }
@@ -2013,10 +1945,10 @@
                         "Configuration": {
                             "ModelAsset": {
                                 "assetId": {
-                                    "guid": "{D0F73AAF-52B7-507C-B045-DBE2FE2D4403}",
-                                    "subId": 268677693
+                                    "guid": "{FD340C30-755C-5911-92A3-19A3F7A77931}",
+                                    "subId": 281415304
                                 },
-                                "assetHint": "objects/shaderball_simple/shaberball_simple_1m.azmodel"
+                                "assetHint": "objects/shaderball/shaderball_default_1m.azmodel"
                             },
                             "LodOverride": 255
                         }
@@ -2120,10 +2052,10 @@
                         "Configuration": {
                             "ModelAsset": {
                                 "assetId": {
-                                    "guid": "{D0F73AAF-52B7-507C-B045-DBE2FE2D4403}",
-                                    "subId": 268677693
+                                    "guid": "{FD340C30-755C-5911-92A3-19A3F7A77931}",
+                                    "subId": 281415304
                                 },
-                                "assetHint": "objects/shaderball_simple/shaberball_simple_1m.azmodel"
+                                "assetHint": "objects/shaderball/shaderball_default_1m.azmodel"
                             },
                             "LodOverride": 255
                         }
@@ -2227,10 +2159,10 @@
                         "Configuration": {
                             "ModelAsset": {
                                 "assetId": {
-                                    "guid": "{D0F73AAF-52B7-507C-B045-DBE2FE2D4403}",
-                                    "subId": 268677693
+                                    "guid": "{FD340C30-755C-5911-92A3-19A3F7A77931}",
+                                    "subId": 281415304
                                 },
-                                "assetHint": "objects/shaderball_simple/shaberball_simple_1m.azmodel"
+                                "assetHint": "objects/shaderball/shaderball_default_1m.azmodel"
                             },
                             "LodOverride": 255
                         }
@@ -2334,10 +2266,10 @@
                         "Configuration": {
                             "ModelAsset": {
                                 "assetId": {
-                                    "guid": "{D0F73AAF-52B7-507C-B045-DBE2FE2D4403}",
-                                    "subId": 268677693
+                                    "guid": "{FD340C30-755C-5911-92A3-19A3F7A77931}",
+                                    "subId": 281415304
                                 },
-                                "assetHint": "objects/shaderball_simple/shaberball_simple_1m.azmodel"
+                                "assetHint": "objects/shaderball/shaderball_default_1m.azmodel"
                             },
                             "LodOverride": 255
                         }
@@ -2441,10 +2373,10 @@
                         "Configuration": {
                             "ModelAsset": {
                                 "assetId": {
-                                    "guid": "{D0F73AAF-52B7-507C-B045-DBE2FE2D4403}",
-                                    "subId": 268677693
+                                    "guid": "{FD340C30-755C-5911-92A3-19A3F7A77931}",
+                                    "subId": 281415304
                                 },
-                                "assetHint": "objects/shaderball_simple/shaberball_simple_1m.azmodel"
+                                "assetHint": "objects/shaderball/shaderball_default_1m.azmodel"
                             },
                             "LodOverride": 255
                         }
@@ -2480,30 +2412,13 @@
                 "Component_[11056805018150955063]": {
                     "$type": "EditorEntitySortComponent",
                     "Id": 11056805018150955063,
-                    "ChildEntityOrderEntryArray": [
-                        {
-                            "EntityId": "Entity_[582745500193]"
-                        },
-                        {
-                            "EntityId": "Entity_[578450532897]",
-                            "SortIndex": 1
-                        },
-                        {
-                            "EntityId": "Entity_[574155565601]",
-                            "SortIndex": 2
-                        },
-                        {
-                            "EntityId": "Entity_[587040467489]",
-                            "SortIndex": 3
-                        },
-                        {
-                            "EntityId": "Entity_[591335434785]",
-                            "SortIndex": 4
-                        },
-                        {
-                            "EntityId": "Entity_[595630402081]",
-                            "SortIndex": 5
-                        }
+                    "Child Entity Order": [
+                        "Entity_[582745500193]",
+                        "Entity_[578450532897]",
+                        "Entity_[574155565601]",
+                        "Entity_[587040467489]",
+                        "Entity_[591335434785]",
+                        "Entity_[595630402081]"
                     ]
                 },
                 "Component_[11466054095979053511]": {
@@ -2632,10 +2547,10 @@
                         "Configuration": {
                             "ModelAsset": {
                                 "assetId": {
-                                    "guid": "{D0F73AAF-52B7-507C-B045-DBE2FE2D4403}",
-                                    "subId": 268677693
+                                    "guid": "{FD340C30-755C-5911-92A3-19A3F7A77931}",
+                                    "subId": 281415304
                                 },
-                                "assetHint": "objects/shaderball_simple/shaberball_simple_1m.azmodel"
+                                "assetHint": "objects/shaderball/shaderball_default_1m.azmodel"
                             },
                             "LodOverride": 255
                         }
@@ -2739,10 +2654,10 @@
                         "Configuration": {
                             "ModelAsset": {
                                 "assetId": {
-                                    "guid": "{D0F73AAF-52B7-507C-B045-DBE2FE2D4403}",
-                                    "subId": 268677693
+                                    "guid": "{FD340C30-755C-5911-92A3-19A3F7A77931}",
+                                    "subId": 281415304
                                 },
-                                "assetHint": "objects/shaderball_simple/shaberball_simple_1m.azmodel"
+                                "assetHint": "objects/shaderball/shaderball_default_1m.azmodel"
                             },
                             "LodOverride": 255
                         }
@@ -2846,10 +2761,10 @@
                         "Configuration": {
                             "ModelAsset": {
                                 "assetId": {
-                                    "guid": "{D0F73AAF-52B7-507C-B045-DBE2FE2D4403}",
-                                    "subId": 268677693
+                                    "guid": "{FD340C30-755C-5911-92A3-19A3F7A77931}",
+                                    "subId": 281415304
                                 },
-                                "assetHint": "objects/shaderball_simple/shaberball_simple_1m.azmodel"
+                                "assetHint": "objects/shaderball/shaderball_default_1m.azmodel"
                             },
                             "LodOverride": 255
                         }
@@ -2953,10 +2868,10 @@
                         "Configuration": {
                             "ModelAsset": {
                                 "assetId": {
-                                    "guid": "{D0F73AAF-52B7-507C-B045-DBE2FE2D4403}",
-                                    "subId": 268677693
+                                    "guid": "{FD340C30-755C-5911-92A3-19A3F7A77931}",
+                                    "subId": 281415304
                                 },
-                                "assetHint": "objects/shaderball_simple/shaberball_simple_1m.azmodel"
+                                "assetHint": "objects/shaderball/shaderball_default_1m.azmodel"
                             },
                             "LodOverride": 255
                         }
@@ -3060,10 +2975,10 @@
                         "Configuration": {
                             "ModelAsset": {
                                 "assetId": {
-                                    "guid": "{D0F73AAF-52B7-507C-B045-DBE2FE2D4403}",
-                                    "subId": 268677693
+                                    "guid": "{FD340C30-755C-5911-92A3-19A3F7A77931}",
+                                    "subId": 281415304
                                 },
-                                "assetHint": "objects/shaderball_simple/shaberball_simple_1m.azmodel"
+                                "assetHint": "objects/shaderball/shaderball_default_1m.azmodel"
                             },
                             "LodOverride": 255
                         }
@@ -3167,10 +3082,10 @@
                         "Configuration": {
                             "ModelAsset": {
                                 "assetId": {
-                                    "guid": "{D0F73AAF-52B7-507C-B045-DBE2FE2D4403}",
-                                    "subId": 268677693
+                                    "guid": "{FD340C30-755C-5911-92A3-19A3F7A77931}",
+                                    "subId": 281415304
                                 },
-                                "assetHint": "objects/shaderball_simple/shaberball_simple_1m.azmodel"
+                                "assetHint": "objects/shaderball/shaderball_default_1m.azmodel"
                             },
                             "LodOverride": 255
                         }

@@ -422,6 +422,8 @@ namespace ScriptCanvasEditor
 
         void ScriptCanvasRootPaletteTreeItem::OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset)
         {
+            using namespace AzFramework;
+
             AZ::Data::AssetId assetId = asset.GetId();
             m_pendingAssets.erase(assetId);
 
@@ -462,19 +464,9 @@ namespace ScriptCanvasEditor
                         return;
                     }
 
+                    auto assetInfo = AssetHelpers::GetSourceInfoByProductId(assetId, asset.GetType());
 
-                    AZStd::string rootPath, absolutePath;
-                    AZ::Data::AssetInfo assetInfo = AssetHelpers::GetAssetInfo(assetId, rootPath);
-                    AzFramework::StringFunc::Path::Join(rootPath.c_str(), assetInfo.m_relativePath.c_str(), absolutePath);
- 
-                    AZStd::string normPath = absolutePath;
-                    AzFramework::StringFunc::Path::Normalize(normPath);
- 
-                    AZStd::string watchFolder;
-                    bool sourceInfoFound{};
-                    AzToolsFramework::AssetSystemRequestBus::BroadcastResult(sourceInfoFound, &AzToolsFramework::AssetSystemRequestBus::Events::GetSourceInfoBySourcePath, normPath.c_str(), assetInfo, watchFolder);
- 
-                    if (!sourceInfoFound)
+                    if (!assetInfo.m_assetId.IsValid())
                     {
                         return;
                     }
@@ -851,49 +843,15 @@ namespace ScriptCanvasEditor
             CycleToNextNode();
         }
 
-        static AZStd::string GetGemPath(const AZStd::string& gemName)
-        {
-            if (auto settingsRegistry = AZ::Interface<AZ::SettingsRegistryInterface>::Get(); settingsRegistry != nullptr)
-            {
-                AZ::IO::Path gemSourceAssetDirectories;
-                AZStd::vector<AzFramework::GemInfo> gemInfos;
-                if (AzFramework::GetGemsInfo(gemInfos, *settingsRegistry))
-                {
-                    auto FindGemByName = [gemName](const AzFramework::GemInfo& gemInfo)
-                    {
-                        return gemInfo.m_gemName == gemName;
-                    };
-                    // Gather unique list of Gem Paths from the Settings Registry
-
-                    auto foundIt = AZStd::find_if(gemInfos.begin(), gemInfos.end(), FindGemByName);
-                    if (foundIt != gemInfos.end())
-                    {
-                        const AzFramework::GemInfo& gemInfo = *foundIt;
-                        for (const AZ::IO::Path& absoluteSourcePath : gemInfo.m_absoluteSourcePaths)
-                        {
-                            gemSourceAssetDirectories = (absoluteSourcePath / gemInfo.GetGemAssetFolder());
-                        }
-
-                        return gemSourceAssetDirectories.c_str();
-                    }
-                }
-            }
-            return "";
-        }
-
         void NodePaletteDockWidget::NavigateToTranslationFile(GraphCanvas::NodePaletteTreeItem* nodePaletteItem)
         {
             if (nodePaletteItem)
             {
-                AZ::IO::Path gemPath = GetGemPath("ScriptCanvas.Editor");
-                gemPath = gemPath / AZ::IO::Path("TranslationAssets");
-                gemPath = gemPath / nodePaletteItem->GetTranslationDataPath();
-                gemPath.ReplaceExtension(".names");
-
+                AZ::IO::Path filePath = nodePaletteItem->GetTranslationDataPath();
                 AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance();
-                if (fileIO && fileIO->Exists(gemPath.c_str()))
+                if (fileIO && !filePath.empty() && fileIO->Exists(filePath.c_str()))
                 {
-                    AzQtComponents::ShowFileOnDesktop(gemPath.c_str());
+                    AzQtComponents::ShowFileOnDesktop(filePath.c_str());
                 }
             }
         }

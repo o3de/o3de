@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/Console/IConsole.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/EditContextConstants.inl>
@@ -16,10 +17,9 @@
 
 #include <Integration/EMotionFXBus.h>
 
-#include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/ViewportPluginBus.h>
-
 #include <BlendTreeMotionMatchNode.h>
 #include <Feature.h>
+#include <FeatureAngularVelocity.h>
 #include <FeaturePosition.h>
 #include <FeatureTrajectory.h>
 #include <FeatureVelocity.h>
@@ -29,6 +29,25 @@
 
 namespace EMotionFX::MotionMatching
 {
+    AZ_CVAR(bool, mm_debugDraw, true, nullptr, AZ::ConsoleFunctorFlags::Null,
+        "Global flag for motion matching debug drawing. Feature-wise debug drawing can be enabled or disabled in the anim graph itself.");
+
+    AZ_CVAR(float, mm_debugDrawVelocityScale, 0.1f, nullptr, AZ::ConsoleFunctorFlags::Null,
+        "Scaling value used for velocity debug rendering.");
+
+    AZ_CVAR(bool, mm_debugDrawQueryPose, false, nullptr, AZ::ConsoleFunctorFlags::Null,
+        "Draw the query skeletal pose used as input pose for the motion matching search.");
+
+    AZ_CVAR(bool, mm_debugDrawQueryVelocities, false, nullptr, AZ::ConsoleFunctorFlags::Null,
+        "Draw the query joint velocities used as input for the motion matching search.");
+
+    AZ_CVAR(bool, mm_useKdTree, true, nullptr, AZ::ConsoleFunctorFlags::Null,
+        "Use Kd-Tree to accelerate the motion matching search for the best next matching frame. "
+        "Disabling it will heavily slow down performance and should only be done for debugging purposes");
+
+    AZ_CVAR(bool, mm_multiThreadedInitialization, true, nullptr, AZ::ConsoleFunctorFlags::Null,
+        "Use multi-threading to initialize motion matching.");
+
     void MotionMatchingSystemComponent::Reflect(AZ::ReflectContext* context)
     {
         if (AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context))
@@ -55,6 +74,7 @@ namespace EMotionFX::MotionMatching
         EMotionFX::MotionMatching::FeaturePosition::Reflect(context);
         EMotionFX::MotionMatching::FeatureTrajectory::Reflect(context);
         EMotionFX::MotionMatching::FeatureVelocity::Reflect(context);
+        EMotionFX::MotionMatching::FeatureAngularVelocity::Reflect(context);
 
         EMotionFX::MotionMatching::PoseDataJointVelocities::Reflect(context);
 
@@ -105,13 +125,15 @@ namespace EMotionFX::MotionMatching
         MotionMatchingRequestBus::Handler::BusConnect();
         AZ::TickBus::Handler::BusConnect();
 
-        // Register the motion matching anim graph node
-        EMotionFX::AnimGraphObject* motionMatchNodeObject = EMotionFX::AnimGraphObjectFactory::Create(azrtti_typeid<EMotionFX::MotionMatching::BlendTreeMotionMatchNode>());
-        auto motionMatchNode = azdynamic_cast<EMotionFX::MotionMatching::BlendTreeMotionMatchNode*>(motionMatchNodeObject);
-        if (motionMatchNode)
+        // Register the motion matching anim graph node.
         {
-            EMotionFX::Integration::EMotionFXRequestBus::Broadcast(&EMotionFX::Integration::EMotionFXRequests::RegisterAnimGraphObjectType, motionMatchNode);
-            delete motionMatchNode;
+            EMotionFX::AnimGraphObject* animGraphObject = EMotionFX::AnimGraphObjectFactory::Create(azrtti_typeid<EMotionFX::MotionMatching::BlendTreeMotionMatchNode>());
+            auto animGraphNode = azdynamic_cast<EMotionFX::MotionMatching::BlendTreeMotionMatchNode*>(animGraphObject);
+            if (animGraphNode)
+            {
+                EMotionFX::Integration::EMotionFXRequestBus::Broadcast(&EMotionFX::Integration::EMotionFXRequests::RegisterAnimGraphObjectType, animGraphNode);
+            }
+            delete animGraphObject;
         }
 
         // Register the joint velocities pose data.
@@ -147,10 +169,6 @@ namespace EMotionFX::MotionMatching
 
     void MotionMatchingSystemComponent::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
     {
-        // Draw the debug visualizations to the Animation Editor as well as the LY Editor viewport.
-        AZ::s32 animationEditorViewportId = -1;
-        EMStudio::ViewportPluginRequestBus::BroadcastResult(animationEditorViewportId, &EMStudio::ViewportPluginRequestBus::Events::GetViewportId);
-        DebugDraw(animationEditorViewportId);
-        DebugDraw(AzFramework::g_defaultSceneEntityDebugDisplayId);
+        MotionMatchingSystemComponent::DebugDraw(AzFramework::g_defaultSceneEntityDebugDisplayId);
     }
 } // namespace EMotionFX::MotionMatching

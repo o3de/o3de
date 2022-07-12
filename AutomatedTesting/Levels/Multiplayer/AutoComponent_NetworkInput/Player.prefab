@@ -122,28 +122,6 @@
                     "$type": "EditorPendingCompositionComponent",
                     "Id": 2002761223483048905
                 },
-                "Component_[2069554278758260821]": {
-                    "$type": "EditorScriptCanvasComponent",
-                    "Id": 2069554278758260821,
-                    "m_name": "AutoComponent_NetworkInput",
-                    "m_assetHolder": {
-                        "m_asset": {
-                            "assetId": {
-                                "guid": "{D079F53D-CCAA-5C98-8E0C-B485B7821747}"
-                            },
-                            "assetHint": "levels/multiplayer/autocomponent_networkinput/autocomponent_networkinput.scriptcanvas"
-                        }
-                    },
-                    "runtimeDataIsValid": true,
-                    "runtimeDataOverrides": {
-                        "source": {
-                            "assetId": {
-                                "guid": "{D079F53D-CCAA-5C98-8E0C-B485B7821747}"
-                            },
-                            "assetHint": "levels/multiplayer/autocomponent_networkinput/autocomponent_networkinput.scriptcanvas"
-                        }
-                    }
-                },
                 "Component_[4337571454344109612]": {
                     "$type": "GenericComponentWrapper",
                     "Id": 4337571454344109612,
@@ -178,6 +156,21 @@
                     "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
                     "Id": 6819443882832501114,
                     "Parent Entity": "ContainerEntity"
+                },
+                "Component_[7200233775362718461]": {
+                    "$type": "EditorScriptCanvasComponent",
+                    "Id": 7200233775362718461,
+                    "m_name": "AutoComponent_NetworkInput.scriptcanvas",
+                    "runtimeDataOverrides": {
+                        "source": {
+                            "id": "{D079F53D-CCAA-5C98-8E0C-B485B7821747}",
+                            "path": "C:/prj/o3de/AutomatedTesting/Levels/Multiplayer/AutoComponent_NetworkInput/AutoComponent_NetworkInput.scriptcanvas"
+                        }
+                    },
+                    "sourceHandle": {
+                        "id": "{D079F53D-CCAA-5C98-8E0C-B485B7821747}",
+                        "path": "C:/prj/o3de/AutomatedTesting/Levels/Multiplayer/AutoComponent_NetworkInput/AutoComponent_NetworkInput.scriptcanvas"
+                    }
                 },
                 "Component_[8125406152674415588]": {
                     "$type": "GenericComponentWrapper",

@@ -8,7 +8,7 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
-#include <Blast/BlastMaterial.h>
+#include <AzCore/Memory/SystemAllocator.h>
 #include <Blast/BlastSystemBus.h>
 #include <QWidget>
 #endif

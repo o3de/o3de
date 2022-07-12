@@ -121,12 +121,20 @@ namespace AZ
                 bufferPoolDesc.m_hostMemoryAccess = RHI::HostMemoryAccess::Read;
                 break;
             case CommonBufferPoolType::ReadWrite:
-                bufferPoolDesc.m_bindFlags = RHI::BufferBindFlags::ShaderWrite | RHI::BufferBindFlags::ShaderRead;
+                // Add CopyRead flag too since it's often we need to read back GPU attachment buffers.
+                bufferPoolDesc.m_bindFlags =
+//                  [To Do] - the following line (and possibly InputAssembly / DynamicInputAssembly) will need to
+//                  be added to support future indirect buffer usage for GPU driven render pipeline
+//                    RHI::BufferBindFlags::Indirect |  
+                    RHI::BufferBindFlags::ShaderWrite | RHI::BufferBindFlags::ShaderRead | RHI::BufferBindFlags::CopyRead;
                 bufferPoolDesc.m_heapMemoryLevel = RHI::HeapMemoryLevel::Device;
                 bufferPoolDesc.m_hostMemoryAccess = RHI::HostMemoryAccess::Write;
                 break;
             case CommonBufferPoolType::ReadOnly:
-                bufferPoolDesc.m_bindFlags = RHI::BufferBindFlags::ShaderRead;
+//                  [To Do] - the following line (and possibly InputAssembly / DynamicInputAssembly) will need to
+//                  be added to support future indirect buffer usage for GPU driven render pipeline
+                bufferPoolDesc.m_bindFlags = // RHI::BufferBindFlags::Indirect |
+                    RHI::BufferBindFlags::ShaderRead;
                 bufferPoolDesc.m_heapMemoryLevel = RHI::HeapMemoryLevel::Device;
                 bufferPoolDesc.m_hostMemoryAccess = RHI::HostMemoryAccess::Write;
                 break;

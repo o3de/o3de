@@ -126,12 +126,12 @@ namespace AzManipulatorTestFramework
         m_manipulatorViewportInteraction.GetManipulatorManager().ConsumeMouseInteractionEvent(*m_event);
     }
 
-    void ImmediateModeActionDispatcher::KeyboardModifierDownImpl(const KeyboardModifier& keyModifier)
+    void ImmediateModeActionDispatcher::KeyboardModifierDownImpl(const KeyboardModifier keyModifier)
     {
         ToggleOn(GetMouseInteractionEvent()->m_mouseInteraction.m_keyboardModifiers.m_keyModifiers, keyModifier);
     }
 
-    void ImmediateModeActionDispatcher::KeyboardModifierUpImpl(const KeyboardModifier& keyModifier)
+    void ImmediateModeActionDispatcher::KeyboardModifierUpImpl(const KeyboardModifier keyModifier)
     {
         ToggleOff(GetMouseInteractionEvent()->m_mouseInteraction.m_keyboardModifiers.m_keyModifiers, keyModifier);
     }

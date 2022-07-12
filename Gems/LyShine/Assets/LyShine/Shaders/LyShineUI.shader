@@ -20,7 +20,7 @@
         "BlendOp" : "Add"
     },
 
-    "DrawList" : "2dpass",
+    "DrawList" : "lyshinepass",
 
     "ProgramSettings":
     {

@@ -43,7 +43,7 @@ namespace ScriptCanvas
             {
             public:
                 AZ_CLASS_ALLOCATOR(TaggedRequest<t_Tag>, AZ::SystemAllocator, 0);
-                AZ_RTTI(((TaggedRequest<t_Tag>), "{DFFD8D88-1C50-457C-B0D0-C0640D78FB76}", t_Tag), Request);
+                AZ_RTTI((TaggedRequest, "{DFFD8D88-1C50-457C-B0D0-C0640D78FB76}", t_Tag), Request);
 
                 TaggedRequest() = default;
 

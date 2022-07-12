@@ -90,7 +90,7 @@ namespace ScriptCanvas
 
                 AZ::Outcome<AZStd::string, void> GetFunctionCallName(const Slot* /*slot*/) const override;
 
-                AZStd::string GetInterfaceName() const;
+                AZ::Outcome<AZStd::string, AZStd::string> GetInterfaceNameFromAssetOrLastSave() const;
 
                 const SlotExecution::Map* GetSlotExecutionMap() const override;
 

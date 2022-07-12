@@ -33,6 +33,7 @@ set(FILES
     Source/Editor/ColliderHelpers.cpp
     Source/Editor/InputDialogValidatable.h
     Source/Editor/InputDialogValidatable.cpp
+    Source/Editor/InspectorBus.h
     Source/Editor/JointSelectionWidget.h
     Source/Editor/JointSelectionWidget.cpp
     Source/Editor/JointSelectionDialog.h
@@ -43,9 +44,15 @@ set(FILES
     Source/Editor/NotificationWidget.cpp
     Source/Editor/ObjectEditor.h
     Source/Editor/ObjectEditor.cpp
+    Source/Editor/ObjectEditorCard.h
+    Source/Editor/ObjectEditorCard.cpp
+    Source/Editor/ObjectEditorCardPool.h
+    Source/Editor/ObjectEditorCardPool.cpp
     Source/Editor/QtMetaTypes.h
     Source/Editor/ReselectingTreeView.cpp
     Source/Editor/ReselectingTreeView.h
+    Source/Editor/SaveDirtyFilesCallbacks.h
+    Source/Editor/SaveDirtyFilesCallbacks.cpp
     Source/Editor/SelectionProxyModel.h
     Source/Editor/SelectionProxyModel.cpp
     Source/Editor/SimulatedObjectBus.h
@@ -75,12 +82,33 @@ set(FILES
     Source/Editor/Plugins/HitDetection/HitDetectionJointInspectorPlugin.cpp
     Source/Editor/Plugins/HitDetection/HitDetectionJointWidget.h
     Source/Editor/Plugins/HitDetection/HitDetectionJointWidget.cpp
+    Source/Editor/Plugins/Ragdoll/ColliderCapsuleManipulators.h
+    Source/Editor/Plugins/Ragdoll/ColliderCapsuleManipulators.cpp
+    Source/Editor/Plugins/Ragdoll/ColliderRotationManipulators.h
+    Source/Editor/Plugins/Ragdoll/ColliderRotationManipulators.cpp
+    Source/Editor/Plugins/Ragdoll/ColliderTranslationManipulators.h
+    Source/Editor/Plugins/Ragdoll/ColliderTranslationManipulators.cpp
+    Source/Editor/Plugins/Ragdoll/JointLimitRotationManipulators.h
+    Source/Editor/Plugins/Ragdoll/JointLimitRotationManipulators.cpp
+    Source/Editor/Plugins/Ragdoll/JointLimitOptimizer.h
+    Source/Editor/Plugins/Ragdoll/JointLimitOptimizer.cpp
+    Source/Editor/Plugins/Ragdoll/JointSwingLimitManipulators.h
+    Source/Editor/Plugins/Ragdoll/JointSwingLimitManipulators.cpp
+    Source/Editor/Plugins/Ragdoll/JointTwistLimitManipulators.h
+    Source/Editor/Plugins/Ragdoll/JointTwistLimitManipulators.cpp
     Source/Editor/Plugins/Ragdoll/RagdollJointLimitWidget.h
     Source/Editor/Plugins/Ragdoll/RagdollJointLimitWidget.cpp
     Source/Editor/Plugins/Ragdoll/RagdollNodeInspectorPlugin.h
     Source/Editor/Plugins/Ragdoll/RagdollNodeInspectorPlugin.cpp
     Source/Editor/Plugins/Ragdoll/RagdollNodeWidget.h
     Source/Editor/Plugins/Ragdoll/RagdollNodeWidget.cpp
+    Source/Editor/Plugins/Ragdoll/PhysicsSetupViewportUiCluster.h
+    Source/Editor/Plugins/Ragdoll/PhysicsSetupViewportUiCluster.cpp
+    Source/Editor/Plugins/Ragdoll/PhysicsSetupManipulatorBus.h
+    Source/Editor/Plugins/Ragdoll/PhysicsSetupManipulatorCommandCallback.h
+    Source/Editor/Plugins/Ragdoll/PhysicsSetupManipulatorCommandCallback.cpp
+    Source/Editor/Plugins/Ragdoll/PhysicsSetupManipulators.h
+    Source/Editor/Plugins/Ragdoll/PhysicsSetupManipulators.cpp
     Source/Editor/Plugins/SimulatedObject/SimulatedJointWidget.h
     Source/Editor/Plugins/SimulatedObject/SimulatedJointWidget.cpp
     Source/Editor/Plugins/SimulatedObject/SimulatedObjectActionManager.h

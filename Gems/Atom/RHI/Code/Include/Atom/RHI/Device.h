@@ -142,7 +142,12 @@ namespace AZ
                 return RHI::ResultCode::Success;
             };
 
+            bool WasDeviceRemoved();
+
         protected:
+
+            void SetDeviceRemoved();
+
             DeviceFeatures m_features;
             DeviceLimits m_limits;
             ResourcePoolDatabase m_resourcePoolDatabase;
@@ -171,7 +176,7 @@ namespace AZ
             virtual void ShutdownInternal() = 0;
 
             //! Called when the device is beginning a frame for processing.
-            virtual void BeginFrameInternal() = 0;
+            virtual AZ::RHI::ResultCode BeginFrameInternal() = 0;
 
             //! Called when the device is ending a frame for processing.
             virtual void EndFrameInternal() = 0;
@@ -207,6 +212,8 @@ namespace AZ
             AZStd::array<Format, static_cast<uint32_t>(Format::Count)> m_nearestSupportedFormats;
 
             FormatCapabilitiesList m_formatsCapabilities;
+
+            bool m_wasDeviceRemoved = false;
         };
     }
 }

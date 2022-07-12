@@ -20,6 +20,7 @@
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
+#include <AzToolsFramework/Prefab/PrefabPublicNotificationBus.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
 #include <Prefab/ProceduralPrefabSystemComponentInterface.h>
 
@@ -391,6 +392,7 @@ namespace AzToolsFramework
                 return false;
             }
             m_prefabSystemComponentInterface->SetTemplateDirtyFlag(templateId, false);
+            PrefabTemplateNotificationBus::Event(templateId, &PrefabTemplateNotifications::OnPrefabTemplateSaved);
             return true;
         }
 

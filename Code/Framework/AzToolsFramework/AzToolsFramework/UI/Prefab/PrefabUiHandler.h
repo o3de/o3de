@@ -36,6 +36,11 @@ namespace AzToolsFramework
         QString GenerateItemTooltip(AZ::EntityId entityId) const override;
         QIcon GenerateItemIcon(AZ::EntityId entityId) const override;
         void PaintItemBackground(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
+        void PaintDescendantBackground(
+            QPainter* painter,
+            const QStyleOptionViewItem& option,
+            const QModelIndex& index,
+            const QModelIndex& descendantIndex) const override;
         void PaintItemForeground(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
         void PaintDescendantForeground(
             QPainter* painter,
@@ -43,8 +48,8 @@ namespace AzToolsFramework
             const QModelIndex& index,
             const QModelIndex& descendantIndex) const override;
         bool OnOutlinerItemClick(const QPoint& position, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
+        bool OnOutlinerItemDoubleClick(const QModelIndex& index) const override;
         void OnOutlinerItemCollapse(const QModelIndex& index) const override;
-        bool OnEntityDoubleClick(AZ::EntityId entityId) const override;
 
     protected:
         Prefab::PrefabFocusPublicInterface* m_prefabFocusPublicInterface = nullptr;
@@ -53,6 +58,13 @@ namespace AzToolsFramework
         static bool IsLastVisibleChild(const QModelIndex& parent, const QModelIndex& child);
         static QModelIndex GetLastVisibleChild(const QModelIndex& parent);
         static QModelIndex Internal_GetLastVisibleChild(const QAbstractItemModel* model, const QModelIndex& index);
+
+        void PaintDescendantBorder(
+            QPainter* painter,
+            const QStyleOptionViewItem& option,
+            const QModelIndex& index,
+            const QModelIndex& descendantIndex,
+            const QColor borderColor) const;
 
         static AzFramework::EntityContextId s_editorEntityContextId;
 

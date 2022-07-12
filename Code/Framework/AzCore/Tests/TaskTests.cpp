@@ -677,7 +677,7 @@ namespace Benchmark
             []
             {
             });
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             TaskGraphEvent ev;
             graph->SubmitOnExecutor(*executor, &ev);
@@ -699,7 +699,7 @@ namespace Benchmark
             });
         a.Precedes(b);
 
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             TaskGraphEvent ev;
             graph->SubmitOnExecutor(*executor, &ev);
@@ -729,7 +729,7 @@ namespace Benchmark
 
         e.Follows(a, b, c, d);
 
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             TaskGraphEvent ev;
             graph->SubmitOnExecutor(*executor, &ev);

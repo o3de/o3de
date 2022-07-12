@@ -1,0 +1,132 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "EditorModeBlurParentTemplate",
+            "PassClass": "EditorModeFeedbackParentPass",
+            "Slots": [
+                {
+                    "Name": "InputDepth",
+                    "SlotType": "Input"
+                },
+                {
+                    "Name": "InputEntityMask",
+                    "SlotType": "Input"
+                },
+                {
+                    "Name": "InputColor",
+                    "SlotType": "Input"
+                },
+                {
+                    "Name": "OutputColor",
+                    "SlotType": "Output"
+                }
+            ],
+            "Connections": [
+                {
+                    "LocalSlot": "OutputColor",
+                    "AttachmentRef": {
+                        "Pass": "BlurVerticalPass",
+                        "Attachment": "OutputColor"
+                    }
+                }
+            ],
+            "FallbackConnections": [
+                {
+                    "Input" : "InputColor",
+                    "Output" : "OutputColor"
+                }
+            ],
+            "PassRequests": [
+                {
+                    "Name": "BlurHorizontalPass",
+                    "TemplateName": "EditorModeBlurTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "InputDepth",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "InputDepth"
+                            }
+                        },
+                        {
+                            "LocalSlot": "InputEntityMask",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "InputEntityMask"
+                            }
+                        },
+                        {
+                            "LocalSlot": "InputColor",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "InputColor"
+                            }
+                        }
+                    ],
+                    "PassData": {
+                        "$type": "FullscreenTrianglePassData",
+                        "ShaderAsset": {
+                            "FilePath": "Shaders/EditorModeBlur.shader"
+                        },
+                        "PipelineViewTag": "MainCamera",
+                        "ShaderDataMappings": {
+                            "UintMappings": [
+                                {
+                                    // Horizontal blur
+                                    "Name": "m_direction",
+                                    "Value": 0
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "Name": "BlurVerticalPass",
+                    "TemplateName": "EditorModeBlurTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "InputDepth",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "InputDepth"
+                            }
+                        },
+                        {
+                            "LocalSlot": "InputEntityMask",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "InputEntityMask"
+                            }
+                        },
+                        {
+                            "LocalSlot": "InputColor",
+                            "AttachmentRef": {
+                                "Pass": "BlurHorizontalPass",
+                                "Attachment": "OutputColor"
+                            }
+                        }
+                    ],
+                    "PassData": {
+                        "$type": "FullscreenTrianglePassData",
+                        "ShaderAsset": {
+                            "FilePath": "Shaders/EditorModeBlur.shader"
+                        },
+                        "PipelineViewTag": "MainCamera",
+                        "ShaderDataMappings": {
+                            "UintMappings": [
+                                {
+                                    // Vertical blur
+                                    "Name": "m_direction",
+                                    "Value": 1
+                                }
+                            ]
+                        }
+                    }
+                }
+            ]
+        }
+    }
+}

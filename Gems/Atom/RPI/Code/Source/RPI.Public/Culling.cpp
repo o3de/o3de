@@ -706,7 +706,6 @@ namespace AZ
 
             auto nodeVisitorLambda = [worklistData, &taskGraph, &worklist](const AzFramework::IVisibilityScene::NodeData& nodeData) -> void
             {
-                AZ_PROFILE_SCOPE(RPI, "nodeVisitorLambda()");
                 AZ_Assert(nodeData.m_entries.size() > 0, "should not get called with 0 entries");
                 AZ_Assert(worklist->size() < worklist->capacity(), "we should always have room to push a node on the queue");
 
@@ -728,10 +727,12 @@ namespace AZ
 
             if (m_debugCtx.m_enableFrustumCulling)
             {
+                AZ_PROFILE_SCOPE(RPI, "Enumerate");
                 m_visScene->Enumerate(frustum, nodeVisitorLambda);
             }
             else
             {
+                AZ_PROFILE_SCOPE(RPI, "EnumerateNoCull");
                 m_visScene->EnumerateNoCull(nodeVisitorLambda);
             }
 
@@ -843,9 +844,12 @@ namespace AZ
                     });
             }
 
-            AZ::TaskGraphEvent waitForCompletion;
-            taskGraph.Submit(&waitForCompletion);
-            waitForCompletion.Wait();
+            if (!taskGraph.IsEmpty())
+            {
+                AZ::TaskGraphEvent waitForCompletion;
+                taskGraph.Submit(&waitForCompletion);
+                waitForCompletion.Wait();
+            }
         }
 
         void CullingScene::BeginCullingJobs(const AZStd::vector<ViewPtr>& views)

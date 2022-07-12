@@ -73,18 +73,20 @@ namespace AZ
         void            GarbageCollect() override;
 
     private:
-        // [LY-84974][sconel@][2018-08-10] SliceStrike integration up to CL 671758
         // this must be at least the max size of HpAllocator (defined in the cpp) + any platform compiler padding
-        static const int hpAllocatorStructureSize = 16584;
-        // [LY][sconel@] end
+        // A static assert inside of HphaSchema.cpp validates that this is the case
+        // as of commit https://github.com/o3de/o3de/commit/92cd457c256e1ec91eeabe04b56d1d4c61f8b1af
+        // When MULTITHREADED and USE_MUTEX_PER_BUCKET is defined
+        // the largest sizeof for HpAllocator is 16640 on MacOS
+        // On Windows the sizeof HpAllocator is 8384
+        // Up this value to 18 KiB to be safe
+        static constexpr size_t hpAllocatorStructureSize = 18 * 1024;
         
         Descriptor          m_desc;
         int                 m_pad;      // pad the Descriptor to avoid C4355
         size_type           m_capacity;                 ///< Capacity in bytes.
         HpAllocator*        m_allocator;
-        // [LY-84974][sconel@][2018-08-10] SliceStrike integration up to CL 671758
-        AZStd::aligned_storage<hpAllocatorStructureSize, 16>::type m_hpAllocatorBuffer;    ///< Memory buffer for HpAllocator
-        // [LY][sconel@] end
+        AZStd::aligned_storage_t<hpAllocatorStructureSize, 16> m_hpAllocatorBuffer;    ///< Memory buffer for HpAllocator
         bool                m_ownMemoryBlock;
     };
 } // namespace AZ

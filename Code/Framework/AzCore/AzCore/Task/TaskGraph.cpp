@@ -99,6 +99,18 @@ namespace AZ
 
     void TaskGraph::Submit(TaskGraphEvent* waitEvent)
     {
+        // If this is a new empty task graph (and not a retained taskgraph that was previously run),
+        // return immediately
+        if (IsEmpty() && !m_compiledTaskGraph)
+        {
+            if (waitEvent)
+            {
+                // TaskGraphEvent asserts if it has a wait count of 0, increment it before signaling.
+                waitEvent->IncWaitCount();
+                waitEvent->Signal();
+            }
+            return;
+        }
         SubmitOnExecutor(TaskExecutor::Instance(), waitEvent);
     }
 

@@ -17,7 +17,6 @@
 #include <SurfaceData/SurfaceTag.h>
 #include <SurfaceData/SurfaceDataSystemNotificationBus.h>
 #include <SurfaceData/SurfaceDataProviderRequestBus.h>
-#include <SurfaceData/SurfaceDataModifierRequestBus.h>
 #include <SurfaceData/Utility/SurfaceDataUtility.h>
 
 
@@ -56,9 +55,13 @@ namespace SurfaceData
                 ;
 
             behaviorContext->EBus<SurfaceDataSystemRequestBus>("SurfaceDataSystemRequestBus")
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                 ->Attribute(AZ::Script::Attributes::Category, "Vegetation")
                 ->Attribute(AZ::Script::Attributes::Module, "surface_data")
                 ->Event("GetSurfacePoints", &SurfaceDataSystemRequestBus::Events::GetSurfacePoints)
+                ->Event("RefreshSurfaceData", &SurfaceDataSystemRequestBus::Events::RefreshSurfaceData)
+                ->Event("GetSurfaceDataProviderHandle", &SurfaceDataSystemRequestBus::Events::GetSurfaceDataProviderHandle)
+                ->Event("GetSurfaceDataModifierHandle", &SurfaceDataSystemRequestBus::Events::GetSurfaceDataModifierHandle)
                 ;
 
             behaviorContext->EBus<SurfaceDataSystemNotificationBus>("SurfaceDataSystemNotificationBus")
@@ -96,12 +99,14 @@ namespace SurfaceData
 
     void SurfaceDataSystemComponent::Activate()
     {
+        AZ::Interface<SurfaceDataSystem>::Register(this);
         SurfaceDataSystemRequestBus::Handler::BusConnect();
     }
 
     void SurfaceDataSystemComponent::Deactivate()
     {
         SurfaceDataSystemRequestBus::Handler::BusDisconnect();
+        AZ::Interface<SurfaceDataSystem>::Unregister(this);
     }
 
     SurfaceDataRegistryHandle SurfaceDataSystemComponent::RegisterSurfaceDataProvider(const SurfaceDataRegistryEntry& entry)
@@ -109,9 +114,16 @@ namespace SurfaceData
         const SurfaceDataRegistryHandle handle = RegisterSurfaceDataProviderInternal(entry);
         if (handle != InvalidSurfaceDataRegistryHandle)
         {
+            // Get the set of surface tags that can be affected by adding the surface data provider.
+            // This includes all of the provider's tags, as well as any surface modifier tags that exist in the bounds,
+            // because new surface points have the potential of getting the modifier tags applied as well.
+            SurfaceTagSet affectedSurfaceTags = GetAffectedSurfaceTags(entry.m_bounds, entry.m_tags);
+
             // Send in the entry's bounds as both the old and new bounds, since a null Aabb for old bounds
-            // would cause *all* vegetation sectors to get marked as dirty.
-            SurfaceDataSystemNotificationBus::Broadcast(&SurfaceDataSystemNotificationBus::Events::OnSurfaceChanged, entry.m_entityId, entry.m_bounds, entry.m_bounds);
+            // would cause a full refresh for any system listening, instead of just a refresh within the bounds.
+            SurfaceDataSystemNotificationBus::Broadcast(
+                &SurfaceDataSystemNotificationBus::Events::OnSurfaceChanged, entry.m_entityId, entry.m_bounds, entry.m_bounds,
+                affectedSurfaceTags);
         }
         return handle;
     }
@@ -121,9 +133,16 @@ namespace SurfaceData
         const SurfaceDataRegistryEntry entry = UnregisterSurfaceDataProviderInternal(handle);
         if (entry.m_entityId.IsValid())
         {
-            // Send in the entry's bounds as both the old and new bounds, since a null Aabb for new bounds
-            // would cause *all* vegetation sectors to get marked as dirty.
-            SurfaceDataSystemNotificationBus::Broadcast(&SurfaceDataSystemNotificationBus::Events::OnSurfaceChanged, entry.m_entityId, entry.m_bounds, entry.m_bounds);
+            // Get the set of surface tags that can be affected by adding the surface data provider.
+            // This includes all of the provider's tags, as well as any surface modifier tags that exist in the bounds,
+            // because the removed surface points have the potential of getting the modifier tags applied as well.
+            SurfaceTagSet affectedSurfaceTags = GetAffectedSurfaceTags(entry.m_bounds, entry.m_tags);
+
+            // Send in the entry's bounds as both the old and new bounds, since a null Aabb for old bounds
+            // would cause a full refresh for any system listening, instead of just a refresh within the bounds.
+            SurfaceDataSystemNotificationBus::Broadcast(
+                &SurfaceDataSystemNotificationBus::Events::OnSurfaceChanged, entry.m_entityId, entry.m_bounds, entry.m_bounds,
+                affectedSurfaceTags);
         }
     }
 
@@ -133,7 +152,18 @@ namespace SurfaceData
 
         if (UpdateSurfaceDataProviderInternal(handle, entry, oldBounds))
         {
-            SurfaceDataSystemNotificationBus::Broadcast(&SurfaceDataSystemNotificationBus::Events::OnSurfaceChanged, entry.m_entityId, oldBounds, entry.m_bounds);
+            // Get the set of surface tags that can be affected by adding the surface data provider.
+            // This includes all of the provider's tags, as well as any surface modifier tags that exist in the bounds,
+            // because the affected surface points have the potential of getting the modifier tags applied as well.
+            // For now, we'll just merge the old and new bounds into a larger region. If this causes too much refreshing to occur,
+            // this could eventually be improved by getting the tags from both sets of bounds separately and combining them.
+            AZ::Aabb surfaceTagBounds = oldBounds;
+            surfaceTagBounds.AddAabb(entry.m_bounds);
+            SurfaceTagSet affectedSurfaceTags = GetAffectedSurfaceTags(surfaceTagBounds, entry.m_tags);
+
+            SurfaceDataSystemNotificationBus::Broadcast(
+                &SurfaceDataSystemNotificationBus::Events::OnSurfaceChanged, entry.m_entityId, oldBounds, entry.m_bounds,
+                affectedSurfaceTags);
         }
     }
 
@@ -142,9 +172,15 @@ namespace SurfaceData
         const SurfaceDataRegistryHandle handle = RegisterSurfaceDataModifierInternal(entry);
         if (handle != InvalidSurfaceDataRegistryHandle)
         {
+            // Get the set of surface tags that can be affected by adding a surface data modifier. Since this doesn't create
+            // any new surface points, we only need to broadcast the modifier tags themselves as the ones that changed.
+            const SurfaceTagSet affectedSurfaceTags = ConvertTagVectorToSet(entry.m_tags);
+
             // Send in the entry's bounds as both the old and new bounds, since a null Aabb for old bounds
-            // would cause *all* vegetation sectors to get marked as dirty.
-            SurfaceDataSystemNotificationBus::Broadcast(&SurfaceDataSystemNotificationBus::Events::OnSurfaceChanged, entry.m_entityId, entry.m_bounds, entry.m_bounds);
+            // would cause a full refresh for any system listening, instead of just a refresh within the bounds.
+            SurfaceDataSystemNotificationBus::Broadcast(
+                &SurfaceDataSystemNotificationBus::Events::OnSurfaceChanged, entry.m_entityId,
+                entry.m_bounds, entry.m_bounds, affectedSurfaceTags);
         }
         return handle;
     }
@@ -154,9 +190,15 @@ namespace SurfaceData
         const SurfaceDataRegistryEntry entry = UnregisterSurfaceDataModifierInternal(handle);
         if (entry.m_entityId.IsValid())
         {
-            // Send in the entry's bounds as both the old and new bounds, since a null Aabb for new bounds
-            // would cause *all* vegetation sectors to get marked as dirty.
-            SurfaceDataSystemNotificationBus::Broadcast(&SurfaceDataSystemNotificationBus::Events::OnSurfaceChanged, entry.m_entityId, entry.m_bounds, entry.m_bounds);
+            // Get the set of surface tags that can be affected by removing a surface data modifier. Since this doesn't create
+            // any new surface points, we only need to broadcast the modifier tags themselves as the ones that changed.
+            const SurfaceTagSet affectedSurfaceTags = ConvertTagVectorToSet(entry.m_tags);
+
+            // Send in the entry's bounds as both the old and new bounds, since a null Aabb for old bounds
+            // would cause a full refresh for any system listening, instead of just a refresh within the bounds.
+            SurfaceDataSystemNotificationBus::Broadcast(
+                &SurfaceDataSystemNotificationBus::Events::OnSurfaceChanged, entry.m_entityId, entry.m_bounds, entry.m_bounds,
+                affectedSurfaceTags);
         }
     }
 
@@ -164,15 +206,46 @@ namespace SurfaceData
     {
         AZ::Aabb oldBounds = AZ::Aabb::CreateNull();
 
+        // Get the previous set of surface tags for this modifier.
+        SurfaceTagSet affectedSurfaceTags;
+        {
+            AZStd::shared_lock<decltype(m_registrationMutex)> registrationLock(m_registrationMutex);
+            auto entryItr = m_registeredSurfaceDataModifiers.find(handle);
+            if (entryItr != m_registeredSurfaceDataModifiers.end())
+            {
+                affectedSurfaceTags = ConvertTagVectorToSet(entryItr->second.m_tags);
+            }
+        }
+
+        // Merge in the new set of surface tags for this modifier. Since modifiers don't create
+        // any new surface points, we only need to broadcast the modifier tags themselves as the ones that changed.
+        for (auto& tag : entry.m_tags)
+        {
+            affectedSurfaceTags.emplace(tag);
+        }
+
         if (UpdateSurfaceDataModifierInternal(handle, entry, oldBounds))
         {
-            SurfaceDataSystemNotificationBus::Broadcast(&SurfaceDataSystemNotificationBus::Events::OnSurfaceChanged, entry.m_entityId, oldBounds, entry.m_bounds);
+            SurfaceDataSystemNotificationBus::Broadcast(
+                &SurfaceDataSystemNotificationBus::Events::OnSurfaceChanged, entry.m_entityId, oldBounds, entry.m_bounds,
+                affectedSurfaceTags);
         }
     }
 
-    void SurfaceDataSystemComponent::RefreshSurfaceData(const AZ::Aabb& dirtyBounds)
+    void SurfaceDataSystemComponent::RefreshSurfaceData(const SurfaceDataRegistryHandle& providerHandle, const AZ::Aabb& dirtyBounds)
     {
-        SurfaceDataSystemNotificationBus::Broadcast(&SurfaceDataSystemNotificationBus::Events::OnSurfaceChanged, AZ::EntityId(), dirtyBounds, dirtyBounds);
+        auto entryItr = m_registeredSurfaceDataProviders.find(providerHandle);
+        if (entryItr != m_registeredSurfaceDataProviders.end())
+        {
+            // Get the set of surface tags that can be affected by refreshing a surface data provider. 
+            // This includes all of the provider's tags, as well as any surface modifier tags that exist in the bounds,
+            // because the affected surface points have the potential of getting the modifier tags applied as well.
+            SurfaceTagSet affectedSurfaceTags = GetAffectedSurfaceTags(dirtyBounds, entryItr->second.m_tags);
+
+            SurfaceDataSystemNotificationBus::Broadcast(
+                &SurfaceDataSystemNotificationBus::Events::OnSurfaceChanged, AZ::EntityId(), dirtyBounds, dirtyBounds, affectedSurfaceTags);
+        }
+
     }
 
     SurfaceDataRegistryHandle SurfaceDataSystemComponent::GetSurfaceDataProviderHandle(const AZ::EntityId& providerEntityId)
@@ -205,54 +278,12 @@ namespace SurfaceData
 
     void SurfaceDataSystemComponent::GetSurfacePoints(const AZ::Vector3& inPosition, const SurfaceTagVector& desiredTags, SurfacePointList& surfacePointList) const
     {
-        const bool useTagFilters = HasValidTags(desiredTags);
-        const bool hasModifierTags = useTagFilters && HasAnyMatchingTags(desiredTags, m_registeredModifierTags);
-
-        AZStd::shared_lock<decltype(m_registrationMutex)> registrationLock(m_registrationMutex);
-
-        surfacePointList.Clear();
-        surfacePointList.ReserveSpace(m_registeredSurfaceDataProviders.size());
-
-        //gather all intersecting points
-        for (const auto& entryPair : m_registeredSurfaceDataProviders)
-        {
-            const AZ::u32 entryAddress = entryPair.first;
-            const SurfaceDataRegistryEntry& entry = entryPair.second;
-            if (!entry.m_bounds.IsValid() || AabbContains2D(entry.m_bounds, inPosition))
-            {
-                if (!useTagFilters || hasModifierTags || HasAnyMatchingTags(desiredTags, entry.m_tags))
-                {
-                    SurfaceDataProviderRequestBus::Event(entryAddress, &SurfaceDataProviderRequestBus::Events::GetSurfacePoints, inPosition, surfacePointList);
-                }
-            }
-        }
-
-        if (!surfacePointList.IsEmpty())
-        {
-            //modify or annotate reported points
-            for (const auto& entryPair : m_registeredSurfaceDataModifiers)
-            {
-                const AZ::u32 entryAddress = entryPair.first;
-                const SurfaceDataRegistryEntry& entry = entryPair.second;
-                if (!entry.m_bounds.IsValid() || AabbContains2D(entry.m_bounds, inPosition))
-                {
-                    SurfaceDataModifierRequestBus::Event(entryAddress, &SurfaceDataModifierRequestBus::Events::ModifySurfacePoints, surfacePointList);
-                }
-            }
-            
-            // After we've finished creating and annotating all the surface points, combine any points together that have effectively the
-            // same XY coordinates and extremely similar Z values.  This produces results that are sorted in decreasing Z order.
-            // Also, this filters out any remaining points that don't match the desired tag list.  This can happen when a surface provider
-            // doesn't add a desired tag, and a surface modifier has the *potential* to add it, but then doesn't.
-            if (useTagFilters)
-            {
-                surfacePointList.FilterPoints(desiredTags);
-            }
-        }
+        GetSurfacePointsFromListInternal(
+            AZStd::span<const AZ::Vector3>(&inPosition, 1), AZ::Aabb::CreateFromPoint(inPosition), desiredTags, surfacePointList);
     }
 
     void SurfaceDataSystemComponent::GetSurfacePointsFromRegion(const AZ::Aabb& inRegion, const AZ::Vector2 stepSize,
-        const SurfaceTagVector& desiredTags, SurfacePointLists& surfacePointLists) const
+        const SurfaceTagVector& desiredTags, SurfacePointList& surfacePointLists) const
     {
         const size_t totalQueryPositions = aznumeric_cast<size_t>(ceil(inRegion.GetXExtent() / stepSize.GetX())) *
             aznumeric_cast<size_t>(ceil(inRegion.GetYExtent() / stepSize.GetY()));
@@ -270,45 +301,96 @@ namespace SurfaceData
             }
         }
 
-        GetSurfacePointsFromList(inPositions, desiredTags, surfacePointLists);
+        GetSurfacePointsFromListInternal(inPositions, inRegion, desiredTags, surfacePointLists);
     }
 
     void SurfaceDataSystemComponent::GetSurfacePointsFromList(
-        AZStd::span<const AZ::Vector3> inPositions, const SurfaceTagVector& desiredTags, SurfacePointLists& surfacePointLists) const
+        AZStd::span<const AZ::Vector3> inPositions,
+        const SurfaceTagVector& desiredTags,
+        SurfacePointList& surfacePointLists) const
     {
-        AZStd::shared_lock<decltype(m_registrationMutex)> registrationLock(m_registrationMutex);
-
-        const size_t totalQueryPositions = inPositions.size();
-
-        surfacePointLists.clear();
-        surfacePointLists.resize(totalQueryPositions);
-
-        for (auto& surfacePointList : surfacePointLists)
+        AZ::Aabb inBounds = AZ::Aabb::CreateNull();
+        for (auto& position : inPositions)
         {
-            surfacePointList.ReserveSpace(m_registeredSurfaceDataProviders.size());
+            inBounds.AddPoint(position);
         }
+
+        GetSurfacePointsFromListInternal(inPositions, inBounds, desiredTags, surfacePointLists);
+    }
+
+    void SurfaceDataSystemComponent::GetSurfacePointsFromListInternal(
+        AZStd::span<const AZ::Vector3> inPositions, const AZ::Aabb& inPositionBounds,
+        const SurfaceTagVector& desiredTags, SurfacePointList& surfacePointLists) const
+    {
+        AZ_PROFILE_FUNCTION(Entity);
+
+        AZStd::shared_lock<decltype(m_registrationMutex)> registrationLock(m_registrationMutex);
 
         const bool useTagFilters = HasValidTags(desiredTags);
         const bool hasModifierTags = useTagFilters && HasAnyMatchingTags(desiredTags, m_registeredModifierTags);
 
-        // Loop through each data provider, and query all the points for each one.  This allows us to check the tags and the overall
-        // AABB bounds just once per provider, instead of once per point.  It also allows for an eventual optimization in which we could
-        // send the list of points directly into each SurfaceDataProvider.
-        for (const auto& [providerHandle, provider] : m_registeredSurfaceDataProviders)
+        // Clear our output structure.
+        surfacePointLists.Clear();
+
+        auto ProviderIsApplicable = [useTagFilters, hasModifierTags, &desiredTags, &inPositionBounds]
+            (const SurfaceDataRegistryEntry& provider) -> bool
         {
             bool hasInfiniteBounds = !provider.m_bounds.IsValid();
 
+            // Only allow surface providers that match our tag filters. However, if we aren't using tag filters,
+            // or if there's at least one surface modifier that can *add* a filtered tag to a created point, then
+            // allow all the surface providers.
             if (!useTagFilters || hasModifierTags || HasAnyMatchingTags(desiredTags, provider.m_tags))
             {
-                for (size_t index = 0; index < totalQueryPositions; index++)
+                // Only allow surface providers that overlap the input position area.
+                if (hasInfiniteBounds || AabbOverlaps2D(provider.m_bounds, inPositionBounds))
                 {
-                    bool inBounds = hasInfiniteBounds || AabbContains2D(provider.m_bounds, inPositions[index]);
-                    if (inBounds)
-                    {
-                        SurfaceDataProviderRequestBus::Event(
-                            providerHandle, &SurfaceDataProviderRequestBus::Events::GetSurfacePoints,
-                            inPositions[index], surfacePointLists[index]);
-                    }
+                    return true;
+                }
+            }
+
+            return false;
+        };
+
+        // Gather up the subset of surface providers that overlap the input positions.
+        size_t maxPointsCreatedPerInput = 0;
+        for (const auto& [providerHandle, provider] : m_registeredSurfaceDataProviders)
+        {
+            if (ProviderIsApplicable(provider))
+            {
+                maxPointsCreatedPerInput += provider.m_maxPointsCreatedPerInput;
+            }
+        }
+
+        // If we don't have any surface providers that will create any new surface points, then there's nothing more to do.
+        if (maxPointsCreatedPerInput == 0)
+        {
+            return;
+        }
+
+        // Notify our output structure that we're starting to build up the list of output points.
+        // This will reserve memory and allocate temporary structures to help build up the list efficiently.
+        AZStd::span<const SurfaceTag> tagFilters;
+        if (useTagFilters)
+        {
+            tagFilters = desiredTags;
+        }
+
+        {
+            AZ_PROFILE_SCOPE(Entity, "GetSurfacePointsFromListInternal: StartListConstruction");
+            surfacePointLists.StartListConstruction(inPositions, maxPointsCreatedPerInput, tagFilters);
+        }
+
+        // Loop through each data provider and generate surface points from the set of input positions.
+        // Any generated points that have the same XY coordinates and extremely similar Z values will get combined together.
+        {
+            AZ_PROFILE_SCOPE(Entity, "GetSurfacePointsFromListInternal: GetSurfacePointsFromList");
+            for (const auto& [providerHandle, provider] : m_registeredSurfaceDataProviders)
+            {
+                if (ProviderIsApplicable(provider))
+                {
+                    SurfaceDataProviderRequestBus::Event(
+                        providerHandle, &SurfaceDataProviderRequestBus::Events::GetSurfacePointsFromList, inPositions, surfacePointLists);
                 }
             }
         }
@@ -318,43 +400,29 @@ namespace SurfaceData
         // create new surface points, but surface data *modifiers* simply annotate points that have already been created.  The modifiers
         // are used to annotate points that occur within a volume.  A common example is marking points as "underwater" for points that occur
         // within a water volume.
-        for (const auto& entryPair : m_registeredSurfaceDataModifiers)
         {
-            const SurfaceDataRegistryEntry& entry = entryPair.second;
-            bool hasInfiniteBounds = !entry.m_bounds.IsValid();
-
-            for (size_t index = 0; index < totalQueryPositions; index++)
+            AZ_PROFILE_SCOPE(Entity, "GetSurfacePointsFromListInternal: ModifySurfaceWeights");
+            for (const auto& [modifierHandle, modifier] : m_registeredSurfaceDataModifiers)
             {
-                const auto& inPosition = inPositions[index];
-                SurfacePointList& surfacePointList = surfacePointLists[index];
-                if (!surfacePointList.IsEmpty())
+                bool hasInfiniteBounds = !modifier.m_bounds.IsValid();
+
+                if (hasInfiniteBounds || AabbOverlaps2D(modifier.m_bounds, surfacePointLists.GetSurfacePointAabb()))
                 {
-                    if (hasInfiniteBounds || AabbContains2D(entry.m_bounds, inPosition))
-                    {
-                        SurfaceDataModifierRequestBus::Event(
-                            entryPair.first, &SurfaceDataModifierRequestBus::Events::ModifySurfacePoints,
-                            surfacePointList);
-                    }
+                    surfacePointLists.ModifySurfaceWeights(modifierHandle);
                 }
             }
         }
 
-        // After we've finished creating and annotating all the surface points, combine any points together that have effectively the
-        // same XY coordinates and extremely similar Z values.  This produces results that are sorted in decreasing Z order.
-        // Also, this filters out any remaining points that don't match the desired tag list.  This can happen when a surface provider
+        // Notify the output structure that we're done building up the list.
+        // This will filter out any remaining points that don't match the desired tag list. This can happen when a surface provider
         // doesn't add a desired tag, and a surface modifier has the *potential* to add it, but then doesn't.
-        if (useTagFilters)
-        {
-            for (auto& surfacePointList : surfacePointLists)
-            {
-                surfacePointList.FilterPoints(desiredTags);
-            }
-        }
-
+        // It may also compact the memory and free any temporary structures.
+        surfacePointLists.EndListConstruction();
     }
 
     SurfaceDataRegistryHandle SurfaceDataSystemComponent::RegisterSurfaceDataProviderInternal(const SurfaceDataRegistryEntry& entry)
     {
+        AZ_Assert(entry.m_maxPointsCreatedPerInput > 0, "Surface data providers should always create at least 1 point.");
         AZStd::unique_lock<decltype(m_registrationMutex)> registrationLock(m_registrationMutex);
         SurfaceDataRegistryHandle handle = ++m_registeredSurfaceDataProviderHandleCounter;
         m_registeredSurfaceDataProviders[handle] = entry;
@@ -376,6 +444,7 @@ namespace SurfaceData
 
     bool SurfaceDataSystemComponent::UpdateSurfaceDataProviderInternal(const SurfaceDataRegistryHandle& handle, const SurfaceDataRegistryEntry& entry, AZ::Aabb& oldBounds)
     {
+        AZ_Assert(entry.m_maxPointsCreatedPerInput > 0, "Surface data providers should always create at least 1 point.");
         AZStd::unique_lock<decltype(m_registrationMutex)> registrationLock(m_registrationMutex);
         auto entryItr = m_registeredSurfaceDataProviders.find(handle);
         if (entryItr != m_registeredSurfaceDataProviders.end())
@@ -389,6 +458,7 @@ namespace SurfaceData
 
     SurfaceDataRegistryHandle SurfaceDataSystemComponent::RegisterSurfaceDataModifierInternal(const SurfaceDataRegistryEntry& entry)
     {
+        AZ_Assert(entry.m_maxPointsCreatedPerInput == 0, "Surface data modifiers cannot create any points.");
         AZStd::unique_lock<decltype(m_registrationMutex)> registrationLock(m_registrationMutex);
         SurfaceDataRegistryHandle handle = ++m_registeredSurfaceDataModifierHandleCounter;
         m_registeredSurfaceDataModifiers[handle] = entry;
@@ -411,6 +481,7 @@ namespace SurfaceData
 
     bool SurfaceDataSystemComponent::UpdateSurfaceDataModifierInternal(const SurfaceDataRegistryHandle& handle, const SurfaceDataRegistryEntry& entry, AZ::Aabb& oldBounds)
     {
+        AZ_Assert(entry.m_maxPointsCreatedPerInput == 0, "Surface data modifiers cannot create any points.");
         AZStd::unique_lock<decltype(m_registrationMutex)> registrationLock(m_registrationMutex);
         auto entryItr = m_registeredSurfaceDataModifiers.find(handle);
         if (entryItr != m_registeredSurfaceDataModifiers.end())
@@ -423,4 +494,66 @@ namespace SurfaceData
         return false;
     }
 
-}
+    SurfaceTagSet SurfaceDataSystemComponent::GetTagsFromBounds(
+        const AZ::Aabb& bounds, const SurfaceDataRegistryMap& registeredEntries) const
+    {
+        SurfaceTagSet tags;
+
+        const bool inputHasInfiniteBounds = !bounds.IsValid();
+
+        for (const auto& [entryHandle, entry] : registeredEntries)
+        {
+            const bool entryHasInfiniteBounds = !entry.m_bounds.IsValid();
+
+            if (inputHasInfiniteBounds || entryHasInfiniteBounds || AabbOverlaps2D(entry.m_bounds, bounds))
+            {
+                for (auto& entryTag : entry.m_tags)
+                {
+                    tags.emplace(entryTag);
+                }
+            }
+        }
+
+        return tags;
+    }
+
+    SurfaceTagSet SurfaceDataSystemComponent::GetProviderTagsFromBounds(const AZ::Aabb& bounds) const
+    {
+        return GetTagsFromBounds(bounds, m_registeredSurfaceDataProviders);
+    }
+
+    SurfaceTagSet SurfaceDataSystemComponent::GetModifierTagsFromBounds(const AZ::Aabb& bounds) const
+    {
+        return GetTagsFromBounds(bounds, m_registeredSurfaceDataModifiers);
+    }
+
+    SurfaceTagSet SurfaceDataSystemComponent::ConvertTagVectorToSet(const SurfaceTagVector& surfaceTags) const
+    {
+        SurfaceTagSet tags;
+        for (auto& tag : surfaceTags)
+        {
+            tags.emplace(tag);
+        }
+
+        return tags;
+    }
+
+    SurfaceTagSet SurfaceDataSystemComponent::GetAffectedSurfaceTags(const AZ::Aabb& bounds, const SurfaceTagVector& providerTags) const
+    {
+        // Get all of the surface tags that can be affected by surface provider changes within the given bounds.
+        // Because a change to a surface provider can cause changes to a surface modifier as well, we need to merge all of the
+        // surface provider tags with all of the potential surface modifier tags in the given bounds.
+
+        // Get all of the modifier tags that occur in the bounds.
+        SurfaceTagSet tagSet = GetModifierTagsFromBounds(bounds);
+
+        // Merge the provider tags with them.
+        for (auto& tag : providerTags)
+        {
+            tagSet.emplace(tag);
+        }
+
+        return tagSet;
+    }
+
+} // namespace SurfaceData

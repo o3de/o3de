@@ -182,6 +182,9 @@ namespace AtomToolsFramework
                 const AZ::Vector3 eulerAngles = AzFramework::EulerAngles(AZ::Matrix3x3::CreateFromTransform(transform));
                 UpdateCameraFromTranslationAndRotation(m_targetCamera, transform.GetTranslation(), eulerAngles);
                 m_targetRoll = eulerAngles.GetY();
+
+                m_camera = m_targetCamera;
+                m_roll = m_targetRoll;
             }
         };
 
@@ -284,14 +287,43 @@ namespace AtomToolsFramework
         m_targetCamera.m_pivot = pivot;
     }
 
+    void ModularViewportCameraControllerInstance::SetCameraPivotAttachedImmediate(const AZ::Vector3& pivot)
+    {
+        m_camera.m_pivot = pivot;
+        m_targetCamera.m_pivot = pivot;
+    }
+
     void ModularViewportCameraControllerInstance::SetCameraPivotDetached(const AZ::Vector3& pivot)
     {
+        AzFramework::MovePivotDetached(m_targetCamera, pivot);
+    }
+
+    void ModularViewportCameraControllerInstance::SetCameraPivotDetachedImmediate(const AZ::Vector3& pivot)
+    {
+        AzFramework::MovePivotDetached(m_camera, pivot);
         AzFramework::MovePivotDetached(m_targetCamera, pivot);
     }
 
     void ModularViewportCameraControllerInstance::SetCameraOffset(const AZ::Vector3& offset)
     {
         m_targetCamera.m_offset = offset;
+    }
+
+    void ModularViewportCameraControllerInstance::SetCameraOffsetImmediate(const AZ::Vector3& offset)
+    {
+        m_camera.m_offset = offset;
+        m_targetCamera.m_offset = offset;
+    }
+
+    bool ModularViewportCameraControllerInstance::AddCameras(const AZStd::vector<AZStd::shared_ptr<AzFramework::CameraInput>>& cameraInputs)
+    {
+        return m_cameraSystem.m_cameras.AddCameras(cameraInputs);
+    }
+
+    bool ModularViewportCameraControllerInstance::RemoveCameras(
+        const AZStd::vector<AZStd::shared_ptr<AzFramework::CameraInput>>& cameraInputs)
+    {
+        return m_cameraSystem.m_cameras.RemoveCameras(cameraInputs);
     }
 
     bool ModularViewportCameraControllerInstance::IsInterpolating() const

@@ -3,7 +3,6 @@
     "Version": 1,
     "ClassName": "AZ::Render::LightingPreset",
     "ClassData": {
-        "displayName": "Urban Street 02",
         "skyboxImageAsset": {
             "assetId": {
                 "guid": "{8D4D0169-2E25-565E-B7BD-D7FFB09598FE}",

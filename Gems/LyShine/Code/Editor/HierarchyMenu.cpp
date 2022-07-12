@@ -387,7 +387,9 @@ void HierarchyMenu::New_ElementFromSlice(HierarchyWidget* hierarchy,
     AZ::Vector2 viewportPosition(-1.0f,-1.0f); // indicates no viewport position specified
     if (optionalPos)
     {
-        viewportPosition = QtHelpers::QPointFToVector2(*optionalPos);
+        // Convert position to render viewport coords
+        QPointF scaledPosition = *optionalPos * hierarchy->GetEditorWindow()->GetViewport()->WidgetToViewportFactor();
+        viewportPosition = QtHelpers::QPointFToVector2(scaledPosition);
     }
 
     SliceMenuHelpers::CreateInstantiateSliceMenu(hierarchy,
@@ -405,7 +407,9 @@ void HierarchyMenu::New_ElementFromSlice(HierarchyWidget* hierarchy,
             AZ::Vector2 viewportPosition(-1.0f,-1.0f); // indicates no viewport position specified
             if (optionalPos)
             {
-                viewportPosition = QtHelpers::QPointFToVector2(*optionalPos);
+                // Convert position to render viewport coords
+                QPointF scaledPosition = *optionalPos * hierarchy->GetEditorWindow()->GetViewport()->WidgetToViewportFactor();
+                viewportPosition = QtHelpers::QPointFToVector2(scaledPosition);
             }
             hierarchy->GetEditorWindow()->GetSliceManager()->InstantiateSliceUsingBrowser(hierarchy, viewportPosition);
         }

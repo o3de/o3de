@@ -41,10 +41,21 @@ namespace ScriptCanvas
         Data
     };
 
+    constexpr bool IsExecution(CombinedSlotType slotType)
+    {
+        return slotType == CombinedSlotType::ExecutionIn
+            || slotType == CombinedSlotType::ExecutionOut
+            || slotType == CombinedSlotType::LatentOut;
+    }
 
     constexpr bool IsExecutionOut(CombinedSlotType slotType)
     {
         return slotType == CombinedSlotType::ExecutionOut || slotType == CombinedSlotType::LatentOut;
+    }
+
+    constexpr bool IsData(CombinedSlotType slotType)
+    {
+        return slotType == CombinedSlotType::DataIn || slotType == CombinedSlotType::DataOut;
     }
 
     class SlotTypeUtils

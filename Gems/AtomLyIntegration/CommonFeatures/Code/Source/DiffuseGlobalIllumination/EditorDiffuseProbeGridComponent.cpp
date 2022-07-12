@@ -41,6 +41,7 @@ namespace AZ
                     ->Field("viewBias", &EditorDiffuseProbeGridComponent::m_viewBias)
                     ->Field("normalBias", &EditorDiffuseProbeGridComponent::m_normalBias)
                     ->Field("numRaysPerProbe", &EditorDiffuseProbeGridComponent::m_numRaysPerProbe)
+                    ->Field("scrolling", &EditorDiffuseProbeGridComponent::m_scrolling)
                     ->Field("editorMode", &EditorDiffuseProbeGridComponent::m_editorMode)
                     ->Field("runtimeMode", &EditorDiffuseProbeGridComponent::m_runtimeMode)
                     ->Field("showVisualization", &EditorDiffuseProbeGridComponent::m_showVisualization)
@@ -100,6 +101,9 @@ namespace AZ
                             ->DataElement(AZ::Edit::UIHandlers::ComboBox, &EditorDiffuseProbeGridComponent::m_numRaysPerProbe, "Number of Rays Per Probe", "Number of rays cast by each probe to detect lighting in its surroundings")
                                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorDiffuseProbeGridComponent::OnNumRaysPerProbeChanged)
                                 ->Attribute(AZ::Edit::Attributes::EnumValues, &EditorDiffuseProbeGridComponent::GetNumRaysPerProbeEnumList)
+                            ->DataElement(AZ::Edit::UIHandlers::CheckBox, &EditorDiffuseProbeGridComponent::m_scrolling, "Scrolling", "Scrolling causes the grid to move probes on the edges of the volume when it is translated, instead of moving all of the probes.  Use scrolling when the DiffuseProbeGrid is attached to a camera or moving entity.")
+                                ->Attribute(AZ::Edit::Attributes::ChangeValidate, &EditorDiffuseProbeGridComponent::OnScrollingChangeValidate)
+                                ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorDiffuseProbeGridComponent::OnScrollingChanged)
                         ->ClassElement(AZ::Edit::ClassElements::Group, "Visualization")
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                             ->DataElement(AZ::Edit::UIHandlers::CheckBox, &EditorDiffuseProbeGridComponent::m_showVisualization, "Show Visualization", "Show the probe grid visualization")
@@ -351,6 +355,25 @@ namespace AZ
             return AZ::Edit::PropertyRefreshLevels::None;
         }
 
+        AZ::Outcome<void, AZStd::string> EditorDiffuseProbeGridComponent::OnScrollingChangeValidate([[maybe_unused]] void* newValue, [[maybe_unused]] const AZ::Uuid& valueType)
+        {
+            bool newScrolling = (*(reinterpret_cast<bool*>(newValue)));
+
+            // scrolling requires Real-Time mode
+            if (newScrolling && (m_editorMode == DiffuseProbeGridMode::Baked || m_runtimeMode == DiffuseProbeGridMode::Baked))
+            {
+                return AZ::Failure(AZStd::string("Scrolling requires that the Editor and Runtime modes are both set to Real-Time."));
+            }
+
+            return AZ::Success();
+        }
+
+        AZ::u32 EditorDiffuseProbeGridComponent::OnScrollingChanged()
+        {
+            m_controller.SetScrolling(m_scrolling);
+            return AZ::Edit::PropertyRefreshLevels::None;
+        }
+
         AZ::u32 EditorDiffuseProbeGridComponent::OnEditorModeChanged()
         {
             // this will update the configuration and also change the DiffuseProbeGrid mode
@@ -394,6 +417,12 @@ namespace AZ
                     !m_controller.m_configuration.m_bakedProbeDataTextureAsset.GetId().IsValid())
                 {
                     return AZ::Failure(AZStd::string("Please bake textures before changing the Diffuse Probe Grid to Baked or Auto-Select mode."));
+                }
+
+                // scrolling requires Real-Time mode
+                if (m_scrolling)
+                {
+                    return AZ::Failure(AZStd::string("Scrolling requires that the Editor and Runtime modes are both set to Real-Time."));
                 }
             }
 

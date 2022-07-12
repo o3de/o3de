@@ -116,6 +116,8 @@ set(FILES
     Debug/TraceReflection.h
     DOM/DomBackend.cpp
     DOM/DomBackend.h
+    DOM/DomPatch.cpp
+    DOM/DomPatch.h
     DOM/DomPath.cpp
     DOM/DomPath.h
     DOM/DomUtils.cpp
@@ -126,12 +128,17 @@ set(FILES
     DOM/DomValueWriter.h
     DOM/DomVisitor.cpp
     DOM/DomVisitor.h
+    DOM/DomComparison.cpp
+    DOM/DomComparison.h
+    DOM/DomPrefixTree.h
+    DOM/DomPrefixTree.inl
     DOM/Backends/JSON/JsonBackend.h
     DOM/Backends/JSON/JsonSerializationUtils.cpp
     DOM/Backends/JSON/JsonSerializationUtils.h
     EBus/BusImpl.h
     EBus/EBus.h
     EBus/EBusEnvironment.cpp
+    EBus/EBusSharedDispatchTraits.h
     EBus/Environment.h
     EBus/Event.h
     EBus/Event.inl
@@ -170,6 +177,7 @@ set(FILES
     IO/IOUtils.h
     IO/IOUtils.cpp
     IO/IStreamer.h
+    IO/IStreamerProfiler.h
     IO/IStreamerTypes.h
     IO/IStreamerTypes.inl
     IO/IStreamerTypes.cpp
@@ -245,6 +253,8 @@ set(FILES
     Math/Aabb.cpp
     Math/Aabb.h
     Math/Aabb.inl
+    Math/Capsule.h
+    Math/Capsule.inl
     Math/Color.cpp
     Math/Color.h
     Math/Color.inl
@@ -259,6 +269,8 @@ set(FILES
     Math/Frustum.inl
     Math/Geometry2DUtils.cpp
     Math/Geometry2DUtils.h
+    Math/Geometry3DUtils.cpp
+    Math/Geometry3DUtils.h
     Math/Guid.h
     Math/Internal/MathTypes.h
     Math/Internal/SimdMathVec1_neon.inl
@@ -285,6 +297,8 @@ set(FILES
     Math/IntersectSegment.inl
     Math/IntersectSegment.cpp
     Math/IntersectSegment.h
+    Math/LineSegment.cpp
+    Math/LineSegment.h
     Math/MathIntrinsics.h
     Math/MathReflection.cpp
     Math/MathReflection.h
@@ -294,6 +308,8 @@ set(FILES
     Math/MathUtils.h
     Math/MathMatrixSerializer.h
     Math/MathMatrixSerializer.cpp
+    Math/MathStringConversions.h
+    Math/MathStringConversions.cpp
     Math/MathVectorSerializer.h
     Math/MathVectorSerializer.cpp
     Math/Matrix3x3.cpp
@@ -319,8 +335,11 @@ set(FILES
     Math/Quaternion.inl
     Math/Quaternion.h
     Math/Random.h
+    Math/Ray.cpp
+    Math/Ray.h
     Math/Sfmt.cpp
     Math/Sfmt.h
+    Math/ShapeIntersection.cpp
     Math/ShapeIntersection.h
     Math/ShapeIntersection.inl
     Math/SimdMath.h
@@ -360,8 +379,6 @@ set(FILES
     Math/Color.cpp
     Math/ColorSerializer.h
     Math/ColorSerializer.cpp
-    Math/ToString.h
-    Math/ToString.cpp
     Memory/AllocationRecords.cpp
     Memory/AllocationRecords.h
     Memory/AllocatorBase.cpp
@@ -401,8 +418,6 @@ set(FILES
     Memory/SystemAllocator.h
     Module/DynamicModuleHandle.cpp
     Module/DynamicModuleHandle.h
-    Module/Environment.cpp
-    Module/Environment.h
     Module/Module.cpp
     Module/Module.h
     Module/ModuleManagerBus.h
@@ -444,6 +459,7 @@ set(FILES
     RTTI/AzStdOnDemandReflectionLuaFunctions.inl
     RTTI/BehaviorContext.cpp
     RTTI/BehaviorContext.h
+    RTTI/BehaviorContextEBusEventRawSignature.inl
     RTTI/BehaviorContextUtilities.h
     RTTI/BehaviorContextUtilities.cpp
     RTTI/BehaviorInterfaceProxy.h
@@ -556,6 +572,9 @@ set(FILES
     Serialization/std/VariantReflection.inl
     Settings/CommandLine.cpp
     Settings/CommandLine.h
+    Settings/ConfigurableStack.cpp
+    Settings/ConfigurableStack.inl
+    Settings/ConfigurableStack.h
     Settings/SettingsRegistry.cpp
     Settings/SettingsRegistry.h
     Settings/SettingsRegistryConsoleUtils.cpp

@@ -110,17 +110,6 @@ namespace AzGameFramework
         AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(registry);
     }
 
-    AZ::ComponentTypeList GameApplication::GetRequiredSystemComponents() const
-    {
-        AZ::ComponentTypeList components = Application::GetRequiredSystemComponents();
-
-#if !defined(_RELEASE)
-        components.emplace_back(azrtti_typeid<AzFramework::TargetManagementComponent>());
-#endif
-
-        return components;
-    }
-
     void GameApplication::CreateStaticModules(AZStd::vector<AZ::Module*>& outModules)
     {
         AzFramework::Application::CreateStaticModules(outModules);

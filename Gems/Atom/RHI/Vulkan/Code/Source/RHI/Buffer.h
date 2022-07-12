@@ -38,7 +38,7 @@ namespace AZ
             friend class Device;
 
         public:
-            AZ_CLASS_ALLOCATOR(Buffer, AZ::ThreadPoolAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Buffer, AZ::SystemAllocator, 0);
             AZ_RTTI(Buffer, "D3416E5D-D058-4EB1-95D9-06C9B3B1C52A", Base);
 
             ~Buffer();

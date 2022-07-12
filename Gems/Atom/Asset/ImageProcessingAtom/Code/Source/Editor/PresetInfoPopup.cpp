@@ -44,6 +44,20 @@ namespace ImageProcessingAtomEditor
         return cubemapFilterTypeNames[(int)cubemapFilterType];
     }
 
+    static AZStd::string FileMasksToString(AZStd::vector<FileMask> fileMasks)
+    {
+        AZStd::string conventionText = "";
+
+        int i = 0;
+        for (const auto& filemask : fileMasks)
+        {
+            conventionText +=  i > 0 && i < fileMasks.size() ? " " + filemask : filemask;
+            i++;
+        }
+
+        return conventionText;
+    }
+
     PresetInfoPopup::PresetInfoPopup(const PresetSettings* presetSettings, QWidget* parent /*= nullptr*/)
         : AzQtComponents::StyledDialog(parent, Qt::Dialog | Qt::Popup)
         , m_ui(new Ui::PresetInfoPopup)
@@ -55,6 +69,7 @@ namespace ImageProcessingAtomEditor
     PresetInfoPopup::~PresetInfoPopup()
     {
     }
+
     void PresetInfoPopup::RefreshPresetInfoLabel(const PresetSettings* presetSettings)
     {
         QString presetInfoText = "";
@@ -71,15 +86,7 @@ namespace ImageProcessingAtomEditor
         presetInfoText += QString("RGB Weight: %1\n").arg(RGBWeightToString(presetSettings->m_rgbWeight));
         presetInfoText += QString("Source ColorSpace: %1\n").arg(ColorSpaceToString(presetSettings->m_srcColorSpace));
         presetInfoText += QString("Destination ColorSpace: %1\n").arg(ColorSpaceToString(presetSettings->m_destColorSpace));
-        presetInfoText += QString("FileMasks: ");
-        int i = 0;
-        for (auto& mask : presetSettings->m_fileMasks)
-        {
-            presetInfoText += i > 0 ? ", " : "";
-            presetInfoText += mask.c_str();
-            i++;
-        }
-        presetInfoText += "\n";
+        presetInfoText += QString("FileMasks: %1\n").arg(FileMasksToString(BuilderSettingManager::Instance()->GetFileMasksForPreset(presetSettings->m_name)).c_str());
         presetInfoText += QString("Suppress Engine Reduce: %1\n").arg(presetSettings->m_suppressEngineReduce ? "True" : "False");
         presetInfoText += QString("Discard Alpha: %1\n").arg(presetSettings->m_discardAlpha ? "True" : "False");
         presetInfoText += QString("Gloss From Normal: %1\n").arg(presetSettings->m_glossFromNormals);
@@ -109,6 +116,8 @@ namespace ImageProcessingAtomEditor
         }
 
         m_ui->infoLabel->setText(presetInfoText);
+        
+        resize(minimumSizeHint());
     }
 }//namespace ImageProcessingAtomEditor
 #include <Source/Editor/moc_PresetInfoPopup.cpp>

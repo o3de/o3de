@@ -44,11 +44,11 @@ namespace EditorPythonBindings
         virtual AZStd::optional<ValueHandle> PythonToBehavior(
             PyObject* pyObj,
             AZ::BehaviorParameter::Traits traits,
-            AZ::BehaviorValueParameter& outValue) = 0;
+            AZ::BehaviorArgument& outValue) = 0;
 
         //! This method convert an incoming behavior value into a Python value; it should fill out the outPyObj pointer
         virtual AZStd::optional<ValueHandle> BehaviorToPython(
-            const AZ::BehaviorValueParameter& behaviorValue,
+            const AZ::BehaviorArgument& behaviorValue,
             PyObject*& outPyObj) = 0;
 
         //! This method is used to determine that the behavior value can be processed using the Python object type as input

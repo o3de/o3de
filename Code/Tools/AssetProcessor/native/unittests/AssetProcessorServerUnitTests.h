@@ -5,47 +5,51 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef ASSETPROCESSORSERVERUNITTEST_H
-#define ASSETPROCESSORSERVERUNITTEST_H
+#pragma once
 
-#if !defined(Q_MOC_RUN)
-#include "UnitTestRunner.h"
-#include "native/utilities/IniConfiguration.h"
-#include <AzCore/std/smart_ptr/unique_ptr.h>
-#include <QString>
-#endif
+#include <AzCore/UnitTest/TestTypes.h>
+#include <QObject>
 
 class ApplicationServer;
-class ConnectionManager;
 
-class AssetProcessorServerUnitTest
-    : public UnitTestRun
+namespace AzFramework
 {
-    Q_OBJECT
-public:
-    AssetProcessorServerUnitTest();
-    ~AssetProcessorServerUnitTest();
-    void AssetProcessorServerTest();
-    virtual void StartTest() override;
-    virtual int UnitTestPriority() const override;
+    class Application;
+}
 
-public Q_SLOTS:
-    void RunFirstPartOfUnitTestsForAssetProcessorServer();
-    void AssetProcessorConnectionStressTest();
-    void ConnectionErrorForNonProxyMode(unsigned int connId, QString error);
+namespace UnitTest
+{
+    class AssetProcessorServerUnitTestAppManager;
 
-private:
-    void RunAssetProcessorConnectionStressTest(bool failNegotiation);
-    AZStd::unique_ptr<ApplicationServer> m_applicationServer;
-    ConnectionManager* m_connectionManager;
-    IniConfiguration m_iniConfiguration;
+    class AssetProcessorServerUnitTest
+        : public QObject
+        , public ScopedAllocatorSetupFixture
+    {
+        Q_OBJECT
+    public:
+        AssetProcessorServerUnitTest();
+        ~AssetProcessorServerUnitTest();
 
-    QMetaObject::Connection m_connection;
+    public Q_SLOTS:
+        void AssetProcessorConnectionStressTest();
+        void ConnectionErrorForNonProxyMode(unsigned int connId, QString error);
 
-    int m_numberOfDisconnectionReceived = 0;
-    unsigned int m_connectionId = 0;
+    protected:
+        void SetUp() override;
+        void TearDown() override;
 
-    bool m_gotNegotiationWithSelfError = false;
-};
+        void RunAssetProcessorConnectionStressTest(bool failNegotiation);
+        AZStd::unique_ptr<ApplicationServer> m_applicationServer;
+        AZStd::unique_ptr<AzFramework::Application> m_application;
 
-#endif // ASSETPROCESSORSERVERUNITTEST_H
+        AZStd::unique_ptr<AssetProcessorServerUnitTestAppManager> m_batchApplicationManager;
+        
+        QMetaObject::Connection m_connection;
+
+        int m_numberOfDisconnectionReceived = 0;
+        unsigned int m_connectionId = 0;
+
+        bool m_gotNegotiationWithSelfError = false;
+        bool m_eventWasPosted = false;
+    };
+} // namespace UnitTest
