@@ -86,9 +86,9 @@ namespace AzToolsFramework
             addAction(renameAction);
 
             QAction* duplicateAction = new QAction("Duplicate Action", this);
-            renameAction->setShortcut(QKeySequence("Ctrl+D"));
+            duplicateAction->setShortcut(QKeySequence("Ctrl+D"));
             connect(
-                renameAction, &QAction::triggered, this, [this]()
+                duplicateAction, &QAction::triggered, this, [this]()
                 {
                     DuplicateEntry();
                 });
