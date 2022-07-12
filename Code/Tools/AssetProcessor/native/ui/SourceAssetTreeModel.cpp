@@ -189,11 +189,21 @@ namespace AssetProcessor
         // Model changes need to be run on the main thread.
         AZ::SystemTickBus::QueueFunction([&, entry]()
             {
+                // Get stat
+                AZ::s64 accumulateJobDuration = 0;
+                QString statKey = QString("CreateJobs,%1").arg(entry.m_sourceName.c_str()).append("%");
+                m_sharedDbConnection->QueryStatLikeStatName(
+                    statKey.toUtf8().data(),
+                    [&](AzToolsFramework::AssetDatabase::StatDatabaseEntry statEntry)
+                    {
+                        accumulateJobDuration += statEntry.m_statValue;
+                        return true;
+                    });
+
                 m_sharedDbConnection->QueryScanFolderBySourceID(entry.m_sourceID,
                     [&, entry](AzToolsFramework::AssetDatabase::ScanFolderDatabaseEntry& scanFolder)
                     {
-                        //  Sven TODO: will the createjob stat change?
-                        AddOrUpdateEntry(entry, scanFolder, false);
+                        AddOrUpdateEntry(entry, scanFolder, false, accumulateJobDuration);
                         return true;
                     });
             });
