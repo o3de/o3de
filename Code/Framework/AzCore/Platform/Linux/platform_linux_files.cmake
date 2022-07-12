@@ -44,7 +44,6 @@ set(FILES
     AzCore/IPC/SharedMemory_Platform.h
     ../Common/Unimplemented/AzCore/Memory/OverrunDetectionAllocator_Unimplemented.h
     ../Common/UnixLike/AzCore/Memory/OSAllocator_UnixLike.h
-    AzCore/Memory/HeapSchema_Linux.cpp
     AzCore/Memory/OSAllocator_Platform.h
     AzCore/Memory/OverrunDetectionAllocator_Platform.h
     AzCore/Module/Internal/ModuleManagerSearchPathTool_Linux.cpp

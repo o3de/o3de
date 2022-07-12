@@ -12,7 +12,6 @@
 namespace AZ
 {
     class HphaSchema;
-    class HeapSchema;
 
     /**
      * System allocator
@@ -39,8 +38,8 @@ namespace AZ
          * flag to specify which arena you want to allocate from.
          * You are also allowed to supply IAllocatorSchema, but if you do
          * so you will need to take care of all allocations, we will not use
-         * the default HeapSchema.
-         * \ref HeapSchema::Descriptor
+         * the default HphaSchema.
+         * \ref HphaSchema::Descriptor
          */
         struct Descriptor
         {
@@ -49,7 +48,7 @@ namespace AZ
                 , m_allocationRecords(true)
                 , m_stackRecordLevels(5)
             {}
-            IAllocatorSchema*         m_custom;   ///< You can provide our own allocation scheme. If NULL a HeapScheme will be used with the provided Descriptor.
+            IAllocatorSchema*         m_custom;   ///< You can provide our own allocation scheme. If NULL a HphaScheme will be used with the provided Descriptor.
 
             struct Heap
             {

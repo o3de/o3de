@@ -50,7 +50,6 @@ set(FILES
     AzCore/IPC/SharedMemory_Windows.cpp
     ../Common/WinAPI/AzCore/Memory/OSAllocator_WinAPI.h
     ../Common/WinAPI/AzCore/Memory/OverrunDetectionAllocator_WinAPI.h
-    AzCore/Memory/HeapSchema_Windows.cpp
     AzCore/Memory/OSAllocator_Platform.h
     AzCore/Memory/OverrunDetectionAllocator_Platform.h
     AzCore/Math/Random_Platform.h
