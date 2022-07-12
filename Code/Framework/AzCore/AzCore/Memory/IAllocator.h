@@ -8,6 +8,7 @@
 #pragma once
 
 #include <AzCore/base.h>
+#include <AzCore/RTTI/RTTI.h>
 
 namespace AZ
 {
@@ -100,13 +101,15 @@ namespace AZ
     class IAllocator : public IAllocatorSchema
     {
     public:
+        AZ_RTTI(IAllocator, "{0A3C59AE-169C-45F6-9423-3B8C89245E2E}");
+
         IAllocator(IAllocatorSchema* schema = nullptr);
         virtual ~IAllocator();
 
-        // Every system allocator is required to provide name this is how
-        // it will be registered with the allocator manager.
-        virtual const char* GetName() const = 0;
-        virtual const char* GetDescription() const = 0;
+        const char* GetName() const
+        {
+            return RTTI_GetTypeName();
+        }
 
         /// Returns the schema
         AZ_FORCE_INLINE IAllocatorSchema* GetSchema() const { return m_schema; };

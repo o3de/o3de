@@ -25,20 +25,7 @@ namespace AWSNativeSDKInit
     {
     public:
         AZ_CLASS_ALLOCATOR(AWSNativeSDKAllocator, AZ::SystemAllocator, 0);
-        AZ_TYPE_INFO(AWSNativeSDKAllocator, "{8B4DA42F-2507-4A5B-B13C-4B2A72BC161E}");
-
-        ///////////////////////////////////////////////////////////////////////////////////////////
-        // IAllocator
-        const char* GetName() const override
-        {
-            return "AWSNativeSDKAllocator";
-        }
-
-        const char* GetDescription() const override
-        {
-            return "Allocator used by the AWSNativeSDK";
-        }
-        ///////////////////////////////////////////////////////////////////////////////////////////
+        AZ_RTTI(AWSNativeSDKAllocator, "{8B4DA42F-2507-4A5B-B13C-4B2A72BC161E}", AZ::SystemAllocator);
     };
 
 #if defined(PLATFORM_SUPPORTS_AWS_NATIVE_SDK)

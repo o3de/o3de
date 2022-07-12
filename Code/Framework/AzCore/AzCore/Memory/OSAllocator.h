@@ -26,7 +26,7 @@ namespace AZ
         : public AllocatorBase
     {
     public:
-        AZ_TYPE_INFO(OSAllocator, "{9F835EE3-F23C-454E-B4E3-011E2F3C8118}")
+        AZ_RTTI(OSAllocator, "{9F835EE3-F23C-454E-B4E3-011E2F3C8118}", AllocatorBase)
 
         OSAllocator();
         ~OSAllocator() override;

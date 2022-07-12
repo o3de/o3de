@@ -618,11 +618,6 @@ namespace UnitTest
             };
 
             using Base = ThreadPoolBase<MyThreadPoolAllocator>;
-
-            MyThreadPoolAllocator()
-                : Base("MyThreadPoolAllocator", "Fast thread 1024 byte allocator")
-            {
-            }
         };
 
         void run()

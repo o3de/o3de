@@ -403,20 +403,7 @@ namespace AZ
         {
         public:
             AZ_CLASS_ALLOCATOR(LuaSystemAllocator, AZ::SystemAllocator, 0);
-            AZ_TYPE_INFO(LuaSystemAllocator, "{7BEFB496-76EC-43DB-AB82-5ABA524FEF7F}");
-
-            ///////////////////////////////////////////////////////////////////////////////////////////
-            // IAllocator
-            const char* GetName() const override
-            {
-                return "LuaSystemAllocator";
-            }
-
-            const char* GetDescription() const override
-            {
-                return "Generic allocator for use in the Lua System.";
-            }
-            ///////////////////////////////////////////////////////////////////////////////////////////
+            AZ_RTTI(LuaSystemAllocator, "{7BEFB496-76EC-43DB-AB82-5ABA524FEF7F}", AZ::SystemAllocator);
         };
 
         //=========================================================================

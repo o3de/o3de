@@ -18,10 +18,6 @@ public:
 
     using Base = AZ::SimpleSchemaAllocator<AZ::HphaSchema>;
     using Descriptor = Base::Descriptor;
-
-    HphaSchema_TestAllocator()
-        : Base("HphaSchema_TestAllocator", "Allocator for Test")
-    {}
 };
 
 static const size_t s_kiloByte = 1024;

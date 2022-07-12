@@ -32,9 +32,7 @@ namespace AZ
             using size_type = typename Base::size_type;
             using difference_type = typename Base::difference_type;
 
-            PoolAllocatorHelper(const char* name, const char* desc) : Base(name, desc)
-            {
-            }
+            AZ_RTTI((PoolAllocatorHelper, "{813b4b74-7381-4c62-b475-3f66efbcb615}", Schema), Base)
 
             struct Descriptor
                 : public Schema::Descriptor
@@ -141,14 +139,10 @@ namespace AZ
     {
     public:
         AZ_CLASS_ALLOCATOR(PoolAllocator, SystemAllocator, 0);
-        AZ_TYPE_INFO(PoolAllocator, "{D3DC61AF-0949-4BFA-87E0-62FA03A4C025}");
 
         using Base = Internal::PoolAllocatorHelper<PoolSchema>;
 
-        PoolAllocator(const char* name = "PoolAllocator", const char* desc = "Generic pool allocator for small objects")
-            : Base(name, desc)
-        {
-        }
+        AZ_RTTI(PoolAllocator, "{D3DC61AF-0949-4BFA-87E0-62FA03A4C025}", Base)
     };
 
     template<class Allocator>
@@ -163,16 +157,10 @@ namespace AZ
     {
     public:
         AZ_CLASS_ALLOCATOR(ThreadPoolAllocator, SystemAllocator, 0);
-        AZ_TYPE_INFO(ThreadPoolAllocator, "{05B4857F-CD06-4942-99FD-CA6A7BAE855A}");
 
         using Base = ThreadPoolBase<ThreadPoolAllocator>;
 
-        ThreadPoolAllocator()
-            : Base("PoolAllocatorThreadSafe", "Generic thread safe pool allocator for small objects")
-        {
-        }
-
-        //////////////////////////////////////////////////////////////////////////
+        AZ_RTTI(ThreadPoolAllocator, "{05B4857F-CD06-4942-99FD-CA6A7BAE855A}", Base)
     };
 }
 

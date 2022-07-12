@@ -24,13 +24,15 @@ namespace AZ
         : public AllocatorBase
     {
     public:
+        AZ_RTTI((SimpleSchemaAllocator, "{32019C72-6E33-4EF9-8ABA-748055D94EB2}", Schema, DescriptorType), AllocatorBase)
+
         using Descriptor = DescriptorType;
         using pointer_type = typename Schema::pointer_type;
         using size_type = typename Schema::size_type;
         using difference_type = typename Schema::difference_type;
 
-        SimpleSchemaAllocator(const char* name, const char* desc)
-            : AllocatorBase(nullptr, name, desc)
+        SimpleSchemaAllocator()
+            : AllocatorBase(nullptr)
         {
         }
 

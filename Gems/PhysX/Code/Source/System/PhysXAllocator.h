@@ -21,10 +21,7 @@ namespace PhysX
 
     public:
 
-        AZ_TYPE_INFO(PhysXAllocator, "{C07BA28C-F6AF-4AFA-A45C-6747476DE07F}");
-
-        const char* GetName() const override { return "PhysX System Allocator"; }
-        const char* GetDescription() const override { return "PhysX general memory allocator"; }
+        AZ_RTTI(PhysXAllocator, "{C07BA28C-F6AF-4AFA-A45C-6747476DE07F}", AZ::SystemAllocator);
     };
 
     //! Implementation of the PhysX memory allocation callback interface using Open 3D Engine allocator.

@@ -19,7 +19,7 @@ namespace UnitTest
         class AllocatorManagerTestAllocator : public AZ::SystemAllocator
         {
         public:
-            AZ_TYPE_INFO(SystemAllocator, "{7E39571D-2E09-416C-BA37-F443C78110FA}")
+            AZ_RTTI(SystemAllocator, "{7E39571D-2E09-416C-BA37-F443C78110FA}", AZ::SystemAllocator)
         };
     }
 

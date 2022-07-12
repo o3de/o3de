@@ -163,10 +163,6 @@ namespace Benchmark
     {
     public:
         AZ_TYPE_INFO(MallocSchemaAllocator, "{3E68224F-E676-402C-8276-CE4B49C05E89}");
-
-        MallocSchemaAllocator()
-            : AZ::SimpleSchemaAllocator<AZ::MallocSchema>("MallocSchemaAllocator", "")
-        {}
     };
 
     // We use both this HphaSchemaAllocator and the SystemAllocator configured with Hpha because the SystemAllocator
@@ -175,10 +171,6 @@ namespace Benchmark
     {
     public:
         AZ_TYPE_INFO(HphaSchemaAllocator, "{6563AB4B-A68E-4499-8C98-D61D640D1F7F}");
-
-        HphaSchemaAllocator()
-            : AZ::SimpleSchemaAllocator<AZ::HphaSchema>("TestHphaSchemaAllocator", "")
-        {}
     };
 
     // For the SystemAllocator we inherit so we have a different stack. The SystemAllocator is used globally so we dont want
@@ -186,7 +178,7 @@ namespace Benchmark
     class TestSystemAllocator : public AZ::SystemAllocator
     {
     public:
-        AZ_TYPE_INFO(TestSystemAllocator, "{360D4DAA-D65D-4D5C-A6FA-1A4C5261C35C}");
+        AZ_RTTI(TestSystemAllocator, "{360D4DAA-D65D-4D5C-A6FA-1A4C5261C35C}", AZ::SystemAllocator);
 
         TestSystemAllocator()
             : AZ::SystemAllocator()

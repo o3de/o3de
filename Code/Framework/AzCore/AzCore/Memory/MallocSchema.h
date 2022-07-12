@@ -25,7 +25,9 @@ namespace AZ
         typedef size_t      size_type;
         typedef ptrdiff_t   difference_type;
 
-        struct Descriptor {};
+        struct Descriptor {
+            AZ_TYPE_INFO(Descriptor, "{85B79120-D60D-40BE-92DA-094B4784FD07}")
+        };
 
         MallocSchema(const Descriptor& desc = Descriptor());
         virtual ~MallocSchema();

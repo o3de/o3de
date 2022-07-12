@@ -33,6 +33,7 @@ namespace AZ
         */
         struct Descriptor
         {
+            AZ_TYPE_INFO(Descriptor, "{DB802BA9-33E0-4E7A-A79B-CC6EBC39DC82}")
             Descriptor()
                 : m_pageSize(4 * 1024)
                 , m_minAllocationSize(8)
@@ -53,6 +54,7 @@ namespace AZ
             unsigned int        m_numStaticPages;
             IAllocatorSchema*   m_pageAllocator;        ///< If you provide this interface we will use it for page allocations, otherwise SystemAllocator will be used.
         };
+        AZ_TYPE_INFO(PoolSchema, "{3BFAC20A-DBE9-4C94-AC20-8417FD9C9CB2}")
 
         PoolSchema(const Descriptor& desc = Descriptor());
         ~PoolSchema();
@@ -142,6 +144,8 @@ namespace AZ
             // Descriptor is ignored here; Create() must be called directly on the schema
             (void)desc;
         }
+
+        AZ_TYPE_INFO(ThreadPoolSchemaHelper, "{43DFADCF-DE57-4056-88CB-04790A140FB3}")
 
     protected:
 

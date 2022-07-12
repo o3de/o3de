@@ -50,7 +50,7 @@ namespace AZ
     // [9/2/2009]
     //=========================================================================
     SystemAllocator::SystemAllocator()
-        : AllocatorBase(nullptr, "SystemAllocator", "Fundamental generic memory allocator")
+        : AllocatorBase(nullptr)
         , m_isCustom(false)
         , m_ownsOSAllocator(false)
     {

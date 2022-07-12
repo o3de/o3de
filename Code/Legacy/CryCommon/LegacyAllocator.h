@@ -25,11 +25,6 @@ namespace AZ
         using size_type = typename Base::size_type;
         using difference_type = typename Base::difference_type;
         
-        LegacyAllocator()
-            : Base("LegacyAllocator", "Allocator for Legacy CryEngine systems")
-        {
-        }
-
         pointer_type Allocate(size_type byteSize, size_type alignment, int flags = 0, const char* name = 0, const char* fileName = 0, int lineNum = 0, unsigned int suppressStackRecord = 0) override;
 
         // DeAllocate with file/line, to track when allocs were freed from Cry

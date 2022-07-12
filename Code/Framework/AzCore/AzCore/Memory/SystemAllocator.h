@@ -27,7 +27,7 @@ namespace AZ
         : public AllocatorBase
     {
     public:
-        AZ_TYPE_INFO(SystemAllocator, "{424C94D8-85CF-4E89-8CD6-AB5EC173E875}")
+        AZ_RTTI(SystemAllocator, "{607C9CDF-B81F-4C5F-B493-2AD9C49023B7}", AllocatorBase)
 
         SystemAllocator();
         ~SystemAllocator() override;

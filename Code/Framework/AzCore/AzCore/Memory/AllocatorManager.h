@@ -102,15 +102,13 @@ namespace AZ
 
         struct AllocatorStats
         {
-            AllocatorStats(const char* name, const char* aliasOrDescription, size_t allocatedBytes, size_t capacityBytes)
+            AllocatorStats(const char* name, size_t allocatedBytes, size_t capacityBytes)
                 : m_name(name)
-                , m_aliasOrDescription(aliasOrDescription)
                 , m_allocatedBytes(allocatedBytes)
                 , m_capacityBytes(capacityBytes)
             {}
 
             AZStd::string m_name;
-            AZStd::string m_aliasOrDescription;
             size_t m_allocatedBytes;
             size_t m_capacityBytes;
         };

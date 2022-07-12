@@ -15,7 +15,7 @@ namespace AZ
     // [9/2/2009]
     //=========================================================================
     OSAllocator::OSAllocator()
-        : AllocatorBase(this, "OSAllocator", "OS allocator, allocating memory directly from the OS (C heap)!")
+        : AllocatorBase(this)
         , m_custom(nullptr)
         , m_numAllocatedBytes(0)
     {

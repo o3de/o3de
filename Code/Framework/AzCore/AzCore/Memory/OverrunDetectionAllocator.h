@@ -64,6 +64,7 @@ namespace AZ
          */
         struct Descriptor
         {
+            AZ_TYPE_INFO(Descriptor, "{831035BD-6B7C-4E11-9ECE-C60B5F6AE195}")
             Descriptor(bool underrunDetection = false)
                 : m_underrunDetection(underrunDetection)
             {}
@@ -107,10 +108,5 @@ namespace AZ
 
         using Base = AZ::SimpleSchemaAllocator<AZ::OverrunDetectionSchema>;
         using Descriptor = Base::Descriptor;
-
-        OverrunDetectionAllocator()
-            : Base("OverrunDetectionAllocator", "Debug allocator for detecting memory overruns")
-        {
-        }
     };
 }

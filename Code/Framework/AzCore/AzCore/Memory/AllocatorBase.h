@@ -22,16 +22,15 @@ namespace AZ
     class AllocatorBase : public IAllocator
     {
     protected:
-        AllocatorBase(IAllocatorSchema* allocationSchema, const char* name, const char* desc);
+        AllocatorBase(IAllocatorSchema* allocationSchema);
         ~AllocatorBase();
 
     public:
+        AZ_RTTI(AllocatorBase, "{E89B953E-FAB2-4BD0-A754-74AD5F8902F5}", IAllocator)
 
         //---------------------------------------------------------------------
         // IAllocator implementation
         //---------------------------------------------------------------------
-        const char* GetName() const override;
-        const char* GetDescription() const override;
         Debug::AllocationRecords* GetRecords() final;
         void SetRecords(Debug::AllocationRecords* records) final;
         bool IsReady() const final;
@@ -93,9 +92,6 @@ namespace AZ
         bool OnOutOfMemory(size_t byteSize, size_t alignment, int flags, const char* name, const char* fileName, int lineNum);
 
     private:
-
-        const char* m_name = nullptr;
-        const char* m_desc = nullptr;
         Debug::AllocationRecords* m_records = nullptr;  // Cached pointer to allocation records
         size_t m_memoryGuardSize = 0;
         bool m_isLazilyCreated = false;

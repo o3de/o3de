@@ -106,18 +106,12 @@ namespace UnitTest
         : public AZ::SimpleSchemaAllocator<AZ::ChildAllocatorSchema<AZ::SystemAllocator>>
     {
     public:
-        AZ_TYPE_INFO(LeakDetection_TestAllocator, "{186B6E32-344D-4322-820A-4C3E4F30650B}");
+        AZ_RTTI(LeakDetection_TestAllocator, "{186B6E32-344D-4322-820A-4C3E4F30650B}", AZ::SimpleSchemaAllocator<AZ::ChildAllocatorSchema<AZ::SystemAllocator>>);
 
         using Base = AZ::SimpleSchemaAllocator<AZ::ChildAllocatorSchema<AZ::SystemAllocator>>;
         using Descriptor = Base::Descriptor;
 
         LeakDetection_TestAllocator()
-            : LeakDetection_TestAllocator(TYPEINFO_Name(), "LeakDetection_TestAllocator")
-        {
-        }
-
-        LeakDetection_TestAllocator(const char* name, const char* desc)
-            : Base(name, desc)
         {
             Create();
         }

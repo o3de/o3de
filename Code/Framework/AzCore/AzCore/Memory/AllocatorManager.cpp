@@ -129,7 +129,7 @@ AllocatorManager::RegisterAllocator(class IAllocator* alloc)
 
     for (size_t i = 0; i < m_numAllocators; i++)
     {
-        AZ_Assert(m_allocators[i] != alloc, "Allocator %s (%s) registered twice!", alloc->GetName(), alloc->GetDescription());
+        AZ_Assert(m_allocators[i] != alloc, "Allocator %s (%s) registered twice!", alloc->GetName());
     }
 
     alloc->SetProfilingActive(m_profilingRefcount.load() > 0);
@@ -148,7 +148,7 @@ AllocatorManager::InternalDestroy()
     {
         IAllocator* allocator = m_allocators[m_numAllocators - 1];
         (void)allocator;
-        AZ_Assert(allocator->IsLazilyCreated(), "Manually created allocator '%s (%s)' must be manually destroyed before shutdown", allocator->GetName(), allocator->GetDescription());
+        AZ_Assert(allocator->IsLazilyCreated(), "Manually created allocator '%s (%s)' must be manually destroyed before shutdown", allocator->GetName());
         m_allocators[--m_numAllocators] = nullptr;
         // Do not actually destroy the lazy allocator as it may have work to do during non-deterministic shutdown
     }
@@ -350,10 +350,9 @@ void AllocatorManager::GetAllocatorStats(size_t& allocatedBytes, size_t& capacit
            
         if (outStats)
         {
-            outStats->emplace(outStats->end(), 
-                allocator->GetName(), 
-                allocator->GetDescription(), 
-                allocator->NumAllocatedBytes(), 
+            outStats->emplace(outStats->end(),
+                allocator->GetName(),
+                allocator->NumAllocatedBytes(),
                 allocator->Capacity());
         }
     }

@@ -160,10 +160,8 @@ namespace
 
 namespace AZ
 {
-    AllocatorBase::AllocatorBase(IAllocatorSchema* allocationSchema, const char* name, const char* desc)
+    AllocatorBase::AllocatorBase(IAllocatorSchema* allocationSchema)
         : IAllocator(allocationSchema)
-        , m_name(name)
-        , m_desc(desc)
     {
     }
 
@@ -171,19 +169,9 @@ namespace AZ
     {
         AZ_Assert(
             !m_isReady,
-            "Allocator %s (%s) is being destructed without first having gone through proper calls to PreDestroy() and Destroy(). Use "
+            "Allocator %s is being destructed without first having gone through proper calls to PreDestroy() and Destroy(). Use "
             "AllocatorInstance<> for global allocators or AllocatorWrapper<> for local allocators.",
-            m_name, m_desc);
-    }
-
-    const char* AllocatorBase::GetName() const
-    {
-        return m_name;
-    }
-
-    const char* AllocatorBase::GetDescription() const
-    {
-        return m_desc;
+            GetName());
     }
 
     Debug::AllocationRecords* AllocatorBase::GetRecords()

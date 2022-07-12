@@ -31,10 +31,6 @@ namespace UnitTest
 
         using Base = AZ::SimpleSchemaAllocator<AZ::HphaSchemaBase<HphaDebugAllocator>>;
         using Descriptor = Base::Descriptor;
-
-        HphaSchemaErrorDetection_TestAllocator()
-            : Base("HphaSchemaErrorDetection_TestAllocator", "Allocator for Test")
-        {}
     };
 
     // Another allocator to test allocating/deallocating with different allocators
@@ -46,10 +42,6 @@ namespace UnitTest
 
         using Base = AZ::SimpleSchemaAllocator<AZ::HphaSchemaBase<HphaDebugAllocator>>;
         using Descriptor = Base::Descriptor;
-
-        AnotherTestAllocator()
-            : Base("AnotherTestAllocator", "Another allocator for Test")
-        {}
     };
 
     // Dummy test class with configurable size

@@ -28,6 +28,7 @@ namespace AZ
         */
         struct Descriptor
         {
+            AZ_TYPE_INFO(Descriptor, "{FE628EB0-C24F-4A59-9CB0-44900EEE3924}")
             Descriptor()
                 : m_fixedMemoryBlockAlignment(AZ_TRAIT_OS_DEFAULT_PAGE_SIZE)
                 , m_pageSize(AZ_PAGE_SIZE)
@@ -51,6 +52,7 @@ namespace AZ
             size_t                  m_capacity;                             ///< Max size this allocator can grow to
         };
 
+        AZ_TYPE_INFO(HphaSchema, "{2C91A6EC-41E5-4711-9A4E-7B93A3A1EAA2}")
 
         HphaSchemaBase(const Descriptor& desc);
         virtual ~HphaSchemaBase();

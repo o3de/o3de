@@ -46,14 +46,9 @@ namespace AZ::Dom
     class ValueAllocator final : public SimpleSchemaAllocator<AZ::HphaSchema, AZ::HphaSchema::Descriptor, false, false>
     {
     public:
-        AZ_TYPE_INFO(ValueAllocator, "{5BC8B389-72C7-459E-B502-12E74D61869F}");
-
         using Base = SimpleSchemaAllocator<AZ::HphaSchema, AZ::HphaSchema::Descriptor, false, false>;
 
-        ValueAllocator()
-            : Base("DomValueAllocator", "Allocator for AZ::Dom::Value")
-        {
-        }
+        AZ_RTTI(ValueAllocator, "{5BC8B389-72C7-459E-B502-12E74D61869F}", Base);
     };
 
     using StdValueAllocator = AZStdAlloc<ValueAllocator>;
