@@ -92,6 +92,8 @@ namespace UnitTest
             {
                 frameGraph.UseShaderAttachment(usage.m_descriptor, usage.m_access);
             }
+
+            frameGraph.SetEstimatedItemCount(0);
         }
 
         void CompileResources(const RHI::FrameGraphCompileContext& context) override
