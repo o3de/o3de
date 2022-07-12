@@ -919,8 +919,8 @@ namespace EMotionFX
         bool SystemComponent::HandlesSource(AZStd::string_view fileName) const
         {
             return AZStd::wildcard_match("*.animgraph", fileName.data()) || AZStd::wildcard_match("*.motionset", fileName.data());
-		}
-		
+        }
+        
         void SystemComponent::FixPhysicsLegacyMaterials(const Physics::Utils::LegacyMaterialIdToNewAssetIdMap& legacyMaterialIdToNewAssetIdMap)
         {
             EMotionFX::Pipeline::Utilities::FixFbxManifestsWithPhysicsLegacyMaterials(legacyMaterialIdToNewAssetIdMap);
