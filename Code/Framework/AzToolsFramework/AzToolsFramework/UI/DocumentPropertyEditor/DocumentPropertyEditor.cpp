@@ -46,6 +46,7 @@ namespace AzToolsFramework
         , m_depth(depth)
     {
     }
+
     DPELayout::~DPELayout()
     {
         if (m_expanderWidget)
@@ -91,8 +92,20 @@ namespace AzToolsFramework
         return m_expanded;
     }
 
+    void DPELayout::invalidate()
+    {
+        QHBoxLayout::invalidate();
+        m_cachedLayoutSize = QSize();
+        m_cachedMinLayoutSize = QSize();
+    }
+
     QSize DPELayout::sizeHint() const
     {
+        if (m_cachedLayoutSize.isValid())
+        {
+            return m_cachedLayoutSize;
+        }
+
         int cumulativeWidth = 0;
         int preferredHeight = 0;
 
@@ -104,11 +117,20 @@ namespace AzToolsFramework
             cumulativeWidth += widgetSizeHint.width();
             preferredHeight = AZStd::max(widgetSizeHint.height(), preferredHeight);
         }
+
+        m_cachedLayoutSize = QSize(cumulativeWidth, preferredHeight);
+
         return { cumulativeWidth, preferredHeight };
     }
 
     QSize DPELayout::minimumSize() const
     {
+        if (m_cachedMinLayoutSize.isValid())
+        {
+            return m_cachedMinLayoutSize;
+        }
+
+
         int cumulativeWidth = 0;
         int minimumHeight = 0;
 
@@ -127,6 +149,9 @@ namespace AzToolsFramework
                 minimumHeight = AZStd::max(widgetChild->sizeHint().height(), minimumHeight);
             }
         }
+
+        m_cachedMinLayoutSize = QSize(cumulativeWidth, minimumHeight);
+
         return { cumulativeWidth, minimumHeight };
     }
 
