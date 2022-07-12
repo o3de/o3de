@@ -554,7 +554,7 @@ void MainWindow::BuilderTabSelectionChanged(const QItemSelection& selected, cons
             patternString.append(pattern.ToString().c_str());
         }
 
-        ui->builderDetails->setPlainText(
+        /*ui->builderDetails->setPlainText(
             QString("Name: %1\n"
                     "Type: %2\n"
                     "Fingerprint: %3\n"
@@ -566,7 +566,7 @@ void MainWindow::BuilderTabSelectionChanged(const QItemSelection& selected, cons
                 .arg(builder.m_analysisFingerprint.c_str())
                 .arg(builder.m_version)
                 .arg(builder.m_busId.ToString<QString>())
-                .arg(patternString));
+                .arg(patternString));*/
     }
 }
 
