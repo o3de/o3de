@@ -22,6 +22,7 @@ namespace AzToolsFramework
     class ActionManagerInterface;
     class ActionManagerInternalInterface;
     class MenuManagerInterface;
+    class MenuManagerInternalInterface;
     
     //! Editor Menu class definitions.
     //! Wraps a QMenu and provides additional functionality to handle and sort its items.
@@ -85,6 +86,7 @@ namespace AzToolsFramework
         inline static ActionManagerInterface* m_actionManagerInterface = nullptr;
         inline static ActionManagerInternalInterface* m_actionManagerInternalInterface = nullptr;
         inline static MenuManagerInterface* m_menuManagerInterface = nullptr;
+        inline static MenuManagerInternalInterface* m_menuManagerInternalInterface = nullptr;
     };
 
 } // namespace AzToolsFramework

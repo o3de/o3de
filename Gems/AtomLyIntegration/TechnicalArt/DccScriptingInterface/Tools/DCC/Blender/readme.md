@@ -3,7 +3,7 @@
 This sets up Blender to be integrated with O3DE in a managed way, via the DccScriptingInterface Gem (DCCsi).
 
 ## Notice
-This is currently the first working verion of a managed integration of Blender, treat it as an Experimental Preview.
+This is currently the first working version of a managed integration of Blender, treat it as an Experimental Preview.
 
 Current requirements:
 1. Windows only ()

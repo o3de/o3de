@@ -494,15 +494,13 @@ class TestsMissingDependencies_WindowsAndMac(object):
 
         # Relative path to text file with varying length UUID references
         expected_product = f"testassets\\onlymatchescorrectlengthuuids.txt"
-        self._asset_processor.add_source_folder_assets(f"{self._workspace.project}\\Objects\\Characters\\Jack")
         # Expected dependencies with valid lengths from file
         expected_dependencies = [
             #            String                                           Asset                   #
-            ('D1265251CC14584AB1CECB10746A2BA0', '{D1265251-CC14-584A-B1CE-CB10746A2BA0}:2'),
-            ('D1265251CC14584AB1CECB10746A2BA0', '{D1265251-CC14-584A-B1CE-CB10746A2BA0}:1'),
             ('D92C4661C8985E19BD3597CB2318CFA6', '{D92C4661-C898-5E19-BD35-97CB2318CFA6}:0'),
             ('837412DFD05F576D81AAACF360463749', '{837412DF-D05F-576D-81AA-ACF360463749}:0'),
             ('785A05D2483E5B43A2B992ACDAE6E938', '{785A05D2-483E-5B43-A2B9-92ACDAE6E938}:0'),
+            ('BAB4D64A05BC5E6FB9E3FC9695D1DBB3', '{BAB4D64A-05BC-5E6F-B9E3-FC9695D1DBB3}:0'),
         ]
 
         self.do_missing_dependency_test( expected_product, expected_dependencies,

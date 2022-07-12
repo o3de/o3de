@@ -270,24 +270,29 @@ namespace AZ
             AzFramework::StringFunc::Path::GetFolderPath(resolvedOutputFilePath, lutGenerationCacheFolder);
             AZ::IO::SystemFile::CreateDir(lutGenerationCacheFolder.c_str());
 
-            bool startedCapture = false;
+            uint32_t frameCaptureId = AZ::Render::FrameCaptureRequests::s_InvalidFrameCaptureId;
             AZ::Render::FrameCaptureRequestBus::BroadcastResult(
-                startedCapture,
+                frameCaptureId,
                 &AZ::Render::FrameCaptureRequestBus::Events::CapturePassAttachment,
                 LutGenerationPassHierarchy,
                 AZStd::string(LutAttachment),
                 m_currentTiffFilePath,
                 AZ::RPI::PassAttachmentReadbackOption::Output);
 
-            if (startedCapture)
+            if (frameCaptureId != AZ::Render::FrameCaptureRequests::s_InvalidFrameCaptureId)
             {
+                m_frameCaptureId = frameCaptureId;
                 AZ::TickBus::Handler::BusDisconnect();
                 AZ::Render::FrameCaptureNotificationBus::Handler::BusConnect();
             }
         }
 
-        void EditorHDRColorGradingComponent::OnCaptureFinished([[maybe_unused]] AZ::Render::FrameCaptureResult result, [[maybe_unused]]const AZStd::string& info)
+        void EditorHDRColorGradingComponent::OnCaptureFinished(uint32_t frameCaptureId, [[maybe_unused]] AZ::Render::FrameCaptureResult result, [[maybe_unused]]const AZStd::string& info)
         {
+            if (m_frameCaptureId == AZ::Render::FrameCaptureRequests::s_InvalidFrameCaptureId || frameCaptureId != m_frameCaptureId)
+            {
+                return;
+            }
             char resolvedInputFilePath[AZ_MAX_PATH_LEN] = { 0 };
             AZ::IO::FileIOBase::GetDirectInstance()->ResolvePath(m_currentTiffFilePath.c_str(), resolvedInputFilePath, AZ_MAX_PATH_LEN);
             char resolvedOutputFilePath[AZ_MAX_PATH_LEN] = { 0 };

@@ -2,14 +2,11 @@
 
 <ScriptCanvas Include="Include/ScriptCanvas/Libraries/Logic/Cycle.h" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <Class Name="Cycle"
-	       QualifiedName="ScriptCanvas::Nodes::Logic::Cycle"
-	       PreferredClassName="Cycle"
-           Uuid="{974258F5-EE1B-4AEE-B956-C7B303801847}"
-           Base="ScriptCanvas::Node"
-           Category="Logic"
-           Version="0"
-           GeneratePropertyFriend="True"
-           Description="">
+        QualifiedName="ScriptCanvas::Nodes::Logic::Cycle"
+        PreferredClassName="Cycle"
+        Uuid="{974258F5-EE1B-4AEE-B956-C7B303801847}"
+        Category="Logic"
+        Description="">
         <In Name="In" Description=""/>
         <Out Name="Out 0" Description="Output 0"/>
     </Class>

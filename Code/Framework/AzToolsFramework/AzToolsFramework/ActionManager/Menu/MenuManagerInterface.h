@@ -109,16 +109,6 @@ namespace AzToolsFramework
         virtual MenuManagerOperationResult AddMenuToMenuBar(
             const AZStd::string& menuBarIdentifier, const AZStd::string& menuIdentifier, int sortIndex) = 0;
 
-        //! Retrieve a QMenu from its identifier.
-        //! @param menuIdentifier The identifier for the menu to retrieve.
-        //! @return A raw pointer to the QMenu object.
-        virtual QMenu* GetMenu(const AZStd::string& menuIdentifier) = 0;
-
-        //! Retrieve a QMenuBar from its identifier.
-        //! @param menuBarIdentifier The identifier for the menu bar to retrieve.
-        //! @return A raw pointer to the QMenuBar object.
-        virtual QMenuBar* GetMenuBar(const AZStd::string& menuBarIdentifier) = 0;
-
         //! Retrieve the sort key of an action in a menu from its identifier.
         //! @param menuIdentifier The identifier for the menu to query.
         //! @param actionIdentifier The identifier for the action whose sort key to get in the menu.
@@ -144,6 +134,16 @@ namespace AzToolsFramework
     {
     public:
         AZ_RTTI(MenuManagerInternalInterface, "{59ED06E9-0F68-4CF4-9C2A-4FEFE534AD02}");
+
+        //! Retrieve a QMenu from its identifier.
+        //! @param menuIdentifier The identifier for the menu to retrieve.
+        //! @return A raw pointer to the QMenu object.
+        virtual QMenu* GetMenu(const AZStd::string& menuIdentifier) = 0;
+
+        //! Retrieve a QMenuBar from its identifier.
+        //! @param menuBarIdentifier The identifier for the menu bar to retrieve.
+        //! @return A raw pointer to the QMenuBar object.
+        virtual QMenuBar* GetMenuBar(const AZStd::string& menuBarIdentifier) = 0;
 
         //! Queues up a menu for a refresh at the end of this tick.
         //! @param menuIdentifier The identifier for the menu to refresh.

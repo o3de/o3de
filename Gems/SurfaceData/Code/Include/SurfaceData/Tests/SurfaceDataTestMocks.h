@@ -130,7 +130,7 @@ namespace UnitTest
         }
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("PhysXColliderService", 0x4ff43f7c));
+            provided.push_back(AZ_CRC_CE("PhysicsColliderService"));
         }
     };
 

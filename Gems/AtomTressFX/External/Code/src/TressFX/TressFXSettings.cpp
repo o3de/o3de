@@ -328,7 +328,7 @@ namespace AMD
                         "Turn on Level of Detail usage for the hair.")
                     ->DataElement(
                         AZ::Edit::UIHandlers::CheckBox, &TressFXRenderingSettings::m_EnableShadowLOD, "Enable Hair LOD(Shadow)",
-                        "Turn on Level of Detail usage for the shadow fo the hair.")
+                        "Turn on Level of Detail usage for the shadow of the hair.")
                     ;
             }
         }

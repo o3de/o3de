@@ -124,7 +124,7 @@ namespace UnitTest
         testPassA->AddChild(testPassB, skipStateCheckWhenRunningTests);
         testPassA->AddChild(testPassC, skipStateCheckWhenRunningTests);
 
-        pipeline->OnPassModified();
+        pipeline->UpdatePasses();
 
         EXPECT_TRUE(pipeline->HasViewTag(viewTag1));
 

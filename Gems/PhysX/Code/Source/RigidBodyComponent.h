@@ -47,24 +47,23 @@ namespace PhysX
 
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("PhysXRigidBodyService", 0x1d4c64a8));
+            provided.push_back(AZ_CRC_CE("PhysicsRigidBodyService"));
         }
 
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
         {
-            incompatible.push_back(AZ_CRC("PhysXRigidBodyService", 0x1d4c64a8));
+            incompatible.push_back(AZ_CRC_CE("PhysicsRigidBodyService"));
             incompatible.push_back(AZ_CRC_CE("PhysicsStaticRigidBodyService"));
-            incompatible.push_back(AZ_CRC("PhysicsService", 0xa7350d22));
         }
 
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
         {
-            required.push_back(AZ_CRC("TransformService", 0x8ee22c50));
+            required.push_back(AZ_CRC_CE("TransformService"));
         }
 
         static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
         {
-            dependent.push_back(AZ_CRC("PhysXColliderService", 0x4ff43f7c));
+            dependent.push_back(AZ_CRC_CE("PhysicsColliderService"));
         }
 
         // RigidBodyRequests + WorldBodyRequests

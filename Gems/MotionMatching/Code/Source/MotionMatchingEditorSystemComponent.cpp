@@ -146,7 +146,7 @@ namespace EMotionFX::MotionMatching
                 {
                     if (feature->GetDebugDrawEnabled())
                     {
-                        feature->DebugDraw(*debugDisplay, currentPose, m_data->GetFeatureMatrix(), currentFrame);
+                        feature->DebugDraw(*debugDisplay, currentPose, m_data->GetFeatureMatrix(), m_data->GetFeatureTransformer(), currentFrame);
                     }
                 }
             }

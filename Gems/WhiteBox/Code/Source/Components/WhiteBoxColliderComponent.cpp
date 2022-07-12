@@ -40,7 +40,7 @@ namespace WhiteBox
 
     void WhiteBoxColliderComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC("TransformService", 0x8ee22c50));
+        required.push_back(AZ_CRC_CE("TransformService"));
     }
 
     void WhiteBoxColliderComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)

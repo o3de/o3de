@@ -10,6 +10,7 @@
 
 #include <AzCore/base.h>
 #include <AzCore/std/containers/array.h>
+#include <AzFramework/Terrain/TerrainDataRequestBus.h>
 #include <Atom/Feature/Utils/GpuBufferHandler.h>
 #include <Atom/RHI/FrameGraphAttachmentInterface.h>
 #include <Atom/RHI/FrameGraphInterface.h>
@@ -17,6 +18,8 @@
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 #include <TerrainRenderer/ClipmapBounds.h>
+#include <TerrainRenderer/TerrainAreaMaterialRequestBus.h>
+#include <TerrainRenderer/TerrainMacroMaterialBus.h>
 
 namespace Terrain
 {
@@ -81,6 +84,9 @@ namespace Terrain
     //! It should be owned by the TerrianFeature Processor and provide data and images
     //! for the ClipmapGenerationPass and terrain forward rendering pass.
     class TerrainClipmapManager
+        : private TerrainMacroMaterialNotificationBus::Handler
+        , private TerrainAreaMaterialNotificationBus::Handler
+        , private AzFramework::Terrain::TerrainDataNotificationBus::Handler
     {
         friend class TerrainClipmapGenerationPass;
     public:
@@ -123,6 +129,8 @@ namespace Terrain
         void Initialize(AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>& terrainSrg);
         bool IsInitialized() const;
         void Reset();
+        //! Reset full refresh flag so that all the clipmap image will be repainted.
+        void TriggerFullRefresh();
         bool UpdateSrgIndices(AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>& srg);
 
         void Update(const AZ::Vector3& cameraPosition, const AZ::RPI::Scene* scene, AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>& terrainSrg);
@@ -165,7 +173,7 @@ namespace Terrain
         //! Data to be passed to shaders
         struct ClipmapData
         {
-            // Current viewport size.
+            //! Current viewport size.
             RawVector2f m_viewportSize;
 
             //! The max range that the clipmap is covering.
@@ -314,7 +322,8 @@ namespace Terrain
 
         //! Flag used to refresh the class and prevent doule initialization.
         bool m_isInitialized = false;
-        bool m_firstTimeUpdate = true;
+        //! Flag to generate the full clipmap in situation such as first frame and material update.
+        bool m_fullRefreshClipmaps = true;
 
         //! Dispatch threads for the compute pass.
         uint32_t m_macroTotalDispatchThreadX = 0;
@@ -327,5 +336,26 @@ namespace Terrain
         static constexpr uint32_t MacroGroupThreadY = 8;
         static constexpr uint32_t DetailGroupThreadX = 8;
         static constexpr uint32_t DetailGroupThreadY = 8;
+
+        // AzFramework::Terrain::TerrainDataNotificationBus overrides...
+        void OnTerrainDataChanged(const AZ::Aabb& dirtyRegion, TerrainDataChangedMask dataChangedMask) override;
+
+        // TerrainMacroMaterialNotificationBus overrides...
+        void OnTerrainMacroMaterialCreated(AZ::EntityId entityId, const MacroMaterialData& material) override;
+        void OnTerrainMacroMaterialChanged(AZ::EntityId entityId, const MacroMaterialData& material) override;
+        void OnTerrainMacroMaterialRegionChanged(AZ::EntityId entityId, const AZ::Aabb& oldRegion, const AZ::Aabb& newRegion) override;
+        void OnTerrainMacroMaterialDestroyed(AZ::EntityId entityId) override;
+
+        // TerrainAreaMaterialNotificationBus overrides...
+        void OnTerrainDefaultSurfaceMaterialCreated(AZ::EntityId entityId, AZ::Data::Instance<AZ::RPI::Material> material) override;
+        void OnTerrainDefaultSurfaceMaterialDestroyed(AZ::EntityId entityId) override;
+        void OnTerrainDefaultSurfaceMaterialChanged(AZ::EntityId entityId, AZ::Data::Instance<AZ::RPI::Material> newMaterial) override;
+        void OnTerrainSurfaceMaterialMappingCreated(AZ::EntityId entityId, SurfaceData::SurfaceTag surfaceTag, AZ::Data::Instance<AZ::RPI::Material> material) override;
+        void OnTerrainSurfaceMaterialMappingDestroyed(AZ::EntityId entityId, SurfaceData::SurfaceTag surfaceTag) override;
+        void OnTerrainSurfaceMaterialMappingMaterialChanged(AZ::EntityId entityId, SurfaceData::SurfaceTag surfaceTag, AZ::Data::Instance<AZ::RPI::Material> material) override;
+        void OnTerrainSurfaceMaterialMappingTagChanged(AZ::EntityId entityId, SurfaceData::SurfaceTag oldSurfaceTag, SurfaceData::SurfaceTag newSurfaceTag) override;
+        void OnTerrainSurfaceMaterialMappingRegionCreated(AZ::EntityId entityId, const AZ::Aabb& region) override;
+        void OnTerrainSurfaceMaterialMappingRegionDestroyed(AZ::EntityId entityId, const AZ::Aabb& oldRegion) override;
+        void OnTerrainSurfaceMaterialMappingRegionChanged(AZ::EntityId entityId, const AZ::Aabb& oldRegion, const AZ::Aabb& newRegion) override;
     };
 }

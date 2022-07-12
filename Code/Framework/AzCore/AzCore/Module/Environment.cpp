@@ -76,13 +76,13 @@ namespace AZ
         bool operator==(const OSStdAllocator& a, const OSStdAllocator& b) { (void)a; (void)b; return true; }
         bool operator!=(const OSStdAllocator& a, const OSStdAllocator& b) { (void)a; (void)b; return false; }
 
-        void EnvironmentVariableHolderBase::UnregisterAndDestroy(DestructFunc destruct, bool moduleRelease)
+        O3DEKERNEL_API void EnvironmentVariableHolderBase::UnregisterAndDestroy(DestructFunc destruct, bool moduleRelease)
         {
             const bool releaseByUseCount = (--m_useCount == 0);
             // We take over the lock, and release it before potentially destroying/freeing ourselves
             {
                 AZStd::scoped_lock envLockHolder(AZStd::adopt_lock, m_mutex);
-                const bool releaseByModule = (moduleRelease && !m_canTransferOwnership && m_moduleOwner == AZ::Environment::GetModuleId());
+                const bool releaseByModule = moduleRelease && !m_canTransferOwnership;
 
                 if (!releaseByModule && !releaseByUseCount)
                 {
@@ -112,9 +112,6 @@ namespace AZ
             }
         }
 
-        // instance of the environment
-        EnvironmentInterface* EnvironmentInterface::s_environment = nullptr;
-
         /**
          *
          */
@@ -125,8 +122,6 @@ namespace AZ
             using MapType = AZStd::unordered_map<u32, void *, AZStd::hash<u32>, AZStd::equal_to<u32>, OSStdAllocator>;
 
             static EnvironmentInterface* Get();
-            static void Attach(EnvironmentInstance sourceEnvironment, bool useAsGetFallback);
-            static void Detach();
 
             EnvironmentImpl(Environment::AllocatorInterface* allocator)
                 : m_variableMap(MapType::hasher(), MapType::key_eq(), OSStdAllocator(allocator))
@@ -346,117 +341,36 @@ namespace AZ
         };
 
 
-        /**
-        * Destructor will be called when we unload the module.
-        */
-        class CleanUp
-        {
-        public:
-            CleanUp()
-                : m_isOwner(false)
-                , m_isAttached(false)
-            {
-            }
-            ~CleanUp()
-            {
-                if (EnvironmentImpl::s_environment)
-                {
-                    if (m_isAttached)
-                    {
-                        EnvironmentImpl::Detach();
-                    }
-                    if (m_isOwner)
-                    {
-                        EnvironmentImpl::s_environment->DeleteThis();
-                        EnvironmentImpl::s_environment = nullptr;
-                    }
-                }
-            }
-
-            bool m_isOwner;        ///< This is not really needed just to make sure the compiler doesn't optimize the code out.
-            bool m_isAttached;     ///< True if this environment is attached in anyway.
-        };
-
-        static CleanUp      g_environmentCleanUp;
-
         EnvironmentInterface* EnvironmentImpl::Get()
         {
-            if (!s_environment)
+            class ModuleAllocator
+                : public Environment::AllocatorInterface
             {
-                // create with default allocator OS allocator. They user can provide custom, but he needs
-                // to call Create before we needed/fist use.
-                Environment::Create(nullptr);
-            }
-
-            return s_environment;
+            public:
+                void* Allocate(size_t byteSize, size_t alignment) override { return AZ_OS_MALLOC(byteSize, alignment); }
+                void DeAllocate(void* address) override { AZ_OS_FREE(address); }
+            };
+            static ModuleAllocator allocator;
+            static EnvironmentImpl environment(&allocator);
+            return &environment;
         }
 
-        void EnvironmentImpl::Attach(EnvironmentInstance sourceEnvironment, bool useAsGetFallback)
-        {
-            if (!sourceEnvironment)
-            {
-                return;
-            }
-
-            Detach();
-
-            {
-                AZStd::lock_guard<AZStd::recursive_mutex> lock(sourceEnvironment->GetLock());
-                if (useAsGetFallback)
-                {
-                    Get(); // create new environment
-                    s_environment->AttachFallback(sourceEnvironment);
-                }
-                else
-                {
-                    s_environment = sourceEnvironment;
-                    s_environment->AttachFallback(nullptr);
-                    s_environment->AddRef();
-                }
-            }
-
-            g_environmentCleanUp.m_isAttached = true;
-        }
-
-        void EnvironmentImpl::Detach()
-        {
-            if (s_environment && g_environmentCleanUp.m_isAttached)
-            {
-                AZStd::lock_guard<AZStd::recursive_mutex> lock(s_environment->GetLock());
-                if (g_environmentCleanUp.m_isOwner)
-                {
-                    if (s_environment->GetFallback())
-                    {
-                        AZStd::lock_guard<AZStd::recursive_mutex> fallbackLock(s_environment->GetFallback()->GetLock());
-                        s_environment->DetachFallback();
-                    }
-                }
-                else
-                {
-                    s_environment->ReleaseRef();
-                    s_environment = nullptr;
-                }
-
-                g_environmentCleanUp.m_isAttached = false;
-            }
-        }
-
-        EnvironmentVariableResult AddAndAllocateVariable(u32 guid, size_t byteSize, size_t alignment, AZStd::recursive_mutex** addedVariableLock)
+        O3DEKERNEL_API EnvironmentVariableResult AddAndAllocateVariable(u32 guid, size_t byteSize, size_t alignment, AZStd::recursive_mutex** addedVariableLock)
         {
             return EnvironmentImpl::Get()->AddAndAllocateVariable(guid, byteSize, alignment, addedVariableLock);
         }
 
-        EnvironmentVariableResult GetVariable(u32 guid)
+        O3DEKERNEL_API EnvironmentVariableResult GetVariable(u32 guid)
         {
             return EnvironmentImpl::Get()->GetVariable(guid);
         }
 
-        Environment::AllocatorInterface* GetAllocator()
+        O3DEKERNEL_API Environment::AllocatorInterface* GetAllocator()
         {
             return EnvironmentImpl::Get()->GetAllocator();
         }
 
-        u32 EnvironmentVariableNameToId(const char* uniqueName)
+        O3DEKERNEL_API u32 EnvironmentVariableNameToId(const char* uniqueName)
         {
             return Crc32(uniqueName);
         }
@@ -464,74 +378,9 @@ namespace AZ
 
     namespace Environment
     {
-        bool IsReady()
-        {
-            return Internal::EnvironmentInterface::s_environment != nullptr;
-        }
-
-        EnvironmentInstance GetInstance()
+        O3DEKERNEL_API EnvironmentInstance GetInstance()
         {
             return Internal::EnvironmentImpl::Get();
-        }
-
-        void* GetModuleId()
-        {
-            return &Internal::g_environmentCleanUp;
-        }
-
-        class ModuleAllocator
-            : public AllocatorInterface
-        {
-        public:
-            void* Allocate(size_t byteSize, size_t alignment) override { return AZ_OS_MALLOC(byteSize, alignment); }
-
-            void DeAllocate(void* address) override { AZ_OS_FREE(address); }
-        };
-
-        bool Create(AllocatorInterface* allocator)
-        {
-            if (Internal::EnvironmentImpl::s_environment)
-            {
-                return false;
-            }
-
-            if (!allocator)
-            {
-                static ModuleAllocator s_moduleAllocator;
-                allocator = &s_moduleAllocator;
-            }
-
-            Internal::EnvironmentImpl::s_environment = new(allocator->Allocate(sizeof(Internal::EnvironmentImpl), AZStd::alignment_of<Internal::EnvironmentImpl>::value)) Internal::EnvironmentImpl(allocator);
-            AZ_Assert(Internal::EnvironmentImpl::s_environment, "We failed to allocate memory from the OS for environment storage %d bytes!", sizeof(Internal::EnvironmentImpl));
-            Internal::g_environmentCleanUp.m_isOwner = true;
-
-            return true;
-        }
-
-        void Destroy()
-        {
-            if (!Internal::g_environmentCleanUp.m_isAttached && Internal::g_environmentCleanUp.m_isOwner)
-            {
-                Internal::g_environmentCleanUp.m_isOwner = false;
-                Internal::g_environmentCleanUp.m_isAttached = false;
-
-                Internal::EnvironmentImpl::s_environment->DeleteThis();
-                Internal::EnvironmentImpl::s_environment = nullptr;
-            }
-            else
-            {
-                Detach();
-            }
-        }
-
-        void Detach()
-        {
-            Internal::EnvironmentImpl::Detach();
-        }
-
-        void Attach(EnvironmentInstance sourceEnvironment, bool useAsGetFallback)
-        {
-            Internal::EnvironmentImpl::Attach(sourceEnvironment, useAsGetFallback);
         }
     } // namespace Environment
 } // namespace AZ

@@ -134,6 +134,13 @@ def parse_args():
         required=False
     )
 
+    parser.add_argument(
+        '--exclude-file',
+        type=valid_file_path,
+        help="Path to file containing tests to exclude from this run",
+        required=False
+    )
+
     args = parser.parse_args()
     
     return args
@@ -150,7 +157,7 @@ if __name__ == "__main__":
             s3_top_level_dir = "tiaf"
 
         tiaf = TestImpact(args.config)
-        tiaf_result = tiaf.run(args.commit, args.src_branch, args.dst_branch, args.s3_bucket, s3_top_level_dir, args.suite, args.test_failure_policy, args.safe_mode, args.test_timeout, args.global_timeout)
+        tiaf_result = tiaf.run(args.commit, args.src_branch, args.dst_branch, args.s3_bucket, s3_top_level_dir, args.suite, args.test_failure_policy, args.safe_mode, args.test_timeout, args.global_timeout, args.exclude_file)
         
         if args.mars_index_prefix:
             logger.info("Transmitting report to MARS...")

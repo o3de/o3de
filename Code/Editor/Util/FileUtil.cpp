@@ -10,6 +10,7 @@
 #include "EditorDefs.h"
 
 #include "FileUtil.h"
+#include "FileUtil_Common.h"
 
 // Qt
 #include <QMenu>
@@ -17,6 +18,7 @@
 #include <QApplication>
 #include <QClipboard>
 #include <QDesktopServices>
+#include <QEvent>
 #include <QProcess>
 #include <QThread>
 
@@ -47,10 +49,17 @@
 #include "Objects/BaseObject.h"
 #include "StringHelpers.h"
 #include "AutoDirectoryRestoreFileDialog.h"
+#include "EditorPreferencesDialog.h"
 
-#if defined(AZ_PLATFORM_WINDOWS)
-#include <Shellapi.h>
-#endif
+namespace Platform
+{
+    // Forward declare platform specific functions
+    bool RunEditorWithArg(const QString editor, const QString arg);
+    QString GetDefaultEditor(const Common::EditFileType fileType);
+    QString MakePlatformFileEditString(QString pathToEdit, int lineToEdit);
+    bool CreatePath(const QString& strPath);
+    const char* GetLuaCompilerName();
+} // namespace Platform
 
 bool CFileUtil::s_singleFileDlgPref[IFileUtil::EFILE_TYPE_LAST] = { true, true, true, true };
 bool CFileUtil::s_multiFileDlgPref[IFileUtil::EFILE_TYPE_LAST] = { true, true, true, true };
@@ -60,7 +69,6 @@ CAutoRestorePrimaryCDRoot::~CAutoRestorePrimaryCDRoot()
     QDir::setCurrent(GetIEditor()->GetPrimaryCDFolder());
 }
 
-//////////////////////////////////////////////////////////////////////////
 bool CFileUtil::ExtractFile(QString& file, bool bMsgBoxAskForExtraction, const char* pDestinationFilename)
 {
     CCryFile cryfile;
@@ -120,6 +128,181 @@ bool CFileUtil::ExtractFile(QString& file, bool bMsgBoxAskForExtraction, const c
 
     return false;
 }
+
+//////////////////////////////////////////////////////////////////////////
+QString CFileUtil::GetEditorForFileTypeFromPreferences(const Common::EditFileType fileType)
+{
+    QString textEditor;
+
+    switch (fileType)
+    {
+    case Common::EditFileType::FILE_TYPE_SHADER:
+        return gSettings.textEditorForShaders;
+    case Common::EditFileType::FILE_TYPE_BSPACE:
+        return gSettings.textEditorForBspaces;
+    case Common::EditFileType::FILE_TYPE_SCRIPT:
+        return gSettings.textEditorForScript;
+    case Common::EditFileType::FILE_TYPE_TEXTURE:
+        return gSettings.textureEditor;
+    case Common::EditFileType::FILE_TYPE_ANIMATION:
+        return gSettings.animEditor;
+    default:
+        AZ_Assert(false, "Unknown file type.");
+        return "";
+    }
+}
+
+void CFileUtil::HandlePrefsDialogForFileType(const Common::EditFileType fileType)
+{
+    // Open the preferences dialog.
+    EditorPreferencesDialog dlg(MainWindow::instance());
+    dlg.open();
+
+    // Assign a filter string so that only the appropriate option shows up.
+    switch (fileType)
+    {
+    case Common::EditFileType::FILE_TYPE_SHADER:
+        dlg.SetFilterText("Shaders Editor");
+        break;
+    case Common::EditFileType::FILE_TYPE_BSPACE:
+        dlg.SetFilterText("BSpace Editor");
+        break;
+    case Common::EditFileType::FILE_TYPE_SCRIPT:
+        dlg.SetFilterText("Scripts Editor");
+        break;
+    case Common::EditFileType::FILE_TYPE_TEXTURE:
+        dlg.SetFilterText("Texture Editor");
+        break;
+    case Common::EditFileType::FILE_TYPE_ANIMATION:
+        dlg.SetFilterText("Animation Editor");
+        break;
+    default:
+        AZ_Assert(false, "Unknown file type.");
+        break;
+    }
+
+    // Wait for the dialog to complete.
+    dlg.exec();
+}
+
+AZStd::string CFileUtil::GetSettingsKeyForFileType(const Common::EditFileType fileType)
+{
+    switch (fileType)
+    {
+    case Common::EditFileType::FILE_TYPE_BSPACE:
+        return "Settings|TextEditorBSpaces";
+    case Common::EditFileType::FILE_TYPE_SHADER:
+        return "Settings|TextEditorShaders";
+    case Common::EditFileType::FILE_TYPE_SCRIPT:
+        return "Settings|TextEditorScript";
+    case Common::EditFileType::FILE_TYPE_TEXTURE:
+        return "Settings|TextureEditor";
+    case Common::EditFileType::FILE_TYPE_ANIMATION:
+        return "Settings|AnimationEditor";
+    default:
+        AZ_Assert(false, "Unknown file type.");
+    }
+
+    return "";
+}
+
+QString CFileUtil::HandleNoEditorAssigned(const Common::EditFileType fileType)
+{
+    QMessageBox dialog(AzToolsFramework::GetActiveWindow());
+    dialog.setWindowTitle(QString());
+
+    QAbstractButton* defaultButton = nullptr;
+    QAbstractButton* assignButton = nullptr;
+    QAbstractButton* cancelButton = nullptr;
+
+    QString defaultEditor = Platform::GetDefaultEditor(fileType);
+    if (defaultEditor.isEmpty())
+    {
+        dialog.setText(QObject::tr("No editor is set for opening this file type. Would you like to go to update the default program?"));
+        assignButton = (QAbstractButton*)dialog.addButton(QObject::tr("Settings"), QMessageBox::YesRole);
+        cancelButton = (QAbstractButton*)dialog.addButton(QObject::tr("Cancel"), QMessageBox::RejectRole);
+    }
+    else
+    {
+        QString editorCapitalized = defaultEditor;
+        editorCapitalized[0] = editorCapitalized[0].toUpper();
+        dialog.setText(
+            QObject::tr(
+                "No editor is set for opening this file type. Would you like to open the file using %1 or update the default program?")
+                .arg(editorCapitalized));
+        defaultButton = (QAbstractButton*)dialog.addButton(editorCapitalized, QMessageBox::YesRole);
+        assignButton = (QAbstractButton*)dialog.addButton(QObject::tr("Settings"), QMessageBox::YesRole);
+        cancelButton = (QAbstractButton*)dialog.addButton(QObject::tr("Cancel"), QMessageBox::RejectRole);
+    }
+
+    dialog.exec();
+    if (dialog.clickedButton() == defaultButton)
+    {
+        // Save the new default editor to settings.
+        AZStd::string editorName = defaultEditor.toUtf8().data();
+        AZStd::any editorAny = AZStd::make_any<AZStd::string>(defaultEditor.toUtf8().data());
+        gSettings.SetValue(GetSettingsKeyForFileType(fileType), editorAny);
+
+        return defaultEditor;
+    }
+    else if (dialog.clickedButton() == assignButton)
+    {
+        HandlePrefsDialogForFileType(fileType);
+
+        return GetEditorForFileTypeFromPreferences(fileType);
+    }
+    else
+    {
+        return "";
+    }
+}
+
+QString CFileUtil::HandleEditorOpenFailure(const Common::EditFileType fileType, const QString& currentEditor)
+{
+    QMessageBox dialog(AzToolsFramework::GetActiveWindow());
+    dialog.setWindowTitle(QString());
+
+    QAbstractButton* defaultButton = nullptr;
+    QAbstractButton* assignButton = nullptr;
+    QAbstractButton* cancelButton = nullptr;
+
+    QString defaultEditor = Platform::GetDefaultEditor(fileType);
+    if (defaultEditor == currentEditor)
+    {
+        dialog.setText(
+            QObject::tr("Failed to run %1. Would you like to go to the settings and update the default program?").arg(currentEditor));
+        assignButton = (QAbstractButton*)dialog.addButton(QObject::tr("Settings"), QMessageBox::YesRole);
+        cancelButton = (QAbstractButton*)dialog.addButton(QObject::tr("Cancel"), QMessageBox::RejectRole);
+    }
+    else
+    {
+        QString editorCapitalized = defaultEditor;
+        editorCapitalized[0] = editorCapitalized[0].toUpper();
+        dialog.setText(QObject::tr("Failed to run %1. Would you like to use %2, or go to the settings and update the default program?")
+                           .arg(currentEditor)
+                           .arg(editorCapitalized));
+        defaultButton = (QAbstractButton*)dialog.addButton(editorCapitalized, QMessageBox::YesRole);
+        assignButton = (QAbstractButton*)dialog.addButton(QObject::tr("Settings"), QMessageBox::YesRole);
+        cancelButton = (QAbstractButton*)dialog.addButton(QObject::tr("Cancel"), QMessageBox::RejectRole);
+    }
+
+    dialog.exec();
+    if (dialog.clickedButton() == defaultButton)
+    {
+        return defaultEditor;
+    }
+    else if (dialog.clickedButton() == assignButton)
+    {
+        HandlePrefsDialogForFileType(fileType);
+
+        return GetEditorForFileTypeFromPreferences(fileType);
+    }
+    else
+    {
+        return "";
+    }
+}
+
 //////////////////////////////////////////////////////////////////////////
 void CFileUtil::EditTextFile(const char* txtFile, int line, IFileUtil::ETextFileType fileType)
 {
@@ -127,40 +310,28 @@ void CFileUtil::EditTextFile(const char* txtFile, int line, IFileUtil::ETextFile
 
     QString fullPathName = Path::GamePathToFullPath(file);
     ExtractFile(fullPathName);
-    QString cmd(fullPathName);
-#if defined (AZ_PLATFORM_WINDOWS)
-    cmd.replace('/', '\\');
-    if (line != 0)
-    {
-        cmd = QStringLiteral("%1/%2/0").arg(cmd).arg(line);
-    }
-#endif
+    QString cmd = Platform::MakePlatformFileEditString(fullPathName, line);
 
-    QString TextEditor = gSettings.textEditorForScript;
-    if (fileType == IFileUtil::FILE_TYPE_SHADER)
+    Common::EditFileType editFileType = Common::EditFileType::FILE_TYPE_SCRIPT;
+
+    switch (fileType)
     {
-        TextEditor = gSettings.textEditorForShaders;
-    }
-    else if (fileType == IFileUtil::FILE_TYPE_BSPACE)
-    {
-        TextEditor = gSettings.textEditorForBspaces;
+    case IFileUtil::ETextFileType::FILE_TYPE_BSPACE:
+        editFileType = Common::EditFileType::FILE_TYPE_BSPACE;
+        break;
+    case IFileUtil::ETextFileType::FILE_TYPE_SCRIPT:
+        editFileType = Common::EditFileType::FILE_TYPE_SCRIPT;
+        break;
+    case IFileUtil::ETextFileType::FILE_TYPE_SHADER:
+        editFileType = Common::EditFileType::FILE_TYPE_SHADER;
+        break;
+    default:
+        // Ensure nothing's been added to the ETextFileType enum we don't know about.
+        AZ_Assert(false, "Unknown IFileUtil::ETextFileType value.");
+        break;
     }
 
-    // attempt to open it with the text editor from the preferences.
-#if AZ_TRAIT_OS_PLATFORM_APPLE
-    // 'open' already detaches, so dont use startDetach, otherwise we can't see the exit code
-    if (QProcess::execute(QStringLiteral("open"), { QStringLiteral("-a"), TextEditor, fullPathName }) != 0)
-#else
-    if (!QProcess::startDetached(TextEditor, { cmd }))
-#endif
-    {
-        // allow the user to opt for notepad, but also tell them about the preferences panel
-
-        if (QMessageBox::question(QApplication::activeWindow(), QString(), QObject::tr("Can't open the file. You can specify a text editor in the Preferences dialog.  Do you want to open the file in the default platform editor?"), QMessageBox::Yes | QMessageBox::No) == QMessageBox::Yes)
-        {
-            QDesktopServices::openUrl(QUrl::fromLocalFile(fullPathName));
-        }
-    }
+    EditFile(cmd, editFileType);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -182,7 +353,8 @@ void CFileUtil::EditTextureFile(const char* textureFile, [[maybe_unused]] bool b
         return;
     }
 
-    AssetSystemRequestBus::BroadcastResult(fullTexturePathFound, &AssetSystemRequest::GetFullSourcePathFromRelativeProductPath, relativePath, fullTexturePath);
+    AssetSystemRequestBus::BroadcastResult(
+        fullTexturePathFound, &AssetSystemRequest::GetFullSourcePathFromRelativeProductPath, relativePath, fullTexturePath);
     if (!fullTexturePathFound)
     {
         QString messageString = QObject::tr("Failed to find absolute path to %1 - could not open texture editor.").arg(textureFile);
@@ -190,38 +362,39 @@ void CFileUtil::EditTextureFile(const char* textureFile, [[maybe_unused]] bool b
         return;
     }
 
-    bool failedToLaunch = true;
-    const QString& textureEditorPath = gSettings.textureEditor;
+    EditFile(fullTexturePath.c_str(), Common::EditFileType::FILE_TYPE_TEXTURE);
+}
 
-    // Give the user a warning if they don't have a texture editor configured
-    if (textureEditorPath.isEmpty())
+//////////////////////////////////////////////////////////////////////////
+
+void CFileUtil::EditFile(const QString& filename, const Common::EditFileType fileType)
+{
+    QString editor = GetEditorForFileTypeFromPreferences(fileType);
+
+    if (editor.isEmpty())
     {
-        QString messageString = QObject::tr("No texture editor has been configured.\nYou need to configure one by going to Edit > Editor Settings > Global Preferences in the menu bar and then configure the 'External Editors > Texture Editor'.");
-        QMessageBox::warning(AzToolsFramework::GetActiveWindow(), warningTitle, messageString);
+        editor = HandleNoEditorAssigned(fileType);
+    }
+
+    // If editor is still not set, just drop out.
+    if (editor.isEmpty())
+    {
         return;
     }
 
-#if defined(AZ_PLATFORM_WINDOWS)
-    // Use the Win32 API calls to open the right editor; the OS knows how to do this even better than
-    // Qt does.
-    QString fullTexturePathFixedForWindows = QString(fullTexturePath.data()).replace('/', '\\');
-    HINSTANCE hInst = ShellExecuteW(nullptr, L"open", textureEditorPath.toStdWString().c_str(), fullTexturePathFixedForWindows.toStdWString().c_str(), nullptr, SW_SHOWNORMAL);
-    failedToLaunch = ((DWORD_PTR)hInst <= 32);
-#elif defined(AZ_PLATFORM_MAC)
-    failedToLaunch = QProcess::execute(QString("/usr/bin/open"), {"-a", gSettings.textureEditor, QString(fullTexturePath.data()) }) != 0;
-#else
-    failedToLaunch = !QProcess::startDetached(gSettings.textureEditor, { QString(fullTexturePath.data()) });
-#endif
-
-    if (failedToLaunch)
+    // Keep trying to open the file if the user changes the editor. If not, just drop out.
+    while (!Platform::RunEditorWithArg(editor, filename))
     {
-        //failed
-        QString messageString = QObject::tr("Failed to open %1 with texture editor %2.").arg(fullTexturePath.data()).arg(textureEditorPath.data());
-        QMessageBox::warning(AzToolsFramework::GetActiveWindow(), warningTitle, messageString);
+        editor = HandleEditorOpenFailure(fileType, editor);
+        if (editor.isEmpty())
+        {
+            return;
+        }
     }
 }
 
 //////////////////////////////////////////////////////////////////////////
+
 void CFileUtil::FormatFilterString(QString& filter)
 {
     const int numPipeChars = static_cast<int>(std::count(filter.begin(), filter.end(), '|'));

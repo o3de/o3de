@@ -106,12 +106,6 @@ namespace Terrain
 
         void DrawMeshes(const AZ::RPI::FeatureProcessor::RenderPacket& process, const AZ::RPI::ViewPtr mainView);
 
-        static constexpr uint32_t GridSizeExponent = 6; // 2^6 = 64
-        static constexpr uint32_t GridSize{ 1 << GridSizeExponent }; // number of terrain quads (vertices are m_gridSize + 1)
-        static constexpr uint32_t GridVerts1D = GridSize + 1;
-        static constexpr uint32_t GridVerts2D = GridVerts1D * GridVerts1D;
-
-
     private:
 
         using HeightDataType = uint16_t;
@@ -178,6 +172,8 @@ namespace Terrain
             AZStd::array<float, 3> m_mainCameraPosition{ 0.0f, 0.0f, 0.0f };
             float m_firstLodDistance;
             float m_rcpClodDistance;
+            float m_rcpGridSize;
+            float m_gridToQuadScale;
         };
 
         struct SectorDataRequest
@@ -222,13 +218,14 @@ namespace Terrain
         void OnTerrainDataDestroyBegin() override;
         void OnTerrainDataChanged(const AZ::Aabb& dirtyRegion, TerrainDataChangedMask dataChangedMask) override;
 
+        bool UpdateGridSize(float distanceToFirstLod);
         void BuildDrawPacket(Sector& sector);
         void RebuildSectors();
         void RebuildDrawPackets();
         AZ::RHI::StreamBufferView CreateStreamBufferView(AZ::Data::Instance<AZ::RPI::Buffer>& buffer, uint32_t offset = 0);
 
         void CreateCommonBuffers();
-        void InitializeCommonSectorData();
+        void InitializeRayTracingData();
         void UpdateSectorBuffers(Sector& sector, const AZStd::span<const HeightNormalVertex> heightsNormals);
         void UpdateSectorLodBuffers(Sector& sector,
             const AZStd::span<const HeightNormalVertex> originalHeightsNormals,
@@ -291,6 +288,10 @@ namespace Terrain
         AZ::Aabb m_worldBounds{ AZ::Aabb::CreateNull() };
         float m_sampleSpacing = 1.0f;
         AZ::RPI::Material::ChangeId m_lastMaterialChangeId;
+
+        uint8_t m_gridSize = 0; // number of quads in a single row of a sector
+        uint8_t m_gridVerts1D = 0; // number of vertices along sector edge (m_gridSize + 1)
+        uint16_t m_gridVerts2D = 0; // number of vertices in sector
 
         bool m_isInitialized{ false };
         bool m_rebuildSectors{ true };

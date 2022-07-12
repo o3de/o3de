@@ -138,7 +138,7 @@ namespace UnitTest
 
     TEST_F(ActionManagerFixture, GetUnregisteredMenu)
     {
-        QMenu* menu = m_menuManagerInterface->GetMenu("o3de.menu.test");
+        QMenu* menu = m_menuManagerInternalInterface->GetMenu("o3de.menu.test");
         EXPECT_TRUE(menu == nullptr);
     }
 
@@ -146,7 +146,7 @@ namespace UnitTest
     {
         m_menuManagerInterface->RegisterMenu("o3de.menu.test", {});
 
-        QMenu* menu = m_menuManagerInterface->GetMenu("o3de.menu.test");
+        QMenu* menu = m_menuManagerInternalInterface->GetMenu("o3de.menu.test");
         EXPECT_TRUE(menu != nullptr);
     }
 
@@ -154,7 +154,7 @@ namespace UnitTest
     {
         // Register menu, get it and verify it's empty.
         m_menuManagerInterface->RegisterMenu("o3de.menu.test", {});
-        QMenu* menu = m_menuManagerInterface->GetMenu("o3de.menu.test");
+        QMenu* menu = m_menuManagerInternalInterface->GetMenu("o3de.menu.test");
         EXPECT_EQ(menu->actions().size(), 0);
 
         // Register a new action and add it to the menu.
@@ -173,7 +173,7 @@ namespace UnitTest
     {
         // Register menu, get it and verify it's empty.
         m_menuManagerInterface->RegisterMenu("o3de.menu.test", {});
-        QMenu* menu = m_menuManagerInterface->GetMenu("o3de.menu.test");
+        QMenu* menu = m_menuManagerInternalInterface->GetMenu("o3de.menu.test");
         EXPECT_EQ(menu->actions().size(), 0);
 
         // Register a new action and add it to the menu.
@@ -202,7 +202,7 @@ namespace UnitTest
     {
         // Register menu, get it and verify it's empty.
         m_menuManagerInterface->RegisterMenu("o3de.menu.test", {});
-        QMenu* menu = m_menuManagerInterface->GetMenu("o3de.menu.test");
+        QMenu* menu = m_menuManagerInternalInterface->GetMenu("o3de.menu.test");
         EXPECT_EQ(menu->actions().size(), 0);
 
         // Register a new action and add it to the menu.
@@ -231,7 +231,7 @@ namespace UnitTest
     {
         // Register menu, get it and verify it's empty.
         m_menuManagerInterface->RegisterMenu("o3de.menu.test", {});
-        QMenu* menu = m_menuManagerInterface->GetMenu("o3de.menu.test");
+        QMenu* menu = m_menuManagerInternalInterface->GetMenu("o3de.menu.test");
         EXPECT_EQ(menu->actions().size(), 0);
 
         // Add a separator to the menu.
@@ -260,8 +260,8 @@ namespace UnitTest
         m_menuManagerInternalInterface->RefreshMenus();
 
         // Verify the sub-menu is now in the menu.
-        QMenu* menu = m_menuManagerInterface->GetMenu("o3de.menu.testMenu");
-        QMenu* submenu = m_menuManagerInterface->GetMenu("o3de.menu.testSubMenu");
+        QMenu* menu = m_menuManagerInternalInterface->GetMenu("o3de.menu.testMenu");
+        QMenu* submenu = m_menuManagerInternalInterface->GetMenu("o3de.menu.testSubMenu");
         const auto& actions = menu->actions();
 
         EXPECT_EQ(actions.size(), 1);
@@ -303,7 +303,7 @@ namespace UnitTest
         m_menuManagerInternalInterface->RefreshMenus();
 
         // Verify the widget is now in the menu.
-        QMenu* menu = m_menuManagerInterface->GetMenu("o3de.menu.test");
+        QMenu* menu = m_menuManagerInternalInterface->GetMenu("o3de.menu.test");
         const auto& actions = menu->actions();
 
         EXPECT_EQ(actions.size(), 1);
@@ -341,8 +341,8 @@ namespace UnitTest
         m_menuManagerInternalInterface->RefreshMenus();
 
         // Verify the actions are now in the menu in the expected order.
-        QMenu* menu = m_menuManagerInterface->GetMenu("o3de.menu.testMenu");
-        QMenu* submenu = m_menuManagerInterface->GetMenu("o3de.menu.testSubMenu");
+        QMenu* menu = m_menuManagerInternalInterface->GetMenu("o3de.menu.testMenu");
+        QMenu* submenu = m_menuManagerInternalInterface->GetMenu("o3de.menu.testSubMenu");
         QAction* test1 = m_actionManagerInternalInterface->GetAction("o3de.action.test1");
         QAction* test2 = m_actionManagerInternalInterface->GetAction("o3de.action.test2");
 
@@ -391,7 +391,7 @@ namespace UnitTest
     {
         m_menuManagerInterface->RegisterMenuBar("o3de.menubar.test");
 
-        QMenuBar* menuBar = m_menuManagerInterface->GetMenuBar("o3de.menubar.test");
+        QMenuBar* menuBar = m_menuManagerInternalInterface->GetMenuBar("o3de.menubar.test");
         EXPECT_TRUE(menuBar != nullptr);
     }
 
@@ -408,8 +408,8 @@ namespace UnitTest
         m_menuManagerInternalInterface->RefreshMenuBars();
 
         // Verify the submenu is now in the menu.
-        QMenuBar* menubar = m_menuManagerInterface->GetMenuBar("o3de.menubar.test");
-        QMenu* menu = m_menuManagerInterface->GetMenu("o3de.menu.test");
+        QMenuBar* menubar = m_menuManagerInternalInterface->GetMenuBar("o3de.menubar.test");
+        QMenu* menu = m_menuManagerInternalInterface->GetMenu("o3de.menu.test");
         const auto& actions = menubar->actions();
 
         EXPECT_EQ(actions.size(), 1);
@@ -437,10 +437,10 @@ namespace UnitTest
         m_menuManagerInternalInterface->RefreshMenuBars();
 
         // Verify the menus are now in the menu bar in the expected order.
-        QMenuBar* menubar = m_menuManagerInterface->GetMenuBar("o3de.menubar.test");
-        QMenu* testMenu1 = m_menuManagerInterface->GetMenu("o3de.menu.testMenu1");
-        QMenu* testMenu2 = m_menuManagerInterface->GetMenu("o3de.menu.testMenu2");
-        QMenu* testMenu3 = m_menuManagerInterface->GetMenu("o3de.menu.testMenu3");
+        QMenuBar* menubar = m_menuManagerInternalInterface->GetMenuBar("o3de.menubar.test");
+        QMenu* testMenu1 = m_menuManagerInternalInterface->GetMenu("o3de.menu.testMenu1");
+        QMenu* testMenu2 = m_menuManagerInternalInterface->GetMenu("o3de.menu.testMenu2");
+        QMenu* testMenu3 = m_menuManagerInternalInterface->GetMenu("o3de.menu.testMenu3");
 
         // Note: menus are represented via a QAction with a submenu property in Qt.
         EXPECT_EQ(menubar->actions().size(), 3);
@@ -557,7 +557,7 @@ namespace UnitTest
     {
         // Register menu, get it and verify it's empty.
         m_menuManagerInterface->RegisterMenu("o3de.menu.test", {});
-        QMenu* menu = m_menuManagerInterface->GetMenu("o3de.menu.test");
+        QMenu* menu = m_menuManagerInternalInterface->GetMenu("o3de.menu.test");
         EXPECT_EQ(menu->actions().size(), 0);
 
         // Register a new action and add it to the menu. HideFromMenusWhenDisabled is set to true by default.
@@ -596,7 +596,7 @@ namespace UnitTest
     {
         // Register menu, get it and verify it's empty.
         m_menuManagerInterface->RegisterMenu("o3de.menu.test", {});
-        QMenu* menu = m_menuManagerInterface->GetMenu("o3de.menu.test");
+        QMenu* menu = m_menuManagerInternalInterface->GetMenu("o3de.menu.test");
         EXPECT_EQ(menu->actions().size(), 0);
 
         // Register a new action and add it to the menu. Have HideFromMenusWhenDisabled set to true.

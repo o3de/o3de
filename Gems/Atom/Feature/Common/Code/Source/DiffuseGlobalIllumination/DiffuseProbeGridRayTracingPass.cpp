@@ -335,13 +335,8 @@ namespace AZ
                 rayTracingFeatureProcessor->GetSubMeshCount() &&
                 m_rayTracingShaderTable)
             {
-                // compute the index range to process for this command list
-                uint32_t numGrids = aznumeric_cast<uint32_t>(diffuseProbeGridFeatureProcessor->GetVisibleRealTimeProbeGrids().size());
-                uint32_t startIndex = (context.GetCommandListIndex() * numGrids) / context.GetCommandListCount();
-                uint32_t endIndex = ((context.GetCommandListIndex() + 1) * numGrids) / context.GetCommandListCount();
-
                 // submit the DispatchRaysItems for each DiffuseProbeGrid in this range
-                for (uint32_t index = startIndex; index < endIndex; ++index)
+                for (uint32_t index = context.GetSubmitRange().m_startIndex; index < context.GetSubmitRange().m_endIndex; ++index)
                 {
                     AZStd::shared_ptr<DiffuseProbeGrid> diffuseProbeGrid = diffuseProbeGridFeatureProcessor->GetVisibleRealTimeProbeGrids()[index];
 
@@ -351,6 +346,7 @@ namespace AZ
                     };
 
                     RHI::DispatchRaysItem dispatchRaysItem;
+                    dispatchRaysItem.m_submitIndex = index;
                     dispatchRaysItem.m_width = diffuseProbeGrid->GetNumRaysPerProbe().m_rayCount;
                     dispatchRaysItem.m_height = diffuseProbeGrid->GetTotalProbeCount();
                     dispatchRaysItem.m_depth = 1;

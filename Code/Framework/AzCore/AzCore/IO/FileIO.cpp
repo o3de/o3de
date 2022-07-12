@@ -499,4 +499,13 @@ namespace AZ::IO
         return fileLengthBytes;
     }
 
+    void FileIOStream::Flush()
+    {
+        if (m_handle != InvalidHandle)
+        {
+            AZ_Assert(FileIOBase::GetInstance(), "FileIO is not initialized.");
+            FileIOBase::GetInstance()->Flush(m_handle);
+        }
+    }
+
 } // namespace AZ::IO

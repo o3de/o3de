@@ -123,6 +123,7 @@ def ComponentCRUD_Add_Delete_Components():
         mesh_frame = comp_list_contents.children()[3]
         QtTest.QTest.mouseClick(mesh_frame, Qt.LeftButton, Qt.NoModifier)
         QtTest.QTest.keyClick(mesh_frame, Qt.Key_Delete, Qt.NoModifier)
+        general.idle_wait_frames(3)  # Wait for Inspector to refresh
         success = await pyside_utils.wait_for_condition(lambda: not hydra.has_components(entity_id, ['Mesh']), 5.0)
         Report.result(Tests.mesh_component_deleted, success)
 

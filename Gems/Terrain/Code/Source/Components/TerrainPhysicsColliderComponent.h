@@ -109,6 +109,14 @@ namespace Terrain
             const Physics::UpdateHeightfieldSampleFunction& updateHeightsMaterialsCallback,
             size_t startColumn, size_t startRow, size_t numColumns, size_t numRows) const override;
 
+        void UpdateHeightsAndMaterialsAsync(
+            const Physics::UpdateHeightfieldSampleFunction& updateHeightsMaterialsCallback,
+            const Physics::UpdateHeightfieldCompleteFunction& updateHeightsCompleteCallback,
+            size_t startColumn,
+            size_t startRow,
+            size_t numColumns,
+            size_t numRows) const override;
+
         void UpdateConfiguration(const TerrainPhysicsColliderConfig& newConfiguration);
 
     protected:

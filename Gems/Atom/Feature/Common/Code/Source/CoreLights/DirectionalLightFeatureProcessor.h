@@ -248,8 +248,9 @@ namespace AZ
             void SetAffectsGI(LightHandle handle, bool affectsGI) override;
             void SetAffectsGIFactor(LightHandle handle, float affectsGIFactor) override;
 
-            const Data::Instance<RPI::Buffer> GetLightBuffer() const;
-            uint32_t GetLightCount() const;
+            const Data::Instance<RPI::Buffer> GetLightBuffer() const { return m_lightBufferHandler.GetBuffer(); }
+            uint32_t GetLightCount() const { return m_lightBufferHandler.GetElementCount(); }
+            ShadowProperty& GetShadowProperty(LightHandle handle) { return m_shadowProperties.GetData(handle.GetIndex()); }
 
         private:
             // RPI::SceneNotificationBus::Handler overrides...

@@ -6,8 +6,13 @@
  *
  */
 
+#include <AzCore/Math/MathUtils.h>
+#include <AzCore/Math/Vector3.h>
+#include <AzCore/Math/Vector4.h>
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/UnitTest/TestTypes.h>
+#include <AZTestShared/Math/MathTestHelpers.h>
+#include <AzCore/Math/SimdMath.h>
 
 using namespace AZ;
 
@@ -16,11 +21,16 @@ namespace UnitTest
     TEST(MATH_Vector2, TestConstructors)
     {
         Vector2 vA(0.0f);
-        AZ_TEST_ASSERT((vA.GetX() == 0.0f) && (vA.GetY() == 0.0f));
+        EXPECT_FLOAT_EQ(vA.GetX(), 0.0f);
+        EXPECT_FLOAT_EQ(vA.GetY(), 0.0f);
         Vector2 vB(5.0f);
-        AZ_TEST_ASSERT((vB.GetX() == 5.0f) && (vB.GetY() == 5.0f));
+        EXPECT_FLOAT_EQ(vB.GetX(), 5.0f);
+        EXPECT_FLOAT_EQ(vB.GetY(), 5.0f);
         Vector2 vC(1.0f, 2.0f);
-        AZ_TEST_ASSERT((vC.GetX() == 1.0f) && (vC.GetY() == 2.0f));
+        EXPECT_FLOAT_EQ(vC.GetX(), 1.0f);
+        EXPECT_FLOAT_EQ(vC.GetY(), 2.0f);
+        EXPECT_THAT(Vector2(Vector4(1.0f, 3.0f,2.0f,4.0f)), IsClose(Vector2(1.0f, 3.0f)));
+        EXPECT_THAT(Vector2(Vector3(1.0f, 3.0f,2.0f)), IsClose(Vector2(1.0f, 3.0f)));
     }
 
     TEST(MATH_Vector2, TestCreate)

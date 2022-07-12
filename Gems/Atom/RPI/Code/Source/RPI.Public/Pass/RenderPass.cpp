@@ -429,8 +429,15 @@ namespace AZ
 
         void RenderPass::SetPipelineViewTag(const PipelineViewTag& viewTag)
         {
-            m_viewTag = viewTag;
-            m_flags.m_hasPipelineViewTag = !viewTag.IsEmpty();
+            if (m_viewTag != viewTag)
+            {
+                m_viewTag = viewTag;
+                m_flags.m_hasPipelineViewTag = !viewTag.IsEmpty();
+                if (m_pipeline)
+                {
+                    m_pipeline->MarkPipelinePassChanges(PipelinePassChanges::PipelineViewTagChanged);
+                }
+            }
         }
 
         TimestampResult RenderPass::GetTimestampResultInternal() const
