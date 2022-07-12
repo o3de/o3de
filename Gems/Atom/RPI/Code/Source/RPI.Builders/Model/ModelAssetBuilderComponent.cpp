@@ -1121,6 +1121,24 @@ namespace AZ
                 {
                     const ProductMeshContentList& meshList = it.second;
 
+                    for (auto meshIter = meshList.begin(); meshIter < meshList.end() - 1;)
+                    {
+                        // Any mesh that doesn't match the others will not be merged and will just be added directly to the final mesh list
+                        // This could result in multiple meshes that do not match the one before them, but still match each other, not
+                        // getting merged. But it's not worth over complicating things by trying to sort and split the meshList when the
+                        // common case is that everything assigned to the same material uid likely matches already anyways
+                        if (!VertexStreamLayoutMatches(*meshIter, *(meshIter + 1)))
+                        {
+                            // Remove the next mesh in the list if it doesn't match the current one
+                            mergedMeshList.emplace_back(*(meshIter + 1));
+                            meshIter = meshList.erase(meshIter + 1);
+                        }
+                        else
+                        {
+                            meshIter++;
+                        }
+                    }
+
                     ProductMeshContent mergedMesh = MergeMeshList(meshList, RemapIndices);
                     mergedMesh.m_materialUid = it.first;
 
@@ -1148,6 +1166,83 @@ namespace AZ
             }
 
             return AZ::Success(finalMeshList);
+        }
+
+        bool ModelAssetBuilderComponent::VertexStreamLayoutMatches(const ProductMeshContent& lhs, const ProductMeshContent& rhs) const
+        {
+            // Check that the stream counts and types match
+            bool layoutMatches =
+                lhs.m_positions.empty() == rhs.m_positions.empty() &&
+                lhs.m_normals.empty() == rhs.m_normals.empty() &&
+                lhs.m_tangents.empty() == rhs.m_tangents.empty() &&
+                lhs.m_bitangents.empty() == rhs.m_bitangents.empty() &&
+                lhs.m_clothData.empty() == rhs.m_clothData.empty() &&
+                lhs.m_skinJointIndices.empty() == rhs.m_skinJointIndices.empty &&
+                lhs.m_skinWeights.empty() == rhs.m_skinWeights.empty() &&
+                lhs.m_uvSets.size() == rhs.m_uvSets.size() &&
+                lhs.m_colorSets.size() == rhs.m_colorSets.size();
+
+            if (layoutMatches)
+            {
+                // For the streams that come with names, make sure the names match
+                bool namesMatch = true;
+                for (size_t i = 0; i < lhs.m_uvCustomNames.size(); ++i)
+                {
+                    if (lhs.m_uvCustomNames[i] != rhs.m_uvCustomNames[i])
+                    {
+                        namesMatch = false;
+                        AZ_Warning(
+                            s_builderName,
+                            false,
+                            "Two meshes have the same material assigment, but the uv names don't match. "
+                            "Mesh '%s' uv '%d' is named '%s'. "
+                            "Mesh '%s' uv '%d' is named '%s'. "
+                            "Consider re-naming the uvs to match. "
+                            "They will not be merged, but will still show up as a single material slot for material assignments. ",
+                            lhs.m_name.GetCStr(),
+                            i,
+                            lhs.m_uvCustomNames[i].GetCStr(),
+                            rhs.m_name.GetCStr(),
+                            i,
+                            rhs.m_uvCustomNames[i].GetCStr());
+                    }
+                }
+                for (size_t i = 0; i < lhs.m_colorCustomNames.size(); ++i)
+                {
+                    if (lhs.m_colorCustomNames[i] != rhs.m_uvCustomNames[i])
+                    {
+                        namesMatch = false;
+                        AZ_Warning(
+                            s_builderName,
+                            false,
+                            "Two meshes have the same material assigment, but the color names don't match. "
+                            "Mesh '%s' color '%d' is named '%s'. "
+                            "Mesh '%s' color '%d' is named '%s'. "
+                            "Consider re-naming the colors to match. "
+                            "They will not be merged, but will still show up as a single material slot for material assignments.",
+                            lhs.m_name.GetCStr(),
+                            i,
+                            lhs.m_colorCustomNames[i].GetCStr(),
+                            rhs.m_name.GetCStr(),
+                            i,
+                            rhs.m_colorCustomNames[i].GetCStr());
+                    }
+                }
+                layoutMatches = namesMatch;
+            }
+            else
+            {
+                AZ_Warning(
+                    s_builderName,
+                    false,
+                    "Mesh '%s' and '%s' have the same material assignment, but don't have matching vertex streams. "
+                    "Consider giving them the same vertex streams in the source file or assigning a unique material to each of them. "
+                    "They will not be merged, but will still show up as a single material slot for material assignments.",
+                    lhs.m_name.GetCStr(),
+                    rhs.m_name.GetCStr());
+            }
+
+            return layoutMatches;
         }
 
         template<typename T>
