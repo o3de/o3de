@@ -933,6 +933,16 @@ try {
         }
 
         timestamps {
+            stage('Validate') {
+                try {
+                    if buildConfigs.containsKey('validation_pipe') {
+                        buildConfigs['validation_pipe']
+                    }
+                }
+                catch (Exception e) {
+                    echo "Exception block: ${e}"
+                }
+            }
 
             stage('Build') {
                 if (params.FAIL_FAST) {
