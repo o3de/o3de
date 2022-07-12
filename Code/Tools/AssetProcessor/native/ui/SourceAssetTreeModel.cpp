@@ -52,14 +52,24 @@ namespace AssetProcessor
             queryString.c_str(),
             [&](AzToolsFramework::AssetDatabase::StatDatabaseEntry& stat)
             {
-                auto pos = stat.m_statName.find(',', queryString.size() - 1);
-                if (pos != AZStd::string::npos)
+                static constexpr int numTokensExpected = 3;
+                AZStd::vector<AZStd::string> tokens;
+                AZ::StringFunc::Tokenize(stat.m_statName, tokens, ',');
+                if (tokens.size() == numTokensExpected)
                 {
-                    statsTable[stat.m_statName.substr(queryString.size() - 1, pos - (queryString.size() - 1))] += stat.m_statValue;
+                    statsTable[tokens[1]] += stat.m_statValue;
                 }
                 else
                 {
-                    // AZ_Warning !!!!! ill-format item
+                    AZ_Warning(
+                        "AssetProcessor",
+                        false,
+                        "Analysis Job (CreateJob) stat entry \"%s\" could not be parsed and will not be used. Expected %d tokens, but found %d. A wrong "
+                        "stat name may be used in Asset Processor code, or the asset database may be corrupted. If you keep encountering "
+                        "this warning, report an issue on GitHub with O3DE version number.",
+                        stat.m_statName.c_str(),
+                        numTokensExpected,
+                        tokens.size()); 
                 }
                 return true;
             });
