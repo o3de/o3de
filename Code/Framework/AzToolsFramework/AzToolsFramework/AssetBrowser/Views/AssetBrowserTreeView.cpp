@@ -30,6 +30,7 @@
 AZ_PUSH_DISABLE_WARNING(4244 4251 4800, "-Wunknown-warning-option") // conversion from 'int' to 'float', possible loss of data, needs to have dll-interface to be used by clients of class
                                                                     // 'QFlags<QPainter::RenderHint>::Int': forcing value to bool 'true' or 'false' (performance warning)
 #include <QMenu>
+#include <QFile>
 #include <QHeaderView>
 #include <QMouseEvent>
 #include <QCoreApplication>
@@ -38,6 +39,8 @@ AZ_PUSH_DISABLE_WARNING(4244 4251 4800, "-Wunknown-warning-option") // conversio
 #include <QTimer>
 #include <QtWidgets/QMessageBox>
 #include <QAbstractButton>
+
+#include <string>
 
 AZ_POP_DISABLE_WARNING
 
@@ -82,6 +85,14 @@ namespace AzToolsFramework
                 });
             addAction(renameAction);
 
+            QAction* duplicateAction = new QAction("Duplicate Action", this);
+            renameAction->setShortcut(QKeySequence("Ctrl+D"));
+            connect(
+                renameAction, &QAction::triggered, this, [this]()
+                {
+                    DuplicateEntry();
+                });
+            addAction(duplicateAction);
         }
 
         AssetBrowserTreeView::~AssetBrowserTreeView()
@@ -492,6 +503,37 @@ namespace AzToolsFramework
             if (entries.size() == 1)
             {
                 edit(currentIndex());
+            }
+        }
+        void AssetBrowserTreeView::DuplicateEntry()
+        {
+            auto entries = GetSelectedAssets();
+            if (entries.size() == 1)
+            {
+                using namespace AZ::IO;
+                AZStd::string originalFname;
+                AssetBrowserEntry* item = entries[0];
+                Path oldPath = item->GetFullPath();
+                Path newPath = oldPath;
+                PathView extension = oldPath.Extension();
+                PathView filename = oldPath.Stem();
+                AZStd::string_view fname = filename.Native();
+                size_t position = fname.rfind("-copy");
+                if (position != AZStd::string_view::npos)
+                {
+                    AZStd::string value = fname.substr(position + 5);
+                    originalFname = fname.substr(0, position + 5);
+                    int oldvalue = std::stoi(std::string(value.data()));
+                    originalFname += AZStd::to_string(oldvalue + 1);
+                }
+                else
+                {
+                    originalFname = AZStd::string(fname) + "-copy1";
+                }
+                PathView temp = originalFname.data();
+                newPath.ReplaceFilename(temp);
+                newPath.ReplaceExtension(extension);
+                QFile::copy(oldPath.c_str(), newPath.c_str());
             }
         }
     } // namespace AssetBrowser

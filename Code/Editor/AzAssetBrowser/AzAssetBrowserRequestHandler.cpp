@@ -431,6 +431,11 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
             {
                 treeView->RenameEntry();
             })->setShortcut(Qt::Key_F2);
+            // Add Duplicate option
+            menu->addAction(QObject::tr("Duplicate asset"), [treeView]()
+            {
+                treeView->DuplicateEntry();
+            })->setShortcut(QKeySequence("Ctrl+D"));
         }
 
         // Add Delete option

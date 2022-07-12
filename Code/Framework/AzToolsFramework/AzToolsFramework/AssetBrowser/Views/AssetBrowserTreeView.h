@@ -59,8 +59,8 @@ namespace AzToolsFramework
             void SelectFolder(AZStd::string_view folderPath);
 
             void DeleteEntries();
-
             void RenameEntry();
+            void DuplicateEntry();
 
             //////////////////////////////////////////////////////////////////////////
             // AssetBrowserViewRequestBus
