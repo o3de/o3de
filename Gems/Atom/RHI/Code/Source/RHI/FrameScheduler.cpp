@@ -494,7 +494,20 @@ namespace AZ
                 ScopeProducer* scopeProducer = FindScopeProducer(executeContext->GetScopeId());
 
                 AZ_PROFILE_SCOPE(RHI, "ScopeProducer: %s", scopeProducer->GetScopeId().GetCStr());
+
+                if (executeContext->GetCommandList())
+                {
+                    // reset the submit count in preparation for the scope submits
+                    executeContext->GetCommandList()->ResetTotalSubmits();
+                }
+
                 scopeProducer->BuildCommandList(*executeContext);
+
+                if (executeContext->GetCommandList())
+                {
+                    // validate the submits that were added during BuildCommandList
+                    executeContext->GetCommandList()->ValidateTotalSubmits(scopeProducer);
+                }
             }
 
             group.EndContext(index);

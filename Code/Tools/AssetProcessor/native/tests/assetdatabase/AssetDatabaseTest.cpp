@@ -30,6 +30,8 @@ namespace UnitTests
     using AzToolsFramework::AssetDatabase::ProductDependencyDatabaseEntryContainer;
     using AzToolsFramework::AssetDatabase::AssetDatabaseConnection;
     using AzToolsFramework::AssetDatabase::FileDatabaseEntry;
+    using AzToolsFramework::AssetDatabase::StatDatabaseEntry;
+    using AzToolsFramework::AssetDatabase::StatDatabaseEntryContainer;
 
     class AssetDatabaseTestMockDatabaseLocationListener : public AzToolsFramework::AssetDatabase::AssetDatabaseRequests::Bus::Handler
     {
@@ -2391,6 +2393,118 @@ namespace UnitTests
         ASSERT_NE(fileEntry.m_fileID, InvalidEntryId);
         ASSERT_TRUE(m_data->m_connection.InsertFile(fileEntry, entryAlreadyExists));
         ASSERT_TRUE(entryAlreadyExists);
+    }
+
+    TEST_F(AssetDatabaseTest, StatDatabaseEntryEquality)
+    {
+        // two entries are the same if m_statName, m_statValue, and m_lastLogTime are same.
+        using namespace AzToolsFramework::AssetDatabase;
+
+        StatDatabaseEntry entry1, entry2;
+        entry1.m_statName = "EqTest";
+        entry1.m_statValue = 17632;
+        entry1.m_lastLogTime = 54689213;
+        entry2.m_statName = "EqTest";
+        entry2.m_statValue = 17632;
+        entry2.m_lastLogTime = 54689213;
+        EXPECT_EQ(entry1, entry2);
+        entry2.m_statName = "Helloworld";
+        EXPECT_NE(entry1, entry2);
+        entry2.m_statName = "EqTest";
+        entry2.m_statValue = 81245;
+        EXPECT_NE(entry1, entry2);
+        entry2.m_statValue = 17632;
+        entry2.m_lastLogTime = 12345678;
+        EXPECT_NE(entry1, entry2);
+    }
+
+    TEST_F(AssetDatabaseTest, ReplaceStat_CreateIfNotExist)
+    {
+        // create entry if StatName is not seen
+        CreateCoverageTestData();
+
+        using namespace AzToolsFramework::AssetDatabase;
+
+        StatDatabaseEntry statEntry;
+        StatDatabaseEntryContainer statContainer;
+        statEntry.m_statName = "testJob_createIfNotExist";
+        statEntry.m_statValue = 1853;
+        statEntry.m_lastLogTime = m_data->m_job1.m_lastLogTime;
+
+        //! Ensure the Stats table is empty
+        size_t entryCount = 0;
+        m_data->m_connection.QueryStatsTable(
+            [&entryCount]([[maybe_unused]] StatDatabaseEntry& stat)
+            {
+                ++entryCount;
+                return true;
+            });
+        EXPECT_EQ(entryCount, 0);
+
+        //! Insert a stat and read the stat. Stat read and stat written should be the same.
+        EXPECT_TRUE(m_data->m_connection.ReplaceStat(statEntry));
+        m_data->m_connection.GetStatByStatName(statEntry.m_statName.c_str(), statContainer);
+        EXPECT_EQ(statContainer.size(), 1);
+        EXPECT_EQ(statContainer.at(0), statEntry);
+        statContainer.clear();
+
+        //! Ensure one element is added.
+        entryCount = 0;
+        m_data->m_connection.QueryStatsTable(
+            [&entryCount]([[maybe_unused]] StatDatabaseEntry& stat)
+            {
+                ++entryCount;
+                return true;
+            });
+        EXPECT_EQ(entryCount, 1);
+    }
+
+    TEST_F(AssetDatabaseTest, ReplaceStat_UpdateIfExist)
+    {
+        // replace the entry if the StatName is in the asset database
+        CreateCoverageTestData();
+
+        using namespace AzToolsFramework::AssetDatabase;
+
+        StatDatabaseEntry statEntry;
+        StatDatabaseEntryContainer statContainer;
+        statEntry.m_statName = "testJob_updateIfExist";
+        statEntry.m_statValue = 8432;
+        statEntry.m_lastLogTime = m_data->m_job1.m_lastLogTime;
+
+        //! Ensure the Stats table is empty
+        size_t entryCount = 0;
+        m_data->m_connection.QueryStatsTable(
+            [&entryCount]([[maybe_unused]] StatDatabaseEntry& stat)
+            {
+                ++entryCount;
+                return true;
+            });
+        EXPECT_EQ(entryCount, 0);
+
+        //! Insert a stat
+        EXPECT_TRUE(m_data->m_connection.ReplaceStat(statEntry));
+
+        //! Insert a stat with the same StatName. The old one should be replaced.
+        StatDatabaseEntry secondStatEntry;
+        secondStatEntry.m_statName = statEntry.m_statName;
+        secondStatEntry.m_statValue = 16384;
+        secondStatEntry.m_lastLogTime = 23570;
+        EXPECT_TRUE(m_data->m_connection.ReplaceStat(secondStatEntry));
+        m_data->m_connection.GetStatByStatName(statEntry.m_statName.c_str(), statContainer);
+        ASSERT_EQ(statContainer.size(), 1);
+        ASSERT_NE(statContainer.at(0), statEntry);
+        ASSERT_EQ(statContainer.at(0), secondStatEntry);
+
+        //! Ensure the element is replaced, not added.
+        entryCount = 0;
+        m_data->m_connection.QueryStatsTable(
+            [&entryCount]([[maybe_unused]] StatDatabaseEntry& stat)
+            {
+                ++entryCount;
+                return true;
+            });
+        ASSERT_EQ(entryCount, 1);
     }
 
     class QueryLoggingTraceHandler : public AZ::Debug::TraceMessageBus::Handler

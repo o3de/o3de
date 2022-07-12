@@ -30,11 +30,11 @@ namespace AZ
             m_scopes = AZStd::move(scopes);
 
             auto& swapChainsToPresent = m_workRequest.m_swapChainsToPresent;
-            AZStd::vector<RHI::ScopeId> scopeIds;
-            scopeIds.reserve(m_scopes.size());
+            AZStd::vector<InitMergedRequest::ScopeEntry> scopeEntries;
+            scopeEntries.reserve(m_scopes.size());
             for (const Scope* scope : m_scopes)
             {
-                scopeIds.push_back(scope->GetId());
+                scopeEntries.push_back({ scope->GetId(), scope->GetEstimatedItemCount() });
                 swapChainsToPresent.reserve(swapChainsToPresent.size() + scope->GetSwapChainsToPresent().size());
                 for (RHI::SwapChain* swapChain : scope->GetSwapChainsToPresent())
                 {
@@ -50,8 +50,8 @@ namespace AZ
             }
 
             InitMergedRequest request;
-            request.m_scopeIds = scopeIds.data();
-            request.m_scopeCount = static_cast<uint32_t>(scopeIds.size());
+            request.m_scopeEntries = scopeEntries.data();
+            request.m_scopeCount = static_cast<uint32_t>(scopeEntries.size());
             Base::Init(request);
 
             m_workRequest.m_debugLabel = "FrameGraph Merged Group";

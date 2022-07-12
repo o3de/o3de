@@ -1322,9 +1322,7 @@ void ApplicationManagerBase::ShutDownFileProcessor()
 void ApplicationManagerBase::InitAssetServerHandler()
 {
     m_assetServerHandler = new AssetProcessor::AssetServerHandler();
-    // This will cache whether AP is running in server mode or not.
-    // It is also important to invoke it here because incase the asset server address is invalid, the error message should get captured in the AP log.
-    AssetUtilities::InServerMode();
+    m_assetServerHandler->HandleRemoteConfiguration();
 }
 
 void ApplicationManagerBase::DestroyAssetServerHandler()
@@ -1591,13 +1589,26 @@ static void HandleConditionalRetry(const AssetProcessor::BuilderRunJobOutcome& r
             // If the connection was lost and the process handle is no longer valid, then we need to request a new builder to reprocess the job
             AZStd::string oldBuilderId = builderRef->GetUuid().ToString<AZStd::string>();
             builderRef.release();
-            AssetProcessor::BuilderManagerBus::BroadcastResult(builderRef, &AssetProcessor::BuilderManagerBusTraits::GetBuilder, purpose);
 
-            AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Lost connection to builder %s. Retrying with a new builder %s (Attempt %d with %d second delay)",
-                            oldBuilderId.c_str(),
-                            builderRef->GetUuid().ToString<AZStd::string>().c_str(),
-                            retryCount+1,
-                            delay);
+            AssetProcessor::BuilderManagerBus::BroadcastResult(builderRef, &AssetProcessor::BuilderManagerBusTraits::GetBuilder, purpose);
+            
+            if (builderRef)
+            {
+                AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Lost connection to builder %s. Retrying with a new builder %s (Attempt %d with %d second delay)",
+                                oldBuilderId.c_str(),
+                                builderRef->GetUuid().ToString<AZStd::string>().c_str(),
+                                retryCount+1,
+                                delay);
+            }
+            else
+            {
+                AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Lost connection to builder %s and no further builders are available. Job will not retry.\n",
+                               oldBuilderId.c_str());
+                // if we failed to get a builder ref, it means we're probably
+                // shutting down, in which case we do not want to do an exponential
+                // backoff delay and need to return immediately.
+                return;
+            }
         }
         else
         {
@@ -1640,7 +1651,7 @@ void ApplicationManagerBase::RegisterBuilderInformation(const AssetBuilderSDK::A
         // We're going to override the createJob function so we can run it externally in AssetBuilder, rather than having it run
         // inside the AP
         modifiedBuilderDesc.m_createJobFunction =
-            [](const AssetBuilderSDK::CreateJobsRequest& request, AssetBuilderSDK::CreateJobsResponse& response)
+            [this](const AssetBuilderSDK::CreateJobsRequest& request, AssetBuilderSDK::CreateJobsResponse& response)
         {
             AssetProcessor::BuilderRef builderRef;
             AssetProcessor::BuilderManagerBus::BroadcastResult(builderRef, &AssetProcessor::BuilderManagerBusTraits::GetBuilder, AssetProcessor::BuilderPurpose::CreateJobs);
@@ -1649,6 +1660,11 @@ void ApplicationManagerBase::RegisterBuilderInformation(const AssetBuilderSDK::A
             {
                 int retryCount = 0;
                 AssetProcessor::BuilderRunJobOutcome result;
+
+                if (this->InitiatedShutdown())
+                {
+                    return; // exit early if you're shutting down!
+                }
 
                 do
                 {
@@ -1671,7 +1687,7 @@ void ApplicationManagerBase::RegisterBuilderInformation(const AssetBuilderSDK::A
         const bool debugOutput = m_assetProcessorManager->GetBuilderDebugFlag();
         // Also override the processJob function to run externally
         modifiedBuilderDesc.m_processJobFunction =
-            [debugOutput](const AssetBuilderSDK::ProcessJobRequest& request, AssetBuilderSDK::ProcessJobResponse& response)
+            [this, debugOutput](const AssetBuilderSDK::ProcessJobRequest& request, AssetBuilderSDK::ProcessJobResponse& response)
         {
             AssetBuilderSDK::JobCancelListener jobCancelListener(request.m_jobId);
 
@@ -1692,6 +1708,18 @@ void ApplicationManagerBase::RegisterBuilderInformation(const AssetBuilderSDK::A
 
                 do
                 {
+                    if (jobCancelListener.IsCancelled())
+                    {
+                        // do not attempt to continue to retry or spawn
+                        // new builders during shut down.
+                        break;
+                    }
+
+                    if (this->InitiatedShutdown())
+                    {
+                        return; // exit early if you're shutting down!
+                    }
+                    
                     retryCount++;
                     result = builderRef->RunJob<AssetBuilder::ProcessJobNetRequest, AssetBuilder::ProcessJobNetResponse>(
                         request, response, s_MaximumProcessJobsTimeSeconds, "process", "", &jobCancelListener, request.m_tempDirPath);

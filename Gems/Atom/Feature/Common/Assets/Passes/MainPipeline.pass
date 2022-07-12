@@ -52,7 +52,7 @@
                 },
                 {
                     "Name": "DepthPrePass",
-                    "TemplateName": "DepthMSAAParentTemplate",
+                    "TemplateName": "DepthParentTemplate",
                     "Connections": [
                         {
                             "LocalSlot": "SkinnedMeshes",

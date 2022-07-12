@@ -53,14 +53,12 @@ namespace AZ
 
 namespace AZ::ConsoleTypeHelpers
 {
-    template <>
     inline CVarFixedString ValueToString(const AzNetworking::ProtocolType& value)
     {
         return (value == AzNetworking::ProtocolType::Tcp) ? "tcp" : "udp";
     }
 
-    template <>
-    inline bool StringSetToValue<AzNetworking::ProtocolType>(AzNetworking::ProtocolType& outValue, const ConsoleCommandContainer& arguments)
+    inline bool StringSetToValue(AzNetworking::ProtocolType& outValue, const ConsoleCommandContainer& arguments)
     {
         if (!arguments.empty())
         {

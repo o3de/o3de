@@ -17,7 +17,7 @@ namespace AtomToolsFramework
     //! PreviewRendererCaptureState renders a preview to an image
     class PreviewRendererCaptureState final
         : public PreviewRendererState
-        , public AZ::TickBus::Handler
+        , public AZ::SystemTickBus::Handler
         , public AZ::Render::FrameCaptureNotificationBus::Handler
     {
     public:
@@ -25,8 +25,8 @@ namespace AtomToolsFramework
         ~PreviewRendererCaptureState();
 
     private:
-        //! AZ::TickBus::Handler interface overrides...
-        void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
+        //! AZ::SystemTickBus::Handler interface overrides...
+        void OnSystemTick() override;
 
         //! AZ::Render::FrameCaptureNotificationBus::Handler overrides...
         void OnCaptureFinished(uint32_t frameCaptureId, AZ::Render::FrameCaptureResult result, const AZStd::string& info) override;
