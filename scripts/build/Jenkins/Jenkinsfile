@@ -935,7 +935,7 @@ try {
         timestamps {
             stage('Validate') {
                 try {
-                    if buildConfigs.containsKey('validation_pipe') {
+                    if (buildConfigs.containsKey('validation_pipe')) {
                         buildConfigs['validation_pipe']
                     }
                 }
