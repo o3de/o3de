@@ -624,7 +624,7 @@ class EditorTestSuite:
 
     @staticmethod
     def pytest_custom_makeitem(collector, name, obj):
-        return EditorTestSuite.EditorTestClass(name, collector)
+        return EditorTestSuite.EditorTestClass.from_parent(collector, name=name)
 
     @classmethod
     def pytest_custom_modify_items(cls, session: _pytest.main.Session, items: list[EditorTest],
