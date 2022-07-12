@@ -653,7 +653,13 @@ namespace AzToolsFramework
         }
 
         AZ::Data::AssetInfo assetInfo;
-        AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetInfo, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetInfoById, assetId);
+
+        AZ::Data::AssetCatalogRequestBus::Broadcast(
+            [&assetInfo, assetId](AZ::Data::AssetCatalogRequestBus::Events* interface)
+            {
+                assetInfo = interface->GetAssetInfoById(assetId);
+            }
+        );
 
         if (assetInfo.m_assetType == GetCurrentAssetType())
         {
