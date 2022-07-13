@@ -1216,6 +1216,13 @@ namespace AZStd::ranges
     }
 }
 
+namespace AZStd::ranges
+{
+    //! Adding C++23 from_range_t tag type
+    //! https://eel.is/c++draft/range.utility.conv
+    struct from_range_t {};
+    inline constexpr from_range_t from_range;
+}
 
 namespace AZStd::ranges
 {

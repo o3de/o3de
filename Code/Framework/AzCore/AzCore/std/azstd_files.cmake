@@ -52,6 +52,7 @@ set(FILES
     ranges/ranges_adaptor.h
     ranges/ranges_algorithm.h
     ranges/ranges_functional.h
+    ranges/ranges_to.h
     ranges/ref_view.h
     ranges/reverse_view.h
     ranges/single_view.h

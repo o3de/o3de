@@ -223,6 +223,7 @@ set(FILES
     AZStd/Parallel.cpp
     AZStd/RangesAlgorithmTests.cpp
     AZStd/RangesTests.cpp
+    AZStd/RangesUtilityTests.cpp
     AZStd/RangesViewTests.cpp
     AZStd/ScopedLockTests.cpp
     AZStd/SetsIntrusive.cpp

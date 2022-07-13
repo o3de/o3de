@@ -572,6 +572,121 @@ namespace AZStd
 
 namespace AZStd::Internal
 {
+    // cpp17 iterator concepts
+    // https://eel.is/c++draft/iterator.traits#2
+    template<class I, class = void>
+    constexpr bool cpp17_iterator_impl = false;
+    template<class I>
+    constexpr bool cpp17_iterator_impl<I, enable_if_t<conjunction_v<
+        bool_constant<can_reference<decltype(*declval<I&>())>>,
+        bool_constant<same_as<decltype(++declval<I&>()), I&>>,
+        bool_constant<can_reference<decltype(*declval<I&>()++)>>,
+        bool_constant<copyable<I>>
+        >>> = true;
+}
+
+namespace AZStd
+{
+    // cpp17-iterator concept
+    template<class I>
+    /*concept*/ constexpr bool cpp17_iterator = Internal::cpp17_iterator_impl<I>;
+}
+
+namespace AZStd::Internal
+{
+    template<class I, class = void>
+    constexpr bool cpp17_input_iterator_impl = false;
+    template<class I>
+    constexpr bool cpp17_input_iterator_impl<I, enable_if_t<conjunction_v<
+        bool_constant<cpp17_iterator<I>>,
+        bool_constant<equality_comparable<I>>,
+        sfinae_trigger<typename incrementable_traits<I>::difference_type>,
+        sfinae_trigger<typename indirectly_readable_traits<I>::value_type>,
+        sfinae_trigger<typename incrementable_traits<I>::difference_type>,
+        sfinae_trigger<typename common_reference_t<iter_reference_t<I>&&,
+            typename indirectly_readable_traits<I>::value_type&>>,
+        sfinae_trigger<typename common_reference_t<decltype(*declval<I&>()++)&&,
+            typename indirectly_readable_traits<I>::value_type&>>,
+        bool_constant<signed_integral<typename incrementable_traits<I>::difference_type>>
+        >>> = true;
+}
+
+namespace AZStd
+{
+    // cpp17-input-iterator concept
+    template<class I>
+    /*concept*/ constexpr bool cpp17_input_iterator = Internal::cpp17_input_iterator_impl<I>;
+}
+
+namespace AZStd::Internal
+{
+    template<class I, class = void>
+    constexpr bool cpp17_forward_iterator_impl = false;
+    template<class I>
+    constexpr bool cpp17_forward_iterator_impl<I, enable_if_t<conjunction_v<
+        bool_constant<cpp17_input_iterator<I>>,
+        bool_constant<constructible_from<I>>,
+        bool_constant<is_lvalue_reference_v<iter_reference_t<I>>>,
+        bool_constant<same_as<remove_cvref_t<iter_reference_t<I>>, typename indirectly_readable_traits<I>::value_type>>,
+        bool_constant<convertible_to<decltype(declval<I&>()++), const I&>>,
+        bool_constant<same_as<decltype(*declval<I&>()++), iter_reference_t<I>>>
+        >>> = true;
+}
+
+namespace AZStd
+{
+    // cpp17-forward-iterator concept
+    template<class I>
+    /*concept*/ constexpr bool cpp17_forward_iterator = Internal::cpp17_forward_iterator_impl<I>;
+}
+
+namespace AZStd::Internal
+{
+    template<class I, class = void>
+    constexpr bool cpp17_bidirectional_iterator_impl = false;
+    template<class I>
+    constexpr bool cpp17_bidirectional_iterator_impl<I, enable_if_t<conjunction_v<
+        bool_constant<cpp17_forward_iterator<I>>,
+        bool_constant<same_as<decltype(--declval<I&>()), I&>>,
+        bool_constant<convertible_to<decltype(declval<I&>()--), const I&>>,
+        bool_constant<same_as<decltype(*declval<I&>()--), iter_reference_t<I>>>
+        >>> = true;
+}
+
+namespace AZStd
+{
+    // cpp17-bidirectional-iterator concept
+    template<class I>
+    /*concept*/ constexpr bool cpp17_bidirectional_iterator = Internal::cpp17_bidirectional_iterator_impl<I>;
+}
+
+namespace AZStd::Internal
+{
+    template<class I, class = void>
+    constexpr bool cpp17_random_access_iterator_impl = false;
+    template<class I>
+    constexpr bool cpp17_random_access_iterator_impl<I, enable_if_t<conjunction_v<
+        bool_constant<cpp17_bidirectional_iterator<I>>,
+        bool_constant<totally_ordered<I>>,
+        bool_constant<same_as<decltype(declval<I&>() += declval<typename incrementable_traits<I>::difference_type>()), I&>>,
+        bool_constant<same_as<decltype(declval<I&>() -= declval<typename incrementable_traits<I>::difference_type>()), I&>>,
+        bool_constant<same_as<decltype(declval<I>() + declval<typename incrementable_traits<I>::difference_type>()), I>>,
+        bool_constant<same_as<decltype(declval<typename incrementable_traits<I>::difference_type>() + declval<I>()), I>>,
+        bool_constant<same_as<decltype(declval<I>() - declval<typename incrementable_traits<I>::difference_type>()), I>>,
+        bool_constant<same_as<decltype(declval<I>() - declval<I>()), typename incrementable_traits<I>::difference_type>>,
+        bool_constant<same_as<decltype(declval<I&>()[declval<typename incrementable_traits<I>::difference_type>()]), iter_reference_t<I>>>
+        >>> = true;
+}
+
+namespace AZStd
+{
+    // cpp17-random_access-iterator concept
+    template<class I>
+    /*concept*/ constexpr bool cpp17_random_access_iterator = Internal::cpp17_random_access_iterator_impl<I>;
+}
+
+namespace AZStd::Internal
+{
     // models the predicate concept
     template <bool, class F, class... Args>
     constexpr bool predicate_impl = false;
