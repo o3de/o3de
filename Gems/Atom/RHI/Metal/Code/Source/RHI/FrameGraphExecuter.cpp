@@ -65,8 +65,7 @@ namespace AZ
             AZStd::vector<const Scope*> mergedScopes;
             for (const RHI::Scope* scopeBase : frameGraph.GetScopes())
             {
-                const Scope& scope = *static_cast<const Scope*>(scopeBase);
-                mergedScopes.push_back(&scope);
+                mergedScopes.push_back(static_cast<const Scope*>(scopeBase));
                 FrameGraphExecuteGroupMerged* scopeContextGroup = AddGroup<FrameGraphExecuteGroupMerged>();
                 scopeContextGroup->Init(device, AZStd::move(mergedScopes), GetGroupCount());
             }

@@ -66,9 +66,7 @@ namespace AZ
             // we can be sure about the work gpu was working on before the crash.
             for (const RHI::Scope* scopeBase : frameGraph.GetScopes())
             {
-                const Scope& scope = *static_cast<const Scope*>(scopeBase);
-                mergedScopes.push_back(&scope);
-                
+                mergedScopes.push_back(static_cast<const Scope*>(scopeBase));
                 FrameGraphExecuteGroupMerged* multiScopeContextGroup = AddGroup<FrameGraphExecuteGroupMerged>();
                 multiScopeContextGroup->Init(device, AZStd::move(mergedScopes));           
             }

@@ -69,13 +69,13 @@ namespace AZ
                             AZ_Printf("RHI","Execution of this command buffer took more time than system allows. execution interrupted and aborted.\n");
                             break;
                         case MTLCommandBufferErrorPageFault:
-                            AZ_Printf("RHI","Execution of this command generated an unserviceable GPU page fault. This error maybe caused by buffer read/write attribute mismatch or outof boundary access.\n");
+                            AZ_Printf("RHI","Execution of this command generated an unserviceable GPU page fault. This error maybe caused by buffer read/write attribute mismatch or out of boundary access.\n");
                             break;
                         case MTLCommandBufferErrorBlacklisted:
                             AZ_Printf("RHI","Access to this device has been revoked because this client has been responsible for too many timeouts or hangs.\n");
                             break;
                         case MTLCommandBufferErrorNotPermitted:
-                            AZ_Printf("RHI","This process does not have aceess to use device.\n");
+                            AZ_Printf("RHI","This process does not have access to use device.\n");
                             break;
                         case MTLCommandBufferErrorOutOfMemory:
                             AZ_Printf("RHI","Insufficient memory.\n");

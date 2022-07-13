@@ -53,7 +53,8 @@ namespace AZ
                 constexpr uint32_t FrameCountMax = 3;
 #endif
             
-                // Due to restriction on DX12 we need to allocate at least a minimum of 2 swapChain images or the drivers will complain
+                // Due to the fact that D3D12 only supports the flip model we need to allocate at least
+                // a minimum of 2 swapChain images or the drivers will complain.
                 constexpr uint32_t MinSwapChainImages = 2;
             }
 

@@ -99,6 +99,7 @@ namespace AZ
                 if(commandList.IsEncoded())
                 {
                     isCommitNeeded = true;
+                    break;
                 }
             }
             
