@@ -30,5 +30,10 @@ namespace AtomToolsFramework
         bool m_enableAlternateSkybox = false;
         float m_fieldOfView = 90.0f;
         AZ::Render::DisplayMapperOperationType m_displayMapperOperationType = AZ::Render::DisplayMapperOperationType::Aces;
+
+        // Added explicit Get & Set functions to avoid serialization errors in
+        // lua script context looking for "const AZ::Render::DisplayMapperOperationType&".
+        AZ::Render::DisplayMapperOperationType GetDisplayMapperOperationType() const;
+        void SetDisplayMapperOperationType(AZ::Render::DisplayMapperOperationType opType);
     };
 } // namespace AtomToolsFramework
