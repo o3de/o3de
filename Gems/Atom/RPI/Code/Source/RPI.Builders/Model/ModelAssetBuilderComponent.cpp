@@ -1130,8 +1130,8 @@ namespace AZ
                         if (!VertexStreamLayoutMatches(*meshIter, *(meshIter + 1)))
                         {
                             // Remove the next mesh in the list if it doesn't match the current one
-                            mergedMeshList.emplace_back(*(meshIter + 1));
-                            meshIter = meshList.erase(meshIter + 1);
+                            finalMeshList.emplace_back(*(meshIter + 1));
+                            meshIter = finalMeshList.erase(meshIter + 1);
                         }
                         else
                         {
@@ -1177,7 +1177,7 @@ namespace AZ
                 lhs.m_tangents.empty() == rhs.m_tangents.empty() &&
                 lhs.m_bitangents.empty() == rhs.m_bitangents.empty() &&
                 lhs.m_clothData.empty() == rhs.m_clothData.empty() &&
-                lhs.m_skinJointIndices.empty() == rhs.m_skinJointIndices.empty &&
+                lhs.m_skinJointIndices.empty() == rhs.m_skinJointIndices.empty() &&
                 lhs.m_skinWeights.empty() == rhs.m_skinWeights.empty() &&
                 lhs.m_uvSets.size() == rhs.m_uvSets.size() &&
                 lhs.m_colorSets.size() == rhs.m_colorSets.size();
