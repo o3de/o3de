@@ -170,7 +170,7 @@ class EditorTestSuite(AbstractTestSuite):
     # Test class to use for shared test collection
     shared_test_class = EditorSharedTest
 
-    def pytest_custom_makeitem(self, collector: _pytest.python.Module, name: str, obj: object) -> AbstractTestClass:
+    def pytest_custom_makeitem(collector: _pytest.python.Module, name: str, obj: object) -> AbstractTestClass:
         """
         Enables ly_test_tools._internal.pytest_plugin.editor_test.pytest_pycollect_makeitem to collect the tests
         defined by this suite.
