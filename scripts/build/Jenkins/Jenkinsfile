@@ -693,7 +693,7 @@ def CreateSingleNode(Map pipelineConfig, def platform, def build_job, Map envVar
                         if (params && params.containsKey('TEST_RESULTS') && params.TEST_RESULTS == 'True') {
                             CreateExportTestResultsStage(pipelineConfig, platform.key, build_job_name, envVars, params).call()
                         }
-                        if (fileExists(GetCrashArtifactDir())) {
+                        if (!(build_job.key ==~ /validation_pipe/) && fileExists(GetCrashArtifactDir())) {
                             CreateUploadCrashArtifactStage(build_job_name, platform.key).call()
                         }
                         if (params && params.containsKey('TEST_SCREENSHOTS') && params.TEST_SCREENSHOTS == 'True' && currentResult == 'FAILURE') {
@@ -917,6 +917,7 @@ try {
 
         // Build and Post-Build Testing Stage
         def buildConfigs = [:]
+        def validateConfig = [:] 
 
         // Platform Builds run on EC2
         pipelineConfig.platforms.each { platform ->
@@ -926,8 +927,12 @@ try {
                     envVars['JENKINS_JOB_NAME'] = env.JOB_NAME // Save original Jenkins job name to JENKINS_JOB_NAME
                     envVars['JOB_NAME'] = "${branchName}_${platform.key}_${build_job.key}" // backwards compatibility, some scripts rely on this
                     someBuildHappened = true
-
-                    buildConfigs["${platform.key} [${build_job.key}]"] = CreateBuildJobs(pipelineConfig, platform, build_job, envVars, branchName, pipelineName, repositoryName, projectName)
+                    if ("${build_job.key}" ==~ /validation_pipe/) {
+                        validateConfig["${platform.key} [${build_job.key}]"] = CreateBuildJobs(pipelineConfig, platform, build_job, envVars, branchName, pipelineName, repositoryName, projectName)
+                    }
+                    else {
+                        buildConfigs["${platform.key} [${build_job.key}]"] = CreateBuildJobs(pipelineConfig, platform, build_job, envVars, branchName, pipelineName, repositoryName, projectName)
+                    }
                 }
             }
         }
@@ -935,9 +940,7 @@ try {
         timestamps {
             stage('Validate') {
                 try {
-                    if (buildConfigs.containsKey('validation_pipe')) {
-                        buildConfigs[validation_pipe]
-                    }
+                    parallel validateConfig
                 }
                 catch (Exception e) {
                     echo "Exception block: ${e}"

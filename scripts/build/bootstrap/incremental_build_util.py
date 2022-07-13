@@ -215,7 +215,7 @@ def get_availability_zone():
         error('No EC2 metadata! Check if you are running this script on an EC2 instance.')
 
 
-def kill_processes(workspace='/dev/'):
+def kill_processes(workspace='/data'):
     """
     Kills all processes that have open file paths associated with the workspace.
     Uses PSUtil for cross-platform compatibility
