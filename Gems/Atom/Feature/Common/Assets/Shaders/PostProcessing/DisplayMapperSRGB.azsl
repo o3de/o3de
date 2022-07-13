@@ -11,7 +11,8 @@
 #include <Atom/Features/PostProcessing/FullscreenPixelInfo.azsli>
 #include <Atom/Features/PostProcessing/FullscreenVertex.azsli>
 #include <Atom/Features/PostProcessing/PostProcessUtil.azsli>
-#include <Atom/Features/PostProcessing/Aces.azsli>
+
+#include <Atom/Features/ColorManagement/GeneratedTransforms/AcesCg_To_LinearSrgb.azsli>
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -36,7 +37,7 @@ PSOutput MainPS(VSOutput IN)
     PSOutput OUT;
 
     float3 color = PassSrg::m_framebuffer.Sample(PassSrg::LinearSampler, IN.m_texCoord).rgb;
-    OUT.m_color.rgb = pow(color, 1.0 / 2.2);
+    OUT.m_color.rgb = LinearToSRGB(AcesCg_To_LinearSrgb(color));
     OUT.m_color.w = 1;
 
     return OUT;
