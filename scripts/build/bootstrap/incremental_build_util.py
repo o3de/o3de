@@ -395,7 +395,7 @@ def unmount_volume_from_device():
         offline_drive()
     else:
         kill_processes(MOUNT_PATH)
-        subprocess.call(['umount', '-f', MOUNT_PATH])
+        subprocess.call(['umount', '-fl', MOUNT_PATH])
 
 
 def detach_volume_from_ec2_instance(volume, ec2_instance_id, force, timeout_duration=DEFAULT_TIMEOUT):
