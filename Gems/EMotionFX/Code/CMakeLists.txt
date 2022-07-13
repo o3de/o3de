@@ -47,7 +47,17 @@ ly_add_target(
     NAMESPACE Gem
     FILES_CMAKE
         emotionfx_files.cmake
+    INCLUDE_DIRECTORIES
+        PRIVATE
+            EMotionFX/Tools
+            EMotionFX/Pipeline
+            ${editor_pal_dir}
     BUILD_DEPENDENCIES
+        PRIVATE
+            3rdParty::Qt::Core
+            3rdParty::Qt::Gui
+            AZ::AzQtComponents
+            AZ::AzToolsFramework
         PUBLIC
             Gem::EMotionFXStaticLib
 )
