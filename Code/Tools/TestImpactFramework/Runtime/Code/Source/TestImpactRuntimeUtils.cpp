@@ -14,6 +14,8 @@
 #include <Artifact/Factory/TestImpactBuildTargetDescriptorFactory.h>
 #include <Artifact/Static/TestImpactTargetDescriptorCompiler.h>
 
+#include <AZCore/JSON/document.h>
+
 #include <filesystem>
 
 namespace TestImpact
@@ -77,5 +79,18 @@ namespace TestImpact
         });
 
         return testNames;
+    }
+
+   AZStd::vector<AZStd::string> GetExcludedTestTargetsFromFile(const RepoPath& excludeFile)
+    {
+        AZStd::string fileData = ReadFileContents<RuntimeException>(excludeFile);
+        rapidjson::Document excludeData;
+        excludeData.Parse(fileData.c_str());
+        AZStd::vector<AZStd::string> excludeList;
+        for (auto& entry : excludeData["exclude"].GetArray())
+        {
+            excludeList.push_back(entry.GetString());
+        }
+        return excludeList;
     }
 } // namespace TestImpact
