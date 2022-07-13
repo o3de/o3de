@@ -11,6 +11,7 @@
 #include <AzFramework/Viewport/ViewportControllerList.h>
 #include <AzToolsFramework/Input/QtEventToAzInputMapper.h>
 #include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
+#include <AzToolsFramework/UnitTest/Mocks/MockViewportInteractionRequests.h>
 #include <EditorViewportWidget.h>
 #include <Mocks/MockWindowRequests.h>
 
@@ -43,6 +44,8 @@ namespace UnitTest
         void ClearOverrideCursor() override;
         AZStd::optional<AzFramework::ScreenPoint> MousePosition() const override;
 
+        AzFramework::ScreenPoint m_mousePosition = AzFramework::ScreenPoint{};
+
     private:
         AzToolsFramework::QtEventToAzInputMapper* m_inputChannelMapper = nullptr;
     };
@@ -59,7 +62,7 @@ namespace UnitTest
 
     void ViewportMouseCursorRequestImpl::SetCursorMode(AzToolsFramework::CursorInputMode mode)
     {
-         m_inputChannelMapper->SetCursorMode(mode);
+        m_inputChannelMapper->SetCursorMode(mode);
     }
 
     bool ViewportMouseCursorRequestImpl::IsMouseOver() const
@@ -80,7 +83,7 @@ namespace UnitTest
 
     AZStd::optional<AzFramework::ScreenPoint> ViewportMouseCursorRequestImpl::MousePosition() const
     {
-        return AzFramework::ScreenPoint(0, 0);
+        return m_mousePosition;
     }
 
     class ModularViewportCameraControllerFixture : public AllocatorsTestFixture
@@ -93,8 +96,14 @@ namespace UnitTest
             AllocatorsTestFixture::SetUp();
 
             m_rootWidget = AZStd::make_unique<QWidget>();
+            // set root widget to the the active window to ensure focus in/out events are fired
+            QApplication::setActiveWindow(m_rootWidget.get());
             m_rootWidget->setFixedSize(WidgetSize);
             m_rootWidget->move(0, 0); // explicitly set the widget to be in the upper left corner
+
+            m_otherWidget = AZStd::make_unique<QWidget>();
+            m_otherWidget->setFixedSize(WidgetSize / 2);
+            m_otherWidget->move(WidgetSize.width(), 0); // move widget to right of root widget
 
             m_controllerList = AZStd::make_shared<AzFramework::ViewportControllerList>();
             m_controllerList->RegisterViewportContext(TestViewportId);
@@ -114,6 +123,9 @@ namespace UnitTest
 
             m_controllerList->UnregisterViewportContext(TestViewportId);
             m_controllerList.reset();
+
+            QApplication::setActiveWindow(nullptr);
+            m_otherWidget.reset();
             m_rootWidget.reset();
 
             AllocatorsTestFixture::TearDown();
@@ -125,7 +137,9 @@ namespace UnitTest
 
             // listen for events signaled from QtEventToAzInputMapper and forward to the controller list
             QObject::connect(
-                m_inputChannelMapper.get(), &AzToolsFramework::QtEventToAzInputMapper::InputChannelUpdated, m_rootWidget.get(),
+                m_inputChannelMapper.get(),
+                &AzToolsFramework::QtEventToAzInputMapper::InputChannelUpdated,
+                m_rootWidget.get(),
                 [this, nativeWindowHandle](const AzFramework::InputChannel* inputChannel, [[maybe_unused]] QEvent* event)
                 {
                     m_controllerList->HandleInputChannelEvent(
@@ -138,6 +152,8 @@ namespace UnitTest
             // note: WindowRequests is used internally by ModularViewportCameraController, this ensures it returns the viewport size we want
             ON_CALL(m_mockWindowRequests, GetClientAreaSize())
                 .WillByDefault(Return(AzFramework::WindowSize(WidgetSize.width(), WidgetSize.height())));
+
+            m_mockViewportInteractionRequests.Connect(TestViewportId);
 
             // respond to begin/end cursor capture events
             m_viewportMouseCursorRequests.Connect(TestViewportId, m_inputChannelMapper.get());
@@ -186,6 +202,7 @@ namespace UnitTest
         void HaltCollaborators()
         {
             m_editorModularViewportCameraComposer.reset();
+            m_mockViewportInteractionRequests.Disconnect();
             m_mockWindowRequests.Disconnect();
             m_viewportMouseCursorRequests.Disconnect();
             m_cameraViewportContextView = nullptr;
@@ -222,7 +239,9 @@ namespace UnitTest
             m_controllerList->UpdateViewport({ TestViewportId, AzFramework::FloatSeconds(deltaTimeFn()), AZ::ScriptTimePoint() });
         }
 
+        ::testing::NiceMock<MockViewportInteractionRequests> m_mockViewportInteractionRequests;
         AZStd::unique_ptr<QWidget> m_rootWidget;
+        AZStd::unique_ptr<QWidget> m_otherWidget;
         AzFramework::ViewportControllerListPtr m_controllerList;
         AZStd::unique_ptr<AzToolsFramework::QtEventToAzInputMapper> m_inputChannelMapper;
         ::testing::NiceMock<MockWindowRequests> m_mockWindowRequests;
@@ -423,6 +442,60 @@ namespace UnitTest
         using ::testing::FloatNear;
         EXPECT_THAT(eulerAngles.GetX(), FloatNear(0.0f, 0.001f));
         EXPECT_THAT(eulerAngles.GetZ(), FloatNear(0.0f, 0.001f));
+
+        // Clean-up
+        HaltCollaborators();
+    }
+
+    TEST_F(ModularViewportCameraControllerFixture, CameraModifersAreDetectedWhenViewportIsNotInFocus)
+    {
+        SandboxEditor::SetCameraCaptureCursorForLook(false);
+
+        const float deltaTime = 1.0f / 60.0f;
+
+        // Given
+        PrepareCollaborators();
+
+        // store initial camera translation and rotation
+        const AZ::Vector3 cameraTranslation = m_cameraViewportContextView->GetCameraTransform().GetTranslation();
+        const AZ::Quaternion cameraRotation = m_cameraViewportContextView->GetCameraTransform().GetRotation();
+
+        // create default projected ray (going into the screen)
+        using ::testing::_;
+        using ::testing::Return;
+        ON_CALL(m_mockViewportInteractionRequests, ViewportScreenToWorldRay(_))
+            .WillByDefault(Return(AzToolsFramework::ViewportInteraction::ProjectedViewportRay{ cameraTranslation, AZ::Vector3::CreateAxisY() }));
+
+        // When
+        // press alt without main viewport in focus
+        m_otherWidget->setFocus();
+        QTest::keyPress(m_otherWidget.get(), Qt::Key::Key_Alt);
+        m_controllerList->UpdateViewport({ TestViewportId, AzFramework::FloatSeconds(deltaTime), AZ::ScriptTimePoint() });
+
+        // change focus
+        m_rootWidget->setFocus();
+
+        // move cursor to the center of the screen
+        auto start = QPoint(WidgetSize.width() / 2, WidgetSize.height() / 2);
+        MouseMove(m_rootWidget.get(), start, QPoint(0, 0));
+        m_controllerList->UpdateViewport({ TestViewportId, AzFramework::FloatSeconds(deltaTime), AZ::ScriptTimePoint() });
+
+        // update starting position of mouse cursor request (if needed later)
+        m_viewportMouseCursorRequests.m_mousePosition = AzToolsFramework::ViewportInteraction::ScreenPointFromQPoint(start);
+
+        // start a mouse press and update the viewport
+        QTest::mousePress(m_rootWidget.get(), Qt::MouseButton::LeftButton, Qt::NoModifier, start);
+        m_controllerList->UpdateViewport({ TestViewportId, AzFramework::FloatSeconds(deltaTime), AZ::ScriptTimePoint() });
+
+        // move mouse right and perform a camera orbit (with left mouse button held from before)
+        const auto mouseDelta = QPoint(200, 0);
+        MouseMove(m_rootWidget.get(), start, mouseDelta);
+        m_controllerList->UpdateViewport({ TestViewportId, AzFramework::FloatSeconds(deltaTime), AZ::ScriptTimePoint() });
+
+        // Then
+        // camera should have moved (we track both position and rotation)
+        EXPECT_THAT(cameraTranslation, ::testing::Not(IsClose(m_cameraViewportContextView->GetCameraTransform().GetTranslation())));
+        EXPECT_THAT(cameraRotation, ::testing::Not(IsClose(m_cameraViewportContextView->GetCameraTransform().GetRotation())));
 
         // Clean-up
         HaltCollaborators();
