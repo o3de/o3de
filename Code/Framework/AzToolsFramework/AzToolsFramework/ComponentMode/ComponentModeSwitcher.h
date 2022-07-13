@@ -24,47 +24,47 @@ namespace AzToolsFramework
 
     namespace ComponentModeFramework
     {
-
-        struct ComponentInfo
+        // Struct to contain relevant information about component 
+        struct ComponentData
         {
-            ComponentInfo(AZ::EntityComponentIdPair pairId);
-             
-            // disable copying and moving (implicit)
-            //ComponentInfo(const ComponentInfo&);
+            ComponentData() = default;
+            ComponentData(AZ::EntityComponentIdPair pairId);
 
-            AZ::EntityComponentIdPair m_pairId;
-            AZ::Entity* m_entity = nullptr;
-            AZ::Component* m_component = nullptr;
-            AZ::ComponentDescriptor* m_componentDescriptor = nullptr;
-            ViewportUi::ButtonId m_buttonId;
-            // AZStd::vector<ViewportUi::ButtonId> m_switcherButtonsId; //!< Vector of component mode switcher button ids.
+            // Member variables
+            AZ::EntityComponentIdPair m_pairId; //!< ID of entity component pair.
+            AZ::Entity* m_entity = nullptr; //!< Pointer to entity associated with pairId.
+            AZ::Component* m_component = nullptr; //!< Pointer to component associated with pairId.
+            AZ::ComponentDescriptor* m_componentDescriptor = nullptr; //!< Pointer to the component descriptor.
+            ViewportUi::ButtonId m_buttonId; //!< Button ID of switcher component.
         };
 
         class ComponentModeSwitcher
         {
         public:
-            ComponentModeSwitcher(Switcher* switcher)
-                : m_switcher(switcher)
-            {
-            }
+            ComponentModeSwitcher(Switcher* switcher);
 
             ~ComponentModeSwitcher() = default;
-
-            bool Update(EntityIdList selectedEntityIds, EntityIdList deselectedEntityIds);
+            /// Updates the switcher based on the entity selected
+            /// <param name="selectedEntityIds"></param>
+            /// <param name="deselectedEntityIds"></param>
+            void Update(EntityIdList selectedEntityIds, EntityIdList deselectedEntityIds);
             void UpdateComponentButton(AZ::EntityComponentIdPair, bool addRemove);
 
+            void ActivateComponentMode(ViewportUi::ButtonId);
+
+            AZ::Event<ViewportUi::ButtonId>::Handler m_handler;
         private:
-            void AddSwitcherButton(ComponentInfo*, const char*, const char*);
+
+            void AddSwitcherButton(ComponentData&, const char*, const char*);
             void AddComponentButton(AZ::EntityComponentIdPair);
             void RemoveComponentButton(AZ::EntityComponentIdPair);
-            // void RemoveSwitcherButton(AZ::EntityComponentIdPair, const char*);
 
             AZStd::unordered_map<AZ::EntityComponentIdPair, AZ::Component*> GetComponentModeIds(AZ::Entity*);
 
             // Member variables
-            Switcher* m_switcher = nullptr;
-            AZStd::unordered_map<AZ::EntityComponentIdPair, AZStd::string> m_buttons;
-            AZStd::vector<ComponentInfo> m_addedComponents;
+            Switcher* m_switcher = nullptr; //!< Pointer to the UI switcher.
+            AZStd::vector<ComponentData> m_addedComponents; //!< Vector of ComponentData elements
+            
         };
 
     } // namespace ComponentModeFramework

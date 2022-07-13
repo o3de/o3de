@@ -65,7 +65,7 @@ namespace AzToolsFramework::ViewportUi
         if (auto switcherIt = m_switcherButtonGroups.find(switcherId); switcherIt != m_switcherButtonGroups.end())
         {
             auto switcher = switcherIt->second;
-            switcher->SetHighlightedButton(buttonId);
+            //switcher->SetHighlightedButton(buttonId);
             m_viewportUi->SetSwitcherActiveButton(switcher->GetViewportUiElementId(), buttonId);
             UpdateButtonGroupUi(switcher.get());
         }

@@ -12,26 +12,47 @@
 #include <AzToolsFramework/ToolsComponents/EditorPendingCompositionBus.h>
 #include <AzToolsFramework/ViewportSelection/EditorTransformComponentSelection.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiManager.h>
+#include <AzToolsFramework/ComponentMode/ComponentModeDelegate.h>
 
 #pragma optimize("", off)
 #pragma inline_depth(0)
 namespace AzToolsFramework::ComponentModeFramework
 
 {
-    ComponentInfo::ComponentInfo(AZ::EntityComponentIdPair pairId)
+    // ComponentData constructor to fill in component info
+    ComponentData::ComponentData(AZ::EntityComponentIdPair pairId)
         : m_pairId(pairId)
     {
         AZ::ComponentApplicationBus::BroadcastResult(
             m_entity, &AZ::ComponentApplicationBus::Events::FindEntity, AZ::EntityId(pairId.GetEntityId()));
-
         AZ::ComponentId componentId = pairId.GetComponentId();
+
         m_component = m_entity->FindComponent(componentId);
         const auto componentTypeId = m_component->GetUnderlyingComponentType();
 
         AZ::ComponentDescriptorBus::EventResult(m_componentDescriptor, componentTypeId, &AZ::ComponentDescriptorBus::Events::GetDescriptor);
+
     }
 
-    bool ComponentModeSwitcher::Update(EntityIdList selectedEntityIds, [[maybe_unused]] EntityIdList deselectedEntityIds)
+    ComponentModeSwitcher::ComponentModeSwitcher(Switcher* switcher)
+        : m_switcher(switcher)
+    {
+        /*auto handlerFunc = [this](ViewportUi::ButtonId buttonId)
+        {
+            ViewportUi::ViewportUiRequestBus::Event(
+                ViewportUi::DefaultViewportId,
+                &ViewportUi::ViewportUiRequestBus::Events::SetSwitcherActiveButton,
+               m_switcher->m_switcherId,
+                buttonId);
+
+            if (buttonId != m_switcher->m_transformButtonId)
+            {
+                ActivateComponentMode(buttonId);
+            }
+        };
+        m_handler = AZ::Event<ViewportUi::ButtonId>::Handler(handlerFunc);*/
+    }
+    void ComponentModeSwitcher::Update(EntityIdList selectedEntityIds, [[maybe_unused]] EntityIdList deselectedEntityIds)
     {
         AZ::Entity* entity = nullptr;
 
@@ -57,19 +78,13 @@ namespace AzToolsFramework::ComponentModeFramework
 
             if (entity)
             {
-                /*auto map = GetComponentModeIds(entity);
-                for (auto component : map)
+
+                for (auto componentDataIt : m_addedComponents)
                 {
-                    auto pairId = component.first;
-                    RemoveComponentButton(pairId);
-                }*/
-                for (auto componentInfoIt : m_addedComponents)
-                {
-                    RemoveComponentButton(componentInfoIt.m_pairId);
+                    RemoveComponentButton(componentDataIt.m_pairId);
                 }
             }
         }
-        return true;
     }
 
     void ComponentModeSwitcher::AddComponentButton(AZ::EntityComponentIdPair pairId)
@@ -82,22 +97,27 @@ namespace AzToolsFramework::ComponentModeFramework
         // make a struct which is output of eg queryComponent which returns component, component name if it has a button, then add it to
         // m_addedComponents?
         AZ_Printf("AddComponentButton", "adding button %zu", pairId.GetComponentId());
-        ComponentInfo newComponentInfo = ComponentInfo(pairId);
 
-        //AZ_Printf("logger", "the name is: %s", newComponentInfo.m_componentDescriptor->GetName());
+        ComponentData newComponentInfo = ComponentData(pairId);
+        AZ::Uuid componentId = newComponentInfo.m_component->GetUnderlyingComponentType();
+        AZStd::string iconStr;
+        AzToolsFramework::EditorRequestBus::BroadcastResult(
+            iconStr, &AzToolsFramework::EditorRequestBus::Events::GetComponentEditorIcon, componentId, newComponentInfo.m_component);
+        AZ_Printf("componentIconPath", "adding button %s", iconStr.c_str());
+        // AZ_Printf("logger", "the name is: %s", newComponentInfo.m_componentDescriptor->GetName());
         auto componentName = newComponentInfo.m_componentDescriptor->GetName();
         // componentDescriptor->GetName(); figure it out later
         // If the component has not already been added as a button
         if (auto componentInfoIt = AZStd::find_if(
                 m_addedComponents.begin(),
                 m_addedComponents.end(),
-                [pairId](const ComponentInfo& componentInfo)
+                [pairId](const ComponentData& componentInfo)
                 {
                     return componentInfo.m_pairId == pairId;
                 });
             componentInfoIt == m_addedComponents.end())
         {
-            AddSwitcherButton(&newComponentInfo, componentName, "World");
+            AddSwitcherButton(newComponentInfo, componentName, iconStr.c_str());
             m_addedComponents.push_back(newComponentInfo);
         }
     }
@@ -108,7 +128,7 @@ namespace AzToolsFramework::ComponentModeFramework
         if (auto componentInfoIt = AZStd::find_if(
                 m_addedComponents.begin(),
                 m_addedComponents.end(),
-                [pairId](const ComponentInfo& componentInfo)
+                [pairId](const ComponentData& componentInfo)
                 {
                     return componentInfo.m_pairId == pairId;
                 });
@@ -167,7 +187,7 @@ namespace AzToolsFramework::ComponentModeFramework
         return newMap;
     }
 
-    void ComponentModeSwitcher::AddSwitcherButton(ComponentInfo* component, const char* buttonName, const char* iconName)
+    void ComponentModeSwitcher::AddSwitcherButton(ComponentData& component, const char* buttonName, const char* iconName)
     {
         ViewportUi::ButtonId buttonId;
         ViewportUi::ViewportUiRequestBus::EventResult(
@@ -175,9 +195,42 @@ namespace AzToolsFramework::ComponentModeFramework
             ViewportUi::DefaultViewportId,
             &ViewportUi::ViewportUiRequestBus::Events::CreateSwitcherButton,
             m_switcher->m_switcherId,
-            AZStd::string::format(":/stylesheet/img/UI20/toolbar/%s.svg", iconName),
+            iconName,
             buttonName);
-        component->m_buttonId = buttonId;
+        component.m_buttonId = buttonId;
+    }
+
+    
+
+    void ComponentModeSwitcher::ActivateComponentMode(ViewportUi::ButtonId buttonId)
+    {
+        bool inComponentMode;
+        AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequestBus::BroadcastResult(
+            inComponentMode, &ComponentModeSystemRequests::InComponentMode);
+        ComponentData* component = nullptr;
+
+        /*auto transformButtonId = m_switcher->m_switcherButtonsId[0];*/
+
+        if (auto componentDataIt = AZStd::find_if(
+                m_addedComponents.begin(),
+                m_addedComponents.end(),
+                [buttonId](const ComponentData& componentData)
+                {
+                    return componentData.m_buttonId == buttonId;
+                });
+            componentDataIt != m_addedComponents.end())
+        {
+            component = componentDataIt;
+        }
+
+        if (inComponentMode)
+        {
+            AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequestBus::Broadcast(
+                &ComponentModeSystemRequests::EndComponentMode);
+        }
+
+        AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequestBus::Broadcast(
+            &ComponentModeSystemRequests::AddSelectedComponentModesOfType, component->m_component->GetUnderlyingComponentType());
     }
 } // namespace AzToolsFramework::ComponentModeFramework
 #pragma optimize("", on)

@@ -33,6 +33,8 @@
 #include <AzToolsFramework/ViewportSelection/EditorTransformComponentSelectionRequestBus.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiRequestBus.h>
 #include <AzToolsFramework/API/EntityCompositionNotificationBus.h>
+#include <AzToolsFramework/ComponentMode/ComponentModeCollection.h>
+#include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
 
 namespace AzToolsFramework
 {
@@ -127,6 +129,7 @@ namespace AzToolsFramework
         ViewportUi::SwitcherId m_switcherId; //!< Switcher id.
         AZStd::vector<ViewportUi::ButtonId> m_switcherButtonsId; //!< Vector of Switcher button ids.
         AZ::Event<ViewportUi::ButtonId>::Handler m_switcherHandler; //!< Callback for when a switcher button is pressed.
+        ViewportUi::ButtonId m_switcherTransformButtonId; //!< Id of the Viewport UI button for switcher transform mode.
     };
 
     //! Exposed to the viewport manager
@@ -369,11 +372,12 @@ namespace AzToolsFramework
         ViewportUi::ButtonId m_translateButtonId; //!< Id of the Viewport UI button for translate mode.
         ViewportUi::ButtonId m_rotateButtonId; //!< Id of the Viewport UI button for rotate mode.
         ViewportUi::ButtonId m_scaleButtonId; //!< Id of the Viewport UI button for scale mode.
+        ViewportUi::ButtonId m_switcherTransformButtonId; //!< Id of the Viewport UI button for switcher transform mode.
         AZ::Event<ViewportUi::ButtonId>::Handler m_transformModeSelectionHandler; //!< Event handler for the Viewport UI cluster.
         AzFramework::ClickDetector m_clickDetector; //!< Detect different types of mouse click.
         AzFramework::CursorState m_cursorState; //!< Track the mouse position and delta movement each frame.
         SpaceCluster m_spaceCluster; //!< Related viewport ui state for controlling the current reference space.
-        SnappingCluster m_snappingCluster; //!< Related viewport ui state for aligning positions to a grid or reference frame.
+        SnappingCluster m_snappingCluster;//!< Related viewport ui state for aligning positions to a grid or reference frame.
         Switcher m_switcher; //!< Related viewport ui state for controlling the component mode switcher.
         bool m_viewportUiVisible = true; //!< Used to hide/show the viewport ui elements.
         AZStd::unique_ptr<ComponentModeFramework::ComponentModeSwitcher> m_componentModeSwitcher;
