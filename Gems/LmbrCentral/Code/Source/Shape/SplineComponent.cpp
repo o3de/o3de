@@ -199,7 +199,7 @@ namespace LmbrCentral
                 ->Event("GetVertex",
                     [](SplineComponentRequests* handler, size_t index) -> AZStd::tuple<AZ::Vector3, bool>
                     {
-                        AZ::Vector3 vertex;
+                        AZ::Vector3 vertex(0.0f);
                         bool vertexFound = handler->GetVertex(index, vertex);
                         return AZStd::make_tuple(vertex, vertexFound);
                     })
