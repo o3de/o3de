@@ -23,7 +23,7 @@ namespace UnitTests
         }
 
     protected:
-        bool Start(AssetProcessor::BuilderPurpose purpose) override;
+        AZ::Outcome<void, AZStd::string> Start(AssetProcessor::BuilderPurpose purpose) override;
     };
 
     class TestBuilderManager : public AssetProcessor::BuilderManager

@@ -106,7 +106,15 @@ namespace AZ
         {
             if (m_nativeQueue != VK_NULL_HANDLE)
             {
-                AssertSuccess(vkQueueWaitIdle(m_nativeQueue));
+                VkResult result = vkQueueWaitIdle(m_nativeQueue);
+#if defined(AZ_FORCE_CPU_GPU_INSYNC)
+                if (result == VK_ERROR_DEVICE_LOST)
+                {
+                    AZ_TracePrintf("Device", "The last executing pass before device removal was: %s\n", GetDevice().GetLastExecutingScope().data());
+                    GetDevice().SetDeviceRemoved();
+                }
+#endif
+                AssertSuccess(result);
             }
         }
 

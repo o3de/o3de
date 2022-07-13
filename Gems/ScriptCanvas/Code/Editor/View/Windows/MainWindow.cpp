@@ -1351,6 +1351,7 @@ namespace ScriptCanvasEditor
 
 
         auto activeGraph =  SourceHandle::FromRelativePath(result.m_handle, assetInfo.m_assetId.m_guid, assetInfo.m_relativePath);
+        activeGraph = SourceHandle::MarkAbsolutePath(activeGraph, fullPath);
         
         auto openOutcome = OpenScriptCanvasAsset(activeGraph, Tracker::ScriptCanvasFileState::UNMODIFIED);
         if (openOutcome)
@@ -1645,10 +1646,13 @@ namespace ScriptCanvasEditor
         {
             auto newPath = sourceHandle.AbsolutePath();
             newPath.ReplaceExtension(".scriptcanvas");
+
             if (auto relativeOption = ScriptCanvasEditor::CreateFromAnyPath(sourceHandle, newPath))
             {
                 sourceHandle = *relativeOption;
             }
+
+            sourceHandle = SourceHandle::MarkAbsolutePath(sourceHandle, newPath);
         }        
 
         if (!m_activeGraph.AnyEquals(sourceHandle))
@@ -1789,13 +1793,13 @@ namespace ScriptCanvasEditor
         if (saveSuccess)
         {
             SourceHandle& fileAssetId = memoryAsset;
-            fileAssetId = SourceHandle::MarkAbsolutePath(fileAssetId, result.absolutePath);
             int currentTabIndex = m_tabBar->currentIndex();
 
             AZ::Data::AssetInfo assetInfo;
             AZ_VerifyWarning("ScriptCanvas", AssetHelpers::GetSourceInfo(fileAssetId.RelativePath().c_str(), assetInfo)
                 , "Failed to find asset info for source file just saved: %s", fileAssetId.RelativePath().c_str());
             fileAssetId = SourceHandle::FromRelativePath(fileAssetId, assetInfo.m_assetId.m_guid, assetInfo.m_relativePath);
+            fileAssetId = SourceHandle::MarkAbsolutePath(fileAssetId, result.absolutePath);
 
             // this path is questionable, this is a save request that is not the current graph
             // We've saved as over a new graph, so we need to close the old one.

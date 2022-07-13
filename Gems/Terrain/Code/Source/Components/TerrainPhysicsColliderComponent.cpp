@@ -438,8 +438,9 @@ namespace Terrain
     }
 
     //! Updates the list of heights and materials within the region.
-    void TerrainPhysicsColliderComponent::UpdateHeightsAndMaterials(
+    void TerrainPhysicsColliderComponent::UpdateHeightsAndMaterialsAsync(
         const Physics::UpdateHeightfieldSampleFunction& updateHeightsMaterialsCallback,
+        const Physics::UpdateHeightfieldCompleteFunction& updateHeightsCompleteCallback,
         size_t startColumn,
         size_t startRow,
         size_t numColumns,
@@ -449,16 +450,13 @@ namespace Terrain
 
         AZ_PROFILE_FUNCTION(Terrain);
 
-        if (!m_terrainDataActive)
+        // Early out if there's no terrain data, or we aren't trying to update any points.
+        if ((!m_terrainDataActive) || (numColumns == 0) || (numRows == 0))
         {
+            updateHeightsCompleteCallback();
             return;
         }
 
-        // Early-out if we aren't trying to update any points.
-        if ((numColumns == 0) || (numRows == 0))
-        {
-            return;
-        }
 
         AZ::Aabb worldSize = GetHeightfieldAabb();
         const AZ::Vector2 gridResolution = GetHeightfieldGridSpacing();
@@ -481,8 +479,10 @@ namespace Terrain
             surfaceTagToMaterialIndexLookup = m_surfaceTagToMaterialIndexLookup;
         }
 
+        // Everything is copied by value into the lambda because this is an async callback, so anything referenced by it needs to
+        // continue to exist after the outer function completes.
         auto perPositionCallback =
-            [startColumn, startRow, &updateHeightsMaterialsCallback, &surfaceTagToMaterialIndexLookup, worldCenterZ,
+            [startColumn, startRow, updateHeightsMaterialsCallback, surfaceTagToMaterialIndexLookup, worldCenterZ,
             worldHeightBoundsMin, worldHeightBoundsMax]
             (size_t xIndex, size_t yIndex, const AzFramework::SurfaceData::SurfacePoint& surfacePoint, bool terrainExists)
         {
@@ -525,19 +525,16 @@ namespace Terrain
         };
 
         // Create an async query to update all of the height and material data so that we can spread the computation across
-        // multiple threads, but block on completion so that we can guarantee the updates have completed by the time we leave
-        // this method.
+        // multiple threads and then call back a completion method at the end.
 
         AZStd::shared_ptr<AzFramework::Terrain::TerrainJobContext> jobContext;
 
-        AZStd::binary_semaphore wait;
         auto params = AZStd::make_shared<AzFramework::Terrain::QueryAsyncParams>();
         params->m_desiredNumberOfJobs = cl_terrainPhysicsColliderMaxJobs;
         params->m_completionCallback =
-            [&wait]([[maybe_unused]] AZStd::shared_ptr<AzFramework::Terrain::TerrainJobContext> context)
+            [updateHeightsCompleteCallback]([[maybe_unused]] AZStd::shared_ptr<AzFramework::Terrain::TerrainJobContext> context)
         {
-            // Notify the main test thread that the query has completed.
-            wait.release();
+            updateHeightsCompleteCallback();
         };
 
         // We can use the "EXACT" sampler here because our query points are guaranteed to be aligned with terrain grid points.
@@ -547,14 +544,35 @@ namespace Terrain
                 TerrainDataRequests::TerrainDataMask::Heights | TerrainDataRequests::TerrainDataMask::SurfaceData),
             perPositionCallback, AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT, params);
 
-        // If a jobContext was successfully created, wait for the query to complete.
-        // (If the call to UpdateHeightsAndMaterials was made on a thread, and the TerrainSystem is currently shutting down on a different
+        // If the call to UpdateHeightsAndMaterials was made on a thread, and the TerrainSystem is currently shutting down on a different
         // thread, it's possible that the TerrainDataRequest bus won't have a listener at the moment we call it, which is why we need
-        // to validate that the jobContext was returned successfully)
-        if (jobContext)
+        // to validate that the jobContext was returned successfully. If it wasn't, just call the completion callback immediately.
+        if (!jobContext)
         {
-            wait.acquire();
+            updateHeightsCompleteCallback();
         }
+    }
+
+    //! Updates the list of heights and materials within the region.
+    void TerrainPhysicsColliderComponent::UpdateHeightsAndMaterials(
+        const Physics::UpdateHeightfieldSampleFunction& updateHeightsMaterialsCallback,
+        size_t startColumn,
+        size_t startRow,
+        size_t numColumns,
+        size_t numRows) const
+    {
+        AZ_PROFILE_FUNCTION(Terrain);
+
+        AZStd::binary_semaphore wait;
+        auto completionCallback = [&wait]()
+        {
+            wait.release();
+        };
+
+        UpdateHeightsAndMaterialsAsync(updateHeightsMaterialsCallback, completionCallback, startColumn, startRow, numColumns, numRows);
+
+        // Wait for the query to complete.
+        wait.acquire();
     }
 
     void TerrainPhysicsColliderComponent::BuildSurfaceTagToMaterialIndexLookup()

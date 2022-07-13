@@ -52,6 +52,8 @@ namespace ScriptCanvasEditor
 
     void EditorScriptCanvasComponent::Activate()
     {
+        using namespace AzToolsFramework;
+
         EditorComponentBase::Activate();
         AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusConnect();
         m_handlerSourceCompiled = m_configuration.ConnectToSourceCompiled([](const Configuration&)

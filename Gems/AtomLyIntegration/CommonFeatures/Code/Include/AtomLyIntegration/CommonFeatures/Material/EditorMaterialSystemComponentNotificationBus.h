@@ -25,9 +25,18 @@ namespace AZ
             static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
             static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
 
-            //! Notify that a material preview image is ready
-            virtual void OnRenderMaterialPreviewComplete(
-                const AZ::EntityId& entityId, const AZ::Render::MaterialAssignmentId& materialAssignmentId, const QPixmap& pixmap) = 0;
+            //! This notification is sent when a material preview image for a given entity and material assignment has been rendered by the
+            //! preview rendering system
+            virtual void OnRenderMaterialPreviewRendered(
+                [[maybe_unused]] const AZ::EntityId& entityId,
+                [[maybe_unused]] const AZ::Render::MaterialAssignmentId& materialAssignmentId,
+                [[maybe_unused]] const QPixmap& pixmap){};
+
+            //! This notification is sent after a material preview image has been rendered and cached
+            virtual void OnRenderMaterialPreviewReady(
+                [[maybe_unused]] const AZ::EntityId& entityId,
+                [[maybe_unused]] const AZ::Render::MaterialAssignmentId& materialAssignmentId,
+                [[maybe_unused]] const QPixmap& pixmap){};
         };
         using EditorMaterialSystemComponentNotificationBus = AZ::EBus<EditorMaterialSystemComponentNotifications>;
     } // namespace Render

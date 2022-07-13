@@ -1,0 +1,122 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "DepthParentTemplate",
+            "PassClass": "ParentPass",
+            "Slots": [
+                // Inputs...
+                {
+                    "Name": "SkinnedMeshes",
+                    "SlotType": "Input"
+                },
+                // Outputs...
+                {
+                    "Name": "DepthMSAA",
+                    "SlotType": "Output"
+                },
+                {
+                    "Name": "Depth",
+                    "SlotType": "Output"
+                },
+                {
+                    "Name": "DepthLinear",
+                    "SlotType": "Output"
+                },
+                // SwapChain here is only used to reference the frame height and format
+                {
+                    "Name": "PipelineOutput",
+                    "SlotType": "InputOutput"
+                }
+            ],
+            "Connections": [
+                {
+                    "LocalSlot": "DepthMSAA",
+                    "AttachmentRef": {
+                        "Pass": "DepthPass",
+                        "Attachment": "Output"
+                    }
+                },
+                {
+                    "LocalSlot": "Depth",
+                    "AttachmentRef": {
+                        "Pass": "MSAAResolveDepthPass",
+                        "Attachment": "Output"
+                    }
+                },
+                {
+                    "LocalSlot": "DepthLinear",
+                    "AttachmentRef": {
+                        "Pass": "DepthToLinearDepthPass",
+                        "Attachment": "Output"
+                    }
+                }
+            ],
+            "PassRequests": [
+                {
+                    "Name": "DepthPass",
+                    "TemplateName": "DepthMSAAPassTemplate",
+                    "PassData": {
+                        "$type": "RasterPassData",
+                        "DrawListTag": "depth",
+                        "PipelineViewTag": "MainCamera"
+                    },
+                    "Connections": [
+                        {
+                            "LocalSlot": "SkinnedMeshes",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "SkinnedMeshes"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "MSAAResolveDepthPass",
+                    "TemplateName": "MSAAResolveDepthTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "Input",
+                            "AttachmentRef": {
+                                "Pass": "DepthPass",
+                                "Attachment": "Output"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "DepthToLinearDepthPass",
+                    "TemplateName": "DepthToLinearTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "Input",
+                            "AttachmentRef": {
+                                "Pass": "MSAAResolveDepthPass",
+                                "Attachment": "Output"
+                            }
+                        }
+                    ]
+                }
+            ],
+            "PassData": {
+                "$type": "PassData",
+                "PipelineGlobalConnections": [
+                    {
+                        "GlobalName": "Depth",
+                        "Slot": "Depth"
+                    },
+                    {
+                        "GlobalName": "DepthMSAA",
+                        "Slot": "DepthMSAA"
+                    },
+                    {
+                        "GlobalName": "DepthLinear",
+                        "Slot": "DepthLinear"
+                    }
+                ]
+            }
+        }
+    }
+}

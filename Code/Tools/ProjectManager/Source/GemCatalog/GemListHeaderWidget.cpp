@@ -61,6 +61,11 @@ namespace O3DE::ProjectManager
         showCountLabel->setObjectName("GemCatalogHeaderShowCountLabel");
         topLayout->addWidget(showCountLabel);
 
+        QPushButton* refreshButton = new QPushButton();
+        refreshButton->setObjectName("RefreshButton");
+        connect( refreshButton, &QPushButton::clicked, [this] { emit OnRefresh(); });
+        topLayout->addWidget(refreshButton);
+
         auto refreshGemCountUI = [=]() {
                 const int numGemsShown = proxyModel->rowCount();
                 showCountLabel->setText(QString(tr("showing %1 Gems")).arg(numGemsShown));

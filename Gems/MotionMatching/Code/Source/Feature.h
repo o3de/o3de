@@ -36,6 +36,7 @@ namespace EMotionFX::MotionMatching
     class FrameDatabase;
     class MotionMatchingInstance;
     class TrajectoryQuery;
+    class FeatureMatrixTransformer;
 
     //! A feature is a property extracted from the animation data and is used by the motion matching algorithm to find the next best matching frame.
     //! Examples of features are the position of the feet joints, the linear or angular velocity of the knee joints or the trajectory history and future
@@ -89,6 +90,7 @@ namespace EMotionFX::MotionMatching
 
             const Pose& m_currentPose; //!< Current actor instance pose.
             const TrajectoryQuery& m_trajectoryQuery;
+            FeatureMatrixTransformer* m_featureTransformer = nullptr;
         };
         virtual void FillQueryVector([[maybe_unused]] QueryVector& queryVector,
             [[maybe_unused]] const QueryVectorContext& context) = 0;
@@ -114,10 +116,10 @@ namespace EMotionFX::MotionMatching
 
         void SetCostFactor(float costFactor) { m_costFactor = costFactor; }
         float GetCostFactor() const { return m_costFactor; }
-
         virtual void DebugDraw([[maybe_unused]] AzFramework::DebugDisplayRequests& debugDisplay,
             [[maybe_unused]] const Pose& currentPose,
             [[maybe_unused]] const FeatureMatrix& featureMatrix,
+            [[maybe_unused]] const FeatureMatrixTransformer* featureTransformer,
             [[maybe_unused]] size_t frameIndex) {}
 
         void SetDebugDrawColor(const AZ::Color& color);
