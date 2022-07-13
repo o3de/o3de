@@ -159,7 +159,7 @@ if __name__ == "__main__":
         else:
             s3_top_level_dir = "tiaf"
 
-        tiaf = TestImpact(args.config, vars(args))
+        tiaf = TestImpact(vars(args))
         tiaf_result = tiaf.run()
         if args.mars_index_prefix:
             logger.info("Transmitting report to MARS...")

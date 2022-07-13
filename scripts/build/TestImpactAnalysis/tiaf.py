@@ -23,7 +23,7 @@ class TestImpact:
 
     
 
-    def __init__(self, config_file: str, args: dict):
+    def __init__(self, args: dict):
         """
         Initializes the test impact model with the commit, branches as runtime configuration.
 
@@ -42,7 +42,7 @@ class TestImpact:
         self._s3_bucket = args.get('s3_bucket')
         self._suite = args.get('suite')
 
-        self._config = self._parse_config_file(config_file)
+        self._config = self._parse_config_file(args['config'])
 
         # Initialise branches
         self._src_branch = args.get("src_branch")
