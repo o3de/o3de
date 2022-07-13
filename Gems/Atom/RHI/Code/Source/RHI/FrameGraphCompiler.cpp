@@ -60,8 +60,9 @@ namespace AZ
             {
                 m_imageViewCache.Clear();
                 m_bufferViewCache.Clear();
-                m_reverseLookupHash.clear();
-
+                m_imageReverseLookupHash.clear();
+                m_bufferReverseLookupHash.clear();
+               
                 ShutdownInternal();
                 DeviceObject::Shutdown();
             }
@@ -727,9 +728,8 @@ namespace AZ
             {
                 // This is one way of clearing view entries within the cache if we are creating a new view to replace the old one.
                 // Normally this can happen for transient resources if their pointer within the heap changes for the current frame
-                HashValue64 idViewHash = imageViewDescriptor.GetHash(TypeHash64(image->GetName()));
-                RemoveFromCache(image->GetName(), idViewHash, m_imageViewCache);
-
+                const ImageResourceViewData imageResourceViewData = ImageResourceViewData {image->GetName(), imageViewDescriptor};
+                RemoveFromCache(imageResourceViewData, m_imageReverseLookupHash, m_imageViewCache);
                 // Create a new image view instance and insert it into the cache.
                 Ptr<ImageView> imageViewPtr = Factory::Get().CreateImageView();
                 if (imageViewPtr->Init(*image, imageViewDescriptor) == ResultCode::Success)
@@ -738,7 +738,7 @@ namespace AZ
                     m_imageViewCache.Insert(static_cast<uint64_t>(hash), AZStd::move(imageViewPtr));
                     if (!image->GetName().IsEmpty())
                     {
-                        m_reverseLookupHash.emplace(idViewHash, hash);
+                        m_imageReverseLookupHash.emplace(imageResourceViewData, hash);
                     }
                 }
                 else
@@ -762,15 +762,19 @@ namespace AZ
             {
                 // This is one way of clearing view entries within the cache if we are creating a new view to replace the old one.
                 // Normally this can happen for transient resources if their pointer within the heap changes for the current frame
-                HashValue64 idViewHash = bufferViewDescriptor.GetHash(TypeHash64(buffer->GetName()));
-                RemoveFromCache(buffer->GetName(), idViewHash, m_bufferViewCache);
-
+                const BufferResourceViewData bufferResourceViewData = BufferResourceViewData {buffer->GetName(), bufferViewDescriptor};
+                RemoveFromCache(bufferResourceViewData, m_bufferReverseLookupHash, m_bufferViewCache);
+                
                 // Create a new buffer view instance and insert it into the cache.
                 Ptr<BufferView> bufferViewPtr = Factory::Get().CreateBufferView();
                 if (bufferViewPtr->Init(*buffer, bufferViewDescriptor) == ResultCode::Success)
                 {
                     bufferView = bufferViewPtr.get();
                     m_bufferViewCache.Insert(static_cast<uint64_t>(hash), AZStd::move(bufferViewPtr));
+                    if (!buffer->GetName().IsEmpty())
+                    {
+                        m_bufferReverseLookupHash.emplace(bufferResourceViewData, hash);
+                    }
                 }
                 else
                 {
@@ -849,20 +853,23 @@ namespace AZ
                 }
             }
         }
-       
-        template<typename ObjectType>
-        void FrameGraphCompiler::RemoveFromCache(RHI::AttachmentId attachmentId, HashValue64 idViewHash, ObjectCache<ObjectType>& cache)
+    
+        template<typename ReverseLookupObjectType, typename ObjectCacheType>
+        void FrameGraphCompiler::RemoveFromCache(ReverseLookupObjectType objectToRemove,
+                                                  AZStd::unordered_map<ReverseLookupObjectType, HashValue64>& reverseHashLookupMap,
+                                                  ObjectCache<ObjectCacheType>& objectCache)
         {
-            if (attachmentId.IsEmpty())
+            if (objectToRemove.m_name.IsEmpty())
             {
                 return;
             }
-            bool isResourceRegistered = m_reverseLookupHash.contains(idViewHash);
+            
+            bool isResourceRegistered = reverseHashLookupMap.contains(objectToRemove);
             if (isResourceRegistered)
             {
-                HashValue64 originalHash = m_reverseLookupHash.find(idViewHash)->second;
-                cache.EraseItem(aznumeric_cast<uint64_t>(originalHash));
-                m_reverseLookupHash.erase(idViewHash);
+                HashValue64 originalHash = reverseHashLookupMap.find(objectToRemove)->second;
+                objectCache.EraseItem(aznumeric_cast<uint64_t>(originalHash));
+                reverseHashLookupMap.erase(objectToRemove);
             }
         }
     }
