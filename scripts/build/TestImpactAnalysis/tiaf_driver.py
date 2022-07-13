@@ -146,25 +146,15 @@ def parse_args():
     args = parser.parse_args()
 
     return args
-
-
-if __name__ == "__main__":
-
+    
+def main(args: dict):
     try:
-        args = parse_args()
-
-        s3_top_level_dir = None
-        if args.s3_top_level_dir:
-            s3_top_level_dir = args.s3_top_level_dir
-        else:
-            s3_top_level_dir = "tiaf"
-
-        tiaf = TestImpact(vars(args))
+        tiaf = TestImpact(args)
         tiaf_result = tiaf.run()
         if args.mars_index_prefix:
             logger.info("Transmitting report to MARS...")
             mars_utils.transmit_report_to_mars(
-                args.mars_index_prefix, tiaf_result, sys.argv, args.build_number)
+                args['mars_index_prefix'], tiaf_result, sys.argv, args['build_number'])
 
         logger.info("Complete!")
         # Non-gating will be removed from this script and handled at the job level in SPEC-7413
@@ -174,3 +164,11 @@ if __name__ == "__main__":
         # Non-gating will be removed from this script and handled at the job level in SPEC-7413
         logger.error(f"Exception caught by TIAF driver: '{e}'.")
         traceback.print_exc()
+
+
+if __name__ == "__main__":
+
+    args = vars(parse_args())
+    main(args)
+
+        
