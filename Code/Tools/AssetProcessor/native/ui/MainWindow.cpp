@@ -15,6 +15,7 @@
 #include "ProductDependencyTreeItemData.h"
 #include "SourceAssetTreeItemData.h"
 #include "SourceAssetTreeModel.h"
+#include <native/ui/BuilderInfoPatternsModel.h>
 
 #include <AzFramework/Asset/AssetSystemBus.h>
 
@@ -161,6 +162,7 @@ MainWindow::MainWindow(GUIApplicationManager* guiApplicationManager, QWidget* pa
     , m_fileSystemWatcher(new QFileSystemWatcher(this))
     , m_builderList(new BuilderListModel(this))
     , m_builderListSortFilterProxy(new BuilderListSortFilterProxy(this))
+    , m_builderInfoPatterns(new AssetProcessor::BuilderInfoPatternsModel(this))
 {
     ui->setupUi(this);
 
@@ -476,6 +478,7 @@ void MainWindow::Activate()
     m_builderListSortFilterProxy->setSourceModel(m_builderList);
     m_builderListSortFilterProxy->sort(0);
     ui->builderList->setModel(m_builderListSortFilterProxy);
+    ui->builderInfoPatternsTableView->setModel(m_builderInfoPatterns);
     connect(ui->builderList->selectionModel(), &QItemSelectionModel::selectionChanged, this, &MainWindow::BuilderTabSelectionChanged);
     connect(m_guiApplicationManager, &GUIApplicationManager::OnBuildersRegistered, [this]()
     {
@@ -545,28 +548,7 @@ void MainWindow::BuilderTabSelectionChanged(const QItemSelection& selected, cons
 
         AZ_Assert(index.isValid(), "BuilderTabSelectionChanged index out of bounds");
 
-        const auto& builder = builders[index.row()];
-        QString patternString;
-
-        for (const auto& pattern : builder.m_patterns)
-        {
-            patternString.append("\n\t");
-            patternString.append(pattern.ToString().c_str());
-        }
-
-        /*ui->builderDetails->setPlainText(
-            QString("Name: %1\n"
-                    "Type: %2\n"
-                    "Fingerprint: %3\n"
-                    "Version Number: %4\n"
-                    "BusId: %5\n"
-                    "Patterns: %6")
-                .arg(builder.m_name.c_str())
-                .arg(builder.m_builderType == AssetBuilderSDK::AssetBuilderDesc::AssetBuilderType::Internal ? "Internal" : "External")
-                .arg(builder.m_analysisFingerprint.c_str())
-                .arg(builder.m_version)
-                .arg(builder.m_busId.ToString<QString>())
-                .arg(patternString));*/
+        m_builderInfoPatterns->Reset(builders[index.row()]);
     }
 }
 
