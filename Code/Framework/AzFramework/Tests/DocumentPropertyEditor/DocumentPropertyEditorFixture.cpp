@@ -15,7 +15,7 @@ namespace AZ::DocumentPropertyEditor::Tests
     {
         UnitTest::AllocatorsFixture::SetUp();
         NameDictionary::Create();
-        AZ::AllocatorInstance<Dom::ValueAllocator>::Create();
+        DocumentAdapter::SetDebugModeEnabled(true);
         m_system = AZStd::make_unique<PropertyEditorSystem>();
         m_adapter = AZStd::make_unique<BasicAdapter>();
     }
@@ -24,7 +24,7 @@ namespace AZ::DocumentPropertyEditor::Tests
     {
         m_adapter.reset();
         m_system.reset();
-        AZ::AllocatorInstance<Dom::ValueAllocator>::Destroy();
+        DocumentAdapter::SetDebugModeEnabled(false);
         NameDictionary::Destroy();
         UnitTest::AllocatorsFixture::TearDown();
     }

@@ -248,11 +248,12 @@ namespace ScriptAutomation
         m_scriptOperations.push(AZStd::move(operation));
     }
 
-    void ScriptAutomationSystemComponent::ExecuteScript(const char* scriptFilePath)
+    void ScriptAutomationSystemComponent::ExecuteScript(const char* scriptFilePath [[maybe_unused]])
     {
         AZ::Data::Asset<AZ::ScriptAsset> scriptAsset = LoadScriptAssetFromPath(scriptFilePath, *m_scriptContext.get());
         if (!scriptAsset)
         {
+#ifndef _RELEASE // AZ_Error is a no-op in release builds
             // Push an error operation on the back of the queue instead of reporting it immediately so it doesn't get lost
             // in front of a bunch of queued m_scriptOperations.
             QueueScriptOperation([scriptFilePath]()
@@ -260,17 +261,21 @@ namespace ScriptAutomation
                     AZ_Error("ScriptAutomation", false, "Script: Could not find or load script asset '%s'.", scriptFilePath);
                 }
             );
+#endif
             return;
         }
 
+#ifndef _RELEASE // AZ_Error is a no-op in release builds
         QueueScriptOperation([scriptFilePath]()
             {
                 AZ_Printf("ScriptAutomation", "Running script '%s'...\n", scriptFilePath);
             }
         );
+#endif
 
         if (!m_scriptContext->Execute(scriptAsset->m_data.GetScriptBuffer().data(), scriptFilePath, scriptAsset->m_data.GetScriptBuffer().size()))
         {
+#ifndef _RELEASE // AZ_Error is a no-op in release builds
             // Push an error operation on the back of the queue instead of reporting it immediately so it doesn't get lost
             // in front of a bunch of queued m_scriptOperations.
             QueueScriptOperation([scriptFilePath]()
@@ -278,6 +283,7 @@ namespace ScriptAutomation
                     AZ_Error("ScriptAutomation", false, "Script: Error running script '%s'.", scriptFilePath);
                 }
             );
+#endif
         }
     }
 } // namespace ScriptAutomation

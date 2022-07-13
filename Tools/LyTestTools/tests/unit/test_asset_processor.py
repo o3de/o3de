@@ -105,6 +105,50 @@ class TestAssetProcessor(object):
         assert under_test._ap_proc is None
 
     @mock.patch('ly_test_tools._internal.managers.workspace.AbstractWorkspaceManager')
+    @mock.patch('ly_test_tools.o3de.asset_processor.waiter.wait_for')
+    @pytest.mark.test_case_id('NOT_RUNNING')
+    @pytest.mark.test_case_id('NO_CONTROL')
+    @pytest.mark.test_case_id('NO_QUIT')
+    @pytest.mark.test_case_id('IO_ERROR')
+    @pytest.mark.test_case_id('TIMEOUT')
+    @pytest.mark.test_case_id('NO_STOP')
+    @pytest.mark.parametrize(
+        "test_id,_ap_proc,_control_connection,send_quit,timesout,no_stop",
+        [
+            ('NOT_RUNNING', None, None, False, 0, False),
+            ('NO_CONTROL', mock.MagicMock(), None, False, 0, False),
+            ('NO_QUIT', mock.MagicMock(), mock.MagicMock(), mock.MagicMock(return_value=False), 0, False),
+            (
+            'IO_ERROR', mock.MagicMock(), mock.MagicMock(), mock.MagicMock(return_value=False, side_effect=IOError),
+            0, False),
+            ('TIMEOUT', mock.MagicMock(), mock.MagicMock(), mock.MagicMock(return_value=True), 0, False),
+            ('NO_STOP', mock.MagicMock(), mock.MagicMock(), mock.MagicMock(return_value=True), 0, True),
+        ],
+    )
+    def test_Stop_ReturnsStopReason(self, mock_waiter, mock_workspace, test_id, _ap_proc, _control_connection,
+                                    send_quit, timesout, no_stop):
+        AssetProcessorError = ly_test_tools.o3de.asset_processor.AssetProcessorError
+        StopProcess = ly_test_tools.o3de.asset_processor.StopReason
+        ly_test_tools.environment.waiter.wait_for = mock.MagicMock(side_effect=AssetProcessorError)
+        under_test = ly_test_tools.o3de.asset_processor.AssetProcessor(mock_workspace)
+        if _ap_proc:
+            under_test.get_process_list = mock.MagicMock(return_value=[mock.MagicMock()])
+        else:
+            under_test.get_process_list = None
+
+        under_test._ap_proc = _ap_proc
+        under_test._control_connection = _control_connection
+        under_test.send_quit = send_quit
+
+        if no_stop:
+            under_test.process_exists = mock.MagicMock()
+            under_test.stop(timeout=timesout) == StopProcess.__getattr__(test_id)
+        else:
+            assert under_test.stop(timeout=timesout) == StopProcess.__getattr__(test_id)
+
+        assert under_test._ap_proc is None
+
+    @mock.patch('ly_test_tools._internal.managers.workspace.AbstractWorkspaceManager')
     @mock.patch('subprocess.run')
     def test_BatchProcess_NoFastscanBatchCompletes_Success(self, mock_run, mock_workspace):
         mock_workspace.project = None

@@ -10,7 +10,6 @@
 #include <Tests/UI/UIFixture.h>
 #include <EMotionStudio/EMStudioSDK/Source/EMStudioManager.h>
 #include <EMotionStudio/EMStudioSDK/Source/PersistentPlugin.h>
-#include <EMotionStudio/Plugins/RenderPlugins/Source/OpenGLRender/OpenGLRenderPlugin.h>
 
 namespace EMotionFX
 {

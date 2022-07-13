@@ -33,7 +33,7 @@ function(ly_add_autogen)
             target_include_directories(${ly_add_autogen_NAME} PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/Azcg/Generated")
         endif()
         execute_process(
-            COMMAND ${LY_PYTHON_CMD} "${LY_ROOT_FOLDER}/cmake/AzAutoGen.py" "${CMAKE_BINARY_DIR}/Azcg/TemplateCache/" "${CMAKE_CURRENT_BINARY_DIR}/Azcg/Generated/" "${CMAKE_CURRENT_SOURCE_DIR}" "${input_files_path}" "${ly_add_autogen_AUTOGEN_RULES}" "-n"
+            COMMAND ${LY_PYTHON_CMD} "${LY_ROOT_FOLDER}/cmake/AzAutoGen.py" "${ly_add_autogen_NAME}" "${CMAKE_BINARY_DIR}/Azcg/TemplateCache/" "${CMAKE_CURRENT_BINARY_DIR}/Azcg/Generated/" "${CMAKE_CURRENT_SOURCE_DIR}" "${input_files_path}" "${ly_add_autogen_AUTOGEN_RULES}" "-n"
             OUTPUT_VARIABLE AUTOGEN_OUTPUTS
         )
         string(STRIP "${AUTOGEN_OUTPUTS}" AUTOGEN_OUTPUTS)
@@ -42,7 +42,7 @@ function(ly_add_autogen)
         add_custom_command(
             OUTPUT ${AUTOGEN_OUTPUTS}
             DEPENDS ${AZCG_DEPENDENCIES}
-            COMMAND ${LY_PYTHON_CMD} "${LY_ROOT_FOLDER}/cmake/AzAutoGen.py" "${CMAKE_BINARY_DIR}/Azcg/TemplateCache/" "${CMAKE_CURRENT_BINARY_DIR}/Azcg/Generated/" "${CMAKE_CURRENT_SOURCE_DIR}" "${input_files_path}" "${ly_add_autogen_AUTOGEN_RULES}"
+            COMMAND ${LY_PYTHON_CMD} "${LY_ROOT_FOLDER}/cmake/AzAutoGen.py" "${ly_add_autogen_NAME}" "${CMAKE_BINARY_DIR}/Azcg/TemplateCache/" "${CMAKE_CURRENT_BINARY_DIR}/Azcg/Generated/" "${CMAKE_CURRENT_SOURCE_DIR}" "${input_files_path}" "${ly_add_autogen_AUTOGEN_RULES}"
             COMMENT "Running AutoGen for ${ly_add_autogen_NAME}"
             VERBATIM
         )

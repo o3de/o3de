@@ -12,6 +12,9 @@
 #include <AzCore/Asset/AssetTypeInfoBus.h>
 #include <AzCore/Serialization/ObjectStream.h>
 #include <ScriptCanvas/Core/Core.h>
+#include <ScriptCanvas/Core/GraphSerialization.h>
+
+// this class is for managing scriptcanvas data through file IO, it does not define, but it uses serialization utilities
 
 namespace AZ
 {
@@ -21,40 +24,32 @@ namespace AZ
 namespace ScriptCanvas
 {
     class ScriptCanvasData;
-}
 
-namespace ScriptCanvasEditor
-{
-    class EditorAssetTree
+    AZ::Outcome<SourceTree, AZStd::string> LoadEditorAssetTree(SourceHandle handle, SourceTree* parent = nullptr);
+
+    struct FileLoadResult
     {
-    public:
-        AZ_CLASS_ALLOCATOR(EditorAssetTree, AZ::SystemAllocator, 0);
+        bool m_isSuccess;
+        SourceHandle m_handle;
+        DeserializeResult m_deserializeResult;
+        AZStd::string m_fileReadErrors;
 
-        EditorAssetTree* m_parent = nullptr;
-        AZStd::vector<EditorAssetTree> m_dependencies;
-        SourceHandle m_asset;
+        operator bool() const
+        {
+            return m_isSuccess && m_deserializeResult.m_isSuccessful;
+        }
 
-        EditorAssetTree* ModRoot();
-
-        void SetParent(EditorAssetTree& parent);
-
-        AZStd::string ToString(size_t depth = 0) const;
+        AZStd::string ToString() const;
     };
 
-    // both success and failure return JSON deserialization errors, regardless of parsing / loading success
-    AZ::Outcome<AZStd::string, AZStd::string> LoadDataFromJson
-        ( ScriptCanvas::ScriptCanvasData& dataTarget
-        , AZStd::string_view source
-        , AZ::SerializeContext& serializeContext);
-
-    AZ::Outcome<EditorAssetTree, AZStd::string> LoadEditorAssetTree(SourceHandle handle, EditorAssetTree* parent = nullptr);
-
-    struct FileLoadSuccess
-    {
-        SourceHandle handle;
-        AZStd::string deserializationErrors;
-    };
-    AZ::Outcome<FileLoadSuccess, AZStd::string> LoadFromFile(AZStd::string_view path);
-
-    AZ::Outcome<void, AZStd::string> SaveToStream(const SourceHandle& source, AZ::IO::GenericStream& stream);
+    /**
+    * Loads the script canvas file at the given path.
+    * @param path Path to the file to load
+    * @param makeEntityIdsUnique controls if the entity IDs are re-generated for the graph to make them unique.
+    *   Set to true if there's a chance the graph may be loaded multiple times, so that buses can be used safely with those IDs.
+    *   Set to false when doing operations that rely on stable entity ID order between runs.
+    * @return An FileLoadResult with either the handle to the data loaded and a string with deserialization issues, or a failure if the file did not load.
+    */
+    FileLoadResult LoadFromFile(AZStd::string_view path
+        , MakeInternalGraphEntitiesUnique makeEntityIdsUnique = MakeInternalGraphEntitiesUnique::Yes);
 }

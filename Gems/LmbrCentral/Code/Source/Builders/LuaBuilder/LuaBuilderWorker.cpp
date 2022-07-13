@@ -283,7 +283,7 @@ namespace LuaBuilder
             // Group 2: quotation mark ("), apostrophe ('), or empty
             // Group 3: specified path or variable (variable will be indicated by empty group 2)
             // Group 4: Same as group 2
-            AZStd::regex requireRegex(R"(\b(?:(require)|Script\.ReloadScript)\s*[\( ]\s*("|'|)([^"')]*)("|'|)\s*\)?)");
+            AZStd::regex requireRegex(R"(\b(?:(require)|Script\.ReloadScript)\s*(?:\(|(?="|'))\s*("|'|)([^"')]*)(\2)\s*\)?)");
             // Regex to match lines looking like a path (containing a /)
             // Group 1: the string contents
             AZStd::regex pathRegex(R"~("((?=[^"]*\/)[^"\n<>:"|?*]{2,})")~");

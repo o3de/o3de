@@ -42,6 +42,9 @@ namespace SurfaceData
             const float adjustedMaxRange = AZStd::max(0.001f, rayMaxRange);
             const AZ::Vector3 rayLength = rayDirection * adjustedMaxRange;
             const AZ::Vector3 rayEnd = rayOrigin + rayLength;
+
+            AZ::Intersect::SegmentTriangleHitTester hitTester(rayOrigin, rayEnd);
+
             for (size_t vertexIndex = 0; vertexIndex < vertexCount; vertexIndex += 4)
             {
                 // This could potentially be optimized further with a single segment / quad intersection check.
@@ -50,9 +53,7 @@ namespace SurfaceData
                 // quads aren't actually planar, or it might just be a precision or winding order issue.
 
                 float resultDistance = 0.0f;
-                if (AZ::Intersect::IntersectSegmentTriangle(
-                    rayOrigin,
-                    rayEnd,
+                if (hitTester.IntersectSegmentTriangle(
                     vertices[vertexIndex + 0],
                     vertices[vertexIndex + 2],
                     vertices[vertexIndex + 3],
@@ -64,9 +65,7 @@ namespace SurfaceData
                 }
 
                 resultDistance = 0.0f;
-                if (AZ::Intersect::IntersectSegmentTriangle(
-                    rayOrigin,
-                    rayEnd,
+                if (hitTester.IntersectSegmentTriangle(
                     vertices[vertexIndex + 0],
                     vertices[vertexIndex + 3],
                     vertices[vertexIndex + 1],

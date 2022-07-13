@@ -138,7 +138,7 @@ namespace AZ
         {
             if (m_boneTransforms)
             {
-                WriteToBuffer(m_boneTransforms->GetRHIBuffer(), data);
+                m_boneTransforms->UpdateData(data.data(), data.size() * sizeof(float));
             }
         }
 

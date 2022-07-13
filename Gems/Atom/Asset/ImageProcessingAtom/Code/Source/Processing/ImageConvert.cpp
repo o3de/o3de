@@ -335,8 +335,8 @@ namespace ImageProcessingAtom
             ConvertPixelformat();
             break;
         case StepSaveToFile:
-            // save to file
-            if (!m_input->m_isPreview)
+            // save to file if required
+            if (!m_input->m_isPreview && m_input->m_shouldSaveFile)
             {
                 m_isSucceed = SaveOutput();
             }

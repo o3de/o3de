@@ -13,6 +13,7 @@
 #include <LyShine/Bus/Sprite/UiSpriteBus.h>
 
 #include <Atom/RPI.Public/Image/StreamingImage.h>
+#include <Atom/RPI.Public/Image/AttachmentImage.h>
 #include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
 #include <Atom/RPI.Reflect/Asset/AssetUtils.h>
 
@@ -684,10 +685,17 @@ CSprite* CSprite::LoadSprite(const AZStd::string& pathname)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-CSprite* CSprite::CreateSprite(const AZStd::string& renderTargetName)
+CSprite* CSprite::CreateSprite(const AZ::Data::Asset<AZ::RPI::AttachmentImageAsset>& attachmentImageAsset)
 {
+    auto attachmentImage = AZ::RPI::AttachmentImage::FindOrCreate(attachmentImageAsset);
+    if (!attachmentImage)
+    {
+        AZ_Warning("UI", false, "Failed to find or create render target");
+        return nullptr;
+    }
+
     // test if the sprite is already loaded, if so return loaded sprite
-    auto result = s_loadedSprites->find(renderTargetName);
+    auto result = s_loadedSprites->find(attachmentImage->GetAttachmentId().GetCStr());
     CSprite* loadedSprite = (result == s_loadedSprites->end()) ? nullptr : result->second;
 
     if (loadedSprite)
@@ -699,17 +707,8 @@ CSprite* CSprite::CreateSprite(const AZStd::string& renderTargetName)
     // create Sprite object
     CSprite* sprite = new CSprite;
 
-#ifdef LYSHINE_ATOM_TODO // [GHI #6270] Support RTT using Atom
-    // the render target texture may not exist yet in which case we will need to load it later
-    sprite->m_texture = gEnv->pRenderer->EF_GetTextureByName(renderTargetName.c_str());
-    if (sprite->m_texture)
-    {
-        // increase the reference count on this render target texture so it doesn't get deleted
-        // while we are using it
-        sprite->m_texture->AddRef();
-    }
-#endif
-    sprite->m_pathname = renderTargetName;
+    sprite->m_image = attachmentImage;
+    sprite->m_pathname = attachmentImage->GetAttachmentId().GetCStr();
     sprite->m_texturePathname.clear();
 
     // add sprite to list of loaded sprites

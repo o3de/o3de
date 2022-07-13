@@ -18,14 +18,11 @@ TextureData GetHitTextureData(RayTracingMaterialSrg::MaterialInfo materialInfo, 
 {
     TextureData textureData = (TextureData)0;
 
-    // get the start of the index list for this material in the indirection buffer 
-    uint materialTextureStartIndex = RayTracingSceneSrg::m_meshBufferIndices[materialInfo.m_textureStartIndex];
-
     // base color
     if (materialInfo.m_textureFlags & TEXTURE_FLAG_BASECOLOR)
     {
         // array index of the baseColor texture for this material in the m_materialTextures unbounded array
-        uint baseColorTextureArrayIndex = materialTextureStartIndex + MATERIAL_BASECOLOR_TEXTURE_OFFSET;
+        uint baseColorTextureArrayIndex = RayTracingMaterialSrg::m_materialTextureIndices[materialInfo.m_textureStartIndex + MATERIAL_BASECOLOR_TEXTURE_OFFSET];
 
         textureData.m_baseColor = RayTracingMaterialSrg::m_materialTextures[baseColorTextureArrayIndex].SampleLevel(RayTracingMaterialSrg::LinearSampler, uv, 0);
     }
@@ -38,7 +35,7 @@ TextureData GetHitTextureData(RayTracingMaterialSrg::MaterialInfo materialInfo, 
     if (materialInfo.m_textureFlags & TEXTURE_FLAG_NORMAL)
     {
         // array index of the normal texture for this material in the m_materialTextures unbounded array
-        uint normalTextureArrayIndex = materialTextureStartIndex + MATERIAL_NORMAL_TEXTURE_OFFSET;
+        uint normalTextureArrayIndex = RayTracingMaterialSrg::m_materialTextureIndices[materialInfo.m_textureStartIndex + MATERIAL_NORMAL_TEXTURE_OFFSET];
 
         textureData.m_normal = RayTracingMaterialSrg::m_materialTextures[normalTextureArrayIndex].SampleLevel(RayTracingMaterialSrg::LinearSampler, uv, 0);
     }
@@ -51,7 +48,7 @@ TextureData GetHitTextureData(RayTracingMaterialSrg::MaterialInfo materialInfo, 
     if (materialInfo.m_textureFlags & TEXTURE_FLAG_METALLIC)
     {
         // array index of the metallic texture for this material in the m_materialTextures unbounded array
-        uint metallicTextureArrayIndex = materialTextureStartIndex + MATERIAL_METALLIC_TEXTURE_OFFSET;
+        uint metallicTextureArrayIndex = RayTracingMaterialSrg::m_materialTextureIndices[materialInfo.m_textureStartIndex + MATERIAL_METALLIC_TEXTURE_OFFSET];
 
         textureData.m_metallic = RayTracingMaterialSrg::m_materialTextures[metallicTextureArrayIndex].SampleLevel(RayTracingMaterialSrg::LinearSampler, uv, 0);
     }
@@ -64,7 +61,7 @@ TextureData GetHitTextureData(RayTracingMaterialSrg::MaterialInfo materialInfo, 
     if (materialInfo.m_textureFlags & TEXTURE_FLAG_ROUGHNESS)
     {
         // array index of the roughness texture for this material in the m_materialTextures unbounded array
-        uint roughnessTextureArrayIndex = materialTextureStartIndex + MATERIAL_ROUGHNESS_TEXTURE_OFFSET;
+        uint roughnessTextureArrayIndex = RayTracingMaterialSrg::m_materialTextureIndices[materialInfo.m_textureStartIndex + MATERIAL_ROUGHNESS_TEXTURE_OFFSET];
 
         textureData.m_roughness = RayTracingMaterialSrg::m_materialTextures[roughnessTextureArrayIndex].SampleLevel(RayTracingMaterialSrg::LinearSampler, uv, 0);
     }

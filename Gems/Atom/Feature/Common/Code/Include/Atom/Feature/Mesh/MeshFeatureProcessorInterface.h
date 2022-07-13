@@ -13,6 +13,7 @@
 #include <Atom/Feature/Material/MaterialAssignment.h>
 #include <Atom/RPI.Public/Culling.h>
 #include <Atom/RPI.Public/FeatureProcessor.h>
+#include <Atom/RPI.Public/MeshDrawPacket.h>
 #include <Atom/RPI.Reflect/Model/ModelAsset.h>
 #include <Atom/Utils/StableDynamicArray.h>
 #include <Atom/Feature/TransformService/TransformServiceFeatureProcessorInterface.h>
@@ -22,6 +23,9 @@ namespace AZ
     namespace Render
     {
         class ModelDataInstance;
+        
+        using MeshDrawPacketList = AZStd::vector<RPI::MeshDrawPacket>;
+        using MeshDrawPacketLods = AZStd::fixed_vector<MeshDrawPacketList, RPI::ModelLodAsset::LodCountMax>;
 
         //! Settings to apply to a mesh handle when acquiring it for the first time
         struct MeshHandleDescriptor
@@ -65,6 +69,9 @@ namespace AZ
             virtual Data::Instance<RPI::Model> GetModel(const MeshHandle& meshHandle) const = 0;
             //! Gets the underlying RPI::ModelAsset for a meshHandle.
             virtual Data::Asset<RPI::ModelAsset> GetModelAsset(const MeshHandle& meshHandle) const = 0;
+            //! This function is primarily intended for debug output and testing, by providing insight into what
+            //! materials, shaders, etc. are actively being used to render the model.
+            virtual const MeshDrawPacketLods& GetDrawPackets(const MeshHandle& meshHandle) const = 0;
 
             //! Gets the ObjectSrgs for a meshHandle.
             //! Updating the ObjectSrgs should be followed by a call to QueueObjectSrgForCompile,

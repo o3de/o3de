@@ -56,15 +56,15 @@ class Editor_ComponentPropertyCommands_set_none(BaseClass):
         componentId = get_component_of_type(entityId, componentTypeId)
 
         # this series tests that a material can be fetched, mutated with a None, and reverts to an 'empty asset'
-        propertPath = 'Mesh Asset'
-        property = get_component_property(componentId, propertPath)
-        BaseClass.check_result(property.is_valid(), "propertPath current is valid - {}".format(propertPath))
+        propertyPath = 'Model Asset'
+        property = get_component_property(componentId, propertyPath)
+        BaseClass.check_result(property.is_valid(), "propertyPath current is valid - {}".format(propertyPath))
 
-        updateResult = set_component_property(componentId, propertPath, None)
+        updateResult = set_component_property(componentId, propertyPath, None)
         BaseClass.check_result(updateResult, "componentId set to None")
 
-        camera = get_component_property(componentId, propertPath)
-        BaseClass.check_result(camera.is_valid() is False, "confirmed, componentId has been set to None")
+        nullModelAssetProperty = get_component_property(componentId, propertyPath)
+        BaseClass.check_result(nullModelAssetProperty.is_valid() is False, "confirmed, componentId has been set to None")
 
 if __name__ == "__main__":
     tester = Editor_ComponentPropertyCommands_set_none()

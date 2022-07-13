@@ -258,6 +258,11 @@ namespace ProjectSettingsTool
         for (PropertyLinkedCtrl* ctrlPointer : m_ctrlInitOrder)
         {
             auto property = m_ctrlToIdentAndLink.find(ctrlPointer);
+            // If it's not linked to another property then continue
+            if (property->second.linkedIdentifier.empty())
+            {
+                continue;
+            }
             auto link = m_identToCtrl.find(property->second.linkedIdentifier);
             if (link != m_identToCtrl.end())
             {

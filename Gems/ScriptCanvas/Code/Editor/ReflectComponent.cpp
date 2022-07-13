@@ -110,7 +110,6 @@ namespace ScriptCanvasEditor
 {
     void ReflectComponent::Reflect(AZ::ReflectContext* context)
     {
-        SourceHandle::Reflect(context);
         Configuration::Reflect(context);
         Interpreter::Reflect(context);
         ScriptCanvas::ScriptCanvasData::Reflect(context);

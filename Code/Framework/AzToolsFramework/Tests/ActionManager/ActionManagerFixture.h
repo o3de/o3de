@@ -17,11 +17,10 @@
 #include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
 
 #include <AzToolsFramework/ActionManager/Action/ActionManager.h>
-#include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
+#include <AzToolsFramework/ActionManager/Menu/MenuManager.h>
+#include <AzToolsFramework/ActionManager/ToolBar/ToolBarManager.h>
 
 #include <QWidget>
-
-class QWidget;
 
 namespace UnitTest
 {
@@ -32,9 +31,19 @@ namespace UnitTest
         void TearDown() override;
 
     public:
-        AZStd::unique_ptr<AzToolsFramework::ActionManager> m_actionManager;
         AzToolsFramework::ActionManagerInterface* m_actionManagerInterface = nullptr;
+        AzToolsFramework::ActionManagerInternalInterface* m_actionManagerInternalInterface = nullptr;
+        AzToolsFramework::MenuManagerInterface* m_menuManagerInterface = nullptr;
+        AzToolsFramework::MenuManagerInternalInterface* m_menuManagerInternalInterface = nullptr;
+        AzToolsFramework::ToolBarManagerInterface* m_toolBarManagerInterface = nullptr;
+        AzToolsFramework::ToolBarManagerInternalInterface* m_toolBarManagerInternalInterface = nullptr;
+
         QWidget* m_widget = nullptr;
+
+    private:
+        AZStd::unique_ptr<AzToolsFramework::ActionManager> m_actionManager;
+        AZStd::unique_ptr<AzToolsFramework::MenuManager> m_menuManager;
+        AZStd::unique_ptr<AzToolsFramework::ToolBarManager> m_toolBarManager;
     };
 
 } // namespace UnitTest

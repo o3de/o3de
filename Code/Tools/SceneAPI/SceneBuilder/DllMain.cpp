@@ -101,9 +101,8 @@ namespace AZ
     } // namespace SceneAPI
 } // namespace AZ
 
-extern "C" AZ_DLL_EXPORT void InitializeDynamicModule(void* env)
+extern "C" AZ_DLL_EXPORT void InitializeDynamicModule()
 {
-    AZ::Environment::Attach(static_cast<AZ::EnvironmentInstance>(env));
 }
 extern "C" AZ_DLL_EXPORT void Reflect(AZ::SerializeContext* context)
 {
@@ -116,7 +115,6 @@ extern "C" AZ_DLL_EXPORT void ReflectBehavior(AZ::BehaviorContext* context)
 extern "C" AZ_DLL_EXPORT void UninitializeDynamicModule()
 {
     AZ::SceneAPI::SceneBuilder::Uninitialize();
-    AZ::Environment::Detach();
 }
 
 #endif // !defined(AZ_MONOLITHIC_BUILD)

@@ -39,6 +39,11 @@ namespace ScriptEvents
         virtual void UnregisterScriptEventFromDefinition([[maybe_unused]] const ScriptEvent& definition) {}
         virtual AZStd::intrusive_ptr<Internal::ScriptEventRegistration> GetScriptEvent(const AZ::Data::AssetId& assetId, AZ::u32 version) = 0;
         virtual const FundamentalTypes* GetFundamentalTypes() = 0;
+
+        virtual AZ::Outcome<ScriptEvents::ScriptEvent, AZStd::string> LoadDefinitionSource(const AZ::IO::Path& path) = 0;
+        virtual AZ::Outcome<void, AZStd::string> SaveDefinitionSourceFile
+            ( const ScriptEvents::ScriptEvent& events
+            , const AZ::IO::Path& path) = 0;
     };
 
     using ScriptEventBus = AZ::EBus<ScriptEventRequests>;

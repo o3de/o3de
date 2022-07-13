@@ -13,6 +13,8 @@ set(FILES
     native/AssetManager/AssetCatalog.h
     native/AssetManager/assetProcessorManager.cpp
     native/AssetManager/assetProcessorManager.h
+    native/AssetManager/ProductAsset.h
+    native/AssetManager/ProductAsset.cpp
     native/AssetManager/AssetRequestHandler.cpp
     native/AssetManager/AssetRequestHandler.h
     native/AssetManager/assetScanFolderInfo.h

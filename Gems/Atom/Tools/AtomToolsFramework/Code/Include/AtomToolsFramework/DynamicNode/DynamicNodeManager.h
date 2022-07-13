@@ -8,45 +8,40 @@
 
 #pragma once
 
-#include <AtomToolsFramework/DynamicNode/DynamicNode.h>
+#include <AtomToolsFramework/DynamicNode/DynamicNodeManagerRequestBus.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/RTTI/RTTI.h>
-#include <AzCore/std/containers/unordered_set.h>
-#include <AzCore/std/string/string.h>
-#include <GraphCanvas/Widgets/NodePalette/TreeItems/NodePaletteTreeItem.h>
+#include <AzCore/std/containers/unordered_map.h>
 
 namespace AtomToolsFramework
 {
-    //! Manages a collection of dynamic node configuration objects.
-    //! Provides functions for loading, registering, clearing, and sorting configurations as well as generating node palette items.
-    class DynamicNodeManager
+    //! Manages all of the DynamicNodeConfig for a tool, providing functions for loading, registering, retrieving DynamicNodeConfig, as well
+    //! as generating a node palette tree to create DynamicNode from DynamicNodeConfig.
+    class DynamicNodeManager : public DynamicNodeManagerRequestBus::Handler
     {
     public:
         AZ_CLASS_ALLOCATOR(DynamicNodeManager, AZ::SystemAllocator, 0);
         AZ_RTTI(Graph, "{0DE0A2FA-3296-4E11-AA7F-831FAFA4126F}");
+        AZ_DISABLE_COPY_MOVE(DynamicNodeManager);
 
-        DynamicNodeManager() = default;
-        virtual ~DynamicNodeManager() = default;
+        DynamicNodeManager(const AZ::Crc32& toolId);
+        virtual ~DynamicNodeManager();
 
-        //! Loads and registers all of the dynamic node configuration files matching a given extension
-        //! @param extensions Set of extensions used to enumerate and identify dynamic mode configuration files
-        void LoadMatchingConfigFiles(const AZStd::unordered_set<AZStd::string>& extensions);
-
-        //! Register a node configuration with the manager.
-        //! @param config Dynamic node configuration to be added.
-        void Register(const DynamicNodeConfig& config);
-
-        //! Remove all registered node configurations.
-        void Clear();
-
-        //! Sort all of the node configurations by category and title
-        void Sort();
-
-        //! Generate the node palette hierarchy from the dynamic node configurations
-        GraphCanvas::GraphCanvasTreeItem* CreateNodePaletteRootTreeItem(const AZ::Crc32& toolId) const;
+        //! DynamicNodeManagerRequestBus::Handler overrides...
+        void RegisterDataTypes(const GraphModel::DataTypeList& dataTypes) override;
+        GraphModel::DataTypeList GetRegisteredDataTypes() override;
+        void LoadConfigFiles(const AZStd::unordered_set<AZStd::string>& extensions) override;
+        bool RegisterConfig(const AZStd::string& configId, const DynamicNodeConfig& config) override;
+        DynamicNodeConfig GetConfig(const AZStd::string& configId) const override;
+        void Clear() override;
+        GraphCanvas::GraphCanvasTreeItem* CreateNodePaletteTree() const override;
 
     private:
-        AZStd::vector<DynamicNodeConfig> m_dynamicNodeConfigs;
-    };
+        bool ValidateSlotConfig(const AZStd::string& configId, const DynamicNodeSlotConfig& slotConfig) const;
+        bool ValidateSlotConfigVec(const AZStd::string& configId, const AZStd::vector<DynamicNodeSlotConfig>& slotConfigVec) const;
 
+        const AZ::Crc32 m_toolId = {};
+        GraphModel::DataTypeList m_registeredDataTypes;
+        AZStd::unordered_map<AZStd::string, DynamicNodeConfig> m_nodeConfigMap;
+    };
 } // namespace AtomToolsFramework

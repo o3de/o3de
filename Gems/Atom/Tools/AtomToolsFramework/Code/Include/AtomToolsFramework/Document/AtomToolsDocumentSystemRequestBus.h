@@ -82,8 +82,27 @@ namespace AtomToolsFramework
         //! Save all documents
         virtual bool SaveAllDocuments() = 0;
 
+        //! Save all modified documents
+        virtual bool SaveAllModifiedDocuments() = 0;
+
         //! Get number of allocated documents
         virtual AZ::u32 GetDocumentCount() const = 0;
+
+        //! Determine if a document is open in the system
+        //! @param documentId unique id of document to check
+        virtual bool IsDocumentOpen(const AZ::Uuid& documentId) const = 0;
+
+        //! Add a file path to the top of the list of recent file paths
+        virtual void AddRecentFilePath(const AZStd::string& absolutePath) = 0;
+
+        //! Remove all file paths from the list of recent file paths
+        virtual void ClearRecentFilePaths() = 0;
+
+        //! Replace the list of recent file paths in the settings registry
+        virtual void SetRecentFilePaths(const AZStd::vector<AZStd::string>& absolutePaths) = 0;
+
+        //! Retrieve the list of recent file paths from the settings registry
+        virtual const AZStd::vector<AZStd::string> GetRecentFilePaths() const = 0;
     };
 
     using AtomToolsDocumentSystemRequestBus = AZ::EBus<AtomToolsDocumentSystemRequests>;

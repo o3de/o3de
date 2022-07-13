@@ -6,9 +6,13 @@
  *
  */
 
+
+#include <AzCore/Component/ComponentApplicationBus.h>
+
 #include <EMotionFX/Tools/EMotionStudio/Plugins/StandardPlugins/Source/Inspector/InspectorWindow.h>
 #include <EMotionFX/Tools/EMotionStudio/Plugins/StandardPlugins/Source/Inspector/NoSelectionWidget.h>
 #include <EMotionFX/Tools/EMotionStudio/Plugins/StandardPlugins/Source/Inspector/ContentWidget.h>
+
 #include <QDockWidget>
 #include <QScrollArea>
 #include <QVBoxLayout>
@@ -18,6 +22,18 @@ namespace EMStudio
     InspectorWindow::~InspectorWindow()
     {
         InspectorRequestBus::Handler::BusDisconnect();
+
+        if (m_scrollArea)
+        {
+            m_scrollArea->takeWidget();
+
+            delete m_contentWidget;
+            m_contentWidget = nullptr;
+
+            delete m_noSelectionWidget;
+            m_noSelectionWidget = nullptr;
+        }
+
     }
 
     bool InspectorWindow::Init()

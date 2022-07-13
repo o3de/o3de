@@ -93,10 +93,16 @@ namespace ScriptCanvas
         // Lua:
         lua_rawgeti(lua, LUA_REGISTRYINDEX, registryIndex);
         // Lua: instance
-        AZ::Internal::azlua_getfield(lua, -1, Grammar::k_DeactivateName);
+        lua_getfield(lua, -1, Grammar::k_DeactivateName);
         // Lua: instance, instance['Deactivate']
-        AZ::Internal::azlua_pushvalue(lua, -2);
+        lua_pushvalue(lua, -2);
         // Lua: instance, instance['Deactivate'], instance
+        AZ::Internal::LuaSafeCall(lua, 1, 0);
+        // Lua: instance
+        lua_getfield(lua, -1, "Destruct");
+        // Lua: instance, instance['Destruct']
+        lua_pushvalue(lua, -2);
+        // Lua: instance, instance['Destruct'], instance
         AZ::Internal::LuaSafeCall(lua, 1, 0);
         // Lua: instance
         AZ::Internal::azlua_pop(lua, 1);

@@ -4784,7 +4784,7 @@ namespace ScriptCanvas
         {
             if (const auto nodeling = azrtti_cast<const Nodes::Core::FunctionDefinitionNode*>(execution->GetId().m_node))
             {
-                // this nodeling will always be the Execution-In part of the function defintion
+                // this nodeling will always be the Execution-In part of the function definition
                 // since a call to a user out does not enter this path
                 AZ_Assert(execution->GetSymbol() != Symbol::UserOut, "User Out data should not be processed here");
                 ParseUserInData(execution, executionChild);

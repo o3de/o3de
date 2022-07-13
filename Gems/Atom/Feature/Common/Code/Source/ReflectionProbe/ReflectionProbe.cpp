@@ -62,9 +62,12 @@ namespace AZ
                 "Models/ReflectionProbeSphere.azmodel",
                 AZ::RPI::AssetUtils::TraceLevel::Assert);
 
-            m_visualizationMeshHandle = m_meshFeatureProcessor->AcquireMesh(MeshHandleDescriptor{ m_visualizationModelAsset });
+            MeshHandleDescriptor visualizationMeshDescriptor;
+            visualizationMeshDescriptor.m_modelAsset = m_visualizationModelAsset;
+            visualizationMeshDescriptor.m_isRayTracingEnabled = false;
+            m_visualizationMeshHandle = m_meshFeatureProcessor->AcquireMesh(visualizationMeshDescriptor);
+
             m_meshFeatureProcessor->SetExcludeFromReflectionCubeMaps(m_visualizationMeshHandle, true);
-            m_meshFeatureProcessor->SetRayTracingEnabled(m_visualizationMeshHandle, false);
             m_meshFeatureProcessor->SetTransform(m_visualizationMeshHandle, AZ::Transform::CreateIdentity());
 
             // We have to pre-load this asset before creating a Material instance because the InstanceDatabase will attempt a blocking load which could deadlock,

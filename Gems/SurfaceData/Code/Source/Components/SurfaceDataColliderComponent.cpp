@@ -73,12 +73,12 @@ namespace SurfaceData
 
     void SurfaceDataColliderComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("PhysXColliderService", 0x4ff43f7c));
+        services.push_back(AZ_CRC_CE("PhysicsColliderService"));
     }
 
     void SurfaceDataColliderComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("PhysicsWorldBodyService", 0x944da0cc));
+        services.push_back(AZ_CRC_CE("PhysicsWorldBodyService"));
     }
 
     void SurfaceDataColliderComponent::Reflect(AZ::ReflectContext* context)

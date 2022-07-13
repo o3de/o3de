@@ -20,34 +20,40 @@ namespace ScriptAutomation
 {
     namespace Bindings
     {
-        void Print(const AZStd::string& message)
+        void Print(const AZStd::string& message [[maybe_unused]])
         {
+#ifndef _RELEASE //AZ_TracePrintf does nothing in release, ignore this call
             auto func = [message]()
             {
                 AZ_TracePrintf("ScriptAutomation", "Script: %s\n", message.c_str());
             };
 
             ScriptAutomationInterface::Get()->QueueScriptOperation(AZStd::move(func));
+#endif
         }
 
-        void Warning(const AZStd::string& message)
+        void Warning(const AZStd::string& message [[maybe_unused]])
         {
+#ifndef _RELEASE //AZ_Warning does nothing in release, ignore this call
             auto func = [message]()
             {
                 AZ_Warning("ScriptAutomation", false, "Script: %s", message.c_str());
             };
 
             ScriptAutomationInterface::Get()->QueueScriptOperation(AZStd::move(func));
+#endif
         }
 
-        void Error(const AZStd::string& message)
+        void Error(const AZStd::string& message [[maybe_unused]])
         {
+#ifndef _RELEASE //AZ_Error does nothing in release, ignore this call
             auto func = [message]()
             {
                 AZ_Error("ScriptAutomation", false, "Script: %s", message.c_str());
             };
 
             ScriptAutomationInterface::Get()->QueueScriptOperation(AZStd::move(func));
+#endif
         }
 
         void ExecuteConsoleCommand(const AZStd::string& command)

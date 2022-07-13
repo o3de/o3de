@@ -77,7 +77,7 @@ namespace AzToolsFramework
             auto writeOutcome = AZ::Dom::Utils::SerializedStringToValue(jsonBackend, stringBuffer, AZ::Dom::Lifetime::Temporary);
 
             // invoke the actual change on the Dom, it will come back to us as an update
-            AZ::DocumentPropertyEditor::Nodes::PropertyEditor::OnChanged.InvokeOnDomNode(GetValueFromDom(), writeOutcome.GetValue());
+            AZ::DocumentPropertyEditor::Nodes::PropertyEditor::OnChanged.InvokeOnDomNode(GetValueFromDom(), writeOutcome.GetValue(), AZ::DocumentPropertyEditor::Nodes::PropertyEditor::ValueChangeType::FinishedEdit);
         }
         return succeeded;
     }
@@ -209,8 +209,12 @@ namespace AzToolsFramework
             m_type = NodeType::PropertyEditorNode;
             auto& jsonBackend = GetModel()->GetBackend();
             AZStd::string stringBuffer;
-            AZ::Dom::Utils::ValueToSerializedString(
-                jsonBackend, domVal[AZ::DocumentPropertyEditor::Nodes::PropertyEditor::Value.GetName()], stringBuffer);
+            auto editorValue = AZ::DocumentPropertyEditor::Nodes::PropertyEditor::Value.ExtractFromDomNode(domVal);
+            if (editorValue.has_value())
+            {
+                AZ::Dom::Utils::ValueToSerializedString(
+                    jsonBackend, editorValue.value(), stringBuffer);
+            }
             m_displayString = QString::fromUtf8(stringBuffer.data(), static_cast<int>(stringBuffer.size()));
         }
 
@@ -316,7 +320,7 @@ namespace AzToolsFramework
     {
     }
 
-    void DPEDebugModel::SetAdapter(AZ::DocumentPropertyEditor::DocumentAdapter* theAdapter)
+    void DPEDebugModel::SetAdapter(AZ::DocumentPropertyEditor::DocumentAdapterPtr theAdapter)
     {
         m_adapter = theAdapter;
         m_resetHandler = AZ::DocumentPropertyEditor::DocumentAdapter::ResetEvent::Handler(
@@ -386,11 +390,8 @@ namespace AzToolsFramework
 
     DPEModelNode* DPEDebugModel::GetNodeFromPath(const AZ::Dom::Path& thePath) const
     {
-        auto pathIter = thePath.begin();
-        AZ_Assert(pathIter->IsIndex() && pathIter->GetIndex() == 0, "start of the path should always be the one and only adapter");
-        ++pathIter;
         DPEModelNode* returnedNode = m_rootNode;
-        for (auto endIter = thePath.end(); pathIter != endIter && returnedNode != nullptr; ++pathIter)
+        for (auto pathIter = thePath.begin(), endIter = thePath.end(); pathIter != endIter && returnedNode != nullptr; ++pathIter)
         {
             // non-index subpaths are for properties not nodes, so only handle the index paths
             if (pathIter->IsIndex())

@@ -17,6 +17,8 @@
 
 namespace AzNetworking
 {
+    AZ_CVAR(bool, net_validateSerializedTypes, false, nullptr, AZ::ConsoleFunctorFlags::Null, "Validate that all serialized types are correct");
+
     void NetworkingSystemComponent::Reflect(AZ::ReflectContext* context)
     {
         if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
@@ -63,27 +65,21 @@ namespace AzNetworking
 
     void NetworkingSystemComponent::Activate()
     {
-        AZ::TickBus::Handler::BusConnect();
+        AZ::SystemTickBus::Handler::BusConnect();
     }
 
     void NetworkingSystemComponent::Deactivate()
     {
-        AZ::TickBus::Handler::BusDisconnect();
+        AZ::SystemTickBus::Handler::BusDisconnect();
     }
 
-    void NetworkingSystemComponent::OnTick(float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
+    void NetworkingSystemComponent::OnSystemTick()
     {
-        AZ::TimeMs elapsedMs = aznumeric_cast<AZ::TimeMs>(aznumeric_cast<int64_t>(deltaTime / 1000.0f));
         m_readerThread->SwapBuffers();
         for (auto& networkInterface : m_networkInterfaces)
         {
-            networkInterface.second->Update(elapsedMs);
+            networkInterface.second->Update();
         }
-    }
-
-    int NetworkingSystemComponent::GetTickOrder()
-    {
-        return AZ::TICK_PLACEMENT;
     }
 
     INetworkInterface* NetworkingSystemComponent::CreateNetworkInterface(const AZ::Name& name, ProtocolType protocolType, TrustZone trustZone, IConnectionListener& listener)
@@ -171,6 +167,11 @@ namespace AzNetworking
     AZ::TimeMs NetworkingSystemComponent::GetUdpReaderThreadUpdateTime() const
     {
         return m_readerThread->GetUpdateTimeMs();
+    }
+
+    void NetworkingSystemComponent::ForceUpdate()
+    {
+        OnSystemTick();
     }
 
     void NetworkingSystemComponent::DumpStats([[maybe_unused]] const AZ::ConsoleCommandContainer& arguments)

@@ -52,7 +52,6 @@ namespace WhiteBox
         }
 
         // calculate the basis vectors for the TBN matrices
-        // TODO: LYN-782
         AZTangentSpaceCalculation tangentSpaceCalculation;
         tangentSpaceCalculation.Calculate(positions, m_indices, uvs);
 

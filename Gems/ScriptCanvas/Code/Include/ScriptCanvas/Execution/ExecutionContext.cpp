@@ -19,13 +19,13 @@
 
 namespace ExecutionContextCpp
 {
-    void CopyTypeInformationOnly(AZ::BehaviorValueParameter& lhs, const AZ::BehaviorValueParameter& rhs)
+    void CopyTypeInformationOnly(AZ::BehaviorArgument& lhs, const AZ::BehaviorArgument& rhs)
     {
         lhs.m_typeId = rhs.m_typeId;
         lhs.m_azRtti = rhs.m_azRtti;
     }
 
-    void CopyTypeAndValueSource(AZ::BehaviorValueParameter& lhs, const AZ::BehaviorValueParameter& rhs)
+    void CopyTypeAndValueSource(AZ::BehaviorArgument& lhs, const AZ::BehaviorArgument& rhs)
     {
         lhs.m_typeId = rhs.m_typeId;
         lhs.m_azRtti = rhs.m_azRtti;
@@ -91,7 +91,7 @@ namespace ScriptCanvas
 
             // (always overridden) EntityIds
             {
-                AZ::BehaviorValueParameter* destVariableIter = rangeOut.inputs
+                AZ::BehaviorArgument* destVariableIter = rangeOut.inputs
                     + runtimeData.m_activationInputRange.nodeableCount
                     + runtimeData.m_activationInputRange.variableCount;
 
@@ -128,14 +128,14 @@ namespace ScriptCanvas
 
         void Context::InitializeStaticActivationInputs(RuntimeData& runtimeData, AZ::BehaviorContext& behaviorContext)
         {
-            AZStd::vector<AZ::BehaviorValueParameter>& parameters = runtimeData.m_activationInputStorage;
+            AZStd::vector<AZ::BehaviorArgument>& parameters = runtimeData.m_activationInputStorage;
             auto& range = runtimeData.m_activationInputRange;
             range.requiresDependencyConstructionParameters = runtimeData.RequiresDependencyConstructionParameters();
             parameters.reserve(runtimeData.m_input.GetConstructorParameterCount());
 
             for (const Nodeable* nodeable : runtimeData.m_input.m_nodeables)
             {
-                AZ::BehaviorValueParameter bvp;
+                AZ::BehaviorArgument bvp;
                 bvp.m_typeId = azrtti_typeid(nodeable);
 
                 const auto classIter(behaviorContext.m_typeToClassMap.find(bvp.m_typeId));
@@ -148,7 +148,7 @@ namespace ScriptCanvas
             for (auto& idDatumPair : runtimeData.m_input.m_variables)
             {
                 const Datum* datum = &idDatumPair.second;
-                AZ::BehaviorValueParameter bvp;
+                AZ::BehaviorArgument bvp;
                 bvp.m_typeId = datum->GetType().GetAZType();
                 const auto classIter(behaviorContext.m_typeToClassMap.find(bvp.m_typeId));
                 bvp.m_azRtti = classIter != behaviorContext.m_typeToClassMap.end() ? classIter->second->m_azRtti : nullptr;
@@ -159,7 +159,7 @@ namespace ScriptCanvas
             const size_t entityIdSize = runtimeData.m_input.m_entityIds.size();
             for (size_t i = 0; i < entityIdSize; ++i)
             {
-                AZ::BehaviorValueParameter bvp;
+                AZ::BehaviorArgument bvp;
                 bvp.m_typeId = azrtti_typeid<Data::EntityIDType>();
                 parameters.push_back(bvp);
             }

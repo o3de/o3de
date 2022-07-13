@@ -135,11 +135,26 @@ namespace AZ
                 // Not mergeable, create a dedicated context group for it.
                 else
                 {
-                    // And then create a new group for the current scope with dedicated [1, N] command lists.
-                    const uint32_t commandListCount = AZStd::max(AZ::DivideAndRoundUp(totalScopeCost, CommandListCostThreshold), 1u);
+                    // GHI-9465 - https://github.com/o3de/o3de/issues/9465
+                    // FrameGraphExecuteGroup assumes a renderpass with a non-null framebuffer,
+                    // as a workaround use a merged group (which doesn't assume a framebuffer) 
+                    // until we can add support for a null framebuffer to FrameGraphExecuteGroup.
+                    if (scope.UsesRenderpass())
+                    {
+                        // And then create a new group for the current scope with dedicated [1, N] command lists.
+                        const uint32_t commandListCount = AZStd::max(AZ::DivideAndRoundUp(totalScopeCost, CommandListCostThreshold), 1u);
 
-                    FrameGraphExecuteGroup* scopeContextGroup = AddGroup<FrameGraphExecuteGroup>();
-                    scopeContextGroup->Init(device, scope, commandListCount, GetJobPolicy());
+                        FrameGraphExecuteGroup* scopeContextGroup = AddGroup<FrameGraphExecuteGroup>();
+                        scopeContextGroup->Init(device, scope, commandListCount, GetJobPolicy());
+                    }
+                    else
+                    {
+                        // non-renderpass's are only supported through the merged group
+                        AZStd::vector<const Scope*> nonRenderPassScopes;
+                        nonRenderPassScopes.push_back(&scope);
+                        FrameGraphExecuteGroupMerged* multiScopeContextGroup = AddGroup<FrameGraphExecuteGroupMerged>();
+                        multiScopeContextGroup->Init(device, AZStd::move(nonRenderPassScopes));
+                    }
                 }
                 scopePrev = &scope;
             }

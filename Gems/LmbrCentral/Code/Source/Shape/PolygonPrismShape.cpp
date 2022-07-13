@@ -641,6 +641,8 @@ namespace LmbrCentral
             const AZ::Vector3 localDir = localFromWorldNormalized.TransformVector(dir);
             const AZ::Vector3 localEnd = localSrc + localDir * rayLength;
 
+            AZ::Intersect::SegmentTriangleHitTester hitTester(localSrc, localEnd);
+
             // iterate over all triangles in polygon prism and
             // test ray against each in turn
             bool intersection = false;
@@ -649,8 +651,7 @@ namespace LmbrCentral
             {
                 float t;
                 AZ::Vector3 normal;
-                if (AZ::Intersect::IntersectSegmentTriangle(
-                    localSrc, localEnd,
+                if (hitTester.IntersectSegmentTriangle(
                     triangles[i] * entityScale,
                     triangles[i + 1] * entityScale,
                     triangles[i + 2] * entityScale, normal, t))

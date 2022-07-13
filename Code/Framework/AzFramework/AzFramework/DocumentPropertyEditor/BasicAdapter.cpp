@@ -17,7 +17,7 @@ namespace AZ::DocumentPropertyEditor
         NotifyResetDocument();
     }
 
-    Dom::Value BasicAdapter::GetContents() const
+    Dom::Value BasicAdapter::GenerateContents()
     {
         return m_value;
     }

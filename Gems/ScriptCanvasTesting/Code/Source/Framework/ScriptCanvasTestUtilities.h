@@ -23,6 +23,8 @@ namespace ScriptCanvasTests
     extern const char* k_tempCoreAssetName;
     extern const char* k_tempCoreAssetPath;
 
+    const char* GetUnitTestDirPathRelative();
+
     void ExpectParse(AZStd::string_view graphPath);
 
     void ExpectParseError(AZStd::string_view graphPath);

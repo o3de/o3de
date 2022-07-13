@@ -33,10 +33,11 @@ def EntityOutliner_EntityOrdering():
     from PySide2 import QtCore
 
     import azlmbr.legacy.general as general
-
+    
     import editor_python_test_tools.hydra_editor_utils as hydra
     import editor_python_test_tools.pyside_utils as pyside_utils
     from editor_python_test_tools.utils import Report
+    from editor_python_test_tools.prefab_utils import wait_for_propagation
 
     # Grab the Editor, Entity Outliner, and Outliner Model
     editor_window = pyside_utils.get_editor_main_window()
@@ -74,16 +75,25 @@ def EntityOutliner_EntityOrdering():
 
     # Creates an entity from the outliner context menu
     def create_entity():
+        # Make sure no entity is selected
+        general.clear_selection()
+        # Create entity
         pyside_utils.trigger_context_menu_entry(
             entity_outliner, "Create entity", index=get_root_prefab_container_index()
         )
         # Wait a tick after entity creation to let events process
-        general.idle_wait(0.0)
+        wait_for_propagation()
 
     # Moves an entity (wrapped by move_entity_before and move_entity_after)
     def _move_entity(source_name, target_name, move_after=False):
         source_index = index_for_name(source_name)
         target_index = index_for_name(target_name)
+        if source_index is None:
+            print(f"Failed to retrieve index for {source_name}")
+            return
+        if target_index is None:
+            print(f"Failed to retrieve index for {target_name}")
+            return
 
         target_row = target_index.row()
         if move_after:
@@ -98,13 +108,13 @@ def EntityOutliner_EntityOrdering():
             mime_data, QtCore.Qt.MoveAction, target_row, 0, target_index.parent()
         )
         # Wait after move to let events (i.e. prefab propagation) process
-        general.idle_wait(1.0)
+        wait_for_propagation()
 
     # Move an entity before another entity in the order by dragging the source above the target
     move_entity_before = lambda source_name, target_name: _move_entity(
         source_name, target_name, move_after=False
     )
-    # Move an entity after another entity in the order by dragging the source beloew the target
+    # Move an entity after another entity in the order by dragging the source below the target
     move_entity_after = lambda source_name, target_name: _move_entity(
         source_name, target_name, move_after=True
     )

@@ -52,6 +52,7 @@
             ],
             "PassData": {
                 "$type": "FullscreenTrianglePassData",
+                "PipelineViewTag": "MainCamera",
                 "ShaderAsset": {
                     "FilePath": "Shaders/MotionVector/CameraMotionVector.shader"
                 }

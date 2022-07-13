@@ -115,7 +115,7 @@ namespace ScriptCanvasEditor
                         assetSaveData.reserve(assetIds.size());
                         for (const AZ::Data::AssetId& assetId : assetIds)
                         {
-                            assetSaveData.emplace_back(SourceHandle( nullptr, assetId.m_guid, "" ));
+                            assetSaveData.emplace_back(SourceHandle( nullptr, assetId.m_guid ));
                         }
                     }
                 }

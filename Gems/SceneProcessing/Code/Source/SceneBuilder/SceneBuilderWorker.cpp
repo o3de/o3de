@@ -79,7 +79,7 @@ namespace SceneBuilder
                 m_cachedFingerprint.append(element);
             }
             // A general catch all version fingerprint. Update this to force all FBX files to recompile.
-            m_cachedFingerprint.append("Version 3");
+            m_cachedFingerprint.append("Version 4");
         }
 
         return m_cachedFingerprint.c_str();
@@ -99,6 +99,11 @@ namespace SceneBuilder
 
         auto manifestObject = document.GetObject();
         auto valuesIterator = manifestObject.FindMember("values");
+        if (valuesIterator == manifestObject.MemberEnd())
+        {
+            // a blank or unexpected JSON formated .assetinfo file
+            return;
+        }
         auto valuesArray = valuesIterator->value.GetArray();
 
         AZStd::vector<AZStd::string> paths;

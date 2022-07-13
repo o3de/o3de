@@ -57,5 +57,15 @@ ly_append_configurations_options(
         -O2
 )
 
+if(LY_BUILD_WITH_ADDRESS_SANITIZER)
+    ly_append_configurations_options(
+        COMPILATION_DEBUG
+            -fsanitize=address
+            -fno-omit-frame-pointer
+        LINK_NON_STATIC_DEBUG
+            -shared-libsan
+            -fsanitize=address
+    )
+endif()
 include(cmake/Platform/Common/TargetIncludeSystemDirectories_supported.cmake)
 

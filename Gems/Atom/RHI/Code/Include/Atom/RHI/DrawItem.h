@@ -8,6 +8,7 @@
 #pragma once
 
 #include <Atom/RHI.Reflect/Limits.h>
+#include <Atom/RHI/SubmitItem.h>
 #include <Atom/RHI/StreamBufferView.h>
 #include <Atom/RHI/IndexBufferView.h>
 #include <Atom/RHI/IndirectBufferView.h>
@@ -113,6 +114,7 @@ namespace AZ
         };
 
         struct DrawItem
+            : public SubmitItem
         {
             DrawItem() = default;
 
@@ -151,7 +153,7 @@ namespace AZ
             const Viewport* m_viewports = nullptr;
         };
 
-        using DrawItemSortKey = int64_t;
+        using DrawItemSortKey = AZ::s64;
 
         // A filter associate to a DrawItem which can be used to filter the DrawItem when submitting to command list
         using DrawFilterTag = Handle<uint8_t, DefaultNamespaceType>;

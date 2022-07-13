@@ -161,7 +161,7 @@ namespace AzToolsFramework
         }
     }
 
-    QRegExpValidator* PropertyColorCtrl::CreateTextEditValidator() const
+    QRegExpValidator* PropertyColorCtrl::CreateTextEditValidator()
     {
         /*Use regex to validate the input
         *\d\d?    Match 0-99
@@ -174,11 +174,11 @@ namespace AzToolsFramework
 
         int numInitialChannelComponents = m_alphaChannelEnabled ? 3 : 2;
 
-        AZStd::string regex = AZStd::string::format(
-            "^\\s*((25[0-5]|2[0-4]\\d|1\\d\\d|\\d\\d?)\\s*,\\s*){%d}(25[0-5]|2[0-4]\\d|1\\d\\d|\\d\\d?)\\s*$",
-            numInitialChannelComponents);
+        const QString regex = QString(
+            R"(^\s*((25[0-5]|2[0-4]\d|1\d\d|\d\d?)\s*,\s*){%1}(25[0-5]|2[0-4]\d|1\d\d|\d\d?)\s*$)"
+        ).arg(numInitialChannelComponents);
 
-        return new QRegExpValidator(QRegExp(regex.c_str()));
+        return new QRegExpValidator(QRegExp(regex), this);
     }
 
     void PropertyColorCtrl::CreateColorDialog()
@@ -400,7 +400,12 @@ namespace AzToolsFramework
             {
                 EBUS_EVENT(PropertyEditorGUIMessages::Bus, RequestWrite, newCtrl);
             });
-        // note:  Qt automatically disconnects objects from each other when either end is destroyed, no need to worry about delete.
+        connect(newCtrl, &PropertyColorCtrl::editingFinished, this, [newCtrl]()
+            {
+                AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
+                    &PropertyEditorGUIMessages::OnEditingFinished, newCtrl);
+            });
+        // note: Qt automatically disconnects objects from each other when either end is destroyed, no need to worry about delete.
 
         return newCtrl;
     }

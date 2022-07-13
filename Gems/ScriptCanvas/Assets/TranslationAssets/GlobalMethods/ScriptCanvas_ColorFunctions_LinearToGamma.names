@@ -1,0 +1,38 @@
+{
+    "entries": [
+        {
+            "base": "ScriptCanvas_ColorFunctions_LinearToGamma",
+            "context": "BehaviorMethod",
+            "variant": "",
+            "details": {
+                "name": "Linear To Gamma",
+                "category": "Math/Color"
+            },
+            "methods": [
+                {
+                    "base": "ScriptCanvas_ColorFunctions_LinearToGamma",
+                    "details": {
+                        "name": "Linear To Gamma",
+                        "tooltip": "Returns Source converted from linear to gamma corrected space."
+                    },
+                    "params": [
+                        {
+                            "typeid": "{7894072A-9050-4F0F-901B-34B1A0D29417}",
+                            "details": {
+                                "name": "Source"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{7894072A-9050-4F0F-901B-34B1A0D29417}",
+                            "details": {
+                                "name": "Color"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

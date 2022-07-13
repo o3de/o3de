@@ -14,8 +14,9 @@
 
 #include <SceneAPI/SceneCore/Mocks/Containers/MockScene.h>
 #include <SceneAPI/SceneCore/DataTypes/Rules/IMaterialRule.h>
-#include <SceneAPI/SceneData/GraphData/BoneData.h>
+#include <SceneAPI/SceneData/GraphData/RootBoneData.h>
 #include <SceneAPI/SceneData/GraphData/MeshData.h>
+#include <SceneAPI/SceneData/GraphData/TransformData.h>
 
 #include <EMotionFX/Source/Node.h>
 #include <EMotionFX/Source/Actor.h>
@@ -25,12 +26,9 @@
 #include <EMotionFX/Pipeline/SceneAPIExt/Groups/ActorGroup.h>
 #include <Integration/System/SystemCommon.h>
 
-#include <GFxFramework/MaterialIO/Material.h>
-
 #include <Tests/Matchers.h>
 #include <Tests/TestAssetCode/ActorFactory.h>
 #include <AzTest/Utils.h>
-
 
 namespace EMotionFX
 {
@@ -196,4 +194,47 @@ namespace EMotionFX
         EXPECT_EQ(mesh1->GetParentNode(), joint1);
         EXPECT_EQ(joint2->GetParentNode(), mesh1);
     }
+
+    class ActorBuilderPipelineTransformTestFixture : public ActorBuilderPipelineFixture
+        , public ::testing::WithParamInterface<AZ::Matrix3x4>
+    {
+    };
+
+    static const AZ::Matrix3x4 Matrix3x4s[] = {
+        AZ::Matrix3x4::CreateIdentity(),
+        AZ::Matrix3x4::CreateRotationX(-0.6f),
+        AZ::Matrix3x4::CreateFromQuaternion(AZ::Quaternion(0.24f, -0.08f, -0.48f, 0.84f)),
+        AZ::Matrix3x4::CreateTranslation(AZ::Vector3(7.9f, 2.4f, -4.6f)),
+        AZ::Matrix3x4::CreateFromQuaternionAndTranslation(AZ::Quaternion(0.12f, -0.24f, -0.72f, 0.64f), AZ::Vector3(2.3f, -5.2f, 0.7f))
+    };
+
+    TEST_P(ActorBuilderPipelineTransformTestFixture, ActorBuilder_Transforms)
+    {
+        // Set up a scene graph like this for testing
+        // root_joint
+        //     |____TransformData
+        using SceneGraph = AZ::SceneAPI::Containers::SceneGraph;
+        using RootBoneData = AZ::SceneData::GraphData::RootBoneData;
+        using GraphTransformData = AZ::SceneData::GraphData::TransformData;
+        SceneGraph& graph = m_scene->GetGraph();
+
+        const AZ::Matrix3x4 globalTransform = GetParam();
+
+        AZStd::shared_ptr<RootBoneData> rootBoneData = AZStd::make_shared<RootBoneData>();
+        const SceneGraph::NodeIndex rootJointIndex = graph.AddChild(graph.GetRoot(), "root_joint", rootBoneData);
+        AZStd::shared_ptr<GraphTransformData> transformData = AZStd::make_shared<GraphTransformData>();
+        transformData->SetMatrix(globalTransform);
+        const SceneGraph::NodeIndex transformIndex = graph.AddChild(rootJointIndex, "transform", transformData);
+        graph.MakeEndPoint(transformIndex);
+
+        ProcessScene();
+
+        ASSERT_EQ(m_actor->GetNumNodes(), 1);
+        const EMotionFX::Pose* pose = m_actor->GetBindPose();
+        AZ::Transform emfxLocal = pose->GetLocalSpaceTransform(0).ToAZTransform();
+        AZ::Transform builderLocal = AZ::Transform::CreateFromMatrix3x4(globalTransform);
+        EXPECT_TRUE(emfxLocal.IsClose(builderLocal));
+    }
+
+    INSTANTIATE_TEST_CASE_P(ActorBuilder_Transforms, ActorBuilderPipelineTransformTestFixture, ::testing::ValuesIn(EMotionFX::Matrix3x4s));
 } // namespace EMotionFX

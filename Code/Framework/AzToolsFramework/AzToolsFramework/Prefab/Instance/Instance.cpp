@@ -5,7 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/StringFunc/StringFunc.h>
@@ -38,8 +37,28 @@ namespace AzToolsFramework
         {
         }
 
+        Instance::Instance(InstanceOptionalReference parent, InstanceAlias alias)
+            : Instance(nullptr, parent, alias)
+        {
+        }
+
+        Instance::Instance(InstanceOptionalReference parent, InstanceAlias alias, EntityIdInstanceRelationship entityIdInstanceRelationship)
+            : Instance(nullptr, parent, alias, entityIdInstanceRelationship)
+        {
+        }
+
         Instance::Instance(InstanceAlias alias)
             : Instance(nullptr, AZStd::nullopt, AZStd::move(alias))
+        {
+        }
+
+        Instance::Instance(EntityIdInstanceRelationship entityIdInstanceRelationship)
+            : Instance(nullptr, AZStd::nullopt, GenerateInstanceAlias(), entityIdInstanceRelationship)
+        {
+        }
+
+        Instance::Instance(InstanceAlias alias, EntityIdInstanceRelationship entityIdInstanceRelationship)
+            : Instance(nullptr, AZStd::nullopt, AZStd::move(alias), entityIdInstanceRelationship)
         {
         }
 
@@ -48,10 +67,11 @@ namespace AzToolsFramework
         {
         }
 
-        Instance::Instance(AZStd::unique_ptr<AZ::Entity> containerEntity, InstanceOptionalReference parent, InstanceAlias alias)
+        Instance::Instance(AZStd::unique_ptr<AZ::Entity> containerEntity, InstanceOptionalReference parent, InstanceAlias alias, EntityIdInstanceRelationship entityIdInstanceRelationship)
             : m_parent(parent.has_value() ? &parent->get() : nullptr)
             , m_alias(AZStd::move(alias))
             , m_containerEntity(containerEntity ? AZStd::move(containerEntity) : AZStd::make_unique<AZ::Entity>())
+            , m_entityIdInstanceRelationship(entityIdInstanceRelationship)
             , m_instanceEntityMapper(AZ::Interface<InstanceEntityMapperInterface>::Get())
             , m_templateInstanceMapper(AZ::Interface<TemplateInstanceMapperInterface>::Get())
         {
@@ -180,15 +200,27 @@ namespace AzToolsFramework
         {
             EntityAlias entityAliasToRemove;
             auto instanceToTemplateEntityIdIterator = m_instanceToTemplateEntityIdMap.find(entityId);
+
             if (instanceToTemplateEntityIdIterator != m_instanceToTemplateEntityIdMap.end())
             {
                 entityAliasToRemove = instanceToTemplateEntityIdIterator->second;
-                [[maybe_unused]] bool isEntityRemoved = m_instanceEntityMapper->UnregisterEntity(entityId) &&
-                    m_templateToInstanceEntityIdMap.erase(entityAliasToRemove) && m_instanceToTemplateEntityIdMap.erase(entityId);
-                AZ_Assert(isEntityRemoved,
-                    "Prefab - Failed to remove entity with id %s with a Prefab Instance derived from source asset %s "
-                    "This happens when the entity is not correctly removed from all the prefab system entity maps.",
-                    entityId.ToString().c_str(), m_templateSourcePath.c_str());
+                if (m_entityIdInstanceRelationship == EntityIdInstanceRelationship::OneToOne)
+                {
+                    if (!UnregisterEntity(entityId))
+                    {
+                        AZ_Error("Prefab", false, "An owning instance couldn't be found corresponding to the entity requested to be detached");
+                        return nullptr;
+                    }
+                }
+                else
+                {
+                    [[maybe_unused]] bool isEntityRemoved =
+                        m_templateToInstanceEntityIdMap.erase(entityAliasToRemove) && m_instanceToTemplateEntityIdMap.erase(entityId);
+                    AZ_Assert(isEntityRemoved,
+                        "Prefab - Failed to remove entity with id %s with a Prefab Instance derived from source asset %s "
+                        "This happens when the entity is not correctly removed from all the prefab system entity maps.",
+                        entityId.ToString().c_str(), m_templateSourcePath.c_str());
+                }
             }
 
             return DetachEntity(entityAliasToRemove);
@@ -221,7 +253,10 @@ namespace AzToolsFramework
         {
             for (auto&& [entityAlias, entity] : m_entities)
             {
-                m_instanceEntityMapper->UnregisterEntity(entity->GetId());
+                if (m_entityIdInstanceRelationship == EntityIdInstanceRelationship::OneToOne)
+                {
+                    m_instanceEntityMapper->UnregisterEntity(entity->GetId());
+                }
                 m_templateToInstanceEntityIdMap.erase(entityAlias);
                 m_instanceToTemplateEntityIdMap.erase(entity->GetId());
 
@@ -266,12 +301,9 @@ namespace AzToolsFramework
             ClearEntities();
 
             m_nestedInstances.clear();
-
-            if (m_containerEntity)
-            {
-                m_containerEntity.reset(aznew AZ::Entity());
-                RegisterEntity(m_containerEntity->GetId(), GenerateEntityAlias());
-            }
+            m_cachedInstanceDom.SetNull();
+            m_containerEntity.reset(aznew AZ::Entity());
+            RegisterEntity(m_containerEntity->GetId(), GenerateEntityAlias());
 
         }
 
@@ -285,7 +317,10 @@ namespace AzToolsFramework
                     const bool shouldRemove = filter(entity);
                     if (shouldRemove)
                     {
-                        m_instanceEntityMapper->UnregisterEntity(entity->GetId());
+                        if (m_entityIdInstanceRelationship == EntityIdInstanceRelationship::OneToOne)
+                        {
+                            m_instanceEntityMapper->UnregisterEntity(entity->GetId());
+                        }
                         m_templateToInstanceEntityIdMap.erase(entityAlias);
                         m_instanceToTemplateEntityIdMap.erase(entity->GetId());
                     }
@@ -296,23 +331,27 @@ namespace AzToolsFramework
 
         void Instance::ClearEntities()
         {
-            if (m_containerEntity)
+            if (m_entityIdInstanceRelationship == EntityIdInstanceRelationship::OneToOne)
             {
-                m_instanceEntityMapper->UnregisterEntity(m_containerEntity->GetId());
-            }
-
-            for (const auto&[entityAlias, entity] : m_entities)
-            {
-                if (entity)
+                if (m_containerEntity)
                 {
-                    // Clean up our entity associations
-                    if (!m_instanceEntityMapper->UnregisterEntity(entity->GetId()))
+                    m_instanceEntityMapper->UnregisterEntity(m_containerEntity->GetId());
+                    m_containerEntity.reset();
+                }
+
+                for (const auto& [entityAlias, entity] : m_entities)
+                {
+                    if (entity)
                     {
-                        AZ_Assert(false,
-                            "Prefab - Attempted to Unregister entity with id '%s' from Prefab Instance derived from source asset '%s' "
-                            "Entity may never have been registered or was Unregistered early.",
-                            entity->GetId().ToString().c_str(),
-                            m_templateSourcePath.c_str());
+                        // Clean up our entity associations
+                        if (!m_instanceEntityMapper->UnregisterEntity(entity->GetId()))
+                        {
+                            AZ_Assert(false,
+                                "Prefab - Attempted to Unregister entity with id '%s' from Prefab Instance derived from source asset '%s' "
+                                "Entity may never have been registered or was Unregistered early.",
+                                entity->GetId().ToString().c_str(),
+                                m_templateSourcePath.c_str());
+                        }
                     }
                 }
             }
@@ -326,7 +365,9 @@ namespace AzToolsFramework
 
         bool Instance::RegisterEntity(const AZ::EntityId& entityId, const EntityAlias& entityAlias)
         {
-            if (!m_instanceEntityMapper->RegisterEntityToInstance(entityId, *this))
+            
+            if ((m_entityIdInstanceRelationship ==
+                    EntityIdInstanceRelationship::OneToOne) && !(m_instanceEntityMapper->RegisterEntityToInstance(entityId, *this)))
             {
                 AZ_Assert(false,
                     "Prefab - Failed to register entity with id %s with a Prefab Instance derived from source asset %s "
@@ -341,6 +382,30 @@ namespace AzToolsFramework
             m_templateToInstanceEntityIdMap.emplace(AZStd::make_pair(entityAlias, entityId));
 
             return true;
+        }
+
+        bool Instance::UnregisterEntity(AZ::EntityId entityId)
+        {
+            EntityAlias entityAliasToRemove;
+            auto instanceToTemplateEntityIdIterator = m_instanceToTemplateEntityIdMap.find(entityId);
+            if (instanceToTemplateEntityIdIterator != m_instanceToTemplateEntityIdMap.end())
+            {
+                entityAliasToRemove = instanceToTemplateEntityIdIterator->second;
+                auto templateToInstanceIterator = m_templateToInstanceEntityIdMap.find(entityAliasToRemove);
+                InstanceOptionalReference owningInstance = m_instanceEntityMapper->FindOwningInstance(entityId);
+                if (templateToInstanceIterator != m_templateToInstanceEntityIdMap.end() && owningInstance.has_value() && &(owningInstance->get()) == this)
+                {
+                    return (
+                        m_instanceEntityMapper->UnregisterEntity(entityId) && m_templateToInstanceEntityIdMap.erase(entityAliasToRemove) &&
+                        m_instanceToTemplateEntityIdMap.erase(entityId));
+                }
+            }
+            AZ_Warning(
+                "Prefab", false,
+                "Failed to remove entity with id %s with a Prefab Instance derived from source asset %s "
+                "This happens when the entity cannot be found in the relevant prefab system entity maps.",
+                entityId.ToString().c_str(), m_templateSourcePath.c_str());
+            return false;
         }
 
         Instance& Instance::AddInstance(AZStd::unique_ptr<Instance> instance)
@@ -824,11 +889,34 @@ namespace AzToolsFramework
 
         AZStd::unique_ptr<AZ::Entity> Instance::DetachContainerEntity()
         {
-            if (m_containerEntity)
+            if (m_entityIdInstanceRelationship == EntityIdInstanceRelationship::OneToOne && m_containerEntity)
             {
-                m_instanceEntityMapper->UnregisterEntity(m_containerEntity->GetId());
+                UnregisterEntity(m_containerEntity->GetId());
             }
             return AZStd::move(m_containerEntity);
         }
+
+        PrefabDomConstReference Instance::GetCachedInstanceDom() const
+        {
+            if (m_cachedInstanceDom.IsNull())
+            {
+                return AZStd::nullopt;
+            }
+            return m_cachedInstanceDom;
+        }
+
+        PrefabDomReference Instance::GetCachedInstanceDom()
+        {
+            if (m_cachedInstanceDom.IsNull())
+            {
+                return AZStd::nullopt;
+            }
+            return m_cachedInstanceDom;
+        }
+
+        void Instance::SetCachedInstanceDom(PrefabDomValueConstReference instanceDom)
+        {
+            m_cachedInstanceDom.CopyFrom(instanceDom->get(), m_cachedInstanceDom.GetAllocator());
+        }
     }
-}
+} // namespace AzToolsFramework

@@ -18,6 +18,7 @@
 #include <LmbrCentral/Animation/SkeletalHierarchyRequestBus.h>
 
 #include <AtomLyIntegration/CommonFeatures/Material/MaterialComponentBus.h>
+#include <AtomLyIntegration/CommonFeatures/Mesh/MeshHandleStateBus.h>
 #include <AtomLyIntegration/CommonFeatures/Mesh/MeshComponentBus.h>
 #include <AtomLyIntegration/CommonFeatures/SkinnedMesh/SkinnedMeshOverrideBus.h>
 #include <Atom/Feature/SkinnedMesh/SkinnedMeshFeatureProcessorBus.h>
@@ -70,6 +71,7 @@ namespace AZ
             , private AZ::Render::SkinnedMeshOutputStreamNotificationBus::Handler
             , private LmbrCentral::SkeletalHierarchyRequestBus::Handler
             , private Data::AssetBus::MultiHandler
+            , private MeshHandleStateRequestBus::Handler
         {
         public:
             AZ_CLASS_ALLOCATOR_DECL;
@@ -124,8 +126,8 @@ namespace AZ
             // MaterialReceiverRequestBus::Handler overrides...
             MaterialAssignmentId FindMaterialAssignmentId(
                 const MaterialAssignmentLodIndex lod, const AZStd::string& label) const override;
-            RPI::ModelMaterialSlotMap GetModelMaterialSlots() const override;
-            MaterialAssignmentMap GetMaterialAssignments() const override;
+            MaterialAssignmentLabelMap GetMaterialLabels() const override;
+            MaterialAssignmentMap GetDefautMaterialMap() const override;
             AZStd::unordered_set<AZ::Name> GetModelUvNames() const override;
 
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -180,6 +182,9 @@ namespace AZ
             void CreateRenderProxy(const MaterialAssignmentMap& materials);
 
         private:
+            // MeshHandleStateRequestBus overrides ...
+            const MeshFeatureProcessorInterface::MeshHandle* GetMeshHandle() const override;
+
             void CreateSkinnedMeshInstance();
 
             // Skip skinning for certain meshes (like those with cloth)

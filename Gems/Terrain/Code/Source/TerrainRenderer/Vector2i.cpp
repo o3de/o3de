@@ -27,6 +27,11 @@ namespace Terrain
         , m_y(value)
     {}
 
+    AZ::Vector2 Vector2i::ToVector2()
+    {
+        return AZ::Vector2(aznumeric_cast<float>(m_x), aznumeric_cast<float>(m_y));
+    }
+
     Vector2i Vector2i::operator+(const Vector2i& rhs) const
     {
         Vector2i returnPoint = *this;

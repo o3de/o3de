@@ -16,9 +16,13 @@
 // and implement that interface, then register it with the property manager.
 
 #include <AzCore/Debug/Profiler.h>
+#include <AzCore/EBus/EBus.h>
 #include <AzCore/RTTI/AttributeReader.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzFramework/DocumentPropertyEditor/ReflectionAdapter.h>
+#include <AzToolsFramework/UI/DocumentPropertyEditor/PropertyEditorToolsSystemInterface.h>
 #include <AzToolsFramework/UI/PropertyEditor/InstanceDataHierarchy.h>
+#include <AzCore/Asset/AssetSerializer.h>
 
 class QWidget;
 class QColor;
@@ -70,6 +74,22 @@ namespace AzToolsFramework
         virtual void PropertySelectionChanged(InstanceDataNode *, bool) {}
     };
 
+    //! Notification bus for edit events from individual RPE widgets.
+    //! Used exclusively by RpePropertyHandlerWrapper.
+    class IndividualPropertyHandlerEditNotifications : public AZ::EBusTraits
+    {
+    public:
+        using Bus = AZ::EBus<IndividualPropertyHandlerEditNotifications>;
+
+        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
+        using BusIdType = QWidget*;
+        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
+
+        virtual void OnValueChanged(AZ::DocumentPropertyEditor::Nodes::PropertyEditor::ValueChangeType changeType) = 0;
+        virtual void OnRequestPropertyNotify() = 0;
+    };
+
+    class PropertyHandlerWidgetInterface;
 
     // this serves as the base class for all property managers.
     // you do not use this class directly.
@@ -79,6 +99,8 @@ namespace AzToolsFramework
         friend class ReflectedPropertyEditor;
         friend PropertyRowWidget;
         friend class Components::PropertyManagerComponent;
+        template<typename WrappedType>
+        friend class RpePropertyHandlerWrapper;
 
     public:
         PropertyHandlerBase();
@@ -120,6 +142,18 @@ namespace AzToolsFramework
         // updates, it can be done in this function.
         virtual void PreventRefresh(QWidget* /*widget*/, bool /*shouldPrevent*/) {}
 
+        //! Registers this handler for usage in the DocumentPropertyHandler.
+        //! GenericPropertyHandler handles this for most cases.
+        virtual void RegisterDpeHandler()
+        {
+        }
+
+        //! Unregisters this handler from the DocumentPropertyHandler.
+        //! GenericPropertyHandler handles this for most cases.
+        virtual void UnregisterDpeHandler()
+        {
+        }
+
     protected:
         // we automatically take care of the rest:
         // --------------------- Internal Implementation ------------------------------
@@ -133,6 +167,163 @@ namespace AzToolsFramework
         virtual QWidget* GetFirstInTabOrder_Internal(QWidget* widget) = 0;
         virtual QWidget* GetLastInTabOrder_Internal(QWidget* widget) = 0;
         virtual void UpdateWidgetInternalTabbing_Internal(QWidget* widget) = 0;
+    };
+
+    // Wrapper type that takes a PropertyHandleBase from the ReflectedPropertyEditor and
+    // provides a PropertyHandlerWidgetInterface for the DocumentPropertyEditor.
+    // Doesn't use the normal static ShouldHandleNode and GetHandlerName implementations,
+    // so must be custom registered to the PropertyEditorToolsSystemInterface.
+    template<typename WrappedType>
+    class RpePropertyHandlerWrapper
+        : public PropertyHandlerWidgetInterface
+        , public IndividualPropertyHandlerEditNotifications::Bus::Handler
+    {
+    public:
+        explicit RpePropertyHandlerWrapper(PropertyHandlerBase& handlerToWrap)
+            : m_rpeHandler(handlerToWrap)
+        {
+            m_proxyNode.m_classData = &m_proxyClassData;
+            m_proxyNode.m_classElement = &m_proxyClassElement;
+            m_proxyClassData.m_typeId = azrtti_typeid<WrappedType>();
+            m_proxyNode.m_instances.push_back(&m_proxyValue);
+        }
+
+        ~RpePropertyHandlerWrapper()
+        {
+            if (m_widget)
+            {
+                delete m_widget;
+            }
+            IndividualPropertyHandlerEditNotifications::Bus::Handler::BusDisconnect();
+        }
+
+        QWidget* GetWidget() override
+        {
+            if (m_widget)
+            {
+                return m_widget;
+            }
+            m_widget = m_rpeHandler.CreateGUI(nullptr);
+            IndividualPropertyHandlerEditNotifications::Bus::Handler::BusConnect(m_widget);
+            return m_widget;
+        }
+
+        void SetValueFromDom(const AZ::Dom::Value& node)
+        {
+            using AZ::DocumentPropertyEditor::Nodes::PropertyEditor;
+
+            auto propertyEditorSystem = AZ::Interface<AZ::DocumentPropertyEditor::PropertyEditorSystemInterface>::Get();
+            AZ_Assert(
+                propertyEditorSystem != nullptr,
+                "RpePropertyHandlerWrapper::SetValueFromDom called with an uninitialized PropertyEditorSystemInterface");
+            if (propertyEditorSystem == nullptr)
+            {
+                return;
+            }
+
+            m_proxyClassElement.m_attributes.clear();
+            for (auto attributeIt = node.MemberBegin(); attributeIt != node.MemberEnd(); ++attributeIt)
+            {
+                const AZ::Name& name = attributeIt->first;
+                if (name == PropertyEditor::Type.GetName() || name == PropertyEditor::Value.GetName() ||
+                    name == PropertyEditor::ValueType.GetName())
+                {
+                    continue;
+                }
+                AZ::Crc32 attributeId = AZ::Crc32(name.GetStringView());
+
+                const AZ::DocumentPropertyEditor::AttributeDefinitionInterface* attribute =
+                    propertyEditorSystem->FindNodeAttribute(name, propertyEditorSystem->FindNode(AZ::Name(GetHandlerName(m_rpeHandler))));
+                AZStd::shared_ptr<AZ::Attribute> marshalledAttribute;
+                if (attribute != nullptr)
+                {
+                    marshalledAttribute = attribute->DomValueToLegacyAttribute(attributeIt->second);
+                }
+                else
+                {
+                    marshalledAttribute = AZ::Reflection::WriteDomValueToGenericAttribute(attributeIt->second);
+                }
+
+                if (marshalledAttribute)
+                {
+                    m_proxyClassElement.m_attributes.emplace_back(attributeId, AZStd::move(marshalledAttribute));
+                }
+            }
+
+            auto value = AZ::DocumentPropertyEditor::Nodes::PropertyEditor::Value.ExtractFromDomNode(node);
+            if (value.has_value())
+            {
+                m_proxyValue = AZ::Dom::Utils::ValueToType<WrappedType>(value.value()).value_or(m_proxyValue);
+            }
+            m_rpeHandler.ReadValuesIntoGUI_Internal(GetWidget(), &m_proxyNode);
+            m_rpeHandler.ConsumeAttributes_Internal(GetWidget(), &m_proxyNode);
+
+            m_domNode = node;
+        }
+
+        QWidget* GetFirstInTabOrder() override
+        {
+            return m_rpeHandler.GetFirstInTabOrder_Internal(GetWidget());
+        }
+
+        QWidget* GetLastInTabOrder() override
+        {
+            return m_rpeHandler.GetLastInTabOrder_Internal(GetWidget());
+        }
+
+        static bool ShouldHandleNode(PropertyHandlerBase& rpeHandler, const AZ::Dom::Value& node)
+        {
+            using AZ::DocumentPropertyEditor::Nodes::PropertyEditor;
+            auto typeIdAttribute = node.FindMember(PropertyEditor::ValueType.GetName());
+            AZ::TypeId typeId = AZ::TypeId::CreateNull();
+            if (typeIdAttribute != node.MemberEnd())
+            {
+                typeId = AZ::Dom::Utils::DomValueToTypeId(typeIdAttribute->second);
+            }
+            else
+            {
+                AZ::Dom::Value value = PropertyEditor::Value.ExtractFromDomNode(node).value_or(AZ::Dom::Value());
+                typeId = AZ::Dom::Utils::GetValueTypeId(value);
+            }
+            return rpeHandler.HandlesType(typeId);
+        }
+
+        static const AZStd::string_view GetHandlerName(PropertyHandlerBase& rpeHandler)
+        {
+            auto propertyEditorSystem = AZ::Interface<AZ::DocumentPropertyEditor::PropertyEditorSystemInterface>::Get();
+            AZ_Assert(
+                propertyEditorSystem != nullptr,
+                "RpePropertyHandlerWrapper::GetHandlerName called with an uninitialized PropertyEditorSystemInterface");
+            if (propertyEditorSystem == nullptr)
+            {
+                return {};
+            }
+            return propertyEditorSystem->LookupNameFromId(rpeHandler.GetHandlerName()).GetStringView();
+        }
+
+        void OnValueChanged(AZ::DocumentPropertyEditor::Nodes::PropertyEditor::ValueChangeType changeType) override
+        {
+            using AZ::DocumentPropertyEditor::Nodes::PropertyEditor;
+
+            m_rpeHandler.WriteGUIValuesIntoProperty_Internal(GetWidget(), &m_proxyNode);
+            const AZ::Dom::Value newValue = AZ::Dom::Utils::ValueFromType(m_proxyValue);
+            PropertyEditor::OnChanged.InvokeOnDomNode(m_domNode, newValue, changeType);
+            OnRequestPropertyNotify();
+        }
+
+        void OnRequestPropertyNotify() override
+        {
+            AZ::DocumentPropertyEditor::ReflectionAdapter::InvokeChangeNotify(m_domNode);
+        }
+
+    private:
+        PropertyHandlerBase& m_rpeHandler;
+        AZ::Dom::Value m_domNode;
+        QPointer<QWidget> m_widget;
+        InstanceDataNode m_proxyNode;
+        AZ::SerializeContext::ClassData m_proxyClassData;
+        AZ::SerializeContext::ClassElement m_proxyClassElement;
+        WrappedType m_proxyValue;
     };
 
     template <class WidgetType>
@@ -228,6 +419,58 @@ namespace AzToolsFramework
         // for example if you have multiple objects selected, index will go from 0 to however many there are.
         virtual bool ReadValuesIntoGUI(size_t index, WidgetType* GUI, const PropertyType& instance, InstanceDataNode* node) = 0;
 
+        // registers this handler to the DocumentPropertyEditor
+        // can be overridden to provide an alternate handler to the DPE
+        // or to disable registration outright if a replacement has been provided
+        void RegisterDpeHandler() override
+        {
+            // For non-constructible types, we can't automatically create a wrapper
+            if constexpr (AZStd::is_constructible_v<PropertyType>)
+            {
+                AZ_Assert(m_registeredDpeHandlerId == nullptr, "RegisterDpeHandler called multiple times for the same handler");
+
+                auto dpeSystemInterface = AZ::Interface<PropertyEditorToolsSystemInterface>::Get();
+                if (dpeSystemInterface == nullptr)
+                {
+                    AZ_WarningOnce("dpe", false, "RegisterDpeHandler failed, PropertyEditorToolsSystemInterface was not found");
+                    return;
+                }
+
+                using HandlerType = RpePropertyHandlerWrapper<PropertyType>;
+                PropertyEditorToolsSystemInterface::HandlerData registrationInfo;
+                registrationInfo.m_name = HandlerType::GetHandlerName(*this);
+                registrationInfo.m_shouldHandleNode = [this](const AZ::Dom::Value& node)
+                {
+                    return HandlerType::ShouldHandleNode(*this, node);
+                };
+                registrationInfo.m_factory = [this]()
+                {
+                    return AZStd::make_unique<HandlerType>(*this);
+                };
+                registrationInfo.m_isDefaultHandler = this->IsDefaultHandler();
+                m_registeredDpeHandlerId = dpeSystemInterface->RegisterHandler(AZStd::move(registrationInfo));
+            }
+        }
+
+        // unregisters this handler from the DocumentPropertyEditor
+        void UnregisterDpeHandler() override
+        {
+            if constexpr (AZStd::is_constructible_v<PropertyType>)
+            {
+                AZ_Assert(m_registeredDpeHandlerId != nullptr, "UnregisterDpeHandler called for a handler that's not registered");
+
+                auto dpeSystemInterface = AZ::Interface<PropertyEditorToolsSystemInterface>::Get();
+                if (dpeSystemInterface == nullptr)
+                {
+                    AZ_WarningOnce("dpe", false, "UnregisterDpeHandler failed, PropertyEditorToolsSystemInterface was not found");
+                    return;
+                }
+
+                dpeSystemInterface->UnregisterHandler(m_registeredDpeHandlerId);
+                m_registeredDpeHandlerId = nullptr;
+            }
+        }
+
     protected:
         // ---------------- INTERNAL -----------------------------
         virtual bool HandlesType(const AZ::Uuid& id) const override
@@ -238,6 +481,11 @@ namespace AzToolsFramework
         virtual const AZ::Uuid& GetHandledType() const override
         {
             return AZ::SerializeTypeInfo<PropertyType>::GetUuid();
+        }
+
+        virtual PropertyType* CastTo(void* instance, const InstanceDataNode* node, const AZ::Uuid& fromId, const AZ::Uuid& toId) const
+        {
+            return static_cast<PropertyType*>(node->GetSerializeContext()->DownCast(instance, fromId, toId));
         }
 
         virtual void WriteGUIValuesIntoProperty_Internal(QWidget* widget, InstanceDataNode* node) override
@@ -251,7 +499,7 @@ namespace AzToolsFramework
             {
                 void* instanceData = node->GetInstance(idx);
 
-                PropertyType* actualCast = static_cast<PropertyType*>(node->GetSerializeContext()->DownCast(instanceData, actualUUID, desiredUUID));
+                PropertyType* actualCast = CastTo(instanceData, node, actualUUID, desiredUUID);
                 AZ_Assert(actualCast, "Could not cast from the existing type ID to the actual typeid required by the editor.");
                 WriteGUIValuesIntoProperty(idx, wid, *actualCast, node);
             }
@@ -281,7 +529,7 @@ namespace AzToolsFramework
             {
                 void* instanceData = node->GetInstance(idx);
 
-                PropertyType* actualCast = static_cast<PropertyType*>(node->GetSerializeContext()->DownCast(instanceData, actualUUID, desiredUUID));
+                PropertyType* actualCast = CastTo(instanceData, node, actualUUID, desiredUUID);
                 AZ_Assert(actualCast, "Could not cast from the existing type ID to the actual typeid required by the editor.");
                 if (!ReadValuesIntoGUI(idx, wid, *actualCast, node))
                 {
@@ -289,6 +537,8 @@ namespace AzToolsFramework
                 }
             }
         }
+
+        PropertyEditorToolsSystemInterface::PropertyHandlerId m_registeredDpeHandlerId = PropertyEditorToolsSystemInterface::InvalidHandlerId;
     };
 }
 

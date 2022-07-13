@@ -1,0 +1,38 @@
+{
+    "entries": [
+        {
+            "base": "ScriptCanvas_OBBFunctions_GetAxisZ",
+            "context": "BehaviorMethod",
+            "variant": "",
+            "details": {
+                "name": "Get Axis Z",
+                "category": "Math/OBB"
+            },
+            "methods": [
+                {
+                    "base": "ScriptCanvas_OBBFunctions_GetAxisZ",
+                    "details": {
+                        "name": "Get Axis Z",
+                        "tooltip": "Returns the Z-Axis of Source"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{004ABD25-CF14-4EB3-BD41-022C247C07FA}",
+                            "details": {
+                                "name": "Source"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector3"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

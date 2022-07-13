@@ -1,0 +1,131 @@
+{
+    "ContainerEntity": {
+        "Id": "ContainerEntity",
+        "Name": "Nested_SC_Spawner",
+        "Components": {
+            "Component_[10378390710040582548]": {
+                "$type": "SelectionComponent",
+                "Id": 10378390710040582548
+            },
+            "Component_[11331331011039546113]": {
+                "$type": "EditorLockComponent",
+                "Id": 11331331011039546113
+            },
+            "Component_[11873177813382376892]": {
+                "$type": "EditorEntityIconComponent",
+                "Id": 11873177813382376892
+            },
+            "Component_[14075890290163420317]": {
+                "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
+                "Id": 14075890290163420317,
+                "Parent Entity": ""
+            },
+            "Component_[14640302178140038951]": {
+                "$type": "EditorOnlyEntityComponent",
+                "Id": 14640302178140038951
+            },
+            "Component_[15054875915060716981]": {
+                "$type": "EditorDisabledCompositionComponent",
+                "Id": 15054875915060716981
+            },
+            "Component_[17704207208292379234]": {
+                "$type": "EditorVisibilityComponent",
+                "Id": 17704207208292379234
+            },
+            "Component_[5248039136778400991]": {
+                "$type": "EditorPrefabComponent",
+                "Id": 5248039136778400991
+            },
+            "Component_[5571733383044332676]": {
+                "$type": "EditorPendingCompositionComponent",
+                "Id": 5571733383044332676
+            },
+            "Component_[8470999668051583554]": {
+                "$type": "EditorEntitySortComponent",
+                "Id": 8470999668051583554,
+                "Child Entity Order": [
+                    "Entity_[6725966533831]"
+                ]
+            },
+            "Component_[996113062629195750]": {
+                "$type": "EditorInspectorComponent",
+                "Id": 996113062629195750
+            }
+        }
+    },
+    "Entities": {
+        "Entity_[6725966533831]": {
+            "Id": "Entity_[6725966533831]",
+            "Name": "Nested_SC_Spawner",
+            "Components": {
+                "Component_[12085002737454593841]": {
+                    "$type": "EditorEntitySortComponent",
+                    "Id": 12085002737454593841
+                },
+                "Component_[14581392516606697621]": {
+                    "$type": "EditorDisabledCompositionComponent",
+                    "Id": 14581392516606697621
+                },
+                "Component_[1562317216532082668]": {
+                    "$type": "SelectionComponent",
+                    "Id": 1562317216532082668
+                },
+                "Component_[1621502205226775734]": {
+                    "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
+                    "Id": 1621502205226775734,
+                    "Parent Entity": "ContainerEntity"
+                },
+                "Component_[17523382454510139843]": {
+                    "$type": "EditorLockComponent",
+                    "Id": 17523382454510139843
+                },
+                "Component_[18165339395066691409]": {
+                    "$type": "EditorInspectorComponent",
+                    "Id": 18165339395066691409,
+                    "ComponentOrderEntryArray": [
+                        {
+                            "ComponentId": 1621502205226775734
+                        },
+                        {
+                            "ComponentId": 4231770690955222948,
+                            "SortIndex": 1
+                        }
+                    ]
+                },
+                "Component_[3074226389810114081]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 3074226389810114081
+                },
+                "Component_[3239329918522695041]": {
+                    "$type": "EditorEntityIconComponent",
+                    "Id": 3239329918522695041
+                },
+                "Component_[4231770690955222948]": {
+                    "$type": "EditorScriptCanvasComponent",
+                    "Id": 4231770690955222948,
+                    "configuration": {
+                        "sourceHandle": {
+                            "id": "{94AF4693-BC86-5DD3-AE93-E601827EA8FC}",
+                            "path": "GitHub/o3de/AutomatedTesting/ScriptCanvas/Spawnables/SimpleNestedSpawn.scriptcanvas"
+                        },
+                        "sourceName": "SimpleNestedSpawn.scriptcanvas",
+                        "propertyOverrides": {
+                            "source": {
+                                "id": "{94AF4693-BC86-5DD3-AE93-E601827EA8FC}",
+                                "path": "GitHub/o3de/AutomatedTesting/ScriptCanvas/Spawnables/SimpleNestedSpawn.scriptcanvas"
+                            }
+                        }
+                    }
+                },
+                "Component_[4812408805963450658]": {
+                    "$type": "EditorPendingCompositionComponent",
+                    "Id": 4812408805963450658
+                },
+                "Component_[5492407292870672398]": {
+                    "$type": "EditorVisibilityComponent",
+                    "Id": 5492407292870672398
+                }
+            }
+        }
+    }
+}

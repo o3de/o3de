@@ -82,7 +82,6 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         BUILD_DEPENDENCIES
             PUBLIC
                 AZ::AzToolsFramework
-                AZ::GFxFramework
                 AZ::SceneCore
                 AZ::SceneData
                 Legacy::Editor.Headers

@@ -105,6 +105,8 @@ namespace AZ
         {
             if (waitEvent)
             {
+                // TaskGraphEvent asserts if it has a wait count of 0, increment it before signaling.
+                waitEvent->IncWaitCount();
                 waitEvent->Signal();
             }
             return;

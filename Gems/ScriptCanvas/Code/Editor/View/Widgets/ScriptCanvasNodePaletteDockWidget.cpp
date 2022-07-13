@@ -422,6 +422,8 @@ namespace ScriptCanvasEditor
 
         void ScriptCanvasRootPaletteTreeItem::OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset)
         {
+            using namespace AzFramework;
+
             AZ::Data::AssetId assetId = asset.GetId();
             m_pendingAssets.erase(assetId);
 
@@ -462,19 +464,9 @@ namespace ScriptCanvasEditor
                         return;
                     }
 
+                    auto assetInfo = AssetHelpers::GetSourceInfoByProductId(assetId, asset.GetType());
 
-                    AZStd::string rootPath, absolutePath;
-                    AZ::Data::AssetInfo assetInfo = AssetHelpers::GetAssetInfo(assetId, rootPath);
-                    AzFramework::StringFunc::Path::Join(rootPath.c_str(), assetInfo.m_relativePath.c_str(), absolutePath);
- 
-                    AZStd::string normPath = absolutePath;
-                    AzFramework::StringFunc::Path::Normalize(normPath);
- 
-                    AZStd::string watchFolder;
-                    bool sourceInfoFound{};
-                    AzToolsFramework::AssetSystemRequestBus::BroadcastResult(sourceInfoFound, &AzToolsFramework::AssetSystemRequestBus::Events::GetSourceInfoBySourcePath, normPath.c_str(), assetInfo, watchFolder);
- 
-                    if (!sourceInfoFound)
+                    if (!assetInfo.m_assetId.IsValid())
                     {
                         return;
                     }
@@ -855,15 +847,11 @@ namespace ScriptCanvasEditor
         {
             if (nodePaletteItem)
             {
-                AZ::IO::Path gemPath = ScriptCanvasEditorTools::Helpers::GetGemPath("ScriptCanvas");
-                gemPath = gemPath / AZ::IO::Path("TranslationAssets");
-                gemPath = gemPath / nodePaletteItem->GetTranslationDataPath();
-                gemPath.ReplaceExtension(".names");
-
+                AZ::IO::Path filePath = nodePaletteItem->GetTranslationDataPath();
                 AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance();
-                if (fileIO && fileIO->Exists(gemPath.c_str()))
+                if (fileIO && !filePath.empty() && fileIO->Exists(filePath.c_str()))
                 {
-                    AzQtComponents::ShowFileOnDesktop(gemPath.c_str());
+                    AzQtComponents::ShowFileOnDesktop(filePath.c_str());
                 }
             }
         }

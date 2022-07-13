@@ -297,6 +297,9 @@ namespace EMotionFX
             skin2dArray.SetNumPreCachedElements(maxSkinInfluences);
             skin2dArray.Resize(modelVertexCount);
 
+            // Keep track of the number of unique jointIds
+            AZStd::bitset<AZStd::numeric_limits<uint16>::max()> usedJoints;
+            uint16 highestJointIndex = 0;
             AZ::u32 currentVertex = 0;
             for (const AZ::RPI::ModelLodAsset::Mesh& sourceMesh : sourceModelLod->GetMeshes())
             {
@@ -325,8 +328,11 @@ namespace EMotionFX
                                     continue;
                                 }
 
-                                const AZ::u16 skeltonJointIndex = skinToSkeletonIndexMap.at(skinJointIndex);
-                                skinningLayer->AddInfluence(currentVertex, skeltonJointIndex, weight, 0);
+                                const AZ::u16 skeletonJointIndex = skinToSkeletonIndexMap.at(skinJointIndex);
+                                skinningLayer->AddInfluence(currentVertex, skeletonJointIndex, weight, 0);
+                                
+                                usedJoints.set(skeletonJointIndex);
+                                highestJointIndex = AZStd::max(highestJointIndex, skeletonJointIndex);
                             }
                         }
 
@@ -334,6 +340,9 @@ namespace EMotionFX
                     }
                 }
             }
+
+            mesh->SetNumUniqueJoints(aznumeric_caster(usedJoints.count()));
+            mesh->SetHighestJointIndex(highestJointIndex);
         }
 
         AZ::u32 vertexOffset = 0;
@@ -355,7 +364,6 @@ namespace EMotionFX
                 subMeshVertexCount,
                 subMeshIndexCount,
                 subMeshPolygonCount,
-                /*materialIndex*/0,
                 /*numJoints*/0);
 
             mesh->InsertSubMesh(subMeshIndex, subMesh);
@@ -1463,7 +1471,6 @@ namespace EMotionFX
             MCore::LogDebug("     + Num vertices = %d", subMesh->GetNumVertices());
             MCore::LogDebug("     + Num indices  = %d (%d polygons)", subMesh->GetNumIndices(), subMesh->GetNumPolygons());
             MCore::LogDebug("     + Num bones    = %d", subMesh->GetNumBones());
-            MCore::LogDebug("     + MaterialNr   = %d", subMesh->GetMaterial());
 
             /*      // output all triangle indices that point inside the data we output above
             LogDebug("       - Triangle Indices:");

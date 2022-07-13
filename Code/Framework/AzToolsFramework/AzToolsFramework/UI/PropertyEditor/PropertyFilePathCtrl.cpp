@@ -26,6 +26,61 @@ AZ_POP_DISABLE_WARNING
 
 namespace AzToolsFramework
 {
+    AZ::IO::Path GetAbsolutePathFromRelativePath(const AZ::IO::Path& relativePath)
+    {
+        // First check if this source relative path already exists and is in an asset safe folder
+        AZ::Data::AssetInfo info;
+        AZStd::string watchFolder;
+        bool fullPathIsValid = false;
+        AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
+            fullPathIsValid, &AzToolsFramework::AssetSystemRequestBus::Events::GetSourceInfoBySourcePath, relativePath.c_str(), info,
+            watchFolder);
+
+        // The full source path asset exists on disk, so use that as
+        // the pre-selected file when the user opens the file picker dialog
+        if (fullPathIsValid)
+        {
+            return AZ::IO::Path(watchFolder) / relativePath;
+        }
+        // GetFullSourcePathFromRelativeProductPath failed so the file doesn't exist on disk yet.
+        // Search through the set of asset-safe folders to look for the first one that contains a matching
+        // subdirectory structure that could be used to store the requested relative path and name.
+        else
+        {
+            bool assetSafeFoldersRetrieved = false;
+            AZStd::vector<AZStd::string> assetSafeFolders;
+            AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
+                assetSafeFoldersRetrieved, &AzToolsFramework::AssetSystemRequestBus::Events::GetAssetSafeFolders, assetSafeFolders);
+
+            if (!assetSafeFoldersRetrieved)
+            {
+                AZ_Error("PropertyFilePathCtrl", false, "Could not acquire a list of asset safe folders from the database.");
+                return AZ::IO::Path();
+            }
+
+            // Find an asset safe folder that already has the existing parent-path that
+            // would satisfy the relative path currently stored.
+            //
+            // Example: m_currentFilePath has a value of "my/sub/folder/image.png"
+            // It will keep looking until it finds an asset safe folder that has
+            // a matching sub-directory structure that exists:
+            //      <ASSET_SAFE_FOLDER>/my/sub/folder
+            for (AZ::IO::Path candidateFilePath : assetSafeFolders)
+            {
+                candidateFilePath /= relativePath;
+
+                if (AZ::IO::FixedMaxPath parentCandidatePath = candidateFilePath.ParentPath();
+                    AZ::IO::SystemFile::IsDirectory(parentCandidatePath.c_str()))
+                {
+                    return candidateFilePath;
+                }
+            }
+        }
+
+        // Failed to find an absolute path for this relative path
+        return AZ::IO::Path();
+    }
+
     PropertyFilePathCtrl::PropertyFilePathCtrl(QWidget* parent)
         : QWidget(parent)
     {
@@ -74,11 +129,6 @@ namespace AzToolsFramework
         m_filter = filter;
     }
 
-    void PropertyFilePathCtrl::SetProductExtension(AZStd::string extension)
-    {
-        m_productExtension = AZStd::move(extension);
-    }
-
     void PropertyFilePathCtrl::SetDefaultFileName(AZ::IO::Path fileName)
     {
         m_defaultFileName = AZStd::move(fileName);
@@ -123,56 +173,8 @@ namespace AzToolsFramework
         // that is stored
         else
         {
-            // The GetFullSourcePathFromRelativeProductPath API only works on product paths,
-            // so we need to append the product extension to try and find it
-            AZStd::string relativePath = m_currentFilePath.Native() + m_productExtension;
-
-            AZStd::string fullPath;
-            bool fullPathIsValid = false;
-            AssetSystemRequestBus::BroadcastResult(
-                fullPathIsValid, &AssetSystemRequestBus::Events::GetFullSourcePathFromRelativeProductPath, relativePath, fullPath);
-
-            // The full source path asset exists on disk, so use that as
-            // the pre-selected file when the user opens the file picker dialog
-            if (fullPathIsValid)
-            {
-                preselectedFilePath = QString::fromUtf8(fullPath.c_str(), static_cast<int>(fullPath.size()));
-            }
-            // GetFullSourcePathFromRelativeProductPath failed so the file doesn't exist on disk yet
-            // So we need to find it by searching in the asset safe folders
-            else
-            {
-                bool assetSafeFoldersRetrieved = false;
-                AZStd::vector<AZStd::string> assetSafeFolders;
-                AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
-                    assetSafeFoldersRetrieved, &AzToolsFramework::AssetSystemRequestBus::Events::GetAssetSafeFolders, assetSafeFolders);
-
-                if (!assetSafeFoldersRetrieved)
-                {
-                    AZ_Error("PropertyFilePathCtrl", false, "Could not acquire a list of asset safe folders from the database.");
-                    return QString();
-                }
-
-                // Find an asset safe folder that already has the existing parent-path that
-                // would satisfy the relative path currently stored.
-                //
-                // Example: m_currentFilePath has a value of "my/sub/folder/image.png"
-                // It will keep looking until it finds an asset safe folder that has
-                // a matching sub-directory structure that exists:
-                //      <ASSET_SAFE_FOLDER>/my/sub/folder
-                for (AZ::IO::Path candidateFilePath : assetSafeFolders)
-                {
-                    candidateFilePath /= m_currentFilePath;
-
-                    if (AZ::IO::FixedMaxPath parentCandidatePath = candidateFilePath.ParentPath();
-                        AZ::IO::SystemFile::IsDirectory(parentCandidatePath.c_str()))
-                    {
-                        preselectedFilePath =
-                            QString::fromUtf8(candidateFilePath.c_str(), static_cast<int>(candidateFilePath.Native().size()));
-                        break;
-                    }
-                }
-            }
+            auto absolutePath = GetAbsolutePathFromRelativePath(m_currentFilePath);
+            preselectedFilePath = QString::fromUtf8(absolutePath.c_str(), static_cast<int>(absolutePath.Native().size()));
         }
 
         return preselectedFilePath;

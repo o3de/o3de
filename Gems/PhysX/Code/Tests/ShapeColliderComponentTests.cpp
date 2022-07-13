@@ -518,8 +518,7 @@ namespace PhysXEditorTests
         return CreateActiveGameEntityFromEditorEntity(rigidBodyEditorEntity.get());
     }
 
-    // LYN-1241 - Test disabled due to AZ_Error reports about MaterialLibrary being not found in the AssetCatalog
-    TEST_F(PhysXEditorFixture, DISABLED_EditorShapeColliderComponent_PolygonPrismForceRegion_AppliesForceAtRuntime)
+    TEST_F(PhysXEditorFixture, EditorShapeColliderComponent_PolygonPrismForceRegion_AppliesForceAtRuntime)
     {
         // create an editor entity with shape collider, polygon prism shape and force region components
         EntityPtr forceRegionEditorEntity = CreateInactiveEditorEntity("ShapeColliderComponentEditorEntity");

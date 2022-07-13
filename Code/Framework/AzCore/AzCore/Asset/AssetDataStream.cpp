@@ -110,8 +110,7 @@ namespace AZ::Data
     }
 
     void AssetDataStream::Open(const AZStd::string& filePath, size_t fileOffset, size_t assetSize,
-        AZStd::chrono::milliseconds deadline, AZ::IO::IStreamerTypes::Priority priority,
-        OnCompleteCallback loadCallback)
+        AZ::IO::IStreamerTypes::Deadline deadline, AZ::IO::IStreamerTypes::Priority priority, OnCompleteCallback loadCallback)
     {
         AZ_PROFILE_FUNCTION(AzCore);
 
@@ -192,7 +191,7 @@ namespace AZ::Data
         }
     }
 
-    void AssetDataStream::Reschedule(AZStd::chrono::milliseconds newDeadline, AZ::IO::IStreamerTypes::Priority newPriority)
+    void AssetDataStream::Reschedule(AZ::IO::IStreamerTypes::Deadline newDeadline, AZ::IO::IStreamerTypes::Priority newPriority)
     {
         if (m_privateData->m_curReadRequest && (newDeadline < m_curDeadline || newPriority > m_curPriority))
         {

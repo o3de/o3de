@@ -20,6 +20,8 @@ set(FILES
     Source/Pass/EditorModeBlurPass.h
     Source/Pass/EditorModeOutlinePass.cpp
     Source/Pass/EditorModeOutlinePass.h
+    Source/FocusedEntity/FocusedMeshEntity.cpp
+    Source/FocusedEntity/FocusedMeshEntity.h
     Source/EditorModeFeedbackSystemComponent.cpp
     Source/EditorModeFeedbackSystemComponent.h
     Source/EditorModeFeedbackFeatureProcessor.cpp
