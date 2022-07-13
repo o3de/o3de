@@ -85,6 +85,7 @@ namespace AzToolsFramework
                     "PrefabLoader::ReloadTemplateFromFile - "
                     "Invalid file path: '%.*s'.",
                     AZ_STRING_ARG(relativePath.Native()));
+                return;
             }
 
             auto readResult = AZ::Utils::ReadFile(GetFullPath(relativePath).Native(), AZStd::numeric_limits<size_t>::max());
@@ -95,6 +96,7 @@ namespace AzToolsFramework
                     "PrefabLoader::ReloadTemplateFromFile - Failed to reload Prefab file from '%.*s'."
                     "Error message: '%s'",
                     AZ_STRING_ARG(relativePath.Native()), readResult.GetError().c_str());
+                return;
             }
             // Cyclical dependency detected if the prefab file is already part of the progressed
             // file path set.
@@ -106,6 +108,7 @@ namespace AzToolsFramework
                     "Prefab file '%.*s' has been detected to directly or indirectly depend on itself."
                     "Terminating any further loading of this branch of its prefab hierarchy.",
                     AZ_STRING_ARG(relativePath.Native()));
+                return;
             }
 
             // Read Template's prefab file from disk and parse Prefab DOM from file.
@@ -117,6 +120,7 @@ namespace AzToolsFramework
                     "PrefabLoader::ReloadTemplateFromFile - Failed to load Prefab file from '%.*s'."
                     "Error message: '%s'",
                     AZ_STRING_ARG(relativePath.Native()), readPrefabFileResult.GetError().c_str());
+                return;
             }
             // Add or replace the Source parameter in the dom
             PrefabDomPath sourcePath = PrefabDomPath((AZStd::string("/") + PrefabDomUtils::SourceName).c_str());
@@ -137,6 +141,7 @@ namespace AzToolsFramework
                     "Prefab", false,
                     "PrefabLoader::ReloadTemplateFromFile - Failed to load template dom from '%.*s'.",
                     AZ_STRING_ARG(relativePath.Native()));
+                return;
             }
             PrefabDom& existingTemplateDom = existingTemplateReference->get().GetPrefabDom();
 
@@ -150,6 +155,7 @@ namespace AzToolsFramework
                     "PrefabLoader::ReloadTemplateFromFile - "
                     "Can't get '%s' of Template's Prefab DOM from file '%s'.",
                     PrefabDomUtils::ContainerEntityName, AZ_STRING_ARG(relativePath.Native()));
+                return;
             }
 
             PrefabDomValueReference containerEntityReference =
@@ -161,10 +167,11 @@ namespace AzToolsFramework
                     "PrefabLoader::ReloadTemplateFromFile - "
                     "Can't get '%s' of Prefab DOM from file '%s'.",
                     PrefabDomUtils::ContainerEntityName, AZ_STRING_ARG(relativePath.Native()));
+                return;
             }
             existingContainerReference->get().CopyFrom(containerEntityReference->get(), existingTemplateDom.GetAllocator());
 
-            // Copy over the entities from the updated prefab dom
+             // Copy over the entities from the updated prefab dom
              PrefabDomValueReference existingEntitiesReference =
                 PrefabDomUtils::FindPrefabDomValue(existingTemplateDom, PrefabDomUtils::EntitiesName);
             if (existingEntitiesReference.has_value())
@@ -174,6 +181,7 @@ namespace AzToolsFramework
                     "PrefabLoader::ReloadTemplateFromFile - "
                     "Can't get '%s' of Template's Prefab DOM from file '%s'.",
                     PrefabDomUtils::EntitiesName, AZ_STRING_ARG(relativePath.Native()));
+                return;
             }
 
             PrefabDomValueReference entitiesReference =
@@ -185,6 +193,7 @@ namespace AzToolsFramework
                     "PrefabLoader::ReloadTemplateFromFile - "
                     "Can't get '%s' of Prefab DOM from file '%s'.",
                     PrefabDomUtils::EntitiesName, AZ_STRING_ARG(relativePath.Native()));
+                return;
             }
              existingEntitiesReference->get().CopyFrom(entitiesReference->get(), existingTemplateDom.GetAllocator());
 
@@ -193,8 +202,7 @@ namespace AzToolsFramework
             {
                const PrefabDomValue& instances = instancesReference->get();
 
-                // For each instance value in 'instances', try to create source Templates for target Template's nested instance data.
-                // Also create Links between source/target Templates if source Template loaded successfully.
+               // For each instance value in 'instances', locate the what was changed on file and update existing template
                for (PrefabDomValue::ConstMemberIterator instanceIterator = instances.MemberBegin();
                     instanceIterator != instances.MemberEnd(); ++instanceIterator)
                 {
@@ -205,6 +213,7 @@ namespace AzToolsFramework
                             "PrefabLoader::ReloadTemplateFrom - "
                             "Reloading nested instance '%s' in target Template '%u' from Prefab file '%.*s' failed.",
                             instanceIterator->name.GetString(), loadedTemplateId, AZ_STRING_ARG(relativePath.Native()));
+                        return;
                     }
                 }
             }
