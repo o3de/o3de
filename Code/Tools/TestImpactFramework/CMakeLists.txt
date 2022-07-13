@@ -18,4 +18,8 @@ endif()
 ly_add_pytest(
     NAME TiafToolsTest
     PATH ${LY_ROOT_FOLDER}/scripts/build/TestImpactAnalysis/test_tiaf_tools.py
+    TEST_SERIAL
+    COMPONENT 
+        TestImpactFramework
+    
 )
