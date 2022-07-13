@@ -307,7 +307,7 @@ class Report:
             Report._exception = traceback.format_exc()
 
         success, report_str = Report.get_report(test_function)
-        # Print on the o3de console, for debugging purpuses
+        # Print on the o3de console, for debugging purposes
         print(report_str)
         # Print the report on the piped stdout of the application
         general.test_output(report_str)

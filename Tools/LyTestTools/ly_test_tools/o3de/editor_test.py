@@ -4,7 +4,7 @@ For complete copyright and license terms please see the LICENSE at the root of t
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
-# Test-writing utilities that simplify creating O3DE in-Editor tests in Python.
+# Test-writing utilities that simplify creating O3DE Editor tests in Python.
 #
 # Test writers should subclass a test suite from EditorTestSuite to hold the specification of python test scripts for
 # the editor to load and run. Tests can be parallelized (run in multiple editor instances at once) and/or batched
@@ -31,18 +31,29 @@ import os
 import tempfile
 import threading
 
+import pytest
 import _pytest.python
 import _pytest.outcomes
 
 import ly_test_tools.o3de.editor_test_utils as editor_utils
 from ly_test_tools._internal.managers.workspace import AbstractWorkspaceManager
 from ly_test_tools.launchers.exceptions import WaitTimeoutError
-from ly_test_tools.o3de.multi_test_framework import (
-    AbstractTestBase, AbstractTestClass, AbstractTestSuite, Result, Runner)
+from ly_test_tools.o3de.multi_test_framework import AbstractTestBase, AbstractTestClass, AbstractTestSuite, Result
 
 logger = logging.getLogger(__name__)
 
 LOG_NAME = "editor_test.log"
+
+
+@pytest.fixture(scope="function")
+def instance_executable(request, editor):
+    """
+    Specify the type of executable to launch for the tests being collected.
+    :param request: The pytest request
+    :param editor: The LyTestTools Editor object
+    :return: editor
+    """
+    return editor
 
 
 class EditorSingleTest(AbstractTestBase):
@@ -58,7 +69,7 @@ class EditorSingleTest(AbstractTestBase):
         self.use_null_renderer = None
 
     @staticmethod
-    def setup(instance: EditorTestSuite.EditorTestClass,
+    def setup(instance: AbstractTestClass,
               request: _pytest.fixtures.FixtureRequest,
               workspace: AbstractWorkspaceManager,
               editor: ly_test_tools.launchers.platforms.base.Launcher,
@@ -66,7 +77,7 @@ class EditorSingleTest(AbstractTestBase):
               launcher_platform: str) -> None:
         """
         User-overrideable setup function, which will run before the test.
-        :param instance: Parent EditorTestClass instance executing the test
+        :param instance: Parent AbstractTestClass instance executing the test
         :param request: PyTest request object
         :param workspace: LyTestTools workspace manager
         :param editor: LyTestTools editor-launcher object
@@ -76,7 +87,7 @@ class EditorSingleTest(AbstractTestBase):
         pass
 
     @staticmethod
-    def wrap_run(instance: EditorTestSuite.EditorTestClass,
+    def wrap_run(instance: AbstractTestClass,
                  request: _pytest.fixtures.FixtureRequest,
                  workspace: AbstractWorkspaceManager,
                  editor: ly_test_tools.launchers.platforms.base.Launcher,
@@ -86,7 +97,7 @@ class EditorSingleTest(AbstractTestBase):
         User-overrideable wrapper function, which will run both before and after test.
         Any code before the 'yield' statement will run before the test. With code after yield run after the test.
         Setup will run before wrap_run starts. Teardown will run after it completes.
-        :param instance: Parent EditorTestClass instance executing the test
+        :param instance: Parent AbstractTestClass instance executing the test
         :param request: PyTest request object
         :param workspace: LyTestTools workspace manager
         :param editor: LyTestTools editor-launcher object
@@ -96,13 +107,15 @@ class EditorSingleTest(AbstractTestBase):
         yield
 
     @staticmethod
-    def teardown(instance: EditorTestSuite.EditorTestClass, request: _pytest.fixtures.FixtureRequest,
+    def teardown(instance: AbstractTestClass,
+                 request: _pytest.fixtures.FixtureRequest,
                  workspace: AbstractWorkspaceManager,
-                 editor: ly_test_tools.launchers.platforms.base.Launcher, editor_test_results: EditorTestSuite.TestData,
+                 editor: ly_test_tools.launchers.platforms.base.Launcher,
+                 editor_test_results: EditorTestSuite.TestData,
                  launcher_platform: str) -> None:
         """
         User-overrideable teardown function, which will run after the test
-        :param instance: Parent EditorTestClass instance executing the test
+        :param instance: Parent AbstractTestClass instance executing the test
         :param request: PyTest request object
         :param workspace: LyTestTools workspace manager
         :param editor: LyTestTools editor-launcher object
@@ -170,7 +183,7 @@ class EditorTestSuite(AbstractTestSuite):
     # Test class to use for shared test collection
     shared_test_class = EditorSharedTest
 
-    def pytest_custom_makeitem(collector: _pytest.python.Module, name: str, obj: object) -> AbstractTestClass:
+    def pytest_multitest_makeitem(collector: _pytest.python.Module, name: str, obj: object) -> AbstractTestClass:
         """
         Enables ly_test_tools._internal.pytest_plugin.editor_test.pytest_pycollect_makeitem to collect the tests
         defined by this suite.
@@ -183,9 +196,9 @@ class EditorTestSuite(AbstractTestSuite):
         """
         return AbstractTestClass(name, collector)
 
-    def _get_number_parallel_editors(self, request: _pytest.fixtures.FixtureRequest) -> int:
+    def _get_number_parallel_instances(self, request: _pytest.fixtures.FixtureRequest) -> int:
         """
-        Retrieves the number of parallel preference based on cmdline overrides or class overrides.
+        Retrieves the number of parallel instances preference based on cmdline overrides or class overrides.
         Defaults to self.get_number_parallel_instances() from inherited AbstractTestSuite class.
         :request: The Pytest Request object
         :return: The number of parallel editors to use
@@ -456,13 +469,13 @@ class EditorTestSuite(AbstractTestSuite):
         if hasattr(test_spec, "extra_cmdline_args"):
             extra_cmdline_args = test_spec.extra_cmdline_args
 
-        result = self._exec_editor_test(request, workspace, editor, 1, "editor_test.log", test_spec, extra_cmdline_args)
+        result = self._exec_editor_test(request, workspace, editor, 1, f"{LOG_NAME}", test_spec, extra_cmdline_args)
         if result is None:
-            logger.error(f"Unexpectedly found no test run in the editor log during {test_spec}")
+            logger.error(f"Unexpectedly found no test run in the {LOG_NAME} during {test_spec}")
             result = {"Unknown":
                       Result.Unknown(
                           test_spec=test_spec,
-                          extra_info="Unexpectedly found no test run information on stdout in the editor log")}
+                          extra_info=f"Unexpectedly found no test run information on stdout in the {LOG_NAME}")}
         collected_test_data.results.update(result)
         test_name, test_result = next(iter(result.items()))
         self._report_result(test_name, test_result)

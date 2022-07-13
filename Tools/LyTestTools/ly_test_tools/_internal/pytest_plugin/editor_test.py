@@ -35,9 +35,9 @@ def pytest_addoption(parser: argparse.ArgumentParser) -> None:
 
 def pytest_pycollect_makeitem(collector: _pytest.python.Module, name: str, obj: object) -> _pytest.python.Module:
     """
-    Create a custom custom item collection if the class defines pytest_custom_makeitem function. This is used for
+    Create a custom item collection if the class defines a pytest_multitest_makeitem method. This is used for
     automatically generating test functions with a custom collector.
-    Classes that inherit the AbstractTestSuite class require a "pytest_custom_makeitem" function or no collection occurs
+    Classes that inherit the AbstractTestSuite class require a "pytest_multitest_makeitem" method to collect tests.
     :param collector: The Pytest collector
     :param name: Name of the collector
     :param obj: The custom collector, normally a test class object inside the AbstractTestSuite class
@@ -45,8 +45,8 @@ def pytest_pycollect_makeitem(collector: _pytest.python.Module, name: str, obj: 
     """
     if inspect.isclass(obj):
         for base in obj.__bases__:
-            if hasattr(base, "pytest_custom_makeitem"):
-                return base.pytest_custom_makeitem(collector, name, obj)
+            if hasattr(base, "pytest_multitest_makeitem"):
+                return base.pytest_multitest_makeitem(collector, name, obj)
 
 
 @pytest.hookimpl(hookwrapper=True)

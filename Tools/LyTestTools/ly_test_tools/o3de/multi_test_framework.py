@@ -378,33 +378,33 @@ class AbstractTestClass(pytest.Class):
 
             def make_single_run(inner_test_spec):
                 @set_marks({"run_type": "run_single"})
-                def single_run(self, request, workspace, editor, collected_test_data, launcher_platform):
+                def single_run(self, request, workspace, instance_executable, collected_test_data, launcher_platform):
                     # only single tests are allowed to have setup/teardown, however we can have shared tests that
                     # were explicitly set as single, for example via cmdline argument override
                     is_single_test = issubclass(inner_test_spec, SingleTest)
                     if is_single_test:
                         # Setup step for wrap_run
                         wrap = inner_test_spec.wrap_run(
-                            self, request, workspace, editor, collected_test_data, launcher_platform)
+                            self, request, workspace, instance_executable, collected_test_data, launcher_platform)
                         assert isinstance(wrap, types.GeneratorType), (
                             "wrap_run must return a generator, did you forget 'yield'?")
                         next(wrap, None)
                         # Setup step
                         inner_test_spec.setup(
-                            self, request, workspace, editor, collected_test_data, launcher_platform)
+                            self, request, workspace, instance_executable, collected_test_data, launcher_platform)
                     # Run
-                    self._run_single_test(request, workspace, editor, collected_test_data, inner_test_spec)
+                    self._run_single_test(request, workspace, instance_executable, collected_test_data, inner_test_spec)
                     if is_single_test:
                         # Teardown
                         inner_test_spec.teardown(
-                            self, request, workspace, editor, collected_test_data, launcher_platform)
+                            self, request, workspace, instance_executable, collected_test_data, launcher_platform)
                         # Teardown step for wrap_run
                         next(wrap, None)
                 return single_run
-            f = make_single_run(test_spec)
+            single_run_test = make_single_run(test_spec)
             if hasattr(test_spec, "pytestmark"):
-                f.pytestmark = test_spec.pytestmark
-            setattr(self.obj, name, f)
+                single_run_test.pytestmark = test_spec.pytestmark
+            setattr(self.obj, name, single_run_test)
 
         # Add the shared tests, with a runner class for storing information from each shared run
         runners = []
@@ -415,7 +415,8 @@ class AbstractTestClass(pytest.Class):
             def make_shared_run():
                 @set_marks({"runner": target_runner, "run_type": "run_shared"})
                 def shared_run(self, request, workspace, editor, collected_test_data, launcher_platform):
-                    getattr(self, function.__name__)(request, workspace, editor, collected_test_data, target_runner.tests)
+                    getattr(self, function.__name__)(
+                        request, workspace, editor, collected_test_data, target_runner.tests)
 
                 return shared_run
 
