@@ -3,31 +3,31 @@ Copyright (c) Contributors to the Open 3D Engine Project.
 For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
-
-Test-writing utilities that simplify creating O3DE in-Editor tests in Python.
-
-Test writers should subclass a test suite from EditorTestSuite to hold the specification of python test scripts for
-the editor to load and run. Tests can be parallelized (run in multiple editor instances at once) and/or batched
-(multiple tests run in the same editor instance), with collated results and crash detection.
-
-Usage example:
-   class MyTestSuite(EditorTestSuite):
-
-       class MyFirstTest(EditorSingleTest):
-           from . import script_to_be_run_by_editor as test_module
-
-       class MyTestInParallel_1(EditorParallelTest):
-           from . import another_script_to_be_run_by_editor as test_module
-
-       class MyTestInParallel_2(EditorParallelTest):
-           from . import yet_another_script_to_be_run_by_editor as test_module
 """
+# Test-writing utilities that simplify creating O3DE in-Editor tests in Python.
+#
+# Test writers should subclass a test suite from EditorTestSuite to hold the specification of python test scripts for
+# the editor to load and run. Tests can be parallelized (run in multiple editor instances at once) and/or batched
+# (multiple tests run in the same editor instance), with collated results and crash detection.
+#
+# Usage example:
+#    class MyTestSuite(EditorTestSuite):
+#
+#        class MyFirstTest(EditorSingleTest):
+#            from . import script_to_be_run_by_editor as test_module
+#
+#        class MyTestInParallel_1(EditorBatchedTest):
+#            from . import another_script_to_be_run_by_editor as test_module
+#
+#        class MyTestInParallel_2(EditorParallelTest):
+#            from . import yet_another_script_to_be_run_by_editor as test_module
+
 from __future__ import annotations
+__test__ = False  # Avoid pytest collection & warnings since this module is for test functions, but not a test itself.
 
 import logging
 import math
 import os
-import pytest
 import tempfile
 import threading
 
@@ -40,8 +40,6 @@ from ly_test_tools.launchers.exceptions import WaitTimeoutError
 from ly_test_tools.o3de.multi_test_framework import (
     AbstractTestBase, AbstractTestClass, AbstractTestSuite, Result, Runner)
 
-__test__ = False  # This file contains ready-to-use test functions which are not actual tests, avoid pytest collection
-
 logger = logging.getLogger(__name__)
 
 LOG_NAME = "editor_test.log"
@@ -52,6 +50,7 @@ class EditorSingleTest(AbstractTestBase):
     Test that will run alone in one editor with no parallel editors, limiting environmental side-effects at the
     expense of redundant isolated work
     """
+
     def __init__(self):
         # Extra cmdline arguments to supply to the editor for the test
         self.extra_cmdline_args = []
@@ -155,7 +154,6 @@ class EditorResult(Result):
     log_attribute = "editor_log"
 
 
-@pytest.mark.parametrize("crash_log_watchdog", [("raise_on_crash", False)])
 class EditorTestSuite(AbstractTestSuite):
     # Extra cmdline arguments to supply for every editor instance for this test suite
     global_extra_cmdline_args = ["-BatchMode", "-autotest_mode"]
@@ -167,6 +165,23 @@ class EditorTestSuite(AbstractTestSuite):
     _TIMEOUT_CRASH_LOG = 20
     # Return code for test failure
     _TEST_FAIL_RETCODE = 0xF
+    # Test class to use for single test collection
+    single_test_class = EditorSingleTest
+    # Test class to use for shared test collection
+    shared_test_class = EditorSharedTest
+
+    def pytest_custom_makeitem(self, collector: _pytest.python.Module, name: str, obj: object) -> AbstractTestClass:
+        """
+        Enables ly_test_tools._internal.pytest_plugin.editor_test.pytest_pycollect_makeitem to collect the tests
+        defined by this suite.
+        This is required for any test suite that inherits from the AbstractTestSuite class else the tests won't be
+        collected for that suite.
+        :param collector: Module that serves as the pytest test class collector
+        :param name: Name of the parent test class
+        :param obj: Module of the test to be run
+        :return: AbstractTestClass
+        """
+        return AbstractTestClass(name, collector)
 
     def _get_number_parallel_editors(self, request: _pytest.fixtures.FixtureRequest) -> int:
         """
@@ -181,35 +196,12 @@ class EditorTestSuite(AbstractTestSuite):
 
         return self.get_number_parallel_instances()
 
-    @classmethod
-    def pytest_custom_modify_items(
-            cls, session: _pytest.main.Session, items: list[AbstractTestBase], config: _pytest.config.Config) -> None:
-        """
-        Adds the runners' functions and filters the tests that will run. The runners will be added if they have any
-        selected tests
-        :param session: The Pytest Session
-        :param items: The test case functions
-        :param config: The Pytest Config object
-        :return: None
-        """
-        new_items = []
-        for runner in cls._runners:
-            runner.tests[:] = cls.filter_session_shared_tests(items, runner.tests)
-            if len(runner.tests) > 0:
-                new_items.append(runner.run_pytestfunc)
-                # Re-order dependent tests so they are run just after the runner
-                for result_pytestfunc in runner.result_pytestfuncs:
-                    found_test = next((item for item in items if item == result_pytestfunc), None)
-                    if found_test:
-                        items.remove(found_test)
-                        new_items.append(found_test)
-
-        items[:] = items + new_items
-
     def _exec_editor_test(self, request: _pytest.fixtures.FixtureRequest,
                           workspace: AbstractWorkspaceManager,
                           editor: ly_test_tools.launchers.platforms.base.Launcher,
-                          run_id: int, log_name: str, test_spec: AbstractTestBase,
+                          run_id: int,
+                          log_name: str,
+                          test_spec: AbstractTestBase,
                           cmdline_args: list[str] = None) -> dict[str, Result.ResultType]:
         """
         Starts the editor with the given test and returns a result dict with a single element specifying the result
@@ -370,7 +362,7 @@ class EditorTestSuite(AbstractTestSuite):
                 # Scrape the output to attempt to find out which tests failed.
                 # This function should always populate the result list, if it didn't find it, it will have "Unknown" type of result
                 results = self._get_results_using_output(test_spec_list, output, editor_log_content)
-                assert len(results) == len(test_spec_list), "bug in _get_results_using_output(), the number of results don't match the tests ran"
+                assert len(results) == len(test_spec_list), "bug in get_results_using_output(), the number of results don't match the tests ran"
 
                 # If the editor crashed, find out in which test it happened and update the results
                 has_crashed = return_code != EditorTestSuite._TEST_FAIL_RETCODE

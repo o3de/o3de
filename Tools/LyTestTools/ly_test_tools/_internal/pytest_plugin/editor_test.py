@@ -33,10 +33,11 @@ def pytest_addoption(parser: argparse.ArgumentParser) -> None:
                      help="Override the number of material_editor instances to run at the same time")
 
 
-def pytest_pycollect_makeitem(collector: PyCollector, name: str, obj: object) -> PyCollector:
+def pytest_pycollect_makeitem(collector: _pytest.python.Module, name: str, obj: object) -> _pytest.python.Module:
     """
     Create a custom custom item collection if the class defines pytest_custom_makeitem function. This is used for
     automatically generating test functions with a custom collector.
+    Classes that inherit the AbstractTestSuite class require a "pytest_custom_makeitem" function or no collection occurs
     :param collector: The Pytest collector
     :param name: Name of the collector
     :param obj: The custom collector, normally a test class object inside the AbstractTestSuite class

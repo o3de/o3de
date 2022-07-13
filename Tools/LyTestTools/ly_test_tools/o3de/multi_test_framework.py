@@ -39,6 +39,10 @@ import ly_test_tools.o3de.editor_test_utils as editor_utils
 from ly_test_tools._internal.managers.workspace import AbstractWorkspaceManager
 from ly_test_tools.o3de.asset_processor import AssetProcessor
 
+logger = logging.getLogger(__name__)
+
+LOG_NAME = "placeholder_test.log"  # Placeholder for Result class.
+
 
 class AbstractTestBase(abc.ABC):
     """
@@ -114,185 +118,13 @@ class BatchedTest(SharedTest):
     is_parallelizable = False
 
 
-class Runner:
-    def __init__(self, name, func, tests):
-        self.name = name
-        self.func = func
-        self.tests = tests
-        self.run_pytestfunc = None
-        self.result_pytestfuncs = []
-
-
-class AbstractTestClass(pytest.Class):
-    """
-    Custom pytest collector which programmatically adds test functions based on data in the AbstractTestSuite class
-    """
-
-    def collect(self):
-        """
-        This collector does the following:
-        1) Iterates through all the EditorSingleTest subclasses defined inside the suite.
-           Adds a test function to the suite to run each separately, and report results
-        2) Iterates through all the EditorSharedTest subclasses defined inside the suite,
-           grouping tests based on the specs in by 3 categories: batched, parallel and batched+parallel.
-           Each category gets a single test runner function registered to run all the tests of the category
-           A result function will be added for every individual test, which will pass/fail based on the results
-           from the previously executed runner function
-        """
-        cls = self.obj
-
-        # Decorator function to add extra lookup information for the test functions
-        def set_marks(marks):
-            def spec_impl(func):
-                @functools.wraps(func)
-                def inner(*args, **argv):
-                    return func(*args, **argv)
-                inner.marks = marks
-                return inner
-            return spec_impl
-
-        # Retrieve the test specs
-        single_tests = self.obj.get_single_tests()
-        shared_tests = self.obj.get_shared_tests()
-        batched_tests = cls.filter_shared_tests(shared_tests, is_parallelizable=False, is_batchable=True)
-        parallel_tests = cls.filter_shared_tests(shared_tests, is_parallelizable=True, is_batchable=False)
-        parallel_batched_tests = cls.filter_shared_tests(shared_tests, is_parallelizable=True, is_batchable=True)
-
-        # user can provide CLI option to not parallelize/batch the tests
-        no_parallelize = self.config.getoption("--no-test-batch", default=False)
-        no_batch = self.config.getoption("--no-test-parallel", default=False)
-        if no_parallelize:
-            single_tests += parallel_tests
-            parallel_tests = []
-            batched_tests += parallel_batched_tests
-            parallel_batched_tests = []
-        if no_batch:
-            single_tests += batched_tests
-            batched_tests = []
-            parallel_tests += parallel_batched_tests
-            parallel_batched_tests = []
-
-        # Add the single tests, these will run separately
-        for test_spec in single_tests:
-            name = test_spec.__name__
-
-            def make_test_func(inner_test_spec):
-                @set_marks({"run_type": "run_single"})
-                def single_run(self, request, workspace, editor, collected_test_data, launcher_platform):
-                    # only single tests are allowed to have setup/teardown, however we can have shared tests that
-                    # were explicitly set as single, for example via cmdline argument override
-                    is_single_test = issubclass(inner_test_spec, SingleTest)
-                    if is_single_test:
-                        # Setup step for wrap_run
-                        wrap = inner_test_spec.wrap_run(
-                            self, request, workspace, editor, collected_test_data, launcher_platform)
-                        assert isinstance(wrap, types.GeneratorType), (
-                            "wrap_run must return a generator, did you forget 'yield'?")
-                        next(wrap, None)
-                        # Setup step
-                        inner_test_spec.setup(
-                            self, request, workspace, editor, collected_test_data, launcher_platform)
-                    # Run
-                    self._run_single_test(request, workspace, editor, collected_test_data, inner_test_spec)
-                    if is_single_test:
-                        # Teardown
-                        inner_test_spec.teardown(
-                            self, request, workspace, editor, collected_test_data, launcher_platform)
-                        # Teardown step for wrap_run
-                        next(wrap, None)
-                return single_run
-            f = make_test_func(test_spec)
-            if hasattr(test_spec, "pytestmark"):
-                f.pytestmark = test_spec.pytestmark
-            setattr(self.obj, name, f)
-
-        # Add the shared tests, with a runner class for storing information from each shared run
-        runners = []
-
-        def create_runner(runner_name, function, tests):
-            target_runner = Runner(runner_name, function, tests)
-
-            def make_func():
-                @set_marks({"runner": target_runner, "run_type": "run_shared"})
-                def shared_run(self, request, workspace, editor, collected_test_data, launcher_platform):
-                    getattr(self, function.__name__)(request, workspace, editor, collected_test_data, target_runner.tests)
-
-                return shared_run
-
-            setattr(self.obj, runner_name, make_func())
-
-            # Add the shared tests results, which succeed/fail based what happened on the Runner.
-            for shared_test_spec in tests:
-                def make_func(inner_test_spec):
-                    @set_marks({"runner": target_runner, "test_spec": inner_test_spec, "run_type": "result"})
-                    def result(self, request, workspace, editor, collected_test_data, launcher_platform):
-                        result_key = inner_test_spec.__name__
-                        # The runner must have filled the collected_test_data.results dict fixture for this test.
-                        # Hitting this assert could mean if there was an error executing the runner
-                        if result_key not in collected_test_data.results:
-                            raise TestResultException(f"No results found for {result_key}. "
-                                                      f"Test may not have ran due to the Editor "
-                                                      f"shutting down. Check for issues in previous "
-                                                      f"tests.")
-                        cls._report_result(result_key, collected_test_data.results[result_key])
-
-                    return result
-
-                result_func = make_func(shared_test_spec)
-                if hasattr(shared_test_spec, "pytestmark"):
-                    result_func.pytestmark = shared_test_spec.pytestmark
-                setattr(self.obj, shared_test_spec.__name__, result_func)
-            runners.append(target_runner)
-
-        create_runner("run_batched_tests", cls._run_batched_tests, batched_tests)
-        create_runner("run_parallel_tests", cls._run_parallel_tests, parallel_tests)
-        create_runner("run_parallel_batched_tests", cls._run_parallel_batched_tests, parallel_batched_tests)
-
-        # Now that we have added the functions to the class, have pytest retrieve all the tests the class contains
-        pytest_class_instance = super().collect()[0]
-
-        # Override the istestfunction for the object, with this we make sure that the
-        # runners are always collected, even if they don't follow the "test_" naming
-        original_istestfunction = pytest_class_instance.istestfunction
-
-        def istestfunction(self, obj, name):
-            ret = original_istestfunction(obj, name)
-            if not ret:
-                ret = hasattr(obj, "marks")
-            return ret
-
-        pytest_class_instance.istestfunction = types.MethodType(istestfunction, pytest_class_instance)
-        collection = pytest_class_instance.collect()
-
-        def get_func_run_type(function):
-            return getattr(function, "marks", {}).setdefault("run_type", None)
-
-        collected_run_pytestfuncs = [item for item in collection if get_func_run_type(item.obj) == "run_shared"]
-        collected_result_pytestfuncs = [item for item in collection if get_func_run_type(item.obj) == "result"]
-        # We'll remove and store the runner functions for later, this way they won't be deselected by any
-        # filtering mechanism. This collection process helps us determine which subset of tests to run.
-        collection = [item for item in collection if item not in collected_run_pytestfuncs]
-
-        # Match each generated pytestfunctions with every runner and store them
-        for run_pytestfunc in collected_run_pytestfuncs:
-            runner = run_pytestfunc.function.marks["runner"]
-            runner.run_pytestfunc = run_pytestfunc
-
-        for result_pytestfunc in collected_result_pytestfuncs:
-            runner = result_pytestfunc.function.marks["runner"]
-            runner.result_pytestfuncs.append(result_pytestfunc)
-
-        self.obj._runners = runners
-        return collection
-
-
 class TestResultException(Exception):
     """Indicates that an unknown result was found during the tests"""
     pass
 
 
 class Result(object):
-    """Holds test results for a given program."""
+    """Holds test results for a given program/application."""
 
     # This value must be set by the inheriting class.
     log_attribute = None
@@ -344,10 +176,10 @@ class Result(object):
 
         def __str__(self):
             output = (
-                f"Test Passed\n"
-                f"------------\n"
-                f"|  Output  |\n"
-                f"------------\n"
+                "Test Passed\n"
+                "------------\n"
+                "|  Output  |\n"
+                "------------\n"
                 f"{self.get_output_str()}\n"
             )
             return output
@@ -367,14 +199,14 @@ class Result(object):
 
         def __str__(self):
             output = (
-                f"Test FAILED\n"
-                f"------------\n"
-                f"|  Output  |\n"
-                f"------------\n"
+                "Test FAILED\n"
+                "------------\n"
+                "|  Output  |\n"
+                "------------\n"
                 f"{self.get_output_str()}\n"
-                f"--------------\n"
-                f"| {Result.log_attribute} log |\n"
-                f"--------------\n"
+                "--------------\n"
+                f"| {LOG_NAME} log |\n"
+                "--------------\n"
                 f"{self.get_log_attribute_str()}\n"
             )
             return output
@@ -386,7 +218,7 @@ class Result(object):
                      test_output: str,
                      ret_code: int,
                      stacktrace: str,
-                     log_output: str or None):
+                     log_output: str or None) -> None:
             """
             Represents a test which failed with an unexpected crash
             :test_spec: The type of test class
@@ -405,17 +237,17 @@ class Result(object):
             stacktrace_str = "-- No stacktrace data found --" if not self.stacktrace else self.stacktrace
             output = (
                 f"Test CRASHED, return code {hex(self.ret_code)}\n"
-                f"---------------\n"
-                f"|  Stacktrace |\n"
-                f"---------------\n"
+                "---------------\n"
+                "|  Stacktrace |\n"
+                "---------------\n"
                 f"{stacktrace_str}"
-                f"------------\n"
-                f"|  Output  |\n"
-                f"------------\n"
+                "------------\n"
+                "|  Output  |\n"
+                "------------\n"
                 f"{self.get_output_str()}\n"
-                f"--------------\n"
-                f"| {Result.log_attribute} log |\n"
-                f"--------------\n"
+                "--------------\n"
+                f"| {LOG_NAME} log |\n"
+                "--------------\n"
                 f"{self.get_log_attribute_str()}\n"
             )
             return output
@@ -439,13 +271,13 @@ class Result(object):
         def __str__(self):
             output = (
                 f"Test ABORTED after not completing within {self.time_secs} seconds\n"
-                f"------------\n"
-                f"|  Output  |\n"
-                f"------------\n"
+                "------------\n"
+                "|  Output  |\n"
+                "------------\n"
                 f"{self.get_output_str()}\n"
-                f"--------------\n"
-                f"| {Result.log_attribute} log |\n"
-                f"--------------\n"
+                "--------------\n"
+                f"| {LOG_NAME} log |\n"
+                "--------------\n"
                 f"{self.get_log_attribute_str()}\n"
             )
             return output
@@ -469,26 +301,198 @@ class Result(object):
         def __str__(self):
             output = (
                 f"Indeterminate test result interpreted as failure, possible cause: {self.extra_info}\n"
-                f"------------\n"
-                f"|  Output  |\n"
-                f"------------\n"
+                "------------\n"
+                "|  Output  |\n"
+                "------------\n"
                 f"{self.get_output_str()}\n"
-                f"--------------\n"
-                f"| {Result.log_attribute} log |\n"
-                f"--------------\n"
+                "--------------\n"
+                f"| {LOG_NAME} log |\n"
+                "--------------\n"
                 f"{self.get_log_attribute_str()}\n"
             )
             return output
 
 
+class Runner:
+    def __init__(self, name, func, tests):
+        self.name = name
+        self.func = func
+        self.tests = tests
+        self.run_pytestfunc = None
+        self.result_pytestfuncs = []
+
+
+class AbstractTestClass(pytest.Class):
+    """
+    Custom pytest collector which programmatically adds test functions based on data in the AbstractTestSuite class
+    """
+
+    def collect(self):
+        """
+        This collector does the following:
+        1) Iterates through all the SingleTest subclasses defined inside the suite.
+           Adds a test function to the suite to run each separately, and report results
+        2) Iterates through all the SharedTest subclasses defined inside the suite,
+           grouping tests based on the classes in by 3 categories: batched, parallel and batched+parallel.
+           Each category gets a single test runner function registered to run all the tests of the category
+           A result function will be added for every individual test, which will pass/fail based on the results
+           from the previously executed runner function
+        """
+        cls = self.obj
+
+        # Decorator function to add extra lookup information for the test functions
+        def set_marks(marks):
+            def spec_impl(func):
+                @functools.wraps(func)
+                def inner(*args, **argv):
+                    return func(*args, **argv)
+                inner.marks = marks
+                return inner
+
+            return spec_impl
+
+        # Retrieve the test classes.
+        single_tests = self.obj.get_single_tests()
+        shared_tests = self.obj.get_shared_tests()
+        batched_tests = cls.filter_shared_tests(shared_tests, is_parallelizable=False, is_batchable=True)
+        parallel_tests = cls.filter_shared_tests(shared_tests, is_parallelizable=True, is_batchable=False)
+        parallel_batched_tests = cls.filter_shared_tests(shared_tests, is_parallelizable=True, is_batchable=True)
+
+        # User can provide a CLI option to not parallelize/batch the tests.
+        no_parallelize = self.config.getoption("--no-test-batch", default=False)
+        no_batch = self.config.getoption("--no-test-parallel", default=False)
+        if no_parallelize:
+            single_tests += parallel_tests
+            parallel_tests = []
+            batched_tests += parallel_batched_tests
+            parallel_batched_tests = []
+        if no_batch:
+            single_tests += batched_tests
+            batched_tests = []
+            parallel_tests += parallel_batched_tests
+            parallel_batched_tests = []
+
+        # Add the single tests, these will run separately
+        for test_spec in single_tests:
+            name = test_spec.__name__
+
+            def make_single_run(inner_test_spec):
+                @set_marks({"run_type": "run_single"})
+                def single_run(self, request, workspace, editor, collected_test_data, launcher_platform):
+                    # only single tests are allowed to have setup/teardown, however we can have shared tests that
+                    # were explicitly set as single, for example via cmdline argument override
+                    is_single_test = issubclass(inner_test_spec, SingleTest)
+                    if is_single_test:
+                        # Setup step for wrap_run
+                        wrap = inner_test_spec.wrap_run(
+                            self, request, workspace, editor, collected_test_data, launcher_platform)
+                        assert isinstance(wrap, types.GeneratorType), (
+                            "wrap_run must return a generator, did you forget 'yield'?")
+                        next(wrap, None)
+                        # Setup step
+                        inner_test_spec.setup(
+                            self, request, workspace, editor, collected_test_data, launcher_platform)
+                    # Run
+                    self._run_single_test(request, workspace, editor, collected_test_data, inner_test_spec)
+                    if is_single_test:
+                        # Teardown
+                        inner_test_spec.teardown(
+                            self, request, workspace, editor, collected_test_data, launcher_platform)
+                        # Teardown step for wrap_run
+                        next(wrap, None)
+                return single_run
+            f = make_single_run(test_spec)
+            if hasattr(test_spec, "pytestmark"):
+                f.pytestmark = test_spec.pytestmark
+            setattr(self.obj, name, f)
+
+        # Add the shared tests, with a runner class for storing information from each shared run
+        runners = []
+
+        def create_runner(runner_name, function, tests):
+            target_runner = Runner(runner_name, function, tests)
+
+            def make_shared_run():
+                @set_marks({"runner": target_runner, "run_type": "run_shared"})
+                def shared_run(self, request, workspace, editor, collected_test_data, launcher_platform):
+                    getattr(self, function.__name__)(request, workspace, editor, collected_test_data, target_runner.tests)
+
+                return shared_run
+
+            setattr(self.obj, runner_name, make_shared_run())
+
+            # Add the shared tests results, which succeed/fail based what happened on the Runner.
+            for shared_test_spec in tests:
+                def make_results_run(inner_test_spec):
+                    @set_marks({"runner": target_runner, "test_spec": inner_test_spec, "run_type": "result"})
+                    def result(self, request, workspace, editor, collected_test_data, launcher_platform):
+                        result_key = inner_test_spec.__name__
+                        # The runner must have filled the collected_test_data.results dict fixture for this test.
+                        # Hitting this assert could mean if there was an error executing the runner
+                        if result_key not in collected_test_data.results:
+                            raise TestResultException(f"No results found for {result_key}. "
+                                                      f"Test may not have ran due to the Editor "
+                                                      f"shutting down. Check for issues in previous "
+                                                      f"tests.")
+                        cls._report_result(result_key, collected_test_data.results[result_key])
+
+                    return result
+
+                result_func = make_results_run(shared_test_spec)
+                if hasattr(shared_test_spec, "pytestmark"):
+                    result_func.pytestmark = shared_test_spec.pytestmark
+                setattr(self.obj, shared_test_spec.__name__, result_func)
+            runners.append(target_runner)
+
+        create_runner("run_batched_tests", cls._run_batched_tests, batched_tests)
+        create_runner("run_parallel_tests", cls._run_parallel_tests, parallel_tests)
+        create_runner("run_parallel_batched_tests", cls._run_parallel_batched_tests, parallel_batched_tests)
+
+        # Now that we have added the functions to the class, have pytest retrieve all the tests the class contains
+        pytest_class_instance = super().collect()[0]
+
+        # Override the istestfunction for the object, with this we make sure that the
+        # runners are always collected, even if they don't follow the "test_" naming
+        original_istestfunction = pytest_class_instance.istestfunction
+
+        def istestfunction(self, obj, name):
+            ret = original_istestfunction(obj, name)
+            if not ret:
+                ret = hasattr(obj, "marks")
+            return ret
+
+        pytest_class_instance.istestfunction = types.MethodType(istestfunction, pytest_class_instance)
+        collection = pytest_class_instance.collect()
+
+        def get_func_run_type(function):
+            return getattr(function, "marks", {}).setdefault("run_type", None)
+
+        collected_run_pytestfuncs = [item for item in collection if get_func_run_type(item.obj) == "run_shared"]
+        collected_result_pytestfuncs = [item for item in collection if get_func_run_type(item.obj) == "result"]
+        # We'll remove and store the runner functions for later, this way they won't be deselected by any
+        # filtering mechanism. This collection process helps us determine which subset of tests to run.
+        collection = [item for item in collection if item not in collected_run_pytestfuncs]
+
+        # Match each generated pytestfunctions with every runner and store them
+        for run_pytestfunc in collected_run_pytestfuncs:
+            runner = run_pytestfunc.function.marks["runner"]
+            runner.run_pytestfunc = run_pytestfunc
+
+        for result_pytestfunc in collected_result_pytestfuncs:
+            runner = result_pytestfunc.function.marks["runner"]
+            runner.result_pytestfuncs.append(result_pytestfunc)
+
+        self.obj._runners = runners
+        return collection
+
+
+@pytest.mark.parametrize("crash_log_watchdog", [("raise_on_crash", False)])
 class AbstractTestSuite(object):
     """
     Main object used to run the tests.
     The new test suite class you create for your tests should inherit from this base AbstractTestSuite class.
     """
     # When this object is inherited, add any custom attributes as needed.
-    # Test class that functions as the pytest test collector
-    pytest_custom_makeitem_class = AbstractTestClass
     # Test class to use for single test collection
     single_test_class = SingleTest
     # Test class to use for shared test collection
@@ -514,8 +518,29 @@ class AbstractTestSuite(object):
         return count
 
     @classmethod
-    def pytest_custom_makeitem(cls, collector, name, obj):
-        return cls.pytest_custom_makeitem_class(name, collector)
+    def pytest_custom_modify_items(
+            cls, session: _pytest.main.Session, items: list[AbstractTestBase], config: _pytest.config.Config) -> None:
+        """
+        Adds the runners' functions and filters the tests that will run. The runners will be added if they have any
+        selected tests
+        :param session: The Pytest Session
+        :param items: The test case functions
+        :param config: The Pytest Config object
+        :return: None
+        """
+        new_items = []
+        for runner in cls._runners:
+            runner.tests[:] = cls.filter_session_shared_tests(items, runner.tests)
+            if len(runner.tests) > 0:
+                new_items.append(runner.run_pytestfunc)
+                # Re-order dependent tests so they are run just after the runner
+                for result_pytestfunc in runner.result_pytestfuncs:
+                    found_test = next((item for item in items if item == result_pytestfunc), None)
+                    if found_test:
+                        items.remove(found_test)
+                        new_items.append(found_test)
+
+        items[:] = items + new_items
 
     class TestData:
         __test__ = False  # Avoid pytest collection & warnings since "test" is in the class name.
@@ -652,7 +677,7 @@ class AbstractTestSuite(object):
                 elem = json.loads(m.groups()[0])
                 found_jsons[elem["name"]] = elem
             except Exception:  # Intentionally broad to avoid failing if the output data is corrupt
-                logging.warning("Error reading result JSON", exc_info=True)
+                logger.warning("Error reading result JSON", exc_info=True)
                 continue
 
         # Try to find the element in the log output, this is used for cutting the log contents later
@@ -663,7 +688,7 @@ class AbstractTestSuite(object):
                 if elem["name"] in found_jsons:
                     found_jsons[elem["name"]]["log_match"] = m
             except Exception:  # Intentionally broad, to avoid failing if the log data is corrupt
-                logging.warning("Error reading result JSON", exc_info=True)
+                logger.warning("Error reading result JSON", exc_info=True)
                 continue
 
         log_start = 0
