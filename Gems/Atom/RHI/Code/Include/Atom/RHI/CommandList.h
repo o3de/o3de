@@ -11,6 +11,7 @@
 #include <Atom/RHI.Reflect/Scissor.h>
 #include <Atom/RHI/DrawItem.h>
 #include <Atom/RHI/DispatchItem.h>
+#include <Atom/RHI/DispatchRaysItem.h>
 #include <Atom/RHI/CopyItem.h>
 #include <Atom/RHI/RayTracingAccelerationStructure.h>
 #include <Atom/RHI/RayTracingBufferPools.h>
