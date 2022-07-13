@@ -1295,7 +1295,17 @@
                  </attribute>
                  <layout class="QVBoxLayout" name="verticalLayout_2">
                   <item>
-                   <widget class="AzQtComponents::TableView" name="builderInfoPatternsTableView"/>
+                   <widget class="AzQtComponents::TableView" name="builderInfoPatternsTableView">
+                    <property name="itemsExpandable">
+                     <bool>false</bool>
+                    </property>
+                    <property name="sortingEnabled">
+                     <bool>true</bool>
+                    </property>
+                    <property name="expandsOnDoubleClick">
+                     <bool>false</bool>
+                    </property>
+                   </widget>
                   </item>
                  </layout>
                 </widget>
