@@ -68,9 +68,7 @@ class ProcessFbxFile(QtCore.QObject):
         if self.textures_directory and os.path.exists(self.fbx_file):
             mc.file(self.fbx_file, i=True, type="FBX")
             return_dictionary = self.process_groups()
-            _LOGGER.info('ReturnDictionary: {}'.format(return_dictionary))
-            json.dumps(return_dictionary)
-            _LOGGER.info('Process Complete.')
+            json.dump(return_dictionary, sys.stdout)
 
     def process_groups(self):
         """
@@ -146,9 +144,6 @@ class ProcessFbxFile(QtCore.QObject):
                                     self.get_relative_path(v)
 
                         if material_definition[key].keys():
-                            _LOGGER.info('\n++++++++++++++\n+++++++++++++++\nFinal Material: {}\n++++++++++++++\n'
-                                         '+++++++++++++++\n_\n'.format(json.dumps(material_definition, indent=4,
-                                         sort_keys=False)))
                             self.export_o3de_material(output_path, material_definition)
             except Exception as e:
                 _LOGGER.info('Problem creating Material Definition: {}'.format(e))

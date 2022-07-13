@@ -27,7 +27,6 @@ import re
 
 # azpy bootstrapping and extensions
 from azpy.constants import FRMT_LOG_LONG
-from box import Box
 
 # O3DE Qt/PySide2
 from PySide2 import QtWidgets, QtCore, QtGui
@@ -43,10 +42,23 @@ logging.basicConfig(level=20, format=FRMT_LOG_LONG, datefmt='%m-%d %H:%M', handl
 _LOGGER = logging.getLogger('kitbash_converter.main')
 
 
+# PLEASE NOTE
+# This is currently set up to convert FBX files, and uses Maya to read asset file and to extract information for
+# material assignments. It currently needs to be bootstrapped using the DCCsi BAT file launching system.
+
 # There is a fix coming for getting project information when bootstrapping the DCCsi- for now, in order to use this
 # script, you will need to set the path to an auto-generated example of the 'standardpbr_allproperties.material'
-# material definition... previously this script worked by using a template file, but this is not going to work moving
-# forward. Set the 'all_properties_location' in the class attributes below:
+# material definition. You can find it inside a currently updated project directory along the following path:
+#
+# <PROJECT_PATH>\Cache\pc\materials\types\standardpbr_allproperties.material
+#
+# Previously this script worked by using a template file, but this is not going to work moving
+# forward- materials generation is now supported by "all properties" material files to dynamically build materials,
+# conforming to latest formatting/builds. Set the 'all_properties_location' in the FBXConverter class attribute below
+
+# TODO - Changing values in the table view is not updating a definition in the material file.
+# TODO - Add Blender support
+# TODO - Put in a better system for processing all available file types (blend, fbx, mb, ma).
 
 
 class FBXConverter(QtWidgets.QDialog):
@@ -74,6 +86,7 @@ class FBXConverter(QtWidgets.QDialog):
         self.input_directory = None
         self.output_directory = None
         self.modal_dialog = None
+        self.modal_launched = False
         self.p = None
         self.process_results = {}
         self.audit_list = []
@@ -122,7 +135,7 @@ class FBXConverter(QtWidgets.QDialog):
         self.input_directory_label = QtWidgets.QLabel('Input Directory')
         self.input_directory_label.setFixedWidth(75)
         self.input_field_layout.addWidget(self.input_directory_label)
-        self.input_path_field = QtWidgets.QLineEdit('C:/Users/benblac/Desktop/KitbashAssets/HiTechStreets')
+        self.input_path_field = QtWidgets.QLineEdit()
         self.input_path_field.textChanged.connect(self.set_io_directories)
         self.input_path_field.setFixedHeight(25)
         self.input_field_layout.addWidget(self.input_path_field)
@@ -287,9 +300,6 @@ class FBXConverter(QtWidgets.QDialog):
         self.initialize_qprocess()
         self.input_path_field.setFocus()
 
-        # Delete me when you remove autofill for path location
-        self.set_io_directories()
-
     def process_single_asset(self, target_fbx):
         """
         This function is executed for both individual and directory processing- it separates
@@ -346,11 +356,11 @@ class FBXConverter(QtWidgets.QDialog):
             env.insert(values[0], values[1])
         self.p.setProcessEnvironment(env)
         self.p.setProgram(str(self.mayapy_path))
-        self.p.setProcessChannelMode(QProcess.MergedChannels)
+        self.p.setProcessChannelMode(QProcess.SeparateChannels)
         self.p.readyReadStandardOutput.connect(self.handle_stdout)
         self.p.readyReadStandardError.connect(self.handle_stderr)
         self.p.stateChanged.connect(self.handle_state)
-        self.p.started.connect(self.processStarted)
+        self.p.started.connect(self.process_started)
         self.p.finished.connect(self.cleanup)
 
     def get_environment_variables(self):
@@ -359,7 +369,7 @@ class FBXConverter(QtWidgets.QDialog):
         env.append(f'PYTHONPATH={os.path.dirname(self.mayapy_path)}')
         return env
 
-    def processStarted(self):
+    def process_started(self):
         _LOGGER.info('Maya Standalone Process Started....')
 
     def handle_stderr(self):
@@ -373,10 +383,12 @@ class FBXConverter(QtWidgets.QDialog):
         :return:
         """
         data = str(self.p.readAllStandardOutput(), 'utf-8')
+        _LOGGER.info(f'STDOUT Firing: {data}')
         if data.startswith('{'):
-            _LOGGER.info('QProcess Complete.')
             self.processed_material_information = json.loads(data)
             self.set_audit_list()
+            self.set_audit_window()
+            _LOGGER.info('QProcess Complete.')
 
     def handle_state(self, state):
         """
@@ -395,7 +407,6 @@ class FBXConverter(QtWidgets.QDialog):
     def cleanup(self):
         self.p.closeWriteChannel()
         _LOGGER.info("Source File Conversion Complete")
-        self.set_audit_window()
         self.process_files_button.setEnabled(False)
 
     def start_maya_session(self, target_fbx):
@@ -417,7 +428,7 @@ class FBXConverter(QtWidgets.QDialog):
                 for entry in info_list:
                     command.append(str(entry))
                 self.p.setArguments(command)
-                self.p.startDetached()
+                self.p.start()
                 self.p.waitForFinished(-1)
                 self.p.finished.connect(self.cleanup)
             except Exception as e:
@@ -471,13 +482,13 @@ class FBXConverter(QtWidgets.QDialog):
 
     def get_material_attributes(self):
         attribute_dictionary = {}
-        self.default_material_definition = self.get_material_definition()
+        self.default_material_definition = self.get_material_definition(self.all_properties_location)
         for key, values in self.default_material_definition.items():
             attribute_dictionary[key] = values
         return attribute_dictionary
 
-    def get_material_definition(self):
-        with open(self.all_properties_location) as json_file:
+    def get_material_definition(self, target_path):
+        with open(target_path) as json_file:
             material_definition = json.load(json_file)
         return material_definition
 
@@ -532,13 +543,13 @@ class FBXConverter(QtWidgets.QDialog):
         self.process_files_button.setFocus()
 
     def set_audit_list(self):
+        _LOGGER.info(f'AuditList: {self.processed_material_information}')
         for key, value in self.processed_material_information.items():
             material_files = []
             for file in os.listdir(value['asset_location']):
                 if file.endswith('.material'):
                     material_files.append(os.path.join(value['asset_location'], file))
             self.audit_list.append([key, material_files])
-        # Add Materials to Combobox
         self.set_material_combobox(self.current_audit_index)
 
     def set_audit_window(self, material_override=None):
@@ -547,14 +558,24 @@ class FBXConverter(QtWidgets.QDialog):
         material_file = material_override if material_override else fbx_materials[0]
         self.title_label.setText(fbx_name)
         target_definition = self.get_material_definition(material_file)
-        _LOGGER.info(f'TargetDefinition:::: {target_definition}')
+        attribute_dict = self.get_attribute_dictionary(target_definition['propertyValues'])
+
         for key in self.material_attributes.keys():
-            if key in target_definition['properties'].keys():
-                _LOGGER.info('++++++++++++++++ TargetDefinition [{}]: {}'.format(key, target_definition['properties'][key]))
-                self.material_attributes[key].set_material_attributes(key, target_definition['properties'][key])
+            if key in attribute_dict.keys():
+                self.material_attributes[key].set_material_attributes(key, attribute_dict[key])
             else:
-                _LOGGER.info(f'{key} NOT IN Definition Keys!!!!')
                 self.material_attributes[key].set_material_attributes(key, None)
+
+    def get_attribute_dictionary(self, property_values):
+        attribute_dictionary = {}
+        target_definition_keys = list(set([k.split('.')[0] for k in property_values.keys()]))
+        for key in target_definition_keys:
+            temp_dict = {}
+            for k, v in property_values.items():
+                if k.startswith(key):
+                    temp_dict[k] = v
+            attribute_dictionary[key] = temp_dict
+        return attribute_dictionary
 
     def set_material_combobox(self, object_index):
         self.material_combobox.blockSignals(True)
@@ -578,10 +599,6 @@ class FBXConverter(QtWidgets.QDialog):
 
         for item in ui_controls:
             item.setVisible(is_visible)
-
-    @Slot(str)
-    def test_communication(self, message):
-        _LOGGER.info('Message: {}'.format(message))
 
     ##############################
     # Button Actions #############
@@ -711,8 +728,8 @@ class FBXConverter(QtWidgets.QDialog):
 
     def jump_button_clicked(self):
         _LOGGER.info('Jump button clicked')
-        jumpable_objects = [x[0] for x in self.audit_list]
-        self.modal_dialog = JumpDialog(jumpable_objects, self)
+        object_list = [x[0] for x in self.audit_list]
+        self.modal_dialog = JumpDialog(object_list, self)
         self.modal_dialog.jump_object_selected.connect(self.jump_object_selected)
         self.modal_dialog.show()
         self.modal_launched = True
@@ -789,9 +806,7 @@ class JumpDialog(QtWidgets.QDialog):
         self.setObjectName('JumpToFbx')
         self.object_list = object_list
         self.main_layout = QtWidgets.QVBoxLayout()
-        popupWidth = 300
-        popupHeight = 300
-        self.setGeometry(200, 200, popupWidth, popupHeight)
+        self.setGeometry(200, 200, 300, 300)
         self.verticalContainer = QtWidgets.QVBoxLayout(self)
         self.setModal(True)
 
@@ -840,9 +855,7 @@ class JumpDialog(QtWidgets.QDialog):
         self.search_table.resizeRowsToContents()
 
     def filter_object_list(self):
-        '''
-        Used for long listings of FBX objects for finding target folders more quickly
-        '''
+        """ Used for long listings of FBX objects for finding target folders more quickly. """
         self.search_table.setRowCount(0)
         for fbx_object in self.object_list:
             if self.filter_entry_field.text() in fbx_object:
@@ -867,8 +880,8 @@ class AttributeListing(QtWidgets.QWidget):
 
     def __init__(self, attribute_values, parent=None):
         super(AttributeListing, self).__init__(parent)
-        self.attribute_values = None
         self.custom_attribute_values = {}
+        self.fbx_name = None
         self.bold_font = QtGui.QFont("Helvetica", 8, QtGui.QFont.Black)
         self.attribute_values = attribute_values
         self.listing_layout = QtWidgets.QVBoxLayout(self)
@@ -900,11 +913,7 @@ class AttributeListing(QtWidgets.QWidget):
         self.setVisible(False)
 
     def populate_attributes_table(self):
-        """
-        Feeds texture information into the texture table of the UI when inspecting FBX asset information
-        :param table_items: The texture list to be displayed- contains PBR texture type and file paths
-        :return:
-        """
+        """ Feeds texture information into the texture table of the UI when inspecting FBX asset information. """
         self.attributes_table.setRowCount(0)
         self.attributes_table.blockSignals(True)
         row = 0
@@ -914,7 +923,6 @@ class AttributeListing(QtWidgets.QWidget):
             for column in range(2):
                 custom_value = False
                 cell_value = key if column == 0 else str(value)
-                bold_font = False
                 item = QtWidgets.QTableWidgetItem(cell_value)
                 item.setTextAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter | QtCore.Qt.AlignCenter)
                 if column == 0:
@@ -922,6 +930,7 @@ class AttributeListing(QtWidgets.QWidget):
                 else:
                     if self.custom_attribute_values:
                         if key in self.custom_attribute_values.keys():
+                            self.attribute_values[1][key] = str(self.custom_attribute_values[key])
                             _LOGGER.info(f'KEY MATCH FOUND=====================>> {key}')
                             font = QtGui.QFont()
                             font.setBold(True)
@@ -988,7 +997,6 @@ class AttributeListing(QtWidgets.QWidget):
         if isinstance(value, list):
             converted_list = []
             for item in value:
-                item_value = 0 if item is 0 else float(item)
                 converted_list.append(item)
             return converted_list
         elif isinstance(value, str):
