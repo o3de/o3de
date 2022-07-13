@@ -20,5 +20,4 @@ server*.cfg
 _savebackup/
 *.swatches
 /imgui.ini
-/O3DE_3rdParty
 
