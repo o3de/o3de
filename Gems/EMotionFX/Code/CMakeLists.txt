@@ -42,29 +42,15 @@ ly_add_target(
             EMFX_DEVELOPMENT_BUILD
 )
 
-if (PAL_TRAIT_BUILD_HOST_TOOLS)
-
 ly_add_target(
     NAME EMotionFX.Static STATIC
     NAMESPACE Gem
     FILES_CMAKE
         emotionfx_files.cmake
-    INCLUDE_DIRECTORIES
-        PRIVATE
-            EMotionFX/Tools
-            EMotionFX/Pipeline
-            ${editor_pal_dir}
     BUILD_DEPENDENCIES
-        PRIVATE
-            3rdParty::Qt::Core
-            3rdParty::Qt::Gui
-            AZ::AzQtComponents
-            AZ::AzToolsFramework
         PUBLIC
             Gem::EMotionFXStaticLib
 )
-
-endif()
 
 ly_add_target(
     NAME EMotionFX ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
