@@ -724,7 +724,7 @@
                         "displayName": "Transmission",
                         "description": "Algorithm used for calculating transmission",
                         "type": "Enum",
-                        "enumValues": [ "None", "ThickObject", "ThinObject" ],
+                        "enumValues": [ "None", "ThickObject", "ThinObject", "Burley" ],
                         "defaultValue": "None",
                         "connection": {
                             "type": "ShaderOption",

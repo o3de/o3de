@@ -64,6 +64,7 @@ float3 GetBackLighting(Surface surface, LightingData lightingData, float3 lightI
             break;
 
         case TransmissionMode::ThinObject:
+        case TransmissionMode::Burley:
             // Thin object mode, based on Jimenez J. et al, 2010, "Real-Time Realistic Skin Translucency"
             // http://www.iryoku.com/translucency/downloads/Real-Time-Realistic-Skin-Translucency.pdf
             
@@ -92,8 +93,12 @@ float3 GetBackLighting(Surface surface, LightingData lightingData, float3 lightI
                 // Generic profile based on scatter color
                 result = TransmissionKernel(s, invScattering) * lightIntensity * E * transmission.GetScale();
 #else // USE_HUMAN_SKIN_PROFILE
-                // Profile specific to human skin
-                result = T(s) * lightIntensity * E * transmission.GetScale();
+                if(o_transmission_mode == TransmissionMode::ThinObject)
+                    // Profile specific to human skin
+                    result = T(s) * lightIntensity * E * transmission.GetScale();
+                else
+                    // Use Burley transmission in skin material
+                    result = TransmissionKernel(s, invScattering) * lightIntensity * E * transmission.GetScale();                
 #endif
 
                 // Distance attenuation applied to hide artifacts due to low-res projected areas onto shadowmaps (might need some work in the future)

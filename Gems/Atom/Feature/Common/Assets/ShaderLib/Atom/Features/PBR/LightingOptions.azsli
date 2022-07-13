@@ -76,5 +76,5 @@ option bool o_clearCoat_feature_enabled = false;
 #endif
 
 #if ENABLE_TRANSMISSION
-option enum class TransmissionMode {None, ThickObject, ThinObject} o_transmission_mode;
+option enum class TransmissionMode {None, ThickObject, ThinObject, Burley} o_transmission_mode;
 #endif
