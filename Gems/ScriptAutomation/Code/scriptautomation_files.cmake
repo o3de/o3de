@@ -11,5 +11,7 @@ set(FILES
     Source/ScriptAutomationScriptBindings.h
     Source/ScriptAutomationSystemComponent.cpp
     Source/ScriptAutomationSystemComponent.h
+    Source/Utils/Utils.cpp
+    Source/Utils/Utils.h
 )
 
