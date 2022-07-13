@@ -49,7 +49,7 @@ AZ_POP_DISABLE_WARNING
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/UI/Logging/GenericLogPanel.h>
 #include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
-#include <AzToolsFramework/UI/PropertyEditor/PropertyAssetCtrlBus.h>
+
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/Thumbnails/ThumbnailWidget.h>
 #include <AzToolsFramework/Thumbnails/ThumbnailerBus.h>
@@ -640,7 +640,7 @@ namespace AzToolsFramework
         }
     }
 
-    void PropertyAssetCtrl::OnCreated(const AZ::Data::AssetId& assetId)
+    void PropertyAssetCtrl::OnAssetCreated(const AZ::Data::AssetId& assetId)
     {
         AZ::Data::AssetInfo assetInfo;
 
@@ -762,7 +762,7 @@ namespace AzToolsFramework
 
     PropertyAssetCtrl::~PropertyAssetCtrl()
     {
-        AzToolsFramework::AssetEventNotificationsBus::Handler::BusDisconnect();
+        AssetEditor::AssetEditorNotificationsBus::Handler::BusDisconnect();
         AssetSystemBus::Handler::BusDisconnect();
     }
 
@@ -1196,7 +1196,7 @@ namespace AzToolsFramework
     void PropertyAssetCtrl::SetComponentId(const AZ::Uuid& uuid)
     {
         m_componentUuid = uuid;
-        AzToolsFramework::AssetEventNotificationsBus::Handler::BusConnect(m_componentUuid);
+        AssetEditor::AssetEditorNotificationsBus::Handler::BusConnect(m_componentUuid);
     }
 
     void PropertyAssetCtrl::SetBrowseButtonIcon(const QIcon& icon)

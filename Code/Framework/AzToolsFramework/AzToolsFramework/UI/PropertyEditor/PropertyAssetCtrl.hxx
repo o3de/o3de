@@ -24,7 +24,7 @@
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/ToolsComponents/EditorAssetReference.h>
 #include <AzToolsFramework/AssetBrowser/AssetSelectionModel.h>
-#include <AzToolsFramework/UI/PropertyEditor/PropertyAssetCtrlBus.h>
+#include <AzToolsFramework/AssetEditor/AssetEditorBus.h>
 
 AZ_PUSH_DISABLE_WARNING(4244 4251, "-Wunknown-warning-option")
 #include <QCompleter>
@@ -57,7 +57,7 @@ namespace AzToolsFramework
         : public QWidget
         , private AssetSystemBus::Handler
         , private AzFramework::AssetCatalogEventBus::Handler
-        , private AzToolsFramework::AssetEventNotificationsBus::Handler
+        , private AssetEditor::AssetEditorNotificationsBus::Handler
     {
         Q_OBJECT
 
@@ -204,8 +204,8 @@ namespace AzToolsFramework
         //////////////////////////////////////////////////////////////////////////
 
         //////////////////////////////////////////////////////////////////////////
-        // AzFramework::AssetEventNotificationsBus::Handler interface overrides...
-        void OnCreated(const AZ::Data::AssetId& assetId) override;
+        // AssetEditor::AssetEditorNotificationsBus::Handler interface overrides...
+        void OnAssetCreated(const AZ::Data::AssetId& assetId) override;
         
         //////////////////////////////////////////////////////////////////////////
         // AzFramework::AssetCatalogEventBus::Handler interface overrides...

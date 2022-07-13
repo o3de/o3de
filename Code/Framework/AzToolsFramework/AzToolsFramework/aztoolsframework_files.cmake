@@ -420,7 +420,6 @@ set(FILES
     UI/PropertyEditor/InstanceDataHierarchy.h
     UI/PropertyEditor/PropertyAssetCtrl.hxx
     UI/PropertyEditor/PropertyAssetCtrl.cpp
-    UI/PropertyEditor/PropertyAssetCtrlBus.h
     UI/PropertyEditor/PropertyAudioCtrl.h
     UI/PropertyEditor/PropertyAudioCtrl.cpp
     UI/PropertyEditor/PropertyAudioCtrlTypes.h

@@ -104,5 +104,20 @@ namespace AzToolsFramework
             virtual void OpenAssetById(const AZ::Data::AssetId assetId) = 0;
         };
         using AssetEditorWidgetRequestsBus = AZ::EBus<AssetEditorWidgetRequests>;
+
+        class AssetEditorNotifications : public AZ::EBusTraits
+        {
+        public:
+            static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
+            static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
+
+            using BusIdType = AZ::Uuid;
+
+            virtual void OnAssetCreated([[maybe_unused]] const AZ::Data::AssetId& assetId)
+            {
+            }
+        };
+
+        using AssetEditorNotificationsBus = AZ::EBus<AssetEditorNotifications>;
     } // namespace AssetEditor
 } // namespace AzToolsFramework

@@ -48,7 +48,6 @@ AZ_POP_DISABLE_WARNING
 
 #include <UI/PropertyEditor/PropertyRowWidget.hxx>
 #include <UI/PropertyEditor/ReflectedPropertyEditor.hxx>
-#include <UI/PropertyEditor/PropertyAssetCtrlBus.h>
 
 #include <AzFramework/DocumentPropertyEditor/ReflectionAdapter.h>
 #include <UI/DocumentPropertyEditor/DocumentPropertyEditor.h>
@@ -837,7 +836,7 @@ namespace AzToolsFramework
                 m_sourceAssetId = assetId;
             }
 
-            AssetEventNotificationsBus::Event(m_waitingComponentId, &AssetEventNotifications::OnCreated, assetId);
+            AssetEditorNotificationsBus::Event(m_waitingComponentId, &AssetEditorNotifications::OnAssetCreated, assetId);
         }
 
         void AssetEditorWidget::OnCatalogAssetRemoved(const AZ::Data::AssetId& /*assetId*/, const AZ::Data::AssetInfo& assetInfo)
