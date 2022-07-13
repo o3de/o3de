@@ -1117,9 +1117,9 @@ namespace AZ
                 finalMeshList.reserve(mergedMeshCount + unmergeableMeshCount);
 
                 // Add the merged meshes
-                for (const auto& it : meshesByMatUid)
+                for (auto& it : meshesByMatUid)
                 {
-                    const ProductMeshContentList& meshList = it.second;
+                    ProductMeshContentList& meshList = it.second;
 
                     for (auto meshIter = meshList.begin(); meshIter < meshList.end() - 1;)
                     {
@@ -1131,7 +1131,7 @@ namespace AZ
                         {
                             // Remove the next mesh in the list if it doesn't match the current one
                             finalMeshList.emplace_back(*(meshIter + 1));
-                            meshIter = finalMeshList.erase(meshIter + 1);
+                            meshIter = meshList.erase(meshIter + 1);
                         }
                         else
                         {
