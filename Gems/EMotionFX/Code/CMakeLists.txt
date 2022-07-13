@@ -47,6 +47,9 @@ ly_add_target(
     NAMESPACE Gem
     FILES_CMAKE
         emotionfx_files.cmake
+        ${core_pal_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
+    PLATFORM_INCLUDE_FILES
+        ${core_pal_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}.cmake
     INCLUDE_DIRECTORIES
         PRIVATE
             EMotionFX/Tools
