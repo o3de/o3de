@@ -1296,6 +1296,9 @@
                  <layout class="QVBoxLayout" name="verticalLayout_2">
                   <item>
                    <widget class="AzQtComponents::TableView" name="builderInfoPatternsTableView">
+                    <property name="indentation">
+                     <number>0</number>
+                    </property>
                     <property name="itemsExpandable">
                      <bool>false</bool>
                     </property>

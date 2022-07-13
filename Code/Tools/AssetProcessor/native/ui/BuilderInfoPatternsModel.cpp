@@ -35,7 +35,7 @@ namespace AssetProcessor
 
     int BuilderInfoPatternsModel::columnCount([[maybe_unused]] const QModelIndex& parent) const
     {
-        return Max;
+        return aznumeric_cast<int>(Column::Max);
     }
 
     QVariant BuilderInfoPatternsModel::data(const QModelIndex& index, int role) const
@@ -48,9 +48,18 @@ namespace AssetProcessor
         {
             switch (index.column())
             {
-            case Type:
-                return m_data[index.row()].m_type;
-            case Extension:
+            case aznumeric_cast<int>(Column::Type):
+                switch (m_data[index.row()].m_type)
+                {
+                case AssetBuilderSDK::AssetBuilderPattern::Regex:
+                    return tr("Regex");
+                case AssetBuilderSDK::AssetBuilderPattern::Wildcard:
+                    return tr("Wildcard");
+                default:
+                    return QVariant();
+                }
+                break;
+            case aznumeric_cast<int>(Column::Extension):
                 return m_data[index.row()].m_pattern.c_str();
             default:
                 break;
@@ -66,9 +75,9 @@ namespace AssetProcessor
         {
             switch (section)
             {
-            case Type:
+            case aznumeric_cast<int>(Column::Type):
                 return tr("Type");
-            case Extension:
+            case aznumeric_cast<int>(Column::Extension):
                 return tr("Extension");
             default:
                 break;

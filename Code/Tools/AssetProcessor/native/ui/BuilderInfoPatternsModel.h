@@ -23,7 +23,7 @@ namespace AssetProcessor
     {
         Q_OBJECT
     public:
-        enum Column
+        enum class Column
         {
             Type,
             Extension,
