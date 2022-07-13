@@ -73,6 +73,7 @@ class FBXConverter(QtWidgets.QDialog):
         self.flagged_material_information = None
         self.input_directory = None
         self.output_directory = None
+        self.modal_dialog = None
         self.p = None
         self.process_results = {}
         self.audit_list = []
@@ -249,12 +250,12 @@ class FBXConverter(QtWidgets.QDialog):
             for property_name, property_values in self.get_material_attributes()['propertyValues'].items():
                 if property_name.startswith(key):
                     attributes[property_name] = property_values
-            if attributes:
-                attribute_list = [key, attributes]
-                self.material_attributes[key] = AttributeListing(attribute_list)
-                self.material_attributes[key].attribute_changed.connect(self.material_attribute_updated)
-                self.results_grid_layout.addWidget(self.material_attributes[key], index, 0)
-                index += 1
+                if attributes:
+                    attribute_list = [key, attributes]
+                    self.material_attributes[key] = AttributeListing(attribute_list)
+                    self.material_attributes[key].attribute_changed.connect(self.material_attribute_updated)
+                    self.results_grid_layout.addWidget(self.material_attributes[key], index, 0)
+                    index += 1
 
         # Process Files Button
         self.process_files_button = QtWidgets.QPushButton('Process Files')
@@ -337,10 +338,13 @@ class FBXConverter(QtWidgets.QDialog):
         :return:
         """
         self.p = QProcess()
-        env = [env for env in QtCore.QProcess.systemEnvironment() if not env.startswith('PYTHONPATH=')]
-        env.append(f'MAYA_LOCATION={os.path.dirname(self.mayapy_path)}')
-        env.append(f'PYTHONPATH={os.path.dirname(self.mayapy_path)}')
-        self.p.setEnvironment(env)
+        env = QtCore.QProcessEnvironment.systemEnvironment()
+        env_variables = self.get_environment_variables()
+        _LOGGER.info(env_variables)
+        for item in env_variables:
+            values = item.split('=')
+            env.insert(values[0], values[1])
+        self.p.setProcessEnvironment(env)
         self.p.setProgram(str(self.mayapy_path))
         self.p.setProcessChannelMode(QProcess.MergedChannels)
         self.p.readyReadStandardOutput.connect(self.handle_stdout)
@@ -349,13 +353,18 @@ class FBXConverter(QtWidgets.QDialog):
         self.p.started.connect(self.processStarted)
         self.p.finished.connect(self.cleanup)
 
+    def get_environment_variables(self):
+        env = [env for env in QtCore.QProcess.systemEnvironment() if not env.startswith('PYTHONPATH=')]
+        env.append(f'MAYA_LOCATION={os.path.dirname(self.mayapy_path)}')
+        env.append(f'PYTHONPATH={os.path.dirname(self.mayapy_path)}')
+        return env
+
     def processStarted(self):
         _LOGGER.info('Maya Standalone Process Started....')
 
     def handle_stderr(self):
-        data = self.p.readAllStandardError()
-        stderr = bytes(data).decode("utf8")
-        _LOGGER.info(f'STD_ERROR_FIRED: {stderr}')
+        data = str(self.p.readAllStandardError(), 'utf-8')
+        _LOGGER.info(f'STD_ERROR_FIRED: {data}')
 
     def handle_stdout(self):
         """
@@ -363,11 +372,10 @@ class FBXConverter(QtWidgets.QDialog):
         the last FBX file in a target directory is processed, it updates the database with the newly created Maya files.
         :return:
         """
-        data = self.p.readAllStandardOutput()
-        stdout = bytes(data).decode("utf8")
-        if stdout.startswith('{'):
+        data = str(self.p.readAllStandardOutput(), 'utf-8')
+        if data.startswith('{'):
             _LOGGER.info('QProcess Complete.')
-            self.processed_material_information = json.loads(stdout)
+            self.processed_material_information = json.loads(data)
             self.set_audit_list()
 
     def handle_state(self, state):
@@ -405,16 +413,13 @@ class FBXConverter(QtWidgets.QDialog):
             try:
                 info_list = [target_fbx, self.input_directory, self.relative_export_path, self.all_properties_location]
                 script_path = os.path.normpath(os.path.join(os.getcwd(), 'process_fbx_file.py'))
-                _LOGGER.info(f'Script path: {script_path}')
-                _LOGGER.info(f'Mayapy path: {self.mayapy_path}')
-                _LOGGER.info(f'InfoList: {info_list}')
                 command = [script_path]
                 for entry in info_list:
                     command.append(str(entry))
-                _LOGGER.info(f'++++++ Command: {command}')
                 self.p.setArguments(command)
                 self.p.startDetached()
                 self.p.waitForFinished(-1)
+                self.p.finished.connect(self.cleanup)
             except Exception as e:
                 _LOGGER.warning(f'Error creating Maya Files: {e}')
                 return None
@@ -507,7 +512,6 @@ class FBXConverter(QtWidgets.QDialog):
             if os.path.isdir(input_directory.strip()):
                 self.input_directory = Path(input_directory.strip())
             else:
-                unlocked = False
                 # Check Relative Output Path
                 output_path = os.path.join(self.input_directory, self.output_directory_button.text())
                 if os.path.isdir(output_path):
@@ -575,6 +579,10 @@ class FBXConverter(QtWidgets.QDialog):
         for item in ui_controls:
             item.setVisible(is_visible)
 
+    @Slot(str)
+    def test_communication(self, message):
+        _LOGGER.info('Message: {}'.format(message))
+
     ##############################
     # Button Actions #############
     ##############################
@@ -620,12 +628,9 @@ class FBXConverter(QtWidgets.QDialog):
             self.input_directory_label.setText('Input Directory')
             input_path = '' if not self.input_directory else str(self.input_directory)
             self.input_path_field.setText(input_path)
-            self.file_target_method = 'Directory'
         else:
             self.input_directory_label.setText('Input FBX File')
-            input_path = '' if not self.input_directory else str(self.input_directory)
             self.input_path_field.setText(str(self.single_asset_file))
-            self.file_target_method = 'File'
 
     def forward_button_clicked(self):
         new_index = self.current_audit_index + 1

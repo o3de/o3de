@@ -10,29 +10,33 @@
 # remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # -------------------------------------------------------------------------
-
-
-#  maya imports
-from PySide2 import QtCore
-import maya.cmds as mc
-import maya.standalone
-maya.standalone.initialize(name='python')
-mc.loadPlugin("fbxmaya")
-import maya.mel as mel
-mel.eval('loadPlugin fbxmaya')
-
-#  built-ins
 import logging as _logging
 import collections
 import json
 import sys
 import os
 
-module_name = 'kitbash_converter.process_fbx_file'
-_LOGGER = _logging.getLogger(module_name)
+from PySide2 import QtCore
+import maya.cmds as mc
+import maya.standalone
+import maya.mel as mel
+maya.standalone.initialize(name='python')
+mc.loadPlugin("fbxmaya")
+mel.eval('loadPlugin fbxmaya')
 
 
-SUPPORTED_MATERIAL_PROPERTIES = ['baseColor', 'emissive', 'metallic', 'roughness', 'normal', 'opacity']
+_LOGGER = _logging.getLogger('kitbash_converter.process_fbx_file')
+
+
+SUPPORTED_MATERIAL_PROPERTIES = [
+    'baseColor',
+    'emissive',
+    'metallic',
+    'normal',
+    'opacity',
+    'parallax',
+    'roughness'
+]
 
 
 class ProcessFbxFile(QtCore.QObject):
@@ -42,7 +46,8 @@ class ProcessFbxFile(QtCore.QObject):
         self.base_directory = base_directory
         self.textures_directory = self.get_textures_directory()
         self.relative_destination_path = relative_destination_path
-        self.default_material_definition = all_properties_definition
+        self.default_material_definition = self.get_material_template(all_properties_definition)
+        self.supported_material_properties = self.get_supported_properties()
         self.transfer_data = {}
         self.process_file()
 
@@ -61,13 +66,10 @@ class ProcessFbxFile(QtCore.QObject):
         _LOGGER.info('-----------------------------------------------------------------------------\n')
 
         if self.textures_directory and os.path.exists(self.fbx_file):
-            with open(self.default_material_definition) as json_file:
-                self.default_material_definition = json.load(json_file)
-
             mc.file(self.fbx_file, i=True, type="FBX")
             return_dictionary = self.process_groups()
             _LOGGER.info('ReturnDictionary: {}'.format(return_dictionary))
-            json.dump(return_dictionary, sys.stdout)
+            json.dumps(return_dictionary)
             _LOGGER.info('Process Complete.')
 
     def process_groups(self):
@@ -87,20 +89,17 @@ class ProcessFbxFile(QtCore.QObject):
             _LOGGER.info('\n_\n////////////////////////////////\n--> {}\n////////////////////////////////'.format(grp))
             asset_material_dictionary = self.get_asset_materials(grp)
             for material_name, texture_set in asset_material_dictionary.items():
-                _LOGGER.info('+++++ MaterialName: {}   TextureSet: {}'.format(material_name, texture_set))
                 fbx_parts_list = grp.split('_')[1:-1]
                 new_fbx_name = '_'.join(fbx_parts_list)
-                _LOGGER.info('NewFBXName: {}'.format(new_fbx_name))
-                material_definition_name = '{}_{}.material'.format(new_fbx_name, material_name)
-                _LOGGER.info('Material File: {}'.format(material_definition_name))
-
-                # Export FBX
                 output_directory = os.path.join(self.base_directory, self.relative_destination_path, new_fbx_name)
-                _LOGGER.info('FBX Output Directory: {}'.format(output_directory))
-                if not os.path.exists(output_directory):
-                    os.makedirs(output_directory)
-                self.export_fbx(grp, os.path.join(output_directory, '{}.fbx'.format(new_fbx_name)))
+                os.makedirs(output_directory, exist_ok=True)
+
+                # Export Material
+                material_definition_name = '{}_{}.material'.format(new_fbx_name, material_name)
                 self.create_object_material(output_directory, material_definition_name, texture_set, material_name)
+                _LOGGER.info('+++++ MaterialName: {}   TextureSet: {}'.format(material_definition_name, texture_set))
+                # Export FBX
+                self.export_fbx(grp, os.path.join(output_directory, '{}.fbx'.format(new_fbx_name)))
                 asset_dictionary[new_fbx_name] = {'asset_location': output_directory}
         return asset_dictionary
 
@@ -131,31 +130,26 @@ class ProcessFbxFile(QtCore.QObject):
         :return:
         """
         output_path = os.path.join(output_directory, material_definition_name)
-        _LOGGER.info('Creating Material: {}   OutputPath: {}'.format(material_definition_name, output_path))
-
         if not os.path.exists(output_path):
             material_definition = collections.OrderedDict()
             material_template = self.default_material_definition.copy()
             try:
                 for key, values in material_template.items():
-                    # These values remain constant
-                    if key != 'properties':
+                    if key != 'propertyValues':
                         material_definition[key] = values
                     else:
-                        modified_items = {}
-                        for material_property in SUPPORTED_MATERIAL_PROPERTIES:
-                            for k, v in values.items():
-                                if k.lower() in texture_dictionary.keys():
-                                    temp_dict = self.get_texture_attributes(k.lower(), texture_dictionary, material_name)
-                                    modified_items[k] = temp_dict
+                        material_definition[key] = {}
+                        for k, v in texture_dictionary.items():
+                            texture_property = self.get_texture_property(k)
+                            if texture_property in self.supported_material_properties:
+                                material_definition[key]['{}.textureMap'.format(texture_property)] = \
+                                    self.get_relative_path(v)
 
-                        if modified_items:
-                            material_definition[key] = modified_items
-
-                if len(material_definition) > 4:
-                    _LOGGER.info('\n++++++++++++++\n+++++++++++++++\nFinal Material: {}\n++++++++++++++\n'
-                                 '+++++++++++++++\n_\n'.format(json.dumps(material_definition, indent=4, sort_keys=False)))
-                    self.export_o3de_material(output_path, material_definition)
+                        if material_definition[key].keys():
+                            _LOGGER.info('\n++++++++++++++\n+++++++++++++++\nFinal Material: {}\n++++++++++++++\n'
+                                         '+++++++++++++++\n_\n'.format(json.dumps(material_definition, indent=4,
+                                         sort_keys=False)))
+                            self.export_o3de_material(output_path, material_definition)
             except Exception as e:
                 _LOGGER.info('Problem creating Material Definition: {}'.format(e))
 
@@ -193,6 +187,27 @@ class ProcessFbxFile(QtCore.QObject):
                 materials_dictionary[material_name] = texture_set
         return materials_dictionary
 
+    def get_supported_properties(self):
+        template_keys = [k.split('.')[0] for k in self.default_material_definition['propertyValues'].keys()]
+        return list(set(template_keys))
+
+    def get_material_template(self, template_path):
+        with open(template_path) as json_file:
+            return json.load(json_file)
+
+    def get_texture_property(self, suffix):
+        """
+        This can help correct for changes in file naming conventions or differences between the naming between O3DE
+        material definition properties and KB3D file textures
+        :param suffix: The "texture type" extracted from KB3D file texture name
+        :return:
+        """
+        if suffix == 'height':
+            suffix = 'parallax'
+        elif suffix == 'basecolor':
+            suffix = 'baseColor'
+        return suffix
+
     def get_textures_directory(self):
         for (root, dirs, files) in os.walk(self.base_directory, topdown=True):
             for dir in dirs:
@@ -214,8 +229,6 @@ class ProcessFbxFile(QtCore.QObject):
                     try:
                         texture_type = self.get_texture_type(file)
                         texture_set[texture_type] = os.path.join(self.textures_directory, file)
-                        _LOGGER.info('{} texture added. Path::: {}'.format(texture_type,
-                                                                           os.path.join(self.textures_directory, file)))
                     except Exception:
                         pass
         return texture_set
@@ -231,22 +244,31 @@ class ProcessFbxFile(QtCore.QObject):
         if len(file_parts) > 1:
             return file_parts[-1]
 
-    def get_texture_attributes(self, texture_type, texture_dictionary, material_name):
+    def get_texture_attributes(self, texture_type, texture_dictionary):
+        """
+        Some textures have additional properties that need to be included in order for the texture to display properly
+        as an O3DE material. This allows an entry point for adding these additional properties. This is not being
+        called in the current state of the script, but I believe it will be needed once supplemental texture attributes
+        surface as being needed (which was definitely the case with material version "3"
+        :param texture_type: The texture attribute that the texture map corresponds to
+        :param texture_dictionary: The texture listing
+        :return:
+        """
         target_path = os.path.normpath(texture_dictionary[texture_type])
         if texture_type == 'opacity':
-            temp_dict = self.get_opacity_settings(material_name, target_path)
-        elif texture_type == 'subsurfacescattering':
-            temp_dict = self.get_sss_settings(material_name, target_path)
+            temp_dict = self.get_opacity_settings(target_path)
+        elif texture_type == 'parallax':
+            temp_dict = self.get_sss_settings(target_path)
         elif texture_type == 'emissive':
-            temp_dict = self.get_emissive_settings(material_name, target_path)
+            temp_dict = self.get_emissive_settings(target_path)
         elif texture_type == 'basecolor':
-            temp_dict = self.get_basecolor_settings(material_name, target_path)
+            temp_dict = self.get_basecolor_settings(target_path)
         else:
             temp_dict = {'textureMap': self.get_relative_path(target_path)}
 
         return temp_dict
 
-    def get_opacity_settings(self, material_name, target_path):
+    def get_opacity_settings(self, target_path):
         """
         Reads Maya material to construct material opacity attributes
 
@@ -257,33 +279,30 @@ class ProcessFbxFile(QtCore.QObject):
         _LOGGER.info('Getting opacity settings...')
         return {'alphaSource': 'Split', 'mode': 'Cutout', 'textureMap': self.get_relative_path(target_path)}
 
-    def get_sss_settings(self, material_name, target_path):
+    def get_sss_settings(self, target_path):
         """
         Reads Maya material to construct material subsurface scattering attributes
 
-        :param material_name: The Maya material name being translated for O3DE
         :param target_path: The path to the texture file
         :return: Attribute values as a dictionary
         """
         _LOGGER.info('Getting Subsurface Scattering settings...')
         return {'enableSubsurfaceScattering': True, 'influenceMap': self.get_relative_path(target_path)}
 
-    def get_emissive_settings(self, material_name, target_path):
+    def get_emissive_settings(self, target_path):
         """
         Reads Maya material to construct material emissive attributes
 
-        :param material_name: The Maya material name being translated for O3DE
         :param target_path: The path to the texture file
         :return: Attribute values as a dictionary
         """
         _LOGGER.info('Getting Emissive settings...')
         return {'enable': True, 'intensity': 4, 'textureMap': self.get_relative_path(target_path)}
 
-    def get_basecolor_settings(self, material_name, target_path):
+    def get_basecolor_settings(self, target_path):
         """
         Reads Maya material to construct material BaseColor settings
 
-        :param material_name: The Maya material name being translated for O3DE
         :param target_path: The path to the texture file
         :return: Attribute values as a dictionary
         """
@@ -311,11 +330,11 @@ class ProcessFbxFile(QtCore.QObject):
         :param full_path: Full path to the asset
         :return:
         """
-        truncated_path = self.textures_directory.split('AtomContent\\')[-1]
-        start_directory = truncated_path.split('\\')[0]
-        path_list = full_path.split('\\')
-        return_path = '/'.join(path_list[path_list.index(start_directory):])
-        return return_path
+        path_parts = full_path.split('\\')
+        for index, part in enumerate(path_parts):
+            if part == 'KB3DTextures':
+                return '/'.join(path_parts[(index-2):])
+        return full_path
 
     ##############################
     # Export Files ###############
