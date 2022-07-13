@@ -25,6 +25,7 @@ namespace TestImpact
             ChangeListKey,
             SequenceReportKey,
             SequenceKey,
+            ExcludeTestsKey,
             TestPrioritizationPolicyKey,
             ExecutionFailurePolicyKey,
             FailedTestCoveragePolicyKey,
@@ -62,6 +63,7 @@ namespace TestImpact
             "changelist",
             "report",
             "sequence",
+            "exclude",
             "ppolicy",
             "epolicy",
             "cpolicy",
@@ -109,6 +111,11 @@ namespace TestImpact
         AZStd::optional<RepoPath> ParseSequenceReportFile(const AZ::CommandLine& cmd)
         {
             return ParsePathOption(OptionKeys[SequenceReportKey], cmd);
+        }
+
+        AZStd::optional<RepoPath> ParseExcludeTestsFile(const AZ::CommandLine& cmd)
+        {
+            return ParsePathOption(OptionKeys[ExcludeTestsKey], cmd);
         }
 
         TestSequenceType ParseTestSequenceType(const AZ::CommandLine& cmd)
@@ -283,6 +290,7 @@ namespace TestImpact
         m_dataFile = ParseDataFile(cmd);
         m_changeListFile = ParseChangeListFile(cmd);
         m_sequenceReportFile = ParseSequenceReportFile(cmd);
+        m_excludeTestsFile = ParseExcludeTestsFile(cmd);
         m_testSequenceType = ParseTestSequenceType(cmd);
         m_testPrioritizationPolicy = ParseTestPrioritizationPolicy(cmd);
         m_executionFailurePolicy = ParseExecutionFailurePolicy(cmd);
@@ -296,6 +304,11 @@ namespace TestImpact
         m_globalTimeout = ParseGlobalTimeout(cmd);
         m_safeMode = ParseSafeMode(cmd);
         m_suiteFilter = ParseSuiteFilter(cmd);
+    }
+
+    bool CommandLineOptions::HasExcludeTestsFilePath() const
+    {
+        return m_excludeTestsFile.has_value();
     }
 
     bool CommandLineOptions::HasDataFilePath() const
@@ -331,6 +344,11 @@ namespace TestImpact
     const AZStd::optional<RepoPath>& CommandLineOptions::GetSequenceReportFilePath() const
     {
         return m_sequenceReportFile;
+    }
+
+    const AZStd::optional<RepoPath>& CommandLineOptions::GetExcludeTestsFilePath() const
+    {
+        return m_excludeTestsFile;
     }
 
     const RepoPath& CommandLineOptions::GetConfigurationFilePath() const
