@@ -44,12 +44,12 @@ void AssetEditorRequestsHandler::NotifyRegisterViews()
     }
 }
 
-void AssetEditorRequestsHandler::CreateNewAsset(const AZ::Data::AssetType& assetType, const AZ::EntityId& interestedEntityId, const AZ::ComponentId& interestedComponentId)
+void AssetEditorRequestsHandler::CreateNewAsset(const AZ::Data::AssetType& assetType, const AZ::Uuid& interestedComponentId)
 {
     using namespace AzToolsFramework::AssetEditor;
     AzToolsFramework::OpenViewPane(LyViewPane::AssetEditor);
 
-    AssetEditorWidgetRequestsBus::Broadcast(&AssetEditorWidgetRequests::CreateAsset, assetType, interestedEntityId, interestedComponentId);
+    AssetEditorWidgetRequestsBus::Broadcast(&AssetEditorWidgetRequests::CreateAsset, assetType, interestedComponentId);
 }
 
 void AssetEditorRequestsHandler::OpenAssetEditor(const AZ::Data::Asset<AZ::Data::AssetData>& asset)

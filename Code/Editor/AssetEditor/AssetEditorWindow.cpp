@@ -77,9 +77,9 @@ void AssetEditorWindow::RegisterViewClass(const AZ::Data::Asset<AZ::Data::AssetD
     AzToolsFramework::RegisterViewPane<AssetEditorWindow>(paneName, LyViewPane::CategoryTools, options, [asset](QWidget*) {return AssetEditorUtils::CreateAssetEditorWithAsset(asset); });
 }
 
-void AssetEditorWindow::CreateAsset(const AZ::Data::AssetType& assetType, const AZ::EntityId& interestedEntityId, const AZ::ComponentId& interestedComponentId)
+void AssetEditorWindow::CreateAsset(const AZ::Data::AssetType& assetType, const AZ::Uuid& interestedComponentId)
 {
-    m_ui->m_assetEditorWidget->CreateAsset(assetType, interestedEntityId, interestedComponentId);
+    m_ui->m_assetEditorWidget->CreateAsset(assetType, interestedComponentId);
 }
 
 void AssetEditorWindow::OpenAsset(const AZ::Data::Asset<AZ::Data::AssetData>& asset)

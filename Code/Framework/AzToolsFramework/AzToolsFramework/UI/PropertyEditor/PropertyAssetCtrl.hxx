@@ -57,7 +57,7 @@ namespace AzToolsFramework
         : public QWidget
         , private AssetSystemBus::Handler
         , private AzFramework::AssetCatalogEventBus::Handler
-        , private AzToolsFramework::PropertyAssetCtrlRequestsBus::Handler
+        , private AzToolsFramework::AssetEventNotificationsBus::Handler
     {
         Q_OBJECT
 
@@ -117,6 +117,8 @@ namespace AzToolsFramework
 
         AZStd::string m_defaultAssetHint;
 
+        AZ::Uuid m_componentUuid;
+
         void* m_editNotifyTarget = nullptr;
         EditCallbackType* m_editNotifyCallback = nullptr;
         ClearCallbackType* m_clearNotifyCallback = nullptr;
@@ -171,9 +173,6 @@ namespace AzToolsFramework
         bool m_showThumbnailDropDownButton = false;
         EditCallbackType* m_thumbnailCallback = nullptr;
 
-        AZ::EntityId m_entityId;
-        AZ::ComponentId m_componentId;
-
         // ! Default suffix used in the field's placeholder text when a default value is set.
         const char* m_DefaultSuffix = " (default)";
 
@@ -205,9 +204,8 @@ namespace AzToolsFramework
         //////////////////////////////////////////////////////////////////////////
 
         //////////////////////////////////////////////////////////////////////////
-        // AzFramework::PropertyAssetCtrlRequestsBus::Handler interface overrides...
-        void OnExpectedCatalogAssetAdded(
-            const AZ::Data::AssetId& assetId, const AZ::EntityId& entityId, const AZ::ComponentId& componentId) override;
+        // AzFramework::AssetEventNotificationsBus::Handler interface overrides...
+        void OnCreated(const AZ::Data::AssetId& assetId) override;
         
         //////////////////////////////////////////////////////////////////////////
         // AzFramework::AssetCatalogEventBus::Handler interface overrides...
@@ -226,12 +224,12 @@ namespace AzToolsFramework
         void SetEditButtonVisible(bool visible);
         void SetEditButtonIcon(const QIcon& icon);
         void SetEditButtonTooltip(QString tooltip);
+        void SetComponentId(const AZ::Uuid&);
         void SetBrowseButtonIcon(const QIcon& icon);
         void SetBrowseButtonEnabled(bool enabled);
         void SetBrowseButtonVisible(bool visible);
         void SetClearButtonEnabled(bool enable);
         void SetClearButtonVisible(bool visible);
-        void SetContainingEntityAndComponentIds(const AZ::EntityId& entityId, const AZ::ComponentId& componentId);
 
         // Otherwise source asset name will shown.
         void SetShowProductAssetName(bool enable);

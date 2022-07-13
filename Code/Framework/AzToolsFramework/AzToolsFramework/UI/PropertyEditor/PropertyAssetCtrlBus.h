@@ -9,14 +9,16 @@
 
 namespace AzToolsFramework
 {
-    class PropertyAssetCtrlRequests : public AZ::EBusTraits
+    class AssetEventNotifications : public AZ::EBusTraits
     {
     public:
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
+        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
 
-        //! Inform any interested components that a new asset has appeared that they may be waiting for.
-        virtual void OnExpectedCatalogAssetAdded(const AZ::Data::AssetId& assetId, const AZ::EntityId& entityId, const AZ::ComponentId& componentId) = 0;
+        using BusIdType = AZ::Uuid;
+
+        virtual void OnCreated([[maybe_unused]]const AZ::Data::AssetId& assetId) {}
     };
-        
-    using PropertyAssetCtrlRequestsBus = AZ::EBus<PropertyAssetCtrlRequests>;
+
+    using AssetEventNotificationsBus = AZ::EBus<AssetEventNotifications>;
 } // namespace AzToolsFramework

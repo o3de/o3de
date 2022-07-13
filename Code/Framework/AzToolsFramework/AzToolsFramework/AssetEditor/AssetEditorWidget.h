@@ -78,7 +78,7 @@ namespace AzToolsFramework
             explicit AssetEditorWidget(QWidget* parent = nullptr);
             ~AssetEditorWidget() override;
 
-            void CreateAsset(AZ::Data::AssetType assetType, const AZ::EntityId& entityId, const AZ::ComponentId& componentId);
+            void CreateAsset(AZ::Data::AssetType assetType, const AZ::Uuid& interestedComponentId);
             void OpenAsset(const AZ::Data::Asset<AZ::Data::AssetData> asset);
             void SetAsset(const AZ::Data::Asset<AZ::Data::AssetData> asset);
 
@@ -150,8 +150,7 @@ namespace AzToolsFramework
             AZStd::shared_ptr<AZ::DocumentPropertyEditor::ReflectionAdapter> m_adapter;
             DocumentPropertyEditor* m_dpe;
             AZ::SerializeContext* m_serializeContext = nullptr;
-            AZ::EntityId m_waitingEntityId = AZ::EntityId(); // Id of PropertyAssetCtrl waiting for an asset to be created by this widget.
-            AZ::ComponentId m_waitingComponentId = AZ::ComponentId();
+            AZ::Uuid m_waitingComponentId;// Id of the component waiting for an asset to be created by this widget.
 
             // Ids can change when an asset goes from in-memory to saved on disk.
             // If there is a failure, the asset will be removed from the catalog.

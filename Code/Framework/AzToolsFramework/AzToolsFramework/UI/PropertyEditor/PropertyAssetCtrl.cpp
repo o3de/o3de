@@ -120,8 +120,6 @@ namespace AzToolsFramework
         setContextMenuPolicy(Qt::CustomContextMenu);
         connect(this, SIGNAL(customContextMenuRequested(const QPoint&)),
             this, SLOT(ShowContextMenu(const QPoint&)));
-
-        AzToolsFramework::PropertyAssetCtrlRequestsBus::Handler::BusConnect();
     }
 
     void PropertyAssetCtrl::ConfigureAutocompleter()
@@ -642,16 +640,8 @@ namespace AzToolsFramework
         }
     }
 
-    void PropertyAssetCtrl::OnExpectedCatalogAssetAdded(
-        const AZ::Data::AssetId& assetId,
-        const AZ::EntityId& entityId,
-        const AZ::ComponentId& componentId)
+    void PropertyAssetCtrl::OnCreated(const AZ::Data::AssetId& assetId)
     {
-        if (m_entityId != entityId || m_componentId != componentId)
-        {
-            return;
-        }
-
         AZ::Data::AssetInfo assetInfo;
 
         AZ::Data::AssetCatalogRequestBus::Broadcast(
@@ -772,7 +762,7 @@ namespace AzToolsFramework
 
     PropertyAssetCtrl::~PropertyAssetCtrl()
     {
-        AzToolsFramework::PropertyAssetCtrlRequestsBus::Handler::BusDisconnect();
+        AzToolsFramework::AssetEventNotificationsBus::Handler::BusDisconnect();
         AssetSystemBus::Handler::BusDisconnect();
     }
 
@@ -798,7 +788,7 @@ namespace AzToolsFramework
                     if (!assetID.IsValid())
                     {
                         // No Asset Id selected - Open editor and create new asset for them
-                        AssetEditor::AssetEditorRequestsBus::Broadcast(&AssetEditor::AssetEditorRequests::CreateNewAsset, GetCurrentAssetType(), m_entityId, m_componentId);
+                        AssetEditor::AssetEditorRequestsBus::Broadcast(&AssetEditor::AssetEditorRequests::CreateNewAsset, GetCurrentAssetType(), m_componentUuid);
                     }
                     else
                     {
@@ -1203,6 +1193,12 @@ namespace AzToolsFramework
         m_editButton->setToolTip(tooltip);
     }
 
+    void PropertyAssetCtrl::SetComponentId(const AZ::Uuid& uuid)
+    {
+        m_componentUuid = uuid;
+        AzToolsFramework::AssetEventNotificationsBus::Handler::BusConnect(m_componentUuid);
+    }
+
     void PropertyAssetCtrl::SetBrowseButtonIcon(const QIcon& icon)
     {
         m_browseEdit->setAttachedButtonIcon(icon);
@@ -1279,12 +1275,6 @@ namespace AzToolsFramework
     void PropertyAssetCtrl::SetClearButtonVisible(bool visible)
     {
         SetClearButtonEnabled(visible);
-    }
-
-    void PropertyAssetCtrl::SetContainingEntityAndComponentIds(const AZ::EntityId& entityId, const AZ::ComponentId& componentId)
-    {
-        m_entityId = entityId;
-        m_componentId = componentId;
     }
 
     void PropertyAssetCtrl::SetShowProductAssetName(bool enable)
@@ -1449,6 +1439,14 @@ namespace AzToolsFramework
             if (attrValue->Read<AZStd::string>(buttonTooltip))
             {
                 GUI->SetEditButtonTooltip(tr(buttonTooltip.c_str()));
+            }
+        }
+        else if (attrib == AZ_CRC_CE("ComponentIdentifier"))
+        {
+            AZ::Uuid uuid;
+            if (attrValue->Read<AZ::Uuid>(uuid))
+            {
+                GUI->SetComponentId(uuid);
             }
         }
         else if (attrib == AZ_CRC_CE("DisableEditButtonWhenNoAssetSelected"))
@@ -1652,20 +1650,6 @@ namespace AzToolsFramework
         while (componentNode->GetParent())
         {
             componentNode = componentNode->GetParent();
-        }
-
-        AZ::SerializeContext* serializeContext = nullptr;
-        AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
-
-        if (serializeContext)
-        {
-            AZ::Component* componentInstance =
-                serializeContext->Cast<AZ::Component*>(componentNode->GetInstance(0), componentNode->GetClassMetadata()->m_typeId);
-
-            if (componentInstance)
-            {
-                GUI->SetContainingEntityAndComponentIds(componentInstance->GetEntityId(), componentInstance->GetId());
-            }
         }
 
         return false;
