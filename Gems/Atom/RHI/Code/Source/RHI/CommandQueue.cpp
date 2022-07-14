@@ -140,6 +140,7 @@ namespace AZ
 
                 //run a command
                 {
+                    AZ_PROFILE_BUDGET(RHI);
                     AZ_PROFILE_SCOPE(RHI, "CommandQueue - Execute Command");
                     command(GetNativeQueue());
                 }

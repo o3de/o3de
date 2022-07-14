@@ -60,7 +60,7 @@
 #define AZ_PROFILE_BUDGET(budget)                                                                                                          \
     ::AZ::Debug::ProfileScope AZ_JOIN(azProfileScope, __LINE__)                                                                            \
     {                                                                                                                                      \
-        AZ_BUDGET_GETTER(budget)(), nullptr, true                                                                                          \
+        AZ_BUDGET_GETTER(budget)(), true, nullptr                                                                                          \
     }
 
 

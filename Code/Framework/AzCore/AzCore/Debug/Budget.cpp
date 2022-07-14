@@ -11,6 +11,7 @@
 #include <AzCore/Module/Environment.h>
 #include <AzCore/Math/Crc.h>
 #include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/Statistics/StatisticalProfilerProxy.h>
 
 AZ_DEFINE_BUDGET(Animation);
 AZ_DEFINE_BUDGET(Audio);
@@ -27,24 +28,23 @@ namespace AZ::Debug
     {
         AZ_CLASS_ALLOCATOR(BudgetImpl, AZ::SystemAllocator, 0);
 
-        BudgetImpl()
+        BudgetImpl(AZ::Statistics::StatisticalProfilerProxy::StatisticalProfilerType& profiler)
+            : m_profiler(profiler)
         {
-            m_logger = AZ::Interface<IEventLogger>::Get();
         }
 
-        IEventLogger* m_logger;
-        AZStd::atomic<AZ::u32> m_frameNumber{ 0 };
-        thread_local static AZStd::chrono::system_clock::time_point s_startTime;
+        AZ::Statistics::StatisticalProfilerProxy::StatisticalProfilerType& m_profiler;
+        AZStd::unordered_map<AZ::u64, AZ::u64> m_perThreadDuration;
+        AZStd::atomic<bool> m_logging{ false };
+        AZStd::mutex m_mapMutex;
+
+        constexpr static int MaxDepth = 16;
+        thread_local static AZStd::chrono::system_clock::time_point s_startTime[MaxDepth];
+        thread_local static int s_currentDepth;
     };
 
-    thread_local AZStd::chrono::system_clock::time_point BudgetImpl::s_startTime;
-
-    struct PerformanceEvent
-    {
-        AZ::u64 m_duration;
-        AZ::u32 m_frameNumber;
-        char m_budgetName[32];
-    };
+    thread_local AZStd::chrono::system_clock::time_point BudgetImpl::s_startTime[BudgetImpl::MaxDepth];
+    thread_local int BudgetImpl::s_currentDepth{ -1 };
 
     Budget::Budget(const char* name)
         : Budget( name, Crc32(name) )
@@ -54,9 +54,8 @@ namespace AZ::Debug
     Budget::Budget(const char* name, uint32_t crc)
         : m_name{ name }
         , m_crc{ crc }
-        , m_budgetHash { name }
     {
-        m_impl = aznew BudgetImpl;
+        m_impl = aznew BudgetImpl(AZ::Interface<AZ::Statistics::StatisticalProfilerProxy>::Get()->GetProfiler(m_crc));
     }
 
     Budget::~Budget()
@@ -71,22 +70,45 @@ namespace AZ::Debug
 
     void Budget::PerFrameReset()
     {
-        m_impl->m_frameNumber++;
+        if (m_impl && m_impl->m_logging)
+        {
+            AZStd::scoped_lock mapLock(m_impl->m_mapMutex);
+            for (auto& threadId : m_impl->m_perThreadDuration)
+            {
+                AZ::Crc32 threadIdCrc = AZ::Crc32(&threadId.first, sizeof(AZ::u64));
+                m_impl->m_profiler.GetStatsManager().AddStatistic(threadIdCrc, m_name, "us");
+                m_impl->m_profiler.PushSample(threadIdCrc, static_cast<double>(threadId.second));
+            }
+            m_impl->m_perThreadDuration.clear();
+        }
     }
 
     void Budget::BeginProfileRegion()
     {
-        BudgetImpl::s_startTime = AZStd::chrono::high_resolution_clock::now();
+        if (m_impl && m_impl->m_logging)
+        {
+            BudgetImpl::s_currentDepth++;
+            BudgetImpl::s_startTime[BudgetImpl::s_currentDepth] = AZStd::chrono::high_resolution_clock::now();
+        }
     }
 
     void Budget::EndProfileRegion()
     {
-        AZStd::chrono::microseconds duration = AZStd::chrono::high_resolution_clock::now() - BudgetImpl::s_startTime;
-        PerformanceEvent& event = m_impl->m_logger->RecordEventBegin<PerformanceEvent>(m_budgetHash, 0);
-        event.m_duration = duration.count();
-        event.m_frameNumber = m_impl->m_frameNumber;
-        memcpy(event.m_budgetName, m_name.data(), m_name.length());
-        m_impl->m_logger->RecordEventEnd();
+        if (m_impl && m_impl->m_logging && BudgetImpl::s_currentDepth >= 0)
+        {
+            AZStd::chrono::microseconds duration = AZStd::chrono::high_resolution_clock::now() - BudgetImpl::s_startTime[BudgetImpl::s_currentDepth];
+            BudgetImpl::s_currentDepth--;
+            thread_local static AZ::u64 threadId = azlossy_caster(AZStd::hash<AZStd::thread_id>{}(AZStd::this_thread::get_id()));
+
+            {
+                AZStd::scoped_lock mapLock(m_impl->m_mapMutex);
+                auto it = m_impl->m_perThreadDuration.try_emplace(threadId, duration.count());
+                if (!it.second)
+                {
+                    it.first->second += duration.count();
+                }
+            }
+        }
     }
 
     void Budget::TrackAllocation(uint64_t)
@@ -95,5 +117,15 @@ namespace AZ::Debug
 
     void Budget::UntrackAllocation(uint64_t)
     {
+    }
+
+    void Budget::StartLogging()
+    {
+        m_impl->m_logging = true;
+    }
+
+    void Budget::StopLogging()
+    {
+        m_impl->m_logging = false;
     }
 } // namespace AZ::Debug

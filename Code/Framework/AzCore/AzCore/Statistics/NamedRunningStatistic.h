@@ -52,12 +52,12 @@ namespace AZ
 
             static const char * GetCsvHeader()
             {
-                return "Name, Units, numSamples, avg, min, max, stdev";
+                return "Name, Units, numSamples, avg, min, max, stdev\n";
             }
 
             AZStd::string GetCsvFormatted() const
             {
-                return AZStd::string::format("\"%s\", \"%s\", %llu, %f, %f, %f, %f",
+                return AZStd::string::format("\"%s\", \"%s\", %llu, %f, %f, %f, %f\n",
                     m_name.c_str(), m_units.c_str(), GetNumSamples(), GetAverage(), GetMinimum(), GetMaximum(), GetStdev());
             }
 

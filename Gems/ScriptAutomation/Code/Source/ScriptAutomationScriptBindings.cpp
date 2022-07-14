@@ -15,6 +15,8 @@
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/Math/MathReflection.h>
 #include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
+#include <AzCore/Statistics/StatisticalProfilerProxy.h>
 
 #include <AzFramework/Components/ConsoleBus.h>
 
@@ -131,6 +133,61 @@ namespace ScriptAutomation
             ScriptAutomationInterface::Get()->QueueScriptOperation(AZStd::move(func));
         }
 
+        void StartBudgetTotalCapture()
+        {
+            auto startLogging = []()
+            {
+                AZ::Interface<AZ::IConsole>::Get()->PerformCommand("ProfilerBudgetsStartCapture");
+            };
+
+            ScriptAutomationInterface::Get()->QueueScriptOperation(AZStd::move(startLogging));
+        }
+
+        void StopBudgetTotalCapture()
+        {
+            auto stopLogging = []()
+            {
+                AZ::Interface<AZ::IConsole>::Get()->PerformCommand("ProfilerBudgetsStopCapture");
+            };
+
+            ScriptAutomationInterface::Get()->QueueScriptOperation(AZStd::move(stopLogging));
+        }
+
+        void CaptureBudgetTotals(int numFrames)
+        {
+            StartBudgetTotalCapture();
+            IdleFrames(numFrames);
+            StopBudgetTotalCapture();
+        }
+
+        void WritePerfDataToFile(const AZStd::string& filePath)
+        {
+            AZ::IO::FixedMaxPath resolvedPath;
+            AZ::IO::FileIOBase::GetInstance()->ResolvePath(resolvedPath, filePath.c_str());
+
+            auto writePerfLogs = [resolvedPath]()
+            {
+                AZ::IO::SystemFile csvFile;
+                csvFile.Open(resolvedPath.c_str(), AZ::IO::SystemFile::SF_OPEN_WRITE_ONLY | AZ::IO::SystemFile::SF_OPEN_CREATE | AZ::IO::SystemFile::SF_OPEN_CREATE_PATH);
+
+                const char* csvHeader = AZ::Statistics::NamedRunningStatistic::GetCsvHeader();
+                csvFile.Write(csvHeader, strnlen_s(csvHeader, 1024));
+
+                AZStd::vector<AZ::Statistics::NamedRunningStatistic*> stats;
+                AZ::Interface<AZ::Statistics::StatisticalProfilerProxy>::Get()->GetAllStatisticsOfUnits(stats, "us");
+                for (auto stat : stats)
+                {
+                    AZStd::string formattedStr = stat->GetCsvFormatted();
+                    csvFile.Write(formattedStr.c_str(), formattedStr.length());
+                    AZ_TracePrintf("ScriptAutomation", "%s", stat->GetFormatted().c_str());
+                }
+
+                csvFile.Close();
+            };
+
+            ScriptAutomationInterface::Get()->QueueScriptOperation(AZStd::move(writePerfLogs));
+        }
+
         float DegToRad(float degrees)
         {
             return AZ::DegToRad(degrees);
@@ -185,5 +242,9 @@ namespace ScriptAutomation
         behaviorContext->Method("RunScript", &Bindings::RunScript);
         behaviorContext->Method("ResolvePath", &Bindings::ResolvePath);
         behaviorContext->Method("NormalizePath", &Bindings::NormalizePath);
+
+        behaviorContext->Method("StartBudgetTotalCapture", &Bindings::StartBudgetTotalCapture);
+        behaviorContext->Method("StopBudgetTotalCapture", &Bindings::StopBudgetTotalCapture);
+        behaviorContext->Method("WritePerfDataToFile", &Bindings::WritePerfDataToFile);
     }
 } // namespace ScriptAutomation

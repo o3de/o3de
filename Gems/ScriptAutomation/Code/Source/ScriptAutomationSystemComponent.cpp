@@ -239,6 +239,7 @@ namespace ScriptAutomation
             m_isStarted = true;
             SetupScriptExecution(m_automationScript);
             ExecuteScript(m_automationScript);
+            return;
         }
 
         if (m_executingScripts.size() > 0 || !m_scriptOperations.empty())

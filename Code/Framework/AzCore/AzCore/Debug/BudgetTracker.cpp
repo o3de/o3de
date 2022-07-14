@@ -70,9 +70,31 @@ namespace AZ::Debug
     {
         if (m_impl)
         {
-            for (auto budgetRef : m_impl->m_externalBudgetRefs)
+            for (auto& budgetRef : m_impl->m_budgets)
             {
-                (*budgetRef)->PerFrameReset();
+                budgetRef.second.PerFrameReset();
+            }
+        }
+    }
+
+    void BudgetTracker::StartLoggingBudgetTotals()
+    {
+        if (m_impl)
+        {
+            for (auto& budgetRef : m_impl->m_budgets)
+            {
+                budgetRef.second.StartLogging();
+            }
+        }
+    }
+
+    void BudgetTracker::StopLoggingBudgetTotals()
+    {
+        if (m_impl)
+        {
+            for (auto& budgetRef : m_impl->m_budgets)
+            {
+                budgetRef.second.StopLogging();
             }
         }
     }

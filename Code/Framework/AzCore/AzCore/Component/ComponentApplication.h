@@ -21,6 +21,7 @@
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Statistics/StatisticalProfilerProxy.h>
 #include <AzCore/RTTI/ReflectionManager.h>
 #include <AzCore/Settings/CommandLine.h>
 #include <AzCore/Settings/SettingsRegistry.h>
@@ -264,6 +265,10 @@ namespace AZ
         */
         AZ::CommandLine* GetAzCommandLine() override;
 
+        void StartLoggingBudgetTotals() override;
+
+        void StopLoggingBudgetTotals() override;
+
         /**
         * Retrieve the argc passed into the application class on startup, if any was passed in.
         * Note that this could return nullptr if the application was not initialized with any such parameter.
@@ -297,6 +302,8 @@ namespace AZ
         //! Performs loading of dynamic modules made up of the list of modules in the cmake_dependencies.*.setreg
         //! loaded into the AZ::SettingsRegistry plus the list of modules stored in the Descriptor::m_modules array
         void LoadDynamicModules();
+
+        void ResetBudgetTotals();
 
     protected:
         virtual void CreateReflectionManager();
@@ -383,6 +390,7 @@ namespace AZ
 
 #if !defined(_RELEASE)
         Debug::BudgetTracker m_budgetTracker;
+        AZStd::unique_ptr<AZ::Statistics::StatisticalProfilerProxy> m_statisticalProfiler;
 #endif
 
         // this is used when no argV/ArgC is supplied.

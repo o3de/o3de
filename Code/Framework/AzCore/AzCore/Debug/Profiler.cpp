@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/Debug/ProfilerBus.h>
 #include <AzCore/Console/IConsole.h>
@@ -50,6 +51,18 @@ namespace AZ::Debug
         }
     }
     AZ_CONSOLEFREEFUNC(ProfilerEndCapture, AZ::ConsoleFunctorFlags::DontReplicate, "End and dump an in-progress continuous capture");
+
+    void ProfilerBudgetsStartCapture([[maybe_unused]] const AZ::ConsoleCommandContainer& arguments)
+    {
+        AZ::ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationBus::Events::StartLoggingBudgetTotals);
+    }
+    AZ_CONSOLEFREEFUNC(ProfilerBudgetsStartCapture, AZ::ConsoleFunctorFlags::DontReplicate, "Start a multi-frame capture of top level budget totals");
+
+    void ProfilerBudgetsStopCapture([[maybe_unused]] const AZ::ConsoleCommandContainer& arguments)
+    {
+        AZ::ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationBus::Events::StopLoggingBudgetTotals);
+    }
+    AZ_CONSOLEFREEFUNC(ProfilerBudgetsStopCapture, AZ::ConsoleFunctorFlags::DontReplicate, "Stop and dump a multi-frame capture of top level budget totals");
 
     AZ::IO::FixedMaxPathString GetProfilerCaptureLocation()
     {
