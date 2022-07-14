@@ -244,7 +244,7 @@ namespace TestImpact
     Runtime::Runtime(
         RuntimeConfig&& config,
         AZStd::optional<RepoPath> dataFile,
-        AZStd::optional<RepoPath> excludeFile,
+        AZStd::optional<AZStd::vector<AZStd::string>> testsToExclude,
         SuiteType suiteFilter,
         Policy::ExecutionFailure executionFailurePolicy,
         Policy::FailedTestCoverage failedTestCoveragePolicy,
@@ -270,22 +270,19 @@ namespace TestImpact
         m_testSelectorAndPrioritizer = AZStd::make_unique<TestSelectorAndPrioritizer>(m_dynamicDependencyMap.get(), DependencyGraphDataMap{});
 
         // Construct the target exclude list from the exclude file if provided, otherwise use target configuration data
-        try
+
+
+        if (testsToExclude.has_value())
         {
-            if (excludeFile.has_value())
-            {
-                m_testTargetExcludeList = ConstructTestTargetExcludeList(
-                    m_dynamicDependencyMap->GetTestTargetList(), GetExcludedTestTargetsFromFile(excludeFile.value()));
-            }
-            else
-            {
-                m_testTargetExcludeList =
-                    ConstructTestTargetExcludeList(m_dynamicDependencyMap->GetTestTargetList(), m_config.m_target.m_excludedTestTargets);
-            }
-        } catch ([[maybe_unused]]const Exception& e)
-        {
-            AZ_Printf(LogCallSite, "The data at the provided exclude file location was invalid");
+            m_testTargetExcludeList = ConstructTestTargetExcludeList(
+                m_dynamicDependencyMap->GetTestTargetList(), testsToExclude.value());
         }
+        else
+        {
+            m_testTargetExcludeList =
+                ConstructTestTargetExcludeList(m_dynamicDependencyMap->GetTestTargetList(), m_config.m_target.m_excludedTestTargets);
+        }
+   
 
         // Construct the test engine with the workspace path and launcher binaries
         m_testEngine = AZStd::make_unique<TestEngine>(
