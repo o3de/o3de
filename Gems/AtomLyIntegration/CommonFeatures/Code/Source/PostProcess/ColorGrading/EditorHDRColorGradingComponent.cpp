@@ -281,15 +281,14 @@ namespace AZ
 
             if (frameCaptureId != AZ::Render::InvalidFrameCaptureId)
             {
-                AZ::Render::FrameCaptureNotificationBus::MultiHandler::BusConnect(frameCaptureId);
-                m_frameCaptureId = frameCaptureId;
+                AZ::Render::FrameCaptureNotificationBus::Handler::BusConnect(frameCaptureId);
                 AZ::TickBus::Handler::BusDisconnect();
             }
         }
 
-        void EditorHDRColorGradingComponent::OnFrameCaptureFinished(AZ::Render::FrameCaptureId frameCaptureId, [[maybe_unused]] AZ::Render::FrameCaptureResult result, [[maybe_unused]]const AZStd::string& info)
+        void EditorHDRColorGradingComponent::OnFrameCaptureFinished([[maybe_unused]] AZ::Render::FrameCaptureResult result, [[maybe_unused]]const AZStd::string& info)
         {
-            AZ::Render::FrameCaptureNotificationBus::MultiHandler::BusDisconnect(frameCaptureId);
+            AZ::Render::FrameCaptureNotificationBus::Handler::BusDisconnect();
 
             char resolvedInputFilePath[AZ_MAX_PATH_LEN] = { 0 };
             AZ::IO::FileIOBase::GetDirectInstance()->ResolvePath(m_currentTiffFilePath.c_str(), resolvedInputFilePath, AZ_MAX_PATH_LEN);

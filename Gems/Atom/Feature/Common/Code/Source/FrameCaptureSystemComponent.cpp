@@ -241,15 +241,15 @@ namespace AZ
         }
 
         class FrameCaptureNotificationBusHandler final
-            : public FrameCaptureNotificationBus::MultiHandler
+            : public FrameCaptureNotificationBus::MultiHandler // Use multi handler as it has to handle all use cases
             , public AZ::BehaviorEBusHandler
         {
         public:
             AZ_EBUS_BEHAVIOR_BINDER(FrameCaptureNotificationBusHandler, "{68D1D94C-7055-4D32-8E22-BEEEBA0940C4}", AZ::SystemAllocator, OnFrameCaptureFinished);
 
-            void OnFrameCaptureFinished(AZ::Render::FrameCaptureId captureId, FrameCaptureResult result, const AZStd::string& info) override
+            void OnFrameCaptureFinished(FrameCaptureResult result, const AZStd::string& info) override
             {
-                Call(FN_OnFrameCaptureFinished, captureId, result, info);
+                Call(FN_OnFrameCaptureFinished, result, info);
             }
 
             static void Reflect(AZ::ReflectContext* context)
@@ -628,7 +628,7 @@ namespace AZ
                 {
                     break;
                 }
-                FrameCaptureNotificationBus::Event(captureHandle.GetCaptureStateIndex(), &FrameCaptureNotificationBus::Events::OnFrameCaptureFinished, captureHandle.GetCaptureStateIndex(), capture->m_result, capture->m_latestCaptureInfo.c_str());
+                FrameCaptureNotificationBus::Event(captureHandle.GetCaptureStateIndex(), &FrameCaptureNotificationBus::Events::OnFrameCaptureFinished, capture->m_result, capture->m_latestCaptureInfo.c_str());
                 m_inProgressCaptures.pop_front();
                 m_idleCaptures.push_back(captureHandle);
             }
