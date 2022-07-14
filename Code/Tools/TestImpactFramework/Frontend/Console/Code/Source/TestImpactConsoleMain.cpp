@@ -168,7 +168,7 @@ namespace TestImpact
                 Runtime runtime(
                     RuntimeConfigurationFactory(ReadFileContents<CommandLineOptionsException>(options.GetConfigurationFilePath())),
                     options.GetDataFilePath(),
-                    options.GetExcludeTestsFilePath(),
+                    options.GetExcludeTests(),
                     options.GetSuiteFilter(),
                     options.GetExecutionFailurePolicy(),
                     options.GetFailedTestCoveragePolicy(),
