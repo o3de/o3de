@@ -345,6 +345,25 @@
       "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo"
     }
   },
+  "release_vs2022": {
+    "TAGS": [
+      "default",
+      "weekly-build-metrics",
+      "snapshot"
+    ],
+    "PIPELINE_ENV":{
+      "NODE_LABEL":"windows-vs2022"
+    },
+    "COMMAND": "build_windows.cmd",
+    "PARAMETERS": {
+      "CONFIGURATION": "release",
+      "OUTPUT_DIRECTORY": "build\\windows",
+      "CMAKE_OPTIONS": "-G \"Visual Studio 17 2022\" -DCMAKE_SYSTEM_VERSION=10.0",
+      "CMAKE_LY_PROJECTS": "AutomatedTesting",
+      "CMAKE_TARGET": "ALL_BUILD",
+      "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo"
+    }
+  },
   "monolithic_release": {
     "TAGS": [
       "periodic-incremental-daily",
