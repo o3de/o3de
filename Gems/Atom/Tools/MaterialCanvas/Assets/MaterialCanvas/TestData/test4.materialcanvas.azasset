@@ -93,7 +93,7 @@
                     "toolId": {
                         "Value": 2034248906
                     },
-                    "configId": "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/TestData/example_pbr.materialcanvasnode.azasset"
+                    "configId": "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/TestData/ExamplePBR/example_pbr.materialcanvasnode.azasset"
                 }
             },
             {
