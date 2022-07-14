@@ -91,8 +91,6 @@ namespace TrackView
     bool AtomOutputFrameCapture::BeginCapture(
         const AZ::RPI::AttachmentReadback::CallbackFunction& attachmentReadbackCallback, CaptureFinishedCallback captureFinishedCallback)
     {
-        AZ_Assert(m_frameCaptureId == AZ::Render::InvalidFrameCaptureId, "Attempting to start a 2nd frame capture while one is in progress");
-
         m_captureFinishedCallback = AZStd::move(captureFinishedCallback);
 
         // note: "Output" (slot name) maps to MainPipeline.pass CopyToSwapChain
@@ -102,9 +100,7 @@ namespace TrackView
             AZStd::string("Output"), attachmentReadbackCallback, AZ::RPI::PassAttachmentReadbackOption::Output);
         if (frameCaptureId != AZ::Render::InvalidFrameCaptureId)
         {
-            AZ::Render::FrameCaptureNotificationBus::MultiHandler::BusConnect(frameCaptureId);
-
-            m_frameCaptureId = frameCaptureId;
+            AZ::Render::FrameCaptureNotificationBus::Handler::BusConnect(frameCaptureId);
             return true;
         }
 
@@ -112,9 +108,9 @@ namespace TrackView
     }
 
     void AtomOutputFrameCapture::OnFrameCaptureFinished(
-        AZ::Render::FrameCaptureId frameCaptureId, [[maybe_unused]] AZ::Render::FrameCaptureResult result, [[maybe_unused]] const AZStd::string& info)
+        [[maybe_unused]] AZ::Render::FrameCaptureResult result, [[maybe_unused]] const AZStd::string& info)
     {
-        AZ::Render::FrameCaptureNotificationBus::MultiHandler::BusDisconnect(frameCaptureId);
+        AZ::Render::FrameCaptureNotificationBus::Handler::BusDisconnect();
         m_captureFinishedCallback();
     }
 

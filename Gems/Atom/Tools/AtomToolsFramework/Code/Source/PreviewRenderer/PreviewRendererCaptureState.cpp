@@ -39,7 +39,7 @@ namespace AtomToolsFramework
         }
     }
 
-    void PreviewRendererCaptureState::OnFrameCaptureFinished([[maybe_unused]] AZ::Render::FrameCaptureId frameCaptureId,
+    void PreviewRendererCaptureState::OnFrameCaptureFinished(
         [[maybe_unused]] AZ::Render::FrameCaptureResult result, [[maybe_unused]] const AZStd::string& info)
     {
         AZ::Render::FrameCaptureNotificationBus::Handler::BusDisconnect();
