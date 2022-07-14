@@ -22,7 +22,6 @@ namespace AZ
     {
         class Query;
         class ScopeProducer;
-        struct DispatchRaysItem;
 
         /**
         * Supported operations for rendering predication.
