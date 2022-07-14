@@ -38,16 +38,11 @@ g_profileOutputFolder = GetProfilingOutputPath(true) .. "/" .. tostring(profileN
 Print('Saving screenshots to ' .. NormalizePath(g_profileOutputFolder))
 
 -- read optional SettingsRegistry values
-AssetLoadWaitCountSR = SettingsRegistryGetUInt(AssetLoadCountRegistryKey)
-local assetLoadIdleFrameCount = AssetLoadWaitCountSR:value_or(DEFAULT_ASSET_LOAD_FRAME_WAIT_COUNT)
-FrameIdleCountSR = SettingsRegistryGetUInt(FrameIdleCountRegistryKey)
-local frameIdleCount = FrameIdleCountSR:value_or(DEFAULT_IDLE_COUNT)
-FrameCaptureCountSR = SettingsRegistryGetUInt(FrameCaptureCountRegistryKey)
-local frameCaptureCount = FrameCaptureCountSR:value_or(DEFAULT_FRAME_COUNT)
-viewportWidthSR = SettingsRegistryGetUInt(ViewportWidthRegistryKey)
-local viewportWidth = viewportWidthSR:value_or(DEFAULT_VIEWPORT_WIDTH)
-viewportHeightSR = SettingsRegistryGetUInt(ViewportHeightRegistryKey)
-local viewportHeight = viewportHeightSR:value_or(DEFAULT_VIEWPORT_HEIGHT)
+local assetLoadIdleFrameCount = SettingsRegistryGetUInt(AssetLoadCountRegistryKey):value_or(DEFAULT_ASSET_LOAD_FRAME_WAIT_COUNT)
+local frameIdleCount = SettingsRegistryGetUInt(FrameIdleCountRegistryKey):value_or(DEFAULT_IDLE_COUNT)
+local frameCaptureCount = SettingsRegistryGetUInt(FrameCaptureCountRegistryKey):value_or(DEFAULT_FRAME_COUNT)
+local viewportWidth = SettingsRegistryGetUInt(ViewportWidthRegistryKey):value_or(DEFAULT_VIEWPORT_WIDTH)
+local viewportHeight = SettingsRegistryGetUInt(ViewportHeightRegistryKey):value_or(DEFAULT_VIEWPORT_HEIGHT)
 
 
 -- Begin script execution
