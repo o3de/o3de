@@ -15,6 +15,7 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/StringFunc/StringFunc.h>
 #include <AzCore/Debug/ProfilerBus.h>
+#include <AzCore/Settings/SettingsRegistry.h>
 
 #include <AzFramework/Components/ConsoleBus.h>
 #include <AzFramework/IO/LocalFileIO.h>
@@ -419,6 +420,37 @@ namespace ScriptAutomation
 
             ScriptAutomationInterface::Get()->QueueScriptOperation(AZStd::move(operation));
         }
+
+        bool SettingsRegistry_QueryKeyExists(const AZStd::string& path)
+        {
+            bool result = false;
+            if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+            {
+                result = settingsRegistry->GetType(path) != AZ::SettingsRegistryInterface::Type::NoType;
+            }
+            return result;
+        }
+
+        #define MAKE_SETTINGS_REGISTRY_VALUE_QUERY(QUERY_NAME, QUERY_TYPE) \
+        AZStd::optional<QUERY_TYPE> QUERY_NAME (const AZStd::string& path) \
+            { \
+                AZStd::optional<QUERY_TYPE> result = AZStd::nullopt; \
+                if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr) \
+                { \
+                    QUERY_TYPE typedResult{}; \
+                    if (settingsRegistry->Get(typedResult, path)) \
+                    { \
+                       result = typedResult; \
+                    } \
+                } \
+                return result; \
+            }
+
+        MAKE_SETTINGS_REGISTRY_VALUE_QUERY(SettingsRegistry_GetBool, bool);
+        MAKE_SETTINGS_REGISTRY_VALUE_QUERY(SettingsRegistry_GetSInt, AZ::s64);
+        MAKE_SETTINGS_REGISTRY_VALUE_QUERY(SettingsRegistry_GetUInt, AZ::u64);
+        MAKE_SETTINGS_REGISTRY_VALUE_QUERY(SettingsRegistry_GetFloat, double);
+        MAKE_SETTINGS_REGISTRY_VALUE_QUERY(SettingsRegistry_GetString, AZStd::string);
     } // namespace Bindings
 
     void ReflectScriptBindings(AZ::BehaviorContext* behaviorContext)
@@ -453,5 +485,13 @@ namespace ScriptAutomation
         behaviorContext->Method("CapturePassPipelineStatistics", &Bindings::CapturePassPipelineStatistics);
         behaviorContext->Method("CaptureCpuProfilingStatistics", &Bindings::CaptureCpuProfilingStatistics);
         behaviorContext->Method("CaptureBenchmarkMetadata", &Bindings::CaptureBenchmarkMetadata);
+
+        // Settings Registery query
+        behaviorContext->Method("SettingsRegistryKeyExists", &Bindings::SettingsRegistry_QueryKeyExists);
+        behaviorContext->Method("SettingsRegistryGetBool",   &Bindings::SettingsRegistry_GetBool);
+        behaviorContext->Method("SettingsRegistryGetSInt",   &Bindings::SettingsRegistry_GetSInt);
+        behaviorContext->Method("SettingsRegistryGetUInt",   &Bindings::SettingsRegistry_GetUInt);
+        behaviorContext->Method("SettingsRegistryGetFloat",  &Bindings::SettingsRegistry_GetFloat);
+        behaviorContext->Method("SettingsRegistryGetString", &Bindings::SettingsRegistry_GetString);
     }
 } // namespace ScriptAutomation

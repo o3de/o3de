@@ -1,0 +1,67 @@
+----------------------------------------------------------------------------------------------------
+--
+-- Copyright (c) Contributors to the Open 3D Engine Project.
+-- For complete copyright and license terms please see the LICENSE at the root of this distribution.
+--
+-- SPDX-License-Identifier: Apache-2.0 OR MIT
+--
+--
+--
+----------------------------------------------------------------------------------------------------
+-- optional settings
+local AssetLoadCountRegistryKey <const> = "/O3DE/ScriptAutomation/FrameTime/AssetLoadCount"
+local FrameIdleCountRegistryKey <const> = "/O3DE/ScriptAutomation/FrameTime/IdleCount"
+local FrameCaptureCountRegistryKey <const> = "/O3DE/ScriptAutomation/FrameTime/CaptureCount"
+local ViewportWidthRegistryKey <const> = "/O3DE/ScriptAutomation/FrameTime/ViewportWidth"
+local ViewportHeightRegistryKey <const> = "/O3DE/ScriptAutomation/FrameTime/ViewportHeight"
+
+-- required settings
+local ProfileNameRegistryKey <const> = "/O3DE/ScriptAutomation/FrameTime/ProfileName"
+
+-- default values
+DEFAULT_ASSET_LOAD_FRAME_WAIT_COUNT = 100
+DEFAULT_IDLE_COUNT = 100
+DEFAULT_FRAME_COUNT = 100
+DEFAULT_VIEWPORT_WIDTH = 800
+DEFAULT_VIEWPORT_HEIGHT = 600
+
+-- check for SettingsRegistry values that must exist
+profileNameSR = SettingsRegistryGetString(ProfileNameRegistryKey)
+if (not profileNameSR:has_value()) then
+    Print('FrameTime script missing profileName settings registry entry, aborting')
+    return;
+end
+profileName = profileNameSR:value()
+
+-- get the output folder path
+g_profileOutputFolder = GetProfilingOutputPath(true) .. "/" .. tostring(profileName)
+Print('Saving screenshots to ' .. NormalizePath(g_profileOutputFolder))
+
+-- read optional SettingsRegistry values
+AssetLoadWaitCountSR = SettingsRegistryGetUInt(AssetLoadCountRegistryKey)
+local assetLoadIdleFrameCount = AssetLoadWaitCountSR:value_or(DEFAULT_ASSET_LOAD_FRAME_WAIT_COUNT)
+FrameIdleCountSR = SettingsRegistryGetUInt(FrameIdleCountRegistryKey)
+local frameIdleCount = FrameIdleCountSR:value_or(DEFAULT_IDLE_COUNT)
+FrameCaptureCountSR = SettingsRegistryGetUInt(FrameCaptureCountRegistryKey)
+local frameCaptureCount = FrameCaptureCountSR:value_or(DEFAULT_FRAME_COUNT)
+viewportWidthSR = SettingsRegistryGetUInt(ViewportWidthRegistryKey)
+local viewportWidth = viewportWidthSR:value_or(DEFAULT_VIEWPORT_WIDTH)
+viewportHeightSR = SettingsRegistryGetUInt(ViewportHeightRegistryKey)
+local viewportHeight = viewportHeightSR:value_or(DEFAULT_VIEWPORT_HEIGHT)
+
+
+-- Begin script execution
+ResizeViewport(viewportWidth, viewportHeight)
+
+IdleFrames(assetLoadIdleFrameCount) -- wait for assets to load into the level
+ExecuteConsoleCommand("r_displayInfo=0")
+
+CaptureBenchmarkMetadata(tostring(profileName), g_profileOutputFolder .. '/benchmark_metadata.json')
+Print('Idling for ' .. tostring(frameIdleCount) .. ' frames..')
+IdleFrames(frameIdleCount)
+Print('Capturing timestamps for ' .. tostring(frameCaptureCount) .. ' frames...')
+for i = 1,frameCaptureCount do
+    cpu_timings = g_profileOutputFolder .. '/cpu_frame' .. tostring(i) .. '_time.json'
+    CaptureCpuFrameTime(cpu_timings)
+end
+Print('Capturing complete.')
