@@ -347,7 +347,7 @@
   },
   "release_vs2022": {
     "TAGS": [
-      "default",
+      "periodic-incremental-daily",
       "weekly-build-metrics",
       "snapshot"
     ],
