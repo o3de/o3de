@@ -1308,8 +1308,6 @@ void TerrainSystem::UnregisterArea(AZ::EntityId areaId)
 
 void TerrainSystem::RefreshArea(AZ::EntityId areaId, AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask changeMask)
 {
-    using Terrain = AzFramework::Terrain::TerrainDataNotifications;
-
     AZStd::unique_lock<AZStd::shared_mutex> lock(m_areaMutex);
 
     auto areaAabb = m_registeredAreas.find(areaId);
