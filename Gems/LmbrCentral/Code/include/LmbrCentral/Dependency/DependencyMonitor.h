@@ -51,6 +51,7 @@ namespace LmbrCentral
         //////////////////////////////////////////////////////////////////////////
         // DependencyNotificationBus
         void OnCompositionChanged() override;
+        void OnCompositionRegionChanged(const AZ::Aabb& dirtyRegion) override;
 
         ////////////////////////////////////////////////////////////////////////
         // EntityEvents
@@ -73,6 +74,7 @@ namespace LmbrCentral
         void OnAssetUnloaded(const AZ::Data::AssetId assetId, const AZ::Data::AssetType assetType) override;
 
         void SendNotification();
+        void SendNotification(const AZ::Aabb& dirtyRegion);
 
         AZ::EntityId m_ownerId;
         AZStd::atomic_bool m_notificationInProgress{false};

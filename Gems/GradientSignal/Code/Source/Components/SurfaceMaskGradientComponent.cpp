@@ -280,8 +280,11 @@ namespace GradientSignal
 
         if (changedTagAffectsGradient)
         {
+            AZ::Aabb expandedBounds(oldBounds);
+            expandedBounds.AddAabb(newBounds);
+
             LmbrCentral::DependencyNotificationBus::Event(
-                GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
+                GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionRegionChanged, expandedBounds);
         }
     }
 

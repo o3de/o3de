@@ -78,6 +78,11 @@ namespace LmbrCentral
         SendNotification();
     }
 
+    inline void DependencyMonitor::OnCompositionRegionChanged(const AZ::Aabb& dirtyRegion)
+    {
+        SendNotification(dirtyRegion);
+    }
+
     inline void DependencyMonitor::OnEntityActivated([[maybe_unused]] const AZ::EntityId& entityId)
     {
         SendNotification();
@@ -120,13 +125,25 @@ namespace LmbrCentral
 
     inline void DependencyMonitor::SendNotification()
     {
+        SendNotification(AZ::Aabb::CreateNull());
+    }
+
+    inline void DependencyMonitor::SendNotification(const AZ::Aabb& dirtyRegion)
+    {
         AZ_PROFILE_FUNCTION(Entity);
 
         //test if notification is in progress to prevent recursion in case of nested dependencies
         if (!m_notificationInProgress)
         {
             m_notificationInProgress = true;
-            DependencyNotificationBus::Event(m_ownerId, &DependencyNotificationBus::Events::OnCompositionChanged);
+            if (dirtyRegion.IsValid())
+            {
+                DependencyNotificationBus::Event(m_ownerId, &DependencyNotificationBus::Events::OnCompositionRegionChanged, dirtyRegion);
+            }
+            else
+            {
+                DependencyNotificationBus::Event(m_ownerId, &DependencyNotificationBus::Events::OnCompositionChanged);
+            }
             m_notificationInProgress = false;
         }
     }

@@ -205,9 +205,25 @@ namespace Terrain
 
     void TerrainSurfaceGradientListComponent::OnCompositionChanged()
     {
-        TerrainSystemServiceRequestBus::Broadcast(
-            &TerrainSystemServiceRequestBus::Events::RefreshArea, GetEntityId(),
-            AzFramework::Terrain::TerrainDataNotifications::SurfaceData);
+        OnCompositionRegionChanged(AZ::Aabb::CreateNull());
+    }
+
+    void TerrainSurfaceGradientListComponent::OnCompositionRegionChanged(const AZ::Aabb& dirtyRegion)
+    {
+        if (dirtyRegion.IsValid())
+        {
+            TerrainSystemServiceRequestBus::Broadcast(
+                &TerrainSystemServiceRequestBus::Events::RefreshRegion,
+                dirtyRegion,
+                AzFramework::Terrain::TerrainDataNotifications::SurfaceData);
+        }
+        else
+        {
+            TerrainSystemServiceRequestBus::Broadcast(
+                &TerrainSystemServiceRequestBus::Events::RefreshArea,
+                GetEntityId(),
+                AzFramework::Terrain::TerrainDataNotifications::SurfaceData);
+        }
     }
 
 } // namespace Terrain
