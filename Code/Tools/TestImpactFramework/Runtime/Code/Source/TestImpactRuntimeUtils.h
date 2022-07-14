@@ -38,8 +38,6 @@ namespace TestImpact
     //! Extracts the name information from the specified test targets.
     AZStd::vector<AZStd::string> ExtractTestTargetNames(const AZStd::vector<const TestTarget*>& testTargets);
 
-    AZStd::vector<AZStd::string> GetExcludedTestTargetsFromFile(const RepoPath& excludeFile);
-
     //! Generates the test suites from the specified test engine job information.
     //! @tparam TestJob The test engine job type.
     template<typename TestJob>
