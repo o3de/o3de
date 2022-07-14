@@ -547,7 +547,7 @@ def create_template(source_path: pathlib.Path,
     # if no template path, use default_templates_folder path
     if not template_path:
         logger.info(f'Template path empty. Using source name {source_name}')
-        template_path = source_name
+        template_path = pathlib.Path(source_name)
     # if the template_path is not an absolute path, then it default to relative from the default template folder
     if not template_path.is_absolute():
         default_templates_folder = manifest.get_registered(default_folder='templates')
@@ -610,28 +610,33 @@ def create_template(source_path: pathlib.Path,
     if not template_restricted_name:
         template_restricted_name = template_name
 
-    # if we have a template restricted path, it must either not exist yet or must be a restricted object already
-    if template_restricted_path:
-        if template_restricted_path.is_dir():
-            # see if this is already a restricted path, if it is get the "restricted_name" from the restricted json
-            # so we can set "restricted_name" to it for this template
-            restricted_json = template_restricted_path / 'restricted.json'
-            if not validation.valid_o3de_restricted_json(restricted_json):
-                logger.error(f'{restricted_json} is not valid.')
+    # if no template restricted path, use default_restricted_folder path
+    if not template_restricted_path:
+        logger.info(f'Template restricted path empty. Using template restricted name {template_restricted_name} in the default restricted folder')
+        default_restricted_folder = manifest.get_registered(default_folder='restricted')
+        template_restricted_path = default_restricted_folder / "Templates" / template_restricted_name
+
+    # template restricted path must either not exist yet or must be a restricted object already
+    if template_restricted_path.is_dir():
+        # see if this is already a restricted path, if it is get the "restricted_name" from the restricted json
+        # so we can set "restricted_name" to it for this template
+        restricted_json = template_restricted_path / 'restricted.json'
+        if not validation.valid_o3de_restricted_json(restricted_json):
+            logger.error(f'{restricted_json} is not valid.')
+            return 1
+        with open(restricted_json, 'r') as s:
+            try:
+                restricted_json_data = json.load(s)
+            except json.JSONDecodeError as e:
+                logger.error(f'Failed to load {restricted_json}: ' + str(e))
                 return 1
-            with open(restricted_json, 'r') as s:
-                try:
-                    restricted_json_data = json.load(s)
-                except json.JSONDecodeError as e:
-                    logger.error(f'Failed to load {restricted_json}: ' + str(e))
-                    return 1
-                try:
-                    template_restricted_name = restricted_json_data['restricted_name']
-                except KeyError as e:
-                    logger.error(f'Failed to read restricted_name from {restricted_json}')
-                    return 1
-        else:
-            os.makedirs(template_restricted_path, exist_ok=True)
+            try:
+                template_restricted_name = restricted_json_data['restricted_name']
+            except KeyError as e:
+                logger.error(f'Failed to read restricted_name from {restricted_json}')
+                return 1
+    else:
+        os.makedirs(template_restricted_path, exist_ok=True)
 
     # source restricted relative
     if not source_restricted_platform_relative_path:
