@@ -13,6 +13,7 @@
 #include "Util/WhiteBoxEditorDrawUtil.h"
 
 #include <AzCore/Math/Color.h>
+#include <AzCore/Math/Quaternion.h>
 #include <AzCore/std/base.h>
 #include <AzCore/std/optional.h>
 #include <AzFramework/Viewport/ViewportColors.h>
@@ -61,7 +62,7 @@ namespace WhiteBox
             m_transformClusterId,
             AzToolsFramework::ViewportUi::DefaultViewportId,
             &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::CreateCluster,
-            AzToolsFramework::ViewportUi::Alignment::TopRight);
+            AzToolsFramework::ViewportUi::Alignment::TopLeft);
         m_transformTranslateButtonId = RegisterClusterButton(m_transformClusterId, "Move");
         m_transformRotateButtonId = RegisterClusterButton(m_transformClusterId, "Rotate");
         m_transformScaleButtonId = RegisterClusterButton(m_transformClusterId, "Scale");
@@ -329,6 +330,7 @@ namespace WhiteBox
             m_whiteBoxSelection->m_vertexPositions = Api::VertexPositions(*mesh, m_whiteBoxSelection->m_vertexHandles);
             m_whiteBoxSelection->m_localPosition = Api::VertexPosition(*mesh, vertexSelection->GetHandle());
         }
+        m_whiteBoxSelection->m_localRotation = AZ::Quaternion::CreateIdentity();
     }
 
     void TransformMode::CreateTranslationManipulators()
@@ -444,7 +446,7 @@ namespace WhiteBox
                 for (const Api::VertexHandle& vertexHandle : transformSelection->m_vertexHandles)
                 {
                     const AZ::Vector3 vertexPosition =
-                        (action.LocalOrientation())
+                        (action.LocalOrientation() * transformSelection->m_localRotation.GetInverseFull())
                             .TransformVector(transformSelection->m_vertexPositions[vertexIndex++] - transformSelection->m_localPosition) +
                         transformSelection->m_localPosition;
                     Api::SetVertexPosition(*whiteBox, vertexHandle, vertexPosition);
@@ -474,11 +476,11 @@ namespace WhiteBox
                 mouseMoveHandlerFn(action);
 
                 transformSelection->m_vertexPositions = Api::VertexPositions(*whiteBox, transformSelection->m_vertexHandles);
+                transformSelection->m_localRotation = action.LocalOrientation();
                 if (auto manipulator = currentManipulator.lock())
                 {
-                    manipulator->SetLocalOrientation(AZ::Quaternion::CreateIdentity());
+                    manipulator->SetLocalOrientation(transformSelection->m_localRotation);
                 }
-
                 EditorWhiteBoxComponentRequestBus::Event(entityComponentIdPair, &EditorWhiteBoxComponentRequests::SerializeWhiteBox);
             });
 
