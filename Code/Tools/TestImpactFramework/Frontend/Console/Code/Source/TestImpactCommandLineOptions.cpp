@@ -114,14 +114,14 @@ namespace TestImpact
             return ParsePathOption(OptionKeys[SequenceReportKey], cmd);
         }
 
-        AZStd::optional<AZStd::vector<AZStd::string>> ParseExcludeTestsFile(const AZ::CommandLine& cmd)
+        AZStd::vector<AZStd::string> ParseExcludeTestsFile(const AZ::CommandLine& cmd)
         {
             AZStd::optional<RepoPath> excludeFilePath = ParsePathOption(OptionKeys[ExcludeTestsKey], cmd);
             if (excludeFilePath.has_value())
             {
                 return ParseExcludedTestTargetsFromFile(ReadFileContents<CommandLineOptionsException>(excludeFilePath.value()));
             }
-            return AZStd::nullopt;
+            return AZStd::vector<AZStd::string>();
         }
 
         TestSequenceType ParseTestSequenceType(const AZ::CommandLine& cmd)
@@ -312,9 +312,9 @@ namespace TestImpact
         m_suiteFilter = ParseSuiteFilter(cmd);
     }
 
-    bool CommandLineOptions::HasExcludeTestsFilePath() const
+    bool CommandLineOptions::HasExcludeTests() const
     {
-        return m_excludeTests.has_value();
+        return !m_excludeTests.empty();
     }
 
     bool CommandLineOptions::HasDataFilePath() const
@@ -352,7 +352,7 @@ namespace TestImpact
         return m_sequenceReportFile;
     }
 
-    const AZStd::optional<AZStd::vector<AZStd::string>>& CommandLineOptions::GetExcludeTests() const
+    const AZStd::vector<AZStd::string>& CommandLineOptions::GetExcludeTests() const
     {
         return m_excludeTests;
     }
