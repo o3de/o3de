@@ -11,7 +11,7 @@ from logging import getLogger
 from tiaf_tools import run
 import os
 import json
-
+from pathlib import Path
 logging = getLogger("tiaf_tools")
 
 class TestTIAFToolsLocal():
@@ -251,9 +251,9 @@ class TestTIAFToolsLocal():
 
             #then
             i = 0
-            for address in address_list:
+            addresses = Path.glob(Path(root_dir), "**/*.json")
+            for address in addresses:
                 absolute = str(address.absolute())
-                string = caplog.messages[i].split(",")[0]
                 assert absolute in caplog.messages[i]
                 i += 1
 
