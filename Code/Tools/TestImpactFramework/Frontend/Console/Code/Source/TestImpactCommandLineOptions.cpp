@@ -12,6 +12,7 @@
 #include <TestImpactCommandLineOptionsUtils.h>
 
 #include <AzCore/Settings/CommandLine.h>
+#include <AzCore/JSON/document.h>
 
 namespace TestImpact
 {
@@ -113,9 +114,15 @@ namespace TestImpact
             return ParsePathOption(OptionKeys[SequenceReportKey], cmd);
         }
 
-        AZStd::optional<RepoPath> ParseExcludeTestsFile(const AZ::CommandLine& cmd)
+        AZStd::optional<AZStd::vector<AZStd::string>> ParseExcludeTestsFile(const AZ::CommandLine& cmd)
         {
-            return ParsePathOption(OptionKeys[ExcludeTestsKey], cmd);
+            AZStd::optional<RepoPath> excludeFilePath = ParsePathOption(OptionKeys[ExcludeTestsKey], cmd);
+            if (excludeFilePath.has_value())
+            {
+                return ParseExcludedTestTargetsFromFile(ReadFileContents<CommandLineOptionsException>(excludeFilePath.value()));
+            }
+            return AZStd::nullopt;
+           
         }
 
         TestSequenceType ParseTestSequenceType(const AZ::CommandLine& cmd)
@@ -290,7 +297,7 @@ namespace TestImpact
         m_dataFile = ParseDataFile(cmd);
         m_changeListFile = ParseChangeListFile(cmd);
         m_sequenceReportFile = ParseSequenceReportFile(cmd);
-        m_excludeTestsFile = ParseExcludeTestsFile(cmd);
+        m_excludeTests = ParseExcludeTestsFile(cmd);
         m_testSequenceType = ParseTestSequenceType(cmd);
         m_testPrioritizationPolicy = ParseTestPrioritizationPolicy(cmd);
         m_executionFailurePolicy = ParseExecutionFailurePolicy(cmd);
@@ -308,7 +315,7 @@ namespace TestImpact
 
     bool CommandLineOptions::HasExcludeTestsFilePath() const
     {
-        return m_excludeTestsFile.has_value();
+        return m_excludeTests.has_value();
     }
 
     bool CommandLineOptions::HasDataFilePath() const
@@ -346,9 +353,9 @@ namespace TestImpact
         return m_sequenceReportFile;
     }
 
-    const AZStd::optional<RepoPath>& CommandLineOptions::GetExcludeTestsFilePath() const
+    const AZStd::optional<AZStd::vector<AZStd::string>>& CommandLineOptions::GetExcludeTests() const
     {
-        return m_excludeTestsFile;
+        return m_excludeTests;
     }
 
     const RepoPath& CommandLineOptions::GetConfigurationFilePath() const
@@ -415,7 +422,6 @@ namespace TestImpact
     {
         return m_suiteFilter;
     }
-
     AZStd::string CommandLineOptions::GetCommandLineUsageString()
     {
         AZStd::string help =
