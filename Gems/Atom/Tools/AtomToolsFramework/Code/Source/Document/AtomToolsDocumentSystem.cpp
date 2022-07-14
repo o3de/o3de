@@ -30,7 +30,7 @@ namespace AtomToolsFramework
 {
     void DisplayErrorMessage(QWidget* parent, const QString& title, const QString& text)
     {
-        AZ_Error("AtomToolsDocumentSystem", false, text.toUtf8().constData());
+        AZ_Error("AtomToolsDocumentSystem", false, "%s: %s", title.toUtf8().constData(), text.toUtf8().constData());
         if (GetSettingsValue<bool>("/O3DE/AtomToolsFramework/AtomToolsDocumentSystem/DisplayErrorMessageDialogs", true))
         {
             QMessageBox::critical(parent, title, text);
@@ -39,7 +39,7 @@ namespace AtomToolsFramework
 
     void DisplayWarningMessage(QWidget* parent, const QString& title, const QString& text)
     {
-        AZ_Warning("AtomToolsDocumentSystem", false, text.toUtf8().constData());
+        AZ_Warning("AtomToolsDocumentSystem", false, "%s: %s", title.toUtf8().constData(), text.toUtf8().constData());
         if (GetSettingsValue<bool>("/O3DE/AtomToolsFramework/AtomToolsDocumentSystem/DisplayWarningMessageDialogs", true))
         {
             QMessageBox::warning(parent, title, text);

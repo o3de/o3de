@@ -19,6 +19,7 @@
 #include <AzToolsFramework/Viewport/ActionBus.h>
 #include <Material/MaterialBrowserInteractions.h>
 #include <QPixmap>
+#include <AzCore/Component/TickBus.h>
 
 namespace AZ
 {
@@ -34,6 +35,7 @@ namespace AZ
             , public AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler
             , public AzToolsFramework::EditorMenuNotificationBus::Handler
             , public AzToolsFramework::EditorEvents::Bus::Handler
+            , public AZ::SystemTickBus::Handler
         {
         public:
             AZ_COMPONENT(EditorMaterialSystemComponent, "{96652157-DA0B-420F-B49C-0207C585144C}");
@@ -65,8 +67,11 @@ namespace AZ
             // AZ::EntitySystemBus::Handler overrides...
             void OnEntityDeactivated(const AZ::EntityId& entityId) override;
 
+            //! AZ::SystemTickBus::Handler interface overrides...
+            void OnSystemTick() override;
+
             //! EditorMaterialSystemComponentNotificationBus::Handler overrides...
-            void OnRenderMaterialPreviewComplete(
+            void OnRenderMaterialPreviewRendered(
                 const AZ::EntityId& entityId, const AZ::Render::MaterialAssignmentId& materialAssignmentId, const QPixmap& pixmap) override;
 
             //! MaterialComponentNotificationBus::Router overrides...
@@ -86,6 +91,7 @@ namespace AZ
 
             QAction* m_openMaterialEditorAction = nullptr;
             AZStd::unique_ptr<MaterialBrowserInteractions> m_materialBrowserInteractions;
+            AZStd::unordered_set<AZStd::pair<AZ::EntityId, AZ::Render::MaterialAssignmentId>> m_materialPreviewRequests;
             AZStd::unordered_map<AZ::EntityId, AZStd::unordered_map<AZ::Render::MaterialAssignmentId, QPixmap>> m_materialPreviews;
             static constexpr const size_t MaterialPreviewLimit = 100;
             static constexpr const int MaterialPreviewResolution = 128;

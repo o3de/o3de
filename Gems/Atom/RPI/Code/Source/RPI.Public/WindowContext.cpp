@@ -176,7 +176,7 @@ namespace AZ
             descriptor.m_verticalSyncInterval = syncInterval;
             descriptor.m_dimensions.m_imageWidth = width;
             descriptor.m_dimensions.m_imageHeight = height;
-            descriptor.m_dimensions.m_imageCount = AZ::RHI::Limits::Device::FrameCountMax;
+            descriptor.m_dimensions.m_imageCount = AZStd::max(RHI::SwapChain::MinSwapChainImages, RHI::Limits::Device::FrameCountMax);
             descriptor.m_dimensions.m_imageFormat = GetSwapChainFormat(device);
 
             AZStd::string attachmentName = AZStd::string::format("WindowContextAttachment_%p", m_windowHandle);

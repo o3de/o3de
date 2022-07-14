@@ -692,7 +692,7 @@ namespace AzFramework
         {
             AZ::Data::AssetInfo assetInfo = GetAssetInfoById(assetId);
 
-            AZ::TickBus::QueueFunction([assetId, assetInfo = AZStd::move(assetInfo)]()
+            AZ::SystemTickBus::QueueFunction([assetId, assetInfo = AZStd::move(assetInfo)]()
             {
                 AzFramework::AssetCatalogEventBus::Broadcast(&AzFramework::AssetCatalogEventBus::Events::OnCatalogAssetRemoved, assetId, assetInfo);
             });
@@ -855,7 +855,7 @@ namespace AzFramework
             if (!isNewAsset)
             {
                 // the following deliveries must happen on the main thread of the application:
-                AZ::TickBus::QueueFunction([assetId]() 
+                AZ::SystemTickBus::QueueFunction([assetId]() 
                 {
                     AzFramework::AssetCatalogEventBus::Broadcast(&AzFramework::AssetCatalogEventBus::Events::OnCatalogAssetChanged, assetId);
                 });
@@ -863,7 +863,7 @@ namespace AzFramework
                 // in case someone has an ancient reference, notify on that too.
                 for (const auto& mapping : message.m_legacyAssetIds)
                 {
-                    AZ::TickBus::QueueFunction([mapping]()
+                    AZ::SystemTickBus::QueueFunction([mapping]()
                     {
                         AzFramework::AssetCatalogEventBus::Broadcast(&AzFramework::AssetCatalogEventBus::Events::OnCatalogAssetChanged, mapping);
                     });
@@ -872,13 +872,13 @@ namespace AzFramework
             }
             else
             {
-                AZ::TickBus::QueueFunction([assetId]()
+                AZ::SystemTickBus::QueueFunction([assetId]()
                 {
                     AzFramework::AssetCatalogEventBus::Broadcast(&AzFramework::AssetCatalogEventBus::Events::OnCatalogAssetAdded, assetId);
                 });
                 for (const auto& mapping : message.m_legacyAssetIds)
                 {
-                    AZ::TickBus::QueueFunction([mapping]()
+                    AZ::SystemTickBus::QueueFunction([mapping]()
                     {
                         AzFramework::AssetCatalogEventBus::Broadcast(&AzFramework::AssetCatalogEventBus::Events::OnCatalogAssetAdded, mapping);
                     });
@@ -889,7 +889,7 @@ namespace AzFramework
             
             if (AZ::Data::AssetManager::IsReady())
             {
-                AZ::TickBus::QueueFunction([assetId]()
+                AZ::SystemTickBus::QueueFunction([assetId]()
                 {
                     AZ::Data::AssetManager::Instance().ReloadAsset(assetId, AZ::Data::AssetLoadBehavior::Default, true);
                 });
