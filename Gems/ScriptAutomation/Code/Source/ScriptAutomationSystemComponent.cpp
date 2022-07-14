@@ -32,10 +32,8 @@ namespace ScriptAutomation
     {
         AZ::Data::Asset<AZ::ScriptAsset> LoadScriptAssetFromPath(const char* productPath, AZ::ScriptContext& context)
         {
-            AZ_Printf("ScriptAutomation", "LoadScriptAssetFromPath %s", productPath);
             AZ::IO::FixedMaxPath resolvedPath;
             AZ::IO::FileIOBase::GetInstance()->ResolvePath(resolvedPath, productPath);
-            AZ_Printf("ScriptAutomation", "LoadScriptAssetFromPath Resolved path = %s", resolvedPath.c_str());
 
             AZ::IO::FileIOStream inputStream;
             if (inputStream.Open(resolvedPath.c_str(), AZ::IO::OpenMode::ModeRead))

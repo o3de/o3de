@@ -9,7 +9,7 @@
 --
 ----------------------------------------------------------------------------------------------------
 -- optional settings
-local AssetLoadCountRegistryKey <const> = "/O3DE/ScriptAutomation/FrameTime/AssetLoadCount"
+local AssetLoadFrameIdleCountRegistryKey <const> = "/O3DE/ScriptAutomation/FrameTime/AssetFrameIdleCount"
 local FrameIdleCountRegistryKey <const> = "/O3DE/ScriptAutomation/FrameTime/IdleCount"
 local FrameCaptureCountRegistryKey <const> = "/O3DE/ScriptAutomation/FrameTime/CaptureCount"
 local ViewportWidthRegistryKey <const> = "/O3DE/ScriptAutomation/FrameTime/ViewportWidth"
@@ -38,7 +38,7 @@ g_profileOutputFolder = GetProfilingOutputPath(true) .. "/" .. tostring(profileN
 Print('Saving screenshots to ' .. NormalizePath(g_profileOutputFolder))
 
 -- read optional SettingsRegistry values
-local assetLoadIdleFrameCount = SettingsRegistryGetUInt(AssetLoadCountRegistryKey):value_or(DEFAULT_ASSET_LOAD_FRAME_WAIT_COUNT)
+local assetLoadIdleFrameCount = SettingsRegistryGetUInt(AssetLoadFrameIdleCountRegistryKey):value_or(DEFAULT_ASSET_LOAD_FRAME_WAIT_COUNT)
 local frameIdleCount = SettingsRegistryGetUInt(FrameIdleCountRegistryKey):value_or(DEFAULT_IDLE_COUNT)
 local frameCaptureCount = SettingsRegistryGetUInt(FrameCaptureCountRegistryKey):value_or(DEFAULT_FRAME_COUNT)
 local viewportWidth = SettingsRegistryGetUInt(ViewportWidthRegistryKey):value_or(DEFAULT_VIEWPORT_WIDTH)
@@ -47,9 +47,9 @@ local viewportHeight = SettingsRegistryGetUInt(ViewportHeightRegistryKey):value_
 
 -- Begin script execution
 ResizeViewport(viewportWidth, viewportHeight)
+ExecuteConsoleCommand("r_displayInfo=0")
 
 IdleFrames(assetLoadIdleFrameCount) -- wait for assets to load into the level
-ExecuteConsoleCommand("r_displayInfo=0")
 
 CaptureBenchmarkMetadata(tostring(profileName), g_profileOutputFolder .. '/benchmark_metadata.json')
 Print('Idling for ' .. tostring(frameIdleCount) .. ' frames..')
