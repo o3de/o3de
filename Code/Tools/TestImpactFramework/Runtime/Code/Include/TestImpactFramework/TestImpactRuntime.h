@@ -96,7 +96,7 @@ namespace TestImpact
         Runtime(
             RuntimeConfig&& config,
             AZStd::optional<RepoPath> dataFile,
-            AZStd::optional<AZStd::vector<AZStd::string>> testsToExclude,
+            AZStd::vector<AZStd::string> testsToExclude,
             SuiteType suiteFilter,
             Policy::ExecutionFailure executionFailurePolicy,
             Policy::FailedTestCoverage failedTestCoveragePolicy,

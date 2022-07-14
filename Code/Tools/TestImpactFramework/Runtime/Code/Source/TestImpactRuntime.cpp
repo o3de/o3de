@@ -244,7 +244,7 @@ namespace TestImpact
     Runtime::Runtime(
         RuntimeConfig&& config,
         AZStd::optional<RepoPath> dataFile,
-        AZStd::optional<AZStd::vector<AZStd::string>> testsToExclude,
+        AZStd::vector<AZStd::string> testsToExclude,
         SuiteType suiteFilter,
         Policy::ExecutionFailure executionFailurePolicy,
         Policy::FailedTestCoverage failedTestCoveragePolicy,
@@ -272,10 +272,10 @@ namespace TestImpact
         // Construct the target exclude list from the exclude file if provided, otherwise use target configuration data
 
 
-        if (testsToExclude.has_value())
+        if (!testsToExclude.empty())
         {
             m_testTargetExcludeList = ConstructTestTargetExcludeList(
-                m_dynamicDependencyMap->GetTestTargetList(), testsToExclude.value());
+                m_dynamicDependencyMap->GetTestTargetList(), testsToExclude);
         }
         else
         {
