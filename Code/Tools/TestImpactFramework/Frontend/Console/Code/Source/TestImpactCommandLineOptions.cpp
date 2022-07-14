@@ -122,7 +122,6 @@ namespace TestImpact
                 return ParseExcludedTestTargetsFromFile(ReadFileContents<CommandLineOptionsException>(excludeFilePath.value()));
             }
             return AZStd::nullopt;
-           
         }
 
         TestSequenceType ParseTestSequenceType(const AZ::CommandLine& cmd)
