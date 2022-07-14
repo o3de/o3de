@@ -12,6 +12,7 @@
 #include "EditorWhiteBoxComponentModeTypes.h"
 #include "Viewport/WhiteBoxManipulatorViews.h"
 
+#include <AzCore/Math/Quaternion.h>
 #include <AzCore/std/containers/span.h>
 #include <AzCore/std/containers/variant.h>
 #include <AzCore/std/containers/vector.h>
@@ -87,6 +88,7 @@ namespace WhiteBox
         struct VertexTransformSelection
         {
             AZ::Vector3 m_localPosition = AZ::Vector3::CreateZero();
+            AZ::Quaternion m_localRotation = AZ::Quaternion::CreateIdentity();
             AZStd::vector<AZ::Vector3> m_vertexPositions;
             Api::VertexHandles m_vertexHandles;
             IntersectionSelection m_selection;
