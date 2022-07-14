@@ -581,7 +581,7 @@ namespace ScriptCanvas
                     {
                         if (AZ::FindAttribute(AZ::ScriptCanvasAttributes::DeactivatesInputEntity, behaviorMethod->m_attributes))
                         {
-                            if (execution->GetInputCount() == 1 && !execution->GetInput(0).m_slot->IsConnected() && IsInputSelf(execution, 0))
+                            if (execution->GetInputCount() == 1 && !execution->GetInput(0).m_slot->IsConnected() && IsSelfInput(execution, 0))
                             {
                                 return true;
                             }
@@ -766,16 +766,6 @@ namespace ScriptCanvas
             }
 
             return IsInLoop(parent);
-        }
-
-        bool IsInputSelf(const ExecutionInput& input)
-        {
-           return IsSelf(input.m_value);
-        }
-
-        bool IsInputSelf(const ExecutionTreeConstPtr& execution, size_t index)
-        {
-            return execution->GetInputCount() > index && IsInputSelf(execution->GetInput(index));
         }
 
         bool IsIsNull(const ExecutionTreeConstPtr& execution)
@@ -1049,6 +1039,21 @@ namespace ScriptCanvas
                     || (variable->m_datum.GetAs<Data::EntityIDType>()
                         && *variable->m_datum.GetAs<Data::EntityIDType>() == GraphOwnerId
                         && !variable->m_isExposedToConstruction));
+        }
+
+        bool IsSelfInput(const ExecutionInput& input)
+        {
+            return IsSelf(input.m_value);
+        }
+
+        bool IsSelfInput(const ExecutionTreeConstPtr& execution, size_t index)
+        {
+            return execution->GetInputCount() > index && IsSelfInput(execution->GetInput(index));
+        }
+
+        bool IsSelfReturnValue(ReturnValueConstPtr returnValue)
+        {
+            return IsSelf(returnValue->m_source);
         }
 
         bool IsSequenceNode(const Node* node)
