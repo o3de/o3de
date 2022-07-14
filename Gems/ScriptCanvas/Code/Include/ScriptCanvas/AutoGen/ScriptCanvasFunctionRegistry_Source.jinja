@@ -67,12 +67,12 @@ namespace ScriptCanvas
 {
     {{autogenTargetName}}FunctionRegistry::{{autogenTargetName}}FunctionRegistry()
     {
-        ScriptCanvas::AutoGenRegistry::GetInstance()->RegisterFunction(GetRegistryName(), this);
+        ScriptCanvas::AutoGenRegistryManager::GetInstance()->RegisterRegistry(GetRegistryName(), this);
     }
 
     {{autogenTargetName}}FunctionRegistry::~{{autogenTargetName}}FunctionRegistry()
     {
-        ScriptCanvas::AutoGenRegistry::GetInstance()->UnregisterFunction(GetRegistryName());
+        ScriptCanvas::AutoGenRegistryManager::GetInstance()->UnregisterRegistry(GetRegistryName());
     }
 
     const char* {{autogenTargetName}}FunctionRegistry::GetRegistryName() {

@@ -313,9 +313,10 @@ namespace AZ
             m_passTree.ProcessQueuedChanges();
         }
 
-        void RenderPipeline::OnPassModified()
+        void RenderPipeline::UpdatePasses()
         {
-            if (m_needsPassRecreate)
+            // Rebuild Pipeline if needed, for example if passes where hot reloaded
+            if (PipelineNeedsRebuild(m_pipelinePassChanges))
             {
                 // Process any queued changes before we attempt to reload the pipeline
                 m_passTree.ProcessQueuedChanges();
@@ -342,8 +343,6 @@ namespace AZ
                     // Re-Apply render pipeline change
                     m_wasModifiedByScene = false;
                     m_scene->TryApplyRenderPipelineChanges(this);
-
-                    m_wasPassModified = true;
                 }
                 else
                 {
@@ -354,19 +353,34 @@ namespace AZ
                     newRoot->DebugPrint();
 #endif
                 }
-                m_needsPassRecreate = false;
             }
 
-            if (m_wasPassModified)
+            // Build and initialize any queued passes
+            m_passTree.ProcessQueuedChanges();
+
+            if (m_pipelinePassChanges != PipelinePassChanges::NoPassChanges)
             {
                 m_passTree.m_rootPass->SetRenderPipeline(this);
-                BuildPipelineViews();
-                m_wasPassModified = false;
+
+                // Pipeline views
+                if (PipelineViewsNeedRebuild(m_pipelinePassChanges))
+                {
+                    BuildPipelineViews();
+                }
+
                 if (m_scene)
                 {
                     SceneNotificationBus::Event(m_scene->GetId(), &SceneNotification::OnRenderPipelinePassesChanged, this);
-                    SceneRequestBus::Event(m_scene->GetId(), &SceneRequest::PipelineStateLookupNeedsRebuild);
+
+                    // Pipeline state lookup
+                    if (PipelineStateLookupNeedsRebuild(m_pipelinePassChanges))
+                    {
+                        SceneRequestBus::Event(m_scene->GetId(), &SceneRequest::PipelineStateLookupNeedsRebuild);
+                    }
                 }
+
+                // Reset change flags
+                m_pipelinePassChanges = PipelinePassChanges::NoPassChanges;
             }
         }
 
@@ -390,7 +404,7 @@ namespace AZ
         {
             AZ_PROFILE_SCOPE(RPI, "RenderPipeline: OnStartFrame");
 
-            OnPassModified();
+            UpdatePasses();
 
             for (auto& viewItr : m_pipelineViewsByTag)
             {
@@ -505,14 +519,9 @@ namespace AZ
             return m_passTree.m_rootPass;
         }
 
-        void RenderPipeline::SetPassModified()
+        void RenderPipeline::MarkPipelinePassChanges(u32 passChangeFlags)
         {
-            m_wasPassModified = true;
-        }
-
-        void RenderPipeline::SetPassNeedsRecreate()
-        {
-            m_needsPassRecreate = true;
+            m_pipelinePassChanges |= passChangeFlags;
         }
 
         Scene* RenderPipeline::GetScene() const

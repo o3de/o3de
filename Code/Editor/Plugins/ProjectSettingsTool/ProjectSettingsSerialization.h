@@ -45,16 +45,16 @@ namespace ProjectSettingsTool
     protected:
         bool UiEqualToJson(rapidjson::Value* root, AzToolsFramework::InstanceDataNode* node) const;
         bool UiEqualToPlist(AzToolsFramework::InstanceDataNode* node) const;
-        bool UiEqualToPlistArray(AZ::rapidxml::xml_node<char>* array, AzToolsFramework::InstanceDataNode* node) const;
+        bool UiEqualToPlistArray(XmlNode* array, AzToolsFramework::InstanceDataNode* node) const;
         bool UiEqualToPlistImages(AzToolsFramework::InstanceDataNode* node) const;
         void LoadFromSettings(rapidjson::Value* root, AzToolsFramework::InstanceDataNode* node);
         void LoadFromSettings(AzToolsFramework::InstanceDataNode* node);
-        void LoadOrientations(AZ::rapidxml::xml_node<char>* array, AzToolsFramework::InstanceDataNode* node);
+        void LoadOrientations(XmlNode* array, AzToolsFramework::InstanceDataNode* node);
         void SetDefaults(AzToolsFramework::InstanceDataNode& node, const AZ::Uuid& type);
         void SetClassToDefaults(AzToolsFramework::InstanceDataNode* node);
         void SaveToSettings(rapidjson::Value* root, AzToolsFramework::InstanceDataNode* node);
         void SaveToSettings(AzToolsFramework::InstanceDataNode* node);
-        bool SaveOrientations(AZ::rapidxml::xml_node<char>* array, AzToolsFramework::InstanceDataNode* node);
+        bool SaveOrientations(XmlNode* array, AzToolsFramework::InstanceDataNode* node);
         void OverwriteImages(AzToolsFramework::InstanceDataNode* node);
 
         // The RPE root relative to the document's root

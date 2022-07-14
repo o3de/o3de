@@ -7,6 +7,7 @@
  */
 #pragma once
 
+#include <Atom/RHI/CommandList.h>
 #include <Atom/RHI.Reflect/AttachmentId.h>
 #include <Atom/RHI.Reflect/ScopeId.h>
 
@@ -15,7 +16,6 @@ namespace AZ
     namespace RHI
     {
         class FrameGraph;
-        class CommandList;
 
         /**
          * FrameGraphExecuteContext provides a scope-local context for accessing a command list. FrameGraphExecuteContext maps
@@ -33,21 +33,25 @@ namespace AZ
                 uint32_t m_commandListIndex = 0;
                 uint32_t m_commandListCount = 0;
                 CommandList* m_commandList = nullptr;
+                CommandList::SubmitRange m_submitRange;
             };
 
             FrameGraphExecuteContext(const Descriptor& descriptor);
 
             /// Returns the scope id associated with this context.
-            const ScopeId& GetScopeId() const;
+            const ScopeId& GetScopeId() const { return m_descriptor.m_scopeId; }
 
             /// Returns the index of the command list in the batch.
-            uint32_t GetCommandListIndex() const;
+            uint32_t GetCommandListIndex() const { return m_descriptor.m_commandListIndex; }
 
             /// Returns the total number of command lists in the batch.
-            uint32_t GetCommandListCount() const;
+            uint32_t GetCommandListCount() const { return m_descriptor.m_commandListCount; }
 
             /// Returns the command list associated with the index in the batch.
-            CommandList* GetCommandList() const;
+            CommandList* GetCommandList() const { return m_descriptor.m_commandList; }
+
+            /// Returns the submit range for this context.
+            const CommandList::SubmitRange& GetSubmitRange() const { return m_descriptor.m_submitRange; }
             //////////////////////////////////////////////////////////////////////////
 
             /**

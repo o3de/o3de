@@ -24,7 +24,7 @@ namespace AZ
             : MaterialComponentRequestBus::Handler
             , MaterialReceiverNotificationBus::Handler
             , Data::AssetBus::MultiHandler
-            , TickBus::Handler
+            , SystemTickBus::Handler
         {
         public:
             friend class EditorMaterialComponent;
@@ -89,8 +89,8 @@ namespace AZ
             void OnAssetReady(Data::Asset<Data::AssetData> asset) override;
             void OnAssetReloaded(Data::Asset<Data::AssetData> asset) override;
 
-            // AZ::TickBus overrides...
-            void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
+            // AZ::SystemTickBus overrides...
+            void OnSystemTick() override;
 
             void LoadMaterials();
             void InitializeMaterialInstance(const Data::Asset<Data::AssetData>& asset);

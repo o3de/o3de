@@ -650,7 +650,7 @@ namespace RecastNavigationTests
         EXPECT_EQ(strcmp(test.TYPEINFO_Name(), "RecastNavigationPhysXProviderComponentController"), 0);
     }
 
-    TEST_F(NavigationTest, AsyncOnNavigationMeshUpdatedIsCalled)
+    TEST_F(NavigationTest, DISABLED_AsyncOnNavigationMeshUpdatedIsCalled)
     {
         Entity e;
         PopulateEntity(e);
@@ -668,7 +668,7 @@ namespace RecastNavigationTests
         wait.BlockUntilCalled();
     }
 
-    TEST_F(NavigationTest, AsyncDeactivateRightAfterCallingUpdate)
+    TEST_F(NavigationTest, DISABLED_AsyncDeactivateRightAfterCallingUpdate)
     {
         Entity e;
         PopulateEntity(e);
@@ -692,7 +692,7 @@ namespace RecastNavigationTests
          */
     }
 
-    TEST_F(NavigationTest, AsyncEmpty)
+    TEST_F(NavigationTest, DISABLED_AsyncEmpty)
     {
         Entity e;
         PopulateEntity(e);
@@ -726,7 +726,7 @@ namespace RecastNavigationTests
         }
     }
 
-    TEST_F(NavigationTest, AsyncSecondWhileFirstIsInProgress)
+    TEST_F(NavigationTest, DISABLED_AsyncSecondWhileFirstIsInProgress)
     {
         Entity e;
         PopulateEntity(e);
@@ -747,7 +747,7 @@ namespace RecastNavigationTests
         EXPECT_EQ(wait.m_updatedCalls, 1);
     }
 
-    TEST_F(NavigationTest, AsyncManyUpdatesWhileFirstIsInProgressStressTest)
+    TEST_F(NavigationTest, DISABLED_AsyncManyUpdatesWhileFirstIsInProgressStressTest)
     {
         Entity e;
         PopulateEntity(e);
@@ -772,7 +772,7 @@ namespace RecastNavigationTests
         EXPECT_EQ(wait.m_updatedCalls, 1);
     }
 
-    TEST_F(NavigationTest, BlockingCallAfterAsync)
+    TEST_F(NavigationTest, DISABLED_BlockingCallAfterAsync)
     {
         Entity e;
         PopulateEntity(e);
@@ -795,7 +795,7 @@ namespace RecastNavigationTests
         EXPECT_EQ(wait.m_updatedCalls, 1);
     }
 
-    TEST_F(NavigationTest, BlockingCallAfterAsyncReturnsFalse)
+    TEST_F(NavigationTest, DISABLED_BlockingCallAfterAsyncReturnsFalse)
     {
         Entity e;
         PopulateEntity(e);
@@ -818,7 +818,7 @@ namespace RecastNavigationTests
         wait.BlockUntilCalled();
     }
 
-    TEST_F(NavigationTest, FindPathRightAfterUpdateAsync)
+    TEST_F(NavigationTest, DISABLED_FindPathRightAfterUpdateAsync)
     {
         Entity e;
         PopulateEntity(e);

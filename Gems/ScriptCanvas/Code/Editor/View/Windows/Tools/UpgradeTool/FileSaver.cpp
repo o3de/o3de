@@ -89,6 +89,7 @@ namespace ScriptCanvasEditor
                     AZ::SystemTickBus::QueueFunction([this, tmpFileName]()
                         {
                             FileSaveResult result;
+                            result.absolutePath = m_fullPath;
                             result.tempFileRemovalError = RemoveTempFile(tmpFileName);
                             m_onComplete(result);
                         });
@@ -191,20 +192,13 @@ namespace ScriptCanvasEditor
             return "";
         }
 
-        void FileSaver::Save(const SourceHandle& source)
+        void FileSaver::Save(const SourceHandle& source, const AZ::IO::Path& absolutePath)
         {
+            m_fullPath.clear();
             m_source = source;
-            auto fullPathOptional = GetFullPath(source);
-            if (fullPathOptional)
-            {
-                m_fullPath = *fullPathOptional;
-            }
-            else
-            {
-                m_fullPath.clear();
-            }
+            m_fullPath = absolutePath;
 
-            if (source.Path().empty())
+            if (m_fullPath.empty())
             {
                 FileSaveResult result;
                 result.fileSaveError = "No save location specified";

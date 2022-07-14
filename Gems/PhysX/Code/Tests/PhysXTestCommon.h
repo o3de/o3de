@@ -113,6 +113,8 @@ namespace PhysX
 
         // Mesh data generation
         PointList GeneratePyramidPoints(float length);
+        AZStd::shared_ptr<Physics::Shape> CreatePyramidShape(
+            float length, const Physics::ColliderConfiguration& colliderConfiguration = Physics::ColliderConfiguration());
         VertexIndexData GenerateCubeMeshData(float halfExtent);
 
         AzPhysics::StaticRigidBody* AddStaticFloorToScene(AzPhysics::SceneHandle sceneHandle,

@@ -251,14 +251,14 @@ namespace AssetProcessor
 
             rec.m_name = "random files";
             rec.m_patternMatcher = AssetBuilderSDK::FilePatternMatcher("*.random", AssetBuilderSDK::AssetBuilderPattern::Wildcard);
-            rec.m_platformSpecs.insert("pc", AssetInternalSpec::Copy);
+            rec.m_platformSpecs.insert({"pc", AssetInternalSpec::Copy});
             config.AddRecognizer(rec);
 
             const char* builderTxt1Name = "txt files";
             rec.m_name = builderTxt1Name;
             rec.m_patternMatcher = AssetBuilderSDK::FilePatternMatcher("*.txt", AssetBuilderSDK::AssetBuilderPattern::Wildcard);
-            rec.m_platformSpecs.insert("pc", AssetInternalSpec::Copy);
-            rec.m_platformSpecs.insert("android", AssetInternalSpec::Copy);
+            rec.m_platformSpecs.insert({"pc", AssetInternalSpec::Copy});
+            rec.m_platformSpecs.insert({"android", AssetInternalSpec::Copy});
 
             config.AddRecognizer(rec);
 
@@ -266,8 +266,8 @@ namespace AssetProcessor
             AssetRecognizer ignore_rec;
             ignore_rec.m_name = "ignore files";
             ignore_rec.m_patternMatcher = AssetBuilderSDK::FilePatternMatcher("*.ignore", AssetBuilderSDK::AssetBuilderPattern::Wildcard);
-            ignore_rec.m_platformSpecs.insert("pc", AssetInternalSpec::Copy);
-            ignore_rec.m_platformSpecs.insert("android", AssetInternalSpec::Skip);
+            ignore_rec.m_platformSpecs.insert({"pc", AssetInternalSpec::Copy});
+            ignore_rec.m_platformSpecs.insert({"android", AssetInternalSpec::Skip});
             config.AddRecognizer(ignore_rec);
 
             ExcludeAssetRecognizer excludeRecogniser;

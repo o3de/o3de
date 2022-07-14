@@ -43,7 +43,7 @@ namespace AzToolsFramework
     void EditorToolBar::AddActionWithSubMenu(int sortKey, AZStd::string actionIdentifier, const AZStd::string& subMenuIdentifier)
     {
         if (QAction* action = m_actionManagerInternalInterface->GetAction(actionIdentifier);
-            QMenu* subMenu = m_menuManagerInterface->GetMenu(subMenuIdentifier))
+            QMenu* subMenu = m_menuManagerInternalInterface->GetMenu(subMenuIdentifier))
         {
             QToolButton* toolButton = new QToolButton(m_toolBar);
             
@@ -179,6 +179,9 @@ namespace AzToolsFramework
 
         m_menuManagerInterface = AZ::Interface<MenuManagerInterface>::Get();
         AZ_Assert(m_menuManagerInterface, "EditorToolBar - Could not retrieve instance of MenuManagerInterface");
+
+        m_menuManagerInternalInterface = AZ::Interface<MenuManagerInternalInterface>::Get();
+        AZ_Assert(m_menuManagerInternalInterface, "EditorToolBar - Could not retrieve instance of MenuManagerInternalInterface");
 
         m_toolBarManagerInterface = AZ::Interface<ToolBarManagerInterface>::Get();
         AZ_Assert(m_toolBarManagerInterface, "EditorToolBar - Could not retrieve instance of ToolBarManagerInterface");

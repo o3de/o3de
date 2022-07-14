@@ -507,7 +507,7 @@ TEST_F(PlatformConfigurationUnitTests, ReadCheckServer_FromConfig_Valid)
 
     // verify that check server flag is set to true for i_caf
     ASSERT_TRUE(recogs.contains("i_caf"));
-    ASSERT_TRUE(recogs["i_caf"].m_checkServer);
+    ASSERT_TRUE(recogs.at("i_caf").m_checkServer);
 }
 
 TEST_F(PlatformConfigurationUnitTests, PlatformConfigFile_IsPresent_Found)

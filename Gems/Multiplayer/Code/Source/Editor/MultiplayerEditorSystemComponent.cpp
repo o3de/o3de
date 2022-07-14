@@ -25,7 +25,7 @@
 #include <Atom/RPI.Public/RPISystemInterface.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
-#include <Multiplayer/IMultiplayerEditorConnectionViewportMessage.h>
+#include <Multiplayer/IMultiplayerConnectionViewportMessage.h>
 namespace Multiplayer
 {
     using namespace AzNetworking;
@@ -171,14 +171,11 @@ namespace Multiplayer
             if (m_serverProcessWatcher)
             {
                 m_serverProcessWatcher->TerminateProcess(0);
-                if (m_serverProcessTracePrinter)
-                {
-                    m_serverProcessTracePrinter->Pump();
-                    m_serverProcessTracePrinter->WriteCurrentString(true);
-                    m_serverProcessTracePrinter->WriteCurrentString(false);
-                }
-                m_serverProcessWatcher = nullptr;
+
+                // The TracePrinter hangs onto a pointer to an object that is owned by
+                // the ProcessWatcher.  Make sure to destroy the TracePrinter first, before ProcessWatcher.
                 m_serverProcessTracePrinter = nullptr;
+                m_serverProcessWatcher = nullptr;
             }
 
             const AZ::Name editorInterfaceName = AZ::Name(MpEditorInterfaceName);
@@ -200,6 +197,9 @@ namespace Multiplayer
 
             // Delete the spawnables we've stored for the server
             m_preAliasedSpawnablesForServer.clear();
+
+            // Turn off debug messaging: we've exiting playmode and intentionally disconnected from the server. 
+            AZ::Interface<IMultiplayerConnectionViewportMessage>::Get()->StopCenterViewportDebugMessaging();
             break;
         }
     }
@@ -287,7 +287,7 @@ namespace Multiplayer
 
         if (outProcess)
         {
-            AZ::Interface<IMultiplayerEditorConnectionViewportMessage>::Get()->DisplayMessage("(1/3) Launching server...");
+            AZ::Interface<IMultiplayerConnectionViewportMessage>::Get()->DisplayCenterViewportMessage("(1/3) Launching server...");
 
             // Stop the previous server if one exists
             if (m_serverProcessWatcher)
@@ -302,7 +302,7 @@ namespace Multiplayer
         else
         {
             const char* fail_message = "LaunchEditorServer failed! Unable to create AzFramework::ProcessWatcher.";
-            AZ::Interface<IMultiplayerEditorConnectionViewportMessage>::Get()->DisplayMessage(fail_message);
+            AZ::Interface<IMultiplayerConnectionViewportMessage>::Get()->DisplayCenterViewportMessage(fail_message);
             AZ_Error("MultiplayerEditor", outProcess, fail_message);
             return false;
         }
@@ -329,7 +329,7 @@ namespace Multiplayer
         }
         
         AZStd::string sending_leveldata_message = "Editor is sending the editor-server the level data packet.";
-        AZ::Interface<IMultiplayerEditorConnectionViewportMessage>::Get()->DisplayMessage(("(3/3) " + sending_leveldata_message).c_str());
+        AZ::Interface<IMultiplayerConnectionViewportMessage>::Get()->DisplayCenterViewportMessage(("(3/3) " + sending_leveldata_message).c_str());
         AZ_Printf("MultiplayerEditor", sending_leveldata_message.c_str())
 
 
@@ -411,7 +411,7 @@ namespace Multiplayer
 
         char message[64];
         azsnprintf(message, 64, "(2/3) Editor tcp connection attempt #%i.", m_connectionAttempts);
-        AZ::Interface<IMultiplayerEditorConnectionViewportMessage>::Get()->DisplayMessage(message);
+        AZ::Interface<IMultiplayerConnectionViewportMessage>::Get()->DisplayCenterViewportMessage(message);
         AZ_Printf("MultiplayerEditor", message)
 
         const AZ::Name editorInterfaceName = AZ::Name(MpEditorInterfaceName);
@@ -492,7 +492,7 @@ namespace Multiplayer
             // Launch the editor-server
             if (!LaunchEditorServer())
             {
-                AZ::Interface<IMultiplayerEditorConnectionViewportMessage>::Get()->DisplayMessage("(1/3) Could not launch editor server.\nSee console for more info.");
+                AZ::Interface<IMultiplayerConnectionViewportMessage>::Get()->DisplayCenterViewportMessage("(1/3) Could not launch editor server.\nSee console for more info.");
                 return;
             }
         }

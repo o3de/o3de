@@ -84,21 +84,6 @@ namespace AssetUtilities
     //! Updates the branch token in the bootstrap file
     bool UpdateBranchToken();
 
-    //! Checks to see if the asset processor is running in server mode
-    bool InServerMode();
-
-    //! Clears the server flag
-    void ResetServerMode();
-
-    //! Checks the args for the server parameter, returns true if found otherwise false.
-    bool CheckServerMode();
-
-    //! Reads the server address from the config file.
-    QString ServerAddress();
-
-    //! Clears the string holding the server address for the Cache Server mode
-    void ResetServerAddress();
-
     bool ShouldUseFileHashing();
 
     //! Determine the name of the current project - for example, AutomatedTesting
@@ -285,7 +270,7 @@ namespace AssetUtilities
     //! Finds the top level source that produced an intermediate product.  If the source is not yet recorded in the database or has no top level source, this will return nothing
     AZStd::optional<AzToolsFramework::AssetDatabase::SourceDatabaseEntry> GetTopLevelSourceForProduct(AZ::IO::PathView relativePath, AZStd::shared_ptr<AssetProcessor::AssetDatabaseConnection> db);
 
-    //! Finds all the souces (up and down) in an intermediate output chain
+    //! Finds all the sources (up and down) in an intermediate output chain
     AZStd::vector<AZStd::string> GetAllIntermediateSources(
         AZ::IO::PathView relativeSourcePath, AZStd::shared_ptr<AssetProcessor::AssetDatabaseConnection> db);
 

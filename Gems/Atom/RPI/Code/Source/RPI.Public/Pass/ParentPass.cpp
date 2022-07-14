@@ -113,7 +113,7 @@ namespace AZ
             // Notify pipeline
             if (m_pipeline)
             {
-                m_pipeline->SetPassModified();
+                m_pipeline->MarkPipelinePassChanges(PipelinePassChanges::PassesAdded);
 
                 // Set child's pipeline if the parent has a owning pipeline
                 child->SetRenderPipeline(m_pipeline);
@@ -162,7 +162,7 @@ namespace AZ
             // Notify pipeline
             if (m_pipeline)
             {
-                m_pipeline->SetPassModified();
+                m_pipeline->MarkPipelinePassChanges(PipelinePassChanges::PassesRemoved);
             }
         }
 
@@ -181,7 +181,7 @@ namespace AZ
             // Notify pipeline
             if (m_pipeline)
             {
-                m_pipeline->SetPassModified();
+                m_pipeline->MarkPipelinePassChanges(PipelinePassChanges::PassesRemoved);
             }
         }
 
@@ -412,6 +412,11 @@ namespace AZ
 
         void ParentPass::SetRenderPipeline(RenderPipeline* pipeline)
         {
+            if (m_pipeline == pipeline)
+            {
+                return;
+            }
+
             // Call base implementation
             Pass::SetRenderPipeline(pipeline);
 

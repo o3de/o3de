@@ -18,7 +18,7 @@ namespace ScriptCanvasEditor
         {
             AZStd::string fileSaveError;
             AZStd::string tempFileRemovalError;
-
+            AZ::IO::Path absolutePath;
             bool IsSuccess() const;
         };
 
@@ -34,7 +34,7 @@ namespace ScriptCanvasEditor
                 , AZStd::function<void(const FileSaveResult& result)> onComplete);
 
             const SourceHandle& GetSource() const;
-            void Save(const SourceHandle& source);
+            void Save(const SourceHandle& source, const AZ::IO::Path& absolutePath);
 
         private:
             AZStd::mutex m_mutex;

@@ -34,12 +34,12 @@ log = logging.getLogger(__name__)
 
 def get_package_name(project_path):
     """
-    Gets the Package name from the project's settings JSON.
+    Gets the Package name from the android project's settings JSON.
 
     :param project_path: The project path of the project
     :return: The Package name from the settings JSON
     """
-    project_json_path = os.path.join(project_path, 'project.json')
+    project_json_path = os.path.join(project_path, 'Platform', 'Android', 'android_project.json')
     with open(project_json_path) as json_file:
         json_list = json.loads(json_file.read())
 

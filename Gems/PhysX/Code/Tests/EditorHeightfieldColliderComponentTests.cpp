@@ -167,6 +167,27 @@ namespace PhysXEditorTests
                         }
                     }
                 });
+
+        ON_CALL(mockShapeRequests, UpdateHeightsAndMaterialsAsync)
+            .WillByDefault(
+                [](const Physics::UpdateHeightfieldSampleFunction& updateHeightsMaterialsCallback,
+                   const Physics::UpdateHeightfieldCompleteFunction& updateHeightsMaterialsCompleteCallback,
+                   [[maybe_unused]] size_t startColumn,
+                   [[maybe_unused]] size_t startRow,
+                   [[maybe_unused]] size_t numColumns,
+                   [[maybe_unused]] size_t numRows)
+                {
+                    auto samples = GetSamples();
+                    for (size_t row = 0; row < 3; row++)
+                    {
+                        for (size_t col = 0; col < 3; col++)
+                        {
+                            updateHeightsMaterialsCallback(col, row, samples[(row * 3) + col]);
+                        }
+                    }
+
+                    updateHeightsMaterialsCompleteCallback();
+                });
     }
 
     EntityPtr TestCreateActiveGameEntityFromEditorEntity(AZ::Entity* editorEntity)
@@ -313,6 +334,10 @@ namespace PhysXEditorTests
         EXPECT_TRUE(gameEntity->FindComponent<UnitTest::MockPhysXHeightfieldProviderComponent>() != nullptr);
         EXPECT_TRUE(gameEntity->FindComponent<PhysX::HeightfieldColliderComponent>() != nullptr);
         EXPECT_TRUE(gameEntity->FindComponent(LmbrCentral::AxisAlignedBoxShapeComponentTypeId) != nullptr);
+
+        // Make sure to deactivate the entities before destroying the mocks, or else it's possible to get deadlocked.
+        gameEntity->Deactivate();
+        editorEntity->Deactivate();
 
         CleanupHeightfieldComponent();
     }

@@ -24,6 +24,7 @@ AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnin
 AZ_POP_DISABLE_WARNING
 
 class QImage;
+class QMimeData;
 class QWidget;
 
 namespace AtomToolsFramework
@@ -100,7 +101,7 @@ namespace AtomToolsFramework
     //! @param exportPath absolute path of the file being saved
     //! @param referencePath absolute path of a file that will be treated as an external reference
     //! @param relativeToExportPath specifies if the path is relative to the source asset root or the export path
-    AZStd::string GetExteralReferencePath(
+    AZStd::string GetPathToExteralReference(
         const AZStd::string& exportPath, const AZStd::string& referencePath, const bool relativeToExportPath = false);
 
     //! Traverse up the instance data hierarchy to find a node containing the corresponding type
@@ -177,8 +178,11 @@ namespace AtomToolsFramework
     bool SaveSettingsToFile(const AZ::IO::FixedMaxPath& savePath, const AZStd::vector<AZStd::string>& filters);
 
     //! Helper function to convert a path containing an alias into a full path
-    AZStd::string ConvertAliasToPath(const AZStd::string& path);
+    AZStd::string GetPathWithoutAlias(const AZStd::string& path);
 
     //! Helper function to convert a full path into one containing an alias
-    AZStd::string ConvertPathToAlias(const AZStd::string& path);
+    AZStd::string GetPathWithAlias(const AZStd::string& path);
+
+    //! Collect a set of file paths contained within asset browser entry or URL mine data
+    AZStd::set<AZStd::string> GetPathsFromMimeData(const QMimeData* mimeData);
 } // namespace AtomToolsFramework

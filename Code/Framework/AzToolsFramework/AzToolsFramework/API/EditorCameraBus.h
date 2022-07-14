@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/Math/Vector3.h>
+#include <AzCore/Math/Transform.h>
 #include <AzCore/Component/Component.h>
 
 namespace AzFramework
@@ -57,6 +58,24 @@ namespace Camera
          * @return True if the camera position was successfully retrieved, false if not.
          */
         virtual bool GetActiveCameraPosition(AZ::Vector3& /*cameraPos*/) { return false; }
+
+        /**
+         * Gets the transform of the currently active Editor camera.
+         * The Editor can have multiple viewports displayed, though at most only one is active at any point in time.
+         * (Active is not the same as "has focus" - a different editor pane can have focus, but there's still one
+         * active viewport that's updating every frame, and the others are not)
+         * @return the current camera transform in the one active Editor viewport.
+         */
+        virtual AZStd::optional<AZ::Transform> GetActiveCameraTransform() { return AZStd::nullopt; }
+
+        /**
+         * Gets the field of view of the currently active Editor camera.
+         * The Editor can have multiple viewports displayed, though at most only one is active at any point in time.
+         * (Active is not the same as "has focus" - a different editor pane can have focus, but there's still one
+         * active viewport that's updating every frame, and the others are not)
+         * @return the current camera field of view in the one active Editor viewport.
+         */
+        virtual AZStd::optional<float> GetCameraFoV() { return 60.0f; }
 
         /**
          * Gets the position of the currently active Editor camera.
@@ -115,6 +134,16 @@ namespace Camera
          * Sets this camera as the active view in the scene, otherwise restores the default editor camera if it was already active
          */
         virtual void ToggleCameraAsActiveView() = 0;
+
+        /**
+         * Aligns this camera with the active view in the scene and sets it as the active camera
+         */
+        virtual void MatchViewport() = 0;
+
+        /**
+         * Returns true if this is the active camera.
+         */
+        virtual bool IsActiveCamera() const = 0;
 
         /**
         * Gets the camera state associated with this view.

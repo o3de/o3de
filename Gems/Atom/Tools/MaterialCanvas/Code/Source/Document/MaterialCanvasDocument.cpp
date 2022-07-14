@@ -19,6 +19,12 @@
 #include <GraphCanvas/Components/SceneBus.h>
 #include <GraphCanvas/GraphCanvasBus.h>
 
+#include <AzCore/IO/ByteContainerStream.h>
+#include <AzCore/Serialization/ObjectStream.h>
+#include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Serialization/Utils.h>
+#include <AzCore/std/containers/vector.h>
+
 namespace MaterialCanvas
 {
     void MaterialCanvasDocument::Reflect(AZ::ReflectContext* context)
@@ -56,8 +62,9 @@ namespace MaterialCanvas
 
         GraphModelIntegration::GraphManagerRequestBus::BroadcastResult(
             m_sceneEntity, &GraphModelIntegration::GraphManagerRequests::CreateScene, m_graph, m_toolId);
-
         m_graphId = m_sceneEntity->GetId();
+
+        RecordGraphState();
 
         // Listen for GraphController notifications on the new graph.
         GraphModelIntegration::GraphControllerNotificationBus::Handler::BusConnect(m_graphId);
@@ -72,13 +79,13 @@ namespace MaterialCanvas
         // Stop listening for GraphController notifications for this graph.
         GraphModelIntegration::GraphControllerNotificationBus::Handler::BusDisconnect();
 
-        // Remove the controller for this graph.
         GraphModelIntegration::GraphManagerRequestBus::Broadcast(
             &GraphModelIntegration::GraphManagerRequests::DeleteGraphController, m_graphId);
 
         m_graph.reset();
-
+        m_graphId = GraphCanvas::GraphId();
         delete m_sceneEntity;
+        m_sceneEntity = {};
     }
 
     AtomToolsFramework::DocumentTypeInfo MaterialCanvasDocument::BuildDocumentTypeInfo()
@@ -151,12 +158,12 @@ namespace MaterialCanvas
         AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
         AZ_Assert(serializeContext, "Failed to acquire application serialize context.");
 
-        m_graph.reset(serializeContext->CloneObject(AZStd::any_cast<const GraphModel::Graph>(&loadResult.GetValue())));
-        m_graph->PostLoadSetup(m_graphContext);
+        GraphModel::GraphPtr graph;
+        graph.reset(serializeContext->CloneObject(AZStd::any_cast<const GraphModel::Graph>(&loadResult.GetValue())));
 
-        GraphModelIntegration::GraphManagerRequestBus::Broadcast(
-            &GraphModelIntegration::GraphManagerRequests::CreateGraphController, m_graphId, m_graph);
-        GraphModelIntegration::GraphControllerNotificationBus::Handler::BusConnect(m_graphId);
+        CreateGraph(graph);
+        m_modified = false;
+
         return OpenSucceeded();
     }
 
@@ -174,6 +181,8 @@ namespace MaterialCanvas
             return SaveFailed();
         }
 
+        m_modified = false;
+        m_absolutePath = m_savePathNormalized;
         return SaveSucceeded();
     }
 
@@ -191,6 +200,8 @@ namespace MaterialCanvas
             return SaveFailed();
         }
 
+        m_modified = false;
+        m_absolutePath = m_savePathNormalized;
         return SaveSucceeded();
     }
 
@@ -208,6 +219,8 @@ namespace MaterialCanvas
             return SaveFailed();
         }
 
+        m_modified = false;
+        m_absolutePath = m_savePathNormalized;
         return SaveSucceeded();
     }
 
@@ -218,18 +231,33 @@ namespace MaterialCanvas
 
     bool MaterialCanvasDocument::IsModified() const
     {
-        bool result = false;
-        return result;
+        return m_modified;
     }
 
     bool MaterialCanvasDocument::BeginEdit()
     {
-        // Save the current properties as a momento for undo before any changes are applied
         return true;
     }
 
     bool MaterialCanvasDocument::EndEdit()
     {
+        auto undoState = m_graphStateForUndoRedo;
+
+        RecordGraphState();
+        auto redoState = m_graphStateForUndoRedo;
+
+        if (undoState != redoState)
+        {
+            AddUndoRedoHistory(
+                [this, undoState]() { RestoreGraphState(undoState); },
+                [this, redoState]() { RestoreGraphState(redoState); });
+
+            m_modified = true;
+            AtomToolsFramework::AtomToolsDocumentNotificationBus::Event(
+                m_toolId, &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentObjectInfoInvalidated, m_id);
+            AtomToolsFramework::AtomToolsDocumentNotificationBus::Event(
+                m_toolId, &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentModified, m_id);
+        }
         return true;
     }
 
@@ -240,11 +268,9 @@ namespace MaterialCanvas
 
     void MaterialCanvasDocument::Clear()
     {
-        GraphModelIntegration::GraphControllerNotificationBus::Handler::BusDisconnect();
-        GraphModelIntegration::GraphManagerRequestBus::Broadcast(
-            &GraphModelIntegration::GraphManagerRequests::DeleteGraphController, m_graphId);
-
-        m_graph.reset();
+        DestroyGraph();
+        m_graphStateForUndoRedo.clear();
+        m_modified = false;
 
         AtomToolsFramework::AtomToolsDocument::Clear();
     }
@@ -257,5 +283,73 @@ namespace MaterialCanvas
     bool MaterialCanvasDocument::ReopenRestoreState()
     {
         return AtomToolsDocument::ReopenRestoreState();
+    }
+
+    void MaterialCanvasDocument::OnGraphModelRequestUndoPoint()
+    {
+        BeginEdit();
+        EndEdit();
+    }
+
+    void MaterialCanvasDocument::OnGraphModelTriggerUndo()
+    {
+        Undo();
+    }
+
+    void MaterialCanvasDocument::OnGraphModelTriggerRedo()
+    {
+        Redo();
+    }
+
+    void MaterialCanvasDocument::RecordGraphState()
+    {
+        // Serialize the current graph to a byte stream so that it can be restored with undo redo operations.
+        m_graphStateForUndoRedo.clear();
+        AZ::IO::ByteContainerStream<decltype(m_graphStateForUndoRedo)> undoGraphStateStream(&m_graphStateForUndoRedo);
+        AZ::Utils::SaveObjectToStream(undoGraphStateStream, AZ::ObjectStream::ST_BINARY, m_graph.get());
+    }
+
+    void MaterialCanvasDocument::RestoreGraphState(const AZStd::vector<AZ::u8>& graphState)
+    {
+        // Restore a version of the graph that was previously serialized to a byte stream
+        m_graphStateForUndoRedo = graphState;
+        AZ::IO::ByteContainerStream<decltype(m_graphStateForUndoRedo)> undoGraphStateStream(&m_graphStateForUndoRedo);
+
+        GraphModel::GraphPtr graph = AZStd::make_shared<GraphModel::Graph>(m_graphContext);
+        AZ::Utils::LoadObjectFromStreamInPlace(undoGraphStateStream, *graph.get());
+
+        CreateGraph(graph);
+
+        m_modified = true;
+        AtomToolsFramework::AtomToolsDocumentNotificationBus::Event(
+            m_toolId, &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentObjectInfoInvalidated, m_id);
+        AtomToolsFramework::AtomToolsDocumentNotificationBus::Event(
+            m_toolId, &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentModified, m_id);
+    }
+
+    void MaterialCanvasDocument::CreateGraph(GraphModel::GraphPtr graph)
+    {
+        DestroyGraph();
+
+        m_graph = graph;
+        m_graph->PostLoadSetup(m_graphContext);
+        RecordGraphState();
+
+        // The graph controller will create all of the scene items on construction.
+        GraphModelIntegration::GraphManagerRequestBus::Broadcast(
+            &GraphModelIntegration::GraphManagerRequests::CreateGraphController, m_graphId, m_graph);
+    }
+
+    void MaterialCanvasDocument::DestroyGraph()
+    {
+        // The graph controller does not currently delete all of the scene items when it's destroyed.
+        GraphModelIntegration::GraphManagerRequestBus::Broadcast(
+            &GraphModelIntegration::GraphManagerRequests::DeleteGraphController, m_graphId);
+        m_graph.reset();
+
+        // This needs to be done whenever the graph is destroyed during undo and redo so that the previous version of the data is deleted. 
+        GraphCanvas::GraphModelRequestBus::Event(m_graphId, &GraphCanvas::GraphModelRequests::RequestPushPreventUndoStateUpdate);
+        GraphCanvas::SceneRequestBus::Event(m_graphId, &GraphCanvas::SceneRequests::ClearScene);
+        GraphCanvas::GraphModelRequestBus::Event(m_graphId, &GraphCanvas::GraphModelRequests::RequestPopPreventUndoStateUpdate);
     }
 } // namespace MaterialCanvas

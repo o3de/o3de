@@ -49,6 +49,10 @@ namespace AZ
         
         bool Instance::Init(const Descriptor& descriptor)
         {
+#if defined(USE_NSIGHT_AFTERMATH)
+            m_gpuCrashHandler.EnableGPUCrashDumps();
+#endif
+
             m_descriptor = descriptor;
             if (GetValidationMode() != RHI::ValidationMode::Disabled)
             {

@@ -847,15 +847,11 @@ namespace ScriptCanvasEditor
         {
             if (nodePaletteItem)
             {
-                AZ::IO::Path gemPath = ScriptCanvasEditorTools::Helpers::GetGemPath("ScriptCanvas");
-                gemPath = gemPath / AZ::IO::Path("TranslationAssets");
-                gemPath = gemPath / nodePaletteItem->GetTranslationDataPath();
-                gemPath.ReplaceExtension(".names");
-
+                AZ::IO::Path filePath = nodePaletteItem->GetTranslationDataPath();
                 AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance();
-                if (fileIO && fileIO->Exists(gemPath.c_str()))
+                if (fileIO && !filePath.empty() && fileIO->Exists(filePath.c_str()))
                 {
-                    AzQtComponents::ShowFileOnDesktop(gemPath.c_str());
+                    AzQtComponents::ShowFileOnDesktop(filePath.c_str());
                 }
             }
         }

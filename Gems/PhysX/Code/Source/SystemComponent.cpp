@@ -36,7 +36,7 @@ namespace PhysX
 
         if (classElement.GetVersion() <= 1)
         {
-            const int pvdTransportTypeElemIndex = classElement.FindElement(AZ_CRC("PvdTransportType", 0x91e0b21e));
+            const int pvdTransportTypeElemIndex = classElement.FindElement(AZ_CRC_CE("PvdTransportType"));
 
             if (pvdTransportTypeElemIndex >= 0)
             {
@@ -58,7 +58,7 @@ namespace PhysX
 
         if (classElement.GetVersion() <= 2)
         {
-            const int globalColliderDebugDrawElemIndex = classElement.FindElement(AZ_CRC("GlobalColliderDebugDraw", 0xca73ed43));
+            const int globalColliderDebugDrawElemIndex = classElement.FindElement(AZ_CRC_CE("GlobalColliderDebugDraw"));
 
             if (globalColliderDebugDrawElemIndex >= 0)
             {
@@ -107,7 +107,7 @@ namespace PhysX
                 editContext->Class<SystemComponent>("PhysX", "Global PhysX physics configuration.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
+                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("System"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &SystemComponent::m_enabled,
                     "Enabled", "Enables the PhysX system component.")
@@ -118,12 +118,12 @@ namespace PhysX
 
     void SystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC_CE("PhysXService"));
+        provided.push_back(AZ_CRC_CE("PhysicsService"));
     }
 
     void SystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC_CE("PhysXService"));
+        incompatible.push_back(AZ_CRC_CE("PhysicsService"));
     }
 
     void SystemComponent::GetRequiredServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& required)

@@ -19,6 +19,7 @@
 
 #include <BlendTreeMotionMatchNode.h>
 #include <Feature.h>
+#include <FeatureAngularVelocity.h>
 #include <FeaturePosition.h>
 #include <FeatureTrajectory.h>
 #include <FeatureVelocity.h>
@@ -73,6 +74,7 @@ namespace EMotionFX::MotionMatching
         EMotionFX::MotionMatching::FeaturePosition::Reflect(context);
         EMotionFX::MotionMatching::FeatureTrajectory::Reflect(context);
         EMotionFX::MotionMatching::FeatureVelocity::Reflect(context);
+        EMotionFX::MotionMatching::FeatureAngularVelocity::Reflect(context);
 
         EMotionFX::MotionMatching::PoseDataJointVelocities::Reflect(context);
 
