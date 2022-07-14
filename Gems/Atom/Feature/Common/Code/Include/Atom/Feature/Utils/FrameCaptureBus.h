@@ -93,7 +93,7 @@ namespace AZ
             virtual ~FrameCaptureNotifications() {};
             
             //! Notify when a capture is finished, you may receive notifications for other captures than your own
-            //! @param frameCaptureId The frame capture id returned when the capture was triggered
+            //! @param frameCaptureId The frame capture id returned when the capture was triggered. This is returned here in case client code has triggered multiple captures
             //! @param result result code
             //! @param info The output file path or error information which depends on the result. 
             virtual void OnFrameCaptureFinished(FrameCaptureResult result, const AZStd::string& info) = 0;
