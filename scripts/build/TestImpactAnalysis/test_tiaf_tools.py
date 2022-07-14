@@ -77,7 +77,7 @@ class TestTIAFToolsLocal():
             # then:
             assert test_string in caplog.messages
 
-        def test_local_full_address_action_read_file_exists(self, caplog, tmp_path_factory):
+        def test_local_full_address_action_read_file_exists(self, caplog, tmp_path_factory, mocker):
             # given:
             fn = tmp_path_factory.mktemp("test") / "test_file.txt"
             fn.write_text("Testing")
@@ -85,11 +85,14 @@ class TestTIAFToolsLocal():
             test_string = f"File found at {full_address}"
             args = {'full_address' : full_address, 'action': 'read'}
 
+            mocker.patch('os.startfile')
+
             # when:
             run(args)
 
             # then:
             assert test_string in caplog.messages
+            os.startfile.assert_called_once_with(os.path.split(full_address)[0])
 
         def test_local_full_address_action_delete(self, caplog, tmp_path_factory):
             # given:
