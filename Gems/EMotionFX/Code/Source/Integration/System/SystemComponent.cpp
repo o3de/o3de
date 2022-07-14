@@ -46,10 +46,6 @@
 #include <EMotionFX/Source/PoseData.h>
 #include <EMotionFX/Source/PoseDataRagdoll.h>
 
-#include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/EMStudioPlugin.h>
-#include <EMotionFX/Tools/EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/AnimGraphPlugin.h>
-#include <EMotionStudio/Plugins/StandardPlugins/Source/MotionSetsWindow/MotionSetsWindowPlugin.h>
-
 #include <Integration/AnimationBus.h>
 #include <Integration/EMotionFXBus.h>
 #include <Integration/Assets/ActorAsset.h>
@@ -63,7 +59,6 @@
 #include <AzFramework/Physics/PhysicsScene.h>
 #include <AzFramework/Physics/Common/PhysicsSceneQueries.h>
 #include <AzFramework/Physics/Common/PhysicsTypes.h>
-#include <AzQtComponents/Components/FancyDocking.h>
 
 #include <Integration/MotionExtractionBus.h>
 
@@ -74,6 +69,7 @@
 // EMStudio tools and main window registration
 #include <LyViewPaneNames.h>
 #include <AzToolsFramework/API/ViewPaneOptions.h>
+#include <AzQtComponents/Components/FancyDocking.h>
 #include <AzCore/std/string/wildcard.h>
 #include <QApplication>
 #include <EMotionStudio/EMStudioSDK/Source/MainWindow.h>
@@ -81,6 +77,10 @@
 #include <Source/Editor/PropertyWidgets/PropertyTypes.h>
 #include <EMotionFX_Traits_Platform.h>
 #include <SceneAPIExt/Utilities/LegacyPhysicsMaterialFbxManifestConversion.h>
+
+#include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/EMStudioPlugin.h>
+#include <EMotionFX/Tools/EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/AnimGraphPlugin.h>
+#include <EMotionStudio/Plugins/StandardPlugins/Source/MotionSetsWindow/MotionSetsWindowPlugin.h>
 
 #include <IEditor.h>
 #endif // EMOTIONFXANIMATION_EDITOR
