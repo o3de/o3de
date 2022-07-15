@@ -202,24 +202,23 @@ namespace AtomToolsFramework
 
     bool ModularViewportCameraControllerInstance::HandleInputChannelEvent(const AzFramework::ViewportControllerInputEvent& event)
     {
-        auto modifierKeyStates = AzFramework::ModifierKeyStates{};
-        const auto* inputDevice =
-            AzFramework::InputDeviceRequests::FindInputDevice(AzToolsFramework::GetSyntheticKeyboardDeviceId(event.m_viewportId));
-
-        // grab keyboard channel (not important which) and check the modifier state (modifier state is shared for all keyboard channels)
-        if (const auto it = inputDevice->GetInputChannelsById().find(AzFramework::InputDeviceKeyboard::Key::Alphanumeric0);
-            it != inputDevice->GetInputChannelsById().end())
+        const auto findModifierStatesFn = [viewportId = event.m_viewportId]
         {
-            modifierKeyStates = [customData = it->second->GetCustomData<AzFramework::ModifierKeyStates>()]
+            const auto* inputDevice =
+                AzFramework::InputDeviceRequests::FindInputDevice(AzToolsFramework::GetSyntheticKeyboardDeviceId(viewportId));
+
+            // grab keyboard channel (not important which) and check the modifier state (modifier state is shared for all keyboard channels)
+            if (const auto it = inputDevice->GetInputChannelsById().find(AzFramework::InputDeviceKeyboard::Key::Alphanumeric0);
+                it != inputDevice->GetInputChannelsById().end())
             {
-                if (customData)
+                if (auto customData = it->second->GetCustomData<AzFramework::ModifierKeyStates>())
                 {
                     return *customData;
                 }
+            }
 
-                return AzFramework::ModifierKeyStates();
-            }();
-        }
+            return AzFramework::ModifierKeyStates();
+        };
 
         if (event.m_priority == m_priorityFn(m_cameraSystem))
         {
@@ -227,7 +226,7 @@ namespace AtomToolsFramework
             AzFramework::WindowRequestBus::EventResult(
                 windowSize, event.m_windowHandle, &AzFramework::WindowRequestBus::Events::GetClientAreaSize);
 
-            return m_cameraSystem.HandleEvents(AzFramework::BuildInputEvent(event.m_inputChannel, modifierKeyStates, windowSize));
+            return m_cameraSystem.HandleEvents(AzFramework::BuildInputEvent(event.m_inputChannel, findModifierStatesFn(), windowSize));
         }
 
         return false;
