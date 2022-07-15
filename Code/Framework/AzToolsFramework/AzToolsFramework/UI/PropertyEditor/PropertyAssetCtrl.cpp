@@ -1644,14 +1644,6 @@ namespace AzToolsFramework
 
         GUI->blockSignals(false);
 
-        // Dig out the ComponentId and the owning EntityId to use to identify this control.
-        InstanceDataNode* componentNode = node;
-
-        while (componentNode->GetParent())
-        {
-            componentNode = componentNode->GetParent();
-        }
-
         return false;
     }
 

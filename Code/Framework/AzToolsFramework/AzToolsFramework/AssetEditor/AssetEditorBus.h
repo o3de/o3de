@@ -58,8 +58,7 @@ namespace AzToolsFramework
             static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
 
             //! Open Asset Editor (if it is not already open) and create a new asset of type specified, if possible.
-            //! Inform the specified component when complete.
-            virtual void CreateNewAsset(const AZ::Data::AssetType& assetType, const AZ::Uuid& interestedComponentId) = 0;
+            virtual void CreateNewAsset(const AZ::Data::AssetType& assetType, const AZ::Uuid& observerId) = 0;
 
             virtual AZ::Outcome<bool, AZStd::string> IsAssetDataValid() { return AZ::Success(true); }
 
@@ -95,7 +94,7 @@ namespace AzToolsFramework
             static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
 
             //! Creates a new asset of type provided (if possible) in the currently open Asset Editor window.
-            virtual void CreateAsset(const AZ::Data::AssetType& assetType, const AZ::Uuid& interestedComponentId) = 0;
+            virtual void CreateAsset(const AZ::Data::AssetType& assetType, const AZ::Uuid& observerId) = 0;
             //! Saves the asset being edited in the currently open Asset Editor window to the path provided
             virtual void SaveAssetAs(const AZStd::string_view assetPath) = 0;
             //! Opens the asset provided (by reference) in the currently open Asset Editor window
