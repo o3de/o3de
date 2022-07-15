@@ -275,6 +275,9 @@ class TestImpact:
         except KeyError as e:
             logger.error(f"The config does not contain the key {str(e)}.")
             return None
+        except json.JSONDecodeError as e:
+            logger.error("The config file doesn not contain valid JSON")
+            raise SystemError("Config file does not contain valid JSON, stopping TIAF")
 
     def _attempt_to_generate_change_list(self):
         """
