@@ -41,14 +41,14 @@ class TestTIAFUnitTests():
 
     @pytest.fixture
     def mock_runtime(self, mocker):
-        mocker.patch('subprocess.run')
+        return mocker.patch('subprocess.run')
 
     @pytest.fixture(autouse=True)
     def mock_uuid(self, mocker):
         universal_uuid = uuid.uuid4()
         mocker.patch('uuid.uuid4', return_value=universal_uuid)
         return universal_uuid
-    
+ 
     @pytest.fixture
     def default_runtime_args(self, mock_uuid, build_root):
         runtime_args = {}
@@ -62,9 +62,104 @@ class TestTIAFUnitTests():
 
     def test_valid_config(self, caplog, tiaf_args, mock_runtime, mocker, default_runtime_args):
         # given:
-        args = tiaf_args
-
+        # default arguments
         # when:
-        main(args)
+        main(tiaf_args)
         # then:
         subprocess.run.assert_called_with(list(default_runtime_args.values()))
+
+    def test_invalid_config(self, caplog, tiaf_args, mock_runtime, tmp_path_factory, default_runtime_args):
+        # given:
+        invalid_file = tmp_path_factory.mktemp("test") / "test_file.txt"
+        with open(invalid_file, 'w+') as f:
+            f.write("fake json")
+        tiaf_args['config'] = invalid_file
+        test_string = "Exception caught by TIAF driver: 'Config file does not contain valid JSON, stopping TIAF'."
+
+        # when:
+        main(tiaf_args)
+
+        # then:
+        assert test_string in caplog.messages 
+
+    def test_valid_src_branch(self, caplog, tiaf_args, mock_runtime, default_runtime_args):
+        # given:
+        tiaf_args['src_branch'] = "development"
+        test_string = "Src branch: 'development'."
+        # when:
+        main(tiaf_args)
+
+        # then:
+        assert test_string in caplog.messages
+    
+    def test_invalid_src_branch(self, caplog, tiaf_args, mock_runtime, default_runtime_args):
+        # given:
+        tiaf_args['src_branch'] = "not_a_real_branch"
+        test_string = "Src branch: 'not_a_real_branch'."
+
+        # when:
+        main(tiaf_args)
+
+        # then:
+        assert test_string in caplog.messages
+
+    def test_valid_dst_branch(self, caplog, tiaf_args, mock_runtime, default_runtime_args):
+        # given:
+        tiaf_args['dst_branch'] = "development"
+        test_string = "Dst branch: 'development'."
+        # when:
+        main(tiaf_args)
+
+        # then:
+        assert test_string in caplog.messages
+    
+    def test_invalid_dst_branch(self, caplog, tiaf_args, mock_runtime, default_runtime_args):
+        # given:
+        tiaf_args['dst_branch'] = "not_a_real_branch"
+        test_string = "Dst branch: 'not_a_real_branch'."
+
+        # when:
+        main(tiaf_args)
+
+        # then:
+        assert test_string in caplog.messages
+
+    def test_valid_commit(self, caplog, tiaf_args, mock_runtime, default_runtime_args):
+        # given:
+        tiaf_args['commit'] = "9a15f038807ba8b987c9e689952d9271ef7fd086"
+        test_string = "Commit: '9a15f038807ba8b987c9e689952d9271ef7fd086'."
+
+        # when:
+        main(tiaf_args)
+
+        # then:
+        assert test_string in caplog.messages
+    
+    def test_invalid_commit(self, caplog, tiaf_args, mock_runtime, default_runtime_args):
+        # given:
+        tiaf_args['commit'] = "foobar"
+        test_string = "Commit: 'foobar'."
+
+        # when:
+        main(tiaf_args)
+
+        # then:
+        assert test_string in caplog.messages
+
+    def test_no_s3_bucket_name(self, caplog, tiaf_args, mock_runtime, default_runtime_args):
+        # given:
+        # default args
+        test_string = "Attempting to access persistent storage for the commit 'foobar' for suite 'main'"
+        
+        # when:
+        main(tiaf_args)
+
+        # then:
+        assert test_string in caplog.messages
+
+    def test_s3_bucket_name_valid_credentials(self, caplog, tiaf_args, mock_runtime, default_runtime_args):
+        pass
+
+    
+
+    
