@@ -51,6 +51,7 @@ private:
         float m_rotationManipulatorRadius = 0.0f;
         float m_manipulatorViewBaseScale = 0.0f;
         bool m_flipManipulatorAxesTowardsView = false;
+        bool m_manipulatorMouseWrap = false;
     };
 
     Manipulators m_manipulators;

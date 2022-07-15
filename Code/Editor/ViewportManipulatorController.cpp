@@ -14,11 +14,11 @@
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
 #include <AzFramework/Viewport/ScreenGeometry.h>
 #include <AzFramework/Viewport/ViewportScreen.h>
+#include <AzToolsFramework/Input/QtEventToAzInputMapper.h>
 #include <AzToolsFramework/Manipulators/ManipulatorManager.h>
+#include <AzToolsFramework/Viewport/ViewportInteractionHelpers.h>
 #include <AzToolsFramework/ViewportSelection/EditorInteractionSystemViewportSelectionRequestBus.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
-#include <AzToolsFramework/Viewport/ViewportInteractionHelpers.h>
-#include <AzToolsFramework/Input/QtEventToAzInputMapper.h>
 #include <Editor/EditorViewportSettings.h>
 
 #include <QApplication>
@@ -46,6 +46,7 @@ namespace SandboxEditor
 
         using InteractionBus = AzToolsFramework::EditorInteractionSystemViewportSelectionRequestBus;
         using AzFramework::InputChannel;
+        using AzToolsFramework::ViewportInteraction::Helpers;
         using AzToolsFramework::ViewportInteraction::KeyboardModifier;
         using AzToolsFramework::ViewportInteraction::MouseButton;
         using AzToolsFramework::ViewportInteraction::MouseEvent;
@@ -53,7 +54,6 @@ namespace SandboxEditor
         using AzToolsFramework::ViewportInteraction::MouseInteractionEvent;
         using AzToolsFramework::ViewportInteraction::ProjectedViewportRay;
         using AzToolsFramework::ViewportInteraction::ViewportInteractionRequestBus;
-        using AzToolsFramework::ViewportInteraction::Helpers;
 
         bool interactionHandled = false;
         float wheelDelta = 0.0f;
@@ -68,7 +68,7 @@ namespace SandboxEditor
         const auto state = event.m_inputChannel.GetState();
         if (Helpers::IsMouseMove(event.m_inputChannel))
         {
-            // Cache the ray trace results when doing manipulator interaction checks, no need to recalculate after
+            // cache the ray trace results when doing manipulator interaction checks, no need to recalculate after
             if (event.m_priority == ManipulatorPriority)
             {
                 const auto* position = event.m_inputChannel.GetCustomData<AzFramework::InputChannel::PositionData2D>();
@@ -78,7 +78,13 @@ namespace SandboxEditor
                 AzFramework::WindowRequestBus::EventResult(
                     windowSize, event.m_windowHandle, &AzFramework::WindowRequestBus::Events::GetClientAreaSize);
 
-                if (SandboxEditor::ManipulatorMouseWrap() && event.m_priority == ManipulatorPriority)
+                // ensures that virtualNormalizedPosition will be cleared if ManipulatorMouseWrap is disabled
+                if (!SandboxEditor::ManipulatorMouseWrap() && m_virtualNormalizedPosition.has_value())
+                {
+                    m_virtualNormalizedPosition.reset();
+                }
+
+                if (SandboxEditor::ManipulatorMouseWrap())
                 {
                     if (m_virtualNormalizedPosition)
                     {
