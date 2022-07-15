@@ -8,7 +8,7 @@
 
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzToolsFramework/API/AssetDatabaseBus.h>
-
+#include <AzCore/std/sort.h>
 
 #include <native/tests/AssetProcessorTest.h>
 #include <native/AssetDatabase/AssetDatabase.h>
@@ -101,6 +101,34 @@ namespace UnitTests
             ASSERT_TRUE(m_data->m_connection.SetProduct(m_data->m_product2));
             ASSERT_TRUE(m_data->m_connection.SetProduct(m_data->m_product3));
             ASSERT_TRUE(m_data->m_connection.SetProduct(m_data->m_product4));
+        }
+
+        /******************************************** Create and insert Stat entry ********************************************/
+        //! Returns the first stat entry to be inserted into Stats table. Users can specify the prefix of the StatName
+        StatDatabaseEntry GetFirstStatEntry(const AZStd::string& namePrefix = "")
+        {
+            return StatDatabaseEntry{ namePrefix + "a", 10, 100 };
+        }
+
+        //! Step statEntry to the next inserted entry, which increments the name's last character by 1 in ASCII order, increment 20 in StatValue, and increment
+        //! 300 in LastLogTime. For example, if statEntry was passed in as (StatName=b, StatValue=30, LastLogTime=400), it will become
+        //! (StatName=c, StatValue=50, LastLogTime=700) after the invocation.
+        void StepStatEntry(StatDatabaseEntry& statEntry)
+        {
+            statEntry.m_statName.back()++;
+            statEntry.m_statValue = statEntry.m_statValue + 20;
+            statEntry.m_lastLogTime = statEntry.m_lastLogTime + 300;
+        }
+
+        //! Insert _StatCount_ stat entries into Stats table, starting with first entry given by GetFirstStatEntry().
+        void InsertStatsTestData(const unsigned int StatCount, const AZStd::string& namePrefix = "")
+        {
+            StatDatabaseEntry statEntry = GetFirstStatEntry(namePrefix);
+            for (unsigned int i = 0; i < StatCount; ++i)
+            {
+                ASSERT_TRUE(m_data->m_connection.ReplaceStat(statEntry));
+                StepStatEntry(statEntry);
+            }
         }
 
     protected:
@@ -2505,6 +2533,94 @@ namespace UnitTests
                 return true;
             });
         ASSERT_EQ(entryCount, 1);
+    }
+
+    TEST_F(AssetDatabaseTest, QueryStatsTable)
+    {
+        const unsigned int StatCount = 10;
+        InsertStatsTestData(StatCount);
+
+        StatDatabaseEntryContainer statContainer;
+        auto getAllStats = [&statContainer](StatDatabaseEntry& stat)
+        {
+            statContainer.push_back(stat);
+            return true;
+        };
+        ASSERT_TRUE(m_data->m_connection.QueryStatsTable(getAllStats));
+        ASSERT_TRUE(statContainer.size() == StatCount);
+
+        // check the items are identical to what we inserted
+        AZStd::sort(
+            statContainer.begin(),
+            statContainer.end(),
+            [](const StatDatabaseEntry& lhs, const StatDatabaseEntry& rhs)
+            {
+                return lhs.m_statName != rhs.m_statName  ? lhs.m_statName < rhs.m_statName
+                    : lhs.m_statValue != rhs.m_statValue ? lhs.m_statValue < rhs.m_statValue
+                                                         : lhs.m_lastLogTime < rhs.m_lastLogTime;
+            });
+
+        StatDatabaseEntry statEntry = GetFirstStatEntry();
+        for (unsigned int i = 0; i < StatCount; ++i)
+        {
+            EXPECT_EQ(statEntry, statContainer[i]);
+            StepStatEntry(statEntry);
+        }
+    }
+
+    TEST_F(AssetDatabaseTest, GetStatByStatName)
+    {
+        const unsigned int StatCount = 10;
+        InsertStatsTestData(StatCount);
+
+        StatDatabaseEntry statEntry = GetFirstStatEntry();
+        for (unsigned int i = 0; i < StatCount; ++i)
+        {
+            StatDatabaseEntryContainer statContainer;
+            ASSERT_TRUE(m_data->m_connection.GetStatByStatName(statEntry.m_statName.c_str(), statContainer));
+            ASSERT_EQ(statContainer.size(), 1);
+            EXPECT_EQ(statContainer[0], statEntry);
+            StepStatEntry(statEntry);
+        }
+    }
+
+    TEST_F(AssetDatabaseTest, GetStatLikeStatName)
+    {
+        const unsigned int StatCountPerPrefix = 5;
+        AZStd::array<AZStd::string, 4> prefixes{ "Apple_", "Banana_", "Orange_", "Grape_" };
+        for (const auto& prefix : prefixes)
+        {
+            InsertStatsTestData(StatCountPerPrefix, prefix);
+        }
+
+        //! Make sure we insert right number of entries
+        {
+            unsigned int entryCount{ 0 };
+            auto countAllStats = [&entryCount]([[maybe_unused]] StatDatabaseEntry& stat)
+            {
+                ++entryCount;
+                return true;
+            };
+            ASSERT_TRUE(m_data->m_connection.QueryStatsTable(countAllStats));
+            ASSERT_EQ(entryCount, StatCountPerPrefix * prefixes.size());
+        }
+        
+        //! Query StatName like prefixes
+        for (const auto& prefix : prefixes)
+        {
+            StatDatabaseEntryContainer container;
+            EXPECT_TRUE(m_data->m_connection.GetStatLikeStatName((prefix + "%").c_str(), container));
+            EXPECT_EQ(container.size(), StatCountPerPrefix);
+        }
+
+        //! Query StatName like suffixes
+        char query[] = "%a";
+        for (unsigned int i = 0; i < StatCountPerPrefix; ++i, ++query[1])
+        {
+            StatDatabaseEntryContainer container;
+            EXPECT_TRUE(m_data->m_connection.GetStatLikeStatName(query, container));
+            EXPECT_EQ(container.size(), prefixes.size());
+        }
     }
 
     class QueryLoggingTraceHandler : public AZ::Debug::TraceMessageBus::Handler
