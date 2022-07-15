@@ -21,6 +21,8 @@ namespace UnitTest
 
     using AzToolsFramework::ViewportInteraction::MouseInteractionEvent;
 
+    static constexpr float DeltaTime = 1.0f / 60.0f;
+
     class ViewportMouseCursorRequestImpl : public AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::Handler
     {
     public:
@@ -318,36 +320,34 @@ namespace UnitTest
         // ensure cursor is captured
         SandboxEditor::SetCameraCaptureCursorForLook(true);
 
-        const float deltaTime = 1.0f / 60.0f;
-
         // When
         // move to the center of the screen
         auto start = QPoint(WidgetSize.width() / 2, WidgetSize.height() / 2);
         MouseMove(m_rootWidget.get(), start, QPoint(0, 0));
-        m_controllerList->UpdateViewport({ TestViewportId, AzFramework::FloatSeconds(deltaTime), AZ::ScriptTimePoint() });
+        m_controllerList->UpdateViewport({ TestViewportId, AzFramework::FloatSeconds(DeltaTime), AZ::ScriptTimePoint() });
 
         const auto mouseDelta = QPoint(5, 0);
 
         // initial movement to begin the camera behavior
         MousePressAndMove(m_rootWidget.get(), start, mouseDelta, Qt::MouseButton::RightButton);
-        m_controllerList->UpdateViewport({ TestViewportId, AzFramework::FloatSeconds(deltaTime), AZ::ScriptTimePoint() });
+        m_controllerList->UpdateViewport({ TestViewportId, AzFramework::FloatSeconds(DeltaTime), AZ::ScriptTimePoint() });
 
         // move the cursor right
         for (int i = 0; i < 50; ++i)
         {
             MousePressAndMove(m_rootWidget.get(), start + mouseDelta, mouseDelta, Qt::MouseButton::RightButton);
-            m_controllerList->UpdateViewport({ TestViewportId, AzFramework::FloatSeconds(deltaTime), AZ::ScriptTimePoint() });
+            m_controllerList->UpdateViewport({ TestViewportId, AzFramework::FloatSeconds(DeltaTime), AZ::ScriptTimePoint() });
         }
 
         // move the cursor left (do an extra iteration moving left to account for the initial dead-zone)
         for (int i = 0; i < 51; ++i)
         {
             MousePressAndMove(m_rootWidget.get(), start + mouseDelta, -mouseDelta, Qt::MouseButton::RightButton);
-            m_controllerList->UpdateViewport({ TestViewportId, AzFramework::FloatSeconds(deltaTime), AZ::ScriptTimePoint() });
+            m_controllerList->UpdateViewport({ TestViewportId, AzFramework::FloatSeconds(DeltaTime), AZ::ScriptTimePoint() });
         }
 
         QTest::mouseRelease(m_rootWidget.get(), Qt::MouseButton::RightButton, Qt::KeyboardModifier::NoModifier, start + mouseDelta);
-        m_controllerList->UpdateViewport({ TestViewportId, AzFramework::FloatSeconds(deltaTime), AZ::ScriptTimePoint() });
+        m_controllerList->UpdateViewport({ TestViewportId, AzFramework::FloatSeconds(DeltaTime), AZ::ScriptTimePoint() });
 
         // Then
         // retrieve the amount of yaw rotation
@@ -368,13 +368,11 @@ namespace UnitTest
         PrepareCollaborators();
         SandboxEditor::SetCameraCaptureCursorForLook(true);
 
-        const float deltaTime = 1.0f / 60.0f;
-
         // When
         // move to the center of the screen
         auto start = QPoint(WidgetSize.width() / 2, WidgetSize.height() / 2);
         MouseMove(m_rootWidget.get(), start, QPoint(0, 0));
-        m_controllerList->UpdateViewport({ TestViewportId, AzFramework::FloatSeconds(deltaTime), AZ::ScriptTimePoint() });
+        m_controllerList->UpdateViewport({ TestViewportId, AzFramework::FloatSeconds(DeltaTime), AZ::ScriptTimePoint() });
 
         // will move a small amount initially
         const auto mouseDelta = QPoint(5, 0);
@@ -383,7 +381,7 @@ namespace UnitTest
         // ensure further updates to not continue to rotate
         for (int i = 0; i < 50; ++i)
         {
-            m_controllerList->UpdateViewport({ TestViewportId, AzFramework::FloatSeconds(deltaTime), AZ::ScriptTimePoint() });
+            m_controllerList->UpdateViewport({ TestViewportId, AzFramework::FloatSeconds(DeltaTime), AZ::ScriptTimePoint() });
         }
 
         // Then
@@ -406,21 +404,19 @@ namespace UnitTest
         PrepareCollaborators();
         SandboxEditor::SetCameraCaptureCursorForLook(true);
 
-        const float deltaTime = 1.0f / 60.0f;
-
         // When
         // move cursor to the center of the screen
         auto start = QPoint(WidgetSize.width() / 2, WidgetSize.height() / 2);
         MouseMove(m_rootWidget.get(), start, QPoint(0, 0));
-        m_controllerList->UpdateViewport({ TestViewportId, AzFramework::FloatSeconds(deltaTime), AZ::ScriptTimePoint() });
+        m_controllerList->UpdateViewport({ TestViewportId, AzFramework::FloatSeconds(DeltaTime), AZ::ScriptTimePoint() });
 
         // move camera right
         const auto mouseDelta = QPoint(200, 0);
         MousePressAndMove(m_rootWidget.get(), start, mouseDelta, Qt::MouseButton::RightButton);
-        m_controllerList->UpdateViewport({ TestViewportId, AzFramework::FloatSeconds(deltaTime), AZ::ScriptTimePoint() });
+        m_controllerList->UpdateViewport({ TestViewportId, AzFramework::FloatSeconds(DeltaTime), AZ::ScriptTimePoint() });
 
         QTest::mouseRelease(m_rootWidget.get(), Qt::MouseButton::RightButton, Qt::NoModifier, start + mouseDelta);
-        m_controllerList->UpdateViewport({ TestViewportId, AzFramework::FloatSeconds(deltaTime), AZ::ScriptTimePoint() });
+        m_controllerList->UpdateViewport({ TestViewportId, AzFramework::FloatSeconds(DeltaTime), AZ::ScriptTimePoint() });
 
         // update the position of the widget
         const auto offset = QPoint(500, 500);
@@ -428,11 +424,11 @@ namespace UnitTest
 
         // move cursor back to widget center
         MouseMove(m_rootWidget.get(), start, QPoint(0, 0));
-        m_controllerList->UpdateViewport({ TestViewportId, AzFramework::FloatSeconds(deltaTime), AZ::ScriptTimePoint() });
+        m_controllerList->UpdateViewport({ TestViewportId, AzFramework::FloatSeconds(DeltaTime), AZ::ScriptTimePoint() });
 
         // move camera left
         MousePressAndMove(m_rootWidget.get(), start, -mouseDelta, Qt::MouseButton::RightButton);
-        m_controllerList->UpdateViewport({ TestViewportId, AzFramework::FloatSeconds(deltaTime), AZ::ScriptTimePoint() });
+        m_controllerList->UpdateViewport({ TestViewportId, AzFramework::FloatSeconds(DeltaTime), AZ::ScriptTimePoint() });
 
         // Then
         // ensure the camera rotation has returned to the identity
@@ -451,8 +447,6 @@ namespace UnitTest
     {
         SandboxEditor::SetCameraCaptureCursorForLook(false);
 
-        const float deltaTime = 1.0f / 60.0f;
-
         // Given
         PrepareCollaborators();
 
@@ -470,7 +464,7 @@ namespace UnitTest
         // press alt without main viewport in focus
         m_otherWidget->setFocus();
         QTest::keyPress(m_otherWidget.get(), Qt::Key::Key_Alt);
-        m_controllerList->UpdateViewport({ TestViewportId, AzFramework::FloatSeconds(deltaTime), AZ::ScriptTimePoint() });
+        m_controllerList->UpdateViewport({ TestViewportId, AzFramework::FloatSeconds(DeltaTime), AZ::ScriptTimePoint() });
 
         // change focus
         m_rootWidget->setFocus();
@@ -478,19 +472,19 @@ namespace UnitTest
         // move cursor to the center of the screen
         auto start = QPoint(WidgetSize.width() / 2, WidgetSize.height() / 2);
         MouseMove(m_rootWidget.get(), start, QPoint(0, 0));
-        m_controllerList->UpdateViewport({ TestViewportId, AzFramework::FloatSeconds(deltaTime), AZ::ScriptTimePoint() });
+        m_controllerList->UpdateViewport({ TestViewportId, AzFramework::FloatSeconds(DeltaTime), AZ::ScriptTimePoint() });
 
         // update starting position of mouse cursor request (if needed later)
         m_viewportMouseCursorRequests.m_mousePosition = AzToolsFramework::ViewportInteraction::ScreenPointFromQPoint(start);
 
         // start a mouse press and update the viewport
         QTest::mousePress(m_rootWidget.get(), Qt::MouseButton::LeftButton, Qt::NoModifier, start);
-        m_controllerList->UpdateViewport({ TestViewportId, AzFramework::FloatSeconds(deltaTime), AZ::ScriptTimePoint() });
+        m_controllerList->UpdateViewport({ TestViewportId, AzFramework::FloatSeconds(DeltaTime), AZ::ScriptTimePoint() });
 
         // move mouse right and perform a camera orbit (with left mouse button held from before)
         const auto mouseDelta = QPoint(200, 0);
         MouseMove(m_rootWidget.get(), start, mouseDelta);
-        m_controllerList->UpdateViewport({ TestViewportId, AzFramework::FloatSeconds(deltaTime), AZ::ScriptTimePoint() });
+        m_controllerList->UpdateViewport({ TestViewportId, AzFramework::FloatSeconds(DeltaTime), AZ::ScriptTimePoint() });
 
         // Then
         // camera should have moved (we track both position and rotation)
