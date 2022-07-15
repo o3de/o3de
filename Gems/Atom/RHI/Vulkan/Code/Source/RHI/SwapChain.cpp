@@ -283,13 +283,20 @@ namespace AZ
                 //     present to the surface successfully."
                 //
                 // These result values may occur after resizing or some window operation. We should update the surface info and recreate the swapchain.
-                // VK_SUBOPTIMAL_KHR is treated as success, but we better update the surface info as well.
+                // VK_SUBOPTIMAL_KHR is treated as success, but on non-mobile platforms we better update the surface info as well.
                 if (result == VK_ERROR_OUT_OF_DATE_KHR)
                 {
                     m_pendingRecreation = true;
                 }
                 else if (result == VK_SUBOPTIMAL_KHR)
                 {
+                    // On mobile platforms the swapchain won't be recreated on VK_SUBOPTIMAL_KHR.
+                    // This is because on mobiles VK_SUBOPTIMAL_KHR is returned when the swapchain's "preTransform"
+                    // doesn't match the rotation of the device and that means its render engine internally will
+                    // perform the rotation and on certain devices that's not as optimal as being handled by O3DE.
+                    // Handle the rotation ourselves is not trivial to achieve, because the viewport dimensions have
+                    // to be flipped (which affects UI operations) and view/projection matrices of 3D and 2D systems
+                    // have to be manipulated in higher level code, which is very intrusive.
 #if AZ_TRAIT_ATOM_VULKAN_RECREATE_SWAPCHAIN_WHEN_SUBOPTIMAL
                     m_pendingRecreation = true;
 #endif
