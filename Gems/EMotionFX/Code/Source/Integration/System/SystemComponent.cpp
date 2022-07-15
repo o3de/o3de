@@ -75,6 +75,7 @@
 #include <EMotionStudio/EMStudioSDK/Source/PluginManager.h>
 #include <Source/Editor/PropertyWidgets/PropertyTypes.h>
 #include <EMotionFX_Traits_Platform.h>
+#include <SceneAPIExt/Utilities/LegacyPhysicsMaterialFbxManifestConversion.h>
 
 #include <IEditor.h>
 #endif // EMOTIONFXANIMATION_EDITOR
@@ -492,6 +493,7 @@ namespace EMotionFX
             AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
             AzToolsFramework::EditorAnimationSystemRequestsBus::Handler::BusConnect();
             AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler::BusConnect();
+            Physics::Utils::PhysicsMaterialConversionRequestBus::Handler::BusConnect();
 
             // Register custom property handlers for the reflected property editor.
             m_propertyHandlers = RegisterPropertyTypes();
@@ -517,6 +519,7 @@ namespace EMotionFX
                 EditorRequests::Bus::Broadcast(&EditorRequests::UnregisterViewPane, EMStudio::MainWindow::GetEMotionFXPaneName());
             }
 
+            Physics::Utils::PhysicsMaterialConversionRequestBus::Handler::BusDisconnect();
             AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler::BusDisconnect();
             AzToolsFramework::EditorAnimationSystemRequestsBus::Handler::BusDisconnect();
             AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect();
@@ -851,6 +854,11 @@ namespace EMotionFX
                 return SourceFileDetails("Editor/Images/AssetBrowser/AnimGraph_16.svg");
             }
             return SourceFileDetails(); // no result
+        }
+
+        void SystemComponent::FixPhysicsLegacyMaterials(const Physics::Utils::LegacyMaterialIdToNewAssetIdMap& legacyMaterialIdToNewAssetIdMap)
+        {
+            EMotionFX::Pipeline::Utilities::FixFbxManifestsWithPhysicsLegacyMaterials(legacyMaterialIdToNewAssetIdMap);
         }
 
 #endif // EMOTIONFXANIMATION_EDITOR

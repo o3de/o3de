@@ -22,7 +22,6 @@ set(FILES
     Tests/ScriptCanvas_FileHandling.cpp
     Tests/ScriptCanvas_Math.cpp
     Tests/ScriptCanvas_MethodOverload.cpp
-    Tests/ScriptCanvas_NodeGenerics.cpp
     Tests/ScriptCanvas_RuntimeInterpreted.cpp
     Tests/ScriptCanvas_Slots.cpp
     Tests/ScriptCanvas_StringNodes.cpp

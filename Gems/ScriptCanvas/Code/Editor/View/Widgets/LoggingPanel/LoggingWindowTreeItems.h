@@ -30,6 +30,8 @@ AZ_POP_DISABLE_WARNING
 
 namespace ScriptCanvasEditor
 {
+    using SourceHandle = ScriptCanvas::SourceHandle;
+
     class DebugLogFilter
     {
     public:
@@ -189,7 +191,7 @@ namespace ScriptCanvasEditor
 
         LoggingDataId                       m_loggingDataId;
         ScriptCanvas::NodeTypeIdentifier    m_nodeType;
-        SourceHandle                        m_graphInfo;
+        SourceHandle          m_graphInfo;
         ScriptCanvas::GraphIdentifier       m_graphIdentifier;
         QString                             m_sourceEntityName;
         QString                             m_graphName;

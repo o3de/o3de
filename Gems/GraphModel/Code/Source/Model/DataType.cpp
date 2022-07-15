@@ -29,24 +29,19 @@ namespace GraphModel
         }
     }
 
-    DataType::DataType()
-        : m_typeEnum(ENUM_INVALID)
-        , m_displayName("INVALID")
-        , m_cppName("INVALID")
-    {
-    }
-
     DataType::DataType(
         Enum typeEnum,
         const AZ::Uuid& typeUuid,
         const AZStd::any& defaultValue,
         AZStd::string_view typeDisplayName,
-        AZStd::string_view cppTypeName)
+        AZStd::string_view cppTypeName,
+        const AZStd::function<bool(const AZStd::any&)>& valueValidator)
         : m_typeEnum(typeEnum)
         , m_typeUuid(typeUuid)
         , m_defaultValue(defaultValue)
         , m_displayName(typeDisplayName)
         , m_cppName(cppTypeName)
+        , m_valueValidator(valueValidator)
     {
     }
 
@@ -93,5 +88,20 @@ namespace GraphModel
     const AZStd::string& DataType::GetCppName() const
     {
         return m_cppName;
+    }
+
+    bool DataType::IsSupportedType(const AZ::Uuid& typeUuid) const
+    {
+        return typeUuid == m_typeUuid || typeUuid == m_defaultValue.type();
+    }
+
+    bool DataType::IsSupportedValue(const AZStd::any& value) const
+    {
+        if (m_valueValidator)
+        {
+            return m_valueValidator(value);
+        }
+
+        return IsSupportedType(value.type());
     }
 } // namespace GraphModel

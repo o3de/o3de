@@ -39,7 +39,7 @@ namespace UnitTest
 
         void ShutdownInternal() override {}
 
-        void BeginFrameInternal() override {}
+        AZ::RHI::ResultCode BeginFrameInternal() override { return AZ::RHI::ResultCode::Success; }
 
         void EndFrameInternal() override {}
 

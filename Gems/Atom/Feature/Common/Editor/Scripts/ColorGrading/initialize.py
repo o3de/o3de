@@ -104,16 +104,12 @@ def start():
             site.addsitedir(_O3DE_BIN)
 
     # test access to oiio
-    if os.name == 'nt':
-        try:
-            import OpenImageIO as oiio
-            return True
-        except ImportError as e:
-            _LOGGER.error(f"invalid import: {e}")
-            pass
-    else:
-        _LOGGER.info("Non-Windows platforms not yet supported...")
-        return False
+    try:
+        import OpenImageIO as oiio
+        return True
+    except ImportError as e:
+        _LOGGER.error(f"invalid import: {e}")
+        pass
 # ------------------------------------------------------------------------
 
 

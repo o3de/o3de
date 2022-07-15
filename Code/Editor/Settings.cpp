@@ -121,8 +121,6 @@ SEditorSettings::SEditorSettings()
     autoBackupMaxCount = 3;
     autoRemindTime = 0;
 
-    bAutoSaveTagPoints = false;
-
     bNavigationContinuousUpdate = false;
     bNavigationShowAreas = true;
     bNavigationDebugDisplay = false;
@@ -456,7 +454,6 @@ void SEditorSettings::Save(bool isEditorClosing)
     SaveValue("Settings", "BrMultiplier", fBrMultiplier);
     SaveValue("Settings", "CameraFastMoveSpeed", cameraFastMoveSpeed);
     SaveValue("Settings", "PreviewGeometryWindow", bPreviewGeometryWindow);
-    SaveValue("Settings", "AutoSaveTagPoints", bAutoSaveTagPoints);
 
     SaveValue("Settings\\Navigation", "NavigationContinuousUpdate", bNavigationContinuousUpdate);
     SaveValue("Settings\\Navigation", "NavigationShowAreas", bNavigationShowAreas);
@@ -647,7 +644,6 @@ void SEditorSettings::Load()
     LoadValue("Settings", "BrMultiplier", fBrMultiplier);
     LoadValue("Settings", "CameraFastMoveSpeed", cameraFastMoveSpeed);
     LoadValue("Settings", "PreviewGeometryWindow", bPreviewGeometryWindow);
-    LoadValue("Settings", "AutoSaveTagPoints", bAutoSaveTagPoints);
 
     LoadValue("Settings\\Navigation", "NavigationContinuousUpdate", bNavigationContinuousUpdate);
     LoadValue("Settings\\Navigation", "NavigationShowAreas", bNavigationShowAreas);

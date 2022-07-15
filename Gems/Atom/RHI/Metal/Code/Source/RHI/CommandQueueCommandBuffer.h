@@ -24,7 +24,7 @@ namespace AZ
             void Init(id<MTLCommandQueue> hwQueue);
             
             //! Commit the native metal command buffer to the command queue
-            void CommitMetalCommandBuffer();
+            void CommitMetalCommandBuffer(bool isCommitNeeded = true);
                         
             //! Creates a ParallelEncoder if one doesnt exist. Creates a new sub renderencoder from it and returns it
             id <MTLCommandEncoder> AcquireSubRenderEncoder(MTLRenderPassDescriptor* renderPassDescriptor, const char * scopeName);
@@ -36,7 +36,8 @@ namespace AZ
             id <MTLCommandBuffer> AcquireMTLCommandBuffer();
             
             const id<MTLCommandBuffer> GetMtlCommandBuffer() const;
-
+            MTLCommandBufferStatus GetCommandBufferStatus() const;
+            
         private:
             
             //! ParallelCommandEncoder needed to encode data across multiple threads
@@ -47,6 +48,9 @@ namespace AZ
             
             //Metal queue that this commandbuffer is attached to
             id<MTLCommandQueue> m_hwQueue = nil;
+            
+            // Used to cache the status of the Command Buffer after execution is finished
+            MTLCommandBufferStatus m_statusAfterExecution;
         };
     }
 }

@@ -420,18 +420,21 @@ namespace AZ
 
             m_isProcessing = true;
 
-            m_device->BeginFrame();
-            m_frameGraph->Begin();
+            if (m_device->BeginFrame() == ResultCode::Success)
+            {
+                m_frameGraph->Begin();
 
-            ImportScopeProducer(*m_rootScopeProducer);
+                ImportScopeProducer(*m_rootScopeProducer);
 
-            // Queue resource pool resolves onto the root scope.
-            m_rootScope->QueueResourcePoolResolves(m_device->GetResourcePoolDatabase());
+                // Queue resource pool resolves onto the root scope.
+                m_rootScope->QueueResourcePoolResolves(m_device->GetResourcePoolDatabase());
 
-            // This is broadcast after beginning the frame so that the CPU and GPU are synchronized.
-            FrameEventBus::Event(m_device, &FrameEventBus::Events::OnFrameBegin);
+                // This is broadcast after beginning the frame so that the CPU and GPU are synchronized.
+                FrameEventBus::Event(m_device, &FrameEventBus::Events::OnFrameBegin);
 
-            return ResultCode::Success;
+                return ResultCode::Success;
+            }
+            return ResultCode::Fail;
         }
 
         ResultCode FrameScheduler::EndFrame()
@@ -491,7 +494,20 @@ namespace AZ
                 ScopeProducer* scopeProducer = FindScopeProducer(executeContext->GetScopeId());
 
                 AZ_PROFILE_SCOPE(RHI, "ScopeProducer: %s", scopeProducer->GetScopeId().GetCStr());
+
+                if (executeContext->GetCommandList())
+                {
+                    // reset the submit count in preparation for the scope submits
+                    executeContext->GetCommandList()->ResetTotalSubmits();
+                }
+
                 scopeProducer->BuildCommandList(*executeContext);
+
+                if (executeContext->GetCommandList())
+                {
+                    // validate the submits that were added during BuildCommandList
+                    executeContext->GetCommandList()->ValidateTotalSubmits(scopeProducer);
+                }
             }
 
             group.EndContext(index);

@@ -1,0 +1,38 @@
+{
+    "entries": [
+        {
+            "base": "ScriptCanvas_TransformFunctions_ToScale",
+            "context": "BehaviorMethod",
+            "variant": "",
+            "details": {
+                "name": "To Scale",
+                "category": "Math/Transform"
+            },
+            "methods": [
+                {
+                    "base": "ScriptCanvas_TransformFunctions_ToScale",
+                    "details": {
+                        "name": "To Scale",
+                        "tooltip": "Returns the uniform scale of the Source."
+                    },
+                    "params": [
+                        {
+                            "typeid": "{5D9958E9-9F1E-4985-B532-FFFDE75FEDFD}",
+                            "details": {
+                                "name": "Source"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                            "details": {
+                                "name": "Result"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

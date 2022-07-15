@@ -8,17 +8,25 @@
 
 #include <AzCore/Interface/Interface.h>
 #include <AzToolsFramework/UI/DocumentPropertyEditor/PropertyEditorToolsSystem.h>
+#include <AzToolsFramework/UI/DocumentPropertyEditor/ContainerActionButtonHandler.h>
 
 namespace AzToolsFramework
 {
     PropertyEditorToolsSystem::PropertyEditorToolsSystem()
     {
         AZ::Interface<PropertyEditorToolsSystemInterface>::Register(this);
+
+        RegisterDefaultHandlers();
     }
 
     PropertyEditorToolsSystem::~PropertyEditorToolsSystem()
     {
         AZ::Interface<PropertyEditorToolsSystemInterface>::Unregister(this);
+    }
+
+    void PropertyEditorToolsSystem::RegisterDefaultHandlers()
+    {
+        PropertyEditorToolsSystemInterface::RegisterHandler<ContainerActionButtonHandler>();
     }
 
     PropertyEditorToolsSystem::PropertyHandlerId PropertyEditorToolsSystem::GetPropertyHandlerForNode(const AZ::Dom::Value node)
@@ -32,7 +40,7 @@ namespace AzToolsFramework
             return InvalidHandlerId;
         }
 
-        // If the Type is empty of unspecified, check the default handler list
+        // If the Type is empty or unspecified, check the default handler list
         AZStd::string_view typeName = PropertyEditor::Type.ExtractFromDomNode(node).value_or("");
         if (typeName.empty())
         {

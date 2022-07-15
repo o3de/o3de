@@ -15,6 +15,7 @@
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
 #include <AzToolsFramework/Prefab/Spawnable/PrefabConverterStackProfileNames.h>
 #include <AzToolsFramework/Prefab/Spawnable/PrefabInMemorySpawnableConverter.h>
+#include <AzToolsFramework/Prefab/Spawnable/PrefabToInMemorySpawnableNotificationBus.h>
 #include <AzFramework/Spawnable/Spawnable.h>
 #include <AzFramework/Spawnable/SpawnableAssetBus.h>
 
@@ -101,6 +102,14 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
             info.m_relativePath = product.GetId();
             AZ::Data::AssetData* assetData = product.ReleaseAsset().release();
             assetDataInfoContainer.emplace_back(AZStd::make_pair<AZ::Data::AssetData*, AZ::Data::AssetInfo>(assetData, info));
+
+            if (info.m_assetType == azrtti_typeid<AzFramework::Spawnable>())
+            {
+                auto spawnable = azrtti_cast<AzFramework::Spawnable*>(assetData);
+
+                PrefabToInMemorySpawnableNotificationBus::Broadcast(&PrefabToInMemorySpawnableNotifications::OnPreparingInMemorySpawnableFromPrefab,
+                    *spawnable, info.m_relativePath);
+            }
         }
 
         return m_assetContainer.CreateInMemorySpawnableAsset(assetDataInfoContainer, loadReferencedAssets, spawnableName);

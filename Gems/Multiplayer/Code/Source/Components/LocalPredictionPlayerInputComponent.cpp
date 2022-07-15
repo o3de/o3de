@@ -10,10 +10,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzNetworking/Serialization/HashSerializer.h>
-#include <AzNetworking/Serialization/NetworkInputSerializer.h>
-#include <AzNetworking/Serialization/NetworkOutputSerializer.h>
 #include <AzNetworking/Serialization/StringifySerializer.h>
-#include <AzNetworking/Serialization/TrackChangedSerializer.h>
 #include <Multiplayer/Components/NetworkHierarchyRootComponent.h>
 #include <Multiplayer/MultiplayerDebug.h>
 
@@ -267,7 +264,7 @@ namespace Multiplayer
                 // Produce correction for client
                 AzNetworking::PacketEncodingBuffer correction;
                 correction.Resize(correction.GetCapacity());
-                AzNetworking::NetworkInputSerializer serializer(correction.GetBuffer(), static_cast<uint32_t>(correction.GetCapacity()));
+                InputSerializer serializer(correction.GetBuffer(), static_cast<uint32_t>(correction.GetCapacity()));
 
                 // only deserialize if we have data (for client/server profile/debug mismatches)
                 if (correction.GetSize() > 0)
@@ -372,7 +369,7 @@ namespace Multiplayer
         m_lastCorrectionInputId = inputId;
 
         // Apply the correction
-        AzNetworking::TrackChangedSerializer<AzNetworking::NetworkOutputSerializer> serializer(correction.GetBuffer(), static_cast<uint32_t>(correction.GetSize()));
+        OutputSerializer serializer(correction.GetBuffer(), static_cast<uint32_t>(correction.GetSize()));
         SerializeEntityCorrection(serializer);
         GetNetBindComponent()->NotifyCorrection();
 

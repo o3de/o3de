@@ -15,6 +15,7 @@
 #include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipInterface.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
+#include <AzToolsFramework/Prefab/Instance/InstanceDomGeneratorInterface.h>
 #include <AzToolsFramework/Prefab/Instance/TemplateInstanceMapperInterface.h>
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
 #include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
@@ -29,11 +30,18 @@ namespace AzToolsFramework
     {
         InstanceUpdateExecutor::InstanceUpdateExecutor(int instanceCountToUpdateInBatch)
             : m_instanceCountToUpdateInBatch(instanceCountToUpdateInBatch)
-        { 
+            , m_GameModeEventHandler(
+                  [this](GameModeState state)
+                  {
+                      m_shouldPausePropagation = (state == GameModeState::Started);
+                  })
+        {
         }
 
         void InstanceUpdateExecutor::RegisterInstanceUpdateExecutorInterface()
         {
+            AZ::Interface<InstanceUpdateExecutorInterface>::Register(this);
+
             m_prefabSystemComponentInterface = AZ::Interface<PrefabSystemComponentInterface>::Get();
             AZ_Assert(m_prefabSystemComponentInterface != nullptr,
                 "Prefab - InstanceUpdateExecutor::RegisterInstanceUpdateExecutorInterface - "
@@ -46,11 +54,21 @@ namespace AzToolsFramework
                 "Template Instance Mapper Interface could not be found. "
                 "Check that it is being correctly initialized.");
 
-            AZ::Interface<InstanceUpdateExecutorInterface>::Register(this);
+            m_instanceDomGeneratorInterface = AZ::Interface<InstanceDomGeneratorInterface>::Get();
+            AZ_Assert(m_instanceDomGeneratorInterface != nullptr,
+                "Prefab - InstanceUpdateExecutor::RegisterInstanceUpdateExecutorInterface - "
+                "Instance Dom Generator Interface could not be found. "
+                "Check that it is being correctly initialized.");
         }
 
         void InstanceUpdateExecutor::UnregisterInstanceUpdateExecutorInterface()
         {
+            m_GameModeEventHandler.Disconnect();
+
+            m_instanceDomGeneratorInterface = nullptr;
+            m_templateInstanceMapperInterface = nullptr;
+            m_prefabSystemComponentInterface = nullptr;
+
             AZ::Interface<InstanceUpdateExecutorInterface>::Unregister(this);
         }
 
@@ -91,10 +109,25 @@ namespace AzToolsFramework
             });
         }
 
+        void InstanceUpdateExecutor::LazyConnectGameModeEventHandler()
+        {
+            PrefabEditorEntityOwnershipInterface* prefabEditorEntityOwnershipInterface =
+                AZ::Interface<PrefabEditorEntityOwnershipInterface>::Get();
+            
+            if (!m_GameModeEventHandler.IsConnected() && prefabEditorEntityOwnershipInterface)
+            {
+                prefabEditorEntityOwnershipInterface->RegisterGameModeEventHandler(m_GameModeEventHandler);
+            }
+        }
+
         bool InstanceUpdateExecutor::UpdateTemplateInstancesInQueue()
         {
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
+
+            LazyConnectGameModeEventHandler();
+
             bool isUpdateSuccessful = true;
-            if (!m_updatingTemplateInstancesInQueue)
+            if (!m_updatingTemplateInstancesInQueue && !m_shouldPausePropagation)
             {
                 m_updatingTemplateInstancesInQueue = true;
 
@@ -110,7 +143,7 @@ namespace AzToolsFramework
 
                     EntityIdList selectedEntityIds;
                     ToolsApplicationRequestBus::BroadcastResult(selectedEntityIds, &ToolsApplicationRequests::GetSelectedEntities);
-                    PrefabDom instanceDomFromRootDocument;
+                    PrefabDom instanceDom;
 
                     // Process all instances in the queue, capped to the batch size.
                     // Even though we potentially initialized the batch size to the queue, it's possible for the queue size to shrink
@@ -155,63 +188,27 @@ namespace AzToolsFramework
                             continue;
                         }
 
+                        bool instanceDomGenerated = m_instanceDomGeneratorInterface->GenerateInstanceDom(
+                            instanceToUpdate, instanceDom);
+                        if (!instanceDomGenerated)
+                        {
+                            AZ_Assert(
+                                false,
+                                "InstanceUpdateExecutor::UpdateTemplateInstancesInQueue - "
+                                "Could not load Instance DOM from the given Instance.");
+
+                            isUpdateSuccessful = false;
+                            continue;
+                        }
+
                         EntityList newEntities;
-
-                        // Climb up to the root of the instance hierarchy from this instance
-                        InstanceOptionalConstReference rootInstance = *instanceToUpdate;
-                        AZStd::vector<InstanceOptionalConstReference> pathOfInstances;
-
-                        while (rootInstance->get().GetParentInstance() != AZStd::nullopt)
-                        {
-                            pathOfInstances.emplace_back(rootInstance);
-                            rootInstance = rootInstance->get().GetParentInstance();
-                        }
-
-                        AZStd::string aliasPathResult = "";
-                        for (auto instanceIter = pathOfInstances.rbegin(); instanceIter != pathOfInstances.rend(); ++instanceIter)
-                        {
-                            aliasPathResult.append("/Instances/");
-                            aliasPathResult.append((*instanceIter)->get().GetInstanceAlias());
-                        }
-
-                        PrefabDomPath rootPrefabDomPath(aliasPathResult.c_str());
-
-                        PrefabDom& rootPrefabTemplateDom =
-                            m_prefabSystemComponentInterface->FindTemplateDom(rootInstance->get().GetTemplateId());
-
-                        auto instanceDomFromRootValue = rootPrefabDomPath.Get(rootPrefabTemplateDom);
-                        if (!instanceDomFromRootValue)
-                        {
-                            AZ_Assert(
-                                false,
-                                "InstanceUpdateExecutor::UpdateTemplateInstancesInQueue - "
-                                "Could not load Instance DOM from the top level ancestor's DOM.");
-
-                            isUpdateSuccessful = false;
-                            continue;
-                        }
-
-                        PrefabDomValueReference instanceDomFromRoot = *instanceDomFromRootValue;
-                        if (!instanceDomFromRoot.has_value())
-                        {
-                            AZ_Assert(
-                                false,
-                                "InstanceUpdateExecutor::UpdateTemplateInstancesInQueue - "
-                                "Could not load Instance DOM from the top level ancestor's DOM.");
-
-                            isUpdateSuccessful = false;
-                            continue;
-                        }
-
-                        // If a link was created for a nested instance before the changes were propagated,
-                        // then we associate it correctly here
-                        instanceDomFromRootDocument.CopyFrom(instanceDomFromRoot->get(), instanceDomFromRootDocument.GetAllocator());
-                        if (PrefabDomUtils::LoadInstanceFromPrefabDom(*instanceToUpdate, newEntities, instanceDomFromRootDocument))
+                        if (PrefabDomUtils::LoadInstanceFromPrefabDom(*instanceToUpdate, newEntities, instanceDom,
+                            PrefabDomUtils::LoadFlags::UseSelectiveDeserialization))
                         {
                             Template& currentTemplate = currentTemplateReference->get();
                             instanceToUpdate->GetNestedInstances([&](AZStd::unique_ptr<Instance>& nestedInstance) 
                             {
-                                if (nestedInstance->GetLinkId() != InvalidLinkId)
+                                if (!nestedInstance || nestedInstance->GetLinkId() != InvalidLinkId)
                                 {
                                     return;
                                 }
@@ -273,6 +270,11 @@ namespace AzToolsFramework
                 AZ::Interface<PrefabEditorEntityOwnershipInterface>::Get();
             m_rootPrefabInstanceSourcePath =
                 prefabEditorEntityOwnershipInterface->GetRootPrefabInstance()->get().GetTemplateSourcePath();
+        }
+
+        void InstanceUpdateExecutor::SetShouldPauseInstancePropagation(bool shouldPausePropagation)
+        {
+            m_shouldPausePropagation = shouldPausePropagation;
         }
     }
 }

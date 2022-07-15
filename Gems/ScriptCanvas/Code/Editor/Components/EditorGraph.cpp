@@ -83,7 +83,6 @@ AZ_POP_DISABLE_WARNING
 #include <ScriptCanvas/Core/Connection.h>
 #include <ScriptCanvas/Utils/NodeUtils.h>
 #include <ScriptCanvas/Variable/VariableBus.h>
-#include <ScriptCanvas/Libraries/UnitTesting/UnitTestingLibrary.h>
 
     AZ_CVAR(bool, g_disableDeprecatedNodeUpdates, false, {}, AZ::ConsoleFunctorFlags::Null,
         "Disables automatic update attempts of deprecated nodes, so that graphs that require and update can be viewed in their original form");
@@ -208,15 +207,31 @@ namespace ScriptCanvasEditor
         }
     }
 
-    bool EditorGraph::SanityCheckNodeReplacement(ScriptCanvas::Node* oldNode, ScriptCanvas::Node* newNode, ScriptCanvas::NodeUpdateSlotReport& nodeUpdateSlotReport)
+    bool EditorGraph::SanityCheckNodeReplacement(
+        ScriptCanvas::Node* oldNode, ScriptCanvas::Node* newNode, ScriptCanvas::NodeUpdateSlotReport& nodeUpdateSlotReport)
     {
-        auto findReplacementMatch = [](const ScriptCanvas::Slot* oldSlot, const AZStd::vector<const ScriptCanvas::Slot*>& newSlots)->ScriptCanvas::SlotId
+        if (!newNode)
+        {
+            AZ_Warning("ScriptCanvas", false, "Replacement node can not be null.");
+            return false;
+        }
+
+        // Do node replace with custom logic first if there is any
+        // If it fails, fall back to replace based on same topology
+        return SanityCheckNodeReplacementWithCustomLogic(oldNode, newNode, nodeUpdateSlotReport) ||
+            SanityCheckNodeReplacementWithSameTopology(oldNode, newNode, nodeUpdateSlotReport);
+    }
+
+    bool EditorGraph::SanityCheckNodeReplacementWithCustomLogic(
+        ScriptCanvas::Node* oldNode, ScriptCanvas::Node* newNode, ScriptCanvas::NodeUpdateSlotReport& nodeUpdateSlotReport)
+    {
+        auto findReplacementMatch = [](const ScriptCanvas::Slot* oldSlot,
+                                       const AZStd::vector<const ScriptCanvas::Slot*>& newSlots) -> ScriptCanvas::SlotId
         {
             for (auto& newSlot : newSlots)
             {
-                if (newSlot->GetName() == oldSlot->GetName()
-                && newSlot->GetType() == oldSlot->GetType()
-                && (newSlot->IsExecution() || newSlot->GetDataType() == oldSlot->GetDataType()))
+                if (newSlot->GetName() == oldSlot->GetName() && newSlot->GetType() == oldSlot->GetType() &&
+                    (newSlot->IsExecution() || newSlot->GetDataType() == oldSlot->GetDataType()))
                 {
                     return newSlot->GetId();
                 }
@@ -225,22 +240,15 @@ namespace ScriptCanvasEditor
             return {};
         };
 
-        if (!newNode)
-        {
-            AZ_Warning("ScriptCanvas", false, "Replacement node can not be null.");
-            return false;
-        }
-
+        // clean guard to avoid stale data if any
+        auto& oldSlotsToNewSlots = nodeUpdateSlotReport.m_oldSlotsToNewSlots;
+        oldSlotsToNewSlots.clear();
         oldNode->CustomizeReplacementNode(newNode, nodeUpdateSlotReport.m_oldSlotsToNewSlots);
 
         AZStd::unordered_map<AZStd::string, AZStd::vector<AZStd::string>> slotNameMap = oldNode->GetReplacementSlotsMap();
 
         const auto newSlots = newNode->GetAllSlots();
         const auto oldSlots = oldNode->GetAllSlots();
-        bool usingDefaults = true;
-        size_t defaultMatchesFound = 0;
-
-        auto& oldSlotsToNewSlots = nodeUpdateSlotReport.m_oldSlotsToNewSlots;
 
         for (auto oldSlot : oldSlots)
         {
@@ -261,12 +269,17 @@ namespace ScriptCanvasEditor
                         auto newSlot = newNode->GetSlot(newSlotId);
                         if (!newSlot)
                         {
-                            AZ_Warning("ScriptCanvas", false, "Failed to find slot with id %s in replacement Node(%s).", newSlotId.ToString().c_str(), newNode->GetNodeName().c_str());
+                            AZ_Warning("ScriptCanvas", false,
+                                "Failed to find slot with id %s in replacement Node(%s).",
+                                newSlotId.ToString().c_str(), newNode->GetNodeName().c_str());
                             return false;
                         }
                         else if (newSlot && oldSlot->GetType() != newSlot->GetType())
                         {
-                            AZ_Warning("ScriptCanvas", false, "Failed to map deprecated Node (%s) Slot (%s) to replacement Node (%s) Slot (%s).", oldNode->GetNodeName().c_str(), oldSlot->GetName().c_str(), newNode->GetNodeName().c_str(), newSlot->GetName().c_str());
+                            AZ_Warning("ScriptCanvas", false,
+                                "Failed to map deprecated Node (%s) Slot (%s) to replacement Node (%s) Slot (%s).",
+                                oldNode->GetNodeName().c_str(), oldSlot->GetName().c_str(), newNode->GetNodeName().c_str(),
+                                newSlot->GetName().c_str());
                             return false;
                         }
                     }
@@ -283,12 +296,17 @@ namespace ScriptCanvasEditor
 
                         if (!newSlot)
                         {
-                            AZ_Warning("ScriptCanvas", false, "Failed to find slot with name %s in replacement Node (%s).", newSlotName.c_str(), newNode->GetNodeName().c_str());
+                            AZ_Warning("ScriptCanvas", false,
+                                "Failed to find slot with name %s in replacement Node (%s).", newSlotName.c_str(),
+                                newNode->GetNodeName().c_str());
                             return false;
                         }
                         else if (newSlot && oldSlot->GetType() != newSlot->GetType())
                         {
-                            AZ_Warning("ScriptCanvas", false, "Failed to map deprecated Node (%s) Slot (%s) to replacement Node (%s) Slot (%s).", oldNode->GetNodeName().c_str(), oldSlot->GetName().c_str(), newNode->GetNodeName().c_str(), newSlot->GetName().c_str());
+                            AZ_Warning("ScriptCanvas", false,
+                                "Failed to map deprecated Node (%s) Slot (%s) to replacement Node (%s) Slot (%s).",
+                                oldNode->GetNodeName().c_str(), oldSlot->GetName().c_str(), newNode->GetNodeName().c_str(),
+                                newSlot->GetName().c_str());
                             return false;
                         }
 
@@ -299,26 +317,86 @@ namespace ScriptCanvasEditor
             }
             else if (slotNameMap.empty())
             {
-                usingDefaults = true;
                 auto newSlotId = findReplacementMatch(oldSlot, newSlots);
 
                 if (newSlotId.IsValid())
                 {
-                    ++defaultMatchesFound;
                     AZStd::vector<ScriptCanvas::SlotId> slotIds{ newSlotId };
                     oldSlotsToNewSlots.emplace(oldSlot->GetId(), slotIds);
                 }
             }
             else
             {
-                AZ_Warning("ScriptCanvas", false, "Failed to remap deprecated Node(%s) Slot(%s).", oldNode->GetNodeName().c_str(), oldSlot->GetName().c_str());
+                AZ_Warning("ScriptCanvas", false,
+                    "Failed to remap deprecated Node(%s) Slot(%s).", oldNode->GetNodeName().c_str(),
+                    oldSlot->GetName().c_str());
                 return false;
             }
         }
 
-        if (usingDefaults && oldSlotsToNewSlots.size() != oldSlots.size())
+        if (oldSlotsToNewSlots.size() != oldSlots.size())
         {
-            AZ_Warning("ScriptCanvas", false, "Failed to remap deprecated Node(%s) not all old slots were present in the new node.", oldNode->GetNodeName().c_str());
+            AZ_Warning("ScriptCanvas", false,
+                "Deprecated Node(%s) slots are not fully remapped by using custom replacement, going to do replacement based on topology.",
+                oldNode->GetNodeName().c_str());
+            return false;
+        }
+
+        return true;
+    }
+
+    bool EditorGraph::SanityCheckNodeReplacementWithSameTopology(
+        ScriptCanvas::Node* oldNode, ScriptCanvas::Node* newNode, ScriptCanvas::NodeUpdateSlotReport& nodeUpdateSlotReport)
+    {
+        // clean guard to avoid stale data if any
+        auto& oldSlotsToNewSlots = nodeUpdateSlotReport.m_oldSlotsToNewSlots;
+        oldSlotsToNewSlots.clear();
+
+        auto findTopologyMatch = [&oldSlotsToNewSlots](const AZStd::vector<const ScriptCanvas::Slot*>& oldSlots,
+                                                       const AZStd::vector<const ScriptCanvas::Slot*>& newSlots) -> void
+        {
+            if (oldSlots.size() == newSlots.size())
+            {
+                for (size_t index = 0; index < newSlots.size(); index++)
+                {
+                    auto oldSlot = oldSlots[index];
+                    auto newSlot = newSlots[index];
+                    if (newSlot->GetType() == oldSlot->GetType() &&
+                        (newSlot->IsExecution() || newSlot->GetDataType() == oldSlot->GetDataType()))
+                    {
+                        oldSlotsToNewSlots.emplace(oldSlot->GetId(), AZStd::vector<ScriptCanvas::SlotId>{ newSlot->GetId() });
+                    }
+                }
+            }
+        };
+
+        // ExecutionIn slots map
+        findTopologyMatch(oldNode->GetSlotsByType(ScriptCanvas::CombinedSlotType::ExecutionIn),
+                          newNode->GetSlotsByType(ScriptCanvas::CombinedSlotType::ExecutionIn));
+
+        // LatentOut slots map
+        findTopologyMatch(oldNode->GetSlotsByType(ScriptCanvas::CombinedSlotType::LatentOut),
+                          newNode->GetSlotsByType(ScriptCanvas::CombinedSlotType::LatentOut));
+
+        // ExecutionOut slots map
+        findTopologyMatch(oldNode->GetSlotsByType(ScriptCanvas::CombinedSlotType::ExecutionOut),
+                          newNode->GetSlotsByType(ScriptCanvas::CombinedSlotType::ExecutionOut));
+
+        // DataIn slots map
+        findTopologyMatch(oldNode->GetSlotsByType(ScriptCanvas::CombinedSlotType::DataIn),
+                          newNode->GetSlotsByType(ScriptCanvas::CombinedSlotType::DataIn));
+
+        // DataOut slots map
+        findTopologyMatch(oldNode->GetSlotsByType(ScriptCanvas::CombinedSlotType::DataOut),
+                          newNode->GetSlotsByType(ScriptCanvas::CombinedSlotType::DataOut));
+
+
+        if (oldSlotsToNewSlots.size() != oldNode->GetAllSlots().size())
+        {
+            AZ_Warning("ScriptCanvas", false,
+                "Failed to remap deprecated Node(%s) topology doesn't match with replacement node, please provide custom replacement slot map.",
+                oldNode->GetNodeName().c_str());
+            return false;
         }
 
         return true;
@@ -371,19 +449,22 @@ namespace ScriptCanvasEditor
                             }
                         }
 
-                        // Now that the slot has a valid type/name, we can actually promote it to a variable
-                        if (PromoteToVariableAction(endpoint, true))
+                        if (!node->GetGraph()->IsScriptEventExtension())
                         {
-                            ScriptCanvas::GraphVariable* variable = slot->GetVariable();
-
-                            if (variable)
+                            // Now that the slot has a valid type/name, we can actually promote it to a variable
+                            if (PromoteToVariableAction(endpoint, true))
                             {
-                                if (variable->GetScope() != ScriptCanvas::VariableFlags::Scope::Function)
+                                ScriptCanvas::GraphVariable* variable = slot->GetVariable();
+
+                                if (variable)
                                 {
-                                    variable->SetScope(ScriptCanvas::VariableFlags::Scope::Function);
+                                    if (variable->GetScope() != ScriptCanvas::VariableFlags::Scope::Function)
+                                    {
+                                        variable->SetScope(ScriptCanvas::VariableFlags::Scope::Function);
+                                    }
                                 }
                             }
-                        }
+                        }                        
                     }
                     else
                     {
@@ -1346,16 +1427,6 @@ namespace ScriptCanvasEditor
         return nullptr;
     }
 
-    void EditorGraph::MarkOwnership(ScriptCanvas::ScriptCanvasData& owner)
-    {
-        m_owner = &owner;
-    }
-
-    ScriptCanvas::DataPtr EditorGraph::GetOwnership() const
-    {
-        return const_cast<EditorGraph*>(this)->m_owner;
-    }
-
     bool EditorGraph::CreateConnection(const GraphCanvas::ConnectionId& connectionId, const GraphCanvas::Endpoint& sourcePoint, const GraphCanvas::Endpoint& targetPoint)
     {
         if (!sourcePoint.IsValid() || !targetPoint.IsValid())
@@ -1638,7 +1709,7 @@ namespace ScriptCanvasEditor
 
     void EditorGraph::SignalDirty()
     {
-        SourceHandle handle(m_owner, {}, {});
+        SourceHandle handle(m_owner, AZ::Uuid::CreateNull());
         GeneralRequestBus::Broadcast(&GeneralRequests::SignalSceneDirty, handle);
     }
 

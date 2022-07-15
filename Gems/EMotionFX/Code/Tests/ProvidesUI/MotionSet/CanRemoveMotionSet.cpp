@@ -26,16 +26,7 @@ namespace EMotionFX
     {
         RecordProperty("test_case_id", "C24255735");
 
-        // Add new motion set.
-        EXPECT_EQ(GetMotionManager().GetNumMotionSets(), 0) << "No motion set should be present yet.";
-        const char* motionSetName = "TestMotionSet";
-        const AZStd::string commandString = AZStd::string::format("CreateMotionSet -name \"%s\"", motionSetName);
-        AZStd::string result;
-        if (!CommandSystem::GetCommandManager()->ExecuteCommand(commandString, result))
-        {
-            AZ_Error("EMotionFX", false, result.c_str());
-        }
-        EXPECT_EQ(GetMotionManager().GetNumMotionSets(), 1) << "Exactly one motion set should be present.";
+        const size_t oldNumMotionSets = GetMotionManager().GetNumMotionSets();
 
         // Select the motion set.
         MotionSet* motionSet = GetMotionManager().GetMotionSet(0);
@@ -74,7 +65,7 @@ namespace EMotionFX
         motionSetWindow->ReInit();       
 
         // Data verification.
-        EXPECT_EQ(GetMotionManager().GetNumMotionSets(), 0) << "No motion set should be present anymore.";
+        EXPECT_EQ(GetMotionManager().GetNumMotionSets(), oldNumMotionSets - 1);
         EXPECT_EQ(treeWidget->topLevelItemCount(), 0) << "Expected an empty tree widget.";
     }
 } // namespace EMotionFX

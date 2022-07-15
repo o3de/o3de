@@ -57,8 +57,6 @@ namespace AssetProcessor
         int NumberOfPendingJobsPerPlatform(QString platform);
         bool IsIdle();
 
-        void SetQueueSortOnDBSourceName();
-
     Q_SIGNALS:
         void FileCompiled(JobEntry entry, AssetBuilderSDK::ProcessJobResponse response);
         void FileFailed(JobEntry entry);

@@ -14,7 +14,7 @@
 
 #include <ScriptCanvasDeveloperEditor/WrapperMock.h>
 
-namespace ScriptCanvasDeveloper
+namespace ScriptCanvas::Developer
 {
     namespace Nodes
     {

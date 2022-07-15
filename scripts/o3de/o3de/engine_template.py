@@ -112,6 +112,55 @@ def _replace_license_text(source_data: str):
     return source_data
 
 
+def _remove_license_text_markers(source_data: str):
+    """
+    Removes the lines containing the BEGIN_LICENSE and END_LICENSE markers from the license text
+    :param source_data: the source data to transform
+    :return: data with the lines containing the license markers removed
+    """
+
+    # Fine the line with the BEGIN_LICENSE marker on it
+    begin_marker = '{BEGIN_LICENSE}'
+    end_marker = '{END_LICENSE}'
+    license_block_start_index = source_data.find(begin_marker)
+    while license_block_start_index != -1:
+        # Store last offset of all text before the license block
+        pre_license_block_end = source_data.rfind('\n', 0, license_block_start_index)
+        if pre_license_block_end == -1:
+            pre_license_block_end = 0
+        # Find the end of line after the BEGIN_LICENSE block
+        next_line = source_data.find('\n', license_block_start_index + len(begin_marker))
+        if next_line != -1:
+            # Skip past {BEGIN_LICENSE} line +1 for the newline character
+            license_block_start_index = next_line + 1;
+        else:
+            # Otherwise Skip pass the {BEGIN_LICENSE} text as the file contains no more newlines
+            license_block_start_index = license_block_start_index + len(begin_marker)
+
+        # Find the {END_LICENSE} marker
+        license_block_end_index = source_data.find(end_marker, license_block_start_index)
+        if license_block_end_index != -1:
+            # Locate the lines before and after the line containing {END_LICENSE} block
+            prev_line = source_data.rfind('\n', 0, license_block_end_index)
+            post_license_block_begin = source_data.find('\n', license_block_end_index + len(end_marker))
+            if post_license_block_begin == -1:
+                post_license_block_begin = len(source_data)
+
+            # Move the license_block_end_index back to end of the previous line
+            # Also protect against the {BEGIN_LICENSE} and {END_LICENSE} block being on the same line
+            if prev_line != -1 and prev_line > license_block_start_index:
+                license_block_end_index = prev_line
+
+        if license_block_end_index == -1:
+            break
+
+        source_data = source_data[:pre_license_block_end] \
+            + source_data[license_block_start_index:license_block_end_index] \
+            + source_data[post_license_block_begin:]
+
+    return source_data
+
+
 def _transform(s_data: str,
                replacements: list,
                keep_license_text: bool = False) -> str:
@@ -129,9 +178,11 @@ def _transform(s_data: str,
 
     # if someone hand edits the template to have ${Random_Uuid} then replace it with a randomly generated uuid
     while '${Random_Uuid}' in t_data:
-        t_data = t_data.replace('${Random_Uuid}', str(uuid.uuid4()), 1)
+        t_data = t_data.replace('${Random_Uuid}', str(uuid.uuid4()).upper(), 1)
 
-    if not keep_license_text:
+    if keep_license_text:
+        t_data = _remove_license_text_markers(t_data)
+    else:
         t_data = _replace_license_text(t_data)
     return t_data
 
@@ -1647,13 +1698,13 @@ def create_project(project_path: pathlib.Path,
     if project_id:
         replacements.append(("${ProjectId}", project_id))
     else:
-        replacements.append(("${ProjectId}", '{' + str(uuid.uuid4()) + '}'))
+        replacements.append(("${ProjectId}", '{' + str(uuid.uuid4()).upper() + '}'))
 
     # module id is a uuid with { and -
     if module_id:
         replacements.append(("${ModuleClassId}", module_id))
     else:
-        replacements.append(("${ModuleClassId}", '{' + str(uuid.uuid4()) + '}'))
+        replacements.append(("${ModuleClassId}", '{' + str(uuid.uuid4()).upper() + '}'))
 
     # system component class id is a uuid with { and -
     if system_component_class_id:
@@ -1664,7 +1715,7 @@ def create_project(project_path: pathlib.Path,
             return 1
         replacements.append(("${SysCompClassId}", system_component_class_id))
     else:
-        replacements.append(("${SysCompClassId}", '{' + str(uuid.uuid4()) + '}'))
+        replacements.append(("${SysCompClassId}", '{' + str(uuid.uuid4()).upper() + '}'))
 
     # editor system component class id is a uuid with { and -
     if editor_system_component_class_id:
@@ -1675,7 +1726,7 @@ def create_project(project_path: pathlib.Path,
             return 1
         replacements.append(("${EditorSysCompClassId}", editor_system_component_class_id))
     else:
-        replacements.append(("${EditorSysCompClassId}", '{' + str(uuid.uuid4()) + '}'))
+        replacements.append(("${EditorSysCompClassId}", '{' + str(uuid.uuid4()).upper() + '}'))
 
     if _instantiate_template(template_json_data,
                              project_name,
@@ -2025,7 +2076,7 @@ def create_gem(gem_path: pathlib.Path,
     if module_id:
         replacements.append(("${ModuleClassId}", module_id))
     else:
-        replacements.append(("${ModuleClassId}", '{' + str(uuid.uuid4()) + '}'))
+        replacements.append(("${ModuleClassId}", '{' + str(uuid.uuid4()).upper() + '}'))
 
     # system component class id is a uuid with { and -
     if system_component_class_id:
@@ -2036,7 +2087,7 @@ def create_gem(gem_path: pathlib.Path,
             return 1
         replacements.append(("${SysCompClassId}", system_component_class_id))
     else:
-        replacements.append(("${SysCompClassId}", '{' + str(uuid.uuid4()) + '}'))
+        replacements.append(("${SysCompClassId}", '{' + str(uuid.uuid4()).upper() + '}'))
 
     # editor system component class id is a uuid with { and -
     if editor_system_component_class_id:
@@ -2047,7 +2098,7 @@ def create_gem(gem_path: pathlib.Path,
             return 1
         replacements.append(("${EditorSysCompClassId}", editor_system_component_class_id))
     else:
-        replacements.append(("${EditorSysCompClassId}", '{' + str(uuid.uuid4()) + '}'))
+        replacements.append(("${EditorSysCompClassId}", '{' + str(uuid.uuid4()).upper() + '}'))
 
     if _instantiate_template(template_json_data,
                              gem_name,

@@ -8,103 +8,64 @@
 
 #include "Libraries.h"
 
-#include <Libraries/Core/CoreNodes.h>
-#include <Libraries/Logic/Logic.h>
-#include <Libraries/Math/Math.h>
-#include <Libraries/Comparison/Comparison.h>
-#include <Libraries/Spawning/Spawning.h>
+#include <Libraries/Comparison/ComparisonLibrary.h>
+#include <Libraries/Core/CoreLibrary.h>
+#include <Libraries/Deprecated/DeprecatedNodeLibrary.h>
+#include <Libraries/Logic/LogicLibrary.h>
+#include <Libraries/Operators/OperatorsLibrary.h>
+#include <Libraries/Spawning/SpawningLibrary.h>
 #include <Libraries/UnitTesting/UnitTestingLibrary.h>
-#include <AzCore/std/containers/vector.h>
 
 namespace ScriptCanvas
 {
-    static AZ::EnvironmentVariable<NodeRegistry> g_nodeRegistry;
-
-    void InitNodeRegistry()
+    void InitLibraries()
     {
-        g_nodeRegistry = AZ::Environment::CreateVariable<NodeRegistry>(s_nodeRegistryName);
-        using namespace Library;
-        Core::InitNodeRegistry(*g_nodeRegistry);
-        Math::InitNodeRegistry(*g_nodeRegistry);
-        Logic::InitNodeRegistry(*g_nodeRegistry);
-        Entity::InitNodeRegistry(*g_nodeRegistry);
-        Comparison::InitNodeRegistry(*g_nodeRegistry);
-        Time::InitNodeRegistry(*g_nodeRegistry);
-        Spawning::InitNodeRegistry(*g_nodeRegistry);
-        String::InitNodeRegistry(*g_nodeRegistry);
-        Operators::InitNodeRegistry(*g_nodeRegistry);
+        auto nodeRegistry = NodeRegistry::GetInstance();
+        ComparisonLibrary::InitNodeRegistry(nodeRegistry);
+        CoreLibrary::InitNodeRegistry(nodeRegistry);
+        LogicLibrary::InitNodeRegistry(nodeRegistry);
+        OperatorsLibrary::InitNodeRegistry(nodeRegistry);
+    }
+
+    void ResetLibraries()
+    {
+        NodeRegistry::ResetInstance();
+    }
+
+    void ReflectLibraries(AZ::ReflectContext* reflectContext)
+    {
+        CoreLibrary::Reflect(reflectContext);
+        DeprecatedNodeLibrary::Reflect(reflectContext);
+        LogicLibrary::Reflect(reflectContext);
+        OperatorsLibrary::Reflect(reflectContext);
+        SpawningLibrary::Reflect(reflectContext);
 
 #ifndef _RELEASE
-        Library::UnitTesting::InitNodeRegistry(*g_nodeRegistry);
+        UnitTestingLibrary::Reflect(reflectContext);
 #endif
     }
 
-    void ResetNodeRegistry()
+    AZStd::vector<AZ::ComponentDescriptor*> GetLibraryDescriptors()
     {
-        g_nodeRegistry.Reset();
+        AZStd::vector<AZ::ComponentDescriptor*> libraryDescriptors(ComparisonLibrary::GetComponentDescriptors());
+
+        AZStd::vector<AZ::ComponentDescriptor*> componentDescriptors = CoreLibrary::GetComponentDescriptors();
+        libraryDescriptors.insert(libraryDescriptors.end(), componentDescriptors.begin(), componentDescriptors.end());
+
+        componentDescriptors = DeprecatedNodeLibrary::GetComponentDescriptors();
+        libraryDescriptors.insert(libraryDescriptors.end(), componentDescriptors.begin(), componentDescriptors.end());
+
+        componentDescriptors = LogicLibrary::GetComponentDescriptors();
+        libraryDescriptors.insert(libraryDescriptors.end(), componentDescriptors.begin(), componentDescriptors.end());
+
+        componentDescriptors = OperatorsLibrary::GetComponentDescriptors();
+        libraryDescriptors.insert(libraryDescriptors.end(), componentDescriptors.begin(), componentDescriptors.end());
+
+        return libraryDescriptors;
     }
 
     AZ::EnvironmentVariable<NodeRegistry> GetNodeRegistry()
     {
         return AZ::Environment::FindVariable<NodeRegistry>(s_nodeRegistryName);
     }
-
-    void ReflectLibraries(AZ::ReflectContext* reflectContext)
-    {
-        using namespace Library;
-
-        Core::Reflect(reflectContext);
-        Math::Reflect(reflectContext);
-        Logic::Reflect(reflectContext);
-        Entity::Reflect(reflectContext);
-        Comparison::Reflect(reflectContext);
-        Time::Reflect(reflectContext);
-        Spawning::Reflect(reflectContext);
-        String::Reflect(reflectContext);
-        Operators::Reflect(reflectContext);
-
-#ifndef _RELEASE
-        Library::UnitTesting::Reflect(reflectContext);
-#endif
-    }
-
-    AZStd::vector<AZ::ComponentDescriptor*> GetLibraryDescriptors()
-    {
-        using namespace Library;
-
-        AZStd::vector<AZ::ComponentDescriptor*> libraryDescriptors(Core::GetComponentDescriptors());
-        
-        AZStd::vector<AZ::ComponentDescriptor*> componentDescriptors(Math::GetComponentDescriptors());
-        libraryDescriptors.insert(libraryDescriptors.end(), componentDescriptors.begin(), componentDescriptors.end());
-        
-        componentDescriptors = Logic::GetComponentDescriptors();
-        libraryDescriptors.insert(libraryDescriptors.end(), componentDescriptors.begin(), componentDescriptors.end());
-        
-        componentDescriptors = Entity::GetComponentDescriptors();
-        libraryDescriptors.insert(libraryDescriptors.end(), componentDescriptors.begin(), componentDescriptors.end());
-
-        componentDescriptors = Comparison::GetComponentDescriptors();
-        libraryDescriptors.insert(libraryDescriptors.end(), componentDescriptors.begin(), componentDescriptors.end());
-
-        componentDescriptors = Time::GetComponentDescriptors();
-        libraryDescriptors.insert(libraryDescriptors.end(), componentDescriptors.begin(), componentDescriptors.end());
-
-        componentDescriptors = Spawning::GetComponentDescriptors();
-        libraryDescriptors.insert(libraryDescriptors.end(), componentDescriptors.begin(), componentDescriptors.end());
-
-        componentDescriptors = String::GetComponentDescriptors();
-        libraryDescriptors.insert(libraryDescriptors.end(), componentDescriptors.begin(), componentDescriptors.end());
-
-        componentDescriptors = Operators::GetComponentDescriptors();
-        libraryDescriptors.insert(libraryDescriptors.end(), componentDescriptors.begin(), componentDescriptors.end());
-
-#ifndef _RELEASE
-        componentDescriptors = Library::UnitTesting::GetComponentDescriptors();
-        libraryDescriptors.insert(libraryDescriptors.end(), componentDescriptors.begin(), componentDescriptors.end());
-#endif
-
-
-        return libraryDescriptors;
-    }
-
 }

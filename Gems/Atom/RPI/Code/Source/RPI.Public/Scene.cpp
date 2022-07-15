@@ -183,7 +183,7 @@ namespace AZ
             {
                 if (renderPipeline->m_descriptor.m_allowModification)
                 {
-                    renderPipeline->SetPassNeedsRecreate();
+                    renderPipeline->MarkPipelinePassChanges(PipelinePassChanges::PipelineChangedByFeatureProcessor);
                 }
             }
         }
@@ -695,6 +695,12 @@ namespace AZ
                 }
             }
 
+            // the pipeline states might have changed during the OnStartFrame, rebuild the lookup
+            if (m_pipelineStatesLookupNeedsRebuild)
+            {
+                RebuildPipelineStatesLookup();
+            }
+
             // Return if there is no active render pipeline
             if (activePipelines.empty())
             {
@@ -885,7 +891,12 @@ namespace AZ
                 }
             }
         }
-        
+
+        void Scene::PipelineStateLookupNeedsRebuild()
+        {
+            m_pipelineStatesLookupNeedsRebuild = true;
+        }
+
         bool Scene::ConfigurePipelineState(RHI::DrawListTag drawListTag, RHI::PipelineStateDescriptorForDraw& outPipelineState) const
         {
             auto pipelineStatesItr = m_pipelineStatesLookup.find(drawListTag);
@@ -1015,6 +1026,7 @@ namespace AZ
                     }
                 }
             }
+            m_pipelineStatesLookupNeedsRebuild = false;
         }
 
         RenderPipelinePtr Scene::FindRenderPipelineForWindow(AzFramework::NativeWindowHandle windowHandle)

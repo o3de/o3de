@@ -107,6 +107,7 @@ namespace AZ
             RHI::DrawItemSortKey m_sortKey;
 
             TransformServiceFeatureProcessorInterface::ObjectId m_objectId;
+            AZ::Uuid m_rayTracingUuid;
 
             Aabb m_aabb = Aabb::CreateNull();
 

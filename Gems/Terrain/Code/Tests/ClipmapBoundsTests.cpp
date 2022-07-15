@@ -40,8 +40,8 @@ namespace UnitTest
         ) * worldBoundsSize;
 
         Terrain::Vector2i localMax = {
-            aznumeric_cast<int32_t>(AZStd::lround(desc.m_worldSpaceCenter.GetX() / desc.m_clipToWorldScale)),
-            aznumeric_cast<int32_t>(AZStd::lround(desc.m_worldSpaceCenter.GetY() / desc.m_clipToWorldScale))
+            aznumeric_cast<int32_t>(AZStd::lround(desc.m_worldSpaceCenter.GetX() / desc.m_clipmapToWorldScale)),
+            aznumeric_cast<int32_t>(AZStd::lround(desc.m_worldSpaceCenter.GetY() / desc.m_clipmapToWorldScale))
         };
         localMax += aznumeric_cast<int32_t>(desc.m_size / 2ul);
 
@@ -90,7 +90,7 @@ namespace UnitTest
         Terrain::ClipmapBoundsDescriptor desc;
         desc.m_worldSpaceCenter = AZ::Vector2(0.0f, 0.0f);
         desc.m_clipmapUpdateMultiple = 0;
-        desc.m_clipToWorldScale = 1.0f;
+        desc.m_clipmapToWorldScale = 1.0f;
         desc.m_size = 1024;
         Terrain::ClipmapBounds bounds(desc);
 
@@ -115,7 +115,7 @@ namespace UnitTest
         Terrain::ClipmapBoundsDescriptor desc;
         desc.m_worldSpaceCenter = AZ::Vector2(0.0f, 0.0f);
         desc.m_clipmapUpdateMultiple = 0;
-        desc.m_clipToWorldScale = 0.5f;
+        desc.m_clipmapToWorldScale = 0.5f;
         desc.m_size = 1024;
         Terrain::ClipmapBounds bounds(desc);
 
@@ -143,7 +143,7 @@ namespace UnitTest
             Terrain::ClipmapBoundsDescriptor desc;
             desc.m_worldSpaceCenter = AZ::Vector2(-1234.0f, -5432.0f);
             desc.m_clipmapUpdateMultiple = 0;
-            desc.m_clipToWorldScale = 0.75f;
+            desc.m_clipmapToWorldScale = 0.75f;
             desc.m_size = 512;
             CheckTransformRegionFullBounds(desc);
         }
@@ -153,7 +153,7 @@ namespace UnitTest
             Terrain::ClipmapBoundsDescriptor desc;
             desc.m_worldSpaceCenter = AZ::Vector2(1234.0f, 5432.0f);
             desc.m_clipmapUpdateMultiple = 0;
-            desc.m_clipToWorldScale = 1.25f;
+            desc.m_clipmapToWorldScale = 1.25f;
             desc.m_size = 1024;
             CheckTransformRegionFullBounds(desc);
         }
@@ -163,7 +163,7 @@ namespace UnitTest
             Terrain::ClipmapBoundsDescriptor desc;
             desc.m_worldSpaceCenter = AZ::Vector2(1234.0f, -100.0f);
             desc.m_clipmapUpdateMultiple = 0;
-            desc.m_clipToWorldScale = 1.5f;
+            desc.m_clipmapToWorldScale = 1.5f;
             desc.m_size = 256;
             CheckTransformRegionFullBounds(desc);
         }
@@ -172,7 +172,7 @@ namespace UnitTest
             Terrain::ClipmapBoundsDescriptor desc;
             desc.m_worldSpaceCenter = AZ::Vector2(-100.0f, 5432.0f);
             desc.m_clipmapUpdateMultiple = 0;
-            desc.m_clipToWorldScale = 1.0f;
+            desc.m_clipmapToWorldScale = 1.0f;
             desc.m_size = 2048;
             CheckTransformRegionFullBounds(desc);
         }
@@ -184,7 +184,7 @@ namespace UnitTest
         Terrain::ClipmapBoundsDescriptor desc;
         desc.m_worldSpaceCenter = AZ::Vector2(0.0f, 0.0f);
         desc.m_clipmapUpdateMultiple = 0;
-        desc.m_clipToWorldScale = 1.0f;
+        desc.m_clipmapToWorldScale = 1.0f;
         desc.m_size = 1024;
         Terrain::ClipmapBounds bounds(desc);
 
@@ -241,7 +241,7 @@ namespace UnitTest
         Terrain::ClipmapBoundsDescriptor desc;
         desc.m_worldSpaceCenter = AZ::Vector2(0.0f, 0.0f);
         desc.m_clipmapUpdateMultiple = 16;
-        desc.m_clipToWorldScale = 1.0f;
+        desc.m_clipmapToWorldScale = 1.0f;
         desc.m_size = 1024;
         Terrain::ClipmapBounds bounds(desc);
 
@@ -268,7 +268,7 @@ namespace UnitTest
         Terrain::ClipmapBoundsDescriptor desc;
         desc.m_worldSpaceCenter = AZ::Vector2(0.0f, 0.0f);
         desc.m_clipmapUpdateMultiple = 16;
-        desc.m_clipToWorldScale = 1.0f;
+        desc.m_clipmapToWorldScale = 1.0f;
         desc.m_size = 1024;
         Terrain::ClipmapBounds bounds(desc);
 
@@ -346,7 +346,7 @@ namespace UnitTest
                 Terrain::ClipmapBoundsDescriptor desc;
                 desc.m_worldSpaceCenter = AZ::Vector2(0.0f, 0.0f);
                 desc.m_clipmapUpdateMultiple = 0;
-                desc.m_clipToWorldScale = 1.0f;
+                desc.m_clipmapToWorldScale = 1.0f;
                 desc.m_size = 1024;
                 Terrain::ClipmapBounds bounds(desc);
 

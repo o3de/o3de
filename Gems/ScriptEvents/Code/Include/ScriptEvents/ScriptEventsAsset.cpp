@@ -24,9 +24,12 @@ namespace ScriptEvents
         }
     }
 
-    ScriptEventAssetRuntimeHandler::ScriptEventAssetRuntimeHandler(const char* displayName, const char* group, const char* extension, const AZ::Uuid& componentTypeId /*= AZ::Uuid::CreateNull()*/, AZ::SerializeContext* serializeContext /*= nullptr*/)
+    ScriptEventAssetRuntimeHandler::ScriptEventAssetRuntimeHandler
+        ( const char* displayName
+        , const char* group
+        , const char* extension
+        , const AZ::Uuid& componentTypeId /*= AZ::Uuid::CreateNull()*/
+        , AZ::SerializeContext* serializeContext /*= nullptr*/)
         : AzFramework::GenericAssetHandler<ScriptEventsAsset>(displayName, group, extension, componentTypeId, serializeContext)
     {}
-
-
 }

@@ -17,7 +17,7 @@
 #include <ImGuiBus.h>
 #endif // IMGUI_ENABLED
 
-namespace ScriptCanvasDeveloper
+namespace ScriptCanvas::Developer
 {
     class SystemComponent
         : public AZ::Component

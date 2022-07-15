@@ -388,6 +388,10 @@ namespace AzToolsFramework
             // A container for mapping Templates' file paths to their Template ids.
             AZStd::unordered_map<AZ::IO::Path, TemplateId> m_templateFilePathToIdMap;
 
+            // A map of entity id to hashed path used for generation of entity id during deserialization.
+            // This map is needed when there is a many-to-one relationship between entity ids and hashed paths.
+            AZStd::unordered_map<AZ::EntityId, AZ::IO::Path> m_entityIdToHashedPathMap;
+
             // A container of Prefab Links mapped by their Link ids.
             AZStd::unordered_map<LinkId, Link> m_linkIdMap;
 

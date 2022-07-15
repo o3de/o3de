@@ -51,7 +51,7 @@ def Lua_Spawnables_SimpleSpawnAndDespawn():
                                       expected_spawned_entity_scale)
 
     # Wait for Lua script to exit Game Mode on despawn of PinkFlower.spawnable and search for expected entities
-    game_mode_exited = helper.wait_for_condition(lambda: not general.is_in_game_mode(), 5.0)
+    game_mode_exited = helper.wait_for_condition(lambda: not general.is_in_game_mode(), 10.0)
     assert game_mode_exited, "Lua script failed to exit Game Mode"
     validate_entities_in_edit_mode("after exiting Game Mode")
 

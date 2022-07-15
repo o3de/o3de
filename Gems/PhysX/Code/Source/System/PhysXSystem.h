@@ -68,8 +68,6 @@ namespace PhysX
         //! Accessor to get the Settings Registry Manager.
         const PhysXSettingsRegistryManager& GetSettingsRegistryManager() const;
 
-        void UpdateMaterialLibrary(const AZ::Data::Asset<Physics::MaterialLibraryAsset>& materialLibrary);
-
         //TEMP -- until these are fully moved over here
         physx::PxPhysics* GetPxPhysics() { return m_physXSdk.m_physics; }
         physx::PxCooking* GetPxCooking() { return m_physXSdk.m_cooking; }
@@ -87,9 +85,6 @@ namespace PhysX
         //! @param cookingParams The cooking params to use when setting up PhysX cooking interface.
         void InitializePhysXSdk(const physx::PxCookingParams& cookingParams);
         void ShutdownPhysXSdk();
-
-        void InitializeMaterialLibrary();
-        bool LoadMaterialLibrary();
 
         PhysXSystemConfiguration m_systemConfig;
         AzPhysics::SceneConfiguration m_defaultSceneConfiguration;
@@ -123,27 +118,6 @@ namespace PhysX
         AZStd::unique_ptr<PhysXSettingsRegistryManager> m_registryManager; //! Handles all settings registry interactions.
         PhysXSceneInterface m_sceneInterface; //! Implemented the Scene Az::Interface.
         PhysXJointHelpersInterface m_jointHelperInterface; //! Implementation of the JointHelpersInterface.
-
-        class MaterialLibraryAssetHelper
-            : private AZ::Data::AssetBus::Handler
-        {
-        public:
-            using OnMaterialLibraryReloadedCallback = AZStd::function<void(const AZ::Data::Asset<Physics::MaterialLibraryAsset>& materialLibrary)>;
-
-            MaterialLibraryAssetHelper(OnMaterialLibraryReloadedCallback callback);
-
-            void Connect(const AZ::Data::AssetId& materialLibraryId);
-            void Disconnect();
-
-        private:
-            // AZ::Data::AssetBus::Handler
-            void OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
-
-            OnMaterialLibraryReloadedCallback m_onMaterialLibraryReloadedCallback;
-        };
-        MaterialLibraryAssetHelper m_materialLibraryAssetHelper;
-
-        AZ::SettingsRegistryInterface::NotifyEventHandler m_componentApplicationLifecycleHandler;
     };
 
     //! Helper function for getting the PhysX System interface from inside the PhysX gem.

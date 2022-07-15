@@ -42,12 +42,15 @@ namespace PhysX
 
         static void Reflect(AZ::ReflectContext* context);
 
-        AZ::u32 GetShapeCount() override;
+        AZ::u32 GetShapeCount() const override;
         AZStd::shared_ptr<Physics::Shape> GetShape(AZ::u32 index) override;
+        AZStd::shared_ptr<const Physics::Shape> GetShape(AZ::u32 index) const override;
 
         AZ::Vector3 GetCenterOfMassWorld() const override;
         AZ::Vector3 GetCenterOfMassLocal() const override;
 
+        AZ::Matrix3x3 GetInertiaWorld() const override;
+        AZ::Matrix3x3 GetInertiaLocal() const override;
         AZ::Matrix3x3 GetInverseInertiaWorld() const override;
         AZ::Matrix3x3 GetInverseInertiaLocal() const override;
 

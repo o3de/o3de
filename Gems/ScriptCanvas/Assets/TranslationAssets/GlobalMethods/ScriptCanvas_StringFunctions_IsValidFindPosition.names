@@ -1,0 +1,40 @@
+{
+    "entries": [
+        {
+            "base": "ScriptCanvas_StringFunctions_IsValidFindPosition",
+            "context": "BehaviorMethod",
+            "variant": "",
+            "details": {
+                "name": "Is Valid Find Position",
+                "category": "String"
+            },
+            "methods": [
+                {
+                    "base": "ScriptCanvas_StringFunctions_IsValidFindPosition",
+                    "details": {
+                        "name": "Is Valid Find Position",
+                        "tooltip": "Checks if position is equal to npos."
+                    },
+                    "params": [
+                        {
+                            "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
+                            "details": {
+                                "name": "Position",
+                                "tooltip": "The string find position to check against"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Result",
+                                "tooltip": "true if find position is valid, false otherwise."
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

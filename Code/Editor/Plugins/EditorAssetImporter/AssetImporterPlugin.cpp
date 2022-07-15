@@ -67,7 +67,7 @@ AZStd::unique_ptr<AZ::DynamicModuleHandle> AssetImporterPlugin::LoadSceneLibrary
             auto init = module->GetFunction<AZ::InitializeDynamicModuleFunction>(AZ::InitializeDynamicModuleFunctionName);
             if (init)
             {
-                (*init)(AZ::Environment::GetInstance());
+                (*init)();
             }
         }
 

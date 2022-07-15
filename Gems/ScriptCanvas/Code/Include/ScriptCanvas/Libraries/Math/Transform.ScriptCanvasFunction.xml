@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScriptCanvas>
+    <Library
+        Include="Include/ScriptCanvas/Libraries/Math/Transform.h"
+        Namespace="ScriptCanvas::TransformFunctions"
+        Category="Math/Transform">
+        
+        <Function Name="FromMatrix3x3">
+            <Parameter Name ="Source"/>
+        </Function>
+        
+        <Function Name="FromMatrix3x3AndTranslation">
+            <Parameter Name ="Matrix"/>
+            <Parameter Name ="Translation"/>
+        </Function>
+        
+        <Function Name="FromRotation">
+            <Parameter Name ="Source"/>
+        </Function>
+        
+        <Function Name="FromRotationAndTranslation">
+            <Parameter Name ="Rotation"/>
+            <Parameter Name ="Translation"/>
+        </Function>
+        
+        <Function Name="FromScale">
+            <Parameter Name ="Scale"/>
+        </Function>
+        
+        <Function Name="FromTranslation">
+            <Parameter Name ="Translation"/>
+        </Function>
+        
+        <Function Name="GetRight">
+            <Parameter Name ="Source"/>
+            <Parameter Name ="Scale" DefaultValue="1.0"/>
+        </Function>
+        
+        <Function Name="GetForward">
+            <Parameter Name ="Source"/>
+            <Parameter Name ="Scale" DefaultValue="1.0"/>
+        </Function>
+        
+        <Function Name="GetUp">
+            <Parameter Name ="Source"/>
+            <Parameter Name ="Scale" DefaultValue="1.0"/>
+        </Function>
+        
+        <Function Name="GetTranslation">
+            <Parameter Name ="Source"/>
+        </Function>
+        
+        <Function Name="IsClose">
+            <Parameter Name ="A"/>
+            <Parameter Name ="B"/>
+            <Parameter Name ="Tolerance" DefaultValue="0.01"/>
+        </Function>
+        
+        <Function Name="IsFinite">
+            <Parameter Name ="Source"/>
+        </Function>
+        
+        <Function Name="IsOrthogonal">
+            <Parameter Name ="Source"/>
+            <Parameter Name ="Tolerance" DefaultValue="0.01"/>
+        </Function>
+        
+        <Function Name="MultiplyByUniformScale">
+            <Parameter Name ="Source"/>
+            <Parameter Name ="Scale"/>
+        </Function>
+        
+        <Function Name="MultiplyByVector3">
+            <Parameter Name ="Source"/>
+            <Parameter Name ="Multiplier"/>
+        </Function>
+        
+        <Function Name="MultiplyByVector4">
+            <Parameter Name ="Source"/>
+            <Parameter Name ="Multiplier"/>
+        </Function>
+        
+        <Function Name="Orthogonalize">
+            <Parameter Name ="Source"/>
+        </Function>
+        
+        <Function Name="RotationXDegrees">
+            <Parameter Name ="Degrees"/>
+        </Function>
+        
+        <Function Name="RotationYDegrees">
+            <Parameter Name ="Degrees"/>
+        </Function>
+        
+        <Function Name="RotationZDegrees">
+            <Parameter Name ="Degrees"/>
+        </Function>
+        
+        <Function Name="ToScale">
+            <Parameter Name ="Source"/>
+        </Function>
+    </Library>
+</ScriptCanvas>

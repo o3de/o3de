@@ -14,10 +14,10 @@ partial ShaderResourceGroup SceneSrg
 {
     struct TerrainWorldData
     {
-        float3 m_min;
-        float m_padding1;
-        float3 m_max;
-        float m_padding2;
+        float m_zMin;
+        float m_zMax;
+        float m_zExtents;
+        float m_padding;
     };
 
     TerrainWorldData m_terrainWorldData;

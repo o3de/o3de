@@ -21,6 +21,11 @@
 
 #if ENABLE_SHADER_DEBUGGING
     option bool o_shader_debugging_enabled = true;
+
+    // Used for custom purposes depending on the debug settings
+    // For example, used to store the value of the directional light shadow when debugging the cascade shadowmap
+    static float4 customDebugFloats = float4(0, 0, 0, 0);
+
 #else
     #define o_shader_debugging_enabled false
 #endif
@@ -43,6 +48,12 @@ enum class RenderDebugOptions
     EnableSpecularLighting,
     EnableDirectLighting,
     EnableIndirectLighting,
+
+    // Debug flags hooked up to the debug render component for quick and easy shader testing/debugging
+    CustomDebugOption01,
+    CustomDebugOption02,
+    CustomDebugOption03,
+    CustomDebugOption04,
 };
 
 // Specifies what debug info to render to the view
@@ -58,6 +69,8 @@ enum class RenderDebugViewMode
     Albedo,
     Roughness,
     Metallic,
+
+    CascadeShadows,
 };
 
 bool IsDebuggingEnabled()
@@ -110,13 +123,14 @@ void DebugModifyOutput(inout float4 outDiffuse, inout float4 outSpecular, inout 
         tangent = (tangent * 0.5) + 0.5;
         bitangent = (bitangent * 0.5) + 0.5;
 
-             if(viewMode == RenderDebugViewMode::Normal)     { outSpecular.rgb = normal; }
-        else if(viewMode == RenderDebugViewMode::Tangent)    { outSpecular.rgb = tangent; }
-        else if(viewMode == RenderDebugViewMode::Bitangent)  { outSpecular.rgb = bitangent; }
-        else if(viewMode == RenderDebugViewMode::BaseColor)  { outSpecular.rgb = baseColor; }
-        else if(viewMode == RenderDebugViewMode::Albedo)     { outSpecular.rgb = albedo; }
-        else if(viewMode == RenderDebugViewMode::Roughness)  { outSpecular.rgb = roughness.rrr; }
-        else if(viewMode == RenderDebugViewMode::Metallic)   { outSpecular.rgb = metallic.rrr; }
+             if(viewMode == RenderDebugViewMode::Normal)         { outSpecular.rgb = normal; }
+        else if(viewMode == RenderDebugViewMode::Tangent)        { outSpecular.rgb = tangent; }
+        else if(viewMode == RenderDebugViewMode::Bitangent)      { outSpecular.rgb = bitangent; }
+        else if(viewMode == RenderDebugViewMode::BaseColor)      { outSpecular.rgb = baseColor; }
+        else if(viewMode == RenderDebugViewMode::Albedo)         { outSpecular.rgb = albedo; }
+        else if(viewMode == RenderDebugViewMode::Roughness)      { outSpecular.rgb = roughness.rrr; }
+        else if(viewMode == RenderDebugViewMode::Metallic)       { outSpecular.rgb = metallic.rrr; }
+        else if(viewMode == RenderDebugViewMode::CascadeShadows) { outSpecular.rgb = customDebugFloats.rgb; }
 
         if(viewMode != RenderDebugViewMode::None)
         {

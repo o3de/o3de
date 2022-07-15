@@ -14,6 +14,7 @@
 
 #include <AzToolsFramework/ActionManager/Action/ActionManager.h>
 #include <AzToolsFramework/ActionManager/Menu/MenuManager.h>
+#include <AzToolsFramework/ActionManager/ToolBar/ToolBarManager.h>
 
 namespace AzToolsFramework
 {
@@ -39,6 +40,7 @@ namespace AzToolsFramework
     private:
         AZStd::unique_ptr<ActionManager> m_actionManager = nullptr;
         AZStd::unique_ptr<MenuManager> m_menuManager = nullptr;
+        AZStd::unique_ptr<ToolBarManager> m_toolBarManager = nullptr;
     };
 
 } // namespace AzToolsFramework

@@ -55,14 +55,12 @@ def ScriptCanvas_TwoComponents_InteractSuccessfully():
     import azlmbr.math as math
     import azlmbr.asset as asset
     import azlmbr.bus as bus
+    import azlmbr.editor as editor
 
     LEVEL_NAME = "tmp_level"
-    ASSET_1 = os.path.join("scriptcanvas", "ScriptCanvas_TwoComponents0.scriptcanvas")
-    ASSET_2 = os.path.join("scriptcanvas", "ScriptCanvas_TwoComponents1.scriptcanvas")
+    SOURCE_1 = os.path.join("scriptcanvas", "ScriptCanvas_TwoComponents0.scriptcanvas")
+    SOURCE_2 = os.path.join("scriptcanvas", "ScriptCanvas_TwoComponents1.scriptcanvas")
     WAIT_TIME = 3.0  # SECONDS
-
-    def get_asset(asset_path):
-        return asset.AssetCatalogRequestBus(bus.Broadcast, "GetAssetIdByPath", asset_path, math.Uuid(), False)
 
     def locate_expected_lines():
         found_lines = []
@@ -82,8 +80,13 @@ def ScriptCanvas_TwoComponents_InteractSuccessfully():
     position = math.Vector3(512.0, 512.0, 32.0)
     test_entity = hydra.Entity("test_entity")
     test_entity.create_entity(position, ["Script Canvas", "Script Canvas"])
-    test_entity.get_set_test(0, "Script Canvas Asset|Script Canvas Asset", get_asset(ASSET_1))
-    test_entity.get_set_test(1, "Script Canvas Asset|Script Canvas Asset", get_asset(ASSET_2))
+    sourceFilePath = "Configuration|Source"
+
+    source1 = azlmbr.scriptcanvas.SourceHandleFromPath(SOURCE_1)
+    source2 = azlmbr.scriptcanvas.SourceHandleFromPath(SOURCE_2)
+
+    test_entity.get_set_test(0, sourceFilePath, source1)
+    test_entity.get_set_test(1, sourceFilePath, source2)
 
     # 3) Start Tracer
     with Tracer() as section_tracer:

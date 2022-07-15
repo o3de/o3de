@@ -53,6 +53,7 @@
 #include <AzFramework/IO/LocalFileIO.h>
 #include <AzFramework/IO/RemoteStorageDrive.h>
 #include <AzFramework/Physics/Utils.h>
+#include <AzFramework/Physics/Material/PhysicsMaterialSystemComponent.h>
 #include <AzFramework/Render/GameIntersectorComponent.h>
 #include <AzFramework/Platform/PlatformDefaults.h>
 #include <AzFramework/Archive/Archive.h>
@@ -352,6 +353,7 @@ namespace AzFramework
             azrtti_typeid<AzFramework::InputSystemComponent>(),
             azrtti_typeid<AzFramework::StreamingInstall::StreamingInstallSystemComponent>(),
             azrtti_typeid<AzFramework::SpawnableSystemComponent>(),
+            azrtti_typeid<Physics::MaterialSystemComponent>(),
             AZ::Uuid("{624a7be2-3c7e-4119-aee2-1db2bdb6cc89}"), // ScriptDebugAgent
             });
 

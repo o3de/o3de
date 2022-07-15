@@ -14,7 +14,7 @@
 #include <ScriptCanvasDeveloperEditor/EditorAutomation/EditorAutomationModelIds.h>
 #include <ScriptCanvasDeveloperEditor/EditorAutomation/EditorAutomationActions/GenericActions.h>
 
-namespace ScriptCanvasDeveloper
+namespace ScriptCanvas::Developer
 {
     /**
         EditorAutomationAction that will create the specified node from the NodePalette at the specified scene point

@@ -265,6 +265,8 @@ namespace ImageProcessingAtom
                 height *= 6;
             }
 
+            height *= arraySize;
+
             IImageObjectPtr outputImage = IImageObjectPtr(IImageObject::CreateImage(width, height, mipLevels, format));
 
             if (isSRGB)

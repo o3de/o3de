@@ -23,6 +23,7 @@
 #   include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #   include <AzToolsFramework/API/EditorAnimationSystemRequestBus.h>
 #   include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
+#   include <AzToolsFramework/Physics/Material/Legacy/LegacyPhysicsMaterialConversionUtils.h>
 #   include <EMotionStudio/EMStudioSDK/Source/EMStudioManager.h>
 #endif // EMOTIONFXANIMATION_EDITOR
 
@@ -51,6 +52,7 @@ namespace EMotionFX
             , private AzToolsFramework::EditorEvents::Bus::Handler
             , private AzToolsFramework::EditorAnimationSystemRequestsBus::Handler
             , private AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler
+            , private Physics::Utils::PhysicsMaterialConversionRequestBus::Handler
 #endif // EMOTIONFXANIMATION_EDITOR
 
         {
@@ -114,6 +116,11 @@ namespace EMotionFX
             //////////////////////////////////////////////////////////////////////////////////////
             // AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler
             AzToolsFramework::AssetBrowser::SourceFileDetails GetSourceFileDetails(const char* fullSourceFileName) override;
+            //////////////////////////////////////////////////////////////////////////////////////
+
+            //////////////////////////////////////////////////////////////////////////////////////
+            // Physics::Utils::PhysicsMaterialConversionRequestBus::Handler
+            void FixPhysicsLegacyMaterials(const Physics::Utils::LegacyMaterialIdToNewAssetIdMap& legacyMaterialIdToNewAssetIdMap) override;
             //////////////////////////////////////////////////////////////////////////////////////
 
             AZStd::vector<AzToolsFramework::PropertyHandlerBase*> m_propertyHandlers;

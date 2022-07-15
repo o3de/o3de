@@ -131,15 +131,13 @@ namespace AZ
             else if (value.is<Data::Asset<Data::AssetData>>())
             {
                 auto asset = AZStd::any_cast<Data::Asset<Data::AssetData>>(value);
-                auto assetId = asset.GetId();
+
                 AZ::Data::AssetInfo assetInfo;
-                AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetInfo, &AZ::Data::AssetCatalogRequests::GetAssetInfoById, assetId);
+                AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+                    assetInfo, &AZ::Data::AssetCatalogRequests::GetAssetInfoById, asset.GetId());
                 if (assetInfo.m_assetId.IsValid())
                 {
-                    result.m_value = Data::Asset<RPI::ImageAsset>(
-                        assetId,
-                        assetInfo.m_assetType,
-                        asset.GetHint());
+                    result.m_value = Data::Asset<RPI::ImageAsset>(assetInfo.m_assetId, assetInfo.m_assetType, assetInfo.m_relativePath);
                 }
                 else
                 {
@@ -149,18 +147,12 @@ namespace AZ
             else if (value.is<Data::Asset<StreamingImageAsset>>())
             {
                 auto asset = AZStd::any_cast<Data::Asset<RPI::StreamingImageAsset>>(value);
-                result.m_value = Data::Asset<RPI::ImageAsset>(
-                    asset.GetId(),
-                    azrtti_typeid<RPI::StreamingImageAsset>(),
-                    asset.GetHint());
+                result.m_value = Data::Asset<RPI::ImageAsset>(asset.GetId(), azrtti_typeid<RPI::StreamingImageAsset>(), asset.GetHint());
             }
             else if (value.is<Data::Asset<AttachmentImageAsset>>())
             {
                 auto asset = AZStd::any_cast<Data::Asset<RPI::AttachmentImageAsset>>(value);
-                result.m_value = Data::Asset<RPI::ImageAsset>(
-                    asset.GetId(),
-                    azrtti_typeid<RPI::AttachmentImageAsset>(),
-                    asset.GetHint());
+                result.m_value = Data::Asset<RPI::ImageAsset>(asset.GetId(), azrtti_typeid<RPI::AttachmentImageAsset>(), asset.GetHint());
             }
             else if (value.is<Data::Asset<ImageAsset>>())
             {

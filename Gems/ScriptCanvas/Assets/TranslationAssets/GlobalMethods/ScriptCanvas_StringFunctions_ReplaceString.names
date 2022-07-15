@@ -1,0 +1,61 @@
+{
+    "entries": [
+        {
+            "base": "ScriptCanvas_StringFunctions_ReplaceString",
+            "context": "BehaviorMethod",
+            "variant": "",
+            "details": {
+                "name": "Replace String",
+                "category": "String"
+            },
+            "methods": [
+                {
+                    "base": "ScriptCanvas_StringFunctions_ReplaceString",
+                    "details": {
+                        "name": "Replace String",
+                        "tooltip": "Replace the portion of the string that begins at character pos and spans len characters by new content."
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Source",
+                                "tooltip": "The string to search in."
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Replace",
+                                "tooltip": "The substring to search for."
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "With",
+                                "tooltip": "The string to replace the substring with."
+                            }
+                        },
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Case Sensitive",
+                                "tooltip": "Take into account the case of the string when searching."
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Result",
+                                "tooltip": "The new string where old substring is replaced with new content."
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

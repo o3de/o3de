@@ -68,7 +68,7 @@
          </size>
         </property>
         <property name="toolTip">
-         <string>Specifies the type of Container to Create.</string>
+         <string>Specifies the type of Container to create.</string>
         </property>
         <property name="text">
          <string>Key Type</string>

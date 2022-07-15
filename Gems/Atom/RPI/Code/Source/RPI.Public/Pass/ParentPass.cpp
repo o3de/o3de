@@ -46,13 +46,16 @@ namespace AZ
         ParentPass::~ParentPass()
         {
             // Explicitly remove children so we call their OnOrphan function
-            RemoveChildren();
+            constexpr bool callingFromDestructor = true;
+            RemoveChildren(callingFromDestructor);
         }
 
         // --- Child Pass Addition ---
 
-        void ParentPass::AddChild(const Ptr<Pass>& child)
+        void ParentPass::AddChild(const Ptr<Pass>& child, [[maybe_unused]] bool skipStateCheckWhenRunningTests)
         {
+            AZ_Error("PassSystem", GetPassState() == PassState::Building || IsRootPass() || skipStateCheckWhenRunningTests, "Do not add child passes outside of build phase");
+
             if (child->m_parent != nullptr)
             {
                 AZ_Assert(false, "Can't add Pass that already has a parent. Remove the Pass from it's parent before adding it to another Pass.");
@@ -110,7 +113,7 @@ namespace AZ
             // Notify pipeline
             if (m_pipeline)
             {
-                m_pipeline->SetPassModified();
+                m_pipeline->MarkPipelinePassChanges(PipelinePassChanges::PassesAdded);
 
                 // Set child's pipeline if the parent has a owning pipeline
                 child->SetRenderPipeline(m_pipeline);
@@ -136,6 +139,9 @@ namespace AZ
         void ParentPass::RemoveChild(Ptr<Pass> pass)
         {
             AZ_Assert(pass->m_parent == this, "Trying to remove a pass of which we are not the parent.");
+            AZ_Error("PassSystem", GetPassState() == PassState::Resetting || GetPassState() == PassState::Building || IsRootPass() ||
+                (GetPassTree() && GetPassTree()->GetPassTreeState() == PassTreeState::RemovingPasses),
+                "Do not remove child passes outside of the removal, reset, or build phases.");
 
             // Find child and move it to the end of the list
             [[maybe_unused]] auto it = AZStd::remove(m_children.begin(), m_children.end(), pass);
@@ -156,12 +162,16 @@ namespace AZ
             // Notify pipeline
             if (m_pipeline)
             {
-                m_pipeline->SetPassModified();
+                m_pipeline->MarkPipelinePassChanges(PipelinePassChanges::PassesRemoved);
             }
         }
 
-        void ParentPass::RemoveChildren()
+        void ParentPass::RemoveChildren([[maybe_unused]] bool calledFromDestructor)
         {
+            AZ_Error("PassSystem", GetPassState() == PassState::Resetting || GetPassState() == PassState::Building || calledFromDestructor ||
+                (GetPassTree() && GetPassTree()->GetPassTreeState() == PassTreeState::RemovingPasses),
+                "Do not remove child passes outside of the removal, reset, or build phases.");
+
             for (auto child : m_children)
             {
                 child->OnOrphan();
@@ -171,7 +181,7 @@ namespace AZ
             // Notify pipeline
             if (m_pipeline)
             {
-                m_pipeline->SetPassModified();
+                m_pipeline->MarkPipelinePassChanges(PipelinePassChanges::PassesRemoved);
             }
         }
 
@@ -402,6 +412,11 @@ namespace AZ
 
         void ParentPass::SetRenderPipeline(RenderPipeline* pipeline)
         {
+            if (m_pipeline == pipeline)
+            {
+                return;
+            }
+
             // Call base implementation
             Pass::SetRenderPipeline(pipeline);
 

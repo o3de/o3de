@@ -2,7 +2,7 @@
  * Modifications Copyright (c) Contributors to the Open 3D Engine Project. 
  * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  * 
- * SPDX-License-Identifier: (Apache-2.0 OR MIT) AND MIT
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
  
@@ -347,10 +347,8 @@ void ApplyAllDiskLights(Surface surface, inout LightingData lightingData)
 //==============================================================================
 //                            Directional Lights
 //==============================================================================
-void ApplyDirectionalLights(Surface surface, inout LightingData lightingData)
+void ApplyDirectionalLights(Surface surface, inout LightingData lightingData, float4 screenUv)
 {
-    DirectionalLightShadow::DebugInfo debugInfo = {0, false};
-
     // Shadowed check
     const uint shadowIndex = ViewSrg::m_shadowIndexDirectionalLight;
     float litRatio = 1.0f;
@@ -362,9 +360,9 @@ void ApplyDirectionalLights(Surface surface, inout LightingData lightingData)
     {
         litRatio = DirectionalLightShadow::GetVisibility(
             shadowIndex,
-            lightingData.shadowCoords,
+            surface.position,
             surface.vertexNormal,
-            debugInfo);
+            screenUv);
     }
 
     // Add the lighting contribution for each directional light
@@ -459,14 +457,11 @@ void ApplyIBL(Surface surface, inout LightingData lightingData)
 //                       Light Types Application
 // 
 //==============================================================================
-void ApplyLighting(inout Surface surface, inout LightingData lightingData)
+void ApplyLighting(inout Surface surface, inout LightingData lightingData, float4 screenCoords)
 {
     // Shadow coordinates generation for the directional light
     const uint shadowIndex = ViewSrg::m_shadowIndexDirectionalLight;
-    if (o_enableShadows && shadowIndex < SceneSrg::m_directionalLightCount)
-    {
-        DirectionalLightShadow::GetShadowCoords(shadowIndex, surface.position, surface.vertexNormal, lightingData.shadowCoords);
-    }
+
 
     // Light loops application.
     // If culling is used, the order of the calls must match the light types list order 
@@ -474,7 +469,7 @@ void ApplyLighting(inout Surface surface, inout LightingData lightingData)
 
     if (o_enableDirectionalLights)
     {
-        ApplyDirectionalLights(surface, lightingData);
+        ApplyDirectionalLights(surface, lightingData, screenCoords);
     }
 
     if (o_enablePunctualLights)

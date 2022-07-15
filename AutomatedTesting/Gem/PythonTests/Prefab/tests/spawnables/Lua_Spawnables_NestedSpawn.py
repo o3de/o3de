@@ -59,7 +59,7 @@ def Lua_Spawnables_NestedSpawn():
     # Verify flower entity is spawned by nested spawner with the correct position, rotation, and scale values
     expected_spawned_entity_position = azmath.Vector3(5.0, 0.0, 0.0)
     expected_spawned_entity_rotation = azmath.Vector3(0.0, 0.0, math.radians(90.0))
-    expected_spawned_entity_scale = 1.0
+    expected_spawned_entity_scale = 5.0
     validate_spawned_entity_transform(flower_entity, expected_spawned_entity_position, expected_spawned_entity_rotation,
                                       expected_spawned_entity_scale)
 

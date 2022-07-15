@@ -9,7 +9,7 @@
 
 #include <AzCore/std/string/string.h>
 
-namespace ScriptCanvasDeveloper
+namespace ScriptCanvas::Developer
 {
     typedef AZStd::string AutomationStateModelId;
     namespace StateModelIds

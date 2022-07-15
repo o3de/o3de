@@ -23,7 +23,7 @@
 #include <ScriptCanvasDeveloperEditor/EditorAutomation/EditorAutomationActions/ScriptCanvasActions/ConnectionActions.h>
 #include <ScriptCanvasDeveloperEditor/EditorAutomation/EditorAutomationActions/ScriptCanvasActions/EditorViewActions.h>
 
-namespace ScriptCanvasDeveloper
+namespace ScriptCanvas::Developer
 { 
     /////////////////////
     // CoupleNodesState

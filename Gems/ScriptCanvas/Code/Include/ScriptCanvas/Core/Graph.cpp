@@ -125,6 +125,7 @@ namespace ScriptCanvas
                 ->Field("executionMode", &Graph::m_executionMode)
                 ->Field("m_assetType", &Graph::m_assetType)
                 ->Field("versionData", &Graph::m_versionData)
+                ->Field("isScriptEventExtension", &Graph::m_isScriptEventExtension)
                 ;
         }
     }
@@ -1218,5 +1219,30 @@ namespace ScriptCanvas
         // Will suppress warnings based on the slotId being disconnected.
         scriptCanvasNode.RemoveConnectionsForSlot(slotId, deletedSlot);
         scriptCanvasNode.SignalSlotRemoved(slotId);
+    }
+
+    void Graph::MarkOwnership(ScriptCanvas::ScriptCanvasData& owner)
+    {
+        m_owner = &owner;
+    }
+
+    ScriptCanvas::DataPtr Graph::GetOwnership() const
+    {
+        return const_cast<Graph*>(this)->m_owner;
+    }
+
+    void Graph::ClearScriptEventExtension()
+    {
+        m_isScriptEventExtension = false;
+    }
+
+    bool Graph::IsScriptEventExtension() const
+    {
+        return m_isScriptEventExtension;
+    }
+
+    void Graph::MarkScriptEventExtension()
+    {
+        m_isScriptEventExtension = true;
     }
 }

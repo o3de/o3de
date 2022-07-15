@@ -8,11 +8,16 @@
 
 #pragma once
 
+#include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Component/Component.h>
-#include <AzFramework/Physics/SystemBus.h>
+#include <AzCore/std/containers/vector.h>
+#include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzFramework/Physics/Common/PhysicsEvents.h>
+#include <AzFramework/Physics/SystemBus.h>
 #include <AzToolsFramework/Editor/EditorContextMenuBus.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
+#include <Editor/Source/Material/PhysXEditorMaterialAssetBuilder.h>
+#include <EditorPhysXJointInterface.h>
 
 namespace AzPhysics
 {
@@ -35,40 +40,41 @@ namespace PhysX
         AZ_COMPONENT(EditorSystemComponent, "{560F08DC-94F5-4D29-9AD4-CDFB3B57C654}");
         static void Reflect(AZ::ReflectContext* context);
 
+        static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
+        static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
+        static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
+        static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent);
+
         EditorSystemComponent() = default;
+        EditorSystemComponent(const EditorSystemComponent&) = delete;
+        EditorSystemComponent& operator=(const EditorSystemComponent&) = delete;
 
-        // Physics::EditorWorldBus
-        AzPhysics::SceneHandle GetEditorSceneHandle() const override;
-
-    private:
-
-        static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
-        {
-            provided.push_back(AZ_CRC("PhysXEditorService", 0x0a61cda5));
-        }
-
-        static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
-        {
-            required.push_back(AZ_CRC("PhysXService", 0x75beae2d));
-        }
-
-        // AZ::Component
+        // AZ::Component overrides...
         void Activate() override;
         void Deactivate() override;
 
-        // AzToolsFramework::EditorEntityContextNotificationBus
+        // Physics::EditorWorldBus overrides...
+        AzPhysics::SceneHandle GetEditorSceneHandle() const override;
+
+    private:
+        // AzToolsFramework::EditorEntityContextNotificationBus overrides...
         void OnStartPlayInEditorBegin() override;
         void OnStopPlayInEditor() override;
 
-        // AztoolsFramework::EditorContextMenuBus::Handler
+        // AztoolsFramework::EditorContextMenuBus overrides...
         void PopulateEditorGlobalContextMenu(QMenu* menu, const AZ::Vector2& point, int flags) override;
 
-        // AztoolsFramework::EditorEvents::Bus::Handler
+        // AztoolsFramework::EditorEvents overrides...
         void NotifyRegisterViews() override;
 
-        AZStd::optional<AZ::Data::Asset<AZ::Data::AssetData>> RetrieveDefaultMaterialLibrary();
-
-        AzPhysics::SystemEvents::OnMaterialLibraryLoadErrorEvent::Handler m_onMaterialLibraryLoadErrorEventHandler;
         AzPhysics::SceneHandle m_editorWorldSceneHandle = AzPhysics::InvalidSceneHandle;
+
+        // Assets related data
+        AZStd::vector<AZStd::unique_ptr<AZ::Data::AssetHandler>> m_assetHandlers;
+
+        // Asset builder for PhysX material asset
+        EditorMaterialAssetBuilder m_materialAssetBuilder;
+
+        PhysXEditorJointHelpersInterface m_editorJointHelpersInterface;
     };
 }

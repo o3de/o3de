@@ -65,6 +65,19 @@ namespace AZ::Utils
         return AZStd::nullopt;
     }
 
+    bool ConvertToAbsolutePath(AZ::IO::FixedMaxPath& outputPath, AZStd::string_view path)
+    {
+        AZ::IO::FixedMaxPathString srcPath{ path };
+        if (ConvertToAbsolutePath(srcPath.c_str(), outputPath.Native().data(), outputPath.Native().capacity()))
+        {
+            // Fix the size value of the fixed string by calculating the c-string length using char traits
+            outputPath.Native().resize_no_construct(AZStd::char_traits<char>::length(outputPath.Native().data()));
+            return true;
+        }
+
+        return false;
+    }
+
     AZ::IO::FixedMaxPathString GetO3deManifestPath()
     {
         AZ::IO::FixedMaxPath o3deManifestPath = GetO3deManifestDirectory();

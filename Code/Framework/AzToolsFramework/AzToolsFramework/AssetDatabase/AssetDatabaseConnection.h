@@ -67,6 +67,8 @@ namespace AzToolsFramework
             RemoveOutputPrefixFromScanFolders,
             AddedSourceIndexForSourceDependencyTable,
             AddedSourceDependencySubIdsAndProductHashes,
+            AddedFlagsColumnToProductTable,
+            AddedStatsTable,
             //Add all new versions before this
             DatabaseVersionCount,
             LatestVersion = DatabaseVersionCount - 1
@@ -232,15 +234,12 @@ namespace AzToolsFramework
         public:
             ProductDatabaseEntry() = default;
             ProductDatabaseEntry(AZ::s64 productID, AZ::s64 jobPK,  AZ::u32 subID, const char* productName,
-                AZ::Data::AssetType assetType, AZ::Uuid legacyGuid = AZ::Uuid::CreateNull(), AZ::u64 hash = 0);
+                AZ::Data::AssetType assetType, AZ::Uuid legacyGuid = AZ::Uuid::CreateNull(), AZ::u64 hash = 0, AZStd::bitset<64> flags = 0);
             ProductDatabaseEntry(AZ::s64 jobPK, AZ::u32 subID, const char* productName,
-                AZ::Data::AssetType assetType, AZ::Uuid legacyGuid = AZ::Uuid::CreateNull(), AZ::u64 hash = 0);
-            ProductDatabaseEntry(ProductDatabaseEntry&& other);
+                AZ::Data::AssetType assetType, AZ::Uuid legacyGuid = AZ::Uuid::CreateNull(), AZ::u64 hash = 0, AZStd::bitset<64> flags = 0);
+            AZ_DEFAULT_COPY_MOVE(ProductDatabaseEntry);
 
-            ProductDatabaseEntry& operator=(ProductDatabaseEntry&& other);
             bool operator==(const ProductDatabaseEntry& other) const;
-
-            AZ_DEFAULT_COPY(ProductDatabaseEntry);
 
             AZStd::string ToString() const;
             auto GetColumns();
@@ -252,6 +251,7 @@ namespace AzToolsFramework
             AZ::Data::AssetType m_assetType = AZ::Data::AssetType::CreateNull();
             AZ::Uuid m_legacyGuid = AZ::Uuid::CreateNull();//used only for backward compatibility with old product guid, is generated based on product name
             AZ::u64 m_hash = 0;
+            AZStd::bitset<64> m_flags = 0;
         };
         typedef AZStd::vector<ProductDatabaseEntry> ProductDatabaseEntryContainer;
 
@@ -411,6 +411,31 @@ namespace AzToolsFramework
         typedef AZStd::vector<SourceAndScanFolderDatabaseEntry> SourceAndScanFolderDatabaseEntryContainer;
 
         //////////////////////////////////////////////////////////////////////////
+        // StatDatabaseEntry
+        class StatDatabaseEntry
+        {
+        public:
+            StatDatabaseEntry() = default;
+
+            StatDatabaseEntry(const StatDatabaseEntry& other) = default;
+            StatDatabaseEntry(StatDatabaseEntry&& other) = default;
+
+            StatDatabaseEntry& operator=(StatDatabaseEntry&& other) = default;
+            StatDatabaseEntry& operator=(const StatDatabaseEntry& other) = default;
+            bool operator==(const StatDatabaseEntry& other) const;
+            bool operator!=(const StatDatabaseEntry& other) const;
+
+            AZStd::string ToString() const;
+            auto GetColumns();
+
+            AZStd::string m_statName;
+            AZ::s64 m_statValue = 0;
+            AZ::s64 m_lastLogTime = 0;
+        };
+
+        typedef AZStd::vector<StatDatabaseEntry> StatDatabaseEntryContainer;
+
+        //////////////////////////////////////////////////////////////////////////
         //AssetDatabaseConnection
         //! The Connection class represents a read-only connection to the asset database specifically
         //! (as opposed to a sql connection). Things like the Asset Processor derive from this in order
@@ -472,6 +497,7 @@ namespace AzToolsFramework
             // note that AZStd::function cannot handle rvalue-refs at the time of writing this.
             using BuilderInfoHandler = std::function<bool(BuilderInfoEntry&&)>;
             using fileHandler = AZStd::function<bool(FileDatabaseEntry& entry)>;
+            using statHandler = AZStd::function<bool(StatDatabaseEntry& entry)>;
 
             //////////////////////////////////////////////////////////////////
             //Query entire table
@@ -484,6 +510,7 @@ namespace AzToolsFramework
             bool QueryProductDependenciesTable(combinedProductDependencyHandler handler);
             bool QueryBuilderInfoTable(const BuilderInfoHandler& handler);
             bool QueryFilesTable(fileHandler handler);
+            bool QueryStatsTable(statHandler handler);
 
             //////////////////////////////////////////////////////////////////////////
             //Queries
@@ -533,6 +560,7 @@ namespace AzToolsFramework
             bool QuerySourceBySourceName(const char* exactSourceName, sourceHandler handler);
             bool QuerySourceBySourceNameScanFolderID(const char* exactSourceName, AZ::s64 scanFolderID, sourceHandler handler);
             bool QuerySourceLikeSourceName(const char* likeSourceName, LikeType likeType, sourceHandler handler);
+            bool QuerySourceLikeSourceNameScanFolderID(const char* likeSourceName, AZ::s64 scanFolderID, LikeType likeType, sourceHandler handler);
             bool QuerySourceAnalysisFingerprint(const char* exactSourceName, AZ::s64 scanFolderID, AZStd::string& result);
             bool QuerySourceAndScanfolder(combinedSourceScanFolderHandler handler);
 
@@ -632,9 +660,14 @@ namespace AzToolsFramework
             //FileInfo
             bool QueryFileByFileID(AZ::s64 fileID, fileHandler handler);
             bool QueryFilesByFileNameAndScanFolderID(const char* fileName, AZ::s64 scanfolderID, fileHandler handler);
-            bool QueryFilesLikeFileName(const char* likeFileName, LikeType likeType, fileHandler handler);
+            bool QueryFilesLikeFileNameAndScanFolderID(const char* likeFileName, LikeType likeType, AZ::s64 scanfolderID, fileHandler handler);
             bool QueryFilesByScanFolderID(AZ::s64 scanFolderID, fileHandler handler);
             bool QueryFileByFileNameScanFolderID(const char* fileName, AZ::s64 scanFolderID, fileHandler handler);
+
+            //Stat
+            bool QueryStatByStatName(const char* statName, statHandler handler);
+            bool QueryStatLikeStatName(const char* statName, statHandler handler);
+
             //////////////////////////////////////////////////////////////////////////
 
             void SetQueryLogging(bool enableLogging);

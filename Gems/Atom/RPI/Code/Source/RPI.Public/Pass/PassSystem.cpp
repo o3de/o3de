@@ -200,15 +200,6 @@ namespace AZ
         {
             AZ_PROFILE_SCOPE(RPI, "PassSystem: ProcessQueuedChanges");
 
-            // Track whether pass hierarchy has changed or not this frame
-            bool change = false;
-
-            // Process render pipelines
-            for (RenderPipeline*& pipeline : m_renderPipelines)
-            {
-                change = pipeline->m_passTree.ProcessQueuedChanges() || change;
-            }
-
             // Erase any passes with pipelines from the passes without pipeline container
             m_passesWithoutPipeline.EraseFromLists([](const RHI::Ptr<Pass>& currentPass)
                 {
@@ -216,16 +207,7 @@ namespace AZ
                 });
 
             // Process passes that don't have a pipeline
-            change = m_passesWithoutPipeline.ProcessQueuedChanges() || change;
-
-            // If any changes to the hierarchy were made this frame
-            if (change)
-            {
-#if AZ_RPI_ENABLE_PASS_DEBUGGING
-                AZ_Printf("PassSystem", "\nFinished building passes:\n");
-                DebugPrintPassHierarchy();
-#endif
-            }
+            m_passesWithoutPipeline.ProcessQueuedChanges();
         }
 
         void PassSystem::FrameUpdate(RHI::FrameGraphBuilder& frameGraphBuilder)

@@ -72,7 +72,7 @@ namespace ScriptCanvasEditor
                     OpenGraph(asset);
                 };
 
-                QTableWidgetItem* rowName = new QTableWidgetItem(tr(asset.Path().c_str()));
+                QTableWidgetItem* rowName = new QTableWidgetItem(tr(asset.RelativePath().c_str()));
                 rowName->setData(Qt::UserRole, rows);
                 m_ui->tableWidget->setItem(rows, 0, rowName);
 
@@ -95,7 +95,7 @@ namespace ScriptCanvasEditor
         AzToolsFramework::OpenViewPane(/*LyViewPane::ScriptCanvas*/"Script Canvas");
         AZ::Outcome<int, AZStd::string> openOutcome = AZ::Failure(AZStd::string());
 
-        if (!asset.Path().empty())
+        if (!asset.RelativePath().empty())
         {
             GeneralRequestBus::BroadcastResult(openOutcome, &GeneralRequests::OpenScriptCanvasAsset, asset, Tracker::ScriptCanvasFileState::UNMODIFIED, -1);
         }

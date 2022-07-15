@@ -32,18 +32,6 @@ namespace AZ::Internal
     using AMString = AZStd::basic_string<char, AZStd::char_traits<char>, AZStdIAllocator>;
     using AllocatorNameMap = AZStd::unordered_map<AMString, IAllocator*, AMStringHasher, AZStd::equal_to<>, AZStdIAllocator>;
     using AllocatorRemappings = AZStd::unordered_map<AMString, AMString, AMStringHasher, AZStd::equal_to<>, AZStdIAllocator>;
-
-    // For allocators that are created before we have an environment, we keep some module-local data for them so that we can register them
-    // properly once the environment is attached.
-    struct PreEnvironmentAttachData
-    {
-        static const int MAX_UNREGISTERED_ALLOCATORS = 8;
-        AZStd::mutex m_mutex;
-        MallocSchema m_mallocSchema;
-        IAllocator* m_unregisteredAllocators[MAX_UNREGISTERED_ALLOCATORS];
-        int m_unregisteredAllocatorCount = 0;
-    };
-
 }
 
 namespace AZ
@@ -52,28 +40,10 @@ namespace AZ
 static EnvironmentVariable<AllocatorManager> s_allocManager = nullptr;
 static AllocatorManager* s_allocManagerDebug = nullptr;  // For easier viewing in crash dumps
 
-/// Returns a module-local instance of data to use for allocators that are created before the environment is attached.
-static Internal::PreEnvironmentAttachData& GetPreEnvironmentAttachData()
-{
-    static Internal::PreEnvironmentAttachData s_data;
-
-    return s_data;
-}
-
-/// Called to register an allocator before AllocatorManager::Instance() is available.
-void AllocatorManager::PreRegisterAllocator(IAllocator* allocator)
-{
-    auto& data = GetPreEnvironmentAttachData();
-    {
-        AZStd::lock_guard<AZStd::mutex> lock(data.m_mutex);
-        AZ_Assert(data.m_unregisteredAllocatorCount < Internal::PreEnvironmentAttachData::MAX_UNREGISTERED_ALLOCATORS, "Too many allocators trying to register before environment attached!");
-        data.m_unregisteredAllocators[data.m_unregisteredAllocatorCount++] = allocator;
-    }
-}
-
 IAllocator* AllocatorManager::CreateLazyAllocator(size_t size, size_t alignment, IAllocator*(*creationFn)(void*))
 {
-    void* mem = GetPreEnvironmentAttachData().m_mallocSchema.Allocate(size, alignment, 0);
+    static MallocSchema mallocSchema;
+    void* mem = mallocSchema.Allocate(size, alignment, 0);
     IAllocator* result = creationFn(mem);
 
     return result;
@@ -100,22 +70,7 @@ AllocatorManager& AllocatorManager::Instance()
 {
     if (!s_allocManager)
     {
-        AZ_Assert(Environment::IsReady(), "Environment must be ready before calling Instance()");
         s_allocManager = Environment::CreateVariable<AllocatorManager>(AZ_CRC_CE("AZ::AllocatorManager::s_allocManager"));
-
-        // Register any allocators that were created in this module before we attached to the environment
-        auto& data = GetPreEnvironmentAttachData();
-
-        {
-            AZStd::lock_guard<AZStd::mutex> lock(data.m_mutex);
-            for (int idx = 0; idx < data.m_unregisteredAllocatorCount; idx++)
-            {
-                s_allocManager->RegisterAllocator(data.m_unregisteredAllocators[idx]);
-            }
-
-            data.m_unregisteredAllocatorCount = 0;
-        
-        }
 
         s_allocManagerDebug = &(*s_allocManager);
     }

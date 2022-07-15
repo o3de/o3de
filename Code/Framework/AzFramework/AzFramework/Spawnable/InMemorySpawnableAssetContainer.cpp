@@ -13,7 +13,6 @@
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzFramework/Spawnable/InMemorySpawnableAssetContainer.h>
 #include <AzFramework/Spawnable/Spawnable.h>
-#include <AzFramework/Spawnable/SpawnableAssetBus.h>
 #include <AzFramework/Spawnable/SpawnableAssetUtils.h>
 
 namespace AzFramework
@@ -77,8 +76,6 @@ namespace AzFramework
             {
                 auto spawnable = azrtti_cast<Spawnable*>(assetData);
 
-                SpawnableAssetEventsBus::Broadcast(&SpawnableAssetEvents::OnPreparingSpawnable,
-                    *spawnable, assetInfo.m_relativePath);
                 spawnables.push_back(AZStd::make_pair<Spawnable*, const AZStd::string&>(spawnable, assetInfo.m_relativePath));
 
                 if (assetInfo.m_relativePath == rootProductId)

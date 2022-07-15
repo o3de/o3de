@@ -180,7 +180,7 @@ def AtomEditorComponents_LookModification_AddedToEntity():
             AtomComponentProperties.look_modification('Enable look modification'), True)
 
         # 9. Set the Color Grading LUT asset on the Look Modification entity.
-        color_grading_lut_path = os.path.join("ColorGrading", "TestData", "Photoshop", "inv-Log2-48nits",
+        color_grading_lut_path = os.path.join("colorgrading", "testdata", "photoshop", "inv-Log2-48nits",
                                               "test_3dl_32_lut.azasset")
         color_grading_lut_asset = Asset.find_asset_by_path(color_grading_lut_path, False)
         look_modification_component.set_component_property_value(

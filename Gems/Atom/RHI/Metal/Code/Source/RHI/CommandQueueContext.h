@@ -46,6 +46,7 @@ namespace AZ
             FenceSet m_compiledFences;
             AZStd::array<FenceSet, RHI::Limits::Device::FrameCountMax> m_frameFences;
             uint32_t m_currentFrameIndex = 0;
+            Device* m_device = nullptr;
             
             void QueueGpuSignals(FenceSet& fenceSet);
         };

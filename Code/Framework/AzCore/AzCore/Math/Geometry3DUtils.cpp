@@ -27,15 +27,16 @@ namespace AZ::Geometry3dUtils
                 return;
             }
 
-            // For each triangle that's passed in, split it into 4 triangles and recursively subdivide those.
-            //           a
-            //           /\
-            //          /  \
-            //     ab  /----\  ca
-            //        / \  / \
-            //       /   \/   \
-            //    b ------------ c
-            //           bc
+            /** For each triangle that's passed in, split it into 4 triangles and recursively subdivide those.
+             *           a
+             *           /\
+             *          /  \
+             *     ab  /----\  ca
+             *        / \  / \
+             *       /   \/   \
+             *    b ------------ c
+             *           bc
+             */
             const AZ::Vector3 ab = (a + b).GetNormalized();
             const AZ::Vector3 bc = (b + c).GetNormalized();
             const AZ::Vector3 ca = (c + a).GetNormalized();

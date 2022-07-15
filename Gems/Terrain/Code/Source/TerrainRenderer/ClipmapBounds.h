@@ -36,7 +36,7 @@ namespace Terrain
 
         //! Scale of the clip map compared to the world. A scale of 0.5 means that
         //! a clipmap of size 1024 would cover 512 meters.
-        float m_clipToWorldScale = 1.0f;
+        float m_clipmapToWorldScale = 1.0f;
     };
 
     struct ClipmapBoundsRegion
@@ -134,7 +134,13 @@ namespace Terrain
         //! 0.25 and margin of 4 would have a safe distance of (1024 * 0.5 - 4) * 0.25 = 127.0f.
         float GetWorldSpaceSafeDistance() const;
 
-        //! Returns the modulated center of the clipmap.
+        //! Returns the center of the clipmap in clipmap space.
+        Vector2i GetCenterInClipmapSpace() const;
+
+        //! Returns the center of the clipmap in world space.
+        AZ::Vector2 GetCenterInWorldSpace() const;
+
+        //! Returns the modulated center of the clipmap in [0, size).
         Vector2i GetModCenter() const;
     private:
 
@@ -157,8 +163,8 @@ namespace Terrain
         int32_t m_size;
         int32_t m_halfSize;
         int32_t m_clipmapUpdateMultiple;
-        float m_scale;
-        float m_rcpScale;
+        float m_clipmapToWorldScale;
+        float m_worldToClipmapScale;
     };
 
 }

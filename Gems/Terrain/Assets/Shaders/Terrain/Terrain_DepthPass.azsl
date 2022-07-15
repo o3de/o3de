@@ -14,17 +14,18 @@
 struct VSDepthOutput
 {
     float4 m_position : SV_Position;
-    float2 m_cullDistance : SV_CullDistance;
 };
 
 VSDepthOutput MainVS(in VertexInput input)
 {
     VSDepthOutput output;
 
-    float3 worldPosition;
+    float3 worldPosition; // ignored
+    float3 normal; // ignored
+
     CalculateTerrainPosition(
         SceneSrg::m_terrainWorldData, ObjectSrg::m_patchData, input, // input params
-        worldPosition, output.m_position, output.m_cullDistance // output params
+        worldPosition, output.m_position, normal // output params
         );
 
     return output;

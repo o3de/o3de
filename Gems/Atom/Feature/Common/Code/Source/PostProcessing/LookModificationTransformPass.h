@@ -51,7 +51,7 @@ namespace AZ
             void BuildInternal() override;
 
         private:
-            const RPI::PassAttachmentBinding* m_swapChainAttachmentBinding = nullptr;
+            const RPI::PassAttachmentBinding* m_pipelineOutput = nullptr;
             RHI::Format m_displayBufferFormat = RHI::Format::Unknown;
             OutputDeviceTransformType m_outputDeviceTransformType = OutputDeviceTransformType_48Nits;
             ShaperParams m_shaperParams;

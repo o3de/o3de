@@ -25,6 +25,9 @@ namespace AZ
         ProjectedShadowmapsPass::ProjectedShadowmapsPass(const RPI::PassDescriptor& descriptor)
             : Base(descriptor)
         {
+            // Pass has it's own logic for managing children, forgo ParentPass logic
+            m_flags.m_createChildren = false;
+
             const RPI::RasterPassData* passData = RPI::PassUtils::GetPassData<RPI::RasterPassData>(descriptor);
             if (passData)
             {

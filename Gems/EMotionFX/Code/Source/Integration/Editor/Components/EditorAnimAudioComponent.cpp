@@ -14,8 +14,6 @@
 #include <Integration/Editor/Components/EditorAnimAudioComponent.h>
 #include <Integration/Components/AnimAudioComponent.h>
 
-using namespace LmbrCentral;
-
 namespace EMotionFX
 {
     namespace Integration

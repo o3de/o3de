@@ -41,38 +41,8 @@ namespace PhysX
     AZ_CVAR(bool, physx_reportTimestepWarnings, false, nullptr, AZ::ConsoleFunctorFlags::Null, "A flag providing ability to turn on/off reporting of PhysX timestep warnings");
 #endif
 
-    PhysXSystem::MaterialLibraryAssetHelper::MaterialLibraryAssetHelper(OnMaterialLibraryReloadedCallback callback)
-        : m_onMaterialLibraryReloadedCallback(callback)
-    {
-
-    }
-
-    void PhysXSystem::MaterialLibraryAssetHelper::Connect(const AZ::Data::AssetId& materialLibraryId)
-    {
-        if (!AZ::Data::AssetBus::Handler::BusIsConnectedId(materialLibraryId))
-        {
-            AZ::Data::AssetBus::Handler::BusDisconnect();
-            AZ::Data::AssetBus::Handler::BusConnect(materialLibraryId);
-        }
-    }
-
-    void PhysXSystem::MaterialLibraryAssetHelper::Disconnect()
-    {
-        AZ::Data::AssetBus::Handler::BusDisconnect();
-    }
-
-    void PhysXSystem::MaterialLibraryAssetHelper::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset)
-    {
-        m_onMaterialLibraryReloadedCallback(asset);
-    }
-
     PhysXSystem::PhysXSystem(AZStd::unique_ptr<PhysXSettingsRegistryManager> registryManager, const physx::PxCookingParams& cookingParams)
         : m_registryManager(AZStd::move(registryManager))
-        , m_materialLibraryAssetHelper(
-            [this](const AZ::Data::Asset<Physics::MaterialLibraryAsset>& materialLibrary)
-            {
-                UpdateMaterialLibrary(materialLibrary);
-            })
         , m_sceneInterface(this)
     {
         // Start PhysX allocator
@@ -103,19 +73,6 @@ namespace PhysX
             m_systemConfig = *physXConfig;
         }
 
-        // If the settings registry isn't available, something earlier in startup will report that failure.
-        if (auto* settingsRegistry = AZ::SettingsRegistry::Get();
-            settingsRegistry != nullptr)
-        {
-            AZ::ComponentApplicationLifecycle::RegisterHandler(
-                *settingsRegistry, m_componentApplicationLifecycleHandler,
-                [this]([[maybe_unused]] AZStd::string_view path, [[maybe_unused]] AZ::SettingsRegistryInterface::Type type)
-                {
-                    InitializeMaterialLibrary();
-                },
-                "CriticalAssetsCompiled");
-        }
-
         m_state = State::Initialized;
         m_initializeEvent.Signal(&m_systemConfig);
     }
@@ -134,12 +91,6 @@ namespace PhysX
         }
 
         RemoveAllScenes();
-
-        m_componentApplicationLifecycleHandler.Disconnect();
-        m_materialLibraryAssetHelper.Disconnect();
-        // Clear the asset reference in deactivate. The asset system is shut down before destructors are called
-        // for system components, causing any hanging asset references to become crashes on shutdown in release builds.
-        m_systemConfig.m_materialLibraryAsset.Reset();
 
         m_accumulatedTime = 0.0f;
         m_state = State::Shutdown;
@@ -379,38 +330,15 @@ namespace PhysX
         return &m_systemConfig;
     }
 
-    void PhysXSystem::InitializeMaterialLibrary()
-    {
-        if (!m_systemConfig.m_materialLibraryAsset.GetId().IsValid())
-        {
-            m_onMaterialLibraryLoadErrorEvent.Signal(AzPhysics::SystemEvents::MaterialLibraryLoadErrorType::InvalidId);
-        }
-
-        bool success = LoadMaterialLibrary();
-        if (!success)
-        {
-            m_onMaterialLibraryLoadErrorEvent.Signal(AzPhysics::SystemEvents::MaterialLibraryLoadErrorType::ErrorLoading);
-        }
-    }
-
     void PhysXSystem::UpdateConfiguration(const AzPhysics::SystemConfiguration* newConfig, [[maybe_unused]] bool forceReinitialization /*= false*/)
     {
         if (const auto* physXConfig = azdynamic_cast<const PhysXSystemConfiguration*>(newConfig);
             m_systemConfig != (*physXConfig))
         {
-            const bool newMaterialLibrary = m_systemConfig.m_materialLibraryAsset != physXConfig->m_materialLibraryAsset;
             m_systemConfig = (*physXConfig);
             m_configChangeEvent.Signal(physXConfig);
 
             //LYN-1146 -- Restarting the simulation if required
-
-            if (newMaterialLibrary)
-            {
-                LoadMaterialLibrary();
-                m_onMaterialLibraryChangedEvent.Signal(m_systemConfig.m_materialLibraryAsset.GetId());
-            }
-            // This function is not called from reloading the material library asset,
-            // which means we don't need to check if the materials inside the library have been modified.
         }
     }
 
@@ -485,53 +413,6 @@ namespace PhysX
     const PhysXSettingsRegistryManager& PhysXSystem::GetSettingsRegistryManager() const
     {
         return *m_registryManager;
-    }
-
-    void PhysXSystem::UpdateMaterialLibrary(const AZ::Data::Asset<Physics::MaterialLibraryAsset>& materialLibrary)
-    {
-        if (m_systemConfig.m_materialLibraryAsset == materialLibrary)
-        {
-            // Same library asset, check if its data has changed.
-            if (m_systemConfig.m_materialLibraryAsset->GetMaterialsData() != materialLibrary->GetMaterialsData())
-            {
-                m_systemConfig.m_materialLibraryAsset = materialLibrary;
-                m_onMaterialLibraryChangedEvent.Signal(materialLibrary.GetId());
-            }
-        }
-        else
-        {
-            // New material library asset
-            m_systemConfig.m_materialLibraryAsset = materialLibrary;
-
-            LoadMaterialLibrary();
-            m_onMaterialLibraryChangedEvent.Signal(materialLibrary.GetId());
-        }
-    }
-
-    bool PhysXSystem::LoadMaterialLibrary()
-    {
-        AZ::Data::Asset<Physics::MaterialLibraryAsset>& materialLibrary = m_systemConfig.m_materialLibraryAsset;
-        const AZ::Data::AssetId& materialLibraryId = materialLibrary.GetId();
-        if (!materialLibraryId.IsValid())
-        {
-            AZ_Warning("PhysX", false,
-                "LoadDefaultMaterialLibrary: Default Material Library asset ID is invalid.");
-            return false;
-        }
-        // Listen for material library asset modification events
-        m_materialLibraryAssetHelper.Connect(materialLibraryId);
-
-        const AZ::Data::AssetFilterCB assetLoadFilterCB = nullptr;
-        materialLibrary = AZ::Data::AssetManager::Instance().GetAsset<Physics::MaterialLibraryAsset>(materialLibrary.GetId(), materialLibrary.GetAutoLoadBehavior(), AZ::Data::AssetLoadParameters{ assetLoadFilterCB });
-
-        materialLibrary.BlockUntilLoadComplete();
-
-        const bool loadedSuccessfully = materialLibrary.GetData() != nullptr && !materialLibrary.IsError();
-
-        AZ_Warning("PhysX", loadedSuccessfully,
-            "LoadDefaultMaterialLibrary: Default Material Library asset data is invalid.");
-
-        return loadedSuccessfully;
     }
 
     //TEMP -- until these are fully moved over here

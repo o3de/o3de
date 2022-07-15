@@ -76,7 +76,7 @@ namespace ScriptCanvasBuilder
         return ScriptCanvas::Translation::ParseGraph(request);
     }
 
-    AZ::Outcome<ScriptCanvas::Translation::LuaAssetResult, AZStd::string> CreateLuaAsset(const ScriptCanvasEditor::SourceHandle& editAsset, AZStd::string_view rawLuaFilePath)
+    AZ::Outcome<ScriptCanvas::Translation::LuaAssetResult, AZStd::string> CreateLuaAsset(const SourceHandle& editAsset, AZStd::string_view rawLuaFilePath)
     {
         AZStd::string fullPath(rawLuaFilePath);
         AZStd::string fileNameOnly;
@@ -130,7 +130,7 @@ namespace ScriptCanvasBuilder
         return AZ::Success(result);
     }
 
-    AZ::Outcome<AZ::Data::Asset<ScriptCanvas::RuntimeAsset>, AZStd::string> CreateRuntimeAsset(const ScriptCanvasEditor::SourceHandle& editAsset)
+    AZ::Outcome<AZ::Data::Asset<ScriptCanvas::RuntimeAsset>, AZStd::string> CreateRuntimeAsset(const SourceHandle& editAsset)
     {
         // Flush asset manager events to ensure no asset references are held by closures queued on Ebuses.
         AZ::Data::AssetManager::Instance().DispatchEvents();

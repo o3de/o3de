@@ -64,6 +64,11 @@ namespace AZ::DocumentPropertyEditor
         //! correct Replace patch for submitting NotifyContentsChanged.
         void OnEditorChanged(
             AZStd::function<void(const Dom::Path&, const Dom::Value&, Nodes::PropertyEditor::ValueChangeType)> onChangedCallback);
+        //! Adds a message handler bound to the given adapter for a given message name or callback attribute.
+        //! \param adapter The adapter to bind this message to.
+        //! \param messageName The name of the message.
+        //! \param contextData If specified, is provided as additional message data when this message is sent.
+        void AddMessageHandler(DocumentAdapter* adapter, AZ::Name messageName, const Dom::Value& contextData = {});
 
         //! Gets the path to the DOM node currently being built within this builder's DOM.
         Dom::Path GetCurrentPath() const;
@@ -76,10 +81,10 @@ namespace AZ::DocumentPropertyEditor
         //! Operations are no longer valid on this builder once this is called.
         Dom::Value&& FinishAndTakeResult();
 
-        template<class PropertyEditorDefinition>
-        void BeginPropertyEditor(Dom::Value value = {})
+        template<class PropertyEditorDefinition, class ValueType = AZ::Dom::Value>
+        void BeginPropertyEditor(ValueType value = {})
         {
-            BeginPropertyEditor(PropertyEditorDefinition::Name, value);
+            BeginPropertyEditor(PropertyEditorDefinition::Name, AZ::Dom::Utils::ValueFromType(value));
         }
 
         template<class NodeDefinition>
@@ -115,6 +120,12 @@ namespace AZ::DocumentPropertyEditor
         void Attribute(const AttributeDefinition<AZStd::string_view>& definition, AZStd::string_view value)
         {
             Attribute(definition.GetName(), Dom::Value(value, true));
+        }
+
+        template<class CallbackType>
+        void AddMessageHandler(DocumentAdapter* adapter, const CallbackAttributeDefinition<CallbackType>& callback, const Dom::Value& contextData = {})
+        {
+            AddMessageHandler(adapter, callback.GetName(), contextData);
         }
 
     private:

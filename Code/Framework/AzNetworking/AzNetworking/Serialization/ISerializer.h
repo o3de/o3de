@@ -160,22 +160,19 @@ namespace AzNetworking
         //! Serialize interface for deducing whether or not TYPE is an enum or an object.
         //! @param value    object instance to serialize
         //! @param name     string name of the object
-        //! @param typeInfo basic type information for the value being serialized
         //! @return boolean true for success, false for serialization failure
         template <typename TYPE>
         bool Serialize(TYPE& value, const char* name);
 
         //! Begins serializing an object.
         //! @param name     string name of the object
-        //! @param typeInfo basic type information for the value being serialized
-        //! @return Result. In the case of Skip, Serialize is not called.
-        virtual bool BeginObject(const char* name, const char* typeName) = 0;
+        //! @return boolean true on success, false for failure
+        virtual bool BeginObject(const char* name) = 0;
 
         //! Ends serializing an object.
         //! @param name     string name of the object
-        //! @param typeInfo basic type information for the value being serialized
-        //! @return boolean true for success, false for serialization failure
-        virtual bool EndObject(const char* name, const char* typeName) = 0;
+        //! @return boolean true on success, false for failure
+        virtual bool EndObject(const char* name) = 0;
 
         //! Returns a pointer to the internal serialization buffer.
         //! @return pointer to the internal serialization buffer

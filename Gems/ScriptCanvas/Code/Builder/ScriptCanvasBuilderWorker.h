@@ -16,6 +16,7 @@
 #include <ScriptCanvas/Translation/Translation.h>
 #include <ScriptCanvas/Asset/RuntimeAsset.h>
 #include <ScriptCanvas/Asset/RuntimeAssetHandler.h>
+#include <ScriptCanvas/Core/Core.h>
 
 namespace AZ
 {
@@ -36,11 +37,12 @@ namespace ScriptCanvas
 namespace ScriptCanvasEditor
 {
     class EditorGraph;
-    class SourceHandle;
 }
 
 namespace ScriptCanvasBuilder
 {
+    using SourceHandle = ScriptCanvas::SourceHandle;
+
     constexpr const char* s_scriptCanvasBuilder = "ScriptCanvasBuilder";
     constexpr const char* s_scriptCanvasProcessJobKey = "Script Canvas Process Job";
     constexpr const char* s_unitTestParseErrorPrefix = "LY_SC_UnitTest";
@@ -128,9 +130,9 @@ namespace ScriptCanvasBuilder
         }
     };
 
-    AZ::Outcome<AZ::Data::Asset<ScriptCanvas::RuntimeAsset>, AZStd::string> CreateRuntimeAsset(const ScriptCanvasEditor::SourceHandle& asset);
+    AZ::Outcome<AZ::Data::Asset<ScriptCanvas::RuntimeAsset>, AZStd::string> CreateRuntimeAsset(const SourceHandle& asset);
 
-    AZ::Outcome<ScriptCanvas::Translation::LuaAssetResult, AZStd::string> CreateLuaAsset(const ScriptCanvasEditor::SourceHandle& editAsset, AZStd::string_view rawLuaFilePath);
+    AZ::Outcome<ScriptCanvas::Translation::LuaAssetResult, AZStd::string> CreateLuaAsset(const SourceHandle& editAsset, AZStd::string_view rawLuaFilePath);
 
     int GetBuilderVersion();
 
