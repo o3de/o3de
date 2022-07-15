@@ -93,7 +93,7 @@ namespace AZ
             //! If after this opration the Origin Stack is empty, then prefix tree entry is removed
             //! @param recurseChildren, If true children entries from the key in the Prefix Tree will also be visited.
             void RemoveOrigin(AZStd::string_view key, AZ::IO::PathView originPath, bool recurseChildren = false);
-        
+
         
         private: // member variables
             AZ::SettingsRegistryInterface& m_settingsRegistry;
@@ -106,7 +106,7 @@ namespace AZ
             //! Stack tracking the current settings file origin
             //! If empty the settings is set within the runtime and not from a file
             AZStd::stack<AZ::IO::Path> m_currentOriginStack;
-            //! Callback that is invoked when a setting field is added/updated/removed
+            //! Stack containing vectors of keys being added or modified while a file is being merged
             TrackingFilterCallback m_trackingFilter;
     };
 };

@@ -124,25 +124,6 @@ namespace SettingsRegistryOriginTrackerTests {
                 }
             }
         )"));
-        ASSERT_TRUE(CreateTestFile(filePath3, R"(
-            {
-                "O3DE": {
-                    "Settings": {
-                        "ArrayValue": [
-                        -5,
-                        39,
-                        42
-                        ],
-                        "ObjectValue": {
-                        "StringKey1": "Hi",
-                        "BoolKey1": true,
-                        "IntKey2": 9001
-                        },
-                        "DoubleValue": 4.0
-                    }
-                }
-            }
-        )"));
         m_registry->MergeSettingsFile(filePath1.FixedMaxPathString(),
             AZ::SettingsRegistryInterface::Format::JsonMergePatch, {},
             nullptr);
@@ -150,14 +131,11 @@ namespace SettingsRegistryOriginTrackerTests {
             AZ::SettingsRegistryInterface::Format::JsonMergePatch,
             "",
             nullptr);
-        m_registry->MergeSettingsFile(filePath3.FixedMaxPathString(),
-            AZ::SettingsRegistryInterface::Format::JsonMergePatch,
-            "",
-            nullptr);
         AZ::SettingsRegistryOriginTracker::SettingsRegistryOriginStack expectedStringKey1OriginStack = {
-            { filePath1.Filename(), "/O3DE/Settings/ObjectValue/StringKey1", "Hi" }
+            { filePath1.String(), "/O3DE/Settings/ObjectValue/StringKey1", "Hello" }
         };
         CheckOriginsAtPath(expectedStringKey1OriginStack, "/O3DE/Settings/ObjectValue/StringKey1");
+        ASSERT_FALSE(false);
     }
    
 }

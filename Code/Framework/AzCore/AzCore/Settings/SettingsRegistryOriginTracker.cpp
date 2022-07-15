@@ -49,7 +49,7 @@ namespace AZ
     bool SettingsRegistryOriginTracker::SettingsRegistryOrigin::operator==(const SettingsRegistryOrigin& origin) const
     {
         return (
-            m_originFilePath == origin.m_originFilePath && m_settingsKey == origin.m_settingsKey &&
+            m_originFilePath.Filename() == origin.m_originFilePath.Filename() && m_settingsKey == origin.m_settingsKey &&
             m_settingsValue == origin.m_settingsValue);
     }
 
@@ -78,43 +78,69 @@ namespace AZ
 
     void SettingsRegistryOriginTracker::AddOrigin(AZStd::string_view key, AZ::IO::PathView originPath)
     {
-        AZ::Dom::Path jsonPath = AZ::Dom::Path(key);
-        m_settingsOriginPrefixTree.ValueAtPathOrDefault(
-            jsonPath, SettingsRegistryOriginStack(), AZ::Dom::PrefixTreeMatch::PathAndParents);
-        auto removeExistingOrigin = [&](const AZ::Dom::Path&, SettingsRegistryOriginStack& stack)
+        const AZ::Dom::Path jsonPath = AZ::Dom::Path(key);
+        if (m_settingsOriginPrefixTree.ValueAtPath(jsonPath, AZ::Dom::PrefixTreeMatch::ExactPath) == nullptr)
         {
-            for (auto it = stack.begin(); it != stack.end(); ++it)
-            {
-                if (it->m_originFilePath == originPath)
-                {
-                    stack.erase(it);
-                    break;
-                };
-            };
-            return true;
-        };
-        m_settingsOriginPrefixTree.VisitPath(jsonPath, removeExistingOrigin, AZ::Dom::PrefixTreeTraversalFlags::TraverseLeastToMostSpecific);
+            m_settingsOriginPrefixTree.SetValue(jsonPath, SettingsRegistryOriginStack());
+        }
+       // adds a new origin to origin stack of a dom tree node
         auto addOriginToStack = [&](const AZ::Dom::Path& path, SettingsRegistryOriginStack& stack) {
+            //RemoveOrigin(path.ToString(), originPath, true);
+            // checks if there is a node in the dom tree for a given path and creates one if it doesn't exist
+            SettingsRegistryOriginStack* stackPtr =
+                m_settingsOriginPrefixTree.ValueAtPath(path, AZ::Dom::PrefixTreeMatch::ExactPath);
+            if (stackPtr == nullptr)
+            {
+                m_settingsOriginPrefixTree.SetValue(path, SettingsRegistryOriginStack());
+            }
             if (stack.empty() || path == jsonPath)
             {
                 AZStd::string_view pathStr = AZStd::string_view(path.ToString());
                 AZStd::string settingJsonStr;
                 AZ::IO::ByteContainerStream stringWriter(&settingJsonStr);
                 AZ::SettingsRegistryMergeUtils::DumperSettings dumperSettings;
-                AZ::SettingsRegistryMergeUtils::DumpSettingsRegistryToStream(this->m_settingsRegistry, key, stringWriter, dumperSettings);
+                AZ::SettingsRegistryMergeUtils::DumpSettingsRegistryToStream(
+                    this->m_settingsRegistry, pathStr, stringWriter, dumperSettings);
                 SettingsRegistryOriginTracker::SettingsRegistryOrigin origin{ originPath, pathStr, settingJsonStr };
                 stack.emplace_back(origin);
             };
             return true;
         };
-        m_settingsOriginPrefixTree.VisitPath(jsonPath, addOriginToStack, AZ::Dom::PrefixTreeTraversalFlags::TraverseLeastToMostSpecific);
+        // Add origin does not add an origin to any child paths, so children are excluded
+        // Parent paths will also have an origin added if they do not currently contain one
+        //AZ::Dom::PrefixTreeTraversalFlags traversalFlags =
+        //    AZ::Dom::PrefixTreeTraversalFlags::ExcludeChildPaths | AZ::Dom::PrefixTreeTraversalFlags::TraverseLeastToMostSpecific;
+        m_settingsOriginPrefixTree.VisitPath(jsonPath, addOriginToStack);
     };
 
-    void RemoveOrigin(AZStd::string_view key, AZ::IO::PathView originPath, bool recurseChildren)
+    void SettingsRegistryOriginTracker::RemoveOrigin(AZStd::string_view key, AZ::IO::PathView originPath, bool recurseChildren)
     {
-        (void)key;
-        (void)originPath;
-        (void)recurseChildren;
+        const AZ::Dom::Path jsonPath = AZ::Dom::Path(key);
+        // Remove origin does not remove any ancestor settings paths, so ExcludeParentPaths is set
+        // If recurseChildren is set, then a depth first search traversal is done
+        // to allow deletion of children settings paths entries safely.
+        const AZ::Dom::PrefixTreeTraversalFlags traversalFlags = AZ::Dom::PrefixTreeTraversalFlags::ExcludeParentPaths |
+            (recurseChildren ? AZ::Dom::PrefixTreeTraversalFlags::TraverseMostToLeastSpecific
+                             : AZ::Dom::PrefixTreeTraversalFlags::ExcludeChildPaths);
+
+        //remove a setting origin at a given Dom path.
+        auto removeOriginAtKey = [this, &originPath](const AZ::Dom::Path& path, SettingsRegistryOriginStack& originStack)
+        {
+            //return if a given origin is the origin to remove
+            auto removeOriginCondition = [&originPath](const SettingsRegistryOrigin& origin)
+            {
+                return origin.m_originFilePath == originPath;
+            };
+            AZStd::erase_if(originStack, removeOriginCondition);
+
+            // if the originStack is empty, remove associated node from prefix tree
+            if (originStack.empty())
+            {
+                m_settingsOriginPrefixTree.EraseValue(path, true);
+            };
+            return true;
+        };
+        m_settingsOriginPrefixTree.VisitPath(jsonPath, removeOriginAtKey, traversalFlags);
     };
 
     void SettingsRegistryOriginTracker::VisitOrigins(AZStd::string_view key, const OriginVisitorCallback& visitCallback)
