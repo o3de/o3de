@@ -163,8 +163,6 @@ namespace ScriptAutomation
                 m_automationScript = commandLine->GetSwitchValue(automationSuiteSwitch, 0);
                 m_exitOnFinish = commandLine->HasSwitch(automationExitSwitch);
 
-                AZ_Printf("ScriptAutomation", "Attempting to run automation script %s, exit on finish = %s", m_automationScript.c_str(), m_exitOnFinish?"true":"false");
-
                 AZ::TickBus::Handler::BusConnect();
             }
         }
