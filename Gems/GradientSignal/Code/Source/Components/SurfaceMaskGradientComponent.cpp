@@ -127,6 +127,7 @@ namespace GradientSignal
     void SurfaceMaskGradientComponent::Activate()
     {
         m_dependencyMonitor.Reset();
+        m_dependencyMonitor.SetRegionChangedEntityNotificationFunction();
         m_dependencyMonitor.ConnectOwner(GetEntityId());
         SurfaceMaskGradientRequestBus::Handler::BusConnect(GetEntityId());
 

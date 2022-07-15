@@ -105,6 +105,7 @@ namespace Terrain
         // Make sure we get update notifications whenever this entity or any dependent gradient entity changes in any way.
         // We'll use that to notify the terrain system that the height information needs to be refreshed.
         m_dependencyMonitor.Reset();
+        m_dependencyMonitor.SetRegionChangedEntityNotificationFunction();
         m_dependencyMonitor.ConnectOwner(GetEntityId());
         m_dependencyMonitor.ConnectDependency(GetEntityId());
 
