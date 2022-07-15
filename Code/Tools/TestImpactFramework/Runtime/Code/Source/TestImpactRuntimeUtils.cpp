@@ -14,8 +14,6 @@
 #include <Artifact/Factory/TestImpactBuildTargetDescriptorFactory.h>
 #include <Artifact/Static/TestImpactTargetDescriptorCompiler.h>
 
-#include <AZCore/JSON/document.h>
-
 #include <filesystem>
 
 namespace TestImpact
