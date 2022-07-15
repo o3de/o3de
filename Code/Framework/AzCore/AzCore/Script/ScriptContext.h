@@ -97,7 +97,7 @@ namespace AZ
     class ScriptContext;
     class ScriptContextDebug;
     struct BehaviorParameter;
-    struct BehaviorValueParameter;
+    struct BehaviorArgument;
 
     namespace IO
     {
@@ -810,11 +810,11 @@ namespace AZ
         {
             AZ_TYPE_INFO(CustomReaderWriter,"{ea18a980-de83-4f1c-bf5b-1658584ebe2d}");
             // This function is REQUIRED to push 1 value on the stack (push nil if you can't push a valid value)
-            using CustomToLua = void(*)(lua_State* lua, BehaviorValueParameter& value);
+            using CustomToLua = void(*)(lua_State* lua, BehaviorArgument& value);
             // temporary allocation on the stack,if you need it by CustomFromLua to read a value
             using TempStackAllocate = void*(*)(size_t byteSize, size_t alignment, int flags);
             // reads value from lua stack, returns true if read is successful otherwise false
-            using CustomFromLua = bool(*)(lua_State* lua, int statckIndex, BehaviorValueParameter& value, BehaviorClass* valueClass, StackVariableAllocator* stackTempAllocator);
+            using CustomFromLua = bool(*)(lua_State* lua, int statckIndex, BehaviorArgument& value, BehaviorClass* valueClass, StackVariableAllocator* stackTempAllocator);
 
             CustomReaderWriter(CustomToLua write, CustomFromLua read)
                 : m_toLua(write)
@@ -946,18 +946,18 @@ namespace AZ
 
     };
 
-    using LuaLoadFromStack = bool(*)(lua_State*, int, AZ::BehaviorValueParameter&, AZ::BehaviorClass*, AZ::StackVariableAllocator*);
-    using LuaPushToStack = void(*)(lua_State*, AZ::BehaviorValueParameter&);
-    using LuaPrepareValue = bool(*)(AZ::BehaviorValueParameter&, AZ::BehaviorClass*, AZ::StackVariableAllocator&, AZStd::allocator* backupAllocator);
+    using LuaLoadFromStack = bool(*)(lua_State*, int, AZ::BehaviorArgument&, AZ::BehaviorClass*, AZ::StackVariableAllocator*);
+    using LuaPushToStack = void(*)(lua_State*, AZ::BehaviorArgument&);
+    using LuaPrepareValue = bool(*)(AZ::BehaviorArgument&, AZ::BehaviorClass*, AZ::StackVariableAllocator&, AZStd::allocator* backupAllocator);
 
     // returns a function that allows the caller to push the parameter into the 
     LuaLoadFromStack FromLuaStack(AZ::BehaviorContext* context, const AZ::BehaviorParameter* param, AZ::BehaviorClass*& behaviorClass);
     LuaPushToStack ToLuaStack(AZ::BehaviorContext* context, const AZ::BehaviorParameter* param, LuaPrepareValue* prepareParamOut, AZ::BehaviorClass*& behaviorClass);
 
-    void StackPush(lua_State* lua, AZ::BehaviorContext* context, AZ::BehaviorValueParameter& param);
-    void StackPush(lua_State* lua, AZ::BehaviorValueParameter& param);
-    bool StackRead(lua_State* lua, int index, AZ::BehaviorContext* context,  AZ::BehaviorValueParameter& param, AZ::StackVariableAllocator*);
-    bool StackRead(lua_State* lua, int index, AZ::BehaviorValueParameter& param, AZ::StackVariableAllocator* = nullptr);
+    void StackPush(lua_State* lua, AZ::BehaviorContext* context, AZ::BehaviorArgument& param);
+    void StackPush(lua_State* lua, AZ::BehaviorArgument& param);
+    bool StackRead(lua_State* lua, int index, AZ::BehaviorContext* context,  AZ::BehaviorArgument& param, AZ::StackVariableAllocator*);
+    bool StackRead(lua_State* lua, int index, AZ::BehaviorArgument& param, AZ::StackVariableAllocator* = nullptr);
 
     //////////////////////////////////////////////////////////////////////////
     template<class T>

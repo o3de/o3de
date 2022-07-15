@@ -9,6 +9,7 @@
 
 #include <Atom/RHI.Reflect/SwapChainDescriptor.h>
 #include <Atom/RHI/ImagePoolBase.h>
+#include <Atom/RHI/XRRenderingInterface.h>
 
 namespace AZ
 {
@@ -26,8 +27,10 @@ namespace AZ
         {
         public:
             AZ_RTTI(SwapChain, "{888B64A5-D956-406F-9C33-CF6A54FC41B0}", Object);
-
             virtual ~SwapChain();
+
+            // Due to restriction on DX12 we need to allocate at least a minimum of 2 swapChain images or the drivers will complain
+            static const uint32_t MinSwapChainImages = 2; 
 
             //! Initializes the swap chain, making it ready for attachment.
             ResultCode Init(RHI::Device& device, const SwapChainDescriptor& descriptor);
@@ -110,6 +113,9 @@ namespace AZ
             //! Initialized all the images.
             ResultCode InitImages();
 
+            //! Return the xr system interface
+            RHI::XRRenderingInterface* GetXRSystem() const;
+
             //! Flag indicating if swapchain recreation is needed at the end of the frame.
             bool m_pendingRecreation = false;
         private:
@@ -143,6 +149,9 @@ namespace AZ
 
             //! The current image index.
             uint32_t m_currentImageIndex = 0;
+
+            //! Cache the XR system at initialization time
+            RHI::XRRenderingInterface* m_xrSystem = nullptr;
         };
     }
 }

@@ -238,10 +238,8 @@ function(ly_add_target)
         else()
             ly_handle_custom_output_directory(${ly_add_target_NAME} "")
         endif()
-        ly_apply_debug_strip_options(${ly_add_target_NAME})
-    elseif(ly_add_target_STATIC)
-        ly_apply_debug_strip_options(${ly_add_target_NAME})
     endif()
+
 
     if(ly_add_target_GEM_MODULE OR ly_add_target_GEM_STATIC OR ly_add_target_GEM_SHARED)
         set_target_properties(${ly_add_target_NAME} PROPERTIES GEM_MODULE TRUE)
@@ -252,6 +250,8 @@ function(ly_add_target)
             ${ly_add_target_INCLUDE_DIRECTORIES}
         )
     endif()
+
+    ly_apply_debug_strip_options(${ly_add_target_NAME})
 
     # Parse the 3rdParty library dependencies
     ly_parse_third_party_dependencies("${ly_add_target_BUILD_DEPENDENCIES}")

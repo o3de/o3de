@@ -20,7 +20,6 @@ namespace EMotionFX
     // forward declaration
     class MotionInstance;
     class Mesh;
-    class Material;
     class Actor;
     class MeshDeformerStack;
     class NodeAttribute;

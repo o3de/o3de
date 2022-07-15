@@ -38,29 +38,59 @@ namespace AZ::DocumentPropertyEditor::Nodes
 
     void Reflect(PropertyEditorSystemInterface* system)
     {
-        system->RegisterNode<Adapter>();
-        system->RegisterNode<Row>();
-        system->RegisterNode<Label>();
-        system->RegisterNode<PropertyEditor>();
-        system->RegisterAttribute<PropertyEditor>(PropertyEditor::OnChanged);
-        system->RegisterAttribute<PropertyEditor>(PropertyEditor::Type);
+        system->RegisterNode<NodeWithVisiblityControl>();
+        system->RegisterNodeAttribute<NodeWithVisiblityControl>(NodeWithVisiblityControl::Visibility);
+
+        system->RegisterNode<Adapter, NodeWithVisiblityControl>();
+
+        system->RegisterNode<Row, NodeWithVisiblityControl>();
+        system->RegisterNodeAttribute<Row>(Row::AutoExpand);
+        system->RegisterNodeAttribute<Row>(Row::ForceAutoExpand);
+
+        system->RegisterNode<Label, NodeWithVisiblityControl>();
+        system->RegisterNodeAttribute<Label>(Label::Value);
+
+        system->RegisterNode<PropertyEditor, NodeWithVisiblityControl>();
+        system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::OnChanged);
+        system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::Type);
+        system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::Value);
+        system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::ValueType);
+        system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::EnumType);
+        system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::EnumUnderlyingType);
+        system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::EnumValue);
+        system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::ChangeNotify);
+        system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::AddNotify);
+        system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::RemoveNotify);
+        system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::ClearNotify);
+
+        system->RegisterPropertyEditor<UIElement>();
+        system->RegisterNodeAttribute<UIElement>(UIElement::Handler);
 
         system->RegisterPropertyEditor<NumericEditor<>>();
-        system->RegisterAttribute<NumericEditor<>>(NumericEditor<>::Min);
-        system->RegisterAttribute<NumericEditor<>>(NumericEditor<>::Max);
-        system->RegisterAttribute<NumericEditor<>>(NumericEditor<>::Step);
-        system->RegisterAttribute<NumericEditor<>>(NumericEditor<>::Suffix);
-        system->RegisterAttribute<NumericEditor<>>(NumericEditor<>::SoftMin);
-        system->RegisterAttribute<NumericEditor<>>(NumericEditor<>::SoftMax);
-        system->RegisterAttribute<NumericEditor<>>(NumericEditor<>::Decimals);
-        system->RegisterAttribute<NumericEditor<>>(NumericEditor<>::DisplayDecimals);
+        system->RegisterNodeAttribute<NumericEditor<>>(NumericEditor<>::Min);
+        system->RegisterNodeAttribute<NumericEditor<>>(NumericEditor<>::Max);
+        system->RegisterNodeAttribute<NumericEditor<>>(NumericEditor<>::Step);
+        system->RegisterNodeAttribute<NumericEditor<>>(NumericEditor<>::Suffix);
+        system->RegisterNodeAttribute<NumericEditor<>>(NumericEditor<>::SoftMin);
+        system->RegisterNodeAttribute<NumericEditor<>>(NumericEditor<>::SoftMax);
+        system->RegisterNodeAttribute<NumericEditor<>>(NumericEditor<>::Decimals);
+        system->RegisterNodeAttribute<NumericEditor<>>(NumericEditor<>::DisplayDecimals);
 
         system->RegisterPropertyEditor<Slider<>, NumericEditor<>>();
         system->RegisterPropertyEditor<SpinBox<>, NumericEditor<>>();
+
         system->RegisterPropertyEditor<Button>();
+        system->RegisterNodeAttribute<Button>(Button::ButtonText);
+
+        system->RegisterPropertyEditor<ContainerActionButton>();
+        system->RegisterNodeAttribute<ContainerActionButton>(ContainerActionButton::Action);
+        system->RegisterNodeAttribute<ContainerActionButton>(ContainerActionButton::OnActivate);
+
         system->RegisterPropertyEditor<CheckBox>();
         system->RegisterPropertyEditor<Color>();
         system->RegisterPropertyEditor<ComboBox>();
+        system->RegisterNodeAttribute<ComboBox>(ComboBox::StringList);
+
         system->RegisterPropertyEditor<RadioButton>();
         system->RegisterPropertyEditor<EntityId>();
         system->RegisterPropertyEditor<LayoutPadding>();
@@ -71,5 +101,8 @@ namespace AZ::DocumentPropertyEditor::Nodes
         system->RegisterPropertyEditor<Vector2>();
         system->RegisterPropertyEditor<Vector3>();
         system->RegisterPropertyEditor<Vector4>();
+        system->RegisterPropertyEditor<FilePath>();
+        system->RegisterPropertyEditor<Asset>();
+        system->RegisterPropertyEditor<AudioControl>();
     }
 } // namespace AZ::DocumentPropertyEditor::Nodes

@@ -360,10 +360,10 @@ namespace Vegetation
                         ->DataElement(0, &Descriptor::m_exclusiveSurfaceFilterTags, "Exclusion Tags", "")
                             ->Attribute(AZ::Edit::Attributes::Visibility, &Descriptor::GetAdvancedGroupVisibility)
                             ->Attribute(AZ::Edit::Attributes::ReadOnly, &Descriptor::IsSurfaceTagFilterReadOnly)
+                    ->EndGroup()
 
-                    ->ClassElement(AZ::Edit::ClassElements::Group, "")
-                        ->DataElement(0, &Descriptor::m_surfaceTagDistance, "Surface Mask Depth Filter", "")
-                            ->Attribute(AZ::Edit::Attributes::Visibility, &Descriptor::GetAdvancedGroupVisibility)
+                    ->DataElement(0, &Descriptor::m_surfaceTagDistance, "Surface Mask Depth Filter", "")
+                        ->Attribute(AZ::Edit::Attributes::Visibility, &Descriptor::GetAdvancedGroupVisibility)
 
                     ;
             }

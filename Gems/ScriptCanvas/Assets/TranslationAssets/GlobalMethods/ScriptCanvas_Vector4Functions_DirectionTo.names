@@ -1,0 +1,56 @@
+{
+    "entries": [
+        {
+            "base": "ScriptCanvas_Vector4Functions_DirectionTo",
+            "context": "BehaviorMethod",
+            "variant": "",
+            "details": {
+                "name": "Direction To",
+                "category": "Math/Vector4"
+            },
+            "methods": [
+                {
+                    "base": "ScriptCanvas_Vector4Functions_DirectionTo",
+                    "details": {
+                        "name": "Direction To",
+                        "tooltip": "Returns a direction vector between two points and the distance between them, by default the direction will be normalized, but it may be optionally scaled using the Scale parameter if different from 1.0."
+                    },
+                    "params": [
+                        {
+                            "typeid": "{0CE9FA36-1E3A-4C06-9254-B7C73A732053}",
+                            "details": {
+                                "name": "From"
+                            }
+                        },
+                        {
+                            "typeid": "{0CE9FA36-1E3A-4C06-9254-B7C73A732053}",
+                            "details": {
+                                "name": "To"
+                            }
+                        },
+                        {
+                            "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                            "details": {
+                                "name": "Scale"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{0CE9FA36-1E3A-4C06-9254-B7C73A732053}",
+                            "details": {
+                                "name": "Direction"
+                            }
+                        },
+                        {
+                            "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                            "details": {
+                                "name": "Length"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

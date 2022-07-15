@@ -131,7 +131,7 @@ namespace EditorPythonBindings
         }
 
         template <typename T>
-        bool ConvertPythonFromEnumClass(const AZ::TypeId& underlyingTypeId, AZ::BehaviorValueParameter& behaviorValue, AZ::s64& outboundPythonValue)
+        bool ConvertPythonFromEnumClass(const AZ::TypeId& underlyingTypeId, AZ::BehaviorArgument& behaviorValue, AZ::s64& outboundPythonValue)
         {
             if (underlyingTypeId == AZ::AzTypeInfo<T>::Uuid())
             {
@@ -141,7 +141,7 @@ namespace EditorPythonBindings
             return false;
         }
 
-        AZStd::optional<pybind11::object> ConvertFromEnumClass(AZ::BehaviorValueParameter& behaviorValue)
+        AZStd::optional<pybind11::object> ConvertFromEnumClass(AZ::BehaviorArgument& behaviorValue)
         {
             if (!behaviorValue.m_azRtti)
             {
@@ -169,7 +169,7 @@ namespace EditorPythonBindings
         }
 
         template <typename T>
-        bool ConvertBehaviorParameterEnum(pybind11::object obj, const AZ::TypeId& underlyingTypeId, AZ::BehaviorValueParameter& parameter)
+        bool ConvertBehaviorParameterEnum(pybind11::object obj, const AZ::TypeId& underlyingTypeId, AZ::BehaviorArgument& parameter)
         {
             if (underlyingTypeId == AZ::AzTypeInfo<T>::Uuid())
             {
@@ -189,7 +189,7 @@ namespace EditorPythonBindings
             return false;
         }
 
-        bool ConvertEnumClassFromPython(pybind11::object obj, const AZ::BehaviorParameter& behaviorArgument, AZ::BehaviorValueParameter& parameter)
+        bool ConvertEnumClassFromPython(pybind11::object obj, const AZ::BehaviorParameter& behaviorArgument, AZ::BehaviorArgument& parameter)
         {
             if (behaviorArgument.m_azRtti)
             {
@@ -278,7 +278,7 @@ namespace EditorPythonBindings
             return false;
         }
 
-        bool AllocateBehaviorValueParameter(const AZ::BehaviorMethod* behaviorMethod, AZ::BehaviorValueParameter& result, Convert::StackVariableAllocator& stackVariableAllocator)
+        bool AllocateBehaviorValueParameter(const AZ::BehaviorMethod* behaviorMethod, AZ::BehaviorArgument& result, Convert::StackVariableAllocator& stackVariableAllocator)
         {
             if (const AZ::BehaviorParameter* resultType = behaviorMethod->GetResult())
             {
@@ -354,7 +354,7 @@ namespace EditorPythonBindings
             return false;
         }
 
-        void DeallocateBehaviorValueParameter(AZ::BehaviorValueParameter& valueParameter)
+        void DeallocateBehaviorValueParameter(AZ::BehaviorArgument& valueParameter)
         {
             if (IsPointerType(valueParameter.m_traits) || IsPrimitiveType(valueParameter.m_typeId))
             {
@@ -397,9 +397,9 @@ namespace EditorPythonBindings
             m_cleanUpItems.emplace_back(deleter);
         }
 
-        // from Python to BehaviorValueParameter
+        // from Python to BehaviorArgument
 
-        bool PythonProxyObjectToBehaviorValueParameter(const AZ::BehaviorParameter& behaviorArgument, pybind11::object pyObj, AZ::BehaviorValueParameter& parameter)
+        bool PythonProxyObjectToBehaviorValueParameter(const AZ::BehaviorParameter& behaviorArgument, pybind11::object pyObj, AZ::BehaviorArgument& parameter)
         {
             auto behaviorObject = pybind11::cast<EditorPythonBindings::PythonProxyObject*>(pyObj)->GetBehaviorObject();
             if (behaviorObject)
@@ -445,7 +445,7 @@ namespace EditorPythonBindings
         bool CustomPythonToBehavior(
             const AZ::BehaviorParameter& behaviorArgument,
             pybind11::object pyObj,
-            AZ::BehaviorValueParameter& outBehavior,
+            AZ::BehaviorArgument& outBehavior,
             StackVariableAllocator& stackVariableAllocator)
         {
             AZStd::optional<CustomTypeBindingNotifications::ValueHandle> handle;
@@ -469,7 +469,7 @@ namespace EditorPythonBindings
             return false;
         }
 
-        bool PythonToBehaviorValueParameter(const AZ::BehaviorParameter& behaviorArgument, pybind11::object pyObj, AZ::BehaviorValueParameter& parameter, Convert::StackVariableAllocator& stackVariableAllocator)
+        bool PythonToBehaviorValueParameter(const AZ::BehaviorParameter& behaviorArgument, pybind11::object pyObj, AZ::BehaviorArgument& parameter, Convert::StackVariableAllocator& stackVariableAllocator)
         {
             AZStd::optional<PythonMarshalTypeRequests::BehaviorValueResult> result;
             PythonMarshalTypeRequests::BehaviorTraits traits = static_cast<PythonMarshalTypeRequests::BehaviorTraits>(behaviorArgument.m_traits);
@@ -511,9 +511,9 @@ namespace EditorPythonBindings
             return false;
         }
 
-        // from BehaviorValueParameter to Python
+        // from BehaviorArgument to Python
 
-        AZStd::optional<pybind11::object> CustomBehaviorToPython(AZ::BehaviorValueParameter& behaviorValue, Convert::StackVariableAllocator& stackVariableAllocator)
+        AZStd::optional<pybind11::object> CustomBehaviorToPython(AZ::BehaviorArgument& behaviorValue, Convert::StackVariableAllocator& stackVariableAllocator)
         {
             AZStd::optional<CustomTypeBindingNotifications::ValueHandle> handle;
             PyObject* outPyObj = nullptr;
@@ -533,7 +533,7 @@ namespace EditorPythonBindings
             return AZStd::nullopt;
         }
 
-        pybind11::object BehaviorValueParameterToPython(AZ::BehaviorValueParameter& behaviorValue, Convert::StackVariableAllocator& stackVariableAllocator)
+        pybind11::object BehaviorValueParameterToPython(AZ::BehaviorArgument& behaviorValue, Convert::StackVariableAllocator& stackVariableAllocator)
         {
             auto pyValue = Internal::ConvertFromEnumClass(behaviorValue);
             if (pyValue.has_value())
@@ -578,9 +578,9 @@ namespace EditorPythonBindings
     namespace Call
     {
         constexpr size_t MaxBehaviorMethodArguments = 32;
-        using BehaviorMethodArgumentArray = AZStd::array<AZ::BehaviorValueParameter, MaxBehaviorMethodArguments>;
+        using BehaviorMethodArgumentArray = AZStd::array<AZ::BehaviorArgument, MaxBehaviorMethodArguments>;
 
-        pybind11::object InvokeBehaviorMethodWithResult(AZ::BehaviorMethod* behaviorMethod, pybind11::args pythonInputArgs, AZ::BehaviorObject self, AZ::BehaviorValueParameter& result)
+        pybind11::object InvokeBehaviorMethodWithResult(AZ::BehaviorMethod* behaviorMethod, pybind11::args pythonInputArgs, AZ::BehaviorObject self, AZ::BehaviorArgument& result)
         {
             if (behaviorMethod->GetNumArguments() > MaxBehaviorMethodArguments || pythonInputArgs.size() > MaxBehaviorMethodArguments)
             {
@@ -595,7 +595,7 @@ namespace EditorPythonBindings
             {
                 // record the "this" pointer's metadata like its RTTI so that it can be
                 // down casted to a parent class type if needed to invoke a parent method
-                AZ::BehaviorValueParameter theThisPointer;
+                AZ::BehaviorArgument theThisPointer;
                 if (const AZ::BehaviorParameter* thisInfo = behaviorMethod->GetArgument(0))
                 {
                     // avoiding the "Special handling for the generic object holder." since it assumes
@@ -685,7 +685,7 @@ namespace EditorPythonBindings
 
         pybind11::object InvokeBehaviorMethod(AZ::BehaviorMethod* behaviorMethod, pybind11::args pythonInputArgs, AZ::BehaviorObject self)
         {
-            AZ::BehaviorValueParameter result;
+            AZ::BehaviorArgument result;
             result.m_value = nullptr;
             pybind11::object pythonOutput = InvokeBehaviorMethodWithResult(behaviorMethod, pythonInputArgs, self, result);
             if (result.m_value)

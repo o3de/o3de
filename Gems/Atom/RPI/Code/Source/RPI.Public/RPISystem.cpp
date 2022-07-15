@@ -30,6 +30,7 @@
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/Device.h>
 #include <Atom/RHI.Reflect/PlatformLimitsDescriptor.h>
+#include <Atom/RHI/XRRenderingInterface.h>
 
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Time/ITime.h>
@@ -79,6 +80,14 @@ namespace AZ
 
         void RPISystem::Initialize(const RPISystemDescriptor& rpiSystemDescriptor)
         {
+            //If xr system is registered with RPI init xr instance
+            if (m_xrSystem)
+            {
+                [[maybe_unused]] AZ::RHI::ResultCode resultCode = m_xrSystem->InitInstance();
+                AZ_Warning("RPISystem", resultCode == AZ::RHI::ResultCode::Success, "Unable to initialize XR System");
+            }
+
+            //Init RHI device
             m_rhiSystem.InitDevice();
 
             // Gather asset handlers from sub-systems.
@@ -460,7 +469,7 @@ namespace AZ
                 for (auto& renderPipeline : scene->GetRenderPipelines())
                 {
                     renderPipeline->GetRenderSettings().m_multisampleState = multisampleState;
-                    renderPipeline->SetPassNeedsRecreate();
+                    renderPipeline->MarkPipelinePassChanges(PipelinePassChanges::MultisampleStateChanged);
                 }
             }
         }
@@ -470,5 +479,22 @@ namespace AZ
             return m_multisampleState;
         }
 
+        void RPISystem::RegisterXRSystem(XRRenderingInterface* xrSystemInterface)
+        { 
+            AZ_Assert(!m_xrSystem, "XR System is already registered");
+            m_xrSystem = xrSystemInterface;
+            m_rhiSystem.RegisterXRSystem(dynamic_cast<RHI::XRRenderingInterface*>(xrSystemInterface));
+        }
+
+        void RPISystem::UnregisterXRSystem()
+        {
+            m_rhiSystem.UnregisterXRSystem();
+            m_xrSystem = nullptr;
+        }
+
+        XRRenderingInterface* RPISystem::GetXRSystem() const
+        {
+            return m_xrSystem;
+        } 
     } //namespace RPI
 } //namespace AZ

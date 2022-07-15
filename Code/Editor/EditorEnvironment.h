@@ -11,7 +11,3 @@
 #include <AzCore/Module/Environment.h>
 
 SANDBOX_API void  SetEditorEnvironment(struct SSystemGlobalEnvironment* pEnv);
-
-SANDBOX_API void AttachEditorAZEnvironment(AZ::EnvironmentInstance azEnv);
-
-SANDBOX_API void DetachEditorAZEnvironment();

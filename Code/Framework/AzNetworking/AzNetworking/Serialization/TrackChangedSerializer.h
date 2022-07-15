@@ -16,7 +16,7 @@ namespace AzNetworking
     //! @class TrackChangedSerializer
     //! @brief Output serializer that tracks if it actually writes changes to memory or not.
     template <typename BASE_TYPE>
-    class TrackChangedSerializer final
+    class TrackChangedSerializer
         : public BASE_TYPE
     {
     public:
@@ -41,8 +41,8 @@ namespace AzNetworking
         bool Serialize(   float& value, const char* name,    float minValue,    float maxValue) override;
         bool Serialize(  double& value, const char* name,   double minValue,   double maxValue) override;
         bool SerializeBytes(uint8_t* buffer, uint32_t bufferCapacity, bool isString, uint32_t& outSize, const char* name) override;
-        bool BeginObject(const char *name, const char* typeName) override;
-        bool EndObject(const char *name, const char* typeName) override;
+        bool BeginObject(const char* name) override;
+        bool EndObject(const char* name) override;
 
         const uint8_t* GetBuffer() const override;
         uint32_t GetCapacity() const override;

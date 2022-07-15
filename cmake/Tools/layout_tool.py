@@ -244,7 +244,11 @@ def copy_asset_files_to_layout(project_asset_folder, target_platform, layout_tar
                             abs_dst)
             continue
 
-        if os.path.isfile(abs_dst):
+        # If the target file doesn't exist, copy it
+        if not os.path.exists(abs_dst):
+            logging.debug("Copying %s -> %s", abs_src, abs_dst)
+            shutil.copy2(abs_src, abs_dst)
+        elif os.path.isfile(abs_dst):
             # The target is a file, do a fingerprint check
             # TODO: Evaluate if we want to just junction the files instead of doing a copy
             src_hash = common.file_fingerprint(abs_src)
@@ -407,10 +411,11 @@ def sync_layout_vfs(target_platform, project_path, asset_type, warning_on_missin
     # Create the link
     create_link(vfs_asset_source, temp_vfs_layout_project_config_path, copy)
 
-    # Create the assets to the layout
-    copy_asset_files_to_layout(project_asset_folder=project_asset_folder,
-                               target_platform=target_platform,
-                               layout_target=layout_target)
+    # Copy minimum assets to the layout necessary for vfs
+    root_assets = ['engine.json', 'bootstrap.game.debug.setreg', 'bootstrap.game.profile.setreg', 'bootstrap.game.release.setreg']
+    for root_asset in root_assets:
+        logging.debug("Copying %s -> %s",  os.path.join(project_asset_folder, root_asset), layout_target)
+        shutil.copy2(os.path.join(project_asset_folder, root_asset), layout_target)
 
     # Reset the 'gems' junction if any in the layout
     layout_gems_folder_src = os.path.join(project_asset_folder, 'gems')

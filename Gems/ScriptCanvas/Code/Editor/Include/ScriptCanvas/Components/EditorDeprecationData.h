@@ -24,6 +24,8 @@
 
 namespace ScriptCanvasEditor
 {
+    using SourceHandle = SourceHandle;
+
     namespace Deprecated
     {
         class EditorScriptCanvasComponentVersionConverter

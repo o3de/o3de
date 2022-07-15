@@ -30,7 +30,6 @@
 #include <EMotionFX/Source/EventDataFootIK.h>
 #include <EMotionFX/Source/MotionEvent.h>
 #include <EMotionFX/Source/AnimGraphNodeGroup.h>
-#include <EMotionFX/Source/AnimGraphGameControllerSettings.h>
 #include <EMotionFX/Source/MotionEventTable.h>
 #include <EMotionFX/Source/MotionEventTrack.h>
 #include <EMotionFX/Source/AnimGraphSyncTrack.h>
@@ -76,6 +75,7 @@
 #include <EMotionStudio/EMStudioSDK/Source/PluginManager.h>
 #include <Source/Editor/PropertyWidgets/PropertyTypes.h>
 #include <EMotionFX_Traits_Platform.h>
+#include <SceneAPIExt/Utilities/LegacyPhysicsMaterialFbxManifestConversion.h>
 
 #include <IEditor.h>
 #endif // EMOTIONFXANIMATION_EDITOR
@@ -300,7 +300,6 @@ namespace EMotionFX
             EMotionFX::AnimGraphObject::Reflect(context);
             EMotionFX::AnimGraph::Reflect(context);
             EMotionFX::AnimGraphNodeGroup::Reflect(context);
-            EMotionFX::AnimGraphGameControllerSettings::Reflect(context);
 
             // Anim graph objects
             EMotionFX::AnimGraphObjectFactory::ReflectTypes(context);
@@ -494,6 +493,7 @@ namespace EMotionFX
             AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
             AzToolsFramework::EditorAnimationSystemRequestsBus::Handler::BusConnect();
             AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler::BusConnect();
+            Physics::Utils::PhysicsMaterialConversionRequestBus::Handler::BusConnect();
 
             // Register custom property handlers for the reflected property editor.
             m_propertyHandlers = RegisterPropertyTypes();
@@ -519,6 +519,7 @@ namespace EMotionFX
                 EditorRequests::Bus::Broadcast(&EditorRequests::UnregisterViewPane, EMStudio::MainWindow::GetEMotionFXPaneName());
             }
 
+            Physics::Utils::PhysicsMaterialConversionRequestBus::Handler::BusDisconnect();
             AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler::BusDisconnect();
             AzToolsFramework::EditorAnimationSystemRequestsBus::Handler::BusDisconnect();
             AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect();
@@ -570,12 +571,16 @@ namespace EMotionFX
 #endif
 
             REGISTER_CVAR2("emfx_updateEnabled", &CVars::emfx_updateEnabled, 1, VF_DEV_ONLY, "Enable main EMFX update");
+            REGISTER_CVAR2(
+                "emfx_ragdollManipulatorsEnabled", &CVars::emfx_ragdollManipulatorsEnabled, 0, VF_DEV_ONLY,
+                "Feature flag for in development ragdoll manipulators");
         }
 
         //////////////////////////////////////////////////////////////////////////
         void SystemComponent::OnCrySystemShutdown(ISystem&)
         {
             gEnv->pConsole->UnregisterVariable("emfx_updateEnabled");
+            gEnv->pConsole->UnregisterVariable("emfx_ragdollManipulatorsEnabled");
 
 #if !defined(AZ_MONOLITHIC_BUILD)
             gEnv = nullptr;
@@ -849,6 +854,11 @@ namespace EMotionFX
                 return SourceFileDetails("Editor/Images/AssetBrowser/AnimGraph_16.svg");
             }
             return SourceFileDetails(); // no result
+        }
+
+        void SystemComponent::FixPhysicsLegacyMaterials(const Physics::Utils::LegacyMaterialIdToNewAssetIdMap& legacyMaterialIdToNewAssetIdMap)
+        {
+            EMotionFX::Pipeline::Utilities::FixFbxManifestsWithPhysicsLegacyMaterials(legacyMaterialIdToNewAssetIdMap);
         }
 
 #endif // EMOTIONFXANIMATION_EDITOR

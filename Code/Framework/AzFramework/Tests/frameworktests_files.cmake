@@ -10,6 +10,7 @@ set(FILES
     Main.cpp
     Spawnable/SpawnableEntitiesInterfaceTests.cpp
     Spawnable/SpawnableEntitiesManagerTests.cpp
+    Spawnable/SpawnableScriptMediatorTests.cpp
     Spawnable/SpawnableTests.cpp
     ArchiveCompressionTests.cpp
     ArchiveTests.cpp

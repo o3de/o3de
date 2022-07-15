@@ -1,0 +1,50 @@
+{#
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
+
+SPDX-License-Identifier: Apache-2.0 OR MIT
+#}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+// This code was produced with AzAutoGen, any modifications made will not be preserved.
+// If you need to modify this code see:
+//
+// Gems\ScriptCanvas\Code\Include\ScriptCanvas\AutoGen\ScriptCanvasFunctionRegistry_Header.jinja
+//
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+{% import 'ScriptCanvas_Macros.jinja' as macros %}
+
+#pragma once
+
+#include <ScriptCanvas/AutoGen/ScriptCanvasAutoGenRegistry.h>
+
+namespace AZ
+{
+    class ReflectContext;
+    class ComponentDescriptor;
+}
+
+namespace ScriptCanvas
+{
+    struct NodeRegistry;
+
+    //! {{autogenTargetName}}FunctionRegistry
+    //! AutoGen registry to register function required metadata into system
+    class {{autogenTargetName}}FunctionRegistry
+        : public ScriptCanvasRegistry
+    {
+    public:
+        {{autogenTargetName}}FunctionRegistry();
+        virtual ~{{autogenTargetName}}FunctionRegistry();
+ 
+        //! ScriptCanvasRegistry
+        void Reflect(AZ::ReflectContext* context) override;
+        void Init([[maybe_unused]] NodeRegistry* nodeRegistry) override {}
+        AZStd::vector<AZ::ComponentDescriptor*> GetComponentDescriptors() override { return {}; }
+
+        //! Get AutoGen registry name
+        static const char* GetRegistryName();
+    };
+}

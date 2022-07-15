@@ -602,6 +602,13 @@ namespace AZ
         {
             retVal.push_back(currentIter->second);
         }
+
+        findResult = m_deprecatedNameToTypeIdMap.equal_range(classNameCrc);
+        for (auto&& currentIter = findResult.first; currentIter != findResult.second; ++currentIter)
+        {
+            AZ_TracePrintf("Serialize", "Found TypeId using deprecated class name CRC value of %u", static_cast<AZ::u32>(classNameCrc));
+            retVal.push_back(currentIter->second);
+        }
         return retVal;
     }
 
@@ -2395,7 +2402,8 @@ namespace AZ
 
         if (classData->m_serializer)
         {
-            if (classData->m_typeId == GetAssetClassId())
+            if (const auto* genericInfo = elementData ? elementData->m_genericClassInfo : FindGenericClassInfo(classData->m_typeId);
+                    genericInfo && genericInfo->GetGenericTypeId() == GetAssetClassId())
             {
                 // Optimized clone path for asset references.
                 static_cast<AssetSerializer*>(classData->m_serializer.get())->Clone(srcPtr, destPtr);
@@ -2783,6 +2791,10 @@ namespace AZ
 
             // if we get here, its a FLG_POINTER
             const void* dataPtr = *reinterpret_cast<void* const*>(element);
+            if (dataPtr == nullptr)
+            {
+                return; // Pointer element is nullptr, nothing to delete
+            }
             if (classData->m_factory)
             {
                 classData->m_factory->Destroy(dataPtr);

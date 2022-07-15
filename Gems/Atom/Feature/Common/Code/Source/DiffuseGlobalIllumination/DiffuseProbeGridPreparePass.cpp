@@ -97,6 +97,9 @@ namespace AZ
 
             RPI::Scene* scene = m_pipeline->GetScene();
             DiffuseProbeGridFeatureProcessor* diffuseProbeGridFeatureProcessor = scene->GetFeatureProcessor<DiffuseProbeGridFeatureProcessor>();
+
+            frameGraph.SetEstimatedItemCount(aznumeric_cast<uint32_t>(diffuseProbeGridFeatureProcessor->GetVisibleProbeGrids().size()));
+
             for (auto& diffuseProbeGrid : diffuseProbeGridFeatureProcessor->GetVisibleProbeGrids())
             {
                 // grid data buffer
@@ -133,13 +136,16 @@ namespace AZ
             RPI::Scene* scene = m_pipeline->GetScene();
             DiffuseProbeGridFeatureProcessor* diffuseProbeGridFeatureProcessor = scene->GetFeatureProcessor<DiffuseProbeGridFeatureProcessor>();
 
-            // submit the DispatchItems for each DiffuseProbeGrid
-            for (auto& diffuseProbeGrid : diffuseProbeGridFeatureProcessor->GetVisibleProbeGrids())
+            // submit the DispatchItems for each DiffuseProbeGrid in this range
+            for (uint32_t index = context.GetSubmitRange().m_startIndex; index < context.GetSubmitRange().m_endIndex; ++index)
             {
+                AZStd::shared_ptr<DiffuseProbeGrid> diffuseProbeGrid = diffuseProbeGridFeatureProcessor->GetVisibleProbeGrids()[index];
+
                 const RHI::ShaderResourceGroup* shaderResourceGroup = diffuseProbeGrid->GetPrepareSrg()->GetRHIShaderResourceGroup();
                 commandList->SetShaderResourceGroupForDispatch(*shaderResourceGroup);
 
                 RHI::DispatchItem dispatchItem;
+                dispatchItem.m_submitIndex = index;
                 dispatchItem.m_arguments = m_dispatchArgs;
                 dispatchItem.m_pipelineState = m_pipelineState;
                 dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsX = 1;

@@ -21,11 +21,8 @@ import ly_test_tools
 class TestCLIToolSerializeContextToolsWorks(object):
     def test_CLITool_SerializeContextTools_Works(self, build_directory):
         file_path = os.path.join(build_directory, "SerializeContextTools")
-        help_message = "Converts a file with an ObjectStream to the new JSON"
         # Launch SerializeContextTools
-        output = subprocess.run([file_path, "-help"], capture_output=True, timeout=10)
+        output = subprocess.run([file_path, "--help"], capture_output=True, timeout=10)
         assert (
-            len(output.stderr) == 0 and output.returncode == 0
-        ), f"Error occurred while launching {file_path}: {output.stderr}"
-        # Verify help message
-        assert help_message in str(output.stdout), f"Help Message: {help_message} is not present"
+            len(output.stdout) > 0 and output.returncode == 0
+        ), f"Error occurred while launching {file_path}: {output.stdout}"

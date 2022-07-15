@@ -87,7 +87,11 @@ namespace GradientSignal
 
         //////////////////////////////////////////////////////////////////////////
         // SurfaceDataSystemNotificationBus
-        void OnSurfaceChanged(const AZ::EntityId& entityId, const AZ::Aabb& oldBounds, const AZ::Aabb& newBounds) override;
+        void OnSurfaceChanged(
+            const AZ::EntityId& entityId,
+            const AZ::Aabb& oldBounds,
+            const AZ::Aabb& newBounds,
+            const SurfaceData::SurfaceTagSet& changedSurfaceTags) override;
 
         //////////////////////////////////////////////////////////////////////////
         // AZ::TickBus::Handler

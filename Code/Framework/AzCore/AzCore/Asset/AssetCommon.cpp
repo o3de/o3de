@@ -163,7 +163,7 @@ namespace AZ::Data
                     return { it->second, assetReferenceLoadBehavior };
                 }
             }
-            return {};
+            return {nullptr, assetReferenceLoadBehavior};
         }
 
         AssetId ResolveAssetId(const AssetId& id)

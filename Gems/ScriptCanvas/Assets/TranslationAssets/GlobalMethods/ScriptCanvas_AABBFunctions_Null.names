@@ -1,0 +1,30 @@
+{
+    "entries": [
+        {
+            "base": "ScriptCanvas_AABBFunctions_Null",
+            "context": "BehaviorMethod",
+            "variant": "",
+            "details": {
+                "name": "Null",
+                "category": "Math/AABB"
+            },
+            "methods": [
+                {
+                    "base": "ScriptCanvas_AABBFunctions_Null",
+                    "details": {
+                        "name": "Null",
+                        "tooltip": "Returns an invalid AABB (min > max), adding any point to it will make it valid."
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A54C2B36-D5B8-46A1-A529-4EBDBD2450E7}",
+                            "details": {
+                                "name": "AABB"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

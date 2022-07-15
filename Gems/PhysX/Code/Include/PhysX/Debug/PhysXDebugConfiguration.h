@@ -107,7 +107,7 @@ namespace PhysX
             //! Color scheme for debug collision
             enum class GlobalCollisionDebugColorMode
             {
-                MaterialColor,   //!< Use debug color specified in the material library
+                MaterialColor,   //!< Use debug color specified in the material
                 ErrorColor       //!< Show default color and flashing red for colliders with errors.
             };
             GlobalCollisionDebugColorMode m_globalCollisionDebugDrawColorMode = GlobalCollisionDebugColorMode::MaterialColor;

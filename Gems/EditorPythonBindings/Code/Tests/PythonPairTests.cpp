@@ -188,8 +188,15 @@ namespace UnitTest
                 test_pair.second = True
 
                 test.accept_pair_of_boolToBool(test_pair)
+
+                # Test out the pair as a single return value that's a list
                 result = test.return_pair_of_boolToBool()
                 if (len(result) == 2 and result[0] == False and result[1] == True):
+                    print ('PairTypeTest_UseConstructed')
+
+                # Test out the pair as two comma-separated return values extracted from the list
+                a, b = test.return_pair_of_boolToBool()
+                if (a == False and b == True):
                     print ('PairTypeTest_UseConstructed')
             )");
         }
@@ -203,7 +210,7 @@ namespace UnitTest
 
         EXPECT_EQ(1, m_testSink.m_evaluationMap[static_cast<int>(LogTypes::PairTypeTest_ConstructBoolDefault)]);
         EXPECT_EQ(1, m_testSink.m_evaluationMap[static_cast<int>(LogTypes::PairTypeTest_ConstructBoolParams)]);
-        EXPECT_EQ(1, m_testSink.m_evaluationMap[static_cast<int>(LogTypes::PairTypeTest_UseConstructed)]);
+        EXPECT_EQ(2, m_testSink.m_evaluationMap[static_cast<int>(LogTypes::PairTypeTest_UseConstructed)]);
     }
 
     TEST_F(PythonReflectionPairTests, SimpleTypes_ConvertedCorrectly)

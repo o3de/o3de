@@ -47,8 +47,7 @@ namespace EMotionFX
 {
     void MakeQtApplicationBase::SetUp()
     {
-        int argc = 0;
-        m_uiApp = new QApplication(argc, nullptr);
+        m_uiApp = new QApplication(s_argc, nullptr);
 
         AzToolsFramework::EditorEvents::Bus::Broadcast(&AzToolsFramework::EditorEvents::NotifyRegisterViews);
 

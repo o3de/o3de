@@ -269,6 +269,9 @@ function(ly_enable_gems_delayed)
             message(FATAL_ERROR "ly_set_gem_variant_to_load specified TARGET '${target}' but no such target was found.")
         endif()
 
+        get_property(target_gem_variants GLOBAL PROPERTY LY_GEM_VARIANTS_"${target}")
+        message(VERBOSE "Adding gem dependencies for \"${target}\" associated with the Gem variants of \"${target_gem_variants}\"")
+
         # Lookup if the target is scoped to a project
         # In that case the target can only use gem targets that is
         # - not project specific: i.e "__NOPROJECT__"
@@ -304,7 +307,6 @@ function(ly_enable_gems_delayed)
 
             # Gather the Gem variants associated with this target and iterate over them to combine them with the enabled
             # gems for the each project
-            get_property(target_gem_variants GLOBAL PROPERTY LY_GEM_VARIANTS_"${target}")
             foreach(variant ${target_gem_variants})
                 ly_add_gem_dependencies_to_project_variants(
                     PROJECT_NAME ${project}

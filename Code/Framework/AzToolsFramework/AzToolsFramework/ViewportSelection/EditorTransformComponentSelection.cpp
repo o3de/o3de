@@ -1835,7 +1835,10 @@ namespace AzToolsFramework
 
         EditorContextMenuUpdate(m_contextMenu, mouseInteraction);
 
-        m_boxSelect.HandleMouseInteraction(mouseInteraction);
+        if (m_boxSelect.HandleMouseInteraction(mouseInteraction))
+        {
+            return true;
+        }
 
         if (Input::CycleManipulator(mouseInteraction))
         {

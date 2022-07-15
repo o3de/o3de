@@ -24,6 +24,7 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
     {
     public:
         explicit PrefabDocument(AZStd::string name);
+        explicit PrefabDocument(AZStd::string name, InstanceAlias alias);
         PrefabDocument(const PrefabDocument&) = delete;
         PrefabDocument(PrefabDocument&&) = default;
 

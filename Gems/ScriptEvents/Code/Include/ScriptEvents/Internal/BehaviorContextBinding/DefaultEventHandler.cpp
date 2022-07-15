@@ -103,7 +103,7 @@ namespace ScriptEvents
     }
 
 
-    bool DefaultBehaviorHandler::Connect(AZ::BehaviorValueParameter* address)
+    bool DefaultBehaviorHandler::Connect(AZ::BehaviorArgument* address)
     {
         if (address)
         {

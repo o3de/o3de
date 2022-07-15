@@ -15,7 +15,7 @@ struct lua_State;
 
 namespace AZ
 {
-    struct BehaviorValueParameter;
+    struct BehaviorArgument;
 }
 
 namespace ScriptCanvas
@@ -39,7 +39,7 @@ namespace ScriptCanvas
 
             OutInterpreted& operator=(OutInterpreted&& source) noexcept;
 
-            void operator()(AZ::BehaviorValueParameter* resultBVP, AZ::BehaviorValueParameter* argsBVPs, int numArguments);
+            void operator()(AZ::BehaviorArgument* resultBVP, AZ::BehaviorArgument* argsBVPs, int numArguments);
 
             // \note Do not use, these are here for compiler compatibility only
             OutInterpreted() = default;
@@ -63,7 +63,7 @@ namespace ScriptCanvas
 
             OutInterpretedResult& operator=(OutInterpretedResult&& source) noexcept;
 
-            void operator()(AZ::BehaviorValueParameter* resultBVP, AZ::BehaviorValueParameter* argsBVPs, int numArguments);
+            void operator()(AZ::BehaviorArgument* resultBVP, AZ::BehaviorArgument* argsBVPs, int numArguments);
 
             // \note Do not use, these are here for compiler compatibility only
             OutInterpretedResult() = default;

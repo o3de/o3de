@@ -774,9 +774,6 @@ namespace UnitTest
         AZ_TEST_ASSERT(AZStd::alphanum_comp(strA, "Alpha 2") == 0);
         AZ_TEST_ASSERT(AZStd::alphanum_comp(strA, "Alpha 2A") < 0);
         AZ_TEST_ASSERT(AZStd::alphanum_comp("Alpha 2 B", strA) > 0);
-        AZ_TEST_ASSERT(AZStd::alphanum_comp(strA, strdup("Alpha 2")) == 0);
-        AZ_TEST_ASSERT(AZStd::alphanum_comp(strA, strdup("Alpha 2A")) < 0);
-        AZ_TEST_ASSERT(AZStd::alphanum_comp(strdup("Alpha 2 B"), strA) > 0);
 
         // show usage of the comparison functor with a set
         using StringSetType = AZStd::set<AZStd::string, AZStd::alphanum_less<AZStd::string>>;

@@ -117,6 +117,9 @@ namespace AZ
             //! @param return the number of shader options that were updated, or Failure if the material owns the indicated shader option.
             AZ::Outcome<uint32_t> SetSystemShaderOption(const Name& shaderOptionName, RPI::ShaderOptionValue value);
 
+            //! Apply all global shader options to this material
+            void ApplyGlobalShaderOptions();
+
             //! Override the material's default PSO handling setting.
             //! This is normally used in tools like Asset Processor or Material Editor to allow changes that impact
             //! Pipeline State Objects which is not allowed at runtime. See MaterialPropertyPsoHandling for more details.

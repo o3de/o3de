@@ -61,6 +61,10 @@ namespace PhysX
     {
         Physics::RagdollConfiguration* configuration =
             AZ::Utils::LoadObjectFromFile<Physics::RagdollConfiguration>(AZ::Test::GetCurrentExecutablePath() + "/Test.Assets/Gems/PhysX/Code/Tests/RagdollConfiguration.xml");
+        if (!configuration)
+        {
+            return nullptr;
+        }
 
         configuration->m_initialState = GetTPose();
         configuration->m_parentIndices.reserve(configuration->m_nodes.size());
@@ -69,12 +73,15 @@ namespace PhysX
             configuration->m_parentIndices.push_back(RagdollTestData::ParentIndices[i]);
         }
 
+        Ragdoll* ragdoll = nullptr;
         if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
         {
             AzPhysics::SimulatedBodyHandle bodyHandle = sceneInterface->AddSimulatedBody(sceneHandle, configuration);
-            return azdynamic_cast<Ragdoll*>(sceneInterface->GetSimulatedBodyFromHandle(sceneHandle, bodyHandle));
+            ragdoll = azdynamic_cast<Ragdoll*>(sceneInterface->GetSimulatedBodyFromHandle(sceneHandle, bodyHandle));
         }
-        return nullptr;
+
+        delete configuration;
+        return ragdoll;
     }
 
 #if AZ_TRAIT_DISABLE_FAILED_PHYSICS_TESTS

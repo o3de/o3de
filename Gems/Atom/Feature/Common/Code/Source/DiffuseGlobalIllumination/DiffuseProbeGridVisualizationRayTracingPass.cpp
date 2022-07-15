@@ -169,6 +169,8 @@ namespace AZ
             RPI::Scene* scene = m_pipeline->GetScene();
             DiffuseProbeGridFeatureProcessor* diffuseProbeGridFeatureProcessor = scene->GetFeatureProcessor<DiffuseProbeGridFeatureProcessor>();
 
+            frameGraph.SetEstimatedItemCount(aznumeric_cast<uint32_t>(diffuseProbeGridFeatureProcessor->GetVisibleProbeGrids().size()));
+
             for (auto& diffuseProbeGrid : diffuseProbeGridFeatureProcessor->GetVisibleProbeGrids())
             {
                 if (!diffuseProbeGrid->GetVisualizationEnabled())
@@ -280,8 +282,11 @@ namespace AZ
                 return;
             }
 
-            for (auto& diffuseProbeGrid : diffuseProbeGridFeatureProcessor->GetVisibleProbeGrids())
+            // submit the DispatchRaysItems for each DiffuseProbeGrid in this range
+            for (uint32_t index = context.GetSubmitRange().m_startIndex; index < context.GetSubmitRange().m_endIndex; ++index)
             {
+                AZStd::shared_ptr<DiffuseProbeGrid> diffuseProbeGrid = diffuseProbeGridFeatureProcessor->GetVisibleProbeGrids()[index];
+
                 if (!diffuseProbeGrid->GetVisualizationEnabled())
                 {
                     continue;
@@ -293,6 +298,7 @@ namespace AZ
                 };
 
                 RHI::DispatchRaysItem dispatchRaysItem;
+                dispatchRaysItem.m_submitIndex = index;
                 dispatchRaysItem.m_width = m_outputAttachmentSize.m_width;
                 dispatchRaysItem.m_height = m_outputAttachmentSize.m_height;
                 dispatchRaysItem.m_depth = 1;

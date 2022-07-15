@@ -51,14 +51,24 @@ def TerrainPhysicsCollider_ChangesSizeWithAxisAlignedBoxShapeChanges():
 
     SET_BOX_X_SIZE = 5.0
     SET_BOX_Y_SIZE = 6.0
-    EXPECTED_COLUMN_SIZE = SET_BOX_X_SIZE + 1
-    EXPECTED_ROW_SIZE = SET_BOX_Y_SIZE + 1
+
+    # Our box is being created at (0,0), so it goes from (-2.5,-3) to (2.5,3)
+    # The default terrain grid step size is 1, and we expect our physics heightfield to be aligned to the grid,
+    # so the heightfield should go from (-2, -3) to (2, 3).
+    # The heightfield is also expected to create final vertex endpoints in each direction, so we expect the 
+    # X axis to create (-2, -1, 0, 1, 2) = 5 points, and the Y axis to create (-3, -2, -1, 0, 1, 2, 3) = 7 points
+    EXPECTED_COLUMN_SIZE = 5
+    EXPECTED_ROW_SIZE = 7
     
     # 1) Load the level
     hydra.open_base_level()
 
+    #1a) Load the level components
+    hydra.add_level_component("Terrain World")
+    hydra.add_level_component("Terrain World Renderer")
+
     # 2) Create test entity
-    test_entity = EditorEntity.create_editor_entity("TestEntity")
+    test_entity = EditorEntity.create_editor_entity_at(azmath.Vector3(0.0, 0.0, 0.0), "TestEntity")
     Report.result(Tests.create_test_entity, test_entity.id.IsValid())
 
     # 3) Start the Tracer to catch any errors and warnings

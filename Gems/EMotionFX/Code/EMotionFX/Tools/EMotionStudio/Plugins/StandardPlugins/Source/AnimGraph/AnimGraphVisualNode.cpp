@@ -6,16 +6,17 @@
  *
  */
 
-// include required headers
 #include "AnimGraphVisualNode.h"
+
+#include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/EMStudioManager.h>
+#include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/MotionEventPresetManager.h>
+#include "AnimGraphPlugin.h"
 #include "NodeGraph.h"
+
+#include <AzQtComponents/Utilities/Conversions.h>
+#include <EMotionFX/CommandSystem/Source/CommandManager.h>
 #include <EMotionFX/Source/AnimGraphNode.h>
 #include <EMotionFX/Source/AnimGraphSyncTrack.h>
-#include <EMotionFX/CommandSystem/Source/CommandManager.h>
-#include "../../../../EMStudioSDK/Source/MotionEventPresetManager.h"
-#include "../../../../EMStudioSDK/Source/EMStudioManager.h"
-#include "AnimGraphPlugin.h"
-
 
 namespace EMStudio
 {
@@ -36,21 +37,14 @@ namespace EMStudio
     {
     }
 
-
-    QColor AnimGraphVisualNode::AzColorToQColor(const AZ::Color& col) const
-    {
-        return QColor::fromRgbF(col.GetR(), col.GetG(), col.GetB(), col.GetA());
-    }
-
-
     void AnimGraphVisualNode::Sync()
     {
         SetName(m_emfxNode->GetName());
         SetNodeInfo(m_emfxNode->GetNodeInfo());
         
         SetDeletable(m_emfxNode->GetIsDeletable());
-        SetBaseColor(AzColorToQColor(m_emfxNode->GetVisualColor()));
-        SetHasChildIndicatorColor(AzColorToQColor(m_emfxNode->GetHasChildIndicatorColor()));
+        SetBaseColor(AzQtComponents::toQColor(m_emfxNode->GetVisualColor()));
+        SetHasChildIndicatorColor(AzQtComponents::toQColor(m_emfxNode->GetHasChildIndicatorColor()));
         SetIsCollapsed(m_emfxNode->GetIsCollapsed());
 
         // Update position
@@ -60,7 +54,7 @@ namespace EMStudio
         SetIsVisualized(m_emfxNode->GetIsVisualizationEnabled());
         SetCanVisualize(m_emfxNode->GetSupportsVisualization());
         SetIsEnabled(m_emfxNode->GetIsEnabled());
-        SetVisualizeColor(AzColorToQColor(m_emfxNode->GetVisualizeColor()));
+        SetVisualizeColor(AzQtComponents::toQColor(m_emfxNode->GetVisualizeColor()));
         SetHasVisualOutputPorts(m_emfxNode->GetHasVisualOutputPorts());
         m_hasVisualGraph = m_emfxNode->GetHasVisualGraph();
 
@@ -181,4 +175,4 @@ namespace EMStudio
         EMotionFX::AnimGraphObjectData* uniqueData = m_emfxNode->FindOrCreateUniqueNodeData(animGraphInstance);
         return m_emfxNode->HierarchicalHasError(uniqueData);
     }
-}   // namespace EMStudio
+} // namespace EMStudio

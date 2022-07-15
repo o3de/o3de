@@ -29,7 +29,7 @@ namespace Multiplayer
     void NetworkRigidBodyComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
         NetworkRigidBodyComponentBase::GetRequiredServices(required);
-        required.push_back(AZ_CRC_CE("PhysXRigidBodyService"));
+        required.push_back(AZ_CRC_CE("PhysicsRigidBodyService"));
     }
 
     NetworkRigidBodyComponent::NetworkRigidBodyComponent()

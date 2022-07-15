@@ -93,12 +93,37 @@ namespace AtomToolsFramework
         }
     }
 
+    void AtomToolsDocumentInspector::OnDocumentObjectInfoInvalidated(const AZ::Uuid& documentId)
+    {
+        if (m_documentId == documentId)
+        {
+            RebuildAll();
+        }
+    }
+
+    void AtomToolsDocumentInspector::OnDocumentModified(const AZ::Uuid& documentId)
+    {
+        if (m_documentId == documentId && !m_editInProgress)
+        {
+            RefreshAll();
+        }
+    }
+
     void AtomToolsDocumentInspector::BeforePropertyModified([[maybe_unused]] AzToolsFramework::InstanceDataNode* pNode)
     {
         if (!m_editInProgress)
         {
             m_editInProgress = true;
             AtomToolsDocumentRequestBus::Event(m_documentId, &AtomToolsDocumentRequestBus::Events::BeginEdit);
+            AtomToolsDocumentNotificationBus::Event(m_toolId, &AtomToolsDocumentNotificationBus::Events::OnDocumentModified, m_documentId);
+        }
+    }
+
+    void AtomToolsDocumentInspector::AfterPropertyModified([[maybe_unused]] AzToolsFramework::InstanceDataNode* pNode)
+    {
+        if (m_editInProgress)
+        {
+            AtomToolsDocumentNotificationBus::Event(m_toolId, &AtomToolsDocumentNotificationBus::Events::OnDocumentModified, m_documentId);
         }
     }
 
@@ -106,10 +131,9 @@ namespace AtomToolsFramework
     {
         if (m_editInProgress)
         {
-            m_editInProgress = false;
+            AtomToolsDocumentNotificationBus::Event(m_toolId, &AtomToolsDocumentNotificationBus::Events::OnDocumentModified, m_documentId);
             AtomToolsDocumentRequestBus::Event(m_documentId, &AtomToolsDocumentRequestBus::Events::EndEdit);
+            m_editInProgress = false;
         }
     }
 } // namespace AtomToolsFramework
-
-//#include <AtomToolsFramework/Document/moc_AtomToolsDocumentInspector.cpp>

@@ -1,6 +1,0 @@
-<download name="C5932042" type="Map">
- <index src="filelist.xml" dest="filelist.xml"/>
- <files>
-  <file src="level.pak" dest="level.pak" size="10041" md5="49dd3589c9e3f97c5a78f3642531fa1b"/>
- </files>
-</download>

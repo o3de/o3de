@@ -143,6 +143,7 @@ def BasicEditorWorkflows_LevelEntityComponentCRUD():
                                                                   "Box Shape|Box Configuration|Dimensions")
         Report.result(Tests.component_updated, box_shape_dimensions == dimensions_to_set)
 
+
         # Remove the component
         child_entity.remove_component("Box Shape")
         component_rem_success = await pyside_utils.wait_for_condition(lambda: not hydra.has_components(child_entity.id,

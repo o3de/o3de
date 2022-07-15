@@ -19,7 +19,6 @@ def CreatePrefab_UnderChildEntityOfAnotherPrefab():
 
     from editor_python_test_tools.editor_entity_utils import EditorEntity
     from editor_python_test_tools.prefab_utils import Prefab
-
     import Prefab.tests.PrefabTestUtils as prefab_test_utils
 
     OUTER_PREFAB_NAME = 'Outer_prefab'
@@ -43,8 +42,9 @@ def CreatePrefab_UnderChildEntityOfAnotherPrefab():
     child_entity.add_component(PHYSX_COLLIDER_NAME)
     assert child_entity.has_component(PHYSX_COLLIDER_NAME), f"Failed to add a {PHYSX_COLLIDER_NAME}"
 
-    # Create a prefab based on that entity
+    # Create a prefab based on that entity and focus it
     _, outer_instance = Prefab.create_prefab([parent_entity], OUTER_PREFAB_FILE_NAME)
+    outer_instance.container_entity.focus_on_owning_prefab()
     # The entities should be now inside the outer prefab instance.
     parent_entity_on_outer_instance = outer_instance.get_direct_child_entities()[0]
     child_entity_on_outer_instance = parent_entity_on_outer_instance.get_children()[0]
@@ -58,6 +58,10 @@ def CreatePrefab_UnderChildEntityOfAnotherPrefab():
 
     # Now, create another prefab, based on the child entity that is inside outer_prefab
     _, inner_instance = Prefab.create_prefab([child_entity_on_outer_instance], INNER_PREFAB_FILE_NAME)
+
+    # Test undo/redo on prefab creation
+    prefab_test_utils.validate_undo_redo_on_prefab_creation(inner_instance, parent_entity_on_outer_instance.id)
+
     # The child entity should now be inside the inner prefab instance
     child_entity_on_inner_instance = inner_instance.get_direct_child_entities()[0]
     # We track if the child entity is the same entity by checking the name and if it still contains the component that we created before

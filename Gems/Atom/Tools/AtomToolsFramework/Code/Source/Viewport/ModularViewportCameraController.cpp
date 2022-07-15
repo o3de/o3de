@@ -182,6 +182,9 @@ namespace AtomToolsFramework
                 const AZ::Vector3 eulerAngles = AzFramework::EulerAngles(AZ::Matrix3x3::CreateFromTransform(transform));
                 UpdateCameraFromTranslationAndRotation(m_targetCamera, transform.GetTranslation(), eulerAngles);
                 m_targetRoll = eulerAngles.GetY();
+
+                m_camera = m_targetCamera;
+                m_roll = m_targetRoll;
             }
         };
 

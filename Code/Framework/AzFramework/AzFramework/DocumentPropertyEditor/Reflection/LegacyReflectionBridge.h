@@ -29,7 +29,19 @@ namespace AZ::Reflection
         //! relative to the instance parameter to a Visit call.
         //! Type: String (can be parsed by AZ::Dom::Path)
         extern const Name SerializedPath;
+        //! The serialize context container interface for a container row.
+        //! Type: AZ::SerializeContext::IDataContainer (marshalled as a void* because it's not reflected)
+        extern const Name Container;
+        //! The serialize context container interface for a container element's parent.
+        //! Type: AZ::SerializeContext::IDataContainer (marshalled as a void* because it's not reflected)
+        extern const Name ParentContainer;
+        //! The container instance pointer for a container element row.
+        //! Type: void*
+        extern const Name ParentContainerInstance;
     } // namespace DescriptorAttributes
+
+    AZStd::shared_ptr<AZ::Attribute> WriteDomValueToGenericAttribute(const AZ::Dom::Value& value);
+    AZStd::optional<AZ::Dom::Value> ReadGenericAttributeToDomValue(void* instance, AZ::Attribute* attribute);
 
     void VisitLegacyInMemoryInstance(
         IRead* visitor, void* instance, const AZ::TypeId& typeId, AZ::SerializeContext* serializeContext = nullptr);

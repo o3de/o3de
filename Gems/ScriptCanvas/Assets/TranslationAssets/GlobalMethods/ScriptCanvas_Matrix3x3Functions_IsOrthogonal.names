@@ -1,0 +1,38 @@
+{
+    "entries": [
+        {
+            "base": "ScriptCanvas_Matrix3x3Functions_IsOrthogonal",
+            "context": "BehaviorMethod",
+            "variant": "",
+            "details": {
+                "name": "Is Orthogonal",
+                "category": "Math/Matrix3x3"
+            },
+            "methods": [
+                {
+                    "base": "ScriptCanvas_Matrix3x3Functions_IsOrthogonal",
+                    "details": {
+                        "name": "Is Orthogonal",
+                        "tooltip": "Returns true if the matrix is orthogonal"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{15A4332F-7C3F-4A58-AC35-50E1CE53FB9C}",
+                            "details": {
+                                "name": "Source"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Result"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

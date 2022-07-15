@@ -1,0 +1,44 @@
+{
+    "entries": [
+        {
+            "base": "ScriptCanvas_PlaneFunctions_Project",
+            "context": "BehaviorMethod",
+            "variant": "",
+            "details": {
+                "name": "Project",
+                "category": "Math/Plane"
+            },
+            "methods": [
+                {
+                    "base": "ScriptCanvas_PlaneFunctions_Project",
+                    "details": {
+                        "name": "Project",
+                        "tooltip": "Returns the projection of Point onto Source"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{847DD984-9DBF-4789-8E25-E0334402E8AD}",
+                            "details": {
+                                "name": "Source"
+                            }
+                        },
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Point"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector3"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

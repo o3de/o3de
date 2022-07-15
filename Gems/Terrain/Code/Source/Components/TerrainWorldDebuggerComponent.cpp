@@ -282,16 +282,21 @@ namespace Terrain
                     AZ::Vector3(sectorX * sectorSize.GetX(), sectorY * sectorSize.GetY(), worldMinZ),
                     AZ::Vector3((sectorX + 1) * sectorSize.GetX(), (sectorY + 1) * sectorSize.GetY(), worldMinZ));
 
-                // Clamp it to the terrain world bounds.
-                sectorAabb.Clamp(worldBounds);
-
                 // If the world space box for the sector doesn't match, set it and mark the sector as dirty so we refresh the height data.
                 {
                     AZStd::lock_guard<AZStd::recursive_mutex> lock(sector.m_sectorStateMutex);
                     if (sector.m_aabb != sectorAabb)
                     {
                         sector.m_aabb = sectorAabb;
-                        sector.SetDirty();
+                        if (worldBounds.Overlaps(sector.m_aabb))
+                        {
+                            sector.SetDirty();
+                        }
+                        else
+                        {
+                            // If this sector doesn't appear in the terrain world bounds, just clear it out.
+                            sector.m_lineVertices.clear();
+                        }
                     }
                 }
             }
@@ -339,36 +344,30 @@ namespace Terrain
 
         sector.m_isDirty = false;
 
-        // To rebuild the wireframe, we walk through the sector by X, then by Y.  For each point, we add two lines in a _| shape.
-        // To do that, we'll need to cache the height from the previous point to draw the _ line, and from the previous row to draw
-        // the | line.
+        // To rebuild the wireframe for the sector, we grab all the sector vertex positions and whether or not that vertex has
+        // terrain data that exists.              _
+        // For each point, we add two lines in a |  shape. (inverted L)
+        // We need to query one extra point in each direction so that we can get the endpoints for the final lines in each direction.
+        AzFramework::Terrain::TerrainQueryRegion queryRegion(
+            sector.m_aabb.GetMin(), SectorSizeInGridPoints + 1, SectorSizeInGridPoints + 1, AZ::Vector2(gridResolution));
 
-        // When walking through the bounding box, the loops will be inclusive on one side, and exclusive on the other.  However, since
-        // our box is exactly aligned with grid points, we want to get the grid points on both sides in each direction, so we need to
-        // expand our query region by one extra point.
-        // For example, if our AABB is 2 m and our grid resolution is 1 m, we'll want to query (*--*--*--), not (*--*--).
-        // Since we're processing lines based on the grid points and going backwards, this will give us (*--*--*).
+        const size_t numSamplesX = queryRegion.m_numPointsX;
+        const size_t numSamplesY = queryRegion.m_numPointsY;
 
-        AZ::Aabb region = sector.m_aabb;
-        region.SetMax(region.GetMax() + AZ::Vector3(gridResolution, gridResolution, 0.0f));
-
-        // We need 4 vertices for each grid point in our sector to hold the _| shape.
-        const size_t numSamplesX = aznumeric_cast<size_t>(ceil(region.GetExtents().GetX() / gridResolution));
-        const size_t numSamplesY = aznumeric_cast<size_t>(ceil(region.GetExtents().GetY() / gridResolution));
+        // We need 4 vertices for each grid point in our sector to hold the inverted L shape.
         sector.m_lineVertices.clear();
-        sector.m_lineVertices.reserve(numSamplesX * numSamplesY * 4);
+        sector.m_lineVertices.reserve(SectorSizeInGridPoints * SectorSizeInGridPoints * 4);
 
-        // This keeps track of the height from the previous point for the _ line.
-        sector.m_previousHeight = 0.0f;
+        // Clear and prepare our temporary buffers to hold all the vertex position data and "exists" flags.
+        // (If we're multithreading, there's no guaranteed order to which each point will get filled in)
+        sector.m_sectorVertices.clear();
+        sector.m_sectorVertexExists.clear();
+        sector.m_sectorVertices.resize(numSamplesX * numSamplesY);
+        sector.m_sectorVertexExists.resize(numSamplesX * numSamplesY);
 
-        // This keeps track of the heights from the previous row for the | line.
-        sector.m_rowHeights.clear();
-        sector.m_rowHeights.resize(numSamplesX);
-
-        // For each terrain height value in the region, create the _| grid lines for that point and cache off the height value
-        // for use with subsequent grid line calculations.
-        auto ProcessHeightValue = [gridResolution, &sector]
-            (size_t xIndex, size_t yIndex, const AzFramework::SurfaceData::SurfacePoint& surfacePoint, [[maybe_unused]] bool terrainExists)
+        // Cache off the vertex position data and "exists" flags.
+        auto ProcessHeightValue = [numSamplesX, &sector]
+            (size_t xIndex, size_t yIndex, const AzFramework::SurfaceData::SurfacePoint& surfacePoint, bool terrainExists)
         {
             AZStd::lock_guard<AZStd::recursive_mutex> lock(sector.m_sectorStateMutex);
             if (sector.m_isDirty)
@@ -377,50 +376,65 @@ namespace Terrain
                 return;
             }
 
-            // Don't add any vertices for the first column or first row.  These grid lines will be handled by an adjacent sector, if
-            // there is one.
-            if ((xIndex > 0) && (yIndex > 0))
-            {
-                float x = surfacePoint.m_position.GetX() - gridResolution;
-                float y = surfacePoint.m_position.GetY() - gridResolution;
-
-                sector.m_lineVertices.emplace_back(AZ::Vector3(x, surfacePoint.m_position.GetY(), sector.m_previousHeight));
-                sector.m_lineVertices.emplace_back(surfacePoint.m_position);
-
-                sector.m_lineVertices.emplace_back(AZ::Vector3(surfacePoint.m_position.GetX(), y, sector.m_rowHeights[xIndex]));
-                sector.m_lineVertices.emplace_back(surfacePoint.m_position);
-            }
-
-            // Save off the heights so that we can use them to draw subsequent columns and rows.
-            sector.m_previousHeight = surfacePoint.m_position.GetZ();
-            sector.m_rowHeights[xIndex] = surfacePoint.m_position.GetZ();
+            sector.m_sectorVertices[(yIndex * numSamplesX) + xIndex] = surfacePoint.m_position;
+            sector.m_sectorVertexExists[(yIndex * numSamplesX) + xIndex] = terrainExists;
         };
 
-        auto completionCallback = [&sector](AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::TerrainJobContext>)
+        // When we've finished gathering all the height data, create all the wireframe lines.
+        auto completionCallback =
+            [&sector, numSamplesX, numSamplesY](AZStd::shared_ptr<AzFramework::Terrain::TerrainJobContext>)
         {
-            // This must happen outside the lock,
-            // otherwise we will get a deadlock if
-            // WireframeSector::Reset is waiting for
-            // the completion event to be signalled.
+            // This must happen outside the lock, otherwise we will get a deadlock if
+            // WireframeSector::Reset is waiting for the completion event to be signalled.
             sector.m_jobCompletionEvent->release();
 
             // Reset the job context once the async request has completed,
             // clearing the way for future requests to be made for this sector.
             AZStd::lock_guard<AZStd::recursive_mutex> lock(sector.m_sectorStateMutex);
             sector.m_jobContext.reset();
+
+            // For each vertex in the sector, try to create the inverted L shape. We'll only draw a wireframe line
+            // if both the start and the end vertex has terrain data.
+            for (size_t yIndex = 0; yIndex < (numSamplesY - 1); yIndex++)
+            {
+                for (size_t xIndex = 0; xIndex < (numSamplesX - 1); xIndex++)
+                {
+                    size_t curIndex = (yIndex * numSamplesX) + xIndex;
+                    size_t rightIndex = (yIndex * numSamplesX) + xIndex + 1;
+                    size_t bottomIndex = ((yIndex + 1) * numSamplesX) + xIndex;
+
+                    if (sector.m_sectorVertexExists[curIndex] && sector.m_sectorVertexExists[bottomIndex])
+                    {
+                        sector.m_lineVertices.emplace_back(sector.m_sectorVertices[curIndex]);
+                        sector.m_lineVertices.emplace_back(sector.m_sectorVertices[bottomIndex]);
+                    }
+
+                    if (sector.m_sectorVertexExists[curIndex] && sector.m_sectorVertexExists[rightIndex])
+                    {
+                        sector.m_lineVertices.emplace_back(sector.m_sectorVertices[curIndex]);
+                        sector.m_lineVertices.emplace_back(sector.m_sectorVertices[rightIndex]);
+                    }
+                }
+            }
+
+            // We're done with our temporary height buffers so clear them back out.
+            sector.m_sectorVertices.clear();
+            sector.m_sectorVertexExists.clear();
         };
 
-        AZStd::shared_ptr<AzFramework::Terrain::TerrainDataRequests::ProcessAsyncParams> asyncParams
-            = AZStd::make_shared<AzFramework::Terrain::TerrainDataRequests::ProcessAsyncParams>();
+        AZStd::shared_ptr<AzFramework::Terrain::QueryAsyncParams> asyncParams
+            = AZStd::make_shared<AzFramework::Terrain::QueryAsyncParams>();
         asyncParams->m_completionCallback = completionCallback;
 
+        // Only allow one thread per sector because we'll likely have multiple sectors processing at once.
+        asyncParams->m_desiredNumberOfJobs = 1;
+
+        // We can use an "EXACT" sampler here because our points are guaranteed to be aligned with terrain grid points.
         sector.m_jobCompletionEvent = AZStd::make_unique<AZStd::semaphore>();
-        AZ::Vector2 stepSize = AZ::Vector2(gridResolution);
         AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
-            sector.m_jobContext,
-            &AzFramework::Terrain::TerrainDataRequests::ProcessHeightsFromRegionAsync,
-            region,
-            stepSize,
+            sector.m_jobContext, &AzFramework::Terrain::TerrainDataRequests::QueryRegionAsync,
+            queryRegion,
+            AzFramework::Terrain::TerrainDataRequests::TerrainDataMask::Heights,
             ProcessHeightValue,
             AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT,
             asyncParams);
@@ -448,8 +462,8 @@ namespace Terrain
         m_jobContext = other.m_jobContext;
         m_aabb = other.m_aabb;
         m_lineVertices = other.m_lineVertices;
-        m_rowHeights = other.m_rowHeights;
-        m_previousHeight = other.m_previousHeight;
+        m_sectorVertices = other.m_sectorVertices;
+        m_sectorVertexExists = other.m_sectorVertexExists;
         m_isDirty = other.m_isDirty;
     }
 
@@ -459,8 +473,8 @@ namespace Terrain
         m_jobContext = AZStd::move(other.m_jobContext);
         m_aabb = AZStd::move(other.m_aabb);
         m_lineVertices = AZStd::move(other.m_lineVertices);
-        m_rowHeights = AZStd::move(other.m_rowHeights);
-        m_previousHeight = AZStd::move(other.m_previousHeight);
+        m_sectorVertices = AZStd::move(other.m_sectorVertices);
+        m_sectorVertexExists = AZStd::move(other.m_sectorVertexExists);
         m_isDirty = AZStd::move(other.m_isDirty);
     }
 
@@ -470,8 +484,8 @@ namespace Terrain
         m_jobContext = other.m_jobContext;
         m_aabb = other.m_aabb;
         m_lineVertices = other.m_lineVertices;
-        m_rowHeights = other.m_rowHeights;
-        m_previousHeight = other.m_previousHeight;
+        m_sectorVertices = other.m_sectorVertices;
+        m_sectorVertexExists = other.m_sectorVertexExists;
         m_isDirty = other.m_isDirty;
         return *this;
     }
@@ -482,8 +496,8 @@ namespace Terrain
         m_jobContext = AZStd::move(other.m_jobContext);
         m_aabb = AZStd::move(other.m_aabb);
         m_lineVertices = AZStd::move(other.m_lineVertices);
-        m_rowHeights = AZStd::move(other.m_rowHeights);
-        m_previousHeight = AZStd::move(other.m_previousHeight);
+        m_sectorVertices = AZStd::move(other.m_sectorVertices);
+        m_sectorVertexExists = AZStd::move(other.m_sectorVertexExists);
         m_isDirty = AZStd::move(other.m_isDirty);
         return *this;
     }
@@ -501,8 +515,8 @@ namespace Terrain
         }
         m_aabb = AZ::Aabb::CreateNull();
         m_lineVertices.clear();
-        m_rowHeights.clear();
-        m_previousHeight = 0.0f;
+        m_sectorVertices.clear();
+        m_sectorVertexExists.clear();
         m_isDirty = true;
     }
 

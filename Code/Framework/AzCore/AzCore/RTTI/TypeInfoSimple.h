@@ -17,8 +17,9 @@ namespace AZ
 
 #define AZ_TYPE_INFO_INTERNAL_1(_ClassName) static_assert(false, "You must provide a ClassName,ClassUUID")
 #define AZ_TYPE_INFO_INTERNAL_2(_ClassName, _ClassUuid)        \
-    void TYPEINFO_Enable(){}                                   \
-    static const char* TYPEINFO_Name() { return #_ClassName; } \
+    struct TYPEINFO_Enable{}; \
+    struct TypeNameInternal { constexpr const char* operator()() const { return #_ClassName; } }; \
+    static constexpr const char* TYPEINFO_Name() { return TypeNameInternal{}(); } \
     static const AZ::TypeId& TYPEINFO_Uuid() { static AZ::TypeId s_uuid(_ClassUuid); return s_uuid; }
 
 #define AZ_TYPE_INFO_1 AZ_TYPE_INFO_INTERNAL_1

@@ -9,16 +9,12 @@
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Asset/AssetManager.h>
-#include <AzCore/std/containers/unordered_map.h>
 
 #include <AzFramework/API/ApplicationAPI.h>
-#include <AzFramework/Spawnable/Spawnable.h>
 
-#include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/SourceControl/SourceControlAPI.h>
-#include <AzToolsFramework/Prefab/PrefabLoaderInterface.h>
-#include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
-#include <AzToolsFramework/Prefab/PrefabDomUtils.h>
+#include <AzToolsFramework/Physics/Material/Legacy/LegacyPhysicsMaterialConversionUtils.h>
+#include <AzToolsFramework/Physics/Material/Legacy/LegacyPhysicsPrefabConversionUtils.h>
 
 #include <Material/BlastMaterialAsset.h>
 #include <Editor/EditorBlastFamilyComponent.h>
@@ -30,188 +26,9 @@ namespace Blast
     AZ_CONSOLEFREEFUNC("ed_blastFixPrefabsWithBlastComponentLegacyMaterials", FixPrefabsWithBlastComponentLegacyMaterials, AZ::ConsoleFunctorFlags::Null,
         "Finds prefabs that contain blast components using legacy blast material ids and fixes them by using new blast material assets.");
 
-    AZStd::optional<AZStd::string> GetFullSourceAssetPathById(AZ::Data::AssetId assetId);
-
-    AZStd::vector<AzToolsFramework::Prefab::PrefabDomValue*> GetPrefabEntities(AzToolsFramework::Prefab::PrefabDom& prefabDom)
+    Physics::Utils::LegacyMaterialIdToNewAssetIdMap CollectConvertedMaterialIds()
     {
-        if (!prefabDom.IsObject())
-        {
-            return {};
-        }
-
-        AZStd::vector<AzToolsFramework::Prefab::PrefabDomValue*> entities;
-        entities.reserve(prefabDom.MemberCount());
-
-        if (auto entitiesIter = prefabDom.FindMember(AzToolsFramework::Prefab::PrefabDomUtils::EntitiesName);
-            entitiesIter != prefabDom.MemberEnd() && entitiesIter->value.IsObject())
-        {
-            for (auto entityIter = entitiesIter->value.MemberBegin(); entityIter != entitiesIter->value.MemberEnd(); ++entityIter)
-            {
-                if (entityIter->value.IsObject())
-                {
-                    entities.push_back(&entityIter->value);
-                }
-            }
-        }
-
-        return entities;
-    }
-
-    template<class ComponentType>
-    AZStd::vector<AzToolsFramework::Prefab::PrefabDomValue*> GetPrefabComponents(AzToolsFramework::Prefab::PrefabDomValue& prefabEntity)
-    {
-        AZStd::vector<AzToolsFramework::Prefab::PrefabDomValue*> components;
-        components.reserve(prefabEntity.MemberCount());
-
-        if (auto componentsIter = prefabEntity.FindMember(AzToolsFramework::Prefab::PrefabDomUtils::ComponentsName);
-            componentsIter != prefabEntity.MemberEnd() && componentsIter->value.IsObject())
-        {
-            for (auto componentIter = componentsIter->value.MemberBegin(); componentIter != componentsIter->value.MemberEnd(); ++componentIter)
-            {
-                if (!componentIter->value.IsObject())
-                {
-                    continue;
-                }
-
-                // Check the component type
-                const auto typeFieldIter = componentIter->value.FindMember(AzToolsFramework::Prefab::PrefabDomUtils::TypeName);
-                if (typeFieldIter == componentIter->value.MemberEnd())
-                {
-                    continue;
-                }
-
-                AZ::Uuid typeId = AZ::Uuid::CreateNull();
-                AZ::JsonSerialization::LoadTypeId(typeId, typeFieldIter->value);
-
-                // Filter by component type
-                if (typeId == azrtti_typeid<ComponentType>())
-                {
-                    components.push_back(&componentIter->value);
-                }
-            }
-        }
-
-        return components;
-    }
-
-    BlastMaterialId GetLegacyBlastMaterialIdFromComponent(const AzToolsFramework::Prefab::PrefabDomValue& prefabComponent)
-    {
-        auto legacyMaterialFieldIter = prefabComponent.FindMember("BlastMaterial");
-        if (legacyMaterialFieldIter == prefabComponent.MemberEnd() || !legacyMaterialFieldIter->value.IsObject())
-        {
-            return {};
-        }
-
-        auto legacyMaterialIdFieldIter = legacyMaterialFieldIter->value.FindMember("BlastMaterialId");
-        if (legacyMaterialIdFieldIter == legacyMaterialFieldIter->value.MemberEnd())
-        {
-            return {};
-        }
-
-        AZ::Uuid legacyMaterialId = AZ::Uuid::CreateNull();
-        AZ::JsonSerialization::LoadTypeId(legacyMaterialId, legacyMaterialIdFieldIter->value);
-
-        return { legacyMaterialId };
-    }
-
-    bool SetBlastMaterialAssetToComponent(
-        AzToolsFramework::Prefab::PrefabDom& prefabDom, AzToolsFramework::Prefab::PrefabDomValue& prefabComponent, AZ::Data::AssetId materialAssetId)
-    {
-        auto blastMaterialAssetFieldIter = prefabComponent.FindMember("BlastMaterialAsset");
-        if (blastMaterialAssetFieldIter == prefabComponent.MemberEnd() || !blastMaterialAssetFieldIter->value.IsObject())
-        {
-            return false;
-        }
-
-        AZ::Data::AssetInfo assetInfo;
-        AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetInfo, &AZ::Data::AssetCatalogRequests::GetAssetInfoById, materialAssetId);
-
-        AZ::Data::Asset<MaterialAsset> materialAsset(materialAssetId, assetInfo.m_assetType, assetInfo.m_relativePath);
-        AZ::Data::Asset<MaterialAsset> defaultObject;
-
-        auto result = AZ::JsonSerialization::Store(
-            blastMaterialAssetFieldIter->value,
-            prefabDom.GetAllocator(),
-            &materialAsset,
-            &defaultObject,
-            azrtti_typeid<AZ::Data::Asset<MaterialAsset>>());
-
-        return result.GetProcessing() == AZ::JsonSerializationResult::Processing::Completed;
-    }
-
-    bool PrefabHasLegacyMaterialId(AzToolsFramework::Prefab::PrefabDom& prefabDom)
-    {
-        for (auto* entity : GetPrefabEntities(prefabDom))
-        {
-            for (auto* component : GetPrefabComponents<Blast::EditorBlastFamilyComponent>(*entity))
-            {
-                if (BlastMaterialId legacyMaterialId = GetLegacyBlastMaterialIdFromComponent(*component);
-                    !legacyMaterialId.m_id.IsNull())
-                {
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
-
-    struct PrefabInfo
-    {
-        AzToolsFramework::Prefab::TemplateId m_templateId;
-        AzToolsFramework::Prefab::Template* m_template = nullptr;
-        AZStd::string m_prefabFullPath;
-    };
-
-    AZStd::vector<PrefabInfo> CollectPrefabsWithLegacyMaterials()
-    {
-        AZStd::vector<PrefabInfo> prefabsWithLegacyMaterials;
-
-        auto* prefabLoader = AZ::Interface<AzToolsFramework::Prefab::PrefabLoaderInterface>::Get();
-        auto* prefabSystemComponent = AZ::Interface<AzToolsFramework::Prefab::PrefabSystemComponentInterface>::Get();
-
-        AZ::Data::AssetCatalogRequests::AssetEnumerationCB assetEnumerationCB =
-            [&prefabsWithLegacyMaterials, prefabLoader, prefabSystemComponent](const AZ::Data::AssetId assetId, const AZ::Data::AssetInfo& assetInfo)
-        {
-            if (assetInfo.m_assetType != AzFramework::Spawnable::RTTI_Type())
-            {
-                return;
-            }
-            
-            AZStd::optional<AZStd::string> assetFullPath = GetFullSourceAssetPathById(assetId);
-            if (!assetFullPath.has_value())
-            {
-                return;
-            }
-
-            if (auto templateId = prefabLoader->LoadTemplateFromFile(assetFullPath->c_str());
-                templateId != AzToolsFramework::Prefab::InvalidTemplateId)
-            {
-                if (auto templateResult = prefabSystemComponent->FindTemplate(templateId);
-                    templateResult.has_value())
-                {
-                    if (AzToolsFramework::Prefab::Template& templateRef = templateResult->get();
-                        PrefabHasLegacyMaterialId(templateRef.GetPrefabDom()))
-                    {
-                        prefabsWithLegacyMaterials.push_back({ templateId, &templateRef, AZStd::move(*assetFullPath) });
-                    }
-                }
-            }
-        };
-
-        AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequestBus::Events::EnumerateAssets,
-            nullptr,
-            assetEnumerationCB,
-            nullptr);
-
-        return prefabsWithLegacyMaterials;
-    }
-
-    using LegacyMaterialIdToNewAssetIdMap = AZStd::unordered_map<AZ::Uuid, AZ::Data::AssetId>;
-
-    LegacyMaterialIdToNewAssetIdMap CollectConvertedMaterialIds()
-    {
-        LegacyMaterialIdToNewAssetIdMap legacyMaterialIdToNewAssetIdMap;
+        Physics::Utils::LegacyMaterialIdToNewAssetIdMap legacyMaterialIdToNewAssetIdMap;
 
         AZ::Data::AssetCatalogRequests::AssetEnumerationCB assetEnumerationCB =
             [&legacyMaterialIdToNewAssetIdMap](const AZ::Data::AssetId assetId, const AZ::Data::AssetInfo& assetInfo)
@@ -247,89 +64,130 @@ namespace Blast
         return legacyMaterialIdToNewAssetIdMap;
     }
 
-    void FixPrefabBlastMaterials(
-        PrefabInfo& prefabWithLegacyMaterials,
-        const LegacyMaterialIdToNewAssetIdMap& legacyMaterialIdToNewAssetIdMap)
+    AZ::Data::Asset<MaterialAsset> ConvertLegacyMaterialIdToMaterialAsset(
+        const BlastMaterialId& legacyMaterialId,
+        const Physics::Utils::LegacyMaterialIdToNewAssetIdMap& legacyMaterialIdToNewAssetIdMap)
     {
-        AZ_TracePrintf("BlastMaterialConversion", "Fixing prefab '%s'.\n", prefabWithLegacyMaterials.m_prefabFullPath.c_str());
-
-        bool prefabDomModified = false;
-
-        for (auto* entity : GetPrefabEntities(prefabWithLegacyMaterials.m_template->GetPrefabDom()))
+        if (legacyMaterialId.m_id.IsNull())
         {
-            for (auto* component : GetPrefabComponents<Blast::EditorBlastFamilyComponent>(*entity))
+            return {};
+        }
+
+        auto it = legacyMaterialIdToNewAssetIdMap.find(legacyMaterialId.m_id);
+        if (it == legacyMaterialIdToNewAssetIdMap.end())
+        {
+            AZ_Warning(
+                "BlastMaterialConversion", false, "Unable to find a blast material asset to replace legacy material id '%s' with.",
+                legacyMaterialId.m_id.ToString<AZStd::string>().c_str());
+            return {};
+        }
+
+        const AZ::Data::AssetId newMaterialAssetId = it->second;
+
+        AZ::Data::AssetInfo assetInfo;
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetInfo, &AZ::Data::AssetCatalogRequests::GetAssetInfoById, newMaterialAssetId);
+        AZ::Data::Asset<MaterialAsset> newMaterialAsset(newMaterialAssetId, assetInfo.m_assetType, assetInfo.m_relativePath);
+
+        return newMaterialAsset;
+    }
+
+    bool FixBlastMaterialId(
+        Physics::Utils::PrefabInfo& prefabInfo,
+        AzToolsFramework::Prefab::PrefabDomValue& component,
+        const Physics::Utils::LegacyMaterialIdToNewAssetIdMap& legacyMaterialIdToNewAssetIdMap,
+        const AZStd::vector<AZStd::string>& oldMemberChain,
+        const AZStd::vector<AZStd::string>& newMemberChain)
+    {
+        BlastMaterialId legacyMaterialId;
+        if (Physics::Utils::LoadObjectFromPrefabComponent<BlastMaterialId>(oldMemberChain, component, legacyMaterialId))
+        {
+            AZ::Data::Asset<MaterialAsset> materialAsset =
+                ConvertLegacyMaterialIdToMaterialAsset(legacyMaterialId, legacyMaterialIdToNewAssetIdMap);
+
+            if (!materialAsset.GetId().IsValid())
             {
-                const BlastMaterialId legacyMaterialId = GetLegacyBlastMaterialIdFromComponent(*component);
+                return false;
+            }
 
-                auto it = legacyMaterialIdToNewAssetIdMap.find(legacyMaterialId.m_id);
-                if (it == legacyMaterialIdToNewAssetIdMap.end())
+            if (!Physics::Utils::StoreObjectToPrefabComponent<AZ::Data::Asset<MaterialAsset>>(
+                newMemberChain, prefabInfo.m_template->GetPrefabDom(), component, materialAsset))
+            {
+                AZ_Warning(
+                    "BlastMaterialConversion", false, "Unable to set blast material asset to prefab '%s'.",
+                    prefabInfo.m_prefabFullPath.c_str());
+                return false;
+            }
+
+            // Remove legacy material id field
+            Physics::Utils::RemoveMemberChainInPrefabComponent(oldMemberChain, component);
+
+            AZ_TracePrintf(
+                "BlastMaterialConversion", "Legacy material id '%s' will be replaced by blast material asset '%s'.\n",
+                legacyMaterialId.m_id.ToString<AZStd::string>().c_str(), materialAsset.GetHint().c_str());
+
+            return true;
+        }
+        return false;
+    };
+
+    void FixPrefabBlastMaterials(
+        Physics::Utils::PrefabInfo& prefabInfo,
+        const Physics::Utils::LegacyMaterialIdToNewAssetIdMap& legacyMaterialIdToNewAssetIdMap)
+    {
+        bool prefabModified = false;
+        for (auto* entity : Physics::Utils::GetPrefabEntities(prefabInfo.m_template->GetPrefabDom()))
+        {
+            for (auto* component : Physics::Utils::GetEntityComponents(*entity))
+            {
+                const AZ::TypeId componentTypeId = Physics::Utils::GetComponentTypeId(*component);
+
+                if (componentTypeId == azrtti_typeid<EditorBlastFamilyComponent>())
                 {
-                    AZ_Warning("BlastMaterialConversion", false, "Unable to find a blast material asset to replace legacy material id '%s' with.",
-                        legacyMaterialId.m_id.ToString<AZStd::string>().c_str());
-                    continue;
+                    if (FixBlastMaterialId(prefabInfo, *component, legacyMaterialIdToNewAssetIdMap,
+                        { "BlastMaterial" }, { "BlastMaterialAsset" }))
+                    {
+                        prefabModified = true;
+                    }
                 }
-                const AZ::Data::AssetId newMaterialAssetId = it->second;
-
-                AZStd::optional<AZStd::string> newMaterialAssetFullPath = GetFullSourceAssetPathById(newMaterialAssetId);
-                AZ_Assert(newMaterialAssetFullPath.has_value(), "Cannot get full source asset path from id %s",
-                    newMaterialAssetId.ToString<AZStd::string>().c_str());
-
-                AZ_TracePrintf("BlastMaterialConversion", "Legacy material id '%s' will be replaced by blast material asset '%s'.\n",
-                    legacyMaterialId.m_id.ToString<AZStd::string>().c_str(),
-                    newMaterialAssetFullPath->c_str());
-
-                // Remove legacy material id field
-                component->RemoveMember("BlastMaterial");
-
-                if (!SetBlastMaterialAssetToComponent(prefabWithLegacyMaterials.m_template->GetPrefabDom(), *component, newMaterialAssetId))
-                {
-                    AZ_Warning("BlastMaterialConversion", false, "Unable to set material asset id value to %s' in prefab.",
-                        newMaterialAssetId.ToString<AZStd::string>().c_str());
-                    continue;
-                }
-
-                prefabDomModified = true;
             }
         }
 
-        if (prefabDomModified)
+        if (prefabModified)
         {
+            AZ_TracePrintf("BlastMaterialConversion", "Saving modified prefab '%s'.\n", prefabInfo.m_prefabFullPath.c_str());
+
             auto* prefabSystemComponent = AZ::Interface<AzToolsFramework::Prefab::PrefabSystemComponentInterface>::Get();
 
-            prefabWithLegacyMaterials.m_template->MarkAsDirty(true);
-            prefabSystemComponent->PropagateTemplateChanges(prefabWithLegacyMaterials.m_templateId);
+            prefabInfo.m_template->MarkAsDirty(true);
+            prefabSystemComponent->PropagateTemplateChanges(prefabInfo.m_templateId);
 
             // Request source control to edit prefab file
             AzToolsFramework::SourceControlCommandBus::Broadcast(
                 &AzToolsFramework::SourceControlCommandBus::Events::RequestEdit,
-                prefabWithLegacyMaterials.m_prefabFullPath.c_str(), true,
-                [prefabWithLegacyMaterials]([[maybe_unused]] bool success, const AzToolsFramework::SourceControlFileInfo& info)
+                prefabInfo.m_prefabFullPath.c_str(), true,
+                [prefabInfo]([[maybe_unused]] bool success, const AzToolsFramework::SourceControlFileInfo& info)
                 {
                     // This is called from the main thread on the next frame from TickBus,
-                    // that is why 'prefabWithLegacyMaterials' is captured as a copy.
+                    // that is why 'prefabInfo' is captured as a copy.
                     if (!info.IsReadOnly())
                     {
                         auto* prefabLoader = AZ::Interface<AzToolsFramework::Prefab::PrefabLoaderInterface>::Get();
-                        if (!prefabLoader->SaveTemplate(prefabWithLegacyMaterials.m_templateId))
+                        if (!prefabLoader->SaveTemplate(prefabInfo.m_templateId))
                         {
                             AZ_Warning("BlastMaterialConversion", false, "Unable to save prefab '%s'",
-                                prefabWithLegacyMaterials.m_prefabFullPath.c_str());
+                                prefabInfo.m_prefabFullPath.c_str());
                         }
                     }
                     else
                     {
                         AZ_Warning("BlastMaterialConversion", false, "Unable to check out asset '%s' in source control.",
-                            prefabWithLegacyMaterials.m_prefabFullPath.c_str());
+                            prefabInfo.m_prefabFullPath.c_str());
                     }
                 }
             );
-        }
-        else
-        {
-            AZ_TracePrintf("BlastMaterialConversion", "No changes were done to the prefab.\n");
-        }
 
-        AZ_TracePrintf("BlastMaterialConversion", "\n");
+            AZ_TracePrintf("BlastMaterialConversion", "\n");
+        }
     }
 
     void FixPrefabsWithBlastComponentLegacyMaterials([[maybe_unused]] const AZ::ConsoleCommandContainer& commandArgs)
@@ -339,33 +197,40 @@ namespace Blast
             prefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
         if (!prefabSystemEnabled)
         {
-            AZ_Error("BlastMaterialConversion", false, "Prefabs system is not enabled.");
+            AZ_TracePrintf("BlastMaterialConversion", "Prefabs system is not enabled. Prefabs won't be converted.\n");
+            AZ_TracePrintf("BlastMaterialConversion", "\n");
             return;
         }
-
-        AZ_TracePrintf("BlastMaterialConversion", "Searching for prefabs with legacy blast material assets...\n");
-        AZStd::vector<PrefabInfo> prefabsWithLegacyMaterials = CollectPrefabsWithLegacyMaterials();
-        if (prefabsWithLegacyMaterials.empty())
-        {
-            AZ_TracePrintf("BlastMaterialConversion", "No prefabs found that contain legacy blast materials.\n");
-            return;
-        }
-        AZ_TracePrintf("BlastMaterialConversion", "Found %zu prefabs containing legacy blast materials.\n", prefabsWithLegacyMaterials.size());
-        AZ_TracePrintf("BlastMaterialConversion", "\n");
 
         AZ_TracePrintf("BlastMaterialConversion", "Searching for converted blast material assets...\n");
-        LegacyMaterialIdToNewAssetIdMap legacyMaterialIdToNewAssetIdMap = CollectConvertedMaterialIds();
+        Physics::Utils::LegacyMaterialIdToNewAssetIdMap legacyMaterialIdToNewAssetIdMap = CollectConvertedMaterialIds();
         if (legacyMaterialIdToNewAssetIdMap.empty())
         {
             AZ_TracePrintf("BlastMaterialConversion", "No converted blast material assets found.\n");
+            AZ_TracePrintf("BlastMaterialConversion", "Command stopped as there are no blast materials with legacy information to be able to fix assets.\n");
             return;
         }
         AZ_TracePrintf("BlastMaterialConversion", "Found %zu converted blast materials.\n", legacyMaterialIdToNewAssetIdMap.size());
         AZ_TracePrintf("BlastMaterialConversion", "\n");
 
-        for (auto& prefabWithLegacyMaterials : prefabsWithLegacyMaterials)
+        AZ_TracePrintf("BlastMaterialConversion", "Searching for prefabs to convert...\n");
+        AZ_TracePrintf("BlastMaterialConversion", "\n");
+        AZStd::vector<Physics::Utils::PrefabInfo> prefabs = Physics::Utils::CollectPrefabs();
+        if (prefabs.empty())
         {
-            FixPrefabBlastMaterials(prefabWithLegacyMaterials, legacyMaterialIdToNewAssetIdMap);
+            AZ_TracePrintf("BlastMaterialConversion", "No prefabs found.\n");
+            AZ_TracePrintf("BlastMaterialConversion", "\n");
+            return;
         }
+        AZ_TracePrintf("BlastMaterialConversion", "Found %zu prefabs to check.\n", prefabs.size());
+        AZ_TracePrintf("BlastMaterialConversion", "\n");
+
+        for (auto& prefab : prefabs)
+        {
+            FixPrefabBlastMaterials(prefab, legacyMaterialIdToNewAssetIdMap);
+        }
+
+        AZ_TracePrintf("BlastMaterialConversion", "Prefab conversion finished.\n");
+        AZ_TracePrintf("BlastMaterialConversion", "\n");
     }
 } // namespace Blast

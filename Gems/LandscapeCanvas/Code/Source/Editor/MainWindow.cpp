@@ -84,6 +84,7 @@
 #include <Editor/Nodes/Gradients/AltitudeGradientNode.h>
 #include <Editor/Nodes/Gradients/ConstantGradientNode.h>
 #include <Editor/Nodes/Gradients/FastNoiseGradientNode.h>
+#include <Editor/Nodes/Gradients/GradientBakerNode.h>
 #include <Editor/Nodes/Gradients/ImageGradientNode.h>
 #include <Editor/Nodes/Gradients/PerlinNoiseGradientNode.h>
 #include <Editor/Nodes/Gradients/RandomNoiseGradientNode.h>
@@ -118,6 +119,7 @@ namespace LandscapeCanvasEditor
     static const char* PreviewEntityElementName = "PreviewEntity";
     static const char* GradientIdElementName = "GradientId";
     static const char* ShapeEntityIdElementName = "ShapeEntityId";
+    static const char* InputBoundsEntityIdElementName = "InputBounds";
     static const char* VegetationAreaEntityIdElementName = "element";
 
     static IEditor* GetLegacyEditor()
@@ -342,6 +344,7 @@ namespace LandscapeCanvasEditor
         gradientCategory->SetTitlePalette("GradientNodeTitlePalette");
         REGISTER_NODE_PALETTE_ITEM(gradientCategory, AltitudeGradientNode, editorId);
         REGISTER_NODE_PALETTE_ITEM(gradientCategory, ConstantGradientNode, editorId);
+        REGISTER_NODE_PALETTE_ITEM(gradientCategory, GradientBakerNode, editorId);
         REGISTER_NODE_PALETTE_ITEM(gradientCategory, ImageGradientNode, editorId);
         REGISTER_NODE_PALETTE_ITEM(gradientCategory, PerlinNoiseGradientNode, editorId);
         REGISTER_NODE_PALETTE_ITEM(gradientCategory, RandomNoiseGradientNode, editorId);
@@ -1227,6 +1230,7 @@ namespace LandscapeCanvasEditor
         static const char* PreviewEntityIdPropertyPath = "Preview Settings|Pin Preview to Shape";
         static const char* GradientEntityIdPropertyPath = "Gradient|Gradient Entity Id";
         static const char* ShapeEntityIdPropertyPath = "Shape Entity Id";
+        static const char* InputBoundsEntityIdPropertyPath = "Input Bounds";
         static const char* PinToShapeEntityIdPropertyPath = "Pin To Shape Entity Id";
         static const char* VegetationAreasPropertyPath = "Vegetation Areas";
 
@@ -1250,6 +1254,10 @@ namespace LandscapeCanvasEditor
             else if (slotName == LandscapeCanvas::PIN_TO_SHAPE_SLOT_ID)
             {
                 propertyPath = PinToShapeEntityIdPropertyPath;
+            }
+            else if (slotName == LandscapeCanvas::INPUT_BOUNDS_SLOT_ID)
+            {
+                propertyPath = InputBoundsEntityIdPropertyPath;
             }
         } break;
         case LandscapeCanvas::LandscapeCanvasDataTypeEnum::Gradient:
@@ -1341,6 +1349,19 @@ namespace LandscapeCanvasEditor
         if (propertyPath.isEmpty())
         {
             return;
+        }
+
+        // Calling UpdateConnectionData will result in a component property being modified,
+        // which in turn will result in prefab propagation. Because that is delayed until the next
+        // tick, there is a point in time where the OnEntityComponentPropertyChanged event will
+        // be triggered but the property won't be set yet, so when UpdateConnections gets called,
+        // it will think the connection corresponding to that property needs to be removed. So
+        // we need to handle this case by ignoring the next component property change for this entity
+        // since it will already be up-to-date by UpdateConnectionData being invoked
+        if (targetNode)
+        {
+            auto targetBaseNode = static_cast<LandscapeCanvas::BaseNode*>(targetNode.get());
+            m_ignoreEntityComponentPropertyChanges.push_back(targetBaseNode->GetVegetationEntityId());
         }
 
         // If our target is an extendable slot (e.g. gradient mixer, area blender, etc...) then the element that needs
@@ -1519,13 +1540,15 @@ namespace LandscapeCanvasEditor
                 }, {},
                 AZ::SerializeContext::ENUM_ACCESS_FOR_WRITE, nullptr/* errorHandler */);
 
-            // Update the property with the new EntityId
-            AzToolsFramework::ScopedUndoBatch undoBatch("Update Component Property");
+            {
+                // Update the property with the new EntityId
+                AzToolsFramework::ScopedUndoBatch undoBatch("Update Component Property");
 
-            AzToolsFramework::PropertyTreeEditor pte = AzToolsFramework::PropertyTreeEditor(reinterpret_cast<void*>(component), component->RTTI_GetType());
-            pte.SetProperty(propertyPath.toUtf8().constData(), AZStd::any(newEntityId));
+                AzToolsFramework::PropertyTreeEditor pte = AzToolsFramework::PropertyTreeEditor(reinterpret_cast<void*>(component), component->RTTI_GetType());
+                pte.SetProperty(propertyPath.toUtf8().constData(), AZStd::any(newEntityId));
 
-            undoBatch.MarkEntityDirty(targetBaseNode->GetVegetationEntityId());
+                undoBatch.MarkEntityDirty(targetBaseNode->GetVegetationEntityId());
+            }
 
             // Trigger property editors to update attributes/values or else they might be showing stale data
             // since we are updating the property value directly.
@@ -2517,6 +2540,12 @@ namespace LandscapeCanvasEditor
 
         const AZ::EntityId changedEntityId = *AzToolsFramework::PropertyEditorEntityChangeNotificationBus::GetCurrentBusId();
 
+        auto ignoreIt = AZStd::find(m_ignoreEntityComponentPropertyChanges.begin(), m_ignoreEntityComponentPropertyChanges.end(), changedEntityId);
+        if (ignoreIt != m_ignoreEntityComponentPropertyChanges.end())
+        {
+            return;
+        }
+
         GraphModel::NodePtrList matchingNodes = GetAllNodesMatchingEntity(changedEntityId);
         for (auto node : matchingNodes)
         {
@@ -2589,6 +2618,10 @@ namespace LandscapeCanvasEditor
     {
         // See comment above in OnPrefabInstancePropagationBegin
         m_prefabPropagationInProgress = false;
+
+        // Clear our list of EntityIds to ignore component property change notifications
+        // from since the prefab propagation has completed
+        m_ignoreEntityComponentPropertyChanges.clear();
 
         // After prefab propagation is complete, the entity tied to one of our open
         // graphs might have been deleted (e.g. if a prefab was created from that entity).
@@ -3097,6 +3130,11 @@ namespace LandscapeCanvasEditor
                     inboundShapeEntityId = *reinterpret_cast<AZ::EntityId*>(instance);
                     return false;
                 }
+                else if (strcmp(classElement->m_name, InputBoundsEntityIdElementName) == 0)
+                {
+                    inboundShapeEntityId = *reinterpret_cast<AZ::EntityId*>(instance);
+                    return false;
+                }
             }
 
             return true;
@@ -3115,12 +3153,16 @@ namespace LandscapeCanvasEditor
         // Connect any inbound shape slots to the corresponding shape bounds
         if (inboundShapeEntityId.IsValid())
         {
-            // We have two different inbound shape slots that share the same underlying property,
+            // We have multiple inbound shape slots that share the same underlying property,
             // so we need to figure out which kind of inbound shape slot this node has
             GraphModel::SlotId shapeSlotId(LandscapeCanvas::INBOUND_SHAPE_SLOT_ID);
             if (!node->GetSlot(shapeSlotId))
             {
                 shapeSlotId = GraphModel::SlotId(LandscapeCanvas::PIN_TO_SHAPE_SLOT_ID);
+                if (!node->GetSlot(shapeSlotId))
+                {
+                    shapeSlotId = GraphModel::SlotId(LandscapeCanvas::INPUT_BOUNDS_SLOT_ID);
+                }
             }
 
             shapeSlotEntityPairs.push_back(AZStd::make_pair(shapeSlotId, inboundShapeEntityId));
@@ -3269,7 +3311,7 @@ namespace LandscapeCanvasEditor
                 // some magic that takes place where they each support an Invalid data type as well as
                 // their specific data type, so instead of comparing the current slot->GetDataType() directly
                 // we need to check the possible data types instead for a  match.
-                const auto& dataTypes = slot->GetPossibleDataTypes();
+                const auto& dataTypes = slot->GetSupportedDataTypes();
                 auto iter = AZStd::find(dataTypes.begin(), dataTypes.end(), dataType);
                 if (iter != dataTypes.end())
                 {

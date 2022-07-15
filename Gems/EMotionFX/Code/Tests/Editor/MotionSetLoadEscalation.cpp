@@ -11,6 +11,7 @@
 #include <Tests/SystemComponentFixture.h>
 #include <Source/Integration/Assets/MotionSetAsset.h>
 #include <AzFramework/Asset/AssetSystemBus.h>
+#include <UI/PropertyEditor/PropertyManagerComponent.h>
 
 namespace EMotionFX
 {
@@ -51,17 +52,16 @@ namespace EMotionFX
     };
 
     struct MotionSetFixture
-        : SystemComponentFixtureWithCatalog
+        : ComponentFixture<
+            AZ::MemoryComponent,
+            AZ::AssetManagerComponent,
+            AZ::JobManagerComponent,
+            AZ::StreamerComponent,
+            AzFramework::AssetCatalogComponent,
+            AzToolsFramework::Components::PropertyManagerComponent,
+            EMotionFX::Integration::SystemComponent
+        >
     {
-        RegisterHandler m_registerHandler;
-
-
-        void TearDown() override
-        {
-            SystemComponentFixtureWithCatalog::TearDown();
-
-            m_app.Stop();
-        }
     };
 
     struct MockAssetSystemRequests

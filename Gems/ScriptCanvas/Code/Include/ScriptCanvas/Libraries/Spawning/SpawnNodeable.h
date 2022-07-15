@@ -22,7 +22,7 @@ namespace ScriptCanvas::Nodeables::Spawning
     //! Node for spawning entities
     class SpawnNodeable
         : public Nodeable
-        , public AzFramework::Scripts::SpawnableScriptNotificationsBus::Handler
+        , public AzFramework::Scripts::SpawnableScriptNotificationsBus::MultiHandler
     {
         SCRIPTCANVAS_NODE(SpawnNodeable);
     public:

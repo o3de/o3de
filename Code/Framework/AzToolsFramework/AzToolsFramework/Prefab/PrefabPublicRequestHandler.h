@@ -12,7 +12,7 @@
 #include <AzCore/RTTI/RTTI.h>
 
 #include <AzToolsFramework/Prefab/PrefabPublicRequestBus.h>
-#include <AzToolsFramework/Prefab/Spawnable/InMemorySpawnableAssetContainer.h>
+#include <AzToolsFramework/Prefab/Spawnable/PrefabInMemorySpawnableConverter.h>
 
 namespace AzToolsFramework
 {
@@ -47,7 +47,7 @@ namespace AzToolsFramework
         private:
             bool TryActivateSpawnableAssetContainer();
 
-            PrefabConversionUtils::InMemorySpawnableAssetContainer m_spawnableAssetContainer;
+            AzToolsFramework::Prefab::PrefabConversionUtils::PrefabInMemorySpawnableConverter m_spawnableAssetContainer;
             PrefabPublicInterface* m_prefabPublicInterface = nullptr;
 
         };

@@ -9,7 +9,6 @@
 #include "InputConfigurationComponent.h"
 #include "InputEventBindings.h"
 #include "InputEventMap.h"
-#include "InputLibrary.h"
 
 #include <AzCore/Module/Module.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -18,6 +17,11 @@
 #include <AzCore/Component/Component.h>
 
 #include <AzFramework/Asset/GenericAssetHandler.h>
+#include <AutoGenNodeableRegistry.generated.h>
+#include <AutoGenGrammarRegistry.generated.h>
+
+REGISTER_SCRIPTCANVAS_AUTOGEN_NODEABLE(StartingPointInputStatic);
+REGISTER_SCRIPTCANVAS_AUTOGEN_GRAMMAR(StartingPointInputStatic);
 
 namespace StartingPointInput
 {
@@ -111,11 +115,11 @@ namespace StartingPointInput
 
         static void Reflect(AZ::ReflectContext* context)
         {
+            REFLECT_SCRIPTCANVAS_AUTOGEN(StartingPointInputStatic, context);
             InputEventBindingsAsset::Reflect(context);
             InputEventBindings::Reflect(context);
             InputEventGroup::Reflect(context);
             InputEventMap::Reflect(context);
-            InputLibrary::Reflect(context);
             ThumbstickInputEventMap::Reflect(context);
 
             if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
@@ -171,12 +175,7 @@ namespace StartingPointInput
 
         void Init() override
         {
-            AZ::EnvironmentVariable<ScriptCanvas::NodeRegistry> nodeRegistryVariable = AZ::Environment::FindVariable<ScriptCanvas::NodeRegistry>(ScriptCanvas::s_nodeRegistryName);
-            if (nodeRegistryVariable)
-            {
-                ScriptCanvas::NodeRegistry& nodeRegistry = nodeRegistryVariable.Get();
-                InputLibrary::InitNodeRegistry(nodeRegistry);
-            }
+            INIT_SCRIPTCANVAS_AUTOGEN(StartingPointInputStatic);
         }
 
         void Activate() override
@@ -212,8 +211,8 @@ namespace StartingPointInput
                 StartingPointInputSystemComponent::CreateDescriptor(),
             });
 
-            AZStd::vector<AZ::ComponentDescriptor*> componentDescriptors(InputLibrary::GetComponentDescriptors());
-            m_descriptors.insert(m_descriptors.end(), componentDescriptors.begin(), componentDescriptors.end());
+            AZStd::vector<AZ::ComponentDescriptor*> autogenDescriptors(GET_SCRIPTCANVAS_AUTOGEN_COMPONENT_DESCRIPTORS(StartingPointInputStatic));
+            m_descriptors.insert(m_descriptors.end(), autogenDescriptors.begin(), autogenDescriptors.end());
         }
 
         AZ::ComponentTypeList GetRequiredSystemComponents() const override

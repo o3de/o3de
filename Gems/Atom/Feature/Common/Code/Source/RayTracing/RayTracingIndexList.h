@@ -153,7 +153,7 @@ namespace AZ
         template<uint32_t BlockSize>
         bool RayTracingIndexList<BlockSize>::IsValidIndex(uint32_t index) const
         {
-            return (index != m_freeStartIndex && index < FreeListThreshold);
+            return (index < FreeListThreshold);
         }
 
         template<uint32_t BlockSize>

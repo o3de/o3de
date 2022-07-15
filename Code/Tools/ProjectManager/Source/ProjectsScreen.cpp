@@ -15,6 +15,7 @@
 #include <ProjectBuilderController.h>
 #include <ScreensCtrl.h>
 #include <SettingsInterface.h>
+#include <AddRemoteProjectDialog.h>
 
 #include <AzQtComponents/Components/FlowLayout.h>
 #include <AzCore/Platform.h>
@@ -82,9 +83,7 @@ namespace O3DE::ProjectManager
             });
     }
 
-    ProjectsScreen::~ProjectsScreen()
-    {
-    }
+    ProjectsScreen::~ProjectsScreen() = default;
 
     QFrame* ProjectsScreen::CreateFirstTimeContent()
     {
@@ -110,16 +109,25 @@ namespace O3DE::ProjectManager
             buttonLayout->setSpacing(s_spacerSize);
 
             // use a newline to force the text up
-            QPushButton* createProjectButton = new QPushButton(tr("Create a Project\n"), this);
+            QPushButton* createProjectButton = new QPushButton(tr("Create a project\n"), this);
             createProjectButton->setObjectName("createProjectButton");
             buttonLayout->addWidget(createProjectButton);
 
-            QPushButton* addProjectButton = new QPushButton(tr("Add a Project\n"), this);
+            QPushButton* addProjectButton = new QPushButton(tr("Open a project\n"), this);
             addProjectButton->setObjectName("addProjectButton");
             buttonLayout->addWidget(addProjectButton);
 
+#ifdef ADD_REMOTE_PROJECT_ENABLED
+            QPushButton* addRemoteProjectButton = new QPushButton(tr("Add a remote project\n"), this);
+            addRemoteProjectButton->setObjectName("addRemoteProjectButton");
+            buttonLayout->addWidget(addRemoteProjectButton);
+#endif
+
             connect(createProjectButton, &QPushButton::clicked, this, &ProjectsScreen::HandleNewProjectButton);
             connect(addProjectButton, &QPushButton::clicked, this, &ProjectsScreen::HandleAddProjectButton);
+#ifdef ADD_REMOTE_PROJECT_ENABLED
+            connect(addRemoteProjectButton, &QPushButton::clicked, this, &ProjectsScreen::HandleAddRemoteProjectButton);
+#endif
 
             layout->addLayout(buttonLayout);
         }
@@ -146,10 +154,16 @@ namespace O3DE::ProjectManager
 
                 QMenu* newProjectMenu = new QMenu(this);
                 m_createNewProjectAction = newProjectMenu->addAction("Create New Project");
-                m_addExistingProjectAction = newProjectMenu->addAction("Add Existing Project");
+                m_addExistingProjectAction = newProjectMenu->addAction("Open Existing Project");
+#ifdef ADD_REMOTE_PROJECT_ENABLED
+                m_addRemoteProjectAction = newProjectMenu->addAction("Add Remote Project");
+#endif
 
                 connect(m_createNewProjectAction, &QAction::triggered, this, &ProjectsScreen::HandleNewProjectButton);
                 connect(m_addExistingProjectAction, &QAction::triggered, this, &ProjectsScreen::HandleAddProjectButton);
+#ifdef ADD_REMOTE_PROJECT_ENABLED
+                connect(m_addRemoteProjectAction, &QAction::triggered, this, &ProjectsScreen::HandleAddRemoteProjectButton);
+#endif
 
                 QPushButton* newProjectMenuButton = new QPushButton(tr("New Project..."), this);
                 newProjectMenuButton->setObjectName("newProjectButton");
@@ -229,9 +243,9 @@ namespace O3DE::ProjectManager
 
                 if (!keepProject.contains(projectButtonsIter.key()))
                 {
+                    m_fileSystemWatcher->removePath(QDir::toNativeSeparators(projectButtonsIter.value()->GetProjectInfo().m_path + "/project.json"));
                     projectButtonsIter.value()->deleteLater();
                     projectButtonsIter = m_projectButtons.erase(projectButtonsIter);
-                    m_fileSystemWatcher->removePath(QDir::toNativeSeparators(projectButtonsIter.value()->GetProjectInfo().m_path + "/project.json"));
                 }
                 else
                 {
@@ -352,7 +366,11 @@ namespace O3DE::ProjectManager
             }
         }
 
-        m_stack->setCurrentWidget(m_projectsContent);
+        if (m_projectsContent)
+        {
+            m_stack->setCurrentWidget(m_projectsContent);
+        }
+
         m_projectsFlowLayout->update();
     }
 
@@ -414,11 +432,27 @@ namespace O3DE::ProjectManager
         emit ResetScreenRequest(ProjectManagerScreen::CreateProject);
         emit ChangeScreenRequest(ProjectManagerScreen::CreateProject);
     }
+
     void ProjectsScreen::HandleAddProjectButton()
     {
         if (ProjectUtils::AddProjectDialog(this))
         {
             emit ChangeScreenRequest(ProjectManagerScreen::Projects);
+        }
+    }
+
+    void ProjectsScreen::HandleAddRemoteProjectButton()
+    {
+        AddRemoteProjectDialog* addRemoteProjectDialog = new AddRemoteProjectDialog(this);
+
+        if (addRemoteProjectDialog->exec() == QDialog::DialogCode::Accepted)
+        {
+            QString repoUri = addRemoteProjectDialog->GetRepoPath();
+            if (repoUri.isEmpty())
+            {
+                QMessageBox::warning(this, tr("No Input"), tr("Please provide a repo Uri."));
+                return;
+            }
         }
     }
 
@@ -490,14 +524,16 @@ namespace O3DE::ProjectManager
             emit ChangeScreenRequest(ProjectManagerScreen::UpdateProject);
         }
     }
+
     void ProjectsScreen::HandleEditProjectGems(const QString& projectPath)
     {
         if (!WarnIfInBuildQueue(projectPath))
         {
             emit NotifyCurrentProject(projectPath);
-            emit ChangeScreenRequest(ProjectManagerScreen::GemCatalog);
+            emit ChangeScreenRequest(ProjectManagerScreen::ProjectGemCatalog);
         }
     }
+
     void ProjectsScreen::HandleCopyProject(const ProjectInfo& projectInfo)
     {
         if (!WarnIfInBuildQueue(projectInfo.m_path))
@@ -512,6 +548,7 @@ namespace O3DE::ProjectManager
             }
         }
     }
+
     void ProjectsScreen::HandleRemoveProject(const QString& projectPath)
     {
         if (!WarnIfInBuildQueue(projectPath))
@@ -523,6 +560,7 @@ namespace O3DE::ProjectManager
             }
         }
     }
+
     void ProjectsScreen::HandleDeleteProject(const QString& projectPath)
     {
         if (!WarnIfInBuildQueue(projectPath))
@@ -554,7 +592,7 @@ namespace O3DE::ProjectManager
         if (showMessage)
         {
             QMessageBox::information(this,
-                tr("Project Should be rebuilt."),
+                tr("Project should be rebuilt."),
                 projectInfo.GetProjectDisplayName() + tr(" project likely needs to be rebuilt."));
         }
     }

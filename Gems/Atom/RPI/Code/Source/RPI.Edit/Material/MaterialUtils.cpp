@@ -70,6 +70,7 @@ namespace AZ
                     }
                     
                     imageAsset = Data::Asset<ImageAsset>{imageAssetId.GetValue(), typeId, imageFilePath};
+                    imageAsset.SetAutoLoadBehavior(Data::AssetLoadBehavior::PreLoad);
                     return GetImageAssetResult::Found;
                 }
             }

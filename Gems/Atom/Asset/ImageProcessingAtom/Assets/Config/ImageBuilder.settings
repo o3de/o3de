@@ -145,6 +145,7 @@
             "_nrma": [ "NormalsWithSmoothness" ],
             // Opacity
             "_blend": [ "Opacity" ],
+            "_influence": [ "Opacity" ],
             "_mask": [ "Opacity" ],
             "_msk": [ "Opacity" ],
             "_o": [ "Opacity" ],
@@ -153,15 +154,19 @@
             "_opacity": [ "Opacity" ],
             "_sss": [ "Opacity" ],
             "_trans": [ "Opacity" ],
+			"_transmission": [ "Opacity" ],
+			"_Transmissive": [ "Opacity" ],
             //Reference
             "_ref": [ "ReferenceImage" ],
             "_refhdr": [ "ReferenceImage_HDRLinear" ],
             "_refhdru": [ "ReferenceImage_HDRLinearUncompressed" ],
             "_reflinear": [ "ReferenceImage_Linear" ],
-            // Reflectance
+            // Reflectance, linear single channel
+			"_cavity": [ "Reflectance" ],
             "_f0": [ "Reflectance" ],
             "_g": [ "Reflectance" ],
             "_gloss": [ "Reflectance" ],
+            "_ior": [ "Reflectance" ],
             "_m": [ "Reflectance" ],
             "_metal": [ "Reflectance" ],
             "_metallic": [ "Reflectance" ],
@@ -176,6 +181,8 @@
             "_spec": [ "Reflectance" ],
             "_specf0": [ "Reflectance" ],
             "_specular": [ "Reflectance" ],
+			"_SpecularReflectance": [ "Reflectance" ],
+			"_thickness": [ "Reflectance" ],
             // Skybox
             "_skyboxcm": [ "Skybox" ],
             // UI

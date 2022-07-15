@@ -63,10 +63,17 @@
                     "$type": "EditorColliderComponent",
                     "Id": 11906722936407481270,
                     "ColliderConfiguration": {
-                        "MaterialSelection": {
-                            "MaterialIds": [
+                        "MaterialSlots": {
+                            "Slots": [
                                 {
-                                    "MaterialId": "{A9E990B3-4EA5-4108-8569-B4CC54D37527}"
+                                    "Name": "Entire object",
+                                    "MaterialAsset": {
+                                        "assetId": {
+                                            "guid": "{DA91BA55-C7CD-57AB-9C64-E4045D239B39}",
+                                            "subId": 1
+                                        },
+                                        "assetHint": "levels/physics/material_defaultlibraryupdatedacrosslevels/bounce_0.physicsmaterial"
+                                    }
                                 }
                             ]
                         }
@@ -258,6 +265,13 @@
                     "$type": "EditorColliderComponent",
                     "Id": 18005002941285960013,
                     "ColliderConfiguration": {
+                        "MaterialSlots": {
+                            "Slots": [
+                                {
+                                    "Name": "Entire object"
+                                }
+                            ]
+                        },
                         "MaterialSelection": {
                             "MaterialIds": [
                                 {}
@@ -353,6 +367,13 @@
                     "ColliderConfiguration": {
                         "Trigger": true,
                         "InSceneQueries": false,
+                        "MaterialSlots": {
+                            "Slots": [
+                                {
+                                    "Name": "Entire object"
+                                }
+                            ]
+                        },
                         "MaterialSelection": {
                             "MaterialIds": [
                                 {}

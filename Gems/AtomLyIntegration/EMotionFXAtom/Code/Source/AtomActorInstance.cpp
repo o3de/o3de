@@ -204,38 +204,20 @@ namespace AZ::Render
         m_skinnedMeshFeatureProcessor = nullptr;
     }
 
-    RPI::ModelMaterialSlotMap AtomActorInstance::GetModelMaterialSlots() const
+    MaterialAssignmentLabelMap AtomActorInstance::GetMaterialLabels() const
     {
-        Data::Asset<const RPI::ModelAsset> modelAsset = GetModelAsset();
-        if (modelAsset.IsReady())
-        {
-            return modelAsset->GetMaterialSlots();
-        }
-        else
-        {
-            return {};
-        }
+        return GetMaterialSlotLabelsFromModelAsset(GetModelAsset());
     }
 
     MaterialAssignmentId AtomActorInstance::FindMaterialAssignmentId(
         const MaterialAssignmentLodIndex lod, const AZStd::string& label) const
     {
-        if (m_skinnedMeshInstance && m_skinnedMeshInstance->m_model)
-        {
-            return FindMaterialAssignmentIdInModel(m_skinnedMeshInstance->m_model, lod, label);
-        }
-
-        return MaterialAssignmentId();
+        return GetMaterialSlotIdFromModelAsset(GetModelAsset(), lod, label);
     }
 
-    MaterialAssignmentMap AtomActorInstance::GetMaterialAssignments() const
+    MaterialAssignmentMap AtomActorInstance::GetDefautMaterialMap() const
     {
-        if (m_skinnedMeshInstance && m_skinnedMeshInstance->m_model)
-        {
-            return GetMaterialAssignmentsFromModel(m_skinnedMeshInstance->m_model);
-        }
-
-        return MaterialAssignmentMap{};
+        return GetDefautMaterialMapFromModelAsset(GetModelAsset());
     }
 
     AZStd::unordered_set<AZ::Name> AtomActorInstance::GetModelUvNames() const
@@ -614,7 +596,7 @@ namespace AZ::Render
     void AtomActorInstance::RegisterActor()
     {
         MaterialAssignmentMap materials;
-        MaterialComponentRequestBus::EventResult(materials, m_entityId, &MaterialComponentRequests::GetMaterialOverrides);
+        MaterialComponentRequestBus::EventResult(materials, m_entityId, &MaterialComponentRequests::GetMaterialMap);
         CreateRenderProxy(materials);
 
         InitWrinkleMasks();
@@ -622,17 +604,21 @@ namespace AZ::Render
         TransformNotificationBus::Handler::BusConnect(m_entityId);
         MaterialComponentNotificationBus::Handler::BusConnect(m_entityId);
         MeshComponentRequestBus::Handler::BusConnect(m_entityId);
-        AZ::Render::SkinnedMeshOverrideRequestBus::Handler::BusConnect(m_entityId);
+        SkinnedMeshOverrideRequestBus::Handler::BusConnect(m_entityId);
+        MeshHandleStateRequestBus::Handler::BusConnect(m_entityId);
 
         const Data::Instance<RPI::Model> model = m_meshFeatureProcessor->GetModel(*m_meshHandle);
         MeshComponentNotificationBus::Event(m_entityId, &MeshComponentNotificationBus::Events::OnModelReady, GetModelAsset(), model);
+
+        m_meshFeatureProcessor->SetVisible(*m_meshHandle, IsVisible());
     }
 
     void AtomActorInstance::UnregisterActor()
     {
         MeshComponentNotificationBus::Event(m_entityId, &MeshComponentNotificationBus::Events::OnModelPreDestroy);
 
-        AZ::Render::SkinnedMeshOverrideRequestBus::Handler::BusDisconnect(m_entityId);
+        MeshHandleStateRequestBus::Handler::BusDisconnect();
+        SkinnedMeshOverrideRequestBus::Handler::BusDisconnect(m_entityId);
         MeshComponentRequestBus::Handler::BusDisconnect();
         MaterialComponentNotificationBus::Handler::BusDisconnect();
         TransformNotificationBus::Handler::BusDisconnect();
@@ -681,7 +667,7 @@ namespace AZ::Render
         m_skinnedMeshInstance = m_skinnedMeshInputBuffers->CreateSkinnedMeshInstance();
         if (m_skinnedMeshInstance && m_skinnedMeshInstance->m_model)
         {
-            MaterialReceiverNotificationBus::Event(m_entityId, &MaterialReceiverNotificationBus::Events::OnMaterialAssignmentsChanged);
+            MaterialReceiverNotificationBus::Event(m_entityId, &MaterialReceiverNotificationBus::Events::OnMaterialAssignmentSlotsChanged);
 
             RegisterActor();
         }
@@ -784,6 +770,11 @@ namespace AZ::Render
                 }
             }
         }
+    }
+
+    const MeshFeatureProcessorInterface::MeshHandle* AtomActorInstance::GetMeshHandle() const
+    {
+        return m_meshHandle.get();
     }
 
 } // namespace AZ::Render

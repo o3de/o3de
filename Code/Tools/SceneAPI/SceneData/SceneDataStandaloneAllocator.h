@@ -17,7 +17,7 @@ namespace AZ
         class SceneDataStandaloneAllocator
         {
         public:
-            SCENE_DATA_API static void Initialize(AZ::EnvironmentInstance environment);
+            SCENE_DATA_API static void Initialize();
             SCENE_DATA_API static void TearDown();
 
         private:

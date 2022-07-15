@@ -19,7 +19,7 @@ namespace EMotionFX
 
 
     // constructor
-    SubMesh::SubMesh(Mesh* parentMesh, uint32 startVertex, uint32 startIndex, uint32 startPolygon, uint32 numVerts, uint32 numIndices, uint32 numPolygons, uint32 materialIndex, size_t numBones)
+    SubMesh::SubMesh(Mesh* parentMesh, uint32 startVertex, uint32 startIndex, uint32 startPolygon, uint32 numVerts, uint32 numIndices, uint32 numPolygons, size_t numBones)
     {
         m_parentMesh     = parentMesh;
         m_numVertices    = numVerts;
@@ -28,7 +28,6 @@ namespace EMotionFX
         m_startIndex     = startIndex;
         m_startVertex    = startVertex;
         m_startPolygon   = startPolygon;
-        m_material       = materialIndex;
 
         SetNumBones(numBones);
     }
@@ -41,16 +40,16 @@ namespace EMotionFX
 
 
     // create
-    SubMesh* SubMesh::Create(Mesh* parentMesh, uint32 startVertex, uint32 startIndex, uint32 startPolygon, uint32 numVerts, uint32 numIndices, uint32 numPolygons, uint32 materialIndex, size_t numBones)
+    SubMesh* SubMesh::Create(Mesh* parentMesh, uint32 startVertex, uint32 startIndex, uint32 startPolygon, uint32 numVerts, uint32 numIndices, uint32 numPolygons, size_t numBones)
     {
-        return aznew SubMesh(parentMesh, startVertex, startIndex, startPolygon, numVerts, numIndices, numPolygons, materialIndex, numBones);
+        return aznew SubMesh(parentMesh, startVertex, startIndex, startPolygon, numVerts, numIndices, numPolygons, numBones);
     }
 
 
     // clone the submesh
     SubMesh* SubMesh::Clone(Mesh* newParentMesh)
     {
-        SubMesh* clone = aznew SubMesh(newParentMesh, m_startVertex, m_startIndex, m_startPolygon, m_numVertices, m_numIndices, m_numPolygons, m_material, m_bones.size());
+        SubMesh* clone = aznew SubMesh(newParentMesh, m_startVertex, m_startIndex, m_startPolygon, m_numVertices, m_numIndices, m_numPolygons, m_bones.size());
         clone->m_bones = m_bones;
         return clone;
     }
@@ -173,19 +172,6 @@ namespace EMotionFX
     {
         m_parentMesh = mesh;
     }
-
-
-    void SubMesh::SetMaterial(uint32 materialIndex)
-    {
-        m_material = materialIndex;
-    }
-
-
-    uint32 SubMesh::GetMaterial() const
-    {
-        return m_material;
-    }
-
 
     void SubMesh::SetStartIndex(uint32 indexOffset)
     {

@@ -468,8 +468,6 @@ namespace AZ
     } // namespace Internal
 } // namespace AZ
 
-typedef AZ::Internal::EnvironmentInterface SharedEnvironmentInstance;
-
 // Description:
 //  Structure passed to Init method of ISystem interface.
 struct SSystemInitParams
@@ -497,8 +495,6 @@ struct SSystemInitParams
 
     ISystem* pSystem;                                           // Pointer to existing ISystem interface, it will be reused if not NULL.
 
-    SharedEnvironmentInstance* pSharedEnvironment;
-
     // Summary:
     //  Initialization defaults.
     SSystemInitParams()
@@ -524,8 +520,6 @@ struct SSystemInitParams
         bToolMode = false;
 
         pSystem = NULL;
-
-        pSharedEnvironment = nullptr;
     }
 };
 
@@ -598,7 +592,6 @@ struct SSystemGlobalEnvironment
     ISystem*                   pSystem = nullptr;
     ILog*                      pLog;
     IMovieSystem*              pMovieSystem;
-    SharedEnvironmentInstance*      pSharedEnvironment;
 
 #if defined(AZ_RESTRICTED_PLATFORM)
     #define AZ_RESTRICTED_SECTION ISYSTEM_H_SECTION_4

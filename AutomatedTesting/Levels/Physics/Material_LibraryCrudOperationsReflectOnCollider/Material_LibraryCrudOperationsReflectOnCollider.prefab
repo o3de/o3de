@@ -196,6 +196,13 @@
                     "$type": "EditorColliderComponent",
                     "Id": 18082739249556167219,
                     "ColliderConfiguration": {
+                        "MaterialSlots": {
+                            "Slots": [
+                                {
+                                    "Name": "Entire object"
+                                }
+                            ]
+                        },
                         "MaterialSelection": {
                             "MaterialIds": [
                                 {}
@@ -303,10 +310,17 @@
                     "$type": "EditorColliderComponent",
                     "Id": 18082739249556167219,
                     "ColliderConfiguration": {
-                        "MaterialSelection": {
-                            "MaterialIds": [
+                        "MaterialSlots": {
+                            "Slots": [
                                 {
-                                    "MaterialId": "{BC7E0096-0D0E-452E-8D3C-E239B4DC6D42}"
+                                    "Name": "Entire object",
+                                    "MaterialAsset": {
+                                        "assetId": {
+                                            "guid": "{99DF9D52-C1E9-54B3-B136-9DF3EB625805}",
+                                            "subId": 1
+                                        },
+                                        "assetHint": "levels/physics/material_librarycrudoperationsreflectoncollider/modified.physicsmaterial"
+                                    }
                                 }
                             ]
                         }

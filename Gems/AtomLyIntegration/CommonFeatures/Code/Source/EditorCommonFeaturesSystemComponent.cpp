@@ -71,6 +71,7 @@ namespace AZ
         void EditorCommonFeaturesSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
         {
             required.push_back(AZ_CRC_CE("ThumbnailerService"));
+            required.push_back(AZ_CRC_CE("PreviewRendererSystem"));
         }
 
         void EditorCommonFeaturesSystemComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)

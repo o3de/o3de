@@ -416,9 +416,9 @@ namespace AZStd::Internal
             size_t numElements = last - first;
             if (numElements > 0)
             {
-#if az_has_builtin_memcpy
+#if az_has_builtin_memmove
                 static_assert(sizeof(iter_value_t<InputIterator>) == sizeof(iter_value_t<ForwardIterator>), "Size of value types must match for a trivial copy");
-                __builtin_memcpy(to_address(result), to_address(first), numElements * sizeof(iter_value_t<InputIterator>));
+                __builtin_memmove(to_address(result), to_address(first), numElements * sizeof(iter_value_t<InputIterator>));
 #else
                 if (az_builtin_is_constant_evaluated())
                 {
@@ -434,7 +434,7 @@ namespace AZStd::Internal
                     AZ_Assert((static_cast<const void*>(&*result) < static_cast<const void*>(&*first))
                         || (static_cast<const void*>(&*result) >= static_cast<const void*>(&*first + numElements)),
                         "AZStd::move memory overlaps use AZStd::move_backward!");
-                    ::memcpy(to_address(result), to_address(first), numElements * sizeof(iter_value_t<InputIterator>));
+                    ::memmove(to_address(result), to_address(first), numElements * sizeof(iter_value_t<InputIterator>));
                 }
 #endif
             }

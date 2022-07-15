@@ -17,11 +17,13 @@ namespace AZ::DocumentPropertyEditor
         Nodes::Reflect(this);
 
         AZ::Interface<PropertyEditorSystemInterface>::Register(this);
+        AZ::AllocatorInstance<AZ::Dom::ValueAllocator>::Create();
     }
 
     PropertyEditorSystem::~PropertyEditorSystem()
     {
         AZ::Interface<PropertyEditorSystemInterface>::Unregister(this);
+        AZ::AllocatorInstance<AZ::Dom::ValueAllocator>::Destroy();
     }
 
     void PropertyEditorSystem::RegisterNode(NodeMetadata metadata)
@@ -40,21 +42,21 @@ namespace AZ::DocumentPropertyEditor
         RegisterNode(metadata);
     }
 
-    void PropertyEditorSystem::RegisterAttribute(AttributeMetadata metadata)
+    void PropertyEditorSystem::RegisterNodeAttribute(const NodeMetadata* node, const AttributeDefinitionInterface* attribute)
     {
-        AddNameToCrcTable(metadata.m_name);
+        AddNameToCrcTable(attribute->GetName());
         AZ::Name parentNodeName;
-        if (metadata.m_node != nullptr)
+        if (node != nullptr)
         {
-            parentNodeName = metadata.m_node->m_name;
+            parentNodeName = node->m_name;
         }
         else
         {
             AZ_Error(
-                "PropertyEditorSystem", false, "Failed to register attribute, no parent Node specified: %s", metadata.m_name.GetCStr());
+                "PropertyEditorSystem", false, "Failed to register attribute, no parent Node specified: %s", attribute->GetName().GetCStr());
             return;
         }
-        m_attributeMetadata[metadata.m_name][parentNodeName] = AZStd::move(metadata);
+        m_attributeMetadata[attribute->GetName()][parentNodeName] = attribute;
     }
 
     const NodeMetadata* PropertyEditorSystem::FindNode(AZ::Name name) const
@@ -72,7 +74,7 @@ namespace AZ::DocumentPropertyEditor
         return result->InheritsFrom<Nodes::PropertyEditor>() ? result : nullptr;
     }
 
-    const AttributeMetadata* PropertyEditorSystem::FindAttribute(AZ::Name name, const PropertyEditorMetadata* parent) const
+    const AttributeDefinitionInterface* PropertyEditorSystem::FindNodeAttribute(AZ::Name name, const PropertyEditorMetadata* parent) const
     {
         if (auto attributeContainerIt = m_attributeMetadata.find(name); attributeContainerIt != m_attributeMetadata.end())
         {
@@ -80,12 +82,24 @@ namespace AZ::DocumentPropertyEditor
             {
                 if (auto attributeIt = attributeContainerIt->second.find(parent->m_name); attributeIt != attributeContainerIt->second.end())
                 {
-                    return &attributeIt->second;
+                    return attributeIt->second;
                 }
                 parent = parent->m_parent;
             }
         }
         return nullptr;
+    }
+
+    void PropertyEditorSystem::EnumerateRegisteredAttributes(
+        AZ::Name name, const AZStd::function<void(const AttributeDefinitionInterface&)>& enumerateCallback) const
+    {
+        if (auto attributeContainerIt = m_attributeMetadata.find(name); attributeContainerIt != m_attributeMetadata.end())
+        {
+            for (auto attributeIt = attributeContainerIt->second.begin(); attributeIt != attributeContainerIt->second.end(); ++attributeIt)
+            {
+                enumerateCallback(*attributeIt->second);
+            }
+        }
     }
 
     void PropertyEditorSystem::AddNameToCrcTable(AZ::Name name)
@@ -100,7 +114,9 @@ namespace AZ::DocumentPropertyEditor
         {
             return crcIt->second;
         }
-        AZ_Assert(false, "No name found for CRC: " PRIu32, static_cast<AZ::u32>(crc));
-        return {};
+        AZ_Warning("DPE", false, "No name found for CRC, falling back to CRC value: %" PRIu32, static_cast<AZ::u32>(crc));
+        AZ::Name hashName(AZStd::fixed_string<16>::format("%" PRIu32, static_cast<AZ::u32>(crc)));
+        m_crcToName[crc] = hashName;
+        return hashName;
     }
 } // namespace AZ::DocumentPropertyEditor

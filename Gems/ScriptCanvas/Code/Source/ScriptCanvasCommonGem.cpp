@@ -21,6 +21,7 @@
 #include <ScriptCanvas/Libraries/Libraries.h>
 #include <ScriptCanvas/Libraries/Math/MathNodeUtilities.h>
 #include <ScriptCanvas/Variable/GraphVariableManagerComponent.h>
+#include <AutoGenNodeableRegistry.generated.h>
 
 namespace ScriptCanvas
 {
@@ -48,18 +49,22 @@ namespace ScriptCanvas
             ScriptCanvas::RuntimeAssetSystemComponent::CreateDescriptor(),
         });
         
-        ScriptCanvas::InitNodeRegistry();
+        ScriptCanvas::InitLibraries();
         AZStd::vector<AZ::ComponentDescriptor*> libraryDescriptors = ScriptCanvas::GetLibraryDescriptors();
         m_descriptors.insert(m_descriptors.end(), libraryDescriptors.begin(), libraryDescriptors.end());
 
         MathNodeUtilities::RandomEngineInit();
         InitDataRegistry();
+
+        INIT_SCRIPTCANVAS_AUTOGEN(ScriptCanvasStatic)
+        auto autogenDescriptors = GET_SCRIPTCANVAS_AUTOGEN_COMPONENT_DESCRIPTORS(ScriptCanvasStatic);
+        m_descriptors.insert(m_descriptors.end(), autogenDescriptors.begin(), autogenDescriptors.end());
     }
 
     ScriptCanvasModuleCommon::~ScriptCanvasModuleCommon()
     {
         MathNodeUtilities::RandomEngineReset();
-        ScriptCanvas::ResetNodeRegistry();
+        ScriptCanvas::ResetLibraries();
         ResetDataRegistry();
     }
     

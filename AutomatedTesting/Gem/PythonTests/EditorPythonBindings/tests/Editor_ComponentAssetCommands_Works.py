@@ -114,8 +114,8 @@ class Editor_ComponentAssetCommands_Works(BaseClass):
 
         # Tests for the Asset<> case
         testAssetId = asset.AssetCatalogRequestBus(bus.Broadcast, 'GetAssetIdByPath', 'assets/objects/foliage/cedar.azmodel', math.Uuid(), False)
-        Editor_ComponentAssetCommands_Works.GetSetCompareTest(component, "Controller|Configuration|Mesh Asset", testAssetId)
-        Editor_ComponentAssetCommands_Works.PteTest(pte, "Controller|Configuration|Mesh Asset", testAssetId)
+        Editor_ComponentAssetCommands_Works.GetSetCompareTest(component, "Controller|Configuration|Model Asset", testAssetId)
+        Editor_ComponentAssetCommands_Works.PteTest(pte, "Controller|Configuration|Model Asset", testAssetId)
 
 if __name__ == "__main__":
     tester = Editor_ComponentAssetCommands_Works()

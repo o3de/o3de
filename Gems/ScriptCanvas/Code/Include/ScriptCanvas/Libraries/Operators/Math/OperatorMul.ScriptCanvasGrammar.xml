@@ -2,12 +2,11 @@
 
 <ScriptCanvas Include="Include/ScriptCanvas/Libraries/Operators/Math/OperatorMul.h" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <Class Name="OperatorMul"
-	       QualifiedName="ScriptCanvas::Nodes::Operators::OperatorMul"
-	       PreferredClassName="Multiply (*)"
-           Uuid="{E9BB45A1-AE96-47B0-B2BF-2927D420A28C}"
-           Base="ScriptCanvas::Nodes::Operators::OperatorArithmetic"
-           Category="Math"
-           Version="0"
-           Description="Multiplies two of more values">
+        QualifiedName="ScriptCanvas::Nodes::Operators::OperatorMul"
+        PreferredClassName="Multiply (*)"
+        Uuid="{E9BB45A1-AE96-47B0-B2BF-2927D420A28C}"
+        Base="ScriptCanvas::Nodes::Operators::OperatorArithmetic"
+        Category="Math"
+        Description="Multiplies two of more values">
     </Class>
 </ScriptCanvas>

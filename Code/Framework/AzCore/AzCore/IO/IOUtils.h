@@ -13,6 +13,8 @@ namespace AZ
     {        
         class FileIOStream;
 
+        enum class OpenMode : AZ::u32;
+
         int TranslateOpenModeToSystemFileMode(const char* path, OpenMode mode);
 
         /**

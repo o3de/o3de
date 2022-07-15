@@ -31,7 +31,7 @@ namespace ExecutionInterpretedDebugAPIcpp
         {
             Datum datum(debugDatumSource->m_slotDatumType, Datum::eOriginality::Copy);
             AZ::BehaviorClass* behaviorClass(nullptr);
-            AZ::BehaviorValueParameter bvp = datum.ToBehaviorContext(behaviorClass);
+            AZ::BehaviorArgument bvp = datum.ToBehaviorContext(behaviorClass);
             debugDatumSource->m_fromStack(lua, stackIndex, bvp, behaviorClass, nullptr);
             datumValue = DatumValue::Create(datum);
         }

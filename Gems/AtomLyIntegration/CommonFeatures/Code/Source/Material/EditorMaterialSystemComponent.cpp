@@ -100,10 +100,11 @@ namespace AZ
             AZ::EntitySystemBus::Handler::BusConnect();
             EditorMaterialSystemComponentNotificationBus::Handler::BusConnect();
             EditorMaterialSystemComponentRequestBus::Handler::BusConnect();
-            MaterialReceiverNotificationBus::Router::BusRouterConnect();
+            MaterialComponentNotificationBus::Router::BusRouterConnect();
             AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler::BusConnect();
             AzToolsFramework::EditorMenuNotificationBus::Handler::BusConnect();
             AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
+            AZ::SystemTickBus::Handler::BusConnect();
 
             m_materialBrowserInteractions.reset(aznew MaterialBrowserInteractions);
         }
@@ -113,10 +114,11 @@ namespace AZ
             AZ::EntitySystemBus::Handler::BusDisconnect();
             EditorMaterialSystemComponentNotificationBus::Handler::BusDisconnect();
             EditorMaterialSystemComponentRequestBus::Handler::BusDisconnect();
-            MaterialReceiverNotificationBus::Router::BusRouterDisconnect();
+            MaterialComponentNotificationBus::Router::BusRouterDisconnect();
             AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler::BusDisconnect();
             AzToolsFramework::EditorMenuNotificationBus::Handler::BusDisconnect();
             AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect(); 
+            AZ::SystemTickBus::Handler::BusDisconnect();
 
             m_materialBrowserInteractions.reset();
 
@@ -151,7 +153,9 @@ namespace AZ
         }
 
         void EditorMaterialSystemComponent::OpenMaterialInspector(
-            const AZ::EntityId& entityId, const AZ::Render::MaterialAssignmentId& materialAssignmentId)
+            const AZ::EntityId& primaryEntityId,
+            const AzToolsFramework::EntityIdSet& entityIdsToEdit,
+            const AZ::Render::MaterialAssignmentId& materialAssignmentId)
         {
             auto dockWidget = AzToolsFramework::InstanceViewPane("Material Property Inspector");
             if (dockWidget)
@@ -159,7 +163,7 @@ namespace AZ
                 auto inspector = static_cast<AZ::Render::EditorMaterialComponentInspector::MaterialPropertyInspector*>(dockWidget->widget());
                 if (inspector)
                 {
-                    inspector->LoadMaterial(entityId, materialAssignmentId);
+                    inspector->LoadMaterial(primaryEntityId, entityIdsToEdit, materialAssignmentId);
                 }
             }
         }
@@ -167,59 +171,7 @@ namespace AZ
         void EditorMaterialSystemComponent::RenderMaterialPreview(
             const AZ::EntityId& entityId, const AZ::Render::MaterialAssignmentId& materialAssignmentId)
         {
-            static constexpr const char* DefaultModelPath = "models/sphere.azmodel";
-            static constexpr const char* DefaultLightingPresetPath = "lightingpresets/thumbnail.lightingpreset.azasset";
-
-            if (auto previewRenderer = AZ::Interface<AtomToolsFramework::PreviewRendererInterface>::Get())
-            {
-                AZ::Data::AssetId materialAssetId = {};
-                MaterialComponentRequestBus::EventResult(
-                    materialAssetId, entityId, &MaterialComponentRequestBus::Events::GetMaterialOverride, materialAssignmentId);
-                if (!materialAssetId.IsValid())
-                {
-                    MaterialComponentRequestBus::EventResult(
-                        materialAssetId, entityId, &MaterialComponentRequestBus::Events::GetDefaultMaterialAssetId, materialAssignmentId);
-                    if (!materialAssetId.IsValid())
-                    {
-                        return;
-                    }
-                }
-
-                AZ::Render::MaterialPropertyOverrideMap propertyOverrides;
-                AZ::Render::MaterialComponentRequestBus::EventResult(
-                    propertyOverrides, entityId, &AZ::Render::MaterialComponentRequestBus::Events::GetPropertyOverrides,
-                    materialAssignmentId);
-
-                AZ::Data::Asset<AZ::RPI::ModelAsset> modelAsset;
-                modelAsset.Create(AZ::RPI::AssetUtils::GetAssetIdForProductPath(DefaultModelPath));
-
-                AZ::Data::Asset<AZ::RPI::MaterialAsset> materialAsset;
-                materialAsset.Create(materialAssetId);
-
-                AZ::Data::Asset<AZ::RPI::AnyAsset> lightingPresetAsset;
-                lightingPresetAsset.Create(AZ::RPI::AssetUtils::GetAssetIdForProductPath(DefaultLightingPresetPath));
-
-                previewRenderer->AddCaptureRequest(
-                    { MaterialPreviewResolution,
-                      AZStd::make_shared<AZ::LyIntegration::SharedPreviewContent>(
-                          previewRenderer->GetScene(), previewRenderer->GetView(), previewRenderer->GetEntityContextId(), modelAsset,
-                          materialAsset, lightingPresetAsset, propertyOverrides),
-                      [entityId, materialAssignmentId]()
-                      {
-                          AZ_UNUSED(entityId);
-                          AZ_UNUSED(materialAssignmentId);
-
-                          AZ_Warning(
-                              "EditorMaterialSystemComponent", false, "RenderMaterialPreview capture failed for entity %s slot %s.",
-                              entityId.ToString().c_str(), materialAssignmentId.ToString().c_str());
-                      },
-                      [entityId, materialAssignmentId](const QPixmap& pixmap)
-                      {
-                          AZ::Render::EditorMaterialSystemComponentNotificationBus::Broadcast(
-                              &AZ::Render::EditorMaterialSystemComponentNotificationBus::Events::OnRenderMaterialPreviewComplete, entityId,
-                              materialAssignmentId, pixmap);
-                      } });
-            }
+            m_materialPreviewRequests.emplace(entityId, materialAssignmentId);
         }
 
         QPixmap EditorMaterialSystemComponent::GetRenderedMaterialPreview(
@@ -243,7 +195,83 @@ namespace AZ
             m_materialPreviews.erase(entityId);
         }
 
-        void EditorMaterialSystemComponent::OnRenderMaterialPreviewComplete(
+        void EditorMaterialSystemComponent::OnSystemTick()
+        {
+            if (auto previewRenderer = AZ::Interface<AtomToolsFramework::PreviewRendererInterface>::Get())
+            {
+                // All material previews use the same model and lighting preset assets
+                AZ::Data::Asset<AZ::RPI::ModelAsset> modelAsset;
+                modelAsset.Create(AZ::RPI::AssetUtils::GetAssetIdForProductPath("models/sphere.azmodel"));
+
+                AZ::Data::Asset<AZ::RPI::AnyAsset> lightingPresetAsset;
+                lightingPresetAsset.Create(AZ::RPI::AssetUtils::GetAssetIdForProductPath("lightingpresets/thumbnail.lightingpreset.azasset"));
+
+                for (const auto& materialPreviewRequestPair : m_materialPreviewRequests)
+                {
+                    const auto& entityId = materialPreviewRequestPair.first;
+                    const auto& materialAssignmentId = materialPreviewRequestPair.second;
+
+                    AZ::Data::AssetId materialAssetId = {};
+                    MaterialComponentRequestBus::EventResult(
+                        materialAssetId, entityId, &MaterialComponentRequestBus::Events::GetMaterialAssetId, materialAssignmentId);
+
+                    AZ::Render::MaterialPropertyOverrideMap propertyOverrides;
+                    AZ::Render::MaterialComponentRequestBus::EventResult(
+                        propertyOverrides,
+                        entityId,
+                        &AZ::Render::MaterialComponentRequestBus::Events::GetPropertyValues,
+                        materialAssignmentId);
+
+                    // Having an invalid material asset will use the default asset on the model.
+                    AZ::Data::Asset<AZ::RPI::MaterialAsset> materialAsset;
+                    materialAsset.Create(materialAssetId);
+
+                    previewRenderer->AddCaptureRequest(
+                        { MaterialPreviewResolution,
+                          AZStd::make_shared<AZ::LyIntegration::SharedPreviewContent>(
+                              previewRenderer->GetScene(),
+                              previewRenderer->GetView(),
+                              previewRenderer->GetEntityContextId(),
+                              modelAsset,
+                              materialAsset,
+                              lightingPresetAsset,
+                              propertyOverrides),
+                          [entityId, materialAssignmentId]()
+                          {
+                              AZ_UNUSED(entityId);
+                              AZ_UNUSED(materialAssignmentId);
+
+                              AZ_Warning(
+                                  "EditorMaterialSystemComponent",
+                                  false,
+                                  "RenderMaterialPreview capture failed for entity %s slot %s.",
+                                  entityId.ToString().c_str(),
+                                  materialAssignmentId.ToString().c_str());
+
+                              // If the capture failed to render substitute it with a black image
+                              QPixmap pixmap(1, 1);
+                              pixmap.fill(Qt::black);
+                              AZ::Render::EditorMaterialSystemComponentNotificationBus::Broadcast(
+                                  &AZ::Render::EditorMaterialSystemComponentNotificationBus::Events::OnRenderMaterialPreviewRendered,
+                                  entityId,
+                                  materialAssignmentId,
+                                  pixmap);
+                          },
+                          [entityId, materialAssignmentId](const QPixmap& pixmap)
+                          {
+                              AZ::Render::EditorMaterialSystemComponentNotificationBus::Broadcast(
+                                  &AZ::Render::EditorMaterialSystemComponentNotificationBus::Events::OnRenderMaterialPreviewRendered,
+                                  entityId,
+                                  materialAssignmentId,
+                                  pixmap);
+                          } });
+                }
+
+                m_materialPreviewRequests.clear();
+            }
+        }
+
+        void EditorMaterialSystemComponent::OnRenderMaterialPreviewRendered(
             [[maybe_unused]] const AZ::EntityId& entityId,
             [[maybe_unused]] const AZ::Render::MaterialAssignmentId& materialAssignmentId,
             [[maybe_unused]] const QPixmap& pixmap)
@@ -252,12 +280,18 @@ namespace AZ
 
             // Caching preview so the image will not have to be regenerated every time it's requested
             m_materialPreviews[entityId][materialAssignmentId] = pixmap;
+
+            AZ::Render::EditorMaterialSystemComponentNotificationBus::Broadcast(
+                &AZ::Render::EditorMaterialSystemComponentNotificationBus::Events::OnRenderMaterialPreviewReady,
+                entityId,
+                materialAssignmentId,
+                pixmap);
         }
 
-        void EditorMaterialSystemComponent::OnMaterialAssignmentsChanged()
+        void EditorMaterialSystemComponent::OnMaterialSlotLayoutChanged()
         {
             // Deleting any preview saved for an entity whose material configuration is about to be invalidated
-            const AZ::EntityId entityId = *MaterialReceiverNotificationBus::GetCurrentBusId();
+            const AZ::EntityId entityId = *MaterialComponentNotificationBus::GetCurrentBusId();
             m_materialPreviews.erase(entityId);
         }
 
@@ -296,7 +330,7 @@ namespace AZ
             AzToolsFramework::ViewPaneOptions inspectorOptions;
             inspectorOptions.canHaveMultipleInstances = true;
             inspectorOptions.preferedDockingArea = Qt::NoDockWidgetArea;
-            inspectorOptions.paneRect = QRect(50, 50, 400, 700);
+            inspectorOptions.paneRect = QRect(50, 50, 600, 1000);
             inspectorOptions.showInMenu = false;
             inspectorOptions.showOnToolsToolbar = false;
             AzToolsFramework::RegisterViewPane<AZ::Render::EditorMaterialComponentInspector::MaterialPropertyInspector>(
