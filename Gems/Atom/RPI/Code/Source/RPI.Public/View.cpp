@@ -457,16 +457,13 @@ namespace AZ
                 // Build other matrices dependent on the view to clip matrices
                 Matrix4x4 offsetWorldToClipMatrix = offsetViewToClipMatrix * m_worldToViewMatrix;
                 Matrix4x4 offsetWorldToClipPrevMatrix = offsetViewToClipPrevMatrix * m_worldToViewPrevMatrix;
-            
-                Matrix4x4 offsetClipToViewMatrix = offsetViewToClipMatrix.GetInverseFull();
-                Matrix4x4 offsetClipToWorldMatrix = m_viewToWorldMatrix * offsetClipToViewMatrix;
 
                 if (m_shaderResourceGroup)
                 {
                     m_shaderResourceGroup->SetConstant(m_worldToClipPrevMatrixConstantIndex, offsetWorldToClipPrevMatrix);
                     m_shaderResourceGroup->SetConstant(m_viewProjectionMatrixConstantIndex, offsetWorldToClipMatrix);
                     m_shaderResourceGroup->SetConstant(m_projectionMatrixConstantIndex, offsetViewToClipMatrix);
-                    m_shaderResourceGroup->SetConstant(m_clipToWorldMatrixConstantIndex, offsetClipToWorldMatrix);
+                    m_shaderResourceGroup->SetConstant(m_clipToWorldMatrixConstantIndex, offsetWorldToClipMatrix.GetInverseFull());
                     m_shaderResourceGroup->SetConstant(m_projectionMatrixInverseConstantIndex, offsetViewToClipMatrix.GetInverseFull());
                 }
             }
@@ -475,7 +472,7 @@ namespace AZ
             {
                 m_shaderResourceGroup->SetConstant(m_worldPositionConstantIndex, m_position);
                 m_shaderResourceGroup->SetConstant(m_viewMatrixConstantIndex, m_worldToViewMatrix);
-                m_shaderResourceGroup->SetConstant(m_viewMatrixInverseConstantIndex, m_worldToViewMatrix.GetInverseFull());
+                m_shaderResourceGroup->SetConstant(m_viewMatrixInverseConstantIndex, m_viewToWorldMatrix);
                 m_shaderResourceGroup->SetConstant(m_zConstantsConstantIndex, m_nearZ_farZ_farZTimesNearZ_farZMinusNearZ);
                 m_shaderResourceGroup->SetConstant(m_unprojectionConstantsIndex, m_unprojectionConstants);
 

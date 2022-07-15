@@ -284,9 +284,15 @@ namespace AZ
                 //
                 // These result values may occur after resizing or some window operation. We should update the surface info and recreate the swapchain.
                 // VK_SUBOPTIMAL_KHR is treated as success, but we better update the surface info as well.
-                if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR)
+                if (result == VK_ERROR_OUT_OF_DATE_KHR)
                 {
                     m_pendingRecreation = true;
+                }
+                else if (result == VK_SUBOPTIMAL_KHR)
+                {
+#if AZ_TRAIT_ATOM_VULKAN_RECREATE_SWAPCHAIN_WHEN_SUBOPTIMAL
+                    m_pendingRecreation = true;
+#endif
                 }
                 else
                 {
