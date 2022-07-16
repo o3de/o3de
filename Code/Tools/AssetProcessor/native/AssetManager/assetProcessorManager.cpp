@@ -226,7 +226,11 @@ namespace AssetProcessor
         }
         else
         {
-            QString statKey = QString("ProcessJob,%1,%2,%3").arg(jobEntry.m_databaseSourceName).arg(jobEntry.m_jobKey).arg(jobEntry.m_platformInfo.m_identifier.c_str());
+            QString statKey = QString("ProcessJob,%1,%2,%3,%4")
+                                  .arg(jobEntry.m_databaseSourceName)
+                                  .arg(jobEntry.m_jobKey)
+                                  .arg(jobEntry.m_platformInfo.m_identifier.c_str())
+                                  .arg(jobEntry.m_builderGuid.ToString<AZStd::string>().c_str());
 
             if (status == JobStatus::InProgress)
             {
