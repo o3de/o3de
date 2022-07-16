@@ -112,9 +112,9 @@ namespace AZ::Debug
                 // We want to measure each thread separately, so we store the numbers
                 // in a map. Lock is needed since this function can be called from 
                 // multiple threads simultaneously. If we wanted to avoid using the map/lock,
-                // we may need to use the event logger and log all numbers and compute avg,
-                // min, max, etc., with some post processing. Not sure if there's a simpler
-                // way.
+                // we may need to log all numbers and compute avg, min, max, etc., with
+                // some post processing instead of using the StatisticalProfiler. Not sure if 
+                // there's a simpler way.
                 AZStd::scoped_lock mapLock(m_impl->m_mapMutex);
                 auto it = m_impl->m_perThreadDuration.try_emplace(threadId, duration.count());
                 if (!it.second)

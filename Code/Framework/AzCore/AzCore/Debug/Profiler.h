@@ -63,6 +63,8 @@
         AZ_BUDGET_GETTER(budget)(), true, nullptr                                                                                          \
     }
 
+#define AZ_PROFILE_BUDGET_BEGIN(budget) ::AZ::Debug::ProfileScope::BeginRegion(AZ_BUDGET_GETTER(budget)(), true, nullptr)
+#define AZ_PROFILE_BUDGET_END(budget) ::AZ::Debug::ProfileScope::EndRegion(AZ_BUDGET_GETTER(budget)(), true)
 
 namespace AZStd
 {
