@@ -69,15 +69,25 @@ namespace ScriptAutomation
     public:
         virtual ~ScriptAutomationHooks() = default;
 
+        //! Called before first(passed as command-line parameter) lua script runs
         virtual void AutomationStarted([[maybe_unused]] const AZStd::string& scriptPath) {};
+
+        //! Called after all lua scripts have finished running
         virtual void AutomationFinished() {};
 
+        //! Override this function to reflect custom functions to ScriptAutomation lua scripts
         virtual void CustomReflect([[maybe_unused]] AZ::BehaviorContext* context) {}
         
+        //! Called before each call to RunScript() from lua
         virtual void PreScriptExecution([[maybe_unused]] const AZStd::string& scriptPath) {}
+
+        //! Called after each call to RunScript() from lua returns
         virtual void PostScriptExecution([[maybe_unused]] const AZStd::string& scriptPath) {}
 
+        //! Called before each ScriptAutomation Tick() runs its script opertaions loop
         virtual void PreTick() {}
+
+        //! Called after each ScriptAutomation Tick() runs its script opertaions loop
         virtual void PostTick() {}
     };
     using ScriptAutomationEventsBus = AZ::EBus<ScriptAutomationHooks>;

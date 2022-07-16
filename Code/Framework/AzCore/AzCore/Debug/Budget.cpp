@@ -66,15 +66,20 @@ namespace AZ::Debug
         }
     }
 
-    // TODO:Budgets Methods below are stubbed pending future work to both update budget data and visualize it
-
     void Budget::PerFrameReset()
     {
+        // This is currently called at the beginning of every frame for all budgets.
+        // It has been suggested to call this at more appropriate locations for different budgets.
+        // When that change is made, we would need to ensure that each budget's
+        // per-frame reset is called from the correct thread when a budget needs to be measured
+        // across multiple threads.
         if (m_impl && m_impl->m_logging)
         {
             AZStd::scoped_lock mapLock(m_impl->m_mapMutex);
             for (auto& threadId : m_impl->m_perThreadDuration)
             {
+                // For each thread for this budget, we need to push the frame total numbers to the 
+                // statistical profiler.
                 AZ::Crc32 threadIdCrc = AZ::Crc32(&threadId.first, sizeof(AZ::u64));
                 m_impl->m_profiler.GetStatsManager().AddStatistic(threadIdCrc, m_name, "us");
                 m_impl->m_profiler.PushSample(threadIdCrc, static_cast<double>(threadId.second));
@@ -87,6 +92,8 @@ namespace AZ::Debug
     {
         if (m_impl && m_impl->m_logging)
         {
+            // Different budgets can call this from the same thread in the same callstack.
+            // So we need to maintain a stack of numbers
             BudgetImpl::s_currentDepth++;
             BudgetImpl::s_startTime[BudgetImpl::s_currentDepth] = AZStd::chrono::high_resolution_clock::now();
         }
@@ -101,6 +108,13 @@ namespace AZ::Debug
             thread_local static AZ::u64 threadId = azlossy_caster(AZStd::hash<AZStd::thread_id>{}(AZStd::this_thread::get_id()));
 
             {
+                // The same budget can be measured across multiple threads.
+                // We want to measure each thread separately, so we store the numbers
+                // in a map. Lock is needed since this function can be called from 
+                // multiple threads simultaneously. If we wanted to avoid using the map/lock,
+                // we may need to use the event logger and log all numbers and compute avg,
+                // min, max, etc., with some post processing. Not sure if there's a simpler
+                // way.
                 AZStd::scoped_lock mapLock(m_impl->m_mapMutex);
                 auto it = m_impl->m_perThreadDuration.try_emplace(threadId, duration.count());
                 if (!it.second)
