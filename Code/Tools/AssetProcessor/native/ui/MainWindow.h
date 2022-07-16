@@ -48,6 +48,7 @@ namespace AssetProcessor
     class ProductDependencyTreeItem;
     class JobEntry;
     class BuilderInfoPatternsModel;
+    class BuilderInfoMetricsModel;
 }
 
 class MainWindow
@@ -156,6 +157,7 @@ private:
     BuilderListSortFilterProxy* m_builderListSortFilterProxy;
     AssetProcessor::CacheServerData m_cacheServerData;
     AssetProcessor::BuilderInfoPatternsModel* m_builderInfoPatterns;
+    AssetProcessor::BuilderInfoMetricsModel* m_builderInfoMetrics;
 
     void SetContextLogDetailsVisible(bool visible);
     void SetContextLogDetails(const QMap<QString, QString>& details);
