@@ -12,8 +12,7 @@
 #include <CreateAGemScreen.h>
 #include <ProjectUtils.h>
 #include <PythonBindingsInterface.h>
-#include <FormFolderBrowseEditWidget.h>
-#include <FormLineEditWidget.h>
+
 
 #include <PythonBindingsInterface.h>
 #include <QDir>
@@ -27,8 +26,7 @@
 #include <QVBoxLayout>
 #include <QRadioButton>
 #include <QLabel>
-#include <QScrollArea>
-
+#include <QDialogButtonBox>
 
 
 namespace O3DE::ProjectManager
@@ -39,48 +37,72 @@ namespace O3DE::ProjectManager
         QVBoxLayout* vLayout = new QVBoxLayout();
         vLayout->setContentsMargins(0, 0, 0, 0);
 
-        QHBoxLayout* widgetsHolder = new QHBoxLayout();
-        QFrame* leftFrame = new QFrame();
-        leftFrame->setObjectName("createAGemLeftPane");
-        QVBoxLayout* leftPane = new QVBoxLayout();
+        QScrollArea* firstScreenScrollArea = CreateFirstScreen();
+        QScrollArea* secondScreenScrollArea = CreateSecondScreen();
+        QScrollArea* thirdScreenScrollArea = CreateThirdScreen();
 
-        QLabel* firstPageString = new QLabel(this);
-        firstPageString->setObjectName("leftPaneText");
-        firstPageString->setText(tr("1. Gem Setup"));
-        firstPageString->setAlignment(Qt::AlignTop);
-        firstPageString->setMinimumHeight(60);
-        QLabel* secondPageString = new QLabel(this);
-        secondPageString->setText(tr("2. Gem Details"));
-        secondPageString->setObjectName("leftPaneText");
-        secondPageString->setAlignment(Qt::AlignTop);
-        secondPageString->setMinimumHeight(60);
-        QLabel* thirdPageString = new QLabel(this);
-        thirdPageString->setText(tr("3. Creator Details"));
-        thirdPageString->setObjectName("leftPaneText");
-        thirdPageString->setAlignment(Qt::AlignTop);
-        thirdPageString->setMinimumHeight(60);
+        connect(m_gemDisplayName->lineEdit(), &QLineEdit::textChanged, this, &CreateAGemScreen::OnGemDisplayNameUpdated);
+        connect(m_gemSystemName->lineEdit(), &QLineEdit::textChanged, this, &CreateAGemScreen::OnGemSystemNameUpdated);
+        connect(m_license->lineEdit(), &QLineEdit::textChanged, this, &CreateAGemScreen::OnLicenseNameUpdated);
+        connect(m_creatorName->lineEdit(), &QLineEdit::textChanged, this, &CreateAGemScreen::OnCreatorNameUpdated);
+        connect(m_repositoryURL->lineEdit(), &QLineEdit::textChanged, this, &CreateAGemScreen::OnRepositoryURLUpdated);
 
-        leftPane->addWidget(firstPageString);
-        leftPane->addWidget(secondPageString);
-        leftPane->addWidget(thirdPageString);
-        leftPane->addStretch();
+        m_tabWidget = new TabWidget();
+        m_tabWidget->setObjectName("createAGemTab");
+        m_tabWidget->addTab(firstScreenScrollArea, "1. Gem Setup");
+        m_tabWidget->addTab(secondScreenScrollArea, "2. Gem Details");
+        m_tabWidget->addTab(thirdScreenScrollArea, "3. Creator Details");
+        
+        vLayout->addWidget(m_tabWidget);
 
-        leftFrame->setLayout(leftPane);
+        m_backNextButtons = new QDialogButtonBox();
+        m_backNextButtons->setObjectName("footer");
+        vLayout->addWidget(m_backNextButtons);
 
-        QFrame* rightFrame = new QFrame();
-        rightFrame->setObjectName("createAGemRightPane");
-        QVBoxLayout* rightPane = new QVBoxLayout();
-        QScrollArea* m_scrollArea = new QScrollArea();
-        m_scrollArea->setWidgetResizable(true);
-        m_scrollArea->setMinimumWidth(660);
-        //QStackedWidget* m_stackedWidget = new QStackedWidget();
+
+        m_backButton = m_backNextButtons->addButton(tr("Back"), QDialogButtonBox::RejectRole);
+        m_backButton->setProperty("secondary", true);
+        m_nextButton = m_backNextButtons->addButton(tr("Next"), QDialogButtonBox::ApplyRole);
+
+        connect(m_tabWidget, &TabWidget::currentChanged, this, &CreateAGemScreen::ConvertNextButtonToCreate);
+        connect(m_backButton, &QPushButton::clicked, this, &CreateAGemScreen::HandleBackButton);
+        connect(m_nextButton, &QPushButton::clicked, this, &CreateAGemScreen::HandleNextButton);
+
+        connect(m_nextButton, &QPushButton::clicked, this, &CreateAGemScreen::OnGemDisplayNameUpdated);
+        connect(m_nextButton, &QPushButton::clicked, this, &CreateAGemScreen::OnGemSystemNameUpdated);
+        connect(m_nextButton, &QPushButton::clicked, this, &CreateAGemScreen::OnLicenseNameUpdated);
+        connect(m_nextButton, &QPushButton::clicked, this, &CreateAGemScreen::OnCreatorNameUpdated);
+        connect(m_nextButton, &QPushButton::clicked, this, &CreateAGemScreen::OnRepositoryURLUpdated);
+
+        connect(m_backButton, &QPushButton::clicked, this, &CreateAGemScreen::OnGemDisplayNameUpdated);
+        connect(m_backButton, &QPushButton::clicked, this, &CreateAGemScreen::OnGemSystemNameUpdated);
+        connect(m_backButton, &QPushButton::clicked, this, &CreateAGemScreen::OnLicenseNameUpdated);
+        connect(m_backButton, &QPushButton::clicked, this, &CreateAGemScreen::OnCreatorNameUpdated);
+        connect(m_backButton, &QPushButton::clicked, this, &CreateAGemScreen::OnRepositoryURLUpdated);
+
+        setLayout(vLayout);
+
+    }
+
+    QScrollArea* CreateAGemScreen::CreateFirstScreen()
+    {
+        QScrollArea* firstScreenScrollArea = new QScrollArea();
+        firstScreenScrollArea->setWidgetResizable(true);
+        firstScreenScrollArea->setMinimumWidth(660);
+        firstScreenScrollArea->setObjectName("createAGemRightPane");
+        QFrame* firstScreenFrame = new QFrame();
+
+        QWidget* firstScreenScrollWidget = new QWidget();
+        firstScreenScrollArea->setWidget(firstScreenScrollWidget);
 
         QVBoxLayout* firstScreen = new QVBoxLayout();
-
-        QLabel* rightPaneHeader = new QLabel(this);
+        firstScreen->setAlignment(Qt::AlignTop);
+        firstScreen->addWidget(firstScreenFrame);
+        firstScreenScrollWidget->setLayout(firstScreen);
+        QLabel* rightPaneHeader = new QLabel();
         rightPaneHeader->setObjectName("rightPaneHeader");
         rightPaneHeader->setText(tr("Please Choose a Gem Template"));
-        QLabel* rightPaneSubheader = new QLabel(this);
+        QLabel* rightPaneSubheader = new QLabel();
         rightPaneSubheader->setObjectName("rightPaneSubheader");
         rightPaneSubheader->setText(tr("Gems can contain assets such as scripts, animations, meshes, textures, and more."));
         firstScreen->addWidget(rightPaneHeader);
@@ -115,8 +137,9 @@ namespace O3DE::ProjectManager
         button5Subtext->setObjectName("qRadioButtonSubtext");
         button5Subtext->setText(tr("A gem template for a custom tool in Python that gets registered with the editor."));
 
+        FormFolderBrowseEditWidget* gemTemplateLocation = new FormFolderBrowseEditWidget(tr("Gem Template Location*"), "");
 
-        firstScreen->addWidget(button1);    
+        firstScreen->addWidget(button1);
         firstScreen->addWidget(button1Subtext);
         firstScreen->addWidget(button2);
         firstScreen->addWidget(button2Subtext);
@@ -127,89 +150,285 @@ namespace O3DE::ProjectManager
         firstScreen->addWidget(button5);
         firstScreen->addWidget(button5Subtext);
         firstScreen->addWidget(button6);
+        firstScreen->addWidget(gemTemplateLocation);
 
-        firstScreen->addStretch();
+        return firstScreenScrollArea;
+    }
 
-        rightPane->addLayout(firstScreen);
+    QScrollArea* CreateAGemScreen::CreateSecondScreen()
+    {
+        QScrollArea* secondScreenScrollArea = new QScrollArea();
+        secondScreenScrollArea->setWidgetResizable(true);
+        secondScreenScrollArea->setMinimumWidth(660);
+        secondScreenScrollArea->setObjectName("createAGemRightPane");
+        QFrame* secondScreenFrame = new QFrame();
 
-        /*
+        QWidget* secondScreenScrollWidget = new QWidget();
+        secondScreenScrollArea->setWidget(secondScreenScrollWidget);
+
         QVBoxLayout* secondScreen = new QVBoxLayout();
+        secondScreen->setAlignment(Qt::AlignTop);
+        secondScreen->addWidget(secondScreenFrame);
+        secondScreenScrollWidget->setLayout(secondScreen);
 
-        QLabel* secondRightPaneHeader = new QLabel(this);
+        QLabel* secondRightPaneHeader = new QLabel();
         secondRightPaneHeader->setObjectName("rightPaneHeader");
         secondRightPaneHeader->setText(tr("Enter Gem Details"));
         secondScreen->addWidget(secondRightPaneHeader);
 
-        FormLineEditWidget* displayName = new FormLineEditWidget(tr("Display name*"), "", this);
-        secondScreen->addWidget(displayName);
-        FormLineEditWidget* gemSystemName = new FormLineEditWidget(tr("Gem System name*"), "", this);
-        secondScreen->addWidget(gemSystemName);
-        FormLineEditWidget* gemSummary = new FormLineEditWidget(tr("Gem Summary"), "", this);
+        m_gemDisplayName = new FormLineEditWidget(tr("Gem Display name*"), "");
+        QLabel* diplayNameErrorLabel = m_gemDisplayName->getErrorLabel();
+        diplayNameErrorLabel->setObjectName("createAGemFormErrorLabel");
+        QLineEdit* gemDisplayLineEdit = m_gemDisplayName->lineEdit();
+        gemDisplayLineEdit->setPlaceholderText(tr("The name displayed on the Gem Catalog"));
+        secondScreen->addWidget(m_gemDisplayName);
+
+        m_gemSystemName = new FormLineEditWidget(tr("Gem System name*"), "");
+        QLabel* gemSystemNameErrorLabel = m_gemSystemName->getErrorLabel();
+        gemSystemNameErrorLabel->setObjectName("createAGemFormErrorLabel");
+        QLineEdit* gemSystemLineEdit = m_gemSystemName->lineEdit();
+        gemSystemLineEdit->setPlaceholderText(tr("The name used in the O3DE Gem System"));
+        secondScreen->addWidget(m_gemSystemName);
+
+        FormLineEditWidget* gemSummary = new FormLineEditWidget(tr("Gem Summary"), "");
+        QLineEdit* gemSummaryLineEdit = gemSummary->lineEdit();
+        gemSummaryLineEdit->setPlaceholderText(tr("A short description of your Gem"));
         secondScreen->addWidget(gemSummary);
-        FormLineEditWidget* requirements = new FormLineEditWidget(tr("Requirements"), "", this);
+
+        FormLineEditWidget* requirements = new FormLineEditWidget(tr("Requirements"), "");
+        QLineEdit* requirementsLineEdit = requirements->lineEdit();
+        requirementsLineEdit->setPlaceholderText(tr("Notice of any requirements your Gem. i.e. This requires X other gem"));
         secondScreen->addWidget(requirements);
-        FormLineEditWidget* license = new FormLineEditWidget(tr("License*"), "", this);
-        secondScreen->addWidget(license);
-        FormLineEditWidget* licenseURL = new FormLineEditWidget(tr("License URL"), "", this);
+
+        m_license = new FormLineEditWidget(tr("License*"), "");
+        QLabel* licenseErrorLabel = m_license->getErrorLabel();
+        licenseErrorLabel->setObjectName("createAGemFormErrorLabel");
+        QLineEdit* licenseLineEdit = m_license->lineEdit();
+        licenseLineEdit->setPlaceholderText(tr("License uses goes here: i.e. Apache-2.0 or MIT"));
+        secondScreen->addWidget(m_license);
+
+        FormLineEditWidget* licenseURL = new FormLineEditWidget(tr("License URL"), "");
+        QLineEdit* licenseURLLineEdit = licenseURL->lineEdit();
+        licenseURLLineEdit->setPlaceholderText(tr("Link to the license web site i.e. https://opensource.org/licenses/Apache-2.0"));
         secondScreen->addWidget(licenseURL);
-        FormLineEditWidget* origin = new FormLineEditWidget(tr("Origin"), "", this);
+
+        FormLineEditWidget* origin = new FormLineEditWidget(tr("Origin"), "");
+        QLineEdit* originLineEdit = origin->lineEdit();
+        originLineEdit->setPlaceholderText(tr("The name of the originator goes. i.e. XYZ Inc."));
         secondScreen->addWidget(origin);
-        FormLineEditWidget* originURL = new FormLineEditWidget(tr("Origin URL"), "", this);
+
+        FormLineEditWidget* originURL = new FormLineEditWidget(tr("Origin URL"), "");
+        QLineEdit* originURLLineEdit = originURL->lineEdit();
+        originURLLineEdit->setPlaceholderText(tr("The primary repo for your Gem. i.e. http://www.mydomain.com"));
         secondScreen->addWidget(originURL);
-        FormLineEditWidget* userDefinedGemTags = new FormLineEditWidget(tr("User-defined Gem Tags"), "", this);
+
+        FormLineEditWidget* userDefinedGemTags = new FormLineEditWidget(tr("User-defined Gem Tags"), "");
         secondScreen->addWidget(userDefinedGemTags);
-        FormFolderBrowseEditWidget* gemLocation = new FormFolderBrowseEditWidget(tr("Gem Location"), "", this);
+
+        FormFolderBrowseEditWidget* gemLocation = new FormFolderBrowseEditWidget(tr("Gem Location"), "");
+        QLineEdit* gemLocationLineEdit = gemLocation->lineEdit();
+        const char* gemLocationPlaceholderText = R"(C:\O3DE\Project\Gems\YourGem)";
+        gemLocationLineEdit->setPlaceholderText(tr(gemLocationPlaceholderText));
         secondScreen->addWidget(gemLocation);
-        FormFolderBrowseEditWidget* gemIconPath = new FormFolderBrowseEditWidget(tr("Gem Icon Path"), "", this);
+
+        FormFolderBrowseEditWidget* gemIconPath = new FormFolderBrowseEditWidget(tr("Gem Icon Path"), "");
+        QLineEdit* gemIconPathLineEdit = gemIconPath->lineEdit();
+        gemIconPathLineEdit->setPlaceholderText(tr("Select Gem icon path"));
         secondScreen->addWidget(gemIconPath);
-        FormLineEditWidget* documentationURL = new FormLineEditWidget(tr("Documentation URL"), "", this);
+
+        FormLineEditWidget* documentationURL = new FormLineEditWidget(tr("Documentation URL"), "");
+        QLineEdit* documentationURLLineEdit = documentationURL->lineEdit();
+        documentationURLLineEdit->setPlaceholderText(
+            tr("Link to any documentation of your Gem i.e. https://o3de.org/docs/user-guide/gems/..."));
         secondScreen->addWidget(documentationURL);
-        secondScreen->addStretch();
 
-        rightPane->addLayout(secondScreen);
-        */
+        return secondScreenScrollArea;
+    }
 
-        /*
+    QScrollArea* CreateAGemScreen::CreateThirdScreen()
+    {
+        QScrollArea* thirdScreenScrollArea = new QScrollArea();
+        thirdScreenScrollArea->setWidgetResizable(true);
+        thirdScreenScrollArea->setMinimumWidth(660);
+        thirdScreenScrollArea->setObjectName("createAGemRightPane");
+        QFrame* thirdScreenFrame = new QFrame();
+
+        QWidget* thirdScreenScrollWidget = new QWidget();
+        thirdScreenScrollArea->setWidget(thirdScreenScrollWidget);
+
         QVBoxLayout* thirdScreen = new QVBoxLayout();
+        thirdScreen->setAlignment(Qt::AlignTop);
+        thirdScreen->addWidget(thirdScreenFrame);
+        thirdScreenScrollWidget->setLayout(thirdScreen);
 
         QLabel* thirdRightPaneHeader = new QLabel(this);
         thirdRightPaneHeader->setObjectName("rightPaneHeader");
         thirdRightPaneHeader->setText(tr("Enter your Details"));
         thirdScreen->addWidget(thirdRightPaneHeader);
 
-        FormLineEditWidget* creatorName = new FormLineEditWidget(tr("Creator Name*"), "", this);
-        thirdScreen->addWidget(creatorName);
-        FormLineEditWidget* repoURL = new FormLineEditWidget(tr("Repository URL*"), "", this);
-        thirdScreen->addWidget(repoURL);
-        thirdScreen->addStretch();
+        m_creatorName = new FormLineEditWidget(tr("Creator Name*"), "", this);
+        QLabel* creatorNameErrorLabel = m_creatorName->getErrorLabel();
+        creatorNameErrorLabel->setObjectName("createAGemFormErrorLabel");
+        QLineEdit* creatorNameLineEdit = m_creatorName->lineEdit();
+        creatorNameLineEdit->setPlaceholderText(tr("John Smith"));
+        thirdScreen->addWidget(m_creatorName);
 
-        rightPane->addLayout(thirdScreen);
-        */
+        m_repositoryURL = new FormLineEditWidget(tr("Repository URL*"), "", this);
+        QLabel* repositoryURLErrorLabel = m_repositoryURL->getErrorLabel();
+        repositoryURLErrorLabel->setObjectName("createAGemFormErrorLabel");
+        QLineEdit* repositoryURLLineEdit = m_repositoryURL->lineEdit();
+        repositoryURLLineEdit->setPlaceholderText(tr("https://github.com/Jane"));
+        thirdScreen->addWidget(m_repositoryURL);
 
+        return thirdScreenScrollArea;
+    }
 
-        rightFrame->setLayout(rightPane);
+    bool CreateAGemScreen::ValidateGemDisplayName()
+    {
+        bool gemScreenNameIsValid = true;
+        if (m_tabWidget->currentIndex() == 1)
+        {
+            if (m_gemDisplayName->lineEdit()->text().isEmpty())
+            {
+                gemScreenNameIsValid = false;
+                m_gemDisplayName->setErrorLabelText(tr("A gem display name is required."));
+            }
 
-        /*
+            m_gemDisplayName->setErrorLabelVisible(!gemScreenNameIsValid);
+        }
+        return gemScreenNameIsValid;
+    }
 
-        QStackedWidget* m_stack = new QStackedWidget(this);
-        m_stack->setObjectName("body");
-        m_stack->setSizePolicy(QSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding));
-        QFrame* rightFrame = new QFrame();
-        rightFrame->setLayout(rightPane);
-        //rightPane->addWidget(m_stack);
+    bool CreateAGemScreen::ValidateGemSystemName()
+    {
+        bool gemSystemNameIsValid = true;
+        if (m_tabWidget->currentIndex() == 1)
+        {
+            if (m_gemSystemName->lineEdit()->text().isEmpty())
+            {
+                gemSystemNameIsValid = false;
+                m_gemSystemName->setErrorLabelText(tr("A gem system name is required."));
+            }
 
-        */
+            m_gemSystemName->setErrorLabelVisible(!gemSystemNameIsValid);
+        }
+        return gemSystemNameIsValid;
 
-        m_scrollArea->setWidget(rightFrame);
+    }
 
+    bool CreateAGemScreen::ValidateLicenseName()
+    {
+        bool licenseNameIsValid = true;
+        if (m_tabWidget->currentIndex() == 1)
+        {
+            if (m_license->lineEdit()->text().isEmpty())
+            {
+                licenseNameIsValid = false;
+                m_license->setErrorLabelText(tr("License details are required."));
+            }
 
+            m_license->setErrorLabelVisible(!licenseNameIsValid);
+        }
+        return licenseNameIsValid;
+    }
 
-        widgetsHolder->addWidget(leftFrame);
-        widgetsHolder->addWidget(m_scrollArea);
-        vLayout->addLayout(widgetsHolder);
+    bool CreateAGemScreen::ValidateCreatorName()
+    {
+        bool creatorNameIsValid = true;
+        if (m_tabWidget->currentIndex() == 2)
+        {
+            if (m_creatorName->lineEdit()->text().isEmpty())
+            {
+                creatorNameIsValid = false;
+                m_creatorName->setErrorLabelText(tr("A creator's name is required."));
+            }
 
-        setLayout(vLayout);
+            m_creatorName->setErrorLabelVisible(!creatorNameIsValid);
+        }
+        return creatorNameIsValid;
+    }
 
+    bool CreateAGemScreen::ValidateRepositoryURL()
+    {
+        bool repositoryURLIsValid = true;
+        if (m_tabWidget->currentIndex() == 2)
+        {
+            if (m_repositoryURL->lineEdit()->text().isEmpty())
+            {
+                repositoryURLIsValid = false;
+                m_repositoryURL->setErrorLabelText(tr("A repository URL is required."));
+            }
+
+            m_repositoryURL->setErrorLabelVisible(!repositoryURLIsValid);
+        }
+        return repositoryURLIsValid;
+    }
+
+    void CreateAGemScreen::OnGemDisplayNameUpdated()
+    {
+        ValidateGemDisplayName();
+    }
+
+    void CreateAGemScreen::OnGemSystemNameUpdated()
+    {
+        ValidateGemSystemName();
+    }
+
+    void CreateAGemScreen::OnLicenseNameUpdated()
+    {
+        ValidateLicenseName();
+    }
+
+    void CreateAGemScreen::OnCreatorNameUpdated()
+    {
+        ValidateCreatorName();
+    }
+
+    void CreateAGemScreen::OnRepositoryURLUpdated()
+    {
+        ValidateRepositoryURL();
+    }
+
+    void CreateAGemScreen::HandleBackButton()
+    {
+        if (m_tabWidget->currentIndex() == 2)
+        {
+            m_tabWidget->setCurrentIndex(1);
+            m_nextButton->setText("Next");
+        }
+        else if (m_tabWidget->currentIndex() == 1)
+        {
+            m_tabWidget->setCurrentIndex(0);
+        }
+    }
+
+    void CreateAGemScreen::HandleNextButton()
+    {
+        if (m_tabWidget->currentIndex() == 0)
+        {
+            m_tabWidget->setCurrentIndex(1);
+        }
+        else if (m_tabWidget->currentIndex() == 1)
+        {
+            m_tabWidget->setCurrentIndex(2);
+            m_nextButton->setText("Create");
+        }
+    }
+
+    void CreateAGemScreen::ConvertNextButtonToCreate()
+    {
+        if (m_tabWidget->currentIndex() == 0)
+        {
+            m_nextButton->setText("Next");
+        }
+        else if (m_tabWidget->currentIndex() == 1)
+        {
+            m_nextButton->setText("Next");
+        }
+        else if (m_tabWidget->currentIndex() == 2)
+        {
+            m_nextButton->setText("Create");
+        }
     }
 
 } // namespace O3DE::ProjectManager

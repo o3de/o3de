@@ -82,6 +82,11 @@ namespace O3DE::ProjectManager
         refreshStyle();
     }
 
+    QLabel* FormLineEditWidget::getErrorLabel()
+    {
+        return m_errorLabel;
+    }
+
     QLineEdit* FormLineEditWidget::lineEdit() const
     {
         return m_lineEdit;
@@ -134,4 +139,6 @@ namespace O3DE::ProjectManager
     {
         m_lineEdit->setFocus();
     }
+
+    
 } // namespace O3DE::ProjectManager

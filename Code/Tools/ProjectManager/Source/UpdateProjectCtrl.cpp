@@ -77,13 +77,13 @@ namespace O3DE::ProjectManager
         m_stack->addWidget(m_gemRepoScreen);
         m_stack->addWidget(m_createAGemScreen);
 
-        QDialogButtonBox* backNextButtons = new QDialogButtonBox();
-        backNextButtons->setObjectName("footer");
-        vLayout->addWidget(backNextButtons);
+        m_backNextButtons = new QDialogButtonBox();
+        m_backNextButtons->setObjectName("footer");
+        vLayout->addWidget(m_backNextButtons);
 
-        m_backButton = backNextButtons->addButton(tr("Back"), QDialogButtonBox::RejectRole);
+        m_backButton = m_backNextButtons->addButton(tr("Back"), QDialogButtonBox::RejectRole);
         m_backButton->setProperty("secondary", true);
-        m_nextButton = backNextButtons->addButton(tr("Next"), QDialogButtonBox::ApplyRole);
+        m_nextButton = m_backNextButtons->addButton(tr("Next"), QDialogButtonBox::ApplyRole);
 
         connect(gemsButton, &QPushButton::clicked, this, &UpdateProjectCtrl::HandleGemsButton);
         connect(m_backButton, &QPushButton::clicked, this, &UpdateProjectCtrl::HandleBackButton);
@@ -244,6 +244,14 @@ namespace O3DE::ProjectManager
             m_header->setSubTitle(QString(tr("Configure Gems")));
             m_nextButton->setText(tr("Save"));
             m_nextButton->setVisible(true);
+        }
+        else if (m_stack->currentWidget() == m_createAGemScreen)
+        {
+            //hide backnextbutton member variable or setvisible(false)
+            //
+            m_backNextButtons->setVisible(false);
+            m_header->setTitle(QString(tr("Create a New Project: \"%1\"")).arg(m_projectInfo.GetProjectDisplayName()));
+            m_header->setSubTitle(QString(tr("Create a new Gem")));
         }
         else
         {

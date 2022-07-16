@@ -23,6 +23,8 @@ QTabBar {
 QTabWidget::tab-bar {
     left: 78px; /* make room for the logo */
 }
+
+
 QTabBar::tab {
     height:82px;
     background-color: transparent;
@@ -31,13 +33,44 @@ QTabBar::tab {
     margin-right:40px;
     border-bottom: 3px solid transparent;
 }
-QTabBar::tab:text {
+
+#createAGemTab QTabBar::tab {
+    background-color: #444444;
+    font-size:16px;
+    min-height:230px;
+    margin: 0px;
     text-align:left;
+
 }
+
+QTabWidget#createAGemTab::tab-bar {
+    left: 0px;
+}
+
+QTabWidget#createAGemTab {
+    background-color: red;
+}
+
+
+QTabBar#createAGemTab::tab:text {
+    text-align:left;
+    color: red;
+}
+
 QTabWidget::pane {
     background-color: #333333;
     border:0 none;
 }
+ 
+QTabWidget#createAGemTab::pane {
+    background-color: #333333;
+    border:0 none;
+}
+
+#createAGemTab {
+    background-color: yellow;
+}
+
 QTabBar::tab:selected {
     background-color: transparent;
     border-bottom: 3px solid #1e70eb;
@@ -93,7 +126,15 @@ QTabBar::tab:focus {
     border-radius: 4px;
     padding: 0px 10px 2px 6px;
     margin-top:10px;
-    margin-left:50px;
+}
+
+#createAGem #formFrame {
+    max-width: 840px;
+    background-color: #444444;
+    border:1px solid #dddddd;
+    border-radius: 4px;
+    padding: 0px 10px 2px 6px;
+    margin-top:10px;
 }
 
 #formFrame[Focus="true"] {
@@ -152,6 +193,11 @@ QTabBar::tab:focus {
     margin-left: 50px;
 }
 
+#createAGemFormErrorLabel {
+    color: #ec3030;
+    font-size: 14px;
+}
+
 #formTitleLabel {
     font-size:21px;
     color:#ffffff;
@@ -167,6 +213,7 @@ QTabBar::tab:focus {
     font-size:14px;
     qproperty-indent: 0;
 }
+
 
 #createAGemLeftPane {
     background-color: #444444;
@@ -200,6 +247,7 @@ QTabBar::tab:focus {
     padding-left: 0px;
     margin-left: 0px;
 }
+
 
 /************** General (Modal windows) **************/
 
@@ -251,12 +299,14 @@ QTabBar::tab:focus {
 #body {
     background-color:#333333;
 }
+
 #footer {
     /* settings min/max lets us use a fixed size */
     min-width: 50px;
     min-height:54px;
     max-height:54px;
 }
+
 
 #footer > QPushButton {
     qproperty-flat: true;

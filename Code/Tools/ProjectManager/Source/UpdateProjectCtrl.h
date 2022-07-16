@@ -16,6 +16,7 @@ QT_FORWARD_DECLARE_CLASS(QStackedWidget)
 QT_FORWARD_DECLARE_CLASS(QTabWidget)
 QT_FORWARD_DECLARE_CLASS(QPushButton)
 QT_FORWARD_DECLARE_CLASS(QFrame)
+QT_FORWARD_DECLARE_CLASS(QDialogButtonBox)
 
 namespace O3DE::ProjectManager
 {
@@ -64,6 +65,7 @@ namespace O3DE::ProjectManager
         GemRepoScreen* m_gemRepoScreen = nullptr;
         CreateAGemScreen* m_createAGemScreen = nullptr;
 
+        QDialogButtonBox* m_backNextButtons;
         QPushButton* m_backButton = nullptr;
         QPushButton* m_nextButton = nullptr;
         QVector<ProjectManagerScreen> m_screensOrder;

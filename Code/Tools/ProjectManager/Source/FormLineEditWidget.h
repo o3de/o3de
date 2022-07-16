@@ -40,6 +40,7 @@ namespace O3DE::ProjectManager
 
         //! Returns a pointer to the underlying LineEdit.
         QLineEdit* lineEdit() const;
+        QLabel* getErrorLabel();
 
         virtual void setText(const QString& text);
 
