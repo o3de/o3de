@@ -26,11 +26,11 @@ def pytest_addoption(parser: argparse.ArgumentParser) -> None:
     parser.addoption("--no-test-batch", action="store_true", help="Don't batch multiple tests in single instance")
     parser.addoption("--no-test-parallel", action="store_true", help="Don't run multiple instances in parallel")
     parser.addoption("--editors-parallel", type=int, action="store",
-                     help="Override the number editors to run at the same time. Tests can override also this value, "
-                          f"which has a higher precedence than this option. Default value is: "
+                     help="Override the number of Editors to run at the same time. Default value is: "
                           f"{ly_test_tools.o3de.multi_test_framework.AbstractTestSuite.get_number_parallel_instances()}")
     parser.addoption("--material-editors-parallel", type=int, action="store",
-                     help="Override the number of material_editor instances to run at the same time")
+                     help="Override the number of MaterialEditors to run at the same time. Default value is "
+                          f"{ly_test_tools.o3de.multi_test_framework.AbstractTestSuite.get_number_parallel_instances()}")
 
 
 def pytest_pycollect_makeitem(collector: _pytest.python.Module, name: str, obj: object) -> _pytest.python.Module:
