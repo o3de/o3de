@@ -153,14 +153,7 @@ namespace ScriptAutomation
             ScriptAutomationInterface::Get()->QueueScriptOperation(AZStd::move(stopLogging));
         }
 
-        void CaptureBudgetTotals(int numFrames)
-        {
-            StartBudgetTotalCapture();
-            IdleFrames(numFrames);
-            StopBudgetTotalCapture();
-        }
-
-        void WritePerfDataToFile(const AZStd::string& filePath)
+        void WritePerfDataToCsvFile(const AZStd::string& filePath)
         {
             AZ::IO::FixedMaxPath resolvedPath;
             AZ::IO::FileIOBase::GetInstance()->ResolvePath(resolvedPath, filePath.c_str());
@@ -245,6 +238,6 @@ namespace ScriptAutomation
 
         behaviorContext->Method("StartBudgetTotalCapture", &Bindings::StartBudgetTotalCapture);
         behaviorContext->Method("StopBudgetTotalCapture", &Bindings::StopBudgetTotalCapture);
-        behaviorContext->Method("WritePerfDataToFile", &Bindings::WritePerfDataToFile);
+        behaviorContext->Method("WritePerfDataToCsvFile", &Bindings::WritePerfDataToCsvFile);
     }
 } // namespace ScriptAutomation
