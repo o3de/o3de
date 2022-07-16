@@ -16,6 +16,7 @@
 #include "SourceAssetTreeItemData.h"
 #include "SourceAssetTreeModel.h"
 #include <native/ui/BuilderInfoPatternsModel.h>
+#include <native/ui/BuilderInfoMetricsModel.h>
 
 #include <AzFramework/Asset/AssetSystemBus.h>
 
@@ -479,6 +480,12 @@ void MainWindow::Activate()
     m_builderListSortFilterProxy->sort(0);
     ui->builderList->setModel(m_builderListSortFilterProxy);
     ui->builderInfoPatternsTableView->setModel(m_builderInfoPatterns);
+    m_builderInfoMetrics = new BuilderInfoMetricsModel(m_sharedDbConnection, this);
+    ui->builderInfoMetricsTreeView->setModel(m_builderInfoMetrics);
+    ui->builderInfoMetricsTreeView->setColumnWidth(0, 400);
+    ui->builderInfoMetricsTreeView->setColumnWidth(1, 70);
+    ui->builderInfoMetricsTreeView->setColumnWidth(2, 150);
+    ui->builderInfoMetricsTreeView->setColumnWidth(3, 150);
     connect(ui->builderList->selectionModel(), &QItemSelectionModel::selectionChanged, this, &MainWindow::BuilderTabSelectionChanged);
     connect(m_guiApplicationManager, &GUIApplicationManager::OnBuildersRegistered, [this]()
     {
@@ -490,6 +497,11 @@ void MainWindow::Activate()
             {
                 m_builderListSortFilterProxy->sort(0);
             }
+        }
+
+        if (m_builderInfoMetrics)
+        {
+            m_builderInfoMetrics->Reset();
         }
     });
 
@@ -548,7 +560,15 @@ void MainWindow::BuilderTabSelectionChanged(const QItemSelection& selected, cons
 
         AZ_Assert(index.isValid(), "BuilderTabSelectionChanged index out of bounds");
 
-        m_builderInfoPatterns->Reset(builders[index.row()]);
+        const auto builder = builders[index.row()];
+        m_builderInfoPatterns->Reset(builder);
+        m_builderInfoMetrics->OnBuilderSelectionChanged(builder);
+        ui->builderInfoHeaderValueName->setText(builder.m_name.c_str());
+        ui->builderInfoHeaderValueType->setText(
+            builder.m_builderType == AssetBuilderSDK::AssetBuilderDesc::AssetBuilderType::Internal ? "Internal" : "External");
+        ui->builderInfoHeaderValueFingerprint->setText(builder.m_analysisFingerprint.c_str());
+        ui->builderInfoHeaderValueVersionNumber->setText(QString::number(builder.m_version));
+        ui->builderInfoHeaderValueBusId->setText(builder.m_busId.ToString<QString>());        
     }
 }
 
