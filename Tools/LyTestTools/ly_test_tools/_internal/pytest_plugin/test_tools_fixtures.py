@@ -12,7 +12,6 @@ import getpass
 import logging
 import os
 import socket
-import time
 from datetime import datetime
 from warnings import warn
 

@@ -392,26 +392,26 @@ class AbstractTestSuite(object):
 
                 def make_single_run(inner_test_spec):
                     @set_marks({"run_type": "run_single"})
-                    def single_run(self, request, workspace, editor, collected_test_data, launcher_platform):
+                    def single_run(self, request, workspace, collected_test_data, launcher_platform):
                         # only single tests are allowed to have setup/teardown, however we can have shared tests that
                         # were explicitly set as single, for example via cmdline argument override
                         is_single_test = issubclass(inner_test_spec, SingleTest)
                         if is_single_test:
                             # Setup step for wrap_run
                             wrap = inner_test_spec.wrap_run(
-                                self, request, workspace, editor, collected_test_data, launcher_platform)
+                                self, request, workspace, collected_test_data, launcher_platform)
                             assert isinstance(wrap, types.GeneratorType), (
                                 "wrap_run must return a generator, did you forget 'yield'?")
                             next(wrap, None)
                             # Setup step
                             inner_test_spec.setup(
-                                self, request, workspace, editor, collected_test_data, launcher_platform)
+                                self, request, workspace, collected_test_data, launcher_platform)
                         # Run
-                        self._run_single_test(request, workspace, editor, collected_test_data, inner_test_spec)
+                        self._run_single_test(request, workspace, collected_test_data, inner_test_spec)
                         if is_single_test:
                             # Teardown
                             inner_test_spec.teardown(
-                                self, request, workspace, editor, collected_test_data, launcher_platform)
+                                self, request, workspace, collected_test_data, launcher_platform)
                             # Teardown step for wrap_run
                             next(wrap, None)
 
@@ -430,9 +430,9 @@ class AbstractTestSuite(object):
 
                 def make_shared_run():
                     @set_marks({"runner": target_runner, "run_type": "run_shared"})
-                    def shared_run(self, request, workspace, editor, collected_test_data, launcher_platform):
+                    def shared_run(self, request, workspace, collected_test_data, launcher_platform):
                         getattr(self, function.__name__)(
-                            request, workspace, editor, collected_test_data, target_runner.tests)
+                            request, workspace, collected_test_data, target_runner.tests)
 
                     return shared_run
 
@@ -442,7 +442,7 @@ class AbstractTestSuite(object):
                 for shared_test_spec in tests:
                     def make_results_run(inner_test_spec):
                         @set_marks({"runner": target_runner, "test_spec": inner_test_spec, "run_type": "result"})
-                        def result(self, request, workspace, editor, collected_test_data, launcher_platform):
+                        def result(self, request, workspace, collected_test_data, launcher_platform):
                             result_key = inner_test_spec.__name__
                             # The runner must have filled the collected_test_data.results dict fixture for this test.
                             # Hitting this assert could mean if there was an error executing the runner
@@ -454,7 +454,6 @@ class AbstractTestSuite(object):
                             cls._report_result(result_key, collected_test_data.results[result_key])
 
                         return result
-
                     result_func = make_results_run(shared_test_spec)
                     if hasattr(shared_test_spec, "pytestmark"):
                         result_func.pytestmark = shared_test_spec.pytestmark

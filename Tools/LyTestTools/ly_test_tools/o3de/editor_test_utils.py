@@ -68,6 +68,17 @@ def retrieve_log_path(run_id: int, workspace: ly_test_tools._internal.managers.w
     return os.path.join(workspace.paths.project(), "user", f"log_test_{run_id}")
 
 
+def retrieve_material_editor_log_path(
+        run_id: int, workspace: ly_test_tools._internal.managers.workspace.AbstractWorkspaceManager) -> str:
+    """
+    return the log path for MaterialEditor test runs
+    :param run_id: MaterialEditor id that will be used for differentiating paths
+    :param workspace: Workspace fixture
+    :return: str: The full path to the given MaterialEditor log
+    """
+    return os.path.join(workspace.paths.project(), "user", "log", f"log_test_{run_id}")
+
+
 def retrieve_crash_output(run_id: int, workspace: ly_test_tools._internal.managers.workspace.AbstractWorkspaceManager,
                           timeout: float = 10) -> str:
     """

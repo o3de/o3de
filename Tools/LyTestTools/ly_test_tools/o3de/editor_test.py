@@ -37,6 +37,7 @@ import _pytest.outcomes
 
 import ly_test_tools.o3de.editor_test_utils as editor_utils
 from ly_test_tools._internal.managers.workspace import AbstractWorkspaceManager
+from ly_test_tools.launchers import launcher_helper
 from ly_test_tools.launchers.exceptions import WaitTimeoutError
 from ly_test_tools.o3de.multi_test_framework import AbstractTestBase, AbstractTestSuite, Result
 
@@ -61,7 +62,6 @@ class EditorSingleTest(AbstractTestBase):
     def setup(instance: EditorTestSuite.AbstractTestClass,
               request: _pytest.fixtures.FixtureRequest,
               workspace: AbstractWorkspaceManager,
-              editor: ly_test_tools.launchers.platforms.base.Launcher,
               editor_test_results: EditorTestSuite.TestData,
               launcher_platform: str) -> None:
         """
@@ -69,7 +69,6 @@ class EditorSingleTest(AbstractTestBase):
         :param instance: Parent EditorTestSuite.AbstractTestClass instance executing the test
         :param request: PyTest request object
         :param workspace: LyTestTools workspace manager
-        :param editor: LyTestTools editor-launcher object
         :param editor_test_results: Currently recorded editor test results
         :param launcher_platform: user-parameterized string for LyTestTools
         """
@@ -79,7 +78,6 @@ class EditorSingleTest(AbstractTestBase):
     def wrap_run(instance: EditorTestSuite.AbstractTestClass,
                  request: _pytest.fixtures.FixtureRequest,
                  workspace: AbstractWorkspaceManager,
-                 editor: ly_test_tools.launchers.platforms.base.Launcher,
                  editor_test_results: EditorTestSuite.TestData,
                  launcher_platform: str) -> None:
         """
@@ -89,7 +87,6 @@ class EditorSingleTest(AbstractTestBase):
         :param instance: Parent EditorTestSuite.AbstractTestClass instance executing the test
         :param request: PyTest request object
         :param workspace: LyTestTools workspace manager
-        :param editor: LyTestTools editor-launcher object
         :param editor_test_results: Currently recorded EditorTest results
         :param launcher_platform: user-parameterized string for LyTestTools
         """
@@ -99,7 +96,6 @@ class EditorSingleTest(AbstractTestBase):
     def teardown(instance: EditorTestSuite.AbstractTestClass,
                  request: _pytest.fixtures.FixtureRequest,
                  workspace: AbstractWorkspaceManager,
-                 editor: ly_test_tools.launchers.platforms.base.Launcher,
                  editor_test_results: EditorTestSuite.TestData,
                  launcher_platform: str) -> None:
         """
@@ -107,7 +103,6 @@ class EditorSingleTest(AbstractTestBase):
         :param instance: Parent EditorTestSuite.AbstractTestClass instance executing the test
         :param request: PyTest request object
         :param workspace: LyTestTools workspace manager
-        :param editor: LyTestTools editor-launcher object
         :param editor_test_results: Currently recorded editor test results
         :param launcher_platform: user-parameterized string for LyTestTools
         """
@@ -154,7 +149,6 @@ class EditorResult(Result):
     log_attribute = "editor_log"
 
 
-@pytest.mark.parametrize("crash_log_watchdog", [("raise_on_crash", False)])
 class EditorTestSuite(AbstractTestSuite):
     # Extra cmdline arguments to supply for every editor instance for this test suite
     global_extra_cmdline_args = ["-BatchMode", "-autotest_mode"]
@@ -171,6 +165,7 @@ class EditorTestSuite(AbstractTestSuite):
     # Test class to use for shared test collection
     shared_test_class = EditorSharedTest
 
+    @pytest.mark.parametrize("crash_log_watchdog", [("raise_on_crash", False)])
     def pytest_multitest_makeitem(
             collector: _pytest.python.Module, name: str, obj: object) -> EditorTestSuite.AbstractTestClass:
         """
@@ -198,9 +193,9 @@ class EditorTestSuite(AbstractTestSuite):
 
         return self.get_number_parallel_instances()
 
-    def _exec_editor_test(self, request: _pytest.fixtures.FixtureRequest,
+    def _exec_editor_test(self,
+                          request: _pytest.fixtures.FixtureRequest,
                           workspace: AbstractWorkspaceManager,
-                          editor: ly_test_tools.launchers.platforms.base.Launcher,
                           run_id: int,
                           log_name: str,
                           test_spec: AbstractTestBase,
@@ -209,7 +204,6 @@ class EditorTestSuite(AbstractTestSuite):
         Starts the editor with the given test and returns a result dict with a single element specifying the result
         :request: The pytest request
         :workspace: The LyTestTools Workspace object
-        :editor: The LyTestTools Editor object
         :run_id: The unique run id
         :log_name: The name of the editor log to retrieve
         :test_spec: The type of test class
@@ -241,6 +235,7 @@ class EditorTestSuite(AbstractTestSuite):
             "--runpythontest", test_filename,
             "-logfile", f"@log@/{log_name}",
             "-project-log-path", editor_utils.retrieve_log_path(run_id, workspace)] + test_cmdline_args
+        editor = launcher_helper.create_editor(workspace)
         editor.args.extend(cmdline)
         editor.start(backupFiles=False, launch_ap=False, configure_settings=False)
 
@@ -285,9 +280,11 @@ class EditorTestSuite(AbstractTestSuite):
         results[test_spec.__name__] = test_result
         return results
 
-    def _exec_editor_multitest(self, request: _pytest.fixtures.FixtureRequest,
+    def _exec_editor_multitest(self,
+                               request: _pytest.fixtures.FixtureRequest,
                                workspace: AbstractWorkspaceManager,
-                               editor: ly_test_tools.launchers.platforms.base.Launcher, run_id: int, log_name: str,
+                               run_id: int,
+                               log_name: str,
                                test_spec_list: list[AbstractTestBase],
                                cmdline_args: list[str] = None) -> dict[str, EditorResult.ResultType]:
         """
@@ -296,7 +293,6 @@ class EditorTestSuite(AbstractTestSuite):
         failed.
         :request: The pytest request
         :workspace: The LyTestTools Workspace object
-        :editor: The LyTestTools Editor object
         :run_id: The unique run id
         :log_name: The name of the editor log to retrieve
         :test_spec_list: A list of test classes to run in the same editor instance
@@ -337,6 +333,7 @@ class EditorTestSuite(AbstractTestSuite):
             "--runpythontest", temp_batched_file.name,
             "-logfile", f"@log@/{log_name}",
             "-project-log-path", editor_utils.retrieve_log_path(run_id, workspace)] + test_cmdline_args
+        editor = launcher_helper.create_editor(workspace)
         editor.args.extend(cmdline)
         editor.start(backupFiles = False, launch_ap = False, configure_settings=False)
 
@@ -440,25 +437,24 @@ class EditorTestSuite(AbstractTestSuite):
     def _run_single_test(self,
                          request: _pytest.fixtures.FixtureRequest,
                          workspace: AbstractWorkspaceManager,
-                         editor: ly_test_tools.launchers.platforms.base.Launcher,
                          collected_test_data: AbstractTestSuite.TestData,
                          test_spec: EditorSingleTest) -> None:
         """
         Runs a single test (one editor, one test) with the given specs
         :request: The Pytest Request
         :workspace: The LyTestTools Workspace object
-        :editor: The LyTestTools Editor object
         :collected_test_data: The TestData from calling collected_test_data()
         :test_spec: The test class that should be a subclass of EditorSingleTest
         :return: None
         """
         self._setup_test_run(workspace, collected_test_data)
+        editor = launcher_helper.create_editor(workspace)
         editor.configure_settings()
         extra_cmdline_args = []
         if hasattr(test_spec, "extra_cmdline_args"):
             extra_cmdline_args = test_spec.extra_cmdline_args
 
-        result = self._exec_editor_test(request, workspace, editor, 1, f"{LOG_NAME}", test_spec, extra_cmdline_args)
+        result = self._exec_editor_test(request, workspace, 1, f"{LOG_NAME}", test_spec, extra_cmdline_args)
         if result is None:
             logger.error(f"Unexpectedly found no test run in the {LOG_NAME} during {test_spec}")
             result = {"Unknown":
@@ -472,9 +468,9 @@ class EditorTestSuite(AbstractTestSuite):
         if not isinstance(test_result, EditorResult.Pass):
             editor_utils.save_failed_asset_joblogs(workspace)
 
-    def _run_batched_tests(self, request: _pytest.fixtures.FixtureRequest,
+    def _run_batched_tests(self,
+                           request: _pytest.fixtures.FixtureRequest,
                            workspace: AbstractWorkspaceManager,
-                           editor: ly_test_tools.launchers.platforms.base.Launcher,
                            collected_test_data: AbstractTestSuite.TestData,
                            test_spec_list: list[EditorSharedTest],
                            extra_cmdline_args: list[str] = None) -> None:
@@ -482,7 +478,6 @@ class EditorTestSuite(AbstractTestSuite):
         Runs a batch of tests in one single editor with the given spec list (one editor, multiple tests)
         :request: The Pytest Request
         :workspace: The LyTestTools Workspace object
-        :editor: The LyTestTools Editor object
         :collected_test_data: The TestData from calling collected_test_data()
         :test_spec_list: A list of EditorSharedTest tests to run
         :extra_cmdline_args: Any extra command line args in a list
@@ -495,9 +490,10 @@ class EditorTestSuite(AbstractTestSuite):
             return
 
         self._setup_test_run(workspace, collected_test_data)
+        editor = launcher_helper.create_editor(workspace)
         editor.configure_settings()
-        results = self._exec_editor_multitest(request, workspace, editor, 1, "editor_test.log", test_spec_list,
-                                              extra_cmdline_args)
+        results = self._exec_editor_multitest(
+            request, workspace, 1, "editor_test.log", test_spec_list, extra_cmdline_args)
         collected_test_data.results.update(results)
         # If at least one test did not pass, save assets with errors and warnings
         for result in results:
@@ -511,7 +507,6 @@ class EditorTestSuite(AbstractTestSuite):
     def _run_parallel_tests(self,
                             request: _pytest.fixtures.FixtureRequest,
                             workspace: AbstractWorkspaceManager,
-                            editor: ly_test_tools.launchers.platforms.base.Launcher,
                             collected_test_data: AbstractTestSuite.TestData,
                             test_spec_list: list[EditorSharedTest],
                             extra_cmdline_args: list[str] = None) -> None:
@@ -519,7 +514,6 @@ class EditorTestSuite(AbstractTestSuite):
         Runs multiple editors with one test on each editor (multiple editor, one test each)
         :request: The Pytest Request
         :workspace: The LyTestTools Workspace object
-        :editor: The LyTestTools Editor object
         :collected_test_data: The TestData from calling collected_test_data()
         :test_spec_list: A list of EditorSharedTest tests to run
         :extra_cmdline_args: Any extra command line args in a list
@@ -532,6 +526,7 @@ class EditorTestSuite(AbstractTestSuite):
             return
 
         self._setup_test_run(workspace, collected_test_data)
+        editor = launcher_helper.create_editor(workspace)
         editor.configure_settings()
         parallel_editors = self._get_number_parallel_instances(request)
         assert parallel_editors > 0, "Must have at least one editor"
@@ -544,10 +539,10 @@ class EditorTestSuite(AbstractTestSuite):
             threads = []
             results_per_thread = [None] * total_threads
             for i in range(total_threads):
-                def make_func(test_spec, index, my_editor):
+                def make_func(test_spec, index):
                     def run(request, workspace, extra_cmdline_args):
-                        results = self._exec_editor_test(request, workspace, my_editor, index+1, f"editor_test.log",
-                                                         test_spec, extra_cmdline_args)
+                        results = self._exec_editor_test(
+                            request, workspace, index + 1, f"editor_test.log", test_spec, extra_cmdline_args)
                         assert results is not None
                         results_per_thread[index] = results
                     return run
@@ -582,7 +577,6 @@ class EditorTestSuite(AbstractTestSuite):
     def _run_parallel_batched_tests(self,
                                     request: _pytest.fixtures.FixtureRequest,
                                     workspace: AbstractWorkspaceManager,
-                                    editor: ly_test_tools.launchers.platforms.base.Launcher,
                                     collected_test_data: AbstractTestSuite.TestData,
                                     test_spec_list: list[EditorSharedTest],
                                     extra_cmdline_args: list[str] = None) -> None:
@@ -590,7 +584,6 @@ class EditorTestSuite(AbstractTestSuite):
         Runs multiple editors with a batch of tests for each editor (multiple editor, multiple tests each)
         :request: The Pytest Request
         :workspace: The LyTestTools Workspace object
-        :editor: The LyTestTools Editor object
         :collected_test_data: The TestData from calling collected_test_data()
         :test_spec_list: A list of EditorSharedTest tests to run
         :extra_cmdline_args: Any extra command line args in a list
@@ -603,6 +596,7 @@ class EditorTestSuite(AbstractTestSuite):
             return
 
         self._setup_test_run(workspace, collected_test_data)
+        editor = launcher_helper.create_editor(workspace)
         editor.configure_settings()
         total_threads = self._get_number_parallel_instances(request)
         assert total_threads > 0, "Must have at least one editor"
@@ -612,13 +606,13 @@ class EditorTestSuite(AbstractTestSuite):
         for i in range(total_threads):
             tests_for_thread = test_spec_list[i*tests_per_editor:(i+1)*tests_per_editor]
 
-            def make_func(test_spec_list_for_editor, index, my_editor):
+            def make_func(test_spec_list_for_editor, index):
                 def run(request, workspace, extra_cmdline_args):
                     results = None
                     if len(test_spec_list_for_editor) > 0:
-                        results = self._exec_editor_multitest(request, workspace, my_editor, index+1,
-                                                              f"editor_test.log", test_spec_list_for_editor,
-                                                              extra_cmdline_args)
+                        results = self._exec_editor_multitest(
+                            request, workspace, index + 1, f"editor_test.log", test_spec_list_for_editor,
+                            extra_cmdline_args)
                         assert results is not None
                     else:
                         results = {}

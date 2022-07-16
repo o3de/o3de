@@ -41,22 +41,12 @@ import _pytest.outcomes
 import ly_test_tools.o3de.editor_test_utils as editor_utils
 from ly_test_tools._internal.managers.workspace import AbstractWorkspaceManager
 from ly_test_tools.launchers.exceptions import WaitTimeoutError
-from ly_test_tools.o3de.multi_test_framework import AbstractTestBase, AbstractTestClass, AbstractTestSuite, Result
+from ly_test_tools.launchers import launcher_helper
+from ly_test_tools.o3de.multi_test_framework import AbstractTestBase, AbstractTestSuite, Result
 
 logger = logging.getLogger(__name__)
 
 LOG_NAME = "material_editor_test.log"
-
-
-@pytest.fixture(scope="function")
-def instance_executable(request, material_editor):
-    """
-    Specify the type of executable to launch for the tests being collected by the AbstractTestClass.
-    :param request: The pytest request
-    :param material_editor: The LyTestTools MaterialEditor object
-    :return: material_editor
-    """
-    return material_editor
 
 
 class MaterialEditorSingleTest(AbstractTestBase):
@@ -72,56 +62,50 @@ class MaterialEditorSingleTest(AbstractTestBase):
         self.use_null_renderer = None
 
     @staticmethod
-    def setup(instance: AbstractTestClass,
+    def setup(instance: MaterialEditorTestSuite.AbstractTestClass,
               request: _pytest.fixtures.FixtureRequest,
               workspace: AbstractWorkspaceManager,
-              material_editor: ly_test_tools.launchers.platforms.base.Launcher,
               material_editor_test_results: AbstractTestSuite.TestData,
               launcher_platform: str) -> None:
         """
         User-overrideable setup function, which will run before the test.
-        :param instance: Parent AbstractTestClass instance executing the test
+        :param instance: Parent MaterialEditorTestSuite.AbstractTestClass instance executing the test
         :param request: PyTest request object
         :param workspace: LyTestTools workspace manager
-        :param material_editor: LyTestTools material_editor-launcher object
         :param material_editor_test_results: Currently recorded MaterialEditor test results
         :param launcher_platform: user-parameterized string for LyTestTools
         """
         pass
 
     @staticmethod
-    def wrap_run(instance: AbstractTestClass,
+    def wrap_run(instance: MaterialEditorTestSuite.AbstractTestClass,
                  request: _pytest.fixtures.FixtureRequest,
                  workspace: AbstractWorkspaceManager,
-                 material_editor: ly_test_tools.launchers.platforms.base.Launcher,
                  material_editor_test_results: AbstractTestSuite.TestData,
                  launcher_platform: str) -> None:
         """
         User-overrideable wrapper function, which will run both before and after test.
         Any code before the 'yield' statement will run before the test. With code after yield run after the test.
         Setup will run before wrap_run starts. Teardown will run after it completes.
-        :param instance: Parent AbstractTestClass instance executing the test
+        :param instance: Parent MaterialEditorTestSuite.AbstractTestClass instance executing the test
         :param request: PyTest request object
         :param workspace: LyTestTools workspace manager
-        :param material_editor: LyTestTools material_editor-launcher object
         :param material_editor_test_results: Currently recorded MaterialEditor test results
         :param launcher_platform: user-parameterized string for LyTestTools
         """
         yield
 
     @staticmethod
-    def teardown(instance: AbstractTestClass,
+    def teardown(instance: MaterialEditorTestSuite.AbstractTestClass,
                  request: _pytest.fixtures.FixtureRequest,
                  workspace: AbstractWorkspaceManager,
-                 material_editor: ly_test_tools.launchers.platforms.base.Launcher,
                  material_editor_test_results: AbstractTestSuite.TestData,
                  launcher_platform: str) -> None:
         """
         User-overrideable teardown function, which will run after the test
-        :param instance: Parent AbstractTestClass instance executing the test
+        :param instance: Parent MaterialEditorTestSuite.AbstractTestClass instance executing the test
         :param request: PyTest request object
         :param workspace: LyTestTools workspace manager
-        :param material_editor: LyTestTools material_editor-launcher object
         :param material_editor_test_results: Currently recorded MaterialEditor test results
         :param launcher_platform: user-parameterized string for LyTestTools
         """
@@ -166,9 +150,7 @@ class MaterialEditorBatchedTest(MaterialEditorSharedTest):
 
 
 class MaterialEditorResult(Result):
-    """
-    Holds test results for MaterialEditor tests, inherits from the Result class but sets its own log_attribute value.
-    """
+    """Used to set the log_attribute value for MaterialEditor result logs."""
     log_attribute = "material_editor_log"
 
 
@@ -188,7 +170,9 @@ class MaterialEditorTestSuite(AbstractTestSuite):
     # Test class to use for shared test collection
     shared_test_class = MaterialEditorSharedTest
 
-    def pytest_multitest_makeitem(collector: _pytest.python.Module, name: str, obj: object) -> AbstractTestClass:
+    @pytest.mark.parametrize("crash_log_watchdog", [("raise_on_crash", False)])
+    def pytest_multitest_makeitem(
+            collector: _pytest.python.Module, name: str, obj: object) -> MaterialEditorTestSuite.AbstractTestClass:
         """
         Enables ly_test_tools._internal.pytest_plugin.editor_test.pytest_pycollect_makeitem to collect the tests
         defined by this suite.
@@ -197,9 +181,9 @@ class MaterialEditorTestSuite(AbstractTestSuite):
         :param collector: Module that serves as the pytest test class collector
         :param name: Name of the parent test class
         :param obj: Module of the test to be run
-        :return: AbstractTestClass
+        :return: MaterialEditorTestSuite.AbstractTestClass
         """
-        return AbstractTestClass(name, collector)
+        return MaterialEditorTestSuite.AbstractTestClass(name, collector)
 
     def _get_number_parallel_instances(self, request: _pytest.fixtures.FixtureRequest) -> int:
         """
@@ -217,16 +201,14 @@ class MaterialEditorTestSuite(AbstractTestSuite):
     def _exec_material_editor_test(self,
                                    request: _pytest.fixtures.FixtureRequest,
                                    workspace: AbstractWorkspaceManager,
-                                   material_editor: ly_test_tools.launchers.platforms.base.Launcher,
                                    run_id: int,
                                    log_name: str,
                                    test_spec: AbstractTestBase,
-                                   cmdline_args: list[str] = None) -> dict[str, Result.ResultType]:
+                                   cmdline_args: list[str] = None) -> dict[str, MaterialEditorResult.ResultType]:
         """
         Starts the MaterialEditor with the given test & returns a result dict with a single element specifying the result
         :request: The pytest request
         :workspace: The LyTestTools Workspace object
-        :material_editor: The LyTestTools MaterialEditor object
         :run_id: The unique run id
         :log_name: The name of the MaterialEditor log to retrieve
         :test_spec: The type of test class
@@ -253,8 +235,8 @@ class MaterialEditorTestSuite(AbstractTestSuite):
         test_filename = editor_utils.get_testcase_module_filepath(test_spec.test_module)
         cmdline = [
                       "--runpythontest", test_filename,
-                      "-logfile", f"@log@/{log_name}",
-                      "-project-log-path", editor_utils.retrieve_log_path(run_id, workspace)] + test_cmdline_args
+                      "-logfile", os.path.join(f"log_test_{run_id}, {log_name}")] + test_cmdline_args
+        material_editor = launcher_helper.create_material_editor(workspace)
         material_editor.args.extend(cmdline)
         material_editor.start(backupFiles=False, launch_ap=False, configure_settings=False)
 
@@ -265,22 +247,21 @@ class MaterialEditorTestSuite(AbstractTestSuite):
             material_editor_log_content = editor_utils.retrieve_editor_log_content(run_id, log_name, workspace)
             # Save the MaterialEditor log
             workspace.artifact_manager.save_artifact(
-                os.path.join(editor_utils.retrieve_log_path(run_id, workspace), log_name),
-                f'({run_id}){log_name}')
+                os.path.join(editor_utils.retrieve_material_editor_log_path(run_id, workspace), log_name))
             if return_code == 0:
-                test_result = Result.Pass(test_spec, output, material_editor_log_content)
+                test_result = MaterialEditorResult.Pass(test_spec, output, material_editor_log_content)
             else:
                 has_crashed = return_code != MaterialEditorTestSuite._TEST_FAIL_RETCODE
                 if has_crashed:
                     crash_output = editor_utils.retrieve_crash_output(run_id, workspace, self._TIMEOUT_CRASH_LOG)
-                    test_result = Result.Crash(test_spec, output, return_code, crash_output, None)
+                    test_result = MaterialEditorResult.Crash(test_spec, output, return_code, crash_output, None)
                     # Save the .dmp file which is generated on Windows only
-                    dmp_file_name = os.path.join(editor_utils.retrieve_log_path(run_id, workspace),
+                    dmp_file_name = os.path.join(editor_utils.retrieve_material_editor_log_path(run_id, workspace),
                                                  'error.dmp')
                     if os.path.exists(dmp_file_name):
                         workspace.artifact_manager.save_artifact(dmp_file_name)
                     # Save the crash log
-                    crash_file_name = os.path.join(editor_utils.retrieve_log_path(run_id, workspace),
+                    crash_file_name = os.path.join(editor_utils.retrieve_material_editor_log_path(run_id, workspace),
                                                    os.path.basename(workspace.paths.crash_log()))
                     if os.path.exists(crash_file_name):
                         workspace.artifact_manager.save_artifact(crash_file_name)
@@ -288,12 +269,12 @@ class MaterialEditorTestSuite(AbstractTestSuite):
                     else:
                         logger.warning(f"Crash occurred, but could not find log {crash_file_name}")
                 else:
-                    test_result = Result.Fail(test_spec, output, material_editor_log_content)
+                    test_result = MaterialEditorResult.Fail(test_spec, output, material_editor_log_content)
         except WaitTimeoutError:
             output = material_editor.get_output()
             material_editor.stop()
             material_editor_log_content = editor_utils.retrieve_editor_log_content(run_id, log_name, workspace)
-            test_result = Result.Timeout(test_spec, output, test_spec.timeout, material_editor_log_content)
+            test_result = MaterialEditorResult.Timeout(test_spec, output, test_spec.timeout, material_editor_log_content)
 
         material_editor_log_content = editor_utils.retrieve_editor_log_content(run_id, log_name, workspace)
         results = self._get_results_using_output([test_spec], output, material_editor_log_content)
@@ -303,18 +284,16 @@ class MaterialEditorTestSuite(AbstractTestSuite):
     def _exec_material_editor_multitest(self,
                                         request: _pytest.fixtures.FixtureRequest,
                                         workspace: AbstractWorkspaceManager,
-                                        material_editor: ly_test_tools.launchers.platforms.base.Launcher,
                                         run_id: int,
                                         log_name: str,
                                         test_spec_list: list[AbstractTestBase],
-                                        cmdline_args: list[str] = None) -> dict[str, Result.ResultType]:
+                                        cmdline_args: list[str] = None) -> dict[str, MaterialEditorResult.ResultType]:
         """
         Starts a MaterialEditor executable with a list of tests and returns a dict of the result of every test ran
         within that MaterialEditor instance.
         In case of failure this function also parses the MaterialEditor output to find out what specific tests failed.
         :request: The pytest request
         :workspace: The LyTestTools Workspace object
-        :material_editor: The LyTestTools MaterialEditor object
         :run_id: The unique run id
         :log_name: The name of the MaterialEditor log to retrieve
         :test_spec_list: A list of test classes to run in the same MaterialEditor instance
@@ -350,8 +329,8 @@ class MaterialEditorTestSuite(AbstractTestSuite):
 
         cmdline = [
                       "--runpythontest", temp_batched_file.name,
-                      "-logfile", f"@log@/{log_name}",
-                      "-project-log-path", editor_utils.retrieve_log_path(run_id, workspace)] + test_cmdline_args
+                      "-logfile", os.path.join(f"log_test_{run_id}, {log_name}")] + test_cmdline_args
+        material_editor = launcher_helper.create_material_editor(workspace)
         material_editor.args.extend(cmdline)
         material_editor.start(backupFiles=False, launch_ap=False, configure_settings=False)
 
@@ -364,9 +343,9 @@ class MaterialEditorTestSuite(AbstractTestSuite):
             material_editor_log_content = editor_utils.retrieve_editor_log_content(run_id, log_name, workspace)
             # Save the MaterialEditor log
             try:
-                path_to_artifact = os.path.join(editor_utils.retrieve_log_path(run_id, workspace), log_name)
-                full_log_name = f'({run_id}){log_name}'
-                destination_path = workspace.artifact_manager.save_artifact(path_to_artifact, full_log_name)
+                path_to_artifact = os.path.join(
+                    editor_utils.retrieve_material_editor_log_path(run_id, workspace), log_name)
+                destination_path = workspace.artifact_manager.save_artifact(path_to_artifact)
                 editor_utils.split_batched_editor_log_file(workspace, path_to_artifact, destination_path)
             except FileNotFoundError:
                 # Error logging is already performed and we don't want this to fail the test
@@ -374,7 +353,7 @@ class MaterialEditorTestSuite(AbstractTestSuite):
             if return_code == 0:
                 # No need to scrape the output, as all the tests have passed
                 for test_spec in test_spec_list:
-                    results[test_spec.__name__] = Result.Pass(test_spec, output, material_editor_log_content)
+                    results[test_spec.__name__] = MaterialEditorResult.Pass(test_spec, output, material_editor_log_content)
             else:
                 # Scrape the output to attempt to find out which tests failed.
                 # This function should always populate the result list,
@@ -388,26 +367,27 @@ class MaterialEditorTestSuite(AbstractTestSuite):
                 if has_crashed:
                     crashed_result = None
                     for test_spec_name, result in results.items():
-                        if isinstance(result, Result.Unknown):
+                        if isinstance(result, MaterialEditorResult.Unknown):
                             if not crashed_result:
                                 # The first test with "Unknown" result (no output data) is likely the one that crashed
                                 crash_error = editor_utils.retrieve_crash_output(
                                     run_id, workspace, self._TIMEOUT_CRASH_LOG)
                                 # Save the .dmp file which is generated on Windows only
-                                dmp_file_name = os.path.join(editor_utils.retrieve_log_path(run_id, workspace),
-                                                             'error.dmp')
+                                dmp_file_name = os.path.join(
+                                    editor_utils.retrieve_material_editor_log_path(run_id, workspace), 'error.dmp')
                                 if os.path.exists(dmp_file_name):
                                     workspace.artifact_manager.save_artifact(dmp_file_name)
                                 # Save the crash log
-                                crash_file_name = os.path.join(editor_utils.retrieve_log_path(run_id, workspace),
-                                                               os.path.basename(workspace.paths.crash_log()))
+                                crash_file_name = os.path.join(
+                                    editor_utils.retrieve_material_editor_log_path(run_id, workspace),
+                                    os.path.basename(workspace.paths.crash_log()))
                                 if os.path.exists(crash_file_name):
                                     workspace.artifact_manager.save_artifact(crash_file_name)
                                     editor_utils.cycle_crash_report(run_id, workspace)
                                 else:
                                     logger.warning(f"Crash occurred, but could not find log {crash_file_name}")
-                                results[test_spec_name] = Result.Crash(result.test_spec, output, return_code,
-                                                                       crash_error, result.material_editor_log)
+                                results[test_spec_name] = MaterialEditorResult.Crash(
+                                    result.test_spec, output, return_code, crash_error, result.material_editor_log)
                                 crashed_result = result
                             else:
                                 # If there are remaning "Unknown" results, these couldn't execute because of the crash,
@@ -419,8 +399,9 @@ class MaterialEditorTestSuite(AbstractTestSuite):
                     if not crashed_result:
                         crash_error = editor_utils.retrieve_crash_output(run_id, workspace, self._TIMEOUT_CRASH_LOG)
                         editor_utils.cycle_crash_report(run_id, workspace)
-                        results[test_spec_name] = Result.Crash(crashed_result.test_spec, output, return_code,
-                                                               crash_error, crashed_result.material_editor_log)
+                        results[test_spec_name] = MaterialEditorResult.Crash(
+                            crashed_result.test_spec, output, return_code, crash_error,
+                            crashed_result.material_editor_log)
         except WaitTimeoutError:
             material_editor.stop()
             output = material_editor.get_output()
@@ -434,9 +415,9 @@ class MaterialEditorTestSuite(AbstractTestSuite):
             # Similar logic here as crashes, the first test that has no result is the one that timed out
             timed_out_result = None
             for test_spec_name, result in results.items():
-                if isinstance(result, Result.Unknown):
+                if isinstance(result, MaterialEditorResult.Unknown):
                     if not timed_out_result:
-                        results[test_spec_name] = Result.Timeout(result.test_spec, result.output,
+                        results[test_spec_name] = MaterialEditorResult.Timeout(result.test_spec, result.output,
                                                                  self.timeout_material_editor_shared_test,
                                                                  result.material_editor_log)
                         timed_out_result = result
@@ -449,7 +430,7 @@ class MaterialEditorTestSuite(AbstractTestSuite):
             # if all the tests ran, the one that has caused the timeout is the last test,
             # as it didn't close the MaterialEditor
             if not timed_out_result:
-                results[test_spec_name] = Result.Timeout(timed_out_result.test_spec,
+                results[test_spec_name] = MaterialEditorResult.Timeout(timed_out_result.test_spec,
                                                          results[test_spec_name].output,
                                                          self.timeout_material_editor_shared_test,
                                                          result.material_editor_log)
@@ -461,42 +442,39 @@ class MaterialEditorTestSuite(AbstractTestSuite):
     def _run_single_test(self,
                          request: _pytest.fixtures.FixtureRequest,
                          workspace: AbstractWorkspaceManager,
-                         material_editor: ly_test_tools.launchers.platforms.base.Launcher,
                          collected_test_data: AbstractTestSuite.TestData,
                          test_spec: MaterialEditorSingleTest) -> None:
         """
         Runs a single test (one MaterialEditor, one test) with the given specs
         :request: The Pytest Request
         :workspace: The LyTestTools Workspace object
-        :material_editor: The LyTestTools MaterialEditor object
         :collected_test_data: The TestData from calling collected_test_data()
         :test_spec: The test class that should be a subclass of MaterialEditorSingleTest
         :return: None
         """
         self._setup_test_run(workspace, collected_test_data)
+        material_editor = launcher_helper.create_material_editor(workspace)
         material_editor.configure_settings()
         extra_cmdline_args = []
         if hasattr(test_spec, "extra_cmdline_args"):
             extra_cmdline_args = test_spec.extra_cmdline_args
 
-        result = self._exec_material_editor_test(
-            request, workspace, material_editor, 1, f"{LOG_NAME}", test_spec, extra_cmdline_args)
+        result = self._exec_material_editor_test(request, workspace, 1, f"{LOG_NAME}", test_spec, extra_cmdline_args)
         if result is None:
             logger.error(f"Unexpectedly found no test run in the {LOG_NAME} during {test_spec}")
             result = {"Unknown":
-                Result.Unknown(
+                MaterialEditorResult.Unknown(
                     test_spec=test_spec,
                     extra_info=f"Unexpectedly found no test run information on stdout in the {LOG_NAME}")}
         collected_test_data.results.update(result)
         test_name, test_result = next(iter(result.items()))
         self._report_result(test_name, test_result)
         # If test did not pass, save assets with errors and warnings
-        if not isinstance(test_result, Result.Pass):
+        if not isinstance(test_result, MaterialEditorResult.Pass):
             editor_utils.save_failed_asset_joblogs(workspace)
 
     def _run_batched_tests(self, request: _pytest.fixtures.FixtureRequest,
                            workspace: AbstractWorkspaceManager,
-                           material_editor: ly_test_tools.launchers.platforms.base.Launcher,
                            collected_test_data: AbstractTestSuite.TestData,
                            test_spec_list: list[MaterialEditorSharedTest],
                            extra_cmdline_args: list[str] = None) -> None:
@@ -504,7 +482,6 @@ class MaterialEditorTestSuite(AbstractTestSuite):
         Runs a batch of tests in one single MaterialEditor with the given spec list (one MaterialEditor, multiple tests)
         :request: The Pytest Request
         :workspace: The LyTestTools Workspace object
-        :material_editor: The LyTestTools MaterialEditor object
         :collected_test_data: The TestData from calling collected_test_data()
         :test_spec_list: A list of MaterialEditorSharedTest tests to run
         :extra_cmdline_args: Any extra command line args in a list
@@ -517,16 +494,17 @@ class MaterialEditorTestSuite(AbstractTestSuite):
             return
 
         self._setup_test_run(workspace, collected_test_data)
+        material_editor = launcher_helper.create_material_editor(workspace)
         material_editor.configure_settings()
         results = self._exec_material_editor_multitest(
-            request, workspace, material_editor, 1, f"{LOG_NAME}", test_spec_list, extra_cmdline_args)
+            request, workspace, 1, f"{LOG_NAME}", test_spec_list, extra_cmdline_args)
         collected_test_data.results.update(results)
         # If at least one test did not pass, save assets with errors and warnings
         for result in results:
             if result is None:
                 logger.error(f"Unexpectedly found no test run in the {LOG_NAME} during MaterialEditorBatchedTest")
                 logger.debug(f"Results from MaterialEditorBatchedTest:\n{results}")
-            if not isinstance(result, Result.Pass):
+            if not isinstance(result, MaterialEditorResult.Pass):
                 editor_utils.save_failed_asset_joblogs(workspace)
                 return  # exit early on first batch failure
 
@@ -567,11 +545,10 @@ class MaterialEditorTestSuite(AbstractTestSuite):
             threads = []
             results_per_thread = [None] * total_threads
             for i in range(total_threads):
-                def make_func(test_spec, index, my_material_editor):
+                def make_func(test_spec, index):
                     def run(request, workspace, extra_cmdline_args):
                         results = self._exec_material_editor_test(
-                            request, workspace, my_material_editor, index + 1, f"{LOG_NAME}", test_spec,
-                            extra_cmdline_args)
+                            request, workspace, index + 1, f"{LOG_NAME}", test_spec, extra_cmdline_args)
                         assert results is not None
                         results_per_thread[index] = results
 
@@ -595,11 +572,11 @@ class MaterialEditorTestSuite(AbstractTestSuite):
                     logger.error(f"Unexpectedly found no test run in the {LOG_NAME} during MaterialEditorParallelTest")
                     logger.debug(f"Results from MaterialEditorParallelTest thread:\n{results_per_thread}")
                     result = {"Unknown":
-                        Result.Unknown(
+                        MaterialEditorResult.Unknown(
                             test_spec=MaterialEditorParallelTest,
                             extra_info=f"Unexpectedly found no test run information on stdout in the {LOG_NAME}")}
                 collected_test_data.results.update(result)
-                if not isinstance(result, Result.Pass):
+                if not isinstance(result, MaterialEditorResult.Pass):
                     save_asset_logs = True
             # If at least one test did not pass, save assets with errors and warnings
             if save_asset_logs:
@@ -608,7 +585,6 @@ class MaterialEditorTestSuite(AbstractTestSuite):
     def _run_parallel_batched_tests(self,
                                     request: _pytest.fixtures.FixtureRequest,
                                     workspace: AbstractWorkspaceManager,
-                                    material_editor: ly_test_tools.launchers.platforms.base.Launcher,
                                     collected_test_data: AbstractTestSuite.TestData,
                                     test_spec_list: list[MaterialEditorSharedTest],
                                     extra_cmdline_args: list[str] = None) -> None:
@@ -616,7 +592,6 @@ class MaterialEditorTestSuite(AbstractTestSuite):
         Runs multiple editors with a batch of tests for each MaterialEditor (multiple instances, multiple tests each)
         :request: The Pytest Request
         :workspace: The LyTestTools Workspace object
-        :material_editor: The LyTestTools MaterialEditor object
         :collected_test_data: The TestData from calling collected_test_data()
         :test_spec_list: A list of MaterialEditorSharedTest tests to run
         :extra_cmdline_args: Any extra command line args in a list
@@ -629,6 +604,7 @@ class MaterialEditorTestSuite(AbstractTestSuite):
             return
 
         self._setup_test_run(workspace, collected_test_data)
+        material_editor = launcher_helper.create_material_editor(workspace)
         material_editor.configure_settings()
         total_threads = self._get_number_parallel_instances(request)
         assert total_threads > 0, "Must have at least one MaterialEditor"
@@ -638,13 +614,13 @@ class MaterialEditorTestSuite(AbstractTestSuite):
         for i in range(total_threads):
             tests_for_thread = test_spec_list[i * tests_per_material_editor:(i + 1) * tests_per_material_editor]
 
-            def make_func(test_spec_list_for_material_editor, index, my_material_editor):
+            def make_func(test_spec_list_for_material_editor, index):
                 def run(request, workspace, extra_cmdline_args):
                     results = None
                     if len(test_spec_list_for_material_editor) > 0:
                         results = self._exec_material_editor_multitest(
-                            request, workspace, my_material_editor, index + 1, f"{LOG_NAME}",
-                            test_spec_list_for_material_editor, extra_cmdline_args)
+                            request, workspace, index + 1, f"{LOG_NAME}", test_spec_list_for_material_editor,
+                            extra_cmdline_args)
                         assert results is not None
                     else:
                         results = {}
@@ -668,11 +644,11 @@ class MaterialEditorTestSuite(AbstractTestSuite):
                 logger.error(f"Unexpectedly found no test run in the {LOG_NAME} during MaterialEditorSharedTest")
                 logger.debug(f"Results from MaterialEditorSharedTest thread:\n{results_per_thread}")
                 result = {"Unknown":
-                    Result.Unknown(
+                    MaterialEditorResult.Unknown(
                         test_spec=MaterialEditorSharedTest,
                         extra_info=f"Unexpectedly found no test run information on stdout in the {LOG_NAME}")}
             collected_test_data.results.update(result)
-            if not isinstance(result, Result.Pass):
+            if not isinstance(result, MaterialEditorResult.Pass):
                 save_asset_logs = True
         # If at least one test did not pass, save assets with errors and warnings
         if save_asset_logs:
