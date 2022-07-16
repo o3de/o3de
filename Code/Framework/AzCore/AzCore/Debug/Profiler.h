@@ -54,8 +54,11 @@
 /**
  * Macro to declare a profile section for the budget total.
  * It works similar to AZ_PROFILE_SCOPE but it's meant to be used 
- * to get budget totals. Using multiple AZ_PROFILE_BUDGET declarations
- * for the same budget within a callstack will result in incorrect results.
+ * to get budget totals. Using multiple AZ_PROFILE_BUDGET calls
+ * for the same budget within a callstack will result in incorrect results
+ * because the duration gets added for each scope. So the macro at a lower
+ * level in the callstack will already include the time for higher level
+ * calls for the same budget.
  */
 #define AZ_PROFILE_BUDGET(budget)                                                                                                          \
     ::AZ::Debug::ProfileScope AZ_JOIN(azProfileScope, __LINE__)                                                                            \
