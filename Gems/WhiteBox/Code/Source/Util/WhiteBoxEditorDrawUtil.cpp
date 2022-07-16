@@ -62,6 +62,7 @@ namespace WhiteBox
     void DrawPoints(
         AzFramework::DebugDisplayRequests& debugDisplay,
         WhiteBoxMesh* mesh,
+        const AZ::Transform& worldFromLocal,
         const AzFramework::ViewportInfo& viewportInfo,
         const AZStd::span<Api::VertexHandle>& verts,
         const AZ::Color& color)
@@ -72,7 +73,7 @@ namespace WhiteBox
             const auto vertPos = Api::VertexPosition(*mesh, vert);
             const AzFramework::CameraState cameraState = AzToolsFramework::GetCameraState(viewportInfo.m_viewportId);
             const float radius =
-                cl_whiteBoxVertexManipulatorSize * AzToolsFramework::CalculateScreenToWorldMultiplier(vertPos, cameraState);
+                cl_whiteBoxVertexManipulatorSize * AzToolsFramework::CalculateScreenToWorldMultiplier(worldFromLocal.TransformPoint(vertPos), cameraState);
 
             debugDisplay.DrawBall(vertPos, radius);
         }

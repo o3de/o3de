@@ -177,7 +177,7 @@ namespace WhiteBox
         {
             auto& vertexIntersection = m_vertexIntersection.value();
             auto handles = AZStd::array<Api::VertexHandle, 1>({ vertexIntersection.GetHandle() });
-            DrawPoints(debugDisplay, whiteBox, viewportInfo, handles, ed_whiteBoxVertexHover);
+            DrawPoints(debugDisplay, whiteBox, worldFromLocal, viewportInfo, handles, ed_whiteBoxVertexHover);
         }
 
         if (m_whiteBoxSelection)
@@ -185,7 +185,7 @@ namespace WhiteBox
             if (auto polygonSelection = AZStd::get_if<PolygonIntersection>(&m_whiteBoxSelection->m_selection))
             {
                 auto vertexHandles = Api::PolygonVertexHandles(*whiteBox, polygonSelection->GetHandle());
-                DrawPoints(debugDisplay, whiteBox, viewportInfo, vertexHandles, ed_whiteBoxVertexSelection);
+                DrawPoints(debugDisplay, whiteBox, worldFromLocal, viewportInfo, vertexHandles, ed_whiteBoxVertexSelection);
                 if (m_polygonIntersection.value_or(PolygonIntersection{}).GetHandle() != polygonSelection->GetHandle())
                 {
                     DrawFace(debugDisplay, whiteBox, polygonSelection->GetHandle(), ed_whiteBoxPolygonSelection);
@@ -195,7 +195,7 @@ namespace WhiteBox
             else if (auto edgeSelection = AZStd::get_if<EdgeIntersection>(&m_whiteBoxSelection->m_selection))
             {
                 auto vertexHandles = Api::EdgeVertexHandles(*whiteBox, edgeSelection->GetHandle());
-                DrawPoints(debugDisplay, whiteBox, viewportInfo, vertexHandles, ed_whiteBoxVertexSelection);
+                DrawPoints(debugDisplay, whiteBox, worldFromLocal, viewportInfo, vertexHandles, ed_whiteBoxVertexSelection);
                 if (m_edgeIntersection.value_or(EdgeIntersection{}).GetHandle() != edgeSelection->GetHandle())
                 {
                     DrawEdge(debugDisplay, whiteBox, edgeSelection->GetHandle(), ed_whiteBoxOutlineSelection);
@@ -206,7 +206,7 @@ namespace WhiteBox
                 if (m_vertexIntersection.value_or(VertexIntersection{}).GetHandle() != vertexSelection->GetHandle())
                 {
                     auto handles = AZStd::array<Api::VertexHandle, 1>({ vertexSelection->GetHandle() });
-                    DrawPoints(debugDisplay, whiteBox, viewportInfo, handles, ed_whiteBoxVertexSelection);
+                    DrawPoints(debugDisplay, whiteBox, worldFromLocal, viewportInfo, handles, ed_whiteBoxVertexSelection);
                 }
             }
         }
@@ -228,6 +228,7 @@ namespace WhiteBox
         const auto closestIntersection = FindClosestGeometryIntersection(edgeIntersection, polygonIntersection, vertexIntersection);
         m_polygonIntersection.reset();
         m_edgeIntersection.reset();
+        m_vertexIntersection.reset();
 
         // update stored edge and vertex intersection
         switch (closestIntersection)
