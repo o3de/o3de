@@ -38,6 +38,11 @@ namespace AssetProcessor
             return m_excludeContainer;
         }
 
+        bool AddAssetCacheRecognizerContainer(const RecognizerContainer&) override
+        {
+            return false;
+        }
+
         RecognizerContainer m_container;
         ExcludeRecognizerContainer m_excludeContainer;
     };
@@ -55,7 +60,7 @@ namespace AssetProcessor
     bool InternalMockBuilder::InitializeMockBuilder(const AssetRecognizer& assetRecognizer)
     {
         MockRecognizerConfiguration conf;
-        conf.m_container[QString(assetRecognizer.m_name.data())] = assetRecognizer;
+        conf.m_container[assetRecognizer.m_name] = assetRecognizer;
         return InternalRecognizerBasedBuilder::Initialize(conf);
     }
 
@@ -110,7 +115,7 @@ namespace AssetProcessor
     bool MockApplicationManager::RegisterAssetRecognizerAsBuilder(const AssetProcessor::AssetRecognizer& rec)
     {
         QString newBuilderId = BUILDER_ID_COPY.GetId();
-        QString newBuilderName = rec.m_name;
+        QString newBuilderName = rec.m_name.c_str();
         QHash<QString, BuilderIdAndName> inputBuilderNameByIdMap =
         {
             { newBuilderId, BUILDER_ID_COPY }
@@ -136,15 +141,14 @@ namespace AssetProcessor
         patterns.push_back(rec.m_patternMatcher.GetBuilderPattern());
 
 
-        AZStd::string buildAZName(rec.m_name.toUtf8().data());
+        AZStd::string buildAZName(rec.m_name);
         if (m_internalBuilders.find(buildAZName) != m_internalBuilders.end())
         {
             m_internalBuilders.erase(buildAZName);
         }
         m_internalBuilders[buildAZName] = builder;
 
-        AssetBuilderSDK::AssetBuilderDesc   builderDesc = builder->CreateBuilderDesc(rec.m_name, newBuilderId, patterns);
-
+        AssetBuilderSDK::AssetBuilderDesc   builderDesc = builder->CreateBuilderDesc(rec.m_name.c_str(), newBuilderId, patterns);
 
         AZ::Uuid internalUuid = AZ::Uuid::CreateRandom();
         m_internalBuilderUUIDByName[buildAZName] = internalUuid;

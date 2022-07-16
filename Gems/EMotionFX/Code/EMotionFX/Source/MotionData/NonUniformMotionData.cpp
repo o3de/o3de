@@ -1204,9 +1204,9 @@ namespace EMotionFX
     }
 #endif
 
-    void NonUniformMotionData::ExtractMotion(size_t sampleJointDataIndex, size_t rootJointDataIndex, bool transitionZeroXAxis, bool transitionZeroYAxis)
+    void NonUniformMotionData::ExtractMotion(size_t sampleJointDataIndex, size_t rootJointDataIndex, bool transitionZeroXAxis, bool transitionZeroYAxis, bool extractRotation)
     {
-        MotionData::ExtractMotion(sampleJointDataIndex, rootJointDataIndex, transitionZeroXAxis, transitionZeroYAxis);
+        MotionData::ExtractMotion(sampleJointDataIndex, rootJointDataIndex, transitionZeroXAxis, transitionZeroYAxis, extractRotation);
 
         if (sampleJointDataIndex == rootJointDataIndex)
         {
@@ -1216,6 +1216,11 @@ namespace EMotionFX
         if (m_jointData.size() > sampleJointDataIndex && m_jointData.size() > rootJointDataIndex)
         {
             m_jointData[rootJointDataIndex].m_positionTrack = m_jointData[sampleJointDataIndex].m_positionTrack;
+            if (extractRotation)
+            {
+                m_jointData[rootJointDataIndex].m_rotationTrack = m_jointData[sampleJointDataIndex].m_rotationTrack;
+            }
+
             for (size_t i = 0; i < m_jointData[sampleJointDataIndex].m_positionTrack.m_values.size(); ++i)
             {
                 // Zero out transition movement based on settings.
@@ -1235,6 +1240,11 @@ namespace EMotionFX
                 const float z = m_jointData[sampleJointDataIndex].m_positionTrack.m_values[i].GetZ();
 
                 m_jointData[sampleJointDataIndex].m_positionTrack.m_values[i].Set(x, y, z);
+
+                if (extractRotation)
+                {
+                    m_jointData[sampleJointDataIndex].m_rotationTrack.m_values[i].FromQuaternion(AZ::Quaternion::CreateIdentity());
+                }
             }
         }
 

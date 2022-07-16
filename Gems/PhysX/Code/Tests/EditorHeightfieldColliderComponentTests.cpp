@@ -335,6 +335,10 @@ namespace PhysXEditorTests
         EXPECT_TRUE(gameEntity->FindComponent<PhysX::HeightfieldColliderComponent>() != nullptr);
         EXPECT_TRUE(gameEntity->FindComponent(LmbrCentral::AxisAlignedBoxShapeComponentTypeId) != nullptr);
 
+        // Make sure to deactivate the entities before destroying the mocks, or else it's possible to get deadlocked.
+        gameEntity->Deactivate();
+        editorEntity->Deactivate();
+
         CleanupHeightfieldComponent();
     }
 

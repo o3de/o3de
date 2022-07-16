@@ -68,6 +68,7 @@ namespace AzToolsFramework
             AddedSourceIndexForSourceDependencyTable,
             AddedSourceDependencySubIdsAndProductHashes,
             AddedFlagsColumnToProductTable,
+            AddedStatsTable,
             //Add all new versions before this
             DatabaseVersionCount,
             LatestVersion = DatabaseVersionCount - 1
@@ -410,6 +411,31 @@ namespace AzToolsFramework
         typedef AZStd::vector<SourceAndScanFolderDatabaseEntry> SourceAndScanFolderDatabaseEntryContainer;
 
         //////////////////////////////////////////////////////////////////////////
+        // StatDatabaseEntry
+        class StatDatabaseEntry
+        {
+        public:
+            StatDatabaseEntry() = default;
+
+            StatDatabaseEntry(const StatDatabaseEntry& other) = default;
+            StatDatabaseEntry(StatDatabaseEntry&& other) = default;
+
+            StatDatabaseEntry& operator=(StatDatabaseEntry&& other) = default;
+            StatDatabaseEntry& operator=(const StatDatabaseEntry& other) = default;
+            bool operator==(const StatDatabaseEntry& other) const;
+            bool operator!=(const StatDatabaseEntry& other) const;
+
+            AZStd::string ToString() const;
+            auto GetColumns();
+
+            AZStd::string m_statName;
+            AZ::s64 m_statValue = 0;
+            AZ::s64 m_lastLogTime = 0;
+        };
+
+        typedef AZStd::vector<StatDatabaseEntry> StatDatabaseEntryContainer;
+
+        //////////////////////////////////////////////////////////////////////////
         //AssetDatabaseConnection
         //! The Connection class represents a read-only connection to the asset database specifically
         //! (as opposed to a sql connection). Things like the Asset Processor derive from this in order
@@ -471,6 +497,7 @@ namespace AzToolsFramework
             // note that AZStd::function cannot handle rvalue-refs at the time of writing this.
             using BuilderInfoHandler = std::function<bool(BuilderInfoEntry&&)>;
             using fileHandler = AZStd::function<bool(FileDatabaseEntry& entry)>;
+            using statHandler = AZStd::function<bool(StatDatabaseEntry& entry)>;
 
             //////////////////////////////////////////////////////////////////
             //Query entire table
@@ -483,6 +510,7 @@ namespace AzToolsFramework
             bool QueryProductDependenciesTable(combinedProductDependencyHandler handler);
             bool QueryBuilderInfoTable(const BuilderInfoHandler& handler);
             bool QueryFilesTable(fileHandler handler);
+            bool QueryStatsTable(statHandler handler);
 
             //////////////////////////////////////////////////////////////////////////
             //Queries
@@ -635,6 +663,11 @@ namespace AzToolsFramework
             bool QueryFilesLikeFileNameAndScanFolderID(const char* likeFileName, LikeType likeType, AZ::s64 scanfolderID, fileHandler handler);
             bool QueryFilesByScanFolderID(AZ::s64 scanFolderID, fileHandler handler);
             bool QueryFileByFileNameScanFolderID(const char* fileName, AZ::s64 scanFolderID, fileHandler handler);
+
+            //Stat
+            bool QueryStatByStatName(const char* statName, statHandler handler);
+            bool QueryStatLikeStatName(const char* statName, statHandler handler);
+
             //////////////////////////////////////////////////////////////////////////
 
             void SetQueryLogging(bool enableLogging);

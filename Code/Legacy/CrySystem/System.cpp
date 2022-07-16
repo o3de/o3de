@@ -400,7 +400,7 @@ void CSystem::ShutDown()
     // Log must be last thing released.
     if (m_env.pLog)
     {
-        m_env.pLog->FlushAndClose();
+        m_env.pLog->Flush();
     }
     SAFE_RELEASE(m_env.pLog);   // creates log backup
 
@@ -428,7 +428,7 @@ void CSystem::Quit()
         m_pUserCallback->OnQuit();
     }
 
-    gEnv->pLog->FlushAndClose();
+    gEnv->pLog->Flush();
 
     // Latest possible place to flush any pending messages to disk before the forceful termination.
     if (auto logger = AZ::Interface<AZ::Debug::IEventLogger>::Get(); logger)
