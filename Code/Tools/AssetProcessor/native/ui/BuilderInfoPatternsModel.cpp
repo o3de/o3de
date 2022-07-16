@@ -9,7 +9,6 @@
 #pragma once
 
 #include <ui/BuilderInfoPatternsModel.h>
-//#include <utilities/AssetUtilEBusHelper.h>
 #include <AssetBuilderSDK/AssetBuilderSDK.h>
 
 namespace AssetProcessor
