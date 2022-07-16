@@ -54,6 +54,9 @@ namespace AzToolsFramework
             explicit AssetBrowserModel(QObject* parent = nullptr);
             ~AssetBrowserModel();
 
+            void EnableTickBus();
+            void DisableTickBus();
+
             QModelIndex findIndex(const QString& absoluteAssetPath) const;
 
             //////////////////////////////////////////////////////////////////////////
@@ -100,6 +103,7 @@ namespace AzToolsFramework
             bool m_loaded;
             bool m_addingEntry;
             bool m_removingEntry;
+            bool m_isTickBusEnabled = false;
 
             bool GetEntryIndex(AssetBrowserEntry* entry, QModelIndex& index) const;
             int GetLeftmostColumnInFilter() const;
