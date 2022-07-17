@@ -27,9 +27,23 @@
 #include <Viewport/WhiteBoxModifierUtil.h>
 #include <Viewport/WhiteBoxViewportConstants.h>
 
+#include <QKeySequence>
+
 namespace WhiteBox
 {
     AZ_CLASS_ALLOCATOR_IMPL(TransformMode, AZ::SystemAllocator, 0)
+
+    static const AZ::Crc32 SwitchTranslationMode = AZ_CRC_CE("org.o3de.action.whitebox.switch_translation");
+    static const AZ::Crc32 SwitchRotationMode = AZ_CRC_CE("org.o3de.action.whitebox.switch_rotation");
+    static const AZ::Crc32 SwitchScaleMode = AZ_CRC_CE("org.o3de.action.whitebox.switch_scale");
+
+    const constexpr char* SwitchToTranslationModeTile = "Translation Mode";
+    const constexpr char* SwitchToRotationModeTile = "Rotation Mode";
+    const constexpr char* SwitchToScaleModeTile = "Scale Mode";
+
+    const constexpr char* SwitchToTranslationModeDesc = "Switch to Translation Mode";
+    const constexpr char* SwitchToRotationModeDesc = "Switch to Rotation Mode";
+    const constexpr char* SwitchToScaleModeDesc = "Switch to Scale Mode";
 
     static void SetViewportUiClusterActiveButton(
         AzToolsFramework::ViewportUi::ClusterId clusterId, AzToolsFramework::ViewportUi::ButtonId buttonId)
@@ -143,7 +157,62 @@ namespace WhiteBox
     AZStd::vector<AzToolsFramework::ActionOverride> TransformMode::PopulateActions(
         [[maybe_unused]] const AZ::EntityComponentIdPair& entityComponentIdPair)
     {
-        return {};
+        return {
+            AzToolsFramework::ActionOverride()
+                .SetUri(SwitchTranslationMode)
+                .SetKeySequence(QKeySequence{Qt::Key_1})
+                .SetTitle(SwitchToTranslationModeTile)
+                .SetTip(SwitchToTranslationModeDesc)
+                .SetEntityComponentIdPair(entityComponentIdPair)
+                .SetCallback(
+                    [cluserId = m_transformClusterId, buttonId = m_transformTranslateButtonId]()
+                    {
+                        AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
+                            AzToolsFramework::ViewportUi::DefaultViewportId,
+                            static_cast<void(AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::*)(
+                                    AzToolsFramework::ViewportUi::ClusterId, 
+                                    AzToolsFramework::ViewportUi::ButtonId)>(
+                                &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::PressButton),
+                            cluserId,
+                            buttonId);
+                    }),
+            AzToolsFramework::ActionOverride()
+                .SetUri(SwitchRotationMode)
+                .SetKeySequence(QKeySequence{Qt::Key_2})
+                .SetTitle(SwitchToRotationModeTile)
+                .SetTip(SwitchToRotationModeDesc)
+                .SetEntityComponentIdPair(entityComponentIdPair)
+                .SetCallback(
+                    [cluserId = m_transformClusterId, buttonId = m_transformRotateButtonId]()
+                    {
+                        AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
+                            AzToolsFramework::ViewportUi::DefaultViewportId,
+                            static_cast<void(AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::*)(
+                                    AzToolsFramework::ViewportUi::ClusterId, 
+                                    AzToolsFramework::ViewportUi::ButtonId)>(
+                                &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::PressButton),
+                            cluserId,
+                            buttonId);
+                    }),
+            AzToolsFramework::ActionOverride()
+                .SetUri(SwitchScaleMode)
+                .SetKeySequence(QKeySequence{Qt::Key_3})
+                .SetTitle(SwitchToScaleModeTile)
+                .SetTip(SwitchToScaleModeDesc)
+                .SetEntityComponentIdPair(entityComponentIdPair)
+                .SetCallback(
+                    [cluserId = m_transformClusterId, buttonId = m_transformScaleButtonId]()
+                    {
+                        AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
+                            AzToolsFramework::ViewportUi::DefaultViewportId,
+                            static_cast<void(AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::*)(
+                                    AzToolsFramework::ViewportUi::ClusterId, 
+                                    AzToolsFramework::ViewportUi::ButtonId)>(
+                                &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::PressButton),
+                            cluserId,
+                            buttonId);
+                    })
+        };
     }
 
     void TransformMode::Display(
@@ -288,26 +357,24 @@ namespace WhiteBox
     void TransformMode::RefreshManipulator()
     {
         DestroyManipulators();
-        if (m_whiteBoxSelection)
+        switch (m_transformType)
         {
-            switch (m_transformType)
-            {
-            case TransformType::Translation:
-                CreateTranslationManipulators();
-                SetViewportUiClusterActiveButton(m_transformClusterId, m_transformTranslateButtonId);
-                break;
-            case TransformType::Rotation:
-                CreateRotationManipulators();
-                SetViewportUiClusterActiveButton(m_transformClusterId, m_transformRotateButtonId);
-                break;
-            case TransformType::Scale:
-                CreateScaleManipulators();
-                SetViewportUiClusterActiveButton(m_transformClusterId, m_transformScaleButtonId);
-                break;
-            default:
-                break;
-            }
+        case TransformType::Translation:
+            CreateTranslationManipulators();
+            SetViewportUiClusterActiveButton(m_transformClusterId, m_transformTranslateButtonId);
+            break;
+        case TransformType::Rotation:
+            CreateRotationManipulators();
+            SetViewportUiClusterActiveButton(m_transformClusterId, m_transformRotateButtonId);
+            break;
+        case TransformType::Scale:
+            CreateScaleManipulators();
+            SetViewportUiClusterActiveButton(m_transformClusterId, m_transformScaleButtonId);
+            break;
+        default:
+            break;
         }
+        
     }
 
     void TransformMode::UpdateTransformHandles(WhiteBoxMesh* mesh)
@@ -336,6 +403,11 @@ namespace WhiteBox
 
     void TransformMode::CreateTranslationManipulators()
     {
+        if (!m_whiteBoxSelection)
+        {
+            return;
+        }
+
         AZ::Transform worldTranform = AZ::Transform::CreateIdentity();
         AZ::TransformBus::EventResult(worldTranform, m_entityComponentIdPair.GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
         AZStd::shared_ptr<AzToolsFramework::TranslationManipulators> translationManipulators =
@@ -412,6 +484,11 @@ namespace WhiteBox
 
     void TransformMode::CreateRotationManipulators()
     {
+        if (!m_whiteBoxSelection)
+        {
+            return;
+        }
+        
         WhiteBoxMesh* whiteBox = nullptr;
         EditorWhiteBoxComponentRequestBus::EventResult(
             whiteBox, m_entityComponentIdPair, &EditorWhiteBoxComponentRequests::GetWhiteBoxMesh);
@@ -491,6 +568,11 @@ namespace WhiteBox
 
     void TransformMode::CreateScaleManipulators()
     {
+        if (!m_whiteBoxSelection)
+        {
+            return;
+        }
+        
         WhiteBoxMesh* whiteBox = nullptr;
         EditorWhiteBoxComponentRequestBus::EventResult(
             whiteBox, m_entityComponentIdPair, &EditorWhiteBoxComponentRequests::GetWhiteBoxMesh);

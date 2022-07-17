@@ -36,6 +36,9 @@ namespace WhiteBox
         AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
             AzToolsFramework::ViewportUi::DefaultViewportId,
             &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::SetClusterActiveButton, clusterId, buttonId);
+
+        AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequestBus::Broadcast(
+            &AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequests::RefreshActions);
     }
 
     // helper function to return what modifier keys move us to restore mode
