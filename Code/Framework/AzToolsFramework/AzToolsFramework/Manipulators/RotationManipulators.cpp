@@ -158,4 +158,22 @@ namespace AzToolsFramework
     {
         m_circleBoundWidth = circleBoundWidth;
     }
+
+    AZStd::vector<BaseManipulator*> RotationManipulators::getManipulators()
+    {
+        AZStd::vector<BaseManipulator*> manipualators;
+        for (auto& manipulator : m_localAngularManipulators)
+        {
+            if (manipulator)
+            {
+                manipualators.emplace_back(manipulator.get());
+            }
+        }
+        if (m_viewAngularManipulator)
+        {
+            manipualators.emplace_back(m_viewAngularManipulator.get());
+        }
+        return manipualators;
+    }
+
 } // namespace AzToolsFramework

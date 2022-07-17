@@ -294,7 +294,25 @@ namespace WhiteBox
         EditorWhiteBoxComponentRequestBus::EventResult(
             whiteBox, m_entityComponentIdPair, &EditorWhiteBoxComponentRequests::GetWhiteBoxMesh);
 
-        const auto closestIntersection = FindClosestGeometryIntersection(edgeIntersection, polygonIntersection, vertexIntersection);
+        const bool mouseOverMainpulator = ([&]() 
+            {
+                if(m_manipulator) 
+                {
+                    for(auto& manipulator: m_manipulator->getManipulators()) 
+                    {
+                        if(manipulator->MouseOver()) 
+                        {
+                            return true;
+                        }
+                    }
+                }
+                return false;
+            }
+        )();
+
+        auto closestIntersection = mouseOverMainpulator
+            ? GeometryIntersection::None
+            : FindClosestGeometryIntersection(edgeIntersection, polygonIntersection, vertexIntersection);
         m_polygonIntersection.reset();
         m_edgeIntersection.reset();
         m_vertexIntersection.reset();
@@ -345,8 +363,9 @@ namespace WhiteBox
                     RefreshManipulator();
                 }
                 break;
-            default:
-                // do nothing
+            default: 
+                m_whiteBoxSelection.reset();
+                DestroyManipulators();
                 break;
             }
         }
