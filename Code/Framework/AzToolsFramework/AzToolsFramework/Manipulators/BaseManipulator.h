@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzCore/std/containers/vector.h>
 #include <AzCore/Component/ComponentBus.h>
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/Console/IConsole.h>
@@ -300,6 +301,7 @@ namespace AzToolsFramework
         void SetLocalPosition(const AZ::Vector3& localPosition);
         void SetLocalOrientation(const AZ::Quaternion& localOrientation);
         void SetNonUniformScale(const AZ::Vector3& nonUniformScale);
+        virtual AZStd::vector<BaseManipulator*> getManipulators() = 0;
 
     protected:
         //! Common processing for base manipulator type - Implement for all
