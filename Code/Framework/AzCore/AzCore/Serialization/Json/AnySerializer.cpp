@@ -14,7 +14,6 @@
 namespace AZ
 {
     AZ_CLASS_ALLOCATOR_IMPL(JsonAnySerializer, SystemAllocator, 0);
-
     JsonSerializationResult::Result JsonAnySerializer::Load
         ( void* outputValue
         , [[maybe_unused]] const Uuid& outputValueTypeId
@@ -27,31 +26,36 @@ namespace AZ
 
         JsonSerializationResult::ResultCode result(JSR::Tasks::ReadField);
 
-        AZ::Uuid typeId = AZ::Uuid::CreateNull();
+        AZ::Uuid anyTypeId = AZ::Uuid::CreateNull();
         auto typeIdMember = inputValue.FindMember(JsonSerialization::TypeIdFieldIdentifier);
         if (typeIdMember == inputValue.MemberEnd())
         {
             return context.Report
-            (JSR::Tasks::ReadField
+                ( JSR::Tasks::ReadField
                 , JSR::Outcomes::Missing
-                , AZStd::string::format("JsonAnySerializer::Load failed to load the %s member"
+                , AZStd::string::format("JsonAnySerializer::Load failed to find the %s member"
                     , JsonSerialization::TypeIdFieldIdentifier));
         }
 
-        result.Combine(LoadTypeId(typeId, typeIdMember->value, context));
+        result.Combine(LoadTypeId(anyTypeId, typeIdMember->value, context));
 
-        if (!typeId.IsNull())
+        if (!anyTypeId.IsNull())
         {
             auto outputAnyPtr = reinterpret_cast<AZStd::any*>(outputValue);
-            *outputAnyPtr = context.GetSerializeContext()->CreateAny(typeId);
+            *outputAnyPtr = context.GetSerializeContext()->CreateAny(anyTypeId);
 
-            if (outputAnyPtr->empty() || outputAnyPtr->type() != typeId)
+            if (outputAnyPtr->empty() || outputAnyPtr->type() != anyTypeId)
             {
                 return context.Report(result, "JsonAnySerializer::Load failed to load a value matched the reported AZ TypeId. "
                     "The C++ declaration may have been deleted or changed.");
             }
 
-            result.Combine(ContinueLoadingFromJsonObjectField(AZStd::any_cast<void>(outputAnyPtr), typeId, inputValue, "value", context));
+            result.Combine(ContinueLoadingFromJsonObjectField
+                ( AZStd::any_cast<void>(outputAnyPtr)
+                , anyTypeId
+                , inputValue
+                , "value"
+                , context));
         }
 
         return context.Report(result, result.GetProcessing() != JSR::Processing::Halted
@@ -67,32 +71,32 @@ namespace AZ
         , JsonSerializerContext& context)
     {
         namespace JSR = JsonSerializationResult; // Used to remove name conflicts in AzCore in uber builds.
-
+        
         AZ_Assert(valueTypeId == azrtti_typeid<AZStd::any>(), "JsonAnySerializer::Store against value typeID that was not AZStd::any");
 
         JSR::ResultCode result(JSR::Tasks::WriteValue);
         outputValue.SetObject();
-        rapidjson::Value typeValue;
-
         auto inputAnyPtr = reinterpret_cast<const AZStd::any*>(inputValue);
-        const auto typeId = inputAnyPtr->type();
-        result.Combine(StoreTypeId(typeValue, typeId, context));
+        const auto anyTypeId = inputAnyPtr->type();
+
+        rapidjson::Value typeValue;
+        result.Combine(StoreTypeId(typeValue, anyTypeId, context));
         outputValue.AddMember
             ( rapidjson::StringRef(JsonSerialization::TypeIdFieldIdentifier)
             , AZStd::move(typeValue)
             , context.GetJsonAllocator());
 
-        if (!typeId.IsNull() && AZStd::any_cast<void>(inputAnyPtr) != nullptr)
+        if (!anyTypeId.IsNull() && AZStd::any_cast<void>(inputAnyPtr) != nullptr)
         {
             auto defaultAnyPtr = reinterpret_cast<const AZStd::any*>(defaultValue);
-            const void* defaultValueSource = defaultAnyPtr->type() == typeId ? AZStd::any_cast<void>(defaultAnyPtr) : nullptr;
+            const void* defaultValueSource = defaultAnyPtr->type() == anyTypeId ? AZStd::any_cast<void>(defaultAnyPtr) : nullptr;
 
             result.Combine(ContinueStoringToJsonObjectField
                 ( outputValue
                 , "value"
                 , AZStd::any_cast<void>(inputAnyPtr)
                 , defaultValueSource
-                , typeId
+                , anyTypeId
                 , context));
         }
 
