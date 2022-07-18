@@ -1411,10 +1411,13 @@ namespace AzToolsFramework
         QModelIndex changedIndex = GetIndexFromEntity(entityId);
 
         // Trigger a refresh of all direct children so that they can be shown or hidden appropriately.
-        int numChildren = rowCount(changedIndex);
-        if (numChildren > 0)
+        QueueEntityUpdate(entityId);
+
+        EntityIdList children;
+        EditorEntityInfoRequestBus::EventResult(children, entityId, &EditorEntityInfoRequestBus::Events::GetChildren);
+        for (auto childId : children)
         {
-            emit dataChanged(index(0, 0, changedIndex), index(numChildren - 1, ColumnCount - 1, changedIndex));
+            QueueEntityUpdate(childId);
         }
 
         // Always expand containers
