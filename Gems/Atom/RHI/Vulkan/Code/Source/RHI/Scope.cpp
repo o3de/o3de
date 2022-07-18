@@ -67,6 +67,7 @@ namespace AZ
 
         void Scope::Begin(CommandList& commandList) const
         {
+            commandList.SetName(GetId());
             commandList.GetValidator().BeginScope(*this);
             commandList.BeginDebugLabel(AZStd::string::format("%s Scope", GetId().GetCStr()).c_str());
 

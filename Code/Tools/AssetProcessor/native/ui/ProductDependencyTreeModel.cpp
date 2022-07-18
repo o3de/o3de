@@ -30,7 +30,7 @@ namespace AssetProcessor
         , m_productFilterModel(productFilterModel)
         , m_treeType(treeType)
         , m_fileIcon(QIcon(QStringLiteral(":/AssetProcessor_goto.svg")))
-    {        
+    {
         m_root.reset(new ProductDependencyTreeItem(AZStd::make_shared<ProductDependencyTreeItemData>("", "")));
     }
 
@@ -213,10 +213,10 @@ namespace AssetProcessor
         switch (m_treeType)
         {
         case DependencyTreeType::Outgoing:
-            PopulateOutgoingProductDependencies(productDependencies, productItemData->m_databaseInfo.m_productID);
+            PopulateOutgoingProductDependencies(productDependencies, productItemData->m_databaseInfo.m_productID, {});
             break;
         case DependencyTreeType::Incoming:
-            PopulateIncomingProductDependencies(productDependencies, productItemData->m_databaseInfo.m_productID);
+            PopulateIncomingProductDependencies(productDependencies, productItemData->m_databaseInfo.m_productID, {});
             break;
         }
         endResetModel();
@@ -233,7 +233,7 @@ namespace AssetProcessor
         AZ::s64 m_productId;
     };
 
-    void ProductDependencyTreeModel::PopulateIncomingProductDependencies(ProductDependencyTreeItem* parent, AZ::s64 parentProductId)
+    void ProductDependencyTreeModel::PopulateIncomingProductDependencies(ProductDependencyTreeItem* parent, AZ::s64 parentProductId, QSet<AZ::s64> visitedDependencies)
     {
         AZ::Data::AssetId assetId;
         m_sharedDbConnection->QueryProductByProductID(
@@ -252,7 +252,7 @@ namespace AssetProcessor
                 return true;
             });
 
-        
+
         AZStd::string platform;
         m_sharedDbConnection->QueryJobByProductID(
             parentProductId,
@@ -262,13 +262,20 @@ namespace AssetProcessor
                 return true;
             });
 
-        
+
         AZStd::vector<ProductDependencyChild> pendingChildren;
 
         m_sharedDbConnection->QueryDirectReverseProductDependenciesBySourceGuidSubId(
             assetId.m_guid, assetId.m_subId,
             [&](AzToolsFramework::AssetDatabase::ProductDatabaseEntry& incomingDependency)
             {
+                // Make sure we haven't already encountered this product before
+                // If we have, that means there's a dependency loop, so just abort
+                if (visitedDependencies.contains(incomingDependency.m_productID))
+                {
+                    return true;
+                }
+
                 bool platformMatches = false;
                 m_sharedDbConnection->QueryJobByJobID(
                     incomingDependency.m_jobPK,
@@ -285,6 +292,8 @@ namespace AssetProcessor
                     return true;
                 }
 
+                visitedDependencies.insert(incomingDependency.m_productID);
+
                 AZ::IO::Path productNamePath(incomingDependency.m_productName, AZ::IO::PosixPathSeparator);
                 const AZ::IO::PathView filename = productNamePath.Filename();
                 AZStd::shared_ptr<ProductDependencyTreeItemData> productDepTreeItemData = AZStd::make_shared<ProductDependencyTreeItemData>(
@@ -298,11 +307,11 @@ namespace AssetProcessor
 
         for (auto& child : pendingChildren)
         {
-            PopulateIncomingProductDependencies(child.m_treeItem, child.m_productId);
+            PopulateIncomingProductDependencies(child.m_treeItem, child.m_productId, visitedDependencies);
         }
     }
 
-    void ProductDependencyTreeModel::PopulateOutgoingProductDependencies(ProductDependencyTreeItem* parent, AZ::s64 parentProductId)
+    void ProductDependencyTreeModel::PopulateOutgoingProductDependencies(ProductDependencyTreeItem* parent, AZ::s64 parentProductId, QSet<AZ::s64> visitedDependencies)
     {
         AZStd::string platform;
         m_sharedDbConnection->QueryJobByProductID(
@@ -326,7 +335,9 @@ namespace AssetProcessor
                     dependency.m_dependencySourceGuid, dependency.m_dependencySubID,
                     [&](AzToolsFramework::AssetDatabase::ProductDatabaseEntry& product)
                     {
-                        if (m_trackedProductIds.contains(product.m_productID))
+                        // Make sure we haven't already encountered this product before
+                        // If we have, that means there's a dependency loop, so just abort
+                        if (visitedDependencies.contains(product.m_productID))
                         {
                             return true;
                         }
@@ -346,6 +357,8 @@ namespace AssetProcessor
                             return true;
                         }
 
+                        visitedDependencies.insert(product.m_productID);
+
                         AZ::IO::Path productNamePath(product.m_productName, AZ::IO::PosixPathSeparator);
                         const AZ::IO::PathView filename = productNamePath.Filename();
                         AZStd::shared_ptr<ProductDependencyTreeItemData> productDepTreeItemData =
@@ -360,7 +373,8 @@ namespace AssetProcessor
             });
         for (auto& child : pendingChildren)
         {
-            PopulateOutgoingProductDependencies(child.m_treeItem, child.m_productId);
+            PopulateOutgoingProductDependencies(child.m_treeItem, child.m_productId, visitedDependencies);
         }
     }
+
 } // namespace AssetProcessor

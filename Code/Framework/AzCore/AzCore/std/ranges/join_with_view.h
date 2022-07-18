@@ -301,11 +301,11 @@ namespace AZStd::ranges
         {
             if (i.m_innerIter.index() == 0)
             {
-                m_innerIter.emplace<0>(AZStd::get<0>(AZStd::move(i.m_innerIter)));
+                m_innerIter.template emplace<0>(AZStd::get<0>(AZStd::move(i.m_innerIter)));
             }
             else
             {
-                m_innerIter.emplace<1>(AZStd::get<1>(AZStd::move(i.m_innerIter)));
+                m_innerIter.template emplace<1>(AZStd::get<1>(AZStd::move(i.m_innerIter)));
             }
         }
 
