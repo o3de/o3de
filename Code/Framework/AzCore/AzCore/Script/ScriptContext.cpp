@@ -5696,7 +5696,7 @@ LUA_API const Node* lua_getDummyNode()
                     lua_pushfstring(thread, "Failed to load script %s.", debugName);
                 }
 
-                AZ_Warning("LuaContext",false, "Failed to load script: %s", lua_tostring(lua, -1));
+                AZ_Warning("LuaContext",false, "Failed to load script: %s", debugName);
 
                 return false;
             }

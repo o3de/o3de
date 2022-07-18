@@ -141,6 +141,8 @@ namespace GradientSignal
         void UpdatePreviewSettings() const;
         AzToolsFramework::EntityIdList CancelPreviewRendering() const;
 
+        void SetupDependencyMonitor();
+
         void BakeImage();
         void StartBakeImageJob();
         bool IsBakeDisabled() const;

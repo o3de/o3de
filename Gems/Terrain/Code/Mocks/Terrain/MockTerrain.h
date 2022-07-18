@@ -36,6 +36,9 @@ namespace UnitTest
         MOCK_METHOD1(UnregisterArea, void(AZ::EntityId areaId));
         MOCK_METHOD2(
             RefreshArea, void(AZ::EntityId areaId, AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask changeMask));
+        MOCK_METHOD2(
+            RefreshRegion,
+            void(const AZ::Aabb& dirtyRegion, AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask changeMask));
     };
 
     class MockTerrainAreaHeightRequests : public Terrain::TerrainAreaHeightRequestBus::Handler

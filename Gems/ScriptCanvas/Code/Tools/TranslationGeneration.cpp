@@ -21,10 +21,7 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
-#include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/std/string/regex.h>
-
-#include <AzFramework/Gem/GemInfo.h>
 
 #include <Libraries/Core/AzEventHandler.h>
 #include <Libraries/Libraries.h>
@@ -1264,8 +1261,7 @@ namespace ScriptCanvasEditorTools
 
         document.AddMember("entries", entries, document.GetAllocator());
 
-        AZ::IO::Path gemPath = Helpers::GetGemPath("ScriptCanvas");
-        gemPath = gemPath / AZ::IO::Path("TranslationAssets");
+        AZ::IO::Path gemPath = ScriptCanvasEditor::TranslationHelper::GetTranslationDefaultFolderPath();
         gemPath = gemPath / filename;
         gemPath.ReplaceExtension(".names");
 
@@ -1362,36 +1358,6 @@ namespace ScriptCanvasEditorTools
                     outName = classData->m_name;
                 }
             }
-        }
-
-        AZStd::string GetGemPath(const AZStd::string& gemName)
-        {
-            if (auto settingsRegistry = AZ::Interface<AZ::SettingsRegistryInterface>::Get(); settingsRegistry != nullptr)
-            {
-                AZ::IO::Path gemSourceAssetDirectories;
-                AZStd::vector<AzFramework::GemInfo> gemInfos;
-                if (AzFramework::GetGemsInfo(gemInfos, *settingsRegistry))
-                {
-                    auto FindGemByName = [gemName](const AzFramework::GemInfo& gemInfo)
-                    {
-                        return gemInfo.m_gemName == gemName;
-                    };
-
-                    // Gather unique list of Gem Paths from the Settings Registry
-                    auto foundIt = AZStd::find_if(gemInfos.begin(), gemInfos.end(), FindGemByName);
-                    if (foundIt != gemInfos.end())
-                    {
-                        const AzFramework::GemInfo& gemInfo = *foundIt;
-                        for (const AZ::IO::Path& absoluteSourcePath : gemInfo.m_absoluteSourcePaths)
-                        {
-                            gemSourceAssetDirectories = (absoluteSourcePath / gemInfo.GetGemAssetFolder());
-                        }
-
-                        return gemSourceAssetDirectories.c_str();
-                    }
-                }
-            }
-            return "";
         }
 
         AZStd::string GetCategory(const AZ::SerializeContext::ClassData* classData)

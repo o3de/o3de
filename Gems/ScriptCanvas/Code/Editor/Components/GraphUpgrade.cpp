@@ -684,7 +684,7 @@ namespace ScriptCanvasEditor
         if (m_asset != asset)
         {
             m_asset = asset;
-            SetDebugPrefix(asset.Path().c_str());
+            SetDebugPrefix(asset.RelativePath().c_str());
         }
     }
 

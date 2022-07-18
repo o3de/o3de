@@ -1640,5 +1640,86 @@ namespace PhysX
 
     INSTANTIATE_TEST_CASE_P(PhysX, MassPropertiesWithTriangleMesh,
         ::testing::ValuesIn(PossibleMassComputeFlags)); // Values for GetMassComputeFlags()
+
+    TEST_F(PhysXSpecificTest, RigidBodyWithBoxGeometryCanSwitchFromKinematicToDynamic)
+    {
+        const AZ::Vector3 position = AZ::Vector3::CreateZero();
+        const AZ::Vector3 dimensions = AZ::Vector3::CreateOne();
+        EntityPtr entity = TestUtils::CreateBoxEntity(m_testSceneHandle, position, dimensions);
+        Physics::RigidBodyRequestBus::Event(entity->GetId(), &Physics::RigidBodyRequestBus::Events::SetKinematic, true);
+        bool isKinematic = false;
+        Physics::RigidBodyRequestBus::EventResult(isKinematic, entity->GetId(), &Physics::RigidBodyRequestBus::Events::IsKinematic);
+        EXPECT_TRUE(isKinematic);
+        Physics::RigidBodyRequestBus::Event(entity->GetId(), &Physics::RigidBodyRequestBus::Events::SetKinematic, false);
+        UnitTest::ErrorHandler setKinematicFalseWarningHandler("Cannot set kinematic to false");
+        Physics::RigidBodyRequestBus::EventResult(isKinematic, entity->GetId(), &Physics::RigidBodyRequestBus::Events::IsKinematic);
+        EXPECT_EQ(setKinematicFalseWarningHandler.GetWarningCount(), 0);
+        EXPECT_FALSE(isKinematic);
+    }
+
+    TEST_F(PhysXSpecificTest, RigidBodyWithSphereGeometryCanSwitchFromKinematicToDynamic)
+    {
+        const AZ::Vector3 position = AZ::Vector3::CreateZero();
+        const float radius = 1.0f;
+        EntityPtr entity = TestUtils::CreateSphereEntity(m_testSceneHandle, position, radius);
+        Physics::RigidBodyRequestBus::Event(entity->GetId(), &Physics::RigidBodyRequestBus::Events::SetKinematic, true);
+        bool isKinematic = false;
+        Physics::RigidBodyRequestBus::EventResult(isKinematic, entity->GetId(), &Physics::RigidBodyRequestBus::Events::IsKinematic);
+        EXPECT_TRUE(isKinematic);
+        Physics::RigidBodyRequestBus::Event(entity->GetId(), &Physics::RigidBodyRequestBus::Events::SetKinematic, false);
+        UnitTest::ErrorHandler setKinematicFalseWarningHandler("Cannot set kinematic to false");
+        Physics::RigidBodyRequestBus::EventResult(isKinematic, entity->GetId(), &Physics::RigidBodyRequestBus::Events::IsKinematic);
+        EXPECT_EQ(setKinematicFalseWarningHandler.GetWarningCount(), 0);
+        EXPECT_FALSE(isKinematic);
+    }
+
+    TEST_F(PhysXSpecificTest, RigidBodyWithCapsuleGeometryCanSwitchFromKinematicToDynamic)
+    {
+        const AZ::Vector3 position = AZ::Vector3::CreateZero();
+        const float radius = 0.5f;
+        const float height = 2.0f;
+        EntityPtr entity = TestUtils::CreateCapsuleEntity(m_testSceneHandle, position, height, radius);
+        Physics::RigidBodyRequestBus::Event(entity->GetId(), &Physics::RigidBodyRequestBus::Events::SetKinematic, true);
+        bool isKinematic = false;
+        Physics::RigidBodyRequestBus::EventResult(isKinematic, entity->GetId(), &Physics::RigidBodyRequestBus::Events::IsKinematic);
+        EXPECT_TRUE(isKinematic);
+        Physics::RigidBodyRequestBus::Event(entity->GetId(), &Physics::RigidBodyRequestBus::Events::SetKinematic, false);
+        UnitTest::ErrorHandler setKinematicFalseWarningHandler("Cannot set kinematic to false");
+        Physics::RigidBodyRequestBus::EventResult(isKinematic, entity->GetId(), &Physics::RigidBodyRequestBus::Events::IsKinematic);
+        EXPECT_EQ(setKinematicFalseWarningHandler.GetWarningCount(), 0);
+        EXPECT_FALSE(isKinematic);
+    }
+
+    TEST_F(PhysXSpecificTest, RigidBodyWithConvexMeshGeometryCanSwitchFromKinematicToDynamic)
+    {
+        auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get();
+        AzPhysics::RigidBodyConfiguration rigidBodyConfiguration;
+        rigidBodyConfiguration.m_kinematic = true;
+
+        AzPhysics::SimulatedBodyHandle rigidBodyhandle = sceneInterface->AddSimulatedBody(m_testSceneHandle, &rigidBodyConfiguration);
+        auto convexShape = PhysX::TestUtils::CreatePyramidShape(1.0f);
+        auto* rigidBody =
+            azdynamic_cast<AzPhysics::RigidBody*>(sceneInterface->GetSimulatedBodyFromHandle(m_testSceneHandle, rigidBodyhandle));
+        rigidBody->AddShape(convexShape);
+        EXPECT_TRUE(rigidBody->IsKinematic());
+        UnitTest::ErrorHandler setKinematicFalseWarningHandler("Cannot set kinematic to false");
+        rigidBody->SetKinematic(false);
+        EXPECT_EQ(setKinematicFalseWarningHandler.GetWarningCount(), 0);
+        EXPECT_FALSE(rigidBody->IsKinematic());
+    }
+
+    TEST_F(PhysXSpecificTest, RigidBodyWithTriangleMeshGeometryCannotSwitchFromKinematicToDynamic)
+    {
+        AzPhysics::SimulatedBodyHandle rigidBodyhandle =
+            TestUtils::AddKinematicTriangleMeshCubeToScene(m_testSceneHandle, 3.0f, AzPhysics::MassComputeFlags::NONE);
+        auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get();
+        auto* rigidBody =
+            azdynamic_cast<AzPhysics::RigidBody*>(sceneInterface->GetSimulatedBodyFromHandle(m_testSceneHandle, rigidBodyhandle));
+        EXPECT_TRUE(rigidBody->IsKinematic());
+        UnitTest::ErrorHandler setKinematicFalseWarningHandler("Cannot set kinematic to false");
+        rigidBody->SetKinematic(false);
+        EXPECT_EQ(setKinematicFalseWarningHandler.GetWarningCount(), 1);
+        EXPECT_TRUE(rigidBody->IsKinematic());
+    }
 } // namespace PhysX
 

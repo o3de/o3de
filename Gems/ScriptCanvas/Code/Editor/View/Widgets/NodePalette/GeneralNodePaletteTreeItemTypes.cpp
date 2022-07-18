@@ -126,7 +126,8 @@ namespace ScriptCanvasEditor
 
     AZ::IO::Path ClassMethodEventPaletteTreeItem::GetTranslationDataPath() const
     {
-        return AZ::IO::Path(ScriptCanvasEditor::TranslationHelper::AssetPath::BehaviorClassPath) / GetClassMethodName();
+        AZStd::string fileName = GetClassMethodName();
+        return ScriptCanvasEditor::TranslationHelper::GetTranslationFilePath(fileName);
     }
 
     void ClassMethodEventPaletteTreeItem::GenerateTranslationData()
@@ -209,21 +210,19 @@ namespace ScriptCanvasEditor
 
     AZ::IO::Path GlobalMethodEventPaletteTreeItem::GetTranslationDataPath() const
     {
+        AZStd::string fileName = "";
         if (m_isProperty)
         {
             AZStd::string propertyName = m_methodName;
             AZ::StringFunc::Replace(propertyName, "::Getter", "");
             AZ::StringFunc::Replace(propertyName, "::Setter", "");
-
-            AZStd::string filename = GraphCanvas::TranslationKey::Sanitize(propertyName);
-
-            return AZ::IO::Path(ScriptCanvasEditor::TranslationHelper::AssetPath::BehaviorGlobalPropertyPath) / filename;
+            fileName = GraphCanvas::TranslationKey::Sanitize(propertyName);
         }
         else
         {
-            AZStd::string filename = GraphCanvas::TranslationKey::Sanitize(m_methodName);
-            return AZ::IO::Path(ScriptCanvasEditor::TranslationHelper::AssetPath::BehaviorGlobalMethodPath) / filename;
+            fileName = GraphCanvas::TranslationKey::Sanitize(m_methodName);
         }
+        return ScriptCanvasEditor::TranslationHelper::GetTranslationFilePath(fileName);
     }
 
     void GlobalMethodEventPaletteTreeItem::GenerateTranslationData()
@@ -305,10 +304,9 @@ namespace ScriptCanvasEditor
 
     AZ::IO::Path CustomNodePaletteTreeItem::GetTranslationDataPath() const
     {
-        AZStd::string filename =
+        AZStd::string fileName =
             ScriptCanvasEditor::TranslationHelper::SanitizeCustomNodeFileName(GetName().toUtf8().data(), GetInfo().m_typeId);
-
-        return AZ::IO::Path(ScriptCanvasEditor::TranslationHelper::AssetPath::CustomNodePath) / filename;
+        return ScriptCanvasEditor::TranslationHelper::GetTranslationFilePath(fileName);
     }
 
     void CustomNodePaletteTreeItem::GenerateTranslationData()
