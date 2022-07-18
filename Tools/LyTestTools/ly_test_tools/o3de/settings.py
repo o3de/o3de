@@ -31,7 +31,7 @@ class LySettings(object):
         return self._temp_path
 
     def modify_asset_processor_setting(self, setting, value):
-        logger.debug(f'Updating setting {setting} to {value}')
+        logger.info(f'Updating setting {setting} to {value}')
         _edit_text_settings_file(self._resource_locator.asset_processor_config_file(), setting, value)
 
     def modify_platform_setting(self, setting, value):

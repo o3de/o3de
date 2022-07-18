@@ -65,7 +65,7 @@ class AbstractWorkspaceManager:
         if not self.output_path:
             self.output_path = os.path.join(self.paths.test_results(),
                                             datetime.datetime.now().strftime('%Y-%m-%dT%H_%M_%S_%f'))
-            logger.debug(f"No logs path set, using default based on timestamp: {self.output_path}")
+            logger.info(f"No logs path set, using default based on timestamp: {self.output_path}")
 
     def setup(self):
         """

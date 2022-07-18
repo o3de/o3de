@@ -86,7 +86,7 @@ class Launcher(object):
                     artifact_ext = os.path.splitext(artifact)[1]
                     if artifact_ext == '.dmp':
                         os.remove(os.path.join(self.workspace.paths.project_log(), artifact))
-                        logger.debug(f"Removing pre-existing artifact {artifact} from calling Launcher.setup()")
+                        logger.info(f"Removing pre-existing artifact {artifact} from calling Launcher.setup()")
                     # For logs, we are going to keep the file in existance and clear it to play nice with filesystem caching and
                     # our code reading the contents of the file
                     elif artifact_ext == '.log':

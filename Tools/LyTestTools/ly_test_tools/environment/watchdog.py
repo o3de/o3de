@@ -219,7 +219,7 @@ class CrashLogWatchdog(Watchdog):
                             Investigate the process that creates the error log for failures."
 
         if os.path.exists(log_path):
-            logger.debug(f"Removing existing {log_path} when initializing crash log watchdog.")
+            logger.info(f"Removing existing {log_path} when initializing crash log watchdog.")
             os.remove(log_path)
 
         super(CrashLogWatchdog, self).__init__(bool_fn=crash_exists, interval=interval,

@@ -57,7 +57,7 @@ def kill_processes_named(names, ignore_extensions=False):
     if not name_set:
         return
 
-    logger.debug(f"Killing all processes named {name_set}")
+    logger.info(f"Killing all processes named {name_set}")
     process_set_to_kill = set()
     for process in _safe_get_processes(['name', 'pid']):
         try:
@@ -93,7 +93,7 @@ def kill_processes_started_from(path):
 
     :param path: path to application or directory
     """
-    logger.debug(f"Killing processes started from '{path}'")
+    logger.info(f"Killing processes started from '{path}'")
     if os.path.exists(path):
         process_list = []
         for process in _safe_get_processes():
@@ -118,7 +118,7 @@ def kill_processes_with_name_not_started_from(name, path):
     :param path: path where process shouldn't have started from
     """
     path = os.path.join(os.getcwd(), os.path.normpath(path)).lower()
-    logger.debug(f"Killing processes with name:'{name}' not started from '{path}'")
+    logger.info(f"Killing processes with name:'{name}' not started from '{path}'")
     if os.path.exists(path):
         proccesses_to_kill = []
         for process in _safe_get_processes(["name", "pid"]):
@@ -130,7 +130,7 @@ def kill_processes_with_name_not_started_from(name, path):
             process_name = os.path.splitext(os.path.basename(process_path))[0]
 
             if process_name == os.path.basename(name) and not os.path.dirname(process_path.lower()) == path:
-                logger.debug("%s -> %s" % (os.path.dirname(process_path.lower()), path))
+                logger.info("%s -> %s" % (os.path.dirname(process_path.lower()), path))
                 proccesses_to_kill.append(process)
 
         _safe_kill_processes(proccesses_to_kill)
@@ -147,7 +147,7 @@ def kill_process_with_pid(pid, raise_on_missing=False):
     """
     if pid is None:
         logger.warning("Killing process id of 'None' will terminate the current python process!")
-    logger.debug(f"Killing processes with id '{pid}'")
+    logger.info(f"Killing processes with id '{pid}'")
     process = psutil.Process(pid)
     if process.is_running():
         _safe_kill_process(process)
@@ -356,7 +356,7 @@ def _safe_kill_process(proc):
     :param proc: The process to kill
     """
     try:
-        logger.debug(f"Terminating process '{proc.name()}' with id '{proc.pid}'")
+        logger.info(f"Terminating process '{proc.name()}' with id '{proc.pid}'")
         _terminate_and_confirm_dead(proc)
     except psutil.AccessDenied:
         logger.warning("Termination failed, Access Denied", exc_info=True)
@@ -374,7 +374,7 @@ def _safe_kill_processes(processes):
     """
     for proc in processes:
         try:
-            logger.debug(f"Terminating process '{proc.name()}' with id '{proc.pid}'")
+            logger.info(f"Terminating process '{proc.name()}' with id '{proc.pid}'")
             proc.kill()
         except psutil.AccessDenied:
             logger.warning("Termination failed, Access Denied with stacktrace:", exc_info=True)
@@ -385,7 +385,7 @@ def _safe_kill_processes(processes):
 
     def on_terminate(proc):
         try:
-            logger.debug(f"process '{proc.name()}' with id '{proc.pid}' terminated with exit code {proc.returncode}")
+            logger.info(f"process '{proc.name()}' with id '{proc.pid}' terminated with exit code {proc.returncode}")
         except psutil.AccessDenied:
             logger.warning("Termination failed, Access Denied with stacktrace:", exc_info=True)
         except psutil.NoSuchProcess:
