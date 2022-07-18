@@ -45,6 +45,16 @@ namespace AzToolsFramework
             AZ::TickBus::Handler::BusDisconnect();
         }
 
+        void AssetBrowserModel::EnableTickBus()
+        {
+            m_isTickBusEnabled = true;
+        }
+
+        void AssetBrowserModel::DisableTickBus()
+        {
+            m_isTickBusEnabled = false;
+        }
+
         QModelIndex AssetBrowserModel::findIndex(const QString& absoluteAssetPath) const
         {
             // Split the path based on either platform's slash
@@ -407,7 +417,8 @@ namespace AzToolsFramework
         void AssetBrowserModel::OnTick(float /*deltaTime*/, AZ::ScriptTimePoint /*time*/) 
         {
             // if any entries changed since last tick, notify the views
-            if (EntryCache* cache = EntryCache::GetInstance())
+            EntryCache* cache = EntryCache::GetInstance();
+            if (m_isTickBusEnabled && cache)
             {
                 if (!cache->m_dirtyThumbnailsSet.empty())
                 {
