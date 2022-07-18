@@ -8,12 +8,19 @@
 
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/PackedVector3.h>
+#include <AzCore/Debug/Trace.h>
+#include <AzCore/Name/Name.h>
+#include <AzCore/base.h>
+#include <AzCore/std/containers/variant.h>
+#include <AzCore/std/containers/vector.h>
+#include <AzCore/std/smart_ptr/unique_ptr.h>
+#include <AzCore/std/utility/move.h>
+#include <EMotionFX/Source/VertexAttributeLayerBuffer.h>
 #include "EMotionFXConfig.h"
 #include "Mesh.h"
 #include "SubMesh.h"
 #include "Node.h"
 #include "SkinningInfoVertexAttributeLayer.h"
-#include "VertexAttributeLayerAbstractData.h"
 #include "Actor.h"
 #include "SoftSkinDeformer.h"
 #include "MeshDeformerStack.h"
@@ -103,27 +110,29 @@ namespace EMotionFX
 
         // Convert Atom buffer storing elements of type SourceType to an EMFX vertex attribute layer storing elements of type TargetType.
         // The vertex attribute layer is created within and added to the given target mesh.
-        // Atom meshes might have different vertex features like some might contain tangents or multiple UV sets while other meshes do not have
-        // tangents or don't contain any UV set at all. The corresponding EMFX sub-meshes do not support that, so we need to pad the vertex buffers.
+        // Atom meshes might have different vertex features like some might contain tangents or multiple UV sets while other meshes do not
+        // have tangents or don't contain any UV set at all. The corresponding EMFX sub-meshes do not support that, so we need to pad the
+        // vertex buffers.
         // @param[in] sourceModelLod Source model LOD asset to read the vertex buffers from.
-        // @param[in] modelVertexCount Accumulated vertex count for all Atom meshes calculated and cached by the caller.
         // @param[in] sourceBufferName The name of the buffer to translate into a vertex attribute layer.
-        // @param[in] inputBufferData Pointer to the source buffer from the Atom model LOD asset. This contains the data to be translated and copied over.
-        // @param[in] targetMesh The EMFX mesh where the newly created vertex attribute layer should be added to.
-        // @param[in] vertexAttributeLayerTypeId The type ID of the attribute layer used to identify type of vertex data (positions, normals, etc.)
+        // @param[in] inputBufferData Pointer to the source buffer from the Atom model LOD asset. This contains the data to be translated
+        // and copied over.
+        // @param[in] vertexAttributeLayerTypeId The type ID of the attribute layer used to identify type of vertex data (positions,
+        // normals, etc.)
         // @param[in] keepOriginals True in case the vertex elements change when deforming the mesh, false if not.
-        // @param[in] defaultPaddingValue The value used for the sub-meshes in the EMFX that do not contain a given vertex feature in Atom for the given mesh.
+        // @param[in] defaultPaddingValue The value used for the sub-meshes in the EMFX that do not contain a given vertex feature in Atom
+        // for the given mesh.
         template<typename TargetType, typename SourceType>
-        void CreateAndAddVertexAttributeLayer(const AZ::Data::Asset<AZ::RPI::ModelLodAsset>& sourceModelLod, AZ::u32 modelVertexCount,
-            const AZ::Name& sourceBufferName, const void* inputBufferData,
-            Mesh* targetMesh, AZ::u32 vertexAttributeLayerTypeId, bool keepOriginals,
+        AZStd::vector<TargetType> CreateBuffer(
+            const AZ::Data::Asset<AZ::RPI::ModelLodAsset>& sourceModelLod,
+            const AZ::Name& sourceBufferName,
+            const void* inputBufferData,
             const TargetType& defaultPaddingValue)
         {
-            VertexAttributeLayerAbstractData* targetVertexAttributeLayer = VertexAttributeLayerAbstractData::Create(modelVertexCount, vertexAttributeLayerTypeId, sizeof(TargetType), keepOriginals);
-            TargetType* targetBuffer = static_cast<TargetType*>(targetVertexAttributeLayer->GetData());
+            AZStd::vector<TargetType> targetBuffer;
 
             // Fill the vertex attribute layer by iterating through the Atom meshes and copying over the vertex data for each.
-            [[maybe_unused]] size_t addedElements = 0;
+            // [[maybe_unused]] size_t addedElements = 0;
             for (const AZ::RPI::ModelLodAsset::Mesh& atomMesh : sourceModelLod->GetMeshes())
             {
                 const uint32_t atomMeshVertexCount = atomMesh.GetVertexCount();
@@ -135,7 +144,7 @@ namespace EMotionFX
 
                     for (size_t vertexIndex = 0; vertexIndex < atomMeshVertexCount; ++vertexIndex)
                     {
-                        targetBuffer[vertexIndex] = ConvertVector(atomMeshBuffer[vertexIndex]);
+                        targetBuffer.emplace_back(ConvertVector(atomMeshBuffer[vertexIndex]));
                     }
                 }
                 else
@@ -145,25 +154,11 @@ namespace EMotionFX
 
                     for (size_t vertexIndex = 0; vertexIndex < atomMeshVertexCount; ++vertexIndex)
                     {
-                        targetBuffer[vertexIndex] = defaultPaddingValue;
+                        targetBuffer.emplace_back(defaultPaddingValue);
                     }
                 }
-
-                targetBuffer += atomMeshVertexCount;
-                addedElements += atomMeshVertexCount;
             }
-
-            AZ_Assert(addedElements == modelVertexCount, "The model has %d vertices while we only added %d elements to the %s buffer.",
-                modelVertexCount, addedElements, sourceBufferName.GetCStr());
-
-            // In case we want to keep the original values, the target buffer will have double the size and we copy the same thing twice.
-            // The original values won't be touched when morphing or skinning but are needed as a base for the mesh deformations.
-            if (keepOriginals)
-            {
-                memcpy(targetBuffer, targetVertexAttributeLayer->GetData(), sizeof(TargetType) * modelVertexCount);
-            }
-
-            targetMesh->AddVertexAttributeLayer(targetVertexAttributeLayer);
+            return targetBuffer;
         }
     };
 
@@ -223,45 +218,33 @@ namespace EMotionFX
 
             if (name == AZ::Name("POSITION"))
             {
-                AtomMeshHelpers::CreateAndAddVertexAttributeLayer<AZ::Vector3, AZ::PackedVector3f>(sourceModelLod, modelVertexCount,
-                    name, bufferData,
-                    mesh, Mesh::ATTRIB_POSITIONS, /*keepOriginals=*/true,
-                    AZ::Vector3(0.0f, 0.0f, 0.0f));
+                auto buffer = AtomMeshHelpers::CreateBuffer<AZ::Vector3, AZ::PackedVector3f>(
+                    sourceModelLod, name, bufferData, AZ::Vector3(0.0f, 0.0f, 0.0f));
+                mesh->CreateVertexAttribute<AttributeType::Position>(AZStd::move(buffer), true);
             }
             else if (name == AZ::Name("NORMAL"))
             {
-                AtomMeshHelpers::CreateAndAddVertexAttributeLayer<AZ::Vector3, AZ::PackedVector3f>(sourceModelLod, modelVertexCount,
-                    name, bufferData,
-                    mesh, Mesh::ATTRIB_NORMALS, /*keepOriginals=*/true,
-                    AZ::Vector3(1.0f, 0.0f, 0.0f));
+                auto buffer = AtomMeshHelpers::CreateBuffer<AZ::Vector3, AZ::PackedVector3f>(
+                    sourceModelLod, name, bufferData, AZ::Vector3(1.0f, 0.0f, 0.0f));
+                mesh->CreateVertexAttribute<AttributeType::Normal>(AZStd::move(buffer), true);
             }
             else if (name == AZ::Name("UV"))
             {
-                AtomMeshHelpers::CreateAndAddVertexAttributeLayer<AZ::Vector2, AtomMeshHelpers::Vector2>(sourceModelLod, modelVertexCount,
-                    name, bufferData,
-                    mesh, Mesh::ATTRIB_UVCOORDS, /*keepOriginals=*/false,
-                    AZ::Vector2(0.0f, 0.0f));
+                auto buffer = AtomMeshHelpers::CreateBuffer<AZ::Vector2, AtomMeshHelpers::Vector2>(
+                    sourceModelLod, name, bufferData, AZ::Vector2(1.0f, 0.0f));
+                mesh->CreateVertexAttribute<AttributeType::UVCoords>(AZStd::move(buffer), false);
             }
             else if (name == AZ::Name("TANGENT"))
             {
-                AtomMeshHelpers::CreateAndAddVertexAttributeLayer<AZ::Vector4, AtomMeshHelpers::Vector4>(sourceModelLod, modelVertexCount,
-                    name, bufferData,
-                    mesh, Mesh::ATTRIB_TANGENTS, /*keepOriginals=*/true,
-                    AZ::Vector4(1.0f, 0.0f, 0.0f, 0.0f));
+                auto buffer = AtomMeshHelpers::CreateBuffer<AZ::Vector4, AtomMeshHelpers::Vector4>(
+                    sourceModelLod,name, bufferData, AZ::Vector4(1.0f, 0.0f, 0.0f, 0.0f));
+                mesh->CreateVertexAttribute<AttributeType::Tangent>(AZStd::move(buffer), true);
             }
             else if (name == AZ::Name("BITANGENT"))
             {
-                AtomMeshHelpers::CreateAndAddVertexAttributeLayer<AZ::Vector3, AZ::PackedVector3f>(sourceModelLod, modelVertexCount,
-                    name, bufferData,
-                    mesh, Mesh::ATTRIB_BITANGENTS, /*keepOriginals=*/true,
-                    AZ::Vector3(1.0f, 0.0f, 0.0f));
-            }
-            else if (name == AZ::Name("COLOR"))
-            {
-                AtomMeshHelpers::CreateAndAddVertexAttributeLayer<AZ::Vector4, AtomMeshHelpers::Vector4>(sourceModelLod, modelVertexCount,
-                    name, bufferData,
-                    mesh, Mesh::ATTRIB_COLORS128, /*keepOriginals=*/false,
-                    AZ::Vector4(0.0f, 0.0f, 0.0f, 0.0f));
+                auto buffer =  AtomMeshHelpers::CreateBuffer<AZ::Vector3, AZ::PackedVector3f>(
+                    sourceModelLod, name, bufferData,AZ::Vector3(1.0f, 0.0f, 0.0f));
+                mesh->CreateVertexAttribute<AttributeType::Bitangent>(AZStd::move(buffer), true);
             }
             else if (name == AZ::Name("SKIN_JOINTINDICES"))
             {
@@ -279,13 +262,12 @@ namespace EMotionFX
         }
 
         // Add the original vertex layer
-        VertexAttributeLayerAbstractData* originalVertexData = VertexAttributeLayerAbstractData::Create(modelVertexCount, Mesh::ATTRIB_ORGVTXNUMBERS, sizeof(AZ::u32), false);
-        AZ::u32* originalVertexDataRaw = static_cast<AZ::u32*>(originalVertexData->GetData());
+        AZStd::vector<AZ::u32> orignalVertexData;
         for (AZ::u32 i = 0; i < modelVertexCount; ++i)
         {
-            originalVertexDataRaw[i] = static_cast<AZ::u32>(i);
+            orignalVertexData.emplace_back(static_cast<AZ::u32>(i));
         }
-        mesh->AddVertexAttributeLayer(originalVertexData);
+        mesh->CreateVertexAttribute<AttributeType::OrginalVertexNumber>(AZStd::move(orignalVertexData), false);
 
         // Add skinning layer
         if (skinJointIndices && skinWeights)
@@ -402,9 +384,13 @@ namespace EMotionFX
     // copy all original data over the output data
     void Mesh::ResetToOriginalData()
     {
-        for (VertexAttributeLayer* vertexAttribute : m_vertexAttributes)
+        for (auto& vertexAttribute : m_vertexAttributeLayer)
         {
-            vertexAttribute->ResetToOriginalData();
+            AZStd::visit([](auto& attr) {
+                if(attr) {
+                    attr->ResetToOriginalData();
+                }
+            }, vertexAttribute);
         }
     }
 
@@ -444,244 +430,6 @@ namespace EMotionFX
         m_numPolygons    = 0;
     }
 
-
-    // calculate the tangent and bitangent for a given triangle
-    void Mesh::CalcTangentAndBitangentForFace(const AZ::Vector3& posA, const AZ::Vector3& posB, const AZ::Vector3& posC,
-        const AZ::Vector2& uvA,  const AZ::Vector2& uvB,  const AZ::Vector2& uvC,
-        AZ::Vector3* outTangent, AZ::Vector3* outBitangent)
-    {
-        // reset the tangent and bitangent
-        *outTangent = AZ::Vector3::CreateZero();
-        if (outBitangent)
-        {
-            *outBitangent = AZ::Vector3::CreateZero();
-        }
-
-        const float x1 = posB.GetX() - posA.GetX();
-        const float x2 = posC.GetX() - posA.GetX();
-        const float y1 = posB.GetY() - posA.GetY();
-        const float y2 = posC.GetY() - posA.GetY();
-        const float z1 = posB.GetZ() - posA.GetZ();
-        const float z2 = posC.GetZ() - posA.GetZ();
-
-        const float s1 = uvB.GetX() - uvA.GetX();
-        const float s2 = uvC.GetX() - uvA.GetX();
-        const float t1 = uvB.GetY() - uvA.GetY();
-        const float t2 = uvC.GetY() - uvA.GetY();
-
-        const float divider = (s1 * t2 - s2 * t1);
-
-        float r;
-        if (MCore::Math::Abs(divider) < MCore::Math::epsilon)
-        {
-            r = 1.0f;
-        }
-        else
-        {
-            r = 1.0f / divider;
-        }
-
-        const AZ::Vector3 sdir((t2* x1 - t1* x2) * r,  (t2* y1 - t1* y2) * r,    (t2* z1 - t1* z2) * r);
-        const AZ::Vector3 tdir((s1* x2 - s2* x1) * r,  (s1* y2 - s2* y1) * r,    (s1* z2 - s2* z1) * r);
-
-        *outTangent = sdir;
-        if (outBitangent)
-        {
-            *outBitangent = tdir;
-        }
-    }
-
-
-    // calculate the S and T vectors
-    bool Mesh::CalcTangents(uint32 uvSet, bool storeBitangents)
-    {
-        if (!CheckIfIsTriangleMesh())
-        {
-            AZ_Warning("EMotionFX", false, "Cannot calculate tangents for mesh that isn't a pure triangle mesh.");
-            return false;
-        }
-
-        // find the uv layer, if it exists, otherwise return
-        AZ::Vector2* uvData = static_cast<AZ::Vector2*>(FindVertexData(Mesh::ATTRIB_UVCOORDS, uvSet));
-        if (!uvData)
-        {
-            // Try UV 0 as fallback.
-            if (uvSet != 0)
-            {
-                uvData = static_cast<AZ::Vector2*>(FindVertexData(Mesh::ATTRIB_UVCOORDS, 0));
-            }
-
-            if (!uvData)
-            {
-                return false;
-            }
-
-            AZ_Warning("EMotionFX", false, "Cannot find UV set %d for this mesh during tangent generation. Falling back to UV set 0.", uvSet);
-            uvSet = 0;
-        }
-
-        // calculate the number of tangent layers that are already available
-        AZ::Vector4* tangents = nullptr;
-        AZ::Vector4* orgTangents = nullptr;
-        AZ::Vector3* bitangents = nullptr;
-        AZ::Vector3* orgBitangents = nullptr;
-        const size_t numTangentLayers = CalcNumAttributeLayers(Mesh::ATTRIB_TANGENTS);
-
-        // make sure we have tangent data allocated for all uv layers before the given one
-        for (size_t i = numTangentLayers; i <= uvSet; ++i)
-        {
-            // add a new tangent layer
-            AddVertexAttributeLayer(VertexAttributeLayerAbstractData::Create(m_numVertices, Mesh::ATTRIB_TANGENTS, sizeof(AZ::Vector4), true));
-            tangents    = static_cast<AZ::Vector4*>(FindVertexData(Mesh::ATTRIB_TANGENTS, i));
-            orgTangents = static_cast<AZ::Vector4*>(FindOriginalVertexData(Mesh::ATTRIB_TANGENTS, i));
-
-            // Add the bitangents layer.
-            if (storeBitangents)
-            {
-                AddVertexAttributeLayer(VertexAttributeLayerAbstractData::Create(m_numVertices, Mesh::ATTRIB_BITANGENTS, sizeof(AZ::PackedVector3f), true));
-                bitangents    = static_cast<AZ::Vector3*>(FindVertexData(Mesh::ATTRIB_BITANGENTS, i));
-                orgBitangents = static_cast<AZ::Vector3*>(FindOriginalVertexData(Mesh::ATTRIB_BITANGENTS, i));
-            }
-
-            // default all tangents for the newly created layer
-            AZ::Vector4 defaultTangent(1.0f, 0.0f, 0.0f, 0.0f);
-            AZ::Vector3 defaultBitangent(0.0f, 0.0f, 1.0f);
-            for (uint32 vtx = 0; vtx < m_numVertices; ++vtx)
-            {
-                tangents[vtx]      = defaultTangent;
-                orgTangents[vtx]   = defaultTangent;
-
-                if (orgBitangents && bitangents)
-                {
-                    bitangents[vtx]    = defaultBitangent;
-                    orgBitangents[vtx] = defaultBitangent;
-                }
-            }
-        }
-
-        // get access to the tangent layer for the given uv set
-        tangents      = static_cast<AZ::Vector4*>(FindVertexData(Mesh::ATTRIB_TANGENTS, uvSet));
-        orgTangents   = static_cast<AZ::Vector4*>(FindOriginalVertexData(Mesh::ATTRIB_TANGENTS, uvSet));
-        bitangents    = static_cast<AZ::Vector3*>(FindVertexData(Mesh::ATTRIB_BITANGENTS, uvSet));
-        orgBitangents = static_cast<AZ::Vector3*>(FindOriginalVertexData(Mesh::ATTRIB_BITANGENTS, uvSet));
-
-        AZ::Vector3* positions   = static_cast<AZ::Vector3*>(FindOriginalVertexData(Mesh::ATTRIB_POSITIONS));
-        AZ::Vector3* normals     = static_cast<AZ::Vector3*>(FindOriginalVertexData(Mesh::ATTRIB_NORMALS));
-        uint32*         indices     = GetIndices(); // the indices (face data)
-        uint8*          vertCounts  = GetPolygonVertexCounts();
-        AZ::Vector3     curTangent;
-        AZ::Vector3     curBitangent;
-
-        // calculate for every vertex the tangent and bitangent
-        for (uint32 i = 0; i < m_numVertices; ++i)
-        {
-            orgTangents[i] = AZ::Vector4::CreateZero();
-            tangents[i] = AZ::Vector4::CreateZero();
-
-            if (orgBitangents && bitangents)
-            {
-                orgBitangents[i].Set(0.0f, 0.0f, 0.0f);
-                bitangents[i].Set(0.0f, 0.0f, 0.0f);
-            }
-        }
-
-        // calculate the tangents and bitangents for all vertices by traversing all polys
-        uint32 polyStartIndex = 0;
-        uint32 indexA, indexB, indexC;
-        const uint32 numPolygons = GetNumPolygons();
-        for (uint32 f = 0; f < numPolygons; f++)
-        {
-            const uint32 numPolyVerts = vertCounts[f];
-
-            // explanation: numPolyVerts-2 == number of triangles
-            // triangle has got 3 polygon vertices  -> 1 triangle
-            // quad has got 4 polygon vertices      -> 2 triangles
-            // pentagon has got 5 polygon vertices  -> 3 triangles
-            for (uint32 i = 2; i < numPolyVerts; i++)
-            {
-                indexA = indices[polyStartIndex];
-                indexB = indices[polyStartIndex + i];
-                indexC = indices[polyStartIndex + i - 1];
-
-                // calculate the tangent and bitangent for the face
-                CalcTangentAndBitangentForFace(positions[indexA], positions[indexB], positions[indexC],
-                    uvData[indexA], uvData[indexB], uvData[indexC],
-                    &curTangent, &curBitangent);
-
-                // normalize the vectors
-                curTangent.NormalizeSafe();
-                curBitangent.NormalizeSafe();
-
-                // store the tangents in the orgTangents array
-                const AZ::Vector4 vec4Tangent(curTangent.GetX(), curTangent.GetY(), curTangent.GetZ(), 1.0f);
-                orgTangents[indexA] += vec4Tangent;
-                orgTangents[indexB] += vec4Tangent;
-                orgTangents[indexC] += vec4Tangent;
-
-                // store the bitangents in the tangents array for now
-                const AZ::Vector4 vec4Bitangent(curBitangent.GetX(), curBitangent.GetY(), curBitangent.GetZ(), 0.0f);
-                tangents[indexA]    += vec4Bitangent;
-                tangents[indexB]    += vec4Bitangent;
-                tangents[indexC]    += vec4Bitangent;
-            }
-
-            polyStartIndex += numPolyVerts;
-        }
-
-        // calculate the per vertex tangents now, fixing up orthogonality and handling mirroring of the bitangent
-        for (uint32 i = 0; i < m_numVertices; ++i)
-        {
-            // get the normal
-            AZ::Vector3 normal(normals[i]);
-            normal.NormalizeSafe();
-
-            // get the tangent
-            AZ::Vector3 tangent = AZ::Vector3(orgTangents[i].GetX(), orgTangents[i].GetY(), orgTangents[i].GetZ());
-            if (MCore::SafeLength(tangent) < MCore::Math::epsilon)
-            {
-                tangent.Set(1.0f, 0.0f, 0.0f);
-            }
-            else
-            {
-                tangent.NormalizeSafe();
-            }
-
-            // get the bitangent
-            AZ::Vector3 bitangent = AZ::Vector3(tangents[i].GetX(), tangents[i].GetY(), tangents[i].GetZ());    // We stored the bitangents inside the tangents array temporarily.
-            if (MCore::SafeLength(bitangent) < MCore::Math::epsilon)
-            {
-                bitangent.Set(0.0f, 1.0f, 0.0f);
-            }
-            else
-            {
-                bitangent.NormalizeSafe();
-            }
-
-            // Gram-Schmidt orthogonalize
-            AZ::Vector3 fixedTangent = tangent - (normal * normal.Dot(tangent));
-            fixedTangent.NormalizeSafe();
-
-            // calculate handedness
-            const AZ::Vector3 crossResult = normal.Cross(tangent);
-            const float tangentW = (crossResult.Dot(bitangent) < 0.0f) ? -1.0f : 1.0f;
-
-            // store the real final tangents
-            orgTangents[i].Set(fixedTangent.GetX(), fixedTangent.GetY(), fixedTangent.GetZ(), tangentW);
-            tangents[i] = orgTangents[i];
-
-            // store the bitangent
-            if (bitangents && orgBitangents)
-            {
-                orgBitangents[i] = bitangent;
-                bitangents[i] = orgBitangents[i];
-            }
-        }
-
-        return true;
-    }
-
-
-
     // creates an array of pointers to bones used by this face
     void Mesh::GatherBonesForFace(uint32 startIndexOfFace, AZStd::vector<Node*>& outBones, Actor* actor)
     {
@@ -699,7 +447,7 @@ namespace EMotionFX
 
         // get the index data and original vertex numbers
         uint32* indices = GetIndices();
-        uint32* orgVerts = (uint32*)FindVertexData(Mesh::ATTRIB_ORGVTXNUMBERS);
+        auto orgVertexAttr = GetVertexAttribute<AttributeType::OrginalVertexNumber>();
 
         Skeleton* skeleton = actor->GetSkeleton();
 
@@ -708,7 +456,7 @@ namespace EMotionFX
         {
             // get the original vertex number
             // remember that a cube can have 24 vertices to render (stored in this mesh), while it has only 8 original vertices
-            uint32 originalVertex = orgVerts[ indices[startIndexOfFace + i] ];
+            uint32 originalVertex = orgVertexAttr->GetData()[ indices[startIndexOfFace + i] ];
 
             // traverse all influences for this vertex
             const size_t numInfluences = skinningLayer->GetNumInfluences(originalVertex);
@@ -741,7 +489,7 @@ namespace EMotionFX
 
         // get the index data and original vertex numbers
         uint32* indices = GetIndices();
-        uint32* orgVerts = (uint32*)FindVertexData(Mesh::ATTRIB_ORGVTXNUMBERS);
+        auto orignalVertexAttribute = GetVertexAttribute<AttributeType::OrginalVertexNumber>();
 
         // get the skinning info for all three vertices
         size_t maxInfluences = 0;
@@ -749,7 +497,7 @@ namespace EMotionFX
         {
             // get the original vertex number
             // remember that a cube can have 24 vertices to render (stored in this mesh), while it has only 8 original vertices
-            uint32 originalVertex = orgVerts[ indices[startIndexOfFace + i] ];
+            uint32 originalVertex = orignalVertexAttribute->GetData()[ indices[startIndexOfFace + i] ];
 
             // check if the number of influences is higher as the highest recorded value
             size_t numInfluences = skinningLayer->GetNumInfluences(originalVertex);
@@ -803,15 +551,15 @@ namespace EMotionFX
             outVertexCounts[0] = GetNumVertices();
             return 0;
         }
-
-        const uint32* orgVerts = (uint32*)FindVertexData(Mesh::ATTRIB_ORGVTXNUMBERS);
+        
+        const auto vertexAttribute = GetVertexAttribute<AttributeType::OrginalVertexNumber>();
 
         // Get the vertex counts for the influences.
         size_t maxInfluences = 0;
         const uint32 numVerts = GetNumVertices();
         for (uint32 i = 0; i < numVerts; ++i)
         {
-            const uint32 orgVertex = orgVerts[i];
+            const uint32 orgVertex = vertexAttribute->GetData()[i];
 
             // Increase the number of vertices for the given influence value.
             const size_t numInfluences = skinningLayer->GetNumInfluences(orgVertex);
@@ -841,31 +589,6 @@ namespace EMotionFX
     void Mesh::InsertSubMesh(size_t insertIndex, SubMesh* subMesh)
     {
         m_subMeshes.emplace(AZStd::next(begin(m_subMeshes), insertIndex), subMesh);
-    }
-
-
-    // count the given type of vertex attribute layers
-    size_t Mesh::CalcNumAttributeLayers(uint32 type) const
-    {
-        size_t numLayers = 0;
-
-        // check the types of all vertex attribute layers
-        for (auto* vertexAttribute : m_vertexAttributes)
-        {
-            if (vertexAttribute->GetType() == type)
-            {
-                numLayers++;
-            }
-        }
-
-        return numLayers;
-    }
-
-
-    // get the number of UV layers
-    size_t Mesh::CalcNumUVLayers() const
-    {
-        return CalcNumAttributeLayers(Mesh::ATTRIB_UVCOORDS);
     }
 
     //---------------------------------------------------------------
@@ -936,90 +659,28 @@ namespace EMotionFX
 
     size_t Mesh::GetNumVertexAttributeLayers() const
     {
-        return m_vertexAttributes.size();
-    }
-
-
-    VertexAttributeLayer* Mesh::GetVertexAttributeLayer(size_t layerNr)
-    {
-        MCORE_ASSERT(layerNr < m_vertexAttributes.size());
-        return m_vertexAttributes[layerNr];
-    }
-
-
-    void Mesh::AddVertexAttributeLayer(VertexAttributeLayer* layer)
-    {
-        MCORE_ASSERT(AZStd::find(begin(m_vertexAttributes), end(m_vertexAttributes), layer) == end(m_vertexAttributes));
-        m_vertexAttributes.emplace_back(layer);
-    }
-
-
-    // find the layer number
-    size_t Mesh::FindVertexAttributeLayerNumber(uint32 layerTypeID, size_t occurrence) const
-    {
-        const auto foundLayer = AZStd::find_if(begin(m_vertexAttributes), end(m_vertexAttributes), [layerTypeID, occurrence](const VertexAttributeLayer* layer) mutable
+        size_t count = 0;
+        for (auto& vertexAttribute : m_vertexAttributeLayer)
         {
-            return layer->GetType() == layerTypeID && occurrence-- == 0;
-        });
-        return foundLayer != end(m_vertexAttributes) ? AZStd::distance(begin(m_vertexAttributes), foundLayer) : InvalidIndex;
-    }
-
-
-    // find the layer number
-    size_t Mesh::FindVertexAttributeLayerNumberByName(uint32 layerTypeID, const char* name) const
-    {
-        const auto foundLayer = AZStd::find_if(begin(m_vertexAttributes), end(m_vertexAttributes), [layerTypeID, name](const VertexAttributeLayer* layer)
-        {
-            return layer->GetType() == layerTypeID && layer->GetNameString() == name;
-        });
-        return foundLayer != end(m_vertexAttributes) ? AZStd::distance(begin(m_vertexAttributes), foundLayer) : InvalidIndex;
-    }
-
-
-
-    // find the vertex attribute layer and return a pointer
-    VertexAttributeLayer* Mesh::FindVertexAttributeLayer(uint32 layerTypeID, size_t occurence) const
-    {
-        const size_t layerNr = FindVertexAttributeLayerNumber(layerTypeID, occurence);
-        if (layerNr == InvalidIndex)
-        {
-            return nullptr;
+            AZStd::visit([&count](auto& attr) {
+                if(attr) {
+                    count++;
+                }
+            }, vertexAttribute);
         }
-
-        return m_vertexAttributes[layerNr];
+        return count;
     }
-
-
-    // find the vertex attribute layer and return a pointer
-    VertexAttributeLayer* Mesh::FindVertexAttributeLayerByName(uint32 layerTypeID, const char* name) const
-    {
-        const size_t layerNr = FindVertexAttributeLayerNumberByName(layerTypeID, name);
-        if (layerNr == InvalidIndex)
-        {
-            return nullptr;
-        }
-
-        return m_vertexAttributes[layerNr];
-    }
-
 
     void Mesh::RemoveAllVertexAttributeLayers()
     {
-        while (m_vertexAttributes.size())
-        {
-            m_vertexAttributes.back()->Destroy();
-            m_vertexAttributes.pop_back();
+        for(auto& attr: m_vertexAttributeLayer) {
+            AZStd::visit([](auto& att) {
+                if(att) {
+                    att.reset();
+                }
+            }, attr);
         }
     }
-
-
-    void Mesh::RemoveVertexAttributeLayer(size_t layerNr)
-    {
-        MCORE_ASSERT(layerNr < m_vertexAttributes.size());
-        m_vertexAttributes[layerNr]->Destroy();
-        m_vertexAttributes.erase(AZStd::next(begin(m_vertexAttributes), layerNr));
-    }
-
 
 
     // clone the mesh
@@ -1049,123 +710,17 @@ namespace EMotionFX
         }
 
         // clone the non-shared vertex attributes
-        const size_t numAttributes = m_vertexAttributes.size();
-        clone->m_vertexAttributes.resize(numAttributes);
-        for (size_t i = 0; i < numAttributes; ++i)
-        {
-            clone->m_vertexAttributes[i] = m_vertexAttributes[i]->Clone();
+        for(auto& attr: m_vertexAttributeLayer) {
+            AZStd::visit([&](auto& it) {
+                using CurrentType = AZStd::decay_t<decltype(it)>;
+                if(it) {
+                    clone->GetVertexAttribute(it->GetType()) = AZStd::make_unique<typename CurrentType::element_type>(*it);
+                }
+            }, attr);
         }
-
         // return the resulting cloned mesh
         return clone;
     }
-
-
-    // swap the data for two vertices
-    void Mesh::SwapVertex(uint32 vertexA, uint32 vertexB)
-    {
-        MCORE_ASSERT(vertexA < m_numVertices);
-        MCORE_ASSERT(vertexB < m_numVertices);
-
-        // if we try to swap itself then there is nothing to do
-        if (vertexA == vertexB)
-        {
-            return;
-        }
-
-        // swap all vertex attribute layers
-        const size_t numLayers = m_vertexAttributes.size();
-        for (size_t i = 0; i < numLayers; ++i)
-        {
-            m_vertexAttributes[i]->SwapAttributes(vertexA, vertexB);
-        }
-    }
-
-    // remove vertex data from the mesh
-    void Mesh::RemoveVertices(uint32 startVertexNr, uint32 endVertexNr, bool changeIndexBuffer, bool removeEmptySubMeshes)
-    {
-        // perform some checks on the input data
-        MCORE_ASSERT(endVertexNr < m_numVertices);
-        MCORE_ASSERT(startVertexNr < m_numVertices);
-
-        // make sure the start vertex is before the end vertex in release mode, to prevent weirdness
-        if (startVertexNr > endVertexNr)
-        {
-            uint32 temp = startVertexNr;
-            startVertexNr = endVertexNr;
-            endVertexNr = temp;
-        }
-
-        //------------------------------------
-        // Remove the vertex attributes
-        //------------------------------------
-        const uint32 numVertsToRemove = (endVertexNr - startVertexNr) + 1; // +1 because we remove the end vertex as well
-
-                                                                           // remove the num verices counter
-        m_numVertices -= numVertsToRemove;
-
-        // remove the attributes from the vertex attribute layers
-        const size_t numLayers = GetNumVertexAttributeLayers();
-        for (size_t i = 0; i < numLayers; ++i)
-        {
-            GetVertexAttributeLayer(i)->RemoveAttributes(startVertexNr, endVertexNr);
-        }
-
-        //------------------------------------------------------------------------
-        // Fix the submesh number of vertices and start vertex offset values
-        //------------------------------------------------------------------------
-        uint32 numRemoved = 0;
-        const uint32 v = startVertexNr;
-        for (uint32 w = 0; w < numVertsToRemove; ++w)
-        {
-            // adjust all submesh start index offsets changed
-            for (size_t s = 0; s < m_subMeshes.size();)
-            {
-                SubMesh* subMesh = m_subMeshes[s];
-
-                // if we remove a vertex from this submesh
-                if (subMesh->GetStartVertex() <= v && subMesh->GetStartVertex() + subMesh->GetNumVertices() > v)
-                {
-                    numRemoved++;
-                    subMesh->SetNumVertices(subMesh->GetNumVertices() - 1);
-                }
-
-                // now find out if we need to adjust the vertex offset of the submesh
-                if (subMesh->GetStartVertex() > v)
-                {
-                    subMesh->SetStartVertex(subMesh->GetStartVertex() - 1);
-                }
-
-                // remove the submesh if it's empty
-                if (subMesh->GetNumVertices() == 0 && removeEmptySubMeshes)
-                {
-                    m_subMeshes.erase(AZStd::next(begin(m_subMeshes), s));
-                }
-                else
-                {
-                    s++;
-                }
-            }
-        }
-
-        // make sure they all got removed
-        MCORE_ASSERT(numRemoved == numVertsToRemove);
-
-        //------------------------------------
-        // Fix the index buffer
-        //------------------------------------
-        if (changeIndexBuffer)
-        {
-            for (uint32 i = 0; i < m_numIndices; ++i)
-            {
-                if (m_indices[i] > startVertexNr)
-                {
-                    m_indices[i] -= numVertsToRemove;
-                }
-            }
-        }
-    }
-
 
     // remove empty submeshes
     size_t Mesh::RemoveEmptySubMeshes(bool onlyRemoveOnZeroVertsAndTriangles)
@@ -1208,71 +763,16 @@ namespace EMotionFX
         return numRemoved;
     }
 
-
-    // find vertex data
-    void* Mesh::FindVertexData(uint32 layerID, size_t occurrence) const
-    {
-        VertexAttributeLayer* layer = FindVertexAttributeLayer(layerID, occurrence);
-        if (layer)
-        {
-            return layer->GetData();
-        }
-
-        return nullptr;
-    }
-
-
-    // find vertex data
-    void* Mesh::FindVertexDataByName(uint32 layerID, const char* name) const
-    {
-        VertexAttributeLayer* layer = FindVertexAttributeLayerByName(layerID, name);
-        if (layer)
-        {
-            return layer->GetData();
-        }
-
-        return nullptr;
-    }
-
-
-
-    // find original vertex data
-    void* Mesh::FindOriginalVertexData(uint32 layerID, size_t occurrence) const
-    {
-        VertexAttributeLayer* layer = FindVertexAttributeLayer(layerID, occurrence);
-        if (layer)
-        {
-            return layer->GetOriginalData();
-        }
-
-        return nullptr;
-    }
-
-
-    // find original vertex data
-    void* Mesh::FindOriginalVertexDataByName(uint32 layerID, const char* name) const
-    {
-        VertexAttributeLayer* layer = FindVertexAttributeLayerByName(layerID, name);
-        if (layer)
-        {
-            return layer->GetOriginalData();
-        }
-
-        return nullptr;
-    }
-
-
     void Mesh::CalcAabb(AZ::Aabb* outBoundingBox, const Transform& transform, uint32 vertexFrequency)
     {
         MCORE_ASSERT(vertexFrequency >= 1);
         *outBoundingBox = AZ::Aabb::CreateNull();
 
-        AZ::Vector3* positions = (AZ::Vector3*)FindVertexData(ATTRIB_POSITIONS);
-
+        auto positionAttr = GetVertexAttribute<AttributeType::Position>();
         const uint32 numVerts = GetNumVertices();
         for (uint32 i = 0; i < numVerts; i += vertexFrequency)
         {
-            outBoundingBox->AddPoint(transform.TransformPoint(positions[i]));
+            outBoundingBox->AddPoint(transform.TransformPoint(positionAttr->GetData()[i]));
         }
     }
 
@@ -1282,7 +782,7 @@ namespace EMotionFX
     bool Mesh::Intersects(const Transform& transform, const MCore::Ray& ray)
     {
         // get the positions and indices and calculate the inverse of the transformation matrix
-        const AZ::Vector3* positions = (AZ::Vector3*)FindVertexData(Mesh::ATTRIB_POSITIONS);
+        const auto attrPositions = GetVertexAttribute<AttributeType::Position>();
         const Transform invTransform = transform.Inversed();
 
         // transform origin and dest of the ray into space of the mesh
@@ -1310,7 +810,7 @@ namespace EMotionFX
                 indexB = indices[polyStartIndex + i];
                 indexC = indices[polyStartIndex + i - 1];
 
-                if (testRay.Intersects(positions[indexA], positions[indexB], positions[indexC]))
+                if (testRay.Intersects(attrPositions->GetData()[indexA], attrPositions->GetData()[indexB], attrPositions->GetData()[indexC]))
                 {
                     return true;
                 }
@@ -1328,7 +828,7 @@ namespace EMotionFX
     // intersection test between the mesh and a ray, includes calculation of intersection point
     bool Mesh::Intersects(const Transform& transform, const MCore::Ray& ray, AZ::Vector3* outIntersect, float* outBaryU, float* outBaryV, uint32* outIndices)
     {
-        AZ::Vector3* positions = (AZ::Vector3*)FindVertexData(Mesh::ATTRIB_POSITIONS);
+        auto positionAttr = GetVertexAttribute<AttributeType::Position>();
         Transform           invNodeTransform = transform.Inversed();
         AZ::Vector3         newOrigin = invNodeTransform.TransformPoint(ray.GetOrigin());
         AZ::Vector3         newDest = invNodeTransform.TransformPoint(ray.GetDest());
@@ -1364,7 +864,7 @@ namespace EMotionFX
                 indexC = indices[polyStartIndex + i - 1];
 
                 // test the ray with the triangle (in object space)
-                if (testRay.Intersects(positions[indexA], positions[indexB], positions[indexC], &intersectionPoint, &baryU, &baryV))
+                if (testRay.Intersects(positionAttr->GetData()[indexA], positionAttr->GetData()[indexB], positionAttr->GetData()[indexC], &intersectionPoint, &baryU, &baryV))
                 {
                     // calculate the squared distance between the intersection point and the ray origin
                     dist = (intersectionPoint - newOrigin).GetLengthSq();
@@ -1422,17 +922,6 @@ namespace EMotionFX
     // log debugging information
     void Mesh::Log()
     {
-        // get all current data
-        //  uint32*     indices     = GetIndices();                                             // never returns nullptr
-        //uint32*     orgVerts    = (uint32*) FindVertexData( Mesh::ATTRIB_ORGVTXNUMBERS ); // never returns nullptr
-        //  uint32*     colors32    = (uint32*) FindVertexData( Mesh::ATTRIB_COLORS32 );        // 32-bit colors
-        //  Vector3*    positions   = (Vector3*)FindVertexData( Mesh::ATTRIB_POSITIONS );       // never returns nullptr
-        //  Vector3*    normals     = (Vector3*)FindVertexData( Mesh::ATTRIB_NORMALS );         // never returns nullptr
-        //  Vector4*    tangents    = (Vector4*)FindVertexData( Mesh::ATTRIB_TANGENTS );        // note the Vector4 instead of Vector3!
-        //  AZ::Vector2*    uvSet1  = static_cast<AZ::Vector2*>(FindVertexData( Mesh::ATTRIB_UVCOORDS ));       // the first UV set
-        //  AZ::Vector2*    uvSet2  = static_cast<AZ::Vector2*>(FindVertexData( Mesh::ATTRIB_UVCOORDS, 1 ));        // the second UV set
-        //  AZ::Vector2*    uvSet3  = static_cast<AZ::Vector2*>(FindVertexData( Mesh::ATTRIB_UVCOORDS, 2 ));        // the third UV set
-        //  RGBAColor*  col128      = (RGBAColor*)FindVertexData( Mesh::ATTRIB_COLORS128 );     // 128 bit colors (one float per r/g/b/a)
 
         // display mesh info
         MCore::LogDebug("- Mesh");
@@ -1444,19 +933,7 @@ namespace EMotionFX
         MCore::LogDebug("  + Num shared attrib layers = %d", GetNumSharedVertexAttributeLayers());
         MCore::LogDebug("  + Is Triangle Mesh         = %d", CheckIfIsTriangleMesh());
         MCore::LogDebug("  + Is Quad Mesh             = %d", CheckIfIsQuadMesh());
-        /*
-        // iterate through and log all org vertex numbers
-        const uint32 numOrgVertices = GetNumOrgVertices();
-        LogDebug("   - Org Vertices (%d)", numOrgVertices);
-        for (i=0; i<numOrgVertices; ++i)
-        LogDebug("     + %d", orgVerts[i]);
-
-        // iterate through and log all positions
-        const uint32 numPositions = GetNumVertices();
-        LogDebug("   - Positions / Normals (%d)", numPositions);
-        for (i=0; i<numPositions; ++i)
-        LogDebug("     + Position: %f %f %f, Normal: %f %f %f", positions[i].x, positions[i].y, positions[i].z, normals[i].x, normals[i].y, normals[i].z);
-        */
+       
         // iterate through all of its submeshes
         const size_t numSubMeshes = GetNumSubMeshes();
         for (size_t s = 0; s < numSubMeshes; ++s)
@@ -1471,23 +948,6 @@ namespace EMotionFX
             MCore::LogDebug("     + Num vertices = %d", subMesh->GetNumVertices());
             MCore::LogDebug("     + Num indices  = %d (%d polygons)", subMesh->GetNumIndices(), subMesh->GetNumPolygons());
             MCore::LogDebug("     + Num bones    = %d", subMesh->GetNumBones());
-
-            /*      // output all triangle indices that point inside the data we output above
-            LogDebug("       - Triangle Indices:");
-            const uint32 startVertex    = subMesh->GetStartVertex();
-            const uint32 startIndex     = subMesh->GetStartIndex();
-            const uint32 endIndex       = subMesh->GetStartIndex() + subMesh->GetNumIndices();
-            for (i=startIndex; i<endIndex; i+=3)
-            {
-            // remove the start index values if you want them local in the submesh vertex buffers
-            // otherwise do not remove the start vertex, then they point absolute inside the big
-            // vertex attribute buffers of the mesh
-            const uint32 indexA = indices[i]   - startVertex;
-            const uint32 indexB = indices[i+1] - startVertex;
-            const uint32 indexC = indices[i+2] - startVertex;
-            LogDebug("         + (%d, %d, %d)", indexA, indexB, indexC);
-            }*/
-
             // output the bones used by this submesh
             MCore::LogDebug("       - Bone list:");
             const size_t numBones = subMesh->GetNumBones();
@@ -1499,140 +959,6 @@ namespace EMotionFX
         }
     }
 
-
-    // check for a given mesh how we categorize it
-    Mesh::EMeshType Mesh::ClassifyMeshType(size_t lodLevel, Actor* actor, size_t nodeIndex, bool forceCPUSkinning, uint32 maxInfluences, uint32 maxBonesPerSubMesh) const
-    {
-        // get the mesh deformer stack for the given node at the given detail level
-        MeshDeformerStack* deformerStack = actor->GetMeshDeformerStack(lodLevel, nodeIndex);
-        if (deformerStack)
-        {
-            // if there are multiple mesh deformers we have to perform deformations on the CPU
-            if (deformerStack->GetNumDeformers() > 1)
-            {
-                return MESHTYPE_CPU_DEFORMED;
-            }
-
-            // is there is only one mesh deformer?
-            if (deformerStack->GetNumDeformers() == 1)
-            {
-                // if the deformer is a skinning deformer, we can process it using a GPU skinning shader
-                if (deformerStack->GetDeformer(0)->GetType() == SoftSkinDeformer::TYPE_ID)
-                {
-                    if (forceCPUSkinning)
-                    {
-                        return MESHTYPE_CPU_DEFORMED;
-                    }
-
-                    // check if the mesh uses more than the given number of weights/bones per vertex
-                    // in that case use CPU skinning
-                    Mesh* mesh = actor->GetMesh(lodLevel, nodeIndex);
-                    Node* node = actor->GetSkeleton()->GetNode(nodeIndex);
-                    size_t meshMaxInfluences = mesh->CalcMaxNumInfluences();
-                    if (meshMaxInfluences > maxInfluences)
-                    {
-                        MCore::LogWarning("*** PERFORMANCE WARNING *** Mesh for node '%s' in geometry LOD %d uses more than %d (%d) bones. Forcing CPU deforms for this mesh.", node->GetName(), lodLevel, maxInfluences, meshMaxInfluences);
-                        return MESHTYPE_CPU_DEFORMED;
-                    }
-
-                    // check if there is any submesh with more than the given number of bones, which would mean we cannot skin on the GPU
-                    // then force CPU skinning as well
-                    const size_t numSubMeshes = mesh->GetNumSubMeshes();
-                    for (size_t i = 0; i < numSubMeshes; ++i)
-                    {
-                        if (mesh->GetSubMesh(i)->GetNumBones() > maxBonesPerSubMesh)
-                        {
-                            MCore::LogWarning("*** PERFORMANCE WARNING *** Submesh %d for node '%s' in geometry LOD %d uses more than %d bones (%d). Forcing CPU deforms for this mesh.", i, node->GetName(), lodLevel, maxBonesPerSubMesh, mesh->GetSubMesh(i)->GetNumBones());
-                            return MESHTYPE_CPU_DEFORMED;
-                        }
-                    }
-
-                    // perform skinning on the GPU inside a vertex shader
-                    return MESHTYPE_GPU_DEFORMED;
-                }
-                else
-                {
-                    return MESHTYPE_CPU_DEFORMED; // it's using a non-skinning controller, so use CPU deformations
-                }
-            }
-        }
-
-        // there are no deformations happening
-        return MESHTYPE_STATIC;
-    }
-
-
-    // convert the indices from 32-bit to 16-bit values
-    bool Mesh::ConvertTo16BitIndices()
-    {
-        // set to success as nothing bad happened yet
-        bool result = true;
-
-        // check if the indices are valid and return false in case they aren't
-        if (m_indices == nullptr)
-        {
-            return false;
-        }
-
-        // use our 32-bit index buffer as new 16-bit index array directly
-        uint16* indices = (uint16*)m_indices;
-
-        // iterate over all indices and convert the values
-        for (uint32 i = 0; i < m_numIndices; ++i)
-        {
-            // create a temporary copy of our 32-bit vertex index
-            const uint32 oldVertexIndex = m_indices[i];
-
-            // check if our index is in range of an unsigned short
-            if (oldVertexIndex < 65536)
-            {
-                indices[i] = (uint16)oldVertexIndex;
-            }
-            else
-            {
-                indices[i]  = MCORE_INVALIDINDEX16;//TODO: or better set to 0?
-                result      = false;
-                MCore::LogWarning("Vertex index '%i'(%i) not in unsigned short range. Cannot convert indices to 16-bit values.", i, oldVertexIndex);
-            }
-        }
-
-        // realloc the memory to the new index buffer size using 16-bit values and return the result
-        m_indices = (uint32*)MCore::AlignedRealloc(m_indices, sizeof(uint16) * m_numIndices, 32, EMFX_MEMCATEGORY_GEOMETRY_MESHES, Mesh::MEMORYBLOCK_ID);
-        return result;
-    }
-
-
-    // function to convert the 128bit colors into 32bit ones, if they exist
-    void Mesh::ConvertTo32BitColors()
-    {
-        // get the colors
-        MCore::RGBAColor*   colors128   = (MCore::RGBAColor*)FindOriginalVertexData(Mesh::ATTRIB_COLORS128);
-        uint32*             colors32    = (uint32*)FindOriginalVertexData(Mesh::ATTRIB_COLORS32);
-
-        // check if 32bit colors already exist or 128bit colors do not exist
-        if (colors128 == nullptr || colors32)
-        {
-            return;
-        }
-
-        // get the number of original vertices
-        const uint32 numVertices = GetNumVertices();
-
-        // create new vertex attribute layer for the 32bit colors
-        VertexAttributeLayerAbstractData* layer = VertexAttributeLayerAbstractData::Create(numVertices, Mesh::ATTRIB_COLORS32, sizeof(uint32));
-
-        // fill the layer with the converted float colors
-        uint32* data = (uint32*)layer->GetData();
-        for (uint32 i = 0; i < numVertices; ++i)
-        {
-            data[i] = colors128[i].ToInt();
-        }
-
-        // add the new layer
-        AddVertexAttributeLayer(layer);
-    }
-
-
     // extract the original vertex positions
     void Mesh::ExtractOriginalVertexPositions(AZStd::vector<AZ::Vector3>& outPoints) const
     {
@@ -1640,132 +966,22 @@ namespace EMotionFX
         outPoints.resize(m_numOrgVerts);
 
         // get the mesh data
-        const AZ::Vector3*      positions = (AZ::Vector3*)FindOriginalVertexData(ATTRIB_POSITIONS);
-        const uint32*           orgVerts  = (uint32*) FindVertexData(ATTRIB_ORGVTXNUMBERS);
+        auto position = GetVertexAttribute<AttributeType::Position>();
+        auto orginalVertexNumbers = GetVertexAttribute<AttributeType::OrginalVertexNumber>();
+        AZ_Assert(position != nullptr, "Mesh", "Position is null");   
+        AZ_Assert(orginalVertexNumbers != nullptr, "Mesh", "OrginalVertexNumber is null");          
 
         // init all org vertices
         for (uint32 v = 0; v < m_numOrgVerts; ++v)
         {
-            outPoints[v] = positions[0]; // init them, as there are some unused original vertices sometimes
+            outPoints[v] = position->GetData()[0]; // init them, as there are some unused original vertices sometimes
         }
         // output the points
         for (uint32 i = 0; i < m_numVertices; ++i)
         {
-            outPoints[ orgVerts[i] ] = positions[i];
+            outPoints[ orginalVertexNumbers->GetOrignal()[i] ] = position->GetData()[i];
         }
     }
-
-
-    // calculate the normals
-    void Mesh::CalcNormals(bool useDuplicates)
-    {
-        AZ::Vector3* positions = (AZ::Vector3*)FindOriginalVertexData(Mesh::ATTRIB_POSITIONS);
-        AZ::Vector3* normals = (AZ::Vector3*)FindOriginalVertexData(Mesh::ATTRIB_NORMALS);
-        //uint32*       indices     = GetIndices();     // the indices (face data)
-
-        // if we want to use the original mesh only
-        if (useDuplicates == false)
-        {
-            // the smoothed normals array
-            AZStd::vector<AZ::Vector3>    smoothNormals(m_numOrgVerts);
-            for (uint32 i = 0; i < m_numOrgVerts; ++i)
-            {
-                smoothNormals[i] = AZ::Vector3::CreateZero();
-            }
-
-            // sum all face normals
-            uint32* orgVerts = (uint32*)FindOriginalVertexData(Mesh::ATTRIB_ORGVTXNUMBERS);
-
-            // iterate over all polygons, triangulate internally
-            const uint32* indices       = GetIndices();
-            const uint8* vertCounts     = GetPolygonVertexCounts();
-            uint32 indexA, indexB, indexC;
-            uint32 polyStartIndex = 0;
-            const uint32 numPolygons = GetNumPolygons();
-            for (uint32 p = 0; p < numPolygons; p++)
-            {
-                const uint32 numPolyVerts = vertCounts[p];
-
-                // iterate over all triangles inside this polygon
-                // explanation: numPolyVerts-2 == number of triangles
-                // 3 verts=1 triangle, 4 verts=2 triangles, etc
-                for (uint32 i = 2; i < numPolyVerts; i++)
-                {
-                    indexA = indices[polyStartIndex + i - 1];
-                    indexB = indices[polyStartIndex + i];
-                    indexC = indices[polyStartIndex];
-
-                    const AZ::Vector3& posA = positions[ indexA ];
-                    const AZ::Vector3& posB = positions[ indexB ];
-                    const AZ::Vector3& posC = positions[ indexC ];
-                    AZ::Vector3 faceNormal = (posB - posA).Cross(posC - posB).GetNormalizedSafe();
-
-                    // store the tangents in the orgTangents array
-                    smoothNormals[ orgVerts[indexA] ] += faceNormal;
-                    smoothNormals[ orgVerts[indexB] ] += faceNormal;
-                    smoothNormals[ orgVerts[indexC] ] += faceNormal;
-                }
-
-                polyStartIndex += numPolyVerts;
-            }
-            // normalize
-            for (uint32 i = 0; i < m_numOrgVerts; ++i)
-            {
-                smoothNormals[i].NormalizeSafe();
-            }
-
-            for (uint32 i = 0; i < m_numVertices; ++i)
-            {
-                normals[i] = smoothNormals[ orgVerts[i] ];
-            }
-        }
-        else
-        {
-            for (uint32 i = 0; i < m_numVertices; ++i)
-            {
-                normals[i] = AZ::Vector3::CreateZero();
-            }
-
-            // iterate over all polygons, triangulate internally
-            const uint32* indices       = GetIndices();
-            const uint8* vertCounts     = GetPolygonVertexCounts();
-            uint32 indexA, indexB, indexC;
-            uint32 polyStartIndex = 0;
-            const uint32 numPolygons = GetNumPolygons();
-            for (uint32 p = 0; p < numPolygons; p++)
-            {
-                const uint32 numPolyVerts = vertCounts[p];
-
-                // iterate over all triangles inside this polygon
-                // explanation: numPolyVerts-2 == number of triangles
-                // 3 verts=1 triangle, 4 verts=2 triangles, etc
-                for (uint32 i = 2; i < numPolyVerts; i++)
-                {
-                    indexA = indices[polyStartIndex + i - 1];
-                    indexB = indices[polyStartIndex + i];
-                    indexC = indices[polyStartIndex];
-
-                    const AZ::Vector3& posA = positions[ indexA ];
-                    const AZ::Vector3& posB = positions[ indexB ];
-                    const AZ::Vector3& posC = positions[ indexC ];
-                    AZ::Vector3 faceNormal = (posB - posA).Cross(posC - posB).GetNormalizedSafe();
-
-                    // store the tangents in the orgTangents array
-                    normals[indexA] = normals[indexA] + faceNormal;
-                    normals[indexB] = normals[indexB] + faceNormal;
-                    normals[indexC] = normals[indexC] + faceNormal;
-                }
-
-                polyStartIndex += numPolyVerts;
-            }
-            // normalize the normals
-            for (uint32 i = 0; i < m_numVertices; ++i)
-            {
-                normals[i].NormalizeSafe();
-            }
-        }
-    }
-
 
     // check if we are a triangle mesh
     bool Mesh::CheckIfIsTriangleMesh() const
@@ -1796,35 +1012,9 @@ namespace EMotionFX
         return true;
     }
 
-
-    // calculate how many triangles it would take to draw this mesh
-    uint32 Mesh::CalcNumTriangles() const
-    {
-        uint32 numTriangles = 0;
-
-        const uint8* polyVertexCounts = GetPolygonVertexCounts();
-        const uint32 numPolygons = GetNumPolygons();
-        for (uint32 i = 0; i < numPolygons; ++i)
-        {
-            numTriangles += (polyVertexCounts[i] - 2); // 3 verts=1 triangle, 4 verts=2 triangles, 5 verts=3 triangles, etc
-        }
-        return numTriangles;
-    }
-
-
-    void Mesh::ReserveVertexAttributeLayerSpace(uint32 numLayers)
-    {
-        m_vertexAttributes.reserve(numLayers);
-    }
-
-
     // scale all positional data
     void Mesh::Scale(float scaleFactor)
     {
-        for (VertexAttributeLayer* layer : m_vertexAttributes)
-        {
-            layer->Scale(scaleFactor);
-        }
 
         for (VertexAttributeLayer* layer : m_sharedVertexAttributes)
         {
@@ -1832,48 +1022,16 @@ namespace EMotionFX
         }
 
         // scale the positional data
-        AZ::Vector3* positions       = (AZ::Vector3*)FindVertexData(ATTRIB_POSITIONS);
-        AZ::Vector3* orgPositions    = (AZ::Vector3*)FindOriginalVertexData(ATTRIB_POSITIONS);
+        auto positionAttr = GetVertexAttribute<AttributeType::Position>();
 
         const uint32 numVerts = m_numVertices;
         for (uint32 i = 0; i < numVerts; ++i)
         {
-            positions[i] = positions[i] * scaleFactor;
-            orgPositions[i] = orgPositions[i] * scaleFactor;
+            positionAttr->GetData()[i] = positionAttr->GetData()[i] * scaleFactor;
+            if(positionAttr->hasOrignal()) {
+                positionAttr->GetOrignal()[i] = positionAttr->GetOrignal()[i] * scaleFactor;
+            }
         }
-    }
-
-
-    // find by name
-    size_t Mesh::FindVertexAttributeLayerIndexByName(const char* name) const
-    {
-        const auto foundLayer = AZStd::find_if(begin(m_vertexAttributes), end(m_vertexAttributes), [name](const VertexAttributeLayer* layer)
-        {
-            return layer->GetNameString() == name;
-        });
-        return foundLayer != end(m_vertexAttributes) ? AZStd::distance(begin(m_vertexAttributes), foundLayer) : InvalidIndex;
-    }
-
-
-    // find by name as string
-    size_t Mesh::FindVertexAttributeLayerIndexByNameString(const AZStd::string& name) const
-    {
-        const auto foundLayer = AZStd::find_if(begin(m_vertexAttributes), end(m_vertexAttributes), [name](const VertexAttributeLayer* layer)
-        {
-            return layer->GetNameString() == name;
-        });
-        return foundLayer != end(m_vertexAttributes) ? AZStd::distance(begin(m_vertexAttributes), foundLayer) : InvalidIndex;
-    }
-
-
-    // find by name ID
-    size_t Mesh::FindVertexAttributeLayerIndexByNameID(uint32 nameID) const
-    {
-        const auto foundLayer = AZStd::find_if(begin(m_vertexAttributes), end(m_vertexAttributes), [nameID](const VertexAttributeLayer* layer)
-        {
-            return layer->GetNameID() == nameID;
-        });
-        return foundLayer != end(m_vertexAttributes) ? AZStd::distance(begin(m_vertexAttributes), foundLayer) : InvalidIndex;
     }
 
 

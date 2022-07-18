@@ -52,52 +52,41 @@ namespace EMStudio
         }
 
         // vertex attribute layers
-        const size_t numVertexAttributeLayers = mesh->GetNumVertexAttributeLayers();
         AZStd::string tmpString;
-        for (uint32 i = 0; i < numVertexAttributeLayers; ++i)
-        {
-            EMotionFX::VertexAttributeLayer* attributeLayer = mesh->GetVertexAttributeLayer(i);
-
-            const uint32 attributeLayerType = attributeLayer->GetType();
-            switch (attributeLayerType)
-            {
-            case EMotionFX::Mesh::ATTRIB_POSITIONS:
-                tmpString = "Vertex positions";
-                break;
-            case EMotionFX::Mesh::ATTRIB_NORMALS:
-                tmpString = "Vertex normals";
-                break;
-            case EMotionFX::Mesh::ATTRIB_TANGENTS:
-                tmpString = "Vertex tangents";
-                break;
-            case EMotionFX::Mesh::ATTRIB_UVCOORDS:
-                tmpString = "Vertex uv coordinates";
-                break;
-            case EMotionFX::Mesh::ATTRIB_COLORS32:
-                tmpString = "Vertex colors in 32-bits";
-                break;
-            case EMotionFX::Mesh::ATTRIB_ORGVTXNUMBERS:
-                tmpString = "Original vertex numbers";
-                break;
-            case EMotionFX::Mesh::ATTRIB_COLORS128:
-                tmpString = "Vertex colors in 128-bits";
-                break;
-            case EMotionFX::Mesh::ATTRIB_BITANGENTS:
-                tmpString = "Vertex bitangents";
-                break;
-            default:
-                tmpString = AZStd::string::format("Unknown data (TypeID=%d)", attributeLayerType);
+        for(auto& attr: mesh->GetVertexAttributes()) {
+            auto attribType = AZStd::visit([](auto& at) -> AZStd::optional<EMotionFX::AttributeType>{
+                if(at) {
+                    return at->GetType();
+                }
+                return AZStd::nullopt;
+            }, attr);
+            if(attribType.has_value()) {
+                switch(attribType.value()) {
+                    case EMotionFX::AttributeType::Position:
+                        tmpString = "Vertex positions";
+                        break;
+                    case EMotionFX::AttributeType::Normal:
+                        tmpString = "Vertex normals";
+                        break;
+                    case EMotionFX::AttributeType::Tangent:
+                        tmpString = "Vertex tangents";
+                        break;
+                    case EMotionFX::AttributeType::UVCoords:
+                        tmpString = "Vertex uv coordinates";
+                        break;
+                    case EMotionFX::AttributeType::Bitangent:
+                        tmpString = "Vertex bitangents";
+                        break;
+                    case EMotionFX::AttributeType::OrginalVertexNumber:
+                        tmpString = "Original vertex numbers";
+                        break;
+                    default: 
+                        break;
+                }
             }
 
-            if (!attributeLayer->GetNameString().empty())
-            {
-                tmpString += AZStd::string::format(" [%s]", attributeLayer->GetName());
-            }
-
-            m_attributeLayers.emplace_back(attributeLayer->GetTypeString(), tmpString);
         }
-
-
+        
         // shared vertex attribute layers
         const size_t numSharedVertexAttributeLayers = mesh->GetNumSharedVertexAttributeLayers();
         for (size_t i = 0; i < numSharedVertexAttributeLayers; ++i)

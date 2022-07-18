@@ -11,8 +11,6 @@
 #include <EMotionFX/Source/Mesh.h>
 #include <EMotionFX/Source/SubMesh.h>
 #include <EMotionFX/Source/SkinningInfoVertexAttributeLayer.h>
-#include <EMotionFX/Source/VertexAttributeLayerAbstractData.h>
-
 namespace EMotionFX
 {
     EMotionFX::Mesh* MeshFactory::Create(
@@ -42,47 +40,17 @@ namespace EMotionFX
             mesh->AddSharedVertexAttributeLayer(skinningLayer);
         }
 
-        // Original vertex numbers
-        auto* orgVtxLayer = EMotionFX::VertexAttributeLayerAbstractData::Create(
-            vertCount,
-            EMotionFX::Mesh::ATTRIB_ORGVTXNUMBERS,
-            sizeof(AZ::u32),
-            true
-        );
-        mesh->AddVertexAttributeLayer(orgVtxLayer);
-        AZStd::copy(indices.begin(), indices.end(), static_cast<AZ::u32*>(orgVtxLayer->GetOriginalData()));
-        orgVtxLayer->ResetToOriginalData();
-
-        // The positions layer
-        auto* posLayer = EMotionFX::VertexAttributeLayerAbstractData::Create(
-            vertCount,
-            EMotionFX::Mesh::ATTRIB_POSITIONS,
-            sizeof(AZ::Vector3),
-            true
-        );
-        mesh->AddVertexAttributeLayer(posLayer);
-        AZStd::copy(vertices.begin(), vertices.end(), static_cast<AZ::Vector3*>(posLayer->GetOriginalData()));
-        posLayer->ResetToOriginalData();
-
-        // The normals layer
-        auto* normalsLayer = EMotionFX::VertexAttributeLayerAbstractData::Create(
-            vertCount,
-            EMotionFX::Mesh::ATTRIB_NORMALS,
-            sizeof(AZ::Vector3),
-            true
-        );
-        mesh->AddVertexAttributeLayer(normalsLayer);
-        AZStd::copy(normals.begin(), normals.end(), static_cast<AZ::Vector3*>(normalsLayer->GetOriginalData()));
-        normalsLayer->ResetToOriginalData();
+        // // Original vertex numbers
+        mesh->CreateVertexAttribute<EMotionFX::AttributeType::OrginalVertexNumber>(indices, true);
+        // // The positions layer
+        mesh->CreateVertexAttribute<EMotionFX::AttributeType::Position>(vertices, true);
+        // // The normals layer
+        mesh->CreateVertexAttribute<EMotionFX::AttributeType::Normal>(normals, true);
 
         // The UVs layer.
-        EMotionFX::VertexAttributeLayerAbstractData* uvsLayer = nullptr;
         if (!uvs.empty() && uvs.size() == vertices.size())
         {
-            uvsLayer = EMotionFX::VertexAttributeLayerAbstractData::Create(vertCount, EMotionFX::Mesh::ATTRIB_UVCOORDS, sizeof(AZ::Vector2), true);
-            mesh->AddVertexAttributeLayer(uvsLayer);
-            AZStd::copy(uvs.begin(), uvs.end(), static_cast<AZ::Vector2*>(uvsLayer->GetOriginalData()));
-            uvsLayer->ResetToOriginalData();
+            mesh->CreateVertexAttribute<EMotionFX::AttributeType::UVCoords>(uvs, true);
         }
 
         auto* subMesh = EMotionFX::SubMesh::Create(

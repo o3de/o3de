@@ -25,7 +25,6 @@
 #include <EMotionFX/Source/ActorManager.h>
 #include <EMotionFX/Source/MotionManager.h>
 #include <EMotionFX/Source/Motion.h>
-#include <EMotionFX/Source/VertexAttributeLayerAbstractData.h>
 #include <EMotionFX/Source/Mesh.h>
 #include <EMotionFX/Source/EMotionFXManager.h>
 #include <EMotionFX/Source/MotionSet.h>

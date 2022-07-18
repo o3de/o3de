@@ -120,23 +120,24 @@ namespace EMotionFX
         AZ::u32 orgVertex;
         float weight;
 
-        AZ::Vector3* positions = static_cast<AZ::Vector3*>(mesh->FindVertexData(Mesh::ATTRIB_POSITIONS));
-        AZ::Vector3* normals = static_cast<AZ::Vector3*>(mesh->FindVertexData(Mesh::ATTRIB_NORMALS));
-        AZ::Vector4* tangents = static_cast<AZ::Vector4*>(mesh->FindVertexData(Mesh::ATTRIB_TANGENTS));
-        AZ::Vector3* bitangents = static_cast<AZ::Vector3*>(mesh->FindVertexData(Mesh::ATTRIB_BITANGENTS));
-        AZ::u32* orgVerts = static_cast<AZ::u32*>(mesh->FindVertexData(Mesh::ATTRIB_ORGVTXNUMBERS));
+        auto positionAttr = mesh->GetVertexAttribute<AttributeType::Position>();
+        auto normalAttr = mesh->GetVertexAttribute<AttributeType::Normal>();
+        auto tangentAttr = mesh->GetVertexAttribute<AttributeType::Tangent>();
+        auto bitangentAttr = mesh->GetVertexAttribute<AttributeType::Bitangent>();
+        auto orgVertsAttr = mesh->GetVertexAttribute<AttributeType::OrginalVertexNumber>();
+
 
         // if there are tangents and bitangents to skin
-        if (tangents && bitangents)
+        if (tangentAttr && bitangentAttr)
         {
             for (AZ::u32 v = startVertex; v < endVertex; ++v)
             {
-                orgVertex = orgVerts[v];
-                vtxPos = positions[v];
-                normal = normals[v];
-                const float tangentW = tangents[v].GetW();
-                tangent.Set(tangents[v].GetX(), tangents[v].GetY(), tangents[v].GetZ());
-                bitangent = bitangents[v];
+                orgVertex = orgVertsAttr->GetData()[v];
+                vtxPos = positionAttr->GetData()[v];
+                normal = normalAttr->GetData()[v];
+                const float tangentW = tangentAttr->GetData()[v].GetW();
+                tangent.Set(tangentAttr->GetData()[v].GetX(), tangentAttr->GetData()[v].GetY(), tangentAttr->GetData()[v].GetZ());
+                bitangent = bitangentAttr->GetData()[v];
 
                 // process the skin influences for this vertex
                 const size_t numInfluences = layer->GetNumInfluences(orgVertex);
@@ -168,32 +169,32 @@ namespace EMotionFX
                     skinQuat.Normalize();
 
                     // perform skinning
-                    positions[v] = skinQuat.TransformPoint(vtxPos);
-                    normals[v] = skinQuat.TransformVector(normal);
+                    positionAttr->GetData()[v] = skinQuat.TransformPoint(vtxPos);
+                    normalAttr->GetData()[v] = skinQuat.TransformVector(normal);
                     newTangent = skinQuat.TransformVector(tangent);
-                    tangents[v].Set(newTangent.GetX(), newTangent.GetY(), newTangent.GetZ(), tangentW);
-                    bitangents[v] = skinQuat.TransformVector(bitangent);
+                    tangentAttr->GetData()[v].Set(newTangent.GetX(), newTangent.GetY(), newTangent.GetZ(), tangentW);
+                    bitangentAttr->GetData()[v] = skinQuat.TransformVector(bitangent);
                 }
                 else
                 {
                     // no skinning influences, just copy the values
-                    positions[v] = vtxPos;
-                    normals[v] = normal;
+                    positionAttr->GetData()[v] = vtxPos;
+                    normalAttr->GetData()[v] = normal;
                     newTangent = tangent;
-                    tangents[v].Set(newTangent.GetX(), newTangent.GetY(), newTangent.GetZ(), tangentW);
-                    bitangents[v] = bitangent;
+                    tangentAttr->GetData()[v].Set(newTangent.GetX(), newTangent.GetY(), newTangent.GetZ(), tangentW);
+                    bitangentAttr->GetData()[v] = bitangent;
                 }
             }
         }
-        else if (tangents && !bitangents) // tangents but no bitangents
+        else if (tangentAttr && !bitangentAttr) // tangents but no bitangents
         {
             for (AZ::u32 v = startVertex; v < endVertex; ++v)
             {
-                orgVertex = orgVerts[v];
-                vtxPos = positions[v];
-                normal = normals[v];
-                const float tangentW = tangents[v].GetW();
-                tangent.Set(tangents[v].GetX(), tangents[v].GetY(), tangents[v].GetZ());
+                orgVertex = orgVertsAttr->GetData()[v];
+                vtxPos = positionAttr->GetData()[v];
+                normal = normalAttr->GetData()[v];
+                const float tangentW = tangentAttr->GetData()[v].GetW();
+                tangent.Set(tangentAttr->GetData()[v].GetX(), tangentAttr->GetData()[v].GetY(), tangentAttr->GetData()[v].GetZ());
 
                 // process the skin influences for this vertex
                 const size_t numInfluences = layer->GetNumInfluences(orgVertex);
@@ -225,18 +226,18 @@ namespace EMotionFX
                     skinQuat.Normalize();
 
                     // perform skinning
-                    positions[v] = skinQuat.TransformPoint(vtxPos);
-                    normals[v] = skinQuat.TransformVector(normal);
+                    positionAttr->GetData()[v] = skinQuat.TransformPoint(vtxPos);
+                    normalAttr->GetData()[v] = skinQuat.TransformVector(normal);
                     newTangent = skinQuat.TransformVector(tangent);
-                    tangents[v].Set(newTangent.GetX(), newTangent.GetY(), newTangent.GetZ(), tangentW);
+                    tangentAttr->GetData()[v].Set(newTangent.GetX(), newTangent.GetY(), newTangent.GetZ(), tangentW);
                 }
                 else
                 {
                     // no skinning influences, just copy the values
-                    positions[v] = vtxPos;
-                    normals[v] = normal;
+                    positionAttr->GetData()[v] = vtxPos;
+                    normalAttr->GetData()[v] = normal;
                     newTangent = tangent;
-                    tangents[v].Set(newTangent.GetX(), newTangent.GetY(), newTangent.GetZ(), tangentW);
+                    tangentAttr->GetData()[v].Set(newTangent.GetX(), newTangent.GetY(), newTangent.GetZ(), tangentW);
                 }
             }
         }
@@ -244,9 +245,9 @@ namespace EMotionFX
         {
             for (AZ::u32 v = startVertex; v < endVertex; ++v)
             {
-                orgVertex = orgVerts[v];
-                vtxPos = positions[v];
-                normal = normals[v];
+                orgVertex = orgVertsAttr->GetData()[v];
+                vtxPos = positionAttr->GetData()[v];
+                normal = normalAttr->GetData()[v];
 
                 // process the skin influences for this vertex
                 const size_t numInfluences = layer->GetNumInfluences(orgVertex);
@@ -278,14 +279,14 @@ namespace EMotionFX
                     skinQuat.Normalize();
 
                     // perform skinning
-                    positions[v] = skinQuat.TransformPoint(vtxPos);
-                    normals[v] = skinQuat.TransformVector(normal);
+                    positionAttr->GetData()[v] = skinQuat.TransformPoint(vtxPos);
+                    normalAttr->GetData()[v] = skinQuat.TransformVector(normal);
                 }
                 else
                 {
                     // no skinning influences, just copy the values
-                    positions[v] = vtxPos;
-                    normals[v] = normal;
+                    positionAttr->GetData()[v] = vtxPos;
+                    normalAttr->GetData()[v] = normal;
                 }
             }
         }
