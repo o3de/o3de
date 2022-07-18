@@ -63,9 +63,6 @@ namespace AzToolsFramework
         template<class, class = void>
         static constexpr bool IsDefaultHandler = false;
 
-        template<class T>
-        static constexpr bool IsDefaultHandler<T, AZStd::void_t<typename T::IsDefaultHandler>> = T::IsDefaultHandler();
-
         //! Registers a factory for a given type of PropertyHandlerWidgetInterface.
         //! This type must implement `static const AZStd::string_view GetHandlerName()`
         //! and may implement `static bool ShouldHandleNode(const AZ::Dom::Value& node)`
@@ -86,4 +83,7 @@ namespace AzToolsFramework
             RegisterHandler(AZStd::move(handlerData));
         }
     };
+
+    template<class T>
+    constexpr bool PropertyEditorToolsSystemInterface::IsDefaultHandler<T, AZStd::void_t<typename T::IsDefaultHandler>> = T::IsDefaultHandler();
 } // namespace AzToolsFramework

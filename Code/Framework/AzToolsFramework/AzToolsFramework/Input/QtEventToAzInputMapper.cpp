@@ -193,10 +193,26 @@ namespace AzToolsFramework
         return m_systemCursorState;
     }
 
+    static constexpr AZ::u32 SyntheticDeviceOffset = 1000;
+
+    AzFramework::InputDeviceId GetSyntheticKeyboardDeviceId(const AzFramework::ViewportId viewportId)
+    {
+        return AzFramework::InputDeviceId(AzFramework::InputDeviceKeyboard::Id.GetName(), viewportId + SyntheticDeviceOffset);
+    }
+
+    AzFramework::InputDeviceId GetSyntheticMouseDeviceId(const AzFramework::ViewportId viewportId)
+    {
+        return AzFramework::InputDeviceId(AzFramework::InputDeviceMouse::Id.GetName(), viewportId + SyntheticDeviceOffset);
+    }
+
+    static bool IsKeyEvent(const QEvent::Type eventType)
+    {
+        return eventType == QEvent::Type::KeyPress || eventType == QEvent::Type::KeyRelease || eventType == QEvent::Type::ShortcutOverride;
+    }
+
     QtEventToAzInputMapper::QtEventToAzInputMapper(QWidget* sourceWidget, int syntheticDeviceId)
         : QObject(sourceWidget)
         , m_sourceWidget(sourceWidget)
-        , m_keyboardModifiers(AZStd::make_shared<AzFramework::ModifierKeyStates>())
     {
         InitializeKeyMappings();
         InitializeMouseButtonMappings();
@@ -205,11 +221,8 @@ namespace AzToolsFramework
         // Add an arbitrary offset to our device index to avoid collision with real physical device index.
         // We still have to use the keyboard and mouse device channel names because input channels are only addressed
         // by their own name and their device index, so overlapping input channels between devices would conflict.
-        constexpr AZ::u32 syntheticDeviceOffset = 1000;
-        const AzFramework::InputDeviceId keyboardDeviceId(
-            AzFramework::InputDeviceKeyboard::Id.GetName(), syntheticDeviceId + syntheticDeviceOffset);
-        const AzFramework::InputDeviceId mouseDeviceId(
-            AzFramework::InputDeviceMouse::Id.GetName(), syntheticDeviceId + syntheticDeviceOffset);
+        const AzFramework::InputDeviceId keyboardDeviceId(GetSyntheticKeyboardDeviceId(syntheticDeviceId));
+        const AzFramework::InputDeviceId mouseDeviceId(GetSyntheticMouseDeviceId(syntheticDeviceId));
 
         m_keyboardDevice = AZStd::make_unique<EditorQtKeyboardDevice>(keyboardDeviceId);
         m_mouseDevice = AZStd::make_unique<EditorQtMouseDevice>(mouseDeviceId);
@@ -297,6 +310,19 @@ namespace AzToolsFramework
             ClearInputChannels(event);
         }
 
+        // If a key event comes in from an outside widget, update the internal state of the keys (e.g. to update the modifiers), but do not
+        // notify the channel (as the source widget does not have focus)
+        if (object != m_sourceWidget && !m_sourceWidget->hasFocus() && IsKeyEvent(eventType))
+        {
+            auto keyEvent = static_cast<QKeyEvent*>(event);
+            HandleKeyEvent(
+                keyEvent,
+                []([[maybe_unused]] const AzFramework::InputChannel* channel, [[maybe_unused]] QEvent* event)
+                {
+                    // noop
+                });
+        }
+
         // Only accept mouse & key release events that originate from an object that is not our target widget,
         // as we don't want to erroneously intercept user input meant for another component.
         if (object != m_sourceWidget && eventType != QEvent::Type::KeyRelease && eventType != QEvent::Type::MouseButtonRelease)
@@ -321,11 +347,16 @@ namespace AzToolsFramework
         // Map key events to input channels.
         // ShortcutOverride is used in lieu of KeyPress for high priority input channels like Alt
         // that need to be accepted and stopped before they bubble up and cause unintended behavior.
-        else if (
-            eventType == QEvent::Type::KeyPress || eventType == QEvent::Type::KeyRelease || eventType == QEvent::Type::ShortcutOverride)
+        else if (IsKeyEvent(eventType))
         {
             auto keyEvent = static_cast<QKeyEvent*>(event);
-            HandleKeyEvent(keyEvent);
+            HandleKeyEvent(
+                keyEvent,
+                [this](const AzFramework::InputChannel* channel, QEvent* event)
+                {
+                    // Notify channel of key event when the source widget is in focus
+                    NotifyUpdateChannelIfNotIdle(channel, event);
+                });
         }
         // Map mouse events to input channels.
         else if (
@@ -514,14 +545,15 @@ namespace AzToolsFramework
         case CursorInputMode::CursorModeNone:
             m_previousGlobalCursorPosition = globalCursorPosition;
             break;
-        default: 
+        default:
             AZ_Assert(false, "Invalid Curosr Mode: %i.", m_cursorMode);
             break;
         }
         ProcessPendingMouseEvents(cursorDelta);
     }
 
-    void QtEventToAzInputMapper::HandleKeyEvent(QKeyEvent* keyEvent)
+    void QtEventToAzInputMapper::HandleKeyEvent(
+        QKeyEvent* keyEvent, const AZStd::function<void(const AzFramework::InputChannel* channel, QEvent* event)>& notifyUpdateChannelFn)
     {
         const Qt::Key key = static_cast<Qt::Key>(keyEvent->key());
         const QEvent::Type eventType = keyEvent->type();
@@ -544,20 +576,18 @@ namespace AzToolsFramework
         {
             if (auto keyIt = m_keyMappings.find(key); keyIt != m_keyMappings.end())
             {
-                auto keyChannel = GetInputChannel<AzFramework::InputChannelDigitalWithSharedModifierKeyStates>(keyIt->second);
-
-                if (keyChannel)
+                if (auto* keyChannel = GetInputChannel<AzFramework::InputChannelDigitalWithSharedModifierKeyStates>(keyIt->second))
                 {
                     if (eventType == QEvent::Type::KeyPress || eventType == QEvent::Type::ShortcutOverride)
                     {
-                        keyChannel->UpdateState(true);
+                        keyChannel->ProcessRawInputEvent(true);
                     }
                     else
                     {
-                        keyChannel->UpdateState(false);
+                        keyChannel->ProcessRawInputEvent(false);
                     }
 
-                    NotifyUpdateChannelIfNotIdle(keyChannel, keyEvent);
+                    notifyUpdateChannelFn(keyChannel, keyEvent);
                 }
             }
         }
