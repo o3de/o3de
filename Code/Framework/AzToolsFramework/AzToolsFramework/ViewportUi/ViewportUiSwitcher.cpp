@@ -60,7 +60,6 @@ namespace AzToolsFramework::ViewportUi::Internal
 
         // resize to fit new action with minimum extra space
         resize(minimumSizeHint());
-
         const AZStd::function<void()>& callback = [this, button]()
         {
             m_buttonGroup->PressButton(button->m_buttonId);

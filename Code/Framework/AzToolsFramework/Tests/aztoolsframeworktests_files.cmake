@@ -27,6 +27,7 @@ set(FILES
     ComponentModeTestFixture.cpp
     ComponentModeTestFixture.h
     ComponentModeTests.cpp
+    ComponentModeSwitcherTests.cpp
     EditorTransformComponentSelectionTests.cpp
     EditorVertexSelectionTests.cpp
     EditorViewportIconTests.cpp

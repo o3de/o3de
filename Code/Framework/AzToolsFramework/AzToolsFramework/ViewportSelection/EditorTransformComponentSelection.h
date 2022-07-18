@@ -129,7 +129,7 @@ namespace AzToolsFramework
         ViewportUi::SwitcherId m_switcherId; //!< Switcher id.
         AZStd::vector<ViewportUi::ButtonId> m_switcherButtonsId; //!< Vector of Switcher button ids.
         AZ::Event<ViewportUi::ButtonId>::Handler m_switcherHandler; //!< Callback for when a switcher button is pressed.
-        ViewportUi::ButtonId m_switcherTransformButtonId; //!< Id of the Viewport UI button for switcher transform mode.
+        ViewportUi::ButtonId m_transformButtonId; //!< Id of the Viewport UI button for switcher transform mode.
     };
 
     //! Exposed to the viewport manager
@@ -208,7 +208,7 @@ namespace AzToolsFramework
 
         void CreateTransformModeSelectionCluster();
         void CreateSpaceSelectionCluster();
-        void CreateSwitcher();
+        void CreateComponentModeSwitcher();
         void CreateSnappingCluster();
 
         void ClearManipulatorTranslationOverride();

@@ -242,12 +242,28 @@ namespace AzToolsFramework
             /// Also called when directly selecting a Component in the EntityOutliner.
             virtual void ActiveComponentModeChanged(const AZ::Uuid& /*componentType*/) {}
 
+            virtual void OnComponentModeExit() {};
+
         protected:
             ~EditorComponentModeNotifications() = default;
         };
 
         /// Type to inherit to implement EditorComponentModeNotifications.
         using EditorComponentModeNotificationBus = AZ::EBus<EditorComponentModeNotifications>;
+
+        class ComponentModeNotifications
+            : public AZ::EBusTraits
+        {
+        public:
+            virtual void OnComponentModeEnter() {};
+            virtual void OnComponentModeExit() {};
+
+        protected:
+            ~ComponentModeNotifications() = default;
+        };
+
+        /// Type to inherit to implement EditorComponentModeNotifications.
+        using EditorComponentModeNotificationBus2 = AZ::EBus<ComponentModeNotifications>;
 
         /// Helper to answer if the Editor is in ComponentMode or not.
         inline bool InComponentMode()
@@ -258,6 +274,36 @@ namespace AzToolsFramework
 
             return inComponentMode;
         }
+
+        //class EntityCompositionNotifications
+        //    : public AZ::EBusTraits
+        //{
+        //public:
+        //    /*!
+        //    * Notification that the specified entities are about to have their composition changed due to user interaction in the editor
+        //    *
+        //    * \param entityIds Entities about to be changed
+        //    */
+        //    virtual void OnEntityCompositionChanging(const AzToolsFramework::EntityIdList& /*entityIds*/) {};
+
+        //    /*!
+        //    * Notification that the specified entities had their composition changed due to user interaction in the editor
+        //    *
+        //    * \param entityIds Entities changed
+        //    */
+        //    virtual void OnEntityCompositionChanged(const AzToolsFramework::EntityIdList& /*entityIds*/) {};
+
+        //    /*!@{
+        //     * Discrete composition events for adding, removing, enabling and disabling components
+        //    */
+        //    virtual void OnEntityComponentAdded(const AZ::EntityId& /*entityId*/, const AZ::ComponentId& /*componentId*/) {};
+        //    virtual void OnEntityComponentRemoved(const AZ::EntityId& /*entityId*/, const AZ::ComponentId& /*componentId*/) {};
+        //    virtual void OnEntityComponentEnabled(const AZ::EntityId& /*entityId*/, const AZ::ComponentId& /*componentId*/) {};
+        //    virtual void OnEntityComponentDisabled(const AZ::EntityId& /*entityId*/, const AZ::ComponentId& /*componentId*/) {};
+        //    //!@}
+        //};
+
+        //using EntityCompositionNotificationBus = AZ::EBus<EntityCompositionNotifications>;
 
     } // namespace ComponentModeFramework
 } // namespace AzToolsFramework
