@@ -445,6 +445,26 @@ function(ly_test_impact_write_config_file CONFIG_TEMPLATE_FILE BIN_DIR)
     message(DEBUG "Test impact framework post steps complete")
 endfunction()
 
+function(ly_test_impact_write_pytest_file)
+    set(config_array "")
+    foreach(config_type ${LY_CONFIGURATION_TYPES})
+        if(NOT "${config_type}" STREQUAL "release")
+            list(APPEND config_array "\"${LY_TEST_IMPACT_WORKING_DIR}/${config_type}/Persistent/tiaf.json\"")
+        endif()
+    endforeach()
+    string(REPLACE ";" "," CONFIG_PATHS "${config_array}")
+    set(BUILD_DIR ${CMAKE_BINARY_DIR})
+
+    ly_file_read("cmake/TestImpactFramework/PyTestTestData.in" test_file)
+    string(CONFIGURE ${test_file} test_file)
+    
+    file(GENERATE
+        OUTPUT "${LY_TEST_IMPACT_PYTEST_FILE_PATH}test_data.json"
+        CONTENT "${test_file}")
+
+endfunction()
+
+
 #! ly_test_impact_post_step: runs the post steps to be executed after all other cmake scripts have been executed.
 function(ly_test_impact_post_step)
     if(NOT LY_TEST_IMPACT_INSTRUMENTATION_BIN)
@@ -478,6 +498,8 @@ function(ly_test_impact_post_step)
         "cmake/TestImpactFramework/ConsoleFrontendConfig.in"
         ${bin_dir}
     )
+
+    ly_test_impact_write_pytest_file()
     
     # Copy over the graphviz options file for the build dependency graphs
     message(DEBUG "Test impact framework config file written")

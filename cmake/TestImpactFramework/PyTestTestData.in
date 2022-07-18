@@ -1,0 +1,4 @@
+{
+  "build_dir" : "${BUILD_DIR}",
+  "configs" : [${CONFIG_PATHS}]
+}
