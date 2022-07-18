@@ -26,7 +26,7 @@ namespace MaterialEditor
     class MaterialDocument
         : public AtomToolsFramework::AtomToolsDocument
         , public MaterialDocumentRequestBus::Handler
-        , public AZ::TickBus::Handler
+        , public AZ::SystemTickBus::Handler
     {
     public:
         AZ_RTTI(MaterialDocument, "{90299628-AD02-4FEB-9527-7278FA2817AD}", AtomToolsFramework::AtomToolsDocument);
@@ -67,8 +67,8 @@ namespace MaterialEditor
         // Map of raw property values for undo/redo comparison and storage
         using PropertyValueMap = AZStd::unordered_map<AZ::Name, AZStd::any>;
 
-        // AZ::TickBus overrides...
-        void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
+        // AZ::SystemTickBus overrides...
+        void OnSystemTick() override;
 
         bool SaveSourceData(AZ::RPI::MaterialSourceData& sourceData, PropertyFilterFunction propertyFilter) const;
 

@@ -7,15 +7,6 @@
       "CMAKE_LY_PROJECTS": "AutomatedTesting"
     }
   },
-  "validation_pipe": {
-    "TAGS": [
-      "default",
-      "snapshot"
-    ],
-    "steps": [
-      "validation"
-    ]
-  },
   "debug_pipe": {
     "TAGS": [
       "periodic-incremental-daily",
@@ -42,13 +33,6 @@
     "COMMAND": "python_windows.cmd",
     "PARAMETERS": {
       "SCRIPT_PATH": "scripts/build/scrubbing_job.py"
-    }
-  },
-  "validation": {
-    "TAGS": [],
-    "COMMAND": "python_windows.cmd",
-    "PARAMETERS": {
-      "SCRIPT_PATH": "scripts/commit_validation/validate_file_or_folder.py"
     }
   },
   "metrics": {

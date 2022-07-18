@@ -40,9 +40,9 @@ namespace UnitTests
         ASSERT_EQ(bm.GetBuilderCreationCount(), 2);
     }
 
-    bool TestBuilder::Start(AssetProcessor::BuilderPurpose /*purpose*/)
+    AZ::Outcome<void, AZStd::string> TestBuilder::Start(AssetProcessor::BuilderPurpose /*purpose*/)
     {
-        return true;
+        return AZ::Success();
     }
 
     TestBuilderManager::TestBuilderManager(ConnectionManager* connectionManager): BuilderManager(connectionManager)

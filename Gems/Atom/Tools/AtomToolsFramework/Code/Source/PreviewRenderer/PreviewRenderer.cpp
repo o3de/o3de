@@ -194,8 +194,10 @@ namespace AtomToolsFramework
                 if (captureCompleteCallback)
                 {
                     captureCompleteCallback(QPixmap::fromImage(QImage(
-                        result.m_dataBuffer.get()->data(), result.m_imageDescriptor.m_size.m_width,
-                        result.m_imageDescriptor.m_size.m_height, QImage::Format_RGBA8888)));
+                        result.m_dataBuffer.get()->data(),
+                        result.m_imageDescriptor.m_size.m_width,
+                        result.m_imageDescriptor.m_size.m_height,
+                        QImage::Format_RGBA8888)));
                 }
             }
             else
