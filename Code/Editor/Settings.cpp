@@ -228,6 +228,7 @@ SEditorSettings::SEditorSettings()
     gui.hSystemFontItalic = QFont("Ms Shell Dlg 2", lfHeight, QFont::Normal, true);
 
     backgroundUpdatePeriod = 0;
+    backgroundSystemTickFPS = 30;
     g_TemporaryLevelName = nullptr;
 
     sliceSettings.dynamicByDefault = false;
@@ -848,6 +849,7 @@ void SEditorSettings::PostInitApply()
     REGISTER_CVAR2_CB("ed_toolbarIconSize", &gui.nToolbarIconSize, gui.nToolbarIconSize, VF_NULL, "Override size of the toolbar icons 0-default, 16,32,...", ToolbarIconSizeChanged);
 
     REGISTER_CVAR2("ed_backgroundUpdatePeriod", &backgroundUpdatePeriod, backgroundUpdatePeriod, 0, "Delay between frame updates (ms) when window is out of focus but not minimized. 0 = disable background update. -1 = update with no delay.");
+    REGISTER_CVAR2("ed_backgroundSystemTickFPS", &backgroundSystemTickFPS, backgroundSystemTickFPS, 30, "FPS at which SystemTick occurs when Editor is backgrounded and frame updates are disabled.");
     REGISTER_CVAR2("ed_showErrorDialogOnLoad", &showErrorDialogOnLoad, showErrorDialogOnLoad, 0, "Show error dialog on level load");
     REGISTER_CVAR2_CB("ed_keepEditorActive", &keepEditorActive, 0, VF_NULL, "Keep the editor active, even if no focus is set", KeepEditorActiveChanged);
     REGISTER_CVAR2("g_TemporaryLevelName", &g_TemporaryLevelName, "temp_level", VF_NULL, "Temporary level named used for experimental levels.");
