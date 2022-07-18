@@ -200,7 +200,7 @@ namespace AZ
             const FrameGraph* m_frameGraph = nullptr;
 
             /// A load balancing factor for command list splitting (platform dependent).
-            uint32_t m_estimatedItemCount = 0;
+            uint32_t m_estimatedItemCount = 1;
 
             /// The hardware queue class that this scope is requested to execute on.
             HardwareQueueClass m_hardwareQueueClass = HardwareQueueClass::Graphics;

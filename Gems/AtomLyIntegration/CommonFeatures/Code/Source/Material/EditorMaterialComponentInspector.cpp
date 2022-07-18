@@ -49,14 +49,14 @@ namespace AZ
                 : AtomToolsFramework::InspectorWidget(parent)
             {
                 CreateHeading();
-                AZ::TickBus::Handler::BusConnect();
+                AZ::SystemTickBus::Handler::BusConnect();
                 AZ::EntitySystemBus::Handler::BusConnect();
                 EditorMaterialSystemComponentNotificationBus::Handler::BusConnect();
             }
 
             MaterialPropertyInspector::~MaterialPropertyInspector()
             {
-                AZ::TickBus::Handler::BusDisconnect();
+                AZ::SystemTickBus::Handler::BusDisconnect();
                 AZ::EntitySystemBus::Handler::BusDisconnect();
                 EditorMaterialSystemComponentNotificationBus::Handler::BusDisconnect();
                 MaterialComponentNotificationBus::MultiHandler::BusDisconnect();
@@ -836,10 +836,8 @@ namespace AZ
                 m_updateUI |= (m_primaryEntityId == entityId);
             }
 
-            void MaterialPropertyInspector::OnTick(float deltaTime, ScriptTimePoint time)
+            void MaterialPropertyInspector::OnSystemTick()
             {
-                AZ_UNUSED(time);
-                AZ_UNUSED(deltaTime);
                 if (m_updateUI)
                 {
                     m_updateUI = false;
@@ -863,7 +861,7 @@ namespace AZ
                 m_updatePreview = true;
             }
 
-            void MaterialPropertyInspector::OnRenderMaterialPreviewComplete(
+            void MaterialPropertyInspector::OnRenderMaterialPreviewReady(
                 const AZ::EntityId& entityId, const AZ::Render::MaterialAssignmentId& materialAssignmentId, const QPixmap& pixmap)
             {
                 if (m_overviewImage && m_primaryEntityId == entityId && m_materialAssignmentId == materialAssignmentId)

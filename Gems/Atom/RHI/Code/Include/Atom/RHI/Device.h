@@ -143,10 +143,13 @@ namespace AZ
             };
 
             bool WasDeviceRemoved();
+            void SetDeviceRemoved();
+            
+            // Accessors
+            void SetLastExecutingScope(const AZStd::string_view scopeName);
+            AZStd::string_view GetLastExecutingScope() const;
 
         protected:
-
-            void SetDeviceRemoved();
 
             DeviceFeatures m_features;
             DeviceLimits m_limits;
@@ -214,6 +217,10 @@ namespace AZ
             FormatCapabilitiesList m_formatsCapabilities;
 
             bool m_wasDeviceRemoved = false;
+
+            // Cache the name of the last executing scope name. Used within AZ_FORCE_CPU_GPU_INSYNC 
+            AZStd::string m_lastExecutingScope;
+
         };
     }
 }
