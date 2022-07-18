@@ -131,8 +131,19 @@ namespace AzToolsFramework
              */
             bool CopyTemplateIntoPrefabFileFormat(
                 TemplateReference templateRef,
-                PrefabDom& output
-            );
+                PrefabDom& output);
+
+            /**
+             * Reload nested instance given a nested instance value iterator and target Template with its id.
+             * @param instanceIterator A nested instance value iterator.
+             * @param targetTemplateId A unique id of target Template.
+             * @param progressedFilePathsSet An unordered_set to track if there's any cyclical dependency between Templates.
+             * @return If reloading the nested instance pointed by instanceIterator on targetTemplate succeeded or not.
+             */
+            bool ReloadNestedInstance(
+                PrefabDomValue::ConstMemberIterator& instanceIterator,
+                TemplateId targetTemplateId,
+                AZStd::unordered_set<AZ::IO::Path>& progressedFilePathsSet);
 
             /**
              * Load Prefab Template from given file path to memory and return the id of loaded Template.
@@ -161,7 +172,7 @@ namespace AzToolsFramework
              * @param instanceIterator A nested instance value iterator.
              * @param targetTemplateId A unique id of target Template.
              * @param progressedFilePathsSet An unordered_set to track if there's any cyclical dependency between Templates.
-             * @return If loading the nested instance pointed by instanceIt on targetTemplate succeeded or not.
+             * @return If loading the nested instance pointed by instanceIterator on targetTemplate succeeded or not.
              */
             bool LoadNestedInstance(
                 PrefabDomValue::MemberIterator& instanceIterator,
