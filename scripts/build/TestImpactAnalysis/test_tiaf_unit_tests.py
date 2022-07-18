@@ -23,14 +23,26 @@ logging = getLogger("tiaf")
 class TestTIAFUnitTests():
 
     @pytest.fixture
-    def build_root(self):
-        if not os.environ.get('OUTPUT_DIRECTORY'):
-            return "C:\\o3de\\build"
-        return os.environ.get('OUTPUT_DIRECTORY')
+    def test_data_file(self):
+        path = Path("scripts/build/TestImpactAnalysis/Testing/test_data.json")
+        with open(path) as file:
+            return json.load(file)
 
-    @pytest.fixture(scope='module', params=['profile_tiaf.json','debug_tiaf.json'])
-    def config_path(self, request):
-        return "C:/o3de/scripts/build/TestImpactAnalysis/Testing/"+request.param
+    @pytest.fixture(scope='module', params=['profile', 'debug'])
+    def build_type(self, request):
+        return request.param
+
+    @pytest.fixture
+    def config_path(self, build_type, test_data_file):
+        return test_data_file['configs'][build_type]
+
+    @pytest.fixture
+    def binary_path(self, build_type, test_data_file):
+        return test_data_file['binary'][build_type]
+
+    @pytest.fixture()
+    def report_path(self, build_type, test_data_file, mock_uuid):
+        return test_data_file['report_dir'][build_type]+"\\report."+mock_uuid.hex+".json"
 
     @pytest.fixture
     def config_data(self, config_path):
@@ -58,17 +70,27 @@ class TestTIAFUnitTests():
         universal_uuid = uuid.uuid4()
         mocker.patch('uuid.uuid4', return_value=universal_uuid)
         return universal_uuid
+
+    
  
     @pytest.fixture
-    def default_runtime_args(self, mock_uuid, build_root, config_data):
+    def default_runtime_args(self, mock_uuid, binary_path, report_path):
         runtime_args = {}
-        runtime_args['bin'] = str(config_data['repo']['tiaf_bin']).replace("/","\\")
+        runtime_args['bin'] = str(binary_path).replace("/","\\")
         runtime_args['sequence'] = "--sequence=seed" 
         runtime_args['safemode'] = "--safemode=off"
         runtime_args['test_failure_policy'] = "--fpolicy=continue"
-        runtime_args['report'] = "--report=C:\\o3de\\build\\bin\\TestImpactFramework\\"+config_data['meta']['build_config']+"\\Temp\\report."+mock_uuid.hex+".json"
+        runtime_args['report'] = "--report="+str(report_path).replace("/","\\")
         runtime_args['suite'] = "--suite=main"
         return runtime_args
+
+    def test_config_files_exist(self, config_path):
+        # given:
+        # config path, and files have been built
+        # when:
+        # we look for the file
+        # then:
+        assert os.path.exists(config_path)
 
     def test_valid_config(self, caplog, tiaf_args, mock_runtime, mocker, default_runtime_args):
         # given:
