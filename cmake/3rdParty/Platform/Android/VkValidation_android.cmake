@@ -14,5 +14,5 @@ else()
     message(WARNING
         "Android Vulkan validation layer libs not found at ${LY_ANDROID_VULKAN_VALIDATION_PATH}. "
         "If using Android NDK r23 or above, these libs are distributed separately via https://github.com/KhronosGroup/Vulkan-ValidationLayers. "
-        "Vulkan validation will not be availble.")
+        "Vulkan validation will not be available.")
 endif()
