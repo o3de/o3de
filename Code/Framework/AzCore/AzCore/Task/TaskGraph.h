@@ -104,6 +104,7 @@ namespace AZ
     public:
         // ! The supplied string label is expected to be a string literal or otherwise outlive the lifetime of this TG.
         explicit TaskGraph(const char* graphlabel);
+        TaskGraph(AZStd::nullptr_t) = delete;
         ~TaskGraph();
 
         // Reset the state of the task graph to begin recording tasks and edges again
