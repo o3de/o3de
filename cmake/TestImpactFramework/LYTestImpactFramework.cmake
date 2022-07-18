@@ -48,6 +48,8 @@ set(LY_TEST_IMPACT_CONFIG_FILE_PATH "${LY_TEST_IMPACT_PERSISTENT_DIR}/tiaf.json"
 # Preprocessor directive for the config file path
 set(LY_TEST_IMPACT_CONFIG_FILE_PATH_DEFINITION "LY_TEST_IMPACT_DEFAULT_CONFIG_FILE=\"${LY_TEST_IMPACT_CONFIG_FILE_PATH}\"")
 
+set(LY_TEST_IMPACT_PYTEST_FILE_PATH "${LY_ROOT_FOLDER}/scripts/build/TestImpactAnalysis/Testing/")
+
 #! ly_test_impact_rebase_file_to_repo_root: rebases the relative and/or absolute path to be relative to repo root directory and places the resulting path in quotes.
 #
 # \arg:INPUT_FILE the file to rebase
@@ -435,6 +437,10 @@ function(ly_test_impact_write_config_file CONFIG_TEMPLATE_FILE BIN_DIR)
         OUTPUT "${LY_TEST_IMPACT_CONFIG_FILE_PATH}" 
         CONTENT "${config_file}"
     )
+
+    file(GENERATE
+        OUTPUT "${LY_TEST_IMPACT_PYTEST_FILE_PATH}$<CONFIG>_tiaf.json"
+        CONTENT "${config_file}")
 
     message(DEBUG "Test impact framework post steps complete")
 endfunction()
