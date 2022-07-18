@@ -2309,15 +2309,15 @@ int CCryEditApp::IdleProcessing(bool bBackgroundUpdate)
         // If we're backgrounded and not fully background updating, idle to rate limit SystemTick
         const float safeMarginFPS = 0.5f; // safe margin to not drop below idle fps
         const int maxEditorFPS = gEnv->pConsole->GetCVar("ed_backgroundSystemTickFPS")->GetIVal();
-        static AZ::TimeMs sTimeLast = AZ::GetRealElapsedTimeMs();
-        const AZ::TimeMs timeFrameMax(static_cast<AZ::TimeMs>((int64)(1000.f / ((float)maxEditorFPS + safeMarginFPS))));
-        const AZ::TimeMs timeLast = timeFrameMax + sTimeLast;
+        static AZ::TimeMs sTimeLastMs = AZ::GetRealElapsedTimeMs();
+        const AZ::TimeMs maxFrameTimeMs(static_cast<AZ::TimeMs>((int64)(1000.f / ((float)maxEditorFPS + safeMarginFPS))));
+        const AZ::TimeMs maxElapsedTimeMs = maxFrameTimeMs + sTimeLastMs;
         const AZ::TimeMs realElapsedTimeMs = AZ::GetRealElapsedTimeMs();
-        if (timeLast > realElapsedTimeMs)
+        if (maxElapsedTimeMs > realElapsedTimeMs)
         {
-            CrySleep(static_cast<uint64_t>(timeLast - realElapsedTimeMs));
+            CrySleep(static_cast<uint64_t>(maxElapsedTimeMs - realElapsedTimeMs));
         }
-        sTimeLast = AZ::GetRealElapsedTimeMs();
+        sTimeLastMs = AZ::GetRealElapsedTimeMs();
     }
 
     DisplayLevelLoadErrors();
