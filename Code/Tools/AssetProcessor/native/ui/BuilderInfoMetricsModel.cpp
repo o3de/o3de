@@ -125,6 +125,19 @@ namespace AssetProcessor
         BuilderInfoMetricsItem* item = static_cast<BuilderInfoMetricsItem*>(index.internalPointer());
         switch (role)
         {
+        case aznumeric_cast<int>(Role::SortRole):
+            switch (index.column())
+            {
+            case aznumeric_cast<int>(Column::AverageDuration):
+                if (item->GetJobCount() == 0)
+                {
+                    return QVariant();
+                }
+                return item->GetTotalDuration() / item->GetJobCount();
+            case aznumeric_cast<int>(Column::TotalDuration):
+                return item->GetTotalDuration();
+            // Other columns are sorted by Qt::DisplayRole immediately below
+            }
         case Qt::DisplayRole:
             switch (index.column())
             {

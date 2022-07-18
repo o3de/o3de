@@ -35,6 +35,11 @@ namespace AssetProcessor
             Max
         };
 
+        enum class Role
+        {
+            SortRole = Qt::UserRole
+        };
+
         BuilderInfoMetricsModel(
             AZStd::shared_ptr<AzToolsFramework::AssetDatabase::AssetDatabaseConnection> dbConnection, QObject* parent = nullptr);
 

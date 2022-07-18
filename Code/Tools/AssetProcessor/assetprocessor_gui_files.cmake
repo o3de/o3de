@@ -41,6 +41,8 @@ set(FILES
     native/ui/BuilderInfoPatternsModel.cpp
     native/ui/BuilderInfoMetricsModel.h
     native/ui/BuilderInfoMetricsModel.cpp
+    native/ui/BuilderInfoMetricsSortModel.h
+    native/ui/BuilderInfoMetricsSortModel.cpp
     native/ui/BuilderInfoMetricsItem.h
     native/ui/BuilderInfoMetricsItem.cpp
     native/ui/MessageWindow.h
