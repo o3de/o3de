@@ -74,6 +74,7 @@ namespace AZ
     class TaskGraphEvent
     {
     public:
+        explicit TaskGraphEvent(const char* label);
         bool IsSignaled();
         void Wait();
 
@@ -88,6 +89,7 @@ namespace AZ
         AZStd::binary_semaphore m_semaphore;
         AZStd::atomic_int       m_waitCount = 0;
         TaskExecutor*           m_executor = nullptr;
+        const char* m_label;
     };
 
     // The TaskGraph encapsulates a set of tasks and their interdependencies. After adding
@@ -99,6 +101,7 @@ namespace AZ
     class TaskGraph final
     {
     public:
+        explicit TaskGraph(const char* graphlabel);
         ~TaskGraph();
 
         // Reset the state of the task graph to begin recording tasks and edges again
@@ -160,6 +163,7 @@ namespace AZ
         // Task index |-> Dependent task indices
         AZStd::unordered_map<uint32_t, AZStd::vector<uint32_t>> m_links;
 
+        char const* m_label;
         uint32_t m_linkCount = 0;
         bool m_retained = true;
         AZStd::atomic<bool> m_submitted = false;
