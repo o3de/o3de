@@ -11,6 +11,7 @@ from logging import getLogger
 import os
 from tiaf import TestImpact
 from tiaf_driver import main
+import json
 from pathlib import Path
 import pytest
 import subprocess
@@ -27,10 +28,19 @@ class TestTIAFUnitTests():
             return "C:\\o3de\\build"
         return os.environ.get('OUTPUT_DIRECTORY')
 
+    @pytest.fixture(scope='module', params=['profile_tiaf.json','debug_tiaf.json'])
+    def config_path(self, request):
+        return "C:/o3de/scripts/build/TestImpactAnalysis/Testing/"+request.param
+
     @pytest.fixture
-    def tiaf_args(self, build_root):
+    def config_data(self, config_path):
+        with open(config_path) as f:
+            return json.load(f)
+
+    @pytest.fixture
+    def tiaf_args(self, config_path):
         args = {}
-        args['config'] = build_root+"/bin/TestImpactFramework/profile/Persistent/tiaf.json"
+        args['config'] = config_path
         args['src_branch'] = "123"
         args['dst_branch'] = "123"
         args['commit'] = "foobar"
@@ -50,13 +60,13 @@ class TestTIAFUnitTests():
         return universal_uuid
  
     @pytest.fixture
-    def default_runtime_args(self, mock_uuid, build_root):
+    def default_runtime_args(self, mock_uuid, build_root, config_data):
         runtime_args = {}
-        runtime_args['bin'] = build_root+"\\bin\\profile\\tiaf.exe"
-        runtime_args['sequence'] = "--sequence=seed"
+        runtime_args['bin'] = str(config_data['repo']['tiaf_bin']).replace("/","\\")
+        runtime_args['sequence'] = "--sequence=seed" 
         runtime_args['safemode'] = "--safemode=off"
         runtime_args['test_failure_policy'] = "--fpolicy=continue"
-        runtime_args['report'] = "--report=C:\\o3de\\build\\bin\\TestImpactFramework\\profile\\Temp\\report."+mock_uuid.hex+".json"
+        runtime_args['report'] = "--report=C:\\o3de\\build\\bin\\TestImpactFramework\\"+config_data['meta']['build_config']+"\\Temp\\report."+mock_uuid.hex+".json"
         runtime_args['suite'] = "--suite=main"
         return runtime_args
 
