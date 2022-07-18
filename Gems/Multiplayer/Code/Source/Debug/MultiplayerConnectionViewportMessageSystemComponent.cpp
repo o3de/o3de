@@ -45,11 +45,13 @@ namespace Multiplayer
     {
         AZ::RPI::ViewportContextNotificationBus::Handler::BusConnect(
             AZ::RPI::ViewportContextRequests::Get()->GetDefaultViewportContextName());
+        MultiplayerEditorServerNotificationBus::Handler::BusConnect();
     }
 
     void MultiplayerConnectionViewportMessageSystemComponent::Deactivate()
     {
         AZ::RPI::ViewportContextNotificationBus::Handler::BusDisconnect();
+        MultiplayerEditorServerNotificationBus::Handler::BusDisconnect();
     }
 
     void MultiplayerConnectionViewportMessageSystemComponent::OnRenderTick()
@@ -128,22 +130,6 @@ namespace Multiplayer
         }
     }
 
-    void MultiplayerConnectionViewportMessageSystemComponent::DisplayCenterViewportMessage(const char* text)
-    {
-        if (strlen(text) == 0)
-        {
-            StopCenterViewportDebugMessaging();
-            return;
-        }
-        
-        m_centerViewportDebugText = text;
-    }
-    
-    void MultiplayerConnectionViewportMessageSystemComponent::StopCenterViewportDebugMessaging()
-    {
-        m_centerViewportDebugText.clear();
-    }
-
     void MultiplayerConnectionViewportMessageSystemComponent::DrawConnectionStatus(AzNetworking::ConnectionState connectionState)
     {
         AZ::RPI::ViewportContextPtr viewport = AZ::RPI::ViewportContextRequests::Get()->GetDefaultViewportContext();
@@ -182,5 +168,40 @@ namespace Multiplayer
         m_drawParams.m_color = AZ::Colors::White;
         m_drawParams.m_position.SetY(m_drawParams.m_position.GetY() - textHeight - m_lineSpacing);
         m_fontDrawInterface->DrawScreenAlignedText2d(m_drawParams, "Multiplayer Client Status:");
+    }
+
+    void MultiplayerConnectionViewportMessageSystemComponent::OnServerLaunched()
+    {
+        m_centerViewportDebugText = "(1/3) Launching server...";
+    }
+
+    void MultiplayerConnectionViewportMessageSystemComponent::OnServerLaunchFail()
+    {
+        m_centerViewportDebugText = "(1/3) Could not launch editor server.\nSee console for more info.";
+    }
+
+    void MultiplayerConnectionViewportMessageSystemComponent::OnEditorSendingLevelData()
+    {
+        m_centerViewportDebugText = "(3/3) Editor is sending the editor-server the level data packet.";
+    }   
+
+    void MultiplayerConnectionViewportMessageSystemComponent::OnEditorConnectionAttempt(uint16_t connectionAttempts)
+    {
+        m_centerViewportDebugText = AZStd::fixed_string<128>::format("(2/3) Editor tcp connection attempt #%i.", connectionAttempts);
+    }
+
+    void MultiplayerConnectionViewportMessageSystemComponent::OnConnectToSimulationFail(uint16_t serverPort)
+    {
+        m_centerViewportDebugText = AZStd::fixed_string<128>::format("EditorServerReady packet was received, but connecting to the editor-server's network simulation failed! Is the editor and server using the same sv_port (%i)?", serverPort);
+    }
+
+    void MultiplayerConnectionViewportMessageSystemComponent::OnConnectToSimulationSuccess() 
+    {
+        m_centerViewportDebugText.clear();
+    }
+
+    void MultiplayerConnectionViewportMessageSystemComponent::OnPlayModeEnd()
+    {
+        m_centerViewportDebugText.clear();
     }
 }
