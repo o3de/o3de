@@ -17,6 +17,7 @@
 #include "SourceAssetTreeModel.h"
 #include <native/ui/BuilderInfoPatternsModel.h>
 #include <native/ui/BuilderInfoMetricsModel.h>
+#include <native/ui/BuilderInfoMetricsSortModel.h>
 
 #include <AzFramework/Asset/AssetSystemBus.h>
 
@@ -481,7 +482,10 @@ void MainWindow::Activate()
     ui->builderList->setModel(m_builderListSortFilterProxy);
     ui->builderInfoPatternsTableView->setModel(m_builderInfoPatterns);
     m_builderInfoMetrics = new BuilderInfoMetricsModel(m_sharedDbConnection, this);
-    ui->builderInfoMetricsTreeView->setModel(m_builderInfoMetrics);
+    m_builderInfoMetricsSort = new BuilderInfoMetricsSortModel(this);
+    m_builderInfoMetricsSort->setSourceModel(m_builderInfoMetrics);
+    m_builderInfoMetricsSort->setSortRole(aznumeric_cast<int>(BuilderInfoMetricsModel::Role::SortRole));
+    ui->builderInfoMetricsTreeView->setModel(m_builderInfoMetricsSort);
     ui->builderInfoMetricsTreeView->setColumnWidth(0, 400);
     ui->builderInfoMetricsTreeView->setColumnWidth(1, 70);
     ui->builderInfoMetricsTreeView->setColumnWidth(2, 150);
