@@ -106,6 +106,7 @@ def AtomEditorComponents_PostFXGradientWeightModifier_AddedToEntity():
     4) UNDO component removal.
     5) Verify PostFX Gradient Weight Modifier component not enabled.
     6) Add PostFX Layer component since it is required by the PostFX Gradient Weight Modifier component.
+    7) Verify PostFX Gradient Weight Modifier component is enabled.
     8) Set 'Gradient Entity Id' property
     9) Set 'Opacity' property
     10) Toggle 'Invert Input' property

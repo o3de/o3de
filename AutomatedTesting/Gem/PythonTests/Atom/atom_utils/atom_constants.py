@@ -1005,8 +1005,10 @@ class AtomComponentProperties:
           - 'Layer Category' frequency at which the settings will be applied from atom_constants.py POSTFX_LAYER_CATEGORY
           - 'Priority' this will take over other settings with the same frequency. lower takes precedence (int)
           - 'Weight' how much these settings override previous settings. (float 0.0 to default 1.0)
-          - 'Select Camera Tags Only' property container list of tags. Only cameras with these tags will include this effect.
-          - 'Excluded Camera Tags' property container list of tags. Cameras with these tags will not be included in the effect.
+          - 'Select Camera Tags Only' property container list of tags.
+            Only cameras with these tags will include this effect.
+          - 'Excluded Camera Tags' property container list of tags.
+            Cameras with these tags will not be included in the effect.
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
@@ -1030,11 +1032,16 @@ class AtomComponentProperties:
           - 'Opacity' factor multiplied by the current gradient before mixing. (float 0.0 to 1.0)
           - 'Invert Input' swap the gradient input order black/white behave oppositely (bool)
           - 'Enable Levels' toggle the application of input/output levels (bool)
-          - 'Input Max' adjustment to the white point for the input treating more of the gradient as max value. (float 0.0 to default 1.0)
-          - 'Input Min' adjustment to the black point for the input treating more of the gradient as min value. (float 0.0 default to 1.0)
-          - 'Input Mid' adjustment to the midtone point for the input effecting all values of the gradient to be more toward min or max. (float 0.0 to 10.0, default 1.0)
-          - 'Output Max' adjusts the output white point of the effective gradient after input levels are applied (float 0.0 to default 1.0)
-          - 'Output Min' adjusts the output black point of the effective gradient after input levels are applied (float 0.0 default to 1.0)
+          - 'Input Max' adjustment to the white point for the input
+            treating more of the gradient as max value. (float 0.0 to default 1.0)
+          - 'Input Min' adjustment to the black point for the input
+            treating more of the gradient as min value. (float 0.0 default to 1.0)
+          - 'Input Mid' adjustment to the midtone point for the input
+            effecting all values of the gradient to be more toward min or max. (float 0.0 to 10.0, default 1.0)
+          - 'Output Max' adjusts the output white point of the effective gradient after input levels are applied
+            (float 0.0 to default 1.0)
+          - 'Output Min' adjusts the output black point of the effective gradient after input levels are applied
+            (float 0.0 default to 1.0)
           - 'Enable Transform' toggle the ability to apply transform to the gradient input (bool)
           - 'Scale' adjusts the gradient size (Vector3 default 1.0,1.0,1.0)
           - 'Rotate' rotates the gradient (Vector3 rotation degrees; default 0.0,0.0,0.0)
