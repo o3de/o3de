@@ -438,10 +438,6 @@ function(ly_test_impact_write_config_file CONFIG_TEMPLATE_FILE BIN_DIR)
         CONTENT "${config_file}"
     )
 
-    file(GENERATE
-        OUTPUT "${LY_TEST_IMPACT_PYTEST_FILE_PATH}$<CONFIG>_tiaf.json"
-        CONTENT "${config_file}")
-
     message(DEBUG "Test impact framework post steps complete")
 endfunction()
 
