@@ -221,6 +221,11 @@ namespace AssetProcessor
         AssetBuilderInfoBus::Broadcast(&AssetBuilderInfoBus::Events::GetAllBuildersInfo, builders);
 
         m_allBuildersMetrics.reset(new BuilderInfoMetricsItem(BuilderInfoMetricsItem::ItemType::Root, "All builders", 0, 0, nullptr));
+        m_singleBuilderMetrics.clear();
+        m_builderGuidToIndex.clear();
+        m_builderNameToIndex.clear();
+        m_currentSelectedBuilderIndex = -1;
+
         for (int i = 0; i < builders.size(); ++i)
         {
             m_singleBuilderMetrics.emplace_back(
