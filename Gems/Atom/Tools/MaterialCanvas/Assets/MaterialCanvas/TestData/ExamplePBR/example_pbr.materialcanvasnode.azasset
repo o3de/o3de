@@ -5,6 +5,13 @@
     "ClassData": {
         "category": "Lighting Model",
         "title": "Example PBR",
+        "settings": {
+            "templates": [
+                "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/TestData/ExamplePBR/MaterialGraphName.materialtype.template",
+                "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/TestData/ExamplePBR/MaterialGraphName_ForwardPass.azsl.template",
+                "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/TestData/ExamplePBR/MaterialGraphName_ForwardPass.shader.template"
+            ]
+        },
         "inputSlots": [
             {
                 "name": "inBaseColor",
