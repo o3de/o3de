@@ -46,7 +46,6 @@ class TestAutomation(TestAutomationBase):
         from . import Pane_HappyPath_ResizesProperly as test_module
         self._run_test(request, workspace, editor, test_module)
 
-    @pytest.mark.skip(reason="Test fails to find expected lines, it needs to be fixed.")
     @pytest.mark.parametrize("level", ["tmp_level"])
     def test_ScriptCanvas_TwoComponents_InteractSuccessfully(self, request, workspace, editor, launcher_platform, level):
         def teardown():

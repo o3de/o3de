@@ -17,7 +17,7 @@ namespace AZ
     {
         namespace
         {
-            const char* const Window = "EditorModeFeedback";
+            [[maybe_unused]] const char* const Window = "EditorModeFeedback";
         }
 
         void EditorModeFeatureProcessor::Reflect(ReflectContext* context)

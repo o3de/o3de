@@ -14,6 +14,10 @@
 #include <Atom/RHI/ValidationLayer.h>
 #include <Atom/RHI/RHISystemInterface.h>
 
+#if defined(USE_NSIGHT_AFTERMATH)
+#include <RHI/NsightAftermathGpuCrashTracker_Windows.h>
+#endif
+
 namespace AZ
 {
     namespace Vulkan
@@ -64,6 +68,10 @@ namespace AZ
             VkInstanceCreateInfo m_instanceCreateInfo = {};
             VkApplicationInfo m_appInfo = {};
             bool m_isXRInstanceCreated = false;
+
+#if defined(USE_NSIGHT_AFTERMATH)
+            GpuCrashTracker m_gpuCrashHandler;
+#endif
         };
     }
 }

@@ -111,6 +111,9 @@ namespace AZ
 
             RPI::Scene* scene = m_pipeline->GetScene();
             DiffuseProbeGridFeatureProcessor* diffuseProbeGridFeatureProcessor = scene->GetFeatureProcessor<DiffuseProbeGridFeatureProcessor>();
+
+            frameGraph.SetEstimatedItemCount(aznumeric_cast<uint32_t>(diffuseProbeGridFeatureProcessor->GetVisibleRealTimeProbeGrids().size()));
+
             for (auto& diffuseProbeGrid : diffuseProbeGridFeatureProcessor->GetVisibleRealTimeProbeGrids())
             {
                 // grid data
@@ -167,13 +170,8 @@ namespace AZ
             RPI::Scene* scene = m_pipeline->GetScene();
             DiffuseProbeGridFeatureProcessor* diffuseProbeGridFeatureProcessor = scene->GetFeatureProcessor<DiffuseProbeGridFeatureProcessor>();
 
-            // compute the index range to process for this command list
-            uint32_t numGrids = aznumeric_cast<uint32_t>(diffuseProbeGridFeatureProcessor->GetVisibleRealTimeProbeGrids().size());
-            uint32_t startIndex = (context.GetCommandListIndex() * numGrids) / context.GetCommandListCount();
-            uint32_t endIndex = ((context.GetCommandListIndex() + 1) * numGrids) / context.GetCommandListCount();
-
             // submit the DispatchItems for each DiffuseProbeGrid in this range
-            for (uint32_t index = startIndex; index < endIndex; ++index)
+            for (uint32_t index = context.GetSubmitRange().m_startIndex; index < context.GetSubmitRange().m_endIndex; ++index)
             {
                 AZStd::shared_ptr<DiffuseProbeGrid> diffuseProbeGrid = diffuseProbeGridFeatureProcessor->GetVisibleRealTimeProbeGrids()[index];
                 DiffuseProbeGridShader& shader = m_shaders[diffuseProbeGrid->GetNumRaysPerProbe().m_index];
@@ -186,6 +184,7 @@ namespace AZ
                 diffuseProbeGrid->GetTexture2DProbeCount(probeCountX, probeCountY);
 
                 RHI::DispatchItem dispatchItem;
+                dispatchItem.m_submitIndex = index;
                 dispatchItem.m_arguments = shader.m_dispatchArgs;
                 dispatchItem.m_pipelineState = shader.m_pipelineState;
                 dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsX = probeCountX * dispatchItem.m_arguments.m_direct.m_threadsPerGroupX;

@@ -189,6 +189,7 @@ namespace ScriptCanvas
         static void AddToRegistry([[maybe_unused]] NodeRegistry& nodeRegistry)
         {
             // Deprecated, do nothing here
+            AZ_Warning("ScriptCanvas", false, "NodeFunctionGeneric is deprecated, please migrate to autogen function node.");
         }
 
         template<typename t_Library>

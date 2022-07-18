@@ -368,6 +368,7 @@ namespace ScriptCanvas
 
         SourceHandle(ScriptCanvas::DataPtr graph, const AZ::Uuid& id);
 
+        // this can be empty, even if the relative path is not
         const AZ::IO::Path& AbsolutePath() const;
 
         bool AnyEquals(const SourceHandle& other) const;
@@ -395,7 +396,7 @@ namespace ScriptCanvas
 
         bool operator!=(const SourceHandle& other) const;
 
-        const AZ::IO::Path& Path() const;
+        const AZ::IO::Path& RelativePath() const;
 
         bool PathEquals(const SourceHandle& other) const;
 
@@ -479,7 +480,7 @@ namespace AZStd
         {
             size_t h = 0;
             hash_combine(h, handle.Id());
-            hash_combine(h, handle.Path());
+            hash_combine(h, handle.RelativePath());
             hash_combine(h, handle.Get());
             return h;
         }

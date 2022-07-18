@@ -110,6 +110,7 @@ namespace UnitTest
         }
 
         void TestFixedDataSampler(const AZStd::vector<float>& expectedOutput, int size, AZ::EntityId gradientEntityId);
+        void TestFixedDataSampler(const AZStd::vector<float>& expectedOutput, int size, GradientSignal::GradientSampler& gradientSampler);
     };
 
 #ifdef HAVE_BENCHMARK

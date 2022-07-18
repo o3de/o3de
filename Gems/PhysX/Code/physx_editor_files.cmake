@@ -8,6 +8,7 @@
 
 set(FILES
     Include/PhysX/EditorColliderComponentRequestBus.h
+    Include/PhysX/EditorHeightfieldColliderRequestBus.h
     Include/PhysX/EditorJointBus.h
     Source/ComponentDescriptors.cpp
     Source/ComponentDescriptors.h

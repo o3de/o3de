@@ -66,7 +66,7 @@ from azpy.constants import ENVAR_DCCSI_GDEBUGGER
 from azpy.constants import FRMT_LOG_LONG
 
 # these allow these ENVARs to be set externally
-# defaults can be overriden/forced here for development
+# defaults can be overridden/forced here for development
 _DCCSI_GDEBUG = env_bool(ENVAR_DCCSI_GDEBUG, False)
 _DCCSI_DEV_MODE = env_bool(ENVAR_DCCSI_DEV_MODE, False)
 _DCCSI_LOGLEVEL = env_bool(ENVAR_DCCSI_LOGLEVEL, _logging.INFO)
@@ -77,7 +77,7 @@ _DCCSI_GDEBUGGER = env_bool(ENVAR_DCCSI_GDEBUGGER, 'WING')
 # -------------------------------------------------------------------------
 # default local dccsi related paths for Blender
 # the constants module doesn't set these as ENVARs, so we can do that here.
-# these defaults could then be picked up in boostrap.py and/or config.py
+# these defaults could then be picked up in bootstrap.py and/or config.py
 from Tools.DCC.Blender.constants import ENVAR_PATH_DCCSI_TOOLS
 from Tools.DCC.Blender.constants import PATH_DCCSI_TOOLS
 os.environ[ENVAR_PATH_DCCSI_TOOLS] = PATH_DCCSI_TOOLS.as_posix()
@@ -103,8 +103,8 @@ from Tools.DCC.Blender.constants import PATH_DCCSI_BLENDER_EXE
 os.environ[ENVAR_PATH_DCCSI_BLENDER_EXE] = PATH_DCCSI_BLENDER_EXE.as_posix()
 
 from Tools.DCC.Blender.constants import ENVAR_DCCSI_BLENDER_PY_EXE
-from Tools.DCC.Blender.constants import DCCSI_BLENDER_PY_EXE
-os.environ[ENVAR_DCCSI_BLENDER_PY_EXE] = DCCSI_BLENDER_PY_EXE.as_posix()
+from Tools.DCC.Blender.constants import PATH_DCCSI_BLENDER_PY_EXE
+os.environ[ENVAR_DCCSI_BLENDER_PY_EXE] = PATH_DCCSI_BLENDER_PY_EXE.as_posix()
 # --- END -----------------------------------------------------------------
 
 
@@ -116,12 +116,8 @@ if __name__ == '__main__':
     STR_CROSSBAR = f"{'-' * 74}"
 
     if _DCCSI_GDEBUG:
-        # override loglevel if runnign debug
+        # override loglevel if running debug
         _DCCSI_LOGLEVEL = _logging.DEBUG
-
-    # set up module logging
-    #for handler in _logging.root.handlers[:]:
-        #_logging.root.removeHandler(handler)
 
     FRMT_LOG_LONG = "[%(name)s][%(levelname)s] >> %(message)s (%(asctime)s; %(filename)s:%(lineno)d)"
 
@@ -173,7 +169,7 @@ if __name__ == '__main__':
                         type=bool,
                         required=False,
                         default=False,
-                        help='Exits python. Do not exit if you want to be in interactive interpretter after config')
+                        help='Exits python. Do not exit if you want to be in interactive interpreter after config')
 
     args = parser.parse_args()
 
@@ -183,6 +179,7 @@ if __name__ == '__main__':
         os.environ["DYNACONF_DCCSI_GDEBUG"] = str(_DCCSI_GDEBUG)
 
     if args.developer_mode:
+        from azpy.config_utils import attach_debugger
         _DCCSI_DEV_MODE = True
         attach_debugger()  # attempts to start debugger
 

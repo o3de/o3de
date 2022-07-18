@@ -29,6 +29,23 @@ class PersistentStorageLocal(PersistentStorage):
         """
 
         super().__init__(config, suite, commit)
+        self._retrieve_historic_data(config)
+        
+    def _store_historic_data(self, historic_data_json: str):
+        """
+        Stores then historical data in historic workspace location specified in the runtime config file.
+
+        @param historic_data_json: The historic data (in JSON format) to be stored in persistent storage.
+        """
+
+        try:
+            self._historic_workspace.mkdir(exist_ok=True)
+            with open(self._historic_data_file, "w") as historic_data_file:
+                historic_data_file.write(historic_data_json)
+        except EnvironmentError as e:
+            logger.error(f"There was a problem the historic data file '{self._historic_data_file}': '{e}'.")
+
+    def _retrieve_historic_data(self, config: dict):
         try:
             # Attempt to obtain the local persistent data location specified in the runtime config file
             self._historic_workspace = pathlib.Path(config[self.WORKSPACE_KEY][self.HISTORIC_KEY][self.ROOT_KEY])
@@ -47,17 +64,3 @@ class PersistentStorageLocal(PersistentStorage):
             raise SystemError(f"The config does not contain the key {str(e)}.")
         except EnvironmentError as e:
             raise SystemError(f"There was a problem the historic data file '{self._historic_data_file}': '{e}'.")
-
-    def _store_historic_data(self, historic_data_json: str):
-        """
-        Stores then historical data in historic workspace location specified in the runtime config file.
-
-        @param historic_data_json: The historic data (in JSON format) to be stored in persistent storage.
-        """
-
-        try:
-            self._historic_workspace.mkdir(exist_ok=True)
-            with open(self._historic_data_file, "w") as historic_data_file:
-                historic_data_file.write(historic_data_json)
-        except EnvironmentError as e:
-            logger.error(f"There was a problem the historic data file '{self._historic_data_file}': '{e}'.")

@@ -37,6 +37,23 @@ namespace AssetProcessor
         return itr != m_fileInfoMap.end();
     }
 
+    void FileStateCache::WarmUpCache(const AssetFileInfo& existingInfo, const FileHash hash)
+    {
+        LockGuardType scopeLock(m_mapMutex);
+        QString key = PathToKey(existingInfo.m_filePath);
+        m_fileInfoMap[key] = FileStateInfo(existingInfo);
+        
+        // it is possible to update the cache so that the info is known, but the hash is not.
+        if (hash == InvalidFileHash)
+        {
+            m_fileHashMap.remove(key);
+        }
+        else
+        {
+            m_fileHashMap[key] = hash;
+        }
+    }
+
     bool FileStateCache::GetHash(const QString& absolutePath, FileHash* foundHash)
     {
         LockGuardType scopeLock(m_mapMutex);

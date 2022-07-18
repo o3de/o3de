@@ -15,17 +15,17 @@ namespace AtomToolsFramework
         : PreviewRendererState(renderer)
     {
         m_renderer->PoseContent();
-        AZ::TickBus::Handler::BusConnect();
+        AZ::SystemTickBus::Handler::BusConnect();
     }
 
     PreviewRendererCaptureState::~PreviewRendererCaptureState()
     {
         AZ::Render::FrameCaptureNotificationBus::Handler::BusDisconnect();
-        AZ::TickBus::Handler::BusDisconnect();
+        AZ::SystemTickBus::Handler::BusDisconnect();
         m_renderer->EndCapture();
     }
 
-    void PreviewRendererCaptureState::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
+    void PreviewRendererCaptureState::OnSystemTick()
     {
         if (m_ticksToCapture-- <= 0)
         {
@@ -33,7 +33,7 @@ namespace AtomToolsFramework
             if (m_frameCaptureId != AZ::Render::FrameCaptureRequests::s_InvalidFrameCaptureId)
             {
                 AZ::Render::FrameCaptureNotificationBus::Handler::BusConnect();
-                AZ::TickBus::Handler::BusDisconnect();
+                AZ::SystemTickBus::Handler::BusDisconnect();
             }
             // if the start capture call fails the capture will be retried next tick.
         }

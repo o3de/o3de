@@ -83,13 +83,13 @@ namespace ScriptCanvasEditor
         {
             if (m_config.filter && m_config.filter(asset) == ScanConfiguration::Filter::Exclude)
             {
-                VE_LOG("Scanner: Excluded: %s ", ModCurrentAsset().Path().c_str());
+                VE_LOG("Scanner: Excluded: %s ", ModCurrentAsset().RelativePath().c_str());
                 m_result.m_filteredAssets.push_back(ModCurrentAsset().Describe());
                 ModelNotificationsBus::Broadcast(&ModelNotificationsTraits::OnScanFilteredGraph, ModCurrentAsset());
             }
             else
             {
-                VE_LOG("Scanner: Included: %s ", ModCurrentAsset().Path().c_str());
+                VE_LOG("Scanner: Included: %s ", ModCurrentAsset().RelativePath().c_str());
                 m_result.m_unfiltered.push_back(ModCurrentAsset().Describe());
                 ModelNotificationsBus::Broadcast(&ModelNotificationsTraits::OnScanUnFilteredGraph, ModCurrentAsset());
             }
@@ -132,17 +132,17 @@ namespace ScriptCanvasEditor
             {
                 if (auto asset = LoadAsset(); asset.IsGraphValid())
                 {
-                    VE_LOG("Scanner: Loaded: %s ", ModCurrentAsset().Path().c_str());
+                    VE_LOG("Scanner: Loaded: %s ", ModCurrentAsset().RelativePath().c_str());
                     FilterAsset(asset);
                 }
                 else
                 {
-                    VE_LOG("Scanner: Failed to load: %s ", ModCurrentAsset().Path().c_str());
+                    VE_LOG("Scanner: Failed to load: %s ", ModCurrentAsset().RelativePath().c_str());
                     m_result.m_loadErrors.push_back(ModCurrentAsset().Describe());
                     ModelNotificationsBus::Broadcast(&ModelNotificationsTraits::OnScanLoadFailure, ModCurrentAsset());
                 }
 
-                VE_LOG("Scanner: scan of %s complete", ModCurrentAsset().Path().c_str());
+                VE_LOG("Scanner: scan of %s complete", ModCurrentAsset().RelativePath().c_str());
                 ++m_catalogAssetIndex;
             }
         }

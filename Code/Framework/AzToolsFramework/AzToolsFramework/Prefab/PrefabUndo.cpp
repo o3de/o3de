@@ -290,7 +290,7 @@ namespace AzToolsFramework
                 "Prefab",
                 (result.GetOutcome() != AZ::JsonSerializationResult::Outcomes::Skipped) &&
                 (result.GetOutcome() != AZ::JsonSerializationResult::Outcomes::PartialSkip),
-                "Some of the patches are not successfully applied.");
+                "Some of the patches are not successfully applied:\n%s.", PrefabDomUtils::PrefabDomValueToString(patch).c_str());
 
             // Remove the link ids if present in the doms. We don't want any overrides to be created on top of linkIds because
             // linkIds are not persistent and will be created dynamically when prefabs are loaded into the editor.

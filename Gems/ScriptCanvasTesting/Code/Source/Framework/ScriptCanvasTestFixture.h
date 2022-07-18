@@ -21,9 +21,8 @@
 #include <AzTest/AzTest.h>
 
 #include <TestAutoGenFunctionRegistry.generated.h>
+#include <TestAutoGenNodeableRegistry.generated.h>
 #include <Nodes/BehaviorContextObjectTestNode.h>
-#include <Nodes/Nodeables/SharedDataSlotExample.h>
-#include <Nodes/Nodeables/ValuePointerReferenceExample.h>
 #include <Nodes/TestAutoGenFunctions.h>
 #include <ScriptCanvas/Core/Graph.h>
 #include <ScriptCanvas/Core/SlotConfigurationDefaults.h>
@@ -113,24 +112,13 @@ namespace ScriptCanvasTests
             ScriptCanvasTestingNodes::BehaviorContextObjectTest::Reflect(m_serializeContext);
             ScriptCanvasTestingNodes::BehaviorContextObjectTest::Reflect(m_behaviorContext);
 
-            ::Nodes::InputMethodSharedDataSlotExampleNode::Reflect(m_serializeContext);
-            ::Nodes::InputMethodSharedDataSlotExampleNode::Reflect(m_behaviorContext);
-            ::Nodes::BranchMethodSharedDataSlotExampleNode::Reflect(m_serializeContext);
-            ::Nodes::BranchMethodSharedDataSlotExampleNode::Reflect(m_behaviorContext);
-            ::Nodes::ReturnTypeExampleNode::Reflect(m_serializeContext);
-            ::Nodes::ReturnTypeExampleNode::Reflect(m_behaviorContext);
-            ::Nodes::InputTypeExampleNode::Reflect(m_serializeContext);
-            ::Nodes::InputTypeExampleNode::Reflect(m_behaviorContext);
-            ::Nodes::BranchInputTypeExampleNode::Reflect(m_serializeContext);
-            ::Nodes::BranchInputTypeExampleNode::Reflect(m_behaviorContext);
-            ::Nodes::PropertyExampleNode::Reflect(m_serializeContext);
-            ::Nodes::PropertyExampleNode::Reflect(m_behaviorContext);
-
             TestNodeableObject::Reflect(m_serializeContext);
             TestNodeableObject::Reflect(m_behaviorContext);
             ScriptUnitTestEventHandler::Reflect(m_serializeContext);
             ScriptUnitTestEventHandler::Reflect(m_behaviorContext);
+
             REGISTER_SCRIPTCANVAS_AUTOGEN_FUNCTION(ScriptCanvasTestingEditorStatic);
+            REGISTER_SCRIPTCANVAS_AUTOGEN_NODEABLE(ScriptCanvasTestingEditorStatic);
             REFLECT_SCRIPTCANVAS_AUTOGEN(ScriptCanvasTestingEditorStatic, m_behaviorContext);
         }
 
@@ -171,6 +159,11 @@ namespace ScriptCanvasTests
 
             RegisterComponentDescriptor<TestNodes::TestResult>();
             RegisterComponentDescriptor<TestNodes::ConfigurableUnitTestNode>();
+            auto autogenDescriptors = GET_SCRIPTCANVAS_AUTOGEN_COMPONENT_DESCRIPTORS(ScriptCanvasTestingEditorStatic);
+            for (auto descriptor : autogenDescriptors)
+            {
+                GetApplication()->RegisterComponentDescriptor(descriptor);
+            }
 
             m_numericVectorType = ScriptCanvas::Data::Type::BehaviorContextObject(azrtti_typeid<AZStd::vector<ScriptCanvas::Data::NumberType>>());
             m_stringToNumberMapType = ScriptCanvas::Data::Type::BehaviorContextObject(azrtti_typeid<AZStd::unordered_map<ScriptCanvas::Data::StringType, ScriptCanvas::Data::NumberType>>());

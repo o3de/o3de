@@ -57,7 +57,7 @@ namespace O3DE::ProjectManager
         void HandleResults(const QString& result, const QString& detailedError);
 
     signals:
-        void StartGemDownload(const QString& gemName);
+        void StartGemDownload(const QString& gemName, bool downloadNow);
         void Done(const QString& gemName, bool success = true);
         void GemDownloadAdded(const QString& gemName);
         void GemDownloadRemoved(const QString& gemName);

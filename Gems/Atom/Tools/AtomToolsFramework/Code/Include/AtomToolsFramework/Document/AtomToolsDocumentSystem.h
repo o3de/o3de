@@ -51,6 +51,7 @@ namespace AtomToolsFramework
         bool SaveDocumentAsCopy(const AZ::Uuid& documentId, const AZStd::string& targetPath) override;
         bool SaveDocumentAsChild(const AZ::Uuid& documentId, const AZStd::string& targetPath) override;
         bool SaveAllDocuments() override;
+        bool SaveAllModifiedDocuments() override;
         AZ::u32 GetDocumentCount() const override;
         bool IsDocumentOpen(const AZ::Uuid& documentId) const override;
         void AddRecentFilePath(const AZStd::string& absolutePath) override;
@@ -60,6 +61,7 @@ namespace AtomToolsFramework
 
     private:
         // AtomToolsDocumentNotificationBus::Handler overrides...
+        void OnDocumentModified(const AZ::Uuid& documentId) override;
         void OnDocumentDependencyModified(const AZ::Uuid& documentId) override;
         void OnDocumentExternallyModified(const AZ::Uuid& documentId) override;
 
@@ -72,6 +74,7 @@ namespace AtomToolsFramework
         AZStd::unordered_set<AZ::Uuid> m_documentIdsWithExternalChanges;
         AZStd::unordered_set<AZ::Uuid> m_documentIdsWithDependencyChanges;
         bool m_queueReopenDocuments = false;
+        bool m_queueSaveAllModifiedDocuments = false;
         const size_t m_maxMessageBoxLineCount = 15;
     };
 } // namespace AtomToolsFramework

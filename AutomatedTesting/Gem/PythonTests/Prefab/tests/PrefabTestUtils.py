@@ -8,10 +8,10 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 import math
 
 from editor_python_test_tools.editor_entity_utils import EditorEntity
-from editor_python_test_tools.prefab_utils import Prefab, wait_for_propagation
+from editor_python_test_tools.prefab_utils import Prefab
+from editor_python_test_tools.wait_utils import PrefabWaiter
 from editor_python_test_tools.utils import Report
 from editor_python_test_tools.utils import TestHelper as helper
-from editor_python_test_tools.pyside_utils import wait_for_condition
 
 import azlmbr.bus as bus
 import azlmbr.editor as editor
@@ -209,7 +209,7 @@ def validate_undo_redo_on_prefab_creation(prefab_instance, original_parent_id):
 
     # Undo the create prefab operation
     general.undo()
-    wait_for_propagation()
+    PrefabWaiter.wait_for_propagation()
 
     # Validate that undo has reverted the addition of the EditorPrefabComponent
     is_prefab = editor.EditorComponentAPIBus(bus.Broadcast, "HasComponentOfType", prefab_instance.container_entity.id,
@@ -226,7 +226,7 @@ def validate_undo_redo_on_prefab_creation(prefab_instance, original_parent_id):
 
     # Redo the create prefab operation
     general.redo()
-    wait_for_propagation()
+    PrefabWaiter.wait_for_propagation()
 
     # Validate that redo has re-added the EditorPrefabComponent to the prefab instance
     is_prefab = editor.EditorComponentAPIBus(bus.Broadcast, "HasComponentOfType", prefab_instance.container_entity.id,

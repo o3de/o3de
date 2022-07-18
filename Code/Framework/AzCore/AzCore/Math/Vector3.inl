@@ -7,6 +7,8 @@
  */
 
 #include <AzCore/Math/MathUtils.h>
+#include <AzCore/Math/Vector4.h>
+#include <AzCore/Math/Vector2.h>
 
 namespace AZ
 {
@@ -30,13 +32,27 @@ namespace AZ
         ;
     }
 
+    AZ_MATH_INLINE Vector3::Vector3(const Vector2& source)
+        : m_value(Simd::Vec3::FromVec2(source.GetSimdValue()))
+    {
+        m_z = 0.0f;
+    }
+
+    AZ_MATH_INLINE Vector3::Vector3(const Vector2& source, float z)
+        : m_value(Simd::Vec3::FromVec2(source.GetSimdValue()))
+    {
+        m_z = z;
+    }
+
+    AZ_MATH_INLINE Vector3::Vector3(const Vector4& source)
+        : m_value(Simd::Vec4::ToVec3(source.GetSimdValue()))
+    {
+    }
 
     AZ_MATH_INLINE Vector3::Vector3(Simd::Vec3::FloatArgType value)
         : m_value(value)
     {
-        ;
     }
-
 
     AZ_MATH_INLINE Vector3 Vector3::CreateZero()
     {
