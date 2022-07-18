@@ -1,0 +1,15 @@
+#
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
+# SPDX-License-Identifier: Apache-2.0 OR MIT
+#
+#
+
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    # Allow exceptions that are defined in OpenImageIO 3rd Party dependency for gcc
+    set(LY_COMPILE_OPTIONS
+        PRIVATE
+            -fexceptions
+    )
+endif()

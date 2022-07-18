@@ -6,6 +6,8 @@
 #
 #
 
+o3de_pal_dir(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME} "${gem_restricted_path}" "${gem_path}" "${gem_parent_relative_path}")
+
 ly_add_target(
     NAME GradientSignal.Static STATIC
     NAMESPACE Gem
@@ -61,6 +63,8 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         AUTOMOC
         FILES_CMAKE
             gradientsignal_editor_files.cmake
+        PLATFORM_INCLUDE_FILES
+            ${pal_source_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_editor.cmake
         INCLUDE_DIRECTORIES
             PRIVATE
                 Source

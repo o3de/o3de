@@ -251,6 +251,10 @@ QString CFileUtil::HandleNoEditorAssigned(const Common::EditFileType fileType)
 
         return GetEditorForFileTypeFromPreferences(fileType);
     }
+    else if (dialog.clickedButton() == cancelButton)
+    {
+        return "";
+    }
     else
     {
         return "";
@@ -296,6 +300,10 @@ QString CFileUtil::HandleEditorOpenFailure(const Common::EditFileType fileType, 
         HandlePrefsDialogForFileType(fileType);
 
         return GetEditorForFileTypeFromPreferences(fileType);
+    }
+    else if (dialog.clickedButton() == cancelButton)
+    {
+        return "";
     }
     else
     {
