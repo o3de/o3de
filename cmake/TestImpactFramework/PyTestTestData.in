@@ -1,4 +1,7 @@
 {
   "build_dir" : "${BUILD_DIR}",
-  "configs" : [${CONFIG_PATHS}]
+  "root_dir" : "${ROOT_DIR}",
+  "configs" : {${CONFIG_PATHS}},
+  "binary" : {${BIN_PATHS}},
+  "report_dir" : {${REPORT_PATHS}}
 }
