@@ -15,6 +15,80 @@
 
 namespace AZ::IO
 {
+    //! Path iterator that allows traversal of the path elements
+    //! Example iterations of path can be seen in the PathIteratorFixture in the PathTests.
+    //! For example the following path with a R"(\\server\share\users\abcdef\AppData\Local\Temp)", with a path separator of '\\',
+    //! Iterates the following elements {R"(\\server)", R"(\)", "share", "users", "abcdef", "AppData", "Local", "Temp"} },
+    template <typename PathType>
+    class PathIterator
+    {
+    public:
+        enum ParserState : uint8_t
+        {
+            Singular,
+            BeforeBegin,
+            InRootName,
+            InRootDir,
+            InFilenames,
+            AtEnd
+        };
+
+        friend PathType;
+
+        using iterator_category = AZStd::bidirectional_iterator_tag;
+        using value_type = AZStd::remove_cv_t<PathType>;
+        using difference_type = ptrdiff_t;
+        using pointer = const value_type*;
+        using reference = const value_type&;
+
+        using stashing_iterator_tag = void; // A reverse_iterator cannot be used with a stashing iterator
+        // As PathView::iterator stores the current path view within it, undefined behavior occurs
+        // when a reverse iterator is used
+
+        constexpr PathIterator() = default;
+        constexpr PathIterator(const PathIterator&) = default;
+        constexpr PathIterator(PathIterator&&) noexcept = default;
+        constexpr PathIterator& operator=(const PathIterator&) = default;
+        constexpr PathIterator& operator=(PathIterator&&) noexcept = default;
+
+        constexpr reference operator*() const;
+
+        constexpr pointer operator->() const
+        {
+            return &m_stashed_elem;
+        }
+
+        constexpr PathIterator& operator++();
+
+        constexpr PathIterator operator++(int);
+
+        constexpr PathIterator& operator--();
+
+        constexpr PathIterator operator--(int);
+
+    private:
+        template <typename PathType1>
+        friend constexpr bool operator==(const PathIterator<PathType1>& lhs, const PathIterator<PathType1>& rhs);
+        template <typename PathType1>
+        friend constexpr bool operator!=(const PathIterator<PathType1>& lhs, const PathIterator<PathType1>& rhs);
+
+        constexpr PathIterator& increment();
+        constexpr PathIterator& decrement();
+
+        value_type m_stashed_elem;
+        const value_type* m_path_ref{};
+        AZStd::string_view m_path_entry_view;
+        ParserState m_state{ Singular };
+    };
+
+    template <typename PathType>
+    constexpr bool operator==(const PathIterator<PathType>& lhs, const PathIterator<PathType>& rhs);
+    template <typename PathType>
+    constexpr bool operator!=(const PathIterator<PathType>& lhs, const PathIterator<PathType>& rhs);
+}
+
+namespace AZ::IO
+{
     //! Implementation of a Path class for providing an abstraction of paths on the file system
     //! This class represents paths provides an abstraction for paths on a filesystem
     //! Only the syntactic parts of a path are handled. The actual paths stored may
@@ -667,80 +741,6 @@ namespace AZ
 {
     AZ_TYPE_INFO_SPECIALIZE(AZ::IO::Path, "{88E0A40F-3085-4CAB-8B11-EF5A2659C71A}");
     AZ_TYPE_INFO_SPECIALIZE(AZ::IO::FixedMaxPath, "{FA6CA49F-376A-417C-9767-DD50744DF203}");
-}
-
-namespace AZ::IO
-{
-    //! Path iterator that allows traversal of the path elements
-    //! Example iterations of path can be seen in the PathIteratorFixture in the PathTests.
-    //! For example the following path with a R"(\\server\share\users\abcdef\AppData\Local\Temp)", with a path separator of '\\',
-    //! Iterates the following elements {R"(\\server)", R"(\)", "share", "users", "abcdef", "AppData", "Local", "Temp"} },
-    template <typename PathType>
-    class PathIterator
-    {
-    public:
-        enum ParserState : uint8_t
-        {
-            Singular,
-            BeforeBegin,
-            InRootName,
-            InRootDir,
-            InFilenames,
-            AtEnd
-        };
-
-        friend PathType;
-
-        using iterator_category = AZStd::bidirectional_iterator_tag;
-        using value_type = AZStd::remove_cv_t<PathType>;
-        using difference_type = ptrdiff_t;
-        using pointer = const value_type*;
-        using reference = const value_type&;
-
-        using stashing_iterator_tag = void; // A reverse_iterator cannot be used with a stashing iterator
-        // As PathView::iterator stores the current path view within it, undefined behavior occurs
-        // when a reverse iterator is used
-
-        constexpr PathIterator() = default;
-        constexpr PathIterator(const PathIterator&) = default;
-        constexpr PathIterator(PathIterator&&) noexcept = default;
-        constexpr PathIterator& operator=(const PathIterator&) = default;
-        constexpr PathIterator& operator=(PathIterator&&) noexcept = default;
-
-        constexpr reference operator*() const;
-
-        constexpr pointer operator->() const
-        {
-            return &m_stashed_elem;
-        }
-
-        constexpr PathIterator& operator++();
-
-        constexpr PathIterator operator++(int);
-
-        constexpr PathIterator& operator--();
-
-        constexpr PathIterator operator--(int);
-
-    private:
-        template <typename PathType1>
-        friend constexpr bool operator==(const PathIterator<PathType1>& lhs, const PathIterator<PathType1>& rhs);
-        template <typename PathType1>
-        friend constexpr bool operator!=(const PathIterator<PathType1>& lhs, const PathIterator<PathType1>& rhs);
-
-        constexpr PathIterator& increment();
-        constexpr PathIterator& decrement();
-
-        value_type m_stashed_elem;
-        const value_type* m_path_ref{};
-        AZStd::string_view m_path_entry_view;
-        ParserState m_state{ Singular };
-    };
-
-    template <typename PathType>
-    constexpr bool operator==(const PathIterator<PathType>& lhs, const PathIterator<PathType>& rhs);
-    template <typename PathType>
-    constexpr bool operator!=(const PathIterator<PathType>& lhs, const PathIterator<PathType>& rhs);
 }
 
 #include <AzCore/IO/Path/Path.inl>
