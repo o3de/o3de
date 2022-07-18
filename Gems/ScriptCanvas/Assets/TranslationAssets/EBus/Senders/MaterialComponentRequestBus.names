@@ -5,28 +5,29 @@
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "Material",
-                "category": "Rendering"
+                "name": "Material Component Request Bus",
+                "category": "Render"
             },
             "methods": [
                 {
-                    "base": "GetPropertyOverrides",
+                    "base": "GetPropertyValues",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Get Property Overrides"
+                        "tooltip": "When signaled, this will invoke Get Property Values"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Get Property Overrides is invoked"
+                        "tooltip": "Signaled after Get Property Values is invoked"
                     },
                     "details": {
-                        "name": "Get Property Overrides"
+                        "name": "Get Property Values"
                     },
                     "params": [
                         {
                             "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
                             "details": {
-                                "name": "AZ:: Render:: Material Assignment Id"
+                                "name": "Material Assignment Id",
+                                "tooltip": "Unique id to address a specific material on an entity"
                             }
                         }
                     ],
@@ -34,113 +35,117 @@
                         {
                             "typeid": "{6E6962E1-04C9-56F9-89C4-361031CC1384}",
                             "details": {
-                                "name": "AZ Std::unordered_map"
+                                "name": "Property Value Map"
                             }
                         }
                     ]
                 },
                 {
-                    "base": "SetPropertyOverrides",
+                    "base": "SetPropertyValues",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Set Property Overrides"
+                        "tooltip": "When signaled, this will invoke Set Property Values"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Set Property Overrides is invoked"
+                        "tooltip": "Signaled after Set Property Values is invoked"
                     },
                     "details": {
-                        "name": "Set Property Overrides"
+                        "name": "Set Property Values"
                     },
                     "params": [
                         {
                             "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
                             "details": {
-                                "name": "AZ:: Render:: Material Assignment Id"
+                                "name": "Material Assignment Id",
+                                "tooltip": "Unique id to address a specific material on an entity"
                             }
                         },
                         {
                             "typeid": "{6E6962E1-04C9-56F9-89C4-361031CC1384}",
                             "details": {
-                                "name": "AZ Std::unordered_map"
+                                "name": "Property Value Map"
                             }
                         }
                     ]
                 },
                 {
-                    "base": "ClearPropertyOverride",
+                    "base": "ClearPropertyValue",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Clear Property Override"
+                        "tooltip": "When signaled, this will invoke Clear Property Value"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Clear Property Override is invoked"
+                        "tooltip": "Signaled after Clear Property Value is invoked"
                     },
                     "details": {
-                        "name": "Clear Property Override"
+                        "name": "Clear Property Value"
                     },
                     "params": [
                         {
                             "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
                             "details": {
-                                "name": "AZ:: Render:: Material Assignment Id"
+                                "name": "Material Assignment Id",
+                                "tooltip": "Unique id to address a specific material on an entity"
                             }
                         },
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "AZ Std::string"
+                                "name": "Property Id"
                             }
                         }
                     ]
                 },
                 {
-                    "base": "ClearPropertyOverrides",
+                    "base": "ClearPropertyValues",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Clear Property Overrides"
+                        "tooltip": "When signaled, this will invoke Clear Property Values"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Clear Property Overrides is invoked"
+                        "tooltip": "Signaled after Clear Property Values is invoked"
                     },
                     "details": {
-                        "name": "Clear Property Overrides"
+                        "name": "Clear Property Values"
                     },
                     "params": [
                         {
                             "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
                             "details": {
-                                "name": "AZ:: Render:: Material Assignment Id"
+                                "name": "Material Assignment Id",
+                                "tooltip": "Unique id to address a specific material on an entity"
                             }
                         }
                     ]
                 },
                 {
-                    "base": "GetPropertyOverrideVector4",
+                    "base": "GetPropertyValueVector4",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Get Property Override Vector 4"
+                        "tooltip": "When signaled, this will invoke Get Property Value Vector4"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Get Property Override Vector 4 is invoked"
+                        "tooltip": "Signaled after Get Property Value Vector4 is invoked"
                     },
                     "details": {
-                        "name": "Get Property Override Vector 4"
+                        "name": "Get Property Value Vector4"
                     },
                     "params": [
                         {
                             "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
                             "details": {
-                                "name": "AZ:: Render:: Material Assignment Id"
+                                "name": "Material Assignment Id",
+                                "tooltip": "Unique id to address a specific material on an entity"
                             }
                         },
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "AZ Std::string"
+                                "name": "Property Id"
                             }
                         }
                     ],
@@ -148,35 +153,36 @@
                         {
                             "typeid": "{0CE9FA36-1E3A-4C06-9254-B7C73A732053}",
                             "details": {
-                                "name": "Vector 4"
+                                "name": "Property Value"
                             }
                         }
                     ]
                 },
                 {
-                    "base": "GetPropertyOverrideUInt32",
+                    "base": "GetPropertyValueUInt32",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Get Property OverrideU Int 32"
+                        "tooltip": "When signaled, this will invoke Get Property Value UInt32"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Get Property OverrideU Int 32 is invoked"
+                        "tooltip": "Signaled after Get Property Value UInt32 is invoked"
                     },
                     "details": {
-                        "name": "Get Property OverrideU Int 32"
+                        "name": "Get Property Value UInt32"
                     },
                     "params": [
                         {
                             "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
                             "details": {
-                                "name": "AZ:: Render:: Material Assignment Id"
+                                "name": "Material Assignment Id",
+                                "tooltip": "Unique id to address a specific material on an entity"
                             }
                         },
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "AZ Std::string"
+                                "name": "Property Id"
                             }
                         }
                     ],
@@ -184,35 +190,36 @@
                         {
                             "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
                             "details": {
-                                "name": "unsigned int"
+                                "name": "Property Value"
                             }
                         }
                     ]
                 },
                 {
-                    "base": "GetPropertyOverrideBool",
+                    "base": "GetPropertyValueBool",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Get Property Override Bool"
+                        "tooltip": "When signaled, this will invoke Get Property Value Bool"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Get Property Override Bool is invoked"
+                        "tooltip": "Signaled after Get Property Value Bool is invoked"
                     },
                     "details": {
-                        "name": "Get Property Override Bool"
+                        "name": "Get Property Value Bool"
                     },
                     "params": [
                         {
                             "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
                             "details": {
-                                "name": "AZ:: Render:: Material Assignment Id"
+                                "name": "Material Assignment Id",
+                                "tooltip": "Unique id to address a specific material on an entity"
                             }
                         },
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "AZ Std::string"
+                                "name": "Property Id"
                             }
                         }
                     ],
@@ -220,103 +227,106 @@
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "bool"
+                                "name": "Property Value"
                             }
                         }
                     ]
                 },
                 {
-                    "base": "SetPropertyOverrideEnum",
+                    "base": "SetPropertyValueEnum",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Set Property Override Enum"
+                        "tooltip": "When signaled, this will invoke Set Property Value Enum"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Set Property Override Enum is invoked"
+                        "tooltip": "Signaled after Set Property Value Enum is invoked"
                     },
                     "details": {
-                        "name": "Set Property Override Enum"
+                        "name": "Set Property Value Enum"
                     },
                     "params": [
                         {
                             "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
                             "details": {
-                                "name": "AZ:: Render:: Material Assignment Id"
+                                "name": "Material Assignment Id",
+                                "tooltip": "Unique id to address a specific material on an entity"
                             }
                         },
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "AZ Std::string"
+                                "name": "Property Id"
                             }
                         },
                         {
                             "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
                             "details": {
-                                "name": "unsigned int"
+                                "name": "Property Value"
                             }
                         }
                     ]
                 },
                 {
-                    "base": "SetPropertyOverrideVector2",
+                    "base": "SetPropertyValueVector2",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Set Property Override Vector 2"
+                        "tooltip": "When signaled, this will invoke Set Property Value Vector2"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Set Property Override Vector 2 is invoked"
+                        "tooltip": "Signaled after Set Property Value Vector2 is invoked"
                     },
                     "details": {
-                        "name": "Set Property Override Vector 2"
+                        "name": "Set Property Value Vector2"
                     },
                     "params": [
                         {
                             "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
                             "details": {
-                                "name": "AZ:: Render:: Material Assignment Id"
+                                "name": "Material Assignment Id",
+                                "tooltip": "Unique id to address a specific material on an entity"
                             }
                         },
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "AZ Std::string"
+                                "name": "Property Id"
                             }
                         },
                         {
                             "typeid": "{3D80F623-C85C-4741-90D0-E4E66164E6BF}",
                             "details": {
-                                "name": "Vector 2"
+                                "name": "Property Value"
                             }
                         }
                     ]
                 },
                 {
-                    "base": "GetPropertyOverrideImage",
+                    "base": "GetPropertyValueImage",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Get Property Override Image"
+                        "tooltip": "When signaled, this will invoke Get Property Value Image"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Get Property Override Image is invoked"
+                        "tooltip": "Signaled after Get Property Value Image is invoked"
                     },
                     "details": {
-                        "name": "Get Property Override Image"
+                        "name": "Get Property Value Image"
                     },
                     "params": [
                         {
                             "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
                             "details": {
-                                "name": "AZ:: Render:: Material Assignment Id"
+                                "name": "Material Assignment Id",
+                                "tooltip": "Unique id to address a specific material on an entity"
                             }
                         },
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "AZ Std::string"
+                                "name": "Property Id"
                             }
                         }
                     ],
@@ -324,43 +334,75 @@
                         {
                             "typeid": "{652ED536-3402-439B-AEBE-4A5DBC554085}",
                             "details": {
-                                "name": "Asset Id"
+                                "name": "Property Value"
                             }
                         }
                     ]
                 },
                 {
-                    "base": "ClearAllPropertyOverrides",
+                    "base": "ClearAllPropertyValues",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Clear All Property Overrides"
+                        "tooltip": "When signaled, this will invoke Clear All Property Values"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Clear All Property Overrides is invoked"
+                        "tooltip": "Signaled after Clear All Property Values is invoked"
                     },
                     "details": {
-                        "name": "Clear All Property Overrides"
+                        "name": "Clear All Property Values"
                     }
                 },
                 {
-                    "base": "GetMaterialSlotLabel",
+                    "base": "GetActiveMaterialAssetId",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Get Material Slot Label"
+                        "tooltip": "When signaled, this will invoke Get Active Material Asset Id"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Get Material Slot Label is invoked"
+                        "tooltip": "Signaled after Get Active Material Asset Id is invoked"
                     },
                     "details": {
-                        "name": "Get Material Slot Label"
+                        "name": "Get Active Material Asset Id"
                     },
                     "params": [
                         {
                             "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
                             "details": {
-                                "name": "AZ:: Render:: Material Assignment Id"
+                                "name": "Material Assignment Id",
+                                "tooltip": "Unique id to address a specific material on an entity"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{652ED536-3402-439B-AEBE-4A5DBC554085}",
+                            "details": {
+                                "name": "Material Asset Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetMaterialLabel",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Material Label"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Material Label is invoked"
+                    },
+                    "details": {
+                        "name": "Get Material Label"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
+                            "details": {
+                                "name": "Material Assignment Id",
+                                "tooltip": "Unique id to address a specific material on an entity"
                             }
                         }
                     ],
@@ -368,231 +410,235 @@
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "AZ Std::string"
+                                "name": "Label"
                             }
                         }
                     ]
                 },
                 {
-                    "base": "SetPropertyOverrideVector3",
+                    "base": "SetPropertyValueVector3",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Set Property Override Vector 3"
+                        "tooltip": "When signaled, this will invoke Set Property Value Vector3"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Set Property Override Vector 3 is invoked"
+                        "tooltip": "Signaled after Set Property Value Vector3 is invoked"
                     },
                     "details": {
-                        "name": "Set Property Override Vector 3"
+                        "name": "Set Property Value Vector3"
                     },
                     "params": [
                         {
                             "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
                             "details": {
-                                "name": "AZ:: Render:: Material Assignment Id"
+                                "name": "Material Assignment Id",
+                                "tooltip": "Unique id to address a specific material on an entity"
                             }
                         },
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "AZ Std::string"
+                                "name": "Property Id"
                             }
                         },
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Vector 3"
+                                "name": "Property Value"
                             }
                         }
                     ]
                 },
                 {
-                    "base": "ClearInvalidMaterialOverrides",
+                    "base": "ClearMaterialsWithMissingAssets",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Clear Invalid Material Overrides"
+                        "tooltip": "When signaled, this will invoke Clear Materials With Missing Assets"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Clear Invalid Material Overrides is invoked"
+                        "tooltip": "Signaled after Clear Materials With Missing Assets is invoked"
                     },
                     "details": {
-                        "name": "Clear Invalid Material Overrides"
+                        "name": "Clear Materials With Missing Assets"
                     }
                 },
                 {
-                    "base": "SetPropertyOverrideBool",
+                    "base": "SetPropertyValueBool",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Set Property Override Bool"
+                        "tooltip": "When signaled, this will invoke Set Property Value Bool"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Set Property Override Bool is invoked"
+                        "tooltip": "Signaled after Set Property Value Bool is invoked"
                     },
                     "details": {
-                        "name": "Set Property Override Bool"
+                        "name": "Set Property Value Bool"
                     },
                     "params": [
                         {
                             "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
                             "details": {
-                                "name": "AZ:: Render:: Material Assignment Id"
+                                "name": "Material Assignment Id",
+                                "tooltip": "Unique id to address a specific material on an entity"
                             }
                         },
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "AZ Std::string"
+                                "name": "Property Id"
                             }
                         },
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "bool"
+                                "name": "Property Value"
                             }
                         }
                     ]
                 },
                 {
-                    "base": "RepairInvalidMaterialOverrides",
+                    "base": "RepairMaterialsWithMissingAssets",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Repair Invalid Material Overrides"
+                        "tooltip": "When signaled, this will invoke Repair Materials With Missing Assets"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Repair Invalid Material Overrides is invoked"
+                        "tooltip": "Signaled after Repair Materials With Missing Assets is invoked"
                     },
                     "details": {
-                        "name": "Repair Invalid Material Overrides"
+                        "name": "Repair Materials With Missing Assets"
                     }
                 },
                 {
-                    "base": "SetPropertyOverrideString",
+                    "base": "SetPropertyValueString",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Set Property Override String"
+                        "tooltip": "When signaled, this will invoke Set Property Value String"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Set Property Override String is invoked"
+                        "tooltip": "Signaled after Set Property Value String is invoked"
                     },
                     "details": {
-                        "name": "Set Property Override String"
+                        "name": "Set Property Value String"
                     },
                     "params": [
                         {
                             "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
                             "details": {
-                                "name": "AZ:: Render:: Material Assignment Id"
+                                "name": "Material Assignment Id",
+                                "tooltip": "Unique id to address a specific material on an entity"
                             }
                         },
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "AZ Std::string"
+                                "name": "Property Id"
                             }
                         },
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "AZ Std::string"
+                                "name": "Property Value"
                             }
                         }
                     ]
                 },
                 {
-                    "base": "SetDefaultMaterialOverride",
+                    "base": "SetMaterialAssetIdOnDefaultSlot",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Set Default Material Override"
+                        "tooltip": "When signaled, this will invoke Set Material Asset Id On Default Slot"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Set Default Material Override is invoked"
+                        "tooltip": "Signaled after Set Material Asset Id On Default Slot is invoked"
                     },
                     "details": {
-                        "name": "Set Default Material Override"
+                        "name": "Set Material Asset Id On Default Slot"
                     },
                     "params": [
                         {
                             "typeid": "{652ED536-3402-439B-AEBE-4A5DBC554085}",
                             "details": {
-                                "name": "Asset Id"
+                                "name": "Material Asset Id"
                             }
                         }
                     ]
                 },
                 {
-                    "base": "GetDefaultMaterialOverride",
+                    "base": "GetMaterialAssetIdOnDefaultSlot",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Get Default Material Override"
+                        "tooltip": "When signaled, this will invoke Get Material Asset Id On Default Slot"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Get Default Material Override is invoked"
+                        "tooltip": "Signaled after Get Material Asset Id On Default Slot is invoked"
                     },
                     "details": {
-                        "name": "Get Default Material Override"
+                        "name": "Get Material Asset Id On Default Slot"
                     },
                     "results": [
                         {
                             "typeid": "{652ED536-3402-439B-AEBE-4A5DBC554085}",
                             "details": {
-                                "name": "Asset Id"
+                                "name": "Material Asset Id"
                             }
                         }
                     ]
                 },
                 {
-                    "base": "SetMaterialOverrides",
+                    "base": "SetMaterialMap",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Set Material Overrides"
+                        "tooltip": "When signaled, this will invoke Set Material Map"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Set Material Overrides is invoked"
+                        "tooltip": "Signaled after Set Material Map is invoked"
                     },
                     "details": {
-                        "name": "Set Material Overrides"
+                        "name": "Set Material Map"
                     },
                     "params": [
                         {
                             "typeid": "{50F6716F-698B-5A6C-AACD-940597FDEC24}",
                             "details": {
-                                "name": "AZ Std::unordered_map"
+                                "name": "Material Assignment Map"
                             }
                         }
                     ]
                 },
                 {
-                    "base": "GetPropertyOverrideString",
+                    "base": "GetPropertyValueString",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Get Property Override String"
+                        "tooltip": "When signaled, this will invoke Get Property Value String"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Get Property Override String is invoked"
+                        "tooltip": "Signaled after Get Property Value String is invoked"
                     },
                     "details": {
-                        "name": "Get Property Override String"
+                        "name": "Get Property Value String"
                     },
                     "params": [
                         {
                             "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
                             "details": {
-                                "name": "AZ:: Render:: Material Assignment Id"
+                                "name": "Material Assignment Id",
+                                "tooltip": "Unique id to address a specific material on an entity"
                             }
                         },
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "AZ Std::string"
+                                "name": "Property Id"
                             }
                         }
                     ],
@@ -600,51 +646,52 @@
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "AZ Std::string"
+                                "name": "Property Value"
                             }
                         }
                     ]
                 },
                 {
-                    "base": "GetMaterialOverrides",
+                    "base": "GetMaterialMap",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Get Material Overrides"
+                        "tooltip": "When signaled, this will invoke Get Material Map"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Get Material Overrides is invoked"
+                        "tooltip": "Signaled after Get Material Map is invoked"
                     },
                     "details": {
-                        "name": "Get Material Overrides"
+                        "name": "Get Material Map"
                     },
                     "results": [
                         {
                             "typeid": "{50F6716F-698B-5A6C-AACD-940597FDEC24}",
                             "details": {
-                                "name": "AZ Std::unordered_map"
+                                "name": "Material Assignment Map"
                             }
                         }
                     ]
                 },
                 {
-                    "base": "GetMaterialOverride",
+                    "base": "GetMaterialAssetId",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Get Material Override"
+                        "tooltip": "When signaled, this will invoke Get Material Asset Id"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Get Material Override is invoked"
+                        "tooltip": "Signaled after Get Material Asset Id is invoked"
                     },
                     "details": {
-                        "name": "Get Material Override"
+                        "name": "Get Material Asset Id"
                     },
                     "params": [
                         {
                             "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
                             "details": {
-                                "name": "AZ:: Render:: Material Assignment Id"
+                                "name": "Material Assignment Id",
+                                "tooltip": "Unique id to address a specific material on an entity"
                             }
                         }
                     ],
@@ -652,75 +699,77 @@
                         {
                             "typeid": "{652ED536-3402-439B-AEBE-4A5DBC554085}",
                             "details": {
-                                "name": "Asset Id"
+                                "name": "Material Asset Id"
                             }
                         }
                     ]
                 },
                 {
-                    "base": "SetPropertyOverrideVector4",
+                    "base": "SetPropertyValueVector4",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Set Property Override Vector 4"
+                        "tooltip": "When signaled, this will invoke Set Property Value Vector4"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Set Property Override Vector 4 is invoked"
+                        "tooltip": "Signaled after Set Property Value Vector4 is invoked"
                     },
                     "details": {
-                        "name": "Set Property Override Vector 4"
+                        "name": "Set Property Value Vector4"
                     },
                     "params": [
                         {
                             "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
                             "details": {
-                                "name": "AZ:: Render:: Material Assignment Id"
+                                "name": "Material Assignment Id",
+                                "tooltip": "Unique id to address a specific material on an entity"
                             }
                         },
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "AZ Std::string"
+                                "name": "Property Id"
                             }
                         },
                         {
                             "typeid": "{0CE9FA36-1E3A-4C06-9254-B7C73A732053}",
                             "details": {
-                                "name": "Vector 4"
+                                "name": "Property Value"
                             }
                         }
                     ]
                 },
                 {
-                    "base": "SetPropertyOverrideUInt32",
+                    "base": "SetPropertyValueUInt32",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Set Property OverrideU Int 32"
+                        "tooltip": "When signaled, this will invoke Set Property Value UInt32"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Set Property OverrideU Int 32 is invoked"
+                        "tooltip": "Signaled after Set Property Value UInt32 is invoked"
                     },
                     "details": {
-                        "name": "Set Property OverrideU Int 32"
+                        "name": "Set Property Value UInt32"
                     },
                     "params": [
                         {
                             "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
                             "details": {
-                                "name": "AZ:: Render:: Material Assignment Id"
+                                "name": "Material Assignment Id",
+                                "tooltip": "Unique id to address a specific material on an entity"
                             }
                         },
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "AZ Std::string"
+                                "name": "Property Id"
                             }
                         },
                         {
                             "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
                             "details": {
-                                "name": "unsigned int"
+                                "name": "Property Value"
                             }
                         }
                     ]
@@ -742,13 +791,15 @@
                         {
                             "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
                             "details": {
-                                "name": "AZ::u 64"
+                                "name": "LOD Index",
+                                "tooltip": "Specifies which LOD index will be used to look up the Material Assignment Id. -1 should be used for the default material or model materials."
                             }
                         },
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "AZ Std::string"
+                                "name": "Label Search String",
+                                "tooltip": "The function will return the first Material Assignment Id with a matching LOD index and a label containing this search string."
                             }
                         }
                     ],
@@ -756,35 +807,37 @@
                         {
                             "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
                             "details": {
-                                "name": "AZ:: Render:: Material Assignment Id"
+                                "name": "Material Assignment Id",
+                                "tooltip": "Unique id to address a specific material on an entity"
                             }
                         }
                     ]
                 },
                 {
-                    "base": "GetPropertyOverrideInt32",
+                    "base": "GetPropertyValueInt32",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Get Property Override Int 32"
+                        "tooltip": "When signaled, this will invoke Get Property Value Int32"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Get Property Override Int 32 is invoked"
+                        "tooltip": "Signaled after Get Property Value Int32 is invoked"
                     },
                     "details": {
-                        "name": "Get Property Override Int 32"
+                        "name": "Get Property Value Int32"
                     },
                     "params": [
                         {
                             "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
                             "details": {
-                                "name": "AZ:: Render:: Material Assignment Id"
+                                "name": "Material Assignment Id",
+                                "tooltip": "Unique id to address a specific material on an entity"
                             }
                         },
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "AZ Std::string"
+                                "name": "Property Id"
                             }
                         }
                     ],
@@ -792,35 +845,36 @@
                         {
                             "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
                             "details": {
-                                "name": "int"
+                                "name": "Property Value"
                             }
                         }
                     ]
                 },
                 {
-                    "base": "GetPropertyOverrideEnum",
+                    "base": "GetPropertyValueEnum",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Get Property Override Enum"
+                        "tooltip": "When signaled, this will invoke Get Property Value Enum"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Get Property Override Enum is invoked"
+                        "tooltip": "Signaled after Get Property Value Enum is invoked"
                     },
                     "details": {
-                        "name": "Get Property Override Enum"
+                        "name": "Get Property Value Enum"
                     },
                     "params": [
                         {
                             "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
                             "details": {
-                                "name": "AZ:: Render:: Material Assignment Id"
+                                "name": "Material Assignment Id",
+                                "tooltip": "Unique id to address a specific material on an entity"
                             }
                         },
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "AZ Std::string"
+                                "name": "Property Id"
                             }
                         }
                     ],
@@ -828,91 +882,93 @@
                         {
                             "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
                             "details": {
-                                "name": "unsigned int"
+                                "name": "Property Value"
                             }
                         }
                     ]
                 },
                 {
-                    "base": "SetPropertyOverride",
+                    "base": "SetPropertyValue",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Set Property Override"
+                        "tooltip": "When signaled, this will invoke Set Property Value"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Set Property Override is invoked"
+                        "tooltip": "Signaled after Set Property Value is invoked"
                     },
                     "details": {
-                        "name": "Set Property Override"
+                        "name": "Set Property Value"
                     },
                     "params": [
                         {
                             "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
                             "details": {
-                                "name": "AZ:: Render:: Material Assignment Id"
+                                "name": "Material Assignment Id",
+                                "tooltip": "Unique id to address a specific material on an entity"
                             }
                         },
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "AZ Std::string"
+                                "name": "Property Id"
                             }
                         },
                         {
                             "typeid": "{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}",
                             "details": {
-                                "name": "any"
+                                "name": "Property Value"
                             }
                         }
                     ]
                 },
                 {
-                    "base": "GetOriginalMaterialAssignments",
+                    "base": "GetDefautMaterialMap",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Get Original Material Assignments"
+                        "tooltip": "When signaled, this will invoke Get Defaut Material Map"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Get Original Material Assignments is invoked"
+                        "tooltip": "Signaled after Get Defaut Material Map is invoked"
                     },
                     "details": {
-                        "name": "Get Original Material Assignments"
+                        "name": "Get Defaut Material Map"
                     },
                     "results": [
                         {
                             "typeid": "{50F6716F-698B-5A6C-AACD-940597FDEC24}",
                             "details": {
-                                "name": "AZ Std::unordered_map"
+                                "name": "Material Assignment Map"
                             }
                         }
                     ]
                 },
                 {
-                    "base": "GetPropertyOverride",
+                    "base": "GetPropertyValue",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Get Property Override"
+                        "tooltip": "When signaled, this will invoke Get Property Value"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Get Property Override is invoked"
+                        "tooltip": "Signaled after Get Property Value is invoked"
                     },
                     "details": {
-                        "name": "Get Property Override"
+                        "name": "Get Property Value"
                     },
                     "params": [
                         {
                             "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
                             "details": {
-                                "name": "AZ:: Render:: Material Assignment Id"
+                                "name": "Material Assignment Id",
+                                "tooltip": "Unique id to address a specific material on an entity"
                             }
                         },
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "AZ Std::string"
+                                "name": "Property Id"
                             }
                         }
                     ],
@@ -920,23 +976,23 @@
                         {
                             "typeid": "{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}",
                             "details": {
-                                "name": "any"
+                                "name": "Property Value"
                             }
                         }
                     ]
                 },
                 {
-                    "base": "ClearModelMaterialOverrides",
+                    "base": "ClearMaterialsOnModelSlots",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Clear Model Material Overrides"
+                        "tooltip": "When signaled, this will invoke Clear Materials On Model Slots"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Clear Model Material Overrides is invoked"
+                        "tooltip": "Signaled after Clear Materials On Model Slots is invoked"
                     },
                     "details": {
-                        "name": "Clear Model Material Overrides"
+                        "name": "Clear Materials On Model Slots"
                     }
                 },
                 {
@@ -956,7 +1012,8 @@
                         {
                             "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
                             "details": {
-                                "name": "AZ:: Render:: Material Assignment Id"
+                                "name": "Material Assignment Id",
+                                "tooltip": "Unique id to address a specific material on an entity"
                             }
                         }
                     ],
@@ -964,103 +1021,106 @@
                         {
                             "typeid": "{652ED536-3402-439B-AEBE-4A5DBC554085}",
                             "details": {
-                                "name": "Asset Id"
+                                "name": "Material Asset Id"
                             }
                         }
                     ]
                 },
                 {
-                    "base": "SetPropertyOverrideInt32",
+                    "base": "SetPropertyValueInt32",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Set Property Override Int 32"
+                        "tooltip": "When signaled, this will invoke Set Property Value Int32"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Set Property Override Int 32 is invoked"
+                        "tooltip": "Signaled after Set Property Value Int32 is invoked"
                     },
                     "details": {
-                        "name": "Set Property Override Int 32"
+                        "name": "Set Property Value Int32"
                     },
                     "params": [
                         {
                             "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
                             "details": {
-                                "name": "AZ:: Render:: Material Assignment Id"
+                                "name": "Material Assignment Id",
+                                "tooltip": "Unique id to address a specific material on an entity"
                             }
                         },
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "AZ Std::string"
+                                "name": "Property Id"
                             }
                         },
                         {
                             "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
                             "details": {
-                                "name": "int"
+                                "name": "Property Value"
                             }
                         }
                     ]
                 },
                 {
-                    "base": "SetPropertyOverrideImage",
+                    "base": "SetPropertyValueImage",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Set Property Override Image"
+                        "tooltip": "When signaled, this will invoke Set Property Value Image"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Set Property Override Image is invoked"
+                        "tooltip": "Signaled after Set Property Value Image is invoked"
                     },
                     "details": {
-                        "name": "Set Property Override Image"
+                        "name": "Set Property Value Image"
                     },
                     "params": [
                         {
                             "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
                             "details": {
-                                "name": "AZ:: Render:: Material Assignment Id"
+                                "name": "Material Assignment Id",
+                                "tooltip": "Unique id to address a specific material on an entity"
                             }
                         },
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "AZ Std::string"
+                                "name": "Property Id"
                             }
                         },
                         {
                             "typeid": "{652ED536-3402-439B-AEBE-4A5DBC554085}",
                             "details": {
-                                "name": "Asset Id"
+                                "name": "Property Value"
                             }
                         }
                     ]
                 },
                 {
-                    "base": "GetPropertyOverrideVector2",
+                    "base": "GetPropertyValueVector2",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Get Property Override Vector 2"
+                        "tooltip": "When signaled, this will invoke Get Property Value Vector2"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Get Property Override Vector 2 is invoked"
+                        "tooltip": "Signaled after Get Property Value Vector2 is invoked"
                     },
                     "details": {
-                        "name": "Get Property Override Vector 2"
+                        "name": "Get Property Value Vector2"
                     },
                     "params": [
                         {
                             "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
                             "details": {
-                                "name": "AZ:: Render:: Material Assignment Id"
+                                "name": "Material Assignment Id",
+                                "tooltip": "Unique id to address a specific material on an entity"
                             }
                         },
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "AZ Std::string"
+                                "name": "Property Id"
                             }
                         }
                     ],
@@ -1068,49 +1128,50 @@
                         {
                             "typeid": "{3D80F623-C85C-4741-90D0-E4E66164E6BF}",
                             "details": {
-                                "name": "Vector 2"
+                                "name": "Property Value"
                             }
                         }
                     ]
                 },
                 {
-                    "base": "ClearAllMaterialOverrides",
+                    "base": "ClearMaterialMap",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Clear All Material Overrides"
+                        "tooltip": "When signaled, this will invoke Clear Material Map"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Clear All Material Overrides is invoked"
+                        "tooltip": "Signaled after Clear Material Map is invoked"
                     },
                     "details": {
-                        "name": "Clear All Material Overrides"
+                        "name": "Clear Material Map"
                     }
                 },
                 {
-                    "base": "GetPropertyOverrideColor",
+                    "base": "GetPropertyValueColor",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Get Property Override Color"
+                        "tooltip": "When signaled, this will invoke Get Property Value Color"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Get Property Override Color is invoked"
+                        "tooltip": "Signaled after Get Property Value Color is invoked"
                     },
                     "details": {
-                        "name": "Get Property Override Color"
+                        "name": "Get Property Value Color"
                     },
                     "params": [
                         {
                             "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
                             "details": {
-                                "name": "AZ:: Render:: Material Assignment Id"
+                                "name": "Material Assignment Id",
+                                "tooltip": "Unique id to address a specific material on an entity"
                             }
                         },
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "AZ Std::string"
+                                "name": "Property Id"
                             }
                         }
                     ],
@@ -1118,141 +1179,144 @@
                         {
                             "typeid": "{7894072A-9050-4F0F-901B-34B1A0D29417}",
                             "details": {
-                                "name": "Color"
+                                "name": "Property Value"
                             }
                         }
                     ]
                 },
                 {
-                    "base": "SetPropertyOverrideFloat",
+                    "base": "SetPropertyValueFloat",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Set Property Override Float"
+                        "tooltip": "When signaled, this will invoke Set Property Value Float"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Set Property Override Float is invoked"
+                        "tooltip": "Signaled after Set Property Value Float is invoked"
                     },
                     "details": {
-                        "name": "Set Property Override Float"
+                        "name": "Set Property Value Float"
                     },
                     "params": [
                         {
                             "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
                             "details": {
-                                "name": "AZ:: Render:: Material Assignment Id"
+                                "name": "Material Assignment Id",
+                                "tooltip": "Unique id to address a specific material on an entity"
                             }
                         },
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "AZ Std::string"
+                                "name": "Property Id"
                             }
                         },
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Property Value"
                             }
                         }
                     ]
                 },
                 {
-                    "base": "ApplyAutomaticPropertyUpdates",
+                    "base": "RepairMaterialsWithRenamedProperties",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Apply Automatic Property Updates"
+                        "tooltip": "When signaled, this will invoke Repair Materials With Renamed Properties"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Apply Automatic Property Updates is invoked"
+                        "tooltip": "Signaled after Repair Materials With Renamed Properties is invoked"
                     },
                     "details": {
-                        "name": "Apply Automatic Property Updates"
+                        "name": "Repair Materials With Renamed Properties"
                     },
                     "results": [
                         {
                             "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
                             "details": {
-                                "name": "unsigned int"
+                                "name": "Num Materials Updated "
                             }
                         }
                     ]
                 },
                 {
-                    "base": "ClearMaterialOverride",
+                    "base": "ClearMaterialAssetId",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Clear Material Override"
+                        "tooltip": "When signaled, this will invoke Clear Material Asset Id"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Clear Material Override is invoked"
+                        "tooltip": "Signaled after Clear Material Asset Id is invoked"
                     },
                     "details": {
-                        "name": "Clear Material Override"
+                        "name": "Clear Material Asset Id"
                     },
                     "params": [
                         {
                             "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
                             "details": {
-                                "name": "AZ:: Render:: Material Assignment Id"
+                                "name": "Material Assignment Id",
+                                "tooltip": "Unique id to address a specific material on an entity"
                             }
                         }
                     ]
                 },
                 {
-                    "base": "ClearLodMaterialOverrides",
+                    "base": "ClearMaterialsOnLodSlots",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Clear Lod Material Overrides"
+                        "tooltip": "When signaled, this will invoke Clear Materials On Lod Slots"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Clear Lod Material Overrides is invoked"
+                        "tooltip": "Signaled after Clear Materials On Lod Slots is invoked"
                     },
                     "details": {
-                        "name": "Clear Lod Material Overrides"
+                        "name": "Clear Materials On Lod Slots"
                     }
                 },
                 {
-                    "base": "ClearIncompatibleMaterialOverrides",
+                    "base": "ClearMaterialsOnInvalidSlots",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Clear Incompatible Material Overrides"
+                        "tooltip": "When signaled, this will invoke Clear Materials On Invalid Slots"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Clear Incompatible Material Overrides is invoked"
+                        "tooltip": "Signaled after Clear Materials On Invalid Slots is invoked"
                     },
                     "details": {
-                        "name": "Clear Incompatible Material Overrides"
+                        "name": "Clear Materials On Invalid Slots"
                     }
                 },
                 {
-                    "base": "GetPropertyOverrideVector3",
+                    "base": "GetPropertyValueVector3",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Get Property Override Vector 3"
+                        "tooltip": "When signaled, this will invoke Get Property Value Vector3"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Get Property Override Vector 3 is invoked"
+                        "tooltip": "Signaled after Get Property Value Vector3 is invoked"
                     },
                     "details": {
-                        "name": "Get Property Override Vector 3"
+                        "name": "Get Property Value Vector3"
                     },
                     "params": [
                         {
                             "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
                             "details": {
-                                "name": "AZ:: Render:: Material Assignment Id"
+                                "name": "Material Assignment Id",
+                                "tooltip": "Unique id to address a specific material on an entity"
                             }
                         },
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "AZ Std::string"
+                                "name": "Property Id"
                             }
                         }
                     ],
@@ -1260,111 +1324,114 @@
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Vector 3"
+                                "name": "Property Value"
                             }
                         }
                     ]
                 },
                 {
-                    "base": "ClearDefaultMaterialOverride",
+                    "base": "ClearMaterialAssetIdOnDefaultSlot",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Clear Default Material Override"
+                        "tooltip": "When signaled, this will invoke Clear Material Asset Id On Default Slot"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Clear Default Material Override is invoked"
+                        "tooltip": "Signaled after Clear Material Asset Id On Default Slot is invoked"
                     },
                     "details": {
-                        "name": "Clear Default Material Override"
+                        "name": "Clear Material Asset Id On Default Slot"
                     }
                 },
                 {
-                    "base": "SetPropertyOverrideColor",
+                    "base": "SetPropertyValueColor",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Set Property Override Color"
+                        "tooltip": "When signaled, this will invoke Set Property Value Color"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Set Property Override Color is invoked"
+                        "tooltip": "Signaled after Set Property Value Color is invoked"
                     },
                     "details": {
-                        "name": "Set Property Override Color"
+                        "name": "Set Property Value Color"
                     },
                     "params": [
                         {
                             "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
                             "details": {
-                                "name": "AZ:: Render:: Material Assignment Id"
+                                "name": "Material Assignment Id",
+                                "tooltip": "Unique id to address a specific material on an entity"
                             }
                         },
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "AZ Std::string"
+                                "name": "Property Id"
                             }
                         },
                         {
                             "typeid": "{7894072A-9050-4F0F-901B-34B1A0D29417}",
                             "details": {
-                                "name": "Color"
+                                "name": "Property Value"
                             }
                         }
                     ]
                 },
                 {
-                    "base": "SetMaterialOverride",
+                    "base": "SetMaterialAssetId",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Set Material Override"
+                        "tooltip": "When signaled, this will invoke Set Material Asset Id"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Set Material Override is invoked"
+                        "tooltip": "Signaled after Set Material Asset Id is invoked"
                     },
                     "details": {
-                        "name": "Set Material Override"
+                        "name": "Set Material Asset Id"
                     },
                     "params": [
                         {
                             "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
                             "details": {
-                                "name": "AZ:: Render:: Material Assignment Id"
+                                "name": "Material Assignment Id",
+                                "tooltip": "Unique id to address a specific material on an entity"
                             }
                         },
                         {
                             "typeid": "{652ED536-3402-439B-AEBE-4A5DBC554085}",
                             "details": {
-                                "name": "Asset Id"
+                                "name": "Material Asset Id"
                             }
                         }
                     ]
                 },
                 {
-                    "base": "GetPropertyOverrideFloat",
+                    "base": "GetPropertyValueFloat",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Get Property Override Float"
+                        "tooltip": "When signaled, this will invoke Get Property Value Float"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Get Property Override Float is invoked"
+                        "tooltip": "Signaled after Get Property Value Float is invoked"
                     },
                     "details": {
-                        "name": "Get Property Override Float"
+                        "name": "Get Property Value Float"
                     },
                     "params": [
                         {
                             "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
                             "details": {
-                                "name": "AZ:: Render:: Material Assignment Id"
+                                "name": "Material Assignment Id",
+                                "tooltip": "Unique id to address a specific material on an entity"
                             }
                         },
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "AZ Std::string"
+                                "name": "Property Id"
                             }
                         }
                     ],
@@ -1372,7 +1439,7 @@
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Property Value"
                             }
                         }
                     ]

@@ -190,8 +190,9 @@ namespace EMotionFX
 
 
     // initialize the mesh deformer
-    void MorphMeshDeformer::Reinitialize(Actor* actor, Node* node, size_t lodLevel)
+    void MorphMeshDeformer::Reinitialize(Actor* actor, Node* node, size_t lodLevel, uint16 highestJointIndex)
     {
+        MCORE_UNUSED(highestJointIndex);
         // clear the deform passes, but don't free the currently allocated/reserved memory
         m_deformPasses.clear();
 

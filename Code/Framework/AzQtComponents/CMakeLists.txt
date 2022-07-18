@@ -76,6 +76,20 @@ ly_add_target(
             AZ::AzToolsFramework
 )
 
+ly_add_target(
+    NAME DPEDebugViewStandalone APPLICATION
+    NAMESPACE AZ
+    FILES_CMAKE
+        AzQtComponents/azqtcomponents_debugviewstandalone_files.cmake
+    BUILD_DEPENDENCIES
+        PRIVATE
+            3rdParty::Qt::Widgets
+            AZ::AzToolsFramework
+            AZ::AzQtComponents
+        PUBLIC
+            AUTOMOC
+)
+
 ################################################################################
 # Tests
 ################################################################################

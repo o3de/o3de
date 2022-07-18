@@ -66,12 +66,12 @@ def _get_build_directory(config):
     if custom_build_directory:
         logger.debug(f'Custom build directory set via cli arg to: {custom_build_directory}')
         if not os.path.exists(custom_build_directory):
-            raise ValueError(f'Pytest argument "--build-directory" does not exist at: {custom_build_directory}')
+            raise ValueError(f'Pytest custom argument "--build-directory" does not exist at: {custom_build_directory}')
         if custom_build_directory.endswith('debug'):
             pytest.exit("Python debug modules are not available. LyTestTools test skipped.", 0)
     else:
         # only warn when unset, allowing non-LyTT tests to still use pytest
-        logger.warning(f'Pytest argument "--build-directory" was not provided, tests using LyTestTools will fail')
+        logger.warning(f'Pytest custom argument "--build-directory" was not provided, tests using LyTestTools will fail')
 
     return custom_build_directory
 
@@ -86,12 +86,16 @@ def _get_output_path(config):
         logger.debug(f'Custom output_path set to: {str(custom_output_path)}')
         output_path = custom_output_path
     else:
-        # from pytest_runner
-        output_path = os.path.join(os.getcwd(),
-                                   "TestResults",
-                                   datetime.now().strftime(TIMESTAMP_FORMAT),
-                                   "pytest_results")
-        logger.debug(f'Defaulting output_path to: {str(output_path)}')
+        custom_build_directory = config.getoption('--build-directory', '')
+        if custom_build_directory: # default into known build folder
+            default_output_path = os.path.join(custom_build_directory, 'Testing', 'LyTestTools')
+        else:  # should already create a separate warning in _get_build_directory()
+            default_output_path = os.getcwd()
+        output_path = os.path.join(default_output_path,
+                                   "pytest_results",
+                                   datetime.now().strftime(TIMESTAMP_FORMAT))
+        logger.warning(f'Pytest custom argument "--output-path" was not provided, '
+                       f'defaulting Test Results output to: {str(output_path)}')
 
     os.makedirs(output_path, exist_ok=True)
     return output_path

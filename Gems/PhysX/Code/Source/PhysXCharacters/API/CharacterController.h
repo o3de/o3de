@@ -237,7 +237,6 @@ namespace PhysX
         PhysX::ActorData m_actorUserData; ///< Used to populate the user data on the PxActor associated with the controller.
         physx::PxFilterData m_filterData; ///< Controls filtering for collisions with other objects and scene queries.
         physx::PxControllerFilters m_pxControllerFilters; ///< Controls which objects the controller interacts with when moving.
-        AZStd::shared_ptr<Physics::Material> m_material; ///< The generic physics API material for the controller.
         AZStd::shared_ptr<Physics::Shape> m_shape; ///< The generic physics API shape associated with the controller.
         AzPhysics::RigidBody* m_shadowBody = nullptr; ///< A kinematic-synchronised rigid body used to store additional colliders.
         AzPhysics::SimulatedBodyHandle m_shadowBodyHandle = AzPhysics::InvalidSimulatedBodyHandle; //!<A handle to the shadow body.

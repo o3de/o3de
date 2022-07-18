@@ -1,0 +1,44 @@
+{
+    "entries": [
+        {
+            "base": "ScriptCanvas_AABBFunctions_AddAABB",
+            "context": "BehaviorMethod",
+            "variant": "",
+            "details": {
+                "name": "Add AABB",
+                "category": "Math/AABB"
+            },
+            "methods": [
+                {
+                    "base": "ScriptCanvas_AABBFunctions_AddAABB",
+                    "details": {
+                        "name": "Add AABB",
+                        "tooltip": "Returns the AABB that is the (min(min(A), min(B)), max(max(A), max(B)))."
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A54C2B36-D5B8-46A1-A529-4EBDBD2450E7}",
+                            "details": {
+                                "name": "A"
+                            }
+                        },
+                        {
+                            "typeid": "{A54C2B36-D5B8-46A1-A529-4EBDBD2450E7}",
+                            "details": {
+                                "name": "B"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A54C2B36-D5B8-46A1-A529-4EBDBD2450E7}",
+                            "details": {
+                                "name": "AABB"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

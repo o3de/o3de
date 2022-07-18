@@ -12,7 +12,7 @@
 
 namespace Physics
 {
-    class MaterialId;
+    struct MaterialId;
 }
 
 namespace PhysX
@@ -26,17 +26,9 @@ namespace PhysX
         /// @return Asset pointer to mesh asset.
         virtual AZ::Data::Asset<Pipeline::MeshAsset> GetMeshAsset() const = 0;
 
-        /// Gets the material id from the material library for this entity.
-        /// @return The asset ID to set it to.
-        virtual Physics::MaterialId GetMaterialId() const = 0;
-
         /// Sets the mesh asset ID
         /// @param id The asset ID to set it to.
         virtual void SetMeshAsset(const AZ::Data::AssetId& id) = 0;
-
-        /// Sets the material id from the material library.
-        /// @param id The asset ID to set it to.
-        virtual void SetMaterialId(const Physics::MaterialId& id) = 0;
     };
 
     /// Bus to service the PhysX Mesh Collider Component event group.

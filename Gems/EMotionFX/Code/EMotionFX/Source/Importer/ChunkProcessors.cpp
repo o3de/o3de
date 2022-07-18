@@ -44,7 +44,6 @@
 #include "../MotionEventTable.h"
 #include "../Skeleton.h"
 #include "../AnimGraph.h"
-#include "../AnimGraphGameControllerSettings.h"
 #include "../AnimGraphManager.h"
 #include "../AnimGraphObjectFactory.h"
 #include "../AnimGraphNode.h"

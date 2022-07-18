@@ -20,7 +20,12 @@ namespace EMStudio
     {
     public:
         // Call in case a fully customized widget shall be shown in the inspector. The header widget will be shown above the given widget.
-        virtual void Update([[maybe_unused]] const QString& headerTitle, [[maybe_unused]] const QString& iconFilename, [[maybe_unused]] QWidget* widget) = 0;
+        // NOTE: The inspector will NOT take ownership of the widget and it is your responsibility to destruct it along with the owning plugin.
+        virtual void UpdateWithHeader([[maybe_unused]] const QString& headerTitle, [[maybe_unused]] const QString& iconFilename, [[maybe_unused]] QWidget* widget) = 0;
+
+        // Call in case a fully customized widget shall be shown in the inspector without the header.
+        // NOTE: The inspector will NOT take ownership of the widget and it is your responsibility to destruct it along with the owning plugin.
+        virtual void Update(QWidget* widget) = 0;
 
         // Call in case the objects to be inspected are reflected. This creates a card with a reflected property editor inside in the standard way for each object along with a header widget above.
         // Use this method whenever a single, reflected object shall be visible in the inspector.
@@ -35,6 +40,9 @@ namespace EMStudio
 
         // Call in case the inspected object got removed or unselected. This will show the no selection widget in the inspector.
         virtual void Clear() = 0;
+
+        // Clear the inspector and show the default no selection widget in case the given widget is currently shown.
+        virtual void ClearIfShown(QWidget* widget) = 0;
     };
 
     using InspectorRequestBus = AZ::EBus<InspectorRequests>;

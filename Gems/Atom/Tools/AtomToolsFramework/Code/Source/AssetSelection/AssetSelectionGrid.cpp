@@ -65,9 +65,9 @@ namespace AtomToolsFramework
             {
                 if (m_filterCallback(assetInfo))
                 {
-                    CreateListItem(
-                        assetInfo.m_assetId,
-                        GetDisplayNameFromPath(AZ::RPI::AssetUtils::GetSourcePathByAssetId(assetInfo.m_assetId)).c_str());
+                    const AZStd::string path = AZ::RPI::AssetUtils::GetSourcePathByAssetId(assetInfo.m_assetId);
+                    const AZStd::string displayName = GetDisplayNameFromPath(path);
+                    CreateListItem(assetInfo.m_assetId, displayName.c_str());
                 }
             };
 
@@ -87,10 +87,11 @@ namespace AtomToolsFramework
 
     void AssetSelectionGrid::SelectAsset(const AZ::Data::AssetId& assetId)
     {
+        const QVariant assetIdItemData(assetId.ToString<AZStd::string>().c_str());
         for (int i = 0; i < m_ui->m_assetList->count(); ++i)
         {
             QListWidgetItem* item = m_ui->m_assetList->item(i);
-            if (assetId == AZ::Data::AssetId::CreateString(item->data(Qt::UserRole).toString().toUtf8().constData()))
+            if (assetIdItemData == item->data(Qt::UserRole))
             {
                 m_ui->m_assetList->setCurrentItem(item);
                 return;
@@ -123,23 +124,24 @@ namespace AtomToolsFramework
                 AZ::Data::AssetInfo assetInfo = assetCatalogRequests->GetAssetInfoById(assetId);
                 if (m_filterCallback && m_filterCallback(assetInfo))
                 {
-                    CreateListItem(
-                        assetInfo.m_assetId,
-                        GetDisplayNameFromPath(AZ::RPI::AssetUtils::GetSourcePathByAssetId(assetInfo.m_assetId)).c_str());
+                    const AZStd::string path = AZ::RPI::AssetUtils::GetSourcePathByAssetId(assetInfo.m_assetId);
+                    const AZStd::string displayName = GetDisplayNameFromPath(path);
+                    CreateListItem(assetInfo.m_assetId, displayName.c_str());
                 }
                 m_ui->m_assetList->sortItems();
             });
     }
 
     void AssetSelectionGrid::OnCatalogAssetRemoved(
-        const AZ::Data::AssetId& assetId, const AZ::Data::AssetInfo& assetInfo)
+        [[maybe_unused]] const AZ::Data::AssetId& assetId, const AZ::Data::AssetInfo& assetInfo)
     {
         if (m_filterCallback && m_filterCallback(assetInfo))
         {
+            const QVariant assetIdItemData(assetInfo.m_assetId.ToString<AZStd::string>().c_str());
             for (int i = 0; i < m_ui->m_assetList->count(); ++i)
             {
                 QListWidgetItem* item = m_ui->m_assetList->item(i);
-                if (assetId == AZ::Data::AssetId::CreateString(item->data(Qt::UserRole).toString().toUtf8().constData()))
+                if (assetIdItemData == item->data(Qt::UserRole))
                 {
                     m_ui->m_assetList->removeItemWidget(item);
                     return;
@@ -150,7 +152,19 @@ namespace AtomToolsFramework
 
     QListWidgetItem* AssetSelectionGrid::CreateListItem(const AZ::Data::AssetId& assetId, const QString& title)
     {
-        const int itemBorder = aznumeric_cast<int>(
+        // Skip creating this list item if one with the same asset ID is already registered
+        const QVariant assetIdItemData(assetId.ToString<AZStd::string>().c_str());
+        for (int i = 0; i < m_ui->m_assetList->count(); ++i)
+        {
+            QListWidgetItem* item = m_ui->m_assetList->item(i);
+            if (assetIdItemData == item->data(Qt::UserRole))
+            {
+                return item;
+            }
+        }
+
+        const int itemBorder =
+            aznumeric_cast<int>(
             AtomToolsFramework::GetSettingsValue<AZ::u64>("/O3DE/AtomToolsFramework/AssetSelectionGrid/ItemBorder", 4));
         const int itemSpacing = aznumeric_cast<int>(
             AtomToolsFramework::GetSettingsValue<AZ::u64>("/O3DE/AtomToolsFramework/AssetSelectionGrid/ItemSpacing", 10));
@@ -164,7 +178,7 @@ namespace AtomToolsFramework
 
         QListWidgetItem* item = new QListWidgetItem(m_ui->m_assetList);
         item->setData(Qt::DisplayRole, title);
-        item->setData(Qt::UserRole, QString(assetId.ToString<AZStd::string>().c_str()));
+        item->setData(Qt::UserRole, assetIdItemData);
         item->setSizeHint(m_tileSize + QSize(itemBorder, itemBorder + headerHeight));
         m_ui->m_assetList->addItem(item);
 

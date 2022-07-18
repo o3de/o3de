@@ -122,8 +122,11 @@ namespace AWSClientAuth
                 {
                     // Id and access token are the same.
                     UpdateTokens(jsonView);
-                    AuthenticationProviderNotificationBus::Broadcast(
-                        &AuthenticationProviderNotifications::OnDeviceCodeGrantConfirmSignInSuccess, m_authenticationTokens);
+
+                    AuthenticationProviderNotificationBus::Broadcast(&AuthenticationProviderNotifications::OnDeviceCodeGrantConfirmSignInSuccess,
+                        AuthenticationTokens(jsonView.GetString(OAuthAccessTokenResponseKey).c_str(),
+                            jsonView.GetString(OAuthRefreshTokenResponseKey).c_str(), jsonView.GetString(OAuthAccessTokenResponseKey).c_str(),
+                            ProviderNameEnum::LoginWithAmazon, jsonView.GetInteger(OAuthExpiresInResponseKey)));
                     m_cachedUserCode = "";
                     m_cachedDeviceCode = "";
                 }
@@ -154,7 +157,11 @@ namespace AWSClientAuth
             {
                 // Id and access token are the same.
                 UpdateTokens(jsonView);
-                AuthenticationProviderNotificationBus::Broadcast(&AuthenticationProviderNotifications::OnRefreshTokensSuccess, m_authenticationTokens);
+
+                AuthenticationProviderNotificationBus::Broadcast(&AuthenticationProviderNotifications::OnRefreshTokensSuccess,
+                    AuthenticationTokens(jsonView.GetString(OAuthAccessTokenResponseKey).c_str(),
+                        jsonView.GetString(OAuthRefreshTokenResponseKey).c_str(), jsonView.GetString(OAuthAccessTokenResponseKey).c_str(),
+                        ProviderNameEnum::LoginWithAmazon, jsonView.GetInteger(OAuthExpiresInResponseKey)));
             }
             else
             {
@@ -167,9 +174,10 @@ namespace AWSClientAuth
 
     void LWAAuthenticationProvider::UpdateTokens(const Aws::Utils::Json::JsonView& jsonView)
     {
-        // For Login with Amazon openId and access tokens are the same.
-        m_authenticationTokens = AuthenticationTokens(jsonView.GetString(OAuthAccessTokenResponseKey).c_str(), jsonView.GetString(OAuthRefreshTokenResponseKey).c_str(),
-            jsonView.GetString(OAuthAccessTokenResponseKey).c_str(), ProviderNameEnum::LoginWithAmazon
+        // Storing authentication tokens in memory can be a security concern. The access token and id token are not actually in use by
+        // the authentication provider and shouldn't be stored in the member variable.
+        m_authenticationTokens = AuthenticationTokens("", jsonView.GetString(OAuthRefreshTokenResponseKey).c_str(),
+            "", ProviderNameEnum::LoginWithAmazon
             , jsonView.GetInteger(OAuthExpiresInResponseKey));
     }
 

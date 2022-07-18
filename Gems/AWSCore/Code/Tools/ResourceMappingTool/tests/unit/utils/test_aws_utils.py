@@ -13,6 +13,8 @@ from model import constants
 from model.basic_resource_attributes import (BasicResourceAttributes, BasicResourceAttributesBuilder)
 from utils import aws_utils
 
+import pytest
+from botocore.exceptions import (CredentialRetrievalError, PartialCredentialsError)
 
 class TestAWSUtils(TestCase):
     """
@@ -48,6 +50,18 @@ class TestAWSUtils(TestCase):
         self._mock_client.assert_called_once_with(aws_utils.AWSConstants.STS_SERVICE_NAME)
         mocked_sts_client.get_caller_identity.assert_called_once()
         assert actual_account_id == TestAWSUtils._expected_account_id
+
+    def test_get_default_account_id_raise_credential_retrieval_error(self) -> None:
+        self._mock_session.return_value.client.side_effect=CredentialRetrievalError(provider="custom-process", error_msg="")
+        with pytest.raises(RuntimeError) as error:
+            aws_utils.get_default_account_id()
+        assert str(error.value) == 'Error when retrieving credentials from custom-process: '
+
+    def test_get_default_account_id_raise_partial_credentials_error(self) -> None:
+        self._mock_session.return_value.client.side_effect=PartialCredentialsError(provider="custom-process", cred_var="access_key")
+        with pytest.raises(RuntimeError) as error:
+            aws_utils.get_default_account_id()
+        assert str(error.value) == 'Partial credentials found in custom-process, missing: access_key'
 
     def test_get_default_region_return_expected_region_from_session(self) -> None:
         mocked_session = self._mock_session.return_value

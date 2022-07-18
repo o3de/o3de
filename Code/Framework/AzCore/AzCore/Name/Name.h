@@ -231,7 +231,7 @@ namespace AZ
 //! dictionary.
 #define AZ_NAME_LITERAL(str)                                                                                                               \
     (                                                                                                                                      \
-        []() -> AZ::Name                                                                                                                   \
+        []() -> const AZ::Name&                                                                                                            \
         {                                                                                                                                  \
             static const AZ::Name nameLiteral(AZ::Name::FromStringLiteral(str));                                                           \
             return nameLiteral;                                                                                                            \

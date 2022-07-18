@@ -13,6 +13,7 @@
 #include <ScriptCanvas/Core/Node.h>
 #include <ScriptCanvas/Core/Slot.h>
 #include <ScriptCanvas/Execution/ExecutionState.h>
+#include <ScriptCanvas/Grammar/DebugMap.h>
 #include <ScriptCanvas/Translation/Configuration.h>
 #include <ScriptCanvas/Variable/VariableData.h>
 
@@ -34,6 +35,11 @@ namespace ScriptCanvas
 
         void ExecutionTree::AddInput(const ExecutionInput& input)
         {
+            if (!RefersToSelfEntityId() && IsInputSelf(input))
+            {
+                MarkRefersToSelfEntityId();
+            }
+
             m_input.push_back(input);
         }
 
@@ -398,6 +404,11 @@ namespace ScriptCanvas
             m_isPure = true;    
         }
 
+        void ExecutionTree::MarkRefersToSelfEntityId()
+        {
+            ModRoot()->m_refersToSelfEntityId = true;
+        }
+
         void ExecutionTree::MarkRootLatent()
         {
             auto root = ModRoot();
@@ -520,6 +531,11 @@ namespace ScriptCanvas
                 m_input = newInput;
                 m_inputConversion = newInputConversion;
             }
+        }
+
+        bool ExecutionTree::RefersToSelfEntityId() const
+        {
+            return GetRoot()->m_refersToSelfEntityId;
         }
 
         AZ::Outcome<AZStd::pair<size_t, ExecutionChild>> ExecutionTree::RemoveChild(const ExecutionTreeConstPtr& child)

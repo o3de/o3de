@@ -12,12 +12,14 @@
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <Editor/DebugDraw.h>
 
-#include <AzFramework/Physics/Components/SimulatedBodyComponentBus.h>
-#include <AzFramework/Physics/HeightfieldProviderBus.h>
 #include <AzFramework/Physics/PhysicsScene.h>
 #include <AzFramework/Physics/Shape.h>
 
-#include <PhysX/ColliderShapeBus.h>
+#include <Source/HeightfieldCollider.h>
+#include <PhysX/HeightFieldAsset.h>
+#include <PhysX/EditorHeightfieldColliderRequestBus.h>
+#include <AzCore/Jobs/Job.h>
+#include <AzCore/Jobs/JobCompletion.h>
 
 namespace PhysX
 {
@@ -26,9 +28,7 @@ namespace PhysX
         : public AzToolsFramework::Components::EditorComponentBase
         , protected AzToolsFramework::EntitySelectionEvents::Bus::Handler
         , protected DebugDraw::DisplayCallback
-        , protected AzPhysics::SimulatedBodyComponentRequestsBus::Handler
-        , protected PhysX::ColliderShapeRequestBus::Handler
-        , protected Physics::HeightfieldProviderNotificationBus::Handler
+        , private EditorHeightfieldColliderRequestBus::Handler
     {
     public:
         AZ_EDITOR_COMPONENT(
@@ -50,6 +50,7 @@ namespace PhysX
         // EditorComponentBase
         void BuildGameEntity(AZ::Entity* gameEntity) override;
 
+        void BlockOnPendingJobs();
     protected:
 
         // AzToolsFramework::EntitySelectionEvents
@@ -57,51 +58,53 @@ namespace PhysX
         void OnDeselected() override;
 
         // DisplayCallback
-        void Display(AzFramework::DebugDisplayRequests& debugDisplay) const;
+        void Display(const AzFramework::ViewportInfo& viewportInfo,
+            AzFramework::DebugDisplayRequests& debugDisplay) const;
 
-        // ColliderShapeRequestBus
-        AZ::Aabb GetColliderShapeAabb() override;
-        bool IsTrigger() override
-        {
-            // PhysX Heightfields don't support triggers.
-            return false;
-        }
-
-        // AzPhysics::SimulatedBodyComponentRequestsBus::Handler overrides ...
-        void EnablePhysics() override;
-        void DisablePhysics() override;
-        bool IsPhysicsEnabled() const override;
-        AZ::Aabb GetAabb() const override;
-        AzPhysics::SimulatedBody* GetSimulatedBody() override;
-        AzPhysics::SimulatedBodyHandle GetSimulatedBodyHandle() const override;
-        AzPhysics::SceneQueryHit RayCast(const AzPhysics::RayCastRequest& request) override;
-
-        // Physics::HeightfieldProviderNotificationBus
-        void OnHeightfieldDataChanged(const AZ::Aabb& dirtyRegion, 
-            Physics::HeightfieldProviderNotifications::HeightfieldChangeMask changeMask) override;
+        // EditorHeightfieldColliderRequestBus::Handler overrides...
+        void RequestHeightfieldBaking() override;
 
     private:
         AZ::u32 OnConfigurationChanged();
+        AZ::u32 OnToggleBakedHeightfield();
+        AZ::u32 GetBakedHeightfieldVisibilitySetting() const;
 
-        void ClearHeightfield();
-        void InitHeightfieldShapeConfiguration();
-        void InitStaticRigidBody();
-        void RefreshHeightfield(const AZ::Aabb& dirtyRegion = AZ::Aabb::CreateNull(), 
-            Physics::HeightfieldProviderNotifications::HeightfieldChangeMask changeMask =
-                Physics::HeightfieldProviderNotifications::HeightfieldChangeMask::Unspecified);
+        // Utility functions for heightfield baking
+        void StartHeightfieldBakingJob();
+        void FinishHeightfieldBakingJob();
+        bool CheckHeightfieldPathExists();
+        void GenerateHeightfieldAsset();
+        bool CheckoutHeightfieldAsset() const;
+
+        // Note: This function is called from a Job thread.
+        bool SaveHeightfieldAssetToDisk();
 
         DebugDraw::Collider m_colliderDebugDraw; //!< Handles drawing the collider
-        AzPhysics::SceneInterface* m_sceneInterface{ nullptr };
 
         AzPhysics::SystemEvents::OnConfigurationChangedEvent::Handler m_physXConfigChangedHandler;
-        AzPhysics::SystemEvents::OnMaterialLibraryChangedEvent::Handler m_onMaterialLibraryChangedEventHandler;
 
-        Physics::ColliderConfiguration m_colliderConfig; //!< Stores collision layers, whether the collider is a trigger, etc.
-        AZStd::shared_ptr<Physics::HeightfieldShapeConfiguration> m_shapeConfig{ new Physics::HeightfieldShapeConfiguration() };
+        //! Stores collision layers, whether the collider is a trigger, etc.
+        AZStd::shared_ptr<Physics::ColliderConfiguration> m_colliderConfig{ aznew Physics::ColliderConfiguration()  };
+        //! Stores all of the cached information for the heightfield shape.
+        AZStd::shared_ptr<Physics::HeightfieldShapeConfiguration> m_shapeConfig{ aznew Physics::HeightfieldShapeConfiguration() };
+        //! Contains all of the runtime logic for creating / updating / destroying the heightfield collider.
+        AZStd::unique_ptr<HeightfieldCollider> m_heightfieldCollider;
 
-        AzPhysics::SimulatedBodyHandle m_staticRigidBodyHandle =
-            AzPhysics::InvalidSimulatedBodyHandle; //!< Handle to the body in the editor physics scene if there is no rigid body component.
-        AzPhysics::SceneHandle m_attachedSceneHandle = AzPhysics::InvalidSceneHandle;
+        bool m_useBakedHeightfield = false;
+        AZStd::string m_bakedHeightfieldRelativePath;
+        AZ::Data::Asset<Pipeline::HeightFieldAsset> m_bakedHeightfieldAsset;
+        AZStd::recursive_mutex m_bakedHeightfieldMutex;
+
+        class HeightfieldBakingJob : public AZ::Job
+        {
+        public:
+            explicit HeightfieldBakingJob(EditorHeightfieldColliderComponent* owner);
+            void Process() override;
+            EditorHeightfieldColliderComponent* m_owner = nullptr;
+        };
+
+        HeightfieldBakingJob m_heightfieldAssetBakingJob;
+        AZ::JobCompletion m_bakingCompletion;
     };
 
 } // namespace PhysX

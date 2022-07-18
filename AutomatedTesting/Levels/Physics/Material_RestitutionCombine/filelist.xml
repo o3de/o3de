@@ -1,6 +1,0 @@
-<download name="C4044460_PhysX_Material_StaticFriction" type="Map">
- <index src="filelist.xml" dest="filelist.xml"/>
- <files>
-  <file src="level.pak" dest="level.pak" size="39203" md5="02a4b3296e2318ea9e8d8a214a49b855"/>
- </files>
-</download>

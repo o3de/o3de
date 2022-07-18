@@ -20,12 +20,6 @@
 #include <ScriptCanvas/Core/Graph.h>
 #include <ScriptCanvas/Core/ScriptCanvasBus.h>
 #include <ScriptCanvas/Data/Data.h>
-#include <ScriptCanvas/Libraries/Comparison/Comparison.h>
-#include <ScriptCanvas/Libraries/Core/BinaryOperator.h>
-#include <ScriptCanvas/Libraries/Core/CoreNodes.h>
-#include <ScriptCanvas/Libraries/Libraries.h>
-#include <ScriptCanvas/Libraries/Logic/Logic.h>
-#include <ScriptCanvas/Libraries/Math/Math.h>
 #include <ScriptCanvas/Variable/VariableBus.h>
 #include <ScriptCanvas/Assets/ScriptCanvasFileHandling.h>
 

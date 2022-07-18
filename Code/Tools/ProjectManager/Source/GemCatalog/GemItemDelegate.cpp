@@ -30,10 +30,11 @@
 
 namespace O3DE::ProjectManager
 {
-    GemItemDelegate::GemItemDelegate(QAbstractItemModel* model, AdjustableHeaderWidget* header, QObject* parent)
+    GemItemDelegate::GemItemDelegate(QAbstractItemModel* model, AdjustableHeaderWidget* header, bool readOnly, QObject* parent)
         : QStyledItemDelegate(parent)
         , m_model(model)
         , m_headerWidget(header)
+        , m_readOnly(readOnly)
     {
         AddPlatformIcon(GemInfo::Android, ":/Android.svg");
         AddPlatformIcon(GemInfo::iOS, ":/iOS.svg");
@@ -163,7 +164,10 @@ namespace O3DE::ProjectManager
         DrawText(summary, painter, summaryRect, standardFont);
 
         DrawDownloadStatusIcon(painter, contentRect, buttonRect, modelIndex);
-        DrawButton(painter, buttonRect, modelIndex);
+        if (!m_readOnly)
+        {
+            DrawButton(painter, buttonRect, modelIndex);
+        }
         DrawPlatformIcons(painter, contentRect, modelIndex);
         DrawFeatureTags(painter, contentRect, featureTags, standardFont, summaryRect);
 
@@ -203,7 +207,7 @@ namespace O3DE::ProjectManager
         if (event->type() == QEvent::KeyPress)
         {
             auto keyEvent = static_cast<const QKeyEvent*>(event);
-            if (keyEvent->key() == Qt::Key_Space)
+            if (keyEvent->key() == Qt::Key_Space && !m_readOnly)
             {
                 const bool isAdded = GemModel::IsAdded(modelIndex);
                 GemModel::SetIsAdded(*model, modelIndex, !isAdded);
@@ -216,13 +220,16 @@ namespace O3DE::ProjectManager
 
             QRect fullRect, itemRect, contentRect;
             CalcRects(option, fullRect, itemRect, contentRect);
-            const QRect buttonRect = CalcButtonRect(contentRect);
 
-            if (buttonRect.contains(mouseEvent->pos()))
+            if (!m_readOnly)
             {
-                const bool isAdded = GemModel::IsAdded(modelIndex);
-                GemModel::SetIsAdded(*model, modelIndex, !isAdded);
-                return true;
+                const QRect buttonRect = CalcButtonRect(contentRect);
+                if (buttonRect.contains(mouseEvent->pos()))
+                {
+                    const bool isAdded = GemModel::IsAdded(modelIndex);
+                    GemModel::SetIsAdded(*model, modelIndex, !isAdded);
+                    return true;
+                }
             }
 
             // we must manually handle html links because we aren't using QLabels
@@ -322,7 +329,14 @@ namespace O3DE::ProjectManager
 
     QPair<int, int> GemItemDelegate::CalcColumnXBounds(HeaderOrder header) const
     {
-        return m_headerWidget->CalcColumnXBounds(static_cast<int>(header));
+        if (m_headerWidget)
+        {
+            return m_headerWidget->CalcColumnXBounds(static_cast<int>(header));
+        }
+        else
+        {
+            return QPair<int, int>(0, 0);
+        }
     }
 
     QRect GemItemDelegate::CalcButtonRect(const QRect& contentRect) const

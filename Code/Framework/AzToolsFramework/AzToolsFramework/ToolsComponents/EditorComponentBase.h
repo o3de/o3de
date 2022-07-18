@@ -6,13 +6,14 @@
  *
  */
 
-/** 
+/**
  * @file
  * Header file for the editor component base class.
- * Derive from this class to create a version of a component to use in the 
- * editor, as opposed to the version of the component that is used during run time. 
- * To learn more about editor components, see the [Open 3D Engine Developer Guide] 
- * (http://docs.aws.amazon.com/lumberyard/latest/developerguide/component-entity-system-pg-editor-components.html).
+ * Derive from this class to create a version of a component to use in the
+ * editor, as opposed to the version of the component that is used during run time.
+ *
+ * To learn more about editor components, see the
+ * [Editor Components documentation](https://www.o3de.org/docs/user-guide/programming/components/editor-components/).
  */
 
 #ifndef EDITOR_COMPONENT_BASE_H
@@ -36,7 +37,7 @@ namespace AZ
 namespace AzToolsFramework
 {
     namespace Components
-    {        
+    {
         class SelectionComponent;
 
         /**
@@ -44,12 +45,12 @@ namespace AzToolsFramework
          * Derive from this class to create a version of a component to use in the
          * editor, as opposed to the version of the component that is used during runtime.
          *
-         * **Important:** Game components must not inherit from EditorComponentBase. 
-         * To create one or more game components to represent your editor component 
-         * in runtime, use BuildGameEntity(). 
+         * **Important:** Game components must not inherit from EditorComponentBase.
+         * To create one or more game components to represent your editor component
+         * in runtime, use BuildGameEntity().
          *
-         * To learn more about editor components, see the [Open 3D Engine Developer Guide]
-         * (http://docs.aws.amazon.com/lumberyard/latest/developerguide/component-entity-system-pg-editor-components.html).
+         * To learn more about editor components, see the
+         * [Editor Components documentation](https://www.o3de.org/docs/user-guide/programming/components/editor-components/).
          */
         class EditorComponentBase
             : public AZ::Component
@@ -70,35 +71,35 @@ namespace AzToolsFramework
             EditorComponentBase();
 
             /**
-             * Sets a flag on the entire entity to indicate that the entity's properties 
-             * were modified. 
-             * Call this function whenever you alter an entity in an unexpected manner. 
-             * For example, edits that you make to one entity might affect other entities,  
+             * Sets a flag on the entire entity to indicate that the entity's properties
+             * were modified.
+             * Call this function whenever you alter an entity in an unexpected manner.
+             * For example, edits that you make to one entity might affect other entities,
              * so the affected entities need to know that something changed.
-             * You do not need to call this function when editing an entity's property   
-             * in the Property Editor, because that scenario automatically sets the flag. 
-             * You need to call this function only when your entity's properties are  
-             * modified outside the Property Editor, such as when a script loops over  
+             * You do not need to call this function when editing an entity's property
+             * in the Property Editor, because that scenario automatically sets the flag.
+             * You need to call this function only when your entity's properties are
+             * modified outside the Property Editor, such as when a script loops over
              * all lights and alters their radii.
              */
             void SetDirty();
 
             //////////////////////////////////////////////////////////////////////////
             // AZ::Component
-            /** 
+            /**
              * Initializes the component's resources.
-             * Overrides AZ::Component::Init(). 
+             * Overrides AZ::Component::Init().
              *
-             * **Important:** %Components derived from EditorComponentBase must 
-             * call the Init() function of the base class. 
+             * **Important:** %Components derived from EditorComponentBase must
+             * call the Init() function of the base class.
              *
-             * (Optional) You can override this function to initialize  
+             * (Optional) You can override this function to initialize
              * resources that the component needs.
              */
             virtual void Init() override;
 
             /**
-             * Gets the transform component and selection component of the 
+             * Gets the transform component and selection component of the
              * entity that the component belongs to, if the entity has them.
              * Overrides AZ::Component::Activate().
              *
@@ -108,7 +109,7 @@ namespace AzToolsFramework
             virtual void Activate() override;
 
             /**
-             * Sets the component's pointers to the transform component  
+             * Sets the component's pointers to the transform component
              * and selection component to null.
              * Overrides AZ::Component::Deactivate().
              *
@@ -119,41 +120,41 @@ namespace AzToolsFramework
             //////////////////////////////////////////////////////////////////////////
 
             /**
-             * Gets the transform interface of the entity that the component   
+             * Gets the transform interface of the entity that the component
              * belongs to, if the entity has a transform component.
              * A transform positions, rotates, and scales an entity in 3D space.
-             * @return A pointer to the transform interface. Might be null if  
-             * you did not include "TransformService" in the component's 
+             * @return A pointer to the transform interface. Might be null if
+             * you did not include "TransformService" in the component's
              * AZ::ComponentDescriptor::GetRequiredServices().
              */
             AZ::TransformInterface* GetTransform() const;
 
             /**
-             * Gets the selection component of the entity that the component 
+             * Gets the selection component of the entity that the component
              * belongs to, if the entity has a selection component.
-             * A selection component keeps track of whether the entity is 
+             * A selection component keeps track of whether the entity is
              * selected in the editor.
-             * @return A pointer to the selection component. Might be null if 
-             * you did not include "SelectionService" in the component's 
+             * @return A pointer to the selection component. Might be null if
+             * you did not include "SelectionService" in the component's
              * AZ::ComponentDescriptor::GetRequiredServices().
              */
             SelectionComponent* GetSelection() const;
 
             /**
-             * Gets the world transform of the entity that the component belongs  
+             * Gets the world transform of the entity that the component belongs
              * to, if the entity has a transform component.
-             * An entity's world transform is the entity's position within the  
+             * An entity's world transform is the entity's position within the
              * entire game space.
-             * @return The world transform, if the entity has one. Otherwise, returns 
+             * @return The world transform, if the entity has one. Otherwise, returns
              * the identity transform, which is the equivalent of no transform.
              */
             AZ::Transform GetWorldTM() const;
-           
+
             /**
              * Gets the local transform of the entity that the component belongs
              * to, if the entity has a transform component.
-             * An entity's local transform is the entity's position relative to its 
-             * parent entity. 
+             * An entity's local transform is the entity's position relative to its
+             * parent entity.
              * @return The local transform, if the entity has one. Otherwise, returns
              * the identity transform, which is the equivalent of no transform.
              */
@@ -161,13 +162,13 @@ namespace AzToolsFramework
 
             /**
              * Identifies whether the component is selected in the editor.
-             * @return True if the component is selected in the editor. 
+             * @return True if the component is selected in the editor.
              * Otherwise, false.
              */
             bool IsSelected() const;
 
             /**
-             * Identifies whether the component is the primary selection in the editor. 
+             * Identifies whether the component is the primary selection in the editor.
              * @return True if the component is the primary selection in the editor.
              * Otherwise, false.
              */
@@ -178,25 +179,25 @@ namespace AzToolsFramework
             /// @endcond
 
             /**
-             * Determines if the entity that the component belongs to 
+             * Determines if the entity that the component belongs to
              * has a selection component.
-             * A selection component keeps track of whether the entity is 
+             * A selection component keeps track of whether the entity is
              * selected in the editor.
-             * @return True if the entity has a selection component. 
+             * @return True if the entity has a selection component.
              * Otherwise, false.
              */
             bool HasSelectionComponent() const { return m_selection != nullptr; }
 
             /**
-             * Override this function to create one or more game components 
-             * to represent your editor component in runtime. 
+             * Override this function to create one or more game components
+             * to represent your editor component in runtime.
              *
              * **Important:** If your entity has a game component, you must implement this function.
              *
-             * This function is called by the slice builder. Any game components  
-             * that you create should be attached to the game entity that is 
-             * provided to this function. If you do not need to create a game  
-             * component, you do not need to override this function. 
+             * This function is called by the slice builder. Any game components
+             * that you create should be attached to the game entity that is
+             * provided to this function. If you do not need to create a game
+             * component, you do not need to override this function.
              * The provided component to the gameEntity is dynamically generated and owned by the
              * gameEntity and should be deallocated appropriately.
              * @param gameEntity A pointer to the game entity.
@@ -204,7 +205,7 @@ namespace AzToolsFramework
             virtual void BuildGameEntity(AZ::Entity* /*gameEntity*/) {}
 
             /**
-             * Implement this function to support dragging and dropping an asset 
+             * Implement this function to support dragging and dropping an asset
              * onto this component.
              * @param assetId A reference to the ID of the asset to drag and drop.
              */
@@ -217,7 +218,7 @@ namespace AzToolsFramework
             virtual void AddContextMenuActions(QMenu* /*menu*/) {}
 
             /**
-             * Reflects component data into a variety of contexts (script, serialize, 
+             * Reflects component data into a variety of contexts (script, serialize,
              * edit, and so on).
              * @param context A pointer to the reflection context.
              */
@@ -229,28 +230,28 @@ namespace AzToolsFramework
         };
 
         /// @cond EXCLUDE_DOCS
-        
+
         /**
-         * Interface for AzToolsFramework::Components::EditorComponentDescriptorBus, 
+         * Interface for AzToolsFramework::Components::EditorComponentDescriptorBus,
          * which handles requests to the editor component regarding editor-only functionality.
          * Do not assume that all editor components have it.
-         */        
+         */
         class EditorComponentDescriptor
         {
         public:
 
             /**
-             * Checks the equality of components. 
+             * Checks the equality of components.
              *
-             * If you want your component to have a custom DoComponentsMatch() 
+             * If you want your component to have a custom DoComponentsMatch()
              * function, you need to do the following:
              * - Put the AZ_EDITOR_COMPONENT macro in your class, instead of AZ_COMPONENT.
              * - Define a static DoComponentsMatch() function with the following signature:
              *
              * `bool DoComponentsMatch(const ComponentClass*, const ComponentClass*); // where ComponentClass is the type of the class containing this function.`
              *
-             * For example, ScriptComponents have a custom DoComponentsMatch() function 
-             * so that two ScriptComponents, which are in C++, are determined to be equal   
+             * For example, ScriptComponents have a custom DoComponentsMatch() function
+             * so that two ScriptComponents, which are in C++, are determined to be equal
              * only if they use the same Lua file to define their behavior.
              *
              * @param thisComponent The first component to compare.
@@ -273,7 +274,7 @@ namespace AzToolsFramework
              * @param destinationComponent The component to apply the paste operation to.
              */
             virtual void PasteOverComponent(const AZ::Component* sourceComponent, AZ::Component* destinationComponent) = 0;
-            
+
             /**
              * Checks if "paste-over" is supported on this component.
              *
@@ -300,9 +301,9 @@ namespace AzToolsFramework
         using EditorComponentDescriptorBus = AZ::EBus<EditorComponentDescriptor, EditorComponentDescriptorBusTraits>;
 
         /**
-         * The default editor component descriptor. The editor component descriptor is the  
-         * interface for AzToolsFramework::Components::EditorComponentDescriptorBus, 
-         * which handles requests to the component regarding editor-only functionality. 
+         * The default editor component descriptor. The editor component descriptor is the
+         * interface for AzToolsFramework::Components::EditorComponentDescriptorBus,
+         * which handles requests to the component regarding editor-only functionality.
          * @tparam ComponentClass The type of component.
          */
         template <class ComponentClass>
@@ -317,9 +318,9 @@ namespace AzToolsFramework
              */
             AZ_CLASS_ALLOCATOR(EditorComponentDescriptorDefault<ComponentClass>, AZ::SystemAllocator, 0);
 
-            AZ_HAS_STATIC_MEMBER(EditorComponentMatching, DoComponentsMatch, bool, (const ComponentClass* thisComponent, const ComponentClass* otherComponent));
-            AZ_HAS_STATIC_MEMBER(EditorComponentPasteOver, PasteOverComponent, void, (const ComponentClass* sourceComponent, ComponentClass* destinationComponent));
-            
+            AZ_HAS_STATIC_MEMBER(EditorComponentMatching, DoComponentsMatch, bool, (const ComponentClass*, const ComponentClass*));
+            AZ_HAS_STATIC_MEMBER(EditorComponentPasteOver, PasteOverComponent, void, (const ComponentClass*, ComponentClass*));
+
             /**
              * Creates an instance of this class.
              */
@@ -403,14 +404,14 @@ namespace AzToolsFramework
             {
             }
         };
-        
+
         /**
          * Declares an editor component descriptor class.
-         * Unless you are implementing very advanced internal functionality, we recommend 
-         * using AZ_EDITOR_COMPONENT instead of this macro. You can use this macro to implement 
-         * a static function in the component class instead of writing a descriptor. It defines 
-         * a CreateDescriptorFunction that you can call to register a descriptor. 
-         * (Only one descriptor can exist per environment.) This macro fails silently if you 
+         * Unless you are implementing very advanced internal functionality, we recommend
+         * using AZ_EDITOR_COMPONENT instead of this macro. You can use this macro to implement
+         * a static function in the component class instead of writing a descriptor. It defines
+         * a CreateDescriptorFunction that you can call to register a descriptor.
+         * (Only one descriptor can exist per environment.) This macro fails silently if you
          * implement the functions with the wrong signatures.
          */
         #define AZ_EDITOR_COMPONENT_INTRUSIVE_DESCRIPTOR_TYPE(_ComponentClass)                                  \
@@ -421,9 +422,9 @@ namespace AzToolsFramework
 
         /**
          * Declares an editor component with the default settings.
-         * The component derives from AzToolsFramework::Components::EditorComponentBase,  
-         * is not templated, uses AZ::SystemAllocator, and so on. 
-         * AZ_EDITOR_COMPONENT(_ComponentClass, _ComponentId, OtherBaseClasses... EditorComponentBase) 
+         * The component derives from AzToolsFramework::Components::EditorComponentBase,
+         * is not templated, uses AZ::SystemAllocator, and so on.
+         * AZ_EDITOR_COMPONENT(_ComponentClass, _ComponentId, OtherBaseClasses... EditorComponentBase)
          * is included automatically.
          * @note Editor components use a separate descriptor than the underlying component system.
          */

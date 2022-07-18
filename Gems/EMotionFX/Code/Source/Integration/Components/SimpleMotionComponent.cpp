@@ -136,6 +136,7 @@ namespace EMotionFX
                         ->Attribute("Hidden", AZ::Edit::Attributes::PropertyHidden)
                     ->VirtualProperty("BlendOutTime", "GetBlendOutTime", "BlendOutTime")
                     ->Event("PlayMotion", &SimpleMotionComponentRequestBus::Events::PlayMotion)
+                    ->Event("GetDuration", &SimpleMotionComponentRequestBus::Events::GetDuration)
                     ;
 
                 behaviorContext->Class<SimpleMotionComponent>()->RequestBus("SimpleMotionComponentRequestBus");
@@ -353,6 +354,11 @@ namespace EMotionFX
                 result = m_motionInstance->GetCurrentTimeNormalized();
             }
             return result;
+        }
+
+        float SimpleMotionComponent::GetDuration() const
+        {
+            return m_motionInstance ? m_motionInstance->GetDuration() : 0.0f;
         }
 
         void SimpleMotionComponent::Motion(AZ::Data::AssetId assetId)

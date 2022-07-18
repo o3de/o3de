@@ -1,0 +1,18 @@
+{
+    "version": 4,
+    "cmakeMinimumRequired": {
+        "major": 3,
+        "minor": 23,
+        "patch": 0
+    },
+    "include": [
+        "cmake/Platform/Android/CMakePresets.json",
+        "cmake/Platform/iOS/CMakePresets.json",
+        "cmake/Platform/Linux/CMakePresets.json",
+        "cmake/Platform/Mac/CMakePresets.json",
+        "cmake/Platform/Windows/CMakePresets.json"
+    ],
+    "configurePresets": [],
+    "buildPresets": [],
+    "testPresets": []
+}

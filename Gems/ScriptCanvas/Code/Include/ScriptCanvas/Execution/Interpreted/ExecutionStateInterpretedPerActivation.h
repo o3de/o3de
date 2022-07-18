@@ -18,10 +18,8 @@ namespace ScriptCanvas
     public:
         AZ_RTTI(ExecutionStateInterpretedPerActivation, "{79BFC45F-2487-456A-9599-3D43CFEABD14}", ExecutionStateInterpreted);
         AZ_CLASS_ALLOCATOR(ExecutionStateInterpretedPerActivation, AZ::SystemAllocator, 0);
-
-        static void Reflect(AZ::ReflectContext* reflectContext);
-        
-        ExecutionStateInterpretedPerActivation(const ExecutionStateConfig& config);
+                
+        ExecutionStateInterpretedPerActivation(ExecutionStateConfig& config);
             
         ~ExecutionStateInterpretedPerActivation() override;
 
@@ -32,7 +30,20 @@ namespace ScriptCanvas
         void StopExecution() override;
 
     protected:
-        bool m_deactivationRequired = false;
+        bool m_deactivationRequired;
+
+        void ClearLuaRegistryIndex();
+
+        int GetLuaRegistryIndex() const;
+
+        void ReferenceInterpretedInstance();
+
+        void ReleaseInterpretedInstance();
+
+        void ReleaseInterpretedInstanceUnchecked();
+
+    private:
+        int m_luaRegistryIndex;
     };
 
     class ExecutionStateInterpretedPerActivationOnGraphStart
@@ -42,13 +53,8 @@ namespace ScriptCanvas
         AZ_RTTI(ExecutionStateInterpretedPerActivationOnGraphStart, "{039AA0BF-C179-4F9C-A7CD-248F24453C4B}", ExecutionStateInterpretedPerActivation);
         AZ_CLASS_ALLOCATOR(ExecutionStateInterpretedPerActivation, AZ::SystemAllocator, 0);
 
-        static void Reflect(AZ::ReflectContext* reflectContext);
-
-        ExecutionStateInterpretedPerActivationOnGraphStart(const ExecutionStateConfig& config);
+        ExecutionStateInterpretedPerActivationOnGraphStart(ExecutionStateConfig& config);
 
         void Execute() override;
-
-    private:
-        bool m_deactivationRequired = false;
     };
 } 

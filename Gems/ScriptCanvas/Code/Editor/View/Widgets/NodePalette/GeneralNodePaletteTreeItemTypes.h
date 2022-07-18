@@ -59,25 +59,8 @@ namespace ScriptCanvasEditor
         bool IsOverload() const;
         ScriptCanvas::PropertyStatus GetPropertyStatus() const;
 
-        AZ::IO::Path GetTranslationDataPath() const override
-        {
-            return AZ::IO::Path("Classes") / GetClassMethodName();
-        }
-
-        void GenerateTranslationData() override
-        {
-            AZ::BehaviorContext* behaviorContext{};
-            AZ::ComponentApplicationBus::BroadcastResult(behaviorContext, &AZ::ComponentApplicationRequests::GetBehaviorContext);
-
-            const char* className = m_className.toUtf8().data();
-            if (behaviorContext->m_classes.contains(className))
-            {
-                auto behaviorClass = behaviorContext->m_classes.find(className);
-
-                ScriptCanvasEditorTools::TranslationGeneration translation;
-                translation.TranslateBehaviorClass(behaviorClass->second);
-            }
-        }
+        AZ::IO::Path GetTranslationDataPath() const override;
+        void GenerateTranslationData() override;
 
     private:
         bool m_isOverload = false;
@@ -99,13 +82,14 @@ namespace ScriptCanvasEditor
         static void Reflect(AZ::ReflectContext* reflectContext);
 
         CreateGlobalMethodMimeEvent() = default;
-        CreateGlobalMethodMimeEvent(AZStd::string methodName);
+        CreateGlobalMethodMimeEvent(AZStd::string methodName, bool isProperty);
 
     protected:
         ScriptCanvasEditor::NodeIdPair CreateNode(const ScriptCanvas::ScriptCanvasId& scriptCanvasId) const override;
 
     private:
         AZStd::string m_methodName;
+        bool m_isProperty;
     };
 
     //! GlobalMethod Node Palette Tree Item
@@ -130,6 +114,7 @@ namespace ScriptCanvasEditor
 
     private:
         AZStd::string m_methodName;
+        bool m_isProperty;
     };
     //! <GlobalMethod>
 
@@ -172,19 +157,8 @@ namespace ScriptCanvasEditor
         AZ::Uuid GetTypeId() const;
         const ScriptCanvasEditor::CustomNodeModelInformation& GetInfo() const { return m_info; }
 
-        AZ::IO::Path GetTranslationDataPath() const override
-        {
-            AZStd::string filename = AZStd::string::format("%s_%s", GetInfo().m_categoryPath.c_str(), GetName().toUtf8().data());
-            filename = GraphCanvas::TranslationKey::Sanitize(filename);
-
-            return AZ::IO::Path("Nodes") / filename;
-        }
-
-        void GenerateTranslationData() override
-        {
-            ScriptCanvasEditorTools::TranslationGeneration translation;
-            translation.TranslateNode(m_typeId);
-        }
+        AZ::IO::Path GetTranslationDataPath() const override;
+        void GenerateTranslationData() override;
 
     private:
         AZ::Uuid m_typeId;

@@ -2,7 +2,7 @@
     "description": "",
     "parentMaterial": "00_illuminant.material",
     "materialType": "../../Types/StandardPBR.materialtype",
-    "materialTypeVersion": 4,
+    "materialTypeVersion": 5,
     "properties": {
         "baseColor": {
             "textureBlendMode": "Lerp",

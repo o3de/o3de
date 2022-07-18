@@ -101,9 +101,6 @@ TEST_F(TerrainHeightGradientListComponentTest, TerrainHeightGradientListReturnsH
 
     NiceMock<UnitTest::MockTerrainAreaHeightRequests> heightfieldRequestBus(entity->GetId());
 
-    ActivateEntity(entity.get());
-
-
     const float mockGradientValue = 0.25f;
     NiceMock<UnitTest::MockGradientRequests> gradientRequests(entity->GetId());
     ON_CALL(gradientRequests, GetValue).WillByDefault(Return(mockGradientValue));
@@ -120,6 +117,8 @@ TEST_F(TerrainHeightGradientListComponentTest, TerrainHeightGradientListReturnsH
     NiceMock<UnitTest::MockTerrainDataRequests> mockterrainDataRequests;
     ON_CALL(mockterrainDataRequests, GetTerrainHeightQueryResolution).WillByDefault(Return(1.0f));
     ON_CALL(mockterrainDataRequests, GetTerrainAabb).WillByDefault(Return(worldAabb));
+
+    ActivateEntity(entity.get());
 
     // Ensure the cached values in the HeightGradientListComponent are up to date.
     LmbrCentral::DependencyNotificationBus::Event(entity->GetId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
@@ -145,8 +144,6 @@ TEST_F(TerrainHeightGradientListComponentTest, TerrainHeightGradientListGetHeigh
 
     NiceMock<UnitTest::MockTerrainAreaHeightRequests> heightfieldRequestBus(entity->GetId());
 
-    ActivateEntity(entity.get());
-
     // Create a deterministic but varying result for our mock gradient.
     NiceMock<UnitTest::MockGradientRequests> gradientRequests(entity->GetId());
     ON_CALL(gradientRequests, GetValue)
@@ -169,6 +166,8 @@ TEST_F(TerrainHeightGradientListComponentTest, TerrainHeightGradientListGetHeigh
     NiceMock<UnitTest::MockTerrainDataRequests> mockterrainDataRequests;
     ON_CALL(mockterrainDataRequests, GetTerrainHeightQueryResolution).WillByDefault(Return(1.0f));
     ON_CALL(mockterrainDataRequests, GetTerrainAabb).WillByDefault(Return(worldAabb));
+
+    ActivateEntity(entity.get());
 
     // Ensure the cached values in the HeightGradientListComponent are up to date.
     LmbrCentral::DependencyNotificationBus::Event(entity->GetId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);

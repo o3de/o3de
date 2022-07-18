@@ -30,7 +30,7 @@ namespace Blast
             maxRadius,
         });
         auto programParams = AZStd::make_unique<NvBlastExtProgramParams>(NvBlastExtProgramParams{
-            desc.get(), m_blastMaterial.GetNativePointer(), actor.GetFamily().GetPxAsset().getAccelerator()});
+            desc.get(), m_blastMaterial->GetNativePointer(), actor.GetFamily().GetPxAsset().getAccelerator()});
 
         const NvBlastDamageProgram program{NvBlastExtFalloffGraphShader, NvBlastExtFalloffSubgraphShader};
         actor.Damage(program, programParams.get());
@@ -50,7 +50,7 @@ namespace Blast
             maxRadius,
         });
         auto programParams = AZStd::make_unique<NvBlastExtProgramParams>(NvBlastExtProgramParams{
-            desc.get(), m_blastMaterial.GetNativePointer(), actor.GetFamily().GetPxAsset().getAccelerator()});
+            desc.get(), m_blastMaterial->GetNativePointer(), actor.GetFamily().GetPxAsset().getAccelerator()});
 
         const NvBlastDamageProgram program{NvBlastExtShearGraphShader, NvBlastExtShearSubgraphShader};
         actor.Damage(program, programParams.get());
@@ -68,7 +68,7 @@ namespace Blast
             maxRadius,
         });
         auto programParams = AZStd::make_unique<NvBlastExtProgramParams>(NvBlastExtProgramParams{
-            desc.get(), m_blastMaterial.GetNativePointer(), actor.GetFamily().GetPxAsset().getAccelerator()});
+            desc.get(), m_blastMaterial->GetNativePointer(), actor.GetFamily().GetPxAsset().getAccelerator()});
 
         const NvBlastDamageProgram program{NvBlastExtImpactSpreadGraphShader, NvBlastExtImpactSpreadSubgraphShader};
         actor.Damage(program, programParams.get());
@@ -88,7 +88,7 @@ namespace Blast
             maxRadius,
         });
         auto programParams = AZStd::make_unique<NvBlastExtProgramParams>(NvBlastExtProgramParams{
-            desc.get(), m_blastMaterial.GetNativePointer(), actor.GetFamily().GetPxAsset().getAccelerator()});
+            desc.get(), m_blastMaterial->GetNativePointer(), actor.GetFamily().GetPxAsset().getAccelerator()});
 
         const NvBlastDamageProgram program{NvBlastExtCapsuleFalloffGraphShader, NvBlastExtCapsuleFalloffSubgraphShader};
         actor.Damage(program, programParams.get());
@@ -108,7 +108,7 @@ namespace Blast
                 {localPosition2.GetX(), localPosition2.GetY(), localPosition2.GetZ()},
             });
         auto programParams = AZStd::make_unique<NvBlastExtProgramParams>(NvBlastExtProgramParams{
-            desc.get(), m_blastMaterial.GetNativePointer(), actor.GetFamily().GetPxAsset().getAccelerator()});
+            desc.get(), m_blastMaterial->GetNativePointer(), actor.GetFamily().GetPxAsset().getAccelerator()});
 
         const NvBlastDamageProgram program
             {NvBlastExtTriangleIntersectionGraphShader, NvBlastExtTriangleIntersectionSubgraphShader};

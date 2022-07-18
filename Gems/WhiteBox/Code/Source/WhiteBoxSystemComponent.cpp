@@ -26,7 +26,7 @@ namespace WhiteBox
                 ec->Class<WhiteBoxSystemComponent>(
                       "WhiteBox", "[Description of functionality provided by this System Component]")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
+                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("System"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
             }
         }
@@ -37,12 +37,12 @@ namespace WhiteBox
 
     void WhiteBoxSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("WhiteBoxService", 0x2f2f42b8));
+        provided.push_back(AZ_CRC_CE("WhiteBoxService"));
     }
 
     void WhiteBoxSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("WhiteBoxService", 0x2f2f42b8));
+        incompatible.push_back(AZ_CRC_CE("WhiteBoxService"));
     }
 
     void WhiteBoxSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& /*required*/) {}
@@ -53,9 +53,9 @@ namespace WhiteBox
     {
         // default builder
         SetRenderMeshInterfaceBuilder(
-            []() -> AZStd::unique_ptr<RenderMeshInterface>
+            [](AZ::EntityId entityId) -> AZStd::unique_ptr<RenderMeshInterface>
             {
-                return AZStd::make_unique<AtomRenderMesh>();
+                return AZStd::make_unique<AtomRenderMesh>(entityId);
             });
 
         WhiteBoxRequestBus::Handler::BusConnect();
@@ -67,9 +67,9 @@ namespace WhiteBox
         m_assetHandlers.clear();
     }
 
-    AZStd::unique_ptr<RenderMeshInterface> WhiteBoxSystemComponent::CreateRenderMeshInterface()
+    AZStd::unique_ptr<RenderMeshInterface> WhiteBoxSystemComponent::CreateRenderMeshInterface(AZ::EntityId entityId)
     {
-        return m_renderMeshInterfaceBuilder();
+        return m_renderMeshInterfaceBuilder(entityId);
     }
 
     void WhiteBoxSystemComponent::SetRenderMeshInterfaceBuilder(RenderMeshInterfaceBuilderFn builder)

@@ -148,6 +148,7 @@ namespace AZ
             //! Returns the model-space axis-aligned bounding box of all meshes in the lod
             const AZ::Aabb& GetAabb() const;
 
+            Data::Asset<BufferAsset> GetIndexBufferAsset() const { return m_indexBuffer; }
         private:
             // AssetData overrides...
             bool HandleAutoReload() override

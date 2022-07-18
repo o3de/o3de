@@ -8,6 +8,7 @@
 #pragma once
 
 #include <AzCore/std/ranges/ranges_adaptor.h>
+#include <AzCore/std/typetraits/is_reference.h>
 #include <AzCore/std/tuple.h>
 
 // Specializing tuple in std:: namespace since tuple_size and tuple_element structs

@@ -71,6 +71,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 GRADIENTSIGNAL_EDITOR
         BUILD_DEPENDENCIES
             PRIVATE
+                3rdParty::OpenImageIO
                 Gem::LmbrCentral.Editor
             PUBLIC
                 3rdParty::Qt::Widgets

@@ -367,6 +367,13 @@
                     "$type": "EditorColliderComponent",
                     "Id": 10744220290655785341,
                     "ColliderConfiguration": {
+                        "MaterialSlots": {
+                            "Slots": [
+                                {
+                                    "Name": "Entire object"
+                                }
+                            ]
+                        },
                         "MaterialSelection": {
                             "MaterialIds": [
                                 {}
@@ -386,14 +393,9 @@
                     "Parent Entity": "Entity_[1146574390643]",
                     "Transform Data": {
                         "Translate": [
-                            143.97714233398438,
-                            237.59323120117188,
-                            14.275827407836914
-                        ],
-                        "Rotate": [
-                            0.7218570113182068,
-                            -18.652305603027344,
-                            -0.16037322580814362
+                            143.75379943847656,
+                            237.58489990234375,
+                            14.5
                         ]
                     }
                 },
@@ -504,18 +506,41 @@
                     "$type": "EditorHeightfieldColliderComponent",
                     "Id": 13116465701951274134,
                     "ColliderConfiguration": {
-                        "MaterialSelection": {
-                            "MaterialIds": [
-                                {},
+                        "Position": [
+                            0.4336090087890625,
+                            0.43792724609375,
+                            0.0
+                        ],
+                        "MaterialSlots": {
+                            "Slots": [
                                 {
-                                    "MaterialId": "{FD59CBE9-D1C4-4119-81CB-CD7AD72FC295}"
+                                    "Name": "Material 1"
                                 },
                                 {
-                                    "MaterialId": "{8C7A6011-61C2-46B7-9BF4-8D4DD2A624F1}"
+                                    "Name": "Material 2",
+                                    "MaterialAsset": {
+                                        "assetId": {
+                                            "guid": "{00880607-87E1-5178-8C30-37B3220D6149}",
+                                            "subId": 1
+                                        },
+                                        "assetHint": "assets/physics/glass.physicsmaterial"
+                                    }
+                                },
+                                {
+                                    "Name": "Material 3",
+                                    "MaterialAsset": {
+                                        "assetId": {
+                                            "guid": "{418485F0-20D0-5819-BC6D-22E89145B6AA}",
+                                            "subId": 1
+                                        },
+                                        "assetHint": "assets/physics/rubber.physicsmaterial"
+                                    }
                                 }
                             ]
-                        },
-                        "propertyVisibilityFlags": 233
+                        }
+                    },
+                    "DebugDrawSettings": {
+                        "LocallyEnabled": true
                     }
                 },
                 "Component_[13811745118082474953]": {
@@ -630,16 +655,24 @@
                                 "Surface": {
                                     "SurfaceTagCrc": 2062838596
                                 },
-                                "Material": {
-                                    "MaterialId": "{FD59CBE9-D1C4-4119-81CB-CD7AD72FC295}"
+                                "MaterialAsset": {
+                                    "assetId": {
+                                        "guid": "{00880607-87E1-5178-8C30-37B3220D6149}",
+                                        "subId": 1
+                                    },
+                                    "assetHint": "assets/physics/glass.physicsmaterial"
                                 }
                             },
                             {
                                 "Surface": {
                                     "SurfaceTagCrc": 1797181423
                                 },
-                                "Material": {
-                                    "MaterialId": "{8C7A6011-61C2-46B7-9BF4-8D4DD2A624F1}"
+                                "MaterialAsset": {
+                                    "assetId": {
+                                        "guid": "{418485F0-20D0-5819-BC6D-22E89145B6AA}",
+                                        "subId": 1
+                                    },
+                                    "assetHint": "assets/physics/rubber.physicsmaterial"
                                 }
                             }
                         ]
@@ -892,6 +925,13 @@
                     "$type": "EditorColliderComponent",
                     "Id": 10744220290655785341,
                     "ColliderConfiguration": {
+                        "MaterialSlots": {
+                            "Slots": [
+                                {
+                                    "Name": "Entire object"
+                                }
+                            ]
+                        },
                         "MaterialSelection": {
                             "MaterialIds": [
                                 {}
@@ -911,14 +951,9 @@
                     "Parent Entity": "Entity_[1146574390643]",
                     "Transform Data": {
                         "Translate": [
-                            143.9164581298828,
-                            224.15390014648438,
-                            14.144479751586914
-                        ],
-                        "Rotate": [
-                            3.441272258758545,
-                            -22.321136474609375,
-                            1.8760989904403687
+                            143.6857452392578,
+                            224.13734436035156,
+                            14.5
                         ]
                     }
                 },

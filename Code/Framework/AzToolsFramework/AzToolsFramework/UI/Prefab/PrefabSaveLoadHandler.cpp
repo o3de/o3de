@@ -17,6 +17,7 @@
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/AssetBrowser/AssetSelectionModel.h>
 #include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
+#include <AzToolsFramework/Prefab/Instance/InstanceEntityMapperInterface.h>
 #include <AzToolsFramework/Prefab/PrefabLoaderInterface.h>
 #include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
@@ -71,27 +72,34 @@ namespace AzToolsFramework
                     ->Field("m_autoNumber", &PrefabUserSettings::m_autoNumber);
             }
         }
-        
+
         PrefabSaveHandler::PrefabSaveHandler()
         {
             s_prefabLoaderInterface = AZ::Interface<PrefabLoaderInterface>::Get();
             if (s_prefabLoaderInterface == nullptr)
             {
-                AZ_Assert(false, "Prefab - could not get PrefabLoaderInterface on PrefabSaveHandler construction.");
+                AZ_Assert(false, "PrefabSaveHandler - could not get PrefabLoaderInterface on construction.");
                 return;
             }
 
             s_prefabPublicInterface = AZ::Interface<PrefabPublicInterface>::Get();
             if (s_prefabPublicInterface == nullptr)
             {
-                AZ_Assert(false, "Prefab - could not get PrefabPublicInterface on PrefabSaveHandler construction.");
+                AZ_Assert(false, "PrefabSaveHandler - could not get PrefabPublicInterface on construction.");
                 return;
             }
-
+           
             s_prefabSystemComponentInterface = AZ::Interface<PrefabSystemComponentInterface>::Get();
             if (s_prefabSystemComponentInterface == nullptr)
             {
-                AZ_Assert(false, "Prefab - could not get PrefabSystemComponentInterface on PrefabSaveHandler construction.");
+                AZ_Assert(false, "PrefabSaveHandler - could not get PrefabSystemComponentInterface on construction.");
+                return;
+            }
+
+            m_instanceEntityMapperInterface = AZ::Interface<InstanceEntityMapperInterface>::Get();
+            if (m_instanceEntityMapperInterface == nullptr)
+            {
+                AZ_Assert(false, "InstanceEntityMapperInterface - could not get InstanceEntityMapperInterface on construction.");
                 return;
             }
 
@@ -121,8 +129,7 @@ namespace AzToolsFramework
             settings->m_saveLocation = path;
         }
 
-        void PrefabSaveHandler::HandleSourceFileType(
-            AZStd::string_view sourceFilePath, AZ::EntityId parentId, AZ::Vector3 position) const
+        void PrefabSaveHandler::HandleSourceFileType(AZStd::string_view sourceFilePath, AZ::EntityId parentId, AZ::Vector3 position) const
         {
             auto instantiatePrefabOutcome = s_prefabPublicInterface->InstantiatePrefab(sourceFilePath, parentId, position);
 
@@ -149,6 +156,14 @@ namespace AzToolsFramework
             }
 
             return QDialogButtonBox::DestructiveRole;
+        }
+
+        void PrefabSaveHandler::ExecuteSavePrefabDialog(AZ::EntityId entityId)
+        {
+            if (const InstanceOptionalReference instance = m_instanceEntityMapperInterface->FindOwningInstance(entityId); instance.has_value())
+            {
+                ExecuteSavePrefabDialog(instance->get().GetTemplateId(), true);
+            }
         }
 
         void PrefabSaveHandler::ExecuteSavePrefabDialog(TemplateId templateId, bool useSaveAllPrefabsPreference)
@@ -310,11 +325,13 @@ namespace AzToolsFramework
                 {
                     // Put an error in the console, so the log files have info about this error, or the user can look up the error after
                     // dismissing it.
-                    AZStd::string errorMessage =
+                    constexpr const char* errorMessage =
                         "You can only save prefabs to either your game project folder or the Gems folder. Update the location and try "
                         "again.\n\n"
-                        "You can also review and update your save locations in the AssetProcessorPlatformConfig.ini file.";
-                    AZ_Error("Prefab", false, errorMessage.c_str());
+                        "You can also review and update your save locations in the Registry/AssetProcessorPlatformConfig.setreg file or "
+                        "your Gem's "
+                        "Registry/assetprocessor_settings.setreg file.";
+                    AZ_Error("Prefab", false, errorMessage);
 
                     // Display a pop-up, the logs are easy to miss. This will make sure a user who encounters this error immediately knows
                     // their prefab save has failed.
@@ -322,7 +339,7 @@ namespace AzToolsFramework
                     msgBox.setIcon(QMessageBox::Icon::Warning);
                     msgBox.setTextFormat(Qt::RichText);
                     msgBox.setWindowTitle(QObject::tr("Invalid save location"));
-                    msgBox.setText(QObject::tr(errorMessage.c_str()));
+                    msgBox.setText(QObject::tr(errorMessage));
                     msgBox.setStandardButtons(QMessageBox::Cancel | QMessageBox::Retry);
                     msgBox.setDefaultButton(QMessageBox::Retry);
                     const int response = msgBox.exec();
@@ -570,7 +587,9 @@ namespace AzToolsFramework
                     AzToolsFramework::Prefab::TemplateId unsavedPrefabTemplateId =
                         s_prefabSystemComponentInterface->GetTemplateIdFromFilePath(unsavedPrefabFileName.data());
                     [[maybe_unused]] bool isTemplateSavedSuccessfully = s_prefabLoaderInterface->SaveTemplate(unsavedPrefabTemplateId);
-                    AZ_Error("Prefab", isTemplateSavedSuccessfully, "Prefab '%s' could not be saved successfully.", unsavedPrefabFileName.c_str());
+                    AZ_Error(
+                        "Prefab", isTemplateSavedSuccessfully, "Prefab '%s' could not be saved successfully.",
+                        unsavedPrefabFileName.c_str());
                 }
             }
         }
@@ -601,7 +620,8 @@ namespace AzToolsFramework
             auto prefabTemplate = s_prefabSystemComponentInterface->FindTemplate(templateId);
             AZ::IO::Path prefabTemplatePath = prefabTemplate->get().GetFilePath();
             QLabel* prefabSavedSuccessfullyLabel = new QLabel(
-                QString("Prefab '<b>%1</b>' has been saved. Do you want to save the below dependent prefabs too?").arg(prefabTemplatePath.c_str()),
+                QString("Prefab '<b>%1</b>' has been saved. Do you want to save the below dependent prefabs too?")
+                    .arg(prefabTemplatePath.c_str()),
                 savePrefabDialog.get());
             prefabSavedMessageLayout->addWidget(prefabSavedSuccessfullyIconContainer);
             prefabSavedMessageLayout->addWidget(prefabSavedSuccessfullyLabel);
@@ -623,9 +643,8 @@ namespace AzToolsFramework
                 footerSeparatorLine->setFrameShape(QFrame::HLine);
                 contentLayout->addWidget(footerSeparatorLine);
 
-                QLabel* prefabSavePreferenceHint = new QLabel(
-                    "You can prevent this from showing in the future by updating your preferences.",
-                    savePrefabDialog.get());
+                QLabel* prefabSavePreferenceHint =
+                    new QLabel("You can prevent this from showing in the future by updating your preferences.", savePrefabDialog.get());
                 prefabSavePreferenceHint->setToolTip(
                     "Go to 'Edit > Editor Settings > Global Preferences... > Prefab Save Settings' to update your preference");
                 prefabSavePreferenceHint->setObjectName(PrefabSavePreferenceHint);
@@ -714,7 +733,8 @@ namespace AzToolsFramework
                 unsavedPrefabsLayout->addWidget(prefabNameLabel);
             }
 
-            AZStd::unique_ptr<AzQtComponents::Card> unsavedPrefabsContainer = AZStd::make_unique<AzQtComponents::Card>(AzToolsFramework::GetActiveWindow());
+            AZStd::unique_ptr<AzQtComponents::Card> unsavedPrefabsContainer =
+                AZStd::make_unique<AzQtComponents::Card>(AzToolsFramework::GetActiveWindow());
             unsavedPrefabsContainer->setObjectName(SaveDependentPrefabsCard);
             unsavedPrefabsContainer->setTitle("Unsaved Prefabs");
             unsavedPrefabsContainer->header()->setHasContextMenu(false);
@@ -729,5 +749,5 @@ namespace AzToolsFramework
 
             return AZStd::move(unsavedPrefabsContainer);
         }
-    }
-}
+    } // namespace Prefab
+} // namespace AzToolsFramework

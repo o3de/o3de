@@ -17,11 +17,6 @@ namespace AzNetworking
         m_threadDesc.m_name = name;
     }
 
-    TimedThread::~TimedThread()
-    {
-        AZ_Assert(!IsRunning(), "You must stop and join your thread before destructing it");
-    }
-
     void TimedThread::Start()
     {
         m_running = true;

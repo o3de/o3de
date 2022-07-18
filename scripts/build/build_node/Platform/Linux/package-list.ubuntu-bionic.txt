@@ -2,8 +2,8 @@
 
 # Build Tools Packages
 cmake/3.20.1-0kitware1ubuntu18.04.1     # For cmake
-clang-12                                # For Ninja Build System
-ninja-build                             # For the compiler and its dependencies
+clang-12                                # For the compiler and its dependencies
+ninja-build                             # For Ninja Build System
 java-11-amazon-corretto-jdk             # For Jenkins and Android
 
 # Build Libraries

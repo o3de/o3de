@@ -112,6 +112,8 @@ namespace EMotionFX::MotionMatching
         float pathRadius,
         float pathSpeed)
     {
+        AZ_PROFILE_SCOPE(Animation, "TrajectoryQuery::Update");
+
         // Build the past trajectory control points.
         const size_t numPastSamples = trajectoryFeature->GetNumPastSamples();
         m_pastControlPoints.resize(numPastSamples);

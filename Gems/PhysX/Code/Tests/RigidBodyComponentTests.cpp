@@ -45,7 +45,6 @@ namespace PhysXEditorTests
         EXPECT_THAT(finalAabb.GetMin(), UnitTest::IsClose(originalAabb.GetMin() * scale));
     }
 
-    // LYN-1241 - Test disabled due to AZ_Error reports about MaterialLibrary being not found in the AssetCatalog
     TEST_F(PhysXEditorFixture, EditorRigidBodyComponent_EntityScaledAndColliderHasNonZeroOffset_RigidBodyAabbMatchesScaledOffset)
     {
         // Create editor entity

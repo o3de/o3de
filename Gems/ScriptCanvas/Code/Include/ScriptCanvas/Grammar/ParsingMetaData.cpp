@@ -10,6 +10,7 @@
 
 #include <AzCore/std/sort.h>
 #include <ScriptCanvas/Debugger/ValidationEvents/ParsingValidation/ParsingValidations.h>
+#include <ScriptCanvas/Grammar/DebugMap.h>
 #include <ScriptCanvas/Libraries/Core/ExtractProperty.h>
 #include <ScriptCanvas/Libraries/Core/GetVariable.h>
 #include <ScriptCanvas/Libraries/Core/Method.h>

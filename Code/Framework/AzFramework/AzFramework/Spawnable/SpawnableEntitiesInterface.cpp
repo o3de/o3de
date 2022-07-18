@@ -356,6 +356,16 @@ namespace AzFramework
         return *this;
     }
 
+    bool EntitySpawnTicket::operator==(const EntitySpawnTicket& rhs) const
+    {
+        return GetId() == rhs.GetId();
+    }
+
+    bool EntitySpawnTicket::operator!=(const EntitySpawnTicket& rhs) const
+    {
+        return !(*this == rhs);
+    }
+
     void EntitySpawnTicket::Reflect(AZ::ReflectContext* context)
     {
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))

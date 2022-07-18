@@ -1,0 +1,87 @@
+{
+    // Applies a box blur effect in the vertical direction as controlled by the box width
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "EditorModeBlurVerticalTemplate",
+            "PassClass": "EditorModeBlurPass",
+            "Slots": [
+                {
+                    "Name": "InputDepth",
+                    "SlotType": "Input",
+                    "ShaderInputName": "m_depth",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "InputEntityMask",
+                    "SlotType": "Input",
+                    "ShaderInputName": "m_entityMask",
+                    "ScopeAttachmentUsage": "Shader",
+                    "ShaderImageDimensionsConstant": "m_maskDimensions"
+                },
+                {
+                    "Name": "InputColor",
+                    "SlotType": "Input",
+                    "ShaderInputName": "m_framebuffer",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "OutputColor",
+                    "SlotType": "Output",
+                    "ScopeAttachmentUsage": "RenderTarget",
+                    "LoadStoreAction": {
+                        "LoadAction": "DontCare"
+                    }
+                }
+            ],
+            "ImageAttachments": [
+                {
+                    "Name": "OutputAttachment",
+                    "SizeSource": {
+                        "Source": {
+                            "Pass": "This",
+                            "Attachment": "InputColor"
+                        }
+                    },
+                    "FormatSource": {
+                        "Pass": "This",
+                        "Attachment": "InputColor"
+                    }
+                }
+            ],
+            "Connections": [
+                {
+                    "LocalSlot": "OutputColor",
+                    "AttachmentRef": {
+                        "Pass": "This",
+                        "Attachment": "OutputAttachment"
+                    }
+                }
+            ],
+            "FallbackConnections": [
+                {
+                    "Input" : "InputColor",
+                    "Output" : "OutputColor"
+                }
+            ],
+            "PassData": {
+                "$type": "FullscreenTrianglePassData",
+                "ShaderAsset": {
+                    "FilePath": "Shaders/EditorModeBlur.shader"
+                },
+                "PipelineViewTag": "MainCamera",
+                "ShaderDataMappings": {
+                    "UintMappings": [
+                        {
+                            // Vertical blur
+                            "Name": "m_direction",
+                            "Value": 1
+                        }
+                    ]
+                }
+            }
+        }
+    }
+}

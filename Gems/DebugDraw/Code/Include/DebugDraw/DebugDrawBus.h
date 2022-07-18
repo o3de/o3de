@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/EBus/EBus.h>
+#include <AzCore/Component/Component.h>
 
 #include <AzCore/Math/Aabb.h>
 #include <AzCore/Math/Color.h>

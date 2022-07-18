@@ -354,7 +354,7 @@ namespace UnitTest
         EXPECT_FALSE(material->SetPropertyValue<float>(material->FindPropertyIndex(Name{ "MyFloat" }), 2.5f));
         
         ProcessQueuedSrgCompilations(m_testMaterialShaderAsset, m_testMaterialSrgLayout->GetName());
-        EXPECT_FALSE(material->Compile());
+        EXPECT_TRUE(material->Compile());
 
         // Make sure the SRG is still tainted, because the SetPropertyValue() functions weren't processed
         EXPECT_EQ(srgData.GetConstant<float>(srgData.FindShaderInputConstantIndex(Name{ "m_float" })), 0.0f);
@@ -869,7 +869,12 @@ namespace UnitTest
         AddCommonTestMaterialProperties(materialTypeCreator);
         materialTypeCreator.SetVersion(2);
         MaterialVersionUpdate versionUpdate(2);
-        versionUpdate.AddAction(MaterialVersionUpdate::RenamePropertyAction({Name{ "OldName" },Name{ "MyInt" }}));
+        versionUpdate.AddAction(MaterialVersionUpdate::Action(Name("rename"),
+                {
+                    { Name{ "from" }, AZStd::string("OldName") },
+                    { Name{ "to"   }, AZStd::string("MyInt")   }
+                } ));
+
         materialTypeCreator.AddVersionUpdate(versionUpdate);
         materialTypeCreator.End(m_testMaterialTypeAsset);
 

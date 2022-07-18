@@ -155,8 +155,15 @@ namespace AZ
                 m_visualizationBlasBuilt = true;
             }
 
-            for (auto& diffuseProbeGrid : diffuseProbeGridFeatureProcessor->GetVisibleProbeGrids())
+            // compute the index range to process for this command list
+            uint32_t numGrids = aznumeric_cast<uint32_t>(diffuseProbeGridFeatureProcessor->GetVisibleProbeGrids().size());
+            uint32_t startIndex = (context.GetCommandListIndex() * numGrids) / context.GetCommandListCount();
+            uint32_t endIndex = ((context.GetCommandListIndex() + 1) * numGrids) / context.GetCommandListCount();
+
+            // call BuildTopLevelAccelerationStructure for each DiffuseProbeGrid in this range
+            for (uint32_t index = startIndex; index < endIndex; ++index)
             {
+                AZStd::shared_ptr<DiffuseProbeGrid> diffuseProbeGrid = diffuseProbeGridFeatureProcessor->GetVisibleProbeGrids()[index];
                 if (!ShouldUpdate(diffuseProbeGrid))
                 {
                     continue;

@@ -95,8 +95,8 @@ namespace Terrain
 
         LmbrCentral::DependencyMonitor m_dependencyMonitor;
 
-        // The TerrainAreaHeightRequestBus has lockless dispatch, so make sure that queries don't happen at the same
-        // time as bus connects / disconnects.
+        // The TerrainAreaHeightRequestBus allows parallel dispatches, so make sure that queries don't happen at the same
+        // time as cached data updates.
         AZStd::shared_mutex m_queryMutex;
     };
 }

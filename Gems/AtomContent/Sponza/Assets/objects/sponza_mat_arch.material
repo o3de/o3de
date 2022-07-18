@@ -2,7 +2,7 @@
     "description": "",
     "parentMaterial": "",
     "materialType": "Materials/Types/StandardPBR.materialtype",
-    "materialTypeVersion": 4,
+    "materialTypeVersion": 5,
     "properties": {
         "baseColor": {
             "textureMap": "../Textures/arch_1k_basecolor.png"
@@ -11,7 +11,8 @@
             "applySpecularAA": true
         },
         "irradiance": {
-            "color": [
+            "irradianceColorSource": "Manual",
+            "manualColor": [
                 0.2663614749908447,
                 0.2383916974067688,
                 0.18117037415504456,

@@ -257,6 +257,8 @@ set(FILES
     MainWindow.cpp
     MainWindow.h
     MainWindow.qrc
+    Core/EditorActionsHandler.cpp
+    Core/EditorActionsHandler.h
     Core/QtEditorApplication.cpp
     Core/QtEditorApplication.h
     Core/LevelEditorMenuHandler.cpp
@@ -580,6 +582,7 @@ set(FILES
     TrackView/TVCustomizeTrackColorsDlg.cpp
     TrackView/TVCustomizeTrackColorsDlg.h
     TrackViewFBXImportPreviewDialog.h
+    TrackView/KeyUIControls.h
     TrackView/2DBezierKeyUIControls.cpp
     TrackView/AssetBlendKeyUIControls.cpp
     TrackView/CaptureKeyUIControls.cpp
@@ -626,6 +629,8 @@ set(FILES
     Util/FileEnum.h
     Util/FileUtil.cpp
     Util/FileUtil.h
+    Util/FileUtil_Common.h
+    Util/FileUtil_Common.cpp
     Util/GeometryUtil.cpp
     Util/GuidUtil.cpp
     Util/GuidUtil.h

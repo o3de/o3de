@@ -23,15 +23,17 @@ namespace AZ
     {
         namespace
         {
-            static AZ::Name GetMapName(const DecalMapType mapType)
+            static const AZ::Name& GetMapName(const DecalMapType mapType)
             {
-                // Using local static to avoid cost of creating AZ::Name. Also so that this can be called from other static functions
-                static AZStd::array<AZ::Name, DecalMapType_Num> mapNames =
+                switch (mapType)
                 {
-                    AZ::Name("baseColor.textureMap"),
-                    AZ::Name("normal.textureMap")
-                };
-                return mapNames[mapType];
+                case DecalMapType_Diffuse:
+                    return AZ_NAME_LITERAL("baseColor.textureMap");
+                case DecalMapType_Normal:
+                    return AZ_NAME_LITERAL("normal.textureMap");
+                default:
+                    return AZ_NAME_LITERAL("");
+                }
             }
 
             static AZ::Data::AssetId GetImagePoolId()

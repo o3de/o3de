@@ -21,7 +21,6 @@
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/NodeGraph.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/NodeGraphWidget.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/StateGraphNode.h>
-#include <EMotionStudio/Plugins/StandardPlugins/Source/MotionWindow/MotionWindowPlugin.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/MotionSetsWindow/MotionSetsWindowPlugin.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/TimeView/TimeViewPlugin.h>
 #include <QMouseEvent>
@@ -744,48 +743,33 @@ namespace EMStudio
                 // Update time view if time view window is opened and animgraph node supports preview motion.
                 if (timeViewPlugin)
                 {
+                    bool motionSelected = false;
                     if (animGraphNode->GetSupportsPreviewMotion())
                     {
-                        MCore::CommandGroup commandGroup("Preview Motion Time View");
-                        AZStd::string commandString, result;
                         EMotionFX::AnimGraphMotionNode* motionNode = static_cast<EMotionFX::AnimGraphMotionNode*>(animGraphNode);
-
                         if (motionNode->GetNumMotions() == 1)
                         {
-                            GetCommandManager()->GetCurrentSelection().ClearMotionSelection();
                             const char* motionId = motionNode->GetMotionId(0);
                             EMotionFX::MotionSet::MotionEntry* motionEntry = MotionSetsWindowPlugin::FindBestMatchMotionEntryById(motionId);
-                            const EMotionFX::MotionManager& motionManager = EMotionFX::GetMotionManager();
-
                             if (motionEntry && motionEntry->GetMotion())
                             {
-                                EMotionFX::Motion* motion = motionEntry->GetMotion();
-                                size_t motionIndex = motionManager.FindMotionIndexByName(motion->GetName());
-                                commandString = AZStd::string::format("Select -motionIndex %zu", motionIndex);
-                                commandGroup.AddCommandString(commandString);
-                            }
-                        }
+                                // Update motion list window to select motion.
+                                EMStudioPlugin* motionSetBasePlugin = EMStudio::GetPluginManager()->FindActivePlugin(MotionSetsWindowPlugin::CLASS_ID);
+                                MotionSetsWindowPlugin* motionSetWindowPlugin = static_cast<MotionSetsWindowPlugin*>(motionSetBasePlugin);
+                                if (motionSetWindowPlugin)
+                                {
+                                    motionSetWindowPlugin->GetMotionSetWindow()->Select(motionEntry);
 
-                        if (commandGroup.GetNumCommands() > 0)
-                        {
-                            if (!EMStudio::GetCommandManager()->ExecuteCommandGroup(commandGroup, result))
-                            {
-                                AZ_Error("EMotionFX", false, result.c_str());
-                            }
+                                    // Update time view plugin with new motion related data.
+                                    timeViewPlugin->SetMode(TimeViewMode::Motion);
 
-                            // Update motion list window to select motion.
-                            EMStudioPlugin* motionBasePlugin = EMStudio::GetPluginManager()->FindActivePlugin(MotionWindowPlugin::CLASS_ID);
-                            MotionWindowPlugin* motionWindowPlugin = static_cast<MotionWindowPlugin*>(motionBasePlugin);
-                            if (motionWindowPlugin)
-                            {
-                                motionWindowPlugin->ReInit();
+                                    motionSelected = true;
+                                }
                             }
-
-                            // Update time view plugin with new motion related data.
-                            timeViewPlugin->SetMode(TimeViewMode::Motion);
                         }
                     }
-                    else
+
+                    if (!motionSelected)
                     {
                         // If not clicked on another animgraph node, clear time view window.
                         timeViewPlugin->SetMode(TimeViewMode::AnimGraph);

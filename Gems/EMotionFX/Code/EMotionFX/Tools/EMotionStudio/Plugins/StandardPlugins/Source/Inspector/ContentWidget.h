@@ -25,12 +25,18 @@ namespace EMStudio
 
     public:
         explicit ContentWidget(QWidget* parent = nullptr);
-        ~ContentWidget() override = default;
+        ~ContentWidget() override;
 
-        void Update(const QString& headerTitle, const QString& iconFilename, QWidget* widget);
+        void Update(QWidget* widget);
+        void UpdateWithHeader(const QString& headerTitle, const QString& iconFilename, QWidget* widget);
         void Clear();
 
+        QWidget* GetWidget() const { return m_widget; }
+
     private:
+        void UpdateInternal(const QString& headerTitle, const QString& iconFilename, QWidget* widget, bool showHeader);
+        void CleanupOldWidget();
+
         ContentHeaderWidget* m_headerWidget = nullptr;
         QWidget* m_widget = nullptr;
         QVBoxLayout* m_layout = nullptr;

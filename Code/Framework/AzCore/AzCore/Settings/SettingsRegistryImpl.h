@@ -64,7 +64,7 @@ namespace AZ
         bool Get(double& result, AZStd::string_view path) const override;
         bool Get(AZStd::string& result, AZStd::string_view path) const override;
         bool Get(SettingsRegistryInterface::FixedValueString& result, AZStd::string_view path) const override;
-        bool GetObject(void* result, Uuid resultTypeID, AZStd::string_view path) const override;
+        bool GetObject(void* result, AZ::Uuid resultTypeID, AZStd::string_view path) const override;
 
         bool Set(AZStd::string_view path, bool value) override;
         bool Set(AZStd::string_view path, s64 value) override;
@@ -72,7 +72,7 @@ namespace AZ
         bool Set(AZStd::string_view path, double value) override;
         bool Set(AZStd::string_view path, AZStd::string_view value) override;
         bool Set(AZStd::string_view path, const char* value) override;
-        bool SetObject(AZStd::string_view path, const void* value, Uuid valueTypeID) override;
+        bool SetObject(AZStd::string_view path, const void* value, AZ::Uuid valueTypeID) override;
 
         bool Remove(AZStd::string_view path) override;
 

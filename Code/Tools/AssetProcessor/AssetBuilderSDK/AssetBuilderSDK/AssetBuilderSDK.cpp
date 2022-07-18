@@ -1059,15 +1059,18 @@ namespace AssetBuilderSDK
     {
         if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serializeContext->Class<JobProduct>()->
-                Version(6)->
-                Field("Product File Name", &JobProduct::m_productFileName)->
-                Field("Product Asset Type", &JobProduct::m_productAssetType)->
-                Field("Product Sub Id", &JobProduct::m_productSubID)->
-                Field("Legacy Sub Ids", &JobProduct::m_legacySubIDs)->
-                Field("Dependencies", &JobProduct::m_dependencies)->
-                Field("Relative Path Dependencies", &JobProduct::m_pathDependencies)->
-                Field("Dependencies Handled", &JobProduct::m_dependenciesHandled);
+            serializeContext->Class<JobProduct>()
+                ->Version(7)
+                ->Field("Product File Name", &JobProduct::m_productFileName)
+                ->Field("Product Asset Type", &JobProduct::m_productAssetType)
+                ->Field("Product Sub Id", &JobProduct::m_productSubID)
+                ->Field("Legacy Sub Ids", &JobProduct::m_legacySubIDs)
+                ->Field("Dependencies", &JobProduct::m_dependencies)
+                ->Field("Relative Path Dependencies", &JobProduct::m_pathDependencies)
+                ->Field("Dependencies Handled", &JobProduct::m_dependenciesHandled)
+                ->Field("Output Flags", &JobProduct::m_outputFlags)
+                ->Field("Output Path Override", &JobProduct::m_outputPathOverride)
+            ;
 
             serializeContext->RegisterGenericType<AZStd::vector<JobProduct>>();
         }
@@ -1084,7 +1087,11 @@ namespace AssetBuilderSDK
                 ->Property("productSubID", BehaviorValueProperty(&JobProduct::m_productSubID))
                 ->Property("productDependencies", BehaviorValueProperty(&JobProduct::m_dependencies))
                 ->Property("pathDependencies", BehaviorValueProperty(&JobProduct::m_pathDependencies))
-                ->Property("dependenciesHandled", BehaviorValueProperty(&JobProduct::m_dependenciesHandled));
+                ->Property("dependenciesHandled", BehaviorValueProperty(&JobProduct::m_dependenciesHandled))
+                ->Property("outputFlags", BehaviorValueProperty(&JobProduct::m_outputFlags))
+                ->Property("outputPathOverride", BehaviorValueProperty(&JobProduct::m_outputPathOverride))
+                ->Enum<aznumeric_cast<int>(ProductOutputFlags::ProductAsset)>("ProductAsset")
+                ->Enum<aznumeric_cast<int>(ProductOutputFlags::IntermediateAsset)>("IntermediateAsset")
             ;
         }
     }
@@ -1159,6 +1166,26 @@ namespace AssetBuilderSDK
     bool ProcessJobResponse::Succeeded() const
     {
         return m_resultCode == ProcessJobResultCode::ProcessJobResult_Success;
+    }
+
+    bool ProcessJobResponse::ReportProductCollisions() const
+    {
+        bool result = true;
+        AZStd::unordered_map<AZ::u32, const char*> subIdMap;
+        for(const auto& jobProduct : m_outputProducts)
+        {
+            auto subIdEntry = AZStd::make_pair(jobProduct.m_productSubID, jobProduct.m_productFileName.c_str());
+            auto insertResult = subIdMap.insert(subIdEntry);
+            if (!insertResult.second)
+            {
+                AZ_Error("asset", false, "SubId (%d) conflicts with file1 (%s) and file2 (%s)",
+                    jobProduct.m_productSubID,
+                    jobProduct.m_productFileName.c_str(),
+                    insertResult.first->second );
+                result = false;
+            }
+        }
+        return result;
     }
 
     void InitializeReflectContext(AZ::ReflectContext* context)

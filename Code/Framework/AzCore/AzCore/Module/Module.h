@@ -112,7 +112,10 @@ namespace AZ
              console->LinkDeferredFunctors(AZ::ConsoleFunctorBase::GetDeferredHead());           \
              console->ExecuteDeferredConsoleCommands();                                          \
         }                                                                                        \
-        AZ::NameDictionary::Instance().LoadDeferredNames(AZ::Name::GetDeferredHead());           \
+        if (AZ::NameDictionary::IsReady(false))                                                  \
+        {                                                                                        \
+            AZ::NameDictionary::Instance().LoadDeferredNames(AZ::Name::GetDeferredHead());       \
+        }                                                                                        \
         return aznew MODULE_CLASSNAME;                                                           \
     }                                                                                            \
     extern "C" AZ_DLL_EXPORT void DestroyModuleClass(AZ::Module* module) { delete module; }

@@ -42,21 +42,6 @@ namespace AZ
         class ObjectStreamImpl;
     }
 
-    namespace SerializeContextAttributes
-    {
-        // Attribute used to set an override function on a SerializeContext::ClassData attribute array
-        // which can be used to override the ObjectStream WriteElement call to write out reflected data differently
-        static const AZ::Crc32 ObjectStreamWriteElementOverride = AZ_CRC("ObjectStreamWriteElementOverride", 0x35eb659f);
-    }
-
-    enum class ObjectStreamWriteOverrideResponse
-    {
-        CompletedWrite,
-        FallbackToDefaultWrite,
-        AbortWrite
-    };
-    AZ_TYPE_INFO_SPECIALIZE(ObjectStreamWriteOverrideResponse, "{BDF960A8-0F18-4E9D-96DA-F800A122C42D}");
-
     ///< Callback that the object stream invokes to override saving an instance of the registered class
     ///< @param callContext EnumerateInstanceCallContext which contains the WriteElement BeingElemCB and the CloseElement EndElemCB
     ///< the callContext parameter can be passed to the SerializeContext::EnumerateInstance to continue object stream writing
@@ -236,9 +221,8 @@ namespace AZ
             classData = genericClassInfo ? genericClassInfo->GetClassData() : nullptr;
             if (classData)
             {
-                char uuidStr[Uuid::MaxStringBuffer];
-                SerializeGenericTypeInfo<T>::GetClassTypeId().ToString(uuidStr, Uuid::MaxStringBuffer, false);
-                AZ_Error("Serializer", false, "Serialization of generic type (%s,%s) or a derivative as root element is not supported!!", classData->m_name, uuidStr);
+                AZ_Error("Serializer", false, "Serialization of generic type (%s,%s) or a derivative as root element is not supported!!"
+                    , classData->m_name, SerializeGenericTypeInfo<T>::GetClassTypeId().ToFixedString().c_str());
             }
             else
             {

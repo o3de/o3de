@@ -10,6 +10,7 @@
 
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Component/NonUniformScaleBus.h>
+#include <AzCore/std/parallel/shared_mutex.h>
 #include <LmbrCentral/Shape/ShapeComponentBus.h>
 #include <LmbrCentral/Shape/PolygonPrismShapeComponentBus.h>
 
@@ -103,12 +104,78 @@ namespace LmbrCentral
             AZStd::vector<AZ::Vector3> m_triangles; ///< Triangles comprising the polygon prism shape (for intersection testing).
         };
 
+        // PolygonPrism has a complicated set of access patterns, so it needs specialized mutex logic to be able to use a shared_mutex
+        // with this shape type. The shared_mutex is desirable because it allows the shape to be queried from multiple threads at once,
+        // while still protecting reads from running concurrently with writes.
+        // The complication is that the PolygonPrismShape has an underlying PolygonPrism, which is the actual data container.
+        // PolygonPrism itself has optional callbacks that trigger when data is modified. The EditorPolygonPrismShapeComponent uses those
+        // callbacks to query the PolygonPrismShape to refresh some data.
+        // This means that when modifying data, the PolygonPrismShape can lock a unique_lock, but while it's holding that lock, callbacks
+        // can trigger that try to read data on the same thread, which will try to lock a shared_lock.
+        // The extra logic the PolygonPrism*LockGuard classes perform is that they track the thread that acquires a unique lock,
+        // and they don't try to acquire or release a shared lock if one is requested on the same thread as the unique lock.
+
+        class PolygonPrismSharedLockGuard
+        {
+        public:
+            PolygonPrismSharedLockGuard(AZStd::shared_mutex& mutex, AZStd::thread::id& uniqueLockThreadId)
+                : m_mutex(mutex)
+            {
+                if (uniqueLockThreadId != AZStd::this_thread::get_id())
+                {
+                    m_mutex.lock_shared();
+                    m_unlockOnDestroy = true;
+                }
+            }
+
+            ~PolygonPrismSharedLockGuard()
+            {
+                if (m_unlockOnDestroy)
+                {
+                    m_mutex.unlock_shared();
+                }
+            }
+
+        private:
+            PolygonPrismSharedLockGuard(const PolygonPrismSharedLockGuard&) = delete;
+            PolygonPrismSharedLockGuard& operator=(const PolygonPrismSharedLockGuard&) = delete;
+            AZStd::shared_mutex& m_mutex;
+            bool m_unlockOnDestroy = false;
+
+        };
+
+        class PolygonPrismUniqueLockGuard
+        {
+        public:
+            PolygonPrismUniqueLockGuard(AZStd::shared_mutex& mutex, AZStd::thread::id& uniqueLockThreadId)
+                : m_mutex(mutex)
+                , m_uniqueLockThreadId(uniqueLockThreadId)
+            {
+                m_mutex.lock();
+                m_uniqueLockThreadId = AZStd::this_thread::get_id();
+            }
+
+            ~PolygonPrismUniqueLockGuard()
+            {
+                m_uniqueLockThreadId = AZStd::thread::id();
+                m_mutex.unlock();
+            }
+
+        private:
+            PolygonPrismUniqueLockGuard(const PolygonPrismUniqueLockGuard&) = delete;
+            PolygonPrismUniqueLockGuard& operator=(const PolygonPrismUniqueLockGuard&) = delete;
+            AZStd::shared_mutex& m_mutex;
+            AZStd::thread::id& m_uniqueLockThreadId;
+        };
+
         AZ::PolygonPrismPtr m_polygonPrism; ///< Reference to the underlying polygon prism data.
         PolygonPrismIntersectionDataCache m_intersectionDataCache; ///< Caches transient intersection data.
         AZ::Transform m_currentTransform = AZ::Transform::CreateIdentity(); ///< Caches the current transform for this shape.
         AZ::EntityId m_entityId; ///< Id of the entity the box shape is attached to.
         AZ::NonUniformScaleChangedEvent::Handler m_nonUniformScaleChangedHandler; ///< Responds to changes in non-uniform scale.
         AZ::Vector3 m_currentNonUniformScale = AZ::Vector3::CreateOne(); ///< Caches the current non-uniform scale.
+        mutable AZStd::shared_mutex m_mutex; ///< Mutex to allow multiple readers but single writer for efficient thread safety
+        mutable AZStd::thread::id m_uniqueLockThreadId; ///< Thread that currently owns the unique lock on the mutex, if any.
     };
 
     /// Generate mesh used for rendering top and bottom of PolygonPrism shape.

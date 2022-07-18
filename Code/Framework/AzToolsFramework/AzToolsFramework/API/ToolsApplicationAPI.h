@@ -926,6 +926,12 @@ namespace AzToolsFramework
 
         /// Signal that an asset should be highlighted / selected
         virtual void SelectAsset(const QString& /* assetPath */) {}
+
+        // Notify that a viewpane has just been opened.
+        virtual void OnViewPaneOpened(const char* /*viewPaneName*/) {}
+
+        // Notify that a viewpane has just been closed.
+        virtual void OnViewPaneClosed(const char* /*viewPaneName*/) {}
     };
 
     using EditorEventsBus = AZ::EBus<EditorEvents>;

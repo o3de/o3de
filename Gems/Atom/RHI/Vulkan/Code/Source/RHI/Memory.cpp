@@ -33,8 +33,10 @@ namespace AZ
             allocInfo.allocationSize = descriptor.m_sizeInBytes;
             allocInfo.memoryTypeIndex = descriptor.m_memoryTypeIndex;
 
+            // VK_MEMORY_ALLOCATE_DEVICE_ADDRESS_BIT requires bufferDeviceAddress enabled.
             VkMemoryAllocateFlagsInfo memAllocInfo{};
-            if (ShouldApplyDeviceAddressBit(descriptor.m_bufferBindFlags))
+            if (ShouldApplyDeviceAddressBit(descriptor.m_bufferBindFlags) &&
+                physicalDevice.GetPhysicalDeviceBufferDeviceAddressFeatures().bufferDeviceAddress)
             {
                 memAllocInfo.flags |= VK_MEMORY_ALLOCATE_DEVICE_ADDRESS_BIT;
             }

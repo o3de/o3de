@@ -45,7 +45,6 @@ namespace ScriptCanvas
                 AZ::Data::AssetBus::Handler::BusDisconnect();
             }
 
-
             SlotExecution::In FunctionCallNode::AddAllSlots(const Grammar::In& interfaceIn, int& slotOffset, const SlotExecution::Map& previousMap)
             {
                 SlotExecution::In slotMapIn = AddExecutionInSlotFromInterface(interfaceIn, slotOffset, previousMap.FindInSlotIdBySource(interfaceIn.sourceID));

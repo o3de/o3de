@@ -75,7 +75,7 @@ namespace Physics
             m_fileIo->SetAlias("@test@", testDir.c_str());
 
             //Test_PhysXSettingsRegistryManager will not do any file saving
-            m_physXSystem = AZStd::make_unique<PhysX::PhysXSystem>(new PhysX::TestUtils::Test_PhysXSettingsRegistryManager(), PhysX::PxCooking::GetEditTimeCookingParams());
+            m_physXSystem = AZStd::make_unique<PhysX::PhysXSystem>(AZStd::make_unique<PhysX::TestUtils::Test_PhysXSettingsRegistryManager>(), PhysX::PxCooking::GetEditTimeCookingParams());
         }
 
         /// Allows derived environments to override to perform additional steps after creating the application.

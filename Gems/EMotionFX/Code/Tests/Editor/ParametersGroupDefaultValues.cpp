@@ -136,14 +136,14 @@ namespace EMotionFX
 
         this->ExecuteCommands({
             R"(Select -actorInstanceID )" + std::to_string(actorInstance->GetID()),
-            R"(CreateMotionSet -name CanSetParameterToDefaultValueWhenInGroupMotionSet -motionSetID 0)",
-            R"(CreateAnimGraph -animGraphID 0)",
-            R"(AnimGraphAddGroupParameter -animGraphID 0 -name GroupParam)",
-            R"(AnimGraphCreateParameter -animGraphID 0 -parent GroupParam -name Param -type )" + azrtti_typeid<ParameterT>().template ToString<std::string>(),
-            R"(ActivateAnimGraph -animGraphID 0 -motionSetID 0 -actorInstanceID )" + std::to_string(actorInstance->GetID()),
+            R"(CreateMotionSet -name CanSetParameterToDefaultValueWhenInGroupMotionSet -motionSetID 200)",
+            R"(CreateAnimGraph -animGraphID 100)",
+            R"(AnimGraphAddGroupParameter -animGraphID 100 -name GroupParam)",
+            R"(AnimGraphCreateParameter -animGraphID 100 -parent GroupParam -name Param -type )" + azrtti_typeid<ParameterT>().template ToString<std::string>(),
+            R"(ActivateAnimGraph -animGraphID 100 -motionSetID 200 -actorInstanceID )" + std::to_string(actorInstance->GetID()),
         });
 
-        AnimGraph* animGraph = GetEMotionFX().GetAnimGraphManager()->FindAnimGraphByID(0);
+        AnimGraph* animGraph = GetEMotionFX().GetAnimGraphManager()->FindAnimGraphByID(100);
 
         const ValueParameter* valueParameter = animGraph->FindValueParameter(0);
         const ParameterT* defaultValueParameter = azdynamic_cast<const ParameterT*>(valueParameter);
@@ -171,5 +171,10 @@ namespace EMotionFX
         animGraphPlugin->GetParameterWindow()->OnMakeDefaultValue();
 
         TestEquality(defaultValueParameter->GetDefaultValue(), expectedValue);
+
+        this->ExecuteCommands({
+            R"(RemoveAnimGraph -animGraphId )" + std::to_string(animGraph->GetID())
+        });
+        actorInstance->Destroy();
     }
 } // namespace EMotionFX

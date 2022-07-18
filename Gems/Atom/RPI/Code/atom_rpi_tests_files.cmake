@@ -28,6 +28,7 @@ set(FILES
     Tests/Common/ShaderAssetTestUtils.h
     Tests/Image/StreamingImageTests.cpp
     Tests/Material/LuaMaterialFunctorTests.cpp
+    Tests/Material/MaterialVersionUpdateTests.cpp
     Tests/Material/MaterialTypeAssetTests.cpp
     Tests/Material/MaterialTypeSourceDataTests.cpp
     Tests/Material/MaterialAssetTestUtils.cpp
@@ -41,6 +42,7 @@ set(FILES
     Tests/Material/MaterialPropertyValueSourceDataTests.cpp
     Tests/Material/MaterialTests.cpp
     Tests/Model/ModelTests.cpp
+    Tests/Model/SkinJointIdPaddingTests.cpp
     Tests/Pass/PassTests.cpp
     Tests/Shader/ShaderTests.cpp
     Tests/ShaderResourceGroup/ShaderResourceGroupBufferTests.cpp

@@ -1,0 +1,30 @@
+{
+    "entries": [
+        {
+            "base": "ScriptCanvas_Matrix4x4Functions_Zero",
+            "context": "BehaviorMethod",
+            "variant": "",
+            "details": {
+                "name": "Zero",
+                "category": "Math/Matrix4x4"
+            },
+            "methods": [
+                {
+                    "base": "ScriptCanvas_Matrix4x4Functions_Zero",
+                    "details": {
+                        "name": "Zero",
+                        "tooltip": "Returns the zero matrix"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{157193C7-B673-4A2B-8B43-5681DCC3DEC3}",
+                            "details": {
+                                "name": "Matrix4x4"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

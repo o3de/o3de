@@ -97,6 +97,8 @@ namespace AZ
             bool GetUseParallaxCorrection() const { return m_useParallaxCorrection; }
             void SetUseParallaxCorrection(bool useParallaxCorrection) { m_useParallaxCorrection = useParallaxCorrection; }
 
+            const AZ::Uuid& GetUuid() const { return m_uuid; }
+
             // initiates the reflection probe bake and invokes the callback when the cubemap is finished rendering
             void Bake(RenderCubeMapCallback callback);
 
@@ -174,6 +176,7 @@ namespace AZ
 
             // culling
             RPI::Cullable m_cullable;
+            AZ::Uuid m_uuid = AZ::Uuid::Create();
         };
 
     } // namespace Render

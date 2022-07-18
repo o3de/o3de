@@ -61,14 +61,16 @@ namespace AzToolsFramework
             AZ::IO::Path GetOwningInstancePrefabPath(AZ::EntityId entityId) const override;
             PrefabRequestResult HasUnsavedChanges(AZ::IO::Path prefabFilePath) const override;
 
+            //! [DEPRECATION]--This function is marked for deprecation. Please use DeleteEntitiesAndAllDescendantsInInstance instead.
             PrefabOperationResult DeleteEntitiesInInstance(const EntityIdList& entityIds) override;
+
             PrefabOperationResult DeleteEntitiesAndAllDescendantsInInstance(const EntityIdList& entityIds) override;
             DuplicatePrefabResult DuplicateEntitiesInInstance(const EntityIdList& entityIds) override;
 
             PrefabOperationResult DetachPrefab(const AZ::EntityId& containerEntityId) override;
 
         private:
-            PrefabOperationResult DeleteFromInstance(const EntityIdList& entityIds, bool deleteDescendants);
+            PrefabOperationResult DeleteFromInstance(const EntityIdList& entityIds);
             PrefabOperationResult RetrieveAndSortPrefabEntitiesAndInstances(
                 const EntityList& inputEntities,
                 Instance& commonRootEntityOwningInstance,
@@ -173,10 +175,10 @@ namespace AzToolsFramework
 
             static void Internal_HandleContainerOverride(
                 UndoSystem::URSequencePoint* undoBatch, AZ::EntityId entityId, const PrefabDom& patch,
-                const LinkId linkId, InstanceOptionalReference parentInstance = AZStd::nullopt);
+                const LinkId linkId);
             static void Internal_HandleEntityChange(
                 UndoSystem::URSequencePoint* undoBatch, AZ::EntityId entityId, PrefabDom& beforeState,
-                PrefabDom& afterState, InstanceOptionalReference instance = AZStd::nullopt);
+                PrefabDom& afterState);
             void Internal_HandleInstanceChange(UndoSystem::URSequencePoint* undoBatch, AZ::Entity* entity, AZ::EntityId beforeParentId, AZ::EntityId afterParentId);
 
             void UpdateLinkPatchesWithNewEntityAliases(

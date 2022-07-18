@@ -9,6 +9,7 @@
 #include <Atom/Features/ParallaxMapping.azsli>
 #include "../MaterialInputs/ParallaxInput.azsli"
 #include <Atom/Features/MatrixUtility.azsli>
+#include "ParallaxShadowUtil.azsli"
 
  void SetPixelDepth(
      inout float3 worldPosition,
@@ -22,9 +23,14 @@
     float3x3 uvMatrix = MaterialSrg::m_parallaxUvIndex == 0 ? MaterialSrg::m_uvMatrix : CreateIdentity3x3();
     float3x3 uvMatrixInverse = MaterialSrg::m_parallaxUvIndex == 0 ? MaterialSrg::m_uvMatrixInverse : CreateIdentity3x3();
     
+    float heightmapScale = MaterialSrg::m_heightmapScale;
+    float heightmapOffset = MaterialSrg::m_heightmapOffset;
+    
+    AdjustParallaxShadowCaster(heightmapScale, heightmapOffset, MaterialSrg::m_parallax_pdo_shadowFactor);
+
     GetParallaxInput(
         normal, tangents[MaterialSrg::m_parallaxUvIndex], bitangents[MaterialSrg::m_parallaxUvIndex],
-        MaterialSrg::m_heightmapScale, MaterialSrg::m_heightmapOffset,
+        heightmapScale, heightmapOffset,
         ObjectSrg::GetWorldMatrix(), uvMatrix, uvMatrixInverse,
         uvs[MaterialSrg::m_parallaxUvIndex], worldPosition, depthNDC);
 }
@@ -43,9 +49,14 @@
     float3x3 uvMatrix = MaterialSrg::m_parallaxUvIndex == 0 ? MaterialSrg::m_uvMatrix : CreateIdentity3x3();
     float3x3 uvMatrixInverse = MaterialSrg::m_parallaxUvIndex == 0 ? MaterialSrg::m_uvMatrixInverse : CreateIdentity3x3();
     
+    float heightmapScale = MaterialSrg::m_heightmapScale;
+    float heightmapOffset = MaterialSrg::m_heightmapOffset;
+    
+    AdjustParallaxShadowCaster(heightmapScale, heightmapOffset, MaterialSrg::m_parallax_pdo_shadowFactor);
+
     GetParallaxInput(
         normal, tangents[MaterialSrg::m_parallaxUvIndex], bitangents[MaterialSrg::m_parallaxUvIndex],
-        MaterialSrg::m_heightmapScale, MaterialSrg::m_heightmapOffset,
+        heightmapScale, heightmapOffset,
         ObjectSrg::GetWorldMatrix(), uvMatrix, uvMatrixInverse,
         uvs[MaterialSrg::m_parallaxUvIndex], worldPosition, depthNDC, depthCS, isClipped);
 }

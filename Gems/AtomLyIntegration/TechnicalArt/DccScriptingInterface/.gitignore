@@ -2,6 +2,7 @@
 .temp
 __downloads__
 __pycache__
+__tmp__
 *.pyc
 *.pyo
 workspace.xml

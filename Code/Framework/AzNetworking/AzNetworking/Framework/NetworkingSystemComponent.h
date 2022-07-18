@@ -26,7 +26,7 @@ namespace AzNetworking
     //! This class creates and manages the set of network interfaces used by the application.
     class NetworkingSystemComponent final
         : public AZ::Component
-        , public AZ::TickBus::Handler
+        , public AZ::SystemTickBus::Handler
         , public INetworking
     {
     public:
@@ -45,25 +45,25 @@ namespace AzNetworking
         void Deactivate() override;
         //! @}
 
-        //! AZ::TickBus::Handler overrides.
+        //! AZ::SystemTickBus::Handler overrides.
         //! @{
-        void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
-        int GetTickOrder() override;
+        void OnSystemTick() override;
         //! @}
 
         //! INetworking overrides.
         //! @{
-        INetworkInterface* CreateNetworkInterface(AZ::Name name, ProtocolType protocolType, TrustZone trustZone, IConnectionListener& listener) override;
-        INetworkInterface* RetrieveNetworkInterface(AZ::Name name) override;
-        bool DestroyNetworkInterface(AZ::Name name) override;
+        INetworkInterface* CreateNetworkInterface(const AZ::Name& name, ProtocolType protocolType, TrustZone trustZone, IConnectionListener& listener) override;
+        INetworkInterface* RetrieveNetworkInterface(const AZ::Name& name) override;
+        bool DestroyNetworkInterface(const AZ::Name& name) override;
         void RegisterCompressorFactory(ICompressorFactory* factory) override;
-        AZStd::unique_ptr<ICompressor> CreateCompressor(AZ::Name name) override;
-        bool UnregisterCompressorFactory(AZ::Name name) override;
+        AZStd::unique_ptr<ICompressor> CreateCompressor(const AZStd::string_view name) override;
+        bool UnregisterCompressorFactory(const AZStd::string_view name) override;
         const NetworkInterfaces& GetNetworkInterfaces() const override;
         uint32_t GetTcpListenThreadSocketCount() const override;
         AZ::TimeMs GetTcpListenThreadUpdateTime() const override;
         uint32_t GetUdpReaderThreadSocketCount() const override;
         AZ::TimeMs GetUdpReaderThreadUpdateTime() const override;
+        void ForceUpdate() override;
         //! @}
 
         //! Console commands.
@@ -79,7 +79,7 @@ namespace AzNetworking
         AZStd::unique_ptr<TcpListenThread> m_listenThread;
         AZStd::unique_ptr<UdpReaderThread> m_readerThread;
 
-        using CompressionFactories = AZStd::unordered_map<AZ::Name, AZStd::unique_ptr<ICompressorFactory>>;
+        using CompressionFactories = AZStd::unordered_map<AZ::Crc32, AZStd::unique_ptr<ICompressorFactory>>;
         CompressionFactories m_compressorFactories;
     };
 }

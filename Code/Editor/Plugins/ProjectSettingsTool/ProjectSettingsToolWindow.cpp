@@ -33,13 +33,23 @@
 #include <QScrollBar>
 #include <QTimer>
 
-// The object name in json for android
-const static char* androidSettings = "android_settings";
-static bool g_serializeRegistered = false;
-
 namespace ProjectSettingsTool
 {
-    using XmlNode = AZ::rapidxml::xml_node<char>;
+    namespace
+    {
+        const char* const IosSettingsPListPaths[] = {
+            "Resources/Platform/iOS/Info.plist",
+
+            // legacy paths
+            "Gem/Resources/Platform/iOS/Info.plist",
+            "Gem/Resources/IOSLauncher/Info.plist"
+        };
+
+        const char* const AndroidSettingsJsonPath = "Platform/Android/android_project.json";
+        const char* const AndroidSettingsJsonValueString = "android_settings";
+
+        bool g_serializeRegistered = false;
+    }
 
     ProjectSettingsToolWindow::ProjectSettingsToolWindow(QWidget* parent)
         : QWidget(parent)
@@ -48,27 +58,32 @@ namespace ProjectSettingsTool
         , m_reconfigureProcess()
         , m_projectRoot(GetProjectRoot())
         , m_projectName(GetProjectName())
-        , m_plistsInitVector(
-            PlatformEnabled(PlatformId::Ios) ?
-            ProjectSettingsContainer::PlistInitVector({
-                ProjectSettingsContainer::PlatformAndPath
-                { PlatformId::Ios, GetPlatformResource(PlatformId::Ios) }
-                })
-            :
-                ProjectSettingsContainer::PlistInitVector())
-        , m_settingsContainer(AZStd::make_unique<ProjectSettingsContainer>(m_projectRoot + "/project.json", m_plistsInitVector))
         , m_validator(AZStd::make_unique<Validator>())
         , m_platformProperties()
         , m_platformPropertyEditors()
         , m_propertyHandlers()
         , m_validationHandler(AZStd::make_unique<ValidationHandler>())
         , m_linkHandler(nullptr)
-        // The default path to select images at
-        , m_lastImagesPath(QStringLiteral("%1Code%2/Resources")
-            .arg(m_projectRoot.c_str()
-            , m_projectName.c_str()))
         , m_invalidState(false)
     {
+        ProjectSettingsContainer::PlatformResources platformResources;
+
+        if (PlatformEnabled(PlatformId::Ios))
+        {
+            platformResources.emplace_back(PlatformId::Ios, GetPlatformResource(PlatformId::Ios));
+        }
+
+        if (PlatformEnabled(PlatformId::Android))
+        {
+            platformResources.emplace_back(PlatformId::Android, GetPlatformResource(PlatformId::Android));
+        }
+
+        // Creates settings container to handle settings of all platforms
+        m_settingsContainer = AZStd::make_unique<ProjectSettingsContainer>(m_projectRoot + "/project.json", platformResources);
+
+        // The default path to select images at
+        m_lastImagesPath = QStringLiteral("%1Code%2/Resources").arg(m_projectRoot.c_str(), m_projectName.c_str());
+
         // Shows any and all errors that occurred during serialization with option to quit out on each one.
         ShowAllErrorsThenExitIfInvalid();
 
@@ -95,6 +110,11 @@ namespace ProjectSettingsTool
         if (!PlatformEnabled(PlatformId::Ios))
         {
             m_ui->platformTabs->removeTab(m_ui->platformTabs->indexOf(m_ui->iosTab));
+        }
+        // Hide the Android tab if that platform is not enabled.
+        if (!PlatformEnabled(PlatformId::Android))
+        {
+            m_ui->platformTabs->removeTab(m_ui->platformTabs->indexOf(m_ui->androidTab));
         }
     }
 
@@ -244,17 +264,17 @@ namespace ProjectSettingsTool
     bool ProjectSettingsToolWindow::IfErrorShowThenExit()
     {
         // Grabs the earliest unseen error popping it off the error queue
-        AZ::Outcome<void, SettingsError> error = m_settingsContainer->GetError();
-        if (!error.IsSuccess())
+        AZ::Outcome<void, SettingsError> outcome = m_settingsContainer->GetError();
+        if (!outcome.IsSuccess())
         {
-            bool shouldAbort = error.GetError().m_error == m_settingsContainer->GetFailedLoadingPlistText();
+            const auto& error = outcome.GetError();
             QMessageBox::StandardButton result = QMessageBox::critical
             (
                 this,
-                error.GetError().m_error.c_str(),
-                error.GetError().m_reason.c_str(),
-                shouldAbort ? QMessageBox::Abort : QMessageBox::StandardButtons(QMessageBox::Ok | QMessageBox::Abort),
-                shouldAbort ? QMessageBox::Abort : QMessageBox::Ok
+                error.m_error.c_str(),
+                error.m_reason.c_str(),
+                error.m_shouldAbort ? QMessageBox::Abort : QMessageBox::StandardButtons(QMessageBox::Ok | QMessageBox::Abort),
+                error.m_shouldAbort ? QMessageBox::Abort : QMessageBox::Ok
             );
             if (result == QMessageBox::Abort)
             {
@@ -402,17 +422,6 @@ namespace ProjectSettingsTool
         m_platformPropertyEditors[platIdValue]->InvalidateAll();
     }
 
-    const char* GetPlatformKey(const Platform& plat)
-    {
-        switch (plat.m_id)
-        {
-        case PlatformId::Android:
-            return androidSettings;
-        default:
-            return "";
-        }
-    }
-
     void ProjectSettingsToolWindow::MakeSerializers()
     {
         for (int plat = 0; plat < static_cast<unsigned long long>(PlatformId::NumPlatformIds); ++plat)
@@ -441,20 +450,37 @@ namespace ProjectSettingsTool
                 ));
             break;
         case PlatformId::Android:
-            m_platformPropertyEditors[platIdValue]->EnumerateInstances(AZStd::bind
+        {
+            auto* androidSettings = m_settingsContainer->GetPlatformData(plat);
+            if (!androidSettings ||
+                !AZStd::holds_alternative<ProjectSettingsContainer::JsonSettings>(*androidSettings))
+            {
+                QMessageBox::critical
                 (
-                    &ProjectSettingsToolWindow::MakeSerializerJsonNonRoot,
                     this,
-                    plat,
-                    AZStd::placeholders::_1,
-                    &m_settingsContainer->GetProjectJsonDocument(),
-                    m_settingsContainer->GetProjectJsonValue(GetPlatformKey(plat)).GetValue()
-                ));
+                    "Critical",
+                    "Android settings is invalid. Project Settings Tool must close.",
+                    QMessageBox::Abort
+                );
+                ForceClose();
+            }
+            auto& androidJSonSettings = AZStd::get<ProjectSettingsContainer::JsonSettings>(*androidSettings);
+
+            m_platformPropertyEditors[platIdValue]->EnumerateInstances(AZStd::bind
+            (
+                &ProjectSettingsToolWindow::MakeSerializerJsonNonRoot,
+                this,
+                plat,
+                AZStd::placeholders::_1,
+                androidJSonSettings.m_document.get(),
+                ProjectSettingsContainer::GetJsonValue(*androidJSonSettings.m_document, AndroidSettingsJsonValueString).GetValue()
+            ));
             break;
+        }
         case PlatformId::Ios:
         {
-            PlistDictionary* dict = m_settingsContainer->GetPlistDictionary(plat).release();
-            if (dict == nullptr)
+            AZStd::unique_ptr<PlistDictionary> dict = m_settingsContainer->CreatePlistDictionary(plat);
+            if (!dict)
             {
                 QMessageBox::critical
                 (
@@ -472,8 +498,9 @@ namespace ProjectSettingsTool
                 this,
                 plat,
                 AZStd::placeholders::_1,
-                // All arguments must be copy constructible so this must be released
-                dict
+                // All arguments must be copy constructible so this must be released,
+                // MakeSerializerPlist creates a unique pointer with dict and Serializer will own it.
+                dict.release()
             ));
             break;
         }
@@ -567,9 +594,9 @@ namespace ProjectSettingsTool
                         if (needToSavePlat[plat])
                         {
                             m_platformSerializers[plat]->SaveToSettings();
-                            if (m_settingsContainer->IsPlistPlatform(platform))
+                            if (m_settingsContainer->HasPlatformData(platform))
                             {
-                                m_settingsContainer->SavePlistData(platform);
+                                m_settingsContainer->SavePlatformData(platform);
                             }
                             else
                             {
@@ -624,7 +651,7 @@ namespace ProjectSettingsTool
             if (result == QMessageBox::Reset)
             {
                 m_settingsContainer->ReloadProjectJsonData();
-                m_settingsContainer->ReloadPlistData();
+                m_settingsContainer->ReloadAllPlatformsData();
                 MakeSerializers();
 
                 // Disable links to avoid overwriting values while loading
@@ -650,6 +677,12 @@ namespace ProjectSettingsTool
             AZStd::string plistPath = GetPlatformResource(platformId);
             return !plistPath.empty();
         }
+        // Android can be disabled if the android_project.json file is missing
+        else if (platformId == PlatformId::Android)
+        {
+            const auto androidProjectJson = AZ::IO::FixedMaxPath(m_projectRoot) / AndroidSettingsJsonPath;
+            return AZ::IO::SystemFile::Exists(androidProjectJson.c_str());
+        }
 
         return true;
     }
@@ -658,23 +691,23 @@ namespace ProjectSettingsTool
     {
         if (platformId == PlatformId::Ios)
         {
-            const char* searchPaths[] = {
-                "Resources/Platform/iOS/Info.plist",
-
-                // legacy paths
-                "Gem/Resources/Platform/iOS/Info.plist",
-                "Gem/Resources/IOSLauncher/Info.plist",
-            };
-
-            for (auto relPath : searchPaths)
+            for (const auto iosSettingsPListPath : IosSettingsPListPaths)
             {
-                AZ::IO::FixedMaxPath projectPlist{ m_projectRoot };
-                projectPlist /= relPath;
+                const auto iosPList = AZ::IO::FixedMaxPath(m_projectRoot) / iosSettingsPListPath;
 
-                if (AZ::IO::SystemFile::Exists(projectPlist.c_str()))
+                if (AZ::IO::SystemFile::Exists(iosPList.c_str()))
                 {
-                    return projectPlist.LexicallyNormal().String();
+                    return iosPList.LexicallyNormal().String();
                 }
+            }
+        }
+        else if (platformId == PlatformId::Android)
+        {
+            const auto androidProjectJson = AZ::IO::FixedMaxPath(m_projectRoot) / AndroidSettingsJsonPath;
+
+            if (AZ::IO::SystemFile::Exists(androidProjectJson.c_str()))
+            {
+                return androidProjectJson.LexicallyNormal().String();
             }
         }
 

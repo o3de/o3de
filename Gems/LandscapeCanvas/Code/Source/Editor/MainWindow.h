@@ -103,7 +103,7 @@ namespace LandscapeCanvasEditor
         ~MainWindow() override;
 
     private:
-        GraphModel::IGraphContextPtr GetGraphContext() const override;
+        GraphModel::GraphContextPtr GetGraphContext() const override;
 
         ////////////////////////////////////////////////////////////////////////
         // GraphModelIntegration::GraphControllerNotificationBus::Handler overrides
@@ -274,6 +274,8 @@ namespace LandscapeCanvasEditor
         using DeletedNodePositionsMap = AZStd::unordered_map<AZ::EntityComponentIdPair, AZ::Vector2>;
         AZStd::unordered_map<GraphCanvas::GraphId, DeletedNodePositionsMap> m_deletedNodePositions;
         AzToolsFramework::EntityIdList m_queuedEntityDeletes;
+
+        AzToolsFramework::EntityIdList m_ignoreEntityComponentPropertyChanges;
 
         AZStd::unordered_map<AZ::Uuid, AZ::u32> m_wrappedNodeLayoutOrderMap;
 

@@ -77,7 +77,7 @@ namespace AZ
 
         bool ShaderVariantId::IsEmpty() const
         {
-            return m_key.none();
+            return m_mask.none();
         }
 
         ShaderVariantSearchResult::ShaderVariantSearchResult(ShaderVariantStableId stableId, uint32_t dynamicOptionCount)

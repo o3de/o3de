@@ -16,6 +16,7 @@
 #include <Shape/QuadShapeComponent.h>
 #include <AZTestShared/Math/MathTestHelpers.h>
 #include <AzFramework/UnitTest/TestDebugDisplayRequests.h>
+#include <ShapeThreadsafeTest.h>
 
 namespace
 {
@@ -560,5 +561,37 @@ namespace UnitTest
             shapeAabb, entity.GetId(), &LmbrCentral::ShapeComponentRequests::GetEncompassingAabb);
         EXPECT_THAT(debugDrawAabb.GetMin(), IsClose(shapeAabb.GetMin()));
         EXPECT_THAT(debugDrawAabb.GetMax(), IsClose(shapeAabb.GetMax()));
+    }
+
+    TEST_F(QuadShapeTest, ShapeHasThreadsafeGetSetCalls)
+    {
+        // Verify that setting values from one thread and querying values from multiple other threads in parallel produces
+        // correct, consistent results.
+
+        // This test expects shapes to be a certain distance in the Z axis away from the test point, which means that the top of the
+        // shape should be height/2 above the origin. Since quads are flat, we'll locate its center at height/2 so that we're the
+        // correct distance away.
+        AZ::Entity entity;
+        CreateQuad(
+            AZ::Transform::CreateTranslation(AZ::Vector3(0.0f, 0.0f, ShapeThreadsafeTest::ShapeHeight / 2.0f)),
+            ShapeThreadsafeTest::MinDimension, ShapeThreadsafeTest::MinDimension, entity);
+
+        // Define the function for setting unimportant dimensions on the shape while queries take place.
+        auto setDimensionFn = [](AZ::EntityId shapeEntityId, float minDimension, uint32_t dimensionVariance, [[maybe_unused]] float height)
+        {
+            float x = minDimension + aznumeric_cast<float>(rand() % dimensionVariance);
+            float y = minDimension + aznumeric_cast<float>(rand() % dimensionVariance);
+
+            LmbrCentral::QuadShapeComponentRequestBus::Event(
+                shapeEntityId, &LmbrCentral::QuadShapeComponentRequestBus::Events::SetQuadWidth, x);
+            LmbrCentral::QuadShapeComponentRequestBus::Event(
+                shapeEntityId, &LmbrCentral::QuadShapeComponentRequestBus::Events::SetQuadHeight, y);
+        };
+
+        // Run the test, which will run multiple queries in parallel with each other and with the dimension-setting function.
+        // The number of iterations is arbitrary - it's set high enough to catch most failures, but low enough to keep the test
+        // time to a minimum.
+        const int numIterations = 30000;
+        ShapeThreadsafeTest::TestShapeGetSetCallsAreThreadsafe(entity, numIterations, setDimensionFn);
     }
 } // namespace UnitTest

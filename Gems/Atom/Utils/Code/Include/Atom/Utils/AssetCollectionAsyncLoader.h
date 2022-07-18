@@ -99,6 +99,8 @@ namespace AZ
 
         //! The key is the asset path
         AZStd::unordered_map<AZStd::string, Data::Asset<Data::AssetData>> m_readyAssets;
+        //! Assets that are queued for loading, waiting for OnAssetReady event.
+        AZStd::unordered_map<AZStd::string, Data::Asset<Data::AssetData>> m_notReadyAssets;
 
         // Called by the m_assetDiscoveryJob as it discovers assets in the AP Cache.
         friend class AssetDiscoveryJob;

@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/Module/Module.h>
 #include <AzNetworking/AzNetworkingModule.h>
 #include <AzNetworking/Framework/NetworkingSystemComponent.h>
 
@@ -24,6 +25,8 @@ namespace AzNetworking
         return AZ::ComponentTypeList
         {
             azrtti_typeid<NetworkingSystemComponent>(),
+            // TargetManagementComponent. We explicitly type here to workaround a dependency loop with AzFramework
+            AZ::TypeId("{39899133-42B3-4e92-A579-CDDC85A23277}"),
         };
     }
-}
+} // namespace AzNetworking

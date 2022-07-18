@@ -17,10 +17,9 @@
 
 #include <Integration/EMotionFXBus.h>
 
-#include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/ViewportPluginBus.h>
-
 #include <BlendTreeMotionMatchNode.h>
 #include <Feature.h>
+#include <FeatureAngularVelocity.h>
 #include <FeaturePosition.h>
 #include <FeatureTrajectory.h>
 #include <FeatureVelocity.h>
@@ -75,6 +74,7 @@ namespace EMotionFX::MotionMatching
         EMotionFX::MotionMatching::FeaturePosition::Reflect(context);
         EMotionFX::MotionMatching::FeatureTrajectory::Reflect(context);
         EMotionFX::MotionMatching::FeatureVelocity::Reflect(context);
+        EMotionFX::MotionMatching::FeatureAngularVelocity::Reflect(context);
 
         EMotionFX::MotionMatching::PoseDataJointVelocities::Reflect(context);
 
@@ -169,10 +169,6 @@ namespace EMotionFX::MotionMatching
 
     void MotionMatchingSystemComponent::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
     {
-        // Draw the debug visualizations to the Animation Editor as well as the LY Editor viewport.
-        AZ::s32 animationEditorViewportId = -1;
-        EMStudio::ViewportPluginRequestBus::BroadcastResult(animationEditorViewportId, &EMStudio::ViewportPluginRequestBus::Events::GetViewportId);
-        DebugDraw(animationEditorViewportId);
-        DebugDraw(AzFramework::g_defaultSceneEntityDebugDisplayId);
+        MotionMatchingSystemComponent::DebugDraw(AzFramework::g_defaultSceneEntityDebugDisplayId);
     }
 } // namespace EMotionFX::MotionMatching

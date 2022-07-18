@@ -236,16 +236,16 @@ def AtomEditorComponents_Light_AddedToEntity():
             Report.result(Tests.edit_light_color, light_color.IsClose(color_value))
 
             # 8. Set Intensity mode.
-            # if LIGHT_TYPES[light_type] not in (LIGHT_TYPES['simple_point'], LIGHT_TYPES['simple_spot']):
-            #     for intensity_mode in INTENSITY_MODE.keys():
-            #         light_component.set_component_property_value(
-            #             AtomComponentProperties.light('Intensity mode'), INTENSITY_MODE[intensity_mode])
-            #         general.idle_wait_frames(1)
-            #         test_intensity_mode = (
-            #             f"Intensity mode set to {intensity_mode}",
-            #             f"P1: Intensity mode failed to be set to {intensity_mode}")
-            #         Report.result(test_intensity_mode, light_component.get_component_property_value(
-            #             AtomComponentProperties.light('Intensity mode')) == INTENSITY_MODE[intensity_mode])
+            if LIGHT_TYPES[light_type] not in (LIGHT_TYPES['simple_point'], LIGHT_TYPES['simple_spot']):
+                for intensity_mode in INTENSITY_MODE.keys():
+                    light_component.set_component_property_value(
+                        AtomComponentProperties.light('Intensity mode'), INTENSITY_MODE[intensity_mode])
+                    general.idle_wait_frames(1)
+                    test_intensity_mode = (
+                        f"Intensity mode set to {intensity_mode}",
+                        f"P1: Intensity mode failed to be set to {intensity_mode}")
+                    Report.result(test_intensity_mode, light_component.get_component_property_value(
+                        AtomComponentProperties.light('Intensity mode')) == INTENSITY_MODE[intensity_mode])
 
             # 9. Edit the Intensity parameter.
             light_component.set_component_property_value(AtomComponentProperties.light('Intensity'), 1000)
@@ -304,15 +304,15 @@ def AtomEditorComponents_Light_AddedToEntity():
                         AtomComponentProperties.light('Normal shadow bias')) == 10)
 
                 # 15. Set the Shadowmap size.
-                # for shadowmap_size in SHADOWMAP_SIZE.keys():
-                #     light_component.set_component_property_value(
-                #         AtomComponentProperties.light('Shadowmap size'), SHADOWMAP_SIZE[shadowmap_size])
-                #     general.idle_wait_frames(1)
-                #     test_shadowmap_size = (
-                #         f"Shadowmap size set to {shadowmap_size}.",
-                #         f"P1: Shadowmap size failed to be set to {shadowmap_size}.")
-                #     Report.result(test_shadowmap_size, light_component.get_component_property_value(
-                #         AtomComponentProperties.light('Shadowmap size')) == SHADOWMAP_SIZE[shadowmap_size])
+                for shadowmap_size in SHADOWMAP_SIZE.keys():
+                    light_component.set_component_property_value(
+                        AtomComponentProperties.light('Shadowmap size'), SHADOWMAP_SIZE[shadowmap_size])
+                    general.idle_wait_frames(1)
+                    test_shadowmap_size = (
+                        f"Shadowmap size set to {shadowmap_size}.",
+                        f"P1: Shadowmap size failed to be set to {shadowmap_size}.")
+                    Report.result(test_shadowmap_size, light_component.get_component_property_value(
+                        AtomComponentProperties.light('Shadowmap size')) == SHADOWMAP_SIZE[shadowmap_size])
 
                 # Shadow filter method tests.
                 # 16. Set the Shadow filter method.

@@ -92,3 +92,5 @@ if __name__ == "__main__":
 
     for entityId in entityIdList:
         activate_lut_asset(entityId, args.assetRelativePath)
+        azlmbr.render.EditorHDRColorGradingNotificationBus(azlmbr.bus.Event, 'OnActivateLutCompleted', entityId)
+    

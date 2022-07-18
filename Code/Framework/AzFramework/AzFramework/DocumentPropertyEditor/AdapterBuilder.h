@@ -52,7 +52,7 @@ namespace AZ::DocumentPropertyEditor
         void EndPropertyEditor();
 
         //! Inserts a Label node with the specified text.
-        void Label(AZStd::string_view text, bool copy = true);
+        void Label(AZStd::string_view text);
 
         //! Sets the value of the last node. Used for setting the current value of a property editor.
         void Value(Dom::Value value);
@@ -62,12 +62,18 @@ namespace AZ::DocumentPropertyEditor
         //! Adds a Nodes::PropertyEditor::OnChanged attribute that will get called with
         //! the path of the property value and its new value. This path can be used to generate a
         //! correct Replace patch for submitting NotifyContentsChanged.
-        void OnEditorChanged(AZStd::function<void(const Dom::Path&, const Dom::Value&)> onChangedCallback);
+        void OnEditorChanged(
+            AZStd::function<void(const Dom::Path&, const Dom::Value&, Nodes::PropertyEditor::ValueChangeType)> onChangedCallback);
+        //! Adds a message handler bound to the given adapter for a given message name or callback attribute.
+        //! \param adapter The adapter to bind this message to.
+        //! \param messageName The name of the message.
+        //! \param contextData If specified, is provided as additional message data when this message is sent.
+        void AddMessageHandler(DocumentAdapter* adapter, AZ::Name messageName, const Dom::Value& contextData = {});
 
         //! Gets the path to the DOM node currently being built within this builder's DOM.
         Dom::Path GetCurrentPath() const;
 
-        //! Returns true if an error has been encountered during the build process, 
+        //! Returns true if an error has been encountered during the build process,
         bool IsError() const;
         //! Returns the error information, if any, encountered during the build process.
         const AZStd::string& GetError() const;
@@ -75,37 +81,37 @@ namespace AZ::DocumentPropertyEditor
         //! Operations are no longer valid on this builder once this is called.
         Dom::Value&& FinishAndTakeResult();
 
-        template <class PropertyEditorDefinition>
-        void BeginPropertyEditor(Dom::Value value = {})
+        template<class PropertyEditorDefinition, class ValueType = AZ::Dom::Value>
+        void BeginPropertyEditor(ValueType value = {})
         {
-            BeginPropertyEditor(PropertyEditorDefinition::Name, value);
+            BeginPropertyEditor(PropertyEditorDefinition::Name, AZ::Dom::Utils::ValueFromType(value));
         }
 
-        template <class NodeDefinition>
+        template<class NodeDefinition>
         void BeginNode()
         {
             BeginNode(GetNodeName<NodeDefinition>());
         }
 
-        template <class NodeDefinition>
+        template<class NodeDefinition>
         void EndNode()
         {
             EndNode(GetNodeName<NodeDefinition>());
         }
 
-        template <class AttributeType>
+        template<class AttributeType>
         void Attribute(const AttributeDefinition<AttributeType>& definition, Dom::Value value)
         {
             Attribute(definition.GetName(), Dom::Value(AZStd::move(value)));
         }
 
-        template <class AttributeType>
+        template<class AttributeType>
         void Attribute(const AttributeDefinition<AttributeType>& definition, AttributeType value)
         {
             Attribute(definition.GetName(), definition.ValueToDom(AZStd::move(value)));
         }
 
-        template <class CallbackType, class Functor>
+        template<class CallbackType, class Functor>
         void CallbackAttribute(const CallbackAttributeDefinition<CallbackType>& definition, Functor value)
         {
             Attribute(definition.GetName(), definition.ValueToDom(AZStd::function<CallbackType>(value)));
@@ -114,6 +120,12 @@ namespace AZ::DocumentPropertyEditor
         void Attribute(const AttributeDefinition<AZStd::string_view>& definition, AZStd::string_view value)
         {
             Attribute(definition.GetName(), Dom::Value(value, true));
+        }
+
+        template<class CallbackType>
+        void AddMessageHandler(DocumentAdapter* adapter, const CallbackAttributeDefinition<CallbackType>& callback, const Dom::Value& contextData = {})
+        {
+            AddMessageHandler(adapter, callback.GetName(), contextData);
         }
 
     private:

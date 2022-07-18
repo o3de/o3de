@@ -55,7 +55,6 @@ namespace LegacyFramework
 {
     ApplicationDesc::ApplicationDesc(const char* name, int argc, char** argv)
         : m_applicationModule(nullptr)
-        , m_enableGridmate(true)
         , m_enablePerforce(true)
         , m_enableGUI(true)
         , m_enableProjectManager(true)
@@ -85,7 +84,6 @@ namespace LegacyFramework
 
         m_applicationModule = other.m_applicationModule;
         m_enableGUI = other.m_enableGUI;
-        m_enableGridmate = other.m_enableGridmate;
         m_enablePerforce = other.m_enablePerforce;
         azstrcpy(m_applicationName, AZ_MAX_PATH_LEN, other.m_applicationName);
         m_enableProjectManager = other.m_enableProjectManager;
@@ -473,7 +471,7 @@ namespace LegacyFramework
 
     void Application::CreateApplicationComponents()
     {
-        EnsureComponentCreated(AzFramework::TargetManagementComponent::RTTI_Type());
+        ;
     }
 
     void Application::CreateSystemComponents()

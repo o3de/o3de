@@ -80,6 +80,58 @@ DISPLAY_MAPPER_PRESET = {
     '4000Nits': 3,
 }
 
+# Control Type options for the Exposure Control component.
+EXPOSURE_CONTROL_TYPE = {
+    'manual': 0,
+    'eye_adaptation': 1
+}
+
+#Reflection Probe Baked Cubemap Quality
+BAKED_CUBEMAP_QUALITY = {
+    'Very Low': 0,
+    'Low': 1,
+    'Medium': 2,
+    'High': 3,
+    'Very High': 4
+}
+
+#Diffuse Probe Grid number of rays to cast per probe from enum DiffuseProbeGridNumRaysPerProbe
+NUM_RAYS_PER_PROBE = {
+    'NumRaysPerProbe_144': 0,
+    'NumRaysPerProbe_288': 1,
+    'NumRaysPerProbe_432': 2,
+    'NumRaysPerProbe_576': 3,
+    'NumRaysPerProbe_720': 4,
+    'NumRaysPerProbe_864': 5,
+    'NumRaysPerProbe_1008': 6,
+}
+
+# LUT Resolution options for the HDR Color Grading component.
+LUT_RESOLUTION = {
+    '16x16x16': 0,
+    '32x32x32': 1,
+    '64x64x64': 2,
+}
+
+# Shaper Type options for the HDR Color Grading & Look Modification components.
+SHAPER_TYPE = {
+    'None': 0,
+    'linear_custom': 1,
+    '48_nits': 2,
+    '1000_nits': 3,
+    '2000_nits': 4,
+    '4000_nits': 5,
+    'log2_custom': 6,
+    'pq': 7,
+}
+
+# Hair Lighting Model
+HAIR_LIGHTING_MODEL = {
+    'GGX': 0,
+    'Marschner': 1,
+    'Kajiya': 2,
+}
+
 # Level list used in Editor Level Load Test
 # WARNING: "Sponza" level is sandboxed due to an intermittent failure.
 LEVEL_LIST = ["hermanubis", "hermanubis_high", "macbeth_shaderballs", "PbrMaterialChart", "ShadowTest"]
@@ -94,11 +146,13 @@ class AtomComponentProperties:
     def actor(property: str = 'name') -> str:
         """
         Actor component properties.
+          - 'Actor asset' Asset.id of the actor asset.
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
         properties = {
             'name': 'Actor',
+            'Actor asset': 'Actor asset',
         }
         return properties[property]
 
@@ -196,6 +250,18 @@ class AtomComponentProperties:
         return properties[property]
 
     @staticmethod
+    def cube_map_capture(property: str = 'name') -> str:
+        """
+        CubeMap capture component properties.
+        :param property: From the last element of the property tree path. Default 'name' for component name string.
+        :return: Full property path OR component name if no property specified.
+        """
+        properties = {
+            'name': 'CubeMap Capture'
+        }
+        return properties[property]
+
+    @staticmethod
     def decal(property: str = 'name') -> str:
         """
         Decal component properties.
@@ -271,6 +337,31 @@ class AtomComponentProperties:
             Use editor_entity_utils EditorEntity.add_components(list) to add this list of requirements.\n
           - 'Camera Entity' an EditorEntity.id reference to the Camera component required for this effect.
             Must be a different entity than the one which hosts Depth of Field component.\n
+          - 'CameraEntityId Override' Override enable for CameraEntityId, (bool, default true).
+          - 'Enabled Override' Override enable for Enabled, (bool, default true).
+          - 'QualityLevel Override' Override enable for QualityLevel, (bool, default true).
+          - 'ApertureF Override' Override factor for ApertureF, (float, 0.0 to default 1.0).
+          - 'FocusDistance Override' Override factor for Focus Distance, (float, 0.0 to default 1.0).
+          - 'EnableAutoFocus Override' Override enable for EnableAutoFocus, (bool, default true).
+          - 'AutoFocusScreenPosition Override' Override enable for AutoFocusScreenPosition, (float, 0.0 to default 1.0).
+          - 'AutoFocusSensitivity Override' Override enable for AutoFocusSensitivity, (float, 0.0 to default 1.0).
+          - 'AutoFocusSpeed Override' Override enable for AutoFocusSpeed, (float, 0.0 to default 1.0).
+          - 'AutoFocusDelay Override' Override enable for AutoFocusDelay, (float, 0.0 to default 1.0).
+          - 'EnableDebugColoring Override' Override enable for EnableDebugColoring, (bool, default true).
+          - 'Enable Depth of Field' Enables or disables depth of field, (bool, default false).
+          - 'Quality Level' 0 or 1, 0 is standard Bokeh blur, 1 is high quality Bokeh blur (int, 0 or 1, default is 1).
+          - 'Aperture F' The higher the value the larger the aperture opening, (float, 0.0 to default 0.5).
+          - 'F Number' The ratio of the system's focal length to the diameter of the aperture.
+          - 'Focus Distance' The distance from the camera to the focused object (float, 0.0 to default 100.0).
+          - 'Enable Auto Focus' Enables or disables auto focus (bool, default true).
+          - 'Focus Screen Position' XY value of the focus position on screen for autofocus (math.Vector2(float x, float
+           y) where ranges are 0.0 to 1.0).\n
+          - 'Auto Focus Sensitivity' Higher value is more responsive, lower needs greater distance depth to refocus,
+             range 0.0 to 1.0.
+          - 'Auto Focus Speed' Distance that focus moves per second, normalizing the distance from view near to view far
+            at the value of 1, range 0.0 to 2.0.
+          - 'Auto Focus Delay' Specifies a delay time for focus to shift from one target to another, range 0.0 to 1.0.
+          - 'Enable Debug Color' Enables or disables debug color overlay, (bool).
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
@@ -278,6 +369,28 @@ class AtomComponentProperties:
             'name': 'DepthOfField',
             'requires': [AtomComponentProperties.postfx_layer()],
             'Camera Entity': 'Controller|Configuration|Camera Entity',
+            'CameraEntityId Override': 'Controller|Configuration|Overrides|CameraEntityId Override',
+            'Enabled Override': 'Controller|Configuration|Overrides|Enabled Override',
+            'QualityLevel Override': 'Controller|Configuration|Overrides|QualityLevel Override',
+            'ApertureF Override': 'Controller|Configuration|Aperture F',
+            'FocusDistance Override': 'Controller|Configuration|Overrides|FocusDistance Override',
+            'EnableAutoFocus Override': 'Controller|Configuration|Overrides|EnableAutoFocus Override',
+            'AutoFocusScreenPosition Override': 'Controller|Configuration|Overrides|AutoFocusScreenPosition Override',
+            'AutoFocusSensitivity Override': 'Controller|Configuration|Overrides|AutoFocusSensitivity Override',
+            'AutoFocusSpeed Override': 'Controller|Configuration|Overrides|AutoFocusSpeed Override',
+            'AutoFocusDelay Override': 'Controller|Configuration|Overrides|AutoFocusDelay Override',
+            'EnableDebugColoring Override': 'Controller|Configuration|Overrides|EnableDebugColoring Override',
+            'Enable Depth of Field': 'Controller|Configuration|Enable Depth of Field',
+            'Quality Level': 'Controller|Configuration|Quality Level',
+            'Aperture F': 'Controller|Configuration|Aperture F',
+            'F Number': 'Controller|Configuration|F Number',
+            'Focus Distance': 'Controller|Configuration|Focus Distance',
+            'Enable Auto Focus': 'Controller|Configuration|Auto Focus|Enable Auto Focus',
+            'Focus Screen Position': 'Controller|Configuration|Auto Focus|Focus Screen Position',
+            'Auto Focus Sensitivity': 'Controller|Configuration|Auto Focus|Auto Focus Sensitivity',
+            'Auto Focus Speed': 'Controller|Configuration|Auto Focus|Auto Focus Speed',
+            'Auto Focus Delay': 'Controller|Configuration|Auto Focus|Auto Focus Delay',
+            'Enable Debug Color': 'Controller|Configuration|Debugging|Enable Debug Color'
         }
         return properties[property]
 
@@ -301,12 +414,28 @@ class AtomComponentProperties:
         """
         Diffuse Probe Grid component properties. Requires one of 'shapes'.
           - 'shapes' a list of supported shapes as component names.
+          - 'Scrolling' Toggle the translation of probes with the entity (bool)
+          - 'Show Inactive Probes' Toggle the visualization of inactive probes (bool)
+          - 'Show Visualization' Toggles the probe grid visualization (bool)
+          - 'Visualization Sphere Radius' Sets the radius of probe visualization spheres (float 0.1 to inf)
+          - 'Normal Bias' Adjusts normal bias (float 0.0 to 1.0)
+          - 'Ambient Multiplier' adjusts multiplier for irradiance intensity (float 0.0 to 10.0)
+          - 'View Bias'Adjusts view bias (float 0.0 to 1.0)
+          - 'Number of Rays Per Probe' Number of rays to cast per probe from atom_constants.py NUM_RAYS_PER_PROBE
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
         properties = {
             'name': 'Diffuse Probe Grid',
-            'shapes': ['Axis Aligned Box Shape', 'Box Shape']
+            'shapes': ['Axis Aligned Box Shape', 'Box Shape'],
+            'Scrolling': 'Grid Settings|Scrolling',
+            'Show Inactive Probes': 'Visualization|Show Inactive Probes',
+            'Show Visualization': 'Visualization|Show Visualization',
+            'Visualization Sphere Radius': 'Visualization|Visualization Sphere Radius',
+            'Normal Bias': 'Grid Settings|Normal Bias',
+            'Ambient Multiplier': 'Grid Settings|Ambient Multiplier',
+            'View Bias': 'Grid Settings|View Bias',
+            'Number of Rays Per Probe': 'Grid Settings|Number of Rays Per Probe',
         }
         return properties[property]
 
@@ -388,12 +517,44 @@ class AtomComponentProperties:
         Exposure Control component properties. Requires PostFX Layer component.
           - 'requires' a list of component names as strings required by this component.
             Use editor_entity_utils EditorEntity.add_components(list) to add this list of requirements.\n
+          - 'Enable' Toggle active state of Exposure Control (bool).
+          - 'Enabled Override' Toggle active state of Exposure Control Overrides (bool).
+          - 'ExposureControlType Override' Toggle enable for Exposure Control Type (bool).
+          - 'ManualCompensation Override' Override Factor for Manual Compensation (0.0, 1.0).
+          - 'EyeAdaptationExposureMin Override' Override Factor for Minimum Exposure (0.0, 1.0).
+          - 'EyeAdaptationExposureMax Override' Override Factor for Maximum Exposure (0.0, 1.0).
+          - 'EyeAdaptationSpeedUp Override' Override Factor for Speed Up (0.0, 1.0).
+          - 'EyeAdaptationSpeedDown Override' Override Factor for Speed Down (0.0, 1.0).
+          - 'HeatmapEnabled Override' Toggle enable for Enable Heatmap (bool).
+          - 'Control Type' specifies manual or Eye Adaptation control from atom_constants.py CONTROL_TYPE.
+          - 'Manual Compensation' Manual exposure compensation value (-16.0, 16.0).
+          - 'Minimum Exposure' Exposure compensation for Eye Adaptation minimum exposure (-16.0, 16.0).
+          - 'Maximum Exposure' Exposure compensation for Eye Adaptation maximum exposure (-16.0, 16.0).
+          - 'Speed Up' Speed for Auto Exposure to adapt to bright scenes (0.01, 10.0).
+          - 'Speed Down' Speed for Auto Exposure to adapt to dark scenes (0.01, 10.0).
+          - 'Enable Heatmap' Toggle enable for Heatmap (bool).
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
         properties = {
             'name': 'Exposure Control',
             'requires': [AtomComponentProperties.postfx_layer()],
+            'Enable': 'Controller|Configuration|Enable',
+            'Enabled Override': 'Controller|Configuration|Overrides|Enabled Override',
+            'ExposureControlType Override': 'Controller|Configuration|Overrides|ExposureControlType Override',
+            'ManualCompensation Override': 'Controller|Configuration|Overrides|ManualCompensation Override',
+            'EyeAdaptationExposureMin Override': 'Controller|Configuration|Overrides|EyeAdaptationExposureMin Override',
+            'EyeAdaptationExposureMax Override': 'Controller|Configuration|Overrides|EyeAdaptationExposureMax Override',
+            'EyeAdaptationSpeedUp Override': 'Controller|Configuration|Overrides|EyeAdaptationSpeedUp Override',
+            'EyeAdaptationSpeedDown Override': 'Controller|Configuration|Overrides|EyeAdaptationSpeedDown Override',
+            'HeatmapEnabled Override': 'Controller|Configuration|Overrides|HeatmapEnabled Override',
+            'Control Type': 'Controller|Configuration|Control Type',
+            'Manual Compensation': 'Controller|Configuration|Manual Compensation',
+            'Minimum Exposure': 'Controller|Configuration|Eye Adaptation|Minimum Exposure',
+            'Maximum Exposure': 'Controller|Configuration|Eye Adaptation|Maximum Exposure',
+            'Speed Up': 'Controller|Configuration|Eye Adaptation|Speed Up',
+            'Speed Down': 'Controller|Configuration|Eye Adaptation|Speed Down',
+            'Enable Heatmap': 'Controller|Configuration|Eye Adaptation|Enable Heatmap',
         }
         return properties[property]
 
@@ -420,14 +581,153 @@ class AtomComponentProperties:
         """
         Grid component properties.
           - 'Grid Size': The size of the grid, default value is 32
-          - 'Secondary Grid Spacing': The spacing value for the secondary grid, i.e. 1.0
+          - 'Axis Color': Sets color of the grid axis using azlmbr.math.Color tuple, default value is 0,0,255 (blue)
+          - 'Primary Grid Spacing': Amount of space between grid lines, default value is 1.0
+          - 'Primary Color': Sets color of the primary grid lines using azlmbr.math.Color tuple,
+             default value is 64,64,64 (dark grey)
+          - 'Secondary Grid Spacing': Amount of space between sub-grid lines, default value is 0.25
+          - 'Secondary Color': Sets color of the secondary grid lines using azlmbr.math.Color tuple,
+             default value is 128,128,128 (light grey)
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
         properties = {
             'name': 'Grid',
             'Grid Size': 'Controller|Configuration|Grid Size',
+            'Axis Color': 'Controller|Configuration|Axis Color',
+            'Primary Grid Spacing': 'Controller|Configuration|Primary Grid Spacing',
+            'Primary Color': 'Controller|Configuration|Primary Color',
             'Secondary Grid Spacing': 'Controller|Configuration|Secondary Grid Spacing',
+            'Secondary Color': 'Controller|Configuration|Secondary Color',
+        }
+        return properties[property]
+
+    @staticmethod
+    def hair(property: str = 'name') -> str:
+        """
+        Atom Hair component properties. Requires Actor component.
+          - 'requires' a list of component names as strings required by this component.
+            Use editor_entity_utils EditorEntity.add_components(list) to add this list of requirements.
+          - 'Hair Asset' Asset.id of the hair TressFX asset.
+          - 'Enable Area Lights' (bool default True)
+          - 'Enable Azimuth' Azimuth Contribution (bool default True)
+          - 'Enable Directional Lights' (bool default True)
+          - 'Enable IBL' imaged-based lighting for hair (bool default True)
+          - 'Enable Longitude' Longitude Contribution (bool default True)
+          - 'Enable Marschner R' (bool default True)
+          - 'Enable Marschner TRT' (bool default True)
+          - 'Enable Marschner TT' (bool default True)
+          - 'Enable Punctual Lights' (bool default True)
+          - 'Enable Shadows' (bool default True)
+          - 'Hair Lighting Model' simulation algorithm selected from atom_constants.py HAIR_LIGHTING_MODEL (default 'Marschner')
+          - 'Base Albedo Asset' Asset.id of the base albedo texture asset (streamingimage or supported texture format)
+          - 'Base Color' base color of the hair (math.Color RGBA, default 255,255,255,161)
+          - 'Enable Hair LOD' Level of Detail usage for the hair (bool default False)
+          - 'Enable Hair LOD(Shadow)' Level of Detail usage for the shadow of hair (bool default False)
+          - 'Enable Strand Tangent' (bool default False)
+          - 'Enable Strand UV' usage of Strand Albedo (bool default False)
+          - 'Enable Thin Tip' end of the hair will narrow or be squared off (bool default True)
+          - 'Fiber Radius' Diameter of the fiber (float 0.0 to 0.01, default 0.002)
+          - 'Fiber Spacing' spacing between the fibers (float 0.0.to 1.0, default 0.4)
+          - 'Fiber ratio' extent to which the hair strand will taper (float 0.01 to 1.0, default 0.06)
+          - 'Hair Cuticle Angle' determins how the light refraction behaves (float radians 0.05 to 0.15, default 0.08)
+          - 'Hair Ex1' Specular power to use for the calculated specular root value (float 0.0 to 100.0, default 14.4)
+          - 'Hair Ex2' Specular power to use for the calculated specular tip value (float 0.0 to 100.0, default 11.8)
+          - 'Hair Kdiffuse' Diffuse coefficient, think of it as a gain value (float 0.0 to 1.0, deafult 0.22)
+          - 'Hair Ks1' Primary specular reflection coefficient (float 0.0 to 1.0, default 0.001)
+          - 'Hair Ks2' Secondary specular reflection coefficient (float 0.0 to 1.0, default 0.136)
+          - 'Hair Roughness' (float 0.4 to 0.9, default 0.65)
+          - 'Hair Shadow Alpha' attenuate hair shadows based on depth into strands (float 0.0 to 1.0, default 0.35)
+          - 'LOD End Distance' Distance in centimeters where LOD will be its maximum reduction/multiplier (float 0.0 to inf, default 5.0)
+          - 'LOD Start Distance' Distance to begin LOD in centimeters camera to hair. (float 0.0 to inf, default 1.0)
+          - 'Mat Tip Color' blend from root to tip (math.Color RGBA, default 255,255,255,161)
+          - 'Max LOD Reduction' Maximum amount of reduction as a percentage of the original (float 0.0 to 1.0, default 0.5)
+          - 'Max LOD Strand Width Multiplier' Maximum amount the strand width would be multiplied by (float 0.0 to 10.0, default 2.0)
+          - 'Max Shadow Fibers' shadow attenuation calculation cutoff (int 0 to 100, default 50)
+          - 'Shadow LOD End Distance' Distance where shadow LOD should be at its maximum (float 0.0 to inf, default 5.0)
+          - 'Shadow LOD Start Distance' Distance to begin shadow LOD (float 0.0 to inf, default 1.0)
+          - 'Shadow Max LOD Reduction' max reduction as a percentage of the original (float 0.0 to 1.0, default 0.5)
+          - 'Shadow Max LOD Strand Width Multiplier' max amount the shadow width cast by the strand would be multiplied by (float 0.0 to 10.0, default 2.0)
+          - 'Strand Albedo Asset' Asset.id of the texture asset used for strands (streamingimage)
+          - 'Strand UVTiling Factor' Amount of tiling to use (float 0.0 to 10.0, default 1.0)
+          - 'Tip Percentage' amount of lerp blend between Base Scalp Albedo and Mat Tip Color (float 0.0 default to 1.0)
+          - 'Clamp Velocity' limits the displacement of hair segments per frame (float 1.0 to 24.0, default 20.0)
+          - 'Damping' smooths out the motion of the hair (float 0.0 to 1.0, default 0.08)
+          - 'Global Constraint Range' global shape stiffness (float 0.0 to 1.0, default 0.308)
+          - 'Global Constraint Stiffness' stiffness of a strand (float 0.0 to 1.0, default 0.408)
+          - 'Gravity Magnitude' gravitational pseudo value approximating force on strands (float 0.0 to 1.0 default 0.19)
+          - 'Length Constraint Iterations' simulation time (iterations) toward keeping the global hair shape (int 1 to 10, default 3)
+          - 'Local Constraint Iterations' more simulation time (iterations) toward keeping the local hair shape (int 1 to 10, default 3)
+          - 'Local Constraint Stiffness' Controls the stiffness of a strand (float 0.0 to 1.0, default 0.908)
+          - 'Tip Separation' Forces the tips of the strands away from each other (float 0.0 to 1.0, default 0.1)
+          - 'Vsp Accel Threshold' Velocity Shock Propagation acceleration threshold (float 0.0 to 10.0, default 1.208)
+          - 'Vsp Coeffs' Velocity Shock Propagation (float 0.0 to 1.0, default 0.758)
+          - 'Wind Angle Radians' (float radians 0.0 to 1.0, default 0.698)
+          - 'Wind Direction' (math.Vector3 XYZ world space default 0.0, 1.0, 0.0)
+          - 'Wind Magnitude' wind multiplier (float 0.0 default to 1.0)
+        :param property: From the last element of the property tree path. Default 'name' for component name string.
+        :return: Full property path OR component name if no property specified.
+        """
+        properties = {
+            'name': 'Atom Hair',
+            'requires': [AtomComponentProperties.actor()],
+            'Hair Asset': 'Controller|Configuration|Hair Asset',
+            'Enable Area Lights': 'Controller|Configuration|Hair Global Settings|Enable Area Lights',
+            'Enable Azimuth': 'Controller|Configuration|Hair Global Settings|Enable Azimuth',
+            'Enable Directional Lights': 'Controller|Configuration|Hair Global Settings|Enable Directional Lights',
+            'Enable IBL': 'Controller|Configuration|Hair Global Settings|Enable IBL',
+            'Enable Longitude': 'Controller|Configuration|Hair Global Settings|Enable Longitude',
+            'Enable Marschner R': 'Controller|Configuration|Hair Global Settings|Enable Marschner R',
+            'Enable Marschner TRT': 'Controller|Configuration|Hair Global Settings|Enable Marschner TRT',
+            'Enable Marschner TT': 'Controller|Configuration|Hair Global Settings|Enable Marschner TT',
+            'Enable Punctual Lights': 'Controller|Configuration|Hair Global Settings|Enable Punctual Lights',
+            'Enable Shadows': 'Controller|Configuration|Hair Global Settings|Enable Shadows',
+            'Hair Lighting Model': 'Controller|Configuration|Hair Global Settings|Hair Lighting Model',
+            'Base Albedo Asset': 'Controller|Configuration|TressFX Render Settings|Base Albedo Asset',
+            'Base Color': 'Controller|Configuration|TressFX Render Settings|Base Color',
+            'Enable Hair LOD': 'Controller|Configuration|TressFX Render Settings|Enable Hair LOD',
+            'Enable Hair LOD(Shadow)': 'Controller|Configuration|TressFX Render Settings|Enable Hair LOD(Shadow)',
+            'Enable Strand Tangent': 'Controller|Configuration|TressFX Render Settings|Enable Strand Tangent',
+            'Enable Strand UV': 'Controller|Configuration|TressFX Render Settings|Enable Strand UV',
+            'Enable Thin Tip': 'Controller|Configuration|TressFX Render Settings|Enable Thin Tip',
+            'Fiber Radius': 'Controller|Configuration|TressFX Render Settings|Fiber Radius',
+            'Fiber Spacing': 'Controller|Configuration|TressFX Render Settings|Fiber Spacing',
+            'Fiber ratio': 'Controller|Configuration|TressFX Render Settings|Fiber ratio',
+            'Hair Cuticle Angle': 'Controller|Configuration|TressFX Render Settings|Hair Cuticle Angle',
+            'Hair Ex1': 'Controller|Configuration|TressFX Render Settings|Hair Ex1',
+            'Hair Ex2': 'Controller|Configuration|TressFX Render Settings|Hair Ex2',
+            'Hair Kdiffuse': 'Controller|Configuration|TressFX Render Settings|Hair Kdiffuse',
+            'Hair Ks1': 'Controller|Configuration|TressFX Render Settings|Hair Ks1',
+            'Hair Ks2': 'Controller|Configuration|TressFX Render Settings|Hair Ks2',
+            'Hair Roughness': 'Controller|Configuration|TressFX Render Settings|Hair Roughness',
+            'Hair Shadow Alpha': 'Controller|Configuration|TressFX Render Settings|Hair Shadow Alpha',
+            'LOD End Distance': 'Controller|Configuration|TressFX Render Settings|LOD End Distance',
+            'LOD Start Distance': 'Controller|Configuration|TressFX Render Settings|LOD Start Distance',
+            'Mat Tip Color': 'Controller|Configuration|TressFX Render Settings|Mat Tip Color',
+            'Max LOD Reduction': 'Controller|Configuration|TressFX Render Settings|Max LOD Reduction',
+            'Max LOD Strand Width Multiplier': 'Controller|Configuration|TressFX Render Settings|Max LOD Strand Width Multiplier',
+            'Max Shadow Fibers': 'Controller|Configuration|TressFX Render Settings|Max Shadow Fibers',
+            'Shadow LOD End Distance': 'Controller|Configuration|TressFX Render Settings|Shadow LOD End Distance',
+            'Shadow LOD Start Distance': 'Controller|Configuration|TressFX Render Settings|Shadow LOD Start Distance',
+            'Shadow Max LOD Reduction': 'Controller|Configuration|TressFX Render Settings|Shadow Max LOD Reduction',
+            'Shadow Max LOD Strand Width Multiplier': 'Controller|Configuration|TressFX Render Settings|Shadow Max LOD Strand Width Multiplier',
+            'Strand Albedo Asset': 'Controller|Configuration|TressFX Render Settings|Strand Albedo Asset',
+            'Strand UVTiling Factor': 'Controller|Configuration|TressFX Render Settings|Strand UVTiling Factor',
+            'Tip Percentage': 'Controller|Configuration|TressFX Render Settings|Tip Percentage',
+            'Clamp Velocity': 'Controller|Configuration|TressFX Sim Settings|Clamp Velocity',
+            'Damping': 'Controller|Configuration|TressFX Sim Settings|Damping',
+            'Global Constraint Range': 'Controller|Configuration|TressFX Sim Settings|Global Constraint Range',
+            'Global Constraint Stiffness': 'Controller|Configuration|TressFX Sim Settings|Global Constraint Stiffness',
+            'Gravity Magnitude': 'Controller|Configuration|TressFX Sim Settings|Gravity Magnitude',
+            'Length Constraint Iterations': 'Controller|Configuration|TressFX Sim Settings|Length Constraint Iterations',
+            'Local Constraint Iterations': 'Controller|Configuration|TressFX Sim Settings|Local Constraint Iterations',
+            'Local Constraint Stiffness': 'Controller|Configuration|TressFX Sim Settings|Local Constraint Stiffness',
+            'Tip Separation': 'Controller|Configuration|TressFX Sim Settings|Tip Separation',
+            'Vsp Accel Threshold': 'Controller|Configuration|TressFX Sim Settings|Vsp Accel Threshold',
+            'Vsp Coeffs': 'Controller|Configuration|TressFX Sim Settings|Vsp Coeffs',
+            'Wind Angle Radians': 'Controller|Configuration|TressFX Sim Settings|Wind Angle Radians',
+            'Wind Direction': 'Controller|Configuration|TressFX Sim Settings|Wind Direction',
+            'Wind Magnitude': 'Controller|Configuration|TressFX Sim Settings|Wind Magnitude',
         }
         return properties[property]
 
@@ -437,7 +737,39 @@ class AtomComponentProperties:
         HDR Color Grading component properties. Requires PostFX Layer component.
           - 'requires' a list of component names as strings required by this component.
             Use editor_entity_utils EditorEntity.add_components(list) to add this list of requirements.\n
-          - 'Enable HDR color grading' Toggle active state of the component True/False
+          - 'Enable HDR color grading' Toggle active state of the component. (bool)
+          - 'Color Adjustment Weight' Level of influence for Color Adjustment parameters. (0, 1)
+          - 'Exposure' Brightness/Darkness of the scene. (-INF, INF)
+          - 'Contrast' Lowers/Enhances the difference in color of the scene. (-100, 100)
+          - 'Pre Saturation' Controls base color saturation before further modification. (-100, 100)
+          - 'Filter Intensity' Brightness of the color filter. (-INF, INF)
+          - 'Filter Multiply'  Enables and controls strength of the color filter. (0, 1)
+          - 'Filter Swatch' Determines color of the color filter applied to the scene. (Vector3)
+          - 'White Balance Weight' Level of influence for White Balance parameters. (0, 1)
+          - 'Temperature' Color temperature in Kelvin. (1000, 40000)
+          - 'Tint' Changes the tint of the scene from Neutral (0) to Magenta (-100) or Green (100). (-100, 100)
+          - 'Luminance Preservation' Maintains the relative brightness of the scene
+            before applying Color Grading. (0, 1)
+          - 'Split Toning Weight' Level of influence for Split Toning parameters. (0, 1)
+          - 'Balance' Determines the level of light interpreted as Shadow  or Highlight. (-1, 1)
+          - 'Split Toning Shadows Color' Shadows are toned to this color. (Vector3)
+          - 'Split Toning Highlights Color' Highlights are toned to this color.
+          - 'SMH Weight'  Level of influence for Shadow Midtones Highlights parameters. (0, 1)
+          - 'Shadows Start' Minimum brightness to interpret as Shadow. (0, 16)
+          - 'Shadows End' Maximum brightness to interpret as Shadow. (0, 16)
+          - 'Highlights Start' Minimum brightness to interpret as Highlight. (0, 16)
+          - 'Highlights End' Maximum brightness to interpret as Shadow. (0, 16)
+          - 'SMH Shadows Color' Shadow interpreted areas set to this color. (Vector3)
+          - 'SMH Midtones Color' Midtone interpreted areas set to this color. (Vector3)
+          - 'SMH Highlights Color' Highlight interpreted areas set to this color. (Vector3)
+          - 'Channel Mixing Red' Color Channels interpreted as Red. (Vector3)
+          - 'Channel Mixing Green' Color Channels interpreted as Green. (Vector3)
+          - 'Channel Mixing Blue' Color channels interpreted as Blue. (Vector3)
+          - 'Final Adjustment Weight' Level of influence for Final Adjustment parameters parameters. (0, 1)
+          - 'Post Saturation' Controls color saturation after modification. (-100, 100)
+          - 'Hue Shift' Shifts all color by 1% of a rotation in the color wheel per 0.01. (0.0, 1.0)
+          - 'LUT Resolution' Resolution of generated LUT from atom_constants.py LUT_RESOLUTION.
+          - 'Shaper Type' Shaper type used for the generated LUT from atom_constants.py SHAPER_TYPE.
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
@@ -445,6 +777,37 @@ class AtomComponentProperties:
             'name': 'HDR Color Grading',
             'requires': [AtomComponentProperties.postfx_layer()],
             'Enable HDR color grading': 'Controller|Configuration|Enable HDR color grading',
+            'Color Adjustment Weight': 'Controller|Configuration|Color Adjustment|Weight',
+            'Exposure': 'Controller|Configuration|Color Adjustment|Exposure',
+            'Contrast': 'Controller|Configuration|Color Adjustment|Contrast',
+            'Pre Saturation': 'Controller|Configuration|Color Adjustment|Pre Saturation',
+            'Filter Intensity': 'Controller|Configuration|Color Adjustment|Filter Intensity',
+            'Filter Multiply': 'Controller|Configuration|Color Adjustment|Filter Multiply',
+            'Filter Swatch': 'Controller|Configuration|Color Adjustment|Filter Swatch',
+            'White Balance Weight': 'Controller|Configuration|White Balance|Weight',
+            'Temperature': 'Controller|Configuration|White Balance|Temperature',
+            'Tint': 'Controller|Configuration|White Balance|Tint',
+            'Luminance Preservation': 'Controller|Configuration|White Balance|Luminance Preservation',
+            'Split Toning Weight': 'Controller|Configuration|Split Toning|Weight',
+            'Balance': 'Controller|Configuration|Split Toning|Balance',
+            'Split Toning Shadows Color': 'Controller|Configuration|Split Toning|Shadows Color',
+            'Split Toning Highlights Color': 'Controller|Configuration|Split Toning|Highlights Color',
+            'SMH Weight': 'Controller|Configuration|Shadow Midtones Highlights|Weight',
+            'Shadows Start': 'Controller|Configuration|Shadow Midtones Highlights|Shadows Start',
+            'Shadows End': 'Controller|Configuration|Shadow Midtones Highlights|Shadows End',
+            'Highlights Start': 'Controller|Configuration|Shadow Midtones Highlights|Highlights Start',
+            'Highlights End': 'Controller|Configuration|Shadow Midtones Highlights|Highlights End',
+            'SMH Shadows Color': 'Controller|Configuration|Shadow Midtones Highlights|Shadows Color',
+            'SMH Midtones Color': 'Controller|Configuration|Shadow Midtones Highlights|Midtones Color',
+            'SMH Highlights Color': 'Controller|Configuration|Shadow Midtones Highlights|Highlights Color',
+            'Channel Mixing Red': 'Controller|Configuration|Channel Mixing|Channel Mixing Red',
+            'Channel Mixing Green': 'Controller|Configuration|Channel Mixing|Channel Mixing Green',
+            'Channel Mixing Blue': 'Controller|Configuration|Channel Mixing|Channel Mixing Blue',
+            'Final Adjustment Weight': 'Controller|Configuration|Final Adjustment|Weight',
+            'Post Saturation': 'Controller|Configuration|Final Adjustment|Post Saturation',
+            'Hue Shift': 'Controller|Configuration|Final Adjustment|Hue Shift',
+            'LUT Resolution': 'Controller|Configuration|LUT Generation|LUT Resolution',
+            'Shaper Type': 'Controller|Configuration|LUT Generation|Shaper Type',
         }
         return properties[property]
 
@@ -497,7 +860,7 @@ class AtomComponentProperties:
             'Attenuation radius Radius': 'Controller|Configuration|Attenuation radius|Radius',
             'Enable shadow': 'Controller|Configuration|Shadows|Enable shadow',
             'Shadows Bias': 'Controller|Configuration|Shadows|Bias',
-            'Normal shadow bias': 'Controller|Configuration|Shadows|Normal Shadow Bias\n',
+            'Normal shadow bias': 'Controller|Configuration|Shadows|Normal Shadow Bias',
             'Shadowmap size': 'Controller|Configuration|Shadows|Shadowmap size',
             'Shadow filter method': 'Controller|Configuration|Shadows|Shadow filter method',
             'Filtering sample count': 'Controller|Configuration|Shadows|Filtering sample count',
@@ -519,6 +882,9 @@ class AtomComponentProperties:
             Use editor_entity_utils EditorEntity.add_components(list) to add this list of requirements.\n
           - 'Enable look modification' Toggle active state of the component True/False
           - 'Color Grading LUT' Asset.id for the LUT used for affecting level look.
+          - 'Shaper Type' Shaper type used for scene look modification from atom_constants.py SHAPER_TYPE.
+          - 'LUT Intensity' Overall influence of the LUT on the scene. (0.0, 1.0)
+          - 'LUT Override' Blend intensity of the LUT (for use with multiple Look Modification entities). (0.0, 1.0)
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
@@ -527,6 +893,9 @@ class AtomComponentProperties:
             'requires': [AtomComponentProperties.postfx_layer()],
             'Enable look modification': 'Controller|Configuration|Enable look modification',
             'Color Grading LUT': 'Controller|Configuration|Color Grading LUT',
+            'Shaper Type': 'Controller|Configuration|Shaper Type',
+            'LUT Intensity': 'Controller|Configuration|LUT Intensity',
+            'LUT Override': 'Controller|Configuration|LUT Override',
         }
         return properties[property]
 
@@ -557,7 +926,9 @@ class AtomComponentProperties:
     def mesh(property: str = 'name') -> str:
         """
         Mesh component properties.
-          - 'Mesh Asset' Asset.id of the mesh model.
+          - 'Model Asset' Asset.id of the mesh model.
+          - 'Mesh Asset' Mesh Asset is deprecated in favor of Model Asset, but this property will continue
+             to exist and map to the new Model Asset property to keep older tests working.
           - 'Sort Key' dis-ambiguates which mesh renders in front of others (signed int 64)
           - 'Use ray tracing' Toggles interaction with ray tracing (bool)
           - 'Lod Type' options: default, screen coverage, specific lod
@@ -566,14 +937,14 @@ class AtomComponentProperties:
           - 'Minimum Screen Coverage' portion of the screen at which the mesh is culled; 0 (never culled) to 1
           - 'Quality Decay Rate' rate at which the mesh degrades; 0 (never) to 1 (lowest quality imediately)
           - 'Lod Override' which specific LOD to always use; default or other named LOD
-          - 'Add Material Component' the button to add a material; set True to add a material component
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         :rtype: str
         """
         properties = {
             'name': 'Mesh',
-            'Mesh Asset': 'Controller|Configuration|Mesh Asset',
+            'Model Asset': 'Controller|Configuration|Model Asset',
+            'Mesh Asset': 'Controller|Configuration|Model Asset',
             'Sort Key': 'Controller|Configuration|Sort Key',
             'Use ray tracing': 'Controller|Configuration|Use ray tracing',
             'Lod Type': 'Controller|Configuration|Lod Type',
@@ -582,7 +953,6 @@ class AtomComponentProperties:
             'Minimum Screen Coverage': 'Controller|Configuration|Lod Configuration|Minimum Screen Coverage',
             'Quality Decay Rate': 'Controller|Configuration|Lod Configuration|Quality Decay Rate',
             'Lod Override': 'Controller|Configuration|Lod Configuration|Lod Override',
-            'Add Material Component': 'Add Material Component',
         }
         return properties[property]
 
@@ -681,13 +1051,31 @@ class AtomComponentProperties:
         """
         Reflection Probe component properties. Requires one of 'shapes' listed.
           - 'shapes' a list of supported shapes as component names.
-          - 'Baked Cubemap Path' Asset.id of the baked cubemap image generated by a call to 'BakeReflectionProbe' ebus.
+          - 'Bake Exposure' Used when baking the cubemap. (float -20.0 to 20.0)
+          - 'Parallax Correction' Toggles between preauthored cubemap and one that captures at the location. (bool)
+          - 'Show Visualization' Toggles the reflection probe visualization sphere. (bool)
+          - 'Settings Exposure' Used when rendering meshes with the cubemap. (float -20.0 to 20.0)
+          - 'Use Baked Cubemap' Toggles between preauthored cubemap and one that captures at the location. (bool)
+          - 'Baked Cubemap Quality' resolution of the baked cubemap from atom_constants.py BAKED_CUBEMAP_QUALITY.
+          - 'Height' Inner extents constrained by the shape dimensions attached to the entity.
+          - 'Length' Inner extents constrained by the shape dimensions attached to the entity.
+          - 'Width' Inner extents constrained by the shape dimensions attached to the entity.
+          - 'Baked Cubemap Path' Read-only Path of baked cubemap image generated by calling 'BakeReflectionProbe' ebus.
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
         properties = {
             'name': 'Reflection Probe',
             'shapes': ['Axis Aligned Box Shape', 'Box Shape'],
+            'Bake Exposure': 'Cubemap Bake|Bake Exposure',
+            'Parallax Correction': 'Controller|Configuration|Settings|Parallax Correction',
+            'Show Visualization': 'Controller|Configuration|Settings|Show Visualization',
+            'Settings Exposure': 'Controller|Configuration|Settings|Exposure',
+            'Use Baked Cubemap': 'Cubemap|Use Baked Cubemap',
+            'Baked Cubemap Quality': 'Cubemap|Baked Cubemap Quality',
+            'Height': 'Controller|Configuration|Inner Extents|Height',
+            'Length': 'Controller|Configuration|Inner Extents|Length',
+            'Width': 'Controller|Configuration|Inner Extents|Width',
             'Baked Cubemap Path': 'Cubemap|Baked Cubemap Path',
         }
         return properties[property]
@@ -698,11 +1086,43 @@ class AtomComponentProperties:
         SSAO component properties. Requires PostFX Layer component.
           - 'requires' a list of component names as strings required by this component.
             Use editor_entity_utils EditorEntity.add_components(list) to add this list of requirements.\n
+          - 'Enable SSAO' toggles the overall function of Screen Space Ambient Occlusion (bool)
+          - 'SSAO Strength' multiplier for SSAO strenght (float 0.0 to 2.0, default 1.0)
+          - 'Sampling Radius' (float 0.0 to 0.25, default 0.05)
+          - 'Enable Blur' toggles the blur feature of SSAO (bool)
+          - 'Blur Strength' (float 0.0 to 1.0 default 0.85)
+          - 'Blur Edge Threshold' (float default 0.0 to 1.0)
+          - 'Blur Sharpness' (float 0.0 to 400.0, default 200.0)
+          - 'Enable Downsample' toggles downsampling before SSAO; trades quality for speed (bool)
+          - 'Enabled Override' toggles a collection of override values (bool)
+          - 'Strength Override' (float 0.0 to default 1.0)
+          - 'SamplingRadius Override' (float 0.0 to default 1.0)
+          - 'EnableBlur Override' toggles blur overrides (bool)
+          - 'BlurConstFalloff Override' (float 0.0 to default 1.0)
+          - 'BlurDepthFalloffThreshold Override' (float 0.0 to default 1.0)
+          - 'BlurDepthFalloffStrength Override' (float 0.0 to default 1.0)
+          - 'EnableDownsample Override' toggles override for enable downsampling (bool)
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
         properties = {
             'name': 'SSAO',
             'requires': [AtomComponentProperties.postfx_layer()],
+            'Enable SSAO': 'Controller|Configuration|Enable SSAO',
+            'SSAO Strength': 'Controller|Configuration|SSAO Strength',
+            'Sampling Radius': 'Controller|Configuration|Sampling Radius',
+            'Enable Blur': 'Controller|Configuration|Enable Blur',
+            'Blur Strength': 'Controller|Configuration|Blur Strength',
+            'Blur Edge Threshold': 'Controller|Configuration|Blur Edge Threshold',
+            'Blur Sharpness': 'Controller|Configuration|Blur Sharpness',
+            'Enable Downsample': 'Controller|Configuration|Enable Downsample',
+            'Enabled Override': 'Controller|Configuration|Overrides|Enabled Override',
+            'Strength Override': 'Controller|Configuration|Overrides|Strength Override',
+            'SamplingRadius Override': 'Controller|Configuration|Overrides|SamplingRadius Override',
+            'EnableBlur Override': 'Controller|Configuration|Overrides|EnableBlur Override',
+            'BlurConstFalloff Override': 'Controller|Configuration|Overrides|BlurConstFalloff Override',
+            'BlurDepthFalloffStrength Override': 'Controller|Configuration|Overrides|BlurDepthFalloffStrength Override',
+            'BlurDepthFalloffThreshold Override': 'Controller|Configuration|Overrides|BlurDepthFalloffThreshold Override',
+            'EnableDownsample Override': 'Controller|Configuration|Overrides|EnableDownsample Override',
         }
         return properties[property]

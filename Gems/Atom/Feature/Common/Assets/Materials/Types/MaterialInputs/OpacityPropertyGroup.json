@@ -80,7 +80,7 @@
         {
             "type": "Lua",
             "args": {
-                "file": "StandardPBR_HandleOpacityMode.lua"
+                "file": "Materials/Types/StandardPBR_HandleOpacityMode.lua"
             }
         }
     ]

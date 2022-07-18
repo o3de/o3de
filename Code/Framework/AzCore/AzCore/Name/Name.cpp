@@ -254,22 +254,17 @@ namespace AZ
             }
             m_nextName = *name;
             m_previousName = (*name)->m_previousName;
+            (*name)->m_previousName = this;
             if (m_previousName != nullptr)
             {
                 m_previousName->m_nextName = this;
             }
-            (*name)->m_previousName = this;
             *name = this;
         }
     }
 
     void Name::UnlinkStaticName()
     {
-        if (NameDictionary::IsReady(false))
-        {
-            NameDictionary::Instance().UnregisterDeferredHead(*this);
-        }
-
         if (s_staticNameBegin == this)
         {
             s_staticNameBegin = m_nextName;

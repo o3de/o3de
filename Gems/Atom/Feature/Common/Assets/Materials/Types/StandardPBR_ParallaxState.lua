@@ -10,7 +10,7 @@
 ----------------------------------------------------------------------------------------------------
 
 function GetMaterialPropertyDependencies()
-    return {"textureMap", "useTexture"}
+    return {"textureMap", "useTexture", "pdo"}
 end
 
 function GetShaderOptionDependencies()
@@ -49,5 +49,11 @@ function ProcessEditor(context)
     context:SetMaterialPropertyVisibility("algorithm", visibility)
     context:SetMaterialPropertyVisibility("quality", visibility)
     context:SetMaterialPropertyVisibility("pdo", visibility)
+    context:SetMaterialPropertyVisibility("shadowFactor", visibility)
     context:SetMaterialPropertyVisibility("textureMapUv", visibility)
+
+    local pdoEnabled = context:GetMaterialPropertyValue_bool("pdo")
+    if(not pdoEnabled) then
+        context:SetMaterialPropertyVisibility("shadowFactor", MaterialPropertyVisibility_Hidden)
+    end
 end

@@ -15,6 +15,7 @@
 
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
 #include <AzToolsFramework/Prefab/Template/Template.h>
+#include <AzToolsFramework/UI/Prefab/PrefabFocusChangeBehavior.h>
 
 namespace AzToolsFramework::Prefab
 {
@@ -31,7 +32,9 @@ namespace AzToolsFramework::Prefab
         virtual PrefabFocusOperationResult FocusOnOwningPrefab(AZ::EntityId entityId) = 0;
 
         //! Set the focused prefab instance to the parent of the currently focused prefab instance. Supports undo/redo.
-        virtual PrefabFocusOperationResult FocusOnParentOfFocusedPrefab(AzFramework::EntityContextId entityContextId) = 0;
+        virtual PrefabFocusOperationResult FocusOnParentOfFocusedPrefab(
+            AzFramework::EntityContextId entityContextId,
+            FocusChangeBehavior focusChangeBehavior = FocusChangeBehavior::CloseCurrentlyFocusedItems) = 0;
 
         //! Set the focused prefab instance to the instance at position index of the current path. Supports undo/redo.
         //! @param index The index of the instance in the current path that we want the prefab system to focus on.

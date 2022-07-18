@@ -299,6 +299,8 @@ namespace ScriptCanvas
 
             void ParseAutoConnectedEBusHandlerVariables();
 
+            void ParseComponentExtension();
+
             enum class FirstNode
             {
                 Self,
@@ -318,6 +320,7 @@ namespace ScriptCanvas
 
             void ParseDependenciesAssetIndicies();
 
+            // #scriptcanvas_component_extension
             void ParseEntityIdInput(ExecutionTreePtr execution);
 
             void ParseExecutionBreak(ExecutionTreePtr execution);
@@ -476,7 +479,7 @@ namespace ScriptCanvas
             }
 
             void AddExecutionMapIn
-            (UserInParseTopologyResult result
+                ( UserInParseTopologyResult result
                 , ExecutionTreeConstPtr root
                 , const AZStd::vector<ExecutionTreeConstPtr>& outCalls
                 , AZStd::string_view defaultOutName
@@ -490,8 +493,6 @@ namespace ScriptCanvas
             void AddPreviouslyExecutedScopeVariableToOutputAssignments(VariableConstPtr newInputVariable, const ConnectionsInPreviouslyExecutedScope& connectedInputInPreviouslyExecutedScope);
 
             void ConvertNamesToIdentifiers();
-
-            AZStd::vector<AZStd::pair<ExecutionTreePtr, const Nodes::Core::FunctionDefinitionNode*>> FindAllNodelingOuts(ExecutionTreePtr root) const;
 
             VariableConstPtr FindBoundVariable(GraphScopedVariableId variableId) const;
 

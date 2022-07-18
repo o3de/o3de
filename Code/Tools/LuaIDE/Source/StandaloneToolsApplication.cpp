@@ -8,15 +8,18 @@
 
 #include "StandaloneToolsApplication.h"
 
-#include <AzCore/std/containers/array.h>
+#include <AzCore/IO/Streamer/StreamerComponent.h>
+#include <AzCore/Jobs/JobManagerComponent.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
+#include <AzCore/std/containers/array.h>
+#include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Asset/AssetCatalogComponent.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzFramework/TargetManagement/TargetManagementComponent.h>
+#include <AzNetworking/Framework/INetworkInterface.h>
+#include <AzNetworking/Framework/INetworking.h>
+#include <AzNetworking/Framework/NetworkingSystemComponent.h>
 #include <AzToolsFramework/UI/LegacyFramework/Core/IPCComponent.h>
-#include <AzFramework/API/ApplicationAPI.h>
-#include <AzCore/Jobs/JobManagerComponent.h>
-#include <AzCore/IO/Streamer/StreamerComponent.h>
 
 namespace StandaloneTools
 {
@@ -37,6 +40,8 @@ namespace StandaloneTools
 
         RegisterComponentDescriptor(LegacyFramework::IPCComponent::CreateDescriptor());
 
+        RegisterComponentDescriptor(AzNetworking::NetworkingSystemComponent::CreateDescriptor());
+
         RegisterComponentDescriptor(AZ::UserSettingsComponent::CreateDescriptor());
         RegisterComponentDescriptor(AzFramework::TargetManagementComponent::CreateDescriptor());
 
@@ -54,10 +59,9 @@ namespace StandaloneTools
 
     void BaseApplication::CreateApplicationComponents()
     {
-        LegacyFramework::Application::CreateApplicationComponents();
-
         EnsureComponentCreated(AZ::StreamerComponent::RTTI_Type());
         EnsureComponentCreated(AZ::JobManagerComponent::RTTI_Type());
+        EnsureComponentCreated(AzNetworking::NetworkingSystemComponent::RTTI_Type());
         EnsureComponentCreated(AzFramework::TargetManagementComponent::RTTI_Type());
         EnsureComponentCreated(LegacyFramework::IPCComponent::RTTI_Type());
 
@@ -72,6 +76,31 @@ namespace StandaloneTools
             }
         }
 
+        // Check Application Entity
+        for (const auto& component : m_applicationEntity->GetComponents())
+        {
+            if (auto targetManagement = azrtti_cast<AzFramework::TargetManagementComponent*>(component))
+            {
+                targetManagement->SetTargetAsHost(true);
+            }
+        }
+
+        // Check Module Entities
+        AZ::ModuleManagerRequestBus::Broadcast(
+            &AZ::ModuleManagerRequestBus::Events::EnumerateModules,
+            [](const AZ::ModuleData& moduleData)
+            {
+                AZ::Entity* moduleEntity = moduleData.GetEntity();
+                for (const auto& component : moduleEntity->GetComponents())
+                {
+                    if (auto targetManagement = azrtti_cast<AzFramework::TargetManagementComponent*>(component))
+                    {
+                        targetManagement->SetTargetAsHost(true);
+                    }
+                }
+                return true;
+            });
+
         // For each provider not already added, add it.
         for (AZ::u32 providerId = 0; providerId < userSettingsAdded.size(); ++providerId)
         {
@@ -83,10 +112,30 @@ namespace StandaloneTools
         }
     }
 
+    bool BaseApplication::StartDebugService()
+    {
+        AzNetworking::INetworkInterface* networkInterface =
+            AZ::Interface<AzNetworking::INetworking>::Get()->RetrieveNetworkInterface(AZ::Name("TargetManagement"));
+        if (networkInterface)
+        {
+            const auto console = AZ::Interface<AZ::IConsole>::Get();
+            uint16_t target_port = AzFramework::DefaultTargetPort;
+
+            if (console->GetCvarValue("target_port", target_port) != AZ::GetValueResult::Success)
+            {
+                AZ_Assert(false, "TargetManagement port could not be found");
+            }
+
+            networkInterface->Listen(target_port);
+            return true;
+        }
+        return false;
+    }
+
     void BaseApplication::OnApplicationEntityActivated()
     {
-        [[maybe_unused]] bool launched = LaunchDiscoveryService();
-        AZ_Warning("EditorApplication", launched, "Could not launch GridHub; Only replay is available.");
+        [[maybe_unused]] bool launched = StartDebugService();
+        AZ_Warning("EditorApplication", launched, "Could not start hosting; Only replay is available.");
     }
 
     void BaseApplication::SetSettingsRegistrySpecializations(AZ::SettingsRegistryInterface::Specializations& specializations)
@@ -131,4 +180,4 @@ namespace StandaloneTools
         AzFramework::StringFunc::Path::Join(userStoragePath.c_str(), fileName.c_str(), userStoragePath);
         return userStoragePath;
     }
-}
+} // namespace StandaloneTools

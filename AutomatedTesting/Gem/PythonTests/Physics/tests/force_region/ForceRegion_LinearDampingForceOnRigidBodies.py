@@ -161,14 +161,42 @@ def ForceRegion_LinearDampingForceOnRigidBodies():
 
     sphere.initial_velocity = azlmbr.physics.RigidBodyRequestBus(azlmbr.bus.Event, "GetLinearVelocity", sphere.id)
 
-    level_correct = (
-        (abs(sphere.initial_pos.y - force_region.initial_pos.y) < CLOSE_ENOUGH)
-        and (abs(sphere.initial_pos.y - trigger.initial_pos.y) < CLOSE_ENOUGH)
-        and (abs(sphere.initial_pos.x - force_region.initial_pos.x) < CLOSE_ENOUGH)
-        and (abs(sphere.initial_pos.x - trigger.initial_pos.x) < CLOSE_ENOUGH)
-        and (sphere.initial_pos.z > force_region.initial_pos.z > trigger.initial_pos.z)
-        and sphere.initial_velocity.IsClose(INITIAL_VELOCITY, CLOSE_ENOUGH)
-    )
+    # Perform Calculations
+    sphere_acceleration_y = abs(sphere.initial_pos.y - force_region.initial_pos.y)
+    sphere_damping_y = abs(sphere.initial_pos.y - trigger.initial_pos.y)
+    sphere_acceleration_x = abs(sphere.initial_pos.x - force_region.initial_pos.x)
+    sphere_damping_x = abs(sphere.initial_pos.x - trigger.initial_pos.x)
+
+    # Perform Checks
+    sphere_acceleration_y_valid = sphere_acceleration_y < CLOSE_ENOUGH
+    sphere_damping_y_valid = sphere_damping_y < CLOSE_ENOUGH
+    sphere_acceleration_x_valid = sphere_acceleration_x < CLOSE_ENOUGH
+    sphere_damping_x_valid = sphere_damping_x < CLOSE_ENOUGH
+    setup_entity_priority_valid = sphere.initial_pos.z > force_region.initial_pos.z > trigger.initial_pos.z
+    sphere_is_close = sphere.initial_velocity.IsClose(INITIAL_VELOCITY, CLOSE_ENOUGH)
+    level_correct = (sphere_acceleration_y_valid and sphere_damping_y_valid and sphere_acceleration_x_valid
+                     and sphere_damping_x_valid and setup_entity_priority_valid and sphere_is_close)
+
+    # Report
+    if not sphere_acceleration_y_valid:
+        Report.info(f"Sphere initial Y position {sphere.initial_pos.y} "
+                    f"is not close enough to force region initial Y position {force_region.initial_pos.y}.")
+    if not sphere_damping_y_valid:
+        Report.info(f"Sphere initial Y position {sphere.initial_pos.y} "
+                    f"is not close enough to trigger initial Y position {trigger.initial_pos.y}.")
+    if not sphere_acceleration_x_valid:
+        Report.info(f"Sphere initial X position {sphere.initial_pos.x} "
+                    f"is not close enough to force region initial X position {force_region.initial_pos.x}.")
+    if not sphere_damping_x_valid:
+        Report.info(f"Sphere initial X position {sphere.initial_pos.x} "
+                    f"is not close enough to trigger initial X position {trigger.initial_pos.x}.")
+    if not setup_entity_priority_valid:
+        Report.info(f"Initial level entity expects "
+                    f"Initial Sphere Z Pos:{sphere.initial_pos.z} "
+                    f"> Force Region Initial Z Pos: {force_region.initial_pos.z} "
+                    f"> Trigger Initial Z Pos: {trigger.initial_pos.z} ")
+    if not sphere_is_close:
+        Report.info(f"Sphere initial velocity of {sphere.initial_velocity} was not close enough to {INITIAL_VELOCITY}")
 
     Report.critical_result(Tests.level_setup, level_correct)
 

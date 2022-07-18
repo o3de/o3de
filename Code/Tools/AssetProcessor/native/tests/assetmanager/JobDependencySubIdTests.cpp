@@ -6,111 +6,17 @@
  *
  */
 
-#include <QCoreApplication>
-#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <native/tests/assetmanager/JobDependencySubIdTests.h>
 #include <unittests/UnitTestRunner.h>
+#include <QApplication>
 
 namespace UnitTests
 {
-    bool JobDependencyDatabaseLocationListener::GetAssetDatabaseLocation(AZStd::string& location)
-    {
-        location = m_databaseLocation;
-        return true;
-    }
-
-    void JobDependencyAssetProcessorManager::CheckActiveFiles(int count)
-    {
-        ASSERT_EQ(m_activeFiles.size(), count);
-    }
-
-    void JobDependencyAssetProcessorManager::CheckFilesToExamine(int count)
-    {
-        ASSERT_EQ(m_filesToExamine.size(), count);
-    }
-
-    void JobDependencyAssetProcessorManager::CheckJobEntries(int count)
-    {
-        ASSERT_EQ(m_jobEntries.size(), count);
-    }
-
-    void JobDependencySubIdTest::SetUp()
-    {
-        ScopedAllocatorSetupFixture::SetUp();
-
-        // File IO is needed to hash the files
-        if (AZ::IO::FileIOBase::GetInstance() == nullptr)
-        {
-            m_localFileIo = aznew AZ::IO::LocalFileIO();
-            AZ::IO::FileIOBase::SetInstance(m_localFileIo);
-        }
-
-        // Specify the database lives in the temp directory
-        AZ::IO::Path tempDir(m_tempDir.GetDirectory());
-        m_databaseLocationListener.m_databaseLocation = (tempDir / "test_database.sqlite").Native();
-
-        // We need a settings registry in order for APM to figure out the cache path
-        m_settingsRegistry = AZStd::make_unique<AZ::SettingsRegistryImpl>();
-        AZ::SettingsRegistry::Register(m_settingsRegistry.get());
-
-        auto projectPathKey =
-            AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) + "/project_path";
-        m_settingsRegistry->Set(projectPathKey, m_tempDir.GetDirectory());
-        AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*m_settingsRegistry);
-
-        // We need a QCoreApplication set up in order for QCoreApplication::processEvents to function
-        m_qApp = AZStd::make_unique<QCoreApplication>(m_argc, m_argv);
-        qRegisterMetaType<AssetProcessor::JobEntry>("JobEntry");
-        qRegisterMetaType<AssetBuilderSDK::ProcessJobResponse>("ProcessJobResponse");
-        qRegisterMetaType<AZStd::string>("AZStd::string");
-        qRegisterMetaType<AssetProcessor::AssetScanningStatus>("AssetProcessor::AssetScanningStatus");
-        qRegisterMetaType<QSet<AssetProcessor::AssetFileInfo>>("QSet<AssetFileInfo>");
-
-        // Platform config with an enabled platform and scanfolder required by APM to function and find the files
-        m_platformConfig = AZStd::make_unique<AssetProcessor::PlatformConfiguration>();
-        m_platformConfig->EnablePlatform(AssetBuilderSDK::PlatformInfo{ "pc", { "test" } });
-
-        AZStd::vector<AssetBuilderSDK::PlatformInfo> platforms;
-        m_platformConfig->PopulatePlatformsForScanFolder(platforms);
-
-        m_platformConfig->AddScanFolder(AssetProcessor::ScanFolderInfo{
-            (tempDir/"folder").c_str(), "folder", "folder", false, true, platforms});
-
-        // Create the APM
-        m_assetProcessorManager = AZStd::make_unique<JobDependencyAssetProcessorManager>(m_platformConfig.get());
-
-        // Cache the db pointer because the TEST_F generates a subclass which can't access this private member
-        m_stateData = m_assetProcessorManager->m_stateData;
-
-        // Configure our mock builder so APM can find the builder and run CreateJobs
-        m_builderInfoHandler.m_builderDesc = m_builderInfoHandler.CreateBuilderDesc("test", AZ::Uuid::CreateRandom().ToString<QString>(), { AssetBuilderSDK::AssetBuilderPattern("*.txt", AssetBuilderSDK::AssetBuilderPattern::Wildcard) });
-        m_builderInfoHandler.BusConnect();
-    }
-
-    void JobDependencySubIdTest::TearDown()
-    {
-        m_builderInfoHandler.BusDisconnect();
-
-        AZ::SettingsRegistry::Unregister(m_settingsRegistry.get());
-
-        if (m_localFileIo)
-        {
-            delete m_localFileIo;
-            m_localFileIo = nullptr;
-            AZ::IO::FileIOBase::SetInstance(nullptr);
-        }
-
-        ScopedAllocatorSetupFixture::TearDown();
-    }
-
     void JobDependencySubIdTest::CreateTestData(AZ::u64 hashA, AZ::u64 hashB, bool useSubId)
     {
         using namespace AzToolsFramework::AssetDatabase;
 
         AZ::IO::Path tempDir(m_tempDir.GetDirectory());
-        m_scanfolder = { (tempDir / "folder").c_str(), "folder", "folder", 0 };
-
-        ASSERT_TRUE(m_stateData->SetScanFolder(m_scanfolder));
 
         SourceDatabaseEntry source1{ m_scanfolder.m_scanFolderID, "parent.txt", AZ::Uuid::CreateRandom(), "fingerprint" };
         SourceDatabaseEntry source2{ m_scanfolder.m_scanFolderID, "child.txt", AZ::Uuid::CreateRandom(), "fingerprint" };
@@ -124,21 +30,15 @@ namespace UnitTests
         ASSERT_TRUE(m_stateData->SetSource(source2));
 
         JobDatabaseEntry job1{
-            source1.m_sourceID, "Mock Job", 1234, "pc", m_builderInfoHandler.m_builderDesc.m_busId, AzToolsFramework::AssetSystem::JobStatus::Completed, 999
+            source1.m_sourceID, "Mock Job", 1234, "pc", m_builderInfoHandler.m_builderDescMap.begin()->second.m_busId, AzToolsFramework::AssetSystem::JobStatus::Completed, 999
         };
 
         ASSERT_TRUE(m_stateData->SetJob(job1));
 
-        ProductDatabaseEntry product1{
-            job1.m_jobID, 0, "product.txt", m_assetType, AZ::Uuid::CreateName("product.txt"),
-            hashA
-        };
-        ProductDatabaseEntry product2{ job1.m_jobID,
-                                       777,
-                                       "product777.txt",
-                                       m_assetType,
-                                       AZ::Uuid::CreateName("product777.txt"),
-                                       hashB };
+        ProductDatabaseEntry product1{ job1.m_jobID, 0, "pc/product.txt", m_assetType,
+            AZ::Uuid::CreateName("product.txt"), hashA, static_cast<int>(AssetBuilderSDK::ProductOutputFlags::ProductAsset) };
+        ProductDatabaseEntry product2{ job1.m_jobID, 777, "pc/product777.txt", m_assetType,
+            AZ::Uuid::CreateName("product777.txt"), hashB, static_cast<int>(AssetBuilderSDK::ProductOutputFlags::ProductAsset) };
 
         ASSERT_TRUE(m_stateData->SetProduct(product1));
         ASSERT_TRUE(m_stateData->SetProduct(product2));
@@ -157,9 +57,13 @@ namespace UnitTests
     {
         AZ::IO::Path cacheDir(m_tempDir.GetDirectory());
         cacheDir /= "Cache";
+        cacheDir /= "pc";
 
-        AZStd::string productPath = (cacheDir / "product.txt").AsPosix().c_str();
-        AZStd::string product2Path = (cacheDir / "product777.txt").AsPosix().c_str();
+        AZStd::string productFilename = "product.txt";
+        AZStd::string product2Filename = "product777.txt";
+
+        AZStd::string productPath = (cacheDir / productFilename).AsPosix().c_str();
+        AZStd::string product2Path = (cacheDir / product2Filename).AsPosix().c_str();
 
         UnitTestUtils::CreateDummyFile(productPath.c_str(), "unit test file");
         UnitTestUtils::CreateDummyFile(product2Path.c_str(), "unit test file");
@@ -202,12 +106,10 @@ namespace UnitTests
 
         AssetBuilderSDK::ProcessJobResponse response;
         response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
-        response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(productPath, m_assetType, 0));
-        response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(product2Path, m_assetType, 777));
+        response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(productFilename, m_assetType, 0));
+        response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(product2Filename, m_assetType, 777));
 
         m_assetProcessorManager->AssetProcessed(jobDetailsList[0].m_jobEntry, response);
-
-        ASSERT_TRUE(true);
 
         // We're only really interested in ActiveFiles but check the others to be sure
         m_assetProcessorManager->CheckFilesToExamine(0);

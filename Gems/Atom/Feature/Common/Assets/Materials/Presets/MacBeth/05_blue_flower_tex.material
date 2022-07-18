@@ -2,7 +2,7 @@
     "description": "",
     "parentMaterial": "05_blue_flower.material",
     "materialType": "../../Types/StandardPBR.materialtype",
-    "materialTypeVersion": 4,
+    "materialTypeVersion": 5,
     "properties": {
         "baseColor": {
             "color": [

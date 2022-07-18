@@ -1119,13 +1119,13 @@ void CSequenceBatchRenderDialog::OnUpdateEnd(IAnimSequence* sequence)
             AzFramework::StringFunc::Path::Join(outputFolder.c_str(), renderItem.prefix.toUtf8().data(), outputFile);
 
             QString inputFile = outputFile.c_str();
-            outputFile += ".mp4";
+            outputFile += ".webm";
 
             // Use a placeholder for the input file, will expand it with replace.
             QString inputFileDefine = "__input_file__";
 
             QString command = QStringLiteral("plugin.ffmpeg_encode '%1' '%2' '%3' %4 %5 '-vf crop=%6:%7:0:0'")
-                .arg(inputFileDefine).arg(outputFile.c_str()).arg("mpeg4")
+                .arg(inputFileDefine).arg(outputFile.c_str()).arg("libvpx-vp9")
                 .arg(10240).arg(renderItem.fps).arg(getResWidth(renderItem.resW)).arg(getResHeight(renderItem.resH));
 
             // Create the input file string, leave the %06d unexpanded for the mpeg tool.

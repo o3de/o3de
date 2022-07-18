@@ -29,7 +29,7 @@ namespace ScriptCanvasDeveloperComponentCpp
     }
 }
 
-namespace ScriptCanvasDeveloper
+namespace ScriptCanvas::Developer
 {
     void SystemComponent::Reflect(AZ::ReflectContext* context)
     {

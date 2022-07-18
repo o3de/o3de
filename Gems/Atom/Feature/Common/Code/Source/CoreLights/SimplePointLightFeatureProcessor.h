@@ -25,8 +25,14 @@ namespace AZ
         {
             AZStd::array<float, 3> m_position = { { 0.0f, 0.0f, 0.0f } };
             float m_invAttenuationRadiusSquared = 0.0f; // Inverse of the distance at which this light no longer has an effect, squared. Also used for falloff calculations.
+
             AZStd::array<float, 3> m_rgbIntensity = { { 0.0f, 0.0f, 0.0f } };
-            float m_padding = 0.0f; // explicit padding.
+            float m_affectsGIFactor = 1.0f;
+
+            bool m_affectsGI = true;
+            float m_padding0 = 0.0f;
+            float m_padding1 = 0.0f;
+            float m_padding2 = 0.0f;
         };
 
         class SimplePointLightFeatureProcessor final
@@ -53,6 +59,8 @@ namespace AZ
             void SetRgbIntensity(LightHandle handle, const PhotometricColor<PhotometricUnitType>& lightColor) override;
             void SetPosition(LightHandle handle, const AZ::Vector3& lightPosition) override;
             void SetAttenuationRadius(LightHandle handle, float attenuationRadius) override;
+            void SetAffectsGI(LightHandle handle, bool affectsGI) override;
+            void SetAffectsGIFactor(LightHandle handle, float affectsGIFactor) override;
 
             const Data::Instance<RPI::Buffer>  GetLightBuffer() const;
             uint32_t GetLightCount()const;

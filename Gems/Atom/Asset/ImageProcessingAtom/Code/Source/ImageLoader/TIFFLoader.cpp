@@ -25,11 +25,13 @@ namespace ImageProcessingAtom
         static constexpr int TiffMaxMessageSize = 1024;
 
 #ifdef AZ_ENABLE_TRACING
+        // Note: the fatal errors are processed in LoadImageFromTIFF function.
+        // We only report the errors as warning here. 
         static void ImageProcessingTiffErrorHandler(const char* module, const char* format, va_list argList)
         {
             char buffer[TiffMaxMessageSize];
             azvsnprintf(buffer, TiffMaxMessageSize, format, argList);
-            AZ_Error(module, false, buffer);
+            AZ_Warning(module, false, buffer);
         }
 #endif
 
@@ -366,25 +368,20 @@ namespace ImageProcessingAtom
                 }
             };
 
-            bool readError = false;
-
             // Loop across the image height, one tile at a time
-            for (uint32_t imageY = 0; (imageY < inputImageHeight) && (!readError); imageY += tileHeight)
+            for (uint32_t imageY = 0; imageY < inputImageHeight; imageY += tileHeight)
             {
                 // Loop across the image width, one tile at a time
                 for (uint32 imageX = 0; imageX < inputImageWidth; imageX += tileWidth)
                 {
                     // Either read in a tile or a scanline
-                    auto readResult = isTiled ?
-                        TIFFReadTile(tif, buf.data(), imageX, imageY, 0, 0) :
+                    [[maybe_unused]] auto result = isTiled?
+                        TIFFReadTile(tif, buf.data(), imageX, imageY, 0, 0):
                         TIFFReadScanline(tif, buf.data(), imageY);
 
-                    // Stop processing if there was an error reading the input data.
-                    if (readResult == -1)
-                    {
-                        readError = true;
-                        break;
-                    }
+                    // non-fatal error, only print the warning
+                    // For details: https://github.com/o3de/o3de/pull/8929
+                    AZ_Warning("TIFFLoader", !(result == -1), "Read tiff image data from %s error at row %d", TIFFFileName(tif), imageY);
 
                     // Convert each pixel in the scanline / tile buffer.
                     // The image might not be evenly divisible by tile height/width, so don't process any pixels outside those bounds.

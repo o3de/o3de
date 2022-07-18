@@ -1,0 +1,47 @@
+{
+    "entries": [
+        {
+            "base": "ScriptCanvas_EntityFunctions_GetEntityUp",
+            "context": "BehaviorMethod",
+            "variant": "",
+            "details": {
+                "name": "Get Entity Up",
+                "category": "Entity/Entity"
+            },
+            "methods": [
+                {
+                    "base": "ScriptCanvas_EntityFunctions_GetEntityUp",
+                    "details": {
+                        "name": "Get Entity Up",
+                        "tooltip": "Returns the up direction vector from the specified entity's world transform, scaled by a given value. (O3DE uses Z up, right handed)"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity Id",
+                                "tooltip": "The entity to get up direction."
+                            }
+                        },
+                        {
+                            "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                            "details": {
+                                "name": "Scale",
+                                "tooltip": "The scale of up direction."
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Result",
+                                "tooltip": "The up direction of entity world transform."
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

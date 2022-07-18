@@ -339,7 +339,7 @@ namespace EditorPythonBindings
 
     void PythonSystemComponent::Reflect(AZ::ReflectContext* context)
     {
-        if (AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context))
+        if (auto serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serialize->Class<PythonSystemComponent, AZ::Component>()
                 ->Version(1)
@@ -355,6 +355,8 @@ namespace EditorPythonBindings
                     ;
             }
         }
+
+        PythonActionManagerHandler::Reflect(context);
     }
 
     void PythonSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)

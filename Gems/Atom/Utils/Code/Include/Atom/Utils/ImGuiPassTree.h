@@ -35,13 +35,14 @@ namespace AZ
 
             void DrawPassAttachments(AZ::RPI::Pass* pass);
 
-            bool m_previewAttachment = false;
+            bool m_shouldPreviewAttachment = false;
             bool m_showAttachments = false;
 
             AZ::RPI::Pass* m_selectedPass = nullptr;
             AZ::RPI::Pass* m_lastSelectedPass = nullptr;
             AZ::Name m_selectedPassPath;
             AZ::RHI::AttachmentId m_attachmentId;
+            float m_attachmentColorTranformRange[2] = {0.0f, 1.0f};
             AZ::Name m_slotName;
             bool m_selectedChanged = false;
 

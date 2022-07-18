@@ -274,6 +274,8 @@ namespace UnitTest
             Image_20X16_RGBA8_Png = 0,
             Image_32X32_16bit_F_Tif,
             Image_32X32_32bit_F_Tif,
+            Image_32X32_checkerboard_png,
+            Image_32X32_halfRedHalfTransparentGreen_png,
             Image_200X200_RGB8_Jpg,
             Image_512X288_RGB8_Tga,
             Image_1024X1024_RGB8_Tif,
@@ -302,6 +304,8 @@ namespace UnitTest
             m_imagFileNameMap[Image_20X16_RGBA8_Png] = (m_testFileFolder / "20x16_32bit.png").Native();
             m_imagFileNameMap[Image_32X32_16bit_F_Tif] = (m_testFileFolder / "32x32_16bit_f.tif").Native();
             m_imagFileNameMap[Image_32X32_32bit_F_Tif] = (m_testFileFolder / "32x32_32bit_f.tif").Native();
+            m_imagFileNameMap[Image_32X32_checkerboard_png] = (m_testFileFolder / "32x32_checkerboard.png").Native();
+            m_imagFileNameMap[Image_32X32_halfRedHalfTransparentGreen_png] = (m_testFileFolder / "32x32_halfRedHalfTransparentGreen.png").Native();
             m_imagFileNameMap[Image_200X200_RGB8_Jpg] = (m_testFileFolder / "200x200_24bit.jpg").Native();
             m_imagFileNameMap[Image_512X288_RGB8_Tga] = (m_testFileFolder / "512x288_24bit.tga").Native();
             m_imagFileNameMap[Image_1024X1024_RGB8_Tif] = (m_testFileFolder / "1024x1024_24bit.tif").Native();
@@ -951,6 +955,34 @@ namespace UnitTest
             }
             SaveImageToFile(dstImage, imageName + "_" + filter.second);
         }
+    }
+
+    TEST_F(ImageProcessingTest, TestAverageColor)
+    {
+        //load builder presets
+        auto outcome = BuilderSettingManager::Instance()->LoadConfigFromFolder(m_defaultSettingFolder.Native());
+        ASSERT_TRUE(outcome.IsSuccess());
+
+        auto checkAverageColor = [&](ImageFeature figureKey, AZ::Color expectedAverage)
+        {
+            AZStd::vector<AssetBuilderSDK::JobProduct> outProducts;
+
+            AZStd::string inputFile = m_imagFileNameMap[figureKey];
+            ImageConvertProcess* process = CreateImageConvertProcess(inputFile, m_outputFolder.Native(), "pc", outProducts, m_context.get());
+            if (process != nullptr)
+            {
+                process->ProcessAll();
+
+                ASSERT_TRUE(process->IsSucceed());
+                ASSERT_TRUE(process->GetOutputImage());
+                ASSERT_TRUE(process->GetOutputImage()->GetAverageColor().IsClose(expectedAverage));
+
+                delete process;
+            }
+        };
+
+        checkAverageColor(Image_32X32_checkerboard_png, AZ::Color(0.5f, 0.5f, 0.5f, 1.0f));
+        checkAverageColor(Image_32X32_halfRedHalfTransparentGreen_png, AZ::Color(1.0f, 0.0f, 0.0f, 0.5f));
     }
 
     TEST_F(ImageProcessingTest, TestColorSpaceConversion)
