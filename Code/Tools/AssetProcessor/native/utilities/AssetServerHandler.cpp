@@ -36,15 +36,16 @@ namespace AssetProcessor
         if (settingsRegistry)
         {
             bool enableAssetCacheServerMode = false;
-            AZ::SettingsRegistryInterface::FixedValueString key(AssetProcessor::AssetProcessorSettingsKey);
-            if (settingsRegistry->Get(enableAssetCacheServerMode, key + "/Server/enableCacheServer"))
+            AZ::SettingsRegistryInterface::FixedValueString key(AssetProcessor::AssetProcessorServerKey);
+            key += "/";
+            if (settingsRegistry->Get(enableAssetCacheServerMode, key + "enableCacheServer"))
             {
                 enableCacheServerMode = enableAssetCacheServerMode ? AssetServerMode::Server : AssetServerMode::Client;
                 AZ_Warning(AssetProcessor::DebugChannel, false, "The 'enableCacheServer' key is deprecated. Please swith to 'assetCacheServerMode'");
             }
 
             AZStd::string assetCacheServerModeValue;
-            if (settingsRegistry->Get(assetCacheServerModeValue, key + "/Server/" + AssetCacheServerModeKey))
+            if (settingsRegistry->Get(assetCacheServerModeValue, key + AssetCacheServerModeKey))
             {
                 AZStd::to_lower(assetCacheServerModeValue.begin(), assetCacheServerModeValue.end());
 
@@ -73,8 +74,8 @@ namespace AssetProcessor
         {
             AZStd::string address;
             if (settingsRegistry->Get(address,
-                AZ::SettingsRegistryInterface::FixedValueString(AssetProcessor::AssetProcessorSettingsKey)
-                + "/Server/"
+                AZ::SettingsRegistryInterface::FixedValueString(AssetProcessor::AssetProcessorServerKey)
+                + "/"
                 + CacheServerAddressKey))
             {
                 AZ_TracePrintf(AssetProcessor::DebugChannel, "Server Address: %s\n", address.c_str());
