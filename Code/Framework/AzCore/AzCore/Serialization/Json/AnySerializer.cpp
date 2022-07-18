@@ -89,7 +89,8 @@ namespace AZ
         if (!anyTypeId.IsNull() && AZStd::any_cast<void>(inputAnyPtr) != nullptr)
         {
             auto defaultAnyPtr = reinterpret_cast<const AZStd::any*>(defaultValue);
-            const void* defaultValueSource = defaultAnyPtr->type() == anyTypeId ? AZStd::any_cast<void>(defaultAnyPtr) : nullptr;
+            const void* defaultValueSource = defaultAnyPtr && defaultAnyPtr->type() == anyTypeId
+                ? AZStd::any_cast<void>(defaultAnyPtr) : nullptr;
 
             result.Combine(ContinueStoringToJsonObjectField
                 ( outputValue
