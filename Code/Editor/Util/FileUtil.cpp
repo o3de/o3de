@@ -20,6 +20,7 @@
 #include <QDesktopServices>
 #include <QEvent>
 #include <QProcess>
+#include <QPushButton>
 #include <QThread>
 
 // AzCore
@@ -213,14 +214,13 @@ QString CFileUtil::HandleNoEditorAssigned(const Common::EditFileType fileType)
 
     QAbstractButton* defaultButton = nullptr;
     QAbstractButton* assignButton = nullptr;
-    QAbstractButton* cancelButton = nullptr;
 
     QString defaultEditor = Platform::GetDefaultEditor(fileType);
     if (defaultEditor.isEmpty())
     {
         dialog.setText(QObject::tr("No editor is set for opening this file type. Would you like to go to update the default program?"));
-        assignButton = (QAbstractButton*)dialog.addButton(QObject::tr("Settings"), QMessageBox::YesRole);
-        cancelButton = (QAbstractButton*)dialog.addButton(QObject::tr("Cancel"), QMessageBox::RejectRole);
+        assignButton = dialog.addButton(QObject::tr("Settings"), QMessageBox::YesRole);
+        dialog.addButton(QObject::tr("Cancel"), QMessageBox::RejectRole);
     }
     else
     {
@@ -230,9 +230,9 @@ QString CFileUtil::HandleNoEditorAssigned(const Common::EditFileType fileType)
             QObject::tr(
                 "No editor is set for opening this file type. Would you like to open the file using %1 or update the default program?")
                 .arg(editorCapitalized));
-        defaultButton = (QAbstractButton*)dialog.addButton(editorCapitalized, QMessageBox::YesRole);
-        assignButton = (QAbstractButton*)dialog.addButton(QObject::tr("Settings"), QMessageBox::YesRole);
-        cancelButton = (QAbstractButton*)dialog.addButton(QObject::tr("Cancel"), QMessageBox::RejectRole);
+        defaultButton = dialog.addButton(editorCapitalized, QMessageBox::YesRole);
+        assignButton = dialog.addButton(QObject::tr("Settings"), QMessageBox::YesRole);
+        dialog.addButton(QObject::tr("Cancel"), QMessageBox::RejectRole);
     }
 
     dialog.exec();
@@ -251,10 +251,7 @@ QString CFileUtil::HandleNoEditorAssigned(const Common::EditFileType fileType)
 
         return GetEditorForFileTypeFromPreferences(fileType);
     }
-    else
-    {
-        return "";
-    }
+    return "";
 }
 
 QString CFileUtil::HandleEditorOpenFailure(const Common::EditFileType fileType, const QString& currentEditor)
@@ -264,15 +261,14 @@ QString CFileUtil::HandleEditorOpenFailure(const Common::EditFileType fileType, 
 
     QAbstractButton* defaultButton = nullptr;
     QAbstractButton* assignButton = nullptr;
-    QAbstractButton* cancelButton = nullptr;
 
     QString defaultEditor = Platform::GetDefaultEditor(fileType);
     if (defaultEditor == currentEditor)
     {
         dialog.setText(
             QObject::tr("Failed to run %1. Would you like to go to the settings and update the default program?").arg(currentEditor));
-        assignButton = (QAbstractButton*)dialog.addButton(QObject::tr("Settings"), QMessageBox::YesRole);
-        cancelButton = (QAbstractButton*)dialog.addButton(QObject::tr("Cancel"), QMessageBox::RejectRole);
+        assignButton = dialog.addButton(QObject::tr("Settings"), QMessageBox::YesRole);
+        dialog.addButton(QObject::tr("Cancel"), QMessageBox::RejectRole);
     }
     else
     {
@@ -281,9 +277,9 @@ QString CFileUtil::HandleEditorOpenFailure(const Common::EditFileType fileType, 
         dialog.setText(QObject::tr("Failed to run %1. Would you like to use %2, or go to the settings and update the default program?")
                            .arg(currentEditor)
                            .arg(editorCapitalized));
-        defaultButton = (QAbstractButton*)dialog.addButton(editorCapitalized, QMessageBox::YesRole);
-        assignButton = (QAbstractButton*)dialog.addButton(QObject::tr("Settings"), QMessageBox::YesRole);
-        cancelButton = (QAbstractButton*)dialog.addButton(QObject::tr("Cancel"), QMessageBox::RejectRole);
+        defaultButton = dialog.addButton(editorCapitalized, QMessageBox::YesRole);
+        assignButton = dialog.addButton(QObject::tr("Settings"), QMessageBox::YesRole);
+        dialog.addButton(QObject::tr("Cancel"), QMessageBox::RejectRole);
     }
 
     dialog.exec();
@@ -297,10 +293,7 @@ QString CFileUtil::HandleEditorOpenFailure(const Common::EditFileType fileType, 
 
         return GetEditorForFileTypeFromPreferences(fileType);
     }
-    else
-    {
-        return "";
-    }
+    return "";
 }
 
 //////////////////////////////////////////////////////////////////////////
