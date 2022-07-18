@@ -13,7 +13,10 @@ import traceback
 from typing import Callable, Tuple
 
 import azlmbr
-import azlmbr.legacy.general as general
+try:
+    import azlmbr.legacy.general as general  # Editor test.
+except ModuleNotFoundError:  # MaterialEditor test.
+    import azlmbr.atomtools.general as general
 import azlmbr.multiplayer as multiplayer
 import azlmbr.debug
 import ly_test_tools.environment.waiter as waiter

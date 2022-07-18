@@ -127,29 +127,60 @@ def cycle_crash_report(run_id: int, workspace: ly_test_tools._internal.managers.
                 logger.warning(f"Couldn't cycle file {filepath}. Error: {str(ex)}")
 
 
-def retrieve_editor_log_content(run_id: int, log_name: str,
+def retrieve_editor_log_content(run_id: int,
+                                log_name: str,
                                 workspace: ly_test_tools._internal.managers.workspace.AbstractWorkspaceManager,
                                 timeout: int = 10) -> str:
     """
     Retrieves the contents of the given editor log file.
     :param run_id: editor id that will be used for differentiating paths
-    :log_name: The name of the editor log to retrieve
+    :param log_name: The name of the editor log to retrieve
     :param workspace: Workspace fixture
     :param timeout: Maximum time to wait for the log file to appear
     :return str: The contents of the log
     """
-    editor_info = "-- No editor log available --"
+    editor_info = "-- No Editor log available --"
     editor_log = os.path.join(retrieve_log_path(run_id, workspace), log_name)
     try:
         waiter.wait_for(lambda: os.path.exists(editor_log), timeout=timeout)
     except AssertionError:              
         pass
-        
+
     # Even if the path didn't exist, we are interested on the exact reason why it couldn't be read
     try:
-        with open(editor_log) as f:
+        with open(editor_log) as opened_log:
             editor_info = ""
-            for line in f:
+            for line in opened_log:
+                editor_info += f"[{log_name}]  {line}"
+    except Exception as ex:
+        editor_info = f"-- Error reading {log_name}: {str(ex)} --"
+    return editor_info
+
+
+def retrieve_material_editor_log_content(run_id: int,
+                                         log_name: str,
+                                         workspace: ly_test_tools._internal.managers.workspace.AbstractWorkspaceManager,
+                                         timeout: int = 10) -> str:
+    """
+    Retrieves the contents of the given path to the MaterialEditor log file.
+    :param run_id: MaterialEditor id that will be used for differentiating paths
+    :param log_name: The name of the MaterialEditor log being retrieved
+    :param workspace: Workspace fixture
+    :param timeout: Maximum time to wait for the log file to appear
+    :return str: The contents of the log
+    """
+    material_editor_info = "-- No MaterialEditor log available --"
+    material_editor_log = os.path.join(retrieve_material_editor_log_path(run_id, workspace), log_name)
+    try:
+        waiter.wait_for(lambda: os.path.exists(material_editor_log), timeout=timeout)
+    except AssertionError:
+        pass
+
+    # Even if the path didn't exist, we are interested on the exact reason why it couldn't be read
+    try:
+        with open(material_editor_log) as opened_log:
+            editor_info = ""
+            for line in opened_log:
                 editor_info += f"[{log_name}]  {line}"
     except Exception as ex:
         editor_info = f"-- Error reading {log_name}: {str(ex)} --"

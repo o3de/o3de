@@ -144,9 +144,9 @@ class EditorBatchedTest(EditorSharedTest):
     is_parallelizable = False
 
 
-class EditorResult(Result):
+class EditorResult(Result.ResultType):
     """Used to set the log_attribute value for Editor result logs."""
-    log_attribute = "editor_log"
+    Result.log_attribute = "editor_log"
 
 
 class EditorTestSuite(AbstractTestSuite):

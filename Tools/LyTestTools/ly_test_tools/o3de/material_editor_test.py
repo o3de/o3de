@@ -151,7 +151,7 @@ class MaterialEditorBatchedTest(MaterialEditorSharedTest):
 
 class MaterialEditorResult(Result):
     """Used to set the log_attribute value for MaterialEditor result logs."""
-    log_attribute = "material_editor_log"
+    Result.log_attribute = "material_editor_log"
 
 
 class MaterialEditorTestSuite(AbstractTestSuite):
@@ -235,7 +235,8 @@ class MaterialEditorTestSuite(AbstractTestSuite):
         test_filename = editor_utils.get_testcase_module_filepath(test_spec.test_module)
         cmdline = [
                       "--runpythontest", test_filename,
-                      "-logfile", os.path.join(f"log_test_{run_id}, {log_name}")] + test_cmdline_args
+                      "-logfile", os.path.join(editor_utils.retrieve_material_editor_log_path(run_id, workspace),
+                                               log_name)] + test_cmdline_args
         material_editor = launcher_helper.create_material_editor(workspace)
         material_editor.args.extend(cmdline)
         material_editor.start(backupFiles=False, launch_ap=False, configure_settings=False)
@@ -244,7 +245,7 @@ class MaterialEditorTestSuite(AbstractTestSuite):
             material_editor.wait(test_spec.timeout)
             output = material_editor.get_output()
             return_code = material_editor.get_returncode()
-            material_editor_log_content = editor_utils.retrieve_editor_log_content(run_id, log_name, workspace)
+            material_editor_log_content = editor_utils.retrieve_material_editor_log_content(run_id, log_name, workspace)
             # Save the MaterialEditor log
             workspace.artifact_manager.save_artifact(
                 os.path.join(editor_utils.retrieve_material_editor_log_path(run_id, workspace), log_name))
@@ -273,10 +274,10 @@ class MaterialEditorTestSuite(AbstractTestSuite):
         except WaitTimeoutError:
             output = material_editor.get_output()
             material_editor.stop()
-            material_editor_log_content = editor_utils.retrieve_editor_log_content(run_id, log_name, workspace)
+            material_editor_log_content = editor_utils.retrieve_material_editor_log_content(run_id, log_name, workspace)
             test_result = MaterialEditorResult.Timeout(test_spec, output, test_spec.timeout, material_editor_log_content)
 
-        material_editor_log_content = editor_utils.retrieve_editor_log_content(run_id, log_name, workspace)
+        material_editor_log_content = editor_utils.retrieve_material_editor_log_content(run_id, log_name, workspace)
         results = self._get_results_using_output([test_spec], output, material_editor_log_content)
         results[test_spec.__name__] = test_result
         return results
@@ -329,7 +330,8 @@ class MaterialEditorTestSuite(AbstractTestSuite):
 
         cmdline = [
                       "--runpythontest", temp_batched_file.name,
-                      "-logfile", os.path.join(f"log_test_{run_id}, {log_name}")] + test_cmdline_args
+                      "-logfile", os.path.join(editor_utils.retrieve_material_editor_log_path(run_id, workspace),
+                                               log_name)] + test_cmdline_args
         material_editor = launcher_helper.create_material_editor(workspace)
         material_editor.args.extend(cmdline)
         material_editor.start(backupFiles=False, launch_ap=False, configure_settings=False)
@@ -340,7 +342,7 @@ class MaterialEditorTestSuite(AbstractTestSuite):
             material_editor.wait(self.timeout_material_editor_shared_test)
             output = material_editor.get_output()
             return_code = material_editor.get_returncode()
-            material_editor_log_content = editor_utils.retrieve_editor_log_content(run_id, log_name, workspace)
+            material_editor_log_content = editor_utils.retrieve_material_editor_log_content(run_id, log_name, workspace)
             # Save the MaterialEditor log
             try:
                 path_to_artifact = os.path.join(
@@ -405,7 +407,7 @@ class MaterialEditorTestSuite(AbstractTestSuite):
         except WaitTimeoutError:
             material_editor.stop()
             output = material_editor.get_output()
-            material_editor_log_content = editor_utils.retrieve_editor_log_content(run_id, log_name, workspace)
+            material_editor_log_content = editor_utils.retrieve_material_editor_log_content(run_id, log_name, workspace)
 
             # The MaterialEditor timed out when running the tests,
             # get the data from the output to find out which ones ran
@@ -463,9 +465,9 @@ class MaterialEditorTestSuite(AbstractTestSuite):
         if result is None:
             logger.error(f"Unexpectedly found no test run in the {LOG_NAME} during {test_spec}")
             result = {"Unknown":
-                MaterialEditorResult.Unknown(
-                    test_spec=test_spec,
-                    extra_info=f"Unexpectedly found no test run information on stdout in the {LOG_NAME}")}
+                      MaterialEditorResult.Unknown(
+                          test_spec=test_spec,
+                          extra_info=f"Unexpectedly found no test run information on stdout in the {LOG_NAME}")}
         collected_test_data.results.update(result)
         test_name, test_result = next(iter(result.items()))
         self._report_result(test_name, test_result)
@@ -572,9 +574,9 @@ class MaterialEditorTestSuite(AbstractTestSuite):
                     logger.error(f"Unexpectedly found no test run in the {LOG_NAME} during MaterialEditorParallelTest")
                     logger.debug(f"Results from MaterialEditorParallelTest thread:\n{results_per_thread}")
                     result = {"Unknown":
-                        MaterialEditorResult.Unknown(
-                            test_spec=MaterialEditorParallelTest,
-                            extra_info=f"Unexpectedly found no test run information on stdout in the {LOG_NAME}")}
+                              MaterialEditorResult.Unknown(
+                                  test_spec=MaterialEditorParallelTest,
+                                  extra_info=f"Unexpectedly found no test run information on stdout in the {LOG_NAME}")}
                 collected_test_data.results.update(result)
                 if not isinstance(result, MaterialEditorResult.Pass):
                     save_asset_logs = True
@@ -644,9 +646,9 @@ class MaterialEditorTestSuite(AbstractTestSuite):
                 logger.error(f"Unexpectedly found no test run in the {LOG_NAME} during MaterialEditorSharedTest")
                 logger.debug(f"Results from MaterialEditorSharedTest thread:\n{results_per_thread}")
                 result = {"Unknown":
-                    MaterialEditorResult.Unknown(
-                        test_spec=MaterialEditorSharedTest,
-                        extra_info=f"Unexpectedly found no test run information on stdout in the {LOG_NAME}")}
+                          MaterialEditorResult.Unknown(
+                              test_spec=MaterialEditorSharedTest,
+                              extra_info=f"Unexpectedly found no test run information on stdout in the {LOG_NAME}")}
             collected_test_data.results.update(result)
             if not isinstance(result, MaterialEditorResult.Pass):
                 save_asset_logs = True

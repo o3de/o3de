@@ -151,7 +151,7 @@ class Result(object):
             Checks if the log_attribute exists and returns it.
             :return: Either the log_attribute string or a no output message
             """
-            log = getattr(self, Result.log_attribute, None)
+            log = getattr(Result, Result.log_attribute, None)
             if log:
                 return log
             else:
@@ -201,7 +201,7 @@ class Result(object):
                 "------------\n"
                 f"{self.get_output_str()}\n"
                 "-------------------------------\n"
-                "|  Program (i.e. Editor) log  |\n"
+                f"|  {Result.log_attribute} log  |\n"
                 "-------------------------------\n"
                 f"{self.get_log_attribute_str()}\n"
             )
@@ -242,7 +242,7 @@ class Result(object):
                 "------------\n"
                 f"{self.get_output_str()}\n"
                 "-------------------------------\n"
-                "|  Program (i.e. Editor) log  |\n"
+                f"|  {Result.log_attribute} log  |\n"
                 "------------------------------\n"
                 f"{self.get_log_attribute_str()}\n"
             )
@@ -272,7 +272,7 @@ class Result(object):
                 "------------\n"
                 f"{self.get_output_str()}\n"
                 "-------------------------------\n"
-                "|  Program (i.e. Editor) log  |\n"
+                f"|  {Result.log_attribute} log  |\n"
                 "-------------------------------\n"
                 f"{self.get_log_attribute_str()}\n"
             )
@@ -302,7 +302,7 @@ class Result(object):
                 "------------\n"
                 f"{self.get_output_str()}\n"
                 "-------------------------------\n"
-                "|  Program (i.e. Editor) log  |\n"
+                f"|  {Result.log_attribute} log  |\n"
                 "-------------------------------\n"
                 f"{self.get_log_attribute_str()}\n"
             )
