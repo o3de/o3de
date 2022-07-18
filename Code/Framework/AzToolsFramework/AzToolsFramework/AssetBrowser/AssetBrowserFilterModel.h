@@ -43,7 +43,7 @@ namespace AzToolsFramework
             //asset type filtering
             void SetFilter(FilterConstType filter);
             void FilterUpdatedSlotImmediate();
-            int LeftmostColumn();
+
             const FilterConstType& GetFilter() const { return m_filter; }
             //////////////////////////////////////////////////////////////////////////
             // AssetBrowserComponentNotificationBus

@@ -445,19 +445,9 @@ namespace AzToolsFramework
             }
 
             int row = entry->row();
-            int column = GetLeftmostColumnInFilter();
+            int column = 0;
             index = createIndex(row, column, entry);
             return true;
-        }
-
-        int AssetBrowserModel::GetLeftmostColumnInFilter() const
-        {
-            constexpr int defaultLeftmostColumn = 0;
-            if (m_filterModel)
-            {
-                return m_filterModel->LeftmostColumn();
-            }
-            return defaultLeftmostColumn;
         }
     } // namespace AssetBrowser
 } // namespace AzToolsFramework

@@ -104,20 +104,6 @@ namespace AzToolsFramework
             return m_shownColumns.find(source_column) != m_shownColumns.end();
         }
 
-        int AssetBrowserFilterModel::LeftmostColumn()
-        {
-            int retval{ -1 };
-            for (int i = 0 ; i < static_cast<int>(AssetBrowserEntry::Column::Count) ; ++i)
-            {
-                if (filterAcceptsColumn(i, QModelIndex()))
-                {
-                    retval = i;
-                    break;
-                }
-            }
-            return retval;
-        }
-
         bool AssetBrowserFilterModel::lessThan(const QModelIndex& source_left, const QModelIndex& source_right) const
         {
             if (source_left.column() == source_right.column())
