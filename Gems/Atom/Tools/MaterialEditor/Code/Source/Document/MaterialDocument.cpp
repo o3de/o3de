@@ -54,7 +54,7 @@ namespace MaterialEditor
     MaterialDocument::~MaterialDocument()
     {
         MaterialDocumentRequestBus::Handler::BusDisconnect();
-        AZ::TickBus::Handler::BusDisconnect();
+        AZ::SystemTickBus::Handler::BusDisconnect();
     }
 
     AZ::Data::Asset<AZ::RPI::MaterialAsset> MaterialDocument::GetAsset() const
@@ -357,14 +357,14 @@ namespace MaterialEditor
         return true;
     }
 
-    void MaterialDocument::OnTick(float /*deltaTime*/, AZ::ScriptTimePoint /*time*/)
+    void MaterialDocument::OnSystemTick()
     {
         if (m_compilePending)
         {
             if (m_materialInstance->Compile())
             {
                 m_compilePending = false;
-                AZ::TickBus::Handler::BusDisconnect();
+                AZ::SystemTickBus::Handler::BusDisconnect();
             }
         }
     }
@@ -687,7 +687,7 @@ namespace MaterialEditor
     {
         AtomToolsFramework::AtomToolsDocument::Clear();
 
-        AZ::TickBus::Handler::BusDisconnect();
+        AZ::SystemTickBus::Handler::BusDisconnect();
 
         m_materialAsset = {};
         m_materialInstance = {};
@@ -726,7 +726,7 @@ namespace MaterialEditor
     {
         if (!m_compilePending)
         {
-            AZ::TickBus::Handler::BusConnect();
+            AZ::SystemTickBus::Handler::BusConnect();
             m_compilePending = true;
         }
     }

@@ -27,8 +27,10 @@ namespace AZ
         {
         public:
             AZ_RTTI(SwapChain, "{888B64A5-D956-406F-9C33-CF6A54FC41B0}", Object);
-
             virtual ~SwapChain();
+
+            // Due to restriction on DX12 we need to allocate at least a minimum of 2 swapChain images or the drivers will complain
+            static const uint32_t MinSwapChainImages = 2; 
 
             //! Initializes the swap chain, making it ready for attachment.
             ResultCode Init(RHI::Device& device, const SwapChainDescriptor& descriptor);

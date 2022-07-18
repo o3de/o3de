@@ -166,6 +166,14 @@ namespace AssetProcessor
             "    FOREIGN KEY (ScanFolderPK) REFERENCES "
             "       ScanFolders(ScanFolderID) ON DELETE CASCADE);";
 
+        static const char* CREATE_STATS_TABLE = "AssetProcessor::CreateStatsTable";
+        static const char* CREATE_STATS_TABLE_STATEMENT =
+            "CREATE TABLE IF NOT EXISTS Stats( "
+            "    StatName       TEXT PRIMARY KEY collate nocase, "
+            "    StatValue      INTEGER NOT NULL, "
+            "    LastLogTime    INTEGER NOT NULL "
+            ");";
+
         //////////////////////////////////////////////////////////////////////////
         //indices
         static const char* CREATEINDEX_DEPENDSONSOURCE_SOURCEDEPENDENCY = "AssetProcesser::CreateIndexDependsOnSource_SourceDependency";
@@ -769,6 +777,16 @@ namespace AssetProcessor
         static const auto s_DeleteFileQuery = MakeSqlQuery(DELETE_FILE, DELETE_FILE_STATEMENT, LOG_NAME,
             SqlParam<AZ::s64>(":fileid"));
 
+        static const char* REPLACE_STAT = "AssetProcessor::ReplaceStat";
+        static const char* REPLACE_STAT_STATEMENT = "REPLACE INTO Stats VALUES (:statname, :statvalue, :lastlogtime);";
+        static const auto s_ReplaceStatQuery = MakeSqlQuery(
+            REPLACE_STAT,
+            REPLACE_STAT_STATEMENT,
+            LOG_NAME,
+            SqlParam<const char*>(":statname"),
+            SqlParam<AZ::s64>(":statvalue"),
+            SqlParam<AZ::s64>(":lastlogtime"));
+
         static const char* CREATEINDEX_SOURCEDEPENDENCY_SOURCE = "AssetProcesser::CreateIndexSourceSourceDependency";
         static const char* CREATEINDEX_SOURCEDEPENDENCY_SOURCE_STATEMENT =
             "CREATE INDEX IF NOT EXISTS Source_SourceDependency ON SourceDependency (Source);";
@@ -1094,6 +1112,15 @@ namespace AssetProcessor
             }
         }
 
+        if (foundVersion == DatabaseVersion::AddedFlagsColumnToProductTable)
+        {
+            if (m_databaseConnection->ExecuteOneOffStatement(CREATE_STATS_TABLE))
+            {
+                foundVersion = DatabaseVersion::AddedStatsTable;
+                AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Upgraded Asset Database to version %i (AddedStatsTable)\n", foundVersion)
+            }
+        }
+
         if (foundVersion == CurrentDatabaseVersion())
         {
             dropAllTables = false;
@@ -1315,6 +1342,15 @@ namespace AssetProcessor
         m_databaseConnection->AddStatement(INSERT_COLUMN_FILE_HASH, INSERT_COLUMN_FILE_HASH_STATEMENT);
         m_databaseConnection->AddStatement(INSERT_COLUMN_LAST_SCAN, INSERT_COLUMN_LAST_SCAN_STATEMENT);
         m_databaseConnection->AddStatement(INSERT_COLUMN_SCAN_TIME_SECONDS_SINCE_EPOCH, INSERT_COLUMN_SCAN_TIME_SECONDS_SINCE_EPOCH_STATEMENT);
+
+        // ---------------------------------------------------------------------------------------------
+        //                  Stats table
+        // ---------------------------------------------------------------------------------------------
+        m_databaseConnection->AddStatement(CREATE_STATS_TABLE, CREATE_STATS_TABLE_STATEMENT);
+        m_createStatements.push_back(CREATE_STATS_TABLE);
+
+        m_databaseConnection->AddStatement(REPLACE_STAT, REPLACE_STAT_STATEMENT);
+
         // ---------------------------------------------------------------------------------------------
         //                   Indices
         // ---------------------------------------------------------------------------------------------
@@ -3277,6 +3313,41 @@ namespace AssetProcessor
     bool AssetDatabaseConnection::RemoveFile(AZ::s64 fileID)
     {
         return s_DeleteFileQuery.BindAndStep(*m_databaseConnection, fileID);
+    }
+
+    bool AssetDatabaseConnection::GetStatByStatName(QString statName, StatDatabaseEntryContainer& container)
+    {
+        bool found = false;
+        bool succeeded = QueryStatByStatName(
+            statName.toUtf8().constData(),
+            [&](StatDatabaseEntry& stat)
+            {
+                found = true;
+                container.push_back();
+                container.back() = AZStd::move(stat);
+                return true; // return true to continue iterating over additional results, we are populating a container
+            });
+        return found && succeeded;
+    }
+
+    bool AssetDatabaseConnection::GetStatLikeStatName(QString statName, StatDatabaseEntryContainer& container)
+    {
+        bool found = false;
+        bool succeeded = QueryStatLikeStatName(
+            statName.toUtf8().constData(),
+            [&](StatDatabaseEntry& stat)
+            {
+                found = true;
+                container.push_back();
+                container.back() = AZStd::move(stat);
+                return true; // return true to continue iterating over additional results, we are populating a container
+            });
+        return found && succeeded;
+    }
+
+    bool AssetDatabaseConnection::ReplaceStat(AzToolsFramework::AssetDatabase::StatDatabaseEntry& stat)
+    {
+        return s_ReplaceStatQuery.BindAndStep(*m_databaseConnection, stat.m_statName.c_str(), stat.m_statValue, stat.m_lastLogTime);
     }
 
     bool AssetDatabaseConnection::SetBuilderInfoTable(AzToolsFramework::AssetDatabase::BuilderInfoEntryContainer& newEntries)
