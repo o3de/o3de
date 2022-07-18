@@ -360,7 +360,7 @@ namespace AssetProcessor
             AZStd::unordered_map<QueueElementID, AZ::s64> historicalStats;
             auto statsFunction = [&historicalStats](AzToolsFramework::AssetDatabase::StatDatabaseEntry entry)
             {
-                static constexpr int numTokensExpected = 4;
+                static constexpr int numTokensExpected = 5;
                 AZStd::vector<AZStd::string> tokens;
                 AZ::StringFunc::Tokenize(entry.m_statName, tokens, ',');
 
