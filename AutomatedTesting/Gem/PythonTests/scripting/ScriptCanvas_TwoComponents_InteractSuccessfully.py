@@ -11,7 +11,7 @@ from editor_python_test_tools.utils import TestHelper as helper
 from editor_python_test_tools.utils import Report as report
 from editor_python_test_tools.utils import Tracer as tracer
 import editor_python_test_tools.hydra_editor_utils as hydra
-from editor_python_test_tools.editor_entity_utils import EditorEntity, EditorComponent
+import azlmbr.scriptcanvas as scriptcanvas
 from editor_python_test_tools.asset_utils import Asset
 import azlmbr.legacy.general as general
 import azlmbr.math as math
@@ -27,14 +27,16 @@ class Tests:
     found_lines       = ("Expected log lines were found",  "Expected log lines were not found")
 # fmt: on
 
-LEVEL_NAME = "tmp_level"
-SOURCE_FILE_0 = os.path.join(paths.projectroot, "ScriptCanvas", "ScriptCanvas_TwoComponents0.scriptcanvas")
-SOURCE_FILE_1 = os.path.join(paths.projectroot, "ScriptCanvas", "ScriptCanvas_TwoComponents1.scriptcanvas")
-WAIT_TIME = 3.0  # SECONDS
-
 
 class LogLines:
     expected_lines = ["Greetings from the first script", "Greetings from the second script"]
+
+
+LEVEL_NAME = "Base"
+SOURCE_FILE_0 = os.path.join(paths.projectroot, "ScriptCanvas", "ScriptCanvas_TwoComponents0.scriptcanvas")
+SOURCE_FILE_1 = os.path.join(paths.projectroot, "ScriptCanvas", "ScriptCanvas_TwoComponents1.scriptcanvas")
+WAIT_TIME = 3.0  # SECONDS
+SCRIPT_CANVAS_COMPONENT_PROPERTY_PATH = "Configuration|Source"
 
 
 class TestScriptCanvas_TwoComponents_InteractSuccessfully:
@@ -63,10 +65,13 @@ class TestScriptCanvas_TwoComponents_InteractSuccessfully:
     :return: None
     """
 
-    def get_asset(asset_path):
+    def __init__(self):
+        self.editor_main_window = None
+
+    def get_asset(self, asset_path):
         return asset.AssetCatalogRequestBus(bus.Broadcast, "GetAssetIdByPath", asset_path, math.Uuid(), False)
 
-    def locate_expected_lines(section_tracer):
+    def locate_expected_lines(self, section_tracer):
         found_lines = []
         for printInfo in section_tracer.prints:
             found_lines.append(printInfo.message.strip())
@@ -76,35 +81,27 @@ class TestScriptCanvas_TwoComponents_InteractSuccessfully:
     @pyside_utils.wrap_async
     async def run_test(self):
 
-        test_entity2 = EditorEntity.create_editor_entity("test_entity2")
-        sccomponent = test_entity2.add_component("Script Canvas")
-        test_entity3 = EditorEntity.find_editor_entity("test_entity3")
-        script_canvas_component = test_entity3.get_components_of_type(["Script Canvas"])[0]
-        property_tree = EditorComponent.get_property_tree(script_canvas_component)
-        path = "Configuration|Source File"
-        path2 = "Configuration|Properties|Unused Variables|varname|Scope"
-        print(path2)
-
-        #value = EditorComponent.get_component_property_value(path)
-        value2 = EditorComponent.get_component_property_value(path2)
-
-        print(EditorComponent.get_property_type_visibility(script_canvas_component))
-
-        #sccomponent.set_component_property_value("Configuration|Source File", SOURCE_FILE_0)
-"""
-        # 1) Create level
+        # Preconditions
         general.idle_enable(True)
-        result = general.create_level_no_prompt(LEVEL_NAME, 128, 1, 512, True)
-        report.critical_result(Tests.level_created, result == 0)
+
+        # 1) Create level
+        hydra.open_base_level()
         helper.wait_for_condition(lambda: general.get_current_level_name() == LEVEL_NAME, WAIT_TIME)
         general.close_pane("Error Report")
 
         # 2) Create entity with SC components
+        sourcehandle = scriptcanvas.SourceHandleFromPath(SOURCE_FILE_0)
+        entity = hydra.Entity("test_Entity")
         position = math.Vector3(512.0, 512.0, 32.0)
-        test_entity = hydra.Entity("test_entity")
-        test_entity.create_entity(position, ["Script Canvas", "Script Canvas"])
-        test_entity.get_set_test(0, "Script Canvas Asset|Script Canvas Asset", self.get_asset(SOURCE_FILE_0))
-        test_entity.get_set_test(1, "Script Canvas Asset|Script Canvas Asset", self.get_asset(SOURCE_FILE_1))
+        entity.create_entity(position, ["Script Canvas", "Script Canvas"])
+
+        script_canvas_component = entity.components[0]
+        hydra.set_component_property_value(script_canvas_component, SCRIPT_CANVAS_COMPONENT_PROPERTY_PATH, sourcehandle)
+
+        sourcehandle = scriptcanvas.SourceHandleFromPath(SOURCE_FILE_1)
+
+        script_canvas_component = entity.components[1]
+        hydra.set_component_property_value(script_canvas_component, SCRIPT_CANVAS_COMPONENT_PROPERTY_PATH, sourcehandle)
 
         # 3) Start Tracer
         with tracer as section_tracer:
@@ -121,6 +118,6 @@ class TestScriptCanvas_TwoComponents_InteractSuccessfully:
         # 7) Exit game mode
         helper.exit_game_mode(Tests.game_mode_exited)
 
-"""
+
 test = TestScriptCanvas_TwoComponents_InteractSuccessfully()
 test.run_test()
