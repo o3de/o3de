@@ -456,7 +456,7 @@ namespace AzToolsFramework
             }
 
             int row = entry->row();
-            int column = 0;
+            int column = 1;
             index = createIndex(row, column, entry);
             return true;
         }
