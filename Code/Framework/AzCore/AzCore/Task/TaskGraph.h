@@ -74,6 +74,7 @@ namespace AZ
     class TaskGraphEvent
     {
     public:
+        // ! The supplied string label is expected to be a string literal or otherwise outlive the lifetime of this TG event.
         explicit TaskGraphEvent(const char* label);
         bool IsSignaled();
         void Wait();
@@ -101,6 +102,7 @@ namespace AZ
     class TaskGraph final
     {
     public:
+        // ! The supplied string label is expected to be a string literal or otherwise outlive the lifetime of this TG.
         explicit TaskGraph(const char* graphlabel);
         ~TaskGraph();
 
