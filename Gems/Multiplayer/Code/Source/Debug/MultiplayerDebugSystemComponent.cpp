@@ -169,8 +169,8 @@ namespace Multiplayer
                                         [console, networkLevelName]()
                                         {
                                             auto loadLevelString = AZStd::fixed_string<256>::format("LoadLevel %s", networkLevelName.c_str());
-                                            console->PerformCommand(loadLevelString.c_str());
                                             console->PerformCommand("host");
+                                            console->PerformCommand(loadLevelString.c_str());
                                         });
                                 }
                                 ++networkLevelIndex;
