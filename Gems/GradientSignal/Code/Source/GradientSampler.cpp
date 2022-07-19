@@ -199,6 +199,19 @@ namespace GradientSignal
         return inHierarchy;
     }
 
+    AZ::Aabb GradientSampler::TransformDirtyRegion(const AZ::Aabb& dirtyRegion) const
+    {
+        if ((!m_enableTransform) || (!dirtyRegion.IsValid()))
+        {
+            return dirtyRegion;
+        }
+
+        // We do *not* use the inverse transform here because we're transforming from world space to world space.
+        AZ::Matrix3x4 transformMatrix = GetTransformMatrix();
+
+        return dirtyRegion.GetTransformedAabb(transformMatrix);
+    }
+
     bool GradientSampler::AreLevelSettingsDisabled() const
     {
         return !m_enableLevels;

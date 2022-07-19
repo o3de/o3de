@@ -162,13 +162,22 @@ namespace AZ
                               Render::MaterialPropertyOverrideMap()),
                           [thumbnailKey]()
                           {
+                              // Instead of sending the notification that the thumbnail render failed, we will allow it to succeed and
+                              // substitute it with a blank image. This will prevent the thumbnail system from getting stuck indefinitely
+                              // with a white file icon and allow the thumbnail to reload if the asset changes in the future. The thumbnail
+                              // system should be updated to support state management and recovery automatically.
+                              QPixmap pixmap(1, 1);
+                              pixmap.fill(Qt::black);
                               AzToolsFramework::Thumbnailer::ThumbnailerRendererNotificationBus::Event(
-                                  thumbnailKey, &AzToolsFramework::Thumbnailer::ThumbnailerRendererNotifications::ThumbnailFailedToRender);
+                                  thumbnailKey,
+                                  &AzToolsFramework::Thumbnailer::ThumbnailerRendererNotifications::ThumbnailRendered,
+                                  pixmap);
                           },
                           [thumbnailKey](const QPixmap& pixmap)
                           {
                               AzToolsFramework::Thumbnailer::ThumbnailerRendererNotificationBus::Event(
-                                  thumbnailKey, &AzToolsFramework::Thumbnailer::ThumbnailerRendererNotifications::ThumbnailRendered,
+                                  thumbnailKey,
+                                  &AzToolsFramework::Thumbnailer::ThumbnailerRendererNotifications::ThumbnailRendered,
                                   pixmap);
                           } });
                 }

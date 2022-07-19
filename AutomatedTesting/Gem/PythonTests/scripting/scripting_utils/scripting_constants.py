@@ -77,3 +77,4 @@ VARIABLE_TYPES = ["Boolean", "Color", "EntityId", "Number", "String", "Transform
 File Paths
 """
 SCRIPT_EVENT_FILE_PATH = os.path.join(paths.projectroot, "ScriptCanvas", "test_file.scriptevent")
+SCRIPT_CANVAS_COMPONENT_PROPERTY_PATH = "Configuration|Source"

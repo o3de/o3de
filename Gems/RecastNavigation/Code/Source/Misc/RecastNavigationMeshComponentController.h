@@ -119,7 +119,7 @@ namespace RecastNavigation
         AZStd::atomic<bool> m_shouldProcessTiles{ true };
 
         //! Task graph objects to process tile geometry into Recast tiles.
-        AZ::TaskGraph m_taskGraph;
+        AZ::TaskGraph m_taskGraph{ "RecastNavigation Tile Processing" };
         AZ::TaskExecutor m_taskExecutor;
         AZStd::unique_ptr<AZ::TaskGraphEvent> m_taskGraphEvent;
         AZ::TaskDescriptor m_taskDescriptor{ "Processing Tiles", "Recast Navigation" };

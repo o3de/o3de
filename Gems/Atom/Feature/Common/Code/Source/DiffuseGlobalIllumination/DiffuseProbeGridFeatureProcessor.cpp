@@ -14,6 +14,7 @@
 #include <Atom/RPI.Public/View.h>
 #include <Atom/RPI.Public/Pass/PassFilter.h>
 #include <DiffuseGlobalIllumination/DiffuseProbeGridFeatureProcessor.h>
+#include <Atom_Feature_Traits_Platform.h>
 #include <Atom/Feature/TransformService/TransformServiceFeatureProcessor.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/RHISystemInterface.h>
@@ -39,6 +40,12 @@ namespace AZ
 
         void DiffuseProbeGridFeatureProcessor::Activate()
         {
+            if (!AZ_TRAIT_DIFFUSE_GI_PASSES_SUPPORTED)
+            {
+                // GI is not supported on this platform
+                return;
+            }
+
             RHI::RHISystemInterface* rhiSystem = RHI::RHISystemInterface::Get();
             RHI::Ptr<RHI::Device> device = rhiSystem->GetDevice();
 
@@ -133,6 +140,12 @@ namespace AZ
 
         void DiffuseProbeGridFeatureProcessor::Deactivate()
         {
+            if (!AZ_TRAIT_DIFFUSE_GI_PASSES_SUPPORTED)
+            {
+                // GI is not supported on this platform
+                return;
+            }
+
             AZ_Warning("DiffuseProbeGridFeatureProcessor", m_diffuseProbeGrids.size() == 0, 
                 "Deactivating the DiffuseProbeGridFeatureProcessor, but there are still outstanding probe grids probes. Components\n"
                 "using DiffuseProbeGridHandles should free them before the DiffuseProbeGridFeatureProcessor is deactivated.\n"

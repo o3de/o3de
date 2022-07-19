@@ -262,7 +262,7 @@ namespace AZStd::ranges
         }
 
         constexpr decltype(auto) operator*() const
-            noexcept(noexcept(AZStd::invoke(*m_parent->m_func, *m_current)))
+            noexcept(noexcept(AZStd::invoke(*declval<Parent>().m_func, *declval<iterator_t<Base>>())))
         {
             return AZStd::invoke(*m_parent->m_func, *m_current);
         }

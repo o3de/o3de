@@ -89,61 +89,63 @@ namespace AZ
             auto& device = static_cast<Device&>(GetDevice());
             const ExecuteWorkRequest& request = static_cast<const ExecuteWorkRequest&>(rhiRequest);
             
-            bool haveEncodedList = false;
-            for (uint32_t commandListIdx = 0; commandListIdx < static_cast<uint32_t>(request.m_commandLists.size()); ++commandListIdx)
+            bool isCommitNeeded = request.m_signalFenceValue > 0 ||
+                                   request.m_scopeFencesToSignal.size() > 0 ||
+                                   request.m_swapChainsToPresent.size() > 0;
+            
+            for (uint32_t index = 0; index < aznumeric_cast<uint32_t>(request.m_commandLists.size()) && !isCommitNeeded; ++index)
             {
-                CommandList& commandList = *request.m_commandLists[commandListIdx];
+                CommandList& commandList = *request.m_commandLists[index];
                 if(commandList.IsEncoded())
                 {
-                    haveEncodedList = true;
+                    isCommitNeeded = true;
                     break;
                 }
             }
-    
-            if(haveEncodedList)
+            
+            id <MTLCommandBuffer> workRequestCommandBuffer = request.m_commandBuffer->GetMtlCommandBuffer();
+            CommandQueueContext& context = device.GetCommandQueueContext();
+            const FenceSet& compiledFences = context.GetCompiledFences();
+            
+            if(isCommitNeeded)
             {
                 //Since we call executework on all the groups in the correct order we safely call enqueue here to ensure
                 //that we reserve a place for the command buffer in the correct order on the associated hw command queue.
-                id <MTLCommandBuffer> workRequestCommandBuffer = request.m_commandBuffer->GetMtlCommandBuffer();
                 [workRequestCommandBuffer enqueue];
-                
-                CommandQueueContext& context = device.GetCommandQueueContext();
-                const FenceSet& compiledFences = context.GetCompiledFences();
-                
-                QueueCommand([=](void* unused)
-                {
-                     //Autoreleasepool is to ensure that the driver is not leaking memory related to the command buffer and encoder
-                     @autoreleasepool
+            }
+            
+            //Queue the fence signals, swapchain presents and commit call for this command buffer
+            QueueCommand([=](void* unused)
+            {
+                 //Autoreleasepool is to ensure that the driver is not leaking memory related to the command buffer and encoder
+                 @autoreleasepool
+                 {
+                     AZ_PROFILE_SCOPE(RHI, "ExecuteWork");
+                     AZ::Debug::ScopedTimer executionTimer(m_lastExecuteDuration);
+                     
+                     if (request.m_signalFenceValue > 0)
                      {
-                         AZ_PROFILE_SCOPE(RHI, "ExecuteWork");
-                         AZ::Debug::ScopedTimer executionTimer(m_lastExecuteDuration);
-                         
-                         if (request.m_signalFenceValue > 0)
-                         {
-                             compiledFences.GetFence(GetDescriptor().m_hardwareQueueClass).SignalFromGpu(workRequestCommandBuffer, request.m_signalFenceValue);
-                         }
-
-                         for (Fence* fence : request.m_scopeFencesToSignal)
-                         {
-                             fence->SignalFromGpu(workRequestCommandBuffer);
-                         }
-                         
-                         {
-                             AZ::Debug::ScopedTimer presentTimer(m_lastPresentDuration);
-                         
-                             for (RHI::SwapChain* swapChain : request.m_swapChainsToPresent)
-                             {
-                                 
-                                 static_cast<SwapChain*>(swapChain)->SetCommandBuffer(workRequestCommandBuffer);
-                                 swapChain->Present();
-                             }
-                         }
-                         
-                         //Commit the command buffer to the command queue
-                         request.m_commandBuffer->CommitMetalCommandBuffer();                         
+                         compiledFences.GetFence(GetDescriptor().m_hardwareQueueClass).SignalFromGpu(workRequestCommandBuffer, request.m_signalFenceValue);
                      }
-                 });
-            }                        
+
+                     for (Fence* fence : request.m_scopeFencesToSignal)
+                     {
+                         fence->SignalFromGpu(workRequestCommandBuffer);
+                     }
+                     
+                     {
+                         AZ::Debug::ScopedTimer presentTimer(m_lastPresentDuration);
+                         for (RHI::SwapChain* swapChain : request.m_swapChainsToPresent)
+                         {
+                             static_cast<SwapChain*>(swapChain)->SetCommandBuffer(workRequestCommandBuffer);
+                             swapChain->Present();
+                         }
+                     }
+                     
+                     //Commit the command buffer to the command queue
+                     request.m_commandBuffer->CommitMetalCommandBuffer(isCommitNeeded);
+                 }
+             });
         }
 
         void CommandQueue::WaitForIdle()
