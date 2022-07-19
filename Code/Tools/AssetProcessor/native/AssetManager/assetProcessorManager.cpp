@@ -251,8 +251,7 @@ namespace AssetProcessor
 
                 if (operationDuration)
                 {
-                    Q_EMIT JobProcessDurationChanged(
-                        jobEntry, QTime::fromMSecsSinceStartOfDay(aznumeric_cast<int>(operationDuration.value())));
+                    Q_EMIT JobProcessDurationChanged(jobEntry, aznumeric_cast<int>(operationDuration.value()));
                 }
 
                 m_jobRunKeyToJobInfoMap.erase(jobEntry.m_jobRunKey);
