@@ -125,30 +125,34 @@ namespace GradientSignal
         inputPositions.reserve(imageResolutionX * imageResolutionY);
         AZStd::vector<AZStd::pair<int, int>> indices;
         indices.reserve(imageResolutionX * imageResolutionY);
-        for (int y = 0; !m_shouldCancel && (y < imageResolutionY); ++y)
-        {
-            for (int x = 0; x < imageResolutionX; ++x)
+
+        // All the input position gathering logic occurs in this lambda passed to the
+        // ShapeComponentRequestsBus so that we only need one bus call
+        LmbrCentral::ShapeComponentRequestsBus::Event(
+            m_boundsEntityId,
+            [this, positionOffset, pixelToBoundsScale, imageResolutionX, imageResolutionY, &inputPositions, &indices](LmbrCentral::ShapeComponentRequestsBus::Events* shape)
             {
-                // Invert world y to match axis.  (We use "imageBoundsY- 1" to invert because our loop doesn't go all the way to
-                // imageBoundsY)
-                AZ::Vector3 uvw(static_cast<float>(x), static_cast<float>((imageResolutionY - 1) - y), 0.0f);
-
-                AZ::Vector3 position = positionOffset + (uvw * pixelToBoundsScale);
-
-                bool inBounds = true;
-                LmbrCentral::ShapeComponentRequestsBus::EventResult(
-                    inBounds, m_boundsEntityId, &LmbrCentral::ShapeComponentRequestsBus::Events::IsPointInside, position);
-
-                if (!inBounds)
+                for (int y = 0; !m_shouldCancel && (y < imageResolutionY); ++y)
                 {
-                    continue;
-                }
+                    for (int x = 0; x < imageResolutionX; ++x)
+                    {
+                        // Invert world y to match axis.  (We use "imageBoundsY- 1" to invert because our loop doesn't go all the way to
+                        // imageBoundsY)
+                        AZ::Vector3 uvw(static_cast<float>(x), static_cast<float>((imageResolutionY - 1) - y), 0.0f);
 
-                // Keep track of this input position + the x,y indices
-                inputPositions.push_back(position);
-                indices.push_back(AZStd::make_pair(x, y));
-            }
-        }
+                        AZ::Vector3 position = positionOffset + (uvw * pixelToBoundsScale);
+
+                        if (!shape->IsPointInside(position))
+                        {
+                            continue;
+                        }
+
+                        // Keep track of this input position + the x,y indices
+                        inputPositions.push_back(position);
+                        indices.push_back(AZStd::make_pair(x, y));
+                    }
+                }
+            });
 
         // Retrieve all the gradient values for the input positions
         const size_t numPositions = inputPositions.size();
@@ -511,7 +515,7 @@ namespace GradientSignal
             AZ::IO::SystemFile::Delete(fullPathIO.c_str());
         }
 
-        m_bakeImageJob = aznew BakeImageJob(m_configuration, fullPathIO, GetPreviewBounds(), GetPreviewEntity());
+        m_bakeImageJob = aznew BakeImageJob(m_configuration, fullPathIO, GetPreviewBounds(), m_configuration.m_inputBounds);
         m_bakeImageJob->Start();
 
         // Force a refresh now so the bake button gets disabled
