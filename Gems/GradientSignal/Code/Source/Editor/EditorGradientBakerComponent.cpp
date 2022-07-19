@@ -159,9 +159,7 @@ namespace GradientSignal
         for (int i = 0; !m_shouldCancel && (i < numPositions); ++i)
         {
             const float& sample = outputValues[i];
-            const auto& indicesPair = indices[i];
-            const auto& x = indicesPair.first;
-            const auto& y = indicesPair.second;
+            const auto& [x, y] = indices[i];
 
             // Write out the sample value for the pixel based on output format
             int index = ((y * imageResolutionX) + x) * channels;
