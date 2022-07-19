@@ -73,7 +73,7 @@ class FBXConverter(QtWidgets.QDialog):
         self.isTopLevel()
         self.setWindowFlags(self.windowFlags() & ~QtCore.Qt.WindowMinMaxButtonsHint)
 
-        self.default_search_path = os.path.normpath(Path(__file__).parents[8] / 'AtomContent')
+        self.default_search_path = Path(__file__).as_posix()
         self.all_properties_location = 'E:/Depot/EnginePythonTesting/Cache/pc/materials/types/' \
                                        'standardpbr_allproperties.material'
         self.autodesk_directory = Path(os.environ['ProgramFiles']) / 'Autodesk'
@@ -140,7 +140,7 @@ class FBXConverter(QtWidgets.QDialog):
         self.input_path_field.setFixedHeight(25)
         self.input_field_layout.addWidget(self.input_path_field)
         self.set_input_button = QtWidgets.QPushButton('Set')
-        self.set_input_button.clicked.connect(partial(self.set_directory_button_clicked, 'input'))
+        self.set_input_button.clicked.connect(self.set_directory_button_clicked)
         self.set_input_button.setFixedSize(40, 25)
         self.input_field_layout.addWidget(self.set_input_button)
         self.target_directory_layout.addLayout(self.input_field_layout)
@@ -177,6 +177,7 @@ class FBXConverter(QtWidgets.QDialog):
         self.output_directory_color_frame.setStyleSheet('background-color:rgb(210,210,210);')
         self.output_directory_button = QtWidgets.QPushButton(self.relative_export_path)
         self.output_directory_button.clicked.connect(self.set_relative_path_clicked)
+        self.output_directory_button.setEnabled(False)
         self.output_directory_button.setFixedHeight(30)
         self.output_directory_button.setFont(self.small_font)
         self.output_directory_button.setStyleSheet(
@@ -428,6 +429,7 @@ class FBXConverter(QtWidgets.QDialog):
                 for entry in info_list:
                     command.append(str(entry))
                 self.p.setArguments(command)
+                _LOGGER.info(f'\n\nCommand:::::>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> \n{command}')
                 self.p.start()
                 self.p.waitForFinished(-1)
                 self.p.finished.connect(self.cleanup)
@@ -516,31 +518,22 @@ class FBXConverter(QtWidgets.QDialog):
         button.
         :return:
         """
-        input_directory = self.input_path_field.text()
-        unlocked = True
+        input_string = self.input_path_field.text()
+        unlocked = False
 
         if self.use_directory_radio_button.isChecked():
-            if os.path.isdir(input_directory.strip()):
-                self.input_directory = Path(input_directory.strip())
-            else:
-                # Check Relative Output Path
-                output_path = os.path.join(self.input_directory, self.output_directory_button.text())
-                if os.path.isdir(output_path):
-                    _LOGGER.info('Directory is valid: {}'.format(output_path))
-                    unlocked = True
-                else:
-                    unlocked = False
+            if os.path.isdir(input_string.strip()):
+                self.input_directory = Path(input_string.strip()).as_posix()
+                unlocked = True
         else:
-            if os.path.isfile(input_directory.strip()):
-                target_path = Path(input_directory.strip()).parent / self.output_directory_button.text()
-                if target_path.is_dir():
-                    self.input_directory = Path(input_directory.strip())
-                    unlocked = True
-            else:
-                unlocked = False
+            if os.path.isfile(input_string.strip()):
+                self.input_directory = Path(input_string.strip()).parent.as_posix()
+                unlocked = True
 
         self.process_files_button.setEnabled(unlocked)
-        self.process_files_button.setFocus()
+
+        if unlocked:
+            self.process_files_button.setFocus()
 
     def set_audit_list(self):
         _LOGGER.info(f'AuditList: {self.processed_material_information}')
@@ -604,35 +597,33 @@ class FBXConverter(QtWidgets.QDialog):
     # Button Actions #############
     ##############################
 
-    def set_directory_button_clicked(self, target):
+    def set_directory_button_clicked(self):
         """
         Launches a file browser dialog window for specifying file paths
 
         :param target: Target sets which directory is being set- input or output
         :return:
         """
-        if self.input_path_field.text != '':
-            if self.use_directory_radio_button.isChecked():
-                file_path = QtWidgets.QFileDialog.getExistingDirectory(self, 'Select Directory', self.default_search_path,
-                                                                       QtWidgets.QFileDialog.ShowDirsOnly)
-                if file_path != '':
-                    self.input_path_field.setText(file_path) if target == 'input' else self.output_path_field.setText(
-                        file_path)
+        if self.use_directory_radio_button.isChecked():
+            file_path = QtWidgets.QFileDialog.getExistingDirectory(self, 'Select Directory', self.default_search_path,
+                                                                   QtWidgets.QFileDialog.ShowDirsOnly)
+            if os.path.isdir(file_path):
+                self.output_directory_button.setEnabled(True)
+                self.input_path_field.setText(file_path)
             else:
-                if target == 'input':
-                    file_browser = QtWidgets.QFileDialog()
-                    file_path = file_browser.getOpenFileName(self, 'Set Target File', self.default_search_path,
-                                                             'FBX Files (*.fbx)')
-                    if file_path != '':
-                        self.input_path_field.setText(file_path[0])
-                        self.single_asset_file = file_path
-                else:
-                    file_path = QtWidgets.QFileDialog.getExistingDirectory(self, 'Select Directory',
-                                                                           self.desktop_location,
-                                                                           QtWidgets.QFileDialog.ShowDirsOnly)
-                    if file_path != '':
-                        self.output_path_field.setText(file_path)
-            self.set_io_directories()
+                self.output_directory_button.setEnabled(False)
+
+        else:
+            file_browser = QtWidgets.QFileDialog()
+            file_path = file_browser.getOpenFileName(self, 'Set Target File', self.default_search_path,
+                                                     'FBX Files (*.fbx)')
+            if os.path.isfile(file_path[0]):
+                self.output_directory_button.setEnabled(True)
+                self.input_path_field.setText(file_path[0])
+                self.single_asset_file = file_path
+            else:
+                self.output_directory_button.setEnabled(False)
+        self.set_io_directories()
 
     def radio_clicked(self):
         """
@@ -643,7 +634,7 @@ class FBXConverter(QtWidgets.QDialog):
         signal_sender = self.sender()
         if signal_sender.text() == 'Directory':
             self.input_directory_label.setText('Input Directory')
-            input_path = '' if not self.input_directory else str(self.input_directory)
+            input_path = '' if not self.input_directory else self.input_directory
             self.input_path_field.setText(input_path)
         else:
             self.input_directory_label.setText('Input FBX File')
@@ -674,7 +665,7 @@ class FBXConverter(QtWidgets.QDialog):
         if self.use_directory_radio_button.isChecked():
             directory_path = Path(self.input_path_field.text())
             if os.path.isdir(directory_path):
-                self.input_directory = os.path.normpath(directory_path)
+                self.input_directory = directory_path
                 self.process_directory(directory_path)
                 self.hidden_button.setFocus()
             else:
@@ -683,7 +674,7 @@ class FBXConverter(QtWidgets.QDialog):
         else:
             fbx_path = self.input_path_field.text()
             if os.path.exists(fbx_path) and fbx_path.endswith('.fbx'):
-                self.input_directory = os.path.normpath(os.path.dirname(fbx_path))
+                self.input_directory = os.path.dirname(fbx_path)
                 self.process_single_asset(Path(fbx_path))
                 self.hidden_button.setFocus()
             else:
@@ -700,31 +691,31 @@ class FBXConverter(QtWidgets.QDialog):
     def set_relative_path_clicked(self):
         """
         This button action keeps output file locations positioned in the best accessible locations. If the user
-        attempts to assign the relative output path to a path thats base is NOT the input directory, a warning
+        attempts to assign the relative output path to a path that has a base that is NOT the input directory, a warning
         dialog box will prompt to select a compatible path. The path that is set by default ('Objects/KB3D/CityKit')
         gives the recommended formatted location.
         :return:
         """
-        input_path = os.path.normpath(self.input_directory)
-        search_path = self.default_search_path if not os.path.isdir(input_path) else input_path
-        file_path = QtWidgets.QFileDialog.getExistingDirectory(self, 'Select Output Directory', search_path,
-                                                               QtWidgets.QFileDialog.ShowDirsOnly)
+        if os.path.isdir(self.input_directory):
+            file_path = QtWidgets.QFileDialog.getExistingDirectory(self, 'Select Output Directory',
+                                                                   self.input_directory,
+                                                                   QtWidgets.QFileDialog.ShowDirsOnly)
+            if os.path.isfile(file_path):
+                file_path = Path(file_path).parent.as_posix()
+            else:
+                file_path = Path(file_path).as_posix()
 
-        if os.path.isfile(file_path):
-            file_path = os.path.normpath(Path(file_path).parent)
-        else:
-            file_path = os.path.normpath(Path(file_path))
-
-        if file_path.index(input_path) != -1:
-            self.relative_export_path = file_path.replace('{}\\'.format(input_path), '')
-            self.output_directory_button.setText(self.relative_export_path)
-        else:
-            msg = QtWidgets.QMessageBox()
-            msg.setIcon(QtWidgets.QMessageBox.Warning)
-            msg.setText('You must choose a subdirectory of \nthe input directory location!')
-            msg.setWindowTitle('Bad Location')
-            msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
-            msg.exec_()
+            _LOGGER.info(f'FilePath: {file_path}  InputDirectory: {self.input_directory}')
+            if file_path.index(self.input_directory) != -1:
+                self.relative_export_path = file_path.replace('{}/'.format(self.input_directory), '')
+                self.output_directory_button.setText(self.relative_export_path)
+            else:
+                msg = QtWidgets.QMessageBox()
+                msg.setIcon(QtWidgets.QMessageBox.Warning)
+                msg.setText('You must choose a subdirectory of \nthe input directory location!')
+                msg.setWindowTitle('Bad Location')
+                msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
+                msg.exec_()
 
     def jump_button_clicked(self):
         _LOGGER.info('Jump button clicked')
@@ -755,7 +746,6 @@ class FBXConverter(QtWidgets.QDialog):
             self.current_audit_index = 0
             self.audit_list = []
             self.set_buttons()
-            self.process_files_button.setEnabled(True)
             self.processed_material_information = {}
             self.set_ui_visibility(False)
             self.input_path_field.setText('')

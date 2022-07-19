@@ -90,11 +90,13 @@ class ProcessFbxFile(QtCore.QObject):
                 fbx_parts_list = grp.split('_')[1:-1]
                 new_fbx_name = '_'.join(fbx_parts_list)
                 output_directory = os.path.join(self.base_directory, self.relative_destination_path, new_fbx_name)
+                output_directory = output_directory.replace('\\', '/')
+                _LOGGER.info(f'Output Directory: {output_directory}')
                 os.makedirs(output_directory, exist_ok=True)
 
                 # Export Material
                 material_definition_name = '{}_{}.material'.format(new_fbx_name, material_name)
-                self.create_object_material(output_directory, material_definition_name, texture_set, material_name)
+                self.create_object_material(output_directory, material_definition_name, texture_set)
                 _LOGGER.info('+++++ MaterialName: {}   TextureSet: {}'.format(material_definition_name, texture_set))
                 # Export FBX
                 self.export_fbx(grp, os.path.join(output_directory, '{}.fbx'.format(new_fbx_name)))
@@ -118,7 +120,7 @@ class ProcessFbxFile(QtCore.QObject):
                     _LOGGER.info('Could not create texture record for file [{}]... Exception: {}'.format(file, e))
         return texture_set
 
-    def create_object_material(self, output_directory, material_definition_name, texture_dictionary, material_name):
+    def create_object_material(self, output_directory, material_definition_name, texture_dictionary):
         """
         Using the file textures present, this function takes materials and associated texture sets
         and forms the .material file based on those values for each material/fbx found
@@ -128,6 +130,7 @@ class ProcessFbxFile(QtCore.QObject):
         :return:
         """
         output_path = os.path.join(output_directory, material_definition_name)
+        output_path = output_path.replace('\\', '/')
         if not os.path.exists(output_path):
             material_definition = collections.OrderedDict()
             material_template = self.default_material_definition.copy()
@@ -223,9 +226,10 @@ class ProcessFbxFile(QtCore.QObject):
                 if file.startswith(base_texture_name):
                     try:
                         texture_type = self.get_texture_type(file)
-                        texture_set[texture_type] = os.path.join(self.textures_directory, file)
-                    except Exception:
-                        pass
+                        texture_path = os.path.join(self.textures_directory, file)
+                        texture_set[texture_type] = texture_path.replace('\\', '/')
+                    except Exception as e:
+                        _LOGGER.info(f'GetTextureSetFailed [{type(e)}]: {e}')
         return texture_set
 
     def get_texture_type(self, file):
@@ -311,7 +315,7 @@ class ProcessFbxFile(QtCore.QObject):
 
         :param texture_path: The path to the texture from which to extract the base texture name
         """
-        path_list = texture_path.split('\\')
+        path_list = texture_path.split('/')
         file_name = path_list[-1]
         texture_list = file_name.split('_')
         base_texture_name = '_'.join(texture_list[:-1])
@@ -325,7 +329,7 @@ class ProcessFbxFile(QtCore.QObject):
         :param full_path: Full path to the asset
         :return:
         """
-        path_parts = full_path.split('\\')
+        path_parts = full_path.split('/')
         for index, part in enumerate(path_parts):
             if part == 'KB3DTextures':
                 return '/'.join(path_parts[(index-2):])
@@ -358,7 +362,7 @@ class ProcessFbxFile(QtCore.QObject):
         :param material_description:
         :return:
         """
-        _LOGGER.info('Output .material++++++>> {}'.format(output_path))
+        _LOGGER.info('Output Material File Path: {}'.format(output_path))
         with open(output_path, 'w') as material_file:
             json.dump(dict(material_description), material_file, ensure_ascii=False, indent=4)
 
