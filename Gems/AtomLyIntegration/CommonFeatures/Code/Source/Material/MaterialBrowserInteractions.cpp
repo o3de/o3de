@@ -17,6 +17,7 @@
 #include <Atom/RPI.Edit/Common/JsonUtils.h>
 #include <Atom/RPI.Edit/Material/MaterialTypeSourceData.h>
 #include <Atom/RPI.Edit/Material/MaterialSourceData.h>
+#include <Atom/RPI.Edit/Material/MaterialUtils.h>
 
 namespace AZ
 {
@@ -55,7 +56,7 @@ namespace AZ
 
             creators.push_back(
                 { "Material_Creator", "Material", QIcon(),
-                  [&]([[maybe_unused]] const char* fullSourceFolderNameInCallback, [[maybe_unused]] const AZ::Uuid& sourceUUID)
+                  [&](const AZStd::string& fullSourceFolderNameInCallback, [[maybe_unused]] const AZ::Uuid& sourceUUID)
                   {
                       const AZ::Data::AssetId assetId = AtomToolsFramework::GetSettingsObject<AZ::Data::AssetId>(
                           "/O3DE/Atom/MaterialEditor/DefaultMaterialTypeAsset",
@@ -64,34 +65,28 @@ namespace AZ
                       AzToolsFramework::EditorRequests::Bus::BroadcastResult(
                           mainWindow, &AzToolsFramework::EditorRequests::Bus::Events::GetMainWindow);
 
-                      CreateDocumentDialog dialog(
-                          QObject::tr("Create Material"), QObject::tr("Select Type"), QObject::tr("Select Material Path"),
-                          fullSourceFolderNameInCallback, { "material" }, assetId,
-                          []([[maybe_unused]] const AZ::Data::AssetInfo& assetInfo)
+                      CreateDocumentDialog dialog( QObject::tr("Create Material"), QObject::tr("Select Type"), QObject::tr("Select Material Path"),
+                          fullSourceFolderNameInCallback.c_str(), { "material" }, assetId,
+                          [](const AZ::Data::AssetInfo& assetInfo)
                           {
-                              AZStd::unordered_set<AZ::Uuid> supportedAssetTypesToCreate;
-                              supportedAssetTypesToCreate.insert(azrtti_typeid<AZ::RPI::MaterialTypeAsset>());
-
-                              // If any asset types are specified, do early rejection tests to avoid expensive string comparisons
-                              const auto& assetTypes = supportedAssetTypesToCreate;
-                              if (assetTypes.empty() || assetTypes.find(assetInfo.m_assetType) != assetTypes.end())
-                              {
-                                  // Additional filtering will be done against the path to the source file for this asset
-                                  const auto& sourcePath = AZ::RPI::AssetUtils::GetSourcePathByAssetId(assetInfo.m_assetId);
-
-                                  // Only add source files with extensions supported by the document types creation rules
-                                  // Ignore any files that are marked as non editable in the registry
-                                  return AZ::StringFunc::EndsWith(sourcePath.c_str(), AZ::RPI::MaterialTypeSourceData::Extension) &&
-                                      IsDocumentPathEditable(sourcePath);
-                              }
-                              return false;
-                          }, mainWindow);
+                              return assetInfo.m_assetType == azrtti_typeid<AZ::RPI::MaterialTypeAsset>() &&
+                                  IsDocumentPathEditable(AZ::RPI::AssetUtils::GetSourcePathByAssetId(assetInfo.m_assetId));
+                          },
+                          mainWindow);
                       dialog.adjustSize();
 
                       if (dialog.exec() == QDialog::Accepted && !dialog.m_sourcePath.isEmpty() && !dialog.m_targetPath.isEmpty())
                       {
+                          uint32_t defaultMaterialVersion = 5;
+                          const char* fullSourcePath = dialog.m_sourcePath.toUtf8().constData();
+                          auto materialTypeSourceData = AZ::RPI::MaterialUtils::LoadMaterialTypeSourceData(fullSourcePath);
+
+                          if (materialTypeSourceData.IsSuccess())
+                          {
+                              defaultMaterialVersion = materialTypeSourceData.GetValue().m_version;
+                          }
                           AZ::RPI::MaterialSourceData materialData;
-                          materialData.m_materialTypeVersion = 5;
+                          materialData.m_materialTypeVersion = defaultMaterialVersion;
                           materialData.m_materialType = AtomToolsFramework::GetPathToExteralReference(
                               dialog.m_targetPath.toUtf8().constData(), dialog.m_sourcePath.toUtf8().constData());
                           dialog.m_sourcePath.toUtf8().constData();

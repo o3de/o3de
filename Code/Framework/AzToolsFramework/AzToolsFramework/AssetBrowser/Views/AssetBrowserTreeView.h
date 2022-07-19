@@ -60,7 +60,7 @@ namespace AzToolsFramework
 
             void DeleteEntries();
             void RenameEntry();
-            void DuplicateEntry();
+            void DuplicateEntries();
 
             //////////////////////////////////////////////////////////////////////////
             // AssetBrowserViewRequestBus

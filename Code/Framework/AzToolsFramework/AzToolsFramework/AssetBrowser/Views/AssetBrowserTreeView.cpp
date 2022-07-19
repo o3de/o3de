@@ -40,8 +40,6 @@ AZ_PUSH_DISABLE_WARNING(4244 4251 4800, "-Wunknown-warning-option") // conversio
 #include <QtWidgets/QMessageBox>
 #include <QAbstractButton>
 
-#include <string>
-
 AZ_POP_DISABLE_WARNING
 
 namespace AzToolsFramework
@@ -90,7 +88,7 @@ namespace AzToolsFramework
             connect(
                 duplicateAction, &QAction::triggered, this, [this]()
                 {
-                    DuplicateEntry();
+                    DuplicateEntries();
                 });
             addAction(duplicateAction);
         }
@@ -505,14 +503,14 @@ namespace AzToolsFramework
                 edit(currentIndex());
             }
         }
-        void AssetBrowserTreeView::DuplicateEntry()
+        void AssetBrowserTreeView::DuplicateEntries()
         {
             auto entries = GetSelectedAssets();
-            if (entries.size() == 1)
+            for (auto entry : entries)
             {
                 using namespace AZ::IO;
                 AZStd::string originalFname;
-                AssetBrowserEntry* item = entries[0];
+                AssetBrowserEntry* item = entry;
                 Path oldPath = item->GetFullPath();
                 Path newPath = oldPath;
                 PathView extension = oldPath.Extension();

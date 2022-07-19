@@ -50,7 +50,7 @@ public:
     void OpenAssetInAssociatedEditor(const AZ::Data::AssetId& assetId, bool& alreadyHandled) override;
 
     static bool OpenWithOS(const AZStd::string& fullEntryPath);
-    void AddCreateMenu(QMenu* menu, AZStd::string fullFolderPath);
+    void AddCreateMenu(QMenu* menu, const AZStd::string fullFolderPath);
 
 protected:
 

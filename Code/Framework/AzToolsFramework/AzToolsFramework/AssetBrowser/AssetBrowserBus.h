@@ -132,9 +132,9 @@ namespace AzToolsFramework
         //! See AssetBrowserInteractionNotifications::OpenSourceFileInEditor below
         struct SourceFileCreatorDetails
         {
-            //! You provide a function to call (you may use std-bind to bind to your class) if your creator is chosen to handle the create
-            //! operation
-            typedef AZStd::function<void(const char* /*fullSourceFileName*/, const AZ::Uuid& /*source uuid*/)> SourceFileCreatorFunctionType;
+            //! You provide a function to call if your creator is chosen to handle the create operation.
+            //! Using a lambda is the prefered method to use for performance reasons.
+            using SourceFileCreatorFunctionType = AZStd::function<void(const AZStd::string& /*fullSourceFileName*/, const AZ::Uuid& /*source uuid*/)>;
 
             AZStd::string m_identifier; ///< choose something unique for your opener.  It may be used to restore state.  it will not be shown to user.
 
@@ -150,9 +150,9 @@ namespace AzToolsFramework
             SourceFileCreatorFunctionType m_creator;
 
             SourceFileCreatorDetails() = default;
-            SourceFileCreatorDetails(const char* identifier, const char* displayText, QIcon icon, SourceFileCreatorFunctionType functionToCall)
-                : m_identifier(identifier)
-                , m_displayText(displayText)
+            SourceFileCreatorDetails(const AZStd::string& identifier, const AZStd::string& displayText, QIcon icon, SourceFileCreatorFunctionType functionToCall)
+                : m_identifier(AZStd::move(identifier))
+                , m_displayText(AZStd::move(displayText))
                 , m_iconToUse(icon)
                 , m_creator(functionToCall)
             {
