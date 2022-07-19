@@ -326,7 +326,7 @@ namespace Multiplayer
         }
         
         MultiplayerEditorServerNotificationBus::Broadcast(&MultiplayerEditorServerNotificationBus::Events::OnEditorSendingLevelData);
-        AZ_Printf("MultiplayerEditor", "Editor is sending the editor-server the level data packet.")
+        AZ_TracePrintf("MultiplayerEditor", "Editor is sending the editor-server the level data packet.")
 
 
         AZStd::vector<uint8_t> buffer;
@@ -406,7 +406,7 @@ namespace Multiplayer
         ++m_connectionAttempts;
 
         MultiplayerEditorServerNotificationBus::Broadcast(&MultiplayerEditorServerNotificationBus::Events::OnEditorConnectionAttempt, m_connectionAttempts);
-        AZ_Printf("MultiplayerEditor", "Editor tcp connection attempt #%i.", m_connectionAttempts)
+        AZ_TracePrintf("MultiplayerEditor", "Editor TCP connection attempt #%i.", m_connectionAttempts)
 
         const AZ::Name editorInterfaceName = AZ::Name(MpEditorInterfaceName);
         INetworkInterface* editorNetworkInterface = AZ::Interface<INetworking>::Get()->RetrieveNetworkInterface(editorInterfaceName);
@@ -417,7 +417,7 @@ namespace Multiplayer
 
         if (m_editorConnId != AzNetworking::InvalidConnectionId)
         {
-            AZ_Printf("MultiplayerEditor", "Editor has connected to the editor-server.")
+            AZ_TracePrintf("MultiplayerEditor", "Editor has connected to the editor-server.")
             m_connectionEvent.RemoveFromQueue();
             SendEditorServerLevelDataPacket(editorNetworkInterface->GetConnectionSet().GetConnection(m_editorConnId));
         }

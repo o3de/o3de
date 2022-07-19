@@ -50,8 +50,8 @@ namespace Multiplayer
 
     void MultiplayerConnectionViewportMessageSystemComponent::Deactivate()
     {
-        AZ::RPI::ViewportContextNotificationBus::Handler::BusDisconnect();
         MultiplayerEditorServerNotificationBus::Handler::BusDisconnect();
+        AZ::RPI::ViewportContextNotificationBus::Handler::BusDisconnect();
     }
 
     void MultiplayerConnectionViewportMessageSystemComponent::OnRenderTick()

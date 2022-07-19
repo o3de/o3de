@@ -38,8 +38,8 @@ namespace Multiplayer
         //! Might have failed for various reasons, this is a catch-all.
         virtual void OnServerLaunchFail() {}
         
-        //! Notification when the Editor attempts a tpc connection to the server.
-        //! Note: It's possible multiple connection attempts are needed if the user starts and stops editor playmode a lot of times because the server port take a few seconds to be free.
+        //! Notification when the Editor attempts a TCP connection to the server.
+        //! Note: It's possible multiple connection attempts are needed if the user starts and stops editor play mode repeatedly because the server port takes a few seconds to free.
         //! @param connectionAttempts The number of attempts made to connect to the editor-server
         virtual void OnEditorConnectionAttempt([[maybe_unused]]uint16_t connectionAttempts) {}
 
@@ -53,7 +53,7 @@ namespace Multiplayer
         //! @param serverPort The server port. This is useful information since user might be trying to connect to the wrong port.
         virtual void OnConnectToSimulationFail([[maybe_unused]]uint16_t serverPort) {}
 
-        //! Notification when the Editor multiplayer playmode is over; therefore ending the multiplayer simulation.
+        //! Notification when the Editor multiplayer play mode is over; therefore ending the multiplayer simulation.
         virtual void OnPlayModeEnd() {}
 
     };
