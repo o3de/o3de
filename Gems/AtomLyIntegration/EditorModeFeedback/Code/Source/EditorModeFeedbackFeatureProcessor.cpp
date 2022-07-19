@@ -82,7 +82,7 @@ namespace AZ
         {
             m_editorStatePassSystem->AddPassesToRenderPipeline(renderPipeline);
 
-            if(m_maskRenderers.empty())
+            if(!m_maskRenderers.empty())
             {
                 return;
             }
