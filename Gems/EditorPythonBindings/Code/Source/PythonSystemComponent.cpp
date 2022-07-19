@@ -651,7 +651,7 @@ namespace EditorPythonBindings
         {
             AZ_Warning("python", false, "Did not finalize since Py_IsInitialized() was false.");
         }
-        return !PyErr_Occurred();
+        return true;
     }
 
     void PythonSystemComponent::ExecuteByString(AZStd::string_view script, bool printResult)
