@@ -146,7 +146,8 @@ def parse_args():
     args = parser.parse_args()
 
     return args
-    
+
+
 def main(args: dict):
     try:
         tiaf = TestImpact(args)
@@ -170,5 +171,3 @@ if __name__ == "__main__":
 
     args = vars(parse_args())
     main(args)
-
-        
