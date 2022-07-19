@@ -2308,18 +2308,15 @@ int CCryEditApp::IdleProcessing(bool bBackgroundUpdate)
 
         // If we're backgrounded and not fully background updating, idle to rate limit SystemTick
         static AZ::TimeMs sTimeLastMs = AZ::GetRealElapsedTimeMs();
+        const int64_t maxFrameTimeMs = ed_backgroundSystemTickCap;
 
-        const auto console = AZ::Interface<AZ::IConsole>::Get();
-        AZ::TimeMs maxFrameTimeMs = AZ::TimeMs{ 1 };
-        console->GetCvarValue("ed_backgroundSystemTickCap", maxFrameTimeMs);
-
-        if (maxFrameTimeMs > AZ::TimeMs{ 0 })
+        if (maxFrameTimeMs > 0)
         {
-            const AZ::TimeMs maxElapsedTimeMs = maxFrameTimeMs + sTimeLastMs;
-            const AZ::TimeMs realElapsedTimeMs = AZ::GetRealElapsedTimeMs();
+            const int64_t maxElapsedTimeMs = maxFrameTimeMs + static_cast<int64_t>(sTimeLastMs);
+            const int64_t realElapsedTimeMs = static_cast<int64_t>(AZ::GetRealElapsedTimeMs());
             if (maxElapsedTimeMs > realElapsedTimeMs)
             {
-                CrySleep(static_cast<unsigned int>(maxElapsedTimeMs - realElapsedTimeMs));
+                CrySleep(aznumeric_cast<unsigned int>(maxElapsedTimeMs - realElapsedTimeMs));
             }
         }
         sTimeLastMs = AZ::GetRealElapsedTimeMs();

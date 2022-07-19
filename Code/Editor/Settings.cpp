@@ -22,9 +22,7 @@
 #include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/StringFunc/StringFunc.h>
-#include <AzCore/Time/ITime.h>
 #include <AzCore/Utils/Utils.h>
-#include <AzCore/Console/IConsole.h>
 
 
 // AzFramework
@@ -834,7 +832,7 @@ void SEditorSettings::Load()
 //////////////////////////////////////////////////////////////////////////
 AZ_CVAR(bool, ed_previewGameInFullscreen_once, false, nullptr, AZ::ConsoleFunctorFlags::IsInvisible, "Preview the game (Ctrl+G, \"Play Game\", etc.) in fullscreen once");
 AZ_CVAR(bool, ed_lowercasepaths, false, nullptr, AZ::ConsoleFunctorFlags::Null, "Convert CCryFile paths to lowercase on Open");
-AZ_CVAR(AZ::TimeMs, ed_backgroundSystemTickCap, AZ::TimeMs{ 33 }, nullptr, AZ::ConsoleFunctorFlags::Null,"Delay between frame updates (ms) when window is out of focus but not minimized AND background update is disabled.");
+AZ_CVAR(int64_t, ed_backgroundSystemTickCap, 33, nullptr, AZ::ConsoleFunctorFlags::Null,"Delay between frame updates (ms) when window is out of focus but not minimized AND background update is disabled.");
     
 void SEditorSettings::PostInitApply()
 {
