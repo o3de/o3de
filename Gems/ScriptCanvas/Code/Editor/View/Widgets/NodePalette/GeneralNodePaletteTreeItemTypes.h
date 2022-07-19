@@ -184,7 +184,7 @@ namespace ScriptCanvasEditor
         ScriptCanvasEditor::NodeIdPair CreateNode(const ScriptCanvas::ScriptCanvasId& scriptCanvasId) const override;
 
     private:
-        const ScriptCanvasEditor::Nodes::DataDrivenNodeCreationData m_nodeData;
+        ScriptCanvasEditor::Nodes::DataDrivenNodeCreationData m_nodeData;
     };
 
     class DataDrivenNodePaletteTreeItem : public GraphCanvas::DraggableNodePaletteTreeItem
