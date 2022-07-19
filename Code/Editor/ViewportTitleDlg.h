@@ -82,10 +82,12 @@ protected:
     void OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UINT_PTR lparam) override;
 
     void OnMaximize();
+    void UpdateEditMode();
     void UpdateDisplayInfo();
 
     void SetupCameraDropdownMenu();
     void SetupResolutionDropdownMenu();
+    void SetupEditModeMenu();
     void SetupViewportInformationMenu();
     void SetupOverflowMenu();
     void SetupHelpersButton();
@@ -121,6 +123,11 @@ protected:
 
     void OnMenuResolutionCustom();
     void CreateResolutionMenu();
+    
+    void CreateEditModeMenu();
+    QMenu* const GetEditModeMenu();
+    void SetNormalEditMode();
+    void SetMonochromaticEditMode();
 
     void CreateViewportInformationMenu();
     QMenu* const GetViewportInformationMenu();
@@ -134,6 +141,7 @@ protected:
 
     void UpdateMuteActionText();
 
+    //void OnToggleEditMode();
     void OnToggleDisplayInfo();
 
     void OnSpeedComboBoxEnter();
@@ -149,9 +157,12 @@ protected:
 
     void UpdateOverFlowMenuState();
 
+    QAction* m_normalEditModeAction = nullptr;
+    QAction* m_monochromaticEditModeAction = nullptr;
     QMenu* m_fovMenu = nullptr;
     QMenu* m_aspectMenu = nullptr;
     QMenu* m_resolutionMenu = nullptr;
+    QMenu* m_editModeMenu = nullptr;
     QMenu* m_viewportInformationMenu = nullptr;
     QMenu* m_helpersMenu = nullptr;
     QAction* m_helpersAction = nullptr;
@@ -173,6 +184,16 @@ protected:
     AzToolsFramework::Prefab::PrefabViewportFocusPathHandler* m_prefabViewportFocusPathHandler = nullptr;
 
     QScopedPointer<Ui::ViewportTitleDlg> m_ui;
+
+    //! The different edit mode effects available in the Edit mode menu.
+    enum class EditMode
+    {
+        Normal, //!< No effect.
+        Monochromatic //!< Monochromatic effect.
+    };
+
+    //! The currently active edit mode effect.
+    EditMode m_editMode = EditMode::Monochromatic;
 };
 
 namespace AzToolsFramework
