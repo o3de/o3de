@@ -65,7 +65,7 @@ namespace AzToolsFramework::ViewportUi
         //! Clears the active button of the cluster if one is active. The button will no longer display as highlighted.
         virtual void ClearClusterActiveButton(ClusterId clusterId) = 0;
         //! Sets the active button of the switcher. This is the button which has a text label.
-        virtual void SetSwitcherActiveButton(SwitcherId clusterId, ButtonId buttonId) = 0;
+        virtual void SetSwitcherActiveButton(SwitcherId switcherId, ButtonId buttonId) = 0;
         //! Adds a locked overlay to the cluster button's icon.
         virtual void SetClusterButtonLocked(ClusterId clusterId, ButtonId buttonId, bool isLocked) = 0;
         //! Updates/sets the cluster button's tooltip to the passed string.

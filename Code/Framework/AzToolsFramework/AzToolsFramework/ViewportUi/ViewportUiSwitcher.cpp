@@ -47,7 +47,7 @@ namespace AzToolsFramework::ViewportUi::Internal
     void ViewportUiSwitcher::AddButton(Button* button)
     {
         QAction* action = new QAction();
-        action->setCheckable(true);
+        action->setCheckable(false);
         action->setIcon(QIcon(QString(button->m_icon.c_str())));
 
         if (!action)

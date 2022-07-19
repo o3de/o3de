@@ -107,9 +107,6 @@ namespace AzToolsFramework
 
         m_componentModeCollection.BeginComponentMode();
 
-        ComponentModeFramework::EditorComponentModeNotificationBus2::Broadcast(
-            &ComponentModeFramework::EditorComponentModeNotificationBus2::Events::OnComponentModeEnter);
-
         // refresh button ui
         ToolsApplicationEvents::Bus::Broadcast(
             &ToolsApplicationEvents::Bus::Events::InvalidatePropertyDisplay, PropertyModificationRefreshLevel::Refresh_EntireTree);
@@ -136,8 +133,6 @@ namespace AzToolsFramework
         ToolsApplicationEvents::Bus::Broadcast(
             &ToolsApplicationEvents::Bus::Events::InvalidatePropertyDisplay, PropertyModificationRefreshLevel::Refresh_EntireTree);
 
-        ComponentModeFramework::EditorComponentModeNotificationBus2::Broadcast(
-            &ComponentModeFramework::EditorComponentModeNotificationBus2::Events::OnComponentModeExit);
     }
 
     void EditorDefaultSelection::EndComponentMode()

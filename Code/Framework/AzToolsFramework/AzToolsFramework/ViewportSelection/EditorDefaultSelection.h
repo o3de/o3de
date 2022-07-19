@@ -23,7 +23,6 @@ namespace AzToolsFramework
         : public ViewportInteraction::InternalViewportSelectionRequests
         , private ActionOverrideRequestBus::Handler
         , private ComponentModeFramework::ComponentModeSystemRequestBus::Handler
-        , private ComponentModeFramework::EditorComponentModeNotificationBus2::Handler
     {
     public:
         AZ_CLASS_ALLOCATOR_DECL
