@@ -125,7 +125,7 @@ namespace GradientSignal
         AZStd::vector<AZStd::pair<int, int>> indices;
         for (int y = 0; !m_shouldCancel && (y < imageResolutionY); ++y)
         {
-            for (int x = 0; !m_shouldCancel && (x < imageResolutionX); ++x)
+            for (int x = 0; x < imageResolutionX; ++x)
             {
                 // Invert world y to match axis.  (We use "imageBoundsY- 1" to invert because our loop doesn't go all the way to
                 // imageBoundsY)
