@@ -38,6 +38,14 @@ namespace AZ
     class Entity;
 }
 
+namespace AzToolsFramework
+{
+    namespace AssetDatabase
+    {
+        class ProductDatabaseEntry;
+    }
+}
+
 // This needs to be up here because it needs to be defined before the hash definition, and the hash needs to be defined before the first use (which occurs further down in this file)
 namespace AssetBuilderSDK
 {
@@ -637,6 +645,8 @@ namespace AssetBuilderSDK
         ProductAsset = 1,
         IntermediateAsset = 2 // Indicates this JobProduct is an intermediate asset which should be output to the intermediate asset folder.  Must be used with the Common platform.
     };
+
+    bool IsProductOutputFlagSet(const AzToolsFramework::AssetDatabase::ProductDatabaseEntry& product, ProductOutputFlags flag);
 
     AZ_DEFINE_ENUM_BITWISE_OPERATORS(ProductOutputFlags);
 

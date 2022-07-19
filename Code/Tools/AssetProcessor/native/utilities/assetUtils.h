@@ -276,7 +276,7 @@ namespace AssetUtilities
     
     //! Given a source path for an intermediate asset, constructs the product path.
     //! This does not verify either exist, it just manipulates the string.
-    AZStd::string GetProductPathForIntermediateSourcePath(AZStd::string_view sourcePath);
+    AZStd::string GetRelativeProductPathForIntermediateSourcePath(AZStd::string_view relativeSourcePath);
 
     //! Helper class that provides various paths related to a single output asset.
     //! Files are not guaranteed to exist at the given path.

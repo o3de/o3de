@@ -1728,9 +1728,9 @@ namespace AssetUtilities
         ++m_warningCount;
     }
 
-    AZStd::string GetProductPathForIntermediateSourcePath(AZStd::string_view sourcePath)
+    AZStd::string GetRelativeProductPathForIntermediateSourcePath(AZStd::string_view relativeSourcePath)
     {
-        AZStd::string productPath((AZ::IO::FixedMaxPath(AssetBuilderSDK::CommonPlatformName) / sourcePath).StringAsPosix());
+        AZStd::string productPath((AZ::IO::FixedMaxPath(AssetBuilderSDK::CommonPlatformName) / relativeSourcePath).StringAsPosix());
         // Product paths are always lowercase
         AZStd::to_lower(productPath.begin(), productPath.end());
         return productPath;

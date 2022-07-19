@@ -56,7 +56,7 @@ namespace AssetProcessor
             {
                 // When building the intermediate asset source asset tree, search by the scan folder to save time
                 m_sharedDbConnection->QueryScanFolderByPortableKey(
-                    "Intermediate Assets",
+                    AssetProcessor::IntermediateAssetsFolderName,
                     [&](AzToolsFramework::AssetDatabase::ScanFolderDatabaseEntry& scanFolder)
                     {
                         m_intermediateAssetFolderId = scanFolder.m_scanFolderID;

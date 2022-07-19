@@ -1655,10 +1655,10 @@ void MainWindow::ShowJobViewContextMenu(const QPoint& pos)
                     return true;
                 }
 
-                if (jobEntry.m_platform == AssetBuilderSDK::CommonPlatformName)
+                if (IsProductOutputFlagSet(productEntry, AssetBuilderSDK::ProductOutputFlags::IntermediateAsset))
                 {
                     ++intermediateCount;
-                    intermediateAssetMenu.m_listWidget->addItem(AZStd::string(AssetUtilities::StripAssetPlatformNoCopy(productEntry.m_productName)).c_str());
+                    intermediateAssetMenu.m_listWidget->addItem(AssetUtilities::StripAssetPlatform(productEntry.m_productName));
                 }
                 else
                 {
@@ -1682,7 +1682,7 @@ void MainWindow::ShowJobViewContextMenu(const QPoint& pos)
         
         if (intermediateCount == 0)
         {
-            CreateDisabledAssetRightClickMenu(&menu, intermediateAssetMenu.m_assetMenu, intermediateMenuTitle, tr("This job created no intermediate product asset."));
+            CreateDisabledAssetRightClickMenu(&menu, intermediateAssetMenu.m_assetMenu, intermediateMenuTitle, tr("This job created no intermediate product assets."));
             intermediateAssetMenu.m_assetMenu = nullptr;
         }
         else
@@ -1788,7 +1788,8 @@ void MainWindow::ShowIntermediateAssetContextMenu(const QPoint& pos)
     {
         const AZStd::shared_ptr<const SourceAssetTreeItemData> sourceItemData = AZStd::rtti_pointer_cast<const SourceAssetTreeItemData>(cachedAsset->GetData());
         // Generate the product path for this intermediate asset.
-        AZStd::string productPathForIntermediateAsset = AssetUtilities::GetProductPathForIntermediateSourcePath(sourceItemData->m_assetDbName);
+        AZStd::string productPathForIntermediateAsset =
+            AssetUtilities::GetRelativeProductPathForIntermediateSourcePath(sourceItemData->m_assetDbName);
 
         // Retrieve the source asset for that product.
         m_sharedDbConnection->QueryProductByProductName(
@@ -1892,7 +1893,7 @@ void MainWindow::BuildSourceAssetTreeContextMenu(QMenu& menu, const AssetProcess
                 {
                     return true;
                 }
-                if (jobEntry.m_platform == AssetBuilderSDK::CommonPlatformName)
+                if (IsProductOutputFlagSet(productEntry, AssetBuilderSDK::ProductOutputFlags::IntermediateAsset))
                 {
                     ++intermediateCount;
                     intermediateAssetMenu.m_listWidget->addItem(AZStd::string(AssetUtilities::StripAssetPlatformNoCopy(productEntry.m_productName)).c_str());

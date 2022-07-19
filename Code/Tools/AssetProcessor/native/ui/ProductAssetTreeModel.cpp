@@ -180,10 +180,9 @@ namespace AssetProcessor
                 return true;
             });
 
-        // Common platform is currently only for Intermediate Product Assets,
-        // which are functionally Source Assets, output as products from other Source Assets.
-        // Don't display them in both Source and Product Asset tabs, just the Source Assets tab.
-        if (platform == AssetBuilderSDK::CommonPlatformName)
+        // Intermediate assets are functionally source assets, output as products from other source assets.
+        // Don't display them in the product assets tab.
+        if (product.m_flags.test(static_cast<int>(AssetBuilderSDK::ProductOutputFlags::IntermediateAsset)))
         {
             return;
         }

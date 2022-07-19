@@ -126,18 +126,16 @@ namespace AssetProcessor
             sourceItemData->m_sourceInfo.m_sourceID,
             [&](AzToolsFramework::AssetDatabase::ProductDatabaseEntry& productEntry)
             {
-                AZStd::string platform;
                 AZ::s64 sourcePK;
                 assetDatabaseConnection.QueryJobByProductID(
                     productEntry.m_productID,
-                    [&platform, &sourcePK](AzToolsFramework::AssetDatabase::JobDatabaseEntry& jobEntry)
+                    [&sourcePK](AzToolsFramework::AssetDatabase::JobDatabaseEntry& jobEntry)
                     {
-                        platform = jobEntry.m_platform;
                         sourcePK = jobEntry.m_sourcePK;
                         return true;
                     });
 
-                if (platform == AssetBuilderSDK::CommonPlatformName)
+                if (IsProductOutputFlagSet(productEntry, AssetBuilderSDK::ProductOutputFlags::IntermediateAsset))
                 {
                     m_ui->IntermediateAssetsTable->insertRow(intermediateAssetCount);
 
