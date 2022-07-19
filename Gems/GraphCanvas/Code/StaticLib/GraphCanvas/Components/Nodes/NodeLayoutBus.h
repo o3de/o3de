@@ -12,6 +12,8 @@
 
 class QGraphicsLayout;
 class QGraphicsLayoutItem;
+class QGraphicsLinearLayout;
+class QGraphicsWidget;
 
 namespace GraphCanvas
 {
