@@ -1308,8 +1308,6 @@ void TerrainSystem::UnregisterArea(AZ::EntityId areaId)
 
 void TerrainSystem::RefreshArea(AZ::EntityId areaId, AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask changeMask)
 {
-    using Terrain = AzFramework::Terrain::TerrainDataNotifications;
-
     AZStd::unique_lock<AZStd::shared_mutex> lock(m_areaMutex);
 
     auto areaAabb = m_registeredAreas.find(areaId);
@@ -1322,7 +1320,15 @@ void TerrainSystem::RefreshArea(AZ::EntityId areaId, AzFramework::Terrain::Terra
     AZ::Aabb expandedAabb = oldAabb;
     expandedAabb.AddAabb(newAabb);
 
-    m_dirtyRegion.AddAabb(expandedAabb);
+    RefreshRegion(expandedAabb, changeMask);
+}
+
+void TerrainSystem::RefreshRegion(
+    const AZ::Aabb& dirtyRegion, AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask changeMask)
+{
+    using Terrain = AzFramework::Terrain::TerrainDataNotifications;
+
+    m_dirtyRegion.AddAabb(dirtyRegion);
 
     // Keep track of which types of data have changed so that we can send out the appropriate notifications later.
 

@@ -12,7 +12,8 @@ def DeletePrefab_ContainingASingleEntity():
     import azlmbr.legacy.general as general
 
     from editor_python_test_tools.editor_entity_utils import EditorEntity
-    from editor_python_test_tools.prefab_utils import Prefab, wait_for_propagation
+    from editor_python_test_tools.prefab_utils import Prefab
+    from editor_python_test_tools.wait_utils import PrefabWaiter
     import Prefab.tests.PrefabTestUtils as prefab_test_utils
 
     CAR_PREFAB_FILE_NAME = Path(__file__).stem + 'car_prefab'
@@ -36,14 +37,14 @@ def DeletePrefab_ContainingASingleEntity():
 
     # Undo the prefab delete
     general.undo()
-    wait_for_propagation()
+    PrefabWaiter.wait_for_propagation()
     child_ids = instance_parent_id.get_children_ids()
     assert instance_id in child_ids, \
         "Undo Failed: Failed to find restored prefab instance after Undo."
 
     # Redo the prefab delete
     general.redo()
-    wait_for_propagation()
+    PrefabWaiter.wait_for_propagation()
     child_ids = instance_parent_id.get_children_ids()
     assert instance_id not in child_ids, \
         "Redo Failed: Instance was still found after redo of instance deletion."
