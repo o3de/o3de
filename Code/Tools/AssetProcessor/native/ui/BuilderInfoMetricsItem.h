@@ -27,7 +27,8 @@ namespace AssetProcessor
 
         enum class ItemType
         {
-            Root,
+            InvisibleRoot,
+            Builder,
             JobType,
             Entry,
             Max
@@ -45,6 +46,7 @@ namespace AssetProcessor
         BuilderInfoMetricsItem* GetChild(int row) const;
         BuilderInfoMetricsItem* GetParent() const;
         int GetRow() const; //! Returns this item's row number in its parent's children list.
+        bool SetChild(AZStd::shared_ptr<BuilderInfoMetricsItem> builder);
         bool UpdateOrInsertEntry(JobType jobType, const AZStd::string& name, AZ::s64 jobCount, AZ::s64 totalDuration);
     private:
         void UpdateMetrics(AZ::s64 jobCountDiff, AZ::s64 totalDurationDiff);
