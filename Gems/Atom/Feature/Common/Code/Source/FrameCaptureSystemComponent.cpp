@@ -88,7 +88,7 @@ namespace AZ
                 if (taskGraphActive)
                 {
                     static const AZ::TaskDescriptor pngTaskDescriptor{"PngWriteOutChannelSwap", "Graphics"};
-                    AZ::TaskGraph taskGraph;
+                    AZ::TaskGraph taskGraph{ "FrameCapturePngWriteOut" };
                     for (int i = 0; i < numThreads; ++i)
                     {
                         int startPixel = i * numPixelsPerThread;
@@ -109,7 +109,7 @@ namespace AZ
                                 }
                             });
                     }
-                    AZ::TaskGraphEvent taskGraphFinishedEvent;
+                    AZ::TaskGraphEvent taskGraphFinishedEvent{ "FrameCapturePngWriteOutWait" };
                     taskGraph.Submit(&taskGraphFinishedEvent);
                     taskGraphFinishedEvent.Wait();
                 }

@@ -272,7 +272,7 @@ namespace AZ
             AZ_PROFILE_SCOPE(RPI, "View: SortFinalizedDrawLists");
             RHI::DrawListsByTag& drawListsByTag = m_drawListContext.GetMergedDrawListsByTag();
 
-            AZ::TaskGraph drawListSortTG;
+            AZ::TaskGraph drawListSortTG{ "DrawList Sort" };
             AZ::TaskDescriptor drawListSortTGDescriptor{"RPI_View_SortFinalizedDrawLists", "Graphics"};
             for (size_t idx = 0; idx < drawListsByTag.size(); ++idx)
             {
