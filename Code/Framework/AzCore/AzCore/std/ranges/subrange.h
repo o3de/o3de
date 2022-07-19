@@ -221,6 +221,10 @@ namespace AZStd::ranges
                 auto actualAdvanceDist = n - ranges::advance(m_begin, n, m_end);
                 m_size -= static_cast<unsigned_difference_type>(actualAdvanceDist);
             }
+            else
+            {
+                ranges::advance(m_begin, n, m_end);
+            }
 
             return *this;
         }
