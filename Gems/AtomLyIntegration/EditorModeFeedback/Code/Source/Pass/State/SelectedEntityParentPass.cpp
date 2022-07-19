@@ -18,7 +18,11 @@ namespace AZ::Render
     // Name of the mask for selected entities
     static constexpr const char* const SelectedEntityMaskName = "editormodeselectedmask";
 
-    // Indicies of child passes
+    // Indicies of child passes (a better way to do this will be to specifiy a pass template name/effect name pair for the
+    // PassDescriptorList so we can lookup child passes by their effect name rather than having to maintain parity between
+    // their ordering in the PassDescriptorList and in this enum but that is a problem that will be addressed in the next
+    // version where we remove the CVARs and have the editor state effects configured via menus and registry, see the note
+    // in UpdatePassData below)
     enum class SelectedEntityChildPass
     {
         EntityOutlinePass
@@ -33,7 +37,6 @@ namespace AZ::Render
             AZ::Name("EditorModeOutlineTemplate")
         };
     }
-    
 
     SelectedEntityParentPass::SelectedEntityParentPass()
         : EditorStateParentPassBase(EditorState::EntitySelection, "EntitySelection", CreateSelectedEntityChildPasses(), SelectedEntityMaskName)
@@ -59,6 +62,7 @@ namespace AZ::Render
         AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(
             initialSelectedEntityList, &AzToolsFramework::ToolsApplicationRequests::GetSelectedEntities);
 
+        // Drill down any entity hierarchies to select all children of the currently selected entities 
         for (const auto& selectedEntityId : initialSelectedEntityList)
         {
             AZStd::queue<AZ::EntityId> entityIdQueue;

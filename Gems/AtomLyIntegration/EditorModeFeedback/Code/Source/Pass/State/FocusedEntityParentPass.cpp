@@ -16,6 +16,7 @@ namespace AZ::Render
 {
     static PassDescriptorList CreateFocusedEntityChildPasses()
     {
+        // Effect chain for the non-focused entities.
         return PassDescriptorList
         {
             // Black and white effect for unfocused entities (scaled by distance)

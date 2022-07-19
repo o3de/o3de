@@ -31,6 +31,6 @@ namespace AZ::Render
     //! Creates and adds to the Atom pass system the pass template for the mask with the specified draw list.
     void CreateAndAddMaskPassTemplate(const Name& drawList);
 
-    //! Creates the mask pass templates from the list of editor state parent passes.
+    //! Creates the mask pass templates from the list of editor state parent passes and returns the drawlists used by the masks.
     AZStd::unordered_set<Name> CreateMaskPassTemplatesFromStateParentPasses(const EditorStateParentPassList& editorStateParentPasses);
 } // namespace AZ::Render

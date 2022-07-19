@@ -36,6 +36,7 @@ namespace AZ::Render
     public:
         //! Constructs the editor state effect pass with the specified pass chain and mask draw list and connects
         //! it to the tick bus.
+        //! @param editorState The editor state enumeration to associate with this pass.
         //! @param stateName Name for this editor mode stat.
         //! @param passDescriptorList List of child passes to create, in order of appearance.
         //! @param maskDrawList The entity mask to use for this state.

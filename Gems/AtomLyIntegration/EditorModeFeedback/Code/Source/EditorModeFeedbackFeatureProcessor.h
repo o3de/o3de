@@ -45,7 +45,7 @@ namespace AZ
             //! The pass system for the editor state feedback effects.
             AZStd::unique_ptr<EditorStatePassSystem> m_editorStatePassSystem;
 
-            //! Map of all mask renderers for the draw tags used by the editor state feedbacke ffects.
+            //! Map of all mask renderers for the draw tags used by the editor state feedback effects.
             AZStd::unordered_map<Name, EditorStateMaskRenderer> m_maskRenderers;
 
             //! Material for sending draw packets to the entity mask pass.
