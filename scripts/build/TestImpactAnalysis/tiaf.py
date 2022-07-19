@@ -85,7 +85,7 @@ class TestImpact:
                         # Use TIA sequence (instrumented subset of tests) for coverage updating branches so we can update the coverage data with the generated coverage
                         sequence_type = "tia"
                     else:
-                        # Use TIA no-write sequence (regular subset of tests) for non coverage updating branche
+                        # Use TIA no-write sequence (regular subset of tests) for non coverage updating branches
                         sequence_type = "tianowrite"
                         # Ignore integrity failures for non coverage updating branches as our confidence in the
                         self._runtime_args.append("--ipolicy=continue")
