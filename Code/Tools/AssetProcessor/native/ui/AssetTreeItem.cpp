@@ -36,9 +36,9 @@ namespace AssetProcessor
     {
         switch (column)
         {
-        case static_cast<int>(AssetTreeColumns::Name):
+        case aznumeric_cast<int>(AssetTreeColumns::Name):
             return m_name;
-        case static_cast<int>(AssetTreeColumns::Extension):
+        case aznumeric_cast<int>(AssetTreeColumns::Extension):
             if (m_isFolder)
             {
                 return QVariant();

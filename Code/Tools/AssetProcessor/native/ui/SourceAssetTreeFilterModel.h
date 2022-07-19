@@ -10,7 +10,8 @@
 
 #include <ui/AssetTreeFilterModel.h>
 
-namespace AssetProcessor {
+namespace AssetProcessor
+{
     class SourceAssetTreeFilterModel : public AssetTreeFilterModel
     {
         Q_OBJECT
@@ -20,4 +21,4 @@ namespace AssetProcessor {
     protected:
         bool lessThan(const QModelIndex& left, const QModelIndex& right) const override;
     };
-}
+} // namespace AssetProcessor
