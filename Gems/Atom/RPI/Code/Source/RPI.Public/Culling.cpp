@@ -831,7 +831,7 @@ namespace AZ
 
         void CullingScene::BeginCullingTaskGraph(const AZStd::vector<ViewPtr>& views)
         {
-            AZ::TaskGraph taskGraph;
+            AZ::TaskGraph taskGraph{ "RPI::Culling" };
             AZ::TaskDescriptor beginCullingDescriptor{"RPI_CullingScene_BeginCullingView", "Graphics"};
             for (auto& view : views)
             {
@@ -846,7 +846,7 @@ namespace AZ
 
             if (!taskGraph.IsEmpty())
             {
-                AZ::TaskGraphEvent waitForCompletion;
+                AZ::TaskGraphEvent waitForCompletion{ "RPI::Culling Wait" };
                 taskGraph.Submit(&waitForCompletion);
                 waitForCompletion.Wait();
             }
