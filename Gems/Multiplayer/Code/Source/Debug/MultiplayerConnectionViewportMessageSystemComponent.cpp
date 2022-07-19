@@ -21,7 +21,7 @@ namespace Multiplayer
     constexpr float defaultConnectionMessageFontSize = 0.7f;
     const AZ::Vector2 viewportConnectionBottomRightBorderPadding(-40.0f, -40.0f);
     const char* centerViewportDebugTitle = "Multiplayer Editor";
-    const char* multiplayerClientStatusTitle = "Multiplayer Client Status:";
+    const char* clientStatusTitle = "Multiplayer Client Status:";
     const char* onServerLaunchedMessage = "(1/3) Launching server...";
     const char* onServerLaunchFailMessage = "(1/3) Could not launch editor server.\nSee console for more info.";
     const char* onEditorConnectionAttemptMessage = "(2/3) Editor tcp connection attempt #%i.";
@@ -173,7 +173,7 @@ namespace Multiplayer
         const float textHeight = m_fontDrawInterface->GetTextSize(m_drawParams, connectionStateText).GetY();
         m_drawParams.m_color = AZ::Colors::White;
         m_drawParams.m_position.SetY(m_drawParams.m_position.GetY() - textHeight - m_lineSpacing);
-        m_fontDrawInterface->DrawScreenAlignedText2d(m_drawParams, multiplayerClientStatusTitle);
+        m_fontDrawInterface->DrawScreenAlignedText2d(m_drawParams, clientStatusTitle);
     }
 
     void MultiplayerConnectionViewportMessageSystemComponent::OnServerLaunched()
