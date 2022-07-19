@@ -80,10 +80,9 @@ namespace ScriptAutomation
         {
             auto func = [numFrames]()
             {
-                auto ScriptAutomationInterface = ScriptAutomationInterface::Get();
-                auto automationComponent = azrtti_cast<ScriptAutomationSystemComponent*>(ScriptAutomationInterface);
+                auto scriptAutomationInterface = ScriptAutomationInterface::Get();
 
-                automationComponent->SetIdleFrames(numFrames);
+                scriptAutomationInterface->SetIdleFrames(numFrames);
             };
 
             ScriptAutomationInterface::Get()->QueueScriptOperation(AZStd::move(func));
@@ -93,10 +92,9 @@ namespace ScriptAutomation
         {
             auto func = [numSeconds]()
             {
-                auto ScriptAutomationInterface = ScriptAutomationInterface::Get();
-                auto automationComponent = azrtti_cast<ScriptAutomationSystemComponent*>(ScriptAutomationInterface);
+                auto scriptAutomationInterface = ScriptAutomationInterface::Get();
 
-                automationComponent->SetIdleSeconds(numSeconds);
+                scriptAutomationInterface->SetIdleSeconds(numSeconds);
             };
 
             ScriptAutomationInterface::Get()->QueueScriptOperation(AZStd::move(func));
@@ -106,13 +104,13 @@ namespace ScriptAutomation
         {
             auto operation = [width,height]()
             {
-                if (Utils::SupportsResizeClientArea())
+                if (Utils::SupportsResizeClientAreaOfDefaultWindow())
                 {
                     Utils::ResizeClientArea(width, height);
                 }
                 else
                 {
-                    AZ_Error("ScriptAutomation", false, "ResizeViewport() is not supported on this platform");
+                    AZ_Error("ScriptAutomation", false, "ResizeClientArea() is not supported on this platform");
                 }
             };
 
@@ -123,12 +121,10 @@ namespace ScriptAutomation
         {
             auto operation = [outputFilePath]()
             {
-                auto ScriptAutomationInterface = ScriptAutomationInterface::Get();
-                auto automationComponent = azrtti_cast<ScriptAutomationSystemComponent*>(ScriptAutomationInterface);
+                auto scriptAutomationInterface = ScriptAutomationInterface::Get();
 
-                automationComponent->SetCapturePending(true);
-                automationComponent->AZ::Render::ProfilingCaptureNotificationBus::Handler::BusConnect();
-                ScriptAutomationInterface->PauseAutomation();
+                scriptAutomationInterface->StartProfilingCapture();
+                scriptAutomationInterface->PauseAutomation();
 
                 AZ::Render::ProfilingCaptureRequestBus::Broadcast(&AZ::Render::ProfilingCaptureRequestBus::Events::CapturePassTimestamp, outputFilePath);
             };
@@ -139,12 +135,10 @@ namespace ScriptAutomation
         {
             auto operation = [outputFilePath]()
             {
-                auto ScriptAutomationInterface = ScriptAutomationInterface::Get();
-                auto automationComponent = azrtti_cast<ScriptAutomationSystemComponent*>(ScriptAutomationInterface);
+                auto scriptAutomationInterface = ScriptAutomationInterface::Get();
 
-                automationComponent->SetCapturePending(true);
-                automationComponent->AZ::Render::ProfilingCaptureNotificationBus::Handler::BusConnect();
-                ScriptAutomationInterface->PauseAutomation();
+                scriptAutomationInterface->StartProfilingCapture();
+                scriptAutomationInterface->PauseAutomation();
 
                 AZ::Render::ProfilingCaptureRequestBus::Broadcast(&AZ::Render::ProfilingCaptureRequestBus::Events::CaptureCpuFrameTime, outputFilePath);
             };
@@ -156,12 +150,10 @@ namespace ScriptAutomation
         {
             auto operation = [outputFilePath]()
             {
-                auto ScriptAutomationInterface = ScriptAutomationInterface::Get();
-                auto automationComponent = azrtti_cast<ScriptAutomationSystemComponent*>(ScriptAutomationInterface);
+                auto scriptAutomationInterface = ScriptAutomationInterface::Get();
 
-                automationComponent->SetCapturePending(true);
-                automationComponent->AZ::Render::ProfilingCaptureNotificationBus::Handler::BusConnect();
-                ScriptAutomationInterface->PauseAutomation();
+                scriptAutomationInterface->StartProfilingCapture();
+                scriptAutomationInterface->PauseAutomation();
 
                 AZ::Render::ProfilingCaptureRequestBus::Broadcast(&AZ::Render::ProfilingCaptureRequestBus::Events::CapturePassPipelineStatistics, outputFilePath);
             };
@@ -173,15 +165,14 @@ namespace ScriptAutomation
         {
             auto operation = [outputFilePath]()
             {
-                auto ScriptAutomationInterface = ScriptAutomationInterface::Get();
-                auto automationComponent = azrtti_cast<ScriptAutomationSystemComponent*>(ScriptAutomationInterface);
-
-                automationComponent->SetCapturePending(true);
-                automationComponent->AZ::Render::ProfilingCaptureNotificationBus::Handler::BusConnect();
-                ScriptAutomationInterface->PauseAutomation();
 
                 if (auto profilerSystem = AZ::Debug::ProfilerSystemInterface::Get(); profilerSystem)
                 {
+                    auto scriptAutomationInterface = ScriptAutomationInterface::Get();
+
+                    scriptAutomationInterface->StartProfilingCapture();
+                    scriptAutomationInterface->PauseAutomation();
+                    
                     profilerSystem->CaptureFrame(outputFilePath);
                 }
             };
@@ -193,12 +184,10 @@ namespace ScriptAutomation
         {
             auto operation = [benchmarkName, outputFilePath]()
             {
-                auto ScriptAutomationInterface = ScriptAutomationInterface::Get();
-                auto automationComponent = azrtti_cast<ScriptAutomationSystemComponent*>(ScriptAutomationInterface);
+                auto scriptAutomationInterface = ScriptAutomationInterface::Get();
 
-                automationComponent->SetCapturePending(true);
-                automationComponent->AZ::Render::ProfilingCaptureNotificationBus::Handler::BusConnect();
-                ScriptAutomationInterface->PauseAutomation();
+                scriptAutomationInterface->StartProfilingCapture();
+                scriptAutomationInterface->PauseAutomation();
 
                 AZ::Render::ProfilingCaptureRequestBus::Broadcast(&AZ::Render::ProfilingCaptureRequestBus::Events::CaptureBenchmarkMetadata, benchmarkName, outputFilePath);
             };
@@ -257,11 +246,9 @@ namespace ScriptAutomation
                 return false;
             }
 
-            auto ScriptAutomationInterface = ScriptAutomationInterface::Get();
-            auto automationComponent = azrtti_cast<ScriptAutomationSystemComponent*>(ScriptAutomationInterface);
+            auto scriptAutomationInterface = ScriptAutomationInterface::Get();
 
-            automationComponent->SetCapturePending(true);
-            ScriptAutomationInterface->PauseAutomation();
+            scriptAutomationInterface->PauseAutomation();
 
             return true;
         }
@@ -273,19 +260,17 @@ namespace ScriptAutomation
                 // Note this will pause the script until the capture is complete
                 if (PrepareForScreenCapture(filePath))
                 {
-                    auto ScriptAutomationInterface = ScriptAutomationInterface::Get();
-                    auto automationComponent = azrtti_cast<ScriptAutomationSystemComponent*>(ScriptAutomationInterface);
+                    auto scriptAutomationInterface = ScriptAutomationInterface::Get();
                     uint32_t frameCaptureId = AZ::Render::FrameCaptureRequests::s_InvalidFrameCaptureId;
                     AZ::Render::FrameCaptureRequestBus::BroadcastResult(frameCaptureId, &AZ::Render::FrameCaptureRequestBus::Events::CaptureScreenshot, filePath);
                     if (frameCaptureId != AZ::Render::FrameCaptureRequests::s_InvalidFrameCaptureId)
                     {
-                        automationComponent->SetFrameCaptureId(frameCaptureId);
-                        automationComponent->AZ::Render::FrameCaptureNotificationBus::Handler::BusConnect();
+                        scriptAutomationInterface->SetFrameCaptureId(frameCaptureId);
                     }
                     else
                     {
                         AZ_Error("ScriptAutomation", false, "Script: failed to trigger screenshot capture");
-                       ScriptAutomationInterface->ResumeAutomation();
+                       scriptAutomationInterface->ResumeAutomation();
                     }
                 }
             };
@@ -300,19 +285,17 @@ namespace ScriptAutomation
                 // Note this will pause the script until the capture is complete
                 if (PrepareForScreenCapture(filePath))
                 {
-                    auto ScriptAutomationInterface = ScriptAutomationInterface::Get();
-                    auto automationComponent = azrtti_cast<ScriptAutomationSystemComponent*>(ScriptAutomationInterface);
+                    auto scriptAutomationInterface = ScriptAutomationInterface::Get();
                     uint32_t frameCaptureId = AZ::Render::FrameCaptureRequests::s_InvalidFrameCaptureId;
                     AZ::Render::FrameCaptureRequestBus::BroadcastResult(frameCaptureId, &AZ::Render::FrameCaptureRequestBus::Events::CaptureScreenshotWithPreview, filePath);
                     if (frameCaptureId != AZ::Render::FrameCaptureRequests::s_InvalidFrameCaptureId)
                     {
-                        automationComponent->SetFrameCaptureId(frameCaptureId);
-                        automationComponent->AZ::Render::FrameCaptureNotificationBus::Handler::BusConnect();
+                        scriptAutomationInterface->SetFrameCaptureId(frameCaptureId);
                     }
                     else
                     {
                         AZ_Error("ScriptAutomation", false, "Script: failed to trigger screenshot capture with preview");
-                       ScriptAutomationInterface->ResumeAutomation();
+                       scriptAutomationInterface->ResumeAutomation();
                     }
                 }
             };
@@ -401,19 +384,17 @@ namespace ScriptAutomation
                 // Note this will pause the script until the capture is complete
                 if (PrepareForScreenCapture(outputFilePath))
                 {
-                    auto ScriptAutomationInterface = ScriptAutomationInterface::Get();
-                    auto automationComponent = azrtti_cast<ScriptAutomationSystemComponent*>(ScriptAutomationInterface);
+                    auto scriptAutomationInterface = ScriptAutomationInterface::Get();
                     uint32_t frameCaptureId = AZ::Render::FrameCaptureRequests::s_InvalidFrameCaptureId;
                     AZ::Render::FrameCaptureRequestBus::BroadcastResult(frameCaptureId, &AZ::Render::FrameCaptureRequestBus::Events::CapturePassAttachment, passHierarchy, slot, outputFilePath, readbackOption);
                     if (frameCaptureId != AZ::Render::FrameCaptureRequests::s_InvalidFrameCaptureId)
                     {
-                        automationComponent->SetFrameCaptureId(frameCaptureId);
-                        automationComponent->AZ::Render::FrameCaptureNotificationBus::Handler::BusConnect();
+                        scriptAutomationInterface->SetFrameCaptureId(frameCaptureId);
                     }
                     else
                     {
                         AZ_Error("ScriptAutomation", false, "Script: failed to trigger screenshot capture of pass");
-                       ScriptAutomationInterface->ResumeAutomation();
+                       scriptAutomationInterface->ResumeAutomation();
                     }
                 }
             };

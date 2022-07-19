@@ -56,10 +56,10 @@ namespace ScriptAutomation
         ScriptAutomationSystemComponent();
         ~ScriptAutomationSystemComponent();
 
-        void SetIdleFrames(int numFrames);
-        void SetIdleSeconds(float numSeconds);
-        void SetCapturePending(bool capturePending);
-        void SetFrameCaptureId(uint32_t frameCaptureId);
+        void SetIdleFrames(int numFrames) override;
+        void SetIdleSeconds(float numSeconds) override;
+        void SetFrameCaptureId(uint32_t frameCaptureId) override;
+        void StartProfilingCapture() override;
 
     protected:
         // AZ::Component implementation
@@ -99,7 +99,6 @@ namespace ScriptAutomation
 
         float m_scriptPauseTimeout = 0.0f;
         bool m_scriptPaused = false;
-        bool m_scriptIsCapturePending = false;
         uint32_t m_scriptFrameCaptureId = AZ::Render::FrameCaptureRequests::s_InvalidFrameCaptureId;
 
         bool m_isStarted = false;

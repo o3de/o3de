@@ -129,14 +129,15 @@ namespace ScriptAutomation
         m_scriptIdleSeconds = numSeconds;
     }
 
-    void ScriptAutomationSystemComponent::SetCapturePending(bool capturePending)
-    {
-        m_scriptIsCapturePending = capturePending;
-    }
-
     void ScriptAutomationSystemComponent::SetFrameCaptureId(uint32_t frameCaptureId)
     {
         m_scriptFrameCaptureId = frameCaptureId;
+        AZ::Render::FrameCaptureNotificationBus::Handler::BusConnect();
+    }
+
+    void ScriptAutomationSystemComponent::StartProfilingCapture()
+    {
+        AZ::Render::ProfilingCaptureNotificationBus::Handler::BusConnect();
     }
 
     void ScriptAutomationSystemComponent::Activate()
@@ -306,35 +307,24 @@ namespace ScriptAutomation
 
     void ScriptAutomationSystemComponent::OnCaptureQueryTimestampFinished([[maybe_unused]] bool result, [[maybe_unused]] const AZStd::string& info)
     {
-        m_scriptIsCapturePending = false;
         AZ::Render::ProfilingCaptureNotificationBus::Handler::BusDisconnect();
         ResumeAutomation();
     }
 
     void ScriptAutomationSystemComponent::OnCaptureCpuFrameTimeFinished([[maybe_unused]] bool result, [[maybe_unused]] const AZStd::string& info)
     {
-        m_scriptIsCapturePending = false;
         AZ::Render::ProfilingCaptureNotificationBus::Handler::BusDisconnect();
         ResumeAutomation();
     }
 
     void ScriptAutomationSystemComponent::OnCaptureQueryPipelineStatisticsFinished([[maybe_unused]] bool result, [[maybe_unused]] const AZStd::string& info)
     {
-        m_scriptIsCapturePending = false;
         AZ::Render::ProfilingCaptureNotificationBus::Handler::BusDisconnect();
         ResumeAutomation();
     }
 
-    // void ScriptAutomationSystemComponent::OnCaptureFinished([[maybe_unused]] bool result, [[maybe_unused]] const AZStd::string& info)
-    // {
-    //     m_scriptIsCapturePending = false;
-    //     AZ::Debug::ProfilerNotificationBus::Handler::BusDisconnect();
-    //     ResumeAutomation();
-    // }
-
     void ScriptAutomationSystemComponent::OnCaptureBenchmarkMetadataFinished([[maybe_unused]] bool result, [[maybe_unused]] const AZStd::string& info)
     {
-        m_scriptIsCapturePending = false;
         AZ::Render::ProfilingCaptureNotificationBus::Handler::BusDisconnect();
         ResumeAutomation();
     }
@@ -346,7 +336,6 @@ namespace ScriptAutomation
         {
             return;
         }
-        m_scriptIsCapturePending = false;
         m_scriptFrameCaptureId = AZ::Render::FrameCaptureRequests::s_InvalidFrameCaptureId;
         AZ::Render::FrameCaptureNotificationBus::Handler::BusDisconnect();
         ResumeAutomation();
@@ -356,8 +345,7 @@ namespace ScriptAutomation
         // "Can't save image with format %s to a ppm file" message.
         if (result == AZ::Render::FrameCaptureResult::UnsupportedFormat && info.find(AZ::RHI::ToString(AZ::RHI::Format::R10G10B10A2_UNORM)) != AZStd::string::npos)
         {
-            AZ_Error("ScriptAutomation", false, "HDR Not Supported", "Screen capture testing is not supported in HDR. Please change the system configuration to disable the HDR display feature. App will abort now");
-            abort();
+            AZ_Assert(false, "ScriptAutomation Screen Capture - HDR Not Supported, Screen capture to image is not supported from RGB10A2 display format. Please change the system configuration to disable the HDR display feature.");
         }
     }
 

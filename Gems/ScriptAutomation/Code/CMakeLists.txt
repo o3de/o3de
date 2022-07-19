@@ -6,12 +6,6 @@
 #
 #
 
-set(gem_path ${CMAKE_CURRENT_LIST_DIR})
-set(gem_json ${gem_path}/gem.json)
-o3de_restricted_path(${gem_json} gem_restricted_path gem_parent_relative_path)
-
-o3de_pal_dir(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME} "${gem_restricted_path}" "${gem_path}" "${gem_parent_relative_path}")
-
 ly_add_target(
     NAME ScriptAutomation.API HEADERONLY
     NAMESPACE Gem
@@ -27,11 +21,9 @@ ly_add_target(
     NAMESPACE Gem
     FILES_CMAKE
         scriptautomation_files.cmake
-        ${pal_dir}/ScriptAutomation_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
     INCLUDE_DIRECTORIES
         PRIVATE
             Source
-            ${pal_dir}
     BUILD_DEPENDENCIES
         PUBLIC
             AZ::AzCore

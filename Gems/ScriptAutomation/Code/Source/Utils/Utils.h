@@ -13,7 +13,10 @@ namespace ScriptAutomation
 {
     namespace Utils
     {
-        bool SupportsResizeClientArea();
+        //! Query if the system supports resizing the renderable area of the default window
+        bool SupportsResizeClientAreaOfDefaultWindow();
+        
+        //! Resize the renderable area of the default window
         void ResizeClientArea(uint32_t width, uint32_t height);
 
         bool SupportsToggleFullScreenOfDefaultWindow();

@@ -31,6 +31,11 @@ namespace ScriptAutomation
 {
     namespace Utils
     {
+        bool SupportsResizeClientAreaOfDefaultWindow()
+        {
+            return AzFramework::NativeWindow::SupportsClientAreaResizeOfDefaultWindow();
+        }
+
         void ResizeClientArea(uint32_t width, uint32_t height)
         {
             AzFramework::NativeWindowHandle windowHandle = nullptr;
