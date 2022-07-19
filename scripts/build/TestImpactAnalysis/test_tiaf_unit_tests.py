@@ -16,11 +16,24 @@ from pathlib import Path
 import pytest
 import subprocess
 import uuid
+from botocore.stub import Stubber
+from botocore import session
+from boto3 import client
 
 logging = getLogger("tiaf")
 
 
 class TestTIAFUnitTests():
+
+    @pytest.fixture
+    def s3_stub(self):
+        with Stubber(client('s3')) as stubber:
+            yield stubber
+            stubber.assert_no_pending_responses()
+
+    @pytest.fixture
+    def mock_s3_resource(self, mocker, s3_stub):
+        return mocker.patch("boto3.client", return_value = s3_stub)
 
     @pytest.fixture
     def test_data_file(self):
@@ -71,8 +84,6 @@ class TestTIAFUnitTests():
         mocker.patch('uuid.uuid4', return_value=universal_uuid)
         return universal_uuid
 
-    
- 
     @pytest.fixture
     def default_runtime_args(self, mock_uuid, binary_path, report_path):
         runtime_args = {}
@@ -189,7 +200,15 @@ class TestTIAFUnitTests():
         # then:
         assert test_string in caplog.messages
 
-    def test_s3_bucket_name_valid_credentials(self, caplog, tiaf_args, mock_runtime, default_runtime_args):
+    def test_s3_bucket_name_valid_credentials(self, caplog, tiaf_args, mock_runtime, default_runtime_args, s3_stub, mocker):
+        tiaf_args['s3_bucket'] = "test_bucket"
+
+        test_response = {}
+
+        s3_stub.add_response('get_object', expected_params = {"Bucket" : "example-bucket"}, service_response = {})
+        
+        mocker.patch("boto3.client", return_value = s3_stub)
+        main(tiaf_args)
         pass
 
     
