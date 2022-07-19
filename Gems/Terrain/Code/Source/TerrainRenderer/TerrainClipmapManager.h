@@ -42,7 +42,8 @@ namespace Terrain
         enum ClipmapSize : uint32_t
         {
             ClipmapSize512 = 512u,
-            ClipmapSize1024 = 1024u
+            ClipmapSize1024 = 1024u,
+            ClipmapSize2048 = 2048u
         };
 
         //! The size of the clipmap image in each layer.
@@ -50,11 +51,12 @@ namespace Terrain
 
         //! Max render radius that the lowest resolution clipmap can cover.
         //! Radius in: meters.
+        //! For example, 1000 means the clipmaps render 1000 meters at most from the view position.
         float m_macroClipmapMaxRenderRadius = 2048.0f;
         float m_detailClipmapMaxRenderRadius = 256.0f;
 
         //! The resolution of the highest resolution clipmap in the stack.
-        //! The actual max resolution may be bigger due to rounding.
+        //! The actual max resolution may be higher due to matching max render radius.
         //! Resolution in: texels per meter.
         float m_macroClipmapMaxResolution = 2.0f;
         float m_detailClipmapMaxResolution = 2048.0f;
@@ -65,8 +67,9 @@ namespace Terrain
         float m_macroClipmapScaleBase = 2.0f;
         float m_detailClipmapScaleBase = 2.0f;
 
-        //! The margin of the clipmap where the data won't be used.
-        //! This is used to reduce the update frequency. Size in texels.
+        //! The margin of the clipmap where the data won't be used, so that bigger margin results in less frequent update.
+        //! But bigger margin also means it tends to use lower resolution clipmap.
+        //! Size in: texels.
         uint32_t m_macroClipmapMarginSize = 4;
         uint32_t m_detailClipmapMarginSize = 4;
         //! In addition to the above margin size used for updating,
