@@ -148,7 +148,7 @@ class TestImpact:
         # Exclude tests
         exclude_file = args.get('exclude_file')
         if exclude_file:
-            runtime_args.append(f"--exclude_file={exclude_file}")
+            runtime_args.append(f"--exclude={exclude_file}")
             logger.info(
                 f"Exclude file found, excluding the tests stored at '{exclude_file}'.")
         else:
