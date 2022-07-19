@@ -517,6 +517,11 @@ void MainWindow::Activate()
             m_builderInfoMetrics->Reset();
         }
     });
+    connect(
+        m_guiApplicationManager->GetAssetProcessorManager(),
+        &AssetProcessor::AssetProcessorManager::JobProcessDurationChanged,
+        m_builderInfoMetrics,
+        &AssetProcessor::BuilderInfoMetricsModel::OnJobProcessingStatChanged);
 
     // Tools tab:
     connect(ui->fullScanButton, &QPushButton::clicked, this, &MainWindow::OnRescanButtonClicked);

@@ -317,4 +317,20 @@ namespace AssetProcessor
         beginResetModel();
         endResetModel();
     }
+
+    void BuilderInfoMetricsModel::OnJobProcessingStatChanged(JobEntry jobEntry, int value)
+    {
+        if (m_builderGuidToIndex.contains(jobEntry.m_builderGuid))
+        {
+            int builderIndex = m_builderGuidToIndex[jobEntry.m_builderGuid];
+            
+            AZStd::string entryName = jobEntry.m_databaseSourceName.toUtf8().constData();
+            entryName.append(",");
+            entryName.append(jobEntry.m_jobKey.toUtf8().constData());
+            entryName.append(",");
+            entryName.append(jobEntry.m_platformInfo.m_identifier);
+            m_singleBuilderMetrics[builderIndex]->UpdateOrInsertEntry(BuilderInfoMetricsItem::JobType::ProcessingJob, entryName, 1, value);
+            m_allBuildersMetrics->UpdateOrInsertEntry(BuilderInfoMetricsItem::JobType::ProcessingJob, entryName, 1, value);
+        }
+    }
 }
