@@ -36,49 +36,11 @@ class PersistentStorageS3(PersistentStorage):
 
         super().__init__(config, suite, commit)
 
-        try:
-            # We store the historic data as compressed JSON
-            object_extension = "json.zip"
-
-            # historic_data.json.zip is the file containing the coverage and meta-data of the last TIAF sequence run
-            historic_data_file = f"historic_data.{object_extension}"
-
-            # The location of the data is in the form <root_dir>/<branch>/<config>/<suite> so the build config of each branch gets its own historic data
-            self._historic_data_dir = f"{root_dir}/{branch}/{config[self.META_KEY][self.BUILD_CONFIG_KEY]}/{self._suite}"
-            self._historic_data_key = f"{self._historic_data_dir}/{historic_data_file}"
-            
-            logger.info(f"Attempting to retrieve historic data for branch '{branch}' at location '{self._historic_data_key}' on bucket '{s3_bucket}'...")
-            self._s3 = boto3.resource("s3")
-            self._bucket = self._s3.Bucket(s3_bucket)
-
-            # There is only one historic_data.json.zip in the specified location
-            for object in self._bucket.objects.filter(Prefix=self._historic_data_key):
-                logger.info(f"Historic data found for branch '{branch}'.")
-
-                # Archive the existing object with the name of the existing last commit hash
-                #archive_key = f"{self._historic_data_dir}/archive/{self._last_commit_hash}.{object_extension}"
-                #logger.info(f"Archiving existing historic data to '{archive_key}' in bucket '{self._bucket.name}'...")
-                #self._bucket.copy({"Bucket": self._bucket.name, "Key": self._historic_data_key}, archive_key)
-                #logger.info(f"Archiving complete.")
-
-                # Decode the historic data object into raw bytes
-                logger.info(f"Attempting to decode historic data object...")
-                response = object.get()
-                file_stream = response['Body']
-                logger.info(f"Decoding complete.")
-
-                # Decompress and unpack the zipped historic data JSON
-                historic_data_json = zlib.decompress(file_stream.read()).decode('UTF-8')
-                self._unpack_historic_data(historic_data_json)
-
-                return
-        except KeyError as e:
-            raise SystemError(f"The config does not contain the key {str(e)}.")
-        except botocore.exceptions.BotoCoreError as e:
-            raise SystemError(f"There was a problem with the s3 bucket: {e}")
-        except botocore.exceptions.ClientError as e:
-            raise SystemError(f"There was a problem with the s3 client: {e}")
-
+        self.s3_bucket = s3_bucket
+        self.root_dir = root_dir
+        self.branch = branch
+        self._retrieve_historic_data(config)
+        
     def _store_historic_data(self, historic_data_json: str):
         """
         Stores then historical data in specified s3 bucket at the location <branch>/<build_config>/historical_data.json.zip.
@@ -95,3 +57,63 @@ class PersistentStorageS3(PersistentStorage):
             logger.error(f"There was a problem with the s3 bucket: {e}")
         except botocore.exceptions.ClientError as e:
             logger.error(f"There was a problem with the s3 client: {e}")
+
+
+    def _retrieve_historic_data(self, config: dict):
+        """
+        Retrieves historic data from s3 storage if it exists, and stores it locally on disk
+
+        @param config: The runtime config file to obtain the data file paths from.
+        """
+        try:
+            # We store the historic data as compressed JSON
+            object_extension = "json.zip"
+
+            # historic_data.json.zip is the file containing the coverage and meta-data of the last TIAF sequence run
+            historic_data_file = f"historic_data.{object_extension}"
+
+            # The location of the data is in the form <root_dir>/<branch>/<config>/<suite> so the build config of each branch gets its own historic data
+            self._historic_data_dir = f"{self.root_dir}/{self.branch}/{config[self.META_KEY][self.BUILD_CONFIG_KEY]}/{self._suite}"
+            self._historic_data_key = f"{self._historic_data_dir}/{historic_data_file}"
+            
+            logger.info(f"Attempting to retrieve historic data for branch '{self.branch}' at location '{self._historic_data_key}' on bucket '{self.s3_bucket}'...")
+            self._s3 = boto3.resource("s3")
+            self._bucket = self._s3.Bucket(self.s3_bucket)
+
+            # There is only one historic_data.json.zip in the specified location
+            for object in self._bucket.objects.filter(Prefix=self._historic_data_key):
+                logger.info(f"Historic data found for branch '{self.branch}'.")
+
+                # Archive the existing object with the name of the existing last commit hash
+                #archive_key = f"{self._historic_data_dir}/archive/{self._last_commit_hash}.{object_extension}"
+                #logger.info(f"Archiving existing historic data to '{archive_key}' in bucket '{self._bucket.name}'...")
+                #self._bucket.copy({"Bucket": self._bucket.name, "Key": self._historic_data_key}, archive_key)
+                #logger.info(f"Archiving complete.")
+
+                # Decode the historic data object into raw bytes and unpack into memory/disk
+                decoded_data = self._decode(object)
+                self._unpack_historic_data(decoded_data)
+
+                return
+        except KeyError as e:
+            raise SystemError(f"The config does not contain the key {str(e)}.")
+        except botocore.exceptions.BotoCoreError as e:
+            raise SystemError(f"There was a problem with the s3 bucket: {e}")
+        except botocore.exceptions.ClientError as e:
+            raise SystemError(f"There was a problem with the s3 client: {e}")
+
+    def _decode(self, s3_object):
+        """
+        Method to decompress and decode the json object and return it to the user
+
+        @param s3_object:  The s3 object to download, decompress and decode
+        """
+        logger.info(f"Attempting to decode historic data object...")
+        response = s3_object.get()
+        file_stream = response['Body']
+        decoded_data = zlib.decompress(file_stream.read()).decode('UTF-8')
+        logger.info(f"Decoding complete.")
+
+        # Decompress and unpack the zipped historic data JSON
+        return decoded_data
+        

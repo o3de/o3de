@@ -8,6 +8,7 @@
 
 #include <native/utilities/StatsCapture.h>
 #include <native/assetprocessor.h>
+#include <native/AssetDatabase/AssetDatabase.h>
 
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Settings/SettingsRegistry.h>
@@ -34,9 +35,9 @@ namespace AssetProcessor
         {
         public:
             AZ_CLASS_ALLOCATOR(StatsCaptureImpl, AZ::SystemAllocator, 0);
-
+            StatsCaptureImpl();
             void BeginCaptureStat(AZStd::string_view statName);
-            AZStd::optional<AZStd::sys_time_t> EndCaptureStat(AZStd::string_view statName);
+            AZStd::optional<AZStd::sys_time_t> EndCaptureStat(AZStd::string_view statName, bool persistToDb);
             void Dump();
         private:
             using timepoint = AZStd::chrono::high_resolution_clock::time_point;
@@ -48,6 +49,7 @@ namespace AssetProcessor
                 int64_t m_operationCount = 0; // In case there's more than one sample.  Used to calc average.
             };
 
+            AssetDatabaseConnection m_dbConnection;
             AZStd::unordered_map<AZStd::string, StatsEntry> m_stats;
             bool m_dumpMachineReadableStats = false;
             bool m_dumpHumanReadableStats = true;
@@ -161,6 +163,11 @@ namespace AssetProcessor
         };
 
 
+        StatsCaptureImpl::StatsCaptureImpl() 
+        {
+            m_dbConnection.OpenDatabase();
+        }
+
         void StatsCaptureImpl::BeginCaptureStat(AZStd::string_view statName)
         {
             StatsEntry& existingStat = m_stats[statName];
@@ -172,7 +179,7 @@ namespace AssetProcessor
             existingStat.m_operationStartTime = AZStd::chrono::high_resolution_clock::now();
         }
 
-        AZStd::optional<AZStd::sys_time_t> StatsCaptureImpl::EndCaptureStat(AZStd::string_view statName)
+        AZStd::optional<AZStd::sys_time_t> StatsCaptureImpl::EndCaptureStat(AZStd::string_view statName, bool persistToDb)
         {
             StatsEntry& existingStat = m_stats[statName];
             AZStd::optional<AZStd::sys_time_t> operationDurationInMillisecond;
@@ -183,6 +190,15 @@ namespace AssetProcessor
                 existingStat.m_cumulativeTime = existingStat.m_cumulativeTime + operationDuration;
                 existingStat.m_operationCount = existingStat.m_operationCount + 1;
                 existingStat.m_operationStartTime = timepoint(); // reset the start time so that double 'Ends' are ignored.
+
+                if (persistToDb)
+                {
+                    AzToolsFramework::AssetDatabase::StatDatabaseEntry entry;
+                    entry.m_statName = statName;
+                    entry.m_statValue = aznumeric_cast<AZ::s64>(operationDuration.count());
+                    entry.m_lastLogTime = aznumeric_cast<AZ::s64>(QDateTime::currentMSecsSinceEpoch());
+                    m_dbConnection.ReplaceStat(entry);
+                }
             }
             return operationDurationInMillisecond;
         }
@@ -386,12 +402,13 @@ namespace AssetProcessor
             }
         }
 
-        //! Stop the clock running for a particular stat name.
-        AZStd::optional<AZStd::sys_time_t> EndCaptureStat(AZStd::string_view statName)
+        //! Stop the clock running for a particular stat name. If persistToDb is true and the returned duration is valid, write the duration
+        //! to asset database Stats table.
+        AZStd::optional<AZStd::sys_time_t> EndCaptureStat(AZStd::string_view statName, bool persistToDb)
         {
             if (g_instance)
             {
-                return g_instance->EndCaptureStat(statName);
+                return g_instance->EndCaptureStat(statName, persistToDb);
             }
             return AZStd::optional<AZStd::sys_time_t>();
         }

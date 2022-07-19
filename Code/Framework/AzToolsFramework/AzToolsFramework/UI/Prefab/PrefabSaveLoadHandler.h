@@ -23,6 +23,7 @@ namespace AzToolsFramework
         class PrefabLoaderInterface;
         class PrefabPublicInterface;
         class PrefabSystemComponentInterface;
+        class InstanceEntityMapperInterface;
 
         //! Structure for saving/retrieving user settings related to prefab workflows.
         class PrefabUserSettings : public AZ::UserSettings
@@ -60,6 +61,7 @@ namespace AzToolsFramework
 
             // Dialogs
             int ExecuteClosePrefabDialog(TemplateId templateId);
+            void ExecuteSavePrefabDialog(AZ::EntityId entityId);
             void ExecuteSavePrefabDialog(TemplateId templateId, bool useSaveAllPrefabsPreference);
             static bool QueryUserForPrefabFilePath(AZStd::string& outPrefabFilePath);
             static bool QueryUserForProceduralPrefabAsset(AZStd::string& outPrefabAssetPath);
@@ -96,6 +98,8 @@ namespace AzToolsFramework
             static PrefabLoaderInterface* s_prefabLoaderInterface;
             static PrefabPublicInterface* s_prefabPublicInterface;
             static PrefabSystemComponentInterface* s_prefabSystemComponentInterface;
+
+            InstanceEntityMapperInterface* m_instanceEntityMapperInterface;
         };
     }
 }
