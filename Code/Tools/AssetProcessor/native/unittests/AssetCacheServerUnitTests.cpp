@@ -71,7 +71,7 @@ namespace UnitTest
         {
             auto getString = [this](AZStd::string& result, AZStd::string_view input) -> bool
             {
-                if (input == "/Amazon/AssetProcessor/Settings/Server/cacheServerAddress")
+                if (input == "/O3DE/AssetProcessor/Settings/Server/cacheServerAddress")
                 {
                     result = this->m_tempFolder.toUtf8().toStdString().c_str();
                 }
@@ -81,7 +81,7 @@ namespace UnitTest
 
             auto getBool = [this](bool& result, AZStd::string_view input) -> bool
             {
-                if (input == "/Amazon/AssetProcessor/Settings/Server/enableCacheServer")
+                if (input == "/O3DE/AssetProcessor/Settings/Server/enableCacheServer")
                 {
                     result = this->m_enableServer;
                 }
