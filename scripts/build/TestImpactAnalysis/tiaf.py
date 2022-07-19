@@ -21,8 +21,6 @@ logger = get_logger(__file__)
 
 class TestImpact:
 
-    
-
     def __init__(self, args: dict):
         """
         Initializes the test impact model with the commit, branches as runtime configuration.
@@ -32,7 +30,8 @@ class TestImpact:
         """
 
         self._runtime_args = []
-        self._change_list = {"createdFiles": [], "updatedFiles": [], "deletedFiles": []}
+        self._change_list = {"createdFiles": [],
+                             "updatedFiles": [], "deletedFiles": []}
         self._has_change_list = False
         self._use_test_impact_analysis = False
 
@@ -92,8 +91,10 @@ class TestImpact:
                         self._runtime_args.append("--ipolicy=continue")
                         logger.info(
                             "Integration failure policy is set to 'continue'.")
-                    self._runtime_args.append(f"--changelist={self._change_list_path}")
-                    logger.info(f"Change list is set to '{self._change_list_path}'.")
+                    self._runtime_args.append(
+                        f"--changelist={self._change_list_path}")
+                    logger.info(
+                        f"Change list is set to '{self._change_list_path}'.")
                 else:
                     if self._is_source_of_truth_branch and self._can_rerun_with_instrumentation:
                         # Use seed sequence (instrumented all tests) for coverage updating branches so we can generate the coverage bed for future sequences
