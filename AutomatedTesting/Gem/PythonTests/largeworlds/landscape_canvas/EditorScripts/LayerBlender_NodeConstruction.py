@@ -139,7 +139,8 @@ def LayerBlender_NodeConstruction():
     graph.GraphControllerRequestBus(bus.Event, 'AddConnectionBySlotId', newGraphId, layerBlockerNode, outboundAreaSlotId,
                                     layerBlenderNode, inboundAreaSlotId2)
 
-    # Delay to allow all the underlying component properties to be updated after the slot connections are made
+    # Delay 2 frames to allow for underlying component properties to be updated after the slot connections are made and
+    # propagation to occur
     general.idle_wait_frames(2)
 
     # Get component info
