@@ -328,6 +328,8 @@ set(FILES
     ToolsComponents/EditorVisibilityBus.h
     ToolsComponents/GenericComponentWrapper.cpp
     ToolsComponents/GenericComponentWrapper.h
+    ToolsComponents/SelectionComponent.cpp
+    ToolsComponents/SelectionComponent.h
     ToolsComponents/TransformComponent.h
     ToolsComponents/TransformComponent.cpp
     ToolsComponents/TransformComponentBus.h

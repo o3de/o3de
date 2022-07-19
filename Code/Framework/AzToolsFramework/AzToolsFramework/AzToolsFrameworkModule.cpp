@@ -46,6 +46,7 @@
 #include <AzToolsFramework/ToolsComponents/EditorSelectionAccentSystemComponent.h>
 #include <AzToolsFramework/ToolsComponents/EditorVisibilityComponent.h>
 #include <AzToolsFramework/ToolsComponents/ScriptEditorComponent.h>
+#include <AzToolsFramework/ToolsComponents/SelectionComponent.h>
 #include <AzToolsFramework/ToolsComponents/TransformComponent.h>
 #include <AzToolsFramework/ToolsComponents/EditorNonUniformScaleComponent.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyManagerComponent.h>
@@ -72,6 +73,7 @@ namespace AzToolsFramework
             ActionManagerSystemComponent::CreateDescriptor(),
             Components::TransformComponent::CreateDescriptor(),
             Components::EditorNonUniformScaleComponent::CreateDescriptor(),
+            Components::SelectionComponent::CreateDescriptor(),
             Components::GenericComponentWrapper::CreateDescriptor(),
             Components::PropertyManagerComponent::CreateDescriptor(),
             Components::ScriptEditorComponent::CreateDescriptor(),
