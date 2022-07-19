@@ -56,6 +56,8 @@ namespace AssetProcessor
 
         void Reset();
         void OnBuilderSelectionChanged(const AssetBuilderSDK::AssetBuilderDesc& builder);
+    public Q_SLOTS:
+        void OnJobProcessingStatChanged(JobEntry jobEntry, int value);
 
     private:
         // BuilderInfoMetricsItem* GetCurrentBuilderRootItem() const;
