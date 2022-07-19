@@ -23,6 +23,8 @@ set(FILES
     native/ui/AssetTreeModel.cpp
     native/ui/AssetTreeItem.h
     native/ui/AssetTreeItem.cpp
+    native/ui/CacheServerData.h
+    native/ui/CacheServerData.cpp
     native/ui/ConnectionEditDialog.h
     native/ui/ConnectionEditDialog.cpp
     native/ui/GoToButton.h

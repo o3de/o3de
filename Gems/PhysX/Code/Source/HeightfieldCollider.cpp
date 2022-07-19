@@ -267,9 +267,17 @@ namespace PhysX
 
         // Update the shape configuration with the new height and material data for the heightfield.
         // This assumes that the shape configuration already has been created with the correct number of samples.
-        Physics::HeightfieldProviderRequestsBus::Event(
-            m_entityId, &Physics::HeightfieldProviderRequestsBus::Events::UpdateHeightsAndMaterialsAsync,
-            modifySample, updateComplete, startColumn, startRow, numColumns, numRows);
+        if (Physics::HeightfieldProviderRequestsBus::HasHandlers(m_entityId))
+        {
+            Physics::HeightfieldProviderRequestsBus::Event(
+                m_entityId, &Physics::HeightfieldProviderRequestsBus::Events::UpdateHeightsAndMaterialsAsync,
+                modifySample, updateComplete, startColumn, startRow, numColumns, numRows);
+        }
+        else
+        {
+            // If nothing is connected to the bus, call updateComplete() directly so that the job processing chain completes.
+            updateComplete();
+        }
     }
 
     void HeightfieldCollider::UpdatePhysXHeightfieldRows(

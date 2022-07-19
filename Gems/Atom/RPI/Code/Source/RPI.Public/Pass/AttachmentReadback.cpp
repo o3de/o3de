@@ -112,9 +112,13 @@ namespace AZ
         }
 
         AttachmentReadback::AttachmentReadback(const RHI::ScopeId& scopeId)
-            : m_readbackBufferArray({ nullptr, nullptr, nullptr })
-            , m_isReadbackComplete({ false, false, false })
         {
+            for(uint32_t i = 0; i < RHI::Limits::Device::FrameCountMax; i++)
+            {
+                m_readbackBufferArray.push_back(nullptr);
+                m_isReadbackComplete.push_back(false);
+            }
+            
             // Create fence
             RHI::Ptr<RHI::Device> device = RHI::RHISystemInterface::Get()->GetDevice();
             m_fence = RHI::Factory::Get().CreateFence();

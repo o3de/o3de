@@ -742,6 +742,19 @@ namespace AzToolsFramework
             ClearComponentEditorSelection();
             ClearComponentEditorState();
         }
+
+        // Clear the focus of the current widget in order to trigger editing
+        // completion before the selected entity list is modified. Otherwise,
+        // the entity will not automatically be marked as dirty since it will
+        // no longer be selected when receiving the BeforePropertyModified event
+        if (DoesOwnFocus())
+        {
+            QWidget* widget = QApplication::focusWidget();
+            if (this != widget)
+            {
+                widget->clearFocus();
+            }
+        }
     }
 
     void EntityPropertyEditor::AfterEntitySelectionChanged(

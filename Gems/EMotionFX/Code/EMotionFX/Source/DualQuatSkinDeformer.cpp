@@ -79,7 +79,7 @@ namespace EMotionFX
         if (m_useTaskGraph)
         {
             // Skin the vertices by executing the task graph.
-            AZ::TaskGraphEvent finishedEvent;
+            AZ::TaskGraphEvent finishedEvent{ "DualQuatSkinning Wait" };
             m_taskGraph.Submit(&finishedEvent);
             finishedEvent.Wait();
         }

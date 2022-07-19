@@ -19,6 +19,9 @@
 
 #include <AzFramework/Asset/AssetSystemBus.h>
 
+#include <AzCore/JSON/stringbuffer.h>
+#include <AzCore/JSON/prettywriter.h>
+#include <AzCore/JSON/pointer.h>
 
 #include <AzQtComponents/AzQtComponentsAPI.h>
 #include <AzQtComponents/Components/ConfigHelpers.h>
@@ -31,7 +34,7 @@
 #include <native/resourcecompiler/JobsModel.h>
 #include "native/ui/ui_MainWindow.h"
 #include "native/ui/JobTreeViewItemDelegate.h"
-
+#include <native/utilities/AssetServerHandler.h>
 
 #include "../utilities/GUIApplicationManager.h"
 #include "../utilities/ApplicationServer.h"
@@ -48,6 +51,7 @@
 #include <QUrl>
 #include <QWidgetAction>
 #include <QKeyEvent>
+#include <QFileDialog>
 
 static const char* g_showContextDetailsKey = "ShowContextDetailsTable";
 static const QString g_jobFilteredSearchWidgetState = QStringLiteral("jobFilteredSearchWidget");
@@ -212,6 +216,7 @@ void MainWindow::Activate()
     ui->buttonList->addTab(QStringLiteral("Connections"));
     ui->buttonList->addTab(QStringLiteral("Builders"));
     ui->buttonList->addTab(QStringLiteral("Tools"));
+    ui->buttonList->addTab(QStringLiteral("Shared Cache"));
 
     connect(ui->buttonList, &AzQtComponents::SegmentBar::currentChanged, ui->dialogStack, &QStackedWidget::setCurrentIndex);
     const int startIndex = static_cast<int>(DialogStackIndex::Jobs);
@@ -531,6 +536,9 @@ void MainWindow::Activate()
 
     m_guiApplicationManager->GetAssetProcessorManager()->SetBuilderDebugFlag(enableBuilderDebugFlag);
     ui->debugOutputCheckBox->setCheckState(enableBuilderDebugFlag ? Qt::Checked : Qt::Unchecked);
+
+    // Shared Cache tab:
+    SetupAssetServerTab();
 }
 
 void MainWindow::BuilderTabSelectionChanged(const QItemSelection& selected, const QItemSelection& /*deselected*/)
@@ -571,6 +579,294 @@ void MainWindow::BuilderTabSelectionChanged(const QItemSelection& selected, cons
                 .arg(builder.m_version)
                 .arg(builder.m_busId.ToString<QString>())
                 .arg(patternString));
+    }
+}
+
+namespace MainWindowInternal
+{
+    enum class PatternColumns
+    {
+        Enabled = 0,
+        Name = 1,
+        Type = 2,
+        Pattern = 3,
+        Remove = 4
+    };
+}
+
+void MainWindow::SetupAssetServerTab()
+{
+    using namespace AssetProcessor;
+    using namespace MainWindowInternal;
+
+    m_cacheServerData.Reset();
+
+    ui->serverCacheModeOptions->addItem(QString("Inactive"), aznumeric_cast<int>(AssetProcessor::AssetServerMode::Inactive));
+    ui->serverCacheModeOptions->addItem(QString("Server"), aznumeric_cast<int>(AssetProcessor::AssetServerMode::Server));
+    ui->serverCacheModeOptions->addItem(QString("Client"), aznumeric_cast<int>(AssetProcessor::AssetServerMode::Client));
+
+    QObject::connect(ui->serverCacheModeOptions,
+        static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
+        this,
+        [this](int newIndex)
+        {
+            AssetServerMode inputAssetServerMode = aznumeric_cast<AssetServerMode>(newIndex);
+            AssetServerBus::BroadcastResult(this->m_cacheServerData.m_cachingMode, &AssetServerBus::Events::GetRemoteCachingMode);
+            if (this->m_cacheServerData.m_cachingMode != inputAssetServerMode)
+            {
+                this->m_cacheServerData.m_dirty = true;
+                this->m_cacheServerData.m_cachingMode = inputAssetServerMode;
+                this->CheckAssetServerStates();
+            }
+        });
+
+    ui->serverAddressButton->setIcon(QIcon(":/PropertyEditor/Resources/Browse_on.png"));
+    QObject::connect(ui->serverAddressButton, &QPushButton::clicked, this,
+        [this]()
+        {
+            auto path = QDir::toNativeSeparators(QFileDialog::getExistingDirectory(this, tr("Choose remote folder.")));
+            if (!path.isEmpty())
+            {
+                ui->serverAddressText->setPlainText(path);
+            }
+        });
+
+    QObject::connect(ui->serverAddressText, &QPlainTextEdit::textChanged, this,
+        [this]()
+        {
+            SetServerAddress(this->ui->serverAddressText->toPlainText().toUtf8().data());
+        });
+
+    QObject::connect(ui->sharedCacheSubmitButton, &QPushButton::clicked, this,
+        [this]()
+        {
+            if (this->m_cacheServerData.m_dirty)
+            {
+                bool changedServerAddress = false;
+                AssembleAssetPatterns();
+                AssetServerBus::BroadcastResult(changedServerAddress, &AssetServerBus::Events::SetServerAddress, this->m_cacheServerData.m_serverAddress);
+                if (changedServerAddress)
+                {
+                    AZ::IO::Path projectPath(m_guiApplicationManager->GetProjectPath().toUtf8().data());
+                    if (this->m_cacheServerData.Save(projectPath))
+                    {
+                        AssetServerBus::Broadcast(&AssetServerBus::Events::SetRemoteCachingMode, this->m_cacheServerData.m_cachingMode);
+                        this->m_cacheServerData.Reset();
+
+                        // Clear the save message after a few moments
+                        QTimer::singleShot(1000 * 5, this, [this] {
+                                this->m_cacheServerData.m_errorLevel = CacheServerData::ErrorLevel::None;
+                                this->m_cacheServerData.m_errorMessage.clear();
+                                this->CheckAssetServerStates();
+                            });
+                    }
+                }
+                else if (this->m_cacheServerData.m_cachingMode != AssetServerMode::Inactive)
+                {
+                    this->m_cacheServerData.m_errorLevel = CacheServerData::ErrorLevel::Error;
+                    this->m_cacheServerData.m_errorMessage = AZStd::string::format("**Error**: Invalid server address!");
+                }
+                this->CheckAssetServerStates();
+            }
+        });
+
+    QObject::connect(ui->sharedCacheDiscardButton, &QPushButton::clicked, this,
+        [this]()
+        {
+            this->m_cacheServerData.Reset();
+            this->ResetAssetServerView();
+        });
+
+    // setting up the patterns table
+    QObject::connect(ui->sharedCacheAddPattern, &QPushButton::clicked, this,
+        [this]()
+        {
+            AddPatternRow("New Name", AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard, "", true);
+            this->m_cacheServerData.m_dirty = true;
+            this->CheckAssetServerStates();
+        });
+
+    ui->sharedCacheTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    ui->sharedCacheTable->horizontalHeader()->setSectionResizeMode(aznumeric_cast<int>(PatternColumns::Enabled), QHeaderView::Fixed);
+    ui->sharedCacheTable->horizontalHeader()->setSectionResizeMode(aznumeric_cast<int>(PatternColumns::Remove), QHeaderView::Fixed);
+
+    ResetAssetServerView();
+    CheckAssetServerStates();
+}
+
+void MainWindow::AddPatternRow(AZStd::string_view name, AssetBuilderSDK::AssetBuilderPattern::PatternType type, AZStd::string_view pattern, bool enable)
+{
+    using namespace AssetBuilderSDK;
+    using namespace MainWindowInternal;
+
+    int row = ui->sharedCacheTable->rowCount();
+    ui->sharedCacheTable->insertRow(row);
+
+    auto updateStatus = [this](int)
+    {
+        this->m_cacheServerData.m_dirty = true;
+        this->CheckAssetServerStates();
+    };
+
+    QObject::connect(ui->sharedCacheTable, &QTableWidget::cellChanged, this,
+        [this](int, int)
+        {
+            this->m_cacheServerData.m_dirty = true;
+            this->CheckAssetServerStates();
+        });
+
+    // Enabled check mark
+    auto* enableChackmark = new QCheckBox();
+    enableChackmark->setChecked(enable);
+    QObject::connect(enableChackmark, &QCheckBox::stateChanged, ui->sharedCacheTable, updateStatus);
+    ui->sharedCacheTable->setCellWidget(row, aznumeric_cast<int>(PatternColumns::Enabled), enableChackmark);
+    ui->sharedCacheTable->setColumnWidth(aznumeric_cast<int>(PatternColumns::Enabled), 8);
+
+    // Name
+    auto* nameWidgetItem = new QTableWidgetItem(name.data());
+    ui->sharedCacheTable->setItem(row, aznumeric_cast<int>(PatternColumns::Name), nameWidgetItem);
+
+    // Type combo
+    auto* combo = new QComboBox();
+    QObject::connect(combo, QOverload<int>::of(&QComboBox::currentIndexChanged), ui->sharedCacheTable, updateStatus);
+    combo->addItem("Wildcard", QVariant(AssetBuilderPattern::PatternType::Wildcard));
+    combo->addItem("Regex", QVariant(AssetBuilderPattern::PatternType::Regex));
+    combo->setCurrentIndex(aznumeric_cast<int>(type));
+    ui->sharedCacheTable->setCellWidget(row, aznumeric_cast<int>(PatternColumns::Type), combo);
+
+    // Pattern
+    auto* patternWidgetItem = new QTableWidgetItem(pattern.data());
+    ui->sharedCacheTable->setItem(row, aznumeric_cast<int>(PatternColumns::Pattern), patternWidgetItem);
+
+    // Remove button
+    auto* button = new QPushButton();
+    button->setIcon(QIcon(":/PropertyEditor/Resources/trash-small.png"));
+    ui->sharedCacheTable->setCellWidget(row, aznumeric_cast<int>(PatternColumns::Remove), button);
+    ui->sharedCacheTable->setColumnWidth(aznumeric_cast<int>(PatternColumns::Remove), 16);
+    QObject::connect(button, &QPushButton::clicked, this,
+        [this]()
+        {
+            this->ui->sharedCacheTable->removeRow(this->ui->sharedCacheTable->currentRow());
+            this->m_cacheServerData.m_dirty = true;
+            this->CheckAssetServerStates();
+        });
+}
+
+void MainWindow::AssembleAssetPatterns()
+{
+    using namespace AssetBuilderSDK;
+    using namespace MainWindowInternal;
+
+    AssetProcessor::RecognizerContainer patternContainer;
+    int row = 0;
+    for(; row < ui->sharedCacheTable->rowCount(); ++row)
+    {
+        auto pattern = AZStd::pair<AZStd::string, AssetProcessor::AssetRecognizer>();
+
+        auto* itemName = ui->sharedCacheTable->item(row, aznumeric_cast<int>(PatternColumns::Name));
+        auto* itemPattern = ui->sharedCacheTable->item(row, aznumeric_cast<int>(PatternColumns::Pattern));
+        auto* itemType = qobject_cast<QComboBox*>(ui->sharedCacheTable->cellWidget(row, aznumeric_cast<int>(PatternColumns::Type)));
+        auto* itemCheck = qobject_cast<QCheckBox*>(ui->sharedCacheTable->cellWidget(row, aznumeric_cast<int>(PatternColumns::Enabled)));
+
+        pattern.first = itemName->text().toUtf8().data();
+
+        AZStd::string filePattern { itemPattern->text().toUtf8().data() };
+        AssetBuilderPattern::PatternType patternType{};
+        auto typeData = itemType->itemData(itemType->currentIndex());
+        if (typeData.toInt() == aznumeric_cast<int>(AssetBuilderPattern::PatternType::Regex))
+        {
+            patternType = AssetBuilderPattern::PatternType::Regex;
+        }
+        pattern.second.m_patternMatcher = { filePattern, patternType };
+        pattern.second.m_checkServer = (itemCheck->checkState() == Qt::CheckState::Checked);
+
+        patternContainer.emplace(AZStd::move(pattern));
+    }
+
+    m_cacheServerData.m_patternContainer = AZStd::move(patternContainer);
+}
+
+void MainWindow::CheckAssetServerStates()
+{
+    using namespace AssetProcessor;
+
+    if (m_cacheServerData.m_dirty)
+    {
+        ui->sharedCacheSubmitButton->setEnabled(true);
+        ui->sharedCacheDiscardButton->setEnabled(true);
+    }
+    else
+    {
+        ui->sharedCacheSubmitButton->setEnabled(false);
+        ui->sharedCacheDiscardButton->setEnabled(false);
+    }
+
+    switch (m_cacheServerData.m_errorLevel)
+    {
+        case CacheServerData::ErrorLevel::None:
+        {
+            ui->sharedCacheStatus->setText("");
+            break;
+        }
+        case CacheServerData::ErrorLevel::Notice:
+        {
+            ui->sharedCacheStatus->setStyleSheet("font-weight: normal; color: green");
+            ui->sharedCacheStatus->setText(m_cacheServerData.m_errorMessage.c_str());
+            break;
+        }
+        case CacheServerData::ErrorLevel::Warning:
+        {
+            ui->sharedCacheStatus->setStyleSheet("font-weight: medium; color: yellow");
+            ui->sharedCacheStatus->setText(m_cacheServerData.m_errorMessage.c_str());
+            break;
+        }
+        case CacheServerData::ErrorLevel::Error:
+        {
+            ui->sharedCacheStatus->setStyleSheet("font-weight: bold; color: red");
+            ui->sharedCacheStatus->setText(m_cacheServerData.m_errorMessage.c_str());
+            break;
+        }
+        default:
+            break;
+    }
+}
+
+void MainWindow::ResetAssetServerView()
+{
+    using namespace AssetProcessor;
+
+    ui->serverCacheModeOptions->setCurrentIndex(aznumeric_cast<int>(m_cacheServerData.m_cachingMode));
+    ui->serverAddressText->setPlainText(QString(m_cacheServerData.m_serverAddress.c_str()));
+
+    ui->sharedCacheTable->setRowCount(0);
+    for (const auto& pattern : m_cacheServerData.m_patternContainer)
+    {
+        AddPatternRow(
+            pattern.second.m_name,
+            pattern.second.m_patternMatcher.GetBuilderPattern().m_type,
+            pattern.second.m_patternMatcher.GetBuilderPattern().m_pattern,
+            pattern.second.m_checkServer);
+    }
+
+    m_cacheServerData.m_dirty = false;
+    m_cacheServerData.m_errorLevel = CacheServerData::ErrorLevel::None;
+    m_cacheServerData.m_errorMessage.clear();
+    CheckAssetServerStates();
+}
+
+void MainWindow::SetServerAddress(AZStd::string_view serverAddress)
+{
+    using namespace AssetProcessor;
+
+    AssetServerBus::BroadcastResult(
+        this->m_cacheServerData.m_serverAddress,
+        &AssetServerBus::Events::GetServerAddress);
+
+    if (this->m_cacheServerData.m_serverAddress != serverAddress)
+    {
+        this->m_cacheServerData.m_dirty = true;
+        this->m_cacheServerData.m_serverAddress = serverAddress;
+        this->CheckAssetServerStates();
     }
 }
 
