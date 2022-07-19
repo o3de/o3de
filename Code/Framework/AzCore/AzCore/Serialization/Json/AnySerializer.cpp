@@ -23,13 +23,22 @@ namespace AZ
         namespace JSR = JsonSerializationResult; // Used to remove name conflicts in AzCore in uber builds.
         AZ_Assert(outputValueTypeId == azrtti_typeid<AZStd::any>(), "JsonAnySerializer::Load against value typeID that was not AZStd::any");
 
+        if (inputValue.GetType() != rapidjson::kObjectType)
+        {
+            return context.Report
+                ( JSR::Tasks::ReadField
+                , JSR::Outcomes::Unsupported
+                , "JsonAnySerializer::Load only supports rapidjson::kObjectType");
+
+        }
+
         AZ::Uuid anyTypeId = AZ::Uuid::CreateNull();
         auto typeIdMember = inputValue.FindMember(JsonSerialization::TypeIdFieldIdentifier);
         if (typeIdMember == inputValue.MemberEnd())
         {
             return context.Report
-                (JSR::Tasks::ReadField
-                , JSR::Outcomes::Success
+                ( JSR::Tasks::ReadField
+                , JSR::Outcomes::DefaultsUsed // passes one test breaks another?
                 , "JsonAnySerializer::Load created a default, empty AZStd::any");
         }
 

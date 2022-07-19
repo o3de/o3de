@@ -19,6 +19,8 @@
 #include <AzCore/Math/MathMatrixSerializer.h>
 #include <AzCore/Math/MathVectorSerializer.h>
 
+#define ANY_JSON "{\n\t\"$type\": \"%s\",\n\t\"value\": %s\n}"
+
  // test the any serializer against several standard serializers, and then
  // compare results of deserialization of types against each other
  // then just do the erroneous input and empty any stuff
@@ -100,7 +102,10 @@ namespace JsonSerializationTests
 
         AZStd::shared_ptr<AZStd::any> CreateFullySetInstance() override
         {
-            return AZStd::make_shared<AZStd::any>();
+            T instanceT = *T::GetInstanceWithoutDefaults().m_instance.get();
+            AZStd::any anyT;
+            anyT = instanceT;
+            return AZStd::make_shared<AZStd::any>(anyT);
         }
 
         AZStd::shared_ptr<AZStd::any> CreatePartialDefaultInstance()
@@ -113,21 +118,17 @@ namespace JsonSerializationTests
 
         AZStd::string_view GetJsonForPartialDefaultInstance() override
         {
-            return m_jsonForPartialDefaultInstance;
+            return m_jsonForPartialDefaultInstanceKeptDefaults.begin();
         }
 
         AZStd::string_view GetJsonForFullySetInstance() override
         {
-            return m_jsonForFullyConfiguredIntance;
+            return m_jsonForFullyConfiguredIntance.begin();
         }
 
         void ConfigureFeatures(JsonSerializerConformityTestDescriptorFeatures& features) override
         {
-            features.EnableJsonType(rapidjson::kNullType);
-            features.EnableJsonType(rapidjson::kFalseType);
-            features.EnableJsonType(rapidjson::kTrueType);
-            features.EnableJsonType(rapidjson::kStringType);
-            features.EnableJsonType(rapidjson::kNumberType);
+            features.EnableJsonType(rapidjson::kObjectType);
         }
 
         bool AreEqual(const AZStd::any& lhs, const AZStd::any& rhs) override
@@ -145,21 +146,31 @@ namespace JsonSerializationTests
 
         void SetUp() override
         {
-            /*
-            "$type": "Vector3",
-            "value": [
-                333.0,
-                5.0,
-                8.0
-            ]
-            */
+            auto instanceWithoutDefaults = T::GetInstanceWithoutDefaults();
+            auto instanceWithSomeDefaults = T::GetInstanceWithSomeDefaults();
+
+            const char* typeName = T::RTTI_TypeName();
+            const char* withoutDefaultsJSON = instanceWithoutDefaults.m_json;
+            const char* withSomeDefaults = instanceWithSomeDefaults.m_jsonWithStrippedDefaults;
+            const char* withKeptDefaults = instanceWithSomeDefaults.m_jsonWithKeptDefaults;
+
+            azsnprintf(m_jsonForFullyConfiguredIntance.begin(), 2048, ANY_JSON, typeName, withoutDefaultsJSON);
+            azsnprintf(m_jsonForPartialDefaultInstanceStrippedDefaults.begin(), 2048, ANY_JSON, typeName, withSomeDefaults);
+            azsnprintf(m_jsonForPartialDefaultInstanceKeptDefaults.begin(), 2048, ANY_JSON, typeName, withKeptDefaults);
+        }
+
+        using JsonSerializerConformityTestDescriptor<AZStd::any>::Reflect;
+        void Reflect(AZStd::unique_ptr<AZ::SerializeContext>& context) override
+        {
+            T::Reflect(context, true);
         }
 
         void TearDown() override {}
 
     private:
-        AZStd::string m_jsonForPartialDefaultInstance;
-        AZStd::string m_jsonForFullyConfiguredIntance;
+        AZStd::fixed_string<2048> m_jsonForPartialDefaultInstanceKeptDefaults;
+        AZStd::fixed_string<2048> m_jsonForPartialDefaultInstanceStrippedDefaults;
+        AZStd::fixed_string<2048> m_jsonForFullyConfiguredIntance;
     };
 
     using AnyConformityTestTypes = ::testing::Types<AnySerializerTestDescription<SimpleClass>>;
