@@ -10,6 +10,7 @@
 
 #include <Atom/Feature/Material/MaterialAssignment.h>
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
+#include <AtomLyIntegration/CommonFeatures/Material/EditorMaterialSystemComponentNotificationBus.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/string/string.h>
@@ -25,6 +26,8 @@ namespace AZ
         //! applied to the entities and their materials using MaterialComponentRequestBus.
         //! Undo and redo for all of those entities will be managed by calls to OnDataChanged.
         struct EditorMaterialComponentSlot final
+            : public AZ::Data::AssetBus::Handler
+            , public EditorMaterialSystemComponentNotificationBus::Handler
         {
             AZ_RTTI(EditorMaterialComponentSlot, "{344066EB-7C3D-4E92-B53D-3C9EBD546488}");
             AZ_CLASS_ALLOCATOR(EditorMaterialComponentSlot, SystemAllocator, 0);
@@ -34,6 +37,7 @@ namespace AZ
 
             EditorMaterialComponentSlot() = default;
             EditorMaterialComponentSlot(const AZ::EntityId& entityId, const MaterialAssignmentId& materialAssignmentId);
+            ~EditorMaterialComponentSlot();
 
             //! Get cached preview image as a buffer to use as an RPE attribute
             //! If a cached image isn't avalible then a request will be made to render one
@@ -87,8 +91,18 @@ namespace AZ
 
         private:
             void OpenPopupMenu(const AZ::Data::AssetId& assetId, const AZ::Data::AssetType& assetType);
-            void OnMaterialChangedFromRPE() const;
-            void OnDataChanged(const AzToolsFramework::EntityIdSet& entityIdsToEdit, bool updateAsset) const;
+            void OnMaterialChangedFromRPE();
+            void OnDataChanged(const AzToolsFramework::EntityIdSet& entityIdsToEdit, bool updateAsset);
+
+            //! EditorMaterialSystemComponentNotificationBus::Handler overrides...
+            void OnRenderMaterialPreviewReady(
+                const AZ::EntityId& entityId, const AZ::Render::MaterialAssignmentId& materialAssignmentId, const QPixmap& pixmap) override;
+
+            //! AZ::Data::AssetBus::Handler overrides...
+            void OnAssetReloaded(Data::Asset<Data::AssetData> asset) override;
+
+            void UpdatePreview() const;
+
             mutable bool m_updatePreview = true;
         };
 

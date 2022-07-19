@@ -105,6 +105,7 @@ namespace Terrain
         // Make sure we get update notifications whenever this entity or any dependent gradient entity changes in any way.
         // We'll use that to notify the terrain system that the height information needs to be refreshed.
         m_dependencyMonitor.Reset();
+        m_dependencyMonitor.SetRegionChangedEntityNotificationFunction();
         m_dependencyMonitor.ConnectOwner(GetEntityId());
         m_dependencyMonitor.ConnectDependency(GetEntityId());
 
@@ -264,9 +265,12 @@ namespace Terrain
         }
     }
 
-
-
     void TerrainHeightGradientListComponent::OnCompositionChanged()
+    {
+        OnCompositionRegionChanged(AZ::Aabb::CreateNull());
+    }
+
+    void TerrainHeightGradientListComponent::OnCompositionRegionChanged(const AZ::Aabb& dirtyRegion)
     {
         // We query the shape and world bounds prior to locking the queryMutex to help reduce the chances of deadlocks between
         // threads due to the EBus call mutexes.
@@ -297,19 +301,29 @@ namespace Terrain
         // is running a query like TerrainSystem::GetHeights -> TerrainHeightGradientListComponent::GetHeights.
         // It's ok if a query is able to run in-between the cache change and the RefreshArea call, because the RefreshArea should cause
         // the querying system to refresh and achieve eventual consistency.
-        TerrainSystemServiceRequestBus::Broadcast(
-            &TerrainSystemServiceRequestBus::Events::RefreshArea, GetEntityId(),
-            AzFramework::Terrain::TerrainDataNotifications::HeightData);
+        if (dirtyRegion.IsValid())
+        {
+            TerrainSystemServiceRequestBus::Broadcast(
+                &TerrainSystemServiceRequestBus::Events::RefreshRegion,
+                dirtyRegion,
+                AzFramework::Terrain::TerrainDataNotifications::HeightData);
+        }
+        else
+        {
+            TerrainSystemServiceRequestBus::Broadcast(
+                &TerrainSystemServiceRequestBus::Events::RefreshArea,
+                GetEntityId(),
+                AzFramework::Terrain::TerrainDataNotifications::HeightData);
+        }
     }
 
-    void TerrainHeightGradientListComponent::OnTerrainDataChanged(
-        [[maybe_unused]] const AZ::Aabb& dirtyRegion, TerrainDataChangedMask dataChangedMask)
+    void TerrainHeightGradientListComponent::OnTerrainDataChanged(const AZ::Aabb& dirtyRegion, TerrainDataChangedMask dataChangedMask)
     {
         if (dataChangedMask & TerrainDataChangedMask::Settings)
         {
             // If the terrain system settings changed, it's possible that the world bounds have changed, which can affect our height data.
             // Refresh the min/max heights and notify that the height data for this area needs to be refreshed.
-            OnCompositionChanged();
+            OnCompositionRegionChanged(dirtyRegion);
         }
     }
 

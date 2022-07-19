@@ -35,6 +35,10 @@ namespace Terrain
         result.Combine(ContinueLoadingFromJsonObjectField(
             &configInstance->m_worldMax, azrtti_typeid<decltype(configInstance->m_worldMax)>(), inputValue, "WorldMax", context));
 
+        result.Combine(ContinueLoadingFromJsonObjectField(
+            &configInstance->m_surfaceDataQueryResolution, azrtti_typeid<decltype(configInstance->m_surfaceDataQueryResolution)>(),
+            inputValue, "SurfaceDataQueryResolution", context));
+
         rapidjson::Value::ConstMemberIterator itr = inputValue.FindMember("HeightQueryResolution");
         if (itr != inputValue.MemberEnd())
         {

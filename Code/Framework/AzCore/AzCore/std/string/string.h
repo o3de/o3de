@@ -30,7 +30,7 @@ namespace AZStd::StringInternal
     template<class Element, size_t ElementSize = sizeof(Element)>
     struct Padding
     {
-        AZ::u8 m_padding[ElementSize - 1];
+        AZ::u8 m_packed[ElementSize - 1];
     };
 
     template<class Element>
@@ -1716,8 +1716,8 @@ namespace AZStd
             {
                 // Make sure the short string buffer is null-terminated
                 m_buffer[0] = Element{};
-                m_size = 0;
-                m_ssoActive = true;
+                m_packed.m_size = 0;
+                m_packed.m_ssoActive = true;
             }
 
             // bit offset: 0, bits: 184
@@ -1731,7 +1731,7 @@ namespace AZStd
             // to have the StringInternal::Padding<Element> struct
             // take 0 bytes when the Element type is 1-byte type like `char`
             // When C++20 support is added, this can be changed to use [[no_unique_address]]
-            struct
+            struct PackedSize
                 : StringInternal::Padding<Element>
             {
 
@@ -1740,7 +1740,7 @@ namespace AZStd
 
                 // bit offset: 191, bits: 1
                 AZ::u8 m_ssoActive : 1;
-            };
+            } m_packed;
             // Total size 192 bits(24 bytes)
         };
 
@@ -1762,7 +1762,7 @@ namespace AZStd
 
             bool ShortStringOptimizationActive() const
             {
-                return m_shortData.m_ssoActive;
+                return m_shortData.m_packed.m_ssoActive;
             }
             const_pointer GetData() const
             {
@@ -1789,14 +1789,14 @@ namespace AZStd
             }
             size_type GetSize() const
             {
-                return ShortStringOptimizationActive() ? m_shortData.m_size
+                return ShortStringOptimizationActive() ? m_shortData.m_packed.m_size
                     : reinterpret_cast<const AllocatedStringData&>(m_shortData).m_size;
             }
             void SetSize(size_type size)
             {
                 if (ShortStringOptimizationActive())
                 {
-                    m_shortData.m_size = size;
+                    m_shortData.m_packed.m_size = size;
                 }
                 else
                 {
@@ -1812,11 +1812,11 @@ namespace AZStd
             {
                 if (capacity <= ShortStringData::Capacity)
                 {
-                    m_shortData.m_ssoActive = true;
+                    m_shortData.m_packed.m_ssoActive = true;
                 }
                 else
                 {
-                    m_shortData.m_ssoActive = false;
+                    m_shortData.m_packed.m_ssoActive = false;
                     reinterpret_cast<AllocatedStringData&>(m_shortData).m_capacity = capacity;
                 }
             }
