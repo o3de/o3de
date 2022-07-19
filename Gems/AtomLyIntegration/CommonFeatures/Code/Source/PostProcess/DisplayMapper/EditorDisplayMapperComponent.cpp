@@ -152,17 +152,9 @@ namespace AZ
 
                     editContext->Class<DisplayMapperComponentConfig>("ToneMapperComponentConfig", "")
                         ->ClassElement(Edit::ClassElements::EditorData, "")
-                        ->DataElement(Edit::UIHandlers::ComboBox,
-                            &DisplayMapperComponentConfig::m_displayMapperOperation,
-                            "Type",
-                            "Display Mapper Type.")
-                        ->EnumAttribute(DisplayMapperOperationType::Aces, "Aces")
-                        ->EnumAttribute(DisplayMapperOperationType::AcesLut, "AcesLut")
-                        ->EnumAttribute(DisplayMapperOperationType::Passthrough, "Passthrough")
-                        ->EnumAttribute(DisplayMapperOperationType::GammaSRGB, "GammaSRGB")
-                        ->EnumAttribute(DisplayMapperOperationType::Reinhard, "Reinhard")
-                        ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
-
+                        ->DataElement(AZ::Edit::UIHandlers::ComboBox, &DisplayMapperComponentConfig::m_displayMapperOperation, "Type", "Display Mapper Type.")
+                            ->Attribute(AZ::Edit::Attributes::EnumValues, AZ::Edit::GetEnumConstantsFromTraits<DisplayMapperOperationType>())
+                            ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
                         ->DataElement(Edit::UIHandlers::CheckBox,
                             &DisplayMapperComponentConfig::m_ldrColorGradingLutEnabled,
                             "Enable LDR color grading LUT",

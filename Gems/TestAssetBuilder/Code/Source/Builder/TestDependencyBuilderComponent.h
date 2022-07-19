@@ -29,7 +29,7 @@ namespace TestAssetBuilder
         TestAsset() = default;
         virtual ~TestAsset() = default;
 
-        AZ::Data::Asset<TestAsset> m_referencedAsset;
+        AZStd::vector<AZ::Data::Asset<TestAsset>> m_referencedAssets;
     };
 
     //! This builder is intended for automated tests which need an asset that can reference other assets.

@@ -50,8 +50,9 @@ namespace AssetProcessor
         void AssetDataSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected);
     protected:
 
-        void PopulateOutgoingProductDependencies(ProductDependencyTreeItem* parent, AZ::s64 parentProductId);
-        void PopulateIncomingProductDependencies(ProductDependencyTreeItem* parent, AZ::s64 parentProductId);
+        // visitedDependencies is intentionally a copy because we need to independently track the chain for each branch in the graph
+        void PopulateOutgoingProductDependencies(ProductDependencyTreeItem* parent, AZ::s64 parentProductId, QSet<AZ::s64> visitedDependencies);
+        void PopulateIncomingProductDependencies(ProductDependencyTreeItem* parent, AZ::s64 parentProductId, QSet<AZ::s64> visitedDependencies);
 
         AZStd::shared_ptr<AzToolsFramework::AssetDatabase::AssetDatabaseConnection> m_sharedDbConnection;
         
