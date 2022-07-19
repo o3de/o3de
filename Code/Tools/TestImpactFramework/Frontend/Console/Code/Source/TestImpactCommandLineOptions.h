@@ -40,6 +40,9 @@ namespace TestImpact
         //! Returns true if a test impact data file path has been supplied, otherwise false.
         bool HasDataFilePath() const;
 
+        //! Returns true if we have tests to exclude that have been loaded from the exclude file, otherwise false.
+        bool HasExcludeTests() const;
+
         //! Returns true if a change list file path has been supplied, otherwise false.
         bool HasChangeListFilePath() const;
 
@@ -60,6 +63,9 @@ namespace TestImpact
 
         //! Returns the path to the sequence report file (if any).
         const AZStd::optional<RepoPath>& GetSequenceReportFilePath() const;
+
+        //! Returns the tests to exclude from this run of TIAF (if any).
+        const AZStd::vector<AZStd::string>& GetExcludeTests() const;
 
         //! Returns the test sequence type to run.
         TestSequenceType GetTestSequenceType() const;
@@ -102,6 +108,7 @@ namespace TestImpact
         AZStd::optional<RepoPath> m_dataFile;
         AZStd::optional<RepoPath> m_changeListFile;
         AZStd::optional<RepoPath> m_sequenceReportFile;
+        AZStd::vector<AZStd::string> m_excludeTests;
         TestSequenceType m_testSequenceType;
         Policy::TestPrioritization m_testPrioritizationPolicy = Policy::TestPrioritization::None;
         Policy::ExecutionFailure m_executionFailurePolicy = Policy::ExecutionFailure::Continue;
