@@ -426,7 +426,6 @@ AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
     int  navigationDebugAgentType;
 
     int backgroundUpdatePeriod;
-    int backgroundSystemTickFPS;
     const char* g_TemporaryLevelName;
 
     SSliceSettings sliceSettings;

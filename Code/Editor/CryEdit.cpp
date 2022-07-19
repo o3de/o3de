@@ -2307,15 +2307,20 @@ int CCryEditApp::IdleProcessing(bool bBackgroundUpdate)
         }
 
         // If we're backgrounded and not fully background updating, idle to rate limit SystemTick
-        const float safeMarginFPS = 0.5f; // safe margin to not drop below idle fps
-        const int maxEditorFPS = gEnv->pConsole->GetCVar("ed_backgroundSystemTickFPS")->GetIVal();
         static AZ::TimeMs sTimeLastMs = AZ::GetRealElapsedTimeMs();
-        const AZ::TimeMs maxFrameTimeMs(static_cast<AZ::TimeMs>((int64)(1000.f / ((float)maxEditorFPS + safeMarginFPS))));
-        const AZ::TimeMs maxElapsedTimeMs = maxFrameTimeMs + sTimeLastMs;
-        const AZ::TimeMs realElapsedTimeMs = AZ::GetRealElapsedTimeMs();
-        if (maxElapsedTimeMs > realElapsedTimeMs)
+
+        const auto console = AZ::Interface<AZ::IConsole>::Get();
+        AZ::TimeMs maxFrameTimeMs = AZ::TimeMs{ 1 };
+        console->GetCvarValue("ed_backgroundSystemTickCap", maxFrameTimeMs);
+
+        if (maxFrameTimeMs > AZ::TimeMs{ 0 })
         {
-            CrySleep(static_cast<uint64_t>(maxElapsedTimeMs - realElapsedTimeMs));
+            const AZ::TimeMs maxElapsedTimeMs = maxFrameTimeMs + sTimeLastMs;
+            const AZ::TimeMs realElapsedTimeMs = AZ::GetRealElapsedTimeMs();
+            if (maxElapsedTimeMs > realElapsedTimeMs)
+            {
+                CrySleep(static_cast<unsigned int>(maxElapsedTimeMs - realElapsedTimeMs));
+            }
         }
         sTimeLastMs = AZ::GetRealElapsedTimeMs();
     }
