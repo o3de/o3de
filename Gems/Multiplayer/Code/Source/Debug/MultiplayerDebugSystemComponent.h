@@ -35,7 +35,7 @@ namespace Multiplayer
 #endif
     {
     public:
-        static constexpr char HOST_BUTTON_TITLE[] = "Host";
+        static constexpr char HOST_LEVEL_MENU_TITLE[] = "Host Level";
         static constexpr char LAUNCH_LOCAL_CLIENT_BUTTON_TITLE[] = "Launch Local Client";
 
         AZ_COMPONENT(MultiplayerDebugSystemComponent, "{060BF3F1-0BFE-4FCE-9C3C-EE991F0DA581}");

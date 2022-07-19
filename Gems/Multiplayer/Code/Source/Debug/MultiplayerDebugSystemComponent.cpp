@@ -8,12 +8,14 @@
 
 #include <Source/Debug/MultiplayerDebugSystemComponent.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
-#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Interface/Interface.h>
+#include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/StringFunc/StringFunc.h>
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
 #include <AzNetworking/Framework/INetworking.h>
 #include <AzNetworking/Framework/INetworkInterface.h>
 #include <Multiplayer/IMultiplayer.h>
+#include <Multiplayer/MultiplayerConstants.h>
 #include <Atom/Feature/ImGui/SystemBus.h>
 #include <ImGuiContextScope.h>
 #include <ImGui/ImGuiPass.h>
@@ -132,9 +134,47 @@ namespace Multiplayer
                     const MultiplayerAgentType multiplayerAgentType = multiplayerInterface->GetAgentType();
                     if (multiplayerAgentType == MultiplayerAgentType::Uninitialized)
                     {
-                        if (ImGui::Button(HOST_BUTTON_TITLE))
+                        if (ImGui::BeginMenu(HOST_LEVEL_MENU_TITLE))
                         {
-                            console->PerformCommand("host");
+                            // Run through all the assets in the asset catalog and gather up the list of level assets
+                            AZ::Data::AssetType levelAssetType = azrtti_typeid<AzFramework::Spawnable>();
+                            AZStd::set<AZStd::string> networkedLevelNames;
+                            auto enumerateCB =
+                                [levelAssetType, &networkedLevelNames]([[maybe_unused]] const AZ::Data::AssetId id, const AZ::Data::AssetInfo& assetInfo)
+                            {
+                                if (assetInfo.m_assetType == levelAssetType)
+                                {
+                                    // A network spawnable is serialized to file as a ".network.spawnable". (See Multiplayer Gem's MultiplayerConstants.h)
+                                    // Grab only network spawnables from the level list
+                                    if (assetInfo.m_relativePath.ends_with(Multiplayer::NetworkSpawnableFileExtension))
+                                    {   
+                                        AZStd::string spawnablePath(assetInfo.m_relativePath); 
+                                        AZ::StringFunc::Replace(spawnablePath, Multiplayer::NetworkFileExtension.data(), "");
+                                        networkedLevelNames.emplace(spawnablePath);
+                                    }
+
+                                }
+                            };
+
+                            AZ::Data::AssetCatalogRequestBus::Broadcast(
+                                &AZ::Data::AssetCatalogRequestBus::Events::EnumerateAssets, nullptr, enumerateCB, nullptr);
+
+                            int networkLevelIndex = 0;
+                            for (const auto& networkLevelName : networkedLevelNames)
+                            {
+                                AZStd::fixed_string<256> levelMenuItem = AZStd::fixed_string<256>::format("%d- %s", networkLevelIndex, networkLevelName.c_str());
+                                if (ImGui::MenuItem(levelMenuItem.c_str()))
+                                {
+                                    AZ::TickBus::QueueFunction(
+                                        [console, networkLevelName]()
+                                        {
+                                            auto loadLevelString = AZStd::fixed_string<256>::format("LoadLevel %s", networkLevelName.c_str());
+                                            console->PerformCommand(loadLevelString.c_str());
+                                            console->PerformCommand("host");
+                                        });
+                                }
+                                ++networkLevelIndex;
+                            }
                         }
                     }
                     else if (multiplayerAgentType == MultiplayerAgentType::DedicatedServer ||
