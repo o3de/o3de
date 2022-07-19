@@ -365,10 +365,9 @@ namespace AzToolsFramework
 
         // Default handler
 
-        //A temporary conversion buffer in case the src and dst data types are different.
+        // A temporary conversion buffer in case the src and dst data types are different.
         AZStd::any convertedValue;
 
-        
         // Check if types match, or convert the value if its type supports it.
         const void* valuePtr = HandleTypeConversion(value.type(), pteNode.m_nodePtr->GetClassMetadata()->m_typeId, AZStd::any_cast<void>(&value), convertedValue);
         if (valuePtr)
@@ -601,7 +600,7 @@ namespace AzToolsFramework
                 if (keyAddress && valueAddress)
                 {
                     m_serializeContext->CloneObjectInplace(keyAddress, AZStd::any_cast<void>(&key), key.type());
-                    m_serializeContext->CloneObjectInplace(valueAddress, AZStd::any_cast<void>(&value), value.type());
+                    m_serializeContext->CloneObjectInplace(valueAddress, AZStd::any_cast<void>(&value), data.value().m_valueElement->m_typeId);
                     data.value().m_dataContainer->StoreElement(nodePtr->FirstInstance(), newEntry);
                     return { PropertyAccessOutcome::ValueType(true) };
                 }
@@ -617,7 +616,7 @@ namespace AzToolsFramework
             if (destination)
             {
                 const void* source = AZStd::any_cast<void>(&value);
-                m_serializeContext->CloneObjectInplace(destination, source, value.type());
+                m_serializeContext->CloneObjectInplace(destination, source, data.value().m_valueElement->m_typeId);
                 return { PropertyAccessOutcome::ValueType(true) };
             }
             else
@@ -691,7 +690,7 @@ namespace AzToolsFramework
             if (destination)
             {
                 const void* source = AZStd::any_cast<void>(&value);
-                m_serializeContext->CloneObjectInplace(destination, source, value.type());
+                m_serializeContext->CloneObjectInplace(destination, source, data.value().m_valueElement->m_typeId);
                 return { PropertyAccessOutcome::ValueType(true) };
             }
         }
@@ -708,7 +707,7 @@ namespace AzToolsFramework
             {
                 void* destination = keyPairInfo.value().m_pairClass->m_container->GetElementByIndex(keyPairValue, keyPairInfo.value().m_valueElement, 1);
                 const void* source = AZStd::any_cast<void>(&value);
-                m_serializeContext->CloneObjectInplace(destination, source, value.type());
+                m_serializeContext->CloneObjectInplace(destination, source, data.value().m_valueElement->m_typeId);
                 return { PropertyAccessOutcome::ValueType(true) };
             }
         }
