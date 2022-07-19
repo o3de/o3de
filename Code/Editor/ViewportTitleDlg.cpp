@@ -205,7 +205,6 @@ void CViewportTitleDlg::SetupEditModeMenu()
     m_ui->m_editModeMenu->setPopupMode(QToolButton::InstantPopup);
 }
 
-
 void CViewportTitleDlg::SetupViewportInformationMenu()
 {
     // Setup the debug information button
