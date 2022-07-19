@@ -122,7 +122,9 @@ namespace GradientSignal
         // Generate a set of input positions that are inside the bounds along with
         // their corresponding x,y indices
         AZStd::vector<AZ::Vector3> inputPositions;
+        inputPositions.reserve(imageResolutionX * imageResolutionY);
         AZStd::vector<AZStd::pair<int, int>> indices;
+        indices.reserve(imageResolutionX * imageResolutionY);
         for (int y = 0; !m_shouldCancel && (y < imageResolutionY); ++y)
         {
             for (int x = 0; x < imageResolutionX; ++x)
