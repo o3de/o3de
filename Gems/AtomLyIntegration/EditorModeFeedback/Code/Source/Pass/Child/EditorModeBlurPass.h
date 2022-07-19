@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <Pass/EditorModeFeedbackPassBase.h>
+#include <Pass/Child/EditorModeFeedbackChildPassBase.h>
 
 namespace AZ
 {
@@ -16,10 +16,10 @@ namespace AZ
     {
         //! Pass for editor mode feedback blur effect.
         class EditorModeBlurPass
-            : public EditorModeFeedbackPassBase
+            : public EditorModeFeedbackChildPassBase
         {
         public:
-            AZ_RTTI(EditorModeBlurPass, "{D907D0ED-61E4-4E46-A682-A849676CF48A}", EditorModeFeedbackPassBase);
+            AZ_RTTI(EditorModeBlurPass, "{D907D0ED-61E4-4E46-A682-A849676CF48A}", EditorModeFeedbackChildPassBase);
             AZ_CLASS_ALLOCATOR(EditorModeBlurPass, SystemAllocator, 0);
 
             virtual ~EditorModeBlurPass() = default;
