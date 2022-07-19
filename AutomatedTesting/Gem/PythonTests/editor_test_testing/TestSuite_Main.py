@@ -109,7 +109,7 @@ class TestEditorTest:
     def test_single_crash_test(self, request, workspace, launcher_platform, testdir):
         (extracted_result, result) = TestEditorTest._run_single_test(testdir, workspace, "EditorTest_That_Crashes")
         result.assert_outcomes(failed=1)
-        assert isinstance(extracted_result, Result.Unknown)
+        assert isinstance(extracted_result, Result.Fail)
     
     @classmethod
     def _run_shared_test(cls, testdir, workspace, module_class_code, extra_cmd_line=None):
