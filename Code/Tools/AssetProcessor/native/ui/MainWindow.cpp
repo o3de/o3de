@@ -567,6 +567,7 @@ void MainWindow::BuilderTabSelectionChanged(const QItemSelection& selected, cons
         const auto builder = builders[index.row()];
         m_builderInfoPatterns->Reset(builder);
         m_builderInfoMetrics->OnBuilderSelectionChanged(builder);
+        ui->builderInfoMetricsTreeView->expandToDepth(0);
         ui->builderInfoHeaderValueName->setText(builder.m_name.c_str());
         ui->builderInfoHeaderValueType->setText(
             builder.m_builderType == AssetBuilderSDK::AssetBuilderDesc::AssetBuilderType::Internal ? "Internal" : "External");

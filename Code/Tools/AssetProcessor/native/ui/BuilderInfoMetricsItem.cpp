@@ -22,14 +22,14 @@ namespace AssetProcessor
         , m_totalDuration(totalDuration)
         , m_parent(parent)
     {
-        if (itemType == ItemType::Root)
+        if (itemType == ItemType::Builder)
         {
             for (int i = 0; i < aznumeric_cast<int>(JobType::Max); ++i)
             {
-                int n = sizeof(jobTypeDisplayNames) / sizeof(jobTypeDisplayNames[0]);
+                int numJobType = sizeof(jobTypeDisplayNames) / sizeof(jobTypeDisplayNames[0]);
                 const AZStd::string& jobTypeDisplayName =
-                    i < n ? jobTypeDisplayNames[i] : invalidJobTypeDisplayName;
-                if (i >= n)
+                    i < numJobType ? jobTypeDisplayNames[i] : invalidJobTypeDisplayName;
+                if (i >= numJobType)
                 {
                     AZ_Warning("Asset Processor", false, "Invalid job type name. Job type indexed %d in scoped enum JobType does not have a matching display name in jobTypeDisplayNames. Update jobTypeDisplayNames vector in BuilderInfoMetricsItem.cpp.");
                 }
@@ -78,8 +78,8 @@ namespace AssetProcessor
     bool BuilderInfoMetricsItem::UpdateOrInsertEntry(
         JobType entryjobType, const AZStd::string& entryName, AZ::s64 entryJobCount, AZ::s64 entryTotalDuration)
     {
-        //! only allowed to insert from root, with a valid JobType
-        if (m_itemType != ItemType::Root || entryjobType >= JobType::Max)
+        //! only allowed to insert from builder, with a valid JobType
+        if (m_itemType != ItemType::Builder || entryjobType >= JobType::Max)
         {
             return false;
         }
@@ -128,5 +128,16 @@ namespace AssetProcessor
             }
         }
         return 0;
+    }
+    bool BuilderInfoMetricsItem::SetChild(AZStd::shared_ptr<BuilderInfoMetricsItem> builder)
+    {
+        if (m_itemType != ItemType::InvisibleRoot)
+        {
+            return false;
+        }
+
+        m_children.resize(1);
+        m_children[0] = builder;
+        return true;
     }
 }

@@ -67,7 +67,7 @@ namespace AssetProcessor
 
         if (!parent.isValid())
         {
-            parentItem = GetCurrentModelRoot();
+            parentItem = m_root.get();
         }
         else
         {
@@ -96,7 +96,7 @@ namespace AssetProcessor
         BuilderInfoMetricsItem* parentItem = nullptr;
         if (!parent.isValid())
         {
-            parentItem = GetCurrentModelRoot();
+            parentItem = m_root.get();
         }
         else
         {
@@ -200,7 +200,7 @@ namespace AssetProcessor
 
         auto currentItem = static_cast<BuilderInfoMetricsItem*>(index.internalPointer());
         auto parentItem = currentItem->GetParent();
-        auto rootItem = GetCurrentModelRoot();
+        auto rootItem = m_root.get();
             
         if (parentItem == rootItem || parentItem == nullptr)
         {
@@ -220,7 +220,9 @@ namespace AssetProcessor
         BuilderInfoList builders;
         AssetBuilderInfoBus::Broadcast(&AssetBuilderInfoBus::Events::GetAllBuildersInfo, builders);
 
-        m_allBuildersMetrics.reset(new BuilderInfoMetricsItem(BuilderInfoMetricsItem::ItemType::Root, "All builders", 0, 0, nullptr));
+        m_root.reset(new BuilderInfoMetricsItem(BuilderInfoMetricsItem::ItemType::InvisibleRoot, "", 0, 0, nullptr));
+        
+        m_allBuildersMetrics.reset(new BuilderInfoMetricsItem(BuilderInfoMetricsItem::ItemType::Builder, "All builders", 0, 0, m_root));
         m_singleBuilderMetrics.clear();
         m_builderGuidToIndex.clear();
         m_builderNameToIndex.clear();
@@ -229,7 +231,7 @@ namespace AssetProcessor
         for (int i = 0; i < builders.size(); ++i)
         {
             m_singleBuilderMetrics.emplace_back(
-                new BuilderInfoMetricsItem(BuilderInfoMetricsItem::ItemType::Root, builders[i].m_name, 0, 0, nullptr));
+                new BuilderInfoMetricsItem(BuilderInfoMetricsItem::ItemType::Builder, builders[i].m_name, 0, 0, m_root));
             m_builderGuidToIndex[builders[i].m_busId] = i;
             m_builderNameToIndex[builders[i].m_name] = i;
         }
@@ -267,7 +269,7 @@ namespace AssetProcessor
             {
                 AZStd::vector<AZStd::string> tokens;
                 AZ::StringFunc::Tokenize(stat.m_statName, tokens, ',');
-                if (tokens.size() == 5) // ProcessJob,filePath,jobKey,platform,builderGuid
+                if (tokens.size() == 5) // ProcessJob,sourceName,jobKey,platform,builderGuid
                 {
                     // const auto& sourceName = tokens[1];
                     // const auto& jobKey = tokens[2];
@@ -294,9 +296,12 @@ namespace AssetProcessor
     }
     void BuilderInfoMetricsModel::OnBuilderSelectionChanged(const AssetBuilderSDK::AssetBuilderDesc& builder)
     {
+        // TODO: need to handle the "all builders" case
+
         if (m_builderGuidToIndex.contains(builder.m_busId))
         {
             m_currentSelectedBuilderIndex = m_builderGuidToIndex[builder.m_busId];
+            m_root->SetChild(m_singleBuilderMetrics[m_currentSelectedBuilderIndex]);
         }
         else
         {
@@ -311,17 +316,5 @@ namespace AssetProcessor
         
         beginResetModel();
         endResetModel();
-    }
-    BuilderInfoMetricsItem* BuilderInfoMetricsModel::GetCurrentModelRoot() const
-    {
-        if (m_currentSelectedBuilderIndex < -1 || m_currentSelectedBuilderIndex >= m_singleBuilderMetrics.size())
-        {
-            return nullptr; // cannot find the builder in this model
-        }
-        if (m_currentSelectedBuilderIndex == -1)
-        {
-            return m_allBuildersMetrics.get();
-        }
-        return m_singleBuilderMetrics[m_currentSelectedBuilderIndex].get();
     }
 }

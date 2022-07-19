@@ -22,8 +22,10 @@ namespace AssetBuilderSDK
 namespace AssetProcessor
 {
     class BuilderInfoMetricsItem;
+    class JobEntry;
 
-    class BuilderInfoMetricsModel : public QAbstractItemModel
+    class BuilderInfoMetricsModel
+        : public QAbstractItemModel
     {
     public:
         enum class Column
@@ -44,7 +46,7 @@ namespace AssetProcessor
             AZStd::shared_ptr<AzToolsFramework::AssetDatabase::AssetDatabaseConnection> dbConnection, QObject* parent = nullptr);
 
         // QAbstractItemModel
-        QModelIndex index(int row, int column, const QModelIndex& parent) const override;
+        QModelIndex index(int row, int column, const QModelIndex& parent = QModelIndex()) const override;
 
         int rowCount(const QModelIndex& parent = QModelIndex()) const override;
         int columnCount(const QModelIndex& parent = QModelIndex()) const override;
@@ -54,15 +56,14 @@ namespace AssetProcessor
 
         void Reset();
         void OnBuilderSelectionChanged(const AssetBuilderSDK::AssetBuilderDesc& builder);
-    /*public Q_SLOTS:
-        void OnReplaceStat(AZStd::string key, AZ::s64 value);*/
 
     private:
-        BuilderInfoMetricsItem* GetCurrentModelRoot() const;
+        // BuilderInfoMetricsItem* GetCurrentBuilderRootItem() const;
 
         AZStd::shared_ptr<AzToolsFramework::AssetDatabase::AssetDatabaseConnection> m_dbConnection;
-        AZStd::unique_ptr<BuilderInfoMetricsItem> m_allBuildersMetrics;
-        AZStd::vector<AZStd::unique_ptr<BuilderInfoMetricsItem>> m_singleBuilderMetrics;
+        AZStd::shared_ptr<BuilderInfoMetricsItem> m_root;
+        AZStd::shared_ptr<BuilderInfoMetricsItem> m_allBuildersMetrics;
+        AZStd::vector<AZStd::shared_ptr<BuilderInfoMetricsItem>> m_singleBuilderMetrics;
         AZStd::unordered_map<AZStd::string, int> m_builderNameToIndex;
         AZStd::unordered_map<AZ::Uuid, int> m_builderGuidToIndex;
 
