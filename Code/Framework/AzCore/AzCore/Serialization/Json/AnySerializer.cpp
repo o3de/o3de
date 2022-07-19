@@ -21,25 +21,29 @@ namespace AZ
         , JsonDeserializerContext& context)
     {
         namespace JSR = JsonSerializationResult; // Used to remove name conflicts in AzCore in uber builds.
-
         AZ_Assert(outputValueTypeId == azrtti_typeid<AZStd::any>(), "JsonAnySerializer::Load against value typeID that was not AZStd::any");
-
-        JsonSerializationResult::ResultCode result(JSR::Tasks::ReadField);
 
         AZ::Uuid anyTypeId = AZ::Uuid::CreateNull();
         auto typeIdMember = inputValue.FindMember(JsonSerialization::TypeIdFieldIdentifier);
         if (typeIdMember == inputValue.MemberEnd())
         {
             return context.Report
-                ( JSR::Tasks::ReadField
-                , JSR::Outcomes::Missing
-                , AZStd::string::format("JsonAnySerializer::Load failed to find the %s member"
-                    , JsonSerialization::TypeIdFieldIdentifier));
+                (JSR::Tasks::ReadField
+                , JSR::Outcomes::Success
+                , "JsonAnySerializer::Load created a default, empty AZStd::any");
         }
 
+        JsonSerializationResult::ResultCode result(JSR::Tasks::ReadField);
         result.Combine(LoadTypeId(anyTypeId, typeIdMember->value, context));
 
-        if (!anyTypeId.IsNull())
+        if (anyTypeId.IsNull())
+        {
+            return context.Report
+                (JSR::Tasks::ReadField
+                , JSR::Outcomes::DefaultsUsed
+                , "JsonAnySerializer::Load created a default, empty AZStd::any");
+        }
+        else
         {
             auto outputAnyPtr = reinterpret_cast<AZStd::any*>(outputValue);
             *outputAnyPtr = context.GetSerializeContext()->CreateAny(anyTypeId);
@@ -71,35 +75,38 @@ namespace AZ
         , JsonSerializerContext& context)
     {
         namespace JSR = JsonSerializationResult; // Used to remove name conflicts in AzCore in uber builds.
-        
         AZ_Assert(valueTypeId == azrtti_typeid<AZStd::any>(), "JsonAnySerializer::Store against value typeID that was not AZStd::any");
 
         JSR::ResultCode result(JSR::Tasks::WriteValue);
         outputValue.SetObject();
+
         auto inputAnyPtr = reinterpret_cast<const AZStd::any*>(inputValue);
         const auto anyTypeId = inputAnyPtr->type();
 
-        rapidjson::Value typeValue;
-        result.Combine(StoreTypeId(typeValue, anyTypeId, context));
-        outputValue.AddMember
-            ( rapidjson::StringRef(JsonSerialization::TypeIdFieldIdentifier)
-            , AZStd::move(typeValue)
-            , context.GetJsonAllocator());
-
-        if (!anyTypeId.IsNull() && AZStd::any_cast<void>(inputAnyPtr) != nullptr)
+        if (!anyTypeId.IsNull())
         {
-            auto defaultAnyPtr = reinterpret_cast<const AZStd::any*>(defaultValue);
-            const void* defaultValueSource = defaultAnyPtr && defaultAnyPtr->type() == anyTypeId
-                ? AZStd::any_cast<void>(defaultAnyPtr) : nullptr;
+            rapidjson::Value typeValue;
+            result.Combine(StoreTypeId(typeValue, anyTypeId, context));
+            outputValue.AddMember
+                ( rapidjson::StringRef(JsonSerialization::TypeIdFieldIdentifier)
+                , AZStd::move(typeValue)
+                , context.GetJsonAllocator());
 
-            result.Combine(ContinueStoringToJsonObjectField
-                ( outputValue
-                , "value"
-                , AZStd::any_cast<void>(inputAnyPtr)
-                , defaultValueSource
-                , anyTypeId
-                , context));
-        }
+            if (AZStd::any_cast<void>(inputAnyPtr) != nullptr)
+            {
+                auto defaultAnyPtr = reinterpret_cast<const AZStd::any*>(defaultValue);
+                const void* defaultValueSource = defaultAnyPtr && defaultAnyPtr->type() == anyTypeId
+                    ? AZStd::any_cast<void>(defaultAnyPtr) : nullptr;
+
+                result.Combine(ContinueStoringToJsonObjectField
+                    ( outputValue
+                    , "value"
+                    , AZStd::any_cast<void>(inputAnyPtr)
+                    , defaultValueSource
+                    , anyTypeId
+                    , context));
+            }
+        }      
 
         return context.Report(result, result.GetProcessing() != JSR::Processing::Halted
             ? "JsonAnySerializer::Store finished storing AZStd::any"

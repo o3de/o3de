@@ -80,32 +80,8 @@ namespace JsonSerializationTests
         CompareStoredAgainstLoaded(AZ::Vector3(9.0f, -9.0f, -81.0f));
     }
 
-    TEST_F(AnyFixture, Any2JSON_StoreAndLoad_String)
-    {
-        CompareStoredAgainstLoaded(AZStd::string(
-            "This is a string larger than the small object optimizations in AZStd::any or AZStd::string"
-            "This is a string larger than the small object optimizations in AZStd::any or AZStd::string"
-            "This is a string larger than the small object optimizations in AZStd::any or AZStd::string"
-            "This is a string larger than the small object optimizations in AZStd::any or AZStd::string"
-            "This is a string larger than the small object optimizations in AZStd::any or AZStd::string"
-            "This is a string larger than the small object optimizations in AZStd::any or AZStd::string"
-            "This is a string larger than the small object optimizations in AZStd::any or AZStd::string"
-            "This is a string larger than the small object optimizations in AZStd::any or AZStd::string"
-            "This is a string larger than the small object optimizations in AZStd::any or AZStd::string"
-            "This is a string larger than the small object optimizations in AZStd::any or AZStd::string"
-            "This is a string larger than the small object optimizations in AZStd::any or AZStd::string"
-            "This is a string larger than the small object optimizations in AZStd::any or AZStd::string"
-            "This is a string larger than the small object optimizations in AZStd::any or AZStd::string"
-            "This is a string larger than the small object optimizations in AZStd::any or AZStd::string"
-            "This is a string larger than the small object optimizations in AZStd::any or AZStd::string"
-            "This is a string larger than the small object optimizations in AZStd::any or AZStd::string"
-            "This is a string larger than the small object optimizations in AZStd::any or AZStd::string"
-        ));
-        CompareStoredAgainstLoaded(AZStd::string("tiny string"));
-    }
-
-
     // write this against the TestCases_Classes thing but store everything in an any
+    template<typename T>
     class AnySerializerTestDescription final
         : public JsonSerializerConformityTestDescriptor<AZStd::any>
     {
@@ -124,34 +100,25 @@ namespace JsonSerializationTests
 
         AZStd::shared_ptr<AZStd::any> CreateFullySetInstance() override
         {
-            AZStd::any asV3;
-            asV3 = AZ::Vector3(7.0f, 7.0f, 7.0f);
-            return AZStd::make_shared<AZStd::any>(asV3);
+            return AZStd::make_shared<AZStd::any>();
+        }
+
+        AZStd::shared_ptr<AZStd::any> CreatePartialDefaultInstance()
+        {
+            T instanceT = *T::GetInstanceWithSomeDefaults().m_instance.get();
+            AZStd::any anyT;
+            anyT = instanceT;
+            return AZStd::make_shared<AZStd::any>(anyT);
         }
 
         AZStd::string_view GetJsonForPartialDefaultInstance() override
         {
-            return R"(
-                {
-                    "assetId" :
-                    {
-                        "guid": "{BBEAC89F-8BAD-4A9D-BF6E-D0DF84A8DFD6}"
-                    }
-                })";
+            return m_jsonForPartialDefaultInstance;
         }
 
         AZStd::string_view GetJsonForFullySetInstance() override
         {
-            return R"(
-                {
-                    "assetId" :
-                    {
-                        "guid": "{BBEAC89F-8BAD-4A9D-BF6E-D0DF84A8DFD6}",
-                        "subId": 1
-                    },
-                    "loadBehavior": "PreLoad",
-                    "assetHint": "TestFile"
-                })";
+            return m_jsonForFullyConfiguredIntance;
         }
 
         void ConfigureFeatures(JsonSerializerConformityTestDescriptorFeatures& features) override
@@ -159,19 +126,16 @@ namespace JsonSerializationTests
             features.EnableJsonType(rapidjson::kNullType);
             features.EnableJsonType(rapidjson::kFalseType);
             features.EnableJsonType(rapidjson::kTrueType);
-            features.EnableJsonType(rapidjson::kObjectType);
-            features.EnableJsonType(rapidjson::kArrayType);
             features.EnableJsonType(rapidjson::kStringType);
             features.EnableJsonType(rapidjson::kNumberType);
-            features.m_enableInitializationTest = false;
         }
 
         bool AreEqual(const AZStd::any& lhs, const AZStd::any& rhs) override
         {
-            if (lhs.type() == azrtti_typeid<AZ::Vector3>() && lhs.type() == rhs.type())
+            if (lhs.type() == azrtti_typeid<T>() && lhs.type() == rhs.type())
             {
-                auto lhsValue = AZStd::any_cast<const AZ::Vector3>(&lhs);
-                auto rhsValue = AZStd::any_cast<const AZ::Vector3>(&rhs);
+                auto lhsValue = AZStd::any_cast<const T>(&lhs);
+                auto rhsValue = AZStd::any_cast<const T>(&rhs);
                 return lhsValue && rhsValue && (*lhsValue == *rhsValue);
             }
 
@@ -179,9 +143,25 @@ namespace JsonSerializationTests
                 && lhs.type() == rhs.type();
         }
 
+        void SetUp() override
+        {
+            /*
+            "$type": "Vector3",
+            "value": [
+                333.0,
+                5.0,
+                8.0
+            ]
+            */
+        }
+
+        void TearDown() override {}
+
     private:
+        AZStd::string m_jsonForPartialDefaultInstance;
+        AZStd::string m_jsonForFullyConfiguredIntance;
     };
 
-    using AnyConformityTestTypes = ::testing::Types<AnySerializerTestDescription>;
+    using AnyConformityTestTypes = ::testing::Types<AnySerializerTestDescription<SimpleClass>>;
     INSTANTIATE_TYPED_TEST_CASE_P(Any, JsonSerializerConformityTests, AnyConformityTestTypes);
 }
