@@ -27,6 +27,7 @@ namespace ScriptCanvas
         AddVisibility,
         MergeScriptFunctions,
         CorrectDynamicDataTypeForExecution,
+        AddCanHaveInputField,
         // Add your version above
         Current
     };
@@ -209,6 +210,7 @@ namespace ScriptCanvas
                 ->Field("IsReference", &Slot::m_isVariableReference)
                 ->Field("VariableReference", &Slot::m_variableReference)
                 ->Field("IsUserAdded", &Slot::m_isUserAdded)
+                ->Field("CanHaveInputField", &Slot::m_canHaveInputField)
                 ;
         }
 
