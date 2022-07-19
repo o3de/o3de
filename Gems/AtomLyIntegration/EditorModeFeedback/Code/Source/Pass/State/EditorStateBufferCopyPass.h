@@ -7,14 +7,11 @@
  */
 #pragma once
 
-#include <Atom/RPI.Public/Pass/ParentPass.h>
-
-
-
 #include <Pass/State/EditorStateParentPass.h>
 #include <Pass/State/EditorStateParentPassData.h>
 
 #include <Atom/RPI.Public/Pass/FullscreenTrianglePass.h>
+#include <Atom/RPI.Public/Pass/ParentPass.h>
 #include <Atom/RPI.Public/Pass/PassUtils.h>
 
 namespace AZ::Render

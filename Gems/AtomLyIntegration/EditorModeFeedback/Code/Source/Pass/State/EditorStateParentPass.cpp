@@ -32,7 +32,7 @@ namespace AZ::Render
         if (passData == nullptr)
         {
                 AZ_Error(
-                    "PassSystem", false, "[EditorStateParentPassData '%s']: Trying to construct without valid EditorStateParentPassData!", GetPathName().GetCStr());
+                    "EditorStateParentPass", false, "[EditorStateParentPassData '%s']: Trying to construct without valid EditorStateParentPassData!", GetPathName().GetCStr());
                 return false;
         }
         return passData->editorStatePass->IsEnabled();

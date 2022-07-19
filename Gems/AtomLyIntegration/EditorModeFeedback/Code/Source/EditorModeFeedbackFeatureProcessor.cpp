@@ -82,6 +82,11 @@ namespace AZ
         {
             m_editorStatePassSystem->AddPassesToRenderPipeline(renderPipeline);
 
+            if(m_maskRenderers.empty())
+            {
+                return;
+            }
+
             for (const auto& mask : m_editorStatePassSystem->GetMasks())
             {
                 m_maskRenderers.emplace(

@@ -32,7 +32,7 @@ namespace AZ::Render
         if (passData == nullptr)
         {
             AZ_Error(
-                "PassSystem", false, "[EditorStateBufferCopyPassData '%s']: Trying to construct without valid EditorStateBufferCopyPassData!", GetPathName().GetCStr());
+                "EditorStateBufferCopyPass", false, "[EditorStateBufferCopyPassData '%s']: Trying to construct without valid EditorStateBufferCopyPassData!", GetPathName().GetCStr());
             return false;
         }
         return passData->editorStatePass->IsEnabled();

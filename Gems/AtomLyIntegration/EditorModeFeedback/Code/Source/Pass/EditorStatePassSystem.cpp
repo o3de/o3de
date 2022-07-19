@@ -41,9 +41,6 @@ namespace AZ::Render
 
         // Editor state child effect passes
         passSystem->LoadPassTemplateMappings("Passes/Child/EditorModeFeedback_ChildPassTemplates.azasset");
-
-        // Editor state parent passes
-        passSystem->LoadPassTemplateMappings("Passes/State/EditorModeFeedback_StatePassTemplates.azasset");
     }
 
     void EditorStatePassSystem::AddPassesToRenderPipeline(RPI::RenderPipeline* renderPipeline)
@@ -154,7 +151,7 @@ namespace AZ::Render
         RPI::Ptr<RPI::Pass> parentPass = RPI::PassSystemInterface::Get()->CreatePassFromRequest(&passRequest);
         if (!parentPass)
         {
-            AZ_Error("", false, "Create editor mode feedback parent pass from pass request failed", renderPipeline->GetId().GetCStr());
+            AZ_Error("EditorStatePassSystem", false, "Create editor mode feedback parent pass from pass request failed", renderPipeline->GetId().GetCStr());
             return;
         }
 
@@ -162,7 +159,7 @@ namespace AZ::Render
         if (!renderPipeline->AddPassAfter(parentPass, Name("PostProcessPass")))
         {
             AZ_Error(
-                "", false, "Add editor mode feedback parent pass to render pipeline [%s] failed", renderPipeline->GetId().GetCStr());
+                "EditorStatePassSystem", false, "Add editor mode feedback parent pass to render pipeline [%s] failed", renderPipeline->GetId().GetCStr());
             return;
         }
     }
