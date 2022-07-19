@@ -20,6 +20,13 @@ namespace Multiplayer
 {
     constexpr float defaultConnectionMessageFontSize = 0.7f;
     const AZ::Vector2 viewportConnectionBottomRightBorderPadding(-40.0f, -40.0f);
+    const char* centerViewportDebugTitle = "Multiplayer Editor";
+    const char* multiplayerClientStatusTitle = "Multiplayer Client Status:";
+    const char* onServerLaunchedMessage = "(1/3) Launching server...";
+    const char* onServerLaunchFailMessage = "(1/3) Could not launch editor server.\nSee console for more info.";
+    const char* onEditorConnectionAttemptMessage = "(2/3) Editor tcp connection attempt #%i.";
+    const char* OnEditorSendingLevelDataMessage = "(3/3) Editor is sending the editor-server the level data packet.";
+    const char* onConnectToSimulationFailMessage = "EditorServerReady packet was received, but connecting to the editor-server's network simulation failed! Is the editor and server using the same sv_port (%i)?";
 
     AZ_CVAR_SCOPED(bool, cl_viewportConnectionStatus, true, nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
         "This will enable displaying connection status in the client's viewport while running multiplayer.");
@@ -92,13 +99,12 @@ namespace Multiplayer
             const float center_screenposition_y = 0.5f*viewportSize.m_height;
 
             // Draw title
-            const char* centerViewportDebugTextTitle = "Multiplayer Editor";
-            const float textHeight = m_fontDrawInterface->GetTextSize(m_drawParams, centerViewportDebugTextTitle).GetY();
+            const float textHeight = m_fontDrawInterface->GetTextSize(m_drawParams, centerViewportDebugTitle).GetY();
             const float screenposition_title_y = center_screenposition_y-textHeight*0.5f;
             m_drawParams.m_position = AZ::Vector3(center_screenposition_x, screenposition_title_y, 1.0f);
             m_drawParams.m_hAlign = AzFramework::TextHorizontalAlignment::Center;
             m_drawParams.m_color = AZ::Colors::Yellow;
-            m_fontDrawInterface->DrawScreenAlignedText2d(m_drawParams, centerViewportDebugTextTitle);
+            m_fontDrawInterface->DrawScreenAlignedText2d(m_drawParams, centerViewportDebugTitle);
             
             // Draw center debug text under the title
             // Calculate line spacing based on the font's actual line height
@@ -167,32 +173,32 @@ namespace Multiplayer
         const float textHeight = m_fontDrawInterface->GetTextSize(m_drawParams, connectionStateText).GetY();
         m_drawParams.m_color = AZ::Colors::White;
         m_drawParams.m_position.SetY(m_drawParams.m_position.GetY() - textHeight - m_lineSpacing);
-        m_fontDrawInterface->DrawScreenAlignedText2d(m_drawParams, "Multiplayer Client Status:");
+        m_fontDrawInterface->DrawScreenAlignedText2d(m_drawParams, multiplayerClientStatusTitle);
     }
 
     void MultiplayerConnectionViewportMessageSystemComponent::OnServerLaunched()
     {
-        m_centerViewportDebugText = "(1/3) Launching server...";
+        m_centerViewportDebugText = onServerLaunchedMessage;
     }
 
     void MultiplayerConnectionViewportMessageSystemComponent::OnServerLaunchFail()
     {
-        m_centerViewportDebugText = "(1/3) Could not launch editor server.\nSee console for more info.";
+        m_centerViewportDebugText = onServerLaunchFailMessage;
     }
 
     void MultiplayerConnectionViewportMessageSystemComponent::OnEditorSendingLevelData()
     {
-        m_centerViewportDebugText = "(3/3) Editor is sending the editor-server the level data packet.";
+        m_centerViewportDebugText = OnEditorSendingLevelDataMessage;
     }   
 
     void MultiplayerConnectionViewportMessageSystemComponent::OnEditorConnectionAttempt(uint16_t connectionAttempts)
     {
-        m_centerViewportDebugText = AZStd::fixed_string<128>::format("(2/3) Editor tcp connection attempt #%i.", connectionAttempts);
+        m_centerViewportDebugText = AZStd::fixed_string<128>::format(onEditorConnectionAttemptMessage, connectionAttempts);
     }
 
     void MultiplayerConnectionViewportMessageSystemComponent::OnConnectToSimulationFail(uint16_t serverPort)
     {
-        m_centerViewportDebugText = AZStd::fixed_string<128>::format("EditorServerReady packet was received, but connecting to the editor-server's network simulation failed! Is the editor and server using the same sv_port (%i)?", serverPort);
+        m_centerViewportDebugText = AZStd::fixed_string<128>::format(onConnectToSimulationFailMessage, serverPort);
     }
 
     void MultiplayerConnectionViewportMessageSystemComponent::OnConnectToSimulationSuccess() 
