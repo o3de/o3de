@@ -185,23 +185,16 @@ namespace JsonSerializationTests
     };
 
     using AnyConformityTestTypes = ::testing::Types
-        <
-          // all work
-          AnySerializerTestDescription<SimpleClass>
-
-        // broke after the default change
-        /*
+        // all work
+        < AnySerializerTestDescription<SimpleClass>
         , AnySerializerTestDescription<SimpleInheritence>
         , AnySerializerTestDescription<MultipleInheritence>
         , AnySerializerTestDescription<SimpleNested>
         , AnySerializerTestDescription<SimpleEnumWrapper>
         , AnySerializerTestDescription<NonReflectedEnumWrapper>
-
-        // , AnySerializerTestDescription<SimpleAssignedPointer>
-        // , AnySerializerTestDescription<ComplexAssignedPointer>
-       */
-
-
+        , AnySerializerTestDescription<SimpleAssignedPointer>
+        , AnySerializerTestDescription<ComplexAssignedPointer>
+       
         /*
         // fails all cases
         AnySerializerTestDescription<SimpleNullPointer>
