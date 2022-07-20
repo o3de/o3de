@@ -168,8 +168,8 @@ namespace Terrain
 
     auto ClipmapBounds::TransformRegion(AZ::Aabb worldSpaceRegion) -> ClipmapBoundsRegionList
     {
-        AZ::Vector2 worldMin = AZ::Vector2(worldSpaceRegion.GetMin().GetX(), worldSpaceRegion.GetMin().GetY());
-        AZ::Vector2 worldMax = AZ::Vector2(worldSpaceRegion.GetMax().GetX(), worldSpaceRegion.GetMax().GetY());
+        AZ::Vector2 worldMin = AZ::Vector2(worldSpaceRegion.GetMin());
+        AZ::Vector2 worldMax = AZ::Vector2(worldSpaceRegion.GetMax());
 
         return TransformRegion(worldMin, worldMax);
     }
@@ -289,16 +289,19 @@ namespace Terrain
                 AZStd::lround(clipSpaceCoord.GetX()),
                 AZStd::lround(clipSpaceCoord.GetY())
             );
+            break;
         case RoundMode::Floor:
             returnValue = Vector2i(
                 aznumeric_cast<int32_t>(AZStd::floorf(clipSpaceCoord.GetX())),
                 aznumeric_cast<int32_t>(AZStd::floorf(clipSpaceCoord.GetY()))
             );
+            break;
         case RoundMode::Ceil:
             returnValue = Vector2i(
                 aznumeric_cast<int32_t>(AZStd::ceilf(clipSpaceCoord.GetX())),
                 aznumeric_cast<int32_t>(AZStd::ceilf(clipSpaceCoord.GetY()))
             );
+            break;
         }
 
         return returnValue;
