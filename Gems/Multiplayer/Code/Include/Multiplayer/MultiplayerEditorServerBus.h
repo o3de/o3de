@@ -41,11 +41,11 @@ namespace Multiplayer
         //! Notification when the Editor attempts a TCP connection to the server.
         //! Note: It's possible multiple connection attempts are needed if the user starts and stops editor play mode repeatedly because the server port takes a few seconds to free.
         //! @param connectionAttempts The number of attempts made to connect to the editor-server
-        virtual void OnEditorConnectionAttempt([[maybe_unused]]uint16_t connectionAttempts) {}
+        virtual void OnEditorConnectionAttempt([[maybe_unused]]uint16_t connectionAttempts, uint16_t maxAttempts) {}
 
         //! Notification when the Editor failed all attempts to establish its TCP connection with the server.
         //! Maximum attempts are set using the cvar: editorsv_max_connection_attempts
-        virtual void OnAllConnectionAttemptsFailed() {}
+        virtual void OnEditorConnectionAttemptsFailed(uint16_t failedAttempts) {}
 
         //! Notification when the Editor starts sending the current level data (spawnable) to the server.
         virtual void OnEditorSendingLevelData() {}
