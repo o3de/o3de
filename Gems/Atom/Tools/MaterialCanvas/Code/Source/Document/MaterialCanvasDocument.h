@@ -12,6 +12,7 @@
 #include <AzCore/RTTI/RTTI.h>
 #include <GraphModel/GraphModelBus.h>
 #include <GraphModel/Model/GraphContext.h>
+#include <GraphModel/Model/Node.h>
 
 #include <AtomToolsFramework/Document/AtomToolsDocument.h>
 #include <Document/MaterialCanvasDocumentRequestBus.h>
@@ -69,6 +70,10 @@ namespace MaterialCanvas
 
         void CreateGraph(GraphModel::GraphPtr graph);
         void DestroyGraph();
+
+        bool CompareNodeExecutionOrder(GraphModel::ConstNodePtr nodeA, GraphModel::ConstNodePtr nodeB) const;
+        AZStd::vector<GraphModel::ConstNodePtr> GetNodesInExecutionOrder() const;
+        bool GenerateDataFromGraph() const;
 
         AZ::Entity* m_sceneEntity = {};
         GraphCanvas::GraphId m_graphId;
