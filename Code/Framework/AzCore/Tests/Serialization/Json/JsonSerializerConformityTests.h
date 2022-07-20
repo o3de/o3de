@@ -172,21 +172,6 @@ namespace JsonSerializationTests
         using Description = T;
         using Type = typename T::Type;
 
-        struct PointerWrapper
-        {
-            AZ_TYPE_INFO(PointerWrapper, "{32FA6645-074A-458A-B79C-B173D0BD4B42}");
-            AZ_CLASS_ALLOCATOR(PointerWrapper, AZ::SystemAllocator, 0);
-
-            Type* m_value{ nullptr };
-
-            ~PointerWrapper()
-            {
-                // Using free because not all types can safely use delete. Since this just to clear the memory to satisfy the memory
-                // leak test, this is fine.
-                azfree(m_value);
-            }
-        };
-
         void SetUp() override
         {
             using namespace AZ::JsonSerializationResult;
@@ -198,8 +183,7 @@ namespace JsonSerializationTests
             descriptor->ConfigureFeatures(this->m_features);
             descriptor->Reflect(this->m_serializeContext);
             descriptor->Reflect(this->m_jsonRegistrationContext);
-            this->m_serializeContext->template Class<PointerWrapper>()->Field("Value", &PointerWrapper::m_value);
-            
+
             this->m_deserializationSettings->m_reporting = &Internal::VerifyCallback;
             this->m_serializationSettings->m_reporting = &Internal::VerifyCallback;
             this->ResetJsonContexts();
@@ -219,7 +203,6 @@ namespace JsonSerializationTests
             this->m_jsonRegistrationContext->DisableRemoveReflection();
 
             this->m_serializeContext->EnableRemoveReflection();
-            this->m_serializeContext->template Class<PointerWrapper>()->Field("Value", &PointerWrapper::m_value);
             descriptor->Reflect(this->m_serializeContext);
             this->m_serializeContext->DisableRemoveReflection();
 
