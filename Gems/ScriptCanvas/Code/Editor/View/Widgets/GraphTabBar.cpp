@@ -157,7 +157,7 @@ namespace ScriptCanvasEditor
                 metaData.m_fileState = fileState;
                 
                 AZStd::string tabName;
-                AzFramework::StringFunc::Path::GetFileName(assetId.Path().c_str(), tabName);
+                AzFramework::StringFunc::Path::GetFileName(assetId.RelativePath().c_str(), tabName);
 
                 SetTabText(tabIndex, tabName.c_str(), fileState);
                 setTabData(tabIndex, QVariant::fromValue(metaData));
@@ -235,7 +235,13 @@ namespace ScriptCanvasEditor
 
         SourceHandle GraphTabBar::FindTabByPath(AZStd::string_view path) const
         {
-            SourceHandle candidate(nullptr, {}, path);
+            auto candidateOption = ScriptCanvasEditor::CompleteDescription(SourceHandle::FromRelativePath(nullptr, {}, path));
+            if (!candidateOption)
+            {
+                return {};
+            }
+
+            auto candidate = *candidateOption;
 
             for (int index = 0; index < count(); ++index)
             {

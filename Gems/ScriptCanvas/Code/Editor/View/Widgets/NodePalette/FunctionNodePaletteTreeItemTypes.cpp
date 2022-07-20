@@ -131,7 +131,7 @@ namespace ScriptCanvasEditor
         {
             GeneralRequestBus::Broadcast
                 ( &GeneralRequests::OpenScriptCanvasAssetId
-                , SourceHandle(nullptr, GetSourceAssetId().m_guid, "")
+                , SourceHandle(nullptr, GetSourceAssetId().m_guid)
                 , Tracker::ScriptCanvasFileState::UNMODIFIED);
         }
     }
@@ -142,7 +142,7 @@ namespace ScriptCanvasEditor
         {
             GeneralRequestBus::Broadcast
                 ( &GeneralRequests::OpenScriptCanvasAssetId
-                , SourceHandle(nullptr, GetSourceAssetId().m_guid, "")
+                , SourceHandle(nullptr, GetSourceAssetId().m_guid)
                 , Tracker::ScriptCanvasFileState::UNMODIFIED);
             return true;
         }

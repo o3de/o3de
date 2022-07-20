@@ -18,6 +18,7 @@
 #include <AzFramework/Viewport/ScreenGeometry.h>
 #include <AzFramework/Viewport/ViewportScreen.h>
 #include <AzFramework/Windowing/WindowBus.h>
+#include <AzToolsFramework/Input/QtEventToAzInputMapper.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 
 namespace AtomToolsFramework
@@ -201,13 +202,31 @@ namespace AtomToolsFramework
 
     bool ModularViewportCameraControllerInstance::HandleInputChannelEvent(const AzFramework::ViewportControllerInputEvent& event)
     {
+        const auto findModifierStatesFn = [viewportId = event.m_viewportId]
+        {
+            const auto* inputDevice =
+                AzFramework::InputDeviceRequests::FindInputDevice(AzToolsFramework::GetSyntheticKeyboardDeviceId(viewportId));
+
+            // grab keyboard channel (not important which) and check the modifier state (modifier state is shared for all keyboard channels)
+            if (const auto it = inputDevice->GetInputChannelsById().find(AzFramework::InputDeviceKeyboard::Key::Alphanumeric0);
+                it != inputDevice->GetInputChannelsById().end())
+            {
+                if (auto customData = it->second->GetCustomData<AzFramework::ModifierKeyStates>())
+                {
+                    return *customData;
+                }
+            }
+
+            return AzFramework::ModifierKeyStates();
+        };
+
         if (event.m_priority == m_priorityFn(m_cameraSystem))
         {
             AzFramework::WindowSize windowSize;
             AzFramework::WindowRequestBus::EventResult(
                 windowSize, event.m_windowHandle, &AzFramework::WindowRequestBus::Events::GetClientAreaSize);
 
-            return m_cameraSystem.HandleEvents(AzFramework::BuildInputEvent(event.m_inputChannel, windowSize));
+            return m_cameraSystem.HandleEvents(AzFramework::BuildInputEvent(event.m_inputChannel, findModifierStatesFn(), windowSize));
         }
 
         return false;
@@ -241,7 +260,8 @@ namespace AtomToolsFramework
             m_cameraAnimation.m_time = AZ::GetClamp(
                 m_cameraAnimation.m_time +
                     (event.m_deltaTime.count() / ModularViewportCameraControllerRequests::InterpolateToTransformDuration),
-                0.0f, 1.0f);
+                0.0f,
+                1.0f);
 
             const auto& [transformStart, transformEnd, animationTime] = m_cameraAnimation;
 

@@ -160,7 +160,7 @@ namespace AZ
         //! for the output when the pass is disabled so the output can present a valid attachments to subsequent passes.
         struct PassFallbackConnection final
         {
-            AZ_TYPE_INFO(PassConnection, "{281C6C09-2BB8-49C0-967E-DF6A57DE1095}");
+            AZ_TYPE_INFO(PassFallbackConnection, "{281C6C09-2BB8-49C0-967E-DF6A57DE1095}");
             static void Reflect(AZ::ReflectContext* context);
 
             //! Name of the input slot that will provide the fallback attachment

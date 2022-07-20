@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AtomToolsFramework/AssetBrowser/AtomToolsAssetBrowser.h>
+#include <AtomToolsFramework/DynamicProperty/DynamicPropertyGroup.h>
 #include <AtomToolsFramework/Window/AtomToolsMainWindowRequestBus.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzQtComponents/Components/DockMainWindow.h>
@@ -50,9 +51,13 @@ namespace AtomToolsFramework
         void SetStatusWarning(const QString& message);
         void SetStatusError(const QString& message);
 
-        virtual void OpenSettings();
-        virtual void OpenHelp();
-        virtual void OpenAbout();
+        virtual AZStd::vector<AZStd::shared_ptr<DynamicPropertyGroup>> GetSettingsDialogGroups() const;
+        virtual void OpenSettingsDialog();
+
+        virtual AZStd::string GetHelpDialogText() const;
+        virtual void OpenHelpDialog();
+
+        virtual void OpenAboutDialog();
 
     protected:
         void showEvent(QShowEvent* showEvent) override;

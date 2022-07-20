@@ -127,6 +127,48 @@ namespace UnitTest
             });
     }
 
+    TEST_F(InstanceDeserializationTest, ReloadInstanceWithCachedDom)
+    {
+        AZ::Entity* entity1 = CreateEntity("Entity1", false);
+        AzToolsFramework::Components::TransformComponent* transformComponent = aznew AzToolsFramework::Components::TransformComponent;
+        transformComponent->SetWorldTranslation(AZ::Vector3(10.0, 0, 0));
+        entity1->AddComponent(transformComponent);
+
+        AZStd::pair<InstanceUniquePointer, InstanceUniquePointer> prefabInstances =
+            SetupPrefabInstances(AzToolsFramework::EntityList{ entity1 }, {}, m_prefabSystemComponent);
+        InstanceUniquePointer createdPrefab = AZStd::move(prefabInstances.first);
+
+        createdPrefab->GetEntities(
+            [](const AZStd::unique_ptr<AZ::Entity>& entity)
+            {
+                if (entity->GetName() == "Entity1")
+                {
+                    // Activate the entity to access the transform interface and use it to modify the transform component.
+                    entity->Init();
+                    entity->Activate();
+                    AZ::TransformBus::Event(entity->GetId(), &AZ::TransformInterface::SetWorldX, 20.0f);
+                }
+                return true;
+            });
+
+        PrefabDom tempDomForStoringAndLoading;
+        PrefabDomUtils::StoreInstanceInPrefabDom(*createdPrefab, tempDomForStoringAndLoading);
+
+        createdPrefab->SetCachedInstanceDom(tempDomForStoringAndLoading);
+
+        PrefabDomUtils::LoadInstanceFromPrefabDom(
+            *createdPrefab, tempDomForStoringAndLoading, PrefabDomUtils::LoadFlags::UseSelectiveDeserialization);
+
+        createdPrefab->GetEntities(
+            [](const AZStd::unique_ptr<AZ::Entity>& entity)
+            {
+                // Since we updated the cached dom, entities should remain untouched in createdPrefab and thus retain their
+                // active state.
+                EXPECT_EQ(entity->GetState(), AZ::Entity::State::Active);
+                return true;
+            });
+    }
+
     TEST_F(InstanceDeserializationTest, ReloadInstanceUponComponentAdd)
     {
         AZ::Entity* entity1 = CreateEntity("Entity1", false);

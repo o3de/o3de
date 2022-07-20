@@ -614,7 +614,7 @@ namespace UnitTest
         AzFramework::SurfaceData::SurfaceTagWeight tagWeight =
             terrainSystem->GetMaxSurfaceWeight(aabb.GetMax() + AZ::Vector3::CreateOne());
 
-        EXPECT_EQ(tagWeight.m_surfaceType, AZ::Crc32(AzFramework::SurfaceData::Constants::s_unassignedTagName));
+        EXPECT_EQ(tagWeight.m_surfaceType, AZ::Crc32(AzFramework::SurfaceData::Constants::UnassignedTagName));
 
         // Inside the layer spawner box should give us the highest weighted tag (tag1).
         tagWeight = terrainSystem->GetMaxSurfaceWeight(aabb.GetCenter());

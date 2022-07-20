@@ -18,7 +18,6 @@
 #include <QHBoxLayout>
 #include <QScrollArea>
 
-
 #endif // Q_MOC_RUN
 
 class QCheckBox;
@@ -41,7 +40,7 @@ namespace AzToolsFramework
         virtual ~DPELayout();
         void SetExpanderShown(bool shouldShow);
         void SetExpanded(bool expanded);
-        bool IsExpanded();
+        bool IsExpanded() const;
 
         // QLayout overrides
         QSize sizeHint() const override;
@@ -82,13 +81,14 @@ namespace AzToolsFramework
         //! returns the last descendent of this row in its own layout
         DPERowWidget* GetLastDescendantInLayout();
 
-        bool IsExpanded();
+        bool IsExpanded() const;
 
     protected slots:
         void onExpanderChanged(int expanderState);
 
     protected:
         DocumentPropertyEditor* GetDPE() const;
+        void AddDomChildWidget(int domIndex, QWidget* childWidget);
 
         DPERowWidget* m_parentRow = nullptr;
         int m_depth = 0; //!< number of levels deep in the tree. Used for indentation
@@ -111,32 +111,63 @@ namespace AzToolsFramework
         explicit DocumentPropertyEditor(QWidget* parentWidget = nullptr);
         ~DocumentPropertyEditor();
 
-        //! set the DOM adapter for this DPE to inspect
-        void SetAdapter(AZ::DocumentPropertyEditor::DocumentAdapter* theAdapter);
-
-        AZ::DocumentPropertyEditor::DocumentAdapter* GetAdapter()
+        auto GetAdapter()
         {
             return m_adapter;
         }
         void AddAfterWidget(QWidget* precursor, QWidget* widgetToAdd);
+
+        enum class ExpanderState : uint8_t
+        {
+            NotSet,
+            Collapsed,
+            Expanded
+        };
+
+        void SetSavedExpanderStateForRow(DPERowWidget* row, ExpanderState expanderState);
+        ExpanderState GetSavedExpanderStateForRow(DPERowWidget* row) const;
+        void RemoveExpanderStateForRow(DPERowWidget* row);
         AZ::Dom::Value GetDomValueForRow(DPERowWidget* row) const;
+
         void ReleaseHandler(AZStd::unique_ptr<PropertyHandlerWidgetInterface>&& handler);
+
+        // sets whether this DPE should also spawn a DPEDebugWindow when its adapter
+        // is set. Initially, this takes its value from the CVAR ed_showDPEDebugView,
+        // but can be overridden here
+        void SetSpawnDebugView(bool shouldSpawn);
+
+    public slots:
+        //! set the DOM adapter for this DPE to inspect
+        void SetAdapter(AZ::DocumentPropertyEditor::DocumentAdapterPtr theAdapter);
 
     protected:
         QVBoxLayout* GetVerticalLayout();
         void AddRowFromValue(const AZ::Dom::Value& domValue, int rowIndex);
+        AZStd::vector<size_t> GetPathToRoot(DPERowWidget* row) const;
 
         void HandleReset();
         void HandleDomChange(const AZ::Dom::Patch& patch);
         void CleanupReleasedHandlers();
 
-        AZ::DocumentPropertyEditor::DocumentAdapter* m_adapter = nullptr;
+        AZ::DocumentPropertyEditor::DocumentAdapterPtr m_adapter;
         AZ::DocumentPropertyEditor::DocumentAdapter::ResetEvent::Handler m_resetHandler;
         AZ::DocumentPropertyEditor::DocumentAdapter::ChangedEvent::Handler m_changedHandler;
         QVBoxLayout* m_layout = nullptr;
 
+        bool m_spawnDebugView = false;
+
         QTimer* m_handlerCleanupTimer;
         AZStd::vector<AZStd::unique_ptr<PropertyHandlerWidgetInterface>> m_unusedHandlers;
         AZStd::deque<DPERowWidget*> m_domOrderedRows;
+
+        //! tree nodes to keep track of expander state explicitly changed by the user
+        struct ExpanderPathNode
+        {
+            ExpanderState expanderState = ExpanderState::NotSet;
+            AZStd::unordered_map<size_t, ExpanderPathNode> nextNode;
+        };
+
+        //! hierarchical dom index to expander state tree
+        AZStd::unordered_map<size_t, ExpanderPathNode> m_expanderPaths;
     };
 } // namespace AzToolsFramework

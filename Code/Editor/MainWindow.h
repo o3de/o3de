@@ -28,6 +28,8 @@
 #include <AzToolsFramework/SourceControl/SourceControlAPI.h>
 
 #include "IEditor.h"
+
+#include <Core/EditorActionsHandler.h>
 #endif
 
 class ActionManager;
@@ -59,9 +61,6 @@ namespace AzQtComponents
 
 namespace AzToolsFramework
 {
-    class ActionManagerInterface;
-    class MenuManagerInterface;
-    class ToolBarManagerInterface;
     class Ticker;
     class QtSourceControlNotificationHandler;
 
@@ -213,16 +212,6 @@ private:
 
     QToolButton* CreateUndoRedoButton(int command);
 
-    // Editor Action Manager initialization functions
-    AzToolsFramework::ActionManagerInterface* m_actionManagerInterface = nullptr;
-    AzToolsFramework::MenuManagerInterface* m_menuManagerInterface = nullptr;
-    AzToolsFramework::ToolBarManagerInterface* m_toolBarManagerInterface = nullptr;
-
-    void InitializeActionContext();
-    void InitializeActions();
-    void InitializeMenus();
-    void InitializeToolBars();
-
 private Q_SLOTS:
     void ShowKeyboardCustomization();
     void ExportKeyboardShortcuts();
@@ -272,6 +261,8 @@ private:
     QPointer<ToolbarCustomizationDialog> m_toolbarCustomizationDialog;
     QScopedPointer<AzToolsFramework::QtSourceControlNotificationHandler> m_sourceControlNotifHandler;
     AZ::Event<bool>::Handler m_handleImGuiStateChangeHandler;
+
+    EditorActionsHandler m_editorActionsHandler;
     AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 
     static MainWindow* m_instance;

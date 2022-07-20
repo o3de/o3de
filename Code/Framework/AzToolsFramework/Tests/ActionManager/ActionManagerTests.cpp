@@ -75,7 +75,7 @@ namespace UnitTest
 
     TEST_F(ActionManagerFixture, GetUnregisteredAction)
     {
-        QAction* action = m_actionManagerInterface->GetAction("o3de.action.test");
+        QAction* action = m_actionManagerInternalInterface->GetAction("o3de.action.test");
         EXPECT_EQ(action, nullptr);
     }
 
@@ -84,7 +84,7 @@ namespace UnitTest
         m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
         m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {}, []{});
 
-        QAction* action = m_actionManagerInterface->GetAction("o3de.action.test");
+        QAction* action = m_actionManagerInternalInterface->GetAction("o3de.action.test");
         EXPECT_TRUE(action != nullptr);
     }
 
@@ -101,7 +101,7 @@ namespace UnitTest
             }
         );
 
-        QAction* action = m_actionManagerInterface->GetAction("o3de.action.test");
+        QAction* action = m_actionManagerInternalInterface->GetAction("o3de.action.test");
         
         action->trigger();
         EXPECT_TRUE(actionTriggered);
@@ -205,7 +205,7 @@ namespace UnitTest
         EXPECT_TRUE(outcome.IsSuccess());
         EXPECT_TRUE(outcome.GetValue().empty());
 
-        QAction* action = m_actionManagerInterface->GetAction("o3de.action.test");
+        QAction* action = m_actionManagerInternalInterface->GetAction("o3de.action.test");
         EXPECT_TRUE(action->icon().isNull());
     }
 
@@ -263,7 +263,7 @@ namespace UnitTest
         // In this example, logic should not rely on the checked state of o3de.action.checkableTest,
         // but on the value of actionToggle itself (just like the update callback does).
         
-        QAction* action = m_actionManagerInterface->GetAction("o3de.action.checkableTest");
+        QAction* action = m_actionManagerInternalInterface->GetAction("o3de.action.checkableTest");
         EXPECT_TRUE(action->isChecked());
     }
 
@@ -321,7 +321,7 @@ namespace UnitTest
             EXPECT_FALSE(enabledOutcome.GetValue());
         }
 
-        auto outcome = m_actionManagerInterface->UpdateAction("o3de.action.test");
+        m_actionManagerInterface->UpdateAction("o3de.action.test");
         
         {
             auto enabledOutcome = m_actionManagerInterface->IsActionEnabled("o3de.action.test");
@@ -354,7 +354,7 @@ namespace UnitTest
             }
         );
         
-        QAction* action = m_actionManagerInterface->GetAction("o3de.action.checkableTest");
+        QAction* action = m_actionManagerInternalInterface->GetAction("o3de.action.checkableTest");
         EXPECT_FALSE(action->isChecked());
 
         // When the property driving the action's state is changed outside the Action Manager system,
@@ -368,6 +368,80 @@ namespace UnitTest
         
         EXPECT_TRUE(outcome.IsSuccess());
         EXPECT_TRUE(action->isChecked());
+    }
+
+    TEST_F(ActionManagerFixture, RegisterActionUpdater)
+    {
+        auto outcome = m_actionManagerInterface->RegisterActionUpdater("o3de.updater.onTestChange");
+        EXPECT_TRUE(outcome.IsSuccess());
+    }
+
+    TEST_F(ActionManagerFixture, AddUnregisteredActionToUpdater)
+    {
+        m_actionManagerInterface->RegisterActionUpdater("o3de.updater.onTestChange");
+        auto outcome = m_actionManagerInterface->AddActionToUpdater("o3de.updater.onTestChange", "o3de.action.test");
+        EXPECT_FALSE(outcome.IsSuccess());
+    }
+
+    TEST_F(ActionManagerFixture, AddActionToUnregisteredUpdater)
+    {
+        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
+        m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {}, []{});
+        auto outcome = m_actionManagerInterface->AddActionToUpdater("o3de.updater.onTestChange", "o3de.action.test");
+        EXPECT_FALSE(outcome.IsSuccess());
+    }
+
+    TEST_F(ActionManagerFixture, AddActionToUpdater)
+    {
+        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
+        m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {}, []{});
+        m_actionManagerInterface->RegisterActionUpdater("o3de.updater.onTestChange");
+
+        auto outcome = m_actionManagerInterface->AddActionToUpdater("o3de.updater.onTestChange", "o3de.action.test");
+        EXPECT_TRUE(outcome.IsSuccess());
+    }
+
+    TEST_F(ActionManagerFixture, TriggerActionUpdater)
+    {
+        // Action Updaters are meant to be triggered when a specific event happens.
+        // This will mostly be achieved by handling a notification bus and calling the
+        // "TriggerActionUpdater" function for the updater identifier there.
+        // This test only verifies that the underlying function works, but does not
+        // represent the expected setup for using the system.
+
+        m_actionManagerInterface->RegisterActionContext("", "o3de.context.test", {}, m_widget);
+        m_actionManagerInterface->RegisterAction("o3de.context.test", "o3de.action.test", {}, []{});
+
+        m_actionManagerInterface->RegisterActionUpdater("o3de.updater.onTestChange");
+        m_actionManagerInterface->AddActionToUpdater("o3de.updater.onTestChange", "o3de.action.test");
+
+        bool enabledState = false;
+
+        m_actionManagerInterface->InstallEnabledStateCallback("o3de.action.test", [&]() {
+            return enabledState;
+        });
+        
+        {
+            auto enabledOutcome = m_actionManagerInterface->IsActionEnabled("o3de.action.test");
+            EXPECT_TRUE(enabledOutcome.IsSuccess());
+            EXPECT_FALSE(enabledOutcome.GetValue());
+        }
+
+        enabledState = true;
+        
+        {
+            auto enabledOutcome = m_actionManagerInterface->IsActionEnabled("o3de.action.test");
+            EXPECT_TRUE(enabledOutcome.IsSuccess());
+            EXPECT_FALSE(enabledOutcome.GetValue());
+        }
+
+        auto outcome = m_actionManagerInterface->TriggerActionUpdater("o3de.updater.onTestChange");
+        
+        {
+            auto enabledOutcome = m_actionManagerInterface->IsActionEnabled("o3de.action.test");
+            EXPECT_TRUE(enabledOutcome.IsSuccess());
+            EXPECT_TRUE(enabledOutcome.GetValue());
+        }
     }
 
 } // namespace UnitTest

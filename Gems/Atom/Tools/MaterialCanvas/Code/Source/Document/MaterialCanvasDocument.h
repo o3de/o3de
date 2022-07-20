@@ -59,9 +59,22 @@ namespace MaterialCanvas
         bool ReopenRecordState() override;
         bool ReopenRestoreState() override;
 
+        // GraphModelIntegration::GraphControllerNotificationBus::Handler overrides...
+        void OnGraphModelRequestUndoPoint() override;
+        void OnGraphModelTriggerUndo() override;
+        void OnGraphModelTriggerRedo() override;
+
+        void RecordGraphState();
+        void RestoreGraphState(const AZStd::vector<AZ::u8>& graphState);
+
+        void CreateGraph(GraphModel::GraphPtr graph);
+        void DestroyGraph();
+
         AZ::Entity* m_sceneEntity = {};
         GraphCanvas::GraphId m_graphId;
         GraphModel::GraphPtr m_graph;
         AZStd::shared_ptr<GraphModel::GraphContext> m_graphContext;
+        AZStd::vector<AZ::u8> m_graphStateForUndoRedo;
+        bool m_modified = {};
     };
 } // namespace MaterialCanvas

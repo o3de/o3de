@@ -92,7 +92,7 @@ namespace AzNetworking
         IConnectionSet& GetConnectionSet() override;
         IConnectionListener& GetConnectionListener() override;
         bool Listen(uint16_t port) override;
-        ConnectionId Connect(const IpAddress& remoteAddress) override;
+        ConnectionId Connect(const IpAddress& remoteAddress, uint16_t localPort = 0) override;
         void Update() override;
         bool SendReliablePacket(ConnectionId connectionId, const IPacket& packet) override;
         PacketId SendUnreliablePacket(ConnectionId connectionId, const IPacket& packet) override;

@@ -34,16 +34,19 @@ namespace AZ::DocumentPropertyEditor
         //! this adapter will produce a property grid based on its contents.
         void SetValue(void* instance, AZ::TypeId typeId);
 
-        void OnContentsChanged(const Dom::Path& path, const Dom::Value& value, Nodes::PropertyEditor::ValueChangeType changeType);
+        //! Invokes the ChangeNotify attribute for an Adapter, if present, and follows up
+        //! with a tree refresh if needed.
+        static void InvokeChangeNotify(const AZ::Dom::Value& domNode);
 
     protected:
         Dom::Value GenerateContents() override;
+        Dom::Value HandleMessage(const AdapterMessage& message) override;
 
     private:
         void* m_instance = nullptr;
         AZ::TypeId m_typeId = AZ::TypeId::CreateNull();
 
-        mutable AZStd::unique_ptr<ReflectionAdapterReflectionImpl> m_impl;
+        AZStd::unique_ptr<ReflectionAdapterReflectionImpl> m_impl;
 
         friend struct ReflectionAdapterReflectionImpl;
     };

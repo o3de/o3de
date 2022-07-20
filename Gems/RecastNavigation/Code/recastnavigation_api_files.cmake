@@ -7,6 +7,7 @@
 #
 
 set(FILES
+    Include/RecastNavigation/NavMeshQuery.h
     Include/RecastNavigation/RecastHelpers.h
     Include/RecastNavigation/RecastSmartPointer.h
 

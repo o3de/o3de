@@ -52,7 +52,7 @@ namespace AzToolsFramework
 
         //! This must be implemented in subclasses registered with PropertyEditorToolsSystemInterface::RegisterHandler.
         //! Returns the handler name, used to look up the type of handler to use from a PropertyEditor node.
-        static const AZStd::string_view GetHandlerName()
+        static constexpr const AZStd::string_view GetHandlerName()
         {
             return "<undefined handler name>";
         }
@@ -65,7 +65,7 @@ namespace AzToolsFramework
         //! would resolve to a spin box, while
         //! <PropertyEditor Type="Slider" Value=5 ValueType="int" />
         //! would still resolve to a slider.
-        static bool IsDefaultHandler()
+        static constexpr bool IsDefaultHandler()
         {
             return false;
         }

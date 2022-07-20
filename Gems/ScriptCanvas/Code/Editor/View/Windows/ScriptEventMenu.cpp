@@ -69,8 +69,9 @@ namespace ScriptEvents
                     auto deserializeResult = Deserialize(loadOutcome.GetValue().GetScriptCanvasSerializationData(), MakeInternalGraphEntitiesUnique::Yes);
                     if (deserializeResult.m_isSuccessful)
                     {
+
                         // success
-                        return { SourceHandle(deserializeResult.m_graphDataPtr, path), "" };
+                        return { SourceHandle::FromRelativePath(deserializeResult.m_graphDataPtr, path.Filename()), "" };
                     }
                     else
                     {

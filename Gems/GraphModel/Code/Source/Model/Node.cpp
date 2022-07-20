@@ -78,6 +78,13 @@ namespace GraphModel
         AZ_Assert(m_allSlotDefinitions.size() == m_propertySlotDefinitions.size() + m_inputDataSlotDefinitions.size() + m_outputDataSlotDefinitions.size() + m_inputEventSlotDefinitions.size() + m_outputEventSlotDefinitions.size() + m_extendableSlotDefinitions.size(), "SlotDefinition counts don't match");
     }
 
+    //! Returns the name that will be displayed as the sub-title of the Node in the UI
+
+    const char* Node::GetSubTitle() const
+    {
+        return "";
+    }
+
     void Node::CreateSlotData()
     {
         AZ_Assert(m_allSlots.empty(), "CreateSlotData() should only be called once after creating a new node.");
@@ -216,6 +223,15 @@ namespace GraphModel
         CreateExtendableSlotData();
     }
 
+    
+//! Returns node type (general by default) which can be overriden for
+    //! other types, such as wrapper nodes
+
+    NodeType Node::GetNodeType() const
+    {
+        return NodeType::GeneralNode;
+    }
+
     NodeId Node::GetId() const
     {
         return m_id;
@@ -276,6 +292,7 @@ namespace GraphModel
         SlotId slotId(name);
         return GetSlot(slotId);
     }
+
     ConstSlotPtr Node::GetSlot(const SlotName& name) const
     {
         SlotId slotId(name);
@@ -305,24 +322,6 @@ namespace GraphModel
         }
 
         return InvalidExtendableSlot;
-    }
-
-    DataTypePtr Node::GetDataType(ConstSlotPtr slot) const
-    {
-        if (slot)
-        {
-            // TODO: This method allows Nodes to introduce extra logic when slots
-            // ask what their data type should be depending on existing connections.
-            // This has been partially implemented, so for now just return the first
-            // possible data type.
-            auto possibleDataTypes = slot->GetPossibleDataTypes();
-            if (possibleDataTypes.size())
-            {
-                return possibleDataTypes[0];
-            }
-        }
-
-        return nullptr;
     }
 
     void Node::DeleteSlot(SlotPtr slot)

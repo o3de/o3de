@@ -28,7 +28,7 @@ namespace Physics
                 // AZStd::vector<AZStd::shared_ptr<ShapeConfiguration>> to
                 // AZStd::vector<AZStd::pair<AZStd::shared_ptr<ColliderConfiguration>, AZStd::shared_ptr<ShapeConfiguration>>>,
                 // and the collider related information from ShapeConfiguration moving to ColliderConfiguration
-                const int shapesIndex = classElement.FindElement(AZ_CRC("shapes", 0x93dba512));
+                const int shapesIndex = classElement.FindElement(AZ_CRC_CE("shapes"));
                 if (shapesIndex != -1)
                 {
                     AZ::SerializeContext::DataElementNode& shapesElement = classElement.GetSubElement(shapesIndex);
@@ -67,15 +67,15 @@ namespace Physics
                             AZ::SerializeContext::DataElementNode& pairElement = newShapesElement.GetSubElement(pairIndex);
 
                             ColliderConfiguration colliderConfig;
-                            if (AZ::SerializeContext::DataElementNode* baseClassNode = shape.FindSubElement(AZ_CRC("BaseClass1", 0xd4925735)))
+                            if (AZ::SerializeContext::DataElementNode* baseClassNode = shape.FindSubElement(AZ_CRC_CE("BaseClass1")))
                             {
-                                baseClassNode->FindSubElementAndGetData(AZ_CRC("Trigger", 0x1a6b0f5d), colliderConfig.m_isTrigger);
-                                baseClassNode->FindSubElementAndGetData(AZ_CRC("Position", 0x462ce4f5), colliderConfig.m_position);
-                                baseClassNode->FindSubElementAndGetData(AZ_CRC("Rotation", 0x297c98f1), colliderConfig.m_rotation);
-                                baseClassNode->FindSubElementAndGetData(AZ_CRC("CollisionLayer", 0x39931633), colliderConfig.m_collisionLayer);
+                                baseClassNode->FindSubElementAndGetData(AZ_CRC_CE("Trigger"), colliderConfig.m_isTrigger);
+                                baseClassNode->FindSubElementAndGetData(AZ_CRC_CE("Position"), colliderConfig.m_position);
+                                baseClassNode->FindSubElementAndGetData(AZ_CRC_CE("Rotation"), colliderConfig.m_rotation);
+                                baseClassNode->FindSubElementAndGetData(AZ_CRC_CE("CollisionLayer"), colliderConfig.m_collisionLayer);
                             }
 
-                            shape.RemoveElementByName(AZ_CRC("BaseClass1", 0xd4925735));
+                            shape.RemoveElementByName(AZ_CRC_CE("BaseClass1"));
 
                             pairElement.GetSubElement(0).AddElementWithData<ColliderConfiguration>(context, "element", colliderConfig);
                             pairElement.GetSubElement(1).AddElement(shape);
@@ -89,13 +89,13 @@ namespace Physics
             // not be able to pass the shapes over to the character collider config. The ragdoll config version converter takes care of this.
             //if (classElement.GetVersion() < 3)
             //{
-            //    classElement.RemoveElementByName(AZ_CRC("shapes", 0x93dba512));
+            //    classElement.RemoveElementByName(AZ_CRC_CE("shapes"));
             //}
 
             // Version 4 adds visibility settings to hide rigid body settings that aren't relevant for the animation editor.
             if (classElement.GetVersion() < 4)
             {
-                const int rigidBodyConfigIndex = classElement.FindElement(AZ_CRC("RigidBodyConfiguration", 0x152d8d79));
+                const int rigidBodyConfigIndex = classElement.FindElement(AZ_CRC_CE("RigidBodyConfiguration"));
                 if (rigidBodyConfigIndex != -1)
                 {
                     AZ::SerializeContext::DataElementNode& rigidBodyConfigElement = classElement.GetSubElement(rigidBodyConfigIndex);
@@ -114,7 +114,7 @@ namespace Physics
             {
                 CharacterColliderConfiguration newColliderConfig;
 
-                AZ::SerializeContext::DataElementNode* ragdollNodeConfig = classElement.FindSubElement(AZ_CRC("nodes", 0x1d3d05fc));
+                AZ::SerializeContext::DataElementNode* ragdollNodeConfig = classElement.FindSubElement(AZ_CRC_CE("nodes"));
                 if (ragdollNodeConfig)
                 {
                     int numNodes = ragdollNodeConfig->GetNumSubElements();
@@ -123,14 +123,14 @@ namespace Physics
                         AZ::SerializeContext::DataElementNode& nodeElement = ragdollNodeConfig->GetSubElement(i);
 
                         AZStd::string name;
-                        AZ::SerializeContext::DataElementNode* baseClass1 = nodeElement.FindSubElement(AZ_CRC("BaseClass1", 0xd4925735));
+                        AZ::SerializeContext::DataElementNode* baseClass1 = nodeElement.FindSubElement(AZ_CRC_CE("BaseClass1"));
                         if (baseClass1)
                         {
-                            AZ::SerializeContext::DataElementNode* baseBaseClass1 = baseClass1->FindSubElement(AZ_CRC("BaseClass1", 0xd4925735));
-                            if (baseBaseClass1 && baseBaseClass1->FindSubElementAndGetData<AZStd::string>(AZ_CRC("name", 0x5e237e06), name))
+                            AZ::SerializeContext::DataElementNode* baseBaseClass1 = baseClass1->FindSubElement(AZ_CRC_CE("BaseClass1"));
+                            if (baseBaseClass1 && baseBaseClass1->FindSubElementAndGetData<AZStd::string>(AZ_CRC_CE("name"), name))
                             {
                                 AzPhysics::ShapeColliderPairList shapes;
-                                if (nodeElement.FindSubElementAndGetData<AzPhysics::ShapeColliderPairList>(AZ_CRC("shapes", 0x93dba512), shapes))
+                                if (nodeElement.FindSubElementAndGetData<AzPhysics::ShapeColliderPairList>(AZ_CRC_CE("shapes"), shapes))
                                 {
                                     CharacterColliderNodeConfiguration newColliderNodeConfig;
                                     newColliderNodeConfig.m_name = name;
@@ -140,7 +140,7 @@ namespace Physics
                             }
                         }
 
-                        nodeElement.RemoveElementByName(AZ_CRC("shapes", 0x93dba512));
+                        nodeElement.RemoveElementByName(AZ_CRC_CE("shapes"));
                     }
                 }
 
@@ -156,7 +156,7 @@ namespace Physics
             if (dataElement.GetVersion() <= 1)
             {
                 // Convert collision group to group id
-                dataElement.RemoveElementByName(AZ_CRC("CollisionGroup", 0xb08873ec));
+                dataElement.RemoveElementByName(AZ_CRC_CE("CollisionGroup"));
                 dataElement.AddElement<AzPhysics::CollisionGroups::Id>(context, "CollisionGroupId");
             }
 
@@ -164,14 +164,14 @@ namespace Physics
             if (dataElement.GetVersion() <= 2)
             {
                 // Force all new colliders to have exclusive shapes
-                dataElement.RemoveElementByName(AZ_CRC("Exclusive", 0x012318fc));
+                dataElement.RemoveElementByName(AZ_CRC_CE("Exclusive"));
                 dataElement.AddElementWithData<bool>(context, "Exclusive", true);
             }
 
             // version 3->4
             if (dataElement.GetVersion() <= 3)
             {
-                const int elementIndex = dataElement.FindElement(AZ_CRC("Trigger", 0x1a6b0f5d));
+                const int elementIndex = dataElement.FindElement(AZ_CRC_CE("Trigger"));
 
                 if (elementIndex >= 0)
                 {

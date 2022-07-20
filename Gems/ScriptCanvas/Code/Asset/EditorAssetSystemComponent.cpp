@@ -133,7 +133,7 @@ namespace ScriptCanvasEditor
             {
                 AzToolsFramework::OpenViewPane(LyViewPane::ScriptCanvas);
 
-                if (auto sourceHandle = CompleteDescription(SourceHandle(nullptr, scSourceUuid, {})))
+                if (auto sourceHandle = CompleteDescription(SourceHandle(nullptr, scSourceUuid)))
                 {
                     AZ::Outcome<int, AZStd::string> openOutcome = AZ::Failure(AZStd::string());
                     GeneralRequestBus::BroadcastResult(openOutcome, &GeneralRequests::OpenScriptCanvasAsset

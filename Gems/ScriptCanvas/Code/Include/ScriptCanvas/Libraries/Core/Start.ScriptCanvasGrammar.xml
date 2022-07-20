@@ -2,16 +2,13 @@
 
 <ScriptCanvas Include="Include/ScriptCanvas/Libraries/Core/Start.h" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <Class Name="Start"
-	       QualifiedName="ScriptCanvas::Nodes::Core::Start"
-	       PreferredClassName="On Graph Start"
-           Uuid="{F200B22A-5903-483A-BF63-5241BC03632B}"
-           Base="ScriptCanvas::Node"
-           Icon="Icons/ScriptCanvas/Start.png"
-           Category="Timing"
-           Version="2"
-           GraphEntryPoint="True"
-           GeneratePropertyFriend="True"
-           Description="Starts executing the graph when the entity that owns the graph is fully activated.">
+        QualifiedName="ScriptCanvas::Nodes::Core::Start"
+        PreferredClassName="On Graph Start"
+        Uuid="{F200B22A-5903-483A-BF63-5241BC03632B}"
+        Category="Timing"
+        Version="2"
+        GraphEntryPoint="True"
+        Description="Starts executing the graph when the entity that owns the graph is fully activated.">
         <Out Name="Out" Description="Signaled when the entity that owns this graph is fully activated."/>
     </Class>
 </ScriptCanvas>

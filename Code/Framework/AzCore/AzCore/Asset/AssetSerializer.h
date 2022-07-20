@@ -128,7 +128,7 @@ namespace AZ {
         {
         public:
             GenericClassGenericAsset()
-                : m_classData{ SerializeContext::ClassData::Create<ThisType>("Asset", GetSpecializedTypeId(), &m_factory, &AssetSerializer::s_serializer) }
+                : m_classData{ SerializeContext::ClassData::Create<ThisType>(AzTypeInfo<ThisType>::Name(), GetSpecializedTypeId(), &m_factory, &AssetSerializer::s_serializer) }
             {
                 m_classData.m_version = 3;
                 m_classData.m_dataConverter = &m_dataConverter;

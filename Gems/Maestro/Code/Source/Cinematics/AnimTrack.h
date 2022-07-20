@@ -24,7 +24,7 @@ class TAnimTrack
 {
 public:
     AZ_CLASS_ALLOCATOR(TAnimTrack, AZ::SystemAllocator, 0);
-    AZ_RTTI((TAnimTrack<KeyType>, "{D6E0F0E3-8843-46F0-8484-7B6E130409AE}", KeyType), IAnimTrack);
+    AZ_RTTI((TAnimTrack, "{D6E0F0E3-8843-46F0-8484-7B6E130409AE}", KeyType), IAnimTrack);
 
     TAnimTrack();
 
@@ -44,7 +44,7 @@ public:
     void SetParameterType(CAnimParamType type) override { m_nParamType = type; };
 
     //////////////////////////////////////////////////////////////////////////
-    // for intrusive_ptr support 
+    // for intrusive_ptr support
     void add_ref() override;
     void release() override;
     //////////////////////////////////////////////////////////////////////////
@@ -224,7 +224,7 @@ public:
     {
         m_trackMultiplier = trackMultiplier;
     }
- 
+
     void SetExpanded([[maybe_unused]] bool expanded) override
     {
         AZ_Assert(false, "Not expected to be used.");

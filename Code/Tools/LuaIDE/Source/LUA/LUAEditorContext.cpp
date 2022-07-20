@@ -1797,8 +1797,16 @@ namespace LUAEditor
     void Context::OnBreakpointHit(const AZStd::string& relativePath, int lineNumber)
     {
         // Convert from debug path (relative) to absolute path (how the Lua IDE stores files)
-        AZStd::string absolutePath = relativePath.substr(1);
-        EBUS_EVENT(AzToolsFramework::AssetSystemRequestBus, GetFullSourcePathFromRelativeProductPath, absolutePath, absolutePath);
+        AZStd::string absolutePath;
+        AZStd::string formattedRelativePath = relativePath.substr(1);
+        EBUS_EVENT(AzToolsFramework::AssetSystemRequestBus, GetFullSourcePathFromRelativeProductPath, formattedRelativePath, absolutePath);
+
+        // If finding a .lua fails, attempt the equivalent .luac
+        if (absolutePath.empty() && relativePath.ends_with(".lua"))
+        {
+            formattedRelativePath = relativePath.substr(1) + "c";
+            EBUS_EVENT(AzToolsFramework::AssetSystemRequestBus, GetFullSourcePathFromRelativeProductPath, formattedRelativePath, absolutePath); 
+        }
 
         //AZ_TracePrintf(LUAEditorDebugName, "Breakpoint '%s' was hit on line %i\n", assetIdString.c_str(), lineNumber);
         EBUS_EVENT(LUAEditorDebuggerMessages::Bus, GetCallstack);

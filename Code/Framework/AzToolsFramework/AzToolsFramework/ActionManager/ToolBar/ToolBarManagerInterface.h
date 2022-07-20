@@ -12,6 +12,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 
 class QToolBar;
+class QWidget;
 
 namespace AzToolsFramework
 {
@@ -42,7 +43,7 @@ namespace AzToolsFramework
         //! @return A successful outcome object, or a string with a message detailing the error in case of failure.
         virtual ToolBarManagerOperationResult RegisterToolBar(const AZStd::string& toolBarIdentifier, const ToolBarProperties& properties) = 0;
 
-        //! Bind an Action to a ToolBar.
+        //! Add an Action to a ToolBar.
         //! @param toolBarIdentifier The identifier for the ToolBar the action is being added to.
         //! @param actionIdentifier The identifier for the action to add to the ToolBar.
         //! @param sortIndex An integer defining the position the action should appear in the ToolBar.
@@ -50,12 +51,50 @@ namespace AzToolsFramework
         virtual ToolBarManagerOperationResult AddActionToToolBar(
             const AZStd::string& toolBarIdentifier, const AZStd::string& actionIdentifier, int sortIndex) = 0;
 
+        //! Add an Action with a submenu to a ToolBar.
+        //! @param toolBarIdentifier The identifier for the ToolBar the action is being added to.
+        //! @param actionIdentifier The identifier for the action to add to the ToolBar.
+        //! @param subMenuIdentifier The identifier for the menu to add to the ToolBar next to the action.
+        //! @param sortIndex An integer defining the position the action should appear in the ToolBar.
+        //! @return A successful outcome object, or a string with a message detailing the error in case of failure.
+        virtual ToolBarManagerOperationResult AddActionWithSubMenuToToolBar(
+            const AZStd::string& toolBarIdentifier, const AZStd::string& actionIdentifier, const AZStd::string& subMenuIdentifier, int sortIndex) = 0;
+
+        //! Add multiple Actions to a ToolBar. Saves time as it only updates the toolbar once at the end.
+        //! @param toolBarIdentifier The identifier for the ToolBar the actions are being added to.
+        //! @param actions A vector of pairs of identifiers for the actions to add to the toolbar and their sort position.
+        //! @return A successful outcome object, or a string with a message detailing the error in case of failure.
+        virtual ToolBarManagerOperationResult AddActionsToToolBar(
+            const AZStd::string& toolBarIdentifier, const AZStd::vector<AZStd::pair<AZStd::string, int>>& actions) = 0;
+
+        //! Removes an Action from a ToolBar.
+        //! @param toolBarIdentifier The identifier for the ToolBar the action is being removed from.
+        //! @param actionIdentifier The identifier for the action to remove from the ToolBar.
+        //! @return A successful outcome object, or a string with a message detailing the error in case of failure.
+        virtual ToolBarManagerOperationResult RemoveActionFromToolBar(
+            const AZStd::string& toolBarIdentifier, const AZStd::string& actionIdentifier) = 0;
+
+        //! Removes multiple Actions from a Menu.
+        //! @param toolBarIdentifier The identifier for the ToolBar the actions are being removed from.
+        //! @param actionIdentifiers A vector of identifiers for the actions to remove from the ToolBar.
+        //! @return A successful outcome object, or a string with a message detailing the error in case of failure.
+        virtual ToolBarManagerOperationResult RemoveActionsFromToolBar(
+            const AZStd::string& toolBarIdentifier, const AZStd::vector<AZStd::string>& actionIdentifiers) = 0;
+
         //! Add a Separator to a ToolBar.
         //! @param toolBarIdentifier The identifier for the ToolBar the separator is being added to.
         //! @param sortIndex An integer defining the position the separator should appear in the ToolBar.
         //! @return A successful outcome object, or a string with a message detailing the error in case of failure.
         virtual ToolBarManagerOperationResult AddSeparatorToToolBar(
             const AZStd::string& toolBarIdentifier, int sortIndex) = 0;
+
+        //! Add a Widget to a ToolBar.
+        //! @param toolBarIdentifier The identifier for the ToolBar the widget is being added to.
+        //! @param widget A pointer to the widget to add to the ToolBar.
+        //! @param sortIndex An integer defining the position the widget should appear in the ToolBar.
+        //! @return A successful outcome object, or a string with a message detailing the error in case of failure.
+        virtual ToolBarManagerOperationResult AddWidgetToToolBar(
+            const AZStd::string& toolBarIdentifier, QWidget* widget, int sortIndex) = 0;
 
         //! Retrieve a QToolBar from its identifier.
         //! @param toolBarIdentifier The identifier for the ToolBar to retrieve.
@@ -67,6 +106,27 @@ namespace AzToolsFramework
         //! @param actionIdentifier The identifier for the action whose sort key to get in the toolbar.
         //! @return A successful outcome object containing the sort key, or a string with a message detailing the error in case of failure.
         virtual ToolBarManagerIntegerResult GetSortKeyOfActionInToolBar(const AZStd::string& toolBarIdentifier, const AZStd::string& actionIdentifier) const = 0;
+    };
+
+    //! ToolBarManagerInternalInterface
+    //! Internal Interface to query implementation details for toolBars.
+    class ToolBarManagerInternalInterface
+    {
+    public:
+        AZ_RTTI(ToolBarManagerInternalInterface, "{55B9CA70-5277-4B8A-8F76-8C1F2A75D558}");
+
+        //! Queues up a toolBar for a refresh at the end of this tick.
+        //! @param toolBarIdentifier The identifier for the toolBar to refresh.
+        //! @return A successful outcome object, or a string with a message detailing the error in case of failure.
+        virtual ToolBarManagerOperationResult QueueToolBarRefresh(const AZStd::string& toolBarIdentifier) = 0;
+
+        //! Queues up all toolbars containing the action provided for a refresh at the end of this tick.
+        //! @param actionIdentifier The identifier for the action triggering the refresh for toolbars containing it.
+        //! @return A successful outcome object, or a string with a message detailing the error in case of failure.
+        virtual ToolBarManagerOperationResult QueueRefreshForToolBarsContainingAction(const AZStd::string& actionIdentifier) = 0;
+
+        //! Refreshes all toolBar that were queued up by QueueMenuRefresh.
+        virtual void RefreshToolBars() = 0;
     };
 
 } // namespace AzToolsFramework

@@ -46,6 +46,11 @@
                 "$type": "EditorEntityIconComponent",
                 "Id": 5688118765544765547
             },
+            "Component_[6504454174989211950]": {
+                "$type": "LocalViewBookmarkComponent",
+                "Id": 6504454174989211950,
+                "LocalBookmarkFileName": "NavigationSample_16046976285.setreg"
+            },
             "Component_[6545738857812235305]": {
                 "$type": "SelectionComponent",
                 "Id": 6545738857812235305
@@ -98,7 +103,13 @@
                 },
                 "Component_[15323900898074703000]": {
                     "$type": "EditorRecastNavigationMeshComponent",
-                    "Id": 15323900898074703000
+                    "Id": 15323900898074703000,
+                    "Controller": {
+                        "Configuration": {
+                            "Agent Radius": 0.5,
+                            "Editor Preview": true
+                        }
+                    }
                 },
                 "Component_[15394602174106695453]": {
                     "$type": "EditorRecastNavigationPhysXProviderComponent",

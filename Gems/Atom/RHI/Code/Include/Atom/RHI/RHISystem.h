@@ -43,7 +43,7 @@ namespace AZ
 
             // Register/Unregister xr system
             void RegisterXRSystem(XRRenderingInterface* xrRenderingInterface);
-            void UnRegisterXRSystem();
+            void UnregisterXRSystem();
 
             //////////////////////////////////////////////////////////////////////////
             // RHISystemInterface Overrides

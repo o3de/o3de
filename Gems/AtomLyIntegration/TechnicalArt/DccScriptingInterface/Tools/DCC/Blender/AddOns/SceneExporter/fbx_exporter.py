@@ -121,7 +121,7 @@ def fbx_file_exporter(fbx_file_path, file_name):
             use_active_collection=False,
             global_scale=1.0,
             apply_unit_scale=True,
-            apply_scale_options='FBX_SCALE_NONE',
+            apply_scale_options='FBX_SCALE_UNITS',
             use_space_transform=True,
             bake_space_transform=False,
             object_types={'ARMATURE', 'CAMERA', 'EMPTY', 'LIGHT', 'MESH', 'OTHER'},
@@ -132,7 +132,7 @@ def fbx_file_exporter(fbx_file_path, file_name):
             use_mesh_edges=False,
             use_tspace=False,
             use_custom_props=False,
-            add_leaf_bones=True,
+            add_leaf_bones=False,
             primary_bone_axis='Y',
             secondary_bone_axis='X',
             use_armature_deform_only=False,
@@ -151,8 +151,6 @@ def fbx_file_exporter(fbx_file_path, file_name):
             use_metadata=True,
             axis_forward='-Z',
             axis_up='Y')
-        ui.message_box("3D Model Exported, please reload O3DE Level", "O3DE Tools", "LIGHT")
+        ui.message_box("3D Model Exported!", "O3DE Tools", "LIGHT")
         if not bpy.types.Scene.export_textures_folder is None:
             utils.ReplaceStoredPaths()
-    else:
-        ui.message_box("Nothing Selected!", "O3DE Tools", "ERROR")

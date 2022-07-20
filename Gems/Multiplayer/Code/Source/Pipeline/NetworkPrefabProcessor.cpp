@@ -136,7 +136,11 @@ namespace Multiplayer
         sourceInstance->GetNestedInstances([networkInstance, rootSourceInstance, rootNetworkInstance, prefabName, uniqueName, &context, networkSpawnableAssetId](AZStd::unique_ptr<AzToolsFramework::Prefab::Instance>& sourceNestedInstance)
         {
             // Make a new nested instance for the network prefab instance
-            AZStd::unique_ptr<AzToolsFramework::Prefab::Instance> networkNestedInstance = AZStd::make_unique<AzToolsFramework::Prefab::Instance>(AzToolsFramework::Prefab::InstanceOptionalReference(*rootNetworkInstance), sourceNestedInstance->GetInstanceAlias());
+            AZStd::unique_ptr<AzToolsFramework::Prefab::Instance> networkNestedInstance =
+                AZStd::make_unique<AzToolsFramework::Prefab::Instance>(
+                    AzToolsFramework::Prefab::InstanceOptionalReference(*rootNetworkInstance),
+                    sourceNestedInstance->GetInstanceAlias(),
+                    AzToolsFramework::Prefab::EntityIdInstanceRelationship::OneToMany);
             AzToolsFramework::Prefab::Instance& targetNestedInstance = networkInstance->AddInstance(AZStd::move(networkNestedInstance));
 
             PopulateNetworkInstance(

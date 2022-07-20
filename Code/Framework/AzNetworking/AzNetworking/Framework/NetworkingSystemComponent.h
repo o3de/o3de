@@ -63,6 +63,7 @@ namespace AzNetworking
         AZ::TimeMs GetTcpListenThreadUpdateTime() const override;
         uint32_t GetUdpReaderThreadSocketCount() const override;
         AZ::TimeMs GetUdpReaderThreadUpdateTime() const override;
+        void ForceUpdate() override;
         //! @}
 
         //! Console commands.

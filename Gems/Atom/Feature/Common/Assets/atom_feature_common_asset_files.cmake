@@ -33,6 +33,11 @@ set(FILES
     Materials/Types/EnhancedPBR_Shadowmap_WithPS.shader
     Materials/Types/EnhancedPBR_SubsurfaceState.lua
     Materials/Types/EnhancedSurface_ForwardPass.azsli
+    Materials/Types/Eye.azsl
+    Materials/Types/Eye.materialtype
+    Materials/Types/Eye.shader
+    Materials/Types/EyeSurface_ForwardPass.azsli
+    Materials/Types/Eye_Common.azsli
     Materials/Types/Skin.azsl
     Materials/Types/Skin.materialtype
     Materials/Types/Skin.shader
@@ -62,6 +67,7 @@ set(FILES
     Materials/Types/StandardPBR_ForwardPass.azsl
     Materials/Types/StandardPBR_ForwardPass.shader
     Materials/Types/StandardPBR_ForwardPass_EDS.shader
+    Materials/Types/StandardPBR_HandleIrradianceColorSource.lua
     Materials/Types/StandardPBR_HandleOpacityDoubleSided.lua
     Materials/Types/StandardPBR_HandleOpacityMode.lua
     Materials/Types/StandardPBR_LowEndForward.shader
@@ -75,10 +81,12 @@ set(FILES
     Materials/Types/StandardSurface_ForwardPass.azsli
     Materials/Types/MaterialFunctions/EnhancedParallaxDepth.azsli
     Materials/Types/MaterialFunctions/EvaluateEnhancedSurface.azsli
+    Materials/Types/MaterialFunctions/EvaluateEyeSurface.azsli
     Materials/Types/MaterialFunctions/EvaluateStandardSurface.azsli
     Materials/Types/MaterialFunctions/EvaluateTangentFrame.azsli
     Materials/Types/MaterialFunctions/MultilayerParallaxDepth.azsli
     Materials/Types/MaterialFunctions/ParallaxDepth.azsli
+    Materials/Types/MaterialFunctions/ParallaxShadowUtil.azsli
     Materials/Types/MaterialFunctions/StandardGetAlphaAndClip.azsli
     Materials/Types/MaterialFunctions/StandardGetNormalToWorld.azsli
     Materials/Types/MaterialFunctions/StandardGetObjectToWorld.azsli
@@ -122,10 +130,6 @@ set(FILES
     Passes/DepthExponentiation.pass
     Passes/DepthMax.pass
     Passes/DepthMSAA.pass
-    Passes/DepthMSAA2x.pass
-    Passes/DepthMSAA4x.pass
-    Passes/DepthMSAA8x.pass
-    Passes/DepthMSAAParent.pass
     Passes/DepthOfField.pass
     Passes/DepthOfFieldBlurBokeh.pass
     Passes/DepthOfFieldComposite.pass
@@ -135,6 +139,7 @@ set(FILES
     Passes/DepthOfFieldPrepare.pass
     Passes/DepthOfFieldReadBackFocusDepth.pass
     Passes/DepthOfFieldWriteFocusDepthFromGpu.pass
+    Passes/DepthParent.pass
     Passes/DepthToLinearDepth.pass
     Passes/DepthUpsample.pass
     Passes/DiffuseComposite.pass
@@ -146,6 +151,7 @@ set(FILES
     Passes/DiffuseProbeGridClassification.pass
     Passes/DiffuseProbeGridDownsample.pass
     Passes/DiffuseProbeGridPrepare.pass
+    Passes/DiffuseProbeGridQuery.pass
     Passes/DiffuseProbeGridRayTracing.pass
     Passes/DiffuseProbeGridRelocation.pass
     Passes/DiffuseProbeGridRender.pass
@@ -159,11 +165,7 @@ set(FILES
     Passes/DownsampleLuminanceMinAvgMaxCS.pass
     Passes/DownsampleMinAvgMaxCS.pass
     Passes/DownsampleMipChain.pass
-    Passes/EnvironmentCubeMapDepthMSAA.pass
-    Passes/EnvironmentCubeMapForwardMSAA.pass
-    Passes/EnvironmentCubeMapForwardSubsurfaceMSAA.pass
     Passes/EnvironmentCubeMapPipeline.pass
-    Passes/EnvironmentCubeMapSkyBox.pass
     Passes/EsmShadowmaps.pass
     Passes/EyeAdaptation.pass
     Passes/FastDepthAwareBlur.pass
@@ -171,11 +173,10 @@ set(FILES
     Passes/FastDepthAwareBlurVer.pass
     Passes/Forward.pass
     Passes/ForwardCheckerboard.pass
-    Passes/ForwardMSAA.pass
-    Passes/ForwardSubsurfaceMSAA.pass
+    Passes/ForwardSubsurface.pass
     Passes/FullscreenCopy.pass
-    Passes/FullscreenShadow.pass
     Passes/FullscreenOutputOnly.pass
+    Passes/FullscreenShadow.pass
     Passes/HDRColorGrading.pass
     Passes/ImGui.pass
     Passes/KawaseShadowBlur.pass
@@ -294,6 +295,7 @@ set(FILES
     ShaderLib/Atom/Features/PBR/Lighting/BaseLighting.azsli
     ShaderLib/Atom/Features/PBR/Lighting/DualSpecularLighting.azsli
     ShaderLib/Atom/Features/PBR/Lighting/EnhancedLighting.azsli
+    ShaderLib/Atom/Features/PBR/Lighting/EyeLighting.azsli
     ShaderLib/Atom/Features/PBR/Lighting/LightingData.azsli
     ShaderLib/Atom/Features/PBR/Lighting/SkinLighting.azsli
     ShaderLib/Atom/Features/PBR/Lighting/StandardLighting.azsli
@@ -317,6 +319,7 @@ set(FILES
     ShaderLib/Atom/Features/PBR/Surfaces/ClearCoatSurfaceData.azsli
     ShaderLib/Atom/Features/PBR/Surfaces/DualSpecularSurface.azsli
     ShaderLib/Atom/Features/PBR/Surfaces/EnhancedSurface.azsli
+    ShaderLib/Atom/Features/PBR/Surfaces/EyeSurface.azsli
     ShaderLib/Atom/Features/PBR/Surfaces/SkinSurface.azsli
     ShaderLib/Atom/Features/PBR/Surfaces/StandardSurface.azsli
     ShaderLib/Atom/Features/PBR/Surfaces/TransmissionSurfaceData.azsli
@@ -340,6 +343,7 @@ set(FILES
     ShaderLib/Atom/Features/ScreenSpace/ScreenSpaceUtil.azsli
     ShaderLib/Atom/Features/Shadow/BicubicPcfFilters.azsli
     ShaderLib/Atom/Features/Shadow/DirectionalLightShadow.azsli
+    ShaderLib/Atom/Features/Shadow/DirectionalLightShadowCalculator.azsli
     ShaderLib/Atom/Features/Shadow/ESM.azsli
     ShaderLib/Atom/Features/Shadow/NormalOffsetShadows.azsli
     ShaderLib/Atom/Features/Shadow/ProjectedShadow.azsli

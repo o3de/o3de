@@ -12,7 +12,7 @@
 
 static const uint MacroClipmapStackSizeMax = 16u;
 static const uint DetailClipmapStackSizeMax = 16u;
-static const uint StackSizeMax = 16u; // = max(MacroClipmapStackSizeMax, DetailClipmapStackSizeMax)
+static const uint SharedClipmapStackSizeMax = 16u; // = max(MacroClipmapStackSizeMax, DetailClipmapStackSizeMax)
 // Each clipmap can have at most 6 update regions based on the current algorithm.
 // Due to compilation limitation, the size of arrays must be direct constant.
 static const uint UpdateRegionMax = 6u;
@@ -31,6 +31,8 @@ ShaderResourceGroup TerrainSrg : SRG_Terrain
         float3 m_mainCameraPosition;
         float m_firstLodDistance;
         float m_rcpClodDistance;
+        float m_rcpGridSize;
+        float m_gridToQuadScale;
     };
 
     struct DetailMaterialData
@@ -97,53 +99,59 @@ ShaderResourceGroup TerrainSrg : SRG_Terrain
         uint m_index23;
     };
 
+    struct ClipmapUpdateRegion
+    {
+        uint4 m_clipmapRegion;
+        uint m_clipmapLevel;
+        uint3 m_padding;
+    };
+
     struct ClipmapData
     {
-        // The 2D xy-plane view position where the main camera is.
-        float2 m_previousViewPosition;
-        float2 m_currentViewPosition;
+        // Current viewport size.
+        float2 m_viewportSize;
 
-        // 2D xy-plane world bounds defined by the terrain.
-        float2 m_worldBoundsMin;
-        float2 m_worldBoundsMax;
-
-        //! The max range that the clipmap is covering.
+        // The max range that the clipmap is covering.
         float m_macroClipmapMaxRenderRadius;
         float m_detailClipmapMaxRenderRadius;
 
-        //! The scale base between two adjacent clipmap layers.
-        //! For example, 3 means the (n+1)th clipmap covers 3^2 = 9 times
-        //! to what is covered by the nth clipmap.
+        // The scale base between two adjacent clipmap layers.
+        // For example, 3 means the (n+1)th clipmap covers 3^2 = 9 times
+        // to what is covered by the nth clipmap.
         float m_macroClipmapScaleBase;
         float m_detailClipmapScaleBase;
 
-        //! Size of the clipmap stack.
+        // Size of the clipmap stack.
         uint m_macroClipmapStackSize;
         uint m_detailClipmapStackSize;
 
-        //! The size of the clipmap image in each layer.
-        //! Given 2 copies in different types to save casting.
+        // The margin size of the edge of the clipmap where the data won't be used.
+        float m_macroClipmapMarginSize;
+        float m_detailClipmapMarginSize;
+
+        // In addition to the above margin size used for updating,
+        // this margin is a safety margin to avoid edge cases when blending or sampling.
+        float m_extendedClipmapMarginSize;
+
+        // The size of the clipmap image in each layer.
+        // Given 2 copies in different types to save casting.
         float m_clipmapSizeFloat;
         uint m_clipmapSizeUint;
 
-        // Clipmap centers in texel coordinates ranging [0, size).
-        // xy represent previous clipmap centers, zw represent current clipmap centers.
-        // (Array elements will always be padded to 16, a float4 size. Storing both centers in float4 saves bandwidth.)
-        // They are used for toroidal addressing and may move each frame based on the view point movement.
-        // The move distance is scaled differently in each layer.
-        uint4 m_macroClipmapCenters[MacroClipmapStackSizeMax];
-        uint4 m_detailClipmapCenters[DetailClipmapStackSizeMax];
+        // The texel position where blending to the next level should start. Equivalent to:
+        // m_clipmapSizeFloat / 2.0 - m_macroClipmapMarginSize - m_extendedClipmapMarginSize
+        // Cached for frequent access.
+        float m_validMacroClipmapRadius;
+        // Same as above, equivalent to:
+        // m_clipmapSizeFloat / 2.0 - m_detailClipmapMarginSize - m_extendedClipmapMarginSize
+        float m_validDetailClipmapRadius;
 
-        // A list of reciprocal the clipmap scale [s],
-        // where 1 pixel in the current layer of clipmap represents s meters. 
-        // Fast lookup list to avoid redundant calculation in shaders.
-        // x: macro; y: detail
-        float4 m_clipmapScaleInv[StackSizeMax];
+        // The size of the blending area between each clipmap level.
+        float m_clipmapBlendSize;
 
-        // The region of the clipmap that needs update.
-        // Each clipmap can have 0-6 regions to update each frame.
-        uint4 m_macroClipmapBoundsRegions[MacroClipmapUpdateRegionMax];
-        uint4 m_detailClipmapBoundsRegions[DetailClipmapUpdateRegionMax];
+        // The number of regions to be updated during the current frame.
+        uint m_macroClipmapUpdateRegionCount;
+        uint m_detailClipmapUpdateRegionCount;
 
         // Numbers match the compute shader invoking call dispatch(X, Y, 1).
         uint m_macroDispatchGroupCountX;
@@ -170,14 +178,39 @@ ShaderResourceGroup TerrainSrg : SRG_Terrain
         // Which clipmap level to sample from, or texture array index.
         float m_debugClipmapLevel; // cast to float in CPU
 
-        // Current viewport size.
-        float2 m_viewportSize;
-
         // How big the clipmap should appear on the screen.
         float m_debugScale;
 
         // Multiplier adjustment for final color output.
         float m_debugBrightness;
+
+        // Clipmap centers in texel coordinates ranging [0, size).
+        // Clipmap centers are the logical center of the texture, based on toroidal addressing.
+        struct ClipmapCenter
+        {
+            uint2 m_macro;
+            uint2 m_detail;
+        };
+        ClipmapCenter m_clipmapCenters[SharedClipmapStackSizeMax];
+
+        // Clipmap centers in world coordinates.
+        struct ClipmapWorldCenter
+        {
+            float2 m_macro;
+            float2 m_detail;
+        };
+        ClipmapWorldCenter m_clipmapWorldCenters[SharedClipmapStackSizeMax];
+
+        // A scale converting the length from the texture space to the world space.
+        // For example: given texel (u0, v0) and (u1, v1), dtexel = sqrt((u0 - u1)^2, (v0 - v1)^2)
+        //              dworld = dtexel * clipmapToWorldScale.
+        struct ClipmapToWorldScale
+        {
+            float m_macro;
+            float m_detail;
+            float2 m_padding;
+        };
+        ClipmapToWorldScale m_clipmapToWorldScale[SharedClipmapStackSizeMax];
     };
 
     MeshData m_meshData;
@@ -188,11 +221,15 @@ ShaderResourceGroup TerrainSrg : SRG_Terrain
     // Clipmap Sampler
     Sampler m_clipmapSampler
     {
-        MaxAnisotropy = 16;
-        AddressU = Wrap;
-        AddressV = Wrap;
-        AddressW = Wrap;
+        AddressU = Clamp;
+        AddressV = Clamp;
+        AddressW = Clamp;
     };
+    
+    // The region of the clipmap that needs update.
+    // Each clipmap can have 0-6 regions to update each frame.
+    StructuredBuffer<ClipmapUpdateRegion> m_macroClipmapUpdateRegions;
+    StructuredBuffer<ClipmapUpdateRegion> m_detailClipmapUpdateRegions;
 
     Texture2DArray<float4> m_macroColorClipmaps;
     Texture2DArray<float2> m_macroNormalClipmaps;
@@ -219,23 +256,11 @@ ShaderResourceGroup TerrainSrg : SRG_Terrain
         return uint2(m_macroMaterialGridInfo.m_resolution >> 16, m_macroMaterialGridInfo.m_resolution & 0xFFFF);
     }
     
-    float2 CalculateCullDistance(uint lodLevel, float3 worldPosition)
+    float CalculateClodDistance(uint lodLevel, float3 worldPosition)
     {
-        float minRange = 0;
-        float maxRange = m_meshData.m_firstLodDistance;
-        if (lodLevel > 0)
-        {
-            maxRange = maxRange * float(1u << lodLevel);
-            minRange = m_meshData.m_firstLodDistance * float(1u<< (lodLevel - 1u));
-        }
-
-        // This is conservative on both the min and max side to avoid holes, but it should be possible to use a single clipping plane when CLOD is implemented.
+        float maxRange = m_meshData.m_firstLodDistance * float(1u << lodLevel);
         float viewDistanceToWorldPosition = length(m_meshData.m_mainCameraPosition - worldPosition);
-
-        float2 outcullDistance;
-        outcullDistance.x = viewDistanceToWorldPosition - minRange;
-        outcullDistance.y = maxRange - viewDistanceToWorldPosition;
-        return outcullDistance;
+        return maxRange - viewDistanceToWorldPosition;
     }
 }
 
