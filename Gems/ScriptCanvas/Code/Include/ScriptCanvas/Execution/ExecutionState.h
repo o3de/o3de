@@ -8,55 +8,53 @@
 
 #pragma once
 
-#include <AzCore/Component/EntityId.h>
-#include <AzCore/EBus/Event.h>
+#include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/RTTI/RTTI.h>
-#include <AzCore/Script/ScriptAsset.h>
-
-#include <ScriptCanvas/Asset/RuntimeAsset.h>
 #include <ScriptCanvas/Execution/ExecutionStateDeclarations.h>
 #include <ScriptCanvas/Grammar/PrimitivesDeclarations.h>
-
-#if !defined(_RELEASE)
-#define SCRIPT_CANVAS_RUNTIME_ASSET_CHECK
-#endif
+#include <ScriptCanvas/Grammar/DebugMap.h>
 
 namespace AZ
 {
     class ReflectContext;
-
-    struct BehaviorValueParameter;
 }
 
 namespace ScriptCanvas
 {
     class RuntimeComponent;
 
+    struct RuntimeData;
+    struct RuntimeDataOverrides;
+
+    constexpr const AZ::u32 UserDataMark = AZ_CRC_CE("UserDataMark");
+
     struct ExecutionStateConfig
     {
-        AZ::Data::Asset<RuntimeAsset> asset;
-        RuntimeComponent& component;
         const RuntimeData& runtimeData;
+        const RuntimeDataOverrides& overrides;
+        ExecutionUserData&& userData;
 
-        ExecutionStateConfig(AZ::Data::Asset<RuntimeAsset> asset, RuntimeComponent& component);
+        ExecutionStateConfig(const RuntimeDataOverrides& overrides);
+        ExecutionStateConfig(const RuntimeDataOverrides& overrides, ExecutionUserData&& userData);
     };
 
+    /// <summary>
+    /// \class ExecutionState - the base abstract class that is the interface for the ScriptCanvas runtime and the hosting environment.
+    /// It allows for customization of initialization, starting, and stopping execution. It only works on on valid runtime data, and holds
+    /// user data. For example, in the Entity/Component system, the user data stores the information required to provide the Entity and
+    /// Component that own the running graph. The actual runtime implementation is entirely up to subclasses.
+    /// </summary>
     class ExecutionState
-        : public AZStd::enable_shared_from_this<ExecutionState>
     {
     public:
-        AZ_RTTI(ExecutionState, "{85C66E59-F012-460E-9756-B36819753F4D}", AZStd::enable_shared_from_this<ExecutionState>);
+        AZ_RTTI(ExecutionState, "{85C66E59-F012-460E-9756-B36819753F4D}");
         AZ_CLASS_ALLOCATOR(ExecutionState, AZ::SystemAllocator, 0);
 
-        static ExecutionStatePtr Create(const ExecutionStateConfig& config);
+        const AZ::u32 m_lightUserDataMark = UserDataMark;
 
-        static void Reflect(AZ::ReflectContext* reflectContext);
-
-        const RuntimeComponent* m_component = nullptr;
-
-        ExecutionState(const ExecutionStateConfig& config);
+        ExecutionState(ExecutionStateConfig& config);
 
         virtual ~ExecutionState() = default;
 
@@ -64,21 +62,35 @@ namespace ScriptCanvas
 
         AZ::Data::AssetId GetAssetId() const;
 
-        AZ::ComponentId GetComponentId() const;
+        const Grammar::DebugExecution* GetDebugSymbolIn(size_t index) const;
 
-        AZ::EntityId GetEntityId() const;
+        const Grammar::DebugExecution* GetDebugSymbolIn(size_t index, const AZ::Data::AssetId& id) const;
+
+        const Grammar::DebugExecution* GetDebugSymbolOut(size_t index) const;
+
+        const Grammar::DebugExecution* GetDebugSymbolOut(size_t index, const AZ::Data::AssetId& id) const;
+
+        const Grammar::DebugExecution* GetDebugSymbolReturn(size_t index) const;
+
+        const Grammar::DebugExecution* GetDebugSymbolReturn(size_t index, const AZ::Data::AssetId& id) const;
+
+        const Grammar::DebugDataSource* GetDebugSymbolVariableChange(size_t index) const;
+
+        const Grammar::DebugDataSource* GetDebugSymbolVariableChange(size_t index, const AZ::Data::AssetId& id) const;
 
         virtual ExecutionMode GetExecutionMode() const = 0;
 
-        GraphIdentifier GetGraphIdentifier() const;
-
-        GraphIdentifier GetGraphIdentifier(const AZ::Data::AssetId& id) const;
-
-        AZ::EntityId GetScriptCanvasId() const;
-
         const RuntimeDataOverrides& GetRuntimeDataOverrides() const;
 
+        const RuntimeData& GetRuntimeData() const;
+
+        const ExecutionUserData& GetUserData() const;
+
         virtual void Initialize() = 0;
+
+        virtual bool IsPure() const { return false; }
+
+        ExecutionUserData& ModUserData() const;
 
         ExecutionStatePtr SharedFromThis();
 
@@ -91,6 +103,10 @@ namespace ScriptCanvas
         ExecutionStateWeakPtr WeakFromThis();
 
         ExecutionStateWeakConstPtr WeakFromThisConst() const;
-    };
 
+    private:
+        const RuntimeData& m_runtimeData;
+        const RuntimeDataOverrides& m_overrides;
+        ExecutionUserData m_userData;
+    };
 }

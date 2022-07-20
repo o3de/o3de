@@ -215,7 +215,7 @@ namespace EditorPythonBindingsUnitTests
 
             const char* testCvar = "test.cvar.int";
             int intArg = 1;
-            AZStd::array<AZ::BehaviorValueParameter, 2> args;
+            AZStd::array<AZ::BehaviorArgument, 2> args;
             args[0].Set(&testCvar);
             args[1].Set(&intArg);
 
@@ -234,7 +234,7 @@ namespace EditorPythonBindingsUnitTests
 
             const char* testCvar = "test.cvar.float";
             float input = 1.234f;
-            AZStd::array<AZ::BehaviorValueParameter, 2> args;
+            AZStd::array<AZ::BehaviorArgument, 2> args;
             args[0].Set(&testCvar);
             args[1].Set(&input);
 
@@ -253,7 +253,7 @@ namespace EditorPythonBindingsUnitTests
 
             const char* testCvar = "test.cvar.string";
             const char* input = "testvalue";
-            AZStd::array<AZ::BehaviorValueParameter, 2> args;
+            AZStd::array<AZ::BehaviorArgument, 2> args;
             args[0].Set(&testCvar);
             args[1].Set(&input);
 
@@ -270,7 +270,7 @@ namespace EditorPythonBindingsUnitTests
             mockEditor.PrepareGetCVarString("atestvalue");
 
             const char* testCvar = "test.cvar.string";
-            AZStd::array<AZ::BehaviorValueParameter, 1> args;
+            AZStd::array<AZ::BehaviorArgument, 1> args;
             args[0].Set(&testCvar);
 
             const char* data;
@@ -278,7 +278,7 @@ namespace EditorPythonBindingsUnitTests
             obj.m_typeId = azrtti_typeid<const char*>();
             obj.m_address = &data;
     
-            AZ::BehaviorValueParameter result;
+            AZ::BehaviorArgument result;
             result.Set(&obj);
 
             context->m_methods.find("get_cvar")->second->Call(args.begin(), static_cast<unsigned int>(args.size()), &result);
@@ -296,7 +296,7 @@ namespace EditorPythonBindingsUnitTests
             ON_CALL(mockEditor.m_console, ExecuteString(_,_,_)).WillByDefault(Invoke([&data](const char* command, const bool, const bool) { data = command; }));
 
             const char* testCvar = "enable_feature game.sim";
-            AZStd::array<AZ::BehaviorValueParameter, 1> args;
+            AZStd::array<AZ::BehaviorArgument, 1> args;
             args[0].Set(&testCvar);
 
             context->m_methods.find("run_console")->second->Call(args.begin(), static_cast<unsigned int>(args.size()));

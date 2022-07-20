@@ -185,5 +185,5 @@ void DHBreakpointsWidget::RemoveRow(int which)
     QByteArray fileName = file->data(Qt::DisplayRole).toString().toUtf8().data();
     int lineNumber = line->data(Qt::DisplayRole).toInt();
 
-    EBUS_EVENT(LUAEditor::LUABreakpointRequestMessages::Bus, RequestDeleteBreakpoint, AZStd::string(fileName), lineNumber);
+    EBUS_EVENT(LUAEditor::LUABreakpointRequestMessages::Bus, RequestDeleteBreakpoint, AZStd::string(fileName.constData()), lineNumber);
 }

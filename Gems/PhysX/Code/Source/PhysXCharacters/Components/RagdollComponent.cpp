@@ -28,7 +28,7 @@ namespace PhysX
         // a valid version 2 in either case.
         if (classElement.GetVersion() <= 1)
         {
-            int ragdollElementIndex = classElement.FindElement(AZ_CRC("PhysXRagdoll", 0xe081b8b0));
+            int ragdollElementIndex = classElement.FindElement(AZ_CRC_CE("PhysXRagdoll"));
 
             if (ragdollElementIndex >= 0)
             {
@@ -87,7 +87,7 @@ namespace PhysX
                     ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
                     ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/PhysXRagdoll.svg")
                     ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/PhysXRagdoll.svg")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
+                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                     ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/physx/ragdoll/")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(

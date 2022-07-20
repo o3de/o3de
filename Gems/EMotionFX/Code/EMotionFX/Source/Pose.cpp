@@ -515,7 +515,7 @@ namespace EMotionFX
             MCORE_ASSERT(numMorphs == destPose->GetNumMorphWeights());
             for (size_t i = 0; i < numMorphs; ++i)
             {
-                m_morphWeights[i] = MCore::LinearInterpolate<float>(m_morphWeights[i], destPose->m_morphWeights[i], weight);
+                m_morphWeights[i] = AZ::Lerp(m_morphWeights[i], destPose->m_morphWeights[i], weight);
             }
         }
         else
@@ -595,7 +595,7 @@ namespace EMotionFX
             MCORE_ASSERT(numMorphs == destPose->GetNumMorphWeights());
             for (size_t i = 0; i < numMorphs; ++i)
             {
-                m_morphWeights[i] = MCore::LinearInterpolate<float>(m_morphWeights[i], destPose->m_morphWeights[i], weight);
+                m_morphWeights[i] = AZ::Lerp(m_morphWeights[i], destPose->m_morphWeights[i], weight);
             }
         }
         else
@@ -847,7 +847,7 @@ namespace EMotionFX
             MCORE_ASSERT(numMorphs == destPose->GetNumMorphWeights());
             for (size_t i = 0; i < numMorphs; ++i)
             {
-                m_morphWeights[i] = MCore::LinearInterpolate<float>(m_morphWeights[i], destPose->m_morphWeights[i], weight);
+                m_morphWeights[i] = AZ::Lerp(m_morphWeights[i], destPose->m_morphWeights[i], weight);
             }
 
             for (const auto& poseDataItem : m_poseDatas)
@@ -871,7 +871,7 @@ namespace EMotionFX
             MCORE_ASSERT(numMorphs == destPose->GetNumMorphWeights());
             for (size_t i = 0; i < numMorphs; ++i)
             {
-                m_morphWeights[i] = MCore::LinearInterpolate<float>(m_morphWeights[i], destPose->m_morphWeights[i], weight);
+                m_morphWeights[i] = AZ::Lerp(m_morphWeights[i], destPose->m_morphWeights[i], weight);
             }
 
             for (const auto& poseDataItem : m_poseDatas)
@@ -1205,7 +1205,7 @@ namespace EMotionFX
         return m_poseDatas;
     }
 
-    PoseData* Pose::GetAndPreparePoseData(const AZ::TypeId& typeId, ActorInstance* linkToActorInstance)
+    PoseData* Pose::GetAndPreparePoseData(const AZ::TypeId& typeId, const ActorInstance* linkToActorInstance)
     {
         PoseData* poseData = GetPoseDataByType(typeId);
         if (!poseData)

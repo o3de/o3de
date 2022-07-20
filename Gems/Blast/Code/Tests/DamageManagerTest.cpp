@@ -43,8 +43,9 @@ namespace Blast
             m_mockFamily = AZStd::make_shared<FakeBlastFamily>();
             m_actorFactory = AZStd::make_shared<FakeActorFactory>(3);
             m_systemHandler = AZStd::make_shared<MockBlastSystemBusHandler>();
+            m_blastMaterial = AZStd::make_shared<Material>(MaterialConfiguration());
             m_damageManager =
-                AZStd::make_unique<DamageManager>(BlastMaterial(BlastMaterialConfiguration()), m_actorTracker);
+                AZStd::make_unique<DamageManager>(m_blastMaterial.get(), m_actorTracker);
         }
 
         void TearDown() override
@@ -53,11 +54,13 @@ namespace Blast
             m_actorFactory = nullptr;
             m_systemHandler = nullptr;
             m_damageManager = nullptr;
+            m_blastMaterial = nullptr;
         }
 
         AZStd::unique_ptr<DamageManager> m_damageManager;
         AZStd::shared_ptr<FakeBlastFamily> m_mockFamily;
         AZStd::shared_ptr<FakeActorFactory> m_actorFactory;
+        AZStd::shared_ptr<Material> m_blastMaterial;
         AZStd::shared_ptr<MockBlastSystemBusHandler> m_systemHandler;
         ActorTracker m_actorTracker;
     };

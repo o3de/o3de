@@ -21,6 +21,7 @@
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/std/sort.h>
+#include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/Serialization/Utils.h>
 
 #include <AzFramework/CommandLine/CommandRegistrationBus.h>
@@ -219,15 +220,15 @@ namespace EditorPythonBindings
 
     void PythonLogSymbolsComponent::LogClassWithName(const AZStd::string moduleName, const AZ::BehaviorClass* behaviorClass, const AZStd::string className)
     {
-        Internal::FileHandle fileHandle(OpenModuleAt(moduleName));
-        if (fileHandle.IsValid())
+        auto fileHandle = OpenModuleAt(moduleName);
+        if (fileHandle->IsValid())
         {
             // Behavior Class types with member methods and properties
             AZStd::string buffer;
             AzFramework::StringFunc::Append(buffer, "class ");
             AzFramework::StringFunc::Append(buffer, className.data());
             AzFramework::StringFunc::Append(buffer, ":\n");
-            AZ::IO::FileIOBase::GetInstance()->Write(fileHandle, buffer.c_str(), buffer.size());
+            AZ::IO::FileIOBase::GetInstance()->Write(*fileHandle, buffer.c_str(), buffer.size());
             buffer.clear();
 
             if (behaviorClass->m_methods.empty() && behaviorClass->m_properties.empty())
@@ -235,7 +236,7 @@ namespace EditorPythonBindings
                 AZStd::string body{ "    # behavior class type with no methods or properties \n" };
                 Internal::Indent(1, body);
                 AzFramework::StringFunc::Append(body, "pass\n\n");
-                AZ::IO::FileIOBase::GetInstance()->Write(fileHandle, body.c_str(), body.size());
+                AZ::IO::FileIOBase::GetInstance()->Write(*fileHandle, body.c_str(), body.size());
             }
             else
             {
@@ -244,7 +245,7 @@ namespace EditorPythonBindings
                     AZ::BehaviorProperty* property = properyEntry.second;
                     AZStd::string propertyName{ properyEntry.first };
                     Scope::FetchScriptName(property->m_attributes, propertyName);
-                    WriteProperty(fileHandle, 1, propertyName, *property, behaviorClass);
+                    WriteProperty(*fileHandle, 1, propertyName, *property, behaviorClass);
                 }
 
                 for (const auto& methodEntry : behaviorClass->m_methods)
@@ -254,7 +255,7 @@ namespace EditorPythonBindings
                     {
                         AZStd::string baseMethodName{ methodEntry.first };
                         Scope::FetchScriptName(method->m_attributes, baseMethodName);
-                        WriteMethod(fileHandle, baseMethodName, *method, behaviorClass);
+                        WriteMethod(*fileHandle, baseMethodName, *method, behaviorClass);
                     }
                 }
             }
@@ -264,14 +265,13 @@ namespace EditorPythonBindings
     void PythonLogSymbolsComponent::LogClassMethod(
         const AZStd::string moduleName,
         const AZStd::string globalMethodName,
-        const AZ::BehaviorClass* behaviorClass,
+        [[maybe_unused]] const AZ::BehaviorClass* behaviorClass,
         const AZ::BehaviorMethod* behaviorMethod)
     {
-        AZ_UNUSED(behaviorClass);
-        Internal::FileHandle fileHandle(OpenModuleAt(moduleName));
-        if (fileHandle.IsValid())
+        auto fileHandle = OpenModuleAt(moduleName);
+        if (fileHandle->IsValid())
         {
-            WriteMethod(fileHandle, globalMethodName, *behaviorMethod, nullptr);
+            WriteMethod(*fileHandle, globalMethodName, *behaviorMethod, nullptr);
         }
     }
 
@@ -282,8 +282,8 @@ namespace EditorPythonBindings
             return;
         }
 
-        Internal::FileHandle fileHandle(OpenModuleAt(moduleName));
-        if (fileHandle.IsValid())
+        auto fileHandle = OpenModuleAt(moduleName);
+        if (fileHandle->IsValid())
         {
             AZStd::string buffer;
 
@@ -314,7 +314,7 @@ namespace EditorPythonBindings
             }
 
             AzFramework::StringFunc::Append(buffer, " -> Any:\n");
-            AZ::IO::FileIOBase::GetInstance()->Write(fileHandle, buffer.c_str(), buffer.size());
+            AZ::IO::FileIOBase::GetInstance()->Write(*fileHandle, buffer.c_str(), buffer.size());
             buffer.clear();
 
             auto eventInfoBuilder = [this](const AZ::BehaviorMethod* behaviorMethod, AZStd::string& inOutStrBuffer, [[maybe_unused]] TypeMap& typeCache)
@@ -398,7 +398,7 @@ namespace EditorPythonBindings
             Internal::Indent(1, buffer);
             AzFramework::StringFunc::Append(buffer, "pass\n\n");
 
-            AZ::IO::FileIOBase::GetInstance()->Write(fileHandle, buffer.c_str(), buffer.size());
+            AZ::IO::FileIOBase::GetInstance()->Write(*fileHandle, buffer.c_str(), buffer.size());
 
             // can the EBus create & destroy a handler?
             if (behaviorEBus->m_createHandler && behaviorEBus->m_destroyHandler)
@@ -409,17 +409,17 @@ namespace EditorPythonBindings
                 AzFramework::StringFunc::Append(buffer, "Handler() -> None:\n");
                 Internal::Indent(1, buffer);
                 AzFramework::StringFunc::Append(buffer, "pass\n\n");
-                AZ::IO::FileIOBase::GetInstance()->Write(fileHandle, buffer.c_str(), buffer.size());
+                AZ::IO::FileIOBase::GetInstance()->Write(*fileHandle, buffer.c_str(), buffer.size());
             }
         }
     }
 
     void PythonLogSymbolsComponent::LogGlobalMethod(const AZStd::string moduleName, const AZStd::string methodName, const AZ::BehaviorMethod* behaviorMethod)
     {
-        Internal::FileHandle fileHandle(OpenModuleAt(moduleName));
-        if (fileHandle.IsValid())
+        auto fileHandle = OpenModuleAt(moduleName);
+        if (fileHandle->IsValid())
         {
-            WriteMethod(fileHandle, methodName, *behaviorMethod, nullptr);
+            WriteMethod(*fileHandle, methodName, *behaviorMethod, nullptr);
         }
 
         auto functionMapIt = m_globalFunctionMap.find(moduleName);
@@ -448,14 +448,14 @@ namespace EditorPythonBindings
             return;
         }
 
-        Internal::FileHandle fileHandle(OpenModuleAt(moduleName));
-        if (fileHandle.IsValid())
+        auto fileHandle = OpenModuleAt(moduleName);
+        if (fileHandle->IsValid())
         {
             AZStd::string buffer;
 
             // add header 
             AZ::u64 filesize = 0;
-            AZ::IO::FileIOBase::GetInstance()->Size(fileHandle, filesize);
+            AZ::IO::FileIOBase::GetInstance()->Size(fileHandle->m_handle, filesize);
             if (filesize == 0)
             {
                 AzFramework::StringFunc::Append(buffer, "class property():\n");
@@ -483,14 +483,14 @@ namespace EditorPythonBindings
             }
             AzFramework::StringFunc::Append(buffer, "\n");
 
-            AZ::IO::FileIOBase::GetInstance()->Write(fileHandle, buffer.c_str(), buffer.size());
+            AZ::IO::FileIOBase::GetInstance()->Write(*fileHandle, buffer.c_str(), buffer.size());
         }
     }
 
     void PythonLogSymbolsComponent::Finalize()
     {
-        Internal::FileHandle fileHandle(OpenInitFileAt("azlmbr.bus"));
-        if (fileHandle)
+        auto fileHandle = OpenInitFileAt("azlmbr.bus");
+        if (fileHandle->IsValid())
         {
             AZStd::string buffer;
             AzFramework::StringFunc::Append(buffer, "# Bus dispatch types:\n");
@@ -499,9 +499,9 @@ namespace EditorPythonBindings
             AzFramework::StringFunc::Append(buffer, "Event: Final[int] = 1\n");
             AzFramework::StringFunc::Append(buffer, "QueueBroadcast: Final[int] = 2\n");
             AzFramework::StringFunc::Append(buffer, "QueueEvent: Final[int] = 3\n");
-            AZ::IO::FileIOBase::GetInstance()->Write(fileHandle, buffer.c_str(), buffer.size());
+            AZ::IO::FileIOBase::GetInstance()->Write(*fileHandle, buffer.c_str(), buffer.size());
         }
-        fileHandle.Close();
+        fileHandle->Close();
     }
 
     void PythonLogSymbolsComponent::GetModuleList(AZStd::vector<AZStd::string_view>& moduleList) const
@@ -689,11 +689,11 @@ namespace EditorPythonBindings
         return pythonType;
     }
 
-    AZ::IO::HandleType PythonLogSymbolsComponent::OpenInitFileAt(AZStd::string_view moduleName)
+    PythonLogSymbolsComponent::FileHandlePtr PythonLogSymbolsComponent::OpenInitFileAt(AZStd::string_view moduleName)
     {
         if (m_basePath.empty())
         {
-            return AZ::IO::InvalidHandle;
+            return AZStd::make_shared<Internal::FileHandle>(AZ::IO::InvalidHandle);
         }
 
         // creates the __init__.py file in this path
@@ -708,20 +708,19 @@ namespace EditorPythonBindings
         AZ::IO::OpenMode openMode = AZ::IO::OpenMode::ModeText | AZ::IO::OpenMode::ModeWrite;
         AZ::IO::HandleType fileHandle = AZ::IO::InvalidHandle;
         AZ::IO::Result result = AZ::IO::FileIOBase::GetInstance()->Open(initFile.c_str(), openMode, fileHandle);
-        AZ_Warning("python", result, "Could not open %s to write Python symbols.", initFile.c_str());
         if (result)
         {
-            return fileHandle;
+            return AZStd::make_shared<Internal::FileHandle>(fileHandle);
         }
 
-        return AZ::IO::InvalidHandle;
+        return AZStd::make_shared<Internal::FileHandle>(AZ::IO::InvalidHandle);
     }
 
-    AZ::IO::HandleType PythonLogSymbolsComponent::OpenModuleAt(AZStd::string_view moduleName)
+    PythonLogSymbolsComponent::FileHandlePtr PythonLogSymbolsComponent::OpenModuleAt(AZStd::string_view moduleName)
     {
         if (m_basePath.empty())
         {
-            return AZ::IO::InvalidHandle;
+            return AZStd::make_shared<Internal::FileHandle>(AZ::IO::InvalidHandle);
         }
 
         bool resetFile = false;
@@ -769,12 +768,11 @@ namespace EditorPythonBindings
 
         AZ::IO::HandleType fileHandle = AZ::IO::InvalidHandle;
         AZ::IO::Result result = AZ::IO::FileIOBase::GetInstance()->Open(modulePath.c_str(), openMode, fileHandle);
-        AZ_Warning("python", result, "Could not open %s to write Python module symbols.", modulePath.c_str());
         if (result)
         {
-            return fileHandle;
+            return AZStd::make_shared<Internal::FileHandle>(fileHandle);
         }
 
-        return AZ::IO::InvalidHandle;
+        return AZStd::make_shared<Internal::FileHandle>(AZ::IO::InvalidHandle);
     }
 }

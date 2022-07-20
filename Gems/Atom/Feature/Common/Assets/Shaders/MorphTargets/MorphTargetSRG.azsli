@@ -32,10 +32,8 @@ struct MorphTargetDelta
     uint m_compressedNormalDeltaZTangentDelta;
     // 8 bit padding plus 8 bits per component for bitangent deltas
     uint m_compressedPadBitangentDeltaXYZ;
-    // 8 bits per component for color delta
-    uint m_compressedColorDeltaRGBA;
     // Extra padding so the struct is 16 byte aligned for structured buffers
-    uint2 m_pad;
+    uint3 m_pad;
 };
 
 // Input to the morph target compute shader

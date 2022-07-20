@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/std/containers/vector.h>
+#include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AtomToolsFramework/DynamicProperty/DynamicProperty.h>
 
 namespace AtomToolsFramework
@@ -22,6 +23,11 @@ namespace AtomToolsFramework
 
         static void Reflect(AZ::ReflectContext* context);
 
+        bool m_visible = true;
+        AZStd::string m_name;
+        AZStd::string m_displayName;
+        AZStd::string m_description;
         AZStd::vector<AtomToolsFramework::DynamicProperty> m_properties;
+        AZStd::vector<AZStd::shared_ptr<DynamicPropertyGroup>> m_groups;
     };
 } // namespace AtomToolsFramework

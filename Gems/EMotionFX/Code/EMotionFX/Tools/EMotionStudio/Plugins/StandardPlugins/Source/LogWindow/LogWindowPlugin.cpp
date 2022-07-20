@@ -35,49 +35,17 @@ namespace EMStudio
         }
     }
 
-
-    // get the compile date
-    const char* LogWindowPlugin::GetCompileDate() const
-    {
-        return MCORE_DATE;
-    }
-
-
     // get the name
     const char* LogWindowPlugin::GetName() const
     {
         return "Log Window";
     }
 
-
     // get the plugin type id
     uint32 LogWindowPlugin::GetClassID() const
     {
         return LogWindowPlugin::CLASS_ID;
     }
-
-
-    // get the creator name
-    const char* LogWindowPlugin::GetCreatorName() const
-    {
-        return "O3DE";
-    }
-
-
-    // get the version
-    float LogWindowPlugin::GetVersion() const
-    {
-        return 1.0f;
-    }
-
-
-    // clone the log window
-    EMStudioPlugin* LogWindowPlugin::Clone()
-    {
-        LogWindowPlugin* newPlugin = new LogWindowPlugin();
-        return newPlugin;
-    }
-
 
     // init after the parent dock window has been created
     bool LogWindowPlugin::Init()

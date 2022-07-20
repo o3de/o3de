@@ -12,10 +12,12 @@
 
 namespace UnitTests
 {
+    using AssetFileInfo = AssetProcessor::AssetFileInfo;
+
     void FileStateCacheTests::SetUp()
     {
         m_temporarySourceDir = QDir(m_temporaryDir.path());
-        m_fileStateCache = AZStd::make_unique<FileStateCache>();
+        m_fileStateCache = AZStd::make_unique<AssetProcessor::FileStateCache>();
     }
 
     void FileStateCacheTests::TearDown()
@@ -26,9 +28,9 @@ namespace UnitTests
     void FileStateCacheTests::CheckForFile(QString path, bool shouldExist)
     {
         bool exists = false;
-        FileStateInfo fileInfo;
+        AssetProcessor::FileStateInfo fileInfo;
 
-        auto* fileStateInterface = AZ::Interface<IFileStateRequests>::Get();
+        auto* fileStateInterface = AZ::Interface<AssetProcessor::IFileStateRequests>::Get();
 
         ASSERT_NE(fileStateInterface, nullptr);
         exists = fileStateInterface->Exists(path);
@@ -142,7 +144,7 @@ namespace UnitTests
     TEST_F(FileStateCacheTests, PassthroughTest)
     {
         m_fileStateCache = nullptr; // Need to release the existing one first since only one handler can exist for the ebus
-        m_fileStateCache = AZStd::make_unique<FileStatePassthrough>();
+        m_fileStateCache = AZStd::make_unique<AssetProcessor::FileStatePassthrough>();
         QString testPath = m_temporarySourceDir.absoluteFilePath("test.txt");
 
         CheckForFile(testPath, false);

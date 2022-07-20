@@ -11,9 +11,6 @@
 
 #include <AzCore/std/containers/array.h>
 
-using namespace AZStd;
-using namespace UnitTestInternal;
-
 #define AZ_TEST_VALIDATE_EMPTY_SET(_set)       \
     EXPECT_EQ(0, _set.size());                 \
     EXPECT_TRUE(_set.begin() == _set.end());   \
@@ -28,6 +25,9 @@ using namespace UnitTestInternal;
 
 namespace UnitTest
 {
+    using namespace AZStd;
+    using namespace UnitTestInternal;
+
     // My intrusive set class.
     // We have 2 hooks in this class. One of each supported type. Base hook which we inherit from the intrusive_set_node node
     // and public member hook (m_setHook).

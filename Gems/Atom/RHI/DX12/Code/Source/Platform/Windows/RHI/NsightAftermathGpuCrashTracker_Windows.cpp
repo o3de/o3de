@@ -7,12 +7,14 @@
  */
 
 #include <RHI/NsightAftermathGpuCrashTracker_Windows.h>
+#include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzFramework/StringFunc/StringFunc.h>
-#if defined(USE_NSIGHT_AFTERMATH)
+
+#if defined(USE_NSIGHT_AFTERMATH)   // To enable nsight aftermath, download and install Nsight AfterMath and add 'ATOM_AFTERMATH_PATH=%path_to_the_install_folder%' to environment variables
 GpuCrashTracker::~GpuCrashTracker()
 {
     // If initialized, disable GPU crash dumps
@@ -45,9 +47,15 @@ void GpuCrashTracker::EnableGPUCrashDumps()
         GpuCrashDumpCallback,                                             // Register callback for GPU crash dumps.
         ShaderDebugInfoCallback,                                          // Register callback for shader debug information.
         CrashDumpDescriptionCallback,                                     // Register callback for GPU crash dump description.
+        ResolveMarkerCallback,                                            // Register callback for mark resolution
         this);                                                           // Set the GpuCrashTracker object as user data for the above callbacks.
     
     m_initialized = GFSDK_Aftermath_SUCCEED(result);
+
+    char executableFolder[AZ::IO::MaxPathLength];
+    AZ::Utils::GetExecutableDirectory(executableFolder, AZ::IO::MaxPathLength);
+    m_executableFolder = executableFolder;
+    m_projectName = AZ::Utils::GetProjectName();
 }
 
 void GpuCrashTracker::OnCrashDump(const void* pGpuCrashDump, const uint32_t gpuCrashDumpSize)
@@ -63,14 +71,31 @@ void GpuCrashTracker::OnCrashDump(const void* pGpuCrashDump, const uint32_t gpuC
     WriteGpuCrashDumpToFile(pGpuCrashDump, gpuCrashDumpSize);
 }
 
-void GpuCrashTracker::OnShaderDebugInfo([[maybe_unused]] const void* pShaderDebugInfo, [[maybe_unused]] const uint32_t shaderDebugInfoSize)
+void GpuCrashTracker::OnShaderDebugInfo(const void* pShaderDebugInfo, const uint32_t shaderDebugInfoSize)
 {
-    AZ_UNUSED(pShaderDebugInfo);
-    AZ_UNUSED(shaderDebugInfoSize);
-
     if (!m_initialized)
     {
         return;
+    }
+        
+    // Get shader debug information identifier
+    GFSDK_Aftermath_ShaderDebugInfoIdentifier identifier = {};
+    if (GFSDK_Aftermath_SUCCEED(GFSDK_Aftermath_GetShaderDebugInfoIdentifier(
+        GFSDK_Aftermath_Version_API,
+        pShaderDebugInfo,
+        shaderDebugInfoSize,
+        &identifier)))
+    {
+        // Store information for decoding of GPU crash dumps with shader address mapping
+        // from within the application.
+        std::vector<uint8_t> data((uint8_t*)pShaderDebugInfo, (uint8_t*)pShaderDebugInfo + shaderDebugInfoSize);
+
+        // Write to file for later in-depth analysis of crash dumps with Nsight Graphics
+        WriteShaderDebugInformationToFile(identifier, pShaderDebugInfo, shaderDebugInfoSize);
+    }
+    else
+    {
+        AZ_TracePrintf("Aftermath", "Failed to get shader debug info\n");
     }
 }
 
@@ -81,15 +106,10 @@ void GpuCrashTracker::OnDescription(PFN_GFSDK_Aftermath_AddGpuCrashDumpDescripti
         return;
     }
 
-    char executableFolder[AZ::IO::MaxPathLength];
     // Add some basic description about the crash. This is called after the GPU crash happens, but before
     // the actual GPU crash dump callback. The provided data is included in the crash dump and can be
     // retrieved using GFSDK_Aftermath_GpuCrashDump_GetDescription().
-    AZ::Utils::GetExecutableDirectory(executableFolder, AZ::IO::MaxPathLength);
-    AZ::IO::FixedMaxPath fileAbsolutePath{executableFolder};
-    fileAbsolutePath /= AZ::Utils::GetProjectName();
-    addDescription(GFSDK_Aftermath_GpuCrashDumpDescriptionKey_ApplicationName, fileAbsolutePath.c_str());
-
+    addDescription(GFSDK_Aftermath_GpuCrashDumpDescriptionKey_ApplicationName, m_projectName.c_str());
     addDescription(GFSDK_Aftermath_GpuCrashDumpDescriptionKey_ApplicationVersion, "v1.0");
     addDescription(GFSDK_Aftermath_GpuCrashDumpDescriptionKey_UserDefined, "GPU crash related dump for nv aftermath");
 }
@@ -115,36 +135,12 @@ void GpuCrashTracker::WriteGpuCrashDumpToFile(const void* pGpuCrashDump, const u
     result = GFSDK_Aftermath_GpuCrashDump_GetBaseInfo(decoder, &baseInfo);
     AssertOnError(result);
 
-    // Use the decoder object to query the application name that was set
-    // in the GPU crash dump description.
-    uint32_t applicationNameLength = 0;
-    result = GFSDK_Aftermath_GpuCrashDump_GetDescriptionSize(
-        decoder,
-        GFSDK_Aftermath_GpuCrashDumpDescriptionKey_ApplicationName,
-        &applicationNameLength);
-    AssertOnError(result);
-
-    AZStd::vector<char> applicationName(applicationNameLength, '\0');
-
-    result = GFSDK_Aftermath_GpuCrashDump_GetDescription(
-        decoder,
-        GFSDK_Aftermath_GpuCrashDumpDescriptionKey_ApplicationName,
-        uint32_t(applicationName.size()),
-        applicationName.data());
-    AssertOnError(result);
-
-    // Create a unique file name for writing the crash dump data to a file.
+     // Create a unique file name for writing the crash dump data to a file.
     // Note: due to an Nsight Aftermath bug (will be fixed in an upcoming
     // driver release) we may see redundant crash dumps. As a workaround,
     // attach a unique count to each generated file name.
     static int count = 0;
-    const AZStd::string baseFileName =
-        AZStd::string(applicationName.data())
-        + "-"
-        + AZStd::string::format("%i", baseInfo.pid)
-        +"-"
-        + AZStd::string::format("%i", ++count);
-
+    const AZStd::string baseFileName = AZStd::string::format("%s/%s-%i-%i", m_executableFolder.c_str(), m_projectName.c_str(), baseInfo.pid, ++count);
 
     const AZStd::string crashDumpFileName = baseFileName + ".nv-gpudmp";
     AZ::IO::SystemFile dumpFile;
@@ -161,25 +157,24 @@ void GpuCrashTracker::WriteGpuCrashDumpToFile(const void* pGpuCrashDump, const u
         GFSDK_Aftermath_GpuCrashDumpFormatterFlags_NONE,
         ShaderDebugInfoLookupCallback,
         ShaderLookupCallback,
-        ShaderInstructionsLookupCallback,
         ShaderSourceDebugInfoLookupCallback,
         this,
         &jsonSize);
     AssertOnError(result);
-
+    
     // Step 2: Allocate a buffer and fetch the generated JSON.
-    AZStd::vector<char> json(jsonSize);
+    AZStd::unique_ptr<char[]> json = AZStd::make_unique<char[]>(jsonSize);
     result = GFSDK_Aftermath_GpuCrashDump_GetJSON(
         decoder,
-        uint32_t(json.size()),
-        json.data());
+        jsonSize,
+        json.get());
     AssertOnError(result);
 
     // Write the the crash dump data as JSON to a file.
     const AZStd::string jsonFileName = crashDumpFileName + ".json";
     AZ::IO::SystemFile jsonFile;
     jsonFile.Open(jsonFileName.c_str(), AZ::IO::SystemFile::SF_OPEN_CREATE | AZ::IO::SystemFile::SF_OPEN_WRITE_ONLY);
-    jsonFile.Write(json.data(), json.size());
+    jsonFile.Write(json.get(), jsonSize - 1);
     jsonFile.Close();
 
     // Destroy the GPU crash dump decoder object.
@@ -188,16 +183,20 @@ void GpuCrashTracker::WriteGpuCrashDumpToFile(const void* pGpuCrashDump, const u
 }
 
 void GpuCrashTracker::WriteShaderDebugInformationToFile(
-    [[maybe_unused]] GFSDK_Aftermath_ShaderDebugInfoIdentifier identifier,
-    [[maybe_unused]] const void* pShaderDebugInfo,
-    [[maybe_unused]] const uint32_t shaderDebugInfoSize)
+    GFSDK_Aftermath_ShaderDebugInfoIdentifier identifier,
+    const void* pShaderDebugInfo,
+    const uint32_t shaderDebugInfoSize)
 {
     if (!m_initialized)
     {
         return;
     }
-
-    // [GFX TODO][ATOM-14662] Add support for debug shader symbols
+     // Create an unique file name from identifier
+    const AZStd::string fileName = AZStd::string::format("%s/%016llX-%016llX.nvdbg", m_executableFolder.c_str(), identifier.id[0], identifier.id[1]);
+    
+    AZ::IO::SystemFile shaderDebugFile;
+    shaderDebugFile.Open(fileName.c_str(), AZ::IO::SystemFile::SF_OPEN_CREATE | AZ::IO::SystemFile::SF_OPEN_WRITE_ONLY);
+    shaderDebugFile.Write(pShaderDebugInfo, shaderDebugInfoSize);
 }
 
 void GpuCrashTracker::OnShaderDebugInfoLookup(
@@ -208,17 +207,15 @@ void GpuCrashTracker::OnShaderDebugInfoLookup(
 }
 
 void GpuCrashTracker::OnShaderLookup(
-    [[maybe_unused]] const GFSDK_Aftermath_ShaderHash& shaderHash,
+    [[maybe_unused]] const GFSDK_Aftermath_ShaderBinaryHash& shaderHash,
     [[maybe_unused]] PFN_GFSDK_Aftermath_SetData setShaderBinary) const
 {
     // [GFX TODO][ATOM-14662] Add support for debug shader symbols
 }
 
-void GpuCrashTracker::OnShaderInstructionsLookup(
-    [[maybe_unused]] const GFSDK_Aftermath_ShaderInstructionsHash& shaderInstructionsHash,
-    [[maybe_unused]] PFN_GFSDK_Aftermath_SetData setShaderBinary) const
+void GpuCrashTracker::OnResolveMarker(
+    [[maybe_unused]] const void* pMarker, [[maybe_unused]] void** resolvedMarkerData, [[maybe_unused]] uint32_t* markerSize) const
 {
-    // [GFX TODO][ATOM-14662] Add support for debug shader symbols
 }
 
 void GpuCrashTracker::OnShaderSourceDebugInfoLookup(
@@ -264,7 +261,7 @@ void GpuCrashTracker::ShaderDebugInfoLookupCallback(
 }
 
 void GpuCrashTracker::ShaderLookupCallback(
-    const GFSDK_Aftermath_ShaderHash* pShaderHash,
+    const GFSDK_Aftermath_ShaderBinaryHash* pShaderHash,
     PFN_GFSDK_Aftermath_SetData setShaderBinary,
     void* pUserData)
 {
@@ -272,13 +269,14 @@ void GpuCrashTracker::ShaderLookupCallback(
     pGpuCrashTracker->OnShaderLookup(*pShaderHash, setShaderBinary);
 }
 
-void GpuCrashTracker::ShaderInstructionsLookupCallback(
-    const GFSDK_Aftermath_ShaderInstructionsHash* pShaderInstructionsHash,
-    PFN_GFSDK_Aftermath_SetData setShaderBinary,
-    void* pUserData)
+void GpuCrashTracker::ResolveMarkerCallback(
+    const void* pMarker,
+    void* pUserData,
+    void** resolvedMarkerData,
+    uint32_t* markerSize)
 {
     GpuCrashTracker* pGpuCrashTracker = reinterpret_cast<GpuCrashTracker*>(pUserData);
-    pGpuCrashTracker->OnShaderInstructionsLookup(*pShaderInstructionsHash, setShaderBinary);
+    pGpuCrashTracker->OnResolveMarker(pMarker, resolvedMarkerData, markerSize);
 }
 
 void GpuCrashTracker::ShaderSourceDebugInfoLookupCallback(

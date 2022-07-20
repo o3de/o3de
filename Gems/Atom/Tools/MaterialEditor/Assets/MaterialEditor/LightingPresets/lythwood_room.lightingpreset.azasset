@@ -3,7 +3,6 @@
     "Version": 1,
     "ClassName": "AZ::Render::LightingPreset",
     "ClassData": {
-        "displayName": "Daytime Hotel Interior",
         "iblDiffuseImageAsset": {
             "assetId": {
                 "guid": "{720DF96E-6A6E-552F-AC82-835BB4888FE3}",

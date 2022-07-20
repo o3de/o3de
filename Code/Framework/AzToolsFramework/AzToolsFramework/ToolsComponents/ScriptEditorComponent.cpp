@@ -783,6 +783,7 @@ namespace AzToolsFramework
             }
 
             EBUS_EVENT(ToolsApplicationEvents::Bus, InvalidatePropertyDisplay, Refresh_EntireTree);
+            ToolsApplicationRequests::Bus::Broadcast(&ToolsApplicationRequests::Bus::Events::AddDirtyEntity, GetEntityId());
         }
 
         void ScriptEditorComponent::LoadProperties()
@@ -890,7 +891,10 @@ namespace AzToolsFramework
                 return;
             }
 
-            gameEntity->AddComponent(context->CloneObject(&m_scriptComponent));
+            auto scriptComponent = context->CloneObject(&m_scriptComponent);
+            // guarantee that the script is set to Preload
+            scriptComponent->SetScript(scriptComponent->GetScript());
+            gameEntity->AddComponent(scriptComponent);
         }
 
         void ScriptEditorComponent::SetPrimaryAsset(const AZ::Data::AssetId& assetId)
@@ -1007,6 +1011,7 @@ namespace AzToolsFramework
                 AzFramework::ScriptComponent::Reflect(context);
 
                 serializeContext->Class<ScriptEditorComponent, EditorComponentBase>()
+                    ->Version(2)
                     ->Field("ScriptComponent", &ScriptEditorComponent::m_scriptComponent)
                     ->Field("ScriptAsset", &ScriptEditorComponent::m_scriptAsset);
 

@@ -53,23 +53,27 @@ namespace AZ
             void OnRenderPipelinePassesChanged(RPI::RenderPipeline* renderPipeline) override;
             void OnBeginPrepareRender() override;
 
-            SkinnedMeshRenderProxyHandle AcquireRenderProxy(const SkinnedMeshRenderProxyDesc& desc);
-            bool ReleaseRenderProxy(SkinnedMeshRenderProxyHandle& handle);
+            // SkinnedMeshFeatureProcessorInterface overrides ...
+            SkinnedMeshHandle AcquireSkinnedMesh(const SkinnedMeshHandleDescriptor& desc) override;
+            bool ReleaseSkinnedMesh(SkinnedMeshHandle& handle) override;
+            void SetSkinningMatrices(const SkinnedMeshHandle& handle, const AZStd::vector<float>& data) override;
+            void SetMorphTargetWeights(const SkinnedMeshHandle& handle, uint32_t lodIndex, const AZStd::vector<float>& weights) override;
+            void EnableSkinning(const SkinnedMeshHandle& handle, uint32_t lodIndex, uint32_t meshIndex) override;
+            void DisableSkinning(const SkinnedMeshHandle& handle, uint32_t lodIndex, uint32_t meshIndex) override;
 
             Data::Instance<RPI::Shader> GetSkinningShader() const;
             RPI::ShaderOptionGroup CreateSkinningShaderOptionGroup(const SkinnedMeshShaderOptions shaderOptions, SkinnedMeshShaderOptionNotificationBus::Handler& shaderReinitializedHandler);
             void OnSkinningShaderReinitialized(const Data::Instance<RPI::Shader> skinningShader);
-            void SubmitSkinningDispatchItems(RHI::CommandList* commandList);
+            uint32_t GetSkinningDispatchCount() const { return aznumeric_cast<uint32_t>(m_skinningDispatches.size()); }
+            void SubmitSkinningDispatchItems(RHI::CommandList* commandList, uint32_t startIndex, uint32_t endIndex);
 
             Data::Instance<RPI::Shader> GetMorphTargetShader() const;
-            void SubmitMorphTargetDispatchItems(RHI::CommandList* commandList);
+            uint32_t GetMorphTargetDispatchCount() const { return aznumeric_cast<uint32_t>(m_morphTargetDispatches.size()); }
+            void SubmitMorphTargetDispatchItems(RHI::CommandList* commandList, uint32_t startIndex, uint32_t endIndex);
         private:
             AZ_DISABLE_COPY_MOVE(SkinnedMeshFeatureProcessor);
 
             void InitSkinningAndMorphPass(RPI::RenderPipeline* renderPipeline);
-
-            SkinnedMeshRenderProxyInterfaceHandle AcquireRenderProxyInterface(const SkinnedMeshRenderProxyDesc& desc) override;
-            bool ReleaseRenderProxyInterface(SkinnedMeshRenderProxyInterfaceHandle& handle) override;
 
             static const char* s_featureProcessorName;
 

@@ -161,9 +161,9 @@ class TestImpact:
         result["change_list"] = self._change_list
         return result
 
-    def run(self, commit: str, src_branch: str, dst_branch: str, s3_bucket: str, s3_top_level_dir: str, suite: str, test_failure_policy: str, safe_mode: bool, test_timeout: int, global_timeout: int):
+    def run(self, commit: str, src_branch: str, dst_branch: str, s3_bucket: str, s3_top_level_dir: str, suite: str, test_failure_policy: str, safe_mode: bool, test_timeout: int, global_timeout: int, exclude_file: str):
         """
-        Determins the type of sequence to run based on the commit, source branch and test branch before running the
+        Determines the type of sequence to run based on the commit, source branch and test branch before running the
         sequence with the specified values.
 
         @param commit:              The commit hash of the changes to run test impact analysis on. 
@@ -176,6 +176,7 @@ class TestImpact:
         @param safe_mode:           Flag to run impact analysis tests in safe mode (ignored when seeding).
         @param test_timeout:        Maximum run time (in seconds) of any test target before being terminated (unlimited if None).
         @param global_timeout:      Maximum run time of the sequence before being terminated (unlimited if None).
+        @param exclude_file:        Path to exclude file, containing a list of tests to exclude from this run.
         """
 
         args = []
@@ -310,11 +311,18 @@ class TestImpact:
         args.append(f"--suite={suite}")
         logger.info(f"Test suite is set to '{suite}'.")
 
+        # Exclude tests
+        if exclude_file:
+            args.append(f"--exclude_file={exclude_file}")
+            logger.info(f"Exclude file found, excluding the tests stored at '{exclude_file}'.")
+        else:
+            logger.info(f'Exclude file not found, skipping.')
+
         # Timeouts
-        if test_timeout is not None:
+        if test_timeout:
             args.append(f"--ttimeout={test_timeout}")
             logger.info(f"Test target timeout is set to {test_timeout} seconds.")
-        if global_timeout is not None:
+        if global_timeout:
             args.append(f"--gtimeout={global_timeout}")
             logger.info(f"Global sequence timeout is set to {test_timeout} seconds.")
 
@@ -332,7 +340,7 @@ class TestImpact:
                 report = json.load(json_file)
 
             # Attempt to store the historic data for this branch and sequence
-            if self._is_source_of_truth_branch and persistent_storage is not None:
+            if self._is_source_of_truth_branch and persistent_storage:
                 persistent_storage.update_and_store_historic_data()
         else:
             logger.error(f"The test impact analysis runtime returned with error: '{runtime_result.returncode}'.")

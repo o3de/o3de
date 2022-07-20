@@ -433,7 +433,7 @@ function(ly_test_impact_write_config_file CONFIG_TEMPLATE_FILE BIN_DIR)
     # Write out entire config contents to a file in the build directory of the test impact framework console target
     file(GENERATE
         OUTPUT "${LY_TEST_IMPACT_CONFIG_FILE_PATH}" 
-        CONTENT ${config_file}
+        CONTENT "${config_file}"
     )
 
     message(DEBUG "Test impact framework post steps complete")

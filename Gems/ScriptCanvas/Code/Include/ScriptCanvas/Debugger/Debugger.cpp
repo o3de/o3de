@@ -55,7 +55,7 @@ namespace ScriptCanvas
             AzFramework::TargetManager::Bus::BroadcastResult(client, &AzFramework::TargetManager::GetTargetInfo, msg->GetSenderTargetId());
 
             // cull messages without a target match
-            if (m_client.m_info.GetNetworkId() != client.GetNetworkId())
+            if (!m_client.m_info.IsIdentityEqualTo(client))
             {
                 if (auto connection = azrtti_cast<Message::ConnectRequest*>(msg.get()))
                 {
@@ -264,8 +264,9 @@ namespace ScriptCanvas
             }
         }
 
-        void ServiceComponent::GraphActivated(const GraphActivation& graphInfo)
+        void ServiceComponent::GraphActivated([[maybe_unused]] const GraphActivation& graphInfo)
         {
+            /*
             SCRIPT_CANVAS_DEBUGGER_TRACE_SERVER("GraphActivation: %s", graphInfo.ToString().data());
 
             Lock lock(m_mutex);
@@ -316,9 +317,9 @@ namespace ScriptCanvas
                 {
                     ActiveGraphStatus graphStatus;
                     graphStatus.m_instanceCounter = 1;
-                    graphStatus.m_isObserved = IsGraphObserved(graphInfo.m_runtimeEntity, graphInfo.m_graphIdentifier);
 
-                    entityStatus->m_activeGraphs.insert(AZStd::make_pair(graphInfo.m_graphIdentifier, graphStatus));
+//                     graphStatus.m_isObserved = IsGraphObserved(graphInfo.m_runtimeEntity, graphInfo.m_graphIdentifier);
+//                     entityStatus->m_activeGraphs.insert(AZStd::make_pair(graphInfo.m_graphIdentifier, graphStatus));
                 }
                 else
                 {
@@ -393,13 +394,15 @@ namespace ScriptCanvas
                 }
             }
 
-            GraphActivation payload = graphInfo;
-            payload.m_entityIsObserved = IsGraphObserved(graphInfo.m_runtimeEntity, graphInfo.m_graphIdentifier);
-            AzFramework::TargetManager::Bus::Broadcast(&AzFramework::TargetManager::SendTmMessage, m_client.m_info, Message::GraphActivated(payload));
+//             GraphActivation payload = graphInfo;
+//             payload.m_entityIsObserved = IsGraphObserved(graphInfo.m_runtimeEntity, graphInfo.m_graphIdentifier);
+//             AzFramework::TargetManager::Bus::Broadcast(&AzFramework::TargetManager::SendTmMessage, m_client.m_info, Message::GraphActivated(payload));
+            */
         }
 
-        void ServiceComponent::GraphDeactivated(const GraphActivation& graphInfo)
+        void ServiceComponent::GraphDeactivated([[maybe_unused]] const GraphActivation& graphInfo)
         {
+            /*
             SCRIPT_CANVAS_DEBUGGER_TRACE_SERVER("GraphDeactivated: %s", graphInfo.ToString().data());
 
             Lock lock(m_mutex);
@@ -448,9 +451,10 @@ namespace ScriptCanvas
                 }
             }
 
-            GraphActivation payload = graphInfo;
-            payload.m_entityIsObserved = IsGraphObserved(graphInfo.m_runtimeEntity, graphInfo.m_graphIdentifier);
-            AzFramework::TargetManager::Bus::Broadcast(&AzFramework::TargetManager::SendTmMessage, m_client.m_info, Message::GraphDeactivated(payload));
+            // GraphActivation payload = graphInfo;
+            // payload.m_entityIsObserved = IsGraphObserved(graphInfo.m_runtimeEntity, graphInfo.m_graphIdentifier);
+            // AzFramework::TargetManager::Bus::Broadcast(&AzFramework::TargetManager::SendTmMessage, m_client.m_info, Message::GraphDeactivated(payload));
+            */
         }
 
         bool ServiceComponent::IsAssetObserved(const AZ::Data::AssetId& assetId) const
@@ -472,7 +476,7 @@ namespace ScriptCanvas
 #endif //defined(SCRIPT_CANVAS_DEBUGGER_IS_ALWAYS_OBSERVING)
         }
 
-        bool ServiceComponent::IsGraphObserved(const AZ::EntityId& entityId, const GraphIdentifier& identifier)
+        bool ServiceComponent::IsGraphObserved([[maybe_unused]] const ExecutionState& executionState)
         {
             if (!m_client.m_script.m_logExecution)
             {
@@ -487,7 +491,8 @@ namespace ScriptCanvas
                 return false;
             }
 
-            return m_client.m_script.IsObserving(entityId, identifier);
+            // return m_client.m_script.IsObserving(executionState.GetGraphIdentifier());
+            return false;
 #endif //defined(SCRIPT_CANVAS_DEBUGGER_IS_ALWAYS_OBSERVING)
         }
 
@@ -731,43 +736,45 @@ namespace ScriptCanvas
             }
         }
 
-        void ServiceComponent::RuntimeError([[maybe_unused]] const AZ::EntityId& entityId, [[maybe_unused]] const GraphIdentifier& identifier, [[maybe_unused]] const AZStd::string_view& description)
+        void ServiceComponent::RuntimeError([[maybe_unused]] const ExecutionState& executionState, [[maybe_unused]] const AZStd::string_view& description)
         {
         }
 
-        void ServiceComponent::SetTargetsObserved(const TargetEntities& targetEntities, bool /*observedState*/)
+        void ServiceComponent::SetTargetsObserved
+            ( [[maybe_unused]] const TargetEntities& targetEntities
+            , [[maybe_unused]] bool observedState)
         {
-            for (auto target : targetEntities)
-            {
-                AZ::Entity* entity = nullptr;
-                AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationRequests::FindEntity, target.first);
-
-                if (entity)
-                {
-                    auto runtimeComponents = AZ::EntityUtils::FindDerivedComponents<RuntimeComponent>(entity);
-
-                    if (runtimeComponents.empty())
-                    {
-                        continue;
-                    }
-
-                    for (auto graphIdentifier : target.second)
-                    {
-                        for (auto graphIter = runtimeComponents.begin(); graphIter != runtimeComponents.end(); ++graphIter)
-                        {
-                            auto runtimeComponent = (*graphIter);
-
-                            if (graphIdentifier.m_assetId.m_guid == runtimeComponent->GetRuntimeDataOverrides().m_runtimeAsset.GetId().m_guid)
-                            {
-                                // TODO: Gate on ComponentId
-                                // runtimeComponent->SetIsGraphObserved(observedState);
-                                runtimeComponents.erase(graphIter);
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
+//             for (auto target : targetEntities)
+//             {
+//                 AZ::Entity* entity = nullptr;
+//                 AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationRequests::FindEntity, target.first);
+// 
+//                 if (entity)
+//                 {
+//                     auto runtimeComponents = AZ::EntityUtils::FindDerivedComponents<RuntimeComponent>(entity);
+// 
+//                     if (runtimeComponents.empty())
+//                     {
+//                         continue;
+//                     }
+// 
+//                     for (auto graphIdentifier : target.second)
+//                     {
+//                         for (auto graphIter = runtimeComponents.begin(); graphIter != runtimeComponents.end(); ++graphIter)
+//                         {
+//                             auto runtimeComponent = (*graphIter);
+// 
+//                             if (graphIdentifier.m_assetId.m_guid == runtimeComponent->GetRuntimeDataOverrides().m_runtimeAsset.GetId().m_guid)
+//                             {
+//                                 // TODO: Gate on ComponentId
+//                                 // runtimeComponent->SetIsGraphObserved(observedState);
+//                                 runtimeComponents.erase(graphIter);
+//                                 break;
+//                             }
+//                         }
+//                     }
+//                 }
+//             }
         }
 
         void ServiceComponent::DisconnectFromClient()
@@ -786,18 +793,18 @@ namespace ScriptCanvas
 
         void ServiceComponent::RefreshActiveEntityStatus()
         {
-            if (m_activeEntityStatusDirty)
-            {
-                m_activeEntityStatusDirty = false;
-
-                for (auto& entityPair : m_activeEntities)
-                {
-                    for (auto& graphPair : entityPair.second.m_activeGraphs)
-                    {
-                        graphPair.second.m_isObserved = IsGraphObserved(entityPair.first, graphPair.first);
-                    }
-                }
-            }
+//             if (m_activeEntityStatusDirty)
+//             {
+//                 m_activeEntityStatusDirty = false;
+// 
+//                 for (auto& entityPair : m_activeEntities)
+//                 {
+//                      for (auto& graphPair : entityPair.second.m_activeGraphs)
+//                      {
+//                          graphPair.second.m_isObserved = IsGraphObserved(entityPair.first, graphPair.first);
+//                      }
+//                 }
+//             }
         }
 
         void ServiceComponent::RefreshActiveGraphStatus()

@@ -196,6 +196,19 @@ namespace AZ
         ASSERT_EQ(joinResult, expectedResult);
     }
 
+    TEST_F(StringFuncTest, Join_NonPathJoin_CanJoinRange)
+    {
+        AZStd::string result;
+        AZ::StringFunc::Join(result, AZStd::initializer_list<const char*>{ "1", "2", "3", "4", "3" }, '/');
+        EXPECT_EQ("1/2/3/4/3", result);
+
+        result.clear();
+
+        // Try joining with a string literal instead of a char literal
+        AZ::StringFunc::Join(result, AZStd::initializer_list<const char*>{ "1", "2", "3", "4", "3" }, "/");
+        EXPECT_EQ("1/2/3/4/3", result);
+    }
+
     TEST_F(StringFuncTest, Tokenize_SingleDelimeter_Empty)
     {
         AZStd::string input = "";

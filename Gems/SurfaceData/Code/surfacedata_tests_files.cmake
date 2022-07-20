@@ -8,6 +8,7 @@
 
 set(FILES
     Include/SurfaceData/Tests/SurfaceDataTestMocks.h
+    Tests/MixedAllocatorTest.cpp
     Tests/SurfaceDataBenchmarks.cpp
     Tests/SurfaceDataColliderComponentTest.cpp
     Tests/SurfaceDataTest.cpp

@@ -351,8 +351,8 @@ namespace ScriptCanvasEditor
             bool m_showValidationWarnings;
             bool m_showValidationErrors;
 
-            bool m_saveRawTranslationOuputToFile = false;
-            bool m_printAbstractCodeModel = false;
+            bool m_saveRawTranslationOuputToFile;
+            bool m_printAbstractCodeModel;
 
             AZ::u32 m_alignmentTimeMS;
 

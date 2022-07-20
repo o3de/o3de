@@ -20,6 +20,11 @@
 
 namespace WhiteBox
 {
+
+    AZ_CVAR(
+        float, ed_whiteBoxPolygonViewOverlapOffset, 0.004f, nullptr, AZ::ConsoleFunctorFlags::Null,
+        "The offset highlighted polygon");
+    
     AZ_CLASS_ALLOCATOR_IMPL(PolygonTranslationModifier, AZ::SystemAllocator, 0)
 
     PolygonTranslationModifier::PolygonTranslationModifier(
@@ -279,8 +284,7 @@ namespace WhiteBox
             whiteBox, m_entityComponentIdPair, &EditorWhiteBoxComponentRequests::GetWhiteBoxMesh);
 
         Api::VertexPositionsCollection outlines = Api::PolygonBorderVertexPositions(*whiteBox, m_polygonHandle);
-        AZStd::vector<AZ::Vector3> triangles = Api::PolygonFacesPositions(*whiteBox, m_polygonHandle);
-
+        AZStd::vector<AZ::Vector3> triangles = Api::PolygonFacesPositions(*whiteBox, m_polygonHandle);        
         const AZ::Vector3 polygonMidpoint = Api::PolygonMidpoint(*whiteBox, m_polygonHandle);
 
         // translate points into local space of the manipulator (see UpdateIntersectionPoint)
@@ -289,7 +293,8 @@ namespace WhiteBox
         {
             TranslatePoints(outline, -polygonMidpoint);
         }
-
+        
+        const AZ::Vector3 normal = Api::PolygonNormal(*whiteBox, m_polygonHandle);
         TranslatePoints(triangles, -polygonMidpoint);
 
         if (!m_polygonView)
@@ -302,6 +307,7 @@ namespace WhiteBox
             m_polygonView->m_triangles = triangles;
         }
 
+        m_polygonView->m_polygonViewOverlapOffset = AZ::Transform::CreateTranslation(normal * ed_whiteBoxPolygonViewOverlapOffset);
         m_polygonView->m_fillColor = m_fillColor;
         m_polygonView->m_outlineColor = m_outlineColor;
 

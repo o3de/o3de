@@ -4,6 +4,7 @@ For complete copyright and license terms please see the LICENSE at the root of t
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
+
 class MacroMaterialTests:
     setup_test = (
         "Setup successful", 
@@ -30,6 +31,7 @@ class MacroMaterialTests:
         "Timed out waiting for OnTerrainMacroMaterialRegionChanged"
     )
 
+
 def TerrainMacroMaterialComponent_MacroMaterialActivates():
     """
     Summary:
@@ -38,7 +40,6 @@ def TerrainMacroMaterialComponent_MacroMaterialActivates():
     """
 
     import os
-    import math as sys_math
 
     import azlmbr.legacy.general as general
     import azlmbr.asset as asset
@@ -46,15 +47,11 @@ def TerrainMacroMaterialComponent_MacroMaterialActivates():
     import azlmbr.math as math
     import azlmbr.terrain as terrain
     import azlmbr.editor as editor
-    import azlmbr.vegetation as vegetation
-    import azlmbr.entity as EntityId
 
     import editor_python_test_tools.hydra_editor_utils as hydra
     from editor_python_test_tools.utils import Report
     from editor_python_test_tools.utils import TestHelper as helper
-    import editor_python_test_tools.pyside_utils as pyside_utils
     from editor_python_test_tools.editor_entity_utils import EditorEntity
-    from editor_python_test_tools.asset_utils import Asset
 
     material_created_called = False
     material_changed_called = False
@@ -84,11 +81,8 @@ def TerrainMacroMaterialComponent_MacroMaterialActivates():
         nonlocal material_destroyed_called
         material_destroyed_called = True
 
-    helper.init_idle()
-
     # Open a level.
-    helper.open_level("Physics", "Base")
-    helper.wait_for_condition(lambda: general.get_current_level_name() == "Base", 2.0)
+    hydra.open_base_level()
     
     general.idle_wait_frames(1)
 
@@ -159,6 +153,7 @@ def TerrainMacroMaterialComponent_MacroMaterialActivates():
     # Check that a callback is received.
     region_changed_call_result = helper.wait_for_condition(lambda: material_region_changed_called == True, 2.0)
     Report.result(MacroMaterialTests.material_changed_call_on_aabb_change, region_changed_call_result)
+
 
 if __name__ == "__main__":
 

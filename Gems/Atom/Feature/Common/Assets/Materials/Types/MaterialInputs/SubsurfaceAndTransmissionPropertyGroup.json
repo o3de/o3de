@@ -1,0 +1,239 @@
+{
+    "name": "subsurfaceScattering",
+    "displayName": "Subsurface Scattering",
+    "description": "Properties for configuring subsurface scattering effects.",
+    "properties": [
+        {
+            "name": "enableSubsurfaceScattering",
+            "displayName": "Subsurface Scattering",
+            "description": "Enable subsurface scattering feature, this will disable metallic and parallax mapping property due to incompatibility",
+            "type": "Bool",
+            "defaultValue": false,
+            "connection": {
+                "type": "ShaderOption",
+                "name": "o_enableSubsurfaceScattering"
+            }
+        },
+        {
+            "name": "subsurfaceScatterFactor",
+            "displayName": "    Factor",
+            "description": "Strength factor for scaling percentage of subsurface scattering effect applied",
+            "type": "float",
+            "defaultValue": 1.0,
+            "min": 0.0,
+            "max": 1.0,
+            "connection": {
+                "type": "ShaderInput",
+                "name": "m_subsurfaceScatteringFactor"
+            }
+        },
+        {
+            "name": "influenceMap",
+            "displayName": "    Influence Map",
+            "description": "Texture for controlling the strength of subsurface scattering",
+            "type": "Image",
+            "connection": {
+                "type": "ShaderInput",
+                "name": "m_subsurfaceScatteringInfluenceMap"
+            }
+        },
+        {
+            "name": "useInfluenceMap",
+            "displayName": "    Use Influence Map",
+            "description": "Whether to use the influence map.",
+            "type": "Bool",
+            "defaultValue": true
+        },
+        {
+            "name": "influenceMapUv",
+            "displayName": "    UV",
+            "description": "Influence map UV set",
+            "type": "Enum",
+            "enumIsUv": true,
+            "defaultValue": "Tiled",
+            "connection": {
+                "type": "ShaderInput",
+                "name": "m_subsurfaceScatteringInfluenceMapUvIndex"
+            }
+        },
+        {
+            "name": "scatterColor",
+            "displayName": "    Scatter color",
+            "description": "Color of volume light traveled through",
+            "type": "Color",
+            "defaultValue": [ 1.0, 0.27, 0.13 ]
+        },
+        {
+            "name": "scatterDistance",
+            "displayName": "    Scatter distance",
+            "description": "How far light traveled inside the volume",
+            "type": "float",
+            "defaultValue": 8,
+            "min": 0.0,
+            "softMax": 20.0
+        },
+        {
+            "name": "quality",
+            "displayName": "    Quality",
+            "description": "How much percent of sample will be used for each pixel, more samples improve quality and reduce artifacts, especially when the scatter distance is relatively large, but slow down computation time, 1.0 = full set 200 samples per pixel",
+            "type": "float",
+            "defaultValue": 0.4,
+            "min": 0.2,
+            "max": 1.0,
+            "connection": {
+                "type": "ShaderInput",
+                "name": "m_subsurfaceScatteringQuality"
+            }
+        },
+        {
+            "name": "transmissionMode",
+            "displayName": "Transmission",
+            "description": "Algorithm used for calculating transmission",
+            "type": "Enum",
+            "enumValues": [ "None", "ThickObject", "ThinObject" ],
+            "defaultValue": "None",
+            "connection": {
+                "type": "ShaderOption",
+                "name": "o_transmission_mode"
+            }
+        },
+        {
+            "name": "thickness",
+            "displayName": "    Thickness",
+            "description": "In thick transmission mode: Normalized global thickness, the maxima between this value (multiplied by thickness map if enabled) and thickness from shadow map (if applicable) will be used as final thickness of pixel\n\nIn thin transmission mode: This value modulates the distance traversed by light inside an object.",
+            "type": "float",
+            "defaultValue": 0.5,
+            "min": 0.0,
+            "max": 1.0
+        },
+        {
+            "name": "thicknessMap",
+            "displayName": "    Thickness Map",
+            "description": "Texture for controlling per pixel thickness",
+            "type": "Image",
+            "connection": {
+                "type": "ShaderInput",
+                "name": "m_transmissionThicknessMap"
+            }
+        },
+        {
+            "name": "useThicknessMap",
+            "displayName": "    Use Thickness Map",
+            "description": "Whether to use the thickness map",
+            "type": "Bool",
+            "defaultValue": true
+        },
+        {
+            "name": "thicknessMapUv",
+            "displayName": "    UV",
+            "description": "Thickness map UV set",
+            "type": "Enum",
+            "enumIsUv": true,
+            "defaultValue": "Tiled",
+            "connection": {
+                "type": "ShaderInput",
+                "name": "m_transmissionThicknessMapUvIndex"
+            }
+        },
+        {
+            "name": "transmissionTint",
+            "displayName": "    Transmission Tint",
+            "description": "Color of the volume light traveling through",
+            "type": "Color",
+            "defaultValue": [ 1.0, 0.8, 0.6 ]
+        },
+        {
+            "name": "transmissionPower",
+            "displayName": "    Power",
+            "description": "How much transmitted light scatter radially ",
+            "type": "float",
+            "defaultValue": 6.0,
+            "min": 0.0,
+            "softMax": 20.0
+        },
+        {
+            "name": "transmissionDistortion",
+            "displayName": "    Distortion",
+            "description": "How much light direction distorted towards surface normal",
+            "type": "float",
+            "defaultValue": 0.1,
+            "min": 0.0,
+            "max": 1.0
+        },
+        {
+            "name": "transmissionAttenuation",
+            "displayName": "    Attenuation",
+            "description": "How fast transmitted light fade with thickness",
+            "type": "float",
+            "defaultValue": 4.0,
+            "min": 0.0,
+            "softMax": 20.0
+        },
+        {
+            "name": "shrinkFactor",
+            "displayName": "    Shrink Factor",
+            "description": "Shrink (absolute) offset towards the normal opposite direction to ensure correct shadow map projection",
+            "type": "float",
+            "defaultValue": 0.005,
+            "min": 0.0,
+            "softMax": 0.05
+        },
+        {
+            "name": "transmissionNdLBias",
+            "displayName": "    Angle Bias",
+            "description": "cosine of angle to extend below (N . L = 0) in scattering through thin objects",
+            "type": "float",
+            "defaultValue": 0.1,
+            "min": -1.0,
+            "softMax": 1.0
+        },
+        {
+            "name": "distanceAttenuation",
+            "displayName": "    Distance Attenuation",
+            "description": "Attenuation of the transmission effect, used to hide artifacts due to low-res shadow maps\nFor directional lights: attenuation proportional to the distance from the object to the camera.\nFor other light sources: attenuation proportional to the distance from the object to the light source.",
+            "type": "float",
+            "defaultValue": 0.5,
+            "min": 0.0,
+            "softMax": 4.0
+        },
+        {
+            "name": "transmissionScale",
+            "displayName": "    Scale",
+            "description": "Strength of transmission",
+            "type": "float",
+            "defaultValue": 1.0,
+            "min": 0.0,
+            "softMax": 5.0
+        }
+    ],
+    "functors": [
+        {
+            // Preprocess & build parameter set for subsurface scattering and translucency
+            "type": "HandleSubsurfaceScatteringParameters",
+            "args": {
+                "mode": "transmissionMode",
+                "scale": "transmissionScale",
+                "power": "transmissionPower",
+                "distortion": "transmissionDistortion",
+                "attenuation": "transmissionAttenuation",
+                "shrinkFactor": "shrinkFactor",
+                "transmissionNdLBias": "transmissionNdLBias",
+                "distanceAttenuation": "distanceAttenuation",
+                "tintColor": "transmissionTint",
+                "thickness": "thickness",
+                "enabled": "enableSubsurfaceScattering",
+                "scatterDistanceColor": "scatterColor",
+                "scatterDistanceIntensity": "scatterDistance",
+                "scatterDistanceShaderInput": "m_scatterDistance",
+                "parametersShaderInput": "m_transmissionParams",
+                "tintThickenssShaderInput": "m_transmissionTintThickness"
+            }
+        },
+        {
+            "type": "Lua",
+            "args": {
+                "file": "Materials/Types/EnhancedPBR_SubsurfaceState.lua"
+            }
+        }
+    ]
+}

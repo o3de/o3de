@@ -25,14 +25,14 @@ namespace AWSGameLift
             const AWSGameLiftSearchSessionsRequest& searchSessionsRequest);
 
         // Create SearchGameSessionsRequest and make a SeachGameSessions call through GameLift client
-        AzFramework::SearchSessionsResponse SearchSessions(
+        Multiplayer::SearchSessionsResponse SearchSessions(
             const AWSGameLiftSearchSessionsRequest& searchSessionsRequest);
 
-        // Convert from Aws::GameLift::Model::SearchGameSessionsResult to AzFramework::SearchSessionsResponse.
-        AzFramework::SearchSessionsResponse ParseResponse(
+        // Convert from Aws::GameLift::Model::SearchGameSessionsResult to Multiplayer::SearchSessionsResponse.
+        Multiplayer::SearchSessionsResponse ParseResponse(
             const Aws::GameLift::Model::SearchGameSessionsResult& gameLiftSearchSessionsResult);
 
         // Validate SearchSessionsRequest and check required request parameters
-        bool ValidateSearchSessionsRequest(const AzFramework::SearchSessionsRequest& searchSessionsRequest);
+        bool ValidateSearchSessionsRequest(const Multiplayer::SearchSessionsRequest& searchSessionsRequest);
     } // namespace SearchSessionsActivity
 } // namespace AWSGameLift

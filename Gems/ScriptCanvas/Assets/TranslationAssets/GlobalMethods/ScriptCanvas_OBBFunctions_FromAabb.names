@@ -1,0 +1,38 @@
+{
+    "entries": [
+        {
+            "base": "ScriptCanvas_OBBFunctions_FromAabb",
+            "context": "BehaviorMethod",
+            "variant": "",
+            "details": {
+                "name": "From AABB",
+                "category": "Math/OBB"
+            },
+            "methods": [
+                {
+                    "base": "ScriptCanvas_OBBFunctions_FromAabb",
+                    "details": {
+                        "name": "From AABB",
+                        "tooltip": "Converts the Source to an OBB"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A54C2B36-D5B8-46A1-A529-4EBDBD2450E7}",
+                            "details": {
+                                "name": "Source"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{004ABD25-CF14-4EB3-BD41-022C247C07FA}",
+                            "details": {
+                                "name": "OBB"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

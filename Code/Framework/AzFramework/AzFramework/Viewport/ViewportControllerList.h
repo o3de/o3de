@@ -57,7 +57,6 @@ namespace AzFramework
         void SetEnabled(bool enabled);
 
     private:
-        void SortControllers();
         bool DispatchInputChannelEvent(const AzFramework::ViewportControllerInputEvent& event);
         void DispatchUpdateViewport(const AzFramework::ViewportControllerUpdateEvent& event);
 
@@ -65,4 +64,4 @@ namespace AzFramework
         AZStd::unordered_set<ViewportId> m_viewports;
         bool m_enabled = true;
     };
-} //namespace AzFramework
+} // namespace AzFramework

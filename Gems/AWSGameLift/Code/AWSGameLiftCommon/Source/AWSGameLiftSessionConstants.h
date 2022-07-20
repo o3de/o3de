@@ -18,6 +18,9 @@ namespace AWSGameLift
     static const char* AWSGameLiftSessionStatusReasons[2] = { "NotSet", "Interrupted" };
     AZ_POP_DISABLE_WARNING_GCC
 
+    // Reference https://docs.aws.amazon.com/gamelift/latest/apireference/API_PlayerSession.html
+    static constexpr const char AWSGameLiftTLSEnabledDNSSuffix[] = ".amazongamelift.com";
+
     static constexpr const char AWSGameLiftErrorMessageTemplate[] = "Exception: %s, Message: %s";
     static constexpr const char AWSGameLiftClientMissingErrorMessage[] = "GameLift client is not configured yet.";
 } // namespace AWSGameLift

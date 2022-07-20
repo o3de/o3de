@@ -30,3 +30,7 @@ function(ly_handle_custom_output_directory target output_subdirectory)
     endif()
 
 endfunction()
+
+function(ly_apply_debug_strip_options target)
+    #Noop
+endfunction()

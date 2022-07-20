@@ -34,7 +34,7 @@ namespace AzToolsFramework
         explicit ThumbnailPropertyCtrl(QWidget* parent = nullptr);
 
         //! Call this to set what thumbnail widget will display
-        void SetThumbnailKey(Thumbnailer::SharedThumbnailKey key, const char* contextName = "Default");
+        void SetThumbnailKey(Thumbnailer::SharedThumbnailKey key);
 
         //! Remove current thumbnail
         void ClearThumbnail();

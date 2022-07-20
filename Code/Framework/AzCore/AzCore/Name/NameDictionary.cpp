@@ -38,6 +38,22 @@ namespace AZ
             // after the AZ::Allocators have been destroyed
             // Therefore we supply the isTransferOwnership value of false using CreateVariableEx
             s_instance = AZ::Environment::CreateVariableEx<NameDictionary>(NameDictionaryInstanceName, true, false);
+
+            // Load any deferred names stored in our module's deferred name list, if it isn't already pointing at the dictionary's list
+            // If Name::s_staticNameBegin is equal to m_deferredHead we can skip this check, as that would make the freshly created name the only
+            // entry in the list.
+            if (Name::s_staticNameBegin != nullptr && &s_instance->m_deferredHead != Name::s_staticNameBegin)
+            {
+                s_instance->m_deferredHead.m_nextName = Name::s_staticNameBegin;
+                Name::s_staticNameBegin->m_previousName = &s_instance->m_deferredHead;
+            }
+            Name* current = s_instance->m_deferredHead.m_nextName;
+            while (current != nullptr)
+            {
+                current->m_linkedToDictionary = true;
+                current = current->m_nextName;
+            }
+            s_instance->LoadDeferredNames(&s_instance->m_deferredHead);
         }
     }
 
@@ -46,21 +62,37 @@ namespace AZ
         using namespace NameDictionaryInternal;
 
         AZ_Assert(s_instance, "NameDictionary not created!");
+
+        // Unload deferred names before destroying the name dictionary
+        // We need to do this because they may release their NameRefs, which require s_instance to be set
+        s_instance->UnloadDeferredNames();
         s_instance.Reset();
     }
 
-    bool NameDictionary::IsReady()
+    bool NameDictionary::IsReady(bool tryCreate)
     {
         using namespace NameDictionaryInternal;
 
+        if (!AZ::AllocatorInstance<AZ::SystemAllocator>::IsReady())
+        {
+            return false;
+        }
+
         if (!s_instance)
         {
-            // Because the NameDictionary allocates memory using the AZ::Allocator and it is created
-            // in the executable memory space, it's ownership cannot be transferred to other module memory spaces
-            // Otherwise this could cause the the NameDictionary to be destroyed in static de-init
-            // after the AZ::Allocators have been destroyed
-            // Therefore we supply the isTransferOwnership value of false using CreateVariableEx
-            s_instance = AZ::Environment::CreateVariableEx<NameDictionary>(NameDictionaryInstanceName, true, false);
+            if (tryCreate)
+            {
+                // Because the NameDictionary allocates memory using the AZ::Allocator and it is created
+                // in the executable memory space, it's ownership cannot be transferred to other module memory spaces
+                // Otherwise this could cause the the NameDictionary to be destroyed in static de-init
+                // after the AZ::Allocators have been destroyed
+                // Therefore we supply the isTransferOwnership value of false using CreateVariableEx
+                s_instance = AZ::Environment::CreateVariableEx<NameDictionary>(NameDictionaryInstanceName, true, false);
+            }
+            else
+            {
+                return false;
+            }
         }
 
         return s_instance.IsConstructed();
@@ -79,12 +111,23 @@ namespace AZ
 
         return *s_instance;
     }
-    
-    NameDictionary::NameDictionary()
-    {}
 
+    NameDictionary::NameDictionary()
+        : m_deferredHead(Name::FromStringLiteral("-fixed name dictionary deferred head-"))
+    {
+        // Ensure a Name that is valid for the life-cycle of this dictionary is the head of our literal linked list
+        // This prevents our list head from being destroyed from a module that has shut down its AZ::Environment and
+        // invalidating our list.
+        m_deferredHead.m_linkedToDictionary = true;
+    }
+    
     NameDictionary::~NameDictionary()
     {
+        // Ensure our module's static name list is up-to-date with what's in our deferred list.
+        // This allows the NameDictionary to be recreated and restore and name literals that still exist
+        // in e.g. unit tests.
+        Name::s_staticNameBegin = m_deferredHead.m_nextName;
+
         [[maybe_unused]] bool leaksDetected = false;
 
         for (const auto& keyValue : m_dictionary)
@@ -95,8 +138,6 @@ namespace AZ
 
             if (useCount == 0)
             {
-                // Entries that had resolved hash collisions are allowed to remain in the dictionary until shutdown.
-                AZ_Assert(hadCollision, "Only colliding names are allowed to remain in the dictionary");
                 delete nameData;
             }
             else
@@ -118,6 +159,77 @@ namespace AZ
             return Name(iter->second);
         }
         return Name();
+    }
+
+    void NameDictionary::LoadLiteral(Name& nameLiteral)
+    {
+        if (nameLiteral.m_data == nullptr)
+        {
+            // Load name data for the literal, but ensure its m_view is still referring to the original literal.
+            Name nameData = MakeName(nameLiteral.m_view);
+            nameLiteral.m_data = AZStd::move(nameData.m_data);
+            nameLiteral.m_hash = nameData.m_hash;
+        }
+    }
+
+    void NameDictionary::LoadDeferredName(Name& deferredName)
+    {
+        // Ensure this name has m_data loaded
+        LoadLiteral(deferredName);
+
+        // Link this name to the Name linked list for our module, if it isn't already.
+        // This ensures that static Names are restored if the NameDictionary is ever destroyed
+        // and then recreated, as the new dictionary will read from our static name list.
+        if (!deferredName.m_linkedToDictionary)
+        {
+            deferredName.m_linkedToDictionary = true;
+            // If there's an entry in our deferred list, prepend this name there so that we keep m_deferredHead unchanged
+            if (m_deferredHead.m_nextName != nullptr)
+            {
+                deferredName.LinkStaticName(&m_deferredHead.m_nextName);
+            }
+            // Otherwise, simply append the name to our deferred head
+            else
+            {
+                m_deferredHead.m_nextName = &deferredName;
+                deferredName.m_previousName = &m_deferredHead;
+                deferredName.m_linkedToDictionary = true;
+            }
+        }
+    }
+
+    void NameDictionary::LoadDeferredNames(Name* deferredHead)
+    {
+        if (deferredHead == nullptr)
+        {
+            return;
+        }
+
+        // Ensure this list entry is linked into our global name dictionary.
+        LoadDeferredName(*deferredHead);
+
+        // Ensure all Names in the list have their data loaded and are flagged as
+        // linked to our static name list.
+        Name* current = deferredHead->m_nextName;
+        while (current != nullptr)
+        {
+            LoadLiteral(*current);
+            current->m_linkedToDictionary = true;
+            current = current->m_nextName;
+        }
+    }
+
+    void NameDictionary::UnloadDeferredNames()
+    {
+        // Iterate through all names that still exist at static scope and clear their data
+        // They'll retain m_view, so will be able to be recreated by LoadDeferredName
+        Name* staticName = &m_deferredHead;
+        while (staticName != nullptr)
+        {
+            staticName->m_data = nullptr;
+            staticName->m_hash = 0;
+            staticName = staticName->m_nextName;
+        }
     }
 
     Name NameDictionary::MakeName(AZStd::string_view nameString)

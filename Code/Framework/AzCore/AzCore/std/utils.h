@@ -92,36 +92,13 @@ namespace AZStd
     //////////////////////////////////////////////////////////////////////////
 
     // The structure that encapsulates index lists
-    template <size_t... Is>
-    struct index_sequence
-    {
-        static constexpr size_t size = sizeof...(Is);
-    };
-
-    // Collects internal details for generating index ranges [MIN, MAX)
-    namespace Internal
-    {
-        // Declare primary template for index range builder
-        template <size_t MIN, size_t N, size_t... Is>
-        struct range_builder;
-
-        // Base step
-        template <size_t MIN, size_t... Is>
-        struct range_builder<MIN, MIN, Is...>
-        {
-            typedef index_sequence<Is...> type;
-        };
-
-        // Induction step
-        template <size_t MIN, size_t N, size_t... Is>
-        struct range_builder : public range_builder<MIN, N - 1, N - 1, Is...>
-        {
-        };
-    }
+    using std::integer_sequence;
+    using std::index_sequence;
+    using std::index_sequence_for;
 
     // Create index range [0,N]
-    template<size_t N>
-    using make_index_sequence = typename Internal::range_builder<0, N>::type;
+    using std::make_index_sequence;
+    using std::make_integer_sequence;
 
     struct piecewise_construct_t {};
     static constexpr piecewise_construct_t piecewise_construct{};
@@ -279,31 +256,7 @@ namespace AZStd
     //////////////////////////////////////////////////////////////////////////
     // Address of
     //////////////////////////////////////////////////////////////////////////
-    namespace Internal
-    {
-        template<class T>
-        struct addr_impl_ref
-        {
-            T& m_v;
-            constexpr addr_impl_ref(T& v)
-                : m_v(v) {}
-            constexpr addr_impl_ref& operator=(const addr_impl_ref& v) { m_v = v; return *this; }
-            constexpr operator T& () const { return m_v; }
-        };
-
-        template<class T>
-        struct addressof_impl
-        {
-            static AZ_FORCE_INLINE T* f(T& v, long) { return reinterpret_cast<T*>(&const_cast<char&>(reinterpret_cast<const volatile char&>(v))); }
-            static constexpr T* f(T* v, int)  { return v; }
-        };
-    }
-
-    template<class T>
-    T* addressof(T& v)
-    {
-        return Internal::addressof_impl<T>::f(Internal::addr_impl_ref<T>(v), 0);
-    }
+    using std::addressof;
     // End addressof
     //////////////////////////////////////////////////////////////////////////
 
@@ -446,57 +399,14 @@ namespace AZStd
     };
 #endif
 
-    template <template <class> class, typename...>
-    struct sequence_and;
+    using std::in_place_t;
+    using std::in_place;
 
-    template <template <class> class trait, typename T1, typename... Ts>
-    struct sequence_and<trait, T1, Ts...>
-    {
-        static const bool value = trait<T1>::value && sequence_and<trait, Ts...>::value;
-    };
+    using std::in_place_type_t;
+    using std::in_place_type;
 
-    template <template <class> class trait>
-    struct sequence_and<trait>
-    {
-        static const bool value = true;
-    };
-
-    template <template <class> class, typename...>
-    struct sequence_or;
-
-    template <template <class> class trait, typename T1, typename... Ts>
-    struct sequence_or<trait, T1, Ts...>
-    {
-        static const bool value = trait<T1>::value || sequence_or<trait, Ts...>::value;
-    };
-
-    template <template <class> class trait>
-    struct sequence_or<trait>
-    {
-        static const bool value = false;
-    };
-
-    struct in_place_t
-    {
-        explicit constexpr in_place_t() = default;
-    };
-    constexpr in_place_t in_place{};
-
-    template<typename T>
-    struct in_place_type_t
-    {
-        explicit constexpr in_place_type_t() = default;
-    };
-    template <typename T>
-    constexpr in_place_type_t<T> in_place_type{};
-
-    template<size_t I>
-    struct in_place_index_t
-    {
-        explicit constexpr in_place_index_t() = default;
-    };
-    template<size_t I>
-    constexpr in_place_index_t<I> in_place_index{}; 
+    using std::in_place_index_t;
+    using std::in_place_index;
 
     namespace Internal
     {

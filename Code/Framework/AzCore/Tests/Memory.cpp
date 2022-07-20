@@ -141,7 +141,6 @@ namespace UnitTest
 
                 ////////////////////////////////////////////////////////////////////////
                 // Create some threads and simulate concurrent allocation and deallocation
-                AZStd::chrono::system_clock::time_point startTime = AZStd::chrono::system_clock::now();
                 {
                     AZStd::thread m_threads[m_maxNumThreads];
                     for (unsigned int i = 0; i < m_maxNumThreads; ++i)
@@ -156,8 +155,6 @@ namespace UnitTest
                         m_threads[i].join();
                     }
                 }
-                //AZStd::chrono::microseconds exTime = AZStd::chrono::system_clock::now() - startTime;
-                //AZ_Printf("UnitTest::SystemAllocatorTest::deafult","Time: %d Ms\n",exTime.count());
                 //////////////////////////////////////////////////////////////////////////
 
                 AllocatorInstance<SystemAllocator>::Destroy();

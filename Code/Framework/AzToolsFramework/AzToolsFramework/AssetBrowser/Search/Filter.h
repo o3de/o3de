@@ -128,20 +128,20 @@ namespace AzToolsFramework
             RegExpFilter();
             ~RegExpFilter() override = default;
 
-            void SetFilterPattern(const QString& filterPattern);
+            void SetFilterPattern(const QRegExp& filterPattern);
 
         protected:
             QString GetNameInternal() const override;
             bool MatchInternal(const AssetBrowserEntry* entry) const override;
 
         private:
-            QString m_filterPattern;
+            QRegExp m_filterPattern;
         };
 
         //////////////////////////////////////////////////////////////////////////
         // AssetTypeFilter
         //////////////////////////////////////////////////////////////////////////
-        //! AssetTypeFilter filters products based on their asset id
+        //! AssetTypeFilter filters products based on their asset type
         class AssetTypeFilter
             : public AssetBrowserEntryFilter
         {

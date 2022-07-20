@@ -9,10 +9,10 @@
 #pragma once
 
 #include <AzCore/Interface/Interface.h>
-#include <AzFramework/Session/ISessionRequests.h>
-#include <AzFramework/Session/ISessionHandlingRequests.h>
-#include <AzFramework/Matchmaking/IMatchmakingRequests.h>
-#include <AzFramework/Matchmaking/MatchmakingNotifications.h>
+#include <Multiplayer/Session/ISessionRequests.h>
+#include <Multiplayer/Session/ISessionHandlingRequests.h>
+#include <Multiplayer/Session/IMatchmakingRequests.h>
+#include <Multiplayer/Session/MatchmakingNotifications.h>
 #include <AzTest/AzTest.h>
 
 #include <aws/core/auth/AWSCredentialsProvider.h>
@@ -58,17 +58,17 @@ public:
 };
 
 class MatchmakingAsyncRequestNotificationsHandlerMock
-    : public AzFramework::MatchmakingAsyncRequestNotificationBus::Handler
+    : public Multiplayer::MatchmakingAsyncRequestNotificationBus::Handler
 {
 public:
     MatchmakingAsyncRequestNotificationsHandlerMock()
     {
-        AzFramework::MatchmakingAsyncRequestNotificationBus::Handler::BusConnect();
+        Multiplayer::MatchmakingAsyncRequestNotificationBus::Handler::BusConnect();
     }
 
     ~MatchmakingAsyncRequestNotificationsHandlerMock()
     {
-        AzFramework::MatchmakingAsyncRequestNotificationBus::Handler::BusDisconnect();
+        Multiplayer::MatchmakingAsyncRequestNotificationBus::Handler::BusDisconnect();
     }
 
     MOCK_METHOD0(OnAcceptMatchAsyncComplete, void());
@@ -77,17 +77,17 @@ public:
 };
 
 class MatchmakingNotificationsHandlerMock
-    : public AzFramework::MatchmakingNotificationBus::Handler
+    : public Multiplayer::MatchmakingNotificationBus::Handler
 {
 public:
     MatchmakingNotificationsHandlerMock()
     {
-        AzFramework::MatchmakingNotificationBus::Handler::BusConnect();
+        Multiplayer::MatchmakingNotificationBus::Handler::BusConnect();
     }
 
     ~MatchmakingNotificationsHandlerMock()
     {
-        AzFramework::MatchmakingNotificationBus::Handler::BusDisconnect();
+        Multiplayer::MatchmakingNotificationBus::Handler::BusDisconnect();
     }
 
     void OnMatchAcceptance() override
@@ -117,39 +117,39 @@ public:
 };
 
 class SessionAsyncRequestNotificationsHandlerMock
-    : public AzFramework::SessionAsyncRequestNotificationBus::Handler
+    : public Multiplayer::SessionAsyncRequestNotificationBus::Handler
 {
 public:
     SessionAsyncRequestNotificationsHandlerMock()
     {
-        AzFramework::SessionAsyncRequestNotificationBus::Handler::BusConnect();
+        Multiplayer::SessionAsyncRequestNotificationBus::Handler::BusConnect();
     }
 
     ~SessionAsyncRequestNotificationsHandlerMock()
     {
-        AzFramework::SessionAsyncRequestNotificationBus::Handler::BusDisconnect();
+        Multiplayer::SessionAsyncRequestNotificationBus::Handler::BusDisconnect();
     }
 
     MOCK_METHOD1(OnCreateSessionAsyncComplete, void(const AZStd::string&));
-    MOCK_METHOD1(OnSearchSessionsAsyncComplete, void(const AzFramework::SearchSessionsResponse&));
+    MOCK_METHOD1(OnSearchSessionsAsyncComplete, void(const Multiplayer::SearchSessionsResponse&));
     MOCK_METHOD1(OnJoinSessionAsyncComplete, void(bool));
     MOCK_METHOD0(OnLeaveSessionAsyncComplete, void());
 };
 
 class SessionHandlingClientRequestsMock
-    : public AzFramework::ISessionHandlingClientRequests
+    : public Multiplayer::ISessionHandlingClientRequests
 {
 public:
     SessionHandlingClientRequestsMock()
     {
-        AZ::Interface<AzFramework::ISessionHandlingClientRequests>::Register(this);
+        AZ::Interface<Multiplayer::ISessionHandlingClientRequests>::Register(this);
     }
 
     virtual ~SessionHandlingClientRequestsMock()
     {
-        AZ::Interface<AzFramework::ISessionHandlingClientRequests>::Unregister(this);
+        AZ::Interface<Multiplayer::ISessionHandlingClientRequests>::Unregister(this);
     }
 
-    MOCK_METHOD1(RequestPlayerJoinSession, bool(const AzFramework::SessionConnectionConfig&));
+    MOCK_METHOD1(RequestPlayerJoinSession, bool(const Multiplayer::SessionConnectionConfig&));
     MOCK_METHOD0(RequestPlayerLeaveSession, void());
 };

@@ -35,20 +35,6 @@ namespace EMotionFX
     {
     }
 
-    AZ::Outcome<size_t> DualQuatSkinDeformer::FindLocalBoneIndex(size_t nodeIndex) const
-    {
-        const size_t numBones = m_bones.size();
-        for (size_t i = 0; i < numBones; ++i)
-        {
-            if (m_bones[i].m_nodeNr == nodeIndex)
-            {
-                return AZ::Success(i);
-            }
-        }
-
-        return AZ::Failure();
-    }
-
     DualQuatSkinDeformer* DualQuatSkinDeformer::Create(Mesh* mesh)
     {
         return aznew DualQuatSkinDeformer(mesh);
@@ -93,7 +79,7 @@ namespace EMotionFX
         if (m_useTaskGraph)
         {
             // Skin the vertices by executing the task graph.
-            AZ::TaskGraphEvent finishedEvent;
+            AZ::TaskGraphEvent finishedEvent{ "DualQuatSkinning Wait" };
             m_taskGraph.Submit(&finishedEvent);
             finishedEvent.Wait();
         }
@@ -306,7 +292,7 @@ namespace EMotionFX
     }
 
     // initialize the mesh deformer
-    void DualQuatSkinDeformer::Reinitialize(Actor* actor, Node* node, size_t lodLevel)
+    void DualQuatSkinDeformer::Reinitialize(Actor* actor, Node* node, size_t lodLevel, uint16 highestJointIndex)
     {
         MCORE_UNUSED(actor);
         MCORE_UNUSED(node);
@@ -324,6 +310,9 @@ namespace EMotionFX
         SkinningInfoVertexAttributeLayer* skinningLayer = (SkinningInfoVertexAttributeLayer*)m_mesh->FindSharedVertexAttributeLayer(SkinningInfoVertexAttributeLayer::TYPE_ID);
         MCORE_ASSERT(skinningLayer);
 
+        constexpr uint16 invalidBoneIndex = AZStd::numeric_limits<uint16>::max();
+        AZStd::vector<uint16> localBoneMap(highestJointIndex + 1, invalidBoneIndex);
+
         // find out what bones this mesh uses
         const uint32 numOrgVerts = m_mesh->GetNumOrgVertices();
         for (uint32 i = 0; i < numOrgVerts; i++)
@@ -335,21 +324,24 @@ namespace EMotionFX
             for (size_t a = 0; a < numInfluences; ++a)
             {
                 SkinInfluence* influence = skinningLayer->GetInfluence(i, a);
+                const uint16 nodeIndex = influence->GetNodeNr();
 
-                AZ::Outcome<size_t> boneIndexOutcome = FindLocalBoneIndex(influence->GetNodeNr());
-                if (boneIndexOutcome.IsSuccess())
-                {
-                    influence->SetBoneNr(aznumeric_caster(boneIndexOutcome.GetValue()));
-                }
-                else
+                // get the bone index in the array
+                uint16 boneIndex = localBoneMap[nodeIndex];
+                // if the bone is not found in our array
+                if (boneIndex == invalidBoneIndex)
                 {
                     // add the bone to the array of bones in this deformer
                     BoneInfo lastBone;
-                    lastBone.m_nodeNr = influence->GetNodeNr();
+                    lastBone.m_nodeNr = nodeIndex;
                     lastBone.m_dualQuat.Identity();
                     m_bones.emplace_back(lastBone);
-                    influence->SetBoneNr(static_cast<AZ::u16>(m_bones.size() - 1));
+                    boneIndex = static_cast<AZ::u16>(m_bones.size() - 1);
+                    localBoneMap[nodeIndex] = boneIndex;
                 }
+                
+                // set the bone number in the influence
+                influence->SetBoneNr(boneIndex);
             }
         }
 

@@ -6,10 +6,12 @@
  *
  */
 
+#include <Source/RigidBodyStatic.h>
+
 #include <AzCore/std/smart_ptr/shared_ptr.h>
+#include <AzCore/std/utility/as_const.h>
 #include <AzFramework/Physics/Configuration/StaticRigidBodyConfiguration.h>
 #include <PxPhysicsAPI.h>
-#include <Source/RigidBodyStatic.h>
 #include <Source/Utils.h>
 #include <PhysX/Utils.h>
 #include <Source/Shape.h>
@@ -65,7 +67,7 @@ namespace PhysX
         }
     }
 
-    void StaticRigidBody::AddShape(const AZStd::shared_ptr<Physics::Shape>& shape)
+    void StaticRigidBody::AddShape(AZStd::shared_ptr<Physics::Shape> shape)
     {
         auto pxShape = AZStd::rtti_pointer_cast<PhysX::Shape>(shape);
         if (pxShape && pxShape->GetPxShape())
@@ -85,6 +87,12 @@ namespace PhysX
 
     AZStd::shared_ptr<Physics::Shape> StaticRigidBody::GetShape(AZ::u32 index)
     {
+        AZStd::shared_ptr<const Physics::Shape> constShape = AZStd::as_const(*this).GetShape(index);
+        return AZStd::const_pointer_cast<Physics::Shape>(constShape);
+    }
+
+    AZStd::shared_ptr<const Physics::Shape> StaticRigidBody::GetShape(AZ::u32 index) const
+    {
         if (index >= m_shapes.size())
         {
             return nullptr;
@@ -92,7 +100,7 @@ namespace PhysX
         return m_shapes[index];
     }
 
-    AZ::u32 StaticRigidBody::GetShapeCount()
+    AZ::u32 StaticRigidBody::GetShapeCount() const
     {
         return static_cast<AZ::u32>(m_shapes.size());
     }

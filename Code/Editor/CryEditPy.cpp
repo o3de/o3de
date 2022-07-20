@@ -260,11 +260,6 @@ namespace
 
 namespace
 {
-    void PyStartProcessDetached(const char* process, const char* args)
-    {
-        CCryEditApp::instance()->StartProcessDetached(process, args);
-    }
-
     void PyLaunchLUAEditor(const char* files)
     {
         CCryEditApp::instance()->OpenLUAEditor(files);
@@ -429,7 +424,6 @@ namespace AzToolsFramework
             addLegacyGeneral(behaviorContext->Method("idle_wait", PyIdleWait, nullptr, "Waits idling for a given seconds. Primarily used for auto-testing."));
             addLegacyGeneral(behaviorContext->Method("idle_wait_frames", PyIdleWaitFrames, nullptr, "Waits idling for a frames. Primarily used for auto-testing."));
 
-            addLegacyGeneral(behaviorContext->Method("start_process_detached", PyStartProcessDetached, nullptr, "Launches a detached process with an optional space separated list of arguments."));
             addLegacyGeneral(behaviorContext->Method("launch_lua_editor", PyLaunchLUAEditor, nullptr, "Launches the Lua editor, may receive a list of space separate file paths, or an empty string to only open the editor."));
 
             addLegacyGeneral(behaviorContext->Method("attach_debugger", PyAttachDebugger, nullptr, "Prompts for attaching the debugger"));

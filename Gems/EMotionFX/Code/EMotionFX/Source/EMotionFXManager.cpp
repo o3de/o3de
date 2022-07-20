@@ -577,7 +577,6 @@ namespace EMotionFX
         memTracker.RegisterCategory(EMFX_MEMCATEGORY_ANIMGRAPH_SYNCTRACK,                     "EMFX_MEMCATEGORY_ANIMGRAPH_SYNCTRACK");
         memTracker.RegisterCategory(EMFX_MEMCATEGORY_ANIMGRAPH_POSE,                          "EMFX_MEMCATEGORY_ANIMGRAPH_POSE");
         memTracker.RegisterCategory(EMFX_MEMCATEGORY_ANIMGRAPH_PROCESSORS,                    "EMFX_MEMCATEGORY_ANIMGRAPH_PROCESSORS");
-        memTracker.RegisterCategory(EMFX_MEMCATEGORY_ANIMGRAPH_GAMECONTROLLER,                "EMFX_MEMCATEGORY_ANIMGRAPH_GAMECONTROLLER");
         memTracker.RegisterCategory(EMFX_MEMCATEGORY_ANIMGRAPH_EVENTBUFFERS,                  "EMFX_MEMCATEGORY_ANIMGRAPH_EVENTBUFFERS");
         memTracker.RegisterCategory(EMFX_MEMCATEGORY_ANIMGRAPH_POSEPOOL,                      "EMFX_MEMCATEGORY_ANIMGRAPH_POSEPOOL");
         memTracker.RegisterCategory(EMFX_MEMCATEGORY_ANIMGRAPH_NODES,                         "EMFX_MEMCATEGORY_ANIMGRAPH_NODES");
@@ -646,7 +645,6 @@ namespace EMotionFX
         idValues.push_back(EMFX_MEMCATEGORY_ANIMGRAPH_SYNCTRACK);
         idValues.push_back(EMFX_MEMCATEGORY_ANIMGRAPH_POSE);
         idValues.push_back(EMFX_MEMCATEGORY_ANIMGRAPH_PROCESSORS);
-        idValues.push_back(EMFX_MEMCATEGORY_ANIMGRAPH_GAMECONTROLLER);
         idValues.push_back(EMFX_MEMCATEGORY_ANIMGRAPH_EVENTBUFFERS);
         idValues.push_back(EMFX_MEMCATEGORY_ANIMGRAPH_POSEPOOL);
         idValues.push_back(EMFX_MEMCATEGORY_ANIMGRAPH_NODES);

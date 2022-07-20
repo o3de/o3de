@@ -7,3 +7,5 @@
 #
 
 add_subdirectory(Code)
+
+ly_install_directory(DIRECTORIES cdk)

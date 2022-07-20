@@ -1,0 +1,30 @@
+{
+    "entries": [
+        {
+            "base": "ScriptCanvas_MathRandoms_RandomUnitVector3",
+            "context": "BehaviorMethod",
+            "variant": "",
+            "details": {
+                "name": "Random Unit Vector3",
+                "category": "Math/Random"
+            },
+            "methods": [
+                {
+                    "base": "ScriptCanvas_MathRandoms_RandomUnitVector3",
+                    "details": {
+                        "name": "Random Unit Vector3",
+                        "tooltip": "Returns a random Vector3 direction."
+                    },
+                    "results": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector3"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

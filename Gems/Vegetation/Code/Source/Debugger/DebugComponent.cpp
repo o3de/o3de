@@ -334,16 +334,11 @@ void DebugComponent::FillSectorEnd([[maybe_unused]] int sectorX, [[maybe_unused]
 
 namespace DebugComponentUtilities
 {
-    constexpr uint32 RoundUpAndDivide(uint32 value, uint32 divide)
-    {
-        return (value + divide - 1) / divide;
-    }
-
     template <typename ValueType>
     union LocalAliasingUnion
     {
         ValueType aliasedValue;
-        AZStd::size_t aliasedValueArray[RoundUpAndDivide(sizeof(ValueType), sizeof(AZStd::size_t))] = {};
+        AZStd::size_t aliasedValueArray[AZ::DivideAndRoundUp(sizeof(ValueType), sizeof(AZStd::size_t))] = {};
     };
 
     template <typename ValueType>
@@ -861,8 +856,9 @@ void DebugComponent::PrepareNextReport()
                                 0.0f);
 
         SurfaceData::SurfacePointList points;
-        SurfaceData::SurfaceDataSystemRequestBus::Broadcast(&SurfaceData::SurfaceDataSystemRequestBus::Events::GetSurfacePoints, pos, SurfaceData::SurfaceTagVector(), points);
-        timing.m_worldPosition = points.empty() ? pos : points.front().m_position;
+        AZ::Interface<SurfaceData::SurfaceDataSystem>::Get()->GetSurfacePoints(pos, SurfaceData::SurfaceTagVector(), points);
+        constexpr size_t inPositionIndex = 0;
+        timing.m_worldPosition = points.IsEmpty(inPositionIndex) ? pos : points.GetHighestSurfacePoint(inPositionIndex).m_position;
         return timing;
     },
     [](const SectorTracker& sectorTracker, SectorTiming& sectorTiming)

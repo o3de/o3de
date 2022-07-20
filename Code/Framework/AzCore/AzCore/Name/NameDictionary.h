@@ -16,11 +16,6 @@
 #include <AzCore/Memory/OSAllocator.h>
 #include <AzCore/Name/Name.h>
 
-namespace MaterialEditor
-{
-    class MaterialEditorCoreComponent;
-}
-
 namespace UnitTest
 {
     class NameDictionaryTester;
@@ -62,7 +57,7 @@ namespace AZ
         static void Create();
 
         static void Destroy();
-        static bool IsReady();
+        static bool IsReady(bool tryCreate = true);
         static NameDictionary& Instance();
 
         //! Makes a Name from the provided raw string. If an entry already exists in the dictionary, it is shared.
@@ -78,6 +73,11 @@ namespace AZ
         Name FindName(Name::Hash hash) const;
 
         NameDictionary();
+
+        //! Loads a list of names, starting at a given list head, and ensures they're all created and linked
+        //! into our list of deferred load names.
+        void LoadDeferredNames(Name* deferredHead);
+
     private:
         ~NameDictionary();
 
@@ -96,7 +96,21 @@ namespace AZ
         // Does not attempt to resolve hash collisions; that is handled elsewhere.
         Name::Hash CalcHash(AZStd::string_view name);
 
+        //! Loads the NameData for a given name literal (a Name created with Name::FromStringLiteral)
+        void LoadLiteral(Name& name);
+        //! Loads a name that was potentially created before this dictionary, ensuring its name data
+        //! is loaded and that it is linked into our list of deferred load names to be released later.
+        void LoadDeferredName(Name& deferredName);
+        //! Unloads the data with all deferred names registered using LoadDeferredName.
+        void UnloadDeferredNames();
+
         AZStd::unordered_map<Name::Hash, Internal::NameData*> m_dictionary;
         mutable AZStd::shared_mutex m_sharedMutex;
+
+        //! A fixed Name used as the head of a linked list of Name literals.
+        //! These literals can be static and have lifecycles not coupled to the name dictionary,
+        //! so we keep track of them here to ensure their name data gets correctly cleaned up
+        //! when this dictionary is shut down.
+        Name m_deferredHead;
     };
 }

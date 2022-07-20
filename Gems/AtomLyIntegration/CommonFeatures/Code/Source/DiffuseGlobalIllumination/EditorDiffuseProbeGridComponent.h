@@ -67,8 +67,13 @@ namespace AZ
             AZ::u32 OnViewBiasChanged();
             AZ::u32 OnNormalBiasChanged();
             AZ::u32 OnNumRaysPerProbeChanged();
+            AZ::Outcome<void, AZStd::string> OnScrollingChangeValidate(void* newValue, const AZ::Uuid& valueType);
+            AZ::u32 OnScrollingChanged();
             AZ::u32 OnEditorModeChanged();
             AZ::u32 OnRuntimeModeChanged();
+            AZ::u32 OnShowVisualizationChanged();
+            AZ::u32 OnShowInactiveProbesChanged();
+            AZ::u32 OnVisualizationSphereRadiusChanged();
             AZ::Outcome<void, AZStd::string> OnModeChangeValidate(void* newValue, const AZ::Uuid& valueType);
 
             // Button handler
@@ -83,8 +88,12 @@ namespace AZ
             float m_viewBias = DefaultDiffuseProbeGridViewBias;
             float m_normalBias = DefaultDiffuseProbeGridNormalBias;
             DiffuseProbeGridNumRaysPerProbe m_numRaysPerProbe = DefaultDiffuseProbeGridNumRaysPerProbe;
+            bool m_scrolling = false;
             DiffuseProbeGridMode m_editorMode = DiffuseProbeGridMode::RealTime;
             DiffuseProbeGridMode m_runtimeMode = DiffuseProbeGridMode::RealTime;
+            bool m_showVisualization = false;
+            bool m_showInactiveProbes = false;
+            float m_visualizationSphereRadius = DefaultVisualizationSphereRadius;
 
             // flags
             bool m_editorModeSet = false;

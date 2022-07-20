@@ -59,6 +59,7 @@ namespace AZ
             void DrawRendererInfo();
             void DrawCameraInfo();
             void DrawPassInfo();
+            void DrawMemoryInfo();
             void DrawFramerate();
 
             static constexpr float BaseFontSize = 0.7f;

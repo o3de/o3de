@@ -33,7 +33,12 @@ function TrySetShaderEnabled(shader, enabled)
 end
 
 function Process(context)
-    local opacityMode = context:GetMaterialPropertyValue_enum("opacity.mode")
+    
+    local opacityMode = OpacityMode_Opaque
+    if context:HasMaterialProperty("opacity.mode") then
+        opacityMode = context:GetMaterialPropertyValue_enum("opacity.mode")
+    end
+
     local displacementMap = context:GetMaterialPropertyValue_Image("parallax.textureMap")
     local useDisplacementMap = context:GetMaterialPropertyValue_bool("parallax.useTexture")
     local parallaxEnabled = displacementMap ~= nil and useDisplacementMap
@@ -77,6 +82,10 @@ function Process(context)
         TrySetShaderEnabled(lowEndForward, opacityMode == OpacityMode_Cutout)
     end
     
-    context:GetShaderByTag("DepthPassTransparentMin"):SetEnabled((opacityMode == OpacityMode_Blended) or (opacityMode == OpacityMode_TintedTransparent))
-    context:GetShaderByTag("DepthPassTransparentMax"):SetEnabled((opacityMode == OpacityMode_Blended) or (opacityMode == OpacityMode_TintedTransparent))
+    if context:HasShaderWithTag("DepthPassTransparentMin") then
+        context:GetShaderByTag("DepthPassTransparentMin"):SetEnabled((opacityMode == OpacityMode_Blended) or (opacityMode == OpacityMode_TintedTransparent))
+    end
+    if context:HasShaderWithTag("DepthPassTransparentMax") then
+        context:GetShaderByTag("DepthPassTransparentMax"):SetEnabled((opacityMode == OpacityMode_Blended) or (opacityMode == OpacityMode_TintedTransparent))
+    end
 end

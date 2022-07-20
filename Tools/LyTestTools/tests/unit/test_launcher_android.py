@@ -97,17 +97,24 @@ class TestLauncherModule:
         assert mock_output.call_count == 2
         assert under_test == '12'
 
-    def test_GenerateMapCommand_HasMapArg_ReturnsMapCommand(self):
-        args_list = ['random_arg', '+map', 'map_name', 'another_arg']
+    def test_GenerateLoadLevelCommand_HasArg_ReturnsLoadLevelCommand(self):
+        args_list = ['random_arg', '+LoadLevel', 'map_name', 'another_arg']
 
-        under_test = ly_test_tools.launchers.platforms.android.launcher.generate_android_map_command(args_list)
+        under_test = ly_test_tools.launchers.platforms.android.launcher.generate_android_loadlevel_command(args_list)
 
-        assert under_test == 'map map_name'
+        assert under_test == 'LoadLevel map_name'
 
-    def test_GenerateMapCommand_NoMapArg_ReturnsEmptyString(self):
+    def test_GenerateLoadLevelCommand_NoArg_ReturnsEmptyString(self):
         args_list = ['random_arg', 'stuff', 'map_name', 'another_arg']
 
-        under_test = ly_test_tools.launchers.platforms.android.launcher.generate_android_map_command(args_list)
+        under_test = ly_test_tools.launchers.platforms.android.launcher.generate_android_loadlevel_command(args_list)
+
+        assert under_test == ''
+
+    def test_GenerateLoadLevelCommand_InvalidArgFormat_ReturnsEmptyString(self):
+        args_list = ['random_arg', 'stuff', 'map_name', 'another_arg', '+LoadLevel']
+
+        under_test = ly_test_tools.launchers.platforms.android.launcher.generate_android_loadlevel_command(args_list)
 
         assert under_test == ''
 
@@ -308,9 +315,11 @@ class TestAndroidLauncher:
     def test_Kill_HappyPath_KillCommandSuccess(self, mock_config, mock_call):
         mock_config.return_value = VALID_ANDROID_CONFIG
         mock_workspace = MockedWorkspace()
-
         launcher = ly_test_tools.launchers.AndroidLauncher(mock_workspace, ["dummy"])
-        launcher.kill()
+
+        # This is a direct call to a protected method, but the point of the test is to ensure functionality of this
+        # protected method, so we will allow this exception
+        launcher._kill()
 
         mock_call.assert_called_once_with(
             ['adb', '-s', VALID_ANDROID_CONFIG['android']['id'], 'shell', 'am', 'force-stop', PACKAGE_NAME])

@@ -9,11 +9,17 @@
 #pragma once
 
 #include <AzCore/EBus/EBus.h>
+#include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzFramework/Viewport/ViewportId.h>
 
 namespace AZ
 {
     class Transform;
+}
+
+namespace AzFramework
+{
+    class CameraInput;
 }
 
 namespace AtomToolsFramework
@@ -47,13 +53,23 @@ namespace AtomToolsFramework
         //! Sets the current camera pivot, moving the camera offset with it (the camera appears
         //! to follow the pivot, staying the same distance away from it).
         virtual void SetCameraPivotAttached(const AZ::Vector3& pivot) = 0;
+        //! Same as SetCameraPivotAttached only the pivot is set on the current and target cameras so no interpolation occurs.
+        virtual void SetCameraPivotAttachedImmediate(const AZ::Vector3& pivot) = 0;
         //! Sets the current camera pivot, leaving the camera offset in-place (the camera will
         //! stay fixed and the pivot will appear to move around on its own).
         virtual void SetCameraPivotDetached(const AZ::Vector3& pivot) = 0;
+        //! Same as SetCameraPivotDetached only the pivot is set on the current and target cameras so no interpolation occurs.
+        virtual void SetCameraPivotDetachedImmediate(const AZ::Vector3& pivot) = 0;
         //! Sets the current camera offset from the pivot.
         //! @note The offset value is in the current space of the camera, not world space. Setting
         //! a negative Z value will move the camera backwards from the pivot.
         virtual void SetCameraOffset(const AZ::Vector3& offset) = 0;
+        //! Same as SetCameraOffset only the offset is set on the current and target cameras so no interpolation occurs.
+        virtual void SetCameraOffsetImmediate(const AZ::Vector3& offset) = 0;
+        //! Add one or more camera inputs (behaviors) to run for the current camera.
+        virtual bool AddCameras(const AZStd::vector<AZStd::shared_ptr<AzFramework::CameraInput>>& cameraInputs) = 0;
+        //! Remove one or more camera inputs (behaviors) to stop them running for the current camera.
+        virtual bool RemoveCameras(const AZStd::vector<AZStd::shared_ptr<AzFramework::CameraInput>>& cameraInputs) = 0;
 
     protected:
         ~ModularViewportCameraControllerRequests() = default;

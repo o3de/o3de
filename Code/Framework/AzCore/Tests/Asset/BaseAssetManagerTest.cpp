@@ -345,7 +345,7 @@ namespace UnitTest
 
         // Currently no test expects a file not to exist so we assert to make it easy to quickly find where something went wrong
         // If we ever need to test for a non-existent file this assert should just be conditionally disabled for that specific test
-        AZ_Assert(false, "Failed to find virtual file %*.s", path.size(), path.data())
+        AZ_Assert(false, "Failed to find virtual file %.*s", AZ_STRING_ARG(path))
 
         return nullptr;
     }

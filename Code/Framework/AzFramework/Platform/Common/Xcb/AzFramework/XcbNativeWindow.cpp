@@ -19,7 +19,6 @@ namespace AzFramework
     [[maybe_unused]] const char XcbErrorWindow[] = "XcbNativeWindow";
     static constexpr uint8_t s_XcbFormatDataSize = 32; // Format indicator for xcb for client messages
     static constexpr uint16_t s_DefaultXcbWindowBorderWidth = 4; // The default border with in pixels if a border was specified
-    static constexpr uint8_t s_XcbResponseTypeMask = 0x7f; // Mask to extract the specific event type from an xcb event
 
 #define _NET_WM_STATE_REMOVE 0l
 #define _NET_WM_STATE_ADD 1l
@@ -144,7 +143,6 @@ namespace AzFramework
 
     void XcbNativeWindow::InitializeAtoms()
     {
-        AZStd::vector<xcb_atom_t> Atoms;
 
         _NET_ACTIVE_WINDOW = GetAtom("_NET_ACTIVE_WINDOW");
         _NET_WM_BYPASS_COMPOSITOR = GetAtom("_NET_WM_BYPASS_COMPOSITOR");
@@ -157,11 +155,12 @@ namespace AzFramework
 
         // This atom is used to close a window. Emitted when user clicks the close button.
         WM_DELETE_WINDOW = GetAtom("WM_DELETE_WINDOW");
+        _NET_WM_PING = GetAtom("_NET_WM_PING");
 
-        Atoms.push_back(WM_DELETE_WINDOW);
+        const AZStd::array atoms {WM_DELETE_WINDOW, _NET_WM_PING};
 
         xcb_change_property(
-            m_xcbConnection, XCB_PROP_MODE_REPLACE, m_xcbWindow, WM_PROTOCOLS, XCB_ATOM_ATOM, 32, Atoms.size(), Atoms.data());
+            m_xcbConnection, XCB_PROP_MODE_REPLACE, m_xcbWindow, WM_PROTOCOLS, XCB_ATOM_ATOM, 32, atoms.size(), atoms.data());
 
         xcb_flush(m_xcbConnection);
 
@@ -382,11 +381,24 @@ namespace AzFramework
             {
                 xcb_client_message_event_t* cme = reinterpret_cast<xcb_client_message_event_t*>(event);
 
-                if ((cme->type == WM_PROTOCOLS) && (cme->format == s_XcbFormatDataSize) && (cme->data.data32[0] == WM_DELETE_WINDOW))
+                if ((cme->type == WM_PROTOCOLS) && (cme->format == s_XcbFormatDataSize))
                 {
-                    Deactivate();
+                    const xcb_atom_t protocolAtom = cme->data.data32[0];
+                    if (protocolAtom == WM_DELETE_WINDOW)
+                    {
+                        Deactivate();
 
-                    ApplicationRequests::Bus::Broadcast(&ApplicationRequests::ExitMainLoop);
+                        ApplicationRequests::Bus::Broadcast(&ApplicationRequests::ExitMainLoop);
+                    }
+                    else if (protocolAtom == _NET_WM_PING && cme->window != m_xcbRootScreen->root)
+                    {
+                        xcb_client_message_event_t reply = *cme;
+                        reply.response_type = XCB_CLIENT_MESSAGE;
+                        reply.window = m_xcbRootScreen->root;
+
+                        xcb_send_event(m_xcbConnection, 0, m_xcbRootScreen->root, XCB_EVENT_MASK_STRUCTURE_NOTIFY | XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT, reinterpret_cast<const char*>(&reply));
+                        xcb_flush(m_xcbConnection);
+                    }
                 }
                 break;
             }

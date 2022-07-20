@@ -10,6 +10,7 @@
 // This header file is for declaring types used for RPI System classes to avoid recursive includes
  
 #include <Atom/RPI.Public/Base.h>
+#include <Atom/RPI.Public/Pass/Pass.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 
 #include <Atom/RPI.Reflect/Pass/PassData.h>
@@ -28,6 +29,12 @@ namespace AZ
 
             //! Retrieves PassData from a PassDescriptor
             const PassData* GetPassData(const PassDescriptor& descriptor);
+
+            //! Finds all PipelineGlobalConnections in the descriptor and adds them to the provided list
+            void ExtractPipelineGlobalConnections(const AZStd::shared_ptr<PassData>& passData, PipelineGlobalConnectionList& outList);
+
+            //! Retrieves PassData from a PassDescriptor
+            AZStd::shared_ptr<PassData> GetPassDataPtr(const PassDescriptor& descriptor);
 
             //! Templated function for retrieving specific data types from a PassDescriptor
             template<typename PassDataType>
@@ -55,7 +62,9 @@ namespace AZ
                 return passData;
             }
 
-        }   // namespace PassUtils
-    }   // namespace RPI
-}   // namespace AZ
+            void SortPassListAscending(AZStd::vector< Ptr<Pass> >& passList);
+            void SortPassListDescending(AZStd::vector< Ptr<Pass> >& passList);
+        }
+    }
+}
 

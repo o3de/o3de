@@ -44,6 +44,7 @@ namespace NodeCpp
     {
         MergeFromBackend2dotZero = 12,
         AddDisabledFlag = 13,
+        AddName = 1,
 
         // add your named version above
         Current,
@@ -431,6 +432,9 @@ namespace ScriptCanvas
                 ->Field("Slots", &Node::m_slots)
                 ->Field("Datums", &Node::m_slotDatums)
                 ->Field("NodeDisabledFlag", &Node::m_disabledFlag)
+                ->Field("Name", &Node::m_name)
+                ->Field("ToolTip", &Node::m_toolTip)
+                ->Field("Style", &Node::m_nodeStyle)
                 ;
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
@@ -1258,31 +1262,6 @@ namespace ScriptCanvas
     {
         
         OnReconfigurationEnd();        
-    }
-
-    Signal Node::CreateNodeInputSignal(const SlotId& slotId) const
-    {
-        return Signal(CreateGraphInfo(GetOwningScriptCanvasId(), GetGraphIdentifier()), GetInputNodeType(slotId), CreateNamedEndpoint(slotId), CreateInputMap());
-    }
-
-    Signal Node::CreateNodeOutputSignal(const SlotId& slotId) const
-    {
-        return Signal(CreateGraphInfo(GetOwningScriptCanvasId(), GetGraphIdentifier()), GetOutputNodeType(slotId), CreateNamedEndpoint(slotId), CreateOutputMap());
-    }
-
-    NodeStateChange Node::CreateNodeStateUpdate() const
-    {
-        return NodeStateChange();
-    }
-
-    VariableChange Node::CreateVariableChange(const GraphVariable& graphVariable) const
-    {
-        return CreateVariableChange((*graphVariable.GetDatum()), graphVariable.GetVariableId());
-    }
-
-    VariableChange Node::CreateVariableChange(const Datum& /*datum*/, const VariableId& /*variableId*/) const
-    {
-        return VariableChange{};
     }
 
     void Node::ClearDisplayType(const AZ::Crc32& dynamicGroup, ExploredDynamicGroupCache& exploredGroupCache)
@@ -2292,11 +2271,15 @@ namespace ScriptCanvas
             return AZ::Failure(AZStd::string("Trying to add a slot with an Invalid Slot Descriptor"));
         }
 
-        auto slotNameIter = m_slotNameMap.find(slotConfiguration.m_name);
-        if (slotConfiguration.m_addUniqueSlotByNameAndType && slotNameIter != m_slotNameMap.end() && slotNameIter->second->GetDescriptor() == slotConfiguration.GetSlotDescriptor())
+        auto findResult = m_slotNameMap.equal_range(slotConfiguration.m_name);
+        for (auto slotNameIter = findResult.first; slotNameIter != findResult.second; ++slotNameIter)
         {
-            iterOut = slotNameIter->second;
-            return AZ::Failure(AZStd::string::format("Slot with name %s already exist", slotConfiguration.m_name.data()));
+            if (slotConfiguration.m_addUniqueSlotByNameAndType &&
+                slotNameIter->second->GetDescriptor() == slotConfiguration.GetSlotDescriptor())
+            {
+                iterOut = slotNameIter->second;
+                return AZ::Failure(AZStd::string::format("Slot with name %s already exist", slotConfiguration.m_name.data()));
+            }
         }
 
         SlotIterator insertIter = (insertIndex < 0 || insertIndex >= azlossy_cast<AZ::s64>(m_slots.size())) ? m_slots.end() : AZStd::next(m_slots.begin(), insertIndex);
@@ -2702,7 +2685,8 @@ namespace ScriptCanvas
             {
                 if (foundIndex == index)
                 {
-                    return FindModifiableDatumView(slot.GetId(), controller);
+                    FindModifiableDatumView(slot.GetId(), controller);
+                    return;
                 }
 
                 ++foundIndex;
@@ -2763,9 +2747,9 @@ namespace ScriptCanvas
         }
 
         return datum;
-    }    
+    }
 
-    void Node::FindModifiableDatumView(const SlotId& slotId, ModifiableDatumView& datumView)
+    bool Node::FindModifiableDatumView(const SlotId& slotId, ModifiableDatumView& datumView)
     {
         auto slotIter = m_slotIdIteratorCache.find(slotId);
 
@@ -2780,6 +2764,7 @@ namespace ScriptCanvas
                 if (variable)
                 {
                     datumView.ConfigureView((*variable));
+                    return true;
                 }
                 else
                 {
@@ -2791,9 +2776,12 @@ namespace ScriptCanvas
                 if (slotIter->second.HasDatum())
                 {
                     datumView.ConfigureView((*slotIter->second.GetDatum()));
+                    return true;
                 }
             }
         }
+
+        return false;
     }
 
     SlotId Node::FindSlotIdForDescriptor(AZStd::string_view slotName, const SlotDescriptor& descriptor) const
@@ -2979,27 +2967,60 @@ namespace ScriptCanvas
 
     AZStd::string Node::GetNodeName() const
     {
-        AZ::SerializeContext* serializeContext = nullptr;
-        AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
-
-        if (serializeContext)
+        if (m_name.empty())
         {
-            const AZ::SerializeContext::ClassData* classData = serializeContext->FindClassData(RTTI_GetType());
+            AZ::SerializeContext* serializeContext = nullptr;
+            AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
 
-            if (classData)
+            if (serializeContext)
             {
-                if (classData->m_editData)
+                const AZ::SerializeContext::ClassData* classData = serializeContext->FindClassData(RTTI_GetType());
+
+                if (classData)
                 {
-                    return classData->m_editData->m_name;
-                }
-                else
-                {
-                    return classData->m_name;
+                    if (classData->m_editData)
+                    {
+                        return classData->m_editData->m_name;
+                    }
+                    else
+                    {
+                        return classData->m_name;
+                    }
                 }
             }
+            return "<unknown>";
         }
+        return m_name;
+    }
 
-        return "<unknown>";
+    const AZStd::string& Node::GetNodeToolTip() const
+    {
+        return m_toolTip;
+    }
+
+    const AZStd::string& Node::GetNodeStyle() const
+    {
+        return m_nodeStyle;
+    }
+
+    void Node::SetNodeName(const AZStd::string& name)
+    {
+        m_name = name;
+    }
+
+    void Node::SetNodeToolTip(const AZStd::string& toolTip)
+    {
+        m_toolTip = toolTip;
+    }
+
+    void Node::SetNodeStyle(const AZStd::string& nodeStyle)
+    {
+        m_nodeStyle = nodeStyle;
+    }
+
+    void Node::SetNodeLexicalId(const AZ::Crc32& nodeLexicalId)
+    {
+        m_nodeLexicalId = nodeLexicalId;
     }
 
     bool Node::IsEntryPoint() const
@@ -3529,6 +3550,11 @@ namespace ScriptCanvas
     VariableId Node::GetVariableIdWritten(const Slot*) const
     {
         return {};
+    }
+
+    const Slot* Node::GetVariableInputSlot() const
+    {
+        return nullptr;
     }
 
     const Slot* Node::GetVariableOutputSlot() const

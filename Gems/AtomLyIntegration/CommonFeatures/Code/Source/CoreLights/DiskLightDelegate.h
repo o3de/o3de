@@ -48,6 +48,9 @@ namespace AZ
             void SetEsmExponent(float exponent) override;
             void SetNormalShadowBias(float bias) override;
 
+            void SetAffectsGI(bool affectsGI) override;
+            void SetAffectsGIFactor(float affectsGIFactor) override;
+
         private:
 
             // LightDelegateBase overrides...

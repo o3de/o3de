@@ -81,6 +81,18 @@ namespace GraphCanvas
                     {
                         itemKey.append(AZStd::string::format(".%d", i));
                     }
+
+                    rapidjson::Value::ConstMemberIterator innerContextItr = element.FindMember(Schema::Field::context);
+                    if (innerContextItr != element.MemberEnd())
+                    {
+                        itemKey.append(AZStd::string::format(".%s", innerContextItr->value.GetString()));
+                    }
+
+                    rapidjson::Value::ConstMemberIterator innerVariantItr = element.FindMember(Schema::Field::variant);
+                    if (innerVariantItr != element.MemberEnd())
+                    {
+                        itemKey.append(AZStd::string::format(".%s", innerVariantItr->value.GetString()));
+                    }
                 }
 
                 AddEntryToDatabase(itemKey, "", element, translationFormat);

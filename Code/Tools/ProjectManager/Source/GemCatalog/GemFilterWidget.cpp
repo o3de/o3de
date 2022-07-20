@@ -80,14 +80,13 @@ namespace O3DE::ProjectManager
                 elementWidget->setLayout(elementLayout);
 
                 QCheckBox* checkbox = new QCheckBox(elementNames[i]);
-                checkbox->setStyleSheet("font-size: 12px;");
                 m_buttonGroup->addButton(checkbox);
                 elementLayout->addWidget(checkbox);
 
                 elementLayout->addSpacerItem(new QSpacerItem(0, 0, QSizePolicy::Expanding));
 
                 QLabel* countLabel = new QLabel(QString::number(elementCounts[i]));
-                countLabel->setStyleSheet("font-size: 12px; background-color: #333333; border-radius: 3px; color: #94D2FF;");
+                countLabel->setObjectName("CountLabel");
                 elementLayout->addWidget(countLabel);
 
                 m_elementWidgets.push_back(elementWidget);
@@ -116,7 +115,7 @@ namespace O3DE::ProjectManager
         // Separating line
         QFrame* hLine = new QFrame();
         hLine->setFrameShape(QFrame::HLine);
-        hLine->setStyleSheet("color: #666666;");
+        hLine->setObjectName("horizontalSeparatingLine");
         vLayout->addWidget(hLine);
 
         UpdateCollapseState();
@@ -205,7 +204,7 @@ namespace O3DE::ProjectManager
         mainWidget->setLayout(mainLayout);
 
         QLabel* filterByLabel = new QLabel("Filter by");
-        filterByLabel->setStyleSheet("font-size: 16px;");
+        filterByLabel->setObjectName("FilterByLabel");
         mainLayout->addWidget(filterByLabel);
 
         QWidget* filterSection = new QWidget(this);
@@ -318,6 +317,12 @@ namespace O3DE::ProjectManager
         const int selectedGemTotal = m_gemModel->GatherGemsToBeAdded(/*includeDependencies=*/true).size();
         const int unselectedGemTotal = m_gemModel->GatherGemsToBeRemoved(/*includeDependencies=*/true).size();
         const int enabledGemTotal = m_gemModel->TotalAddedGems(/*includeDependencies=*/true);
+
+        if (selectedGemTotal == 0 && enabledGemTotal == 0 && unselectedGemTotal == 0 && totalGems > 0)
+        {
+            // no gems are selected, unselected or enabled  
+            return;
+        }
 
         elementNames.push_back(GemSortFilterProxyModel::GetGemSelectedString(GemSortFilterProxyModel::GemSelected::Selected));
         elementCounts.push_back(selectedGemTotal);

@@ -165,10 +165,19 @@ namespace AZ
             //! User should use this event to update the part scene srg they know of
             void ConnectEvent(PrepareSceneSrgEvent::Handler& handler);
 
+            //! Rebuild pipeline states lookup table.
+            //! This function is called every time scene's render pipelines change.
+            //! User may call this function explicitly if render pipelines were changed
+            void RebuildPipelineStatesLookup();
+                        
+            //! Try apply render pipeline changes from each feature processors if the pipeline allows modification and wasn't modified.
+            void TryApplyRenderPipelineChanges(RenderPipeline* pipeline);
+
         protected:
             // SceneFinder overrides...
             void OnSceneNotifictaionHandlerConnected(SceneNotification* handler);
-                        
+            void PipelineStateLookupNeedsRebuild() override;
+
             // Cpu simulation which runs all active FeatureProcessor Simulate() functions.
             // @param jobPolicy if it's JobPolicy::Parallel, the function will spawn a job thread for each FeatureProcessor's simulation.
             // @param simulationTime the number of seconds since the application started
@@ -187,21 +196,23 @@ namespace AZ
             // This is called after PassSystem's FramePrepare so passes can still modify view srgs in its FramePrepareIntenal function before they are submitted to command list
             void UpdateSrgs();
 
+
         private:
             Scene();
 
-            // Rebuild pipeline states lookup table.
-            // This function is called every time scene's render pipelines change.
-            void RebuildPipelineStatesLookup();
 
             // Helper function to wait for end of TaskGraph and then delete the TaskGraphEvent
-            void WaitAndCleanTGEvent(AZStd::unique_ptr<AZ::TaskGraphEvent>&& completionTGEvent);
+            void WaitAndCleanTGEvent();
 
             // Helper function for wait and clean up a completion job
             void WaitAndCleanCompletionJob(AZ::JobCompletion*& completionJob);
 
             // Add a created feature processor to this scene
             void AddFeatureProcessor(FeatureProcessorPtr fp);
+
+            // Check each of the added render pipelines and set its recreate flag if it's allowed to be modified by any feature processors
+            // This is usually called when a feature processor was added and removed after scene was activated
+            void CheckRecreateRenderPipeline();
 
             // Send out event to PrepareSceneSrgEvent::Handlers so they can update scene srg as needed
             // This happens in UpdateSrgs()
@@ -250,6 +261,9 @@ namespace AZ
             bool m_taskGraphActive = false; // update during tick, to ensure it only changes on frame boundaries
 
             RenderPipelinePtr m_defaultPipeline;
+
+            // Rebuild the m_pipelineStatesLookup after queued Pipeline changes have been applied.
+            bool m_pipelineStatesLookupNeedsRebuild = false;
 
             // Mapping of draw list tag and a group of pipeline states info built from scene's render pipeline passes
             AZStd::map<RHI::DrawListTag, PipelineStateList> m_pipelineStatesLookup;

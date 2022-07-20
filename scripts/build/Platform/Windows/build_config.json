@@ -7,19 +7,10 @@
       "CMAKE_LY_PROJECTS": "AutomatedTesting"
     }
   },
-  "validation_pipe": {
-    "TAGS": [
-      "default",
-      "snapshot"
-    ],
-    "steps": [
-      "validation"
-    ]
-  },
   "debug_pipe": {
     "TAGS": [
-      "nightly-incremental",
-      "nightly-clean"
+      "periodic-incremental-daily",
+      "periodic-clean-weekly-internal"
     ],
     "steps": [
       "debug",
@@ -42,13 +33,6 @@
     "COMMAND": "python_windows.cmd",
     "PARAMETERS": {
       "SCRIPT_PATH": "scripts/build/scrubbing_job.py"
-    }
-  },
-  "validation": {
-    "TAGS": [],
-    "COMMAND": "python_windows.cmd",
-    "PARAMETERS": {
-      "SCRIPT_PATH": "scripts/commit_validation/validate_file_or_folder.py"
     }
   },
   "metrics": {
@@ -119,10 +103,28 @@
       "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo"
     }
   },
+  "profile_vs2022": {
+    "TAGS": [
+      "periodic-incremental-daily",
+      "periodic-clean-weekly-internal"
+    ],
+    "PIPELINE_ENV":{
+      "NODE_LABEL":"windows-vs2022"
+    },
+    "COMMAND": "build_windows.cmd",
+    "PARAMETERS": {
+      "CONFIGURATION": "profile",
+      "OUTPUT_DIRECTORY": "build\\windows",
+      "CMAKE_OPTIONS": "-G \"Visual Studio 17 2022\" -DCMAKE_SYSTEM_VERSION=10.0 -DLY_TEST_IMPACT_INSTRUMENTATION_BIN=%TEST_IMPACT_WIN_BINARY%",
+      "CMAKE_LY_PROJECTS": "AutomatedTesting",
+      "CMAKE_TARGET": "ALL_BUILD",
+      "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo"
+    }
+  },
   "profile_nounity": {
     "TAGS": [
-      "nightly-incremental",
-      "nightly-clean",
+      "periodic-incremental-daily",
+      "periodic-clean-weekly-internal",
       "weekly-build-metrics"
     ],
     "COMMAND": "build_windows.cmd",
@@ -155,8 +157,8 @@
   },
   "test_gpu_profile": {
     "TAGS":[
-      "nightly-incremental",
-      "nightly-clean"
+      "periodic-incremental-daily-internal",
+      "periodic-clean-weekly-internal"
     ],
     "PIPELINE_ENV":{
       "NODE_LABEL":"windows-gpu"
@@ -175,11 +177,31 @@
       "TEST_SCREENSHOTS": "True"
     }
   },
+  "benchmark_test_gpu_profile": {
+    "TAGS": [
+      "nightly-incremental-internal",
+      "weekly-clean-internal",
+      "weekly-build-metrics"
+    ],
+    "PIPELINE_ENV":{
+      "NODE_LABEL":"windows-gpu"
+    },
+    "COMMAND": "build_test_windows.cmd",
+    "PARAMETERS": {
+      "CONFIGURATION": "profile",
+      "OUTPUT_DIRECTORY": "build\\windows",
+      "CMAKE_OPTIONS": "-G \"Visual Studio 16 2019\" -DCMAKE_SYSTEM_VERSION=10.0",
+      "CMAKE_LY_PROJECTS": "AutomatedTesting",
+      "CMAKE_TARGET": "TEST_SUITE_benchmark",
+      "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo",
+      "CTEST_OPTIONS": "-L \"(SUITE_benchmark_REQUIRES_gpu)\" -T Test --no-tests=error",
+      "TEST_METRICS": "True",
+      "TEST_RESULTS": "True"
+    }
+  },
   "asset_profile": {
     "TAGS": [
-      "weekly-build-metrics",
-      "nightly-incremental",
-      "nightly-clean"
+      "weekly-build-metrics"
     ],
     "COMMAND": "build_asset_windows.cmd",
     "PARAMETERS": {
@@ -196,8 +218,8 @@
   },
   "awsi_test_profile_pipe": {
     "TAGS": [
-      "nightly-incremental",
-      "nightly-clean"
+      "periodic-incremental-daily-internal",
+      "periodic-clean-weekly-internal"
     ],
     "steps": [
       "awsi_deployment",
@@ -227,8 +249,8 @@
   },
   "periodic_test_profile": {
     "TAGS": [
-        "nightly-incremental",
-        "nightly-clean",
+        "periodic-incremental-daily",
+        "periodic-clean-weekly-internal",
         "weekly-build-metrics"
     ],
     "COMMAND": "build_test_windows.cmd",
@@ -239,15 +261,37 @@
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "TEST_SUITE_periodic",
       "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo",
-      "CTEST_OPTIONS": "-L \"(SUITE_periodic)\" -T Test --no-tests=error",
+      "CTEST_OPTIONS": "-L \"(SUITE_periodic)\" -LE \"(REQUIRES_gpu)\"  -T Test --no-tests=error",
+      "TEST_METRICS": "True",
+      "TEST_RESULTS": "True"
+    }
+  },
+  "periodic_test_gpu_profile": {
+    "TAGS": [
+        "periodic-incremental-daily-internal",
+        "periodic-clean-weekly-internal",
+        "weekly-build-metrics"
+    ],
+    "PIPELINE_ENV":{
+      "NODE_LABEL":"windows-gpu"
+    },
+    "COMMAND": "build_test_windows.cmd",
+    "PARAMETERS": {
+      "CONFIGURATION": "profile",
+      "OUTPUT_DIRECTORY": "build\\windows",
+      "CMAKE_OPTIONS": "-G \"Visual Studio 16 2019\" -DCMAKE_SYSTEM_VERSION=10.0",
+      "CMAKE_LY_PROJECTS": "AutomatedTesting",
+      "CMAKE_TARGET": "TEST_SUITE_periodic",
+      "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo",
+      "CTEST_OPTIONS": "-L \"(SUITE_periodic_REQUIRES_gpu)\" -T Test --no-tests=error",
       "TEST_METRICS": "True",
       "TEST_RESULTS": "True"
     }
   },
   "sandbox_test_profile": {
     "TAGS": [
-      "nightly-incremental",
-      "nightly-clean",
+      "periodic-incremental-daily",
+      "periodic-clean-weekly-internal",
       "weekly-build-metrics"
     ],
     "PIPELINE_ENV": {
@@ -268,8 +312,8 @@
   },
   "benchmark_test_profile": {
     "TAGS": [
-      "nightly-incremental",
-      "nightly-clean",
+      "periodic-incremental-daily",
+      "periodic-clean-weekly-internal",
       "weekly-build-metrics"
     ],
     "COMMAND": "build_test_windows.cmd",
@@ -280,7 +324,7 @@
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "TEST_SUITE_benchmark",
       "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo",
-      "CTEST_OPTIONS": "-L \"(SUITE_benchmark)\" -T Test --no-tests=error",
+      "CTEST_OPTIONS": "-L (SUITE_benchmark) -LE (REQUIRES_gpu) -T Test --no-tests=error",
       "TEST_METRICS": "True",
       "TEST_RESULTS": "True"
     }
@@ -288,8 +332,6 @@
   "release": {
     "TAGS": [
       "default",
-      "nightly-incremental",
-      "nightly-clean",
       "weekly-build-metrics",
       "snapshot"
     ],
@@ -303,10 +345,29 @@
       "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo"
     }
   },
+  "release_vs2022": {
+    "TAGS": [
+      "periodic-incremental-daily",
+      "weekly-build-metrics",
+      "snapshot"
+    ],
+    "PIPELINE_ENV":{
+      "NODE_LABEL":"windows-vs2022"
+    },
+    "COMMAND": "build_windows.cmd",
+    "PARAMETERS": {
+      "CONFIGURATION": "release",
+      "OUTPUT_DIRECTORY": "build\\windows",
+      "CMAKE_OPTIONS": "-G \"Visual Studio 17 2022\" -DCMAKE_SYSTEM_VERSION=10.0",
+      "CMAKE_LY_PROJECTS": "AutomatedTesting",
+      "CMAKE_TARGET": "ALL_BUILD",
+      "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo"
+    }
+  },
   "monolithic_release": {
     "TAGS": [
-      "nightly-incremental",
-      "nightly-clean",
+      "periodic-incremental-daily",
+      "periodic-clean-weekly-internal",
       "weekly-build-metrics"
     ],
     "COMMAND": "build_windows.cmd",
@@ -330,11 +391,18 @@
         "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo"
     }
   },
-  "installer": {
+  "installer_pipe": { 
     "TAGS": [
-      "nightly-clean",
+      "periodic-clean-weekly-internal",
       "nightly-installer"
     ],
+    "steps": [
+      "installer",
+      "installer_test"
+    ]
+  },
+  "installer": {
+    "TAGS": [],
     "PIPELINE_ENV":{
       "NODE_LABEL":"windows-packaging"
     },
@@ -349,10 +417,21 @@
         "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo"
     }
   },
+  "installer_test": {
+    "TAGS": [],
+    "PIPELINE_ENV":{
+      "NODE_LABEL":"windows-installer-test"
+    },
+    "COMMAND": "pytest_windows.cmd",
+    "PARAMETERS": {
+      "PYTEST_PATH": "cmake\\Platform\\Windows\\Packaging\\Tests",
+      "PYTEST_PARAMETERS": "--capture=no --log-file=%WORKSPACE%\\installer_test.log --install-root=%WORKSPACE%\\o3de_install --installer-uri=!INSTALLER_S3_BUCKET!/development/Latest/Windows/o3de_installer.exe --project-path=%WORKSPACE%\\TestProject"
+    }
+  },
   "install_profile_pipe": {
     "TAGS": [
-      "nightly-incremental",
-      "nightly-clean"
+      "periodic-incremental-daily",
+      "periodic-clean-weekly-internal"
     ],
     "PIPELINE_ENV": {
       "PROJECT_REPOSITORY_NAME": "TestProject"
@@ -417,7 +496,9 @@
       "NONBLOCKING_STEP": "True"
     },
     "COMMAND": "deploy_cdk_applications.cmd",
-    "PARAMETERS": {}
+    "PARAMETERS": {
+      "CDK_VERSION": "1.154.0"
+    }
   },
   "awsi_destruction": {
     "TAGS": [],
@@ -425,6 +506,8 @@
       "NONBLOCKING_STEP": "True"
     },
     "COMMAND": "destroy_cdk_applications.cmd",
-    "PARAMETERS": {}
+    "PARAMETERS": {
+      "CDK_VERSION": "1.154.0"
+    }
   }
 }

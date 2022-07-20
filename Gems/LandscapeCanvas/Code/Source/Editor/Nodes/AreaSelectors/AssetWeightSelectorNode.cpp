@@ -70,14 +70,13 @@ namespace LandscapeCanvas
 
     void AssetWeightSelectorNode::RegisterSlots()
     {
-        GraphModel::DataTypePtr invalidEntityDataType = GraphContext::GetInstance()->GetDataType(LandscapeCanvasDataTypeEnum::InvalidEntity);
-        GraphModel::DataTypePtr gradientDataType = GraphContext::GetInstance()->GetDataType(LandscapeCanvasDataTypeEnum::Gradient);
+        GraphModel::DataTypePtr gradientDataType = GetGraphContext()->GetDataType(LandscapeCanvasDataTypeEnum::Gradient);
 
         RegisterSlot(GraphModel::SlotDefinition::CreateInputData(
             INBOUND_GRADIENT_SLOT_ID,
             INBOUND_GRADIENT_SLOT_LABEL.toUtf8().constData(),
-            { gradientDataType, invalidEntityDataType },
-            gradientDataType->GetDefaultValue(),
+            { gradientDataType },
+            AZStd::any(AZ::EntityId()),
             INBOUND_GRADIENT_INPUT_SLOT_DESCRIPTION.toUtf8().constData()));
     }
 } // namespace LandscapeCanvas

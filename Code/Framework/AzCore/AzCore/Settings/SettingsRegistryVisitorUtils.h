@@ -26,7 +26,7 @@ namespace AZ::SettingsRegistryVisitorUtils
 
         // Bring the base class visitor functions into scope
         using AZ::SettingsRegistryInterface::Visitor::Visit;
-        virtual void Visit(AZStd::string_view path, AZStd::string_view arrayIndex, Type type) = 0;
+        virtual void Visit(AZStd::string_view path, AZStd::string_view fieldName, Type type) = 0;
 
     protected:
         // VisitFieldType is used for filtering the type of referenced by the root path

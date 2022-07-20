@@ -37,7 +37,6 @@ namespace AZ
                                 ->Attribute(AZ::Edit::Attributes::ViewportIcon, "editor/icons/components/viewport/component_placeholder.png")
                                 ->Attribute(Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
                                 ->Attribute(Edit::Attributes::AutoExpand, true)
-                                ->Attribute(Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/gems/reference/rendering/amd/atom-tressfx/")
                             ;
                         
                         editContext->Class<HairComponentController>(

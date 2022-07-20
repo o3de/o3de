@@ -302,10 +302,10 @@ namespace AZ::JsonSerializationUtils
     }
 
     AZ::Outcome<void, AZStd::string> LoadObjectFromStringByType(void* objectToLoad, const Uuid& classId, AZStd::string_view stream,
-        const JsonDeserializerSettings* settings)
+        AZStd::string& deserializeErrors, const JsonDeserializerSettings* settings)
     {
         JsonDeserializerSettings loadSettings;
-        AZStd::string deserializeErrors;
+        deserializeErrors.clear();
         auto prepare = PrepareDeserializerSettings(settings, loadSettings, deserializeErrors);
         if (!prepare.IsSuccess())
         {
@@ -342,7 +342,7 @@ namespace AZ::JsonSerializationUtils
 
         JsonSerializationResult::ResultCode result = JsonSerialization::Load(objectToLoad, classId, jsonDocument.FindMember(ClassDataTag)->value, loadSettings);
 
-        if (!WasLoadSuccess(result.GetOutcome()) || !deserializeErrors.empty())
+        if (!WasLoadSuccess(result.GetOutcome()))
         {
             return AZ::Failure(deserializeErrors);
         }
@@ -350,11 +350,24 @@ namespace AZ::JsonSerializationUtils
         return AZ::Success();
     }
 
-    AZ::Outcome<void, AZStd::string> LoadObjectFromStreamByType(void* objectToLoad, const Uuid& classId, IO::GenericStream& stream,
+    AZ::Outcome<void, AZStd::string> LoadObjectFromStringByType(void* objectToLoad, const Uuid& objectType, AZStd::string_view source,
         const JsonDeserializerSettings* settings)
     {
-        JsonDeserializerSettings loadSettings;
         AZStd::string deserializeErrors;
+        auto mayHaveLoadedWithErrors = LoadObjectFromStringByType(objectToLoad, objectType, source, deserializeErrors, settings);
+        if (!deserializeErrors.empty())
+        {
+            return AZ::Failure(deserializeErrors);
+        }
+
+        return mayHaveLoadedWithErrors;
+    }
+
+    AZ::Outcome<void, AZStd::string> LoadObjectFromStreamByType(void* objectToLoad, const Uuid& classId, IO::GenericStream& stream,
+        AZStd::string& deserializeErrors, const JsonDeserializerSettings* settings)
+    {
+        JsonDeserializerSettings loadSettings;
+        deserializeErrors.clear();
         auto prepare = PrepareDeserializerSettings(settings, loadSettings, deserializeErrors);
         if (!prepare.IsSuccess())
         {
@@ -391,12 +404,25 @@ namespace AZ::JsonSerializationUtils
 
         JsonSerializationResult::ResultCode result = JsonSerialization::Load(objectToLoad, classId, jsonDocument.FindMember(ClassDataTag)->value, loadSettings);
 
-        if (!WasLoadSuccess(result.GetOutcome()) || !deserializeErrors.empty())
+        if (!WasLoadSuccess(result.GetOutcome()))
         {
             return AZ::Failure(deserializeErrors);
         }
 
         return AZ::Success();
+    }
+
+    AZ::Outcome<void, AZStd::string> LoadObjectFromStreamByType(void* objectToLoad, const Uuid& classId, IO::GenericStream& stream,
+        const JsonDeserializerSettings* settings)
+    {
+        AZStd::string deserializeErrors;
+        auto mayHaveLoadedWithErrors = LoadObjectFromStreamByType(objectToLoad, classId, stream, deserializeErrors, settings);
+        if (!deserializeErrors.empty())
+        {
+            return AZ::Failure(deserializeErrors);
+        }
+
+        return mayHaveLoadedWithErrors;
     }
 
     AZ::Outcome<AZStd::any, AZStd::string> LoadAnyObjectFromStream(IO::GenericStream& stream, const JsonDeserializerSettings* settings)

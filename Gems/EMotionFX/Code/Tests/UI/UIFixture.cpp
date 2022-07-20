@@ -8,6 +8,9 @@
 
 #include <Tests/UI/UIFixture.h>
 #include <Tests/UI/ModalPopupHandler.h>
+#include <Tests/Mocks/AtomRenderPlugin.h>
+#include <Tests/Mocks/PhysicsSystem.h>
+#include <Tests/D6JointLimitConfiguration.h>
 #include <Integration/System/SystemCommon.h>
 
 #include <EMotionStudio/EMStudioSDK/Source/EMStudioManager.h>
@@ -44,8 +47,7 @@ namespace EMotionFX
 {
     void MakeQtApplicationBase::SetUp()
     {
-        int argc = 0;
-        m_uiApp = new QApplication(argc, nullptr);
+        m_uiApp = new QApplication(s_argc, nullptr);
 
         AzToolsFramework::EditorEvents::Bus::Broadcast(&AzToolsFramework::EditorEvents::NotifyRegisterViews);
 
@@ -69,23 +71,41 @@ namespace EMotionFX
         // Set ignore visibilty so that the visibility check can be ignored in plugins
         EMStudio::GetManager()->SetIgnoreVisibility(true);
     }
+
     void UIFixture::SetupPluginWindows()
     {
-        // Plugins have to be created after both the QApplication object and
-        // after the SystemComponent
-        const size_t numPlugins = EMStudio::GetPluginManager()->GetNumPlugins();
-        for (size_t i = 0; i < numPlugins; ++i)
+        // Plugins have to be created after both the QApplication object and after the SystemComponent
+        const EMStudio::PluginManager::PluginVector& registeredPlugins = EMStudio::GetPluginManager()->GetRegisteredPlugins();
+        for (EMStudio::EMStudioPlugin* plugin : registeredPlugins)
         {
-            EMStudio::EMStudioPlugin* plugin = EMStudio::GetPluginManager()->GetPlugin(i);
             EMStudio::GetPluginManager()->CreateWindowOfType(plugin->GetName());
         }
     }
 
+    void UIFixture::ReflectMockedSystems()
+    {
+        if (ShouldReflectPhysicSystem())
+        {
+            AZ::SerializeContext* serializeContext = GetSerializeContext();
+
+            Physics::MockPhysicsSystem::Reflect(serializeContext); // Required by Ragdoll plugin to fake PhysX Gem is available
+            D6JointLimitConfiguration::Reflect(serializeContext);
+        }
+    }
+
+    void UIFixture::OnRegisterPlugin()
+    {
+        EMStudio::PluginManager* pluginManager = EMStudio::EMStudioManager::GetInstance()->GetPluginManager();
+        pluginManager->RegisterPlugin(new EMStudio::MockAtomRenderPlugin());
+    }
 
     void UIFixture::SetUp()
     {
+        Integration::SystemNotificationBus::Handler::BusConnect();
+
         using namespace testing;
         SetupQtAndFixtureBase();
+        ReflectMockedSystems();
         SetupPluginWindows();
 
         m_animGraphPlugin = static_cast<EMStudio::AnimGraphPlugin*>(EMStudio::GetPluginManager()->FindActivePlugin(EMStudio::AnimGraphPlugin::CLASS_ID));
@@ -97,6 +117,7 @@ namespace EMotionFX
     void UIFixture::TearDown()
     {
         m_assetSystemRequestMock.BusDisconnect();
+        Integration::SystemNotificationBus::Handler::BusDisconnect();
         CloseAllNotificationWindows();
 
         DeselectAllAnimGraphNodes();

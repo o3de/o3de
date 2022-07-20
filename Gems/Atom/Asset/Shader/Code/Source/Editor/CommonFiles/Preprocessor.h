@@ -67,38 +67,28 @@ namespace AZ
             //!   or "output diagnostics to std.err" or "enable digraphs/trigraphs"...
         };
 
-        //! You can use this canonicalized way to initialize preprocessor options
-        //! It will populate your option with a default base of include folders given by the Asset Processor scan folders.
-        //! This is going to look for a Config/shader_global_build_options.json in one of the scan folders
-        //!  (that file can specify additional include files and preprocessor macros).
-        //! @param options: Outout parameter, will contain the preprocessor options.
         //! @param builderName: Used for debugging.
-        //! @param optionalIncludeFolder: If not null, will be added to the list of include folders for the c-preprocessor in @options.
-        void InitializePreprocessorOptions(PreprocessorOptions& options, const char* builderName, const char* optionalIncludeFolder = nullptr);
+        //! @param optionalIncludeFolder: If not null, will be added at the beginning of the returned list of include folders.
+        //! @returns A list of fully qualified directory paths that will be given to the c-preprocessor to find the included files in .azsl files.
+        AZStd::vector<AZStd::string> BuildListOfIncludeDirectories(const char* builderName, const char* optionalIncludeFolder = nullptr);
+
+        // @returns A new list of command arguments for the C-Preprocessor where each string in @includePaths
+        //     is appended to @preprocessorArguments as "-I<path>".
+        AZStd::vector<AZStd::string> AppendIncludePathsToArgumentList(const AZStd::vector<AZStd::string>& preprocessorArguments, AZStd::vector<AZStd::string> includePaths);
 
         /**
         * Runs the preprocessor on the given source file path, and stores results in outputData.
         * @param fullPath   The file to preprocess
         * @param outputData Collects data from the preprocessor. This will be filled out as much as possible, even if preprocessing fails.
-        * @param options    Control of macros to define and paths to solve includes
+        * @param preprocessorArguments The command line arguments for the C-preprocessor.
         * @param collectDiagnostics If true, warnings and errors will be collected in outputData.diagnostics instead of using AZ_Warning and AZ_Error.
-        * @param preprocessIncludedFiles  By default MCPP follows the chain of included files
-        *        and extracts the content of each file and dumps it in the output.
-        *        Setting this flag to false will prevent mcpp from preprocessing the included files,
-        *        so the produced content will come only from the file given as input to MCPP.
-        *        Setting to false is handy, for example, for the SrgLayoutBuilder from creating SRGs from included files.
-        *        REMARK: You can make the argument of why not simply leave the @m_projectIncludePaths empty?
-        *        It will cause MCPP to error because it won't find the included files. So, in reality the chain
-        *        of included files is validated, but their content won't make it into the output.
-        *        A change is required in azslc so it skips #include lines. SEE: [ATOM-5302]
         * @return false if the preprocessor failed
         */
         bool PreprocessFile(
             const AZStd::string& fullPath,
             PreprocessorData& outputData,
-            const PreprocessorOptions& options,
-            bool collectDiagnostics = false,
-            bool preprocessIncludedFiles = true);
+            const AZStd::vector<AZStd::string>& preprocessorArguments,
+            bool collectDiagnostics = false);
 
         //! Replace all ocurrences of #line "whatever" by #line "whatwewant"
         void MutateLineDirectivesFileOrigin(

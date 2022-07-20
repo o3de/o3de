@@ -120,13 +120,9 @@ namespace AZ
                     entireBoundBox.AddPoint({positionBuffer[positionIndex], positionBuffer[positionIndex + 1], positionBuffer[positionIndex + 2]});
                 }
 
-                // The view returned by GetIndexBuffer returns a tuple<uint32_t, uint32_t, uint32_t>, in order to read
-                // 3 values at a time from the raw index buffer. It uses a reinterpret_cast to accomplish this. The
-                // cast results in the order of the indices being reversed, which is why they are read [third, second,
-                // first] here.
-                for (const auto& [thirdIndex, secondIndex, firstIndex] : GetIndexBuffer(*m_meshes[meshIndex].m_mesh))
+                for (const TriangleIndices& triangleIndices : GetIndexBuffer(*m_meshes[meshIndex].m_mesh))
                 {
-                    indices.emplace_back(meshIndex, TriangleIndices{firstIndex, secondIndex, thirdIndex});
+                    indices.emplace_back(meshIndex, triangleIndices);
                 }
             }
 
@@ -226,7 +222,6 @@ namespace AZ
             AZ::Vector3& normal) const
         {
             using Intersect::IntersectRayAABB2;
-            using Intersect::IntersectSegmentTriangleCCW;
             using Intersect::ISECT_RAY_AABB_NONE;
 
             if (!pNode)
@@ -258,6 +253,9 @@ namespace AZ
                     return false;
                 }
 
+                const AZ::Vector3 rayEnd = raySrc + rayDir;
+                Intersect::SegmentTriangleHitTester hitTester(raySrc, rayEnd);
+
                 float nearestDistanceNormalized = distanceNormalized;
                 for (AZ::u32 i = 0; i < nVBuffSize; ++i)
                 {
@@ -279,9 +277,8 @@ namespace AZ
 
                     float hitDistanceNormalized;
                     AZ::Vector3 intersectionNormal;
-                    const AZ::Vector3 rayEnd = raySrc + rayDir;
-                    if (IntersectSegmentTriangleCCW(raySrc, rayEnd, trianglePoints[0], trianglePoints[1], trianglePoints[2],
-                        intersectionNormal, hitDistanceNormalized) != ISECT_RAY_AABB_NONE)
+                    if (hitTester.IntersectSegmentTriangleCCW(trianglePoints[0], trianglePoints[1], trianglePoints[2],
+                        intersectionNormal, hitDistanceNormalized))
                     {
                         if (nearestDistanceNormalized > hitDistanceNormalized)
                         {

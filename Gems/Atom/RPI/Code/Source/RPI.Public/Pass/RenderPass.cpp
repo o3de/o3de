@@ -53,13 +53,13 @@ namespace AZ
         RHI::RenderAttachmentConfiguration RenderPass::GetRenderAttachmentConfiguration() const
         {
             RHI::RenderAttachmentLayoutBuilder builder;
-            auto* pass = builder.AddSubpass();
+            auto* layoutBuilder = builder.AddSubpass();
 
             for (size_t slotIndex = 0; slotIndex < m_attachmentBindings.size(); ++slotIndex)
             {
                 const PassAttachmentBinding& binding = m_attachmentBindings[slotIndex];
 
-                if (!binding.m_attachment)
+                if (!binding.GetAttachment())
                 {
                     continue;
                 }
@@ -67,7 +67,7 @@ namespace AZ
                 // Handle the depth-stencil attachment. There should be only one.
                 if (binding.m_scopeAttachmentUsage == RHI::ScopeAttachmentUsage::DepthStencil)
                 {
-                    pass->DepthStencilAttachment(binding.m_attachment->m_descriptor.m_image.m_format);
+                    layoutBuilder->DepthStencilAttachment(binding.GetAttachment()->m_descriptor.m_image.m_format);
                     continue;
                 }
 
@@ -79,8 +79,8 @@ namespace AZ
 
                 if (binding.m_scopeAttachmentUsage == RHI::ScopeAttachmentUsage::RenderTarget)
                 {
-                    RHI::Format format = binding.m_attachment->m_descriptor.m_image.m_format;
-                    pass->RenderTargetAttachment(format);
+                    RHI::Format format = binding.GetAttachment()->m_descriptor.m_image.m_format;
+                    layoutBuilder->RenderTargetAttachment(format);
                 }
             }
 
@@ -101,7 +101,7 @@ namespace AZ
                 {
                     continue;
                 }
-                if (!binding.m_attachment)
+                if (!binding.GetAttachment())
                 {
                     continue;
                 }
@@ -112,13 +112,13 @@ namespace AZ
                     if (!wasSet)
                     {
                         // save multi-sample state found in the first output color attachment
-                        outputMultiSampleState = binding.m_attachment->m_descriptor.m_image.m_multisampleState;
+                        outputMultiSampleState = binding.GetAttachment()->m_descriptor.m_image.m_multisampleState;
                         wasSet = true;
                     }
                     else if (PassValidation::IsEnabled())
                     {
                         // return false directly if the current output color attachment has different multi-sample state then previous ones
-                        if (outputMultiSampleState != binding.m_attachment->m_descriptor.m_image.m_multisampleState)
+                        if (outputMultiSampleState != binding.GetAttachment()->m_descriptor.m_image.m_multisampleState)
                         {
                             AZ_Error("RPI", false, "Pass %s has different multi-sample states within its color attachments", GetPathName().GetCStr());
                             break;
@@ -145,7 +145,7 @@ namespace AZ
                 for (PassAttachmentBinding& binding : m_attachmentBindings)
                 {
                     const Name& shaderName = binding.m_shaderInputName;
-                    PassAttachment* attachment = binding.m_attachment.get();
+                    PassAttachment* attachment = binding.GetAttachment().get();
 
                     if (shaderName == autoBind)
                     {
@@ -172,7 +172,7 @@ namespace AZ
                     }
                     else
                     {
-                        AZ_Error( "Pass System", AZ::RHI::IsNullRenderer(), "[Pass %s] Could not bind shader buffer index '%s' because it has no attachment.", GetName().GetCStr(), shaderName.GetCStr());
+                        AZ_Error( "Pass System", AZ::RHI::IsNullRHI(), "[Pass %s] Could not bind shader buffer index '%s' because it has no attachment.", GetName().GetCStr(), shaderName.GetCStr());
                         binding.m_shaderInputIndex = PassAttachmentBinding::ShaderInputNoBind;
                     }
                 }
@@ -183,7 +183,7 @@ namespace AZ
         {
             if (GetScopeId().IsEmpty())
             {
-                SetScopeId(RHI::ScopeId(GetPathName()));
+                InitScope(RHI::ScopeId(GetPathName()), m_hardwareQueueClass);
             }
 
             params.m_frameGraphBuilder->ImportScopeProducer(*this);
@@ -220,8 +220,8 @@ namespace AZ
         {
             for (const PassAttachmentBinding& attachmentBinding : m_attachmentBindings)
             {
-                if (attachmentBinding.m_attachment != nullptr &&
-                    frameGraph.GetAttachmentDatabase().IsAttachmentValid(attachmentBinding.m_attachment->GetAttachmentId()))
+                if (attachmentBinding.GetAttachment() != nullptr &&
+                    frameGraph.GetAttachmentDatabase().IsAttachmentValid(attachmentBinding.GetAttachment()->GetAttachmentId()))
                 {
                     switch (attachmentBinding.m_unifiedScopeDesc.GetType())
                     {
@@ -250,7 +250,7 @@ namespace AZ
                 RenderPass* renderPass = azrtti_cast<RenderPass*>(pass);
                 if (renderPass)
                 {
-                    frameGraph.ExecuteAfter(GetScopeId());
+                    frameGraph.ExecuteAfter(renderPass->GetScopeId());
                 }
             }
             for (Pass* pass : m_executeBeforePasses)
@@ -258,14 +258,14 @@ namespace AZ
                 RenderPass* renderPass = azrtti_cast<RenderPass*>(pass);
                 if (renderPass)
                 {
-                    frameGraph.ExecuteBefore(GetScopeId());
+                    frameGraph.ExecuteBefore(renderPass->GetScopeId());
                 }
             }
         }
 
         void RenderPass::BindAttachment(const RHI::FrameGraphCompileContext& context, PassAttachmentBinding& binding, int16_t& imageIndex, int16_t& bufferIndex)
         {
-            PassAttachment* attachment = binding.m_attachment.get();
+            PassAttachment* attachment = binding.GetAttachment().get();
             if (attachment)
             {
                 int16_t inputIndex = binding.m_shaderInputIndex;
@@ -400,7 +400,14 @@ namespace AZ
         {
             if (srg)
             {
-                m_shaderResourceGroupsToBind.push_back(srg);
+                if (!m_shaderResourceGroupsToBind.full())
+                {
+                    m_shaderResourceGroupsToBind.push_back(srg);
+                }
+                else
+                {
+                    AZ_Error("Pass System", false, "Attempting to bind an srg to a RenderPass, but there is no more room.")
+                }
             }
         }
 
@@ -422,8 +429,15 @@ namespace AZ
 
         void RenderPass::SetPipelineViewTag(const PipelineViewTag& viewTag)
         {
-            m_viewTag = viewTag;
-            m_flags.m_hasPipelineViewTag = !viewTag.IsEmpty();
+            if (m_viewTag != viewTag)
+            {
+                m_viewTag = viewTag;
+                m_flags.m_hasPipelineViewTag = !viewTag.IsEmpty();
+                if (m_pipeline)
+                {
+                    m_pipeline->MarkPipelinePassChanges(PipelinePassChanges::PipelineViewTagChanged);
+                }
+            }
         }
 
         TimestampResult RenderPass::GetTimestampResultInternal() const

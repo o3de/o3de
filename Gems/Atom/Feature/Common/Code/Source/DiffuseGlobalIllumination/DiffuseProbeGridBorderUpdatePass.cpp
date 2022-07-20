@@ -83,27 +83,34 @@ namespace AZ
             }
         }
 
-        void DiffuseProbeGridBorderUpdatePass::FrameBeginInternal(FramePrepareParams params)
+        bool DiffuseProbeGridBorderUpdatePass::IsEnabled() const
         {
-            RPI::Scene* scene = m_pipeline->GetScene();
-            DiffuseProbeGridFeatureProcessor* diffuseProbeGridFeatureProcessor = scene->GetFeatureProcessor<DiffuseProbeGridFeatureProcessor>();
-
-            if (!diffuseProbeGridFeatureProcessor || diffuseProbeGridFeatureProcessor->GetVisibleRealTimeProbeGrids().empty())
+            if (!RenderPass::IsEnabled())
             {
-                // no diffuse probe grids
-                return;
+                return false;
+            }
+
+            RPI::Scene* scene = m_pipeline->GetScene();
+            if (!scene)
+            {
+                return false;
             }
 
             RayTracingFeatureProcessor* rayTracingFeatureProcessor = scene->GetFeatureProcessor<RayTracingFeatureProcessor>();
-            AZ_Assert(rayTracingFeatureProcessor, "DiffuseProbeGridBorderUpdatePass requires the RayTracingFeatureProcessor");
-
-            if (!rayTracingFeatureProcessor->GetSubMeshCount())
+            if (!rayTracingFeatureProcessor || !rayTracingFeatureProcessor->GetSubMeshCount())
             {
                 // empty scene
-                return;
+                return false;
             }
 
-            RenderPass::FrameBeginInternal(params);
+            DiffuseProbeGridFeatureProcessor* diffuseProbeGridFeatureProcessor = scene->GetFeatureProcessor<DiffuseProbeGridFeatureProcessor>();
+            if (!diffuseProbeGridFeatureProcessor || diffuseProbeGridFeatureProcessor->GetVisibleRealTimeProbeGrids().empty())
+            {
+                // no diffuse probe grids
+                return false;
+            }
+
+            return true;
         }
 
         void DiffuseProbeGridBorderUpdatePass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph)
@@ -112,6 +119,10 @@ namespace AZ
 
             RPI::Scene* scene = m_pipeline->GetScene();
             DiffuseProbeGridFeatureProcessor* diffuseProbeGridFeatureProcessor = scene->GetFeatureProcessor<DiffuseProbeGridFeatureProcessor>();
+
+            // there are 4 submits per grid
+            frameGraph.SetEstimatedItemCount(aznumeric_cast<uint32_t>(diffuseProbeGridFeatureProcessor->GetVisibleRealTimeProbeGrids().size() * 4));
+
             for (auto& diffuseProbeGrid : diffuseProbeGridFeatureProcessor->GetVisibleRealTimeProbeGrids())
             {
                 // probe irradiance image
@@ -160,9 +171,15 @@ namespace AZ
             RPI::Scene* scene = m_pipeline->GetScene();
             DiffuseProbeGridFeatureProcessor* diffuseProbeGridFeatureProcessor = scene->GetFeatureProcessor<DiffuseProbeGridFeatureProcessor>();
 
-            // submit the DispatchItems for each DiffuseProbeGrid
-            for (auto& diffuseProbeGrid : diffuseProbeGridFeatureProcessor->GetVisibleRealTimeProbeGrids())
+            // submit the DispatchItems for each DiffuseProbeGrid in this range
+            uint32_t index = context.GetSubmitRange().m_startIndex;
+            while (index < context.GetSubmitRange().m_endIndex)
             {
+                // Note: there are 4 submits per grid, so we need to calculate the diffuseProbeGridIndex in the list as (submit index / 4)
+                AZ_Assert(index % 4 == 0, "Incorrect number of submits in DiffuseProbeGridBorderUpdatePass::BuildCommandListInternal");
+                uint32_t diffuseProbeGridIndex = index / 4;
+                AZStd::shared_ptr<DiffuseProbeGrid> diffuseProbeGrid = diffuseProbeGridFeatureProcessor->GetVisibleRealTimeProbeGrids()[diffuseProbeGridIndex];
+
                 uint32_t probeCountX;
                 uint32_t probeCountY;
                 diffuseProbeGrid->GetTexture2DProbeCount(probeCountX, probeCountY);
@@ -173,6 +190,7 @@ namespace AZ
                     commandList->SetShaderResourceGroupForDispatch(*shaderResourceGroup);
 
                     RHI::DispatchItem dispatchItem;
+                    dispatchItem.m_submitIndex = index++;
                     dispatchItem.m_arguments = m_rowDispatchArgs;
                     dispatchItem.m_pipelineState = m_rowPipelineState;
                     dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsX = probeCountX * (DiffuseProbeGrid::DefaultNumIrradianceTexels + 2);
@@ -188,6 +206,7 @@ namespace AZ
                     commandList->SetShaderResourceGroupForDispatch(*shaderResourceGroup);
 
                     RHI::DispatchItem dispatchItem;
+                    dispatchItem.m_submitIndex = index++;
                     dispatchItem.m_arguments = m_columnDispatchArgs;
                     dispatchItem.m_pipelineState = m_columnPipelineState;
                     dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsX = probeCountX;
@@ -203,6 +222,7 @@ namespace AZ
                     commandList->SetShaderResourceGroupForDispatch(*shaderResourceGroup);
 
                     RHI::DispatchItem dispatchItem;
+                    dispatchItem.m_submitIndex = index++;
                     dispatchItem.m_arguments = m_rowDispatchArgs;
                     dispatchItem.m_pipelineState = m_rowPipelineState;
                     dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsX = probeCountX * (DiffuseProbeGrid::DefaultNumDistanceTexels + 2);
@@ -218,6 +238,7 @@ namespace AZ
                     commandList->SetShaderResourceGroupForDispatch(*shaderResourceGroup);
 
                     RHI::DispatchItem dispatchItem;
+                    dispatchItem.m_submitIndex = index++;
                     dispatchItem.m_arguments = m_columnDispatchArgs;
                     dispatchItem.m_pipelineState = m_columnPipelineState;
                     dispatchItem.m_arguments.m_direct.m_totalNumberOfThreadsX = probeCountX;

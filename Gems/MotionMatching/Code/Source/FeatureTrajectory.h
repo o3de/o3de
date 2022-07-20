@@ -29,12 +29,10 @@ namespace EMotionFX::MotionMatching
 {
     class FrameDatabase;
 
-    /**
-     * Matches the root joint past and future trajectory.
-     * For each frame in the motion database, the position and facing direction relative to the current frame of the joint will be evaluated for a past and future time window.
-     * The past and future samples together form the trajectory of the current frame within the time window. This basically describes where the character came from to reach the
-     * current frame and where it will go when continuing to play the animation.
-     **/
+    //! Matches the root joint past and future trajectory.
+    //! For each frame in the motion database, the position and facing direction relative to the current frame of the joint will be evaluated for a past and future time window.
+    //! The past and future samples together form the trajectory of the current frame within the time window. This basically describes where the character came from to reach the
+    //! current frame and where it will go when continuing to play the animation.
     class EMFX_API FeatureTrajectory
         : public Feature
     {
@@ -62,13 +60,18 @@ namespace EMotionFX::MotionMatching
         ~FeatureTrajectory() override = default;
 
         bool Init(const InitSettings& settings) override;
+
         void ExtractFeatureValues(const ExtractFeatureContext& context) override;
-        void DebugDraw(AzFramework::DebugDisplayRequests& debugDisplay,
-            MotionMatchingInstance* instance,
-            size_t frameIndex) override;
+        void FillQueryVector(QueryVector& queryVector, const QueryVectorContext& context) override;
 
         float CalculateFutureFrameCost(size_t frameIndex, const FrameCostContext& context) const;
         float CalculatePastFrameCost(size_t frameIndex, const FrameCostContext& context) const;
+
+        void DebugDraw(AzFramework::DebugDisplayRequests& debugDisplay,
+            const Pose& currentPose,
+            const FeatureMatrix& featureMatrix,
+            const FeatureMatrixTransformer* featureTransformer,
+            size_t frameIndex) override;
 
         void SetNumPastSamplesPerFrame(size_t numHistorySamples);
         void SetNumFutureSamplesPerFrame(size_t numFutureSamples);
@@ -107,9 +110,9 @@ namespace EMotionFX::MotionMatching
         using SplineToFeatureMatrixIndex = AZStd::function<size_t(size_t)>;
         float CalculateCost(const FeatureMatrix& featureMatrix,
             size_t frameIndex,
-            const Transform& invRootTransform,
-            const AZStd::vector<TrajectoryQuery::ControlPoint>& controlPoints,
-            const SplineToFeatureMatrixIndex& splineToFeatureMatrixIndex) const;
+            size_t numControlPoints,
+            const SplineToFeatureMatrixIndex& splineToFeatureMatrixIndex,
+            const FrameCostContext& context) const;
 
         //! Called for every sample in the past or future range to extract its information.
         //! @param[in] pose The sampled pose within the trajectory range [m_pastTimeRange, m_futureTimeRange].
@@ -119,8 +122,14 @@ namespace EMotionFX::MotionMatching
         Sample GetFeatureData(const FeatureMatrix& featureMatrix, size_t frameIndex, size_t sampleIndex) const;
         void SetFeatureData(FeatureMatrix& featureMatrix, size_t frameIndex, size_t sampleIndex, const Sample& sample);
 
+        Sample GetFeatureDataInverseTransformed(const FeatureMatrix& featureMatrix,
+            const FeatureMatrixTransformer* featureTransformer,
+            size_t frameIndex,
+            size_t sampleIndex) const;
+
         void DebugDrawTrajectory(AzFramework::DebugDisplayRequests& debugDisplay,
-            MotionMatchingInstance* instance,
+            const FeatureMatrix& featureMatrix,
+            const FeatureMatrixTransformer* featureTransformer,
             size_t frameIndex,
             const Transform& transform,
             const AZ::Color& color,

@@ -20,6 +20,7 @@
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
+#include <AzToolsFramework/Prefab/PrefabPublicNotificationBus.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
 #include <Prefab/ProceduralPrefabSystemComponentInterface.h>
 
@@ -331,7 +332,7 @@ namespace AzToolsFramework
             }
 
             PrefabDom storedPrefabDom(&loadedTemplateDom->get().GetAllocator());
-            if (!PrefabDomUtils::StoreInstanceInPrefabDom(loadedPrefabInstance, storedPrefabDom, PrefabDomUtils::StoreFlags::StoreLinkIds))
+            if (!PrefabDomUtils::StoreInstanceInPrefabDom(loadedPrefabInstance, storedPrefabDom))
             {
                 return false;
             }
@@ -359,7 +360,7 @@ namespace AzToolsFramework
 
             PrefabDom storedPrefabDom(&savingTemplateDom->get().GetAllocator());
             if (!PrefabDomUtils::StoreInstanceInPrefabDom(savingPrefabInstance, storedPrefabDom,
-                PrefabDomUtils::StoreFlags::StripDefaultValues))
+                PrefabDomUtils::StoreFlags::StripDefaultValues | PrefabDomUtils::StoreFlags::StripLinkIds))
             {
                 return false;
             }
@@ -391,6 +392,7 @@ namespace AzToolsFramework
                 return false;
             }
             m_prefabSystemComponentInterface->SetTemplateDirtyFlag(templateId, false);
+            PrefabTemplateNotificationBus::Event(templateId, &PrefabTemplateNotifications::OnPrefabTemplateSaved);
             return true;
         }
 

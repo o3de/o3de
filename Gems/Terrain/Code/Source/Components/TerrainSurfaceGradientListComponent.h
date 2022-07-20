@@ -10,6 +10,7 @@
 
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Component/Component.h>
+#include <AzCore/std/parallel/shared_mutex.h>
 #include <AzFramework/Terrain/TerrainDataRequestBus.h>
 #include <LmbrCentral/Dependency/DependencyMonitor.h>
 #include <LmbrCentral/Dependency/DependencyNotificationBus.h>
@@ -25,6 +26,8 @@ namespace LmbrCentral
 
 namespace Terrain
 {
+    class EditorSurfaceTagListProvider;
+
     class TerrainSurfaceGradientMapping final
     {
     public:
@@ -39,8 +42,14 @@ namespace Terrain
         {
         }
 
+        AZStd::vector<AZStd::pair<AZ::u32, AZStd::string>> BuildSelectableTagList() const;
+        void SetTagListProvider(const EditorSurfaceTagListProvider* tagListProvider);
+
         AZ::EntityId m_gradientEntityId;
         SurfaceData::SurfaceTag m_surfaceTag;
+
+    private:
+        const EditorSurfaceTagListProvider* m_tagListProvider = nullptr;
     };
 
     class TerrainSurfaceGradientListConfig : public AZ::ComponentConfig
@@ -88,6 +97,7 @@ namespace Terrain
         //////////////////////////////////////////////////////////////////////////
         // LmbrCentral::DependencyNotificationBus
         void OnCompositionChanged() override;
+        void OnCompositionRegionChanged(const AZ::Aabb& dirtyRegion) override;
 
         TerrainSurfaceGradientListConfig m_configuration;
         LmbrCentral::DependencyMonitor m_dependencyMonitor;

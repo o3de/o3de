@@ -25,18 +25,6 @@
                 "Path": "Passes/DepthMSAA.pass"
             },
             {
-                "Name": "DepthMSAA2xPassTemplate",
-                "Path": "Passes/DepthMSAA2x.pass"
-            },
-            {
-                "Name": "DepthMSAA4xPassTemplate",
-                "Path": "Passes/DepthMSAA4x.pass"
-            },
-            {
-                "Name": "DepthMSAA8xPassTemplate",
-                "Path": "Passes/DepthMSAA8x.pass"
-            },
-            {
                 "Name": "DepthMaxPassTemplate",
                 "Path": "Passes/DepthMax.pass"
             },
@@ -45,12 +33,8 @@
                 "Path": "Passes/Forward.pass"
             },
             {
-                "Name": "ForwardMSAAPassTemplate",
-                "Path": "Passes/ForwardMSAA.pass"
-            },
-            {
-                "Name": "ForwardSubsurfaceMSAAPassTemplate",
-                "Path": "Passes/ForwardSubsurfaceMSAA.pass"
+                "Name": "ForwardSubsurfacePassTemplate",
+                "Path": "Passes/ForwardSubsurface.pass"
             },
             {
                 "Name": "MainPipeline",
@@ -216,9 +200,13 @@
                 "Name": "NewDepthOfFieldCompositeTemplate",
                 "Path": "Passes/NewDepthOfFieldComposite.pass"
             },
-			{
+            {
                 "Name": "EsmShadowmapsTemplate",
                 "Path": "Passes/EsmShadowmaps.pass"
+            },
+            {
+                "Name": "FullscreenShadowTemplate",
+                "Path": "Passes/FullscreenShadow.pass"
             },
             {
                 "Name": "LightCullingHeatmapTemplate",
@@ -251,22 +239,6 @@
             {
                 "Name": "LightCullingRemapTemplate",
                 "Path": "Passes/LightCullingRemap.pass"
-            },
-            {
-                "Name": "EnvironmentCubeMapForwardMSAAPassTemplate",
-                "Path": "Passes/EnvironmentCubeMapForwardMSAA.pass"
-            },
-            {
-                "Name": "EnvironmentCubeMapForwardSubsurfaceMSAAPassTemplate",
-                "Path": "Passes/EnvironmentCubeMapForwardSubsurfaceMSAA.pass"
-            },
-            {
-                "Name": "EnvironmentCubeMapDepthMSAAPassTemplate",
-                "Path": "Passes/EnvironmentCubeMapDepthMSAA.pass"
-            },
-            {
-                "Name": "EnvironmentCubeMapSkyBoxPassTemplate",
-                "Path": "Passes/EnvironmentCubeMapSkyBox.pass"
             },
             {
                 "Name": "DepthToLinearTemplate",
@@ -461,6 +433,10 @@
                 "Path": "Passes/DiffuseProbeGridClassification.pass"
             },
             {
+                "Name": "DiffuseProbeGridPreparePassTemplate",
+                "Path": "Passes/DiffuseProbeGridPrepare.pass"
+            },
+            {
                 "Name": "DiffuseGlobalIlluminationPassTemplate",
                 "Path": "Passes/DiffuseGlobalIllumination.pass"
             },
@@ -477,6 +453,26 @@
                 "Path": "Passes/DiffuseComposite.pass"
             },
             {
+                "Name": "DiffuseProbeGridVisualizationPreparePassTemplate",
+                "Path": "Passes/DiffuseProbeGridVisualizationPrepare.pass"
+            },
+            {
+                "Name": "DiffuseProbeGridVisualizationAccelerationStructurePassTemplate",
+                "Path": "Passes/DiffuseProbeGridVisualizationAccelerationStructure.pass"
+            },
+            {
+                "Name": "DiffuseProbeGridVisualizationRayTracingPassTemplate",
+                "Path": "Passes/DiffuseProbeGridVisualizationRayTracing.pass"
+            },
+            {
+                "Name": "DiffuseProbeGridQueryPassTemplate",
+                "Path": "Passes/DiffuseProbeGridQuery.pass"
+            },
+            {
+                "Name": "DiffuseProbeGridVisualizationCompositePassTemplate",
+                "Path": "Passes/DiffuseProbeGridVisualizationComposite.pass"
+            },
+            {
                 "Name": "DiffuseGlobalFullscreenPassTemplate",
                 "Path": "Passes/DiffuseGlobalFullscreen.pass"
             },
@@ -485,8 +481,8 @@
                 "Path": "Passes/MorphTarget.pass"
             },
             {
-                "Name": "DepthMSAAParentTemplate",
-                "Path": "Passes/DepthMSAAParent.pass"
+                "Name": "DepthParentTemplate",
+                "Path": "Passes/DepthParent.pass"
             },
             {
                 "Name": "MotionVectorParentTemplate",
@@ -551,6 +547,10 @@
             {
                 "Name": "LutGenerationTemplate",
                 "Path": "Passes/LutGeneration.pass"
+            },
+            {
+                "Name": "ChromaticAberrationTemplate",
+                "Path": "Passes/ChromaticAberration.pass"
             }
         ]
     }

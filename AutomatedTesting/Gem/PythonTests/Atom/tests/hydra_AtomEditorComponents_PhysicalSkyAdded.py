@@ -27,6 +27,9 @@ class Tests:
     physical_sky_component = (
         "Entity has a Physical Sky component",
         "Entity failed to find Physical Sky component")
+    sky_intensity = (
+        "Sky Intensity value updated successfully",
+        "Sky Intensity value could not be set")
     enter_game_mode = (
         "Entered game mode",
         "Failed to enter game mode")
@@ -68,13 +71,14 @@ def AtomEditorComponents_PhysicalSky_AddedToEntity():
     2) Add Physical Sky component to Physical Sky entity.
     3) UNDO the entity creation and component addition.
     4) REDO the entity creation and component addition.
-    5) Enter/Exit game mode.
-    6) Test IsHidden.
-    7) Test IsVisible.
-    8) Delete Physical Sky entity.
-    9) UNDO deletion.
-    10) REDO deletion.
-    11) Look for errors and asserts.
+    5) Update Sky Intensity value.
+    6) Enter/Exit game mode.
+    7) Test IsHidden.
+    8) Test IsVisible.
+    9) Delete Physical Sky entity.
+    10) UNDO deletion.
+    11) REDO deletion.
+    12) Look for errors and asserts.
 
     :return: None
     """
@@ -126,35 +130,42 @@ def AtomEditorComponents_PhysicalSky_AddedToEntity():
         general.idle_wait_frames(1)
         Report.result(Tests.creation_redo, physical_sky_entity.exists())
 
-        # 5. Enter/Exit game mode.
+        # 5. Set Sky Intensity value
+        physical_sky_component.set_component_property_value(
+            AtomComponentProperties.physical_sky('Sky Intensity'), value=2)
+        current_sky_intensity = physical_sky_component.get_component_property_value(
+            AtomComponentProperties.physical_sky('Sky Intensity'))
+        Report.result(Tests.sky_intensity, current_sky_intensity == 2)
+
+        # 6. Enter/Exit game mode.
         TestHelper.enter_game_mode(Tests.enter_game_mode)
         general.idle_wait_frames(1)
         TestHelper.exit_game_mode(Tests.exit_game_mode)
 
-        # 6. Test IsHidden.
+        # 7. Test IsHidden.
         physical_sky_entity.set_visibility_state(False)
         Report.result(Tests.is_hidden, physical_sky_entity.is_hidden() is True)
 
-        # 7. Test IsVisible.
+        # 8. Test IsVisible.
         physical_sky_entity.set_visibility_state(True)
         general.idle_wait_frames(1)
         Report.result(Tests.is_visible, physical_sky_entity.is_visible() is True)
 
-        # 8. Delete Physical Sky entity.
+        # 9. Delete Physical Sky entity.
         physical_sky_entity.delete()
         Report.result(Tests.entity_deleted, not physical_sky_entity.exists())
 
-        # 9. UNDO deletion.
+        # 10. UNDO deletion.
         general.undo()
         general.idle_wait_frames(1)
         Report.result(Tests.deletion_undo, physical_sky_entity.exists())
 
-        # 10. REDO deletion.
+        # 11. REDO deletion.
         general.redo()
         general.idle_wait_frames(1)
         Report.result(Tests.deletion_redo, not physical_sky_entity.exists())
 
-        # 11. Look for errors and asserts.
+        # 12. Look for errors and asserts.
         TestHelper.wait_for_condition(lambda: error_tracer.has_errors or error_tracer.has_asserts, 1.0)
         for error_info in error_tracer.errors:
             Report.info(f"Error: {error_info.filename} {error_info.function} | {error_info.message}")

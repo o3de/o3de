@@ -12,12 +12,12 @@
 
 partial ShaderResourceGroup ViewSrg
 {
-    row_major float4x4 m_viewProjectionMatrix;
-    row_major float4x4 m_viewMatrix;
-    row_major float4x4 m_viewMatrixInverse;
-    row_major float4x4 m_projectionMatrix;
-    row_major float4x4 m_projectionMatrixInverse;
-    row_major float4x4 m_viewProjectionInverseMatrix;
+    row_major float4x4 m_viewProjectionMatrix;          // World -> Projection
+    row_major float4x4 m_viewMatrix;                    // World -> View
+    row_major float4x4 m_viewMatrixInverse;             // View -> World
+    row_major float4x4 m_projectionMatrix;              // View -> Projection
+    row_major float4x4 m_projectionMatrixInverse;       // Projection -> View
+    row_major float4x4 m_viewProjectionInverseMatrix;   // Projection -> World
 
     // view projection matrix of last frame
     row_major float4x4 m_viewProjectionPrevMatrix;
@@ -29,6 +29,14 @@ partial ShaderResourceGroup ViewSrg
     // Constants used to unproject depth values and reconstruct the view-space position (Z-forward & Y-up)
     // See the GetViewSpacePosition( ) function below
     float4 m_unprojectionConstants;
+
+    // Debug members...
+
+    // Rendering options related to shader debugging
+    uint m_renderDebugOptions;
+
+    // Specifies what should be output to the view (i.e. normals, lighting, albedo, etc.)
+    uint m_renderDebugViewMode;
 
     float GetNearZ()
     {

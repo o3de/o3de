@@ -117,11 +117,7 @@ namespace UnitTest
         EXPECT_EQ(param2[0], "param2val");
     }
 
-#if AZ_TRAIT_DISABLE_FAILED_PROCESS_LAUNCHER_TESTS
-    TEST_F(ProcessLaunchParseTests, DISABLED_ProcessLauncher_StringsWithCommas_Success)
-#else
     TEST_F(ProcessLaunchParseTests, ProcessLauncher_WithCommas_Success)
-#endif // AZ_TRAIT_DISABLE_FAILED_PROCESS_LAUNCHER_TESTS
     {
         ProcessLaunchParseTests::ParsedArgMap argMap;
         AzFramework::ProcessOutput processOutput;
@@ -155,11 +151,7 @@ namespace UnitTest
         EXPECT_EQ(param2[1], "al");
     }
     
-#if AZ_TRAIT_DISABLE_FAILED_PROCESS_LAUNCHER_TESTS
-    TEST_F(ProcessLaunchParseTests, DISABLED_ProcessLauncher_StringsWithSpaces_Success)
-#else
     TEST_F(ProcessLaunchParseTests, ProcessLauncher_WithSpaces_Success)
-#endif // AZ_TRAIT_DISABLE_FAILED_PROCESS_LAUNCHER_TESTS
     {
         ProcessLaunchParseTests::ParsedArgMap argMap;
         AzFramework::ProcessOutput processOutput;
@@ -191,11 +183,7 @@ namespace UnitTest
         EXPECT_EQ(param2[0], "param2v al");
     }
 
-#if AZ_TRAIT_DISABLE_FAILED_PROCESS_LAUNCHER_TESTS
-    TEST_F(ProcessLaunchParseTests, DISABLED_ProcessLauncher_StringsWithSpacesAndComma_Success)
-#else
     TEST_F(ProcessLaunchParseTests, ProcessLauncher_WithSpacesAndComma_Success)
-#endif // AZ_TRAIT_DISABLE_FAILED_PROCESS_LAUNCHER_TESTS
     {
         ProcessLaunchParseTests::ParsedArgMap argMap;
         AzFramework::ProcessOutput processOutput;

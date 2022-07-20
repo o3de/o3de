@@ -8,17 +8,23 @@
 
 #include <AzToolsFramework/UnitTest/ToolsTestApplication.h>
 
+#include <AzCore/Console/IConsole.h>
+
 namespace UnitTest
 {
     ToolsTestApplication::ToolsTestApplication(AZStd::string applicationName)
         :ToolsTestApplication(AZStd::move(applicationName), 0, nullptr)
     {
+        ;
     }
 
     ToolsTestApplication::ToolsTestApplication(AZStd::string applicationName, int argc, char** argv)
         : AzToolsFramework::ToolsApplication(&argc, &argv)
         , m_applicationName(AZStd::move(applicationName))
     {
+        // Connection polling can be slow, disable for Tools Tests
+        const auto console = AZ::Interface<AZ::IConsole>::Get();
+        console->PerformCommand("target_autoconnect false");
     }
 
     void ToolsTestApplication::SetSettingsRegistrySpecializations(AZ::SettingsRegistryInterface::Specializations& specializations)

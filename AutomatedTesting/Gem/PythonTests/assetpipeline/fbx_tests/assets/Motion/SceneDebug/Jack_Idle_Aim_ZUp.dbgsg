@@ -25,6 +25,17 @@ Node Type: AnimationData
 	KeyFrames: Count 195. Hash: 8622607111849624366
 	TimeStepBetweenFrames: 0.033333
 
+Node Name: custom_properties
+Node Path: RootNode.jack_root.custom_properties
+Node Type: CustomPropertyData
+	bodyPartName: jack_root
+	rigStatus: Driven
+	IsNull: false
+	RotationActive: true
+	DefaultAttributeIndex: 0
+	UserProperties: 
+	InheritType: 1
+
 Node Name: Bip01__pelvis
 Node Path: RootNode.jack_root.Bip01__pelvis
 Node Type: BoneData
@@ -48,6 +59,21 @@ Node Type: TransformData
 		BasisY: <-0.158404,  0.987337,  0.008581>
 		BasisZ: < 0.017427, -0.005894,  0.999831>
 		Transl: < 0.002174,  0.008085,  1.014749>
+
+Node Name: custom_properties
+Node Path: RootNode.jack_root.Bip01__pelvis.custom_properties
+Node Type: CustomPropertyData
+	rotZLimited: false
+	bodyPartName: Bip01__pelvis
+	rotYLimited: false
+	lockInfluenceWeights: false
+	rotXLimited: false
+	rigStatus: Driven
+	IsNull: false
+	RotationActive: true
+	DefaultAttributeIndex: 0
+	UserProperties: 
+	InheritType: 2
 
 Node Name: l_upLeg
 Node Path: RootNode.jack_root.Bip01__pelvis.l_upLeg
@@ -91,6 +117,21 @@ Node Type: TransformData
 		BasisZ: < 0.020552,  0.062493,  0.997834>
 		Transl: <-0.100606,  0.011412, -0.032745>
 
+Node Name: custom_properties
+Node Path: RootNode.jack_root.Bip01__pelvis.l_upLeg.custom_properties
+Node Type: CustomPropertyData
+	rotZLimited: false
+	bodyPartName: l_upLeg
+	rotYLimited: false
+	rotXLimited: false
+	lockInfluenceWeights: false
+	rigStatus: Driven
+	IsNull: false
+	RotationActive: true
+	DefaultAttributeIndex: 0
+	UserProperties: 
+	InheritType: 2
+
 Node Name: l_upLegRoll
 Node Path: RootNode.jack_root.Bip01__pelvis.l_upLeg.l_upLegRoll
 Node Type: BoneData
@@ -123,6 +164,21 @@ Node Type: TransformData
 		BasisY: < 0.257148,  0.957967,  0.127175>
 		BasisZ: <-0.107382, -0.102460,  0.988924>
 		Transl: < 0.100610,  0.011411, -0.032745>
+
+Node Name: custom_properties
+Node Path: RootNode.jack_root.Bip01__pelvis.r_upLeg.custom_properties
+Node Type: CustomPropertyData
+	rotZLimited: false
+	bodyPartName: r_upLeg
+	rotYLimited: false
+	rotXLimited: false
+	lockInfluenceWeights: false
+	rigStatus: Driven
+	IsNull: false
+	RotationActive: true
+	DefaultAttributeIndex: 0
+	UserProperties: 
+	InheritType: 2
 
 Node Name: r_upLegRoll
 Node Path: RootNode.jack_root.Bip01__pelvis.r_upLeg.r_upLegRoll
@@ -157,6 +213,21 @@ Node Type: TransformData
 		BasisZ: < 0.009010,  0.999656,  0.024617>
 		Transl: <-0.003564,  0.017900,  0.066792>
 
+Node Name: custom_properties
+Node Path: RootNode.jack_root.Bip01__pelvis.spine1.custom_properties
+Node Type: CustomPropertyData
+	rotZLimited: false
+	bodyPartName: spine1
+	rotYLimited: false
+	lockInfluenceWeights: false
+	rotXLimited: false
+	rigStatus: Driven
+	IsNull: false
+	RotationActive: true
+	DefaultAttributeIndex: 0
+	UserProperties: 
+	InheritType: 2
+
 Node Name: spine2
 Node Path: RootNode.jack_root.Bip01__pelvis.spine1.spine2
 Node Type: BoneData
@@ -181,6 +252,21 @@ Node Type: TransformData
 		BasisZ: < 0.000000,  0.000000,  1.000000>
 		Transl: < 0.000000,  0.000000, -0.223000>
 
+Node Name: custom_properties
+Node Path: RootNode.jack_root.Bip01__pelvis.l_upLeg.l_upLegRoll.custom_properties
+Node Type: CustomPropertyData
+	rotZLimited: false
+	bodyPartName: l_upLegRoll
+	rotYLimited: false
+	rotXLimited: false
+	lockInfluenceWeights: false
+	rigStatus: Driven
+	IsNull: false
+	RotationActive: true
+	DefaultAttributeIndex: 0
+	UserProperties: 
+	InheritType: 1
+
 Node Name: animation
 Node Path: RootNode.jack_root.Bip01__pelvis.l_upLeg.l_loLeg.animation
 Node Type: AnimationData
@@ -195,6 +281,21 @@ Node Type: TransformData
 		BasisY: <-0.000000,  0.994203, -0.107519>
 		BasisZ: < 0.000000,  0.107519,  0.994203>
 		Transl: < 0.000000,  0.000001, -0.446000>
+
+Node Name: custom_properties
+Node Path: RootNode.jack_root.Bip01__pelvis.l_upLeg.l_loLeg.custom_properties
+Node Type: CustomPropertyData
+	rotZLimited: false
+	bodyPartName: l_loLeg
+	rotYLimited: false
+	rotXLimited: false
+	lockInfluenceWeights: false
+	rigStatus: Driven
+	IsNull: false
+	RotationActive: true
+	DefaultAttributeIndex: 0
+	UserProperties: 
+	InheritType: 2
 
 Node Name: l_ankle
 Node Path: RootNode.jack_root.Bip01__pelvis.l_upLeg.l_loLeg.l_ankle
@@ -220,6 +321,21 @@ Node Type: TransformData
 		BasisZ: < 0.000000,  0.000000,  1.000000>
 		Transl: < 0.000000,  0.000000, -0.223000>
 
+Node Name: custom_properties
+Node Path: RootNode.jack_root.Bip01__pelvis.r_upLeg.r_upLegRoll.custom_properties
+Node Type: CustomPropertyData
+	rotZLimited: false
+	bodyPartName: r_upLegRoll
+	rotYLimited: false
+	rotXLimited: false
+	lockInfluenceWeights: false
+	rigStatus: Driven
+	IsNull: false
+	RotationActive: true
+	DefaultAttributeIndex: 0
+	UserProperties: 
+	InheritType: 1
+
 Node Name: animation
 Node Path: RootNode.jack_root.Bip01__pelvis.r_upLeg.r_loLeg.animation
 Node Type: AnimationData
@@ -235,6 +351,21 @@ Node Type: TransformData
 		BasisZ: <-0.000000,  0.229154,  0.973390>
 		Transl: < 0.000000,  0.000001, -0.446000>
 
+Node Name: custom_properties
+Node Path: RootNode.jack_root.Bip01__pelvis.r_upLeg.r_loLeg.custom_properties
+Node Type: CustomPropertyData
+	rotZLimited: false
+	bodyPartName: r_loLeg
+	rotYLimited: false
+	rotXLimited: false
+	lockInfluenceWeights: false
+	rigStatus: Driven
+	IsNull: false
+	RotationActive: true
+	DefaultAttributeIndex: 0
+	UserProperties: 
+	InheritType: 2
+
 Node Name: r_ankle
 Node Path: RootNode.jack_root.Bip01__pelvis.r_upLeg.r_loLeg.r_ankle
 Node Type: BoneData
@@ -242,7 +373,7 @@ Node Type: BoneData
 		BasisX: < 1.000000, -0.000000,  0.000000>
 		BasisY: < 0.000000,  1.000000,  0.000000>
 		BasisZ: <-0.000000, -0.000000,  1.000000>
-		Transl: < 0.152547,  0.043345,  0.090954>
+		Transl: < 0.152547,  0.043345,  0.090955>
 
 Node Name: animation
 Node Path: RootNode.jack_root.Bip01__pelvis.spine1.spine2.animation
@@ -258,6 +389,21 @@ Node Type: TransformData
 		BasisY: < 0.001464,  0.999168,  0.040751>
 		BasisZ: < 0.025634, -0.040775,  0.998839>
 		Transl: <-0.000000,  0.150000, -0.000000>
+
+Node Name: custom_properties
+Node Path: RootNode.jack_root.Bip01__pelvis.spine1.spine2.custom_properties
+Node Type: CustomPropertyData
+	rotZLimited: false
+	bodyPartName: spine2
+	rotYLimited: false
+	lockInfluenceWeights: false
+	rotXLimited: false
+	rigStatus: Driven
+	IsNull: false
+	RotationActive: true
+	DefaultAttributeIndex: 0
+	UserProperties: 
+	InheritType: 2
 
 Node Name: spine3
 Node Path: RootNode.jack_root.Bip01__pelvis.spine1.spine2.spine3
@@ -283,6 +429,21 @@ Node Type: TransformData
 		BasisZ: <-0.048355, -0.150898,  0.987366>
 		Transl: <-0.000000,  0.000001, -0.451141>
 
+Node Name: custom_properties
+Node Path: RootNode.jack_root.Bip01__pelvis.l_upLeg.l_loLeg.l_ankle.custom_properties
+Node Type: CustomPropertyData
+	rotZLimited: false
+	bodyPartName: l_ankle
+	rotYLimited: false
+	rotXLimited: false
+	lockInfluenceWeights: false
+	rigStatus: Driven
+	IsNull: false
+	RotationActive: true
+	DefaultAttributeIndex: 0
+	UserProperties: 
+	InheritType: 2
+
 Node Name: l_ball
 Node Path: RootNode.jack_root.Bip01__pelvis.l_upLeg.l_loLeg.l_ankle.l_ball
 Node Type: BoneData
@@ -307,6 +468,21 @@ Node Type: TransformData
 		BasisZ: < 0.058580, -0.099080,  0.993354>
 		Transl: <-0.000000,  0.000001, -0.451141>
 
+Node Name: custom_properties
+Node Path: RootNode.jack_root.Bip01__pelvis.r_upLeg.r_loLeg.r_ankle.custom_properties
+Node Type: CustomPropertyData
+	rotZLimited: false
+	bodyPartName: r_ankle
+	rotYLimited: false
+	rotXLimited: false
+	lockInfluenceWeights: false
+	rigStatus: Driven
+	IsNull: false
+	RotationActive: true
+	DefaultAttributeIndex: 0
+	UserProperties: 
+	InheritType: 2
+
 Node Name: r_ball
 Node Path: RootNode.jack_root.Bip01__pelvis.r_upLeg.r_loLeg.r_ankle.r_ball
 Node Type: BoneData
@@ -330,6 +506,21 @@ Node Type: TransformData
 		BasisY: <-0.000102,  0.997277, -0.073739>
 		BasisZ: < 0.027386,  0.073714,  0.996903>
 		Transl: <-0.000000,  0.150000, -0.000000>
+
+Node Name: custom_properties
+Node Path: RootNode.jack_root.Bip01__pelvis.spine1.spine2.spine3.custom_properties
+Node Type: CustomPropertyData
+	rotZLimited: false
+	bodyPartName: spine3
+	rotYLimited: false
+	lockInfluenceWeights: false
+	rotXLimited: false
+	rigStatus: Driven
+	IsNull: false
+	RotationActive: true
+	DefaultAttributeIndex: 0
+	UserProperties: 
+	InheritType: 2
 
 Node Name: neck
 Node Path: RootNode.jack_root.Bip01__pelvis.spine1.spine2.spine3.neck
@@ -373,6 +564,21 @@ Node Type: TransformData
 		BasisZ: < 0.000000,  0.000000,  1.000000>
 		Transl: <-0.000000,  0.150173, -0.067188>
 
+Node Name: custom_properties
+Node Path: RootNode.jack_root.Bip01__pelvis.l_upLeg.l_loLeg.l_ankle.l_ball.custom_properties
+Node Type: CustomPropertyData
+	rotZLimited: false
+	bodyPartName: l_ball
+	rotYLimited: false
+	rotXLimited: false
+	lockInfluenceWeights: false
+	rigStatus: Driven
+	IsNull: false
+	RotationActive: true
+	DefaultAttributeIndex: 0
+	UserProperties: 
+	InheritType: 2
+
 Node Name: animation
 Node Path: RootNode.jack_root.Bip01__pelvis.r_upLeg.r_loLeg.r_ankle.r_ball.animation
 Node Type: AnimationData
@@ -388,6 +594,21 @@ Node Type: TransformData
 		BasisZ: < 0.000000,  0.000000,  1.000000>
 		Transl: <-0.000000,  0.150173, -0.067188>
 
+Node Name: custom_properties
+Node Path: RootNode.jack_root.Bip01__pelvis.r_upLeg.r_loLeg.r_ankle.r_ball.custom_properties
+Node Type: CustomPropertyData
+	rotZLimited: false
+	bodyPartName: r_ball
+	rotYLimited: false
+	rotXLimited: false
+	lockInfluenceWeights: false
+	rigStatus: Driven
+	IsNull: false
+	RotationActive: true
+	DefaultAttributeIndex: 0
+	UserProperties: 
+	InheritType: 2
+
 Node Name: animation
 Node Path: RootNode.jack_root.Bip01__pelvis.spine1.spine2.spine3.neck.animation
 Node Type: AnimationData
@@ -402,6 +623,21 @@ Node Type: TransformData
 		BasisY: <-0.036664,  0.985473,  0.165825>
 		BasisZ: <-0.100131, -0.168724,  0.980564>
 		Transl: <-0.000000,  0.190000, -0.000000>
+
+Node Name: custom_properties
+Node Path: RootNode.jack_root.Bip01__pelvis.spine1.spine2.spine3.neck.custom_properties
+Node Type: CustomPropertyData
+	rotZLimited: false
+	bodyPartName: neck
+	rotYLimited: false
+	lockInfluenceWeights: false
+	rotXLimited: false
+	rigStatus: Driven
+	IsNull: false
+	RotationActive: true
+	DefaultAttributeIndex: 0
+	UserProperties: 
+	InheritType: 2
 
 Node Name: head
 Node Path: RootNode.jack_root.Bip01__pelvis.spine1.spine2.spine3.neck.head
@@ -427,6 +663,21 @@ Node Type: TransformData
 		BasisZ: < 0.018220,  0.994461,  0.103516>
 		Transl: < 0.081970,  0.115722, -0.010486>
 
+Node Name: custom_properties
+Node Path: RootNode.jack_root.Bip01__pelvis.spine1.spine2.spine3.l_shldr.custom_properties
+Node Type: CustomPropertyData
+	rotZLimited: false
+	bodyPartName: l_shldr
+	rotYLimited: false
+	lockInfluenceWeights: false
+	rotXLimited: false
+	rigStatus: Driven
+	IsNull: false
+	RotationActive: true
+	DefaultAttributeIndex: 0
+	UserProperties: 
+	InheritType: 2
+
 Node Name: l_upArm
 Node Path: RootNode.jack_root.Bip01__pelvis.spine1.spine2.spine3.l_shldr.l_upArm
 Node Type: BoneData
@@ -450,6 +701,21 @@ Node Type: TransformData
 		BasisY: < 0.966208, -0.122847, -0.226609>
 		BasisZ: <-0.161881, -0.973327, -0.162570>
 		Transl: <-0.081969,  0.115722, -0.010486>
+
+Node Name: custom_properties
+Node Path: RootNode.jack_root.Bip01__pelvis.spine1.spine2.spine3.r_shldr.custom_properties
+Node Type: CustomPropertyData
+	rotZLimited: false
+	bodyPartName: r_shldr
+	rotYLimited: false
+	lockInfluenceWeights: false
+	rotXLimited: false
+	rigStatus: Driven
+	IsNull: false
+	RotationActive: true
+	DefaultAttributeIndex: 0
+	UserProperties: 
+	InheritType: 2
 
 Node Name: r_upArm
 Node Path: RootNode.jack_root.Bip01__pelvis.spine1.spine2.spine3.r_shldr.r_upArm
@@ -475,6 +741,21 @@ Node Type: TransformData
 		BasisZ: <-0.067299,  0.124358,  0.989953>
 		Transl: <-0.000000,  0.094124,  0.016902>
 
+Node Name: custom_properties
+Node Path: RootNode.jack_root.Bip01__pelvis.spine1.spine2.spine3.neck.head.custom_properties
+Node Type: CustomPropertyData
+	rotZLimited: false
+	bodyPartName: head
+	rotYLimited: false
+	lockInfluenceWeights: false
+	rotXLimited: false
+	rigStatus: Driven
+	IsNull: false
+	RotationActive: true
+	DefaultAttributeIndex: 0
+	UserProperties: 
+	InheritType: 2
+
 Node Name: animation
 Node Path: RootNode.jack_root.Bip01__pelvis.spine1.spine2.spine3.l_shldr.l_upArm.animation
 Node Type: AnimationData
@@ -489,6 +770,21 @@ Node Type: TransformData
 		BasisY: <-0.144991, -0.950487, -0.274866>
 		BasisZ: <-0.082504,  0.288449, -0.953934>
 		Transl: <-0.011672,  0.115971, -0.042453>
+
+Node Name: custom_properties
+Node Path: RootNode.jack_root.Bip01__pelvis.spine1.spine2.spine3.l_shldr.l_upArm.custom_properties
+Node Type: CustomPropertyData
+	rotZLimited: false
+	bodyPartName: l_upArm
+	rotYLimited: false
+	lockInfluenceWeights: false
+	rotXLimited: false
+	rigStatus: Driven
+	IsNull: false
+	RotationActive: true
+	DefaultAttributeIndex: 0
+	UserProperties: 
+	InheritType: 2
 
 Node Name: l_upArmRoll
 Node Path: RootNode.jack_root.Bip01__pelvis.spine1.spine2.spine3.l_shldr.l_upArm.l_upArmRoll
@@ -523,6 +819,21 @@ Node Type: TransformData
 		BasisZ: <-0.906042, -0.350541,  0.237086>
 		Transl: < 0.011672, -0.115971,  0.042450>
 
+Node Name: custom_properties
+Node Path: RootNode.jack_root.Bip01__pelvis.spine1.spine2.spine3.r_shldr.r_upArm.custom_properties
+Node Type: CustomPropertyData
+	rotZLimited: false
+	bodyPartName: r_upArm
+	rotYLimited: false
+	lockInfluenceWeights: false
+	rotXLimited: false
+	rigStatus: Driven
+	IsNull: false
+	RotationActive: true
+	DefaultAttributeIndex: 0
+	UserProperties: 
+	InheritType: 2
+
 Node Name: r_upArmRoll
 Node Path: RootNode.jack_root.Bip01__pelvis.spine1.spine2.spine3.r_shldr.r_upArm.r_upArmRoll
 Node Type: BoneData
@@ -544,7 +855,7 @@ Node Type: BoneData
 Node Name: animation
 Node Path: RootNode.jack_root.Bip01__pelvis.spine1.spine2.spine3.l_shldr.l_upArm.l_upArmRoll.animation
 Node Type: AnimationData
-	KeyFrames: Count 195. Hash: 8781707605519483934
+	KeyFrames: Count 195. Hash: 15529789169672670472
 	TimeStepBetweenFrames: 0.033333
 
 Node Name: transform
@@ -555,6 +866,21 @@ Node Type: TransformData
 		BasisY: < 0.000000,  1.000000,  0.000000>
 		BasisZ: < 0.000000,  0.000000,  1.000000>
 		Transl: < 0.000000,  0.000000,  0.127000>
+
+Node Name: custom_properties
+Node Path: RootNode.jack_root.Bip01__pelvis.spine1.spine2.spine3.l_shldr.l_upArm.l_upArmRoll.custom_properties
+Node Type: CustomPropertyData
+	rotZLimited: false
+	bodyPartName: l_upArmRoll
+	rotYLimited: false
+	rotXLimited: false
+	lockInfluenceWeights: false
+	rigStatus: Driven
+	IsNull: false
+	RotationActive: true
+	DefaultAttributeIndex: 0
+	UserProperties: 
+	InheritType: 2
 
 Node Name: animation
 Node Path: RootNode.jack_root.Bip01__pelvis.spine1.spine2.spine3.l_shldr.l_upArm.l_loArm.animation
@@ -570,6 +896,21 @@ Node Type: TransformData
 		BasisY: <-0.320926,  0.943491, -0.082657>
 		BasisZ: < 0.324166,  0.191427,  0.926430>
 		Transl: < 0.000000,  0.000000,  0.254000>
+
+Node Name: custom_properties
+Node Path: RootNode.jack_root.Bip01__pelvis.spine1.spine2.spine3.l_shldr.l_upArm.l_loArm.custom_properties
+Node Type: CustomPropertyData
+	rotZLimited: false
+	bodyPartName: l_loArm
+	rotYLimited: false
+	lockInfluenceWeights: false
+	rotXLimited: false
+	rigStatus: Driven
+	IsNull: false
+	RotationActive: true
+	DefaultAttributeIndex: 0
+	UserProperties: 
+	InheritType: 2
 
 Node Name: l_loArmRoll
 Node Path: RootNode.jack_root.Bip01__pelvis.spine1.spine2.spine3.l_shldr.l_upArm.l_loArm.l_loArmRoll
@@ -604,6 +945,21 @@ Node Type: TransformData
 		BasisZ: < 0.000000,  0.000000,  1.000000>
 		Transl: < 0.000000,  0.000005,  0.127006>
 
+Node Name: custom_properties
+Node Path: RootNode.jack_root.Bip01__pelvis.spine1.spine2.spine3.r_shldr.r_upArm.r_upArmRoll.custom_properties
+Node Type: CustomPropertyData
+	rotZLimited: false
+	bodyPartName: r_upArmRoll
+	rotYLimited: false
+	rotXLimited: false
+	lockInfluenceWeights: false
+	rigStatus: Driven
+	IsNull: false
+	RotationActive: true
+	DefaultAttributeIndex: 0
+	UserProperties: 
+	InheritType: 2
+
 Node Name: animation
 Node Path: RootNode.jack_root.Bip01__pelvis.spine1.spine2.spine3.r_shldr.r_upArm.r_loArm.animation
 Node Type: AnimationData
@@ -618,6 +974,21 @@ Node Type: TransformData
 		BasisY: <-0.001920,  0.999998,  0.001049>
 		BasisZ: <-0.538586, -0.001918,  0.842568>
 		Transl: < 0.000000,  0.000001,  0.254001>
+
+Node Name: custom_properties
+Node Path: RootNode.jack_root.Bip01__pelvis.spine1.spine2.spine3.r_shldr.r_upArm.r_loArm.custom_properties
+Node Type: CustomPropertyData
+	rotZLimited: false
+	bodyPartName: r_loArm
+	rotYLimited: false
+	lockInfluenceWeights: false
+	rotXLimited: false
+	rigStatus: Driven
+	IsNull: false
+	RotationActive: true
+	DefaultAttributeIndex: 0
+	UserProperties: 
+	InheritType: 2
 
 Node Name: r_loArmRoll
 Node Path: RootNode.jack_root.Bip01__pelvis.spine1.spine2.spine3.r_shldr.r_upArm.r_loArm.r_loArmRoll
@@ -652,6 +1023,21 @@ Node Type: TransformData
 		BasisZ: < 0.000000,  0.000000,  1.000000>
 		Transl: < 0.000000, -0.000000,  0.138254>
 
+Node Name: custom_properties
+Node Path: RootNode.jack_root.Bip01__pelvis.spine1.spine2.spine3.l_shldr.l_upArm.l_loArm.l_loArmRoll.custom_properties
+Node Type: CustomPropertyData
+	rotZLimited: false
+	bodyPartName: l_loArmRoll
+	rotYLimited: false
+	rotXLimited: false
+	lockInfluenceWeights: false
+	rigStatus: Driven
+	IsNull: false
+	RotationActive: true
+	DefaultAttributeIndex: 0
+	UserProperties: 
+	InheritType: 2
+
 Node Name: animation
 Node Path: RootNode.jack_root.Bip01__pelvis.spine1.spine2.spine3.l_shldr.l_upArm.l_loArm.l_hand.animation
 Node Type: AnimationData
@@ -666,6 +1052,21 @@ Node Type: TransformData
 		BasisY: <-0.296461,  0.930527, -0.215011>
 		BasisZ: <-0.113726,  0.189134,  0.975343>
 		Transl: < 0.000000,  0.000000,  0.276509>
+
+Node Name: custom_properties
+Node Path: RootNode.jack_root.Bip01__pelvis.spine1.spine2.spine3.l_shldr.l_upArm.l_loArm.l_hand.custom_properties
+Node Type: CustomPropertyData
+	rotZLimited: false
+	bodyPartName: l_hand
+	rotYLimited: false
+	lockInfluenceWeights: false
+	rotXLimited: false
+	rigStatus: Driven
+	IsNull: false
+	RotationActive: true
+	DefaultAttributeIndex: 0
+	UserProperties: 
+	InheritType: 2
 
 Node Name: l_thumb1
 Node Path: RootNode.jack_root.Bip01__pelvis.spine1.spine2.spine3.l_shldr.l_upArm.l_loArm.l_hand.l_thumb1
@@ -710,7 +1111,7 @@ Node Type: BoneData
 		BasisX: < 0.514369,  0.855813,  0.054857>
 		BasisY: < 0.088153,  0.010863, -0.996047>
 		BasisZ: <-0.853026,  0.517172, -0.069855>
-		Transl: <-0.247306, -0.062325,  0.878372>
+		Transl: <-0.247306, -0.062325,  0.878373>
 
 Node Name: animation
 Node Path: RootNode.jack_root.Bip01__pelvis.spine1.spine2.spine3.r_shldr.r_upArm.r_loArm.r_loArmRoll.animation
@@ -727,6 +1128,21 @@ Node Type: TransformData
 		BasisZ: < 0.000000,  0.000000,  1.000000>
 		Transl: <-0.000001, -0.000004,  0.138251>
 
+Node Name: custom_properties
+Node Path: RootNode.jack_root.Bip01__pelvis.spine1.spine2.spine3.r_shldr.r_upArm.r_loArm.r_loArmRoll.custom_properties
+Node Type: CustomPropertyData
+	rotZLimited: false
+	bodyPartName: r_loArmRoll
+	rotYLimited: false
+	lockInfluenceWeights: false
+	rotXLimited: false
+	rigStatus: Driven
+	IsNull: false
+	RotationActive: true
+	DefaultAttributeIndex: 0
+	UserProperties: 
+	InheritType: 2
+
 Node Name: animation
 Node Path: RootNode.jack_root.Bip01__pelvis.spine1.spine2.spine3.r_shldr.r_upArm.r_loArm.r_hand.animation
 Node Type: AnimationData
@@ -741,6 +1157,21 @@ Node Type: TransformData
 		BasisY: < 0.077771,  0.993995, -0.076972>
 		BasisZ: < 0.376136,  0.042247,  0.925601>
 		Transl: < 0.000000,  0.000000,  0.276509>
+
+Node Name: custom_properties
+Node Path: RootNode.jack_root.Bip01__pelvis.spine1.spine2.spine3.r_shldr.r_upArm.r_loArm.r_hand.custom_properties
+Node Type: CustomPropertyData
+	rotZLimited: false
+	bodyPartName: r_hand
+	rotYLimited: false
+	lockInfluenceWeights: false
+	rotXLimited: false
+	rigStatus: Driven
+	IsNull: false
+	RotationActive: true
+	DefaultAttributeIndex: 0
+	UserProperties: 
+	InheritType: 2
 
 Node Name: r_thumb1
 Node Path: RootNode.jack_root.Bip01__pelvis.spine1.spine2.spine3.r_shldr.r_upArm.r_loArm.r_hand.r_thumb1
@@ -802,6 +1233,21 @@ Node Type: TransformData
 		BasisZ: < 0.847368, -0.484751, -0.216757>
 		Transl: < 0.045859,  0.000463,  0.037215>
 
+Node Name: custom_properties
+Node Path: RootNode.jack_root.Bip01__pelvis.spine1.spine2.spine3.l_shldr.l_upArm.l_loArm.l_hand.l_thumb1.custom_properties
+Node Type: CustomPropertyData
+	rotZLimited: false
+	bodyPartName: l_thumb1
+	rotYLimited: false
+	lockInfluenceWeights: false
+	rotXLimited: false
+	rigStatus: Driven
+	IsNull: false
+	RotationActive: true
+	DefaultAttributeIndex: 0
+	UserProperties: 
+	InheritType: 2
+
 Node Name: l_thumb2
 Node Path: RootNode.jack_root.Bip01__pelvis.spine1.spine2.spine3.l_shldr.l_upArm.l_loArm.l_hand.l_thumb1.l_thumb2
 Node Type: BoneData
@@ -825,6 +1271,21 @@ Node Type: TransformData
 		BasisY: < 0.038455,  0.070476,  0.996772>
 		BasisZ: <-0.165297, -0.983319,  0.075902>
 		Transl: < 0.025377, -0.012455,  0.096456>
+
+Node Name: custom_properties
+Node Path: RootNode.jack_root.Bip01__pelvis.spine1.spine2.spine3.l_shldr.l_upArm.l_loArm.l_hand.l_index1.custom_properties
+Node Type: CustomPropertyData
+	rotZLimited: false
+	bodyPartName: l_index1
+	rotYLimited: false
+	lockInfluenceWeights: false
+	rotXLimited: false
+	rigStatus: Driven
+	IsNull: false
+	RotationActive: true
+	DefaultAttributeIndex: 0
+	UserProperties: 
+	InheritType: 2
 
 Node Name: l_index2
 Node Path: RootNode.jack_root.Bip01__pelvis.spine1.spine2.spine3.l_shldr.l_upArm.l_loArm.l_hand.l_index1.l_index2
@@ -850,6 +1311,21 @@ Node Type: TransformData
 		BasisZ: <-0.212594, -0.974647,  0.069762>
 		Transl: < 0.006100, -0.007900,  0.096826>
 
+Node Name: custom_properties
+Node Path: RootNode.jack_root.Bip01__pelvis.spine1.spine2.spine3.l_shldr.l_upArm.l_loArm.l_hand.l_mid1.custom_properties
+Node Type: CustomPropertyData
+	rotZLimited: false
+	bodyPartName: l_mid1
+	rotYLimited: false
+	lockInfluenceWeights: false
+	rotXLimited: false
+	rigStatus: Driven
+	IsNull: false
+	RotationActive: true
+	DefaultAttributeIndex: 0
+	UserProperties: 
+	InheritType: 2
+
 Node Name: l_mid2
 Node Path: RootNode.jack_root.Bip01__pelvis.spine1.spine2.spine3.l_shldr.l_upArm.l_loArm.l_hand.l_mid1.l_mid2
 Node Type: BoneData
@@ -857,7 +1333,7 @@ Node Type: BoneData
 		BasisX: < 0.329257,  0.944038, -0.019538>
 		BasisY: < 0.465563, -0.180309, -0.866452>
 		BasisZ: <-0.821487,  0.276189, -0.498877>
-		Transl: <-0.255124, -0.049696,  0.794466>
+		Transl: <-0.255124, -0.049696,  0.794467>
 
 Node Name: animation
 Node Path: RootNode.jack_root.Bip01__pelvis.spine1.spine2.spine3.l_shldr.l_upArm.l_loArm.l_hand.l_metacarpal.animation
@@ -873,6 +1349,21 @@ Node Type: TransformData
 		BasisY: <-0.205134, -0.000000,  0.978734>
 		BasisZ: < 0.000000, -1.000000, -0.000000>
 		Transl: <-0.015690,  0.001524,  0.042645>
+
+Node Name: custom_properties
+Node Path: RootNode.jack_root.Bip01__pelvis.spine1.spine2.spine3.l_shldr.l_upArm.l_loArm.l_hand.l_metacarpal.custom_properties
+Node Type: CustomPropertyData
+	rotZLimited: false
+	bodyPartName: l_metacarpal
+	rotYLimited: false
+	lockInfluenceWeights: false
+	rotXLimited: false
+	rigStatus: Driven
+	IsNull: false
+	RotationActive: true
+	DefaultAttributeIndex: 0
+	UserProperties: 
+	InheritType: 2
 
 Node Name: l_ring1
 Node Path: RootNode.jack_root.Bip01__pelvis.spine1.spine2.spine3.l_shldr.l_upArm.l_loArm.l_hand.l_metacarpal.l_ring1
@@ -907,6 +1398,21 @@ Node Type: TransformData
 		BasisZ: < 0.000000, -1.000000, -0.000000>
 		Transl: < 0.001937,  0.014896,  0.059955>
 
+Node Name: custom_properties
+Node Path: RootNode.jack_root.Bip01__pelvis.spine1.spine2.spine3.l_shldr.l_upArm.l_loArm.l_hand.l_handProp.custom_properties
+Node Type: CustomPropertyData
+	rotZLimited: false
+	bodyPartName: l_handProp
+	rotYLimited: false
+	rotXLimited: false
+	lockInfluenceWeights: false
+	rigStatus: Driven
+	IsNull: false
+	RotationActive: true
+	DefaultAttributeIndex: 0
+	UserProperties: 
+	InheritType: 2
+
 Node Name: animation
 Node Path: RootNode.jack_root.Bip01__pelvis.spine1.spine2.spine3.r_shldr.r_upArm.r_loArm.r_hand.r_thumb1.animation
 Node Type: AnimationData
@@ -921,6 +1427,21 @@ Node Type: TransformData
 		BasisY: < 0.015879, -0.980614, -0.195303>
 		BasisZ: < 0.216264, -0.187336,  0.958194>
 		Transl: <-0.045860,  0.000461,  0.037212>
+
+Node Name: custom_properties
+Node Path: RootNode.jack_root.Bip01__pelvis.spine1.spine2.spine3.r_shldr.r_upArm.r_loArm.r_hand.r_thumb1.custom_properties
+Node Type: CustomPropertyData
+	rotZLimited: false
+	bodyPartName: r_thumb1
+	rotYLimited: false
+	lockInfluenceWeights: false
+	rotXLimited: false
+	rigStatus: Driven
+	IsNull: false
+	RotationActive: true
+	DefaultAttributeIndex: 0
+	UserProperties: 
+	InheritType: 2
 
 Node Name: r_thumb2
 Node Path: RootNode.jack_root.Bip01__pelvis.spine1.spine2.spine3.r_shldr.r_upArm.r_loArm.r_hand.r_thumb1.r_thumb2
@@ -946,6 +1467,21 @@ Node Type: TransformData
 		BasisZ: <-0.291398,  0.797784, -0.527852>
 		Transl: <-0.025377, -0.012454,  0.096457>
 
+Node Name: custom_properties
+Node Path: RootNode.jack_root.Bip01__pelvis.spine1.spine2.spine3.r_shldr.r_upArm.r_loArm.r_hand.r_index1.custom_properties
+Node Type: CustomPropertyData
+	rotZLimited: false
+	bodyPartName: r_index1
+	rotYLimited: false
+	lockInfluenceWeights: false
+	rotXLimited: false
+	rigStatus: Driven
+	IsNull: false
+	RotationActive: true
+	DefaultAttributeIndex: 0
+	UserProperties: 
+	InheritType: 2
+
 Node Name: r_index2
 Node Path: RootNode.jack_root.Bip01__pelvis.spine1.spine2.spine3.r_shldr.r_upArm.r_loArm.r_hand.r_index1.r_index2
 Node Type: BoneData
@@ -953,7 +1489,7 @@ Node Type: BoneData
 		BasisX: <-0.102387, -0.418082, -0.902621>
 		BasisY: < 0.928150,  0.286271, -0.237880>
 		BasisZ: < 0.357847, -0.862123,  0.358732>
-		Transl: < 0.187367,  0.698323,  1.467209>
+		Transl: < 0.187367,  0.698324,  1.467209>
 
 Node Name: animation
 Node Path: RootNode.jack_root.Bip01__pelvis.spine1.spine2.spine3.r_shldr.r_upArm.r_loArm.r_hand.r_mid1.animation
@@ -969,6 +1505,21 @@ Node Type: TransformData
 		BasisY: <-0.014710, -0.966034, -0.257996>
 		BasisZ: <-0.361362,  0.245721, -0.899466>
 		Transl: <-0.006099, -0.007899,  0.096827>
+
+Node Name: custom_properties
+Node Path: RootNode.jack_root.Bip01__pelvis.spine1.spine2.spine3.r_shldr.r_upArm.r_loArm.r_hand.r_mid1.custom_properties
+Node Type: CustomPropertyData
+	rotZLimited: false
+	bodyPartName: r_mid1
+	rotYLimited: false
+	lockInfluenceWeights: false
+	rotXLimited: false
+	rigStatus: Driven
+	IsNull: false
+	RotationActive: true
+	DefaultAttributeIndex: 0
+	UserProperties: 
+	InheritType: 2
 
 Node Name: r_mid2
 Node Path: RootNode.jack_root.Bip01__pelvis.spine1.spine2.spine3.r_shldr.r_upArm.r_loArm.r_hand.r_mid1.r_mid2
@@ -993,6 +1544,21 @@ Node Type: TransformData
 		BasisY: <-0.143103, -0.246709, -0.958465>
 		BasisZ: <-0.285310,  0.937604, -0.198741>
 		Transl: < 0.015689,  0.001521,  0.042641>
+
+Node Name: custom_properties
+Node Path: RootNode.jack_root.Bip01__pelvis.spine1.spine2.spine3.r_shldr.r_upArm.r_loArm.r_hand.r_metacarpal.custom_properties
+Node Type: CustomPropertyData
+	rotZLimited: false
+	bodyPartName: r_metacarpal
+	rotYLimited: false
+	lockInfluenceWeights: false
+	rotXLimited: false
+	rigStatus: Driven
+	IsNull: false
+	RotationActive: true
+	DefaultAttributeIndex: 0
+	UserProperties: 
+	InheritType: 2
 
 Node Name: r_ring1
 Node Path: RootNode.jack_root.Bip01__pelvis.spine1.spine2.spine3.r_shldr.r_upArm.r_loArm.r_hand.r_metacarpal.r_ring1
@@ -1027,6 +1593,21 @@ Node Type: TransformData
 		BasisZ: <-0.119169, -0.009136,  0.992832>
 		Transl: <-0.044247,  0.021524,  0.135515>
 
+Node Name: custom_properties
+Node Path: RootNode.jack_root.Bip01__pelvis.spine1.spine2.spine3.r_shldr.r_upArm.r_loArm.r_hand.r_handProp.custom_properties
+Node Type: CustomPropertyData
+	rotZLimited: false
+	bodyPartName: r_handProp
+	rotYLimited: false
+	lockInfluenceWeights: false
+	rotXLimited: false
+	rigStatus: Driven
+	IsNull: false
+	RotationActive: true
+	DefaultAttributeIndex: 0
+	UserProperties: 
+	InheritType: 2
+
 Node Name: animation
 Node Path: RootNode.jack_root.Bip01__pelvis.spine1.spine2.spine3.l_shldr.l_upArm.l_loArm.l_hand.l_thumb1.l_thumb2.animation
 Node Type: AnimationData
@@ -1041,6 +1622,21 @@ Node Type: TransformData
 		BasisY: < 0.000000,  0.929898, -0.367817>
 		BasisZ: < 0.000000,  0.367817,  0.929898>
 		Transl: <-0.000000,  0.039739,  0.000000>
+
+Node Name: custom_properties
+Node Path: RootNode.jack_root.Bip01__pelvis.spine1.spine2.spine3.l_shldr.l_upArm.l_loArm.l_hand.l_thumb1.l_thumb2.custom_properties
+Node Type: CustomPropertyData
+	rotZLimited: false
+	bodyPartName: l_thumb2
+	rotYLimited: false
+	lockInfluenceWeights: false
+	rotXLimited: false
+	rigStatus: Driven
+	IsNull: false
+	RotationActive: true
+	DefaultAttributeIndex: 0
+	UserProperties: 
+	InheritType: 2
 
 Node Name: l_thumb3
 Node Path: RootNode.jack_root.Bip01__pelvis.spine1.spine2.spine3.l_shldr.l_upArm.l_loArm.l_hand.l_thumb1.l_thumb2.l_thumb3
@@ -1066,6 +1662,21 @@ Node Type: TransformData
 		BasisZ: < 0.000000,  0.364030,  0.931387>
 		Transl: <-0.000000,  0.049147,  0.000000>
 
+Node Name: custom_properties
+Node Path: RootNode.jack_root.Bip01__pelvis.spine1.spine2.spine3.l_shldr.l_upArm.l_loArm.l_hand.l_index1.l_index2.custom_properties
+Node Type: CustomPropertyData
+	rotZLimited: false
+	bodyPartName: l_index2
+	rotYLimited: false
+	lockInfluenceWeights: false
+	rotXLimited: false
+	rigStatus: Driven
+	IsNull: false
+	RotationActive: true
+	DefaultAttributeIndex: 0
+	UserProperties: 
+	InheritType: 2
+
 Node Name: l_index3
 Node Path: RootNode.jack_root.Bip01__pelvis.spine1.spine2.spine3.l_shldr.l_upArm.l_loArm.l_hand.l_index1.l_index2.l_index3
 Node Type: BoneData
@@ -1089,6 +1700,21 @@ Node Type: TransformData
 		BasisY: < 0.000000,  0.931387, -0.364030>
 		BasisZ: < 0.000000,  0.364030,  0.931387>
 		Transl: <-0.000000,  0.046344,  0.000000>
+
+Node Name: custom_properties
+Node Path: RootNode.jack_root.Bip01__pelvis.spine1.spine2.spine3.l_shldr.l_upArm.l_loArm.l_hand.l_mid1.l_mid2.custom_properties
+Node Type: CustomPropertyData
+	rotZLimited: false
+	bodyPartName: l_mid2
+	rotYLimited: false
+	lockInfluenceWeights: false
+	rotXLimited: false
+	rigStatus: Driven
+	IsNull: false
+	RotationActive: true
+	DefaultAttributeIndex: 0
+	UserProperties: 
+	InheritType: 2
 
 Node Name: l_mid3
 Node Path: RootNode.jack_root.Bip01__pelvis.spine1.spine2.spine3.l_shldr.l_upArm.l_loArm.l_hand.l_mid1.l_mid2.l_mid3
@@ -1114,6 +1740,21 @@ Node Type: TransformData
 		BasisZ: <-0.168932,  0.124210,  0.977770>
 		Transl: < 0.011562,  0.049057,  0.004398>
 
+Node Name: custom_properties
+Node Path: RootNode.jack_root.Bip01__pelvis.spine1.spine2.spine3.l_shldr.l_upArm.l_loArm.l_hand.l_metacarpal.l_ring1.custom_properties
+Node Type: CustomPropertyData
+	rotZLimited: false
+	bodyPartName: l_ring1
+	rotYLimited: false
+	lockInfluenceWeights: false
+	rotXLimited: false
+	rigStatus: Driven
+	IsNull: false
+	RotationActive: true
+	DefaultAttributeIndex: 0
+	UserProperties: 
+	InheritType: 2
+
 Node Name: l_ring2
 Node Path: RootNode.jack_root.Bip01__pelvis.spine1.spine2.spine3.l_shldr.l_upArm.l_loArm.l_hand.l_metacarpal.l_ring1.l_ring2
 Node Type: BoneData
@@ -1137,6 +1778,21 @@ Node Type: TransformData
 		BasisY: < 0.046345,  0.949812, -0.309370>
 		BasisZ: <-0.220139,  0.311800,  0.924294>
 		Transl: <-0.008664,  0.045625, -0.000244>
+
+Node Name: custom_properties
+Node Path: RootNode.jack_root.Bip01__pelvis.spine1.spine2.spine3.l_shldr.l_upArm.l_loArm.l_hand.l_metacarpal.l_pinky1.custom_properties
+Node Type: CustomPropertyData
+	rotZLimited: false
+	bodyPartName: l_pinky1
+	rotYLimited: false
+	lockInfluenceWeights: false
+	rotXLimited: false
+	rigStatus: Driven
+	IsNull: false
+	RotationActive: true
+	DefaultAttributeIndex: 0
+	UserProperties: 
+	InheritType: 2
 
 Node Name: l_pinky2
 Node Path: RootNode.jack_root.Bip01__pelvis.spine1.spine2.spine3.l_shldr.l_upArm.l_loArm.l_hand.l_metacarpal.l_pinky1.l_pinky2
@@ -1162,6 +1818,21 @@ Node Type: TransformData
 		BasisZ: < 0.000000,  0.745572,  0.666425>
 		Transl: < 0.000000, -0.039738, -0.000001>
 
+Node Name: custom_properties
+Node Path: RootNode.jack_root.Bip01__pelvis.spine1.spine2.spine3.r_shldr.r_upArm.r_loArm.r_hand.r_thumb1.r_thumb2.custom_properties
+Node Type: CustomPropertyData
+	rotZLimited: false
+	bodyPartName: r_thumb2
+	rotYLimited: false
+	lockInfluenceWeights: false
+	rotXLimited: false
+	rigStatus: Driven
+	IsNull: false
+	RotationActive: true
+	DefaultAttributeIndex: 0
+	UserProperties: 
+	InheritType: 2
+
 Node Name: r_thumb3
 Node Path: RootNode.jack_root.Bip01__pelvis.spine1.spine2.spine3.r_shldr.r_upArm.r_loArm.r_hand.r_thumb1.r_thumb2.r_thumb3
 Node Type: BoneData
@@ -1185,6 +1856,21 @@ Node Type: TransformData
 		BasisY: < 0.015953,  0.271895, -0.962195>
 		BasisZ: < 0.020268,  0.962031,  0.272185>
 		Transl: < 0.000001, -0.049150,  0.000002>
+
+Node Name: custom_properties
+Node Path: RootNode.jack_root.Bip01__pelvis.spine1.spine2.spine3.r_shldr.r_upArm.r_loArm.r_hand.r_index1.r_index2.custom_properties
+Node Type: CustomPropertyData
+	rotZLimited: false
+	bodyPartName: r_index2
+	rotYLimited: false
+	lockInfluenceWeights: false
+	rotXLimited: false
+	rigStatus: Driven
+	IsNull: false
+	RotationActive: true
+	DefaultAttributeIndex: 0
+	UserProperties: 
+	InheritType: 2
 
 Node Name: r_index3
 Node Path: RootNode.jack_root.Bip01__pelvis.spine1.spine2.spine3.r_shldr.r_upArm.r_loArm.r_hand.r_index1.r_index2.r_index3
@@ -1210,6 +1896,21 @@ Node Type: TransformData
 		BasisZ: < 0.000000,  0.932581,  0.360962>
 		Transl: < 0.000001, -0.046347,  0.000002>
 
+Node Name: custom_properties
+Node Path: RootNode.jack_root.Bip01__pelvis.spine1.spine2.spine3.r_shldr.r_upArm.r_loArm.r_hand.r_mid1.r_mid2.custom_properties
+Node Type: CustomPropertyData
+	rotZLimited: false
+	bodyPartName: r_mid2
+	rotYLimited: false
+	lockInfluenceWeights: false
+	rotXLimited: false
+	rigStatus: Driven
+	IsNull: false
+	RotationActive: true
+	DefaultAttributeIndex: 0
+	UserProperties: 
+	InheritType: 2
+
 Node Name: r_mid3
 Node Path: RootNode.jack_root.Bip01__pelvis.spine1.spine2.spine3.r_shldr.r_upArm.r_loArm.r_hand.r_mid1.r_mid2.r_mid3
 Node Type: BoneData
@@ -1233,6 +1934,21 @@ Node Type: TransformData
 		BasisY: <-0.142094,  0.360579, -0.921841>
 		BasisZ: <-0.129456,  0.916523,  0.378454>
 		Transl: <-0.011561, -0.049063, -0.004394>
+
+Node Name: custom_properties
+Node Path: RootNode.jack_root.Bip01__pelvis.spine1.spine2.spine3.r_shldr.r_upArm.r_loArm.r_hand.r_metacarpal.r_ring1.custom_properties
+Node Type: CustomPropertyData
+	rotZLimited: false
+	bodyPartName: r_ring1
+	rotYLimited: false
+	lockInfluenceWeights: false
+	rotXLimited: false
+	rigStatus: Driven
+	IsNull: false
+	RotationActive: true
+	DefaultAttributeIndex: 0
+	UserProperties: 
+	InheritType: 2
 
 Node Name: r_ring2
 Node Path: RootNode.jack_root.Bip01__pelvis.spine1.spine2.spine3.r_shldr.r_upArm.r_loArm.r_hand.r_metacarpal.r_ring1.r_ring2
@@ -1258,6 +1974,21 @@ Node Type: TransformData
 		BasisZ: <-0.155697,  0.964965,  0.211187>
 		Transl: < 0.008664, -0.045630,  0.000249>
 
+Node Name: custom_properties
+Node Path: RootNode.jack_root.Bip01__pelvis.spine1.spine2.spine3.r_shldr.r_upArm.r_loArm.r_hand.r_metacarpal.r_pinky1.custom_properties
+Node Type: CustomPropertyData
+	rotZLimited: false
+	bodyPartName: r_pinky1
+	rotYLimited: false
+	lockInfluenceWeights: false
+	rotXLimited: false
+	rigStatus: Driven
+	IsNull: false
+	RotationActive: true
+	DefaultAttributeIndex: 0
+	UserProperties: 
+	InheritType: 2
+
 Node Name: r_pinky2
 Node Path: RootNode.jack_root.Bip01__pelvis.spine1.spine2.spine3.r_shldr.r_upArm.r_loArm.r_hand.r_metacarpal.r_pinky1.r_pinky2
 Node Type: BoneData
@@ -1282,6 +2013,21 @@ Node Type: TransformData
 		BasisZ: < 0.000000,  0.000000,  1.000000>
 		Transl: <-0.000000,  0.029553,  0.000000>
 
+Node Name: custom_properties
+Node Path: RootNode.jack_root.Bip01__pelvis.spine1.spine2.spine3.l_shldr.l_upArm.l_loArm.l_hand.l_thumb1.l_thumb2.l_thumb3.custom_properties
+Node Type: CustomPropertyData
+	rotZLimited: false
+	bodyPartName: l_thumb3
+	rotYLimited: false
+	rotXLimited: false
+	lockInfluenceWeights: false
+	rigStatus: Driven
+	IsNull: false
+	RotationActive: true
+	DefaultAttributeIndex: 0
+	UserProperties: 
+	InheritType: 2
+
 Node Name: animation
 Node Path: RootNode.jack_root.Bip01__pelvis.spine1.spine2.spine3.l_shldr.l_upArm.l_loArm.l_hand.l_index1.l_index2.l_index3.animation
 Node Type: AnimationData
@@ -1296,6 +2042,21 @@ Node Type: TransformData
 		BasisY: < 0.000000,  0.931387, -0.364030>
 		BasisZ: < 0.000000,  0.364030,  0.931387>
 		Transl: <-0.000000,  0.032610,  0.000000>
+
+Node Name: custom_properties
+Node Path: RootNode.jack_root.Bip01__pelvis.spine1.spine2.spine3.l_shldr.l_upArm.l_loArm.l_hand.l_index1.l_index2.l_index3.custom_properties
+Node Type: CustomPropertyData
+	rotZLimited: false
+	bodyPartName: l_index3
+	rotYLimited: false
+	lockInfluenceWeights: false
+	rotXLimited: false
+	rigStatus: Driven
+	IsNull: false
+	RotationActive: true
+	DefaultAttributeIndex: 0
+	UserProperties: 
+	InheritType: 2
 
 Node Name: animation
 Node Path: RootNode.jack_root.Bip01__pelvis.spine1.spine2.spine3.l_shldr.l_upArm.l_loArm.l_hand.l_mid1.l_mid2.l_mid3.animation
@@ -1312,6 +2073,21 @@ Node Type: TransformData
 		BasisZ: < 0.000000,  0.364030,  0.931387>
 		Transl: <-0.000000,  0.032599,  0.000000>
 
+Node Name: custom_properties
+Node Path: RootNode.jack_root.Bip01__pelvis.spine1.spine2.spine3.l_shldr.l_upArm.l_loArm.l_hand.l_mid1.l_mid2.l_mid3.custom_properties
+Node Type: CustomPropertyData
+	rotZLimited: false
+	bodyPartName: l_mid3
+	rotYLimited: false
+	lockInfluenceWeights: false
+	rotXLimited: false
+	rigStatus: Driven
+	IsNull: false
+	RotationActive: true
+	DefaultAttributeIndex: 0
+	UserProperties: 
+	InheritType: 2
+
 Node Name: animation
 Node Path: RootNode.jack_root.Bip01__pelvis.spine1.spine2.spine3.l_shldr.l_upArm.l_loArm.l_hand.l_metacarpal.l_ring1.l_ring2.animation
 Node Type: AnimationData
@@ -1326,6 +2102,21 @@ Node Type: TransformData
 		BasisY: < 0.000000,  0.907225, -0.420646>
 		BasisZ: < 0.000000,  0.420646,  0.907225>
 		Transl: < 0.000000,  0.040226, -0.000000>
+
+Node Name: custom_properties
+Node Path: RootNode.jack_root.Bip01__pelvis.spine1.spine2.spine3.l_shldr.l_upArm.l_loArm.l_hand.l_metacarpal.l_ring1.l_ring2.custom_properties
+Node Type: CustomPropertyData
+	rotZLimited: false
+	bodyPartName: l_ring2
+	rotYLimited: false
+	lockInfluenceWeights: false
+	rotXLimited: false
+	rigStatus: Driven
+	IsNull: false
+	RotationActive: true
+	DefaultAttributeIndex: 0
+	UserProperties: 
+	InheritType: 2
 
 Node Name: l_ring3
 Node Path: RootNode.jack_root.Bip01__pelvis.spine1.spine2.spine3.l_shldr.l_upArm.l_loArm.l_hand.l_metacarpal.l_ring1.l_ring2.l_ring3
@@ -1351,6 +2142,21 @@ Node Type: TransformData
 		BasisZ: < 0.000000,  0.396745,  0.917929>
 		Transl: < 0.000000,  0.034035,  0.000000>
 
+Node Name: custom_properties
+Node Path: RootNode.jack_root.Bip01__pelvis.spine1.spine2.spine3.l_shldr.l_upArm.l_loArm.l_hand.l_metacarpal.l_pinky1.l_pinky2.custom_properties
+Node Type: CustomPropertyData
+	rotZLimited: false
+	bodyPartName: l_pinky2
+	rotYLimited: false
+	lockInfluenceWeights: false
+	rotXLimited: false
+	rigStatus: Driven
+	IsNull: false
+	RotationActive: true
+	DefaultAttributeIndex: 0
+	UserProperties: 
+	InheritType: 2
+
 Node Name: l_pinky3
 Node Path: RootNode.jack_root.Bip01__pelvis.spine1.spine2.spine3.l_shldr.l_upArm.l_loArm.l_hand.l_metacarpal.l_pinky1.l_pinky2.l_pinky3
 Node Type: BoneData
@@ -1375,6 +2181,21 @@ Node Type: TransformData
 		BasisZ: < 0.000000,  0.469883,  0.882729>
 		Transl: < 0.000001, -0.029555,  0.000004>
 
+Node Name: custom_properties
+Node Path: RootNode.jack_root.Bip01__pelvis.spine1.spine2.spine3.r_shldr.r_upArm.r_loArm.r_hand.r_thumb1.r_thumb2.r_thumb3.custom_properties
+Node Type: CustomPropertyData
+	rotZLimited: false
+	bodyPartName: r_thumb3
+	rotYLimited: false
+	lockInfluenceWeights: false
+	rotXLimited: false
+	rigStatus: Driven
+	IsNull: false
+	RotationActive: true
+	DefaultAttributeIndex: 0
+	UserProperties: 
+	InheritType: 2
+
 Node Name: animation
 Node Path: RootNode.jack_root.Bip01__pelvis.spine1.spine2.spine3.r_shldr.r_upArm.r_loArm.r_hand.r_index1.r_index2.r_index3.animation
 Node Type: AnimationData
@@ -1389,6 +2210,21 @@ Node Type: TransformData
 		BasisY: < 0.000000,  0.450521, -0.892766>
 		BasisZ: < 0.000000,  0.892766,  0.450521>
 		Transl: < 0.000000, -0.032611,  0.000000>
+
+Node Name: custom_properties
+Node Path: RootNode.jack_root.Bip01__pelvis.spine1.spine2.spine3.r_shldr.r_upArm.r_loArm.r_hand.r_index1.r_index2.r_index3.custom_properties
+Node Type: CustomPropertyData
+	rotZLimited: false
+	bodyPartName: r_index3
+	rotYLimited: false
+	lockInfluenceWeights: false
+	rotXLimited: false
+	rigStatus: Driven
+	IsNull: false
+	RotationActive: true
+	DefaultAttributeIndex: 0
+	UserProperties: 
+	InheritType: 2
 
 Node Name: animation
 Node Path: RootNode.jack_root.Bip01__pelvis.spine1.spine2.spine3.r_shldr.r_upArm.r_loArm.r_hand.r_mid1.r_mid2.r_mid3.animation
@@ -1405,6 +2241,21 @@ Node Type: TransformData
 		BasisZ: < 0.000000,  0.935676,  0.352861>
 		Transl: < 0.000000, -0.032600,  0.000001>
 
+Node Name: custom_properties
+Node Path: RootNode.jack_root.Bip01__pelvis.spine1.spine2.spine3.r_shldr.r_upArm.r_loArm.r_hand.r_mid1.r_mid2.r_mid3.custom_properties
+Node Type: CustomPropertyData
+	rotZLimited: false
+	bodyPartName: r_mid3
+	rotYLimited: false
+	lockInfluenceWeights: false
+	rotXLimited: false
+	rigStatus: Driven
+	IsNull: false
+	RotationActive: true
+	DefaultAttributeIndex: 0
+	UserProperties: 
+	InheritType: 2
+
 Node Name: animation
 Node Path: RootNode.jack_root.Bip01__pelvis.spine1.spine2.spine3.r_shldr.r_upArm.r_loArm.r_hand.r_metacarpal.r_ring1.r_ring2.animation
 Node Type: AnimationData
@@ -1419,6 +2270,21 @@ Node Type: TransformData
 		BasisY: < 0.000000,  0.235909, -0.971775>
 		BasisZ: < 0.000000,  0.971775,  0.235909>
 		Transl: < 0.000000, -0.040227,  0.000001>
+
+Node Name: custom_properties
+Node Path: RootNode.jack_root.Bip01__pelvis.spine1.spine2.spine3.r_shldr.r_upArm.r_loArm.r_hand.r_metacarpal.r_ring1.r_ring2.custom_properties
+Node Type: CustomPropertyData
+	rotZLimited: false
+	bodyPartName: r_ring2
+	rotYLimited: false
+	lockInfluenceWeights: false
+	rotXLimited: false
+	rigStatus: Driven
+	IsNull: false
+	RotationActive: true
+	DefaultAttributeIndex: 0
+	UserProperties: 
+	InheritType: 2
 
 Node Name: r_ring3
 Node Path: RootNode.jack_root.Bip01__pelvis.spine1.spine2.spine3.r_shldr.r_upArm.r_loArm.r_hand.r_metacarpal.r_ring1.r_ring2.r_ring3
@@ -1444,6 +2310,21 @@ Node Type: TransformData
 		BasisZ: < 0.000000,  0.940067,  0.340991>
 		Transl: < 0.000000, -0.034037,  0.000001>
 
+Node Name: custom_properties
+Node Path: RootNode.jack_root.Bip01__pelvis.spine1.spine2.spine3.r_shldr.r_upArm.r_loArm.r_hand.r_metacarpal.r_pinky1.r_pinky2.custom_properties
+Node Type: CustomPropertyData
+	rotZLimited: false
+	bodyPartName: r_pinky2
+	rotYLimited: false
+	lockInfluenceWeights: false
+	rotXLimited: false
+	rigStatus: Driven
+	IsNull: false
+	RotationActive: true
+	DefaultAttributeIndex: 0
+	UserProperties: 
+	InheritType: 2
+
 Node Name: r_pinky3
 Node Path: RootNode.jack_root.Bip01__pelvis.spine1.spine2.spine3.r_shldr.r_upArm.r_loArm.r_hand.r_metacarpal.r_pinky1.r_pinky2.r_pinky3
 Node Type: BoneData
@@ -1468,6 +2349,21 @@ Node Type: TransformData
 		BasisZ: < 0.000000,  0.420646,  0.907225>
 		Transl: <-0.000000,  0.033153,  0.000000>
 
+Node Name: custom_properties
+Node Path: RootNode.jack_root.Bip01__pelvis.spine1.spine2.spine3.l_shldr.l_upArm.l_loArm.l_hand.l_metacarpal.l_ring1.l_ring2.l_ring3.custom_properties
+Node Type: CustomPropertyData
+	rotZLimited: false
+	bodyPartName: l_ring3
+	rotYLimited: false
+	lockInfluenceWeights: false
+	rotXLimited: false
+	rigStatus: Driven
+	IsNull: false
+	RotationActive: true
+	DefaultAttributeIndex: 0
+	UserProperties: 
+	InheritType: 2
+
 Node Name: animation
 Node Path: RootNode.jack_root.Bip01__pelvis.spine1.spine2.spine3.l_shldr.l_upArm.l_loArm.l_hand.l_metacarpal.l_pinky1.l_pinky2.l_pinky3.animation
 Node Type: AnimationData
@@ -1482,6 +2378,21 @@ Node Type: TransformData
 		BasisY: < 0.000000,  0.917929, -0.396745>
 		BasisZ: < 0.000000,  0.396745,  0.917929>
 		Transl: < 0.000000,  0.023771,  0.000000>
+
+Node Name: custom_properties
+Node Path: RootNode.jack_root.Bip01__pelvis.spine1.spine2.spine3.l_shldr.l_upArm.l_loArm.l_hand.l_metacarpal.l_pinky1.l_pinky2.l_pinky3.custom_properties
+Node Type: CustomPropertyData
+	rotZLimited: false
+	bodyPartName: l_pinky3
+	rotYLimited: false
+	lockInfluenceWeights: false
+	rotXLimited: false
+	rigStatus: Driven
+	IsNull: false
+	RotationActive: true
+	DefaultAttributeIndex: 0
+	UserProperties: 
+	InheritType: 2
 
 Node Name: animation
 Node Path: RootNode.jack_root.Bip01__pelvis.spine1.spine2.spine3.r_shldr.r_upArm.r_loArm.r_hand.r_metacarpal.r_ring1.r_ring2.r_ring3.animation
@@ -1498,6 +2409,21 @@ Node Type: TransformData
 		BasisZ: < 0.000000,  0.966679,  0.255993>
 		Transl: < 0.000000, -0.033153, -0.000000>
 
+Node Name: custom_properties
+Node Path: RootNode.jack_root.Bip01__pelvis.spine1.spine2.spine3.r_shldr.r_upArm.r_loArm.r_hand.r_metacarpal.r_ring1.r_ring2.r_ring3.custom_properties
+Node Type: CustomPropertyData
+	rotZLimited: false
+	bodyPartName: r_ring3
+	rotYLimited: false
+	lockInfluenceWeights: false
+	rotXLimited: false
+	rigStatus: Driven
+	IsNull: false
+	RotationActive: true
+	DefaultAttributeIndex: 0
+	UserProperties: 
+	InheritType: 2
+
 Node Name: animation
 Node Path: RootNode.jack_root.Bip01__pelvis.spine1.spine2.spine3.r_shldr.r_upArm.r_loArm.r_hand.r_metacarpal.r_pinky1.r_pinky2.r_pinky3.animation
 Node Type: AnimationData
@@ -1512,4 +2438,19 @@ Node Type: TransformData
 		BasisY: < 0.000000,  0.229519, -0.973304>
 		BasisZ: < 0.000000,  0.973304,  0.229519>
 		Transl: < 0.000000, -0.023770,  0.000000>
+
+Node Name: custom_properties
+Node Path: RootNode.jack_root.Bip01__pelvis.spine1.spine2.spine3.r_shldr.r_upArm.r_loArm.r_hand.r_metacarpal.r_pinky1.r_pinky2.r_pinky3.custom_properties
+Node Type: CustomPropertyData
+	rotZLimited: false
+	bodyPartName: r_pinky3
+	rotYLimited: false
+	lockInfluenceWeights: false
+	rotXLimited: false
+	rigStatus: Driven
+	IsNull: false
+	RotationActive: true
+	DefaultAttributeIndex: 0
+	UserProperties: 
+	InheritType: 2
 

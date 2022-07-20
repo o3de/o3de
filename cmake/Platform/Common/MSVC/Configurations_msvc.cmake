@@ -34,11 +34,13 @@ ly_append_configurations_options(
         /W4             # Warning level 4
         /WX             # Warnings as errors
         /permissive-    # Conformance with standard
-        
+        /Zc:preprocessor # Forces preprocessor into conformance mode:  https://docs.microsoft.com/en-us/cpp/preprocessor/preprocessor-experimental-overview?view=msvc-170
+
         ###################
         # Disabled warnings (please do not disable any others without first consulting sig-build)
         ###################
         /wd4201 # nonstandard extension used: nameless struct/union. This actually became part of the C++11 std, MS has an open issue: https://developercommunity.visualstudio.com/t/warning-level-4-generates-a-bogus-warning-c4201-no/103064
+        /wd4324 #  warning C4324: 'std::tuple<...>': structure was padded due to alignment specifier. This warning is triggered whenever a simd type is used with the MSVC std::optional or std::tuple types, which is namespaced into AZStd
 
         ###################
         # Enabled warnings (that are disabled by default from /W4)
@@ -66,14 +68,14 @@ ly_append_configurations_options(
         /bigobj         # Increase number of sections in obj files. Profiling has shown no meaningful impact in memory nore build times
     COMPILATION_DEBUG
         /GS             # Enable Buffer security check
-        /MDd            # defines _DEBUG, _MT, and _DLL and causes the application to use the debug multithread-specific and DLL-specific version of the run-time library. 
+        /MDd            # defines _DEBUG, _MT, and _DLL and causes the application to use the debug multithread-specific and DLL-specific version of the run-time library.
                         # It also causes the compiler to place the library name MSVCRTD.lib into the .obj file.
         /Ob0            # Disables inline expansions
         /Od             # Disables optimization
     COMPILATION_PROFILE
-        /GF             # Enable string pooling   
+        /GF             # Enable string pooling
         /Gy             # Function level linking
-        /MD             # Causes the application to use the multithread-specific and DLL-specific version of the run-time library. Defines _MT and _DLL and causes the compiler 
+        /MD             # Causes the application to use the multithread-specific and DLL-specific version of the run-time library. Defines _MT and _DLL and causes the compiler
                         # to place the library name MSVCRT.lib into the .obj file.
         /O2             # Maximinize speed, equivalent to /Og /Oi /Ot /Oy /Ob2 /GF /Gy
         /Zc:inline      # Removes unreferenced functions or data that are COMDATs or only have internal linkage
@@ -101,7 +103,7 @@ ly_append_configurations_options(
 
 set(LY_BUILD_WITH_ADDRESS_SANITIZER FALSE CACHE BOOL "Builds using AddressSanitizer (ASan). Will disable Edit/Continue, Incremental building and Run-Time checks (default = FALSE)")
 if(LY_BUILD_WITH_ADDRESS_SANITIZER)
-    set(LY_BUILD_WITH_INCREMENTAL_LINKING_DEBUG FALSE) 
+    set(LY_BUILD_WITH_INCREMENTAL_LINKING_DEBUG FALSE)
     ly_append_configurations_options(
         COMPILATION_DEBUG
             /fsanitize=address
@@ -134,16 +136,16 @@ else()
             /DEBUG      # Despite the documentation states /Zi implies /DEBUG, without it, stack traces are not expanded
             /INCREMENTAL:NO
 
-    )    
+    )
 endif()
 
 # Configure system includes
-ly_set(LY_CXX_SYSTEM_INCLUDE_CONFIGURATION_FLAG 
+ly_set(LY_CXX_SYSTEM_INCLUDE_CONFIGURATION_FLAG
     /experimental:external # Turns on "external" headers feature for MSVC compilers, required for MSVC < 16.10
     /external:W0 # Set warning level in external headers to 0. This is used to suppress warnings 3rdParty libraries which uses the "system_includes" option in their json configuration
 )
 
-# CMake 3.22rc added a definition for CMAKE_INCLUDE_SYSTEM_FLAG_CXX. However, its defined as "-external:I ", that space causes 
+# CMake 3.22rc added a definition for CMAKE_INCLUDE_SYSTEM_FLAG_CXX. However, its defined as "-external:I ", that space causes
 # issues when trying to use in TargetIncludeSystemDirectories_unsupported.cmake.
 # CMake 3.22rc has also not added support for external directories in MSVC through target_include_directories(... SYSTEM
 # So we will just fix the flag that was added by 3.22rc so it works with our TargetIncludeSystemDirectories_unsupported.cmake

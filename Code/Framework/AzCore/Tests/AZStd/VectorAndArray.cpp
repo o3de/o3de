@@ -18,9 +18,6 @@
 
 #include <AzCore/std/utils.h>
 
-using namespace AZStd;
-using namespace UnitTestInternal;
-
 /**
  * Make sure a vector is empty, and control all functions to return the proper values.
  * Empty vector as all AZStd containers should not have allocated any memory. Empty and clean containers are not the same.
@@ -57,6 +54,9 @@ using namespace UnitTestInternal;
 
 namespace UnitTest
 {
+    using namespace AZStd;
+    using namespace UnitTestInternal;
+
 #if !AZ_UNIT_TEST_SKIP_STD_VECTOR_AND_ARRAY_TESTS
 
     struct MyCtorClass

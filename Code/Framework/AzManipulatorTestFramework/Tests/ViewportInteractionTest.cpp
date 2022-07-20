@@ -23,7 +23,7 @@ namespace UnitTest
     protected:
         void SetUpEditorFixtureImpl() override
         {
-            m_cameraState = AzFramework::CreateIdentityDefaultCamera(AZ::Vector3::CreateZero(), AZ::Vector2(800.0f, 600.0f));
+            m_cameraState = AzFramework::CreateIdentityDefaultCamera(AZ::Vector3::CreateZero(), AzFramework::ScreenSize(800, 600));
         }
 
     public:

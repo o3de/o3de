@@ -10,13 +10,20 @@
 #include <AzCore/Math/Crc.h>
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/Vector3.h>
-#include <AzCore/std/containers/vector.h>
+#include <AzCore/std/containers/fixed_vector.h>
 
 namespace AzFramework::SurfaceData
 {
     namespace Constants
     {
-        static constexpr const char* s_unassignedTagName = "(unassigned)";
+        static constexpr const char* UnassignedTagName = "(unassigned)";
+        static constexpr AZ::Crc32 UnassignedTagCrc = AZ::Crc32(Constants::UnassignedTagName);
+
+        //! The maximum number of surface weights that we can store.
+        //! For performance reasons, we want to limit this so that we can preallocate the max size in advance.
+        //! The current number is chosen to be higher than expected needs, but small enough to avoid being excessively wasteful.
+        //! (Dynamic structures would end up taking more memory than what we're preallocating)
+        static constexpr size_t MaxSurfaceWeights = 16;
     }
 
     struct SurfaceTagWeight
@@ -29,7 +36,20 @@ namespace AzFramework::SurfaceData
         {
         }
 
-        AZ::Crc32 m_surfaceType = AZ::Crc32(Constants::s_unassignedTagName);
+        //! Equality comparison operator for SurfaceTagWeight.
+        bool operator==(const SurfaceTagWeight& rhs) const
+        {
+            return (m_surfaceType == rhs.m_surfaceType) && (m_weight == rhs.m_weight);
+        }
+
+        //! Inequality comparison operator for SurfaceTagWeight.
+        bool operator!=(const SurfaceTagWeight& rhs) const
+        {
+            return !(*this == rhs);
+        }
+
+
+        AZ::Crc32 m_surfaceType = Constants::UnassignedTagCrc;
         float m_weight = 0.0f; //! A Value in the range [0.0f .. 1.0f]
 
         static void Reflect(AZ::ReflectContext* context);
@@ -57,7 +77,7 @@ namespace AzFramework::SurfaceData
         }
     };
 
-    using SurfaceTagWeightList = AZStd::vector<SurfaceTagWeight>;
+    using SurfaceTagWeightList = AZStd::fixed_vector<SurfaceTagWeight, Constants::MaxSurfaceWeights>;
 
     struct SurfacePoint final
     {

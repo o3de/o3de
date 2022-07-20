@@ -17,10 +17,7 @@
             },
             "Component_[14126657869720434043]": {
                 "$type": "EditorEntitySortComponent",
-                "Id": 14126657869720434043,
-                "Child Entity Order": [
-                    "Entity_[1176639161715]"
-                ]
+                "Id": 14126657869720434043
             },
             "Component_[15230859088967841193]": {
                 "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
@@ -204,7 +201,7 @@
                     "Controller": {
                         "Configuration": {
                             "Field of View": 55.0,
-                            "EditorEntityId": 3342481886060234850
+                            "EditorEntityId": 8929576024571800510
                         }
                     }
                 },
@@ -545,11 +542,6 @@
                     "Id": 931091830724002070
                 }
             }
-        }
-    },
-    "Instances": {
-        "Instance_[425258647110]": {
-            "Source": "assets/simple_pot_fbx.procprefab"
         }
     }
 }

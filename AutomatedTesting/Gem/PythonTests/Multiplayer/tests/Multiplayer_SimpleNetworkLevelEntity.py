@@ -38,23 +38,21 @@ def Multiplayer_SimpleNetworkLevelEntity():
     from editor_python_test_tools.utils import Tracer
 
     from editor_python_test_tools.utils import TestHelper as helper
-    from ly_remote_console.remote_console_commands import RemoteConsole as RemoteConsole
 
     level_name = "SimpleNetworkLevelEntity"
-    player_prefab_name = "Player"
-    player_prefab_path = f"levels/multiplayer/{level_name}/{player_prefab_name}.network.spawnable"
 
     helper.init_idle()
 
     # 1) Open Level
     helper.open_level("Multiplayer", level_name)
+    general.set_cvar_integer('editorsv_port', 33455)
 
     with Tracer() as section_tracer:
         # 2) Enter game mode
-        helper.multiplayer_enter_game_mode(TestSuccessFailTuples.enter_game_mode, player_prefab_path.lower())
+        helper.multiplayer_enter_game_mode(TestSuccessFailTuples.enter_game_mode)
 
         # 3) Make sure the network player was spawned
-        player_id = general.find_game_entity(player_prefab_name)
+        player_id = general.find_game_entity("Player")
         Report.critical_result(TestSuccessFailTuples.find_network_player, player_id.IsValid())
 
         # 4) Check the editor logs for network spawnable errors

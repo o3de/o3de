@@ -13,6 +13,7 @@
 #include <RHI/Conversions.h>
 #include <RHI/Device.h>
 #include <RHI/PipelineState.h>
+#include <RHI/PipelineLibrary.h>
 
 namespace AZ
 {
@@ -110,8 +111,6 @@ namespace AZ
             
             [source release];
             source = nil;
-            
-            
             return pFunction;
         }
         
@@ -119,68 +118,71 @@ namespace AZ
                                                     const RHI::PipelineStateDescriptorForDraw& descriptor,
                                                     RHI::PipelineLibrary* pipelineLibraryBase)
         {
+            NSError* error = 0;
             Device& device = static_cast<Device&>(deviceBase);
             RHI::ConstPtr<PipelineLayout> pipelineLayout = device.AcquirePipelineLayout(*descriptor.m_pipelineLayoutDescriptor);
             AZ_Assert(pipelineLayout, "PipelineLayout can not be null");
             
             const RHI::RenderAttachmentConfiguration& attachmentsConfiguration = descriptor.m_renderAttachmentConfiguration;
-            MTLRenderPipelineDescriptor* desc = [[MTLRenderPipelineDescriptor alloc] init];
+            m_renderPipelineDesc = [[MTLRenderPipelineDescriptor alloc] init];
             
             for (AZ::u32 i = 0; i < attachmentsConfiguration.GetRenderTargetCount(); ++i)
             {
-                desc.colorAttachments[i].pixelFormat = ConvertPixelFormat(attachmentsConfiguration.GetRenderTargetFormat(i));
-                desc.colorAttachments[i].writeMask = ConvertColorWriteMask(descriptor.m_renderStates.m_blendState.m_targets[i].m_writeMask);
-                desc.colorAttachments[i].blendingEnabled = descriptor.m_renderStates.m_blendState.m_targets[i].m_enable;
-                desc.colorAttachments[i].alphaBlendOperation = ConvertBlendOp(descriptor.m_renderStates.m_blendState.m_targets[i].m_blendAlphaOp);
-                desc.colorAttachments[i].rgbBlendOperation = ConvertBlendOp(descriptor.m_renderStates.m_blendState.m_targets[i].m_blendOp);
-                desc.colorAttachments[i].destinationAlphaBlendFactor = ConvertBlendFactor(descriptor.m_renderStates.m_blendState.m_targets[i].m_blendAlphaDest);
-                desc.colorAttachments[i].destinationRGBBlendFactor = ConvertBlendFactor(descriptor.m_renderStates.m_blendState.m_targets[i].m_blendDest);;
-                desc.colorAttachments[i].sourceAlphaBlendFactor = ConvertBlendFactor(descriptor.m_renderStates.m_blendState.m_targets[i].m_blendAlphaSource);
-                desc.colorAttachments[i].sourceRGBBlendFactor = ConvertBlendFactor(descriptor.m_renderStates.m_blendState.m_targets[i].m_blendSource);;
+                m_renderPipelineDesc.colorAttachments[i].pixelFormat = ConvertPixelFormat(attachmentsConfiguration.GetRenderTargetFormat(i));
+                m_renderPipelineDesc.colorAttachments[i].writeMask = ConvertColorWriteMask(descriptor.m_renderStates.m_blendState.m_targets[i].m_writeMask);
+                m_renderPipelineDesc.colorAttachments[i].blendingEnabled = descriptor.m_renderStates.m_blendState.m_targets[i].m_enable;
+                m_renderPipelineDesc.colorAttachments[i].alphaBlendOperation = ConvertBlendOp(descriptor.m_renderStates.m_blendState.m_targets[i].m_blendAlphaOp);
+                m_renderPipelineDesc.colorAttachments[i].rgbBlendOperation = ConvertBlendOp(descriptor.m_renderStates.m_blendState.m_targets[i].m_blendOp);
+                m_renderPipelineDesc.colorAttachments[i].destinationAlphaBlendFactor = ConvertBlendFactor(descriptor.m_renderStates.m_blendState.m_targets[i].m_blendAlphaDest);
+                m_renderPipelineDesc.colorAttachments[i].destinationRGBBlendFactor = ConvertBlendFactor(descriptor.m_renderStates.m_blendState.m_targets[i].m_blendDest);;
+                m_renderPipelineDesc.colorAttachments[i].sourceAlphaBlendFactor = ConvertBlendFactor(descriptor.m_renderStates.m_blendState.m_targets[i].m_blendAlphaSource);
+                m_renderPipelineDesc.colorAttachments[i].sourceRGBBlendFactor = ConvertBlendFactor(descriptor.m_renderStates.m_blendState.m_targets[i].m_blendSource);;
             }
             
             MTLVertexDescriptor* vertexDescriptor = [[MTLVertexDescriptor alloc] init];
             ConvertInputElements(descriptor.m_inputStreamLayout, vertexDescriptor);
-            desc.vertexDescriptor = vertexDescriptor;
+            m_renderPipelineDesc.vertexDescriptor = vertexDescriptor;
             [vertexDescriptor release];
             vertexDescriptor = nil;
             
-            desc.vertexFunction = ExtractMtlFunction(device.GetMtlDevice(), descriptor.m_vertexFunction.get());
-            AZ_Assert(desc.vertexFunction, "Vertex mtlFuntion can not be null");
-            desc.fragmentFunction = ExtractMtlFunction(device.GetMtlDevice(), descriptor.m_fragmentFunction.get());
+            m_renderPipelineDesc.vertexFunction = ExtractMtlFunction(device.GetMtlDevice(), descriptor.m_vertexFunction.get());
+            AZ_Assert(m_renderPipelineDesc.vertexFunction, "Vertex mtlFuntion can not be null");
+            m_renderPipelineDesc.fragmentFunction = ExtractMtlFunction(device.GetMtlDevice(), descriptor.m_fragmentFunction.get());
             
             RHI::Format depthStencilFormat = attachmentsConfiguration.GetDepthStencilFormat();
             if(descriptor.m_renderStates.m_depthStencilState.m_stencil.m_enable || IsDepthStencilMerged(depthStencilFormat))
             {
-                desc.stencilAttachmentPixelFormat = ConvertPixelFormat(depthStencilFormat);
+                m_renderPipelineDesc.stencilAttachmentPixelFormat = ConvertPixelFormat(depthStencilFormat);
             }
             
             //Depthstencil state
             if(descriptor.m_renderStates.m_depthStencilState.m_depth.m_enable || IsDepthStencilMerged(depthStencilFormat))
             {
-                desc.depthAttachmentPixelFormat = ConvertPixelFormat(depthStencilFormat);
+                m_renderPipelineDesc.depthAttachmentPixelFormat = ConvertPixelFormat(depthStencilFormat);
                 
                 MTLDepthStencilDescriptor* depthStencilDesc = [[MTLDepthStencilDescriptor alloc] init];
                 ConvertDepthStencilState(descriptor.m_renderStates.m_depthStencilState, depthStencilDesc);
                 m_depthStencilState = [device.GetMtlDevice() newDepthStencilStateWithDescriptor:depthStencilDesc];
                 AZ_Assert(m_depthStencilState, "Could not create Depth Stencil state.");
-                [m_depthStencilState retain];
                 [depthStencilDesc release];
                 depthStencilDesc = nil;
             }
                         
-            desc.sampleCount = descriptor.m_renderStates.m_multisampleState.m_samples;
-            desc.alphaToCoverageEnabled = descriptor.m_renderStates.m_blendState.m_alphaToCoverageEnable;
+            m_renderPipelineDesc.sampleCount = descriptor.m_renderStates.m_multisampleState.m_samples;
+            m_renderPipelineDesc.alphaToCoverageEnabled = descriptor.m_renderStates.m_blendState.m_alphaToCoverageEnable;
             
-            NSError* error = 0;
-            MTLRenderPipelineReflection* ref;
-            m_graphicsPipelineState = [device.GetMtlDevice() newRenderPipelineStateWithDescriptor:desc options : MTLPipelineOptionBufferTypeInfo reflection : &ref error : &error];
+            PipelineLibrary* pipelineLibrary = static_cast<PipelineLibrary*>(pipelineLibraryBase);
+            if (pipelineLibrary && pipelineLibrary->IsInitialized())
+            {
+                m_graphicsPipelineState = pipelineLibrary->CreateGraphicsPipelineState(static_cast<uint64_t>(descriptor.GetHash()), m_renderPipelineDesc, &error);
+            }
+            else
+            {
+                MTLRenderPipelineReflection* ref;
+                m_graphicsPipelineState = [device.GetMtlDevice() newRenderPipelineStateWithDescriptor:m_renderPipelineDesc options : MTLPipelineOptionBufferTypeInfo reflection : &ref error : &error];
+            }
             
             AZ_Assert(m_graphicsPipelineState, "Could not create Pipeline object!.");
-            [m_graphicsPipelineState retain];
-            [desc release];
-            desc = nil;
-            
             m_pipelineStateMultiSampleState = descriptor.m_renderStates.m_multisampleState;
             
             //Cache the rasterizer state
@@ -207,20 +209,25 @@ namespace AZ
                                                     RHI::PipelineLibrary* pipelineLibraryBase)
         {
             Device& device = static_cast<Device&>(deviceBase);
-            MTLComputePipelineDescriptor* desc = [[MTLComputePipelineDescriptor alloc] init];
+            NSError* error = 0;
+            m_computePipelineDesc = [[MTLComputePipelineDescriptor alloc] init];
             RHI::ConstPtr<PipelineLayout> pipelineLayout = device.AcquirePipelineLayout(*descriptor.m_pipelineLayoutDescriptor);
             AZ_Assert(pipelineLayout, "PipelineLayout can not be null");
-            desc.computeFunction = ExtractMtlFunction(device.GetMtlDevice(), descriptor.m_computeFunction.get());
-            AZ_Assert(desc.computeFunction, "Compute mtlFuntion can not be null");
+            m_computePipelineDesc.computeFunction = ExtractMtlFunction(device.GetMtlDevice(), descriptor.m_computeFunction.get());
+            AZ_Assert(m_computePipelineDesc.computeFunction, "Compute mtlFuntion can not be null");
             
-            NSError* error = 0;
-            MTLComputePipelineReflection* ref;
-            m_computePipelineState = [device.GetMtlDevice() newComputePipelineStateWithDescriptor:desc options:MTLPipelineOptionBufferTypeInfo reflection:&ref error:&error];
+            PipelineLibrary* pipelineLibrary = static_cast<PipelineLibrary*>(pipelineLibraryBase);
+            if (pipelineLibrary && pipelineLibrary->IsInitialized())
+            {
+                m_computePipelineState = pipelineLibrary->CreateComputePipelineState(static_cast<uint64_t>(descriptor.GetHash()), m_computePipelineDesc, &error);
+            }
+            else
+            {
+                MTLComputePipelineReflection* ref;
+                m_computePipelineState = [device.GetMtlDevice() newComputePipelineStateWithDescriptor:m_computePipelineDesc options:MTLPipelineOptionBufferTypeInfo reflection:&ref error:&error];
+            }
             
             AZ_Assert(m_computePipelineState, "Could not create Pipeline object!.");
-            [m_computePipelineState retain];
-            [desc release];
-            desc = nil;
             
             if (m_computePipelineState)
             {
@@ -262,12 +269,16 @@ namespace AZ
         {
             if (m_graphicsPipelineState)
             {
+                [m_renderPipelineDesc release];
+                m_renderPipelineDesc = nil;
                 [m_graphicsPipelineState release];
                 m_graphicsPipelineState = nil;
             }
             
             if (m_computePipelineState)
             {
+                [m_computePipelineDesc release];
+                m_computePipelineDesc = nil;
                 [m_computePipelineState release];
                 m_computePipelineState = nil;
             }

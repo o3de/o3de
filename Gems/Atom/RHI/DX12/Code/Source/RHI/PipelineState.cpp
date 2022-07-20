@@ -100,7 +100,7 @@ namespace AZ
             else
             {
                 Microsoft::WRL::ComPtr<ID3D12PipelineState> pipelineStateComPtr;
-                device.GetDevice()->CreateGraphicsPipelineState(&pipelineStateDesc, IID_GRAPHICS_PPV_ARGS(pipelineStateComPtr.GetAddressOf()));
+                device.AssertSuccess(device.GetDevice()->CreateGraphicsPipelineState(&pipelineStateDesc, IID_GRAPHICS_PPV_ARGS(pipelineStateComPtr.GetAddressOf())));
                 pipelineState = pipelineStateComPtr.Get();
             }
 
@@ -147,7 +147,7 @@ namespace AZ
             else
             {
                 Microsoft::WRL::ComPtr<ID3D12PipelineState> pipelineStateComPtr;
-                device.GetDevice()->CreateComputePipelineState(&pipelineStateDesc, IID_GRAPHICS_PPV_ARGS(pipelineStateComPtr.GetAddressOf()));
+                device.AssertSuccess(device.GetDevice()->CreateComputePipelineState(&pipelineStateDesc, IID_GRAPHICS_PPV_ARGS(pipelineStateComPtr.GetAddressOf())));
                 pipelineState = pipelineStateComPtr.Get();
             }
 

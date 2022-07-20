@@ -43,7 +43,7 @@ namespace AZ
             D3D12_QUERY_HEAP_DESC queryHeapDesc = {};
             queryHeapDesc.Count = descriptor.m_queriesCount;
             queryHeapDesc.Type = ConvertQueryHeapType(descriptor.m_type);
-            if (!AssertSuccess(dx12Device->CreateQueryHeap(&queryHeapDesc, IID_GRAPHICS_PPV_ARGS(heap.GetAddressOf()))))
+            if (!device.AssertSuccess(dx12Device->CreateQueryHeap(&queryHeapDesc, IID_GRAPHICS_PPV_ARGS(heap.GetAddressOf()))))
             {
                 return RHI::ResultCode::Fail;
             }
@@ -55,7 +55,7 @@ namespace AZ
             const CD3DX12_RESOURCE_DESC resourceDesc = CD3DX12_RESOURCE_DESC::Buffer(GetQueryResultSize() * descriptor.m_queriesCount);
 
             Microsoft::WRL::ComPtr<ID3D12Resource> resource;
-            if (!AssertSuccess(dx12Device->CreateCommittedResource(
+            if (!device.AssertSuccess(dx12Device->CreateCommittedResource(
                 &heapProperties, D3D12_HEAP_FLAG_NONE, &resourceDesc, D3D12_RESOURCE_STATE_COPY_DEST, nullptr, IID_GRAPHICS_PPV_ARGS(resource.GetAddressOf()))))
             {
                 return RHI::ResultCode::Fail;

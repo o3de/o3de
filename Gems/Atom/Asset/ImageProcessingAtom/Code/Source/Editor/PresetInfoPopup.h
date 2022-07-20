@@ -13,6 +13,7 @@
 #include <QDialog>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzQtComponents/Components/StyledDialog.h>
+#include <Source/BuilderSettings/BuilderSettingManager.h>
 #endif
 
 namespace ImageProcessingAtom

@@ -3,7 +3,6 @@
     "Version": 1,
     "ClassName": "AZ::Render::LightingPreset",
     "ClassData": {
-        "displayName": "Blau River",
         "iblDiffuseImageAsset": {
             "assetId": {
                 "guid": "{442FFD57-9ED2-51A5-B627-764AE2A2161F}",

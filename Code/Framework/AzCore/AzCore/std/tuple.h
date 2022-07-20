@@ -19,28 +19,21 @@
 
 namespace AZStd
 {
-    template<class... Types>
-    using tuple = std::tuple<Types...>;
-
-    template<class T>
-    using tuple_size = std::tuple_size<T>;
-
-    template<size_t I, class T>
-    using tuple_element = std::tuple_element<I, T>;
-
-    template<size_t I, class T>
-    using tuple_element_t = typename std::tuple_element<I, T>::type;
+    using std::tuple;
+    using std::tuple_size;
+    using std::tuple_size_v;
+    using std::tuple_element;
+    using std::tuple_element_t;
 
     // Placeholder structure that can be assigned any value with no effect.
-    // This is used by AZStd::tie as placeholder for unused arugments
-    using ignore_t = AZStd::decay_t<decltype(std::ignore)>;
-    decltype(std::ignore) ignore = std::ignore;
+    using std::ignore;
 
     using std::make_tuple;
     using std::tie;
     using std::forward_as_tuple;
     using std::tuple_cat;
     using std::get;
+
 
     //! Creates an hash specialization for tuple types using the hash_combine function
     //! The std::tuple implementation does not have this support. This is an extension
@@ -62,6 +55,31 @@ namespace AZStd
             return ElementHasher(value, AZStd::make_index_sequence<sizeof...(Types)>{});
         }
     };
+}
+
+namespace AZ
+{
+    // Specialize the AzDeprcatedTypeNameVisitor for tuple to make sure their
+    // is a mapping of the old type name to current type id
+    inline namespace DeprecatedTypeNames
+    {
+        template<typename... Types>
+        struct AzDeprecatedTypeNameVisitor<AZStd::tuple<Types...>>
+        {
+            template<class Functor>
+            constexpr void operator()(Functor&& visitCallback) const
+            {
+                // AZStd::tuple previous name was place into a buffer of size 128
+                AZStd::array<char, 128> deprecatedName{};
+
+                AZ::Internal::AzTypeInfoSafeCat(deprecatedName.data(), deprecatedName.size(), "tuple<");
+                (AggregateTypeNameOld<Types>(deprecatedName.data(), deprecatedName.size()), ...);
+                AZ::Internal::AzTypeInfoSafeCat(deprecatedName.data(), deprecatedName.size(), ">");
+
+                AZStd::invoke(AZStd::forward<Functor>(visitCallback), deprecatedName.data());
+            }
+        };
+    }
 }
 
 namespace AZStd
@@ -278,7 +296,7 @@ namespace AZStd
     };
 }
 
-// AZStd::apply implemenation helper block 
+// AZStd::apply implemenation helper block
 namespace AZStd
 {
     namespace Internal
@@ -353,5 +371,5 @@ namespace std
 // Adds typeinfo specialization for tuple type
 namespace AZ
 {
-    AZ_TYPE_INFO_INTERNAL_SPECIALIZED_TEMPLATE_PREFIX_UUID(AZStd::tuple, "tuple", "{F99F9308-DC3E-4384-9341-89CBF1ABD51E}", AZ_TYPE_INFO_INTERNAL_TYPENAME_VARARGS);
+    AZ_TYPE_INFO_INTERNAL_SPECIALIZED_TEMPLATE_PREFIX_UUID(AZStd::tuple, "AZStd::tuple", "{F99F9308-DC3E-4384-9341-89CBF1ABD51E}", AZ_TYPE_INFO_INTERNAL_TYPENAME_VARARGS);
 }

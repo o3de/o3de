@@ -409,6 +409,7 @@ namespace ScriptCanvas
             void MethodOverloaded::OnDeserialize()
             {
                 AZStd::lock_guard<AZStd::recursive_mutex> lock(GetMutex());
+                Node::OnDeserialize();
 
                 // look for a standard, class overload
                 AZStd::tuple<const AZ::BehaviorMethod*, MethodType, EventType, const AZ::BehaviorClass*> methodLookup = LookupMethod();
@@ -435,7 +436,7 @@ namespace ScriptCanvas
 
                     if (m_overloadSelection.m_availableIndexes.empty())
                     {
-                        AZ_Error("ScriptCanvas", false, "Method Overloaded[%s] to an invalid configuration.", GetRawMethodName().c_str());
+                        AZ_Warning("ScriptCanvas", false, "Method Overloaded[%s] to an invalid configuration.", GetRawMethodName().c_str());
 
                         /* Debug information to spew out the non-found configuration. Useful in debugging, and kind of tedious to write.
                            Keeping here as a quick ref commented out, since not useful in the general case.
@@ -458,7 +459,6 @@ namespace ScriptCanvas
                 }
 
                 SetWarnOnMissingFunction(true);
-                Node::OnDeserialize();
             }
 
             void MethodOverloaded::SetupMethodData(const AZ::BehaviorMethod* behaviorMethod, const AZ::BehaviorClass* behaviorClass)

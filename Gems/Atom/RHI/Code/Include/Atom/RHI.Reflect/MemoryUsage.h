@@ -75,6 +75,14 @@ namespace AZ
             // heaps.
             size_t m_budgetInBytes = 0;
 
+            // For heaps that suballocate in a manner that results in fragmentation, this quantity is computed as
+            // 1 - (largest free block byte size) / (total free memory). When the free memory equals the largest block size, this
+            // measure is 0. As the largest free block size descreases relative to the amount of free memory, this approaches 1.
+            // Fragmentation may be expensive to compute on demand, so it is currently computed as a side-effect of the ReportMemoryUsage
+            // routines. As this is the only quantity that changes during the memory statistics gathering process, we opt to mark it mutable
+            // here instead of marking the entire routine mutable.
+            mutable float m_fragmentation{ 0 };
+
             // Number of bytes reserved on the heap for allocations. This value represents the allocation capacity for
             // the platform. It is validated against the budget and may not exceed it.
             AZStd::atomic_size_t m_reservedInBytes{ 0 };

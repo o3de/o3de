@@ -7,7 +7,15 @@
             {
                 "Name": "LyShineParentTemplate",
                 "Path": "Passes/LyShineParent.pass"
-            }        
+            },
+            {
+                "Name": "LyShineChildPassTemplate",
+                "Path": "Passes/LyShineChildPass.pass"
+            },
+            {
+                "Name": "RttChildPassTemplate",
+                "Path": "Passes/RttChildPass.pass"
+            }      
         ]
     }
 }

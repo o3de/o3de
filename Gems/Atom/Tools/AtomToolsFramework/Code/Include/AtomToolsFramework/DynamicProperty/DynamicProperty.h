@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Name/Name.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/RTTI/ReflectContext.h>
@@ -46,6 +47,7 @@ namespace AtomToolsFramework
         AZStd::string m_name;
         AZStd::string m_displayName;
         AZStd::string m_groupName;
+        AZStd::string m_groupDisplayName;
         AZStd::string m_description;
         AZStd::any m_defaultValue;
         AZStd::any m_parentValue;
@@ -60,6 +62,9 @@ namespace AtomToolsFramework
         bool m_visible = true;
         bool m_readOnly = false;
         bool m_showThumbnail = false;
+        AZStd::function<AZ::u32(const AZStd::any&)> m_dataChangeCallback;
+        AZStd::vector<AZ::Data::AssetType> m_supportedAssetTypes;
+        AZ::u32 m_customHandler = 0;
     };
 
     //! Wraps an AZStd::any value and configuration so that it can be displayed and edited in a ReflectedPropertyEditor.
@@ -106,12 +111,12 @@ namespace AtomToolsFramework
     private:
         // Functions used to configure edit data attributes.
         AZStd::string GetDisplayName() const;
-        AZStd::string GetGroupName() const;
+        AZStd::string GetGroupDisplayName() const;
         AZStd::string GetAssetPickerTitle() const;
         AZStd::string GetDescription() const;
         AZStd::vector<AZ::Edit::EnumConstant<uint32_t>> GetEnumValues() const;
 
-        // Handles changes from the ReflectedPropertyEditor and sends notification to the material document.
+        // Handles changes from the ReflectedPropertyEditor and sends notification.
         AZ::u32 OnDataChanged() const;
 
         template<typename T>

@@ -50,7 +50,9 @@ namespace ImageProcessingAtom
                 ->Field("NumberResidentMips", &PresetSettings::m_numResidentMips)
                 ->Field("Swizzle", &PresetSettings::m_swizzle)
                 ->Field("CubemapSettings", &PresetSettings::m_cubemapSetting)
-                ->Field("MipMapSetting", &PresetSettings::m_mipmapSetting);
+                ->Field("MipMapSetting", &PresetSettings::m_mipmapSetting)
+                ->Field("OutputTypeHandling", &PresetSettings::m_outputTypeHandling)
+                ;
 
             serialize->Enum<RGBWeight>()
                 ->Value("Uniform", RGBWeight::uniform)
@@ -130,6 +132,11 @@ namespace ImageProcessingAtom
                 ->Value("R32", EPixelFormat::ePixelFormat_R32)
                 ->Value("Unknown", EPixelFormat::ePixelFormat_Unknown)
                 ;
+
+            serialize->Enum<OutputTypeHandling>()
+                ->Value("Default", OutputTypeHandling::UseSpecifiedOutputType)
+                ->Value("UseInputFormat", OutputTypeHandling::UseInputFormat)
+                ;
         }
     }
 
@@ -200,7 +207,9 @@ namespace ImageProcessingAtom
             m_glossFromNormals == other.m_glossFromNormals &&
             m_swizzle == other.m_swizzle &&
             m_isMipRenormalize == other.m_isMipRenormalize &&
-            m_numResidentMips == other.m_numResidentMips;
+            m_numResidentMips == other.m_numResidentMips &&
+            m_outputTypeHandling == other.m_outputTypeHandling
+            ;
     }
 
     void PresetSettings::DeepCopyMembers(const PresetSettings& other)
@@ -237,6 +246,7 @@ namespace ImageProcessingAtom
             m_swizzle = other.m_swizzle;
             m_isMipRenormalize = other.m_isMipRenormalize;
             m_numResidentMips = other.m_numResidentMips;
+            m_outputTypeHandling = other.m_outputTypeHandling;
         }
     }
 

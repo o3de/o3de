@@ -23,6 +23,7 @@
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/std/algorithm.h>
 
+
 namespace AZ
 {
     namespace RPI
@@ -176,11 +177,11 @@ namespace AZ
             
             if (GetOutputCount() > 0)
             {
-                outputAttachment = GetOutputBinding(0).m_attachment.get();
+                outputAttachment = GetOutputBinding(0).GetAttachment().get();
             }
             else if(GetInputOutputCount() > 0)
             {
-                outputAttachment = GetInputOutputBinding(0).m_attachment.get();
+                outputAttachment = GetInputOutputBinding(0).GetAttachment().get();
             }
 
             AZ_Assert(outputAttachment != nullptr, "[FullscreenTrianglePass %s] has no valid output or input/output attachments.", GetPathName().GetCStr());

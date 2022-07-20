@@ -53,14 +53,12 @@ namespace ScriptCanvas
             AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
             AZ_Assert(serializeContext, "Failed to retrieve serialize context.");
 
-            AZStd::string fullpath = ExecutionLogAsset::GetDefaultDirectoryRoot();
-            fullpath += ExecutionLogAsset::GetDefaultDirectoryPath();
-            fullpath += path;
+            AZ::IO::FixedMaxPath fullpath = ExecutionLogAsset::GetDefaultDirectoryPath() /path;
 
             AZ::IO::FileIOStream fileStream;
             if (!fileStream.Open(fullpath.c_str(), AZ::IO::OpenMode::ModeRead | AZ::IO::OpenMode::ModeText))
             {
-                AZ_Error("ScriptCanvas", false, "Failed to open path: %s", fullpath.data());
+                AZ_Error("ScriptCanvas", false, "Failed to open path: %s", fullpath.c_str());
                 return {};
             }
 
@@ -70,7 +68,7 @@ namespace ScriptCanvas
             }
             else
             {
-                AZ_Error("ScriptCanvas", false, "Failed to load object: %s", fullpath.data());
+                AZ_Error("ScriptCanvas", false, "Failed to load object: %s", fullpath.c_str());
                 return {};
             }
         }
@@ -81,11 +79,10 @@ namespace ScriptCanvas
             AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
             AZ_Assert(serializeContext, "Failed to retrieve serialize context.");
 
-            AZStd::string fullpath = ExecutionLogAsset::GetDefaultDirectoryRoot();
-            fullpath += ExecutionLogAsset::GetDefaultDirectoryPath();
-            fullpath += path;
+            AZ::IO::FixedMaxPath fullpath = ExecutionLogAsset::GetDefaultDirectoryPath() / path;
 
-            AZ_VerifyError("ScriptCanvas", AZ::Utils::SaveObjectToFile(fullpath, AZ::DataStream::ST_XML, &m_logAsset), "File failed to save: %s", fullpath.data());
+            AZ_VerifyError("ScriptCanvas", AZ::Utils::SaveObjectToFile(fullpath.String(), AZ::DataStream::ST_XML, &m_logAsset),
+                "File failed to save: %s", fullpath.c_str());
         }
 
         void Logger::SetLogExecutionOverride(bool value)

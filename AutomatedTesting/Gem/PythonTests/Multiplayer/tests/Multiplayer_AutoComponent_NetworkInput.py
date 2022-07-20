@@ -44,66 +44,31 @@ def Multiplayer_AutoComponent_NetworkInput():
     from editor_python_test_tools.utils import Tracer
 
     from editor_python_test_tools.utils import TestHelper as helper
-    from ly_remote_console.remote_console_commands import RemoteConsole as RemoteConsole
-
-
-    def find_expected_line(expected_line):
-        found_lines = [printInfo.message.strip() for printInfo in section_tracer.prints]
-        return expected_line in found_lines
-
-    def find_unexpected_line(expected_line):
-        return not find_expected_line(expected_line)
-
-    unexpected_lines = [
-        'AutoComponent_NetworkInput received bad fwdback!',
-        'AutoComponent_NetworkInput received bad leftright!',
-
-    ]
-    expected_lines = [
-        'AutoComponent_NetworkInput ProcessInput called!',
-        'AutoComponent_NetworkInput CreateInput called!',
-    ]
-
-    expected_lines_server = [
-        '(Script) - AutoComponent_NetworkInput ProcessInput called!',
-    ]
 
     level_name = "AutoComponent_NetworkInput"
-    player_prefab_name = "Player"
-    player_prefab_path = f"levels/multiplayer/{level_name}/{player_prefab_name}.network.spawnable"
-
     helper.init_idle()
-
+    general.set_cvar_integer('editorsv_port', 33452)
 
     # 1) Open Level
     helper.open_level("Multiplayer", level_name)
 
     with Tracer() as section_tracer:
         # 2) Enter game mode
-        helper.multiplayer_enter_game_mode(Tests.enter_game_mode, player_prefab_path.lower())
+        helper.multiplayer_enter_game_mode(Tests.enter_game_mode)
 
         # 3) Make sure the network player was spawned
-        player_id = general.find_game_entity(player_prefab_name)
+        player_id = general.find_game_entity("Player")
         Report.critical_result(Tests.find_network_player, player_id.IsValid())
 
         # 4) Check the editor logs for expected and unexpected log output
         EXPECTEDLINE_WAIT_TIME_SECONDS = 1.0
-        for expected_line in expected_lines :
-            helper.wait_for_condition(lambda: find_expected_line(expected_line), EXPECTEDLINE_WAIT_TIME_SECONDS)
-            Report.result(Tests.found_lines, find_expected_line(expected_line))
+        helper.succeed_if_log_line_found('Script', "AutoComponent_NetworkInput CreateInput called!", section_tracer.prints, EXPECTEDLINE_WAIT_TIME_SECONDS)
+        helper.succeed_if_log_line_found('Script', "AutoComponent_NetworkInput ProcessInput called!", section_tracer.prints, EXPECTEDLINE_WAIT_TIME_SECONDS)
+        helper.succeed_if_log_line_found('EditorServer', 'Script: AutoComponent_NetworkInput ProcessInput called!', section_tracer.prints, EXPECTEDLINE_WAIT_TIME_SECONDS)
 
-        general.idle_wait_frames(1)
-        for unexpected_line in unexpected_lines :
-            Report.result(Tests.found_unexpected_lines, find_unexpected_line(unexpected_line))
-
-        # 5) Check the ServerLauncher logs for expected log output 
-        # Since the editor has  started a server launcher, the RemoteConsole with the default port=4600 will automatically be able to read the server logs
-        server_console = RemoteConsole()
-        server_console.start()
-        for line in expected_lines_server:
-            assert server_console.expect_log_line(line, EXPECTEDLINE_WAIT_TIME_SECONDS), f"Expected line not found: {line}"
-        server_console.stop()
-
+        WAIT_TIME_CLIENT_RECEIVED_INCORRECT_INPUT = 1.0
+        helper.fail_if_log_line_found("Script", "AutoComponent_NetworkInput received bad fwdback!", section_tracer.prints, WAIT_TIME_CLIENT_RECEIVED_INCORRECT_INPUT)
+        helper.fail_if_log_line_found("Script", "AutoComponent_NetworkInput received bad leftright!", section_tracer.prints, WAIT_TIME_CLIENT_RECEIVED_INCORRECT_INPUT)
     
     # Exit game mode
     helper.exit_game_mode(Tests.exit_game_mode)

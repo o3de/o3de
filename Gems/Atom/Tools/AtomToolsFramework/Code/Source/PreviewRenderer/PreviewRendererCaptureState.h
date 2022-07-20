@@ -14,10 +14,10 @@
 
 namespace AtomToolsFramework
 {
-    //! PreviewRendererCaptureState renders a thumbnail to a pixmap and notifies MaterialOrModelThumbnail once finished
+    //! PreviewRendererCaptureState renders a preview to an image
     class PreviewRendererCaptureState final
         : public PreviewRendererState
-        , public AZ::TickBus::Handler
+        , public AZ::SystemTickBus::Handler
         , public AZ::Render::FrameCaptureNotificationBus::Handler
     {
     public:
@@ -25,13 +25,14 @@ namespace AtomToolsFramework
         ~PreviewRendererCaptureState();
 
     private:
-        //! AZ::TickBus::Handler interface overrides...
-        void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
+        //! AZ::SystemTickBus::Handler interface overrides...
+        void OnSystemTick() override;
 
         //! AZ::Render::FrameCaptureNotificationBus::Handler overrides...
-        void OnCaptureFinished(AZ::Render::FrameCaptureResult result, const AZStd::string& info) override;
+        void OnCaptureFinished(uint32_t frameCaptureId, AZ::Render::FrameCaptureResult result, const AZStd::string& info) override;
 
-        //! This is necessary to suspend capture to allow a frame for Material and Mesh components to assign materials
+        //! This is necessary to suspend capture until preview scene is ready
         int m_ticksToCapture = 1;
+        uint32_t m_frameCaptureId = AZ::Render::FrameCaptureRequests::s_InvalidFrameCaptureId;
     };
 } // namespace AtomToolsFramework

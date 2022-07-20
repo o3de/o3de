@@ -1,18 +1,12 @@
 {
-    "description": "",
     "materialType": "Materials/Types/StandardMultilayerPBR.materialtype",
-    "parentMaterial": "",
     "materialTypeVersion": 3,
-    "properties": {
-        "blend": {
-            "blendSource": "BlendMaskVertexColors",
-            "debugDrawMode": "FinalBlendWeights",
-            "enableLayer2": true,
-            "enableLayer3": true,
-            "textureMap": ""
-        },
-        "parallax": {
-            "enable": false
-        }
+    "propertyValues": {
+        "blend.blendSource": "BlendMaskVertexColors",
+        "blend.debugDrawMode": "FinalBlendWeights",
+        "blend.enableLayer2": true,
+        "blend.enableLayer3": true,
+        "blend.textureMap": "",
+        "parallax.enable": false
     }
 }

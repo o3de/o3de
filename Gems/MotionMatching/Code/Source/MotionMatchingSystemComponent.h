@@ -12,6 +12,7 @@
 #include <AzCore/Component/TickBus.h>
 #include <MotionMatching/MotionMatchingBus.h>
 
+
 namespace EMotionFX::MotionMatching
 {
     class MotionMatchingSystemComponent
@@ -33,8 +34,7 @@ namespace EMotionFX::MotionMatching
         ~MotionMatchingSystemComponent();
 
     protected:
-        ////////////////////////////////////////////////////////////////////////
-        // MotionMatchingRequestBus interface implementation
+        virtual void DebugDraw(AZ::s32 debugDisplayId);
 
         ////////////////////////////////////////////////////////////////////////
         // AZ::Component interface implementation
@@ -45,7 +45,12 @@ namespace EMotionFX::MotionMatching
 
         ////////////////////////////////////////////////////////////////////////
         // AZTickBus interface implementation
-        void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
+        int GetTickOrder() override
+        {
+            return AZ::TICK_PRE_RENDER;
+        }
+        virtual void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
         ////////////////////////////////////////////////////////////////////////
+
     };
 } // namespace EMotionFX::MotionMatching

@@ -37,6 +37,7 @@ namespace AZ
                 if (behaviorContext)
                 {
                     behaviorContext->Class<SceneAPI::DataTypes::IBlendShapeData>()
+                        ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::ListOnly)
                         ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                         ->Attribute(AZ::Script::Attributes::Module, "scene")
                         ->Method("GetUsedControlPointCount", &SceneAPI::DataTypes::IBlendShapeData::GetUsedControlPointCount)

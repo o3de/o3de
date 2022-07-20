@@ -46,9 +46,13 @@
                     "Name": "Output",
                     "SlotType": "Output"
                 },
+                {
+                    "Name": "DiffuseProbeGridVisualization",
+                    "SlotType": "Output"
+                },
                 // SwapChain here is only used to reference the frame height and format
                 {
-                    "Name": "SwapChainOutput",
+                    "Name": "PipelineOutput",
                     "SlotType": "InputOutput"
                 }
             ],
@@ -59,12 +63,19 @@
                         "Pass": "DiffuseSpecularMergePass",
                         "Attachment": "Output"
                     }
+                },
+                {
+                    "LocalSlot": "DiffuseProbeGridVisualization",
+                    "AttachmentRef": {
+                        "Pass": "DiffuseGlobalIlluminationPass",
+                        "Attachment":  "VisualizationOutput"
+                    }
                 }
             ],
             "PassRequests": [
                 {
-                    "Name": "ForwardMSAAPass",
-                    "TemplateName": "ForwardMSAAPassTemplate",
+                    "Name": "Forward",
+                    "TemplateName": "ForwardPassTemplate",
                     "Connections": [
                         // Inputs...
                         {
@@ -128,8 +139,8 @@
                     }
                 },
                 {
-                    "Name": "ForwardSubsurfaceMSAAPass",
-                    "TemplateName": "ForwardSubsurfaceMSAAPassTemplate",
+                    "Name": "ForwardSubsurface",
+                    "TemplateName": "ForwardSubsurfacePassTemplate",
                     "Connections": [
                         // Inputs...
                         {
@@ -185,35 +196,35 @@
                         {
                             "LocalSlot": "DiffuseOutput",
                             "AttachmentRef": {
-                                "Pass": "ForwardMSAAPass",
+                                "Pass": "Forward",
                                 "Attachment": "DiffuseOutput"
                             }
                         },
                         {
                             "LocalSlot": "SpecularOutput",
                             "AttachmentRef": {
-                                "Pass": "ForwardMSAAPass",
+                                "Pass": "Forward",
                                 "Attachment": "SpecularOutput"
                             }
                         },
                         {
                             "LocalSlot": "AlbedoOutput",
                             "AttachmentRef": {
-                                "Pass": "ForwardMSAAPass",
+                                "Pass": "Forward",
                                 "Attachment": "AlbedoOutput"
                             }
                         },
                         {
                             "LocalSlot": "SpecularF0Output",
                             "AttachmentRef": {
-                                "Pass": "ForwardMSAAPass",
+                                "Pass": "Forward",
                                 "Attachment": "SpecularF0Output"
                             }
                         },
                         {
                             "LocalSlot": "NormalOutput",
                             "AttachmentRef": {
-                                "Pass": "ForwardMSAAPass",
+                                "Pass": "Forward",
                                 "Attachment": "NormalOutput"
                             }
                         }
@@ -234,28 +245,28 @@
                         {
                             "LocalSlot": "DiffuseInputOutput",
                             "AttachmentRef": {
-                                "Pass": "ForwardMSAAPass",
+                                "Pass": "Forward",
                                 "Attachment": "DiffuseOutput"
                             }
                         },
                         {
                             "LocalSlot": "AlbedoInput",
                             "AttachmentRef": {
-                                "Pass": "ForwardMSAAPass",
+                                "Pass": "Forward",
                                 "Attachment": "AlbedoOutput"
                             }
                         },
                         {
                             "LocalSlot": "NormalInput",
                             "AttachmentRef": {
-                                "Pass": "ForwardMSAAPass",
+                                "Pass": "Forward",
                                 "Attachment": "NormalOutput"
                             }
                         },
                         {
                             "LocalSlot": "DepthStencilInputOutput",
                             "AttachmentRef": {
-                                "Pass": "ForwardMSAAPass",
+                                "Pass": "Forward",
                                 "Attachment": "DepthStencilInputOutput"
                             }
                         }
@@ -269,35 +280,35 @@
                         {
                             "LocalSlot": "NormalInput",
                             "AttachmentRef": {
-                                "Pass": "ForwardMSAAPass",
+                                "Pass": "Forward",
                                 "Attachment": "NormalOutput"
                             }
                         },
                         {
                             "LocalSlot": "SpecularF0Input",
                             "AttachmentRef": {
-                                "Pass": "ForwardMSAAPass",
+                                "Pass": "Forward",
                                 "Attachment": "SpecularF0Output"
                             }
                         },
                         {
                             "LocalSlot": "AlbedoInput",
                             "AttachmentRef": {
-                                "Pass": "ForwardMSAAPass",
+                                "Pass": "Forward",
                                 "Attachment": "AlbedoOutput"
                             }
                         },
                         {
                             "LocalSlot": "DepthStencilInputOutput",
                             "AttachmentRef": {
-                                "Pass": "ForwardMSAAPass",
+                                "Pass": "Forward",
                                 "Attachment": "DepthStencilInputOutput"
                             }
                         },
                         {
                             "LocalSlot": "SpecularInputOutput",
                             "AttachmentRef": {
-                                "Pass": "ForwardMSAAPass",
+                                "Pass": "Forward",
                                 "Attachment": "SpecularOutput"
                             }
                         }
@@ -420,7 +431,7 @@
                         {
                             "LocalSlot": "Input",
                             "AttachmentRef": {
-                                "Pass": "ForwardSubsurfaceMSAAPass",
+                                "Pass": "ForwardSubsurface",
                                 "Attachment": "ScatterDistanceOutput"
                             }
                         }
@@ -466,13 +477,6 @@
                     "Name": "Ssao",
                     "TemplateName": "SsaoParentTemplate",
                     "Connections": [
-                        {
-                            "LocalSlot": "LinearDepth",
-                            "AttachmentRef": {
-                                "Pass": "Parent",
-                                "Attachment": "DepthLinear"
-                            }
-                        },
                         {
                             "LocalSlot": "Modulate",
                             "AttachmentRef": {

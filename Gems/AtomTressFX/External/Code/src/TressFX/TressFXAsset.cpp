@@ -282,8 +282,8 @@ namespace AMD
         TressFXTFXFileHeader header = {};
 
         // read the header
-        EI_Seek(ioObject, 0); // make sure the stream pos is at the beginning. 
-        EI_Read((void*)&header, sizeof(TressFXTFXFileHeader), ioObject);
+        [[maybe_unused]] auto eiSeekResult = EI_Seek(ioObject, 0); // make sure the stream pos is at the beginning. 
+        [[maybe_unused]] auto eiReadResult = EI_Read((void*)&header, sizeof(TressFXTFXFileHeader), ioObject);
 
         // If the tfx version is lower than the current major version, exit. 
         if (header.version < AMD_TRESSFX_VERSION_MAJOR)
@@ -317,8 +317,8 @@ namespace AMD
         m_positions.resize(m_numTotalVertices); // size of m_positions = number of total vertices * sizeo of each position vector. 
 
                                                 // Read position data from the io stream. 
-        EI_Seek(ioObject, header.offsetVertexPosition);
-        EI_Read((void*)m_positions.data(), numStrandsInFile * m_numVerticesPerStrand * sizeof(AMD::float4), ioObject); // note that the position data in io stream contains only guide hairs. If we call GenerateFollowHairs
+        eiSeekResult = EI_Seek(ioObject, header.offsetVertexPosition);
+        eiReadResult = EI_Read((void*)m_positions.data(), numStrandsInFile * m_numVerticesPerStrand * sizeof(AMD::float4), ioObject); // note that the position data in io stream contains only guide hairs. If we call GenerateFollowHairs
                                                                                                                        // to generate follow hairs, m_positions will be re-allocated. 
 
                                                                                                                        // We need to make up some strands to fill up the buffer because the number of strands from stream is not necessarily multile of thread size. 
@@ -335,11 +335,11 @@ namespace AMD
         }
 
         // Read strand UVs
-        EI_Seek(ioObject, header.offsetStrandUV);
+        eiSeekResult = EI_Seek(ioObject, header.offsetStrandUV);
         m_strandUV.resize(m_numTotalStrands); // If we call GenerateFollowHairs to generate follow hairs, 
                                               // m_strandUV will be re-allocated. 
 
-        EI_Read((void*)m_strandUV.data(), numStrandsInFile * sizeof(AMD::float2), ioObject);
+        eiReadResult = EI_Read((void*)m_strandUV.data(), numStrandsInFile * sizeof(AMD::float2), ioObject);
 
         // Fill up the last empty space
         AMD::int32 indexLastStrand = (numStrandsInFile - 1);
@@ -683,21 +683,21 @@ namespace AMD
     void TressFXAsset::GetBonesNames(FILE* ioObject, std::vector<std::string>& boneNames)
     {
         AMD::int32 numOfBones = 0;
-        EI_Seek(ioObject, 0);
-        EI_Read((void*)&numOfBones, sizeof(AMD::int32), ioObject);
+        [[maybe_unused]] auto eiSeekResult = EI_Seek(ioObject, 0);
+        [[maybe_unused]] auto eiReadResult = EI_Read((void*)&numOfBones, sizeof(AMD::int32), ioObject);
 
         //    boneNames.reserve(numOfBones);
         boneNames.resize(numOfBones);
         for (int i = 0; i < numOfBones; i++)
         {
             int boneIndex;
-            EI_Read((char*)&boneIndex, sizeof(AMD::int32), ioObject);
+            eiReadResult = EI_Read((char*)&boneIndex, sizeof(AMD::int32), ioObject);
 
             AMD::int32 charLen = 0;
-            EI_Read((char*)&charLen, sizeof(AMD::int32), ioObject); // character length includes null termination already.
+            eiReadResult = EI_Read((char*)&charLen, sizeof(AMD::int32), ioObject); // character length includes null termination already.
 
             char boneName[128];
-            EI_Read(boneName, sizeof(char) * charLen, ioObject);
+            eiReadResult = EI_Read(boneName, sizeof(char) * charLen, ioObject);
             boneName[charLen] = '\0';   // adding 0 termination to be on the safe side.
             boneNames[i] = std::string(boneName);
         }
@@ -730,8 +730,8 @@ namespace AMD
         m_boneSkinningData.resize(0);
 
         AMD::int32 numOfBones = 0;
-        EI_Seek(ioObject, 0);
-        EI_Read((void*)&numOfBones, sizeof(AMD::int32), ioObject);
+        [[maybe_unused]] auto eiSeekResult = EI_Seek(ioObject, 0);
+        [[maybe_unused]] auto eiReadResult = EI_Read((void*)&numOfBones, sizeof(AMD::int32), ioObject);
 
         if (skeletonBoneIndices.size() != numOfBones)
         {
@@ -742,18 +742,18 @@ namespace AMD
         for (int i = 0; i < numOfBones; i++)
         {
             int boneIndex;
-            EI_Read((char*)&boneIndex, sizeof(AMD::int32), ioObject);
+            eiReadResult = EI_Read((char*)&boneIndex, sizeof(AMD::int32), ioObject);
 
             AMD::int32 charLen = 0;
-            EI_Read((char*)&charLen, sizeof(AMD::int32), ioObject); // character length includes null termination already.
+            eiReadResult = EI_Read((char*)&charLen, sizeof(AMD::int32), ioObject); // character length includes null termination already.
 
             char boneName[128];
-            EI_Read(boneName, sizeof(char) * charLen, ioObject);
+            eiReadResult = EI_Read(boneName, sizeof(char) * charLen, ioObject);
         }
 
         // Reading the number of strands 
         AMD::int32 numOfStrandsInStream = 0;
-        EI_Read((char*)&numOfStrandsInStream, sizeof(AMD::int32), ioObject);
+        eiReadResult = EI_Read((char*)&numOfStrandsInStream, sizeof(AMD::int32), ioObject);
 
         //If the number of strands from the input stream (tfxbone) is bigger than what we already know from tfx, something is wrong.
         if (m_numGuideStrands < numOfStrandsInStream)
@@ -765,15 +765,15 @@ namespace AMD
         for (int i = 0; i < numOfStrandsInStream; ++i)
         {
             AMD::int32 index = 0; // Well, we don't really use this here. 
-            EI_Read((char*)&index, sizeof(AMD::int32), ioObject);
+            eiReadResult = EI_Read((char*)&index, sizeof(AMD::int32), ioObject);
 
             for (AMD::int32 j = 0; j < TRESSFX_MAX_INFLUENTIAL_BONE_COUNT; ++j)
             {
                 AMD::int32 boneIndex;
-                EI_Read((char*)&boneIndex, sizeof(AMD::int32), ioObject);
+                eiReadResult = EI_Read((char*)&boneIndex, sizeof(AMD::int32), ioObject);
                 assert(boneIndex >= 0);
                 skinData.boneIndex[j] = (float)skeletonBoneIndices[boneIndex]; // Change the joint index to be what the engine wants
-                EI_Read((char*)&skinData.weight[j], sizeof(AMD::real32), ioObject);
+                eiReadResult = EI_Read((char*)&skinData.weight[j], sizeof(AMD::real32), ioObject);
             }
 
 #if defined(AZ_ENABLE_TRACING)
@@ -987,4 +987,3 @@ namespace AMD
         return true;
     }
 } // namespace AMD
-

@@ -243,9 +243,6 @@ void ReflectedPropertyItem::SetVariable(IVariable *var)
     case ePropertySelection:
         m_reflectedVarAdapter = new ReflectedVarEnumAdapter;
         break;
-    case ePropertyColor:
-        m_reflectedVarAdapter = new ReflectedVarColorAdapter;
-        break;
     case ePropertyUser:
         m_reflectedVarAdapter = new ReflectedVarUserAdapter;
         break;

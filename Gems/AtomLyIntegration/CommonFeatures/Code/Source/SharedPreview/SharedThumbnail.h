@@ -41,6 +41,7 @@ namespace AZ
         private:
             // AzFramework::AssetCatalogEventBus::Handler interface overrides...
             void OnCatalogAssetChanged(const AZ::Data::AssetId& assetId) override;
+            void OnCatalogAssetRemoved(const AZ::Data::AssetId& assetId, const AZ::Data::AssetInfo& assetInfo) override;
 
             AZStd::binary_semaphore m_renderWait;
             Data::AssetInfo m_assetInfo;

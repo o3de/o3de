@@ -189,9 +189,25 @@ namespace AZ
         RHI::ResultCode Image::BuildNativeImage()
         {
             AZ_Assert(m_vkImage == VK_NULL_HANDLE, "Vulkan's native image has already been initialized.");
+
             auto& device = static_cast<Device&>(GetDevice());
+            const auto& physicalDevice = static_cast<const PhysicalDevice&>(device.GetPhysicalDevice());
             const RHI::ImageDescriptor& descriptor = GetDescriptor();
-            const VkImageFormatProperties formatProps = GetImageFormatProperties();
+            
+            VkImageCreateInfo createInfo{};
+            createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+            createInfo.pNext = nullptr;
+            createInfo.format = ConvertFormat(descriptor.m_format);
+            createInfo.flags = GetImageCreateFlags();
+            createInfo.imageType = ConvertToImageType(descriptor.m_dimension);
+            createInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
+            createInfo.usage = GetImageUsageFlags();
+
+            VkImageFormatProperties formatProps{};
+            AssertSuccess(vkGetPhysicalDeviceImageFormatProperties(
+                physicalDevice.GetNativePhysicalDevice(), createInfo.format,
+                createInfo.imageType, createInfo.tiling, createInfo.usage,
+                createInfo.flags, &formatProps));
 
             AZ_Assert(descriptor.m_sharedQueueMask != RHI::HardwareQueueClassMask::None, "Invalid shared queue mask");
             AZStd::vector<uint32_t> queueFamilies(device.GetCommandQueueContext().GetQueueFamilyIndices(descriptor.m_sharedQueueMask));
@@ -204,13 +220,7 @@ namespace AZ
                 RHI::CountBitsSet(static_cast<uint32_t>(descriptor.m_sharedQueueMask)) == 2;    // And ONLY copy + another queue. This means that the
                                                                                                 // copy queue can transition the resource to the correct queue
                                                                                                 // after finishing copying.
-
-            VkImageCreateInfo createInfo{};
-            createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-            createInfo.pNext = nullptr;
-            createInfo.flags = GetImageCreateFlags();
-            createInfo.imageType = ConvertToImageType(descriptor.m_dimension);
-            createInfo.format = ConvertFormat(descriptor.m_format);
+            
             VkExtent3D extent = ConvertToExtent3D(descriptor.m_size);
             extent.width = AZStd::min<uint32_t>(extent.width, formatProps.maxExtent.width);
             extent.height = AZStd::min<uint32_t>(extent.height, formatProps.maxExtent.height);
@@ -220,61 +230,16 @@ namespace AZ
             createInfo.arrayLayers = AZStd::min<uint32_t>(descriptor.m_arraySize, formatProps.maxArrayLayers);
             VkSampleCountFlagBits sampleCountFlagBits = static_cast<VkSampleCountFlagBits>(RHI::FilterBits(static_cast<VkSampleCountFlags>(ConvertSampleCount(descriptor.m_multisampleState.m_samples)), formatProps.sampleCounts));
             createInfo.samples = (static_cast<uint32_t>(sampleCountFlagBits) > 0) ? sampleCountFlagBits : VK_SAMPLE_COUNT_1_BIT;
-            createInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
-            createInfo.usage = GetImageUsageFlags();
             createInfo.sharingMode = exclusiveOwnership ? VK_SHARING_MODE_EXCLUSIVE : VK_SHARING_MODE_CONCURRENT;
             createInfo.queueFamilyIndexCount = static_cast<uint32_t>(queueFamilies.size());
             createInfo.pQueueFamilyIndices = queueFamilies.empty() ? nullptr : queueFamilies.data();
             createInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-
-#ifdef AZ_RHI_ENABLE_VALIDATION
-            switch (createInfo.imageType)
-            {
-            case VK_IMAGE_TYPE_1D:
-                AZ_Assert(createInfo.extent.width <= device.GetLimits().m_maxImageDimension1D, "Image width exceeds device capability.");
-                break;
-            case VK_IMAGE_TYPE_2D:
-                if (RHI::CheckBitsAny(createInfo.flags, static_cast<VkImageCreateFlags>(VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT)))
-                {
-                    AZ_Assert(createInfo.extent.width <= device.GetLimits().m_maxImageDimensionCube, "Image width exceeds device capability.");
-                    AZ_Assert(createInfo.extent.height <= device.GetLimits().m_maxImageDimensionCube, "Image height exceeds device capability.");
-                }
-                else
-                {
-                    AZ_Assert(createInfo.extent.width <= device.GetLimits().m_maxImageDimension2D, "Image width exceeds device capability.");
-                    AZ_Assert(createInfo.extent.height <= device.GetLimits().m_maxImageDimension2D, "Image height exceeds device capability.");
-                }
-                break;
-            case VK_IMAGE_TYPE_3D:
-                AZ_Assert(createInfo.extent.width <= device.GetLimits().m_maxImageDimension3D, "Image width exceeds device capability.");
-                AZ_Assert(createInfo.extent.height <= device.GetLimits().m_maxImageDimension3D, "Image height exceeds device capability.");
-                AZ_Assert(createInfo.extent.depth <= device.GetLimits().m_maxImageDimension3D, "Image depth exceeds device capability.");
-                break;
-            default:
-                AZ_Assert(false, "Image Type is illegal.");
-            }
-#endif
 
             const VkResult result = vkCreateImage(device.GetNativeDevice(), &createInfo, nullptr, &m_vkImage);
             AssertSuccess(result);
 
             m_isOwnerOfNativeImage = true;
             return ConvertResult(result);
-        }
-
-        VkImageFormatProperties Image::GetImageFormatProperties() const
-        {
-            auto& device = static_cast<Device&>(GetDevice());
-            const auto& physicalDevice = static_cast<const PhysicalDevice&>(device.GetPhysicalDevice());
-            const RHI::ImageDescriptor& descriptor = GetDescriptor();
-
-            VkImageFormatProperties imageFormatProperties{};
-            AssertSuccess(vkGetPhysicalDeviceImageFormatProperties(
-                physicalDevice.GetNativePhysicalDevice(), ConvertFormat(descriptor.m_format),
-                ConvertToImageType(descriptor.m_dimension), VK_IMAGE_TILING_OPTIMAL, GetImageUsageFlags(),
-                GetImageCreateFlags(), &imageFormatProperties));
-
-            return imageFormatProperties;
         }
 
         VkImageCreateFlags Image::GetImageCreateFlags() const
@@ -331,11 +296,6 @@ namespace AZ
             {
                 usageFlags |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
             }
-            // MSAA images may be resolved using a command list function, so we need to add the transfer src bit.
-            if (RHI::CheckBitsAny(bindFlags, RHI::ImageBindFlags::CopyRead) || GetDescriptor().m_multisampleState.m_samples > 1)
-            {
-                usageFlags |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
-            }
             if (RHI::CheckBitsAny(bindFlags, RHI::ImageBindFlags::CopyWrite))
             {
                 usageFlags |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
@@ -346,10 +306,21 @@ namespace AZ
                 usageFlags |= VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT;
             }
 
+            // add transfer src usage for all images since we may want them to be copyied for preview or readback
+            usageFlags |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+
             auto& device = static_cast<Device&>(GetDevice());
             const VkImageUsageFlags usageMask = device.GetImageUsageFromFormat(GetDescriptor().m_format);
 
-            return usageFlags & usageMask;
+            auto finalFlags = usageFlags & usageMask;
+
+            // Output a warning about desired usages are not support
+            if (finalFlags != usageFlags)
+            {
+                AZ_Warning("Vulkan", false, "Missing usage bit flags (unsupported): %x", usageFlags & ~finalFlags);
+            }
+
+            return finalFlags;
         }
         
         void Image::SetNameInternal(const AZStd::string_view& name)

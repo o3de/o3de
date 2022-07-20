@@ -26,7 +26,8 @@ namespace AZ
             static RHI::Ptr<RayTracingTlas> Create();
             
             // RHI::RayTracingTlas overrides...
-            virtual const RHI::Ptr<RHI::Buffer> GetTlasBuffer() const override { return nullptr; }
+            const RHI::Ptr<RHI::Buffer> GetTlasBuffer() const override { return nullptr; }
+            const RHI::Ptr<RHI::Buffer> GetTlasInstancesBuffer() const override { return nullptr; }
 
         private:
             RayTracingTlas() = default;

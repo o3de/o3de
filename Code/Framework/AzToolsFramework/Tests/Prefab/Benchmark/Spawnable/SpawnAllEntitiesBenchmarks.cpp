@@ -22,7 +22,7 @@ namespace Benchmark
 
         SetUpSpawnableAsset(entityCountInSourcePrefab);
 
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             state.PauseTiming();
             m_spawnTicket = aznew AzFramework::EntitySpawnTicket(m_spawnableAsset);
@@ -59,7 +59,7 @@ namespace Benchmark
 
         SetUpSpawnableAsset(entityCountInSpawnable);
 
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             state.PauseTiming();
             m_spawnTicket = aznew AzFramework::EntitySpawnTicket(m_spawnableAsset);
@@ -94,7 +94,7 @@ namespace Benchmark
         SetUpSpawnableAsset(entityCountInSpawnable);
 
         auto spawner = AzFramework::SpawnableEntitiesInterface::Get();
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             state.PauseTiming();
             m_spawnTicket = aznew AzFramework::EntitySpawnTicket(m_spawnableAsset);

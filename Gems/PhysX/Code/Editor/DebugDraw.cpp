@@ -13,12 +13,12 @@
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
-#include <AzFramework/Physics/MaterialBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <LyViewPaneNames.h>
 #include <LmbrCentral/Geometry/GeometrySystemComponentBus.h>
 #include <Source/Utils.h>
 
+#include <PhysX/Material/PhysXMaterial.h>
 #include <PhysX/Debug/PhysXDebugInterface.h>
 #include <PhysX/MathConversion.h>
 
@@ -139,7 +139,6 @@ namespace PhysX
                 serializeContext->Class<Collider>()
                     ->Version(1)
                     ->Field("LocallyEnabled", &Collider::m_locallyEnabled)
-                    ->Field("GlobalButtonState", &Collider::m_globalButtonState)
                     ;
 
                 if (auto editContext = serializeContext->GetEditContext())
@@ -156,7 +155,7 @@ namespace PhysX
                             ->Attribute(AZ::Edit::Attributes::Visibility,
                                 VisibilityFunc{ []() { return IsGlobalColliderDebugCheck(GlobalCollisionDebugState::Manual); } })
                             ->Attribute(AZ::Edit::Attributes::ReadOnly, &IsDrawColliderReadOnly)
-                        ->DataElement(AZ::Edit::UIHandlers::Button, &Collider::m_globalButtonState, "Draw collider",
+                        ->UIElement(AZ::Edit::UIHandlers::Button, "Draw collider",
                             "Display collider geometry in the viewport.")
                             ->Attribute(AZ::Edit::Attributes::ButtonText, "Global override")
                             ->Attribute(AZ::Edit::Attributes::ButtonTooltip,
@@ -214,6 +213,11 @@ namespace PhysX
         void Collider::ClearCachedGeometry()
         {
             m_geometry.clear();
+        }
+
+        void Collider::SetDisplayFlag(bool enable)
+        {
+            m_locallyEnabled = enable;
         }
 
         void Collider::BuildMeshes(const Physics::ShapeConfiguration& shapeConfig, AZ::u32 geomIndex) const
@@ -442,16 +446,13 @@ namespace PhysX
             {
             case GlobalCollisionDebugColorMode::MaterialColor:
             {
-                const Physics::MaterialId materialId = colliderConfig.m_materialSelection.GetMaterialId(elementDebugInfo.m_materialSlotIndex);
+                const auto materialAsset = colliderConfig.m_materialSlots.GetMaterialAsset(elementDebugInfo.m_materialSlotIndex);
 
-                AZStd::shared_ptr<Physics::Material> physicsMaterial;
-                Physics::PhysicsMaterialRequestBus::BroadcastResult(
-                    physicsMaterial,
-                    &Physics::PhysicsMaterialRequestBus::Events::GetMaterialById,
-                    materialId);
-                if (physicsMaterial)
+                AZStd::shared_ptr<Material> material = Material::FindOrCreateMaterial(materialAsset);
+
+                if (material)
                 {
-                    debugColor = physicsMaterial->GetDebugColor();
+                    debugColor = material->GetDebugColor();
                 }
                 break;
             }
@@ -681,58 +682,55 @@ namespace PhysX
         }
 
         void Collider::DrawHeightfield(
-            [[maybe_unused]] AzFramework::DebugDisplayRequests& debugDisplay,
-            [[maybe_unused]] const Physics::ColliderConfiguration& colliderConfig,
-            [[maybe_unused]] const Physics::HeightfieldShapeConfiguration& heightfieldShapeConfig,
-            [[maybe_unused]] const AZ::Vector3& colliderScale,
-            [[maybe_unused]] const bool forceUniformScaling) const
+            AzFramework::DebugDisplayRequests& debugDisplay,
+            const AZ::Vector3& aabbCenterLocalBody,
+            float drawDistance,
+            const AZStd::shared_ptr<const Physics::Shape>& shape) const
         {
-            const int numColumns = heightfieldShapeConfig.GetNumColumns();
-            const int numRows = heightfieldShapeConfig.GetNumRows();
+            // Shape::GetGeometry expects the bounding box in local space
+            const AZ::Vector3 shapeOffset = shape->GetLocalPose().first;
+            const AZ::Vector3 aabbCenterLocalShape = aabbCenterLocalBody - shapeOffset;
 
-            const float minXBounds = -(numColumns * heightfieldShapeConfig.GetGridResolution().GetX()) / 2.0f;
-            const float minYBounds = -(numRows * heightfieldShapeConfig.GetGridResolution().GetY()) / 2.0f;
-
-            auto heights = heightfieldShapeConfig.GetSamples();
-            
-            for (int xIndex = 0; xIndex < numColumns - 1; xIndex++)
+            // Create the bounds box of the required size
+            const AZ::Aabb boundsAabb = AZ::Aabb::CreateCenterRadius(aabbCenterLocalShape, drawDistance);
+            if (!boundsAabb.IsValid())
             {
-                for (int yIndex = 0; yIndex < numRows - 1; yIndex++)
+                return;
+            }
+
+            // Extract the heightfield geometry within the bounds
+            AZStd::vector<AZ::Vector3> vertices;
+            AZStd::vector<AZ::u32> indices;
+            shape->GetGeometry(vertices, indices, &boundsAabb);
+
+            if (!vertices.empty())
+            {
+                /* 
+                   Each heightfield quad consists of 6 vertices, or 2 triangles.
+                   If we naively draw each triangle, we'll need 6 lines per quad. However, the diagonal line would be drawn twice,
+                   and the quad borders with adjacent quads would also be drawn twice, so we can reduce this down to 3 lines, so
+                   that we're drawing a per-quad pattern like this:
+                   2 --- 3
+                     |\
+                   0 | \ 1
+                  
+                   To draw 3 lines, we need 6 vertices. Because our results *already* have 6 vertices per quad, we just need to make
+                   sure each set of 6 is the *right* set of vertices for what we want to draw, and then we can submit the entire set
+                   directly to DrawLines().
+                   We currently get back 6 vertices in the pattern 0-1-2, 1-3-2, for our two triangles. The lines we want to draw
+                   are 0-2, 2-1, and 3-2. We can create this pattern by just copying the third vertex onto the second vertex for
+                   every quad so that 0 1 2 1 3 2 becomes 0 2 2 1 3 2.
+                */
+                for (size_t vertex = 0; vertex < vertices.size(); vertex += 6)
                 {
-                    const int index0 = yIndex * numColumns + xIndex;
-                    const int index1 = yIndex * numColumns + xIndex + 1;
-                    const int index2 = (yIndex + 1) * numColumns + xIndex;
-                    const int index3 = (yIndex + 1) * numColumns + xIndex + 1;
-
-                    const float x0 = minXBounds + heightfieldShapeConfig.GetGridResolution().GetX() * xIndex;
-                    const float x1 = minXBounds + heightfieldShapeConfig.GetGridResolution().GetX() * (xIndex + 1);
-                    const float y0 = minYBounds + heightfieldShapeConfig.GetGridResolution().GetY() * yIndex;
-                    const float y1 = minYBounds + heightfieldShapeConfig.GetGridResolution().GetY() * (yIndex + 1);
-
-                    // Always draw top and left line of quad
-                    debugDisplay.DrawLine(
-                        AZ::Vector3(x0, y0, heights[index0].m_height),
-                        AZ::Vector3(x1, y0, heights[index1].m_height));
-                    debugDisplay.DrawLine(
-                        AZ::Vector3(x0, y0, heights[index0].m_height),
-                        AZ::Vector3(x0, y1, heights[index2].m_height));
-
-                    // Draw bottom line in last row
-                    if (yIndex == numRows - 2)
-                    {
-                        debugDisplay.DrawLine(
-                            AZ::Vector3(x1, y1, heights[index3].m_height),
-                            AZ::Vector3(x0, y1, heights[index2].m_height));
-                    }
-
-                    // Draw right line in last column
-                    if (xIndex == numColumns - 2)
-                    {
-                        debugDisplay.DrawLine(
-                            AZ::Vector3(x1, y0, heights[index1].m_height),
-                            AZ::Vector3(x1, y1, heights[index3].m_height));
-                    }
+                    vertices[vertex + 1] = vertices[vertex + 2];
                 }
+
+                // Returned vertices are in the shape-local space, so need to adjust the debug display matrix
+                const AZ::Transform shapeOffsetTransform = AZ::Transform::CreateTranslation(shapeOffset);
+                debugDisplay.PushMatrix(shapeOffsetTransform);
+                debugDisplay.DrawLines(vertices, AZ::Colors::White);
+                debugDisplay.PopMatrix();
             }
         }
 
@@ -775,8 +773,7 @@ namespace PhysX
         }
 
         // AzFramework::EntityDebugDisplayEventBus
-        void Collider::DisplayEntityViewport(
-            [[maybe_unused]] const AzFramework::ViewportInfo& viewportInfo,
+        void Collider::DisplayEntityViewport(const AzFramework::ViewportInfo& viewportInfo,
             AzFramework::DebugDisplayRequests& debugDisplay)
         {
             if (!m_displayCallback)
@@ -809,7 +806,7 @@ namespace PhysX
                     || (proximityVisualization.m_enabled && colliderIsInRange))
                 {
                     debugDisplay.PushMatrix(entityWorldTransformWithoutScale);
-                    m_displayCallback->Display(debugDisplay);
+                    m_displayCallback->Display(viewportInfo, debugDisplay);
                     debugDisplay.PopMatrix();
                 }
             }

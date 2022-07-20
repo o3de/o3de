@@ -302,7 +302,7 @@ namespace ScriptCanvas
             auto isConnectable = IsTargetConnectable(info);
             if (isConnectable.IsSuccess())
             {
-                m_networkTargets.emplace(info.GetNetworkId(), info);
+                m_networkTargets.emplace(info.GetPersistentId(), info);
                 ServiceNotificationsBus::Broadcast(&ServiceNotifications::BecameUnavailable, Target(info));
             }
         }
@@ -311,14 +311,14 @@ namespace ScriptCanvas
         {
             bool eventNeeded = false;
 
-            if (info.GetNetworkId() == m_currentTarget.GetNetworkId())
+            if (info.IsIdentityEqualTo(m_currentTarget))
             {
                 CleanupConnection();
                 eventNeeded = true;
             }
             else
             {
-                auto iter = m_networkTargets.find(info.GetNetworkId());
+                auto iter = m_networkTargets.find(info.GetPersistentId());
                 if (iter != m_networkTargets.end())
                 {
                     m_networkTargets.erase(iter);

@@ -16,6 +16,10 @@
 #include "native/assetprocessor.h"
 #include <AzQtComponents/Components/FilteredSearchWidget.h>
 #include <QElapsedTimer>
+#include <ui/BuilderListModel.h>
+#include <native/utilities/AssetUtilEBusHelper.h>
+#include <native/utilities/PlatformConfiguration.h>
+#include <native/ui/CacheServerData.h>
 #endif
 
 namespace AzToolsFramework
@@ -41,6 +45,7 @@ namespace AssetProcessor
     class JobsModel;
     class ProductAssetTreeModel;
     class SourceAssetTreeModel;
+    class ProductDependencyTreeItem;
     class JobEntry;
 }
 
@@ -66,6 +71,7 @@ public:
         Assets,
         Logs,
         Connections,
+        Builders,
         Tools
     };
 
@@ -101,7 +107,7 @@ public:
 
 public Q_SLOTS:
     void ShowWindow();
-    
+
     void SyncAllowedListAndRejectedList(QStringList allowedList, QStringList rejectedList);
     void FirstTimeAddedToRejctedList(QString ipAddress);
     void SaveLogPanelState();
@@ -111,6 +117,7 @@ public Q_SLOTS:
     void HighlightAsset(QString assetPath);
 
     void OnAssetTabChange(int index);
+    void BuilderTabSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected);
 
 protected Q_SLOTS:
     void ApplyConfig();
@@ -144,6 +151,9 @@ private:
     int m_createJobCount = 0;
     QFileSystemWatcher* m_fileSystemWatcher;
     Config m_config;
+    BuilderListModel* m_builderList;
+    BuilderListSortFilterProxy* m_builderListSortFilterProxy;
+    AssetProcessor::CacheServerData m_cacheServerData;
 
     void SetContextLogDetailsVisible(bool visible);
     void SetContextLogDetails(const QMap<QString, QString>& details);
@@ -159,12 +169,12 @@ private:
 
     QStringListModel m_rejectedAddresses;
     QStringListModel m_allowedListAddresses;
-    
+
     void OnAllowedListConnectionsListViewClicked();
     void OnRejectedConnectionsListViewClicked();
-    
+
     void OnAllowedListCheckBoxToggled();
-    
+
     void OnAddHostNameAllowedListButtonClicked();
     void OnAddIPAllowedListButtonClicked();
 
@@ -186,6 +196,10 @@ private:
 
     void ShowProductAssetContextMenu(const QPoint& pos);
     void ShowSourceAssetContextMenu(const QPoint& pos);
+    // Helper function that retrieves the item selected in outgoing/incoming dependency TreeView
+    AssetProcessor::ProductDependencyTreeItem* GetProductAssetFromDependencyTreeView(bool isOutgoing, const QPoint& pos);
+    void ShowOutgoingProductDependenciesContextMenu(const QPoint& pos);
+    void ShowIncomingProductDependenciesContextMenu(const QPoint& pos);
 
     void ResetTimers();
     void CheckStartAnalysisTimers();
@@ -196,10 +210,17 @@ private:
 
     /// Refreshes the filter in the Asset Tab at a set time interval.
     /// TreeView filters can be expensive to refresh every time an item is added, so refreshing on a set schedule
-    /// keeps the view up-to-date without causing a performance bottleneck. 
+    /// keeps the view up-to-date without causing a performance bottleneck.
     void IntervalAssetTabFilterRefresh();
     /// Fires off one final refresh before invalidating the filter refresh timer.
     void ShutdownAssetTabFilterRefresh();
+
+    void SetupAssetServerTab();
+    void AddPatternRow(AZStd::string_view name, AssetBuilderSDK::AssetBuilderPattern::PatternType type, AZStd::string_view pattern, bool enable);
+    void AssembleAssetPatterns();
+    void CheckAssetServerStates();
+    void ResetAssetServerView();
+    void SetServerAddress(AZStd::string_view serverAddress);
 
     void SetupAssetSelectionCaching();
 

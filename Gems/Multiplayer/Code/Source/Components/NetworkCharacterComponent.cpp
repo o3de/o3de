@@ -99,12 +99,7 @@ namespace Multiplayer
     void NetworkCharacterComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
         NetworkCharacterComponentBase::GetRequiredServices(required);
-        required.push_back(AZ_CRC_CE("PhysXCharacterControllerService"));
-    }
-
-    void NetworkCharacterComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
-    {
-        incompatible.push_back(AZ_CRC_CE("NetworkRigidBodyService"));
+        required.push_back(AZ_CRC_CE("PhysicsCharacterControllerService"));
     }
 
     NetworkCharacterComponent::NetworkCharacterComponent()

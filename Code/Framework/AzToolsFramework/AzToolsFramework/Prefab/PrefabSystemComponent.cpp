@@ -19,6 +19,7 @@
 #include <AzToolsFramework/Prefab/Spawnable/PrefabCatchmentProcessor.h>
 #include <AzToolsFramework/Prefab/Spawnable/PrefabConversionPipeline.h>
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
+#include <AzToolsFramework/Prefab/PrefabPublicNotificationHandler.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 
 namespace AzToolsFramework
@@ -33,8 +34,8 @@ namespace AzToolsFramework
         {
             AZ::Interface<PrefabSystemComponentInterface>::Register(this);
             m_prefabLoader.RegisterPrefabLoaderInterface();
-            m_instanceUpdateExecutor.RegisterInstanceUpdateExecutorInterface();
             m_instanceToTemplatePropagator.RegisterInstanceToTemplateInterface();
+            m_instanceUpdateExecutor.RegisterInstanceUpdateExecutorInterface();
             m_prefabPublicHandler.RegisterPrefabPublicHandlerInterface();
             m_prefabPublicRequestHandler.Connect();
             m_prefabSystemScriptingHandler.Connect(this);
@@ -47,8 +48,8 @@ namespace AzToolsFramework
             m_prefabSystemScriptingHandler.Disconnect();
             m_prefabPublicRequestHandler.Disconnect();
             m_prefabPublicHandler.UnregisterPrefabPublicHandlerInterface();
-            m_instanceToTemplatePropagator.UnregisterInstanceToTemplateInterface();
             m_instanceUpdateExecutor.UnregisterInstanceUpdateExecutorInterface();
+            m_instanceToTemplatePropagator.UnregisterInstanceToTemplateInterface();
             m_prefabLoader.UnregisterPrefabLoaderInterface();
             AZ::Interface<PrefabSystemComponentInterface>::Unregister(this);
         }
@@ -60,6 +61,7 @@ namespace AzToolsFramework
             AzToolsFramework::Prefab::PrefabConversionUtils::PrefabCatchmentProcessor::Reflect(context);
             AzToolsFramework::Prefab::PrefabConversionUtils::EditorInfoRemover::Reflect(context);
             PrefabPublicRequestHandler::Reflect(context);
+            PrefabPublicNotificationHandler::Reflect(context);
             PrefabFocusHandler::Reflect(context);
             PrefabLoader::Reflect(context);
             PrefabSystemScriptingHandler::Reflect(context);
@@ -71,13 +73,12 @@ namespace AzToolsFramework
 
             if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
             {
-
                 behaviorContext->EBus<PrefabLoaderScriptingBus>("PrefabLoaderScriptingBus")
                     ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                     ->Attribute(AZ::Script::Attributes::Module, "prefab")
                     ->Attribute(AZ::Script::Attributes::Category, "Prefab")
-                    ->Event("SaveTemplateToString", &PrefabLoaderScriptingBus::Events::SaveTemplateToString);
-                ;
+                    ->Event("SaveTemplateToString", &PrefabLoaderScriptingBus::Events::SaveTemplateToString)
+                    ;
             }
 
             AZ::JsonRegistrationContext* jsonRegistration = azrtti_cast<AZ::JsonRegistrationContext*>(context);
@@ -163,17 +164,21 @@ namespace AzToolsFramework
 
         void PrefabSystemComponent::PropagateTemplateChanges(TemplateId templateId, InstanceOptionalConstReference instanceToExclude)
         {
-            auto templateIdToLinkIdsIterator = m_templateToLinkIdsMap.find(templateId);
-            if (templateIdToLinkIdsIterator != m_templateToLinkIdsMap.end())
+            TemplateReference findTemplateResult = FindTemplate(templateId);
+            if (findTemplateResult.has_value())
             {
-                // We need to initialize a queue here because once all linked instances of a template are updated,
-                // we will find all the linkIds corresponding to the updated template and add them to this queue again.
-                AZStd::queue<LinkIds> linkIdsToUpdateQueue;
-                linkIdsToUpdateQueue.push(LinkIds(templateIdToLinkIdsIterator->second.begin(),
-                    templateIdToLinkIdsIterator->second.end()));
-                UpdateLinkedInstances(linkIdsToUpdateQueue);
+                auto templateIdToLinkIdsIterator = m_templateToLinkIdsMap.find(templateId);
+                if (templateIdToLinkIdsIterator != m_templateToLinkIdsMap.end())
+                {
+                    // We need to initialize a queue here because once all linked instances of a template are updated,
+                    // we will find all the linkIds corresponding to the updated template and add them to this queue again.
+                    AZStd::queue<LinkIds> linkIdsToUpdateQueue;
+                    linkIdsToUpdateQueue.push(
+                        LinkIds(templateIdToLinkIdsIterator->second.begin(), templateIdToLinkIdsIterator->second.end()));
+                    UpdateLinkedInstances(linkIdsToUpdateQueue);
+                }
+                UpdatePrefabInstances(templateId, instanceToExclude);
             }
-            UpdatePrefabInstances(templateId, instanceToExclude);
         }
 
         void PrefabSystemComponent::UpdatePrefabTemplate(TemplateId templateId, const PrefabDom& updatedDom)
@@ -315,11 +320,13 @@ namespace AzToolsFramework
             }
 
             auto newInstance = AZStd::make_unique<Instance>(parent);
-            Instance::EntityList newEntities;
-            if (!PrefabDomUtils::LoadInstanceFromPrefabDom(*newInstance, newEntities, instantiatingTemplate->get().GetPrefabDom()))
+            EntityList newEntities;
+            if (!PrefabDomUtils::LoadInstanceFromPrefabDom(
+                    *newInstance, newEntities, instantiatingTemplate->get().GetPrefabDom(),
+                    PrefabDomUtils::LoadFlags::UseSelectiveDeserialization))
             {
-                AZ_Error("Prefab", false,
-                    "Failed to Load Prefab Template associated with path %s. Instantiation Failed",
+                AZ_Error(
+                    "Prefab", false, "Failed to Load Prefab Template associated with path %s. Instantiation Failed",
                     instantiatingTemplate->get().GetFilePath().c_str());
                 return nullptr;
             }
@@ -728,6 +735,7 @@ namespace AzToolsFramework
                 instancesValue->get().AddMember(
                     rapidjson::Value(instanceAlias.c_str(), targetTemplateDom.GetAllocator()), PrefabDomValue(),
                     targetTemplateDom.GetAllocator());
+                SetTemplateDirtyFlag(linkTargetId, true);
             }
 
             Template& sourceTemplate = sourceTemplateRef->get();
@@ -815,7 +823,8 @@ namespace AzToolsFramework
 
             if (templateRef.has_value())
             {
-                return templateRef->get().IsDirty();
+                return !templateRef->get().IsProcedural() && // all procedural prefabs are read-only
+                        templateRef->get().IsDirty();
             }
 
             return false;

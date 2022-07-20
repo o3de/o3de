@@ -7,9 +7,9 @@
  */
 
 #include <SurfaceDataModule.h>
-#include <SurfaceDataSystemComponent.h>
-#include <Components/SurfaceDataColliderComponent.h>
-#include <Components/SurfaceDataShapeComponent.h>
+#include <SurfaceData/Components/SurfaceDataSystemComponent.h>
+#include <SurfaceData/Components/SurfaceDataColliderComponent.h>
+#include <SurfaceData/Components/SurfaceDataShapeComponent.h>
 
 namespace SurfaceData
 {

@@ -145,7 +145,7 @@ namespace AZ
                 CD3DX12_HEAP_DESC heapDesc(descriptor.m_budgetInBytes, D3D12_HEAP_TYPE_DEFAULT, 0, D3D12_HEAP_FLAG_DENY_BUFFERS | D3D12_HEAP_FLAG_DENY_RT_DS_TEXTURES);
 
                 Microsoft::WRL::ComPtr<ID3D12Heap> heap;
-                AssertSuccess(device.GetDevice()->CreateHeap(&heapDesc, IID_GRAPHICS_PPV_ARGS(heap.GetAddressOf())));
+                device.AssertSuccess(device.GetDevice()->CreateHeap(&heapDesc, IID_GRAPHICS_PPV_ARGS(heap.GetAddressOf())));
                 m_heap = heap.Get();
             }
 

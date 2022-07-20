@@ -367,10 +367,11 @@
     <file>img/UI20/toolbar/Parent.svg</file>
     <file>img/UI20/toolbar/particle.svg</file>
     <file>img/UI20/toolbar/Play.svg</file>
+    <file>img/UI20/toolbar/Question.svg</file>
     <file>img/UI20/toolbar/Redo.svg</file>
     <file>img/UI20/toolbar/remove_link.svg</file>
     <file>img/UI20/toolbar/Reset_physics_state.svg</file>
-	<file>img/UI20/toolbar/RestoreMode.svg</file>
+    <file>img/UI20/toolbar/RestoreMode.svg</file>
     <file>img/UI20/toolbar/Save.svg</file>
     <file>img/UI20/toolbar/Scale.svg</file>
     <file>img/UI20/toolbar/Select.svg</file>
@@ -378,7 +379,7 @@
     <file>img/UI20/toolbar/Select_terrain.svg</file>
     <file>img/UI20/toolbar/Simulate_Physics.svg</file>
     <file>img/UI20/toolbar/Simulate_Physics_on_selected_objects.svg</file>
-	<file>img/UI20/toolbar/SketchMode.svg</file>
+    <file>img/UI20/toolbar/SketchMode.svg</file>
     <file>img/UI20/toolbar/Terrain.svg</file>
     <file>img/UI20/toolbar/Terrain_Texture.svg</file>
     <file>img/UI20/toolbar/Rotate.svg</file>
@@ -538,14 +539,6 @@
     <file>img/UI20/shadows/menu-shadow@2x.png</file>
     <file>img/UI20/tear.svg</file>
     <file>img/UI20/tear-vertical.svg</file>
-    <file>img/UI20/titlebar-close.svg</file>
-    <file>img/UI20/titlebar-maximize.svg</file>
-    <file>img/UI20/titlebar-minimize.svg</file>
-    <file>img/UI20/titlebar-popout-hover.svg</file>
-    <file>img/UI20/titlebar-popout.svg</file>
-    <file>img/UI20/titlebar-popout-small.svg</file>
-    <file>img/UI20/titlebar-restore-hover.svg</file>
-    <file>img/UI20/titlebar-restore.svg</file>
     <file>img/UI20/toggleswitch/checked.svg</file>
     <file>img/UI20/toggleswitch/checked-disabled.svg</file>
     <file>img/UI20/toggleswitch/checked-focus.svg</file>

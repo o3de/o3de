@@ -44,9 +44,6 @@ namespace AZ
                 return AZStd::make_unique<PassTemplate>(*this);
             }
 
-            //! Returns whether the given attachment matches the restrictions for the slot
-            bool AttachmentFitsSlot(const RHI::UnifiedAttachmentDescriptor& attachmentDesc, Name slotName) const;
-
             //! Find a pass request by name in m_passRequests
             const PassRequest* FindPassRequest(const Name& passName) const;
 

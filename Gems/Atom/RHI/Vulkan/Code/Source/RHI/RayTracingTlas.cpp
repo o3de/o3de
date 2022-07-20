@@ -60,7 +60,7 @@ namespace AZ
                 // create instances buffer
                 buffers.m_tlasInstancesBuffer = RHI::Factory::Get().CreateBuffer();
                 AZ::RHI::BufferDescriptor tlasInstancesBufferDescriptor;
-                tlasInstancesBufferDescriptor.m_bindFlags = RHI::BufferBindFlags::ShaderRead | RHI::BufferBindFlags::RayTracingAccelerationStructure;
+                tlasInstancesBufferDescriptor.m_bindFlags = RHI::BufferBindFlags::ShaderReadWrite | RHI::BufferBindFlags::RayTracingAccelerationStructure;
                 tlasInstancesBufferDescriptor.m_byteCount = instanceDescsSizeInBytes;
                 
                 AZ::RHI::BufferInitRequest tlasInstancesBufferRequest;

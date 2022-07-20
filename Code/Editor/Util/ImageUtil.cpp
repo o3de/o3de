@@ -143,7 +143,8 @@ bool CImageUtil::LoadPGM(const QString& fileName, CImageEx& image)
     fseek(file, 0, SEEK_SET);
 
     char* str = new char[fileSize];
-    fread(str, fileSize, 1, file);
+
+    [[maybe_unused]] auto bytesRead = fread(str, fileSize, 1, file);
 
     [[maybe_unused]] char* nextToken = nullptr;
     token = azstrtok(str, 0, seps, &nextToken);

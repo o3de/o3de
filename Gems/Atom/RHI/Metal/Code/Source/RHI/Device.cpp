@@ -15,6 +15,7 @@
 #include <RHI/Conversions.h>
 #include <RHI/Device.h>
 #include <RHI/Metal.h>
+#include <RHI/PhysicalDevice.h>
 
 //Symbols related to Obj-c categories are getting stripped out as part of the link step for monolithic builds
 //This forces the linker to not strip symbols related to categories without actually referencing the dummy function.
@@ -40,9 +41,10 @@ namespace AZ
             return aznew Device();
         }
 
-        RHI::ResultCode Device::InitInternal(RHI::PhysicalDevice& physicalDevice)
+        RHI::ResultCode Device::InitInternal(RHI::PhysicalDevice& physicalDeviceBase)
         {
-            m_metalDevice = MTLCreateSystemDefaultDevice();
+            PhysicalDevice& physicalDevice = static_cast<PhysicalDevice&>(physicalDeviceBase);
+            m_metalDevice = physicalDevice.GetNativeDevice();
             AZ_Assert(m_metalDevice, "Native device wasnt created");
             m_eventListener = [[MTLSharedEventListener alloc] init];
 
@@ -117,9 +119,11 @@ namespace AZ
             }
         }
 
-        void Device::BeginFrameInternal()
+        RHI::ResultCode Device::BeginFrameInternal()
         {
             TryCreateAutoreleasePool();
+            m_commandQueueContext.Begin();
+            return RHI::ResultCode::Success;
         }
 
         void Device::EndFrameInternal()
@@ -339,6 +343,9 @@ namespace AZ
             m_features.m_dualSourceBlending = true;
             m_features.m_customResolvePositions = m_metalDevice.programmableSamplePositionsSupported;
             m_features.m_indirectDrawSupport = false;
+            
+            //Metal drivers save and load serialized PipelineLibrary internally
+            m_features.m_isPsoCacheFileOperationsNeeded = false; 
             
             RHI::QueryTypeFlags counterSamplingFlags = RHI::QueryTypeFlags::None;
 

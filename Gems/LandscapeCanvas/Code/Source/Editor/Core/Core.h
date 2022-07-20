@@ -33,6 +33,7 @@ namespace LandscapeCanvas
     static constexpr const char* INBOUND_AREA_SLOT_ID = "InboundArea";
     static constexpr const char* OUTBOUND_AREA_SLOT_ID = "OutboundArea";
     static constexpr const char* INBOUND_SHAPE_SLOT_ID = "InboundShape";
+    static constexpr const char* INPUT_BOUNDS_SLOT_ID = "InputBounds";
     static constexpr const char* PIN_TO_SHAPE_SLOT_ID = "PinToShape";
     static constexpr const char* ENTITY_NAME_SLOT_ID = "EntityName";
 
@@ -50,6 +51,7 @@ namespace LandscapeCanvas
     static const QString INBOUND_AREA_SLOT_LABEL = QObject::tr("Inbound Area");
     static const QString OUTBOUND_AREA_SLOT_LABEL = QObject::tr("Outbound Area");
     static const QString INBOUND_SHAPE_SLOT_LABEL = QObject::tr("Inbound Shape");
+    static const QString INPUT_BOUNDS_SLOT_LABEL = QObject::tr("Input Bounds");
     static const QString PIN_TO_SHAPE_SLOT_LABEL = QObject::tr("Pin To Shape");
     static const QString ENTITY_NAME_SLOT_LABEL = QObject::tr("Entity Name");
 
@@ -61,6 +63,7 @@ namespace LandscapeCanvas
     static const QString INBOUND_AREA_INPUT_SLOT_DESCRIPTION = QObject::tr("Inbound Area input slot");
     static const QString OUTBOUND_AREA_OUTPUT_SLOT_DESCRIPTION = QObject::tr("Outbound Area output slot");
     static const QString INBOUND_SHAPE_INPUT_SLOT_DESCRIPTION = QObject::tr("Inbound Shape input slot");
+    static const QString INPUT_BOUNDS_INPUT_SLOT_DESCRIPTION = QObject::tr("Input Bounds input slot");
     static const QString PIN_TO_SHAPE_INPUT_SLOT_DESCRIPTION = QObject::tr("Pin To Shape input slot");
     static const QString ENTITY_NAME_SLOT_DESCRIPTION = QObject::tr("Vegetation entity name");
 }

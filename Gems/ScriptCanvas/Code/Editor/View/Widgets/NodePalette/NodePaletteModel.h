@@ -21,6 +21,8 @@
 
 #include <ScriptEvents/ScriptEventsAsset.h>
 
+#include <Editor/Nodes/NodeCreateUtils.h>
+
 #include <Editor/View/Widgets/NodePalette/NodePaletteModelBus.h>
 
 #include <ScriptCanvas/Asset/RuntimeAsset.h>
@@ -51,6 +53,14 @@ namespace ScriptCanvasEditor
         AZStd::string                    m_titlePaletteOverride;
     };
 
+    struct DataDrivenNodeModelInformation : public NodePaletteModelInformation
+    {
+        AZ_RTTI(DataDrivenNodeModelInformation, "{D44D697D-7462-456B-B305-E9931FC02E6B}", NodePaletteModelInformation);
+        AZ_CLASS_ALLOCATOR(DataDrivenNodeModelInformation, AZ::SystemAllocator, 0);
+
+        Nodes::DataDrivenNodeCreationData m_nodeData;
+    };
+
     struct CategoryInformation
     {
         AZStd::string m_styleOverride;
@@ -77,18 +87,21 @@ namespace ScriptCanvasEditor
 
         void RepopulateModel();
 
-        void RegisterCustomNode(AZStd::string_view categoryPath, const AZ::Uuid& uuid, AZStd::string_view name, const AZ::SerializeContext::ClassData* classData);
+        void RegisterDataDrivenNode(DataDrivenNodeModelInformation* nodePaletteItemInformation);
+
+        void RegisterCustomNode(const AZ::SerializeContext::ClassData* classData, const AZStd::string& categoryPath = "Nodes");
         void RegisterClassNode(const AZStd::string& categoryPath, const AZStd::string& methodClass, const AZStd::string& methodName, const AZ::BehaviorMethod* behaviorMethod, const AZ::BehaviorContext* behaviorContext, ScriptCanvas::PropertyStatus propertyStatus, bool isOverload);
-        void RegisterMethodNode(const AZ::BehaviorContext& behaviorContext, const AZ::BehaviorMethod& behaviorMethod);
+        void RegisterGlobalMethodNode(const AZ::BehaviorContext& behaviorContext, const AZ::BehaviorMethod& behaviorMethod);
         void RegisterGlobalConstant(const AZ::BehaviorContext& behaviorContext, const AZ::BehaviorProperty* behaviorProperty, const AZ::BehaviorMethod& behaviorMethod);
 
 
         void RegisterEBusHandlerNodeModelInformation(AZStd::string_view categoryPath, AZStd::string_view busName, AZStd::string_view eventName, const ScriptCanvas::EBusBusId& busId, const AZ::BehaviorEBusHandler::BusForwarderEvent& forwardEvent);
-        void RegisterEBusSenderNodeModelInformation(AZStd::string_view categoryPath, AZStd::string_view busName, AZStd::string_view eventName, const ScriptCanvas::EBusBusId& busId, const ScriptCanvas::EBusEventId& eventId, const AZ::BehaviorEBusEventSender& eventSender, ScriptCanvas::PropertyStatus propertyStatus, bool isOverload);
+        void RegisterEBusSenderNodeModelInformation(AZStd::string_view categoryPath, AZStd::string_view busName, AZStd::string_view eventName, const ScriptCanvas::EBusBusId& busId, const ScriptCanvas::EBusEventId& eventId, ScriptCanvas::PropertyStatus propertyStatus, bool isOverload);
 
         // Asset Based Registrations
         AZStd::vector<ScriptCanvas::NodeTypeIdentifier> RegisterScriptEvent(ScriptEvents::ScriptEventsAsset* scriptEventAsset);
 
+        void RegisterDefaultCateogryInformation();
         void RegisterCategoryInformation(const AZStd::string& category, const CategoryInformation& categoryInformation);
         const CategoryInformation* FindCategoryInformation(const AZStd::string& categoryStyle) const;
         const CategoryInformation* FindBestCategoryInformation(AZStd::string_view categoryView) const;
@@ -165,6 +178,7 @@ namespace ScriptCanvasEditor
         AZ_CLASS_ALLOCATOR(GlobalMethodNodeModelInformation, AZ::SystemAllocator, 0);
 
         AZStd::string m_methodName;
+        bool m_isProperty;
     };
 
     struct EBusHandlerNodeModelInformation

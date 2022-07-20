@@ -75,6 +75,9 @@ namespace AZ
             //! Whether Unbounded Array support is available.
             bool m_unboundedArrays = false;
 
+            //! Whether PipelineLibrary related serialized data needs to be loaded/saved explicitly as drivers (like dx12/vk) do not support it internally
+            bool m_isPsoCacheFileOperationsNeeded = true;
+            
             /// Additional features here.
         };
     }

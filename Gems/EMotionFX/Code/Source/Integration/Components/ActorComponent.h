@@ -82,11 +82,9 @@ namespace EMotionFX
                 AZ::EntityId m_attachmentTarget{}; ///< Target entity this actor should attach to.
                 size_t m_attachmentJointIndex = InvalidIndex; ///< Index of joint on target skeleton for actor attachments.
                 AttachmentType m_attachmentType = AttachmentType::None; ///< Type of attachment.
-                bool m_renderSkeleton = false; ///< Toggles debug rendering of the skeleton.
-                bool m_renderCharacter = true; ///< Toggles rendering of the character.
-                bool m_renderBounds = false; ///< Toggles rendering of the character bounds used for visibility testing.
                 SkinningMethod m_skinningMethod = SkinningMethod::DualQuat; ///< The skinning method for this actor
                 size_t m_lodLevel = 0;
+                ActorRenderFlags m_renderFlags = ActorRenderFlags::Default; ///< Actor render flag
 
                 // Force updating the joints when it is out of camera view. By
                 // default, joints level update (beside the root joint) on
@@ -161,11 +159,6 @@ namespace EMotionFX
                 incompatible.push_back(AZ_CRC_CE("NonUniformScaleService"));
             }
 
-            static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
-            {
-                dependent.push_back(AZ_CRC("PhysicsService", 0xa7350d22));
-            }
-
             static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
             {
                 required.push_back(AZ_CRC("TransformService", 0x8ee22c50));
@@ -180,7 +173,7 @@ namespace EMotionFX
             bool IsPhysicsSceneSimulationFinishEventConnected() const;
             AZ::Data::Asset<ActorAsset> GetActorAsset() const { return m_configuration.m_actorAsset; }
 
-            void SetRenderFlag(ActorRenderFlagBitset renderFlags);
+            void SetRenderFlag(ActorRenderFlags renderFlags);
 
         private:
             // AZ::TransformNotificationBus::MultiHandler
@@ -195,14 +188,12 @@ namespace EMotionFX
             void CheckAttachToEntity();
 
             Configuration                                   m_configuration;            ///< Component configuration.
-                                                                                        /// Live state
-            ActorAsset::ActorInstancePtr                    m_attachmentTargetActor;    ///< Target actor instance to attach to.
             AZ::EntityId                                    m_attachmentTargetEntityId; ///< Target actor entity ID
+            AZ::EntityId                                    m_attachmentPreviousParent; ///< The parent entity id before attaching to the attachment target.
             ActorAsset::ActorInstancePtr                    m_actorInstance;            ///< Live actor instance.
             AZStd::vector<AZ::EntityId>                     m_attachments;
 
             AZStd::unique_ptr<RenderActorInstance>          m_renderActorInstance;
-            ActorRenderFlagBitset                             m_debugRenderFlags;         ///< Actor debug render flag
 
             AzPhysics::SceneEvents::OnSceneSimulationFinishHandler m_sceneFinishSimHandler;
         };

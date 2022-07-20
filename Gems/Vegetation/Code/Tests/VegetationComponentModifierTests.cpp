@@ -71,7 +71,7 @@ namespace UnitTest
         MockSurfaceHandler mockSurfaceHandler;
         mockSurfaceHandler.m_outPosition = AZ::Vector3(vegInstance.m_position.GetX(), vegInstance.m_position.GetY(), 6.0f);
         mockSurfaceHandler.m_outNormal = AZ::Vector3(0.0f, 0.0f, 1.0f);
-        mockSurfaceHandler.m_outMasks[crcMask] = 1.0f;
+        mockSurfaceHandler.m_outMasks.AddSurfaceTagWeight(crcMask, 1.0f);
 
         entity->Deactivate();
         config.m_autoSnapToSurface = true;

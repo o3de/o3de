@@ -59,7 +59,8 @@ namespace AzToolsFramework
 
     void ExpandingFadingCircles::Display(const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay)
     {
-        const AZ::Vector2 viewportSize = AzToolsFramework::GetCameraState(viewportInfo.m_viewportId).m_viewportSize;
+        const AZ::Vector2 viewportSize =
+            AzFramework::Vector2FromScreenSize(AzToolsFramework::GetCameraState(viewportInfo.m_viewportId).m_viewportSize);
 
         for (const auto& fadingCircle : m_fadingCircles)
         {

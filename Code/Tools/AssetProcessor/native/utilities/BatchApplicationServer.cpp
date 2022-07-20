@@ -16,6 +16,7 @@ BatchApplicationServer::BatchApplicationServer(QObject* parent)
 
 BatchApplicationServer::~BatchApplicationServer()
 {
+    close();
 }
 
 bool BatchApplicationServer::startListening(unsigned short port)

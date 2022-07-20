@@ -1239,11 +1239,13 @@ void HierarchyWidget::AddElement(const QTreeWidgetItemRawPtrQList& selectedItems
         this,
         selectedItems,
         childIndex,
-        [optionalPos](AZ::Entity* element)
+        [this, optionalPos](AZ::Entity* element)
         {
             if (optionalPos)
             {
-                EntityHelpers::MoveElementToGlobalPosition(element, *optionalPos);
+                // Convert position to render viewport coords
+                QPoint scaledPosition = *optionalPos * GetEditorWindow()->GetViewport()->WidgetToViewportFactor();
+                EntityHelpers::MoveElementToGlobalPosition(element, scaledPosition);
             }
         });
 }

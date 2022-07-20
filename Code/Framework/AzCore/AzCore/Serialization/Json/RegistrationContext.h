@@ -8,11 +8,12 @@
 
 #pragma once
 
+#include <AzCore/Math/Uuid.h>
+#include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/Json/BaseJsonSerializer.h>
 #include <AzCore/std/containers/unordered_map.h>
-#include <AzCore/Math/Uuid.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 
 namespace AZ
@@ -22,6 +23,7 @@ namespace AZ
     {
     public:
         AZ_RTTI(JsonRegistrationContext, "{5A763774-CA8B-4245-A897-A03C503DCD60}", ReflectContext);
+        AZ_CLASS_ALLOCATOR(JsonRegistrationContext, SystemAllocator, 0);
 
         class SerializerBuilder;
         using SerializerMap = AZStd::unordered_map<Uuid, AZStd::unique_ptr<BaseJsonSerializer>, AZStd::hash<Uuid>>;

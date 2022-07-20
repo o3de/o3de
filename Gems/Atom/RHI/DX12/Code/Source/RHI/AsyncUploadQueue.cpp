@@ -74,13 +74,13 @@ namespace AZ
 
                 
                 Microsoft::WRL::ComPtr<ID3D12CommandAllocator> commandAllocator;
-                AssertSuccess(dx12Device->CreateCommandAllocator(
+                device.AssertSuccess(dx12Device->CreateCommandAllocator(
                     D3D12_COMMAND_LIST_TYPE_COPY,
                     IID_GRAPHICS_PPV_ARGS(commandAllocator.GetAddressOf())));
                 framePacket.m_commandAllocator = commandAllocator.Get();
 
                 Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList;
-                AssertSuccess(dx12Device->CreateCommandList(
+                device.AssertSuccess(dx12Device->CreateCommandList(
                     0,
                     D3D12_COMMAND_LIST_TYPE_COPY,
                     framePacket.m_commandAllocator.get(),
@@ -88,7 +88,7 @@ namespace AZ
                     IID_GRAPHICS_PPV_ARGS(commandList.GetAddressOf())));
 
                 framePacket.m_commandList = commandList.Get();
-                AssertSuccess(framePacket.m_commandList->Close());
+                device.AssertSuccess(framePacket.m_commandList->Close());
             }
         }
 

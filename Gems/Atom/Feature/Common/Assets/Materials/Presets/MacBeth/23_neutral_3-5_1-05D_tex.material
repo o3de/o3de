@@ -2,7 +2,7 @@
     "description": "",
     "parentMaterial": "23_neutral_3-5_1-05D.material",
     "materialType": "../../Types/StandardPBR.materialtype",
-    "materialTypeVersion": 4,
+    "materialTypeVersion": 5,
     "properties": {
         "baseColor": {
             "color": [

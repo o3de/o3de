@@ -15,7 +15,6 @@
     "documentation_url": "",
     "dependencies": [
         "Atom_RPI",
-        "Atom_RHI",
-        "Atom"
+        "Atom_RHI"
     ]
 }

@@ -13,6 +13,7 @@
 #include <AzCore/Memory/OSAllocator.h> // required by certain platforms
 #include <AzCore/std/parallel/mutex.h>
 #include <AzCore/std/parallel/lock.h>
+#include <AzCore/std/containers/intrusive_list.h>
 #include <AzCore/std/containers/intrusive_set.h>
 
 #ifdef _DEBUG
@@ -41,8 +42,8 @@
 #define HPPA_ASSERT_PRINT_STACK(...) _EXPAND(_GET_MACRO23(__VA_ARGS__, _HPPA_ASSERT_PRINT_STACK3, _HPPA_ASSERT_PRINT_STACK2)(__VA_ARGS__))  
 
 
-namespace AZ {
-
+namespace AZ
+{
     /// default windows virtual page size \todo Read this from the OS when we create the allocator)
 #define OS_VIRTUAL_PAGE_SIZE AZ_PAGE_SIZE
     //////////////////////////////////////////////////////////////////////////
@@ -56,211 +57,78 @@ namespace AZ {
 // Enabled mutex per bucket
 #define USE_MUTEX_PER_BUCKET
 
-    //////////////////////////////////////////////////////////////////////////
-    // TODO: Replace with AZStd::intrusive_list
-    class intrusive_list_base
+    namespace HphaInternal
     {
-    public:
-        class node_base
+        //! Rounds up a value to next power of 2.
+        //! For example to round 8388609((2^23) + 1) up to 16777216(2^24) the following occurs
+        //! Subtract one from the value in case it is already
+        //! equal to a power of 2
+        //! 8388609 - 1 = 8388608
+        //! Propagate the highest one bit in the value to all the lower bits
+        //! 8388608 = 0b100'0000'0000'0000'0000'0000 in binary
+        //! 
+        //!  0b100'0000'0000'0000'0000'0000 
+        //! |0b010'0000'0000'0000'0000'0000 (>> 1)
+        //! -------------------------------
+        //!  0b110'0000'0000'0000'0000'0000 (Now there are 2 consecutive 1-bits)
+        //! |0b001'1000'0000'0000'0000'0000 (>> 2)
+        //! -------------------------------
+        //!  0b111'1000'0000'0000'0000'0000 (Now there are 4 consecutive 1-bits)
+        //! |0b000'0111'1000'0000'0000'0000 (>> 4)
+        //! -------------------------------
+        //!  0b111'1111'1000'0000'0000'0000 (Now there are 8 consecutive 1-bits)
+        //! |0b000'0000'0111'1111'1000'0000 (>> 8)
+        //! -------------------------------
+        //!  0b111'1111'1111'1111'1000'0000 (Now there are 16 consecutive 1-bits)
+        //! |0b000'0000'0000'0000'0111'1111 (>> 16)
+        //! -------------------------------
+        //!  0b111'1111'1111'1111'1111'1111 (Now there are 23 consecutive 1-bits)
+        //! |0b000'0000'0000'0000'0000'0000 (>> 32)
+        //! -------------------------------
+        //!  0b111'1111'1111'1111'1111'1111
+        //! Finally since all the one bits are set in the value, adding one pushes it
+        //! to next power of 2
+        //! 0b1000'0000'0000'0000'0000'0000 = 16777216
+        static constexpr size_t AlignUpToPowerOfTwo(size_t value)
         {
-            node_base* mPrev;
-            node_base* mNext;
-        public:
-            node_base* next() const {return mNext; }
-            node_base* prev() const {return mPrev; }
-            void reset()
+            // If the value is <=2 it is already aligned
+            if (value <= 2)
             {
-                mPrev = this;
-                mNext = this;
+                return value;
             }
-            void unlink()
-            {
-                mNext->mPrev = mPrev;
-                mPrev->mNext = mNext;
-            }
-            void link(node_base* node)
-            {
-                mPrev = node->mPrev;
-                mNext = node;
-                node->mPrev = this;
-                mPrev->mNext = this;
-            }
-        };
-        intrusive_list_base()
-        {
-            mHead.reset();
-        }
-        intrusive_list_base(const intrusive_list_base&)
-        {
-            mHead.reset();
-        }
-        bool empty() const {return mHead.next() == &mHead; }
-        void swap(intrusive_list_base& other)
-        {
-            node_base* node = &other.mHead;
-            if (!empty())
-            {
-                node = mHead.next();
-                mHead.unlink();
-                mHead.reset();
-            }
-            node_base* other_node = &mHead;
-            if (!other.empty())
-            {
-                other_node = other.mHead.next();
-                other.mHead.unlink();
-                other.mHead.reset();
-            }
-            mHead.link(other_node);
-            other.mHead.link(node);
-        }
-    protected:
-        node_base mHead;
-    };
 
-    //////////////////////////////////////////////////////////////////////////
-    // TODO: Replace with AZStd::intrusive_list
-    template<class T>
-    class intrusive_list
-        : public intrusive_list_base
-    {
-        intrusive_list(const intrusive_list& rhs);
-        intrusive_list& operator=(const intrusive_list& rhs);
-    public:
-        class node
-            : public node_base
-        {
-        public:
-            T* next() const {return static_cast<T*>(node_base::next()); }
-            T* prev() const {return static_cast<T*>(node_base::prev()); }
-            const T& data() const {return *static_cast<const T*>(this); }
-            T& data() {return *static_cast<T*>(this); }
-        };
-
-        class const_iterator;
-        class iterator
-        {
-            using reference = T&;
-            using pointer = T*;
-            friend class const_iterator;
-            T* mPtr;
-        public:
-            iterator()
-                : mPtr(0) {}
-            explicit iterator(T* ptr)
-                : mPtr(ptr) {}
-            reference operator*() const {return mPtr->data(); }
-            pointer operator->() const {return &mPtr->data(); }
-            operator pointer() const {
-                return &mPtr->data();
-            }
-            iterator& operator++()
-            {
-                mPtr = mPtr->next();
-                return *this;
-            }
-            iterator& operator--()
-            {
-                mPtr = mPtr->prev();
-                return *this;
-            }
-            bool operator==(const iterator& rhs) const {return mPtr == rhs.mPtr; }
-            bool operator!=(const iterator& rhs) const {return mPtr != rhs.mPtr; }
-            T* ptr() const {return mPtr; }
-        };
-
-        class const_iterator
-        {
-            using reference = const T &;
-            using pointer = const T *;
-            const T* mPtr;
-        public:
-            const_iterator()
-                : mPtr(0) {}
-            explicit const_iterator(const T* ptr)
-                : mPtr(ptr) {}
-            const_iterator(const iterator& it)
-                : mPtr(it.mPtr) {}
-            reference operator*() const {return mPtr->data(); }
-            pointer operator->() const {return &mPtr->data(); }
-            operator pointer() const {
-                return &mPtr->data();
-            }
-            const_iterator& operator++()
-            {
-                mPtr = mPtr->next();
-                return *this;
-            }
-            const_iterator& operator--()
-            {
-                mPtr = mPtr->prev();
-                return *this;
-            }
-            bool operator==(const const_iterator& rhs) const {return mPtr == rhs.mPtr; }
-            bool operator!=(const const_iterator& rhs) const {return mPtr != rhs.mPtr; }
-            const T* ptr() const {return mPtr; }
-        };
-
-        intrusive_list()
-            : intrusive_list_base() {}
-        ~intrusive_list() {clear(); }
-
-        const_iterator begin() const {return const_iterator((const T*)mHead.next()); }
-        iterator begin() {return iterator((T*)mHead.next()); }
-        const_iterator end() const {return const_iterator((const T*)&mHead); }
-        iterator end() {return iterator((T*)&mHead); }
-
-        const T& front() const
-        {
-            HPPA_ASSERT(!empty());
-            return *begin();
-        }
-        T& front()
-        {
-            HPPA_ASSERT(!empty());
-            return *begin();
-        }
-        const T& back() const
-        {
-            HPPA_ASSERT(!empty());
-            return *(--end());
-        }
-        T& back()
-        {
-            HPPA_ASSERT(!empty());
-            return *(--end());
+            // Subtract one to make any values already
+            // aligned to a power of 2 less than that power of 2
+            // so that algorithm doesn't push those values upwards
+            --value;
+            value |= value >> 0b1;
+            value |= value >> 0b10;
+            value |= value >> 0b100;
+            value |= value >> 0b1000;
+            value |= value >> 0b1'0000;
+            value |= value >> 0b10'0000;
+            ++value;
+            return value;
         }
 
-        void push_front(T* v) {insert(this->begin(), v); }
-        void pop_front() {erase(this->begin()); }
-        void push_back(T* v) {insert(this->end(), v); }
-        void pop_back() {erase(--(this->end())); }
-
-        iterator insert(iterator where, T* node)
-        {
-            T* newLink = node;
-            newLink->link(where.ptr());
-            return iterator(newLink);
-        }
-        iterator erase(iterator where)
-        {
-            T* node = where.ptr();
-            ++where;
-            node->unlink();
-            return where;
-        }
-        void erase(T* node)
-        {
-            node->unlink();
-        }
-        void clear()
-        {
-            while (!this->empty())
-            {
-                this->pop_back();
-            }
-        }
-    };
+        static_assert(AlignUpToPowerOfTwo(0) == 0);
+        static_assert(AlignUpToPowerOfTwo(1) == 1);
+        static_assert(AlignUpToPowerOfTwo(2) == 2);
+        static_assert(AlignUpToPowerOfTwo(3) == 4);
+        static_assert(AlignUpToPowerOfTwo(4) == 4);
+        static_assert(AlignUpToPowerOfTwo(5) == 8);
+        static_assert(AlignUpToPowerOfTwo(8) == 8);
+        static_assert(AlignUpToPowerOfTwo(10) == 16);
+        static_assert(AlignUpToPowerOfTwo(16) == 16);
+        static_assert(AlignUpToPowerOfTwo(24) == 32);
+        static_assert(AlignUpToPowerOfTwo(32) == 32);
+        static_assert(AlignUpToPowerOfTwo(45) == 64);
+        static_assert(AlignUpToPowerOfTwo(64) == 64);
+        static_assert(AlignUpToPowerOfTwo(112) == 128);
+        static_assert(AlignUpToPowerOfTwo(128) == 128);
+        static_assert(AlignUpToPowerOfTwo(136) == 256);
+        static_assert(AlignUpToPowerOfTwo(256) == 256);
+    }
 
     //////////////////////////////////////////////////////////////////////////
     class HpAllocator
@@ -376,7 +244,7 @@ namespace AZ {
         };
         struct page
             : public block_header_proxy     /* must be first */
-            , public intrusive_list<page>::node
+            , public AZStd::list_base_hook<page>::node_type
         {
             page(size_t elemSize, size_t pageSize, size_t marker)
                 : mBucketIndex((unsigned short)bucket_spacing_function_aligned(elemSize))
@@ -415,25 +283,22 @@ namespace AZ {
             void dec_ref()                          { HPPA_ASSERT(mUseCount > 0); mUseCount--; }
             bool check_marker(size_t marker) const  { return mMarker == (marker ^ ((size_t)this)); }
         };
-        using page_list = intrusive_list<page>;
-        class bucket
+        using page_list = AZStd::intrusive_list<page, AZStd::list_base_hook<page>>;
+
+#if defined(MULTITHREADED) && defined(USE_MUTEX_PER_BUCKET)
+        static constexpr size_t BucketAlignment = HphaInternal::AlignUpToPowerOfTwo(sizeof(page_list) + sizeof(AZStd::mutex) + sizeof(size_t));
+#else
+        static constexpr size_t BucketAlignment = HphaInternal::AlignUpToPowerOfTwo(sizeof(page_list) + sizeof(size_t));
+#endif
+        AZ_PUSH_DISABLE_WARNING_MSVC(4324)
+        class alignas(BucketAlignment) bucket
         {
             page_list mPageList;
-#ifdef MULTITHREADED 
-    #if defined (USE_MUTEX_PER_BUCKET)
+#if defined(MULTITHREADED) && defined(USE_MUTEX_PER_BUCKET)
             mutable AZStd::mutex mLock;
-    #endif
 #endif
             size_t          mMarker;
-#ifdef MULTITHREADED
-    #if defined (USE_MUTEX_PER_BUCKET)
-            unsigned char _padding[sizeof(void*) * 16 - sizeof(page_list) - sizeof(AZStd::mutex) - sizeof(size_t)];
-    #else
-            unsigned char _padding[sizeof(void*) * 16 - sizeof(page_list) - sizeof(size_t)];
-    #endif
-#else
-            unsigned char _padding[sizeof(void*) * 4 - sizeof(page_list) - sizeof(size_t)];
-#endif
+
         public:
             bucket();
 #ifdef MULTITHREADED
@@ -442,17 +307,19 @@ namespace AZ {
     #endif
 #endif
             size_t marker() const {return mMarker; }
-            const page* page_list_begin() const {return mPageList.begin(); }
-            page* page_list_begin() {return mPageList.begin(); }
-            const page* page_list_end() const {return mPageList.end(); }
-            page* page_list_end() {return mPageList.end(); }
+            auto page_list_begin() const {return mPageList.begin(); }
+            auto page_list_begin() {return mPageList.begin(); }
+            auto page_list_end() const {return mPageList.end(); }
+            auto page_list_end() {return mPageList.end(); }
             bool page_list_empty() const {return mPageList.empty(); }
-            void add_free_page(page* p) {mPageList.push_front(p); }
+            void add_free_page(page* p) {mPageList.push_front(*p); }
             page* get_free_page();
             const page* get_free_page() const;
             void* alloc(page* p);
             void free(page* p, void* ptr);
+            void unlink(page* p);
         };
+        AZ_POP_DISABLE_WARNING_MSVC
         void* bucket_system_alloc();
         void bucket_system_free(void* ptr);
         page* bucket_grow(size_t elemSize, size_t marker);
@@ -1237,8 +1104,6 @@ namespace AZ {
         // Thats why we use SimpleLcgRandom here
         AZ::SimpleLcgRandom randGenerator = AZ::SimpleLcgRandom(reinterpret_cast<u64>(static_cast<void*>(this)));
         mMarker = size_t(randGenerator.Getu64Random());
-
-        (void)_padding;
     }
 
     HpAllocator::page* HpAllocator::bucket::get_free_page()
@@ -1278,8 +1143,8 @@ namespace AZ {
         if (!next)
         {
             // if full, auto sort to back
-            p->unlink();
-            mPageList.push_back(p);
+            mPageList.erase(*p);
+            mPageList.push_back(*p);
         }
         return (void*)free;
     }
@@ -1295,9 +1160,14 @@ namespace AZ {
         if (!free)
         {
             // if the page was previously full, auto sort to front
-            p->unlink();
-            mPageList.push_front(p);
+            mPageList.erase(*p);
+            mPageList.push_front(*p);
         }
+    }
+
+    void HpAllocator::bucket::unlink(page* p)
+    {
+        mPageList.erase(*p);
     }
 
     void* HpAllocator::bucket_system_alloc()
@@ -1522,8 +1392,8 @@ namespace AZ {
             AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
     #endif
 #endif
-            const page* pageEnd = mBuckets[i].page_list_end();
-            for (const page* p = mBuckets[i].page_list_begin(); p != pageEnd; )
+            auto pageEnd = mBuckets[i].page_list_end();
+            for (auto p = mBuckets[i].page_list_begin(); p != pageEnd; )
             {
                 // early out if we reach fully occupied page (the remaining should all be full)
                 if (p->mFreeList == nullptr)
@@ -1537,7 +1407,7 @@ namespace AZ {
                 {
                     AZ_TracePrintf("System", "Unused Bucket %d page %p elementSize: %d available: %d elements\n", i, p, elementSize, availableMemory / elementSize);
                 }
-                p = p->next();
+                p = p->m_next;
             }
         }
         return unusedMemory;
@@ -1554,21 +1424,21 @@ namespace AZ {
             AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
     #endif
 #endif
-            page* pageEnd = mBuckets[i].page_list_end();
-            for (page* p = mBuckets[i].page_list_begin(); p != pageEnd; )
+            auto pageEnd = mBuckets[i].page_list_end();
+            for (auto p = mBuckets[i].page_list_begin(); p != pageEnd; )
             {
                 // early out if we reach fully occupied page (the remaining should all be full)
                 if (p->mFreeList == nullptr)
                 {
                     break;
                 }
-                page* next = p->next();
+                page* next = p->m_next;
                 if (p->empty())
                 {
                     HPPA_ASSERT(p->mFreeList);
-                    p->unlink();
+                    mBuckets[i].unlink(AZStd::to_address(p));
                     p->setInvalid();
-                    bucket_system_free(p);
+                    bucket_system_free(AZStd::to_address(p));
                 }
                 p = next;
             }
@@ -2239,11 +2109,17 @@ namespace AZ {
 
     size_t HpAllocator::tree_get_max_allocation() const
     {
+#ifdef MULTITHREADED
+        AZStd::lock_guard<AZStd::recursive_mutex> lock(mTreeMutex);
+#endif
         return mFreeTree.maximum()->get_block()->size();
     }
 
     size_t HpAllocator::tree_get_unused_memory(bool isPrint) const
     {
+#ifdef MULTITHREADED
+        AZStd::lock_guard<AZStd::recursive_mutex> lock(mTreeMutex);
+#endif
         size_t unusedMemory = 0;
         for (free_node_tree::const_iterator it = mFreeTree.begin(); it != mFreeTree.end(); ++it)
         {
@@ -2564,7 +2440,7 @@ namespace AZ {
             m_capacity = desc.m_capacity;
         }
 
-        AZ_Assert(sizeof(HpAllocator) <= sizeof(m_hpAllocatorBuffer), "Increase the m_hpAllocatorBuffer, we need %d bytes but we have %d bytes!", sizeof(HpAllocator), sizeof(m_hpAllocatorBuffer));
+        static_assert(sizeof(HpAllocator) <= sizeof(m_hpAllocatorBuffer), "Increase the m_hpAllocatorBuffer, it needs to be at least the sizeof(HpAllocator)");
         m_allocator = new (&m_hpAllocatorBuffer) HpAllocator(m_desc);
     }
 

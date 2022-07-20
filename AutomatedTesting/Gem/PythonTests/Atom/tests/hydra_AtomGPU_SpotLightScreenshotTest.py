@@ -172,7 +172,7 @@ def AtomGPU_LightComponent_SpotLightScreenshotsMatchGoldenImages():
         ground_plane_material_component = ground_plane_entity.get_components_of_type(
             [ground_plane_material_component_name])[0]
         ground_plane_material_asset_path = os.path.join(
-            "Materials", "Presets", "Macbeth", "22_neutral_5-0_0-70d.azmaterial")
+            "materials", "presets", "macbeth", "22_neutral_5-0_0-70d.azmaterial")
         ground_plane_material_asset = Asset.find_asset_by_path(ground_plane_material_asset_path, False)
         ground_plane_material_component.set_component_property_value(
             AtomComponentProperties.material('Material Asset'), ground_plane_material_asset.id)

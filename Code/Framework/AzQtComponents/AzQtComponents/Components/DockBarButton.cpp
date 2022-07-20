@@ -12,6 +12,7 @@
 #include <AzQtComponents/Components/Style.h>
 
 #include <QApplication>
+#include <QEvent>
 #include <QStyleOptionToolButton>
 #include <QStylePainter>
 
@@ -66,13 +67,19 @@ namespace AzQtComponents
                 Style::addClass(this, QStringLiteral("close"));
                 break;
             case DockBarButton::MaximizeButton:
-                Style::addClass(this, QStringLiteral("maximize"));
+                SetMaximizeRestoreButton();
                 break;
             case DockBarButton::MinimizeButton:
                 Style::addClass(this, QStringLiteral("minimize"));
                 break;
             case DockBarButton::DividerButton:
                 break;
+        }
+
+        QWidget* topLevelWindow = window();
+        if (topLevelWindow)
+        {
+            topLevelWindow->installEventFilter(this);
         }
 
         if (m_isDarkStyle)
@@ -86,6 +93,15 @@ namespace AzQtComponents
         // Our dock bar buttons only need click focus, they don't need to accept
         // focus by tabbing
         setFocusPolicy(Qt::ClickFocus);
+    }
+
+    bool DockBarButton::eventFilter(QObject* object, QEvent* event)
+    {
+        if (event->type() == QEvent::WindowStateChange && m_buttonType == DockBarButton::MaximizeButton)
+        {
+            SetMaximizeRestoreButton();
+        }
+        return QWidget::eventFilter(object, event);
     }
 
     void DockBarButton::paintEvent(QPaintEvent *)
@@ -129,6 +145,20 @@ namespace AzQtComponents
         }
 
         emit buttonPressed(m_buttonType);
+    }
+
+    void DockBarButton::SetMaximizeRestoreButton()
+    {
+        if (window() && window()->isMaximized())
+        {
+            Style::removeClass(this, QStringLiteral("maximize"));
+            Style::addClass(this, QStringLiteral("restore"));
+        }
+        else
+        {
+            Style::removeClass(this, QStringLiteral("restore"));
+            Style::addClass(this, QStringLiteral("maximize"));
+        }
     }
 
     bool DockBarButton::drawDockBarButton(const Style* style, const QStyleOptionComplex* option, QPainter* painter, const QWidget* widget, const Config& config)

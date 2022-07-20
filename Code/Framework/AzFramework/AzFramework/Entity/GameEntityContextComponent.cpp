@@ -56,6 +56,14 @@ namespace AzFramework
                     ->Attribute(AZ::ScriptCanvasAttributes::DeactivatesInputEntity, true)
                 ->Event("GetEntityName", &GameEntityContextRequestBus::Events::GetEntityName)
                 ;
+
+            behaviorContext->EBus<GameEntityContextEventBus>("GameEntityContextEventBus")
+                ->Attribute(AZ::Script::Attributes::Module, "entity")
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                ->Event("OnPreGameEntitiesStarted", &GameEntityContextEventBus::Events::OnPreGameEntitiesStarted)
+                ->Event("OnGameEntitiesStarted", &GameEntityContextEventBus::Events::OnGameEntitiesStarted)
+                ->Event("OnGameEntitiesReset", &GameEntityContextEventBus::Events::OnGameEntitiesReset)
+                ;
         }
     }
 
@@ -290,17 +298,17 @@ namespace AzFramework
                     isPrefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
                 if (isPrefabSystemEnabled)
                 {
-                    if (currentEntity->GetSpawnTicketId() > 0)
+                    if (currentEntity->GetEntitySpawnTicketId() > 0)
                     {
                         SpawnableEntitiesDefinition* spawnableEntitiesInterface = SpawnableEntitiesInterface::Get();
                         AZ_Assert(spawnableEntitiesInterface != nullptr, "SpawnableEntitiesInterface is not found.");
-                        spawnableEntitiesInterface->RetrieveEntitySpawnTicket(
-                            currentEntity->GetSpawnTicketId(),
-                            [spawnableEntitiesInterface, currentEntity](EntitySpawnTicket* entitySpawnTicket)
+                        spawnableEntitiesInterface->RetrieveTicket(
+                            currentEntity->GetEntitySpawnTicketId(),
+                            [spawnableEntitiesInterface, currentEntity](EntitySpawnTicket&& entitySpawnTicket)
                             {
-                                if (entitySpawnTicket != nullptr)
+                                if (entitySpawnTicket.IsValid())
                                 {
-                                    spawnableEntitiesInterface->DespawnEntity(currentEntity->GetId(), *entitySpawnTicket);
+                                    spawnableEntitiesInterface->DespawnEntity(currentEntity->GetId(), entitySpawnTicket);
                                 }
                             });
                         return;

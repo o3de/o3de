@@ -57,6 +57,8 @@ def Material_LibraryClearingAssignsDefault():
     from editor_python_test_tools.utils import TestHelper as helper
     from editor_python_test_tools.asset_utils import Asset
 
+    import editor_python_test_tools.hydra_editor_utils as hydra
+
     # Open 3D Engine Imports
     import azlmbr.asset as azasset
 
@@ -66,9 +68,8 @@ def Material_LibraryClearingAssignsDefault():
     default_material_path = os.path.join("assets", "physics", "surfacetypemateriallibrary.physmaterial")
     new_material_path = os.path.join("physicssurfaces", "default_phys_materials.physmaterial")
 
-    helper.init_idle()
     # 1) Load the level
-    helper.open_level("Physics", "Base")
+    hydra.open_base_level()
 
     # 2) Create new Entity with PhysX Character Controller
     test_entity = EditorEntity.create_editor_entity("TestEntity")

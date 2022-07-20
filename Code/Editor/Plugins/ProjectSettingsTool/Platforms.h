@@ -21,8 +21,8 @@ namespace ProjectSettingsTool
 
     enum class PlatformDataType
     {
-        ProjectJson,
-        Plist,
+        ProjectJson, //!< Data comes from global project.json file
+        PlatformResource, //!< Data comes from another file, which can have different formats (json or plist)
 
         NumPlatformDataTypes
     };
@@ -36,8 +36,8 @@ namespace ProjectSettingsTool
     const Platform Platforms[static_cast<unsigned>(PlatformId::NumPlatformIds)]
     {
         Platform{ PlatformId::Base, PlatformDataType::ProjectJson },
-        Platform{ PlatformId::Android, PlatformDataType::ProjectJson },
-        Platform{ PlatformId::Ios, PlatformDataType::Plist }
+        Platform{ PlatformId::Android, PlatformDataType::PlatformResource },
+        Platform{ PlatformId::Ios, PlatformDataType::PlatformResource }
     };
     
 } // namespace ProjectSettingsTool

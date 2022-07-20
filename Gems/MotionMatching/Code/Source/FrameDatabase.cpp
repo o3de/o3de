@@ -53,7 +53,7 @@ namespace EMotionFX::MotionMatching
         m_usedMotions.shrink_to_fit();
     }
 
-    void FrameDatabase::ExtractActiveMotionEventDatas(const Motion* motion, float time, AZStd::vector<EventData*>& activeEventDatas)
+    void FrameDatabase::ExtractActiveMotionEventDatas(const Motion* motion, float time, AZStd::vector<EventData*>& activeEventDatas) const
     {
         activeEventDatas.clear();
 
@@ -84,9 +84,11 @@ namespace EMotionFX::MotionMatching
         }
     }
 
-    bool FrameDatabase::IsFrameDiscarded(const AZStd::vector<EventData*>& activeEventDatas) const
+    bool FrameDatabase::IsFrameDiscarded(const Motion* motion, float frameTime, AZStd::vector<EventData*>& activeEvents) const
     {
-        for (const EventData* eventData : activeEventDatas)
+        // Is frame discarded by a motion event?
+        ExtractActiveMotionEventDatas(motion, frameTime, activeEvents);
+        for (const EventData* eventData : activeEvents)
         {
             if (eventData->RTTI_GetType() == azrtti_typeid<DiscardFrameEventData>())
             {
@@ -126,11 +128,10 @@ namespace EMotionFX::MotionMatching
         double curTime = 0.0;
         while (curTime <= totalTime)
         {
-            const float floatTime = aznumeric_cast<float>(curTime);
-            ExtractActiveMotionEventDatas(motion, floatTime, activeEvents);
-            if (!IsFrameDiscarded(activeEvents))
+            const float frameTime = aznumeric_cast<float>(curTime);
+            if (!IsFrameDiscarded(motion, frameTime, activeEvents))
             {
-                ImportFrame(motion, floatTime, mirrored);
+                ImportFrame(motion, frameTime, mirrored);
                 numFramesImported++;
             }
             else
@@ -143,11 +144,10 @@ namespace EMotionFX::MotionMatching
         // Make sure we include the last frame, if we stepped over it.
         if (curTime - timeStep < totalTime - 0.000001)
         {
-            const float floatTime = aznumeric_cast<float>(totalTime);
-            ExtractActiveMotionEventDatas(motion, floatTime, activeEvents);
-            if (!IsFrameDiscarded(activeEvents))
+            const float frameTime = aznumeric_cast<float>(totalTime);
+            if (!IsFrameDiscarded(motion, frameTime, activeEvents))
             {
-                ImportFrame(motion, floatTime, mirrored);
+                ImportFrame(motion, frameTime, mirrored);
                 numFramesImported++;
             }
             else

@@ -52,7 +52,7 @@ class TestBaseLauncher:
     def test_Kill_Unimplemented_NotImplementedError(self):
         launcher = self.test_Construct_TestDoubles_BaseLauncherCreated()
         with pytest.raises(NotImplementedError):
-            launcher.kill()
+            launcher.stop()
 
     def test_Launch_Unimplemented_NotImplementedError(self):
         launcher = self.test_Construct_TestDoubles_BaseLauncherCreated()
@@ -111,7 +111,7 @@ class TestBaseLauncher:
         with pytest.raises(NotImplementedError):
             launcher.stop()
 
-    @mock.patch('ly_test_tools.launchers.platforms.base.Launcher.kill')
+    @mock.patch('ly_test_tools.launchers.platforms.base.Launcher._kill')
     @mock.patch('ly_test_tools.launchers.platforms.base.Launcher.ensure_stopped')
     @mock.patch('ly_test_tools.launchers.platforms.base.Launcher.teardown')
     def test_Stop_MockImplementedLauncher_KillTeardown(self, mock_teardown, mock_ensure, mock_kill):
@@ -195,13 +195,13 @@ class TestLauncherBuilder(object):
     """
     def test_CreateLauncher_DummyWorkspace_DefaultLauncher(self):
         dummy_workspace = mock.MagicMock()
-        under_test = ly_test_tools.launchers.launcher_helper.create_launcher(
+        under_test = ly_test_tools.launchers.launcher_helper.create_game_launcher(
             dummy_workspace, ly_test_tools.HOST_OS_EDITOR)
         assert isinstance(under_test, ly_test_tools.launchers.Launcher)
 
     def test_CreateDedicateLauncher_DummyWorkspace_DefaultLauncher(self):
         dummy_workspace = mock.MagicMock()
-        under_test = ly_test_tools.launchers.launcher_helper.create_dedicated_launcher(
+        under_test = ly_test_tools.launchers.launcher_helper.create_server_launcher(
             dummy_workspace, ly_test_tools.HOST_OS_DEDICATED_SERVER)
         assert isinstance(under_test, ly_test_tools.launchers.Launcher)
 

@@ -6,6 +6,7 @@
         "Name": "LowEndPipeline",
         "MainViewTag": "MainCamera",
         "RootPassTemplate": "LowEndPipelineTemplate",
+        "AllowModification": true,
         "RenderSettings": {
             "MultisampleState": {
                 "samples": 1

@@ -56,10 +56,10 @@ class TestWinLauncher(object):
         launcher = ly_test_tools.launchers.WinLauncher(mock.MagicMock(), ["dummy"])
         launcher._proc = mock_proc
 
-        launcher.kill()
+        launcher.stop()
 
         mock_proc.kill.assert_called_once()
-        mock_alive.assert_called_once()
+        mock_alive.assert_called()
 
     def test_IsAlive_NoProc_False(self):
         launcher = ly_test_tools.launchers.WinLauncher(mock.MagicMock(), ["dummy"])

@@ -8,10 +8,12 @@
 
 #pragma once
 
+#include <AzCore/PlatformDef.h>
+
 #ifdef PLUGIN_EXPORTS
-#define PLUGIN_API DLL_EXPORT
+#define PLUGIN_API AZ_DLL_EXPORT
 #else
-#define PLUGIN_API DLL_IMPORT
+#define PLUGIN_API AZ_DLL_IMPORT
 #endif
 
 #include <ISystem.h>

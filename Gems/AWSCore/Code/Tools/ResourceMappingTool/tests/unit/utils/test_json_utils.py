@@ -50,8 +50,8 @@ class TestJsonUtils(TestCase):
     }
 
     def setUp(self) -> None:
-        schema_path: str = file_utils.join_path(file_utils.get_parent_directory_path(__file__, 4),
-                                                'resource_mapping_schema.json')
+        schema_path: str = file_utils.join_path(file_utils.get_parent_directory_path(__file__, 7),
+                                                'Assets/resource_mapping_schema.json')
         json_utils.load_resource_mapping_json_schema(schema_path)
 
         self._mock_open = mock_open()

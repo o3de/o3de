@@ -112,13 +112,19 @@ namespace AZ
         }
 
         AttachmentReadback::AttachmentReadback(const RHI::ScopeId& scopeId)
-            : m_readbackBufferArray({ nullptr, nullptr, nullptr })
-            , m_isReadbackComplete({ false, false, false })
         {
+            for(uint32_t i = 0; i < RHI::Limits::Device::FrameCountMax; i++)
+            {
+                m_readbackBufferArray.push_back(nullptr);
+                m_isReadbackComplete.push_back(false);
+            }
+            
             // Create fence
             RHI::Ptr<RHI::Device> device = RHI::RHISystemInterface::Get()->GetDevice();
             m_fence = RHI::Factory::Get().CreateFence();
-            m_fence->Init(*device, RHI::FenceState::Reset);
+            AZ_Assert(m_fence != nullptr, "AttachmentReadback failed to create a fence");
+            [[maybe_unused]] RHI::ResultCode result = m_fence->Init(*device, RHI::FenceState::Reset);
+            AZ_Assert(result == RHI::ResultCode::Success, "AttachmentReadback failed to init fence");
 
             // Load shader and srg
             const char* ShaderPath = "shaders/decomposemsimage.azshader";
@@ -176,7 +182,7 @@ namespace AZ
 
         bool AttachmentReadback::ReadPassAttachment(const PassAttachment* attachment, const AZ::Name& readbackName)
         {
-            if (AZ::RHI::IsNullRenderer())
+            if (AZ::RHI::IsNullRHI())
             {
                 return false;
             }
@@ -251,7 +257,7 @@ namespace AZ
         void AttachmentReadback::DecomposePrepare(RHI::FrameGraphInterface frameGraph)
         {
             RHI::ImageScopeAttachmentDescriptor inputDesc{ m_attachmentId };
-            inputDesc.m_imageViewDescriptor.m_aspectFlags = RHI::CheckBitsAll(RHI::GetImageAspectFlags(m_imageDescriptor.m_format), RHI::ImageAspectFlags::Depth)?
+            inputDesc.m_imageViewDescriptor.m_aspectFlags = RHI::CheckBitsAny(RHI::GetImageAspectFlags(m_imageDescriptor.m_format), RHI::ImageAspectFlags::Depth)?
                 RHI::ImageAspectFlags::Depth:RHI::ImageAspectFlags::Color;
             frameGraph.UseAttachment(inputDesc, RHI::ScopeAttachmentAccess::Read, RHI::ScopeAttachmentUsage::Shader);
             RHI::ImageScopeAttachmentDescriptor outputDesc{ m_copyAttachmentId };
@@ -366,6 +372,11 @@ namespace AZ
             {
                 // copy image to read back buffer since only buffer can be accessed by host
                 const AZ::RHI::Image* image = context.GetImage(m_copyAttachmentId);
+                if (!image)
+                {
+                    AZ_Warning("AttachmentReadback", false, "Failed to find attachment image %s for copy to buffer", m_copyAttachmentId.GetCStr());
+                    return;
+                }
                 m_imageDescriptor = image->GetDescriptor();
 
                 // [GFX TODO] [ATOM-14140] [Pass Tree] Add the ability to output all the mipmaps, array and planars
@@ -427,13 +438,16 @@ namespace AZ
             m_state = ReadbackState::Idle;
             m_readbackName = AZ::Name{};
             m_dataBuffer = nullptr;
-            m_fence->Reset();
             m_copyAttachmentId = RHI::AttachmentId{};
             m_decomposeScopeProducer = nullptr;
             if (m_decomposeSrg)
             {
                 m_decomposeSrg->SetImageView(m_decomposeInputImageIndex, nullptr);
                 m_decomposeSrg->SetImageView(m_decomposeOutputImageIndex, nullptr);
+            }
+            if (m_fence)
+            {
+                m_fence->Reset();
             }
         }
 
@@ -445,6 +459,11 @@ namespace AZ
         void AttachmentReadback::SetCallback(CallbackFunction callback)
         {
             m_callback = callback;
+        }
+
+        void AttachmentReadback::SetUserIdentifier(uint32_t userIdentifier)
+        {
+            m_userIdentifier = userIdentifier;
         }
 
         void AttachmentReadback::FrameBegin(Pass::FramePrepareParams params)
@@ -501,6 +520,7 @@ namespace AZ
             result.m_attachmentType = m_attachmentType;
             result.m_dataBuffer = m_dataBuffer;
             result.m_name = m_readbackName;
+            result.m_userIdentifier = m_userIdentifier;
             result.m_imageDescriptor = m_imageDescriptor;
             result.m_imageDescriptor.m_arraySize = 1;
             return result;
@@ -542,10 +562,13 @@ namespace AZ
                 }
 
                 readbackBufferCurrent->Unmap();
+                m_isReadbackComplete[readbackBufferIndex] = true;
+                return true;
             }
-
-            m_isReadbackComplete[readbackBufferIndex] = true;
-            return true;
+            else
+            {
+                return false;
+            }
         }
     }   // namespace RPI
 }   // namespace AZ

@@ -238,7 +238,7 @@ namespace AZ
                         behaviorMethod->GetNumArguments());
                     return AZStd::any(false);
                 }
-                AZ::BehaviorValueParameter behaviorParamList[behaviorParamListSize];
+                AZ::BehaviorArgument behaviorParamList[behaviorParamListSize];
 
                 // detect if the method passes in a "this" pointer which can be true if the method is a member function
                 // or if the first argument is the same as the behavior class such as from a lambda function
@@ -254,7 +254,7 @@ namespace AZ
                 {
                     // avoiding the "Special handling for the generic object holder." since it assumes
                     // the BehaviorObject.m_value is a pointer; the reference version is already dereferenced
-                    AZ::BehaviorValueParameter theThisPointer;
+                    AZ::BehaviorArgument theThisPointer;
                     const void* self = reinterpret_cast<const void*>(m_graphObject.get());
                     if ((thisInfo->m_traits & AZ::BehaviorParameter::TR_POINTER) == AZ::BehaviorParameter::TR_POINTER)
                     {
@@ -288,12 +288,36 @@ namespace AZ
                     ++paramCount;
                 }
 
-                AZ::BehaviorValueParameter returnBehaviorValue;
+                AZ::BehaviorArgument returnBehaviorValue;
                 if (behaviorMethod->HasResult())
                 {
                     returnBehaviorValue.Set(*behaviorMethod->GetResult());
-                    returnBehaviorValue.m_value =
-                        returnBehaviorValue.m_tempData.allocate(returnBehaviorValue.m_azRtti->GetTypeSize(), 16);
+                    const size_t typeSize = returnBehaviorValue.m_azRtti->GetTypeSize();
+
+                    if (returnBehaviorValue.m_traits & BehaviorParameter::TR_POINTER)
+                    {
+                        // Used to allocate storage to store a copy of a pointer and the allocated memory address in one block.
+                        constexpr size_t PointerAllocationStorage = 2 * sizeof(void*);
+                        void* valueAddress = returnBehaviorValue.m_tempData.allocate(PointerAllocationStorage, 16, 0);
+                        void* valueAddressPtr = reinterpret_cast<AZ::u8*>(valueAddress) + sizeof(void*);
+                        ::memset(valueAddress, 0, sizeof(void*));
+                        *reinterpret_cast<void**>(valueAddressPtr) = valueAddress;
+                        returnBehaviorValue.m_value = valueAddressPtr;
+                    }
+                    else if (returnBehaviorValue.m_traits & BehaviorParameter::TR_REFERENCE)
+                    {
+                        // the reference value will just be assigned
+                        returnBehaviorValue.m_value = nullptr;
+                    }
+                    else if (typeSize < returnBehaviorValue.m_tempData.max_size())
+                    {
+                        returnBehaviorValue.m_value = returnBehaviorValue.m_tempData.allocate(typeSize, 16);
+                    }
+                    else
+                    {
+                        AZ_Warning("SceneAPI", false, "Can't invoke method since the return value is too big; %d bytes", typeSize);
+                        return AZStd::any(false);
+                    }
                 }
 
                 if (!entry->second->Call(behaviorParamList, paramCount, &returnBehaviorValue))
@@ -312,7 +336,7 @@ namespace AZ
             }
 
             template <typename FROM, typename TO>
-            bool ConvertFromTo(AZStd::any& input, const AZ::BehaviorParameter* argBehaviorInfo, AZ::BehaviorValueParameter& behaviorParam)
+            bool ConvertFromTo(AZStd::any& input, const AZ::BehaviorParameter* argBehaviorInfo, AZ::BehaviorArgument& behaviorParam)
             {
                 if (input.get_type_info().m_id != azrtti_typeid<FROM>())
                 {
@@ -329,7 +353,7 @@ namespace AZ
                 return true;
             }
 
-            bool GraphObjectProxy::Convert(AZStd::any& input, const AZ::BehaviorParameter* argBehaviorInfo, AZ::BehaviorValueParameter& behaviorParam)
+            bool GraphObjectProxy::Convert(AZStd::any& input, const AZ::BehaviorParameter* argBehaviorInfo, AZ::BehaviorArgument& behaviorParam)
             {
                 if (input.get_type_info().m_id == argBehaviorInfo->m_typeId)
                 {

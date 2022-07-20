@@ -34,16 +34,13 @@ AZ_POP_DISABLE_WARNING
     #define PIXEndEvent(...)
 #endif //USE_PIX
 
-// This define controls whether ID3D12PipelineLibrary instances are used to de-duplicate
-// pipeline states. This feature was added in the Windows Anniversary Update, so if you
-// have an older version of windows this will need to be disabled.
-#define AZ_DX12_USE_PIPELINE_LIBRARY
-
-// Enabling this define will force every scope into its own command list that
-// is explicitly flushed through the GPU before the next scope is processed.
-// Use it to debug TDR's when you need to know which scope is causing the problem.
-//#define AZ_DX12_FORCE_FLUSH_SCOPES
-
+// Wrapper around PipelineLibrary code
+// We have disabled PSO caching for DX12 as there is a bug where the same PSO hash for a shader (like StandardPBR_ForwardPass_EDS) yields a different PipelineLibrary binary file
+// when written out from different user flows. For example a D3D12_GRAPHICS_PIPELINE_STATE_DESC with the same hash  when written out from ASV full test suite will yield
+// a different binary when compared to the one written out from Editor user flow. The only difference between the two workflows is that the shader options differ but in the
+// end both the flows should yield the same bytecode as they should pick the same shader variant yet the cached pso differs for some reason.
+// This seems like a driver bug that we suspect is causing flickering issues. Need to follow up with Microsoft with this issue.
+//#define AZ_DX12_USE_PIPELINE_LIBRARY
 
 // This define is enabled if Aftermath SDK is downloaded and the path is hooked up to Env var ATOM_AFTERMATH_PATH.
 // Enabling this define will allow AfterMath SDK to do a dump in case of GPU crash/TDR.

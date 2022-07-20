@@ -16,7 +16,6 @@
     "dependencies": [
         "Atom_RHI",
         "Atom_RPI",
-        "Atom_Bootstrap",
-        "Atom_AtomBridge"
+        "Atom_Bootstrap"
     ]
 }

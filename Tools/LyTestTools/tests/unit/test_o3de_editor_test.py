@@ -11,30 +11,63 @@ import unittest.mock as mock
 
 import ly_test_tools
 import ly_test_tools.o3de.editor_test as editor_test
+import ly_test_tools.launchers.exceptions
 
 pytestmark = pytest.mark.SUITE_smoke
 
-class TestEditorTestBase(unittest.TestCase):
+
+class TestEditorTest(unittest.TestCase):
 
     def test_EditorSharedTest_Init_CorrectAttributes(self):
         mock_editorsharedtest = editor_test.EditorSharedTest()
-        assert mock_editorsharedtest.is_batchable == True
-        assert mock_editorsharedtest.is_parallelizable == True
+        assert mock_editorsharedtest.is_batchable
+        assert mock_editorsharedtest.is_parallelizable
 
     def test_EditorParallelTest_Init_CorrectAttributes(self):
         mock_editorsharedtest = editor_test.EditorParallelTest()
-        assert mock_editorsharedtest.is_batchable == False
-        assert mock_editorsharedtest.is_parallelizable == True
+        assert not mock_editorsharedtest.is_batchable
+        assert mock_editorsharedtest.is_parallelizable
 
     def test_EditorBatchedTest_Init_CorrectAttributes(self):
         mock_editorsharedtest = editor_test.EditorBatchedTest()
-        assert mock_editorsharedtest.is_batchable == True
-        assert mock_editorsharedtest.is_parallelizable == False
+        assert mock_editorsharedtest.is_batchable
+        assert not mock_editorsharedtest.is_parallelizable
 
-class TestResultBase(unittest.TestCase):
+    def test_SplitBatchedEditorLogFile_FoundTestCase_SavesTwoLogs(self):
+        mock_workspace = mock.MagicMock()
+        starting_path = "C:/Git/o3de/AutomatedTesting/user/log_test_1/(1)editor_test.log"
+        destination_file = "C:/Git/o3de/build/windows/Testing/LyTestTools/arbitrary/(1)editor_test.log"
+        log_file_to_split = "(1)editor_test.log"
+        mock_data = 'plus some text here \n and more dummy (python) - Running automated test: ' \
+                    'C:\\Git\\o3de\\AutomatedTesting\\Gem\\PythonTests\\largeworlds\\dyn_veg\\EditorScripts' \
+                    '\\SurfaceDataRefreshes_RemainsStable.py (testcase ) \n plus some other text \n'
+        with mock.patch('builtins.open', mock.mock_open(read_data=mock_data)) as mock_file:
+            editor_test._split_batched_editor_log_file(mock_workspace, starting_path, destination_file, log_file_to_split)
+
+        assert mock_workspace.artifact_manager.save_artifact.call_count == 2
+
+    def test_SplitBatchedEditorLogFile_DidNotFindTestCase_SavesOneLog(self):
+        mock_workspace = mock.MagicMock()
+        starting_path = "C:/Git/o3de/AutomatedTesting/user/log_test_1/(1)editor_test.log"
+        destination_file = "C:/Git/o3de/build/windows/Testing/LyTestTools/arbitrary/(1)editor_test.log"
+        log_file_to_split = "(1)editor_test.log"
+        mock_data = 'plus some text here \n and more dummy (python) - Running automated test: ' \
+                    'C:\\Git\\o3de\\AutomatedTesting\\Gem\\PythonTests\\largeworlds\\dyn_veg\\EditorScripts' \
+                    '\\SurfaceDataRefreshes_RemainsStable.\n plus some other text \n'
+        with mock.patch('builtins.open', mock.mock_open(read_data=mock_data)) as mock_file:
+            editor_test._split_batched_editor_log_file(mock_workspace, starting_path, destination_file, log_file_to_split)
+
+        assert mock_workspace.artifact_manager.save_artifact.call_count == 1
+
+
+class TestResultType(unittest.TestCase):
+
+    class DummySubclass(editor_test.Result.ResultType):
+        def __str__(self):
+            return None
 
     def setUp(self):
-        self.mock_result = editor_test.Result.Base()
+        self.mock_result = TestResultType.DummySubclass()
 
     def test_GetOutputStr_HasOutput_ReturnsCorrectly(self):
         self.mock_result.output = 'expected output'
@@ -52,6 +85,7 @@ class TestResultBase(unittest.TestCase):
         self.mock_result.editor_log = None
         assert self.mock_result.get_editor_log_str() == '-- No editor log found --'
 
+
 class TestResultPass(unittest.TestCase):
 
     def test_Create_ValidArgs_CorrectAttributes(self):
@@ -59,18 +93,19 @@ class TestResultPass(unittest.TestCase):
         mock_output = mock.MagicMock()
         mock_editor_log = mock.MagicMock()
 
-        mock_pass = editor_test.Result.Pass.create(mock_test_spec, mock_output, mock_editor_log)
-        assert mock_pass.test_spec == mock_test_spec
-        assert mock_pass.output == mock_output
-        assert mock_pass.editor_log == mock_editor_log
+        under_test = editor_test.Result.Pass(mock_test_spec, mock_output, mock_editor_log)
+        assert under_test.test_spec == mock_test_spec
+        assert under_test.output == mock_output
+        assert under_test.editor_log == mock_editor_log
 
     def test_Str_ValidString_ReturnsOutput(self):
         mock_test_spec = mock.MagicMock()
         mock_output = 'mock_output'
         mock_editor_log = mock.MagicMock()
 
-        mock_pass = editor_test.Result.Pass.create(mock_test_spec, mock_output, mock_editor_log)
-        assert mock_output in str(mock_pass)
+        under_test = editor_test.Result.Pass(mock_test_spec, mock_output, mock_editor_log)
+        assert mock_output in str(under_test)
+
 
 class TestResultFail(unittest.TestCase):
 
@@ -79,19 +114,20 @@ class TestResultFail(unittest.TestCase):
         mock_output = mock.MagicMock()
         mock_editor_log = mock.MagicMock()
 
-        mock_pass = editor_test.Result.Fail.create(mock_test_spec, mock_output, mock_editor_log)
-        assert mock_pass.test_spec == mock_test_spec
-        assert mock_pass.output == mock_output
-        assert mock_pass.editor_log == mock_editor_log
+        under_test = editor_test.Result.Fail(mock_test_spec, mock_output, mock_editor_log)
+        assert under_test.test_spec == mock_test_spec
+        assert under_test.output == mock_output
+        assert under_test.editor_log == mock_editor_log
 
     def test_Str_ValidString_ReturnsOutput(self):
         mock_test_spec = mock.MagicMock()
         mock_output = 'mock_output'
         mock_editor_log = 'mock_editor_log'
 
-        mock_pass = editor_test.Result.Fail.create(mock_test_spec, mock_output, mock_editor_log)
-        assert mock_output in str(mock_pass)
-        assert mock_editor_log in str(mock_pass)
+        under_test = editor_test.Result.Fail(mock_test_spec, mock_output, mock_editor_log)
+        assert mock_output in str(under_test)
+        assert mock_editor_log in str(under_test)
+
 
 class TestResultCrash(unittest.TestCase):
 
@@ -102,13 +138,13 @@ class TestResultCrash(unittest.TestCase):
         mock_ret_code = mock.MagicMock()
         mock_stacktrace = mock.MagicMock()
 
-        mock_pass = editor_test.Result.Crash.create(mock_test_spec, mock_output, mock_ret_code, mock_stacktrace,
+        under_test = editor_test.Result.Crash(mock_test_spec, mock_output, mock_ret_code, mock_stacktrace,
                                                     mock_editor_log)
-        assert mock_pass.test_spec == mock_test_spec
-        assert mock_pass.output == mock_output
-        assert mock_pass.editor_log == mock_editor_log
-        assert mock_pass.ret_code == mock_ret_code
-        assert mock_pass.stacktrace == mock_stacktrace
+        assert under_test.test_spec == mock_test_spec
+        assert under_test.output == mock_output
+        assert under_test.editor_log == mock_editor_log
+        assert under_test.ret_code == mock_ret_code
+        assert under_test.stacktrace == mock_stacktrace
 
     def test_Str_ValidString_ReturnsOutput(self):
         mock_test_spec = mock.MagicMock()
@@ -117,11 +153,11 @@ class TestResultCrash(unittest.TestCase):
         mock_return_code = 0
         mock_stacktrace = 'mock stacktrace'
 
-        mock_pass = editor_test.Result.Crash.create(mock_test_spec, mock_output, mock_return_code, mock_stacktrace,
+        under_test = editor_test.Result.Crash(mock_test_spec, mock_output, mock_return_code, mock_stacktrace,
                                                     mock_editor_log)
-        assert mock_stacktrace in str(mock_pass)
-        assert mock_output in str(mock_pass)
-        assert mock_editor_log in str(mock_pass)
+        assert mock_stacktrace in str(under_test)
+        assert mock_output in str(under_test)
+        assert mock_editor_log in str(under_test)
 
     def test_Str_MissingStackTrace_ReturnsCorrectly(self):
         mock_test_spec = mock.MagicMock()
@@ -129,10 +165,11 @@ class TestResultCrash(unittest.TestCase):
         mock_editor_log = 'mock_editor_log'
         mock_return_code = 0
         mock_stacktrace = None
-        mock_pass = editor_test.Result.Crash.create(mock_test_spec, mock_output, mock_return_code, mock_stacktrace,
-                                                    mock_editor_log)
-        assert mock_output in str(mock_pass)
-        assert mock_editor_log in str(mock_pass)
+        under_test = editor_test.Result.Crash(mock_test_spec, mock_output, mock_return_code, mock_stacktrace,
+                                              mock_editor_log)
+        assert mock_output in str(under_test)
+        assert mock_editor_log in str(under_test)
+
 
 class TestResultTimeout(unittest.TestCase):
 
@@ -142,11 +179,11 @@ class TestResultTimeout(unittest.TestCase):
         mock_editor_log = mock.MagicMock()
         mock_timeout = mock.MagicMock()
 
-        mock_pass = editor_test.Result.Timeout.create(mock_test_spec, mock_output, mock_timeout, mock_editor_log)
-        assert mock_pass.test_spec == mock_test_spec
-        assert mock_pass.output == mock_output
-        assert mock_pass.editor_log == mock_editor_log
-        assert mock_pass.time_secs == mock_timeout
+        under_test = editor_test.Result.Timeout(mock_test_spec, mock_output, mock_timeout, mock_editor_log)
+        assert under_test.test_spec == mock_test_spec
+        assert under_test.output == mock_output
+        assert under_test.editor_log == mock_editor_log
+        assert under_test.time_secs == mock_timeout
 
     def test_Str_ValidString_ReturnsOutput(self):
         mock_test_spec = mock.MagicMock()
@@ -154,9 +191,10 @@ class TestResultTimeout(unittest.TestCase):
         mock_editor_log = 'mock_editor_log'
         mock_timeout = 0
 
-        mock_pass = editor_test.Result.Timeout.create(mock_test_spec, mock_output, mock_timeout, mock_editor_log)
-        assert mock_output in str(mock_pass)
-        assert mock_editor_log in str(mock_pass)
+        under_test = editor_test.Result.Timeout(mock_test_spec, mock_output, mock_timeout, mock_editor_log)
+        assert mock_output in str(under_test)
+        assert mock_editor_log in str(under_test)
+
 
 class TestResultUnknown(unittest.TestCase):
 
@@ -166,11 +204,11 @@ class TestResultUnknown(unittest.TestCase):
         mock_editor_log = mock.MagicMock()
         mock_extra_info = mock.MagicMock()
 
-        mock_pass = editor_test.Result.Unknown.create(mock_test_spec, mock_output, mock_extra_info, mock_editor_log)
-        assert mock_pass.test_spec == mock_test_spec
-        assert mock_pass.output == mock_output
-        assert mock_pass.editor_log == mock_editor_log
-        assert mock_pass.extra_info == mock_extra_info
+        under_test = editor_test.Result.Unknown(mock_test_spec, mock_output, mock_extra_info, mock_editor_log)
+        assert under_test.test_spec == mock_test_spec
+        assert under_test.output == mock_output
+        assert under_test.editor_log == mock_editor_log
+        assert under_test.extra_info == mock_extra_info
 
     def test_Str_ValidString_ReturnsOutput(self):
         mock_test_spec = mock.MagicMock()
@@ -178,9 +216,10 @@ class TestResultUnknown(unittest.TestCase):
         mock_editor_log = 'mock_editor_log'
         mock_extra_info = 'mock extra info'
 
-        mock_pass = editor_test.Result.Unknown.create(mock_test_spec, mock_output, mock_extra_info, mock_editor_log)
-        assert mock_output in str(mock_pass)
-        assert mock_editor_log in str(mock_pass)
+        under_test = editor_test.Result.Unknown(mock_test_spec, mock_output, mock_extra_info, mock_editor_log)
+        assert mock_output in str(under_test)
+        assert mock_editor_log in str(under_test)
+
 
 class TestEditorTestSuite(unittest.TestCase):
 
@@ -191,7 +230,6 @@ class TestEditorTestSuite(unittest.TestCase):
         mock_asset_processor = mock.MagicMock()
         for test_data in mock_test_data_generator:
             test_data.asset_processor = mock_asset_processor
-        mock_asset_processor.stop.assert_called_once_with(1)
         mock_asset_processor.teardown.assert_called()
         assert test_data.asset_processor is None
         mock_kill_processes.assert_called_once_with(include_asset_processor=True)
@@ -295,7 +333,7 @@ class TestEditorTestSuite(unittest.TestCase):
         assert mock_get_shared_tests.called
         assert mock_filter_session.called
 
-    @mock.patch('ly_test_tools.o3de.editor_test.skipping_pytest_runtest_setup', mock.MagicMock())
+    @mock.patch('ly_test_tools.o3de.editor_test.skip_pytest_runtest_setup', mock.MagicMock())
     def test_FilterSessionSharedTests_OneSharedTest_ReturnsOne(self):
         def mock_test():
             pass
@@ -308,7 +346,7 @@ class TestEditorTestSuite(unittest.TestCase):
         assert selected_tests == mock_session_items
         assert len(selected_tests) == 1
 
-    @mock.patch('ly_test_tools.o3de.editor_test.skipping_pytest_runtest_setup', mock.MagicMock())
+    @mock.patch('ly_test_tools.o3de.editor_test.skip_pytest_runtest_setup', mock.MagicMock())
     def test_FilterSessionSharedTests_ManyTests_ReturnsCorrectTests(self):
         def mock_test():
             pass
@@ -328,7 +366,7 @@ class TestEditorTestSuite(unittest.TestCase):
         selected_tests = editor_test.EditorTestSuite.filter_session_shared_tests(mock_session_items, mock_shared_tests)
         assert selected_tests == mock_session_items
 
-    @mock.patch('ly_test_tools.o3de.editor_test.skipping_pytest_runtest_setup')
+    @mock.patch('ly_test_tools.o3de.editor_test.skip_pytest_runtest_setup')
     def test_FilterSessionSharedTests_SkipOneTest_ReturnsCorrectTests(self, mock_skip):
         def mock_test():
             pass
@@ -349,7 +387,7 @@ class TestEditorTestSuite(unittest.TestCase):
         selected_tests = editor_test.EditorTestSuite.filter_session_shared_tests(mock_session_items, mock_shared_tests)
         assert selected_tests == [mock_test]
 
-    @mock.patch('ly_test_tools.o3de.editor_test.skipping_pytest_runtest_setup', mock.MagicMock(side_effect=Exception))
+    @mock.patch('ly_test_tools.o3de.editor_test.skip_pytest_runtest_setup', mock.MagicMock(side_effect=Exception))
     def test_FilterSessionSharedTests_ExceptionDuringSkipSetup_SkipsAddingTest(self):
         def mock_test():
             pass
@@ -387,6 +425,7 @@ class TestEditorTestSuite(unittest.TestCase):
             mock_shared_tests, is_batchable=False, is_parallelizable=False)
         assert filtered_tests == [mock_test_2]
 
+
 class TestUtils(unittest.TestCase):
 
     @mock.patch('ly_test_tools.o3de.editor_test_utils.kill_all_ly_processes')
@@ -416,6 +455,7 @@ class TestUtils(unittest.TestCase):
         assert isinstance(mock_editor_data.asset_processor, ly_test_tools.o3de.asset_processor.AssetProcessor)
         assert mock_start.called
 
+#TODO not run???
     @mock.patch('ly_test_tools.o3de.asset_processor.AssetProcessor.start')
     @mock.patch('ly_test_tools.environment.process_utils.process_exists')
     @mock.patch('ly_test_tools.o3de.editor_test_utils.kill_all_ly_processes')
@@ -458,9 +498,8 @@ class TestUtils(unittest.TestCase):
         assert mock_prepare_ap.called
         mock_kill_processes.assert_called_once_with(include_asset_processor=False)
 
-    @mock.patch('ly_test_tools.o3de.editor_test.Result.Pass.create')
     @mock.patch('ly_test_tools.o3de.editor_test_utils.get_module_filename')
-    def test_GetResultsUsingOutput_ValidJsonSuccess_CreatesPassResult(self, mock_get_module, mock_create):
+    def test_GetResultsUsingOutput_ValidJsonSuccess_CreatesPassResult(self, mock_get_module):
         mock_get_module.return_value = 'mock_module_name'
         mock_test_suite = editor_test.EditorTestSuite()
         mock_test = mock.MagicMock()
@@ -469,17 +508,14 @@ class TestUtils(unittest.TestCase):
         mock_output = 'JSON_START(' \
                       '{"name": "mock_module_name", "output": "mock_std_out", "success": "mock_success_data"}' \
                       ')JSON_END'
-        mock_pass = mock.MagicMock()
-        mock_create.return_value = mock_pass
 
         results = mock_test_suite._get_results_using_output(mock_test_list, mock_output, '')
-        assert mock_create.called
         assert len(results) == 1
-        assert results[mock_test.__name__] == mock_pass
+        assert 'mock_test_name' in results.keys()
+        assert isinstance(results['mock_test_name'], editor_test.Result.Pass)
 
-    @mock.patch('ly_test_tools.o3de.editor_test.Result.Fail.create')
     @mock.patch('ly_test_tools.o3de.editor_test_utils.get_module_filename')
-    def test_GetResultsUsingOutput_ValidJsonFail_CreatesFailResult(self, mock_get_module, mock_create):
+    def test_GetResultsUsingOutput_ValidJsonFail_CreatesFailResult(self, mock_get_module):
         mock_get_module.return_value = 'mock_module_name'
         mock_test_suite = editor_test.EditorTestSuite()
         mock_test = mock.MagicMock()
@@ -488,17 +524,14 @@ class TestUtils(unittest.TestCase):
         mock_output = 'JSON_START(' \
                       '{"name": "mock_module_name", "output": "mock_std_out", "failed": "mock_fail_data", "success": ""}' \
                       ')JSON_END'
-        mock_fail = mock.MagicMock()
-        mock_create.return_value = mock_fail
 
         results = mock_test_suite._get_results_using_output(mock_test_list, mock_output, '')
-        assert mock_create.called
         assert len(results) == 1
-        assert results[mock_test.__name__] == mock_fail
+        assert 'mock_test_name' in results.keys()
+        assert isinstance(results['mock_test_name'], editor_test.Result.Fail)
 
-    @mock.patch('ly_test_tools.o3de.editor_test.Result.Unknown.create')
     @mock.patch('ly_test_tools.o3de.editor_test_utils.get_module_filename')
-    def test_GetResultsUsingOutput_ModuleNotInLog_CreatesUnknownResult(self, mock_get_module, mock_create):
+    def test_GetResultsUsingOutput_ModuleNotInLog_CreatesUnknownResult(self, mock_get_module):
         mock_get_module.return_value = 'different_module_name'
         mock_test_suite = editor_test.EditorTestSuite()
         mock_test = mock.MagicMock()
@@ -507,20 +540,14 @@ class TestUtils(unittest.TestCase):
         mock_output = 'JSON_START(' \
                       '{"name": "mock_module_name", "output": "mock_std_out", "failed": "mock_fail_data"}' \
                       ')JSON_END'
-        mock_unknown = mock.MagicMock()
-        mock_create.return_value = mock_unknown
 
         results = mock_test_suite._get_results_using_output(mock_test_list, mock_output, '')
-        assert mock_create.called
         assert len(results) == 1
-        assert results[mock_test.__name__] == mock_unknown
+        assert 'mock_test_name' in results.keys()
+        assert isinstance(results['mock_test_name'], editor_test.Result.Unknown)
 
-    @mock.patch('ly_test_tools.o3de.editor_test.Result.Pass.create')
-    @mock.patch('ly_test_tools.o3de.editor_test.Result.Fail.create')
-    @mock.patch('ly_test_tools.o3de.editor_test.Result.Unknown.create')
     @mock.patch('ly_test_tools.o3de.editor_test_utils.get_module_filename')
-    def test_GetResultsUsingOutput_MultipleTests_CreatesCorrectResults(self, mock_get_module, mock_create_unknown,
-                                                                       mock_create_fail, mock_create_pass):
+    def test_GetResultsUsingOutput_MultipleTests_CreatesCorrectResults(self, mock_get_module):
         mock_get_module.side_effect = ['mock_module_name_pass', 'mock_module_name_fail', 'different_module_name']
         mock_test_suite = editor_test.EditorTestSuite()
         mock_test_pass = mock.MagicMock()
@@ -545,45 +572,36 @@ class TestUtils(unittest.TestCase):
                           'JSON_START(' \
                           '{"name": "mock_module_name_fail"}' \
                           ')JSON_END'
-        mock_unknown = mock.MagicMock()
-        mock_pass = mock.MagicMock()
-        mock_fail = mock.MagicMock()
-        mock_create_unknown.return_value = mock_unknown
-        mock_create_pass.return_value = mock_pass
-        mock_create_fail.return_value = mock_fail
 
         results = mock_test_suite._get_results_using_output(mock_test_list, mock_output, mock_editor_log)
-        mock_create_pass.assert_called_with(
-            mock_test_pass, 'mock_std_out', 'JSON_START({"name": "mock_module_name_pass"})JSON_END')
-        mock_create_fail.assert_called_with(
-            mock_test_fail, 'mock_std_out', 'JSON_START({"name": "mock_module_name_fail"})JSON_END')
-        mock_create_unknown.assert_called_with(
-            mock_test_unknown, mock_output, "Couldn't find any test run information on stdout", mock_editor_log)
         assert len(results) == 3
-        assert results[mock_test_pass.__name__] == mock_pass
-        assert results[mock_test_fail.__name__] == mock_fail
-        assert results[mock_test_unknown.__name__] == mock_unknown
+        assert 'mock_test_name_pass' in results.keys()
+        assert 'mock_test_name_fail' in results.keys()
+        assert 'mock_test_name_unknown' in results.keys()
+        assert isinstance(results['mock_test_name_pass'], editor_test.Result.Pass)
+        assert isinstance(results['mock_test_name_fail'], editor_test.Result.Fail)
+        assert isinstance(results['mock_test_name_unknown'], editor_test.Result.Unknown)
 
     @mock.patch('builtins.print')
     def test_ReportResult_TestPassed_ReportsCorrectly(self, mock_print):
         mock_test_name = 'mock name'
-        mock_pass = ly_test_tools.o3de.editor_test.Result.Pass()
+        mock_pass = ly_test_tools.o3de.editor_test.Result.Pass("", "", "")
         ly_test_tools.o3de.editor_test.EditorTestSuite._report_result(mock_test_name, mock_pass)
         mock_print.assert_called_with(f'Test {mock_test_name}:\nTest Passed\n------------\n|  Output  |\n------------\n'
                                       f'-- No output --\n')
 
     @mock.patch('pytest.fail')
     def test_ReportResult_TestFailed_FailsCorrectly(self, mock_pytest_fail):
-        mock_fail = ly_test_tools.o3de.editor_test.Result.Fail()
+        mock_fail = ly_test_tools.o3de.editor_test.Result.Fail("", "", "")
 
         ly_test_tools.o3de.editor_test.EditorTestSuite._report_result('mock_test_name', mock_fail)
         mock_pytest_fail.assert_called_with('Test mock_test_name:\nTest FAILED\n------------\n|  Output  |'
                                             '\n------------\n-- No output --\n--------------\n| Editor log |'
                                             '\n--------------\n-- No editor log found --\n')
 
+
 class TestRunningTests(unittest.TestCase):
 
-    @mock.patch('ly_test_tools.o3de.editor_test.Result.Pass.create')
     @mock.patch('ly_test_tools.o3de.editor_test.EditorTestSuite._get_results_using_output')
     @mock.patch('ly_test_tools.o3de.editor_test_utils.retrieve_editor_log_content')
     @mock.patch('ly_test_tools.o3de.editor_test_utils.retrieve_log_path')
@@ -592,7 +610,7 @@ class TestRunningTests(unittest.TestCase):
     @mock.patch('os.path.join', mock.MagicMock())
     def test_ExecEditorTest_TestSucceeds_ReturnsPass(self, mock_cycle_crash, mock_get_testcase_filepath,
                                                      mock_retrieve_log, mock_retrieve_editor_log,
-                                                     mock_get_output_results, mock_create):
+                                                     mock_get_output_results):
         mock_test_suite = ly_test_tools.o3de.editor_test.EditorTestSuite()
         mock_workspace = mock.MagicMock()
         mock_workspace.paths.engine_root.return_value = ""
@@ -601,17 +619,13 @@ class TestRunningTests(unittest.TestCase):
         mock_test_spec.__name__ = 'mock_test_name'
         mock_editor.get_returncode.return_value = 0
         mock_get_output_results.return_value = {}
-        mock_pass = mock.MagicMock()
-        mock_create.return_value = mock_pass
 
         results = mock_test_suite._exec_editor_test(mock.MagicMock(), mock_workspace, mock_editor, 0,
                                                     'mock_log_name', mock_test_spec, [])
+        assert isinstance(results[mock_test_spec.__name__], editor_test.Result.Pass)
         assert mock_cycle_crash.called
         assert mock_editor.start.called
-        assert mock_create.called
-        assert results == {mock_test_spec.__name__: mock_pass}
 
-    @mock.patch('ly_test_tools.o3de.editor_test.Result.Fail.create')
     @mock.patch('ly_test_tools.o3de.editor_test.EditorTestSuite._get_results_using_output')
     @mock.patch('ly_test_tools.o3de.editor_test_utils.retrieve_editor_log_content')
     @mock.patch('ly_test_tools.o3de.editor_test_utils.retrieve_log_path')
@@ -620,7 +634,7 @@ class TestRunningTests(unittest.TestCase):
     @mock.patch('os.path.join', mock.MagicMock())
     def test_ExecEditorTest_TestFails_ReturnsFail(self, mock_cycle_crash, mock_get_testcase_filepath,
                                                      mock_retrieve_log, mock_retrieve_editor_log,
-                                                     mock_get_output_results, mock_create):
+                                                     mock_get_output_results):
         mock_test_suite = ly_test_tools.o3de.editor_test.EditorTestSuite()
         mock_workspace = mock.MagicMock()
         mock_workspace.paths.engine_root.return_value = ""
@@ -629,17 +643,14 @@ class TestRunningTests(unittest.TestCase):
         mock_test_spec.__name__ = 'mock_test_name'
         mock_editor.get_returncode.return_value = 15
         mock_get_output_results.return_value = {}
-        mock_fail = mock.MagicMock()
-        mock_create.return_value = mock_fail
 
         results = mock_test_suite._exec_editor_test(mock.MagicMock(), mock_workspace, mock_editor, 0,
                                                     'mock_log_name', mock_test_spec, [])
+
+        assert isinstance(results[mock_test_spec.__name__], editor_test.Result.Fail)
         assert mock_cycle_crash.called
         assert mock_editor.start.called
-        assert mock_create.called
-        assert results == {mock_test_spec.__name__: mock_fail}
 
-    @mock.patch('ly_test_tools.o3de.editor_test.Result.Crash.create')
     @mock.patch('ly_test_tools.o3de.editor_test_utils.retrieve_crash_output')
     @mock.patch('ly_test_tools.o3de.editor_test.EditorTestSuite._get_results_using_output')
     @mock.patch('ly_test_tools.o3de.editor_test_utils.retrieve_editor_log_content')
@@ -650,7 +661,7 @@ class TestRunningTests(unittest.TestCase):
     @mock.patch('os.path.basename', mock.MagicMock())
     def test_ExecEditorTest_TestCrashes_ReturnsCrash(self, mock_cycle_crash, mock_get_testcase_filepath,
                                                      mock_retrieve_log, mock_retrieve_editor_log,
-                                                     mock_get_output_results, mock_retrieve_crash, mock_create):
+                                                     mock_get_output_results, mock_retrieve_crash):
         mock_test_suite = ly_test_tools.o3de.editor_test.EditorTestSuite()
         mock_workspace = mock.MagicMock()
         mock_workspace.paths.engine_root.return_value = ""
@@ -659,18 +670,16 @@ class TestRunningTests(unittest.TestCase):
         mock_test_spec.__name__ = 'mock_test_name'
         mock_editor.get_returncode.return_value = 1
         mock_get_output_results.return_value = {}
-        mock_crash = mock.MagicMock()
-        mock_create.return_value = mock_crash
 
         results = mock_test_suite._exec_editor_test(mock.MagicMock(), mock_workspace, mock_editor, 0,
                                                     'mock_log_name', mock_test_spec, [])
         assert mock_cycle_crash.call_count == 2
+        assert isinstance(results[mock_test_spec.__name__], editor_test.Result.Crash)
         assert mock_editor.start.called
         assert mock_retrieve_crash.called
-        assert mock_create.called
-        assert results == {mock_test_spec.__name__: mock_crash}
+        # Save editor log, crash log, and crash dmp
+        assert mock_workspace.artifact_manager.save_artifact.call_count == 3
 
-    @mock.patch('ly_test_tools.o3de.editor_test.Result.Timeout.create')
     @mock.patch('ly_test_tools.o3de.editor_test.EditorTestSuite._get_results_using_output')
     @mock.patch('ly_test_tools.o3de.editor_test_utils.retrieve_editor_log_content')
     @mock.patch('ly_test_tools.o3de.editor_test_utils.retrieve_log_path')
@@ -678,7 +687,7 @@ class TestRunningTests(unittest.TestCase):
     @mock.patch('ly_test_tools.o3de.editor_test_utils.cycle_crash_report')
     def test_ExecEditorTest_TestTimeout_ReturnsTimeout(self, mock_cycle_crash, mock_get_testcase_filepath,
                                                      mock_retrieve_log, mock_retrieve_editor_log,
-                                                     mock_get_output_results, mock_create):
+                                                     mock_get_output_results):
         mock_test_suite = ly_test_tools.o3de.editor_test.EditorTestSuite()
         mock_workspace = mock.MagicMock()
         mock_workspace.paths.engine_root.return_value = ""
@@ -687,29 +696,26 @@ class TestRunningTests(unittest.TestCase):
         mock_test_spec.__name__ = 'mock_test_name'
         mock_editor.wait.side_effect = ly_test_tools.launchers.exceptions.WaitTimeoutError()
         mock_get_output_results.return_value = {}
-        mock_timeout = mock.MagicMock()
-        mock_create.return_value = mock_timeout
 
         results = mock_test_suite._exec_editor_test(mock.MagicMock(), mock_workspace, mock_editor, 0,
                                                     'mock_log_name', mock_test_spec, [])
+
+        assert isinstance(results[mock_test_spec.__name__], editor_test.Result.Timeout)
         assert mock_cycle_crash.called
         assert mock_editor.start.called
-        assert mock_editor.kill.called
-        assert mock_create.called
-        assert results == {mock_test_spec.__name__: mock_timeout}
+        assert mock_editor.stop.called
 
-    @mock.patch('ly_test_tools.o3de.editor_test.Result.Pass.create')
-    @mock.patch('ly_test_tools.o3de.editor_test_utils.retrieve_editor_log_content')
-    @mock.patch('ly_test_tools.o3de.editor_test_utils.retrieve_log_path')
     @mock.patch('ly_test_tools.o3de.editor_test_utils.get_testcase_module_filepath')
     @mock.patch('ly_test_tools.o3de.editor_test_utils.cycle_crash_report')
+    @mock.patch('os.unlink', mock.MagicMock())
+    @mock.patch('tempfile.NamedTemporaryFile', mock.MagicMock())
     @mock.patch('os.path.join', mock.MagicMock())
-    def test_ExecEditorMultitest_AllTestsPass_ReturnsPasses(self, mock_cycle_crash, mock_get_testcase_filepath,
-                                                            mock_retrieve_log, mock_retrieve_editor_log, mock_create):
+    @mock.patch('os.path.splitext', mock.MagicMock())
+    @mock.patch('os.path.dirname', mock.MagicMock())
+    def test_ExecEditorMultitest_AllTestsPass_ReturnsPasses(self, mock_cycle_crash, mock_get_filepath):
         mock_test_suite = ly_test_tools.o3de.editor_test.EditorTestSuite()
         mock_workspace = mock.MagicMock()
         mock_artifact_manager = mock.MagicMock()
-        mock_artifact_manager.save_artifact.return_value = mock.MagicMock()
         mock_workspace.artifact_manager = mock_artifact_manager
         mock_workspace.paths.engine_root.return_value = ""
         mock_editor = mock.MagicMock()
@@ -719,25 +725,30 @@ class TestRunningTests(unittest.TestCase):
         mock_test_spec_2 = mock.MagicMock()
         mock_test_spec_2.__name__ = 'mock_test_name_2'
         mock_test_spec_list = [mock_test_spec, mock_test_spec_2]
-        mock_get_testcase_filepath.side_effect = ['mock_path', 'mock_path_2']
-        mock_pass = mock.MagicMock()
-        mock_pass_2 = mock.MagicMock()
-        mock_create.side_effect = [mock_pass, mock_pass_2]
+        mock_get_filepath.return_value = ""
+        mock_path_exists = mock.MagicMock()
+        mock_path_exists.return_value = True
 
-        results = mock_test_suite._exec_editor_multitest(mock.MagicMock(), mock_workspace, mock_editor, 0,
-                                                         'mock_log_name', mock_test_spec_list, [])
-        assert results == {mock_test_spec.__name__: mock_pass, mock_test_spec_2.__name__: mock_pass_2}
+        with mock.patch('builtins.open', mock.mock_open(read_data="")) as mock_file:
+            results = mock_test_suite._exec_editor_multitest(mock.MagicMock(), mock_workspace, mock_editor, 0,
+                                                             'mock_log_name', mock_test_spec_list, [])
+
+        assert len(results) == 2
+        assert isinstance(results['mock_test_name'], editor_test.Result.Pass)
+        assert isinstance(results['mock_test_name_2'], editor_test.Result.Pass)
         assert mock_cycle_crash.called
-        assert mock_create.call_count == 2
+        assert mock_get_filepath.called
 
     @mock.patch('ly_test_tools.o3de.editor_test.EditorTestSuite._get_results_using_output')
-    @mock.patch('ly_test_tools.o3de.editor_test_utils.retrieve_editor_log_content')
-    @mock.patch('ly_test_tools.o3de.editor_test_utils.retrieve_log_path')
     @mock.patch('ly_test_tools.o3de.editor_test_utils.get_testcase_module_filepath')
     @mock.patch('ly_test_tools.o3de.editor_test_utils.cycle_crash_report')
+    @mock.patch('os.unlink', mock.MagicMock())
+    @mock.patch('tempfile.NamedTemporaryFile', mock.MagicMock())
     @mock.patch('os.path.join', mock.MagicMock())
+    @mock.patch('os.path.splitext', mock.MagicMock())
+    @mock.patch('os.path.dirname', mock.MagicMock())
     def test_ExecEditorMultitest_OneFailure_CallsCorrectFunc(self, mock_cycle_crash, mock_get_testcase_filepath,
-                                                           mock_retrieve_log, mock_retrieve_editor_log, mock_get_results):
+                                                             mock_get_results):
         mock_test_suite = ly_test_tools.o3de.editor_test.EditorTestSuite()
         mock_workspace = mock.MagicMock()
         mock_workspace.paths.engine_root.return_value = ""
@@ -749,23 +760,29 @@ class TestRunningTests(unittest.TestCase):
         mock_get_testcase_filepath.side_effect = ['mock_path', 'mock_path_2']
         mock_get_results.return_value = {'mock_test_name': mock.MagicMock(), 'mock_test_name_2': mock.MagicMock()}
 
-        results = mock_test_suite._exec_editor_multitest(mock.MagicMock(), mock_workspace, mock_editor, 0,
-                                                         'mock_log_name', mock_test_spec_list, [])
+        with mock.patch('builtins.open', mock.mock_open(read_data="")) as mock_file:
+            results = mock_test_suite._exec_editor_multitest(mock.MagicMock(), mock_workspace, mock_editor, 0,
+                                                             'mock_log_name', mock_test_spec_list, [])
+
+        assert len(results) == 2
         assert mock_cycle_crash.called
         assert mock_get_results.called
 
-    @mock.patch('ly_test_tools.o3de.editor_test.Result.Crash.create')
     @mock.patch('ly_test_tools.o3de.editor_test_utils.retrieve_crash_output')
     @mock.patch('ly_test_tools.o3de.editor_test.EditorTestSuite._get_results_using_output')
     @mock.patch('ly_test_tools.o3de.editor_test_utils.retrieve_editor_log_content')
     @mock.patch('ly_test_tools.o3de.editor_test_utils.retrieve_log_path')
     @mock.patch('ly_test_tools.o3de.editor_test_utils.get_testcase_module_filepath')
     @mock.patch('ly_test_tools.o3de.editor_test_utils.cycle_crash_report')
+    @mock.patch('os.unlink', mock.MagicMock())
+    @mock.patch('tempfile.NamedTemporaryFile', mock.MagicMock())
     @mock.patch('os.path.join', mock.MagicMock())
     @mock.patch('os.path.basename', mock.MagicMock())
+    @mock.patch('os.path.dirname', mock.MagicMock())
+    @mock.patch('ly_test_tools.o3de.editor_test._split_batched_editor_log_file', mock.MagicMock())
     def test_ExecEditorMultitest_OneCrash_ReportsOnUnknownResult(self, mock_cycle_crash, mock_get_testcase_filepath,
                                                                  mock_retrieve_log, mock_retrieve_editor_log,
-                                                                 mock_get_results, mock_retrieve_crash, mock_create):
+                                                                 mock_get_results, mock_retrieve_crash):
         mock_test_suite = ly_test_tools.o3de.editor_test.EditorTestSuite()
         mock_workspace = mock.MagicMock()
         mock_workspace.paths.engine_root.return_value = ""
@@ -776,33 +793,36 @@ class TestRunningTests(unittest.TestCase):
         mock_test_spec_2 = mock.MagicMock()
         mock_test_spec_2.__name__ = 'mock_test_name_2'
         mock_test_spec_list = [mock_test_spec, mock_test_spec_2]
-        mock_unknown_result = ly_test_tools.o3de.editor_test.Result.Unknown()
+        mock_unknown_result = ly_test_tools.o3de.editor_test.Result.Unknown(test_spec=None)
         mock_unknown_result.test_spec = mock.MagicMock()
         mock_unknown_result.editor_log = mock.MagicMock()
         mock_get_testcase_filepath.side_effect = ['mock_path', 'mock_path_2']
         mock_get_results.return_value = {mock_test_spec.__name__: mock_unknown_result,
                                          mock_test_spec_2.__name__: mock.MagicMock()}
-        mock_crash = mock.MagicMock()
-        mock_create.return_value = mock_crash
 
         results = mock_test_suite._exec_editor_multitest(mock.MagicMock(), mock_workspace, mock_editor, 0,
                                                          'mock_log_name', mock_test_spec_list, [])
         assert mock_cycle_crash.call_count == 2
         assert mock_get_results.called
-        assert results[mock_test_spec.__name__] == mock_crash
+        assert isinstance(results[mock_test_spec.__name__], editor_test.Result.Crash)
+        # Save editor log, crash log, and crash dmp
+        assert mock_workspace.artifact_manager.save_artifact.call_count == 3
 
-    @mock.patch('ly_test_tools.o3de.editor_test.Result.Crash.create')
     @mock.patch('ly_test_tools.o3de.editor_test_utils.retrieve_crash_output')
     @mock.patch('ly_test_tools.o3de.editor_test.EditorTestSuite._get_results_using_output')
     @mock.patch('ly_test_tools.o3de.editor_test_utils.retrieve_editor_log_content')
     @mock.patch('ly_test_tools.o3de.editor_test_utils.retrieve_log_path')
     @mock.patch('ly_test_tools.o3de.editor_test_utils.get_testcase_module_filepath')
     @mock.patch('ly_test_tools.o3de.editor_test_utils.cycle_crash_report')
+    @mock.patch('os.unlink', mock.MagicMock())
+    @mock.patch('tempfile.NamedTemporaryFile', mock.MagicMock())
     @mock.patch('os.path.join', mock.MagicMock())
     @mock.patch('os.path.basename', mock.MagicMock())
+    @mock.patch('os.path.dirname', mock.MagicMock())
+    @mock.patch('ly_test_tools.o3de.editor_test._split_batched_editor_log_file', mock.MagicMock())
     def test_ExecEditorMultitest_ManyUnknown_ReportsUnknownResults(self, mock_cycle_crash, mock_get_testcase_filepath,
                                                                    mock_retrieve_log, mock_retrieve_editor_log,
-                                                                   mock_get_results, mock_retrieve_crash, mock_create):
+                                                                   mock_get_results, mock_retrieve_crash):
         mock_test_suite = ly_test_tools.o3de.editor_test.EditorTestSuite()
         mock_workspace = mock.MagicMock()
         mock_workspace.paths.engine_root.return_value = ""
@@ -813,7 +833,7 @@ class TestRunningTests(unittest.TestCase):
         mock_test_spec_2 = mock.MagicMock()
         mock_test_spec_2.__name__ = 'mock_test_name_2'
         mock_test_spec_list = [mock_test_spec, mock_test_spec_2]
-        mock_unknown_result = ly_test_tools.o3de.editor_test.Result.Unknown()
+        mock_unknown_result = ly_test_tools.o3de.editor_test.Result.Unknown(test_spec=None)
         mock_unknown_result.__name__ = 'mock_test_name'
         mock_unknown_result.test_spec = mock.MagicMock()
         mock_unknown_result.test_spec.__name__ = 'mock_test_spec_name'
@@ -821,17 +841,15 @@ class TestRunningTests(unittest.TestCase):
         mock_get_testcase_filepath.side_effect = ['mock_path', 'mock_path_2']
         mock_get_results.return_value = {mock_test_spec.__name__: mock_unknown_result,
                                          mock_test_spec_2.__name__: mock_unknown_result}
-        mock_crash = mock.MagicMock()
-        mock_create.return_value = mock_crash
 
         results = mock_test_suite._exec_editor_multitest(mock.MagicMock(), mock_workspace, mock_editor, 0,
                                                          'mock_log_name', mock_test_spec_list, [])
         assert mock_cycle_crash.call_count == 2
         assert mock_get_results.called
-        assert results[mock_test_spec.__name__] == mock_crash
-        assert results[mock_test_spec_2.__name__].extra_info
+        assert isinstance(results[mock_test_spec.__name__], editor_test.Result.Crash)
+        assert isinstance(results[mock_test_spec_2.__name__], editor_test.Result.Unknown)
+        assert results[mock_test_spec_2.__name__].extra_info, "Extra info missing from Unknown failure"
 
-    @mock.patch('ly_test_tools.o3de.editor_test.Result.Timeout.create')
     @mock.patch('ly_test_tools.o3de.editor_test.EditorTestSuite._get_results_using_output')
     @mock.patch('ly_test_tools.o3de.editor_test_utils.retrieve_editor_log_content')
     @mock.patch('ly_test_tools.o3de.editor_test_utils.retrieve_log_path')
@@ -839,7 +857,7 @@ class TestRunningTests(unittest.TestCase):
     @mock.patch('ly_test_tools.o3de.editor_test_utils.cycle_crash_report')
     def test_ExecEditorMultitest_EditorTimeout_ReportsCorrectly(self, mock_cycle_crash, mock_get_testcase_filepath,
                                                                 mock_retrieve_log, mock_retrieve_editor_log,
-                                                                mock_get_results, mock_create):
+                                                                mock_get_results):
         mock_test_suite = ly_test_tools.o3de.editor_test.EditorTestSuite()
         mock_workspace = mock.MagicMock()
         mock_workspace.paths.engine_root.return_value = ""
@@ -850,7 +868,7 @@ class TestRunningTests(unittest.TestCase):
         mock_test_spec_2 = mock.MagicMock()
         mock_test_spec_2.__name__ = 'mock_test_name_2'
         mock_test_spec_list = [mock_test_spec, mock_test_spec_2]
-        mock_unknown_result = ly_test_tools.o3de.editor_test.Result.Unknown()
+        mock_unknown_result = ly_test_tools.o3de.editor_test.Result.Unknown(test_spec=None)
         mock_unknown_result.test_spec = mock.MagicMock()
         mock_unknown_result.test_spec.__name__ = 'mock_test_spec_name'
         mock_unknown_result.output = mock.MagicMock()
@@ -858,19 +876,19 @@ class TestRunningTests(unittest.TestCase):
         mock_get_testcase_filepath.side_effect = ['mock_path', 'mock_path_2']
         mock_get_results.return_value = {mock_test_spec.__name__: mock_unknown_result,
                                          mock_test_spec_2.__name__: mock_unknown_result}
-        mock_timeout = mock.MagicMock()
-        mock_create.return_value = mock_timeout
 
         results = mock_test_suite._exec_editor_multitest(mock.MagicMock(), mock_workspace, mock_editor, 0,
                                                          'mock_log_name', mock_test_spec_list, [])
         assert mock_cycle_crash.called
         assert mock_get_results.called
-        assert results[mock_test_spec_2.__name__].extra_info
-        assert results[mock_test_spec.__name__] == mock_timeout
+        assert isinstance(results[mock_test_spec.__name__], editor_test.Result.Timeout)
+        assert isinstance(results[mock_test_spec_2.__name__], editor_test.Result.Unknown)
+        assert results[mock_test_spec_2.__name__].extra_info, "Extra info missing from Unknown failure"
 
     @mock.patch('ly_test_tools.o3de.editor_test.EditorTestSuite._report_result')
     @mock.patch('ly_test_tools.o3de.editor_test.EditorTestSuite._exec_editor_test')
     @mock.patch('ly_test_tools.o3de.editor_test.EditorTestSuite._setup_editor_test')
+    @mock.patch('ly_test_tools.o3de.editor_test_utils.save_failed_asset_joblogs', mock.MagicMock())
     def test_RunSingleTest_ValidTest_ReportsResults(self, mock_setup_test, mock_exec_editor_test, mock_report_result):
         mock_test_suite = ly_test_tools.o3de.editor_test.EditorTestSuite()
         mock_test_data = mock.MagicMock()
@@ -903,6 +921,7 @@ class TestRunningTests(unittest.TestCase):
     @mock.patch('threading.Thread')
     @mock.patch('ly_test_tools.o3de.editor_test.EditorTestSuite._get_number_parallel_editors')
     @mock.patch('ly_test_tools.o3de.editor_test.EditorTestSuite._setup_editor_test')
+    @mock.patch('ly_test_tools.o3de.editor_test_utils.save_failed_asset_joblogs', mock.MagicMock())
     def test_RunParallelTests_TwoTestsAndEditors_TwoThreads(self, mock_setup_test, mock_get_num_editors, mock_thread):
         mock_test_suite = ly_test_tools.o3de.editor_test.EditorTestSuite()
         mock_get_num_editors.return_value = 2
@@ -919,6 +938,7 @@ class TestRunningTests(unittest.TestCase):
     @mock.patch('threading.Thread')
     @mock.patch('ly_test_tools.o3de.editor_test.EditorTestSuite._get_number_parallel_editors')
     @mock.patch('ly_test_tools.o3de.editor_test.EditorTestSuite._setup_editor_test')
+    @mock.patch('ly_test_tools.o3de.editor_test_utils.save_failed_asset_joblogs', mock.MagicMock())
     def test_RunParallelTests_TenTestsAndTwoEditors_TenThreads(self, mock_setup_test, mock_get_num_editors, mock_thread):
         mock_test_suite = ly_test_tools.o3de.editor_test.EditorTestSuite()
         mock_get_num_editors.return_value = 2
@@ -937,6 +957,7 @@ class TestRunningTests(unittest.TestCase):
     @mock.patch('threading.Thread')
     @mock.patch('ly_test_tools.o3de.editor_test.EditorTestSuite._get_number_parallel_editors')
     @mock.patch('ly_test_tools.o3de.editor_test.EditorTestSuite._setup_editor_test')
+    @mock.patch('ly_test_tools.o3de.editor_test_utils.save_failed_asset_joblogs', mock.MagicMock())
     def test_RunParallelTests_TenTestsAndThreeEditors_TenThreads(self, mock_setup_test, mock_get_num_editors,
                                                                  mock_thread):
         mock_test_suite = ly_test_tools.o3de.editor_test.EditorTestSuite()
@@ -956,6 +977,7 @@ class TestRunningTests(unittest.TestCase):
     @mock.patch('threading.Thread')
     @mock.patch('ly_test_tools.o3de.editor_test.EditorTestSuite._get_number_parallel_editors')
     @mock.patch('ly_test_tools.o3de.editor_test.EditorTestSuite._setup_editor_test')
+    @mock.patch('ly_test_tools.o3de.editor_test_utils.save_failed_asset_joblogs', mock.MagicMock())
     def test_RunParallelBatchedTests_TwoTestsAndEditors_TwoThreads(self, mock_setup_test, mock_get_num_editors,
                                                                    mock_thread):
         mock_test_suite = ly_test_tools.o3de.editor_test.EditorTestSuite()
@@ -973,6 +995,7 @@ class TestRunningTests(unittest.TestCase):
     @mock.patch('threading.Thread')
     @mock.patch('ly_test_tools.o3de.editor_test.EditorTestSuite._get_number_parallel_editors')
     @mock.patch('ly_test_tools.o3de.editor_test.EditorTestSuite._setup_editor_test')
+    @mock.patch('ly_test_tools.o3de.editor_test_utils.save_failed_asset_joblogs', mock.MagicMock())
     def test_RunParallelBatchedTests_TenTestsAndTwoEditors_2Threads(self, mock_setup_test, mock_get_num_editors,
                                                                       mock_thread):
         mock_test_suite = ly_test_tools.o3de.editor_test.EditorTestSuite()
@@ -992,6 +1015,7 @@ class TestRunningTests(unittest.TestCase):
     @mock.patch('threading.Thread')
     @mock.patch('ly_test_tools.o3de.editor_test.EditorTestSuite._get_number_parallel_editors')
     @mock.patch('ly_test_tools.o3de.editor_test.EditorTestSuite._setup_editor_test')
+    @mock.patch('ly_test_tools.o3de.editor_test_utils.save_failed_asset_joblogs', mock.MagicMock())
     def test_RunParallelBatchedTests_TenTestsAndThreeEditors_ThreeThreads(self, mock_setup_test, mock_get_num_editors,
                                                                         mock_thread):
         mock_test_suite = ly_test_tools.o3de.editor_test.EditorTestSuite()
@@ -1023,6 +1047,7 @@ class TestRunningTests(unittest.TestCase):
 
         num_of_editors = mock_test_suite._get_number_parallel_editors(mock_request)
         assert num_of_editors == mock_test_suite.get_number_parallel_editors()
+
 
 @mock.patch('_pytest.python.Class.collect')
 class TestEditorTestClass(unittest.TestCase):

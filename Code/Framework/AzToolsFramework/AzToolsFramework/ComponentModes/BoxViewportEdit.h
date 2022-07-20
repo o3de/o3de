@@ -31,4 +31,10 @@ namespace AzToolsFramework
         using BoxManipulators = AZStd::array<AZStd::shared_ptr<LinearManipulator>, 6>;
         BoxManipulators m_linearManipulators; ///< Manipulators for editing box size.
     };
+
+    /// Calculates the position of the manipulator in its own reference frame.
+    /// Removes the effects of the manipulator local transform, and accounts for world transform scale in
+    /// the action local offset.
+    AZ::Vector3 GetPositionInManipulatorFrame(float worldUniformScale, const AZ::Transform& manipulatorLocalTransform,
+        const LinearManipulator::Action& action);
 } // namespace AzToolsFramework

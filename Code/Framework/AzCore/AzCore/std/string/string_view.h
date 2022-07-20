@@ -12,7 +12,6 @@
 #include <AzCore/std/iterator.h>
 #include <AzCore/std/limits.h>
 
-
 namespace AZStd
 {
     namespace StringInternal
@@ -312,7 +311,7 @@ namespace AZStd
         static constexpr int compare(const char_type* s1, const char_type* s2, size_t count) noexcept
         {
             // In GCC versions , __builtin_memcmp fails in valid checks in constexpr evaluation
-#if !defined(AZ_COMPILER_GCC)
+#if az_has_builtin_memcmp
             if constexpr (AZStd::is_same_v<char_type, char>)
             {
                 return __builtin_memcmp(s1, s2, count);
@@ -353,7 +352,7 @@ namespace AZStd
 
             if constexpr (AZStd::is_same_v<char_type, char>)
             {
-#if defined(AZ_COMPILER_GCC) && AZ_COMPILER_GCC < 100000
+#if !az_has_builtin_strlen
                 if (!az_builtin_is_constant_evaluated())
                 {
                     return strlen(s);
@@ -373,7 +372,7 @@ namespace AZStd
             }
             else if constexpr (AZStd::is_same_v<char_type, wchar_t>)
             {
-#if defined(AZ_COMPILER_GCC)
+#if !az_has_builtin_wcslen
                 if (!az_builtin_is_constant_evaluated())
                 {
                     return wcslen(s);
@@ -410,7 +409,7 @@ namespace AZStd
             // return the pointer to 's' (at compile time)
             if constexpr (AZStd::is_same_v<char_type, char>)
             {
-#if defined(AZ_COMPILER_GCC)
+#if !az_has_builtin_char_memchr
                 if (!az_builtin_is_constant_evaluated())
                 {
                     return static_cast<const char_type*>(__builtin_memchr(s, ch, count));
@@ -429,11 +428,11 @@ namespace AZStd
                 }
 #else
                 return __builtin_char_memchr(s, ch, count);
-#endif // defined(AZ_COMPILER_GCC)AZ_COMPILER_GCC < 100000
+#endif
             }
             else if constexpr (AZStd::is_same_v<char_type, wchar_t>)
             {
-#if defined(AZ_COMPILER_GCC)
+#if !az_has_builtin_wmemchr
                 if (!az_builtin_is_constant_evaluated())
                 {
                     return wmemchr(s, ch, count);
@@ -475,7 +474,7 @@ namespace AZStd
                 return dest;
             }
 
-        #if !defined(AZ_COMPILER_GCC) && az_has_builtin_memmove
+        #if az_has_builtin_memmove
             __builtin_memmove(dest, src, count * sizeof(char_type));
         #else
             auto NonBuiltinMove = [](char_type* dest1, const char_type* src1, size_t count1) constexpr
@@ -528,7 +527,7 @@ namespace AZStd
         }
         static constexpr char_type* copy(char_type* dest, const char_type* src, size_t count) noexcept
         {
-        #if !defined(AZ_COMPILER_GCC) && az_has_builtin_memcpy
+        #if az_has_builtin_memcpy
             __builtin_memcpy(dest, src, count * sizeof(char_type));
         #else
             auto NonBuiltinCopy = [](char_type* dest1, const char_type* src1, size_t count1) constexpr
@@ -558,7 +557,7 @@ namespace AZStd
         static constexpr char_type* copy_backward(char_type* dest, const char_type* src, size_t count) noexcept
         {
             char_type* result = dest;
-        #if !defined(AZ_COMPILER_GCC) && az_has_builtin_memmove
+        #if az_has_builtin_memmove
             __builtin_memmove(dest, src, count * sizeof(char_type));
         #else
             if (az_builtin_is_constant_evaluated())
@@ -594,9 +593,27 @@ namespace AZStd
         static constexpr int_type eof() noexcept { return static_cast<int_type>(-1); }
         static constexpr int_type not_eof(int_type c) noexcept { return c != eof() ? c : !eof(); }
     };
+}
 
+namespace AZStd::Internal
+{
+    template <class Element, class Traits, class R, class = void>
+    constexpr bool convertible_to_string_view = false;
+
+    // If the range has a traits_type element, it must match
+    template <class Element, class Traits, class R, class = void>
+    static constexpr bool range_trait_type_matches = true;
+    template <class Element, class Traits, class R>
+    inline constexpr bool range_trait_type_matches<Element, Traits, R,
+        enable_if_t<conjunction_v<
+        Internal::sfinae_trigger<typename remove_reference_t<R>::traits_type>,
+        bool_constant<!same_as<typename remove_reference_t<R>::traits_type, Traits>>
+        >>> = false;
+}
+namespace AZStd
+{
     /**
-     * Immutable string wrapper based on boost::const_string and std::string_view. When we operate on
+     * Immutable string wrapper based on std::string_view. When we operate on
      * const char* we don't know if this points to NULL terminated string or just a char array.
      * to have a clear distinction between them we provide this wrapper.
      */
@@ -644,6 +661,25 @@ namespace AZStd
         constexpr basic_string_view(It first, End last)
             : m_begin(AZStd::to_address(first))
             , m_size(AZStd::to_address(last) - AZStd::to_address(first))
+        {}
+
+        // double SFINAE is used to defer evaluation of the contiguous range
+        // until after validating the input type isn't basic_string_view
+        template <typename R,
+            typename = enable_if_t<conjunction_v<
+            bool_constant<!same_as<remove_cvref_t<R>, basic_string_view>>,
+            bool_constant<!convertible_to<R, const_pointer>>
+            >>,
+            typename = enable_if_t<conjunction_v<
+            bool_constant<ranges::contiguous_range<R>>,
+            bool_constant<ranges::sized_range<R>>,
+            bool_constant<same_as<ranges::range_value_t<R>, value_type>>,
+            bool_constant<!Internal::convertible_to_string_view<Element, Traits, R>>,
+            bool_constant<Internal::range_trait_type_matches<Element, Traits, R>>
+            >>>
+        constexpr basic_string_view(R&& r)
+            : m_begin(ranges::data(r))
+            , m_size(ranges::size(r))
         {}
 
         constexpr basic_string_view(const basic_string_view&) noexcept = default;
@@ -982,6 +1018,11 @@ namespace AZStd
         size_type m_size{};
     };
 
+    template<class It, class End>
+    basic_string_view(It, End)->basic_string_view<iter_value_t<It>>;
+    template<class R>
+    basic_string_view(R&&)->basic_string_view<ranges::range_value_t<R>>;
+
     using string_view = basic_string_view<char>;
     using wstring_view = basic_string_view<wchar_t>;
 
@@ -1030,6 +1071,16 @@ namespace AZStd
     };
 
 } // namespace AZStd
+
+namespace AZStd::Internal
+{
+    // Specialize the convertible_to_string_view after the class declaration
+    // of basic_string_view, as it neds to reference the complete type
+    template <class Element, class Traits, class R>
+    inline constexpr bool convertible_to_string_view<Element, Traits, R, enable_if_t<
+        same_as<::AZStd::basic_string_view<Element, Traits>, decltype(declval<remove_cvref_t<R>&>().operator ::AZStd::basic_string_view<Element, Traits>())>
+        >> = true;
+}
 
 namespace AZStd::ranges
 {

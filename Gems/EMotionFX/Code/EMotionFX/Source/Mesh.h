@@ -20,7 +20,6 @@
 #include <MCore/Source/Vector.h>
 #include <AzCore/std/containers/vector.h>
 #include <MCore/Source/Ray.h>
-#include <MCore/Source/Color.h>
 
 namespace AZ::RPI
 {
@@ -70,9 +69,7 @@ namespace EMotionFX
             ATTRIB_NORMALS          = 1,    /**< Vertex normals. Typecast to AZ::Vector3. Normals are always exist. */
             ATTRIB_TANGENTS         = 2,    /**< Vertex tangents. Typecast to <b> AZ::Vector4 </b>. */
             ATTRIB_UVCOORDS         = 3,    /**< Vertex uv coordinates. Typecast to AZ::Vector2. */
-            ATTRIB_COLORS32         = 4,    /**< Vertex colors in 32-bits. Typecast to uint32. */
             ATTRIB_ORGVTXNUMBERS    = 5,    /**< Original vertex numbers. Typecast to uint32. Original vertex numbers always exist. */
-            ATTRIB_COLORS128        = 6,    /**< Vertex colors in 128-bits. */
             ATTRIB_BITANGENTS       = 7,    /**< Vertex bitangents (aka binormal). Typecast to AZ::Vector3. When tangents exists bitangents may still not exist! */
         };
 
@@ -614,12 +611,6 @@ namespace EMotionFX
         bool ConvertTo16BitIndices();
 
         /**
-         * Convert RGBAColors consisting of 4 floats to 32bit DWORD color
-         * if 32bit colors do not exist yet and if 128bit colors do exist.
-         */
-        void ConvertTo32BitColors();
-
-        /**
          * Check if this mesh is a pure triangle mesh.
          * Please keep in mind that this method is quite heavy to process as it iterates over all polygons to check if the vertex count equals to 3 for all polygons in the worst case.
          * @result Returns true in case this mesh contains only triangles, otherwise false is returned.
@@ -647,19 +638,40 @@ namespace EMotionFX
          */
         void Scale(float scaleFactor);
 
+        /**
+         * Get the total number of unique joints that impact this mesh
+         */
+        uint16 GetNumUniqueJoints() const;
+
+        /**
+         * Set the total number of unique joints that impact this mesh
+         */
+        void SetNumUniqueJoints(uint16 numUniqueJoints);
+
+        /**
+         * Get the highest id of all the jointId's used by this mesh
+         */
+        uint16 GetHighestJointIndex() const;
+
+        /**
+         * Get the highest id of all the jointId's used by this mesh
+         */
+        void SetHighestJointIndex(uint16 highestJointIndex);
 
         MCORE_INLINE bool GetIsCollisionMesh() const            { return m_isCollisionMesh; }
         void SetIsCollisionMesh(bool isCollisionMesh)           { m_isCollisionMesh = isCollisionMesh; }
 
     protected:
 
-        AZStd::vector<SubMesh*>  m_subMeshes;         /**< The collection of sub meshes. */
+        AZStd::vector<SubMesh*> m_subMeshes;         /**< The collection of sub meshes. */
         uint32*                 m_indices;           /**< The array of indices, which define the faces. */
         uint8*                  m_polyVertexCounts;  /**< The number of vertices for each polygon, where the length of this array equals the number of polygons. */
         uint32                  m_numPolygons;       /**< The number of polygons in this mesh. */
         uint32                  m_numOrgVerts;       /**< The number of original vertices. */
         uint32                  m_numVertices;       /**< Number of vertices. */
         uint32                  m_numIndices;        /**< Number of indices. */
+        uint16                  m_numUniqueJoints;   /**< Number of unique joints*/
+        uint16                  m_highestJointIndex;    /**< The highest id of all the joints used by this mesh*/
         bool                    m_isCollisionMesh;   /**< Is this mesh a collision mesh? */
 
         /**

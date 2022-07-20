@@ -374,8 +374,6 @@ namespace AzFramework
                 // is double-quoted, then the double-quotes must be escaped properly otherwise
                 // it will be absorbed by the native argument parser and possibly evaluated as
                 // multiple values for arguments
-                AZStd::string_view escapedDoubleQuote = R"("\")";
-
                 AZStd::vector<AZStd::string> preprocessedCommandArray;
 
                 for (const auto& commandArg : commandLineArray)

@@ -60,7 +60,7 @@ namespace Aftermath
         {
             GFSDK_Aftermath_Result result = GFSDK_Aftermath_SetEventMarker(
                 static_cast<GFSDK_Aftermath_ContextHandle>(cntxHandle), static_cast<const void*>(markerData),
-                static_cast<unsigned int>(strlen(markerData) + 1);
+                static_cast<unsigned int>(strlen(markerData) + 1));
             AssertOnError(result);
         }
 #endif

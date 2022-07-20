@@ -52,22 +52,36 @@ function(o3de_read_manifest o3de_manifest_json_data)
 endfunction()
 
 
-#! o3de_find_gem: returns the gem path
+#! o3de_find_gem_with_registered_external_subdirs: Query the path of a gem using its name
 #
 # \arg:gem_name the gem name to find
-# \arg:the path of the gem
-function(o3de_find_gem gem_name gem_path)
-    get_all_external_subdirectories(all_external_subdirs)
-    foreach(external_subdir IN LISTS all_external_subdirs)
+# \arg:output_gem_path the path of the gem to set
+# \arg:registered_external_subdirs a list of external subdirectories registered accross
+#      all manifest files to look for gems
+function(o3de_find_gem_with_registered_external_subdirs gem_name output_gem_path registered_external_subdirs)
+    foreach(external_subdir IN LISTS registered_external_subdirs)
         set(candidate_gem_path ${external_subdir}/gem.json)
         if(EXISTS ${candidate_gem_path})
             o3de_read_json_key(gem_json_name ${candidate_gem_path} "gem_name")
             if(gem_json_name STREQUAL gem_name)
-                set(${gem_path} ${external_subdir} PARENT_SCOPE)
+                set(${output_gem_path} ${external_subdir} PARENT_SCOPE)
                 return()
             endif()
         endif()
     endforeach()
+endfunction()
+
+#! o3de_find_gem: Query the path of a gem using its name
+#
+# \arg:gem_name the gem name to find
+# \arg:output_gem_path the path of the gem to set
+#
+# If the list of registered external subdirectories are available in the caller,
+# then slightly better more performance can be achieved by calling `o3de_find_gem_with_registered_external_subdirs` above
+function(o3de_find_gem gem_name output_gem_path)
+    get_all_external_subdirectories(registered_external_subdirs)
+    o3de_find_gem_with_registered_external_subdirs(${gem_name} gem_path "${registered_external_subdirs}")
+    set(${output_gem_path} ${gem_path} PARENT_SCOPE)
 endfunction()
 
 #! o3de_manifest_restricted: returns the manifests restricted paths

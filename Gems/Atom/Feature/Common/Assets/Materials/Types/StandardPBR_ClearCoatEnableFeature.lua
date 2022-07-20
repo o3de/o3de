@@ -13,7 +13,7 @@
 -- Note multi-layer versions this material type have separate functors for 'handling the individual material layers' vs 'enabling the overall feature', so we follow the same pattern here for consistency.
 
 function GetMaterialPropertyDependencies()
-    return { "clearCoat.enable" }
+    return { "enable" }
 end
 
 function GetShaderOptionDependencies()
@@ -21,7 +21,7 @@ function GetShaderOptionDependencies()
 end
  
 function Process(context)
-    local enable = context:GetMaterialPropertyValue_bool("clearCoat.enable")
+    local enable = context:GetMaterialPropertyValue_bool("enable")
     context:SetShaderOptionValue_bool("o_clearCoat_feature_enabled", enable)
     context:SetShaderOptionValue_bool("o_materialUseForwardPassIBLSpecular", enable)
 end

@@ -2,7 +2,7 @@
     "description": "",
     "parentMaterial": "",
     "materialType": "Materials/Types/StandardPBR.materialtype",
-    "materialTypeVersion": 4,
+    "materialTypeVersion": 5,
     "properties": {
         "baseColor": {
             "textureMap": "../Textures/fabricRed_1k_basecolor.png"
@@ -11,7 +11,8 @@
             "applySpecularAA": true
         },
         "irradiance": {
-            "color": [
+            "irradianceColorSource": "Manual",
+            "manualColor": [
                 0.42040130496025085,
                 0.004654001910239458,
                 0.0037232013419270515,

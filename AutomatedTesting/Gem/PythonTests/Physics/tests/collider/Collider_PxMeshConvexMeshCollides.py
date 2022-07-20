@@ -62,7 +62,9 @@ def Collider_PxMeshConvexMeshCollides():
     from editor_python_test_tools.utils import Report
     from editor_python_test_tools.utils import TestHelper as helper
     from editor_python_test_tools.asset_utils import Asset
+
     import azlmbr.math as math
+    import editor_python_test_tools.hydra_editor_utils as hydra
 
     # Open 3D Engine Imports
     import azlmbr
@@ -73,9 +75,8 @@ def Collider_PxMeshConvexMeshCollides():
     MESH_ASSET_PATH = os.path.join("assets", "Physics", "Collider_PxMeshConvexMeshCollides", "spherebot", "r0-b_body.pxmesh")
     TIMEOUT = 2.0
 
-    helper.init_idle()
     # 1) Load the level
-    helper.open_level("Physics", "Base")
+    hydra.open_base_level()
 
     # 2) Create test entity
     collider = EditorEntity.create_editor_entity_at([512.0, 512.0, 33.0], "Collider")

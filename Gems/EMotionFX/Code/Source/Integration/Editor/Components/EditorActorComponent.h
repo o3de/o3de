@@ -36,6 +36,7 @@ namespace EMotionFX
             , private AZ::TransformNotificationBus::Handler
             , private AZ::TickBus::Handler
             , private ActorComponentRequestBus::Handler
+            , private ActorComponentNotificationBus::Handler
             , private EditorActorComponentRequestBus::Handler
             , private LmbrCentral::AttachmentComponentNotificationBus::Handler
             , private AzToolsFramework::EditorComponentSelectionRequestsBus::Handler
@@ -76,7 +77,7 @@ namespace EMotionFX
                 const AZ::Vector3& src, const AZ::Vector3& dir, float& distance) override;
             bool SupportsEditorRayIntersect() override { return true; }
 
-            // AZ::Data::AssetBus::Handler overrides ...
+            // AZ::Data::AssetBus overrides ...
             void OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
             void OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
 
@@ -94,17 +95,12 @@ namespace EMotionFX
                 ActorComponent::GetIncompatibleServices(incompatible);
             }
 
-            static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
-            {
-                ActorComponent::GetDependentServices(dependent);
-            }
-
             static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
             {
                 ActorComponent::GetRequiredServices(required);
             }
 
-            void SetRenderFlag(ActorRenderFlagBitset renderFlags);
+            void SetRenderFlag(ActorRenderFlags renderFlags);
 
             static void Reflect(AZ::ReflectContext* context);
 
@@ -114,7 +110,7 @@ namespace EMotionFX
             void OnMaterialChanged();
             void OnMaterialPerActorChanged();
             void OnLODLevelChanged();
-            void OnDebugDrawFlagChanged();
+            void OnRenderFlagChanged();
             void OnSkinningMethodChanged();
             AZ::Crc32 OnAttachmentTypeChanged();
             AZ::Crc32 OnAttachmentTargetChanged();
@@ -124,6 +120,7 @@ namespace EMotionFX
             bool AttachmentTargetJointVisibility();
             AZStd::string AttachmentJointButtonText();
             void InitializeMaterial(ActorAsset& actorAsset);
+            void UpdateRenderFlags();
 
             void LaunchAnimationEditor(const AZ::Data::AssetId& assetId, const AZ::Data::AssetType&);
 
@@ -133,14 +130,21 @@ namespace EMotionFX
             // Called at edit-time when creating the component directly from an asset.
             void SetPrimaryAsset(const AZ::Data::AssetId& assetId) override;
 
-            // AZ::TickBus::Handler
+            // AZ::TickBus overrides ...
             void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
 
-            // LmbrCentral::AttachmentComponentNotificationBus::Handler
+            // LmbrCentral::AttachmentComponentNotificationBus overrides ...
             void OnAttached(AZ::EntityId targetId) override;
             void OnDetached(AZ::EntityId targetId) override;
 
+            // ActorComponentNotificationBus overrides ...
+            void OnActorInstanceCreated(ActorInstance* actorInstance) override;
+            void OnActorInstanceDestroyed(ActorInstance* actorInstance) override;
+
             void CheckActorCreation();
+            void CheckAttachToEntity();
+            void DetachFromEntity() override;
+            void AttachToInstance(ActorInstance* targetActorInstance);
             void BuildGameEntity(AZ::Entity* gameEntity) override;
 
             void LoadActorAsset();
@@ -150,6 +154,10 @@ namespace EMotionFX
 
             bool IsAtomDisabled() const;
 
+            AZ::Crc32 AddEditorMaterialComponent();
+            bool HasEditorMaterialComponent() const;
+            AZ::u32 GetEditorMaterialComponentVisibility() const;
+
             AZ::Data::Asset<ActorAsset>         m_actorAsset;               ///< Assigned actor asset.
             AZStd::vector<AZ::EntityId>         m_attachments;              ///< A list of entities that are attached to this entity.
             bool                                m_renderSkeleton;           ///< Toggles rendering of character skeleton.
@@ -157,14 +165,16 @@ namespace EMotionFX
             bool                                m_renderBounds;             ///< Toggles rendering of the world bounding box.
             bool                                m_entityVisible;            ///< Entity visible from the EditorVisibilityNotificationBus
             SkinningMethod                      m_skinningMethod;           ///< The skinning method for this actor
+
             AttachmentType                      m_attachmentType;           ///< Attachment type.
             AZ::EntityId                        m_attachmentTarget;         ///< Target entity to attach to, if any.
+            AZ::EntityId                        m_attachmentPreviousParent; ///< The parent entity id before attaching to the attachment target.
             AZStd::string                       m_attachmentJointName;      ///< Joint name on target to which to attach (if ActorAttachment).
             size_t                              m_attachmentJointIndex;
             size_t                              m_lodLevel;
             ActorComponent::BoundingBoxConfiguration m_bboxConfig;
             bool                                m_forceUpdateJointsOOV = false;
-            ActorRenderFlagBitset                 m_debugRenderFlags;         ///< Actor debug render flag
+            ActorRenderFlags                    m_renderFlags;              ///< Actor render flag               
             // \todo attachmentTarget node nr
 
             // Note: LOD work in progress. For now we use one material instead of a list of material, because we don't have the support for LOD with multiple scene files.

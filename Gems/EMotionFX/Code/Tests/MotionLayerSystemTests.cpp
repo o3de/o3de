@@ -59,16 +59,16 @@ namespace EMotionFX
         EXPECT_FLOAT_EQ(motionInstance1->GetCurrentTime(), 1.0f);
         EXPECT_FLOAT_EQ(motionInstance2->GetCurrentTime(), 0.0f);
 
-        GetEMotionFX().Update(8.0f);
+        GetEMotionFX().Update(8.0f); // time = 9.0f
         EXPECT_EQ(motionSystem->GetNumMotionInstances(), 2);
         EXPECT_FLOAT_EQ(motionInstance1->GetWeight(), 1.0f);
         EXPECT_FLOAT_EQ(motionInstance2->GetWeight(), 0.0f);
         EXPECT_FLOAT_EQ(motionInstance1->GetCurrentTime(), 9.0f);
         EXPECT_FLOAT_EQ(motionInstance2->GetCurrentTime(), 0.0f);
 
-        GetEMotionFX().Update(0.5f);
+        GetEMotionFX().Update(0.5f); // time = 9.5f
         EXPECT_EQ(motionSystem->GetNumMotionInstances(), 2);
-        EXPECT_FLOAT_EQ(motionInstance1->GetWeight(), 1.0f);
+        EXPECT_FLOAT_EQ(motionInstance1->GetWeight(), 0.5f); // motion 1 started blending out at time 9.0f
         EXPECT_FLOAT_EQ(motionInstance2->GetWeight(), 0.5f);
         EXPECT_FLOAT_EQ(motionInstance1->GetCurrentTime(), 9.5f);
         EXPECT_FLOAT_EQ(motionInstance2->GetCurrentTime(), 0.5f);
@@ -179,7 +179,7 @@ namespace EMotionFX
         GetEMotionFX().Update(9.0f);
         GetEMotionFX().Update(0.5f);
         EXPECT_EQ(motionSystem->GetNumMotionInstances(), 2);
-        EXPECT_FLOAT_EQ(motionInstance1->GetWeight(), 1.0f);
+        EXPECT_FLOAT_EQ(motionInstance1->GetWeight(), 0.5f); // motion 1 started blending out at time 9.0f
         EXPECT_FLOAT_EQ(motionInstance2->GetWeight(), 0.5f);
 
         motionSystem->StopAllMotions();

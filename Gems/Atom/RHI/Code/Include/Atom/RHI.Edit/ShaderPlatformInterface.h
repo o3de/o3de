@@ -12,7 +12,7 @@
 
 #include <Atom/RHI.Reflect/PipelineLayoutDescriptor.h>
 
-#include <Atom/RHI.Edit/ShaderCompilerArguments.h>
+#include <Atom/RHI.Edit/ShaderBuildArguments.h>
 
 namespace AssetBuilderSDK
 {
@@ -124,16 +124,13 @@ namespace AZ
                 ShaderHardwareStage shaderStage,
                 const AZStd::string& tempFolderPath,
                 StageDescriptor& outputDescriptor,
-                const RHI::ShaderCompilerArguments& shaderCompilerArguments) const = 0;
-
-            //! Get the parameters (except warning related) from that platform interface, and the configuration files.
-            virtual AZStd::string GetAzslCompilerParameters(const RHI::ShaderCompilerArguments& shaderCompilerArguments) const = 0;
-
-            //! Get only the warning-related parameters from that platform interface.
-            virtual AZStd::string GetAzslCompilerWarningParameters(const RHI::ShaderCompilerArguments& shaderCompilerArguments) const = 0;
+                const RHI::ShaderBuildArguments& shaderBuildArguments) const = 0;
 
             //! Query whether the shaders are set to build with debug information
-            virtual bool BuildHasDebugInfo(const RHI::ShaderCompilerArguments& shaderCompilerArguments) const = 0;
+            virtual bool BuildHasDebugInfo(const RHI::ShaderBuildArguments& shaderBuildArguments) const
+            {
+                return shaderBuildArguments.m_generateDebugInfo;
+            }
 
             //! Get the filename of include file to prefix shader programs with
             virtual const char* GetAzslHeader(const AssetBuilderSDK::PlatformInfo& platform) const = 0;
@@ -144,7 +141,7 @@ namespace AZ
                 RHI::Ptr<RHI::PipelineLayoutDescriptor> pipelineLayoutDescriptor,
                 const ShaderResourceGroupInfoList& srgInfoList,
                 const RootConstantsInfo& rootConstantsInfo,
-                const ShaderCompilerArguments& shaderCompilerArguments) = 0;
+                const RHI::ShaderBuildArguments& shaderBuildArguments) = 0;
             
             //! In general, shader compilation doesn't require SRG Layout data, but RHIs like
             //! Metal don't do well if unused resources (descriptors) are not bound. If this function returns TRUE

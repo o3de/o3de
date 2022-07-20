@@ -83,7 +83,7 @@
 #define AZ_PUSH_DISABLE_WARNING_GCC(_gccOption)
 
 /// Compiler specific AZ_POP_DISABLE_WARNING. This needs to be matched with the compiler specific AZ_PUSH_DISABLE_WARNINGs
-#define AZ_POP_DISABLE_WARNING_CLANG                     
+#define AZ_POP_DISABLE_WARNING_CLANG
 #define AZ_POP_DISABLE_WARNING_MSVC                     \
     __pragma(warning(pop))
 #define AZ_POP_DISABLE_WARNING_GCC
@@ -176,7 +176,7 @@
 #define AZ_PUSH_DISABLE_WARNING_3(_1, _2, _gccOption)   AZ_PUSH_DISABLE_WARNING_GCC(_gccOption)
 
 /// Pops the warning stack. For use matched with an AZ_PUSH_DISABLE_WARNING
-#define AZ_POP_DISABLE_WARNING                              
+#define AZ_POP_DISABLE_WARNING
     _Pragma("GCC diagnostic pop")
 
 #endif // defined(AZ_COMPILER_CLANG)
@@ -207,6 +207,10 @@
 
 #if !defined(AZ_PROFILE_BUILD) && defined(_PROFILE)
 #   define AZ_PROFILE_BUILD
+#endif
+
+#if !defined(AZ_RELEASE_BUILD) && defined(_RELEASE)
+#   define AZ_RELEASE_BUILD
 #endif
 
 // note that many include ONLY PlatformDef.h and not base.h, so flags such as below need to be here.
@@ -277,18 +281,44 @@
 // define builtin functions used by char_traits class for efficient compile time and runtime
 // operations
 #if defined(__has_builtin)
-    #if __has_builtin(__builtin_memcpy)
+    #if __has_builtin(__builtin_memcpy) && (!defined(AZ_COMPILER_GCC) || AZ_COMPILER_GCC >= 130000)
         #define az_has_builtin_memcpy true
     #endif
-    #if __has_builtin(__builtin_wmemcpy)
+    #if __has_builtin(__builtin_wmemcpy) && (!defined(AZ_COMPILER_GCC) || AZ_COMPILER_GCC >= 130000)
         #define az_has_builtin_wmemcpy true
     #endif
-    #if __has_builtin(__builtin_memmove)
+    #if __has_builtin(__builtin_memmove) && (!defined(AZ_COMPILER_GCC) || AZ_COMPILER_GCC >= 130000)
         #define az_has_builtin_memmove true
     #endif
-    #if __has_builtin(__builtin_wmemmove)
+    #if __has_builtin(__builtin_wmemmove) && (!defined(AZ_COMPILER_GCC) || AZ_COMPILER_GCC >= 130000)
         #define az_has_builtin_wmemmove true
     #endif
+    #if (__has_builtin(__builtin_strlen) && (!defined(AZ_COMPILER_GCC) || AZ_COMPILER_GCC >= 130000)) || defined(AZ_COMPILER_MSVC)
+        #define az_has_builtin_strlen true
+    #endif
+    #if (__has_builtin(__builtin_wcslen) && (!defined(AZ_COMPILER_GCC) || AZ_COMPILER_GCC >= 130000)) || defined(AZ_COMPILER_MSVC)
+        #define az_has_builtin_wcslen true
+    #endif
+    #if (__has_builtin(__builtin_char_memchr) && (!defined(AZ_COMPILER_GCC) || AZ_COMPILER_GCC >= 130000)) || defined(AZ_COMPILER_MSVC)
+        #define az_has_builtin_char_memchr true
+    #endif
+    #if (__has_builtin(__builtin_wmemchr) && (!defined(AZ_COMPILER_GCC) || AZ_COMPILER_GCC >= 130000)) || defined(AZ_COMPILER_MSVC)
+        #define az_has_builtin_wmemchr true
+    #endif
+    #if (__has_builtin(__builtin_memcmp) && (!defined(AZ_COMPILER_GCC) || AZ_COMPILER_GCC >= 130000)) || defined(AZ_COMPILER_MSVC)
+        #define az_has_builtin_memcmp true
+    #endif
+    #if (__has_builtin(__builtin_wmemcmp) && (!defined(AZ_COMPILER_GCC) || AZ_COMPILER_GCC >= 130000)) || defined(AZ_COMPILER_MSVC)
+        #define az_has_builtin_wmemcmp true
+    #endif
+#elif defined(AZ_COMPILER_MSVC)
+//  MSVC doesn't support the __has_builtin macro, so instead hardcode the list of known compile time builtins
+    #define az_has_builtin_strlen true
+    #define az_has_builtin_wcslen true
+    #define az_has_builtin_char_memchr true
+    #define az_has_builtin_wmemchr true
+    #define az_has_builtin_memcmp true
+    #define az_has_builtin_wmemcmp true
 #endif
 
 #if !defined(az_has_builtin_memcpy)
@@ -302,4 +332,29 @@
 #endif
 #if !defined(az_has_builtin_wmemmove)
     #define az_has_builtin_wmemmove false
+#endif
+#if !defined(az_has_builtin_strlen)
+    #define az_has_builtin_strlen false
+#endif
+#if !defined(az_has_builtin_wcslen)
+    #define az_has_builtin_wcslen false
+#endif
+#if !defined(az_has_builtin_char_memchr)
+    #define az_has_builtin_char_memchr false
+#endif
+#if !defined(az_has_builtin_wmemchr)
+    #define az_has_builtin_wmemchr false
+#endif
+#if !defined(az_has_builtin_memcmp)
+    #define az_has_builtin_memcmp false
+#endif
+#if !defined(az_has_builtin_wmemcmp)
+    #define az_has_builtin_wmemcmp false
+#endif
+
+// no unique address attribute support in C++17
+#if __has_cpp_attribute(no_unique_address)
+    #define AZ_NO_UNIQUE_ADDRESS [[no_unique_address]]
+#else
+    #define AZ_NO_UNIQUE_ADDRESS
 #endif

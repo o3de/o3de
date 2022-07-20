@@ -88,8 +88,26 @@ namespace AzToolsFramework
             //generate undo/redo patches
             m_instanceToTemplateInterface->GeneratePatch(m_redoPatch, initialState, endState);
             m_instanceToTemplateInterface->AppendEntityAliasToPatchPaths(m_redoPatch, entityId);
+            
             m_instanceToTemplateInterface->GeneratePatch(m_undoPatch, endState, initialState);
             m_instanceToTemplateInterface->AppendEntityAliasToPatchPaths(m_undoPatch, entityId);
+
+            AZStd::string entityAliasPath = m_instanceToTemplateInterface->GenerateEntityAliasPath(entityId);
+            if (!entityAliasPath.empty())
+            {
+                PrefabDomReference cachedDom = instance.GetCachedInstanceDom();
+
+                if (cachedDom.has_value())
+                {
+                    // Create a copy of the dom of the end state so that it shares the lifecycle of the cached Dom.
+                    PrefabDom endStateCopy;
+                    endStateCopy.CopyFrom(endState, cachedDom->get().GetAllocator());
+                    Prefab::PrefabDomPath entityPathInDom(entityAliasPath.c_str());
+
+                    // Update the cached instance dom corresponding to the entity so that the same modified entity isn't reloaded again.
+                    entityPathInDom.Set(cachedDom->get(), AZStd::move(endStateCopy));
+                }
+            }
         }
 
         void PrefabUndoEntityUpdate::Undo()
@@ -256,7 +274,7 @@ namespace AzToolsFramework
                 return;
             }
 
-            PrefabDomReference sourceDom = sourceTemplate->get().GetPrefabDom();
+            PrefabDom& sourceDom = sourceTemplate->get().GetPrefabDom();
 
             //use instance pointer to reach position
             PrefabDomValueReference instanceDomRef = link->get().GetLinkedInstanceDom();
@@ -268,22 +286,20 @@ namespace AzToolsFramework
             //apply the patch to the template within the target
             [[maybe_unused]] AZ::JsonSerializationResult::ResultCode result = PrefabDomUtils::ApplyPatches(instanceDom, instanceDom.GetAllocator(), patch);
 
-            AZ_Error(
+            AZ_Warning(
                 "Prefab",
                 (result.GetOutcome() != AZ::JsonSerializationResult::Outcomes::Skipped) &&
                 (result.GetOutcome() != AZ::JsonSerializationResult::Outcomes::PartialSkip),
-                "Some of the patches are not successfully applied.");
+                "Some of the patches are not successfully applied:\n%s.", PrefabDomUtils::PrefabDomValueToString(patch).c_str());
 
-            //remove the link id placed into the instance
-            auto linkIdIter = instanceDom.FindMember(PrefabDomUtils::LinkIdName);
-            if (linkIdIter != instanceDom.MemberEnd())
-            {
-                instanceDom.RemoveMember(PrefabDomUtils::LinkIdName);
-            }
+            // Remove the link ids if present in the doms. We don't want any overrides to be created on top of linkIds because
+            // linkIds are not persistent and will be created dynamically when prefabs are loaded into the editor.
+            instanceDom.RemoveMember(PrefabDomUtils::LinkIdName);
+            sourceDom.RemoveMember(PrefabDomUtils::LinkIdName);
 
             //we use this to diff our copy against the vanilla template (source template)
             PrefabDom patchLink;
-            m_instanceToTemplateInterface->GeneratePatch(patchLink, sourceDom->get(), instanceDom);
+            m_instanceToTemplateInterface->GeneratePatch(patchLink, sourceDom, instanceDom);
 
             // Create a copy of patchLink by providing the allocator of m_linkDomNext so that the patch doesn't become invalid when
             // the patch goes out of scope in this function.

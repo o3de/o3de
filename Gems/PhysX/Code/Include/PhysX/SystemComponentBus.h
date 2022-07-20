@@ -44,6 +44,8 @@ namespace PhysX
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
 
+        using MutexType = AZStd::recursive_mutex;
+
         virtual ~SystemRequests() = default;
 
         /// Creates a new convex mesh.
@@ -67,10 +69,10 @@ namespace PhysX
 
         /// Creates a new heightfield.
         /// @param samples Pointer to beginning of heightfield sample data.
-        /// @param numRows Number of rows in the heightfield.
         /// @param numColumns Number of columns in the heightfield.
+        /// @param numRows Number of rows in the heightfield.
         /// @return Pointer to the created heightfield.
-        virtual physx::PxHeightField* CreateHeightField(const physx::PxHeightFieldSample* samples, AZ::u32 numRows, AZ::u32 numColumns) = 0;
+        virtual physx::PxHeightField* CreateHeightField(const physx::PxHeightFieldSample* samples, size_t numColumns, size_t numRows) = 0;
 
         /// Creates PhysX collision filter data from generic collision filtering settings.
         /// @param layer The collision layer the object belongs to.

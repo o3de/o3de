@@ -24,7 +24,7 @@ namespace Benchmark
         const auto& nestedTemplatePath = m_paths.front();
         const auto& enclosingTemplatePath = m_paths.back();
 
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             state.PauseTiming();
 
@@ -85,7 +85,7 @@ namespace Benchmark
 
         const unsigned int numInstances = maxDepth;
 
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             state.PauseTiming();
 
@@ -137,7 +137,7 @@ namespace Benchmark
 
         const unsigned int numInstances = numRootInstances * maxDepth;
 
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             state.PauseTiming();
 
@@ -197,7 +197,7 @@ namespace Benchmark
 
         const unsigned int numInstances =  (1 << maxDepth) - 1;
 
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             state.PauseTiming();
 

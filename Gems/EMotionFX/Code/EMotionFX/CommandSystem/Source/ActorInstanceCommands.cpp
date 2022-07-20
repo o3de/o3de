@@ -6,9 +6,7 @@
  *
  */
 
-// include the required headers
 #include "ActorInstanceCommands.h"
-#include <EMotionFX/Source/Attachment.h>
 #include <EMotionFX/Source/ActorManager.h>
 #include <MCore/Source/LogManager.h>
 #include <MCore/Source/StringConversions.h>

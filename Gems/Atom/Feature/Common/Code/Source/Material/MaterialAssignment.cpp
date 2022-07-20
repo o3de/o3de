@@ -10,6 +10,7 @@
 #include <Atom/RPI.Reflect/Model/ModelAsset.h>
 #include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/Json/RegistrationContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <Material/MaterialAssignmentSerializer.h>
@@ -33,9 +34,23 @@ namespace AZ
                 serializeContext->RegisterGenericType<MaterialPropertyOverrideMap>();
 
                 serializeContext->Class<MaterialAssignment>()
-                    ->Version(1)
+                    ->Version(2)
                     ->Field("MaterialAsset", &MaterialAssignment::m_materialAsset)
-                    ->Field("PropertyOverrides", &MaterialAssignment::m_propertyOverrides);
+                    ->Field("PropertyOverrides", &MaterialAssignment::m_propertyOverrides)
+                    ->Field("ModelUvOverrides", &MaterialAssignment::m_matModUvOverrides)
+                    ;
+
+                if (auto editContext = serializeContext->GetEditContext())
+                {
+                    editContext->Class<MaterialAssignment>(
+                        "Material Assignment", "Material Assignment")
+                        ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                        ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                        ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Show)
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &MaterialAssignment::m_materialAsset, "Material Asset", "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &MaterialAssignment::m_propertyOverrides, "Property Overrides", "")
+                        ;
+                }
             }
 
             if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
@@ -71,19 +86,18 @@ namespace AZ
         }
 
         MaterialAssignment::MaterialAssignment(const AZ::Data::AssetId& materialAssetId)
-            : m_materialAsset(materialAssetId, AZ::AzTypeInfo<AZ::RPI::MaterialAsset>::Uuid())
-            , m_materialInstance()
+            : MaterialAssignment(Data::Asset<RPI::MaterialAsset>(materialAssetId, AZ::AzTypeInfo<AZ::RPI::MaterialAsset>::Uuid()))
         {
         }
 
         MaterialAssignment::MaterialAssignment(const Data::Asset<RPI::MaterialAsset>& asset)
-            : m_materialAsset(asset)
-            , m_materialInstance()
+            : MaterialAssignment(asset, Data::Instance<RPI::Material>())
         {
         }
 
         MaterialAssignment::MaterialAssignment(const Data::Asset<RPI::MaterialAsset>& asset, const Data::Instance<RPI::Material>& instance)
-            : m_materialAsset(asset)
+            : m_defaultMaterialAsset(asset)
+            , m_materialAsset(asset)
             , m_materialInstance(instance)
         {
         }
@@ -99,12 +113,18 @@ namespace AZ
             {
                 m_materialInstance = m_propertyOverrides.empty() ? RPI::Material::FindOrCreate(m_materialAsset) : RPI::Material::Create(m_materialAsset);
                 AZ_Error("MaterialAssignment", m_materialInstance, "Material instance not initialized");
+                return;
             }
-            else if (m_defaultMaterialAsset.IsReady())
+
+            if (m_defaultMaterialAsset.IsReady())
             {
                 m_materialInstance = m_propertyOverrides.empty() ? RPI::Material::FindOrCreate(m_defaultMaterialAsset) : RPI::Material::Create(m_defaultMaterialAsset);
                 AZ_Error("MaterialAssignment", m_materialInstance, "Material instance not initialized");
+                return;
             }
+
+            // Clear the existing material instance if no asset was ready
+            m_materialInstance = nullptr;
         }
 
         void MaterialAssignment::Release()
@@ -129,56 +149,52 @@ namespace AZ
 
         bool MaterialAssignment::ApplyProperties()
         {
-            // if there is no instance or no properties there's nothing to apply
+            // Immediately return true, skipping this material, if there is no instance or no properties to apply
             if (!m_materialInstance || m_propertyOverrides.empty())
             {
                 return true;
             }
 
-            if (m_materialInstance->CanCompile())
+            for (const auto& propertyPair : m_propertyOverrides)
             {
-                for (const auto& propertyPair : m_propertyOverrides)
+                if (!propertyPair.second.empty())
                 {
-                    if (!propertyPair.second.empty())
+                    bool wasRenamed = false;
+                    Name newName;
+                    RPI::MaterialPropertyIndex materialPropertyIndex =
+                        m_materialInstance->FindPropertyIndex(propertyPair.first, &wasRenamed, &newName);
+
+                    // FindPropertyIndex will have already reported a message about what the old and new names are. Here we just add
+                    // some extra info to help the user resolve it.
+                    AZ_Warning(
+                        "MaterialAssignment", !wasRenamed,
+                        "Consider running \"Apply Automatic Property Updates\" to use the latest property names.",
+                        propertyPair.first.GetCStr(), newName.GetCStr());
+
+                    if (wasRenamed && m_propertyOverrides.find(newName) != m_propertyOverrides.end())
                     {
-                        bool wasRenamed = false;
-                        Name newName;
-                        RPI::MaterialPropertyIndex materialPropertyIndex =
-                            m_materialInstance->FindPropertyIndex(propertyPair.first, &wasRenamed, &newName);
+                        materialPropertyIndex.Reset();
 
-                        // FindPropertyIndex will have already reported a message about what the old and new names are. Here we just add
-                        // some extra info to help the user resolve it.
                         AZ_Warning(
-                            "MaterialAssignment", !wasRenamed,
-                            "Consider running \"Apply Automatic Property Updates\" to use the latest property names.",
+                            "MaterialAssignment", false,
+                            "Material property '%s' has been renamed to '%s', and a property override exists for both. The one with "
+                            "the old name will be ignored.",
                             propertyPair.first.GetCStr(), newName.GetCStr());
+                    }
 
-                        if (wasRenamed && m_propertyOverrides.find(newName) != m_propertyOverrides.end())
-                        {
-                            materialPropertyIndex.Reset();
+                    if (!materialPropertyIndex.IsNull())
+                    {
+                        const auto propertyDescriptor =
+                            m_materialInstance->GetMaterialPropertiesLayout()->GetPropertyDescriptor(materialPropertyIndex);
 
-                            AZ_Warning(
-                                "MaterialAssignment", false,
-                                "Material property '%s' has been renamed to '%s', and a property override exists for both. The one with "
-                                "the old name will be ignored.",
-                                propertyPair.first.GetCStr(), newName.GetCStr());
-                        }
-
-                        if (!materialPropertyIndex.IsNull())
-                        {
-                            const auto propertyDescriptor =
-                                m_materialInstance->GetMaterialPropertiesLayout()->GetPropertyDescriptor(materialPropertyIndex);
-
-                            m_materialInstance->SetPropertyValue(
-                                materialPropertyIndex, ConvertMaterialPropertyValueFromScript(propertyDescriptor, propertyPair.second));
-                        }
+                        m_materialInstance->SetPropertyValue(
+                            materialPropertyIndex, ConvertMaterialPropertyValueFromScript(propertyDescriptor, propertyPair.second));
                     }
                 }
-
-                return m_materialInstance->Compile();
             }
 
-            return false;
+            // Return true if there is nothing to compile, meaning no properties changed, or the compile succeeded
+            return !m_materialInstance->NeedsCompile() || m_materialInstance->Compile();
         }
 
         AZStd::string MaterialAssignment::ToString() const
@@ -220,28 +236,26 @@ namespace AZ
             return DefaultMaterialAssignment;
         }
 
-        MaterialAssignmentMap GetMaterialAssignmentsFromModel(Data::Instance<AZ::RPI::Model> model)
+        MaterialAssignmentMap GetDefautMaterialMapFromModelAsset(const Data::Asset<AZ::RPI::ModelAsset> modelAsset)
         {
             MaterialAssignmentMap materials;
             materials[DefaultMaterialAssignmentId] = MaterialAssignment();
 
-            if (model)
+            if (modelAsset.IsReady())
             {
-                size_t lodIndex = 0;
-                for (const Data::Instance<AZ::RPI::ModelLod>& lod : model->GetLods())
+                MaterialAssignmentLodIndex lodIndex = 0;
+                for (const auto& lod : modelAsset->GetLodAssets())
                 {
-                    for (const AZ::RPI::ModelLod::Mesh& mesh : lod->GetMeshes())
+                    for (const auto& mesh : lod->GetMeshes())
                     {
-                        if (mesh.m_material)
-                        {
-                            const MaterialAssignmentId generalId =
-                                MaterialAssignmentId::CreateFromStableIdOnly(mesh.m_materialSlotStableId);
-                            materials[generalId] = MaterialAssignment(mesh.m_material->GetAsset(), mesh.m_material);
+                        const auto slotId = mesh.GetMaterialSlotId();
+                        const auto& slot = modelAsset->FindMaterialSlot(slotId);
 
-                            const MaterialAssignmentId specificId =
-                                MaterialAssignmentId::CreateFromLodAndStableId(lodIndex, mesh.m_materialSlotStableId);
-                            materials[specificId] = MaterialAssignment(mesh.m_material->GetAsset(), mesh.m_material);
-                        }
+                        const auto generalId = MaterialAssignmentId::CreateFromStableIdOnly(slotId);
+                        materials[generalId] = MaterialAssignment(slot.m_defaultMaterialAsset);
+
+                        const auto specificId = MaterialAssignmentId::CreateFromLodAndStableId(lodIndex, slotId);
+                        materials[specificId] = MaterialAssignment(slot.m_defaultMaterialAsset);
                     }
                     ++lodIndex;
                 }
@@ -250,37 +264,66 @@ namespace AZ
             return materials;
         }
 
-        MaterialAssignmentId FindMaterialAssignmentIdInLod(
-            const Data::Instance<AZ::RPI::Model>& model,
-            const Data::Instance<AZ::RPI::ModelLod>& lod,
+        MaterialAssignmentLabelMap GetMaterialSlotLabelsFromModelAsset(const Data::Asset<AZ::RPI::ModelAsset> modelAsset)
+        {
+            MaterialAssignmentLabelMap labels;
+            labels[DefaultMaterialAssignmentId] = "Default Material";
+
+            if (modelAsset.IsReady())
+            {
+                MaterialAssignmentLodIndex lodIndex = 0;
+                for (const auto& lod : modelAsset->GetLodAssets())
+                {
+                    for (const auto& mesh : lod->GetMeshes())
+                    {
+                        const auto slotId = mesh.GetMaterialSlotId();
+                        const auto& slot = modelAsset->FindMaterialSlot(slotId);
+
+                        const auto generalId = MaterialAssignmentId::CreateFromStableIdOnly(slotId);
+                        labels[generalId] = slot.m_displayName.GetStringView();
+
+                        const auto specificId = MaterialAssignmentId::CreateFromLodAndStableId(lodIndex, slotId);
+                        labels[specificId] = slot.m_displayName.GetStringView();
+                    }
+                    ++lodIndex;
+                }
+            }
+
+            return labels;
+        }
+
+        MaterialAssignmentId GetMaterialSlotIdFromLodAsset(
+            const Data::Asset<AZ::RPI::ModelAsset> modelAsset,
+            const Data::Asset<AZ::RPI::ModelLodAsset>& lodAsset,
             const MaterialAssignmentLodIndex lodIndex,
             const AZStd::string& labelFilter)
         {
-            for (const AZ::RPI::ModelLod::Mesh& mesh : lod->GetMeshes())
+            for (const AZ::RPI::ModelLodAsset::Mesh& mesh : lodAsset->GetMeshes())
             {
-                const AZ::RPI::ModelMaterialSlot& slot = model->GetModelAsset()->FindMaterialSlot(mesh.m_materialSlotStableId);
+                const auto slotId = mesh.GetMaterialSlotId();
+                const auto& slot = modelAsset->FindMaterialSlot(slotId);
                 if (AZ::StringFunc::Contains(slot.m_displayName.GetCStr(), labelFilter, true))
                 {
-                    return MaterialAssignmentId::CreateFromLodAndStableId(lodIndex, mesh.m_materialSlotStableId);
+                    return MaterialAssignmentId::CreateFromLodAndStableId(lodIndex, slotId);
                 }
             }
             return MaterialAssignmentId();
         }
 
-        MaterialAssignmentId FindMaterialAssignmentIdInModel(
-            const Data::Instance<AZ::RPI::Model>& model, const MaterialAssignmentLodIndex lodFilter, const AZStd::string& labelFilter)
+        MaterialAssignmentId GetMaterialSlotIdFromModelAsset(
+            const Data::Asset<AZ::RPI::ModelAsset> modelAsset, const MaterialAssignmentLodIndex lodFilter, const AZStd::string& labelFilter)
         {
-            if (model && !labelFilter.empty())
+            if (modelAsset.IsReady() && !labelFilter.empty())
             {
-                if (lodFilter < model->GetLodCount())
+                if (lodFilter < modelAsset->GetLodCount())
                 {
-                    return FindMaterialAssignmentIdInLod(model, model->GetLods()[lodFilter], lodFilter, labelFilter);
+                    return GetMaterialSlotIdFromLodAsset(modelAsset, modelAsset->GetLodAssets()[lodFilter], lodFilter, labelFilter);
                 }
 
-                for (size_t lodIndex = 0; lodIndex < model->GetLodCount(); ++lodIndex)
+                for (size_t lodIndex = 0; lodIndex < modelAsset->GetLodCount(); ++lodIndex)
                 {
-                    const MaterialAssignmentId result =
-                        FindMaterialAssignmentIdInLod(model, model->GetLods()[lodIndex], MaterialAssignmentId::NonLodIndex, labelFilter);
+                    const MaterialAssignmentId result = GetMaterialSlotIdFromLodAsset(
+                        modelAsset, modelAsset->GetLodAssets()[lodIndex], MaterialAssignmentId::NonLodIndex, labelFilter);
                     if (!result.IsDefault())
                     {
                         return result;

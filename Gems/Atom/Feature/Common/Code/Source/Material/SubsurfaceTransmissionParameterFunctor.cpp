@@ -26,6 +26,9 @@ namespace AZ
                     ->Field("m_power", &SubsurfaceTransmissionParameterFunctor::m_power)
                     ->Field("m_distortion", &SubsurfaceTransmissionParameterFunctor::m_distortion)
                     ->Field("m_attenuation", &SubsurfaceTransmissionParameterFunctor::m_attenuation)
+                    ->Field("m_shrinkFactor", &SubsurfaceTransmissionParameterFunctor::m_shrinkFactor)
+                    ->Field("m_transmissionNdLBias", &SubsurfaceTransmissionParameterFunctor::m_transmissionNdLBias)
+                    ->Field("m_distanceAttenuation", &SubsurfaceTransmissionParameterFunctor::m_distanceAttenuation)
                     ->Field("m_tintColor", &SubsurfaceTransmissionParameterFunctor::m_tintColor)
                     ->Field("m_thickness", &SubsurfaceTransmissionParameterFunctor::m_thickness)
                     ->Field("m_enabled", &SubsurfaceTransmissionParameterFunctor::m_enabled)
@@ -50,6 +53,9 @@ namespace AZ
             auto power = context.GetMaterialPropertyValue<float>(m_power);
             auto distortion = context.GetMaterialPropertyValue<float>(m_distortion);
             auto attenuation = context.GetMaterialPropertyValue<float>(m_attenuation);
+            auto shrinkFactor = context.GetMaterialPropertyValue<float>(m_shrinkFactor);
+            auto transmissionNdLBias = context.GetMaterialPropertyValue<float>(m_transmissionNdLBias);
+            auto distanceAttenuation = context.GetMaterialPropertyValue<float>(m_distanceAttenuation);
             auto tintColor = context.GetMaterialPropertyValue<Color>(m_tintColor);
             auto thickness = context.GetMaterialPropertyValue<float>(m_thickness);
             auto scatterDistanceColor = context.GetMaterialPropertyValue<Color>(m_scatterDistanceColor);
@@ -67,7 +73,9 @@ namespace AZ
             }
             else
             {
-                transmissionParams.Set(scatterDistance);
+                transmissionParams.SetX(shrinkFactor);
+                transmissionParams.SetY(transmissionNdLBias);
+                transmissionParams.SetZ(distanceAttenuation);
                 transmissionParams.SetW(scale);
             }
 

@@ -42,13 +42,11 @@ namespace EMotionFX
         bool GetIsFloatable() const override                { return true;  }
         bool GetIsVertical() const override                 { return false; }
         bool Init() override;
-        EMStudioPlugin* Clone() override;
+        EMStudioPlugin* Clone() const override              { return new ClothJointInspectorPlugin(); }
 
         // SkeletonOutlinerNotificationBus overrides
         void OnContextMenu(QMenu* menu, const QModelIndexList& selectedRowIndices) override;
 
-        void LegacyRender(EMStudio::RenderPlugin* renderPlugin, RenderInfo* renderInfo) override;
-        void Render(EMotionFX::ActorRenderFlagBitset renderFlags) override;
         static bool IsJointInCloth(const QModelIndex& index);
 
     public slots:

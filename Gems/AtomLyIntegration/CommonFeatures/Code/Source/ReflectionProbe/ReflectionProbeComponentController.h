@@ -16,34 +16,12 @@
 #include <Atom/RPI.Public/Model/Model.h>
 #include <LmbrCentral/Shape/BoxShapeComponentBus.h>
 #include <ReflectionProbe/ReflectionProbeComponentConstants.h>
+#include <CubeMapCapture/EditorCubeMapRenderer.h>
 
 namespace AZ
 {
     namespace Render
     {
-        enum class BakedCubeMapQualityLevel : uint32_t
-        {
-            VeryLow,    // 64
-            Low,        // 128
-            Medium,     // 256
-            High,       // 512
-            VeryHigh,   // 1024
-
-            Count
-        };
-
-        static const char* BakedCubeMapFileSuffixes[] =
-        {
-            "_iblspecularcm64.dds",
-            "_iblspecularcm128.dds",
-            "_iblspecularcm256.dds",
-            "_iblspecularcm512.dds",
-            "_iblspecularcm1024.dds"
-        };
-
-        static_assert(AZ_ARRAY_SIZE(BakedCubeMapFileSuffixes) == aznumeric_cast<uint32_t>(BakedCubeMapQualityLevel::Count),
-            "BakedCubeMapFileSuffixes must have the same number of entries as BakedCubeMapQualityLevel");
-
         class ReflectionProbeComponentConfig final
             : public AZ::ComponentConfig
         {
@@ -63,7 +41,7 @@ namespace AZ
             bool m_showVisualization = true;
             bool m_useBakedCubemap = true;
 
-            BakedCubeMapQualityLevel m_bakedCubeMapQualityLevel = BakedCubeMapQualityLevel::Medium;
+            CubeMapSpecularQualityLevel m_bakedCubeMapQualityLevel = CubeMapSpecularQualityLevel::Medium;
             AZStd::string m_bakedCubeMapRelativePath;
             Data::Asset<RPI::StreamingImageAsset> m_bakedCubeMapAsset;
             Data::Asset<RPI::StreamingImageAsset> m_authoredCubeMapAsset;

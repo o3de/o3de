@@ -35,7 +35,7 @@ TEST_F(AWSGameLiftCreateSessionOnQueueActivityTest, BuildAWSGameLiftCreateGameSe
 
 TEST_F(AWSGameLiftCreateSessionOnQueueActivityTest, ValidateCreateSessionOnQueueRequest_CallWithBaseType_GetFalseResult)
 {
-    auto result = CreateSessionOnQueueActivity::ValidateCreateSessionOnQueueRequest(AzFramework::CreateSessionRequest());
+    auto result = CreateSessionOnQueueActivity::ValidateCreateSessionOnQueueRequest(Multiplayer::CreateSessionRequest());
     EXPECT_FALSE(result);
 }
 

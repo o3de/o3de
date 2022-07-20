@@ -25,6 +25,9 @@ namespace AZ
         ProjectedShadowmapsPass::ProjectedShadowmapsPass(const RPI::PassDescriptor& descriptor)
             : Base(descriptor)
         {
+            // Pass has it's own logic for managing children, forgo ParentPass logic
+            m_flags.m_createChildren = false;
+
             const RPI::RasterPassData* passData = RPI::PassUtils::GetPassData<RPI::RasterPassData>(descriptor);
             if (passData)
             {
@@ -100,9 +103,6 @@ namespace AZ
                 return;
             }
 
-            const uint32_t baseSize = static_cast<uint32_t>(m_atlas.GetBaseShadowmapSize());
-            const RHI::Size imageSize = { baseSize, baseSize, 1 };
-
             const size_t shadowmapCount = m_sizes.size();
             SetChildrenCount(shadowmapCount);
             AZStd::vector<bool> sliceIsCleared(m_atlas.GetArraySliceCount());
@@ -166,7 +166,7 @@ namespace AZ
             AZ_Assert(attachment->m_descriptor.m_type == RHI::AttachmentType::Image, "[ProjectedShadowmapsPass %s] requires an image attachment", GetPathName().GetCStr());
 
             RPI::PassAttachmentBinding& binding = GetOutputBinding(0);
-            binding.m_attachment = attachment;
+            binding.SetAttachment(attachment);
 
             RHI::ImageDescriptor& imageDescriptor = attachment->m_descriptor.m_image;
             const uint32_t shadowmapWidth = static_cast<uint32_t>(m_atlas.GetBaseShadowmapSize());

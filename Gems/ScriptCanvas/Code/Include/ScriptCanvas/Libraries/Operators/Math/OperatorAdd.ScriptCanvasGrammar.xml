@@ -2,12 +2,11 @@
 
 <ScriptCanvas Include="Include/ScriptCanvas/Libraries/Operators/Math/OperatorAdd.h" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <Class Name="OperatorAdd"
-	       QualifiedName="ScriptCanvas::Nodes::Operators::OperatorAdd"
-	       PreferredClassName="Add (+)"
-           Uuid="{C1B42FEC-0545-4511-9FAC-11E0387FEDF0}"
-           Base="ScriptCanvas::Nodes::Operators::OperatorArithmetic"
-           Category="Math"
-           Version="0"
-           Description="Adds two or more values">
+        QualifiedName="ScriptCanvas::Nodes::Operators::OperatorAdd"
+        PreferredClassName="Add (+)"
+        Uuid="{C1B42FEC-0545-4511-9FAC-11E0387FEDF0}"
+        Base="ScriptCanvas::Nodes::Operators::OperatorArithmetic"
+        Category="Math"
+        Description="Adds two or more values">
     </Class>
 </ScriptCanvas>

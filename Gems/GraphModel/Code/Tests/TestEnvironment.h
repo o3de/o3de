@@ -22,7 +22,7 @@
 
 // GraphModel ...
 #include <GraphModel/Model/DataType.h>
-#include <GraphModel/Model/IGraphContext.h>
+#include <GraphModel/Model/GraphContext.h>
 #include <GraphModel/Model/Graph.h>
 #include <GraphModel/Model/Node.h>
 #include <GraphModel/Model/Slot.h>
@@ -45,30 +45,11 @@ namespace GraphModelIntegrationTest
         TestDataTypeEnum_Count
     };
 
-    class TestGraphContext
-        : public GraphModel::IGraphContext
-        , public AZStd::enable_shared_from_this<TestGraphContext>
+    class TestGraphContext : public GraphModel::GraphContext
     {
     public:
         TestGraphContext();
         virtual ~TestGraphContext() = default;
-
-        const char* GetSystemName() const override;
-        const char* GetModuleFileExtension() const override;
-        const GraphModel::DataTypeList& GetAllDataTypes() const override;
-        GraphModel::DataTypePtr GetDataType(AZ::Uuid typeId) const override;
-        GraphModel::DataTypePtr GetDataType(GraphModel::DataType::Enum typeEnum) const override;
-
-        template<typename T>
-        GraphModel::DataTypePtr GetDataType() const
-        {
-            return IGraphContext::GetDataType<T>();
-        }
-
-        GraphModel::ModuleGraphManagerPtr GetModuleGraphManager() const override;
-
-    private:
-        GraphModel::DataTypeList m_dataTypes;
     };
 
     class TestNode

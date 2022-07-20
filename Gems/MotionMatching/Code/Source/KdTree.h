@@ -34,12 +34,10 @@ namespace EMotionFX::MotionMatching
             size_t maxDepth=10,
             size_t minFramesPerLeaf=1000);
 
-        /**
-         * Calculate the number of dimensions or values for the given feature set.
-         * Each feature might store one or multiple values inside the feature matrix and the number of
-         * values each feature holds varies with the feature type. This calculates the sum of the number of
-         * values of the given feature set.
-         */
+        //! Calculate the number of dimensions or values for the given feature set.
+        //! Each feature might store one or multiple values inside the feature matrix and the number of
+        //! values each feature holds varies with the feature type. This calculates the sum of the number of
+        //! values of the given feature set.
         static size_t CalcNumDimensions(const AZStd::vector<Feature*>& features);
 
         void Clear();

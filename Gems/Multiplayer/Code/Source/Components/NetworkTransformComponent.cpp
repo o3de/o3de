@@ -29,6 +29,7 @@ namespace Multiplayer
         : m_entityPreRenderEventHandler([this](float deltaTime) { OnPreRender(deltaTime); })
         , m_entityCorrectionEventHandler([this]() { OnCorrection(); })
         , m_parentChangedEventHandler([this](NetEntityId parentId) { OnParentChanged(parentId); })
+        , m_resetCountChangedEventHandler([this]([[maybe_unused]] uint8_t resetCount) { m_syncTransformImmediate = true; })
     {
         ;
     }
@@ -43,6 +44,7 @@ namespace Multiplayer
         GetNetBindComponent()->AddEntityPreRenderEventHandler(m_entityPreRenderEventHandler);
         GetNetBindComponent()->AddEntityCorrectionEventHandler(m_entityCorrectionEventHandler);
         ParentEntityIdAddEvent(m_parentChangedEventHandler);
+        ResetCountAddEvent(m_resetCountChangedEventHandler);
 
         if (!GetNetBindComponent()->IsNetEntityRoleAuthority())
         {
@@ -64,22 +66,29 @@ namespace Multiplayer
             blendTransform.SetTranslation(GetTranslation());
             blendTransform.SetUniformScale(GetScale());
 
-            const float blendFactor = GetMultiplayer()->GetCurrentBlendFactor();
-            if (!AZ::IsClose(blendFactor, 1.0f))
+            if (!m_syncTransformImmediate)
             {
-                AZ::Transform blendTransformPrevious;
-                blendTransformPrevious.SetRotation(GetRotationPrevious());
-                blendTransformPrevious.SetTranslation(GetTranslationPrevious());
-                blendTransformPrevious.SetUniformScale(GetScalePrevious());
-
-                if (!blendTransform.IsClose(blendTransformPrevious))
+                const float blendFactor = GetMultiplayer()->GetCurrentBlendFactor();
+                if (!AZ::IsClose(blendFactor, 1.0f))
                 {
-                    blendTransform.SetRotation(blendTransformPrevious.GetRotation().Slerp(blendTransform.GetRotation(), blendFactor));
-                    blendTransform.SetTranslation(
-                        blendTransformPrevious.GetTranslation().Lerp(blendTransform.GetTranslation(), blendFactor));
-                    blendTransform.SetUniformScale(
-                        AZ::Lerp(blendTransformPrevious.GetUniformScale(), blendTransform.GetUniformScale(), blendFactor));
+                    AZ::Transform blendTransformPrevious;
+                    blendTransformPrevious.SetRotation(GetRotationPrevious());
+                    blendTransformPrevious.SetTranslation(GetTranslationPrevious());
+                    blendTransformPrevious.SetUniformScale(GetScalePrevious());
+
+                    if (!blendTransform.IsClose(blendTransformPrevious))
+                    {
+                        blendTransform.SetRotation(blendTransformPrevious.GetRotation().Slerp(blendTransform.GetRotation(), blendFactor));
+                        blendTransform.SetTranslation(
+                            blendTransformPrevious.GetTranslation().Lerp(blendTransform.GetTranslation(), blendFactor));
+                        blendTransform.SetUniformScale(
+                            AZ::Lerp(blendTransformPrevious.GetUniformScale(), blendTransform.GetUniformScale(), blendFactor));
+                    }
                 }
+            }
+            else
+            {
+                m_syncTransformImmediate = false;
             }
 
             AzFramework::TransformComponent* transformComponent = GetTransformComponent();

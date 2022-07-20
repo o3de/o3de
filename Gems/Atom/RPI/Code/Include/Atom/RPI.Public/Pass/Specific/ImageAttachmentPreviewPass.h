@@ -10,6 +10,7 @@
 #include <AtomCore/Instance/Instance.h>
 
 #include <Atom/RHI/BufferPool.h>
+#include <Atom/RHI/CopyItem.h>
 #include <Atom/RHI/ScopeProducer.h>
 
 #include <Atom/RPI.Public/Buffer/Buffer.h>
@@ -93,6 +94,9 @@ namespace AZ
             //! Readback the output color attachment
             bool ReadbackOutput(AZStd::shared_ptr<AttachmentReadback> readback);
 
+            //! Set a min/max range for remapping the preview output, to increase contrast. The default of 0-1 is a no-op.
+            void SetColorTransformRange(float colorTransformRange[2]);
+
         private:
             explicit ImageAttachmentPreviewPass(const PassDescriptor& descriptor);
 
@@ -103,6 +107,7 @@ namespace AZ
             void LoadShader();
 
             // Pass overrides
+            void BuildInternal() override;
             void FrameBeginInternal(FramePrepareParams params) override;
 
             // RHI::ScopeProducer overrides...
@@ -142,6 +147,9 @@ namespace AZ
 
             // render target for the preview
             RHI::Ptr<PassAttachment> m_outputColorAttachment;
+            
+            RHI::ShaderInputConstantIndex m_colorRangeMinMaxInput;
+            float m_attachmentColorTranformRange[2] = {0.0f, 1.0f};
 
             // shader for render images to the output
             Data::Instance<Shader> m_shader;

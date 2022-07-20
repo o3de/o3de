@@ -241,6 +241,7 @@ AZStd::fixed_vector<{{ Property.attrib['Type'] }}, {{ Property.attrib['Count'] }
 #include <AzCore/EBus/Event.h>
 #include <AzCore/EBus/ScheduledEvent.h>
 #include <AzNetworking/DataStructures/FixedSizeBitsetView.h>
+#include <Multiplayer/IMultiplayerDebug.h>
 #include <Multiplayer/MultiplayerTypes.h>
 #include <Multiplayer/Components/MultiplayerComponent.h>
 #include <Multiplayer/Components/MultiplayerController.h>
@@ -354,6 +355,7 @@ namespace {{ Component.attrib['Namespace'] }}
 {%      endif%}
         Multiplayer::NetComponentId GetNetComponentId() const override;
         bool Serialize(AzNetworking::ISerializer& serializer) override;
+        Multiplayer::MultiplayerAuditingElement GetInputDeltaLog() const override;
         Multiplayer::IMultiplayerComponentInput& operator =(const Multiplayer::IMultiplayerComponentInput& rhs) override;
 
 {% call(Input) AutoComponentMacros.ParseNetworkInputs(Component) %}
@@ -461,7 +463,7 @@ namespace {{ Component.attrib['Namespace'] }}
         {{ AutoComponentMacros.DeclareRpcEventGetters(Component, 'Authority', 'Autonomous')|indent(8) -}}
 
 {% for Service in Component.iter('ComponentRelation') %}
-{%      if (Service.attrib['HasController']|booleanTrue) and (Service.attrib['Constraint'] != 'Incompatible') %}
+{%      if (Service.attrib['Constraint'] != 'Incompatible') and (Service.attrib['HasController']|booleanTrue)  %}
         {{ Service.attrib['Namespace'] }}::{{ Service.attrib['Name'] }}Controller* Get{{ Service.attrib['Name'] }}Controller();
 {%      endif %}
 {% endfor %}

@@ -1285,39 +1285,40 @@ namespace GraphCanvas
     void SceneComponent::ReadSaveData(const EntitySaveDataContainer& saveDataContainer)
     {
         GRAPH_CANVAS_PROFILE_FUNCTION();
-        const SceneComponentSaveData* saveData = saveDataContainer.FindSaveDataAs<SceneComponentSaveData>();
-
-        for (const GraphCanvasConstructSaveData* currentConstruct : saveData->m_constructs)
+        if (const SceneComponentSaveData* saveData = saveDataContainer.FindSaveDataAs<SceneComponentSaveData>())
         {
-            AZ::Entity* constructEntity = nullptr;
-            switch (currentConstruct->m_constructType)
+            for (const GraphCanvasConstructSaveData* currentConstruct : saveData->m_constructs)
             {
-            case ConstructType::CommentNode:
-                GraphCanvasRequestBus::BroadcastResult(constructEntity, &GraphCanvasRequests::CreateCommentNode);
-                break;
-            case ConstructType::NodeGroup:
-                GraphCanvasRequestBus::BroadcastResult(constructEntity, &GraphCanvasRequests::CreateNodeGroup);
-                break;
-            case ConstructType::BookmarkAnchor:
-                GraphCanvasRequestBus::BroadcastResult(constructEntity, &GraphCanvasRequests::CreateBookmarkAnchor);
-                break;
-            default:
-                break;
+                AZ::Entity* constructEntity = nullptr;
+                switch (currentConstruct->m_constructType)
+                {
+                case ConstructType::CommentNode:
+                    GraphCanvasRequestBus::BroadcastResult(constructEntity, &GraphCanvasRequests::CreateCommentNode);
+                    break;
+                case ConstructType::NodeGroup:
+                    GraphCanvasRequestBus::BroadcastResult(constructEntity, &GraphCanvasRequests::CreateNodeGroup);
+                    break;
+                case ConstructType::BookmarkAnchor:
+                    GraphCanvasRequestBus::BroadcastResult(constructEntity, &GraphCanvasRequests::CreateBookmarkAnchor);
+                    break;
+                default:
+                    break;
+                }
+
+                if (constructEntity)
+                {
+                    constructEntity->Init();
+                    constructEntity->Activate();
+
+                    EntitySaveDataRequestBus::Event(constructEntity->GetId(), &EntitySaveDataRequests::ReadSaveData, currentConstruct->m_saveDataContainer);
+
+                    Add(constructEntity->GetId());
+                }
             }
 
-            if (constructEntity)
-            {
-                constructEntity->Init();
-                constructEntity->Activate();
-
-                EntitySaveDataRequestBus::Event(constructEntity->GetId(), &EntitySaveDataRequests::ReadSaveData, currentConstruct->m_saveDataContainer);
-
-                Add(constructEntity->GetId());
-            }
+            m_viewParams = saveData->m_viewParams;
+            m_bookmarkCounter = saveData->m_bookmarkCounter;
         }
-
-        m_viewParams = saveData->m_viewParams;
-        m_bookmarkCounter = saveData->m_bookmarkCounter;
     }
 
     AZStd::any* SceneComponent::GetUserData()
@@ -4697,9 +4698,6 @@ namespace GraphCanvas
         : m_scene(scene)
         , m_suppressContextMenu(false)
     {
-        // Workaround for QTBUG-18021
-        setItemIndexMethod(QGraphicsScene::NoIndex);
-
         setMinimumRenderSize(2.0f);
         connect(this, &QGraphicsScene::selectionChanged, this, [this]() { m_scene.OnSelectionChanged(); });
         setSceneRect(-20000, -20000, 40000, 40000);

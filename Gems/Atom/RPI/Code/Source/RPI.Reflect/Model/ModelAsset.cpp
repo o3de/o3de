@@ -15,6 +15,7 @@
 
 #include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Serialization/EditContext.h>
 
 namespace AZ
 {
@@ -35,6 +36,15 @@ namespace AZ
                     ->Field("MaterialSlots", &ModelAsset::m_materialSlots)
                     ->Field("LodAssets", &ModelAsset::m_lodAssets)
                     ;
+
+                // Note: This class needs to have edit context reflection so PropertyAssetCtrl::OnEditButtonClicked
+                //       can open the asset with the preferred asset editor (Scene Settings).
+                if (auto* editContext = serializeContext->GetEditContext())
+                {
+                    editContext->Class<ModelAsset>("Model Asset", "")
+                        ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                        ;
+                }
             }
         }
 
@@ -124,7 +134,7 @@ namespace AZ
         void ModelAsset::BuildKdTree() const
         {
             AZStd::lock_guard<AZStd::mutex> lock(m_kdTreeLock);
-            if (m_isKdTreeCalculationRunning == false)
+            if ((m_isKdTreeCalculationRunning == false) && !m_kdTree)
             {
                 m_isKdTreeCalculationRunning = true;
 
@@ -241,6 +251,8 @@ namespace AZ
                 const float* positionPtr = reinterpret_cast<const float*>(
                     positionRawBuffer.data() + (positionBufferViewDesc.m_elementOffset * positionBufferViewDesc.m_elementSize));
 
+                Intersect::SegmentTriangleHitTester hitTester(rayStart, rayEnd);
+
                 constexpr int StepSize = 3; // number of values per vertex (x, y, z)
                 for (uint32_t indexIter = 0; indexIter < indexBufferViewDesc.m_elementCount; indexIter += StepSize, indexPtr += StepSize)
                 {
@@ -263,8 +275,7 @@ namespace AZ
                     c.Set(cRef);
 
                     float currentDistanceNormalized;
-                    if (AZ::Intersect::IntersectSegmentTriangleCCW(
-                            rayStart, rayEnd, a, b, c, intersectionNormal, currentDistanceNormalized))
+                    if (hitTester.IntersectSegmentTriangleCCW(a, b, c, intersectionNormal, currentDistanceNormalized))
                     {
                         anyHit = true;
 

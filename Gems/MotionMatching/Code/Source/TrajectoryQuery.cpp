@@ -6,105 +6,113 @@
  *
  */
 
-#include <TrajectoryQuery.h>
 #include <EMotionFX/Source/ActorInstance.h>
+#include <TrajectoryQuery.h>
 #include <FeatureTrajectory.h>
 
 namespace EMotionFX::MotionMatching
 {
-    AZ::Vector3 SampleFunction(TrajectoryQuery::EMode mode, float offset, float radius, float phase)
+    AZ::Vector3 SampleFunction(float offset, float radius, float phase)
     {
-        switch (mode)
+        phase += 10.7;
+        AZ::Vector3 displacement = AZ::Vector3::CreateZero();
+        displacement.SetX(radius * sinf(phase * 0.7f + offset) + radius * 0.75f * cosf(phase * 2.0f + offset * 2.0f));
+        displacement.SetY(radius * cosf(phase * 0.4f + offset));
+        return displacement;
+    }
+
+    void TrajectoryQuery::PredictFutureTrajectory(const ActorInstance& actorInstance,
+        const FeatureTrajectory* trajectoryFeature,
+        const AZ::Vector3& targetPos,
+        const AZ::Vector3& targetFacingDir,
+        bool useTargetFacingDir)
+    {
+        const AZ::Vector3 actorInstanceWorldPosition = actorInstance.GetWorldSpaceTransform().m_position;
+        const AZ::Quaternion actorInstanceWorldRotation = actorInstance.GetWorldSpaceTransform().m_rotation;
+        const AZ::Vector3 actorInstanceToTarget = (targetPos - actorInstanceWorldPosition);
+
+        const size_t numFutureSamples = trajectoryFeature->GetNumFutureSamples();
+        const float numSections = aznumeric_cast<float>(numFutureSamples-1);
+
+        float linearDisplacementPerSample = 0.0f;
+        AZ::Quaternion targetFacingDirQuat = actorInstanceWorldRotation;
+        if (!actorInstanceToTarget.IsClose(AZ::Vector3::CreateZero(), m_deadZone))
         {
-        case TrajectoryQuery::MODE_TWO:
+            // Calculate the desired linear velocity from the current position to the target position based on the trajectory future time range.
+            AZ_Assert(trajectoryFeature->GetFutureTimeRange() > AZ::Constants::FloatEpsilon, "Trajectory feature future time range is too small.");
+            const float velocity = actorInstanceToTarget.GetLength() / trajectoryFeature->GetFutureTimeRange();
+
+            linearDisplacementPerSample = (velocity / numSections);
+        }
+        else
         {
-            AZ::Vector3 displacement = AZ::Vector3::CreateZero();
-            displacement.SetX(radius * sinf(phase + offset) );
-            displacement.SetY(cosf(phase + offset));
-            return displacement;
+            // Force using the target facing direction in the dead zone as the samples of the future trajectory will be all at the same
+            // location.
+            useTargetFacingDir = true;
         }
 
-        case TrajectoryQuery::MODE_THREE:
+        if (useTargetFacingDir)
         {
-            AZ::Vector3 displacement = AZ::Vector3::CreateZero();
-            const float rad = radius * cosf(radius + phase*0.2f);
-            displacement.SetX(rad * sinf(phase + offset));
-            displacement.SetY(rad * cosf(phase + offset));
-            return displacement;
+            // Use the given target facing direction and convert the direction vector to a quaternion.
+            targetFacingDirQuat = AZ::Quaternion::CreateShortestArc(trajectoryFeature->GetFacingAxisDir(), targetFacingDir);
+        }
+        else
+        {
+            // Use the direction from the current actor instance position to the target as the target facing direction
+            // and convert the direction vector to a quaternion.
+            targetFacingDirQuat = AZ::Quaternion::CreateShortestArc(trajectoryFeature->GetFacingAxisDir(), actorInstanceToTarget);
         }
 
-        case TrajectoryQuery::MODE_FOUR:
-        {
-            AZ::Vector3 displacement = AZ::Vector3::CreateZero();
-            displacement.SetX(radius * sinf(phase + offset));
-            displacement.SetY(radius*2.0f * cosf(phase + offset));
-            return displacement;
-        }
+        // Set the first control point to the current position and facing direction.
+        m_futureControlPoints[0].m_position = actorInstanceWorldPosition;
+        m_futureControlPoints[0].m_facingDirection = actorInstanceWorldRotation.TransformVector(trajectoryFeature->GetFacingAxisDir());
 
-        // MODE_ONE and default
-        default:
+        for (size_t i = 1; i < numFutureSamples; ++i)
         {
-            AZ::Vector3 displacement = AZ::Vector3::CreateZero();
-            displacement.SetX(radius * sinf(phase * 0.7f + offset) + radius * 0.75f * cosf(phase * 2.0f + offset * 2.0f));
-            displacement.SetY(radius * cosf(phase * 0.4f + offset));
-            return displacement;
-        }
+            const float t = aznumeric_cast<float>(i) / numSections;
+
+            // Position
+            {
+                const AZ::Vector3 prevFacingDir = m_futureControlPoints[i - 1].m_facingDirection;
+
+                // Interpolate between the linear direction to target and the facing direction from the previous sample.
+                // This will make sure the facing direction close to the current time matches the current facing direction and
+                // the facing direction in the most far future matches the desired target facing direction.
+                const float weight = 1.0f - AZStd::pow(1.0f - t, m_positionBias);
+                const AZ::Vector3 interpolatedPosDelta = prevFacingDir.Lerp(actorInstanceToTarget.GetNormalized(), weight);
+
+                // Scale it by the desired velocity.
+                const AZ::Vector3 scaledPosDelta = interpolatedPosDelta * linearDisplacementPerSample;
+
+                m_futureControlPoints[i].m_position = m_futureControlPoints[i - 1].m_position + scaledPosDelta;
+            }
+
+            // Facing direction
+            {
+                // Interpolate facing direction from current character facing direction (first sample) to the target facing direction (most far future sample).
+                const float weight = 1.0f - AZStd::pow(1.0f - t, m_rotationBias);
+                const AZ::Quaternion interpolatedRotation = actorInstanceWorldRotation.Slerp(targetFacingDirQuat, weight);
+
+                // Convert the interpolated rotation result back to a facing direction vector.
+                const AZ::Vector3 interpolatedFacingDir = interpolatedRotation.TransformVector(trajectoryFeature->GetFacingAxisDir());
+
+                m_futureControlPoints[i].m_facingDirection = interpolatedFacingDir.GetNormalizedSafe();
+            }
         }
     }
 
-    void TrajectoryQuery::Update(const ActorInstance* actorInstance,
+    void TrajectoryQuery::Update(const ActorInstance& actorInstance,
         const FeatureTrajectory* trajectoryFeature,
         const TrajectoryHistory& trajectoryHistory,
         EMode mode,
-        [[maybe_unused]] AZ::Vector3 targetPos,
-        [[maybe_unused]] AZ::Vector3 targetFacingDir,
+        const AZ::Vector3& targetPos,
+        const AZ::Vector3& targetFacingDir,
+        bool useTargetFacingDir,
         float timeDelta,
         float pathRadius,
         float pathSpeed)
     {
-        // Build the future trajectory control points.
-        const size_t numFutureSamples = trajectoryFeature->GetNumFutureSamples();
-        m_futureControlPoints.resize(numFutureSamples);
-
-        if (mode == MODE_TARGETDRIVEN)
-        {
-            const AZ::Vector3 curPos = actorInstance->GetWorldSpaceTransform().m_position;
-            if (curPos.IsClose(targetPos, 0.1f))
-            {
-                for (size_t i = 0; i < numFutureSamples; ++i)
-                {
-                    m_futureControlPoints[i].m_position = curPos;
-                }
-            }
-            else
-            {
-                // NOTE: Improve it by using a curve to the target.
-                for (size_t i = 0; i < numFutureSamples; ++i)
-                {
-                    const float sampleTime = static_cast<float>(i) / (numFutureSamples - 1);
-                    m_futureControlPoints[i].m_position = curPos.Lerp(targetPos, sampleTime);
-                }
-            }
-        }
-        else
-        {
-            static float phase = 0.0f;
-            phase += timeDelta * pathSpeed;
-            AZ::Vector3 base = SampleFunction(mode, 0.0f, pathRadius, phase);
-            for (size_t i = 0; i < numFutureSamples; ++i)
-            {
-                const float offset = i * 0.1f;
-                const AZ::Vector3 curSample = SampleFunction(mode, offset, pathRadius, phase);
-                AZ::Vector3 displacement = curSample - base;
-                m_futureControlPoints[i].m_position = actorInstance->GetWorldSpaceTransform().m_position + displacement;
-
-                // Evaluate a control point slightly further into the future than the actual
-                // one and use the position difference as the facing direction.
-                const AZ::Vector3 deltaSample = SampleFunction(mode, offset + 0.01f, pathRadius, phase);
-                const AZ::Vector3 dir = deltaSample - curSample;
-                m_futureControlPoints[i].m_facingDirection = dir.GetNormalizedSafe();
-            }
-        }
+        AZ_PROFILE_SCOPE(Animation, "TrajectoryQuery::Update");
 
         // Build the past trajectory control points.
         const size_t numPastSamples = trajectoryFeature->GetNumPastSamples();
@@ -113,9 +121,36 @@ namespace EMotionFX::MotionMatching
 
         for (size_t i = 0; i < numPastSamples; ++i)
         {
-            const float sampleTimeNormalized = i / static_cast<float>(numPastSamples - 1);
+            const float sampleTimeNormalized = i / aznumeric_cast<float>(numPastSamples - 1);
             const TrajectoryHistory::Sample sample = trajectoryHistory.Evaluate(sampleTimeNormalized * pastTimeRange);
             m_pastControlPoints[i] = { sample.m_position, sample.m_facingDirection };
+        }
+
+        // Build the future trajectory control points.
+        const size_t numFutureSamples = trajectoryFeature->GetNumFutureSamples();
+        m_futureControlPoints.resize(numFutureSamples);
+
+        if (mode == MODE_TARGETDRIVEN)
+        {
+            PredictFutureTrajectory(actorInstance, trajectoryFeature, targetPos, targetFacingDir, useTargetFacingDir);
+        }
+        else
+        {
+            m_automaticModePhase += timeDelta * pathSpeed;
+            AZ::Vector3 base = SampleFunction(0.0f, pathRadius, m_automaticModePhase);
+            for (size_t i = 0; i < numFutureSamples; ++i)
+            {
+                const float offset = i * 0.1f;
+                const AZ::Vector3 curSample = SampleFunction(offset, pathRadius, m_automaticModePhase);
+                AZ::Vector3 displacement = curSample - base;
+                m_futureControlPoints[i].m_position = actorInstance.GetWorldSpaceTransform().m_position + displacement;
+
+                // Evaluate a control point slightly further into the future than the actual
+                // one and use the position difference as the facing direction.
+                const AZ::Vector3 deltaSample = SampleFunction(offset + 0.01f, pathRadius, m_automaticModePhase);
+                const AZ::Vector3 dir = deltaSample - curSample;
+                m_futureControlPoints[i].m_facingDirection = dir.GetNormalizedSafe();
+            }
         }
     }
 

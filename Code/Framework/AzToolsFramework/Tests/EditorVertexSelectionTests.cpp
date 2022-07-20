@@ -427,7 +427,7 @@ namespace UnitTest
                 AZ::Vector3(14.0f, -6.0f, 5.0f)));
 
         // camera (go to position format) - 12.00, 18.00, 16.00, -38.00, -175.00
-        m_cameraState.m_viewportSize = AZ::Vector2(1280.0f, 720.0f);
+        m_cameraState.m_viewportSize = AzFramework::ScreenSize(1280, 720);
         AzFramework::SetCameraTransform(
             m_cameraState,
             AZ::Transform::CreateFromMatrix3x3AndTranslation(

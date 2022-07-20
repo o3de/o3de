@@ -186,7 +186,7 @@ namespace TestImpact
         void TestRunCompleteCallback(const Client::TestRunBase& testRun, size_t numTestRunsCompleted, size_t totalNumTestRuns)
         {
             const auto progress =
-                AZStd::string::format("(%03u/%03u)", numTestRunsCompleted, totalNumTestRuns, testRun.GetTargetName().c_str());
+                AZStd::string::format("(%03zu/%03zu)", numTestRunsCompleted, totalNumTestRuns);
 
             AZStd::string result;
             switch (testRun.GetResult())

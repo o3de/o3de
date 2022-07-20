@@ -9,6 +9,9 @@
 #include <AssetBuilderSDK/AssetBuilderSDK.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/std/ranges/elements_view.h>
+#include <Editor/Framework/Configuration.h>
+#include <Editor/Framework/Interpreter.h>
 #include <Editor/Include/ScriptCanvas/Components/EditorGraph.h>
 #include <Editor/ReflectComponent.h>
 #include <Editor/View/Dialogs/SettingsDialog.h>
@@ -107,7 +110,8 @@ namespace ScriptCanvasEditor
 {
     void ReflectComponent::Reflect(AZ::ReflectContext* context)
     {
-        SourceHandle::Reflect(context);
+        Configuration::Reflect(context);
+        Interpreter::Reflect(context);
         ScriptCanvas::ScriptCanvasData::Reflect(context);
         Deprecated::ScriptCanvasAssetHolder::Reflect(context);
         EditorSettings::EditorWorkspace::Reflect(context);        
@@ -126,6 +130,7 @@ namespace ScriptCanvasEditor
         CreateNodeGroupMimeEvent::Reflect(context);
         CreateCommentNodeMimeEvent::Reflect(context);
         CreateCustomNodeMimeEvent::Reflect(context);
+        CreateDataDrivenNodeMimeEvent::Reflect(context);
         CreateEBusHandlerMimeEvent::Reflect(context);
         CreateEBusHandlerEventMimeEvent::Reflect(context);
         CreateEBusSenderMimeEvent::Reflect(context);
@@ -176,9 +181,103 @@ namespace ScriptCanvasEditor
 
     void ReflectComponent::Activate()
     {
+        ReflectEventTypes();
     }
 
     void ReflectComponent::Deactivate()
     {
+    }
+
+    void ReflectComponent::ReflectEventTypes()
+    {
+        AZ::BehaviorContext* behaviorContext{};
+        AZ::ComponentApplicationBus::BroadcastResult(behaviorContext, &AZ::ComponentApplicationBus::Events::GetBehaviorContext);
+        AZ_Assert(behaviorContext, "BehaviorContext is required to lookup methods returning AZ::Event");
+
+        AZ::SerializeContext* serializeContext{};
+        AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
+        AZ_Assert(serializeContext, "SerializeContext is required to register AZ::Event type");
+
+        auto ReflectEventTypeOnDemand = [](AZ::SerializeContext* context, const AZ::BehaviorMethod& behaviorMethod) -> void
+        {
+            if (AZ::MethodReturnsAzEventByReferenceOrPointer(behaviorMethod))
+            {
+                const AZ::BehaviorParameter* resultParameter = behaviorMethod.GetResult();
+                AZ::SerializeContext::ClassData classData;
+                classData.m_name = resultParameter->m_name;
+                classData.m_typeId = resultParameter->m_typeId;
+                classData.m_azRtti = resultParameter->m_azRtti;
+
+                auto EventPlaceholderAnyCreator = [](AZ::SerializeContext*) -> AZStd::any
+                {
+                    return AZStd::make_any<AZStd::monostate>();
+                };
+
+                context->RegisterType(resultParameter->m_typeId, AZStd::move(classData), EventPlaceholderAnyCreator);
+            }
+        };
+
+        // Behavior Context Global Methods
+        for (auto behaviorMethod : AZStd::ranges::views::values(behaviorContext->m_methods))
+        {
+            if (behaviorMethod != nullptr)
+            {
+                ReflectEventTypeOnDemand(serializeContext, *behaviorMethod);
+            }
+        }
+
+        // Behavior Context Global Properties
+        for (auto behaviorProperty : AZStd::ranges::views::values(behaviorContext->m_properties))
+        {
+            // Only the getter can reflect a method that returns an AZ::Event& or AZ::Event*
+            if (behaviorProperty != nullptr && behaviorProperty->m_getter != nullptr)
+            {
+                ReflectEventTypeOnDemand(serializeContext, *behaviorProperty->m_getter);
+            }
+        }
+
+        // Behavior Context Class Methods
+        // Behavior Context Getter Property Methods
+        for (auto behaviorClass : AZStd::ranges::views::values(behaviorContext->m_classes))
+        {
+            if (behaviorClass != nullptr)
+            {
+                for (auto behaviorClassMethod : AZStd::ranges::views::values(behaviorClass->m_methods))
+                {
+                    if (behaviorClassMethod != nullptr)
+                    {
+                        ReflectEventTypeOnDemand(serializeContext, *behaviorClassMethod);
+                    }
+                }
+
+                // Behavior Context Global Properties
+                for (auto behaviorClassProperty : AZStd::ranges::views::values(behaviorClass->m_properties))
+                {
+                    // Only the getter can reflect a method that returns an AZ::Event& or AZ::Event*
+                    if (behaviorClassProperty != nullptr && behaviorClassProperty->m_getter != nullptr)
+                    {
+                        ReflectEventTypeOnDemand(serializeContext, *behaviorClassProperty->m_getter);
+                    }
+                }
+            }
+        }
+
+        // Behavior Context EBus event sender
+        for (auto behaviorEbus : AZStd::ranges::views::values(behaviorContext->m_ebuses))
+        {
+            if (behaviorEbus != nullptr)
+            {
+                for (auto behaviorEventSender : AZStd::ranges::views::values(behaviorEbus->m_events))
+                {
+                    // An event sender has the same signature for all of its functions and it's guaranteed
+                    // that it will have a valid m_broadcast.
+                    // So use that to reflect the any EBus event that returns an AZ Event pointer or reference
+                    if (behaviorEventSender.m_broadcast != nullptr)
+                    {
+                        ReflectEventTypeOnDemand(serializeContext, *behaviorEventSender.m_broadcast);
+                    }
+                }
+            }
+        }
     }
 }

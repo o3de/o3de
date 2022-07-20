@@ -25,13 +25,30 @@ namespace EMotionFX::MotionMatching
         virtual void PushPerformanceHistogramValue(const char* performanceMetricName, float value) = 0;
         virtual void PushCostHistogramValue(const char* costName, float value, const AZ::Color& color) = 0;
 
-        virtual void SetFeatureMatrixMemoryUsage(size_t sizeInBytes) = 0;
-        virtual void SetFeatureMatrixNumFrames(size_t numFrames) = 0;
-        virtual void SetFeatureMatrixNumComponents(size_t numFeatureComponents) = 0;
+        struct FrameDatabaseInfo
+        {
+            size_t m_memoryUsedInBytes = 0;
+            size_t m_numFrames;
+            size_t m_numMotions;
+            float m_motionDataInSeconds;
+        };
+        virtual void SetFrameDatabaseInfo(const FrameDatabaseInfo& info) = 0;
 
-        virtual void SetKdTreeMemoryUsage(size_t sizeInBytes) = 0;
-        virtual void SetKdTreeNumNodes(size_t numNodes) = 0;
-        virtual void SetKdTreeNumDimensions(size_t numDimensions) = 0;
+        struct FeatureMatrixInfo
+        {
+            size_t m_memoryUsedInBytes = 0;
+            size_t m_numFrames = 0;
+            size_t m_numDimensions = 0;
+        };
+        virtual void SetFeatureMatrixInfo(const FeatureMatrixInfo& info) = 0;
+
+        struct KdTreeInfo
+        {
+            size_t m_memoryUsedInBytes = 0;
+            size_t m_numNodes = 0;
+            size_t m_numDimensions = 0;
+        };
+        virtual void SetKdTreeInfo(const KdTreeInfo& info) = 0;
     };
     using ImGuiMonitorRequestBus = AZ::EBus<ImGuiMonitorRequests>;
 } // namespace EMotionFX::MotionMatching

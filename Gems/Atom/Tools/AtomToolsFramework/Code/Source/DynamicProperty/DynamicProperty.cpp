@@ -136,8 +136,11 @@ namespace AtomToolsFramework
             AddEditDataAttributeMemberFunction(AZ::Edit::Attributes::ReadOnly, &DynamicProperty::IsReadOnly);
             AddEditDataAttributeMemberFunction(AZ::Edit::Attributes::EnumValues, &DynamicProperty::GetEnumValues);
             AddEditDataAttributeMemberFunction(AZ::Edit::Attributes::ChangeNotify, &DynamicProperty::OnDataChanged);
-            AddEditDataAttribute(AZ::Edit::Attributes::ShowProductAssetFileName, false);
-            AddEditDataAttribute(AZ_CRC_CE("Thumbnail"), m_config.m_showThumbnail);
+
+            if (m_config.m_customHandler)
+            {
+                AddEditDataAttribute(AZ::Edit::Attributes::Handler, m_config.m_customHandler);
+            }
 
             switch (m_config.m_dataType)
             {
@@ -168,6 +171,11 @@ namespace AtomToolsFramework
             case DynamicPropertyType::String:
                 m_editData.m_elementId = AZ::Edit::UIHandlers::LineEdit;
                 break;
+            case DynamicPropertyType::Asset:
+                AddEditDataAttribute(AZ::Edit::Attributes::ShowProductAssetFileName, false);
+                AddEditDataAttribute(AZ_CRC_CE("Thumbnail"), m_config.m_showThumbnail);
+                AddEditDataAttribute(AZ_CRC_CE("SupportedAssetTypes"), m_config.m_supportedAssetTypes);
+                break;
             case DynamicPropertyType::Invalid:
                 break;
             }
@@ -195,14 +203,14 @@ namespace AtomToolsFramework
         return !m_config.m_displayName.empty() ? m_config.m_displayName : m_config.m_name;
     }
 
-    AZStd::string DynamicProperty::GetGroupName() const
+    AZStd::string DynamicProperty::GetGroupDisplayName() const
     {
-        return m_config.m_groupName;
+        return m_config.m_groupDisplayName;
     }
 
     AZStd::string DynamicProperty::GetAssetPickerTitle() const
     {
-        return GetGroupName().empty() ? GetDisplayName() : GetGroupName() + " " + GetDisplayName();
+        return GetGroupDisplayName().empty() ? GetDisplayName() : GetGroupDisplayName() + " " + GetDisplayName();
     }
 
     AZStd::string DynamicProperty::GetDescription() const
@@ -235,6 +243,10 @@ namespace AtomToolsFramework
 
     AZ::u32 DynamicProperty::OnDataChanged() const
     {
+        if (m_config.m_dataChangeCallback)
+        {
+            return m_config.m_dataChangeCallback(GetValue());
+        }
         return AZ::Edit::PropertyRefreshLevels::AttributesAndValues;
     }
 

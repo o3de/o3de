@@ -8,7 +8,7 @@
 
 include_guard()
 
-#! read_json_external_subdirs
+#! o3de_read_json_external_subdirs
 #  Read the "external_subdirectories" array from a *.json file
 #  External subdirectories are any folders with CMakeLists.txt in them
 #  This could be regular subdirectories, Gems(contains an additional gem.json),
@@ -17,7 +17,7 @@ include_guard()
 #  \arg:output_external_subdirs name of output variable to store external subdirectories into
 #  \arg:input_json_path path to the *.json file to load and read the external subdirectories from
 #  \return: external subdirectories as is from the json file.
-function(read_json_external_subdirs output_external_subdirs input_json_path)
+function(o3de_read_json_external_subdirs output_external_subdirs input_json_path)
     o3de_read_json_array(json_array ${input_json_path} "external_subdirectories")
     set(${output_external_subdirs} ${json_array} PARENT_SCOPE)
 endfunction()

@@ -8,14 +8,15 @@
 
 #pragma once
 
-#include <AzCore/Serialization/SerializeContext.h>
-#include <LmbrCentral/Dependency/DependencyMonitor.h>
-#include <GradientSignal/GradientSampler.h>
-#include <GradientSignal/SmoothStep.h>
 #include <AzCore/Component/Component.h>
+#include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/std/parallel/shared_mutex.h>
 #include <GradientSignal/Ebuses/GradientRequestBus.h>
 #include <GradientSignal/Ebuses/SmoothStepGradientRequestBus.h>
 #include <GradientSignal/Ebuses/SmoothStepRequestBus.h>
+#include <GradientSignal/GradientSampler.h>
+#include <GradientSignal/SmoothStep.h>
+#include <LmbrCentral/Dependency/DependencyMonitor.h>
 
 namespace LmbrCentral
 {
@@ -94,5 +95,6 @@ namespace GradientSignal
     private:
         SmoothStepGradientConfig m_configuration;
         LmbrCentral::DependencyMonitor m_dependencyMonitor;
+        mutable AZStd::shared_mutex m_queryMutex;
     };
 }

@@ -168,16 +168,9 @@ namespace
 /////////////////////////////////////////////////////////////////////////////////
 // System Implementation.
 //////////////////////////////////////////////////////////////////////////
-CSystem::CSystem(SharedEnvironmentInstance* pSharedEnvironment)
+CSystem::CSystem()
 {
     CrySystemRequestBus::Handler::BusConnect();
-
-    if (!pSharedEnvironment)
-    {
-        CryFatalError("No shared environment instance provided. "
-            "Cross-module sharing of EBuses and allocators "
-            "is not possible.");
-    }
 
     m_systemGlobalState = ESYSTEM_GLOBAL_STATE_UNKNOWN;
     m_iHeight = 0;
@@ -204,7 +197,6 @@ CSystem::CSystem(SharedEnvironmentInstance* pSharedEnvironment)
     m_env.bIgnoreAllAsserts = false;
     m_env.bNoAssertDialog = false;
 
-    m_env.pSharedEnvironment = pSharedEnvironment;
     //////////////////////////////////////////////////////////////////////////
 
     m_sysNoUpdate = NULL;
@@ -290,8 +282,6 @@ CSystem::~CSystem()
     {
         AZ::AllocatorInstance<AZ::OSAllocator>::Destroy();
     }
-
-    AZ::Environment::Detach();
 
     m_env.pSystem = 0;
     gEnv = 0;
@@ -410,7 +400,7 @@ void CSystem::ShutDown()
     // Log must be last thing released.
     if (m_env.pLog)
     {
-        m_env.pLog->FlushAndClose();
+        m_env.pLog->Flush();
     }
     SAFE_RELEASE(m_env.pLog);   // creates log backup
 
@@ -438,7 +428,7 @@ void CSystem::Quit()
         m_pUserCallback->OnQuit();
     }
 
-    gEnv->pLog->FlushAndClose();
+    gEnv->pLog->Flush();
 
     // Latest possible place to flush any pending messages to disk before the forceful termination.
     if (auto logger = AZ::Interface<AZ::Debug::IEventLogger>::Get(); logger)
@@ -751,7 +741,10 @@ bool CSystem::UpdateLoadtime()
 
 void CSystem::UpdateAudioSystems()
 {
-    Audio::AudioSystemRequestBus::Broadcast(&Audio::AudioSystemRequestBus::Events::ExternalUpdate);
+    if (auto audioSystem = AZ::Interface<Audio::IAudioSystem>::Get(); audioSystem != nullptr)
+    {
+        audioSystem->ExternalUpdate();
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1041,7 +1034,7 @@ void CSystem::ExecuteCommandLine(bool deferred)
 
     m_executedCommandLine = true;
 
-    // execute command line arguments e.g. +g_gametype ASSAULT +map "testy"
+    // execute command line arguments e.g. +g_gametype ASSAULT +LoadLevel "testy"
 
     ICmdLine* pCmdLine = GetICmdLine();
     assert(pCmdLine);

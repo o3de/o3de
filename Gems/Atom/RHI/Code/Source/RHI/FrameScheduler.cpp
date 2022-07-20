@@ -275,13 +275,13 @@ namespace AZ
                 const uint32_t compilesPerJob = m_compileRequest.m_shaderResourceGroupCompilesPerJob;
                 if (m_taskGraphActive && m_taskGraphActive->IsTaskGraphActive())
                 {
-                    AZ::TaskGraph taskGraph;
+                    AZ::TaskGraph taskGraph{ "SRG Compilation" };
 
                     const auto compileIntervalsFunction = [compilesPerJob, &taskGraph](ShaderResourceGroupPool* srgPool)
                     {
                         srgPool->CompileGroupsBegin();
                         const uint32_t compilesInPool = srgPool->GetGroupsToCompileCount();
-                        const uint32_t jobCount = DivideByMultiple(compilesInPool, compilesPerJob);
+                        const uint32_t jobCount = AZ::DivideAndRoundUp(compilesInPool, compilesPerJob);
                         AZ::TaskDescriptor srgCompileDesc{"SrgCompile", "Graphics"};
                         AZ::TaskDescriptor srgCompileEndDesc{"SrgCompileEnd", "Graphics"};
 
@@ -312,7 +312,7 @@ namespace AZ
                     resourcePoolDatabase.ForEachShaderResourceGroupPool<decltype(compileIntervalsFunction)>(AZStd::move(compileIntervalsFunction));
                     if (!taskGraph.IsEmpty())
                     {
-                        AZ::TaskGraphEvent finishedEvent;
+                        AZ::TaskGraphEvent finishedEvent{ "SRG Compile Wait" };
                         taskGraph.Submit(&finishedEvent);
                         finishedEvent.Wait();
                     }
@@ -332,7 +332,7 @@ namespace AZ
                     const auto compileIntervalsFunction = [compilesPerJob, &jobCompletion](ShaderResourceGroupPool* srgPool)
                     {
                         const uint32_t compilesInPool = srgPool->GetGroupsToCompileCount();
-                        const uint32_t jobCount = DivideByMultiple(compilesInPool, compilesPerJob);
+                        const uint32_t jobCount = AZ::DivideAndRoundUp(compilesInPool, compilesPerJob);
 
                         for (uint32_t i = 0; i < jobCount; ++i)
                         {
@@ -420,18 +420,21 @@ namespace AZ
 
             m_isProcessing = true;
 
-            m_device->BeginFrame();
-            m_frameGraph->Begin();
+            if (m_device->BeginFrame() == ResultCode::Success)
+            {
+                m_frameGraph->Begin();
 
-            ImportScopeProducer(*m_rootScopeProducer);
+                ImportScopeProducer(*m_rootScopeProducer);
 
-            // Queue resource pool resolves onto the root scope.
-            m_rootScope->QueueResourcePoolResolves(m_device->GetResourcePoolDatabase());
+                // Queue resource pool resolves onto the root scope.
+                m_rootScope->QueueResourcePoolResolves(m_device->GetResourcePoolDatabase());
 
-            // This is broadcast after beginning the frame so that the CPU and GPU are synchronized.
-            FrameEventBus::Event(m_device, &FrameEventBus::Events::OnFrameBegin);
+                // This is broadcast after beginning the frame so that the CPU and GPU are synchronized.
+                FrameEventBus::Event(m_device, &FrameEventBus::Events::OnFrameBegin);
 
-            return ResultCode::Success;
+                return ResultCode::Success;
+            }
+            return ResultCode::Fail;
         }
 
         ResultCode FrameScheduler::EndFrame()
@@ -455,6 +458,12 @@ namespace AZ
             if (CheckBitsAny(m_compileRequest.m_statisticsFlags, FrameSchedulerStatisticsFlags::GatherMemoryStatistics))
             {
                 m_device->CompileMemoryStatistics(m_memoryStatistics, MemoryStatisticsReportFlags::Detail);
+                m_memoryStatistics.m_detailedCapture = true;
+            }
+            else
+            {
+                m_device->CompileMemoryStatistics(m_memoryStatistics, MemoryStatisticsReportFlags::Basic);
+                m_memoryStatistics.m_detailedCapture = false;
             }
 
             m_device->UpdateCpuTimingStatistics();
@@ -485,7 +494,20 @@ namespace AZ
                 ScopeProducer* scopeProducer = FindScopeProducer(executeContext->GetScopeId());
 
                 AZ_PROFILE_SCOPE(RHI, "ScopeProducer: %s", scopeProducer->GetScopeId().GetCStr());
+
+                if (executeContext->GetCommandList())
+                {
+                    // reset the submit count in preparation for the scope submits
+                    executeContext->GetCommandList()->ResetTotalSubmits();
+                }
+
                 scopeProducer->BuildCommandList(*executeContext);
+
+                if (executeContext->GetCommandList())
+                {
+                    // validate the submits that were added during BuildCommandList
+                    executeContext->GetCommandList()->ValidateTotalSubmits(scopeProducer);
+                }
             }
 
             group.EndContext(index);
@@ -588,10 +610,7 @@ namespace AZ
 
         const MemoryStatistics* FrameScheduler::GetMemoryStatistics() const
         {
-            return
-                CheckBitsAny(m_compileRequest.m_statisticsFlags, FrameSchedulerStatisticsFlags::GatherMemoryStatistics)
-                ? &m_memoryStatistics
-                : nullptr;
+            return &m_memoryStatistics;
         }
 
         const TransientAttachmentStatistics* FrameScheduler::GetTransientAttachmentStatistics() const

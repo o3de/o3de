@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <AzFramework/Session/SessionRequests.h>
+#include <Multiplayer/Session/SessionRequests.h>
 
 namespace AWSGameLift
 {
@@ -16,10 +16,10 @@ namespace AWSGameLift
     //! GameLift create session on fleet request which corresponds to Amazon GameLift
     //! CreateGameSessionRequest
     struct AWSGameLiftCreateSessionRequest
-        : public AzFramework::CreateSessionRequest
+        : public Multiplayer::CreateSessionRequest
     {
     public:
-        AZ_RTTI(AWSGameLiftCreateSessionRequest, "{69612D5D-F899-4DEB-AD63-4C497ABC5C0D}", AzFramework::CreateSessionRequest);
+        AZ_RTTI(AWSGameLiftCreateSessionRequest, "{69612D5D-F899-4DEB-AD63-4C497ABC5C0D}", Multiplayer::CreateSessionRequest);
         static void Reflect(AZ::ReflectContext* context);
 
         AWSGameLiftCreateSessionRequest() = default;

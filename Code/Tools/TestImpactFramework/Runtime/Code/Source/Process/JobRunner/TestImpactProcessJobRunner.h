@@ -58,14 +58,14 @@ namespace TestImpact
         //! @param payloadMapProducer The client callback to be called when all jobs have finished to transform the work produced by each job into the desired output.
         //! @param jobCallback The client callback to be called when each job changes state.
         //! @return The result of the run sequence and the jobs with their associated payloads.
-        AZStd::pair<ProcessSchedulerResult, AZStd::vector<typename JobT>> Execute(
+        AZStd::pair<ProcessSchedulerResult, AZStd::vector<JobT>> Execute(
             const AZStd::vector<typename JobT::Info>& jobs,
             PayloadMapProducer<JobT> payloadMapProducer,
             StdOutputRouting stdOutRouting,
             StdErrorRouting stdErrRouting,
             AZStd::optional<AZStd::chrono::milliseconds> jobTimeout,
             AZStd::optional<AZStd::chrono::milliseconds> runnerTimeout,
-            JobCallback<typename JobT> jobCallback);
+            JobCallback<JobT> jobCallback);
 
     private:
         ProcessScheduler m_processScheduler;
@@ -82,17 +82,17 @@ namespace TestImpact
     }
 
     template<typename JobT>
-    AZStd::pair<ProcessSchedulerResult, AZStd::vector<typename JobT>> JobRunner<JobT>::Execute(
+    AZStd::pair<ProcessSchedulerResult, AZStd::vector<JobT>> JobRunner<JobT>::Execute(
         const AZStd::vector<typename JobT::Info>& jobInfos,
         PayloadMapProducer<JobT> payloadMapProducer,
         StdOutputRouting stdOutRouting,
         StdErrorRouting stdErrRouting,
         AZStd::optional<AZStd::chrono::milliseconds> jobTimeout,
         AZStd::optional<AZStd::chrono::milliseconds> runnerTimeout,
-        JobCallback<typename JobT> jobCallback)
+        JobCallback<JobT> jobCallback)
     {
         AZStd::vector<ProcessInfo> processes;
-        AZStd::unordered_map<JobT::Info::IdType, AZStd::pair<JobMeta, const typename JobT::Info*>> metas;
+        AZStd::unordered_map<typename JobT::Info::IdType, AZStd::pair<JobMeta, const typename JobT::Info*>> metas;
         AZStd::vector<JobT> jobs;
         jobs.reserve(jobInfos.size());
         processes.reserve(jobInfos.size());

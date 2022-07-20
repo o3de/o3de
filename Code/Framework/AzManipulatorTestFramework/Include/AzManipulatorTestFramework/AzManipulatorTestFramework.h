@@ -47,8 +47,6 @@ namespace AzManipulatorTestFramework
         virtual void UpdateVisibility() = 0;
         //! Sets if sticky select is enabled or not.
         virtual void SetStickySelect(bool enabled) = 0;
-        //! Gets default Editor Camera Position.
-        virtual AZ::Vector3 DefaultEditorCameraPosition() const = 0;
         //! Sets if icons are visible in the viewport.
         virtual void SetIconsVisible(bool visible) = 0;
         //! Sets if helpers are visible in the viewport.

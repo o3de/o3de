@@ -757,10 +757,13 @@ namespace AzFramework
                 ->Event("GetAllDescendants", &AZ::TransformBus::Events::GetAllDescendants)
                 ->Event("GetEntityAndAllDescendants", &AZ::TransformBus::Events::GetEntityAndAllDescendants)
                 ->Event("IsStaticTransform", &AZ::TransformBus::Events::IsStaticTransform)
+                ->Event("GetWorldUniformScale", &AZ::TransformBus::Events::GetWorldUniformScale)
                 ;
 
             behaviorContext->Constant("TransformComponentTypeId", BehaviorConstant(AZ::TransformComponentTypeId));
-            behaviorContext->Constant("EditorTransformComponentTypeId", BehaviorConstant(AZ::EditorTransformComponentTypeId));
+            behaviorContext->ConstantProperty("EditorTransformComponentTypeId", BehaviorConstant(AZ::EditorTransformComponentTypeId))
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
+                ;
 
             behaviorContext->Class<AZ::TransformConfig>()
                 ->Attribute(AZ::Script::Attributes::ConstructorOverride, &AZ::TransformConfigConstructor)

@@ -10,8 +10,11 @@
 #include <AzCore/Debug/Trace.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/IO/FileIO.h>
+#include <AzCore/std/ranges/ranges_algorithm.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
+#include <AzCore/Settings/SettingsRegistryVisitorUtils.h>
 #include <AzCore/StringFunc/StringFunc.h>
+#include <AzCore/Utils/Utils.h>
 #include <AzFramework/Gem/GemInfo.h>
 
 namespace AzFramework
@@ -23,69 +26,40 @@ namespace AzFramework
 
     bool GetGemsInfo(AZStd::vector<GemInfo>& gemInfoList, AZ::SettingsRegistryInterface& settingsRegistry)
     {
-        AZStd::vector<AZ::IO::FixedMaxPath> gemModuleSourcePaths;
+        using FixedValueString = AZ::SettingsRegistryInterface::FixedValueString;
+        using Type = AZ::SettingsRegistryInterface::Type;
 
-        struct GemSourcePathsVisitor
-            : AZ::SettingsRegistryInterface::Visitor
+        auto GemSettingsVisitor = [&settingsRegistry, &gemInfoList]
+        (AZStd::string_view gemObjectKeyPath, AZStd::string_view gemName, AZ::SettingsRegistryInterface::Type)
         {
-            GemSourcePathsVisitor(AZ::SettingsRegistryInterface& settingsRegistry, AZStd::vector<GemInfo>& gemInfoList)
-                : m_settingsRegistry(settingsRegistry)
-                , m_gemInfoList(gemInfoList)
+            auto FindGemInfoByName = [gemName](const GemInfo& gemInfo)
             {
-            }
+                return gemName == gemInfo.m_gemName;
+            };
+            auto gemInfoFoundIter = AZStd::ranges::find_if(gemInfoList, FindGemInfoByName);
+            GemInfo& gemInfo = gemInfoFoundIter != gemInfoList.end() ? *gemInfoFoundIter : gemInfoList.emplace_back(gemName);
 
-            using AZ::SettingsRegistryInterface::Visitor::Visit;
-            void Visit(AZStd::string_view path, AZStd::string_view, AZ::SettingsRegistryInterface::Type,
-                AZStd::string_view value) override
+            // Read the Gem Target Name into target Name field
+            auto VisitGemTargets = [&gemInfo](AZStd::string_view, AZStd::string_view fieldName, Type)
             {
-                AZStd::string_view jsonPointerPath{ path };
-                // Remove the array index from the path and check if the JSON path ends with "/SourcePaths"
-                AZ::StringFunc::TokenizeLast(jsonPointerPath, '/');
-                if (jsonPointerPath.ends_with("/SourcePaths"))
-                {
-                    AZStd::string_view gemName;
-                    // The parent key of the "SourcePaths" field is the gem name
-                    AZ::StringFunc::TokenizeLast(jsonPointerPath, '/'); // Peel off "/SourcePaths"
-                    // Retrieve Gem name
-                    if (auto gemNameToken = AZ::StringFunc::TokenizeLast(jsonPointerPath, '/'); gemNameToken.has_value())
-                    {
-                        gemName = *gemNameToken;
-                    }
+                // Assume the fieldName is the name of the target in this case
+                gemInfo.m_gemTargetNames.emplace_back(fieldName);
+            };
+            AZ::SettingsRegistryVisitorUtils::VisitObject(settingsRegistry, VisitGemTargets,
+                FixedValueString::format("%.*s/Targets", AZ_STRING_ARG(gemObjectKeyPath)));
 
-                    auto FindGemInfoByName = [gemName](const GemInfo& gemInfo)
-                    {
-                        return gemName == gemInfo.m_gemName;
-                    };
-                    auto gemInfoFoundIter = AZStd::find_if(m_gemInfoList.begin(), m_gemInfoList.end(), FindGemInfoByName);
-                    GemInfo& gemInfo = gemInfoFoundIter != m_gemInfoList.end() ? *gemInfoFoundIter : m_gemInfoList.emplace_back(gemName);
-
-                    AZ::IO::Path& gemAbsPath = gemInfo.m_absoluteSourcePaths.emplace_back(value);
-                    // Resolve any file aliases first - Do not use ResolvePath() as that assumes
-                    // any relative path is underneath the @products@ alias
-                    if (auto fileIoBase = AZ::IO::FileIOBase::GetInstance(); fileIoBase != nullptr)
-                    {
-                        AZ::IO::FixedMaxPath replacedAliasPath;
-                        if (fileIoBase->ReplaceAlias(replacedAliasPath, value))
-                        {
-                            gemAbsPath = AZ::IO::PathView(replacedAliasPath);
-                        }
-                    }
-
-                    // The current assumption is that the gem source path is the relative to the engine root
-                    AZ::IO::FixedMaxPath engineRootPath;
-                    m_settingsRegistry.Get(engineRootPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
-                    gemAbsPath = (engineRootPath / gemAbsPath).LexicallyNormal();
-                }
+            // Visit the "SourcePath" array fields of the gem to
+            // populate the Gem Absolute Source Paths array
+            const auto gemPathKey = FixedValueString::format("%s/%.*s/Path",
+                AZ::SettingsRegistryMergeUtils::ManifestGemsRootKey, AZ_STRING_ARG(gemName));
+            if (AZ::IO::Path gemRootPath; settingsRegistry.Get(gemRootPath.Native(), gemPathKey))
+            {
+                gemInfo.m_absoluteSourcePaths.emplace_back(gemRootPath);
             }
-
-            AZ::SettingsRegistryInterface& m_settingsRegistry;
-            AZStd::vector<GemInfo>& m_gemInfoList;
         };
 
-        GemSourcePathsVisitor visitor{ settingsRegistry, gemInfoList };
-        constexpr auto gemListKey = AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::OrganizationRootKey)
-            + "/Gems";
-        settingsRegistry.Visit(visitor, gemListKey);
+        AZ::SettingsRegistryVisitorUtils::VisitObject(settingsRegistry, GemSettingsVisitor,
+            AZ::SettingsRegistryMergeUtils::ActiveGemsRootKey);
 
         return true;
     }

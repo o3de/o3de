@@ -37,46 +37,6 @@ namespace AzManipulatorTestFramework
         return m_cameraState;
     }
 
-    bool ViewportInteraction::GridSnappingEnabled() const
-    {
-        return m_gridSnapping;
-    }
-
-    float ViewportInteraction::GridSize() const
-    {
-        return m_gridSize;
-    }
-
-    bool ViewportInteraction::ShowGrid() const
-    {
-        return false;
-    }
-
-    bool ViewportInteraction::AngleSnappingEnabled() const
-    {
-        return m_angularSnapping;
-    }
-
-    float ViewportInteraction::AngleStep() const
-    {
-        return m_angularStep;
-    }
-
-    float ViewportInteraction::ManipulatorLineBoundWidth() const
-    {
-        return 0.1f;
-    }
-
-    float ViewportInteraction::ManipulatorCircleBoundWidth() const
-    {
-        return 0.1f;
-    }
-
-    bool ViewportInteraction::StickySelectEnabled() const
-    {
-        return m_stickySelect;
-    }
-
     void ViewportInteraction::FindVisibleEntities(AZStd::vector<AZ::EntityId>& visibleEntitiesOut)
     {
         visibleEntitiesOut.assign(m_entityVisibilityQuery.Begin(), m_entityVisibilityQuery.End());
@@ -127,11 +87,6 @@ namespace AzManipulatorTestFramework
         m_helpersVisible = visible;
     }
 
-    AZ::Vector3 ViewportInteraction::DefaultEditorCameraPosition() const
-    {
-        return {};
-    }
-
     void ViewportInteraction::SetGridSize(float size)
     {
         m_gridSize = size;
@@ -161,15 +116,5 @@ namespace AzManipulatorTestFramework
     float ViewportInteraction::DeviceScalingFactor()
     {
         return 1.0f;
-    }
-
-    bool ViewportInteraction::IconsVisible() const
-    {
-        return m_iconsVisible;
-    }
-
-    bool ViewportInteraction::HelpersVisible() const
-    {
-        return m_helpersVisible;
     }
 } // namespace AzManipulatorTestFramework

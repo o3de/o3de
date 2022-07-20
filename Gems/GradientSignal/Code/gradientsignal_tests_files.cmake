@@ -11,9 +11,9 @@ set(FILES
     Tests/GradientSignalGetValuesTests.cpp
     Tests/GradientSignalImageTests.cpp
     Tests/GradientSignalReferencesTests.cpp
+    Tests/GradientSignalSamplerTests.cpp
     Tests/GradientSignalServicesTests.cpp
     Tests/GradientSignalSurfaceTests.cpp
     Tests/GradientSignalTransformTests.cpp
     Tests/GradientSignalTest.cpp
-    Tests/ImageAssetTests.cpp
 )

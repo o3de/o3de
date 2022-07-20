@@ -34,12 +34,12 @@ log = logging.getLogger(__name__)
 
 def get_package_name(project_path):
     """
-    Gets the Package name from the project's settings JSON.
+    Gets the Package name from the android project's settings JSON.
 
     :param project_path: The project path of the project
     :return: The Package name from the settings JSON
     """
-    project_json_path = os.path.join(project_path, 'project.json')
+    project_json_path = os.path.join(project_path, 'Platform', 'Android', 'android_project.json')
     with open(project_json_path) as json_file:
         json_list = json.loads(json_file.read())
 
@@ -93,21 +93,22 @@ def get_pid(package_name, adb_prefix):
     return pid
 
 
-def generate_android_map_command(args_list):
+def generate_android_loadlevel_command(args_list):
     """
-    Takes a list of executable args and returns a the android map command to use with the autoexec.cfg file
+    Takes a list of executable args and returns a the android LoadLevel command to use with the autoexec.cfg file
 
     :param args_list: list representing args to execute with the current game executable.
-    :return: map command to use with android in the autoexec.cfg file
-        i.e.: 'map simple_jacklocomotion'
+    :return: LoadLevel command to use with android in the autoexec.cfg file
+        i.e.: 'LoadLevel simple_jacklocomotion'
     """
-    map_cmd = ''
+    load_level_cmd = ''
 
-    for arg in args_list:
-        if arg == '+map':
-            map_cmd = "{}{}".format('map ', args_list[args_list.index(arg) + 1])
+    if '+LoadLevel' in args_list:
+        level_name_index = args_list.index('+LoadLevel') + 1
+        if level_name_index < len(args_list):
+            load_level_cmd = f'LoadLevel {args_list[level_name_index]}'
 
-    return map_cmd
+    return load_level_cmd
 
 
 class AndroidLauncher(Launcher):
@@ -280,7 +281,7 @@ class AndroidLauncher(Launcher):
             return True
         return False
 
-    def kill(self):
+    def _kill(self):
         """
         Attempts to force quit any running processes with the stored package name on the device
         that is set to self._device_id via the self._adb_prefix_command

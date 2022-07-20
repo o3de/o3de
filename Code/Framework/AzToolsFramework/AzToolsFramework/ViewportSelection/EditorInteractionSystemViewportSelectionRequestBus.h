@@ -16,7 +16,7 @@
 
 namespace AzToolsFramework
 {
-    class EditorVisibleEntityDataCache;
+    class EditorVisibleEntityDataCacheInterface;
     class ViewportEditorModeTrackerInterface;
 
     //! Bus to handle all mouse events originating from the viewport.
@@ -34,7 +34,7 @@ namespace AzToolsFramework
 
     //! Alias for factory function to create a new type implementing the ViewportSelectionRequests interface.
     using ViewportSelectionRequestsBuilderFn = AZStd::function<AZStd::unique_ptr<ViewportInteraction::InternalViewportSelectionRequests>(
-        const EditorVisibleEntityDataCache*, ViewportEditorModeTrackerInterface*)>;
+        const EditorVisibleEntityDataCacheInterface*, ViewportEditorModeTrackerInterface*)>;
 
     //! Interface for system component implementing the ViewportSelectionRequests interface.
     //! This interface also includes a setter to set a custom handler also implementing

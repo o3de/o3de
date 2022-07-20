@@ -73,11 +73,13 @@ def SurfaceDataRefreshes_RemainsStable():
             # dirty surface points that cause sectors to be refreshed, and having no dirty surface points or
             # active surface areas to trigger a "delete all sectors" condition.
             if (test_counter % loops_per_surface_changed[test_case]) == 0:
-                azlmbr.surface_data.SurfaceDataSystemNotificationBus(azlmbr.bus.Broadcast,
-                                                                     'OnSurfaceChanged',
-                                                                     surface_entity.id,
-                                                                     azlmbr.math.Aabb(),
-                                                                     azlmbr.math.Aabb())
+                provider_handle = azlmbr.surface_data.SurfaceDataSystemRequestBus(azlmbr.bus.Broadcast,
+                                                                'GetSurfaceDataProviderHandle',
+                                                                surface_entity.id)
+                azlmbr.surface_data.SurfaceDataSystemRequestBus(azlmbr.bus.Broadcast,
+                                                                'RefreshSurfaceData',
+                                                                provider_handle,
+                                                                azlmbr.math.Aabb())
 
             # Move the camera back and forth along the X axis at just the right speed to invalidate sectors that are
             # queued for updating but haven't updated yet, so that when they try to update they crash.

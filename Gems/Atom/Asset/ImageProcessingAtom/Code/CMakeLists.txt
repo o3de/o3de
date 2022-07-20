@@ -26,14 +26,14 @@ set(pal_tools_include_dirs)
 foreach(enabled_platform ${LY_PAL_TOOLS_ENABLED})
     string(TOLOWER ${enabled_platform} enabled_platform_lowercase)
 
-    o3de_pal_dir(pal_tools_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${enabled_platform} ${gem_restricted_path} ${gem_path} ${gem_parent_relative_path})
+    o3de_pal_dir(pal_tools_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${enabled_platform} "${gem_restricted_path}" "${gem_path}" "${gem_parent_relative_path}")
     list(APPEND pal_tools_include_dirs ${pal_tools_source_dir})
 
     list(APPEND platform_tools_files ${pal_tools_source_dir}/pal_tools_${enabled_platform_lowercase}.cmake)
     list(APPEND pal_tools_include_files ${pal_tools_source_dir}/pal_tools_${enabled_platform_lowercase}_files.cmake)
 endforeach()
 
-o3de_pal_dir(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME} ${gem_restricted_path} ${gem_path} ${gem_parent_relative_path})
+o3de_pal_dir(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME} "${gem_restricted_path}" "${gem_path}" "${gem_parent_relative_path}")
 set(common_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/Common)
 
 ly_add_target(
@@ -41,6 +41,7 @@ ly_add_target(
     NAMESPACE Gem
     AUTOMOC
     AUTOUIC
+    AUTORCC
     FILES_CMAKE
         imageprocessing_files.cmake
         ${pal_tools_include_files}
@@ -66,7 +67,7 @@ ly_add_target(
             3rdParty::squish-ccr
             3rdParty::TIFF
             3rdParty::ISPCTexComp
-            3rdParty::ilmbase
+            3rdParty::OpenEXR
             AZ::AzFramework
             AZ::AzToolsFramework
             AZ::AzQtComponents

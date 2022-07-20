@@ -44,15 +44,15 @@ def ForceRegion_WithNonTriggerColliderWarning():
     :return: None
     """
     import azlmbr.legacy.general as general
+    import editor_python_test_tools.hydra_editor_utils as hydra
+    
     from editor_python_test_tools.editor_entity_utils import EditorEntity
     from editor_python_test_tools.utils import Report
-
     from editor_python_test_tools.utils import TestHelper as helper
     from editor_python_test_tools.utils import Tracer
 
-    helper.init_idle()
     # 1) Load the empty level
-    helper.open_level("Physics", "Base")
+    hydra.open_base_level()
 
     # 2) Create test entity
     test_entity = EditorEntity.create_editor_entity("TestEntity")

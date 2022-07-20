@@ -24,7 +24,6 @@
 #include <ATLUtils.h>
 #include <AudioAllocators.h>
 
-#include <platform.h>
 
 namespace Audio
 {
@@ -33,18 +32,6 @@ namespace Audio
 
     template <typename KeyType>
     using ATLSetLookupType = AZStd::unordered_set<KeyType, AZStd::hash<KeyType>, AZStd::equal_to<KeyType>, AudioSystemStdAllocator>;
-
-    // Forward declarations.
-    struct IAudioSystemImplementation;
-    class CATLCallbackManager;
-    struct IATLAudioObjectData;
-    struct IATLListenerData;
-    struct IATLTriggerImplData;
-    struct IATLRtpcImplData;
-    struct IATLSwitchStateImplData;
-    struct IATLEnvironmentImplData;
-    struct IATLEventData;
-    struct IATLAudioFileEntryData;
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     enum EATLObjectFlags : TATLEnumFlagsType
@@ -62,19 +49,6 @@ namespace Audio
     };
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
-    enum EAudioFileFlags : TATLEnumFlagsType
-    {
-        eAFF_NOTFOUND                       = AUDIO_BIT(0),
-        eAFF_CACHED                         = AUDIO_BIT(1),
-        eAFF_MEMALLOCFAIL                   = AUDIO_BIT(2),
-        eAFF_REMOVABLE                      = AUDIO_BIT(3),
-        eAFF_LOADING                        = AUDIO_BIT(4),
-        eAFF_USE_COUNTED                    = AUDIO_BIT(5),
-        eAFF_NEEDS_RESET_TO_MANUAL_LOADING  = AUDIO_BIT(6),
-        eAFF_LOCALIZED                      = AUDIO_BIT(7),
-    };
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
     template <typename IDType>
     class CATLEntity
     {
@@ -84,7 +58,7 @@ namespace Audio
             , m_eDataScope(eDataScope)
         {}
 
-        virtual ~CATLEntity() {}
+        virtual ~CATLEntity() = default;
 
         virtual IDType GetID() const
         {
@@ -341,7 +315,7 @@ namespace Audio
             , m_pImplData(pImplData)
         {}
 
-        ~CATLEvent() override {}
+        ~CATLEvent() override = default;
 
         CATLEvent(const CATLEvent&) = delete;               // copy protection!
         CATLEvent& operator=(const CATLEvent&) = delete;    // copy protection!
@@ -353,7 +327,7 @@ namespace Audio
 
         bool IsPlaying() const
         {
-            return m_audioEventState == eAES_PLAYING || m_audioEventState == eAES_PLAYING_DELAYED;
+            return m_audioEventState == eAES_PLAYING;
         }
 
         void Clear()
@@ -384,16 +358,16 @@ namespace Audio
         ~CATLAudioFileEntry();
 
         AZStd::string m_filePath;
-        size_t m_fileSize;
-        size_t m_useCount;
-        size_t m_memoryBlockAlignment;
-        Flags<TATLEnumFlagsType> m_flags;
-        EATLDataScope m_dataScope;
-        void* m_memoryBlock;
 
         AZ::IO::FileRequestPtr m_asyncStreamRequest;
-
+        void* m_memoryBlock;
         IATLAudioFileEntryData* m_implData;
+
+        size_t m_fileSize;
+        size_t m_memoryBlockAlignment;
+        AZ::u32 m_useCount;
+        Flags<TATLEnumFlagsType> m_flags;
+        EATLDataScope m_dataScope;
 
 #if !defined(AUDIO_RELEASE)
         AZStd::chrono::system_clock::time_point m_timeCached;
@@ -452,34 +426,27 @@ namespace Audio
     class CATLDebugNameStore
     {
     public:
-        CATLDebugNameStore();
-        ~CATLDebugNameStore();
+        CATLDebugNameStore() = default;
+        ~CATLDebugNameStore() = default;
 
-        void SyncChanges(const CATLDebugNameStore& rOtherNameStore);
+        // The Add* and Remove* functions return true if the storage changed, false otherwise
+        bool AddAudioObject(const TAudioObjectID nObjectID, const char* const sName);
+        bool AddAudioTrigger(const TAudioControlID nTriggerID, const char* const sName);
+        bool AddAudioRtpc(const TAudioControlID nRtpcID, const char* const sName);
+        bool AddAudioSwitch(const TAudioControlID nSwitchID, const char* const sName);
+        bool AddAudioSwitchState(const TAudioControlID nSwitchID, const TAudioSwitchStateID nStateID, const char* const sName);
+        bool AddAudioPreloadRequest(const TAudioPreloadRequestID nRequestID, const char* const sName);
+        bool AddAudioEnvironment(const TAudioEnvironmentID nEnvironmentID, const char* const sName);
 
-        void AddAudioObject(const TAudioObjectID nObjectID, const char* const sName);
-        void AddAudioTrigger(const TAudioControlID nTriggerID, const char* const sName);
-        void AddAudioRtpc(const TAudioControlID nRtpcID, const char* const sName);
-        void AddAudioSwitch(const TAudioControlID nSwitchID, const char* const sName);
-        void AddAudioSwitchState(const TAudioControlID nSwitchID, const TAudioSwitchStateID nStateID, const char* const sName);
-        void AddAudioPreloadRequest(const TAudioPreloadRequestID nRequestID, const char* const sName);
-        void AddAudioEnvironment(const TAudioEnvironmentID nEnvironmentID, const char* const sName);
+        bool RemoveAudioObject(const TAudioObjectID nObjectID);
+        bool RemoveAudioTrigger(const TAudioControlID nTriggerID);
+        bool RemoveAudioRtpc(const TAudioControlID nRtpcID);
+        bool RemoveAudioSwitch(const TAudioControlID nSwitchID);
+        bool RemoveAudioSwitchState(const TAudioControlID nSwitchID, const TAudioSwitchStateID nStateID);
+        bool RemoveAudioPreloadRequest(const TAudioPreloadRequestID nRequestID);
+        bool RemoveAudioEnvironment(const TAudioEnvironmentID nEnvironmentID);
 
-        void RemoveAudioObject(const TAudioObjectID nObjectID);
-        void RemoveAudioTrigger(const TAudioControlID nTriggerID);
-        void RemoveAudioRtpc(const TAudioControlID nRtpcID);
-        void RemoveAudioSwitch(const TAudioControlID nSwitchID);
-        void RemoveAudioSwitchState(const TAudioControlID nSwitchID, const TAudioSwitchStateID nStateID);
-        void RemoveAudioPreloadRequest(const TAudioPreloadRequestID nRequestID);
-        void RemoveAudioEnvironment(const TAudioEnvironmentID nEnvironmentID);
-
-        bool AudioObjectsChanged() const { return m_bATLObjectsChanged; }
-        bool AudioTriggersChanged() const { return m_bATLTriggersChanged; }
-        bool AudioRtpcsChanged() const { return m_bATLRtpcsChanged; }
-        bool AudioSwitchesChanged() const { return m_bATLSwitchesChanged; }
-        bool AudioPreloadsChanged() const { return m_bATLPreloadsChanged; }
-        bool AudioEnvironmentsChanged() const { return m_bATLEnvironmentsChanged; }
-
+        // The Lookup* functions return nullptr if the content is not found.
         const char* LookupAudioObjectName(const TAudioObjectID nObjectID) const;
         const char* LookupAudioTriggerName(const TAudioControlID nTriggerID) const;
         const char* LookupAudioRtpcName(const TAudioControlID nRtpcID) const;
@@ -502,13 +469,6 @@ namespace Audio
         TAudioSwitchMap m_cATLSwitchNames;
         TAudioPreloadRequestsMap m_cATLPreloadRequestNames;
         TAudioEnvironmentMap m_cATLEnvironmentNames;
-
-        mutable bool m_bATLObjectsChanged;
-        mutable bool m_bATLTriggersChanged;
-        mutable bool m_bATLRtpcsChanged;
-        mutable bool m_bATLSwitchesChanged;
-        mutable bool m_bATLPreloadsChanged;
-        mutable bool m_bATLEnvironmentsChanged;
     };
 #endif // !AUDIO_RELEASE
 } // namespace Audio

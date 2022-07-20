@@ -75,10 +75,13 @@ namespace AZ
             RHI::ConstPtr<PipelineLayout> m_pipelineLayout;
             AZStd::atomic_bool m_isCompiled = {false};
 
-            // Platform pipeline state.
+            // PSOs + descriptors
             id<MTLRenderPipelineState> m_graphicsPipelineState = nil;
             id<MTLComputePipelineState> m_computePipelineState = nil;
             id<MTLDepthStencilState> m_depthStencilState = nil;
+            MTLRenderPipelineDescriptor* m_renderPipelineDesc = nil;
+            MTLComputePipelineDescriptor* m_computePipelineDesc = nil;
+            
             AZ::u32 m_stencilRef = 0;
             RasterizerState m_rasterizerState;
             MTLPrimitiveType m_primitiveTopology = MTLPrimitiveTypeTriangle;

@@ -47,6 +47,7 @@ namespace UnitTest
         MOCK_METHOD1(ProcessReady, GenericOutcome(const Server::ProcessParameters& processParameters));
         MOCK_METHOD0(ProcessEnding, GenericOutcome());
         MOCK_METHOD1(RemovePlayerSession, GenericOutcome(const AZStd::string& playerSessionId));
+        MOCK_METHOD0(GetInstanceCertificate, Aws::GameLift::GetInstanceCertificateOutcome());
         MOCK_METHOD0(GetTerminationTime, AZStd::string());
         MOCK_METHOD1(StartMatchBackfill, StartMatchBackfillOutcome(
             const Aws::GameLift::Server::Model::StartMatchBackfillRequest&));
@@ -95,7 +96,7 @@ namespace UnitTest
             UpdateGameSessionData(m_testGameSession);
         }
 
-        bool AddConnectedTestPlayer(const AzFramework::PlayerConnectionConfig& playerConnectionConfig)
+        bool AddConnectedTestPlayer(const Multiplayer::PlayerConnectionConfig& playerConnectionConfig)
         {
             return AddConnectedPlayer(playerConnectionConfig);
         }

@@ -22,10 +22,10 @@ namespace UnitTest
         AzFramework::Camera m_targetCamera;
         AZStd::shared_ptr<AzFramework::CameraSystem> m_cameraSystem;
 
-        bool HandleEventAndUpdate(const AzFramework::InputEvent& event)
+        bool HandleEventAndUpdate(const AzFramework::InputState& state)
         {
             constexpr float deltaTime = 0.01666f; // 60fps
-            const bool consumed = m_cameraSystem->HandleEvents(event);
+            const bool consumed = m_cameraSystem->HandleEvents(state);
             m_targetCamera = m_cameraSystem->StepCamera(m_targetCamera, deltaTime);
             m_camera = m_targetCamera; // no smoothing
             return consumed;
@@ -113,16 +113,20 @@ namespace UnitTest
     TEST_F(CameraInputFixture, BeginAndEndOrbitCameraInputConsumesCorrectEvents)
     {
         // begin orbit camera
-        const bool consumed1 = HandleEventAndUpdate(AzFramework::DiscreteInputEvent{ AzFramework::InputDeviceKeyboard::Key::ModifierAltL,
-                                                                                     AzFramework::InputChannel::State::Began });
+        const bool consumed1 = HandleEventAndUpdate(AzFramework::InputState{
+            AzFramework::DiscreteInputEvent{ AzFramework::InputDeviceKeyboard::Key::ModifierAltL, AzFramework::InputChannel::State::Began },
+            AzFramework::ModifierKeyStates{} });
         // begin listening for orbit rotate (click detector) - event is not consumed
-        const bool consumed2 = HandleEventAndUpdate(
-            AzFramework::DiscreteInputEvent{ AzFramework::InputDeviceMouse::Button::Left, AzFramework::InputChannel::State::Began });
+        const bool consumed2 = HandleEventAndUpdate(AzFramework::InputState{
+            AzFramework::DiscreteInputEvent{ AzFramework::InputDeviceMouse::Button::Left, AzFramework::InputChannel::State::Began },
+            AzFramework::ModifierKeyStates{} });
         // begin orbit rotate (mouse has moved sufficient distance to initiate)
-        const bool consumed3 = HandleEventAndUpdate(AzFramework::HorizontalMotionEvent{ 5 });
+        const bool consumed3 =
+            HandleEventAndUpdate(AzFramework::InputState{ AzFramework::HorizontalMotionEvent{ 5 }, AzFramework::ModifierKeyStates{} });
         // end orbit (mouse up) - event is not consumed
-        const bool consumed4 = HandleEventAndUpdate(
-            AzFramework::DiscreteInputEvent{ AzFramework::InputDeviceMouse::Button::Left, AzFramework::InputChannel::State::Ended });
+        const bool consumed4 = HandleEventAndUpdate(AzFramework::InputState{
+            AzFramework::DiscreteInputEvent{ AzFramework::InputDeviceMouse::Button::Left, AzFramework::InputChannel::State::Ended },
+            AzFramework::ModifierKeyStates{} });
 
         const auto allConsumed = AZStd::vector<bool>{ consumed1, consumed2, consumed3, consumed4 };
 
@@ -139,8 +143,9 @@ namespace UnitTest
                 activationBegan = true;
             });
 
-        HandleEventAndUpdate(AzFramework::DiscreteInputEvent{ m_translateCameraInputChannelIds.m_forwardChannelId,
-                                                              AzFramework::InputChannel::State::Began });
+        HandleEventAndUpdate(AzFramework::InputState{
+            AzFramework::DiscreteInputEvent{ m_translateCameraInputChannelIds.m_forwardChannelId, AzFramework::InputChannel::State::Began },
+            AzFramework::ModifierKeyStates{} });
 
         EXPECT_TRUE(activationBegan);
     }
@@ -154,9 +159,11 @@ namespace UnitTest
                 activationBegan = true;
             });
 
-        HandleEventAndUpdate(
-            AzFramework::DiscreteInputEvent{ AzFramework::InputDeviceMouse::Button::Right, AzFramework::InputChannel::State::Began });
-        HandleEventAndUpdate(AzFramework::HorizontalMotionEvent{ 20 }); // must move input device
+        HandleEventAndUpdate(AzFramework::InputState{
+            AzFramework::DiscreteInputEvent{ AzFramework::InputDeviceMouse::Button::Right, AzFramework::InputChannel::State::Began },
+            AzFramework::ModifierKeyStates{} });
+        HandleEventAndUpdate(AzFramework::InputState{ AzFramework::HorizontalMotionEvent{ 20 },
+                                                      AzFramework::ModifierKeyStates{} }); // must move input device
 
         EXPECT_TRUE(activationBegan);
     }
@@ -170,8 +177,9 @@ namespace UnitTest
                 activationBegan = true;
             });
 
-        HandleEventAndUpdate(
-            AzFramework::DiscreteInputEvent{ AzFramework::InputDeviceMouse::Button::Right, AzFramework::InputChannel::State::Began });
+        HandleEventAndUpdate(AzFramework::InputState{
+            AzFramework::DiscreteInputEvent{ AzFramework::InputDeviceMouse::Button::Right, AzFramework::InputChannel::State::Began },
+            AzFramework::ModifierKeyStates{} });
 
         EXPECT_FALSE(activationBegan);
     }
@@ -185,11 +193,13 @@ namespace UnitTest
                 activationEnded = true;
             });
 
-        HandleEventAndUpdate(
-            AzFramework::DiscreteInputEvent{ AzFramework::InputDeviceMouse::Button::Right, AzFramework::InputChannel::State::Began });
-        HandleEventAndUpdate(AzFramework::HorizontalMotionEvent{ 20 });
-        HandleEventAndUpdate(
-            AzFramework::DiscreteInputEvent{ AzFramework::InputDeviceMouse::Button::Right, AzFramework::InputChannel::State::Ended });
+        HandleEventAndUpdate(AzFramework::InputState{
+            AzFramework::DiscreteInputEvent{ AzFramework::InputDeviceMouse::Button::Right, AzFramework::InputChannel::State::Began },
+            AzFramework::ModifierKeyStates{} });
+        HandleEventAndUpdate(AzFramework::InputState{ AzFramework::HorizontalMotionEvent{ 20 }, AzFramework::ModifierKeyStates{} });
+        HandleEventAndUpdate(AzFramework::InputState{
+            AzFramework::DiscreteInputEvent{ AzFramework::InputDeviceMouse::Button::Right, AzFramework::InputChannel::State::Ended },
+            AzFramework::ModifierKeyStates{} });
 
         EXPECT_TRUE(activationEnded);
     }
@@ -210,10 +220,12 @@ namespace UnitTest
                 activationEnded = true;
             });
 
-        HandleEventAndUpdate(
-            AzFramework::DiscreteInputEvent{ AzFramework::InputDeviceMouse::Button::Right, AzFramework::InputChannel::State::Began });
-        HandleEventAndUpdate(
-            AzFramework::DiscreteInputEvent{ AzFramework::InputDeviceMouse::Button::Right, AzFramework::InputChannel::State::Ended });
+        HandleEventAndUpdate(AzFramework::InputState{
+            AzFramework::DiscreteInputEvent{ AzFramework::InputDeviceMouse::Button::Right, AzFramework::InputChannel::State::Began },
+            AzFramework::ModifierKeyStates{} });
+        HandleEventAndUpdate(AzFramework::InputState{
+            AzFramework::DiscreteInputEvent{ AzFramework::InputDeviceMouse::Button::Right, AzFramework::InputChannel::State::Ended },
+            AzFramework::ModifierKeyStates{} });
 
         EXPECT_FALSE(activationBegan);
         EXPECT_FALSE(activationEnded);
@@ -235,10 +247,12 @@ namespace UnitTest
                 activationEnded = true;
             });
 
-        HandleEventAndUpdate(AzFramework::DiscreteInputEvent{ m_translateCameraInputChannelIds.m_forwardChannelId,
-                                                              AzFramework::InputChannel::State::Began });
-        HandleEventAndUpdate(AzFramework::DiscreteInputEvent{ m_translateCameraInputChannelIds.m_forwardChannelId,
-                                                              AzFramework::InputChannel::State::Ended });
+        HandleEventAndUpdate(AzFramework::InputState{
+            AzFramework::DiscreteInputEvent{ m_translateCameraInputChannelIds.m_forwardChannelId, AzFramework::InputChannel::State::Began },
+            AzFramework::ModifierKeyStates{} });
+        HandleEventAndUpdate(AzFramework::InputState{
+            AzFramework::DiscreteInputEvent{ m_translateCameraInputChannelIds.m_forwardChannelId, AzFramework::InputChannel::State::Ended },
+            AzFramework::ModifierKeyStates{} });
 
         EXPECT_TRUE(activationBegan);
         EXPECT_TRUE(activationEnded);
@@ -253,8 +267,9 @@ namespace UnitTest
                 activationEnded = true;
             });
 
-        HandleEventAndUpdate(AzFramework::DiscreteInputEvent{ m_translateCameraInputChannelIds.m_forwardChannelId,
-                                                              AzFramework::InputChannel::State::Began });
+        HandleEventAndUpdate(AzFramework::InputState{
+            AzFramework::DiscreteInputEvent{ m_translateCameraInputChannelIds.m_forwardChannelId, AzFramework::InputChannel::State::Began },
+            AzFramework::ModifierKeyStates{} });
 
         m_cameraSystem->m_cameras.Clear();
 
@@ -276,9 +291,12 @@ namespace UnitTest
             AZ::Transform::CreateFromQuaternionAndTranslation(
                 AZ::Quaternion::CreateFromEulerAnglesDegrees(AZ::Vector3(0.0f, 0.0f, 90.0f)), expectedCameraPosition));
 
-        HandleEventAndUpdate(AzFramework::DiscreteInputEvent{ m_orbitChannelId, AzFramework::InputChannel::State::Began });
+        HandleEventAndUpdate(
+            AzFramework::InputState{ AzFramework::DiscreteInputEvent{ m_orbitChannelId, AzFramework::InputChannel::State::Began },
+                                     AzFramework::ModifierKeyStates{} });
 
-        // verify the camera yaw has not changed and pivot point matches the expected camera position
+        // verify the camera yaw has not changed and pivot point matches the expected camera
+        // position
         using ::testing::FloatNear;
         EXPECT_THAT(m_camera.m_yaw, FloatNear(AZ::DegToRad(90.0f), 0.001f));
         EXPECT_THAT(m_camera.m_pitch, FloatNear(0.0f, 0.001f));
@@ -291,9 +309,11 @@ namespace UnitTest
         const auto cameraStartingPosition = AZ::Vector3::CreateAxisY(-10.0f);
         m_targetCamera.m_pivot = cameraStartingPosition;
 
+        HandleEventAndUpdate(AzFramework::InputState{
+            AzFramework::DiscreteInputEvent{ AzFramework::InputDeviceMouse::Button::Right, AzFramework::InputChannel::State::Began },
+            AzFramework::ModifierKeyStates{} });
         HandleEventAndUpdate(
-            AzFramework::DiscreteInputEvent{ AzFramework::InputDeviceMouse::Button::Right, AzFramework::InputChannel::State::Began });
-        HandleEventAndUpdate(AzFramework::HorizontalMotionEvent{ PixelMotionDelta90Degrees });
+            AzFramework::InputState{ AzFramework::HorizontalMotionEvent{ PixelMotionDelta90Degrees }, AzFramework::ModifierKeyStates{} });
 
         const float expectedYaw = AzFramework::WrapYawRotation(-AZ::Constants::HalfPi);
 
@@ -309,9 +329,11 @@ namespace UnitTest
         const auto cameraStartingPosition = AZ::Vector3::CreateAxisY(-10.0f);
         m_targetCamera.m_pivot = cameraStartingPosition;
 
+        HandleEventAndUpdate(AzFramework::InputState{
+            AzFramework::DiscreteInputEvent{ AzFramework::InputDeviceMouse::Button::Right, AzFramework::InputChannel::State::Began },
+            AzFramework::ModifierKeyStates{} });
         HandleEventAndUpdate(
-            AzFramework::DiscreteInputEvent{ AzFramework::InputDeviceMouse::Button::Right, AzFramework::InputChannel::State::Began });
-        HandleEventAndUpdate(AzFramework::VerticalMotionEvent{ PixelMotionDelta90Degrees });
+            AzFramework::InputState{ AzFramework::VerticalMotionEvent{ PixelMotionDelta90Degrees }, AzFramework::ModifierKeyStates{} });
 
         const float expectedPitch = AzFramework::ClampPitchRotation(-AZ::Constants::HalfPi);
 
@@ -340,10 +362,14 @@ namespace UnitTest
 
         m_pivot = AZ::Vector3::CreateAxisY(-10.0f);
 
-        HandleEventAndUpdate(AzFramework::DiscreteInputEvent{ m_orbitChannelId, AzFramework::InputChannel::State::Began });
         HandleEventAndUpdate(
-            AzFramework::DiscreteInputEvent{ AzFramework::InputDeviceMouse::Button::Left, AzFramework::InputChannel::State::Began });
-        HandleEventAndUpdate(AzFramework::VerticalMotionEvent{ PixelMotionDelta90Degrees });
+            AzFramework::InputState{ AzFramework::DiscreteInputEvent{ m_orbitChannelId, AzFramework::InputChannel::State::Began },
+                                     AzFramework::ModifierKeyStates{} });
+        HandleEventAndUpdate(AzFramework::InputState{
+            AzFramework::DiscreteInputEvent{ AzFramework::InputDeviceMouse::Button::Left, AzFramework::InputChannel::State::Began },
+            AzFramework::ModifierKeyStates{} });
+        HandleEventAndUpdate(
+            AzFramework::InputState{ AzFramework::VerticalMotionEvent{ PixelMotionDelta90Degrees }, AzFramework::ModifierKeyStates{} });
 
         const auto expectedCameraEndingPosition = AZ::Vector3(0.0f, -10.0f, 10.0f);
         const float expectedPitch = AzFramework::ClampPitchRotation(-AZ::Constants::HalfPi);
@@ -363,10 +389,14 @@ namespace UnitTest
 
         m_pivot = AZ::Vector3(10.0f, -10.0f, 0.0f);
 
-        HandleEventAndUpdate(AzFramework::DiscreteInputEvent{ m_orbitChannelId, AzFramework::InputChannel::State::Began });
         HandleEventAndUpdate(
-            AzFramework::DiscreteInputEvent{ AzFramework::InputDeviceMouse::Button::Left, AzFramework::InputChannel::State::Began });
-        HandleEventAndUpdate(AzFramework::HorizontalMotionEvent{ -PixelMotionDelta90Degrees });
+            AzFramework::InputState{ AzFramework::DiscreteInputEvent{ m_orbitChannelId, AzFramework::InputChannel::State::Began },
+                                     AzFramework::ModifierKeyStates{} });
+        HandleEventAndUpdate(AzFramework::InputState{
+            AzFramework::DiscreteInputEvent{ AzFramework::InputDeviceMouse::Button::Left, AzFramework::InputChannel::State::Began },
+            AzFramework::ModifierKeyStates{} });
+        HandleEventAndUpdate(
+            AzFramework::InputState{ AzFramework::HorizontalMotionEvent{ -PixelMotionDelta90Degrees }, AzFramework::ModifierKeyStates{} });
 
         const auto expectedCameraEndingPosition = AZ::Vector3(20.0f, -5.0f, 0.0f);
         const float expectedYaw = AzFramework::WrapYawRotation(AZ::Constants::HalfPi);
@@ -384,10 +414,12 @@ namespace UnitTest
         const auto cameraStartingPosition = AZ::Vector3(15.0f, -20.0f, 0.0f);
         m_targetCamera.m_pivot = cameraStartingPosition;
 
-        HandleEventAndUpdate(
-            AzFramework::DiscreteInputEvent{ AzFramework::InputDeviceMouse::Button::Right, AzFramework::InputChannel::State::Began });
+        HandleEventAndUpdate(AzFramework::InputState{
+            AzFramework::DiscreteInputEvent{ AzFramework::InputDeviceMouse::Button::Right, AzFramework::InputChannel::State::Began },
+            AzFramework::ModifierKeyStates{} });
         // pitch by 135.0 degrees
-        HandleEventAndUpdate(AzFramework::VerticalMotionEvent{ -PixelMotionDelta135Degrees });
+        HandleEventAndUpdate(
+            AzFramework::InputState{ AzFramework::VerticalMotionEvent{ -PixelMotionDelta135Degrees }, AzFramework::ModifierKeyStates{} });
 
         // clamped to 90.0 degrees
         const float expectedPitch = AZ::DegToRad(90.0f);
@@ -406,10 +438,12 @@ namespace UnitTest
         const auto cameraStartingPosition = AZ::Vector3(15.0f, -20.0f, 0.0f);
         m_targetCamera.m_pivot = cameraStartingPosition;
 
-        HandleEventAndUpdate(
-            AzFramework::DiscreteInputEvent{ AzFramework::InputDeviceMouse::Button::Right, AzFramework::InputChannel::State::Began });
+        HandleEventAndUpdate(AzFramework::InputState{
+            AzFramework::DiscreteInputEvent{ AzFramework::InputDeviceMouse::Button::Right, AzFramework::InputChannel::State::Began },
+            AzFramework::ModifierKeyStates{} });
         // pitch by 135.0 degrees
-        HandleEventAndUpdate(AzFramework::VerticalMotionEvent{ -PixelMotionDelta135Degrees });
+        HandleEventAndUpdate(
+            AzFramework::InputState{ AzFramework::VerticalMotionEvent{ -PixelMotionDelta135Degrees }, AzFramework::ModifierKeyStates{} });
 
         const float expectedPitch = AZ::DegToRad(135.0f);
 
@@ -419,11 +453,13 @@ namespace UnitTest
 
     TEST_F(CameraInputFixture, InvalidTranslationInputKeyCannotBeginTranslateCameraInputAgain)
     {
-        HandleEventAndUpdate(AzFramework::DiscreteInputEvent{ m_translateCameraInputChannelIds.m_forwardChannelId,
-                                                              AzFramework::InputChannel::State::Began });
+        HandleEventAndUpdate(AzFramework::InputState{
+            AzFramework::DiscreteInputEvent{ m_translateCameraInputChannelIds.m_forwardChannelId, AzFramework::InputChannel::State::Began },
+            AzFramework::ModifierKeyStates{} });
 
-        const bool consumed =
-            m_cameraSystem->HandleEvents(AzFramework::DiscreteInputEvent{ m_orbitChannelId, AzFramework::InputChannel::State::Began });
+        const bool consumed = m_cameraSystem->HandleEvents(
+            AzFramework::InputState{ AzFramework::DiscreteInputEvent{ m_orbitChannelId, AzFramework::InputChannel::State::Began },
+                                     AzFramework::ModifierKeyStates{} });
 
         using ::testing::IsFalse;
         using ::testing::IsTrue;
@@ -434,11 +470,13 @@ namespace UnitTest
 
     TEST_F(CameraInputFixture, InvalidTranslationInputKeyDownCannotBeginTranslateCameraInputAgain)
     {
-        HandleEventAndUpdate(AzFramework::DiscreteInputEvent{ m_translateCameraInputChannelIds.m_forwardChannelId,
-                                                              AzFramework::InputChannel::State::Began });
+        HandleEventAndUpdate(AzFramework::InputState{
+            AzFramework::DiscreteInputEvent{ m_translateCameraInputChannelIds.m_forwardChannelId, AzFramework::InputChannel::State::Began },
+            AzFramework::ModifierKeyStates{} });
 
-        const bool consumed =
-            m_cameraSystem->HandleEvents(AzFramework::DiscreteInputEvent{ m_orbitChannelId, AzFramework::InputChannel::State::Began });
+        const bool consumed = m_cameraSystem->HandleEvents(
+            AzFramework::InputState{ AzFramework::DiscreteInputEvent{ m_orbitChannelId, AzFramework::InputChannel::State::Began },
+                                     AzFramework::ModifierKeyStates{} });
 
         using ::testing::IsFalse;
         using ::testing::IsTrue;
@@ -449,14 +487,17 @@ namespace UnitTest
 
     TEST_F(CameraInputFixture, InvalidTranslationInputKeyUpDoesNotAffectTranslateCameraInputEnd)
     {
-        HandleEventAndUpdate(AzFramework::DiscreteInputEvent{ m_translateCameraInputChannelIds.m_forwardChannelId,
-                                                              AzFramework::InputChannel::State::Began });
+        HandleEventAndUpdate(AzFramework::InputState{
+            AzFramework::DiscreteInputEvent{ m_translateCameraInputChannelIds.m_forwardChannelId, AzFramework::InputChannel::State::Began },
+            AzFramework::ModifierKeyStates{} });
 
-        const bool consumed =
-            m_cameraSystem->HandleEvents(AzFramework::DiscreteInputEvent{ m_orbitChannelId, AzFramework::InputChannel::State::Began });
+        const bool consumed = m_cameraSystem->HandleEvents(
+            AzFramework::InputState{ AzFramework::DiscreteInputEvent{ m_orbitChannelId, AzFramework::InputChannel::State::Began },
+                                     AzFramework::ModifierKeyStates{} });
 
-        HandleEventAndUpdate(AzFramework::DiscreteInputEvent{ m_translateCameraInputChannelIds.m_forwardChannelId,
-                                                              AzFramework::InputChannel::State::Ended });
+        HandleEventAndUpdate(AzFramework::InputState{
+            AzFramework::DiscreteInputEvent{ m_translateCameraInputChannelIds.m_forwardChannelId, AzFramework::InputChannel::State::Ended },
+            AzFramework::ModifierKeyStates{} });
 
         using ::testing::IsFalse;
         using ::testing::IsTrue;
@@ -466,10 +507,13 @@ namespace UnitTest
 
     TEST_F(CameraInputFixture, OrbitCameraInputCannotBeLeftInInvalidStateIfItCannotFullyBeginAfterInputChannelBegin)
     {
-        HandleEventAndUpdate(AzFramework::DiscreteInputEvent{ m_translateCameraInputChannelIds.m_forwardChannelId,
-                                                              AzFramework::InputChannel::State::Began });
+        HandleEventAndUpdate(AzFramework::InputState{
+            AzFramework::DiscreteInputEvent{ m_translateCameraInputChannelIds.m_forwardChannelId, AzFramework::InputChannel::State::Began },
+            AzFramework::ModifierKeyStates{} });
 
-        HandleEventAndUpdate(AzFramework::DiscreteInputEvent{ m_orbitChannelId, AzFramework::InputChannel::State::Began });
+        HandleEventAndUpdate(
+            AzFramework::InputState{ AzFramework::DiscreteInputEvent{ m_orbitChannelId, AzFramework::InputChannel::State::Began },
+                                     AzFramework::ModifierKeyStates{} });
 
         using ::testing::IsFalse;
         using ::testing::IsTrue;
@@ -479,15 +523,56 @@ namespace UnitTest
 
     TEST_F(CameraInputFixture, OrbitCameraInputCannotBeLeftInInvalidStateIfItCannotFullyBeginAfterInputChannelBeginAndEnd)
     {
-        HandleEventAndUpdate(AzFramework::DiscreteInputEvent{ m_translateCameraInputChannelIds.m_forwardChannelId,
-                                                              AzFramework::InputChannel::State::Began });
+        HandleEventAndUpdate(AzFramework::InputState{
+            AzFramework::DiscreteInputEvent{ m_translateCameraInputChannelIds.m_forwardChannelId, AzFramework::InputChannel::State::Began },
+            AzFramework::ModifierKeyStates{} });
 
-        HandleEventAndUpdate(AzFramework::DiscreteInputEvent{ m_orbitChannelId, AzFramework::InputChannel::State::Began });
-        HandleEventAndUpdate(AzFramework::DiscreteInputEvent{ m_orbitChannelId, AzFramework::InputChannel::State::Ended });
+        HandleEventAndUpdate(
+            AzFramework::InputState{ AzFramework::DiscreteInputEvent{ m_orbitChannelId, AzFramework::InputChannel::State::Began },
+                                     AzFramework::ModifierKeyStates{} });
+        HandleEventAndUpdate(
+            AzFramework::InputState{ AzFramework::DiscreteInputEvent{ m_orbitChannelId, AzFramework::InputChannel::State::Ended },
+                                     AzFramework::ModifierKeyStates{} });
 
         using ::testing::IsFalse;
         using ::testing::IsTrue;
         EXPECT_THAT(m_orbitCamera->Ending(), IsFalse());
         EXPECT_THAT(m_orbitCamera->Idle(), IsTrue());
+    }
+
+    TEST_F(CameraInputFixture, NewCameraInputCanBeAddedToCameraSystem)
+    {
+        auto firstPersonPanCamera = AZStd::make_shared<AzFramework::PanCameraInput>(
+            AzFramework::InputDeviceMouse::Button::Middle, AzFramework::LookPan, AzFramework::TranslatePivotLook);
+        const bool added =
+            m_cameraSystem->m_cameras.AddCameras(AZStd::vector<AZStd::shared_ptr<AzFramework::CameraInput>>{ firstPersonPanCamera });
+
+        EXPECT_THAT(added, ::testing::IsTrue());
+    }
+
+    TEST_F(CameraInputFixture, ExistingCameraInputCannotBeAddedToCameraSystem)
+    {
+        const bool added =
+            m_cameraSystem->m_cameras.AddCameras(AZStd::vector<AZStd::shared_ptr<AzFramework::CameraInput>>{ m_firstPersonRotateCamera });
+
+        EXPECT_THAT(added, ::testing::IsFalse());
+    }
+
+    TEST_F(CameraInputFixture, ExistingCameraInputCanBeRemovedFromCameraSystem)
+    {
+        const bool removed = m_cameraSystem->m_cameras.RemoveCameras(
+            AZStd::vector<AZStd::shared_ptr<AzFramework::CameraInput>>{ m_firstPersonRotateCamera });
+
+        EXPECT_THAT(removed, ::testing::IsTrue());
+    }
+
+    TEST_F(CameraInputFixture, NonExistentCameraInputCannotBeRemovedFromCameraSystem)
+    {
+        auto firstPersonPanCamera = AZStd::make_shared<AzFramework::PanCameraInput>(
+            AzFramework::InputDeviceMouse::Button::Middle, AzFramework::LookPan, AzFramework::TranslatePivotLook);
+        const bool removed =
+            m_cameraSystem->m_cameras.RemoveCameras(AZStd::vector<AZStd::shared_ptr<AzFramework::CameraInput>>{ firstPersonPanCamera });
+
+        EXPECT_THAT(removed, ::testing::IsFalse());
     }
 } // namespace UnitTest

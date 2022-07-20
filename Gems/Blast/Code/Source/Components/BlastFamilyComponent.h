@@ -7,15 +7,17 @@
  */
 #pragma once
 
-#include <AZCore/std/containers/unordered_map.h>
+#include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <Asset/BlastAsset.h>
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TickBus.h>
+#include <AzCore/Asset/AssetCommon.h>
 #include <AzFramework/Physics/Common/PhysicsSimulatedBodyEvents.h>
+#include <AzFramework/Physics/Material/PhysicsMaterialAsset.h>
 #include <Blast/BlastDebug.h>
 #include <Blast/BlastFamilyComponentBus.h>
-#include <Blast/BlastMaterial.h>
+#include <Material/BlastMaterialAsset.h>
 #include <Common/BlastInterfaces.h>
 #include <Family/ActorRenderManager.h>
 #include <Family/BlastFamily.h>
@@ -29,21 +31,29 @@ namespace AzPhysics
     struct CollisionEvent;
 }
 
+namespace PhysX
+{
+    class Material;
+}
+
 namespace Blast
 {
     //! Component that handles simulation of the Blast family.
     class BlastFamilyComponent
         : public AZ::Component
-        , public BlastFamilyDamageRequestBus::MultiHandler
-        , public BlastFamilyComponentRequestBus::Handler
+        , protected BlastFamilyDamageRequestBus::MultiHandler
+        , protected BlastFamilyComponentRequestBus::Handler
         , protected BlastListener
+        , protected AZ::Data::AssetBus::MultiHandler
     {
     public:
         AZ_COMPONENT(BlastFamilyComponent, "{88ECE087-C88A-4A83-A83C-477BA9C13221}", AZ::Component);
 
         BlastFamilyComponent(
-            AZ::Data::Asset<BlastAsset> blastAsset, Blast::BlastMaterialId materialId,
-            Physics::MaterialId physicsMaterialId, BlastActorConfiguration actorConfiguration);
+            AZ::Data::Asset<BlastAsset> blastAsset,
+            AZ::Data::Asset<MaterialAsset> blastMaterialAsset,
+            AZ::Data::Asset<Physics::MaterialAsset> physicsMaterialAsset,
+            const BlastActorConfiguration& actorConfiguration);
 
         BlastFamilyComponent() = default;
         virtual ~BlastFamilyComponent() = default;
@@ -54,16 +64,17 @@ namespace Blast
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
         static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent);
 
-        // AZ::Component interface implementation
+        // AZ::Component overrides ...
         void Init() override;
         void Activate() override;
         void Deactivate() override;
 
+    protected:
         // Lifecycle
         void Spawn();
         void Despawn();
 
-        // BlastFamilyDamageRequestBus
+        // BlastFamilyDamageRequestBus overrides ...
         AZ::EntityId GetFamilyId() override;
         void RadialDamage(const AZ::Vector3& position, float minRadius, float maxRadius, float damage) override;
         void CapsuleDamage(
@@ -80,17 +91,20 @@ namespace Blast
         void StressDamage(const BlastActor& blastActor, const AZ::Vector3& position, const AZ::Vector3& force) override;
         void DestroyActor() override;
 
-        // BlastFamilyComponentRequestBus
+        // BlastFamilyComponentRequestBus overrides ...
         AZStd::vector<const BlastActor*> GetActors() override;
         AZStd::vector<BlastActorData> GetActorsData() override;
-
         void FillDebugRenderBuffer(DebugRenderBuffer& debugRenderBuffer, DebugRenderMode debugRenderMode) override;
         void ApplyStressDamage() override;
         void SyncMeshes() override;
 
+        // AZ::Data::AssetBus overrides ...
+        void OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
+        void OnAssetError(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
+
     private:
-        // BlastListener interface implementation. These methods trigger notifications on
-        // BlastFamilyComponentNotificationBus.
+        // BlastListener overrides ...
+        // These methods trigger notifications on BlastFamilyComponentNotificationBus.
         void OnActorCreated(const BlastFamily& family, const BlastActor& actor) override;
         void OnActorDestroyed(const BlastFamily& family, const BlastActor& actor) override;
 
@@ -103,17 +117,22 @@ namespace Blast
         physx::unique_ptr<Nv::Blast::ExtStressSolver> m_solver;
         AZStd::unique_ptr<BlastFamily> m_family;
 
+        // Blast material instance
+        AZStd::unique_ptr<Material> m_blastMaterial;
+
+        // PhysX material instance
+        AZStd::shared_ptr<PhysX::Material> m_physxMaterial;
+
         // Dependencies
         BlastMeshData* m_meshDataComponent = nullptr;
 
         // Configurations
         AZ::Data::Asset<BlastAsset> m_blastAsset;
-        const BlastMaterialId m_materialId{};
-        Physics::MaterialId m_physicsMaterialId;
+        AZ::Data::Asset<MaterialAsset> m_blastMaterialAsset;
+        AZ::Data::Asset<Physics::MaterialAsset> m_physicsMaterialAsset;
         const BlastActorConfiguration m_actorConfiguration{};
 
         bool m_isSpawned = false;
-        bool m_shouldSpawnOnAssetLoad = false;
         DebugRenderMode m_debugRenderMode;
 
         using CollisionHandlersMap = AZStd::unordered_map<AZ::EntityId, AzPhysics::SimulatedBodyEvents::OnCollisionBegin::Handler>;

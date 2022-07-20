@@ -14,6 +14,7 @@
 #include <AzToolsFramework/API/ComponentEntitySelectionBus.h>
 #include <ReflectionProbe/ReflectionProbeComponent.h>
 #include <ReflectionProbe/ReflectionProbeComponentConstants.h>
+#include <CubeMapCapture/EditorCubeMapRenderer.h>
 #include <Atom/Feature/Utils/EditorRenderComponentAdapter.h>
 #include <AtomLyIntegration/CommonFeatures/ReflectionProbe/EditorReflectionProbeBus.h>
 
@@ -27,6 +28,7 @@ namespace AZ
             , private AzToolsFramework::EditorComponentSelectionRequestsBus::Handler
             , private AzFramework::EntityDebugDisplayEventBus::Handler
             , private AZ::TickBus::Handler
+            , private EditorCubeMapRenderer
         {
         public:
             using BaseClass = EditorRenderComponentAdapter<ReflectionProbeComponentController, ReflectionProbeComponent, ReflectionProbeComponentConfig>;
@@ -64,9 +66,6 @@ namespace AZ
             // initiate the reflection probe cubemap generation, returns the refresh value for the ChangeNotify UIElement attribute 
             AZ::u32 BakeReflectionProbe() override;
 
-            // save the cubemap data to the output file
-            void WriteOutputFile(AZStd::string filePath, uint8_t* const* cubeMapTextureData, RHI::Format cubeMapTextureFormat);
-
             // EditorComponentSelectionRequestsBus overrides
             AZ::Aabb GetEditorSelectionBoundsViewport(const AzFramework::ViewportInfo& viewportInfo) override;
             bool SupportsEditorRayIntersect() override;
@@ -74,14 +73,10 @@ namespace AZ
             // UI settings
             // the user can select between a baked cubemap or an authored cubemap asset
             bool m_useBakedCubemap = true;
-            BakedCubeMapQualityLevel m_bakedCubeMapQualityLevel = BakedCubeMapQualityLevel::Medium;
+            CubeMapSpecularQualityLevel m_bakedCubeMapQualityLevel = CubeMapSpecularQualityLevel::Medium;
             AZStd::string m_bakedCubeMapRelativePath;
-            Data::Asset<RPI::StreamingImageAsset> m_bakedCubeMapAsset;
             Data::Asset<RPI::StreamingImageAsset> m_authoredCubeMapAsset;
             float m_bakeExposure = 0.0f;
-
-            // flag indicating if a cubemap bake is currently in progress
-            AZStd::atomic_bool m_bakeInProgress = false;
         };
 
     } // namespace Render

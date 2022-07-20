@@ -8,10 +8,12 @@
 
 #pragma once
 
+#include <AzCore/PlatformDef.h>
+
 #ifdef CRYSYSTEM_EXPORTS
-#define CRYSYSTEM_API DLL_EXPORT
+#define CRYSYSTEM_API AZ_DLL_EXPORT
 #else
-#define CRYSYSTEM_API DLL_IMPORT
+#define CRYSYSTEM_API AZ_DLL_IMPORT
 #endif
 #include <AzCore/IO/SystemFile.h>
 
@@ -48,10 +50,6 @@ struct IRemoteConsole;
 struct IRenderer;
 struct ICryFont;
 struct IMovieSystem;
-namespace Audio
-{
-    struct IAudioSystem;
-} // namespace Audio
 struct SFileVersion;
 struct INameTable;
 struct ILevelSystem;
@@ -470,8 +468,6 @@ namespace AZ
     } // namespace Internal
 } // namespace AZ
 
-typedef AZ::Internal::EnvironmentInterface SharedEnvironmentInstance;
-
 // Description:
 //  Structure passed to Init method of ISystem interface.
 struct SSystemInitParams
@@ -499,8 +495,6 @@ struct SSystemInitParams
 
     ISystem* pSystem;                                           // Pointer to existing ISystem interface, it will be reused if not NULL.
 
-    SharedEnvironmentInstance* pSharedEnvironment;
-
     // Summary:
     //  Initialization defaults.
     SSystemInitParams()
@@ -526,8 +520,6 @@ struct SSystemInitParams
         bToolMode = false;
 
         pSystem = NULL;
-
-        pSharedEnvironment = nullptr;
     }
 };
 
@@ -600,7 +592,6 @@ struct SSystemGlobalEnvironment
     ISystem*                   pSystem = nullptr;
     ILog*                      pLog;
     IMovieSystem*              pMovieSystem;
-    SharedEnvironmentInstance*      pSharedEnvironment;
 
 #if defined(AZ_RESTRICTED_PLATFORM)
     #define AZ_RESTRICTED_SECTION ISYSTEM_H_SECTION_4
@@ -963,7 +954,7 @@ struct ISystem
     //   Execute command line arguments.
     //   Should be after init game.
     // Example:
-    //   +g_gametype ASSAULT +map "testy"
+    //   +g_gametype ASSAULT +LoadLevel "testy"
     virtual void ExecuteCommandLine(bool deferred=true) = 0;
 
     // Description:
@@ -1051,7 +1042,10 @@ void* GetModuleShutdownISystemSymbol();
 //   Interface of the DLL.
 extern "C"
 {
-    CRYSYSTEM_API ISystem* CreateSystemInterface(const SSystemInitParams& initParams);
+#if !defined(AZ_MONOLITHIC_BUILD)
+    CRYSYSTEM_API
+#endif
+    ISystem* CreateSystemInterface(const SSystemInitParams& initParams);
 }
 
 // Description:
@@ -1280,48 +1274,72 @@ namespace Detail
 
 #endif
 
-#define ASSERT_CONSOLE_EXISTS 0
-
 // the following macros allow the help text to be easily stripped out
 
 // Summary:
 //   Preferred way to register a CVar
-#define REGISTER_CVAR(_var, _def_val, _flags, _comment)                                                            (ASSERT_CONSOLE_EXISTS, gEnv->pConsole == 0 ? 0 : gEnv->pConsole->Register((#_var), &(_var), (_def_val), (_flags), CVARHELP(_comment)))
+#define REGISTER_CVAR(_var, _def_val, _flags, _comment) \
+    (gEnv->pConsole == 0 ? 0 : gEnv->pConsole->Register((#_var), &(_var), (_def_val), (_flags), CVARHELP(_comment)))
+
 // Summary:
 //   Preferred way to register a CVar with a callback
-#define REGISTER_CVAR_CB(_var, _def_val, _flags, _comment, _onchangefunction)                   (ASSERT_CONSOLE_EXISTS, gEnv->pConsole == 0 ? 0 : gEnv->pConsole->Register((#_var), &(_var), (_def_val), (_flags), CVARHELP(_comment), _onchangefunction))
+#define REGISTER_CVAR_CB(_var, _def_val, _flags, _comment, _onchangefunction) \
+    (gEnv->pConsole == 0 ? 0 : gEnv->pConsole->Register((#_var), &(_var), (_def_val), (_flags), CVARHELP(_comment), _onchangefunction))
+
 // Summary:
 //   Preferred way to register a string CVar
-#define REGISTER_STRING(_name, _def_val, _flags, _comment)                                                     (ASSERT_CONSOLE_EXISTS, gEnv->pConsole == 0 ? 0 : gEnv->pConsole->RegisterString(_name, (_def_val), (_flags), CVARHELP(_comment)))
+#define REGISTER_STRING(_name, _def_val, _flags, _comment) \
+    (gEnv->pConsole == 0 ? 0 : gEnv->pConsole->RegisterString(_name, (_def_val), (_flags), CVARHELP(_comment)))
+
 // Summary:
 //   Preferred way to register a string CVar with a callback
-#define REGISTER_STRING_CB(_name, _def_val, _flags, _comment, _onchangefunction)            (ASSERT_CONSOLE_EXISTS, gEnv->pConsole == 0 ? 0 : gEnv->pConsole->RegisterString(_name, (_def_val), (_flags), CVARHELP(_comment), _onchangefunction))
+#define REGISTER_STRING_CB(_name, _def_val, _flags, _comment, _onchangefunction) \
+    (gEnv->pConsole == 0 ? 0 : gEnv->pConsole->RegisterString(_name, (_def_val), (_flags), CVARHELP(_comment), _onchangefunction))
+
 // Summary:
 //   Preferred way to register an int CVar
-#define REGISTER_INT(_name, _def_val, _flags, _comment)                                                            (ASSERT_CONSOLE_EXISTS, gEnv->pConsole == 0 ? 0 : gEnv->pConsole->RegisterInt(_name, (_def_val), (_flags), CVARHELP(_comment)))
+#define REGISTER_INT(_name, _def_val, _flags, _comment) \
+    (gEnv->pConsole == 0 ? 0 : gEnv->pConsole->RegisterInt(_name, (_def_val), (_flags), CVARHELP(_comment)))
+
 // Summary:
 //   Preferred way to register an int CVar with a callback
-#define REGISTER_INT_CB(_name, _def_val, _flags, _comment, _onchangefunction)                   (ASSERT_CONSOLE_EXISTS, gEnv->pConsole == 0 ? 0 : gEnv->pConsole->RegisterInt(_name, (_def_val), (_flags), CVARHELP(_comment), _onchangefunction))
+#define REGISTER_INT_CB(_name, _def_val, _flags, _comment, _onchangefunction) \
+    (gEnv->pConsole == 0 ? 0 : gEnv->pConsole->RegisterInt(_name, (_def_val), (_flags), CVARHELP(_comment), _onchangefunction))
+
 // Summary:
 //   Preferred way to register a float CVar
-#define REGISTER_FLOAT(_name, _def_val, _flags, _comment)                                                      (ASSERT_CONSOLE_EXISTS, gEnv->pConsole == 0 ? 0 : gEnv->pConsole->RegisterFloat(_name, (_def_val), (_flags), CVARHELP(_comment)))
+#define REGISTER_FLOAT(_name, _def_val, _flags, _comment) \
+    (gEnv->pConsole == 0 ? 0 : gEnv->pConsole->RegisterFloat(_name, (_def_val), (_flags), CVARHELP(_comment)))
+
 // Summary:
 //   Offers more flexibility but more code is required
-#define REGISTER_CVAR2(_name, _var, _def_val, _flags, _comment)                                             (ASSERT_CONSOLE_EXISTS, gEnv->pConsole == 0 ? 0 : gEnv->pConsole->Register(_name, _var, (_def_val), (_flags), CVARHELP(_comment)))
+#define REGISTER_CVAR2(_name, _var, _def_val, _flags, _comment) \
+    (gEnv->pConsole == 0 ? 0 : gEnv->pConsole->Register(_name, _var, (_def_val), (_flags), CVARHELP(_comment)))
+
 // Summary:
 //   Offers more flexibility but more code is required
-#define REGISTER_CVAR2_CB(_name, _var, _def_val, _flags, _comment, _onchangefunction)    (ASSERT_CONSOLE_EXISTS, gEnv->pConsole == 0 ? 0 : gEnv->pConsole->Register(_name, _var, (_def_val), (_flags), CVARHELP(_comment), _onchangefunction))
+#define REGISTER_CVAR2_CB(_name, _var, _def_val, _flags, _comment, _onchangefunction) \
+    (gEnv->pConsole == 0 ? 0 : gEnv->pConsole->Register(_name, _var, (_def_val), (_flags), CVARHELP(_comment), _onchangefunction))
+
 // Summary:
 //   Offers more flexibility but more code is required, explicit address taking of destination variable
-#define REGISTER_CVAR3(_name, _var, _def_val, _flags, _comment)                                             (ASSERT_CONSOLE_EXISTS, gEnv->pConsole == 0 ? 0 : gEnv->pConsole->Register(_name, &(_var), (_def_val), (_flags), CVARHELP(_comment)))
+#define REGISTER_CVAR3(_name, _var, _def_val, _flags, _comment) \
+    (gEnv->pConsole == 0 ? 0 : gEnv->pConsole->Register(_name, &(_var), (_def_val), (_flags), CVARHELP(_comment)))
+
 // Summary:
 //   Preferred way to register a console command
-#define REGISTER_COMMAND(_name, _func, _flags, _comment)                                                           (ASSERT_CONSOLE_EXISTS, gEnv->pConsole == 0 ? false : gEnv->pConsole->AddCommand(_name, _func, (_flags), CVARHELP(_comment)))
+#define REGISTER_COMMAND(_name, _func, _flags, _comment) \
+    (gEnv->pConsole == 0 ? false : gEnv->pConsole->AddCommand(_name, _func, (_flags), CVARHELP(_comment)))
+
 // Summary:
 //   Preferred way to unregister a CVar
-#define UNREGISTER_CVAR(_name)                                                      (ASSERT_CONSOLE_EXISTS, gEnv->pConsole == 0 ? (void)0 : gEnv->pConsole->UnregisterVariable(_name))
+#define UNREGISTER_CVAR(_name) \
+    (gEnv->pConsole == 0 ? (void)0 : gEnv->pConsole->UnregisterVariable(_name))
+
+// Summary:
 //   Preferred way to unregister a console command
-#define UNREGISTER_COMMAND(_name)                                                           (ASSERT_CONSOLE_EXISTS, gEnv->pConsole == 0 ? (void)0 : gEnv->pConsole->RemoveCommand(_name))
+#define UNREGISTER_COMMAND(_name) \
+    (gEnv->pConsole == 0 ? (void)0 : gEnv->pConsole->RemoveCommand(_name))
 
 ////////////////////////////////////////////////////////////////////////////////
 //

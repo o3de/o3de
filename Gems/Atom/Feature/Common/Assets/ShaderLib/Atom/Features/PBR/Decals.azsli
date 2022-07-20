@@ -99,10 +99,12 @@ void ApplyDecal(uint currDecalIndex, inout Surface surface)
             break;            
         }
         
-        float opacity = baseMap.a * decal.m_opacity * GetDecalAttenuation(surface.normal, decalRot[2], decal.m_angleAttenuation);
-        surface.albedo = lerp(surface.albedo, baseMap.rgb, opacity);      
-      
-        float3 normalMapWS = GetWorldSpaceNormal(normalMap, decalRot[2], decalRot[0], decalRot[1], 1.0f);      
-        surface.normal = normalize(lerp(surface.normal, normalMapWS, opacity));
+        const float decalAttenuation = GetDecalAttenuation(surface.normal, decalRot[2], decal.m_angleAttenuation);
+        const float albedoOpacity = baseMap.a * decal.m_opacity * decalAttenuation;
+        surface.albedo = lerp(surface.albedo, baseMap.rgb, albedoOpacity);      
+
+        const float normalOpacity = baseMap.a * decal.m_normalMapOpacity * decalAttenuation;
+        const float3 normalMapWS = GetWorldSpaceNormal(normalMap, decalRot[2], decalRot[0], decalRot[1], 1.0f);      
+        surface.normal = normalize(lerp(surface.normal, normalMapWS, normalOpacity));
     }
 }

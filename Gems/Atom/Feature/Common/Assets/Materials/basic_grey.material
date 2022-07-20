@@ -1,6 +1,6 @@
 {
     "materialType": "Materials/Types/StandardPBR.materialtype",
-    "materialTypeVersion": 1,
+    "materialTypeVersion": 5,
     "properties": {
         "baseColor": {
             "color": [ 0.18, 0.18, 0.18 ],

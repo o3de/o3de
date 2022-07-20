@@ -16,29 +16,26 @@
 
 namespace AzToolsFramework
 {
-    /// Provide interface for Entity manipulator Undo/Redo requests.
-    class EditorManipulatorCommandUndoRedoRequests
-        : public AZ::EBusTraits
+    //! Provide interface for Entity manipulator Undo/Redo requests.
+    class EditorManipulatorCommandUndoRedoRequests : public AZ::EBusTraits
     {
     public:
         using BusIdType = AzFramework::EntityContextId;
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
 
-        /// Set the transform of the current entity manipulator.
-        virtual void UndoRedoEntityManipulatorCommand(
-            AZ::u8 pivotOverride, const AZ::Transform& transform, AZ::EntityId entityId) = 0;
+        //! Set the transform of the current entity manipulator.
+        virtual void UndoRedoEntityManipulatorCommand(AZ::u8 pivotOverride, const AZ::Transform& transform) = 0;
 
     protected:
         ~EditorManipulatorCommandUndoRedoRequests() = default;
     };
 
-    /// Type to inherit to implement EditorManipulatorCommandUndoRedoRequests.
+    //! Type to inherit to implement EditorManipulatorCommandUndoRedoRequests.
     using EditorManipulatorCommandUndoRedoRequestBus = AZ::EBus<EditorManipulatorCommandUndoRedoRequests>;
 
-    /// Stores a manipulator transform change.
-    class EntityManipulatorCommand
-        : public UndoSystem::URSequencePoint
+    //! Stores a manipulator transform change.
+    class EntityManipulatorCommand : public UndoSystem::URSequencePoint
     {
     public:
         AZ_CLASS_ALLOCATOR(EntityManipulatorCommand, AZ::SystemAllocator, 0);
@@ -54,12 +51,12 @@ namespace AzToolsFramework
             };
         };
 
-        /// State relevant to EntityManipulatorCommand before and after
-        /// any kind of Entity manipulation.
+        //! State relevant to EntityManipulatorCommand before and after
+        //! any kind of Entity manipulation.
         struct State
         {
             State() = default;
-            State(AZ::u8 pivotOverrideBefore, const AZ::Transform& transformBefore, AZ::EntityId entityIdBefore);
+            State(AZ::u8 pivotOverrideBefore, const AZ::Transform& transformBefore);
 
             State(const State&) = default;
             State& operator=(const State&) = default;
@@ -68,16 +65,14 @@ namespace AzToolsFramework
             ~State() = default;
 
             AZ::Transform m_transform = AZ::Transform::CreateIdentity();
-            AZ::EntityId m_entityId;
             AZ::u8 m_pivotOverride = 0;
         };
 
-        EntityManipulatorCommand(
-            const State& state, const AZStd::string& friendlyName);
+        EntityManipulatorCommand(const State& state, const AZStd::string& friendlyName);
 
         void SetManipulatorAfter(const State& state);
 
-        // URSequencePoint
+        // URSequencePoint overrides ...
         void Undo() override;
         void Redo() override;
         bool Changed() const override;
@@ -87,16 +82,12 @@ namespace AzToolsFramework
         State m_stateAfter;
     };
 
-    bool operator==(
-        const EntityManipulatorCommand::State& lhs, const EntityManipulatorCommand::State& rhs);
-    bool operator!=(
-        const EntityManipulatorCommand::State& lhs, const EntityManipulatorCommand::State& rhs);
+    bool operator==(const EntityManipulatorCommand::State& lhs, const EntityManipulatorCommand::State& rhs);
+    bool operator!=(const EntityManipulatorCommand::State& lhs, const EntityManipulatorCommand::State& rhs);
 
-    AZ::u8 BuildPivotOverride(
-        bool translationOverride, bool orientationOverride);
+    AZ::u8 BuildPivotOverride(bool translationOverride, bool orientationOverride);
 
     bool PivotHasTranslationOverride(AZ::u8 pivotOverride);
     bool PivotHasOrientationOverride(AZ::u8 pivotOverride);
     bool PivotHasTransformOverride(AZ::u8 pivotOverride);
-
 } // namespace AzToolsFramework

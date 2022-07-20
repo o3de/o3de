@@ -158,7 +158,7 @@ namespace EditorPythonBindings
                 }
 
                 Convert::StackVariableAllocator stackVariableAllocator;
-                AZ::BehaviorValueParameter busAddress;
+                AZ::BehaviorArgument busAddress;
 
                 if (!Convert::PythonToBehaviorValueParameter(m_ebus->m_idParam, busId, busAddress, stackVariableAllocator))
                 {
@@ -257,7 +257,7 @@ namespace EditorPythonBindings
                 return true;
             }
 
-            static void OnEventGenericHook(void* userData, const char* eventName, int eventIndex, AZ::BehaviorValueParameter* result, int numParameters, AZ::BehaviorValueParameter* parameters)
+            static void OnEventGenericHook(void* userData, const char* eventName, int eventIndex, AZ::BehaviorArgument* result, int numParameters, AZ::BehaviorArgument* parameters)
             {
                 auto editorPythonEventsInterface = AZ::Interface<AzToolsFramework::EditorPythonEventsInterface>::Get();
                 if (!editorPythonEventsInterface)
@@ -290,14 +290,14 @@ namespace EditorPythonBindings
                     handler->m_ebus->m_name.c_str(), eventName);
             }
 
-            void OnEventGenericHook([[maybe_unused]] const char* eventName, pybind11::function callback, [[maybe_unused]] int eventIndex, AZ::BehaviorValueParameter* result, int numParameters, AZ::BehaviorValueParameter* parameters)
+            void OnEventGenericHook([[maybe_unused]] const char* eventName, pybind11::function callback, [[maybe_unused]] int eventIndex, AZ::BehaviorArgument* result, int numParameters, AZ::BehaviorArgument* parameters)
             {
                 // build the parameters to send to callback
                 Convert::StackVariableAllocator stackVariableAllocator;
                 pybind11::tuple pythonParamters(numParameters);
                 for (int index = 0; index < numParameters; ++index)
                 {
-                    AZ::BehaviorValueParameter& behaviorValueParameter{ *(parameters + index) };
+                    AZ::BehaviorArgument& behaviorValueParameter{ *(parameters + index) };
                     pythonParamters[index] = Convert::BehaviorValueParameterToPython(behaviorValueParameter, stackVariableAllocator);
                     
                     if (pythonParamters[index].is_none())
@@ -346,7 +346,7 @@ namespace EditorPythonBindings
             AZ::BehaviorEBusHandler* m_handler = nullptr;
             AZStd::unordered_map<AZStd::string, pybind11::function> m_callbackMap;
             Convert::StackVariableAllocator m_stackVariableAllocator;
-            AZ::BehaviorValueParameter m_resultParam;
+            AZ::BehaviorArgument m_resultParam;
         };
     }
 

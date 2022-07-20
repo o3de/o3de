@@ -13,10 +13,23 @@
 #ifdef QUALITY_LOW_END
 
     // Unifies the forward output into a single lighting buffer instead of splitting it into a GBuffer
+    #ifndef UNIFIED_FORWARD_OUTPUT
     #define UNIFIED_FORWARD_OUTPUT          1
-    
+    #endif
+
     // Forces IBL lighting to be executed in the forward pass instead of subsequent refleciton passes
+    #ifndef FORCE_IBL_IN_FORWARD_PASS
     #define FORCE_IBL_IN_FORWARD_PASS       1
+    #endif
+
+    // Forces removal of area light validation code
+    #ifndef ENABLE_AREA_LIGHT_VALIDATION
+    #define ENABLE_AREA_LIGHT_VALIDATION    0
+    #endif
+
+    // Uncomment to disable all area light calcuation
+    // #ifndef ENABLE_AREA_LIGHTS
+    // #define ENABLE_AREA_LIGHTS           0
+    // #endif
 
 #endif
-

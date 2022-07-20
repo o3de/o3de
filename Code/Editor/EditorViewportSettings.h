@@ -12,6 +12,7 @@
 
 #include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
+#include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzFramework/Input/Channels/InputChannelId.h>
 
@@ -50,6 +51,9 @@ namespace SandboxEditor
 
     SANDBOX_API bool ShowingGrid();
     SANDBOX_API void SetShowingGrid(bool showing);
+
+    SANDBOX_API bool ManipulatorMouseWrap();
+    SANDBOX_API void SetManipulatorMouseWrap(bool enabled);
 
     SANDBOX_API bool StickySelectEnabled();
     SANDBOX_API void SetStickySelectEnabled(bool enabled);
@@ -104,6 +108,11 @@ namespace SandboxEditor
 
     SANDBOX_API AZ::Vector3 CameraDefaultEditorPosition();
     SANDBOX_API void SetCameraDefaultEditorPosition(const AZ::Vector3& position);
+
+    //! @return pitch/yaw value in x/y Vector2 component in degrees.
+    SANDBOX_API AZ::Vector2 CameraDefaultEditorOrientation();
+    //! @param pitchYaw pitch/yaw value in x/y Vector2 component in degrees.
+    SANDBOX_API void SetCameraDefaultEditorOrientation(const AZ::Vector2& pitchYaw);
 
     SANDBOX_API float CameraDefaultOrbitDistance();
     SANDBOX_API void SetCameraDefaultOrbitDistance(float distance);

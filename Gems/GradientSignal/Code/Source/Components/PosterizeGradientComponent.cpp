@@ -117,14 +117,18 @@ namespace GradientSignal
         m_dependencyMonitor.Reset();
         m_dependencyMonitor.ConnectOwner(GetEntityId());
         m_dependencyMonitor.ConnectDependency(m_configuration.m_gradientSampler.m_gradientId);
-        GradientRequestBus::Handler::BusConnect(GetEntityId());
         PosterizeGradientRequestBus::Handler::BusConnect(GetEntityId());
+
+        // Connect to GradientRequestBus last so that everything is initialized before listening for gradient queries.
+        GradientRequestBus::Handler::BusConnect(GetEntityId());
     }
 
     void PosterizeGradientComponent::Deactivate()
     {
-        m_dependencyMonitor.Reset();
+        // Disconnect from GradientRequestBus first to ensure no queries are in process when deactivating.
         GradientRequestBus::Handler::BusDisconnect();
+
+        m_dependencyMonitor.Reset();
         PosterizeGradientRequestBus::Handler::BusDisconnect();
     }
 
@@ -150,6 +154,8 @@ namespace GradientSignal
 
     float PosterizeGradientComponent::GetValue(const GradientSampleParams& sampleParams) const
     {
+        AZStd::shared_lock lock(m_queryMutex);
+
         const float bands = AZ::GetMax(static_cast<float>(m_configuration.m_bands), 2.0f);
         const float input = m_configuration.m_gradientSampler.GetValue(sampleParams);
         return PosterizeValue(input, bands, m_configuration.m_mode);
@@ -162,6 +168,8 @@ namespace GradientSignal
             AZ_Assert(false, "input and output lists are different sizes (%zu vs %zu).", positions.size(), outValues.size());
             return;
         }
+
+        AZStd::shared_lock lock(m_queryMutex);
 
         const float bands = AZ::GetMax(static_cast<float>(m_configuration.m_bands), 2.0f);
 
@@ -187,7 +195,13 @@ namespace GradientSignal
 
     void PosterizeGradientComponent::SetBands(AZ::s32 bands)
     {
-        m_configuration.m_bands = bands;
+        // Only hold the lock while we're changing the data. Don't hold onto it during the OnCompositionChanged call, because that can
+        // execute an arbitrary amount of logic, including calls back to this component.
+        {
+            AZStd::unique_lock lock(m_queryMutex);
+            m_configuration.m_bands = bands;
+        }
+
         LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
     }
 
@@ -198,7 +212,13 @@ namespace GradientSignal
 
     void PosterizeGradientComponent::SetModeType(AZ::u8 modeType)
     {
-        m_configuration.m_mode = static_cast<PosterizeGradientConfig::ModeType>(modeType);
+        // Only hold the lock while we're changing the data. Don't hold onto it during the OnCompositionChanged call, because that can
+        // execute an arbitrary amount of logic, including calls back to this component.
+        {
+            AZStd::unique_lock lock(m_queryMutex);
+            m_configuration.m_mode = static_cast<PosterizeGradientConfig::ModeType>(modeType);
+        }
+
         LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
     }
 

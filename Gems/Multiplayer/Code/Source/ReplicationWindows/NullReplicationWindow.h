@@ -28,6 +28,7 @@ namespace Multiplayer
         void UpdateWindow() override;
         AzNetworking::PacketId SendEntityUpdateMessages(NetworkEntityUpdateVector& entityUpdateVector) override;
         void SendEntityRpcs(NetworkEntityRpcVector& entityRpcVector, bool reliable) override;
+        void SendEntityResets(const NetEntityIdSet& resetIds) override;
         void DebugDraw() const override;
         //! @}
 

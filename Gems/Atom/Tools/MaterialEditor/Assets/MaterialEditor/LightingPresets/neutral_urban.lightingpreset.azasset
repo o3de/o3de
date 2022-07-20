@@ -3,7 +3,6 @@
     "Version": 1,
     "ClassName": "AZ::Render::LightingPreset",
     "ClassData": {
-        "displayName": "Neutral Urban",
         "iblDiffuseImageAsset": {
             "assetId": {
                 "guid": "{AA144B9D-68F6-5191-9DD1-211B8D72802C}",

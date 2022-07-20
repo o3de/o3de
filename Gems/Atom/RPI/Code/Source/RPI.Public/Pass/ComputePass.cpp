@@ -58,6 +58,12 @@ namespace AZ
                 return;
             }
 
+            // Hardware Queue Class
+            if (passData->m_useAsyncCompute)
+            {
+                m_hardwareQueueClass = RHI::HardwareQueueClass::Compute;
+            }
+
             // Load Shader
             Data::Asset<ShaderAsset> shaderAsset;
             if (passData->m_shaderReference.m_assetId.IsValid())
@@ -134,7 +140,6 @@ namespace AZ
         void ComputePass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph)
         {
             RenderPass::SetupFrameGraphDependencies(frameGraph);
-            frameGraph.SetEstimatedItemCount(1);
         }
 
         void ComputePass::CompileResources(const RHI::FrameGraphCompileContext& context)
@@ -166,11 +171,11 @@ namespace AZ
             
             if (GetOutputCount() > 0)
             {
-                outputAttachment = GetOutputBinding(0).m_attachment.get();
+                outputAttachment = GetOutputBinding(0).GetAttachment().get();
             }
             else if (GetInputOutputCount() > 0)
             {
-                outputAttachment = GetInputOutputBinding(0).m_attachment.get();
+                outputAttachment = GetInputOutputBinding(0).GetAttachment().get();
             }
 
             AZ_Assert(outputAttachment != nullptr, "[ComputePass '%s']: A fullscreen compute pass must have a valid output or input/output.",

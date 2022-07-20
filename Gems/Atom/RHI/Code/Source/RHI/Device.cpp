@@ -8,6 +8,7 @@
 
 #include <Atom/RHI/Device.h>
 #include <Atom/RHI/MemoryStatisticsBus.h>
+#include <Atom/RHI/RHISystem.h>
 
 #include <AzCore/std/sort.h>
 
@@ -109,6 +110,19 @@ namespace AZ
             }
         }
 
+        bool Device::WasDeviceRemoved()
+        {
+            return m_wasDeviceRemoved;
+        }
+
+        void Device::SetDeviceRemoved()
+        {
+            m_wasDeviceRemoved = true;
+
+            // set notification
+            RHISystemNotificationBus::Broadcast(&RHISystemNotificationBus::Events::OnDeviceRemoved, this);
+        }
+
         ResultCode Device::BeginFrame()
         {
             AZ_PROFILE_FUNCTION(RHI);
@@ -116,8 +130,7 @@ namespace AZ
             if (ValidateIsInitialized() && ValidateIsNotInFrame())
             {
                 m_isInFrame = true;
-                BeginFrameInternal();
-                return ResultCode::Success;
+                return BeginFrameInternal();
             }
             return ResultCode::InvalidOperation;
         }
@@ -290,6 +303,16 @@ namespace AZ
                     m_nearestSupportedFormats[i] = static_cast<Format>(i);
                 }
             }
+        }
+
+        void Device::SetLastExecutingScope(const AZStd::string_view scopeName)
+        {
+            m_lastExecutingScope = scopeName;
+        }
+
+        AZStd::string_view Device::GetLastExecutingScope() const
+        {
+            return m_lastExecutingScope;
         }
     }
 }

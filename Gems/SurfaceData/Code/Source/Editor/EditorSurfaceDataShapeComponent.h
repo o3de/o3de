@@ -11,7 +11,7 @@
 #include <AzCore/Module/Module.h>
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
 #include <AzToolsFramework/ToolsComponents/EditorVisibilityBus.h>
-#include <Components/SurfaceDataShapeComponent.h>
+#include <SurfaceData/Components/SurfaceDataShapeComponent.h>
 #include <LmbrCentral/Component/EditorWrappedComponentBase.h>
 
 namespace SurfaceData
@@ -29,6 +29,6 @@ namespace SurfaceData
         static constexpr const char* const s_componentDescription = "Enables a shape to emit surface tags";
         static constexpr const char* const s_icon = "Editor/Icons/Components/SurfaceData.svg";
         static constexpr const char* const s_viewportIcon = "Editor/Icons/Components/Viewport/SurfaceData.png";
-        static constexpr const char* const s_helpUrl = "https://o3de.org/docs/user-guide/components/reference/";
+        static constexpr const char* const s_helpUrl = "https://www.o3de.org/docs/user-guide/components/reference/surface-data/shape-surface-tag-emitter/";
     };
 }

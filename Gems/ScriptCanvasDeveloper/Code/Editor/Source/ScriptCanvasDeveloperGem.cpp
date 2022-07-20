@@ -12,7 +12,7 @@
 #include <ScriptCanvasDeveloperEditor/ScriptCanvasDeveloperEditorComponent.h>
 #include <ScriptCanvasDeveloperEditor/Developer.h>
 
-namespace ScriptCanvasDeveloper
+namespace ScriptCanvas::Developer
 {
     ////////////////////////////////////////////////////////////////////////////
     // ScriptCanvasDeveloperModule
@@ -25,11 +25,11 @@ namespace ScriptCanvasDeveloper
         : AZ::Module()
     {
         m_descriptors.insert(m_descriptors.end(), {
-            ScriptCanvasDeveloper::SystemComponent::CreateDescriptor(),
+            ScriptCanvas::Developer::SystemComponent::CreateDescriptor(),
             ScriptCanvasDeveloperEditor::SystemComponent::CreateDescriptor()
         });
 
-        AZStd::vector<AZ::ComponentDescriptor*> componentDescriptors(ScriptCanvasDeveloper::Libraries::Developer::GetComponentDescriptors());
+        AZStd::vector<AZ::ComponentDescriptor*> componentDescriptors(ScriptCanvas::Developer::GetComponentDescriptors());
         m_descriptors.insert(m_descriptors.end(), componentDescriptors.begin(), componentDescriptors.end());
     }
 
@@ -42,7 +42,7 @@ namespace ScriptCanvasDeveloper
         AZ::ComponentTypeList components;
 
         components.insert(components.end(), std::initializer_list<AZ::Uuid> {
-            azrtti_typeid<ScriptCanvasDeveloper::SystemComponent>(),
+            azrtti_typeid<ScriptCanvas::Developer::SystemComponent>(),
             azrtti_typeid<ScriptCanvasDeveloperEditor::SystemComponent>()
         });
 
@@ -50,4 +50,4 @@ namespace ScriptCanvasDeveloper
     }
 }
 
-AZ_DECLARE_MODULE_CLASS(Gem_ScriptCanvasDeveloperGem, ScriptCanvasDeveloper::ScriptCanvasDeveloperModule)
+AZ_DECLARE_MODULE_CLASS(Gem_ScriptCanvasDeveloperGem, ScriptCanvas::Developer::ScriptCanvasDeveloperModule)

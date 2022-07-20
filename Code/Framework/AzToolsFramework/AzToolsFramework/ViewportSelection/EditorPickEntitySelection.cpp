@@ -17,7 +17,7 @@ namespace AzToolsFramework
     AZ_CLASS_ALLOCATOR_IMPL(EditorPickEntitySelection, AZ::SystemAllocator, 0)
 
     EditorPickEntitySelection::EditorPickEntitySelection(
-        const EditorVisibleEntityDataCache* entityDataCache, ViewportEditorModeTrackerInterface* viewportEditorModeTracker)
+        const EditorVisibleEntityDataCacheInterface* entityDataCache, ViewportEditorModeTrackerInterface* viewportEditorModeTracker)
         : m_editorHelpers(AZStd::make_unique<EditorHelpers>(entityDataCache))
         , m_viewportEditorModeTracker(viewportEditorModeTracker)
     {

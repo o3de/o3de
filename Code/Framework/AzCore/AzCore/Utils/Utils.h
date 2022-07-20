@@ -68,7 +68,7 @@ namespace AZ
         //! @returns a result object that indicates if the executable directory was able to be stored within the buffer
         ExecutablePathResult GetExecutableDirectory(char* exeStorageBuffer, size_t exeStorageSize);
 
-        //! Retrieves the full path of the directroy containing the executable
+        //! Retrieves the full path of the directory containing the executable
         AZ::IO::FixedMaxPathString GetExecutableDirectory();
 
         //! Retrieves the full path to the engine from settings registry
@@ -87,7 +87,7 @@ namespace AZ
         AZ::IO::FixedMaxPathString GetO3deManifestDirectory();
 
         //! Retrieves the full path where the manifest file lives, i.e. "<userhome>/.o3de/o3de_manifest.json"
-        AZ::IO::FixedMaxPathString GetEngineManifestPath();
+        AZ::IO::FixedMaxPathString GetO3deManifestPath();
 
         //! Retrieves the full directory to the O3DE logs directory, i.e. "<userhome>/.o3de/Logs"
         AZ::IO::FixedMaxPathString GetO3deLogsDirectory();
@@ -104,6 +104,7 @@ namespace AZ
         // Attempts the supplied path to an absolute path.
         //! Returns nullopt if path cannot be converted to an absolute path
         AZStd::optional<AZ::IO::FixedMaxPathString> ConvertToAbsolutePath(AZStd::string_view path);
+        bool ConvertToAbsolutePath(AZ::IO::FixedMaxPath& outputPath, AZStd::string_view path);
         bool ConvertToAbsolutePath(const char* path, char* absolutePath, AZ::u64 absolutePathMaxSize);
 
         //! Save a string to a file. Otherwise returns a failure with error message.
@@ -114,5 +115,18 @@ namespace AZ
         template<typename Container = AZStd::string>
         AZ::Outcome<Container, AZStd::string> ReadFile(
             AZStd::string_view filePath, size_t maxFileSize = AZStd::numeric_limits<size_t>::max());
+
+        //! Create or modify environment variable.
+        //! @param envname The environment variable name
+        //! @param envvalue The environment variable name
+        //! @param overwrite If name does exist in the environment, then its value is changed to value if overwrite is nonzero;
+        //! if overwrite is zero, then the value of name is not changed
+        //! @returns Return true if successful, otherwise false
+        bool SetEnv(const char* envname, const char* envvalue, bool overwrite);
+
+        //! Remove environment variable.
+        //! @param envname The environment variable name
+        //! @returns Return true if successful, otherwise false
+        bool UnsetEnv(const char* envname);
     }
 }

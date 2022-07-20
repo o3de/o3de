@@ -7,6 +7,7 @@
  */
 
 #include <AzCore/UserSettings/UserSettingsComponent.h>
+#include <AzCore/Utils/Utils.h>
 #include <AzFramework/IO/LocalFileIO.h>
 #include <AzTest/GemTestEnvironment.h>
 #include <AzToolsFramework/Application/ToolsApplication.h>
@@ -21,6 +22,7 @@
 #include <System/PhysXCookingParams.h>
 #include <Tests/PhysXTestCommon.h>
 #include <UnitTest/ToolsTestApplication.h>
+#include <LmbrCentral/Shape/ShapeComponentBus.h>
 
 namespace Physics
 {
@@ -69,12 +71,12 @@ namespace Physics
 
             AZ::IO::FileIOBase::SetInstance(m_fileIo.get());
 
-            char testDir[AZ_MAX_PATH_LEN];
-            m_fileIo->ConvertToAbsolutePath("../Gems/PhysX/Code/Tests", testDir, AZ_MAX_PATH_LEN);
-            m_fileIo->SetAlias("@test@", testDir);
+            AZ::IO::FixedMaxPath testDir = AZ::Utils::GetExecutableDirectory();
+            testDir /= "Test.Assets/Gems/PhysX/Code/Tests";
+            m_fileIo->SetAlias("@test@", testDir.c_str());
 
             //Test_PhysXSettingsRegistryManager will not do any file saving
-            m_physXSystem = AZStd::make_unique<PhysX::PhysXSystem>(new PhysX::TestUtils::Test_PhysXSettingsRegistryManager(), PhysX::PxCooking::GetEditTimeCookingParams());
+            m_physXSystem = AZStd::make_unique<PhysX::PhysXSystem>(AZStd::make_unique<PhysX::TestUtils::Test_PhysXSettingsRegistryManager>(), PhysX::PxCooking::GetEditTimeCookingParams());
         }
 
         /// Allows derived environments to override to perform additional steps after creating the application.
@@ -84,6 +86,17 @@ namespace Physics
             // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash 
             // in the unit tests.
             AZ::UserSettingsComponentRequestBus::Broadcast(&AZ::UserSettingsComponentRequests::DisableSaveOnFinalize);
+
+            // Ebus usage will allocate a global context on first usage. If that first usage occurs in a DLL, then the context will be
+            // invalid on subsequent unit test runs if using gtest_repeat. However, if we force the ebus to create their global context in
+            // the main test DLL (this one), the context will remain active throughout repeated runs. By creating them in
+            // PostCreateApplication(), they will be created before the DLLs get loaded and any system components from those DLLs run, so we
+            // can guarantee this will be the first usage.
+
+            // These ebuses need their contexts created here before any of the dependent DLLs get loaded:
+            LmbrCentral::ShapeComponentRequestsBus::GetOrCreateContext();
+            LmbrCentral::ShapeComponentNotificationsBus::GetOrCreateContext();
+            AZ::Data::AssetManagerNotificationBus::GetOrCreateContext();
         }
 
         /// Allows derived environments to override to perform additional steps prior to destroying the application.
@@ -99,6 +112,7 @@ namespace Physics
         void PostDestroyApplication() override
         {
             m_fileIo.reset();
+            AZ::IO::FileIOBase::SetInstance(nullptr);
         }
 
         AZ::ComponentApplication* CreateApplicationInstance() override

@@ -22,13 +22,6 @@ set(FILES
     Controls/ReflectedPropertyControl/ReflectedVar.h
     Controls/ReflectedPropertyControl/ReflectedVarWrapper.cpp
     Controls/ReflectedPropertyControl/ReflectedVarWrapper.h
-    Controls/QBitmapPreviewDialog.cpp
-    Controls/QBitmapPreviewDialog.h
-    Controls/QBitmapPreviewDialog.ui
-    Controls/QBitmapPreviewDialogImp.cpp
-    Controls/QBitmapPreviewDialogImp.h
-    Controls/QToolTipWidget.h
-    Controls/QToolTipWidget.cpp
     UsedResources.cpp
     LyViewPaneNames.h
     QtViewPaneManager.cpp
@@ -55,7 +48,6 @@ set(FILES
     Util/Image.cpp
     Util/ImageHistogram.h
     Util/Image.h
-    Util/ColorUtils.cpp
     Undo/Undo.cpp
     Undo/IUndoManagerListener.h
     Undo/IUndoObject.h

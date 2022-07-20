@@ -8,6 +8,58 @@
 
 #pragma once
 
+// --- Note: About this file ---
+// This file uses #defines to completely strip out certain lighting features from shaders
+// This enables us to avoid code duplication and write an uber-esque shader code and then
+// be able to adjust the code for different use cases (for example basic materials can strip
+// away transimission related code used for foliage). These are different from shader options
+// in that shader options allow more user flexibility to adjust materials at runtime, whereas
+// these #define options are for customizing and optimizing material types (like BasePBR)
+
+// --- Light Defines ---
+
+#ifndef ENABLE_AREA_LIGHT_VALIDATION
+#define ENABLE_AREA_LIGHT_VALIDATION    1
+#endif
+
+#ifndef ENABLE_AREA_LIGHTS
+#define ENABLE_AREA_LIGHTS              1
+#endif
+
+#ifndef ENABLE_SPHERE_LIGHTS
+#define ENABLE_SPHERE_LIGHTS            ENABLE_AREA_LIGHTS
+#endif
+
+#ifndef ENABLE_DISK_LIGHTS
+#define ENABLE_DISK_LIGHTS              ENABLE_AREA_LIGHTS
+#endif
+
+#ifndef ENABLE_CAPSULE_LIGHTS
+#define ENABLE_CAPSULE_LIGHTS           ENABLE_AREA_LIGHTS
+#endif
+
+#ifndef ENABLE_QUAD_LIGHTS
+#define ENABLE_QUAD_LIGHTS              ENABLE_AREA_LIGHTS
+#endif
+
+#ifndef ENABLE_POLYGON_LTC_LIGHTS
+#define ENABLE_POLYGON_LTC_LIGHTS       ENABLE_AREA_LIGHTS
+#endif
+
+
+// --- Material defines ---
+
+#ifndef ENABLE_CLEAR_COAT
+#define ENABLE_CLEAR_COAT               1
+#endif
+
+#ifndef ENABLE_TRANSMISSION
+#define ENABLE_TRANSMISSION             1
+#endif
+
+
+// --- Shader Options ---
+
 option bool o_specularF0_enableMultiScatterCompensation = true;
 option bool o_enableShadows = true;
 option bool o_enableDirectionalLights = true;
@@ -15,8 +67,14 @@ option bool o_enablePunctualLights = true;
 option bool o_enableAreaLights = true;
 option bool o_enableIBL = true;
 option bool o_enableSubsurfaceScattering = false;
-option bool o_clearCoat_feature_enabled = false;
-option enum class TransmissionMode {None, ThickObject, ThinObject} o_transmission_mode;
 option bool o_meshUseForwardPassIBLSpecular = false;
 option bool o_materialUseForwardPassIBLSpecular = false;
+option bool o_area_light_validation = false;
 
+#if ENABLE_CLEAR_COAT
+option bool o_clearCoat_feature_enabled = false;
+#endif
+
+#if ENABLE_TRANSMISSION
+option enum class TransmissionMode {None, ThickObject, ThinObject} o_transmission_mode;
+#endif

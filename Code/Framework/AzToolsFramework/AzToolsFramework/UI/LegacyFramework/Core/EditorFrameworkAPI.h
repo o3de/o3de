@@ -208,10 +208,6 @@ namespace LegacyFramework
         */
         virtual bool IsRunningInGUIMode() = 0;
 
-        /** Retrieve a Command Line Parser object that you can then use to check for values on the command line
-        */
-        virtual const AzFramework::CommandLine* GetCommandLineParser() = 0;
-
         /** (Windows) retrieves the main module of the executable.
         * This is always going to be the main executable except in the situation where the framework may be running as a DLL belonging to another process or program.
         */

@@ -32,7 +32,7 @@ namespace AZ
             m_destAttachmentId = destAttachmentId;
 
             // Use the unique destination attachment id as scope id
-            SetScopeId(m_destAttachmentId);
+            InitScope(m_destAttachmentId);
 
             // Clear the previous attachment and copy item
             m_copyItem = {};
@@ -54,13 +54,14 @@ namespace AZ
 
         void ImageAttachmentCopy::FrameBegin(Pass::FramePrepareParams params)
         {
+            RHI::FrameGraphAttachmentInterface attachmentDatabase = params.m_frameGraphBuilder->GetAttachmentDatabase();
+
             if (m_srcAttachmentId.IsEmpty())
             {
                 return;
             }
 
             // Return if the source attachment is not imported
-            RHI::FrameGraphAttachmentInterface attachmentDatabase = params.m_frameGraphBuilder->GetAttachmentDatabase();
             if (!attachmentDatabase.IsAttachmentValid(m_srcAttachmentId))
             {
                 Reset();
@@ -123,7 +124,7 @@ namespace AZ
         ImageAttachmentPreviewPass::ImageAttachmentPreviewPass(const PassDescriptor& descriptor)
             : Pass(descriptor)
         {
-            SetScopeId(RHI::ScopeId(GetPathName()));
+            InitScope(RHI::ScopeId(GetPathName()));
         }
 
         ImageAttachmentPreviewPass::~ImageAttachmentPreviewPass()
@@ -144,9 +145,9 @@ namespace AZ
             uint32_t bindingIndex = 0;
             for (auto& binding : pass->GetAttachmentBindings())
             {
-                if (passAttachment == binding.m_attachment)
+                if (passAttachment == binding.GetAttachment())
                 {
-                    RHI::AttachmentId attachmentId = binding.m_attachment->GetAttachmentId();
+                    RHI::AttachmentId attachmentId = binding.GetAttachment()->GetAttachmentId();
                     
                     // Append slot index and pass name so the read back's name won't be same as the attachment used in other passes.
                     AZStd::string readbackName = AZStd::string::format("%s_%d_%s", attachmentId.GetCStr(),
@@ -175,14 +176,25 @@ namespace AZ
                 RenderPipeline* pipeline = pass->GetRenderPipeline();
                 if (pipeline)
                 {
-                    for (const auto& binding : pipeline->GetRootPass()->GetAttachmentBindings())
+                    Pass* pipelinePass = pipeline->GetRootPass().get();
+                    PassAttachmentBinding* binding = nullptr;
+
+                    // Get either first output or first input/output
+                    if (pipelinePass->GetOutputCount() > 0)
                     {
-                        if (binding.m_scopeAttachmentUsage == RHI::ScopeAttachmentUsage::RenderTarget
-                            && binding.m_slotType == PassSlotType::Output)
-                        {
-                            SetOutputColorAttachment(binding.m_attachment);
-                        }
+                        binding = &pipelinePass->GetOutputBinding(0);
                     }
+                    else if (pipelinePass->GetInputOutputCount() > 0)
+                    {
+                        binding = &pipelinePass->GetInputOutputBinding(0);
+                    }
+
+                    if (binding)
+                    {
+                        SetOutputColorAttachment(binding->GetAttachment());
+                    }
+
+                    AZ_Warning("PassSystem", binding != nullptr, "ImageAttachmentPreviewPass couldn't find a color attachment on pipeline");
                 }
             }
         }
@@ -269,6 +281,7 @@ namespace AZ
             // Find srg input indexes
             m_imageTypePreviewInfo[static_cast<uint32_t>(ImageType::Image2d)].m_imageInput = m_passSrg->FindShaderInputImageIndex(Name("m_image"));
             m_imageTypePreviewInfo[static_cast<uint32_t>(ImageType::Image2dMs)].m_imageInput = m_passSrg->FindShaderInputImageIndex(Name("m_msImage"));
+            m_colorRangeMinMaxInput = m_passSrg->FindShaderInputConstantIndex(Name("m_colorRangeMinMax"));
             
             // Setup initial data for pipeline state descriptors. The rest of the data will be set when the draw data is updated
 
@@ -310,13 +323,31 @@ namespace AZ
             Data::AssetBus::Handler::BusConnect(shaderAsset.GetId());
         }
 
+        void ImageAttachmentPreviewPass::BuildInternal()
+        {
+            m_updateDrawData = true;
+        }
+
         void ImageAttachmentPreviewPass::FrameBeginInternal(FramePrepareParams params)
         {
             bool scopeImported = false;
             if (!m_imageAttachmentId.IsEmpty() && m_outputColorAttachment)
             {
                 // Only import the scope if the attachment is valid
-                if (params.m_frameGraphBuilder->GetAttachmentDatabase().IsAttachmentValid(m_imageAttachmentId))
+                auto attachmentDatabase = params.m_frameGraphBuilder->GetAttachmentDatabase();
+                bool isAttachmentValid = attachmentDatabase.IsAttachmentValid(m_imageAttachmentId);
+                if (!isAttachmentValid)
+                {
+                    // Import the cached copy dest image if it exists (copied)
+                    // So the attachment can be still previewed when the pass is disabled.
+                    if (m_attachmentCopy && m_attachmentCopy->m_destImage)
+                    {
+                        attachmentDatabase.ImportImage(m_attachmentCopy->m_destAttachmentId, m_attachmentCopy->m_destImage->GetRHIImage());
+                        isAttachmentValid = true;
+                    }
+                }
+
+                if (isAttachmentValid)
                 {
                     if (m_needsShaderLoad)
                     {
@@ -348,15 +379,38 @@ namespace AZ
             return false;
         }
         
+        void ImageAttachmentPreviewPass::SetColorTransformRange(float colorTransformRange[2])
+        {
+            m_attachmentColorTranformRange[0] = AZ::GetMin(colorTransformRange[0], colorTransformRange[1]);
+            m_attachmentColorTranformRange[1] = AZ::GetMax(colorTransformRange[0], colorTransformRange[1]);
+            m_updateDrawData = true;
+        }
+
         void ImageAttachmentPreviewPass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph)
         {
             // add attachments to the scope
             // input attachment
-            frameGraph.UseAttachment(RHI::ImageScopeAttachmentDescriptor{ m_imageAttachmentId }, RHI::ScopeAttachmentAccess::Read, RHI::ScopeAttachmentUsage::Shader);
+            RHI::FrameGraphAttachmentInterface attachmentDatabase = frameGraph.GetAttachmentDatabase();
+            RHI::ImageDescriptor imageDesc = attachmentDatabase.GetImageDescriptor(m_imageAttachmentId);
+            // only preview mip 0 and array 0
+            RHI::ImageViewDescriptor imageViewDesc = RHI::ImageViewDescriptor::Create(
+                RHI::Format::Unknown, // no overwrite
+                0,  //mipSliceMin
+                0,  //mipSliceMax
+                0,  //arraySliceMin
+                0   //arraySliceMax
+            );
+
+            // If the format contains depth, set m_aspectFlags to depth, otherwise set it to color
+            imageViewDesc.m_aspectFlags = RHI::CheckBitsAny(RHI::GetImageAspectFlags(imageDesc.m_format), RHI::ImageAspectFlags::Depth) ? 
+                RHI::ImageAspectFlags::Depth : RHI::ImageAspectFlags::Color;
+
+            auto scopeAttachmentDesc = RHI::ImageScopeAttachmentDescriptor{ m_imageAttachmentId, imageViewDesc};
+            frameGraph.UseAttachment(scopeAttachmentDesc, RHI::ScopeAttachmentAccess::Read, RHI::ScopeAttachmentUsage::Shader);
 
             // output attachment
             frameGraph.UseColorAttachment(RHI::ImageScopeAttachmentDescriptor{ m_outputColorAttachment->GetAttachmentId() });
-            frameGraph.SetEstimatedItemCount(1);
+            frameGraph.SetEstimatedItemCount(aznumeric_cast<uint32_t>(m_imageTypePreviewInfo.size()));
         }
 
         void ImageAttachmentPreviewPass::CompileResources(const RHI::FrameGraphCompileContext& context)
@@ -401,9 +455,9 @@ namespace AZ
                         auto& previewInfo = m_imageTypePreviewInfo[typeIndex];
                         m_passSrg->SetShaderVariantKeyFallbackValue(previewInfo.m_shaderVariantKeyFallback);
                         m_passSrg->SetImageView(previewInfo.m_imageInput, inputImageView, 0);
+                        m_passSrg->SetConstant(m_colorRangeMinMaxInput, m_attachmentColorTranformRange);
                         m_passSrgChanged = true;
                         previewInfo.m_imageCount = 1;
-                
                     }
                     else
                     {
@@ -482,10 +536,12 @@ namespace AZ
             commandList->SetShaderResourceGroupForDraw(*m_passSrg->GetRHIShaderResourceGroup());
 
             // submit draw call
-            for (const auto& previewInfo : m_imageTypePreviewInfo)
+            for (uint32_t index = context.GetSubmitRange().m_startIndex; index < context.GetSubmitRange().m_endIndex; ++index)
             {
+                const ImageTypePreviewInfo& previewInfo = m_imageTypePreviewInfo[index];
                 if (previewInfo.m_imageCount > 0)
                 {
+                    previewInfo.m_item.m_submitIndex = index;
                     commandList->Submit(previewInfo.m_item);
                 }
             }

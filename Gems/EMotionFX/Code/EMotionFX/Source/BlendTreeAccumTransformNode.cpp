@@ -188,7 +188,7 @@ namespace EMotionFX
             }
 
             const AZ::Quaternion targetRot = MCore::CreateFromAxisAndAngle(axis, MCore::Math::DegreesToRadians(360.0f * (inputAmount - 0.5f) * invertFactor));
-            AZ::Quaternion deltaRot = MCore::LinearInterpolate<AZ::Quaternion>(AZ::Quaternion::CreateIdentity(), targetRot, uniqueData->m_deltaTime * factor);
+            AZ::Quaternion deltaRot = AZ::Quaternion::CreateIdentity().Lerp(targetRot, uniqueData->m_deltaTime * factor);
             deltaRot.Normalize();
             uniqueData->m_additiveTransform.m_rotation = uniqueData->m_additiveTransform.m_rotation * deltaRot;
             outputTransform.m_rotation = (inputTransform.m_rotation * uniqueData->m_additiveTransform.m_rotation);
@@ -225,7 +225,7 @@ namespace EMotionFX
             }
 
             axis *= (inputAmount - 0.5f) * invertFactor;
-            uniqueData->m_additiveTransform.m_position += MCore::LinearInterpolate<AZ::Vector3>(AZ::Vector3::CreateZero(), axis, uniqueData->m_deltaTime * factor);
+            uniqueData->m_additiveTransform.m_position += AZ::Vector3::CreateZero().Lerp(axis, uniqueData->m_deltaTime * factor);
             outputTransform.m_position = inputTransform.m_position + uniqueData->m_additiveTransform.m_position;
         }
 
@@ -265,7 +265,7 @@ namespace EMotionFX
                 }
 
                 axis *= (inputAmount - 0.5f) * invertFactor;
-                uniqueData->m_additiveTransform.m_scale += MCore::LinearInterpolate<AZ::Vector3>(AZ::Vector3::CreateZero(), axis, uniqueData->m_deltaTime * factor);
+                uniqueData->m_additiveTransform.m_scale += AZ::Vector3::CreateZero().Lerp(axis, uniqueData->m_deltaTime * factor);
                 outputTransform.m_scale = inputTransform.m_scale + uniqueData->m_additiveTransform.m_scale;
             }
         )

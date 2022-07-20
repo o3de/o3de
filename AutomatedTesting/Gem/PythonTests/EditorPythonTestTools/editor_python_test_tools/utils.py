@@ -31,8 +31,6 @@ class TestHelper:
     @staticmethod
     def init_idle():
         general.idle_enable(True)
-        # JIRA: SPEC-2880
-        # general.idle_wait_frames(1)
 
     @staticmethod
     def create_level(level_name: str) -> bool:
@@ -67,15 +65,25 @@ class TestHelper:
         return result == 0
 
     @staticmethod
-    def open_level(directory : str, level : str):
+    def open_level(directory : str, level : str, no_prompt: bool = True):
         # type: (str, str) -> None
         """
         :param level: the name of the level folder in AutomatedTesting\\Physics\\
 
         :return: None
         """
+        # Make sure we are not in game mode
+        if general.is_in_game_mode():
+            general.exit_game_mode()
+            TestHelper.wait_for_condition(lambda : not general.is_in_game_mode(), 1.0)
+            assert not general.is_in_game_mode(), "Editor was in gamemode when opening the level and was unable to exit from it"
+
         Report.info("Open level {}/{}".format(directory, level))
-        success = general.open_level_no_prompt(os.path.join(directory, level))
+        if no_prompt:
+            success = general.open_level_no_prompt(os.path.join(directory, level))
+        else:
+            success = general.open_level(os.path.join(directory, level))
+
         if not success:
             open_level_name = general.get_current_level_name()
             if open_level_name == level:
@@ -144,16 +152,13 @@ class TestHelper:
         Report.critical_result(("Unexpected line not found: " + line, "Unexpected line found: " + line), not TestHelper.find_line(window, line, print_infos))
 
     @staticmethod
-    def multiplayer_enter_game_mode(msgtuple_success_fail: Tuple[str, str], sv_default_player_spawn_asset: str) -> None:
+    def multiplayer_enter_game_mode(msgtuple_success_fail: Tuple[str, str]) -> None:
         """
         :param msgtuple_success_fail: The tuple with the expected/unexpected messages for entering game mode.
-        :param sv_default_player_spawn_asset: The path to the network player prefab that will be automatically spawned upon entering gamemode.  The engine default is "prefabs/player.network.spawnable" 
 
         :return: None
         """
         Report.info("Entering game mode")
-        if sv_default_player_spawn_asset :
-            general.set_cvar("sv_defaultPlayerSpawnAsset", sv_default_player_spawn_asset)
 
         with Tracer() as section_tracer:
             # enter game-mode. 
@@ -166,15 +171,13 @@ class TestHelper:
             # make sure the server launcher is running
             waiter.wait_for(lambda: process_utils.process_exists("AutomatedTesting.ServerLauncher", ignore_extensions=True), timeout=5.0, exc=AssertionError("AutomatedTesting.ServerLauncher has NOT launched!"), interval=1.0)
 
-            TestHelper.succeed_if_log_line_found("EditorServer", "MultiplayerEditorConnection: Editor-server activation has found and connected to the editor.", section_tracer.prints, 15.0)
+            TestHelper.succeed_if_log_line_found("MultiplayerEditor", "Editor has connected to the editor-server.", section_tracer.prints, 120.0)
 
             TestHelper.succeed_if_log_line_found("MultiplayerEditor", "Editor is sending the editor-server the level data packet.", section_tracer.prints, 5.0)
 
-            TestHelper.succeed_if_log_line_found("EditorServer", "Logger: Editor Server completed receiving the editor's level assets, responding to Editor...", section_tracer.prints, 5.0)
+            TestHelper.succeed_if_log_line_found("EditorServer", "System: Editor Server completed receiving the editor's level assets, responding to Editor...", section_tracer.prints, 5.0)
 
             TestHelper.succeed_if_log_line_found("MultiplayerEditorConnection", "Editor-server ready. Editor has successfully connected to the editor-server's network simulation.", section_tracer.prints, 5.0)
-
-            TestHelper.fail_if_log_line_found("EditorServer", f"MultiplayerSystemComponent: SpawnDefaultPlayerPrefab failed. Missing sv_defaultPlayerSpawnAsset at path '{sv_default_player_spawn_asset.lower()}'.", section_tracer.prints, 0.5)
 
         TestHelper.wait_for_condition(lambda : multiplayer.PythonEditorFuncs_is_in_game_mode(), 5.0)
         Report.critical_result(msgtuple_success_fail, multiplayer.PythonEditorFuncs_is_in_game_mode())
@@ -205,10 +208,8 @@ class TestHelper:
         raises FailFast
         :return: None
         """
-        Report.info("Failing fast. Raising an exception and shutting down the editor.")
         if message:
             Report.info("Fail fast message: {}".format(message))
-        TestHelper.close_editor()
         raise FailFast()
 
     @staticmethod

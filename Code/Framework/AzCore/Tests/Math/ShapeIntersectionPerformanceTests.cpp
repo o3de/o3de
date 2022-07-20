@@ -80,7 +80,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathShapeIntersection, ContainsFrustumPoint)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& testData : m_testDataArray)
             {
@@ -103,7 +103,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathShapeIntersection, OverlapsFrustumSphere)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& testData : m_testDataArray)
             {
@@ -120,7 +120,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathShapeIntersection, ContainsFrustumSphere)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& testData : m_testDataArray)
             {
@@ -137,7 +137,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathShapeIntersection, OverlapsFrustumAabb)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& testData : m_testDataArray)
             {
@@ -154,7 +154,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathShapeIntersection, ContainsFrustumAabb)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& testData : m_testDataArray)
             {

@@ -36,6 +36,10 @@ namespace AZ
             //! Initializes the resource group and associates it with the pool. The resource
             //! group must be updated on this pool.
             ResultCode InitGroup(ShaderResourceGroup& srg);
+            
+            //! Compile Shader Resource Group with the associated ShaderResourceGroupData
+            ResultCode CompileGroup(ShaderResourceGroup& shaderResourceGroup,
+                                    const ShaderResourceGroupData& shaderResourceGroupData);
 
             //! Returns the descriptor passed at initialization time.
             const ShaderResourceGroupPoolDescriptor& GetDescriptor() const override;
@@ -80,6 +84,10 @@ namespace AZ
             // ResourcePool overrides
             void ShutdownInternal() override;
             void ShutdownResourceInternal(Resource& resource) override;
+            void ComputeFragmentation() const override
+            {
+                // Fragmentation for SRG descriptors not currently measured
+            }
             //////////////////////////////////////////////////////////////////////////
 
         private:
@@ -100,7 +108,24 @@ namespace AZ
 
             // Calculate diffs for updating the resource registry.
             void CalculateGroupDataDiff(ShaderResourceGroup& shaderResourceGroup, const ShaderResourceGroupData& groupData);
-          
+
+            // Calculate the hash for all the views passed in
+            template<typename T>
+            HashValue64 GetViewHash(AZStd::span<const RHI::ConstPtr<T>> views);
+
+            // Modify the m_rhiUpdateMask of a Srg if a view was modified in the current frame. This
+            // will ensure that the view will be compiled by the back end
+            template<typename T>
+            void UpdateMaskBasedOnViewHash(
+                ShaderResourceGroup& shaderResourceGroup,
+                Name entryName,
+                AZStd::span<const RHI::ConstPtr<T>> views,
+                ShaderResourceGroupData::ResourceType resourceType);
+
+            // Check all the resource types in order to ensure none of the views were invalidated or modified
+            void ResetUpdateMaskForModifiedViews(
+                ShaderResourceGroup& shaderResourceGroup, const ShaderResourceGroupData& shaderResourceGroupData);
+
             //////////////////////////////////////////////////////////////////////////
             // Platform API
 

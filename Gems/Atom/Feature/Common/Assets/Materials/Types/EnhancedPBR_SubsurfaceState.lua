@@ -11,12 +11,12 @@
 
 function GetMaterialPropertyDependencies()
     return {
-        "subsurfaceScattering.enableSubsurfaceScattering", 
-        "subsurfaceScattering.influenceMap", 
-        "subsurfaceScattering.useInfluenceMap", 
-        "subsurfaceScattering.transmissionMode", 
-        "subsurfaceScattering.thicknessMap", 
-        "subsurfaceScattering.useThicknessMap", 
+        "enableSubsurfaceScattering", 
+        "influenceMap", 
+        "useInfluenceMap", 
+        "transmissionMode", 
+        "thicknessMap", 
+        "useThicknessMap", 
         }
 end
 
@@ -38,10 +38,10 @@ function UpdateUseTextureState(context, subsurfaceScatteringEnabled, textureMapP
 end
 
 function Process(context)
-    local ssEnabled = context:GetMaterialPropertyValue_bool("subsurfaceScattering.enableSubsurfaceScattering")
-    local transmissionEnabled = TransmissionMode_None ~= context:GetMaterialPropertyValue_enum("subsurfaceScattering.transmissionMode")
-    UpdateUseTextureState(context, ssEnabled, "subsurfaceScattering.influenceMap", "subsurfaceScattering.useInfluenceMap", "o_subsurfaceScattering_useTexture")
-    UpdateUseTextureState(context, transmissionEnabled, "subsurfaceScattering.thicknessMap", "subsurfaceScattering.useThicknessMap", "o_transmission_useTexture")
+    local ssEnabled = context:GetMaterialPropertyValue_bool("enableSubsurfaceScattering")
+    local transmissionEnabled = TransmissionMode_None ~= context:GetMaterialPropertyValue_enum("transmissionMode")
+    UpdateUseTextureState(context, ssEnabled, "influenceMap", "useInfluenceMap", "o_subsurfaceScattering_useTexture")
+    UpdateUseTextureState(context, transmissionEnabled, "thicknessMap", "useThicknessMap", "o_transmission_useTexture")
 end
 
 function UpdateTextureDependentPropertyVisibility(context, featureEnabled, textureMapPropertyName, useTexturePropertyName, uvPropertyName)
@@ -71,7 +71,7 @@ function ProcessEditor(context)
     
     -- Update visibility for subsurface scattering...
 
-    local ssEnabled = context:GetMaterialPropertyValue_bool("subsurfaceScattering.enableSubsurfaceScattering")
+    local ssEnabled = context:GetMaterialPropertyValue_bool("enableSubsurfaceScattering")
     
     local commonSsVisibility
     if(ssEnabled) then
@@ -80,35 +80,46 @@ function ProcessEditor(context)
         commonSsVisibility = MaterialPropertyVisibility_Hidden
     end
     
-    context:SetMaterialPropertyVisibility("subsurfaceScattering.subsurfaceScatterFactor", commonSsVisibility)
-    context:SetMaterialPropertyVisibility("subsurfaceScattering.influenceMap", commonSsVisibility)
-    context:SetMaterialPropertyVisibility("subsurfaceScattering.useInfluenceMap", commonSsVisibility)
-    context:SetMaterialPropertyVisibility("subsurfaceScattering.influenceMapUv", commonSsVisibility)
-    context:SetMaterialPropertyVisibility("subsurfaceScattering.scatterColor", commonSsVisibility)
-    context:SetMaterialPropertyVisibility("subsurfaceScattering.scatterDistance", commonSsVisibility)
-    context:SetMaterialPropertyVisibility("subsurfaceScattering.quality", commonSsVisibility)
+    context:SetMaterialPropertyVisibility("subsurfaceScatterFactor", commonSsVisibility)
+    context:SetMaterialPropertyVisibility("influenceMap", commonSsVisibility)
+    context:SetMaterialPropertyVisibility("useInfluenceMap", commonSsVisibility)
+    context:SetMaterialPropertyVisibility("influenceMapUv", commonSsVisibility)
+    context:SetMaterialPropertyVisibility("scatterColor", commonSsVisibility)
+    context:SetMaterialPropertyVisibility("scatterDistance", commonSsVisibility)
+    context:SetMaterialPropertyVisibility("quality", commonSsVisibility)
 
-    UpdateTextureDependentPropertyVisibility(context, ssEnabled, "subsurfaceScattering.influenceMap", "subsurfaceScattering.useInfluenceMap", "subsurfaceScattering.influenceMapUv")
+    UpdateTextureDependentPropertyVisibility(context, ssEnabled, "influenceMap", "useInfluenceMap", "influenceMapUv")
     
     -- Update visibility for transmission...
 
-    local transmissionEnabled = TransmissionMode_None ~= context:GetMaterialPropertyValue_enum("subsurfaceScattering.transmissionMode")
-    
-    local commonTrasmissionVisibility
-    if(transmissionEnabled) then
+    local thickTransmissionEnabled = TransmissionMode_ThickObject == context:GetMaterialPropertyValue_enum("transmissionMode")
+    local thinTransmissionEnabled = TransmissionMode_ThinObject == context:GetMaterialPropertyValue_enum("transmissionMode")
+
+    local commonTrasmissionVisibility = MaterialPropertyVisibility_Hidden
+    local thickTransmissionVisibility = MaterialPropertyVisibility_Hidden
+    local thinTransmissionVisibility = MaterialPropertyVisibility_Hidden
+    if (thickTransmissionEnabled or thinTransmissionEnabled) then
         commonTrasmissionVisibility = MaterialPropertyVisibility_Enabled
-    else
-        commonTrasmissionVisibility = MaterialPropertyVisibility_Hidden
+
+            if(thickTransmissionEnabled) then
+                thickTransmissionVisibility = MaterialPropertyVisibility_Enabled
+            else -- thin transmission enabled
+                thinTransmissionVisibility = MaterialPropertyVisibility_Enabled
+            end
     end
     
-    context:SetMaterialPropertyVisibility("subsurfaceScattering.thickness", commonTrasmissionVisibility)
-    context:SetMaterialPropertyVisibility("subsurfaceScattering.thicknessMap", commonTrasmissionVisibility)
-    context:SetMaterialPropertyVisibility("subsurfaceScattering.transmissionTint", commonTrasmissionVisibility)
-    context:SetMaterialPropertyVisibility("subsurfaceScattering.transmissionPower", commonTrasmissionVisibility)
-    context:SetMaterialPropertyVisibility("subsurfaceScattering.transmissionDistortion", commonTrasmissionVisibility)
-    context:SetMaterialPropertyVisibility("subsurfaceScattering.transmissionAttenuation", commonTrasmissionVisibility)
-    context:SetMaterialPropertyVisibility("subsurfaceScattering.transmissionScale", commonTrasmissionVisibility)
+    context:SetMaterialPropertyVisibility("thickness", commonTrasmissionVisibility)
+    context:SetMaterialPropertyVisibility("thicknessMap", commonTrasmissionVisibility)
+    context:SetMaterialPropertyVisibility("transmissionTint", commonTrasmissionVisibility)
+    context:SetMaterialPropertyVisibility("transmissionPower", thickTransmissionVisibility)
+    context:SetMaterialPropertyVisibility("transmissionDistortion", thickTransmissionVisibility)
+    context:SetMaterialPropertyVisibility("transmissionAttenuation", thickTransmissionVisibility)
+    context:SetMaterialPropertyVisibility("shrinkFactor", thinTransmissionVisibility)
+    context:SetMaterialPropertyVisibility("transmissionNdLBias", thinTransmissionVisibility)
+    context:SetMaterialPropertyVisibility("distanceAttenuation", thinTransmissionVisibility)
+    context:SetMaterialPropertyVisibility("transmissionScale", commonTrasmissionVisibility)
     
-    UpdateTextureDependentPropertyVisibility(context, transmissionEnabled, "subsurfaceScattering.thicknessMap", "subsurfaceScattering.useThicknessMap", "subsurfaceScattering.thicknessMapUv")
+    
+    UpdateTextureDependentPropertyVisibility(context, thickTransmissionEnabled or thinTransmissionEnabled, "thicknessMap", "useThicknessMap", "thicknessMapUv")
 
 end

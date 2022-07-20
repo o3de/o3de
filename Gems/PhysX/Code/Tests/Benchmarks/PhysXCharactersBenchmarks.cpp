@@ -235,7 +235,7 @@ namespace PhysX::Benchmarks
         //setup the frame timer tracker
         AZStd::vector<double> tickTimes;
         tickTimes.reserve(CharacterConstants::GameFramesToSimulate);
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (AZ::u32 i = 0; i < CharacterConstants::GameFramesToSimulate; i++)
             {
@@ -294,7 +294,7 @@ namespace PhysX::Benchmarks
 
         AZStd::vector<double> tickTimes;
         tickTimes.reserve(CharacterConstants::GameFramesToSimulate);
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (AZ::u32 i = 0; i < CharacterConstants::GameFramesToSimulate; i++)
             {
@@ -361,7 +361,7 @@ namespace PhysX::Benchmarks
         //setup the frame timer tracker
         AZStd::vector<double> tickTimes;
         tickTimes.reserve(CharacterConstants::GameFramesToSimulate);
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             //run each simulation part, and change direction each time
             for (AZ::u32 i = 0; i < numDirectionChanges; i++)

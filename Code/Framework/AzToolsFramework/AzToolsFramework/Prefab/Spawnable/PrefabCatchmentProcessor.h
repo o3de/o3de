@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/Serialization/ObjectStream.h>
 #include <AzToolsFramework/Prefab/Spawnable/PrefabProcessor.h>
 
 namespace AZ

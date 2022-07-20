@@ -3,7 +3,6 @@
     "Version": 1,
     "ClassName": "AZ::Render::LightingPreset",
     "ClassData": {
-        "displayName": "Misty Pines",
         "iblDiffuseImageAsset": {
             "assetId": {
                 "guid": "{2DF63061-F85C-5F41-A6DC-0CF52C63B63B}",

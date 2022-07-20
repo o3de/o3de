@@ -44,6 +44,8 @@ def Physics_UndoRedoWorksOnEntityWithPhysComponents():
     """
     import os
     import sys
+
+    from editor_python_test_tools.wait_utils import PrefabWaiter
     from editor_python_test_tools.utils import Report
     from editor_python_test_tools.utils import TestHelper as helper
     from editor_python_test_tools.utils import Tracer
@@ -66,16 +68,19 @@ def Physics_UndoRedoWorksOnEntityWithPhysComponents():
         # 3) Delete entity
         general.select_objects([entity_name])
         general.delete_selected()
+        PrefabWaiter.wait_for_propagation()
         entity_id = general.find_editor_entity(entity_name)
         Report.result(Tests.entity_deleted, not entity_id.IsValid())
 
         # 4) Undo deletion
         general.undo()
+        PrefabWaiter.wait_for_propagation()
         entity_id = general.find_editor_entity(entity_name)
         Report.result(Tests.deletion_undone, entity_id.IsValid())
 
         # 5) Redo deletion
         general.redo()
+        PrefabWaiter.wait_for_propagation()
         entity_id = general.find_editor_entity(entity_name)
         Report.result(Tests.deletion_redone, not entity_id.IsValid())
 

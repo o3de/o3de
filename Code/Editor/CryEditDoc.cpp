@@ -118,7 +118,11 @@ CCryEditDoc::CCryEditDoc()
     GetIEditor()->SetDocument(this);
     CLogFile::WriteLine("Document created");
 
-    MainWindow::instance()->GetActionManager()->RegisterActionHandler(ID_FILE_SAVE_AS, this, &CCryEditDoc::OnFileSaveAs);
+    if (auto* actionManager = MainWindow::instance()->GetActionManager())
+    {
+        actionManager->RegisterActionHandler(ID_FILE_SAVE_AS, this, &CCryEditDoc::OnFileSaveAs);
+    }
+    
     bool isPrefabSystemEnabled = false;
     AzFramework::ApplicationRequests::Bus::BroadcastResult(isPrefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
     if (isPrefabSystemEnabled)
@@ -371,7 +375,7 @@ void CCryEditDoc::Load(TDocMultiArchive& arrXmlAr, const QString& szFilename)
 
         bool usePrefabSystemForLevels = false;
         AzFramework::ApplicationRequests::Bus::BroadcastResult(
-            usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemForLevelsEnabled);
+            usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
 
         if (!usePrefabSystemForLevels)
         {
@@ -636,7 +640,7 @@ bool CCryEditDoc::SaveModified()
 
     bool usePrefabSystemForLevels = false;
     AzFramework::ApplicationRequests::Bus::BroadcastResult(
-        usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemForLevelsEnabled);
+        usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
     if (!usePrefabSystemForLevels)
     {
         QMessageBox saveModifiedMessageBox(AzToolsFramework::GetActiveWindow());
@@ -667,7 +671,7 @@ bool CCryEditDoc::SaveModified()
             return true;
         }
 
-        int prefabSaveSelection = m_prefabIntegrationInterface->ExecuteClosePrefabDialog(rootPrefabTemplateId);
+        int prefabSaveSelection = m_prefabIntegrationInterface->HandleRootPrefabClosure(rootPrefabTemplateId);
 
         // In order to get the accept and reject codes of QDialog and QDialogButtonBox aligned, we do (1-prefabSaveSelection) here.
         // For example, QDialog::Rejected(0) is emitted when dialog is closed. But the int value corresponds to
@@ -699,7 +703,7 @@ void CCryEditDoc::OnFileSaveAs()
             CCryEditApp::instance()->AddToRecentFileList(levelFileDialog.GetFileName());
             bool usePrefabSystemForLevels = false;
             AzFramework::ApplicationRequests::Bus::BroadcastResult(
-                usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemForLevelsEnabled);
+                usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
             if (usePrefabSystemForLevels)
             {
                 AzToolsFramework::Prefab::TemplateId rootPrefabTemplateId =
@@ -728,7 +732,7 @@ bool CCryEditDoc::BeforeOpenDocument(const QString& lpszPathName, TOpenDocContex
 
     bool usePrefabSystemForLevels = false;
     AzFramework::ApplicationRequests::Bus::BroadcastResult(
-        usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemForLevelsEnabled);
+        usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
 
     if (!usePrefabSystemForLevels)
     {
@@ -990,12 +994,6 @@ bool CCryEditDoc::DoSaveDocument(const QString& filename, TSaveDocContext& conte
     {
         bSaved = false;
         return false;
-    }
-
-    // Save Tag Point locations to file if auto save of tag points disabled
-    if (!gSettings.bAutoSaveTagPoints)
-    {
-        CCryEditApp::instance()->SaveTagLocations();
     }
 
     QString normalizedPath = Path::ToUnixPath(filename);

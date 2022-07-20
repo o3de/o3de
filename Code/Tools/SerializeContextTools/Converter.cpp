@@ -16,6 +16,7 @@
 #include <AzCore/Serialization/Json/JsonSerialization.h>
 #include <AzCore/Settings/SettingsRegistryImpl.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
+#include <AzCore/Settings/SettingsRegistryVisitorUtils.h>
 #include <AzCore/std/containers/unordered_set.h>
 #include <AzCore/Utils/Utils.h>
 #include <Application.h>
@@ -36,7 +37,7 @@ namespace AZ
                 AZ_Error("SerializeContextTools", false, "Command line not available.");
                 return false;
             }
-            
+
             JsonSerializerSettings convertSettings;
             convertSettings.m_keepDefaults = commandLine->HasSwitch("keepdefaults");
             convertSettings.m_registrationContext = application.GetJsonRegistrationContext();
@@ -118,7 +119,7 @@ namespace AZ
                     AZ_Warning("Convert", false, "Failed to load '%s'. File may not contain an object stream.", filePath.c_str());
                     result = false;
                 }
-                
+
                 // If there's only one file, then use the original name instead of the extended name
                 AZ::StringFunc::Path::ReplaceExtension(filePath, extension.c_str());
                 if (documents.size() == 1)
@@ -161,145 +162,6 @@ namespace AZ
                             scratchBuffer.Clear();
                         }
                     }
-                }
-            }
-
-            return result;
-        }
-
-        bool Converter::ConvertApplicationDescriptor(Application& application)
-        {
-            const AZ::CommandLine* commandLine = application.GetAzCommandLine();
-            if (!commandLine)
-            {
-                AZ_Error("SerializeContextTools", false, "Command line not available.");
-                return false;
-            }
-
-            JsonSerializerSettings convertSettings;
-            convertSettings.m_keepDefaults = commandLine->HasSwitch("keepdefaults");
-            convertSettings.m_registrationContext = application.GetJsonRegistrationContext();
-            convertSettings.m_serializeContext = application.GetSerializeContext();
-            if (!convertSettings.m_serializeContext)
-            {
-                AZ_Error("Convert", false, "No serialize context found.");
-                return false;
-            }
-            if (!convertSettings.m_registrationContext)
-            {
-                AZ_Error("Convert", false, "No json registration context found.");
-                return false;
-            }
-            AZStd::string logggingScratchBuffer;
-            SetupLogging(logggingScratchBuffer, convertSettings.m_reporting, *commandLine);
-
-            JsonDeserializerSettings verifySettings;
-            verifySettings.m_registrationContext = application.GetJsonRegistrationContext();
-            verifySettings.m_serializeContext = application.GetSerializeContext();
-            SetupLogging(logggingScratchBuffer, verifySettings.m_reporting, *commandLine);
-
-            bool skipGems = commandLine->HasSwitch("skipgems");
-            bool skipSystem = commandLine->HasSwitch("skipsystem");
-            bool isDryRun = commandLine->HasSwitch("dryrun");
-
-            PathDocumentContainer documents;
-            bool result = true;
-            const AZStd::string& filePath = application.GetConfigFilePath();
-            AZ_Printf("Convert", "Reading '%s' for conversion.\n", filePath.c_str());
-            AZStd::string configurationName;
-            if (!AZ::StringFunc::Path::GetFileName(filePath.c_str(), configurationName) ||
-                configurationName.empty())
-            {
-                AZ_Error("Convert", false, "Unable to extract configuration from '%s'.", filePath.c_str());
-                return false;
-            }
-            // Most folder names start with a capital letter, but most files with lower case. As the configuration name
-            // will be used as a folder, turn the first letter into a capital one.
-            AZStd::to_upper(configurationName.begin(), configurationName.begin() + 1);
-
-            AZ::IO::FixedMaxPath sourceGameFolder;
-            if (auto settingsRegistry = AZ::SettingsRegistry::Get();
-                !settingsRegistry
-                || !settingsRegistry->Get(sourceGameFolder.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectPath))
-            {
-                AZ_Error("Serialize Context Tools", false, "Unable to determine the game root automatically. "
-                    "Make sure a default project has been set or provide a default option on the command line. (See -help for more info.)");
-                return false;
-            }
-            
-            auto callback = 
-                [&result, skipGems, skipSystem, &configurationName, sourceGameFolder, &documents, &convertSettings, &verifySettings]
-                (void* classPtr, const Uuid& classId, SerializeContext* context)
-            {
-                if (classId == azrtti_typeid<AZ::ComponentApplication::Descriptor>())
-                {
-                    if (!skipSystem)
-                    {
-                        result = ConvertSystemSettings(documents, *reinterpret_cast<AZ::ComponentApplication::Descriptor*>(classPtr), 
-                            configurationName, sourceGameFolder) && result;
-                    }
-
-                    // Cleanup the Serialized Element to allow any classes within the element's hierarchy to delete
-                    // memory allocated by the SerializeContext
-                    const AZ::SerializeContext::ClassData* classData = context->FindClassData(classId);
-                    if (classData)
-                    {
-                        classData->m_factory->Destroy(classPtr);
-                    }
-                }
-                else if (classId == azrtti_typeid<Entity>())
-                {
-                    if (!skipSystem)
-                    {
-                        result = ConvertSystemComponents(documents, *reinterpret_cast<Entity*>(classPtr), configurationName,
-                            sourceGameFolder, convertSettings, verifySettings) && result;
-                    }
-                    const AZ::SerializeContext::ClassData* classData = context->FindClassData(classId);
-                    if (classData)
-                    {
-                        classData->m_factory->Destroy(classPtr);
-                    }
-                }
-                else if (classId == azrtti_typeid<ModuleEntity>())
-                {
-                    if (!skipGems)
-                    {
-                        result = ConvertModuleComponents(documents, *reinterpret_cast<ModuleEntity*>(classPtr), configurationName, 
-                            convertSettings, verifySettings) && result;
-                    }
-                    const AZ::SerializeContext::ClassData* classData = context->FindClassData(classId);
-                    if (classData)
-                    {
-                        classData->m_factory->Destroy(classPtr);
-                    }
-                }
-                else
-                {
-                    AZ_Warning("Convert", false, "Unable to process component in Application Descriptor of type '%s'.", 
-                        classId.ToString<AZStd::string>().c_str());
-                    result = false;
-                }
-                return true;
-            };
-            if (!Utilities::InspectSerializedFile(filePath.c_str(), convertSettings.m_serializeContext, callback))
-            {
-                AZ_Warning("Convert", false, "Failed to load '%s'. File may not contain an object stream.", filePath.c_str());
-                result = false;
-            }
-            
-            if (!isDryRun)
-            {
-                AZStd::string jsonDocumentRootPrefix;
-                if (commandLine->HasSwitch("json-prefix"))
-                {
-                    jsonDocumentRootPrefix = commandLine->GetSwitchValue("json-prefix", 0);
-                }
-
-                rapidjson::StringBuffer scratchBuffer;
-                for (auto& pathDocPair : documents)
-                {
-                    result = WriteDocumentToDisk(pathDocPair.first, pathDocPair.second, jsonDocumentRootPrefix, scratchBuffer) && result;
-                    scratchBuffer.Clear();
                 }
             }
 
@@ -440,313 +302,7 @@ namespace AZ
             return result;
         }
 
-        bool Converter::ConvertSystemSettings(PathDocumentContainer& documents, const ComponentApplication::Descriptor& descriptor, 
-            const AZStd::string& configurationName, const AZ::IO::PathView& projectFolder)
-        {
-            AZ::IO::FixedMaxPath memoryFilePath{ projectFolder };
-            memoryFilePath /= "Registry";
-            
-            AZ::IO::FixedMaxPath modulesFilePath = memoryFilePath;
-            AZStd::string configurationNameLower = configurationName;
-            AZStd::to_lower(configurationNameLower.begin(), configurationNameLower.end());
-            modulesFilePath /= AZ::IO::FixedMaxPathString::format("module.%s.setreg", configurationNameLower.c_str());
-            memoryFilePath /= AZ::IO::FixedMaxPathString::format("memory.%s.setreg", configurationNameLower.c_str());
-
-            AZ_Printf("Convert", "  Exporting application descriptor to '%s' and '%s'.\n", memoryFilePath.c_str(), modulesFilePath.c_str());
-            
-            rapidjson::Document modulesDoc;
-            modulesDoc.SetObject();
-            rapidjson::Value moduleList(rapidjson::kArrayType);
-            for (auto& module : descriptor.m_modules)
-            {
-                moduleList.PushBack(rapidjson::StringRef(module.m_dynamicLibraryPath.c_str()), modulesDoc.GetAllocator());
-            }
-            modulesDoc.AddMember(rapidjson::StringRef("Modules"), AZStd::move(moduleList), modulesDoc.GetAllocator());
-
-            struct GemVisitor
-                : public AZ::SettingsRegistryInterface::Visitor
-            {
-                GemVisitor(rapidjson::Value& gemSourcePaths, rapidjson::Document& modulesDoc)
-                    : m_gemSourcePaths{ gemSourcePaths }
-                    , m_modulesDoc{ modulesDoc }
-                {}
-
-                AZ::SettingsRegistryInterface::VisitResponse Traverse([[maybe_unused]] AZStd::string_view path, [[maybe_unused]] AZStd::string_view valueName,
-                    AZ::SettingsRegistryInterface::VisitAction action, [[maybe_unused]] AZ::SettingsRegistryInterface::Type type) override
-                {
-                    if (valueName == "SourcePaths")
-                    {
-                        if (action == AZ::SettingsRegistryInterface::VisitAction::Begin)
-                        {
-                            // Allows merging of the registry folders within the gem source path array
-                            // via the Visit function
-                            m_processingSourcePathKey = true;
-                        }
-                        else if (action == AZ::SettingsRegistryInterface::VisitAction::End)
-                        {
-                            // The end of the gem source path array has been reached
-                            m_processingSourcePathKey = false;
-                        }
-                    }
-
-                    return AZ::SettingsRegistryInterface::VisitResponse::Continue;
-                }
-
-                using AZ::SettingsRegistryInterface::Visitor::Visit;
-                void Visit(AZStd::string_view, [[maybe_unused]] AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, AZStd::string_view value) override
-                {
-                    if (m_processingSourcePathKey)
-                    {
-                        m_gemSourcePaths.PushBack(rapidjson::StringRef(value.data(), value.size()), m_modulesDoc.GetAllocator());
-                    }
-                }
-
-                rapidjson::Value& m_gemSourcePaths;
-                rapidjson::Document& m_modulesDoc;
-                bool m_processingSourcePathKey{};
-            };
-
-            // Visit each gem target "SourcePaths" entry within the settings registry
-            rapidjson::Value gemPathList(rapidjson::kArrayType);
-            GemVisitor visitor{ gemPathList, modulesDoc };
-            const auto gemListKey = AZ::SettingsRegistryInterface::FixedValueString::format("%s/Gems",
-                AZ::SettingsRegistryMergeUtils::OrganizationRootKey);
-            AZ::SettingsRegistryInterface& registry = *AZ::SettingsRegistry::Get();
-            registry.Visit(visitor, gemListKey);
-
-            modulesDoc.AddMember(rapidjson::StringRef("GemFolders"), AZStd::move(gemPathList), modulesDoc.GetAllocator());
-            documents.emplace_back(AZStd::move(modulesFilePath.Native()), AZStd::move(modulesDoc));
-
-            rapidjson::Document memoryDoc;
-            memoryDoc.SetObject();
-            memoryDoc.AddMember(rapidjson::StringRef("useExistingAllocator"),
-                rapidjson::Value(descriptor.m_useExistingAllocator), memoryDoc.GetAllocator());
-            memoryDoc.AddMember(rapidjson::StringRef("grabAllMemory"),
-                rapidjson::Value(descriptor.m_grabAllMemory), memoryDoc.GetAllocator());
-            memoryDoc.AddMember(rapidjson::StringRef("allocationRecords"),
-                rapidjson::Value(descriptor.m_allocationRecords), memoryDoc.GetAllocator());
-            memoryDoc.AddMember(rapidjson::StringRef("allocationRecordsSaveNames"),
-                rapidjson::Value(descriptor.m_allocationRecordsSaveNames), memoryDoc.GetAllocator());
-            memoryDoc.AddMember(rapidjson::StringRef("allocationRecordsAttemptDecodeImmediately"),
-                rapidjson::Value(descriptor.m_allocationRecordsAttemptDecodeImmediately), memoryDoc.GetAllocator());
-            memoryDoc.AddMember(rapidjson::StringRef("recordingMode"),
-                rapidjson::Value(descriptor.m_recordingMode), memoryDoc.GetAllocator());
-            memoryDoc.AddMember(rapidjson::StringRef("stackRecordLevels"),
-                rapidjson::Value(descriptor.m_stackRecordLevels), memoryDoc.GetAllocator());
-            memoryDoc.AddMember(rapidjson::StringRef("autoIntegrityCheck"),
-                rapidjson::Value(descriptor.m_autoIntegrityCheck), memoryDoc.GetAllocator());
-            memoryDoc.AddMember(rapidjson::StringRef("markUnallocatedMemory"),
-                rapidjson::Value(descriptor.m_markUnallocatedMemory), memoryDoc.GetAllocator());
-            memoryDoc.AddMember(rapidjson::StringRef("doNotUsePools"),
-                rapidjson::Value(descriptor.m_doNotUsePools), memoryDoc.GetAllocator());
-            memoryDoc.AddMember(rapidjson::StringRef("enableScriptReflection"),
-                rapidjson::Value(descriptor.m_enableScriptReflection), memoryDoc.GetAllocator());
-            memoryDoc.AddMember(rapidjson::StringRef("pageSize"),
-                rapidjson::Value(descriptor.m_pageSize), memoryDoc.GetAllocator());
-            memoryDoc.AddMember(rapidjson::StringRef("poolPageSize"),
-                rapidjson::Value(descriptor.m_poolPageSize), memoryDoc.GetAllocator());
-            memoryDoc.AddMember(rapidjson::StringRef("blockAlignment"),
-                rapidjson::Value(descriptor.m_memoryBlockAlignment), memoryDoc.GetAllocator());
-            memoryDoc.AddMember(rapidjson::StringRef("blockSize"),
-                rapidjson::Value(descriptor.m_memoryBlocksByteSize), memoryDoc.GetAllocator());
-            memoryDoc.AddMember(rapidjson::StringRef("reservedOS"),
-                rapidjson::Value(descriptor.m_reservedOS), memoryDoc.GetAllocator());
-            memoryDoc.AddMember(rapidjson::StringRef("reservedDebug"),
-                rapidjson::Value(descriptor.m_reservedDebug), memoryDoc.GetAllocator());
-            documents.emplace_back(AZStd::move(memoryFilePath.Native()), AZStd::move(memoryDoc));
-            
-            return true;
-        }
-
-        bool Converter::ConvertSystemComponents(PathDocumentContainer& documents, const Entity& entity, const AZStd::string& configurationName, 
-            const AZ::IO::PathView& projectFolder, const JsonSerializerSettings& convertSettings, const JsonDeserializerSettings& verifySettings)
-        {
-            using namespace AZ::JsonSerializationResult;
-
-            AZ::IO::FixedMaxPath systemFilePath{ projectFolder };
-            systemFilePath /= "Registry";
-            AZStd::string configurationNameLower = configurationName;
-            AZStd::to_lower(configurationNameLower.begin(), configurationNameLower.end());
-            systemFilePath /= AZ::IO::FixedMaxPathString::format("system.%s.setreg", configurationNameLower.c_str());
-            AZ_Printf("Convert", "  Exporting Entity to '%s'\n", systemFilePath.c_str());
-
-            rapidjson::Document systemSettings;
-            ResultCode result = JsonSerialization::Store(systemSettings.SetObject(), systemSettings.GetAllocator(), entity, convertSettings);
-            if (result.GetProcessing() != Processing::Halted)
-            {
-                if (!VerifyConvertedData(systemSettings, &entity, azrtti_typeid(entity), verifySettings))
-                {
-                    // Errors will already be reported by VerifyConvertedData.
-                    return false;
-                }
-
-                if (result.GetProcessing() != Processing::Halted)
-                {
-                    if (result.GetOutcome() == Outcomes::DefaultsUsed)
-                    {
-                        AZ_Printf("Convert", "  System settings not exported as only default values were found.\n");
-                    }
-                    else
-                    {
-                        documents.emplace_back(AZStd::move(systemFilePath.Native()), AZStd::move(systemSettings));
-                    }
-                }
-                else
-                {
-                    AZ_Printf("Convert", "  System settings not exported.\n");
-                }
-                return true;
-            }
-            else
-            {
-                // Other errors will already have been reported by the JsonSerialierManager.
-                return false;
-            }
-        }
-
-        bool Converter::ConvertModuleComponents(PathDocumentContainer& documents, const ModuleEntity& entity, 
-            const AZStd::string& configurationName, const JsonSerializerSettings& convertSettings, const JsonDeserializerSettings& verifySettings)
-        {
-            using namespace AZ::JsonSerializationResult;
-
-            AZStd::fixed_string<128> gemName;
-            AZStd::vector<AZ::IO::FixedMaxPath> gemModuleSourcePaths;
-            AZ::ModuleManagerRequestBus::Broadcast([&gemModuleSourcePaths, &gemName, gemModuleClassId = entity.m_moduleClassId](AZ::ModuleManagerRequests* request)
-            {
-                request->EnumerateModules([&gemModuleSourcePaths, &gemName, &gemModuleClassId](const AZ::ModuleData& moduleData) -> bool
-                {
-                    AZ::Module* moduleInst = moduleData.GetModule();
-                    if (moduleInst && AZ::RttiTypeId(*moduleInst) == gemModuleClassId)
-                    {
-                        struct GemBuildSystemVisitor
-                            : AZ::SettingsRegistryInterface::Visitor
-                        {
-                            GemBuildSystemVisitor(AZStd::string_view moduleFilename, AZStd::vector<AZ::IO::FixedMaxPath>& gemSourcePaths)
-                                : m_gemModuleFilename(moduleFilename)
-                                , m_gemSourcePaths(gemSourcePaths)
-                            {}
-
-                            AZ::SettingsRegistryInterface::VisitResponse Traverse([[maybe_unused]] AZStd::string_view path, AZStd::string_view valueName,
-                                AZ::SettingsRegistryInterface::VisitAction action, AZ::SettingsRegistryInterface::Type) override
-                            {
-                                if (m_gemSourcePathStored)
-                                {
-                                    return AZ::SettingsRegistryInterface::VisitResponse::Done;
-                                }
-
-                                // Store off the name of the Gem target when it is parsed underneath the /Amazon/Gems JSON pointer path
-                                // The names of gems are keys on the /Amazon/Gems JSON object which is at a depth of 1
-                                if (m_keyDepthIndex == 1)
-                                {
-                                    m_gemName = valueName;
-                                }
-
-                                if (action == SettingsRegistryInterface::VisitAction::Begin)
-                                {
-                                    ++m_keyDepthIndex;
-                                }
-                                else if (action == SettingsRegistryInterface::VisitAction::End)
-                                {
-                                    --m_keyDepthIndex;
-                                }
-
-                                return AZ::SettingsRegistryInterface::VisitResponse::Continue;
-                            }
-
-                            using AZ::SettingsRegistryInterface::Visitor::Visit;
-                            void Visit(AZStd::string_view path, AZStd::string_view valueName, [[maybe_unused]] AZ::SettingsRegistryInterface::Type type,
-                                AZStd::string_view value) override
-                            {
-                                if (valueName == "Module" && m_gemModuleFilename.find(value) != AZStd::string_view::npos)
-                                {
-                                    m_moduleFilenameMatches = true;
-                                }
-                                else if (m_moduleFilenameMatches && path.find("SourcePaths") != AZStd::string_view::npos)
-                                {
-                                    m_gemSourcePaths.emplace_back(value);
-                                    m_gemSourcePathStored = true;
-                                    m_moduleFilenameMatches = false;
-                                }
-                            }
-                            AZStd::string_view m_gemModuleFilename;
-                            AZStd::vector<AZ::IO::FixedMaxPath>& m_gemSourcePaths;
-                            AZStd::fixed_string<128> m_gemName;
-                            bool m_moduleFilenameMatches{};
-                            bool m_gemSourcePathStored{};
-                            int32_t m_keyDepthIndex{};
-                        };
-
-                        GemBuildSystemVisitor visitor{ AZStd::string_view{moduleData.GetDynamicModuleHandle()->GetFilename()}, gemModuleSourcePaths };
-                        const auto gemListKey = AZ::SettingsRegistryInterface::FixedValueString::format("%s/Gems",
-                            AZ::SettingsRegistryMergeUtils::OrganizationRootKey);
-                        AZ::SettingsRegistry::Get()->Visit(visitor, gemListKey);
-                        gemName = visitor.m_gemName;
-                    }
-                    return true;
-                });
-            });
-
-            if (gemModuleSourcePaths.empty())
-            {
-                AZ_Warning("Convert", false, "Unable to find a gem folder to write output registry for module entity '%s'.", entity.GetName().c_str());
-                return false;
-            }
-
-            AZ::SettingsRegistryInterface* settingsRegistry = AZ::SettingsRegistry::Get();
-
-            AZ::IO::FixedMaxPath registryPath;
-            if (!settingsRegistry->Get(registryPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder))
-            {
-                AZ_Warning("Convert", false, "Unable To find Engine Root Path at key '%s' in the Settings Registry",
-                    AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
-            }
-            registryPath /= gemModuleSourcePaths.front();
-            registryPath /= "Registry";
-            AZStd::string configurationNameLower = configurationName;
-            AZStd::to_lower(configurationNameLower.begin(), configurationNameLower.end());
-            registryPath /= AZ::IO::FixedMaxPathString::format("gem.%s.setreg", configurationNameLower.c_str());
-            AZ_Printf("Convert", "  Exporting ModuleEntity to '%s'\n", registryPath.c_str());
-
-            rapidjson::Document moduleSettings;
-            moduleSettings.SetObject().AddMember(rapidjson::Value(gemName.c_str(),
-                aznumeric_cast<rapidjson::SizeType>(gemName.size()), moduleSettings.GetAllocator()),
-                rapidjson::Value(rapidjson::kObjectType).Move(), moduleSettings.GetAllocator());
-            rapidjson::Value& moduleSettingsValue = moduleSettings[gemName.c_str()];
-            ResultCode result = JsonSerialization::Store(moduleSettingsValue, moduleSettings.GetAllocator(), entity, convertSettings);
-            if (result.GetProcessing() != Processing::Halted)
-            {
-                if (!VerifyConvertedData(moduleSettingsValue, &entity, azrtti_typeid(entity), verifySettings))
-                {
-                    // Errors will already be reported by VerifyConvertedData.
-                    return false;
-                }
-
-                if (result.GetProcessing() != Processing::Halted)
-                {
-                    if (result.GetOutcome() == Outcomes::DefaultsUsed)
-                    {
-                        AZ_Printf("Convert", "  Gem settings not exported as only default values were found.\n");
-                    }
-                    else
-                    {
-                        // Add Converted module settings in a JSON pointer path underneath the Gem Name
-                        documents.emplace_back(AZStd::move(registryPath.Native()), AZStd::move(moduleSettings));
-                    }
-                }
-                else
-                {
-                    AZ_Printf("Convert", "  Gem settings not exported.\n");
-                }
-                return true;
-            }
-            else
-            {
-                // Other errors will already have been reported by the JsonSerialization.
-                return false;
-            }
-        }
-
-        bool Converter::VerifyConvertedData(rapidjson::Value& convertedData, const void* original, const Uuid& originalType, 
+        bool Converter::VerifyConvertedData(rapidjson::Value& convertedData, const void* original, const Uuid& originalType,
             const JsonDeserializerSettings& settings)
         {
             using namespace AZ::JsonSerializationResult;
@@ -779,7 +335,7 @@ namespace AZ
                     originalType.ToString<AZStd::string>().c_str());
                 return false;
             }
-            
+
             bool result = false;
             if (data->m_serializer)
             {
@@ -795,8 +351,8 @@ namespace AZ
                 AZ::IO::ByteContainerStream<decltype(loadedData)> loadedStream(&loadedData);
                 AZ::Utils::SaveObjectToStream(loadedStream, AZ::ObjectStream::ST_BINARY,
                     objectPtr, originalType);
-                
-                result = 
+
+                result =
                     (originalData.size() == loadedData.size()) &&
                     (memcmp(originalData.data(), loadedData.data(), originalData.size()) == 0);
             }
@@ -891,7 +447,7 @@ namespace AZ
             scratchBuffer.append(".\n");
             AZ_Printf("SerializeContextTools", "%s", scratchBuffer.c_str());
             scratchBuffer.clear();
-            
+
             return result;
         }
 

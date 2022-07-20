@@ -68,7 +68,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathQuaternion, SplatFloatConstruction)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& quatData : m_quatDataArray)
             {
@@ -80,7 +80,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathQuaternion, NonNormalized4FloatsConstruction)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& quatData : m_quatDataArray)
             {
@@ -92,7 +92,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathQuaternion, CreateFromIdentity)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for ([[maybe_unused]] auto& quatData : m_quatDataArray)
             {
@@ -104,7 +104,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathQuaternion, CreateZero)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for ([[maybe_unused]] auto& quatData : m_quatDataArray)
             {
@@ -116,7 +116,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathQuaternion, CreateRotationX)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& quatData : m_quatDataArray)
             {
@@ -128,7 +128,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathQuaternion, CreateRotationY)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& quatData : m_quatDataArray)
             {
@@ -140,7 +140,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathQuaternion, CreateRotationZ)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& quatData : m_quatDataArray)
             {
@@ -155,7 +155,7 @@ namespace Benchmark
         const AZ::Vector3 vec1 = AZ::Vector3(1.0f, 2.0f, 3.0f).GetNormalized();
         const AZ::Vector3 vec2 = AZ::Vector3(-2.0f, 7.0f, -1.0f).GetNormalized();
 
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for ([[maybe_unused]] auto& quatData : m_quatDataArray)
             {
@@ -170,7 +170,7 @@ namespace Benchmark
         const AZ::Vector3 vec1 = AZ::Vector3(1.0f, 2.0f, 3.0f).GetNormalized();
         const AZ::Vector3 vec2 = AZ::Vector3(-1.0f, -2.0f, -3.0f).GetNormalized();
 
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for ([[maybe_unused]] auto& quatData : m_quatDataArray)
             {
@@ -182,7 +182,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathQuaternion, GetX)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& quatData : m_quatDataArray)
             {
@@ -194,7 +194,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathQuaternion, GetY)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& quatData : m_quatDataArray)
             {
@@ -206,7 +206,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathQuaternion, GetZ)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& quatData : m_quatDataArray)
             {
@@ -218,7 +218,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathQuaternion, GetW)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& quatData : m_quatDataArray)
             {
@@ -230,7 +230,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathQuaternion, SetX)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& quatData : m_quatDataArray)
             {
@@ -243,7 +243,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathQuaternion, SetY)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& quatData : m_quatDataArray)
             {
@@ -256,7 +256,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathQuaternion, SetZ)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& quatData : m_quatDataArray)
             {
@@ -269,7 +269,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathQuaternion, SetW)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& quatData : m_quatDataArray)
             {
@@ -282,7 +282,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathQuaternion, SetSplat)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& quatData : m_quatDataArray)
             {
@@ -295,7 +295,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathQuaternion, SetAll)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& quatData : m_quatDataArray)
             {
@@ -310,7 +310,7 @@ namespace Benchmark
     {
         AZ::Vector3 vec(5.0f, 6.0f, 7.0f);
 
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for ([[maybe_unused]] auto& quatData : m_quatDataArray)
             {
@@ -324,7 +324,7 @@ namespace Benchmark
     BENCHMARK_F(BM_MathQuaternion, SetArray)(benchmark::State& state)
     {
         const float quatArray[4] = { 5.0f, 6.0f, 7.0f, 8.0f };
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for ([[maybe_unused]] auto& quatData : m_quatDataArray)
             {
@@ -337,7 +337,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathQuaternion, SetElements)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& quatData : m_quatDataArray)
             {
@@ -353,7 +353,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathQuaternion, GetElement)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& quatData : m_quatDataArray)
             {
@@ -374,7 +374,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathQuaternion, GetConjugate)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& quatData : m_quatDataArray)
             {
@@ -386,7 +386,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathQuaternion, GetInverseFast)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& quatData : m_quatDataArray)
             {
@@ -398,7 +398,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathQuaternion, GetInverseFull)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& quatData : m_quatDataArray)
             {
@@ -410,7 +410,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathQuaternion, Dot)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& quatData : m_quatDataArray)
             {
@@ -422,7 +422,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathQuaternion, GetLength)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& quatData : m_quatDataArray)
             {
@@ -434,7 +434,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathQuaternion, GetLengthEstimate)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& quatData : m_quatDataArray)
             {
@@ -446,7 +446,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathQuaternion, GetLengthReciprocal)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& quatData : m_quatDataArray)
             {
@@ -458,7 +458,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathQuaternion, GetLengthReciprocalEstimate)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& quatData : m_quatDataArray)
             {
@@ -470,7 +470,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathQuaternion, GetNormalized)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& quatData : m_quatDataArray)
             {
@@ -482,7 +482,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathQuaternion, GetNormalizedEstimate)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& quatData : m_quatDataArray)
             {
@@ -494,7 +494,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathQuaternion, NormalizeWithLength)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& quatData : m_quatDataArray)
             {
@@ -506,7 +506,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathQuaternion, NormalizeWithLengthEstimate)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& quatData : m_quatDataArray)
             {
@@ -518,7 +518,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathQuaternion, Lerp)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& quatData : m_quatDataArray)
             {
@@ -530,7 +530,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathQuaternion, NLerp)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& quatData : m_quatDataArray)
             {
@@ -542,7 +542,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathQuaternion, Slerp)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& quatData : m_quatDataArray)
             {
@@ -554,7 +554,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathQuaternion, OperatorEquality)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& quatData : m_quatDataArray)
             {
@@ -566,7 +566,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathQuaternion, OperatorInequality)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& quatData : m_quatDataArray)
             {
@@ -578,7 +578,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathQuaternion, OperatorNegate)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& quatData : m_quatDataArray)
             {
@@ -590,7 +590,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathQuaternion, OperatorSum)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& quatData : m_quatDataArray)
             {
@@ -602,7 +602,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathQuaternion, OperatorSub)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& quatData : m_quatDataArray)
             {
@@ -614,7 +614,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathQuaternion, OperatorMultiply)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& quatData : m_quatDataArray)
             {
@@ -626,7 +626,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathQuaternion, OperatorMultiplyScalar)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& quatData : m_quatDataArray)
             {
@@ -638,7 +638,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathQuaternion, TransformVector)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& quatData : m_quatDataArray)
             {
@@ -653,7 +653,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathQuaternion, IsClose)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& quatData : m_quatDataArray)
             {
@@ -665,7 +665,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathQuaternion, IsIdentity)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& quatData : m_quatDataArray)
             {
@@ -677,7 +677,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathQuaternion, GetEulerDegrees)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& quatData : m_quatDataArray)
             {
@@ -689,7 +689,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathQuaternion, GetEulerRadians)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& quatData : m_quatDataArray)
             {
@@ -701,7 +701,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathQuaternion, SetFromEulerRadians)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& quatData : m_quatDataArray)
             {
@@ -715,7 +715,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathQuaternion, SetFromEulerDegrees)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& quatData : m_quatDataArray)
             {
@@ -729,7 +729,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathQuaternion, ConvertToAxisAngle)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& quatData : m_quatDataArray)
             {
@@ -744,7 +744,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathQuaternion, AggregateMultiply)(::benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             AZ::Vector3 position = AZ::Vector3::CreateZero();
             for (auto& quatData : m_quatDataArray)

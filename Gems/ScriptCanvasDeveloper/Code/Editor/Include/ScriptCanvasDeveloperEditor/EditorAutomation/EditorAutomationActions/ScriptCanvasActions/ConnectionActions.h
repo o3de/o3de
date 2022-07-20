@@ -12,7 +12,7 @@
 
 #include <ScriptCanvasDeveloperEditor/EditorAutomation/EditorAutomationActions/GenericActions.h>
 
-namespace ScriptCanvasDeveloper
+namespace ScriptCanvas::Developer
 {
     /**
         EditorAutomationAction that will couple the two specified nodes together. The ordering of the coupling is decided by the specified connection type from the perspective of the 'nodeToPickUp'

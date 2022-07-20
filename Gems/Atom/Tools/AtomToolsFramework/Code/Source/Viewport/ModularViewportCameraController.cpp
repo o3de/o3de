@@ -18,6 +18,7 @@
 #include <AzFramework/Viewport/ScreenGeometry.h>
 #include <AzFramework/Viewport/ViewportScreen.h>
 #include <AzFramework/Windowing/WindowBus.h>
+#include <AzToolsFramework/Input/QtEventToAzInputMapper.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 
 namespace AtomToolsFramework
@@ -182,6 +183,9 @@ namespace AtomToolsFramework
                 const AZ::Vector3 eulerAngles = AzFramework::EulerAngles(AZ::Matrix3x3::CreateFromTransform(transform));
                 UpdateCameraFromTranslationAndRotation(m_targetCamera, transform.GetTranslation(), eulerAngles);
                 m_targetRoll = eulerAngles.GetY();
+
+                m_camera = m_targetCamera;
+                m_roll = m_targetRoll;
             }
         };
 
@@ -198,13 +202,31 @@ namespace AtomToolsFramework
 
     bool ModularViewportCameraControllerInstance::HandleInputChannelEvent(const AzFramework::ViewportControllerInputEvent& event)
     {
+        const auto findModifierStatesFn = [viewportId = event.m_viewportId]
+        {
+            const auto* inputDevice =
+                AzFramework::InputDeviceRequests::FindInputDevice(AzToolsFramework::GetSyntheticKeyboardDeviceId(viewportId));
+
+            // grab keyboard channel (not important which) and check the modifier state (modifier state is shared for all keyboard channels)
+            if (const auto it = inputDevice->GetInputChannelsById().find(AzFramework::InputDeviceKeyboard::Key::Alphanumeric0);
+                it != inputDevice->GetInputChannelsById().end())
+            {
+                if (auto customData = it->second->GetCustomData<AzFramework::ModifierKeyStates>())
+                {
+                    return *customData;
+                }
+            }
+
+            return AzFramework::ModifierKeyStates();
+        };
+
         if (event.m_priority == m_priorityFn(m_cameraSystem))
         {
             AzFramework::WindowSize windowSize;
             AzFramework::WindowRequestBus::EventResult(
                 windowSize, event.m_windowHandle, &AzFramework::WindowRequestBus::Events::GetClientAreaSize);
 
-            return m_cameraSystem.HandleEvents(AzFramework::BuildInputEvent(event.m_inputChannel, windowSize));
+            return m_cameraSystem.HandleEvents(AzFramework::BuildInputEvent(event.m_inputChannel, findModifierStatesFn(), windowSize));
         }
 
         return false;
@@ -238,7 +260,8 @@ namespace AtomToolsFramework
             m_cameraAnimation.m_time = AZ::GetClamp(
                 m_cameraAnimation.m_time +
                     (event.m_deltaTime.count() / ModularViewportCameraControllerRequests::InterpolateToTransformDuration),
-                0.0f, 1.0f);
+                0.0f,
+                1.0f);
 
             const auto& [transformStart, transformEnd, animationTime] = m_cameraAnimation;
 
@@ -284,14 +307,43 @@ namespace AtomToolsFramework
         m_targetCamera.m_pivot = pivot;
     }
 
+    void ModularViewportCameraControllerInstance::SetCameraPivotAttachedImmediate(const AZ::Vector3& pivot)
+    {
+        m_camera.m_pivot = pivot;
+        m_targetCamera.m_pivot = pivot;
+    }
+
     void ModularViewportCameraControllerInstance::SetCameraPivotDetached(const AZ::Vector3& pivot)
     {
+        AzFramework::MovePivotDetached(m_targetCamera, pivot);
+    }
+
+    void ModularViewportCameraControllerInstance::SetCameraPivotDetachedImmediate(const AZ::Vector3& pivot)
+    {
+        AzFramework::MovePivotDetached(m_camera, pivot);
         AzFramework::MovePivotDetached(m_targetCamera, pivot);
     }
 
     void ModularViewportCameraControllerInstance::SetCameraOffset(const AZ::Vector3& offset)
     {
         m_targetCamera.m_offset = offset;
+    }
+
+    void ModularViewportCameraControllerInstance::SetCameraOffsetImmediate(const AZ::Vector3& offset)
+    {
+        m_camera.m_offset = offset;
+        m_targetCamera.m_offset = offset;
+    }
+
+    bool ModularViewportCameraControllerInstance::AddCameras(const AZStd::vector<AZStd::shared_ptr<AzFramework::CameraInput>>& cameraInputs)
+    {
+        return m_cameraSystem.m_cameras.AddCameras(cameraInputs);
+    }
+
+    bool ModularViewportCameraControllerInstance::RemoveCameras(
+        const AZStd::vector<AZStd::shared_ptr<AzFramework::CameraInput>>& cameraInputs)
+    {
+        return m_cameraSystem.m_cameras.RemoveCameras(cameraInputs);
     }
 
     bool ModularViewportCameraControllerInstance::IsInterpolating() const

@@ -24,14 +24,19 @@ AZ_POP_DISABLE_WARNING
 // warning C4244: 'argument': conversion from 'UINT64' to 'AZ::u32',
 AZ_PUSH_DISABLE_WARNING(4244 4800 4251, "-Wunknown-warning-option")
 #include <QBoxLayout>
-#include <QUrl>
-#include <QDesktopServices>
 #include <QKeyEvent>
 #include <QPushButton>
-
+#include <QToolButton>
 #include <QCheckBox>
 #include <QComboBox>
+#include <QUrl>
+#include <QDesktopServices>
 AZ_POP_DISABLE_WARNING
+
+void InitTexturePropertyEditorResources()
+{
+    Q_INIT_RESOURCE(ImageProcessing);
+}
 
 namespace ImageProcessingAtomEditor
 {
@@ -47,7 +52,14 @@ namespace ImageProcessingAtomEditor
             return;
         }
 
+        InitTexturePropertyEditorResources();
+
         m_ui->setupUi(this);
+
+        m_ui->helpBtn->setToolTip(QString("Visit the Texture Settings documentation on o3de.org."));
+        m_ui->saveBtn->setToolTip(QString("Save settings to a .assetinfo sidecar file. The texture source asset is automatically processed on save."));
+        m_ui->saveBtn->setDefault(true);
+        m_ui->cancelBtn->setToolTip(QString("Close Texture Settings."));
 
         //Initialize all the format string here
         EditorHelper::InitPixelFormatString();
@@ -58,21 +70,18 @@ namespace ImageProcessingAtomEditor
 
         //TexturePresetSelectionWidget will be the widget to select the preset for the texture
         m_presetSelectionWidget.reset(aznew TexturePresetSelectionWidget(m_textureSetting, this));
-        m_ui->mainLayout->layout()->addWidget(m_presetSelectionWidget.data());
+        m_ui->settingsLayout->layout()->addWidget(m_presetSelectionWidget.data());
 
         //ResolutionSettingWidget will be the table section to display mipmap resolution for each platform
         m_resolutionSettingWidget.reset(aznew ResolutionSettingWidget(ResoultionWidgetType::TexturePropety, m_textureSetting, this));
-        m_ui->mainLayout->layout()->addWidget(m_resolutionSettingWidget.data());
+        m_ui->settingsLayout->layout()->addWidget(m_resolutionSettingWidget.data());
 
         //MipmapSettingWidget will be simple ReflectedProperty editor to reflect mipmap settings section
         m_mipmapSettingWidget.reset(aznew MipmapSettingWidget(m_textureSetting, this));
-        m_ui->mainLayout->layout()->addWidget(m_mipmapSettingWidget.data());
+        m_ui->settingsLayout->layout()->addWidget(m_mipmapSettingWidget.data());
 
-        // Disable horizontal scroll
-        m_ui->scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-
+        QObject::connect(m_ui->helpBtn, &QToolButton::clicked, this, &TexturePropertyEditor::OnHelp);
         QObject::connect(m_ui->saveBtn, &QPushButton::clicked, this, &TexturePropertyEditor::OnSave);
-        QObject::connect(m_ui->helpBtn, &QPushButton::clicked, this, &TexturePropertyEditor::OnHelp);
         QObject::connect(m_ui->cancelBtn, &QPushButton::clicked, this, &QDialog::reject);
 
         EditorInternalNotificationBus::Handler::BusConnect();
@@ -105,6 +114,12 @@ namespace ImageProcessingAtomEditor
     void TexturePropertyEditor::OnEditorSettingsChanged([[maybe_unused]] bool needRefresh, const AZStd::string& /*platform*/)
     {
         m_textureSetting.m_modified = true;
+    }
+
+    void TexturePropertyEditor::OnHelp()
+    {
+        QString webLink = tr("https://o3de.org/docs/user-guide/assets/texture-settings/");
+        QDesktopServices::openUrl(QUrl(webLink));
     }
 
     void TexturePropertyEditor::OnSave()
@@ -165,13 +180,6 @@ namespace ImageProcessingAtomEditor
             AZ_Error("Texture Editor", false, "Cannot save texture settings to %s!", outputPath.data());
         }
     }
-    
-    void TexturePropertyEditor::OnHelp()
-    {
-        QString webLink = tr("https://o3de.org/docs/");
-        QDesktopServices::openUrl(QUrl(webLink));
-    }
-
 
     bool TexturePropertyEditor::event(QEvent* event)
     {

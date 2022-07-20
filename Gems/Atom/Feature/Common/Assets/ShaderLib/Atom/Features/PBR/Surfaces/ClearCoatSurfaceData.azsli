@@ -8,6 +8,8 @@
 
 #pragma once
 
+#if ENABLE_CLEAR_COAT
+
 class ClearCoatSurfaceData
 {
     float factor;           //!< clear coat strength factor
@@ -23,3 +25,5 @@ void ClearCoatSurfaceData::InitializeToZero()
     roughness = 0.0f;
     normal = float3(0.0f, 0.0f, 0.0f);
 }
+
+#endif

@@ -14,7 +14,6 @@
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzToolsFramework/API/EditorCameraBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
-#include <AzToolsFramework/Thumbnails/ThumbnailContext.h>
 #include <EditorCommonFeaturesSystemComponent.h>
 #include <SharedPreview/SharedThumbnail.h>
 #include <SkinnedMesh/SkinnedMeshDebugDisplay.h>
@@ -72,6 +71,7 @@ namespace AZ
         void EditorCommonFeaturesSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
         {
             required.push_back(AZ_CRC_CE("ThumbnailerService"));
+            required.push_back(AZ_CRC_CE("PreviewRendererSystem"));
         }
 
         void EditorCommonFeaturesSystemComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
@@ -217,8 +217,8 @@ namespace AZ
             using namespace AzToolsFramework::Thumbnailer;
             using namespace LyIntegration;
 
-            ThumbnailerRequestsBus::Broadcast(
-                &ThumbnailerRequests::RegisterThumbnailProvider, MAKE_TCACHE(SharedThumbnailCache), ThumbnailContext::DefaultContext);
+            ThumbnailerRequestBus::Broadcast(
+                &ThumbnailerRequests::RegisterThumbnailProvider, MAKE_TCACHE(SharedThumbnailCache));
 
             if (!m_thumbnailRenderer)
             {
@@ -236,9 +236,7 @@ namespace AZ
             using namespace AzToolsFramework::Thumbnailer;
             using namespace LyIntegration;
 
-            ThumbnailerRequestsBus::Broadcast(
-                &ThumbnailerRequests::UnregisterThumbnailProvider, SharedThumbnailCache::ProviderName,
-                ThumbnailContext::DefaultContext);
+            ThumbnailerRequestBus::Broadcast(&ThumbnailerRequests::UnregisterThumbnailProvider, SharedThumbnailCache::ProviderName);
 
             m_thumbnailRenderer.reset();
             m_previewerFactory.reset();

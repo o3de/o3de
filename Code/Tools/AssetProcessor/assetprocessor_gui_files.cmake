@@ -23,6 +23,8 @@ set(FILES
     native/ui/AssetTreeModel.cpp
     native/ui/AssetTreeItem.h
     native/ui/AssetTreeItem.cpp
+    native/ui/CacheServerData.h
+    native/ui/CacheServerData.cpp
     native/ui/ConnectionEditDialog.h
     native/ui/ConnectionEditDialog.cpp
     native/ui/GoToButton.h
@@ -30,9 +32,14 @@ set(FILES
     native/ui/GoToButton.ui
     native/ui/JobTreeViewItemDelegate.h
     native/ui/JobTreeViewItemDelegate.cpp
-    native/ui/MainWindow.ui
+    native/ui/MainWindow.h
     native/ui/MainWindow.cpp
     native/ui/MainWindow.ui
+    native/ui/BuilderListModel.h
+    native/ui/BuilderListModel.cpp
+    native/ui/MessageWindow.h
+    native/ui/MessageWindow.cpp
+    native/ui/MessageWindow.ui
     native/ui/ProductAssetDetailsPanel.h
     native/ui/ProductAssetDetailsPanel.cpp
     native/ui/ProductAssetDetailsPanel.ui
@@ -40,6 +47,12 @@ set(FILES
     native/ui/ProductAssetTreeItemData.cpp
     native/ui/ProductAssetTreeModel.h
     native/ui/ProductAssetTreeModel.cpp
+    native/ui/ProductDependencyTreeItemData.h
+    native/ui/ProductDependencyTreeItemData.cpp
+    native/ui/ProductDependencyTreeModel.h
+    native/ui/ProductDependencyTreeModel.cpp
+    native/ui/ProductDependencyTreeDelegate.h
+    native/ui/ProductDependencyTreeDelegate.cpp
     native/ui/SourceAssetDetailsPanel.h
     native/ui/SourceAssetDetailsPanel.cpp
     native/ui/SourceAssetDetailsPanel.ui

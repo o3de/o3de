@@ -10,6 +10,8 @@ set(FILES
     dllmain.cpp
     ComponentEntityEditorPlugin.h
     ComponentEntityEditorPlugin.cpp
+    ContextMenuHandlers.h
+    ContextMenuHandlers.cpp
     SandboxIntegration.h
     SandboxIntegration.cpp
     UI/QComponentEntityEditorMainWindow.h

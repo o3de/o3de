@@ -108,7 +108,7 @@ namespace LUAEditor
         m_settingsDialog = aznew LUAEditorSettingsDialog(this);
 
         actionTabForwards = new QAction(tr("Next Document Tab"), this);
-        actionTabBackwards = new QAction(tr("Prev Document Tab"), this);
+        actionTabBackwards = new QAction(tr("Previous Document Tab"), this);
 
         actionTabForwards->setShortcut(QKeySequence("Ctrl+Tab"));
         connect(actionTabForwards, SIGNAL(triggered(bool)), this, SLOT(OnTabForwards()));
@@ -766,14 +766,6 @@ namespace LUAEditor
         if (view)
         {
             view->UpdateCurrentExecutingLine(-1);
-        }
-
-        // cache the lines count of the source, to check for document changes
-        TrackedLUAViewMap::iterator viewInfoIter = m_dOpenLUAView.find(m_lastFocusedAssetId);
-
-        if (viewInfoIter != m_dOpenLUAView.end())
-        {
-            ExecuteScript(false);
         }
     }
 

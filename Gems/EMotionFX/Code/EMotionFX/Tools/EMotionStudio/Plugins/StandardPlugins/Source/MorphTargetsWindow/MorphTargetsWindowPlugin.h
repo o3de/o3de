@@ -38,18 +38,15 @@ namespace EMStudio
         ~MorphTargetsWindowPlugin();
 
         // overloaded
-        const char* GetCompileDate() const override         { return MCORE_DATE; }
         const char* GetName() const override                { return "Morph Targets"; }
         uint32 GetClassID() const override                  { return MorphTargetsWindowPlugin::CLASS_ID; }
-        const char* GetCreatorName() const override         { return "O3DE"; }
-        float GetVersion() const override                   { return 1.0f;  }
         bool GetIsClosable() const override                 { return true;  }
         bool GetIsFloatable() const override                { return true;  }
         bool GetIsVertical() const override                 { return false; }
 
         // overloaded main init function
         bool Init() override;
-        EMStudioPlugin* Clone() override;
+        EMStudioPlugin* Clone() const override { return new MorphTargetsWindowPlugin(); }
 
         // update the morph targets window based on the current selection
         void ReInit(EMotionFX::ActorInstance* actorInstance, bool forceReInit = false);

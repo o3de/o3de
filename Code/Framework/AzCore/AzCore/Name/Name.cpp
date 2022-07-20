@@ -18,9 +18,68 @@
 
 namespace AZ
 {
-    Name::Name()
+    AZStd::thread::id Name::s_staticNameListThread = 0;
+    Name* Name::s_staticNameBegin = nullptr;
+
+    NameRef::NameRef(Name name)
+        : m_data(AZStd::move(name.m_data))
     {
-        SetEmptyString();
+    }
+
+    NameRef::NameRef(const AZStd::intrusive_ptr<Internal::NameData>& nameData)
+        : m_data(nameData)
+    {
+    }
+
+    NameRef::NameRef(AZStd::intrusive_ptr<Internal::NameData>&& nameData)
+        : m_data(nameData)
+    {
+    }
+
+    NameRef& NameRef::operator=(Name name)
+    {
+        m_data = AZStd::move(name.m_data);
+        return *this;
+    }
+
+    bool NameRef::operator==(const NameRef& other) const
+    {
+        return m_data == other.m_data;
+    }
+
+    bool NameRef::operator!=(const NameRef& other) const
+    {
+        return m_data != other.m_data;
+    }
+
+    bool NameRef::operator==(const Name& other) const
+    {
+        return m_data == other.m_data;
+    }
+
+    bool NameRef::operator!=(const Name& other) const
+    {
+        return m_data != other.m_data;
+    }
+
+    AZStd::string_view NameRef::GetStringView() const
+    {
+        return m_data == nullptr ? "" : m_data->GetName();
+    }
+
+    const char* NameRef::GetCStr() const
+    {
+        return m_data == nullptr ? "" : m_data->GetName().data();
+    }
+
+    Internal::NameData::Hash NameRef::GetHash() const
+    {
+        return m_data == nullptr ? 0 : m_data->GetHash();
+    }
+
+    Name::Name()
+        : m_view("")
+    {
     }
 
     Name::Name(AZStd::string_view name)
@@ -44,39 +103,58 @@ namespace AZ
         *this = rhs;
     }
 
+    Name::Name(NameRef name)
+        : m_data(AZStd::move(name.m_data))
+        , m_hash(name.GetHash())
+        , m_view(name.GetStringView())
+    {
+    }
+
+    Name Name::FromStringLiteral(AZStd::string_view name)
+    {
+        Name literalName;
+        literalName.SetNameLiteral(name);
+        return literalName;
+    }
+
     Name& Name::operator=(const Name& rhs)
     {
-        m_data = rhs.m_data;
-        m_hash = rhs.m_hash;
-        if (!rhs.m_view.empty())
+        // If we're copying a string literal and it's not yet initialized,
+        // we need to flag ourselves as a string literal
+        if (rhs.m_supportsDeferredLoad && rhs.m_data == nullptr)
         {
-            m_view = rhs.m_view;
+            m_hash = rhs.m_hash;
+            m_data = rhs.m_data;
+            SetNameLiteral(rhs.GetStringView());
         }
         else
         {
-            SetEmptyString();
+            m_data = rhs.m_data;
+            m_hash = rhs.m_hash;
+            m_view = rhs.m_view;
         }
         return *this;
     }
 
     Name& Name::operator=(Name&& rhs)
     {
-        if (rhs.m_view.empty())
+        // If we're moving a string literal (generally from FromStringLiteral)
+        // we promote outselves to a string literal so that we respect all deferred initialization
+        // This covers cases like a static Name being created at function scope while the dictionary is
+        // active, when a test then destroys and recreates the name dictionary, meaning the Name needs to be
+        // restored via the deferred initialization logic.
+        if (rhs.m_supportsDeferredLoad)
         {
-            // In this case we can't actually copy the values from rhs
-            // because rhs.m_view points to the address of rhs.m_data.
-            // Instead we just use SetEmptyString() to make our m_view
-            // point to *our* m_data.
-            m_data = nullptr;
-            m_hash = 0;
-            SetEmptyString();
+            m_hash = rhs.m_hash;
+            m_data = rhs.m_data;
+            SetNameLiteral(rhs.m_view);
         }
         else
         {
             m_data = AZStd::move(rhs.m_data);
             m_view = rhs.m_view;
             m_hash = rhs.m_hash;
-            rhs.SetEmptyString();
+            rhs.m_view = "";
         }
 
         return *this;
@@ -93,30 +171,52 @@ namespace AZ
         *this = AZStd::move(rhs);
     }
 
-    void Name::SetEmptyString()
+    Name::~Name()
     {
-        /**
-         * When an AZStd::string_view references an AZStd::string, it sees the null-terminator and assigns m_begin / m_end
-         * to '\0'. This means calling string_view::data() won't return nullptr. This is important in cases where data is fed
-         * to C functions which call strlen.
-         *
-         * In order to make the 'empty' string non-null, the string_view is assigned to the memory location of m_data, which
-         * is always a null pointer when the string is empty. This address is reset any time a move / copy occurs. This is safer
-         * than using a value in the string table of the module, since a module shutdown would de-allocate that memory.
-         */
-
-        AZ_Assert(!m_data.get(), "Data pointer is not null.");
-        m_view = reinterpret_cast<const char*>(&m_data);
-        m_hash = 0;
+        if (m_supportsDeferredLoad)
+        {
+            UnlinkStaticName();
+        }
     }
 
     void Name::SetName(AZStd::string_view name)
     {
         if (!name.empty())
         {
-            AZ_Assert(NameDictionary::IsReady(), "Attempted to initialize Name '%.*s' before the NameDictionary is ready.", AZ_STRING_ARG(name));
+            AZ_Assert(NameDictionary::IsReady(), "Attempted to initialize Name '%.*s' before the NameDictionary is ready.\nIf this name is being constructed from a string literal, consider using AZ::Name::FromStringLiteral instead.", AZ_STRING_ARG(name));
 
             *this = AZStd::move(NameDictionary::Instance().MakeName(name));
+        }
+        else
+        {
+            *this = Name();
+        }
+    }
+
+    void Name::SetNameLiteral(AZStd::string_view name)
+    {
+        if (!name.empty())
+        {
+            if (s_staticNameListThread == 0)
+            {
+                s_staticNameListThread = AZStd::this_thread::get_id();
+            }
+            AZ_Assert(s_staticNameListThread == AZStd::this_thread::get_id(), "Attempted to construct a name literal on a different thread from the first initialized static name, this is unsafe");
+            m_view = name;
+            if (!NameDictionary::IsReady(false))
+            {
+                // Link ourselves into the deferred list if we're not already in there
+                if (!m_supportsDeferredLoad)
+                {
+                    LinkStaticName(&s_staticNameBegin);
+                }
+            }
+            else
+            {
+                NameDictionary::Instance().LoadDeferredName(*this);
+            }
+
+            m_supportsDeferredLoad = true;
         }
         else
         {
@@ -137,6 +237,47 @@ namespace AZ
     bool Name::IsEmpty() const
     {
         return m_view.empty();
+    }
+
+    void Name::LinkStaticName(Name** name)
+    {
+        if ((*name) == nullptr)
+        {
+            m_nextName = m_previousName = nullptr;
+            *name = this;
+        }
+        else
+        {
+            if ((*name)->m_linkedToDictionary)
+            {
+                m_linkedToDictionary = true;
+            }
+            m_nextName = *name;
+            m_previousName = (*name)->m_previousName;
+            (*name)->m_previousName = this;
+            if (m_previousName != nullptr)
+            {
+                m_previousName->m_nextName = this;
+            }
+            *name = this;
+        }
+    }
+
+    void Name::UnlinkStaticName()
+    {
+        if (s_staticNameBegin == this)
+        {
+            s_staticNameBegin = m_nextName;
+        }
+        if (m_nextName != nullptr)
+        {
+            m_nextName->m_previousName = m_previousName;
+        }
+        if (m_previousName != nullptr)
+        {
+            m_previousName->m_nextName = m_nextName;
+        }
+        m_nextName = m_previousName = nullptr;
     }
 
     void Name::ScriptConstructor(Name* thisPtr, ScriptDataContext& dc)
@@ -187,7 +328,7 @@ namespace AZ
                 ->Method("ToString", &Name::GetCStr)
                 ->Method("Set", &Name::SetName)
                 ->Method("IsEmpty", &Name::IsEmpty)
-                ->Method("Equal", &Name::operator==)
+                ->Method("Equal", static_cast<bool(Name::*)(const Name&)const>(&Name::operator==))
                 ->Attribute(AZ::Script::Attributes::Operator, AZ::Script::Attributes::OperatorType::Equal)
                 ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
                 ;

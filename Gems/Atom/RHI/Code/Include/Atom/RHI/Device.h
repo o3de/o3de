@@ -142,7 +142,15 @@ namespace AZ
                 return RHI::ResultCode::Success;
             };
 
+            bool WasDeviceRemoved();
+            void SetDeviceRemoved();
+            
+            // Accessors
+            void SetLastExecutingScope(const AZStd::string_view scopeName);
+            AZStd::string_view GetLastExecutingScope() const;
+
         protected:
+
             DeviceFeatures m_features;
             DeviceLimits m_limits;
             ResourcePoolDatabase m_resourcePoolDatabase;
@@ -171,7 +179,7 @@ namespace AZ
             virtual void ShutdownInternal() = 0;
 
             //! Called when the device is beginning a frame for processing.
-            virtual void BeginFrameInternal() = 0;
+            virtual AZ::RHI::ResultCode BeginFrameInternal() = 0;
 
             //! Called when the device is ending a frame for processing.
             virtual void EndFrameInternal() = 0;
@@ -207,6 +215,12 @@ namespace AZ
             AZStd::array<Format, static_cast<uint32_t>(Format::Count)> m_nearestSupportedFormats;
 
             FormatCapabilitiesList m_formatsCapabilities;
+
+            bool m_wasDeviceRemoved = false;
+
+            // Cache the name of the last executing scope name. Used within AZ_FORCE_CPU_GPU_INSYNC 
+            AZStd::string m_lastExecutingScope;
+
         };
     }
 }

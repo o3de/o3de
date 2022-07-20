@@ -26,6 +26,6 @@ namespace AWSGameLift
         AZStd::string StartMatchmaking(const AWSGameLiftStartMatchmakingRequest& startMatchmakingRequest);
 
         // Validate StartMatchmakingRequest and check required request parameters
-        bool ValidateStartMatchmakingRequest(const AzFramework::StartMatchmakingRequest& startMatchmakingRequest);
+        bool ValidateStartMatchmakingRequest(const Multiplayer::StartMatchmakingRequest& startMatchmakingRequest);
     } // namespace StartMatchmakingActivity
 } // namespace AWSGameLift

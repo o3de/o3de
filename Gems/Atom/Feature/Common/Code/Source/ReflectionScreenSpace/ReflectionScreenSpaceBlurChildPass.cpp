@@ -30,7 +30,7 @@ namespace AZ
         void ReflectionScreenSpaceBlurChildPass::FrameBeginInternal(FramePrepareParams params)
         {
             // get attachment size
-            RPI::PassAttachment* inputAttachment = GetInputOutputBinding(0).m_attachment.get();
+            RPI::PassAttachment* inputAttachment = GetInputOutputBinding(0).GetAttachment().get();
             AZ_Assert(inputAttachment, "ReflectionScreenSpaceBlurChildPass: Input binding has no attachment!");
 
             RHI::Size size = inputAttachment->m_descriptor.m_image.m_size;

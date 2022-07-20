@@ -5,8 +5,7 @@
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
-
-# This will export its "SourcePaths" to the generated "cmake_dependencies.<project>.assetbuilder.setreg"
+# This will export the ReferenceMaterials Buliders module to the generated "cmake_dependencies.<project>.assetbuilder.setreg"
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
-    ly_create_alias(NAME AtomContent_ReferenceMaterials.Builders NAMESPACE Gem)
+    ly_create_alias(NAME ReferenceMaterials.Builders NAMESPACE Gem)
 endif()

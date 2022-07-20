@@ -3,7 +3,6 @@
     "Version": 1,
     "ClassName": "AZ::Render::LightingPreset",
     "ClassData": {
-        "displayName": "Blouberg Sunrise 1",
         "iblDiffuseImageAsset": {
             "assetId": {
                 "guid": "{10853039-DC8A-558A-B27E-4433A6386731}",

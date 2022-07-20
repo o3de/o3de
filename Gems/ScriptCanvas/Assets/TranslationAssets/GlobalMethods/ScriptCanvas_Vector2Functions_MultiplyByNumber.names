@@ -1,0 +1,44 @@
+{
+    "entries": [
+        {
+            "base": "ScriptCanvas_Vector2Functions_MultiplyByNumber",
+            "context": "BehaviorMethod",
+            "variant": "",
+            "details": {
+                "name": "Multiply By Number",
+                "category": "Math/Vector2"
+            },
+            "methods": [
+                {
+                    "base": "ScriptCanvas_Vector2Functions_MultiplyByNumber",
+                    "details": {
+                        "name": "Multiply By Number",
+                        "tooltip": "Returns the vector Source with each element multiplied by Multiplier."
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3D80F623-C85C-4741-90D0-E4E66164E6BF}",
+                            "details": {
+                                "name": "Source"
+                            }
+                        },
+                        {
+                            "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                            "details": {
+                                "name": "Multiplier"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{3D80F623-C85C-4741-90D0-E4E66164E6BF}",
+                            "details": {
+                                "name": "Vector2"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

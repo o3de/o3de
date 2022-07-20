@@ -26,7 +26,7 @@ namespace AzToolsFramework
         m_clickDetector.SetDoubleClickInterval(0.0f);
     }
 
-    void EditorBoxSelect::HandleMouseInteraction(const ViewportInteraction::MouseInteractionEvent& mouseInteraction)
+    bool EditorBoxSelect::HandleMouseInteraction(const ViewportInteraction::MouseInteractionEvent& mouseInteraction)
     {
         AZ_PROFILE_FUNCTION(AzToolsFramework);
 
@@ -77,6 +77,8 @@ namespace AzToolsFramework
         }
 
         m_previousModifiers = mouseInteraction.m_mouseInteraction.m_keyboardModifiers;
+
+        return m_boxSelectRegion.has_value();
     }
 
     void EditorBoxSelect::Display2d(const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay)
@@ -91,15 +93,15 @@ namespace AzToolsFramework
             debugDisplay.SetLineWidth(s_boxSelectLineWidth);
             debugDisplay.SetColor(s_boxSelectColor);
 
-            AZ::Vector2 viewportSize = AzToolsFramework::GetCameraState(viewportInfo.m_viewportId).m_viewportSize;
+            const auto screenSize = AzToolsFramework::GetCameraState(viewportInfo.m_viewportId).m_viewportSize;
+            const auto viewportSize = AzFramework::Vector2FromScreenSize(screenSize);
+            const auto [x, y, width, height] = [boxSelectRegion = m_boxSelectRegion.value()]
+            {
+                return AZStd::tuple{ aznumeric_cast<float>(boxSelectRegion.x()), aznumeric_cast<float>(boxSelectRegion.y()),
+                                     aznumeric_cast<float>(boxSelectRegion.width()), aznumeric_cast<float>(boxSelectRegion.height()) };
+            }();
 
-            debugDisplay.DrawWireQuad2d(
-                AZ::Vector2(aznumeric_cast<float>(m_boxSelectRegion->x()), aznumeric_cast<float>(m_boxSelectRegion->y())) / viewportSize,
-                AZ::Vector2(
-                    aznumeric_cast<float>(m_boxSelectRegion->x()) + aznumeric_cast<float>(m_boxSelectRegion->width()),
-                    aznumeric_cast<float>(m_boxSelectRegion->y()) + aznumeric_cast<float>(m_boxSelectRegion->height())) /
-                    viewportSize,
-                0.f);
+            debugDisplay.DrawWireQuad2d(AZ::Vector2(x, y) / viewportSize, AZ::Vector2(x + width, y + height) / viewportSize, 0.0f);
 
             debugDisplay.DepthTestOn();
 

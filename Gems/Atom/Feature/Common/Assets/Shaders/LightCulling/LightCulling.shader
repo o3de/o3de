@@ -1,10 +1,5 @@
 {
     "Source": "LightCulling.azsl",
-   
-    "CompilerHints":
-    {
-        "DisableOptimizations":false
-    },
     
     "ProgramSettings" :
     {

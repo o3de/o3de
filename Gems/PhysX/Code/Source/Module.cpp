@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/Module/Module.h>
 #include <AzCore/Module/DynamicModuleHandle.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
@@ -32,15 +33,23 @@ namespace PhysX
     {
     public:
         AZ_RTTI(PhysX::Module, "{160C59B1-FA68-4CDC-8562-D1204AB78FC1}", AZ::Module);
+        AZ_CLASS_ALLOCATOR(PhysX::Module, AZ::SystemAllocator, 0)
 
         Module()
             : AZ::Module()
 #if defined(PHYSX_EDITOR)
-            , m_physXSystem(new PhysXEditorSettingsRegistryManager(), PxCooking::GetEditTimeCookingParams())
+            , m_physXSystem(AZStd::make_unique<PhysXEditorSettingsRegistryManager>(), PxCooking::GetEditTimeCookingParams())
 #else
-            , m_physXSystem(new PhysXSettingsRegistryManager(), PxCooking::GetRealTimeCookingParams())
+            , m_physXSystem(AZStd::make_unique<PhysXSettingsRegistryManager>(), PxCooking::GetRealTimeCookingParams())
 #endif
         {
+            // PhysXSystemConfiguration needs to be 16-byte aligned since it contains a SIMD vector4.
+            // The vector4 itself is aligned relative to the module class, but if the module class is
+            // not also aligned, it will crash. This checks makes sure they will be aligned to 16 bytes.
+            static_assert(alignof(PhysX::PhysXSystemConfiguration) == 16);
+            static_assert(alignof(PhysX::PhysXSystem) == 16);
+            static_assert(alignof(PhysX::Module) == 16);
+            
             LoadModules();
 
             AZStd::list<AZ::ComponentDescriptor*> descriptorsToAdd = GetDescriptors();

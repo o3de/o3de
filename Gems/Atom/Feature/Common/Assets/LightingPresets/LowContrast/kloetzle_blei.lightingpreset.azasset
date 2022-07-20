@@ -3,7 +3,6 @@
     "Version": 1,
     "ClassName": "AZ::Render::LightingPreset",
     "ClassData": {
-        "displayName": "Kloetzle Blei",
         "iblDiffuseImageAsset": {
             "assetId": {
                 "guid": "{8C964DCA-0737-5EA1-B333-EF1D2F281431}",

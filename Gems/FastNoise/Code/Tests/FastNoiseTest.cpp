@@ -102,7 +102,7 @@ TEST_F(FastNoiseTest, FastNoise_VerifyGetValueAndGetValuesMatch)
     noiseEntity->Activate();
 
     // Create a gradient sampler and run through a series of points to see if they match expectations.
-    UnitTest::GradientSignalTestHelpers::CompareGetValueAndGetValues(noiseEntity->GetId(), shapeHalfBounds);
+    UnitTest::GradientSignalTestHelpers::CompareGetValueAndGetValues(noiseEntity->GetId(), -shapeHalfBounds, shapeHalfBounds);
 }
 
 // This uses custom test / benchmark hooks so that we can load LmbrCentral and GradientSignal Gems.

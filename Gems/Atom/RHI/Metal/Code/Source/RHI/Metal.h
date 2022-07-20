@@ -54,8 +54,8 @@ namespace AZ
             };
         }
     
-        const uint32_t DefaultConstantBufferPageSize = 2 * 1024 * 1024;
-        const uint32_t DefaultArgumentBufferPageSize = 1 * 1024 * 1024;
+        const uint32_t DefaultConstantBufferPageSize = 4 * 1024 * 1024;
+        const uint32_t DefaultArgumentBufferPageSize = 4 * 1024 * 1024;
     
         const int MaxScissorsAllowed = 16;
     }

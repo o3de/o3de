@@ -865,6 +865,8 @@ bool OutlinerListModel::CanDropMimeDataAssets(const QMimeData* data, Qt::DropAct
     return false;
 }
 
+// There are two paths for generating entities by dragging and dropping from the asset browser.
+// This logic handles dropping them into the outliner. Dropping them in the viewport is handled by AzAssetBrowserRequestHandler::Drop.
 bool OutlinerListModel::DropMimeDataAssets(const QMimeData* data, [[maybe_unused]] Qt::DropAction action, int row, [[maybe_unused]] int column, const QModelIndex& parent)
 {
     using namespace AzToolsFramework;

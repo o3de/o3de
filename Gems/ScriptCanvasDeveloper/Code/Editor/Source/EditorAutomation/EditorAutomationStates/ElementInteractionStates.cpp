@@ -10,7 +10,7 @@
 
 #include <ScriptCanvasDeveloperEditor/EditorAutomation/EditorAutomationStates/ElementInteractionStates.h>
 
-namespace ScriptCanvasDeveloper
+namespace ScriptCanvas::Developer
 {
     ////////////////////////////
     // SelectSceneElementState

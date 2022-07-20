@@ -15,11 +15,15 @@ namespace Platform
     AZ::RHI::PhysicalDeviceList EnumerateDevices();
 }
 
-
 namespace AZ
 {
     namespace Metal
     {
+        id<MTLDevice> PhysicalDevice::GetNativeDevice()
+        {
+            return m_mtlNativeDevice;
+        }
+    
         RHI::PhysicalDeviceList PhysicalDevice::Enumerate()
         {
             return Platform::EnumerateDevices();
@@ -29,15 +33,34 @@ namespace AZ
         {
             if(mtlDevice)
             {
+                m_mtlNativeDevice = mtlDevice;
                 NSString * deviceName = [mtlDevice name];
-                const char * secondName = [ deviceName UTF8String ];
-                m_descriptor.m_description = AZStd::string(secondName);
-                m_descriptor.m_deviceId = [mtlDevice registryID];
+                const char * deviceNameCStr = [ deviceName UTF8String ];
+                m_descriptor.m_description = AZStd::string(deviceNameCStr);
+                m_descriptor.m_deviceId = deviceName.hash; //Used for storing PipelineLibraries
                 
-                //Currently no way of knowing vendor id through metal. Using AMD as a placeholder for now.
-                m_descriptor.m_vendorId = RHI::VendorId::AMD;
+                if(strstr(m_descriptor.m_description.c_str(), ToString(RHI::VendorId::Apple).data()))
+                {
+                    m_descriptor.m_vendorId = RHI::VendorId::Apple;
+                }
+                else if(strstr(m_descriptor.m_description.c_str(), ToString(RHI::VendorId::Intel).data()))
+                {
+                    m_descriptor.m_vendorId = RHI::VendorId::Intel;
+                }
+                else if(strstr(m_descriptor.m_description.c_str(), ToString(RHI::VendorId::nVidia).data()))
+                {
+                    m_descriptor.m_vendorId = RHI::VendorId::nVidia;
+                }
+                else if(strstr(m_descriptor.m_description.c_str(), ToString(RHI::VendorId::AMD).data()))
+                {
+                    m_descriptor.m_vendorId = RHI::VendorId::AMD;
+                }
                 
                 m_descriptor.m_type = Platform::GetPhysicalDeviceType(mtlDevice);
+                
+                NSOperatingSystemVersion version = [[NSProcessInfo processInfo] operatingSystemVersion];
+                AZStd::string concatVer = AZStd::string::format("%li%li%li", version.majorVersion, version.minorVersion, version.patchVersion);
+                m_descriptor.m_driverVersion = AZStd::stoi(concatVer);
             }
         }
 

@@ -10,50 +10,40 @@ Node Type: RootBoneData
 		BasisZ: < 0.000000,  0.000000,  1.000000>
 		Transl: < 0.000000,  0.000000,  0.000000>
 
-Node Name: Cone_1
-Node Path: RootNode.Cone.Cone_1
+Node Name: Cone
+Node Path: RootNode.Cone
 Node Type: MeshData
 	Positions: Count 128. Hash: 7714223793259938211
 	Normals: Count 128. Hash: 2352668179264002707
-	FaceList: Count 62. Hash: 14563017593520122982
+	FaceList: Count 62. Hash: 9996709738915796379
 	FaceMaterialIds: Count 62. Hash: 12234218120113875284
 
-Node Name: Cone_2
-Node Path: RootNode.Cone.Cone_2
-Node Type: BoneData
-	WorldTransform:
-		BasisX: < 100.000000,  0.000000,  0.000000>
-		BasisY: < 0.000000, -0.000016,  100.000000>
-		BasisZ: < 0.000000, -100.000000, -0.000016>
-		Transl: < 0.000000,  0.000000,  0.000000>
-
-Node Name: Cone_1_optimized
-Node Path: RootNode.Cone.Cone_1_optimized
-Node Type: MeshData
-	Positions: Count 128. Hash: 10174710861731544050
-	Normals: Count 128. Hash: 2352668179264002707
-	FaceList: Count 62. Hash: 11332459830831720586
-	FaceMaterialIds: Count 62. Hash: 12234218120113875284
-
-Node Name: Cube_phys_1
-Node Path: RootNode.Cube_phys.Cube_phys_1
+Node Name: Cube_phys
+Node Path: RootNode.Cube_phys
 Node Type: MeshData
 	Positions: Count 24. Hash: 3478903613105670818
 	Normals: Count 24. Hash: 7251512570672401149
 	FaceList: Count 12. Hash: 9888799799190757436
 	FaceMaterialIds: Count 12. Hash: 7110546404675862471
 
-Node Name: Cube_phys_2
-Node Path: RootNode.Cube_phys.Cube_phys_2
-Node Type: BoneData
-	WorldTransform:
-		BasisX: < 100.000000,  0.000000,  0.000000>
-		BasisY: < 0.000000, -0.000016,  100.000000>
-		BasisZ: < 0.000000, -100.000000, -0.000016>
-		Transl: < 0.000000,  0.000000,  0.000000>
+Node Name: Cone_physicstest_optimized
+Node Path: RootNode.Cone_physicstest_optimized
+Node Type: MeshData
+	Positions: Count 128. Hash: 10174710861731544050
+	Normals: Count 128. Hash: 2352668179264002707
+	FaceList: Count 62. Hash: 16809217014760075539
+	FaceMaterialIds: Count 62. Hash: 12234218120113875284
+
+Node Name: Cube_phys_default_physicstest_2F546FB6_1953_511C_975F_FD56DA950528__optimized
+Node Path: RootNode.Cube_phys_default_physicstest_2F546FB6_1953_511C_975F_FD56DA950528__optimized
+Node Type: MeshData
+	Positions: Count 24. Hash: 3478903613105670818
+	Normals: Count 24. Hash: 7251512570672401149
+	FaceList: Count 12. Hash: 9888799799190757436
+	FaceMaterialIds: Count 12. Hash: 7110546404675862471
 
 Node Name: transform
-Node Path: RootNode.Cone.Cone_1.transform
+Node Path: RootNode.Cone.transform
 Node Type: TransformData
 	Matrix:
 		BasisX: < 100.000000,  0.000000,  0.000000>
@@ -61,14 +51,22 @@ Node Type: TransformData
 		BasisZ: < 0.000000, -100.000000, -0.000016>
 		Transl: < 0.000000,  0.000000,  0.000000>
 
+Node Name: custom_properties
+Node Path: RootNode.Cone.custom_properties
+Node Type: CustomPropertyData
+	UserProperties: 
+	IsNull: false
+	DefaultAttributeIndex: 0
+	InheritType: 1
+
 Node Name: UVMap
-Node Path: RootNode.Cone.Cone_1.UVMap
+Node Path: RootNode.Cone.UVMap
 Node Type: MeshVertexUVData
 	UVs: Count 128. Hash: 10171083346831193808
 	UVCustomName: UVMap
 
 Node Name: DefaultMaterial
-Node Path: RootNode.Cone.Cone_1.DefaultMaterial
+Node Path: RootNode.Cone.DefaultMaterial
 Node Type: MaterialData
 	MaterialName: DefaultMaterial
 	UniqueId: 3809502407269006983
@@ -98,20 +96,20 @@ Node Type: MaterialData
 	BaseColorTexture: 
 
 Node Name: TangentSet_0
-Node Path: RootNode.Cone.Cone_1.TangentSet_0
+Node Path: RootNode.Cone.TangentSet_0
 Node Type: MeshVertexTangentData
-	Tangents: Count 128. Hash: 14351734474754285313
+	Tangents: Count 128. Hash: 913385441694195840
 	GenerationMethod: 1
 	SetIndex: 0
 
 Node Name: BitangentSet_0
-Node Path: RootNode.Cone.Cone_1.BitangentSet_0
+Node Path: RootNode.Cone.BitangentSet_0
 Node Type: MeshVertexBitangentData
-	Bitangents: Count 128. Hash: 15997251922861304891
+	Bitangents: Count 128. Hash: 16763868708150748964
 	GenerationMethod: 1
 
 Node Name: transform
-Node Path: RootNode.Cone.Cone_2.transform
+Node Path: RootNode.Cube_phys.transform
 Node Type: TransformData
 	Matrix:
 		BasisX: < 100.000000,  0.000000,  0.000000>
@@ -119,117 +117,22 @@ Node Type: TransformData
 		BasisZ: < 0.000000, -100.000000, -0.000016>
 		Transl: < 0.000000,  0.000000,  0.000000>
 
-Node Name: UVMap
-Node Path: RootNode.Cone.Cone_2.UVMap
-Node Type: MeshVertexUVData
-	UVs: Count 128. Hash: 10171083346831193808
-	UVCustomName: UVMap
-
-Node Name: DefaultMaterial
-Node Path: RootNode.Cone.Cone_2.DefaultMaterial
-Node Type: MaterialData
-	MaterialName: DefaultMaterial
-	UniqueId: 3809502407269006983
-	IsNoDraw: false
-	DiffuseColor: < 0.800000,  0.800000,  0.800000>
-	SpecularColor: < 0.000000,  0.000000,  0.000000>
-	EmissiveColor: < 0.000000,  0.000000,  0.000000>
-	Opacity: 1.000000
-	Shininess: 0.000000
-	UseColorMap: Not set
-	BaseColor: Not set
-	UseMetallicMap: Not set
-	MetallicFactor: Not set
-	UseRoughnessMap: Not set
-	RoughnessFactor: Not set
-	UseEmissiveMap: Not set
-	EmissiveIntensity: Not set
-	UseAOMap: Not set
-	DiffuseTexture: 
-	SpecularTexture: 
-	BumpTexture: 
-	NormalTexture: 
-	MetallicTexture: 
-	RoughnessTexture: 
-	AmbientOcclusionTexture: 
-	EmissiveTexture: 
-	BaseColorTexture: 
+Node Name: custom_properties
+Node Path: RootNode.Cube_phys.custom_properties
+Node Type: CustomPropertyData
+	UserProperties: 
+	IsNull: false
+	DefaultAttributeIndex: 0
+	InheritType: 1
 
 Node Name: UVMap
-Node Path: RootNode.Cone.Cone_1_optimized.UVMap
-Node Type: MeshVertexUVData
-	UVs: Count 128. Hash: 7873368003484215433
-	UVCustomName: UVMap
-
-Node Name: TangentSet_0
-Node Path: RootNode.Cone.Cone_1_optimized.TangentSet_0
-Node Type: MeshVertexTangentData
-	Tangents: Count 128. Hash: 12937806066914201637
-	GenerationMethod: 1
-	SetIndex: 0
-
-Node Name: BitangentSet_0
-Node Path: RootNode.Cone.Cone_1_optimized.BitangentSet_0
-Node Type: MeshVertexBitangentData
-	Bitangents: Count 128. Hash: 873786942732834087
-	GenerationMethod: 1
-
-Node Name: transform
-Node Path: RootNode.Cone.Cone_1_optimized.transform
-Node Type: TransformData
-	Matrix:
-		BasisX: < 100.000000,  0.000000,  0.000000>
-		BasisY: < 0.000000, -0.000016,  100.000000>
-		BasisZ: < 0.000000, -100.000000, -0.000016>
-		Transl: < 0.000000,  0.000000,  0.000000>
-
-Node Name: DefaultMaterial
-Node Path: RootNode.Cone.Cone_1_optimized.DefaultMaterial
-Node Type: MaterialData
-	MaterialName: DefaultMaterial
-	UniqueId: 3809502407269006983
-	IsNoDraw: false
-	DiffuseColor: < 0.800000,  0.800000,  0.800000>
-	SpecularColor: < 0.000000,  0.000000,  0.000000>
-	EmissiveColor: < 0.000000,  0.000000,  0.000000>
-	Opacity: 1.000000
-	Shininess: 0.000000
-	UseColorMap: Not set
-	BaseColor: Not set
-	UseMetallicMap: Not set
-	MetallicFactor: Not set
-	UseRoughnessMap: Not set
-	RoughnessFactor: Not set
-	UseEmissiveMap: Not set
-	EmissiveIntensity: Not set
-	UseAOMap: Not set
-	DiffuseTexture: 
-	SpecularTexture: 
-	BumpTexture: 
-	NormalTexture: 
-	MetallicTexture: 
-	RoughnessTexture: 
-	AmbientOcclusionTexture: 
-	EmissiveTexture: 
-	BaseColorTexture: 
-
-Node Name: transform
-Node Path: RootNode.Cube_phys.Cube_phys_1.transform
-Node Type: TransformData
-	Matrix:
-		BasisX: < 100.000000,  0.000000,  0.000000>
-		BasisY: < 0.000000, -0.000016,  100.000000>
-		BasisZ: < 0.000000, -100.000000, -0.000016>
-		Transl: < 0.000000,  0.000000,  0.000000>
-
-Node Name: UVMap
-Node Path: RootNode.Cube_phys.Cube_phys_1.UVMap
+Node Path: RootNode.Cube_phys.UVMap
 Node Type: MeshVertexUVData
 	UVs: Count 24. Hash: 13623018071435219250
 	UVCustomName: UVMap
 
 Node Name: DefaultMaterial
-Node Path: RootNode.Cube_phys.Cube_phys_1.DefaultMaterial
+Node Path: RootNode.Cube_phys.DefaultMaterial
 Node Type: MaterialData
 	MaterialName: DefaultMaterial
 	UniqueId: 3809502407269006983
@@ -259,20 +162,39 @@ Node Type: MaterialData
 	BaseColorTexture: 
 
 Node Name: TangentSet_0
-Node Path: RootNode.Cube_phys.Cube_phys_1.TangentSet_0
+Node Path: RootNode.Cube_phys.TangentSet_0
 Node Type: MeshVertexTangentData
 	Tangents: Count 24. Hash: 11965897353301448436
 	GenerationMethod: 1
 	SetIndex: 0
 
 Node Name: BitangentSet_0
-Node Path: RootNode.Cube_phys.Cube_phys_1.BitangentSet_0
+Node Path: RootNode.Cube_phys.BitangentSet_0
 Node Type: MeshVertexBitangentData
 	Bitangents: Count 24. Hash: 17515781720544086759
 	GenerationMethod: 1
 
+Node Name: UVMap
+Node Path: RootNode.Cone_physicstest_optimized.UVMap
+Node Type: MeshVertexUVData
+	UVs: Count 128. Hash: 7873368003484215433
+	UVCustomName: UVMap
+
+Node Name: TangentSet_0
+Node Path: RootNode.Cone_physicstest_optimized.TangentSet_0
+Node Type: MeshVertexTangentData
+	Tangents: Count 128. Hash: 11496565252852403390
+	GenerationMethod: 1
+	SetIndex: 0
+
+Node Name: BitangentSet_0
+Node Path: RootNode.Cone_physicstest_optimized.BitangentSet_0
+Node Type: MeshVertexBitangentData
+	Bitangents: Count 128. Hash: 6810649909977646014
+	GenerationMethod: 1
+
 Node Name: transform
-Node Path: RootNode.Cube_phys.Cube_phys_2.transform
+Node Path: RootNode.Cone_physicstest_optimized.transform
 Node Type: TransformData
 	Matrix:
 		BasisX: < 100.000000,  0.000000,  0.000000>
@@ -280,14 +202,16 @@ Node Type: TransformData
 		BasisZ: < 0.000000, -100.000000, -0.000016>
 		Transl: < 0.000000,  0.000000,  0.000000>
 
-Node Name: UVMap
-Node Path: RootNode.Cube_phys.Cube_phys_2.UVMap
-Node Type: MeshVertexUVData
-	UVs: Count 24. Hash: 13623018071435219250
-	UVCustomName: UVMap
+Node Name: custom_properties
+Node Path: RootNode.Cone_physicstest_optimized.custom_properties
+Node Type: CustomPropertyData
+	UserProperties: 
+	IsNull: false
+	DefaultAttributeIndex: 0
+	InheritType: 1
 
 Node Name: DefaultMaterial
-Node Path: RootNode.Cube_phys.Cube_phys_2.DefaultMaterial
+Node Path: RootNode.Cone_physicstest_optimized.DefaultMaterial
 Node Type: MaterialData
 	MaterialName: DefaultMaterial
 	UniqueId: 3809502407269006983
@@ -315,3 +239,70 @@ Node Type: MaterialData
 	AmbientOcclusionTexture: 
 	EmissiveTexture: 
 	BaseColorTexture: 
+
+Node Name: UVMap
+Node Path: RootNode.Cube_phys_default_physicstest_2F546FB6_1953_511C_975F_FD56DA950528__optimized.UVMap
+Node Type: MeshVertexUVData
+	UVs: Count 24. Hash: 13623018071435219250
+	UVCustomName: UVMap
+
+Node Name: TangentSet_0
+Node Path: RootNode.Cube_phys_default_physicstest_2F546FB6_1953_511C_975F_FD56DA950528__optimized.TangentSet_0
+Node Type: MeshVertexTangentData
+	Tangents: Count 24. Hash: 11965897353301448436
+	GenerationMethod: 1
+	SetIndex: 0
+
+Node Name: BitangentSet_0
+Node Path: RootNode.Cube_phys_default_physicstest_2F546FB6_1953_511C_975F_FD56DA950528__optimized.BitangentSet_0
+Node Type: MeshVertexBitangentData
+	Bitangents: Count 24. Hash: 17515781720544086759
+	GenerationMethod: 1
+
+Node Name: transform
+Node Path: RootNode.Cube_phys_default_physicstest_2F546FB6_1953_511C_975F_FD56DA950528__optimized.transform
+Node Type: TransformData
+	Matrix:
+		BasisX: < 100.000000,  0.000000,  0.000000>
+		BasisY: < 0.000000, -0.000016,  100.000000>
+		BasisZ: < 0.000000, -100.000000, -0.000016>
+		Transl: < 0.000000,  0.000000,  0.000000>
+
+Node Name: custom_properties
+Node Path: RootNode.Cube_phys_default_physicstest_2F546FB6_1953_511C_975F_FD56DA950528__optimized.custom_properties
+Node Type: CustomPropertyData
+	UserProperties: 
+	IsNull: false
+	DefaultAttributeIndex: 0
+	InheritType: 1
+
+Node Name: DefaultMaterial
+Node Path: RootNode.Cube_phys_default_physicstest_2F546FB6_1953_511C_975F_FD56DA950528__optimized.DefaultMaterial
+Node Type: MaterialData
+	MaterialName: DefaultMaterial
+	UniqueId: 3809502407269006983
+	IsNoDraw: false
+	DiffuseColor: < 0.800000,  0.800000,  0.800000>
+	SpecularColor: < 0.000000,  0.000000,  0.000000>
+	EmissiveColor: < 0.000000,  0.000000,  0.000000>
+	Opacity: 1.000000
+	Shininess: 0.000000
+	UseColorMap: Not set
+	BaseColor: Not set
+	UseMetallicMap: Not set
+	MetallicFactor: Not set
+	UseRoughnessMap: Not set
+	RoughnessFactor: Not set
+	UseEmissiveMap: Not set
+	EmissiveIntensity: Not set
+	UseAOMap: Not set
+	DiffuseTexture: 
+	SpecularTexture: 
+	BumpTexture: 
+	NormalTexture: 
+	MetallicTexture: 
+	RoughnessTexture: 
+	AmbientOcclusionTexture: 
+	EmissiveTexture: 
+	BaseColorTexture: 
+

@@ -846,7 +846,7 @@ threadID CryGetCurrentThreadId()
 
 #if defined(APPLE) || defined(LINUX)
 // WinAPI debug functions.
-DLL_EXPORT void OutputDebugString(const char* outputString)
+AZ_DLL_EXPORT void OutputDebugString(const char* outputString)
 {
 #if !defined(_RELEASE)
     // Emulates dev tools output in Xcode and cmd line launch with idevicedebug.

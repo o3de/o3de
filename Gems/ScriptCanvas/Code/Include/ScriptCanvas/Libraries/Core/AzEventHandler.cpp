@@ -6,6 +6,10 @@
  *
  */
 
+#include <AzCore/Serialization/Json/BaseJsonSerializer.h>
+#include <AzCore/Serialization/Json/JsonSerialization.h>
+#include <AzCore/Serialization/Json/RegistrationContext.h>
+#include <AzCore/Serialization/SerializeContext.h>
 #include <ScriptCanvas/Core/Contracts/ConnectionLimitContract.h>
 #include <ScriptCanvas/Core/Contracts/RestrictedNodeContract.h>
 #include <ScriptCanvas/Grammar/PrimitivesDeclarations.h>
@@ -13,6 +17,148 @@
 #include <ScriptCanvas/Libraries/Core/EventHandlerTranslationUtility.h>
 #include <ScriptCanvas/Utils/BehaviorContextUtils.h>
 #include <ScriptCanvas/Utils/NodeUtils.h>
+
+namespace AzEventHandlerCpp
+{
+    using namespace ScriptCanvas;
+    using namespace ScriptCanvas::Nodes;
+    using namespace ScriptCanvas::Nodes::Core;
+    
+    struct AzEventEntryData_v0
+    {
+        static void Reflect(AZ::ReflectContext* context)
+        {
+            if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context); serializeContext != nullptr)
+            {
+                serializeContext->Class<AzEventEntryData_v0>()
+                    ->Field("eventName", &AzEventEntryData_v0::m_eventName)
+                    ->Field("parameterSlotIds", &AzEventEntryData_v0::m_parameterSlotIds)
+                    ->Field("parameterNames", &AzEventEntryData_v0::m_parameterNames)
+                    ->Field("azEventInputSlotId", &AzEventEntryData_v0::m_azEventInputSlotId)
+                    ;
+            }
+        }
+
+        AZ_TYPE_INFO(AzEventEntryData_v0, "{D17AE86E-48D3-4187-A4A9-2594CCA034E6}");
+
+        AZStd::string m_eventName;
+        AZStd::vector<SlotId> m_parameterSlotIds;
+        AZStd::vector<AZStd::string> m_parameterNames;
+        SlotId m_azEventInputSlotId;
+    };
+
+    class AzEventEntrySerializer
+        : public AZ::BaseJsonSerializer
+    {
+    public:
+        AZ_RTTI(AzEventEntrySerializer, "{8FD61AF4-8EBF-4DDB-9251-9A62C05AEA1C}", AZ::BaseJsonSerializer);
+        AZ_CLASS_ALLOCATOR_DECL;
+
+    private:
+
+        AZ::JsonSerializationResult::Result Load
+            ( void* outputValue
+            , [[maybe_unused]] const AZ::Uuid& outputValueTypeId
+            , const rapidjson::Value& inputValue
+            , AZ::JsonDeserializerContext& context) override
+        {
+            namespace JSR = AZ::JsonSerializationResult;
+
+            AZ_Assert(outputValueTypeId == azrtti_typeid<AzEventEntry>()
+                , "AzEventEntrySerializer Load against output typeID that was not RuntimeVariable");
+            AZ_Assert(outputValue, "AzEventEntrySerializer Load against null output");
+
+            auto outputEntry = reinterpret_cast<AzEventEntry*>(outputValue);
+            JSR::ResultCode result(JSR::Tasks::ReadField);
+            
+            auto data_v0 = inputValue.FindMember("AzEventEntryData_v0");
+            if (data_v0 != inputValue.MemberEnd())
+            {
+                // latest version detected, continue loading automatically
+                AzEventEntryData_v0 target;
+                result.Combine(ContinueLoading(&target, azrtti_typeid<AzEventEntryData_v0>(), data_v0->value, context));
+                outputEntry->m_eventName = target.m_eventName;
+                outputEntry->m_parameterSlotIds = target.m_parameterSlotIds;
+                outputEntry->m_parameterNames = target.m_parameterNames;
+                outputEntry->m_azEventInputSlotId = target.m_azEventInputSlotId;
+            }
+            else
+            {
+                // older version detected
+                // read manually and do not read multiple copies of m_parameterSlotIds, nor erroneously reflected parameter names
+                result.Combine(ContinueLoadingFromJsonObjectField
+                    ( &outputEntry->m_eventName
+                    , azrtti_typeid(outputEntry->m_eventName)
+                    , inputValue
+                    , "m_eventName"
+                    , context));
+                result.Combine(ContinueLoadingFromJsonObjectField
+                    ( &outputEntry->m_parameterSlotIds
+                    , azrtti_typeid(outputEntry->m_parameterSlotIds)
+                    , inputValue, "m_parameterSlotIds"
+                    , context));
+                result.Combine(ContinueLoadingFromJsonObjectField
+                    ( &outputEntry->m_azEventInputSlotId
+                    , azrtti_typeid(outputEntry->m_azEventInputSlotId)
+                    , inputValue
+                    , "m_eventSlotId"
+                    , context));
+
+                for (size_t newSize = 1; newSize < outputEntry->m_parameterSlotIds.size(); ++newSize)
+                {
+                    if (outputEntry->m_parameterSlotIds.front() == outputEntry->m_parameterSlotIds[newSize])
+                    {
+                        outputEntry->m_parameterSlotIds.resize(newSize);
+                        break;
+                    }
+                }
+            }
+
+            return context.Report(result, result.GetProcessing() != JSR::Processing::Halted
+                ? "AzEventEntrySerializer Load finished loading AzEventEntry"
+                : "AzEventEntrySerializer Load failed to load AzEventEntry");
+        }
+
+        AZ::JsonSerializationResult::Result Store
+            ( rapidjson::Value& outputValue
+            , const void* inputValue
+            , [[maybe_unused]] const void* defaultValue
+            , [[maybe_unused]] const AZ::Uuid& valueTypeId
+            , AZ::JsonSerializerContext& context) override
+        {
+            namespace JSR = AZ::JsonSerializationResult;
+
+            AZ_Assert(valueTypeId == azrtti_typeid<AzEventEntry>()
+                , "AzEventEntrySerializer Load against input typeID that was not AzEventEntry");
+            AZ_Assert(inputValue, "AzEventEntrySerializer Load against null inputValue");
+
+            auto inputEntry = reinterpret_cast<const AzEventEntry*>(inputValue);
+            AzEventEntryData_v0 defaultData;
+            AzEventEntryData_v0 target;
+            target.m_eventName = inputEntry->m_eventName;
+            target.m_parameterSlotIds = inputEntry->m_parameterSlotIds;
+            target.m_parameterNames = inputEntry->m_parameterNames;
+            target.m_azEventInputSlotId = inputEntry->m_azEventInputSlotId;
+
+            // save out version data as a psuedo member variable
+            JSR::ResultCode result(JSR::Tasks::WriteValue);
+            outputValue.SetObject();
+            {
+                rapidjson::Value versionData;
+                versionData.SetObject();
+                result.Combine(ContinueStoring(versionData, &target, &defaultData, azrtti_typeid<AzEventEntryData_v0>(), context));
+                outputValue.AddMember(rapidjson::StringRef("AzEventEntryData_v0"), AZStd::move(versionData), context.GetJsonAllocator());
+            }
+
+            return context.Report(result, result.GetProcessing() != JSR::Processing::Halted
+                ? "AzEventEntrySerializer Load finished loading Datum"
+                : "AzEventEntrySerializer Load failed to load Datum");
+        }
+    };
+
+    AZ_CLASS_ALLOCATOR_IMPL(AzEventEntrySerializer, AZ::SystemAllocator, 0);
+
+}
 
 namespace ScriptCanvas::Nodes::Core
 {
@@ -133,6 +279,11 @@ namespace ScriptCanvas::Nodes::Core
         return BehaviorContextUtils::GenerateFingerprintForMethod(MethodType::Event, "", m_azEventEntry.m_eventName);
     }
 
+    AZStd::string AzEventHandler::GetDebugName() const
+    {
+        return m_azEventEntry.m_eventName;
+    }
+
     AZ::Outcome<DependencyReport, void> AzEventHandler::GetDependencies() const
     {
         return AZ::Success(DependencyReport{});
@@ -180,6 +331,11 @@ namespace ScriptCanvas::Nodes::Core
     AZStd::vector<SlotId> AzEventHandler::GetEventSlotIds() const
     {
         return { AzEventHandlerProperty::GetOnEventSlotId(this) };
+    }
+
+    AZStd::string AzEventHandler::GetNodeName() const
+    {
+        return GetDebugName();
     }
 
     AZStd::vector<SlotId> AzEventHandler::GetNonEventSlotIds() const
@@ -276,22 +432,18 @@ namespace ScriptCanvas::Nodes::Core
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context); serializeContext != nullptr)
         {
             serializeContext->Class<AzEventEntry>()
-                ->Version(0)
                 ->Field("m_eventName", &AzEventEntry::m_eventName)
                 ->Field("m_parameterSlotIds", &AzEventEntry::m_parameterSlotIds)
-                ->Field("m_parameterNames", &AzEventEntry::m_parameterSlotIds)
+                ->Field("m_parameterNames", &AzEventEntry::m_parameterNames)
                 ->Field("m_eventSlotId", &AzEventEntry::m_azEventInputSlotId)
                 ;
         }
-    }
 
-    AZStd::string AzEventHandler::GetNodeName() const
-    {
-        return GetDebugName();
-    }
+        AzEventHandlerCpp::AzEventEntryData_v0::Reflect(context);
 
-    AZStd::string AzEventHandler::GetDebugName() const
-    {
-        return m_azEventEntry.m_eventName;
+        if (AZ::JsonRegistrationContext* jsonContext = azrtti_cast<AZ::JsonRegistrationContext*>(context))
+        {
+            jsonContext->Serializer<AzEventHandlerCpp::AzEventEntrySerializer>()->HandlesType<AzEventEntry>();
+        }
     }
 }

@@ -8,7 +8,7 @@
 
 #include <Atom/RPI.Reflect/Model/ModelLodAsset.h>
 
-#include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Asset/AssetSerializer.h>
 
 namespace AZ
 {
@@ -26,6 +26,8 @@ namespace AZ
                     ->Version(0)
                     ->Field("Meshes", &ModelLodAsset::m_meshes)
                     ->Field("Aabb", &ModelLodAsset::m_aabb)
+                    ->Field("StreamBuffers", &ModelLodAsset::m_streamBuffers)
+                    ->Field("IndexBufferView", &ModelLodAsset::m_indexBuffer)
                     ;
             }
 

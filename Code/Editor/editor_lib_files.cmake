@@ -257,6 +257,8 @@ set(FILES
     MainWindow.cpp
     MainWindow.h
     MainWindow.qrc
+    Core/EditorActionsHandler.cpp
+    Core/EditorActionsHandler.h
     Core/QtEditorApplication.cpp
     Core/QtEditorApplication.h
     Core/LevelEditorMenuHandler.cpp
@@ -313,8 +315,6 @@ set(FILES
     AssetEditor/AssetEditorWindow.ui
     Commands/CommandManager.cpp
     Commands/CommandManager.h
-    Controls/BitmapToolTip.cpp
-    Controls/BitmapToolTip.h
     Controls/ConsoleSCB.cpp
     Controls/ConsoleSCB.h
     Controls/ConsoleSCB.ui
@@ -336,8 +336,6 @@ set(FILES
     Controls/ReflectedPropertyControl/PropertyMiscCtrl.h
     Controls/ReflectedPropertyControl/PropertyMotionCtrl.cpp
     Controls/ReflectedPropertyControl/PropertyMotionCtrl.h
-    Controls/ReflectedPropertyControl/PropertyResourceCtrl.cpp
-    Controls/ReflectedPropertyControl/PropertyResourceCtrl.h
     Controls/ReflectedPropertyControl/PropertyCtrl.cpp
     Controls/ReflectedPropertyControl/PropertyCtrl.h
     MainStatusBar.cpp
@@ -536,8 +534,6 @@ set(FILES
     ErrorReport.h
     IconManager.cpp
     IconManager.h
-    LevelInfo.cpp
-    LevelInfo.h
     ProcessInfo.cpp
     ProcessInfo.h
     TrackView/AtomOutputFrameCapture.cpp
@@ -586,6 +582,7 @@ set(FILES
     TrackView/TVCustomizeTrackColorsDlg.cpp
     TrackView/TVCustomizeTrackColorsDlg.h
     TrackViewFBXImportPreviewDialog.h
+    TrackView/KeyUIControls.h
     TrackView/2DBezierKeyUIControls.cpp
     TrackView/AssetBlendKeyUIControls.cpp
     TrackView/CaptureKeyUIControls.cpp
@@ -632,6 +629,8 @@ set(FILES
     Util/FileEnum.h
     Util/FileUtil.cpp
     Util/FileUtil.h
+    Util/FileUtil_Common.h
+    Util/FileUtil_Common.cpp
     Util/GeometryUtil.cpp
     Util/GuidUtil.cpp
     Util/GuidUtil.h

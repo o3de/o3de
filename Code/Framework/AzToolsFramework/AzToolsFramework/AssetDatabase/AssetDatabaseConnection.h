@@ -66,6 +66,9 @@ namespace AzToolsFramework
             ChangedSortFunctionFromQSortToStdStableSort = 30,
             RemoveOutputPrefixFromScanFolders,
             AddedSourceIndexForSourceDependencyTable,
+            AddedSourceDependencySubIdsAndProductHashes,
+            AddedFlagsColumnToProductTable,
+            AddedStatsTable,
             //Add all new versions before this
             DatabaseVersionCount,
             LatestVersion = DatabaseVersionCount - 1
@@ -166,7 +169,7 @@ namespace AzToolsFramework
             JobDatabaseEntry() = default;
             JobDatabaseEntry(AZ::s64 jobID, AZ::s64 sourcePK, const char* jobKey, AZ::u32 fingerprint, const char* platform, AZ::Uuid builderGuid, AssetSystem::JobStatus status, AZ::u64 jobRunKey, AZ::s64 firstFailLogTime = 0, const char* firstFailLogFile = nullptr, AZ::s64 lastFailLogTime = 0, const char* lastFailLogFile = nullptr, AZ::s64 lastLogTime = 0, const char* lastLogFile = nullptr, AZ::u32 warningCount = 0, AZ::u32 errorCount = 0);
             JobDatabaseEntry(AZ::s64 sourcePK, const char* jobKey, AZ::u32 fingerprint, const char* platform, AZ::Uuid builderGuid, AssetSystem::JobStatus status, AZ::u64 jobRunKey, AZ::s64 firstFailLogTime = 0, const char* firstFailLogFile = nullptr, AZ::s64 lastFailLogTime = 0, const char* lastFailLogFile = nullptr, AZ::s64 lastLogTime = 0, const char* lastLogFile = nullptr, AZ::u32 warningCount = 0, AZ::u32 errorCount = 0);
-            
+
             bool operator==(const JobDatabaseEntry& other) const;
 
             AZStd::string ToString() const;
@@ -206,9 +209,9 @@ namespace AzToolsFramework
                 DEP_SourceLikeMatch = 1 << 2, ///< Allow wildcard matches using LIKE
                 DEP_Any             = 0xFFFFFFFF ///< convenience value - not allowed to write this to the actual DB.
             };
-            
+
             SourceFileDependencyEntry() = default;
-            SourceFileDependencyEntry(AZ::Uuid builderGuid, const char* source, const char* dependsOnSource, TypeOfDependency dependencyType, AZ::u32 fromAssetId);
+            SourceFileDependencyEntry(AZ::Uuid builderGuid, const char* source, const char* dependsOnSource, TypeOfDependency dependencyType, AZ::u32 fromAssetId, const char* subIds);
 
             AZStd::string ToString() const;
             auto GetColumns();
@@ -219,6 +222,7 @@ namespace AzToolsFramework
             AZStd::string m_source;
             AZStd::string m_dependsOnSource;
             AZ::u32 m_fromAssetId = false; // Indicates if the dependency was converted from an AssetId into a path before being stored in the DB
+            AZStd::string m_subIds;
         };
 
         typedef AZStd::vector<SourceFileDependencyEntry> SourceFileDependencyEntryContainer;
@@ -230,14 +234,11 @@ namespace AzToolsFramework
         public:
             ProductDatabaseEntry() = default;
             ProductDatabaseEntry(AZ::s64 productID, AZ::s64 jobPK,  AZ::u32 subID, const char* productName,
-                AZ::Data::AssetType assetType, AZ::Uuid legacyGuid = AZ::Uuid::CreateNull());
+                AZ::Data::AssetType assetType, AZ::Uuid legacyGuid = AZ::Uuid::CreateNull(), AZ::u64 hash = 0, AZStd::bitset<64> flags = 0);
             ProductDatabaseEntry(AZ::s64 jobPK, AZ::u32 subID, const char* productName,
-                AZ::Data::AssetType assetType, AZ::Uuid legacyGuid = AZ::Uuid::CreateNull());
-            ProductDatabaseEntry(const ProductDatabaseEntry& entry);
-            ProductDatabaseEntry(ProductDatabaseEntry&& other);
+                AZ::Data::AssetType assetType, AZ::Uuid legacyGuid = AZ::Uuid::CreateNull(), AZ::u64 hash = 0, AZStd::bitset<64> flags = 0);
+            AZ_DEFAULT_COPY_MOVE(ProductDatabaseEntry);
 
-            ProductDatabaseEntry& operator=(ProductDatabaseEntry&& other);
-            ProductDatabaseEntry& operator=(const ProductDatabaseEntry& other);
             bool operator==(const ProductDatabaseEntry& other) const;
 
             AZStd::string ToString() const;
@@ -249,6 +250,8 @@ namespace AzToolsFramework
             AZStd::string m_productName;
             AZ::Data::AssetType m_assetType = AZ::Data::AssetType::CreateNull();
             AZ::Uuid m_legacyGuid = AZ::Uuid::CreateNull();//used only for backward compatibility with old product guid, is generated based on product name
+            AZ::u64 m_hash = 0;
+            AZStd::bitset<64> m_flags = 0;
         };
         typedef AZStd::vector<ProductDatabaseEntry> ProductDatabaseEntryContainer;
 
@@ -284,7 +287,7 @@ namespace AzToolsFramework
             ProductDependencyDatabaseEntry() = default;
             ProductDependencyDatabaseEntry(AZ::s64 productDependencyID, AZ::s64 productPK, AZ::Uuid dependencySourceGuid, AZ::u32 dependencySubID, AZStd::bitset<64> dependencyFlags, const AZStd::string& platform, const AZStd::string& unresolvedPath, DependencyType dependencyType, AZ::u32 fromAssetId);
             ProductDependencyDatabaseEntry(AZ::s64 productPK, AZ::Uuid dependencySourceGuid, AZ::u32 dependencySubID, AZStd::bitset<64> dependencyFlags, const AZStd::string& platform, AZ::u32 fromAssetId, const AZStd::string& unresolvedPath="", DependencyType dependencyType = DependencyType::ProductDep_ProductFile);
-            
+
             bool operator == (const ProductDependencyDatabaseEntry& other) const;
 
             AZStd::string ToString() const;
@@ -408,6 +411,31 @@ namespace AzToolsFramework
         typedef AZStd::vector<SourceAndScanFolderDatabaseEntry> SourceAndScanFolderDatabaseEntryContainer;
 
         //////////////////////////////////////////////////////////////////////////
+        // StatDatabaseEntry
+        class StatDatabaseEntry
+        {
+        public:
+            StatDatabaseEntry() = default;
+
+            StatDatabaseEntry(const StatDatabaseEntry& other) = default;
+            StatDatabaseEntry(StatDatabaseEntry&& other) = default;
+
+            StatDatabaseEntry& operator=(StatDatabaseEntry&& other) = default;
+            StatDatabaseEntry& operator=(const StatDatabaseEntry& other) = default;
+            bool operator==(const StatDatabaseEntry& other) const;
+            bool operator!=(const StatDatabaseEntry& other) const;
+
+            AZStd::string ToString() const;
+            auto GetColumns();
+
+            AZStd::string m_statName;
+            AZ::s64 m_statValue = 0;
+            AZ::s64 m_lastLogTime = 0;
+        };
+
+        typedef AZStd::vector<StatDatabaseEntry> StatDatabaseEntryContainer;
+
+        //////////////////////////////////////////////////////////////////////////
         //AssetDatabaseConnection
         //! The Connection class represents a read-only connection to the asset database specifically
         //! (as opposed to a sql connection). Things like the Asset Processor derive from this in order
@@ -469,6 +497,7 @@ namespace AzToolsFramework
             // note that AZStd::function cannot handle rvalue-refs at the time of writing this.
             using BuilderInfoHandler = std::function<bool(BuilderInfoEntry&&)>;
             using fileHandler = AZStd::function<bool(FileDatabaseEntry& entry)>;
+            using statHandler = AZStd::function<bool(StatDatabaseEntry& entry)>;
 
             //////////////////////////////////////////////////////////////////
             //Query entire table
@@ -481,6 +510,7 @@ namespace AzToolsFramework
             bool QueryProductDependenciesTable(combinedProductDependencyHandler handler);
             bool QueryBuilderInfoTable(const BuilderInfoHandler& handler);
             bool QueryFilesTable(fileHandler handler);
+            bool QueryStatsTable(statHandler handler);
 
             //////////////////////////////////////////////////////////////////////////
             //Queries
@@ -530,6 +560,7 @@ namespace AzToolsFramework
             bool QuerySourceBySourceName(const char* exactSourceName, sourceHandler handler);
             bool QuerySourceBySourceNameScanFolderID(const char* exactSourceName, AZ::s64 scanFolderID, sourceHandler handler);
             bool QuerySourceLikeSourceName(const char* likeSourceName, LikeType likeType, sourceHandler handler);
+            bool QuerySourceLikeSourceNameScanFolderID(const char* likeSourceName, AZ::s64 scanFolderID, LikeType likeType, sourceHandler handler);
             bool QuerySourceAnalysisFingerprint(const char* exactSourceName, AZ::s64 scanFolderID, AZStd::string& result);
             bool QuerySourceAndScanfolder(combinedSourceScanFolderHandler handler);
 
@@ -609,6 +640,9 @@ namespace AzToolsFramework
             //! These finds all incoming dependencies: everything that depends on the given asset.
             //! Similar to QueryDirectProductDependencies, this query deals with product dependencies but retrieves rows from Products, not ProductDependencies.
             bool QueryDirectReverseProductDependenciesBySourceGuidSubId(AZ::Uuid dependencySourceGuid, AZ::u32 dependencySubId, productHandler handler);
+            bool QueryDirectReverseProductDependenciesBySourceGuidAllPlatforms(
+                AZ::Uuid dependencySourceGuid,
+                productDependencyHandler handler);
             bool QueryAllProductDependencies(AZ::s64 productID, productHandler handler);
 
             bool QueryUnresolvedProductDependencies(productDependencyHandler handler);
@@ -626,16 +660,21 @@ namespace AzToolsFramework
             //FileInfo
             bool QueryFileByFileID(AZ::s64 fileID, fileHandler handler);
             bool QueryFilesByFileNameAndScanFolderID(const char* fileName, AZ::s64 scanfolderID, fileHandler handler);
-            bool QueryFilesLikeFileName(const char* likeFileName, LikeType likeType, fileHandler handler);
+            bool QueryFilesLikeFileNameAndScanFolderID(const char* likeFileName, LikeType likeType, AZ::s64 scanfolderID, fileHandler handler);
             bool QueryFilesByScanFolderID(AZ::s64 scanFolderID, fileHandler handler);
             bool QueryFileByFileNameScanFolderID(const char* fileName, AZ::s64 scanFolderID, fileHandler handler);
+
+            //Stat
+            bool QueryStatByStatName(const char* statName, statHandler handler);
+            bool QueryStatLikeStatName(const char* statName, statHandler handler);
+
             //////////////////////////////////////////////////////////////////////////
 
             void SetQueryLogging(bool enableLogging);
             void LogQuery(const char* statement, const AZStd::string& params) override;
             void LogResultId(AZ::s64 rowId) override;
         protected:
-            
+
             SQLite::Connection* m_databaseConnection;
 
             //override in your derived class when you need to add specific queries

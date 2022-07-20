@@ -96,6 +96,8 @@ namespace AZ
 
         void CommandList::Submit(const RHI::CopyItem& copyItem) 
         {
+            ValidateSubmitItem(copyItem);
+
             switch (copyItem.m_type)
             {
             case RHI::CopyItemType::Buffer:
@@ -248,6 +250,8 @@ namespace AZ
 
         void CommandList::Submit(const RHI::DrawItem& drawItem) 
         {
+            ValidateSubmitItem(drawItem);
+
             if (!CommitShaderResource(drawItem))
             {
                 AZ_Warning("CommandList", false, "Failed to bind shader resources for draw item. Skipping.");
@@ -363,6 +367,8 @@ namespace AZ
 
         void CommandList::Submit(const RHI::DispatchItem& dispatchItem) 
         {
+            ValidateSubmitItem(dispatchItem);
+
             if (!CommitShaderResource(dispatchItem))
             {
                 AZ_Warning("CommandList", false, "Failed to bind shader resources for dispatch item. Skipping.");
@@ -396,6 +402,8 @@ namespace AZ
 
         void CommandList::Submit([[maybe_unused]] const RHI::DispatchRaysItem& dispatchRaysItem)
         {
+            ValidateSubmitItem(dispatchRaysItem);
+
             // manually clear the Dispatch bindings
             ShaderResourceBindings& bindings = GetShaderResourceBindingsByPipelineType(RHI::PipelineStateType::Dispatch);
             for (size_t i = 0; i < bindings.m_descriptorSets.size(); ++i)
@@ -853,7 +861,12 @@ namespace AZ
                     shaderResourceGroup = shaderResourceGroupList.front();
                 }
                 
-                AZ_Assert(shaderResourceGroup, "Shader resource group in descriptor set index %d is null.", index);
+                if (shaderResourceGroup == nullptr)
+                {
+                    AZ_Assert(false, "Shader resource group in descriptor set index %d is null.", index);
+                    continue;
+                }
+
                 auto& compiledData = shaderResourceGroup->GetCompiledData();
                 VkDescriptorSet vkDescriptorSet = compiledData.GetNativeDescriptorSet();
 
@@ -922,11 +935,16 @@ namespace AZ
             const RHI::PipelineLayoutDescriptor& pipelineLayoutDescriptor = pipelineLayout->GetPipelineLayoutDescriptor();
             for (uint32_t i = 0; i < pipelineLayout->GetDescriptorSetLayoutCount(); ++i)
             {
-                uint32_t slot = pipelineLayout->GetAZSLBindingSlotOfIndex(i);
-                const ShaderResourceGroup* shaderResourceGroup = bindings.m_SRGByAzslBindingSlot[slot];
-                AZ_Assert(shaderResourceGroup != nullptr, "NULL srg bound");
-                
-                m_validator.ValidateShaderResourceGroup(*shaderResourceGroup, pipelineLayoutDescriptor.GetShaderResourceGroupBindingInfo(i));
+                const auto& srgBitset = pipelineLayout->GetAZSLBindingSlotsOfIndex(i);
+                for (uint32_t bindingSlot = 0; bindingSlot < srgBitset.size(); ++bindingSlot)
+                {
+                    if (srgBitset[bindingSlot])
+                    {
+                        const ShaderResourceGroup* shaderResourceGroup = bindings.m_SRGByAzslBindingSlot[bindingSlot];
+                        AZ_Assert(shaderResourceGroup != nullptr, "NULL srg bound");
+                        m_validator.ValidateShaderResourceGroup(*shaderResourceGroup, pipelineLayoutDescriptor.GetShaderResourceGroupBindingInfo(i));
+                    }
+                }
             }
 #endif
         }
@@ -970,6 +988,26 @@ namespace AZ
             const VkAccelerationStructureBuildRangeInfoKHR& offsetInfo = tlasBuffers.m_offsetInfo;
             const VkAccelerationStructureBuildRangeInfoKHR* pOffsetInfo = &offsetInfo;
             vkCmdBuildAccelerationStructuresKHR(GetNativeCommandBuffer(), 1, &tlasBuffers.m_buildInfo, &pOffsetInfo);
+
+            // we need a pipeline barrier on VK_ACCESS_ACCELERATION_STRUCTURE (both read and write) in case we are building
+            // multiple TLAS objects in a command list
+            VkMemoryBarrier memoryBarrier = {};
+            memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
+            memoryBarrier.pNext = nullptr;
+            memoryBarrier.srcAccessMask = VK_ACCESS_ACCELERATION_STRUCTURE_WRITE_BIT_KHR | VK_ACCESS_ACCELERATION_STRUCTURE_READ_BIT_KHR;
+            memoryBarrier.dstAccessMask = VK_ACCESS_ACCELERATION_STRUCTURE_WRITE_BIT_KHR | VK_ACCESS_ACCELERATION_STRUCTURE_READ_BIT_KHR;
+
+            vkCmdPipelineBarrier(
+                GetNativeCommandBuffer(),
+                VK_PIPELINE_STAGE_ACCELERATION_STRUCTURE_BUILD_BIT_KHR,
+                VK_PIPELINE_STAGE_ACCELERATION_STRUCTURE_BUILD_BIT_KHR,
+                0,
+                1,
+                &memoryBarrier,
+                0,
+                nullptr,
+                0,
+                nullptr);
         }
 
         void CommandList::ClearImage(const ResourceClearRequest& request)

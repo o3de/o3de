@@ -8,8 +8,6 @@
 
 #include <AzFramework/Physics/SystemBus.h>
 #include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.h>
-#include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderPlugin.h>
-#include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderViewWidget.h>
 #include <Editor/ColliderContainerWidget.h>
 #include <Editor/ColliderHelpers.h>
 #include <Editor/SkeletonModel.h>
@@ -31,12 +29,6 @@ namespace EMotionFX
     HitDetectionJointInspectorPlugin::~HitDetectionJointInspectorPlugin()
     {
         EMotionFX::SkeletonOutlinerNotificationBus::Handler::BusDisconnect();
-    }
-
-    EMStudio::EMStudioPlugin* HitDetectionJointInspectorPlugin::Clone()
-    {
-        HitDetectionJointInspectorPlugin* newPlugin = new HitDetectionJointInspectorPlugin();
-        return newPlugin;
     }
 
     bool HitDetectionJointInspectorPlugin::Init()
@@ -158,41 +150,4 @@ namespace EMotionFX
         ColliderHelpers::ClearColliders(selectedRowIndices, PhysicsSetup::HitDetection);
     }
 
-    void HitDetectionJointInspectorPlugin::LegacyRender(EMStudio::RenderPlugin* renderPlugin, RenderInfo* renderInfo)
-    {
-        EMStudio::RenderViewWidget* activeViewWidget = renderPlugin->GetActiveViewWidget();
-        if (!activeViewWidget)
-        {
-            return;
-        }
-
-        const bool renderColliders = activeViewWidget->GetRenderFlag(EMStudio::RenderViewWidget::RENDER_HITDETECTION_COLLIDERS);
-        if (!renderColliders)
-        {
-            return;
-        }
-
-        const EMStudio::RenderOptions* renderOptions = renderPlugin->GetRenderOptions();
-
-        ColliderContainerWidget::LegacyRenderColliders(PhysicsSetup::HitDetection,
-            renderOptions->GetHitDetectionColliderColor(),
-            renderOptions->GetSelectedHitDetectionColliderColor(),
-            renderPlugin,
-            renderInfo);
-    }
-
-    void HitDetectionJointInspectorPlugin::Render(EMotionFX::ActorRenderFlagBitset renderFlags)
-    {
-        const bool renderColliders = renderFlags[EMotionFX::ActorRenderFlag::RENDER_HITDETECTION_COLLIDERS];
-        if (!renderColliders)
-        {
-            return;
-        }
-
-        const AZ::Render::RenderActorSettings& settings = EMotionFX::GetRenderActorSettings();
-
-        ColliderContainerWidget::RenderColliders(
-            PhysicsSetup::HitDetection, settings.m_hitDetectionColliderColor,
-            settings.m_selectedHitDetectionColliderColor);
-    }
 } // namespace EMotionFX

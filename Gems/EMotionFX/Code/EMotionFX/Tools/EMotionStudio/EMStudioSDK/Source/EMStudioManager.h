@@ -16,9 +16,6 @@
 // include the command system
 #include <EMotionFX/CommandSystem/Source/CommandManager.h>
 
-// include the gizmos
-#include <EMotionFX/Rendering/Common/TransformationManipulator.h>
-
 #include <EMotionFX/Source/JointSelectionBus.h>
 
 // include the EMStudio Config
@@ -119,11 +116,6 @@ namespace EMStudio
 
         Workspace* GetWorkspace()                                                               { return &m_workspace; }
 
-        // functions for adding/removing gizmos
-        MCommon::TransformationManipulator* AddTransformationManipulator(MCommon::TransformationManipulator* manipulator);
-        void RemoveTransformationManipulator(MCommon::TransformationManipulator* manipulator);
-        AZStd::vector<MCommon::TransformationManipulator*>* GetTransformationManipulators();
-
         void ClearScene();  // remove animgraphs, animgraph instances and actors
 
         MCORE_INLINE bool GetAvoidRendering() const                                             { return m_avoidRendering; }
@@ -133,7 +125,6 @@ namespace EMStudio
         MCORE_INLINE bool GetSkipSourceControlCommands()                                        { return m_skipSourceControlCommands; }
         MCORE_INLINE void SetSkipSourceControlCommands(bool skip)                               { m_skipSourceControlCommands = skip; }
     private:
-        AZStd::vector<MCommon::TransformationManipulator*> m_transformationManipulators;
         QPointer<MainWindow>                m_mainWindow;
         QApplication*                       m_app;
         PluginManager*                      m_pluginManager;

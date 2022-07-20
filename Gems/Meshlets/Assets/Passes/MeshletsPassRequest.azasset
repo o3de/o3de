@@ -1,0 +1,26 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassRequest",
+    "ClassData": {
+        "Name": "MeshletsParentPass",
+        "TemplateName": "MeshletsParentPassTemplate",
+        "Enabled": true,
+        "Connections": [
+            {
+                "LocalSlot": "DepthStencilInputOutput",
+                "AttachmentRef": {
+                    "Pass": "DepthPrePass",
+                    "Attachment": "Depth"
+                }
+            },
+            {
+                "LocalSlot": "RenderTargetInputOutput",
+                "AttachmentRef": {
+                    "Pass": "OpaquePass",
+                    "Attachment": "Output"
+                }
+            }
+        ]
+    }
+}

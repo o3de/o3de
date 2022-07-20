@@ -60,7 +60,9 @@ namespace AZ
             {
                 m_imageViewCache.Clear();
                 m_bufferViewCache.Clear();
-
+                m_imageReverseLookupHash.clear();
+                m_bufferReverseLookupHash.clear();
+               
                 ShutdownInternal();
                 DeviceObject::Shutdown();
             }
@@ -626,7 +628,7 @@ namespace AZ
 
                     case Action::DeactivateBuffer:
                     {
-                        AZ_Assert(!allocateResources || transientBuffers[attachmentIndex] || IsNullRenderer(), "Buffer is not active: %s", transientBufferGraphAttachments[attachmentIndex]->GetId().GetCStr());
+                        AZ_Assert(!allocateResources || transientBuffers[attachmentIndex] || IsNullRHI(), "Buffer is not active: %s", transientBufferGraphAttachments[attachmentIndex]->GetId().GetCStr());
                         BufferFrameAttachment* bufferFrameAttachment = transientBufferGraphAttachments[attachmentIndex];
                         transientAttachmentPool.DeactivateBuffer(bufferFrameAttachment->GetId());
                         transientBuffers[attachmentIndex] = nullptr;
@@ -635,7 +637,7 @@ namespace AZ
 
                     case Action::DeactivateImage:
                     {
-                        AZ_Assert(!allocateResources || transientImages[attachmentIndex] || IsNullRenderer(), "Image is not active: %s", transientImageGraphAttachments[attachmentIndex]->GetId().GetCStr());
+                        AZ_Assert(!allocateResources || transientImages[attachmentIndex] || IsNullRHI(), "Image is not active: %s", transientImageGraphAttachments[attachmentIndex]->GetId().GetCStr());
                         ImageFrameAttachment* imageFrameAttachment = transientImageGraphAttachments[attachmentIndex];
                         transientAttachmentPool.DeactivateImage(imageFrameAttachment->GetId());
                         transientImages[attachmentIndex] = nullptr;
@@ -724,12 +726,20 @@ namespace AZ
 
             if (!imageView)
             {
+                // This is one way of clearing view entries within the cache if we are creating a new view to replace the old one.
+                // Normally this can happen for transient resources if their pointer within the heap changes for the current frame
+                const ImageResourceViewData imageResourceViewData = ImageResourceViewData {image->GetName(), imageViewDescriptor};
+                RemoveFromCache(imageResourceViewData, m_imageReverseLookupHash, m_imageViewCache);
                 // Create a new image view instance and insert it into the cache.
                 Ptr<ImageView> imageViewPtr = Factory::Get().CreateImageView();
                 if (imageViewPtr->Init(*image, imageViewDescriptor) == ResultCode::Success)
                 {
                     imageView = imageViewPtr.get();
                     m_imageViewCache.Insert(static_cast<uint64_t>(hash), AZStd::move(imageViewPtr));
+                    if (!image->GetName().IsEmpty())
+                    {
+                        m_imageReverseLookupHash.emplace(imageResourceViewData, hash);
+                    }
                 }
                 else
                 {
@@ -750,12 +760,21 @@ namespace AZ
 
             if (!bufferView)
             {
+                // This is one way of clearing view entries within the cache if we are creating a new view to replace the old one.
+                // Normally this can happen for transient resources if their pointer within the heap changes for the current frame
+                const BufferResourceViewData bufferResourceViewData = BufferResourceViewData {buffer->GetName(), bufferViewDescriptor};
+                RemoveFromCache(bufferResourceViewData, m_bufferReverseLookupHash, m_bufferViewCache);
+                
                 // Create a new buffer view instance and insert it into the cache.
                 Ptr<BufferView> bufferViewPtr = Factory::Get().CreateBufferView();
                 if (bufferViewPtr->Init(*buffer, bufferViewDescriptor) == ResultCode::Success)
                 {
                     bufferView = bufferViewPtr.get();
                     m_bufferViewCache.Insert(static_cast<uint64_t>(hash), AZStd::move(bufferViewPtr));
+                    if (!buffer->GetName().IsEmpty())
+                    {
+                        m_bufferReverseLookupHash.emplace(bufferResourceViewData, hash);
+                    }
                 }
                 else
                 {
@@ -832,6 +851,25 @@ namespace AZ
 
                     node->SetBufferView(bufferView);
                 }
+            }
+        }
+    
+        template<typename ReverseLookupObjectType, typename ObjectCacheType>
+        void FrameGraphCompiler::RemoveFromCache(ReverseLookupObjectType objectToRemove,
+                                                  AZStd::unordered_map<ReverseLookupObjectType, HashValue64>& reverseHashLookupMap,
+                                                  ObjectCache<ObjectCacheType>& objectCache)
+        {
+            if (objectToRemove.m_name.IsEmpty())
+            {
+                return;
+            }
+            
+            bool isResourceRegistered = reverseHashLookupMap.contains(objectToRemove);
+            if (isResourceRegistered)
+            {
+                HashValue64 originalHash = reverseHashLookupMap.find(objectToRemove)->second;
+                objectCache.EraseItem(aznumeric_cast<uint64_t>(originalHash));
+                reverseHashLookupMap.erase(objectToRemove);
             }
         }
     }

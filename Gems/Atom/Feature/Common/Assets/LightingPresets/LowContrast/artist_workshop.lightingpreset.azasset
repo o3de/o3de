@@ -3,7 +3,6 @@
     "Version": 1,
     "ClassName": "AZ::Render::LightingPreset",
     "ClassData": {
-        "displayName": "Artist Workshop",
         "iblDiffuseImageAsset": {
             "assetId": {
                 "guid": "{D2B747EE-85B8-5766-8AA0-CCB6AFF81BA2}",

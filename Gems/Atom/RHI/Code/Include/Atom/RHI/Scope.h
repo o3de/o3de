@@ -76,6 +76,9 @@ namespace AZ
             /// Returns the hardware queue class for this scope.
             HardwareQueueClass GetHardwareQueueClass() const;
 
+            /// Sets the hardware queue class for this scope.
+            void SetHardwareQueueClass(HardwareQueueClass hardwareQueueClass);
+
             /**
              * Returns the estimated number of draw / dispatch / copy items that the user will submit
              * while in this scope. This is an estimation intended to be used by the platform-specific
@@ -120,7 +123,7 @@ namespace AZ
             const AZStd::vector<Ptr<Fence>>& GetFencesToSignal() const;
 
             /// Initializes the scope.
-            void Init(const ScopeId& scopeId);
+            void Init(const ScopeId& scopeId, HardwareQueueClass hardwareQueueClass = HardwareQueueClass::Graphics);
 
             /// Activates the scope for the current frame.
             void Activate(const FrameGraph* frameGraph, uint32_t index, const GraphGroupId& groupId);
@@ -197,7 +200,7 @@ namespace AZ
             const FrameGraph* m_frameGraph = nullptr;
 
             /// A load balancing factor for command list splitting (platform dependent).
-            uint32_t m_estimatedItemCount = 0;
+            uint32_t m_estimatedItemCount = 1;
 
             /// The hardware queue class that this scope is requested to execute on.
             HardwareQueueClass m_hardwareQueueClass = HardwareQueueClass::Graphics;

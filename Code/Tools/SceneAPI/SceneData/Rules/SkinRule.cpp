@@ -21,10 +21,12 @@ namespace AZ
             AZ_CLASS_ALLOCATOR_IMPL(SkinRule, AZ::SystemAllocator, 0)
 
             SkinRule::SkinRule()
-                : m_maxWeightsPerVertex(4)
-                , m_weightThreshold(0.001f)
             {
+                DataTypes::SkinRuleSettings defaultSettings = DataTypes::GetDefaultSkinRuleSettings();
+                m_maxWeightsPerVertex = defaultSettings.m_maxInfluencesPerVertex;
+                m_weightThreshold = defaultSettings.m_weightThreshold;
             }
+
             AZ::u32 SkinRule::GetMaxWeightsPerVertex() const
             {
                 return m_maxWeightsPerVertex;

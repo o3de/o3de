@@ -124,7 +124,7 @@ namespace AZ
 
         AZ::RHI::Size LightCullingRemap::GetTileDataBufferResolution()
         {
-            auto binding = GetInputOutputBinding(m_tileDataIndex).m_attachment.get();
+            auto binding = GetInputOutputBinding(m_tileDataIndex).GetAttachment().get();
             return binding->m_descriptor.m_image.m_size;
         }
 

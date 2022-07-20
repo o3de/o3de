@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <AzFramework/Matchmaking/MatchmakingRequests.h>
+#include <Multiplayer/Session/MatchmakingRequests.h>
 
 namespace AWSGameLift
 {
@@ -17,10 +17,10 @@ namespace AWSGameLift
     //! Registers a player's acceptance or rejection of a proposed FlexMatch match. 
     //! AcceptMatchRequest
     struct AWSGameLiftAcceptMatchRequest
-        : public AzFramework::AcceptMatchRequest
+        : public Multiplayer::AcceptMatchRequest
     {
     public:
-        AZ_RTTI(AWSGameLiftAcceptMatchRequest, "{8372B297-88E8-4C13-B31D-BE87236CA416}", AzFramework::AcceptMatchRequest);
+        AZ_RTTI(AWSGameLiftAcceptMatchRequest, "{8372B297-88E8-4C13-B31D-BE87236CA416}", Multiplayer::AcceptMatchRequest);
         static void Reflect(AZ::ReflectContext* context);
 
         AWSGameLiftAcceptMatchRequest() = default;

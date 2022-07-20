@@ -7,46 +7,30 @@
  */
 
 #include <Atom/RHI/FrameScheduler.h>
-
-#include <Atom/RPI.Public/WindowContext.h>
+#include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/Pass/AttachmentReadback.h>
 #include <Atom/RPI.Public/Pass/PassSystemInterface.h>
 #include <Atom/RPI.Public/Pass/Specific/SwapChainPass.h>
 #include <Atom/RHI/RHISystemInterface.h>
+#include <Atom/RPI.Public/RPISystemInterface.h>
 
 namespace AZ
 {
     namespace RPI
     {
-        SwapChainPass::SwapChainPass(const PassDescriptor& descriptor, const WindowContext* windowContext, const Name& childTemplateName)
+        SwapChainPass::SwapChainPass(
+            const PassDescriptor& descriptor, const WindowContext* windowContext, const WindowContext::SwapChainMode swapChainMode)
             : ParentPass(descriptor)
             , m_windowContext(windowContext)
-            , m_childTemplateName(childTemplateName)
+            , m_swapChainMode(swapChainMode)
         {
-            PassSystemInterface* passSystem = PassSystemInterface::Get();
-
-            // Create child pass
-
-            PassRequest childRequest;
-            childRequest.m_templateName = childTemplateName;
-            childRequest.m_passName = childTemplateName;
-
-            PassConnection childInputConnection;
-            childInputConnection.m_localSlot = "SwapChainOutput";
-            childInputConnection.m_attachmentRef.m_pass = "Parent";
-            childInputConnection.m_attachmentRef.m_attachment = "SwapChainOutput";
-            childRequest.m_connections.emplace_back(childInputConnection);
-
-            m_childPass = passSystem->CreatePassFromRequest(&childRequest);
-            AZ_Assert(m_childPass, "SwapChain child pass is invalid: check your passs pipeline, run configuration and your AssetProcessor set project (project_path)");
-
             AzFramework::WindowNotificationBus::Handler::BusConnect(m_windowContext->GetWindowHandle());
         }
 
         Ptr<ParentPass> SwapChainPass::Recreate() const
         {
             PassDescriptor desc = GetPassDescriptor();
-            Ptr<ParentPass> pass = aznew SwapChainPass(desc, m_windowContext, m_childTemplateName);
+            Ptr<ParentPass> pass = aznew SwapChainPass(desc, m_windowContext, m_swapChainMode);
             return pass;
         }
 
@@ -57,9 +41,9 @@ namespace AZ
 
         RHI::Format SwapChainPass::GetSwapChainFormat() const
         {
-            if (m_attachmentBindings.size() > 0 && m_attachmentBindings[0].m_attachment)
+            if (m_attachmentBindings.size() > 0 && m_attachmentBindings[0].GetAttachment())
             {
-                return m_attachmentBindings[0].m_attachment->GetTransientImageDescriptor().m_imageDescriptor.m_format;
+                return m_attachmentBindings[0].GetAttachment()->GetTransientImageDescriptor().m_imageDescriptor.m_format;
             }
             return RHI::Format::Unknown;
         }
@@ -76,11 +60,11 @@ namespace AZ
 
         void SwapChainPass::SetupSwapChainAttachment()
         {
-            m_swapChainDimensions = m_windowContext->GetSwapChain()->GetDescriptor().m_dimensions;
+            m_swapChainDimensions = m_windowContext->GetSwapChain(m_swapChainMode)->GetDescriptor().m_dimensions;
 
             m_swapChainAttachment = aznew PassAttachment();
             m_swapChainAttachment->m_name = "SwapChainOutput";
-            m_swapChainAttachment->m_path = m_windowContext->GetSwapChainAttachmentId();
+            m_swapChainAttachment->m_path = m_windowContext->GetSwapChainAttachmentId(m_swapChainMode);
 
             RHI::ImageDescriptor swapChainImageDesc;
             swapChainImageDesc.m_bindFlags = RHI::ImageBindFlags::Color | RHI::ImageBindFlags::ShaderRead | RHI::ImageBindFlags::CopyWrite;
@@ -89,31 +73,26 @@ namespace AZ
             swapChainImageDesc.m_format = m_swapChainDimensions.m_imageFormat;
             m_swapChainAttachment->m_descriptor = swapChainImageDesc;
 
-            PassAttachmentBinding swapChainOutput;
-            swapChainOutput.m_name = "SwapChainOutput";
-            swapChainOutput.m_slotType = PassSlotType::Output;
-            swapChainOutput.m_attachment = m_swapChainAttachment;
-            swapChainOutput.m_scopeAttachmentUsage = RHI::ScopeAttachmentUsage::RenderTarget;
+            PassAttachmentBinding* swapChainOutput = FindAttachmentBinding(Name("PipelineOutput"));
+            AZ_Assert(swapChainOutput != nullptr &&
+                      swapChainOutput->m_slotType == PassSlotType::InputOutput,
+                      "PassTemplate used to create SwapChainPass must have an InputOutput called PipelineOutput");
 
-            m_attachmentBindings.push_back(swapChainOutput);
+            swapChainOutput->SetAttachment(m_swapChainAttachment);
         }
 
         // --- Pass behavior overrides ---
 
-        void SwapChainPass::CreateChildPassesInternal()
-        {            
-            AddChild(m_childPass);
-        }
-
         void SwapChainPass::BuildInternal()
         {
-            if (m_windowContext->GetSwapChain() == nullptr)
+            if (m_windowContext->GetSwapChainsSize() == 0 ||
+                m_windowContext->GetSwapChain(m_swapChainMode) == nullptr)
             {
                 return;
             }
 
-            m_scissorState = m_windowContext->GetScissor();
-            m_viewportState = m_windowContext->GetViewport();
+            m_scissorState = m_windowContext->GetScissor(m_swapChainMode);
+            m_viewportState = m_windowContext->GetViewport(m_swapChainMode);
 
             SetupSwapChainAttachment();
 
@@ -125,15 +104,41 @@ namespace AZ
             params.m_scissorState = m_scissorState;
             params.m_viewportState = m_viewportState;
 
-            if(m_windowContext->GetSwapChain() == nullptr || m_windowContext->GetSwapChain()->GetImageCount() == 0)
+            if (m_windowContext->GetSwapChainsSize() == 0 ||
+                m_windowContext->GetSwapChain(m_swapChainMode) == nullptr ||
+                m_windowContext->GetSwapChain(m_swapChainMode)->GetImageCount() == 0)
             {
                 return;
             }
 
             RHI::FrameGraphAttachmentInterface attachmentDatabase = params.m_frameGraphBuilder->GetAttachmentDatabase();
 
+            AZ::RPI::RPISystemInterface* rpiSystem = AZ::RPI::RPISystemInterface::Get();
+            if (rpiSystem->GetXRSystem())
+            {
+                switch (m_swapChainMode)
+                {
+                case WindowContext::SwapChainMode::XrLeft:
+                    {
+                        rpiSystem->GetXRSystem()->AcquireSwapChainImage(0);
+                        break;
+                    }
+                case WindowContext::SwapChainMode::XrRight:
+                    {
+                        rpiSystem->GetXRSystem()->AcquireSwapChainImage(1);
+                        break;
+                    }
+                default:
+                    {
+                        // No need to do anything for non-xr swapchain
+                        break;
+                    }
+                } 
+            }
+
             // Import the SwapChain
-            attachmentDatabase.ImportSwapChain(m_windowContext->GetSwapChainAttachmentId(), m_windowContext->GetSwapChain());
+            attachmentDatabase.ImportSwapChain(
+                m_windowContext->GetSwapChainAttachmentId(m_swapChainMode), m_windowContext->GetSwapChain(m_swapChainMode));
 
             ParentPass::FrameBeginInternal(params);
         }

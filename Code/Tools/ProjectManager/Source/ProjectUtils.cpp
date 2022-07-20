@@ -28,6 +28,7 @@
 #include <QScrollBar>
 #include <QProgressBar>
 #include <QLabel>
+#include <QStandardPaths>
 
 #include <AzCore/std/chrono/chrono.h>
 
@@ -150,7 +151,7 @@ namespace O3DE::ProjectManager
 
             for (const QString& directory : original.entryList(QDir::Dirs | QDir::NoDotAndDotDot))
             {
-                if (progressDialog->wasCanceled())
+                if (progressDialog && progressDialog->wasCanceled())
                 {
                     return false;
                 }
@@ -172,10 +173,10 @@ namespace O3DE::ProjectManager
             }
 
             QLocale locale;
-            const float progressDialogRangeHalf = static_cast<float>(qFabs(progressDialog->maximum() - progressDialog->minimum()) * 0.5f);
+            const float progressDialogRangeHalf = progressDialog ? static_cast<float>(qFabs(progressDialog->maximum() - progressDialog->minimum()) * 0.5f) : 0.f;
             for (const QString& file : original.entryList(QDir::Files))
             {
-                if (progressDialog->wasCanceled())
+                if (progressDialog && progressDialog->wasCanceled())
                 {
                     return false;
                 }
@@ -188,6 +189,7 @@ namespace O3DE::ProjectManager
                 }
 
                 // Progress window update
+                if (progressDialog)
                 {
                     // Weight in the number of already copied files as well as the copied bytes to get a better progress indication
                     // for cases combining many small files and some really large files.
@@ -330,7 +332,7 @@ namespace O3DE::ProjectManager
             return copyResult;
         }
 
-        bool CopyProject(const QString& origPath, const QString& newPath, QWidget* parent, bool skipRegister)
+        bool CopyProject(const QString& origPath, const QString& newPath, QWidget* parent, bool skipRegister, bool showProgress)
         {
             // Disallow copying from or into subdirectory
             if (IsDirectoryDescedent(origPath, newPath) || IsDirectoryDescedent(newPath, origPath))
@@ -346,28 +348,35 @@ namespace O3DE::ProjectManager
                 ProjectCacheDirectoryName
             };
 
-            QProgressDialog* progressDialog = new QProgressDialog(parent);
-            progressDialog->setAutoClose(true);
-            progressDialog->setValue(0);
-            progressDialog->setRange(0, 1000);
-            progressDialog->setModal(true);
-            progressDialog->setWindowTitle(QObject::tr("Copying project ..."));
-            progressDialog->show();
+            QProgressDialog* progressDialog = nullptr;
+            if (showProgress)
+            {
+                progressDialog = new QProgressDialog(parent);
+                progressDialog->setAutoClose(true);
+                progressDialog->setValue(0);
+                progressDialog->setRange(0, 1000);
+                progressDialog->setModal(true);
+                progressDialog->setWindowTitle(QObject::tr("Copying project ..."));
+                progressDialog->show();
+            }
 
             QLocale locale;
             QStringList getFilesSkippedPaths(skippedPaths);
             RecursiveGetAllFiles(origPath, getFilesSkippedPaths, filesToCopyCount, totalSizeInBytes, [=](int fileCount, int sizeInBytes)
                 {
-                    // Create a human-readable version of the file size.
-                    const QString fileSizeString = locale.formattedDataSize(sizeInBytes);
+                    if (progressDialog)
+                    {
+                        // Create a human-readable version of the file size.
+                        const QString fileSizeString = locale.formattedDataSize(sizeInBytes);
 
-                    progressDialog->setLabelText(QString("%1 ... %2 %3, %4 %5.")
-                        .arg(QObject::tr("Indexing files"))
-                        .arg(QString::number(fileCount))
-                        .arg(QObject::tr("files found"))
-                        .arg(fileSizeString)
-                        .arg(QObject::tr("to copy")));
-                    qApp->processEvents(QEventLoop::ExcludeUserInputEvents);
+                        progressDialog->setLabelText(QString("%1 ... %2 %3, %4 %5.")
+                            .arg(QObject::tr("Indexing files"))
+                            .arg(QString::number(fileCount))
+                            .arg(QObject::tr("files found"))
+                            .arg(fileSizeString)
+                            .arg(QObject::tr("to copy")));
+                        qApp->processEvents(QEventLoop::ExcludeUserInputEvents);
+                    }
                 });
 
             int numFilesCopied = 0;
@@ -386,13 +395,19 @@ namespace O3DE::ProjectManager
 
             if (!success)
             {
-                progressDialog->setLabelText(QObject::tr("Duplicating project failed/cancelled, removing already copied files ..."));
-                qApp->processEvents(QEventLoop::ExcludeUserInputEvents);
+                if (progressDialog)
+                {
+                    progressDialog->setLabelText(QObject::tr("Duplicating project failed/cancelled, removing already copied files ..."));
+                    qApp->processEvents(QEventLoop::ExcludeUserInputEvents);
+                }
 
                 DeleteProjectFiles(newPath, true);
             }
 
-            progressDialog->deleteLater();
+            if (progressDialog)
+            {
+                progressDialog->deleteLater();
+            }
             return success;
         }
 
@@ -411,7 +426,7 @@ namespace O3DE::ProjectManager
             return false;
         }
 
-        bool MoveProject(QString origPath, QString newPath, QWidget* parent, bool skipRegister)
+        bool MoveProject(QString origPath, QString newPath, QWidget* parent, bool skipRegister, bool showProgress)
         {
             origPath = QDir::toNativeSeparators(origPath);
             newPath = QDir::toNativeSeparators(newPath);
@@ -429,7 +444,7 @@ namespace O3DE::ProjectManager
             if (!newDirectory.rename(origPath, newPath))
             {
                 // Likely failed because trying to move to another partition, try copying
-                if (!CopyProject(origPath, newPath, parent))
+                if (!CopyProject(origPath, newPath, parent, skipRegister, showProgress))
                 {
                     return false;
                 }
@@ -658,6 +673,21 @@ namespace O3DE::ProjectManager
 
             return AZ::Success(QString(projectBuildPath.c_str()));
         }
+
+    QString GetDefaultProjectPath()
+    {
+        QString defaultPath = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
+        AZ::Outcome<EngineInfo> engineInfoResult = PythonBindingsInterface::Get()->GetEngineInfo();
+        if (engineInfoResult.IsSuccess())
+        {
+            QDir path(QDir::toNativeSeparators(engineInfoResult.GetValue().m_defaultProjectsFolder));
+            if (path.exists())
+            {
+                defaultPath = path.absolutePath();
+            }
+        }
+        return defaultPath;
+    }
 
         void DisplayDetailedError(const QString& title, const AZ::Outcome<void, AZStd::pair<AZStd::string, AZStd::string>>& outcome, QWidget* parent)
         {

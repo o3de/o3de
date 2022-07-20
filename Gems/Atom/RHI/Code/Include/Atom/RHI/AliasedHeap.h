@@ -93,6 +93,9 @@ namespace AZ
             //! Returns the heap statistics of the frame when the Aliased Heap was began with the GatherStatistics flag.
             const TransientAttachmentStatistics::Heap& GetStatistics() const;
 
+            //! Remove the entry related to the provided attachmentId from the cache as it is probably stale now
+            void RemoveFromCache(RHI::AttachmentId attachmentId);
+
         protected:
             AliasedHeap() = default;
 
@@ -114,6 +117,7 @@ namespace AZ
             //////////////////////////////////////////////////////////////////////////
             // ResourcePool
             void ShutdownInternal() override;
+            void ComputeFragmentation() const override;
             //////////////////////////////////////////////////////////////////////////
 
         private:
@@ -151,6 +155,10 @@ namespace AZ
             };
 
             AZStd::unordered_map<AttachmentId, AttachmentData> m_activeAttachmentLookup;
+
+            // This map is used to reverse look up resource hash so we can clear them out of m_cache
+            // once they have been replaced with a new resource at a different place in the heap. 
+            AZStd::unordered_map<AttachmentId, HashValue64> m_reverseLookupHash;
         };
     }
 }

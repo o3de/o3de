@@ -1,6 +1,0 @@
-<Material MtlFlags="526336" Shader="Water" GenMask="800" StringGenMask="" SurfaceType="mat_water" Diffuse="1,1,1" Specular="0.19806935,0.19806935,0.19806935" Emittance="1,1,1,25" Shininess="254" CloakAmount="0" vertModifType="0" LayerAct="1">
- <Textures>
-  <Texture Map="Diffuse" File="///textures/gettingstartedtextures/white.dds"/>
- </Textures>
- <PublicParams NormalsScale="1.25" SoftIntersectionFactor="1" Tilling="10" SubSurfaceScatteringScale="2" RipplesNormalsScale="1" DetailNormalsScale="0.5" DetailTilling="2.5" GradientScale="0.1" FresnelGloss="0.89999998" ReflectionScale="1" RefractionBumpScale="0.1" HeightScale="0.2" ReflectionBumpScale="0.1" RainTilling="1"/>
-</Material>

@@ -18,11 +18,13 @@
  * THIS FILE IS TO BE INCLUDED By THE TARGET MANAGER ONLY!!!
  */
 
-#include <GridMate/GridMate.h>
-#include <GridMate/Session/Session.h>
-#include <GridMate/Replica/Replica.h>
 #include <AzCore/EBus/EBus.h>
-#include <GridMate/Replica/ReplicaChunkDescriptor.h>
+#include <AzCore/RTTI/TypeSafeIntegral.h>
+
+namespace AzFrameworkPackets
+{
+    class TargetConnect;
+}
 
 // neighborhood common
 namespace Neighborhood {
@@ -32,9 +34,7 @@ namespace Neighborhood {
         NEIGHBOR_CAP_LUA_VM         = 1 << 0,
         NEIGHBOR_CAP_LUA_DEBUGGER   = 1 << 1,
     };
-    typedef AZ::u32 NeighborCaps;
-
-    class NeighborReplica;
+    AZ_TYPE_SAFE_INTEGRAL(NeighborCaps, uint32_t);
 
     /*
      * Neighborhood changes are broadcast at each node through this bus
@@ -45,60 +45,20 @@ namespace Neighborhood {
     public:
         virtual ~NeighborhoodEvents() {}
 
-        // used to advertise a node and its capabilities
-        virtual void    OnNodeJoined(const NeighborReplica& /*node*/) {}
-        // used to notify that a node is no longer available
-        virtual void    OnNodeLeft(const NeighborReplica& /*node*/) {}
+        //! Used to advertise a node and its capabilities
+        //! @param node Packet containing join information from a Target node
+        //! @param networkId Network ID of the joining Target
+        virtual void OnNodeJoined([[maybe_unused]] const AzFrameworkPackets::TargetConnect& node, [[maybe_unused]] const AZ::u32 networkId) {}
+        
+        //! Used to notify that a node is no longer available
+        //! @param networkId Network ID of the Target node leaving the host
+        virtual void OnNodeLeft([[maybe_unused]] const AZ::u32 networkId) {}
     };
     typedef AZ::EBus<NeighborhoodEvents> NeighborhoodBus;
 
-    /*
-     * The NeighborReplica is used to advertise features present at each node
-     */
-    class NeighborReplica
-        : public GridMate::ReplicaChunk
-    {
-    public:
-        GM_CLASS_ALLOCATOR(NeighborReplica);
-
-        NeighborReplica();
-        NeighborReplica(GridMate::MemberIDCompact owner, const char* persistentName, NeighborCaps capabilities = NEIGHBOR_CAP_NONE);
-
-        //////////////////////////////////////////////////////////////////////
-        //! GridMate::ReplicaChunk overrides.
-        static const char* GetChunkName() { return "NeighborReplica"; }
-        void UpdateChunk(const GridMate::ReplicaContext& rc) override;
-        void OnReplicaActivate(const GridMate::ReplicaContext& rc) override;
-        void OnReplicaDeactivate(const GridMate::ReplicaContext& rc) override;
-        void UpdateFromChunk(const GridMate::ReplicaContext& rc) override;
-        bool IsReplicaMigratable() override;
-
-        NeighborCaps                GetCapabilities() const;
-        GridMate::MemberIDCompact   GetTargetMemberId() const;
-        const char*                 GetPersistentName() const;
-        void                        SetDisplayName(const char* displayName);
-        const char*                 GetDisplayName() const;
-
-        class Desc
-            : public GridMate::ReplicaChunkDescriptor
-        {
-        public:
-            Desc();
-
-            ReplicaChunkBase* CreateFromStream(GridMate::UnmarshalContext& mc) override;
-            void DiscardCtorStream(GridMate::UnmarshalContext& mc) override;
-            void DeleteReplicaChunk(ReplicaChunkBase* chunkInstance) override;
-            void MarshalCtorData(ReplicaChunkBase* chunkInstance, GridMate::WriteBuffer& wb) override;
-        };
-
-    protected:
-        GridMate::DataSet<NeighborCaps>                 m_capabilities;
-        GridMate::DataSet<GridMate::MemberIDCompact>    m_owner;
-        GridMate::DataSet<AZStd::string>                m_persistentName;
-        GridMate::DataSet<AZStd::string>                m_displayName;
-    };
-    typedef AZStd::intrusive_ptr<NeighborReplica> NeighborReplicaPtr;
-    //---------------------------------------------------------------------
+    // Slightly below AzNetworking's TCP max packet size for maximum message space with room for packet headers
+    static constexpr uint32_t NeighborBufferSize = 16000;
+    using NeighborMessageBuffer = AzNetworking::ByteBuffer<NeighborBufferSize>;
 }   // namespace Neighborhood
 
 

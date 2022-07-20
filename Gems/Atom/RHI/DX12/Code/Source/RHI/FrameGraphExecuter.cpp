@@ -30,7 +30,11 @@ namespace AZ
 
         FrameGraphExecuter::FrameGraphExecuter()
         {
-            SetJobPolicy(RHI::JobPolicy::Parallel);
+            RHI::JobPolicy graphJobPolicy = RHI::JobPolicy::Parallel;
+#if defined(AZ_FORCE_CPU_GPU_INSYNC)
+            graphJobPolicy = RHI::JobPolicy::Serial;
+#endif
+            SetJobPolicy(graphJobPolicy);
         }
 
         RHI::ResultCode FrameGraphExecuter::InitInternal(const RHI::FrameGraphExecuterDescriptor& descriptor)
@@ -51,30 +55,27 @@ namespace AZ
             m_commandQueueContext = nullptr;
         }
 
-        void FrameGraphExecuter::BeginInternalDebug(const RHI::FrameGraph& frameGraph)
-        {
-            for (const RHI::Scope* scopeBase : frameGraph.GetScopes())
-            {
-                const Scope& scope = *static_cast<const Scope*>(scopeBase);
-
-                FrameGraphExecuteGroup* scopeContextGroup = AddGroup<FrameGraphExecuteGroup>();
-                scopeContextGroup->Init(GetDevice(), scope, 1, RHI::JobPolicy::Serial);
-            }
-        }
-
         void FrameGraphExecuter::BeginInternal(const RHI::FrameGraph& frameGraph)
         {
-#if defined (AZ_DX12_FORCE_FLUSH_SCOPES)
-            BeginInternalDebug(frameGraph);
-#else
-
             Device& device = GetDevice();
+            AZStd::vector<const Scope*> mergedScopes;
 
+#if defined(AZ_FORCE_CPU_GPU_INSYNC)
+            // Forces all scopes to issue a dedicated merged scope group with one command list.
+            // This will ensure that the Execute is done on only one scope and if an error happens
+            // we can be sure about the work gpu was working on before the crash.
+            for (const RHI::Scope* scopeBase : frameGraph.GetScopes())
+            {
+                mergedScopes.push_back(static_cast<const Scope*>(scopeBase));
+                RHI::ScopeId scopeId = scopeBase->GetName();
+                FrameGraphExecuteGroupMerged* multiScopeContextGroup = AddGroup<FrameGraphExecuteGroupMerged>();
+                multiScopeContextGroup->Init(device, AZStd::move(mergedScopes), scopeId);
+            }
+#else
             bool hasUserFencesToSignal = false;
             RHI::HardwareQueueClass mergedHardwareQueueClass = RHI::HardwareQueueClass::Graphics;
             uint32_t mergedGroupCost = 0;
             uint32_t mergedSwapchainCount = 0;
-            AZStd::vector<const Scope*> mergedScopes;
 
             const Scope* scopePrev = nullptr;
             for (const RHI::Scope* scopeBase : frameGraph.GetScopes())
@@ -92,12 +93,10 @@ namespace AZ
                 const uint32_t CommandListCostThreshold =
                     AZStd::max(
                         m_frameGraphExecuterData.m_commandListCostThresholdMin,
-                        RHI::DivideByMultiple(estimatedItemCount, m_frameGraphExecuterData.m_commandListsPerScopeMax));
+                        AZ::DivideAndRoundUp(estimatedItemCount, m_frameGraphExecuterData.m_commandListsPerScopeMax));
 
-                /**
-                 * Computes a cost heuristic based on the number of items and number of attachments in
-                 * the scope. This cost is used to partition command list generation.
-                 */
+                // Computes a cost heuristic based on the number of items and number of attachments in
+                // the scope. This cost is used to partition command list generation.
                 const uint32_t totalScopeCost =
                     estimatedItemCount * m_frameGraphExecuterData.m_itemCost +
                     static_cast<uint32_t>(scope.GetAttachments().size()) * m_frameGraphExecuterData.m_attachmentCost;
@@ -145,7 +144,7 @@ namespace AZ
                 else
                 {
                     // And then create a new group for the current scope with dedicated [1, N] command lists.
-                    const uint32_t commandListCount = AZStd::max(RHI::DivideByMultiple(totalScopeCost, CommandListCostThreshold), 1u);
+                    const uint32_t commandListCount = AZStd::max(AZ::DivideAndRoundUp(totalScopeCost, CommandListCostThreshold), 1u);
 
                     FrameGraphExecuteGroup* scopeContextGroup = AddGroup<FrameGraphExecuteGroup>();
                     scopeContextGroup->Init(device, scope, commandListCount, GetJobPolicy());

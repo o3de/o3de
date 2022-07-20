@@ -573,7 +573,7 @@ namespace UnitTest
         using AzToolsFramework::EditorInteractionSystemViewportSelectionRequestBus;
         EditorInteractionSystemViewportSelectionRequestBus::Event(
             AzToolsFramework::GetEntityContextId(), &EditorInteractionSystemViewportSelectionRequestBus::Events::SetHandler,
-            [](const AzToolsFramework::EditorVisibleEntityDataCache* entityDataCache,
+            [](const AzToolsFramework::EditorVisibleEntityDataCacheInterface* entityDataCache,
                [[maybe_unused]] AzToolsFramework::ViewportEditorModeTrackerInterface* viewportEditorModeTracker)
             {
                 return AZStd::make_unique<AzToolsFramework::EditorPickEntitySelection>(entityDataCache, viewportEditorModeTracker);
@@ -591,7 +591,7 @@ namespace UnitTest
         using AzToolsFramework::EditorInteractionSystemViewportSelectionRequestBus;
         EditorInteractionSystemViewportSelectionRequestBus::Event(
             AzToolsFramework::GetEntityContextId(), &EditorInteractionSystemViewportSelectionRequestBus::Events::SetHandler,
-            [](const AzToolsFramework::EditorVisibleEntityDataCache* entityDataCache,
+            [](const AzToolsFramework::EditorVisibleEntityDataCacheInterface* entityDataCache,
                [[maybe_unused]] AzToolsFramework::ViewportEditorModeTrackerInterface* viewportEditorModeTracker)
             {
                 return AZStd::make_unique<AzToolsFramework::EditorPickEntitySelection>(entityDataCache, viewportEditorModeTracker);
@@ -599,7 +599,7 @@ namespace UnitTest
 
         EditorInteractionSystemViewportSelectionRequestBus::Event(
             AzToolsFramework::GetEntityContextId(), &EditorInteractionSystemViewportSelectionRequestBus::Events::SetHandler,
-            [](const AzToolsFramework::EditorVisibleEntityDataCache* entityDataCache,
+            [](const AzToolsFramework::EditorVisibleEntityDataCacheInterface* entityDataCache,
                [[maybe_unused]] AzToolsFramework::ViewportEditorModeTrackerInterface* viewportEditorModeTracker)
             {
                 return AZStd::make_unique<AzToolsFramework::EditorDefaultSelection>(entityDataCache, viewportEditorModeTracker);

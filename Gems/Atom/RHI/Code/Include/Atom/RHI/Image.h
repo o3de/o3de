@@ -83,6 +83,9 @@ namespace AZ
             //! Returns the aspects that are included in the image.
             ImageAspectFlags GetAspectFlags() const;
 
+            //! Get the hash associated with the passed view descriptorimage
+            const HashValue64 GetHash() const;
+
         protected:
             Image() = default;
 
@@ -98,12 +101,8 @@ namespace AZ
                 const ImageSubresourceRange& subresourceRange,
                 ImageSubresourceLayoutPlaced* subresourceLayouts,
                 size_t* totalSizeInBytes) const = 0;
-
             ///////////////////////////////////////////////////////////////////
 
-            //! Get the hash associated with the passed view descriptor
-            const size_t GetHash(const ImageViewDescriptor& imageViewDescriptor) const;
-            
             /// The RHI descriptor for this image.
             ImageDescriptor m_descriptor;
 

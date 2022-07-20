@@ -104,7 +104,6 @@ namespace AzManipulatorTestFramework
 
     AzFramework::ScreenPoint GetCameraStateViewportCenter(const AzFramework::CameraState& cameraState)
     {
-        return { aznumeric_cast<int>(cameraState.m_viewportSize.GetX() / 2.f),
-                 aznumeric_cast<int>(cameraState.m_viewportSize.GetY() / 2.f) };
+        return { cameraState.m_viewportSize.m_width / 2, cameraState.m_viewportSize.m_height / 2 };
     }
 } // namespace AzManipulatorTestFramework

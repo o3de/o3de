@@ -10,6 +10,8 @@
 
 #include <AssetBuilderSDK/AssetBuilderBusses.h>
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
+#include <Atom/RPI.Reflect/Material/MaterialTypeAsset.h>
+#include <Atom/RPI.Edit/Material/MaterialSourceData.h>
 #include <AzCore/JSON/document.h>
 
 namespace AZ
@@ -38,9 +40,17 @@ namespace AZ
             void RegisterBuilder();
 
         private:
-            
+
+            enum class MaterialTypeProductSubId : u32
+            {
+                MaterialTypeAsset = 0,
+                AllPropertiesMaterialSourceFile = 1
+            };
+
             AZ::Data::Asset<MaterialAsset> CreateMaterialAsset(AZStd::string_view materialSourceFilePath, const rapidjson::Value& json) const;
-            bool ReportMaterialAssetWarningsAsErrors() const;
+            bool ShouldReportMaterialAssetWarningsAsErrors() const;
+            bool ShouldOutputAllPropertiesMaterial() const;
+            AZStd::string GetBuilderSettingsFingerprint() const;
             
             bool m_isShuttingDown = false;
         };

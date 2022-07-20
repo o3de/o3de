@@ -2,7 +2,7 @@
     "description": "",
     "parentMaterial": "",
     "materialType": "Materials/Types/StandardPBR.materialtype",
-    "materialTypeVersion": 4,
+    "materialTypeVersion": 5,
     "properties": {
         "baseColor": {
             "textureMap": "../Textures/curtainRed_1k_basecolor.png"
@@ -11,7 +11,8 @@
             "applySpecularAA": true
         },
         "irradiance": {
-            "color": [
+            "irradianceColorSource": "Manual",
+            "manualColor": [
                 0.41960784792900085,
                 0.003921568859368563,
                 0.003921568859368563,

@@ -2620,26 +2620,7 @@ namespace
         UnixTimeToFileTime(unixtime, &filetime);
         FileTimeToSystemTime(&filetime, systemtime);
     }
-
-    time_t UnixTimeFromFileTime(const FILETIME* filetime)
-    {
-        LONGLONG longlong = filetime->dwHighDateTime;
-        longlong <<= 32;
-        longlong |= filetime->dwLowDateTime;
-        longlong -= 116444736000000000;
-        return longlong / 10000000;
-    }
-
-    time_t UnixTimeFromSystemTime(const SYSTEMTIME* systemtime)
-    {
-        // convert systemtime to filetime
-        FILETIME filetime;
-        SystemTimeToFileTime(systemtime, &filetime);
-        // convert filetime to unixtime
-        time_t unixtime = UnixTimeFromFileTime(&filetime);
-        return unixtime;
-    }
-};
+}
 
 void CLocalizedStringsManager::LocalizeTime(time_t t, bool bMakeLocalTime, bool bShowSeconds, AZStd::string& outTimeString)
 {

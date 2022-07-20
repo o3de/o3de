@@ -33,7 +33,7 @@ def Collider_PxMeshAutoAssignedWhenModifyingRenderMeshComponent():
      2) Create an entity
      3) Add Mesh and PhysX Collider component
      4) Verify no physics asset is auto-assigned.
-     5) Assign a render mesh asset to Mesh component (the fbx mesh having both Static mesh and PhysX collision Mesh)
+     5) Assign a render model asset to Mesh component (the fbx mesh having both Static mesh and PhysX collision Mesh)
      6) The physics asset in PhysX Collider component is auto-assigned.
 
     Note:
@@ -53,16 +53,17 @@ def Collider_PxMeshAutoAssignedWhenModifyingRenderMeshComponent():
     from editor_python_test_tools.utils import TestHelper as helper
     from editor_python_test_tools.asset_utils import Asset
 
+    import editor_python_test_tools.hydra_editor_utils as hydra
+
     # Open 3D Engine Imports
     import azlmbr.legacy.general as general
 
     MESH_ASSET_PATH = os.path.join("Objects", "SphereBot", "r0-b_body.azmodel")
-    MESH_PROPERTY_PATH = "Controller|Configuration|Mesh Asset"
+    MESH_PROPERTY_PATH = "Controller|Configuration|Model Asset"
     TESTED_PROPERTY_PATH = "Shape Configuration|Asset|PhysX Mesh"
 
-    helper.init_idle()
     # 1) Load the empty level
-    helper.open_level("Physics", "Base")
+    hydra.open_base_level()
 
     # 2) Create an entity
     test_entity = Entity.create_editor_entity("test_entity")
@@ -79,7 +80,7 @@ def Collider_PxMeshAutoAssignedWhenModifyingRenderMeshComponent():
     value_to_test = test_component.get_component_property_value(TESTED_PROPERTY_PATH)
     Report.result(Tests.shape_default_at_start, value_to_test == azlmbr.asset.AssetId())
 
-    # 5) Assign a render mesh asset to Mesh component (the fbx mesh having both Static mesh and PhysX collision Mesh)
+    # 5) Assign a render model asset to Mesh component (the fbx mesh having both Static mesh and PhysX collision Mesh)
     asset_value = Asset.find_asset_by_path(MESH_ASSET_PATH)
     mesh_component.set_component_property_value(MESH_PROPERTY_PATH, asset_value.id)
 

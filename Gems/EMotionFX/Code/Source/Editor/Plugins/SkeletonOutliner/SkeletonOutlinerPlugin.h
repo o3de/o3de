@@ -19,7 +19,6 @@
 #include <QTreeView>
 #endif
 
-
 QT_FORWARD_DECLARE_CLASS(QLabel)
 
 namespace EMotionFX
@@ -44,7 +43,7 @@ namespace EMotionFX
         bool GetIsClosable() const override                 { return true;  }
         bool GetIsFloatable() const override                { return true;  }
         bool GetIsVertical() const override                 { return false; }
-        EMStudioPlugin* Clone() override                    { return new SkeletonOutlinerPlugin(); }
+        EMStudioPlugin* Clone() const override              { return new SkeletonOutlinerPlugin(); }
         bool Init() override;
 
         // SkeletalOutlinerRequestBus overrides
@@ -73,7 +72,7 @@ namespace EMotionFX
         AZStd::unique_ptr<SkeletonModel>        m_skeletonModel;
         QModelIndexList                         m_selectedRows;
         SkeletonSortFilterProxyModel*           m_filterProxyModel;
-        static int                              s_iconSize;
+        static constexpr int s_iconSize = 16;
 
         // Callbacks
         // Works for all commands that use the actor id as well as the joint name mixins

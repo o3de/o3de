@@ -21,7 +21,8 @@
                 "Child Entity Order": [
                     "Entity_[1176639161715]",
                     "Entity_[12685882829720]",
-                    "Entity_[31145534614197]"
+                    "Entity_[31145534614197]",
+                    "Entity_[813941421311]"
                 ]
             },
             "Component_[15230859088967841193]": {
@@ -206,7 +207,7 @@
                     "Controller": {
                         "Configuration": {
                             "Field of View": 55.0,
-                            "EditorEntityId": 11050384689878106598
+                            "EditorEntityId": 4424216666259806904
                         }
                     }
                 },
@@ -568,22 +569,15 @@
                     "$type": "EditorScriptCanvasComponent",
                     "Id": 14750978061505735417,
                     "m_name": "GlobalGameData",
-                    "m_assetHolder": {
-                        "m_asset": {
-                            "assetId": {
-                                "guid": "{B16589A0-EA01-56BC-8141-91A3967FB95F}"
-                            },
-                            "assetHint": "levels/multiplayer/autocomponent_rpc/globalgamedata.scriptcanvas"
-                        }
-                    },
-                    "runtimeDataIsValid": true,
                     "runtimeDataOverrides": {
                         "source": {
-                            "assetId": {
-                                "guid": "{B16589A0-EA01-56BC-8141-91A3967FB95F}"
-                            },
-                            "assetHint": "levels/multiplayer/autocomponent_rpc/globalgamedata.scriptcanvas"
+                            "id": "{B16589A0-EA01-56BC-8141-91A3967FB95F}",
+                            "path": "C:/prj/o3de/AutomatedTesting/Levels/Multiplayer/AutoComponent_RPC/GlobalGameData.scriptcanvas"
                         }
+                    },
+                    "sourceHandle": {
+                        "id": "{B16589A0-EA01-56BC-8141-91A3967FB95F}",
+                        "path": "C:/prj/o3de/AutomatedTesting/Levels/Multiplayer/AutoComponent_RPC/GlobalGameData.scriptcanvas"
                     }
                 },
                 "Component_[16436925042043744033]": {
@@ -636,6 +630,13 @@
                     "$type": "SelectionComponent",
                     "Id": 12302672911455629152
                 },
+                "Component_[12517591696100736853]": {
+                    "$type": "GenericComponentWrapper",
+                    "Id": 12517591696100736853,
+                    "m_template": {
+                        "$type": "AutomatedTesting::NetworkTestLevelEntityComponent"
+                    }
+                },
                 "Component_[14169903623243423134]": {
                     "$type": "EditorVisibilityComponent",
                     "Id": 14169903623243423134
@@ -643,13 +644,6 @@
                 "Component_[14607413934411389854]": {
                     "$type": "EditorInspectorComponent",
                     "Id": 14607413934411389854
-                },
-                "Component_[15396284312416541768]": {
-                    "$type": "GenericComponentWrapper",
-                    "Id": 15396284312416541768,
-                    "m_template": {
-                        "$type": "Multiplayer::LocalPredictionPlayerInputComponent"
-                    }
                 },
                 "Component_[15494977028055234270]": {
                     "$type": "EditorDisabledCompositionComponent",
@@ -681,23 +675,16 @@
                 "Component_[7256163899440301540]": {
                     "$type": "EditorScriptCanvasComponent",
                     "Id": 7256163899440301540,
-                    "m_name": "AutoComponent_RPC_NetLevelEntity",
-                    "m_assetHolder": {
-                        "m_asset": {
-                            "assetId": {
-                                "guid": "{1D517006-AC01-5ECA-AE66-0E007871F0CD}"
-                            },
-                            "assetHint": "levels/multiplayer/autocomponent_rpc/autocomponent_rpc_netlevelentity.scriptcanvas"
-                        }
-                    },
-                    "runtimeDataIsValid": true,
+                    "m_name": "AutoComponent_RPC_NetLevelEntity.scriptcanvas",
                     "runtimeDataOverrides": {
                         "source": {
-                            "assetId": {
-                                "guid": "{1D517006-AC01-5ECA-AE66-0E007871F0CD}"
-                            },
-                            "assetHint": "levels/multiplayer/autocomponent_rpc/autocomponent_rpc_netlevelentity.scriptcanvas"
+                            "id": "{1D517006-AC01-5ECA-AE66-0E007871F0CD}",
+                            "path": "C:/prj/o3de/AutomatedTesting/Levels/Multiplayer/AutoComponent_RPC/AutoComponent_RPC_NetLevelEntity.scriptcanvas"
                         }
+                    },
+                    "sourceHandle": {
+                        "id": "{1D517006-AC01-5ECA-AE66-0E007871F0CD}",
+                        "path": "C:/prj/o3de/AutomatedTesting/Levels/Multiplayer/AutoComponent_RPC/AutoComponent_RPC_NetLevelEntity.scriptcanvas"
                     }
                 },
                 "Component_[731336627222243355]": {
@@ -730,16 +717,85 @@
                         "$type": "NetBindComponent"
                     }
                 },
-                "Component_[9816897251206708579]": {
-                    "$type": "GenericComponentWrapper",
-                    "Id": 9816897251206708579,
-                    "m_template": {
-                        "$type": "AutomatedTesting::NetworkTestPlayerComponent"
-                    }
-                },
                 "Component_[9880860858035405475]": {
                     "$type": "EditorOnlyEntityComponent",
                     "Id": 9880860858035405475
+                }
+            }
+        },
+        "Entity_[813941421311]": {
+            "Id": "Entity_[813941421311]",
+            "Name": "NetworkPlayerSpawner",
+            "Components": {
+                "Component_[14176908959588655413]": {
+                    "$type": "EditorEntityIconComponent",
+                    "Id": 14176908959588655413
+                },
+                "Component_[15418724777997603711]": {
+                    "$type": "EditorEntitySortComponent",
+                    "Id": 15418724777997603711
+                },
+                "Component_[17311716517667895575]": {
+                    "$type": "GenericComponentWrapper",
+                    "Id": 17311716517667895575,
+                    "m_template": {
+                        "$type": "NetworkPlayerSpawnerComponent",
+                        "SnapToGround": true,
+                        "SpawnableAsset": {
+                            "assetId": {
+                                "guid": "{E472C498-952F-5472-A7FA-ADDEF51A6BB8}",
+                                "subId": 738868766
+                            },
+                            "assetHint": "levels/multiplayer/autocomponent_rpc/player.network.spawnable"
+                        }
+                    }
+                },
+                "Component_[17401758523218194715]": {
+                    "$type": "EditorInspectorComponent",
+                    "Id": 17401758523218194715
+                },
+                "Component_[3349885435450338644]": {
+                    "$type": "EditorPendingCompositionComponent",
+                    "Id": 3349885435450338644
+                },
+                "Component_[3690931284860136061]": {
+                    "$type": "EditorLockComponent",
+                    "Id": 3690931284860136061
+                },
+                "Component_[4983909636142747440]": {
+                    "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
+                    "Id": 4983909636142747440,
+                    "Parent Entity": "Entity_[1146574390643]",
+                    "Transform Data": {
+                        "Translate": [
+                            -1.8025494813919067,
+                            0.09999942779541016,
+                            1.7718431949615479
+                        ]
+                    }
+                },
+                "Component_[5226660854992901830]": {
+                    "$type": "EditorDisabledCompositionComponent",
+                    "Id": 5226660854992901830
+                },
+                "Component_[57983742636283789]": {
+                    "$type": "SelectionComponent",
+                    "Id": 57983742636283789
+                },
+                "Component_[7798777289664892554]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 7798777289664892554
+                },
+                "Component_[8010736475644599930]": {
+                    "$type": "EditorVisibilityComponent",
+                    "Id": 8010736475644599930
+                },
+                "Component_[8271342218935359209]": {
+                    "$type": "GenericComponentWrapper",
+                    "Id": 8271342218935359209,
+                    "m_template": {
+                        "$type": "NetBindComponent"
+                    }
                 }
             }
         }
