@@ -127,7 +127,6 @@ class LogMonitor(object):
         # Log file is now opened by our process, start monitoring log lines:
         self.py_log = ""
         try:
-            logger.debug("Monitoring log file in '{}' ".format(self.log_file_path))
             with open(self.log_file_path, mode='r', encoding='utf-8') as log:
                 logger.info(
                     "Monitoring log file '{}' for '{}' seconds".format(self.log_file_path, timeout))
