@@ -208,6 +208,6 @@ namespace JsonSerializationTests
         static InstanceWithSomeDefaults<InheritedPointerInContainer> GetInstanceWithSomeDefaults();
         static InstanceWithoutDefaults<InheritedPointerInContainer> GetInstanceWithoutDefaults();
 
-        AZStd::vector<BaseClass*> m_array; // only used as SimpleInheritence in tests
+        AZStd::vector<BaseClass*> m_array; 
     };
 } // namespace JsonSerializationTests

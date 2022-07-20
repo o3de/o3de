@@ -187,7 +187,8 @@ namespace JsonSerializationTests
 
     using AnyConformityTestTypes = ::testing::Types
         // All pass, and all must pass; do not remove any types from these testing cases.
-        < AnySerializerTestDescription<SimpleClass>
+        <
+        /*AnySerializerTestDescription<SimpleClass>
         , AnySerializerTestDescription<SimpleInheritence>
         , AnySerializerTestDescription<MultipleInheritence>
         , AnySerializerTestDescription<SimpleNested>
@@ -200,7 +201,7 @@ namespace JsonSerializationTests
         , AnySerializerTestDescription<ComplexAssignedDifferentInheritedPointer>
 
         // fails two tests
-        // , AnySerializerTestDescription<ComplexAssignedSameInheritedPointer>
+        // ,*/ AnySerializerTestDescription<ComplexAssignedSameInheritedPointer>
 
          //still crash
         /*
