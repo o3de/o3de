@@ -18,7 +18,6 @@
 
 #include <Editor/MultiplayerEditorConnection.h>
 #include <Multiplayer/IMultiplayer.h>
-#include <Multiplayer/IMultiplayerConnectionViewportMessage.h>
 #include <Multiplayer/INetworkSpawnableLibrary.h>
 #include <Multiplayer/MultiplayerConstants.h>
 #include <Multiplayer/MultiplayerEditorServerBus.h>
@@ -238,12 +237,11 @@ namespace Multiplayer
         if (AZ::Interface<IMultiplayer>::Get()->Connect(editorsv_serveraddr.c_str(), sv_port))
         {
             AZ_Printf("MultiplayerEditorConnection", "Editor-server ready. Editor has successfully connected to the editor-server's network simulation.")
-            AZ::Interface<IMultiplayerConnectionViewportMessage>::Get()->StopCenterViewportDebugMessaging();
+            MultiplayerEditorServerNotificationBus::Broadcast(&MultiplayerEditorServerNotificationBus::Events::OnConnectToSimulationSuccess);
         }
         else
         {   
-            const auto connection_fail_message = AZStd::fixed_string<256>::format("EditorServerReady packet was received, but connecting to the editor-server's network simulation failed! Is the editor and server using the same sv_port (%i)?", sv_port);
-            AZ::Interface<IMultiplayerConnectionViewportMessage>::Get()->DisplayCenterViewportMessage(connection_fail_message.c_str());
+            MultiplayerEditorServerNotificationBus::Broadcast(&MultiplayerEditorServerNotificationBus::Events::OnConnectToSimulationFail, sv_port);
         }
         return true;
     }

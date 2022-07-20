@@ -255,7 +255,8 @@ class Launcher(object):
         """
         ly_test_tools.environment.waiter.wait_for(
             lambda: not self.is_alive(),
-            exc=ly_test_tools.launchers.exceptions.WaitTimeoutError("Application is unexpectedly still active"),
+            exc=ly_test_tools.launchers.exceptions.WaitTimeoutError(f"Application is unexpectedly still active after "
+                                                                    f"timeout of {timeout} seconds"),
             timeout=timeout
         )
 
@@ -270,7 +271,8 @@ class Launcher(object):
         try:
             ly_test_tools.environment.waiter.wait_for(
                 lambda: not self.is_alive(),
-                exc=ly_test_tools.launchers.exceptions.TeardownError("Application is unexpectedly still active"),
+                exc=ly_test_tools.launchers.exceptions.TeardownError(f"Application is unexpectedly still active after "
+                                                                     f"timeout of {timeout} seconds"),
                 timeout=timeout
             )
         except ly_test_tools.launchers.exceptions.TeardownError:

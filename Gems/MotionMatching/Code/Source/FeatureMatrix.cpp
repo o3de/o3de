@@ -51,17 +51,7 @@ namespace EMotionFX::MotionMatching
 
     void FeatureMatrix::SaveAsCsv(const AZStd::string& filename, const FeatureSchema* featureSchema)
     {
-        AZStd::vector<AZStd::string> columnNames;
-
-        for (Feature* feature: featureSchema->GetFeatures())
-        {
-            const size_t numDimensions = feature->GetNumDimensions();
-            for (size_t dimension = 0; dimension < numDimensions; ++dimension)
-            {
-                columnNames.push_back(feature->GetDimensionName(dimension));
-            }
-        }
-
+        const AZStd::vector<AZStd::string> columnNames = featureSchema->CollectColumnNames();
         SaveAsCsv(filename, columnNames);
     }
 

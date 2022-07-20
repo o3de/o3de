@@ -45,10 +45,12 @@ namespace Multiplayer
     {
         AZ::RPI::ViewportContextNotificationBus::Handler::BusConnect(
             AZ::RPI::ViewportContextRequests::Get()->GetDefaultViewportContextName());
+        MultiplayerEditorServerNotificationBus::Handler::BusConnect();
     }
 
     void MultiplayerConnectionViewportMessageSystemComponent::Deactivate()
     {
+        MultiplayerEditorServerNotificationBus::Handler::BusDisconnect();
         AZ::RPI::ViewportContextNotificationBus::Handler::BusDisconnect();
     }
 
@@ -90,13 +92,12 @@ namespace Multiplayer
             const float center_screenposition_y = 0.5f*viewportSize.m_height;
 
             // Draw title
-            const char* centerViewportDebugTextTitle = "Multiplayer Editor";
-            const float textHeight = m_fontDrawInterface->GetTextSize(m_drawParams, centerViewportDebugTextTitle).GetY();
+            const float textHeight = m_fontDrawInterface->GetTextSize(m_drawParams, CenterViewportDebugTitle).GetY();
             const float screenposition_title_y = center_screenposition_y-textHeight*0.5f;
             m_drawParams.m_position = AZ::Vector3(center_screenposition_x, screenposition_title_y, 1.0f);
             m_drawParams.m_hAlign = AzFramework::TextHorizontalAlignment::Center;
             m_drawParams.m_color = AZ::Colors::Yellow;
-            m_fontDrawInterface->DrawScreenAlignedText2d(m_drawParams, centerViewportDebugTextTitle);
+            m_fontDrawInterface->DrawScreenAlignedText2d(m_drawParams, CenterViewportDebugTitle);
             
             // Draw center debug text under the title
             // Calculate line spacing based on the font's actual line height
@@ -126,22 +127,6 @@ namespace Multiplayer
                 }
             }
         }
-    }
-
-    void MultiplayerConnectionViewportMessageSystemComponent::DisplayCenterViewportMessage(const char* text)
-    {
-        if (strlen(text) == 0)
-        {
-            StopCenterViewportDebugMessaging();
-            return;
-        }
-        
-        m_centerViewportDebugText = text;
-    }
-    
-    void MultiplayerConnectionViewportMessageSystemComponent::StopCenterViewportDebugMessaging()
-    {
-        m_centerViewportDebugText.clear();
     }
 
     void MultiplayerConnectionViewportMessageSystemComponent::DrawConnectionStatus(AzNetworking::ConnectionState connectionState)
@@ -181,6 +166,41 @@ namespace Multiplayer
         const float textHeight = m_fontDrawInterface->GetTextSize(m_drawParams, connectionStateText).GetY();
         m_drawParams.m_color = AZ::Colors::White;
         m_drawParams.m_position.SetY(m_drawParams.m_position.GetY() - textHeight - m_lineSpacing);
-        m_fontDrawInterface->DrawScreenAlignedText2d(m_drawParams, "Multiplayer Client Status:");
+        m_fontDrawInterface->DrawScreenAlignedText2d(m_drawParams, ClientStatusTitle);
+    }
+
+    void MultiplayerConnectionViewportMessageSystemComponent::OnServerLaunched()
+    {
+        m_centerViewportDebugText = OnServerLaunchedMessage;
+    }
+
+    void MultiplayerConnectionViewportMessageSystemComponent::OnServerLaunchFail()
+    {
+        m_centerViewportDebugText = OnServerLaunchFailMessage;
+    }
+
+    void MultiplayerConnectionViewportMessageSystemComponent::OnEditorSendingLevelData()
+    {
+        m_centerViewportDebugText = OnEditorSendingLevelDataMessage;
+    }   
+
+    void MultiplayerConnectionViewportMessageSystemComponent::OnEditorConnectionAttempt(uint16_t connectionAttempts)
+    {
+        m_centerViewportDebugText = AZStd::fixed_string<128>::format(OnEditorConnectionAttemptMessage, connectionAttempts);
+    }
+
+    void MultiplayerConnectionViewportMessageSystemComponent::OnConnectToSimulationFail(uint16_t serverPort)
+    {
+        m_centerViewportDebugText = AZStd::fixed_string<128>::format(OnConnectToSimulationFailMessage, serverPort);
+    }
+
+    void MultiplayerConnectionViewportMessageSystemComponent::OnConnectToSimulationSuccess() 
+    {
+        m_centerViewportDebugText.clear();
+    }
+
+    void MultiplayerConnectionViewportMessageSystemComponent::OnPlayModeEnd()
+    {
+        m_centerViewportDebugText.clear();
     }
 }
