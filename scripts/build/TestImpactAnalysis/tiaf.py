@@ -43,7 +43,7 @@ class TestImpact:
 
         self._config = self._parse_config_file(args['config'])
 
-        # Initialise branches
+        # Initialize branches
         self._src_branch = args.get("src_branch")
         self._dst_branch = args.get("dst_branch")
         logger.info(f"Source branch: '{self._src_branch}'.")
@@ -52,7 +52,7 @@ class TestImpact:
         # Determine our source of truth. Also intializes our source of truth property.
         self._determine_source_of_truth()
 
-        # Initialise commit info
+        # Initialize commit info
         self._dst_commit = args.get("commit")
         logger.info(f"Commit: '{self._dst_commit}'.")
         self._src_commit = None
