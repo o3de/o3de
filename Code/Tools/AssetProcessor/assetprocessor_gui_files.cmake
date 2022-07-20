@@ -33,6 +33,8 @@ set(FILES
     native/ui/MainWindow.h
     native/ui/MainWindow.cpp
     native/ui/MainWindow.ui
+    native/ui/BuilderData.h
+    native/ui/BuilderData.cpp
     native/ui/BuilderListModel.h
     native/ui/BuilderListModel.cpp
     native/ui/BuilderInfoPatternsModel.h
