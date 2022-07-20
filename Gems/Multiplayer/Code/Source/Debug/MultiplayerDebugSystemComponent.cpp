@@ -134,7 +134,7 @@ namespace Multiplayer
                     const MultiplayerAgentType multiplayerAgentType = multiplayerInterface->GetAgentType();
                     if (multiplayerAgentType == MultiplayerAgentType::Uninitialized)
                     {
-                        if (ImGui::BeginMenu(HOST_LEVEL_MENU_TITLE))
+                        if (ImGui::BeginMenu(HostLevelMenuTitle))
                         {
                             // Run through all the assets in the asset catalog and gather up the list of level assets
                             AZ::Data::AssetType levelAssetType = azrtti_typeid<AzFramework::Spawnable>();
@@ -163,8 +163,25 @@ namespace Multiplayer
 
                                 AZ::IO::PathView spawnablePath(assetInfo.m_relativePath);
                                 AZ::IO::PathView stem = spawnablePath.Stem(); // Just the filename without the extension
+                                AZ_TracePrintf("MultiplayerDebugSystemComponent", 
+                                    "Gene stem: %s, size: %i", AZStd::string(stem.Native()).c_str(), stem.Native().length());
+
                                 auto parentFolderIter = spawnablePath.end();
-                                AZStd::advance(parentFolderIter, -2);
+                                AZStd::advance(parentFolderIter, -1);
+                                AZ_TracePrintf("MultiplayerDebugSystemComponent", 
+                                    "Gene iter -1 %s, size: %i", AZStd::string(parentFolderIter->Native()).c_str(), parentFolderIter->Native().length());
+
+
+                                AZStd::advance(parentFolderIter, -1);
+
+                                AZ_TracePrintf("MultiplayerDebugSystemComponent", 
+                                    "Gene iter -2 %s, size: %i", AZStd::string(parentFolderIter->Native()).c_str(), parentFolderIter->Native().length());
+                                
+                                AZStd::advance(parentFolderIter, -1);
+
+                                AZ_TracePrintf("MultiplayerDebugSystemComponent", 
+                                    "Gene iter -3 %s, size: %i", AZStd::string(parentFolderIter->Native()).c_str(), parentFolderIter->Native().length());
+
                                 if (*parentFolderIter != stem)
                                 {
                                     return;
@@ -199,7 +216,7 @@ namespace Multiplayer
                     else if (multiplayerAgentType == MultiplayerAgentType::DedicatedServer ||
                         multiplayerAgentType == MultiplayerAgentType::ClientServer)
                     {
-                        if (ImGui::Button(LAUNCH_LOCAL_CLIENT_BUTTON_TITLE))
+                        if (ImGui::Button(LaunchLocalClientButtonTitle))
                         {
                             console->PerformCommand("sv_launch_local_client");
                         }
