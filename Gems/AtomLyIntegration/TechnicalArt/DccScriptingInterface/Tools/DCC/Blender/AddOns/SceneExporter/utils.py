@@ -11,7 +11,7 @@
 import bpy
 from bpy.props import EnumProperty
 import shutil
-from pathlib import Path, PurePosixPath, PureWindowsPath, PurePath
+from pathlib import Path
 import re
 
 from . import constants
@@ -52,24 +52,24 @@ def selected_hierarchy_and_rig_animation():
     """!
     This function will select the attached animation armature rig and all of its children.
     """
-    ob = bpy.ops.object
+    obj = bpy.ops.object
     
     for selected_obj in bpy.context.selected_objects:
         if selected_obj is not []:
-            ob.select_grouped(extend=True, type='SIBLINGS')
-            ob.select_grouped(extend=True, type='PARENT')
-            ob.select_grouped(extend=True, type='CHILDREN_RECURSIVE')
-            ob.select_grouped(extend=True, type='PARENT')
+            obj.select_grouped(extend=True, type='SIBLINGS')
+            obj.select_grouped(extend=True, type='PARENT')
+            obj.select_grouped(extend=True, type='CHILDREN_RECURSIVE')
+            obj.select_grouped(extend=True, type='PARENT')
 
 def selected_attachment_and_rig_animation():
     """!
     This function will select the selected attachments armature rig.
     """
-    ob = bpy.ops.object
+    obj = bpy.ops.object
     
     for selected_obj in bpy.context.selected_objects:
         if selected_obj is not []:
-            ob.select_grouped(extend=True, type='PARENT')
+            obj.select_grouped(extend=True, type='PARENT')
 
 def valid_animation_selection():
     """!
@@ -110,7 +110,7 @@ def get_selected_materials(selected):
     @param selected This is your current selected mesh(s)
     """
     materials = []
-
+    # Find Connected materials attached to mesh
     for obj in selected:
         try:
             materials.append(obj.active_material.name)
@@ -157,7 +157,7 @@ def loop_through_selected_materials(texture_file_path):
                         bpy.data.images[img.image.name].filepath = str(o3de_texture_path)
                         # Save image to location
                         bpy.data.images[img.image.name].save()
-                    except FileNotFoundError:
+                    except (FileNotFoundError, RuntimeError):
                         pass
                 img.image.reload()
 
@@ -228,7 +228,7 @@ def check_file_paths_duplicate(source_path, destination_path):
     except FileNotFoundError:
         pass
 
-def ReplaceStoredPaths():
+def replace_stored_paths():
     """!
     This Function will replace all the repathed image paths to thier origninal source paths
     """
@@ -241,25 +241,42 @@ def ReplaceStoredPaths():
         image.reload()
     bpy.types.Scene.stored_image_source_paths = {}
 
-def create_collision_mesh():
+def create_udp():
     """!
     This function will create a copy of a selected mesh and create an o3de PhysX collider PhysX Mesh that will
-    autodect in o3de if you have a PhysX Collder Component. 
+    autodect in o3de if you have a PhysX Collder Component.
     """
-    obj = bpy.context.object
-    # Duplicate the mesh and add an _phys extension
-    duplicate_phys_mesh = bpy.data.objects.new(f'{obj.name}_phys', bpy.data.objects[obj.name].data)
-    # Add copy to current collection in scene
-    bpy.context.collection.objects.link(duplicate_phys_mesh)
-    # Check to see if Blender added an .000 to the end of name, if so split it and use zero
-    if '.' in duplicate_phys_mesh.name:
-        name, ext = duplicate_phys_mesh.name.split(".")
-        duplicate_phys_mesh.name = name
-    # Set the copy active
-    bpy.context.view_layer.objects.active = duplicate_phys_mesh
-    # Add the Decimate Modifier on for user.
-    bpy.ops.object.modifier_add(type='DECIMATE')
-    bpy.context.object.modifiers["Decimate"].ratio = 0.1
+    selected_objects = bpy.context.object
+    # Check to see if bool was check on or of on pop-up question
+    if bpy.types.Scene.pop_up_question_bool:
+        #We must apply the tansforms before duplication
+        bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+        # Duplicate the mesh and add add the upd name extension
+        duplicate_mesh = bpy.data.objects.new(f'{selected_objects.name}{bpy.types.Scene.udp_type}', bpy.data.objects[selected_objects.name].data)
+        # Add copy to current collection in scene
+        bpy.context.collection.objects.link(duplicate_mesh)
+        # Check to see if Blender added an .000 to the end of name, if so split it and use zero
+        if '.' in duplicate_mesh.name:
+            name, ext = duplicate_mesh.name.split(".")
+            duplicate_mesh.name = name
+        
+        if bpy.types.Scene.udp_type == '_lod':
+            duplicate_mesh['o3de_atom_lod'] = '_lod'
+        if bpy.types.Scene.udp_type == '_phys':
+            duplicate_mesh['o3de_atom_phys'] = '_phys'
+        # Set the copy active
+        bpy.context.view_layer.objects.active = duplicate_mesh
+
+        # Add the Decimate Modifier on for user.
+        bpy.ops.object.modifier_add(type='DECIMATE')
+        bpy.context.object.modifiers["Decimate"].ratio = 0.5
+        
+    else:
+        if bpy.types.Scene.udp_type == '_lod':
+            selected_objects['o3de_atom_lod'] = '_lod'
+        if bpy.types.Scene.udp_type == '_phys':
+            selected_objects['o3de_atom_phys'] = '_phys'
+
 
 def compair_set(list_a, list_b):
     """!

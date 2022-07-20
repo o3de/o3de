@@ -9,7 +9,7 @@
 #
 # -------------------------------------------------------------------------
 import bpy
-from pathlib import Path, PurePath
+from pathlib import Path
 import webbrowser
 import re
 from bpy_extras.io_utils import ExportHelper, ImportHelper
@@ -19,6 +19,7 @@ from . import constants
 from . import fbx_exporter
 from . import o3de_utils
 from . import utils
+import addon_utils
 
 
 def message_box(message = "", title = "Message Box", icon = 'LIGHT'):
@@ -40,7 +41,7 @@ class MessageBox(bpy.types.Operator):
     This Class is for the UI Message Box Pop-Up
     """
     bl_idname = "message.popup"
-    bl_label = "O3DE Tool Information"
+    bl_label = "O3DE Scene Exporter"
 
     def invoke(self, context, event):
         """!
@@ -60,6 +61,38 @@ class MessageBox(bpy.types.Operator):
         """!
         This will update the UI with the current o3de Project Title.
         """
+        return {'FINISHED'}
+
+class MessageBoxConfirm(bpy.types.Operator):
+    """!
+    This Class is for the UI Message Box Pop-Up but with extra properties that can be added.
+    """
+    bl_idname = "message_confirm.popup"
+    bl_label = "O3DE Scene Exporter"
+    bl_options = {'REGISTER', 'INTERNAL'}
+    
+    question_one: bpy.props.BoolProperty()
+
+    @classmethod
+    def poll(cls, context):
+        return True
+
+    def invoke(self, context, event):
+        return context.window_manager.invoke_props_dialog(self)
+
+    def draw(self, context):
+
+        layout = self.layout
+        layout.label(text=bpy.types.Scene.pop_up_confirm_label)
+        layout.prop(self, "question_one", text=bpy.types.Scene.pop_up_question_label)
+        bpy.types.Scene.pop_up_question_bool = self.question_one
+    
+    def execute(self, context):
+        """!
+        This will update the UI with the current o3de Project Title.
+        """
+        utils.create_udp()
+        self.report({'INFO'}, "OKAY")
         return {'FINISHED'}
 
 class WikiButton(bpy.types.Operator):
@@ -92,13 +125,17 @@ class CustomProjectPath(bpy.types.Operator, ImportHelper):
 
     def execute(self, context):
         # Look at current project list, if path not in list add it
-        bpy.types.Scene.selected_o3de_project_path = str(Path(self.filepath).parents[0])
+        real_path =  Path(self.filepath)
+        if real_path.is_dir():
+            bpy.types.Scene.selected_o3de_project_path = str(Path(self.filepath))
+        else:
+            bpy.types.Scene.selected_o3de_project_path = str(Path(self.filepath).parent)
         if bpy.types.Scene.selected_o3de_project_path not in context.scene.o3de_projects_list:
             o3de_utils.save_project_list_json(str(bpy.types.Scene.selected_o3de_project_path))
+            # Refesh the addon
+            addon_utils.enable('SceneExporter')
             # Rebuild the project list
-            o3de_utils.build_projects_list()
-            # Need to reload script to see update project in projects dropdown menu
-            bpy.ops.script.reload() 
+            o3de_utils.build_projects_list() 
         return {'FINISHED'}
 
 class AddColliderMesh(bpy.types.Operator):
@@ -112,7 +149,11 @@ class AddColliderMesh(bpy.types.Operator):
         """!
         This function will create the collision mesh.
         """
-        utils.create_collision_mesh()
+        # Create a Pop-Up confirm window
+        bpy.types.Scene.pop_up_confirm_label = 'Adding UDP Type: o3de_atom_phys to mesh.'
+        bpy.types.Scene.pop_up_question_label = 'Add UPD to a Duplicate mesh?'
+        bpy.types.Scene.udp_type = constants.UPD.get('o3de_atom_phys')
+        bpy.ops.message_confirm.popup('INVOKE_DEFAULT')
         return{'FINISHED'}
 
 class AddLODMesh(bpy.types.Operator):
@@ -126,7 +167,11 @@ class AddLODMesh(bpy.types.Operator):
         """!
         This function will create the LOD mesh
         """
-        utils.create_lod_mesh()
+        # Create a Pop-Up confirm window
+        bpy.types.Scene.pop_up_confirm_label = 'Adding UDP Type: o3de_atom_lod to mesh.'
+        bpy.types.Scene.pop_up_question_label = 'Add UPD to a Duplicate mesh?'
+        bpy.types.Scene.udp_type = constants.UPD.get('o3de_atom_lod')
+        bpy.ops.message_confirm.popup('INVOKE_DEFAULT')
         return{'FINISHED'}
 
 class ExportFiles(bpy.types.Operator):
@@ -325,7 +370,7 @@ class O3deTools(Panel):
     """!
     This is the Blender UI Panel O3DE Tools Tab
     """
-    bl_idname = "O3DE_Tools"
+    bl_idname = "O3DE_TOOLS_PT_Panel"
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
     bl_label = f'O3DE Tools v{constants.PLUGIN_VERSION}'
@@ -355,7 +400,7 @@ class O3deTools(Panel):
             row.operator("vin.wiki", text='O3DE Tools Wiki', icon="WORLD_DATA")
             # Let user choose a custom project path
             local_project_path = layout.row()
-            local_project_path.operator("project.open_filebrowser", text="Set Custom Project Path", icon="OUTLINER_OB_GROUP_INSTANCE")
+            local_project_path.operator("project.open_filebrowser", text="Add Custom Project Path", icon="OUTLINER_OB_GROUP_INSTANCE")
             # Heads up of current selected objects and options
             current_selected_options_row = layout.row()
             current_selected_options_row.label(text="CURRENT SELECTED", icon="OUTLINER_DATA_GP_LAYER")
@@ -471,4 +516,5 @@ class O3deTools(Panel):
             row.operator("vin.wiki", text='O3DE Tools Wiki', icon="WORLD_DATA")
             not_installed = layout.row()
             not_installed.label(text='O3DE Needs to be installed')
+            
 

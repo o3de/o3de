@@ -37,7 +37,6 @@ bl_info = {
     "name": "O3DE_DCCSI_BLENDER_SCENE_EXPORTER",
     "author": "shawstar@amazon",
     "version": (1, 4),
-
     "blender": (3, 00, 0),
     "location": "",
     "description": "Export Scene Assets to O3DE",
@@ -54,7 +53,6 @@ from pathlib import Path
 # Needed to import custom scripts in Blender Python
 directory = Path.cwd()
 sys.path += [str(directory)]
-
 from . import o3de_utils
 from . import ui
 from . import constants
@@ -66,6 +64,7 @@ def register():
     bpy.types.Scene.plugin_directory = str(directory)
     bpy.utils.register_class(ui.O3deTools)
     bpy.utils.register_class(ui.MessageBox)
+    bpy.utils.register_class(ui.MessageBoxConfirm)
     bpy.utils.register_class(ui.WikiButton)
     bpy.utils.register_class(ui.CustomProjectPath)
     bpy.utils.register_class(ui.AddColliderMesh)
@@ -83,6 +82,10 @@ def register():
     bpy.types.TOPBAR_MT_file_export.append(ui.file_export_menu_add)  # Blender Specific Class and Naming Convention. 
     bpy.types.Scene.selected_o3de_project_path = ''
     bpy.types.Scene.pop_up_notes = ''
+    bpy.types.Scene.pop_up_confirm_label = ''
+    bpy.types.Scene.pop_up_question_label = ''
+    bpy.types.Scene.pop_up_question_bool = False
+    bpy.types.Scene.udp_type = ''
     bpy.types.Scene.export_textures_folder = True
     bpy.types.Scene.animation_export = constants.NO_ANIMATION
     bpy.types.Scene.file_menu_animation_export = False
@@ -100,6 +103,7 @@ def unregister():
     del bpy.types.Scene.plugin_directory
     bpy.utils.unregister_class(ui.O3deTools)
     bpy.utils.unregister_class(ui.MessageBox)
+    bpy.utils.unregister_class(ui.MessageBoxConfirm)
     bpy.utils.unregister_class(ui.WikiButton)
     bpy.utils.unregister_class(ui.CustomProjectPath)
     bpy.utils.unregister_class(ui.AddColliderMesh)
@@ -112,6 +116,10 @@ def unregister():
     bpy.types.TOPBAR_MT_file_export.remove(ui.file_export_menu_add)  # Blender Specific Class and Naming Convention. 
     del bpy.types.Scene.export_file_name_o3de
     del bpy.types.Scene.pop_up_notes
+    del bpy.types.Scene.pop_up_confirm_label
+    del bpy.types.Scene.pop_up_question_label
+    del bpy.types.Scene.pop_up_question_bool
+    del bpy.types.Scene.udp_type
     del bpy.types.Scene.selected_o3de_project_path
     del bpy.types.Scene.o3de_projects_list
     del bpy.types.Scene.texture_options_list

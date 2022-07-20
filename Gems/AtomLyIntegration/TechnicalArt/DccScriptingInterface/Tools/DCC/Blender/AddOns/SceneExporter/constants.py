@@ -27,6 +27,8 @@ ANIMATION_LIST_OPTIONS = ( (
     ('2', MESH_AND_RIG, 'Key All Bones, Force exporting at least one key of animation for all bones'),
     ('3', SKIN_ATTACHMENT, 'Export a mesh with the Armature bones for use as a O3DE Skin Attachment.')
     ))
+
+UPD = {'o3de_atom_lod' : '_lod',  'o3de_atom_phys' : '_phys'}
 TAG_O3DE = '.o3de'
 IMAGE_EXT = ('', '.jpg', '.png', '.JPG', '.PNG')
 USER_HOME = Path.home()

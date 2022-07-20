@@ -10,7 +10,6 @@
 # -------------------------------------------------------------------------
 import bpy
 from pathlib import Path
-from . import ui
 from . import utils
 from . import o3de_utils
 from . import constants
@@ -166,4 +165,4 @@ def fbx_file_exporter(fbx_file_path, file_name):
         bpy.types.Scene.pop_up_notes = f'{file_name} Exported! Freeze Transforms: {transforms_status}'
         bpy.ops.message.popup('INVOKE_DEFAULT')
         if not bpy.types.Scene.export_textures_folder is None:
-            utils.ReplaceStoredPaths()
+            utils.replace_stored_paths()
