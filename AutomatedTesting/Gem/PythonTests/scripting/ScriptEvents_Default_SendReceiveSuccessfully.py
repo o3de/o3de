@@ -38,10 +38,9 @@ class ScriptEvents_Default_SendReceiveSuccessfully:
     Test Steps:
      1) Create test level
      2) Create test entity
-     3) Start Tracer
-     4) Enter Game Mode
-     5) Read for line
-     6) Exit Game Mode
+     3) Enter Game Mode
+     4) Read for line
+     5) Exit Game Mode
 
     Note:
      - This test file must be called from the Open 3D Engine Editor command terminal
@@ -69,19 +68,18 @@ class ScriptEvents_Default_SendReceiveSuccessfully:
         entity = scripting_tools.create_entity_with_sc_component_asset("TestEntity", SC_ASSET_PATH)
         helper.wait_for_condition(lambda: entity is not None, WAIT_TIME_3)
         Report.critical_result(Tests.entity_created, entity.id.isValid())
-        
-        # 3) Start Tracer
+
         with Tracer() as section_tracer:
 
-            # 4) Enter Game Mode
+            # 3) Enter Game Mode
             helper.enter_game_mode(Tests.enter_game_mode)
 
-            # 5) Read for line
+            # 4) Read for line
             lines_located = helper.wait_for_condition(
                 lambda: scripting_tools.located_expected_tracer_lines(self, section_tracer, EXPECTED_LINES), WAIT_TIME_3)
             Report.result(Tests.lines_found, lines_located)
 
-        # 6) Exit Game Mode
+        # 5) Exit Game Mode
         helper.exit_game_mode(Tests.exit_game_mode)
 
 
