@@ -70,6 +70,7 @@ namespace JsonSerializationTests
         virtual void add_ref();
         virtual void release();
 
+        virtual BaseClass* Clone() const;
         bool Equals(const BaseClass& rhs, bool) const;
         static void Reflect(AZStd::unique_ptr<AZ::SerializeContext>& context);
 
@@ -90,6 +91,7 @@ namespace JsonSerializationTests
         virtual void add_ref();
         virtual void release();
 
+        virtual BaseClass2* Clone() const;
         bool Equals(const BaseClass2& rhs, bool) const;
         static void Reflect(AZStd::unique_ptr<AZ::SerializeContext>& context);
 

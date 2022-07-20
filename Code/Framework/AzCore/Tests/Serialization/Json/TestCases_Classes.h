@@ -57,6 +57,7 @@ namespace JsonSerializationTests
 
         static const bool SupportsPartialDefaults = true;
 
+        BaseClass* Clone() const override;
         bool Equals(const SimpleInheritence& rhs, bool fullReflection) const;
         static void Reflect(AZStd::unique_ptr<AZ::SerializeContext>& context, bool fullReflection);
         static InstanceWithSomeDefaults<SimpleInheritence> GetInstanceWithSomeDefaults();

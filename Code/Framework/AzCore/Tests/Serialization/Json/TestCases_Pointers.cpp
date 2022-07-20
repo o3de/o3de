@@ -487,15 +487,14 @@ namespace JsonSerializationTests
 
     ComplexAssignedDifferentInheritedPointer::ComplexAssignedDifferentInheritedPointer(
         const ComplexAssignedDifferentInheritedPointer& rhs)
-        : m_pointer(aznew BaseClass(*rhs.m_pointer))
     {
+        *this = rhs;
     }
 
     ComplexAssignedDifferentInheritedPointer::ComplexAssignedDifferentInheritedPointer(
         ComplexAssignedDifferentInheritedPointer&& rhs)
-        : m_pointer(rhs.m_pointer)
     {
-        rhs.m_pointer = nullptr;
+        *this = AZStd::move(rhs);
     }
 
     ComplexAssignedDifferentInheritedPointer::~ComplexAssignedDifferentInheritedPointer()
@@ -506,7 +505,10 @@ namespace JsonSerializationTests
     ComplexAssignedDifferentInheritedPointer& ComplexAssignedDifferentInheritedPointer::operator=(
         const ComplexAssignedDifferentInheritedPointer& rhs)
     {
-        m_pointer = aznew BaseClass(*rhs.m_pointer);
+        if (rhs.m_pointer)
+        {
+            m_pointer = rhs.m_pointer->Clone();
+        }
         return *this;
     }
 

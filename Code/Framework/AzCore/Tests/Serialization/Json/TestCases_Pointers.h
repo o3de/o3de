@@ -98,7 +98,7 @@ namespace JsonSerializationTests
         static InstanceWithSomeDefaults<ComplexNullInheritedPointer> GetInstanceWithSomeDefaults();
         static InstanceWithoutDefaults<ComplexNullInheritedPointer> GetInstanceWithoutDefaults();
         
-        BaseClass* m_pointer{ nullptr }; // is a SimpleInheritence
+        BaseClass* m_pointer{ nullptr }; // only used as SimpleInheritence in tests
     };
 
     struct ComplexAssignedDifferentInheritedPointer
@@ -120,7 +120,7 @@ namespace JsonSerializationTests
         static InstanceWithSomeDefaults<ComplexAssignedDifferentInheritedPointer> GetInstanceWithSomeDefaults();
         static InstanceWithoutDefaults<ComplexAssignedDifferentInheritedPointer> GetInstanceWithoutDefaults();
         
-        BaseClass* m_pointer{ nullptr };
+        BaseClass* m_pointer{ nullptr }; // used as multiple types in tests
     };
 
     struct ComplexAssignedSameInheritedPointer
@@ -142,7 +142,7 @@ namespace JsonSerializationTests
         static InstanceWithSomeDefaults<ComplexAssignedSameInheritedPointer> GetInstanceWithSomeDefaults();
         static InstanceWithoutDefaults<ComplexAssignedSameInheritedPointer> GetInstanceWithoutDefaults();
         
-        BaseClass* m_pointer{ nullptr };
+        BaseClass* m_pointer{ nullptr }; // only used as SimpleInheritence in tests
     };
 
     struct PrimitivePointerInContainer
@@ -208,6 +208,6 @@ namespace JsonSerializationTests
         static InstanceWithSomeDefaults<InheritedPointerInContainer> GetInstanceWithSomeDefaults();
         static InstanceWithoutDefaults<InheritedPointerInContainer> GetInstanceWithoutDefaults();
 
-        AZStd::vector<BaseClass*> m_array;
+        AZStd::vector<BaseClass*> m_array; // only used as SimpleInheritence in tests
     };
 } // namespace JsonSerializationTests
