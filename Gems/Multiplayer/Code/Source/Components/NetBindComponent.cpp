@@ -168,6 +168,14 @@ namespace Multiplayer
         ;
     }
 
+    NetBindComponent::~NetBindComponent()
+    {
+        if (m_needsToBeStopped)
+        {
+            AZ_Warning("NetBindComponent", false, "NetBindComponent destructed without being stopped. Ensure MarkForRemoval is called before destroying a networked entity or disconnect is called before exiting.")                       
+        }
+    }
+
     void NetBindComponent::Init()
     {
         auto* netEntityManager = AZ::Interface<INetworkEntityManager>::Get();

@@ -50,7 +50,7 @@ namespace Multiplayer
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
 
         NetBindComponent();
-        ~NetBindComponent() override = default;
+        ~NetBindComponent() override;
 
         //! AZ::Component overrides.
         //! @{
