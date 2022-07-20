@@ -92,12 +92,12 @@ namespace Multiplayer
             const float center_screenposition_y = 0.5f*viewportSize.m_height;
 
             // Draw title
-            const float textHeight = m_fontDrawInterface->GetTextSize(m_drawParams, CENTER_VIEWPORT_DEBUG_TITLE).GetY();
+            const float textHeight = m_fontDrawInterface->GetTextSize(m_drawParams, CenterViewportDebugTitle).GetY();
             const float screenposition_title_y = center_screenposition_y-textHeight*0.5f;
             m_drawParams.m_position = AZ::Vector3(center_screenposition_x, screenposition_title_y, 1.0f);
             m_drawParams.m_hAlign = AzFramework::TextHorizontalAlignment::Center;
             m_drawParams.m_color = AZ::Colors::Yellow;
-            m_fontDrawInterface->DrawScreenAlignedText2d(m_drawParams, CENTER_VIEWPORT_DEBUG_TITLE);
+            m_fontDrawInterface->DrawScreenAlignedText2d(m_drawParams, CenterViewportDebugTitle);
             
             // Draw center debug text under the title
             // Calculate line spacing based on the font's actual line height
@@ -166,27 +166,27 @@ namespace Multiplayer
         const float textHeight = m_fontDrawInterface->GetTextSize(m_drawParams, connectionStateText).GetY();
         m_drawParams.m_color = AZ::Colors::White;
         m_drawParams.m_position.SetY(m_drawParams.m_position.GetY() - textHeight - m_lineSpacing);
-        m_fontDrawInterface->DrawScreenAlignedText2d(m_drawParams, CLIENT_STATUS_TITLE);
+        m_fontDrawInterface->DrawScreenAlignedText2d(m_drawParams, ClientStatusTitle);
     }
 
     void MultiplayerConnectionViewportMessageSystemComponent::OnServerLaunched()
     {
-        m_centerViewportDebugText = ON_SERVER_LAUNCHED_MESSAGE;
+        m_centerViewportDebugText = OnServerLaunchedMessage;
     }
 
     void MultiplayerConnectionViewportMessageSystemComponent::OnServerLaunchFail()
     {
-        m_centerViewportDebugText = ON_SERVER_LAUNCH_FAIL_MESSAGE;
+        m_centerViewportDebugText = OnServerLaunchFailMessage;
     }
 
     void MultiplayerConnectionViewportMessageSystemComponent::OnEditorSendingLevelData()
     {
-        m_centerViewportDebugText = ON_EDITOR_SENDING_LEVELDATA_MESSAGE;
+        m_centerViewportDebugText = OnEditorSendingLevelDataMessage;
     }   
 
     void MultiplayerConnectionViewportMessageSystemComponent::OnEditorConnectionAttempt(uint16_t connectionAttempts)
     {
-        m_centerViewportDebugText = AZStd::fixed_string<MAX_MESSAGE_LENGTH>::format(ON_EDITOR_CONNECTION_ATTEMPT_MESSAGE, connectionAttempts);
+        m_centerViewportDebugText = AZStd::fixed_string<MaxMessageLength>::format(OnEditorConnectionAttemptMessage, connectionAttempts);
     }
 
     void MultiplayerConnectionViewportMessageSystemComponent::OnAllConnectionAttemptsFailed()
@@ -196,7 +196,7 @@ namespace Multiplayer
 
     void MultiplayerConnectionViewportMessageSystemComponent::OnConnectToSimulationFail(uint16_t serverPort)
     {
-        m_centerViewportDebugText = AZStd::fixed_string<MAX_MESSAGE_LENGTH>::format(ON_CONNECT_TO_SIMULATION_FAIL_MESSAGE, serverPort);
+        m_centerViewportDebugText = AZStd::fixed_string<MaxMessageLength>::format(OnConnectToSimulationFailMessage, serverPort);
     }
 
     void MultiplayerConnectionViewportMessageSystemComponent::OnConnectToSimulationSuccess() 
