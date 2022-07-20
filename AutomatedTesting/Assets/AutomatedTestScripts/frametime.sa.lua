@@ -26,7 +26,7 @@ DEFAULT_VIEWPORT_WIDTH = 800
 DEFAULT_VIEWPORT_HEIGHT = 600
 
 -- check for SettingsRegistry values that must exist
-profileNameSR = SettingsRegistryGetString(ProfileNameRegistryKey)
+profileNameSR = g_SettingsRegistry:GetString(ProfileNameRegistryKey)
 if (not profileNameSR:has_value()) then
     Print('FrameTime script missing profileName settings registry entry, aborting')
     return;
@@ -38,11 +38,11 @@ g_profileOutputFolder = GetProfilingOutputPath(true) .. "/" .. tostring(profileN
 Print('Saving screenshots to ' .. NormalizePath(g_profileOutputFolder))
 
 -- read optional SettingsRegistry values
-local assetLoadIdleFrameCount = SettingsRegistryGetUInt(AssetLoadFrameIdleCountRegistryKey):value_or(DEFAULT_ASSET_LOAD_FRAME_WAIT_COUNT)
-local frameIdleCount = SettingsRegistryGetUInt(FrameIdleCountRegistryKey):value_or(DEFAULT_IDLE_COUNT)
-local frameCaptureCount = SettingsRegistryGetUInt(FrameCaptureCountRegistryKey):value_or(DEFAULT_FRAME_COUNT)
-local viewportWidth = SettingsRegistryGetUInt(ViewportWidthRegistryKey):value_or(DEFAULT_VIEWPORT_WIDTH)
-local viewportHeight = SettingsRegistryGetUInt(ViewportHeightRegistryKey):value_or(DEFAULT_VIEWPORT_HEIGHT)
+local assetLoadIdleFrameCount   = g_SettingsRegistry:GetUInt(AssetLoadFrameIdleCountRegistryKey):value_or(DEFAULT_ASSET_LOAD_FRAME_WAIT_COUNT)
+local frameIdleCount            = g_SettingsRegistry:GetUInt(FrameIdleCountRegistryKey):value_or(DEFAULT_IDLE_COUNT)
+local frameCaptureCount         = g_SettingsRegistry:GetUInt(FrameCaptureCountRegistryKey):value_or(DEFAULT_FRAME_COUNT)
+local viewportWidth             = g_SettingsRegistry:GetUInt(ViewportWidthRegistryKey):value_or(DEFAULT_VIEWPORT_WIDTH)
+local viewportHeight            = g_SettingsRegistry:GetUInt(ViewportHeightRegistryKey):value_or(DEFAULT_VIEWPORT_HEIGHT)
 
 
 -- Begin script execution

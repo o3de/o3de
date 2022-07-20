@@ -16,17 +16,95 @@
 #include <AzCore/StringFunc/StringFunc.h>
 #include <AzCore/Debug/ProfilerBus.h>
 #include <AzCore/Settings/SettingsRegistry.h>
+#include <AzCore/Settings/SettingsRegistryScriptUtils.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
+
+#include <AzCore/std/string/string.h>
+#include <AzCore/std/optional.h>
+#include <AzCore/IO/Path/Path.h>
 
 #include <AzFramework/Components/ConsoleBus.h>
 #include <AzFramework/IO/LocalFileIO.h>
+#include <AzFramework/Windowing/NativeWindow.h>
 
 #include <Atom/RPI.Public/Pass/AttachmentReadback.h>
 #include <Atom/RPI.Public/RPISystemInterface.h>
 
-#include <Utils/Utils.h>
-
 namespace ScriptAutomation
 {
+    namespace Utils
+    {
+        bool SupportsResizeClientAreaOfDefaultWindow()
+        {
+            return AzFramework::NativeWindow::SupportsClientAreaResizeOfDefaultWindow();
+        }
+
+        void ResizeClientArea(uint32_t width, uint32_t height)
+        {
+            AzFramework::NativeWindowHandle windowHandle = nullptr;
+            AzFramework::WindowSystemRequestBus::BroadcastResult(
+                windowHandle,
+                &AzFramework::WindowSystemRequestBus::Events::GetDefaultWindowHandle);
+
+            AzFramework::WindowSize clientAreaSize = {width, height};
+            AzFramework::WindowRequestBus::Event(windowHandle, &AzFramework::WindowRequestBus::Events::ResizeClientArea, clientAreaSize);
+            AzFramework::WindowSize newWindowSize;
+            AzFramework::WindowRequestBus::EventResult(newWindowSize, windowHandle, &AzFramework::WindowRequests::GetClientAreaSize);
+            AZ_Error("ResizeClientArea", newWindowSize.m_width == width && newWindowSize.m_height == height,
+                "Requested window resize to %ux%u but got %ux%u. This display resolution is too low or desktop scaling is too high.",
+                width, height, newWindowSize.m_width, newWindowSize.m_height);
+        }
+
+        bool SupportsToggleFullScreenOfDefaultWindow()
+        {
+            return AzFramework::NativeWindow::CanToggleFullScreenStateOfDefaultWindow();
+        }
+
+        void ToggleFullScreenOfDefaultWindow()
+        {
+            AzFramework::NativeWindow::ToggleFullScreenStateOfDefaultWindow();
+        }
+
+        AZ::IO::FixedMaxPath GetScreenshotsPath(bool resolvePath)
+        {
+            AZ::IO::FixedMaxPath path("@user@");
+            if (resolvePath)
+            {
+                if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+                {
+                    path.clear();
+                    settingsRegistry->Get(path.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectUserPath);
+                }
+            }
+            
+            path /= "scriptautomation/screenshots";
+            
+            return path.LexicallyNormal();
+        }
+
+        AZ::IO::FixedMaxPath GetProfilingPath(bool resolvePath)
+        {
+            AZ::IO::FixedMaxPath path("@user@");
+            if (resolvePath)
+            {
+                if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+                {
+                    path.clear();
+                    settingsRegistry->Get(path.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectUserPath);
+                }
+            }
+            path /= "scriptautomation/profiling";
+
+            return path.LexicallyNormal();
+        }
+
+        AZ::IO::FixedMaxPath ResolvePath(const AZ::IO::PathView path)
+        {
+            AZStd::optional<AZ::IO::FixedMaxPath> resolvedPath = AZ::IO::FileIOBase::GetInstance()->ResolvePath(path);
+            return resolvedPath ? resolvedPath.value() : AZ::IO::FixedMaxPath{};
+        }
+    } // namespace Utils
+
     namespace Bindings
     {
         void Print(const AZStd::string& message [[maybe_unused]])
@@ -197,19 +275,7 @@ namespace ScriptAutomation
 
         AZStd::string ResolvePath(const AZStd::string& path)
         {
-            return Utils::ResolvePath(path);
-        }
-
-        AZStd::string NormalizePath(const AZStd::string& path)
-        {
-            AZStd::string normalizedPath = path;
-            AzFramework::StringFunc::Path::Normalize(normalizedPath);
-            return normalizedPath;
-        }
-
-        float DegToRad(float degrees)
-        {
-            return AZ::DegToRad(degrees);
+            return Utils::ResolvePath(AZ::IO::PathView(path)).String();
         }
 
         AZStd::string GetRenderApiName()
@@ -220,17 +286,17 @@ namespace ScriptAutomation
 
         AZStd::string GetScreenshotOutputPath(bool normalized)
         {
-            return Utils::GetScreenshotsPath(normalized);
+            return Utils::GetScreenshotsPath(normalized).String();
         }
 
         AZStd::string GetProfilingOutputPath(bool normalized)
         {
-            return Utils::GetProfilingPath(normalized);
+            return Utils::GetProfilingPath(normalized).String();
         }
 
-        bool PrepareForScreenCapture(const AZStd::string& path)
+        bool PrepareForScreenCapture(const AZ::IO::FixedMaxPath& path)
         {
-            if (!Utils::IsFileUnderFolder(Utils::ResolvePath(path), Utils::GetScreenshotsPath(true)))
+            if (!AZ::IO::PathView(Utils::ResolvePath(path)).IsRelativeTo(Utils::GetScreenshotsPath(true)))
             {
                 // The main reason we require screenshots to be in a specific folder is to ensure we don't delete or replace some other important file.
                 AZ_Error("ScriptAutomation", false, "Screenshots must be captured under the '%s' folder. Attempted to save screenshot to '%s'.",
@@ -258,7 +324,7 @@ namespace ScriptAutomation
             auto operation = [filePath]()
             {
                 // Note this will pause the script until the capture is complete
-                if (PrepareForScreenCapture(filePath))
+                if (PrepareForScreenCapture(AZ::IO::FixedMaxPath(filePath)))
                 {
                     auto scriptAutomationInterface = ScriptAutomationInterface::Get();
                     uint32_t frameCaptureId = AZ::Render::FrameCaptureRequests::s_InvalidFrameCaptureId;
@@ -283,7 +349,7 @@ namespace ScriptAutomation
             auto operation = [filePath]()
             {
                 // Note this will pause the script until the capture is complete
-                if (PrepareForScreenCapture(filePath))
+                if (PrepareForScreenCapture(AZ::IO::FixedMaxPath(filePath)))
                 {
                     auto scriptAutomationInterface = ScriptAutomationInterface::Get();
                     uint32_t frameCaptureId = AZ::Render::FrameCaptureRequests::s_InvalidFrameCaptureId;
@@ -382,7 +448,7 @@ namespace ScriptAutomation
             auto operation = [passHierarchy, slot, outputFilePath, readbackOption]()
             {
                 // Note this will pause the script until the capture is complete
-                if (PrepareForScreenCapture(outputFilePath))
+                if (PrepareForScreenCapture(AZ::IO::FixedMaxPath(outputFilePath)))
                 {
                     auto scriptAutomationInterface = ScriptAutomationInterface::Get();
                     uint32_t frameCaptureId = AZ::Render::FrameCaptureRequests::s_InvalidFrameCaptureId;
@@ -401,42 +467,12 @@ namespace ScriptAutomation
 
             ScriptAutomationInterface::Get()->QueueScriptOperation(AZStd::move(operation));
         }
-
-        bool SettingsRegistry_QueryKeyExists(const AZStd::string& path)
-        {
-            bool result = false;
-            if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
-            {
-                result = settingsRegistry->GetType(path) != AZ::SettingsRegistryInterface::Type::NoType;
-            }
-            return result;
-        }
-
-        #define MAKE_SETTINGS_REGISTRY_VALUE_QUERY(QUERY_NAME, QUERY_TYPE) \
-        AZStd::optional<QUERY_TYPE> QUERY_NAME (const AZStd::string& path) \
-            { \
-                AZStd::optional<QUERY_TYPE> result = AZStd::nullopt; \
-                if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr) \
-                { \
-                    QUERY_TYPE typedResult{}; \
-                    if (settingsRegistry->Get(typedResult, path)) \
-                    { \
-                       result = typedResult; \
-                    } \
-                } \
-                return result; \
-            }
-
-        MAKE_SETTINGS_REGISTRY_VALUE_QUERY(SettingsRegistry_GetBool, bool);
-        MAKE_SETTINGS_REGISTRY_VALUE_QUERY(SettingsRegistry_GetSInt, AZ::s64);
-        MAKE_SETTINGS_REGISTRY_VALUE_QUERY(SettingsRegistry_GetUInt, AZ::u64);
-        MAKE_SETTINGS_REGISTRY_VALUE_QUERY(SettingsRegistry_GetFloat, double);
-        MAKE_SETTINGS_REGISTRY_VALUE_QUERY(SettingsRegistry_GetString, AZStd::string);
     } // namespace Bindings
 
     void ReflectScriptBindings(AZ::BehaviorContext* behaviorContext)
     {
         AZ::MathReflect(behaviorContext);
+        AZ::SettingsRegistryScriptUtils::ReflectSettingsRegistryToBehaviorContext(*behaviorContext);
 
         behaviorContext->Method("Print", &Bindings::Print);
         behaviorContext->Method("Warning", &Bindings::Warning);
@@ -449,8 +485,8 @@ namespace ScriptAutomation
         behaviorContext->Method("ResizeViewport", &Bindings::ResizeViewport);
 
         behaviorContext->Method("ResolvePath", &Bindings::ResolvePath);
-        behaviorContext->Method("NormalizePath", &Bindings::NormalizePath);
-        behaviorContext->Method("DegToRad", &Bindings::DegToRad);
+        behaviorContext->Method("NormalizePath", [](AZStd::string_view path) -> AZStd::string { return AZ::IO::PathView(path).LexicallyNormal().String(); });
+        behaviorContext->Method("DegToRad", &AZ::DegToRad);
         behaviorContext->Method("GetRenderApiName", &Bindings::GetRenderApiName);
         behaviorContext->Method("GetScreenshotOutputPath", &Bindings::GetScreenshotOutputPath);
         behaviorContext->Method("GetProfilingOutputPath", &Bindings::GetProfilingOutputPath);
@@ -466,13 +502,5 @@ namespace ScriptAutomation
         behaviorContext->Method("CapturePassPipelineStatistics", &Bindings::CapturePassPipelineStatistics);
         behaviorContext->Method("CaptureCpuProfilingStatistics", &Bindings::CaptureCpuProfilingStatistics);
         behaviorContext->Method("CaptureBenchmarkMetadata", &Bindings::CaptureBenchmarkMetadata);
-
-        // Settings Registery query
-        behaviorContext->Method("SettingsRegistryKeyExists", &Bindings::SettingsRegistry_QueryKeyExists);
-        behaviorContext->Method("SettingsRegistryGetBool",   &Bindings::SettingsRegistry_GetBool);
-        behaviorContext->Method("SettingsRegistryGetSInt",   &Bindings::SettingsRegistry_GetSInt);
-        behaviorContext->Method("SettingsRegistryGetUInt",   &Bindings::SettingsRegistry_GetUInt);
-        behaviorContext->Method("SettingsRegistryGetFloat",  &Bindings::SettingsRegistry_GetFloat);
-        behaviorContext->Method("SettingsRegistryGetString", &Bindings::SettingsRegistry_GetString);
     }
 } // namespace ScriptAutomation
