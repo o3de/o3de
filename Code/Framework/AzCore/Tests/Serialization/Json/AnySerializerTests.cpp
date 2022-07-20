@@ -125,7 +125,8 @@ namespace JsonSerializationTests
 
         AZStd::string_view GetJsonForPartialDefaultInstance() override
         {
-            // return m_jsonForPartialDefaultInstanceKeptDefaults.begin(); // may need to split up return values
+            // may need to split up return values
+            // return m_jsonForPartialDefaultInstanceKeptDefaults.begin(); 
             return m_jsonForPartialDefaultInstanceStrippedDefaults.begin();
         }
 
@@ -194,21 +195,20 @@ namespace JsonSerializationTests
         , AnySerializerTestDescription<NonReflectedEnumWrapper>
         , AnySerializerTestDescription<SimpleAssignedPointer>
         , AnySerializerTestDescription<ComplexAssignedPointer>
-       
+        
         /*
         // fails all cases
         AnySerializerTestDescription<SimpleNullPointer>
 
         // cause problems with memory allocation tracking, if not actual serialization issues
-        // , AnySerializerTestDescription<ComplexNullInheritedPointer>
-        // , AnySerializerTestDescription<ComplexAssignedDifferentInheritedPointer>
-        // , AnySerializerTestDescription<ComplexAssignedSameInheritedPointer>
-        // , AnySerializerTestDescription<PrimitivePointerInContainer>
-
-        // a null check should allow this to pass, defaults should allow null type
-        // , AnySerializerTestDescription<SimplePointerInContainer> 
-        // , AnySerializerTestDescription<InheritedPointerInContainer>
+        , AnySerializerTestDescription<ComplexNullInheritedPointer>
+        , AnySerializerTestDescription<ComplexAssignedDifferentInheritedPointer>
+        , AnySerializerTestDescription<ComplexAssignedSameInheritedPointer>
+        , AnySerializerTestDescription<PrimitivePointerInContainer>
         */
+
+        , AnySerializerTestDescription<SimplePointerInContainer> 
+        , AnySerializerTestDescription<InheritedPointerInContainer>
         >;
     INSTANTIATE_TYPED_TEST_CASE_P(Any, JsonSerializerConformityTests, AnyConformityTestTypes);
 }

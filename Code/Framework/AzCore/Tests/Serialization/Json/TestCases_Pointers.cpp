@@ -748,7 +748,7 @@ namespace JsonSerializationTests
     {
         for (SimpleClass* instance : rhs.m_array)
         {
-            m_array.push_back(aznew SimpleClass(*instance));
+            m_array.push_back(instance ? aznew SimpleClass(*instance) : nullptr);
         }
     }
 
@@ -765,7 +765,7 @@ namespace JsonSerializationTests
     {
         for (SimpleClass* instance : rhs.m_array)
         {
-            m_array.push_back(aznew SimpleClass(*instance));
+            m_array.push_back(instance ? aznew SimpleClass(*instance) : nullptr);
         }
         return *this;
     }
@@ -862,7 +862,7 @@ namespace JsonSerializationTests
     {
         for (BaseClass* instance : rhs.m_array)
         {
-            m_array.push_back(aznew SimpleInheritence(*static_cast<SimpleInheritence*>(instance)));
+            m_array.push_back(instance ? aznew SimpleInheritence(*static_cast<SimpleInheritence*>(instance)) : nullptr);
         }
     }
 
@@ -879,7 +879,7 @@ namespace JsonSerializationTests
     {
         for (BaseClass* instance : rhs.m_array)
         {
-            m_array.push_back(aznew SimpleInheritence(*static_cast<SimpleInheritence*>(instance)));
+            m_array.push_back(instance ? aznew SimpleInheritence(*static_cast<SimpleInheritence*>(instance)) : nullptr);
         }
         return *this;
     }
