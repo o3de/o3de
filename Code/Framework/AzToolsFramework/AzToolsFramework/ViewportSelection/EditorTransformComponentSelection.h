@@ -284,11 +284,6 @@ namespace AzToolsFramework
         void BeforeEntitySelectionChanged() override;
         void AfterEntitySelectionChanged(const EntityIdList& newlySelectedEntities, const EntityIdList& newlyDeselectedEntities) override;
 
-        // EntityCompositionNotificationBus overrides ...
-        void OnEntityComponentAdded(const AZ::EntityId&, const AZ::ComponentId&) override;
-        void OnEntityComponentRemoved(const AZ::EntityId&, const AZ::ComponentId&) override;
-        void OnEntityCompositionChanged(const AzToolsFramework::EntityIdList&) override;
-
         // TransformNotificationBus overrides ...
         void OnTransformChanged(const AZ::Transform& localTM, const AZ::Transform& worldTM) override;
 

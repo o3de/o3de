@@ -2764,6 +2764,7 @@ namespace AzToolsFramework
             &ViewportUi::ViewportUiRequestBus::Events::CreateSwitcher,
             ViewportUi::Alignment::TopLeft);
 
+        //Initial Transform button
         ViewportUi::ViewportUiRequestBus::EventResult(
             m_switcherTransformButtonId,
             ViewportUi::DefaultViewportId,
@@ -2777,15 +2778,14 @@ namespace AzToolsFramework
             m_switcherTransformButtonId);
 
         m_switcher.m_transformButtonId = m_switcherTransformButtonId;
+
+        // Creating ComponentModeSwitcher with switcher input
         m_componentModeSwitcher = AZStd::make_unique<ComponentModeFramework::ComponentModeSwitcher>(&m_switcher);
 
+        // Registers the SwitcherEventHandler which is defined in ComponentModeSwitcher
         ViewportUi::ViewportUiRequestBus::Event(
             ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::RegisterSwitcherEventHandler, m_switcher.m_switcherId,
             m_componentModeSwitcher->m_handler);
-
-        // Register the switcher cluster with the switcher manager
-        
-
     }
 
     void EditorTransformComponentSelection::SnapSelectedEntitiesToWorldGrid(const float gridSize)
@@ -3432,30 +3432,6 @@ namespace AzToolsFramework
         m_snappingCluster.TrySetVisible(m_viewportUiVisible && !m_selectedEntityIds.empty());
 
         RegenerateManipulators();
-    }
-
-    void EditorTransformComponentSelection::OnEntityComponentAdded([[maybe_unused]] const AZ::EntityId& entity, [[maybe_unused]] const AZ::ComponentId& component)
-    {
-        // when a component is added to an entity set a staging member variable to the entityComponentIdPair
-        m_componentModePair = AZ::EntityComponentIdPair(entity, component);
-        m_AddRemove = true; // find a better way to do this
-    }
-
-    void EditorTransformComponentSelection::OnEntityComponentRemoved([[maybe_unused]] const AZ::EntityId& entity, [[maybe_unused]] const AZ::ComponentId& component)
-    {
-        m_componentModePair = AZ::EntityComponentIdPair(entity, component);
-        m_AddRemove = false;
-    }
-
-    // this is called twice when a component is added, once while the component is pending and
-    // once when it has been added fully to the entity. This is handled in UpdateComponentButton
-    void EditorTransformComponentSelection::OnEntityCompositionChanged(const AzToolsFramework::EntityIdList& entityIdList)
-    {
-
-        if (AZStd::find(entityIdList.begin(), entityIdList.end(), m_componentModePair.GetEntityId()) != entityIdList.end())
-        {
-             m_componentModeSwitcher->UpdateComponentButton(m_componentModePair, m_AddRemove);
-        }
     }
 
     static void DrawPreviewAxis(

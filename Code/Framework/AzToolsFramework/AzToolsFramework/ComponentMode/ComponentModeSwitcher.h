@@ -13,6 +13,7 @@
 #include <AzToolsFramework/ViewportUi/Button.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiRequestBus.h>
 #include <AzToolsFramework/API/ViewportEditorModeTrackerNotificationBus.h>
+#include <AzToolsFramework/API/EntityCompositionNotificationBus.h>
 
 namespace AZ
 {
@@ -43,6 +44,7 @@ namespace AzToolsFramework
         class ComponentModeSwitcher
             : private EditorComponentModeNotificationBus::Handler
             , private ViewportEditorModeNotificationsBus::Handler
+            , private EntityCompositionNotificationBus::Handler
         {
         public:
             ComponentModeSwitcher(Switcher* switcher);
@@ -50,8 +52,9 @@ namespace AzToolsFramework
 
             // Add or remove component buttons to/from the switcher based on entities selected.
             void Update(EntityIdList selectedEntityIds, EntityIdList deselectedEntityIds);
-            // Either add or remove component button to switcher.
-            void UpdateComponentButton(AZ::EntityComponentIdPair, bool addRemove);
+            void AddComponentButton(AZ::EntityComponentIdPair);
+            // Removes component button
+            void RemoveComponentButton(AZ::EntityComponentIdPair);
 
             // Handler for the entering component mode.
             AZ::Event<ViewportUi::ButtonId>::Handler m_handler;
@@ -60,13 +63,13 @@ namespace AzToolsFramework
             // Calls ViewportUiRequestBus to create switcher button, helper for AddComponentButton.
             void AddSwitcherButton(ComponentData&, const char* componentName, const char* iconStr);
             // Creates button with component information.
-            void AddComponentButton(AZ::EntityComponentIdPair);
-            // Removes component button
-            void RemoveComponentButton(AZ::EntityComponentIdPair);
-            // Uses ComponentModeSystemRequestBus to initiate component mode.
+            //void AddComponentButton(AZ::EntityComponentIdPair);
+            //// Removes component button
+            //void RemoveComponentButton(AZ::EntityComponentIdPair);
+            //// Uses ComponentModeSystemRequestBus to initiate component mode.
             void ActivateComponentMode(ViewportUi::ButtonId);
             // Removes swticher buttons that are not common to the inputted entity.
-            void RemoveExclusiveComponents(AZ::Entity&);
+            void RemoveExclusiveComponents(const AZ::Entity&);
 
             // EditorComponentModeNotificationBus overrides ...
             void OnComponentModeExit() override;
@@ -74,10 +77,15 @@ namespace AzToolsFramework
             // ViewportEditorModeNotificationsBus overrides ...
             void OnEditorModeActivated(
                 [[maybe_unused]] const ViewportEditorModesInterface& editorModeState, [[maybe_unused]] ViewportEditorMode mode) override;
-
             void OnEditorModeDeactivated(
                 [[maybe_unused]] const ViewportEditorModesInterface& editorModeState, [[maybe_unused]] ViewportEditorMode mode) override;
 
+            // EntityCompositionNotificationBus overrides ...
+            void OnEntityComponentAdded(const AZ::EntityId& /*entityId*/, const AZ::ComponentId& /*componentId*/) override;
+            void OnEntityComponentRemoved(const AZ::EntityId& /*entityId*/, const AZ::ComponentId& /*componentId*/) override;
+            void OnEntityComponentEnabled(const AZ::EntityId& /*entityId*/, const AZ::ComponentId& /*componentId*/) override;
+            void OnEntityComponentDisabled(const AZ::EntityId& /*entityId*/, const AZ::ComponentId& /*componentId*/) override;
+            void OnEntityCompositionChanged(const AzToolsFramework::EntityIdList& /*entityIdList*/) override;
             
 
             // Member variables
@@ -85,7 +93,8 @@ namespace AzToolsFramework
             AZStd::vector<ComponentData> m_addedComponents; //!< Vector of ComponentData elements
             EntityIdList m_entityIds; //!< List of entities active in the switcher
             AZStd::set<AZStd::string> m_addedComponentNames;
-            
+            AZ::EntityComponentIdPair m_componentModePair;
+            bool m_AddRemove;
         };
 
     } // namespace ComponentModeFramework
