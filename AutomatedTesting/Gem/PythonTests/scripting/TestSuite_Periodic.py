@@ -146,16 +146,6 @@ class TestAutomation(TestAutomationBase):
 
     @pytest.mark.skip(reason="Test fails to find expected lines, it needs to be fixed.")
     @pytest.mark.parametrize("level", ["tmp_level"])
-    def test_ScriptEvents_HappyPath_SendReceiveAcrossMultiple(self, request, workspace, editor, launcher_platform, project, level):
-        def teardown():
-            file_system.delete([os.path.join(workspace.paths.project(), "Levels", level)], True, True)
-        request.addfinalizer(teardown)
-        file_system.delete([os.path.join(workspace.paths.project(), "Levels", level)], True, True)
-        from . import ScriptEvents_HappyPath_SendReceiveAcrossMultiple as test_module
-        self._run_test(request, workspace, editor, test_module)
-
-    @pytest.mark.skip(reason="Test fails to find expected lines, it needs to be fixed.")
-    @pytest.mark.parametrize("level", ["tmp_level"])
     def test_ScriptEvents_Default_SendReceiveSuccessfully(self, request, workspace, editor, launcher_platform, project, level):
         def teardown():
             file_system.delete([os.path.join(workspace.paths.project(), "Levels", level)], True, True)
@@ -417,6 +407,23 @@ class TestScriptCanvasTests(object):
             TEST_DIRECTORY,
             editor,
             "ScriptEvents_AllParamDatatypes_CreationSuccess.py",
+            expected_lines,
+            auto_test_mode=False,
+            timeout=60,
+        )
+
+    def test_ScriptEvents_HappyPath_SendReceiveAcrossMultiple(self, request, workspace, editor, launcher_platform):
+        expected_lines = [
+            "Successfully created Entity",
+            "Successfully entered game mode",
+            "Successfully found expected message",
+            "Successfully exited game mode",
+        ]
+        hydra.launch_and_validate_results(
+            request,
+            TEST_DIRECTORY,
+            editor,
+            "ScriptEvents_HappyPath_SendReceiveAcrossMultiple.py",
             expected_lines,
             auto_test_mode=False,
             timeout=60,
