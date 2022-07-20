@@ -97,6 +97,7 @@ namespace Terrain
         //////////////////////////////////////////////////////////////////////////
         // LmbrCentral::DependencyNotificationBus
         void OnCompositionChanged() override;
+        void OnCompositionRegionChanged(const AZ::Aabb& dirtyRegion) override;
 
         TerrainSurfaceGradientListConfig m_configuration;
         LmbrCentral::DependencyMonitor m_dependencyMonitor;

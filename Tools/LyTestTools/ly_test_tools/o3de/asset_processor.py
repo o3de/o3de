@@ -155,7 +155,7 @@ class AssetProcessor(object):
 
         try:
             self._control_connection.sendall(message.encode())
-            logger.info(f"Sent input {message}")
+            logger.debug(f"Sent input {message}")
             return True
         except IOError as e:
             logger.warning(f"Failed to send message {message} to AP with error {e}")
@@ -179,7 +179,7 @@ class AssetProcessor(object):
         try:
             result = self._control_connection.recv(4096)
             result_message = result.decode()
-            logger.info(f"Got result message {result_message}")
+            logger.debug(f"Got result message {result_message}")
             return result_message
         except IOError as e:
             logger.warning(f"Failed to read message from with error {e}")
@@ -215,7 +215,8 @@ class AssetProcessor(object):
         # the timeout needs to be large enough to load all the dynamic libraries the AP-GUI loads since the control port
         # is opened after all the DLL loads, this can take a long time in a Debug build
         ap_max_activate_time = 60
-        err = AssetProcessorError(f"Failed to read port type {port_type} from {self._workspace.paths.ap_gui_log()}")
+        err = AssetProcessorError(f"Failed to read port type {port_type} from {self._workspace.paths.ap_gui_log()}. "
+                                  f"Waited for {ap_max_activate_time} seconds.")
         waiter.wait_for(_get_port_from_log, timeout=ap_max_activate_time, exc=err)
         return port
 
@@ -276,7 +277,7 @@ class AssetProcessor(object):
                         logger.debug(f"Failed to read port data", exc_info=read_exception)
             return False
 
-        err = AssetProcessorError(f"Could not connect to AP {port_name} on {host}:{connect_port}")
+        err = AssetProcessorError(f"Could not connect to AP {port_name} on {host}:{connect_port}. Waited for {timeout}.")
         waiter.wait_for(_attempt_connection, timeout=timeout, exc=err)
         return True, None
 
@@ -294,7 +295,7 @@ class AssetProcessor(object):
             return StopReason.NOT_RUNNING
 
         if not self._control_connection:
-            logger.info("No control connection open, using terminate")
+            logger.debug("No control connection open, using terminate")
             self.terminate()
             return StopReason.NO_CONTROL
 
@@ -333,7 +334,7 @@ class AssetProcessor(object):
         # An Asset Processor process can be running but if _ap_proc is None, it means we don't own it.
         # If we don't own it, we won't kill it
         if len(process_list) == 0:
-            logger.info("Attempted to stop asset processor, but it's already closed.")
+            logger.debug("Attempted to stop asset processor, but it's already closed.")
             return
         process_list.reverse()  # Kill child processes first
 
@@ -342,10 +343,10 @@ class AssetProcessor(object):
             self._control_connection = None
 
         def term_success(proc):
-            logger.info(f"Successfully terminated {proc} with code {proc.returncode}")
+            logger.debug(f"Successfully terminated {proc} with code {proc.returncode}")
 
         for this_process in process_list:
-            logger.info(f"Terminating: {this_process.name()} pid: {this_process.pid}")
+            logger.debug(f"Terminating: {this_process.name()} pid: {this_process.pid}")
             try:
                 this_process.terminate()
             except psutil.NoSuchProcess:
@@ -353,9 +354,9 @@ class AssetProcessor(object):
                 pass
         _, remaining = psutil.wait_procs(process_list, timeout=10, callback=term_success)
         for process in remaining:
-            logger.info(f"Killing: {process.name()} pid: {process.pid}")
+            logger.debug(f"Killing: {process.name()} pid: {process.pid}")
             process.kill()
-        logger.info("Finished terminating asset processor")
+        logger.debug("Finished terminating asset processor")
         self._ap_proc = None
 
     def get_pid(self):
@@ -396,12 +397,12 @@ class AssetProcessor(object):
 
         # Return whether all instances of targeted process are idle
         for targeted_process in targeted_processes:
-            logger.info(f"Process name: {targeted_process.name()}")
-            if hasattr(targeted_process, "pid"):
-                logger.info(f"Process ID: {targeted_process.pid}")
             process_cpu_load = targeted_process.cpu_percent(interval=1)
-            logger.info(f"Process CPU load: {process_cpu_load}")
             if process_cpu_load >= cpu_usage_threshold:
+                logger.info(f"Process name: {targeted_process.name()}")
+                if hasattr(targeted_process, "pid"):
+                    logger.info(f"Process ID: {targeted_process.pid}")
+                logger.info(f"Process CPU load: {process_cpu_load}")
                 return False
         return True
 
@@ -469,7 +470,7 @@ class AssetProcessor(object):
         if accept_input:
             extra_gui_params.append("--acceptInput")
 
-        logger.info("Starting asset processor")
+        logger.debug("Starting asset processor")
         if self.process_exists():
             logger.error("Asset processor already started.  Stop first")
             return False, None
@@ -480,7 +481,7 @@ class AssetProcessor(object):
             else:
                 ap_target = ly_test_tools.HOST_OS_PLATFORM
             ap_platform = ASSET_PROCESSOR_PLATFORM_MAP.get(ap_target, ly_test_tools.HOST_OS_PLATFORM)
-            logger.info(f"Setting AP platform to: {ap_platform}")
+            logger.debug(f"Setting AP platform to: {ap_platform}")
             extra_gui_params.append('--platforms')
             extra_gui_params.append(ap_platform)
 
@@ -502,7 +503,7 @@ class AssetProcessor(object):
             return self.run_ap_process_command(command, timeout=timeout, capture_output=capture_output, decode=decode,
                                                expect_failure=expect_failure)
 
-        logger.info(f"Launching AP at path: {self._workspace.paths.asset_processor()}")
+        logger.debug(f"Launching AP at path: {self._workspace.paths.asset_processor()}")
 
         if capture_output:
             logger.warning(f"Cannot capture output when leaving AP connection open.")
@@ -556,7 +557,7 @@ class AssetProcessor(object):
             if scan folder overrides are set, on if not
         :return: Command list ready to pass to subprocess
         """
-        logger.info(f"Starting {ap_path}")
+        logger.debug(f"Starting {ap_path}")
         command = [ap_path]
         if fastscan:
             command.append("--zeroAnalysisMode")
@@ -636,7 +637,7 @@ class AssetProcessor(object):
         if run_result.returncode != 0:
             errorMessage = f"{command} returned error code: {run_result.returncode}"
             if expect_failure:
-                logger.info(f"Expected error occurred. {errorMessage}")
+                logger.debug(f"Expected error occurred. {errorMessage}")
             else:
                 logger.error(errorMessage)
                 self.check_copy_logs()
@@ -644,7 +645,7 @@ class AssetProcessor(object):
         elif expect_failure:
             logger.error(f"{command} was expected to fail, but instead ran without failure.")
             return True, output_list
-        logger.info(f"{command} completed successfully in {time.time() - start} seconds")
+        logger.debug(f"{command} completed successfully in {time.time() - start} seconds")
         return True, output_list
 
     def set_failure_log_folder(self, log_root):
@@ -654,7 +655,7 @@ class AssetProcessor(object):
         if self._temp_asset_root and self._failed_log_root:
             source_path = os.path.join(self._temp_asset_root, "logs")
             dest_path = os.path.join(self._failed_log_root, f"{self._function_name + '.' if self._function_name else ''}{int(round(time.time() * 1000))}")
-            logger.info(f"Copying {source_path} to {dest_path}")
+            logger.debug(f"Copying {source_path} to {dest_path}")
             shutil.copytree(source_path, dest_path)
 
     def disable_all_asset_processor_platforms(self):
@@ -726,7 +727,7 @@ class AssetProcessor(object):
         :return: None
         """
         if self._temp_asset_root:
-            logger.info(f'Cleaning up old asset root at {self._temp_asset_root}')
+            logger.debug(f'Cleaning up old asset root at {self._temp_asset_root}')
             shutil.rmtree(self._temp_asset_root, onerror=self._del_readonly)
 
     def create_temp_asset_root(self, project_scan_folder=True):
@@ -738,7 +739,7 @@ class AssetProcessor(object):
         :return: None
         """
         if self._temp_asset_root:
-            logger.info(f'Cleaning up old asset root at {self._temp_asset_root}')
+            logger.debug(f'Cleaning up old asset root at {self._temp_asset_root}')
             shutil.rmtree(self._temp_asset_root, True)
         self._temp_asset_directory = tempfile.TemporaryDirectory()
         self._temp_asset_root = self._temp_asset_directory.name
@@ -760,7 +761,7 @@ class AssetProcessor(object):
         runs of asset processor.
         """
         if self._temp_log_directory:
-            logger.info(f'Cleaning up old log root at {self._temp_log_root}')
+            logger.debug(f'Cleaning up old log root at {self._temp_log_root}')
             # The finalizer will clean up the old temporary directory when the TemporaryDirectory() reference count
             # hits 0
             self._temp_log_directory = None
@@ -779,7 +780,7 @@ class AssetProcessor(object):
         if os.path.isabs(folder_name):
             if folder_name not in self._override_scan_folders:
                 self._override_scan_folders.append(folder_name)
-                logger.info(f'Adding override scan folder {folder_name}')
+                logger.debug(f'Adding override scan folder {folder_name}')
             return folder_name
         else:
             if not self._temp_asset_root:
@@ -791,7 +792,7 @@ class AssetProcessor(object):
                 os.makedirs(scan_folder)
             if folder_name not in self._override_scan_folders:
                 self._override_scan_folders.append(scan_folder)
-                logger.info(f"Adding scan folder {scan_folder}")
+                logger.debug(f"Adding scan folder {scan_folder}")
             return scan_folder
 
     def clear_scan_folders(self) -> None:
@@ -814,7 +815,7 @@ class AssetProcessor(object):
         f = open(write_path, 'w')
         f.write(content)
         f.close()
-        logger.info('Wrote to asset ')
+        logger.debug(f'Wrote to asset at path: {write_path}')
 
     def prepare_test_environment(self, assets_path: str, function_name: str, use_current_root=False,
                                  relative_asset_root=None, add_scan_folder=True, cache_platform=None,
@@ -978,10 +979,10 @@ class AssetProcessor(object):
             return
         clear_path = os.path.join(self._temp_asset_root, relative_dest)
         if os.path.isfile(clear_path):
-            logger.info(f"Clearing readonly flag for {clear_path}")
+            logger.debug(f"Clearing readonly flag for {clear_path}")
             os.chmod(clear_path, stat.S_IWRITE)
         elif os.path.isdir(clear_path):
-            logger.info(f"Clearing readonly flag for files in {clear_path}")
+            logger.debug(f"Clearing readonly flag for files in {clear_path}")
             file_system.change_permissions(clear_path, stat.S_IWRITE)
         else:
             logger.warning(f"clear_readonly called with invalid path {clear_path}")
