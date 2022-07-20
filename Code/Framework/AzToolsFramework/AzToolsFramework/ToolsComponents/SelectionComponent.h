@@ -21,6 +21,10 @@ namespace AzToolsFramework
             SelectionComponent() = default;
             ~SelectionComponent() override = default;
 
+            // delete me
+            void Activate() override;
+            void Deactivate() override;
+
         private:
             static void Reflect(AZ::ReflectContext* context);
         };

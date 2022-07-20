@@ -12,6 +12,9 @@
 #include <AzCore/Serialization/Json/BaseJsonSerializer.h>
 #include <AzCore/Serialization/Json/RegistrationContext.h>
 
+#pragma optimize("", off)
+#pragma inline_depth(0)
+
 namespace AzToolsFramework
 {
     namespace Components
@@ -47,8 +50,9 @@ namespace AzToolsFramework
             [[maybe_unused]] const rapidjson::Value& inputValue,
             AZ::JsonDeserializerContext& context)
         {
+            // this is a quick hack to test - not final
             namespace JSR = AZ::JsonSerializationResult;
-            return context.Report(JSR::Tasks::Clear, JSR::Outcomes::Success, "empty");
+            return context.Report(JSR::Tasks::Clear, JSR::Outcomes::Success, "Skip Selection Component");
         }
 
         AZ::JsonSerializationResult::Result SelectionComponentSerializer::Store(
@@ -58,8 +62,9 @@ namespace AzToolsFramework
             [[maybe_unused]] const AZ::Uuid& valueTypeId,
             [[maybe_unused]] AZ::JsonSerializerContext& context)
         {
+            // this is a quick hack to test - not final
             namespace JSR = AZ::JsonSerializationResult;
-            return context.Report(JSR::Tasks::WriteValue, JSR::Outcomes::Success, "empty");
+            return context.Report(JSR::Tasks::Clear, JSR::Outcomes::Success, "Skip Selection Component");
         }
 
         void SelectionComponent::Reflect(AZ::ReflectContext* context)
@@ -74,5 +79,21 @@ namespace AzToolsFramework
                 jsonRegistration->Serializer<SelectionComponentSerializer>()->HandlesType<SelectionComponent>();
             }
         }
+
+        void SelectionComponent::Activate()
+        {
+            int i;
+            i = 0;
+        }
+
+        void SelectionComponent::Deactivate()
+        {
+            int i;
+            i = 0;
+        }
+
     } // namespace Components
 } // namespace AzToolsFramework
+
+#pragma optimize("", on)
+#pragma inline_depth()
