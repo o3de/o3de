@@ -18,7 +18,19 @@
 namespace LmbrCentral
 {
     /**
-    * Tracks changes in entity dependencies to refresh vegetation
+    * The DependencyMonitor is a convenience class to track multiple types of changes in entities and assets and distill the
+    * changes down to a single propagated notification that downstream listeners can handle. Specifically, it listens for the
+    * following:
+    *  - Entity activated / deactivated
+    *  - Transform changed
+    *  - Shape changed
+    *  - Asset ready / reloaded / unloaded / moved
+    *  - Entity's dependencies changed
+    * All of those get distilled into a single notification that by default will trigger an OnCompositionChanged() message
+    * on the DependencyNotificationBus.
+    * However, this is sometimes a little *too* distilled, so an entity can override the notification functions to perform custom logic.
+    * For example, if the dependent entity has provided a dirty region via OnCompositionRegionChanged(), a function can be installed
+    * to examine the region and determine whether or not it should be propagated, changed, or ignored.
     */
     class DependencyMonitor
         : private AZ::Data::AssetBus::MultiHandler
@@ -43,6 +55,23 @@ namespace LmbrCentral
         void ConnectDependency(const AZ::Data::AssetId& assetId);
         void ConnectDependencies(const AZStd::vector<AZ::Data::AssetId>& assetIds);
 
+        using EntityNotificationFunction =
+            AZStd::function<void(const AZ::EntityId& ownerId, const AZ::EntityId& dependentId, const AZ::Aabb& dirtyRegion)>;
+        using AssetNotificationFunction =
+            AZStd::function<void(const AZ::EntityId& ownerId, const AZ::Data::AssetId& assetId)>;
+
+        void SetEntityNotificationFunction(EntityNotificationFunction entityNotificationFn);
+
+        void SetAssetNotificationFunction(AssetNotificationFunction assetNotificationFn);
+
+        // Common notification functions that can be set.
+
+        // The default notification function - always send OnCompositionChanged() on any change.
+        void SetDefaultNotificationFunctions();
+
+        // Notification function that passes through a dirty region to OnCompositionRegionChanged() if a dirty region is available.
+        void SetRegionChangedEntityNotificationFunction();
+
     private:
         DependencyMonitor(const DependencyMonitor&) = delete;
         DependencyMonitor(const DependencyMonitor&&) = delete;
@@ -51,6 +80,7 @@ namespace LmbrCentral
         //////////////////////////////////////////////////////////////////////////
         // DependencyNotificationBus
         void OnCompositionChanged() override;
+        void OnCompositionRegionChanged(const AZ::Aabb& dirtyRegion) override;
 
         ////////////////////////////////////////////////////////////////////////
         // EntityEvents
@@ -72,10 +102,15 @@ namespace LmbrCentral
         void OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
         void OnAssetUnloaded(const AZ::Data::AssetId assetId, const AZ::Data::AssetType assetType) override;
 
-        void SendNotification();
+        void ResetOwnerId(const AZ::EntityId& ownerId);
+
+        void SendAssetChangedNotification(const AZ::Data::AssetId& assetId);
+        void SendEntityChangedNotification(const AZ::EntityId& entityId, const AZ::Aabb& dirtyRegion = AZ::Aabb::CreateNull());
 
         AZ::EntityId m_ownerId;
         AZStd::atomic_bool m_notificationInProgress{false};
+        EntityNotificationFunction m_entityNotificationFn;
+        AssetNotificationFunction m_assetNotificationFn;
     };
 }
 

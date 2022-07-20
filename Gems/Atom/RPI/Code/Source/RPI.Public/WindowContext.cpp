@@ -27,10 +27,6 @@ namespace AZ
 
             CreateSwapChains(device);
 
-            RHI::Ptr<RHI::SwapChain> defaultSwapChain = GetSwapChain(SwapChainMode::Default);
-            FillWindowState(defaultSwapChain->GetDescriptor().m_dimensions.m_imageWidth,
-                            defaultSwapChain->GetDescriptor().m_dimensions.m_imageHeight);
-
             AzFramework::WindowNotificationBus::Handler::BusConnect(m_windowHandle);
             AzFramework::ExclusiveFullScreenRequestBus::Handler::BusConnect(m_windowHandle);
         }
@@ -176,24 +172,33 @@ namespace AZ
             descriptor.m_verticalSyncInterval = syncInterval;
             descriptor.m_dimensions.m_imageWidth = width;
             descriptor.m_dimensions.m_imageHeight = height;
-            descriptor.m_dimensions.m_imageCount = AZ::RHI::Limits::Device::FrameCountMax;
+            descriptor.m_dimensions.m_imageCount = AZStd::max(RHI::Limits::Device::MinSwapChainImages, RHI::Limits::Device::FrameCountMax);
             descriptor.m_dimensions.m_imageFormat = GetSwapChainFormat(device);
 
             AZStd::string attachmentName = AZStd::string::format("WindowContextAttachment_%p", m_windowHandle);
             descriptor.m_attachmentId = RHI::AttachmentId{ attachmentName.c_str() };
             swapChain->Init(device, descriptor);
+            descriptor = swapChain->GetDescriptor(); // Get descriptor from swapchain because it can set different values during initialization
+
+            RHI::Viewport viewport;
+            viewport.m_maxX = static_cast<float>(descriptor.m_dimensions.m_imageWidth);
+            viewport.m_maxY = static_cast<float>(descriptor.m_dimensions.m_imageHeight);
+
+            RHI::Scissor scissor;
+            scissor.m_maxX = static_cast<int16_t>(descriptor.m_dimensions.m_imageWidth);
+            scissor.m_maxY = static_cast<int16_t>(descriptor.m_dimensions.m_imageHeight);
 
             uint32_t defaultSwapChainIndex = static_cast<uint32_t>(SwapChainMode::Default);
             if (defaultSwapChainIndex < m_swapChainsData.size())
             {
                 m_swapChainsData[defaultSwapChainIndex].m_swapChain = swapChain;
-                m_swapChainsData[defaultSwapChainIndex].m_viewport = RHI::Viewport{};
-                m_swapChainsData[defaultSwapChainIndex].m_scissor = RHI::Scissor{};
+                m_swapChainsData[defaultSwapChainIndex].m_viewport = viewport;
+                m_swapChainsData[defaultSwapChainIndex].m_scissor = scissor;
             }
             else
             {
                 m_swapChainsData.insert(
-                    m_swapChainsData.begin() + defaultSwapChainIndex, SwapChainData{ swapChain, RHI::Viewport{}, RHI::Scissor{} });
+                    m_swapChainsData.begin() + defaultSwapChainIndex, SwapChainData{ swapChain, viewport, scissor });
             }
 
             // Add XR pipelines if it is active
@@ -216,6 +221,7 @@ namespace AZ
                     attachmentName = AZStd::string::format("XRSwapChain_View_%i", i);
                     xrDescriptor.m_attachmentId = RHI::AttachmentId{ attachmentName.c_str() };
                     xrSwapChain->Init(device, xrDescriptor);
+                    xrDescriptor = xrSwapChain->GetDescriptor(); // Get descriptor from swapchain because it can set different values during initialization
 
                     RHI::Viewport xrViewport;
                     xrViewport.m_maxX = static_cast<float>(xrDescriptor.m_dimensions.m_imageWidth);

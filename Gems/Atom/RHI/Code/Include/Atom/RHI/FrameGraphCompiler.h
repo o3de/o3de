@@ -13,6 +13,69 @@
 #include <Atom/RHI/ImageView.h>
 #include <Atom/RHI/BufferView.h>
 
+//! Struct used as a key for m_imageReverseLookupHash map below. The reason for using a struct instead of a hash directly is
+//! so that the map can handle hash collision correctly by using the == operator. This struct contains
+//! the resource name and the view descriptor related to the image views.
+struct ImageResourceViewData
+{
+    AZ::Name m_name;
+    AZ::RHI::ImageViewDescriptor m_imageViewDescriptor;
+
+    bool operator==(const ImageResourceViewData& other) const
+    {
+        return this->m_name == other.m_name && this->m_imageViewDescriptor == other.m_imageViewDescriptor;
+    };
+
+    AZ::HashValue64 GetHash() const
+    {
+        return m_imageViewDescriptor.GetHash(AZ::TypeHash64(m_name.GetHash()));
+    }
+};
+
+//! Struct used as a key for m_bufferReverseLookupHash map below. The reason for using a struct instead of a hash directly is
+//! so that the map can handle hash collision correctly by using the == operator. This struct contains
+//! the resource name and the view descriptor related to the buffer views.
+struct BufferResourceViewData
+{
+    AZ::Name m_name;
+    AZ::RHI::BufferViewDescriptor m_bufferViewDescriptor;
+
+    bool operator==(const BufferResourceViewData& other) const
+    {
+        return this->m_name == other.m_name && this->m_bufferViewDescriptor == other.m_bufferViewDescriptor;
+    };
+
+    AZ::HashValue64 GetHash() const
+    {
+        return m_bufferViewDescriptor.GetHash(AZ::TypeHash64(m_name.GetHash()));
+    }
+};
+
+namespace AZStd
+{
+   template<>
+   struct hash<ImageResourceViewData>
+   {
+       size_t operator()(const ImageResourceViewData& imageResourceViewData) const noexcept
+       {
+           return aznumeric_cast<size_t>(imageResourceViewData.GetHash());
+       }
+   };
+}
+ 
+namespace AZStd
+{
+    template<>
+    struct hash<BufferResourceViewData>
+    {
+        size_t operator()(const BufferResourceViewData& bufferResourceViewData) const noexcept
+        {
+            return aznumeric_cast<size_t>(bufferResourceViewData.GetHash());
+        }
+    };
+}
+
+
 namespace AZ
 {
     namespace RHI
@@ -162,7 +225,13 @@ namespace AZ
 
             void CompileResourceViews(const FrameGraphAttachmentDatabase& attachmentDatabase);
 
-            //Returns the resource from local cache if it exists within it or create one if it doesn't and add it to the cache
+            //! Remove the entry related to the provided ReverseLookupObjectType from the appropriate cache as it is probably stale now
+            template<typename ReverseLookupObjectType, typename ObjectCacheType>
+            void RemoveFromCache(ReverseLookupObjectType objectToRemove,
+                                 AZStd::unordered_map<ReverseLookupObjectType, HashValue64>& reverseHashLookupMap,
+                                 ObjectCache<ObjectCacheType>& objectCache);
+            
+            // Returns the resource from local cache if it exists within it or create one if it doesn't and add it to the cache
             ImageView* GetImageViewFromLocalCache(Image* image, const ImageViewDescriptor& imageViewDescriptor);
             BufferView* GetBufferViewFromLocalCache(Buffer* buffer, const BufferViewDescriptor& bufferViewDescriptor);
             
@@ -170,7 +239,11 @@ namespace AZ
             // deleted at the end of the frame and re-created at the start. Mainly used as an optimization.  
             ObjectCache<ImageView> m_imageViewCache;
             ObjectCache<BufferView> m_bufferViewCache;
-
+            
+            // The maps below are used to reverse look up view hashes so we can clear them out of m_imageViewCache/m_bufferViewCache
+            // once they have been replaced with a new view instance. 
+            AZStd::unordered_map<ImageResourceViewData, HashValue64> m_imageReverseLookupHash;
+            AZStd::unordered_map<BufferResourceViewData, HashValue64> m_bufferReverseLookupHash;
         };
     }
 }
