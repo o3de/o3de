@@ -25,6 +25,9 @@
                         0.0,
                         0.0
                     ]
+                },
+                "settings": {
+                    "instructions": [ "SLOTTYPE NODEID_SLOTNAME = SLOTVALUE;" ]
                 }
             }
         ],
@@ -44,6 +47,9 @@
                         0.0,
                         0.0
                     ]
+                },
+                "settings": {
+                    "instructions": [ "SLOTTYPE NODEID_SLOTNAME = sin(NODEID_inValue);" ]
                 }
             }
         ]

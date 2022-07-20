@@ -103,7 +103,7 @@
                     "toolId": {
                         "Value": 2034248906
                     },
-                    "configId": "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/TestData/cosine.materialcanvasnode.azasset"
+                    "configId": "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/TestData/time.materialcanvasnode.azasset"
                 }
             },
             {
@@ -131,7 +131,7 @@
                     "toolId": {
                         "Value": 2034248906
                     },
-                    "configId": "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/TestData/sine.materialcanvasnode.azasset"
+                    "configId": "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/TestData/sin.materialcanvasnode.azasset"
                 }
             },
             {

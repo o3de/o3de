@@ -6,7 +6,7 @@
         "category": "Lighting Model",
         "title": "Example PBR",
         "settings": {
-            "templates": [
+            "templatePaths": [
                 "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/TestData/ExamplePBR/MaterialGraphName.materialtype.template",
                 "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/TestData/ExamplePBR/MaterialGraphName_ForwardPass.azsl.template",
                 "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/TestData/ExamplePBR/MaterialGraphName_ForwardPass.shader.template"
@@ -32,6 +32,9 @@
                         1.0,
                         1.0
                     ]
+                },
+                "settings": {
+                    "instructions": [ "SLOTTYPE NODEID_SLOTNAME = SLOTVALUE;" ]
                 }
             },
             {
@@ -53,6 +56,9 @@
                         0.0,
                         1.0
                     ]
+                },
+                "settings": {
+                    "instructions": [ "SLOTTYPE NODEID_SLOTNAME = SLOTVALUE;" ]
                 }
             },
             {
@@ -74,6 +80,9 @@
                         0.0,
                         1.0
                     ]
+                },
+                "settings": {
+                    "instructions": [ "SLOTTYPE NODEID_SLOTNAME = SLOTVALUE;" ]
                 }
             },
             {
@@ -95,6 +104,9 @@
                         0.0,
                         1.0
                     ]
+                },
+                "settings": {
+                    "instructions": [ "SLOTTYPE NODEID_SLOTNAME = SLOTVALUE;" ]
                 }
             },
             {
@@ -116,6 +128,9 @@
                         0.0,
                         1.0
                     ]
+                },
+                "settings": {
+                    "instructions": [ "SLOTTYPE NODEID_SLOTNAME = SLOTVALUE;" ]
                 }
             }
         ]
