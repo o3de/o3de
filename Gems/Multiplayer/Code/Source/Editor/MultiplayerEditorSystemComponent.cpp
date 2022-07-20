@@ -41,7 +41,7 @@ namespace Multiplayer
     AZ_CVAR(AZ::CVarFixedString, editorsv_rhi_override, "", nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
         "Override the default rendering hardware interface (rhi) when launching the Editor server. For example, you may be running an Editor using 'dx12', but want to launch a headless server using 'null'. If empty the server will launch using the same rhi as the Editor.");
     AZ_CVAR(bool, editorsv_print_server_logs, true, nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
-        "Whether Editor should print its server's logs to the Editor console. Useful for seeing server prints, warnings, and errors without having to open up the server console or server.log file.");
+        "Whether Editor should print its server's logs to the Editor console. Useful for seeing server prints, warnings, and errors without having to open up the server console or server.log file. Note: Must be set before entering the editor play mode.");
 
     AZ_CVAR_EXTERNED(uint16_t, editorsv_port);
     
@@ -395,7 +395,7 @@ namespace Multiplayer
 
     void MultiplayerEditorSystemComponent::OnTick(float, AZ::ScriptTimePoint)
     {
-        if (editorsv_print_server_logs && m_serverProcessTracePrinter)
+        if (m_serverProcessTracePrinter)
         {
             m_serverProcessTracePrinter->Pump();
         }
