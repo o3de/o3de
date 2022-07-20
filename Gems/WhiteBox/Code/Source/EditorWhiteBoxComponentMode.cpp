@@ -509,7 +509,7 @@ namespace WhiteBox
             settingsRegistry->Get(hasTransformMode, WhiteBoxTransformFeature);
             if (hasTransformMode)
             {
-                m_transformModeButtonId = RegisterClusterButton(m_modeSelectionClusterId, "TransformMode");
+                m_transformModeButtonId = RegisterClusterButton(m_modeSelectionClusterId, "Move");
                 AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
                     AzToolsFramework::ViewportUi::DefaultViewportId,
                     &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::SetClusterButtonTooltip, m_modeSelectionClusterId,

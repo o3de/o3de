@@ -441,6 +441,7 @@ namespace WhiteBox
             whiteBox, m_entityComponentIdPair, &EditorWhiteBoxComponentRequests::GetWhiteBoxMesh);
 
         UpdateTransformHandles(whiteBox);
+        translationManipulators->SetLineBoundWidth(AzToolsFramework::ManipulatorLineBoundWidth());
         translationManipulators->SetLocalPosition(m_whiteBoxSelection->m_localPosition);
 
         auto mouseMoveHandlerFn = [entityComponentIdPair = m_entityComponentIdPair,
