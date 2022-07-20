@@ -142,18 +142,37 @@ namespace Multiplayer
                             auto enumerateCB =
                                 [levelAssetType, &networkedLevelNames]([[maybe_unused]] const AZ::Data::AssetId id, const AZ::Data::AssetInfo& assetInfo)
                             {
-                                if (assetInfo.m_assetType == levelAssetType)
+                                // Skip everything that isn't a spawnable
+                                if (assetInfo.m_assetType != levelAssetType)
                                 {
-                                    // A network spawnable is serialized to file as a ".network.spawnable". (See Multiplayer Gem's MultiplayerConstants.h)
-                                    // Grab only network spawnables from the level list
-                                    if (assetInfo.m_relativePath.ends_with(Multiplayer::NetworkSpawnableFileExtension))
-                                    {   
-                                        AZStd::string spawnablePath(assetInfo.m_relativePath); 
-                                        AZ::StringFunc::Replace(spawnablePath, Multiplayer::NetworkFileExtension.data(), "");
-                                        networkedLevelNames.emplace(spawnablePath);
-                                    }
-
+                                    return;
                                 }
+
+                                // Skip non-network spawnables
+                                // A network spawnable is serialized to file as a ".network.spawnable". (See Multiplayer Gem's MultiplayerConstants.h)
+                                if (!assetInfo.m_relativePath.ends_with(Multiplayer::NetworkSpawnableFileExtension))
+                                {
+                                    return;   
+                                }
+
+                                // Skip spawnables not inside the levels folder
+                                if (!assetInfo.m_relativePath.starts_with("levels"))
+                                {
+                                    return;
+                                }
+
+                                AZ::IO::PathView spawnablePath(assetInfo.m_relativePath);
+                                AZ::IO::PathView stem = spawnablePath.Stem(); // Just the filename without the extension
+                                auto parentFolderIter = spawnablePath.end();
+                                AZStd::advance(parentFolderIter, -2);
+                                if (*parentFolderIter != stem)
+                                {
+                                    return;
+                                }
+
+                                AZStd::string networkLevelPath = assetInfo.m_relativePath;
+                                AZ::StringFunc::Replace(networkLevelPath, Multiplayer::NetworkFileExtension.data(), "");
+                                networkedLevelNames.emplace(networkLevelPath);
                             };
 
                             AZ::Data::AssetCatalogRequestBus::Broadcast(
@@ -162,13 +181,13 @@ namespace Multiplayer
                             int networkLevelIndex = 0;
                             for (const auto& networkLevelName : networkedLevelNames)
                             {
-                                AZStd::fixed_string<256> levelMenuItem = AZStd::fixed_string<256>::format("%d- %s", networkLevelIndex, networkLevelName.c_str());
+                                auto levelMenuItem = AZStd::string::format("%d- %s", networkLevelIndex, networkLevelName.c_str());
                                 if (ImGui::MenuItem(levelMenuItem.c_str()))
                                 {
                                     AZ::TickBus::QueueFunction(
                                         [console, networkLevelName]()
                                         {
-                                            auto loadLevelString = AZStd::fixed_string<256>::format("LoadLevel %s", networkLevelName.c_str());
+                                            auto loadLevelString = AZStd::string::format("LoadLevel %s", networkLevelName.c_str());
                                             console->PerformCommand("host");
                                             console->PerformCommand(loadLevelString.c_str());
                                         });
