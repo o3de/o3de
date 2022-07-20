@@ -44,8 +44,15 @@ namespace Terrain
 
             serialize->Class<ClipmapConfiguration>()
                 ->Version(1)
+                ->Field("ClipmapSize", &ClipmapConfiguration::m_clipmapSize)
+                ->Field("MacroClipmapMaxRenderRadius", &ClipmapConfiguration::m_macroClipmapMaxRenderRadius)
+                ->Field("DetailClipmapMaxRenderRadius", &ClipmapConfiguration::m_detailClipmapMaxRenderRadius)
                 ->Field("MacroClipmapMaxResolution", &ClipmapConfiguration::m_macroClipmapMaxResolution)
                 ->Field("DetailClipmapMaxResolution", &ClipmapConfiguration::m_detailClipmapMaxResolution)
+                ->Field("MacroClipmapScaleBase", &ClipmapConfiguration::m_macroClipmapScaleBase)
+                ->Field("DetailClipmapScaleBase", &ClipmapConfiguration::m_detailClipmapScaleBase)
+                ->Field("MacroClipmapMarginSize", &ClipmapConfiguration::m_macroClipmapMarginSize)
+                ->Field("DetailClipmapMarginSize", &ClipmapConfiguration::m_detailClipmapMarginSize)
                 ;
 
             serialize->Class<TerrainWorldRendererConfig, AZ::ComponentConfig>()
@@ -93,20 +100,77 @@ namespace Terrain
                     ;
 
                 editContext->Class<ClipmapConfiguration>("Clipmap", "Settings related to clipmap rendering")
+                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &ClipmapConfiguration::m_clipmapSize,
+                        "Clipmap image size",
+                        "The size of the clipmap image in each layer.")
+                        ->EnumAttribute(ClipmapConfiguration::ClipmapSize2048, "2048")
+                        ->EnumAttribute(ClipmapConfiguration::ClipmapSize1024, "1024")
+                        ->EnumAttribute(ClipmapConfiguration::ClipmapSize512, "512")
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &ClipmapConfiguration::m_macroClipmapMaxRenderRadius,
+                        "Macro clipmap max render radius: m",
+                        "Max render radius that the lowest resolution clipmap can cover. \n"
+                        "For example, 1000 means the clipmaps render 1000 meters at most from the view position.")
+                        ->Attribute(AZ::Edit::Attributes::Step, 1.0f)
+                        ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
+                        ->Attribute(AZ::Edit::Attributes::SoftMin, 1000.0f)
+                        ->Attribute(AZ::Edit::Attributes::SoftMax, 10000.0f)
+                        ->Attribute(AZ::Edit::Attributes::Max, 400000.0f)
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &ClipmapConfiguration::m_detailClipmapMaxRenderRadius,
+                        "Detail clipmap max render radius: m",
+                        "Max render radius that the lowest resolution clipmap can cover. \n"
+                        "For example, 1000 means the clipmaps render 1000 meters at most from the view position.")
+                        ->Attribute(AZ::Edit::Attributes::Step, 1.0f)
+                        ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
+                        ->Attribute(AZ::Edit::Attributes::SoftMin, 100.0f)
+                        ->Attribute(AZ::Edit::Attributes::SoftMax, 2000.0f)
+                        ->Attribute(AZ::Edit::Attributes::Max, 10000.0f)
                     ->DataElement(AZ::Edit::UIHandlers::Slider, &ClipmapConfiguration::m_macroClipmapMaxResolution,
-                        "Macro clipmap max resolution (in texels per meter)",
+                        "Macro clipmap max resolution: texels/m",
                         "The resolution of the highest resolution clipmap in the stack.")
-                        ->Attribute(AZ::Edit::Attributes::Min, 0.5f)
+                        ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                         ->Attribute(AZ::Edit::Attributes::SoftMin, 2.0f)
-                        ->Attribute(AZ::Edit::Attributes::Max, 16.0f)
-                        ->Attribute(AZ::Edit::Attributes::SoftMax, 128.0f)
+                        ->Attribute(AZ::Edit::Attributes::SoftMax, 10.0f)
+                        ->Attribute(AZ::Edit::Attributes::Max, 100.0f)
                     ->DataElement(AZ::Edit::UIHandlers::Slider, &ClipmapConfiguration::m_detailClipmapMaxResolution,
-                        "Detail clipmap max resolution (in texels per meter)",
+                        "Detail clipmap max resolution: texels/m",
                         "The resolution of the highest resolution clipmap in the stack.")
-                        ->Attribute(AZ::Edit::Attributes::Min, 0.5f)
-                        ->Attribute(AZ::Edit::Attributes::SoftMin, 256.0f)
-                        ->Attribute(AZ::Edit::Attributes::Max, 2048.0f)
-                        ->Attribute(AZ::Edit::Attributes::SoftMax, 4096.0f)
+                        ->Attribute(AZ::Edit::Attributes::Min, 10.0f)
+                        ->Attribute(AZ::Edit::Attributes::SoftMin, 512.0f)
+                        ->Attribute(AZ::Edit::Attributes::SoftMax, 2048.0f)
+                        ->Attribute(AZ::Edit::Attributes::Max, 4096.0f)
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &ClipmapConfiguration::m_macroClipmapScaleBase,
+                        "Macro clipmap scale base",
+                        "The scale base between two adjacent clipmap layers. \n"
+                        "For example, 3 means the (n+1)th clipmap covers 3^2 = 9 times to what is covered by the nth clipmap.")
+                        ->Attribute(AZ::Edit::Attributes::Min, 1.0f)
+                        ->Attribute(AZ::Edit::Attributes::SoftMin, 2.0f)
+                        ->Attribute(AZ::Edit::Attributes::SoftMax, 4.0f)
+                        ->Attribute(AZ::Edit::Attributes::Max, 10.0f)
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &ClipmapConfiguration::m_detailClipmapScaleBase,
+                        "Detail clipmap scale base",
+                        "The scale base between two adjacent clipmap layers. \n"
+                        "For example, 3 means the (n+1)th clipmap covers 3^2 = 9 times to what is covered by the nth clipmap.")
+                        ->Attribute(AZ::Edit::Attributes::Min, 1.0f)
+                        ->Attribute(AZ::Edit::Attributes::SoftMin, 2.0f)
+                        ->Attribute(AZ::Edit::Attributes::SoftMax, 4.0f)
+                        ->Attribute(AZ::Edit::Attributes::Max, 10.0f)
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &ClipmapConfiguration::m_macroClipmapMarginSize,
+                        "Macro clipmap margin size: texels",
+                        "The margin of the clipmap where the data won't be used, so that bigger margin results in less frequent update."
+                        "But bigger margin also means it tends to use lower resolution clipmap.")
+                        ->Attribute(AZ::Edit::Attributes::Min, 1u)
+                        ->Attribute(AZ::Edit::Attributes::SoftMin, 1u)
+                        ->Attribute(AZ::Edit::Attributes::SoftMax, 8u)
+                        ->Attribute(AZ::Edit::Attributes::Max, 16u)
+                    ->DataElement(AZ::Edit::UIHandlers::Slider, &ClipmapConfiguration::m_detailClipmapMarginSize,
+                        "Detail clipmap margin size: texels",
+                        "The margin of the clipmap where the data won't be used, so that bigger margin results in less frequent update."
+                        "But bigger margin also means it tends to use lower resolution clipmap.")
+                        ->Attribute(AZ::Edit::Attributes::Min, 1u)
+                        ->Attribute(AZ::Edit::Attributes::SoftMin, 1u)
+                        ->Attribute(AZ::Edit::Attributes::SoftMax, 8u)
+                        ->Attribute(AZ::Edit::Attributes::Max, 16u)
+                    // Note: m_extendedClipmapMarginSize, m_clipmapBlendSize won't be exposed because algorithm may change and we may not need them.
                     ;
 
                 editContext->Class<TerrainWorldRendererConfig>("Terrain World Renderer Component", "Enables terrain rendering")

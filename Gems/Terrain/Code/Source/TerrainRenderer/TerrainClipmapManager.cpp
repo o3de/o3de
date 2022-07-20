@@ -460,7 +460,7 @@ namespace Terrain
         m_clipmaps[ClipmapName::MacroColor] =
             AZ::RPI::AttachmentImage::Create(*pool.get(), imageDesc, macroColorClipmapName, nullptr, nullptr);
 
-        imageDesc.m_format = AZ::RHI::Format::R8G8_SNORM;
+        imageDesc.m_format = AZ::RHI::Format::R16G16_SNORM;
         imageDesc.m_arraySize = aznumeric_cast<uint16_t>(m_macroClipmapStackSize);
 
         AZ::Name macroNormalClipmapName = AZ::Name("MacroNormalClipmaps");
@@ -476,7 +476,6 @@ namespace Terrain
         imageDesc.m_bindFlags = AZ::RHI::ImageBindFlags::ShaderReadWrite;
         imageDesc.m_size = AZ::RHI::Size(m_config.m_clipmapSize, m_config.m_clipmapSize, 1);
 
-        // TODO: Test and find the most suitable precision for color map.
         imageDesc.m_format = AZ::RHI::Format::R8G8B8A8_UNORM;
         imageDesc.m_arraySize = aznumeric_cast<uint16_t>(m_detailClipmapStackSize);
 
@@ -484,7 +483,7 @@ namespace Terrain
         m_clipmaps[ClipmapName::DetailColor] =
             AZ::RPI::AttachmentImage::Create(*pool.get(), imageDesc, detailColorClipmapName, nullptr, nullptr);
 
-        imageDesc.m_format = AZ::RHI::Format::R8G8_SNORM;
+        imageDesc.m_format = AZ::RHI::Format::R16G16_SNORM;
         imageDesc.m_arraySize = aznumeric_cast<uint16_t>(m_detailClipmapStackSize);
 
         AZ::Name detailNormalClipmapName = AZ::Name("DetailNormalClipmaps");
