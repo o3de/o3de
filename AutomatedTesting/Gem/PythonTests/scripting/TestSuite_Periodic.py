@@ -263,11 +263,11 @@ class TestScriptCanvasTests(object):
         )
     def test_ScriptEvent_AddRemoveParameter_ActionsSuccessful(self, request, editor, launcher_platform):
         expected_lines = [
-            "Successfully created a new event",
-            "Successfully created Child Event",
-            "Successfully saved event asset",
-            "Successfully added parameter",
-            "Successfully removed parameter",
+            "Success: New Script Event created",
+            "Success: Child Event created",
+            "Success: Successfully saved event asset",
+            "Success: Successfully added parameter",
+            "Success: Successfully removed parameter",
         ]
         hydra.launch_and_validate_results(
             request,
