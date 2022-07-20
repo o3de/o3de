@@ -196,3 +196,4 @@ class PersistentStorage(ABC):
         If the hash of the last commit was found in our historic data, then this flag will be set.
         """
         return self._has_previous_last_commit_hash
+
