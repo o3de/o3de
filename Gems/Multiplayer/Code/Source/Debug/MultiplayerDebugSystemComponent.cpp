@@ -180,22 +180,31 @@ namespace Multiplayer
                             AZ::Data::AssetCatalogRequestBus::Broadcast(
                                 &AZ::Data::AssetCatalogRequestBus::Events::EnumerateAssets, nullptr, enumerateCB, nullptr);
 
-                            int levelIndex = 0;
-                            for (const auto& multiplayerLevelFilePath : multiplayerLevelFilePaths)
+                            if (multiplayerLevelFilePaths.size() > 0)
                             {
-                                auto levelMenuItem = AZStd::string::format("%d- %s", levelIndex, multiplayerLevelFilePath.c_str());
-                                if (ImGui::MenuItem(levelMenuItem.c_str()))
+                                int levelIndex = 0;
+                                for (const auto& multiplayerLevelFilePath : multiplayerLevelFilePaths)
                                 {
-                                    AZ::TickBus::QueueFunction(
-                                        [console, multiplayerLevelFilePath]()
-                                        {
-                                            auto loadLevelString = AZStd::string::format("LoadLevel %s", multiplayerLevelFilePath.c_str());
-                                            console->PerformCommand("host");
-                                            console->PerformCommand(loadLevelString.c_str());
-                                        });
+                                    auto levelMenuItem = AZStd::string::format("%d- %s", levelIndex, multiplayerLevelFilePath.c_str());
+                                    if (ImGui::MenuItem(levelMenuItem.c_str()))
+                                    {
+                                        AZ::TickBus::QueueFunction(
+                                            [console, multiplayerLevelFilePath]()
+                                            {
+                                                auto loadLevelString = AZStd::string::format("LoadLevel %s", multiplayerLevelFilePath.c_str());
+                                                console->PerformCommand("host");
+                                                console->PerformCommand(loadLevelString.c_str());
+                                            });
+                                    }
+                                    ++levelIndex;
                                 }
-                                ++levelIndex;
                             }
+                            else
+                            {
+                                ImGui::MenuItem(NoMultiplayerLevelsFound);
+                            }
+                            
+                            ImGui::EndMenu();
                         }
                     }
                     else if (multiplayerAgentType == MultiplayerAgentType::DedicatedServer ||
