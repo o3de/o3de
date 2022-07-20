@@ -1,6 +1,6 @@
-ProductName: vertexcolor.dbgsg
+ProductName: ModifiedFBXFile.dbgsg
 debugSceneGraphVersion: 1
-vertexcolor
+ModifiedFBXFile
 Node Name: RootNode
 Node Path: RootNode
 Node Type: RootBoneData
@@ -10,39 +10,33 @@ Node Type: RootBoneData
 		BasisZ: < 0.000000,  0.000000,  1.000000>
 		Transl: < 0.000000,  0.000000,  0.000000>
 
-Node Name: Cube
-Node Path: RootNode.Cube
+Node Name: Sphere
+Node Path: RootNode.Sphere
 Node Type: MeshData
-	Positions: Count 24576. Hash: 7031773714680283213
-	Normals: Count 24576. Hash: 8968157737282745201
-	FaceList: Count 12288. Hash: 13183441914179219962
-	FaceMaterialIds: Count 12288. Hash: 12545154121625736090
+	Positions: Count 132. Hash: 15328204272558877065
+	Normals: Count 132. Hash: 5332700147958345032
+	FaceList: Count 60. Hash: 12684029649592213879
+	FaceMaterialIds: Count 60. Hash: 446144740372925555
 
-Node Name: Cube_vertexcolor_optimized
-Node Path: RootNode.Cube_vertexcolor_optimized
+Node Name: Sphere_ModifiedFBXFile_optimized
+Node Path: RootNode.Sphere_ModifiedFBXFile_optimized
 Node Type: MeshData
-	Positions: Count 6376. Hash: 10806296444120211070
-	Normals: Count 6376. Hash: 3814626075063770280
-	FaceList: Count 12288. Hash: 15242182080304859208
-	FaceMaterialIds: Count 12288. Hash: 12545154121625736090
-
-Node Name: Col0
-Node Path: RootNode.Cube.Col0
-Node Type: MeshVertexColorData
-	Colors: Count 24576. Hash: 17169952715183318502
-	ColorsCustomName: 
+	Positions: Count 132. Hash: 15328204272558877065
+	Normals: Count 132. Hash: 5332700147958345032
+	FaceList: Count 60. Hash: 12684029649592213879
+	FaceMaterialIds: Count 60. Hash: 446144740372925555
 
 Node Name: transform
-Node Path: RootNode.Cube.transform
+Node Path: RootNode.Sphere.transform
 Node Type: TransformData
 	Matrix:
 		BasisX: < 100.000000,  0.000000,  0.000000>
-		BasisY: < 0.000000, -0.000016,  100.000000>
-		BasisZ: < 0.000000, -100.000000, -0.000016>
+		BasisY: < 0.000000,  100.000000,  0.000000>
+		BasisZ: < 0.000000,  0.000000,  100.000000>
 		Transl: < 0.000000,  0.000000,  0.000000>
 
 Node Name: custom_properties
-Node Path: RootNode.Cube.custom_properties
+Node Path: RootNode.Sphere.custom_properties
 Node Type: CustomPropertyData
 	UserProperties: 
 	IsNull: false
@@ -50,16 +44,16 @@ Node Type: CustomPropertyData
 	InheritType: 1
 
 Node Name: UVMap
-Node Path: RootNode.Cube.UVMap
+Node Path: RootNode.Sphere.UVMap
 Node Type: MeshVertexUVData
-	UVs: Count 24576. Hash: 4554678369329207802
+	UVs: Count 132. Hash: 15790245322135584055
 	UVCustomName: UVMap
 
-Node Name: Material
-Node Path: RootNode.Cube.Material
+Node Name: CubeMaterial
+Node Path: RootNode.Sphere.CubeMaterial
 Node Type: MaterialData
-	MaterialName: Material
-	UniqueId: 11127505492038345244
+	MaterialName: CubeMaterial
+	UniqueId: 973942033197978066
 	IsNoDraw: false
 	DiffuseColor: < 0.800000,  0.800000,  0.800000>
 	SpecularColor: < 0.800000,  0.800000,  0.800000>
@@ -75,7 +69,7 @@ Node Type: MaterialData
 	UseEmissiveMap: Not set
 	EmissiveIntensity: Not set
 	UseAOMap: Not set
-	DiffuseTexture: 
+	DiffuseTexture: ModifiedFBXFile_ConsistentProductOutput/FBXTestTexture.png
 	SpecularTexture: 
 	BumpTexture: 
 	NormalTexture: 
@@ -83,68 +77,62 @@ Node Type: MaterialData
 	RoughnessTexture: 
 	AmbientOcclusionTexture: 
 	EmissiveTexture: 
-	BaseColorTexture: 
+	BaseColorTexture: ModifiedFBXFile_ConsistentProductOutput/FBXTestTexture.png
 
 Node Name: TangentSet_0
-Node Path: RootNode.Cube.TangentSet_0
+Node Path: RootNode.Sphere.TangentSet_0
 Node Type: MeshVertexTangentData
-	Tangents: Count 24576. Hash: 13321090379606717973
+	Tangents: Count 132. Hash: 12553984081256994771
 	GenerationMethod: 1
 	SetIndex: 0
 
 Node Name: BitangentSet_0
-Node Path: RootNode.Cube.BitangentSet_0
+Node Path: RootNode.Sphere.BitangentSet_0
 Node Type: MeshVertexBitangentData
-	Bitangents: Count 24576. Hash: 17217515414004886507
+	Bitangents: Count 132. Hash: 15943717771083870087
 	GenerationMethod: 1
 
 Node Name: UVMap
-Node Path: RootNode.Cube_vertexcolor_optimized.UVMap
+Node Path: RootNode.Sphere_ModifiedFBXFile_optimized.UVMap
 Node Type: MeshVertexUVData
-	UVs: Count 6376. Hash: 12957930967905951851
+	UVs: Count 132. Hash: 15790245322135584055
 	UVCustomName: UVMap
 
 Node Name: TangentSet_0
-Node Path: RootNode.Cube_vertexcolor_optimized.TangentSet_0
+Node Path: RootNode.Sphere_ModifiedFBXFile_optimized.TangentSet_0
 Node Type: MeshVertexTangentData
-	Tangents: Count 6376. Hash: 7712841033379094373
+	Tangents: Count 132. Hash: 12553984081256994771
 	GenerationMethod: 1
 	SetIndex: 0
 
 Node Name: BitangentSet_0
-Node Path: RootNode.Cube_vertexcolor_optimized.BitangentSet_0
+Node Path: RootNode.Sphere_ModifiedFBXFile_optimized.BitangentSet_0
 Node Type: MeshVertexBitangentData
-	Bitangents: Count 6376. Hash: 12547048737213169362
+	Bitangents: Count 132. Hash: 15943717771083870087
 	GenerationMethod: 1
 
-Node Name: Col0
-Node Path: RootNode.Cube_vertexcolor_optimized.Col0
-Node Type: MeshVertexColorData
-	Colors: Count 6376. Hash: 8761962599807935159
-	ColorsCustomName: 
-
 Node Name: transform
-Node Path: RootNode.Cube_vertexcolor_optimized.transform
+Node Path: RootNode.Sphere_ModifiedFBXFile_optimized.transform
 Node Type: TransformData
 	Matrix:
 		BasisX: < 100.000000,  0.000000,  0.000000>
-		BasisY: < 0.000000, -0.000016,  100.000000>
-		BasisZ: < 0.000000, -100.000000, -0.000016>
+		BasisY: < 0.000000,  100.000000,  0.000000>
+		BasisZ: < 0.000000,  0.000000,  100.000000>
 		Transl: < 0.000000,  0.000000,  0.000000>
 
 Node Name: custom_properties
-Node Path: RootNode.Cube_vertexcolor_optimized.custom_properties
+Node Path: RootNode.Sphere_ModifiedFBXFile_optimized.custom_properties
 Node Type: CustomPropertyData
 	UserProperties: 
 	IsNull: false
 	DefaultAttributeIndex: 0
 	InheritType: 1
 
-Node Name: Material
-Node Path: RootNode.Cube_vertexcolor_optimized.Material
+Node Name: CubeMaterial
+Node Path: RootNode.Sphere_ModifiedFBXFile_optimized.CubeMaterial
 Node Type: MaterialData
-	MaterialName: Material
-	UniqueId: 11127505492038345244
+	MaterialName: CubeMaterial
+	UniqueId: 973942033197978066
 	IsNoDraw: false
 	DiffuseColor: < 0.800000,  0.800000,  0.800000>
 	SpecularColor: < 0.800000,  0.800000,  0.800000>
@@ -160,7 +148,7 @@ Node Type: MaterialData
 	UseEmissiveMap: Not set
 	EmissiveIntensity: Not set
 	UseAOMap: Not set
-	DiffuseTexture: 
+	DiffuseTexture: ModifiedFBXFile_ConsistentProductOutput/FBXTestTexture.png
 	SpecularTexture: 
 	BumpTexture: 
 	NormalTexture: 
@@ -168,5 +156,5 @@ Node Type: MaterialData
 	RoughnessTexture: 
 	AmbientOcclusionTexture: 
 	EmissiveTexture: 
-	BaseColorTexture: 
+	BaseColorTexture: ModifiedFBXFile_ConsistentProductOutput/FBXTestTexture.png
 
