@@ -12,6 +12,7 @@ from logging import getLogger
 import os
 from tiaf_driver import main
 import pytest
+from tiaf_persistent_storage_s3 import PersistentStorageS3
 
 logging = getLogger("tiaf")
 
@@ -139,16 +140,47 @@ class TestTIAFUnitTests():
         # then:
         assert test_string in caplog.messages
 
-    def test_s3_bucket_name_valid_credentials(self, caplog, tiaf_args, mock_runtime, default_runtime_args, s3_stub, mocker):
-        tiaf_args['s3_bucket'] = "test_bucket"
+    @pytest.mark.parametrize("bucket_name,top_level_dir",[("test_bucket", None), ("test_bucket", "test_dir")])
+    def test_s3_bucket_name(self, caplog, tiaf_args, mock_runtime, default_runtime_args, mocker, bucket_name, top_level_dir, config_data):
+        # given:
+        tiaf_args['s3_bucket'] = bucket_name
+        tiaf_args['s3_top_level_dir'] = top_level_dir
+        mock_storage = mocker.patch("tiaf_persistent_storage_s3.PersistentStorageS3.__init__", return_value = None)
 
-        test_response = {}
-
-        s3_stub.add_response('get_object', expected_params={
-                             "Bucket": "example-bucket"}, service_response={})
-
-        mocker.patch("boto3.client", return_value=s3_stub)
+        expected_storage_args = config_data, tiaf_args['suite'], tiaf_args['commit'], bucket_name, top_level_dir, tiaf_args['src_branch']
+        # when:
         main(tiaf_args)
+
+        # then:
+        mock_storage.assert_called_with(*expected_storage_args)
+
+    def test_s3_bucket_name_not_supplied(self, caplog, tiaf_args, mock_runtime, default_runtime_args, mocker, config_data):
+        # given:
+        tiaf_args['s3_bucket'] = None
+        tiaf_args['s3_top_level_dir'] = None
+        mock_storage = mocker.patch("tiaf_persistent_storage_s3.PersistentStorageS3.__init__", return_value = None)
+
+        # when:
+        with pytest.raises(SystemExit):
+            main(tiaf_args)
+
+        # then:
+        mock_storage.assert_not_called()
+
+    def test_s3_top_level_dir_bucket_name_not_supplied(self, caplog, tiaf_args, mock_runtime, default_runtime_args, mocker, config_data):
+        # given:
+        tiaf_args['s3_bucket'] = None
+        tiaf_args['s3_top_level_dir'] = "test_dir"
+        mock_storage = mocker.patch("tiaf_persistent_storage_s3.PersistentStorageS3.__init__", return_value = None)
+
+        expected_storage_args = config_data, tiaf_args['suite'], tiaf_args['commit'], None, None, tiaf_args['src_branch']
+        # when:
+        with pytest.raises(SystemExit):
+            main(tiaf_args)
+
+        # then:
+        mock_storage.assert_not_called()
+
 
     def test_mars_index_prefix_is_supplied(self, caplog, tiaf_args, mock_runtime, mocker):
         # given:
