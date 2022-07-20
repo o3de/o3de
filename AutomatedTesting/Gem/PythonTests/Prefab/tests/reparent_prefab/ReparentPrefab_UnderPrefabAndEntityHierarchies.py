@@ -18,7 +18,8 @@ def ReparentPrefab_UnderPrefabAndEntityHierarchies():
     async def run_test():
 
         from editor_python_test_tools.editor_entity_utils import EditorEntity
-        from editor_python_test_tools.prefab_utils import Prefab, wait_for_propagation
+        from editor_python_test_tools.prefab_utils import Prefab
+        from editor_python_test_tools.wait_utils import PrefabWaiter
 
         import Prefab.tests.PrefabTestUtils as prefab_test_utils
         import azlmbr.legacy.general as general
@@ -34,7 +35,7 @@ def ReparentPrefab_UnderPrefabAndEntityHierarchies():
 
             # Undo the reparent operation, and verify original parent is restored
             general.undo()
-            wait_for_propagation()
+            PrefabWaiter.wait_for_propagation()
             original_parent_children_ids = original_parent.get_children_ids()
             new_parent_children_ids = new_parent.get_children_ids()
             instance_id = general.find_editor_entity(prefab_file_name)
@@ -45,7 +46,7 @@ def ReparentPrefab_UnderPrefabAndEntityHierarchies():
 
             # Redo the reparent operation, and verify the new instance is not among the original parent's child entities
             general.redo()
-            wait_for_propagation()
+            PrefabWaiter.wait_for_propagation()
             original_parent_children_ids = original_parent.get_children_ids()
             new_parent_children_ids = new_parent.get_children_ids()
             instance_id = general.find_editor_entity(prefab_file_name)

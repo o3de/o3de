@@ -15,7 +15,8 @@ def DeleteEntity_UnderAnotherPrefab():
     """
 
     from editor_python_test_tools.editor_entity_utils import EditorEntity
-    from editor_python_test_tools.prefab_utils import Prefab, wait_for_propagation
+    from editor_python_test_tools.prefab_utils import Prefab
+    from editor_python_test_tools.wait_utils import PrefabWaiter
 
     import Prefab.tests.PrefabTestUtils as prefab_test_utils
 
@@ -40,7 +41,7 @@ def DeleteEntity_UnderAnotherPrefab():
     child_entity_inside_prefab.delete()
 
     # Wait till prefab propagation finishes before validating entity deletion.
-    wait_for_propagation()
+    PrefabWaiter.wait_for_propagation()
 
     child_entity_ids_inside_prefab = child_instance.get_direct_child_entities()
     assert len(
@@ -49,13 +50,13 @@ def DeleteEntity_UnderAnotherPrefab():
 
     # Test undo/redo on entity delete
     azlmbr.legacy.general.undo()
-    wait_for_propagation()
+    PrefabWaiter.wait_for_propagation()
     child_entity_ids_inside_prefab = child_instance.get_direct_child_entities()
     assert len(
         child_entity_ids_inside_prefab) == 1, f"{len(child_entity_ids_inside_prefab)} entities found inside prefab" \
                                               f" after Undo operation, when there should have been 1 entities"
     azlmbr.legacy.general.redo()
-    wait_for_propagation()
+    PrefabWaiter.wait_for_propagation()
     child_entity_ids_inside_prefab = child_instance.get_direct_child_entities()
     assert len(
         child_entity_ids_inside_prefab) == 0, f"{len(child_entity_ids_inside_prefab)} entities found inside prefab" \

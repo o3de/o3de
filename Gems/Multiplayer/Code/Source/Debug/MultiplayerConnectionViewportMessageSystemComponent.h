@@ -24,13 +24,13 @@ namespace Multiplayer
         , MultiplayerEditorServerNotificationBus::Handler
     {
     public:
-        static constexpr char CENTER_VIEWPORT_DEBUG_TITLE[] = "Multiplayer Editor";
-        static constexpr char CLIENT_STATUS_TITLE[] = "Multiplayer Client Status:";
-        static constexpr char ON_SERVER_LAUNCHED_MESSAGE[] = "(1/3) Launching server...";
-        static constexpr char ON_SERVER_LAUNCH_FAIL_MESSAGE[] = "(1/3) Could not launch editor server.\nSee console for more info.";
-        static constexpr char ON_EDITOR_CONNECTION_ATTEMPT_MESSAGE[] = "(2/3) Editor tcp connection attempt #%i.";
-        static constexpr char ON_EDITOR_SENDING_LEVELDATA_MESSAGE[] = "(3/3) Editor is sending the editor-server the level data packet.";
-        static constexpr char ON_CONNECT_TO_SIMULATION_FAIL_MESSAGE[] = "EditorServerReady packet was received, but connecting to the editor-server's network simulation failed! Is the editor and server using the same sv_port (%i)?";
+        static constexpr char CenterViewportDebugTitle[] = "Multiplayer Editor";
+        static constexpr char ClientStatusTitle[] = "Multiplayer Client Status:";
+        static constexpr char OnServerLaunchedMessage[] = "(1/3) Launching server...";
+        static constexpr char OnServerLaunchFailMessage[] = "(1/3) Could not launch editor server.\nSee console for more info.";
+        static constexpr char OnEditorConnectionAttemptMessage[] = "(2/3) Editor tcp connection attempt #%i.";
+        static constexpr char OnEditorSendingLevelDataMessage[] = "(3/3) Editor is sending the editor-server the level data packet.";
+        static constexpr char OnConnectToSimulationFailMessage[] = "EditorServerReady packet was received, but connecting to the editor-server's network simulation failed! Is the editor and server using the same sv_port (%i)?";
 
         AZ_COMPONENT(MultiplayerConnectionViewportMessageSystemComponent, "{7600cfcf-e380-4876-aa90-8120e57205e9}");
 
