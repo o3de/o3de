@@ -179,7 +179,7 @@ class PersistentStorage(ABC):
     def is_last_commit_hash_equal_to_this_commit_hash(self):
         """
         Is the current commit that we are running TIAF on the same as the last commit we have in our historic data.
-        This means that this is a repeat sequence
+        This means that this is a repeat sequence.
         """
         return self._last_commit_hash == self._this_commit_hash
 
