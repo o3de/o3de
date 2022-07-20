@@ -423,9 +423,8 @@ namespace Multiplayer
         INetworkInterface* editorNetworkInterface = AZ::Interface<INetworking>::Get()->RetrieveNetworkInterface(editorInterfaceName);
         AZ_Assert(editorNetworkInterface, "MP Editor Network Interface was unregistered before Editor could connect.")
 
-        //const AZ::CVarFixedString remoteAddress = editorsv_serveraddr;
-        //m_editorConnId = editorNetworkInterface->Connect(AzNetworking::IpAddress(remoteAddress.c_str(), editorsv_port, AzNetworking::ProtocolType::Tcp));
-m_editorConnId =AzNetworking::InvalidConnectionId;
+        const AZ::CVarFixedString remoteAddress = editorsv_serveraddr;
+        m_editorConnId = editorNetworkInterface->Connect(AzNetworking::IpAddress(remoteAddress.c_str(), editorsv_port, AzNetworking::ProtocolType::Tcp));
         if (m_editorConnId != AzNetworking::InvalidConnectionId)
         {
             AZ_TracePrintf("MultiplayerEditor", "Editor has connected to the editor-server.")
