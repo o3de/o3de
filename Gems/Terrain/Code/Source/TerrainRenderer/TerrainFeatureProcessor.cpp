@@ -400,6 +400,11 @@ namespace Terrain
     {
         m_meshManager.SetConfiguration(config);
     }
+
+    void TerrainFeatureProcessor::SetClipmapConfiguration(const ClipmapConfiguration& config)
+    {
+        m_clipmapManager.SetConfiguration(config);
+    }
     
     void TerrainFeatureProcessor::CachePasses()
     {
