@@ -18,19 +18,6 @@ from botocore.stub import Stubber
 from botocore import session
 from boto3 import client
 
-
-@pytest.fixture
-def s3_stub():
-    with Stubber(client('s3')) as stubber:
-        yield stubber
-        stubber.assert_no_pending_responses()
-
-
-@pytest.fixture
-def mock_s3_resource(mocker, s3_stub):
-    return mocker.patch("boto3.client", return_value=s3_stub)
-
-
 @pytest.fixture
 def test_data_file():
     path = Path("scripts/build/TestImpactAnalysis/Testing/test_data.json")
