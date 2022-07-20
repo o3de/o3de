@@ -138,9 +138,9 @@ namespace Multiplayer
                         {
                             // Run through all the assets in the asset catalog and gather up the list of level assets
                             AZ::Data::AssetType levelAssetType = azrtti_typeid<AzFramework::Spawnable>();
-                            AZStd::set<AZStd::string> networkedLevelNames;
+                            AZStd::set<AZStd::string> multiplayerLevelFilePaths;
                             auto enumerateCB =
-                                [levelAssetType, &networkedLevelNames]([[maybe_unused]] const AZ::Data::AssetId id, const AZ::Data::AssetInfo& assetInfo)
+                                [levelAssetType, &multiplayerLevelFilePaths]([[maybe_unused]] const AZ::Data::AssetId id, const AZ::Data::AssetInfo& assetInfo)
                             {
                                 // Skip everything that isn't a spawnable
                                 if (assetInfo.m_assetType != levelAssetType)
@@ -161,55 +161,40 @@ namespace Multiplayer
                                     return;
                                 }
 
-                                AZ::IO::PathView spawnablePath(assetInfo.m_relativePath);
-                                AZ::IO::PathView stem = spawnablePath.Stem(); // Just the filename without the extension
-                                AZ_TracePrintf("MultiplayerDebugSystemComponent", 
-                                    "Gene stem: %s, size: %i", AZStd::string(stem.Native()).c_str(), stem.Native().length());
-
-                                auto parentFolderIter = spawnablePath.end();
-                                AZStd::advance(parentFolderIter, -1);
-                                AZ_TracePrintf("MultiplayerDebugSystemComponent", 
-                                    "Gene iter -1 %s, size: %i", AZStd::string(parentFolderIter->Native()).c_str(), parentFolderIter->Native().length());
-
-
-                                AZStd::advance(parentFolderIter, -1);
-
-                                AZ_TracePrintf("MultiplayerDebugSystemComponent", 
-                                    "Gene iter -2 %s, size: %i", AZStd::string(parentFolderIter->Native()).c_str(), parentFolderIter->Native().length());
+                                // Skip spawnables that live inside level folders, but isn't the level itself
+                                AZ::IO::PathView spawnableFilePath(assetInfo.m_relativePath);
+                                AZ::IO::PathView filenameSansExtention = spawnableFilePath.Stem().Stem(); // Just the filename without the .network.spawnable extension
                                 
-                                AZStd::advance(parentFolderIter, -1);
-
-                                AZ_TracePrintf("MultiplayerDebugSystemComponent", 
-                                    "Gene iter -3 %s, size: %i", AZStd::string(parentFolderIter->Native()).c_str(), parentFolderIter->Native().length());
-
-                                if (*parentFolderIter != stem)
+                                AZ::IO::PathView::const_iterator parentFolderName = spawnableFilePath.end();
+                                AZStd::advance(parentFolderName, -2);
+                                if (parentFolderName->Native() != filenameSansExtention.Native())
                                 {
                                     return;
                                 }
 
-                                AZStd::string networkLevelPath = assetInfo.m_relativePath;
-                                AZ::StringFunc::Replace(networkLevelPath, Multiplayer::NetworkFileExtension.data(), "");
-                                networkedLevelNames.emplace(networkLevelPath);
+                                AZStd::string multiplayerLevelFilePath = assetInfo.m_relativePath;
+                                AZ::StringFunc::Replace(multiplayerLevelFilePath, Multiplayer::NetworkFileExtension.data(), "");
+                                multiplayerLevelFilePaths.emplace(multiplayerLevelFilePath);
                             };
 
                             AZ::Data::AssetCatalogRequestBus::Broadcast(
                                 &AZ::Data::AssetCatalogRequestBus::Events::EnumerateAssets, nullptr, enumerateCB, nullptr);
 
-                            int networkLevelIndex = 0;
-                            for (const auto& networkLevelName : networkedLevelNames)
+                            int levelIndex = 0;
+                            for (const auto& multiplayerLevelFilePath : multiplayerLevelFilePaths)
                             {
-                                auto levelMenuItem = AZStd::string::format("%d- %s", networkLevelIndex, networkLevelName.c_str());
+                                auto levelMenuItem = AZStd::string::format("%d- %s", levelIndex, multiplayerLevelFilePath.c_str());
                                 if (ImGui::MenuItem(levelMenuItem.c_str()))
                                 {
                                     AZ::TickBus::QueueFunction(
-                                        [console, networkLevelName]()
+                                        [console, multiplayerLevelFilePath]()
                                         {
-                                            auto loadLevelString = AZStd::string::format("LoadLevel %s", networkLevelName.c_str());
+                                            auto loadLevelString = AZStd::string::format("LoadLevel %s", multiplayerLevelFilePath.c_str());
                                             console->PerformCommand("host");
                                             console->PerformCommand(loadLevelString.c_str());
                                         });
                                 }
-                                ++networkLevelIndex;
+                                ++levelIndex;
                             }
                         }
                     }
