@@ -150,7 +150,7 @@ namespace AzToolsFramework
             AZStd::shared_ptr<AZ::DocumentPropertyEditor::ReflectionAdapter> m_adapter;
             DocumentPropertyEditor* m_dpe;
             AZ::SerializeContext* m_serializeContext = nullptr;
-            AZ::Uuid m_observerId; // Id of the 
+            AZ::Uuid m_observerId; // Id of the component that requested a new asset be created, if relevant. Used as a bus id to send OnAssetCreated event. 
 
             // Ids can change when an asset goes from in-memory to saved on disk.
             // If there is a failure, the asset will be removed from the catalog.

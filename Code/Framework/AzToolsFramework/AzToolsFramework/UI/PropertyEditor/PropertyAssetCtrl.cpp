@@ -763,6 +763,7 @@ namespace AzToolsFramework
     PropertyAssetCtrl::~PropertyAssetCtrl()
     {
         AssetEditor::AssetEditorNotificationsBus::Handler::BusDisconnect();
+        AzFramework::AssetCatalogEventBus::Handler::BusDisconnect();
         AssetSystemBus::Handler::BusDisconnect();
     }
 
@@ -1647,7 +1648,6 @@ namespace AzToolsFramework
         return false;
     }
 
-    
     bool AssetPropertyHandlerDefault::ReadValuesIntoGUI(size_t index, PropertyAssetCtrl* GUI, const property_t& instance, InstanceDataNode* node)
     {
         return ReadValuesIntoGUIInternal(index, GUI, instance, node);
