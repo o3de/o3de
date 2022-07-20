@@ -11,8 +11,8 @@
 #include <AzCore/std/containers/vector.h>
 #include <Tests/Serialization/Json/BaseJsonSerializerFixture.h>
 #include <Tests/Serialization/Json/JsonSerializerConformityTests.h>
-#include <Tests/Serialization/Json/TestCases_Base.h>
 #include <Tests/Serialization/Json/TestCases_Classes.h>
+#include <Tests/Serialization/Json/TestCases_Pointers.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Serialization/AZStdAnyDataContainer.inl>
 
@@ -83,12 +83,16 @@ namespace JsonSerializationTests
     }
 
     // write this against the TestCases_Classes thing but store everything in an any
+
+    // these tests test the *transparency* of the effect of storage through an any
+    // that is, serializing a value contained in an any should behave exactly as not in an any
     template<typename T>
     class AnySerializerTestDescription final
         : public JsonSerializerConformityTestDescriptor<AZStd::any>
     {
     public:
         using Any = AZStd::any;
+        static constexpr bool SupportsPartialDefaults = T::SupportsPartialDefaults;
 
         AZStd::shared_ptr<AZ::BaseJsonSerializer> CreateSerializer() override
         {
@@ -97,7 +101,10 @@ namespace JsonSerializationTests
 
         AZStd::shared_ptr<AZStd::any> CreateDefaultInstance() override
         {
-            return AZStd::make_shared<AZStd::any>();
+            T instanceT;
+            AZStd::any anyT;
+            anyT = instanceT;
+            return AZStd::make_shared<AZStd::any>(anyT);
         }
 
         AZStd::shared_ptr<AZStd::any> CreateFullySetInstance() override
@@ -118,7 +125,8 @@ namespace JsonSerializationTests
 
         AZStd::string_view GetJsonForPartialDefaultInstance() override
         {
-            return m_jsonForPartialDefaultInstanceKeptDefaults.begin();
+            // return m_jsonForPartialDefaultInstanceKeptDefaults.begin(); // may need to split up return values
+            return m_jsonForPartialDefaultInstanceStrippedDefaults.begin();
         }
 
         AZStd::string_view GetJsonForFullySetInstance() override
@@ -129,6 +137,7 @@ namespace JsonSerializationTests
         void ConfigureFeatures(JsonSerializerConformityTestDescriptorFeatures& features) override
         {
             features.EnableJsonType(rapidjson::kObjectType);
+            features.m_defaultIsEqualToEmpty = false;
         }
 
         bool AreEqual(const AZStd::any& lhs, const AZStd::any& rhs) override
@@ -137,7 +146,7 @@ namespace JsonSerializationTests
             {
                 auto lhsValue = AZStd::any_cast<const T>(&lhs);
                 auto rhsValue = AZStd::any_cast<const T>(&rhs);
-                return lhsValue && rhsValue && (*lhsValue == *rhsValue);
+                return lhsValue && rhsValue && lhsValue->Equals(*rhsValue, m_fullyReflected);
             }
 
             return lhs.empty() == rhs.empty()
@@ -163,16 +172,50 @@ namespace JsonSerializationTests
         void Reflect(AZStd::unique_ptr<AZ::SerializeContext>& context) override
         {
             T::Reflect(context, true);
+            m_fullyReflected = true;
         }
 
         void TearDown() override {}
 
     private:
+        bool m_fullyReflected = false;
         AZStd::fixed_string<2048> m_jsonForPartialDefaultInstanceKeptDefaults;
         AZStd::fixed_string<2048> m_jsonForPartialDefaultInstanceStrippedDefaults;
         AZStd::fixed_string<2048> m_jsonForFullyConfiguredIntance;
     };
 
-    using AnyConformityTestTypes = ::testing::Types<AnySerializerTestDescription<SimpleClass>>;
+    using AnyConformityTestTypes = ::testing::Types
+        <
+          // all work
+          AnySerializerTestDescription<SimpleClass>
+
+        // broke after the default change
+        /*
+        , AnySerializerTestDescription<SimpleInheritence>
+        , AnySerializerTestDescription<MultipleInheritence>
+        , AnySerializerTestDescription<SimpleNested>
+        , AnySerializerTestDescription<SimpleEnumWrapper>
+        , AnySerializerTestDescription<NonReflectedEnumWrapper>
+
+        // , AnySerializerTestDescription<SimpleAssignedPointer>
+        // , AnySerializerTestDescription<ComplexAssignedPointer>
+       */
+
+
+        /*
+        // fails all cases
+        AnySerializerTestDescription<SimpleNullPointer>
+
+        // cause problems with memory allocation tracking, if not actual serialization issues
+        // , AnySerializerTestDescription<ComplexNullInheritedPointer>
+        // , AnySerializerTestDescription<ComplexAssignedDifferentInheritedPointer>
+        // , AnySerializerTestDescription<ComplexAssignedSameInheritedPointer>
+        // , AnySerializerTestDescription<PrimitivePointerInContainer>
+
+        // a null check should allow this to pass, defaults should allow null type
+        // , AnySerializerTestDescription<SimplePointerInContainer> 
+        // , AnySerializerTestDescription<InheritedPointerInContainer>
+        */
+        >;
     INSTANTIATE_TYPED_TEST_CASE_P(Any, JsonSerializerConformityTests, AnyConformityTestTypes);
 }

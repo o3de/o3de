@@ -66,6 +66,8 @@ namespace JsonSerializationTests
         //! the Serialize Context. This test is automatically disabled for classes that don't have a factory or
         //! have a null factory as well as for classes that have mandatory fields.
         bool m_enableNewInstanceTests{ true };
+        //! Disable this test if the empty json is not equal to the default constructed object
+        bool m_defaultIsEqualToEmpty{ true };
 
     private:
         // There's no way to retrieve the number of types from RapidJSON so they're hard-coded here.
@@ -733,7 +735,7 @@ namespace JsonSerializationTests
             // prohibits construction.
             if (classData->m_factory && classData->m_factory != AZ::Internal::NullFactory::GetInstance())
             {
-                typename JsonSerializerConformityTests<TypeParam>::PointerWrapper instance;
+                auto instance = this->m_description.CreateDefaultConstructedInstance();
                 auto compare = this->m_description.CreateDefaultInstance();
 
                 this->m_jsonDocument->Parse(R"({ "Value": {}})");
@@ -742,12 +744,13 @@ namespace JsonSerializationTests
                 AZ::JsonDeserializerSettings settings;
                 settings.m_serializeContext = serializeContext;
                 settings.m_registrationContext = this->m_jsonDeserializationContext->GetRegistrationContext();
-                ResultCode result = AZ::JsonSerialization::Load(instance, *this->m_jsonDocument, settings);
+                ResultCode result = AZ::JsonSerialization::Load/*<typename TypeParam::Type>*/(*instance.get(), *this->m_jsonDocument, settings);
 
                 EXPECT_EQ(Outcomes::DefaultsUsed, result.GetOutcome());
                 EXPECT_EQ(Processing::Completed, result.GetProcessing());
-                ASSERT_NE(nullptr, instance.m_value);
-                EXPECT_TRUE(this->m_description.AreEqual(*instance.m_value, *compare));
+                ASSERT_NE(nullptr, instance);
+                ASSERT_NE(nullptr, compare);
+                EXPECT_TRUE(this->m_description.AreEqual(*instance, *compare));
             }
         }
     }
@@ -763,16 +766,18 @@ namespace JsonSerializationTests
             if ((serializer->GetOperationsFlags() & BaseJsonSerializer::OperationFlags::InitializeNewInstance) ==
                 BaseJsonSerializer::OperationFlags::InitializeNewInstance)
             {
-                typename TypeParam::Type instance;
+                auto instance = this->m_description.CreateDefaultConstructedInstance();
                 auto compare = this->m_description.CreateDefaultInstance();
                 this->m_jsonDocument->SetObject();
 
                 ResultCode result =
-                    serializer->Load(&instance, azrtti_typeid(instance), *this->m_jsonDocument, *this->m_jsonDeserializationContext);
+                    serializer->Load(instance.get(), azrtti_typeid(instance), *this->m_jsonDocument, *this->m_jsonDeserializationContext);
 
                 EXPECT_EQ(Outcomes::DefaultsUsed, result.GetOutcome());
                 EXPECT_EQ(Processing::Completed, result.GetProcessing());
-                EXPECT_TRUE(this->m_description.AreEqual(instance, *compare));
+                ASSERT_NE(nullptr, instance);
+                ASSERT_NE(nullptr, compare);
+                EXPECT_TRUE(this->m_description.AreEqual(*instance, *compare));
             }
         }
     }
@@ -884,6 +889,11 @@ namespace JsonSerializationTests
     {
         using namespace AZ::JsonSerializationResult;
 
+        if (!this->m_features.m_defaultIsEqualToEmpty)
+        {
+            return;
+        }
+
         this->m_serializationSettings->m_keepDefaults = false;
         this->ResetJsonContexts();
         this->m_jsonSerializationContext->PushPath(DefaultPath);
@@ -914,6 +924,11 @@ namespace JsonSerializationTests
     TYPED_TEST_P(JsonSerializerConformityTests, Store_SerializeDefaultInstanceThroughMainStore_EmptyJsonReturned)
     {
         using namespace AZ::JsonSerializationResult;
+
+        if (!this->m_features.m_defaultIsEqualToEmpty)
+        {
+            return;
+        }
 
         auto serializer = this->m_description.CreateSerializer();
         auto instance = this->m_description.CreateDefaultInstance();
@@ -1203,8 +1218,10 @@ namespace JsonSerializationTests
         {
             auto instance = this->m_description.CreateDefaultInstance();
             AZ_PUSH_DISABLE_WARNING(4701, "-Wuninitialized-const-reference")
-            typename TypeParam::Type compare;
-            if (!this->m_description.AreEqual(*instance, compare))
+            auto compare = this->m_description.CreateDefaultConstructedInstance();
+            ASSERT_NE(compare, nullptr);
+            ASSERT_NE(instance, nullptr);
+            if (!this->m_description.AreEqual(*instance, *compare))
             AZ_POP_DISABLE_WARNING
             {
                 auto serializer = this->m_description.CreateSerializer();
