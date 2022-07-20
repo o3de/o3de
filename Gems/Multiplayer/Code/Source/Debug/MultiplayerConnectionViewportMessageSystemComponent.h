@@ -24,13 +24,16 @@ namespace Multiplayer
         , MultiplayerEditorServerNotificationBus::Handler
     {
     public:
+        static constexpr int MAX_MESSAGE_LENGTH = 256;
         static constexpr char CENTER_VIEWPORT_DEBUG_TITLE[] = "Multiplayer Editor";
         static constexpr char CLIENT_STATUS_TITLE[] = "Multiplayer Client Status:";
         static constexpr char ON_SERVER_LAUNCHED_MESSAGE[] = "(1/3) Launching server...";
         static constexpr char ON_SERVER_LAUNCH_FAIL_MESSAGE[] = "(1/3) Could not launch editor server.\nSee console for more info.";
-        static constexpr char ON_EDITOR_CONNECTION_ATTEMPT_MESSAGE[] = "(2/3) Editor tcp connection attempt #%i.";
+        static constexpr char ON_EDITOR_CONNECTION_ATTEMPT_MESSAGE[] = "(2/3) Editor TCP connection attempt #%i.";
+        static constexpr char ON_ALL_CONNECTION_ATTEMPTS_FAILED_MESSAGE[] = "(2/3) All connection attempts failed!\nConnection limit is defined by 'editorsv_max_connection_attempts'\nPlease exit play mode and try again.";
         static constexpr char ON_EDITOR_SENDING_LEVELDATA_MESSAGE[] = "(3/3) Editor is sending the editor-server the level data packet.";
         static constexpr char ON_CONNECT_TO_SIMULATION_FAIL_MESSAGE[] = "EditorServerReady packet was received, but connecting to the editor-server's network simulation failed! Is the editor and server using the same sv_port (%i)?";
+
 
         AZ_COMPONENT(MultiplayerConnectionViewportMessageSystemComponent, "{7600cfcf-e380-4876-aa90-8120e57205e9}");
 
@@ -55,6 +58,7 @@ namespace Multiplayer
         void OnServerLaunched() override;
         void OnServerLaunchFail() override;
         void OnEditorConnectionAttempt(uint16_t connectionAttempts) override;
+        void OnAllConnectionAttemptsFailed() override;
         void OnEditorSendingLevelData() override;
         void OnConnectToSimulationSuccess() override;
         void OnConnectToSimulationFail(uint16_t serverPort) override;
@@ -63,7 +67,7 @@ namespace Multiplayer
 
         void DrawConnectionStatus(AzNetworking::ConnectionState connectionState);
 
-        AZStd::fixed_string<128> m_centerViewportDebugText;
+        AZStd::fixed_string<MAX_MESSAGE_LENGTH> m_centerViewportDebugText;
         AzFramework::FontDrawInterface* m_fontDrawInterface = nullptr;
         AzFramework::TextDrawParameters m_drawParams;
         float m_lineSpacing = 0.0f;

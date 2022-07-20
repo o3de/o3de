@@ -40,6 +40,9 @@ namespace Multiplayer
     AZ_CVAR(AZ::CVarFixedString, editorsv_serveraddr, AZ::CVarFixedString(LocalHost), nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "The address of the server to connect to");
     AZ_CVAR(AZ::CVarFixedString, editorsv_rhi_override, "", nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
         "Override the default rendering hardware interface (rhi) when launching the Editor server. For example, you may be running an Editor using 'dx12', but want to launch a headless server using 'null'. If empty the server will launch using the same rhi as the Editor.");
+    AZ_CVAR(int, editorsv_max_connection_attempts, 5, nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
+        "The maximum times the editor will attempt to connect to the server.");
+
     AZ_CVAR_EXTERNED(uint16_t, editorsv_port);
     
     //////////////////////////////////////////////////////////////////////////
@@ -167,6 +170,8 @@ namespace Multiplayer
         case eNotify_OnEndGameMode:
             // Kill the configured server if it's active
             AZ::TickBus::Handler::BusDisconnect();
+            m_connectionEvent.RemoveFromQueue();
+            
             if (m_serverProcessWatcher)
             {
                 m_serverProcessWatcher->TerminateProcess(0);
@@ -404,6 +409,12 @@ namespace Multiplayer
     void MultiplayerEditorSystemComponent::Connect()
     {
         ++m_connectionAttempts;
+        if (m_connectionAttempts > editorsv_max_connection_attempts)
+        {
+            m_connectionEvent.RemoveFromQueue();
+            MultiplayerEditorServerNotificationBus::Broadcast(&MultiplayerEditorServerNotificationBus::Events::OnAllConnectionAttemptsFailed);
+            return;
+        }
 
         MultiplayerEditorServerNotificationBus::Broadcast(&MultiplayerEditorServerNotificationBus::Events::OnEditorConnectionAttempt, m_connectionAttempts);
         AZ_TracePrintf("MultiplayerEditor", "Editor TCP connection attempt #%i.", m_connectionAttempts)
@@ -412,9 +423,9 @@ namespace Multiplayer
         INetworkInterface* editorNetworkInterface = AZ::Interface<INetworking>::Get()->RetrieveNetworkInterface(editorInterfaceName);
         AZ_Assert(editorNetworkInterface, "MP Editor Network Interface was unregistered before Editor could connect.")
 
-        const AZ::CVarFixedString remoteAddress = editorsv_serveraddr;
-        m_editorConnId = editorNetworkInterface->Connect(AzNetworking::IpAddress(remoteAddress.c_str(), editorsv_port, AzNetworking::ProtocolType::Tcp));
-
+        //const AZ::CVarFixedString remoteAddress = editorsv_serveraddr;
+        //m_editorConnId = editorNetworkInterface->Connect(AzNetworking::IpAddress(remoteAddress.c_str(), editorsv_port, AzNetworking::ProtocolType::Tcp));
+m_editorConnId =AzNetworking::InvalidConnectionId;
         if (m_editorConnId != AzNetworking::InvalidConnectionId)
         {
             AZ_TracePrintf("MultiplayerEditor", "Editor has connected to the editor-server.")
