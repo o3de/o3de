@@ -17,14 +17,14 @@ namespace AzToolsFramework
         namespace PrefabUndoHelpers
         {
             void UpdatePrefabInstance(
-                const Instance& instance, AZStd::string_view undoMessage, const PrefabDom& instanceDomBeforeUpdate,
+                Instance& instance, AZStd::string_view undoMessage, const PrefabDom& instanceDomBeforeUpdate,
                 UndoSystem::URSequencePoint* undoBatch)
             {
                 PrefabDom instanceDomAfterUpdate;
                 PrefabDomUtils::StoreInstanceInPrefabDom(instance, instanceDomAfterUpdate);
 
                 PrefabUndoInstance* state = aznew Prefab::PrefabUndoInstance(undoMessage);
-                state->Capture(instanceDomBeforeUpdate, instanceDomAfterUpdate, instance.GetTemplateId());
+                state->Capture(instanceDomBeforeUpdate, instanceDomAfterUpdate, instance);
                 state->SetParent(undoBatch);
                 state->Redo();
             }

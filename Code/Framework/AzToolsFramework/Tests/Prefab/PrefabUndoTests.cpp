@@ -131,7 +131,7 @@ namespace UnitTest
 
         //create undo node
         PrefabUndoInstance instanceEntityAddUndo("Entity Update Undo Node");
-        instanceEntityAddUndo.Capture(instanceDomBeforeUpdate, instanceDomAfterUpdate, templateId);
+        instanceEntityAddUndo.Capture(instanceDomBeforeUpdate, instanceDomAfterUpdate, *testInstance);
 
         //update template
         m_instanceToTemplateInterface->PatchTemplate(patch, templateId);
@@ -184,7 +184,7 @@ namespace UnitTest
 
         //create undo node
         PrefabUndoInstance instanceEntityRemoveUndo("Entity Update Undo Node");
-        instanceEntityRemoveUndo.Capture(instanceDomBeforeUpdate, instanceDomAfterUpdate, templateId);
+        instanceEntityRemoveUndo.Capture(instanceDomBeforeUpdate, instanceDomAfterUpdate, *testInstance);
 
         //update template
         m_instanceToTemplateInterface->PatchTemplate(patch, templateId);

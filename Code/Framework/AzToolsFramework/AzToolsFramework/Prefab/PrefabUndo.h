@@ -49,11 +49,11 @@ namespace AzToolsFramework
             void Capture(
                 const PrefabDom& initialState,
                 const PrefabDom& endState,
-                TemplateId templateId);
+                InstanceOptionalReference instanceRef);
 
             void Undo() override;
             void Redo() override;
-            void Redo(InstanceOptionalConstReference instance);
+            void Redo(InstanceOptionalConstReference instanceToExclude);
         };
 
         //! handles entity updates, such as when the values on an entity change

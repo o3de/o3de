@@ -36,6 +36,7 @@ namespace AzToolsFramework
             }
         }
 
+        // Serialization
         AZ::JsonSerializationResult::Result JsonInstanceSerializer::Store(rapidjson::Value& outputValue, const void* inputValue, const void* defaultValue,
             [[maybe_unused]] const AZ::Uuid& valueTypeId, AZ::JsonSerializerContext& context)
         {
@@ -109,6 +110,7 @@ namespace AzToolsFramework
                 "Failed to store Instance information for Prefab.");
         }
 
+        // Deserialization
         AZ::JsonSerializationResult::Result JsonInstanceSerializer::Load(void* outputValue, [[maybe_unused]] const AZ::Uuid& outputValueTypeId,
             const rapidjson::Value& inputValue, AZ::JsonDeserializerContext& context)
         {
