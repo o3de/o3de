@@ -475,13 +475,13 @@ void MainWindow::Activate()
     m_jobsModel->PopulateJobsFromDatabase();
 
     // Builders Tab:
-
+    m_builderData = AZStd::make_shared<BuilderData>(m_sharedDbConnection);
     m_builderListSortFilterProxy->setDynamicSortFilter(true);
     m_builderListSortFilterProxy->setSourceModel(m_builderList);
     m_builderListSortFilterProxy->sort(0);
     ui->builderList->setModel(m_builderListSortFilterProxy);
     ui->builderInfoPatternsTableView->setModel(m_builderInfoPatterns);
-    m_builderInfoMetrics = new BuilderInfoMetricsModel(m_sharedDbConnection, this);
+    m_builderInfoMetrics = new BuilderInfoMetricsModel(m_builderData, this);
     m_builderInfoMetricsSort = new BuilderInfoMetricsSortModel(this);
     m_builderInfoMetricsSort->setSourceModel(m_builderInfoMetrics);
     m_builderInfoMetricsSort->setSortRole(aznumeric_cast<int>(BuilderInfoMetricsModel::Role::SortRole));

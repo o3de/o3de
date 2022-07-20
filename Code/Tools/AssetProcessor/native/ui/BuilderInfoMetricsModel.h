@@ -24,6 +24,25 @@ namespace AssetProcessor
     class BuilderInfoMetricsItem;
     class JobEntry;
 
+    class BuilderData
+    {
+    public:
+        BuilderData(AZStd::shared_ptr<AzToolsFramework::AssetDatabase::AssetDatabaseConnection> dbConnection);
+        void Reset();
+
+        AZStd::shared_ptr<AzToolsFramework::AssetDatabase::AssetDatabaseConnection> m_dbConnection;
+        AZStd::shared_ptr<BuilderInfoMetricsItem> m_root;
+        AZStd::shared_ptr<BuilderInfoMetricsItem> m_allBuildersMetrics;
+        AZStd::vector<AZStd::shared_ptr<BuilderInfoMetricsItem>> m_singleBuilderMetrics;
+        AZStd::unordered_map<AZStd::string, int> m_builderNameToIndex;
+        AZStd::unordered_map<AZ::Uuid, int> m_builderGuidToIndex;
+
+        //! This value, when being non-negative, refers to index of m_singleBuilderMetrics.
+        //! When it is -1, currently selects m_allBuildersMetrics.
+        //! When it is -2, it means BuilderInfoMetricsModel cannot find the selected builder in m_builderGuidToIndex.
+        int m_currentSelectedBuilderIndex = -1;
+    };
+
     class BuilderInfoMetricsModel
         : public QAbstractItemModel
     {
@@ -42,8 +61,7 @@ namespace AssetProcessor
             SortRole = Qt::UserRole
         };
 
-        BuilderInfoMetricsModel(
-            AZStd::shared_ptr<AzToolsFramework::AssetDatabase::AssetDatabaseConnection> dbConnection, QObject* parent = nullptr);
+        BuilderInfoMetricsModel(AZStd::shared_ptr<BuilderData> builderData, QObject* parent = nullptr);
 
         // QAbstractItemModel
         QModelIndex index(int row, int column, const QModelIndex& parent = QModelIndex()) const override;
@@ -60,18 +78,6 @@ namespace AssetProcessor
         void OnJobProcessingStatChanged(JobEntry jobEntry, int value);
 
     private:
-        // BuilderInfoMetricsItem* GetCurrentBuilderRootItem() const;
-
-        AZStd::shared_ptr<AzToolsFramework::AssetDatabase::AssetDatabaseConnection> m_dbConnection;
-        AZStd::shared_ptr<BuilderInfoMetricsItem> m_root;
-        AZStd::shared_ptr<BuilderInfoMetricsItem> m_allBuildersMetrics;
-        AZStd::vector<AZStd::shared_ptr<BuilderInfoMetricsItem>> m_singleBuilderMetrics;
-        AZStd::unordered_map<AZStd::string, int> m_builderNameToIndex;
-        AZStd::unordered_map<AZ::Uuid, int> m_builderGuidToIndex;
-
-        //! This value, when being non-negative, refers to index of m_singleBuilderMetrics.
-        //! When it is -1, currently selects m_allBuildersMetrics.
-        //! When it is -2, it means BuilderInfoMetricsModel cannot find the selected builder in m_builderGuidToIndex.
-        int m_currentSelectedBuilderIndex = -1;
+        AZStd::shared_ptr<BuilderData> m_data;
     };
 } // namespace AssetProcessor
