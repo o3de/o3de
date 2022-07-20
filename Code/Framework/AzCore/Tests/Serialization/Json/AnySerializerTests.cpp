@@ -187,7 +187,9 @@ namespace JsonSerializationTests
 
     using AnyConformityTestTypes = ::testing::Types
         // all work
-        < AnySerializerTestDescription<SimpleClass>
+        <
+        
+        AnySerializerTestDescription<SimpleClass>
         , AnySerializerTestDescription<SimpleInheritence>
         , AnySerializerTestDescription<MultipleInheritence>
         , AnySerializerTestDescription<SimpleNested>
@@ -196,19 +198,20 @@ namespace JsonSerializationTests
         , AnySerializerTestDescription<SimpleAssignedPointer>
         , AnySerializerTestDescription<ComplexAssignedPointer>
         
-        /*
-        // fails all cases
-        AnySerializerTestDescription<SimpleNullPointer>
+        
+        // fails all cases, but no longer crashes
+        , AnySerializerTestDescription<SimpleNullPointer>
 
-        // cause problems with memory allocation tracking, if not actual serialization issues
+        // fail cases, but no longer crashes
         , AnySerializerTestDescription<ComplexNullInheritedPointer>
         , AnySerializerTestDescription<ComplexAssignedDifferentInheritedPointer>
         , AnySerializerTestDescription<ComplexAssignedSameInheritedPointer>
-        , AnySerializerTestDescription<PrimitivePointerInContainer>
-        */
 
+        /* still crash
+        , AnySerializerTestDescription<PrimitivePointerInContainer>
         , AnySerializerTestDescription<SimplePointerInContainer> 
         , AnySerializerTestDescription<InheritedPointerInContainer>
+        */
         >;
     INSTANTIATE_TYPED_TEST_CASE_P(Any, JsonSerializerConformityTests, AnyConformityTestTypes);
 }

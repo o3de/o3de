@@ -21,6 +21,47 @@ namespace JsonSerializationTests
         azfree(m_pointer1);
     }
 
+    SimpleNullPointer::SimpleNullPointer(const SimpleNullPointer& rhs)
+    {
+        *this = rhs;
+    }
+
+    SimpleNullPointer::SimpleNullPointer(SimpleNullPointer&& rhs)
+    {
+        *this = AZStd::move(rhs);
+    }
+
+    SimpleNullPointer& SimpleNullPointer::operator=(const SimpleNullPointer& rhs)
+    {
+        azfree(m_pointer1);
+        if (rhs.m_pointer1)
+        {
+            m_pointer1 = reinterpret_cast<int*>(azmalloc(sizeof(int), alignof(int)));
+            *m_pointer1 = *rhs.m_pointer1;
+        }
+
+        azfree(m_pointer2);
+        if (rhs.m_pointer2)
+        {
+            m_pointer2 = reinterpret_cast<int*>(azmalloc(sizeof(int), alignof(int)));
+            *m_pointer2 = *rhs.m_pointer2;
+        }
+
+        return *this;
+    }
+
+    SimpleNullPointer& SimpleNullPointer::operator=(SimpleNullPointer&& rhs)
+    {
+        azfree(m_pointer1);
+        m_pointer1 = rhs.m_pointer1;
+        rhs.m_pointer1 = nullptr;
+
+        azfree(m_pointer2);
+        m_pointer2 = rhs.m_pointer2;
+        rhs.m_pointer2 = nullptr;
+        return *this; 
+    }
+
     bool SimpleNullPointer::Equals(const SimpleNullPointer& rhs, bool /*fullReflection*/) const
     {
         if (m_pointer1)
@@ -316,6 +357,40 @@ namespace JsonSerializationTests
 
 
     // ComplexNullInheritedPointer
+
+    ComplexNullInheritedPointer::ComplexNullInheritedPointer(const ComplexNullInheritedPointer& rhs)
+    {
+        *this = rhs;
+    }
+
+    ComplexNullInheritedPointer::ComplexNullInheritedPointer(ComplexNullInheritedPointer&& rhs)
+    {
+        *this = AZStd::move(rhs);
+    }
+
+    ComplexNullInheritedPointer& ComplexNullInheritedPointer::operator=(const ComplexNullInheritedPointer& rhs)
+    {
+        delete m_pointer;
+
+        if (rhs.m_pointer)
+        {
+            m_pointer = aznew SimpleInheritence(*static_cast<const SimpleInheritence*>(rhs.m_pointer));
+        }
+        else
+        {
+            m_pointer = nullptr;
+        }
+
+        return *this;
+    }
+
+    ComplexNullInheritedPointer& ComplexNullInheritedPointer::operator=(ComplexNullInheritedPointer&& rhs)
+    {
+        delete m_pointer;
+        m_pointer = rhs.m_pointer;
+        rhs.m_pointer = nullptr;
+        return *this;
+    }
 
     ComplexNullInheritedPointer::~ComplexNullInheritedPointer()
     {

@@ -19,7 +19,13 @@ namespace JsonSerializationTests
 
         static const bool SupportsPartialDefaults = true;
 
+        SimpleNullPointer() = default;
         virtual ~SimpleNullPointer();
+        SimpleNullPointer(const SimpleNullPointer& rhs);
+        SimpleNullPointer(SimpleNullPointer&& rhs);
+        SimpleNullPointer& operator=(const SimpleNullPointer& rhs);
+        SimpleNullPointer& operator=(SimpleNullPointer&& rhs);
+
         bool Equals(const SimpleNullPointer& rhs, bool fullReflection) const;
         static void Reflect(AZStd::unique_ptr<AZ::SerializeContext>& context, bool fullReflection);
         static InstanceWithSomeDefaults<SimpleNullPointer> GetInstanceWithSomeDefaults();
@@ -80,14 +86,19 @@ namespace JsonSerializationTests
 
         static const bool SupportsPartialDefaults = true;
 
+        ComplexNullInheritedPointer() = default;
         virtual ~ComplexNullInheritedPointer();
-        
+        ComplexNullInheritedPointer(const ComplexNullInheritedPointer& rhs);
+        ComplexNullInheritedPointer(ComplexNullInheritedPointer&& rhs);
+        ComplexNullInheritedPointer& operator=(const ComplexNullInheritedPointer& rhs);
+        ComplexNullInheritedPointer& operator=(ComplexNullInheritedPointer&& rhs);
+
         bool Equals(const ComplexNullInheritedPointer& rhs, bool fullReflection) const;
         static void Reflect(AZStd::unique_ptr<AZ::SerializeContext>& context, bool fullReflection);
         static InstanceWithSomeDefaults<ComplexNullInheritedPointer> GetInstanceWithSomeDefaults();
         static InstanceWithoutDefaults<ComplexNullInheritedPointer> GetInstanceWithoutDefaults();
         
-        BaseClass* m_pointer{ nullptr };
+        BaseClass* m_pointer{ nullptr }; // is a SimpleInheritence
     };
 
     struct ComplexAssignedDifferentInheritedPointer
