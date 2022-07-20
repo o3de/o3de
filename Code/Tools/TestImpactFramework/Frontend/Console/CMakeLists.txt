@@ -6,4 +6,6 @@
 #
 #
 
-add_subdirectory(Code)
+add_subdirectory(Common)
+add_subdirectory(Native)
+add_subdirectory(Python)

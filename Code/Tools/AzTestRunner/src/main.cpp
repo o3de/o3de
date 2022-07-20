@@ -11,12 +11,15 @@
 
 #include "aztestrunner.h"
 
+#include <fstream>
+#include <string>
 
 namespace AzTestRunner
 {
     const int INCORRECT_USAGE = 101;
     const int LIB_NOT_FOUND = 102;
     const int SYMBOL_NOT_FOUND = 103;
+    constexpr char argFromFileSeparator = '\n';
 
     //! display proper usage of the application
     void usage([[maybe_unused]] AZ::Test::Platform& platform)
@@ -37,8 +40,10 @@ namespace AzTestRunner
             "   --wait-for-debugger: tells runner to wait for debugger to attach to process (on supported platforms)\n"
             "   --pause-on-completion: tells the runner to pause after running the tests\n"
             "   --quiet: disables stdout for minimal output while running tests\n"
+            "   --args_from_file <filename>: reads additional arguments (newline separated) from the specified file (can be used in conjunction with regular command line arguments)\n"
             "\n"
             "Example:\n"
+            "   AzTestRunner.exe AzCore.Tests.dll AzRunUnitTests --args_from_file=args.txt\n"
             "   AzTestRunner.exe AzCore.Tests.dll AzRunUnitTests --pause-on-completion\n"
             "\n"
             "Exit Codes:\n"
@@ -62,40 +67,101 @@ namespace AzTestRunner
             return INCORRECT_USAGE;
         }
 
+        std::vector<char*> args(argc);
+        for (size_t i = 0; i < argc; i++)
+        {
+            args[i] = argv[i];
+        }
         // capture positional arguments
         // [0] is the program name
-        std::string lib = argv[1];
-        std::string symbol = argv[2];
+        std::string lib = args[1];
+        std::string symbol = args[2];
 
-        // shift argv parameters down as we don't need lib or symbol anymore
-        AZ::Test::RemoveParameters(argc, argv, 1, 2);
+        // shift args parameters down as we don't need lib or symbol anymore
+        AZ::Test::RemoveParameters(argc, args.data(), 1, 2);
 
         // capture optional arguments
         bool waitForDebugger = false;
         bool pauseOnCompletion = false;
         bool quiet = false;
+        std::string argsFromFile;
+        std::vector<std::string> fileArgs;
         for (int i = 0; i < argc; i++)
         {
-            if (strcmp(argv[i], "--wait-for-debugger") == 0)
+            if (strcmp(args[i], "--wait-for-debugger") == 0)
             {
                 waitForDebugger = true;
-                AZ::Test::RemoveParameters(argc, argv, i, i);
+                AZ::Test::RemoveParameters(argc, args.data(), i, i);
                 i--;
             }
-            else if (strcmp(argv[i], "--pause-on-completion") == 0)
+            else if (strcmp(args[i], "--pause-on-completion") == 0)
             {
                 pauseOnCompletion = true;
-                AZ::Test::RemoveParameters(argc, argv, i, i);
+                AZ::Test::RemoveParameters(argc, args.data(), i, i);
                 i--;
             }
-            else if (strcmp(argv[i], "--quiet") == 0)
+            else if (strcmp(args[i], "--quiet") == 0)
             {
                 quiet = true;
-                AZ::Test::RemoveParameters(argc, argv, i, i);
+                AZ::Test::RemoveParameters(argc, args.data(), i, i);
                 i--;
+            }            
+            else if (strcmp(args[i], "--args_from_file") == 0)
+            {
+                // Check that the arg file path has been passed
+                if (i + 1 >= argc)
+                {
+                    std::cout << "Incorrect number of args_from_file arguments\n";
+                    usage(platform);
+                    return INCORRECT_USAGE;
+                }
+
+                std::ifstream infile(args[i + 1]);
+                if (!infile.is_open())
+                {
+                    std::cout << "Couldn't open " << args[i + 1] << " for args input, exiting" << std::endl;
+                    return INCORRECT_USAGE;
+                }
+
+                // Remove the args_from_file argument and value from the arg list
+                AZ::Test::RemoveParameters(argc, args.data(), i, i + 1);
+                i--;
+
+                // Find the first empty slot in the arg list
+                size_t backArg = 0;
+                for (; backArg < args.size(); backArg++)
+                {
+                    if (args[backArg] == nullptr)
+                    {
+                        break;
+                    }
+                }
+
+                // Construct a list of args from the args specified in the file
+                std::string arg;
+                while (std::getline(infile, arg, argFromFileSeparator))
+                {
+                    fileArgs.emplace_back(arg);
+                    argc++;
+                }
+
+                // Place the args from the file in the arg list
+                for (int j = 0; j < fileArgs.size(); j++)
+                {
+                    if (backArg < args.size())
+                    {
+                        // If our placement position is that of an arg in the list that was deleted we can simply reuse the slot 
+                        args[backArg] = const_cast<char*>(fileArgs[j].c_str());
+                    }
+                    else
+                    {
+                        args.emplace_back(const_cast<char*>(fileArgs[j].c_str()));
+                    }
+
+                    backArg++;
+                }
             }
         }
-
         if (quiet)
         {
             AzTestRunner::set_quiet_mode();
@@ -163,7 +229,7 @@ namespace AzTestRunner
         // run the test main function.
         if (testMainFunction->IsValid())
         {
-            result = (*testMainFunction)(argc, argv);
+            result = (*testMainFunction)(argc, args.data());
             std::cout << "OKAY " << symbol << "() returned " << result << std::endl;
             testMainFunction.reset();
         }

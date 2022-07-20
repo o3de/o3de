@@ -22,7 +22,8 @@
     "active": {
       "root": "${active_dir}",
       "relative_paths": {
-        "test_impact_data_file": "TestImpactData.spartia"
+        "test_impact_data_file": "TestImpactData.spartia",
+        "previous_test_run_data_file": "PreviousTestRunData.json"
       }
     },
     "historic": {
@@ -77,9 +78,18 @@
   },
   "target": {
     "dir": "${bin_dir}",
-    "exclude": [
-     
-    ],
+    "exclude": {
+      "regular": [
+      ],
+      "instrumented": [
+        {
+          "target": "AzCore.Tests",
+          "tests": [
+            "Components.EntityIdGeneration"
+          ]
+        }
+      ]
+    },
     "shard": [
     ]
   }
