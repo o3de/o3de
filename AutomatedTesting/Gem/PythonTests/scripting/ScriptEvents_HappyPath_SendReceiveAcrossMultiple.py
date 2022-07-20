@@ -76,6 +76,7 @@ class ScriptEvents_HappyPath_SendReceiveAcrossMultiple:
         for key_name in ENTITY_NAME_FILEPATH_MAP.keys():
             entity = scripting_tools.create_entity_with_sc_component_asset(key_name, ENTITY_NAME_FILEPATH_MAP[key_name])
             helper.wait_for_condition(lambda: entity is not None, WAIT_TIME_3)
+            Report.critical_result(Tests.entity_created, entity.id.isValid())
 
         with Tracer() as section_tracer:
 
@@ -84,7 +85,7 @@ class ScriptEvents_HappyPath_SendReceiveAcrossMultiple:
 
             # 4) Read for line
             lines_located = helper.wait_for_condition(
-                lambda: scripting_tools.located_expected_tracer_lines(EXPECTED_LINES, section_tracer), WAIT_TIME_3)
+                lambda: scripting_tools.located_expected_tracer_lines(self, section_tracer, EXPECTED_LINES), WAIT_TIME_3)
             Report.result(Tests.lines_found, lines_located)
 
         # 5) Exit Game Mode
