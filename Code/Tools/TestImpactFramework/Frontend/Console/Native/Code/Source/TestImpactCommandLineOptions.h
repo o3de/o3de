@@ -10,6 +10,7 @@
 
 #include <TestImpactFramework/TestImpactTestSequence.h>
 #include <TestImpactFramework/TestImpactRepoPath.h>
+#include <TestImpactFramework/TestImpactConfiguration.h>
 
 #include <AzCore/std/chrono/chrono.h>
 #include <AzCore/std/string/string.h>
@@ -38,13 +39,13 @@ namespace TestImpact
         static AZStd::string GetCommandLineUsageString();
 
         //! Returns true if a test impact data file path has been supplied, otherwise false.
-        bool HasTestImpactDataFilePath() const;
+        bool HasDataFilePath() const;
 
         //! Returns true if a previous run data file path has been supplied, otherwise false.
         bool HasPreviousRunDataFilePath() const;
 
         //! Returns true if we have tests to exclude that have been loaded from the exclude file, otherwise false.
-        bool HasExcludeTests() const;
+        bool HasExcludedTests() const;
 
         //! Returns true if a change list file path has been supplied, otherwise false.
         bool HasChangeListFilePath() const;
@@ -62,7 +63,7 @@ namespace TestImpact
         const RepoPath& GetConfigurationFilePath() const;
 
         //! Returns the path to the test impact data file (if any).
-        const AZStd::optional<RepoPath>& GetTestImpactDataFilePath() const;
+        const AZStd::optional<RepoPath>& GetDataFilePath() const;
 
         //! Returns the path to the previous run data file (if any).
         const AZStd::optional<RepoPath>& GetPreviousRunDataFilePath() const;
@@ -74,7 +75,7 @@ namespace TestImpact
         const AZStd::optional<RepoPath>& GetSequenceReportFilePath() const;
 
         //! Returns the tests to exclude from this run of TIAF (if any).
-        const AZStd::vector<AZStd::string>& GetExcludeTests() const;
+        const AZStd::vector<TargetConfig::ExcludedTarget>& GetExcludedTests() const;
 
         //! Returns the test sequence type to run.
         TestSequenceType GetTestSequenceType() const;
@@ -114,11 +115,11 @@ namespace TestImpact
 
     private:
         RepoPath m_configurationFile;
-        AZStd::optional<RepoPath> m_testImpactDataFile;
+        AZStd::optional<RepoPath> m_dataFile;
         AZStd::optional<RepoPath> m_previousRunDataFile;
         AZStd::optional<RepoPath> m_changeListFile;
         AZStd::optional<RepoPath> m_sequenceReportFile;
-        AZStd::vector<AZStd::string> m_excludeTests;
+        AZStd::vector<TargetConfig::ExcludedTarget> m_excludedTests;
         TestSequenceType m_testSequenceType;
         Policy::TestPrioritization m_testPrioritizationPolicy = Policy::TestPrioritization::None;
         Policy::ExecutionFailure m_executionFailurePolicy = Policy::ExecutionFailure::Continue;

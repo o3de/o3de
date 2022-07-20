@@ -246,9 +246,9 @@ namespace TestImpact
 
     Runtime::Runtime(
         RuntimeConfig&& config,
-        AZStd::optional<RepoPath> dataFile,
-        AZStd::optional<RepoPath> previousRunDataFile,
-        AZStd::vector<AZStd::string> testsToExclude,
+        const AZStd::optional<RepoPath>& dataFile,
+        [[maybe_unused]] const AZStd::optional<RepoPath>& previousRunDataFile,
+        const AZStd::vector<TargetConfig::ExcludedTarget>& testsToExclude,
         SuiteType suiteFilter,
         Policy::ExecutionFailure executionFailurePolicy,
         Policy::FailedTestCoverage failedTestCoveragePolicy,
@@ -282,17 +282,17 @@ namespace TestImpact
         {
             // Construct using data from excludeTestFile
             m_regularTestTargetExcludeList =
-                ConstructTestTargetExcludeList(testTargetList, AZStd::move(testsToExclude));
+                ConstructTestTargetExcludeList(m_dynamicDependencyMap->GetBuildTargets()->GetTestTargetList(), testsToExclude);
             m_instrumentedTestTargetExcludeList =
-                ConstructTestTargetExcludeList(testTargetList, AZStd::move(testsToExclude));
+                ConstructTestTargetExcludeList(m_dynamicDependencyMap->GetBuildTargets()->GetTestTargetList(), testsToExclude);
         }
         else
         {
             // Construct using data from config file.
-            m_regularTestTargetExcludeList =
-                ConstructTestTargetExcludeList(testTargetList, AZStd::move(m_config.m_target.m_excludedRegularTestTargets));
-            m_instrumentedTestTargetExcludeList =
-                ConstructTestTargetExcludeList(testTargetList, AZStd::move(m_config.m_target.m_excludedInstrumentedTestTargets));
+            m_regularTestTargetExcludeList = ConstructTestTargetExcludeList(
+                m_dynamicDependencyMap->GetBuildTargets()->GetTestTargetList(), m_config.m_target.m_excludedRegularTestTargets);
+            m_instrumentedTestTargetExcludeList = ConstructTestTargetExcludeList(
+                m_dynamicDependencyMap->GetBuildTargets()->GetTestTargetList(), m_config.m_target.m_excludedInstrumentedTestTargets);
         }
 
         // Construct the test engine with the workspace path and launcher binaries

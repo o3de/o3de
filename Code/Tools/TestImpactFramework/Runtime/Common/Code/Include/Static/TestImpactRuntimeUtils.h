@@ -35,7 +35,7 @@ namespace TestImpact
     //! Constructs the resolved test target exclude list from the specified list of targets and unresolved test target exclude list.
     AZStd::unique_ptr<TestTargetExclusionList> ConstructTestTargetExcludeList(
         const TargetList<NativeTestTarget>& testTargets,
-        AZStd::vector<TargetConfig::ExcludedTarget>&& excludedTestTargets);
+        const AZStd::vector<TargetConfig::ExcludedTarget>& excludedTestTargets);
 
     //! Selects the test targets from the specified list of test targets that are not in the specified test target exclusion list.
     //! @param testTargetExcludeList The test target exclusion list to lookup.

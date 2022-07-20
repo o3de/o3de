@@ -21,7 +21,7 @@ ly_add_target(
         PRIVATE
             Source
     BUILD_DEPENDENCIES
-        PRIVATE            
+        PRIVATE
             AZ::TestImpact.Runtime.Common.Static
         PUBLIC
             AZ::AzCore

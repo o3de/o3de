@@ -57,7 +57,7 @@ namespace TestImpact
     }
 
     AZStd::unique_ptr<TestTargetExclusionList> ConstructTestTargetExcludeList(
-        const TargetList<NativeTestTarget>& testTargets, AZStd::vector<TargetConfig::ExcludedTarget>&& excludedTestTargets)
+        const TargetList<NativeTestTarget>& testTargets, const AZStd::vector<TargetConfig::ExcludedTarget>& excludedTestTargets)
     {
         AZStd::unordered_map<const NativeTestTarget*, AZStd::vector<AZStd::string>> testTargetExcludeList;
         for (const auto& excludedTestTarget : excludedTestTargets)
@@ -65,7 +65,7 @@ namespace TestImpact
             if (const auto* testTarget = testTargets.GetTarget(excludedTestTarget.m_name);
                 testTarget != nullptr)
             {
-                testTargetExcludeList[testTarget] = AZStd::move(excludedTestTarget.m_excludedTests);
+                testTargetExcludeList[testTarget] = excludedTestTarget.m_excludedTests;
             }
         }
 

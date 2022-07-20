@@ -117,5 +117,5 @@ namespace TestImpact
     AZStd::optional<AZStd::chrono::milliseconds> ParseSecondsOption(const AZStd::string& optionName, const AZ::CommandLine& cmd);
 
     //! Attempts to parse the file data into a JSON array of test names.
-    AZStd::vector<AZStd::string> ParseExcludedTestTargetsFromFile(const AZStd::string& fileData);
+    AZStd::vector<TargetConfig::ExcludedTarget> ParseExcludedTestTargetsFromFile(const AZStd::string& fileData);
 } // namespace TestImpact
