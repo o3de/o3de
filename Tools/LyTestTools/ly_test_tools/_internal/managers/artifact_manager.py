@@ -48,8 +48,8 @@ class ArtifactManager(object):
             updated_path = f"{file_without_ext}_{i}{extension}"
             if not os.path.exists(updated_path):
                 return updated_path
-        logger.info(f"Maximum number of attempts: {amount} met when trying to handle name collision for file: "
-                    f"{file_path}. Ending on {updated_path} which will override the existing file.")
+        logger.warning(f"Maximum number of attempts: {amount} met when trying to handle name collision for file: "
+                       f"{file_path}. Ending on {updated_path} which will override the existing file.")
         return updated_path
 
     def _set_dest_path(self, test_name=None, amount=1):
