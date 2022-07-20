@@ -24,7 +24,6 @@
 
 #include <QVBoxLayout>
 #include <QHBoxLayout>
-#include <QPushButton>
 #include <QTimer>
 #include <PythonBindingsInterface.h>
 #include <QMessageBox>
@@ -94,6 +93,7 @@ namespace O3DE::ProjectManager
         filterWidget->setLayout(m_filterWidgetLayout);
 
         GemListHeaderWidget* catalogHeaderWidget = new GemListHeaderWidget(m_proxyModel);
+        connect(catalogHeaderWidget, &GemListHeaderWidget::OnRefresh, this, &GemCatalogScreen::Refresh);
 
         constexpr int minHeaderSectionWidth = 100;
         AdjustableHeaderWidget* listHeaderWidget = new AdjustableHeaderWidget(
@@ -143,21 +143,21 @@ namespace O3DE::ProjectManager
 
     void GemCatalogScreen::NotifyCurrentScreen()
     {
-        if (m_readOnly)
+        if (m_readOnly && m_gemModel->rowCount() == 0)
         {
-            if (m_gemModel->rowCount() == 0)
-            {
-                ReinitForProject(m_projectPath);
-            }
-            else
-            {
-                Refresh();
-            }
+            // init the read only catalog the first time it is shown
+            ReinitForProject(m_projectPath);
         }
     }
 
     void GemCatalogScreen::ReinitForProject(const QString& projectPath)
     {
+        // avoid slow rebuilding, user can manually refresh if needed
+        if (m_gemModel->rowCount() > 0 && QDir(projectPath) == QDir(m_projectPath))
+        {
+            return;
+        }
+
         m_projectPath = projectPath;
         m_gemModel->Clear();
         m_gemsToRegisterWithProject.clear();

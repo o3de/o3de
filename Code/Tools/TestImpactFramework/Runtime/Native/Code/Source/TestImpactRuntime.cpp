@@ -246,8 +246,9 @@ namespace TestImpact
 
     Runtime::Runtime(
         RuntimeConfig&& config,
-        AZStd::optional<RepoPath> testImpactDataFile,
+        AZStd::optional<RepoPath> dataFile,
         AZStd::optional<RepoPath> previousRunDataFile,
+        AZStd::vector<AZStd::string> testsToExclude,
         SuiteType suiteFilter,
         Policy::ExecutionFailure executionFailurePolicy,
         Policy::FailedTestCoverage failedTestCoveragePolicy,
@@ -276,12 +277,23 @@ namespace TestImpact
         m_testSelectorAndPrioritizer =
             AZStd::make_unique<TestSelectorAndPrioritizer<NativeTestTarget, NativeProductionTarget>>(m_dynamicDependencyMap.get(), DependencyGraphDataMap{});
 
-        // Construct the target exclude list from the target configuration data
-        const auto& testTargetList = m_dynamicDependencyMap->GetBuildTargets()->GetTestTargetList();
-        m_regularTestTargetExcludeList =
-            ConstructTestTargetExcludeList(testTargetList, AZStd::move(m_config.m_target.m_excludedRegularTestTargets));
-        m_instrumentedTestTargetExcludeList =
-            ConstructTestTargetExcludeList(testTargetList, AZStd::move(m_config.m_target.m_excludedInstrumentedTestTargets));
+        // Construct the target exclude list from the exclude file if provided, otherwise use target configuration data
+        if (!testsToExclude.empty())
+        {
+            // Construct using data from excludeTestFile
+            m_regularTestTargetExcludeList =
+                ConstructTestTargetExcludeList(testTargetList, AZStd::move(testsToExclude));
+            m_instrumentedTestTargetExcludeList =
+                ConstructTestTargetExcludeList(testTargetList, AZStd::move(testsToExclude));
+        }
+        else
+        {
+            // Construct using data from config file.
+            m_regularTestTargetExcludeList =
+                ConstructTestTargetExcludeList(testTargetList, AZStd::move(m_config.m_target.m_excludedRegularTestTargets));
+            m_instrumentedTestTargetExcludeList =
+                ConstructTestTargetExcludeList(testTargetList, AZStd::move(m_config.m_target.m_excludedInstrumentedTestTargets));
+        }
 
         // Construct the test engine with the workspace path and launcher binaries
         m_testEngine = AZStd::make_unique<NativeTestEngine>(
@@ -295,9 +307,9 @@ namespace TestImpact
 
         try
         {
-            if (testImpactDataFile.has_value())
+            if (dataFile.has_value())
             {
-                m_sparTiaFile = testImpactDataFile.value().String();
+                m_sparTiaFile = dataFile.value().String();
             }
             else
             {

@@ -44,6 +44,7 @@ Constants for Asset Editor
 SAVE_ASSET_AS = "SaveAssetAs"
 DEFAULT_SCRIPT_EVENT = "EventName"
 DEFAULT_METHOD_NAME = "MethodName"
+PARAMETER_NAME = "ParameterName"
 
 """
 Constants for QtWidgets.
@@ -76,3 +77,4 @@ VARIABLE_TYPES = ["Boolean", "Color", "EntityId", "Number", "String", "Transform
 File Paths
 """
 SCRIPT_EVENT_FILE_PATH = os.path.join(paths.projectroot, "ScriptCanvas", "test_file.scriptevent")
+SCRIPT_CANVAS_COMPONENT_PROPERTY_PATH = "Configuration|Source"

@@ -451,6 +451,16 @@ namespace AzToolsFramework
 
                 qDebug() << printMessage.data() << "\n" << prefabBuffer.GetString();
             }
+
+            AZStd::string PrefabDomValueToString(const PrefabDomValue& prefabDomValue)
+            {
+                rapidjson::StringBuffer prefabBuffer;
+                rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(prefabBuffer);
+                prefabDomValue.Accept(writer);
+
+                return prefabBuffer.GetString();
+            }
+
         } // namespace PrefabDomUtils
     } // namespace Prefab
 } // namespace AzToolsFramework

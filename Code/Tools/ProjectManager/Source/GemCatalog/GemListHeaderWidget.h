@@ -24,5 +24,7 @@ namespace O3DE::ProjectManager
     public:
         explicit GemListHeaderWidget(GemSortFilterProxyModel* proxyModel, QWidget* parent = nullptr);
         ~GemListHeaderWidget() = default;
+    signals:
+        void OnRefresh();
     };
 } // namespace O3DE::ProjectManager

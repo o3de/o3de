@@ -365,7 +365,7 @@ namespace RecastNavigation
         {
             AZ_PROFILE_SCOPE(Navigation, "Navigation: CollectGeometryAsync");
 
-            m_taskGraphEvent = AZStd::make_unique<AZ::TaskGraphEvent>();
+            m_taskGraphEvent = AZStd::make_unique<AZ::TaskGraphEvent>("RecastNavigation PhysX Wait");
             m_taskGraph.Reset();
 
             AZStd::vector<AZStd::shared_ptr<TileGeometry>> tiles;

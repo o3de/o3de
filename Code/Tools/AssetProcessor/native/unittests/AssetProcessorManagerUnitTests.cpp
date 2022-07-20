@@ -93,10 +93,10 @@ namespace AssetProcessor
             config.GetMatchingRecognizers(filePath, output);
             for (const AssetRecognizer* assetRecogniser : output)
             {
-                extraInfoForPC.append(assetRecogniser->m_platformSpecs["pc"] == AssetInternalSpec::Copy ? "copy" : "skip");
-                extraInfoForANDROID.append(assetRecogniser->m_platformSpecs["android"] == AssetInternalSpec::Copy ? "copy" : "skip");
-                extraInfoForPC.append(assetRecogniser->m_version);
-                extraInfoForANDROID.append(assetRecogniser->m_version);
+                extraInfoForPC.append(assetRecogniser->m_platformSpecs.at("pc") == AssetInternalSpec::Copy ? "copy" : "skip");
+                extraInfoForANDROID.append(assetRecogniser->m_platformSpecs.at("android") == AssetInternalSpec::Copy ? "copy" : "skip");
+                extraInfoForPC.append(assetRecogniser->m_version.c_str());
+                extraInfoForANDROID.append(assetRecogniser->m_version.c_str());
             }
 
             //Calculating fingerprints for the file for pc and android platforms
@@ -267,15 +267,15 @@ namespace AssetProcessor
 
         rec.m_name = "random files";
         rec.m_patternMatcher = AssetBuilderSDK::FilePatternMatcher("*.random", AssetBuilderSDK::AssetBuilderPattern::Wildcard);
-        rec.m_platformSpecs.insert("pc", AssetInternalSpec::Copy);
+        rec.m_platformSpecs.insert({"pc", AssetInternalSpec::Copy});
         config.AddRecognizer(rec);
         UNIT_TEST_EXPECT_TRUE(mockAppManager.RegisterAssetRecognizerAsBuilder(rec));
 
         const char* builderTxt1Name = "txt files";
         rec.m_name = builderTxt1Name;
         rec.m_patternMatcher = AssetBuilderSDK::FilePatternMatcher("*.txt", AssetBuilderSDK::AssetBuilderPattern::Wildcard);
-        rec.m_platformSpecs.insert("pc", AssetInternalSpec::Copy);
-        rec.m_platformSpecs.insert("android", AssetInternalSpec::Copy);
+        rec.m_platformSpecs.insert({"pc", AssetInternalSpec::Copy});
+        rec.m_platformSpecs.insert({"android", AssetInternalSpec::Copy});
 
         config.AddRecognizer(rec);
 
@@ -296,7 +296,7 @@ namespace AssetProcessor
         rec.m_name = "tiff files";
         rec.m_patternMatcher = AssetBuilderSDK::FilePatternMatcher("*.tiff", AssetBuilderSDK::AssetBuilderPattern::Wildcard);
         rec.m_platformSpecs.clear();
-        rec.m_platformSpecs.insert("pc", AssetInternalSpec::Copy);
+        rec.m_platformSpecs.insert({"pc", AssetInternalSpec::Copy});
         rec.m_testLockSource = true;
         config.AddRecognizer(rec);
         mockAppManager.RegisterAssetRecognizerAsBuilder(rec);
@@ -306,15 +306,15 @@ namespace AssetProcessor
 
         rec.m_name = "xxx files";
         rec.m_patternMatcher = AssetBuilderSDK::FilePatternMatcher("*.xxx", AssetBuilderSDK::AssetBuilderPattern::Wildcard);
-        rec.m_platformSpecs.insert("pc", AssetInternalSpec::Copy);
-        rec.m_platformSpecs.insert("android", AssetInternalSpec::Copy);
+        rec.m_platformSpecs.insert({"pc", AssetInternalSpec::Copy});
+        rec.m_platformSpecs.insert({"android", AssetInternalSpec::Copy});
         config.AddRecognizer(rec);
         mockAppManager.RegisterAssetRecognizerAsBuilder(rec);
 
         // two recognizers for the same pattern.
         rec.m_name = "xxx files 2 (builder2)";
-        rec.m_platformSpecs.insert("pc", AssetInternalSpec::Copy);
-        rec.m_platformSpecs.insert("android", AssetInternalSpec::Copy);
+        rec.m_platformSpecs.insert({"pc", AssetInternalSpec::Copy});
+        rec.m_platformSpecs.insert({"android", AssetInternalSpec::Copy});
         config.AddRecognizer(rec);
         mockAppManager.RegisterAssetRecognizerAsBuilder(rec);
 
@@ -322,8 +322,8 @@ namespace AssetProcessor
         AssetRecognizer ignore_rec;
         ignore_rec.m_name = "ignore files";
         ignore_rec.m_patternMatcher = AssetBuilderSDK::FilePatternMatcher("*.ignore", AssetBuilderSDK::AssetBuilderPattern::Wildcard);
-        ignore_rec.m_platformSpecs.insert("pc", AssetInternalSpec::Copy);
-        ignore_rec.m_platformSpecs.insert("android", AssetInternalSpec::Skip);
+        ignore_rec.m_platformSpecs.insert({"pc", AssetInternalSpec::Copy});
+        ignore_rec.m_platformSpecs.insert({"android", AssetInternalSpec::Skip});
         config.AddRecognizer(ignore_rec);
         mockAppManager.RegisterAssetRecognizerAsBuilder(ignore_rec);
 
@@ -1687,7 +1687,7 @@ namespace AssetProcessor
         UNIT_TEST_EXPECT_TRUE(mockAppManager.UnRegisterAssetRecognizerAsBuilder("xxx files 2 (builder2)"));
 
         //Changing specs for pc
-        rec.m_platformSpecs.insert("pc", AssetInternalSpec::Copy);
+        rec.m_platformSpecs.insert({"pc", AssetInternalSpec::Copy});
 
         config.AddRecognizer(rec);
         mockAppManager.RegisterAssetRecognizerAsBuilder(rec);
@@ -2191,13 +2191,13 @@ namespace AssetProcessor
         AssetRecognizer abt_rec1;
         abt_rec1.m_name = "UnitTestTextBuilder1";
         abt_rec1.m_patternMatcher = AssetBuilderSDK::FilePatternMatcher("*.txt", AssetBuilderSDK::AssetBuilderPattern::Wildcard);
-        abt_rec1.m_platformSpecs.insert("android", AssetInternalSpec::Copy);
+        abt_rec1.m_platformSpecs.insert({"android", AssetInternalSpec::Copy});
         mockAppManager.RegisterAssetRecognizerAsBuilder(abt_rec1);
 
         AssetRecognizer abt_rec2;
         abt_rec2.m_name = "UnitTestTextBuilder2";
         abt_rec2.m_patternMatcher = AssetBuilderSDK::FilePatternMatcher("*.txt", AssetBuilderSDK::AssetBuilderPattern::Wildcard);
-        abt_rec2.m_platformSpecs.insert("pc", AssetInternalSpec::Copy);
+        abt_rec2.m_platformSpecs.insert({"pc", AssetInternalSpec::Copy});
         mockAppManager.RegisterAssetRecognizerAsBuilder(abt_rec2);
 
         processResults.clear();
@@ -2242,8 +2242,8 @@ namespace AssetProcessor
         UNIT_TEST_EXPECT_TRUE(processResults[1].m_jobEntry.m_platformInfo.m_identifier == "pc");
         UNIT_TEST_EXPECT_TRUE(QString::compare(processResults[0].m_jobEntry.GetAbsoluteSourcePath(), absolutePath, Qt::CaseInsensitive) == 0);
         UNIT_TEST_EXPECT_TRUE(QString::compare(processResults[1].m_jobEntry.GetAbsoluteSourcePath(), absolutePath, Qt::CaseInsensitive) == 0);
-        UNIT_TEST_EXPECT_TRUE(QString::compare(QString(processResults[0].m_jobEntry.m_jobKey), QString(abt_rec1.m_name)) == 0);
-        UNIT_TEST_EXPECT_TRUE(QString::compare(QString(processResults[1].m_jobEntry.m_jobKey), QString(abt_rec2.m_name)) == 0);
+        UNIT_TEST_EXPECT_TRUE(QString::compare(QString(processResults[0].m_jobEntry.m_jobKey), QString(abt_rec1.m_name.c_str())) == 0);
+        UNIT_TEST_EXPECT_TRUE(QString::compare(QString(processResults[1].m_jobEntry.m_jobKey), QString(abt_rec2.m_name.c_str())) == 0);
         Q_EMIT UnitTestPassed();
 
         // Stop file watching, disconnect everything and process all events so nothing gets called after the method finishes

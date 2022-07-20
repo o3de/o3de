@@ -12,8 +12,6 @@
 
 #define THREAD_NUM_X 8
 #define THREAD_NUM_Y 8
-#define NO_DETAIL 0.0
-#define HAS_DETAIL 1.0
 
 ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
 {
