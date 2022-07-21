@@ -130,11 +130,13 @@ namespace ScriptCanvasEditor::TranslationHelper
                     searchResult = fileIO->FindFiles(folderName.c_str(), "*",
                         [&](const char* path)
                         {
+                            AZ::IO::Path currentPath = path;
                             if (fileIO->IsDirectory(path))
                             {
                                 foldersToSearch.push_back(path);
                             }
-                            else if (AZStd::string(path).ends_with(fileNameWithExtension))
+                            else if (currentPath.HasFilename()
+                                && strcmp(currentPath.Filename().LexicallyNormal().c_str(), fileNameWithExtension.c_str()) == 0)
                             {
                                 filesFound.push_back(path);
                                 foldersToSearch.clear();

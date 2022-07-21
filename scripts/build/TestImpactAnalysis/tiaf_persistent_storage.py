@@ -163,20 +163,37 @@ class PersistentStorage(ABC):
 
     @property
     def has_historic_data(self):
+        """
+        Flag denoting that persistent storage was able to find relevant historic data for the requested branch.
+        """
         return self._has_historic_data
 
     @property
     def last_commit_hash(self):
+        """
+        Hash of the last commit we processed, ingested from our historic data.
+        """
         return self._last_commit_hash
 
     @property
-    def is_repeat_sequence(self):
+    def is_last_commit_hash_equal_to_this_commit_hash(self):
+        """
+        Is the current commit that we are running TIAF on the same as the last commit we have in our historic data.
+        This means that this is a repeat sequence.
+        """
         return self._last_commit_hash == self._this_commit_hash
 
     @property
     def this_commit_last_commit_hash(self):
+        """
+        Hash of this commit. Is none if this commit hash was not found in our historic data.
+        """
         return self._this_commit_hash_last_commit_hash
 
     @property
-    def can_rerun_sequence(self):
+    def has_previous_last_commit_hash(self):
+        """
+        If the hash of the last commit was found in our historic data, then this flag will be set.
+        """
         return self._has_previous_last_commit_hash
+
