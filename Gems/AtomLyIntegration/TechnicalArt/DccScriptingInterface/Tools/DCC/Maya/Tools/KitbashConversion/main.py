@@ -16,6 +16,7 @@
 # -------------------------------------------------------------------------
 
 # Built-ins
+import shutil
 from functools import partial
 import logging
 from pathlib import Path
@@ -43,8 +44,9 @@ _LOGGER = logging.getLogger('kitbash_converter.main')
 
 
 # PLEASE NOTE
-# This is currently set up to convert FBX files, and uses Maya to read asset file and to extract information for
-# material assignments. It currently needs to be bootstrapped using the DCCsi BAT file launching system.
+# This is currently set up to convert Maya compatible content files (.fbx, .ma, .mb) , using Maya to read asset file and
+# to extract information for material assignments. It currently needs to be bootstrapped using the DCCsi BAT file
+# launching system.
 
 # There is a fix coming for getting project information when bootstrapping the DCCsi- for now, in order to use this
 # script, you will need to set the path to an auto-generated example of the 'standardpbr_allproperties.material'
@@ -54,22 +56,23 @@ _LOGGER = logging.getLogger('kitbash_converter.main')
 #
 # Previously this script worked by using a template file, but this is not going to work moving
 # forward- materials generation is now supported by "all properties" material files to dynamically build materials,
-# conforming to latest formatting/builds. Set the 'all_properties_location' in the FBXConverter class attribute below
+# conforming to the latest formatting/builds. Set the 'all_properties_location' in the KitbashConverter class
+# attribute below
 
 # TODO - Changing values in the table view is not updating a definition in the material file.
 # TODO - Add Blender support
 # TODO - Put in a better system for processing all available file types (blend, fbx, mb, ma).
 
 
-class FBXConverter(QtWidgets.QDialog):
+class KitbashConverter(QtWidgets.QDialog):
     def __init__(self, parent=None):
-        super(FBXConverter, self).__init__(parent)
+        super(KitbashConverter, self).__init__(parent)
 
         self.app = QtWidgets.QApplication.instance()
         self.setWindowFlags(QtCore.Qt.Window)
         self.setGeometry(50, 50, 600, 400)
-        self.setObjectName('FBXConverter')
-        self.setWindowTitle('FBX to O3DE')
+        self.setObjectName('DCCConverter')
+        self.setWindowTitle('DCC to O3DE')
         self.isTopLevel()
         self.setWindowFlags(self.windowFlags() & ~QtCore.Qt.WindowMinMaxButtonsHint)
 
@@ -78,8 +81,8 @@ class FBXConverter(QtWidgets.QDialog):
                                        'standardpbr_allproperties.material'
         self.autodesk_directory = Path(os.environ['ProgramFiles']) / 'Autodesk'
         self.default_material_definition = 'standardPBR.template.material'
+        self.supported_file_extensions = ['.fbx', '.ma', '.mb']
         self.processed_material_information = {}
-        self.relative_export_path = 'Objects'
         self.mayapy_path = self.get_mayapy_path()
         self.single_asset_file = ''
         self.flagged_material_information = None
@@ -128,63 +131,67 @@ class FBXConverter(QtWidgets.QDialog):
         self.target_directory_layout.setAlignment(QtCore.Qt.AlignTop)
         self.target_directory_groupbox = QtWidgets.QGroupBox()
         self.target_directory_groupbox.setLayout(self.target_directory_layout)
-        self.target_directory_layout.setContentsMargins(10, 10, 10, 10)
+        self.target_directory_layout.setContentsMargins(10, 0, 10, 10)
 
-        # Input Directory
-        self.input_field_layout = QtWidgets.QHBoxLayout()
+        # Input Directory title bar
+        self.input_title_layout = QtWidgets.QHBoxLayout()
+        self.target_directory_layout.addLayout(self.input_title_layout)
         self.input_directory_label = QtWidgets.QLabel('Input Directory')
-        self.input_directory_label.setFixedWidth(75)
-        self.input_field_layout.addWidget(self.input_directory_label)
+        self.input_directory_label.setFixedWidth(100)
+        self.input_directory_label.setFont(self.bold_font)
+        self.input_title_layout.addWidget(self.input_directory_label)
+        self.input_title_layout.addSpacing(25)
+        self.radio_button_layout = QtWidgets.QHBoxLayout()
+        self.radio_button_layout.setAlignment(QtCore.Qt.AlignLeft)
+        self.radio_button_group = QtWidgets.QButtonGroup()
+        self.use_file_radio_button = QtWidgets.QRadioButton('Single File')
+        self.use_file_radio_button.setFixedWidth(70)
+        self.use_file_radio_button.setChecked(True)
+        self.use_file_radio_button.clicked.connect(self.radio_clicked)
+        self.radio_button_group.addButton(self.use_file_radio_button)
+        self.radio_button_layout.addWidget(self.use_file_radio_button)
+        self.radio_button_layout.addSpacing(10)
+        self.use_directory_radio_button = QtWidgets.QRadioButton('Directory')
+        self.use_directory_radio_button.clicked.connect(self.radio_clicked)
+        self.radio_button_layout.addWidget(self.use_directory_radio_button)
+        self.radio_button_group.addButton(self.use_directory_radio_button)
+        self.input_title_layout.addLayout(self.radio_button_layout)
+
+        # Input Directory Field
+        self.input_field_layout = QtWidgets.QHBoxLayout()
         self.input_path_field = QtWidgets.QLineEdit()
-        self.input_path_field.textChanged.connect(self.set_io_directories)
+        self.input_path_field.setStyleSheet('padding-left: 5px;')
+        self.input_path_field.textChanged.connect(self.set_io_locations)
         self.input_path_field.setFixedHeight(25)
         self.input_field_layout.addWidget(self.input_path_field)
         self.set_input_button = QtWidgets.QPushButton('Set')
-        self.set_input_button.clicked.connect(self.set_directory_button_clicked)
+        self.set_input_button.clicked.connect(partial(self.set_directory_button_clicked, 'input'))
         self.set_input_button.setFixedSize(40, 25)
         self.input_field_layout.addWidget(self.set_input_button)
         self.target_directory_layout.addLayout(self.input_field_layout)
         self.target_directory_layout.addSpacing(8)
 
-        # File handling radio buttons
-        self.file_options_layout = QtWidgets.QHBoxLayout()
-        self.radio_button_layout = QtWidgets.QHBoxLayout()
-        self.radio_button_layout.setAlignment(QtCore.Qt.AlignLeft)
-        self.radio_button_group = QtWidgets.QButtonGroup()
-        self.use_directory_radio_button = QtWidgets.QRadioButton('Directory')
-        self.use_directory_radio_button.setChecked(True)
-        self.use_directory_radio_button.clicked.connect(self.radio_clicked)
-        self.radio_button_group.addButton(self.use_directory_radio_button)
-        self.radio_button_layout.addWidget(self.use_directory_radio_button)
-        self.radio_button_layout.addSpacing(10)
-        self.use_file_radio_button = QtWidgets.QRadioButton('Single File')
-        self.use_file_radio_button.setFixedWidth(80)
-        self.use_file_radio_button.clicked.connect(self.radio_clicked)
-        self.radio_button_layout.addWidget(self.use_file_radio_button)
-        self.radio_button_group.addButton(self.use_file_radio_button)
-        self.file_options_layout.addLayout(self.radio_button_layout)
-        self.target_directory_layout.addLayout(self.file_options_layout)
-        self.content_layout.addWidget(self.target_directory_groupbox)
+        # Output Directory Title Bar
+        self.output_directory_label = QtWidgets.QLabel('Output Directory')
+        self.output_directory_label.setFont(self.bold_font)
+        self.target_directory_layout.addWidget(self.output_directory_label)
 
-        # Relative Output Path
-        self.output_directory_widget = QtWidgets.QWidget()
-        self.output_field_layout = QtWidgets.QHBoxLayout(self.output_directory_widget)
-        self.output_field_layout.setAlignment(QtCore.Qt.AlignRight)
-        self.output_field_layout.addStretch()
-        self.output_field_layout.setContentsMargins(0, 0, 0, 0)
-        self.output_directory_color_frame = QtWidgets.QFrame(self.output_directory_widget)
-        self.output_directory_color_frame.setGeometry(0, 0, 5000, 30)
-        self.output_directory_color_frame.setStyleSheet('background-color:rgb(210,210,210);')
-        self.output_directory_button = QtWidgets.QPushButton(self.relative_export_path)
-        self.output_directory_button.clicked.connect(self.set_relative_path_clicked)
-        self.output_directory_button.setEnabled(False)
-        self.output_directory_button.setFixedHeight(30)
-        self.output_directory_button.setFont(self.small_font)
-        self.output_directory_button.setStyleSheet(
-                'QPushButton {border:None; color:rgb(125,125,125); padding-right:10px; background-color:rgb(210,210,210); '
-                'text-align:right;} QPushButton:hover { color: black;}')
-        self.output_field_layout.addWidget(self.output_directory_button)
-        self.file_options_layout.addWidget(self.output_directory_widget)
+        # Output Directory Field
+        self.output_field_layout = QtWidgets.QHBoxLayout()
+        self.output_path_field = QtWidgets.QLineEdit()
+        self.output_path_field.setStyleSheet('padding-left: 5px;')
+        self.output_path_field.textChanged.connect(self.set_io_locations)
+        self.output_path_field.setFixedHeight(25)
+        self.output_field_layout.addWidget(self.output_path_field)
+        self.set_output_button = QtWidgets.QPushButton('Set')
+        self.set_output_button.clicked.connect(partial(self.set_directory_button_clicked, 'output'))
+        self.set_output_button.setFixedSize(40, 25)
+        self.output_field_layout.addWidget(self.set_output_button)
+        self.target_directory_layout.addLayout(self.output_field_layout)
+        self.target_directory_layout.addSpacing(8)
+        self.transfer_source_files_checkbox = QtWidgets.QCheckBox('Transfer KB3D Source Files')
+        self.target_directory_layout.addWidget(self.transfer_source_files_checkbox)
+        self.content_layout.addWidget(self.target_directory_groupbox)
 
         # Navigate Listings
         self.review_layout = QtWidgets.QVBoxLayout()
@@ -249,7 +256,7 @@ class FBXConverter(QtWidgets.QDialog):
         self.scroll_area.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         self.scrollAreaWidgetContents = QtWidgets.QWidget()
         self.results_grid_layout = QtWidgets.QGridLayout()
-        self.results_grid_layout.setColumnStretch(0,-1)
+        self.results_grid_layout.setColumnStretch(0, -1)
         self.scrollAreaWidgetContents.setLayout(self.results_grid_layout)
         self.scroll_area.setWidgetResizable(True)
         self.results_grid_layout.setContentsMargins(0, 0, 0, 0)
@@ -301,37 +308,31 @@ class FBXConverter(QtWidgets.QDialog):
         self.initialize_qprocess()
         self.input_path_field.setFocus()
 
-    def process_single_asset(self, target_fbx):
+    def process_single_asset(self, target_file):
         """
         This function is executed for both individual and directory processing- it separates
         actions into a single process for splitting sources files and generating materials.
-        :param target_fbx:
-        :return:
+        :param target_file: File to be parsed and converted. Supported types listed in "supported_file_extensions" attr
         """
-        self.start_maya_session(target_fbx)
+        self.start_maya_session(target_file)
         if self.use_file_radio_button.isChecked():
-            self.display_message('Process Completed.')
-            self.app.processEvents()
-            time.sleep(5)
-            self.display_message('Ready.')
-            self.app.processEvents()
+            self.process_complete()
 
     def process_directory(self, directory_path):
         """
         Sets script for directory processing, this function will collect all fbx files found
         in a targeted directory and send each individually to single asset processing above.
-        :param directory_path:
-        :return:
+        :param directory_path: Path to conversion source directory
         """
+        processed_files = []
         for target_file in directory_path.iterdir():
-            if target_file.suffix.lower() == '.fbx':
-                _LOGGER.info(f'Processing Directory: {target_file}')
+            file_stem = target_file.stem
+            if target_file.suffix.lower() in self.supported_file_extensions and file_stem not in processed_files:
+                self.display_message(f'Processing: {file_stem}')
+                self.app.processEvents()
                 self.process_single_asset(target_file)
-        self.display_message('Process Completed.')
-        self.app.processEvents()
-        time.sleep(5)
-        self.display_message('Ready.')
-        self.app.processEvents()
+                processed_files.append(file_stem)
+        self.process_complete()
 
     def display_message(self, message):
         """
@@ -405,12 +406,19 @@ class FBXConverter(QtWidgets.QDialog):
         state_name = states[state]
         _LOGGER.info(f'QProcess State Change: {state_name}')
 
+    def process_complete(self):
+        self.display_message('Process Completed.')
+        self.app.processEvents()
+        time.sleep(5)
+        self.display_message('Ready.')
+        self.app.processEvents()
+
     def cleanup(self):
         self.p.closeWriteChannel()
         _LOGGER.info("Source File Conversion Complete")
         self.process_files_button.setEnabled(False)
 
-    def start_maya_session(self, target_fbx):
+    def start_maya_session(self, target_file):
         """
         This starts the exchange between the standalone QT UI and Maya Standalone to process FBX files.
         The information sent to Maya is the FBX file for processing, as well as the base directory and
@@ -419,11 +427,11 @@ class FBXConverter(QtWidgets.QDialog):
         :param target_fbx:
         :return:
         """
-        self.display_message(f'Working: {target_fbx.name}')
+        self.display_message(f'Working: {target_file.name}')
         self.app.processEvents()
         if self.mayapy_path:
             try:
-                info_list = [target_fbx, self.input_directory, self.relative_export_path, self.all_properties_location]
+                info_list = [target_file, self.input_directory, self.output_directory, self.all_properties_location]
                 script_path = os.path.normpath(os.path.join(os.getcwd(), 'process_fbx_file.py'))
                 command = [script_path]
                 for entry in info_list:
@@ -460,6 +468,25 @@ class FBXConverter(QtWidgets.QDialog):
         """
         with open(output, 'w', encoding='utf-8') as material_file:
             json.dump(material_description, material_file, ensure_ascii=False, indent=4)
+
+    def transfer_file_textures(self, textures_source, textures_destination):
+        os.makedirs(textures_destination, exist_ok=True)
+        for file in Path(textures_source).iterdir():
+            src = file
+            dest = Path(textures_destination) / file.name
+            if not os.path.exists(dest):
+                shutil.copyfile(src, dest)
+
+    def transfer_source_files(self, output_directory):
+        if self.transfer_source_files_checkbox.isChecked():
+            for file in Path(self.input_directory).iterdir():
+                if file.suffix in self.supported_file_extensions:
+                    dst = output_directory / file.name
+                    shutil.copyfile(file, dst)
+
+    ##############################
+    # Getters/Setters ############
+    ##############################
 
     def get_separator_bar(self):
         """ Convenience function for UI layout element """
@@ -499,6 +526,34 @@ class FBXConverter(QtWidgets.QDialog):
         fbx_materials = self.audit_list[target_index][1]
         return fbx_name, fbx_materials
 
+    def get_attribute_dictionary(self, property_values):
+        attribute_dictionary = {}
+        target_definition_keys = list(set([k.split('.')[0] for k in property_values.keys()]))
+        for key in target_definition_keys:
+            temp_dict = {}
+            for k, v in property_values.items():
+                if k.startswith(key):
+                    temp_dict[k] = v
+            attribute_dictionary[key] = temp_dict
+        return attribute_dictionary
+
+    def get_path_type(self):
+        if self.use_directory_radio_button.isChecked():
+            return 'directory'
+        return 'path'
+
+    def get_textures_directory(self, input_path):
+        if input_path.is_dir():
+            textures_directory = Path(input_path / 'KB3DTextures')
+            if textures_directory.is_dir():
+                return textures_directory
+        else:
+            parent_directory = input_path.parent
+            textures_directory = Path(parent_directory / 'KB3DTextures')
+            if textures_directory.is_dir():
+                return textures_directory
+        return None
+
     def set_buttons(self):
         self.update_material_button.setEnabled(False)
         if self.current_audit_index == 0:
@@ -511,32 +566,25 @@ class FBXConverter(QtWidgets.QDialog):
             self.forward_button.setEnabled(True)
             self.back_button.setEnabled(True)
 
-    def set_io_directories(self):
+    def set_io_locations(self):
         """
         This is constantly running when user interacts with the source and destination fields in the UI, validating that
         the paths are legitimate. In the event that there are malformed or non-existing paths- it disables the processing
         button.
         :return:
         """
-        input_string = self.input_path_field.text()
-        unlocked = False
-
-        if self.use_directory_radio_button.isChecked():
-            if os.path.isdir(input_string.strip()):
-                self.input_directory = Path(input_string.strip()).as_posix()
-                unlocked = True
-        else:
-            if os.path.isfile(input_string.strip()):
-                self.input_directory = Path(input_string.strip()).parent.as_posix()
-                unlocked = True
-
+        unlocked = True
+        for target_path in [self.input_path_field, self.output_path_field]:
+            path_check = Path(target_path.text())
+            if target_path.text() == '' or not path_check.exists():
+                unlocked = False
+                break
         self.process_files_button.setEnabled(unlocked)
 
         if unlocked:
             self.process_files_button.setFocus()
 
     def set_audit_list(self):
-        _LOGGER.info(f'AuditList: {self.processed_material_information}')
         for key, value in self.processed_material_information.items():
             material_files = []
             for file in os.listdir(value['asset_location']):
@@ -558,17 +606,6 @@ class FBXConverter(QtWidgets.QDialog):
                 self.material_attributes[key].set_material_attributes(key, attribute_dict[key])
             else:
                 self.material_attributes[key].set_material_attributes(key, None)
-
-    def get_attribute_dictionary(self, property_values):
-        attribute_dictionary = {}
-        target_definition_keys = list(set([k.split('.')[0] for k in property_values.keys()]))
-        for key in target_definition_keys:
-            temp_dict = {}
-            for k, v in property_values.items():
-                if k.startswith(key):
-                    temp_dict[k] = v
-            attribute_dictionary[key] = temp_dict
-        return attribute_dictionary
 
     def set_material_combobox(self, object_index):
         self.material_combobox.blockSignals(True)
@@ -593,37 +630,63 @@ class FBXConverter(QtWidgets.QDialog):
         for item in ui_controls:
             item.setVisible(is_visible)
 
+    def set_file_path(self, path_type, toggle_field=False):
+        if path_type == 'directory':
+            file_path = QtWidgets.QFileDialog.getExistingDirectory(self, 'Select Directory', self.default_search_path,
+                                                                   QtWidgets.QFileDialog.ShowDirsOnly)
+            if toggle_field:
+                self.input_directory = file_path
+        else:
+            file_browser = QtWidgets.QFileDialog()
+            file_path = file_browser.getOpenFileName(self, 'Set Target File', self.default_search_path,
+                                                     'Maya Files (*.fbx *.mb *.ma)')
+            self.single_asset_file = file_path[0]
+        return file_path
+
+    def set_output_directory(self, kit_name):
+        directory_location = Path(self.output_path_field.text())
+        _LOGGER.info(f'***** DirectoryLocation: {directory_location}')
+        _LOGGER.info(f'***** KitName: {kit_name}')
+        if directory_location.name != 'Assets':
+            assets_directory_path = directory_location / 'Assets' / kit_name
+        else:
+            assets_directory_path = directory_location / kit_name
+
+        os.makedirs(assets_directory_path.as_posix(), exist_ok=True)
+        textures_directory_path = assets_directory_path / 'KB3DTextures'
+        os.makedirs(textures_directory_path.as_posix(), exist_ok=True)
+        objects_directory_path = assets_directory_path / 'Objects'
+        os.makedirs(objects_directory_path.as_posix(), exist_ok=True)
+
+        return assets_directory_path
+
     ##############################
     # Button Actions #############
     ##############################
 
-    def set_directory_button_clicked(self):
+    def set_directory_button_clicked(self, target):
         """
         Launches a file browser dialog window for specifying file paths
 
         :param target: Target sets which directory is being set- input or output
         :return:
         """
-        if self.use_directory_radio_button.isChecked():
-            file_path = QtWidgets.QFileDialog.getExistingDirectory(self, 'Select Directory', self.default_search_path,
-                                                                   QtWidgets.QFileDialog.ShowDirsOnly)
-            if os.path.isdir(file_path):
-                self.output_directory_button.setEnabled(True)
-                self.input_path_field.setText(file_path)
-            else:
-                self.output_directory_button.setEnabled(False)
+        path_type = 'directory' if target == 'output' else self.get_path_type()
+        file_path = self.set_file_path(path_type) if target == 'output' else self.set_file_path(path_type, True)
+        target_field = self.input_path_field if target is 'input' else self.output_path_field
 
+        self.input_path_field.blockSignals(True)
+        self.output_path_field.blockSignals(True)
+
+        if path_type == 'directory':
+            if os.path.isdir(file_path):
+                target_field.setText(file_path)
         else:
-            file_browser = QtWidgets.QFileDialog()
-            file_path = file_browser.getOpenFileName(self, 'Set Target File', self.default_search_path,
-                                                     'FBX Files (*.fbx)')
             if os.path.isfile(file_path[0]):
-                self.output_directory_button.setEnabled(True)
-                self.input_path_field.setText(file_path[0])
-                self.single_asset_file = file_path
-            else:
-                self.output_directory_button.setEnabled(False)
-        self.set_io_directories()
+                target_field.setText(file_path[0])
+        self.input_path_field.blockSignals(False)
+        self.output_path_field.blockSignals(False)
+        self.set_io_locations()
 
     def radio_clicked(self):
         """
@@ -637,7 +700,7 @@ class FBXConverter(QtWidgets.QDialog):
             input_path = '' if not self.input_directory else self.input_directory
             self.input_path_field.setText(input_path)
         else:
-            self.input_directory_label.setText('Input FBX File')
+            self.input_directory_label.setText('Input File')
             self.input_path_field.setText(str(self.single_asset_file))
 
     def forward_button_clicked(self):
@@ -661,61 +724,22 @@ class FBXConverter(QtWidgets.QDialog):
         Starts the conversion process once a target directory/file and output folder has been chosen in the UI
         :return:
         """
-        invalid_path = False
-        if self.use_directory_radio_button.isChecked():
-            directory_path = Path(self.input_path_field.text())
-            if os.path.isdir(directory_path):
-                self.input_directory = directory_path
-                self.process_directory(directory_path)
-                self.hidden_button.setFocus()
-            else:
-                invalid_path = 'Please enter a valid directory path.'
+        input_path = Path(self.input_path_field.text())
+        input_type = 'directory' if input_path.is_dir() else 'file'
+        self.input_directory = input_path if input_type == 'directory' else input_path.parent
+        kit_name = self.input_directory.name
+        self.output_directory = self.set_output_directory(kit_name)
+        textures_source = self.get_textures_directory(input_path)
+        textures_destination = self.output_directory / 'KB3DTextures'
+        if textures_source:
+            self.transfer_file_textures(textures_source, textures_destination)
 
+        if input_type == 'directory':
+            self.process_directory(input_path)
         else:
-            fbx_path = self.input_path_field.text()
-            if os.path.exists(fbx_path) and fbx_path.endswith('.fbx'):
-                self.input_directory = os.path.dirname(fbx_path)
-                self.process_single_asset(Path(fbx_path))
-                self.hidden_button.setFocus()
-            else:
-                invalid_path = 'Please enter a valid FBX path.'
+            self.process_single_asset(input_path)
 
-        if invalid_path:
-            msg = QtWidgets.QMessageBox()
-            msg.setIcon(QtWidgets.QMessageBox.Warning)
-            msg.setText(invalid_path)
-            msg.setWindowTitle('Bad Path')
-            msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
-            msg.exec_()
-
-    def set_relative_path_clicked(self):
-        """
-        This button action keeps output file locations positioned in the best accessible locations. If the user
-        attempts to assign the relative output path to a path that has a base that is NOT the input directory, a warning
-        dialog box will prompt to select a compatible path. The path that is set by default ('Objects/KB3D/CityKit')
-        gives the recommended formatted location.
-        :return:
-        """
-        if os.path.isdir(self.input_directory):
-            file_path = QtWidgets.QFileDialog.getExistingDirectory(self, 'Select Output Directory',
-                                                                   self.input_directory,
-                                                                   QtWidgets.QFileDialog.ShowDirsOnly)
-            if os.path.isfile(file_path):
-                file_path = Path(file_path).parent.as_posix()
-            else:
-                file_path = Path(file_path).as_posix()
-
-            _LOGGER.info(f'FilePath: {file_path}  InputDirectory: {self.input_directory}')
-            if file_path.index(self.input_directory) != -1:
-                self.relative_export_path = file_path.replace('{}/'.format(self.input_directory), '')
-                self.output_directory_button.setText(self.relative_export_path)
-            else:
-                msg = QtWidgets.QMessageBox()
-                msg.setIcon(QtWidgets.QMessageBox.Warning)
-                msg.setText('You must choose a subdirectory of \nthe input directory location!')
-                msg.setWindowTitle('Bad Location')
-                msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
-                msg.exec_()
+        self.transfer_source_files(self.output_directory)
 
     def jump_button_clicked(self):
         _LOGGER.info('Jump button clicked')
@@ -1027,7 +1051,7 @@ class AttributeListing(QtWidgets.QWidget):
 def launch_kitbash_converter():
     app = QApplication(sys.argv)
     app.setStyle('Fusion')
-    converter = FBXConverter()
+    converter = KitbashConverter()
     converter.show()
     sys.exit(app.exec_()) 
 

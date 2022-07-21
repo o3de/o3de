@@ -40,12 +40,12 @@ SUPPORTED_MATERIAL_PROPERTIES = [
 
 
 class ProcessFbxFile(QtCore.QObject):
-    def __init__(self, fbx_file, base_directory, relative_destination_path, all_properties_definition):
+    def __init__(self, target_file, import_directory_base, export_directory_base, all_properties_definition):
         super(ProcessFbxFile, self).__init__()
-        self.fbx_file = fbx_file
-        self.base_directory = base_directory
+        self.target_file = target_file
+        self.import_directory_base = import_directory_base
+        self.export_directory_base = export_directory_base
         self.textures_directory = self.get_textures_directory()
-        self.relative_destination_path = relative_destination_path
         self.default_material_definition = self.get_material_template(all_properties_definition)
         self.supported_material_properties = self.get_supported_properties()
         self.transfer_data = {}
@@ -59,14 +59,21 @@ class ProcessFbxFile(QtCore.QObject):
         :return:
         """
         _LOGGER.info('MAYA STANDALONE PROCESS STARTED ---------------------------------------------')
-        _LOGGER.info('FBX File Passed: {}'.format(self.fbx_file))
-        _LOGGER.info('Base Directory: {}'.format(self.base_directory))
+        _LOGGER.info('Target File Passed: {}'.format(self.target_file))
+        _LOGGER.info('Import Directory Base: {}'.format(self.import_directory_base))
+        _LOGGER.info('Export Directory Base: {}'.format(self.export_directory_base))
         _LOGGER.info('Textures Directory: {}'.format(self.textures_directory))
-        _LOGGER.info('Destination Directory: {}'.format(self.relative_destination_path))
         _LOGGER.info('-----------------------------------------------------------------------------\n')
 
-        if self.textures_directory and os.path.exists(self.fbx_file):
-            mc.file(self.fbx_file, i=True, type="FBX")
+        if self.textures_directory and os.path.exists(self.target_file):
+            file_name = os.path.basename(self.target_file)
+            file_type = file_name.split('.')[-1]
+
+            if file_type.lower() == 'fbx':
+                mc.file(self.target_file, i=True, type="FBX")
+            else:
+                mc.file(self.target_file, o=True, force=True)
+
             return_dictionary = self.process_groups()
             json.dump(return_dictionary, sys.stdout)
 
@@ -89,7 +96,7 @@ class ProcessFbxFile(QtCore.QObject):
             for material_name, texture_set in asset_material_dictionary.items():
                 fbx_parts_list = grp.split('_')[1:-1]
                 new_fbx_name = '_'.join(fbx_parts_list)
-                output_directory = os.path.join(self.base_directory, self.relative_destination_path, new_fbx_name)
+                output_directory = os.path.join(self.export_directory_base, 'Objects', new_fbx_name)
                 output_directory = output_directory.replace('\\', '/')
                 _LOGGER.info(f'Output Directory: {output_directory}')
                 os.makedirs(output_directory, exist_ok=True)
@@ -207,7 +214,7 @@ class ProcessFbxFile(QtCore.QObject):
         return suffix
 
     def get_textures_directory(self):
-        for (root, dirs, files) in os.walk(self.base_directory, topdown=True):
+        for (root, dirs, files) in os.walk(self.export_directory_base, topdown=True):
             for dir in dirs:
                 if 'textures' in dir.lower():
                     return os.path.join(root, dir)
@@ -366,10 +373,13 @@ class ProcessFbxFile(QtCore.QObject):
         with open(output_path, 'w') as material_file:
             json.dump(dict(material_description), material_file, ensure_ascii=False, indent=4)
 
+# info_list = [target_file, self.input_directory, self.output_directory, self.all_properties_location]
 
-_LOGGER.info('FBX file: {}'.format(sys.argv[1]))
-_LOGGER.info('Base Directory: {}'.format(sys.argv[2]))
-_LOGGER.info('Relative Destination Path: {}'.format(sys.argv[3].replace('/', '\\')))
-_LOGGER.info('All properties location: {}'.format(sys.argv[4]))
+
+_LOGGER.info(f'TargetFile: {sys.argv[1]}')
+_LOGGER.info(f'InputDirectory: {sys.argv[2]}')
+_LOGGER.info(f'OutputDirectory: {sys.argv[3]}')
+_LOGGER.info(f'AllPropertiesLocation: {sys.argv[4]}')
+
 ProcessFbxFile(sys.argv[1], sys.argv[2], sys.argv[3].replace('/', '\\'), sys.argv[4])
 
