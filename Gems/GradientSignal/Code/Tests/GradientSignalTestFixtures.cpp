@@ -421,6 +421,12 @@ namespace UnitTest
         GradientSignal::GradientSampler gradientSampler;
         gradientSampler.m_gradientId = gradientEntityId;
 
+        TestFixedDataSampler(expectedOutput, size, gradientSampler);
+    }
+
+    void GradientSignalTest::TestFixedDataSampler(
+        const AZStd::vector<float>& expectedOutput, int size, GradientSignal::GradientSampler& gradientSampler)
+    {
         for (int y = 0; y < size; ++y)
         {
             for (int x = 0; x < size; ++x)
@@ -436,5 +442,6 @@ namespace UnitTest
             }
         }
     }
+
 }
 

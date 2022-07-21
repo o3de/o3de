@@ -27,7 +27,6 @@ namespace AZ
         {
         public:
             AZ_RTTI(SwapChain, "{888B64A5-D956-406F-9C33-CF6A54FC41B0}", Object);
-
             virtual ~SwapChain();
 
             //! Initializes the swap chain, making it ready for attachment.

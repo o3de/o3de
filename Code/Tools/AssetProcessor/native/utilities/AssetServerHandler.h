@@ -13,10 +13,16 @@
 
 namespace AssetProcessor
 {
+    inline constexpr const char* AssetCacheServerModeKey{ "assetCacheServerMode" };
+    inline constexpr const char* CacheServerAddressKey{ "cacheServerAddress" };
+
     //! AssetServerHandler is implementing asset server using network share.
     class AssetServerHandler
         : public AssetServerBus::Handler
     {
+    public:
+        static const char* GetAssetServerModeText(AssetServerMode mode);
+
     public:
         AssetServerHandler();
         virtual ~AssetServerHandler();
@@ -37,7 +43,7 @@ namespace AssetProcessor
         //! Retrieve the remote folder location for the shared cache 
         const AZStd::string& GetServerAddress() const override;
         //! Store the remote folder location for the shared cache 
-        void SetServerAddress(const AZStd::string& address) override;
+        bool SetServerAddress(const AZStd::string& address) override;
     protected:
         //! Source files intended to be copied into the cache don't go through out temp folder so they need
         //! to be added to the Archive in an additional step
