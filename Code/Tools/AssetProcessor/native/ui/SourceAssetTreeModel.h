@@ -25,6 +25,9 @@ namespace AssetProcessor
         void OnSourceFileChanged(const AzToolsFramework::AssetDatabase::SourceDatabaseEntry& entry) override;
         void OnSourceFileRemoved(AZ::s64 sourceId) override;
 
+        // Overriding AssetTreeModel for displaying analysis job duration header
+        QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
+
         QModelIndex GetIndexForSource(const AZStd::string& source);
 
     protected:
@@ -33,7 +36,7 @@ namespace AssetProcessor
         void AddOrUpdateEntry(
             const AzToolsFramework::AssetDatabase::SourceDatabaseEntry& source,
             const AzToolsFramework::AssetDatabase::ScanFolderDatabaseEntry& scanFolder,
-            bool modelIsResetting);
+            bool modelIsResetting, AZ::s64 analysisJobDuration = -1);
 
         void RemoveAssetTreeItem(AssetTreeItem* assetToRemove);
         void RemoveFoldersIfEmpty(AssetTreeItem* itemToCheck);

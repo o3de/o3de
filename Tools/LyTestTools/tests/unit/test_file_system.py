@@ -229,9 +229,9 @@ class TestUnZip(unittest.TestCase):
 
     @mock.patch('ly_test_tools.environment.file_system.logger')
     @mock.patch('os.path.exists')
-    @mock.patch('ly_test_tools.environment.file_system.check_free_space')
-    @mock.patch('os.path.join')
-    def test_Unzip_AllowExistsSet_INFOLogged(self, mock_join, mock_check_free, mock_exists, mock_log):
+    @mock.patch('ly_test_tools.environment.file_system.check_free_space', mock.MagicMock())
+    @mock.patch('os.path.join', mock.MagicMock())
+    def test_Unzip_AllowExistsSet_INFOLogged(self, mock_exists, mock_log):
 
         force = False
         allow_exists = True
@@ -246,9 +246,9 @@ class TestUnZip(unittest.TestCase):
 
     @mock.patch('ly_test_tools.environment.file_system.logger')
     @mock.patch('os.path.exists')
-    @mock.patch('ly_test_tools.environment.file_system.check_free_space')
-    @mock.patch('os.path.join')
-    def test_Unzip_BuildDirExistsForceSetTrue_INFOLogged(self, mock_join, mock_check_free, mock_exists, mock_log):
+    @mock.patch('ly_test_tools.environment.file_system.check_free_space', mock.MagicMock())
+    @mock.patch('os.path.join', mock.MagicMock())
+    def test_Unzip_BuildDirExistsForceSetTrue_INFOLogged(self, mock_exists, mock_log):
 
         path = ''
         self.exists = True
@@ -364,11 +364,10 @@ class TestUnTgz(unittest.TestCase):
 
     @mock.patch('ly_test_tools.environment.file_system.logger')
     @mock.patch('os.path.exists')
-    @mock.patch('ly_test_tools.environment.file_system.check_free_space')
-    @mock.patch('os.path.join')
+    @mock.patch('ly_test_tools.environment.file_system.check_free_space', mock.MagicMock())
+    @mock.patch('os.path.join', mock.MagicMock())
     @mock.patch('os.stat')
-    def test_Untgz_BuildDirExistsForceAndAllowExistsNotSet_CRITICALLogged(self, mock_stat, mock_join,
-                                                                          mock_check_free, mock_exists, mock_log):
+    def test_Untgz_BuildDirExistsForceAndAllowExistsNotSet_CRITICALLogged(self, mock_stat, mock_exists, mock_log):
 
         force = False
         mock_exists.return_value = True
@@ -382,10 +381,10 @@ class TestUnTgz(unittest.TestCase):
 
     @mock.patch('ly_test_tools.environment.file_system.logger')
     @mock.patch('os.path.exists')
-    @mock.patch('ly_test_tools.environment.file_system.check_free_space')
-    @mock.patch('os.path.join')
+    @mock.patch('ly_test_tools.environment.file_system.check_free_space', mock.MagicMock())
+    @mock.patch('os.path.join', mock.MagicMock())
     @mock.patch('os.stat')
-    def test_Untgz_AllowExiststSet_INFOLogged(self, mock_stat, mock_join, mock_check_free, mock_exists, mock_log):
+    def test_Untgz_AllowExiststSet_INFOLogged(self, mock_stat, mock_exists, mock_log):
 
         allow_exists = True
         force = False
