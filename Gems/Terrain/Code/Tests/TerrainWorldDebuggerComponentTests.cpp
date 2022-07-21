@@ -18,19 +18,6 @@ class TerrainWorldDebuggerComponentTest
 {
 };
 
-TEST_F(TerrainWorldDebuggerComponentTest, MissingRequiredComponentsActivateFailure)
-{
-    auto entity = CreateEntity();
-
-    entity->CreateComponent<Terrain::TerrainWorldDebuggerComponent>();
-
-    // This should report failure because it depends on a missing TerrainWorldCmponent.
-    const AZ::Entity::DependencySortOutcome sortOutcome = entity->EvaluateDependenciesGetDetails();
-    EXPECT_FALSE(sortOutcome.IsSuccess());
-
-    entity.reset();
-}
-
 TEST_F(TerrainWorldDebuggerComponentTest, ComponentActivatesSuccessfully)
 {
     auto entity = CreateEntity();

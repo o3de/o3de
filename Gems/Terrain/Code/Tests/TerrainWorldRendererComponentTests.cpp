@@ -71,19 +71,6 @@ private:
     AZStd::unique_ptr<AZ::Entity> m_sceneSystemEntity;
 };
 
-TEST_F(TerrainWorldRendererComponentTest, MissingRequiredComponentsActivateFailure)
-{
-    auto entity = CreateEntity();
-
-    entity->CreateComponent<Terrain::TerrainWorldRendererComponent>();
-
-    // This should report failure because it depends on a missing TerrainWorldComponent.
-    const AZ::Entity::DependencySortOutcome sortOutcome = entity->EvaluateDependenciesGetDetails();
-    EXPECT_FALSE(sortOutcome.IsSuccess());
-
-    entity.reset();
-}
-
 TEST_F(TerrainWorldRendererComponentTest, ComponentActivatesSuccessfully)
 {
     auto entity = CreateEntity();
