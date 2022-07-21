@@ -433,6 +433,7 @@ namespace WhiteBox
             AZStd::make_shared<AzToolsFramework::TranslationManipulators>(
                 AzToolsFramework::TranslationManipulators::Dimensions::Three, worldTranform, AZ::Vector3::CreateOne());
 
+        translationManipulators->SetLineBoundWidth(AzToolsFramework::ManipulatorLineBoundWidth());
         translationManipulators->AddEntityComponentIdPair(m_entityComponentIdPair);
         AzToolsFramework::ConfigureTranslationManipulatorAppearance3d(translationManipulators.get());
 
@@ -441,7 +442,6 @@ namespace WhiteBox
             whiteBox, m_entityComponentIdPair, &EditorWhiteBoxComponentRequests::GetWhiteBoxMesh);
 
         UpdateTransformHandles(whiteBox);
-        translationManipulators->SetLineBoundWidth(AzToolsFramework::ManipulatorLineBoundWidth());
         translationManipulators->SetLocalPosition(m_whiteBoxSelection->m_localPosition);
 
         auto mouseMoveHandlerFn = [entityComponentIdPair = m_entityComponentIdPair,
