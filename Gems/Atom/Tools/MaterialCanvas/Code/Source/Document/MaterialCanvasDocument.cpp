@@ -628,19 +628,30 @@ namespace MaterialCanvas
 
         for (const auto& node : nodes)
         {
+            AZ_UNUSED(node);
             AZ_TracePrintf("MaterialCanvasDocument", "Sorted node: %s\n", node->GetTitle());
         }
 
+        // The document name will be used to replace file and symbol names in template files
         AZStd::string documentName;
         AZ::StringFunc::Path::GetFullFileName(m_absolutePath.c_str(), documentName);
         AZ::StringFunc::Replace(documentName, ".materialcanvas.azasset", "");
 
+        // Sanitize the document name to remove any illegal characters that could not be used as symbols in generated code
+        AZ::StringFunc::Replace(documentName, "-", "_");
+        documentName = AZ::RPI::AssetUtils::SanitizeFileName(documentName);
+
         for (const auto& templatePath : templatePaths)
         {
             AZ_TracePrintf("MaterialCanvasDocument", "templatePath: %s\n", templatePath.c_str());
+
+            // Remove any aliases to resolve the absolute path to the template file
             const AZStd::string resolvedPath = AtomToolsFramework::GetPathWithoutAlias(templatePath);
+
+            // Load the template file so that we can do symbol substitution and inject any code or data
             if(auto result = AZ::Utils::ReadFile(resolvedPath))
             {
+                // Create the path and file name for the file generated from the template using the document path and name
                 AZStd::string outputFullName;
                 AZ::StringFunc::Path::GetFullFileName(resolvedPath.c_str(), outputFullName);
                 AZStd::string outputPath = m_absolutePath;
@@ -648,16 +659,25 @@ namespace MaterialCanvas
                 AZ::StringFunc::Replace(outputPath, "MaterialGraphName", documentName.c_str());
                 AZ::StringFunc::Replace(outputPath, ".template", "");
 
+                // Tokenize lines from the template file so that we can search for injection points by line
                 AZStd::vector<AZStd::string> lines;
                 AZ::StringFunc::Tokenize(result.GetValue(), lines, '\n', true, true);
+
+                // Substitute all references to the generic graph name with the document name
                 replaceStringsInVec("MaterialGraphName", documentName, lines);
 
+                // Locate the first injection point for instructions so that we can remove pre-existing instructions and insert the
+                // generated instructions.
+                // The begin block will eventually list the variable names that it expects code to be generated for.
+                // Code will be regenerated for each block, only using the nodes connected to the expected variables.
                 auto codeGenBeginItr = AZStd::find_if(lines.begin(), lines.end(), [](const AZStd::string& line) {
                     return AZ::StringFunc::Contains(line, "GENERATED_INSTRUCTIONS_BEGIN");
                 });
 
                 while (codeGenBeginItr != lines.end())
                 {
+                    // We have to insert one instruction at a time because the implementation of vector does not include a standard range
+                    // insert that returns an iterator
                     for (const auto& instruction : instructions)
                     {
                         ++codeGenBeginItr;
@@ -665,16 +685,21 @@ namespace MaterialCanvas
                     }
                     ++codeGenBeginItr;
 
+                    // From the last line that was inserted, locate the hand of the instruction insertion block 
                     auto codeGenEndItr = AZStd::find_if(codeGenBeginItr, lines.end(), [](const AZStd::string& line) {
                         return AZ::StringFunc::Contains(line, "GENERATED_INSTRUCTIONS_END");
                     });
 
+                    // Erase any pre-existing structions the template might have had between the begin and end blocks
                     codeGenEndItr = lines.erase(codeGenBeginItr, codeGenEndItr);
+
+                    // Search for another instruction insertion point
                     codeGenBeginItr = AZStd::find_if(codeGenEndItr, lines.end(), [](const AZStd::string& line) {
                         return AZ::StringFunc::Contains(line, "GENERATED_INSTRUCTIONS_BEGIN");
                     });
                 }
 
+                // After everything has been substituted and inserted, save the file.
                 AZStd::string output;
                 AZ::StringFunc::Join(output, lines, '\n');
                 AZ::Utils::WriteFile(output, outputPath);
@@ -684,21 +709,25 @@ namespace MaterialCanvas
 
         for (const auto& includePath : includePaths)
         {
+            AZ_UNUSED(includePath);
             AZ_TracePrintf("MaterialCanvasDocument", "includePath: %s\n", includePath.c_str());
         }
 
         for (const auto& classDefinition : classDefinitions)
         {
+            AZ_UNUSED(classDefinition);
             AZ_TracePrintf("MaterialCanvasDocument", "classDefinition: %s\n", classDefinition.c_str());
         }
 
         for (const auto& functionDefinition : functionDefinitions)
         {
+            AZ_UNUSED(functionDefinition);
             AZ_TracePrintf("MaterialCanvasDocument", "functionDefinition: %s\n", functionDefinition.c_str());
         }
 
         for (const auto& instruction : instructions)
         {
+            AZ_UNUSED(instruction);
             AZ_TracePrintf("MaterialCanvasDocument", "instruction: %s\n", instruction.c_str());
         }
 
