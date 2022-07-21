@@ -55,51 +55,32 @@ namespace WhiteBox
             buttonId);
     }
 
-    static AzToolsFramework::ViewportUi::ButtonId RegisterClusterButton(
-        AzToolsFramework::ViewportUi::ClusterId clusterId, const char* iconName)
-    {
-        AzToolsFramework::ViewportUi::ButtonId buttonId;
-        AzToolsFramework::ViewportUi::ViewportUiRequestBus::EventResult(
-            buttonId,
-            AzToolsFramework::ViewportUi::DefaultViewportId,
-            &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::CreateClusterButton,
-            clusterId,
-            AZStd::string::format(":/stylesheet/img/UI20/toolbar/%s.svg", iconName));
-
-        return buttonId;
-    }
-
     TransformMode::TransformMode(const AZ::EntityComponentIdPair& entityComponentIdPair)
         : m_entityComponentIdPair(entityComponentIdPair)
     {
-        AzToolsFramework::ViewportUi::ViewportUiRequestBus::EventResult(
-            m_transformClusterId,
+        AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
             AzToolsFramework::ViewportUi::DefaultViewportId,
-            &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::CreateCluster,
-            AzToolsFramework::ViewportUi::Alignment::TopLeft);
-        m_transformTranslateButtonId = RegisterClusterButton(m_transformClusterId, "Move");
-        m_transformRotateButtonId = RegisterClusterButton(m_transformClusterId, "Rotate");
-        m_transformScaleButtonId = RegisterClusterButton(m_transformClusterId, "Scale");
+            [&](AzToolsFramework::ViewportUi::ViewportUiRequests* requests)
+            {
+                auto fetchIcon = [](const char* iconName)
+                {
+                    return AZStd::string::format(":/stylesheet/img/UI20/toolbar/%s.svg", iconName);
+                };
 
-        // set translation tooltips
-        AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
-            AzToolsFramework::ViewportUi::DefaultViewportId,
-            &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::SetClusterButtonTooltip,
-            m_transformClusterId,
-            m_transformTranslateButtonId,
-            ManipulatorModeClusterTranslateTooltip);
-        AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
-            AzToolsFramework::ViewportUi::DefaultViewportId,
-            &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::SetClusterButtonTooltip,
-            m_transformClusterId,
-            m_transformRotateButtonId,
-            ManipulatorModeClusterRotateTooltip);
-        AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
-            AzToolsFramework::ViewportUi::DefaultViewportId,
-            &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::SetClusterButtonTooltip,
-            m_transformClusterId,
-            m_transformScaleButtonId,
-            ManipulatorModeClusterScaleTooltip);
+                m_transformClusterId = requests->CreateCluster(AzToolsFramework::ViewportUi::Alignment::TopLeft);
+                
+                m_transformTranslateButtonId = requests->CreateClusterButton(m_transformClusterId, fetchIcon("Move"));
+                m_transformRotateButtonId = requests->CreateClusterButton(m_transformClusterId, fetchIcon("Rotate"));
+                m_transformScaleButtonId = requests->CreateClusterButton(m_transformClusterId, fetchIcon("Scale"));
+
+                // set translation tooltips
+                requests->SetClusterButtonTooltip(m_transformClusterId, m_transformTranslateButtonId, 
+                    ManipulatorModeClusterTranslateTooltip);
+                requests->SetClusterButtonTooltip(m_transformClusterId, m_transformRotateButtonId, 
+                    ManipulatorModeClusterRotateTooltip);
+                requests->SetClusterButtonTooltip(m_transformClusterId, m_transformScaleButtonId, 
+                    ManipulatorModeClusterScaleTooltip);
+            });
 
         m_transformSelectionHandler = AZ::Event<AzToolsFramework::ViewportUi::ButtonId>::Handler(
             [this](AzToolsFramework::ViewportUi::ButtonId buttonId)
