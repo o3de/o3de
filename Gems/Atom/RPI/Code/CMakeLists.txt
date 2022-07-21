@@ -138,7 +138,7 @@ endif()
 ################################################################################
 # Tests
 ################################################################################
-if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
+if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
 
     ly_add_target(
         NAME Atom_RPI.TestUtils.Static STATIC
@@ -161,7 +161,9 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
                 Gem::Atom_RPI.Edit
                 Gem::Atom_Utils.TestUtils.Static
     )
+endif()
 
+if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(
         NAME Atom_RPI.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
         NAMESPACE Gem
