@@ -55,6 +55,7 @@ namespace Terrain
 
         void SetDetailMaterialConfiguration(const DetailMaterialConfiguration& config);
         void SetMeshConfiguration(const MeshConfiguration& config);
+        void SetClipmapConfiguration(const ClipmapConfiguration& config);
 
         const AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> GetTerrainShaderResourceGroup() const;
         const AZ::Data::Instance<AZ::RPI::Material> GetMaterial() const;
