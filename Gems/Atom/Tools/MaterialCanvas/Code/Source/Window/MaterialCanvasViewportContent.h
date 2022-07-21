@@ -34,6 +34,7 @@ namespace MaterialCanvas
 
     private:
         // AtomToolsDocumentNotificationBus::Handler overrides...
+        void OnDocumentClosed(const AZ::Uuid& documentId) override;
         void OnDocumentOpened(const AZ::Uuid& documentId) override;
         void OnDocumentModified(const AZ::Uuid& documentId) override;
 
