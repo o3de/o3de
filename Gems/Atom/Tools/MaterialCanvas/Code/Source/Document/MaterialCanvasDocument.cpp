@@ -427,9 +427,11 @@ namespace MaterialCanvas
     {
         m_generatedFiles.clear();
 
-        // All of these slots and nodes will be visited to collect all of the uniuue include and template paths.
+        // All slots and nodes will be visited to collect all of the uniuue include and template paths.
         AZStd::set<AZStd::string> includePaths;
         AZStd::set<AZStd::string> templatePaths;
+
+        // Build a unique set of settings found on a node or slot configuration.
         auto collectSettingsAsSet = [](const AtomToolsFramework::DynamicNodeSettingsMap& settings,
                                        const AZStd::string& settingName,
                                        AZStd::set<AZStd::string>& container)
@@ -444,7 +446,14 @@ namespace MaterialCanvas
         // function, class, struct, define.
         AZStd::vector<AZStd::string> classDefinitions;
         AZStd::vector<AZStd::string> functionDefinitions;
+
+        // This is a complete list of all the instructions collected from settings found in each node.
+        // The set of instructions will need to be rebuilt for every instance of a generated code block based on the context and outputs
+        // expected from that block. This will be updated in another pass so that instruction can be built by filtering the set of nodes
+        // down to only those that will be used to generate the outputs listed in each block.
         AZStd::vector<AZStd::string> instructions;
+
+        // Build an accumulated list of settings found on a node or slot configuration.
         auto collectSettingsAsVec = [](const AtomToolsFramework::DynamicNodeSettingsMap& settings,
                                        const AZStd::string& settingName,
                                        AZStd::vector<AZStd::string>& container)
@@ -454,6 +463,8 @@ namespace MaterialCanvas
                 container.insert(container.end(), settingsItr->second.begin(), settingsItr->second.end());
             }
         };
+
+        // Perform string substitutions on a container of strings.
         auto replaceStringsInVec =
             [](const AZStd::string& findText, const AZStd::string& replaceText, AZStd::vector<AZStd::string>& container)
         {
@@ -462,6 +473,8 @@ namespace MaterialCanvas
                 AZ::StringFunc::Replace(sourceText, findText.c_str(), replaceText.c_str());
             }
         };
+
+        // Slots with special types, like color, need to be converted into a type compatible with shader code.
         auto convertSlotTypeName = [](const AZStd::string& slotTypeName) -> AZStd::string
         {
             if (AZ::StringFunc::Equal(slotTypeName, "color"))
@@ -471,6 +484,8 @@ namespace MaterialCanvas
 
             return slotTypeName;
         };
+
+        // Disconnected input and property spots need to have their values converted into a format that can be injected into the shader.
         auto convertSlotValue = [](const AZStd::any& slotValue) -> AZStd::string
         {
             if (auto v = AZStd::any_cast<const AZ::Color>(&slotValue))
@@ -504,7 +519,30 @@ namespace MaterialCanvas
             return AZStd::string();
         };
 
+        // Gather all of the common settings usually associated with a material canvas note to hand slot.
+        auto collectCommonSettings = [&](const AtomToolsFramework::DynamicNodeSettingsMap& settings)
+        {
+            collectSettingsAsSet(settings, "includePaths", includePaths);
+            collectSettingsAsSet(settings, "templatePaths", templatePaths);
+            collectSettingsAsVec(settings, "classDefinitions", classDefinitions);
+            collectSettingsAsVec(settings, "functionDefinitions", functionDefinitions);
+        };
+
+        // Each instruction block needs to have name substitutions performed on it. Variable names need to be unique per
+        // node and will be prepended with the node ID. Slot types and values will be determined based on connections and
+        // then substituted.
+        auto updateAndAddSlotInstructions =
+            [&](GraphModel::ConstNodePtr node, GraphModel::ConstSlotPtr slot, AZStd::vector<AZStd::string>& instructionsForSlot)
+        {
+            replaceStringsInVec("NODEID", AZStd::string::format("node%u", node->GetId()), instructionsForSlot);
+            replaceStringsInVec("SLOTNAME", slot->GetName().c_str(), instructionsForSlot);
+            replaceStringsInVec("SLOTTYPE", convertSlotTypeName(slot->GetDataType()->GetDisplayName()), instructionsForSlot);
+            replaceStringsInVec("SLOTVALUE", convertSlotValue(slot->GetValue()), instructionsForSlot);
+            instructions.insert(instructions.end(), instructionsForSlot.begin(), instructionsForSlot.end());
+        };
+
         AZStd::vector<GraphModel::ConstNodePtr> nodes = GetNodesInExecutionOrder();
+
         for (const auto& node : nodes)
         {
             if (auto dynamicNode = azrtti_cast<const AtomToolsFramework::DynamicNode*>(node.get()))
@@ -524,49 +562,33 @@ namespace MaterialCanvas
                     }
                 }
 
-                collectSettingsAsSet(nodeConfig.m_settings, "includePaths", includePaths);
-                collectSettingsAsSet(nodeConfig.m_settings, "templatePaths", templatePaths);
-                collectSettingsAsVec(nodeConfig.m_settings, "classDefinitions", classDefinitions);
-                collectSettingsAsVec(nodeConfig.m_settings, "functionDefinitions", functionDefinitions);
+                collectCommonSettings(nodeConfig.m_settings);
 
                 for (const auto& slotConfig : nodeConfig.m_propertySlots)
                 {
-                    collectSettingsAsSet(slotConfig.m_settings, "includePaths", includePaths);
-                    collectSettingsAsSet(slotConfig.m_settings, "templatePaths", templatePaths);
-                    collectSettingsAsVec(slotConfig.m_settings, "classDefinitions", classDefinitions);
-                    collectSettingsAsVec(slotConfig.m_settings, "functionDefinitions", functionDefinitions);
+                    collectCommonSettings(slotConfig.m_settings);
 
-                    // Write out any property slot data if there were any helpful connections
+                    // Write out any property slot data if there were any connections
                     if (hasOutputConnections)
                     {
-                        // Each instruction block needs to have name substitutions performed on it.
+                        auto slot = dynamicNode->GetSlot(slotConfig.m_name);
                         AZStd::vector<AZStd::string> instructionsForSlot;
                         collectSettingsAsVec(slotConfig.m_settings, "instructions", instructionsForSlot);
-
-                        auto slot = dynamicNode->GetSlot(slotConfig.m_name);
-                        replaceStringsInVec("NODEID", AZStd::string::format("node%u", node->GetId()), instructionsForSlot);
-                        replaceStringsInVec("SLOTNAME", slot->GetName().c_str(), instructionsForSlot);
-                        replaceStringsInVec("SLOTTYPE", convertSlotTypeName(slot->GetDataType()->GetDisplayName()), instructionsForSlot);
-                        replaceStringsInVec("SLOTVALUE", convertSlotValue(slot->GetValue()), instructionsForSlot);
-                        instructions.insert(instructions.end(), instructionsForSlot.begin(), instructionsForSlot.end());
+                        updateAndAddSlotInstructions(node, slot, instructionsForSlot);
                     }
                 }
 
                 for (const auto& slotConfig : nodeConfig.m_inputSlots)
                 {
-                    collectSettingsAsSet(slotConfig.m_settings, "includePaths", includePaths);
-                    collectSettingsAsSet(slotConfig.m_settings, "templatePaths", templatePaths);
-                    collectSettingsAsVec(slotConfig.m_settings, "classDefinitions", classDefinitions);
-                    collectSettingsAsVec(slotConfig.m_settings, "functionDefinitions", functionDefinitions);
+                    collectCommonSettings(slotConfig.m_settings);
 
-                    // There is currently no data to determine if an input property is utilized or not. We should be able to add metadata
-                    // for that to the output slots.
-                    // For now, we will always generate all input slot instructions.
-                    // Each instruction block needs to have name substitutions performed on it.
+                    // For now, this will always generate all input slot instructions but can potentially be optimized to eliminate
+                    // instructions that result in temporary variables that are copies would pass through two other variables.
+                    auto slot = dynamicNode->GetSlot(slotConfig.m_name);
                     AZStd::vector<AZStd::string> instructionsForSlot;
                     collectSettingsAsVec(slotConfig.m_settings, "instructions", instructionsForSlot);
 
-                    auto slot = dynamicNode->GetSlot(slotConfig.m_name);
+                    // Input slots will replace the value with the name of the variable from the connected help with slot if one is set.
                     if (slot && !slot->GetConnections().empty())
                     {
                         for (const auto& connection : slot->GetConnections())
@@ -583,33 +605,20 @@ namespace MaterialCanvas
                         }
                     }
 
-                    replaceStringsInVec("NODEID", AZStd::string::format("node%u", node->GetId()), instructionsForSlot);
-                    replaceStringsInVec("SLOTNAME", slot->GetName().c_str(), instructionsForSlot);
-                    replaceStringsInVec("SLOTTYPE", convertSlotTypeName(slot->GetDataType()->GetDisplayName()), instructionsForSlot);
-                    replaceStringsInVec("SLOTVALUE", convertSlotValue(slot->GetValue()), instructionsForSlot);
-                    instructions.insert(instructions.end(), instructionsForSlot.begin(), instructionsForSlot.end());
+                    updateAndAddSlotInstructions(node, slot, instructionsForSlot);
                 }
 
                 for (const auto& slotConfig : nodeConfig.m_outputSlots)
                 {
-                    collectSettingsAsSet(slotConfig.m_settings, "includePaths", includePaths);
-                    collectSettingsAsSet(slotConfig.m_settings, "templatePaths", templatePaths);
-                    collectSettingsAsVec(slotConfig.m_settings, "classDefinitions", classDefinitions);
-                    collectSettingsAsVec(slotConfig.m_settings, "functionDefinitions", functionDefinitions);
+                    collectCommonSettings(slotConfig.m_settings);
 
                     // If an output slot has any connections assume that we're going to use any configured instructions
                     auto slot = dynamicNode->GetSlot(slotConfig.m_name);
                     if (slot && !slot->GetConnections().empty())
                     {
-                        // Each instruction block needs to have name substitutions performed on it.
                         AZStd::vector<AZStd::string> instructionsForSlot;
                         collectSettingsAsVec(slotConfig.m_settings, "instructions", instructionsForSlot);
-
-                        replaceStringsInVec("NODEID", AZStd::string::format("node%u", node->GetId()), instructionsForSlot);
-                        replaceStringsInVec("SLOTNAME", slot->GetName().c_str(), instructionsForSlot);
-                        replaceStringsInVec("SLOTTYPE", convertSlotTypeName(slot->GetDataType()->GetDisplayName()), instructionsForSlot);
-                        replaceStringsInVec("SLOTVALUE", convertSlotValue(slot->GetValue()), instructionsForSlot);
-                        instructions.insert(instructions.end(), instructionsForSlot.begin(), instructionsForSlot.end());
+                        updateAndAddSlotInstructions(node, slot, instructionsForSlot);
                     }
                 }
             }
