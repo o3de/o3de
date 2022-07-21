@@ -122,13 +122,13 @@ namespace AssetProcessor
                 scanFolderEntry.m_scanFolderID,
                 [&](AzToolsFramework::AssetDatabase::SourceDatabaseEntry& sourceEntry)
                 {
-                    if (statsTable.count(sourceAndScanFolder.m_sourceName))
+                    if (statsTable.count(sourceEntry.m_sourceName))
                     {
-                        AddOrUpdateEntry(sourceEntry, scanFolderEntry, true, statsTable[sourceAndScanFolder.m_sourceName]);
+                        AddOrUpdateEntry(sourceEntry, scanFolderEntry, true, statsTable[sourceEntry.m_sourceName]);
                     }
                     else
                     {
-                        AddOrUpdateEntry(souceEntry, scanFolderEntry, true);
+                        AddOrUpdateEntry(sourceEntry, scanFolderEntry, true);
                     }
                     return true; // return true to continue iterating over additional results, we are populating a container
                 });
