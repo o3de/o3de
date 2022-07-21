@@ -675,7 +675,7 @@ namespace AssetProcessor
         }
     }
 
-    // Find the current AssetRecognizer identified by the top entry in the name stack
+    // Find the current AssetRecognizer identified by the top entry in the name stack 
     AssetRecognizer* ACSVisitor::CurrentAssetRecognizer()
     {
         if (m_nameStack.empty())
