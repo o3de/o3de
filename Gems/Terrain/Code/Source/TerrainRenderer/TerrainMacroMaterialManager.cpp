@@ -223,8 +223,8 @@ namespace Terrain
             {
                 AZ::Vector2 tileMax = tileMin + AZ::Vector2(MacroMaterialGridSize);
                 bool overlapsNew =
-                    tileMin.IsLessEqualThan(macroMaterial.m_data.m_maxBounds) &&
-                    tileMax.IsGreaterEqualThan(macroMaterial.m_data.m_minBounds);
+                    tileMin.IsLessThan(macroMaterial.m_data.m_maxBounds) &&
+                    tileMax.IsGreaterThan(macroMaterial.m_data.m_minBounds);
 
                 MacroMaterialRefs& materialRefList = m_materialRefGridShaderData.at(idx);
                 for (uint16_t refIdx = 0; refIdx < MacroMaterialsPerTile; ++refIdx)
