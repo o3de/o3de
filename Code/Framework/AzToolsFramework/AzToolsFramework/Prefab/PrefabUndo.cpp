@@ -33,23 +33,12 @@ namespace AzToolsFramework
         void PrefabUndoInstance::Capture(
             const PrefabDom& initialState,
             const PrefabDom& endState,
-            InstanceOptionalReference instanceRef)
+            TemplateId templateId)
         {
-            AZ_Assert(instanceRef.has_value(), "Failed to get the instance from optional reference.");
-            Instance& instance = instanceRef->get();
-            m_templateId = instance.GetTemplateId();
+            m_templateId = templateId;
 
             m_instanceToTemplateInterface->GeneratePatch(m_redoPatch, initialState, endState);
             m_instanceToTemplateInterface->GeneratePatch(m_undoPatch, endState, initialState);
-
-            // Preemptively updates the cached dom to prevent reloading instance dom.
-            PrefabDomReference cachedDom = instance.GetCachedInstanceDom();
-
-            if (cachedDom.has_value())
-            {
-                // Update the cached instance dom corresponding to the entity so that the same modified entity isn't reloaded again.
-                instance.SetCachedInstanceDom(endState);
-            }
         }
 
         void PrefabUndoInstance::Undo()

@@ -49,7 +49,7 @@ namespace AzToolsFramework
             void Capture(
                 const PrefabDom& initialState,
                 const PrefabDom& endState,
-                InstanceOptionalReference instanceRef);
+                TemplateId templateId);
 
             void Undo() override;
             void Redo() override;
