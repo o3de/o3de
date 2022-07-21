@@ -59,8 +59,8 @@
             },
             {
                 "name": "inSpecularF0Factor",
-                "displayName": "Specu;ar F0 Factor",
-                "description": "Specu;ar F0 Factor",
+                "displayName": "Specular F0 Factor",
+                "description": "Specular F0 Factor",
                 "supportedDataTypes": [
                     "float",
                     "float2",
