@@ -983,7 +983,7 @@ namespace AZ
 
                             if (pipelineStatesItr == m_pipelineStatesLookup.end())
                             {
-                                m_pipelineStatesLookup[drawListTag].push_back();
+                                m_pipelineStatesLookup[drawListTag].emplace_back();
                                 m_pipelineStatesLookup[drawListTag][0].m_multisampleState = rasterPass->GetMultisampleState();
                                 m_pipelineStatesLookup[drawListTag][0].m_renderAttachmentConfiguration = rasterPass->GetRenderAttachmentConfiguration();
                                 rasterPass->SetPipelineStateDataIndex(0);
@@ -1016,7 +1016,7 @@ namespace AZ
                                 else
                                 {
                                     // No match found, add new pipeline state data
-                                    pipelineStateList.push_back();
+                                    pipelineStateList.emplace_back();
                                     pipelineStateList[size].m_multisampleState = rasterPass->GetMultisampleState();
                                     pipelineStateList[size].m_renderAttachmentConfiguration = rasterPass->GetRenderAttachmentConfiguration();
                                     rasterPass->SetPipelineStateDataIndex(static_cast<AZ::u32>(size));

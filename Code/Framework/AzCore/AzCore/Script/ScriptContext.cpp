@@ -3855,8 +3855,7 @@ LUA_API const Node* lua_getDummyNode()
                             const BehaviorEBusHandler::BusForwarderEvent& e = events[iEvent];
                             if (strcmp(fieldName, e.m_name) == 0)
                             {
-                                m_hooks.push_back();
-                                HookUserData* userData = &m_hooks.back();
+                                HookUserData* userData = &m_hooks.emplace_back();
 
                                 // make the object, cache the function, find the pushers for each argument
                                 userData->m_luaHandler = this;

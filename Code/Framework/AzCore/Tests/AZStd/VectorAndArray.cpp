@@ -254,7 +254,7 @@ namespace UnitTest
         AZ_TEST_ASSERT(int_vector1.back() == 55);
 
         // push back
-        int_vector1.push_back();
+        int_vector1.emplace_back();
         AZ_TEST_VALIDATE_VECTOR(int_vector1, 11);
 
         // pop back
@@ -273,7 +273,7 @@ namespace UnitTest
         AZ_TEST_ASSERT(int_vector1.back() == 100);
 
         // push back with capacity and change capacity!
-        int_vector1.push_back();
+        int_vector1.emplace_back();
         AZ_TEST_VALIDATE_VECTOR(int_vector1, 12);
         AZ_TEST_ASSERT(int_vector1.capacity() >= 12);
 
@@ -343,8 +343,8 @@ namespace UnitTest
         AZ_TEST_VALIDATE_VECTOR(int_vector1, 33);
         AZ_TEST_ASSERT(int_vector1.front() == 55);
 
-        // swap rvalue reference binding to temporary
-        int_vector1.swap(vector_int_type());
+        // empty variable via default constructor
+        int_vector1 = {};
         AZ_TEST_VALIDATE_EMPTY_VECTOR(int_vector1);
 
 
@@ -510,7 +510,7 @@ namespace UnitTest
         move_only_vector.push_back(4);
 
         AZStd::vector<VectorMoveOnly> result_move_only_vector{ AZStd::make_move_iterator(move_only_vector.begin()), AZStd::make_move_iterator(move_only_vector.end()) };
-        
+
         for (const auto& move_only1 : move_only_vector)
         {
             EXPECT_EQ(0, move_only1.m_num);
@@ -606,7 +606,7 @@ namespace UnitTest
         AZ_TEST_ASSERT(int_vector1.back() == 55);
 
         // push back
-        int_vector1.push_back();
+        int_vector1.emplace_back();
         AZ_TEST_VALIDATE_VECTOR(int_vector1, 11);
 
         // pop back
