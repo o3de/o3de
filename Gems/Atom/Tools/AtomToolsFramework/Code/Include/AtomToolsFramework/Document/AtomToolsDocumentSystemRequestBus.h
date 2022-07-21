@@ -82,6 +82,9 @@ namespace AtomToolsFramework
         //! Save all documents
         virtual bool SaveAllDocuments() = 0;
 
+        //! Save all modified documents
+        virtual bool SaveAllModifiedDocuments() = 0;
+
         //! Get number of allocated documents
         virtual AZ::u32 GetDocumentCount() const = 0;
 

@@ -21,6 +21,7 @@
 
 #include <Allocators.h>
 #include <Feature.h>
+#include <FeatureMatrixMinMaxScaler.h>
 #include <FeatureSchemaDefault.h>
 #include <FeatureTrajectory.h>
 #include <FrameDatabase.h>
@@ -44,7 +45,7 @@ namespace EMotionFX::MotionMatching
         Clear();
     }
 
-    bool MotionMatchingData::ExtractFeatures(ActorInstance* actorInstance, FrameDatabase* frameDatabase, size_t maxKdTreeDepth, size_t minFramesPerKdTreeNode)
+    bool MotionMatchingData::ExtractFeatures(ActorInstance* actorInstance, FrameDatabase* frameDatabase)
     {
         AZ_PROFILE_SCOPE(Animation, "MotionMatchingData::ExtractFeatures");
         AZ::Debug::Timer timer;
@@ -83,7 +84,7 @@ namespace EMotionFX::MotionMatching
             const bool useTaskGraph = taskGraphActiveInterface && taskGraphActiveInterface->IsTaskGraphActive();
             if (useTaskGraph)
             {
-                AZ::TaskGraph m_taskGraph;
+                AZ::TaskGraph m_taskGraph{ "MotionMatching FeatureExtraction" };
 
                 // Split-up the motion database into batches of frames and extract the feature values for each batch simultaneously.
                 for (size_t batchIndex = 0; batchIndex < numBatches; ++batchIndex)
@@ -101,7 +102,7 @@ namespace EMotionFX::MotionMatching
                         });
                 }
 
-                AZ::TaskGraphEvent finishedEvent;
+                AZ::TaskGraphEvent finishedEvent{ "MotionMatching FeatureExtraction Wait" };
                 m_taskGraph.Submit(&finishedEvent);
                 finishedEvent.Wait();
             }
@@ -134,24 +135,7 @@ namespace EMotionFX::MotionMatching
         }
 
         const float extractFeaturesTime = timer.GetDeltaTimeInSeconds();
-        timer.Stamp();
-
-        // Initialize the kd-tree used to accelerate the searches.
-        if (!m_kdTree->Init(*frameDatabase, m_featureMatrix, m_featuresInKdTree, maxKdTreeDepth, minFramesPerKdTreeNode)) // Internally automatically clears any existing contents.
-        {
-            AZ_Error("EMotionFX", false, "Failed to initialize KdTree acceleration structure.");
-            return false;
-        }
-
-        const float initKdTreeTimer = timer.GetDeltaTimeInSeconds();
-
-        AZ_Printf("MotionMatching", "Feature matrix (%zu, %zu) uses %.2f MB and took %.2f ms to initialize (KD-Tree %.2f ms).",
-            m_featureMatrix.rows(),
-            m_featureMatrix.cols(),
-            static_cast<float>(m_featureMatrix.CalcMemoryUsageInBytes()) / 1024.0f / 1024.0f,
-            extractFeaturesTime * 1000.0f,
-            initKdTreeTimer * 1000.0f);
-
+        AZ_Printf("Motion Matching", "Extracting features for %zu frames took %.2f ms.", m_featureMatrix.rows(), extractFeaturesTime * 1000.0f);
         return true;
     }
 
@@ -191,6 +175,12 @@ namespace EMotionFX::MotionMatching
     {
         AZ_PROFILE_SCOPE(Animation, "MotionMatchingData::Init");
 
+        AZ::Debug::Timer initTimer;
+        initTimer.Stamp();
+
+        ///////////////////////////////////////////////////////////////////////
+        // 1. Import motion data
+
         // Import all motion frames.
         size_t totalNumFramesImported = 0;
         size_t totalNumFramesDiscarded = 0;
@@ -220,21 +210,62 @@ namespace EMotionFX::MotionMatching
                 (totalNumFramesImported / (float)settings.m_frameImportSettings.m_sampleRate) / 60.0f);
         }
 
-        // Use all features other than the trajectory for the broad-phase search using the KD-Tree.
-        for (Feature* feature : m_featureSchema.GetFeatures())
-        {
-            if (feature->RTTI_GetType() != azrtti_typeid<FeatureTrajectory>())
-            {
-                m_featuresInKdTree.push_back(feature);
-            }
-        }
+        ///////////////////////////////////////////////////////////////////////
+        // 2. Extract feature data and place the values into the feature matrix.
 
-        // Extract feature data and place the values into the feature matrix.
-        if (!ExtractFeatures(settings.m_actorInstance, &m_frameDatabase, settings.m_maxKdTreeDepth, settings.m_minFramesPerKdTreeNode))
+        if (!ExtractFeatures(settings.m_actorInstance, &m_frameDatabase))
         {
             AZ_Error("Motion Matching", false, "Failed to extract features from motion database.");
             return false;
         }
+
+        ///////////////////////////////////////////////////////////////////////
+        // 3. Transform feature data / -matrix
+        // Note: Do this before initializing the KD-tree as the query vector will contain pre-transformed data as well.
+        if (settings.m_normalizeData)
+        {
+            AZ_PROFILE_SCOPE(Animation, "MotionMatchingData::TransformFeatures");
+            AZ::Debug::Timer transformFeatureTimer;
+            transformFeatureTimer.Stamp();
+
+            MinMaxScaler* minMaxScaler = aznew MinMaxScaler();
+            m_featureTransformer.reset(minMaxScaler);
+            m_featureTransformer->Fit(m_featureMatrix, settings.m_featureTansformerSettings);
+            m_featureMatrix = m_featureTransformer->Transform(m_featureMatrix);
+
+            const float transformFeatureTime = transformFeatureTimer.GetDeltaTimeInSeconds();
+            AZ_Printf("Motion Matching", "Transforming/normalizing features took %.2f ms.", transformFeatureTime * 1000.0f);
+        }
+        else
+        {
+            m_featureTransformer.reset();
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+        // 4. Initialize the kd-tree used to accelerate the searches
+        {
+            // Use all features other than the trajectory for the broad-phase search using the KD-Tree.
+            for (Feature* feature : m_featureSchema.GetFeatures())
+            {
+                if (feature->RTTI_GetType() != azrtti_typeid<FeatureTrajectory>())
+                {
+                    m_featuresInKdTree.push_back(feature);
+                }
+            }
+
+            if (!m_kdTree->Init(m_frameDatabase, m_featureMatrix, m_featuresInKdTree, settings.m_maxKdTreeDepth, settings.m_minFramesPerKdTreeNode)) // Internally automatically clears any existing contents.
+            {
+                AZ_Error("EMotionFX", false, "Failed to initialize KdTree acceleration structure.");
+                return false;
+            }
+        }
+
+        const float initTime = initTimer.GetDeltaTimeInSeconds();
+        AZ_Printf("Motion Matching", "Feature matrix (%zu, %zu) uses %.2f MB and took %.2f ms to initialize (including initialization of acceleration structures).",
+            m_featureMatrix.rows(),
+            m_featureMatrix.cols(),
+            static_cast<float>(m_featureMatrix.CalcMemoryUsageInBytes()) / 1024.0f / 1024.0f,
+            initTime * 1000.0f);
 
         return true;
     }

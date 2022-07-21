@@ -22,7 +22,7 @@
                 },
                 // SwapChain here is only used to reference the frame height and format
                 {
-                    "Name": "SwapChainOutput",
+                    "Name": "PipelineOutput",
                     "SlotType": "InputOutput"
                 },
                 // Outputs...
@@ -181,10 +181,10 @@
                             }
                         },
                         {
-                            "LocalSlot": "SwapChainOutput",
+                            "LocalSlot": "PipelineOutput",
                             "AttachmentRef": {
                                 "Pass": "Parent",
-                                "Attachment": "SwapChainOutput"
+                                "Attachment": "PipelineOutput"
                             }
                         }
                     ]

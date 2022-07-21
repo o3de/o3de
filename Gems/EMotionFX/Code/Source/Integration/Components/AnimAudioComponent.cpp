@@ -20,9 +20,6 @@
 
 #include <MathConversion.h>
 
-
-using namespace LmbrCentral;
-
 namespace EMotionFX
 {
     namespace Integration
@@ -88,15 +85,15 @@ namespace EMotionFX
 
             bool success = false;
             AZ::s32 jointId = -1;
-            SkeletalHierarchyRequestBus::EventResult(jointId, GetEntityId(),
-                &SkeletalHierarchyRequestBus::Events::GetJointIndexByName, jointName.c_str());
+            LmbrCentral::SkeletalHierarchyRequestBus::EventResult(jointId, GetEntityId(),
+                &LmbrCentral::SkeletalHierarchyRequestBus::Events::GetJointIndexByName, jointName.c_str());
 
             if (jointId < 0)
             {
                 if (jointName.empty())
                 {
                     AZ_Warning("Editor", false, "'ExecuteSourceTrigger' called on default entity proxy.  If this was the intent, a more explicit practice would be requesting this via the AudioProxyComponentBus.");
-                    AudioProxyComponentRequestBus::EventResult(success, GetEntityId(), &AudioProxyComponentRequests::ExecuteSourceTrigger, triggerID, sourceID);
+                    LmbrCentral::AudioProxyComponentRequestBus::EventResult(success, GetEntityId(), &LmbrCentral::AudioProxyComponentRequests::ExecuteSourceTrigger, triggerID, sourceID);
                 }
                 else
                 {
@@ -132,15 +129,15 @@ namespace EMotionFX
 
             bool success = false;
             AZ::s32 jointId = -1;
-            SkeletalHierarchyRequestBus::EventResult(jointId, GetEntityId(),
-                &SkeletalHierarchyRequestBus::Events::GetJointIndexByName, jointName.c_str());
+            LmbrCentral::SkeletalHierarchyRequestBus::EventResult(jointId, GetEntityId(),
+                &LmbrCentral::SkeletalHierarchyRequestBus::Events::GetJointIndexByName, jointName.c_str());
 
             if (jointId < 0)
             {
                 if (jointName.empty())
                 {
                     AZ_Warning("Editor", false, "'ExecuteTrigger' called on default entity proxy.  If this was the intent, a more explicit practice would be requesting this via the AudioProxyComponentBus.");
-                    AudioProxyComponentRequestBus::EventResult(success, GetEntityId(), &AudioProxyComponentRequests::ExecuteTrigger, triggerID);
+                    LmbrCentral::AudioProxyComponentRequestBus::EventResult(success, GetEntityId(), &LmbrCentral::AudioProxyComponentRequests::ExecuteTrigger, triggerID);
                 }
                 else
                 {
@@ -170,15 +167,15 @@ namespace EMotionFX
             AZ::s32 jointId = -1;
             if (jointName)
             {
-                SkeletalHierarchyRequestBus::EventResult(jointId, GetEntityId(),
-                    &SkeletalHierarchyRequestBus::Events::GetJointIndexByName, jointName->c_str());
+                LmbrCentral::SkeletalHierarchyRequestBus::EventResult(jointId, GetEntityId(),
+                    &LmbrCentral::SkeletalHierarchyRequestBus::Events::GetJointIndexByName, jointName->c_str());
 
                 if (jointId < 0)
                 {
                     if (jointName->empty())
                     {
                         AZ_Warning("Editor", false, "'KillTrigger' called on default entity proxy.  If this was the intent, a more explicit practice would be requesting this via the AudioProxyComponentBus.");
-                        AudioProxyComponentRequestBus::Event(GetEntityId(), &AudioProxyComponentRequests::KillTrigger, triggerId);
+                        LmbrCentral::AudioProxyComponentRequestBus::Event(GetEntityId(), &LmbrCentral::AudioProxyComponentRequests::KillTrigger, triggerId);
                     }
                     else
                     {
@@ -206,15 +203,15 @@ namespace EMotionFX
             AZ::s32 jointId = -1;
             if (jointName)
             {
-                SkeletalHierarchyRequestBus::EventResult(jointId, GetEntityId(),
-                    &SkeletalHierarchyRequestBus::Events::GetJointIndexByName, jointName->c_str());
+                LmbrCentral::SkeletalHierarchyRequestBus::EventResult(jointId, GetEntityId(),
+                    &LmbrCentral::SkeletalHierarchyRequestBus::Events::GetJointIndexByName, jointName->c_str());
 
                 if (jointId < 0)
                 {
                     if (jointName->empty())
                     {
                         AZ_Warning("Editor", false, "'KillAllTrigger' called on default entity proxy.  If this was the intent, a more explicit practice would be requesting this via the AudioProxyComponentBus.");
-                        AudioProxyComponentRequestBus::Event(GetEntityId(), &AudioProxyComponentRequests::KillAllTriggers);
+                        LmbrCentral::AudioProxyComponentRequestBus::Event(GetEntityId(), &LmbrCentral::AudioProxyComponentRequests::KillAllTriggers);
                     }
                     else
                     {
@@ -242,15 +239,15 @@ namespace EMotionFX
             AZ::s32 jointId = -1;
             if (jointName)
             {
-                SkeletalHierarchyRequestBus::EventResult(jointId, GetEntityId(),
-                    &SkeletalHierarchyRequestBus::Events::GetJointIndexByName, jointName->c_str());
+                LmbrCentral::SkeletalHierarchyRequestBus::EventResult(jointId, GetEntityId(),
+                    &LmbrCentral::SkeletalHierarchyRequestBus::Events::GetJointIndexByName, jointName->c_str());
 
                 if (jointId < 0)
                 {
                     if (jointName->empty())
                     {
                         AZ_Warning("Editor", false, "'SetRtpcValue' called on default entity proxy.  If this was the intent, a more explicit practice would be requesting this via the AudioProxyComponentBus.");
-                        AudioProxyComponentRequestBus::Event(GetEntityId(), &AudioProxyComponentRequests::SetRtpcValue, rtpcID, value);
+                        LmbrCentral::AudioProxyComponentRequestBus::Event(GetEntityId(), &LmbrCentral::AudioProxyComponentRequests::SetRtpcValue, rtpcID, value);
                     }
                     else
                     {
@@ -278,15 +275,15 @@ namespace EMotionFX
             AZ::s32 jointId = -1;
             if (jointName)
             {
-                SkeletalHierarchyRequestBus::EventResult(jointId, GetEntityId(),
-                    &SkeletalHierarchyRequestBus::Events::GetJointIndexByName, jointName->c_str());
+                LmbrCentral::SkeletalHierarchyRequestBus::EventResult(jointId, GetEntityId(),
+                    &LmbrCentral::SkeletalHierarchyRequestBus::Events::GetJointIndexByName, jointName->c_str());
 
                 if (jointId < 0)
                 {
                     if (jointName->empty())
                     {
                         AZ_Warning("Editor", false, "'SetSwitchState' called on default entity proxy.  If this was the intent, a more explicit practice would be requesting this via the AudioProxyComponentBus.");
-                        AudioProxyComponentRequestBus::Event(GetEntityId(), &AudioProxyComponentRequests::SetSwitchState, switchID, stateID);
+                        LmbrCentral::AudioProxyComponentRequestBus::Event(GetEntityId(), &LmbrCentral::AudioProxyComponentRequests::SetSwitchState, switchID, stateID);
                     }
                     else
                     {
@@ -314,15 +311,15 @@ namespace EMotionFX
             AZ::s32 jointId = -1;
             if (jointName)
             {
-                SkeletalHierarchyRequestBus::EventResult(jointId, GetEntityId(),
-                    &SkeletalHierarchyRequestBus::Events::GetJointIndexByName, jointName->c_str());
+                LmbrCentral::SkeletalHierarchyRequestBus::EventResult(jointId, GetEntityId(),
+                    &LmbrCentral::SkeletalHierarchyRequestBus::Events::GetJointIndexByName, jointName->c_str());
 
                 if (jointId < 0)
                 {
                     if (jointName->empty())
                     {
                         AZ_Warning("Editor", false, "'SetEnvironmentAmount' called on default entity proxy.  If this was the intent, a more explicit practice would be requesting this via the AudioProxyComponentBus.");
-                        AudioProxyComponentRequestBus::Event(GetEntityId(), &AudioProxyComponentRequests::SetEnvironmentAmount, environmentID, amount);
+                        LmbrCentral::AudioProxyComponentRequestBus::Event(GetEntityId(), &LmbrCentral::AudioProxyComponentRequests::SetEnvironmentAmount, environmentID, amount);
                     }
                     else
                     {
@@ -415,8 +412,8 @@ namespace EMotionFX
                 if (Audio::IAudioProxy* proxy = iter.second)
                 {
                     AZ::Transform jointTransform = AZ::Transform::CreateIdentity();
-                    auto getJointTransform = &SkeletalHierarchyRequestBus::Events::GetJointTransformCharacterRelative;
-                    SkeletalHierarchyRequestBus::EventResult(jointTransform, GetEntityId(), getJointTransform, iter.first);
+                    auto getJointTransform = &LmbrCentral::SkeletalHierarchyRequestBus::Events::GetJointTransformCharacterRelative;
+                    LmbrCentral::SkeletalHierarchyRequestBus::EventResult(jointTransform, GetEntityId(), getJointTransform, iter.first);
 
                     Audio::SATLWorldPosition atlTransform(m_transform * jointTransform);
                     proxy->SetPosition(m_transform * jointTransform);
@@ -443,7 +440,7 @@ namespace EMotionFX
             const AZ::s32 jointId = eventIter->second.GetJointId();
             if (jointId < 0)
             {
-                AudioProxyComponentRequestBus::Event(GetEntityId(), &AudioProxyComponentRequests::ExecuteTrigger,
+                LmbrCentral::AudioProxyComponentRequestBus::Event(GetEntityId(), &LmbrCentral::AudioProxyComponentRequests::ExecuteTrigger,
                     eventIter->second.GetTriggerId());
                 return;
             }
@@ -463,8 +460,8 @@ namespace EMotionFX
                 const Audio::TAudioControlID triggerId = eventIter->second.GetTriggerId();
 
                 AZ::Transform jointTransform = AZ::Transform::CreateIdentity();
-                const auto getJointTransform = &SkeletalHierarchyRequestBus::Events::GetJointTransformCharacterRelative;
-                SkeletalHierarchyRequestBus::EventResult(jointTransform, GetEntityId(), getJointTransform, jointId);
+                const auto getJointTransform = &LmbrCentral::SkeletalHierarchyRequestBus::Events::GetJointTransformCharacterRelative;
+                LmbrCentral::SkeletalHierarchyRequestBus::EventResult(jointTransform, GetEntityId(), getJointTransform, jointId);
 
                 const Audio::SATLWorldPosition atlTransform(m_transform * jointTransform);
                 proxy->SetPosition(atlTransform);
@@ -511,8 +508,8 @@ namespace EMotionFX
                 AZ::s32 jointId = -1;
                 if (!jointName.empty())
                 {
-                    SkeletalHierarchyRequestBus::EventResult(jointId, GetEntityId(),
-                        &SkeletalHierarchyRequestBus::Events::GetJointIndexByName, jointName.c_str());
+                    LmbrCentral::SkeletalHierarchyRequestBus::EventResult(jointId, GetEntityId(),
+                        &LmbrCentral::SkeletalHierarchyRequestBus::Events::GetJointIndexByName, jointName.c_str());
 
                     if (jointId < 0)
                     {

@@ -175,9 +175,9 @@ namespace UnitTests
             m_assetProcessorManager->CheckJobEntries(expectedFileCount + dependencyFileCount);
 
             QCoreApplication::processEvents(); // execute CheckForIdle
-
-            ASSERT_EQ(m_jobDetailsList.size(), expectedJobCount + dependencyFileCount);
         }
+
+        ASSERT_EQ(m_jobDetailsList.size(), expectedJobCount + dependencyFileCount);
     }
 
     void AssetManagerTestingBase::ProcessJob(AssetProcessor::RCController& rcController, const AssetProcessor::JobDetails& jobDetails)

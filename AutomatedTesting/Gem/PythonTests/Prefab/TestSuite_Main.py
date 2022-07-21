@@ -66,6 +66,9 @@ class TestAutomationNoAutoTestMode(EditorTestSuite):
     class test_DuplicatePrefab_ContainingASingleEntity(EditorSharedTest):
         from .tests.duplicate_prefab import DuplicatePrefab_ContainingASingleEntity as test_module
 
+    class test_DuplicatePrefab_ContainingNestedEntitiesAndNestedPrefabs(EditorSharedTest):
+        from .tests.duplicate_prefab import DuplicatePrefab_ContainingNestedEntitiesAndNestedPrefabs as test_module
+
     class test_PrefabNotifications_PropagationNotificationsReceived(EditorSharedTest):
         from .tests.prefab_notifications import PrefabNotifications_PropagationNotificationsReceived as test_module
 

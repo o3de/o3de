@@ -51,20 +51,20 @@ namespace AssetProcessor
     struct InternalAssetRecognizer
         : public AssetRecognizer
     {
-        InternalAssetRecognizer(const AssetRecognizer& src, const QString& builderId, const QHash<QString, AssetInternalSpec>& assetPlatformSpecByPlatform);
+        InternalAssetRecognizer(const AssetRecognizer& src, const AZStd::string& builderId, const AZStd::unordered_map<AZStd::string, AssetInternalSpec>& assetPlatformSpecByPlatform);
         InternalAssetRecognizer(const InternalAssetRecognizer& src) = default;
 
         AZ::u32 CalculateCRC() const;
 
         //! Map of platform specs based on the identifier of the platform
-        QHash<QString, AssetInternalSpec> m_platformSpecsByPlatform;
+        AZStd::unordered_map<AZStd::string, AssetInternalSpec> m_platformSpecsByPlatform;
 
         //! unique id that is generated for each unique internal asset recognizer
         //! which can be used as the key for the job parameter map (see AssetBuilderSDK::JobParameterMap)
         AZ::u32 m_paramID;
 
         //! Keep track which internal builder type this recognizer is for
-        const QString m_builderId;
+        const AZStd::string m_builderId;
     };
     typedef QHash<AZ::u32, InternalAssetRecognizer*> InternalRecognizerContainer;
     typedef QList<const InternalAssetRecognizer*> InternalRecognizerPointerContainer;
@@ -95,17 +95,6 @@ namespace AssetProcessor
         void ProcessJob(const AssetBuilderSDK::ProcessJobRequest& request, AssetBuilderSDK::ProcessJobResponse& response);
 
         static bool MatchTempFileToSkip(const QString& outputFilename);
-
-        static void RegisterInternalAssetRecognizerToMap(
-            const AssetRecognizer& assetRecognizer,
-            const QString& builderId,
-            QHash<QString, AssetInternalSpec>& sourceAssetPlatformSpecs,
-            QHash<QString, InternalAssetRecognizerList>& internalRecognizerListByType);
-
-        //! Split all of the asset recognizers from a container into buckets based on their specific builder action type
-        static void BuildInternalAssetRecognizersByType(
-            const RecognizerContainer& assetRecognizers,
-            QHash<QString, InternalAssetRecognizerList>& internalRecognizerListByType);
 
     protected:
         //! Constructor to initialize the internal builders and a general internal builder uuid that is used for bus

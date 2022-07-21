@@ -8,10 +8,11 @@
 
 #pragma once
 
+#include <AzCore/Preprocessor/Enum.h>
 #include <AzCore/std/containers/fixed_vector.h>
 #include <AzCore/std/functional.h>
+#include <AzCore/std/ranges/ranges_algorithm.h>
 #include <AzCore/std/string/fixed_string.h>
-#include <AzCore/std/string/conversions.h>
 #include <AzCore/StringFunc/StringFunc.h>
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/Vector3.h>
@@ -23,72 +24,56 @@ namespace AZ
 {
     namespace ConsoleTypeHelpers
     {
-        inline AZStd::string ConvertString(const CVarFixedString& value)
-        {
-            return AZStd::string(value.c_str(), value.size());
-        }
-
-        inline AZ::CVarFixedString ConvertString(const AZStd::string& value)
-        {
-            return AZ::CVarFixedString(value.c_str(), value.size());
-        }
-
         template <typename TYPE>
-        inline CVarFixedString ValueToString(const TYPE& value)
+        inline auto ValueToString(const TYPE& value)
+            -> AZStd::enable_if_t<AZStd::is_void_v<decltype(AZStd::to_string(AZStd::declval<CVarFixedString&>(), AZStd::declval<TYPE>()))>, CVarFixedString>
         {
-            return ConvertString(AZStd::to_string(value));
+            CVarFixedString resultString;
+            AZStd::to_string(resultString, value);
+            return resultString;
         }
 
-        template <>
         inline CVarFixedString ValueToString(const bool& value)
         {
             return value ? "true" : "false";
         }
 
-        template <>
         inline CVarFixedString ValueToString(const char& value)
         {
             return CVarFixedString(1, value);
         }
 
-        template <>
-        inline CVarFixedString ValueToString<AZ::CVarFixedString>(const AZ::CVarFixedString& value)
+        inline CVarFixedString ValueToString(const AZ::CVarFixedString& value)
         {
             return value;
         }
 
-        template <>
-        inline CVarFixedString ValueToString<AZStd::string>(const AZStd::string& value)
+        inline CVarFixedString ValueToString(const AZStd::string& value)
         {
-            return ConvertString(value);
+            return CVarFixedString(value.c_str(), value.size());
         }
 
-        template <>
-        inline CVarFixedString ValueToString<AZ::Vector2>(const AZ::Vector2& value)
+        inline CVarFixedString ValueToString(const AZ::Vector2& value)
         {
             return CVarFixedString::format("%0.2f %0.2f", static_cast<float>(value.GetX()), static_cast<float>(value.GetY()));
         }
 
-        template <>
-        inline CVarFixedString ValueToString<AZ::Vector3>(const AZ::Vector3& value)
+        inline CVarFixedString ValueToString(const AZ::Vector3& value)
         {
             return CVarFixedString::format("%0.2f %0.2f %0.2f", static_cast<float>(value.GetX()), static_cast<float>(value.GetY()), static_cast<float>(value.GetZ()));
         }
 
-        template <>
-        inline CVarFixedString ValueToString<AZ::Vector4>(const AZ::Vector4& value)
+        inline CVarFixedString ValueToString(const AZ::Vector4& value)
         {
             return CVarFixedString::format("%0.2f %0.2f %0.2f %0.2f", static_cast<float>(value.GetX()), static_cast<float>(value.GetY()), static_cast<float>(value.GetZ()), static_cast<float>(value.GetW()));
         }
 
-        template <>
-        inline CVarFixedString ValueToString<AZ::Quaternion>(const AZ::Quaternion& value)
+        inline CVarFixedString ValueToString(const AZ::Quaternion& value)
         {
             return CVarFixedString::format("%0.2f %0.2f %0.2f %0.2f", static_cast<float>(value.GetX()), static_cast<float>(value.GetY()), static_cast<float>(value.GetZ()), static_cast<float>(value.GetW()));
         }
 
-        template <>
-        inline CVarFixedString ValueToString<AZ::Color>(const AZ::Color& value)
+        inline CVarFixedString ValueToString(const AZ::Color& value)
         {
             return CVarFixedString::format("%0.2f %0.2f %0.2f %0.2f", static_cast<float>(value.GetR()), static_cast<float>(value.GetG()), static_cast<float>(value.GetB()), static_cast<float>(value.GetA()));
         }
@@ -351,17 +336,144 @@ namespace AZ
                 return StringSetToRgbaValue(outValue, arguments);
             }
         }
+    }
+}
 
-        template <typename _TYPE>
-        inline bool StringToValue(_TYPE& outValue, AZStd::string_view string)
+
+namespace AZ::ConsoleTypeHelpers
+{
+    namespace Internal
+    {
+        template<class T, class = void>
+        inline constexpr bool HasValueToString = false;
+        template<class T>
+        inline constexpr bool HasValueToString<T, AZStd::enable_if_t<
+            AZStd::convertible_to<decltype(ValueToString(AZStd::declval<T>())), CVarFixedString>>> = true;
+
+        struct ToStringFn
         {
-            AZ::ConsoleCommandContainer arguments;
-            auto splitToVector = [&arguments](AZStd::string_view token)
+            // Converts type to string if the expression ValueToString(const T&) is well formed
+            // and returns a type convertible to a CVarFixedString(AZStd::fixed_string)
+            template<class T>
+            constexpr auto operator()(const T& value) const
+                -> AZStd::enable_if_t<HasValueToString<T>, CVarFixedString>
             {
-                arguments.emplace_back(token);
-            };
-            StringFunc::TokenizeVisitor(string, splitToVector, " ");
-            return StringSetToValue(outValue, arguments);
-        }
+                return ValueToString(value);
+            }
+
+            // Converts an enum to a enum option string if the EnumType specializes AzEnumTraits
+            // otherwise converts the enum to a numeric string
+            template<class T>
+            constexpr auto operator()(const T& value) const
+                -> AZStd::enable_if_t<!HasValueToString<T>&& AZStd::is_enum_v<AZStd::remove_cvref_t<T>>, CVarFixedString>
+            {
+                if constexpr (AZ::HasAzEnumTraits_v<T>)
+                {
+                    // For enum types which specialize AzEnumTraits
+                    // attempt to use the enum option name if the value matches an enum value
+                    // in the Enum Traits Members array
+                    using EnumMemberPair = typename AZ::AzEnumTraits<T>::MembersArrayType::value_type;
+                    auto FindEnumOptionString = [value](EnumMemberPair enumPair)
+                    {
+                        return value == enumPair.m_value;
+                    };
+                    if (auto foundIt = AZStd::ranges::find_if(AZ::AzEnumTraits<T>::Members, FindEnumOptionString);
+                        foundIt != AZ::AzEnumTraits<T>::Members.end())
+                    {
+                        return CVarFixedString(foundIt->m_string);
+                    }
+                }
+
+                // Convert the enum numeric value to a string if AzEnumTraits isn't specialized
+                CVarFixedString resultString;
+                AZStd::to_string(resultString, static_cast<AZStd::underlying_type_t<AZStd::remove_cvref_t<T>>>(value));
+                return resultString;
+            }
+        };
+
+        template<class T, class = void>
+        inline constexpr bool HasStringSetToValue = false;
+        template<class T>
+        inline constexpr bool HasStringSetToValue<T, AZStd::enable_if_t<
+            AZStd::convertible_to<decltype(StringSetToValue(AZStd::declval<AZStd::remove_const_t<T>&>(), AZStd::declval<AZ::ConsoleCommandContainer>())),
+            bool>>> = true;
+
+        struct ToValueFn
+        {
+            template<class T>
+            constexpr auto operator()(T& outValue,
+                const AZ::ConsoleCommandContainer& arguments) const
+                -> AZStd::enable_if_t<HasStringSetToValue<T>, bool>
+            {
+                return StringSetToValue(outValue, arguments);
+            }
+
+            // Allows converting a string to an enum type
+            // If the enum type specialized AzEnumTraits,
+            // then converting a string version of the enum option to the enum value is also supported
+            // Given an enum declared as followed AZ_ENUM(EnumName, Option1, Option2)
+            // Then a string of "Option1" can be converted to the enum value of EnumName::Option1 == 0
+            // and a string of "Option2" can be converted to the enum value of EnumName::Option2 == 1
+            template<class T>
+            constexpr auto operator()(T& outValue,
+                const AZ::ConsoleCommandContainer& arguments) const
+                -> AZStd::enable_if_t<!HasStringSetToValue<T>&& AZStd::is_enum_v<AZStd::remove_cvref_t<T>>, bool>
+            {
+                if (arguments.empty())
+                {
+                    // No string arguments to convert to type so return
+                    return false;
+                }
+
+                if constexpr (AZ::HasAzEnumTraits_v<T>)
+                {
+                    using EnumMemberPair = typename AZ::AzEnumTraits<T>::MembersArrayType::value_type;
+                    auto FindEnumOptionValue = [firstArg = arguments.front()](EnumMemberPair enumPair)
+                    {
+                        return firstArg == enumPair.m_string;
+                    };
+                    if (auto foundIt = AZStd::ranges::find_if(AZ::AzEnumTraits<T>::Members, FindEnumOptionValue);
+                        foundIt != AZ::AzEnumTraits<T>::Members.end())
+                    {
+                        outValue = foundIt->m_value;
+                        return true;
+                    }
+                }
+                AZStd::underlying_type_t<AZStd::remove_cvref_t<T>> underlyingValue;
+                const bool result = StringSetToValue(underlyingValue, arguments);
+                if (result)
+                {
+                    outValue = static_cast<T>(underlyingValue);
+                }
+                return result;
+            }
+
+            template<class T>
+            auto operator()(T& outValue, AZStd::string_view inputString) const
+            {
+                AZ::ConsoleCommandContainer arguments;
+                auto splitToVector = [&arguments](AZStd::string_view token)
+                {
+                    arguments.emplace_back(token);
+                };
+                StringFunc::TokenizeVisitor(inputString, splitToVector, " ");
+                return operator()(outValue, arguments);
+            }
+        };
+    }
+
+    inline namespace CustomizationPoint
+    {
+        // Customization point for allow types to convert to and from a string
+        // for the purpose of interacting with the AZ::Console
+        constexpr Internal::ToStringFn ToString{};
+
+        constexpr Internal::ToValueFn ToValue{};
+    }
+
+    template <typename _TYPE>
+    inline bool StringToValue(_TYPE& outValue, AZStd::string_view string)
+    {
+        return ConsoleTypeHelpers::ToValue(outValue, string);
     }
 }

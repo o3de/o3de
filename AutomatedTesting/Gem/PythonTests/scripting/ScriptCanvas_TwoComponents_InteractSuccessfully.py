@@ -4,37 +4,30 @@ For complete copyright and license terms please see the LICENSE at the root of t
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
-import editor_python_test_tools.editor_entity_utils as entity_utils
 import os
 import editor_python_test_tools.pyside_utils as pyside_utils
 from editor_python_test_tools.utils import TestHelper as helper
-from editor_python_test_tools.utils import Report as report
-from editor_python_test_tools.utils import Tracer as tracer
+from editor_python_test_tools.utils import Report, Tracer
 import editor_python_test_tools.hydra_editor_utils as hydra
-import scripting_utils.scripting_tools
-import azlmbr.scriptcanvas as scriptcanvas
+import scripting_utils.scripting_tools as scripting_tools
 import azlmbr.legacy.general as general
-import azlmbr.math as math
-import azlmbr.asset as asset
-import azlmbr.bus as bus
 import azlmbr.paths as paths
-from scripting_utils.scripting_constants import (BASE_LEVEL_NAME, WAIT_TIME_3)
+from scripting_utils.scripting_constants import (BASE_LEVEL_NAME, WAIT_TIME_3, SCRIPT_CANVAS_COMPONENT_PROPERTY_PATH)
 
 
 # fmt: off
 class Tests:
-    level_created     = ("New level created",              "New level not created")
+    entity_created     = ("New entity created",              "New entity not created")
     game_mode_entered = ("Game Mode successfully entered", "Game mode failed to enter")
     game_mode_exited  = ("Game Mode successfully exited",  "Game mode failed to exited")
-    found_lines       = ("Expected log lines were found",  "Expected log lines were not found")
+    lines_found       = ("Expected log lines were found",  "Expected log lines were not found")
 # fmt: on
 
 
-class LogLines:
-    expected_lines = ["Greetings from the first script", "Greetings from the second script"]
-
-SOURCE_FILE_0 = os.path.join(paths.projectroot, "ScriptCanvas", "ScriptCanvas_TwoComponents0.scriptcanvas")
-SOURCE_FILE_1 = os.path.join(paths.projectroot, "ScriptCanvas", "ScriptCanvas_TwoComponents1.scriptcanvas")
+EXPECTED_LINES = ["Greetings from the first script", "Greetings from the second script"]
+SOURCE_FILES = [os.path.join(paths.projectroot, "ScriptCanvas", "ScriptCanvas_TwoComponents0.scriptcanvas"),
+                os.path.join(paths.projectroot, "ScriptCanvas", "ScriptCanvas_TwoComponents1.scriptcanvas")]
+TEST_ENTITY_NAME = "test_entity"
 
 class TestScriptCanvas_TwoComponents_InteractSuccessfully:
     """
@@ -48,11 +41,10 @@ class TestScriptCanvas_TwoComponents_InteractSuccessfully:
     Test Steps:
      1) Create level
      2) Create entity with SC components
-     3) Start Tracer
-     4) Enter game mode
-     5) Wait for expected lines to be found
-     6) Report if expected lines were found
-     7) Exit game mode
+     3) Enter game mode
+     4) Wait for expected lines to be found
+     5) Report if expected lines were found
+     6) Exit game mode
 
     Note:
      - This test file must be called from the Open 3D Engine Editor command terminal
@@ -64,16 +56,6 @@ class TestScriptCanvas_TwoComponents_InteractSuccessfully:
 
     def __init__(self):
         self.editor_main_window = None
-
-    def get_asset(self, asset_path):
-        return asset.AssetCatalogRequestBus(bus.Broadcast, "GetAssetIdByPath", asset_path, math.Uuid(), False)
-
-    def locate_expected_lines(self, section_tracer):
-        found_lines = []
-        for printInfo in section_tracer.prints:
-            found_lines.append(printInfo.message.strip())
-
-        return all(line in found_lines for line in LogLines.expected_lines)
 
     @pyside_utils.wrap_async
     async def run_test(self):
@@ -87,31 +69,23 @@ class TestScriptCanvas_TwoComponents_InteractSuccessfully:
         general.close_pane("Error Report")
 
         # 2) Create entity with SC components
-        entity = hydra.Entity("test_Entity")
-        position = math.Vector3(512.0, 512.0, 32.0)
-        entity.create_entity(position, ["Script Canvas", "Script Canvas"])
+        entity = scripting_tools.create_entity_with_multiple_sc_component_asset(TEST_ENTITY_NAME, SOURCE_FILES)
+        helper.wait_for_condition(lambda: entity is not None, WAIT_TIME_3)
+        Report.critical_result(Tests.entity_created, entity.id.isValid())
 
-        script_canvas_component = entity.components[0]
-        hydra.set_component_property_value(script_canvas_component, SCRIPT_CANVAS_COMPONENT_PROPERTY_PATH, sourcehandle)
+        with Tracer() as section_tracer:
 
-        sourcehandle = scriptcanvas.SourceHandleFromPath(SOURCE_FILE_1)
-
-        script_canvas_component = entity.components[1]
-        hydra.set_component_property_value(script_canvas_component, SCRIPT_CANVAS_COMPONENT_PROPERTY_PATH, sourcehandle)
-
-        # 3) Start Tracer
-        with tracer as section_tracer:
-
-            # 4) Enter game mode
+            # 3) Enter game mode
             helper.enter_game_mode(Tests.game_mode_entered)
 
-            # 5) Wait for expected lines to be found
-            helper.wait_for_condition(self.locate_expected_lines(section_tracer), WAIT_TIME_3)
+            # 4) Wait for expected lines to be found
+            lines_located = helper.wait_for_condition(
+                lambda: scripting_tools.located_expected_tracer_lines(self, section_tracer, EXPECTED_LINES),
+                WAIT_TIME_3)
+            Report.result(Tests.lines_found, lines_located)
 
-            # 6) Report if expected lines were found
-            report.result(Tests.found_lines, self.locate_expected_lines(section_tracer))
 
-        # 7) Exit game mode
+        # 5) Exit game mode
         helper.exit_game_mode(Tests.game_mode_exited)
 
 

@@ -601,6 +601,19 @@ QProgressBar::chunk {
     font-weight: 600;
 }
 
+#RefreshButton {
+    background:transparent url(:/Refresh.svg) no-repeat center center;
+    qproperty-flat: true;
+    max-width:24px;
+    min-width:24px;
+    max-height:24px;
+    min-height:24px;
+}
+
+#RefreshButton:hover {
+    background:transparent url(:/Refresh_Hover.svg) no-repeat center center;
+}
+
 #gemCatalogMenuButton {
     qproperty-flat: true;
     max-width:36px;
@@ -619,14 +632,6 @@ QProgressBar::chunk {
     margin:0;
     padding: 0px;
     background-color: #444444;
-}
-
-#gemCatalogMenuButton {
-    qproperty-flat: true;
-    max-width:36px;
-    min-width:36px;
-    max-height:24px;
-    min-height:24px;
 }
 
 #adjustableHeaderWidget QHeaderView::section { 
@@ -743,6 +748,26 @@ QProgressBar::chunk {
 #GemCatalogFilterCategoryTitle {
     font-size: 12px;
     font-weight: 600;
+    color: #ffffff;
+}
+
+#GemCatalogFilterWidget #FilterByLabel {
+    color: #ffffff;
+}
+#GemCatalogFilterWidget QLabel {
+    color: #ffffff;
+}
+
+#GemCatalogFilterWidget #CountLabel {
+    font-size: 12px; 
+    background-color: #333333; 
+    border-radius: 3px; 
+    color: #94D2FF;
+}
+
+#GemCatalogFilterWidget QCheckbox {
+    color: #ffffff;
+    font-size: 12px;
 }
 
 /************** Engine **************/

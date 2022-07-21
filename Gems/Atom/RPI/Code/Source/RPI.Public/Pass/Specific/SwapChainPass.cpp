@@ -73,10 +73,10 @@ namespace AZ
             swapChainImageDesc.m_format = m_swapChainDimensions.m_imageFormat;
             m_swapChainAttachment->m_descriptor = swapChainImageDesc;
 
-            PassAttachmentBinding* swapChainOutput = FindAttachmentBinding(Name("SwapChainOutput"));
+            PassAttachmentBinding* swapChainOutput = FindAttachmentBinding(Name("PipelineOutput"));
             AZ_Assert(swapChainOutput != nullptr &&
                       swapChainOutput->m_slotType == PassSlotType::InputOutput,
-                      "PassTemplate used to create SwapChainPass must have an InputOutput called SwapChainOutput");
+                      "PassTemplate used to create SwapChainPass must have an InputOutput called PipelineOutput");
 
             swapChainOutput->SetAttachment(m_swapChainAttachment);
         }
@@ -85,7 +85,8 @@ namespace AZ
 
         void SwapChainPass::BuildInternal()
         {
-            if (m_windowContext->GetSwapChainsSize() == 0)
+            if (m_windowContext->GetSwapChainsSize() == 0 ||
+                m_windowContext->GetSwapChain(m_swapChainMode) == nullptr)
             {
                 return;
             }
@@ -104,6 +105,7 @@ namespace AZ
             params.m_viewportState = m_viewportState;
 
             if (m_windowContext->GetSwapChainsSize() == 0 ||
+                m_windowContext->GetSwapChain(m_swapChainMode) == nullptr ||
                 m_windowContext->GetSwapChain(m_swapChainMode)->GetImageCount() == 0)
             {
                 return;

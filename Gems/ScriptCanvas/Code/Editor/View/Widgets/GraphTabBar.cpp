@@ -157,7 +157,7 @@ namespace ScriptCanvasEditor
                 metaData.m_fileState = fileState;
                 
                 AZStd::string tabName;
-                AzFramework::StringFunc::Path::GetFileName(assetId.Path().c_str(), tabName);
+                AzFramework::StringFunc::Path::GetFileName(assetId.RelativePath().c_str(), tabName);
 
                 SetTabText(tabIndex, tabName.c_str(), fileState);
                 setTabData(tabIndex, QVariant::fromValue(metaData));

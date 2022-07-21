@@ -39,7 +39,6 @@ bl_info = {
     "name": "O3DE_DCCSI_BLENDER_SCENE_EXPORTER",
     "author": "shawstar@amazon",
     "version": (1, 3),
-
     "blender": (3, 00, 0),
     "location": "",
     "description": "Export Scene Assets to O3DE",

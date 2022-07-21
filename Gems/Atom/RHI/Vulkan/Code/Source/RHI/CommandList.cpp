@@ -96,6 +96,8 @@ namespace AZ
 
         void CommandList::Submit(const RHI::CopyItem& copyItem) 
         {
+            ValidateSubmitItem(copyItem);
+
             switch (copyItem.m_type)
             {
             case RHI::CopyItemType::Buffer:
@@ -248,6 +250,8 @@ namespace AZ
 
         void CommandList::Submit(const RHI::DrawItem& drawItem) 
         {
+            ValidateSubmitItem(drawItem);
+
             if (!CommitShaderResource(drawItem))
             {
                 AZ_Warning("CommandList", false, "Failed to bind shader resources for draw item. Skipping.");
@@ -363,6 +367,8 @@ namespace AZ
 
         void CommandList::Submit(const RHI::DispatchItem& dispatchItem) 
         {
+            ValidateSubmitItem(dispatchItem);
+
             if (!CommitShaderResource(dispatchItem))
             {
                 AZ_Warning("CommandList", false, "Failed to bind shader resources for dispatch item. Skipping.");
@@ -396,6 +402,8 @@ namespace AZ
 
         void CommandList::Submit([[maybe_unused]] const RHI::DispatchRaysItem& dispatchRaysItem)
         {
+            ValidateSubmitItem(dispatchRaysItem);
+
             // manually clear the Dispatch bindings
             ShaderResourceBindings& bindings = GetShaderResourceBindingsByPipelineType(RHI::PipelineStateType::Dispatch);
             for (size_t i = 0; i < bindings.m_descriptorSets.size(); ++i)
