@@ -26,6 +26,9 @@ namespace AZ::Debug
         void TrackAllocation(uint64_t bytes);
         void UntrackAllocation(uint64_t bytes);
 
+        void StartLogging();
+        void StopLogging();
+
         const char* Name() const
         {
             return m_name;

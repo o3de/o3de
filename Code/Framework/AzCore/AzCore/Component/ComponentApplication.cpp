@@ -614,6 +614,7 @@ namespace AZ
 
 #if !defined(_RELEASE)
         m_budgetTracker.Init();
+        m_statisticalProfiler.reset(new AZ::Statistics::StatisticalProfilerProxy);
 #endif
 
         // This can be moved to the ComponentApplication constructor if need be
@@ -757,6 +758,7 @@ namespace AZ
         // the budget tracker must be cleaned up prior to module unloading to ensure
         // budgets initialized cross boundary are freed properly
         m_budgetTracker.Reset();
+        m_statisticalProfiler.reset();
 #endif
 
         // Uninit and unload any dynamic modules.
@@ -1335,6 +1337,7 @@ namespace AZ
 
     void ComponentApplication::Tick()
     {
+        AZ_PROFILE_BUDGET(System);
         AZ_PROFILE_SCOPE(System, "Component application simulation tick");
 
         {
@@ -1354,6 +1357,7 @@ namespace AZ
 
     void ComponentApplication::TickSystem()
     {
+        AZ_PROFILE_BUDGET(System);
         AZ_PROFILE_SCOPE(System, "Component application tick");
 
         SystemTickBus::ExecuteQueuedEvents();
@@ -1414,6 +1418,27 @@ namespace AZ
     AZ::CommandLine* ComponentApplication::GetAzCommandLine()
     {
         return &m_commandLine;
+    }
+
+    void ComponentApplication::StartLoggingBudgetTotals()
+    {
+#if !defined(_RELEASE)
+        m_budgetTracker.StartLoggingBudgetTotals();
+#endif
+    }
+
+    void ComponentApplication::StopLoggingBudgetTotals()
+    {
+#if !defined(_RELEASE)
+        m_budgetTracker.StopLoggingBudgetTotals();
+#endif
+    }
+
+    void ComponentApplication::ResetBudgetTotals()
+    {
+#if !defined(_RELEASE)
+        m_budgetTracker.PerFrameReset();
+#endif  
     }
 
     int* ComponentApplication::GetArgC()

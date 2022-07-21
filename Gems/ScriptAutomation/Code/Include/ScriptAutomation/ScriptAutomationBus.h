@@ -11,6 +11,7 @@
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/std/string/string_view.h>
+#include <AzCore/std/string/string.h>
 
 
 namespace AZ
@@ -39,8 +40,15 @@ namespace ScriptAutomation
         virtual void PauseAutomation(float timeout = DefaultPauseTimeout) = 0;
         virtual void ResumeAutomation() = 0;
 
+        //! Can be used to set number of frame/seconds for which the script is paused
+        virtual void SetIdleFrames(int numFrames) = 0;
+        virtual void SetIdleSeconds(float numSeconds) = 0;
+
         //! Add an operation into the queue for processing later
         virtual void QueueScriptOperation(ScriptOperation&& action) = 0;
+
+        //! Runs a lua script at the provided path
+        virtual void ExecuteScript(const AZStd::string& scriptFilePath) = 0;
     };
 
     class ScriptAutomationRequestsBusTraits
@@ -55,14 +63,32 @@ namespace ScriptAutomation
     using ScriptAutomationInterface = AZ::Interface<ScriptAutomationRequests>;
 
 
-    class ScriptAutomationNotifications
+    class ScriptAutomationHooks
         : public AZ::EBusTraits
     {
     public:
-        virtual ~ScriptAutomationNotifications() = default;
+        virtual ~ScriptAutomationHooks() = default;
 
-        virtual void OnAutomationStarted() = 0;
-        virtual void OnAutomationFinished() = 0;
+        //! Called before first(passed as command-line parameter) lua script runs
+        virtual void AutomationStarted([[maybe_unused]] const AZStd::string& scriptPath) {};
+
+        //! Called after all lua scripts have finished running
+        virtual void AutomationFinished() {};
+
+        //! Override this function to reflect custom functions to ScriptAutomation lua scripts
+        virtual void CustomReflect([[maybe_unused]] AZ::BehaviorContext* context) {}
+        
+        //! Called before each call to RunScript() from lua
+        virtual void PreScriptExecution([[maybe_unused]] const AZStd::string& scriptPath) {}
+
+        //! Called after each call to RunScript() from lua returns
+        virtual void PostScriptExecution([[maybe_unused]] const AZStd::string& scriptPath) {}
+
+        //! Called before each ScriptAutomation Tick() runs its script opertaions loop
+        virtual void PreTick() {}
+
+        //! Called after each ScriptAutomation Tick() runs its script opertaions loop
+        virtual void PostTick() {}
     };
-    using ScriptAutomationNotificationBus = AZ::EBus<ScriptAutomationNotifications>;
+    using ScriptAutomationEventsBus = AZ::EBus<ScriptAutomationHooks>;
 } // namespace ScriptAutomation

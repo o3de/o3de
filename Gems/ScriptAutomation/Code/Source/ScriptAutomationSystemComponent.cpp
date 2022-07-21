@@ -30,11 +30,8 @@ namespace ScriptAutomation
 {
     namespace
     {
-        AZ::Data::Asset<AZ::ScriptAsset> LoadScriptAssetFromPath(const char* productPath, AZ::ScriptContext& context)
+        AZ::Data::Asset<AZ::ScriptAsset> LoadRawLuaScript(const AZStd::string& productPath, const AZ::IO::FixedMaxPath& resolvedPath, AZ::ScriptContext& context)
         {
-            AZ::IO::FixedMaxPath resolvedPath;
-            AZ::IO::FileIOBase::GetInstance()->ResolvePath(resolvedPath, productPath);
-
             AZ::IO::FileIOStream inputStream;
             if (inputStream.Open(resolvedPath.c_str(), AZ::IO::OpenMode::ModeRead))
             {
@@ -46,7 +43,7 @@ namespace ScriptAutomation
                 inputStream.Close();
                 if (outcome.IsSuccess())
                 {
-                    AZ::Uuid id = AZ::Uuid::CreateName(productPath);
+                    AZ::Uuid id = AZ::Uuid::CreateName(productPath.c_str());
                     AZ::Data::Asset<AZ::ScriptAsset> scriptAsset = AZ::Data::AssetManager::Instance().FindOrCreateAsset<AZ::ScriptAsset>(AZ::Data::AssetId(id)
                         , AZ::Data::AssetLoadBehavior::Default);
                     scriptAsset.Get()->m_data = compileRequest.m_luaScriptDataOut;
@@ -59,11 +56,56 @@ namespace ScriptAutomation
                     return {};
                 }
             }
-            else
+            
+            AZ_Assert(false, "Unable to find product asset '%s'. Has the source asset finished building?", resolvedPath.c_str());
+            return {};
+        }
+
+        AZ::Data::Asset<AZ::ScriptAsset> LoadCompiledLuaScript(const AZStd::string& productPath)
+        {
+            AZ::Data::AssetId assetId;
+            AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+                assetId,
+                &AZ::Data::AssetCatalogRequestBus::Events::GetAssetIdByPath,
+                productPath.c_str(),
+                AZ::AzTypeInfo<AZ::ScriptAsset>::Uuid(),
+                true);
+
+            if (assetId.IsValid())
             {
-                AZ_Assert(false, "Unable to find product asset '%s'. Has the source asset finished building?", resolvedPath.c_str());
-                return {};
+                AZ::Data::Asset<AZ::ScriptAsset> asset = AZ::Data::AssetManager::Instance().GetAsset<AZ::ScriptAsset>(
+                    assetId, AZ::Data::AssetLoadBehavior::PreLoad);
+                asset.BlockUntilLoadComplete();
+
+                if (!asset.IsReady())
+                {
+                    AZ_Assert(false, "Could not load '%s'", productPath.c_str());
+                    return {};
+                }
+
+                return asset;
             }
+
+            AZ_Assert(false, "Unable to find product asset '%s'. Has the source asset finished building?", productPath.c_str());
+            return {};
+        }
+
+        AZ::Data::Asset<AZ::ScriptAsset> LoadScriptAssetFromPath(const AZStd::string& productPath, AZ::ScriptContext& context)
+        {
+            AZ::IO::FixedMaxPath resolvedPath;
+            AZ::IO::FileIOBase::GetInstance()->ResolvePath(resolvedPath, productPath.c_str());
+
+            if (resolvedPath.Extension() == ".lua")
+            {
+                return LoadRawLuaScript(productPath, resolvedPath, context);
+            }
+            else if (resolvedPath.Extension() == ".luac")
+            {
+                return LoadCompiledLuaScript(productPath);
+            }
+
+            AZ_Assert(false, "'%s' is not a script asset!", resolvedPath.c_str());
+            return {};
         }
     } // namespace
 
@@ -120,13 +162,24 @@ namespace ScriptAutomation
 
     void ScriptAutomationSystemComponent::SetIdleFrames(int numFrames)
     {
-        AZ_Assert(m_scriptIdleSeconds == 0, "m_scriptIdleFrames is being stomped");
+        AZ_Assert(m_scriptIdleFrames == 0, "m_scriptIdleFrames is being stomped");
         m_scriptIdleFrames = numFrames;
     }
 
     void ScriptAutomationSystemComponent::SetIdleSeconds(float numSeconds)
     {
+        AZ_Assert(m_scriptIdleSeconds <= 0, "m_scriptIdleSeconds is being stomped");
         m_scriptIdleSeconds = numSeconds;
+    }
+
+    void ScriptAutomationSystemComponent::SetFrameTimeIsLocked(bool frameTimeIsLocked)
+    {
+        m_frameTimeIsLocked = frameTimeIsLocked;
+    }
+
+    int ScriptAutomationSystemComponent::GetRandomTestSeed()
+    {
+        return m_randomSeed;
     }
 
     void ScriptAutomationSystemComponent::Activate()
@@ -145,6 +198,7 @@ namespace ScriptAutomation
         {
             constexpr const char* automationSuiteSwitch = "run-automation-suite";
             constexpr const char* automationExitSwitch = "exit-on-automation-end";
+            constexpr const char* automationRandomSeedSwitch = "random-test-seed";
 
             auto commandLine = application->GetAzCommandLine();
             if (commandLine->HasSwitch(automationSuiteSwitch))
@@ -152,6 +206,11 @@ namespace ScriptAutomation
                 m_isStarted = false;
                 m_automationScript = commandLine->GetSwitchValue(automationSuiteSwitch, 0);
                 m_exitOnFinish = commandLine->HasSwitch(automationExitSwitch);
+
+                if (commandLine->HasSwitch(automationRandomSeedSwitch))
+                {
+                    m_randomSeed = atoi(commandLine->GetSwitchValue(automationRandomSeedSwitch, 0).c_str());
+                }
 
                 AZ::TickBus::Handler::BusConnect();
             }
@@ -175,53 +234,72 @@ namespace ScriptAutomation
     {
         if (!m_isStarted)
         {
+            ScriptAutomationEventsBus::Broadcast(&ScriptAutomationEventsBus::Events::CustomReflect, m_scriptBehaviorContext.get());
+            
             m_isStarted = true;
-            ExecuteScript(m_automationScript.c_str());
-
-            ScriptAutomationNotificationBus::Broadcast(&ScriptAutomationNotificationBus::Events::OnAutomationStarted);
+            SetupScriptExecution(m_automationScript);
+            ExecuteScript(m_automationScript);
+            return;
         }
 
-        while (!m_scriptOperations.empty())
+        if (m_executingScripts.size() > 0 || !m_scriptOperations.empty())
         {
-            if (m_scriptPaused)
+            ScriptAutomationEventsBus::Broadcast(&ScriptAutomationEventsBus::Events::PreTick);
+
+            while (!m_scriptOperations.empty())
             {
-                m_scriptPauseTimeout -= deltaTime;
-                if (m_scriptPauseTimeout < 0)
+                if (m_scriptPaused)
                 {
-                    AZ_Error("ScriptAutomation", false, "Script pause timed out. Continuing...");
-                    m_scriptPaused = false;
+                    m_scriptPauseTimeout -= deltaTime;
+                    if (m_scriptPauseTimeout < 0)
+                    {
+                        AZ_Error("ScriptAutomation", false, "Script pause timed out. Continuing...");
+                        m_scriptPaused = false;
+                    }
+                    else
+                    {
+                        break;
+                    }
                 }
-                else
+
+                if (m_scriptIdleFrames > 0)
                 {
+                    m_scriptIdleFrames--;
                     break;
                 }
-            }
 
-            if (m_scriptIdleFrames > 0)
-            {
-                m_scriptIdleFrames--;
-                break;
-            }
-
-            if (m_scriptIdleSeconds > 0)
-            {
-                m_scriptIdleSeconds -= deltaTime;
-                break;
-            }
-
-            // Execute the next operation
-            m_scriptOperations.front()();
-
-            m_scriptOperations.pop();
-
-            if (m_scriptOperations.empty())
-            {
-                ScriptAutomationNotificationBus::Broadcast(&ScriptAutomationNotificationBus::Events::OnAutomationFinished);
-
-                if (m_exitOnFinish)
+                if (m_scriptIdleSeconds > 0)
                 {
-                    AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::ExitMainLoop);
+                    m_scriptIdleSeconds -= deltaTime;
+                    break;
                 }
+
+                // Execute the next operation
+                m_scriptOperations.front()();
+
+                m_scriptOperations.pop();
+            }
+
+            ScriptAutomationEventsBus::Broadcast(&ScriptAutomationEventsBus::Events::PostTick);
+        }
+        else
+        {
+            AZ_Assert(m_scriptPaused == false, "Script manager is in an unexpected state.");
+            AZ_Assert(m_scriptIdleFrames == 0, "Script manager is in an unexpected state.");
+            AZ_Assert(m_scriptIdleSeconds <= 0.0f, "Script manager is in an unexpected state.");
+            AZ_Assert(m_executingScripts.size() == 0, "Script manager is in an unexpected state");
+
+            if (m_frameTimeIsLocked)
+            {
+                AZ::Interface<AZ::IConsole>::Get()->PerformCommand("t_simulationTickDeltaOverride 0");
+                m_frameTimeIsLocked = false;
+            }
+
+            ScriptAutomationEventsBus::Broadcast(&ScriptAutomationEventsBus::Events::AutomationFinished);
+
+            if (m_exitOnFinish)
+            {
+                AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::ExitMainLoop);
             }
         }
     }
@@ -248,42 +326,65 @@ namespace ScriptAutomation
         m_scriptOperations.push(AZStd::move(operation));
     }
 
-    void ScriptAutomationSystemComponent::ExecuteScript(const char* scriptFilePath [[maybe_unused]])
+    void ScriptAutomationSystemComponent::ExecuteScript(const AZStd::string& scriptFilePath)
     {
         AZ::Data::Asset<AZ::ScriptAsset> scriptAsset = LoadScriptAssetFromPath(scriptFilePath, *m_scriptContext.get());
         if (!scriptAsset)
         {
-#ifndef _RELEASE // AZ_Error is a no-op in release builds
+#ifndef _RELEASE //AZ_Error does nothing in release, ignore this call
             // Push an error operation on the back of the queue instead of reporting it immediately so it doesn't get lost
             // in front of a bunch of queued m_scriptOperations.
             QueueScriptOperation([scriptFilePath]()
                 {
-                    AZ_Error("ScriptAutomation", false, "Script: Could not find or load script asset '%s'.", scriptFilePath);
+                    AZ_Error("ScriptAutomation", false, "Script: Could not find or load script asset '%s'.", scriptFilePath.c_str());
                 }
             );
 #endif
             return;
         }
 
-#ifndef _RELEASE // AZ_Error is a no-op in release builds
+        if (m_executingScripts.find(scriptAsset.GetId()) != m_executingScripts.end())
+        {
+#ifndef _RELEASE //AZ_Error does nothing in release, ignore this call
+            QueueScriptOperation([scriptFilePath]()
+                {
+                    AZ_Error("ScriptAutomation", false, "Calling script '%s' would likely cause an infinite loop and crash. Skipping.", scriptFilePath.c_str());
+                }
+            );
+#endif
+            return;
+        }
+
         QueueScriptOperation([scriptFilePath]()
             {
-                AZ_Printf("ScriptAutomation", "Running script '%s'...\n", scriptFilePath);
+                AZ_Printf("ScriptAutomation", "Running script '%s'...\n", scriptFilePath.c_str());
             }
         );
-#endif
 
-        if (!m_scriptContext->Execute(scriptAsset->m_data.GetScriptBuffer().data(), scriptFilePath, scriptAsset->m_data.GetScriptBuffer().size()))
+        ScriptAutomationEventsBus::Broadcast(&ScriptAutomationEventsBus::Events::PreScriptExecution, scriptFilePath);
+        m_executingScripts.insert(scriptAsset.GetId());
+
+        if (!m_scriptContext->Execute(scriptAsset->m_data.GetScriptBuffer().data(), scriptFilePath.c_str(), scriptAsset->m_data.GetScriptBuffer().size()))
         {
-#ifndef _RELEASE // AZ_Error is a no-op in release builds
+#ifndef _RELEASE //AZ_Error does nothing in release, ignore this call
             // Push an error operation on the back of the queue instead of reporting it immediately so it doesn't get lost
             // in front of a bunch of queued m_scriptOperations.
             QueueScriptOperation([scriptFilePath]()
                 {
-                    AZ_Error("ScriptAutomation", false, "Script: Error running script '%s'.", scriptFilePath);
+                    AZ_Error("ScriptAutomation", false, "Script: Error running script '%s'.", scriptFilePath.c_str());
                 }
             );
 #endif
         }
+
+        m_executingScripts.erase(scriptAsset.GetId());
+        ScriptAutomationEventsBus::Broadcast(&ScriptAutomationEventsBus::Events::PostScriptExecution, scriptFilePath);
+    }
+
+    void ScriptAutomationSystemComponent::SetupScriptExecution(const AZStd::string& scriptFilePath)
+    {
+        AZ_Assert(m_executingScripts.empty(), "There should be no active scripts at this point");
+        
+        ScriptAutomationEventsBus::Broadcast(&ScriptAutomationEventsBus::Events::AutomationStarted, scriptFilePath);
     }
 } // namespace ScriptAutomation

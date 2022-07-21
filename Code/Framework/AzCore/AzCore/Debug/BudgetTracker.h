@@ -28,6 +28,11 @@ namespace AZ::Debug
         bool Init();
         void Reset();
 
+        void PerFrameReset();
+
+        void StartLoggingBudgetTotals();
+        void StopLoggingBudgetTotals();
+
         void GetBudget(Budget*& extBudgetRef, const char* budgetName, uint32_t crc);
 
     private:

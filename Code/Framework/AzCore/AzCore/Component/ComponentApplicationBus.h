@@ -189,6 +189,10 @@ namespace AZ
         //! Command Line structure can be queried for switches (-<switch> /<switch>) or positional parameter (<value>)
         virtual AZ::CommandLine* GetAzCommandLine() { return{}; }
 
+        virtual void StartLoggingBudgetTotals() { }
+
+        virtual void StopLoggingBudgetTotals() { }
+
         //! Returns all the flags that are true for the current application.
         virtual void QueryApplicationType(ApplicationTypeQuery& appType) const = 0;
     };

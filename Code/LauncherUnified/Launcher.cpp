@@ -11,7 +11,9 @@
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/Component/ComponentApplicationLifecycle.h>
 #include <AzCore/Console/IConsole.h>
+#include <AzCore/Debug/Budget.h>
 #include <AzCore/Debug/BudgetTracker.h>
+#include <AzCore/Debug/Profiler.h>
 #include <AzCore/Debug/Trace.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/IO/Path/Path.h>
@@ -45,6 +47,8 @@ extern "C" void CreateStaticModules(AZStd::vector<AZ::Module*>& modulesOut);
 #endif
 
 void CVar_OnViewportPosition(const AZ::Vector2& value);
+
+AZ_DEFINE_BUDGET(Launcher);
 
 namespace
 {
@@ -97,6 +101,9 @@ namespace
         ISystem* system = gEnv ? gEnv->pSystem : nullptr;
         while (!gameApplication.WasExitMainLoopRequested())
         {
+            gameApplication.ResetBudgetTotals();
+
+            AZ_PROFILE_BUDGET(Launcher);
             // Pump the system event loop
             gameApplication.PumpSystemEventLoopUntilEmpty();
 

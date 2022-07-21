@@ -52,12 +52,10 @@ namespace AZ::Statistics
     ////////////////////////////////////////////////////////////////////////////////////////////////
     void StatisticalProfilerProxySystemComponent::Activate()
     {
-        m_StatisticalProfilerProxy = new StatisticalProfilerProxy;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     void StatisticalProfilerProxySystemComponent::Deactivate()
     {
-        delete m_StatisticalProfilerProxy;
     }
 } // namespace AZ::Statistics

@@ -66,6 +66,39 @@ namespace AZ::Debug
         }
     }
 
+    void BudgetTracker::PerFrameReset()
+    {
+        if (m_impl)
+        {
+            for (auto& budgetRef : m_impl->m_budgets)
+            {
+                budgetRef.second.PerFrameReset();
+            }
+        }
+    }
+
+    void BudgetTracker::StartLoggingBudgetTotals()
+    {
+        if (m_impl)
+        {
+            for (auto& budgetRef : m_impl->m_budgets)
+            {
+                budgetRef.second.StartLogging();
+            }
+        }
+    }
+
+    void BudgetTracker::StopLoggingBudgetTotals()
+    {
+        if (m_impl)
+        {
+            for (auto& budgetRef : m_impl->m_budgets)
+            {
+                budgetRef.second.StopLogging();
+            }
+        }
+    }
+
     void BudgetTracker::GetBudget(Budget*& extBudgetRef, const char* budgetName, uint32_t crc)
     {
         AZStd::scoped_lock lock{ m_mutex };

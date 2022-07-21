@@ -10,6 +10,7 @@
 
 #include <ScriptAutomation/ScriptAutomationBus.h>
 
+#include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
@@ -50,8 +51,9 @@ namespace ScriptAutomation
         ScriptAutomationSystemComponent();
         ~ScriptAutomationSystemComponent();
 
-        void SetIdleFrames(int numFrames);
-        void SetIdleSeconds(float numSeconds);
+        void SetFrameTimeIsLocked(bool frameTimeIsLocked);
+
+        int GetRandomTestSeed();
 
     protected:
         // AZ::Component implementation
@@ -67,7 +69,12 @@ namespace ScriptAutomation
         void ResumeAutomation() override;
         void QueueScriptOperation(ScriptAutomationRequests::ScriptOperation&& operation) override;
 
-        void ExecuteScript(const char* scriptFilePath);
+        void SetIdleFrames(int numFrames) override;
+        void SetIdleSeconds(float numSeconds) override;
+
+        void ExecuteScript(const AZStd::string& scriptFilePath) override;
+
+        AZStd::unordered_set<AZ::Data::AssetId> m_executingScripts;
 
         AZStd::unique_ptr<AZ::ScriptContext> m_scriptContext; //< Provides the lua scripting system
         AZStd::unique_ptr<AZ::BehaviorContext> m_scriptBehaviorContext; //< Used to bind script callback functions to lua
@@ -76,13 +83,19 @@ namespace ScriptAutomation
 
         AZStd::string m_automationScript;
 
+        int m_randomSeed = 0;
+
         int m_scriptIdleFrames = 0;
         float m_scriptIdleSeconds = 0.0f;
 
         float m_scriptPauseTimeout = 0.0f;
         bool m_scriptPaused = false;
 
+        bool m_frameTimeIsLocked = false;
+
         bool m_isStarted = false;
         bool m_exitOnFinish = false;
+    private:
+        void SetupScriptExecution(const AZStd::string& scriptFilePath);
     };
 } // namespace ScriptAutomation

@@ -25,14 +25,14 @@
 #define AZ_PROFILE_SCOPE(budget, ...)                                                                                                      \
     ::AZ::Debug::ProfileScope AZ_JOIN(azProfileScope, __LINE__)                                                                            \
     {                                                                                                                                      \
-        AZ_BUDGET_GETTER(budget)(), __VA_ARGS__                                                                                            \
+        AZ_BUDGET_GETTER(budget)(), false, __VA_ARGS__                                                                                     \
     }
 
 #define AZ_PROFILE_FUNCTION(category) AZ_PROFILE_SCOPE(category, AZ_FUNCTION_SIGNATURE)
 
 // Prefer using the scoped macros which automatically end the event (AZ_PROFILE_SCOPE/AZ_PROFILE_FUNCTION)
-#define AZ_PROFILE_BEGIN(budget, ...) ::AZ::Debug::ProfileScope::BeginRegion(AZ_BUDGET_GETTER(budget)(), __VA_ARGS__)
-#define AZ_PROFILE_END(budget) ::AZ::Debug::ProfileScope::EndRegion(AZ_BUDGET_GETTER(budget)())
+#define AZ_PROFILE_BEGIN(budget, ...) ::AZ::Debug::ProfileScope::BeginRegion(AZ_BUDGET_GETTER(budget)(), false, __VA_ARGS__)
+#define AZ_PROFILE_END(budget) ::AZ::Debug::ProfileScope::EndRegion(AZ_BUDGET_GETTER(budget)(), false)
 
 #endif // AZ_PROFILER_MACRO_DISABLE
 
@@ -50,6 +50,24 @@
 #define AZ_PROFILE_DATAPOINT(...)
 #define AZ_PROFILE_DATAPOINT_PERCENT(...)
 #endif
+
+/**
+ * Macro to declare a profile section for the budget total.
+ * It works similar to AZ_PROFILE_SCOPE but it's meant to be used 
+ * to get budget totals. Using multiple AZ_PROFILE_BUDGET calls
+ * for the same budget within a callstack will result in incorrect results
+ * because the duration gets added for each scope. So the macro at a lower
+ * level in the callstack will already include the time for higher level
+ * calls for the same budget.
+ */
+#define AZ_PROFILE_BUDGET(budget)                                                                                                          \
+    ::AZ::Debug::ProfileScope AZ_JOIN(azProfileScope, __LINE__)                                                                            \
+    {                                                                                                                                      \
+        AZ_BUDGET_GETTER(budget)(), true, nullptr                                                                                          \
+    }
+
+#define AZ_PROFILE_BUDGET_BEGIN(budget) ::AZ::Debug::ProfileScope::BeginRegion(AZ_BUDGET_GETTER(budget)(), true, nullptr)
+#define AZ_PROFILE_BUDGET_END(budget) ::AZ::Debug::ProfileScope::EndRegion(AZ_BUDGET_GETTER(budget)(), true)
 
 namespace AZStd
 {
@@ -75,16 +93,17 @@ namespace AZ::Debug
     {
     public:
         template<typename... T>
-        static void BeginRegion(Budget* budget, const char* eventName, T const&... args);
-        static void EndRegion(Budget* budget);
+        static void BeginRegion(Budget* budget, bool budgetTotal, const char* eventName, T const&... args);
+        static void EndRegion(Budget* budget, bool budgetTotal);
 
         template<typename... T>
-        ProfileScope(Budget* budget, const char* eventName, T const&... args);
+        ProfileScope(Budget* budget, bool budgetTotal, const char* eventName, T const&... args);
 
         ~ProfileScope();
 
     private:
         Budget* m_budget;
+        bool m_budgetTotal;
     };
 } // namespace AZ::Debug
 
