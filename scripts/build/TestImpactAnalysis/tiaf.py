@@ -278,7 +278,8 @@ class TestImpact:
             return None
         except json.JSONDecodeError as e:
             logger.error("The config file doesn not contain valid JSON")
-            raise SystemError("Config file does not contain valid JSON, stopping TIAF")
+            raise SystemError(
+                "Config file does not contain valid JSON, stopping TIAF")
 
     def _attempt_to_generate_change_list(self):
         """
@@ -443,3 +444,68 @@ class TestImpact:
         if self._persistent_storage:
             return self._persistent_storage.has_historic_data
         return False
+
+    @property
+    def source_branch(self):
+        """
+        The source branch for this TIAF run.
+        """
+        return self._src_branch
+
+    @property
+    def destination_branch(self):
+        """
+        The destination branch for this TIAF run.
+        """
+        return self._dst_branch
+
+    @property
+    def destination_commit(self):
+        """
+        The destination commit for this TIAF run.
+        Destination commit is the commit that is being built.
+        """
+        return self._dst_commit
+
+    @property
+    def source_commit(self):
+        """
+        The source commit for this TIAF run.
+        Source commit is the commit that we compare to for PR builds.
+        """
+        return self._src_commit
+
+    @property
+    def runtime_args(self):
+        """
+        The arguments to be passed to the TIAF runtime.
+        """
+        return self._runtime_args
+
+    @property
+    def has_change_list(self):
+        """
+        True if a change list has been generated for this TIAF run.
+        """
+        return self._has_change_list
+
+    @property
+    def instance_id(self):
+        """
+        The instance id of this TestImpact object.
+        """
+        return self._instance_id
+
+    @property
+    def test_suite(self):
+        """
+        The test suite being executed.
+        """
+        return self._suite
+
+    @property
+    def source_of_truth_branch(self):
+        """
+        The source of truth branch for this TIAF run.
+        """
+        return self._source_of_truth_branch
