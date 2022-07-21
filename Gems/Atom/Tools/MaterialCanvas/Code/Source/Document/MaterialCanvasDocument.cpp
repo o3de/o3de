@@ -173,7 +173,7 @@ namespace MaterialCanvas
         CreateGraph(graph);
         m_modified = false;
 
-        GenerateDataFromGraph();
+        CompileGraph();
         return OpenSucceeded();
     }
 
@@ -193,7 +193,7 @@ namespace MaterialCanvas
 
         m_modified = false;
         m_absolutePath = m_savePathNormalized;
-        GenerateDataFromGraph();
+        CompileGraph();
         return SaveSucceeded();
     }
 
@@ -213,7 +213,7 @@ namespace MaterialCanvas
 
         m_modified = false;
         m_absolutePath = m_savePathNormalized;
-        GenerateDataFromGraph();
+        CompileGraph();
         return SaveSucceeded();
     }
 
@@ -233,7 +233,7 @@ namespace MaterialCanvas
 
         m_modified = false;
         m_absolutePath = m_savePathNormalized;
-        GenerateDataFromGraph();
+        CompileGraph();
         return SaveSucceeded();
     }
 
@@ -266,7 +266,7 @@ namespace MaterialCanvas
                 [this, redoState]() { RestoreGraphState(redoState); });
 
             m_modified = true;
-            GenerateDataFromGraph();
+            CompileGraph();
             AtomToolsFramework::AtomToolsDocumentNotificationBus::Event(
                 m_toolId, &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentObjectInfoInvalidated, m_id);
             AtomToolsFramework::AtomToolsDocumentNotificationBus::Event(
@@ -340,7 +340,7 @@ namespace MaterialCanvas
         CreateGraph(graph);
 
         m_modified = true;
-        GenerateDataFromGraph();
+        CompileGraph();
         AtomToolsFramework::AtomToolsDocumentNotificationBus::Event(
             m_toolId, &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentObjectInfoInvalidated, m_id);
         AtomToolsFramework::AtomToolsDocumentNotificationBus::Event(
@@ -423,7 +423,7 @@ namespace MaterialCanvas
         return nodes;
     }
 
-    bool MaterialCanvasDocument::GenerateDataFromGraph() const
+    bool MaterialCanvasDocument::CompileGraph() const
     {
         m_generatedFiles.clear();
 

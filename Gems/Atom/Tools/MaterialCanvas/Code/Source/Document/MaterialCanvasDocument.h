@@ -74,7 +74,7 @@ namespace MaterialCanvas
 
         bool CompareNodeExecutionOrder(GraphModel::ConstNodePtr nodeA, GraphModel::ConstNodePtr nodeB) const;
         AZStd::vector<GraphModel::ConstNodePtr> GetNodesInExecutionOrder() const;
-        bool GenerateDataFromGraph() const;
+        bool CompileGraph() const;
 
         AZ::Entity* m_sceneEntity = {};
         GraphCanvas::GraphId m_graphId;
