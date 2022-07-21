@@ -390,6 +390,31 @@ def get_script_event_parameter_type_combobox(self):
 
     return type_combo_boxes
 
+
+def located_expected_tracer_lines(self, section_tracer, lines):
+    """
+    function for parsing game mode's console output for expected test lines. requires section_tracer. duplicates lines 
+    and error lines are not handled by this function
+    
+    param self: The script calling this function
+    param section_tracer: python editor tracer object
+    param lines: list of expected lines
+    
+    
+    returns true if all the expected lines were detected in the parsed output
+    """
+    found_lines = [printInfo.message.strip() for printInfo in section_tracer.prints]
+
+    expected_lines = len(lines)
+    matching_lines = 0
+
+    for line in lines:
+        for found_line in found_lines:
+            if line == found_line:
+                matching_lines += 1
+
+    return matching_lines >= expected_lines
+
 def create_entity_with_sc_component_asset(entity_name, source_file, position = math.Vector3(512.0, 512.0, 32.0)):
     """
     function for creating a new entity in the scene w/ a script canvas component. Function also adds as
