@@ -318,7 +318,7 @@ namespace Terrain
             if (ref == InvalidMacroMaterialRef)
             {
                 ref = materialRef;
-                break;
+                return;
             }
         }
     }
