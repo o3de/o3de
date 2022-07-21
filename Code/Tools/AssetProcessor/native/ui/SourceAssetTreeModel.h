@@ -40,6 +40,7 @@ namespace AssetProcessor
 
         void RemoveAssetTreeItem(AssetTreeItem* assetToRemove);
         void RemoveFoldersIfEmpty(AssetTreeItem* itemToCheck);
+        AZ::s64 GetCreateJobDuration(const char* sourceName);
 
         AZStd::unordered_map<AZStd::string, AssetTreeItem*> m_sourceToTreeItem;
         AZStd::unordered_map<AZ::s64, AssetTreeItem*> m_sourceIdToTreeItem;

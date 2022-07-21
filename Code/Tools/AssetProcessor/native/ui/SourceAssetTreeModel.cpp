@@ -189,17 +189,7 @@ namespace AssetProcessor
         // Model changes need to be run on the main thread.
         AZ::SystemTickBus::QueueFunction([&, entry]()
             {
-                    // Get stat
-                AZ::s64 accumulateJobDuration = 0;
-                QString statKey = QString("CreateJobs,%1").arg(entry.m_sourceName.c_str()).append("%");
-                m_sharedDbConnection->QueryStatLikeStatName(
-                    statKey.toUtf8().data(),
-                    [&](AzToolsFramework::AssetDatabase::StatDatabaseEntry statEntry)
-                    {
-                        accumulateJobDuration += statEntry.m_statValue;
-                        return true;
-                    });
-
+                AZ::s64 accumulateJobDuration = GetCreateJobDuration(entry.m_sourceName.c_str());
                 m_sharedDbConnection->QueryScanFolderBySourceID(entry.m_sourceID,
                     [&, entry](AzToolsFramework::AssetDatabase::ScanFolderDatabaseEntry& scanFolder)
                     {
@@ -217,6 +207,20 @@ namespace AssetProcessor
             return;
         }
         RemoveAssetTreeItem(itemToCheck);
+    }
+
+    AZ::s64 SourceAssetTreeModel::GetCreateJobDuration(const char* sourceName)
+    {
+        AZ::s64 accumulateJobDuration = 0;
+        QString statKey = QString("CreateJobs,%1").arg(sourceName).append("%");
+        m_sharedDbConnection->QueryStatLikeStatName(
+            statKey.toUtf8().data(),
+            [&](AzToolsFramework::AssetDatabase::StatDatabaseEntry statEntry)
+            {
+                accumulateJobDuration += statEntry.m_statValue;
+                return true;
+            });
+        return accumulateJobDuration;
     }
 
     void SourceAssetTreeModel::RemoveAssetTreeItem(AssetTreeItem* assetToRemove)
