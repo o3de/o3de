@@ -11,13 +11,15 @@ from editor_python_test_tools.utils import TestHelper as helper
 from editor_python_test_tools.utils import Report as report
 from editor_python_test_tools.utils import Tracer as tracer
 import editor_python_test_tools.hydra_editor_utils as hydra
+import scripting_utils.scripting_tools
 import azlmbr.scriptcanvas as scriptcanvas
-from editor_python_test_tools.asset_utils import Asset
 import azlmbr.legacy.general as general
 import azlmbr.math as math
 import azlmbr.asset as asset
 import azlmbr.bus as bus
 import azlmbr.paths as paths
+from scripting_utils.scripting_constants import (BASE_LEVEL_NAME, WAIT_TIME_3)
+
 
 # fmt: off
 class Tests:
@@ -31,13 +33,8 @@ class Tests:
 class LogLines:
     expected_lines = ["Greetings from the first script", "Greetings from the second script"]
 
-
-LEVEL_NAME = "Base"
 SOURCE_FILE_0 = os.path.join(paths.projectroot, "ScriptCanvas", "ScriptCanvas_TwoComponents0.scriptcanvas")
 SOURCE_FILE_1 = os.path.join(paths.projectroot, "ScriptCanvas", "ScriptCanvas_TwoComponents1.scriptcanvas")
-WAIT_TIME = 3.0  # SECONDS
-SCRIPT_CANVAS_COMPONENT_PROPERTY_PATH = "Configuration|Source"
-
 
 class TestScriptCanvas_TwoComponents_InteractSuccessfully:
     """
@@ -86,11 +83,10 @@ class TestScriptCanvas_TwoComponents_InteractSuccessfully:
 
         # 1) Create level
         hydra.open_base_level()
-        helper.wait_for_condition(lambda: general.get_current_level_name() == LEVEL_NAME, WAIT_TIME)
+        helper.wait_for_condition(lambda: general.get_current_level_name() == BASE_LEVEL_NAME, WAIT_TIME_3)
         general.close_pane("Error Report")
 
         # 2) Create entity with SC components
-        sourcehandle = scriptcanvas.SourceHandleFromPath(SOURCE_FILE_0)
         entity = hydra.Entity("test_Entity")
         position = math.Vector3(512.0, 512.0, 32.0)
         entity.create_entity(position, ["Script Canvas", "Script Canvas"])
@@ -110,7 +106,7 @@ class TestScriptCanvas_TwoComponents_InteractSuccessfully:
             helper.enter_game_mode(Tests.game_mode_entered)
 
             # 5) Wait for expected lines to be found
-            helper.wait_for_condition(self.locate_expected_lines(section_tracer), WAIT_TIME)
+            helper.wait_for_condition(self.locate_expected_lines(section_tracer), WAIT_TIME_3)
 
             # 6) Report if expected lines were found
             report.result(Tests.found_lines, self.locate_expected_lines(section_tracer))

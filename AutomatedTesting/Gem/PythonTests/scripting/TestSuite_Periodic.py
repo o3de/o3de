@@ -46,15 +46,6 @@ class TestAutomation(TestAutomationBase):
         from . import Pane_HappyPath_ResizesProperly as test_module
         self._run_test(request, workspace, editor, test_module)
 
-    @pytest.mark.skip(reason="Test fails to find expected lines, it needs to be fixed.")
-    @pytest.mark.parametrize("level", ["tmp_level"])
-    def test_ScriptCanvas_TwoComponents_InteractSuccessfully(self, request, workspace, editor, launcher_platform, level):
-        def teardown():
-            file_system.delete([os.path.join(workspace.paths.project(), "Levels", level)], True, True)
-        request.addfinalizer(teardown)
-        file_system.delete([os.path.join(workspace.paths.project(), "Levels", level)], True, True)
-        from . import ScriptCanvas_TwoComponents_InteractSuccessfully as test_module
-        self._run_test(request, workspace, editor, test_module)
 
     @pytest.mark.skip(reason="Test fails to find expected lines, it needs to be fixed.")
     @pytest.mark.parametrize("level", ["tmp_level"])
@@ -418,6 +409,23 @@ class TestScriptCanvasTests(object):
             TEST_DIRECTORY,
             editor,
             "ScriptEvents_AllParamDatatypes_CreationSuccess.py",
+            expected_lines,
+            auto_test_mode=False,
+            timeout=60,
+        )
+
+    def test_ScriptCanvas_TwoComponents_InteractSuccessfully(self, request, workspace, editor, launcher_platform):
+        expected_lines = [
+            "New level created",
+            "Game Mode successfully entered",
+            "Game Mode successfully exited",
+            "Expected log lines were found",
+        ]
+        hydra.launch_and_validate_results(
+            request,
+            TEST_DIRECTORY,
+            editor,
+            "ScriptCanvas_TwoComponents_InteractSuccessfully.py",
             expected_lines,
             auto_test_mode=False,
             timeout=60,
