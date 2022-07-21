@@ -3940,6 +3940,9 @@ namespace AssetProcessor
         // now we can update the database with this new information:
         UpdateSourceFileDependenciesDatabase(entry);
         m_jobEntries.push_back(entry);
+
+        // Signals SourceAssetTreeModel so it can update the CreateJob duration change
+        Q_EMIT CreateJobDurationChanged(newSourceInfo.m_sourceRelativeToWatchFolder);
     }
 
     bool AssetProcessorManager::ResolveSourceFileDependencyPath(const AssetBuilderSDK::SourceFileDependency& sourceDependency, QString& resultDatabaseSourceName, QStringList& resolvedDependencyList)
