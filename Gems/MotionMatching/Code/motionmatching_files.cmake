@@ -14,6 +14,8 @@ set(FILES
     Source/Allocators.h
     Source/BlendTreeMotionMatchNode.cpp
     Source/BlendTreeMotionMatchNode.h
+    Source/CsvSerializers.cpp
+    Source/CsvSerializers.h
     Source/EventData.cpp
     Source/EventData.h
     Source/Frame.cpp

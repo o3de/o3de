@@ -101,7 +101,7 @@ namespace EMotionFX::MotionMatching
 
     void FeatureAngularVelocity::Reflect(AZ::ReflectContext* context)
     {
-        AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
+        auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
         if (!serializeContext)
         {
             return;
