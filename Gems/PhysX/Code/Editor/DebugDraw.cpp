@@ -705,20 +705,22 @@ namespace PhysX
 
             if (!vertices.empty())
             {
-                // Each heightfield quad consists of 6 vertices, or 2 triangles.
-                // If we naively draw each triangle, we'll need 6 lines per quad. However, the diagonal line would be drawn twice,
-                // and the quad borders with adjacent quads would also be drawn twice, so we can reduce this down to 3 lines, so
-                // that we're drawing a per-quad pattern like this:
-                // 2 --- 3
-                //   |\
-                // 0 | \ 1
-                //  
-                // To draw 3 lines, we need 6 vertices. Because our results *already* have 6 vertices per quad, we just need to make
-                // sure each set of 6 is the *right* set of vertices for what we want to draw, and then we can submit the entire set
-                // directly to DrawLines().
-                // We currently get back 6 vertices in the pattern 0-1-2, 1-3-2, for our two triangles. The lines we want to draw
-                // are 0-2, 2-1, and 3-2. We can create this pattern by just copying the third vertex onto the second vertex for
-                // every quad so that 0 1 2 1 3 2 becomes 0 2 2 1 3 2.
+                /* 
+                   Each heightfield quad consists of 6 vertices, or 2 triangles.
+                   If we naively draw each triangle, we'll need 6 lines per quad. However, the diagonal line would be drawn twice,
+                   and the quad borders with adjacent quads would also be drawn twice, so we can reduce this down to 3 lines, so
+                   that we're drawing a per-quad pattern like this:
+                   2 --- 3
+                     |\
+                   0 | \ 1
+                  
+                   To draw 3 lines, we need 6 vertices. Because our results *already* have 6 vertices per quad, we just need to make
+                   sure each set of 6 is the *right* set of vertices for what we want to draw, and then we can submit the entire set
+                   directly to DrawLines().
+                   We currently get back 6 vertices in the pattern 0-1-2, 1-3-2, for our two triangles. The lines we want to draw
+                   are 0-2, 2-1, and 3-2. We can create this pattern by just copying the third vertex onto the second vertex for
+                   every quad so that 0 1 2 1 3 2 becomes 0 2 2 1 3 2.
+                */
                 for (size_t vertex = 0; vertex < vertices.size(); vertex += 6)
                 {
                     vertices[vertex + 1] = vertices[vertex + 2];

@@ -21,8 +21,6 @@ logger = get_logger(__file__)
 
 class TestImpact:
 
-    
-
     def __init__(self, args: dict):
         """
         Initializes the test impact model with the commit, branches as runtime configuration.
@@ -32,7 +30,8 @@ class TestImpact:
         """
 
         self._runtime_args = []
-        self._change_list = {"createdFiles": [], "updatedFiles": [], "deletedFiles": []}
+        self._change_list = {"createdFiles": [],
+                             "updatedFiles": [], "deletedFiles": []}
         self._has_change_list = False
         self._use_test_impact_analysis = False
 
@@ -44,16 +43,16 @@ class TestImpact:
 
         self._config = self._parse_config_file(args['config'])
 
-        # Initialise branches
+        # Initialize branches
         self._src_branch = args.get("src_branch")
         self._dst_branch = args.get("dst_branch")
-        logger.info(f"Src branch: '{self._src_branch}'.")
-        logger.info(f"Dst branch: '{self._dst_branch}'.")
+        logger.info(f"Source branch: '{self._src_branch}'.")
+        logger.info(f"Destination branch: '{self._dst_branch}'.")
 
-        # Determine our source of truth. Also initialises our source of truth property.
+        # Determine our source of truth. Also intializes our source of truth property.
         self._determine_source_of_truth()
 
-        # Initialise commit info
+        # Initialize commit info
         self._dst_commit = args.get("commit")
         logger.info(f"Commit: '{self._dst_commit}'.")
         self._src_commit = None
@@ -65,10 +64,10 @@ class TestImpact:
         # If flag is set for us to use TIAF
         if self._use_test_impact_analysis:
             logger.info("Test impact analysis is enabled.")
-            self._persistent_storage = self._initialise_persistent_storage(
+            self._persistent_storage = self._intialize_persistent_storage(
                 s3_bucket=self._s3_bucket, suite=self._suite, s3_top_level_dir=args.get('s3_top_level_dir'))
 
-            # If persistent storage initialised correctly
+            # If persistent storage intialized correctly
             if self._persistent_storage:
 
                 # Historic Data Handling:
@@ -86,14 +85,16 @@ class TestImpact:
                         # Use TIA sequence (instrumented subset of tests) for coverage updating branches so we can update the coverage data with the generated coverage
                         sequence_type = "tia"
                     else:
-                        # Use TIA no-write sequence (regular subset of tests) for non coverage updating branche
+                        # Use TIA no-write sequence (regular subset of tests) for non coverage updating branches
                         sequence_type = "tianowrite"
                         # Ignore integrity failures for non coverage updating branches as our confidence in the
                         self._runtime_args.append("--ipolicy=continue")
                         logger.info(
                             "Integration failure policy is set to 'continue'.")
-                    self._runtime_args.append(f"--changelist={self._change_list_path}")
-                    logger.info(f"Change list is set to '{self._change_list_path}'.")
+                    self._runtime_args.append(
+                        f"--changelist={self._change_list_path}")
+                    logger.info(
+                        f"Change list is set to '{self._change_list_path}'.")
                 else:
                     if self._is_source_of_truth_branch and self._can_rerun_with_instrumentation:
                         # Use seed sequence (instrumented all tests) for coverage updating branches so we can generate the coverage bed for future sequences
@@ -113,9 +114,9 @@ class TestImpact:
 
     def _parse_arguments_to_runtime(self, args, sequence_type, runtime_args):
         """
-        Fetches the relevant keys from the provided dict, and applies the values of the arguments(or applies them as a flag) to our runtime_args list.
+        Fetches the relevant keys from the provided dictionary, and applies the values of the arguments(or applies them as a flag) to our runtime_args list.
 
-        @param args: Dict containing the arguments passed to this TestImpact object. Will contain all the runtime arguments we need to apply.
+        @param args: Dictionary containing the arguments passed to this TestImpact object. Will contain all the runtime arguments we need to apply.
         @sequence_type: The sequence type as determined when initialising this TestImpact object.
         @runtime_args: A list of strings that will become the arguments for our runtime.
         """
@@ -148,7 +149,7 @@ class TestImpact:
         # Exclude tests
         exclude_file = args.get('exclude_file')
         if exclude_file:
-            runtime_args.append(f"--exclude={exclude_file}")
+            runtime_args.append(f"--exclude_file={exclude_file}")
             logger.info(
                 f"Exclude file found, excluding the tests stored at '{exclude_file}'.")
         else:
@@ -200,7 +201,7 @@ class TestImpact:
             # If this commit is different to the last commit in our historic data, we can diff the commits to get our change list
             self._attempt_to_generate_change_list()
 
-    def _initialise_persistent_storage(self, suite: str,  s3_bucket: str = None, s3_top_level_dir: str = None):
+    def _intialize_persistent_storage(self, suite: str,  s3_bucket: str = None, s3_top_level_dir: str = None):
         """
         Initialise our persistent storage object. Defaults to initialising local storage, unless the s3_bucket argument is not None. 
         Returns PersistentStorage object or None if initialisation failed.
@@ -225,7 +226,7 @@ class TestImpact:
 
     def _determine_source_of_truth(self):
         """
-        Determines whether the branch we are executing TIAF on is the source of truth(the branch from which the coverage data will be stored/retrieved from) or not.        
+        Determines whether the branch we are executing TIAF on is the source of truth (the branch from which the coverage data will be stored/retrieved from) or not.        
         """
         # Source of truth (the branch from which the coverage data will be stored/retrieved from)
         if not self._dst_branch or self._src_branch == self._dst_branch:
@@ -397,10 +398,10 @@ class TestImpact:
         """
         Builds our runtime argument string based on the initialisation state, then executes the runtime with those arguments.
         Stores the report of this run locally.
-        Updates and stores historic data if storage is initialised and source branch is source of truth.
-        Returns the runtime result as a dict.
+        Updates and stores historic data if storage is intialized and source branch is source of truth.
+        Returns the runtime result as a dictionary.
 
-        @return: Runtime results in a dict.
+        @return: Runtime results in a dictionary.
         """
 
         unpacked_args = " ".join(self._runtime_args)
