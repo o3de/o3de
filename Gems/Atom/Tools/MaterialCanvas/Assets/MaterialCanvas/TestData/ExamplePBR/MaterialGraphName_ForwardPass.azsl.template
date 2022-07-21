@@ -52,43 +52,6 @@ ShaderResourceGroup MaterialSrg : SRG_PerMaterial
 // GENERATED_FUNCTIONS_BEGIN
 // GENERATED_FUNCTIONS_END
 
-// One possibility for generating code for each input on the lighting model output node is to use one function per input on that node. Each
-// of these functions resulting value will be initialized with a default value and calling the functions as is should allow the template
-// shader code to compile even without generated data. This will allow iteration and testing while building material graph templates.
-// Alternatively, all of the nodes can be evaluated and code generated inline in the main fragment shader function. That may be more
-// desirable if a lot of the generated code is shared between them.
-float4 GetBaseColorInput(VSOutput IN)
-{
-    float4 result = float4(1.0, 1.0, 1.0, 1.0);
-    // GENERATED_VSOUTPUT_FUNCTION_BEGIN BaseColor
-    // GENERATED_VSOUTPUT_FUNCTION_END
-    return result;
-}
- 
-float GetMetallicInput(VSOutput IN)
-{
-    float result = 1.0;
-    // GENERATED_VSOUTPUT_FUNCTION_BEGIN Metallic
-    // GENERATED_VSOUTPUT_FUNCTION_END
-    return result;
-}
- 
-float GetRoughnessInput(VSOutput IN)
-{
-    float result = 0.5;
-    // GENERATED_VSOUTPUT_FUNCTION_BEGIN Roughness
-    // GENERATED_VSOUTPUT_FUNCTION_END
-    return result;
-}
- 
-float GetSpecularF0Input(VSOutput IN)
-{
-    float result = 0.5;
-    // GENERATED_VSOUTPUT_FUNCTION_BEGIN SpecularF0
-    // GENERATED_VSOUTPUT_FUNCTION_END
-    return result;
-}
- 
 VSOutput MaterialGraphName_MainPassVS(VSInput IN)
 {
     VSOutput OUT;
@@ -102,40 +65,31 @@ VSOutput MaterialGraphName_MainPassVS(VSInput IN)
 
 ForwardPassOutput MaterialGraphName_MainPassPS(VSOutput IN)
 {
+    // GENERATED_INSTRUCTIONS_BEGIN
+    float4 inBaseColor = float4(1.0, 1.0, 1.0, 1.0);
+    float inMetallic = 1.0;
+    float inRoughness = 0.5;
+    float inSpecularF0Factor = 0.5;
+    // GENERATED_INSTRUCTIONS_END
+
     // ------- Surface -------
 
     Surface surface;
-    
-    // Position, Normal, Roughness
     surface.position = IN.m_worldPosition.xyz;
     surface.normal = normalize(IN.m_normal);
     surface.vertexNormal = normalize(IN.m_normal);
-    surface.roughnessLinear = GetRoughnessInput(IN);
+    surface.roughnessLinear = inRoughness;
     surface.CalculateRoughnessA();
-
-    // Albedo, SpecularF0
-    float4 baseColor = GetBaseColorInput(IN);
-    float metallic = GetMetallicInput(IN);
-    float specularF0Factor = GetSpecularF0Input(IN);
-    surface.SetAlbedoAndSpecularF0(baseColor, specularF0Factor, metallic);
-
-    // Clear Coat
+    surface.SetAlbedoAndSpecularF0(inBaseColor.rgb, inSpecularF0Factor, inMetallic);
     surface.clearCoat.InitializeToZero();
 
     // ------- LightingData -------
 
     LightingData lightingData;
-
-    // Light iterator
     lightingData.tileIterator.Init(IN.m_position, PassSrg::m_lightListRemapped, PassSrg::m_tileLightData);
     lightingData.Init(surface.position, surface.normal, surface.roughnessLinear);
-
-
-    // Diffuse and Specular response
     lightingData.specularResponse = FresnelSchlickWithRoughness(lightingData.NdotV, surface.specularF0, surface.roughnessLinear);
     lightingData.diffuseResponse = 1.0f - lightingData.specularResponse;
-
-    const float alpha = 1.0f;
 
     // ------- Lighting Calculation -------
 
@@ -151,7 +105,7 @@ ForwardPassOutput MaterialGraphName_MainPassPS(VSOutput IN)
     // Finalize Lighting
     lightingData.FinalizeLighting();
 
-    PbrLightingOutput lightingOutput = GetPbrLightingOutput(surface, lightingData, alpha);
+    PbrLightingOutput lightingOutput = GetPbrLightingOutput(surface, lightingData, inBaseColor.a);
 
     // ------- Output -------
 

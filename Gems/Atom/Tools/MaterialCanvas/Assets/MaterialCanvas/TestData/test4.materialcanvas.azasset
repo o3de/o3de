@@ -47,13 +47,8 @@
                             },
                             "Value": {
                                 "m_value": {
-                                    "$type": "Vector4",
-                                    "Value": [
-                                        0.0,
-                                        0.0,
-                                        0.0,
-                                        1.0
-                                    ]
+                                    "$type": "float",
+                                    "Value": 0.0
                                 }
                             }
                         },
@@ -63,29 +58,19 @@
                             },
                             "Value": {
                                 "m_value": {
-                                    "$type": "Vector4",
-                                    "Value": [
-                                        0.0,
-                                        0.0,
-                                        0.0,
-                                        1.0
-                                    ]
+                                    "$type": "float",
+                                    "Value": 0.0
                                 }
                             }
                         },
                         {
                             "Key": {
-                                "m_name": "inSpecular"
+                                "m_name": "inSpecularF0Factor"
                             },
                             "Value": {
                                 "m_value": {
-                                    "$type": "Vector4",
-                                    "Value": [
-                                        0.0,
-                                        0.0,
-                                        0.0,
-                                        1.0
-                                    ]
+                                    "$type": "float",
+                                    "Value": 0.0
                                 }
                             }
                         }
@@ -174,7 +159,7 @@
                 "m_targetEndpoint": [
                     1,
                     {
-                        "m_name": "inSpecular"
+                        "m_name": "inSpecularF0Factor"
                     }
                 ]
             },
