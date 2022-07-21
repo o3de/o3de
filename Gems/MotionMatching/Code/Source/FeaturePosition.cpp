@@ -57,7 +57,6 @@ namespace EMotionFX::MotionMatching
         const FeatureMatrixTransformer* featureTransformer,
         size_t frameIndex)
     {
-        const Transform jointModelTM = currentPose.GetModelSpaceTransform(m_jointIndex);
         const Transform relativeToWorldTM = currentPose.GetWorldSpaceTransform(m_relativeToNodeIndex);
 
         AZ::Vector3 position = GetFeatureData(featureMatrix, frameIndex);

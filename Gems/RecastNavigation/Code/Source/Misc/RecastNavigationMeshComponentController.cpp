@@ -397,7 +397,7 @@ namespace RecastNavigation
         {
             AZ_PROFILE_SCOPE(Navigation, "Navigation: OnReceivedAllNewTiles");
 
-            m_taskGraphEvent = AZStd::make_unique<AZ::TaskGraphEvent>();
+            m_taskGraphEvent = AZStd::make_unique<AZ::TaskGraphEvent>("RecastNavigation Tile Processing Wait");
             m_taskGraph.Reset();
 
             AZStd::vector<AZ::TaskToken> tileTaskTokens;

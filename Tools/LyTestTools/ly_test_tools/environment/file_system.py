@@ -40,7 +40,7 @@ def check_free_space(dest, required_space, msg):
 def safe_makedirs(dest_path):
     """ This allows an OSError in the case the directory cannot be created, which is logged but does not propagate."""
     try:
-        logger.debug(f'Creating directory "{dest_path}"')
+        logger.info(f'Creating directory "{dest_path}"')
         os.makedirs(dest_path)
 
     except OSError as e:
@@ -50,7 +50,7 @@ def safe_makedirs(dest_path):
             # In this case, windows will raise EACCES instead of EEXIST if you try to make a directory at the root.
             pass
         else:
-            logger.debug(f'Could not create directory: "{dest_path}".')
+            logger.info(f'Could not create directory: "{dest_path}".')
             raise
 
 
@@ -362,6 +362,7 @@ def restore_backup(original_file, backup_dir, backup_name=None):
         logger.warning('Could not restore backup, exception occurred while copying.', exc_info=True)
         return False
     return True
+
 
 def delete_oldest(path_glob, keep_num, del_files=True, del_dirs=False):
     """ Delete oldest builds, keeping a specific number """

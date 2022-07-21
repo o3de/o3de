@@ -231,8 +231,6 @@ namespace AzToolsFramework
 
         for (auto& view : m_manipulatorViews)
         {
-            auto nonUniformScale = GetNonUniformScale();
-
             view->Draw(
                 GetManipulatorManagerId(), managerState, GetManipulatorId(),
                 ManipulatorState{ ApplySpace(localTransform), GetNonUniformScale(), AZ::Vector3::CreateZero(), MouseOver() }, debugDisplay,
