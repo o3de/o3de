@@ -278,5 +278,4 @@ namespace JsonSerializationTests
          , AnySerializerTestDescription<PrimitivePointerInContainer>
          >;
      IF_JSON_CONFORMITY_ENABLED(INSTANTIATE_TYPED_TEST_CASE_P(Any, JsonSerializerConformityTests, AnyConformityTestTypes));
-     // INSTANTIATE_TYPED_TEST_CASE_P(Any, JsonSerializerConformityTests, AnyConformityTestTypes);
 }

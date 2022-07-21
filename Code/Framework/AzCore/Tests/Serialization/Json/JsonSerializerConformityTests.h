@@ -246,6 +246,7 @@ namespace JsonSerializationTests
             descriptor->ConfigureFeatures(this->m_features);
             descriptor->Reflect(this->m_serializeContext);
             descriptor->Reflect(this->m_jsonRegistrationContext);
+            this->m_serializeContext->template Class<PointerWrapper>()->Field("Value", &PointerWrapper::m_value);
 
             this->m_deserializationSettings->m_reporting = &Internal::VerifyCallback;
             this->m_serializationSettings->m_reporting = &Internal::VerifyCallback;
@@ -266,6 +267,7 @@ namespace JsonSerializationTests
             this->m_jsonRegistrationContext->DisableRemoveReflection();
 
             this->m_serializeContext->EnableRemoveReflection();
+            this->m_serializeContext->template Class<PointerWrapper>()->Field("Value", &PointerWrapper::m_value);
             descriptor->Reflect(this->m_serializeContext);
             this->m_serializeContext->DisableRemoveReflection();
 
