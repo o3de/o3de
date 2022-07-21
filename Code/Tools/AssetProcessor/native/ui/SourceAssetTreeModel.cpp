@@ -91,7 +91,7 @@ namespace AssetProcessor
     void SourceAssetTreeModel::AddOrUpdateEntry(
         const AzToolsFramework::AssetDatabase::SourceDatabaseEntry& source,
         const AzToolsFramework::AssetDatabase::ScanFolderDatabaseEntry& scanFolder,
-        bool modelIsResetting, AZ::s64 analysisJobDuration)
+        bool modelIsResetting, AZ::s64 createJobDuration)
     {
         const auto& existingEntry = m_sourceToTreeItem.find(source.m_sourceName);
         if (existingEntry != m_sourceToTreeItem.end())
@@ -101,7 +101,7 @@ namespace AssetProcessor
             // This item already exists, refresh the related data.
             sourceItemData->m_scanFolderInfo = scanFolder;
             sourceItemData->m_sourceInfo = source;
-            sourceItemData->m_analysisDuration = analysisJobDuration;
+            sourceItemData->m_analysisDuration = createJobDuration;
 
             QModelIndex existingIndexStart = createIndex(existingEntry->second->GetRow(), 0, existingEntry->second);
             QModelIndex existingIndexEnd = createIndex(existingEntry->second->GetRow(), existingEntry->second->GetColumnCount() - 1, existingEntry->second);
@@ -171,7 +171,7 @@ namespace AssetProcessor
         }
 
         m_sourceToTreeItem[source.m_sourceName] = parentItem->CreateChild(AZStd::make_shared<SourceAssetTreeItemData>(
-            &source, &scanFolder, source.m_sourceName, AZ::IO::FixedMaxPathString(filename.Native()).c_str(), false, analysisJobDuration));
+            &source, &scanFolder, source.m_sourceName, AZ::IO::FixedMaxPathString(filename.Native()).c_str(), false, createJobDuration));
         m_sourceIdToTreeItem[source.m_sourceID] = m_sourceToTreeItem[source.m_sourceName];
         if (!modelIsResetting)
         {
@@ -189,7 +189,7 @@ namespace AssetProcessor
         // Model changes need to be run on the main thread.
         AZ::SystemTickBus::QueueFunction([&, entry]()
             {
-                // Get stat
+                    // Get stat
                 AZ::s64 accumulateJobDuration = 0;
                 QString statKey = QString("CreateJobs,%1").arg(entry.m_sourceName.c_str()).append("%");
                 m_sharedDbConnection->QueryStatLikeStatName(
