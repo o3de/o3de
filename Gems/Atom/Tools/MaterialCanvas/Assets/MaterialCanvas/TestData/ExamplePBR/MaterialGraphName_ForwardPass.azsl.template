@@ -16,13 +16,14 @@
 #include <Atom/Features/PBR/Lighting/StandardLighting.azsli>
 #include <Atom/Features/PBR/Decals.azsli>
 
+// Everything inside of the generated blocks will eventually be replaced in the generated files as the material graph is compiled. 
+
 struct VSInput
 {
-    // These will eventually also be filled in by the material graph
     float3 m_position : POSITION;
     float3 m_normal : NORMAL;
     float4 m_tangent : TANGENT; 
-    float3 m_bitangent : BITANGENT; 
+    float3 m_bitangent : BITANGENT;
 
     // GENERATED_VSINPUT_BEGIN
     // GENERATED_VSINPUT_END
@@ -33,7 +34,7 @@ struct VSOutput
     precise linear centroid float4 m_position : SV_Position;
     float3 m_normal: NORMAL;
     float3 m_tangent : TANGENT; 
-    float3 m_bitangent : BITANGENT; 
+    float3 m_bitangent : BITANGENT;
     float3 m_worldPosition : UV0;
 };
 
@@ -41,7 +42,6 @@ struct VSOutput
 
 ShaderResourceGroup MaterialSrg : SRG_PerMaterial
 {
-    // Auto-generate material SRG fields from MaterialGraphName
     // GENERATED_MATERIAL_SRG_BEGIN
     // GENERATED_MATERIAL_SRG_END
 }

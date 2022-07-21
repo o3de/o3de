@@ -427,7 +427,7 @@ namespace MaterialCanvas
     {
         m_generatedFiles.clear();
 
-        // All slots and nodes will be visited to collect all of the uniuue include and template paths.
+        // All slots and nodes will be visited to collect all of the unique include and template paths.
         AZStd::set<AZStd::string> includePaths;
         AZStd::set<AZStd::string> templatePaths;
 
@@ -485,7 +485,7 @@ namespace MaterialCanvas
             return slotTypeName;
         };
 
-        // Disconnected input and property spots need to have their values converted into a format that can be injected into the shader.
+        // Disconnected input and property slots need to have their values converted into a format that can be injected into the shader.
         auto convertSlotValue = [](const AZStd::any& slotValue) -> AZStd::string
         {
             if (auto v = AZStd::any_cast<const AZ::Color>(&slotValue))
