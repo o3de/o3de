@@ -2114,15 +2114,17 @@ namespace AssetProcessor
 
     bool PlatformConfiguration::AddAssetCacheRecognizerContainer(const RecognizerContainer& recognizerContainer)
     {
+        bool addedEntries = false;
         for (const auto& recognizer : recognizerContainer)
         {
             auto entryIter = m_assetCacheServerRecognizers.find(recognizer.first);
             if (entryIter != m_assetCacheServerRecognizers.end())
             {
                 m_assetCacheServerRecognizers.insert(recognizer);
+                addedEntries = true;
             }
         }
-        return true;
+        return addedEntries;
     }
 
     // AssetProcessor
