@@ -21,6 +21,12 @@ namespace AzToolsFramework::Prefab
 {
     using PrefabFocusOperationResult = AZ::Outcome<void, AZStd::string>;
 
+    enum class PrefabEditScope
+    {
+        NESTED_TEMPLATES = 0,
+        NESTED_INSTANCES
+    };
+
     //! Public Interface for external systems to utilize the Prefab Focus system.
     class PrefabFocusPublicInterface
     {
@@ -39,6 +45,10 @@ namespace AzToolsFramework::Prefab
         //! Set the focused prefab instance to the instance at position index of the current path. Supports undo/redo.
         //! @param index The index of the instance in the current path that we want the prefab system to focus on.
         virtual PrefabFocusOperationResult FocusOnPathIndex(AzFramework::EntityContextId entityContextId, int index) = 0;
+
+        //! Opens the prefab instance owning the entityId provided.Supports undo/redo.
+        //! @param entityId The entityId of the entity whose owning instance we want to open for overrides.
+        virtual PrefabFocusOperationResult SetOwningPrefabInstanceOpenState(AZ::EntityId entityId, bool openState) = 0;
 
         //! Returns the entity id of the container entity for the instance the prefab system is focusing on.
         virtual AZ::EntityId GetFocusedPrefabContainerEntityId(AzFramework::EntityContextId entityContextId) const = 0;
@@ -59,6 +69,17 @@ namespace AzToolsFramework::Prefab
 
         //! Returns the size of the path to the currently focused instance.
         virtual const int GetPrefabFocusPathLength(AzFramework::EntityContextId entityContextId) const = 0;
+
+        //! Returns the current focus mode.
+        virtual PrefabEditScope GetPrefabEditScope(AzFramework::EntityContextId entityContextId) const = 0;
+
+        //! Sets the current focus mode.
+        virtual void SetPrefabEditScope(AzFramework::EntityContextId entityContextId, PrefabEditScope mode) = 0;
+
+        // TEMP
+        virtual int GetOpenInstanceMode() = 0;
+        virtual bool GetAllowContextMenuInstanceExpanding() = 0;
+        virtual bool GetContainerStepByStepSelection() = 0;
     };
 
     /**
