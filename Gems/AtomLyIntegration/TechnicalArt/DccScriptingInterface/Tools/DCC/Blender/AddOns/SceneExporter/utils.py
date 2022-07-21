@@ -106,14 +106,27 @@ def get_selected_materials(selected):
     """!
     This function will check the selected mesh and find material are connected
     then build a material list for selected.
-
     @param selected This is your current selected mesh(s)
     """
     materials = []
     # Find Connected materials attached to mesh
     for obj in selected:
         try:
-            materials.append(obj.active_material.name)
+            materials = get_all_materials(obj, materials)
+        except AttributeError:
+            pass
+    return materials
+
+def get_all_materials(obj, materials):
+    """!
+    This function will loop through all assigned materails slots on a mesh and the attach textures.
+    then build a material list for selected.
+    @param selected This is your current selected mesh(s)
+    """
+    for mat in obj.material_slots:
+        try:
+            if mat.name not in materials:
+                materials.append(mat.name)
         except AttributeError:
             pass
     return materials
@@ -144,22 +157,39 @@ def loop_through_selected_materials(texture_file_path):
                         bpy.data.images[img.image.name].filepath = str(Path(texture_file_path).joinpath(build_string))
                     
                     bpy.data.images[img.image.name].save()
-                full_path = bpy.path.abspath(img.image.filepath, library=img.image.library)
+                full_path = Path(bpy.path.abspath(img.image.filepath, library=img.image.library))
                 base_name = Path(full_path).name
+                if not full_path.exists(): # if embedded path doesnt exist, check current folder
+                    #full_path = str(Path(bpy.data.filepath).parent.joinpath(base_name))
+                    full_path = Path(bpy.data.filepath).parent.joinpath(base_name)
                 o3de_texture_path = Path(texture_file_path).joinpath(base_name)
                 # Add to stored_image_source_paths to replace later
                 if not check_file_paths_duplicate(full_path, o3de_texture_path): # We check first if its not already copied over.
                     bpy.types.Scene.stored_image_source_paths[img.image.name] = full_path
                     # Copy the image to Destination
                     try:
-                        shutil.copyfile(full_path, o3de_texture_path)
-                        # Find image and repath
                         bpy.data.images[img.image.name].filepath = str(o3de_texture_path)
-                        # Save image to location
-                        bpy.data.images[img.image.name].save()
+                        if full_path.exists():
+                            copy_texture_file(full_path, o3de_texture_path)
+                        else:
+                            bpy.data.images[img.image.name].save() 
+                            # Save image to location
                     except (FileNotFoundError, RuntimeError):
                         pass
                 img.image.reload()
+
+def copy_texture_file(source_path, destination_path):
+    """!
+    This function will copy project texture files to a O3DE textures folder
+    @param source_path This is the texture source path
+    @param destination_path This is the O3DE destination path
+    """
+    destination_size = -1
+    source_size = source_path.stat().st_size
+    if destination_path.exists():
+        destination_size = destination_path.stat().st_size
+    if source_size != destination_size:
+        shutil.copyfile(source_path, destination_path)
 
 def clone_repath_images(fileMenuExport, texture_file_path, projectSelectionList):
     """!
@@ -245,24 +275,24 @@ def replace_stored_paths():
 def duplicate_selected(selected_objects, rename):
     """!
     This function will duplicate selected objects with a new name string
+    @param selected_objects This is the current selected object
+    @param rename this is the duplicate object name
+    @param return duplicated object
     """
     # Duplicate the mesh and add add the upd name extension
     duplicate_object = bpy.data.objects.new(f'{selected_objects.name}{bpy.types.Scene.udp_type}', bpy.data.objects[selected_objects.name].data)
     # Add copy to current collection in scene
     bpy.context.collection.objects.link(duplicate_object)
-    # Check to see if Blender added an .000 to the end of name, if so split it and use zero
-    #duplicate_object_name = check_for_blender_int_ext(duplicate_object.name)
-    #duplicate_object.name = duplicate_object_name
-    # Rename
+    # Rename duplicated object
     duplicate_object.name = rename
     duplicate_object.data.name = rename
-    print("XXXX")
-    print(duplicate_object.name, duplicate_object.data.name)
     return duplicate_object
 
 def check_for_blender_int_ext(duplicated_node_name):
     """!
     This function will check if blender adds on its own .000 ext to a node name
+    @param duplicated_node_name This is the name string of the duplicate object
+    @param return name string
     """
     if '.' in duplicated_node_name:
             name, ext = duplicated_node_name.split(".")
@@ -279,12 +309,6 @@ def create_udp():
     selected_objects = bpy.context.object
     # Check to see if bool was check on or of on pop-up question
     if bpy.types.Scene.pop_up_question_bool:
-        # We must apply the tansforms before duplication
-        '''try:
-            bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
-        except RuntimeError:
-            pass'''
-
         # Check to see if name string already contails a _LOD int
         if bpy.types.Scene.udp_type == "_lod":
             if re.search(r"_lod(?:)\d", selected_objects.name):
@@ -294,7 +318,7 @@ def create_udp():
                 # Lets get the level and add the next
                 lod_level = int(lod_level_int[1]) + 1
                 # rename to the correct lod level
-                base_name = selected_objects.name.split("_")
+                base_name = selected_objects.name.rsplit("_",1)
                 # Duplicate the object
                 duplicate_object = duplicate_selected(selected_objects, f"{base_name[0]}_lod{lod_level}")
                 # ADD UDP

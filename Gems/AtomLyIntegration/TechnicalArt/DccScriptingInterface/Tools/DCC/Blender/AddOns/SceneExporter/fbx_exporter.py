@@ -83,6 +83,7 @@ def fbx_file_exporter(fbx_file_path, file_name):
     This function will send to selected .FBX to an O3DE Project Path
     @param fbx_file_path this is the o3de project path where the selected meshe(s)
     will be exported as an .fbx
+    @param file_name A custom file name string
     """
     # Export file path Var
     export_file_path = ''
