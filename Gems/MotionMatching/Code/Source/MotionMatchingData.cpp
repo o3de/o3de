@@ -84,7 +84,7 @@ namespace EMotionFX::MotionMatching
             const bool useTaskGraph = taskGraphActiveInterface && taskGraphActiveInterface->IsTaskGraphActive();
             if (useTaskGraph)
             {
-                AZ::TaskGraph m_taskGraph;
+                AZ::TaskGraph m_taskGraph{ "MotionMatching FeatureExtraction" };
 
                 // Split-up the motion database into batches of frames and extract the feature values for each batch simultaneously.
                 for (size_t batchIndex = 0; batchIndex < numBatches; ++batchIndex)
@@ -102,7 +102,7 @@ namespace EMotionFX::MotionMatching
                         });
                 }
 
-                AZ::TaskGraphEvent finishedEvent;
+                AZ::TaskGraphEvent finishedEvent{ "MotionMatching FeatureExtraction Wait" };
                 m_taskGraph.Submit(&finishedEvent);
                 finishedEvent.Wait();
             }
