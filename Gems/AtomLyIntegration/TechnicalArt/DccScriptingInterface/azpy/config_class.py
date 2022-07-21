@@ -151,6 +151,21 @@ class ConfigCore(object):
         '''a method docstring'''
         pass
 
+    def set_envar(self, key, value):
+        '''to do ...'''
+        # standard environment
+        if isinstance(value, Path):
+            os.environ[key] = value.as_posix()
+        elif isinstance(value, list):
+            # to do
+            pass
+        elif isinstance(value, bool) or \
+                isinstance(value, int) or \
+                isinstance(value, dict):
+            os.environ[key] = str(value)
+        else:
+            os.environ[key] = value
+
     def add_setting(self,
                     key: str,
                     value: Union[int, str, bool, list, Path],
@@ -179,22 +194,11 @@ class ConfigCore(object):
                 value = os.getenv(key, value)
 
         if set_envar:
-            # standard environment
-            if isinstance(value, Path):
-                os.environ[key] = value.as_posix()
-            elif isinstance(value, bool) or isinstance(value, int):
-                os.environ[key] = str(value)
-            else:
-                os.environ[key] = value
+            self.set_envar(key, value)
 
         if set_dyanmic:
-            # dynamic environment, aka dynaconf settings
-            if isinstance(value, Path):
-                os.environ[f'{prefix}_{key}'] = value.as_posix()
-            elif isinstance(value, bool) or isinstance(value, int):
-                os.environ[f'{prefix}_{key}'] = str(value)
-            else:
-                os.environ[f'{prefix}_{key}'] = value
+            key = f'{prefix}_{key}'
+            self.set_envar(key, value)
 
         if set_sys_path:
             self.sys_path.append(value.as_posix())
@@ -296,9 +300,19 @@ class ConfigCore(object):
 
         return os.environ[envar]
 
+    def export_settings(self):
+        '''to do ...'''
+        pass
+
     def get_config_settings(self, set_env: bool = True):
         '''To do ...'''
-        pass
+
+        # now standalone we can validate the config. env, settings.
+        from dynaconf import settings
+        if set_env:
+            settings.setenv()
+
+        return settings
     # ---------------------------------------------------------------------
 
 ###########################################################################
@@ -330,10 +344,10 @@ if __name__ == '__main__':
     _foo_test.add_setting('foo_level', 10)
 
     # add a envar dict
-    _foo_test.add_setting('foo_level', {'fooey': 'Is fun!'})
+    _foo_test.add_setting('foo_dict', {'fooey': 'Is fun!'})
 
     _LOGGER.debug(f'_foo_test.sys_path = {_foo_test.sys_path}')
 
-
-
     settings = _foo_test.get_config_settings()
+
+    _LOGGER.info(f'settings: {settings}')
