@@ -226,7 +226,7 @@ namespace WhiteBox
             : AZStd::optional<PolygonIntersection>{};
     }
 
-    bool EditorWhiteBoxComponentMode::HandleMouseInteraction(
+    bool EditorComponentMode::HandleMouseInteraction(
         const AzToolsFramework::ViewportInteraction::MouseInteractionEvent& mouseInteraction)
     {
         AZ_PROFILE_FUNCTION(AzToolsFramework);
@@ -286,7 +286,7 @@ namespace WhiteBox
 
     AZStd::string EditorWhiteBoxComponentMode::GetComponentModeName() const
     {
-        return "WhiteBox Edit Mode";
+        return "White Box Edit Mode";
     }
 
     AZStd::vector<AzToolsFramework::ActionOverride> EditorWhiteBoxComponentMode::PopulateActionsImpl()
