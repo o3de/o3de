@@ -18,7 +18,7 @@ AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 
 CAboutDialog::CAboutDialog(QString versionText, QString richTextCopyrightNotice, QWidget* pParent)
-    : QDialog(pParent, Qt::FramelessWindowHint | Qt::Tool)
+    : QDialog(pParent, Qt::FramelessWindowHint | Qt::Popup)
     , m_ui(new Ui::CAboutDialog)
 {
 
