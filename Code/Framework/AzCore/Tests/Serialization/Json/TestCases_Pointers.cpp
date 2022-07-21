@@ -740,9 +740,16 @@ namespace JsonSerializationTests
     {
         for (int* instance : rhs.m_array)
         {
-            int* newInstance = reinterpret_cast<int*>(azmalloc(sizeof(int), alignof(int)));
-            *newInstance = *instance;
-            m_array.push_back(newInstance);
+            if (instance)
+            {
+                int* newInstance = reinterpret_cast<int*>(azmalloc(sizeof(int), alignof(int)));
+                *newInstance = *instance;
+                m_array.push_back(newInstance);
+            }
+            else
+            {
+                m_array.push_back(nullptr);
+            }
         }
     }
     
@@ -759,9 +766,16 @@ namespace JsonSerializationTests
     {
         for (int* instance : rhs.m_array)
         {
-            int* newInstance = reinterpret_cast<int*>(azmalloc(sizeof(int), alignof(int)));
-            *newInstance = *instance;
-            m_array.push_back(newInstance);
+            if (instance)
+            {
+                int* newInstance = reinterpret_cast<int*>(azmalloc(sizeof(int), alignof(int)));
+                *newInstance = *instance;
+                m_array.push_back(newInstance);
+            }
+            else
+            {
+                m_array.push_back(nullptr);
+            }
         }
         return *this;
     }
