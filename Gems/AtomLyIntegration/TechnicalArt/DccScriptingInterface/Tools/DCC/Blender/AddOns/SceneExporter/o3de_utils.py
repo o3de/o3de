@@ -53,7 +53,6 @@ def extend_project_list(o3de_projects):
     """!
     This function will load the users project.json list and extend it to the engine manifest projects
     """
-    print("Now we are at extend_project_list")
     saved_o3de_projects = load_saved_projects()
     # Check to see if these projects are already on list
     if saved_o3de_projects not in o3de_projects:

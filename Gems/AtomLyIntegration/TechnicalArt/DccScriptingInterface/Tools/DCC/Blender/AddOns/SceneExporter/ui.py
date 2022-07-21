@@ -203,6 +203,9 @@ class ExportFiles(bpy.types.Operator):
         if len(selected_name) > 1:
             if bpy.types.Scene.multi_file_export_o3de:
                 for obj_name in selected_name:
+                    # Deselect all or will just keep adding to selection
+                    bpy.ops.object.select_all(action='DESELECT')
+                    # Select a mesh in the loop
                     bpy.data.objects[obj_name].select_set(True)
                     # Remove some nasty invalid char
                     file_name = re.sub(r'\W+', '', obj_name)

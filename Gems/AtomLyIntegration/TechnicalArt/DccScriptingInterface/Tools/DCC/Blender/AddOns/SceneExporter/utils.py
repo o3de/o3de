@@ -41,7 +41,7 @@ def check_selected_bone_names():
                 try:
                     for pb in obj.pose.bones:
                         # Validate all chars in string.
-                        check_re =  re.compile(r"^[^<>/{}[\]~.`]*$");
+                        check_re =  re.compile(r"^[^<>/{}[\]~.`]*$")
                         if not check_re.match(pb.name):
                             # If any in the ARMATURE are named invalid return will fail.
                             return False
@@ -241,6 +241,36 @@ def replace_stored_paths():
         image.reload()
     bpy.types.Scene.stored_image_source_paths = {}
 
+
+def duplicate_selected(selected_objects, rename):
+    """!
+    This function will duplicate selected objects with a new name string
+    """
+    # Duplicate the mesh and add add the upd name extension
+    duplicate_object = bpy.data.objects.new(f'{selected_objects.name}{bpy.types.Scene.udp_type}', bpy.data.objects[selected_objects.name].data)
+    # Add copy to current collection in scene
+    bpy.context.collection.objects.link(duplicate_object)
+    # Check to see if Blender added an .000 to the end of name, if so split it and use zero
+    #duplicate_object_name = check_for_blender_int_ext(duplicate_object.name)
+    #duplicate_object.name = duplicate_object_name
+    # Rename
+    duplicate_object.name = rename
+    duplicate_object.data.name = rename
+    print("XXXX")
+    print(duplicate_object.name, duplicate_object.data.name)
+    return duplicate_object
+
+def check_for_blender_int_ext(duplicated_node_name):
+    """!
+    This function will check if blender adds on its own .000 ext to a node name
+    """
+    if '.' in duplicated_node_name:
+            name, ext = duplicated_node_name.split(".")
+            node_name = name
+    else:
+        name = duplicated_node_name
+    return name
+
 def create_udp():
     """!
     This function will create a copy of a selected mesh and create an o3de PhysX collider PhysX Mesh that will
@@ -249,34 +279,44 @@ def create_udp():
     selected_objects = bpy.context.object
     # Check to see if bool was check on or of on pop-up question
     if bpy.types.Scene.pop_up_question_bool:
-        #We must apply the tansforms before duplication
-        bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
-        # Duplicate the mesh and add add the upd name extension
-        duplicate_mesh = bpy.data.objects.new(f'{selected_objects.name}{bpy.types.Scene.udp_type}', bpy.data.objects[selected_objects.name].data)
-        # Add copy to current collection in scene
-        bpy.context.collection.objects.link(duplicate_mesh)
-        # Check to see if Blender added an .000 to the end of name, if so split it and use zero
-        if '.' in duplicate_mesh.name:
-            name, ext = duplicate_mesh.name.split(".")
-            duplicate_mesh.name = name
-        
-        if bpy.types.Scene.udp_type == '_lod':
-            duplicate_mesh['o3de_atom_lod'] = '_lod'
-        if bpy.types.Scene.udp_type == '_phys':
-            duplicate_mesh['o3de_atom_phys'] = '_phys'
+        # We must apply the tansforms before duplication
+        '''try:
+            bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+        except RuntimeError:
+            pass'''
+
+        # Check to see if name string already contails a _LOD int
+        if bpy.types.Scene.udp_type == "_lod":
+            if re.search(r"_lod(?:)\d", selected_objects.name):
+                # Lets get the current LOD Level
+                ext_result = re.search(r"_lod(?:)\d", selected_objects.name)
+                lod_level_int = ext_result.group().split("_lod")
+                # Lets get the level and add the next
+                lod_level = int(lod_level_int[1]) + 1
+                # rename to the correct lod level
+                base_name = selected_objects.name.split("_")
+                # Duplicate the object
+                duplicate_object = duplicate_selected(selected_objects, f"{base_name[0]}_lod{lod_level}")
+                # ADD UDP
+                duplicate_object["o3de_atom_lod"] = f"_lod{lod_level}"
+            else:
+                duplicate_object = duplicate_selected(selected_objects, f"{selected_objects.name}_lod0")
+                # ADD UDP
+                duplicate_object["o3de_atom_lod"] = "_lod0"
+        # If UDP Type is _phys
+        if bpy.types.Scene.udp_type == "_phys":
+            duplicate_object = duplicate_selected(selected_objects, f"{selected_objects.name}_phys")
+            duplicate_object["o3de_atom_phys"] = "_phys"
         # Set the copy active
-        bpy.context.view_layer.objects.active = duplicate_mesh
-
+        bpy.context.view_layer.objects.active = duplicate_object
         # Add the Decimate Modifier on for user.
-        bpy.ops.object.modifier_add(type='DECIMATE')
+        bpy.ops.object.modifier_add(type="DECIMATE")
         bpy.context.object.modifiers["Decimate"].ratio = 0.5
-        
     else:
-        if bpy.types.Scene.udp_type == '_lod':
-            selected_objects['o3de_atom_lod'] = '_lod'
-        if bpy.types.Scene.udp_type == '_phys':
-            selected_objects['o3de_atom_phys'] = '_phys'
-
+        if bpy.types.Scene.udp_type == "_lod":
+                selected_objects['o3de_atom_lod'] = "_lod0"
+        if bpy.types.Scene.udp_type == "_phys":
+            selected_objects["o3de_atom_phys"] = "_phys"
 
 def compair_set(list_a, list_b):
     """!
