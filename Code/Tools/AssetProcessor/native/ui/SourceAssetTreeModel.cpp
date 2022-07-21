@@ -212,20 +212,6 @@ namespace AssetProcessor
         RemoveAssetTreeItem(itemToCheck);
     }
 
-    AZ::s64 SourceAssetTreeModel::GetCreateJobDuration(const char* sourceName)
-    {
-        AZ::s64 accumulateJobDuration = 0;
-        QString statKey = QString("CreateJobs,%1").arg(sourceName).append("%");
-        m_sharedDbConnection->QueryStatLikeStatName(
-            statKey.toUtf8().data(),
-            [&](AzToolsFramework::AssetDatabase::StatDatabaseEntry statEntry)
-            {
-                accumulateJobDuration += statEntry.m_statValue;
-                return true;
-            });
-        return accumulateJobDuration;
-    }
-
     void SourceAssetTreeModel::RemoveAssetTreeItem(AssetTreeItem* assetToRemove)
     {
         if (!assetToRemove)
@@ -323,7 +309,16 @@ namespace AssetProcessor
             AZStd::shared_ptr<SourceAssetTreeItemData> sourceItemData =
                 AZStd::rtti_pointer_cast<SourceAssetTreeItemData>(existingEntry->second->GetData());
 
-            sourceItemData->m_analysisDuration = GetCreateJobDuration(sourceName.toUtf8().constData());
+            AZ::s64 accumulateJobDuration = 0;
+            QString statKey = QString("CreateJobs,%1").arg(sourceName).append("%");
+            m_sharedDbConnection->QueryStatLikeStatName(
+                statKey.toUtf8().data(),
+                [&](AzToolsFramework::AssetDatabase::StatDatabaseEntry statEntry)
+                {
+                    accumulateJobDuration += statEntry.m_statValue;
+                    return true;
+                });
+            sourceItemData->m_analysisDuration = accumulateJobDuration;
 
             QModelIndex existingIndex = createIndex(
                 existingEntry->second->GetRow(), aznumeric_cast<int>(SourceAssetTreeColumns::AnalysisJobDuration), existingEntry->second);
