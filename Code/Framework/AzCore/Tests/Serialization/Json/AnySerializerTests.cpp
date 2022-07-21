@@ -176,7 +176,6 @@ namespace JsonSerializationTests
                     else
                     {
                         // fully configured
-                        // needed
                         return m_jsonForFullyConfiguredInstanceWithoutDefaults.begin();
                     }
                 }
@@ -192,7 +191,7 @@ namespace JsonSerializationTests
                     }
                     else
                     {
-                        // fully configured
+                        return m_jsonForFullyConfiguredInstanceWithoutDefaults.begin();
                     }
                 }
             }
