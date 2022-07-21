@@ -154,17 +154,6 @@ class TestAutomation(TestAutomationBase):
         from . import ScriptEvents_HappyPath_SendReceiveAcrossMultiple as test_module
         self._run_test(request, workspace, editor, test_module)
 
-    @pytest.mark.skip(reason="Test fails to find expected lines, it needs to be fixed.")
-    @pytest.mark.parametrize("level", ["tmp_level"])
-    def test_ScriptEvents_Default_SendReceiveSuccessfully(self, request, workspace, editor, launcher_platform, project, level):
-        def teardown():
-            file_system.delete([os.path.join(workspace.paths.project(), "Levels", level)], True, True)
-        request.addfinalizer(teardown)
-        file_system.delete([os.path.join(workspace.paths.project(), "Levels", level)], True, True)
-        from . import ScriptEvents_Default_SendReceiveSuccessfully as test_module
-        self._run_test(request, workspace, editor, test_module)
-
-
     def test_NodePalette_SearchText_Deletion(self, request, workspace, editor, launcher_platform):
         from . import NodePalette_SearchText_Deletion as test_module
         self._run_test(request, workspace, editor, test_module)
@@ -195,8 +184,25 @@ class TestScriptCanvasTests(object):
             timeout=60,
         )
 
+    def test_ScriptEvents_Default_SendReceiveSuccessfully(self, request, editor, launcher_platform):
 
+        expected_lines = [
+            "Successfully created test entity",
+            "Successfully entered game mode",
+            "Successfully found expected message",
+            "Successfully exited game mode",
+        ]
+        hydra.launch_and_validate_results(
+            request,
+            TEST_DIRECTORY,
+            editor,
+            "ScriptEvents_Default_SendReceiveSuccessfully.py",
+            expected_lines,
+            auto_test_mode=False,
+            timeout=60,
+        )
     def test_ScriptEvents_ReturnSetType_Successfully(self, request, editor, launcher_platform):
+
         expected_lines = [
             "Successfully created test entity",
             "Successfully entered game mode",
