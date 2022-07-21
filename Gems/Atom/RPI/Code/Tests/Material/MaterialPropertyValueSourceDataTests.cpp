@@ -80,7 +80,7 @@ namespace JsonSerializationTests
     };
 
     using MaterialPropertyValueSourceDataSerializerTestTypes = ::testing::Types<MaterialPropertyValueSourceDataSerializerTestDescription>;
-    INSTANTIATE_TYPED_TEST_CASE_P(MaterialPropertyValueSourceDataTests, JsonSerializerConformityTests, MaterialPropertyValueSourceDataSerializerTestTypes);
+    RESTRICT_JSON_CONFORMITY_TESTS(INSTANTIATE_TYPED_TEST_CASE_P(MaterialPropertyValueSourceDataTests, JsonSerializerConformityTests, MaterialPropertyValueSourceDataSerializerTestTypes));
 } // namespace JsonSerializationTests
 
 namespace UnitTest

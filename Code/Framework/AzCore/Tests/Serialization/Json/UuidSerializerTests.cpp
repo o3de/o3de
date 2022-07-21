@@ -50,7 +50,7 @@ namespace JsonSerializationTests
     };
 
     using UuidSerializerConformityTestTypes = ::testing::Types<UuidSerializerTestDescription>;
-    INSTANTIATE_TYPED_TEST_CASE_P(JsonUuidSerializer, JsonSerializerConformityTests, UuidSerializerConformityTestTypes);
+    RESTRICT_JSON_CONFORMITY_TESTS(INSTANTIATE_TYPED_TEST_CASE_P(JsonUuidSerializer, JsonSerializerConformityTests, UuidSerializerConformityTestTypes));
 
     class JsonUuidSerializerTests
         : public BaseJsonSerializerFixture

@@ -64,7 +64,7 @@ namespace JsonSerializationTests
     };
 
     using ColorSerializerConformityTestTypes = ::testing::Types<ColorSerializerTestDescription>;
-    INSTANTIATE_TYPED_TEST_CASE_P(JsonColorSerializer, JsonSerializerConformityTests, ColorSerializerConformityTestTypes);
+    RESTRICT_JSON_CONFORMITY_TESTS(INSTANTIATE_TYPED_TEST_CASE_P(JsonColorSerializer, JsonSerializerConformityTests, ColorSerializerConformityTestTypes));
 
     class JsonColorSerializerTests
         : public BaseJsonSerializerFixture

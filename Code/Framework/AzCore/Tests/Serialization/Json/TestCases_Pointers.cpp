@@ -817,10 +817,13 @@ namespace JsonSerializationTests
         *member = 42;
         instance->m_array.push_back(member);
         instance->m_array.push_back(nullptr);
+        member = reinterpret_cast<int*>(azmalloc(sizeof(int), alignof(int)));
+        *member = 43;
+        instance->m_array.push_back(member);
 
         const char* defaults = R"(
             {
-                "array": [ 42, null ] 
+                "array": [ 42, null, 43 ] 
             })";
         return MakeInstanceWithSomeDefaults(AZStd::move(instance), defaults, defaults);
     }
@@ -831,7 +834,7 @@ namespace JsonSerializationTests
         int* member0 = reinterpret_cast<int*>(azmalloc(sizeof(int), alignof(int)));
         int* member1 = reinterpret_cast<int*>(azmalloc(sizeof(int), alignof(int)));
         int* member2 = reinterpret_cast<int*>(azmalloc(sizeof(int), alignof(int)));
-        *member0 = 42;
+        *member0 = 53;
         *member1 = 88;
         *member2 = 13;
         instance->m_array.push_back(member0);
@@ -840,7 +843,7 @@ namespace JsonSerializationTests
 
         const char* json = R"(
             {
-                "array": [ 42, 88, 13 ]
+                "array": [ 53, 88, 13 ]
             })";
         return MakeInstanceWithoutDefaults(AZStd::move(instance), json);
     }

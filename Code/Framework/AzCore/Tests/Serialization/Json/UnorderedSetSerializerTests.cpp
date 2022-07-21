@@ -121,7 +121,7 @@ namespace JsonSerializationTests
     };
 
     using UnorderedSetSerializerConformityTestTypes = ::testing::Types< UnorderedSetTestDescription, UnorderedMultiSetTestDescription>;
-    INSTANTIATE_TYPED_TEST_CASE_P(UnorderedSetSerializer, JsonSerializerConformityTests, UnorderedSetSerializerConformityTestTypes);
+    RESTRICT_JSON_CONFORMITY_TESTS(INSTANTIATE_TYPED_TEST_CASE_P(UnorderedSetSerializer, JsonSerializerConformityTests, UnorderedSetSerializerConformityTestTypes));
 
     class JsonUnorderedSetSerializerTests
         : public BaseJsonSerializerFixture

@@ -17,6 +17,8 @@
 #include <AzCore/std/typetraits/is_base_of.h>
 #include <Tests/Serialization/Json/BaseJsonSerializerFixture.h>
 
+#define RESTRICT_JSON_CONFORMITY_TESTS(X) 
+
 namespace JsonSerializationTests
 {
     static constexpr char DefaultPath[] = "Test";
@@ -48,6 +50,8 @@ namespace JsonSerializationTests
         bool m_fixedSizeArray{ false };
         //! Set to false if the type the serializer targets can't be partially initialized.
         bool m_supportsPartialInitialization{ true };
+        //! Set to false if partial defaults are supported, but not reported as a PartialDefaults. This can be true in container/pointer cases.
+        bool m_partialDefaultReportingIsStrict{ true };
         //! The serializer will look up the type id in the Serialize Context.
         //! Normally serializer only get the exact type they support, but some serializers support
         //! multiple types such as templated code. By settings this option to true tests will be added
@@ -698,7 +702,11 @@ namespace JsonSerializationTests
             ResultCode result = serializer->Load(instance.get(), azrtti_typeid(*instance),
                 *this->m_jsonDocument, *this->m_jsonDeserializationContext);
 
-            EXPECT_EQ(Outcomes::PartialDefaults, result.GetOutcome());
+            if (this->m_features.m_partialDefaultReportingIsStrict)
+            {
+                EXPECT_EQ(Outcomes::PartialDefaults, result.GetOutcome());
+            }
+
             EXPECT_EQ(Processing::Completed, result.GetProcessing());
             EXPECT_TRUE(this->m_description.AreEqual(*instance, *compare));
         }

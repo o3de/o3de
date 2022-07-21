@@ -53,7 +53,7 @@ namespace JsonSerializationTests
     };
 
     using BoolSerializerConformityTestTypes = ::testing::Types<BoolSerializerTestDescription>;
-    INSTANTIATE_TYPED_TEST_CASE_P(JsonBoolSerializer, JsonSerializerConformityTests, BoolSerializerConformityTestTypes);
+    RESTRICT_JSON_CONFORMITY_TESTS(INSTANTIATE_TYPED_TEST_CASE_P(JsonBoolSerializer, JsonSerializerConformityTests, BoolSerializerConformityTestTypes));
 
     class JsonBoolSerializerTests
         : public BaseJsonSerializerFixture

@@ -141,7 +141,7 @@ namespace JsonSerializationTests
     };
 
     using MaterialPropertySerializerTestTypes = ::testing::Types<MaterialPropertySerializerTestDescription>;
-    INSTANTIATE_TYPED_TEST_CASE_P(MaterialPropertySerializerTests, JsonSerializerConformityTests, MaterialPropertySerializerTestTypes);
+    RESTRICT_JSON_CONFORMITY_TESTS(INSTANTIATE_TYPED_TEST_CASE_P(MaterialPropertySerializerTests, JsonSerializerConformityTests, MaterialPropertySerializerTestTypes));
 } // namespace JsonSerializationTests
 
 namespace UnitTest

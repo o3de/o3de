@@ -17,22 +17,21 @@ namespace JsonSerializationTests
 {
     using JsonSerializationTestCases = ::testing::Types
         // Structures
-        <
-        // SimpleClass
-//         , SimpleInheritence
-//         , MultipleInheritence
-//         , SimpleNested
-//         , SimpleEnumWrapper
-//         , NonReflectedEnumWrapper
-//         // Pointers
-//         , SimpleNullPointer
-//         , SimpleAssignedPointer
-//         , ComplexAssignedPointer
-//         , ComplexNullInheritedPointer
-//         , ComplexAssignedDifferentInheritedPointer
-        ComplexAssignedSameInheritedPointer
-//         , PrimitivePointerInContainer
-//         , SimplePointerInContainer
-//         , InheritedPointerInContainer
+        < SimpleClass
+        , SimpleInheritence
+        , MultipleInheritence
+        , SimpleNested
+        , SimpleEnumWrapper
+        , NonReflectedEnumWrapper
+        // Pointers
+        , SimpleNullPointer
+        , SimpleAssignedPointer
+        , ComplexAssignedPointer
+        , ComplexNullInheritedPointer
+        , ComplexAssignedDifferentInheritedPointer
+        , ComplexAssignedSameInheritedPointer
+        , SimplePointerInContainer
+        , InheritedPointerInContainer
+        , PrimitivePointerInContainer
         >;
 } // namespace JsonSerializationTests

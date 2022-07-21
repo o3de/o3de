@@ -93,6 +93,7 @@ namespace JsonSerializationTests
     public:
         using Any = AZStd::any;
         static constexpr bool SupportsPartialDefaults = T::SupportsPartialDefaults;
+        static constexpr bool PartialDefaultReportingIsStrict = T::PartialDefaultReportingIsStrict;
 
         AZStd::shared_ptr<AZ::BaseJsonSerializer> CreateSerializer() override
         {
@@ -125,8 +126,6 @@ namespace JsonSerializationTests
 
         std::optional<AZStd::string_view> GetJSON([[maybe_unused]] const JSONRequestSpec& requestSpec) override
         {
-            // return m_jsonForFullyConfiguredInstanceWithoutDefaults.begin();
-
             if (requestSpec.jsonStorage == DefaultJSONStorage::Store)
             {
                 if (requestSpec.objectSupplied == DefaultObjectSuppliedInSerialization::True)
@@ -201,8 +200,6 @@ namespace JsonSerializationTests
 
         AZStd::string_view GetJsonForPartialDefaultInstance() override
         {
-            // may need to split up return values
-            // return m_jsonForPartialDefaultInstanceKeptDefaults.begin(); 
             return m_jsonForPartialDefaultInstanceStrippedDefaults.begin();
         }
 
@@ -216,6 +213,8 @@ namespace JsonSerializationTests
         {
             features.EnableJsonType(rapidjson::kObjectType);
             features.m_defaultIsEqualToEmpty = false;
+            features.m_partialDefaultReportingIsStrict = PartialDefaultReportingIsStrict;
+            features.m_supportsPartialInitialization = SupportsPartialDefaults;
         }
 
         bool AreEqual(const AZStd::any& lhs, const AZStd::any& rhs) override
@@ -268,25 +267,23 @@ namespace JsonSerializationTests
         AZStd::fixed_string<2048> m_jsonForFullyConfiguredInstanceWithoutDefaults;
     };
 
-    using AnyConformityTestTypes = ::testing::Types
-        // All pass, and all must pass; do not remove any types from these testing cases.
-        < /*AnySerializerTestDescription<SimpleClass>
-        , AnySerializerTestDescription<SimpleInheritence>
-        , AnySerializerTestDescription<MultipleInheritence>
-        , AnySerializerTestDescription<SimpleNested>
-        , AnySerializerTestDescription<SimpleEnumWrapper>
-        , AnySerializerTestDescription<NonReflectedEnumWrapper>
-        , AnySerializerTestDescription<SimpleAssignedPointer>
-        , AnySerializerTestDescription<ComplexAssignedPointer>
-        , AnySerializerTestDescription<SimpleNullPointer>
-        , AnySerializerTestDescription<ComplexNullInheritedPointer>
-        , AnySerializerTestDescription<ComplexAssignedDifferentInheritedPointer>
-        , AnySerializerTestDescription<ComplexAssignedSameInheritedPointer>
-        , AnySerializerTestDescription<SimplePointerInContainer>
-        , AnySerializerTestDescription<InheritedPointerInContainer>
-
-         // fails
-        , */ AnySerializerTestDescription<PrimitivePointerInContainer>
-        >;
-    INSTANTIATE_TYPED_TEST_CASE_P(Any, JsonSerializerConformityTests, AnyConformityTestTypes);
+     using AnyConformityTestTypes = ::testing::Types
+         // All pass, and all must pass; do not remove any types from these testing cases.
+         < AnySerializerTestDescription<SimpleClass>
+         , AnySerializerTestDescription<SimpleInheritence>
+         , AnySerializerTestDescription<MultipleInheritence>
+         , AnySerializerTestDescription<SimpleNested>
+         , AnySerializerTestDescription<SimpleEnumWrapper>
+         , AnySerializerTestDescription<NonReflectedEnumWrapper>
+         , AnySerializerTestDescription<SimpleAssignedPointer>
+         , AnySerializerTestDescription<ComplexAssignedPointer>
+         , AnySerializerTestDescription<SimpleNullPointer>
+         , AnySerializerTestDescription<ComplexNullInheritedPointer>
+         , AnySerializerTestDescription<ComplexAssignedDifferentInheritedPointer>
+         , AnySerializerTestDescription<ComplexAssignedSameInheritedPointer>
+         , AnySerializerTestDescription<SimplePointerInContainer>
+         , AnySerializerTestDescription<InheritedPointerInContainer>
+         , AnySerializerTestDescription<PrimitivePointerInContainer>
+         >;
+     INSTANTIATE_TYPED_TEST_CASE_P(Any, JsonSerializerConformityTests, AnyConformityTestTypes);
 }

@@ -223,7 +223,7 @@ namespace JsonSerializationTests
         MathMatrixSerializerTestDescription<AZ::Matrix3x4, 3, 4, AZ::JsonMatrix3x4Serializer>,
         MathMatrixSerializerTestDescription<AZ::Matrix4x4, 4, 4, AZ::JsonMatrix4x4Serializer>
     >;
-    INSTANTIATE_TYPED_TEST_CASE_P(JsonMathMatrixSerializer, JsonSerializerConformityTests, MathMatrixSerializerConformityTestTypes);
+    RESTRICT_JSON_CONFORMITY_TESTS(INSTANTIATE_TYPED_TEST_CASE_P(JsonMathMatrixSerializer, JsonSerializerConformityTests, MathMatrixSerializerConformityTestTypes));
 
     template<typename T>
     class JsonMathMatrixSerializerTests

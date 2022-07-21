@@ -65,7 +65,7 @@ namespace JsonSerializationTests
         PathTestDescription<AZ::IO::Path>,
         PathTestDescription<AZ::IO::FixedMaxPath>
     >;
-    INSTANTIATE_TYPED_TEST_CASE_P(Path, JsonSerializerConformityTests, PathConformityTestTypes);
+    RESTRICT_JSON_CONFORMITY_TESTS(INSTANTIATE_TYPED_TEST_CASE_P(Path, JsonSerializerConformityTests, PathConformityTestTypes));
 
 
     class PathSerializerTests
