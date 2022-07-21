@@ -10,6 +10,7 @@
 
 from logging import getLogger
 import os
+from typing import Counter
 from tiaf_driver import main
 import pytest
 from tiaf_persistent_storage_s3 import PersistentStorageS3
@@ -21,9 +22,8 @@ class TestTIAFUnitTests():
 
 
     def call_args_equal_expected_args(self, call_args, expected_args):
-        set_expected_args = set(expected_args)
         for args_list in call_args:
-            if set(args_list) == set_expected_args:
+            if Counter(args_list[0]) == Counter(expected_args):
                 return True
         return False
 
@@ -42,7 +42,7 @@ class TestTIAFUnitTests():
         with pytest.raises(SystemExit):
             main(tiaf_args)
         # then:
-        assert self.call_args_equal_expected_args(mock_runtime.call_args.args, default_runtime_args.values())
+        assert self.call_args_equal_expected_args(mock_runtime.call_args, default_runtime_args.values())
 
     def test_invalid_config(self, caplog, tiaf_args, mock_runtime, tmp_path_factory, default_runtime_args):
         # given:
@@ -61,7 +61,7 @@ class TestTIAFUnitTests():
     def test_valid_src_branch(self, caplog, tiaf_args, mock_runtime, default_runtime_args):
         # given:
         tiaf_args['src_branch'] = "development"
-        test_string = "Src branch: 'development'."
+        test_string = "Source branch: 'development'."
         # when:
         with pytest.raises(SystemExit):
             main(tiaf_args)
@@ -72,7 +72,7 @@ class TestTIAFUnitTests():
     def test_invalid_src_branch(self, caplog, tiaf_args, mock_runtime, default_runtime_args):
         # given:
         tiaf_args['src_branch'] = "not_a_real_branch"
-        test_string = "Src branch: 'not_a_real_branch'."
+        test_string = "Source branch: 'not_a_real_branch'."
 
         # when:
         with pytest.raises(SystemExit):
@@ -84,7 +84,7 @@ class TestTIAFUnitTests():
     def test_valid_dst_branch(self, caplog, tiaf_args, mock_runtime, default_runtime_args):
         # given:
         tiaf_args['dst_branch'] = "development"
-        test_string = "Dst branch: 'development'."
+        test_string = "Destination branch: 'development'."
         # when:
         with pytest.raises(SystemExit):
             main(tiaf_args)
@@ -95,7 +95,7 @@ class TestTIAFUnitTests():
     def test_invalid_dst_branch(self, caplog, tiaf_args, mock_runtime, default_runtime_args):
         # given:
         tiaf_args['dst_branch'] = "not_a_real_branch"
-        test_string = "Dst branch: 'not_a_real_branch'."
+        test_string = "Destination branch: 'not_a_real_branch'."
 
         # when:
         with pytest.raises(SystemExit):
@@ -212,7 +212,7 @@ class TestTIAFUnitTests():
         with pytest.raises(SystemExit):
             main(tiaf_args)
 
-        assert self.call_args_equal_expected_args(mock_runtime.call_args.args, default_runtime_args.values())
+        assert self.call_args_equal_expected_args(mock_runtime.call_args, default_runtime_args.values())
 
     def test_invalid_test_suite_name(self, caplog, tiaf_args, mock_runtime, default_runtime_args):
         # given:
@@ -223,7 +223,7 @@ class TestTIAFUnitTests():
             main(tiaf_args)
 
         # then:
-        assert self.call_args_equal_expected_args(mock_runtime.call_args.args, default_runtime_args.values())
+        assert self.call_args_equal_expected_args(mock_runtime.call_args, default_runtime_args.values())
 
     @pytest.mark.parametrize("policy",["continue","abort","ignore"])
     def test_valid_failure_policy(self, caplog, tiaf_args, mock_runtime, default_runtime_args, policy):
@@ -239,7 +239,7 @@ class TestTIAFUnitTests():
         with pytest.raises(SystemExit):
             main(tiaf_args)
         # then:
-        assert self.call_args_equal_expected_args(mock_runtime.call_args.args, default_runtime_args.values())
+        assert self.call_args_equal_expected_args(mock_runtime.call_args, default_runtime_args.values())
 
     @pytest.mark.parametrize("safemode, arg_val",[(True, "on"),(None, "off")])
     def test_safe_mode_arguments(self, caplog, tiaf_args, mock_runtime, default_runtime_args, safemode, arg_val):
@@ -249,7 +249,7 @@ class TestTIAFUnitTests():
         with pytest.raises(SystemExit):
             main(tiaf_args)
         # then:
-        assert self.call_args_equal_expected_args(mock_runtime.call_args.args, default_runtime_args.values())
+        assert self.call_args_equal_expected_args(mock_runtime.call_args, default_runtime_args.values())
 
     def test_exclude_file_not_supplied(self, caplog, tiaf_args, mock_runtime, default_runtime_args):
         # given:
@@ -260,7 +260,7 @@ class TestTIAFUnitTests():
             main(tiaf_args)
 
         # then:
-        assert self.call_args_equal_expected_args(mock_runtime.call_args.args, default_runtime_args.values())
+        assert self.call_args_equal_expected_args(mock_runtime.call_args, default_runtime_args.values())
 
     def test_exclude_file_supplied(self, caplog, tiaf_args, mock_runtime, default_runtime_args):
         # given:
@@ -271,4 +271,4 @@ class TestTIAFUnitTests():
             main(tiaf_args)
         
         # then:
-        assert self.call_args_equal_expected_args(mock_runtime.call_args.args, default_runtime_args.values())
+        assert self.call_args_equal_expected_args(mock_runtime.call_args, default_runtime_args.values())
