@@ -88,6 +88,32 @@ namespace JsonSerializationTests
         }
     }
 
+    enum DefaultJSONStorage
+    {
+        Store,
+        Drop
+    };
+
+    enum DefaultSerializedObjectStatus
+    {
+        Full,
+        Partial,
+        None
+    };
+
+    enum DefaultObjectSuppliedInSerialization
+    {
+        True,
+        False
+    };
+
+    struct JSONRequestSpec
+    {
+        DefaultJSONStorage jsonStorage;
+        DefaultSerializedObjectStatus objectStatus;
+        DefaultObjectSuppliedInSerialization objectSupplied;
+    };
+
     template<typename T>
     class JsonSerializerConformityTestDescriptor
     {
@@ -116,6 +142,10 @@ namespace JsonSerializationTests
         //! tests using this value will be skipped.
         virtual AZStd::shared_ptr<T> CreateSingleArrayDefaultInstance() { return nullptr; }
 
+        virtual AZStd::optional<AZStd::string_view> GetJSON([[maybe_unused]] const JSONRequestSpec& requestSpec)
+        {
+            return AZStd::nullopt;
+        }
         //! Get the json that represents the default instance.
         //! If the target type doesn't support partial specialization this can be ignored and
         //! tests for partial support will be skipped.
@@ -949,12 +979,15 @@ namespace JsonSerializationTests
 
         auto serializer = this->m_description.CreateSerializer();
         auto instance = this->m_description.CreateFullySetInstance();
-
+        auto defaultInstance = this->m_description.CreateDefaultInstance();
+        // changed from default instance that is a duplicate of the fully set instance, and then set back to it
         ResultCode result = serializer->Store(*this->m_jsonDocument, instance.get(), instance.get(), azrtti_typeid(*instance),
             *this->m_jsonSerializationContext);
 
         EXPECT_EQ(Processing::Completed, result.GetProcessing());
         EXPECT_EQ(Outcomes::Success, result.GetOutcome());
+        
+        // GetJSON ?
         this->Expect_DocStrEq(this->m_description.GetJsonFor_Store_SerializeWithDefaultsKept());
     }
 
@@ -975,7 +1008,21 @@ namespace JsonSerializationTests
 
         EXPECT_EQ(Processing::Completed, result.GetProcessing());
         EXPECT_EQ(Outcomes::Success, result.GetOutcome());
-        this->Expect_DocStrEq(this->m_description.GetJsonFor_Store_SerializeFullySetInstance());
+
+        JSONRequestSpec spec;
+        spec.jsonStorage = this->m_jsonSerializationContext->ShouldKeepDefaults() ? DefaultJSONStorage::Store : DefaultJSONStorage::Drop;
+        spec.objectStatus = DefaultSerializedObjectStatus::None;
+        spec.objectSupplied = DefaultObjectSuppliedInSerialization::True;
+
+        if (auto json = this->m_description.GetJSON(spec))
+        {
+            this->Expect_DocStrEq(*json);
+
+        }
+        else
+        {
+            this->Expect_DocStrEq(this->m_description.GetJsonFor_Store_SerializeFullySetInstance());
+        }
     }
 
     TYPED_TEST_P(JsonSerializerConformityTests, Store_SerializeWithoutDefault_StoredSuccessfullyAndJsonMatches)
@@ -994,7 +1041,20 @@ namespace JsonSerializationTests
 
         EXPECT_EQ(Processing::Completed, result.GetProcessing());
         EXPECT_EQ(Outcomes::Success, result.GetOutcome());
-        this->Expect_DocStrEq(this->m_description.GetJsonFor_Store_SerializeWithoutDefault());
+
+        JSONRequestSpec spec;
+        spec.jsonStorage = this->m_jsonSerializationContext->ShouldKeepDefaults() ? DefaultJSONStorage::Store : DefaultJSONStorage::Drop;
+        spec.objectStatus = DefaultSerializedObjectStatus::None;
+        spec.objectSupplied = DefaultObjectSuppliedInSerialization::False;
+
+        if (auto json = this->m_description.GetJSON(spec))
+        {
+            this->Expect_DocStrEq(*json);
+        }
+        else
+        {
+            this->Expect_DocStrEq(this->m_description.GetJsonFor_Store_SerializeWithoutDefault());
+        }
     }
 
     TYPED_TEST_P(JsonSerializerConformityTests, Store_SerializeWithoutDefaultAndDefaultsKept_StoredSuccessfullyAndJsonMatches)

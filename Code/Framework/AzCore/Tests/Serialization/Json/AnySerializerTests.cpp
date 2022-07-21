@@ -123,6 +123,83 @@ namespace JsonSerializationTests
             return AZStd::make_shared<AZStd::any>(anyT);
         }
 
+        std::optional<AZStd::string_view> GetJSON([[maybe_unused]] const JSONRequestSpec& requestSpec) override
+        {
+            // return m_jsonForFullyConfiguredInstanceWithoutDefaults.begin();
+
+            if (requestSpec.jsonStorage == DefaultJSONStorage::Store)
+            {
+                if (requestSpec.objectSupplied == DefaultObjectSuppliedInSerialization::True)
+                {
+                    if (requestSpec.objectStatus == DefaultSerializedObjectStatus::Full)
+                    {
+
+                    }
+                    else if (requestSpec.objectStatus == DefaultSerializedObjectStatus::Partial)
+                    {
+
+                    }
+                    else
+                    {
+                        // fully configured
+                    }
+                }
+                else
+                {
+                    if (requestSpec.objectStatus == DefaultSerializedObjectStatus::Full)
+                    {
+
+                    }
+                    else if (requestSpec.objectStatus == DefaultSerializedObjectStatus::Partial)
+                    {
+
+                    }
+                    else
+                    {
+                        // fully configured
+                    }
+                }
+            }
+            else
+            {
+                // dropping defaults
+                if (requestSpec.objectSupplied == DefaultObjectSuppliedInSerialization::True)
+                {
+                    if (requestSpec.objectStatus == DefaultSerializedObjectStatus::Full)
+                    {
+
+                    }
+                    else if (requestSpec.objectStatus == DefaultSerializedObjectStatus::Partial)
+                    {
+                        
+                    }
+                    else
+                    {
+                        // fully configured
+                        // needed
+                        return m_jsonForFullyConfiguredInstanceWithoutDefaults.begin();
+                    }
+                }
+                else
+                {
+                    if (requestSpec.objectStatus == DefaultSerializedObjectStatus::Full)
+                    {
+
+                    }
+                    else if (requestSpec.objectStatus == DefaultSerializedObjectStatus::Partial)
+                    {
+
+                    }
+                    else
+                    {
+                        // fully configured
+                    }
+                }
+            }
+
+            return AZStd::nullopt;
+        }
+
         AZStd::string_view GetJsonForPartialDefaultInstance() override
         {
             // may need to split up return values
@@ -132,9 +209,10 @@ namespace JsonSerializationTests
 
         AZStd::string_view GetJsonForFullySetInstance() override
         {
-            return m_jsonForFullyConfiguredIntance.begin();
+            return m_jsonForFullyConfiguredInstance.begin();
         }
 
+        
         void ConfigureFeatures(JsonSerializerConformityTestDescriptorFeatures& features) override
         {
             features.EnableJsonType(rapidjson::kObjectType);
@@ -160,11 +238,16 @@ namespace JsonSerializationTests
             auto instanceWithSomeDefaults = T::GetInstanceWithSomeDefaults();
 
             const char* typeName = T::RTTI_TypeName();
-            const char* withoutDefaultsJSON = instanceWithoutDefaults.m_json;
+            const char* fullInstanceWithoutDefaultsInJSON = instanceWithoutDefaults.m_jsonWithStrippedDefaults;
+            const char* fullInstanceWithDefaultsInJSON = instanceWithoutDefaults.m_jsonWithKeptDefaults;
             const char* withSomeDefaults = instanceWithSomeDefaults.m_jsonWithStrippedDefaults;
             const char* withKeptDefaults = instanceWithSomeDefaults.m_jsonWithKeptDefaults;
 
-            azsnprintf(m_jsonForFullyConfiguredIntance.begin(), 2048, ANY_JSON, typeName, withoutDefaultsJSON);
+            // static_assert(false); // fix it here, different classes need different things
+            // the different pointer means non defaults will ALWAYS have non defaults
+
+            azsnprintf(m_jsonForFullyConfiguredInstance.begin(), 2048, ANY_JSON, typeName, fullInstanceWithDefaultsInJSON);
+            azsnprintf(m_jsonForFullyConfiguredInstanceWithoutDefaults.begin(), 2048, ANY_JSON, typeName, fullInstanceWithoutDefaultsInJSON);
             azsnprintf(m_jsonForPartialDefaultInstanceStrippedDefaults.begin(), 2048, ANY_JSON, typeName, withSomeDefaults);
             azsnprintf(m_jsonForPartialDefaultInstanceKeptDefaults.begin(), 2048, ANY_JSON, typeName, withKeptDefaults);
         }
@@ -182,7 +265,8 @@ namespace JsonSerializationTests
         bool m_fullyReflected = false;
         AZStd::fixed_string<2048> m_jsonForPartialDefaultInstanceKeptDefaults;
         AZStd::fixed_string<2048> m_jsonForPartialDefaultInstanceStrippedDefaults;
-        AZStd::fixed_string<2048> m_jsonForFullyConfiguredIntance;
+        AZStd::fixed_string<2048> m_jsonForFullyConfiguredInstance;
+        AZStd::fixed_string<2048> m_jsonForFullyConfiguredInstanceWithoutDefaults;
     };
 
     using AnyConformityTestTypes = ::testing::Types
@@ -198,10 +282,8 @@ namespace JsonSerializationTests
         , AnySerializerTestDescription<ComplexAssignedPointer>
         , AnySerializerTestDescription<SimpleNullPointer>
         , AnySerializerTestDescription<ComplexNullInheritedPointer>
-        , AnySerializerTestDescription<ComplexAssignedDifferentInheritedPointer>
-
-        // fails two tests
-        // ,*/ AnySerializerTestDescription<ComplexAssignedSameInheritedPointer>
+        , */AnySerializerTestDescription<ComplexAssignedDifferentInheritedPointer>
+        , AnySerializerTestDescription<ComplexAssignedSameInheritedPointer>
 
          //still crash
         /*

@@ -592,7 +592,8 @@ namespace JsonSerializationTests
         member->m_baseVar = -88.0f;
         instance->m_pointer = member;
 
-        const char* json = R"(
+        // because it is configured with a different object type in the pointer, the JSON is ALWAYS tracking the default
+        const char* jsonWithDefaults = R"(
             {
                 "pointer": 
                 {
@@ -602,7 +603,8 @@ namespace JsonSerializationTests
                     "var2": 88.0
                 }
             })";
-        return MakeInstanceWithoutDefaults(AZStd::move(instance), json);
+
+        return MakeInstanceWithoutDefaults(AZStd::move(instance), jsonWithDefaults, jsonWithDefaults);
     }
 
 
@@ -717,7 +719,18 @@ namespace JsonSerializationTests
                     "var2": 88.0
                 }
             })";
-        return MakeInstanceWithoutDefaults(AZStd::move(instance), json);
+
+        const char* keptDefaults = R"(
+            {
+                "pointer": 
+                {
+                    "$type": "SimpleInheritence",
+                    "base_var": -88.0,
+                    "var1": 88,
+                    "var2": 88.0
+                }
+            })";
+        return MakeInstanceWithoutDefaults(AZStd::move(instance), json, keptDefaults);
     }
 
 

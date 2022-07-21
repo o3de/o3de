@@ -42,19 +42,21 @@ namespace JsonSerializationTests
     struct InstanceWithoutDefaults
     {
         AZStd::unique_ptr<T> m_instance;
-        const char* m_json;
+        const char* m_jsonWithStrippedDefaults;
+        const char* m_jsonWithKeptDefaults;
 
-        InstanceWithoutDefaults(AZStd::unique_ptr<T>&& instance, const char* json)
+        InstanceWithoutDefaults(AZStd::unique_ptr<T>&& instance, const char* jsonWithStrippedDefaults, const char* jsonWithKeptDefaults)
             : m_instance(AZStd::move(instance))
-            , m_json(json)
+            , m_jsonWithStrippedDefaults(jsonWithStrippedDefaults)
+            , m_jsonWithKeptDefaults(jsonWithKeptDefaults)
         {
         }
     };
 
     template<typename T>
-    InstanceWithoutDefaults<T> MakeInstanceWithoutDefaults(AZStd::unique_ptr<T> instance, const char* json)
+    InstanceWithoutDefaults<T> MakeInstanceWithoutDefaults(AZStd::unique_ptr<T> instance, const char* jsonWithStrippedDefaults, const char* jsonWithKeptDefaults = nullptr)
     {
-        return InstanceWithoutDefaults<T>(AZStd::move(instance), json);
+        return InstanceWithoutDefaults<T>(AZStd::move(instance), jsonWithStrippedDefaults, jsonWithKeptDefaults ? jsonWithKeptDefaults : jsonWithStrippedDefaults);
     }
 
     struct BaseClass
