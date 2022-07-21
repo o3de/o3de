@@ -167,14 +167,17 @@ namespace WhiteBox
                 .SetCallback(
                     [cluserId = m_transformClusterId, buttonId = m_transformTranslateButtonId]()
                     {
-                        AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
-                            AzToolsFramework::ViewportUi::DefaultViewportId,
-                            static_cast<void(AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::*)(
-                                    AzToolsFramework::ViewportUi::ClusterId, 
-                                    AzToolsFramework::ViewportUi::ButtonId)>(
-                                &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::PressButton),
-                            cluserId,
-                            buttonId);
+                        
+                            AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
+                                AzToolsFramework::ViewportUi::DefaultViewportId,
+                                [](AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events* event,
+                                   AzToolsFramework::ViewportUi::ClusterId clusterId,
+                                   AzToolsFramework::ViewportUi::ButtonId buttonId)
+                                    {
+                                        event->PressButton(clusterId, buttonId);
+                                    },
+                                cluserId,
+                                buttonId);
                     }),
             AzToolsFramework::ActionOverride()
                 .SetUri(SwitchRotationMode)
@@ -187,10 +190,12 @@ namespace WhiteBox
                     {
                         AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
                             AzToolsFramework::ViewportUi::DefaultViewportId,
-                            static_cast<void(AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::*)(
-                                    AzToolsFramework::ViewportUi::ClusterId, 
-                                    AzToolsFramework::ViewportUi::ButtonId)>(
-                                &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::PressButton),
+                            [](AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events* event,
+                                   AzToolsFramework::ViewportUi::ClusterId clusterId,
+                                   AzToolsFramework::ViewportUi::ButtonId buttonId)
+                                    {
+                                        event->PressButton(clusterId, buttonId);
+                                    },
                             cluserId,
                             buttonId);
                     }),
@@ -205,10 +210,12 @@ namespace WhiteBox
                     {
                         AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
                             AzToolsFramework::ViewportUi::DefaultViewportId,
-                            static_cast<void(AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::*)(
-                                    AzToolsFramework::ViewportUi::ClusterId, 
-                                    AzToolsFramework::ViewportUi::ButtonId)>(
-                                &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::PressButton),
+                            [](AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events* event,
+                                   AzToolsFramework::ViewportUi::ClusterId clusterId,
+                                   AzToolsFramework::ViewportUi::ButtonId buttonId)
+                                    {
+                                        event->PressButton(clusterId, buttonId);
+                                    },
                             cluserId,
                             buttonId);
                     })
