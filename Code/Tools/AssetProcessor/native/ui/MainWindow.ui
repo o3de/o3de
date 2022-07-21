@@ -1478,7 +1478,7 @@
           </item>
          </layout>
         </widget>
-        <widget class="QWidget" name="page">
+        <widget class="QWidget" name="SharedCachePage">
          <layout class="QGridLayout" name="gridLayout_2">
           <property name="leftMargin">
            <number>0</number>
@@ -1493,7 +1493,7 @@
            <number>0</number>
           </property>
           <item row="0" column="0">
-           <widget class="QWidget" name="widget" native="true">
+           <widget class="QWidget" name="widget_sharedCache" native="true">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
               <horstretch>0</horstretch>
@@ -1513,30 +1513,43 @@
              <property name="bottomMargin">
               <number>10</number>
              </property>
-             <item row="5" column="4">
-              <widget class="QPushButton" name="serverAddressButton">
-               <property name="maximumSize">
-                <size>
-                 <width>16</width>
-                 <height>16777215</height>
-                </size>
+             <item row="0" column="0" colspan="2">
+              <widget class="QLabel" name="sharedCacheTitle">
+               <property name="font">
+                <font>
+                 <pointsize>10</pointsize>
+                 <weight>75</weight>
+                 <bold>true</bold>
+                </font>
                </property>
                <property name="text">
-                <string/>
+                <string># Shared Cache Settings</string>
+               </property>
+               <property name="textFormat">
+                <enum>Qt::MarkdownText</enum>
                </property>
               </widget>
              </item>
-             <item row="1" column="0">
-              <widget class="Line" name="line">
-               <property name="orientation">
-                <enum>Qt::Horizontal</enum>
+             <item row="9" column="3">
+              <widget class="QPushButton" name="sharedCacheSubmitButton">
+               <property name="text">
+                <string>Save Changes</string>
+               </property>
+               <property name="autoDefault">
+                <bool>true</bool>
+               </property>
+               <property name="default">
+                <bool>true</bool>
                </property>
               </widget>
              </item>
-             <item row="4" column="0">
-              <widget class="QLabel" name="label_3">
+             <item row="5" column="0" colspan="4">
+              <widget class="QLineEdit" name="serverAddressLineEdit"/>
+             </item>
+             <item row="9" column="4">
+              <widget class="QPushButton" name="sharedCacheDiscardButton">
                <property name="text">
-                <string>Step 2: Select a remote folder</string>
+                <string>Discard</string>
                </property>
               </widget>
              </item>
@@ -1603,64 +1616,24 @@
                </column>
               </widget>
              </item>
-             <item row="5" column="0" colspan="4">
-              <widget class="QPlainTextEdit" name="serverAddressText">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Expanding" vsizetype="Maximum">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="maximumSize">
-                <size>
-                 <width>16777215</width>
-                 <height>32</height>
-                </size>
-               </property>
-               <property name="font">
-                <font>
-                 <family>Amazon Ember Mono</family>
-                 <pointsize>9</pointsize>
-                </font>
-               </property>
-               <property name="toolTip">
-                <string>The remote folder should be accessible to the entire team.</string>
-               </property>
-               <property name="inputMethodHints">
-                <set>Qt::ImhNone</set>
-               </property>
-               <property name="plainText">
-                <string>c:/transfer/stuff</string>
+             <item row="4" column="0">
+              <widget class="QLabel" name="label_3">
+               <property name="text">
+                <string>Step 2: Select a remote folder</string>
                </property>
               </widget>
              </item>
-             <item row="0" column="0">
-              <widget class="QLabel" name="sharedCacheTitle">
-               <property name="font">
-                <font>
-                 <pointsize>10</pointsize>
-                 <weight>75</weight>
-                 <bold>true</bold>
-                </font>
-               </property>
-               <property name="text">
-                <string># Shared Cache Settings</string>
-               </property>
-               <property name="textFormat">
-                <enum>Qt::MarkdownText</enum>
+             <item row="1" column="0">
+              <widget class="Line" name="line">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
                </property>
               </widget>
              </item>
-             <item row="9" column="4">
-              <widget class="QPushButton" name="sharedCacheDiscardButton">
-               <property name="maximumSize">
-                <size>
-                 <width>64</width>
-                 <height>16777215</height>
-                </size>
-               </property>
+             <item row="6" column="0">
+              <widget class="QLabel" name="label_4">
                <property name="text">
-                <string>Discard</string>
+                <string>Step 3: Manage shared cache asset patterns</string>
                </property>
               </widget>
              </item>
@@ -1674,41 +1647,8 @@
                </property>
               </widget>
              </item>
-             <item row="6" column="0">
-              <widget class="QLabel" name="label_4">
-               <property name="text">
-                <string>Step 3: Manage shared cache asset patterns</string>
-               </property>
-              </widget>
-             </item>
-             <item row="2" column="0">
-              <widget class="QLabel" name="label_2">
-               <property name="text">
-                <string>Step 1: Set shared cache mode</string>
-               </property>
-              </widget>
-             </item>
-             <item row="9" column="3">
-              <widget class="QPushButton" name="sharedCacheSubmitButton">
-               <property name="maximumSize">
-                <size>
-                 <width>128</width>
-                 <height>16777215</height>
-                </size>
-               </property>
-               <property name="text">
-                <string>Save Changes</string>
-               </property>
-              </widget>
-             </item>
-             <item row="3" column="0">
+             <item row="3" column="0" colspan="4">
               <widget class="QComboBox" name="serverCacheModeOptions">
-               <property name="maximumSize">
-                <size>
-                 <width>128</width>
-                 <height>16777215</height>
-                </size>
-               </property>
                <property name="toolTip">
                 <string>Select the mode the project should use to cache asset products.</string>
                </property>
@@ -1720,7 +1660,32 @@
                </property>
               </widget>
              </item>
-             <item row="0" column="2" colspan="3">
+             <item row="2" column="0">
+              <widget class="QLabel" name="label_2">
+               <property name="text">
+                <string>Step 1: Set shared cache mode</string>
+               </property>
+              </widget>
+             </item>
+             <item row="5" column="4">
+              <widget class="QToolButton" name="serverAddressToolButton">
+               <property name="text">
+                <string>Choose a remote folder.</string>
+               </property>
+               <property name="icon">
+                <iconset>
+                 <normaloff>style/Browse.png</normaloff>
+                 <selectedon>style/Browse_on.png</selectedon>style/Browse.png</iconset>
+               </property>
+               <property name="popupMode">
+                <enum>QToolButton::DelayedPopup</enum>
+               </property>
+               <property name="toolButtonStyle">
+                <enum>Qt::ToolButtonIconOnly</enum>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="0" colspan="4">
               <widget class="QLabel" name="sharedCacheStatus">
                <property name="font">
                 <font>
@@ -1741,6 +1706,16 @@
                </property>
                <property name="margin">
                 <number>5</number>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="4">
+              <widget class="QPushButton" name="sharedCacheSupport">
+               <property name="text">
+                <string/>
+               </property>
+               <property name="flat">
+                <bool>true</bool>
                </property>
               </widget>
              </item>
