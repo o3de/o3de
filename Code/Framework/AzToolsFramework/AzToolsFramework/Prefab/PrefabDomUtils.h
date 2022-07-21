@@ -190,9 +190,6 @@ namespace AzToolsFramework
              */
             PrefabDomValueReference GetInstancesValue(PrefabDomValue& prefabDom);
 
-            AZ::JsonSerializationResult::ResultCode ApplyPatches(
-                PrefabDomValue& prefabDomToApplyPatchesOn, PrefabDom::AllocatorType& allocator, const PrefabDomValue& patches);
-
             //! Identifies instance members modified by inspecting the patches provided.
             //! @param patches The patches to inspect.
             //! @return PatchesMetada The metadata object indicating which instance members get modified with the provided patches.
