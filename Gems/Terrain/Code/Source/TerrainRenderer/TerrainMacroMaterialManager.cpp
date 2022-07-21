@@ -258,7 +258,7 @@ namespace Terrain
 
         auto UpdateImageIndex = [&](uint32_t& indexRef, const AZ::Data::Instance<AZ::RPI::Image>& imageView)
         {
-            if (indexRef)
+            if (indexRef != InvalidImageIndex)
             {
                 if (imageView)
                 {
@@ -276,15 +276,8 @@ namespace Terrain
             }
         };
 
-        if (shaderData.m_colorMapId != InvalidImageIndex)
-        {
-            UpdateImageIndex(shaderData.m_colorMapId, macroMaterialData.m_colorImage);
-        }
-
-        if (shaderData.m_normalMapId != InvalidImageIndex)
-        {
-            UpdateImageIndex(shaderData.m_normalMapId, macroMaterialData.m_normalImage);
-        }
+        UpdateImageIndex(shaderData.m_colorMapId, macroMaterialData.m_colorImage);
+        UpdateImageIndex(shaderData.m_normalMapId, macroMaterialData.m_normalImage);
 
         MacroMaterialMetaData& metaData = m_materialData.GetElement<1>(materialRef);
         metaData.m_priority = macroMaterialData.m_priority;
