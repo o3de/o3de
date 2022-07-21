@@ -502,7 +502,7 @@ namespace MaterialCanvas
             }
             if (auto v = AZStd::any_cast<const AZ::Vector2>(&slotValue))
             {
-                return AZStd::string::format("float2(%g, %g, %g)", v->GetX(), v->GetY());
+                return AZStd::string::format("float2(%g, %g)", v->GetX(), v->GetY());
             }
             if (auto v = AZStd::any_cast<const float>(&slotValue))
             {
