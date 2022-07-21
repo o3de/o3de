@@ -31,6 +31,6 @@ namespace AzToolsFramework
 
     AZStd::string BoxComponentMode::GetComponentModeName() const
     {
-        return "Tube Shape Edit Mode";
+        return "Box Edit Mode";
     }
 } // namespace AzToolsFramework
