@@ -141,6 +141,28 @@ endif()
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
 
     ly_add_target(
+        NAME Atom_RPI.TestUtils.Static STATIC
+        NAMESPACE Gem
+        FILES_CMAKE
+            atom_rpi_test_utils_files.cmake
+        INCLUDE_DIRECTORIES
+            PUBLIC
+                Tests
+        BUILD_DEPENDENCIES
+            PRIVATE
+                AZ::AtomCore
+                AZ::AzTest
+                AZ::AzTestShared
+                AZ::AzFramework
+                AZ::AzToolsFramework
+                Legacy::CryCommon
+                Gem::Atom_RPI.Public
+                Gem::Atom_RHI.Public
+                Gem::Atom_RPI.Edit
+                Gem::Atom_Utils.TestUtils.Static
+    )
+
+    ly_add_target(
         NAME Atom_RPI.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
         NAMESPACE Gem
         FILES_CMAKE
@@ -160,6 +182,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
                 Gem::Atom_RPI.Public
                 Gem::Atom_RHI.Public
                 Gem::Atom_RPI.Edit
+                Gem::Atom_RPI.TestUtils.Static
                 Gem::Atom_Utils.TestUtils.Static
     )
     ly_add_googletest(
