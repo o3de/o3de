@@ -107,12 +107,7 @@ namespace Terrain
 
     void TerrainMacroMaterialManager::OnTerrainMacroMaterialCreated(AZ::EntityId entityId, const MacroMaterialData& newMaterialData)
     {
-        // If terrainSizeChanged is set, we're going to rebuild everything anyways, so don't do any work here. This early-out also
-        // fixes order-of-activation issues when the following happens:
-        // - macro material entity tries to register itself by calling OnTerrainMacroMaterialCreated
-        // - TerrainMacroMaterialManager initializes
-        // - macro material entity gets a change and calls OnTerrainMacroMaterialChanged (assert because not registered yet)
-        // - TerrainMacroMaterialManager updates itself (manager enumerates the already-connected handlers and registers them)
+        // If terrainSizeChanged, everything will rebuild later, so don't do any work here.
         if (m_terrainSizeChanged)
         {
             return;
@@ -143,14 +138,7 @@ namespace Terrain
             [&](uint32_t idx, [[maybe_unused]] const AZ::Vector2& corner)
             {
                 MacroMaterialRefs& materialRefList = m_materialRefGridShaderData.at(idx);
-                for (uint8_t offset = 0; offset < MacroMaterialsPerTile; ++offset)
-                {
-                    if (materialRefList.at(offset) == InvalidMacroMaterialRef)
-                    {
-                        materialRefList.at(offset) = macroMaterial.m_materialRef;
-                        break;
-                    }
-                }
+                AddMacroMaterialShaderEntry(macroMaterial.m_materialRef, materialRefList);
             }
         );
 
@@ -159,8 +147,7 @@ namespace Terrain
 
     void TerrainMacroMaterialManager::OnTerrainMacroMaterialChanged(AZ::EntityId entityId, const MacroMaterialData& newMaterialData)
     {
-        // If terrainSizeChanged is set, we're going to rebuild everything anyways, so don't do any work here. This early-out also
-        // fixes order-of-activation issues.
+        // If terrainSizeChanged, everything will rebuild later, so don't do any work here.
         if (m_terrainSizeChanged)
         {
             return;
@@ -211,8 +198,7 @@ namespace Terrain
     void TerrainMacroMaterialManager::OnTerrainMacroMaterialRegionChanged(
         AZ::EntityId entityId, [[maybe_unused]] const AZ::Aabb& oldRegion, const AZ::Aabb& newRegion)
     {
-        // If terrainSizeChanged is set, we're going to rebuild everything anyways, so don't do any work here. This early-out also
-        // fixes order-of-activation issues.
+        // If terrainSizeChanged, everything will rebuild later, so don't do any work here.
         if (m_terrainSizeChanged)
         {
             return;
@@ -270,8 +256,7 @@ namespace Terrain
 
     void TerrainMacroMaterialManager::OnTerrainMacroMaterialDestroyed(AZ::EntityId entityId)
     {
-        // If terrainSizeChanged is set, we're going to rebuild everything anyways, so don't do any work here. This early-out also
-        // fixes order-of-activation issues.
+        // If terrainSizeChanged, everything will rebuild later, so don't do any work here.
         if (m_terrainSizeChanged)
         {
             return;
@@ -324,6 +309,18 @@ namespace Terrain
         macroMaterial.m_data.m_maxBounds.StoreToFloat2(macroMaterialShaderData.m_boundsMax.data());
         macroMaterialShaderData.m_colorMapId = macroMaterial.m_colorIndex;
         macroMaterialShaderData.m_normalMapId = macroMaterial.m_normalIndex;
+    }
+
+    void TerrainMacroMaterialManager::AddMacroMaterialShaderEntry(uint16_t materialRef, MacroMaterialRefs& materialRefs)
+    {
+        for (auto& ref : materialRefs)
+        {
+            if (ref == InvalidMacroMaterialRef)
+            {
+                ref = materialRef;
+                break;
+            }
+        }
     }
 
     void TerrainMacroMaterialManager::RemoveMacroMaterialShaderEntry(uint16_t shaderDataIdx, MacroMaterialRefs& materialRefs)
@@ -433,7 +430,7 @@ namespace Terrain
 
                 for (auto& [entityId, macroMaterial] : m_macroMaterials)
                 {
-                    //if (macroMaterial.m_data.Overlaps(regionMin, regionMax))
+                    if (macroMaterial.m_data.Overlaps(regionMin, regionMax))
                     {
                         affectedMaterials.push_back(macroMaterial);
                     }
@@ -452,15 +449,7 @@ namespace Terrain
                         {
                             if (macroMaterial.m_data.Overlaps(tileMin, tileMax))
                             {
-                                for (uint16_t& ref : refs)
-                                {
-                                    if (ref == InvalidMacroMaterialRef)
-                                    {
-                                        ref = macroMaterial.m_materialRef;
-                                        break;
-                                    }
-                                }
-
+                                AddMacroMaterialShaderEntry(macroMaterial.m_materialRef, refs);
                             }
                         }
                     }

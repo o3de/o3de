@@ -110,6 +110,7 @@ namespace Terrain
         void OnTerrainMacroMaterialDestroyed(AZ::EntityId entityId) override;
         
         void UpdateMacroMaterialShaderEntry(MacroMaterialShaderData& shaderData, const MacroMaterial& macroMaterialData);
+        void AddMacroMaterialShaderEntry(uint16_t materialRef, MacroMaterialRefs& materialRefs);
         void RemoveMacroMaterialShaderEntry(uint16_t shaderDataIdx, MacroMaterialRefs& materialRefs);
 
         template<typename Callback>
