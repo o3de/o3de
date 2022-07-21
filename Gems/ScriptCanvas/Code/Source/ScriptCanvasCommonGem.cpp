@@ -21,7 +21,6 @@
 #include <ScriptCanvas/Libraries/Libraries.h>
 #include <ScriptCanvas/Libraries/Math/MathNodeUtilities.h>
 #include <ScriptCanvas/Variable/GraphVariableManagerComponent.h>
-#include <AutoGenNodeableRegistry.generated.h>
 
 namespace ScriptCanvas
 {
@@ -55,10 +54,6 @@ namespace ScriptCanvas
 
         MathNodeUtilities::RandomEngineInit();
         InitDataRegistry();
-
-        INIT_SCRIPTCANVAS_AUTOGEN(ScriptCanvasStatic)
-        auto autogenDescriptors = GET_SCRIPTCANVAS_AUTOGEN_COMPONENT_DESCRIPTORS(ScriptCanvasStatic);
-        m_descriptors.insert(m_descriptors.end(), autogenDescriptors.begin(), autogenDescriptors.end());
     }
 
     ScriptCanvasModuleCommon::~ScriptCanvasModuleCommon()

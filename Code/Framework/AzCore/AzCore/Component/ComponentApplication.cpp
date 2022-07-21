@@ -1322,15 +1322,20 @@ namespace AZ
         }
 
         // All dynamic modules have been gathered at this point
-        AZ::ModuleManagerRequests::LoadModulesResult loadModuleOutcomes;
-        ModuleManagerRequestBus::BroadcastResult(loadModuleOutcomes, &ModuleManagerRequests::LoadDynamicModules, gemModules, ModuleInitializationSteps::RegisterComponentDescriptors, true);
+        for (ModuleInitializationSteps lastStepToPerform :
+             { ModuleInitializationSteps::CreateClass, ModuleInitializationSteps::RegisterComponentDescriptors })
+        {
+            AZ::ModuleManagerRequests::LoadModulesResult loadModuleOutcomes;
+            ModuleManagerRequestBus::BroadcastResult(
+                loadModuleOutcomes, &ModuleManagerRequests::LoadDynamicModules, gemModules, lastStepToPerform, true);
 
 #if defined(AZ_ENABLE_TRACING)
-        for (const auto& loadModuleOutcome : loadModuleOutcomes)
-        {
-            AZ_Error("ComponentApplication", loadModuleOutcome.IsSuccess(), "%s", loadModuleOutcome.GetError().c_str());
-        }
+            for (const auto& loadModuleOutcome : loadModuleOutcomes)
+            {
+                AZ_Error("ComponentApplication", loadModuleOutcome.IsSuccess(), "%s", loadModuleOutcome.GetError().c_str());
+            }
 #endif
+        }
     }
 
     void ComponentApplication::Tick()
