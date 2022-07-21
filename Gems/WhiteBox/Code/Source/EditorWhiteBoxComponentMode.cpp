@@ -226,7 +226,7 @@ namespace WhiteBox
             : AZStd::optional<PolygonIntersection>{};
     }
 
-    bool EditorComponentMode::HandleMouseInteraction(
+    bool EditorWhiteBoxComponentMode::HandleMouseInteraction(
         const AzToolsFramework::ViewportInteraction::MouseInteractionEvent& mouseInteraction)
     {
         AZ_PROFILE_FUNCTION(AzToolsFramework);
