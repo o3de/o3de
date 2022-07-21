@@ -17,7 +17,16 @@
 #include <AzCore/std/typetraits/is_base_of.h>
 #include <Tests/Serialization/Json/BaseJsonSerializerFixture.h>
 
-#define RESTRICT_JSON_CONFORMITY_TESTS(X) 
+// It is difficult to isolate individual conformity tests or types with gtest_filter.
+// Use the macros below to disable all tests except the one you need to work on.
+#define JSON_CONFORMITY_ENABLED
+
+#if defined JSON_CONFORMITY_ENABLED
+#define IF_JSON_CONFORMITY_ENABLED(X) X
+#else
+#define IF_JSON_CONFORMITY_ENABLED(X) 
+#endif
+
 
 namespace JsonSerializationTests
 {
@@ -209,6 +218,22 @@ namespace JsonSerializationTests
     public:
         using Description = T;
         using Type = typename T::Type;
+
+
+        struct PointerWrapper
+        {
+            AZ_TYPE_INFO(PointerWrapper, "{32FA6645-074A-458A-B79C-B173D0BD4B42}");
+            AZ_CLASS_ALLOCATOR(PointerWrapper, AZ::SystemAllocator, 0);
+
+            Type* m_value{ nullptr };
+
+            ~PointerWrapper()
+            {
+                // Using free because not all types can safely use delete. Since this just to clear the memory to satisfy the memory
+                // leak test, this is fine.
+                azfree(m_value);
+            }
+        };
 
         void SetUp() override
         {
@@ -751,16 +776,18 @@ namespace JsonSerializationTests
     {
         using namespace AZ::JsonSerializationResult;
 
-        if (this->m_features.m_enableNewInstanceTests && this->m_features.m_mandatoryFields.empty())
+        if (this->m_features.m_enableNewInstanceTests
+        && this->m_features.m_mandatoryFields.empty()
+        && this->m_features.m_defaultIsEqualToEmpty)
         {
             AZ::SerializeContext* serializeContext = this->m_jsonDeserializationContext->GetSerializeContext();
             const AZ::SerializeContext::ClassData* classData = serializeContext->FindClassData(azrtti_typeid<typename TypeParam::Type>());
             ASSERT_NE(nullptr, classData);
-            // Skip this test if the target type doesn't have a factor to create a new instance with or if the factor explicit
+            // Skip this test if the target type doesn't have a factory to create a new instance with or if the factory explicitly
             // prohibits construction.
             if (classData->m_factory && classData->m_factory != AZ::Internal::NullFactory::GetInstance())
             {
-                auto instance = this->m_description.CreateDefaultConstructedInstance();
+                typename JsonSerializerConformityTests<TypeParam>::PointerWrapper instance;
                 auto compare = this->m_description.CreateDefaultInstance();
 
                 this->m_jsonDocument->Parse(R"({ "Value": {}})");
@@ -769,13 +796,13 @@ namespace JsonSerializationTests
                 AZ::JsonDeserializerSettings settings;
                 settings.m_serializeContext = serializeContext;
                 settings.m_registrationContext = this->m_jsonDeserializationContext->GetRegistrationContext();
-                ResultCode result = AZ::JsonSerialization::Load/*<typename TypeParam::Type>*/(*instance.get(), *this->m_jsonDocument, settings);
+                ResultCode result = AZ::JsonSerialization::Load(instance, *this->m_jsonDocument, settings);
 
                 EXPECT_EQ(Outcomes::DefaultsUsed, result.GetOutcome());
                 EXPECT_EQ(Processing::Completed, result.GetProcessing());
-                ASSERT_NE(nullptr, instance);
+                ASSERT_NE(nullptr, instance.m_value);
                 ASSERT_NE(nullptr, compare);
-                EXPECT_TRUE(this->m_description.AreEqual(*instance, *compare));
+                EXPECT_TRUE(this->m_description.AreEqual(*instance.m_value, *compare));
             }
         }
     }
@@ -796,7 +823,7 @@ namespace JsonSerializationTests
                 this->m_jsonDocument->SetObject();
 
                 ResultCode result =
-                    serializer->Load(instance.get(), azrtti_typeid(instance), *this->m_jsonDocument, *this->m_jsonDeserializationContext);
+                    serializer->Load(instance.get(), azrtti_typeid(instance.get()), *this->m_jsonDocument, *this->m_jsonDeserializationContext);
 
                 EXPECT_EQ(Outcomes::DefaultsUsed, result.GetOutcome());
                 EXPECT_EQ(Processing::Completed, result.GetProcessing());
@@ -992,14 +1019,12 @@ namespace JsonSerializationTests
         auto serializer = this->m_description.CreateSerializer();
         auto instance = this->m_description.CreateFullySetInstance();
         auto defaultInstance = this->m_description.CreateDefaultInstance();
-        // changed from default instance that is a duplicate of the fully set instance, and then set back to it
         ResultCode result = serializer->Store(*this->m_jsonDocument, instance.get(), instance.get(), azrtti_typeid(*instance),
             *this->m_jsonSerializationContext);
 
         EXPECT_EQ(Processing::Completed, result.GetProcessing());
         EXPECT_EQ(Outcomes::Success, result.GetOutcome());
-        
-        // GetJSON ?
+
         this->Expect_DocStrEq(this->m_description.GetJsonFor_Store_SerializeWithDefaultsKept());
     }
 

@@ -519,7 +519,7 @@ namespace JsonSerializationTests
         TupleTestDescription,
         ComplexTupleTestDescription,
         NestedTupleTestDescription>;
-    RESTRICT_JSON_CONFORMITY_TESTS(INSTANTIATE_TYPED_TEST_CASE_P(Tuple, JsonSerializerConformityTests, TupleConformityTestTypes));
+    IF_JSON_CONFORMITY_ENABLED(INSTANTIATE_TYPED_TEST_CASE_P(Tuple, JsonSerializerConformityTests, TupleConformityTestTypes));
 
     class JsonTupleSerializerTests
         : public BaseJsonSerializerFixture
