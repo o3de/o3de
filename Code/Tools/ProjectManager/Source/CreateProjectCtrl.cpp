@@ -13,6 +13,7 @@
 #include <ScreenHeaderWidget.h>
 #include <GemCatalog/GemModel.h>
 #include <GemCatalog/GemCatalogScreen.h>
+#include <GemCatalog/GemCatalogHeaderWidget.h>
 #include <GemRepo/GemRepoScreen.h>
 #include <CreateAGemScreen.h>
 #include <ProjectUtils.h>
@@ -54,10 +55,15 @@ namespace O3DE::ProjectManager
         m_gemRepoScreen = new GemRepoScreen(this);
         m_stack->addWidget(m_gemRepoScreen);
 
+        m_createAGemScreen = new CreateAGemScreen(this);
+        m_stack->addWidget(m_createAGemScreen);
+
         vLayout->addWidget(m_stack);
 
         connect(m_gemCatalogScreen, &ScreenWidget::ChangeScreenRequest, this, &CreateProjectCtrl::OnChangeScreenRequest);
         connect(m_gemRepoScreen, &GemRepoScreen::OnRefresh, m_gemCatalogScreen, &GemCatalogScreen::Refresh);
+        connect(m_createAGemScreen, &ScreenWidget::ChangeScreenRequest, this, &CreateProjectCtrl::OnChangeScreenRequest);
+
 
         // When there are multiple project templates present, we re-gather the gems when changing the selected the project template.
         connect(m_newProjectSettingsScreen, &NewProjectSettingsScreen::OnTemplateSelectionChanged, this, [=](int oldIndex, [[maybe_unused]] int newIndex)
@@ -93,17 +99,17 @@ namespace O3DE::ProjectManager
                 }
             });
 
-        QDialogButtonBox* buttons = new QDialogButtonBox();
-        buttons->setObjectName("footer");
-        vLayout->addWidget(buttons);
+        m_buttons = new QDialogButtonBox();
+        m_buttons->setObjectName("footer");
+        vLayout->addWidget(m_buttons);
 
-        m_primaryButton = buttons->addButton(tr("Create Project"), QDialogButtonBox::ApplyRole);
+        m_primaryButton = m_buttons->addButton(tr("Create Project"), QDialogButtonBox::ApplyRole);
         connect(m_primaryButton, &QPushButton::clicked, this, &CreateProjectCtrl::HandlePrimaryButton);
 
 #ifdef TEMPLATE_GEM_CONFIGURATION_ENABLED
         connect(m_newProjectSettingsScreen, &ScreenWidget::ChangeScreenRequest, this, &CreateProjectCtrl::OnChangeScreenRequest);
 
-        m_secondaryButton = buttons->addButton(tr("Back"), QDialogButtonBox::RejectRole);
+        m_secondaryButton = m_buttons->addButton(tr("Back"), QDialogButtonBox::RejectRole);
         m_secondaryButton->setProperty("secondary", true);
         m_secondaryButton->setVisible(false);
         connect(m_secondaryButton, &QPushButton::clicked, this, &CreateProjectCtrl::HandleSecondaryButton);
@@ -200,6 +206,10 @@ namespace O3DE::ProjectManager
         {
             NextScreen();
         }
+        else if (screen == ProjectManagerScreen::CreateAGemScreen)
+        {
+            SpawnCreateAGemScreen();
+        }
         else
         {
             emit ChangeScreenRequest(screen);
@@ -219,6 +229,19 @@ namespace O3DE::ProjectManager
             else
             {
                 QMessageBox::warning(this, tr("Invalid project settings"), tr("Please correct the indicated project settings and try again."));
+            }
+        }
+    }
+
+    void CreateProjectCtrl::SpawnCreateAGemScreen()
+    {
+        if (m_stack->currentIndex() < m_stack->count())
+        {
+            if (CurrentScreenIsValid())
+            {
+                m_stack->setCurrentIndex(m_stack->currentIndex() + 2);
+
+                Update();
             }
         }
     }
@@ -301,4 +324,6 @@ namespace O3DE::ProjectManager
         const QString projectTemplatePath = m_newProjectSettingsScreen->GetProjectTemplatePath();
         m_gemCatalogScreen->ReinitForProject(projectTemplatePath + "/Template");
     }
+
+  
 } // namespace O3DE::ProjectManager

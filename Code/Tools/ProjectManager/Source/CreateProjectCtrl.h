@@ -16,6 +16,7 @@
 
 QT_FORWARD_DECLARE_CLASS(QStackedWidget)
 QT_FORWARD_DECLARE_CLASS(QPushButton)
+QT_FORWARD_DECLARE_CLASS(QDialogButtonBox)
 QT_FORWARD_DECLARE_CLASS(QLabel)
 
 namespace O3DE::ProjectManager
@@ -24,6 +25,7 @@ namespace O3DE::ProjectManager
     QT_FORWARD_DECLARE_CLASS(NewProjectSettingsScreen)
     QT_FORWARD_DECLARE_CLASS(GemCatalogScreen)
     QT_FORWARD_DECLARE_CLASS(GemRepoScreen)
+    QT_FORWARD_DECLARE_CLASS(CreateAGemScreen)
 
     class CreateProjectCtrl
         : public ScreenWidget
@@ -48,6 +50,7 @@ namespace O3DE::ProjectManager
 #ifdef TEMPLATE_GEM_CONFIGURATION_ENABLED
         void Update();
         void NextScreen();
+        void SpawnCreateAGemScreen();
         void PreviousScreen();
 #endif // TEMPLATE_GEM_CONFIGURATION_ENABLED
 
@@ -57,6 +60,7 @@ namespace O3DE::ProjectManager
         QStackedWidget* m_stack = nullptr;
         ScreenHeader* m_header = nullptr;
 
+        QDialogButtonBox* m_buttons;
         QPushButton* m_primaryButton = nullptr;
 
 #ifdef TEMPLATE_GEM_CONFIGURATION_ENABLED
@@ -66,6 +70,7 @@ namespace O3DE::ProjectManager
         NewProjectSettingsScreen* m_newProjectSettingsScreen = nullptr;
         GemCatalogScreen* m_gemCatalogScreen = nullptr;
         GemRepoScreen* m_gemRepoScreen = nullptr;
+        CreateAGemScreen* m_createAGemScreen = nullptr;
     };
 
 } // namespace O3DE::ProjectManager

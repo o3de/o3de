@@ -35,6 +35,7 @@ namespace O3DE::ProjectManager
         : ScreenWidget(parent)
     {
         QVBoxLayout* vLayout = new QVBoxLayout();
+        vLayout->setSpacing(0);
         vLayout->setContentsMargins(0, 0, 0, 0);
 
         QScrollArea* firstScreenScrollArea = CreateFirstScreen();
@@ -52,12 +53,20 @@ namespace O3DE::ProjectManager
         m_tabWidget->addTab(firstScreenScrollArea, "1. Gem Setup");
         m_tabWidget->addTab(secondScreenScrollArea, "2. Gem Details");
         m_tabWidget->addTab(thirdScreenScrollArea, "3. Creator Details");
+        m_tabWidget->tabBar()->setEnabled(false);
+
         
         vLayout->addWidget(m_tabWidget);
 
+        QFrame* footerFrame = new QFrame();
+        footerFrame->setObjectName("createAGemFooter");
         m_backNextButtons = new QDialogButtonBox();
         m_backNextButtons->setObjectName("footer");
-        vLayout->addWidget(m_backNextButtons);
+        QVBoxLayout* footerLayout = new QVBoxLayout();
+        footerLayout->setContentsMargins(0, 0, 0, 0);
+        footerFrame->setLayout(footerLayout);
+        footerLayout->addWidget(m_backNextButtons);
+        vLayout->addWidget(footerFrame);
 
 
         m_backButton = m_backNextButtons->addButton(tr("Back"), QDialogButtonBox::RejectRole);
@@ -74,12 +83,7 @@ namespace O3DE::ProjectManager
         connect(m_nextButton, &QPushButton::clicked, this, &CreateAGemScreen::OnCreatorNameUpdated);
         connect(m_nextButton, &QPushButton::clicked, this, &CreateAGemScreen::OnRepositoryURLUpdated);
 
-        connect(m_backButton, &QPushButton::clicked, this, &CreateAGemScreen::OnGemDisplayNameUpdated);
-        connect(m_backButton, &QPushButton::clicked, this, &CreateAGemScreen::OnGemSystemNameUpdated);
-        connect(m_backButton, &QPushButton::clicked, this, &CreateAGemScreen::OnLicenseNameUpdated);
-        connect(m_backButton, &QPushButton::clicked, this, &CreateAGemScreen::OnCreatorNameUpdated);
-        connect(m_backButton, &QPushButton::clicked, this, &CreateAGemScreen::OnRepositoryURLUpdated);
-
+        setObjectName("createAGemBody");
         setLayout(vLayout);
 
     }
@@ -286,7 +290,7 @@ namespace O3DE::ProjectManager
     bool CreateAGemScreen::ValidateGemDisplayName()
     {
         bool gemScreenNameIsValid = true;
-        if (m_tabWidget->currentIndex() == 1)
+        if (m_tabWidget->currentIndex() == 2)
         {
             if (m_gemDisplayName->lineEdit()->text().isEmpty())
             {
@@ -302,7 +306,7 @@ namespace O3DE::ProjectManager
     bool CreateAGemScreen::ValidateGemSystemName()
     {
         bool gemSystemNameIsValid = true;
-        if (m_tabWidget->currentIndex() == 1)
+        if (m_tabWidget->currentIndex() == 2)
         {
             if (m_gemSystemName->lineEdit()->text().isEmpty())
             {
@@ -319,7 +323,7 @@ namespace O3DE::ProjectManager
     bool CreateAGemScreen::ValidateLicenseName()
     {
         bool licenseNameIsValid = true;
-        if (m_tabWidget->currentIndex() == 1)
+        if (m_tabWidget->currentIndex() == 2)
         {
             if (m_license->lineEdit()->text().isEmpty())
             {
@@ -337,13 +341,17 @@ namespace O3DE::ProjectManager
         bool creatorNameIsValid = true;
         if (m_tabWidget->currentIndex() == 2)
         {
-            if (m_creatorName->lineEdit()->text().isEmpty())
+            m_numNextClicks += 1;
+            if (m_numNextClicks > 1)
             {
-                creatorNameIsValid = false;
-                m_creatorName->setErrorLabelText(tr("A creator's name is required."));
-            }
+                if (m_creatorName->lineEdit()->text().isEmpty())
+                {
+                    creatorNameIsValid = false;
+                    m_creatorName->setErrorLabelText(tr("A creator's name is required."));
+                }
 
-            m_creatorName->setErrorLabelVisible(!creatorNameIsValid);
+                m_creatorName->setErrorLabelVisible(!creatorNameIsValid);
+            }
         }
         return creatorNameIsValid;
     }
@@ -353,13 +361,16 @@ namespace O3DE::ProjectManager
         bool repositoryURLIsValid = true;
         if (m_tabWidget->currentIndex() == 2)
         {
-            if (m_repositoryURL->lineEdit()->text().isEmpty())
+            if (m_numNextClicks > 1)
             {
-                repositoryURLIsValid = false;
-                m_repositoryURL->setErrorLabelText(tr("A repository URL is required."));
-            }
+                if (m_repositoryURL->lineEdit()->text().isEmpty())
+                {
+                    repositoryURLIsValid = false;
+                    m_repositoryURL->setErrorLabelText(tr("A repository URL is required."));
+                }
 
-            m_repositoryURL->setErrorLabelVisible(!repositoryURLIsValid);
+                m_repositoryURL->setErrorLabelVisible(!repositoryURLIsValid);
+            }
         }
         return repositoryURLIsValid;
     }

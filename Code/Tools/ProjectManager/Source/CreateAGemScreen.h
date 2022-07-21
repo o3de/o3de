@@ -41,23 +41,28 @@ protected:
         QStylePainter painter(this);
         QStyleOptionTab opt;
 
+        QPoint currentTopPosition(115, 175);
+
+        QStringList strs = { "1. Gem Setup", "2. Gem Details", "3. Creator Details" };
         for (int i = 0; i < count(); i++)
         {
             initStyleOption(&opt, i);
             painter.drawControl(QStyle::CE_TabBarTabShape, opt);
             painter.save();
-
             QSize s = opt.rect.size();
             s.transpose();
             QRect r(QPoint(), s);
             r.moveCenter(opt.rect.center());
             opt.rect = r;
-
             QPoint c = tabRect(i).center();
-            painter.translate(c);
-            painter.rotate(90);
+            QPoint leftJustify(currentTopPosition);
+            leftJustify.setX(30 + (int)(0.5 * opt.rect.width()));
+            painter.translate(leftJustify);
+            currentTopPosition.setY(currentTopPosition.y() + 55);
+            //painter.rotate(90);
             painter.translate(-c);
-            painter.drawControl(QStyle::CE_TabBarTabLabel, opt);
+            // painter.drawControl(QStyle::CE_TabBarTabLabel, opt);
+            painter.drawItemText(r, Qt::AlignLeft, QApplication::palette(), true, strs.at(i));
             painter.restore();
         }
     }
@@ -107,6 +112,7 @@ namespace O3DE::ProjectManager
         bool ValidateLicenseName();
         bool ValidateCreatorName();
         bool ValidateRepositoryURL();
+        int m_numNextClicks = 0;
 
         FormLineEditWidget* m_gemDisplayName;
         FormLineEditWidget* m_gemSystemName;

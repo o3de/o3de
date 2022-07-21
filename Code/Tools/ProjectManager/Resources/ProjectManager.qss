@@ -24,7 +24,6 @@ QTabWidget::tab-bar {
     left: 78px; /* make room for the logo */
 }
 
-
 QTabBar::tab {
     height:82px;
     background-color: transparent;
@@ -43,12 +42,9 @@ QTabBar::tab {
 
 }
 
+
 QTabWidget#createAGemTab::tab-bar {
     left: 0px;
-}
-
-QTabWidget#createAGemTab {
-    background-color: red;
 }
 
 
@@ -65,6 +61,7 @@ QTabWidget::pane {
 QTabWidget#createAGemTab::pane {
     background-color: #333333;
     border:0 none;
+
 }
 
 #createAGemTab {
@@ -77,6 +74,13 @@ QTabBar::tab:selected {
     color: #1e70eb;
     font-weight: 500;
 }
+
+QTabBar#createAGemTab::tab:selected {
+    background-color: #333333;
+    border-bottom: 3px solid #1e70eb;
+    font-weight: 900;
+}
+
 QTabBar::tab:hover {
     color: #1e70eb;
     font-weight: 500;
@@ -215,15 +219,8 @@ QTabBar::tab:focus {
 }
 
 
-#createAGemLeftPane {
-    background-color: #444444;
-    min-width: 230px;
-    padding-top: 60px;
-    padding-left: 30px;
-}
-
 #createAGemRightPane {
-    padding-top: 50px;
+    padding-top: 25px;
     padding-left: 60px;
 }
 
@@ -232,7 +229,7 @@ QTabBar::tab:focus {
 }
 
 #qRadioButton {
-    padding-top: 34px;
+    padding-top: 15px;
     font-size: 14px;
 }
 
@@ -300,11 +297,19 @@ QTabBar::tab:focus {
     background-color:#333333;
 }
 
+#createAGemBody {
+    background-color:#444444;
+}
+
 #footer {
     /* settings min/max lets us use a fixed size */
     min-width: 50px;
     min-height:54px;
     max-height:54px;
+}
+
+#createAGemFooter {
+    background-color: #000000;
 }
 
 
