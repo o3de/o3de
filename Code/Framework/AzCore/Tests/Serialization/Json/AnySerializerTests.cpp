@@ -19,11 +19,7 @@
 #include <AzCore/Math/MathMatrixSerializer.h>
 #include <AzCore/Math/MathVectorSerializer.h>
 
-#define ANY_JSON "{\n\t\"$type\": \"%s\",\n\t\"value\": %s\n}"
-
- // test the any serializer against several standard serializers, and then
- // compare results of deserialization of types against each other
- // then just do the erroneous input and empty any stuff
+#define ANY_JSON_REFERENCE_STRING_FORMAT "{\n\t\"$type\": \"%s\",\n\t\"value\": %s\n}"
 
 namespace JsonSerializationTests
 {
@@ -82,10 +78,9 @@ namespace JsonSerializationTests
         CompareStoredAgainstLoaded(AZ::Vector3(9.0f, -9.0f, -81.0f));
     }
 
-    // write this against the TestCases_Classes thing but store everything in an any
-
-    // these tests test the *transparency* of the effect of storage through an any
-    // that is, serializing a value contained in an any should behave exactly as not in an any
+    // These tests test the *transparency* of the effect of storage through an any.
+    // That is, serializing a value contained in an any should behave exactly as serializing a value NOT in an any.
+    // *DO NOT DISABLE THESE TESTS*
     template<typename T>
     class AnySerializerTestDescription final
         : public JsonSerializerConformityTestDescriptor<AZStd::any>
@@ -241,13 +236,10 @@ namespace JsonSerializationTests
             const char* withSomeDefaults = instanceWithSomeDefaults.m_jsonWithStrippedDefaults;
             const char* withKeptDefaults = instanceWithSomeDefaults.m_jsonWithKeptDefaults;
 
-            // static_assert(false); // fix it here, different classes need different things
-            // the different pointer means non defaults will ALWAYS have non defaults
-
-            azsnprintf(m_jsonForFullyConfiguredInstance.begin(), 2048, ANY_JSON, typeName, fullInstanceWithDefaultsInJSON);
-            azsnprintf(m_jsonForFullyConfiguredInstanceWithoutDefaults.begin(), 2048, ANY_JSON, typeName, fullInstanceWithoutDefaultsInJSON);
-            azsnprintf(m_jsonForPartialDefaultInstanceStrippedDefaults.begin(), 2048, ANY_JSON, typeName, withSomeDefaults);
-            azsnprintf(m_jsonForPartialDefaultInstanceKeptDefaults.begin(), 2048, ANY_JSON, typeName, withKeptDefaults);
+            azsnprintf(m_jsonForFullyConfiguredInstance.begin(), 2048, ANY_JSON_REFERENCE_STRING_FORMAT, typeName, fullInstanceWithDefaultsInJSON);
+            azsnprintf(m_jsonForFullyConfiguredInstanceWithoutDefaults.begin(), 2048, ANY_JSON_REFERENCE_STRING_FORMAT, typeName, fullInstanceWithoutDefaultsInJSON);
+            azsnprintf(m_jsonForPartialDefaultInstanceStrippedDefaults.begin(), 2048, ANY_JSON_REFERENCE_STRING_FORMAT, typeName, withSomeDefaults);
+            azsnprintf(m_jsonForPartialDefaultInstanceKeptDefaults.begin(), 2048, ANY_JSON_REFERENCE_STRING_FORMAT, typeName, withKeptDefaults);
         }
 
         using JsonSerializerConformityTestDescriptor<AZStd::any>::Reflect;

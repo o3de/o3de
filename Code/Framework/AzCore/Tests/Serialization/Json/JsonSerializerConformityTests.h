@@ -92,6 +92,10 @@ namespace JsonSerializationTests
         }
     }
 
+    // The word "default" has three meanings in the json serialization conformity tests. Each is reflected in an emum.
+    // 1) Is JSON serializing keeping or dropping default values from serialization? (DefaultJSONStorage)
+    // 2) How much default values remain in the serialized C++ object? (DefaultSerializedObjectStatus)
+    // 3) Did JSON serialization supply a default object to the store/load call? (DefaultObjectSuppliedInSerialization)
     enum DefaultJSONStorage
     {
         Store,
@@ -145,7 +149,7 @@ namespace JsonSerializationTests
         //! If the target type doesn't support arrays or requires more than one entry this can be ignored and
         //! tests using this value will be skipped.
         virtual AZStd::shared_ptr<T> CreateSingleArrayDefaultInstance() { return nullptr; }
-
+        //! Use this function evaluating which JSON to return based on the full spec of the test
         virtual AZStd::optional<AZStd::string_view> GetJSON([[maybe_unused]] const JSONRequestSpec& requestSpec)
         {
             return AZStd::nullopt;
