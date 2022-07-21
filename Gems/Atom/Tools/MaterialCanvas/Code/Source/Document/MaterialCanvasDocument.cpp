@@ -30,6 +30,7 @@
 #include <AzCore/Serialization/ObjectStream.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/Utils.h>
+#include <AzCore/Utils/Utils.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/sort.h>
 
@@ -265,6 +266,7 @@ namespace MaterialCanvas
                 [this, redoState]() { RestoreGraphState(redoState); });
 
             m_modified = true;
+            GenerateDataFromGraph();
             AtomToolsFramework::AtomToolsDocumentNotificationBus::Event(
                 m_toolId, &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentObjectInfoInvalidated, m_id);
             AtomToolsFramework::AtomToolsDocumentNotificationBus::Event(
@@ -276,6 +278,11 @@ namespace MaterialCanvas
     GraphCanvas::GraphId MaterialCanvasDocument::GetGraphId() const
     {
         return m_graphId;
+    }
+
+    const AZStd::vector<AZStd::string>& MaterialCanvasDocument::GetGeneratedFilePaths() const
+    {
+        return m_generatedFiles;
     }
 
     void MaterialCanvasDocument::Clear()
@@ -333,12 +340,11 @@ namespace MaterialCanvas
         CreateGraph(graph);
 
         m_modified = true;
+        GenerateDataFromGraph();
         AtomToolsFramework::AtomToolsDocumentNotificationBus::Event(
             m_toolId, &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentObjectInfoInvalidated, m_id);
         AtomToolsFramework::AtomToolsDocumentNotificationBus::Event(
             m_toolId, &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentModified, m_id);
-
-        GenerateDataFromGraph();
     }
 
     void MaterialCanvasDocument::CreateGraph(GraphModel::GraphPtr graph)
@@ -419,6 +425,8 @@ namespace MaterialCanvas
 
     bool MaterialCanvasDocument::GenerateDataFromGraph() const
     {
+        m_generatedFiles.clear();
+
         // All of these slots and nodes will be visited to collect all of the uniuue include and template paths.
         AZStd::set<AZStd::string> includePaths;
         AZStd::set<AZStd::string> templatePaths;
@@ -614,9 +622,55 @@ namespace MaterialCanvas
             AZ_TracePrintf("MaterialCanvasDocument", "Sorted node: %s\n", node->GetTitle());
         }
 
+        AZStd::string documentName;
+        AZ::StringFunc::Path::GetFullFileName(m_absolutePath.c_str(), documentName);
+        AZ::StringFunc::Replace(documentName, ".materialcanvas.azasset", "");
+
         for (const auto& templatePath : templatePaths)
         {
             AZ_TracePrintf("MaterialCanvasDocument", "templatePath: %s\n", templatePath.c_str());
+            const AZStd::string resolvedPath = AtomToolsFramework::GetPathWithoutAlias(templatePath);
+            if(auto result = AZ::Utils::ReadFile(resolvedPath))
+            {
+                AZStd::string outputFullName;
+                AZ::StringFunc::Path::GetFullFileName(resolvedPath.c_str(), outputFullName);
+                AZStd::string outputPath = m_absolutePath;
+                AZ::StringFunc::Path::ReplaceFullName(outputPath, outputFullName.c_str());
+                AZ::StringFunc::Replace(outputPath, "MaterialGraphName", documentName.c_str());
+                AZ::StringFunc::Replace(outputPath, ".template", "");
+
+                AZStd::vector<AZStd::string> lines;
+                AZ::StringFunc::Tokenize(result.GetValue(), lines, '\n', true, true);
+                replaceStringsInVec("MaterialGraphName", documentName, lines);
+
+                auto codeGenBeginItr = AZStd::find_if(lines.begin(), lines.end(), [](const AZStd::string& line) {
+                    return AZ::StringFunc::Contains(line, "GENERATED_INSTRUCTIONS_BEGIN");
+                });
+
+                while (codeGenBeginItr != lines.end())
+                {
+                    for (const auto& instruction : instructions)
+                    {
+                        ++codeGenBeginItr;
+                        codeGenBeginItr = lines.insert(codeGenBeginItr, instruction);
+                    }
+                    ++codeGenBeginItr;
+
+                    auto codeGenEndItr = AZStd::find_if(codeGenBeginItr, lines.end(), [](const AZStd::string& line) {
+                        return AZ::StringFunc::Contains(line, "GENERATED_INSTRUCTIONS_END");
+                    });
+
+                    codeGenEndItr = lines.erase(codeGenBeginItr, codeGenEndItr);
+                    codeGenBeginItr = AZStd::find_if(codeGenEndItr, lines.end(), [](const AZStd::string& line) {
+                        return AZ::StringFunc::Contains(line, "GENERATED_INSTRUCTIONS_BEGIN");
+                    });
+                }
+
+                AZStd::string output;
+                AZ::StringFunc::Join(output, lines, '\n');
+                AZ::Utils::WriteFile(output, outputPath);
+                m_generatedFiles.push_back(outputPath);
+            }
         }
 
         for (const auto& includePath : includePaths)
@@ -639,6 +693,7 @@ namespace MaterialCanvas
             AZ_TracePrintf("MaterialCanvasDocument", "instruction: %s\n", instruction.c_str());
         }
 
-        return false;
+        return true;
     }
 } // namespace MaterialCanvas
+
