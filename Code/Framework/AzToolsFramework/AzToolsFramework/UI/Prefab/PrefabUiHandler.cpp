@@ -7,7 +7,6 @@
  */
 
 #include <AzToolsFramework/UI/Prefab/PrefabUiHandler.h>
-#include <AzToolsFramework/UI/Prefab/PrefabFocusChangeBehavior.h>
 
 #include <AzFramework/API/ApplicationAPI.h>
 
@@ -447,8 +446,8 @@ namespace AzToolsFramework
 
         if (m_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(entityId))
         {
-            // Focus on the parent, close this prefab if required.
-            m_prefabFocusPublicInterface->FocusOnParentOfFocusedPrefab(s_editorEntityContextId, Prefab::FocusChangeBehavior::IgnoreCurrentlyFocusedItems);
+            // Close this prefab and focus on the parent
+            m_prefabFocusPublicInterface->FocusOnParentOfFocusedPrefab(s_editorEntityContextId);
         }
     }
 
