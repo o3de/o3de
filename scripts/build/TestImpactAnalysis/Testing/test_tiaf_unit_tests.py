@@ -200,9 +200,11 @@ class TestTIAFUnitTests():
 
     @pytest.mark.parametrize("safemode, arg_val", [(True, "on"), (None, "off")])
     def test_safe_mode_arguments(self, caplog, tiaf_args, mock_runtime, default_runtime_args, safemode, arg_val):
+        # given:
         tiaf_args['safe_mode'] = safemode
         default_runtime_args['safemode'] = "--safemode="+arg_val
 
+        # when:
         tiaf = TestImpact(tiaf_args)
         # then:
         assert_list_content_equal(
