@@ -84,5 +84,16 @@ namespace AZ
             descriptor.m_elementFormat = Format::R32_UINT;
             return descriptor;
         }
+    
+        bool BufferViewDescriptor::operator==(const BufferViewDescriptor& other) const
+        {
+            return
+                m_elementOffset == other.m_elementOffset &&
+                m_elementCount == other.m_elementCount &&
+                m_elementSize == other.m_elementSize &&
+                m_elementFormat == other.m_elementFormat &&
+                m_overrideBindFlags == other.m_overrideBindFlags &&
+                m_ignoreFrameAttachmentValidation == other.m_ignoreFrameAttachmentValidation;
+        }
     }
 }

@@ -15,7 +15,6 @@
 
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
 #include <AzToolsFramework/Prefab/Template/Template.h>
-#include <AzToolsFramework/UI/Prefab/PrefabFocusChangeBehavior.h>
 
 namespace AzToolsFramework::Prefab
 {
@@ -34,8 +33,7 @@ namespace AzToolsFramework::Prefab
 
         //! Set the focused prefab instance to the owning instance of the entityId provided.
         //! @param entityId The entityId of the entity whose owning instance we want the prefab system to focus on.
-        virtual PrefabFocusOperationResult FocusOnPrefabInstanceOwningEntityId(
-            AZ::EntityId entityId, FocusChangeBehavior focusChangeBehavior = FocusChangeBehavior::CloseCurrentlyFocusedItems) = 0;
+        virtual PrefabFocusOperationResult FocusOnPrefabInstanceOwningEntityId(AZ::EntityId entityId) = 0;
 
         //! Returns the template id of the instance the prefab system is focusing on.
         virtual TemplateId GetFocusedPrefabTemplateId(AzFramework::EntityContextId entityContextId) const = 0;
