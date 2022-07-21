@@ -28,4 +28,9 @@ namespace AzToolsFramework
     {
         m_boxEdit.UpdateManipulators();
     }
+
+    AZStd::string BoxComponentMode::GetComponentModeName() const
+    {
+        return "Tube Shape Edit Mode";
+    }
 } // namespace AzToolsFramework
