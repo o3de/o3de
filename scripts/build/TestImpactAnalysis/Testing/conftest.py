@@ -18,6 +18,7 @@ from botocore.stub import Stubber
 from botocore import session
 from boto3 import client
 
+
 @pytest.fixture
 def test_data_file():
     path = Path("scripts/build/TestImpactAnalysis/Testing/test_data.json")
@@ -79,7 +80,6 @@ def mock_uuid(mocker):
 @pytest.fixture
 def default_runtime_args(mock_uuid, binary_path, report_path):
     runtime_args = {}
-    runtime_args['bin'] = str(binary_path).replace("/", "\\")
     runtime_args['sequence'] = "--sequence=seed"
     runtime_args['safemode'] = "--safemode=off"
     runtime_args['test_failure_policy'] = "--fpolicy=continue"

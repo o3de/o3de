@@ -7,25 +7,22 @@
 #
 
 
-
 from logging import getLogger
 import os
+import json
 from typing import Counter
+from tiaf import TestImpact
 from tiaf_driver import main
 import pytest
-from tiaf_persistent_storage_s3 import PersistentStorageS3
 
 logging = getLogger("tiaf")
 
 
+def assert_list_content_equal(list1, list2):
+    assert Counter(list1) == Counter(list2)
+
+
 class TestTIAFUnitTests():
-
-
-    def call_args_equal_expected_args(self, call_args, expected_args):
-        for args_list in call_args:
-            if Counter(args_list[0]) == Counter(expected_args):
-                return True
-        return False
 
     def test_config_files_exist(self, config_path):
         # given:
@@ -39,10 +36,10 @@ class TestTIAFUnitTests():
         # given:
         # default arguments
         # when:
-        with pytest.raises(SystemExit):
-            main(tiaf_args)
+        tiaf = TestImpact(tiaf_args)
         # then:
-        assert self.call_args_equal_expected_args(mock_runtime.call_args, default_runtime_args.values())
+        assert_list_content_equal(
+            tiaf.runtime_args, default_runtime_args.values())
 
     def test_invalid_config(self, caplog, tiaf_args, mock_runtime, tmp_path_factory, default_runtime_args):
         # given:
@@ -50,83 +47,40 @@ class TestTIAFUnitTests():
         with open(invalid_file, 'w+') as f:
             f.write("fake json")
         tiaf_args['config'] = invalid_file
-        test_string = "Exception caught by TIAF driver: 'Config file does not contain valid JSON, stopping TIAF'."
 
-        # when:
-        main(tiaf_args)
+        # when & then:
+        with pytest.raises(SystemError) as exc_info:
+            tiaf = TestImpact(tiaf_args)
 
-        # then:
-        assert test_string in caplog.messages
-
-    def test_valid_src_branch(self, caplog, tiaf_args, mock_runtime, default_runtime_args):
+    @pytest.mark.parametrize("branch_name", ["development", "not_a_real_branch"])
+    def test_src_branch(self, caplog, tiaf_args, mock_runtime, default_runtime_args, branch_name):
         # given:
-        tiaf_args['src_branch'] = "development"
-        test_string = "Source branch: 'development'."
+        tiaf_args['src_branch'] = branch_name
         # when:
-        with pytest.raises(SystemExit):
-            main(tiaf_args)
-
+        tiaf = TestImpact(tiaf_args)
         # then:
-        assert test_string in caplog.messages
+        assert tiaf.source_branch == branch_name
 
-    def test_invalid_src_branch(self, caplog, tiaf_args, mock_runtime, default_runtime_args):
+    @pytest.mark.parametrize("branch_name", ["development", "not_a_real_branch"])
+    def test_dst_branch(self, caplog, tiaf_args, mock_runtime, default_runtime_args, branch_name):
         # given:
-        tiaf_args['src_branch'] = "not_a_real_branch"
-        test_string = "Source branch: 'not_a_real_branch'."
-
+        tiaf_args['dst_branch'] = branch_name
         # when:
-        with pytest.raises(SystemExit):
-            main(tiaf_args)
+        tiaf = TestImpact(tiaf_args)
 
         # then:
-        assert test_string in caplog.messages
+        assert tiaf.destination_branch == branch_name
 
-    def test_valid_dst_branch(self, caplog, tiaf_args, mock_runtime, default_runtime_args):
+    @pytest.mark.parametrize("commit", ["9a15f038807ba8b987c9e689952d9271ef7fd086", "foobar"])
+    def test_commit(self, caplog, tiaf_args, mock_runtime, default_runtime_args, commit):
         # given:
-        tiaf_args['dst_branch'] = "development"
-        test_string = "Destination branch: 'development'."
-        # when:
-        with pytest.raises(SystemExit):
-            main(tiaf_args)
-
-        # then:
-        assert test_string in caplog.messages
-
-    def test_invalid_dst_branch(self, caplog, tiaf_args, mock_runtime, default_runtime_args):
-        # given:
-        tiaf_args['dst_branch'] = "not_a_real_branch"
-        test_string = "Destination branch: 'not_a_real_branch'."
+        tiaf_args['commit'] = commit
 
         # when:
-        with pytest.raises(SystemExit):
-            main(tiaf_args)
+        tiaf = TestImpact(tiaf_args)
 
         # then:
-        assert test_string in caplog.messages
-
-    def test_valid_commit(self, caplog, tiaf_args, mock_runtime, default_runtime_args):
-        # given:
-        tiaf_args['commit'] = "9a15f038807ba8b987c9e689952d9271ef7fd086"
-        test_string = "Commit: '9a15f038807ba8b987c9e689952d9271ef7fd086'."
-
-        # when:
-        with pytest.raises(SystemExit):
-            main(tiaf_args)
-
-        # then:
-        assert test_string in caplog.messages
-
-    def test_invalid_commit(self, caplog, tiaf_args, mock_runtime, default_runtime_args):
-        # given:
-        tiaf_args['commit'] = "foobar"
-        test_string = "Commit: 'foobar'."
-
-        # when:
-        with pytest.raises(SystemExit):
-            main(tiaf_args)
-
-        # then:
-        assert test_string in caplog.messages
+        assert tiaf.destination_commit == commit
 
     def test_no_s3_bucket_name(self, caplog, tiaf_args, mock_runtime, default_runtime_args):
         # given:
@@ -134,20 +88,21 @@ class TestTIAFUnitTests():
         test_string = "Attempting to access persistent storage for the commit 'foobar' for suite 'main'"
 
         # when:
-        with pytest.raises(SystemExit):
-            main(tiaf_args)
+        tiaf = TestImpact(tiaf_args)
 
         # then:
         assert test_string in caplog.messages
 
-    @pytest.mark.parametrize("bucket_name,top_level_dir",[("test_bucket", None), ("test_bucket", "test_dir")])
+    @pytest.mark.parametrize("bucket_name,top_level_dir", [("test_bucket", None), ("test_bucket", "test_dir")])
     def test_s3_bucket_name(self, caplog, tiaf_args, mock_runtime, default_runtime_args, mocker, bucket_name, top_level_dir, config_data):
         # given:
         tiaf_args['s3_bucket'] = bucket_name
         tiaf_args['s3_top_level_dir'] = top_level_dir
-        mock_storage = mocker.patch("tiaf_persistent_storage_s3.PersistentStorageS3.__init__", return_value = None)
+        mock_storage = mocker.patch(
+            "tiaf_persistent_storage_s3.PersistentStorageS3.__init__", return_value=None)
 
-        expected_storage_args = config_data, tiaf_args['suite'], tiaf_args['commit'], bucket_name, top_level_dir, tiaf_args['src_branch']
+        expected_storage_args = config_data, tiaf_args['suite'], tiaf_args[
+            'commit'], bucket_name, top_level_dir, tiaf_args['src_branch']
         # when:
         main(tiaf_args)
 
@@ -158,7 +113,8 @@ class TestTIAFUnitTests():
         # given:
         tiaf_args['s3_bucket'] = None
         tiaf_args['s3_top_level_dir'] = None
-        mock_storage = mocker.patch("tiaf_persistent_storage_s3.PersistentStorageS3.__init__", return_value = None)
+        mock_storage = mocker.patch(
+            "tiaf_persistent_storage_s3.PersistentStorageS3.__init__", return_value=None)
 
         # when:
         with pytest.raises(SystemExit):
@@ -171,16 +127,17 @@ class TestTIAFUnitTests():
         # given:
         tiaf_args['s3_bucket'] = None
         tiaf_args['s3_top_level_dir'] = "test_dir"
-        mock_storage = mocker.patch("tiaf_persistent_storage_s3.PersistentStorageS3.__init__", return_value = None)
+        mock_storage = mocker.patch(
+            "tiaf_persistent_storage_s3.PersistentStorageS3.__init__", return_value=None)
 
-        expected_storage_args = config_data, tiaf_args['suite'], tiaf_args['commit'], None, None, tiaf_args['src_branch']
+        expected_storage_args = config_data, tiaf_args['suite'], tiaf_args[
+            'commit'], None, None, tiaf_args['src_branch']
         # when:
         with pytest.raises(SystemExit):
             main(tiaf_args)
 
         # then:
         mock_storage.assert_not_called()
-
 
     def test_mars_index_prefix_is_supplied(self, caplog, tiaf_args, mock_runtime, mocker):
         # given:
@@ -209,23 +166,23 @@ class TestTIAFUnitTests():
         # default args
 
         # when:
-        with pytest.raises(SystemExit):
-            main(tiaf_args)
-
-        assert self.call_args_equal_expected_args(mock_runtime.call_args, default_runtime_args.values())
+        tiaf = TestImpact(tiaf_args)
+        # then:
+        assert_list_content_equal(
+            tiaf.runtime_args, default_runtime_args.values())
 
     def test_invalid_test_suite_name(self, caplog, tiaf_args, mock_runtime, default_runtime_args):
         # given:
         tiaf_args['suite'] = "foobar"
         default_runtime_args['suite'] = "--suite=foobar"
         # when:
-        with pytest.raises(SystemExit):
-            main(tiaf_args)
+        tiaf = TestImpact(tiaf_args)
 
         # then:
-        assert self.call_args_equal_expected_args(mock_runtime.call_args, default_runtime_args.values())
+        assert_list_content_equal(
+            tiaf.runtime_args, default_runtime_args.values())
 
-    @pytest.mark.parametrize("policy",["continue","abort","ignore"])
+    @pytest.mark.parametrize("policy", ["continue", "abort", "ignore"])
     def test_valid_failure_policy(self, caplog, tiaf_args, mock_runtime, default_runtime_args, policy):
         # given:
         tiaf_args['test_failure_policy'] = policy
@@ -236,39 +193,39 @@ class TestTIAFUnitTests():
         default_runtime_args['sequence'] = "--sequence=regular"
         default_runtime_args['ipolicy'] = "--ipolicy=continue"
         # when:
-        with pytest.raises(SystemExit):
-            main(tiaf_args)
+        tiaf = TestImpact(tiaf_args)
         # then:
-        assert self.call_args_equal_expected_args(mock_runtime.call_args, default_runtime_args.values())
+        assert_list_content_equal(
+            tiaf.runtime_args, default_runtime_args.values())
 
-    @pytest.mark.parametrize("safemode, arg_val",[(True, "on"),(None, "off")])
+    @pytest.mark.parametrize("safemode, arg_val", [(True, "on"), (None, "off")])
     def test_safe_mode_arguments(self, caplog, tiaf_args, mock_runtime, default_runtime_args, safemode, arg_val):
         tiaf_args['safe_mode'] = safemode
         default_runtime_args['safemode'] = "--safemode="+arg_val
 
-        with pytest.raises(SystemExit):
-            main(tiaf_args)
+        tiaf = TestImpact(tiaf_args)
         # then:
-        assert self.call_args_equal_expected_args(mock_runtime.call_args, default_runtime_args.values())
+        assert_list_content_equal(
+            tiaf.runtime_args, default_runtime_args.values())
 
     def test_exclude_file_not_supplied(self, caplog, tiaf_args, mock_runtime, default_runtime_args):
         # given:
         # default args
 
         # when:
-        with pytest.raises(SystemExit):
-            main(tiaf_args)
+        tiaf = TestImpact(tiaf_args)
 
         # then:
-        assert self.call_args_equal_expected_args(mock_runtime.call_args, default_runtime_args.values())
+        assert_list_content_equal(
+            tiaf.runtime_args, default_runtime_args.values())
 
     def test_exclude_file_supplied(self, caplog, tiaf_args, mock_runtime, default_runtime_args):
         # given:
         tiaf_args['exclude_file'] = "testpath"
         default_runtime_args['exclude'] = "--exclude=testpath"
         # when:
-        with pytest.raises(SystemExit):
-            main(tiaf_args)
-        
+        tiaf = TestImpact(tiaf_args)
+
         # then:
-        assert self.call_args_equal_expected_args(mock_runtime.call_args, default_runtime_args.values())
+        assert_list_content_equal(
+            tiaf.runtime_args, default_runtime_args.values())
