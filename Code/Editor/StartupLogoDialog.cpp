@@ -6,9 +6,6 @@
  *
  */
 
-
-// Description : implementation file
-
 #include "EditorDefs.h"
 #include "StartupLogoDialog.h"
 
@@ -17,6 +14,7 @@
 // Qt
 #include <QPainter>
 #include <QThread>
+#include <qdialog.h>
 
 AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 #include <ui_StartupLogoDialog.h>
@@ -27,9 +25,10 @@ AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 
 CStartupLogoDialog* CStartupLogoDialog::s_pLogoWindow = nullptr;
 
-CStartupLogoDialog::CStartupLogoDialog(QString versionText, QString richTextCopyrightNotice, QWidget* pParent /*=nullptr*/)
-    : QWidget(pParent, Qt::Dialog | Qt::FramelessWindowHint)
+CStartupLogoDialog::CStartupLogoDialog(DialogType dialogType, QString versionText, QString richTextCopyrightNotice, QWidget* pParent /*=nullptr*/)
+    : QDialog(pParent)
     , m_ui(new Ui::StartupLogoDialog)
+    , m_dialogType(dialogType)
 {
     m_ui->setupUi(this);
 
@@ -46,24 +45,49 @@ CStartupLogoDialog::CStartupLogoDialog(QString versionText, QString richTextCopy
         Qt::SmoothTransformation
     );
 
+
+    m_ui->m_transparentAgreement->setObjectName("link");
+    
+    switch(m_dialogType) {
+        case Loading:
+            setWindowFlags(Qt::Dialog | Qt::FramelessWindowHint);
+            m_ui->m_pages->setCurrentIndex(0);
+            setWindowTitle(tr("Starting Open 3D Engine Editor"));
+            m_ui->m_TransparentConfidential->setObjectName("copyrightNotice");
+            m_ui->m_TransparentConfidential->setTextFormat(Qt::RichText);
+            m_ui->m_TransparentConfidential->setText(richTextCopyrightNotice);
+            m_ui->m_TransparentVersion->setText(versionText);
+            setStyleSheet( "QLabel { background: transparent; color: 'white' }\
+                            QLabel#copyrightNotice { color: #AAAAAA; font-size: 9px; } ");
+            
+            break;
+        case About:
+            setWindowFlags(Qt::FramelessWindowHint | Qt::Popup);
+            m_ui->m_pages->setCurrentIndex(1);
+            m_ui->m_transparentAllRightReserved->setObjectName("copyrightNotice");
+            m_ui->m_transparentAllRightReserved->setTextFormat(Qt::RichText);
+            m_ui->m_transparentAllRightReserved->setText(richTextCopyrightNotice);
+            m_ui->m_transparentTrademarks->setText(versionText);
+            setStyleSheet( "QLabel#copyrightNotice { color: #AAAAAA; font-size: 9px; }\
+                            QLabel#link { text-decoration: underline; color: #94D2FF; }");
+            break;
+    }
+
     // Draw the Open 3D Engine logo from svg
     m_ui->m_logo->load(QStringLiteral(":/StartupLogoDialog/o3de_logo.svg"));
-
-    m_ui->m_TransparentConfidential->setObjectName("copyrightNotice");
-    m_ui->m_TransparentConfidential->setTextFormat(Qt::RichText);
-    m_ui->m_TransparentConfidential->setText(richTextCopyrightNotice);
-
-    setWindowTitle(tr("Starting Open 3D Engine Editor"));
-
-    setStyleSheet( "CStartupLogoDialog > QLabel { background: transparent; color: 'white' }\
-                    CStartupLogoDialog > QLabel#copyrightNotice { color: #AAAAAA; font-size: 9px; } ");
-
-    m_ui->m_TransparentVersion->setText(versionText);
 }
 
 CStartupLogoDialog::~CStartupLogoDialog()
 {
     s_pLogoWindow = nullptr;
+}
+
+void CStartupLogoDialog::focusOutEvent(QFocusEvent* event)
+{
+    if (m_dialogType == About)
+    {
+        accept();
+    }
 }
 
 void CStartupLogoDialog::SetText(const char* text)
