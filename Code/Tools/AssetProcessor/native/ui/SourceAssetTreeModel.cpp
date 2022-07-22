@@ -300,7 +300,7 @@ namespace AssetProcessor
         return createIndex(sourceItem->second->GetRow(), 0, sourceItem->second);
     }
 
-    void SourceAssetTreeModel::OnCreateJobDurationChanged([[maybe_unused]] QString sourceName)
+    void SourceAssetTreeModel::OnCreateJobsDurationChanged(QString sourceName)
     {
         // update the source asset's CreateJob duration, if such asset exists in the tree
         const auto& existingEntry = m_sourceToTreeItem.find(sourceName.toUtf8().constData());
