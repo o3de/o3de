@@ -34,11 +34,11 @@ namespace GraphModelIntegration
         {
             if (enabled != slot->GetValue<bool>())
             {
-                slot->SetValue(enabled);
-
                 GraphCanvas::GraphId graphCanvasSceneId;
                 IntegrationBus::BroadcastResult(graphCanvasSceneId, &IntegrationBusInterface::GetActiveGraphCanvasSceneId);
-                IntegrationBus::Broadcast(&IntegrationBusInterface::SignalSceneDirty, graphCanvasSceneId);
+                GraphCanvas::ScopedGraphUndoBatch undoBatch(graphCanvasSceneId);
+
+                slot->SetValue(enabled);
             }
         }
     }

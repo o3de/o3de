@@ -13,6 +13,7 @@ from bpy.props import EnumProperty
 import shutil
 from pathlib import Path
 import re
+import os
 
 from . import constants
 from . import ui
@@ -96,9 +97,19 @@ def get_selected_materials(selected):
 
     for obj in selected:
         try:
-            materials.append(obj.active_material.name)
+            materials = get_all_materials(obj, materials)
         except AttributeError:
             pass
+    return materials
+
+def get_all_materials(obj, materials):
+    for mat in obj.material_slots:
+        try:
+            if mat.name not in materials:
+                materials.append(mat.name)
+        except AttributeError:
+            pass
+
     return materials
 
 def loop_through_selected_materials(texture_file_path):
@@ -129,20 +140,37 @@ def loop_through_selected_materials(texture_file_path):
                     bpy.data.images[img.image.name].save()
                 full_path = bpy.path.abspath(img.image.filepath, library=img.image.library)
                 base_name = Path(full_path).name
+                if not os.path.exists(full_path): # if embedded path doesnt exist, check current folder
+                    full_path = str(Path(bpy.data.filepath).parent.joinpath(base_name))
+
                 o3de_texture_path = Path(texture_file_path).joinpath(base_name)
                 # Add to stored_image_source_paths to replace later
                 if not check_file_paths_duplicate(full_path, o3de_texture_path): # We check first if its not already copied over.
                     bpy.types.Scene.stored_image_source_paths[img.image.name] = full_path
                     # Copy the image to Destination
                     try:
-                        shutil.copyfile(full_path, o3de_texture_path)
                         # Find image and repath
                         bpy.data.images[img.image.name].filepath = str(o3de_texture_path)
-                        # Save image to location
-                        bpy.data.images[img.image.name].save()
+                        if os.path.exists(full_path):
+                            copy_texture_file(full_path, o3de_texture_path)
+                        else:
+                            bpy.data.images[img.image.name].save() 
+                            # Save image to location
                     except FileNotFoundError:
                         pass
                 img.image.reload()
+
+def copy_texture_file(src, dest):
+
+    destSize = -1
+    srcSize = os.path.getsize(src)
+
+    if os.path.exists(dest):
+        destSize = os.path.getsize(dest)
+
+    if srcSize != destSize:
+        shutil.copyfile(src,dest)
+
 
 def clone_repath_images(fileMenuExport, texture_file_path, projectSelectionList):
     """!
