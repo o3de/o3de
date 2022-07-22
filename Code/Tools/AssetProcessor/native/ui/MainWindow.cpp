@@ -521,7 +521,7 @@ void MainWindow::Activate()
         m_guiApplicationManager->GetAssetProcessorManager(),
         &AssetProcessor::AssetProcessorManager::JobProcessDurationChanged,
         m_builderInfoMetrics,
-        &AssetProcessor::BuilderInfoMetricsModel::OnJobProcessingStatChanged);
+        &AssetProcessor::BuilderInfoMetricsModel::OnProcessJobDurationChanged);
 
     // Tools tab:
     connect(ui->fullScanButton, &QPushButton::clicked, this, &MainWindow::OnRescanButtonClicked);

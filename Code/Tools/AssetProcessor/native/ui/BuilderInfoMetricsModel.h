@@ -57,7 +57,7 @@ namespace AssetProcessor
         void Reset();
         void OnBuilderSelectionChanged(const AssetBuilderSDK::AssetBuilderDesc& builder);
     public Q_SLOTS:
-        void OnJobProcessingStatChanged(JobEntry jobEntry, int value);
+        void OnProcessJobDurationChanged(JobEntry jobEntry, int value);
         void OnCreateJobsDurationChanged(QString sourceName);
 
     private:

@@ -347,7 +347,7 @@ namespace AssetProcessor
             });
     }
 
-    void BuilderInfoMetricsModel::OnJobProcessingStatChanged(JobEntry jobEntry, int value)
+    void BuilderInfoMetricsModel::OnProcessJobDurationChanged(JobEntry jobEntry, int value)
     {
         if (m_builderGuidToIndex.contains(jobEntry.m_builderGuid))
         {
