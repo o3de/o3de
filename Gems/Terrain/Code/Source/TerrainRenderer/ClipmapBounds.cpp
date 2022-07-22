@@ -163,15 +163,20 @@ namespace Terrain
 
         return boundsUpdate;
     }
-    
+
     auto ClipmapBounds::TransformRegion(AZ::Aabb worldSpaceRegion) -> ClipmapBoundsRegionList
     {
-        AZ::Vector2 worldMin = AZ::Vector2(worldSpaceRegion.GetMin().GetX(), worldSpaceRegion.GetMin().GetY());
-        AZ::Vector2 worldMax = AZ::Vector2(worldSpaceRegion.GetMax().GetX(), worldSpaceRegion.GetMax().GetY());
+        AZ::Vector2 worldMin = AZ::Vector2(worldSpaceRegion.GetMin());
+        AZ::Vector2 worldMax = AZ::Vector2(worldSpaceRegion.GetMax());
 
+        return TransformRegion(worldMin, worldMax);
+    }
+
+    auto ClipmapBounds::TransformRegion(const AZ::Vector2& worldSpaceMin, const AZ::Vector2& worldSpaceMax) ->ClipmapBoundsRegionList
+    {
         Aabb2i clipSpaceRegion;
-        clipSpaceRegion.m_min = GetClipSpaceVector(worldMin);
-        clipSpaceRegion.m_max = GetClipSpaceVector(worldMax);
+        clipSpaceRegion.m_min = GetClipSpaceVector(worldSpaceMin, RoundMode::Floor);
+        clipSpaceRegion.m_max = GetClipSpaceVector(worldSpaceMax, RoundMode::Ceil);
 
         return TransformRegion(clipSpaceRegion);
     }
@@ -268,12 +273,36 @@ namespace Terrain
         return Aabb2i(m_center - m_halfSize, m_center + m_halfSize);
     }
     
-    Vector2i ClipmapBounds::GetClipSpaceVector(const AZ::Vector2& worldSpaceVector) const
+    Vector2i ClipmapBounds::GetClipSpaceVector(const AZ::Vector2& worldSpaceVector, RoundMode roundMode) const
     {
         // Get rounded integer x/y coords in clipmap space.
-        int32_t x = AZStd::lround(worldSpaceVector.GetX() * m_worldToClipmapScale);
-        int32_t y = AZStd::lround(worldSpaceVector.GetY() * m_worldToClipmapScale);
-        return Vector2i(x, y);
+        AZ::Vector2 clipSpaceCoord = worldSpaceVector * m_worldToClipmapScale;
+
+        Vector2i returnValue;
+
+        switch (roundMode)
+        {
+        case RoundMode::Average:
+            returnValue = Vector2i(
+                AZStd::lround(clipSpaceCoord.GetX()),
+                AZStd::lround(clipSpaceCoord.GetY())
+            );
+            break;
+        case RoundMode::Floor:
+            returnValue = Vector2i(
+                aznumeric_cast<int32_t>(AZStd::floorf(clipSpaceCoord.GetX())),
+                aznumeric_cast<int32_t>(AZStd::floorf(clipSpaceCoord.GetY()))
+            );
+            break;
+        case RoundMode::Ceil:
+            returnValue = Vector2i(
+                aznumeric_cast<int32_t>(AZStd::ceilf(clipSpaceCoord.GetX())),
+                aznumeric_cast<int32_t>(AZStd::ceilf(clipSpaceCoord.GetY()))
+            );
+            break;
+        }
+
+        return returnValue;
     }
 
     AZ::Aabb ClipmapBounds::GetWorldSpaceAabb(const Aabb2i& clipSpaceAabb) const
