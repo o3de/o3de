@@ -34,10 +34,14 @@ namespace MaterialCanvas
 
     private:
         // AtomToolsDocumentNotificationBus::Handler overrides...
+        void OnDocumentClosed(const AZ::Uuid& documentId) override;
         void OnDocumentOpened(const AZ::Uuid& documentId) override;
+        void OnDocumentModified(const AZ::Uuid& documentId) override;
 
         // EntityPreviewViewportSettingsNotificationBus::Handler overrides...
         void OnViewportSettingsChanged() override;
+
+        void ApplyMaterial(const AZ::Uuid& documentId);
 
         AZ::Entity* m_environmentEntity = {};
         AZ::Entity* m_gridEntity = {};

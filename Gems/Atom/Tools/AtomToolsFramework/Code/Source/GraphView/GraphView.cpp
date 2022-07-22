@@ -635,6 +635,7 @@ namespace AtomToolsFramework
 
         if (auto contextMenuAction = qobject_cast<GraphCanvas::ContextMenuAction*>(result))
         {
+            GraphCanvas::ScopedGraphUndoBatch undoBatch(m_activeGraphId);
             return contextMenuAction->TriggerAction(m_activeGraphId, sceneVector);
         }
 

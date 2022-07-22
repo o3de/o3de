@@ -235,8 +235,7 @@ namespace AZ
                 const RHI::RenderStates& renderStatesOverlay = *shaderItem.GetRenderStatesOverlay();
                 RHI::MergeStateInto(renderStatesOverlay, pipelineStateDescriptor.m_renderStates);
 
-                streamBufferViewsPerShader.push_back();
-                auto& streamBufferViews = streamBufferViewsPerShader.back();
+                auto& streamBufferViews = streamBufferViewsPerShader.emplace_back();
 
                 UvStreamTangentBitmask uvStreamTangentBitmask;
 
