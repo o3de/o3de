@@ -507,8 +507,7 @@ namespace AZ
             }
             AZ_Assert(serializeClassData, "Class %s is not reflected in the serializer yet! Edit context can be set after the class is reflected!", AzTypeInfo<T>::Name());
 
-            m_classData.push_back();
-            Edit::ClassData& editClassData = m_classData.back();
+            Edit::ClassData& editClassData = m_classData.emplace_back();
             editClassData.m_name = displayName;
             editClassData.m_description = description;
             editClassData.m_editDataProvider = nullptr;
@@ -556,8 +555,7 @@ namespace AZ
     {
         if (IsValid())
         {
-            m_classElement->m_elements.push_back();
-            Edit::ElementData& ed = m_classElement->m_elements.back();
+            Edit::ElementData& ed = m_classElement->m_elements.emplace_back();
             ed.m_elementId = elementIdCrc;
             ed.m_description = description;
             m_editElement = &ed;
@@ -674,8 +672,7 @@ namespace AZ
         // We cannot continue past this point, we must alert the user to fix their serialization config and crash
         AZ_Assert(classElement, "Class element for editor data element reflection '%s' was NOT found in the serialize context! This member MUST be serializable to be editable!", name);
 
-        m_classElement->m_elements.push_back();
-        Edit::ElementData* ed = &m_classElement->m_elements.back();
+        Edit::ElementData* ed = &m_classElement->m_elements.emplace_back();
         
         classElement->m_editData = ed;
         m_editElement = ed;
