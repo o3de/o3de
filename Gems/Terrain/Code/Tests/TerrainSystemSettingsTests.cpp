@@ -61,7 +61,7 @@ namespace UnitTest
             TearDownCoreSystems();
         }
 
-        AZStd::unique_ptr<AZ::Entity> CreateAndActivateMockTerrainLayerSpawnerThatReturnsXPositionAsHeight(const AZ::Aabb& spawnerBox)
+        AZStd::unique_ptr<AZ::Entity> CreateAndActivateMockTerrainLayerSpawnerThatReturnsXSquaredAsHeight(const AZ::Aabb& spawnerBox)
         {
             // Create the base entity with a mock box shape, Terrain Layer Spawner, and height provider.
             auto entity = CreateEntity();
@@ -76,8 +76,8 @@ namespace UnitTest
 
             auto mockHeights = [](const AZ::Vector3& inPosition, AZ::Vector3& outPosition, bool& terrainExists)
             {
-                // Return a height (Z) that's equal to the X position.
-                outPosition = AZ::Vector3(inPosition.GetX(), inPosition.GetY(), inPosition.GetX());
+                // Return a height (Z) that's equal to X^2.
+                outPosition = AZ::Vector3(inPosition.GetX(), inPosition.GetY(), inPosition.GetX() * inPosition.GetX());
                 terrainExists = true;
             };
 
@@ -134,11 +134,11 @@ namespace UnitTest
     {
         // Verify that any height data returned from a terrain layer spawner is clamped to the world min/max settings.
 
-        // Create a mock terrain layer spawner that uses a box of (0,0,0) - (20,20,20) and generates a height equal to the X value.
+        // Create a mock terrain layer spawner that uses a box of (0,0,0) - (20,20,20) and generates a height equal to the X value squared.
         // The world min/max will be set to 5 and 15, so we'll verify the heights are always between 5 and 15.
 
         const AZ::Aabb spawnerBox = AZ::Aabb::CreateFromMinMaxValues(0.0f, 0.0f, 0.0f, 20.0f, 20.0f, 20.0f);
-        auto entity = CreateAndActivateMockTerrainLayerSpawnerThatReturnsXPositionAsHeight(spawnerBox);
+        auto entity = CreateAndActivateMockTerrainLayerSpawnerThatReturnsXSquaredAsHeight(spawnerBox);
 
         // Create and activate the terrain system with world height min/max of 5 and 15.
         const float queryResolution = 1.0f;
@@ -162,40 +162,76 @@ namespace UnitTest
     TEST_F(TerrainSystemSettingsTests, TerrainHeightQueryResolutionAffectsHeightQueries)
     {
         // Verify that the terrain height query resolution setting affects height queries. We'll verify this by
-        // setting the height query resolution to 10, use the CLAMP sampler, and query a set of positions from 0 - 20 that return
-        // the X value as the height.
-        // If the query resolution is working, we should only get heights of 0 for X = 0-9, and 10 for X = 10-19
+        // setting the height query resolution to 10 and querying a set of positions from 0 - 20 that return
+        // the X^2 value as the height.
+        // If the height query resolution is working, when we use the CLAMP sampler, queries for X=0-9 should return 0, and
+        // queries for X=10-19 should return 100.
+        // When we use the EXACT sampler, the query resolution should be ignored and we should get back X^2.
+        // When we use the BILINEAR sampler, queries for X=0-9 should return values from 0^2-10^2, and X=10-19 should return
+        // values from 10^2-20^2. 
 
-        // Create a mock terrain layer spawner that uses a box of (0,0,0) - (20,20,20) and generates a height equal to the X value.
-        const AZ::Aabb spawnerBox = AZ::Aabb::CreateFromMinMaxValues(0.0f, 0.0f, 0.0f, 20.0f, 20.0f, 20.0f);
-        auto entity = CreateAndActivateMockTerrainLayerSpawnerThatReturnsXPositionAsHeight(spawnerBox);
+        // Create a mock terrain layer spawner that uses a box of (0,0,0) - (20,20,1000) and generates
+        // a height equal to the X value squared. (We set the max height high enough to allow for the X^2 values without clamping)
+        const AZ::Aabb spawnerBox = AZ::Aabb::CreateFromMinMaxValues(0.0f, 0.0f, 0.0f, 20.0f, 20.0f, 1000.0f);
+        auto entity = CreateAndActivateMockTerrainLayerSpawnerThatReturnsXSquaredAsHeight(spawnerBox);
 
         // Create and activate the terrain system with a world bounds that matches the spawner box, and a query resolution of 10.
         const float queryResolution = 10.0f;
         auto terrainSystem = CreateAndActivateTerrainSystem(queryResolution, spawnerBox);
 
-        // Test a set of points from (0,0) - (20,20). If the query resolution is working, we should only get a height of 0 for X=0-9,
-        // and a height of 10 for X=10-19.
-        for (float x = 0.0f; x < 20.0f; x += 1.0f)
+        for (auto sampler : { AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR,
+                              AzFramework::Terrain::TerrainDataRequests::Sampler::CLAMP,
+                              AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT })
         {
-            AZ::Vector3 position(x, x, 0.0f);
-            bool terrainExists = false;
-            float height = terrainSystem->GetHeight(position, AzFramework::Terrain::TerrainDataRequests::Sampler::CLAMP, &terrainExists);
+            // Test a set of points from (0,0) - (20,20).
+            for (float x = 0.0f; x < 20.0f; x += 1.0f)
+            {
+                AZ::Vector3 position(x, x, 0.0f);
+                bool terrainExists = false;
+                float height =
+                    terrainSystem->GetHeight(position, sampler, &terrainExists);
 
-            EXPECT_EQ(height, x < 10.0f ? 0.0f : 10.0f);
+                switch (sampler)
+                {
+                case AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR:
+                    if (x < 10.0f)
+                    {
+                        // Values from 0-10 should linearly interpolate from 0^2 to 10^2
+                        EXPECT_NEAR(height, AZStd::lerp(0.0f, 100.0f, x / queryResolution), 0.001f);
+                    }
+                    else
+                    {
+                        // Values from 10-19 should linearly interpolate from 10^2 to 20^2
+                        EXPECT_NEAR(height, AZStd::lerp(100.0f, 400.0f, (x - queryResolution) / queryResolution), 0.001f);
+                    }
+                    break;
+                case AzFramework::Terrain::TerrainDataRequests::Sampler::CLAMP:
+                    // X values from 0-9 should clamp to X=0 and return 0, and X values from 10-19 should clamp to X=10 and return 10^2
+                    EXPECT_EQ(height, x < 10.0f ? 0.0f : 100.0f);
+                    break;
+                case AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT:
+                    // All query points should return X^2
+                    EXPECT_EQ(height, x*x);
+                    break;
+                }
+            }
         }
     }
 
     TEST_F(TerrainSystemSettingsTests, TerrainSurfaceQueryResolutionAffectsSurfaceQueries)
     {
         // Verify that the terrain surface query resolution setting affects surface queries. We'll verify this by
-        // setting the surface query resolution to 10, use the CLAMP sampler, and query a set of positions from 0 - 20 that return
+        // setting the surface query resolution to 10 and querying a set of positions from 0 - 20 that return
         // the X value / 100 as the surface weight.
-        // If the query resolution is working, we should only get weights of 0.0 for X = 0-9, and 0.1 for X = 10-19
+        // If the surface query resolution is working, when we use the CLAMP sampler, queries for X=0-9 should return (0/100), and
+        // queries for X=10-19 should return (10/100).
+        // When we use the EXACT sampler, the query resolution should be ignored and we should get back (X/100).
+        // When we use the BILINEAR sampler, we should get back the same results as the CLAMP sampler, because currently the two
+        // are interpreted the same way for surface queries.
 
         // Create a mock terrain layer spawner that uses a box of (0,0,0) - (20,20,20).
         const AZ::Aabb spawnerBox = AZ::Aabb::CreateFromMinMaxValues(0.0f, 0.0f, 0.0f, 20.0f, 20.0f, 20.0f);
-        auto entity = CreateAndActivateMockTerrainLayerSpawnerThatReturnsXPositionAsHeight(spawnerBox);
+        auto entity = CreateAndActivateMockTerrainLayerSpawnerThatReturnsXSquaredAsHeight(spawnerBox);
         // Set up the surface weight mocks that will return X/100 as the surface weight.
         SetupSurfaceWeightMocks(entity.get());
 
@@ -204,18 +240,33 @@ namespace UnitTest
         const float surfaceQueryResolution = 10.0f;
         auto terrainSystem = CreateAndActivateTerrainSystem(heightQueryResolution, surfaceQueryResolution, spawnerBox);
 
-        // Test a set of points from (0,0) - (20,20). If the query resolution is working, we should only get a weight of 0.0 for X=0-9,
-        // and a weight of 0.1 for X=10-19.
-        for (float x = 0.0f; x < 20.0f; x += 1.0f)
+        for (auto sampler : { AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR,
+                              AzFramework::Terrain::TerrainDataRequests::Sampler::CLAMP,
+                              AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT })
         {
-            AZ::Vector3 position(x, x, 0.0f);
-            bool terrainExists = false;
-            AzFramework::SurfaceData::SurfaceTagWeight weight = terrainSystem->GetMaxSurfaceWeight(
-                position, AzFramework::Terrain::TerrainDataRequests::Sampler::CLAMP, &terrainExists);
+            // Test a set of points from (0,0) - (20,20).
+            for (float x = 0.0f; x < 20.0f; x += 1.0f)
+            {
+                AZ::Vector3 position(x, x, 0.0f);
+                bool terrainExists = false;
+                AzFramework::SurfaceData::SurfaceTagWeight weight =
+                    terrainSystem->GetMaxSurfaceWeight(position, sampler, &terrainExists);
 
-            EXPECT_NEAR(weight.m_weight, x < 10.0f ? 0.0f : 0.1f, 0.001f);
+                switch (sampler)
+                {
+                    case AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR:
+                        [[fallthrough]];
+                    case AzFramework::Terrain::TerrainDataRequests::Sampler::CLAMP:
+                        // For BILINEAR and CLAMP, queries for X=0-9 should return (0/100), and queries for X=10-19 should return (10/100).
+                        EXPECT_NEAR(weight.m_weight, x < 10.0f ? 0.0f : 0.1f, 0.001f);
+                        break;
+                    case AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT:
+                        // For EXACT, queries should just return x/100 and ignore the query resolution.
+                        EXPECT_NEAR(weight.m_weight, x / 100.0f, 0.001f);
+                        break;
+                }
+            }
         }
     }
-
 
 } // namespace UnitTest
