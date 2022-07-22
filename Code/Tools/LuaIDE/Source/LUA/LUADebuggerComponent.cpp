@@ -48,11 +48,12 @@ namespace LUADebugger
         }
 
         targetInfo = info;
-        if (!targetInfo.IsValid())
+        if (!targetInfo.IsValid() || !targetInfo.IsOnline())
         {
             AZ_TracePrintf("Debug", "The target is currently not in a state that would allow debugging code (offline or not debuggable)\n");
             return false;
         }
+
         return true;
     }
 

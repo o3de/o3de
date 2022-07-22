@@ -79,7 +79,6 @@ namespace RemoteTools
         if (!isRequestingConnection)
         {
             Stop();
-            Join();
         }
     }
 } // namespace RemoteTools

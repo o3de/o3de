@@ -528,14 +528,15 @@ namespace LUAEditor
         }
     }
 
-    void Context::DesiredTargetChanged(AZ::u32 newTargetID, AZ::u32 oldTargetID)
+    void Context::DesiredTargetChanged([[maybe_unused]] AZ::u32 newTargetID, AZ::u32 oldTargetID)
     {
-        (void)oldTargetID;
-        (void)newTargetID;
-
         AZ_TracePrintf(LUAEditorDebugName, "Context::RemoteTargetChanged()\n");
 
-        RequestDetachDebugger();
+        // If there's no prior target, there's nothing to detach
+        if (oldTargetID != 0)
+        {
+            RequestDetachDebugger();
+        }
     }
 
     //////////////////////////////////////////////////////////////////////////

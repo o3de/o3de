@@ -46,6 +46,13 @@ namespace RemoteTools
         return aznumeric_cast<uint32_t>(m_outbox.size());
     }
 
+    void RemoteToolsOutboxThread::OnStop()
+    {
+        m_outboxMutex.lock();
+        m_outbox.clear();
+        m_outboxMutex.unlock();
+    }
+
     void RemoteToolsOutboxThread::OnUpdate([[maybe_unused]] AZ::TimeMs updateRateMs)
     {
         // Send outbound data

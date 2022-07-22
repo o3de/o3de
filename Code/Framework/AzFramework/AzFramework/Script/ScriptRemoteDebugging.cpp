@@ -353,7 +353,7 @@ namespace AzFramework
                     dbgContext->EnableDebugCmdProcess(debugCommandCallback);
                 }
 
-                // Notify debugger that he successfully connected
+                // Notify debugger that we successfully connected
                 RemoteToolsInterface::Get()->SendRemoteToolsMessage(
                     ti, ScriptDebugAck(AZ_CRC("AttachDebugger", 0x6590ff36), AZ_CRC("Ack", 0x22e4f8b1)));
                 AZ_TracePrintf("LUA", "Remote debugger %s has attached to context %s.\n", m_debugger.GetDisplayName(), it->m_name.c_str());

@@ -49,6 +49,7 @@ namespace RemoteTools
 
     class RemoteToolsSystemComponent
         : public AZ::Component
+        , public AZ::SystemTickBus::Handler
         , public AzFramework::IRemoteTools
         , public AzNetworking::IConnectionListener
     {
@@ -107,6 +108,11 @@ namespace RemoteTools
         void Deactivate() override;
         ////////////////////////////////////////////////////////////////////////
 
+        ////////////////////////////////////////////////////////////////////////
+        // AZ::SystemTickBus::Handler overrides.
+        void OnSystemTick() override;
+        ////////////////////////////////////////////////////////////////////////
+        
         ////////////////////////////////////////////////////////////////////////
         // AzFramework::IRemoteTools interface implementation
         void RegisterToolingServiceClient(AZ::Crc32 key, AZ::Name name, uint16_t port) override;

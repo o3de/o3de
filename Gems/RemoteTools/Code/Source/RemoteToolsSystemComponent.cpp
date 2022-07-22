@@ -97,10 +97,12 @@ namespace RemoteTools
     {
         m_outboxThread = AZStd::make_unique<RemoteToolsOutboxThread>(remote_outbox_interval);
         m_joinThread = AZStd::make_unique<RemoteToolsJoinThread>(remote_join_interval, this);
+        AZ::SystemTickBus::Handler::BusConnect();
     }
 
     void RemoteToolsSystemComponent::Deactivate()
     {
+        AZ::SystemTickBus::Handler::BusDisconnect();
         m_joinThread = nullptr;
         m_outboxThread = nullptr;
         for (auto registryIt = m_entryRegistry.begin(); registryIt != m_entryRegistry.end(); ++registryIt)
@@ -108,6 +110,15 @@ namespace RemoteTools
             AZ::Interface<AzNetworking::INetworking>::Get()->DestroyNetworkInterface(registryIt->second.m_name);
         }
         m_entryRegistry.clear();
+    }
+
+    void RemoteToolsSystemComponent::OnSystemTick()
+    {
+        // Join thread can stop itself, check if it needs to join
+        if (m_joinThread && !m_joinThread->IsRunning())
+        {
+            m_joinThread->Join();
+        }
     }
 
     void RemoteToolsSystemComponent::RegisterToolingServiceClient(AZ::Crc32 key, AZ::Name name, uint16_t port)
@@ -130,6 +141,7 @@ namespace RemoteTools
 
         if (!m_joinThread->IsRunning())
         {
+            m_joinThread->Join();
             m_joinThread->Start();
         }
     }
@@ -357,6 +369,7 @@ namespace RemoteTools
             networkInterface, static_cast<AzNetworking::ConnectionId>(target.GetNetworkId()), AZStd::move(datum));
         if (!m_outboxThread->IsRunning())
         {
+            m_outboxThread->Join();
             m_outboxThread->Start();
         }
     }
@@ -424,6 +437,8 @@ namespace RemoteTools
 
             if (GetDesiredEndpoint(key).GetPersistentId() != packet.GetPersistentId())
             {
+                AzFramework::RemoteToolsEndpointInfo& ti = m_entryRegistry[key].m_availableTargets[packet.GetPersistentId()];
+                ti.SetInfo(ti.GetDisplayName(), ti.GetPersistentId(), static_cast<uint32_t>(connection->GetConnectionId()));
                 SetDesiredEndpoint(key, packet.GetPersistentId());
             }
         }
@@ -533,7 +548,22 @@ namespace RemoteTools
 
         if (!m_joinThread->IsRunning())
         {
+            m_joinThread->Join();
             m_joinThread->Start();
+        }
+
+        // Check if there are any active connections, if not stop the outbox thread
+        bool hasActiveConnection = false;
+        for (auto registryIt = m_entryRegistry.begin(); registryIt != m_entryRegistry.end(); ++registryIt)
+        {
+            hasActiveConnection =
+                AZ::Interface<AzNetworking::INetworking>::Get()->RetrieveNetworkInterface(registryIt->second.m_name) != nullptr;
+        }
+
+        if (!hasActiveConnection)
+        {
+            m_outboxThread->Stop();
+            m_outboxThread->Join();
         }
     }
 
