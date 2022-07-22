@@ -163,9 +163,7 @@ namespace UnitTest
         AZ_TEST_ASSERT(int_deque1.front() == 1);
         AZ_TEST_ASSERT(int_deque1[3] == 3);
 
-        AZ_TEST_START_TRACE_SUPPRESSION;
         int_deque1.insert(int_deque1.begin(), {});
-        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
         AZ_TEST_VALIDATE_DEQUE(int_deque1, 37);
         int_deque1.erase(int_deque1.begin(), int_deque1.begin() + 8);
         AZ_TEST_VALIDATE_DEQUE(int_deque1, 29);
@@ -200,11 +198,11 @@ namespace UnitTest
         }
 
         // extensions
-        int_deque2.push_back();
+        int_deque2.emplace_back();
         AZ_TEST_VALIDATE_DEQUE(int_deque2, 2);
         AZ_TEST_ASSERT(int_deque2.front() == 401);
 
-        int_deque2.push_front();
+        int_deque2.emplace_front();
         AZ_TEST_VALIDATE_DEQUE(int_deque2, 3);
         AZ_TEST_ASSERT(int_deque2[1] == 401);
 
@@ -620,13 +618,13 @@ namespace UnitTest
         int_buffer5.push_back(101);
         AZ_TEST_VALIDATE_RINGBUFFER(int_buffer5, myArr.size() + 1);
         AZ_TEST_ASSERT(int_buffer5.back() == 101);
-        int_buffer5.push_back();
+        int_buffer5.emplace_back();
         AZ_TEST_VALIDATE_RINGBUFFER(int_buffer5, myArr.size() + 2);
 
         int_buffer5.push_front(201);
         AZ_TEST_VALIDATE_RINGBUFFER(int_buffer5, myArr.size() + 3);
         AZ_TEST_ASSERT(int_buffer5.front() == 201);
-        int_buffer5.push_front();
+        int_buffer5.emplace_front();
         AZ_TEST_VALIDATE_RINGBUFFER(int_buffer5, myArr.size() + 4);
 
         // pop

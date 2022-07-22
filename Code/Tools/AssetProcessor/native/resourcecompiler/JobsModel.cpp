@@ -86,7 +86,7 @@ namespace AssetProcessor
                 case ColumnCompleted:
                     return tr("Completed");
                 case ColumnProcessDuration:
-                    return tr("Last Process Duration");
+                    return tr("Last Processing Job Duration");
                 default:
                     break;
                 }

@@ -444,7 +444,10 @@ namespace AZ
 
             ID3D12Device* removedDevice = m_dx12Device.get();
             HRESULT removedReason = removedDevice->GetDeviceRemovedReason();
-            
+
+#if defined(AZ_FORCE_CPU_GPU_INSYNC)
+            AZ_TracePrintf("Device", "The last executing pass before device removal was: %s\n", GetLastExecutingScope().data());
+#endif
             AZ_TracePrintf("Device", "Device was removed because of the following reason:\n");
             const char* removedReasonString;
 

@@ -9,6 +9,7 @@
 #include <TestImpactCommandLineOptionsUtils.h>
 
 #include <AzCore/std/string/conversions.h>
+#include <AzCore/JSON/document.h>
 
 namespace TestImpact
 {
@@ -71,5 +72,18 @@ namespace TestImpact
         }
 
         return AZStd::nullopt;
+    }
+
+    //! Attempst to parse the JSON in fileData into an array of test names.
+    AZStd::vector<AZStd::string> ParseExcludedTestTargetsFromFile(const AZStd::string& fileData)
+    {
+        rapidjson::Document excludeData;
+        excludeData.Parse(fileData.c_str());
+        AZStd::vector<AZStd::string> excludeList;
+        for (const auto& entry : excludeData["exclude"].GetArray())
+        {
+            excludeList.push_back(entry.GetString());
+        }
+        return excludeList;
     }
 } // namespace TestImpact

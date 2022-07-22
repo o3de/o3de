@@ -20,6 +20,7 @@
 #include <AzToolsFramework/Editor/EditorSettingsAPIBus.h>
 #include <AzToolsFramework/Prefab/PrefabLoaderInterface.h>
 #include <AzCore/JSON/document.h>
+#include <AzCore/Console/IConsole.h>
 
 #include <AzQtComponents/Components/Widgets/ToolBar.h>
 
@@ -253,6 +254,7 @@ struct SSmartOpenDialogSettings
 //////////////////////////////////////////////////////////////////////////
 /** Various editor settings.
 */
+AZ_CVAR_EXTERNED(int64_t, ed_backgroundSystemTickCap);
 AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
 struct SANDBOX_API SEditorSettings
     : AzToolsFramework::EditorSettingsAPIBus::Handler

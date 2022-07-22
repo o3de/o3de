@@ -2299,9 +2299,27 @@ int CCryEditApp::IdleProcessing(bool bBackgroundUpdate)
             GetIEditor()->Notify(eNotify_OnIdleUpdate);
         }
     }
-    else if (GetIEditor()->GetSystem() && GetIEditor()->GetSystem()->GetILog())
+    else
     {
-        GetIEditor()->GetSystem()->GetILog()->Update(); // print messages from other threads
+        if (GetIEditor()->GetSystem() && GetIEditor()->GetSystem()->GetILog())
+        {
+            GetIEditor()->GetSystem()->GetILog()->Update(); // print messages from other threads
+        }
+
+        // If we're backgrounded and not fully background updating, idle to rate limit SystemTick
+        static AZ::TimeMs sTimeLastMs = AZ::GetRealElapsedTimeMs();
+        const int64_t maxFrameTimeMs = ed_backgroundSystemTickCap;
+
+        if (maxFrameTimeMs > 0)
+        {
+            const int64_t maxElapsedTimeMs = maxFrameTimeMs + static_cast<int64_t>(sTimeLastMs);
+            const int64_t realElapsedTimeMs = static_cast<int64_t>(AZ::GetRealElapsedTimeMs());
+            if (maxElapsedTimeMs > realElapsedTimeMs)
+            {
+                CrySleep(aznumeric_cast<unsigned int>(maxElapsedTimeMs - realElapsedTimeMs));
+            }
+        }
+        sTimeLastMs = AZ::GetRealElapsedTimeMs();
     }
 
     DisplayLevelLoadErrors();

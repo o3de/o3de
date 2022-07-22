@@ -134,8 +134,7 @@ namespace PhysX
             m_entityTransformHandlers.emplace_back(entityId,
                 [this, entityId]()
                 {
-                    m_pendingAabbUpdates.push_back();
-                    ColliderShapeRequestBus::EventResult(m_pendingAabbUpdates.back()
+                    ColliderShapeRequestBus::EventResult(m_pendingAabbUpdates.emplace_back()
                         , entityId
                         , &ColliderShapeRequestBus::Events::GetColliderShapeAabb);
 
@@ -161,8 +160,7 @@ namespace PhysX
 
                 // When deleting entity from handler's m_entities, the AABB should be appended to m_pendingAabbUpdates
                 // for local wind handler to broadcast OnWindChanged to notify relative entities of wind changes in OnTick().  
-                m_pendingAabbUpdates.push_back();
-                ColliderShapeRequestBus::EventResult(m_pendingAabbUpdates.back(),
+                ColliderShapeRequestBus::EventResult(m_pendingAabbUpdates.emplace_back(),
                     entityId, &ColliderShapeRequestBus::Events::GetColliderShapeAabb);
 
                 m_changed = true;

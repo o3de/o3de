@@ -3755,7 +3755,7 @@ namespace AssetProcessor
                 QString statKey = QString("CreateJobs,%1,%2").arg(actualRelativePath).arg(builderInfo.m_name.c_str());
                 AssetProcessor::StatsCapture::BeginCaptureStat(statKey.toUtf8().constData());
                 builderInfo.m_createJobFunction(createJobsRequest, createJobsResponse);
-                AssetProcessor::StatsCapture::EndCaptureStat(statKey.toUtf8().constData());
+                AssetProcessor::StatsCapture::EndCaptureStat(statKey.toUtf8().constData(), true);
             }
 
             AssetProcessor::SetThreadLocalJobId(0);
@@ -5029,8 +5029,7 @@ namespace AssetProcessor
                         entry.m_productID,
                         [&](AzToolsFramework::AssetDatabase::ProductDependencyDatabaseEntry& entry)
                         {
-                            container.push_back();
-                            container.back() = AZStd::move(entry);
+                            container.emplace_back() = AZStd::move(entry);
                             return true; // return true to keep iterating over further rows.
                         });
 
