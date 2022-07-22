@@ -66,8 +66,7 @@ namespace Terrain
         // Calculate the vertical box
         if (updatedCenter.m_x != m_center.m_x)
         {
-            updateRegions.push_back();
-            Aabb2i& updateRegion = updateRegions.back();
+            Aabb2i& updateRegion = updateRegions.emplace_back();
             
             if (updatedCenter.m_x < m_center.m_x)
             {
@@ -86,8 +85,7 @@ namespace Terrain
         // Calculate the horizontal box
         if (updatedCenter.m_y != m_center.m_y && updateWidth < m_size)
         {
-            updateRegions.push_back();
-            Aabb2i& updateRegion = updateRegions.back();
+            Aabb2i& updateRegion = updateRegions.emplace_back();
             
             uint32_t updateHeight = AZStd::GetMin<uint32_t>(abs(updatedCenter.m_y - m_center.m_y), m_size);
             if (updatedCenter.m_y < m_center.m_y)

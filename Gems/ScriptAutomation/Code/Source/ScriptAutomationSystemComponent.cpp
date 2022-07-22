@@ -129,6 +129,17 @@ namespace ScriptAutomation
         m_scriptIdleSeconds = numSeconds;
     }
 
+    void ScriptAutomationSystemComponent::SetFrameCaptureId(uint32_t frameCaptureId)
+    {
+        m_scriptFrameCaptureId = frameCaptureId;
+        AZ::Render::FrameCaptureNotificationBus::Handler::BusConnect();
+    }
+
+    void ScriptAutomationSystemComponent::StartProfilingCapture()
+    {
+        AZ::Render::ProfilingCaptureNotificationBus::Handler::BusConnect();
+    }
+
     void ScriptAutomationSystemComponent::Activate()
     {
         ScriptAutomationRequestBus::Handler::BusConnect();
@@ -181,7 +192,7 @@ namespace ScriptAutomation
             ScriptAutomationNotificationBus::Broadcast(&ScriptAutomationNotificationBus::Events::OnAutomationStarted);
         }
 
-        while (!m_scriptOperations.empty())
+        while (true)
         {
             if (m_scriptPaused)
             {
@@ -209,19 +220,26 @@ namespace ScriptAutomation
                 break;
             }
 
-            // Execute the next operation
-            m_scriptOperations.front()();
+            if (!m_scriptOperations.empty()) // may be looping waiting for final pause to finish
+            {
+                // Execute the next operation
+                m_scriptOperations.front()();
 
-            m_scriptOperations.pop();
+                m_scriptOperations.pop();
+            }
 
             if (m_scriptOperations.empty())
             {
-                ScriptAutomationNotificationBus::Broadcast(&ScriptAutomationNotificationBus::Events::OnAutomationFinished);
-
-                if (m_exitOnFinish)
+                if(!m_scriptPaused) // final operation may have paused, wait for it to complete or time out
                 {
-                    AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::ExitMainLoop);
+                    ScriptAutomationNotificationBus::Broadcast(&ScriptAutomationNotificationBus::Events::OnAutomationFinished);
+
+                    if (m_exitOnFinish)
+                    {
+                        AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::ExitMainLoop);
+                    }
                 }
+                break;
             }
         }
     }
@@ -286,4 +304,49 @@ namespace ScriptAutomation
 #endif
         }
     }
+
+    void ScriptAutomationSystemComponent::OnCaptureQueryTimestampFinished([[maybe_unused]] bool result, [[maybe_unused]] const AZStd::string& info)
+    {
+        AZ::Render::ProfilingCaptureNotificationBus::Handler::BusDisconnect();
+        ResumeAutomation();
+    }
+
+    void ScriptAutomationSystemComponent::OnCaptureCpuFrameTimeFinished([[maybe_unused]] bool result, [[maybe_unused]] const AZStd::string& info)
+    {
+        AZ::Render::ProfilingCaptureNotificationBus::Handler::BusDisconnect();
+        ResumeAutomation();
+    }
+
+    void ScriptAutomationSystemComponent::OnCaptureQueryPipelineStatisticsFinished([[maybe_unused]] bool result, [[maybe_unused]] const AZStd::string& info)
+    {
+        AZ::Render::ProfilingCaptureNotificationBus::Handler::BusDisconnect();
+        ResumeAutomation();
+    }
+
+    void ScriptAutomationSystemComponent::OnCaptureBenchmarkMetadataFinished([[maybe_unused]] bool result, [[maybe_unused]] const AZStd::string& info)
+    {
+        AZ::Render::ProfilingCaptureNotificationBus::Handler::BusDisconnect();
+        ResumeAutomation();
+    }
+
+    void ScriptAutomationSystemComponent::OnCaptureFinished(uint32_t frameCaptureId, AZ::Render::FrameCaptureResult result, const AZStd::string &info)
+    {
+         // ignore captures that are not triggered by the script manager
+        if (m_scriptFrameCaptureId == AZ::Render::FrameCaptureRequests::s_InvalidFrameCaptureId || frameCaptureId != m_scriptFrameCaptureId)
+        {
+            return;
+        }
+        m_scriptFrameCaptureId = AZ::Render::FrameCaptureRequests::s_InvalidFrameCaptureId;
+        AZ::Render::FrameCaptureNotificationBus::Handler::BusDisconnect();
+        ResumeAutomation();
+
+        // This is checking for the exact scenario that results from an HDR setup. The goal is to add a very specific and prominent message that will
+        // alert users to a common issue and what action to take. Any other Format issues will be reported by FrameCaptureSystemComponent with a
+        // "Can't save image with format %s to a ppm file" message.
+        if (result == AZ::Render::FrameCaptureResult::UnsupportedFormat && info.find(AZ::RHI::ToString(AZ::RHI::Format::R10G10B10A2_UNORM)) != AZStd::string::npos)
+        {
+            AZ_Assert(false, "ScriptAutomation Screen Capture - HDR Not Supported, Screen capture to image is not supported from RGB10A2 display format. Please change the system configuration to disable the HDR display feature.");
+        }
+    }
+
 } // namespace ScriptAutomation

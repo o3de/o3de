@@ -5,6 +5,14 @@
     "ClassData": {
         "category": "Lighting Model",
         "title": "Example PBR",
+        "settings": {
+            "templatePaths": [
+                "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/TestData/ExamplePBR/MaterialGraphName_ForwardPass.azsl.template",
+                "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/TestData/ExamplePBR/MaterialGraphName_ForwardPass.shader.template",
+                "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/TestData/ExamplePBR/MaterialGraphName.materialtype.template",
+                "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/TestData/ExamplePBR/MaterialGraphName.material.template"
+            ]
+        },
         "inputSlots": [
             {
                 "name": "inBaseColor",
@@ -25,6 +33,9 @@
                         1.0,
                         1.0
                     ]
+                },
+                "settings": {
+                    "instructions": [ "SLOTTYPE SLOTNAME = SLOTVALUE;" ]
                 }
             },
             {
@@ -39,19 +50,17 @@
                     "color"
                 ],
                 "defaultValue": {
-                    "$type": "Vector4",
-                    "Value": [
-                        0.0,
-                        0.0,
-                        0.0,
-                        1.0
-                    ]
+                    "$type": "float",
+                    "Value": 0.0
+                },
+                "settings": {
+                    "instructions": [ "SLOTTYPE SLOTNAME = SLOTVALUE;" ]
                 }
             },
             {
-                "name": "inSpecular",
-                "displayName": "Specular",
-                "description": "Specular",
+                "name": "inSpecularF0Factor",
+                "displayName": "Specular F0 Factor",
+                "description": "Specular F0 Factor",
                 "supportedDataTypes": [
                     "float",
                     "float2",
@@ -60,13 +69,11 @@
                     "color"
                 ],
                 "defaultValue": {
-                    "$type": "Vector4",
-                    "Value": [
-                        0.0,
-                        0.0,
-                        0.0,
-                        1.0
-                    ]
+                    "$type": "float",
+                    "Value": 0.0
+                },
+                "settings": {
+                    "instructions": [ "SLOTTYPE SLOTNAME = SLOTVALUE;" ]
                 }
             },
             {
@@ -81,13 +88,11 @@
                     "color"
                 ],
                 "defaultValue": {
-                    "$type": "Vector4",
-                    "Value": [
-                        0.0,
-                        0.0,
-                        0.0,
-                        1.0
-                    ]
+                    "$type": "float",
+                    "Value": 0.0
+                },
+                "settings": {
+                    "instructions": [ "SLOTTYPE SLOTNAME = SLOTVALUE;" ]
                 }
             },
             {
@@ -109,6 +114,9 @@
                         0.0,
                         1.0
                     ]
+                },
+                "settings": {
+                    "instructions": [ "SLOTTYPE SLOTNAME = SLOTVALUE;" ]
                 }
             }
         ]
