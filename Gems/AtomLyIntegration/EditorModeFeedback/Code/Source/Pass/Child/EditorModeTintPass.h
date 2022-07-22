@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <Pass/EditorModeFeedbackPassBase.h>
+#include <Pass/Child/EditorModeFeedbackChildPassBase.h>
 
 namespace AZ
 {
@@ -15,10 +15,10 @@ namespace AZ
     {
         //! Pass for editor mode feedback color tint effect.
         class EditorModeTintPass
-            : public EditorModeFeedbackPassBase
+            : public EditorModeFeedbackChildPassBase
         {
         public:
-            AZ_RTTI(EditorModeTintPass, "{3E4FEFCB-9416-4CAE-8918-72D31AA482C5}", EditorModeFeedbackPassBase);
+            AZ_RTTI(EditorModeTintPass, "{3E4FEFCB-9416-4CAE-8918-72D31AA482C5}", EditorModeFeedbackChildPassBase);
             AZ_CLASS_ALLOCATOR(EditorModeTintPass, SystemAllocator, 0);
 
             virtual ~EditorModeTintPass() = default;

@@ -6,7 +6,7 @@
  *
  */
  
-#include <Pass/EditorModeDesaturationPass.h>
+#include <Pass/Child/EditorModeDesaturationPass.h>
 #include <PostProcess/PostProcessFeatureProcessor.h>
 
 #include <Atom/RPI.Public/RenderPipeline.h>
@@ -17,7 +17,7 @@
 AZ_EDITOR_MODE_PASS_TRANSITION_CVARS(cl_editorModeDesaturationPass, 0.75f, 0.0f, 20.0f, 1.0f);
 AZ_EDITOR_MODE_PASS_CVAR(float, cl_editorModeDesaturationPass, DesaturationAmount, 1.0f);
 
- namespace AZ
+namespace AZ
 {
     namespace Render
     {
@@ -28,20 +28,20 @@ AZ_EDITOR_MODE_PASS_CVAR(float, cl_editorModeDesaturationPass, DesaturationAmoun
         }
         
         EditorModeDesaturationPass::EditorModeDesaturationPass(const RPI::PassDescriptor& descriptor)
-            : EditorModeFeedbackPassBase(descriptor, { 0.75f, 0.0f, 20.0f }, 1.0f)
+            : EditorModeFeedbackChildPassBase(descriptor, { 0.75f, 0.0f, 20.0f }, 1.0f)
         {
         }
         
         void EditorModeDesaturationPass::InitializeInternal()
         {
-            EditorModeFeedbackPassBase::InitializeInternal();
+            EditorModeFeedbackChildPassBase::InitializeInternal();
             m_desaturationAmountIndex.Reset();
         }
         
         void EditorModeDesaturationPass::FrameBeginInternal(FramePrepareParams params)
         {
             SetSrgConstants();
-            EditorModeFeedbackPassBase::FrameBeginInternal(params);
+            EditorModeFeedbackChildPassBase::FrameBeginInternal(params);
         }
         
         void EditorModeDesaturationPass::SetDesaturationAmount(const float amount)

@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
- 
-#include <Pass/EditorModeOutlinePass.h>
+
+#include <Pass/Child/EditorModeOutlinePass.h>
 #include <PostProcess/PostProcessFeatureProcessor.h>
 
 #include <Atom/RPI.Public/RenderPipeline.h>
@@ -14,12 +14,12 @@
 #include <Atom/RPI.Public/View.h>
 
 // Temporary measure for setting the outline pass shader parameters at runtime until GHI 3455 is implemented
-AZ_EDITOR_MODE_PASS_TRANSITION_CVARS(cl_editorModeOutlinePass, 0.0f, 0.0f, 10.0f, 1.0f);
+AZ_EDITOR_MODE_PASS_TRANSITION_CVARS(cl_editorModeOutlinePass, 0.0f, 0.0f, 0.0f, 1.0f);
 AZ_EDITOR_MODE_PASS_CVAR(float, cl_editorModeOutlinePass, LineThickness, 3.0f);
 AZ_EDITOR_MODE_PASS_CVAR(AZ::u8, cl_editorModeOutlinePass, OutlineStyle, 0);
 AZ_EDITOR_MODE_PASS_CVAR(AZ::Color, cl_editorModeOutlinePass, LineColor, AZ::Color(0.96f, 0.65f, 0.13f, 1.0f));
 
- namespace AZ
+namespace AZ
 {
     namespace Render
     {
@@ -30,13 +30,13 @@ AZ_EDITOR_MODE_PASS_CVAR(AZ::Color, cl_editorModeOutlinePass, LineColor, AZ::Col
         }
         
         EditorModeOutlinePass::EditorModeOutlinePass(const RPI::PassDescriptor& descriptor)
-            : EditorModeFeedbackPassBase(descriptor, { 0.0f, 0.0f, 10.0f }, 1.0f)
+            : EditorModeFeedbackChildPassBase(descriptor, { 0.0f, 0.0f, 0.0f }, 1.0f)
         {
         }
         
         void EditorModeOutlinePass::InitializeInternal()
         {
-            EditorModeFeedbackPassBase::InitializeInternal();
+            EditorModeFeedbackChildPassBase::InitializeInternal();
             m_lineThicknessIndex.Reset();
             m_lineColorIndex.Reset();
             m_outlineStyleIndex.Reset();
@@ -45,7 +45,7 @@ AZ_EDITOR_MODE_PASS_CVAR(AZ::Color, cl_editorModeOutlinePass, LineColor, AZ::Col
         void EditorModeOutlinePass::FrameBeginInternal(FramePrepareParams params)
         {
             SetSrgConstants();
-            EditorModeFeedbackPassBase::FrameBeginInternal(params);
+            EditorModeFeedbackChildPassBase::FrameBeginInternal(params);
         }
 
         void EditorModeOutlinePass::SetLineThickness(const float thickness)
