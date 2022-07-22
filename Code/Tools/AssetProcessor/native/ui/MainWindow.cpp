@@ -631,8 +631,7 @@ void MainWindow::SetupAssetServerTab()
         });
 
     // serverAddressToolButton
-    ui->serverAddressToolButton->setIcon(QIcon(":/PropertyEditor/Resources/Browse_on.png"));
-    AzQtComponents::PushButton::applySmallIconStyle(ui->serverAddressToolButton);
+    ui->serverAddressToolButton->setIcon(QIcon(":Browse_on.png"));
     QObject::connect(ui->serverAddressToolButton, &QToolButton::clicked, this,
         [this]()
         {

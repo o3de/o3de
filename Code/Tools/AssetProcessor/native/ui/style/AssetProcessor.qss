@@ -182,3 +182,11 @@ QLabel#sharedCacheStatus[highlight = "red"] {
     background-color: rgba(255, 0, 0, 0.1);
     border: 1px solid #FA2727;
 }
+
+QToolButton#serverAddressToolButton {
+    min-width: -1px;
+    border-width: 0px;
+    border-radius: 0px;
+    border-image: url(":/Browse_on.png") 0 0 0 0 stretch stretch;
+    padding: 0 0 0 0;
+}

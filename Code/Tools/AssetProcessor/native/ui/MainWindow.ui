@@ -1665,17 +1665,6 @@
                <property name="text">
                 <string>Choose a remote folder.</string>
                </property>
-               <property name="icon">
-                <iconset>
-                 <normaloff>style/Browse.png</normaloff>
-                 <selectedon>style/Browse_on.png</selectedon>style/Browse.png</iconset>
-               </property>
-               <property name="popupMode">
-                <enum>QToolButton::DelayedPopup</enum>
-               </property>
-               <property name="toolButtonStyle">
-                <enum>Qt::ToolButtonIconOnly</enum>
-               </property>
               </widget>
              </item>
              <item row="1" column="0" colspan="4">
