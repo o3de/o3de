@@ -37,7 +37,15 @@ class AutoGenConfig:
         self.pythonPaths = pythonPaths
 
 def SanitizeTargetName(targetName):
-    return ''.join(ch for ch in targetName if ch.isalnum())
+    targetNameList = list(targetName)
+    firstAlphabetIndex = -1
+    for i, ch in enumerate(targetNameList):
+        if ch.isalpha() and firstAlphabetIndex == -1:
+            firstAlphabetIndex = i
+        if not ch.isalnum():
+            targetNameList[i] = ""
+
+    return ''.join(targetNameList[firstAlphabetIndex:]) if 0 <= firstAlphabetIndex < len(targetNameList) else ""
 
 def ParseInputFile(inputFilePath):
     result = []

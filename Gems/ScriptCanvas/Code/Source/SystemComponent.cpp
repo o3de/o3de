@@ -152,15 +152,6 @@ namespace ScriptCanvas
 
         m_infiniteLoopDetectionMaxIterations = ScriptCanvasSystemComponentCpp::k_infiniteLoopDetectionMaxIterations;
         m_maxHandlerStackDepth = ScriptCanvasSystemComponentCpp::k_maxHandlerStackDepth;
-
-        ScriptCanvas::AutoGenRegistryManager::Init();
-        if (auto componentApplication = AZ::Interface<AZ::ComponentApplicationRequests>::Get())
-        {
-            for (auto descriptor : ScriptCanvas::AutoGenRegistryManager::GetComponentDescriptors())
-            {
-                componentApplication->RegisterComponentDescriptor(descriptor);
-            }
-        }
     }
 
     void SystemComponent::Activate()

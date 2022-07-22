@@ -10,6 +10,7 @@
 #include <SystemComponent.h>
 
 #include <Asset/RuntimeAssetSystemComponent.h>
+#include <ScriptCanvas/AutoGen/ScriptCanvasAutoGenRegistry.h>
 #include <ScriptCanvas/Core/Graph.h>
 #include <ScriptCanvas/Core/Connection.h>
 
@@ -54,6 +55,15 @@ namespace ScriptCanvas
 
         MathNodeUtilities::RandomEngineInit();
         InitDataRegistry();
+
+        ScriptCanvas::AutoGenRegistryManager::Init();
+        if (auto componentApplication = AZ::Interface<AZ::ComponentApplicationRequests>::Get())
+        {
+            for (auto descriptor : ScriptCanvas::AutoGenRegistryManager::GetComponentDescriptors())
+            {
+                componentApplication->RegisterComponentDescriptor(descriptor);
+            }
+        }
     }
 
     ScriptCanvasModuleCommon::~ScriptCanvasModuleCommon()
