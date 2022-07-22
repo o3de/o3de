@@ -420,7 +420,7 @@ namespace Terrain
             for (const auto& updateRegion : updateRegionList)
             {
                 AZStd::vector<MacroMaterial> affectedMaterials;
-                affectedMaterials.reserve(AZStd::GetMin(m_macroMaterials.size(), 128ull));
+                affectedMaterials.reserve(AZStd::GetMin(m_macroMaterials.size(), size_t(128)));
                 AZ::Vector2 regionMin = AZ::Vector2(updateRegion.m_worldAabb.GetMin());
                 AZ::Vector2 regionMax = AZ::Vector2(updateRegion.m_worldAabb.GetMax());
 
