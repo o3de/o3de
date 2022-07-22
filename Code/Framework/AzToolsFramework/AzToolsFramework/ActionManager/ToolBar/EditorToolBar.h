@@ -8,7 +8,11 @@
 
 #pragma once
 
+#include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/RTTI/ReflectContext.h>
+#include <AzCore/RTTI/RTTI.h>
 #include <AzCore/std/containers/map.h>
+#include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/optional.h>
 #include <AzCore/std/string/string.h>
 
@@ -28,13 +32,17 @@ namespace AzToolsFramework
 
     //! Editor ToolBar class definitions.
     //! Wraps a QToolBar and provides additional functionality to handle and sort its items.
-    class EditorToolBar
+    class EditorToolBar final
     {
     public:
+        AZ_CLASS_ALLOCATOR(EditorToolBar, AZ::SystemAllocator, 0);
+        AZ_RTTI(EditorToolBar, "{A3862087-FEB3-466C-985B-92F9411BC2EF}");
+
         EditorToolBar();
         explicit EditorToolBar(const AZStd::string& name);
 
         static void Initialize();
+        static void Reflect(AZ::ReflectContext* context);
         
         // Add Menu Items
         void AddSeparator(int sortKey);
@@ -66,8 +74,11 @@ namespace AzToolsFramework
             Widget
         };
 
-        struct ToolBarItem
+        struct ToolBarItem final
         {
+            AZ_CLASS_ALLOCATOR(ToolBarItem, AZ::SystemAllocator, 0);
+            AZ_RTTI(ToolBarItem, "{B0DE0795-2C3F-4ABC-AAAB-1A68604EF33E}");
+
             explicit ToolBarItem(ToolBarItemType type = ToolBarItemType::Separator, AZStd::string identifier = AZStd::string());
             explicit ToolBarItem(QWidget* widget);
 
@@ -78,8 +89,8 @@ namespace AzToolsFramework
         };
 
         QToolBar* m_toolBar = nullptr;
-        AZStd::multimap<int, ToolBarItem> m_toolBarItems;
-        AZStd::map<AZStd::string, int> m_actionToSortKeyMap;
+        AZStd::map<int, AZStd::vector<ToolBarItem>> m_toolBarItems;
+        AZStd::unordered_map<AZStd::string, int> m_actionToSortKeyMap;
 
         inline static ActionManagerInterface* m_actionManagerInterface = nullptr;
         inline static ActionManagerInternalInterface* m_actionManagerInternalInterface = nullptr;

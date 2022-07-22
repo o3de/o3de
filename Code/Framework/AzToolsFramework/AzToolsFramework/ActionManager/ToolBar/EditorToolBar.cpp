@@ -31,13 +31,13 @@ namespace AzToolsFramework
 
     void EditorToolBar::AddSeparator(int sortKey)
     {
-        m_toolBarItems.insert({ sortKey, ToolBarItem() });
+        m_toolBarItems[sortKey].emplace_back(ToolBarItem());
     }
     
     void EditorToolBar::AddAction(int sortKey, AZStd::string actionIdentifier)
     {
         m_actionToSortKeyMap.insert(AZStd::make_pair(actionIdentifier, sortKey));
-        m_toolBarItems.insert({ sortKey, ToolBarItem(ToolBarItemType::Action, AZStd::move(actionIdentifier)) });
+        m_toolBarItems[sortKey].emplace_back(ToolBarItem(ToolBarItemType::Action, AZStd::move(actionIdentifier)));
     }
 
     void EditorToolBar::AddActionWithSubMenu(int sortKey, AZStd::string actionIdentifier, const AZStd::string& subMenuIdentifier)
@@ -53,7 +53,7 @@ namespace AzToolsFramework
             toolButton->setDefaultAction(action);
 
             m_actionToSortKeyMap.insert(AZStd::make_pair(AZStd::move(actionIdentifier), sortKey));
-            m_toolBarItems.insert({ sortKey, ToolBarItem(static_cast<QWidget*>(toolButton)) });
+            m_toolBarItems[sortKey].emplace_back(ToolBarItem(static_cast<QWidget*>(toolButton)));
         }
     }
 
@@ -67,27 +67,18 @@ namespace AzToolsFramework
 
         int sortKey = sortKeyIterator->second;
 
-        auto multimapIterator = m_toolBarItems.find(sortKey);
-        if (multimapIterator == m_toolBarItems.end())
-        {
-            return;
-        }
-
-        while (multimapIterator->first == sortKey)
-        {
-            if (multimapIterator->second.m_identifier == actionIdentifier)
+        AZStd::erase_if(
+            m_toolBarItems[sortKey],
+            [actionIdentifier](const ToolBarItem& item)
             {
-                m_toolBarItems.erase(multimapIterator);
-                return;
+                return item.m_identifier == actionIdentifier;
             }
-
-            ++multimapIterator;
-        }
+        );
     }
 
     void EditorToolBar::AddWidget(int sortKey, QWidget* widget)
     {
-        m_toolBarItems.insert({ sortKey, ToolBarItem(widget) });
+        m_toolBarItems[sortKey].emplace_back(ToolBarItem(widget));
     }
 
     bool EditorToolBar::ContainsAction(const AZStd::string& actionIdentifier) const
@@ -120,35 +111,39 @@ namespace AzToolsFramework
     {
         m_toolBar->clear();
 
-        for (const auto& elem : m_toolBarItems)
+        for (const auto& vectorIterator : m_toolBarItems)
         {
-            switch (elem.second.m_type)
+            for (const auto& toolBarItem : vectorIterator.second)
             {
-            case ToolBarItemType::Action:
+                switch (toolBarItem.m_type)
                 {
-                    if (QAction* action = m_actionManagerInternalInterface->GetAction(elem.second.m_identifier))
+                case ToolBarItemType::Action:
                     {
-                        if (!action->isEnabled() && m_actionManagerInternalInterface->GetHideFromToolBarsWhenDisabled(elem.second.m_identifier))
+                        if (QAction* action = m_actionManagerInternalInterface->GetAction(toolBarItem.m_identifier))
                         {
-                            continue;
-                        }
+                            if (!action->isEnabled() &&
+                                m_actionManagerInternalInterface->GetHideFromToolBarsWhenDisabled(toolBarItem.m_identifier))
+                            {
+                                continue;
+                            }
 
-                        m_toolBar->addAction(action);
+                            m_toolBar->addAction(action);
+                        }
+                        break;
                     }
+                case ToolBarItemType::Separator:
+                    {
+                        m_toolBar->addSeparator();
+                        break;
+                    }
+                case ToolBarItemType::Widget:
+                    {
+                        m_toolBar->addAction(toolBarItem.m_widgetAction);
+                        break;
+                    }
+                default:
                     break;
                 }
-            case ToolBarItemType::Separator:
-                {
-                    m_toolBar->addSeparator();
-                    break;
-                }
-            case ToolBarItemType::Widget:
-                {
-                    m_toolBar->addAction(elem.second.m_widgetAction);
-                    break;
-                }
-            default:
-                break;
             }
         }
     }
@@ -185,6 +180,21 @@ namespace AzToolsFramework
 
         m_toolBarManagerInterface = AZ::Interface<ToolBarManagerInterface>::Get();
         AZ_Assert(m_toolBarManagerInterface, "EditorToolBar - Could not retrieve instance of ToolBarManagerInterface");
+    }
+
+    void EditorToolBar::Reflect(AZ::ReflectContext* context)
+    {
+        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serializeContext->Class<ToolBarItem>()
+                ->Field("Type", &ToolBarItem::m_type)
+                ->Field("Identifier", &ToolBarItem::m_identifier);
+
+            serializeContext->RegisterGenericType<AZStd::multimap<int, ToolBarItem>>();
+
+            serializeContext->Class<EditorToolBar>()
+                ->Field("Items", &EditorToolBar::m_toolBarItems);
+        }
     }
 
 } // namespace AzToolsFramework
