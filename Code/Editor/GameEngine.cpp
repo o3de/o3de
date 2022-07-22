@@ -356,8 +356,6 @@ AZ::Outcome<void, AZStd::string> CGameEngine::Init(
     sip.bTestMode = bTestMode;
     sip.hInstance = nullptr;
 
-    sip.pSharedEnvironment = AZ::Environment::GetInstance();
-
 #ifdef AZ_PLATFORM_MAC
     // Create a hidden QWidget. Would show a black window on macOS otherwise.
     auto window = new QWidget();

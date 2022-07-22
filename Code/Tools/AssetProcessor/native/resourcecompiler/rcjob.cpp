@@ -538,10 +538,13 @@ namespace AssetProcessor
                     bool runProcessJob = true;
                     if (m_jobDetails.m_checkServer)
                     {
+                        AssetServerMode assetServerMode = AssetServerMode::Inactive;
+                        AssetServerBus::BroadcastResult(assetServerMode, &AssetServerBus::Events::GetRemoteCachingMode);
+
                         QFileInfo fileInfo(builderParams.m_processJobRequest.m_sourceFile.c_str());
                         builderParams.m_serverKey = QString("%1_%2_%3_%4").arg(fileInfo.completeBaseName(), builderParams.m_processJobRequest.m_jobDescription.m_jobKey.c_str(), builderParams.m_processJobRequest.m_platformInfo.m_identifier.c_str()).arg(builderParams.m_rcJob->GetOriginalFingerprint());
                         bool operationResult = false;
-                        if (AssetUtilities::InServerMode())
+                        if (assetServerMode == AssetServerMode::Server)
                         {
                             // sending process job command to the builder
                             builderParams.m_assetBuilderDesc.m_processJobFunction(builderParams.m_processJobRequest, result);
@@ -566,7 +569,7 @@ namespace AssetProcessor
                                 }
                             }
                         }
-                        else
+                        else if (assetServerMode == AssetServerMode::Client)
                         {
                             // running as client, check with the server whether it has already
                             // processed this asset, if not or if the operation fails then process locally
@@ -607,13 +610,17 @@ namespace AssetProcessor
         if (result.m_resultCode == AssetBuilderSDK::ProcessJobResult_Success)
         {
             // do a final check of this job to make sure its not making colliding subIds.
-            AZStd::unordered_set<AZ::u32> subIdsFound;
+            AZStd::unordered_map<AZ::u32, AZStd::string> subIdsFound;
             for (const AssetBuilderSDK::JobProduct& product : result.m_outputProducts)
             {
-                if (!subIdsFound.insert(product.m_productSubID).second)
+                if (!subIdsFound.insert({ product.m_productSubID, product.m_productFileName }).second)
                 {
                     // if this happens the element was already in the set.
-                    AZ_Error(AssetBuilderSDK::ErrorWindow, false, "The builder created more than one asset with the same subID (%u) when emitting product %s\n  Builders should set a unique m_productSubID value for each product, as this is used as part of the address of the asset.", product.m_productSubID, product.m_productFileName.c_str());
+                    AZ_Error(AssetBuilderSDK::ErrorWindow, false,
+                        "The builder created more than one asset with the same subID (%u) when emitting product %.*s, colliding with %.*s\n  Builders should set a unique m_productSubID value for each product, as this is used as part of the address of the asset.",
+                        product.m_productSubID,
+                        AZ_STRING_ARG(product.m_productFileName),
+                        AZ_STRING_ARG(subIdsFound[product.m_productSubID]));
                     result.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed;
                     break;
                 }
@@ -735,8 +742,7 @@ namespace AssetProcessor
         // and  the second is the product destination we intend to copy it to.
         QList< QPair<QString, QString> > outputsToCopy;
         outputsToCopy.reserve(static_cast<int>(response.m_outputProducts.size()));
-        qint64 totalCacheFileSizeRequired = 0;
-        qint64 totalIntermediateFileSizeRequired = 0;
+        qint64 fileSizeRequired = 0;
 
         bool needCacheDirectory = false;
         bool needIntermediateDirectory = false;
@@ -812,7 +818,7 @@ namespace AssetProcessor
                 }
 
                 if (!VerifyOutputProduct(
-                    QDir(cacheDirectory.c_str()), outputFilename, absolutePathOfSource, totalCacheFileSizeRequired,
+                    QDir(cacheDirectory.c_str()), outputFilename, absolutePathOfSource, fileSizeRequired,
                     outputsToCopy))
                 {
                     return false;
@@ -830,7 +836,7 @@ namespace AssetProcessor
 
                 if (!VerifyOutputProduct(
                     QDir(intermediateDirectory.c_str()), outputFilename, absolutePathOfSource,
-                    totalIntermediateFileSizeRequired, outputsToCopy))
+                    fileSizeRequired, outputsToCopy))
                 {
                     return false;
                 }
@@ -842,42 +848,21 @@ namespace AssetProcessor
 
         // now we can check if there's enough space for ALL the files before we copy any.
 
-        QStorageInfo cacheStorage(cacheDirectory.c_str());
-        QStorageInfo intermediateStorage(intermediateDirectory.c_str());
-
-        bool bothDirectoriesOnSameDrive = cacheStorage.device() == intermediateStorage.device();
         bool hasSpace = false;
 
-        if(bothDirectoriesOnSameDrive)
-        {
-            totalCacheFileSizeRequired += totalIntermediateFileSizeRequired;
-        }
-        else
-        {
-            AssetProcessor::DiskSpaceInfoBus::BroadcastResult(
-                hasSpace, &AssetProcessor::DiskSpaceInfoBusTraits::CheckSufficientDiskSpace, intermediateDirectory.c_str(),
-                totalIntermediateFileSizeRequired, false);
+        auto* diskSpaceInfoInterface = AZ::Interface<AssetProcessor::IDiskSpaceInfo>::Get();
 
-            if (!hasSpace)
-            {
-                AZ_Error(
-                    AssetProcessor::ConsoleChannel, false,
-                    "Cannot save file(s) to intermediate directory, not enough disk space to save all the products of %s.  Total needed: %lli bytes",
-                    params.m_processJobRequest.m_sourceFile.c_str(), totalIntermediateFileSizeRequired);
-                return false;
-            }
+        if (diskSpaceInfoInterface)
+        {
+            hasSpace = diskSpaceInfoInterface->CheckSufficientDiskSpace(fileSizeRequired, false);
         }
-
-        AssetProcessor::DiskSpaceInfoBus::BroadcastResult(
-            hasSpace, &AssetProcessor::DiskSpaceInfoBusTraits::CheckSufficientDiskSpace, cacheDirectory.c_str(),
-            totalCacheFileSizeRequired, false);
 
         if (!hasSpace)
         {
             AZ_Error(
                 AssetProcessor::ConsoleChannel, false,
                 "Cannot save file(s) to cache, not enough disk space to save all the products of %s.  Total needed: %lli bytes",
-                params.m_processJobRequest.m_sourceFile.c_str(), totalCacheFileSizeRequired);
+                params.m_processJobRequest.m_sourceFile.c_str(), fileSizeRequired);
             return false;
         }
 

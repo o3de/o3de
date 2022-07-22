@@ -10,6 +10,7 @@
 #include <native/tests/UnitTestUtilities.h>
 #include <native/resourcecompiler/rcjob.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <tests/assetmanager/AssetManagerTestingBase.h>
 
 namespace UnitTests
 {
@@ -18,12 +19,6 @@ namespace UnitTests
 
     using namespace AssetProcessor;
     using namespace AssetBuilderSDK;
-
-    class MockDiskSpaceResponder : public DiskSpaceInfoBus::Handler
-    {
-    public:
-        MOCK_METHOD3(CheckSufficientDiskSpace, bool(const QString&, qint64, bool));
-    };
 
     class IgnoreNotifyTracker : public ProcessingJobInfoBus::Handler
     {
@@ -59,19 +54,15 @@ namespace UnitTests
             // while files inside the output folder should be lowercased, the path to there should not be lowercased by RCJob.
             m_data->m_absolutePathToTempOutputFolder = m_data->tempDirPath.absoluteFilePath("OutputFolder").toUtf8().constData();
             m_data->tempDirPath.mkpath(QString::fromUtf8(m_data->m_absolutePathToTempInputFolder.c_str()));
-            m_data->m_diskSpaceResponder.BusConnect();
             m_data->m_notifyTracker.BusConnect();
 
             // this can be overridden in each test but if you don't override it, then this fixture will do it.
-            ON_CALL(m_data->m_diskSpaceResponder, CheckSufficientDiskSpace(_, _, _))
+            ON_CALL(m_data->m_diskSpaceResponder, CheckSufficientDiskSpace(_, _))
                 .WillByDefault(Return(true));
-
-
         }
 
         void TearDown() override
         {
-            m_data->m_diskSpaceResponder.BusDisconnect();
             m_data->m_notifyTracker.BusDisconnect();
             m_data.reset();
             AssetProcessorTest::TearDown();
@@ -168,8 +159,8 @@ namespace UnitTests
         response.m_outputProducts.push_back({ "file2.txt" }); // make sure that there is at least one product so that it doesn't early out.
         UnitTestUtils::CreateDummyFile(QDir(m_data->m_absolutePathToTempInputFolder.c_str()).absoluteFilePath("file2.txt"), "output of file 2");
 
-        // we exepct exactly one call to check for disk space, (not once for each file), and in this case, we'll return false.
-        EXPECT_CALL(m_data->m_diskSpaceResponder, CheckSufficientDiskSpace(_,_,_))
+        // we expect exactly one call to check for disk space, (not once for each file), and in this case, we'll return false.
+        EXPECT_CALL(m_data->m_diskSpaceResponder, CheckSufficientDiskSpace(_,_))
             .Times(1)
             .WillRepeatedly(Return(false));
 

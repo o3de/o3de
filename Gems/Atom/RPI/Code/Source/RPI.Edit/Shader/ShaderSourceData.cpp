@@ -105,6 +105,31 @@ namespace AZ
 
             if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
             {
+                // declare EntryPoint before things that use it.
+                behaviorContext->Class<ShaderSourceData::EntryPoint>("ShaderSourceData::EntryPoint")
+                    ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
+                    ->Attribute(AZ::Script::Attributes::Category, "RPI")
+                    ->Attribute(AZ::Script::Attributes::Module, "rpi")
+                    ->Constructor()
+                    ->Constructor<const ShaderSourceData::EntryPoint&>()
+                    ->Property("name", BehaviorValueProperty(&EntryPoint::m_name))
+                    ->Property("type", BehaviorValueProperty(&EntryPoint::m_type))
+                    ;
+                
+                // Declare SupervariantInfo (which uses EntryPoint) before things that use it.
+                behaviorContext->Class<ShaderSourceData::SupervariantInfo>("ShaderSourceData::SupervariantInfo")
+                    ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
+                    ->Attribute(AZ::Script::Attributes::Category, "RPI")
+                    ->Attribute(AZ::Script::Attributes::Module, "rpi")
+                    ->Constructor()
+                    ->Constructor<const ShaderSourceData::SupervariantInfo&>()
+                    ->Property("name", BehaviorValueProperty(&SupervariantInfo::m_name))
+                    ->Property("removeBuildArguments", BehaviorValueProperty(&SupervariantInfo::m_removeBuildArguments))
+                    ->Property("addBuildArguments", BehaviorValueProperty(&SupervariantInfo::m_addBuildArguments))
+                    ->Property("definitions", BehaviorValueProperty(&SupervariantInfo::m_definitions))
+                    ;
+                
+                // ShaderSourceData uses SuperVariant, so SuperVarient is defined above, before it.
                 behaviorContext->Class<ShaderSourceData>("ShaderSourceData")
                     ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
                     ->Attribute(AZ::Script::Attributes::Category, "RPI")
@@ -132,28 +157,6 @@ namespace AZ
                     ->Constructor()
                     ->Constructor<const ShaderSourceData::ProgramSettings&>()
                     ->Property("entryPoints", BehaviorValueProperty(&ProgramSettings::m_entryPoints))
-                    ;
-
-                behaviorContext->Class<ShaderSourceData::EntryPoint>("ShaderSourceData::EntryPoint")
-                    ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
-                    ->Attribute(AZ::Script::Attributes::Category, "RPI")
-                    ->Attribute(AZ::Script::Attributes::Module, "rpi")
-                    ->Constructor()
-                    ->Constructor<const ShaderSourceData::EntryPoint&>()
-                    ->Property("name", BehaviorValueProperty(&EntryPoint::m_name))
-                    ->Property("type", BehaviorValueProperty(&EntryPoint::m_type))
-                    ;
-
-                behaviorContext->Class<ShaderSourceData::SupervariantInfo>("ShaderSourceData::SupervariantInfo")
-                    ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
-                    ->Attribute(AZ::Script::Attributes::Category, "RPI")
-                    ->Attribute(AZ::Script::Attributes::Module, "rpi")
-                    ->Constructor()
-                    ->Constructor<const ShaderSourceData::SupervariantInfo&>()
-                    ->Property("name", BehaviorValueProperty(&SupervariantInfo::m_name))
-                    ->Property("removeBuildArguments", BehaviorValueProperty(&SupervariantInfo::m_removeBuildArguments))
-                    ->Property("addBuildArguments", BehaviorValueProperty(&SupervariantInfo::m_addBuildArguments))
-                    ->Property("definitions", BehaviorValueProperty(&SupervariantInfo::m_definitions))
                     ;
             }
         }

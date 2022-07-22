@@ -43,14 +43,13 @@ namespace LandscapeCanvas
 
     void AltitudeFilterNode::RegisterSlots()
     {
-        GraphModel::DataTypePtr invalidEntityDataType = GetGraphContext()->GetDataType(LandscapeCanvasDataTypeEnum::InvalidEntity);
         GraphModel::DataTypePtr boundsDataType = GetGraphContext()->GetDataType(LandscapeCanvasDataTypeEnum::Bounds);
 
         RegisterSlot(GraphModel::SlotDefinition::CreateInputData(
             PIN_TO_SHAPE_SLOT_ID,
             PIN_TO_SHAPE_SLOT_LABEL.toUtf8().constData(),
-            { boundsDataType, invalidEntityDataType },
-            invalidEntityDataType->GetDefaultValue(),
+            { boundsDataType },
+            AZStd::any(AZ::EntityId()),
             PIN_TO_SHAPE_INPUT_SLOT_DESCRIPTION.toUtf8().constData()));
     }
 } // namespace LandscapeCanvas

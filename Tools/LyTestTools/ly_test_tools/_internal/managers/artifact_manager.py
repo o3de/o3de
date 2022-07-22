@@ -48,8 +48,8 @@ class ArtifactManager(object):
             updated_path = f"{file_without_ext}_{i}{extension}"
             if not os.path.exists(updated_path):
                 return updated_path
-        logger.info(f"Maximum number of attempts: {amount} met when trying to handle name collision for file: "
-                    f"{file_path}. Ending on {updated_path} which will override the existing file.")
+        logger.warning(f"Maximum number of attempts: {amount} met when trying to handle name collision for file: "
+                       f"{file_path}. Ending on {updated_path} which will override the existing file.")
         return updated_path
 
     def _set_dest_path(self, test_name=None, amount=1):
@@ -116,6 +116,7 @@ class ArtifactManager(object):
         :param artifact_name: string representing a new artifact name for log if necessary, max length: 25 characters.
         :param amount: amount of renames possible for the saved artifact if file name collision occurs by appending
         integers to the name. If the amount is reached, the save will override the file instead.
+        :return destination_path: a destination folder if a folder is copied, a destination file path if a file is copied
         """
         if artifact_name:
             artifact_name = file_system.reduce_file_name_length(file_name=artifact_name, max_length=25)
@@ -131,6 +132,7 @@ class ArtifactManager(object):
         else:
             shutil.copy(artifact_path, dest_path)
             os.chmod(dest_path, stat.S_IWRITE | stat.S_IREAD | stat.S_IEXEC)
+        return dest_path
 
     def generate_artifact_file_name(self, artifact_name):
         """

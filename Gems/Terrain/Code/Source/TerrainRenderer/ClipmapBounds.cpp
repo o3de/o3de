@@ -294,8 +294,8 @@ namespace Terrain
     AZ::Vector2 ClipmapBounds::GetCenterInWorldSpace() const
     {
         AZ::Vector2 worldCenter;
-        worldCenter.SetX(m_center.m_x * m_clipmapToWorldScale + 0.5f);
-        worldCenter.SetY(m_center.m_y * m_clipmapToWorldScale + 0.5f);
+        worldCenter.SetX(m_center.m_x * m_clipmapToWorldScale);
+        worldCenter.SetY(m_center.m_y * m_clipmapToWorldScale);
         return worldCenter;
     }
 

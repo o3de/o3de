@@ -39,11 +39,13 @@ set(FILES
     math.h
     optional.h
     ranges/all_view.h
+    ranges/common_view.h
     ranges/elements_view.h
     ranges/empty_view.h
     ranges/iter_move.h
     ranges/iter_swap.h
     ranges/join_view.h
+    ranges/join_with_view.h
     ranges/owning_view.h
     ranges/ranges.h
     ranges/ranges_adaptor.h
@@ -54,6 +56,7 @@ set(FILES
     ranges/subrange.h
     ranges/split_view.h
     ranges/swap.h
+    ranges/transform_view.h
     ranges/zip_view.h
     ranges/zip_view.inl
     ratio.h

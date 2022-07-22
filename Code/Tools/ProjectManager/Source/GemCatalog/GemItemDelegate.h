@@ -27,7 +27,7 @@ namespace O3DE::ProjectManager
         Q_OBJECT
 
     public:
-        explicit GemItemDelegate(QAbstractItemModel* model, AdjustableHeaderWidget* header, QObject* parent = nullptr);
+        explicit GemItemDelegate(QAbstractItemModel* model, AdjustableHeaderWidget* header, bool readOnly, QObject* parent = nullptr);
         ~GemItemDelegate() = default;
 
         void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& modelIndex) const override;
@@ -120,6 +120,7 @@ namespace O3DE::ProjectManager
         QPixmap m_downloadSuccessfulPixmap;
         QPixmap m_downloadFailedPixmap;
         QMovie* m_downloadingMovie = nullptr;
+        bool m_readOnly = false;
 
         AdjustableHeaderWidget* m_headerWidget = nullptr;
     };

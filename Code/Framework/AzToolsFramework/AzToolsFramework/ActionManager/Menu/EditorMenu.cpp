@@ -136,15 +136,20 @@ namespace AzToolsFramework
             {
             case MenuItemType::Action:
                 {
-                    if(QAction* action = m_actionManagerInterface->GetAction(elem.second.m_identifier))
+                    if (QAction* action = m_actionManagerInternalInterface->GetAction(elem.second.m_identifier))
                     {
+                        if (!action->isEnabled() && m_actionManagerInternalInterface->GetHideFromMenusWhenDisabled(elem.second.m_identifier))
+                        {
+                            continue;
+                        }
+
                         m_menu->addAction(action);
                     }
                     break;
                 }
             case MenuItemType::SubMenu:
                 {
-                    if(QMenu* menu = m_menuManagerInterface->GetMenu(elem.second.m_identifier))
+                    if (QMenu* menu = m_menuManagerInternalInterface->GetMenu(elem.second.m_identifier))
                     {
                         m_menu->addMenu(menu);
                     }
@@ -187,8 +192,14 @@ namespace AzToolsFramework
         m_actionManagerInterface = AZ::Interface<ActionManagerInterface>::Get();
         AZ_Assert(m_actionManagerInterface, "EditorMenu - Could not retrieve instance of ActionManagerInterface");
 
+        m_actionManagerInternalInterface = AZ::Interface<ActionManagerInternalInterface>::Get();
+        AZ_Assert(m_actionManagerInternalInterface, "EditorMenu - Could not retrieve instance of ActionManagerInternalInterface");
+
         m_menuManagerInterface = AZ::Interface<MenuManagerInterface>::Get();
         AZ_Assert(m_menuManagerInterface, "EditorMenu - Could not retrieve instance of MenuManagerInterface");
+
+        m_menuManagerInternalInterface = AZ::Interface<MenuManagerInternalInterface>::Get();
+        AZ_Assert(m_menuManagerInternalInterface, "EditorMenu - Could not retrieve instance of MenuManagerInternalInterface");
     }
 
 } // namespace AzToolsFramework

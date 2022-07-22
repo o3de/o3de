@@ -2,24 +2,21 @@
 
 <ScriptCanvas Include="Include/ScriptCanvas/Libraries/Time/HeartBeatNodeable.h" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <Class Name="HeartBeatNodeable"
-           QualifiedName="Nodeables::Time::HeartBeatNodeable"
-           PreferredClassName="HeartBeat"
-           Base="Nodeables::Time::BaseTimer"
-           Icon="Icons/ScriptCanvas/Placeholder.png"
-           Category="Timing"
-           GeneratePropertyFriend="True"
-           Namespace="ScriptCanvas"
-           Description="While active, will signal the output at the given interval.">
+        QualifiedName="Nodeables::Time::HeartBeatNodeable"
+        PreferredClassName="HeartBeat"
+        Base="Nodeables::Time::BaseTimer"
+        Category="Timing"
+        Namespace="ScriptCanvas"
+        Description="While active, will signal the output at the given interval.">
 
-      <Input Name="Start" Description="">
-        <Parameter Name="Interval" Type="Data::NumberType" DefaultValue="0.0" Description="The amount of time between pulses"/>
-      </Input>
+        <Input Name="Start" Description="">
+            <Parameter Name="Interval" Type="Data::NumberType" DefaultValue="0.0" Description="The amount of time between pulses"/>
+        </Input>
 
-      <Input Name="Stop"/>
+        <Input Name="Stop"/>
 
-      <Output Name="Pulse" Description="Signaled at each specified interval." />
+        <Output Name="Pulse" Description="Signaled at each specified interval." />
 
-      <PropertyInterface Property="m_timeUnitsInterface" Name="Units" Type="Input" Description="Units to represent the time in."/>
-
+        <PropertyInterface Property="m_timeUnitsInterface" Name="Units" Type="Input" Description="Units to represent the time in."/>
     </Class>
 </ScriptCanvas>

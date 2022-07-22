@@ -132,6 +132,11 @@ namespace AZ
                 m_cameraViewName = viewName;
                 m_childrenPipelineViewTags.clear();
                 GetPipelineViewTags();
+                for (size_t i = 0; i < m_children.size(); ++i)
+                {
+                    ShadowmapPass* shadowPass = azrtti_cast<ShadowmapPass*>(m_children[i].get());
+                    shadowPass->UpdatePipelineViewTag(GetPipelineViewTags()[i]);
+                }
             }
         }
 

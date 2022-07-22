@@ -88,6 +88,7 @@ namespace AzToolsFramework
 
     protected:
         DocumentPropertyEditor* GetDPE() const;
+        void AddDomChildWidget(int domIndex, QWidget* childWidget);
 
         DPERowWidget* m_parentRow = nullptr;
         int m_depth = 0; //!< number of levels deep in the tree. Used for indentation

@@ -108,4 +108,25 @@ namespace AzToolsFramework
         virtual ToolBarManagerIntegerResult GetSortKeyOfActionInToolBar(const AZStd::string& toolBarIdentifier, const AZStd::string& actionIdentifier) const = 0;
     };
 
+    //! ToolBarManagerInternalInterface
+    //! Internal Interface to query implementation details for toolBars.
+    class ToolBarManagerInternalInterface
+    {
+    public:
+        AZ_RTTI(ToolBarManagerInternalInterface, "{55B9CA70-5277-4B8A-8F76-8C1F2A75D558}");
+
+        //! Queues up a toolBar for a refresh at the end of this tick.
+        //! @param toolBarIdentifier The identifier for the toolBar to refresh.
+        //! @return A successful outcome object, or a string with a message detailing the error in case of failure.
+        virtual ToolBarManagerOperationResult QueueToolBarRefresh(const AZStd::string& toolBarIdentifier) = 0;
+
+        //! Queues up all toolbars containing the action provided for a refresh at the end of this tick.
+        //! @param actionIdentifier The identifier for the action triggering the refresh for toolbars containing it.
+        //! @return A successful outcome object, or a string with a message detailing the error in case of failure.
+        virtual ToolBarManagerOperationResult QueueRefreshForToolBarsContainingAction(const AZStd::string& actionIdentifier) = 0;
+
+        //! Refreshes all toolBar that were queued up by QueueMenuRefresh.
+        virtual void RefreshToolBars() = 0;
+    };
+
 } // namespace AzToolsFramework

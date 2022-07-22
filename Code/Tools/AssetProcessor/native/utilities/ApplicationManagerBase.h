@@ -56,7 +56,7 @@ class ApplicationManagerBase
     , public AssetProcessor::AssetBuilderRegistrationBus::Handler
     , public AZ::Debug::TraceMessageBus::Handler
     , protected AzToolsFramework::AssetDatabase::AssetDatabaseRequests::Bus::Handler
-    , public AssetProcessor::DiskSpaceInfoBus::Handler
+    , public AZ::Interface<AssetProcessor::IDiskSpaceInfo>::Registrar
     , protected AzToolsFramework::SourceControlNotificationBus::Handler
     , public AssetProcessor::MessageInfoBus::Handler
 {
@@ -104,8 +104,8 @@ public:
     //! TraceMessageBus Interface
     bool OnError(const char* window, const char* message) override;
 
-    //! DiskSpaceInfoBus::Handler
-    bool CheckSufficientDiskSpace(const QString& savePath, qint64 requiredSpace, bool shutdownIfInsufficient) override;
+    //! IDiskSpaceInfo Interface
+    bool CheckSufficientDiskSpace(qint64 requiredSpace, bool shutdownIfInsufficient) override;
 
     //! AzFramework::SourceControlNotificationBus::Handler
     void ConnectivityStateChanged(const AzToolsFramework::SourceControlState newState) override;

@@ -58,7 +58,6 @@ ApplicationManagerBase::ApplicationManagerBase(int* argc, char*** argv, QObject*
 ApplicationManagerBase::~ApplicationManagerBase()
 {
     AzToolsFramework::SourceControlNotificationBus::Handler::BusDisconnect();
-    AssetProcessor::DiskSpaceInfoBus::Handler::BusDisconnect();
     AZ::Debug::TraceMessageBus::Handler::BusDisconnect();
     AssetProcessor::AssetBuilderRegistrationBus::Handler::BusDisconnect();
     AssetBuilderSDK::AssetBuilderBus::Handler::BusDisconnect();
@@ -886,7 +885,6 @@ ApplicationManager::BeforeRunStatus ApplicationManagerBase::BeforeRun()
     AssetProcessor::AssetBuilderRegistrationBus::Handler::BusConnect();
     AssetProcessor::AssetBuilderInfoBus::Handler::BusConnect();
     AZ::Debug::TraceMessageBus::Handler::BusConnect();
-    AssetProcessor::DiskSpaceInfoBus::Handler::BusConnect();
     AzToolsFramework::SourceControlNotificationBus::Handler::BusConnect();
 
     return ApplicationManager::BeforeRunStatus::Status_Success;
@@ -1324,9 +1322,7 @@ void ApplicationManagerBase::ShutDownFileProcessor()
 void ApplicationManagerBase::InitAssetServerHandler()
 {
     m_assetServerHandler = new AssetProcessor::AssetServerHandler();
-    // This will cache whether AP is running in server mode or not.
-    // It is also important to invoke it here because incase the asset server address is invalid, the error message should get captured in the AP log.
-    AssetUtilities::InServerMode();
+    m_assetServerHandler->HandleRemoteConfiguration();
 }
 
 void ApplicationManagerBase::DestroyAssetServerHandler()
@@ -1405,7 +1401,7 @@ bool ApplicationManagerBase::Activate()
         "AssetProcessor will process assets from project root %s.\n", AssetUtilities::ComputeProjectPath().toUtf8().data());
 
     // Shutdown if the disk has less than 128MB of free space
-    if (!CheckSufficientDiskSpace(projectCache.absolutePath(), 128 * 1024 * 1024, true))
+    if (!CheckSufficientDiskSpace(128 * 1024 * 1024, true))
     {
         // CheckSufficientDiskSpace reports an error if disk space is low.
         return false;
@@ -1523,7 +1519,7 @@ bool ApplicationManagerBase::Activate()
         []()
         {
             AssetProcessor::BuilderRef builder;
-            AssetProcessor::BuilderManagerBus::BroadcastResult(builder, &AssetProcessor::BuilderManagerBus::Events::GetBuilder, true);
+            AssetProcessor::BuilderManagerBus::BroadcastResult(builder, &AssetProcessor::BuilderManagerBus::Events::GetBuilder, AssetProcessor::BuilderPurpose::Registration);
 
             if (!builder)
             {
@@ -1578,7 +1574,7 @@ bool ApplicationManagerBase::InitializeInternalBuilders()
     return result;
 }
 
-static void HandleConditionalRetry(const AssetProcessor::BuilderRunJobOutcome& result, int retryCount, AssetProcessor::BuilderRef& builderRef)
+static void HandleConditionalRetry(const AssetProcessor::BuilderRunJobOutcome& result, int retryCount, AssetProcessor::BuilderRef& builderRef, AssetProcessor::BuilderPurpose purpose)
 {
     // If a lost connection occured or the process was terminated before a response can be read, and there is another retry to get the
     // response from a Builder, then handle the logic to log and sleep before attempting the retry of the job
@@ -1593,13 +1589,26 @@ static void HandleConditionalRetry(const AssetProcessor::BuilderRunJobOutcome& r
             // If the connection was lost and the process handle is no longer valid, then we need to request a new builder to reprocess the job
             AZStd::string oldBuilderId = builderRef->GetUuid().ToString<AZStd::string>();
             builderRef.release();
-            AssetProcessor::BuilderManagerBus::BroadcastResult(builderRef, &AssetProcessor::BuilderManagerBusTraits::GetBuilder, false);
 
-            AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Lost connection to builder %s. Retrying with a new builder %s (Attempt %d with %d second delay)",
-                            oldBuilderId.c_str(),
-                            builderRef->GetUuid().ToString<AZStd::string>().c_str(),
-                            retryCount+1,
-                            delay);
+            AssetProcessor::BuilderManagerBus::BroadcastResult(builderRef, &AssetProcessor::BuilderManagerBusTraits::GetBuilder, purpose);
+            
+            if (builderRef)
+            {
+                AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Lost connection to builder %s. Retrying with a new builder %s (Attempt %d with %d second delay)",
+                                oldBuilderId.c_str(),
+                                builderRef->GetUuid().ToString<AZStd::string>().c_str(),
+                                retryCount+1,
+                                delay);
+            }
+            else
+            {
+                AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Lost connection to builder %s and no further builders are available. Job will not retry.\n",
+                               oldBuilderId.c_str());
+                // if we failed to get a builder ref, it means we're probably
+                // shutting down, in which case we do not want to do an exponential
+                // backoff delay and need to return immediately.
+                return;
+            }
         }
         else
         {
@@ -1642,15 +1651,20 @@ void ApplicationManagerBase::RegisterBuilderInformation(const AssetBuilderSDK::A
         // We're going to override the createJob function so we can run it externally in AssetBuilder, rather than having it run
         // inside the AP
         modifiedBuilderDesc.m_createJobFunction =
-            [](const AssetBuilderSDK::CreateJobsRequest& request, AssetBuilderSDK::CreateJobsResponse& response)
+            [this](const AssetBuilderSDK::CreateJobsRequest& request, AssetBuilderSDK::CreateJobsResponse& response)
         {
             AssetProcessor::BuilderRef builderRef;
-            AssetProcessor::BuilderManagerBus::BroadcastResult(builderRef, &AssetProcessor::BuilderManagerBusTraits::GetBuilder, false);
+            AssetProcessor::BuilderManagerBus::BroadcastResult(builderRef, &AssetProcessor::BuilderManagerBusTraits::GetBuilder, AssetProcessor::BuilderPurpose::CreateJobs);
 
             if (builderRef)
             {
                 int retryCount = 0;
                 AssetProcessor::BuilderRunJobOutcome result;
+
+                if (this->InitiatedShutdown())
+                {
+                    return; // exit early if you're shutting down!
+                }
 
                 do
                 {
@@ -1658,7 +1672,7 @@ void ApplicationManagerBase::RegisterBuilderInformation(const AssetBuilderSDK::A
                     result = builderRef->RunJob<AssetBuilder::CreateJobsNetRequest, AssetBuilder::CreateJobsNetResponse>(
                         request, response, s_MaximumCreateJobsTimeSeconds, "create", "", nullptr);
 
-                    HandleConditionalRetry(result, retryCount, builderRef);
+                    HandleConditionalRetry(result, retryCount, builderRef, AssetProcessor::BuilderPurpose::CreateJobs);
 
                 } while ((result == AssetProcessor::BuilderRunJobOutcome::LostConnection ||
                           result == AssetProcessor::BuilderRunJobOutcome::ProcessTerminated) &&
@@ -1673,12 +1687,12 @@ void ApplicationManagerBase::RegisterBuilderInformation(const AssetBuilderSDK::A
         const bool debugOutput = m_assetProcessorManager->GetBuilderDebugFlag();
         // Also override the processJob function to run externally
         modifiedBuilderDesc.m_processJobFunction =
-            [debugOutput](const AssetBuilderSDK::ProcessJobRequest& request, AssetBuilderSDK::ProcessJobResponse& response)
+            [this, debugOutput](const AssetBuilderSDK::ProcessJobRequest& request, AssetBuilderSDK::ProcessJobResponse& response)
         {
             AssetBuilderSDK::JobCancelListener jobCancelListener(request.m_jobId);
 
             AssetProcessor::BuilderRef builderRef;
-            AssetProcessor::BuilderManagerBus::BroadcastResult(builderRef, &AssetProcessor::BuilderManagerBusTraits::GetBuilder, false);
+            AssetProcessor::BuilderManagerBus::BroadcastResult(builderRef, &AssetProcessor::BuilderManagerBusTraits::GetBuilder, AssetProcessor::BuilderPurpose::ProcessJob);
 
             if (builderRef)
             {
@@ -1694,11 +1708,23 @@ void ApplicationManagerBase::RegisterBuilderInformation(const AssetBuilderSDK::A
 
                 do
                 {
+                    if (jobCancelListener.IsCancelled())
+                    {
+                        // do not attempt to continue to retry or spawn
+                        // new builders during shut down.
+                        break;
+                    }
+
+                    if (this->InitiatedShutdown())
+                    {
+                        return; // exit early if you're shutting down!
+                    }
+                    
                     retryCount++;
                     result = builderRef->RunJob<AssetBuilder::ProcessJobNetRequest, AssetBuilder::ProcessJobNetResponse>(
                         request, response, s_MaximumProcessJobsTimeSeconds, "process", "", &jobCancelListener, request.m_tempDirPath);
 
-                    HandleConditionalRetry(result, retryCount, builderRef);
+                    HandleConditionalRetry(result, retryCount, builderRef, AssetProcessor::BuilderPurpose::ProcessJob);
 
                 } while ((result == AssetProcessor::BuilderRunJobOutcome::LostConnection ||
                           result == AssetProcessor::BuilderRunJobOutcome::ProcessTerminated) &&
@@ -1854,38 +1880,29 @@ bool ApplicationManagerBase::OnError(const char* /*window*/, const char* /*messa
     return true;
 }
 
-bool ApplicationManagerBase::CheckSufficientDiskSpace(const QString& savePath, qint64 requiredSpace, bool shutdownIfInsufficient)
+bool ApplicationManagerBase::CheckSufficientDiskSpace(qint64 requiredSpace, bool shutdownIfInsufficient)
 {
-    bool createdDirectory = false;
+    QDir cacheDir;
+    if (!AssetUtilities::ComputeProjectCacheRoot(cacheDir))
+    {
+        AZ_Error(
+            "AssetProcessor",
+            false,
+            "Could not compute project cache root, please configure your project correctly to launch Asset Processor.");
+        return false;
+    }
+
+    QString savePath = cacheDir.absolutePath();
 
     if (!QDir(savePath).exists())
     {
         // GetFreeDiskSpace will fail if the path does not exist
         QDir dir;
-        createdDirectory = dir.mkpath(savePath);
+        dir.mkpath(savePath);
     }
 
     qint64 bytesFree = 0;
     [[maybe_unused]] bool result = AzToolsFramework::ToolsFileUtils::GetFreeDiskSpace(savePath, bytesFree);
-
-    if (createdDirectory)
-    {
-        // Clean up the folder so we're not leaving empty folders all over the place
-        // We need to walk up the path and try to delete each folder along the way since savePath might have created a series of folders
-        // Just deleting savePath would only delete the last folder created
-        AZ::IO::Path path(savePath.toUtf8().constData());
-        while(AZ::IO::SystemFile::DeleteDir(path.c_str())) // DeleteDir should fail if the directory is not empty
-        {
-            if (path.HasParentPath())
-            {
-                path = path.ParentPath();
-            }
-            else
-            {
-                break;
-            }
-        }
-    }
 
     AZ_Assert(result, "Unable to determine the amount of free space on drive containing path (%s).", savePath.toUtf8().constData());
 

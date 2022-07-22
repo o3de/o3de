@@ -31,7 +31,8 @@ namespace AZ
 {
     namespace Render
     {
-        //////////////////// CameraConfiguration
+        // --- Camera Configuration ---
+
         CascadeShadowCameraConfiguration::CascadeShadowCameraConfiguration()
         {
             SetDepthCenterRatio();
@@ -130,7 +131,8 @@ namespace AZ
                 (1 + tanFovYHalf * tanFovYHalf * (1 + m_aspectRatio * m_aspectRatio));
         }
 
-        //////////////////// DirectionalLightFeatureProcessor
+        // --- Feature Processor ---
+
         void DirectionalLightFeatureProcessor::Reflect(ReflectContext* context)
         {
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
@@ -327,6 +329,8 @@ namespace AZ
             }
         }
 
+        // --- Directional Light ---
+
         DirectionalLightFeatureProcessorInterface::LightHandle DirectionalLightFeatureProcessor::AcquireLight()
         {
             const uint16_t index = m_lightData.GetFreeSlotIndex();
@@ -427,6 +431,8 @@ namespace AZ
             m_lightBufferNeedsUpdate = true;
         }
 
+        // --- Cascade Shadows ---
+
         void DirectionalLightFeatureProcessor::SetShadowmapSize(LightHandle handle, ShadowmapSize size)
         {
             for (auto& it : m_shadowData)
@@ -508,7 +514,7 @@ namespace AZ
 
         void DirectionalLightFeatureProcessor::SetShadowFarClipDistance(LightHandle handle, float farDist)
         {
-            ShadowProperty& property = m_shadowProperties.GetData(handle.GetIndex());
+            ShadowProperty& property = GetShadowProperty(handle);
             property.m_shadowDepthFar = farDist;
             for (auto& it : property.m_cameraConfigurations)
             {
@@ -1002,8 +1008,7 @@ namespace AZ
             return property.m_cameraConfigurations.at(nullptr);
         }
 
-        void DirectionalLightFeatureProcessor::UpdateFrustums(
-            LightHandle handle)
+        void DirectionalLightFeatureProcessor::UpdateFrustums(LightHandle handle)
         {
             ShadowProperty& property = m_shadowProperties.GetData(handle.GetIndex());
             for (const auto& segmentIt : property.m_segments)
@@ -1150,13 +1155,6 @@ namespace AZ
                         for (CascadedShadowmapsPass* pass : it.second)
                         {
                             pass->SetShadowmapSize(shadowmapSize, numCascades);
-                        }
-                    }
-                    for (const auto& it : m_esmShadowmapsPasses)
-                    {
-                        for (EsmShadowmapsPass* pass : it.second)
-                        {
-                            pass->QueueForBuildAndInitialization();
                         }
                     }
                 }
@@ -1742,14 +1740,5 @@ namespace AZ
             }
         }
 
-        const Data::Instance<RPI::Buffer> DirectionalLightFeatureProcessor::GetLightBuffer() const
-        {
-            return m_lightBufferHandler.GetBuffer();
-        }
-
-        uint32_t DirectionalLightFeatureProcessor::GetLightCount() const
-        {
-            return m_lightBufferHandler.GetElementCount();
-        }
     } // namespace Render
 } // namespace AZ

@@ -719,4 +719,119 @@ namespace UnitTests
         EXPECT_EQ(m_assetProcessorManager->RequestReprocess(m_testFilePath.c_str()), 3);
         EXPECT_EQ(m_assetProcessorManager->RequestReprocess(MakePath("test.stage2", true).c_str()), 3);
     }
+
+    TEST_F(IntermediateAssetTests, PriorProductsAreCleanedUp)
+    {
+        using namespace AssetBuilderSDK;
+        int counter = 0;
+
+        CreateBuilder("stage1", "*.stage1", "stage2", true, ProductOutputFlags::IntermediateAsset);
+        // Custom builder with random output
+        m_builderInfoHandler.CreateBuilderDesc(
+            "stage2",
+            AZ::Uuid::CreateRandom().ToFixedString().c_str(),
+            { AssetBuilderPattern{ "*.stage2", AssetBuilderPattern::Wildcard } },
+            CreateJobStage("stage2", true),
+            [&counter](const ProcessJobRequest& request, ProcessJobResponse& response)
+            {
+                ++counter;
+
+                AZ::IO::Path outputFile = request.m_sourceFile;
+                outputFile.ReplaceExtension(AZStd::string::format("stage3_%d", counter).c_str());
+
+                AZ::IO::LocalFileIO::GetInstance()->Copy(
+                    request.m_fullPath.c_str(), (AZ::IO::Path(request.m_tempDirPath) / outputFile).c_str());
+
+                auto product = JobProduct{ outputFile.c_str(), AZ::Data::AssetType::CreateName("stage2"), 1 };
+
+                product.m_outputFlags = ProductOutputFlags::IntermediateAsset;
+                product.m_dependenciesHandled = true;
+                response.m_outputProducts.push_back(product);
+
+                response.m_resultCode = ProcessJobResult_Success;
+            },
+            "fingerprint");
+        CreateBuilder("stage3", "*.stage3_*", "stage4", false, ProductOutputFlags::ProductAsset);
+
+        QMetaObject::invokeMethod(
+            m_assetProcessorManager.get(), "AssessAddedFile", Qt::QueuedConnection, Q_ARG(QString, m_testFilePath.c_str()));
+        QCoreApplication::processEvents();
+
+        // Process test.stage1, which should queue up test.stage2
+        // We're going to do this manually instead of using the helper because this test uses a different file naming convention
+        ProcessSingleStep();
+        CheckIntermediate("test.stage2");
+        ProcessSingleStep();
+        CheckIntermediate("test.stage3_1");
+        ProcessSingleStep();
+        CheckProduct("test.stage4");
+
+        // Modify the source file
+        UnitTestUtils::CreateDummyFile(m_testFilePath.c_str(), "modified unit test file");
+
+        // Run again, this time expecting the stage3_2 to be output instead of stage3_1
+        QMetaObject::invokeMethod(
+            m_assetProcessorManager.get(), "AssessAddedFile", Qt::QueuedConnection, Q_ARG(QString, m_testFilePath.c_str()));
+        QCoreApplication::processEvents();
+
+        ProcessSingleStep();
+        CheckIntermediate("test.stage2");
+        ProcessSingleStep();
+        CheckIntermediate("test.stage3_1", false); // Prior intermediate is deleted
+        CheckIntermediate("test.stage3_2", true); // New intermediate created
+        ProcessSingleStep();
+        CheckProduct("test.stage4"); // Same product result at the end
+    }
+
+    TEST_F(IntermediateAssetTests, UpdateSource_OutputDoesntChange_IntermediateDoesNotReprocess)
+    {
+        using namespace AssetBuilderSDK;
+
+        // Custom builder with fixed product output
+        m_builderInfoHandler.CreateBuilderDesc(
+            "stage1",
+            AZ::Uuid::CreateRandom().ToFixedString().c_str(),
+            { AssetBuilderPattern{ "*.stage1", AssetBuilderPattern::Wildcard } },
+            CreateJobStage("stage1", true),
+            [](const ProcessJobRequest& request, ProcessJobResponse& response)
+            {
+                AZ::IO::Path outputFile = request.m_sourceFile;
+                outputFile.ReplaceExtension("stage2");
+
+                auto* fileIo = AZ::IO::LocalFileIO::GetInstance();
+                AZ::IO::HandleType fileHandle;
+                AZStd::string data = "hello world"; // We'll output the same product every time no matter what the input source is
+
+                fileIo->Open((AZ::IO::Path(request.m_tempDirPath) / outputFile).c_str(), AZ::IO::OpenMode::ModeWrite, fileHandle);
+                fileIo->Write(fileHandle, data.data(), data.size());
+                fileIo->Close(fileHandle);
+
+                auto product = JobProduct{ outputFile.c_str(), AZ::Data::AssetType::CreateName("stage2"), 1 };
+
+                product.m_outputFlags = ProductOutputFlags::IntermediateAsset;
+                product.m_dependenciesHandled = true;
+                response.m_outputProducts.push_back(product);
+
+                response.m_resultCode = ProcessJobResult_Success;
+            }, "fingerprint");
+
+        CreateBuilder("stage2", "*.stage2", "stage3", true, ProductOutputFlags::IntermediateAsset);
+        CreateBuilder("stage3", "*.stage3", "stage4", false, ProductOutputFlags::ProductAsset);
+
+        // Process once
+        ProcessFileMultiStage(3, true);
+
+        // Modify the source file
+        UnitTestUtils::CreateDummyFile(m_testFilePath.c_str(), "modified unit test file");
+
+        // Start processing the test.stage1 file again
+        QMetaObject::invokeMethod(
+            m_assetProcessorManager.get(), "AssessAddedFile", Qt::QueuedConnection, Q_ARG(QString, m_testFilePath.c_str()));
+        QCoreApplication::processEvents();
+
+        // Process test.stage1, which should queue up test.stage2
+        ProcessSingleStep();
+        // Start processing test.stage2, this shouldn't create a job since the input is the same
+        RunFile(0, 1, 0);
+    }
 } // namespace UnitTests

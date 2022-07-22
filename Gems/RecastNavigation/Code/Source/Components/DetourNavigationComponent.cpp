@@ -40,6 +40,8 @@ namespace RecastNavigation
                 ->Attribute(AZ::Script::Attributes::Category, "Recast Navigation")
                 ->Event("FindPathBetweenEntities", &DetourNavigationRequests::FindPathBetweenEntities)
                 ->Event("FindPathBetweenPositions", &DetourNavigationRequests::FindPathBetweenPositions)
+                ->Event("SetNavigationMeshEntity", &DetourNavigationRequests::SetNavigationMeshEntity)
+                ->Event("GetNavigationMeshEntity", &DetourNavigationRequests::GetNavigationMeshEntity)
                 ;
 
             behaviorContext->Class<DetourNavigationComponent>()->RequestBus("DetourNavigationRequestBus");
@@ -138,6 +140,16 @@ namespace RecastNavigation
         }
 
         return pathPoints;
+    }
+
+    void DetourNavigationComponent::SetNavigationMeshEntity(AZ::EntityId navMeshEntity)
+    {
+        m_navQueryEntityId = navMeshEntity;
+    }
+
+    AZ::EntityId DetourNavigationComponent::GetNavigationMeshEntity() const
+    {
+        return m_navQueryEntityId;
     }
 
     void DetourNavigationComponent::Activate()

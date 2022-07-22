@@ -20,20 +20,10 @@
 
 namespace UnitTests
 {
-    class MockDiskSpaceResponder : public AssetProcessor::DiskSpaceInfoBus::Handler
+    class MockDiskSpaceResponder : public AZ::Interface<AssetProcessor::IDiskSpaceInfo>::Registrar
     {
     public:
-        MOCK_METHOD3(CheckSufficientDiskSpace, bool(const QString&, qint64, bool));
-
-        MockDiskSpaceResponder()
-        {
-            BusConnect();
-        }
-
-        ~MockDiskSpaceResponder()
-        {
-            BusDisconnect();
-        }
+        MOCK_METHOD2(CheckSufficientDiskSpace, bool(qint64, bool));
     };
 
     class TestingDatabaseLocationListener : public AzToolsFramework::AssetDatabase::AssetDatabaseRequests::Bus::Handler
@@ -89,7 +79,7 @@ namespace UnitTests
         void CheckJobEntries(int count);
     };
 
-    class AssetManagerTestingBase : public UnitTest::ScopedAllocatorSetupFixture
+    class AssetManagerTestingBase : public ::UnitTest::ScopedAllocatorSetupFixture
     {
     public:
         void SetUp() override;

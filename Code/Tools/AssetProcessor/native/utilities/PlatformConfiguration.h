@@ -35,6 +35,7 @@ namespace AZ
 namespace AssetProcessor
 {
     inline constexpr const char* AssetProcessorSettingsKey{ "/Amazon/AssetProcessor/Settings" };
+    inline constexpr const char* AssetProcessorServerKey{ "/O3DE/AssetProcessor/Settings/Server" };
     class PlatformConfiguration;
     class ScanFolderInfo;
     extern const char AssetConfigPlatformDir[];
@@ -68,11 +69,22 @@ namespace AssetProcessor
     //! essentially a plain data holder, but with helper funcs
     struct AssetRecognizer
     {
+        AZ_CLASS_ALLOCATOR(AssetRecognizer, AZ::SystemAllocator, 0);
+        AZ_TYPE_INFO(AssetRecognizer, "{29B7A73A-4D7F-4C19-AEAC-6D6750FB1156}");
+
         AssetRecognizer() = default;
 
-        AssetRecognizer(const QString& name, bool testLockSource, int priority,
-            bool critical, bool supportsCreateJobs, AssetBuilderSDK::FilePatternMatcher patternMatcher,
-            const QString& version, const AZ::Data::AssetType& productAssetType, bool outputProductDependencies, bool checkServer = false)
+        AssetRecognizer(
+            const AZStd::string& name,
+            bool testLockSource,
+            int priority,
+            bool critical,
+            bool supportsCreateJobs,
+            AssetBuilderSDK::FilePatternMatcher patternMatcher, 
+            const AZStd::string& version,
+            const AZ::Data::AssetType& productAssetType,
+            bool outputProductDependencies,
+            bool checkServer = false)
             : m_name(name)
             , m_testLockSource(testLockSource)
             , m_priority(priority)
@@ -85,13 +97,13 @@ namespace AssetProcessor
             , m_checkServer(checkServer)
         {}
 
-        QString m_name;
+        AZStd::string m_name;
         AssetBuilderSDK::FilePatternMatcher  m_patternMatcher;
-        QString m_version = QString();
+        AZStd::string m_version = {};
 
         // the QString is the Platform Identifier ("pc")
         // the AssetInternalSpec specifies the type of internal job to process
-        QHash<QString, AssetInternalSpec> m_platformSpecs;
+        AZStd::unordered_map<AZStd::string, AssetInternalSpec> m_platformSpecs;
 
         // an optional parameter which is a UUID of types to assign to the output asset(s)
         // if you don't specify one, then a heuristic will be used
@@ -105,7 +117,7 @@ namespace AssetProcessor
         bool m_outputProductDependencies = false;
     };
     //! Dictionary of Asset Recognizers based on name
-    typedef QHash<QString, AssetRecognizer> RecognizerContainer;
+    typedef AZStd::unordered_map<AZStd::string, AssetRecognizer> RecognizerContainer;
     typedef QList<const AssetRecognizer*> RecognizerPointerContainer;
 
     //! The structure holds information about a particular exclude recognizer
@@ -119,9 +131,12 @@ namespace AssetProcessor
     //! Interface to get constant references to asset and exclude recognizers
     struct RecognizerConfiguration
     {
+        AZ_RTTI(RecognizerConfiguration, "{2E4DD73E-8D1E-42BC-A3E3-1A671D636DAC}");
+
         virtual const RecognizerContainer& GetAssetRecognizerContainer() const = 0;
         virtual const RecognizerContainer& GetAssetCacheRecognizerContainer() const = 0;
         virtual const ExcludeRecognizerContainer& GetExcludeAssetRecognizerContainer() const = 0;
+        virtual bool AddAssetCacheRecognizerContainer(const RecognizerContainer& recognizerContainer) = 0;
     };
 
     //! Visitor for reading the "/Amazon/AssetProcessor/Settings/ScanFolder *" entries from the Settings Registry
@@ -230,6 +245,8 @@ namespace AssetProcessor
     public:
         explicit PlatformConfiguration(QObject* pParent = nullptr);
         virtual ~PlatformConfiguration() = default;
+
+        static void Reflect(AZ::ReflectContext* context);
 
         /** Use this function to parse the set of config files and the gem file to set up the platform config.
         * This should be about the only function that is required to be called in order to end up with
@@ -357,6 +374,11 @@ namespace AssetProcessor
         const RecognizerContainer& GetAssetCacheRecognizerContainer() const override;
 
         const ExcludeRecognizerContainer& GetExcludeAssetRecognizerContainer() const override;
+
+        bool AddAssetCacheRecognizerContainer(const RecognizerContainer& recognizerContainer) override;
+
+        static bool ConvertToJson(const RecognizerContainer& recognizerContainer, AZStd::string& jsonText);
+        static bool ConvertFromJson(const AZStd::string& jsonText, RecognizerContainer& recognizerContainer);
 
         /** returns true if the config is valid.
         * configs are considered invalid if critical information is missing.

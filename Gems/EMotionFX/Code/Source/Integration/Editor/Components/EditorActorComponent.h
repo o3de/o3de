@@ -95,11 +95,6 @@ namespace EMotionFX
                 ActorComponent::GetIncompatibleServices(incompatible);
             }
 
-            static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
-            {
-                ActorComponent::GetDependentServices(dependent);
-            }
-
             static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
             {
                 ActorComponent::GetRequiredServices(required);

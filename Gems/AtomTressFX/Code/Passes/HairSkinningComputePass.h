@@ -74,6 +74,7 @@ namespace AZ
             protected:
                 HairSkinningComputePass(const RPI::PassDescriptor& descriptor);
 
+                void SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph) override;
                 void BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context) override;
 
                 // Attach here all the pass buffers

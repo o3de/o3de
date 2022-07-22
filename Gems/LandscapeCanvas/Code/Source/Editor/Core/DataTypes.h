@@ -19,15 +19,13 @@ namespace LandscapeCanvas
 {
     enum LandscapeCanvasDataTypeEnum
     {
-        InvalidEntity = 0,  // Need a special case data type for the AZ::EntityId::InvalidEntityId to handle the default value since we are re-using the AZ::EntityId type in several node data types
-        Bounds,
+        Bounds = 0,
         Gradient,
         Area,
         String,
         Count
     };
 
-    static const AZ::Uuid InvalidEntityTypeId = "{4CD676F4-2C6E-43A4-8477-623640477D32}";
     static const AZ::Uuid BoundsTypeId = "{746398F1-0325-4A56-A544-FEF561C24E7C}";
     static const AZ::Uuid GradientTypeId = "{F38CF64A-1EB6-41FA-A2CC-73D19B48E59E}";
     static const AZ::Uuid AreaTypeId = "{FE1878D9-D445-4652-894B-D6348706EEAE}";

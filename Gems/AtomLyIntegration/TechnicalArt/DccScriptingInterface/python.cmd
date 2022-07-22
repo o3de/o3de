@@ -1,5 +1,5 @@
 @ECHO OFF
-REM 
+REM
 REM Copyright (c) Contributors to the Open 3D Engine Project.
 REM For complete copyright and license terms please see the LICENSE at the root of this distribution.
 REM
@@ -58,7 +58,6 @@ exit /B 1
 
 SET PYTHON=%O3DE_PYTHONHOME%\python.exe
 echo     PYTHON = %PYTHON%
-echo.
 
 SET PYTHON_ARGS=%*
 
@@ -76,6 +75,9 @@ exit /B 1
 
 :: Change to root dir
 CD /D %PATH_DCCSIG%
+
+echo _____________________________________________________________________
+echo.
 
 SET PYTHONNOUSERSITE=1
 "%PYTHON%" %PYTHON_ARGS%

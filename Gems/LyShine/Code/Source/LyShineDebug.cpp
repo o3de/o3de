@@ -845,8 +845,6 @@ static void DebugDraw2dImageUVs()
 
     AZ::Data::Instance<AZ::RPI::Image> texture = GetColorTestTexture();
 
-    IDraw2d::ImageOptions imageOptions = draw2d->GetDefaultImageOptions();
-
     draw2d->DrawText(
         "Testing DrawImage with minMaxTexCoords. Full image, top left quadrant, middle section, full flipped",
         AZ::Vector2(20, 20), 16);
@@ -932,8 +930,6 @@ static void DebugDraw2dImagePixelRounding()
 static void DebugDraw2dLineBasic()
 {
     IDraw2d* draw2d = Draw2dHelper::GetDefaultDraw2d();
-
-    IDraw2d::ImageOptions imageOptions = draw2d->GetDefaultImageOptions();
 
     draw2d->DrawText("Testing DrawLine", AZ::Vector2(20, 20), 16);
 
