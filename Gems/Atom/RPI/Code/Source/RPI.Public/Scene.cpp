@@ -44,10 +44,6 @@ namespace AZ
             {
                 auto shaderAsset = RPISystemInterface::Get()->GetCommonShaderAssetForSrgs();
                 scene->m_srg = ShaderResourceGroup::Create(shaderAsset, sceneSrgLayout->GetName());
-                
-                // Set value for constants defined in SceneTimeSrg.azsli
-                scene->m_timeInputIndex = scene->m_srg->FindShaderInputConstantIndex(Name{ "m_time" });
-                scene->m_prevTimeInputIndex= scene->m_srg->FindShaderInputConstantIndex(Name{ "m_prevTime" });
             }
 
             scene->m_name = sceneDescriptor.m_nameId;
@@ -516,15 +512,8 @@ namespace AZ
         {
             if (m_srg)
             {
-                if (m_timeInputIndex.IsValid())
-                {
-                    m_srg->SetConstant(m_timeInputIndex, m_simulationTime);
-                }
-
-                if (m_prevTimeInputIndex.IsValid()) 
-                {
-                    m_srg->SetConstant(m_prevTimeInputIndex, m_prevSimulationTime);
-                }
+                m_srg->SetConstant(m_timeInputIndex, m_simulationTime);
+                m_srg->SetConstant(m_prevTimeInputIndex, m_prevSimulationTime);
 
                 // signal any handlers to update values for their partial scene srg
                 m_prepareSrgEvent.Signal(m_srg.get());
