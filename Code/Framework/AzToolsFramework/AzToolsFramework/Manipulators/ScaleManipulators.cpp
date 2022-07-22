@@ -158,7 +158,7 @@ namespace AzToolsFramework
         m_lineBoundWidth = lineBoundWidth;
     }
 
-    AZStd::vector<BaseManipulator*> ScaleManipulators::getManipulators()
+    AZStd::vector<BaseManipulator*> ScaleManipulators::GetManipulators()
     {
         AZStd::vector<BaseManipulator*> manipulators;
         for (auto& mainpulator : m_axisScaleManipulators)
