@@ -1321,10 +1321,10 @@ namespace AZ
 
         }
 
-        // All dynamic modules have been gathered at this point, and each dynamic module will be up until follow two phases:
-        // 1. Load - the first call is to load ensure all dynamic modules are loaded
-        // 1. CreateClass - the second call is to created specific AZ::Module class instances for each dynamic module after its loaded
-        // 2. RegisterComponentDescriptors - the third call is to perform a horizontal register step for each module component descriptos after
+        // All dynamic modules have been gathered at this point, and each dynamic module will be up until follow three phases:
+        // 1. Load - the first call is to ensure all dynamic modules are loaded
+        // 2. CreateClass - the second call is to create specific AZ::Module class instances for each dynamic module after its loaded
+        // 3. RegisterComponentDescriptors - the third call is to perform a horizontal register step for each module component descriptos after
         //    module has been loaded and created
         for (ModuleInitializationSteps lastStepToPerform : { ModuleInitializationSteps::Load,
             ModuleInitializationSteps::CreateClass, ModuleInitializationSteps::RegisterComponentDescriptors })
