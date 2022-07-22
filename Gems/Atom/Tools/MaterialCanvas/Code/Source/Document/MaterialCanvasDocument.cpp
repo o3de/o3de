@@ -583,12 +583,12 @@ namespace MaterialCanvas
                     collectCommonSettings(slotConfig.m_settings);
 
                     // For now, this will always generate all input slot instructions but can potentially be optimized to eliminate
-                    // instructions that result in temporary variables that are copies would pass through two other variables.
+                    // instructions that result in temporary variables that just pass through to other variables.
                     auto slot = dynamicNode->GetSlot(slotConfig.m_name);
                     AZStd::vector<AZStd::string> instructionsForSlot;
                     collectSettingsAsVec(slotConfig.m_settings, "instructions", instructionsForSlot);
 
-                    // Input slots will replace the value with the name of the variable from the connected help with slot if one is set.
+                    // Input slots will replace the value with the name of the variable from the connected slot if one is set.
                     if (slot && !slot->GetConnections().empty())
                     {
                         for (const auto& connection : slot->GetConnections())
@@ -669,7 +669,7 @@ namespace MaterialCanvas
                 // Locate the first injection point for instructions so that we can remove pre-existing instructions and insert the
                 // generated instructions.
                 // The begin block will eventually list the variable names that it expects code to be generated for.
-                // Code will be regenerated for each block, only using the nodes connected to the expected variables.
+                // Then code will be generated for each block, only using the nodes connected to the expected variables.
                 auto codeGenBeginItr = AZStd::find_if(lines.begin(), lines.end(), [](const AZStd::string& line) {
                     return AZ::StringFunc::Contains(line, "GENERATED_INSTRUCTIONS_BEGIN");
                 });
@@ -685,12 +685,12 @@ namespace MaterialCanvas
                     }
                     ++codeGenBeginItr;
 
-                    // From the last line that was inserted, locate the hand of the instruction insertion block 
+                    // From the last line that was inserted, locate the end of the instruction insertion block 
                     auto codeGenEndItr = AZStd::find_if(codeGenBeginItr, lines.end(), [](const AZStd::string& line) {
                         return AZ::StringFunc::Contains(line, "GENERATED_INSTRUCTIONS_END");
                     });
 
-                    // Erase any pre-existing structions the template might have had between the begin and end blocks
+                    // Erase any pre-existing instructions the template might have had between the begin and end blocks
                     codeGenEndItr = lines.erase(codeGenBeginItr, codeGenEndItr);
 
                     // Search for another instruction insertion point
