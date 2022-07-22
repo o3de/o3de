@@ -48,6 +48,11 @@ AzToolsFramework--ComponentEditorHeader #Title[IsOverridden="true"]
 }
 
 /* Asset Editor */
+#AssetEditorTabWidget:pane
+{
+    padding: 0;
+}
+
 Ui--AssetEditorHeader
 {
     margin: 0px;
@@ -57,17 +62,16 @@ Ui--AssetEditorHeader
 Ui--AssetEditorHeader *
 {
     height: 16px;
-    background-color: #272727;
+    background-color: #606060;
 }
 
 Ui--AssetEditorHeader #Background
 {
     margin: 0px;
     padding: 2px 7px 3px 7px;
-    border: 1px solid transparent;
-    border-bottom: none;
+    border: 1px solid #3A3E3F;
     background-image: none;
-    background-color: #272727;
+    background-color: #606060;
 }
 
 Ui--AssetEditorHeader #Name
@@ -84,17 +88,17 @@ Ui--AssetEditorHeader #Location
     background-color: transparent;
 }
 
-#AssetEditorWidgetPropertyEditor AzToolsFramework--PropertyRowWidget[isTopLevel="true"]
+#AssetEditorTabPropertyEditor  AzToolsFramework--PropertyRowWidget[isTopLevel="true"]
 {
     qproperty-appendDefaultLabelToName:1;
 }
 
-#AssetEditorWidgetPropertyEditor AzToolsFramework--PropertyRowWidget[isTopLevel="false"]
+#AssetEditorTabPropertyEditor  AzToolsFramework--PropertyRowWidget[isTopLevel="false"]
 {
     qproperty-appendDefaultLabelToName:0;
 }
 
-#AssetEditorWidgetPropertyEditor AzToolsFramework--PropertyRowWidget[getLevel="1"][hasChildRows="true"]
+#AssetEditorTabPropertyEditor  AzToolsFramework--PropertyRowWidget[getLevel="1"][hasChildRows="true"]
 {
     border-top: 1px solid rgba(255, 255, 255, 0.2);
 }
