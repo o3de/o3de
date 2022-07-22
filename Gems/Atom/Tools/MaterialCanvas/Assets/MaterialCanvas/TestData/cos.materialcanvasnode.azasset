@@ -3,23 +3,27 @@
     "Version": 1,
     "ClassName": "DynamicNodeConfig",
     "ClassData": {
-        "category": "Constants",
-        "title": "Constant Color",
-        "propertySlots": [
+        "category": "Math Operations",
+        "title": "Cosine",
+        "inputSlots": [
             {
                 "name": "inValue",
                 "displayName": "Value",
                 "description": "Value",
                 "supportedDataTypes": [
+                    "float",
+                    "float2",
+                    "float3",
+                    "float4",
                     "color"
                 ],
                 "defaultValue": {
-                    "$type": "Color",
+                    "$type": "Vector4",
                     "Value": [
                         0.0,
                         0.0,
                         0.0,
-                        1.0
+                        0.0
                     ]
                 },
                 "settings": {
@@ -33,19 +37,19 @@
                 "displayName": "Value",
                 "description": "Value",
                 "supportedDataTypes": [
-                    "color"
+                    "float4"
                 ],
                 "defaultValue": {
-                    "$type": "Color",
+                    "$type": "Vector4",
                     "Value": [
                         0.0,
                         0.0,
                         0.0,
-                        1.0
+                        0.0
                     ]
                 },
                 "settings": {
-                    "instructions": [ "SLOTTYPE NODEID_SLOTNAME = NODEID_inValue;" ]
+                    "instructions": [ "SLOTTYPE NODEID_SLOTNAME = cos(NODEID_inValue);" ]
                 }
             }
         ]
