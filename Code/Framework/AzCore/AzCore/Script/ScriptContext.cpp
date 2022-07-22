@@ -5205,7 +5205,7 @@ LUA_API const Node* lua_getDummyNode()
 
                 BindClassMethodAndProperties(behaviorClass);
 
-                if (AZ::Attribute* eventHandlerCreationFunctionAttribute = FindAttribute(AZ::Script::Attributes::EventHandlerCreationFunction, behaviorClass->m_attributes))
+                if (FindAttribute(AZ::Script::Attributes::EventHandlerCreationFunction, behaviorClass->m_attributes))
                 {
                     BindEventSupport();
                 }
