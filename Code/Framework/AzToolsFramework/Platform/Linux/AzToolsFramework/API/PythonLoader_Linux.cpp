@@ -14,7 +14,7 @@ namespace AzToolsFramework::EmbeddedPython
 {
     PythonLoader::PythonLoader()
     {
-        constexpr char libPythonName[] = "libpython3.7m.so.1.0";
+        constexpr char libPythonName[] = "libpython3.10.so.1.0";
         m_embeddedLibPythonHandle = dlopen(libPythonName, RTLD_NOW | RTLD_GLOBAL);
         if (m_embeddedLibPythonHandle == nullptr)
         {
