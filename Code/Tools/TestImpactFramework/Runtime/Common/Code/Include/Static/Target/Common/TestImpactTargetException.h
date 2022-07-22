@@ -8,11 +8,14 @@
 
 #pragma once
 
-#include <Artifact/Dynamic/TestImpactTestEnumerationSuite.h>
-#include <TestEngine/TestImpactTestSuiteContainer.h>
+#include <TestImpactFramework/TestImpactException.h>
 
 namespace TestImpact
 {
-    //! Representation of a given test target's enumerated tests.
-    using TestEnumeration = TestSuiteContainer<TestEnumerationSuite>;
+    //! Exception for target and target-related operations.
+    class TargetException : public Exception
+    {
+    public:
+        using Exception::Exception;
+    };
 } // namespace TestImpact
