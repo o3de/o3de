@@ -801,7 +801,7 @@ void OutlinerListModel::DecodeAssetMimeData(const QMimeData* data, AZStd::vector
 {
     using namespace AzToolsFramework;
 
-    AZStd::vector<AssetBrowser::AssetBrowserEntry*> entries;
+    AZStd::vector<const AssetBrowser::AssetBrowserEntry*> entries;
     AssetBrowser::AssetBrowserEntry::FromMimeData(data, entries);
 
     AZStd::vector<const AssetBrowser::ProductAssetBrowserEntry*> products;
@@ -809,7 +809,7 @@ void OutlinerListModel::DecodeAssetMimeData(const QMimeData* data, AZStd::vector
 
     // Look at all products and determine if they have an associated component.
     // If so, store the componentType->assetId pair.
-    for (AssetBrowser::AssetBrowserEntry* entry : entries)
+    for (const AssetBrowser::AssetBrowserEntry* entry : entries)
     {
         products.clear();
         const AssetBrowser::ProductAssetBrowserEntry* browserEntry = azrtti_cast<const AssetBrowser::ProductAssetBrowserEntry*>(entry);

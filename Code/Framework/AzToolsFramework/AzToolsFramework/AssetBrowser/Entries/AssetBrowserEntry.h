@@ -21,11 +21,6 @@
 
 class QMimeData;
 
-namespace AZ
-{
-    class ReflectContext;
-}
-
 namespace AzToolsFramework
 {
     using namespace Thumbnailer;
@@ -90,10 +85,12 @@ namespace AzToolsFramework
 
             virtual QVariant data(int column) const;
             int row() const;
-            static bool FromMimeData(const QMimeData* mimeData, AZStd::vector<AssetBrowserEntry*>& entries);
-            void AddToMimeData(QMimeData* mimeData) const;
+
+            //! @deprecated: Use "AssetBrowserEntryUtils::FromMimeData" instead
+            static bool FromMimeData(const QMimeData* mimeData, AZStd::vector<const AssetBrowserEntry*>& entries);
+           
             static QString GetMimeType();
-            static void Reflect(AZ::ReflectContext* context);
+
             virtual AssetEntryType GetEntryType() const = 0;
 
             //! Actual name of the asset or folder

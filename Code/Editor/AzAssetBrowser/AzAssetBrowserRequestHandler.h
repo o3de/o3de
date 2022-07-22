@@ -7,6 +7,7 @@
  */
 #pragma once
 
+#include <SandboxAPI.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzQtComponents/Buses/DragAndDrop.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
@@ -33,9 +34,10 @@ namespace AzToolsFramework
     }
 }
 
-class AzAssetBrowserRequestHandler
+class SANDBOX_API AzAssetBrowserRequestHandler
     : protected AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler
     , protected AzQtComponents::DragAndDropEventsBus::Handler
+    , protected AzQtComponents::DragAndDropItemViewEventsBus::Handler
 {
 public:
     AzAssetBrowserRequestHandler();
@@ -61,9 +63,14 @@ protected:
     void DragMove(QDragMoveEvent* event, AzQtComponents::DragAndDropContextBase& context) override;
     void DragLeave(QDragLeaveEvent* event) override;
     void Drop(QDropEvent* event, AzQtComponents::DragAndDropContextBase& context) override;
+    // listview/outliner dragging:
+    void CanDropItemView(bool& accepted, AzQtComponents::DragAndDropContextBase& context) override;
+    void DoDropItemView(bool& accepted, AzQtComponents::DragAndDropContextBase& context) override;
 
-    bool CanAcceptDragAndDropEvent(
-        QDropEvent* event, AzQtComponents::DragAndDropContextBase& context,
-        AZStd::optional<AZStd::vector<const AzToolsFramework::AssetBrowser::SourceAssetBrowserEntry*>*> outSources = AZStd::nullopt,
+    bool CanAcceptDragAndDropEvent(QDropEvent* event, AzQtComponents::DragAndDropContextBase& context) const;
+
+    bool DecodeDragMimeData(
+        const QMimeData* mimeData,
         AZStd::optional<AZStd::vector<const AzToolsFramework::AssetBrowser::ProductAssetBrowserEntry*>*> outProducts = AZStd::nullopt) const;
 };
+

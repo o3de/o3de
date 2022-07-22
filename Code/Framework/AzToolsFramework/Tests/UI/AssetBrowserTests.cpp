@@ -15,6 +15,7 @@
 #include <AzToolsFramework/AssetBrowser/AssetBrowserTableModel.h>
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntryCache.h>
+#include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntryUtils.h>
 #include <AzToolsFramework/AssetBrowser/Entries/FolderAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Entries/ProductAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Entries/RootAssetBrowserEntry.h>
@@ -81,6 +82,7 @@ namespace UnitTest
         QVector<int> m_folderIds = { 13, 14, 15 };
         QVector<int> m_sourceIDs = { 1, 2, 3, 4, 5 };
         QVector<int> m_productIDs = { 1, 2, 3, 4, 5 };
+        QVector<AZ::Uuid> m_sourceUUIDs;
     };
 
     void AssetBrowserTest::SetUpEditorFixtureImpl()
@@ -201,13 +203,12 @@ namespace UnitTest
         CreateProduct(m_productIDs.at(2), sourceUuid_4, "Product_4_2");
 
         AddScanFolder(m_folderIds.at(1), "D:/dev/o3de/GameProject/Scripts", "Scripts");
+        AZ::Uuid sourceUuid_3 = CreateSourceEntry(m_sourceIDs.at(3), m_folderIds.at(1), "Source_3");
 
         AZ::Uuid sourceUuid_2 = CreateSourceEntry(m_sourceIDs.at(2), m_folderIds.at(1), "Source_2");
         CreateProduct(m_productIDs.at(0), sourceUuid_2, "Product_2_0");
         CreateProduct(m_productIDs.at(1), sourceUuid_2, "Product_2_1");
         CreateProduct(m_productIDs.at(2), sourceUuid_2, "Product_2_2");
-
-        CreateSourceEntry(m_sourceIDs.at(3), m_folderIds.at(1), "Source_3");
 
         AddScanFolder(m_folderIds.at(0), "D:/dev/o3de/GameProject/Assets", "Assets");
 
@@ -220,6 +221,11 @@ namespace UnitTest
         AZ::Uuid sourceUuid_1 = CreateSourceEntry(m_sourceIDs.at(1), m_folderIds.at(0), "Source_1");
         CreateProduct(m_productIDs.at(0), sourceUuid_1, "Product_1_0");
         CreateProduct(m_productIDs.at(1), sourceUuid_1, "Product_1_1");
+
+        m_sourceUUIDs = {
+            sourceUuid_0, sourceUuid_1, sourceUuid_2, sourceUuid_3, sourceUuid_4
+        };
+
     }
 
     void AssetBrowserTest::PrintModel(const QAbstractItemModel* model, AZStd::function<void(const QString&)> printer)
@@ -322,6 +328,183 @@ namespace UnitTest
 
         // When we add a file to the folder it should be added to the model
         EXPECT_EQ(m_assetBrowserModel->rowCount(), 2);
+    }
+
+    // this test exercises the functions on nullptr to ensure it does not crash
+    TEST_F(AssetBrowserTest, EnsureEncodingAndDecodingWorks_NullPointer)
+    {
+        namespace AB = AzToolsFramework::AssetBrowser;
+
+        AZStd::vector<const AB::AssetBrowserEntry*> selection;
+        AB::Utils::ToMimeData(nullptr, selection);
+
+        AZStd::vector<const AB::AssetBrowserEntry*> decoded;
+        EXPECT_FALSE(AB::Utils::FromMimeData(nullptr, decoded));
+        EXPECT_TRUE(decoded.empty());
+    }
+
+    // this test exercises the functions on empty data to ensure its not going to crash.
+    TEST_F(AssetBrowserTest, EnsureEncodingAndDecodingWorks_Empty)
+    {
+        namespace AB = AzToolsFramework::AssetBrowser;
+
+        AZStd::vector<const AB::AssetBrowserEntry*> selection;
+        QMimeData md;
+        AB::Utils::ToMimeData(&md, selection);
+
+        AZStd::vector<const AB::AssetBrowserEntry*> decoded;
+        EXPECT_FALSE(AB::Utils::FromMimeData(&md, decoded));
+        EXPECT_TRUE(decoded.empty());
+    }
+
+    TEST_F(AssetBrowserTest, EnsureEncodingAndDecodingWorks_BadData)
+    {
+        namespace AB = AzToolsFramework::AssetBrowser;
+        // encode the selection in mimedata
+        QMimeData md;
+        md.setData(AB::AssetBrowserEntry::GetMimeType(), "21312638127631|28796321asdkjhakjhfasda:21321#:!@312#:!@\n\n12312312");
+        // decode the selection
+        AZStd::vector<const AB::AssetBrowserEntry*> decoded;
+        AZ_TEST_START_TRACE_SUPPRESSION;
+        EXPECT_FALSE(AB::Utils::FromMimeData(&md, decoded));
+        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
+
+        // more plausable but still garbage data
+        AZ_TEST_START_TRACE_SUPPRESSION;
+        md.setData(AB::AssetBrowserEntry::GetMimeType(), "1|2|3|4\n|5|4");
+        EXPECT_FALSE(AB::Utils::FromMimeData(&md, decoded));
+        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
+
+        // valid data but non-existent assets. This should not trigger an error.
+        md.setData(AB::AssetBrowserEntry::GetMimeType(), "Source|{D7C08FE3-D762-4E92-A530-8A42D828B81E}\n"
+                                                         "Product|{D7C08FE3-D762-4E92-A530-8A42D828B81E}:1\n");
+        EXPECT_FALSE(AB::Utils::FromMimeData(&md, decoded));
+
+        // it should also not make a difference if there's extra data after a comment token
+        md.setData(
+            AB::AssetBrowserEntry::GetMimeType(),
+            "Source|{D7C08FE3-D762-4E92-A530-8A42D828B81E}//comment goes here\n"
+            "Product|{D7C08FE3-D762-4E92-A530-8A42D828B81E}:1// an example of a comment\n");
+        EXPECT_FALSE(AB::Utils::FromMimeData(&md, decoded));
+    }
+
+    TEST_F(AssetBrowserTest, EnsureEncodingAndDecodingWorks_DuplicatesRemoved)
+    {
+        namespace AB = AzToolsFramework::AssetBrowser;
+        // see the heirarchy that the fixture sets up to understand this...
+        // we will select source1 and source3.
+
+        AZStd::vector<const AB::AssetBrowserEntry*> selection;
+        selection.push_back(AB::SourceAssetBrowserEntry::GetSourceByUuid(m_sourceUUIDs.at(3)));
+        selection.push_back(AB::SourceAssetBrowserEntry::GetSourceByUuid(m_sourceUUIDs.at(3))); // <-- duplicate!
+        selection.push_back(AB::SourceAssetBrowserEntry::GetSourceByUuid(m_sourceUUIDs.at(1)));
+
+        // encode the selection in mimedata
+        QMimeData md;
+        AB::Utils::ToMimeData(&md, selection);
+        EXPECT_TRUE(md.hasFormat("text/plain"));
+        EXPECT_TRUE(md.hasFormat(AB::AssetBrowserEntry::GetMimeType()));
+
+        // decode the selection
+        AZStd::vector<const AB::AssetBrowserEntry*> decoded;
+        EXPECT_TRUE(AB::Utils::FromMimeData(&md, decoded));
+        ASSERT_EQ(decoded.size(), 2);
+        EXPECT_EQ(decoded[0], selection[0]);
+        // skip selection[1]
+        EXPECT_EQ(decoded[1], selection[2]);
+    }
+
+    TEST_F(AssetBrowserTest, EnsureEncodingAndDecodingWorks_MissingData)
+    {
+        namespace AB = AzToolsFramework::AssetBrowser;
+        // encode the selection in mimedata
+        QMimeData md;
+        AZStd::vector<const AB::AssetBrowserEntry*> decoded;
+        EXPECT_FALSE(AB::Utils::FromMimeData(&md, decoded));
+    }
+
+    TEST_F(AssetBrowserTest, EnsureEncodingAndDecodingWorks_MultipleSources)
+    {
+        namespace AB = AzToolsFramework::AssetBrowser;
+        // see the heirarchy that the fixture sets up to understand this...
+        // we will select source1 and source3.
+
+        AZStd::vector<const AB::AssetBrowserEntry*> selection;
+        selection.push_back(AB::SourceAssetBrowserEntry::GetSourceByUuid(m_sourceUUIDs.at(3)));
+        selection.push_back(AB::SourceAssetBrowserEntry::GetSourceByUuid(m_sourceUUIDs.at(1)));
+
+        // encode the selection in mimedata
+        QMimeData md;
+        AB::Utils::ToMimeData(&md, selection);
+        EXPECT_TRUE(md.hasFormat("text/plain"));
+        EXPECT_TRUE(md.hasFormat(AB::AssetBrowserEntry::GetMimeType()));
+
+        // decode the selection
+        AZStd::vector<const AB::AssetBrowserEntry*> decoded;
+        EXPECT_TRUE(AB::Utils::FromMimeData(&md, decoded));
+        ASSERT_EQ(decoded.size(), 2);
+        EXPECT_EQ(decoded[0], selection[0]);
+        EXPECT_EQ(decoded[1], selection[1]);
+    }
+
+    TEST_F(AssetBrowserTest, EnsureEncodingAndDecodingWorks_MixedProductsAndSources)
+    {
+        namespace AB = AzToolsFramework::AssetBrowser;
+        // see the heirarchy that the fixture sets up to understand this...
+        // we will select source1 and source3.
+
+        AZStd::vector<const AB::AssetBrowserEntry*> selection;
+        selection.push_back(AB::SourceAssetBrowserEntry::GetSourceByUuid(m_sourceUUIDs.at(3)));
+        selection.push_back(AB::SourceAssetBrowserEntry::GetSourceByUuid(m_sourceUUIDs.at(1)));
+
+        AZ::Data::AssetId product11id = AZ::Data::AssetId(m_sourceUUIDs.at(1), m_productIDs.at(1));
+        AZ::Data::AssetId product02id = AZ::Data::AssetId(m_sourceUUIDs.at(0), m_productIDs.at(2));
+
+        selection.push_back(AB::ProductAssetBrowserEntry::GetProductByAssetId(product11id));
+        selection.push_back(AB::ProductAssetBrowserEntry::GetProductByAssetId(product02id));
+
+        // encode the selection in mimedata
+        QMimeData md;
+        AB::Utils::ToMimeData(&md, selection);
+        EXPECT_TRUE(md.hasFormat("text/plain"));
+        EXPECT_TRUE(md.hasFormat(AB::AssetBrowserEntry::GetMimeType()));
+
+        // decode the selection
+        AZStd::vector<const AB::AssetBrowserEntry*> decoded;
+        EXPECT_TRUE(AB::Utils::FromMimeData(&md, decoded));
+        ASSERT_EQ(decoded.size(), 4); // we don't pack nullptrs, so this also ensures all the products were found.
+        EXPECT_EQ(decoded[0], selection[0]);
+        EXPECT_EQ(decoded[1], selection[1]);
+        EXPECT_EQ(decoded[2], selection[2]);
+        EXPECT_EQ(decoded[3], selection[3]);
+    }
+
+    // its possible for the data in the model to change between being written and read.
+    // this test removes an element after encoding and ensures no crash happens.
+    TEST_F(AssetBrowserTest, EnsureEncodingAndDecodingWorks_RemovedSourceNoCrash)
+    {
+        namespace AB = AzToolsFramework::AssetBrowser;
+        // see the heirarchy that the fixture sets up to understand this...
+        // we will select source1 and source3.
+
+        AZStd::vector<const AB::AssetBrowserEntry*> selection;
+        selection.push_back(AB::SourceAssetBrowserEntry::GetSourceByUuid(m_sourceUUIDs.at(3)));
+        selection.push_back(AB::SourceAssetBrowserEntry::GetSourceByUuid(m_sourceUUIDs.at(1)));
+
+        // encode the selection in mimedata
+        QMimeData md;
+        AB::Utils::ToMimeData(&md, selection);
+        EXPECT_TRUE(md.hasFormat("text/plain"));
+        EXPECT_TRUE(md.hasFormat(AB::AssetBrowserEntry::GetMimeType()));
+
+        // remove the source!
+        GetRootEntry()->RemoveFile(m_sourceIDs.at(3));
+
+        // decode the selection
+        AZStd::vector<const AB::AssetBrowserEntry*> decoded;
+        EXPECT_TRUE(AB::Utils::FromMimeData(&md, decoded));
+        ASSERT_EQ(decoded.size(), 1); // we don't pack nullptrs, so this also ensures all the products were found.
+        EXPECT_EQ(decoded[0], selection[1]);
     }
 
 } // namespace UnitTest

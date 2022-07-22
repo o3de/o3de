@@ -373,7 +373,7 @@ namespace AtomToolsFramework
 
         if (mimeData->hasFormat(AzToolsFramework::AssetBrowser::AssetBrowserEntry::GetMimeType()))
         {
-            AZStd::vector<AzToolsFramework::AssetBrowser::AssetBrowserEntry*> entries;
+            AZStd::vector<const AzToolsFramework::AssetBrowser::AssetBrowserEntry*> entries;
             if (AzToolsFramework::AssetBrowser::AssetBrowserEntry::FromMimeData(mimeData, entries))
             {
                 for (const auto entry : entries)

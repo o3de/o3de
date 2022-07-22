@@ -2449,7 +2449,7 @@ namespace EMStudio
         // check if we dropped any files to the application
         const QMimeData* mimeData = event->mimeData();
 
-        AZStd::vector<AzToolsFramework::AssetBrowser::AssetBrowserEntry*> entries;
+        AZStd::vector<const AzToolsFramework::AssetBrowser::AssetBrowserEntry*> entries;
         AzToolsFramework::AssetBrowser::AssetBrowserEntry::FromMimeData(mimeData, entries);
 
         AZStd::vector<AZStd::string> fileNames;

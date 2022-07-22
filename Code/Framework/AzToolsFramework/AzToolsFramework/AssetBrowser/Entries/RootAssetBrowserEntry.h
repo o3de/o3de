@@ -54,8 +54,6 @@ namespace AzToolsFramework
 
             RootAssetBrowserEntry();
 
-            static void Reflect(AZ::ReflectContext* context);
-
             AssetEntryType GetEntryType() const override;
 
             //! Update root node to new engine location

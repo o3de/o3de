@@ -22,13 +22,13 @@ namespace AssetDropHelpers
     {
         using namespace AzToolsFramework;
 
-        AZStd::vector<AssetBrowser::AssetBrowserEntry*> entries;
+        AZStd::vector<const AssetBrowser::AssetBrowserEntry*> entries;
         AssetBrowser::AssetBrowserEntry::FromMimeData(mimeData, entries);
 
         AZStd::vector<const AssetBrowser::ProductAssetBrowserEntry*> products;
         products.reserve(entries.size());
 
-        for (AssetBrowser::AssetBrowserEntry* entry : entries)
+        for (const AssetBrowser::AssetBrowserEntry* entry : entries)
         {
             const AssetBrowser::ProductAssetBrowserEntry* browserEntry = azrtti_cast<const AssetBrowser::ProductAssetBrowserEntry*>(entry);
             if (browserEntry)

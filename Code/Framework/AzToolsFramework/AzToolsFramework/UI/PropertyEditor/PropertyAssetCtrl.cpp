@@ -427,7 +427,7 @@ namespace AzToolsFramework
 
         if (pData->hasFormat(AssetBrowser::AssetBrowserEntry::GetMimeType()))
         {
-            AZStd::vector<AssetBrowser::AssetBrowserEntry*> entries;
+            AZStd::vector<const AssetBrowser::AssetBrowserEntry*> entries;
             if (AssetBrowser::AssetBrowserEntry::FromMimeData(pData, entries))
             {
                 // Searching all source data entries for a compatible asset

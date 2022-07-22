@@ -32,16 +32,6 @@ namespace AzToolsFramework
             EntryCache::CreateInstance();
         }
 
-        void RootAssetBrowserEntry::Reflect(AZ::ReflectContext* context)
-        {
-            AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
-            if (serializeContext)
-            {
-                serializeContext->Class<RootAssetBrowserEntry>()
-                    ->Version(1);
-            }
-        }
-
         AssetBrowserEntry::AssetEntryType RootAssetBrowserEntry::GetEntryType() const
         {
             return AssetEntryType::Root;
@@ -383,7 +373,7 @@ namespace AzToolsFramework
                 parent = nearestAncestor;
             }
 
-            // If the nearest ancestor is the absolutePath, then it is already crated
+            // If the nearest ancestor is the absolutePath, then it is already created
             if (absolutePathView == AZ::IO::PathView(parent->GetFullPath()))
             {
                 return parent;

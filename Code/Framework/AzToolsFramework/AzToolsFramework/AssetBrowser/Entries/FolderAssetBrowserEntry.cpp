@@ -15,25 +15,9 @@ namespace AzToolsFramework
 {
     namespace AssetBrowser
     {
-        void FolderAssetBrowserEntry::Reflect(AZ::ReflectContext* context)
-        {
-            AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
-            if (serializeContext)
-            {
-                serializeContext->Class<FolderAssetBrowserEntry, AssetBrowserEntry>()
-                    ->Field("m_isGemsFolder", &FolderAssetBrowserEntry::m_isGemsFolder)
-                    ->Version(1);
-            }
-        }
-
         AssetBrowserEntry::AssetEntryType FolderAssetBrowserEntry::GetEntryType() const
         {
             return AssetEntryType::Folder;
-        }
-
-        bool FolderAssetBrowserEntry::IsGemsFolder() const
-        {
-            return m_isGemsFolder;
         }
 
         void FolderAssetBrowserEntry::UpdateChildPaths(AssetBrowserEntry* child) const
@@ -46,7 +30,7 @@ namespace AzToolsFramework
 
         SharedThumbnailKey FolderAssetBrowserEntry::CreateThumbnailKey()
         {
-            return MAKE_TKEY(FolderThumbnailKey, m_fullPath.c_str(), IsGemsFolder());
+            return MAKE_TKEY(FolderThumbnailKey, m_fullPath.c_str());
         }
     } // namespace AssetBrowser
 } // namespace AzToolsFramework
