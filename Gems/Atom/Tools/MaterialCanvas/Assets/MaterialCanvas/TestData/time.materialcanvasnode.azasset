@@ -13,9 +13,12 @@
                 "supportedDataTypes": [
                     "float"
                 ],
-                "defaultTime": {
+                "defaultValue": {
                     "$type": "float",
                     "Value": 0.0
+                },
+                "settings": {
+                    "instructions": [ "SLOTTYPE NODEID_SLOTNAME = SceneSrg::m_time;" ]
                 }
             }
         ]

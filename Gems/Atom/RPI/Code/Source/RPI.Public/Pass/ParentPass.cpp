@@ -312,7 +312,7 @@ namespace AZ
             PassRequest clearRequest;
             clearRequest.m_templateName = Name("SlowClearPassTemplate");
             clearRequest.m_passData = AZStd::make_shared<SlowClearPassData>();
-            clearRequest.m_connections.push_back();
+            clearRequest.m_connections.emplace_back();
             clearRequest.m_connections[0].m_localSlot = Name("ClearInputOutput");
             clearRequest.m_connections[0].m_attachmentRef.m_pass = Name("Parent");
 
