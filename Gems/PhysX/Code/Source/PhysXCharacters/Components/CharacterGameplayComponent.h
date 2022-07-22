@@ -64,7 +64,7 @@ namespace PhysX
         void Deactivate() override;
 
     private:
-        void OnPreSimulate(float deltaTime);
+        void OnSceneSimulationStart(float physicsTimestep);
         void OnGravityChanged(const AZ::Vector3& gravity);
         void ApplyGravity(float deltaTime);
 
@@ -72,7 +72,7 @@ namespace PhysX
         AZ::Vector3 m_gravity = AZ::Vector3::CreateZero();
         AZ::Vector3 m_fallingVelocity = AZ::Vector3::CreateZero();
 
-        AzPhysics::SystemEvents::OnPresimulateEvent::Handler m_preSimulateHandler;
+        AzPhysics::SceneEvents::OnSceneSimulationStartHandler m_sceneSimulationStartHandler;
         AzPhysics::SceneEvents::OnSceneGravityChangedEvent::Handler m_onGravityChangedHandler;
     };
 

@@ -15,6 +15,7 @@
 #include <PhysX/Utils.h>
 #include <PhysX/Debug/PhysXDebugConfiguration.h>
 #include <System/PhysXSystem.h>
+#include <PhysX/MathConversion.h>
 
 namespace PhysX
 {
@@ -109,9 +110,8 @@ namespace PhysX
 
         physx::PxControllerState state;
         pxController->getState(state);
-        return
-            state.touchedActor != nullptr ||
-            (state.collisionFlags & physx::PxControllerCollisionFlag::eCOLLISION_DOWN) != 0;
+
+        return state.touchedActor != nullptr || (state.collisionFlags & physx::PxControllerCollisionFlag::eCOLLISION_DOWN) != 0;
     }
 
     float CharacterGameplayComponent::GetGravityMultiplier() const
@@ -144,12 +144,13 @@ namespace PhysX
                 OnGravityChanged(newGravity);
             });
 
-        m_preSimulateHandler = AzPhysics::SystemEvents::OnPresimulateEvent::Handler(
-            [this](float deltaTime)
+        m_sceneSimulationStartHandler = AzPhysics::SceneEvents::OnSceneSimulationStartHandler(
+            [this](
+                [[maybe_unused]] AzPhysics::SceneHandle sceneHandle,
+                float fixedDeltaTime)
             {
-                OnPreSimulate(deltaTime);
-            }
-        );
+                OnSceneSimulationStart(fixedDeltaTime);
+            }, aznumeric_cast<int32_t>(AzPhysics::SceneEvents::PhysicsStartFinishSimulationPriority::Animation));
     }
 
     void CharacterGameplayComponent::Activate()
@@ -162,12 +163,15 @@ namespace PhysX
             {
                 m_gravity = sceneInterface->GetGravity(worldBody->m_sceneOwner);
                 sceneInterface->RegisterSceneGravityChangedEvent(worldBody->m_sceneOwner, m_onGravityChangedHandler);
+                AzPhysics::SceneHandle attachedSceneHandle = AzPhysics::InvalidSceneHandle;
+                Physics::DefaultWorldBus::BroadcastResult(attachedSceneHandle, &Physics::DefaultWorldRequests::GetDefaultSceneHandle);
+                if (attachedSceneHandle == AzPhysics::InvalidSceneHandle)
+                {
+                    AZ_Error("PhysX Character Controller Component", false, "Failed to retrieve default scene.");
+                    return;
+                }
+                sceneInterface->RegisterSceneSimulationStartHandler(attachedSceneHandle, m_sceneSimulationStartHandler);
             }
-        }
-
-        if (auto* physXSystem = GetPhysXSystem())
-        {
-            physXSystem->RegisterPreSimulateEvent(m_preSimulateHandler);
         }
 
         Physics::Character* character = nullptr;
@@ -190,13 +194,13 @@ namespace PhysX
     {
         CharacterGameplayRequestBus::Handler::BusDisconnect();
         m_onGravityChangedHandler.Disconnect();
-        m_preSimulateHandler.Disconnect();
+        m_sceneSimulationStartHandler.Disconnect();
     }
 
     // Physics::SystemEvent
-    void CharacterGameplayComponent::OnPreSimulate(float deltaTime)
+    void CharacterGameplayComponent::OnSceneSimulationStart(float physicsTimestep)
     {
-        ApplyGravity(deltaTime);
+        ApplyGravity(physicsTimestep);
     }
 
     void CharacterGameplayComponent::OnGravityChanged(const AZ::Vector3& gravity)

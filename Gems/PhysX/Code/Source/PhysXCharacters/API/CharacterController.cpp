@@ -592,24 +592,34 @@ namespace PhysX
         return m_colliderTag;
     }
 
-    void CharacterController::AddVelocity(const AZ::Vector3& velocity)
+    void CharacterController::AddVelocityForTick(const AZ::Vector3& velocity)
     {
-        m_requestedVelocity += velocity;
+        m_requestedVelocityForTick += velocity;
     }
 
-    void CharacterController::ApplyRequestedVelocity(float deltaTime)
+    void CharacterController::AddVelocityForPhysicsTimestep(const AZ::Vector3& velocity)
     {
-        const AZ::Vector3 oldPosition = GetBasePosition();
-        const AZ::Vector3 clampedVelocity = m_requestedVelocity.GetLength() > m_maximumSpeed
-            ? m_maximumSpeed * m_requestedVelocity.GetNormalized()
-            : m_requestedVelocity;
-        const AZ::Vector3 deltaPosition = clampedVelocity * deltaTime;
+        m_requestedVelocityForPhysicsTimestep += velocity;
+    }
 
+    void CharacterController::ResetRequestedVelocityForTick()
+    {
+        m_requestedVelocityForTick = AZ::Vector3::CreateZero();
+    }
+
+    void CharacterController::ResetRequestedVelocityForPhysicsTimestep()
+    {
+        m_requestedVelocityForPhysicsTimestep = AZ::Vector3::CreateZero();
+    }
+
+    void CharacterController::Move(const AZ::Vector3& requestedMovement, float deltaTime)
+    {
         if (m_pxController)
         {
+            const AZ::Vector3 oldPosition = GetBasePosition();
             {
                 PHYSX_SCENE_WRITE_LOCK(m_pxController->getScene());
-                m_pxController->move(PxMathConvert(deltaPosition), m_minimumMovementDistance, deltaTime, m_pxControllerFilters);
+                m_pxController->move(PxMathConvert(requestedMovement), m_minimumMovementDistance, deltaTime, m_pxControllerFilters);
                 if (m_shadowBody)
                 {
                     m_shadowBody->SetKinematicTarget(AZ::Transform::CreateTranslation(GetBasePosition()));
@@ -618,8 +628,18 @@ namespace PhysX
             const AZ::Vector3 newPosition = GetBasePosition();
             m_observedVelocity = deltaTime > 0.0f ? (newPosition - oldPosition) / deltaTime : AZ::Vector3::CreateZero();
         }
+    }
 
-        m_requestedVelocity = AZ::Vector3::CreateZero();
+    void CharacterController::ApplyRequestedVelocity(float deltaTime)
+    {
+        const AZ::Vector3 oldPosition = GetBasePosition();
+        const AZ::Vector3 totalRequestedVelocity = m_requestedVelocityForTick + m_requestedVelocityForPhysicsTimestep;
+        const AZ::Vector3 clampedVelocity = totalRequestedVelocity.GetLength() > m_maximumSpeed
+            ? m_maximumSpeed * totalRequestedVelocity.GetNormalized()
+            : totalRequestedVelocity;
+        const AZ::Vector3 deltaPosition = clampedVelocity * deltaTime;
+
+        Move(deltaPosition, deltaTime);
     }
 
     void CharacterController::SetRotation(const AZ::Quaternion& rotation)
