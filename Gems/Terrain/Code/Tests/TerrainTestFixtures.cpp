@@ -194,10 +194,20 @@ namespace UnitTest
     AZStd::unique_ptr<Terrain::TerrainSystem> TerrainBaseFixture::CreateAndActivateTerrainSystem(
         float queryResolution, AZ::Aabb worldBounds) const
     {
+        const float defaultSurfaceQueryResolution = 1.0f;
+        return CreateAndActivateTerrainSystem(queryResolution, defaultSurfaceQueryResolution, worldBounds);
+    }
+
+    // Create a terrain system with reasonable defaults for testing, but with the ability to override the defaults
+    // on a test-by-test basis.
+    AZStd::unique_ptr<Terrain::TerrainSystem> TerrainBaseFixture::CreateAndActivateTerrainSystem(
+        float heightQueryResolution, float surfaceQueryResolution, AZ::Aabb worldBounds) const
+    {
         // Create the terrain system and give it one tick to fully initialize itself.
         auto terrainSystem = AZStd::make_unique<Terrain::TerrainSystem>();
         terrainSystem->SetTerrainAabb(worldBounds);
-        terrainSystem->SetTerrainHeightQueryResolution(queryResolution);
+        terrainSystem->SetTerrainHeightQueryResolution(heightQueryResolution);
+        terrainSystem->SetTerrainSurfaceDataQueryResolution(surfaceQueryResolution);
         terrainSystem->Activate();
         AZ::TickBus::Broadcast(&AZ::TickBus::Events::OnTick, 0.f, AZ::ScriptTimePoint{});
         return terrainSystem;
