@@ -245,7 +245,7 @@ namespace AssetProcessor
     void BuilderInfoMetricsModel::OnProcessJobDurationChanged([[maybe_unused]] JobEntry jobEntry, [[maybe_unused]] int value)
     {
         // TODO: move it to BuilderData?
-
+    
         // if (m_builderGuidToIndex.contains(jobEntry.m_builderGuid))
         // {
         //     int builderIndex = m_builderGuidToIndex[jobEntry.m_builderGuid];
@@ -263,7 +263,7 @@ namespace AssetProcessor
     void BuilderInfoMetricsModel::OnCreateJobsDurationChanged(QString sourceName)
     {
         QString statKey = QString("CreateJobs,").append(sourceName).append("%");
-        m_dbConnection->QueryStatLikeStatName(
+        m_data->m_dbConnection->QueryStatLikeStatName(
             statKey.toUtf8().constData(),
             [this](AzToolsFramework::AssetDatabase::StatDatabaseEntry entry)
             {
@@ -273,11 +273,11 @@ namespace AssetProcessor
                 {
                     const auto& sourceName = tokens[1];
                     const auto& builderName = tokens[2];
-                    if (m_builderNameToIndex.contains(builderName))
+                    if (m_data->m_builderNameToIndex.contains(builderName))
                     {
-                        m_singleBuilderMetrics[m_builderNameToIndex[builderName]]->UpdateOrInsertEntry(
+                        m_data->m_singleBuilderMetrics[m_data->m_builderNameToIndex[builderName]]->UpdateOrInsertEntry(
                             BuilderInfoMetricsItem::JobType::AnalysisJob, sourceName, 1, entry.m_statValue);
-                        m_allBuildersMetrics->UpdateOrInsertEntry(
+                        m_data->m_allBuildersMetrics->UpdateOrInsertEntry(
                             BuilderInfoMetricsItem::JobType::AnalysisJob, builderName + "," + sourceName, 1, entry.m_statValue);
                     }
                     else

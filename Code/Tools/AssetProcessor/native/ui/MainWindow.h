@@ -163,9 +163,6 @@ private:
     AssetProcessor::BuilderInfoMetricsModel* m_builderInfoMetrics;
     AssetProcessor::BuilderInfoMetricsSortModel* m_builderInfoMetricsSort;
     AssetProcessor::CacheServerData m_cacheServerData;
-    AssetProcessor::BuilderInfoPatternsModel* m_builderInfoPatterns;
-    AssetProcessor::BuilderInfoMetricsModel* m_builderInfoMetrics;
-    AssetProcessor::BuilderInfoMetricsSortModel* m_builderInfoMetricsSort;
 
     void SetContextLogDetailsVisible(bool visible);
     void SetContextLogDetails(const QMap<QString, QString>& details);
