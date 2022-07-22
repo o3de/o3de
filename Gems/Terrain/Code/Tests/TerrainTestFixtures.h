@@ -11,6 +11,13 @@
 #include <TerrainSystem/TerrainSystem.h>
 #include <Components/TerrainSurfaceGradientListComponent.h>
 
+#include <Atom/RPI.Public/RPISystem.h>
+#include <Common/RHI/Factory.h>
+#include <Common/RHI/Stubs.h>
+
+#include <AzCore/UnitTest/Mocks/MockFileIOBase.h>
+#include <Tests/FileIOBaseTestTypes.h>
+
 namespace UnitTest
 {
     // The Terrain unit tests need to use the GemTestEnvironment to load LmbrCentral, SurfaceData, and GradientSignal Gems so that these
@@ -112,6 +119,27 @@ namespace UnitTest
             TearDownCoreSystems();
         }
     };
+
+    // This test fixture initializes and destroys both the Atom RPI and the Terrain System Component as a part of setup and teardown.
+    // It's useful for creating unit tests that use or test the terrain level components.
+    class TerrainSystemTestFixture : public UnitTest::TerrainTestFixture
+    {
+    protected:
+        TerrainSystemTestFixture();
+
+        void SetUp() override;
+        void TearDown() override;
+
+    private:
+        AZStd::unique_ptr<UnitTest::StubRHI::Factory> m_rhiFactory;
+        AZStd::unique_ptr<AZ::RPI::RPISystem> m_rpiSystem;
+
+        UnitTest::SetRestoreFileIOBaseRAII m_restoreFileIO;
+        ::testing::NiceMock<AZ::IO::MockFileIOBase> m_fileIOMock;
+
+        AZStd::unique_ptr<AZ::Entity> m_systemEntity;
+    };
+
 
 #ifdef HAVE_BENCHMARK
     class TerrainBenchmarkFixture
