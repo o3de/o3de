@@ -14,7 +14,6 @@
 #include <AzCore/Script/ScriptContextDebug.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzFramework/Script/ScriptRemoteDebugging.h>
-#include <AzFramework/TargetManagement/TargetManagementAPI.h>
 
 #pragma once
 

@@ -12,15 +12,13 @@ namespace ScriptCanvas
 {
     namespace Debugger
     {
-        
-
         void ReflectNotifications(AZ::ReflectContext* context)
         {
             using namespace Message;
 
             if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
-                serializeContext->Class<Notification, AzFramework::TmMsg>()
+                serializeContext->Class<Notification, AzFramework::RemoteToolsMessage>()
                     ;
 
                 ActiveEntitiesResult::Reflect(context);

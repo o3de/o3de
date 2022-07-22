@@ -19,7 +19,6 @@ set(FILES
     ../Common/WinAPI/AzFramework/IO/LocalFileIO_WinAPI.cpp
     AzFramework/IO/LocalFileIO_Windows.cpp
     ../Common/Unimplemented/AzFramework/StreamingInstall/StreamingInstall_Unimplemented.cpp
-    AzFramework/TargetManagement/TargetManagementComponent_Windows.cpp
     AzFramework/Windowing/NativeWindow_Windows.cpp
     AzFramework/Input/Buses/Notifications/RawInputNotificationBus_Platform.h
     AzFramework/Input/Buses/Notifications/RawInputNotificationBus_Windows.h

@@ -10,7 +10,7 @@
 #define LUADEBUGGER_COMPONENT_H
 
 #include "LUAEditorDebuggerMessages.h"
-#include <AzFramework/TargetManagement/TargetManagementAPI.h>
+#include <AzFramework/Network/IRemoteTools.h>
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TickBus.h>
 
@@ -27,8 +27,7 @@ namespace LUADebugger
     class Component
         : public AZ::Component
         , public LUAEditor::LUAEditorDebuggerMessages::Bus::Handler
-        , public AzFramework::TargetManagerClient::Bus::Handler
-        , public AzFramework::TmMsgBus::Handler
+        , public AZ::SystemTickBus::Handler
     {
     public:
         AZ_COMPONENT(Component, "{7854C9F4-D7E5-4420-A14E-FA5B19822F39}");
@@ -43,6 +42,11 @@ namespace LUADebugger
         virtual void Deactivate();
         //////////////////////////////////////////////////////////////////////////
 
+        //! AZ::SystemTickBus::Handler overrides.
+        //! @{
+        void OnSystemTick() override;
+        //! @}
+        //
         //////////////////////////////////////////////////////////////////////////
         //Debugger Messages, from the LUAEditor::LUAEditorDebuggerMessages::Bus
         // Enumerate script contexts on the target
@@ -90,12 +94,10 @@ namespace LUADebugger
         virtual void DesiredTargetChanged(AZ::u32 newTargetID, AZ::u32 oldTargetID);
         //////////////////////////////////////////////////////////////////////////
 
-        //////////////////////////////////////////////////////////////////////////
-        // TmMsgBus
-        virtual void OnReceivedMsg(AzFramework::TmMsgPtr msg);
-        //////////////////////////////////////////////////////////////////////////
-
         static void Reflect(AZ::ReflectContext* reflection);
+
+     private:
+        AzFramework::IRemoteTools* m_remoteTools = nullptr;
     };
 };
 

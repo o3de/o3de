@@ -12,7 +12,6 @@
 #include <AzCore/Utils/Utils.h>
 
 #include <AzFramework/Archive/Archive.h>
-#include <AzFramework/TargetManagement/TargetManagementComponent.h>
 #include <AzGameFramework/AzGameFrameworkModule.h>
 
 namespace AzGameFramework

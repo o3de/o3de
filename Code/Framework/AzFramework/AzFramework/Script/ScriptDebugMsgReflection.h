@@ -10,7 +10,7 @@
 #define HEXFRAMEWORK_SCRIPT_DEBUGGER_CLASSES_H
 
 #include <AzFramework/Script/ScriptRemoteDebugging.h>
-#include <AzFramework/TargetManagement/TargetManagementAPI.h>
+#include <AzFramework/Network/IRemoteTools.h>
 #include <AzCore/Script/ScriptContextDebug.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/containers/vector.h>
@@ -25,19 +25,19 @@ namespace DH {
 namespace AzFramework
 {
     class ScriptDebugRequest
-        : public TmMsg
+        : public RemoteToolsMessage
     {
     public:
         AZ_CLASS_ALLOCATOR(ScriptDebugRequest, AZ::SystemAllocator, 0);
-        AZ_RTTI(ScriptDebugRequest, "{2137E01A-F2AE-4137-A17E-6B82F3B7E4DE}", TmMsg);
+        AZ_RTTI(ScriptDebugRequest, "{2137E01A-F2AE-4137-A17E-6B82F3B7E4DE}", RemoteToolsMessage);
 
         ScriptDebugRequest()
-            : TmMsg(AZ_CRC("ScriptDebugAgent", 0xb6be0836)) {}
+            : RemoteToolsMessage(AZ_CRC("ScriptDebugAgent", 0xb6be0836)) {}
         ScriptDebugRequest(AZ::u32 request)
-            : TmMsg(AZ_CRC("ScriptDebugAgent", 0xb6be0836))
+            : RemoteToolsMessage(AZ_CRC("ScriptDebugAgent", 0xb6be0836))
             , m_request(request) {}
         ScriptDebugRequest(AZ::u32 request, const char* context)
-            : TmMsg(AZ_CRC("ScriptDebugAgent", 0xb6be0836))
+            : RemoteToolsMessage(AZ_CRC("ScriptDebugAgent", 0xb6be0836))
             , m_request(request)
             , m_context(context) {}
 
@@ -61,27 +61,27 @@ namespace AzFramework
     };
 
     class ScriptDebugSetValue
-        : public TmMsg
+        : public RemoteToolsMessage
     {
     public:
         AZ_CLASS_ALLOCATOR(ScriptDebugSetValue, AZ::SystemAllocator, 0);
-        AZ_RTTI(ScriptDebugSetValue, "{11E0E012-BD54-457D-A44B-FDDA55736ED3}", TmMsg);
+        AZ_RTTI(ScriptDebugSetValue, "{11E0E012-BD54-457D-A44B-FDDA55736ED3}", RemoteToolsMessage);
 
         ScriptDebugSetValue()
-            : TmMsg(AZ_CRC("ScriptDebugAgent", 0xb6be0836)) {}
+            : RemoteToolsMessage(AZ_CRC("ScriptDebugAgent", 0xb6be0836)) {}
 
         AZ::ScriptContextDebug::DebugValue  m_value;
     };
 
     class ScriptDebugAck
-        : public TmMsg
+        : public RemoteToolsMessage
     {
     public:
         AZ_CLASS_ALLOCATOR(ScriptDebugAck, AZ::SystemAllocator, 0);
-        AZ_RTTI(ScriptDebugAck, "{0CA1671A-BAFD-499C-B2CD-7B7E3DD5E2A8}", TmMsg);
+        AZ_RTTI(ScriptDebugAck, "{0CA1671A-BAFD-499C-B2CD-7B7E3DD5E2A8}", RemoteToolsMessage);
 
         ScriptDebugAck(AZ::u32 request = 0, AZ::u32 ackCode = 0)
-            : TmMsg(AZ_CRC("ScriptDebugger", 0xf8ab685e))
+            : RemoteToolsMessage(AZ_CRC("ScriptDebugger", 0xf8ab685e))
             , m_request(request)
             , m_ackCode(ackCode)
         {}
@@ -91,14 +91,14 @@ namespace AzFramework
     };
 
     class ScriptDebugAckBreakpoint
-        : public TmMsg
+        : public RemoteToolsMessage
     {
     public:
         AZ_CLASS_ALLOCATOR(ScriptDebugAckBreakpoint, AZ::SystemAllocator, 0);
-        AZ_RTTI(ScriptDebugAckBreakpoint, "{D9644B8A-92FD-43B6-A579-77E123A72EC2}",  TmMsg);
+        AZ_RTTI(ScriptDebugAckBreakpoint, "{D9644B8A-92FD-43B6-A579-77E123A72EC2}",  RemoteToolsMessage);
 
         ScriptDebugAckBreakpoint()
-            : TmMsg(AZ_CRC("ScriptDebugger", 0xf8ab685e)) {}
+            : RemoteToolsMessage(AZ_CRC("ScriptDebugger", 0xf8ab685e)) {}
 
         AZ::u32         m_id;
         AZStd::string   m_moduleName;
@@ -106,121 +106,121 @@ namespace AzFramework
     };
 
     class ScriptDebugAckExecute
-        : public TmMsg
+        : public RemoteToolsMessage
     {
     public:
         AZ_CLASS_ALLOCATOR(ScriptDebugAckExecute, AZ::SystemAllocator, 0);
-        AZ_RTTI(ScriptDebugAckExecute, "{F5B24F7E-85DA-4FE8-B720-AABE35CE631D}", TmMsg);
+        AZ_RTTI(ScriptDebugAckExecute, "{F5B24F7E-85DA-4FE8-B720-AABE35CE631D}", RemoteToolsMessage);
 
         ScriptDebugAckExecute()
-            : TmMsg(AZ_CRC("ScriptDebugger", 0xf8ab685e)) {}
+            : RemoteToolsMessage(AZ_CRC("ScriptDebugger", 0xf8ab685e)) {}
 
         AZStd::string   m_moduleName;
         bool            m_result;
     };
 
     class ScriptDebugEnumLocalsResult
-        : public TmMsg
+        : public RemoteToolsMessage
     {
     public:
         AZ_CLASS_ALLOCATOR(ScriptDebugEnumLocalsResult, AZ::SystemAllocator, 0);
-        AZ_RTTI(ScriptDebugEnumLocalsResult, "{201701DD-0B74-4886-AB84-93BDB338A8DD}", TmMsg);
+        AZ_RTTI(ScriptDebugEnumLocalsResult, "{201701DD-0B74-4886-AB84-93BDB338A8DD}", RemoteToolsMessage);
 
         ScriptDebugEnumLocalsResult()
-            : TmMsg(AZ_CRC("ScriptDebugger", 0xf8ab685e)) {}
+            : RemoteToolsMessage(AZ_CRC("ScriptDebugger", 0xf8ab685e)) {}
 
         AZStd::vector<AZStd::string>    m_names;
     };
 
     class ScriptDebugEnumContextsResult
-        : public TmMsg
+        : public RemoteToolsMessage
     {
     public:
         AZ_CLASS_ALLOCATOR(ScriptDebugEnumContextsResult, AZ::SystemAllocator, 0);
-        AZ_RTTI(ScriptDebugEnumContextsResult, "{8CE74569-9B7D-4993-AFE8-38BB8CE419F5}", TmMsg);
+        AZ_RTTI(ScriptDebugEnumContextsResult, "{8CE74569-9B7D-4993-AFE8-38BB8CE419F5}", RemoteToolsMessage);
 
         ScriptDebugEnumContextsResult()
-            : TmMsg(AZ_CRC("ScriptDebugger", 0xf8ab685e)) {}
+            : RemoteToolsMessage(AZ_CRC("ScriptDebugger", 0xf8ab685e)) {}
 
         AZStd::vector<AZStd::string>    m_names;
     };
 
     class ScriptDebugGetValueResult
-        : public TmMsg
+        : public RemoteToolsMessage
     {
     public:
         AZ_CLASS_ALLOCATOR(ScriptDebugGetValueResult, AZ::SystemAllocator, 0);
-        AZ_RTTI(ScriptDebugGetValueResult, "{B10720F1-B8FE-476F-A39D-6E80711580FD}", TmMsg);
+        AZ_RTTI(ScriptDebugGetValueResult, "{B10720F1-B8FE-476F-A39D-6E80711580FD}", RemoteToolsMessage);
 
         ScriptDebugGetValueResult()
-            : TmMsg(AZ_CRC("ScriptDebugger", 0xf8ab685e)) {}
+            : RemoteToolsMessage(AZ_CRC("ScriptDebugger", 0xf8ab685e)) {}
 
         AZ::ScriptContextDebug::DebugValue  m_value;
     };
 
     class ScriptDebugSetValueResult
-        : public TmMsg
+        : public RemoteToolsMessage
     {
     public:
         AZ_CLASS_ALLOCATOR(ScriptDebugSetValueResult, AZ::SystemAllocator, 0);
-        AZ_RTTI(ScriptDebugSetValueResult, "{2E2BD168-1805-43D6-8602-FDE14CED8E53}", TmMsg);
+        AZ_RTTI(ScriptDebugSetValueResult, "{2E2BD168-1805-43D6-8602-FDE14CED8E53}", RemoteToolsMessage);
 
         ScriptDebugSetValueResult()
-            : TmMsg(AZ_CRC("ScriptDebugger", 0xf8ab685e)) {}
+            : RemoteToolsMessage(AZ_CRC("ScriptDebugger", 0xf8ab685e)) {}
 
         AZStd::string   m_name;
         bool            m_result;
     };
 
     class ScriptDebugCallStackResult
-        : public TmMsg
+        : public RemoteToolsMessage
     {
     public:
         AZ_CLASS_ALLOCATOR(ScriptDebugCallStackResult, AZ::SystemAllocator, 0);
-        AZ_RTTI(ScriptDebugCallStackResult, "{B2606AC6-F966-4991-8144-BA6117F4A54E}", TmMsg);
+        AZ_RTTI(ScriptDebugCallStackResult, "{B2606AC6-F966-4991-8144-BA6117F4A54E}", RemoteToolsMessage);
 
         ScriptDebugCallStackResult()
-            : TmMsg(AZ_CRC("ScriptDebugger", 0xf8ab685e)) {}
+            : RemoteToolsMessage(AZ_CRC("ScriptDebugger", 0xf8ab685e)) {}
 
         AZStd::string   m_callstack;
     };
 
     class ScriptDebugRegisteredGlobalsResult
-        : public TmMsg
+        : public RemoteToolsMessage
     {
     public:
         AZ_CLASS_ALLOCATOR(ScriptDebugRegisteredGlobalsResult, AZ::SystemAllocator, 0);
-        AZ_RTTI(ScriptDebugRegisteredGlobalsResult, "{CEE4E889-0249-4D59-9D56-CD4BD159E411}", TmMsg);
+        AZ_RTTI(ScriptDebugRegisteredGlobalsResult, "{CEE4E889-0249-4D59-9D56-CD4BD159E411}", RemoteToolsMessage);
 
         ScriptDebugRegisteredGlobalsResult()
-            : TmMsg(AZ_CRC("ScriptDebugger", 0xf8ab685e)) {}
+            : RemoteToolsMessage(AZ_CRC("ScriptDebugger", 0xf8ab685e)) {}
 
         ScriptUserMethodList    m_methods;
         ScriptUserPropertyList  m_properties;
     };
 
     class ScriptDebugRegisteredClassesResult
-        : public TmMsg
+        : public RemoteToolsMessage
     {
     public:
         AZ_CLASS_ALLOCATOR(ScriptDebugRegisteredClassesResult, AZ::SystemAllocator, 0);
-        AZ_RTTI(ScriptDebugRegisteredClassesResult, "{7DF455AB-9AB1-4A95-B906-5DB1D1087EBB}", TmMsg);
+        AZ_RTTI(ScriptDebugRegisteredClassesResult, "{7DF455AB-9AB1-4A95-B906-5DB1D1087EBB}", RemoteToolsMessage);
 
         ScriptDebugRegisteredClassesResult()
-            : TmMsg(AZ_CRC("ScriptDebugger", 0xf8ab685e)) {}
+            : RemoteToolsMessage(AZ_CRC("ScriptDebugger", 0xf8ab685e)) {}
 
         ScriptUserClassList m_classes;
     };
 
     class ScriptDebugRegisteredEBusesResult
-        : public TmMsg
+        : public RemoteToolsMessage
     {
     public:
         AZ_CLASS_ALLOCATOR(ScriptDebugRegisteredEBusesResult, AZ::SystemAllocator, 0);
-        AZ_RTTI(ScriptDebugRegisteredEBusesResult, "{D2B5D77C-09F3-476D-A611-49B0A1B9EDFB}", TmMsg);
+        AZ_RTTI(ScriptDebugRegisteredEBusesResult, "{D2B5D77C-09F3-476D-A611-49B0A1B9EDFB}", RemoteToolsMessage);
 
         ScriptDebugRegisteredEBusesResult()
-            : TmMsg(AZ_CRC("ScriptDebugger", 0xf8ab685e)) {}
+            : RemoteToolsMessage(AZ_CRC("ScriptDebugger", 0xf8ab685e)) {}
 
         ScriptUserEBusList m_ebusList;
     };

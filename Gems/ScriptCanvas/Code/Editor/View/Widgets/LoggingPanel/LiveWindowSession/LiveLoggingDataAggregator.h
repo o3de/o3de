@@ -7,8 +7,6 @@
  */
 #pragma once
 
-#include <AzFramework/TargetManagement/TargetManagementAPI.h>
-
 #include <Editor/Include/ScriptCanvas/Bus/EditorScriptCanvasBus.h>
 #include <Editor/View/Widgets/LoggingPanel/LoggingDataAggregator.h>
 

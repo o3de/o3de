@@ -14,7 +14,6 @@
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/Debug/Profiler.h>
 
-#include <AzFramework/TargetManagement/TargetManagementComponent.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 
 #include <AzToolsFramework/AzToolsFrameworkModule.h>

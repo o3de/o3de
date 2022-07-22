@@ -10,8 +10,10 @@
 
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/Component/TickBus.h>
-#include <ScriptCanvas/Core/Core.h>
 #include <AzCore/EBus/EBus.h>
+#include <AzFramework/Network/IRemoteTools.h>
+
+#include <ScriptCanvas/Core/Core.h>
 #include <Debugger/Bus.h>
 #include <Debugger/Messages/Notify.h>
 
@@ -33,8 +35,6 @@ namespace ScriptCanvas
          */
         class ClientTransceiver
             : public Message::NotificationVisitor
-            , public AzFramework::TargetManagerClient::Bus::Handler
-            , public AzFramework::TmMsgBus::Handler
             , public AZ::SystemTickBus::Handler
             , public ClientRequestsBus::Handler
             , public ClientUIRequestBus::Handler
@@ -51,12 +51,12 @@ namespace ScriptCanvas
             
             //////////////////////////////////////////////////////////////////////////
             // ClientRequests
-            AzFramework::TargetContainer EnumerateAvailableNetworkTargets() override;
+            AzFramework::RemoteToolsEndpointContainer EnumerateAvailableNetworkTargets() override;
 
             bool HasValidConnection() const override;
-            bool IsConnected(const AzFramework::TargetInfo&) const override;
+            bool IsConnected(const AzFramework::RemoteToolsEndpointInfo&) const override;
             bool IsConnectedToSelf() const override;
-            AzFramework::TargetInfo GetNetworkTarget() override;
+            AzFramework::RemoteToolsEndpointInfo GetNetworkTarget() override;
 
             void AddBreakpoint(const Breakpoint&) override;
             void AddVariableChangeBreakpoint(const VariableChangeBreakpoint&) override;
@@ -76,16 +76,13 @@ namespace ScriptCanvas
 
             //////////////////////////////////////////////////////////////////////////
             // TargetManagerClient
-            void DesiredTargetConnected(bool connected) override;
-            void DesiredTargetChanged(AZ::u32 newId, AZ::u32 oldId) override;
-            void TargetJoinedNetwork(AzFramework::TargetInfo info) override;
-            void TargetLeftNetwork(AzFramework::TargetInfo info) override;
+            void DesiredTargetConnected(bool connected);
+            void DesiredTargetChanged(AZ::u32 newId, AZ::u32 oldId);
+            void TargetJoinedNetwork(AzFramework::RemoteToolsEndpointInfo info);
+            void TargetLeftNetwork(AzFramework::RemoteToolsEndpointInfo info);
             //////////////////////////////////////////////////////////////////////////
 
-            //////////////////////////////////////////////////////////////////////////
-            // TmMsgBus
-            void OnReceivedMsg(AzFramework::TmMsgPtr msg) override;
-            //////////////////////////////////////////////////////////////////////////
+            void OnReceivedMsg(AzFramework::RemoteToolsMessagePointer msg);
             
             //////////////////////////////////////////////////////////////////////////
             // Message processing
@@ -139,15 +136,15 @@ namespace ScriptCanvas
             Mutex m_mutex;
             bool m_breakOnNext = true;
 
-            AzFramework::TargetInfo m_selfTarget;
+            AzFramework::RemoteToolsEndpointInfo m_selfTarget;
 
             bool m_resetDesiredTarget = false;
-            AzFramework::TargetInfo m_previousDesiredInfo;
+            AzFramework::RemoteToolsEndpointInfo m_previousDesiredInfo;
 
-            AzFramework::TargetInfo m_currentTarget;
+            AzFramework::RemoteToolsEndpointInfo m_currentTarget;
             ScriptTarget m_connectionState;
 
-            AzFramework::TargetContainer m_networkTargets;
+            AzFramework::RemoteToolsEndpointContainer m_networkTargets;
             AZStd::unordered_set<Breakpoint> m_breakpointsActive;
             AZStd::unordered_set<Breakpoint> m_breakpointsInactive;
 
@@ -155,7 +152,7 @@ namespace ScriptCanvas
             ScriptTarget m_removeCache;
             
             Mutex m_msgMutex;
-            AzFramework::TmMsgQueue m_msgQueue;
+            AzFramework::RemoteToolsMessageQueue m_msgQueue;
         };
     }
 }
