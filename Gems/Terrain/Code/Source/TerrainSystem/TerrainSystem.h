@@ -54,6 +54,8 @@ namespace Terrain
         void UnregisterArea(AZ::EntityId areaId) override;
         void RefreshArea(
             AZ::EntityId areaId, AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask changeMask) override;
+        void RefreshRegion(
+            const AZ::Aabb& dirtyRegion, AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask changeMask) override;
 
         ///////////////////////////////////////////
         // TerrainDataRequestBus::Handler Impl

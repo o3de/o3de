@@ -7,6 +7,9 @@
  */
 
 #pragma once
+#include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/RTTI/RTTI.h>
+#include <AzToolsFramework/Prefab/Instance/InstanceDomGenerator.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceToTemplateInterface.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceEntityMapperInterface.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
@@ -19,6 +22,9 @@ namespace AzToolsFramework
             : private InstanceToTemplateInterface
         {
         public:
+            AZ_RTTI(InstanceToTemplatePropagator, "{526F7B55-84F9-4EA9-8180-19C5DBCD0103}", InstanceToTemplateInterface);
+            AZ_CLASS_ALLOCATOR(InstanceToTemplatePropagator, AZ::SystemAllocator, 0);
+
             void RegisterInstanceToTemplateInterface();
             void UnregisterInstanceToTemplateInterface();
 
@@ -42,9 +48,9 @@ namespace AzToolsFramework
             void AddPatchesToLink(const PrefabDom& patches, Link& link);
 
         private:
-
-            InstanceEntityMapperInterface* m_instanceEntityMapperInterface;
-            PrefabSystemComponentInterface* m_prefabSystemComponentInterface;
+            InstanceEntityMapperInterface* m_instanceEntityMapperInterface = nullptr;
+            PrefabSystemComponentInterface* m_prefabSystemComponentInterface = nullptr;
+            InstanceDomGenerator m_instanceDomGenerator;
         };
     }
 }

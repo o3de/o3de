@@ -32,7 +32,7 @@ PUSHD %~dp0
 ::SETLOCAL ENABLEDELAYEDEXPANSION
 
 :: if the user has set up a custom env call it
-IF EXIST "%~dp0\..\Env_Dev.bat" CALL %~dp0\..\Env_Dev.bat
+IF EXIST "%~dp0\Env_Dev.bat" CALL %~dp0\Env_Dev.bat
 
 :: Constant Vars (Global)
 :: global debug (propogates)
@@ -91,7 +91,7 @@ CALL %~dp0\..\Env_IDE_WingIDE.bat
 SET PATH=%WINGHOME%;%PATH%
 
 :: if the user has set up a custom env call it
-IF EXIST "%~dp0\..\Env_Dev.bat" CALL %~dp0\..\Env_Dev.bat
+IF EXIST "%~dp0\Env_Dev.bat" CALL %~dp0\Env_Dev.bat
 
 echo.
 echo _____________________________________________________________________

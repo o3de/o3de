@@ -45,7 +45,7 @@ namespace AZ::DocumentPropertyEditor
                         {
                             buffer = aznumeric_cast<T>(value.GetDouble());
                         }
-                        (*functor)({ ConsoleTypeHelpers::ValueToString(buffer) });
+                        (*functor)({ ConsoleTypeHelpers::ToString(buffer) });
                         m_adapter->OnContentsChanged(path, value);
                     });
 
@@ -105,7 +105,7 @@ namespace AZ::DocumentPropertyEditor
                         AZStd::fixed_vector<CVarFixedString, ElementCount> newValue;
                         for (int i = 0; i < ElementCount; ++i)
                         {
-                            newValue.push_back(ConsoleTypeHelpers::ValueToString(newContainer.GetElement(i)));
+                            newValue.push_back(ConsoleTypeHelpers::ToString(newContainer.GetElement(i)));
                         }
                         (*functor)(ConsoleCommandContainer(newValue));
                         m_adapter->OnContentsChanged(path, value);
@@ -126,7 +126,7 @@ namespace AZ::DocumentPropertyEditor
                 builder.OnEditorChanged(
                     [this, functor](const Dom::Path& path, const Dom::Value& value, Nodes::PropertyEditor::ValueChangeType)
                     {
-                        (*functor)({ ConsoleTypeHelpers::ValueToString(value.GetBool()) });
+                        (*functor)({ ConsoleTypeHelpers::ToString(value.GetBool()) });
                         m_adapter->OnContentsChanged(path, value);
                     });
                 builder.EndPropertyEditor();

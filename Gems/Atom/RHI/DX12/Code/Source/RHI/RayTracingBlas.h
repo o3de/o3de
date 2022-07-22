@@ -53,7 +53,7 @@ namespace AZ
 #endif
 
             // buffer list to keep buffers alive for several frames
-            static const uint32_t BufferCount = 3;
+            static const uint32_t BufferCount = AZ::RHI::Limits::Device::FrameCountMax;
             BlasBuffers m_buffers[BufferCount];
             uint32_t m_currentBufferIndex = 0;
         };
