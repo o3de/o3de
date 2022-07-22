@@ -6,39 +6,27 @@
  *
  */
 
-#include "TestImpactBuildTarget.h"
+#include <Target/Common/TestImpactTarget.h>
 
 namespace TestImpact
 {
-    BuildTarget::BuildTarget(BuildTargetDescriptor&& descriptor, TargetType type)
-        : m_buildMetaData(AZStd::move(descriptor.m_buildMetaData))
-        , m_sources(AZStd::move(descriptor.m_sources))
-        , m_type(type)
+    Target::Target(TargetDescriptor* descriptor)
+        : m_descriptor(descriptor)
     {
     }
 
-    const AZStd::string& BuildTarget::GetName() const
+    const AZStd::string& Target::GetName() const
     {
-        return m_buildMetaData.m_name;
+        return m_descriptor->m_name;
     }
 
-    const AZStd::string& BuildTarget::GetOutputName() const
+    const RepoPath& Target::GetPath() const
     {
-        return m_buildMetaData.m_outputName;
+        return m_descriptor->m_path;
     }
 
-    const RepoPath& BuildTarget::GetPath() const
+    const TargetSources& Target::GetSources() const
     {
-        return m_buildMetaData.m_path;
-    }
-
-    const TargetSources& BuildTarget::GetSources() const
-    {
-        return m_sources;
-    }
-
-    TargetType BuildTarget::GetType() const
-    {
-        return m_type;
+        return m_descriptor->m_sources;
     }
 } // namespace TestImpact

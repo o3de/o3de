@@ -6,7 +6,7 @@
  *
  */
 
-#include "TestImpactTestRun.h"
+#include <TestRunner/Common/Run/TestImpactTestRun.h>
 
 namespace TestImpact
 {

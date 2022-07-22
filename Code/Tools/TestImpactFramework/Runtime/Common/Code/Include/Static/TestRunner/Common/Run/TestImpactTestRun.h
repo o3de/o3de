@@ -9,7 +9,7 @@
 #pragma once
 
 #include <Artifact/Dynamic/TestImpactTestRunSuite.h>
-#include <TestEngine/TestImpactTestSuiteContainer.h>
+#include <TestRunner/Common/TestImpactTestSuiteContainer.h>
 
 namespace TestImpact
 {

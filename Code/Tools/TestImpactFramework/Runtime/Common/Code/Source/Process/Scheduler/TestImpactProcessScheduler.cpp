@@ -29,8 +29,9 @@ namespace TestImpact
             size_t maxConcurrentProcesses,
             AZStd::optional<AZStd::chrono::milliseconds> processTimeout,
             AZStd::optional<AZStd::chrono::milliseconds> scheduleTimeout,
-            ProcessLaunchCallback& processLaunchCallback,
-            ProcessExitCallback& processExitCallback);
+            ProcessLaunchCallback processLaunchCallback,
+            ProcessExitCallback processExitCallback,
+            AZStd::optional<ProcessStdContentCallback> processStdContentCallback);
         ~ExecutionState();
 
         ProcessSchedulerResult MonitorProcesses(const AZStd::vector<ProcessInfo>& processes);
@@ -43,6 +44,7 @@ namespace TestImpact
         size_t m_maxConcurrentProcesses = 0;
         ProcessLaunchCallback m_processLaunchCallback;
         ProcessExitCallback m_processExitCallback;
+        AZStd::optional<ProcessStdContentCallback> m_processStdContentCallback;
         AZStd::optional<AZStd::chrono::milliseconds> m_processTimeout;
         AZStd::optional<AZStd::chrono::milliseconds> m_scheduleTimeout;
         AZStd::chrono::high_resolution_clock::time_point m_startTime;
@@ -54,11 +56,13 @@ namespace TestImpact
         size_t maxConcurrentProcesses,
         AZStd::optional<AZStd::chrono::milliseconds> processTimeout,
         AZStd::optional<AZStd::chrono::milliseconds> scheduleTimeout,
-        ProcessLaunchCallback& processLaunchCallback,
-        ProcessExitCallback& processExitCallback)
+        ProcessLaunchCallback processLaunchCallback,
+        ProcessExitCallback processExitCallback,
+        AZStd::optional<ProcessStdContentCallback> processStdContentCallback)
         : m_maxConcurrentProcesses(maxConcurrentProcesses)
         , m_processLaunchCallback(processLaunchCallback)
         , m_processExitCallback(processExitCallback)
+        , m_processStdContentCallback(processStdContentCallback)
         , m_processTimeout(processTimeout)
         , m_scheduleTimeout(scheduleTimeout)
     {
@@ -242,8 +246,19 @@ namespace TestImpact
     void ProcessScheduler::ExecutionState::AccumulateProcessStdContent(ProcessInFlight& processInFlight)
     {
         // Accumulate the stdout/stderr so we don't deadlock with the process waiting for the pipe to empty before finishing
-        processInFlight.m_stdOutput += processInFlight.m_process->ConsumeStdOut().value_or("");
-        processInFlight.m_stdError += processInFlight.m_process->ConsumeStdErr().value_or("");
+        StdContent stdContents{ processInFlight.m_process->ConsumeStdOut(), processInFlight.m_process->ConsumeStdErr() };
+        processInFlight.m_stdOutput += stdContents.m_out.value_or("");
+        processInFlight.m_stdError += stdContents.m_err.value_or("");
+
+        if (m_processStdContentCallback.has_value() && (stdContents.m_out.has_value() || stdContents.m_err.has_value()))
+        {
+            (*m_processStdContentCallback)(
+                processInFlight.m_process->GetProcessInfo().GetId(),
+                processInFlight.m_stdOutput,
+                processInFlight.m_stdError,
+                AZStd::move(stdContents.m_out.value_or("")),
+                AZStd::move(stdContents.m_err.value_or("")));
+        }
     }
 
     StdContent ProcessScheduler::ExecutionState::ConsumeProcessStdContent(ProcessInFlight& processInFlight)
@@ -304,11 +319,13 @@ namespace TestImpact
         AZStd::optional<AZStd::chrono::milliseconds> processTimeout,
         AZStd::optional<AZStd::chrono::milliseconds> scheduleTimeout,
         ProcessLaunchCallback processLaunchCallback,
-        ProcessExitCallback processExitCallback)
+        ProcessExitCallback processExitCallback,
+        AZStd::optional<ProcessStdContentCallback> processStdContentCallback)
     {
         AZ_TestImpact_Eval(!m_executionState, ProcessException, "Couldn't execute schedule, schedule already in progress");
         m_executionState = AZStd::make_unique<ExecutionState>(
-            m_maxConcurrentProcesses, processTimeout, scheduleTimeout, processLaunchCallback, processExitCallback);
+            m_maxConcurrentProcesses, processTimeout, scheduleTimeout, processLaunchCallback, processExitCallback,
+            processStdContentCallback);
         const auto result = m_executionState->MonitorProcesses(processes);
         m_executionState.reset();
         return result;

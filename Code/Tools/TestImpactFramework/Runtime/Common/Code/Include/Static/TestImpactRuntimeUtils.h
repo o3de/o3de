@@ -12,31 +12,45 @@
 #include <TestImpactFramework/TestImpactClientTestSelection.h>
 #include <TestImpactFramework/TestImpactClientSequenceReport.h>
 
-#include <Artifact/Static/TestImpactTestTargetMeta.h>
-#include <Artifact/Static/TestImpactBuildTargetDescriptor.h>
+#include <Artifact/Static/TestImpactNativeTestTargetMeta.h>
+#include <Artifact/Static/TestImpactNativeTargetDescriptor.h>
 #include <Dependency/TestImpactDynamicDependencyMap.h>
 #include <Dependency/TestImpactSourceCoveringTestsList.h>
-#include <Target/TestImpactTestTarget.h>
-#include <TestEngine/Enumeration/TestImpactTestEnumeration.h>
-#include <TestEngine/TestImpactTestEngineInstrumentedRun.h>
+#include <BuildTarget/Common/TestImpactBuildTarget.h>
+#include <Target/Native/TestImpactNativeTestTarget.h>
+#include <TestEngine/Common/Run/TestImpactTestEngineInstrumentedRun.h>
+#include <TestRunner/Common/Enumeration/TestImpactTestEnumeration.h>
+#include <TestImpactTestTargetExclusionList.h>
 
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 
 namespace TestImpact
 {
-    //! Construct a dynamic dependency map from the build target descriptors and test target metas.
-    AZStd::unique_ptr<DynamicDependencyMap> ConstructDynamicDependencyMap(
+    //! Construct a build target list from the build target descriptors and test target metas.
+    AZStd::unique_ptr<BuildTargetList<NativeTestTarget, NativeProductionTarget>> ConstructNativeBuildTargetList(
         SuiteType suiteFilter,
-        const BuildTargetDescriptorConfig& buildTargetDescriptorConfig,
+        const NativeTargetDescriptorConfig& NativeTargetDescriptorConfig,
         const TestTargetMetaConfig& testTargetMetaConfig);
 
     //! Constructs the resolved test target exclude list from the specified list of targets and unresolved test target exclude list.
-    AZStd::unordered_set<const TestTarget*> ConstructTestTargetExcludeList(
-        const TestTargetList& testTargets,
-        const AZStd::vector<AZStd::string>& excludedTestTargets);
+    AZStd::unique_ptr<TestTargetExclusionList> ConstructTestTargetExcludeList(
+        const TargetList<NativeTestTarget>& testTargets,
+        const AZStd::vector<TargetConfig::ExcludedTarget>& excludedTestTargets);
+
+    //! Selects the test targets from the specified list of test targets that are not in the specified test target exclusion list.
+    //! @param testTargetExcludeList The test target exclusion list to lookup.
+    //! @param testTargets The list of test targets to select from.
+    //! @returns The subset of test targets in the specified list that are not on the target exclude list.
+    AZStd::pair<
+        AZStd::vector<const NativeTestTarget*>,
+        AZStd::vector<const NativeTestTarget*>>
+    SelectTestTargetsByExcludeList(
+        const TestTargetExclusionList& testTargetExcludeList,
+        const AZStd::vector<const NativeTestTarget*>& testTargets);
 
     //! Extracts the name information from the specified test targets.
-    AZStd::vector<AZStd::string> ExtractTestTargetNames(const AZStd::vector<const TestTarget*>& testTargets);
+    AZStd::vector<AZStd::string> ExtractTestTargetNames(
+        const AZStd::vector<const NativeTestTarget*>& testTargets);
 
     //! Generates the test suites from the specified test engine job information.
     //! @tparam TestJob The test engine job type.

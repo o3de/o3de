@@ -8,123 +8,100 @@
 
 #pragma once
 
-#include <Target/TestImpactTargetException.h>
+#include <BuildTarget/Common/TestImpactBuildTargetException.h>
+#include <Target/Common/TestImpactTargetList.h>
 
+#include <AzCore/std/containers/variant.h>
 #include <AzCore/std/containers/vector.h>
-#include <AzCore/std/optional.h>
-#include <AzCore/std/sort.h>
 #include <AzCore/std/string/string.h>
-
-#include <algorithm>
+#include <AzCore/std/smart_ptr/unique_ptr.h>
 
 namespace TestImpact
 {
-    //! Container for unique set of sorted build target types.
-    //! @tparam Target The specialized build target type.
-    template<typename Target>
+    template<typename TestTarget, typename ProductionTarget>
     class BuildTargetList
     {
     public:
-        using TargetType = Target;
+        //! Constructs the dependency map with entries for each build target's source files with empty test coverage data.
+        BuildTargetList(
+            AZStd::vector<AZStd::unique_ptr<typename TestTarget::Descriptor>>&& testTargetDescriptors,
+            AZStd::vector<AZStd::unique_ptr<typename ProductionTarget::Descriptor>>&& productionTargetDescriptors);
 
-        BuildTargetList(AZStd::vector<typename Target::Descriptor>&& descriptors);
-
-        //! Returns the targets in the collection.
-        const AZStd::vector<Target>& GetTargets() const;
-
-        //! Returns the target with the specified name.
-        const Target* GetTarget(const AZStd::string& name) const;
-
-        //! Returns the target with the specified name or throws if target not found.
-        const Target* GetTargetOrThrow(const AZStd::string& name) const;
-
-        //! Returns true if the specified target is in the list, otherwise false.
-        bool HasTarget(const AZStd::string& name) const;
-
-        //! Returns the number of targets in the list.
+        //! Gets the total number of production and test targets in the repository.
         size_t GetNumTargets() const;
 
+        //! Attempts to get the specified target's specialized type.
+        //! @param name The name of the target to get.
+        //! @returns If found, the pointer to the specialized target, otherwise AZStd::monostate.
+        OptionalBuildTarget<TestTarget, ProductionTarget> GetBuildTarget(const AZStd::string& name) const;
+
+        //! Attempts to get the specified target's specialized type or throw TargetException.
+        //! @param name The name of the target to get.
+        BuildTarget<TestTarget, ProductionTarget> GetBuildTargetOrThrow(const AZStd::string& name) const;
+
+        //! Get the list of test targets in the repository.
+        const TargetList<TestTarget>& GetTestTargetList() const;
+
+        //! Get the list of production targets in the repository.
+        const TargetList<ProductionTarget>& GetProductionTargetList() const;
     private:
-        AZStd::vector<Target> m_targets;
+        //! The sorted list of unique test targets in the repository.
+        TargetList<TestTarget> m_testTargets;
+
+        //! The sorted list of unique production targets in the repository.
+        TargetList<ProductionTarget> m_productionTargets;
     };
 
-    template<typename Target>
-    BuildTargetList<Target>::BuildTargetList(AZStd::vector<typename Target::Descriptor>&& descriptors)
+    template<typename TestTarget, typename ProductionTarget>
+    BuildTargetList<TestTarget, ProductionTarget>::BuildTargetList(
+        AZStd::vector<AZStd::unique_ptr<typename TestTarget::Descriptor>>&& testTargetDescriptors,
+        AZStd::vector<AZStd::unique_ptr<typename ProductionTarget::Descriptor>>&& productionTargetDescriptors)
+        : m_testTargets(AZStd::move(testTargetDescriptors))
+        , m_productionTargets(AZStd::move(productionTargetDescriptors))
     {
-        AZ_TestImpact_Eval(!descriptors.empty(), TargetException, "Target list is empty");
+    }
 
-        AZStd::sort(
-            descriptors.begin(), descriptors.end(), [](const typename Target::Descriptor& lhs, const typename Target::Descriptor& rhs)
+    template<typename TestTarget, typename ProductionTarget>
+    size_t BuildTargetList<TestTarget, ProductionTarget>::GetNumTargets() const
+    {
+        return m_productionTargets.GetNumTargets() + m_testTargets.GetNumTargets();
+    }
+
+    template<typename TestTarget, typename ProductionTarget>
+    OptionalBuildTarget<TestTarget, ProductionTarget> BuildTargetList<TestTarget, ProductionTarget>::GetBuildTarget(const AZStd::string& name) const
+    {
+        if (const auto testTarget = m_testTargets.GetTarget(name);
+            testTarget != nullptr)
         {
-                return lhs.m_buildMetaData.m_name < rhs.m_buildMetaData.m_name;
-        });
-
-        const auto duplicateElement = AZStd::adjacent_find(
-            descriptors.begin(), descriptors.end(), [](const typename Target::Descriptor& lhs, const typename Target::Descriptor& rhs)
-        {
-                return lhs.m_buildMetaData.m_name == rhs.m_buildMetaData.m_name;
-        });
-
-        AZ_TestImpact_Eval(duplicateElement == descriptors.end(), TargetException, "Target list contains duplicate targets");
-
-        m_targets.reserve(descriptors.size());
-        for (auto&& descriptor : descriptors)
-        {
-            m_targets.emplace_back(Target(AZStd::move(descriptor)));
+            return testTarget;
         }
-    }
-
-    template<typename Target>
-    const AZStd::vector<Target>& BuildTargetList<Target>::GetTargets() const
-    {
-        return m_targets;
-    }
-
-    template<typename Target>
-    size_t BuildTargetList<Target>::GetNumTargets() const
-    {
-        return m_targets.size();
-    }
-
-    template<typename Target>
-    const Target* BuildTargetList<Target>::GetTarget(const AZStd::string& name) const
-    {
-        struct TargetComparator
+        else if (auto productionTarget = m_productionTargets.GetTarget(name);
+            productionTarget != nullptr)
         {
-            bool operator()(const Target& target, const AZStd::string& name) const
-            {
-                return target.GetName() < name;
-            }
-
-            bool operator()(const AZStd::string& name, const Target& target) const
-            {
-                return name < target.GetName();
-            }
-        };
-
-        const auto targetRange = std::equal_range(m_targets.begin(), m_targets.end(), name, TargetComparator{});
-
-        if (targetRange.first != targetRange.second)
-        {
-            return targetRange.first;
+            return productionTarget;
         }
-        else
-        {
-            return nullptr;
-        }
+
+        return AZStd::nullopt;
     }
 
-    template<typename Target>
-    const Target* BuildTargetList<Target>::GetTargetOrThrow(const AZStd::string& name) const
+    template<typename TestTarget, typename ProductionTarget>
+    BuildTarget<TestTarget, ProductionTarget> BuildTargetList<TestTarget, ProductionTarget>::GetBuildTargetOrThrow(
+        const AZStd::string& name) const
     {
-        const Target* target = GetTarget(name);
-        AZ_TestImpact_Eval(target, TargetException, AZStd::string::format("Couldn't find target %s", name.c_str()).c_str());
-        return target;
+        auto buildTarget = GetBuildTarget(name);
+        AZ_TestImpact_Eval(buildTarget.has_value(), TargetException, AZStd::string::format("Couldn't find target %s", name.c_str()).c_str());
+        return buildTarget.value();
     }
 
-    template<typename Target>
-    bool BuildTargetList<Target>::HasTarget(const AZStd::string& name) const
+    template<typename TestTarget, typename ProductionTarget>
+    const TargetList<TestTarget>& BuildTargetList<TestTarget, ProductionTarget>::GetTestTargetList() const
     {
-        return GetTarget(name) != nullptr;
+        return m_testTargets;
+    }
+
+    template<typename TestTarget, typename ProductionTarget>
+    const TargetList<ProductionTarget>& BuildTargetList<TestTarget, ProductionTarget>::GetProductionTargetList() const
+    {
+        return m_productionTargets;
     }
 } // namespace TestImpact

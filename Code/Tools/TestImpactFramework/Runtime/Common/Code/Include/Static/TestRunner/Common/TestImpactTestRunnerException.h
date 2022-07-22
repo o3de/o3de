@@ -12,8 +12,8 @@
 
 namespace TestImpact
 {
-    //! Exception for build target and build target-related operations.
-    class BuildTargetException : public Exception
+    //! Exception for test runner and related operations.
+    class TestRunnerException : public Exception
     {
     public:
         using Exception::Exception;

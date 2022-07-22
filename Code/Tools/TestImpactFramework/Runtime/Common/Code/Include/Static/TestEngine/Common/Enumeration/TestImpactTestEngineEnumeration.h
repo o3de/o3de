@@ -8,21 +8,36 @@
 
 #pragma once
 
-#include <TestEngine/TestImpactTestEngineJob.h>
-#include <TestEngine/Enumeration/TestImpactTestEnumeration.h>
+#include <TestEngine/Common/Job/TestImpactTestEngineJob.h>
+#include <TestRunner/Common/Enumeration/TestImpactTestEnumeration.h>
 
 namespace TestImpact
 {
     //! Represents the generated test enumeration data for a test engine enumeration.
+    template<typename TestTarget>
     class TestEngineEnumeration
-        : public TestEngineJob
+        : public TestEngineJob<TestTarget>
     {
     public:
-        TestEngineEnumeration(TestEngineJob&& job, AZStd::optional<TestEnumeration>&& enumeration);
+        TestEngineEnumeration(TestEngineJob<TestTarget>&& job, AZStd::optional<TestEnumeration>&& enumeration);
 
         //! Returns the test enumeration payload for this job (if any).
         const AZStd::optional<TestEnumeration>& GetTestEnumeration() const;
     private:
         AZStd::optional<TestEnumeration> m_enumeration;
     };
+
+    template<typename TestTarget>
+    TestEngineEnumeration<TestTarget>::TestEngineEnumeration(
+        TestEngineJob<TestTarget>&& job, AZStd::optional<TestEnumeration>&& enumeration)
+        : TestEngineJob(AZStd::move(job))
+        , m_enumeration(AZStd::move(enumeration))
+    {
+    }
+
+    template<typename TestTarget>
+    const AZStd::optional<TestEnumeration>& TestEngineEnumeration<TestTarget>::GetTestEnumeration() const
+    {
+        return m_enumeration;
+    }
 } // namespace TestImpact

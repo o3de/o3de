@@ -13,9 +13,6 @@
 
 namespace TestImpact
 {
-    //! Delete the files that match the pattern from the specified directory.
-    //! @param path The path to the directory to pattern match the files for deletion.
-    //! @param pattern The pattern to match files for deletion.
     size_t DeleteFiles(const RepoPath& path, const AZStd::string& pattern)
     {
         size_t numFilesDeleted = 0;
@@ -36,13 +33,30 @@ namespace TestImpact
         return numFilesDeleted;
     }
 
-    //! Deletes the specified file.
+    size_t CountFiles(const RepoPath& path, const AZStd::string& pattern)
+    {
+        size_t numFiles = 0;
+
+        AZ::IO::SystemFile::FindFiles(
+            AZStd::string::format("%s/%s", path.c_str(), pattern.c_str()).c_str(),
+            [&numFiles]([[maybe_unused]] const char* file, bool isFile)
+            {
+                if (isFile)
+                {
+                    numFiles++;
+                }
+
+                return true;
+            });
+
+        return numFiles;
+    }
+
     void DeleteFile(const RepoPath& file)
     {
         DeleteFiles(file.ParentPath(), file.Filename().Native());
     }
 
-    //! User-friendly names for the test suite types.
     AZStd::string SuiteTypeAsString(SuiteType suiteType)
     {
         switch (suiteType)

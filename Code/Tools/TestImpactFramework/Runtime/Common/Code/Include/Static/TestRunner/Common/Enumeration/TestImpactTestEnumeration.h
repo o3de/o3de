@@ -8,14 +8,11 @@
 
 #pragma once
 
-#include <TestImpactFramework/TestImpactException.h>
+#include <Artifact/Dynamic/TestImpactTestEnumerationSuite.h>
+#include <TestRunner/Common/TestImpactTestSuiteContainer.h>
 
 namespace TestImpact
 {
-    //! Exception for build target and build target-related operations.
-    class BuildTargetException : public Exception
-    {
-    public:
-        using Exception::Exception;
-    };
+    //! Representation of a given test target's enumerated tests.
+    using TestEnumeration = TestSuiteContainer<TestEnumerationSuite>;
 } // namespace TestImpact

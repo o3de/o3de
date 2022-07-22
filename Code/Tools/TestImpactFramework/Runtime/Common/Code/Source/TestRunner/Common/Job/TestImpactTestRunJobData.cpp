@@ -6,7 +6,7 @@
  *
  */
 
-#include <TestEngine/Run/TestImpactTestRunJobData.h>
+#include <TestRunner/Common/Job/TestImpactTestRunJobData.h>
 
 namespace TestImpact
 {

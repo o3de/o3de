@@ -11,7 +11,6 @@
 #include <TestImpactFramework/TestImpactRepoPath.h>
 
 #include <AzCore/std/containers/vector.h>
-#include <AzCore/std/optional.h>
 #include <AzCore/std/string/string.h>
 
 namespace TestImpact
@@ -32,20 +31,11 @@ namespace TestImpact
         AutogenSources m_autogenSources; //!< Autogen source files (if any).
     };
 
-    //! Representation of a given build target's basic build infotmation.
-    struct BuildMetaData
+    //! Artifact produced by the build system for each build target. Contains source and output information about said targets.
+    struct TargetDescriptor
     {
         AZStd::string m_name; //!< Build target name.
-        AZStd::string m_outputName; //!< Output name (sans extension) of build target binary.
-        RepoPath m_path; //!< Path to build target location in source tree (relative to repository root).
-    };
-
-    //! Artifact produced by the build system for each build target. Contains source and output information about said targets.
-    struct BuildTargetDescriptor
-    {
-        BuildTargetDescriptor() = default;
-
-        BuildMetaData m_buildMetaData;
+        RepoPath m_path; //!< Source path to target location in source tree (relative to repository root).
         TargetSources m_sources;
     };
 } // namespace TestImpact

@@ -10,21 +10,36 @@
 
 #include <TestImpactFramework/TestImpactClientTestRun.h>
 
-#include <TestEngine/TestImpactTestEngineJob.h>
-#include <TestEngine/Run/TestImpactTestRun.h>
+#include <TestEngine/Common/Job/TestImpactTestEngineJob.h>
+#include <TestRunner/Common/Run/TestImpactTestRun.h>
 
 namespace TestImpact
 {
     //! Represents the generated test run data for a regular test engine run. 
+    template<typename TestTarget>
     class TestEngineRegularRun
-        : public TestEngineJob
+        : public TestEngineJob<TestTarget>
     {
     public:
-        TestEngineRegularRun(TestEngineJob&& testJob, AZStd::optional<TestRun>&& testRun);
+        TestEngineRegularRun(TestEngineJob<TestTarget>&& testJob, AZStd::optional<TestRun>&& testRun);
 
         //! Returns the test run payload for this job (if any).
         const AZStd::optional<TestRun>& GetTestRun() const;
     private:
         AZStd::optional<TestRun> m_testRun;
     };
+
+    template<typename TestTarget>
+    TestEngineRegularRun<TestTarget>::TestEngineRegularRun(
+        TestEngineJob<TestTarget>&& testJob, AZStd::optional<TestRun>&& testRun)
+        : TestEngineJob<TestTarget>(AZStd::move(testJob))
+        , m_testRun(AZStd::move(testRun))
+    {
+    }
+
+    template<typename TestTarget>
+    const AZStd::optional<TestRun>& TestEngineRegularRun<TestTarget>::GetTestRun() const
+    {
+        return m_testRun;
+    }
 } // namespace TestImpact
