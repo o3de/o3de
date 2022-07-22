@@ -10,13 +10,12 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
+#include <QDialog>
 #include <QWidget>
 #include <QString>
 #include <QPixmap>
+#include "IEditor.h"
 #endif
-
-/////////////////////////////////////////////////////////////////////////////
-// CStartupLogoDialog dialog
 
 namespace Ui
 {
@@ -24,13 +23,18 @@ namespace Ui
 }
 
 class CStartupLogoDialog
-    : public QWidget
+    : public QDialog
     , public IInitializeUIInfo
 {
     Q_OBJECT
-
 public:
-    CStartupLogoDialog(QString versionText, QString richTextCopyrightNotice, QWidget* pParent = nullptr);   // standard constructor
+
+    enum DialogType {
+        Loading, 
+        About
+    };
+
+    CStartupLogoDialog(DialogType dialogType, QString versionText, QString richTextCopyrightNotice, QWidget* pParent = nullptr);   // standard constructor
     ~CStartupLogoDialog();
 
     void SetInfoText(const char* text) override;
@@ -40,6 +44,9 @@ public:
 
     static CStartupLogoDialog* instance() { return s_pLogoWindow; }
 
+protected:
+    virtual void focusOutEvent(QFocusEvent * event) override;
+
 private:
 
     void SetInfo(const char* text);
@@ -48,6 +55,7 @@ private:
     static CStartupLogoDialog*              s_pLogoWindow;
 
     QScopedPointer<Ui::StartupLogoDialog>   m_ui;
+    DialogType                              m_dialogType;
 
     QPixmap                                 m_backgroundImage;
     const int                               m_enforcedWidth = 668;

@@ -876,7 +876,7 @@ void CCryEditApp::ShowSplashScreen(CCryEditApp* app)
 {
     g_splashScreenStateLock.lock();
 
-    CStartupLogoDialog* splashScreen = new CStartupLogoDialog(FormatVersion(app->m_pEditor->GetFileVersion()), FormatRichTextCopyrightNotice());
+    CStartupLogoDialog* splashScreen = new CStartupLogoDialog(CStartupLogoDialog::Loading, FormatVersion(app->m_pEditor->GetFileVersion()), FormatRichTextCopyrightNotice());
 
     g_pInitializeUIInfo = splashScreen;
     g_splashScreen = splashScreen;
@@ -1903,7 +1903,7 @@ void CCryEditApp::WriteConfig()
 // App command to run the dialog
 void CCryEditApp::OnAppAbout()
 {
-    auto* dialog = new CAboutDialog(FormatVersion(m_pEditor->GetFileVersion()), FormatRichTextCopyrightNotice());
+    auto* dialog = new CStartupLogoDialog(CStartupLogoDialog::About, FormatVersion(m_pEditor->GetFileVersion()), FormatRichTextCopyrightNotice());
     auto mainWindow = MainWindow::instance();
     auto geo = dialog->geometry();
     geo.moveCenter(mainWindow->mapToGlobal(mainWindow->geometry().center()));
