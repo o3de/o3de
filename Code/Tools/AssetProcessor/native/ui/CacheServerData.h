@@ -19,10 +19,10 @@ namespace AssetProcessor
     {
         enum class StatusLevel
         {
-            None,   // uninitalized or no state
+            None,   // uninitialized or no state
             Notice, // a notification to inform the user about state changes
             Error,  // system is configured wrong
-            Active  // the sysetm is active as a Client or Server
+            Active  // the system is active as a Client or Server
         };
 
         bool m_dirty = false;

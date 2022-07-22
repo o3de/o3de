@@ -613,9 +613,6 @@ void MainWindow::SetupAssetServerTab()
                 QStringLiteral("https://o3de.org/docs/user-guide/assets/asset-processor/asset-cache-server/"));
 
         });
-    ui->sharedCacheSupport->setStyleSheet(
-        ui->sharedCacheSupport->styleSheet() +
-        "qproperty-icon: url(:/stylesheet/img/help.svg); qproperty-iconSize: 24px 24px;");
 
     QObject::connect(ui->serverCacheModeOptions,
         static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
@@ -628,6 +625,7 @@ void MainWindow::SetupAssetServerTab()
             {
                 this->m_cacheServerData.m_dirty = true;
                 this->m_cacheServerData.m_cachingMode = inputAssetServerMode;
+                this->m_cacheServerData.m_updateStatus = false;
                 this->CheckAssetServerStates();
             }
         });
@@ -690,6 +688,7 @@ void MainWindow::SetupAssetServerTab()
         {
             AddPatternRow("New Name", AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard, "", true);
             this->m_cacheServerData.m_dirty = true;
+            this->m_cacheServerData.m_updateStatus = false;
             this->CheckAssetServerStates();
         });
 
@@ -712,6 +711,7 @@ void MainWindow::AddPatternRow(AZStd::string_view name, AssetBuilderSDK::AssetBu
     auto updateStatus = [this](int)
     {
         this->m_cacheServerData.m_dirty = true;
+        this->m_cacheServerData.m_updateStatus = false;
         this->CheckAssetServerStates();
     };
 
@@ -814,31 +814,37 @@ void MainWindow::CheckAssetServerStates()
         case CacheServerData::StatusLevel::None:
         {
             m_cacheServerData.m_updateStatus = true;
-            ui->sharedCacheStatus->setStyleSheet("background-color: transparent; color : white;");
+            ui->sharedCacheStatus->setStyleSheet("QLabel#sharedCacheStatus");
             ui->sharedCacheStatus->setText("");
             break;
         }
         case CacheServerData::StatusLevel::Notice:
         {
-            // blue
-            ui->sharedCacheStatus->setStyleSheet("font-weight: normal; color: white; background-color: rgba(88, 140, 188, 0.1); border: 1px solid #4285F4;");
             ui->sharedCacheStatus->setText(m_cacheServerData.m_statusMessage.c_str());
+            ui->sharedCacheStatus->setProperty("highlight", "blue");
+            ui->sharedCacheStatus->style()->unpolish(ui->sharedCacheStatus);
+            ui->sharedCacheStatus->style()->polish(ui->sharedCacheStatus);
+            ui->sharedCacheStatus->update();
             break;
         }
         case CacheServerData::StatusLevel::Active:
         {
-            // green
             m_cacheServerData.m_updateStatus = false;
-            ui->sharedCacheStatus->setStyleSheet("font-weight: medium; color: white; background-color: rgba(88, 188, 97, 0.1); border: 1px solid #58BC61;");
             ui->sharedCacheStatus->setText(m_cacheServerData.m_statusMessage.c_str());
+            ui->sharedCacheStatus->setProperty("highlight", "green");
+            ui->sharedCacheStatus->style()->unpolish(ui->sharedCacheStatus);
+            ui->sharedCacheStatus->style()->polish(ui->sharedCacheStatus);
+            ui->sharedCacheStatus->update();
             break;
         }
         case CacheServerData::StatusLevel::Error:
         {
-            // red
             m_cacheServerData.m_updateStatus = false;
-            ui->sharedCacheStatus->setStyleSheet("font-weight: bold; color: white; background-color: rgba(255, 0, 0, 0.1); border: 1px solid #FA2727;");
             ui->sharedCacheStatus->setText(m_cacheServerData.m_statusMessage.c_str());
+            ui->sharedCacheStatus->setProperty("highlight", "red");
+            ui->sharedCacheStatus->style()->unpolish(ui->sharedCacheStatus);
+            ui->sharedCacheStatus->style()->polish(ui->sharedCacheStatus);
+            ui->sharedCacheStatus->update();
             break;
         }
         default:
