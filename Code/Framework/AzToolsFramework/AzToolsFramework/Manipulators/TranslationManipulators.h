@@ -76,7 +76,7 @@ namespace AzToolsFramework
 
         //! Sets the bound width to use for the line/axis of a linear manipulator.
         void SetLineBoundWidth(float lineBoundWidth);
-        virtual AZStd::vector<BaseManipulator*> getManipulators() override;
+        virtual AZStd::vector<BaseManipulator*> GetManipulators() override;
 
     private:
         void ConfigurePlanarView(

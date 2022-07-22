@@ -238,7 +238,7 @@ namespace AzToolsFramework
             m_surfaceManipulator->SetNonUniformScale(nonUniformScale);
         }
     }
-    AZStd::vector<BaseManipulator*> TranslationManipulators::getManipulators()
+    AZStd::vector<BaseManipulator*> TranslationManipulators::GetManipulators()
     {
         AZStd::vector<BaseManipulator*> manipulators;
         for (auto& mainpulator : m_linearManipulators)

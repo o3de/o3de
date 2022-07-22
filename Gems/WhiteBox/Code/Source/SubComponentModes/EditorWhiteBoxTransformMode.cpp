@@ -286,7 +286,7 @@ namespace WhiteBox
             {
                 if(m_manipulator) 
                 {
-                    for(auto& manipulator: m_manipulator->getManipulators()) 
+                    for(auto& manipulator: m_manipulator->GetManipulators()) 
                     {
                         if(manipulator->MouseOver()) 
                         {
