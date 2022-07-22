@@ -1496,8 +1496,7 @@ namespace AssetProcessor
             [&](ScanFolderDatabaseEntry& scanFolder)
             {
                 found = true;
-                container.push_back();
-                container.back() = AZStd::move(scanFolder);
+                container.emplace_back() = AZStd::move(scanFolder);
                 return true;  // return true to collect more rows since we are filling a container
             });
         return found && succeeded;
@@ -1610,8 +1609,7 @@ namespace AssetProcessor
             [&](SourceDatabaseEntry& source)
             {
                 found = true;
-                container.push_back();
-                container.back() = AZStd::move(source);
+                container.emplace_back() = AZStd::move(source);
                 return true; // return true to continue iterating over additional results, we are populating a container
             });
         return  found && succeeded;
@@ -1635,12 +1633,11 @@ namespace AssetProcessor
         bool found = false;
         bool succeeded = QuerySourceBySourceName(AssetUtilities::NormalizeFilePath(exactSourceName).toUtf8().constData(),
             [&](SourceDatabaseEntry& source)
-        {
-            found = true;
-            container.push_back();
-            container.back() = AZStd::move(source);
-            return true;  // return true to continue iterating over additional results, we are populating a container
-        });
+            {
+                found = true;
+                container.emplace_back() = AZStd::move(source);
+                return true;  // return true to continue iterating over additional results, we are populating a container
+            });
         return  found && succeeded;
     }
 
@@ -1650,12 +1647,11 @@ namespace AssetProcessor
         bool succeeded = QuerySourceBySourceNameScanFolderID(exactSourceName.toUtf8().constData(),
             scanFolderID,
             [&](SourceDatabaseEntry& source)
-        {
-            found = true;
-            container.push_back();
-            container.back() = AZStd::move(source);
-            return true;  // return true to continue iterating over additional results, we are populating a container
-        });
+            {
+                found = true;
+                container.emplace_back() = AZStd::move(source);
+                return true;  // return true to continue iterating over additional results, we are populating a container
+            });
         return  found && succeeded;
     }
 
@@ -1671,8 +1667,7 @@ namespace AssetProcessor
             [&](SourceDatabaseEntry& source)
             {
                 found = true;
-                container.push_back();
-                container.back() = AZStd::move(source);
+                container.emplace_back() = AZStd::move(source);
                 return true;  // return true to continue iterating over additional results, we are populating a container
             });
         return  found && succeeded;
@@ -1695,8 +1690,7 @@ namespace AssetProcessor
             [&](SourceDatabaseEntry& source)
             {
                 found = true;
-                container.push_back();
-                container.back() = AZStd::move(source);
+                container.emplace_back() = AZStd::move(source);
                 return true; // return true to continue iterating over additional results, we are populating a container
             });
         return found && succeeded;
@@ -1707,11 +1701,11 @@ namespace AssetProcessor
         bool found = false;
         QuerySourceByJobID( jobID,
             [&](SourceDatabaseEntry& source)
-        {
-            found = true;
-            entry = AZStd::move(source);
-            return false; // stop after the first result
-        });
+            {
+                found = true;
+                entry = AZStd::move(source);
+                return false; // stop after the first result
+            });
         return found;
     }
 
@@ -1720,11 +1714,11 @@ namespace AssetProcessor
         bool found = false;
         QuerySourceByProductID( productID,
             [&](SourceDatabaseEntry& source)
-        {
-            found = true;
-            entry = AZStd::move(source);
-            return false; // stop after the first result
-        });
+            {
+                found = true;
+                entry = AZStd::move(source);
+                return false; // stop after the first result
+            });
         return found;
     }
 
@@ -1732,13 +1726,12 @@ namespace AssetProcessor
     {
         bool found = false;
         bool succeeded = QueryCombinedByProductName(exactProductName.toUtf8().constData(),
-                [&](CombinedDatabaseEntry& combined)
-                {
-                    found = true;
-                    container.push_back();
-                    container.back() = AZStd::move(combined);
-                    return true; // return true to continue collecting all
-                });
+            [&](CombinedDatabaseEntry& combined)
+            {
+                found = true;
+                container.emplace_back() = AZStd::move(combined);
+                return true; // return true to continue collecting all
+            });
         return found && succeeded;
     }
 
@@ -1746,13 +1739,12 @@ namespace AssetProcessor
     {
         bool found = false;
         bool succeeded = QueryCombinedLikeProductName(likeProductName.toUtf8().constData(), likeType,
-                [&](CombinedDatabaseEntry& combined)
-                {
-                    found = true;
-                    container.push_back();
-                    container.back() = AZStd::move(combined);
-                    return true;//all
-                });
+            [&](CombinedDatabaseEntry& combined)
+            {
+                found = true;
+                container.emplace_back() = AZStd::move(combined);
+                return true;//all
+            });
         return found && succeeded;
     }
 
@@ -1899,8 +1891,7 @@ namespace AssetProcessor
                 [&](JobDatabaseEntry& job)
                 {
                     found = true;
-                    container.push_back();
-                    container.back() = AZStd::move(job);
+                    container.emplace_back() = AZStd::move(job);
                     return true;//all
                 },  builderGuid,
                 jobKey.isEmpty() ? nullptr : jobKey.toUtf8().constData(),
@@ -1942,8 +1933,7 @@ namespace AssetProcessor
             [&](JobDatabaseEntry& job)
         {
             found = true;
-            container.push_back();
-            container.back() = AZStd::move(job);
+            container.emplace_back() = AZStd::move(job);
             return true; // continue to fetch more rows.
         },  builderGuid,
             jobKey.isEmpty() ? nullptr : jobKey.toUtf8().constData(),
@@ -1962,8 +1952,7 @@ namespace AssetProcessor
                 [&](JobDatabaseEntry& job)
                 {
                     found = true;
-                    container.push_back();
-                    container.back() = AZStd::move(job);
+                    container.emplace_back() = AZStd::move(job);
                     return true;//all
                 },  builderGuid,
                     jobKey.isEmpty() ? nullptr : jobKey.toUtf8().constData(),
@@ -1989,8 +1978,7 @@ namespace AssetProcessor
                 [&](JobDatabaseEntry& job)
             {
                 found = true;
-                container.push_back();
-                container.back() = AZStd::move(job);
+                container.emplace_back() = AZStd::move(job);
                 return true;//all
             },  builderGuid,
                 jobKey.isEmpty() ? nullptr : jobKey.toUtf8().constData(),
@@ -2011,8 +1999,7 @@ namespace AssetProcessor
                 [&](JobDatabaseEntry& job)
             {
                 found = true;
-                container.push_back();
-                container.back() = AZStd::move(job);
+                container.emplace_back() = AZStd::move(job);
                 return true;//all
             });
             return true; // continue to fetch more rows.
@@ -2033,8 +2020,7 @@ namespace AssetProcessor
                 [&](JobDatabaseEntry& job)
             {
                 found = true;
-                container.push_back();
-                container.back() = AZStd::move(job);
+                container.emplace_back() = AZStd::move(job);
                 return true; // continue to fetch more rows for the QueryJobByProductId call
             });
             return true; // continue to fetch more rows for the QueryProductLikeProductName call
@@ -2182,8 +2168,7 @@ namespace AssetProcessor
                 [&](ProductDatabaseEntry& product)
             {
                 found = true;
-                container.push_back();
-                container.back() = AZStd::move(product);
+                container.emplace_back() = AZStd::move(product);
                 return true; // continue fetching more results.
             }, builderGuid,
                jobKey.isEmpty() ? nullptr : jobKey.toUtf8().constData(),
@@ -2199,8 +2184,7 @@ namespace AssetProcessor
             [&](ProductDatabaseEntry& product)
         {
             found = true;
-            container.push_back();
-            container.back() = AZStd::move(product);
+            container.emplace_back() = AZStd::move(product);
             return true; // continue fetching more results.
         }, builderGuid,
            jobKey.isEmpty() ? nullptr : jobKey.toUtf8().constData(),
@@ -2222,8 +2206,7 @@ namespace AssetProcessor
                 [&](ProductDatabaseEntry& product)
             {
                 found = true;
-                container.push_back();
-                container.back() = AZStd::move(product);
+                container.emplace_back() = AZStd::move(product);
                 return true; // continue fetching more results.
             }, builderGuid,
                jobKey.isEmpty() ? nullptr : jobKey.toUtf8().constData(),
@@ -2239,8 +2222,7 @@ namespace AssetProcessor
                 [&](ProductDatabaseEntry& product)
             {
                 found = true;
-                container.push_back();
-                container.back() = AZStd::move(product);
+                container.emplace_back() = AZStd::move(product);
                 return true; // continue fetching more results.
             }, builderGuid,
                jobKey.isEmpty() ? nullptr : jobKey.toUtf8().constData(),
@@ -2261,8 +2243,7 @@ namespace AssetProcessor
             [&](ProductDatabaseEntry& product)
         {
             found = true;
-            container.push_back();
-            container.back() = AZStd::move(product);
+            container.emplace_back() = AZStd::move(product);
             return true; // continue fetching more results.
         }, builderGuid,
             jobKey.isEmpty() ? nullptr : jobKey.toUtf8().constData(),
@@ -2278,8 +2259,7 @@ namespace AssetProcessor
             [&](CombinedDatabaseEntry& combined)
             {
                 found = true;
-                container.push_back();
-                container.back() = AZStd::move(combined);
+                container.emplace_back() = AZStd::move(combined);
                 return true; // continue fetching more results.
             }, builderGuid,
                jobKey.isEmpty() ? nullptr : jobKey.toUtf8().constData(),
@@ -2295,8 +2275,7 @@ namespace AssetProcessor
             [&](CombinedDatabaseEntry& combined)
             {
                 found = true;
-                container.push_back();
-                container.back() = AZStd::move(combined);
+                container.emplace_back() = AZStd::move(combined);
                 return true; // continue fetching more results.
             });
         return found && succeeded;
@@ -2565,8 +2544,7 @@ namespace AssetProcessor
             [&](JobInfo& jobInfo)
         {
             found = true;
-            container.push_back();
-            container.back() = AZStd::move(jobInfo);
+            container.emplace_back() = AZStd::move(jobInfo);
             return true; // return true to keep iterating over further rows.
         });
         return found && succeeded;
@@ -2580,8 +2558,7 @@ namespace AssetProcessor
             [&](JobInfo& jobInfo)
         {
             found = true;
-            container.push_back();
-            container.back() = AZStd::move(jobInfo);
+            container.emplace_back() = AZStd::move(jobInfo);
             return true; // return true to keep iterating over further rows.
         });
         return found && succeeded;
@@ -2594,8 +2571,7 @@ namespace AssetProcessor
             [&](JobInfo& jobInfo)
         {
             found = true;
-            container.push_back();
-            container.back() = AZStd::move(jobInfo);
+            container.emplace_back() = AZStd::move(jobInfo);
             return true; // return true to keep iterating over further rows.
         }, builderGuid,
             jobKey.isEmpty() ? nullptr : jobKey.toUtf8().constData(),
@@ -2667,8 +2643,7 @@ namespace AssetProcessor
             if (builderGuid == entry.m_builderGuid)
             {
                 found = true;
-                container.push_back();
-                container.back() = AZStd::move(entry);
+                container.emplace_back() = AZStd::move(entry);
             }
             return true; // return true to keep iterating over further rows.
         });
@@ -2682,8 +2657,7 @@ namespace AssetProcessor
             [&](SourceFileDependencyEntry& entry)
         {
             found = true;
-            container.push_back();
-            container.back() = AZStd::move(entry);
+            container.emplace_back() = AZStd::move(entry);
             return true; // return true to keep iterating over further rows.
         });
         return found && succeeded;
@@ -2699,8 +2673,7 @@ namespace AssetProcessor
             [&](SourceFileDependencyEntry& entry)
         {
             found = true;
-            container.push_back();
-            container.back() = AZStd::move(entry);
+            container.emplace_back() = AZStd::move(entry);
             return true; // return true to keep iterating over further rows.
         });
         return found && succeeded;
@@ -2792,8 +2765,7 @@ namespace AssetProcessor
         bool succeeded = QueryProductDependenciesTable([&](AZ::Data::AssetId& /*assetId*/, ProductDependencyDatabaseEntry& entry)
         {
             found = true;
-            container.push_back();
-            container.back() = AZStd::move(entry);
+            container.emplace_back() = AZStd::move(entry);
             return true; // return true to keep iterating over further rows.
         });
         return found && succeeded;
@@ -2819,8 +2791,7 @@ namespace AssetProcessor
             [&](ProductDependencyDatabaseEntry& entry)
         {
             found = true;
-            container.push_back();
-            container.back() = AZStd::move(entry);
+            container.emplace_back() = AZStd::move(entry);
             return true; // return true to keep iterating over further rows.
         });
         return found && succeeded;
@@ -2833,8 +2804,7 @@ namespace AssetProcessor
             [&](ProductDatabaseEntry& entry)
         {
             found = true;
-            container.push_back();
-            container.back() = AZStd::move(entry);
+            container.emplace_back() = AZStd::move(entry);
             return true; // return true to keep iterating over further rows.
         });
         return found && succeeded;
@@ -2847,8 +2817,7 @@ namespace AssetProcessor
             [&](ProductDatabaseEntry& entry)
         {
             found = true;
-            container.push_back();
-            container.back() = AZStd::move(entry);
+            container.emplace_back() = AZStd::move(entry);
             return true;
         });
         return found && succeeded;
@@ -2872,8 +2841,7 @@ namespace AssetProcessor
             [&](ProductDatabaseEntry& entry)
         {
             found = true;
-            container.push_back();
-            container.back() = AZStd::move(entry);
+            container.emplace_back() = AZStd::move(entry);
             return true; // return true to keep iterating over further rows.
         });
         return found && succeeded;
@@ -2887,8 +2855,7 @@ namespace AssetProcessor
             [&](ProductDependencyDatabaseEntry& entry)
         {
             found = true;
-            container.push_back();
-            container.back() = AZStd::move(entry);
+            container.emplace_back() = AZStd::move(entry);
             return true; // return true to keep iterating over further rows.
         });
         return found && succeeded;
@@ -3056,8 +3023,7 @@ namespace AssetProcessor
             [&](MissingProductDependencyDatabaseEntry& entry)
         {
             found = true;
-            container.push_back();
-            container.back() = AZStd::move(entry);
+            container.emplace_back() = AZStd::move(entry);
             return true; // return true to keep iterating over further rows.
         });
         return found && succeeded;
@@ -3323,8 +3289,7 @@ namespace AssetProcessor
             [&](StatDatabaseEntry& stat)
             {
                 found = true;
-                container.push_back();
-                container.back() = AZStd::move(stat);
+                container.emplace_back() = AZStd::move(stat);
                 return true; // return true to continue iterating over additional results, we are populating a container
             });
         return found && succeeded;
@@ -3338,8 +3303,7 @@ namespace AssetProcessor
             [&](StatDatabaseEntry& stat)
             {
                 found = true;
-                container.push_back();
-                container.back() = AZStd::move(stat);
+                container.emplace_back() = AZStd::move(stat);
                 return true; // return true to continue iterating over additional results, we are populating a container
             });
         return found && succeeded;

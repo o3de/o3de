@@ -5029,8 +5029,7 @@ namespace AssetProcessor
                         entry.m_productID,
                         [&](AzToolsFramework::AssetDatabase::ProductDependencyDatabaseEntry& entry)
                         {
-                            container.push_back();
-                            container.back() = AZStd::move(entry);
+                            container.emplace_back() = AZStd::move(entry);
                             return true; // return true to keep iterating over further rows.
                         });
 

@@ -416,6 +416,11 @@ namespace AtomToolsFramework
         resize(targetSize);
     }
 
+    bool RenderViewportWidget::SupportsClientAreaResize() const
+    {
+        return true;
+    }
+
     bool RenderViewportWidget::GetFullScreenState() const
     {
         // The RenderViewportWidget does not currently support full screen.

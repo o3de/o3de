@@ -29,6 +29,7 @@ ly_add_target(
             AZ::AzCore
             AZ::AzFramework
             Gem::ScriptAutomation.API
+            Gem::Atom_Feature_Common.Public
 )
 
 ly_add_target(
