@@ -242,7 +242,7 @@ namespace AssetProcessor
         endResetModel();
     }
 
-    void BuilderInfoMetricsModel::OnJobProcessingStatChanged([[maybe_unused]] JobEntry jobEntry, [[maybe_unused]] int value)
+    void BuilderInfoMetricsModel::OnProcessJobDurationChanged([[maybe_unused]] JobEntry jobEntry, [[maybe_unused]] int value)
     {
         // TODO: move it to BuilderData?
 
@@ -258,5 +258,34 @@ namespace AssetProcessor
         //     m_singleBuilderMetrics[builderIndex]->UpdateOrInsertEntry(BuilderInfoMetricsItem::JobType::ProcessingJob, entryName, 1, value);
         //     m_allBuildersMetrics->UpdateOrInsertEntry(BuilderInfoMetricsItem::JobType::ProcessingJob, entryName, 1, value);
         // }
+    }
+
+    void BuilderInfoMetricsModel::OnCreateJobsDurationChanged(QString sourceName)
+    {
+        QString statKey = QString("CreateJobs,").append(sourceName).append("%");
+        m_dbConnection->QueryStatLikeStatName(
+            statKey.toUtf8().constData(),
+            [this](AzToolsFramework::AssetDatabase::StatDatabaseEntry entry)
+            {
+                AZStd::vector<AZStd::string> tokens;
+                AZ::StringFunc::Tokenize(entry.m_statName, tokens, ',');
+                if (tokens.size() == 3) // CreateJobs,filePath,builderName
+                {
+                    const auto& sourceName = tokens[1];
+                    const auto& builderName = tokens[2];
+                    if (m_builderNameToIndex.contains(builderName))
+                    {
+                        m_singleBuilderMetrics[m_builderNameToIndex[builderName]]->UpdateOrInsertEntry(
+                            BuilderInfoMetricsItem::JobType::AnalysisJob, sourceName, 1, entry.m_statValue);
+                        m_allBuildersMetrics->UpdateOrInsertEntry(
+                            BuilderInfoMetricsItem::JobType::AnalysisJob, builderName + "," + sourceName, 1, entry.m_statValue);
+                    }
+                    else
+                    {
+                        AZ_Warning("AssetProcessor", false, "No builder found for an analysis job stat!!!\n");
+                    }
+                }
+                return true;
+            });
     }
 }

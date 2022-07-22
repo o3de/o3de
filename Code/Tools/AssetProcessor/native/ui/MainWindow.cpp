@@ -19,6 +19,9 @@
 #include <native/ui/BuilderInfoMetricsModel.h>
 #include <native/ui/BuilderInfoMetricsSortModel.h>
 #include <ui/SourceAssetTreeFilterModel.h>
+#include <native/ui/BuilderInfoPatternsModel.h>
+#include <native/ui/BuilderInfoMetricsModel.h>
+#include <native/ui/BuilderInfoMetricsSortModel.h>
 
 #include <AzFramework/Asset/AssetSystemBus.h>
 
@@ -521,7 +524,7 @@ void MainWindow::Activate()
         m_guiApplicationManager->GetAssetProcessorManager(),
         &AssetProcessor::AssetProcessorManager::JobProcessDurationChanged,
         m_builderInfoMetrics,
-        &AssetProcessor::BuilderInfoMetricsModel::OnJobProcessingStatChanged);
+        &AssetProcessor::BuilderInfoMetricsModel::OnProcessJobDurationChanged);
 
     // Tools tab:
     connect(ui->fullScanButton, &QPushButton::clicked, this, &MainWindow::OnRescanButtonClicked);

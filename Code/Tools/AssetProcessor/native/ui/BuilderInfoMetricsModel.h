@@ -8,7 +8,11 @@
 
 #pragma once
 
+#include <AZCore/std/containers/vector.h>
+#include <AZCore/std/containers/unordered_map.h>
+#include <AzCore/std/string/string.h>
 #include <QAbstractItemModel>
+#include <AzToolsFramework/AssetDatabase/AssetDatabaseConnection.h>
 
 namespace AssetBuilderSDK
 {
@@ -53,7 +57,8 @@ namespace AssetProcessor
         void Reset();
         void OnBuilderSelectionChanged(const AssetBuilderSDK::AssetBuilderDesc& builder);
     public Q_SLOTS:
-        void OnJobProcessingStatChanged(JobEntry jobEntry, int value);
+        void OnProcessJobDurationChanged(JobEntry jobEntry, int value);
+        void OnCreateJobsDurationChanged(QString sourceName);
 
     private:
         AZStd::shared_ptr<BuilderData> m_data;
