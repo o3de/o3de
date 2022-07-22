@@ -94,11 +94,11 @@ namespace AZ
                 [this](const char* message){ ReportError("%s", message); });
         }
 
-        void MaterialTypeAssetCreator::AddShader(const AZ::Data::Asset<ShaderAsset>& shaderAsset, const ShaderVariantId& shaderVaraintId, const AZ::Name& shaderTag)
+        void MaterialTypeAssetCreator::AddShader(const AZ::Data::Asset<ShaderAsset>& shaderAsset, const ShaderVariantId& shaderVariantId, const AZ::Name& shaderTag)
         {
             if (ValidateIsReady() && ValidateNotNull(shaderAsset, "ShaderAsset"))
             {
-                m_asset->m_shaderCollection.m_shaderItems.push_back(ShaderCollection::Item{shaderAsset, shaderTag, shaderVaraintId});
+                m_asset->m_shaderCollection.m_shaderItems.push_back(ShaderCollection::Item{shaderAsset, shaderTag, shaderVariantId});
                 if (!m_asset->m_shaderCollection.m_shaderTagIndexMap.Insert(shaderTag, RHI::Handle<uint32_t>(m_asset->m_shaderCollection.m_shaderItems.size() - 1)))
                 {
                     ReportError(AZStd::string::format("Failed to insert shader tag '%s'. Shader tag must be unique.", shaderTag.GetCStr()).c_str());
@@ -110,6 +110,11 @@ namespace AZ
 
                 CacheMaterialSrgLayout();
             }
+        }
+
+        void MaterialTypeAssetCreator::AddShader(const AZ::Data::Asset<ShaderAsset>& shaderAsset, const ShaderVariantId& shaderVariantId)
+        {
+            AddShader(shaderAsset, shaderVariantId, AZ::Name(AZ::Uuid::CreateRandom().ToFixedString()));
         }
 
         void MaterialTypeAssetCreator::AddShader(const AZ::Data::Asset<ShaderAsset>& shaderAsset, const AZ::Name& shaderTag)

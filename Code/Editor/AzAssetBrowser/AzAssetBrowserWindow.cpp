@@ -95,6 +95,7 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
     m_ui->m_searchWidget->SetFilterInputInterval(AZStd::chrono::milliseconds(250));
 
     m_assetBrowserModel->SetFilterModel(m_filterModel.data());
+    m_assetBrowserModel->EnableTickBus();
 
     m_ui->m_collapseAllButton->setAutoRaise(true); // hover highlight
     m_ui->m_collapseAllButton->setIcon(QIcon(AzAssetBrowser::CollapseAllIcon));
@@ -171,6 +172,7 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
 
 AzAssetBrowserWindow::~AzAssetBrowserWindow()
 {
+    m_assetBrowserModel->DisableTickBus();
     m_ui->m_assetBrowserTreeViewWidget->SaveState();
 }
 

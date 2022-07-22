@@ -640,8 +640,7 @@ namespace AzFramework
         }
 
         m_outboxMutex.lock();
-        m_outbox.push_back();
-        m_outbox.back().first = target.m_persistentId;
+        m_outbox.emplace_back().first = target.m_persistentId;
         m_outbox.back().second.swap(msgBuffer);
         m_outboxMutex.unlock();
     }

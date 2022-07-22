@@ -17,6 +17,9 @@
 #include <AzQtComponents/Components/FilteredSearchWidget.h>
 #include <QElapsedTimer>
 #include <ui/BuilderListModel.h>
+#include <native/utilities/AssetUtilEBusHelper.h>
+#include <native/utilities/PlatformConfiguration.h>
+#include <native/ui/CacheServerData.h>
 #endif
 
 namespace AzToolsFramework
@@ -150,6 +153,7 @@ private:
     Config m_config;
     BuilderListModel* m_builderList;
     BuilderListSortFilterProxy* m_builderListSortFilterProxy;
+    AssetProcessor::CacheServerData m_cacheServerData;
 
     void SetContextLogDetailsVisible(bool visible);
     void SetContextLogDetails(const QMap<QString, QString>& details);
@@ -210,6 +214,13 @@ private:
     void IntervalAssetTabFilterRefresh();
     /// Fires off one final refresh before invalidating the filter refresh timer.
     void ShutdownAssetTabFilterRefresh();
+
+    void SetupAssetServerTab();
+    void AddPatternRow(AZStd::string_view name, AssetBuilderSDK::AssetBuilderPattern::PatternType type, AZStd::string_view pattern, bool enable);
+    void AssembleAssetPatterns();
+    void CheckAssetServerStates();
+    void ResetAssetServerView();
+    void SetServerAddress(AZStd::string_view serverAddress);
 
     void SetupAssetSelectionCaching();
 

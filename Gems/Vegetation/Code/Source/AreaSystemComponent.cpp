@@ -1128,8 +1128,7 @@ namespace Vegetation
         ([[maybe_unused]] size_t inPositionIndex, const AZ::Vector3& position,
             const AZ::Vector3& normal, const SurfaceData::SurfaceTagWeights& masks) -> bool
             {
-                sectorInfo.m_baseContext.m_availablePoints.push_back();
-                ClaimPoint& claimPoint = sectorInfo.m_baseContext.m_availablePoints.back();
+                ClaimPoint& claimPoint = sectorInfo.m_baseContext.m_availablePoints.emplace_back();
                 claimPoint.m_handle = CreateClaimHandle(sectorInfo, ++claimIndex);
                 claimPoint.m_position = position;
                 claimPoint.m_normal = normal;

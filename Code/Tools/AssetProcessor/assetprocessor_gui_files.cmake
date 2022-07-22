@@ -23,6 +23,8 @@ set(FILES
     native/ui/AssetTreeModel.cpp
     native/ui/AssetTreeItem.h
     native/ui/AssetTreeItem.cpp
+    native/ui/CacheServerData.h
+    native/ui/CacheServerData.cpp
     native/ui/ConnectionEditDialog.h
     native/ui/ConnectionEditDialog.cpp
     native/ui/GoToButton.h
@@ -58,6 +60,8 @@ set(FILES
     native/ui/SourceAssetTreeItemData.cpp
     native/ui/SourceAssetTreeModel.h
     native/ui/SourceAssetTreeModel.cpp
+    native/ui/SourceAssetTreeFilterModel.h
+    native/ui/SourceAssetTreeFilterModel.cpp
     native/utilities/GUIApplicationServer.cpp
     native/utilities/GUIApplicationServer.h
     native/utilities/GUIApplicationManager.cpp

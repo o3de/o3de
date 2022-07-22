@@ -352,7 +352,7 @@ namespace Terrain
         m_candidateSectors.clear();
         m_sectorsThatNeedSrgCompiled.clear();
 
-        const uint8_t lodCount = aznumeric_cast<uint8_t>(ceil(log2f(AZStd::GetMax(1.0f, m_config.m_renderDistance / m_config.m_firstLodDistance)) + 1.0f));
+        const uint8_t lodCount = aznumeric_cast<uint8_t>(AZStd::ceilf(log2f(AZStd::GetMax(1.0f, m_config.m_renderDistance / m_config.m_firstLodDistance)) + 1.0f));
         m_sectorLods.reserve(lodCount);
         
         // Create all the sectors with uninitialized SRGs. The SRGs will be updated later by CheckLodGridsForUpdate().
