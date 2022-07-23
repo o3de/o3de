@@ -198,7 +198,14 @@ namespace AZStd::ranges
             else if constexpr (common_range<R> && cpp17_input_iterator<iterator_t<R>>
                 && constructible_from<C, iterator_t<R>, sentinel_t<R>, Args...>)
             {
-                return C(ranges::begin(r), ranges::end(r), AZStd::forward<Args>(args)...);
+                if constexpr (is_lvalue_reference_v<R>)
+                {
+                    return C(ranges::begin(r), ranges::end(r), AZStd::forward<Args>(args)...);
+                }
+                else
+                {
+                    return C(make_move_iterator(ranges::begin(r)), make_move_iterator(ranges::end(r)), AZStd::forward<Args>(args)...);
+                }
             }
             // Construct an empty container and then use the inserter adapter to forward arguments
             else if constexpr (constructible_from<C, Args...> && Internal::container_insertable<C, range_reference_t<R>>)
@@ -212,7 +219,14 @@ namespace AZStd::ranges
                     c.reserve(ranges::size(r));
                 }
 
-                ranges::copy(r, Internal::container_inserter<range_reference_t<R>>(c));
+                if constexpr (is_lvalue_reference_v<R>)
+                {
+                    ranges::copy(r, Internal::container_inserter<range_reference_t<R>>(c));
+                }
+                else
+                {
+                    ranges::move(r, Internal::container_inserter<range_reference_t<R>>(c));
+                }
                 return c;
             }
             // Otherwise the construct is ill-formed

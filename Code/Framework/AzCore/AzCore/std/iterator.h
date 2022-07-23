@@ -136,7 +136,7 @@ namespace AZStd
     // to work with the range algorithms which require a weakly_incrementable iterator
     // the difference_type type alias must not be void as it is in C++17
     // https://en.cppreference.com/w/cpp/iterator/back_insert_iterator
-    // This is being workaround by specializing AZStd::iterator_traits for these types
+    // We workaround this by specializing AZStd::iterator_traits for these types
     // to provide a difference_type type alias
     template<class Container>
     struct iterator_traits<back_insert_iterator<Container>>

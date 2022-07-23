@@ -1218,14 +1218,6 @@ namespace AZStd::ranges
 
 namespace AZStd::ranges
 {
-    //! Adding C++23 from_range_t tag type
-    //! https://eel.is/c++draft/range.utility.conv
-    struct from_range_t {};
-    inline constexpr from_range_t from_range;
-}
-
-namespace AZStd::ranges
-{
     template<class I1, class I2>
     struct in_in_result
     {
@@ -1313,4 +1305,9 @@ namespace AZStd::ranges::views{}
 namespace AZStd
 {
       namespace views = ranges::views;
+
+      //! Adding C++23 from_range_t tag type
+      //! https://eel.is/c++draft/range.utility.conv
+      struct from_range_t {};
+      inline constexpr from_range_t from_range;
 }

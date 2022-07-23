@@ -32,6 +32,7 @@ set(FILES
     hash.cpp
     hash.h
     hash_table.h
+    iterator/common_iterator.h
     iterator/iterator_primitives.h
     iterator.h
     limits.h
@@ -77,6 +78,7 @@ set(FILES
     containers/bitset.h
     containers/compressed_pair.h
     containers/compressed_pair.inl
+    containers/containers_concepts.h
     containers/deque.h
     containers/fixed_forward_list.h
     containers/fixed_list.h
