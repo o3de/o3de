@@ -441,36 +441,27 @@ function(ly_test_impact_write_config_file CONFIG_TEMPLATE_FILE BIN_DIR)
     message(DEBUG "Test impact framework post steps complete")
 endfunction()
 
+#! ly_test_impact_write_pytest_file: writes out the test information utilised by our TIAF testing tools, using the data derived from the build generation process.
+# 
 function(ly_test_impact_write_pytest_file)
-    set(config_array "")
+    
+    set(build_configs "")
     foreach(config_type ${LY_CONFIGURATION_TYPES})
-        if(NOT "${config_type}" STREQUAL "release")
-            list(APPEND config_array "\"${config_type}\":\"${LY_TEST_IMPACT_WORKING_DIR}/${config_type}/Persistent/tiaf.json\"")
-        endif()
+        set(config "\"${LY_TEST_IMPACT_WORKING_DIR}/${config_type}/Persistent/tiaf.json\"")
+        set(report "\"${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${config_type}/tiaf.exe\"")
+        set(bin "\"${LY_TEST_IMPACT_WORKING_DIR}/${config_type}/Temp\"")
+        ly_file_read("cmake/TestImpactFramework/LyTestImpactBuildConfigEntry.in" build_config)
+        string(CONFIGURE ${build_config} build_config)
+        list(APPEND build_configs "${build_config}")
     endforeach()
-    string(REPLACE ";" "," CONFIG_PATHS "${config_array}")
 
-    set(bin_array "")
-    foreach(config_type ${LY_CONFIGURATION_TYPES})
-        if(NOT "${config_type}" STREQUAL "release")
-            list(APPEND bin_array "\"${config_type}\":\"${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${config_type}/tiaf.exe\"")
-        endif()
-    endforeach()
-    string(REPLACE ";" "," BIN_PATHS "${bin_array}")
+    string(REPLACE ";" ",\n" build_configs "${build_configs}")
+    message("${build_configs}")
+    set(build ${CMAKE_BINARY_DIR})
 
-    set(report_arr "")
-    foreach(config_type ${LY_CONFIGURATION_TYPES})
-        if(NOT "${config_type}" STREQUAL "release")
-            list(APPEND report_arr "\"${config_type}\":\"${LY_TEST_IMPACT_WORKING_DIR}/${config_type}/Temp\"")
-        endif()
-    endforeach()
-    string(REPLACE ";" "," REPORT_PATHS "${report_arr}")
+    set(root ${LY_ROOT_FOLDER})
 
-    set(BUILD_DIR ${CMAKE_BINARY_DIR})
-
-    set(ROOT_DIR ${LY_ROOT_FOLDER})
-
-    ly_file_read("cmake/TestImpactFramework/PyTestTestData.in" test_file)
+    ly_file_read("cmake/TestImpactFramework/LYTestImpactTestData.in" test_file)
     string(CONFIGURE ${test_file} test_file)
     
     file(GENERATE

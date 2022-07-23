@@ -1,7 +1,0 @@
-{
-  "build_dir" : "${BUILD_DIR}",
-  "root_dir" : "${ROOT_DIR}",
-  "configs" : {${CONFIG_PATHS}},
-  "binary" : {${BIN_PATHS}},
-  "report_dir" : {${REPORT_PATHS}}
-}
