@@ -33,7 +33,7 @@ elseif  (${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Windows" )
     ly_set(LY_PYTHON_VERSION 3.10.5)
     ly_set(LY_PYTHON_VERSION_MAJOR_MINOR 3.10)
     ly_set(LY_PYTHON_PACKAGE_NAME python-3.10.5-rev1-windows)
-    ly_set(LY_PYTHON_PACKAGE_HASH aec3ae765ea7b55826f67fbed85f38c302d98502cb5deb62fa06e9db911e6e59)
+    ly_set(LY_PYTHON_PACKAGE_HASH c012e7c8fd20e632446d2cd689a9472e4e4495da7534d484d0f1c63840222cbb)
 endif()
 
 # settings and globals
