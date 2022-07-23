@@ -6,15 +6,13 @@
  *
  */
 
-
 #pragma once
 
 #if !defined(Q_MOC_RUN)
-#include <QDialog>
-#include <QWidget>
-#include <QString>
-#include <QPixmap>
 #include "IEditor.h"
+#include <QDialog>
+#include <QPixmap>
+#include <QString>
 #endif
 
 namespace Ui
@@ -28,13 +26,17 @@ class CStartupLogoDialog
 {
     Q_OBJECT
 public:
+    static constexpr int EnforcedWidth = 668;
+    static constexpr int EnforcedHeight = 368;
 
-    enum DialogType {
-        Loading, 
+    enum DialogType
+    {
+        Loading,
         About
     };
 
-    CStartupLogoDialog(DialogType dialogType, QString versionText, QString richTextCopyrightNotice, QWidget* pParent = nullptr);   // standard constructor
+    CStartupLogoDialog(
+        DialogType dialogType, QString versionText, QString richTextCopyrightNotice, QWidget* pParent = nullptr); // standard constructor
     ~CStartupLogoDialog();
 
     void SetInfoText(const char* text) override;
@@ -45,20 +47,15 @@ public:
     static CStartupLogoDialog* instance() { return s_pLogoWindow; }
 
 protected:
-    virtual void focusOutEvent(QFocusEvent * event) override;
+    virtual void focusOutEvent(QFocusEvent* event) override;
 
 private:
-
     void SetInfo(const char* text);
     void paintEvent(QPaintEvent* event) override;
 
-    static CStartupLogoDialog*              s_pLogoWindow;
+    static CStartupLogoDialog* s_pLogoWindow;
 
-    QScopedPointer<Ui::StartupLogoDialog>   m_ui;
-    DialogType                              m_dialogType;
-
-    QPixmap                                 m_backgroundImage;
-    const int                               m_enforcedWidth = 668;
-    const int                               m_enforcedHeight = 368;
+    QScopedPointer<Ui::StartupLogoDialog> m_ui;
+    DialogType m_dialogType;
+    QPixmap m_backgroundImage;
 };
-
