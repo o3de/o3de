@@ -428,8 +428,6 @@ set(FILES
     GameResourcesExporter.cpp
     GameExporter.h
     GameResourcesExporter.h
-    AboutDialog.h
-    AboutDialog.ui
     DocMultiArchive.h
     FBXExporterDialog.h
     FileTypeUtils.h
@@ -514,7 +512,6 @@ set(FILES
     SettingsManager.h
     SettingsManagerDialog.h
     SettingsManagerDialog.ui
-    AboutDialog.cpp
     ErrorReportTableModel.h
     ErrorReportTableModel.cpp
     FBXExporterDialog.cpp
