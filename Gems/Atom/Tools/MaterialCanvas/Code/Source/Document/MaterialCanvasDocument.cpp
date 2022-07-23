@@ -621,6 +621,13 @@ namespace MaterialCanvas
                         updateAndAddSlotInstructions(node, slot, instructionsForSlot);
                     }
                 }
+
+                // Gather and insert instructions provided by the node.
+                // We might need separate blocks of instructions that can be processed before or after the slots are processed.
+                AZStd::vector<AZStd::string> instructionsForNode;
+                collectSettingsAsVec(nodeConfig.m_settings, "instructions", instructionsForNode);
+                replaceStringsInVec("NODEID", AZStd::string::format("node%u", node->GetId()), instructionsForNode);
+                instructions.insert(instructions.end(), instructionsForNode.begin(), instructionsForNode.end());
             }
         }
 
