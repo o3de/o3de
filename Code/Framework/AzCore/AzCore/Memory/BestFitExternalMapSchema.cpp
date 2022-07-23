@@ -23,7 +23,7 @@ namespace AZ
               AZStdIAllocator(desc.m_mapAllocator != nullptr ? desc.m_mapAllocator : &AllocatorInstance<SystemAllocator>::Get()))
         , m_allocChunksMap(
               AllocMapType::hasher(),
-              AllocMapType::key_eq(),
+              AllocMapType::key_equal(),
               AZStdIAllocator(desc.m_mapAllocator != nullptr ? desc.m_mapAllocator : &AllocatorInstance<SystemAllocator>::Get()))
     {
         if (m_desc.m_mapAllocator == nullptr)

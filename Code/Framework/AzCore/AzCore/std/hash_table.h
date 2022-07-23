@@ -7,6 +7,7 @@
  */
 #pragma once
 
+#include <AzCore/std/containers/containers_concepts.h>
 #include <AzCore/std/containers/node_handle.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/containers/fixed_vector.h>
@@ -51,8 +52,12 @@ namespace AZStd
                 init_buckets();
             }
 
-            AZ_FORCE_INLINE hash_table_storage(const this_type& rhs)
-                : m_allocator(rhs.m_allocator)
+            hash_table_storage(const this_type& rhs)
+                : hash_table_storage(rhs, rhs.m_allocator)
+            {
+            }
+            hash_table_storage(const this_type& rhs, const type_identity_t<allocator_type>& alloc)
+                : m_allocator(alloc)
                 , m_list(typename list_type::allocator_type(m_allocator))
                 , m_vector(typename vector_type::allocator_type(m_allocator))
                 , m_max_load_factor(rhs.m_max_load_factor)
@@ -372,7 +377,7 @@ namespace AZStd
      *
      * Traits should have the following members
      * typedef xxx  key_type;
-     * typedef xxx  key_eq;
+     * typedef xxx  key_equal;
      * typedef xxx  hasher;
      * typedef xxx  value_type;
      * typedef xxx  allocator_type;
@@ -402,7 +407,7 @@ namespace AZStd
         typedef Traits                          traits_type;
 
         typedef typename Traits::key_type       key_type;
-        typedef typename Traits::key_eq         key_eq;
+        typedef typename Traits::key_equal         key_equal;
         typedef typename Traits::hasher         hasher;
 
         typedef typename Traits::allocator_type                 allocator_type;
@@ -437,14 +442,14 @@ namespace AZStd
         typedef typename vector_type::node_type                 vector_node_type;
         typedef hash_node_destructor<allocator_type, list_node_type> node_deleter;
 
-        AZ_FORCE_INLINE explicit hash_table(const hasher& hash, const key_eq& keyEqual, const allocator_type& alloc = allocator_type())
+        AZ_FORCE_INLINE hash_table(const hasher& hash, const key_equal& keyEqual, const allocator_type& alloc = allocator_type())
             : m_data(alloc)
             , m_keyEqual(keyEqual)
             , m_hasher(hash)
         {}
 
 
-        AZ_FORCE_INLINE hash_table(const value_type* first, const value_type* last, const hasher& hash, const key_eq& keyEqual, const allocator_type& alloc)
+        AZ_FORCE_INLINE hash_table(const value_type* first, const value_type* last, const hasher& hash, const key_equal& keyEqual, const allocator_type& alloc)
             : m_data(alloc)
             , m_keyEqual(keyEqual)
             , m_hasher(hash)
@@ -452,20 +457,34 @@ namespace AZStd
             insert(first, last);
         }
 
-        AZ_FORCE_INLINE hash_table(const this_type& rhs)
+        hash_table(const hash_table& rhs)
             : m_data(rhs.m_data)
             , m_keyEqual(rhs.m_keyEqual)
             , m_hasher(rhs.m_hasher)
         {
             copy(rhs);
         }
-
-        AZ_FORCE_INLINE hash_table(this_type&& rhs)
-            : m_data(rhs.get_allocator())
+        hash_table(const hash_table& rhs, const type_identity_t<allocator_type>& alloc)
+            : m_data(rhs.m_data, alloc)
             , m_keyEqual(rhs.m_keyEqual)
             , m_hasher(rhs.m_hasher)
         {
-            assign_rv(AZStd::forward<this_type>(rhs));
+            copy(rhs);
+        }
+
+        hash_table(hash_table&& rhs)
+            : m_data(rhs.m_data)
+            , m_keyEqual(AZStd::move(rhs.m_keyEqual))
+            , m_hasher(AZStd::move(rhs.m_hasher))
+        {
+            assign_rv(AZStd::move(rhs));
+        }
+        hash_table(hash_table&& rhs, const type_identity_t<allocator_type>& alloc)
+            : m_data(alloc)
+            , m_keyEqual(AZStd::move(rhs.m_keyEqual))
+            , m_hasher(AZStd::move(rhs.m_hasher))
+        {
+            assign_rv(AZStd::move(rhs));
         }
 
         this_type& operator=(this_type&& rhs)
@@ -524,7 +543,7 @@ namespace AZStd
         AZ_FORCE_INLINE size_type       size() const                { return m_data.m_list.size(); }
         AZ_FORCE_INLINE size_type       max_size() const            { return m_data.m_list.max_size(); }
         AZ_FORCE_INLINE bool            empty() const               { return m_data.m_list.empty(); }
-        AZ_FORCE_INLINE key_eq          key_equal() const           { return m_keyEqual; }
+        AZ_FORCE_INLINE key_equal       key_eq() const           { return m_keyEqual; }
         AZ_FORCE_INLINE hasher          get_hasher() const          { return m_hasher; }
         AZ_FORCE_INLINE size_type       bucket_count() const        { return m_data.get_num_buckets(); }
         AZ_FORCE_INLINE size_type       max_bucket_count() const    { return m_data.m_vector.max_size(); }
@@ -563,7 +582,8 @@ namespace AZStd
 
         // START UNIQUE
         template<class Iterator>
-        void            insert(Iterator first, Iterator last)
+        auto insert(Iterator first, Iterator last)
+            -> enable_if_t<input_iterator<Iterator> && !is_convertible_v<Iterator, size_type>>
         {
             // insert [first, last) one at a time
             for (; first != last; ++first)
@@ -592,8 +612,20 @@ namespace AZStd
 
             m_data.rehash_if_needed(this);
         }
+        template<class R>
+        auto insert_range(R&& rg) -> enable_if_t<Internal::container_compatible_range<R, value_type>>
+        {
+            if constexpr (is_lvalue_reference_v<R>)
+            {
+                insert(ranges::begin(rg), ranges::end(rg));
+            }
+            else
+            {
+                insert(make_move_iterator(ranges::begin(rg)), make_move_iterator(ranges::end(rg)));
+            }
+        }
 
-        
+
         //! Returns an insert_return_type with the members initialized as follows: if nh is empty, inserted is false, position is end(), and node is empty.
         //! Otherwise if the insertion took place, inserted is true, position points to the inserted element, and node is empty.
         //! If the insertion failed, inserted is false, node has the previous value of nh, and position points to an element with a key equivalent to nh.key().
@@ -703,28 +735,28 @@ namespace AZStd
 
         template<class ComparableToKey>
         auto find(const ComparableToKey& key)
-            -> enable_if_t<(Internal::is_transparent<key_eq, ComparableToKey>::value && Internal::is_transparent<hasher, ComparableToKey>::value) || AZStd::is_convertible_v<ComparableToKey, key_type>, iterator>
+            -> enable_if_t<(Internal::is_transparent<key_equal, ComparableToKey>::value && Internal::is_transparent<hasher, ComparableToKey>::value) || AZStd::is_convertible_v<ComparableToKey, key_type>, iterator>
         {
             return lower_bound(key);
         }
 
         template<class ComparableToKey>
         auto find(const ComparableToKey& key) const
-            -> enable_if_t<(Internal::is_transparent<key_eq, ComparableToKey>::value && Internal::is_transparent<hasher, ComparableToKey>::value) || AZStd::is_convertible_v<ComparableToKey, key_type>, const_iterator>
+            -> enable_if_t<(Internal::is_transparent<key_equal, ComparableToKey>::value && Internal::is_transparent<hasher, ComparableToKey>::value) || AZStd::is_convertible_v<ComparableToKey, key_type>, const_iterator>
         {
             return lower_bound(key);
         }
 
         template<class ComparableToKey>
         auto contains(const ComparableToKey& key) const
-            -> enable_if_t<(Internal::is_transparent<key_eq, ComparableToKey>::value && Internal::is_transparent<hasher, ComparableToKey>::value) || AZStd::is_convertible_v<ComparableToKey, key_type>, bool>
+            -> enable_if_t<(Internal::is_transparent<key_equal, ComparableToKey>::value && Internal::is_transparent<hasher, ComparableToKey>::value) || AZStd::is_convertible_v<ComparableToKey, key_type>, bool>
         {
             return find(key) != end();
         }
 
         template<class ComparableToKey>
         auto count(const ComparableToKey& key) const
-            -> enable_if_t<(Internal::is_transparent<key_eq, ComparableToKey>::value && Internal::is_transparent<hasher, ComparableToKey>::value) || AZStd::is_convertible_v<ComparableToKey, key_type>, size_type>
+            -> enable_if_t<(Internal::is_transparent<key_equal, ComparableToKey>::value && Internal::is_transparent<hasher, ComparableToKey>::value) || AZStd::is_convertible_v<ComparableToKey, key_type>, size_type>
         {   // count all elements that match keyValue
             pair_citer_citer pair = equal_range(key);
             size_type num = AZStd::distance(pair.first, pair.second);
@@ -734,7 +766,7 @@ namespace AZStd
         // START UNIQUE
         template<class ComparableToKey>
         auto lower_bound(const ComparableToKey& key)
-            -> enable_if_t<(Internal::is_transparent<key_eq, ComparableToKey>::value && Internal::is_transparent<hasher, ComparableToKey>::value) || AZStd::is_convertible_v<ComparableToKey, key_type>, iterator>
+            -> enable_if_t<(Internal::is_transparent<key_equal, ComparableToKey>::value && Internal::is_transparent<hasher, ComparableToKey>::value) || AZStd::is_convertible_v<ComparableToKey, key_type>, iterator>
         {
             vector_value_type& bucket = m_data.buckets()[bucket_from_hash(m_hasher(key))];
             iterator iter = bucket.second;
@@ -751,14 +783,14 @@ namespace AZStd
 
         template<class ComparableToKey>
         auto lower_bound(const ComparableToKey& key) const
-            -> enable_if_t<(Internal::is_transparent<key_eq, ComparableToKey>::value && Internal::is_transparent<hasher, ComparableToKey>::value) || AZStd::is_convertible_v<ComparableToKey, key_type>, const_iterator>
+            -> enable_if_t<(Internal::is_transparent<key_equal, ComparableToKey>::value && Internal::is_transparent<hasher, ComparableToKey>::value) || AZStd::is_convertible_v<ComparableToKey, key_type>, const_iterator>
         {
             return const_iterator(const_cast<hash_table*>(this)->lower_bound(key));
         }
 
         template<class ComparableToKey>
         auto upper_bound(const ComparableToKey& key)
-            -> enable_if_t<(Internal::is_transparent<key_eq, ComparableToKey>::value && Internal::is_transparent<hasher, ComparableToKey>::value) || AZStd::is_convertible_v<ComparableToKey, key_type>, iterator>
+            -> enable_if_t<(Internal::is_transparent<key_equal, ComparableToKey>::value && Internal::is_transparent<hasher, ComparableToKey>::value) || AZStd::is_convertible_v<ComparableToKey, key_type>, iterator>
         {
             vector_value_type& bucket = m_data.buckets()[bucket_from_hash(m_hasher(key))];
             iterator iter = bucket.second;
@@ -780,14 +812,14 @@ namespace AZStd
 
         template<class ComparableToKey>
         auto upper_bound(const ComparableToKey& key) const
-            -> enable_if_t<(Internal::is_transparent<key_eq, ComparableToKey>::value && Internal::is_transparent<hasher, ComparableToKey>::value) || AZStd::is_convertible_v<ComparableToKey, key_type>, const_iterator>
+            -> enable_if_t<(Internal::is_transparent<key_equal, ComparableToKey>::value && Internal::is_transparent<hasher, ComparableToKey>::value) || AZStd::is_convertible_v<ComparableToKey, key_type>, const_iterator>
         {
             return const_iterator(const_cast<hash_table*>(this)->upper_bound(key));
         }
 
         template<class ComparableToKey>
         auto equal_range(const ComparableToKey& key)
-            -> enable_if_t<(Internal::is_transparent<key_eq, ComparableToKey>::value && Internal::is_transparent<hasher, ComparableToKey>::value) || AZStd::is_convertible_v<ComparableToKey, key_type>, AZStd::pair<iterator, iterator>>
+            -> enable_if_t<(Internal::is_transparent<key_equal, ComparableToKey>::value && Internal::is_transparent<hasher, ComparableToKey>::value) || AZStd::is_convertible_v<ComparableToKey, key_type>, AZStd::pair<iterator, iterator>>
         {
             vector_value_type& bucket = m_data.buckets()[bucket_from_hash(m_hasher(key))];
             iterator iter = bucket.second;
@@ -818,7 +850,7 @@ namespace AZStd
 
         template<class ComparableToKey>
         auto equal_range(const ComparableToKey& key) const
-            -> enable_if_t<(Internal::is_transparent<key_eq, ComparableToKey>::value && Internal::is_transparent<hasher, ComparableToKey>::value) || AZStd::is_convertible_v<ComparableToKey, key_type>, AZStd::pair<const_iterator, const_iterator>>
+            -> enable_if_t<(Internal::is_transparent<key_equal, ComparableToKey>::value && Internal::is_transparent<hasher, ComparableToKey>::value) || AZStd::is_convertible_v<ComparableToKey, key_type>, AZStd::pair<const_iterator, const_iterator>>
         {
             AZStd::pair<iterator, iterator> non_const_range = const_cast<hash_table*>(this)->equal_range(key);
             return { const_iterator(non_const_range.first), const_iterator(non_const_range.second) };
@@ -1099,7 +1131,7 @@ namespace AZStd
         iterator insert_or_assign_transparent(const_iterator hint, ComparableToKey&& key, MappedType&& value);
 
         storage_type    m_data;
-        key_eq          m_keyEqual;
+        key_equal          m_keyEqual;
         hasher          m_hasher;
 
         /**
@@ -1114,7 +1146,7 @@ namespace AZStd
         };
     };
 
-    
+
     template <class Traits>
     template <class InsertReturnType, class NodeHandle>
     InsertReturnType hash_table<Traits>::node_handle_insert(NodeHandle&& nodeHandle)
@@ -1123,7 +1155,7 @@ namespace AZStd
         {
             return { end(), false, NodeHandle{} };
         }
-        
+
         const key_type& valueKey = Traits::key_from_value(nodeHandle.m_node->m_value);
         size_type bucketIndex = bucket_from_hash(m_hasher(valueKey));
         vector_value_type& bucket = m_data.buckets()[bucketIndex];
@@ -1155,7 +1187,7 @@ namespace AZStd
         // The insertion has succeeded in this case so the node handle is empty
         return { insertPos, true, NodeHandle{} };
     }
-    
+
     template <class Traits>
     template <class NodeHandle>
     inline auto hash_table<Traits>::node_handle_insert(const iterator, NodeHandle&& nodeHandle) -> iterator

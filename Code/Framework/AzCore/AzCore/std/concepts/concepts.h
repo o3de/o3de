@@ -80,7 +80,15 @@ namespace AZStd
 
         // fancy pointer helper
         template <class T, class = void>
-        struct to_address_fancy_pointer_fn;
+        inline constexpr bool to_address_fancy_pointer_v = false;
+
+        template <class T>
+        inline constexpr bool to_address_fancy_pointer_v<T, enable_if_t<
+            sfinae_trigger_v<decltype(declval<const T&>().operator->())>>> = true;
+
+        template <class T>
+        inline constexpr bool to_address_fancy_pointer_v<T, enable_if_t<
+            pointer_traits_has_to_address_v<T>>> = true;
 
         struct to_address_fn
         {
@@ -88,7 +96,7 @@ namespace AZStd
             template <class T>
             constexpr T* operator()(T* ptr) const noexcept
             {
-                static_assert(!AZStd::is_function_v<T>, "Invoking to address on a function pointer is not allowed");
+                static_assert(!AZStd::is_function_v<T>, "Invoking to_address on a function pointer is not allowed");
                 return ptr;
             }
 
@@ -100,37 +108,20 @@ namespace AZStd
                 bool_constant<!is_pointer_v<T>>,
                 bool_constant<!is_array_v<T>>,
                 bool_constant<!is_function_v<T>>,
-                sfinae_trigger<decltype(declval<to_address_fancy_pointer_fn<T>>().operator()(declval<T>()))>
+                bool_constant<to_address_fancy_pointer_v<T>>
                 >>>
-            constexpr auto operator()(const T& ptr) const noexcept;
-        };
-
-        template <class T>
-        struct to_address_fancy_pointer_fn<T, enable_if_t<
-            sfinae_trigger_v<decltype(declval<const T&>().operator->())>>>
-        {
             constexpr auto operator()(const T& ptr) const noexcept
             {
-                return to_address_fn{}(ptr.operator->());
+                if constexpr (pointer_traits_has_to_address_v<T>)
+                {
+                    return pointer_traits<T>::to_address(ptr);
+                }
+                else
+                {
+                    return ptr.operator->();
+                }
             }
         };
-
-
-        template <class T>
-        struct to_address_fancy_pointer_fn<T, enable_if_t<
-            pointer_traits_has_to_address_v<T>>>
-        {
-            constexpr auto operator()(const T& ptr) const noexcept
-            {
-                return pointer_traits<T>::to_address(ptr);
-            }
-        };
-
-        template <class T, class>
-        constexpr auto to_address_fn::operator()(const T& ptr) const noexcept
-        {
-            return to_address_fancy_pointer_fn<T>{}(ptr);
-        }
     }
 
     inline namespace customization_point_object
@@ -603,9 +594,9 @@ namespace AZStd::Internal
         sfinae_trigger<typename incrementable_traits<I>::difference_type>,
         sfinae_trigger<typename indirectly_readable_traits<I>::value_type>,
         sfinae_trigger<typename incrementable_traits<I>::difference_type>,
-        sfinae_trigger<typename common_reference_t<iter_reference_t<I>&&,
+        sfinae_trigger<common_reference_t<iter_reference_t<I>&&,
             typename indirectly_readable_traits<I>::value_type&>>,
-        sfinae_trigger<typename common_reference_t<decltype(*declval<I&>()++)&&,
+        sfinae_trigger<common_reference_t<decltype(*declval<I&>()++)&&,
             typename indirectly_readable_traits<I>::value_type&>>,
         bool_constant<signed_integral<typename incrementable_traits<I>::difference_type>>
         >>> = true;
