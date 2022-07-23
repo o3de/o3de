@@ -445,6 +445,7 @@ endfunction()
 # 
 function(ly_test_impact_write_pytest_file)
     
+    # For each configuration type, compile the build info we need and add it to our array
     set(build_configs "")
     foreach(config_type ${LY_CONFIGURATION_TYPES})
         set(config "\"${LY_TEST_IMPACT_WORKING_DIR}/${config_type}/Persistent/tiaf.json\"")
@@ -455,15 +456,16 @@ function(ly_test_impact_write_pytest_file)
         list(APPEND build_configs "${build_config}")
     endforeach()
 
+    # Configure our list of entries
     string(REPLACE ";" ",\n" build_configs "${build_configs}")
-    message("${build_configs}")
+
     set(build ${CMAKE_BINARY_DIR})
 
     set(root ${LY_ROOT_FOLDER})
 
+    # Configure and write out our test data file
     ly_file_read("cmake/TestImpactFramework/LYTestImpactTestData.in" test_file)
     string(CONFIGURE ${test_file} test_file)
-    
     file(GENERATE
         OUTPUT "${LY_TEST_IMPACT_PYTEST_FILE_PATH}test_data.json"
         CONTENT "${test_file}")
