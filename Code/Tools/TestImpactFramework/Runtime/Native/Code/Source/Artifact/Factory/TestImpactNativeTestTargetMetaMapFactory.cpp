@@ -8,16 +8,14 @@
 
 #include <TestImpactFramework/TestImpactUtils.h>
 
-#include <Artifact/Factory/TestImpactTestTargetMetaMapFactory.h>
+#include <Artifact/Factory/TestImpactNativeTestTargetMetaMapFactory.h>
 #include <Artifact/TestImpactArtifactException.h>
 
 #include <AzCore/JSON/document.h>
 
-#include <cstring>
-
 namespace TestImpact
 {
-    TestTargetMetaMap TestTargetMetaMapFactory(const AZStd::string& masterTestListData, SuiteType suiteType)
+    NativeTestTargetMetaMap NativeTestTargetMetaMapFactory(const AZStd::string& masterTestListData, SuiteType suiteType)
     {
         // Keys for pertinent JSON node and attribute names
         constexpr const char* Keys[] =
@@ -50,9 +48,9 @@ namespace TestImpact
             TimeoutKey
         };
 
-        AZ_TestImpact_Eval(!masterTestListData.empty(), ArtifactException, "test meta-data cannot be empty");
+        AZ_TestImpact_Eval(!masterTestListData.empty(), ArtifactException, "Test meta-data cannot be empty");
 
-        TestTargetMetaMap testMetas;
+        NativeTestTargetMetaMap testMetas;
         rapidjson::Document masterTestList;
 
         if (masterTestList.Parse(masterTestListData.c_str()).HasParseError())
@@ -63,7 +61,7 @@ namespace TestImpact
         const auto tests = masterTestList[Keys[GoogleKey]][Keys[TestKey]][Keys[TestsKey]].GetArray();
         for (const auto& test : tests)
         {
-            TestTargetMeta testMeta;
+            NativeTestTargetMeta testMeta;
             const auto testSuites = test[Keys[TestSuitesKey]].GetArray();
             for (const auto& suite : testSuites)
             {
@@ -71,9 +69,9 @@ namespace TestImpact
                 if (const auto suiteName = suite[Keys[SuiteKey]].GetString();
                     strcmp(SuiteTypeAsString(suiteType).c_str(), suiteName) == 0)
                 {
-                    testMeta.m_suite = suiteName;
+                    testMeta.m_suiteMeta.m_name = suiteName;
+                    testMeta.m_suiteMeta.m_timeout = AZStd::chrono::seconds{ suite[Keys[TimeoutKey]].GetUint() };
                     testMeta.m_customArgs = suite[Keys[CommandKey]].GetString();
-                    testMeta.m_timeout = AZStd::chrono::seconds{ suite[Keys[TimeoutKey]].GetUint() };
                     if (const auto buildTypeString = test[Keys[LaunchMethodKey]].GetString(); strcmp(buildTypeString, Keys[TestRunnerKey]) == 0)
                     {
                         testMeta.m_launchMethod = LaunchMethod::TestRunner;

@@ -8,17 +8,17 @@
 
 #pragma once
 
-#include <Artifact/Static/TestImpactBuildTargetDescriptor.h>
-#include <Artifact/Static/TestImpactTestTargetMeta.h>
+#include <Artifact/Static/TestImpactNativeTargetDescriptor.h>
+#include <Artifact/Static/TestImpactNativeTestTargetMeta.h>
 
 namespace TestImpact
 {
     //! Artifact produced by the target artifact compiler that represents a test build target in the repository.
-    struct TestTargetDescriptor
-        : public BuildTargetDescriptor
+    struct NativeTestTargetDescriptor
+        : public NativeTargetDescriptor
     {
-        TestTargetDescriptor(BuildTargetDescriptor&& buildTarget, TestTargetMeta&& testTargetMeta);
+        NativeTestTargetDescriptor(NativeTargetDescriptor&& buildTarget, NativeTestTargetMeta&& testTargetMeta);
 
-        TestTargetMeta m_testMetaData;
+        NativeTestTargetMeta m_testMetaData;
     };
 } // namespace TestImpact

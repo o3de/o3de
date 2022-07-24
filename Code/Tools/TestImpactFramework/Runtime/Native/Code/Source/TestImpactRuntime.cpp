@@ -11,11 +11,14 @@
 #include <TestImpactFramework/TestImpactRuntimeException.h>
 
 #include <TestImpactRuntimeUtils.h>
+#include <BuildTarget/Common/TestImpactBuildTarget.h>
 #include <Dependency/TestImpactDependencyException.h>
 #include <Dependency/TestImpactDynamicDependencyMap.h>
 #include <Dependency/TestImpactSourceCoveringTestsSerializer.h>
 #include <Dependency/TestImpactTestSelectorAndPrioritizer.h>
-#include <TestEngine/TestImpactTestEngine.h>
+#include <Target/Native/TestImpactNativeTestTarget.h>
+#include <Target/Native/TestImpactNativeProductionTarget.h>
+#include <TestEngine/Native/TestImpactNativeTestEngine.h>
 
 #include <AzCore/IO/SystemFile.h>
 
@@ -77,7 +80,7 @@ namespace TestImpact
             {
             }
 
-            void operator()(const TestEngineJob& testJob)
+            void operator()(const TestEngineJob<NativeTestTarget>& testJob)
             {
                 if (m_testCompleteCallback.has_value())
                 {
@@ -144,10 +147,10 @@ namespace TestImpact
         SuiteType suiteType,
         const Timer& sequenceTimer,
         const TestRunnerFunctor& testRunner,
-        const AZStd::vector<const TestTarget*>& includedSelectedTestTargets,
-        const AZStd::vector<const TestTarget*>& excludedSelectedTestTargets,
-        const AZStd::vector<const TestTarget*>& discardedTestTargets,
-        const AZStd::vector<const TestTarget*>& draftedTestTargets,
+        const AZStd::vector<const NativeTestTarget*>& includedSelectedTestTargets,
+        const AZStd::vector<const NativeTestTarget*>& excludedSelectedTestTargets,
+        const AZStd::vector<const NativeTestTarget*>& discardedTestTargets,
+        const AZStd::vector<const NativeTestTarget*>& draftedTestTargets,
         const AZStd::optional<AZStd::chrono::milliseconds>& testTargetTimeout,
         const AZStd::optional<AZStd::chrono::milliseconds>& globalTimeout,
         AZStd::optional<ImpactAnalysisTestSequenceStartCallback> testSequenceStartCallback,
@@ -176,7 +179,7 @@ namespace TestImpact
         TestRunCompleteCallbackHandler testRunCompleteHandler(totalNumTestRuns, testCompleteCallback);
 
         const auto gatherTestRunData = [&sequenceTimer, &testRunner, &testRunCompleteHandler, &globalTimeout]
-        (const AZStd::vector<const TestTarget*>& testsTargets, TestRunData<TestJob>& testRunData)
+        (const AZStd::vector<const NativeTestTarget*>& testsTargets, TestRunData<TestJob>& testRunData)
         {
             const Timer testRunTimer;
             testRunData.m_relativeStartTime = testRunTimer.GetStartTimePointRelative(sequenceTimer);
@@ -243,8 +246,9 @@ namespace TestImpact
 
     Runtime::Runtime(
         RuntimeConfig&& config,
-        AZStd::optional<RepoPath> dataFile,
-        AZStd::vector<AZStd::string> testsToExclude,
+        const AZStd::optional<RepoPath>& dataFile,
+        [[maybe_unused]] const AZStd::optional<RepoPath>& previousRunDataFile,
+        const AZStd::vector<TargetConfig::ExcludedTarget>& testsToExclude,
         SuiteType suiteFilter,
         Policy::ExecutionFailure executionFailurePolicy,
         Policy::FailedTestCoverage failedTestCoveragePolicy,
@@ -263,28 +267,36 @@ namespace TestImpact
         , m_targetOutputCapture(targetOutputCapture)
         , m_maxConcurrency(maxConcurrency.value_or(AZStd::thread::hardware_concurrency()))
     {
-        // Construct the dynamic dependency map from the build target descriptors
-        m_dynamicDependencyMap = ConstructDynamicDependencyMap(suiteFilter, m_config.m_buildTargetDescriptor, m_config.m_testTargetMeta);
+        // Construct the build targets from the build target descriptors
+        m_buildTargets = ConstructNativeBuildTargetList(suiteFilter, m_config.m_NativeTargetDescriptor, m_config.m_testTargetMeta);
+
+        // Construct the dynamic dependency map from the build targets
+        m_dynamicDependencyMap = AZStd::make_unique<DynamicDependencyMap<NativeTestTarget, NativeProductionTarget>>(m_buildTargets.get());
 
         // Construct the test selector and prioritizer from the dependency graph data (NOTE: currently not implemented)
-        m_testSelectorAndPrioritizer = AZStd::make_unique<TestSelectorAndPrioritizer>(m_dynamicDependencyMap.get(), DependencyGraphDataMap{});
+        m_testSelectorAndPrioritizer =
+            AZStd::make_unique<TestSelectorAndPrioritizer<NativeTestTarget, NativeProductionTarget>>(m_dynamicDependencyMap.get(), DependencyGraphDataMap{});
 
         // Construct the target exclude list from the exclude file if provided, otherwise use target configuration data
         if (!testsToExclude.empty())
         {
             // Construct using data from excludeTestFile
-            m_testTargetExcludeList = ConstructTestTargetExcludeList(
-                m_dynamicDependencyMap->GetTestTargetList(), testsToExclude);
+            m_regularTestTargetExcludeList =
+                ConstructTestTargetExcludeList(m_dynamicDependencyMap->GetBuildTargets()->GetTestTargetList(), testsToExclude);
+            m_instrumentedTestTargetExcludeList =
+                ConstructTestTargetExcludeList(m_dynamicDependencyMap->GetBuildTargets()->GetTestTargetList(), testsToExclude);
         }
         else
         {
             // Construct using data from config file.
-            m_testTargetExcludeList =
-                ConstructTestTargetExcludeList(m_dynamicDependencyMap->GetTestTargetList(), m_config.m_target.m_excludedTestTargets);
+            m_regularTestTargetExcludeList = ConstructTestTargetExcludeList(
+                m_dynamicDependencyMap->GetBuildTargets()->GetTestTargetList(), m_config.m_target.m_excludedRegularTestTargets);
+            m_instrumentedTestTargetExcludeList = ConstructTestTargetExcludeList(
+                m_dynamicDependencyMap->GetBuildTargets()->GetTestTargetList(), m_config.m_target.m_excludedInstrumentedTestTargets);
         }
 
         // Construct the test engine with the workspace path and launcher binaries
-        m_testEngine = AZStd::make_unique<TestEngine>(
+        m_testEngine = AZStd::make_unique<NativeTestEngine>(
             m_config.m_repo.m_root,
             m_config.m_target.m_outputDirectory,
             m_config.m_workspace.m_temp.m_enumerationCacheDirectory,
@@ -312,6 +324,19 @@ namespace TestImpact
             {
                 m_dynamicDependencyMap->ReplaceSourceCoverage(tiaData);
                 m_hasImpactAnalysisData = true;
+
+                // Enumerate new test targets
+                //const auto testTargetsWithNoEnumeration = m_dynamicDependencyMap->GetNotCoveringTests();
+                //if (!testTargetsWithNoEnumeration.empty())
+                //{
+                //    m_testEngine->UpdateEnumerationCache(
+                //        testTargetsWithNoEnumeration,
+                //        Policy::ExecutionFailure::Ignore,
+                //        Policy::TestFailure::Continue,
+                //        AZStd::nullopt,
+                //        AZStd::nullopt,
+                //        AZStd::nullopt);
+                //}
             }
         }
         catch (const DependencyException& e)
@@ -332,59 +357,62 @@ namespace TestImpact
 
     Runtime::~Runtime() = default;
 
-    void Runtime::EnumerateMutatedTestTargets(const ChangeDependencyList& changeDependencyList)
-    {
-        AZStd::vector<const TestTarget*> testTargets;
-        const auto addMutatedTestTargetsToEnumerationList = [&testTargets](const AZStd::vector<SourceDependency>& sourceDependencies)
-        {
-            for (const auto& sourceDependency : sourceDependencies)
-            {
-                for (const auto& parentTarget : sourceDependency.GetParentTargets())
-                {
-                    AZStd::visit([&testTargets]([[maybe_unused]] auto&& target)
-                    {
-                        if constexpr (IsTestTarget<decltype(target)>)
-                        {
-                            testTargets.push_back(target);
-                        }
-                    }, parentTarget.GetTarget());
-                }
-            }
-        };
+    //void Runtime::EnumerateMutatedTestTargets(const ChangeDependencyList& changeDependencyList)
+    //{
+    //    AZStd::vector<const NativeTestTarget*> testTargets;
+    //    const auto addMutatedTestTargetsToEnumerationList = [this, &testTargets](const AZStd::vector<SourceDependency>& sourceDependencies)
+    //    {
+    //        for (const auto& sourceDependency : sourceDependencies)
+    //        {
+    //            for (const auto& parentTarget : sourceDependency.GetParentTargets())
+    //            {
+    //                AZStd::visit([&testTargets]([[maybe_unused]] auto&& target)
+    //                {
+    //                    if constexpr (IsTestTarget<decltype(target)>)
+    //                    {
+    //                        testTargets.push_back(target);
+    //                    }
+    //                }, parentTarget.GetBuildTarget());
+    //            }
+    //        }
+    //    };
+    //
+    //    // Gather all of the test targets that have had any of their sources modified
+    //    addMutatedTestTargetsToEnumerationList(changeDependencyList.GetCreateSourceDependencies());
+    //    addMutatedTestTargetsToEnumerationList(changeDependencyList.GetUpdateSourceDependencies());
+    //    addMutatedTestTargetsToEnumerationList(changeDependencyList.GetDeleteSourceDependencies());
+    //
+    //    // Enumerate the mutated test targets to ensure their enumeration caches are up to date
+    //    if (!testTargets.empty())
+    //    {
+    //        m_testEngine->UpdateEnumerationCache(
+    //            testTargets,
+    //            Policy::ExecutionFailure::Ignore,
+    //            Policy::TestFailure::Continue,
+    //            AZStd::nullopt,
+    //            AZStd::nullopt,
+    //            AZStd::nullopt);
+    //    }
+    //}
 
-        // Gather all of the test targets that have had any of their sources modified
-        addMutatedTestTargetsToEnumerationList(changeDependencyList.GetCreateSourceDependencies());
-        addMutatedTestTargetsToEnumerationList(changeDependencyList.GetUpdateSourceDependencies());
-        addMutatedTestTargetsToEnumerationList(changeDependencyList.GetDeleteSourceDependencies());
-
-        // Enumerate the mutated test targets to ensure their enumeration caches are up to date
-        if (!testTargets.empty())
-        {
-            m_testEngine->UpdateEnumerationCache(
-                testTargets,
-                Policy::ExecutionFailure::Ignore,
-                Policy::TestFailure::Continue,
-                AZStd::nullopt,
-                AZStd::nullopt,
-                AZStd::nullopt);
-        }
-    }
-
-    AZStd::pair<AZStd::vector<const TestTarget*>, AZStd::vector<const TestTarget*>> Runtime::SelectCoveringTestTargets(
+    AZStd::pair<AZStd::vector<const NativeTestTarget*>, AZStd::vector<const NativeTestTarget*>> Runtime::SelectCoveringTestTargets(
         const ChangeList& changeList,
         Policy::TestPrioritization testPrioritizationPolicy)
     {
-        AZStd::vector<const TestTarget*> discardedTestTargets;
+        AZStd::vector<const NativeTestTarget*> discardedTestTargets;
 
         // Select and prioritize the test targets pertinent to this change list
         const auto changeDependencyList = m_dynamicDependencyMap->ApplyAndResoveChangeList(changeList, m_integrationFailurePolicy);
         const auto selectedTestTargets = m_testSelectorAndPrioritizer->SelectTestTargets(changeDependencyList, testPrioritizationPolicy);
 
         // Populate a set with the selected test targets so that we can infer the discarded test target not selected for this change list
-        const AZStd::unordered_set<const TestTarget*> selectedTestTargetSet(selectedTestTargets.begin(), selectedTestTargets.end());
+        const AZStd::unordered_set<const NativeTestTarget*> selectedTestTargetSet(selectedTestTargets.begin(), selectedTestTargets.end());
+
+        // Update the enumeration caches of mutated targets regardless of the current sharding policy
+        //EnumerateMutatedTestTargets(changeDependencyList);
 
         // The test targets in the main list not in the selected test target set are the test targets not selected for this change list
-        for (const auto& testTarget : m_dynamicDependencyMap->GetTestTargetList().GetTargets())
+        for (const auto& testTarget : m_dynamicDependencyMap->GetBuildTargets()->GetTestTargetList().GetTargets())
         {
             if (!selectedTestTargetSet.contains(&testTarget))
             {
@@ -395,52 +423,32 @@ namespace TestImpact
         return { selectedTestTargets, discardedTestTargets };
     }
 
-    AZStd::pair<AZStd::vector<const TestTarget*>, AZStd::vector<const TestTarget*>> Runtime::SelectTestTargetsByExcludeList(
-        AZStd::vector<const TestTarget*> testTargets) const
-    {
-        AZStd::vector<const TestTarget*> includedTestTargets;
-        AZStd::vector<const TestTarget*> excludedTestTargets;
-
-        if (m_testTargetExcludeList.empty())
-        {
-            return { testTargets, {} };
-        }
-
-        for (const auto& testTarget : testTargets)
-        {
-            if (!m_testTargetExcludeList.contains(testTarget))
-            {
-                includedTestTargets.push_back(testTarget);
-            }
-            else
-            {
-                excludedTestTargets.push_back(testTarget);
-            }
-        }
-
-        return { includedTestTargets, excludedTestTargets };
-    }
-
     void Runtime::ClearDynamicDependencyMapAndRemoveExistingFile()
     {
         m_dynamicDependencyMap->ClearAllSourceCoverage();
         DeleteFile(m_sparTiaFile);
     }
 
-    SourceCoveringTestsList Runtime::CreateSourceCoveringTestFromTestCoverages(const AZStd::vector<TestEngineInstrumentedRun>& jobs)
+    //! Prunes the existing coverage for the specified jobs and creates the consolidated source covering tests list from the
+    //! test engine instrumented run jobs.
+    SourceCoveringTestsList CreateSourceCoveringTestFromTestCoverages(
+        DynamicDependencyMap<NativeTestTarget, NativeProductionTarget>* dynamicDependencyMap,
+        const AZStd::vector<TestEngineInstrumentedRun<NativeTestTarget, TestCoverage>>& jobs,
+        Policy::FailedTestCoverage failedTestCoveragePolicy,
+        const RepoPath& repoRoot)
     {
         AZStd::unordered_map<AZStd::string, AZStd::unordered_set<AZStd::string>> coverage;
         for (const auto& job : jobs)
         {
             // First we must remove any existing coverage for the test target so as to not end up with source remnants from previous
             // coverage that is no longer covered by this revision of the test target
-            m_dynamicDependencyMap->RemoveTestTargetFromSourceCoverage(job.GetTestTarget());
+            dynamicDependencyMap->RemoveTestTargetFromSourceCoverage(job.GetTestTarget());
 
             // Next we will update the coverage of test targets that completed (with or without failures), unless the failed test coverage
             // policy dictates we should instead discard the coverage of test targets with failing tests
             const auto testResult = job.GetTestResult();
 
-            if (m_failedTestCoveragePolicy == Policy::FailedTestCoverage::Discard && testResult == Client::TestRunResult::TestFailures)
+            if (failedTestCoveragePolicy == Policy::FailedTestCoverage::Discard && testResult == Client::TestRunResult::TestFailures)
             {
                 // Discard the coverage for this job
                 continue;
@@ -452,14 +460,14 @@ namespace TestImpact
                 {
                     // Passing tests should have coverage data, otherwise something is very wrong
                     AZ_TestImpact_Eval(
-                        job.GetTestCoverge().has_value(),
+                        job.GetCoverge().has_value(),
                         RuntimeException,
                         AZStd::string::format(
                             "Test target '%s' completed its test run successfully but produced no coverage data. Command string: '%s'",
                             job.GetTestTarget()->GetName().c_str(), job.GetCommandString().c_str()));
                 }
 
-                if (!job.GetTestCoverge().has_value())
+                if (!job.GetCoverge().has_value())
                 {
                     // When a test run completes with failing tests but produces no coverage artifact that's typically a sign of the
                     // test aborting due to an unhandled exception, in which case ignore it and let it be picked up in the failure report
@@ -467,7 +475,7 @@ namespace TestImpact
                 }
 
                 // Add the sources covered by this test target to the coverage map
-                for (const auto& source : job.GetTestCoverge().value().GetSourcesCovered())
+                for (const auto& source : job.GetCoverge().value().GetSourcesCovered())
                 {
                     coverage[source.String()].insert(job.GetTestTarget()->GetName());
                 }
@@ -480,10 +488,10 @@ namespace TestImpact
         {
             // Check to see whether this source is inside the repo or not (not a perfect check but weeds out the obvious non-repo sources)
             if (const auto sourcePath = RepoPath(source);
-                sourcePath.IsRelativeTo(m_config.m_repo.m_root))
+                sourcePath.IsRelativeTo(repoRoot))
             {
                 sourceCoveringTests.push_back(
-                    SourceCoveringTests(RepoPath(sourcePath.LexicallyRelative(m_config.m_repo.m_root)), AZStd::move(testTargets)));
+                    SourceCoveringTests(RepoPath(sourcePath.LexicallyRelative(repoRoot)), AZStd::move(testTargets)));
             }
             else
             {
@@ -494,25 +502,34 @@ namespace TestImpact
         return SourceCoveringTestsList(AZStd::move(sourceCoveringTests));
     }
 
-    void Runtime::UpdateAndSerializeDynamicDependencyMap(const AZStd::vector<TestEngineInstrumentedRun>& jobs)
+    //! Updates the dynamic dependency map and serializes the entire map to disk.
+    [[nodiscard]] AZStd::optional<bool> UpdateAndSerializeDynamicDependencyMap(
+        DynamicDependencyMap<NativeTestTarget, NativeProductionTarget>* dynamicDependencyMap,
+        const AZStd::vector<TestEngineInstrumentedRun<NativeTestTarget, TestCoverage>>& jobs,
+        Policy::FailedTestCoverage failedTestCoveragePolicy,
+        Policy::IntegrityFailure integrationFailurePolicy,
+        const RepoPath& repoRoot,
+        const RepoPath& sparTiaFile)
     {
         try
         {
-            const auto sourceCoverageTestsList = CreateSourceCoveringTestFromTestCoverages(jobs);
+            const auto sourceCoverageTestsList =
+                CreateSourceCoveringTestFromTestCoverages(dynamicDependencyMap, jobs, failedTestCoveragePolicy, repoRoot);
+
             if (sourceCoverageTestsList.GetNumSources() == 0)
             {
-                return;
+                return AZStd::nullopt;
             }
 
-            m_dynamicDependencyMap->ReplaceSourceCoverage(sourceCoverageTestsList);
-            const auto sparTia = m_dynamicDependencyMap->ExportSourceCoverage();
+            dynamicDependencyMap->ReplaceSourceCoverage(sourceCoverageTestsList);
+            const auto sparTia = dynamicDependencyMap->ExportSourceCoverage();
             const auto sparTiaData = SerializeSourceCoveringTestsList(sparTia);
-            WriteFileContents<RuntimeException>(sparTiaData, m_sparTiaFile);
-            m_hasImpactAnalysisData = true;
+            WriteFileContents<RuntimeException>(sparTiaData, sparTiaFile);
+            return true;
         }
         catch(const RuntimeException& e)
         {
-            if (m_integrationFailurePolicy == Policy::IntegrityFailure::Abort)
+            if (integrationFailurePolicy == Policy::IntegrityFailure::Abort)
             {
                 throw e;
             }
@@ -521,6 +538,8 @@ namespace TestImpact
                 AZ_Error(LogCallSite, false, e.what());
             }
         }
+
+        return AZStd::nullopt;
     }
 
     PolicyStateBase Runtime::GeneratePolicyStateBase() const
@@ -562,20 +581,19 @@ namespace TestImpact
         AZStd::optional<TestRunCompleteCallback> testCompleteCallback)
     {
         const Timer sequenceTimer;
-        AZStd::vector<const TestTarget*> includedTestTargets;
-        AZStd::vector<const TestTarget*> excludedTestTargets;
+        AZStd::vector<const NativeTestTarget*> includedTestTargets;
+        AZStd::vector<const NativeTestTarget*> excludedTestTargets;
         
         // Separate the test targets into those that are excluded by either the test filter or exclusion list and those that are not
-        for (const auto& testTarget : m_dynamicDependencyMap->GetTestTargetList().GetTargets())
+        for (const auto& testTarget : m_dynamicDependencyMap->GetBuildTargets()->GetTestTargetList().GetTargets())
         {
-            if (!m_testTargetExcludeList.contains(&testTarget))
+            if (m_regularTestTargetExcludeList->IsTestTargetFullyExcluded(&testTarget))
             {
-                includedTestTargets.push_back(&testTarget);
+                excludedTestTargets.push_back(&testTarget);
             }
             else
             {
-                // Test targets on the exclude list are excluded
-                excludedTestTargets.push_back(&testTarget);
+                includedTestTargets.push_back(&testTarget);
             }
         }
 
@@ -592,7 +610,6 @@ namespace TestImpact
         const Timer testRunTimer;
         const auto [result, testJobs] = m_testEngine->RegularRun(
             includedTestTargets,
-            m_testShardingPolicy,
             m_executionFailurePolicy,
             m_testFailurePolicy,
             m_targetOutputCapture,
@@ -633,7 +650,7 @@ namespace TestImpact
         const Timer sequenceTimer;
 
         // Draft in the test targets that have no coverage entries in the dynamic dependency map
-        const AZStd::vector<const TestTarget*> draftedTestTargets = m_dynamicDependencyMap->GetNotCoveringTests();
+        const AZStd::vector<const NativeTestTarget*> draftedTestTargets = m_dynamicDependencyMap->GetNotCoveringTests();
 
         const auto selectCoveringTestTargetsAndPruneDraftedFromDiscarded =
             [this, &draftedTestTargets, &changeList, testPrioritizationPolicy]()
@@ -642,9 +659,9 @@ namespace TestImpact
             const auto [selectedTestTargets, discardedTestTargets] =
                 SelectCoveringTestTargets(changeList, testPrioritizationPolicy);
 
-            const AZStd::unordered_set<const TestTarget*> draftedTestTargetsSet(draftedTestTargets.begin(), draftedTestTargets.end());
+            const AZStd::unordered_set<const NativeTestTarget*> draftedTestTargetsSet(draftedTestTargets.begin(), draftedTestTargets.end());
 
-            AZStd::vector<const TestTarget*> discardedNotDraftedTestTargets;
+            AZStd::vector<const NativeTestTarget*> discardedNotDraftedTestTargets;
             for (const auto* testTarget : discardedTestTargets)
             {
                 if (!draftedTestTargetsSet.count(testTarget))
@@ -659,18 +676,18 @@ namespace TestImpact
         const auto [selectedTestTargets, discardedTestTargets] = selectCoveringTestTargetsAndPruneDraftedFromDiscarded();
 
         // The subset of selected test targets that are not on the configuration's exclude list and those that are
-        auto [includedSelectedTestTargets, excludedSelectedTestTargets] = SelectTestTargetsByExcludeList(selectedTestTargets);
+        const auto [includedSelectedTestTargets, excludedSelectedTestTargets] =
+            SelectTestTargetsByExcludeList(*m_instrumentedTestTargetExcludeList, selectedTestTargets);
 
         // Functor for running instrumented test targets
         const auto instrumentedTestRun =
             [this, &testTargetTimeout](
-                const AZStd::vector<const TestTarget*>& testsTargets,
+                const AZStd::vector<const NativeTestTarget*>& testsTargets,
                 TestRunCompleteCallbackHandler& testRunCompleteHandler,
                 AZStd::optional<AZStd::chrono::milliseconds> globalTimeout)
         {
             return m_testEngine->InstrumentedRun(
                 testsTargets,
-                m_testShardingPolicy,
                 m_executionFailurePolicy,
                 m_integrationFailurePolicy,
                 m_testFailurePolicy,
@@ -683,13 +700,12 @@ namespace TestImpact
         // Functor for running uninstrumented test targets
         const auto regularTestRun =
             [this, &testTargetTimeout](
-                const AZStd::vector<const TestTarget*>& testsTargets,
+                const AZStd::vector<const NativeTestTarget*>& testsTargets,
                  TestRunCompleteCallbackHandler& testRunCompleteHandler,
                 AZStd::optional<AZStd::chrono::milliseconds> globalTimeout)
         {
             return m_testEngine->RegularRun(
                 testsTargets,
-                m_testShardingPolicy,
                 m_executionFailurePolicy,
                 m_testFailurePolicy,
                 m_targetOutputCapture,
@@ -700,10 +716,16 @@ namespace TestImpact
 
         if (dynamicDependencyMapPolicy == Policy::DynamicDependencyMap::Update)
         {
-            AZStd::optional<AZStd::function<void(const AZStd::vector<TestEngineInstrumentedRun>& jobs)>> updateCoverage =
-                [this](const AZStd::vector<TestEngineInstrumentedRun>& jobs)
+            AZStd::optional<AZStd::function<void(const AZStd::vector<TestEngineInstrumentedRun<NativeTestTarget, TestCoverage>>& jobs)>>
+                updateCoverage = [this](const AZStd::vector<TestEngineInstrumentedRun<NativeTestTarget, TestCoverage>>& jobs)
             {
-                UpdateAndSerializeDynamicDependencyMap(jobs);
+                m_hasImpactAnalysisData = UpdateAndSerializeDynamicDependencyMap(
+                    m_dynamicDependencyMap.get(),
+                    jobs,
+                    m_failedTestCoveragePolicy,
+                    m_integrationFailurePolicy,
+                    m_config.m_repo.m_root,
+                    m_sparTiaFile).value_or(m_hasImpactAnalysisData);
             };
 
             return ImpactAnalysisTestSequenceWrapper(
@@ -740,7 +762,8 @@ namespace TestImpact
                 testSequenceStartCallback,
                 testSequenceEndCallback,
                 testCompleteCallback,
-                AZStd::optional<AZStd::function<void(const AZStd::vector<TestEngineRegularRun>& jobs)>>{ AZStd::nullopt });
+                AZStd::optional<AZStd::function<void(const AZStd::vector<TestEngineRegularRun<NativeTestTarget>>& jobs)>>{
+                    AZStd::nullopt });
         }
     }
 
@@ -754,21 +777,23 @@ namespace TestImpact
         AZStd::optional<TestRunCompleteCallback> testCompleteCallback)
     {
         const Timer sequenceTimer;
-        TestRunData<TestEngineInstrumentedRun> selectedTestRunData, draftedTestRunData;
-        TestRunData<TestEngineRegularRun> discardedTestRunData;
+        TestRunData<TestEngineInstrumentedRun<NativeTestTarget, TestCoverage>> selectedTestRunData, draftedTestRunData;
+        TestRunData<TestEngineRegularRun<NativeTestTarget>> discardedTestRunData;
         AZStd::optional<AZStd::chrono::milliseconds> sequenceTimeout = globalTimeout;
 
         // Draft in the test targets that have no coverage entries in the dynamic dependency map
-        AZStd::vector<const TestTarget*> draftedTestTargets = m_dynamicDependencyMap->GetNotCoveringTests();
+        AZStd::vector<const NativeTestTarget*> draftedTestTargets = m_dynamicDependencyMap->GetNotCoveringTests();
 
         // The test targets that were selected for the change list by the dynamic dependency map and the test targets that were not
         const auto [selectedTestTargets, discardedTestTargets] = SelectCoveringTestTargets(changeList, testPrioritizationPolicy);
 
         // The subset of selected test targets that are not on the configuration's exclude list and those that are
-        auto [includedSelectedTestTargets, excludedSelectedTestTargets] = SelectTestTargetsByExcludeList(selectedTestTargets);
+        const auto [includedSelectedTestTargets, excludedSelectedTestTargets] =
+            SelectTestTargetsByExcludeList(*m_instrumentedTestTargetExcludeList, selectedTestTargets);
 
         // The subset of discarded test targets that are not on the configuration's exclude list and those that are
-        auto [includedDiscardedTestTargets, excludedDiscardedTestTargets] = SelectTestTargetsByExcludeList(discardedTestTargets);
+        const auto [includedDiscardedTestTargets, excludedDiscardedTestTargets] =
+            SelectTestTargetsByExcludeList(*m_regularTestTargetExcludeList, discardedTestTargets);
 
         // Extract the client facing representation of selected, discarded and drafted test targets
         const Client::TestRunSelection selectedTests(
@@ -789,11 +814,10 @@ namespace TestImpact
         
         // Functor for running instrumented test targets
         const auto instrumentedTestRun =
-            [this, &testTargetTimeout, &sequenceTimeout, &testRunCompleteHandler](const AZStd::vector<const TestTarget*>& testsTargets)
+            [this, &testTargetTimeout, &sequenceTimeout, &testRunCompleteHandler](const AZStd::vector<const NativeTestTarget*>& testsTargets)
         {
             return m_testEngine->InstrumentedRun(
                 testsTargets,
-                m_testShardingPolicy,
                 m_executionFailurePolicy,
                 m_integrationFailurePolicy,
                 m_testFailurePolicy,
@@ -805,11 +829,10 @@ namespace TestImpact
 
         // Functor for running uninstrumented test targets
         const auto regularTestRun =
-            [this, &testTargetTimeout, &sequenceTimeout, &testRunCompleteHandler](const AZStd::vector<const TestTarget*>& testsTargets)
+            [this, &testTargetTimeout, &sequenceTimeout, &testRunCompleteHandler](const AZStd::vector<const NativeTestTarget*>& testsTargets)
         {
             return m_testEngine->RegularRun(
                 testsTargets,
-                m_testShardingPolicy,
                 m_executionFailurePolicy,
                 m_testFailurePolicy,
                 m_targetOutputCapture,
@@ -820,7 +843,7 @@ namespace TestImpact
 
         // Functor for running instrumented test targets
         const auto gatherTestRunData = [&sequenceTimer]
-        (const AZStd::vector<const TestTarget*>& testsTargets, const auto& testRunner, auto& testRunData)
+        (const AZStd::vector<const NativeTestTarget*>& testsTargets, const auto& testRunner, auto& testRunData)
         {
             const Timer testRunTimer;
             testRunData.m_relativeStartTime = testRunTimer.GetStartTimePointRelative(sequenceTimer);
@@ -894,7 +917,14 @@ namespace TestImpact
             (*testSequenceEndCallback)(sequenceReport);
         }
 
-        UpdateAndSerializeDynamicDependencyMap(ConcatenateVectors(selectedTestRunData.m_jobs, draftedTestRunData.m_jobs));
+        m_hasImpactAnalysisData = UpdateAndSerializeDynamicDependencyMap(
+                    m_dynamicDependencyMap.get(),
+                    ConcatenateVectors(selectedTestRunData.m_jobs, draftedTestRunData.m_jobs),
+                    m_failedTestCoveragePolicy,
+                    m_integrationFailurePolicy,
+                    m_config.m_repo.m_root,
+                    m_sparTiaFile).value_or(m_hasImpactAnalysisData);
+
         return sequenceReport;
     }
 
@@ -906,19 +936,19 @@ namespace TestImpact
         AZStd::optional<TestRunCompleteCallback> testCompleteCallback)
     {
         const Timer sequenceTimer;
-        AZStd::vector<const TestTarget*> includedTestTargets;
-        AZStd::vector<const TestTarget*> excludedTestTargets;
+        AZStd::vector<const NativeTestTarget*> includedTestTargets;
+        AZStd::vector<const NativeTestTarget*> excludedTestTargets;
 
         // Separate the test targets into those that are excluded by either the test filter or exclusion list and those that are not
-        for (const auto& testTarget : m_dynamicDependencyMap->GetTestTargetList().GetTargets())
+        for (const auto& testTarget : m_dynamicDependencyMap->GetBuildTargets()->GetTestTargetList().GetTargets())
         {
-            if (!m_testTargetExcludeList.contains(&testTarget))
+            if (m_instrumentedTestTargetExcludeList->IsTestTargetFullyExcluded(&testTarget))
             {
-                includedTestTargets.push_back(&testTarget);
+                excludedTestTargets.push_back(&testTarget);
             }
             else
             {
-                excludedTestTargets.push_back(&testTarget);
+                includedTestTargets.push_back(&testTarget);
             }
         }
 
@@ -935,7 +965,6 @@ namespace TestImpact
         const Timer testRunTimer;
         const auto [result, testJobs] = m_testEngine->InstrumentedRun(
             includedTestTargets,
-            m_testShardingPolicy,
             m_executionFailurePolicy,
             m_integrationFailurePolicy,
             m_testFailurePolicy,
@@ -962,7 +991,15 @@ namespace TestImpact
         }
 
         ClearDynamicDependencyMapAndRemoveExistingFile();
-        UpdateAndSerializeDynamicDependencyMap(testJobs);
+
+         m_hasImpactAnalysisData = UpdateAndSerializeDynamicDependencyMap(
+                    m_dynamicDependencyMap.get(),
+                    testJobs,
+                    m_failedTestCoveragePolicy,
+                    m_integrationFailurePolicy,
+                    m_config.m_repo.m_root,
+                    m_sparTiaFile).value_or(m_hasImpactAnalysisData);
+
         return sequenceReport;
     }
 

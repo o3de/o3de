@@ -9,9 +9,7 @@
 #pragma once
 
 #include <TestImpactFramework/TestImpactTestSequence.h>
-#include <Artifact/Static/TestImpactTestTargetMeta.h>
-
-#include <AzCore/std/containers/vector.h>
+#include <Artifact/Static/TestImpactNativeTestTargetMeta.h>
 
 namespace TestImpact
 {
@@ -19,5 +17,5 @@ namespace TestImpact
     //! @param masterTestListData The raw master test list data in JSON format.
     //! @param suiteType The suite type to select the target meta-data artifacts from.
     //! @return The constructed list of test target meta-data artifacts.
-    TestTargetMetaMap TestTargetMetaMapFactory(const AZStd::string& masterTestListData, SuiteType suiteType);
+    NativeTestTargetMetaMap NativeTestTargetMetaMapFactory(const AZStd::string& masterTestListData, SuiteType suiteType);
 } // namespace TestImpact
