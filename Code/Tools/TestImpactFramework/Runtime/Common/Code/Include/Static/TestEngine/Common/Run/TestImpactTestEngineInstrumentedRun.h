@@ -26,14 +26,15 @@ namespace TestImpact
         const AZStd::optional<Coverage>& GetCoverge() const;
 
     private:
-        //!
+        //! Release the test run component to the consumer, leaving the residing test run component undefined.
         static AZStd::optional<TestRun> ReleaseTestRun(
             AZStd::optional<AZStd::pair<AZStd::optional<TestRun>, Coverage>>& testRunAndCoverage);
 
-        //!
+        //! Release the test coverage component to the consumer, leaving the residing test run component undefined.
         static AZStd::optional<Coverage> ReleaseCoverage(
             AZStd::optional<AZStd::pair<AZStd::optional<TestRun>, Coverage>>& testRunAndCoverage);
 
+        //! The coverage data for this run.
         AZStd::optional<Coverage> m_coverage;
     };
 

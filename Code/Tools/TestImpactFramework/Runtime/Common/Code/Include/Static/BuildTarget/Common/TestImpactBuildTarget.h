@@ -15,20 +15,22 @@
 
 namespace TestImpact
 {
-    enum BuildTargetType : AZ::u8
+    //! Enumeration to facilitate runtime determination of build target types. 
+    enum class BuildTargetType : AZ::u8
     {
         TestTarget,
         ProductionTarget
     };
 
+    //! Common wrapper for repository build targets, be they production targets or test targets.
     template<typename TestTarget, typename ProductionTarget>
     class BuildTarget
     {
     public:
-        //!
+        //! Constructor for test targets.
         BuildTarget(const TestTarget* testTarget);
 
-        //!
+        //! Constructor for production targets.
         BuildTarget(const ProductionTarget* productionTarget);
     
         //! Returns the generic target pointer for this parent, otherwise nullptr.
@@ -40,32 +42,28 @@ namespace TestImpact
         //! Returns the production target pointer for this parent (if any), otherwise nullptr.
         AZStd::optional<const ProductionTarget*> GetProductionTarget() const;
 
-        //!
+        //! Returns the target type at runtime.
         BuildTargetType GetTargetType() const;
     
-        //!
+        //! Visits the target type at compile time.
         template<typename Visitor>
         void Visit(const Visitor& visitor) const;
 
-        //!
-        BuildTargetType m_type;
-
     private:
-        //!
+        //! Compile time check for whether or not this build target is a production target.
         template<typename Target>
         static constexpr bool IsProductionTarget =
             AZStd::is_same_v<ProductionTarget, AZStd::remove_const_t<AZStd::remove_pointer_t<AZStd::decay_t<Target>>>>;
 
-        //!
+        //! Compile time check for whether or not this build target is a test target.
         template<typename Target>
         static constexpr bool IsTestTarget =
             AZStd::is_same_v<TestTarget, AZStd::remove_const_t<AZStd::remove_pointer_t<AZStd::decay_t<Target>>>>;
         AZStd::variant<const TestTarget*, const ProductionTarget*> m_target;
-    };
 
-    //! Optional holder for optional build target types.
-    template<typename TestTarget, typename ProductionTarget>
-    using OptionalBuildTarget = AZStd::optional<BuildTarget<TestTarget, ProductionTarget>>;
+        //! The build target type (either production or test)/.
+        BuildTargetType m_type;
+    };
 
     template<typename TestTarget, typename ProductionTarget>
     BuildTarget<TestTarget, ProductionTarget>::BuildTarget(const TestTarget* testTarget)
@@ -139,12 +137,16 @@ namespace TestImpact
         AZStd::visit(visitor, m_target);
     }
 
-    //!
+    //! Comparison between build target types.
     template<typename TestTarget, typename ProductionTarget>
     bool operator==(const BuildTarget<TestTarget, ProductionTarget>& lhs, const BuildTarget<TestTarget, ProductionTarget>& rhs)
     {
         return lhs.GetTarget() == rhs.GetTarget();
     }
+
+    //! Optional for build target types.
+    template<typename TestTarget, typename ProductionTarget>
+    using OptionalBuildTarget = AZStd::optional<BuildTarget<TestTarget, ProductionTarget>>;
 } // namespace TestImpact
 
 namespace AZStd
