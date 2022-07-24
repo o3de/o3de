@@ -481,7 +481,7 @@ namespace
                 continue;
             }
 
-            if (auto excludeFromPointer = AZ::FindAttribute(AZ::ScriptCanvasAttributes::Internal::ImplementedAsNodeGeneric, behaviorClass->m_attributes))
+            if (AZ::FindAttribute(AZ::ScriptCanvasAttributes::Internal::ImplementedAsNodeGeneric, behaviorClass->m_attributes))
             {
                 continue;
             }

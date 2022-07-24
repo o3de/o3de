@@ -256,8 +256,7 @@ TEST_F(StatsCaptureOutputTest, StatsCaptureTest_PersistToDb)
     AZStd::vector<AzToolsFramework::AssetDatabase::StatDatabaseEntry> statEntryContainer;
     auto getQueriedStatEntry = [&statEntryContainer]([[maybe_unused]] AzToolsFramework::AssetDatabase::StatDatabaseEntry& entry)
     {
-        statEntryContainer.push_back();
-        statEntryContainer.back() = AZStd::move(entry);
+        statEntryContainer.emplace_back() = AZStd::move(entry);
         return true;
     };
 

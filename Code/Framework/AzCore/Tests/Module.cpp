@@ -133,8 +133,7 @@ namespace UnitTest
             appDesc.m_recordingMode = Debug::AllocationRecords::RECORD_FULL;
 
             // AZCoreTestDLL will load as a dynamic module
-            appDesc.m_modules.push_back();
-            DynamicModuleDescriptor& dynamicModuleDescriptor = appDesc.m_modules.back();
+            DynamicModuleDescriptor& dynamicModuleDescriptor = appDesc.m_modules.emplace_back();
             dynamicModuleDescriptor.m_dynamicLibraryPath = "AzCoreTestDLL";
 
             // StaticModule will load via AZCreateStaticModule(...)
