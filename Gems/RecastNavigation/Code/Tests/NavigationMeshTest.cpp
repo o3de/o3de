@@ -24,8 +24,6 @@
 #include <PhysX/MockSceneInterface.h>
 #include <PhysX/MockSimulatedBody.h>
 
-#pragma optimize("", off)
-
 namespace RecastNavigationTests
 {
     using testing::_;
@@ -931,5 +929,3 @@ namespace RecastNavigationTests
         EXPECT_EQ(waypoints.size(), 0);
     }
 }
-
-#pragma optimize("", on)
