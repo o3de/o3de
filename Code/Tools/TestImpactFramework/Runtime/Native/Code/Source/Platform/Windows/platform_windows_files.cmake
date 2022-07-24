@@ -7,10 +7,6 @@
 #
 
 set(FILES
-    Process/TestImpactWin32_ProcessLauncher.cpp
-    Process/TestImpactWin32_Process.cpp
-    Process/TestImpactWin32_Process.h
-    Process/TestImpactWin32_Handle.h
-    Process/TestImpactWin32_Pipe.cpp
-    Process/TestImpactWin32_Pipe.h
+    TestEngine/Native/TestImpactWin32_NativeErrorCodeChecker.cpp
+    TestEngine/Native/Job/TestImpactWin32_NativeTestTargetExtension.cpp
 )

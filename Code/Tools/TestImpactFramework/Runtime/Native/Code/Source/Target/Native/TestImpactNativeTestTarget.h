@@ -8,19 +8,21 @@
 
 #pragma once
 
-#include <Artifact/Static/TestImpactTestTargetDescriptor.h>
-#include <Target/TestImpactBuildTarget.h>
+#include <Artifact/Static/TestImpactNativeTestTargetDescriptor.h>
+#include <Target/Native/TestImpactNativeTarget.h>
+
+#include <AzCore/std/smart_ptr/unique_ptr.h>
 
 namespace TestImpact
 {
     //! Build target specialization for test targets (build targets containing test code and no production code).
-    class TestTarget
-        : public BuildTarget
+    class NativeTestTarget
+        : public NativeTarget
     {
     public:
-        using Descriptor = TestTargetDescriptor;
+        using Descriptor = NativeTestTargetDescriptor;
 
-        TestTarget(Descriptor&& descriptor);
+        NativeTestTarget(AZStd::unique_ptr<Descriptor> descriptor);
 
         //! Returns the test target suite.
         const AZStd::string& GetSuite() const;
@@ -35,9 +37,6 @@ namespace TestImpact
         LaunchMethod GetLaunchMethod() const;
 
     private:
-        const TestTargetMeta m_testMetaData;
+        AZStd::unique_ptr<Descriptor> m_descriptor;
     };
-
-    template<typename Target>
-    inline constexpr bool IsTestTarget = AZStd::is_same_v<TestTarget, AZStd::remove_const_t<AZStd::remove_pointer_t<AZStd::decay_t<Target>>>>;
 } // namespace TestImpact

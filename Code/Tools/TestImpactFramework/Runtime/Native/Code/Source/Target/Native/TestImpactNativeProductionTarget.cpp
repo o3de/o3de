@@ -6,12 +6,13 @@
  *
  */
 
-#include "TestImpactProductionTarget.h"
+#include <Target/Native/TestImpactNativeProductionTarget.h>
 
 namespace TestImpact
 {
-    ProductionTarget::ProductionTarget(Descriptor&& descriptor)
-        : BuildTarget(AZStd::move(descriptor), TargetType::Production)
+    NativeProductionTarget::NativeProductionTarget(AZStd::unique_ptr<Descriptor> descriptor)
+        : NativeTarget(descriptor.get())
+        , m_descriptor(AZStd::move(descriptor))
     {
     }
 } // namespace TestImpact

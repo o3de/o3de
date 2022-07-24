@@ -8,11 +8,12 @@
 
 #pragma once
 
-#include <Target/TestImpactBuildTargetList.h>
-#include <Target/TestImpactTestTarget.h>
+#include <AzCore/std/string/string.h>
 
 namespace TestImpact
 {
-    //! Container for set of sorted test targets containing no duplicates.
-    using TestTargetList = BuildTargetList<TestTarget>;
-} // namespace TestImpact
+    class NativeTestTarget;
+
+    //! Returns the binary file extension for the specified test target.
+    AZStd::string GetTestTargetExtension(const NativeTestTarget* testTarget);
+}
