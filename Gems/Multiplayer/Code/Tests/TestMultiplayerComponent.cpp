@@ -65,9 +65,9 @@ namespace MultiplayerTest
     void TestMultiplayerComponentController::ProcessInput(Multiplayer::NetworkInput& input, [[maybe_unused]] float deltaTime)
     {
         const auto& component = GetParent();
-        [[maybe_unused]] auto* networkInput = input.FindComponentInput<TestMultiplayerComponentNetworkInput>();
+        [[maybe_unused]] const auto* networkInput = input.FindComponentInput<TestMultiplayerComponentNetworkInput>();
         AZ_Assert(networkInput->m_ownerId == component.GetId(), "Input Id doesn't match the owner component Id on entity %llu",
-            GetEntityId());
+            aznumeric_cast<AZ::u64>(GetEntityId()));
 
         if (component.m_processInputCallback)
         {
