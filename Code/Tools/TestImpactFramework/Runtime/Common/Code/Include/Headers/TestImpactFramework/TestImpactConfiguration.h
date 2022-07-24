@@ -52,7 +52,7 @@ namespace TestImpact
     };
 
     //! Build target descriptor configuration.
-    struct NativeTargetDescriptorConfig
+    struct BuildTargetDescriptorConfig
     {
         RepoPath m_mappingDirectory; //!< Path to the source to target mapping files.
         AZStd::vector<AZStd::string> m_staticInclusionFilters; //!< File extensions to include for static files.
@@ -127,7 +127,7 @@ namespace TestImpact
         ConfigMeta m_meta;
         RepoConfig m_repo;
         WorkspaceConfig m_workspace;
-        NativeTargetDescriptorConfig m_NativeTargetDescriptor;
+        BuildTargetDescriptorConfig m_buildTargetDescriptor;
         DependencyGraphDataConfig m_dependencyGraphData;
         TestTargetMetaConfig m_testTargetMeta;
         GemTargetConfig m_gemTarget;

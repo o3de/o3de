@@ -53,7 +53,6 @@ namespace TestImpact
         return AZStd::nullopt;
     }
 
-    //!
     AZStd::optional<Client::TestRunResult> CheckStandAloneError(ReturnCode returnCode)
     {
         if (returnCode == 0)

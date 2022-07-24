@@ -19,7 +19,7 @@
 
 namespace TestImpact
 {
-    //!
+    //! Determines the test run result of a native regular test run.
     AZStd::optional<Client::TestRunResult> NativeRegularTestRunnerErrorCodeChecker(
         const typename NativeRegularTestRunner::JobInfo& jobInfo, const JobMeta& meta)
     {
