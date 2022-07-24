@@ -18,6 +18,8 @@ ly_add_target(
     PLATFORM_INCLUDE_FILES
         ${common_dir}/${PAL_TRAIT_COMPILER_ID}/testimpactframework_${PAL_TRAIT_COMPILER_ID_LOWERCASE}.cmake
     INCLUDE_DIRECTORIES
+        PUBLIC
+            Include
         PRIVATE
             Source
     BUILD_DEPENDENCIES

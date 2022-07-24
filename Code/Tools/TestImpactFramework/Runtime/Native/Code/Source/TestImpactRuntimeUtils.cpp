@@ -43,7 +43,7 @@ namespace TestImpact
         return NativeTargetDescriptors;
     }
 
-     AZStd::unique_ptr<BuildTargetList<NativeTestTarget, NativeProductionTarget>> ConstructNativeBuildTargetList(
+    AZStd::unique_ptr<BuildTargetList<NativeTestTarget, NativeProductionTarget>> ConstructNativeBuildTargetList(
         SuiteType suiteFilter,
         const NativeTargetDescriptorConfig& NativeTargetDescriptorConfig,
         const TestTargetMetaConfig& testTargetMetaConfig)
@@ -56,7 +56,7 @@ namespace TestImpact
             AZStd::move(testTargets), AZStd::move(productionTargets));
     }
 
-    AZStd::unique_ptr<TestTargetExclusionList> ConstructTestTargetExcludeList(
+    AZStd::unique_ptr<TestTargetExclusionList<NativeTestTarget>> ConstructTestTargetExcludeList(
         const TargetList<NativeTestTarget>& testTargets, const AZStd::vector<TargetConfig::ExcludedTarget>& excludedTestTargets)
     {
         AZStd::unordered_map<const NativeTestTarget*, AZStd::vector<AZStd::string>> testTargetExcludeList;
@@ -69,14 +69,14 @@ namespace TestImpact
             }
         }
 
-        return AZStd::make_unique<TestTargetExclusionList>(AZStd::move(testTargetExcludeList));
+        return AZStd::make_unique<TestTargetExclusionList<NativeTestTarget>>(AZStd::move(testTargetExcludeList));
     }
 
     AZStd::pair<
         AZStd::vector<const NativeTestTarget*>,
         AZStd::vector<const NativeTestTarget*>>
     SelectTestTargetsByExcludeList(
-        const TestTargetExclusionList& testTargetExcludeList,
+        const TestTargetExclusionList<NativeTestTarget>& testTargetExcludeList,
         const AZStd::vector<const NativeTestTarget*>& testTargets)
     {
         AZStd::vector<const NativeTestTarget*> includedTestTargets;

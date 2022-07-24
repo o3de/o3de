@@ -33,7 +33,7 @@ namespace TestImpact
         const TestTargetMetaConfig& testTargetMetaConfig);
 
     //! Constructs the resolved test target exclude list from the specified list of targets and unresolved test target exclude list.
-    AZStd::unique_ptr<TestTargetExclusionList> ConstructTestTargetExcludeList(
+    AZStd::unique_ptr<TestTargetExclusionList<NativeTestTarget>> ConstructTestTargetExcludeList(
         const TargetList<NativeTestTarget>& testTargets,
         const AZStd::vector<TargetConfig::ExcludedTarget>& excludedTestTargets);
 
@@ -45,7 +45,7 @@ namespace TestImpact
         AZStd::vector<const NativeTestTarget*>,
         AZStd::vector<const NativeTestTarget*>>
     SelectTestTargetsByExcludeList(
-        const TestTargetExclusionList& testTargetExcludeList,
+        const TestTargetExclusionList<NativeTestTarget>& testTargetExcludeList,
         const AZStd::vector<const NativeTestTarget*>& testTargets);
 
     //! Extracts the name information from the specified test targets.

@@ -17,7 +17,7 @@
 
 namespace TestImpact
 {
-    //!
+    //! Callback for when a given test engine job has failed and requires determination of the error code it returned.
     template<typename TestJobRunner> 
     using ErrorCodeCheckerCallback = AZStd::function<AZStd::optional<Client::TestRunResult>(const typename TestJobRunner::JobInfo& jobInfo, const JobMeta& meta)>;
 
@@ -217,6 +217,7 @@ namespace TestImpact
         return engineRuns;
     }
 
+    //! Helper function to run the specified tests.
     template<typename TestJobRunner, typename TestTarget>
     AZStd::pair<TestSequenceResult, AZStd::vector<TestEngineJobType<TestJobRunner>>> RunTests(
         TestJobRunner* testRunner,
@@ -251,7 +252,7 @@ namespace TestImpact
         return { CalculateSequenceResult(result, engineRuns, executionFailurePolicy), AZStd::move(engineRuns) };
     }
 
-    //!
+    //! Helper function to generate the test engine job infos and the proceed to running the tests.
     template<typename TestJobRunner, typename TestJobInfoGenerator, typename TestTarget>
     AZStd::pair<TestSequenceResult, AZStd::vector<TestEngineJobType<TestJobRunner>>> GenerateJobInfosAndRunTests(
         TestJobRunner* testRunner,

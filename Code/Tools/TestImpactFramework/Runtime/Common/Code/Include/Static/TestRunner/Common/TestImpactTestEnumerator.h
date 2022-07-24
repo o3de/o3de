@@ -8,7 +8,6 @@
 
 #pragma once
 
-#include <TestImpactFramework/TestImpactRuntime.h>
 #include <TestImpactFramework/TestImpactUtils.h>
 
 #include <Artifact/TestImpactArtifactException.h>

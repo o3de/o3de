@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <TestImpactFramework/TestImpactRuntime.h>
+#include <TestImpactFramework/TestImpactRepoPath.h>
 
 #include <AzCore/std/optional.h>
 #include <AzCore/std/string/string.h>

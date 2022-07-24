@@ -10,7 +10,6 @@
 
 #include <TestImpactFramework/TestImpactTestSequence.h>
 #include <TestImpactFramework/TestImpactClientTestRun.h>
-#include <TestImpactFramework/TestImpactRuntime.h>
 
 #include <TestEngine/Common/TestImpactTestEngine.h>
 #include <TestEngine/Common/Enumeration/TestImpactTestEngineEnumeration.h>

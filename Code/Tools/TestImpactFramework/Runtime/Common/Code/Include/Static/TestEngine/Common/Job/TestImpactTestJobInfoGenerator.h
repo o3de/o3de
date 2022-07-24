@@ -12,9 +12,7 @@
 
 namespace TestImpact
 {
-    // These are helpers. you don't have to inherit from them
-
-    //!
+    //! Helper class for generating test job infos.
     template<typename TestJobRunner, typename TestTarget>
     class TestJobInfoGenerator
     {

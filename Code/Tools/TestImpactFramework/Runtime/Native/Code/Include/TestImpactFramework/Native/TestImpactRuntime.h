@@ -29,7 +29,6 @@ namespace TestImpact
     class NativeTestTarget;
     class NativeProductionTarget;
     class SourceCoveringTestsList;
-    class TestTargetExclusionList;
 
     template<typename TestTarget, typename ProdutionTarget>
     class ChangeDependencyList;
@@ -42,6 +41,9 @@ namespace TestImpact
 
     template<typename TestTarget, typename ProdutionTarget>
     class TestSelectorAndPrioritizer;
+
+    template<typename TestTarget>
+    class TestTargetExclusionList;
 
     //! Callback for a test sequence that isn't using test impact analysis to determine selected tests.
     //! @parm suiteType The test suite to select tests from.
@@ -235,8 +237,8 @@ namespace TestImpact
         AZStd::unique_ptr<DynamicDependencyMap<NativeTestTarget, NativeProductionTarget>> m_dynamicDependencyMap;
         AZStd::unique_ptr<TestSelectorAndPrioritizer<NativeTestTarget, NativeProductionTarget>> m_testSelectorAndPrioritizer;
         AZStd::unique_ptr<NativeTestEngine> m_testEngine;
-        AZStd::unique_ptr<TestTargetExclusionList> m_regularTestTargetExcludeList;
-        AZStd::unique_ptr<TestTargetExclusionList> m_instrumentedTestTargetExcludeList;
+        AZStd::unique_ptr<TestTargetExclusionList<NativeTestTarget>> m_regularTestTargetExcludeList;
+        AZStd::unique_ptr<TestTargetExclusionList<NativeTestTarget>> m_instrumentedTestTargetExcludeList;
         AZStd::unordered_set<const NativeTestTarget*> m_testTargetShardList;
         AZStd::unordered_set<const NativeTestTarget*> m_previouslyFailingTestTargets;
         bool m_hasImpactAnalysisData = false;

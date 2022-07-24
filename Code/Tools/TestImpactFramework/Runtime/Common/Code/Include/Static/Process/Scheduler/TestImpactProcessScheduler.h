@@ -8,8 +8,6 @@
 
 #pragma once
 
-#include <TestImpactFramework/TestImpactRuntime.h>
-
 #include <Process/TestImpactProcessInfo.h>
 
 #include <AzCore/std/chrono/chrono.h>

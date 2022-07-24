@@ -14,11 +14,10 @@
 #include <TestImpactFramework/TestImpactConsoleMain.h>
 #include <TestImpactFramework/TestImpactChangeListSerializer.h>
 #include <TestImpactFramework/TestImpactChangeList.h>
-#include <TestImpactFramework/TestImpactRuntime.h>
 #include <TestImpactFramework/TestImpactUtils.h>
 #include <TestImpactFramework/TestImpactClientTestSelection.h>
-#include <TestImpactFramework/TestImpactRuntime.h>
 #include <TestImpactFramework/TestImpactClientSequenceReportSerializer.h>
+#include <TestImpactFramework/Native/TestImpactRuntime.h>
 
 #include <TestImpactConsoleTestSequenceEventHandler.h>
 #include <TestImpactCommandLineOptions.h>
