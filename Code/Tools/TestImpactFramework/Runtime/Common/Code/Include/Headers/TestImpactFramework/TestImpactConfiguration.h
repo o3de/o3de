@@ -74,6 +74,12 @@ namespace TestImpact
         RepoPath m_metaFile; //!< Path to the test target meta file.
     };
 
+    //! Gem target configuration.
+    struct GemTargetConfig
+    {
+        RepoPath m_metaFile; //!< Path to the gem target file.
+    };
+
     //! Test engine configuration.
     struct TestEngineConfig
     {
@@ -103,8 +109,16 @@ namespace TestImpact
             ShardConfiguration m_configuration; //!< The shard configuration to use.
         };
 
+        //! Test target excluded from test selection.
+        struct ExcludedTarget
+        {
+            AZStd::string m_name; //!< Name of test target to exclude.
+            AZStd::vector<AZStd::string> m_excludedTests; //!< Specific tests to exclude (if empty, all tests are excluded).
+        };
+
         RepoPath m_outputDirectory; //!< Path to the test target binary directory.
-        AZStd::vector<AZStd::string> m_excludedTestTargets; //!< Test targets to always exclude from test run sequences.
+        AZStd::vector<ExcludedTarget> m_excludedRegularTestTargets; //!< Test targets to always exclude from regular test run sequences.
+        AZStd::vector<ExcludedTarget> m_excludedInstrumentedTestTargets; //!< Test targets to always exclude from instrumented test run sequences.
         AZStd::vector<ShardedTarget> m_shardedTestTargets; //!< Test target shard configurations (opt-in).
     };
 
@@ -116,6 +130,7 @@ namespace TestImpact
         BuildTargetDescriptorConfig m_buildTargetDescriptor;
         DependencyGraphDataConfig m_dependencyGraphData;
         TestTargetMetaConfig m_testTargetMeta;
+        GemTargetConfig m_gemTarget;
         TestEngineConfig m_testEngine;
         TargetConfig m_target;
     };

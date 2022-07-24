@@ -65,6 +65,11 @@ namespace TestImpact
     //! Deletes the specified file.
     void DeleteFile(const RepoPath& file);
 
+    //! Counts the number files that match the pattern from the specified directory.
+    //! @param path The path to the directory to pattern match the files for deletion.
+    //! @param pattern The pattern to match files for counting.
+    size_t CountFiles(const RepoPath& path, const AZStd::string& pattern);
+
     //! User-friendly names for the test suite types.
     AZStd::string SuiteTypeAsString(SuiteType suiteType);
 

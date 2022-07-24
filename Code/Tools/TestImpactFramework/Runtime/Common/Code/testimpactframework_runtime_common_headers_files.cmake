@@ -9,7 +9,6 @@
 set(FILES
     Include/Headers/TestImpactFramework/TestImpactException.h
     Include/Headers/TestImpactFramework/TestImpactRepoPath.h
-    Include/Headers/TestImpactFramework/TestImpactRuntime.h
     Include/Headers/TestImpactFramework/TestImpactRuntimeException.h
     Include/Headers/TestImpactFramework/TestImpactConfiguration.h
     Include/Headers/TestImpactFramework/TestImpactConfigurationException.h

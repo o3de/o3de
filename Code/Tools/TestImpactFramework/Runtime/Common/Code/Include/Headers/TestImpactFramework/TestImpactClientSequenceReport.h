@@ -391,57 +391,57 @@ namespace TestImpact
             // SequenceReport overrides ...
             AZStd::chrono::milliseconds GetDuration() const override
             {
-                return SequenceReportBase<Type, PolicyStateType>::GetDuration() + m_draftedTestRunReport.GetDuration();
+                return GetDuration() + m_draftedTestRunReport.GetDuration();
             }
 
             TestSequenceResult GetResult() const override
             {
-                return CalculateMultiTestSequenceResult({ SequenceReportBase<Type, PolicyStateType>::GetResult(), m_draftedTestRunReport.GetResult() });
+                return CalculateMultiTestSequenceResult({ GetResult(), m_draftedTestRunReport.GetResult() });
             }
 
             size_t GetTotalNumTestRuns() const override
             {
-                return SequenceReportBase<Type, PolicyStateType>::GetTotalNumTestRuns() + m_draftedTestRunReport.GetTotalNumTestRuns();
+                return GetTotalNumTestRuns() + m_draftedTestRunReport.GetTotalNumTestRuns();
             }
 
             size_t GetTotalNumPassingTests() const override
             {
-                return SequenceReportBase<Type, PolicyStateType>::GetTotalNumPassingTests() + m_draftedTestRunReport.GetTotalNumPassingTests();
+                return GetTotalNumPassingTests() + m_draftedTestRunReport.GetTotalNumPassingTests();
             }
 
             size_t GetTotalNumFailingTests() const override
             {
-                return SequenceReportBase<Type, PolicyStateType>::GetTotalNumFailingTests() + m_draftedTestRunReport.GetTotalNumFailingTests();
+                return GetTotalNumFailingTests() + m_draftedTestRunReport.GetTotalNumFailingTests();
             }
 
             size_t GetTotalNumDisabledTests() const override
             {
-                return SequenceReportBase<Type, PolicyStateType>::GetTotalNumDisabledTests() + m_draftedTestRunReport.GetTotalNumDisabledTests();
+                return GetTotalNumDisabledTests() + m_draftedTestRunReport.GetTotalNumDisabledTests();
             }
 
             size_t GetTotalNumPassingTestRuns() const override
             {
-                return SequenceReportBase<Type, PolicyStateType>::GetTotalNumPassingTestRuns() + m_draftedTestRunReport.GetNumPassingTestRuns();
+                return GetTotalNumPassingTestRuns() + m_draftedTestRunReport.GetNumPassingTestRuns();
             }
 
             size_t GetTotalNumFailingTestRuns() const override
             {
-                return SequenceReportBase<Type, PolicyStateType>::GetTotalNumFailingTestRuns() + m_draftedTestRunReport.GetNumFailingTestRuns();
+                return GetTotalNumFailingTestRuns() + m_draftedTestRunReport.GetNumFailingTestRuns();
             }
 
             size_t GetTotalNumExecutionFailureTestRuns() const override
             {
-                return SequenceReportBase<Type, PolicyStateType>::GetTotalNumExecutionFailureTestRuns() + m_draftedTestRunReport.GetNumExecutionFailureTestRuns();
+                return GetTotalNumExecutionFailureTestRuns() + m_draftedTestRunReport.GetNumExecutionFailureTestRuns();
             }
 
             size_t GetTotalNumTimedOutTestRuns() const override
             {
-                return SequenceReportBase<Type, PolicyStateType>::GetTotalNumTimedOutTestRuns() + m_draftedTestRunReport.GetNumTimedOutTestRuns();
+                return GetTotalNumTimedOutTestRuns() + m_draftedTestRunReport.GetNumTimedOutTestRuns();
             }
 
             size_t GetTotalNumUnexecutedTestRuns() const override
             {
-                return SequenceReportBase<Type, PolicyStateType>::GetTotalNumUnexecutedTestRuns() + m_draftedTestRunReport.GetNumUnexecutedTestRuns();
+                return GetTotalNumUnexecutedTestRuns() + m_draftedTestRunReport.GetNumUnexecutedTestRuns();
             }
         private:
             AZStd::vector<AZStd::string> m_draftedTestRuns;

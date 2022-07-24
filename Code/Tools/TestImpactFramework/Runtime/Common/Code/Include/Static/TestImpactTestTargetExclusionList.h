@@ -14,7 +14,6 @@
 
 namespace TestImpact
 {
-
     //! List for excluding entire test targets (or a subset of the target's tests) from test runs.
     template<typename TestTarget>
     class TestTargetExclusionList
@@ -51,20 +50,20 @@ namespace TestImpact
     };
 
     template<typename TestTarget>
-    TestTargetExclusionList::TestTargetExclusionList(
+    TestTargetExclusionList<TestTarget>::TestTargetExclusionList(
         AZStd::unordered_map<const TestTarget*, AZStd::vector<AZStd::string>>&& excludedTestTargets)
         : m_excludedTestTargets(AZStd::move(excludedTestTargets))
     {
     }
 
     template<typename TestTarget>
-    const AZStd::unordered_map<const TestTarget*, AZStd::vector<AZStd::string>>& TestTargetExclusionList::GetExcludedTargets() const
+    const AZStd::unordered_map<const TestTarget*, AZStd::vector<AZStd::string>>& TestTargetExclusionList<TestTarget>::GetExcludedTargets() const
     {
         return m_excludedTestTargets;
     }
 
     template<typename TestTarget>
-    const AZStd::vector<AZStd::string>* TestTargetExclusionList::GetExcludedTestsForTarget(const TestTarget* testTarget) const
+    const AZStd::vector<AZStd::string>* TestTargetExclusionList<TestTarget>::GetExcludedTestsForTarget(const TestTarget* testTarget) const
     {
         const auto it = m_excludedTestTargets.find(testTarget);
         return it != m_excludedTestTargets.end()
@@ -73,7 +72,7 @@ namespace TestImpact
     }
 
     template<typename TestTarget>
-    bool TestTargetExclusionList::IsTestTargetFullyExcluded(const TestTarget* testTarget) const
+    bool TestTargetExclusionList<TestTarget>::IsTestTargetFullyExcluded(const TestTarget* testTarget) const
     {
         if (const auto* excludedTests = GetExcludedTestsForTarget(testTarget);
             excludedTests)
@@ -85,13 +84,13 @@ namespace TestImpact
     }
 
     template<typename TestTarget>
-    size_t TestTargetExclusionList::GetNumTargets() const
+    size_t TestTargetExclusionList<TestTarget>::GetNumTargets() const
     {
         return m_excludedTestTargets.size();
     }
 
     template<typename TestTarget>
-    bool TestTargetExclusionList::IsEmpty() const
+    bool TestTargetExclusionList<TestTarget>::IsEmpty() const
     {
         return m_excludedTestTargets.empty();
     }

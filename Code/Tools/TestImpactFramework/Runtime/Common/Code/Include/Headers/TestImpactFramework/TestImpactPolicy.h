@@ -54,6 +54,15 @@ namespace TestImpact
             Continue //!< Continue the test sequence and report the test failures after the run.
         };
 
+
+        //! Policy for drafting in test targets outside of the selection to be run in conjunction with the selected targets.
+        enum class Drafting
+        {
+            NoCoverageOnly,
+            FailingTestsOnly,
+            All
+        };
+
         //! Policy for updating the dynamic dependency map with the coverage data of produced by test sequences.
         enum class DynamicDependencyMap : AZ::u8
         {
