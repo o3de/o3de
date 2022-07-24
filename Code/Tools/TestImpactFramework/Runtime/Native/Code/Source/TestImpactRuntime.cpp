@@ -7,7 +7,7 @@
  */
 
 #include <TestImpactFramework/TestImpactUtils.h>
-#include <TestImpactFramework/TestImpactRuntime.h>
+#include <TestImpactFramework/Native/TestImpactRuntime.h>
 #include <TestImpactFramework/TestImpactRuntimeException.h>
 
 #include <TestImpactRuntimeUtils.h>

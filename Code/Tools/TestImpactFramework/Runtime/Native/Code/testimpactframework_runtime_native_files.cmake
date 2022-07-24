@@ -7,6 +7,7 @@
 #
 
 set(FILES
+    Include/TestImpactFramework/Native/TestImpactRuntime.h
     Source/Artifact/Factory/TestImpactNativeTargetDescriptorFactory.cpp
     Source/Artifact/Factory/TestImpactNativeTargetDescriptorFactory.h
     Source/Artifact/Factory/TestImpactNativeTestTargetMetaMapFactory.cpp
@@ -41,5 +42,5 @@ set(FILES
     Source/TestEngine/Native/Job/TestImpactNativeTestJobInfoGenerator.h
     Source/TestImpactRuntime.cpp
     Source/TestImpactRuntimeUtils.cpp
-    Source/TestImpactTestTargetExclusionList.cpp
+    Source/TestImpactRuntimeUtils.h
 )

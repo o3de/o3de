@@ -6,8 +6,6 @@
  *
  */
 
-#include <TestImpactFramework/TestImpactRuntime.h>
-
 #include <Artifact/Factory/TestImpactNativeTargetDescriptorFactory.h>
 #include <Artifact/TestImpactArtifactException.h>
 
