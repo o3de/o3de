@@ -15,15 +15,15 @@
 
 namespace TestImpact
 {
-    //! Returns the error code handler for native instrumentation error codes.
+    //! Returns the error code for native instrumentation error codes.
     AZStd::optional<Client::TestRunResult> CheckNativeInstrumentationErrorCode(ReturnCode returnCode);
 
-    //! Returns the error code handler for native test runner error codes.
+    //! Returns the error code for native test runner error codes.
     AZStd::optional<Client::TestRunResult> CheckNativeTestRunnerErrorCode(ReturnCode returnCode);
 
-    //! Returns the error code handler for native test library error codes.
+    //! Returns the error code for native test library error codes.
     AZStd::optional<Client::TestRunResult> CheckNativeTestLibraryErrorCode(ReturnCode returnCode);
 
-    //!
+    //! Returns the error code for native stand alone (executable) test targets.
     AZStd::optional<Client::TestRunResult> CheckStandAloneError(ReturnCode returnCode);
 } // namespace TestImpact
