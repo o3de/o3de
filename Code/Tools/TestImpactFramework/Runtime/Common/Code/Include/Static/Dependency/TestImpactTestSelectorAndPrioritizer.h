@@ -240,7 +240,7 @@ namespace TestImpact
                     // 1. The file has been newly created
                     // 2. This file exists in one or more source to production target mapping artifacts
                     // 3. There exists no coverage data for this file in the source covering test list
-                    CreateProductionSourceAction(parentTarget.GetProductionTarget().value(), selectedTestTargetMap);
+                    CreateProductionSourceAction(parentTarget.GetProductionTarget(), selectedTestTargetMap);
                 }
                 else
                 {
@@ -252,7 +252,7 @@ namespace TestImpact
                     // 1. The file has been newly created
                     // 2. This file exists in one or more source to test target mapping artifacts
                     // 3. There exists no coverage data for this file in the source covering test list
-                    CreateTestSourceAction(parentTarget.GetTestTarget().value(), selectedTestTargetMap);
+                    CreateTestSourceAction(parentTarget.GetTestTarget(), selectedTestTargetMap);
                 }
             }
         }
@@ -276,7 +276,7 @@ namespace TestImpact
                             // 1. The existing file has been modified
                             // 2. This file exists in one or more source to production target mapping artifacts
                             // 3. There exists coverage data for this file in the source covering test list
-                            UpdateProductionSourceWithCoverageAction(parentTarget.GetProductionTarget().value(), selectedTestTargetMap, sourceDependency);
+                            UpdateProductionSourceWithCoverageAction(parentTarget.GetProductionTarget(), selectedTestTargetMap, sourceDependency);
                         }
                         else
                         {
@@ -288,7 +288,7 @@ namespace TestImpact
                             // 1. The existing file has been modified
                             // 2. This file exists in one or more source to test target mapping artifacts
                             // 3. There exists coverage data for this file in the source covering test list
-                            UpdateTestSourceWithCoverageAction(parentTarget.GetTestTarget().value(), selectedTestTargetMap);
+                            UpdateTestSourceWithCoverageAction(parentTarget.GetTestTarget(), selectedTestTargetMap);
                         }
                     }
                 }
@@ -306,7 +306,7 @@ namespace TestImpact
                             // 1. The existing file has been modified
                             // 2. This file exists in one or more source to test target mapping artifacts
                             // 3. There exists no coverage data for this file in the source covering test list
-                            UpdateProductionSourceWithoutCoverageAction(parentTarget.GetProductionTarget().value(), selectedTestTargetMap);
+                            UpdateProductionSourceWithoutCoverageAction(parentTarget.GetProductionTarget(), selectedTestTargetMap);
                         }
                         else
                         {
@@ -318,7 +318,7 @@ namespace TestImpact
                             // 1. The existing file has been modified
                             // 2. This file exists in one or more source to test target mapping artifacts
                             // 3. There exists no coverage data for this file in the source covering test list
-                            UpdateTestSourceWithoutCoverageAction(parentTarget.GetTestTarget().value(), selectedTestTargetMap);
+                            UpdateTestSourceWithoutCoverageAction(parentTarget.GetTestTarget(), selectedTestTargetMap);
                         }
                     }
                 }

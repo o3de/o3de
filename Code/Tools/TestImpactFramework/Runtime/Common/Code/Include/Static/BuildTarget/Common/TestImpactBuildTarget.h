@@ -37,10 +37,10 @@ namespace TestImpact
         const Target* GetTarget() const;
     
         //! Returns the test target pointer for this parent (if any), otherwise nullptr.
-        AZStd::optional<const TestTarget*> GetTestTarget() const;
+        const TestTarget* GetTestTarget() const;
     
         //! Returns the production target pointer for this parent (if any), otherwise nullptr.
-        AZStd::optional<const ProductionTarget*> GetProductionTarget() const;
+        const ProductionTarget* GetProductionTarget() const;
 
         //! Returns the target type at runtime.
         BuildTargetType GetTargetType() const;
@@ -93,9 +93,9 @@ namespace TestImpact
     }
 
     template<typename TestTarget, typename ProductionTarget>
-    AZStd::optional<const TestTarget*> BuildTarget<TestTarget, ProductionTarget>::GetTestTarget() const
+    const TestTarget* BuildTarget<TestTarget, ProductionTarget>::GetTestTarget() const
     {
-        AZStd::optional<const TestTarget*> testTarget;
+        const TestTarget* testTarget = nullptr;
         Visit(
             [&testTarget](auto&& target)
             {
@@ -109,9 +109,9 @@ namespace TestImpact
     }
 
     template<typename TestTarget, typename ProductionTarget>
-    AZStd::optional<const ProductionTarget*> BuildTarget<TestTarget, ProductionTarget>::GetProductionTarget() const
+    const ProductionTarget* BuildTarget<TestTarget, ProductionTarget>::GetProductionTarget() const
     {
-        AZStd::optional<const ProductionTarget*> productionTarget;
+        const ProductionTarget* productionTarget = nullptr;
         Visit(
             [&productionTarget](auto&& target)
             {
