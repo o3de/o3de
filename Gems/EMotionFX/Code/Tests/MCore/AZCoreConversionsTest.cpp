@@ -1,0 +1,48 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#include <AzCore/Math/Vector3.h>
+#include <AzCore/Math/Quaternion.h>
+#include <AzTest/AzTest.h>
+#include <MCore/Source/AzCoreConversions.h>
+
+namespace MCore
+{
+
+    struct EularTestArgs {
+        AZ::Vector3 eular;
+        AZ::Quaternion result;
+    };
+    
+    using AngleRadianTestFixtureXYZ = ::testing::TestWithParam<EularTestArgs>;
+
+    TEST_P(AngleRadianTestFixtureXYZ, EularRadiansXYZ) {
+        auto& param = GetParam();
+        EXPECT_THAT(MCore::AzEulerAnglesToAzQuat(param.eular.GetX(),param.eular.GetY(),param.eular.GetZ()), IsClose(param.result));
+    }
+
+    INSTANTIATE_TEST_CASE_P(
+        MATH_Quaternion,
+        AngleRadianTestFixtureXYZ,
+        ::testing::Values(
+            EularTestArgs{ AZ::Vector3(AZ::Constants::QuarterPi, 0, 0), AZ::Quaternion::CreateRotationX(AZ::Constants::QuarterPi) },
+            EularTestArgs{ AZ::Vector3(0, AZ::Constants::QuarterPi, 0), AZ::Quaternion::CreateRotationY(AZ::Constants::QuarterPi) },
+            EularTestArgs{ AZ::Vector3(0, 0, AZ::Constants::QuarterPi), AZ::Quaternion::CreateRotationZ(AZ::Constants::QuarterPi) },
+
+            EularTestArgs{ AZ::Vector3(-AZ::Constants::QuarterPi, 0, 0), AZ::Quaternion::CreateRotationX(-AZ::Constants::QuarterPi) },
+            EularTestArgs{ AZ::Vector3(0, -AZ::Constants::QuarterPi, 0), AZ::Quaternion::CreateRotationY(-AZ::Constants::QuarterPi) },
+            EularTestArgs{ AZ::Vector3(0, 0, -AZ::Constants::QuarterPi), AZ::Quaternion::CreateRotationZ(-AZ::Constants::QuarterPi) },
+
+            EularTestArgs{ AZ::Vector3(AZ::Constants::QuarterPi, AZ::Constants::QuarterPi, 0), AZ::Quaternion::CreateRotationY(AZ::Constants::QuarterPi) *
+                AZ::Quaternion::CreateRotationX(AZ::Constants::QuarterPi) },
+            EularTestArgs{ AZ::Vector3(0, AZ::Constants::QuarterPi, AZ::Constants::QuarterPi), AZ::Quaternion::CreateRotationZ(AZ::Constants::QuarterPi) *
+                AZ::Quaternion::CreateRotationY(AZ::Constants::QuarterPi) },
+            EularTestArgs{ AZ::Vector3(AZ::Constants::QuarterPi, 0, AZ::Constants::QuarterPi), AZ::Quaternion::CreateRotationZ(AZ::Constants::QuarterPi) *
+                AZ::Quaternion::CreateRotationX(AZ::Constants::QuarterPi)}));
+
+} // namespace MCore
