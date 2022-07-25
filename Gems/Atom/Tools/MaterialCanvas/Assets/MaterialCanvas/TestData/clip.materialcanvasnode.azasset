@@ -5,6 +5,9 @@
     "ClassData": {
         "category": "Math Functions",
         "title": "clip",
+        "settings": {
+            "instructions": [ "clip(NODEID_inValue);" ]
+        },
         "inputSlots": [
             {
                 "name": "inValue",
@@ -47,9 +50,6 @@
                         0.0,
                         0.0
                     ]
-                },
-                "settings": {
-                    "instructions": [ "SLOTTYPE NODEID_SLOTNAME = clip(NODEID_inValue);" ]
                 }
             }
         ]
