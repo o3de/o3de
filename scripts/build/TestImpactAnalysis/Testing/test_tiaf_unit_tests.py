@@ -9,7 +9,7 @@
 
 from logging import getLogger
 from typing import Counter
-from test_impact import TestImpact
+from test_impact import CPPTestImpact as TestImpact
 from tiaf_driver import main
 import pytest
 logging = getLogger("tiaf")
