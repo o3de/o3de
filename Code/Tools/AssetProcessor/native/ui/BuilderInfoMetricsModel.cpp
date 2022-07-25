@@ -6,7 +6,7 @@
  *
  */
 #include <ui/BuilderInfoMetricsModel.h>
-#include <ui/BuilderInfoMetricsItem.h>
+#include <ui/BuilderDataItem.h>
 #include <ui/BuilderData.h>
 #include <AssetBuilderSDK/AssetBuilderSDK.h>
 #include <QTime>
@@ -93,7 +93,7 @@ namespace AssetProcessor
             return QModelIndex();
         }
 
-        BuilderInfoMetricsItem* parentItem = nullptr;
+        BuilderDataItem* parentItem = nullptr;
 
         if (!parent.isValid())
         {
@@ -101,7 +101,7 @@ namespace AssetProcessor
         }
         else
         {
-            parentItem = static_cast<BuilderInfoMetricsItem*>(parent.internalPointer());
+            parentItem = static_cast<BuilderDataItem*>(parent.internalPointer());
         }
 
         if (!parentItem)
@@ -109,7 +109,7 @@ namespace AssetProcessor
             return QModelIndex();
         }
 
-        BuilderInfoMetricsItem* childItem = parentItem->GetChild(row);
+        BuilderDataItem* childItem = parentItem->GetChild(row);
 
         if (childItem)
         {
@@ -123,14 +123,14 @@ namespace AssetProcessor
 
     int BuilderInfoMetricsModel::rowCount(const QModelIndex& parent) const
     {
-        BuilderInfoMetricsItem* parentItem = nullptr;
+        BuilderDataItem* parentItem = nullptr;
         if (!parent.isValid())
         {
             parentItem = m_data->m_root.get();
         }
         else
         {
-            parentItem = static_cast<BuilderInfoMetricsItem*>(parent.internalPointer());
+            parentItem = static_cast<BuilderDataItem*>(parent.internalPointer());
         }
 
         if (!parentItem)
@@ -152,7 +152,7 @@ namespace AssetProcessor
             return QVariant();
         }
 
-        BuilderInfoMetricsItem* item = static_cast<BuilderInfoMetricsItem*>(index.internalPointer());
+        BuilderDataItem* item = static_cast<BuilderDataItem*>(index.internalPointer());
         switch (role)
         {
         case aznumeric_cast<int>(Role::SortRole):
@@ -228,7 +228,7 @@ namespace AssetProcessor
             return QModelIndex();
         }
 
-        auto currentItem = static_cast<BuilderInfoMetricsItem*>(index.internalPointer());
+        auto currentItem = static_cast<BuilderDataItem*>(index.internalPointer());
         auto parentItem = currentItem->GetParent();
         auto rootItem = m_data->m_root.get();
             
@@ -242,7 +242,7 @@ namespace AssetProcessor
         return parentIndex;
     }
 
-    void BuilderInfoMetricsModel::OnDurationChanged(BuilderInfoMetricsItem* item)
+    void BuilderInfoMetricsModel::OnDurationChanged(BuilderDataItem* item)
     {
         while (item)
         {

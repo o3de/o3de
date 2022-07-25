@@ -1,4 +1,4 @@
-#include "BuilderInfoMetricsItem.h"
+#include "BuilderDataItem.h"
 /*
  * Copyright (c) Contributors to the Open 3D Engine Project.
  * For complete copyright and license terms please see the LICENSE at the root of this distribution.
@@ -12,11 +12,11 @@ namespace AssetProcessor
     const AZStd::string jobTypeDisplayNames[] = { "Analysis Jobs", "Processing Jobs" };
     const AZStd::string invalidJobTypeDisplayName{ "Invalid Job Type" };
 
-    BuilderInfoMetricsItem::BuilderInfoMetricsItem(
+    BuilderDataItem::BuilderDataItem(
         ItemType itemType, const AZStd::string& name,
         AZ::s64 jobCount,
         AZ::s64 totalDuration,
-        AZStd::shared_ptr<BuilderInfoMetricsItem> parent)
+        AZStd::shared_ptr<BuilderDataItem> parent)
         : m_itemType(itemType), m_name(name)
         , m_jobCount(jobCount)
         , m_totalDuration(totalDuration)
@@ -31,36 +31,36 @@ namespace AssetProcessor
                     i < numJobType ? jobTypeDisplayNames[i] : invalidJobTypeDisplayName;
                 if (i >= numJobType)
                 {
-                    AZ_Warning("Asset Processor", false, "Invalid job type name. Job type indexed %d in scoped enum JobType does not have a matching display name in jobTypeDisplayNames. Update jobTypeDisplayNames vector in BuilderInfoMetricsItem.cpp.");
+                    AZ_Warning("Asset Processor", false, "Invalid job type name. Job type indexed %d in scoped enum JobType does not have a matching display name in jobTypeDisplayNames. Update jobTypeDisplayNames vector in BuilderDataItem.cpp.");
                 }
 
-                m_children.emplace_back(new BuilderInfoMetricsItem(
-                    ItemType::JobType, jobTypeDisplayName, 0, 0, AZStd::shared_ptr<BuilderInfoMetricsItem>(this)));
+                m_children.emplace_back(new BuilderDataItem(
+                    ItemType::JobType, jobTypeDisplayName, 0, 0, AZStd::shared_ptr<BuilderDataItem>(this)));
             }
         }
     }
 
-    int BuilderInfoMetricsItem::ChildCount() const
+    int BuilderDataItem::ChildCount() const
     {
         return aznumeric_cast<int>(m_children.size());
     }
 
-    const char* BuilderInfoMetricsItem::GetName() const
+    const char* BuilderDataItem::GetName() const
     {
         return m_name.c_str();
     }
 
-    AZ::s64 BuilderInfoMetricsItem::GetJobCount() const
+    AZ::s64 BuilderDataItem::GetJobCount() const
     {
         return m_jobCount;
     }
 
-    AZ::s64 BuilderInfoMetricsItem::GetTotalDuration() const
+    AZ::s64 BuilderDataItem::GetTotalDuration() const
     {
         return m_totalDuration;
     }
 
-    BuilderInfoMetricsItem* BuilderInfoMetricsItem::GetChild(int row) const
+    BuilderDataItem* BuilderDataItem::GetChild(int row) const
     {
         if (row >= m_children.size())
         {
@@ -70,12 +70,12 @@ namespace AssetProcessor
         return m_children[row].get();
     }
 
-    BuilderInfoMetricsItem* BuilderInfoMetricsItem::GetParent() const
+    BuilderDataItem* BuilderDataItem::GetParent() const
     {
         return m_parent.get();
     }
 
-    BuilderInfoMetricsItem* BuilderInfoMetricsItem::UpdateOrInsertEntry(
+    BuilderDataItem* BuilderDataItem::UpdateOrInsertEntry(
         JobType entryjobType, const AZStd::string& entryName, AZ::s64 entryJobCount, AZ::s64 entryTotalDuration)
     {
         //! only allowed to insert from builder, with a valid JobType
@@ -87,7 +87,7 @@ namespace AssetProcessor
         // jobType is either CreateJob or ProcessJob
         const auto& jobType = m_children[aznumeric_cast<int>(entryjobType)];
 
-        BuilderInfoMetricsItem* entry = nullptr;
+        BuilderDataItem* entry = nullptr;
         if (jobType->m_childNameToIndex.contains(entryName))
         {
             entry = jobType->m_children[jobType->m_childNameToIndex[entryName]].get();
@@ -100,7 +100,7 @@ namespace AssetProcessor
         else
         {
             entry = jobType->m_children
-                        .emplace_back(new BuilderInfoMetricsItem(ItemType::Entry, entryName, entryJobCount, entryTotalDuration, jobType))
+                        .emplace_back(new BuilderDataItem(ItemType::Entry, entryName, entryJobCount, entryTotalDuration, jobType))
                         .get();
             jobType->m_childNameToIndex[entryName] = aznumeric_cast<int>(jobType->m_children.size() - 1);
             jobType->UpdateMetrics(entryJobCount, entryTotalDuration);
@@ -108,7 +108,7 @@ namespace AssetProcessor
 
         return entry;
     }
-    void BuilderInfoMetricsItem::UpdateMetrics(AZ::s64 jobCountDiff, AZ::s64 totalDurationDiff)
+    void BuilderDataItem::UpdateMetrics(AZ::s64 jobCountDiff, AZ::s64 totalDurationDiff)
     {
         m_jobCount += jobCountDiff;
         m_totalDuration += totalDurationDiff;
@@ -117,7 +117,7 @@ namespace AssetProcessor
             m_parent->UpdateMetrics(jobCountDiff, totalDurationDiff);
         }
     }
-    int BuilderInfoMetricsItem::GetRow() const
+    int BuilderDataItem::GetRow() const
     {
         if (m_parent)
         {
@@ -133,7 +133,7 @@ namespace AssetProcessor
         }
         return 0;
     }
-    bool BuilderInfoMetricsItem::SetChild(AZStd::shared_ptr<BuilderInfoMetricsItem> builder)
+    bool BuilderDataItem::SetChild(AZStd::shared_ptr<BuilderDataItem> builder)
     {
         if (m_itemType != ItemType::InvisibleRoot)
         {

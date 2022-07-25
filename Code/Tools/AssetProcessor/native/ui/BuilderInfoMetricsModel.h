@@ -21,7 +21,7 @@ namespace AssetBuilderSDK
 
 namespace AssetProcessor
 {
-    class BuilderInfoMetricsItem;
+    class BuilderDataItem;
     class BuilderData;
     class JobEntry;
 
@@ -56,7 +56,7 @@ namespace AssetProcessor
         QModelIndex parent(const QModelIndex& index) const override;
 
     public Q_SLOTS:
-        void OnDurationChanged(BuilderInfoMetricsItem* item);
+        void OnDurationChanged(BuilderDataItem* item);
 
     private:
         BuilderData* m_data;

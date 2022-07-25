@@ -27,7 +27,7 @@ namespace AzToolsFramework
 
 namespace AssetProcessor
 {
-    class BuilderInfoMetricsItem;
+    class BuilderDataItem;
 
     class BuilderData : public QObject
     {
@@ -37,9 +37,9 @@ namespace AssetProcessor
         void Reset();
 
         AZStd::shared_ptr<AzToolsFramework::AssetDatabase::AssetDatabaseConnection> m_dbConnection;
-        AZStd::shared_ptr<BuilderInfoMetricsItem> m_root;
-        AZStd::shared_ptr<BuilderInfoMetricsItem> m_allBuildersMetrics;
-        AZStd::vector<AZStd::shared_ptr<BuilderInfoMetricsItem>> m_singleBuilderMetrics;
+        AZStd::shared_ptr<BuilderDataItem> m_root;
+        AZStd::shared_ptr<BuilderDataItem> m_allBuildersMetrics;
+        AZStd::vector<AZStd::shared_ptr<BuilderDataItem>> m_singleBuilderMetrics;
         AZStd::unordered_map<AZStd::string, int> m_builderNameToIndex;
         AZStd::unordered_map<AZ::Uuid, int> m_builderGuidToIndex;
         //! This value, when being non-negative, refers to index of m_singleBuilderMetrics.
@@ -47,7 +47,7 @@ namespace AssetProcessor
         //! When it is -2, it means BuilderInfoMetricsModel cannot find the selected builder in m_builderGuidToIndex.
         int m_currentSelectedBuilderIndex = -1;
     Q_SIGNALS:
-        void DurationChanged(BuilderInfoMetricsItem* itemChanged);
+        void DurationChanged(BuilderDataItem* itemChanged);
     public Q_SLOTS:
         void OnProcessJobDurationChanged(JobEntry jobEntry, int value);
         void OnCreateJobsDurationChanged(QString sourceName);
