@@ -1435,7 +1435,7 @@
               <item>
                <widget class="QTabWidget" name="builderInfoTabWidget">
                 <property name="currentIndex">
-                 <number>2</number>
+                 <number>0</number>
                 </property>
                 <widget class="QWidget" name="builderInfoPatternsTab">
                  <attribute name="title">
@@ -1456,6 +1456,9 @@
                     <property name="expandsOnDoubleClick">
                      <bool>false</bool>
                     </property>
+                    <attribute name="headerShowSortIndicator" stdset="0">
+                     <bool>false</bool>
+                    </attribute>
                    </widget>
                   </item>
                  </layout>
