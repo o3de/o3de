@@ -41,7 +41,7 @@ namespace AssetProcessor
 
     protected:
         void ResetText();
-        void SetDetailsVisible(bool visible, bool isIntermediateAsset);
+        void SetDetailsVisible(bool visible);
 
         void BuildProducts(
             AssetDatabaseConnection& assetDatabaseConnection,

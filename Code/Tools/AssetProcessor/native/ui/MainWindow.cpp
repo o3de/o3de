@@ -2205,8 +2205,9 @@ void MainWindow::BuildSourceAssetTreeContextMenu(QMenu& menu, const AssetProcess
                 }
                 return true; // Keep iterating, add all products.
             });
-        return true; // Stop iterating, there should only be one job with this run key.
+        return true;
     });
+
     if (productCount == 0)
     {
         CreateDisabledAssetRightClickMenu(&menu, productAssetMenu.m_assetMenu, productMenuTitle, tr("This source asset has no products."));

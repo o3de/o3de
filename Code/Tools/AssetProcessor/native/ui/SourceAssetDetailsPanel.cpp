@@ -60,11 +60,12 @@ namespace AssetProcessor
         if (childItem->GetData()->m_isFolder || !sourceItemData)
         {
             // Folders don't have details.
-            SetDetailsVisible(false, false);
+            m_isIntermediateAsset = false;
+            SetDetailsVisible(false);
             return;
         }
 
-        SetDetailsVisible(true, m_isIntermediateAsset);
+        SetDetailsVisible(true);
 
         AssetDatabaseConnection assetDatabaseConnection;
         assetDatabaseConnection.OpenDatabase();
@@ -288,10 +289,11 @@ namespace AssetProcessor
     void SourceAssetDetailsPanel::ResetText()
     {
         m_ui->assetNameLabel->setText(tr("Select an asset to see details"));
-        SetDetailsVisible(false, false);
+        m_isIntermediateAsset = false;
+        SetDetailsVisible(false);
     }
 
-    void SourceAssetDetailsPanel::SetDetailsVisible(bool visible, bool isIntermediateAsset)
+    void SourceAssetDetailsPanel::SetDetailsVisible(bool visible)
     {
         // The folder selected description has opposite visibility from everything else.
         m_ui->folderSelectedDescription->setVisible(!visible);
@@ -302,9 +304,9 @@ namespace AssetProcessor
         m_ui->sourceGuidTitleLabel->setVisible(visible);
         m_ui->sourceGuidValueLabel->setVisible(visible);
 
-        m_ui->sourceAsssetTitleLabel->setVisible(isIntermediateAsset);
-        m_ui->gotoAssetButton->setVisible(isIntermediateAsset);
-        m_ui->sourceAssetValueLabel->setVisible(isIntermediateAsset);
+        m_ui->sourceAsssetTitleLabel->setVisible(m_isIntermediateAsset);
+        m_ui->gotoAssetButton->setVisible(m_isIntermediateAsset);
+        m_ui->sourceAssetValueLabel->setVisible(m_isIntermediateAsset);
 
         m_ui->AssetInfoSeparatorLine->setVisible(visible);
 
