@@ -22,8 +22,8 @@ namespace AzToolsFramework::Prefab
 
     enum class PrefabEditScope
     {
-        NESTED_TEMPLATES = 0,
-        NESTED_INSTANCES
+        HIDE_NESTED_INSTANCES_CONTENT = 0,
+        SHOW_NESTED_INSTANCES_CONTENT
     };
 
     //! Public Interface for external systems to utilize the Prefab Focus system.
@@ -66,9 +66,6 @@ namespace AzToolsFramework::Prefab
 
         //! Returns the size of the path to the currently focused instance.
         virtual const int GetPrefabFocusPathLength(AzFramework::EntityContextId entityContextId) const = 0;
-
-        //! Returns the current focus mode.
-        virtual PrefabEditScope GetPrefabEditScope(AzFramework::EntityContextId entityContextId) const = 0;
 
         //! Sets the current focus mode.
         virtual void SetPrefabEditScope(AzFramework::EntityContextId entityContextId, PrefabEditScope mode) = 0;

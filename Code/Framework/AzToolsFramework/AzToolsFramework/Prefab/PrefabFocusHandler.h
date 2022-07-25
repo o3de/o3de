@@ -52,7 +52,6 @@ namespace AzToolsFramework::Prefab
         PrefabFocusOperationResult FocusOnPrefabInstanceOwningEntityId(AZ::EntityId entityId) override;
         TemplateId GetFocusedPrefabTemplateId(AzFramework::EntityContextId entityContextId) const override;
         InstanceOptionalReference GetFocusedPrefabInstance(AzFramework::EntityContextId entityContextId) const override;
-        LinkId AppendPathFromFocusedInstanceToPatchPaths(PrefabDom& providedPatch, const AZ::EntityId& entityId) const override;
 
         // PrefabFocusPublicInterface and PrefabFocusPublicRequestBus overrides ...
         PrefabFocusOperationResult FocusOnOwningPrefab(AZ::EntityId entityId) override;
@@ -64,7 +63,6 @@ namespace AzToolsFramework::Prefab
         bool IsOwningPrefabInFocusHierarchy(AZ::EntityId entityId) const override;
         const AZ::IO::Path& GetPrefabFocusPath(AzFramework::EntityContextId entityContextId) const override;
         const int GetPrefabFocusPathLength(AzFramework::EntityContextId entityContextId) const override;
-        PrefabEditScope GetPrefabEditScope(AzFramework::EntityContextId entityContextId) const override;
         void SetPrefabEditScope(AzFramework::EntityContextId entityContextId, PrefabEditScope mode) override;
 
         int GetOpenInstanceMode() override;
@@ -88,7 +86,7 @@ namespace AzToolsFramework::Prefab
         void SetInstanceContainersOpenState(const RootAliasPath& rootAliasPath, bool openState) const;
         void SetInstanceContainersOpenStateOfAllDescendantContainers(InstanceOptionalReference instance, bool openState) const;
 
-        void SwitchToEditScope(PrefabEditScope editScope) const;
+        void SwitchToEditScope() const;
 
         InstanceOptionalReference GetInstanceReference(RootAliasPath rootAliasPath) const;
 
@@ -99,7 +97,7 @@ namespace AzToolsFramework::Prefab
         //! The length of the current focus path. Stored to simplify internal checks.
         int m_rootAliasFocusPathLength = 0;
         //! The current focus mode.
-        PrefabEditScope m_prefabEditScope = PrefabEditScope::NESTED_TEMPLATES;
+        PrefabEditScope m_prefabEditScope = PrefabEditScope::HIDE_NESTED_INSTANCES_CONTENT;
 
         int m_openInstanceMode = 0;
         bool m_allowContextMenuInstanceExpanding = false;
