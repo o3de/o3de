@@ -335,7 +335,7 @@
       <item>
        <widget class="QStackedWidget" name="dialogStack">
         <property name="currentIndex">
-         <number>4</number>
+         <number>0</number>
         </property>
         <widget class="QSplitter" name="jobDialogSplitter">
          <property name="orientation">

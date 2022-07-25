@@ -17,7 +17,8 @@ namespace AssetProcessor
         AZ::s64 jobCount,
         AZ::s64 totalDuration,
         AZStd::shared_ptr<BuilderDataItem> parent)
-        : m_itemType(itemType), m_name(name)
+        : m_itemType(itemType)
+        , m_name(name)
         , m_jobCount(jobCount)
         , m_totalDuration(totalDuration)
         , m_parent(parent)

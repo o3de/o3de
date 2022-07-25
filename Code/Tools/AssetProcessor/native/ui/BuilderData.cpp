@@ -77,9 +77,6 @@ namespace AssetProcessor
                 AZ::StringFunc::Tokenize(stat.m_statName, tokens, ',');
                 if (tokens.size() == 5) // ProcessJob,sourceName,jobKey,platform,builderGuid
                 {
-                    // const auto& sourceName = tokens[1];
-                    // const auto& jobKey = tokens[2];
-                    // const auto& platform = tokens[3];
                     const auto& builderGuid = AZ::Uuid::CreateString(tokens[4].c_str());
 
                     if (m_builderGuidToIndex.contains(builderGuid))

@@ -88,7 +88,7 @@ namespace AssetProcessor
         return QModelIndex();
     }
 
-    void BuilderInfoPatternsModel::Reset([[maybe_unused]] const AssetBuilderSDK::AssetBuilderDesc& builder)
+    void BuilderInfoPatternsModel::Reset(const AssetBuilderSDK::AssetBuilderDesc& builder)
     {
         beginResetModel();
         m_data = builder.m_patterns;
