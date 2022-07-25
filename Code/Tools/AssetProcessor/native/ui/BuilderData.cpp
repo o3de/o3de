@@ -30,7 +30,7 @@ namespace AssetProcessor
         m_singleBuilderMetrics.clear();
         m_builderGuidToIndex.clear();
         m_builderNameToIndex.clear();
-        m_currentSelectedBuilderIndex = -1;
+        m_currentSelectedBuilderIndex = aznumeric_cast<int>(BuilderSelection::AllBuilders);
 
         for (int i = 0; i < builders.size(); ++i)
         {

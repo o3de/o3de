@@ -64,7 +64,8 @@ namespace AssetProcessor
 
     void BuilderInfoMetricsModel::OnBuilderSelectionChanged(const AssetBuilderSDK::AssetBuilderDesc& builder)
     {
-        // TODO: need to handle the "all builders" case
+        // TODO: after "All Builders" becomes the parent item of all builders in builder list, here we need to handle the case when "All
+        // Builders" is selected
         beginResetModel();
         
         if (m_data->m_builderGuidToIndex.contains(builder.m_busId))
@@ -80,7 +81,7 @@ namespace AssetProcessor
                 "BuilderInfoMetricsModel cannot find the GUID of the builder selected by the user (%s) in itself. No metrics will be "
                 "shown in the builder tab.",
                 builder.m_busId.ToString<AZStd::string>().c_str());
-            m_data->m_currentSelectedBuilderIndex = -2;
+            m_data->m_currentSelectedBuilderIndex = aznumeric_cast<int>(BuilderData::BuilderSelection::Invalid);
         }
         
         endResetModel();

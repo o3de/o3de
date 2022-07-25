@@ -40,6 +40,13 @@ namespace AssetProcessor
         //! processing jobs, and matches stats with builders and save them appropriately for future use.
         void Reset();
 
+        enum class BuilderSelection: int
+        {
+            Invalid = -2,
+            AllBuilders = -1,
+            FirstBuilderIndex = 0
+        };
+
         AZStd::shared_ptr<AzToolsFramework::AssetDatabase::AssetDatabaseConnection> m_dbConnection;
         AZStd::shared_ptr<BuilderDataItem> m_root;
         AZStd::shared_ptr<BuilderDataItem> m_allBuildersMetrics;
@@ -47,9 +54,9 @@ namespace AssetProcessor
         AZStd::unordered_map<AZStd::string, int> m_builderNameToIndex;
         AZStd::unordered_map<AZ::Uuid, int> m_builderGuidToIndex;
         //! This value, when being non-negative, refers to index of m_singleBuilderMetrics.
-        //! When it is -1, currently selects m_allBuildersMetrics.
-        //! When it is -2, it means BuilderInfoMetricsModel cannot find the selected builder in m_builderGuidToIndex.
-        int m_currentSelectedBuilderIndex = -1;
+        //! When it is BuilderSelection::AllBuilders, currently selects m_allBuildersMetrics.
+        //! When it is BuilderSelection::Invalid, it means BuilderInfoMetricsModel cannot find the selected builder in m_builderGuidToIndex.
+        int m_currentSelectedBuilderIndex = aznumeric_cast<int>(BuilderSelection::AllBuilders);
     Q_SIGNALS:
         void DurationChanged(BuilderDataItem* itemChanged);
     public Q_SLOTS:
