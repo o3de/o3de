@@ -65,10 +65,6 @@ namespace AzToolsFramework::Prefab
         const int GetPrefabFocusPathLength(AzFramework::EntityContextId entityContextId) const override;
         void SetPrefabEditScope(AzFramework::EntityContextId entityContextId, PrefabEditScope mode) override;
 
-        int GetOpenInstanceMode() override;
-        bool GetAllowContextMenuInstanceExpanding() override;
-        bool GetContainerStepByStepSelection() override;
-
         // EditorEntityContextNotificationBus overrides ...
         void OnContextReset() override;
         

@@ -67,13 +67,8 @@ namespace AzToolsFramework::Prefab
         //! Returns the size of the path to the currently focused instance.
         virtual const int GetPrefabFocusPathLength(AzFramework::EntityContextId entityContextId) const = 0;
 
-        //! Sets the current focus mode.
-        virtual void SetPrefabEditScope(AzFramework::EntityContextId entityContextId, PrefabEditScope mode) = 0;
-
-        // TEMP
-        virtual int GetOpenInstanceMode() = 0;
-        virtual bool GetAllowContextMenuInstanceExpanding() = 0;
-        virtual bool GetContainerStepByStepSelection() = 0;
+        //! Sets the currently using prefab edit scope in editor.
+        virtual void SetPrefabEditScope(AzFramework::EntityContextId entityContextId, PrefabEditScope prefabEditScope) = 0;
     };
 
     /**

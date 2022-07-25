@@ -359,25 +359,10 @@ namespace AzToolsFramework::Prefab
         return m_rootAliasFocusPathLength;
     }
 
-    void PrefabFocusHandler::SetPrefabEditScope([[maybe_unused]] AzFramework::EntityContextId entityContextId, PrefabEditScope mode)
+    void PrefabFocusHandler::SetPrefabEditScope([[maybe_unused]] AzFramework::EntityContextId entityContextId, PrefabEditScope prefabEditScope)
     {
-        m_prefabEditScope = mode;
+        m_prefabEditScope = prefabEditScope;
         SwitchToEditScope();
-    }
-
-    int PrefabFocusHandler::GetOpenInstanceMode()
-    {
-        return m_openInstanceMode;
-    }
-
-    bool PrefabFocusHandler::GetAllowContextMenuInstanceExpanding()
-    {
-        return m_allowContextMenuInstanceExpanding;
-    }
-
-    bool PrefabFocusHandler::GetContainerStepByStepSelection()
-    {
-        return m_containerStepByStepSelection;
     }
 
     void PrefabFocusHandler::OnContextReset()
@@ -572,15 +557,15 @@ namespace AzToolsFramework::Prefab
         auto focusInstance = GetInstanceReference(m_rootAliasFocusPath);
 
         switch (m_prefabEditScope)
-        {
-        case PrefabEditScope::HIDE_NESTED_INSTANCES_CONTENT:
-        {
-            SetInstanceContainersOpenStateOfAllDescendantContainers(focusInstance, false);
-        }
-        break;
+        {           
         case PrefabEditScope::SHOW_NESTED_INSTANCES_CONTENT:
         {
             SetInstanceContainersOpenStateOfAllDescendantContainers(focusInstance, true);
+        }
+        break;
+        default:
+        {
+            SetInstanceContainersOpenStateOfAllDescendantContainers(focusInstance, false);
         }
         break;
         }
