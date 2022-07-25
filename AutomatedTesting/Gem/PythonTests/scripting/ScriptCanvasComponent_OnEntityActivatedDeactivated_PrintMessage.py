@@ -5,21 +5,49 @@ For complete copyright and license terms please see the LICENSE at the root of t
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
+import os
+import editor_python_test_tools.pyside_utils as pyside_utils
+import editor_python_test_tools.hydra_editor_utils as hydra
+from editor_python_test_tools.editor_entity_utils import EditorEntity
+from editor_python_test_tools.utils import Report, Tracer
+from editor_python_test_tools.utils import TestHelper as helper
+import scripting_utils.scripting_tools as scripting_tools
+import azlmbr.legacy.general as general
+import azlmbr.paths as paths
+from scripting_utils.scripting_constants import (WAIT_TIME_3, BASE_LEVEL_NAME)
+
+LEVEL_NAME = "tmp_level"
+WAIT_TIME = 3.0  # SECONDS
+EXPECTED_LINES = ["Activator Script: Activated", "Deactivator Script: Deactivated"]
+controller_dict = {
+    "name": "Controller",
+    "status": "active",
+    "path": os.path.join(paths.projectroot, "ScriptCanvas", "OnEntityActivatedScripts", "controller.scriptcanvas"),
+}
+activated_dict = {
+    "name": "ActivationTest",
+    "status": "inactive",
+    "path": os.path.join(paths.projectroot, "ScriptCanvas", "OnEntityActivatedScripts", "activator.scriptcanvas"),
+}
+deactivated_dict = {
+    "name": "DeactivationTest",
+    "status": "active",
+    "path": os.path.join(paths.projectroot, "ScriptCanvas", "OnEntityActivatedScripts", "deactivator.scriptcanvas"),
+}
 
 # fmt: off
 class Tests():
-    level_created        = ("Successfully created temp level",       "Failed to create temp level")
     controller_exists    = ("Successfully found controller entity",  "Failed to find controller entity")
     activated_exists     = ("Successfully found activated entity",   "Failed to find activated entity")
     deactivated_exists   = ("Successfully found deactivated entity", "Failed to find deactivated entity")
     start_states_correct = ("Start states set up successfully",      "Start states set up incorrectly")
-    game_mode_entered    = ("Successfully entered game mode"         "Failed to enter game mode")
+    game_mode_entered    = ("Successfully entered game mode",         "Failed to enter game mode")
     lines_found          = ("Successfully found expected prints",    "Failed to find expected prints")
-    game_mode_exited     = ("Successfully exited game mode"          "Failed to exit game mode")
+    game_mode_exited     = ("Successfully exited game mode", "Failed to exit game mode")
 # fmt: on
 
 
-def ScriptCanvasComponent_OnEntityActivatedDeactivated_PrintMessage():
+class ScriptCanvasComponent_OnEntityActivatedDeactivated_PrintMessage():
     """
     Summary:
      Verify that the On Entity Activated/On Entity Deactivated nodes are working as expected
@@ -31,7 +59,7 @@ def ScriptCanvasComponent_OnEntityActivatedDeactivated_PrintMessage():
 
     Test Steps:
      1) Create temp level
-     2) Setup the level
+     2) Create all the entities we need for the test
      3) Validate the entities
      4) Start the Tracer
      5) Enter Game Mode
@@ -45,77 +73,51 @@ def ScriptCanvasComponent_OnEntityActivatedDeactivated_PrintMessage():
 
     :return: None
     """
-    import os
+    def __init__(self):
+        self.editor_main_window = None
 
-    from editor_entity_utils import EditorEntity as Entity
-    from utils import Report
-    from utils import TestHelper as helper
-    from utils import Tracer
+    def setup_level_entities(self):
 
-    import azlmbr.legacy.general as general
+        self.create_editor_entity(activated_dict)
+        self.create_editor_entity(deactivated_dict)
+        self.create_editor_entity(controller_dict)
 
-    EditorEntity = str
-    LEVEL_NAME = "tmp_level"
-    WAIT_TIME = 3.0  # SECONDS
-    EXPECTED_LINES = ["Activator Script: Activated", "Deactivator Script: Deactivated"]
-    controller_dict = {
-        "name": "Controller",
-        "status": "active",
-        "path": os.path.join("ScriptCanvas", "OnEntityActivatedScripts", "controller.scriptcanvas"),
-    }
-    activated_dict = {
-        "name": "ActivationTest",
-        "status": "inactive",
-        "path": os.path.join("ScriptCanvas", "OnEntityActivatedScripts", "activator.scriptcanvas"),
-    }
-    deactivated_dict = {
-        "name": "DeactivationTest",
-        "status": "active",
-        "path": os.path.join("ScriptCanvas", "OnEntityActivatedScripts", "deactivator.scriptcanvas"),
-    }
+    def create_editor_entity(self, entity_dict: dict):
+        """
+        Create entities and configure their activation status and variables. We call two different libraries to modify the
+        entity. Hydra editor utils to create the entity and editor entity utils to drill into its properties to change values.
 
-    def get_asset(asset_path):
-        return azlmbr.asset.AssetCatalogRequestBus(
-            azlmbr.bus.Broadcast, "GetAssetIdByPath", asset_path, azlmbr.math.Uuid(), False
-        )
+        """
 
-    def setup_level():
-        def create_editor_entity(
-            entity_dict: dict, entity_to_activate: EditorEntity = None, entity_to_deactivate: EditorEntity = None
-        ) -> EditorEntity:
-            entity = Entity.create_editor_entity(entity_dict["name"])
-            entity.set_start_status(entity_dict["status"])
-            sc_component = entity.add_component("Script Canvas")
+        entity = scripting_tools.create_entity_with_sc_component_asset(entity_dict["name"], entity_dict["path"])
+        editor_entity = EditorEntity.find_editor_entity(entity_dict["name"])
+        editor_entity.set_start_status(entity_dict["status"])
+
+        if entity_dict["name"] == "Controller":
+            activated_entity = EditorEntity.find_editor_entity(activated_dict["name"])
+            sc_component = editor_entity.get_components_of_type(["Script Canvas"])[0]
             sc_component.set_component_property_value(
-                "Script Canvas Asset|Script Canvas Asset", get_asset(entity_dict["path"])
+                "Configuration|Properties|Variables|EntityToActivate|Datum|Datum|value|EntityToActivate",
+                activated_entity.id,
             )
+            deactivated_entity = EditorEntity.find_editor_entity(deactivated_dict["name"])
+            sc_component = editor_entity.get_components_of_type(["Script Canvas"])[0]
+            sc_component.set_component_property_value(
+                "Configuration|Properties|Variables|EntityToDeactivate|Datum|Datum|value|EntityToDeactivate",
+                deactivated_entity.id,
+            )
+        helper.wait_for_condition(lambda: entity is not None, WAIT_TIME)
 
-            if entity_dict["name"] == "Controller":
-                sc_component.get_property_tree()
-                sc_component.set_component_property_value(
-                    "Properties|Variables|EntityToActivate|Datum|Datum|value|EntityToActivate",
-                    entity_to_activate.id,
-                )
-                sc_component.set_component_property_value(
-                    "Properties|Variables|EntityToDeactivate|Datum|Datum|value|EntityToDeactivate",
-                    entity_to_deactivate.id,
-                )
-            return entity
-
-        activated = create_editor_entity(activated_dict)
-        deactivated = create_editor_entity(deactivated_dict)
-        create_editor_entity(controller_dict, activated, deactivated)
-
-    def validate_entity_exist(entity_name: str, test_tuple: tuple):
+    def validate_entity_exist(self, entity_name: str, test_tuple: tuple):
         """
         Validate the entity with the given name exists in the level
         :return: entity: editor entity object
         """
-        entity = Entity.find_editor_entity(entity_name)
+        entity = EditorEntity.find_editor_entity(entity_name)
         Report.critical_result(test_tuple, entity.id.IsValid())
         return entity
 
-    def validate_start_state(entity: EditorEntity, expected_state: str):
+    def validate_start_state(self, entity: EditorEntity, expected_state: str):
         """
         Validate that the starting state of the entity is correct, if it isn't then attempt to rectify and recheck.
         :return: bool: Whether state is set as expected
@@ -134,55 +136,51 @@ def ScriptCanvasComponent_OnEntityActivatedDeactivated_PrintMessage():
             entity.set_start_status(expected_state)
         return True
 
-    def validate_entities_in_level():
-        controller = validate_entity_exist(controller_dict["name"], Tests.controller_exists)
-        state1_correct = validate_start_state(controller, controller_dict["status"])
+    def validate_entities_in_level(self):
+        controller = self.validate_entity_exist(controller_dict["name"], Tests.controller_exists)
+        state1_correct = self.validate_start_state(controller, controller_dict["status"])
 
-        act_tester = validate_entity_exist(activated_dict["name"], Tests.activated_exists)
-        state2_correct = validate_start_state(act_tester, activated_dict["status"])
+        act_tester = self.validate_entity_exist(activated_dict["name"], Tests.activated_exists)
+        state2_correct = self.validate_start_state(act_tester, activated_dict["status"])
 
-        deac_tester = validate_entity_exist(deactivated_dict["name"], Tests.deactivated_exists)
-        state3_correct = validate_start_state(deac_tester, deactivated_dict["status"])
+        deac_tester = self.validate_entity_exist(deactivated_dict["name"], Tests.deactivated_exists)
+        state3_correct = self.validate_start_state(deac_tester, deactivated_dict["status"])
 
         all_states_correct = state1_correct and state2_correct and state3_correct
         Report.critical_result(Tests.start_states_correct, all_states_correct)
 
-    def locate_expected_lines(line_list: list):
+    def locate_expected_lines(self, line_list: list, section_tracer):
         found_lines = [printInfo.message.strip() for printInfo in section_tracer.prints]
         return all(line in found_lines for line in line_list)
 
-    # 1) Create temp level
-    general.idle_enable(True)
-    result = general.create_level_no_prompt(LEVEL_NAME, 128, 1, 512, True)
-    Report.critical_result(Tests.level_created, result == 0)
-    helper.wait_for_condition(lambda: general.get_current_level_name() == LEVEL_NAME, WAIT_TIME)
-    general.close_pane("Error Report")
+    @pyside_utils.wrap_async
+    async def run_test(self):
 
-    # 2) Setup the level
-    setup_level()
+        # 1) Create temp level
+        general.idle_enable(True)
+        hydra.open_base_level()
+        helper.wait_for_condition(lambda: general.get_current_level_name() == BASE_LEVEL_NAME, WAIT_TIME_3)
+        general.close_pane("Error Report")
 
-    # 3) Validate the entities
-    validate_entities_in_level()
+        # 2) create all the entities we need for the test
+        self.setup_level_entities()
 
-    # 4) Start the Tracer
-    with Tracer() as section_tracer:
+        # 3) Validate the entities
+        self.validate_entities_in_level()
 
-        # 5) Enter Game Mode
-        helper.enter_game_mode(Tests.game_mode_entered)
+        # 4) Start the Tracer
+        with Tracer() as section_tracer:
 
-        # 6) Validate Print message
-        helper.wait_for_condition(lambda: locate_expected_lines(EXPECTED_LINES), WAIT_TIME)
+            # 5) Enter Game Mode
+            helper.enter_game_mode(Tests.game_mode_entered)
 
-    Report.result(Tests.lines_found, locate_expected_lines(EXPECTED_LINES))
+            # 6) Validate Print message
+            helper.wait_for_condition(lambda: self.locate_expected_lines(EXPECTED_LINES, section_tracer), WAIT_TIME_3)
 
-    # 7) Exit game mode
-    helper.exit_game_mode(Tests.game_mode_exited)
+        Report.result(Tests.lines_found, self.locate_expected_lines(EXPECTED_LINES, section_tracer))
 
+        # 7) Exit game mode
+        helper.exit_game_mode(Tests.game_mode_exited)
 
-if __name__ == "__main__":
-    import ImportPathHelper as imports
-
-    imports.init()
-    from utils import Report
-
-    Report.start_test(ScriptCanvasComponent_OnEntityActivatedDeactivated_PrintMessage)
+test = ScriptCanvasComponent_OnEntityActivatedDeactivated_PrintMessage()
+test.run_test()
