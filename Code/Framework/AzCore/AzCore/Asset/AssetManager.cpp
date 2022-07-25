@@ -27,6 +27,13 @@
 #include <utility>
 #include <AzCore/Serialization/ObjectStream.h>
 
+#define ENABLE_DEBUG_OUTPUT 0
+#if ENABLE_DEBUG_OUTPUT == 1
+#define DEBUG_OUTPUT(OUTPUT) AZ_Printf("AssetManager Debug", "%s\n", (OUTPUT).c_str())
+#else
+#define DEBUG_OUTPUT(OUTPUT)
+#endif
+
 namespace AZ::Data
 {
     AZ_CVAR(bool, cl_assetLoadWarningEnable, false, nullptr, AZ::ConsoleFunctorFlags::Null,
@@ -173,7 +180,16 @@ namespace AZ::Data
 
         void LoadAndSignal(Asset<AssetData>& asset)
         {
+            DEBUG_OUTPUT(AZStd::string::format("LoadAndSignal - Pre - " AZ_STRING_FORMAT,
+                AZ_STRING_ARG(asset.GetId().ToFixedString())));
+
             const bool loadSucceeded = LoadData();
+
+            DEBUG_OUTPUT(AZStd::string::format(
+                "LoadAndSignal - Post - Result: %s - Signal: %s - " AZ_STRING_FORMAT,
+                loadSucceeded ? "Success" : "Failure",
+                m_signalLoaded ? "Yes" : "No",
+                AZ_STRING_ARG(asset.GetId().ToFixedString())));
 
             if (m_signalLoaded && loadSucceeded)
             {
@@ -1176,6 +1192,8 @@ namespace AZ::Data
             m_debugAssetEvents = AZ::Interface<IDebugAssetEvent>::Get();
         }
 
+        DEBUG_OUTPUT(AZStd::string::format("Status - %d - " AZ_STRING_FORMAT, int(asset.GetStatus()), AZ_STRING_ARG(asset.GetId().ToFixedString())));
+
         if(m_debugAssetEvents)
         {
             m_debugAssetEvents->AssetStatusUpdate(asset.GetId(), asset.GetStatus());
@@ -1285,6 +1303,8 @@ namespace AZ::Data
         // while the lock is not held since destroying the asset while holding the lock can cause a deadlock.
         if (destroyAsset)
         {
+            DEBUG_OUTPUT(AZStd::string::format("Release asset - " AZ_STRING_FORMAT, AZ_STRING_ARG(assetId.ToFixedString())));
+
             if(m_debugAssetEvents)
             {
                 m_debugAssetEvents->ReleaseAsset(assetId);
@@ -1325,8 +1345,20 @@ namespace AZ::Data
 
     void AssetManager::ReleaseAssetContainersForAsset(AssetData* asset)
     {
+        // To be safe, we want to keep the assetMutex locked the whole time to avoid another thread trying to start a load while we're invalidating containers
+        // The container mutex is also needed as we're modifying the container storage
+        // Since we need both of these, there's deadlock potential, so passing both to scoped_lock will handle avoiding a deadlock
+        AZStd::scoped_lock assetLock(m_assetMutex, m_assetContainerMutex);
+
+        // Make sure there are no pending reloads using a container before we attempt to release the containers
+        auto reloadsItr = m_reloads.find(asset->GetId());
+
+        if (reloadsItr != m_reloads.end())
+        {
+            return;
+        }
+
         // Release any containers that were loading this asset
-        AZStd::scoped_lock lock(m_assetContainerMutex);
 
         AssetId assetId = asset->GetId();
 
@@ -1378,6 +1410,8 @@ namespace AZ::Data
     //=========================================================================
     void AssetManager::ReloadAsset(const AssetId& assetId, AssetLoadBehavior assetReferenceLoadBehavior, bool isAutoReload)
     {
+        DEBUG_OUTPUT(AZStd::string::format("Reload asset - " AZ_STRING_FORMAT, AZ_STRING_ARG(assetId.ToFixedString())));
+
         AZStd::shared_ptr<AssetContainer> container;
         Asset<AssetData> newAsset;
 
@@ -1388,6 +1422,8 @@ namespace AZ::Data
             if (assetIter == m_assets.end() || assetIter->second->IsLoading())
             {
                 // Only existing assets can be reloaded.
+                DEBUG_OUTPUT(AZStd::string::format("Asset does not exist or is already loading - reload abort - " AZ_STRING_FORMAT,
+                    AZ_STRING_ARG(assetId.ToFixedString())));
                 return;
             }
 
@@ -1400,14 +1436,28 @@ namespace AZ::Data
                 // As the current load could already be stale
                 if (curStatus == AssetData::AssetStatus::Queued)
                 {
+                    DEBUG_OUTPUT(AZStd::string::format("Already reloading - queued - " AZ_STRING_FORMAT, AZ_STRING_ARG(assetId.ToFixedString())));
                     return;
                 }
-                else if (curStatus == AssetData::AssetStatus::Loading || curStatus == AssetData::AssetStatus::StreamReady)
+                else if (curStatus == AssetData::AssetStatus::Loading || curStatus == AssetData::AssetStatus::StreamReady || curStatus == AssetData::AssetStatus::LoadedPreReady)
                 {
+                    DEBUG_OUTPUT(AZStd::string::format(
+                        "Already reloading - loading OR ready, marking requeue - " AZ_STRING_FORMAT,
+                        AZ_STRING_ARG(assetId.ToFixedString())));
                     // Don't flood the tick bus - this value will be checked when the asset load completes
                     reloadIter->second->SetRequeue(true);
                     return;
                 }
+
+                DEBUG_OUTPUT(AZStd::string::format(
+                    "Already reloading - other state %d, continue - " AZ_STRING_FORMAT,
+                    int(curStatus),
+                    AZ_STRING_ARG(assetId.ToFixedString())));
+            }
+            else
+            {
+                DEBUG_OUTPUT(AZStd::string::format(
+                    "No current reload found, starting a new one - " AZ_STRING_FORMAT, AZ_STRING_ARG(assetId.ToFixedString())));
             }
 
             AssetData* newAssetData = nullptr;
@@ -1470,11 +1520,30 @@ namespace AZ::Data
         }
 
         AZStd::scoped_lock lock(m_assetContainerMutex);
-        container = GetAssetContainer(newAsset, {}, true);
 
+#if ENABLE_DEBUG_OUTPUT == 1
+        {
+            AssetContainerKey key{ newAsset.GetId(), {} };
+            auto containerItr = m_assetContainers.find(key);
+
+            if (containerItr != m_assetContainers.end() && !containerItr->second.expired())
+            {
+                DEBUG_OUTPUT(AZStd::string::format(
+                    "Getting container but one already exists - " AZ_STRING_FORMAT, AZ_STRING_ARG(assetId.ToFixedString())));
+            }
+        }
+#endif
+
+        container = GetAssetContainer(newAsset, {}, true);
+        
         if (container)
         {
-            m_ownedAssetContainers.insert({ container.get(), container });
+            auto result = m_ownedAssetContainers.insert({ container.get(), container });
+
+            DEBUG_OUTPUT(AZStd::string::format(
+                "Insert asset container - %p - %s - " AZ_STRING_FORMAT,
+                static_cast<void*>(container.get()), result.second ? "Inserted" : "Not inserted",
+                AZ_STRING_ARG(newAsset.GetId().ToFixedString())));
 
             // Only insert a new entry into m_ownedAssetContainerLookup if one doesn't already exist for this container.
             // Because it's a multimap, it is possible to add duplicate copies of the same AssetContainer by mistake.
@@ -1677,6 +1746,7 @@ namespace AZ::Data
                         return;
                     }
                     data->m_status = AssetData::AssetStatus::StreamReady;
+                    UpdateDebugStatus(loadingAsset);
                 }
 
                 // The callback from AZ Streamer blocks the streaming thread until this function completes. To minimize the overhead,
@@ -1830,6 +1900,8 @@ namespace AZ::Data
                 if (data->GetStatus() != AssetData::AssetStatus::StreamReady)
                 {
                     // Something else has attempted to load this asset
+                    DEBUG_OUTPUT(AZStd::string::format(
+                        "ValidateAndRegisterAssetLoading - Aborting, status (%d) is not StreamReady", static_cast<int>(data->GetStatus())));
                     return false;
                 }
                 data->m_status = AssetData::AssetStatus::Loading;
@@ -2026,7 +2098,8 @@ namespace AZ::Data
     {
         AZ_Assert(assetContainer, "Trying to release a null assetContainer pointer!");
         AZStd::scoped_lock lock(m_assetContainerMutex);
-        auto rangeItr = m_ownedAssetContainerLookup.equal_range(assetContainer->GetContainerAssetId());
+        auto id = assetContainer->GetContainerAssetId();
+        auto rangeItr = m_ownedAssetContainerLookup.equal_range(id);
 
         for (auto itr = rangeItr.first; itr != rangeItr.second; ++itr)
         {
@@ -2038,12 +2111,40 @@ namespace AZ::Data
         }
 
         m_ownedAssetContainers.erase(assetContainer);
+
+        // Do a search through the asset containers list as well and see if there are any old references laying around
+        // which can be cleaned up.
+        for (auto itr = m_assetContainers.begin(); itr != m_assetContainers.end();)
+        {
+            if (itr->second.expired())
+            {
+                itr = m_assetContainers.erase(itr);
+            }
+            else
+            {
+                ++itr;
+            }
+        }
+
+        DEBUG_OUTPUT(AZStd::string::format(
+            "Released owned container - %p - " AZ_STRING_FORMAT, static_cast<void*>(assetContainer),
+            AZ_STRING_ARG(id.ToFixedString())));
     }
 
     void AssetManager::OnAssetContainerReady(AssetContainer* assetContainer)
     {
+        DEBUG_OUTPUT(AZStd::string::format(
+            "OnAssetContainerReady - Queue - %p - " AZ_STRING_FORMAT,
+            static_cast<void*>(assetContainer),
+            AZ_STRING_ARG(assetContainer->GetContainerAssetId().ToFixedString())));
+
         AssetBus::QueueFunction([this, assetContainer, asset = assetContainer->GetRootAsset()]()
         {
+            DEBUG_OUTPUT(AZStd::string::format(
+                "OnAssetContainerReady - Notify - %p - " AZ_STRING_FORMAT,
+                static_cast<void*>(assetContainer),
+                AZ_STRING_ARG(assetContainer->GetContainerAssetId().ToFixedString())));
+
             NotifyAssetContainerReady(asset);
             ReleaseOwnedAssetContainer(assetContainer);
         });
@@ -2208,7 +2309,7 @@ namespace AZ::Data
 
         AZStd::scoped_lock<AZStd::recursive_mutex> containerLock(m_assetContainerMutex);
         AssetContainerKey containerKey{ asset.GetId(), loadParams };
-
+        
         auto curIter = m_assetContainers.find(containerKey);
         if (curIter != m_assetContainers.end())
         {
