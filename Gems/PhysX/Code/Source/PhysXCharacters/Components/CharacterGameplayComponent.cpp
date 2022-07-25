@@ -94,23 +94,83 @@ namespace PhysX
     // CharacterGameplayRequestBus
     bool CharacterGameplayComponent::IsOnGround() const
     {
+        if (m_cachedGroundState == CharacterGroundState::NotYetDetermined)
+        {
+            DetermineCachedGroundState();
+        }
+
+        return m_cachedGroundState == CharacterGroundState::Touching;
+    }
+
+    void CharacterGameplayComponent::DetermineCachedGroundState() const
+    {
         Physics::Character* character = nullptr;
         Physics::CharacterRequestBus::EventResult(character, GetEntityId(), &Physics::CharacterRequests::GetCharacter);
         if (!character)
         {
-            return true;
+            m_cachedGroundState = CharacterGroundState::Touching;
+            return;
         }
 
         auto pxController = static_cast<physx::PxController*>(character->GetNativePointer());
         if (!pxController)
         {
-            return true;
+            m_cachedGroundState = CharacterGroundState::Touching;
+            return;
         }
 
+        // first check if we can use the character controller state, which should be cheaper than doing a scene query
+
+        // if the controller is slightly above an object or has not been asked to move downwards, the PxController may
+        // not report a touched actor or downward collision, so this can give false negatives, but should not give
+        // false positives, so it's useful as an early out
         physx::PxControllerState state;
         pxController->getState(state);
 
-        return state.touchedActor != nullptr || (state.collisionFlags & physx::PxControllerCollisionFlag::eCOLLISION_DOWN) != 0;
+        if (state.touchedActor != nullptr || (state.collisionFlags & physx::PxControllerCollisionFlag::eCOLLISION_DOWN) != 0)
+        {
+            m_cachedGroundState = CharacterGroundState::Touching;
+            return;
+        }
+
+        // if we get to this point it's still unclear whether the character is touching the ground so
+        // use an overlap query to see if there's any geometry immediately below the character's foot position
+        if (auto* scene = character->GetScene())
+        {
+            // use a box shape for the overlap, even if the character geometry is a capsule, to avoid difficulties with
+            // the curved base of the capsule
+            AZ::Vector3 footBoxDimensions(0.0f, 0.0f, m_groundDetectionBoxHeight);
+            if (pxController->getType() == physx::PxControllerShapeType::eCAPSULE)
+            {
+                const float radius = static_cast<physx::PxCapsuleController*>(pxController)->getRadius();
+                footBoxDimensions.SetX(2.0f * radius);
+                footBoxDimensions.SetY(2.0f * radius);
+            }
+            else if (pxController->getType() == physx::PxControllerShapeType::eBOX)
+            {
+                const auto* boxController = static_cast<physx::PxBoxController*>(pxController);
+                footBoxDimensions.SetX(2.0f * boxController->getHalfSideExtent());
+                footBoxDimensions.SetY(2.0f * boxController->getHalfForwardExtent());
+            }
+
+            AZ::Transform footBoxTransform = AZ::Transform::CreateFromQuaternionAndTranslation(
+                AZ::Quaternion::CreateShortestArc(AZ::Vector3::CreateAxisZ(), character->GetUpDirection()), character->GetBasePosition());
+            AzPhysics::OverlapRequest overlapRequest =
+                AzPhysics::OverlapRequestHelpers::CreateBoxOverlapRequest(footBoxDimensions, footBoxTransform);
+            overlapRequest.m_collisionGroup = character->GetCollisionGroup();
+            overlapRequest.m_maxResults = 2;
+            AZ::EntityId entityId = GetEntityId();
+            AzPhysics::SceneQueryHits sceneQueryHits = scene->QueryScene(&overlapRequest);
+            m_cachedGroundState = AZStd::any_of(
+                                      sceneQueryHits.m_hits.begin(),
+                                      sceneQueryHits.m_hits.end(),
+                                      [&entityId](const AzPhysics::SceneQueryHit& hit)
+                                      {
+                                          return hit.m_entityId != entityId;
+                                      })
+                ? CharacterGroundState::Touching
+                : CharacterGroundState::NotTouching;
+        }
     }
 
     float CharacterGameplayComponent::GetGravityMultiplier() const
@@ -150,6 +210,14 @@ namespace PhysX
             {
                 OnSceneSimulationStart(fixedDeltaTime);
             }, aznumeric_cast<int32_t>(AzPhysics::SceneEvents::PhysicsStartFinishSimulationPriority::Animation));
+
+        m_sceneSimulationFinishHandler = AzPhysics::SceneEvents::OnSceneSimulationStartHandler(
+            [this](
+                [[maybe_unused]] AzPhysics::SceneHandle sceneHandle,
+                [[maybe_unused]] float fixedDeltaTime)
+            {
+                OnSceneSimulationFinish();
+            }, aznumeric_cast<int32_t>(AzPhysics::SceneEvents::PhysicsStartFinishSimulationPriority::Default));
     }
 
     void CharacterGameplayComponent::Activate()
@@ -170,6 +238,7 @@ namespace PhysX
                     return;
                 }
                 sceneInterface->RegisterSceneSimulationStartHandler(attachedSceneHandle, m_sceneSimulationStartHandler);
+                sceneInterface->RegisterSceneSimulationFinishHandler(attachedSceneHandle, m_sceneSimulationFinishHandler);
             }
         }
 
@@ -194,12 +263,18 @@ namespace PhysX
         CharacterGameplayRequestBus::Handler::BusDisconnect();
         m_onGravityChangedHandler.Disconnect();
         m_sceneSimulationStartHandler.Disconnect();
+        m_sceneSimulationFinishHandler.Disconnect();
     }
 
     // Physics::SystemEvent
     void CharacterGameplayComponent::OnSceneSimulationStart(float physicsTimestep)
     {
         ApplyGravity(physicsTimestep);
+    }
+
+    void CharacterGameplayComponent::OnSceneSimulationFinish()
+    {
+        m_cachedGroundState = CharacterGroundState::NotYetDetermined;
     }
 
     void CharacterGameplayComponent::OnGravityChanged(const AZ::Vector3& gravity)
