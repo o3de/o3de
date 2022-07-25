@@ -60,7 +60,6 @@ namespace AssetProcessor
         if (childItem->GetData()->m_isFolder || !sourceItemData)
         {
             // Folders don't have details.
-            m_isIntermediateAsset = false;
             SetDetailsVisible(false);
             return;
         }
@@ -289,7 +288,6 @@ namespace AssetProcessor
     void SourceAssetDetailsPanel::ResetText()
     {
         m_ui->assetNameLabel->setText(tr("Select an asset to see details"));
-        m_isIntermediateAsset = false;
         SetDetailsVisible(false);
     }
 
@@ -304,9 +302,9 @@ namespace AssetProcessor
         m_ui->sourceGuidTitleLabel->setVisible(visible);
         m_ui->sourceGuidValueLabel->setVisible(visible);
 
-        m_ui->sourceAssetTitleLabel->setVisible(m_isIntermediateAsset);
-        m_ui->gotoAssetButton->setVisible(m_isIntermediateAsset);
-        m_ui->sourceAssetValueLabel->setVisible(m_isIntermediateAsset);
+        m_ui->sourceAssetTitleLabel->setVisible(visible && m_isIntermediateAsset);
+        m_ui->gotoAssetButton->setVisible(visible && m_isIntermediateAsset);
+        m_ui->sourceAssetValueLabel->setVisible(visible && m_isIntermediateAsset);
 
         m_ui->AssetInfoSeparatorLine->setVisible(visible);
 
