@@ -436,3 +436,29 @@ def create_entity_with_sc_component_asset(entity_name, source_file, position = m
 
     return entity
 
+def create_entity_with_multiple_sc_component_asset(entity_name, source_files, position = math.Vector3(512.0, 512.0, 32.0)):
+    """
+    function for creating a new entity with multiple script canvas components and adding a source file to each.
+
+    param entity_name: the name you want to assign the entity
+    param source_files: a list of source files you want added to the script canvas components
+    param position: the translation property of the new entity's transform
+
+    returns: the entity created by this function
+    """
+
+    number_of_files = len(source_files)
+
+    components_array =[]
+    for num in range(number_of_files):
+        components_array.append("Script Canvas")
+
+    entity = hydra.Entity(entity_name)
+    entity.create_entity(position, components_array)
+
+    for num in range(number_of_files):
+        script_canvas_component = entity.components[num]
+        sourcehandle = scriptcanvas.SourceHandleFromPath(source_files[num])
+        hydra.set_component_property_value(script_canvas_component, SCRIPT_CANVAS_COMPONENT_PROPERTY_PATH, sourcehandle)
+
+    return entity

@@ -480,6 +480,11 @@ void MainWindow::Activate()
         &AssetProcessor::AssetProcessorManager::JobProcessDurationChanged,
         m_jobsModel,
         &AssetProcessor::JobsModel::OnJobProcessDurationChanged);
+    connect(
+        m_guiApplicationManager->GetAssetProcessorManager(),
+        &AssetProcessor::AssetProcessorManager::CreateJobsDurationChanged,
+        m_sourceModel,
+        &AssetProcessor::SourceAssetTreeModel::OnCreateJobsDurationChanged);
 
     connect(ui->jobTreeView, &AzQtComponents::TableView::customContextMenuRequested, this, &MainWindow::ShowJobViewContextMenu);
     connect(ui->jobContextLogTableView, &AzQtComponents::TableView::customContextMenuRequested, this, &MainWindow::ShowLogLineContextMenu);
