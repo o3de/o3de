@@ -211,9 +211,9 @@ namespace AssetProcessor
         case aznumeric_cast<int>(Column::JobCount):
             return tr("Job Count");
         case aznumeric_cast<int>(Column::AverageDuration):
-            return tr("Average Duration (ms)");
+            return tr("Average Duration");
         case aznumeric_cast<int>(Column::TotalDuration):
-            return tr("Total Duration (ms)");
+            return tr("Total Duration");
         default:
             AZ_Warning("Asset Processor", false, "Unhandled BuilderInfoMetricsModel header %d", section);
             break;
