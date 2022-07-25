@@ -9,12 +9,18 @@
 #
 #
 # -------------------------------------------------------------------------
-"""A common Class object for DCCsi config
+"""! A common Class object for DCCsi configs
 
-    < DCCsi >/azpy/config_class.py
-
+:file: < DCCsi >/azpy/config_class.py
 :Status: Prototype
 :Version: 0.0.1
+
+This class reduces boilerplate and should streamline code used across
+various config.py files within the DCCsi, by wrapping various functionality,
+and providing common methods to inheret and/or extend.
+
+The DCCsi config pattern utilizes a robust configuration and settings
+package called dynaconf: https://www.dynaconf.com
 """
 # -------------------------------------------------------------------------
 # standard imports
@@ -26,6 +32,12 @@ from typing import Union
 
 
 # -------------------------------------------------------------------------
+# a suggestion is that we make the root DccScriptingInterfance a pkg,
+# by placing a top-level __init__ so we can have something like the following
+# _MODULENAME = 'DCCsi.azpy.config_class'
+# import DccScriptingInterface as DCCsi
+# from DCCsi import _PATH_DCCSIG
+
 # global scope
 _MODULENAME = 'azpy.config_class'
 
@@ -39,51 +51,87 @@ from azpy import _PATH_DCCSIG  # root DCCsi path
 from azpy.env_bool import env_bool
 # -------------------------------------------------------------------------
 
-
+6
 # -------------------------------------------------------------------------
-# temporarily put defaults/constants here
+# global constants here
 DCCSI_DYNAMIC_PREFIX = 'DYNACONF'
 
-ENVAR_0 = 'DYNACONF_DCCSI_SYS_PATH'
-ENVAR_1 = 'DYNACONF_DCCSI_PYTHONPATH'
+from azpy.constants import ENVAR_PATH_DCCSIG
+from azpy.constants import ENVAR_DCCSI_SYS_PATH
+from azpy.constants import ENVAR_DCCSI_PYTHONPATH
+from azpy.constants import TAG_DCCSI_LOCAL_SETTINGS_SLUG
 
+_default_settings_filepath = Path(TAG_DCCSI_LOCAL_SETTINGS_SLUG)
 # -------------------------------------------------------------------------
 
 
 # -------------------------------------------------------------------------
-class ConfigCore(object):
-    """Class constructor: makes a DCCsi Config object.
-
+class ConfigClass(object):
+    """! Class constructor: makes a DCCsi Config object.
     ...
 
     Attributes
     ----------
     config_name : str
-        the name of the config, e.g. Tools.DCC.Substance.config
-
-    parent_config : ConfigCore
-        another ConfigCore object, as parent config
-
-    Methods
-    -------
-    foo(in=None)
-        Does something amazing
+        (Optional) name of the config, e.g. Tools.DCC.Substance.config
     """
 
     def __init__(self,
                  config_name=None,
-                 parent_config=None,
                  *args, **kwargs):
+        '''! The ConfigClass base class initializer.'''
 
+        self._dccsi_dir = _PATH_DCCSIG
+
+        self._tracked_settings = list()
         self._sys_path = list()
         self._pythonpath = list()
-        self._pythonpath_exclude = list()
-        self._local_settings = {}
+        self._settings = None
 
     # -- properties -------------------------------------------------------
     @property
+    def tracked_settings(self):
+        ''':Class property: settings this class object will track. Normally
+        this may be superfluous, as settings can be retreived via the
+        standard dynaconf patterns. Only add a setting to this property if
+        you have a reason to track a specialized setting.
+         :return tracked_settings: dict'''
+        return self._tracked_settings
+
+    @tracked_settings.setter
+    def tracked_settings(self, new_dict: dict) -> dict:
+        ''':param new_dict: replace entire tracked_settings
+        :return tracked_settings: dict'''
+        self._tracked_settings = new_dict
+        return self._tracked_settings
+
+    @tracked_settings.getter
+    def tracked_settings(self):
+        ''':return: tracked_settings dict'''
+        return self._tracked_settings
+
+    @property
+    def local_settings(self):
+        ''':Class property: non-managed settings (fully local to this config object)
+         :return local_settings: dict'''
+        return self._local_settings
+
+    @local_settings.setter
+    def local_settings(self, new_dict: dict) -> dict:
+        ''':param new_dict: replace entire local_settings
+        :return local_settings: dict'''
+        self._local_settings = new_dict
+        return self._local_settings
+
+    @local_settings.getter
+    def local_settings(self):
+        ''':return: local_settings dict'''
+        return self._local_settings
+
+    @property
     def sys_path(self):
-        '''List for stashing PATHs for managed settings'''
+        ''':Class property: for stashing PATHs for managed settings
+        :return sys_path: list'''
         return self._sys_path
 
     @sys_path.setter
@@ -99,7 +147,7 @@ class ConfigCore(object):
 
     @property
     def pythonpath(self):
-        '''List for stashing PYTHONPATHs for managed settings'''
+        ''':Class property: List for stashing PYTHONPATHs for managed settings'''
         return self._pythonpath
 
     @pythonpath.setter
@@ -114,81 +162,111 @@ class ConfigCore(object):
         return self._pythonpath
 
     @property
-    def pythonpath_exclude(self):
-        '''List() stash local PYTHONPATHs in a non-managed way'''
-        return self._pythonpath_exclude
+    def settings(self):
+        ''':Class property: storage for settings'''
+        return self._settings
 
-    @pythonpath_exclude.setter
-    def pythonpath_exclude(self, new_list: list) -> list:
-        ''':param new_list: replace entire pythonpath_exclude'''
-        self._pythonpath_exclude = new_list
-        return self._pythonpath_exclude
+    @settings.setter
+    def settings(self, settings):
+        ''':param settings: the settings object to store'''
+        self._settings = new_list
+        return self._settings
 
-    @pythonpath_exclude.getter
-    def pythonpath_exclude(self):
-        ''':return: list of paths to be excluded from PYTHONPATH'''
-        return self._pythonpath_exclude
+    @settings.getter
+    def settings(self, set):
+        ''':return: a list for PYTHONPATH, site.addsitedir()'''
 
-    @property
-    def local_settings(self):
-        '''dict for non-managed settings (fully local to this cofig object)'''
-        return self._local_settings
+        # now standalone we can validate the config. env, settings.
+        from dynaconf import settings
+        if set_env:
+            settings.setenv()
 
-    @local_settings.setter
-    def local_settings(self, new_dict: dict) -> dict:
-        ''':param new_dict: replace entire local_settings'''
-        self._local_settings = new_dict
-        return self._local_settings
-
-    @local_settings.getter
-    def local_settings(self):
-        return self._local_settings
+        return self._settings
     # ---------------------------------------------------------------------
 
 
     # --method-set---------------------------------------------------------
-    def method():
-        '''a method docstring'''
-        pass
-
-    def set_envar(self, key, value):
-        '''to do ...'''
+    def set_envar(self, key: str, value: str):
+        '''! sets the envar
+        @param key: the enavr key as a string
+        @ param value: the enavr value as a string
+        Path type objects are specially handled.'''
         # standard environment
         if isinstance(value, Path):
             os.environ[key] = value.as_posix()
-        elif isinstance(value, list):
-            # to do
-            pass
-        elif isinstance(value, bool) or \
-                isinstance(value, int) or \
-                isinstance(value, dict):
-            os.environ[key] = str(value)
         else:
-            os.environ[key] = value
+            os.environ[key] = str(value)
 
     def add_setting(self,
                     key: str,
-                    value: Union[int, str, bool, list, Path],
+                    value: Union[int, str, bool, list, dict, Path],
                     set_dyanmic: bool = True,
                     prefix: str = DCCSI_DYNAMIC_PREFIX,
-                    get_envar: bool = True,
-                    set_envar: bool = True,
+                    check_envar: bool = True,
+                    set_envar: bool = False,
                     set_sys_path: bool = False,
                     set_pythonpath: bool = False,
-                    set_pythonpath_exclude: bool = False):
-        '''to do ...'''
+                    tracked_setting=False):
+        '''! adds a settings with various configurable options
 
-        if isinstance(value, Path) or set_sys_path \
-           or set_pythonpath or set_pythonpath_exclude:
+        @param key: the key (str) for the setting/envar
+
+        @param value: the stored value for the setting
+
+        @param set_dyanmic: makes this a dynamic setting (dynaconf)
+            Dyanmic settings will use the prefix_ to specify membership
+                os.environ['DYNACONF_FOO'] = 'foo'
+            This setting will be present in the dynaconf settings object
+                from dynaconf import settings
+            And will be in the dynamic settings
+                print(settings.FOO)
+            And the dynamic environment
+                settings.setenv()
+                print(os.getenv('FOO'))
+
+        @param prefix: specifies the default prefix for the dyanamic env
+            The default is:
+            DCCSI_DYNAMIC_PREFIX = 'DYNACONF'
+
+        @param check_envar: This will check if this is set in the external
+            env such that we can retain the external setting as an
+            override, if it is not externally set we will use the passed
+            in value
+
+        @param set_envar: this will set an envar in the traditional way
+            os.environ['key'] = value
+
+            this is optional, but may be important if ...
+            you are running other code that relies on this envar
+            and want or need access, before the following occures:
+
+                from dynaconf import settings
+                settings.setenv()
+
+                class_object.get_config_settings(set_env=True)
+
+        @param set_sys_path: a list of paths to be added to PATH
+            This uses traditional direct manipulation of env PATH
+            @see self.add_path_list_to_envar()
+
+        @param set_pythonpath: a list of paths to be added to PYTHONPATH
+            This uses the site.addsitedir() approach to add sire access
+            @see self.add_path_list_to_addsitedir()
+
+        @param tracked_setting: tracks the setting on the class object
+            This isn't normally needed, since settings object can be accessed
+            This would be used in a specail case where you need to retreive
+            a settings directly from the ConfigClass rather then via settings.
+        '''
+        # -----------------------------------------------------------------
+
+        if isinstance(value, Path) or set_sys_path or set_pythonpath:
             value = Path(value).resolve()
 
-        if get_envar:
+        if check_envar:
             if isinstance(value, bool):
                 # this checks and returns value as bool
-                value = env_bool(key)
-            elif isinstance(value, list):
-                # to do
-                pass
+                value = env_bool(key, value)
             else:
                 # if the envar is set, it will override the input value!
                 value = os.getenv(key, value)
@@ -197,8 +275,8 @@ class ConfigCore(object):
             self.set_envar(key, value)
 
         if set_dyanmic:
-            key = f'{prefix}_{key}'
-            self.set_envar(key, value)
+            dynakey = f'{prefix}_{key}'
+            self.set_envar(dynakey, value)
 
         if set_sys_path:
             self.sys_path.append(value.as_posix())
@@ -206,25 +284,24 @@ class ConfigCore(object):
         if set_pythonpath:
             self.pythonpath.append(value.as_posix())
 
-        if set_pythonpath_exclude:
-            self.pythonpath_exclude.append(value.as_posix())
-
         return (key, value)
 
+    # -----------------------------------------------------------------
     def add_path_list_to_envar(self,
-                               envar: str,
-                               path_list: list):
-        """!
-        Take in a list of Path objects to add to system ENVAR (like PATH).
+                               envar: str = 'PATH',
+                               path_list: list = self._sys_path):
+        """! add list of Paths to update system ENVAR (like PATH).
         This method explicitly adds the paths to the system ENVAR.
 
-        @param path_list: list
-            a list() of paths
+        Note: this handles PATH in a way
 
         @param envar: str
             add paths to this ENVAR
 
-        @ return: os.environ[envar]"""
+        @param path_list: list
+            a list() of paths
+
+        @return: the envar setting"""
 
         _LOGGER.info('checking envar: {}'.format(envar))
 
@@ -253,13 +330,13 @@ class ConfigCore(object):
 
         return os.environ[envar]
 
+    # -----------------------------------------------------------------
     def add_path_list_to_addsitedir(self,
-                                    envar: str,
+                                    envar: str = 'PYTHONPATH',
                                     path_list: list):
-        """!
-        Take in a list of Path objects to add to system ENVAR (like PYTHONPATH).
-        This makes sure each path is fully added as searchable code access.
-        Mainly to use/access site.addsitedir so from imports work in our namespace.
+        """! Ensures each path in list, is fully added as searchable
+        code access.(site.addsitedir). Works in conjuction with paths
+        from the defined ENVAR.
 
         @param path_list: list
             a list() of paths
@@ -267,7 +344,7 @@ class ConfigCore(object):
         @param envar: str
             add paths to this ENVAR, and site.addsitedir
 
-        @ return: os.environ[envar]"""
+        @return: os.environ[envar]"""
 
         _LOGGER.info('checking envar: {}'.format(envar))
 
@@ -300,19 +377,59 @@ class ConfigCore(object):
 
         return os.environ[envar]
 
-    def export_settings(self):
-        '''to do ...'''
+    # -----------------------------------------------------------------
+    def export_settings(self,
+                        settings_filepath: Path = _default_settings_filepath,
+                        use_dynabox: bool = False,
+                        env: bool = False,
+                        merge: bool = False
+                        log_settings: bool = False):
+        '''! exports the settings to a file
+
+        @param settings_filepath: The file path for the exported
+        settings. Default file is: settings.local.json
+        This file name is chosen as it's also a default settings file
+        dynaconf will read in when initializing settings.
+
+            # basic file writer looks something like
+            dynaconf.loaders.write(settings_path=Path('settings.local.json'),
+                                   settings_data=DynaBox(settings).to_dict(),
+                                   env='core',
+                                   merge=True)
+
+        @param use_dynabox: use dynaconf.utils.boxing module
+            https://dynaconf.readthedocs.io/en/docs_223/reference/dynaconf.utils.html
+
+        @param env: put settings into an env, e.g. development
+            https://dynaconf.readthedocs.io/en/docs_223/reference/dynaconf.loaders.html
+
+        @param merge: whether existing file should be merged with new data
+
+        @param log_settings: ouptus settings contents to logging
+
+        The default is to write: < dccsi >/settings.local.json
+
+        Dynaconf is configured by default to behave in the following
+        manner,
+
+        This is the Dynaconf call to initialize and retreive settings,
+        make this call from your entrypoint e.g. main.py:
+
+            from dynaconf import settings
+
+        That will find and execute the local config and aggregate
+        settings from the following:
+            config.py
+            settings.py
+            settings.json
+            settings.local.json
+
+        We do not commit settings.local.json to source control,
+        effectively it can be created and used as a local stash of the
+        settings, with the beneift that a user can overide settings locally.
+
+        '''
         pass
-
-    def get_config_settings(self, set_env: bool = True):
-        '''To do ...'''
-
-        # now standalone we can validate the config. env, settings.
-        from dynaconf import settings
-        if set_env:
-            settings.setenv()
-
-        return settings
     # ---------------------------------------------------------------------
 
 ###########################################################################
@@ -327,7 +444,7 @@ if __name__ == '__main__':
     _LOGGER.info(f'~ {_MODULENAME}.py ... Running script as __main__')
     _LOGGER.info(STR_CROSSBAR)
 
-    _foo_test = ConfigCore()
+    _foo_test = ConfigClass()
 
     new_list = list()
     new_list.append('c:/foo')
@@ -338,7 +455,10 @@ if __name__ == '__main__':
     _foo_test.add_setting('kablooey', Path('c:/kablooey'))
 
     # add a envar bool
-    _foo_test.add_setting('foo_is', True)
+    _bool_test = _foo_test.add_setting('foo_is', True)
+
+    if _bool_test:
+        _LOGGER.info(f'The boolean is: {_bool_test}')
 
     # add a envar int
     _foo_test.add_setting('foo_level', 10)

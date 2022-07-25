@@ -17,11 +17,9 @@ This is the shared pure-python api.
 # --------------------------------------------------------------------------
 # standard imports
 import sys
-import errno
 import os
-import os.path
 import site
-import re
+from pathlib import Path
 import logging as _logging
 # -------------------------------------------------------------------------
 
@@ -47,12 +45,13 @@ __all__ = ['constants',
 # 2 - no need to support py2.7 anymore, can use pathlib
 
 # we need to set up basic access to the DCCsi
-_MODULE_PATH = os.path.realpath(__file__)  # To Do: what if frozen?
-_PATH_DCCSIG = os.path.normpath(os.path.join(_MODULE_PATH, '../..'))
+_MODULE_PATH = Path(__file__)
+_PATH_DCCSIG = _MODULE_PATH.parents[1].resolve()
+# allows env to override the path externally
 _PATH_DCCSIG = os.getenv('PATH_DCCSIG', _PATH_DCCSIG)
 site.addsitedir(_PATH_DCCSIG)
 
-_PATH_DCCSI_AZPY = os.path.dirname(_MODULE_PATH)
+_PATH_DCCSI_AZPY = _MODULE_PATH.parent.name
 
 # azpy
 import azpy.return_stub as return_stub
