@@ -12,6 +12,7 @@
 #include <AZCore/std/containers/unordered_map.h>
 #include <AzCore/std/string/string.h>
 #include <QAbstractItemModel>
+#include <QSortFilterProxyModel>
 #include <AzToolsFramework/AssetDatabase/AssetDatabaseConnection.h>
 
 namespace AssetBuilderSDK
@@ -60,5 +61,11 @@ namespace AssetProcessor
 
     private:
         BuilderData* m_data;
+    };
+
+    class BuilderInfoMetricsSortModel : public QSortFilterProxyModel
+    {
+    public:
+        BuilderInfoMetricsSortModel(QObject* parent = nullptr);
     };
 } // namespace AssetProcessor

@@ -253,4 +253,9 @@ namespace AssetProcessor
             item = item->GetParent();
         }
     }
+
+    BuilderInfoMetricsSortModel::BuilderInfoMetricsSortModel(QObject* parent)
+        : QSortFilterProxyModel(parent)
+    {
+    }
 }

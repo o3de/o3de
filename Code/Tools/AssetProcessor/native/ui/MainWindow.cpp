@@ -18,10 +18,6 @@
 #include <native/ui/BuilderData.h>
 #include <native/ui/BuilderInfoPatternsModel.h>
 #include <native/ui/BuilderInfoMetricsModel.h>
-#include <native/ui/BuilderInfoMetricsSortModel.h>
-#include <native/ui/BuilderInfoPatternsModel.h>
-#include <native/ui/BuilderInfoMetricsModel.h>
-#include <native/ui/BuilderInfoMetricsSortModel.h>
 #include <native/ui/SourceAssetTreeFilterModel.h>
 
 #include <AzFramework/Asset/AssetSystemBus.h>
