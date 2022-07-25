@@ -21,7 +21,8 @@ from boto3 import client
 
 @pytest.fixture
 def test_data_file():
-    path = Path("/o3de/scripts/build/TestImpactAnalysis/Testing/test_data.json")
+    path = Path(
+        "../o3de/scripts/build/TestImpactAnalysis/Testing/test_data.json")
     with open(path) as file:
         return json.load(file)
 
