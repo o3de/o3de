@@ -27,11 +27,12 @@
 #include <utility>
 #include <AzCore/Serialization/ObjectStream.h>
 
-#define ENABLE_DEBUG_OUTPUT 0
-#if ENABLE_DEBUG_OUTPUT == 1
-#define DEBUG_OUTPUT(OUTPUT) AZ_Printf("AssetManager Debug", "%s\n", (OUTPUT).c_str())
+// Set this to 1 to enable debug logging for asset loads/unloads
+#define ENABLE_ASSET_DEBUGGING 0
+#if ENABLE_ASSET_DEBUGGING == 1
+#define ASSET_DEBUG_OUTPUT(OUTPUT) AZ_Printf("AssetManager Debug", "%s\n", (OUTPUT).c_str())
 #else
-#define DEBUG_OUTPUT(OUTPUT)
+#define ASSET_DEBUG_OUTPUT(OUTPUT)
 #endif
 
 namespace AZ::Data
@@ -180,12 +181,12 @@ namespace AZ::Data
 
         void LoadAndSignal(Asset<AssetData>& asset)
         {
-            DEBUG_OUTPUT(AZStd::string::format("LoadAndSignal - Pre - " AZ_STRING_FORMAT,
+            ASSET_DEBUG_OUTPUT(AZStd::string::format("LoadAndSignal - Pre - " AZ_STRING_FORMAT,
                 AZ_STRING_ARG(asset.GetId().ToFixedString())));
 
             const bool loadSucceeded = LoadData();
 
-            DEBUG_OUTPUT(AZStd::string::format(
+            ASSET_DEBUG_OUTPUT(AZStd::string::format(
                 "LoadAndSignal - Post - Result: %s - Signal: %s - " AZ_STRING_FORMAT,
                 loadSucceeded ? "Success" : "Failure",
                 m_signalLoaded ? "Yes" : "No",
@@ -1192,7 +1193,7 @@ namespace AZ::Data
             m_debugAssetEvents = AZ::Interface<IDebugAssetEvent>::Get();
         }
 
-        DEBUG_OUTPUT(AZStd::string::format("Status - %d - " AZ_STRING_FORMAT, int(asset.GetStatus()), AZ_STRING_ARG(asset.GetId().ToFixedString())));
+        ASSET_DEBUG_OUTPUT(AZStd::string::format("Status - %d - " AZ_STRING_FORMAT, int(asset.GetStatus()), AZ_STRING_ARG(asset.GetId().ToFixedString())));
 
         if(m_debugAssetEvents)
         {
@@ -1303,7 +1304,7 @@ namespace AZ::Data
         // while the lock is not held since destroying the asset while holding the lock can cause a deadlock.
         if (destroyAsset)
         {
-            DEBUG_OUTPUT(AZStd::string::format("Release asset - " AZ_STRING_FORMAT, AZ_STRING_ARG(assetId.ToFixedString())));
+            ASSET_DEBUG_OUTPUT(AZStd::string::format("Release asset - " AZ_STRING_FORMAT, AZ_STRING_ARG(assetId.ToFixedString())));
 
             if(m_debugAssetEvents)
             {
@@ -1410,7 +1411,7 @@ namespace AZ::Data
     //=========================================================================
     void AssetManager::ReloadAsset(const AssetId& assetId, AssetLoadBehavior assetReferenceLoadBehavior, bool isAutoReload)
     {
-        DEBUG_OUTPUT(AZStd::string::format("Reload asset - " AZ_STRING_FORMAT, AZ_STRING_ARG(assetId.ToFixedString())));
+        ASSET_DEBUG_OUTPUT(AZStd::string::format("Reload asset - " AZ_STRING_FORMAT, AZ_STRING_ARG(assetId.ToFixedString())));
 
         AZStd::shared_ptr<AssetContainer> container;
         Asset<AssetData> newAsset;
@@ -1422,7 +1423,7 @@ namespace AZ::Data
             if (assetIter == m_assets.end() || assetIter->second->IsLoading())
             {
                 // Only existing assets can be reloaded.
-                DEBUG_OUTPUT(AZStd::string::format("Asset does not exist or is already loading - reload abort - " AZ_STRING_FORMAT,
+                ASSET_DEBUG_OUTPUT(AZStd::string::format("Asset does not exist or is already loading - reload abort - " AZ_STRING_FORMAT,
                     AZ_STRING_ARG(assetId.ToFixedString())));
                 return;
             }
@@ -1436,12 +1437,12 @@ namespace AZ::Data
                 // As the current load could already be stale
                 if (curStatus == AssetData::AssetStatus::Queued)
                 {
-                    DEBUG_OUTPUT(AZStd::string::format("Already reloading - queued - " AZ_STRING_FORMAT, AZ_STRING_ARG(assetId.ToFixedString())));
+                    ASSET_DEBUG_OUTPUT(AZStd::string::format("Already reloading - queued - " AZ_STRING_FORMAT, AZ_STRING_ARG(assetId.ToFixedString())));
                     return;
                 }
                 else if (curStatus == AssetData::AssetStatus::Loading || curStatus == AssetData::AssetStatus::StreamReady || curStatus == AssetData::AssetStatus::LoadedPreReady)
                 {
-                    DEBUG_OUTPUT(AZStd::string::format(
+                    ASSET_DEBUG_OUTPUT(AZStd::string::format(
                         "Already reloading - loading OR ready, marking requeue - " AZ_STRING_FORMAT,
                         AZ_STRING_ARG(assetId.ToFixedString())));
                     // Don't flood the tick bus - this value will be checked when the asset load completes
@@ -1449,14 +1450,14 @@ namespace AZ::Data
                     return;
                 }
 
-                DEBUG_OUTPUT(AZStd::string::format(
+                ASSET_DEBUG_OUTPUT(AZStd::string::format(
                     "Already reloading - other state %d, continue - " AZ_STRING_FORMAT,
                     int(curStatus),
                     AZ_STRING_ARG(assetId.ToFixedString())));
             }
             else
             {
-                DEBUG_OUTPUT(AZStd::string::format(
+                ASSET_DEBUG_OUTPUT(AZStd::string::format(
                     "No current reload found, starting a new one - " AZ_STRING_FORMAT, AZ_STRING_ARG(assetId.ToFixedString())));
             }
 
@@ -1528,7 +1529,7 @@ namespace AZ::Data
 
             if (containerItr != m_assetContainers.end() && !containerItr->second.expired())
             {
-                DEBUG_OUTPUT(AZStd::string::format(
+                ASSET_DEBUG_OUTPUT(AZStd::string::format(
                     "Getting container but one already exists - " AZ_STRING_FORMAT, AZ_STRING_ARG(assetId.ToFixedString())));
             }
         }
@@ -1540,7 +1541,7 @@ namespace AZ::Data
         {
             auto result = m_ownedAssetContainers.insert({ container.get(), container });
 
-            DEBUG_OUTPUT(AZStd::string::format(
+            ASSET_DEBUG_OUTPUT(AZStd::string::format(
                 "Insert asset container - %p - %s - " AZ_STRING_FORMAT,
                 static_cast<void*>(container.get()), result.second ? "Inserted" : "Not inserted",
                 AZ_STRING_ARG(newAsset.GetId().ToFixedString())));
@@ -1900,7 +1901,7 @@ namespace AZ::Data
                 if (data->GetStatus() != AssetData::AssetStatus::StreamReady)
                 {
                     // Something else has attempted to load this asset
-                    DEBUG_OUTPUT(AZStd::string::format(
+                    ASSET_DEBUG_OUTPUT(AZStd::string::format(
                         "ValidateAndRegisterAssetLoading - Aborting, status (%d) is not StreamReady", static_cast<int>(data->GetStatus())));
                     return false;
                 }
@@ -2126,21 +2127,21 @@ namespace AZ::Data
             }
         }
 
-        DEBUG_OUTPUT(AZStd::string::format(
+        ASSET_DEBUG_OUTPUT(AZStd::string::format(
             "Released owned container - %p - " AZ_STRING_FORMAT, static_cast<void*>(assetContainer),
             AZ_STRING_ARG(id.ToFixedString())));
     }
 
     void AssetManager::OnAssetContainerReady(AssetContainer* assetContainer)
     {
-        DEBUG_OUTPUT(AZStd::string::format(
+        ASSET_DEBUG_OUTPUT(AZStd::string::format(
             "OnAssetContainerReady - Queue - %p - " AZ_STRING_FORMAT,
             static_cast<void*>(assetContainer),
             AZ_STRING_ARG(assetContainer->GetContainerAssetId().ToFixedString())));
 
         AssetBus::QueueFunction([this, assetContainer, asset = assetContainer->GetRootAsset()]()
         {
-            DEBUG_OUTPUT(AZStd::string::format(
+            ASSET_DEBUG_OUTPUT(AZStd::string::format(
                 "OnAssetContainerReady - Notify - %p - " AZ_STRING_FORMAT,
                 static_cast<void*>(assetContainer),
                 AZ_STRING_ARG(assetContainer->GetContainerAssetId().ToFixedString())));
