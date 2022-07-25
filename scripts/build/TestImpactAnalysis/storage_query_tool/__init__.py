@@ -1,3 +1,3 @@
-from .storage_query_tool import StorageQueryTool
+from .base_storage_query_tool import StorageQueryTool
 from .local_storage_query_tool import LocalStorageQueryTool
 from .s3_storage_query_tool import S3StorageQueryTool
