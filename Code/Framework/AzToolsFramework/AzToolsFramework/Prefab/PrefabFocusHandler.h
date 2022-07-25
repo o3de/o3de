@@ -95,10 +95,6 @@ namespace AzToolsFramework::Prefab
         //! The current focus mode.
         PrefabEditScope m_prefabEditScope = PrefabEditScope::HIDE_NESTED_INSTANCES_CONTENT;
 
-        int m_openInstanceMode = 0;
-        bool m_allowContextMenuInstanceExpanding = false;
-        bool m_containerStepByStepSelection = false;
-
         ContainerEntityInterface* m_containerEntityInterface = nullptr;
         FocusModeInterface* m_focusModeInterface = nullptr;
         InstanceEntityMapperInterface* m_instanceEntityMapperInterface = nullptr;
