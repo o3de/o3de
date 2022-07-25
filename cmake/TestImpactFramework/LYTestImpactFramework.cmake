@@ -61,7 +61,7 @@ set(LY_TEST_IMPACT_RUNTIME_CONFIG_FILE_PATH "${LY_TEST_IMPACT_RUNTIME_PERSISTENT
 set(LY_TEST_IMPACT_RUNTIME_CONFIG_FILE_PATH_DEFINITION "LY_TEST_IMPACT_DEFAULT_CONFIG_FILE=\"${LY_TEST_IMPACT_RUNTIME_CONFIG_FILE_PATH}\"")
 
 # Path to file used to store data required by TIAF tests
-set(LY_TEST_IMPACT_PYTEST_FILE_PATH "${LY_ROOT_FOLDER}/scripts/build/TestImpactAnalysis/Testing")
+set(LY_TEST_IMPACT_PYTEST_FILE_PATH "${LY_TEST_IMPACT_WORKING_DIR}")
 
 #! ly_test_impact_rebase_file_to_repo_root: rebases the relative and/or absolute path to be relative to repo root directory and places the resulting path in quotes.
 #
@@ -458,8 +458,6 @@ endfunction()
 # 
 function(ly_test_impact_write_pytest_file)
 
-    set(runtime_bin $<TARGET_FILE:${LY_TEST_IMPACT_CONSOLE_TARGET}>)
-
     # For each configuration type, compile the build info we need and add it to our array
     set(build_configs "")
     foreach(config_type ${LY_CONFIGURATION_TYPES})
@@ -486,7 +484,6 @@ function(ly_test_impact_write_pytest_file)
         CONTENT "${test_file}")
 
 endfunction()
-
 
 #! ly_test_impact_post_step: runs the post steps to be executed after all other cmake scripts have been executed.
 function(ly_test_impact_post_step)
