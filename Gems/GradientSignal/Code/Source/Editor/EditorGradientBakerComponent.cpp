@@ -6,13 +6,12 @@
  *
  */
 
-#include "EditorGradientBakerComponent.h"
-
 #include <AzCore/IO/SystemFile.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyFilePathCtrl.h>
 #include <GradientSignal/Ebuses/GradientPreviewRequestBus.h>
 #include <GradientSignal/Ebuses/ImageGradientRequestBus.h>
+#include <GradientSignal/Editor/EditorGradientBakerComponent.h>
 
 AZ_PUSH_DISABLE_WARNING(4777, "-Wunknown-warning-option")
 #include <OpenImageIO/imageio.h>
