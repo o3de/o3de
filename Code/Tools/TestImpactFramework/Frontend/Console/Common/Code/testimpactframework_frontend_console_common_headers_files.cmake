@@ -7,5 +7,5 @@
 #
 
 set(FILES
-    Source/TestImpactConsole.cpp
+    Include/Headers/TestImpactFramework/TestImpactConsoleMain.h
 )

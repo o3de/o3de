@@ -249,7 +249,7 @@ namespace TestImpact
             catch (const ChangeListException& e)
             {
                 std::cout << e.what() << std::endl;
-                return ReturnCode::InvalidUnifiedDiff;
+                return ReturnCode::InvalidChangeList;
             }
             catch (const ConfigurationException& e)
             {

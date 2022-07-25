@@ -7,7 +7,6 @@
 #
 
 set(FILES
-    Include/TestImpactFramework/TestImpactConsoleMain.h
     Source/TestImpactCommandLineOptions.h
     Source/TestImpactCommandLineOptions.cpp
     Source/TestImpactCommandLineOptionsUtils.cpp
