@@ -632,7 +632,6 @@ namespace PhysX
 
     void CharacterController::ApplyRequestedVelocity(float deltaTime)
     {
-        const AZ::Vector3 oldPosition = GetBasePosition();
         const AZ::Vector3 totalRequestedVelocity = m_requestedVelocityForTick + m_requestedVelocityForPhysicsTimestep;
         const AZ::Vector3 clampedVelocity = totalRequestedVelocity.GetLength() > m_maximumSpeed
             ? m_maximumSpeed * totalRequestedVelocity.GetNormalized()
