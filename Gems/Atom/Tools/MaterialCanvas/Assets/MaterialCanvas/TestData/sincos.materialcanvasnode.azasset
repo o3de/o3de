@@ -4,36 +4,19 @@
     "ClassName": "DynamicNodeConfig",
     "ClassData": {
         "category": "Math Functions",
-        "title": "subtract",
+        "title": "sincos",
+        "settings": {
+            "instructions": [
+                "float4 NODEID_outValue1 = float4(0, 0, 0, 0);",
+                "float4 NODEID_outValue2 = float4(0, 0, 0, 0);",
+                "sincos(NODEID_inValue, NODEID_outValue1, NODEID_outValue2);"
+            ]
+        },
         "inputSlots": [
             {
-                "name": "inValue1",
-                "displayName": "Value1",
-                "description": "Value1",
-                "supportedDataTypes": [
-                    "float",
-                    "float2",
-                    "float3",
-                    "float4",
-                    "color"
-                ],
-                "defaultValue": {
-                    "$type": "Vector4",
-                    "Value": [
-                        0.0,
-                        0.0,
-                        0.0,
-                        0.0
-                    ]
-                },
-                "settings": {
-                    "instructions": [ "SLOTTYPE NODEID_SLOTNAME = SLOTVALUE;" ]
-                }
-            },
-            {
-                "name": "inValue2",
-                "displayName": "Value2",
-                "description": "Value2",
+                "name": "inValue",
+                "displayName": "Value",
+                "description": "Value",
                 "supportedDataTypes": [
                     "float",
                     "float2",
@@ -57,9 +40,9 @@
         ],
         "outputSlots": [
             {
-                "name": "outValue",
-                "displayName": "Value",
-                "description": "Value",
+                "name": "outValue1",
+                "displayName": "Value1",
+                "description": "Value1",
                 "supportedDataTypes": [
                     "float4"
                 ],
@@ -71,9 +54,23 @@
                         0.0,
                         0.0
                     ]
-                },
-                "settings": {
-                    "instructions": [ "SLOTTYPE NODEID_SLOTNAME = NODEID_inValue1 - NODEID_inValue2;" ]
+                }
+            },
+            {
+                "name": "outValue2",
+                "displayName": "Value2",
+                "description": "Value2",
+                "supportedDataTypes": [
+                    "float4"
+                ],
+                "defaultValue": {
+                    "$type": "Vector4",
+                    "Value": [
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ]
                 }
             }
         ]

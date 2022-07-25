@@ -3,8 +3,8 @@
     "Version": 1,
     "ClassName": "DynamicNodeConfig",
     "ClassData": {
-        "category": "Math Operations",
-        "title": "Combine",
+        "category": "Math Functions",
+        "title": "combine",
         "inputSlots": [
             {
                 "name": "inX",

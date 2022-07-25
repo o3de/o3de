@@ -4,7 +4,7 @@
     "ClassName": "DynamicNodeConfig",
     "ClassData": {
         "category": "Math Functions",
-        "title": "subtract",
+        "title": "step",
         "inputSlots": [
             {
                 "name": "inValue1",
@@ -73,7 +73,7 @@
                     ]
                 },
                 "settings": {
-                    "instructions": [ "SLOTTYPE NODEID_SLOTNAME = NODEID_inValue1 - NODEID_inValue2;" ]
+                    "instructions": [ "SLOTTYPE NODEID_SLOTNAME = step(NODEID_inValue1, NODEID_inValue2);" ]
                 }
             }
         ]
