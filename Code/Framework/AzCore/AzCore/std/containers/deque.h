@@ -1135,6 +1135,10 @@ namespace AZStd
         allocator_type      m_allocator{};    ///< Instance of the allocator.
     };
 
+    // AZStd::deque deduction guides
+    template <class InputIt, class Alloc = allocator>
+    deque(InputIt, InputIt, Alloc = Alloc()) -> deque<typename iterator_traits<InputIt>::value_type, Alloc>;
+
     template <class T, class Allocator, AZStd::size_t NumElementsPerBlock, AZStd::size_t MinMapSize>
     AZ_FORCE_INLINE bool operator==(const deque<T, Allocator, NumElementsPerBlock, MinMapSize>& left, const deque<T, Allocator, NumElementsPerBlock, MinMapSize>& right)
     {
