@@ -74,16 +74,28 @@ namespace TestImpact
         return AZStd::nullopt;
     }
 
-    //! Attempst to parse the JSON in fileData into an array of test names.
-    AZStd::vector<AZStd::string> ParseExcludedTestTargetsFromFile(const AZStd::string& fileData)
+    //! Attempts to parse the JSON in fileData into an array of test names.
+    AZStd::vector<TargetConfig::ExcludedTarget> ParseExcludedTestTargetsFromFile(const AZStd::string& fileData)
     {
         rapidjson::Document excludeData;
         excludeData.Parse(fileData.c_str());
-        AZStd::vector<AZStd::string> excludeList;
-        for (const auto& entry : excludeData["exclude"].GetArray())
+        AZStd::vector<TargetConfig::ExcludedTarget> targetExcludeList;
+        for (const auto& testExclude : excludeData["targetExclude"].GetArray())
         {
-            excludeList.push_back(entry.GetString());
+            TargetConfig::ExcludedTarget excludedTarget;
+            excludedTarget.m_name = testExclude["target"].GetString();
+            if (testExclude.HasMember("tests"))
+            {
+                const auto& excludedTests = testExclude["tests"].GetArray();
+                for (const auto& excludedTest : excludedTests)
+                {
+                    excludedTarget.m_excludedTests.push_back(excludedTest.GetString());
+                }
+            }
+
+            targetExcludeList.push_back(excludedTarget);
         }
-        return excludeList;
+
+        return targetExcludeList;
     }
 } // namespace TestImpact

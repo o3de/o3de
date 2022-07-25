@@ -10,6 +10,7 @@
 
 #include <TestImpactFramework/TestImpactTestSequence.h>
 #include <TestImpactFramework/TestImpactRepoPath.h>
+#include <TestImpactFramework/TestImpactConfiguration.h>
 
 #include <AzCore/std/chrono/chrono.h>
 #include <AzCore/std/string/string.h>
@@ -40,8 +41,11 @@ namespace TestImpact
         //! Returns true if a test impact data file path has been supplied, otherwise false.
         bool HasDataFilePath() const;
 
+        //! Returns true if a previous run data file path has been supplied, otherwise false.
+        bool HasPreviousRunDataFilePath() const;
+
         //! Returns true if we have tests to exclude that have been loaded from the exclude file, otherwise false.
-        bool HasExcludeTests() const;
+        bool HasExcludedTests() const;
 
         //! Returns true if a change list file path has been supplied, otherwise false.
         bool HasChangeListFilePath() const;
@@ -52,11 +56,17 @@ namespace TestImpact
         //! Returns true if the safe mode option has been enabled, otherwise false.
         bool HasSafeMode() const;
 
+        //! Returns true if the draft failing tests option has been enabled, otherwise false.
+        bool HasDraftFailingTests() const;
+
         //! Returns the path to the runtime configuration file.
         const RepoPath& GetConfigurationFilePath() const;
 
-        //! Returns the path to the data file (if any).
+        //! Returns the path to the test impact data file (if any).
         const AZStd::optional<RepoPath>& GetDataFilePath() const;
+
+        //! Returns the path to the previous run data file (if any).
+        const AZStd::optional<RepoPath>& GetPreviousRunDataFilePath() const;
 
         //! Returns the path to the change list file (if any).
         const AZStd::optional<RepoPath>& GetChangeListFilePath() const;
@@ -65,7 +75,7 @@ namespace TestImpact
         const AZStd::optional<RepoPath>& GetSequenceReportFilePath() const;
 
         //! Returns the tests to exclude from this run of TIAF (if any).
-        const AZStd::vector<AZStd::string>& GetExcludeTests() const;
+        const AZStd::vector<TargetConfig::ExcludedTarget>& GetExcludedTests() const;
 
         //! Returns the test sequence type to run.
         TestSequenceType GetTestSequenceType() const;
@@ -106,9 +116,10 @@ namespace TestImpact
     private:
         RepoPath m_configurationFile;
         AZStd::optional<RepoPath> m_dataFile;
+        AZStd::optional<RepoPath> m_previousRunDataFile;
         AZStd::optional<RepoPath> m_changeListFile;
         AZStd::optional<RepoPath> m_sequenceReportFile;
-        AZStd::vector<AZStd::string> m_excludeTests;
+        AZStd::vector<TargetConfig::ExcludedTarget> m_excludedTests;
         TestSequenceType m_testSequenceType;
         Policy::TestPrioritization m_testPrioritizationPolicy = Policy::TestPrioritization::None;
         Policy::ExecutionFailure m_executionFailurePolicy = Policy::ExecutionFailure::Continue;
@@ -122,5 +133,6 @@ namespace TestImpact
         AZStd::optional<AZStd::chrono::milliseconds> m_globalTimeout;
         SuiteType m_suiteFilter;
         bool m_safeMode = false;
+        bool m_draftFailingTests = false;
     };
 } // namespace TestImpact

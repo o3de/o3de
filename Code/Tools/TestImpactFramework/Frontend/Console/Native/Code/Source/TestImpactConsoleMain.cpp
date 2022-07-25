@@ -14,11 +14,10 @@
 #include <TestImpactFramework/TestImpactConsoleMain.h>
 #include <TestImpactFramework/TestImpactChangeListSerializer.h>
 #include <TestImpactFramework/TestImpactChangeList.h>
-#include <TestImpactFramework/TestImpactRuntime.h>
 #include <TestImpactFramework/TestImpactUtils.h>
 #include <TestImpactFramework/TestImpactClientTestSelection.h>
-#include <TestImpactFramework/TestImpactRuntime.h>
 #include <TestImpactFramework/TestImpactClientSequenceReportSerializer.h>
+#include <TestImpactFramework/Native/TestImpactRuntime.h>
 
 #include <TestImpactConsoleTestSequenceEventHandler.h>
 #include <TestImpactCommandLineOptions.h>
@@ -160,6 +159,7 @@ namespace TestImpact
                 // As of now, there are no non-test operations but leave this door open for the future
                 if (options.GetTestSequenceType() == TestSequenceType::None)
                 {
+                    std::cout << "No test operations specified.";
                     return ReturnCode::Success;
                 }
 
@@ -168,7 +168,8 @@ namespace TestImpact
                 Runtime runtime(
                     RuntimeConfigurationFactory(ReadFileContents<CommandLineOptionsException>(options.GetConfigurationFilePath())),
                     options.GetDataFilePath(),
-                    options.GetExcludeTests(),
+                    options.GetPreviousRunDataFilePath(),
+                    options.GetExcludedTests(),
                     options.GetSuiteFilter(),
                     options.GetExecutionFailurePolicy(),
                     options.GetFailedTestCoveragePolicy(),
