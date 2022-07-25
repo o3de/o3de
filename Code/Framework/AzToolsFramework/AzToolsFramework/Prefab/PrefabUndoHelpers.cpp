@@ -25,10 +25,7 @@ namespace AzToolsFramework
 
                 // Preemptively updates the cached dom to prevent unnecessary reloading in InstanceSerializer::Reload().
                 PrefabDomReference cachedDom = instance.GetCachedInstanceDom();
-                if (cachedDom.has_value())
-                {
-                    instance.SetCachedInstanceDom(instanceDomAfterUpdate);
-                }
+                instance.SetCachedInstanceDom(instanceDomAfterUpdate);
 
                 PrefabUndoInstance* state = aznew Prefab::PrefabUndoInstance(undoMessage);
                 state->Capture(instanceDomBeforeUpdate, instanceDomAfterUpdate, instance.GetTemplateId());

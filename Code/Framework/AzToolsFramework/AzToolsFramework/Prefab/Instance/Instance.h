@@ -36,6 +36,7 @@ namespace AzToolsFramework
     {
         class InstanceEntityMapperInterface;
         class TemplateInstanceMapperInterface;
+        class PrefabSystemComponentInterface;
 
         using AliasPath = AZ::IO::Path;
         using AliasPathView = AZ::IO::PathView;
@@ -231,9 +232,11 @@ namespace AzToolsFramework
 
             static InstanceAlias GenerateInstanceAlias();
 
+            // Cached Instance DOM
             PrefabDomConstReference GetCachedInstanceDom() const;
             PrefabDomReference GetCachedInstanceDom();
             void SetCachedInstanceDom(PrefabDomValueConstReference instanceDom);
+            bool IsCachedInstanceDomUpToDate() const;
 
         private:
             static constexpr const char s_aliasPathSeparator = '/';
@@ -292,11 +295,14 @@ namespace AzToolsFramework
             // Pointer to the parent instance if nested
             Instance* m_parent = nullptr;
 
-            // Interface for registering owned entities for external queries
+            // Interface for registering owned entities for external queries.
             InstanceEntityMapperInterface* m_instanceEntityMapper = nullptr;
 
             // Interface for registering the Instance itself for external queries.
             TemplateInstanceMapperInterface* m_templateInstanceMapper = nullptr;
+
+            // Interface for prefab system component.
+            PrefabSystemComponentInterface* m_prefabSystemComponentInterface = nullptr;
 
             EntityIdInstanceRelationship m_entityIdInstanceRelationship = DefaultEntityIdInstanceRelationship;
         };
