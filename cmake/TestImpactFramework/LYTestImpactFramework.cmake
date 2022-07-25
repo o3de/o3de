@@ -52,13 +52,13 @@ set(LY_TEST_IMPACT_TEST_TYPE_FILE "${LY_TEST_IMPACT_ARTIFACT_DIR}/TestType/All.t
 set(LY_TEST_IMPACT_GEM_TARGET_FILE "${LY_TEST_IMPACT_ARTIFACT_DIR}/BuildType/All.gems")
 
 # File name for TIAF config files.
-set(LY_TEST_IMPACT_CONFIG_FILE "tiaf.json")
+set(LY_TEST_IMPACT_CONFIG_FILE_NAME "tiaf.json")
 
 # Path to the config file for each build configuration
-set(LY_TEST_IMPACT_RUNTIME_CONFIG_FILE_PATH "${LY_TEST_IMPACT_RUNTIME_PERSISTENT_DIR}/${LY_TEST_IMPACT_CONFIG_FILE}")
+set(LY_TEST_IMPACT_CONFIG_FILE_PATH "${LY_TEST_IMPACT_RUNTIME_PERSISTENT_DIR}/${LY_TEST_IMPACT_CONFIG_FILE_NAME}")
 
 # Preprocessor directive for the config file path
-set(LY_TEST_IMPACT_RUNTIME_CONFIG_FILE_PATH_DEFINITION "LY_TEST_IMPACT_DEFAULT_CONFIG_FILE=\"${LY_TEST_IMPACT_RUNTIME_CONFIG_FILE_PATH}\"")
+set(LY_TEST_IMPACT_CONFIG_FILE_PATH_DEFINITION "LY_TEST_IMPACT_DEFAULT_CONFIG_FILE=\"${LY_TEST_IMPACT_RUNTIME_CONFIG_FILE_PATH}\"")
 
 # Path to file used to store data required by TIAF tests
 set(LY_TEST_IMPACT_PYTEST_FILE_PATH "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIG>")
@@ -461,7 +461,7 @@ function(ly_test_impact_write_pytest_file)
     # For each configuration type, compile the build info we need and add it to our array
     set(build_configs "")
     foreach(config_type ${LY_CONFIGURATION_TYPES})
-        set(config "${LY_TEST_IMPACT_WORKING_DIR}/${config_type}/${LY_TEST_IMPACT_PERSISTENT_DIR}/${LY_TEST_IMPACT_CONFIG_FILE}")
+        set(config "${LY_TEST_IMPACT_WORKING_DIR}/${config_type}/${LY_TEST_IMPACT_PERSISTENT_DIR}/${LY_TEST_IMPACT_CONFIG_FILE_NAME}")
         set(report "${LY_TEST_IMPACT_WORKING_DIR}/${config_type}/${LY_TEST_IMPACT_TEMP_DIR}")
         set(bin "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${config_type}/${LY_TEST_IMPACT_BINARY_NAME}")
         ly_file_read("cmake/TestImpactFramework/LyTestImpactBuildConfigEntry.in" build_config)
