@@ -268,7 +268,7 @@ namespace TestImpact
         , m_maxConcurrency(maxConcurrency.value_or(AZStd::thread::hardware_concurrency()))
     {
         // Construct the build targets from the build target descriptors
-        m_buildTargets = ConstructNativeBuildTargetList(suiteFilter, m_config.m_NativeTargetDescriptor, m_config.m_testTargetMeta);
+        m_buildTargets = ConstructNativeBuildTargetList(suiteFilter, m_config.m_buildTargetDescriptor, m_config.m_testTargetMeta);
 
         // Construct the dynamic dependency map from the build targets
         m_dynamicDependencyMap = AZStd::make_unique<DynamicDependencyMap<NativeTestTarget, NativeProductionTarget>>(m_buildTargets.get());
