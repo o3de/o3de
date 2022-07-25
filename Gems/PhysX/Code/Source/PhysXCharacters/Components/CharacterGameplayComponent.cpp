@@ -15,7 +15,6 @@
 #include <PhysX/Utils.h>
 #include <PhysX/Debug/PhysXDebugConfiguration.h>
 #include <System/PhysXSystem.h>
-#include <PhysX/MathConversion.h>
 
 namespace PhysX
 {
@@ -224,7 +223,7 @@ namespace PhysX
         }
 
         m_fallingVelocity += m_gravityMultiplier * m_gravity * deltaTime;
-        Physics::CharacterRequestBus::Event(GetEntityId(), &Physics::CharacterRequests::AddVelocity, m_fallingVelocity);
+        Physics::CharacterRequestBus::Event(GetEntityId(), &Physics::CharacterRequests::AddVelocityForPhysicsTimestep, m_fallingVelocity);
     }
 
     bool CollisionLayerBasedControllerFilter(
