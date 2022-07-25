@@ -86,6 +86,7 @@ set(FILES
     Prefab/PrefabFocus/PrefabFocusTests.cpp
     Prefab/MockPrefabFileIOActionValidator.cpp
     Prefab/MockPrefabFileIOActionValidator.h
+    Prefab/PrefabCreateTests.cpp
     Prefab/PrefabDeleteTests.cpp
     Prefab/PrefabDuplicateTests.cpp
     Prefab/PrefabEntityAliasTests.cpp

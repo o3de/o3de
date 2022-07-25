@@ -50,6 +50,9 @@ namespace UnitTest
         m_instanceToTemplateInterface = AZ::Interface<AzToolsFramework::Prefab::InstanceToTemplateInterface>::Get();
         EXPECT_TRUE(m_instanceToTemplateInterface);
 
+        m_instanceEntityMapperInterface = AZ::Interface<AzToolsFramework::Prefab::InstanceEntityMapperInterface>::Get();
+        EXPECT_TRUE(m_instanceEntityMapperInterface);
+
         GetApplication()->RegisterComponentDescriptor(PrefabTestComponent::CreateDescriptor());
         GetApplication()->RegisterComponentDescriptor(PrefabTestComponentWithUnReflectedTypeMember::CreateDescriptor());
 

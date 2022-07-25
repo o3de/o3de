@@ -147,4 +147,21 @@ namespace UnitTest
         prefabContainerEntity = AzToolsFramework::GetEntityById(createdPrefabContainerId);
         EXPECT_TRUE(prefabContainerEntity == nullptr);
     }
+
+    TEST_F(PrefabDeleteTest, DeleteEntitiesAndAllDescendantsInInstance_PreemptiveRefreshOnCachedInstanceDom)
+    {
+        PrefabEntityResult createEntityResult = m_prefabPublicInterface->CreateEntity(AZ::EntityId(), AZ::Vector3());
+
+        // Verify that a valid entity is created.
+        AZ::EntityId createdEntityId = createEntityResult.GetValue();
+        ASSERT_TRUE(createdEntityId.IsValid());
+        AZ::Entity* createdEntity = AzToolsFramework::GetEntityById(createdEntityId);
+        ASSERT_TRUE(createdEntity != nullptr);
+
+        // Verify that the cached instance DOM is up to date due to preemptive cache update.
+        InstanceOptionalReference owningInstance = m_instanceEntityMapperInterface->FindOwningInstance(createdEntityId);
+        ASSERT_TRUE(owningInstance.has_value());
+        m_prefabPublicInterface->DeleteEntitiesAndAllDescendantsInInstance(AzToolsFramework::EntityIdList{ createdEntityId });
+        EXPECT_TRUE(owningInstance->get().IsCachedInstanceDomUpToDate());
+    }
 } // namespace UnitTest
